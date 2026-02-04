@@ -30,4 +30,4 @@ struct Refresh
 void refresh_init(Refresh*, Db*);
 void refresh_free(Refresh*);
 void refresh_reset(Refresh*);
-void refresh_run(Refresh*, Uuid*, uint64_t);
+void refresh_run(Refresh*, Uuid*, uint64_t, Str*);

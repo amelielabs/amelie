@@ -467,7 +467,15 @@ emit_utility(Compiler* self)
 		auto table = table_mgr_find(&share()->db->catalog.table_mgr,
 		                            self->parser.db,
 		                            &arg->table->string, true);
-		op2(self, CREFRESH, (intptr_t)table, arg->id);
+		if (arg->type == PARTITION_ALTER_REFRESH)
+		{
+			op3(self, CREFRESH, (intptr_t)table, arg->id, -1);
+		} else
+		if (arg->type == PARTITION_ALTER_MOVE)
+		{
+			auto offset = code_data_add_string(self->code_data, &arg->storage);
+			op3(self, CREFRESH, (intptr_t)table, arg->id, offset);
+		}
 		break;
 	}
 

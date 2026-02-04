@@ -15,7 +15,8 @@ typedef struct AstPartAlter AstPartAlter;
 
 enum
 {
-	PART_ALTER_REFRESH
+	PARTITION_ALTER_REFRESH,
+	PARTITION_ALTER_MOVE
 };
 
 struct AstPartAlter
@@ -23,7 +24,8 @@ struct AstPartAlter
 	Ast      ast;
 	uint64_t id;
 	Ast*     table;
-	int      op;
+	int      type;
+	Str      storage;
 };
 
 static inline AstPartAlter*

@@ -23,12 +23,12 @@
 #include <amelie_db.h>
 
 void
-db_refresh(Db* self, Uuid* id_table, uint64_t id)
+db_refresh(Db* self, Uuid* id_table, uint64_t id, Str* storage)
 {
 	Refresh refresh;
 	refresh_init(&refresh, self);
 	defer(refresh_free, &refresh);
-	refresh_run(&refresh, id_table, id);
+	refresh_run(&refresh, id_table, id, storage);
 }
 
 static Buf*
@@ -88,7 +88,7 @@ db_checkpoint(Db* self)
 	auto end = (Id*)list->position;
 	auto it  = (Id*)list->start;
 	for (; it < end; it++)
-		refresh_run(&refresh, &it->id_table, it->id);
+		refresh_run(&refresh, &it->id_table, it->id, NULL);
 
 	// wal gc
 	db_gc(self);

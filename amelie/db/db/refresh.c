@@ -23,7 +23,7 @@
 #include <amelie_db.h>
 
 static bool
-refresh_begin(Refresh* self, Uuid* id_table, uint64_t id)
+refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 {
 	auto db = self->db;
 
@@ -53,6 +53,22 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id)
 	self->id_origin = origin->id;
 	self->id = origin->id;
 	self->id.id = state_psn_next();
+
+	// set storage to use
+	if (storage)
+	{
+		auto ref = tier_storage_find(self->id.tier, storage);
+		if (! ref)
+		{
+			unlock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+			heap_free(heap_shadow);
+			return false;
+		}
+		self->id.storage = ref->storage;
+	} else
+	{
+		// todo: choose next available storage to use
+	}
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -215,7 +231,7 @@ refresh_reset(Refresh* self)
 }
 
 void
-refresh_run(Refresh* self, Uuid* id_table, uint64_t id)
+refresh_run(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 {
 	refresh_reset(self);
 
@@ -223,10 +239,10 @@ refresh_run(Refresh* self, Uuid* id_table, uint64_t id)
 	db_lock(self->db, &self->lock, id);
 
 	// find and rotate partition
-	if (! refresh_begin(self, id_table, id))
+	if (! refresh_begin(self, id_table, id, storage))
 	{
 		db_unlock(self->db, &self->lock);
-		error("partition not found");
+		error("partition or tier storage not found");
 	}
 
 	// create heap snapshot

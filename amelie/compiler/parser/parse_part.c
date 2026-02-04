@@ -20,7 +20,8 @@
 void
 parse_part_alter(Stmt* self)
 {
-	// ALTER PARTITION id ON table command
+	// ALTER PARTITION id ON table REFRESH
+	// ALTER PARTITION id ON table MOVE TO storage
 	auto stmt = ast_part_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -39,8 +40,22 @@ parse_part_alter(Stmt* self)
 	if  (cmd->id != KNAME)
 		stmt_error(self, cmd, "command expected");
 
+	// REFRESH | MOVE
 	if (str_is_case(&cmd->string, "refresh", 7))
-		stmt->op = PART_ALTER_REFRESH;
-	else
+	{
+		stmt->type = PARTITION_ALTER_REFRESH;
+	} else
+	if (str_is_case(&cmd->string, "move", 4))
+	{
+		stmt->type = PARTITION_ALTER_MOVE;
+
+		// TO
+		stmt_expect(self, KTO);
+
+		// name
+		auto storage = stmt_expect(self, KNAME);
+		stmt->storage = storage->string;
+	} else {
 		stmt_error(self, cmd, "unknown command");
+	}
 }

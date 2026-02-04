@@ -12,11 +12,31 @@ alter partition 1 on xyz;
 alter partition 1 on xyz qwerty;
 
 # test: alter partition refresh
-create table test (id int primary key) partitions 1;
+create table test (id int primary key) partitions 1
+        tier main (id "00000000-0000-0000-0000-000000000000");
 show partitions on test;
 insert into test values (123);
 alter partition 1 on test refresh;
 show partitions on test;
+
+# test: alter partition move
+create storage b;
+alter tier main on test add storage b;
+show tiers on test;
+show partitions on test;
+
+alter partition 2 on test move;
+alter partition 2 on test move to;
+alter partition 2 on test move to b;
+show partitions on test;
+
+# test: alter partition move (same partition)
+alter partition 3 on test move to b;
+show partitions on test;
+
+# test: alter partition move (storage not exists)
+alter partition 4 on test move to c;
+
 drop table test;
 
 disconnect S0;

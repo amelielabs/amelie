@@ -1913,8 +1913,12 @@ cddl:
 	op_next;
 
 crefresh:
-	// [table*, id]
-	db_refresh(share()->db, &((Table*)op->a)->config->id, op->b);
+	// [table*, id, storage_name]
+	str_init(&string);
+	if (op->c != -1)
+		code_data_at_string(code_data, op->c, &string);
+	db_refresh(share()->db, &((Table*)op->a)->config->id, op->b,
+	           str_empty(&string) ? NULL : &string);
 	op_next;
 
 csend_shard:

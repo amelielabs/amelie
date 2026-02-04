@@ -14,7 +14,8 @@ alter partition 1 on xyz;
 alter partition 1 on xyz qwerty;
 {"msg": "alter partition 1 on xyz ❰qwerty❱ ⟵ unknown command"}
 # test: alter partition refresh
-create table test (id int primary key) partitions 1;
+create table test (id int primary key) partitions 1
+        tier main (id "00000000-0000-0000-0000-000000000000");
 show partitions on test;
 [{
   "id": 1,
@@ -41,6 +42,65 @@ show partitions on test;
   "size": 524288,
   "compression": 1
 }]
+# test: alter partition move
+create storage b;
+alter tier main on test add storage b;
+show tiers on test;
+[{
+  "name": "main",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "zstd",
+  "compression_level": 0,
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main", "b"]
+}]
+show partitions on test;
+[{
+  "id": 2,
+  "tier": "main",
+  "storage": "main",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 3,
+  "size": 524288,
+  "compression": 1
+}]
+alter partition 2 on test move;
+{"msg": "alter partition 2 on test move❰;❱ ⟵ TO expected"}
+alter partition 2 on test move to;
+{"msg": "alter partition 2 on test move to❰;❱ ⟵ name expected"}
+alter partition 2 on test move to b;
+show partitions on test;
+[{
+  "id": 3,
+  "tier": "main",
+  "storage": "b",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 3,
+  "size": 524288,
+  "compression": 1
+}]
+# test: alter partition move (same partition)
+alter partition 3 on test move to b;
+show partitions on test;
+[{
+  "id": 4,
+  "tier": "main",
+  "storage": "b",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 3,
+  "size": 524288,
+  "compression": 1
+}]
+# test: alter partition move (storage not exists)
+alter partition 4 on test move to c;
+{"msg": "partition or tier storage not found"}
 drop table test;
 disconnect S0;
 close E0;
