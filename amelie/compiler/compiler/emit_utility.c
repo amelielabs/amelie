@@ -255,6 +255,16 @@ emit_ddl(Compiler* self)
 			                                    &arg->name,
 			                                    &arg->name_storage);
 		else
+		if (arg->type == TIER_ALTER_STORAGE_PAUSE)
+			offset = table_op_tier_storage_pause(data, db, &arg->table_name,
+			                                     &arg->name,
+			                                     &arg->name_storage, true);
+		else
+		if (arg->type == TIER_ALTER_STORAGE_RESUME)
+			offset = table_op_tier_storage_pause(data, db, &arg->table_name,
+			                                     &arg->name,
+			                                     &arg->name_storage, false);
+		else
 		if (arg->type == TIER_ALTER_SET)
 			offset = table_op_tier_set(data, db, &arg->table_name,
 			                           arg->set,

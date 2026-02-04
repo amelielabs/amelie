@@ -362,7 +362,7 @@ table_tier_storage_drop(Table* self,
 		return false;
 	}
 
-	// ensure storage not exists
+	// ensure storage exists
 	auto tier_storage = tier_storage_find(tier, name_storage);
 	if (! tier_storage)
 	{
@@ -378,23 +378,102 @@ table_tier_storage_drop(Table* self,
 	}
 
 	// ensure tier storage has no deps
-	auto level = engine_tier_find(&self->engine, name);
-	assert(level);
-	list_foreach(&level->list)
+	if (tier_storage->refs > 0)
+		error("table '%.*s' tier '%.*s' storage '%.*s': is not empty",
+		      str_size(&self->config->name),
+		      str_of(&self->config->name),
+		      str_size(name),
+		      str_of(name),
+		      str_size(name_storage),
+		      str_of(name_storage));
+
+	// update table
+	log_relation(&tr->log, &storage_drop_if, tier, &self->rel);
+
+	// save storage name
+	encode_string(&tr->log.data, name_storage);
+	return true;
+}
+
+static void
+storage_pause_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+storage_pause_if_abort(Log* self, LogOp* op)
+{
+	Tier* tier = op->iface_arg;
+	auto relation = log_relation_of(self, op);
+	uint8_t* pos = relation->data;
+	Str storage_name;
+	json_read_string(&pos, &storage_name);
+
+	auto tier_storage = tier_storage_find(tier, &storage_name);
+	tier_storage->pause = !tier_storage->pause;
+}
+
+static LogIf storage_pause_if =
+{
+	.commit = storage_pause_if_commit,
+	.abort  = storage_pause_if_abort
+};
+
+bool
+table_tier_storage_pause(Table* self,
+                         Tr*    tr,
+                         Str*   name,
+                         Str*   name_storage,
+                         bool   pause,
+                         bool   if_exists,
+                         bool   if_exists_storage)
+{
+	// find tier
+	auto tier = table_tier_find(self, name, false);
+	if (! tier)
 	{
-		auto part = list_at(Part, link);
-		if (part->id.storage == tier_storage)
-			error("table '%.*s' tier '%.*s' storage '%.*s': is not empty",
+		if (! if_exists)
+			error("table '%.*s' tier '%.*s': not exists",
+			      str_size(&self->config->name),
+			      str_of(&self->config->name),
+			      str_size(name),
+			      str_of(name));
+		return false;
+	}
+
+	// ensure storage exists
+	auto tier_storage = tier_storage_find(tier, name_storage);
+	if (! tier_storage)
+	{
+		if (! if_exists_storage)
+			error("table '%.*s' tier '%.*s' storage '%.*s': not found",
 			      str_size(&self->config->name),
 			      str_of(&self->config->name),
 			      str_size(name),
 			      str_of(name),
 			      str_size(name_storage),
 			      str_of(name_storage));
+		return false;
 	}
 
+	if (tier_storage->pause == pause)
+		return false;
+
+	// ensure at least one tier storage is still active
+	if (pause && tier_storage_count(tier) <= 1)
+		error("table '%.*s' tier '%.*s': at least one storage must remain active",
+		      str_size(&self->config->name),
+		      str_of(&self->config->name),
+		      str_size(name),
+		      str_of(name));
+
 	// update table
-	log_relation(&tr->log, &storage_drop_if, tier, &self->rel);
+	log_relation(&tr->log, &storage_pause_if, tier, &self->rel);
+
+	// apply
+	tier_storage->pause = pause;
 
 	// save storage name
 	encode_string(&tr->log.data, name_storage);

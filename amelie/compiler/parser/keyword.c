@@ -139,6 +139,7 @@ Keyword keywords[] =
 	{ KPARTITION,             "partition",             9  },
 	{ KPOOL,                  "pool",                  4  },
 	{ KPRIMARY,               "primary",               7  },
+	{ KPAUSE,                 "pause",                 5  },
 
 	// r
 	{ KRIGHT,                 "right",                 5  },
@@ -152,6 +153,7 @@ Keyword keywords[] =
 	{ KRANDOM,                "random",                6  },
 	{ KRESOLVE,               "resolve",               7  },
 	{ KRESOLVED,              "resolved",              8  },
+	{ KRESUME,                "resume",                6  },
 
 	// s
 	{ KSELECT,                "select",                6  },

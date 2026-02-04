@@ -183,6 +183,8 @@ parse_tier_alter(Stmt* self)
 	// ALTER TIER [IF EXISTS] name ON table_name RENAME TO name
 	// ALTER TIER [IF EXISTS] name ON table_name ADD STORAGE [IF NOT EXISTS] name
 	// ALTER TIER [IF EXISTS] name ON table_name DROP STORAGE [IF EXISTS] name
+	// ALTER TIER [IF EXISTS] name ON table_name PAUSE STORAGE [IF EXISTS] name
+	// ALTER TIER [IF EXISTS] name ON table_name RESUME STORAGE [IF EXISTS] name
 	// ALTER TIER [IF EXISTS] name ON table_name SET (options)
 	auto stmt = ast_tier_alter_allocate();
 	self->ast = &stmt->ast;
@@ -201,7 +203,7 @@ parse_tier_alter(Stmt* self)
 	auto name_table  = stmt_expect(self, KNAME);
 	stmt->table_name = name_table->string;
 
-	// RENAME | ADD | DROP
+	// RENAME | ADD | DROP | PAUSE | RESUME | SET
 	if (stmt_if(self, KRENAME))
 	{
 		stmt->type = TIER_ALTER_RENAME;
@@ -241,6 +243,34 @@ parse_tier_alter(Stmt* self)
 		auto name = stmt_expect(self, KNAME);
 		stmt->name_storage = name->string;
 	} else
+	if (stmt_if(self, KPAUSE))
+	{
+		stmt->type = TIER_ALTER_STORAGE_PAUSE;
+
+		// STORAGE
+		stmt_expect(self, KSTORAGE);
+
+		// [IF EXISTS]
+		stmt->if_exists_storage = parse_if_exists(self);
+
+		// name
+		auto name = stmt_expect(self, KNAME);
+		stmt->name_storage = name->string;
+	} else
+	if (stmt_if(self, KRESUME))
+	{
+		stmt->type = TIER_ALTER_STORAGE_RESUME;
+
+		// STORAGE
+		stmt_expect(self, KSTORAGE);
+
+		// [IF EXISTS]
+		stmt->if_exists_storage = parse_if_exists(self);
+
+		// name
+		auto name = stmt_expect(self, KNAME);
+		stmt->name_storage = name->string;
+	} else
 	if (stmt_if(self, KSET))
 	{
 		stmt->type = TIER_ALTER_SET;
@@ -257,6 +287,6 @@ parse_tier_alter(Stmt* self)
 			stmt_error(self, name, "tier id cannot be changed");
 	} else
 	{
-		stmt_error(self, NULL, "RENAME | ADD | DROP | SET expected");
+		stmt_error(self, NULL, "RENAME | ADD | DROP | PAUSE | RESUME | SET expected");
 	}
 }

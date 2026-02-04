@@ -137,8 +137,31 @@ alter tier t on test drop storage test;
 alter tier t on test drop storage if exists test;
 show tier t on test;
 drop storage test;
+drop tier t on test;
+
+# test: alter tier storage pause
+create storage test;
+create tier t on test (id "00000000-0000-0000-0000-000000000000") using main, test;
+show tier t on test;
+
+alter tier t on test pause;
+alter tier t on test pause storage;
+alter tier t on test pause storage test;
+show tier t on test;
+
+# test: alter tier storage pause (one must remain)
+alter tier t on test pause storage main;
+
+# test: alter tier storage resume
+alter tier t on test resume;
+alter tier t on test resume storage;
+alter tier t on test resume storage test;
+show tier t on test;
+
+drop tier t on test;
 
 # test: alter tier set
+create tier t on test (id "00000000-0000-0000-0000-000000000000");
 alter tier t on test set (region_size 123, compression '');
 show tier t on test;
 
@@ -170,6 +193,38 @@ show partitions on test;
 
 alter partition 7 on test refresh;
 show partition '8' on test;
+
+drop table test;
+drop storage a;
+drop storage b;
+drop storage c;
+
+# test: storages rebalance (pause/resume)
+create storage a;
+create storage b;
+create storage c;
+
+create table test (id int primary key, a int, b int) partitions 5
+        tier main (id "00000000-0000-0000-0000-000000000001") using a,b,c;
+show partitions on test;
+
+alter tier main on test pause storage b;
+alter tier main on test pause storage c;
+show tiers on test;
+
+# a
+alter partition 8 on test refresh;
+show partition '9' on test;
+
+# a
+alter partition 9 on test refresh;
+show partition '10' on test;
+
+alter tier main on test resume storage c;
+
+# c
+alter partition 10 on test refresh;
+show partition '11' on test;
 
 drop table test;
 drop storage a;

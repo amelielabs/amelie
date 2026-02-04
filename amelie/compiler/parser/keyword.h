@@ -174,6 +174,7 @@ enum
 	KPARTITION,
 	KPOOL,
 	KPRIMARY,
+	KPAUSE,
 
 	// q
 
@@ -189,6 +190,7 @@ enum
 	KRANDOM,
 	KRESOLVE,
 	KRESOLVED,
+	KRESUME,
 
 	// s
 	KSELECT,

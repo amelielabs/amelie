@@ -509,6 +509,24 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                                if_exists_storage);
 		break;
 	}
+	case DDL_TIER_STORAGE_PAUSE:
+	{
+		Str  db;
+		Str  name;
+		Str  name_tier;
+		Str  name_storage;
+		bool pause;
+		table_op_tier_storage_pause_read(op, &db, &name, &name_tier, &name_storage, &pause);
+
+		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
+		auto if_exists = ddl_if_exists(flags);
+		auto if_exists_storage = ddl_if_storage_exists(flags);
+		write = table_tier_storage_pause(table, tr, &name_tier, &name_storage,
+		                                 pause,
+		                                 if_exists,
+		                                 if_exists_storage);
+		break;
+	}
 	case DDL_UDF_CREATE:
 	{
 		auto config = udf_op_create_read(op);

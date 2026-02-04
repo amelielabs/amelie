@@ -28,7 +28,10 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 # test: create tier if not exists
 create tier t on test ();
@@ -42,7 +45,10 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 drop tier t on test;
 # test: create tier using main
@@ -61,7 +67,10 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 drop tier t on test;
 # test: create tier using main dup
@@ -78,7 +87,13 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["test", "main"]
+  "storages": [{
+    "name": "test",
+    "pause": false
+  }, {
+    "name": "main",
+    "pause": false
+  }]
 }]
 drop tier t on test;
 drop storage test;
@@ -118,7 +133,13 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["test", "main"]
+  "storages": [{
+    "name": "test",
+    "pause": false
+  }, {
+    "name": "main",
+    "pause": false
+  }]
 }]
 drop storage test;
 {"msg": "storage 'test': is being used"}
@@ -144,9 +165,9 @@ alter tier i 1;
 alter tier i on;
 {"msg": "alter tier i on❰;❱ ⟵ name expected"}
 alter tier i on test;
-{"msg": "alter tier i on test❰;❱ ⟵ RENAME | ADD | DROP | SET expected"}
+{"msg": "alter tier i on test❰;❱ ⟵ RENAME | ADD | DROP | PAUSE | RESUME | SET expected"}
 alter tier i on test 1;
-{"msg": "alter tier i on test ❰1❱ ⟵ RENAME | ADD | DROP | SET expected"}
+{"msg": "alter tier i on test ❰1❱ ⟵ RENAME | ADD | DROP | PAUSE | RESUME | SET expected"}
 alter tier i on test rename;
 {"msg": "alter tier i on test rename❰;❱ ⟵ TO expected"}
 alter tier i on test rename 1;
@@ -167,7 +188,10 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 alter tier t on test rename to z;
 show tier t on test;
@@ -180,7 +204,10 @@ show tier z on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 # test: alter tier rename if exists
 alter tier if exists t on test rename to z;
@@ -194,7 +221,10 @@ show tier z on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 # test: alter tier rename (conflict)
 alter tier z on test rename to z;
@@ -207,7 +237,10 @@ show tier z on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 drop tier z on test;
 # test: alter tier storage add
@@ -221,7 +254,10 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 alter tier t on test add;
 {"msg": "alter tier t on test add❰;❱ ⟵ STORAGE expected"}
@@ -238,7 +274,13 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main", "test"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }, {
+    "name": "test",
+    "pause": false
+  }]
 }]
 # test: alter tier storage add if not exists
 alter tier t on test add storage test;
@@ -252,7 +294,13 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main", "test"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }, {
+    "name": "test",
+    "pause": false
+  }]
 }]
 # test: alter tier storage drop
 drop storage test;
@@ -272,7 +320,10 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 # test: alter tier storage drop if exists
 alter tier t on test drop storage test;
@@ -286,10 +337,81 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 drop storage test;
+drop tier t on test;
+# test: alter tier storage pause
+create storage test;
+create tier t on test (id "00000000-0000-0000-0000-000000000000") using main, test;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "zstd",
+  "compression_level": 0,
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }, {
+    "name": "test",
+    "pause": false
+  }]
+}]
+alter tier t on test pause;
+{"msg": "alter tier t on test pause❰;❱ ⟵ STORAGE expected"}
+alter tier t on test pause storage;
+{"msg": "alter tier t on test pause storage❰;❱ ⟵ name expected"}
+alter tier t on test pause storage test;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "zstd",
+  "compression_level": 0,
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }, {
+    "name": "test",
+    "pause": true
+  }]
+}]
+# test: alter tier storage pause (one must remain)
+alter tier t on test pause storage main;
+{"msg": "table 'test' tier 't': at least one storage must remain active"}
+# test: alter tier storage resume
+alter tier t on test resume;
+{"msg": "alter tier t on test resume❰;❱ ⟵ STORAGE expected"}
+alter tier t on test resume storage;
+{"msg": "alter tier t on test resume storage❰;❱ ⟵ name expected"}
+alter tier t on test resume storage test;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "zstd",
+  "compression_level": 0,
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }, {
+    "name": "test",
+    "pause": false
+  }]
+}]
+drop tier t on test;
 # test: alter tier set
+create tier t on test (id "00000000-0000-0000-0000-000000000000");
 alter tier t on test set (region_size 123, compression '');
 show tier t on test;
 [{
@@ -299,7 +421,10 @@ show tier t on test;
   "compression_level": 0,
   "region_size": 123,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 # test: alter tier set compression
 insert into test values (123, 0, 0);
@@ -329,7 +454,7 @@ show partitions on test;
   "ram": true,
   "min": 0,
   "max": 8096,
-  "lsn": 26,
+  "lsn": 33,
   "size": 524288,
   "compression": 0
 }]
@@ -399,6 +524,129 @@ alter partition 7 on test refresh;
 show partition '8' on test;
 [{
   "id": 8,
+  "tier": "main",
+  "storage": "c",
+  "ram": true,
+  "min": 6476,
+  "max": 8096,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}]
+drop table test;
+drop storage a;
+drop storage b;
+drop storage c;
+# test: storages rebalance (pause/resume)
+create storage a;
+create storage b;
+create storage c;
+create table test (id int primary key, a int, b int) partitions 5
+        tier main (id "00000000-0000-0000-0000-000000000001") using a,b,c;
+show partitions on test;
+[{
+  "id": 6,
+  "tier": "main",
+  "storage": "a",
+  "ram": true,
+  "min": 4857,
+  "max": 6476,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 3,
+  "tier": "main",
+  "storage": "a",
+  "ram": true,
+  "min": 0,
+  "max": 1619,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 4,
+  "tier": "main",
+  "storage": "b",
+  "ram": true,
+  "min": 1619,
+  "max": 3238,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 8,
+  "tier": "main",
+  "storage": "c",
+  "ram": true,
+  "min": 6476,
+  "max": 8096,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 5,
+  "tier": "main",
+  "storage": "c",
+  "ram": true,
+  "min": 3238,
+  "max": 4857,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}]
+alter tier main on test pause storage b;
+alter tier main on test pause storage c;
+show tiers on test;
+[{
+  "name": "main",
+  "id": "00000000-0000-0000-0000-000000000001",
+  "compression": "zstd",
+  "compression_level": 0,
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": [{
+    "name": "a",
+    "pause": false
+  }, {
+    "name": "b",
+    "pause": true
+  }, {
+    "name": "c",
+    "pause": true
+  }]
+}]
+alter partition 8 on test refresh;
+show partition '9' on test;
+[{
+  "id": 9,
+  "tier": "main",
+  "storage": "a",
+  "ram": true,
+  "min": 6476,
+  "max": 8096,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}]
+alter partition 9 on test refresh;
+show partition '10' on test;
+[{
+  "id": 10,
+  "tier": "main",
+  "storage": "a",
+  "ram": true,
+  "min": 6476,
+  "max": 8096,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}]
+alter tier main on test resume storage c;
+alter partition 10 on test refresh;
+show partition '11' on test;
+[{
+  "id": 11,
   "tier": "main",
   "storage": "c",
   "ram": true,

@@ -296,10 +296,26 @@ tier_storage_next(Tier* self)
 	list_foreach(&self->storages)
 	{
 		auto ref = list_at(TierStorage, link);
+		if (ref->pause)
+			continue;
 		if (!storage || ref->refs < storage->refs)
 			storage = ref;
 	}
 	return storage;
+}
+
+static inline int
+tier_storage_count(Tier* self)
+{
+	int count = 0;
+	list_foreach(&self->storages)
+	{
+		auto ref = list_at(TierStorage, link);
+		if (ref->pause)
+			continue;
+		count++;
+	}
+	return count;
 }
 
 static inline TierStorage*

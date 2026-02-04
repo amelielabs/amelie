@@ -673,7 +673,10 @@ show tiers on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }]
 drop table test;
 create table test (id int primary key)
@@ -694,7 +697,10 @@ show tiers on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["main"]
+  "storages": [{
+    "name": "main",
+    "pause": false
+  }]
 }, {
   "name": "b",
   "id": "00000000-0000-0000-0000-000000000000",
@@ -702,7 +708,16 @@ show tiers on test;
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
-  "storages": ["x", "y", "z"]
+  "storages": [{
+    "name": "x",
+    "pause": false
+  }, {
+    "name": "y",
+    "pause": false
+  }, {
+    "name": "z",
+    "pause": false
+  }]
 }]
 drop table test;
 drop storage x;
