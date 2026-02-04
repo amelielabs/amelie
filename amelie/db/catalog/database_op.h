@@ -18,7 +18,7 @@ database_op_create(Buf* self, DatabaseConfig* config)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_DATABASE_CREATE);
-	database_config_write(config, self);
+	database_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }

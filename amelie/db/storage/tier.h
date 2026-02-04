@@ -211,9 +211,8 @@ tier_read(uint8_t** pos)
 }
 
 static inline void
-tier_write(Tier* self, Buf* buf, bool safe)
+tier_write(Tier* self, Buf* buf, int flags)
 {
-	unused(safe);
 	encode_obj(buf);
 
 	// name
@@ -246,7 +245,7 @@ tier_write(Tier* self, Buf* buf, bool safe)
 	list_foreach(&self->storages)
 	{
 		auto storage = list_at(TierStorage, link);
-		tier_storage_write(storage, buf);
+		tier_storage_write(storage, buf, flags);
 	}
 	encode_array_end(buf);
 	encode_obj_end(buf);

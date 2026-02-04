@@ -530,7 +530,7 @@ table_tier_set(Table* self,
 	log_relation(&tr->log, &set_if, tier, &self->rel);
 
 	// save current tier settings
-	tier_write(tier, &tr->log.data, true);
+	tier_write(tier, &tr->log.data, 0);
 
 	// apply settings
 	tier_set(tier, config, mask);
@@ -538,9 +538,8 @@ table_tier_set(Table* self,
 }
 
 Buf*
-table_tier_list(Table* self, Str* ref, bool extended)
+table_tier_list(Table* self, Str* ref, int flags)
 {
-	unused(extended);
 	auto buf = buf_create();
 	errdefer_buf(buf);
 
@@ -551,7 +550,7 @@ table_tier_list(Table* self, Str* ref, bool extended)
 		if (! tier)
 			encode_null(buf);
 		else
-			tier_write(tier, buf, false);
+			tier_write(tier, buf, flags);
 		return buf;
 	}
 
@@ -560,7 +559,7 @@ table_tier_list(Table* self, Str* ref, bool extended)
 	list_foreach(&self->config->tiers)
 	{
 		auto tier = list_at(Tier, link);
-		tier_write(tier, buf, false);
+		tier_write(tier, buf, flags);
 	}
 	encode_array_end(buf);
 	return buf;

@@ -84,8 +84,10 @@ storage_config_read(uint8_t** pos)
 }
 
 static inline void
-storage_config_write(StorageConfig* self, Buf* buf)
+storage_config_write(StorageConfig* self, Buf* buf, int flags)
 {
+	unused(flags);
+
 	// map
 	encode_obj(buf);
 

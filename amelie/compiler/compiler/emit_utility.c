@@ -432,7 +432,7 @@ emit_utility(Compiler* self)
 	{
 		auto arg = ast_replica_create_of(stmt->ast);
 		auto offset = buf_size(data);
-		replica_config_write(arg->config, data);
+		replica_config_write(arg->config, data, 0);
 		op2(self, CREPLICA_CREATE, offset, arg->if_not_exists);
 		break;
 	}

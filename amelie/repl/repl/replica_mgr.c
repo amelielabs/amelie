@@ -46,7 +46,7 @@ replica_mgr_save(ReplicaMgr* self)
 	list_foreach(&self->list)
 	{
 		auto replica = list_at(Replica, link);
-		replica_config_write(replica->config, buf);
+		replica_config_write(replica->config, buf, 0);
 	}
 	encode_array_end(buf);
 
@@ -154,7 +154,7 @@ replica_mgr_drop(ReplicaMgr* self, Uuid* id, bool if_exists)
 }
 
 Buf*
-replica_mgr_list(ReplicaMgr* self, Uuid* id)
+replica_mgr_list(ReplicaMgr* self, Uuid* id, int flags)
 {
 	auto buf = buf_create();
 	if (id)
@@ -163,14 +163,14 @@ replica_mgr_list(ReplicaMgr* self, Uuid* id)
 		if (! replica)
 			encode_null(buf);
 		else
-			replica_status(replica, buf);
+			replica_status(replica, buf, flags);
 	} else
 	{
 		encode_array(buf);
 		list_foreach(&self->list)
 		{
 			auto replica = list_at(Replica, link);
-			replica_status(replica, buf);
+			replica_status(replica, buf, flags);
 		}
 		encode_array_end(buf);
 	}

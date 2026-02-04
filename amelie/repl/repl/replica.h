@@ -54,8 +54,9 @@ replica_stop(Replica* self)
 }
 
 static inline void
-replica_status(Replica* self, Buf* buf)
+replica_status(Replica* self, Buf* buf, int flags)
 {
+	unused(flags);
 	encode_obj(buf);
 
 	// id

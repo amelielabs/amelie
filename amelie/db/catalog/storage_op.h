@@ -18,7 +18,7 @@ storage_op_create(Buf* self, StorageConfig* config)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_STORAGE_CREATE);
-	storage_config_write(config, self);
+	storage_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }

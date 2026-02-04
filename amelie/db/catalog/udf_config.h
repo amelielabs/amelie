@@ -111,7 +111,7 @@ udf_config_read(uint8_t** pos)
 }
 
 static inline void
-udf_config_write(UdfConfig* self, Buf* buf)
+udf_config_write(UdfConfig* self, Buf* buf, int flags)
 {
 	// map
 	encode_obj(buf);
@@ -123,6 +123,12 @@ udf_config_write(UdfConfig* self, Buf* buf)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
+
+	if (flags_has(flags, FMINIMAL))
+	{
+		encode_obj_end(buf);
+		return;
+	}
 
 	// text
 	encode_raw(buf, "text", 4);
@@ -134,28 +140,11 @@ udf_config_write(UdfConfig* self, Buf* buf)
 
 	// args
 	encode_raw(buf, "args", 4);
-	columns_write(&self->args, buf);
+	columns_write(&self->args, buf, flags);
 
 	// args
 	encode_raw(buf, "returning", 9);
-	columns_write(&self->returning, buf);
-
-	encode_obj_end(buf);
-}
-
-static inline void
-udf_config_write_compact(UdfConfig* self, Buf* buf)
-{
-	// map
-	encode_obj(buf);
-
-	// db
-	encode_raw(buf, "db", 2);
-	encode_string(buf, &self->db);
-
-	// name
-	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
+	columns_write(&self->returning, buf, flags);
 
 	encode_obj_end(buf);
 }

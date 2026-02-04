@@ -18,7 +18,7 @@ table_op_create(Buf* self, TableConfig* config)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_TABLE_CREATE);
-	table_config_write(config, self, true);
+	table_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }
@@ -177,7 +177,7 @@ table_op_column_add(Buf* self, Str* db, Str* name, Column* column)
 	encode_integer(self, DDL_TABLE_COLUMN_ADD);
 	encode_string(self, db);
 	encode_string(self, name);
-	column_write(column, self);
+	column_write(column, self, 0);
 	encode_array_end(self);
 	return offset;
 }
@@ -294,7 +294,7 @@ table_op_index_create(Buf* self, Str* db, Str* name, IndexConfig* config)
 	encode_integer(self, DDL_INDEX_CREATE);
 	encode_string(self, db);
 	encode_string(self, name);
-	index_config_write(config, self);
+	index_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }
@@ -383,7 +383,7 @@ table_op_tier_create(Buf* self, Str* db, Str* name, Tier* tier)
 	encode_integer(self, DDL_TIER_CREATE);
 	encode_string(self, db);
 	encode_string(self, name);
-	tier_write(tier, self, true);
+	tier_write(tier, self, 0);
 	encode_array_end(self);
 	return offset;
 }
@@ -562,7 +562,7 @@ table_op_tier_set(Buf* self, Str* db, Str* name, Tier* tier, int mask)
 	encode_integer(self, DDL_TIER_SET);
 	encode_string(self, db);
 	encode_string(self, name);
-	tier_write(tier, self, true);
+	tier_write(tier, self, 0);
 	encode_integer(self, mask);
 	encode_array_end(self);
 	return offset;

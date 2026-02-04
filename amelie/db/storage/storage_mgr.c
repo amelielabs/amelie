@@ -156,7 +156,7 @@ storage_mgr_dump(StorageMgr* self, Buf* buf)
 		auto storage = storage_of(list_at(Relation, link));
 		if (storage->config->system)
 			continue;
-		storage_config_write(storage->config, buf);
+		storage_config_write(storage->config, buf, 0);
 	}
 	encode_array_end(buf);
 }
@@ -176,15 +176,14 @@ storage_mgr_find(StorageMgr* self, Str* name, bool error_if_not_exists)
 }
 
 Buf*
-storage_mgr_list(StorageMgr* self, Str* name, bool extended)
+storage_mgr_list(StorageMgr* self, Str* name, int flags)
 {
-	unused(extended);
 	auto buf = buf_create();
 	if (name)
 	{
 		auto storage = storage_mgr_find(self, name, false);
 		if (storage)
-			storage_config_write(storage->config, buf);
+			storage_config_write(storage->config, buf, flags);
 		else
 			encode_null(buf);
 	} else
@@ -193,7 +192,7 @@ storage_mgr_list(StorageMgr* self, Str* name, bool extended)
 		list_foreach(&self->mgr.list)
 		{
 			auto storage = storage_of(list_at(Relation, link));
-			storage_config_write(storage->config, buf);
+			storage_config_write(storage->config, buf, flags);
 		}
 		encode_array_end(buf);
 	}

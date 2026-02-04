@@ -153,7 +153,7 @@ repl_status(Repl* self)
 		encode_string(buf, &state()->repl_primary.string);
 
 	encode_raw(buf, "replicas", 8);
-	auto replicas = replica_mgr_list(&self->replica_mgr, NULL);
+	auto replicas = replica_mgr_list(&self->replica_mgr, NULL, 0);
 	defer_buf(replicas);
 	buf_write(buf, replicas->start, buf_size(replicas));
 

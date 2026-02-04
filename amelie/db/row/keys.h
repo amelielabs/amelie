@@ -136,14 +136,14 @@ keys_read(Keys* self, uint8_t** pos)
 }
 
 static inline void
-keys_write(Keys* self, Buf* buf)
+keys_write(Keys* self, Buf* buf, int flags)
 {
 	// []
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
 		auto key = list_at(Key, link);
-		key_write(key, buf);
+		key_write(key, buf, flags);
 	}
 	encode_array_end(buf);
 }

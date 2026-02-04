@@ -203,7 +203,7 @@ table_config_read(uint8_t** pos)
 }
 
 static inline void
-table_config_write(TableConfig* self, Buf* buf, bool safe)
+table_config_write(TableConfig* self, Buf* buf, int flags)
 {
 	// obj
 	encode_obj(buf);
@@ -215,6 +215,12 @@ table_config_write(TableConfig* self, Buf* buf, bool safe)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
+
+	if (flags_has(flags, FMINIMAL))
+	{
+		encode_obj_end(buf);
+		return;
+	}
 
 	// id
 	encode_raw(buf, "id", 2);
@@ -230,7 +236,7 @@ table_config_write(TableConfig* self, Buf* buf, bool safe)
 
 	// columns
 	encode_raw(buf, "columns", 7);
-	columns_write(&self->columns, buf);
+	columns_write(&self->columns, buf, flags);
 
 	// indexes
 	encode_raw(buf, "indexes", 7);
@@ -238,7 +244,7 @@ table_config_write(TableConfig* self, Buf* buf, bool safe)
 	list_foreach(&self->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
-		index_config_write(config, buf);
+		index_config_write(config, buf, flags);
 	}
 	encode_array_end(buf);
 
@@ -248,29 +254,9 @@ table_config_write(TableConfig* self, Buf* buf, bool safe)
 	list_foreach(&self->tiers)
 	{
 		auto tier = list_at(Tier, link);
-		tier_write(tier, buf, safe);
+		tier_write(tier, buf, flags);
 	}
 	encode_array_end(buf);
-	encode_obj_end(buf);
-}
-
-static inline void
-table_config_write_compact(TableConfig* self, Buf* buf)
-{
-	// obj
-	encode_obj(buf);
-
-	// db
-	encode_raw(buf, "db", 2);
-	encode_string(buf, &self->db);
-
-	// name
-	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
-
-	// unlogged
-	encode_raw(buf, "unlogged", 8);
-	encode_bool(buf, self->unlogged);
 	encode_obj_end(buf);
 }
 

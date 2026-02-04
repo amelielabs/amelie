@@ -207,28 +207,33 @@ fn_show(Fn* self)
 			fn_error_noargs(self, "unexpected on argument");
 	}
 
+	// prepare flags
+	int flags = 0;
+	if (! extended)
+		flags |= FMINIMAL;
+
 	auto catalog = &share()->db->catalog;
 	switch (cmd->id) {
 	case SHOW_USERS:
 	{
-		buf = user_mgr_list(share()->user_mgr, NULL, 0);
+		buf = user_mgr_list(share()->user_mgr, NULL, flags);
 		break;
 	}
 	case SHOW_USER:
 	{
-		buf = user_mgr_list(share()->user_mgr, name, 0);
+		buf = user_mgr_list(share()->user_mgr, name, flags);
 		break;
 	}
 	case SHOW_REPLICAS:
 	{
-		buf = replica_mgr_list(&share()->repl->replica_mgr, NULL);
+		buf = replica_mgr_list(&share()->repl->replica_mgr, NULL, flags);
 		break;
 	}
 	case SHOW_REPLICA:
 	{
 		Uuid id;
 		uuid_set(&id, name);
-		buf = replica_mgr_list(&share()->repl->replica_mgr, &id);
+		buf = replica_mgr_list(&share()->repl->replica_mgr, &id, flags);
 		break;
 	}
 	case SHOW_REPL:
@@ -248,78 +253,78 @@ fn_show(Fn* self)
 	}
 	case SHOW_STORAGES:
 	{
-		buf = storage_mgr_list(&catalog->storage_mgr, NULL, extended);
+		buf = storage_mgr_list(&catalog->storage_mgr, NULL, flags);
 		break;
 	}
 	case SHOW_STORAGE:
 	{
-		buf = storage_mgr_list(&catalog->storage_mgr, name, extended);
+		buf = storage_mgr_list(&catalog->storage_mgr, name, flags);
 		break;
 	}
 	case SHOW_DATABASES:
 	{
-		buf = database_mgr_list(&catalog->db_mgr, NULL, extended);
+		buf = database_mgr_list(&catalog->db_mgr, NULL, flags);
 		break;
 	}
 	case SHOW_DATABASE:
 	{
-		buf = database_mgr_list(&catalog->db_mgr, name, extended);
+		buf = database_mgr_list(&catalog->db_mgr, name, flags);
 		break;
 	}
 	case SHOW_TABLES:
 	{
-		buf = table_mgr_list(&catalog->table_mgr, db, NULL, extended);
+		buf = table_mgr_list(&catalog->table_mgr, db, NULL, flags);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		buf = table_mgr_list(&catalog->table_mgr, db, name, extended);
+		buf = table_mgr_list(&catalog->table_mgr, db, name, flags);
 		break;
 	}
 	case SHOW_INDEXES:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = table_index_list(table, NULL, extended);
+		buf = table_index_list(table, NULL, flags);
 		break;
 	}
 	case SHOW_INDEX:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = table_index_list(table, name, extended);
+		buf = table_index_list(table, name, flags);
 		break;
 	}
 	case SHOW_TIERS:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = table_tier_list(table, NULL, extended);
+		buf = table_tier_list(table, NULL, flags);
 		break;
 	}
 	case SHOW_TIER:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = table_tier_list(table, name, extended);
+		buf = table_tier_list(table, name, flags);
 		break;
 	}
 	case SHOW_PARTITIONS:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = engine_status(&table->engine, NULL, extended);
+		buf = engine_status(&table->engine, NULL, flags);
 		break;
 	}
 	case SHOW_PARTITION:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = engine_status(&table->engine, name, extended);
+		buf = engine_status(&table->engine, name, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:
 	{
-		buf = udf_mgr_list(&catalog->udf_mgr, db, NULL, extended);
+		buf = udf_mgr_list(&catalog->udf_mgr, db, NULL, flags);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		buf = udf_mgr_list(&catalog->udf_mgr, db, name, extended);
+		buf = udf_mgr_list(&catalog->udf_mgr, db, name, flags);
 		break;
 	}
 	case SHOW_STATE:

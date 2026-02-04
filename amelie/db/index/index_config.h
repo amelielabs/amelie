@@ -110,7 +110,7 @@ index_config_read(Columns* columns, uint8_t** pos)
 }
 
 static inline void
-index_config_write(IndexConfig* self, Buf* buf)
+index_config_write(IndexConfig* self, Buf* buf, int flags)
 {
 	// obj
 	encode_obj(buf);
@@ -133,7 +133,7 @@ index_config_write(IndexConfig* self, Buf* buf)
 
 	// keys
 	encode_raw(buf, "keys", 4);
-	keys_write(&self->keys, buf);
+	keys_write(&self->keys, buf, flags);
 
 	encode_obj_end(buf);
 }

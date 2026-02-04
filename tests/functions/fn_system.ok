@@ -192,15 +192,13 @@ create table test (id int primary key);
 select show('tables');
 [[{
   "db": "main",
-  "name": "test",
-  "unlogged": false
+  "name": "test"
 }]]
 # test: table
 select show('table', 'test');
 [{
   "db": "main",
-  "name": "test",
-  "unlogged": false
+  "name": "test"
 }]
 # test: indexes
 select show('indexes', '', 'test', false);

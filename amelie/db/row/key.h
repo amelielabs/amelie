@@ -76,8 +76,9 @@ key_read(uint8_t** pos)
 }
 
 static inline void
-key_write(Key* self, Buf* buf)
+key_write(Key* self, Buf* buf, int flags)
 {
+	unused(flags);
 	encode_obj(buf);
 
 	// column

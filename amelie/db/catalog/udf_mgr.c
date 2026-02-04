@@ -242,7 +242,7 @@ udf_mgr_dump(UdfMgr* self, Buf* buf)
 	list_foreach(&self->mgr.list)
 	{
 		auto udf = udf_of(list_at(Relation, link));
-		udf_config_write(udf->config, buf);
+		udf_config_write(udf->config, buf, 0);
 	}
 	encode_array_end(buf);
 }
@@ -263,21 +263,17 @@ udf_mgr_find(UdfMgr* self, Str* db, Str* name,
 }
 
 Buf*
-udf_mgr_list(UdfMgr* self, Str* db, Str* name, bool extended)
+udf_mgr_list(UdfMgr* self, Str* db, Str* name, int flags)
 {
 	auto buf = buf_create();
 	if (db && name)
 	{
 		// show udf
 		auto udf = udf_mgr_find(self, db, name, false);
-		if (udf) {
-			if (extended)
-				udf_config_write(udf->config, buf);
-			else
-				udf_config_write_compact(udf->config, buf);
-		} else {
+		if (udf)
+			udf_config_write(udf->config, buf, flags);
+		else
 			encode_null(buf);
-		}
 		return buf;
 	}
 
@@ -288,10 +284,7 @@ udf_mgr_list(UdfMgr* self, Str* db, Str* name, bool extended)
 		auto udf = udf_of(list_at(Relation, link));
 		if (db && !str_compare_case(&udf->config->db, db))
 			continue;
-		if (extended)
-			udf_config_write(udf->config, buf);
-		else
-			udf_config_write_compact(udf->config, buf);
+		udf_config_write(udf->config, buf, flags);
 	}
 	encode_array_end(buf);
 	return buf;

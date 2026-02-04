@@ -30,4 +30,4 @@ bool   table_mgr_truncate(TableMgr*, Tr*, Str*, Str*, bool);
 void   table_mgr_dump(TableMgr*, Buf*);
 Table* table_mgr_find(TableMgr*, Str*, Str*, bool);
 Table* table_mgr_find_by(TableMgr*, Uuid*, bool);
-Buf*   table_mgr_list(TableMgr*, Str*, Str*, bool);
+Buf*   table_mgr_list(TableMgr*, Str*, Str*, int);

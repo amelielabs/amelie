@@ -24,6 +24,6 @@ bool database_mgr_create(DatabaseMgr*, Tr*, DatabaseConfig*, bool);
 bool database_mgr_drop(DatabaseMgr*, Tr*, Str*, bool);
 bool database_mgr_rename(DatabaseMgr*, Tr*, Str*, Str*, bool);
 void database_mgr_dump(DatabaseMgr*, Buf*);
-Buf* database_mgr_list(DatabaseMgr*, Str*, bool);
+Buf* database_mgr_list(DatabaseMgr*, Str*, int);
 Database*
 database_mgr_find(DatabaseMgr*, Str*, bool);

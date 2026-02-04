@@ -18,7 +18,7 @@ udf_op_create(Buf* self, UdfConfig* config)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_UDF_CREATE);
-	udf_config_write(config, self);
+	udf_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }
@@ -42,7 +42,7 @@ udf_op_replace(Buf* self, UdfConfig* config)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_UDF_REPLACE);
-	udf_config_write(config, self);
+	udf_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }

@@ -18,5 +18,5 @@ bool  table_tier_storage_add(Table*, Tr*, Str*, Str*, bool, bool);
 bool  table_tier_storage_drop(Table*, Tr*, Str*, Str*, bool, bool);
 bool  table_tier_storage_pause(Table*, Tr*, Str*, Str*, bool, bool, bool);
 bool  table_tier_set(Table*, Tr*, Tier*, int, bool);
-Buf*  table_tier_list(Table*, Str*, bool);
+Buf*  table_tier_list(Table*, Str*, int);
 Tier* table_tier_find(Table*, Str*, bool);

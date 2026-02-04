@@ -24,6 +24,6 @@ bool storage_mgr_create(StorageMgr*, Tr*, StorageConfig*, bool);
 bool storage_mgr_drop(StorageMgr*, Tr*, Str*, bool);
 bool storage_mgr_rename(StorageMgr*, Tr*, Str*, Str*, bool);
 void storage_mgr_dump(StorageMgr*, Buf*);
-Buf* storage_mgr_list(StorageMgr*, Str*, bool);
+Buf* storage_mgr_list(StorageMgr*, Str*, int);
 Storage*
 storage_mgr_find(StorageMgr*, Str*, bool);

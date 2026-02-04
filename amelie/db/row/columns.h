@@ -216,14 +216,14 @@ columns_read(Columns* self, uint8_t** pos)
 }
 
 static inline void
-columns_write(Columns* self, Buf* buf)
+columns_write(Columns* self, Buf* buf, int flags)
 {
 	// []
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
 		auto column = list_at(Column, link);
-		column_write(column, buf);
+		column_write(column, buf, flags);
 	}
 	encode_array_end(buf);
 }

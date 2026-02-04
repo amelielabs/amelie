@@ -104,7 +104,7 @@ column_read(uint8_t** pos)
 }
 
 static inline void
-column_write(Column* self, Buf* buf)
+column_write(Column* self, Buf* buf, int flags)
 {
 	encode_obj(buf);
 
@@ -126,7 +126,7 @@ column_write(Column* self, Buf* buf)
 
 	// constraints
 	encode_raw(buf, "constraints", 11);
-	constraints_write(&self->constraints, buf);
+	constraints_write(&self->constraints, buf, flags);
 
 	encode_obj_end(buf);
 }

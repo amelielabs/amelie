@@ -75,8 +75,10 @@ replica_config_read(uint8_t** pos)
 }
 
 static inline void
-replica_config_write(ReplicaConfig* self, Buf* buf)
+replica_config_write(ReplicaConfig* self, Buf* buf, int flags)
 {
+	unused(flags);
+
 	// {}
 	encode_obj(buf);
 

@@ -150,7 +150,7 @@ database_mgr_dump(DatabaseMgr* self, Buf* buf)
 		auto db = database_of(list_at(Relation, link));
 		if (db->config->system)
 			continue;
-		database_config_write(db->config, buf);
+		database_config_write(db->config, buf, 0);
 	}
 	encode_array_end(buf);
 }
@@ -170,32 +170,23 @@ database_mgr_find(DatabaseMgr* self, Str* name, bool error_if_not_exists)
 }
 
 Buf*
-database_mgr_list(DatabaseMgr* self, Str* name, bool extended)
+database_mgr_list(DatabaseMgr* self, Str* name, int flags)
 {
 	auto buf = buf_create();
 	if (name)
 	{
 		auto db = database_mgr_find(self, name, false);
 		if (db)
-		{
-			if (extended)
-				database_config_write(db->config, buf);
-			else
-				database_config_write_compact(db->config, buf);
-		} else
-		{
+			database_config_write(db->config, buf, flags);
+		else
 			encode_null(buf);
-		}
 	} else
 	{
 		encode_array(buf);
 		list_foreach(&self->mgr.list)
 		{
 			auto db = database_of(list_at(Relation, link));
-			if (extended)
-				database_config_write(db->config, buf);
-			else
-				database_config_write_compact(db->config, buf);
+			database_config_write(db->config, buf, flags);
 		}
 		encode_array_end(buf);
 	}

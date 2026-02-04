@@ -182,12 +182,10 @@ switch S1;
 show tables;
 [{
   "db": "test2",
-  "name": "a",
-  "unlogged": false
+  "name": "a"
 }, {
   "db": "test2",
-  "name": "b",
-  "unlogged": false
+  "name": "b"
 }]
 show functions;
 []

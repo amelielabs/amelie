@@ -14,6 +14,6 @@
 bool table_index_create(Table*, Tr*, IndexConfig*, bool);
 bool table_index_drop(Table*, Tr*, Str*, bool);
 bool table_index_rename(Table*, Tr*, Str*, Str*, bool);
-Buf* table_index_list(Table*, Str*, bool);
+Buf* table_index_list(Table*, Str*, int);
 IndexConfig*
 table_index_find(Table*, Str*, bool);

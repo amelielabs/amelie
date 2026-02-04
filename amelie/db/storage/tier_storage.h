@@ -92,7 +92,7 @@ tier_storage_read(uint8_t** pos)
 }
 
 static inline void
-tier_storage_write(TierStorage* self, Buf* buf)
+tier_storage_write(TierStorage* self, Buf* buf, int flags)
 {
 	// map
 	encode_obj(buf);
@@ -104,6 +104,13 @@ tier_storage_write(TierStorage* self, Buf* buf)
 	// pause
 	encode_raw(buf, "pause", 5);
 	encode_bool(buf, self->pause);
+
+	// count
+	if (flags_has(flags, FMETRICS))
+	{
+		encode_raw(buf, "count", 5);
+		encode_integer(buf, self->refs);
+	}
 
 	encode_obj_end(buf);
 }

@@ -149,8 +149,9 @@ constraints_read(Constraints* self, uint8_t** pos)
 }
 
 static inline void
-constraints_write(Constraints* self, Buf* buf)
+constraints_write(Constraints* self, Buf* buf, int flags)
 {
+	unused(flags);
 	encode_array(buf);
 
 	// not_null

@@ -194,10 +194,8 @@ table_index_rename(Table* self,
 }
 
 Buf*
-table_index_list(Table* self, Str* ref, bool extended)
+table_index_list(Table* self, Str* ref, int flags)
 {
-	unused(extended);
-
 	auto buf = buf_create();
 	errdefer_buf(buf);
 
@@ -208,7 +206,7 @@ table_index_list(Table* self, Str* ref, bool extended)
 		if (! index)
 			encode_null(buf);
 		else
-			index_config_write(index, buf);
+			index_config_write(index, buf, flags);
 		return buf;
 	}
 
@@ -217,7 +215,7 @@ table_index_list(Table* self, Str* ref, bool extended)
 	list_foreach(&self->config->indexes)
 	{
 		auto index = list_at(IndexConfig, link);
-		index_config_write(index, buf);
+		index_config_write(index, buf, flags);
 	}
 	encode_array_end(buf);
 	return buf;

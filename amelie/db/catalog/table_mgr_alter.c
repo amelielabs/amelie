@@ -464,7 +464,7 @@ table_mgr_column_set(TableMgr* self,
 	log_relation(&tr->log, &column_set_if, column, &table->rel);
 
 	// save previous constraints
-	constraints_write(&column->constraints, &tr->log.data);
+	constraints_write(&column->constraints, &tr->log.data, 0);
 
 	switch (cmd) {
 	case DDL_TABLE_COLUMN_SET_DEFAULT:

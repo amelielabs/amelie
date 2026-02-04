@@ -73,21 +73,10 @@ database_config_read(uint8_t** pos)
 }
 
 static inline void
-database_config_write(DatabaseConfig* self, Buf* buf)
+database_config_write(DatabaseConfig* self, Buf* buf, int flags)
 {
-	// obj
-	encode_obj(buf);
+	unused(flags);
 
-	// name
-	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
-
-	encode_obj_end(buf);
-}
-
-static inline void
-database_config_write_compact(DatabaseConfig* self, Buf* buf)
-{
 	// obj
 	encode_obj(buf);
 
