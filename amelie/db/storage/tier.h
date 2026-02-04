@@ -290,6 +290,19 @@ tier_storage_find(Tier* self, Str* name)
 }
 
 static inline TierStorage*
+tier_storage_next(Tier* self)
+{
+	TierStorage* storage = NULL;
+	list_foreach(&self->storages)
+	{
+		auto ref = list_at(TierStorage, link);
+		if (!storage || ref->refs < storage->refs)
+			storage = ref;
+	}
+	return storage;
+}
+
+static inline TierStorage*
 tier_storage(Tier* self)
 {
 	return container_of(list_first(&self->storages), TierStorage, link);

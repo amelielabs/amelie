@@ -337,5 +337,80 @@ show partitions on test;
 alter tier t on test set (id "00000000-0000-0000-0000-000000000001");
 {"msg": "alter tier ❰t❱ ⟵ tier id cannot be changed"}
 drop table test;
+# test: storages rebalance
+create storage a;
+create storage b;
+create storage c;
+create table test (id int primary key, a int, b int) partitions 5
+        tier main (id "00000000-0000-0000-0000-000000000001") using a,b,c;
+show partitions on test;
+[{
+  "id": 3,
+  "tier": "main",
+  "storage": "a",
+  "ram": true,
+  "min": 0,
+  "max": 1619,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 4,
+  "tier": "main",
+  "storage": "b",
+  "ram": true,
+  "min": 1619,
+  "max": 3238,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 5,
+  "tier": "main",
+  "storage": "c",
+  "ram": true,
+  "min": 3238,
+  "max": 4857,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 6,
+  "tier": "main",
+  "storage": "a",
+  "ram": true,
+  "min": 4857,
+  "max": 6476,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 7,
+  "tier": "main",
+  "storage": "b",
+  "ram": true,
+  "min": 6476,
+  "max": 8096,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}]
+alter partition 7 on test refresh;
+show partition '8' on test;
+[{
+  "id": 8,
+  "tier": "main",
+  "storage": "c",
+  "ram": true,
+  "min": 6476,
+  "max": 8096,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}]
+drop table test;
+drop storage a;
+drop storage b;
+drop storage c;
 disconnect S0;
 close E0;

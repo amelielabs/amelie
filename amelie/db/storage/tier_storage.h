@@ -17,6 +17,7 @@ struct TierStorage
 {
 	Str      name;
 	Storage* storage;
+	int      refs;
 	List     link;
 };
 
@@ -25,6 +26,7 @@ tier_storage_allocate(void)
 {
 	auto self = (TierStorage*)am_malloc(sizeof(TierStorage));
 	self->storage = NULL;
+	self->refs    = 0;
 	str_init(&self->name);
 	list_init(&self->link);
 	return self;
@@ -35,6 +37,19 @@ tier_storage_free(TierStorage* self)
 {
 	str_free(&self->name);
 	am_free(self);
+}
+
+static inline void
+tier_storage_ref(TierStorage* self)
+{
+	self->refs++;
+}
+
+static inline void
+tier_storage_unref(TierStorage* self)
+{
+	self->refs--;
+	assert(self->refs >= 0);
 }
 
 static inline void

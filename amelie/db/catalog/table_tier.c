@@ -383,7 +383,7 @@ table_tier_storage_drop(Table* self,
 	list_foreach(&level->list)
 	{
 		auto part = list_at(Part, link);
-		if (part->id.storage == tier_storage->storage)
+		if (part->id.storage == tier_storage)
 			error("table '%.*s' tier '%.*s' storage '%.*s': is not empty",
 			      str_size(&self->config->name),
 			      str_of(&self->config->name),

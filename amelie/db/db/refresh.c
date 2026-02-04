@@ -54,7 +54,8 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	self->id = origin->id;
 	self->id.id = state_psn_next();
 
-	// set storage to use
+	// pick storage to use
+	TierStorage* storage_ref;
 	if (storage)
 	{
 		auto ref = tier_storage_find(self->id.tier, storage);
@@ -64,11 +65,13 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 			heap_free(heap_shadow);
 			return false;
 		}
-		self->id.storage = ref->storage;
+		storage_ref = ref;
 	} else
 	{
-		// todo: choose next available storage to use
+		// choose next available storage to use
+		storage_ref = tier_storage_next(self->id.tier);
 	}
+	self->id.storage = storage_ref;
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -98,7 +101,7 @@ refresh_snapshot_job(intptr_t* argv)
 
 	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
 	info("checkpoint: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
-	     id->storage->config->name.pos,
+	     id->storage->storage->config->name.pos,
 	     id->tier->name.pos,
 	     id->id,
 	     total);
@@ -186,6 +189,10 @@ refresh_apply(Refresh* self)
 		// update indexes using row copy (replace shadow copy)
 		part_apply(origin, row, false);
 	}
+
+	// update storage refs
+	tier_storage_unref(origin->id.storage);
+	tier_storage_ref(self->id.storage);
 
 	// update partition id
 	origin->id = self->id;

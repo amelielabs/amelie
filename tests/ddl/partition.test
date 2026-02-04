@@ -36,7 +36,6 @@ show partitions on test;
 
 # test: alter partition move (storage not exists)
 alter partition 4 on test move to c;
-
 drop table test;
 
 disconnect S0;

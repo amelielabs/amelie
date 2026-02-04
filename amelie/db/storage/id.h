@@ -11,8 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Id   Id;
-typedef struct Tier Tier;
+typedef struct Id Id;
 
 enum
 {
@@ -25,11 +24,11 @@ enum
 
 struct Id
 {
-	uint64_t id;
-	Uuid     id_tier;
-	Uuid     id_table;
-	Storage* storage;
-	Tier*    tier;
+	uint64_t     id;
+	Uuid         id_tier;
+	Uuid         id_table;
+	TierStorage* storage;
+	Tier*        tier;
 };
 
 static inline void
@@ -78,25 +77,26 @@ id_path(Id* self, char* path, int state)
 	char id_tier[UUID_SZ];
 	uuid_get(&self->id_tier, id_tier, sizeof(id_tier));
 
+	auto storage = self->storage->storage;
 	switch (state) {
 	case ID_SERVICE:
 		// <storage_path>/<id_tier>/<id>.service
-		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".service",
+		storage_pathfmt(storage, path, "%s/%05" PRIu64 ".service",
 		                id_tier, self->id);
 		break;
 	case ID_SERVICE_INCOMPLETE:
 		// <storage_path>/<id_tier>/<id>.service.incomplete
-		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".service.incomplete",
+		storage_pathfmt(storage, path, "%s/%05" PRIu64 ".service.incomplete",
 		                id_tier, self->id);
 		break;
 	case ID_RAM:
 		// <storage_path>/<id_tier>/<id>.ram
-		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".ram",
+		storage_pathfmt(storage, path, "%s/%05" PRIu64 ".ram",
 		                id_tier, self->id);
 		break;
 	case ID_RAM_INCOMPLETE:
 		// <storage_path>/<id_tier>/<id>.ram.incomplete
-		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".ram.incomplete",
+		storage_pathfmt(storage, path, "%s/%05" PRIu64 ".ram.incomplete",
 		                id_tier, self->id);
 		break;
 	default:

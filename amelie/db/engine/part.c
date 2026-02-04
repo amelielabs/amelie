@@ -77,7 +77,7 @@ part_open(Part* self)
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
 	auto id = &self->id;
 	info("recover: %s/%s/%05" PRIu64 ".ram (%.2f MiB, %" PRIu64 " rows)",
-	     id->storage->config->name.pos,
+	     id->storage->storage->config->name.pos,
 	     id->tier->name.pos,
 	     id->id,
 	     total, count);
@@ -167,7 +167,7 @@ part_status(Part* self, Buf* buf, bool extended)
 
 	// tier
 	encode_raw(buf, "storage", 7);
-	encode_string(buf, &self->id.storage->config->name);
+	encode_string(buf, &self->id.storage->storage->config->name);
 
 	// ram
 	encode_raw(buf, "ram", 3);

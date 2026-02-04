@@ -159,5 +159,22 @@ alter tier t on test set (id "00000000-0000-0000-0000-000000000001");
 
 drop table test;
 
+# test: storages rebalance
+create storage a;
+create storage b;
+create storage c;
+
+create table test (id int primary key, a int, b int) partitions 5
+        tier main (id "00000000-0000-0000-0000-000000000001") using a,b,c;
+show partitions on test;
+
+alter partition 7 on test refresh;
+show partition '8' on test;
+
+drop table test;
+drop storage a;
+drop storage b;
+drop storage c;
+
 disconnect S0;
 close E0;

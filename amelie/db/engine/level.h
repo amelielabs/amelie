@@ -54,6 +54,7 @@ level_add(Level* self, Part* part)
 {
 	list_append(&self->list, &part->link);
 	self->list_count++;
+	tier_storage_ref(part->id.storage);
 }
 
 static inline void
@@ -61,6 +62,7 @@ level_remove(Level* self, Part* part)
 {
 	list_unlink(&part->link);
 	self->list_count--;
+	tier_storage_unref(part->id.storage);
 }
 
 static inline void
@@ -68,4 +70,11 @@ level_add_service(Level* self, Service* service)
 {
 	list_append(&self->list_service, &service->link);
 	self->list_service_count++;
+}
+
+static inline void
+level_remove_service(Level* self, Service* service)
+{
+	list_unlink(&service->link);
+	self->list_count--;
 }

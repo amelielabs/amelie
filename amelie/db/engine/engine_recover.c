@@ -71,7 +71,7 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 			.id       = psn,
 			.id_tier  = level->tier->id,
 			.id_table = *self->id_table,
-			.storage  = storage->storage,
+			.storage  = storage,
 			.tier     = level->tier
 		};
 		switch (state) {
@@ -126,7 +126,6 @@ engine_create(Engine* self, int count)
 		error("table has invalid partitions number");
 
 	auto main = engine_main(self);
-	auto main_storage = tier_storage(main->tier);
 
 	// hash partition_max / hash partitions
 	int range_max      = PART_MAPPING_MAX;
@@ -134,13 +133,16 @@ engine_create(Engine* self, int count)
 	int range_start    = 0;
 	for (auto order = 0; order < count; order++)
 	{
+		// choose next storagee
+		auto storage = tier_storage_next(main->tier);
+
 		// create partition
 		Id id =
 		{
 			.id       = state_psn_next(),
 			.id_tier  = main->tier->id,
 			.id_table = *self->id_table,
-			.storage  = main_storage->storage,
+			.storage  = storage,
 			.tier     = main->tier
 		};
 		auto part = part_allocate(&id, self->seq, self->unlogged);
@@ -228,6 +230,9 @@ engine_recover_service(Engine* self, Service* service)
 done:
 	// remove service file
 	id_delete(&service->id, ID_SERVICE);
+
+	// remove from the list
+	level_remove_service(engine_main(self), service);
 
 	// done
 	service_free(service);
