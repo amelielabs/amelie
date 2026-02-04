@@ -42,7 +42,7 @@ engine_main(Engine* self)
 void  engine_init(Engine*, EngineIf*, void*, StorageMgr*, Uuid*, Sequence*, bool, Keys*);
 void  engine_free(Engine*);
 void  engine_open(Engine*, List*, List*, int);
-void  engine_close(Engine*);
+void  engine_close(Engine*, bool);
 Part* engine_find(Engine*, uint64_t);
 Buf*  engine_status(Engine*, Str*, bool);
 Iterator*

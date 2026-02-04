@@ -40,16 +40,20 @@ table_keys(Table* self)
 }
 
 static inline void
-table_free(Table* self)
+table_free(Table* self, bool drop)
 {
-	// unref storages
+	engine_close(&self->engine, drop);
+	engine_free(&self->engine);
+
+	// maybe drop and unref storages
 	list_foreach(&self->config->tiers)
 	{
 		auto tier = list_at(Tier, link);
+		if (drop)
+			tier_rmdir(tier);
 		tier_unref(tier);
 	}
-	engine_close(&self->engine);
-	engine_free(&self->engine);
+
 	sequence_free(&self->seq);
 	if (self->config)
 		table_config_free(self->config);

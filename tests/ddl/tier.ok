@@ -30,7 +30,8 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 # test: create tier if not exists
@@ -47,7 +48,8 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 drop tier t on test;
@@ -69,7 +71,8 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 drop tier t on test;
@@ -89,10 +92,12 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "test",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }, {
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 drop tier t on test;
@@ -135,10 +140,12 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "test",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }, {
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 drop storage test;
@@ -190,7 +197,8 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 alter tier t on test rename to z;
@@ -206,7 +214,8 @@ show tier z on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 # test: alter tier rename if exists
@@ -223,7 +232,8 @@ show tier z on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 # test: alter tier rename (conflict)
@@ -239,7 +249,8 @@ show tier z on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 drop tier z on test;
@@ -256,7 +267,8 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 alter tier t on test add;
@@ -276,10 +288,12 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }, {
     "name": "test",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 # test: alter tier storage add if not exists
@@ -296,10 +310,12 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }, {
     "name": "test",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 # test: alter tier storage drop
@@ -322,7 +338,8 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 # test: alter tier storage drop if exists
@@ -339,7 +356,8 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 drop storage test;
@@ -357,10 +375,12 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }, {
     "name": "test",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 alter tier t on test pause;
@@ -378,10 +398,12 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }, {
     "name": "test",
-    "pause": true
+    "pause": true,
+    "partitions": 0
   }]
 }]
 # test: alter tier storage pause (one must remain)
@@ -403,10 +425,12 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }, {
     "name": "test",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 drop tier t on test;
@@ -423,7 +447,8 @@ show tier t on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 # test: alter tier set compression
@@ -520,6 +545,28 @@ show partitions on test;
   "size": 0,
   "compression": 1
 }]
+show tiers on test;
+[{
+  "name": "main",
+  "id": "00000000-0000-0000-0000-000000000001",
+  "compression": "zstd",
+  "compression_level": 0,
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": [{
+    "name": "a",
+    "pause": false,
+    "partitions": 2
+  }, {
+    "name": "b",
+    "pause": false,
+    "partitions": 2
+  }, {
+    "name": "c",
+    "pause": false,
+    "partitions": 1
+  }]
+}]
 alter partition 7 on test refresh;
 show partition '8' on test;
 [{
@@ -545,17 +592,7 @@ create table test (id int primary key, a int, b int) partitions 5
         tier main (id "00000000-0000-0000-0000-000000000001") using a,b,c;
 show partitions on test;
 [{
-  "id": 6,
-  "tier": "main",
-  "storage": "a",
-  "ram": true,
-  "min": 4857,
-  "max": 6476,
-  "lsn": 0,
-  "size": 0,
-  "compression": 1
-}, {
-  "id": 3,
+  "id": 9,
   "tier": "main",
   "storage": "a",
   "ram": true,
@@ -565,7 +602,7 @@ show partitions on test;
   "size": 0,
   "compression": 1
 }, {
-  "id": 4,
+  "id": 10,
   "tier": "main",
   "storage": "b",
   "ram": true,
@@ -575,22 +612,32 @@ show partitions on test;
   "size": 0,
   "compression": 1
 }, {
-  "id": 8,
-  "tier": "main",
-  "storage": "c",
-  "ram": true,
-  "min": 6476,
-  "max": 8096,
-  "lsn": 0,
-  "size": 0,
-  "compression": 1
-}, {
-  "id": 5,
+  "id": 11,
   "tier": "main",
   "storage": "c",
   "ram": true,
   "min": 3238,
   "max": 4857,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 12,
+  "tier": "main",
+  "storage": "a",
+  "ram": true,
+  "min": 4857,
+  "max": 6476,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 13,
+  "tier": "main",
+  "storage": "b",
+  "ram": true,
+  "min": 6476,
+  "max": 8096,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -607,19 +654,22 @@ show tiers on test;
   "object_size": 67108864,
   "storages": [{
     "name": "a",
-    "pause": false
+    "pause": false,
+    "partitions": 2
   }, {
     "name": "b",
-    "pause": true
+    "pause": true,
+    "partitions": 2
   }, {
     "name": "c",
-    "pause": true
+    "pause": true,
+    "partitions": 1
   }]
 }]
-alter partition 8 on test refresh;
-show partition '9' on test;
+alter partition 13 on test refresh;
+show partition '14' on test;
 [{
-  "id": 9,
+  "id": 14,
   "tier": "main",
   "storage": "a",
   "ram": true,
@@ -629,10 +679,10 @@ show partition '9' on test;
   "size": 0,
   "compression": 1
 }]
-alter partition 9 on test refresh;
-show partition '10' on test;
+alter partition 14 on test refresh;
+show partition '15' on test;
 [{
-  "id": 10,
+  "id": 15,
   "tier": "main",
   "storage": "a",
   "ram": true,
@@ -643,10 +693,10 @@ show partition '10' on test;
   "compression": 1
 }]
 alter tier main on test resume storage c;
-alter partition 10 on test refresh;
-show partition '11' on test;
+alter partition 15 on test refresh;
+show partition '16' on test;
 [{
-  "id": 11,
+  "id": 16,
   "tier": "main",
   "storage": "c",
   "ram": true,

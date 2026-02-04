@@ -105,10 +105,10 @@ tier_storage_write(TierStorage* self, Buf* buf, int flags)
 	encode_raw(buf, "pause", 5);
 	encode_bool(buf, self->pause);
 
-	// count
+	// partitions
 	if (flags_has(flags, FMETRICS))
 	{
-		encode_raw(buf, "count", 5);
+		encode_raw(buf, "partitions", 10);
 		encode_integer(buf, self->refs);
 	}
 

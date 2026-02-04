@@ -351,7 +351,7 @@ tier_storage_rmdir(Tier* self, TierStorage* storage)
 
 	char path[PATH_MAX];
 	storage_pathfmt(storage->storage, path, "%s", id);
-	if (! fs_exists("%s", path))
+	if (fs_exists("%s", path))
 		fs_rmdir("%s", path);
 }
 

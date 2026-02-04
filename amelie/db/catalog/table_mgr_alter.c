@@ -272,7 +272,7 @@ column_add_if_commit(Log* self, LogOp* op)
 	relation_mgr_replace(&mgr->mgr, &prev->rel, &table->rel);
 
 	// free previous table and unmap partitions
-	table_free(prev);
+	table_free(prev, false);
 }
 
 static void
@@ -280,7 +280,7 @@ column_add_if_abort(Log* self, LogOp* op)
 {
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
-	table_free(table);
+	table_free(table, false);
 }
 
 static LogIf column_add_if =

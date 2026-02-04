@@ -275,8 +275,9 @@ create storage y;
 create storage z;
 create table test (id int primary key)
 	    tier a (id "00000000-0000-0000-0000-000000000000") using main
-	    tier b (id "00000000-0000-0000-0000-000000000000") using x, y, z;
+	    tier b (id "00000000-0000-0000-0000-000000000001") using x, y, z;
 show tiers on test;
+show partitions on test;
 drop table test;
 drop storage x;
 drop storage y;

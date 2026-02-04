@@ -65,7 +65,7 @@ replace_if_commit(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto data = (void**)relation->data;
 	auto tmp = udf_allocate_as(data[0], data[1], mgr->free, mgr->free_arg);
-	udf_free(tmp);
+	udf_free(tmp, false);
 }
 
 static void
@@ -78,7 +78,7 @@ replace_if_abort(Log* self, LogOp* op)
 	auto udf = udf_of(relation->relation);
 
 	auto tmp = udf_allocate_as(udf->config, udf->data, mgr->free, mgr->free_arg);
-	udf_free(tmp);
+	udf_free(tmp, false);
 
 	// set previous config and data
 	auto data = (void**)relation->data;

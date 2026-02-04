@@ -208,7 +208,7 @@ fn_show(Fn* self)
 	}
 
 	// prepare flags
-	int flags = 0;
+	int flags = FMETRICS;
 	if (! extended)
 		flags |= FMINIMAL;
 

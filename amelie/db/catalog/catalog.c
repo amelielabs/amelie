@@ -560,7 +560,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 			// create and compile new udf
 			auto replace = udf_allocate(config, self->udf_mgr.free, self->udf_mgr.free_arg);
-			defer(udf_free, replace);
+			defer(relation_free, replace);
 			self->iface->udf_compile(self, replace);
 
 			udf_mgr_replace(&self->udf_mgr, tr, udf, replace);

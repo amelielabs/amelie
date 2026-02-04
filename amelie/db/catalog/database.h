@@ -20,8 +20,9 @@ struct Database
 };
 
 static inline void
-database_free(Database* self)
+database_free(Database* self, bool drop)
 {
+	unused(drop);
 	if (self->config)
 		database_config_free(self->config);
 	am_free(self);

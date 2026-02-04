@@ -13,7 +13,7 @@
 
 typedef struct Relation Relation;
 
-typedef void (*RelationFree)(Relation*);
+typedef void (*RelationFree)(Relation*, bool);
 
 struct Relation
 {
@@ -56,5 +56,12 @@ static inline void
 relation_free(Relation* self)
 {
 	if (self->free_function)
-		self->free_function(self);
+		self->free_function(self, false);
+}
+
+static inline void
+relation_drop(Relation* self)
+{
+	if (self->free_function)
+		self->free_function(self, true);
 }

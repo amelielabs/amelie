@@ -25,8 +25,9 @@ struct Udf
 };
 
 static inline void
-udf_free(Udf* self)
+udf_free(Udf* self, bool drop)
 {
+	unused(drop);
 	if (self->free)
 		self->free(self);
 	if (self->config)

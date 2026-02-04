@@ -190,6 +190,7 @@ create storage c;
 create table test (id int primary key, a int, b int) partitions 5
         tier main (id "00000000-0000-0000-0000-000000000001") using a,b,c;
 show partitions on test;
+show tiers on test;
 
 alter partition 7 on test refresh;
 show partition '8' on test;
@@ -213,18 +214,18 @@ alter tier main on test pause storage c;
 show tiers on test;
 
 # a
-alter partition 8 on test refresh;
-show partition '9' on test;
+alter partition 13 on test refresh;
+show partition '14' on test;
 
 # a
-alter partition 9 on test refresh;
-show partition '10' on test;
+alter partition 14 on test refresh;
+show partition '15' on test;
 
 alter tier main on test resume storage c;
 
 # c
-alter partition 10 on test refresh;
-show partition '11' on test;
+alter partition 15 on test refresh;
+show partition '16' on test;
 
 drop table test;
 drop storage a;

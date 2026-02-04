@@ -55,10 +55,12 @@ show tiers on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 1
   }, {
     "name": "b",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
 }]
 show partitions on test;

@@ -675,7 +675,8 @@ show tiers on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 1
   }]
 }]
 drop table test;
@@ -688,7 +689,7 @@ create storage y;
 create storage z;
 create table test (id int primary key)
 	    tier a (id "00000000-0000-0000-0000-000000000000") using main
-	    tier b (id "00000000-0000-0000-0000-000000000000") using x, y, z;
+	    tier b (id "00000000-0000-0000-0000-000000000001") using x, y, z;
 show tiers on test;
 [{
   "name": "a",
@@ -699,25 +700,41 @@ show tiers on test;
   "object_size": 67108864,
   "storages": [{
     "name": "main",
-    "pause": false
+    "pause": false,
+    "partitions": 1
   }]
 }, {
   "name": "b",
-  "id": "00000000-0000-0000-0000-000000000000",
+  "id": "00000000-0000-0000-0000-000000000001",
   "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
   "storages": [{
     "name": "x",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }, {
     "name": "y",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }, {
     "name": "z",
-    "pause": false
+    "pause": false,
+    "partitions": 0
   }]
+}]
+show partitions on test;
+[{
+  "id": 33,
+  "tier": "a",
+  "storage": "main",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
 }]
 drop table test;
 drop storage x;

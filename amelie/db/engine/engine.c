@@ -91,12 +91,24 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 }
 
 void
-engine_close(Engine* self)
+engine_close(Engine* self, bool drop)
 {
 	if (! self->levels_count)
 		return;
+
+	// drop pods
 	auto main = engine_main(self);
 	self->iface->detach(self, main);
+
+	// delete partition files on drop
+	if (drop)
+	{
+		list_foreach(&main->list)
+		{
+			auto part = list_at(Part, link);
+			id_delete(&part->id, ID_RAM);
+		}
+	}
 }
 
 Part*

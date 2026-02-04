@@ -22,8 +22,9 @@ struct Storage
 };
 
 static inline void
-storage_free(Storage* self)
+storage_free(Storage* self, bool drop)
 {
+	unused(drop);
 	storage_config_free(self->config);
 	am_free(self);
 }

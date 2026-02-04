@@ -83,7 +83,7 @@ create_if_abort(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	RelationMgr* mgr = op->iface_arg;
 	relation_mgr_delete(mgr, relation->relation);
-	relation_free(relation->relation);
+	relation_drop(relation->relation);
 }
 
 static LogIf create_if =
@@ -108,7 +108,7 @@ static void
 drop_if_commit(Log* self, LogOp* op)
 {
 	auto relation = log_relation_of(self, op);
-	relation_free(relation->relation);
+	relation_drop(relation->relation);
 }
 
 static void
