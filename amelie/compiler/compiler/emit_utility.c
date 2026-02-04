@@ -406,7 +406,7 @@ emit_utility(Compiler* self)
 	{
 		auto arg = ast_user_create_of(stmt->ast);
 		auto offset = buf_size(data);
-		user_config_write(arg->config, data, true);
+		user_config_write(arg->config, data, FSECRETS);
 		op2(self, CUSER_CREATE, offset, arg->if_not_exists);
 		break;
 	}
@@ -422,7 +422,7 @@ emit_utility(Compiler* self)
 	{
 		auto arg = ast_user_alter_of(stmt->ast);
 		auto offset = buf_size(data);
-		user_config_write(arg->config, data, true);
+		user_config_write(arg->config, data, FSECRETS);
 		op1(self, CUSER_ALTER, offset);
 		break;
 	}

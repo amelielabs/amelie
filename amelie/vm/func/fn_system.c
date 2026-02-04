@@ -211,12 +211,12 @@ fn_show(Fn* self)
 	switch (cmd->id) {
 	case SHOW_USERS:
 	{
-		buf = user_mgr_list(share()->user_mgr, NULL);
+		buf = user_mgr_list(share()->user_mgr, NULL, 0);
 		break;
 	}
 	case SHOW_USER:
 	{
-		buf = user_mgr_list(share()->user_mgr, name);
+		buf = user_mgr_list(share()->user_mgr, name, 0);
 		break;
 	}
 	case SHOW_REPLICAS:

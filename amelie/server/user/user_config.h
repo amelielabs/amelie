@@ -84,20 +84,15 @@ user_config_read(uint8_t** pos)
 }
 
 static inline void
-user_config_write(UserConfig* self, Buf* buf, bool safe)
+user_config_write(UserConfig* self, Buf* buf, int flags)
 {
-	if (safe)
-	{
-		encode_obj(buf);
-		encode_raw(buf, "name", 4);
-		encode_string(buf, &self->name);
-		encode_raw(buf, "secret", 6);
-		encode_string(buf, &self->secret);
-		encode_obj_end(buf);
-		return;
-	}
 	encode_obj(buf);
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
+	if (flags_has(flags, FSECRETS))
+	{
+		encode_raw(buf, "secret", 6);
+		encode_string(buf, &self->secret);
+	}
 	encode_obj_end(buf);
 }

@@ -100,14 +100,14 @@ user_cache_dump(UserCache* self)
 	list_foreach(&self->list)
 	{
 		auto user = list_at(User, link);
-		user_config_write(user->config, buf, true);
+		user_config_write(user->config, buf, FSECRETS);
 	}
 	encode_array_end(buf);
 	return buf;
 }
 
 static inline Buf*
-user_cache_list(UserCache* self, Str* name)
+user_cache_list(UserCache* self, Str* name, int flags)
 {
 	auto buf = buf_create();
 	if (name)
@@ -116,14 +116,14 @@ user_cache_list(UserCache* self, Str* name)
 		if (! user)
 			encode_null(buf);
 		else
-			user_config_write(user->config, buf, false);
+			user_config_write(user->config, buf, flags);
 	} else
 	{
 		encode_array(buf);
 		list_foreach(&self->list)
 		{
 			auto user = list_at(User, link);
-			user_config_write(user->config, buf, false);
+			user_config_write(user->config, buf, flags);
 		}
 		encode_array_end(buf);
 	}

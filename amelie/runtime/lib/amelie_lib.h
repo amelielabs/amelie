@@ -43,6 +43,9 @@
 #include "lib/avg.h"
 #include "lib/vector.h"
 
+// generilized flags
+#include "lib/flags.h"
+
 // codec
 #include "lib/codec.h"
 #include "lib/codec_cache.h"
