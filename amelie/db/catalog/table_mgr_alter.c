@@ -264,15 +264,8 @@ table_mgr_column_rename(TableMgr* self,
 static void
 column_add_if_commit(Log* self, LogOp* op)
 {
-	// swap former table with a new one
-	TableMgr* mgr = op->iface_arg;
-	auto relation = log_relation_of(self, op);
-	auto table  = table_of(relation->relation);
-	auto prev   = table_mgr_find(mgr, &table->config->db, &table->config->name, true);
-	relation_mgr_replace(&mgr->mgr, &prev->rel, &table->rel);
-
-	// free previous table and unmap partitions
-	table_free(prev, false);
+	unused(self);
+	unused(op);
 }
 
 static void
@@ -280,7 +273,9 @@ column_add_if_abort(Log* self, LogOp* op)
 {
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
-	table_free(table, false);
+	Column* column = op->iface_arg;
+	columns_del(&table->config->columns, column);
+	column_free(column);
 }
 
 static LogIf column_add_if =
@@ -289,7 +284,7 @@ static LogIf column_add_if =
 	.abort  = column_add_if_abort
 };
 
-Table*
+bool
 table_mgr_column_add(TableMgr* self,
                      Tr*       tr,
                      Str*      db,
@@ -304,7 +299,7 @@ table_mgr_column_add(TableMgr* self,
 		if (! if_exists)
 			error("table '%.*s': not exists", str_size(name),
 			      str_of(name));
-		return NULL;
+		return false;
 	}
 
 	// ensure column does not exists
@@ -315,7 +310,7 @@ table_mgr_column_add(TableMgr* self,
 			      str_of(name),
 			      str_size(&column->name),
 			      str_of(&column->name));
-		return NULL;
+		return false;
 	}
 
 	// ensure only one identity column defined
@@ -323,26 +318,37 @@ table_mgr_column_add(TableMgr* self,
 		error("table '%.*s': already has identity column", str_size(name),
 		      str_of(name));
 
-	// physical column require a new table
-
-	// allocate new table
-	auto table_new = table_allocate(table->config, self->storage_mgr,
-	                                self->iface,
-	                                self->iface_arg);
-
 	// add new column
 	auto column_new = column_copy(column);
-	columns_add(&table_new->config->columns, column_new);
+	columns_add(&table->config->columns, column_new);
 
 	// update log (old table is still present)
-	log_relation(&tr->log, &column_add_if, self,
-	             &table_new->rel);
-
-	table_open(table_new);
-	return table_new;
+	log_relation(&tr->log, &column_add_if, column_new, &table->rel);
+	return true;
 }
 
-Table*
+static void
+column_drop_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+column_drop_if_abort(Log* self, LogOp* op)
+{
+	unused(self);
+	Column* column = op->iface_arg;
+	column_set_deleted(column, false);
+}
+
+static LogIf column_drop_if =
+{
+	.commit = column_drop_if_commit,
+	.abort  = column_drop_if_abort
+};
+
+bool
 table_mgr_column_drop(TableMgr* self,
                       Tr*       tr,
                       Str*      db,
@@ -357,7 +363,7 @@ table_mgr_column_drop(TableMgr* self,
 		if (! if_exists)
 			error("table '%.*s': not exists", str_size(name),
 			      str_of(name));
-		return NULL;
+		return false;
 	}
 
 	auto column = columns_find(&table->config->columns, name_column);
@@ -368,7 +374,7 @@ table_mgr_column_drop(TableMgr* self,
 			      str_of(name),
 			      str_size(name_column),
 			      str_of(name_column));
-		return NULL;
+		return false;
 	}
 
 	// ensure column currently not used as a key
@@ -378,29 +384,12 @@ table_mgr_column_drop(TableMgr* self,
 		      str_size(name_column),
 		      str_of(name_column));
 
-	// physical column require new table rebuild
+	// update log
+	log_relation(&tr->log, &column_drop_if, column, &table->rel);
 
-	// allocate new table
-	auto table_new = table_allocate(table->config, self->storage_mgr,
-	                                self->iface,
-	                                self->iface_arg);
-
-	// delete and reorder columns and update keys
-	auto column_new = columns_find(&table_new->config->columns, &column->name);
-	columns_del(&table_new->config->columns, column_new);
-	column_free(column_new);
-
-	list_foreach(&table_new->config->indexes)
-	{
-		auto config = list_at(IndexConfig, link);
-		keys_update(&config->keys);
-	}
-
-	// update log (old table is still present)
-	log_relation(&tr->log, &column_add_if, self, &table_new->rel);
-
-	table_open(table_new);
-	return table_new;
+	// mark column as deleted
+	column_set_deleted(column, true);
+	return true;
 }
 
 static void

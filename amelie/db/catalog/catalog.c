@@ -307,13 +307,10 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_not_exists = ddl_if_column_not_exists(flags);
-		auto table_new = table_mgr_column_add(&self->table_mgr, tr, &db, &name,
-		                                      column,
-		                                      if_exists,
-		                                      if_column_not_exists);
-		if (! table_new)
-			break;
-		write = true;
+		write = table_mgr_column_add(&self->table_mgr, tr, &db, &name,
+		                             column,
+		                             if_exists,
+		                             if_column_not_exists);
 		break;
 	}
 	case DDL_TABLE_COLUMN_DROP:
@@ -323,18 +320,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name_column;
 		table_op_column_drop_read(op, &db, &name, &name_column);
 
-		auto if_exists = ddl_if_exists(flags);
-		auto if_column_exists = ddl_if_column_exists(flags);
-		auto table_new = table_mgr_column_drop(&self->table_mgr, tr, &db, &name,
-		                                       &name_column,
-		                                       if_exists,
-		                                       if_column_exists);
-		if (! table_new)
-			break;
-
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
-		write = true;
+
+		auto if_exists = ddl_if_exists(flags);
+		auto if_column_exists = ddl_if_column_exists(flags);
+		write = table_mgr_column_drop(&self->table_mgr, tr, &db, &name,
+		                              &name_column,
+		                              if_exists,
+		                              if_column_exists);
 		break;
 	}
 	case DDL_TABLE_COLUMN_RENAME:
