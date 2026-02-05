@@ -15,18 +15,20 @@ typedef struct Row Row;
 
 struct Row
 {
-	uint8_t size_factor: 2;
-	uint8_t is_delete: 1;
-	uint8_t unused: 5;
-	uint8_t data[];
+	uint8_t  size_factor: 2;
+	uint8_t  is_delete: 1;
+	uint8_t  unused: 5;
+	uint16_t columns;
+	uint8_t  data[];
 } packed;
 
 always_inline hot static inline void
-row_init(Row* self, int size_factor, int size)
+row_init(Row* self, int columns, int size_factor, int size)
 {
 	self->size_factor = size_factor;
 	self->is_delete   = false;
 	self->unused      = 0;
+	self->columns     = columns;
 	if (size_factor == 0)
 		*self->data = size;
 	else
@@ -49,6 +51,8 @@ row_size(Row* self)
 always_inline hot static inline void*
 row_column(Row* self, int column)
 {
+	if (unlikely(column >= self->columns))
+		return NULL;
 	register uint32_t offset;
 	if (self->size_factor == 0)
 		offset = self->data[1 + column];
