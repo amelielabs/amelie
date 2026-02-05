@@ -276,6 +276,7 @@ column_add_if_abort(Log* self, LogOp* op)
 	Column* column = op->iface_arg;
 	columns_del(&table->config->columns, column);
 	column_free(column);
+	columns_sync(&table->config->columns);
 }
 
 static LogIf column_add_if =
@@ -321,6 +322,7 @@ table_mgr_column_add(TableMgr* self,
 	// add new column
 	auto column_new = column_copy(column);
 	columns_add(&table->config->columns, column_new);
+	columns_sync(&table->config->columns);
 
 	// update log (old table is still present)
 	log_relation(&tr->log, &column_add_if, column_new, &table->rel);
@@ -337,9 +339,18 @@ column_drop_if_commit(Log* self, LogOp* op)
 static void
 column_drop_if_abort(Log* self, LogOp* op)
 {
-	unused(self);
+	// undelete
 	Column* column = op->iface_arg;
 	column_set_deleted(column, false);
+
+	// restore constraints
+	auto relation = log_relation_of(self, op);
+	uint8_t* pos = relation->data;
+	auto cons = &column->constraints;
+	constraints_free(cons);
+	constraints_init(cons);
+	constraints_read(cons, &pos);
+	columns_sync(&table_of(relation->relation)->config->columns);
 }
 
 static LogIf column_drop_if =
@@ -387,8 +398,16 @@ table_mgr_column_drop(TableMgr* self,
 	// update log
 	log_relation(&tr->log, &column_drop_if, column, &table->rel);
 
-	// mark column as deleted
+	// save previous constraints
+	constraints_write(&column->constraints, &tr->log.data, 0);
+
+	// drop constraints
 	column_set_deleted(column, true);
+	constraints_free(&column->constraints);
+	constraints_init(&column->constraints);
+	encode_null(&column->constraints.value);
+
+	columns_sync(&table->config->columns);
 	return true;
 }
 

@@ -76,16 +76,6 @@ columns_del(Columns* self, Column* column)
 
 	if (self->identity == column)
 		self->identity = NULL;
-
-	// reorder columns
-	int order = 0;
-	list_foreach(&self->list)
-	{
-		auto column = list_at(Column, link);
-		column->order = order++;
-		if (column->constraints.as_identity && !self->identity)
-			self->identity = column;
-	}
 }
 
 static inline void
