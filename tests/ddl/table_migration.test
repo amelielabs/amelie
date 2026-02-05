@@ -1,0 +1,72 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "full-pretty";
+connect E0 S0 127.0.0.1:3485;
+
+# test: add column
+create table test (id int primary key);
+insert into test values (0);
+select * from test;
+
+alter table test add column a int;
+select show('table', 'test', true).columns;
+select * from test;
+
+insert into test values (1, 1);
+
+alter table test add column b int;
+select show('table', 'test', true).columns;
+select * from test;
+
+insert into test values (2, 2, 2);
+select * from test;
+
+# test: drop column
+alter table test drop column a;
+select show('table', 'test', true).columns;
+
+# test: select (dropped column)
+select *  from test;
+select a from test;
+select * from test order by 1;
+select * from test order by 2;
+select * from test order by 3;
+
+select * from test group by 1;
+select * from test group by 2;
+select * from test group by 3;
+select * from test group by b;
+
+# test: insert
+insert into test values (3, 3);
+select * from test;
+
+# test: insert (column list)
+insert into test (id, a) values (4, 4);
+select * from test;
+
+insert into test (id, b) values (4, 4);
+select * from test;
+
+# test: add column (reuse dropped column name)
+alter table test add column a int;
+select show('table', 'test', true).columns;
+select * from test;
+
+# test: insert
+insert into test values (5, 5, 5);
+select * from test;
+
+# test: update
+update test set a = id, b = id;
+select * from test;
+
+# test: drop column
+alter table test drop column b;
+select show('table', 'test', true).columns;
+select * from test;
+
+drop table test;
+
+disconnect S0;
+close E0;

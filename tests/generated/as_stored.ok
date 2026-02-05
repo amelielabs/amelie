@@ -32,7 +32,7 @@ select show('table', 'test', true).columns[1];
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "deleted": false,
+  "dropped": false,
   "constraints": [["as_stored", "1 + 1"], ["default", null]]
 }]
 explain insert into test values (0, null);

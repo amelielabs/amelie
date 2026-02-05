@@ -20,7 +20,7 @@ struct Column
 	Str         name;
 	int64_t     type;
 	int64_t     type_size;
-	bool        deleted;
+	bool        dropped;
 	Constraints constraints;
 	int         refs;
 	List        link_variable;
@@ -32,7 +32,7 @@ column_allocate(void)
 {
 	Column* self = am_malloc(sizeof(Column));
 	self->order     = 0;
-	self->deleted   = false;
+	self->dropped   = false;
 	self->type      = -1;
 	self->type_size = 0;
 	self->refs      = 0;
@@ -66,9 +66,9 @@ column_set_type(Column* self, int type, int type_size)
 }
 
 static inline void
-column_set_deleted(Column* self, bool value)
+column_set_dropped(Column* self, bool value)
 {
-	self->deleted = value;
+	self->dropped = value;
 }
 
 static inline Column*
@@ -94,7 +94,7 @@ column_read(uint8_t** pos)
 		{ DECODE_STRING, "name",        &self->name      },
 		{ DECODE_INT,    "type",        &self->type      },
 		{ DECODE_INT,    "type_size",   &self->type_size },
-		{ DECODE_BOOL,   "deleted",     &self->deleted   },
+		{ DECODE_BOOL,   "dropped",     &self->dropped   },
 		{ DECODE_ARRAY,  "constraints", &constraints     },
 		{ 0,              NULL,         NULL             },
 	};
@@ -120,9 +120,9 @@ column_write(Column* self, Buf* buf, int flags)
 	encode_raw(buf, "type_size", 9);
 	encode_integer(buf, self->type_size);
 
-	// deleted
-	encode_raw(buf, "deleted", 7);
-	encode_bool(buf, self->deleted);
+	// dropped
+	encode_raw(buf, "dropped", 7);
+	encode_bool(buf, self->dropped);
 
 	// constraints
 	encode_raw(buf, "constraints", 11);

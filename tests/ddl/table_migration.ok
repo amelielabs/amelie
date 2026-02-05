@@ -1,0 +1,362 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "full-pretty";
+connect E0 S0 127.0.0.1:3485;
+# test: add column
+create table test (id int primary key);
+insert into test values (0);
+select * from test;
+[{
+  "id": 0
+}]
+alter table test add column a int;
+select show('table', 'test', true).columns;
+[{
+  "col1": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["not_null", true], ["default", null]]
+  }, {
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["default", null]]
+  }]
+}]
+select * from test;
+[{
+  "id": 0,
+  "a": null
+}]
+insert into test values (1, 1);
+alter table test add column b int;
+select show('table', 'test', true).columns;
+[{
+  "col1": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["not_null", true], ["default", null]]
+  }, {
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["default", null]]
+  }, {
+    "name": "b",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["default", null]]
+  }]
+}]
+select * from test;
+[{
+  "id": 0,
+  "a": null,
+  "b": null
+}, {
+  "id": 1,
+  "a": 1,
+  "b": null
+}]
+insert into test values (2, 2, 2);
+select * from test;
+[{
+  "id": 0,
+  "a": null,
+  "b": null
+}, {
+  "id": 1,
+  "a": 1,
+  "b": null
+}, {
+  "id": 2,
+  "a": 2,
+  "b": 2
+}]
+# test: drop column
+alter table test drop column a;
+select show('table', 'test', true).columns;
+[{
+  "col1": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["not_null", true], ["default", null]]
+  }, {
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "dropped": true,
+    "constraints": [["default", null]]
+  }, {
+    "name": "b",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["default", null]]
+  }]
+}]
+# test: select (dropped column)
+select *  from test;
+[{
+  "id": 0,
+  "b": null
+}, {
+  "id": 1,
+  "b": null
+}, {
+  "id": 2,
+  "b": 2
+}]
+select a from test;
+{"msg": "select ❰a❱ ⟵ column not found"}
+select * from test order by 1;
+[{
+  "id": 0,
+  "b": null
+}, {
+  "id": 1,
+  "b": null
+}, {
+  "id": 2,
+  "b": 2
+}]
+select * from test order by 2;
+[{
+  "id": 0,
+  "b": null
+}, {
+  "id": 1,
+  "b": null
+}, {
+  "id": 2,
+  "b": 2
+}]
+select * from test order by 3;
+{"msg": "select * from test order by ❰3❱ ⟵ column 3 is not in the SELECT expr list"}
+select * from test group by 1;
+{"msg": "select ❰*❱ ⟵ column test.b must appear in the GROUP BY clause or be used by an aggregate function"}
+select * from test group by 2;
+{"msg": "select ❰*❱ ⟵ column test.id must appear in the GROUP BY clause or be used by an aggregate function"}
+select * from test group by 3;
+{"msg": "select * from test group by ❰3❱ ⟵ column 3 is not in the SELECT expr list"}
+select * from test group by b;
+{"msg": "select ❰*❱ ⟵ column test.id must appear in the GROUP BY clause or be used by an aggregate function"}
+# test: insert
+insert into test values (3, 3);
+select * from test;
+[{
+  "id": 0,
+  "b": null
+}, {
+  "id": 1,
+  "b": null
+}, {
+  "id": 2,
+  "b": 2
+}, {
+  "id": 3,
+  "b": 3
+}]
+# test: insert (column list)
+insert into test (id, a) values (4, 4);
+{"msg": "insert into test (id, ❰a❱ ⟵ column does not exists"}
+select * from test;
+[{
+  "id": 0,
+  "b": null
+}, {
+  "id": 1,
+  "b": null
+}, {
+  "id": 2,
+  "b": 2
+}, {
+  "id": 3,
+  "b": 3
+}]
+insert into test (id, b) values (4, 4);
+select * from test;
+[{
+  "id": 0,
+  "b": null
+}, {
+  "id": 1,
+  "b": null
+}, {
+  "id": 2,
+  "b": 2
+}, {
+  "id": 3,
+  "b": 3
+}, {
+  "id": 4,
+  "b": 4
+}]
+# test: add column (reuse dropped column name)
+alter table test add column a int;
+select show('table', 'test', true).columns;
+[{
+  "col1": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["not_null", true], ["default", null]]
+  }, {
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "dropped": true,
+    "constraints": [["default", null]]
+  }, {
+    "name": "b",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["default", null]]
+  }, {
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["default", null]]
+  }]
+}]
+select * from test;
+[{
+  "id": 0,
+  "b": null,
+  "a": null
+}, {
+  "id": 1,
+  "b": null,
+  "a": null
+}, {
+  "id": 2,
+  "b": 2,
+  "a": null
+}, {
+  "id": 3,
+  "b": 3,
+  "a": null
+}, {
+  "id": 4,
+  "b": 4,
+  "a": null
+}]
+# test: insert
+insert into test values (5, 5, 5);
+select * from test;
+[{
+  "id": 0,
+  "b": null,
+  "a": null
+}, {
+  "id": 1,
+  "b": null,
+  "a": null
+}, {
+  "id": 2,
+  "b": 2,
+  "a": null
+}, {
+  "id": 3,
+  "b": 3,
+  "a": null
+}, {
+  "id": 4,
+  "b": 4,
+  "a": null
+}, {
+  "id": 5,
+  "b": 5,
+  "a": 5
+}]
+# test: update
+update test set a = id, b = id;
+select * from test;
+[{
+  "id": 0,
+  "b": 0,
+  "a": 0
+}, {
+  "id": 1,
+  "b": 1,
+  "a": 1
+}, {
+  "id": 2,
+  "b": 2,
+  "a": 2
+}, {
+  "id": 3,
+  "b": 3,
+  "a": 3
+}, {
+  "id": 4,
+  "b": 4,
+  "a": 4
+}, {
+  "id": 5,
+  "b": 5,
+  "a": 5
+}]
+# test: drop column
+alter table test drop column b;
+select show('table', 'test', true).columns;
+[{
+  "col1": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["not_null", true], ["default", null]]
+  }, {
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "dropped": true,
+    "constraints": [["default", null]]
+  }, {
+    "name": "b",
+    "type": 2,
+    "type_size": 4,
+    "dropped": true,
+    "constraints": [["default", null]]
+  }, {
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["default", null]]
+  }]
+}]
+select * from test;
+[{
+  "id": 0,
+  "a": 0
+}, {
+  "id": 1,
+  "a": 1
+}, {
+  "id": 2,
+  "a": 2
+}, {
+  "id": 3,
+  "a": 3
+}, {
+  "id": 4,
+  "a": 4
+}, {
+  "id": 5,
+  "a": 5
+}]
+drop table test;
+disconnect S0;
+close E0;

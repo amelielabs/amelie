@@ -75,6 +75,13 @@ parse_row(Stmt* self, From* from, Table* table, Set* values)
 		auto column = list_at(Column, link);
 		auto column_value = &row[column->order];
 
+		// handle dropped columns as NULL values
+		if (column->dropped)
+		{
+			value_set_null(column_value);
+			continue;
+		}
+
 		// DEFAULT | value
 		Ast* value = stmt_if(self, KDEFAULT);
 		if (! value)

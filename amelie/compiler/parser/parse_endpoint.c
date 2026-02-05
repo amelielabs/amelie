@@ -137,7 +137,7 @@ hot static inline void
 import_row(Stmt* self, ParseEndpoint* pe)
 {
 	// prepare row
-	auto row = set_reserve(pe->values);
+	auto row  = set_reserve(pe->values);
 
 	auto list = pe->columns;
 	list_foreach(&pe->columns_target->list)
@@ -163,13 +163,21 @@ import_row(Stmt* self, ParseEndpoint* pe)
 			}
 		} else
 		{
-			// parse column value
-			value = parse_value(self, NULL, column, column_value);
-			column_separator = !list_is_last(&pe->columns_target->list, &column->link);
+			if (unlikely(column->dropped))
+			{
+				value_set_null(column_value);
+				column_separator = false;
+			} else
+			{
+				// parse column value
+				value = parse_value(self, NULL, column, column_value);
+				column_separator = !list_is_last(&pe->columns_target->list, &column->link);
+			}
 		}
 
 		// ensure NOT NULL constraint and hash key
-		parse_value_validate(self, column, column_value, value);
+		if (value)
+			parse_value_validate(self, column, column_value, value);
 
 		// ,
 		if (column_separator)

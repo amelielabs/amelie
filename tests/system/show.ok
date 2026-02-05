@@ -212,7 +212,7 @@ show functions extended;
     "name": "id",
     "type": 2,
     "type_size": 4,
-    "deleted": false,
+    "dropped": false,
     "constraints": [["default", null]]
   }],
   "returning": []
@@ -235,7 +235,7 @@ show function test_fn extended;
     "name": "id",
     "type": 2,
     "type_size": 4,
-    "deleted": false,
+    "dropped": false,
     "constraints": [["default", null]]
   }],
   "returning": []

@@ -57,7 +57,8 @@ test storage
 test database
 test table_create
 test table_drop
-#test table_alter
+test table_alter
+test table_migration
 #test index
 test tier
 test partition

@@ -341,7 +341,7 @@ column_drop_if_abort(Log* self, LogOp* op)
 {
 	// undelete
 	Column* column = op->iface_arg;
-	column_set_deleted(column, false);
+	column_set_dropped(column, false);
 
 	// restore constraints
 	auto relation = log_relation_of(self, op);
@@ -398,11 +398,13 @@ table_mgr_column_drop(TableMgr* self,
 	// update log
 	log_relation(&tr->log, &column_drop_if, column, &table->rel);
 
+	// mark column as being dropped
+	column_set_dropped(column, true);
+
 	// save previous constraints
 	constraints_write(&column->constraints, &tr->log.data, 0);
 
 	// drop constraints
-	column_set_deleted(column, true);
 	constraints_free(&column->constraints);
 	constraints_init(&column->constraints);
 	encode_null(&column->constraints.value);

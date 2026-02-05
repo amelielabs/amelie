@@ -151,6 +151,9 @@ returning_add_target(Returning* self, Target* target, Ast* star)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
+		if (column->dropped)
+			continue;
+
 		auto as = ast(KAS);
 		// target.order AS column, ...
 		as->l = ast(KNAME_COMPOUND);
