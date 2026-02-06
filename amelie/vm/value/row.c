@@ -23,22 +23,22 @@ row_create_prepare(Columns* columns, Value* values, Value* refs)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		auto value = values + column->order;
+
+		// identity column
+		if (column->constraints.as_identity)
+		{
+			size += column->type_size;
+			continue;
+		}
 
 		// use reference
+		auto value = values + column->order;
 		if (value->type == TYPE_REF)
 			value = &refs[value->integer];
 
 		// null
 		if (value->type == TYPE_NULL)
 		{
-			// identity column
-			if (column->constraints.as_identity)
-			{
-				size += column->type_size;
-				continue;
-			}
-
 			// NOT NULL constraint
 			if (unlikely(column->constraints.not_null))
 				error("column '%.*s' cannot be NULL", str_size(&column->name),
@@ -73,8 +73,10 @@ row_create_prepare(Columns* columns, Value* values, Value* refs)
 }
 
 hot Row*
-row_create(Heap*   heap, Columns* columns, Value* values, Value* refs,
-           int64_t identity)
+row_create(Heap*  heap, Columns* columns,
+           Value* values,
+           Value* refs,
+           Value* identity)
 {
 	auto     row_size = row_create_prepare(columns, values, refs);
 	auto     row = row_allocate(heap, columns->count, row_size);
@@ -88,18 +90,13 @@ row_create(Heap*   heap, Columns* columns, Value* values, Value* refs,
 		if (value->type == TYPE_REF)
 			value = &refs[value->integer];
 
+		// use generated identity value
+		if (column->constraints.as_identity)
+			value = identity;
+
 		// null
 		if (value->type == TYPE_NULL)
 		{
-			// set identity column value
-			if (columns->identity == column)
-			{
-				row_set(row, column->order, pos - (uint8_t*)row);
-				*(int64_t*)pos = identity;
-				pos += sizeof(int64_t);
-				continue;
-			}
-
 			row_set_null(row, column->order);
 			continue;
 		}

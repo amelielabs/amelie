@@ -44,23 +44,23 @@ value_hash(Value* self, int type_size, uint32_t hash)
 }
 
 hot static inline uint32_t
-value_hash_refs(Value*   self, Value* refs,
-                Column*  column,
-                int64_t  identity,
+value_hash_refs(Value*   self, Column*  column,
+                Value*   refs,
+                Value*   identity,
                 uint32_t hash)
 {
 	if (self->type == TYPE_REF)
 		self = &refs[self->integer];
-	if (column->constraints.as_identity && self->type == TYPE_NULL)
-		return hash_murmur3_32((uint8_t*)&identity, sizeof(identity), hash);
+	if (column->constraints.as_identity)
+		self = identity;
 	assert(self->type != TYPE_NULL);
 	return value_hash(self, column->type_size, hash);
 }
 
 hot static inline uint32_t
-value_hash_row(Keys*   keys, Value* refs,
-               Value*  values,
-               int64_t identity)
+value_hash_row(Keys*  keys, Value* refs,
+               Value* values,
+               Value* identity)
 {
 	// values are row columns
 	uint32_t hash = 0;
@@ -68,15 +68,15 @@ value_hash_row(Keys*   keys, Value* refs,
 	{
 		auto column = list_at(Key, link)->column;
 		auto value = values + column->order;
-		hash = value_hash_refs(value, refs, column, identity, hash);
+		hash = value_hash_refs(value, column, refs, identity, hash);
 	}
 	return hash;
 }
 
 hot static inline uint32_t
-value_hash_keys(Keys*   keys, Value* refs,
-                Value*  values,
-                int64_t identity)
+value_hash_keys(Keys*  keys, Value* refs,
+                Value* values,
+                Value* identity)
 {
 	// values are row keys
 	uint32_t hash = 0;
@@ -84,7 +84,7 @@ value_hash_keys(Keys*   keys, Value* refs,
 	{
 		auto key = list_at(Key, link);
 		auto value = values + key->order;
-		hash = value_hash_refs(value, refs, key->column, identity, hash);
+		hash = value_hash_refs(value, key->column, refs, identity, hash);
 	}
 	return hash;
 }

@@ -11,34 +11,42 @@
 // AGPL-3.0 Licensed.
 //
 
-Row* row_create(Heap*, Columns*, Value*, Value*, int64_t);
+Row* row_create(Heap*, Columns*, Value*, Value*, Value*);
 Row* row_create_key(Buf*, Keys*, Value*, int);
 Row* row_update(Heap*, Row*, Columns*, Value*, int);
 
-static inline int64_t
-row_get_identity(Table* table, Value* refs, Value* row)
+static inline void
+row_get_identity(Table* table, Value* refs, Value* row, Value* identity)
 {
 	auto columns = table_columns(table);
 	if (! columns->identity)
-		return 0;
+	{
+		value_set_int(identity, 0);
+		return;
+	}
 
 	// get identity column value
-	auto ref = row + columns->identity->order;
-	if (ref->type == TYPE_REF)
-		ref = &refs[ref->integer];
-	if (ref->type != TYPE_NULL)
-		return ref->integer;
+	auto value = row + columns->identity->order;
+	if (value->type == TYPE_REF)
+		value = &refs[value->integer];
+	if (value->type != TYPE_NULL)
+	{
+		value_set_int(identity, value->integer);
+		return;
+	}
 
 	// generate identity column value
 	auto cons = &columns->identity->constraints;
+	uint64_t id;
 	if (cons->as_identity == IDENTITY_SERIAL)
-		return sequence_next(&table->seq);
-
-	return random_generate(&runtime()->random) % cons->as_identity_modulo;
+		id = sequence_next(&table->seq);
+	else
+		id = random_generate(&runtime()->random) % cons->as_identity_modulo;
+	value_set_int(identity, id);
 }
 
 hot static inline Part*
-row_map(Table* table, Value* refs, Value* values, int64_t identity)
+row_map(Table* table, Value* refs, Value* values, Value* identity)
 {
 	// values are row columns
 	auto mapping = &table->engine.mapping;
