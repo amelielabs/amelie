@@ -18,6 +18,7 @@
 // value
 #include "value/value.h"
 #include "value/value_hash.h"
+#include "value/value_data.h"
 
 // value objects
 #include "value/reg.h"

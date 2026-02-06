@@ -16,160 +16,33 @@
 #include <amelie_repl>
 #include <amelie_value.h>
 
-hot static inline int
-row_create_prepare(Columns* columns, Value* values, Value* refs)
-{
-	auto size = 0;
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-
-		// identity column
-		if (column->constraints.as_identity)
-		{
-			size += column->type_size;
-			continue;
-		}
-
-		// use reference
-		auto value = values + column->order;
-		if (value->type == TYPE_REF)
-			value = &refs[value->integer];
-
-		// null
-		if (value->type == TYPE_NULL)
-		{
-			// NOT NULL constraint
-			if (unlikely(column->constraints.not_null))
-				error("column '%.*s' cannot be NULL", str_size(&column->name),
-				      str_of(&column->name));
-			continue;
-		}
-
-		// fixed types
-		if (column->type_size > 0)
-		{
-			size += column->type_size;
-			continue;
-		}
-
-		// variable types
-		switch (column->type) {
-		case TYPE_STRING:
-			size += json_size_string(str_size(&value->string));
-			break;
-		case TYPE_JSON:
-			size += value->json_size;
-			break;
-		case TYPE_VECTOR:
-			size += vector_size(value->vector);
-			break;
-		default:
-			abort();
-			break;
-		}
-	}
-	return size;
-}
-
 hot Row*
 row_create(Heap*  heap, Columns* columns,
            Value* values,
            Value* refs,
            Value* identity)
 {
-	auto     row_size = row_create_prepare(columns, values, refs);
-	auto     row = row_allocate(heap, columns->count, row_size);
+	// calculate row size
+	auto size = 0;
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		auto value  = values + column->order;
+		size += value_data_size(value, column, refs);
+	}
+
+	// create and write row
+	auto     row = row_allocate(heap, columns->count, size);
 	uint8_t* pos = row_data(row, columns->count);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-
-		// use reference
-		auto value = &values[column->order];
-		if (value->type == TYPE_REF)
-			value = &refs[value->integer];
-
-		// use generated identity value
-		if (column->constraints.as_identity)
-			value = identity;
-
-		// null
-		if (value->type == TYPE_NULL)
-		{
+		auto offset = pos - (uint8_t*)row;
+		if (value_data_write(&values[column->order], column, refs, identity, &pos))
+			row_set(row, column->order, offset);
+		else
 			row_set_null(row, column->order);
-			continue;
-		}
-
-		row_set(row, column->order, pos - (uint8_t*)row);
-		switch (column->type) {
-		case TYPE_BOOL:
-		case TYPE_INT:
-		case TYPE_TIMESTAMP:
-		case TYPE_DATE:
-		{
-			switch (column->type_size) {
-			case 1:
-				*(int8_t*)pos = value->integer;
-				pos += sizeof(int8_t);
-				break;
-			case 2:
-				*(int16_t*)pos = value->integer;
-				pos += sizeof(int16_t);
-				break;
-			case 4:
-				*(int32_t*)pos = value->integer;
-				pos += sizeof(int32_t);
-				break;
-			case 8:
-				*(int64_t*)pos = value->integer;
-				pos += sizeof(int64_t);
-				break;
-			default:
-				abort();
-				break;
-			}
-			break;
-		}
-		case TYPE_DOUBLE:
-		{
-			switch (column->type_size) {
-			case 4:
-				*(float*)pos = value->dbl;
-				pos += sizeof(float);
-				break;
-			case 8:
-				*(double*)pos = value->dbl;
-				pos += sizeof(double);
-				break;
-			default:
-				abort();
-				break;
-			}
-			break;
-		}
-		case TYPE_INTERVAL:
-			*(Interval*)pos = value->interval;
-			pos += sizeof(Interval);
-			break;
-		case TYPE_STRING:
-			json_write_string(&pos, &value->string);
-			break;
-		case TYPE_JSON:
-			memcpy(pos, value->json, value->json_size);
-			pos += value->json_size;
-			break;
-		case TYPE_VECTOR:
-			memcpy(pos, value->vector, vector_size(value->vector));
-			pos += vector_size(value->vector);
-			break;
-		case TYPE_UUID:
-			*(Uuid*)pos = value->uuid;
-			pos += sizeof(Uuid);
-			break;
-		}
 	}
-
 	return row;
 }
 
@@ -302,43 +175,10 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 			order++;
 		}
 
+		// use value
 		if (value)
 		{
-			// null
-			if (value->type == TYPE_NULL)
-			{
-				if (column->constraints.not_null)
-				{
-					// NOT NULL constraint
-					if (unlikely(column->constraints.not_null))
-						error("column '%.*s' cannot be NULL", str_size(&column->name),
-						      str_of(&column->name));
-				}
-				continue;
-			}
-
-			// fixed types
-			if (column->type_size > 0)
-			{
-				size += column->type_size;
-				continue;
-			}
-
-			// variable types
-			switch (column->type) {
-			case TYPE_STRING:
-				size += json_size_string(str_size(&value->string));
-				break;
-			case TYPE_JSON:
-				size += value->json_size;
-				break;
-			case TYPE_VECTOR:
-				size += vector_size(value->vector);
-				break;
-			default:
-				abort();
-				break;
-			}
+			size += value_data_size(value, column, NULL);
 			continue;
 		}
 
@@ -397,83 +237,14 @@ row_update(Heap* heap, Row* self, Columns* columns, Value* values, int count)
 			order++;
 		}
 
+		// use value
+		auto offset = pos - (uint8_t*)row;
 		if (value)
 		{
-			// null
-			if (value->type == TYPE_NULL)
-			{
+			if (value_data_write(value, column, NULL, NULL, &pos))
+				row_set(row, column->order, offset);
+			else
 				row_set_null(row, column->order);
-				continue;
-			}
-
-			row_set(row, column->order, pos - (uint8_t*)row);
-			switch (column->type) {
-			case TYPE_BOOL:
-			case TYPE_INT:
-			case TYPE_TIMESTAMP:
-			case TYPE_DATE:
-			{
-				switch (column->type_size) {
-				case 1:
-					*(int8_t*)pos = value->integer;
-					pos += sizeof(int8_t);
-					break;
-				case 2:
-					*(int16_t*)pos = value->integer;
-					pos += sizeof(int16_t);
-					break;
-				case 4:
-					*(int32_t*)pos = value->integer;
-					pos += sizeof(int32_t);
-					break;
-				case 8:
-					*(int64_t*)pos = value->integer;
-					pos += sizeof(int64_t);
-					break;
-				default:
-					abort();
-					break;
-				}
-				break;
-			}
-			case TYPE_DOUBLE:
-			{
-				switch (column->type_size) {
-				case 4:
-					*(float*)pos = value->dbl;
-					pos += sizeof(float);
-					break;
-				case 8:
-					*(double*)pos = value->dbl;
-					pos += sizeof(double);
-					break;
-				default:
-					abort();
-					break;
-				}
-				break;
-			}
-			case TYPE_INTERVAL:
-				*(Interval*)pos = value->interval;
-				pos += sizeof(Interval);
-				break;
-			case TYPE_STRING:
-				json_write_string(&pos, &value->string);
-				break;
-			case TYPE_JSON:
-				memcpy(pos, value->json, value->json_size);
-				pos += value->json_size;
-				break;
-			case TYPE_VECTOR:
-				memcpy(pos, value->vector, vector_size(value->vector));
-				pos += vector_size(value->vector);
-				break;
-			case TYPE_UUID:
-				*(Uuid*)pos = value->uuid;
-				pos += sizeof(Uuid);
-				break;
-			}
-
 			continue;
 		}
 
@@ -485,7 +256,7 @@ row_update(Heap* heap, Row* self, Columns* columns, Value* values, int count)
 			continue;
 		}
 
-		row_set(row, column->order, pos - (uint8_t*)row);
+		row_set(row, column->order, offset);
 		switch (column->type) {
 		case TYPE_STRING:
 		case TYPE_JSON:
