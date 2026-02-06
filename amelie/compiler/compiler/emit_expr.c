@@ -183,7 +183,7 @@ emit_column(Compiler* self,
 			abort();
 			break;
 		}
-		r = op3pin(self, op, column->type, target->rcursor, column->order);
+		r = op3pin(self, op, column->type, target->rcursor, (intptr_t)column);
 	} else
 	{
 		assert(target->r != -1);

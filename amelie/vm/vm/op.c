@@ -478,6 +478,27 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&table->config->name));
 			break;
 		}
+		case CTABLE_READB:
+		case CTABLE_READI8:
+		case CTABLE_READI16:
+		case CTABLE_READI32:
+		case CTABLE_READI64:
+		case CTABLE_READF32:
+		case CTABLE_READF64:
+		case CTABLE_READT:
+		case CTABLE_READL:
+		case CTABLE_READD:
+		case CTABLE_READS:
+		case CTABLE_READJ:
+		case CTABLE_READV:
+		case CTABLE_READU:
+		{
+			auto column = (Column*)op->c;
+			op_write(output, op, true, true, false,
+			         "%.*s", str_size(&column->name),
+			         str_of(&column->name));
+			break;
+		}
 		case CCALL:
 		{
 			auto function = (Function*)op->b;

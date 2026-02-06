@@ -18,28 +18,28 @@ compare(Keys* self, Row* a, Row* b)
 	{
 		const auto column = list_at(Key, link)->column;
 		int64_t rc;
-		if (column->type_size == 4)
-		{
-			// int
-			rc = compare_int32(*(int32_t*)row_column(a, column->order),
-			                   *(int32_t*)row_column(b, column->order));
-		} else
 		if (column->type_size == 8)
 		{
 			// int64, timestamp
-			rc = compare_int64(*(int64_t*)row_column(a, column->order),
-			                   *(int64_t*)row_column(b, column->order));
+			rc = compare_int64(*(int64_t*)row_column(a, column),
+			                   *(int64_t*)row_column(b, column));
+		} else
+		if (column->type_size == 4)
+		{
+			// int
+			rc = compare_int32(*(int32_t*)row_column(a, column),
+			                   *(int32_t*)row_column(b, column));
 		} else
 		if (column->type_size == sizeof(Uuid))
 		{
 			// uuid
-			rc = uuid_compare(row_column(a, column->order),
-			                  row_column(b, column->order));
+			rc = uuid_compare(row_column(a, column),
+			                  row_column(b, column));
 		} else
 		{
 			// string
-			rc = json_compare_string(row_column(a, column->order),
-			                         row_column(b, column->order));
+			rc = json_compare_string(row_column(a, column),
+			                         row_column(b, column));
 		}
 		if (rc != 0)
 			return rc;

@@ -49,7 +49,7 @@ row_size(Row* self)
 }
 
 always_inline hot static inline void*
-row_column(Row* self, int column)
+row_at(Row* self, int column)
 {
 	if (unlikely(column >= self->columns))
 		return NULL;
@@ -64,6 +64,12 @@ row_column(Row* self, int column)
 	if (offset == 0)
 		return NULL;
 	return (uint8_t*)self + offset;
+}
+
+always_inline hot static inline void*
+row_column(Row* self, Column* column)
+{
+	return row_at(self, column->order);
 }
 
 always_inline hot static inline void*
@@ -105,7 +111,7 @@ row_hash(Row* self, Keys* keys)
 	{
 		auto column = list_at(Key, link)->column;
 		// fixed or variable type
-		uint8_t* pos = row_column(self, column->order);
+		uint8_t* pos = row_at(self, column->order);
 		if (column->type_size > 0) {
 			hash = hash_murmur3_32(pos, column->type_size, hash);
 		} else {

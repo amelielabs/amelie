@@ -1618,7 +1618,7 @@ ctable_next:
 
 ctable_readb:
 	// [result, cursor, column]
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_bool(&r[op->a], *(int8_t*)ptr);
 	else
@@ -1627,7 +1627,7 @@ ctable_readb:
 
 ctable_readi8:
 	// [result, cursor, column]
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int8_t*)ptr);
 	else
@@ -1635,7 +1635,7 @@ ctable_readi8:
 	op_next;
 
 ctable_readi16:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int16_t*)ptr);
 	else
@@ -1643,7 +1643,7 @@ ctable_readi16:
 	op_next;
 
 ctable_readi32:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int32_t*)ptr);
 	else
@@ -1651,7 +1651,7 @@ ctable_readi32:
 	op_next;
 
 ctable_readi64:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int64_t*)ptr);
 	else
@@ -1659,7 +1659,7 @@ ctable_readi64:
 	op_next;
 
 ctable_readf32:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_double(&r[op->a], *(float*)ptr);
 	else
@@ -1667,7 +1667,7 @@ ctable_readf32:
 	op_next;
 
 ctable_readf64:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_double(&r[op->a], *(double*)ptr);
 	else
@@ -1675,7 +1675,7 @@ ctable_readf64:
 	op_next;
 
 ctable_readt:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_timestamp(&r[op->a], *(int64_t*)ptr);
 	else
@@ -1683,7 +1683,7 @@ ctable_readt:
 	op_next;
 
 ctable_readl:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_interval(&r[op->a], (Interval*)ptr);
 	else
@@ -1691,7 +1691,7 @@ ctable_readl:
 	op_next;
 
 ctable_readd:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_date(&r[op->a], *(int32_t*)ptr);
 	else
@@ -1699,7 +1699,7 @@ ctable_readd:
 	op_next;
 
 ctable_reads:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 	{
 		json_read_string((uint8_t**)&ptr, &r[op->a].string);
@@ -1711,7 +1711,7 @@ ctable_reads:
 	op_next;
 
 ctable_readj:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_json(&r[op->a], ptr, json_sizeof(ptr), NULL);
 	else
@@ -1719,7 +1719,7 @@ ctable_readj:
 	op_next;
 
 ctable_readv:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_vector(&r[op->a], (Vector*)ptr, NULL);
 	else
@@ -1727,7 +1727,7 @@ ctable_readv:
 	op_next;
 
 ctable_readu:
-	ptr = row_column(iterator_at(r[op->b].cursor), op->c);
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_uuid(&r[op->a], (Uuid*)ptr);
 	else

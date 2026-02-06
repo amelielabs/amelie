@@ -51,7 +51,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t;
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "table_open_part     1      0      6     # test (primary)",
-    "02": "table_readi32       2      1      0     ",
+    "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
     "05": "table_next          1      2      0     ",

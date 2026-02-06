@@ -183,7 +183,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		}
 
 		// null
-		uint8_t* pos_src = row_column(self, column->order);
+		uint8_t* pos_src = row_column(self, column);
 		if (! pos_src)
 			continue;
 
@@ -249,7 +249,7 @@ row_update(Heap* heap, Row* self, Columns* columns, Value* values, int count)
 		}
 
 		// null
-		uint8_t* pos_src = row_column(self, column->order);
+		uint8_t* pos_src = row_column(self, column);
 		if (! pos_src)
 		{
 			row_set_null(row, column->order);
