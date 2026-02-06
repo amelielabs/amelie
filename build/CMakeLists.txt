@@ -210,6 +210,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/wal/wal_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/refresh.c
+    ${AMELIE_ROOT}/db/db/indexate.c
     ${AMELIE_ROOT}/db/db/op.c
     ${AMELIE_ROOT}/db/db/recover.c)
 

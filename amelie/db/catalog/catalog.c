@@ -381,9 +381,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_not_exists = ddl_if_not_exists(flags);
 		write = table_index_create(table, tr, config, if_not_exists);
-		if (write) {
-			// todo:
-		}
 		break;
 	}
 	case DDL_INDEX_DROP:

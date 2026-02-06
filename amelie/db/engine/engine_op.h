@@ -13,7 +13,7 @@
 
 void   engine_set_unlogged(Engine*, bool);
 void   engine_truncate(Engine*);
-void   engine_index_add(Engine*, IndexConfig*);
+void   engine_index_create(Engine*, IndexConfig*);
 void   engine_index_remove(Engine*, Str*);
 void   engine_tier_add(Engine*, Tier*);
 void   engine_tier_remove(Engine*, Str*);

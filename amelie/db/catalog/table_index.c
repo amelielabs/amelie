@@ -82,7 +82,7 @@ table_index_create(Table*       self,
 	log_relation(&tr->log, &create_if, index, &self->rel);
 
 	// create index for each partition
-	engine_index_add(&self->engine, index);
+	engine_index_create(&self->engine, index);
 	return true;
 }
 

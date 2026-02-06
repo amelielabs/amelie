@@ -14,6 +14,7 @@
 // db
 #include "db/db.h"
 #include "db/refresh.h"
+#include "db/indexate.h"
 #include "db/op.h"
 
 // recover

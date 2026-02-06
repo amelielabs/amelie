@@ -1,0 +1,230 @@
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+#include <amelie_runtime>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
+#include <amelie_index.h>
+#include <amelie_object.h>
+#include <amelie_engine.h>
+#include <amelie_catalog.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+
+static bool
+indexate_begin(Indexate* self, Uuid* id_table, uint64_t id,
+               IndexConfig* config)
+{
+	auto db = self->db;
+
+	// create index object
+	if (config->type == INDEX_TREE)
+		self->index = index_tree_allocate(config, self->origin);
+	else
+	if (config->type == INDEX_HASH)
+		self->index = index_hash_allocate(config, self->origin);
+	else
+		error("unrecognized index type");
+
+	// find table by uuid
+	auto table = table_mgr_find_by(&db->catalog.table_mgr, id_table, false);
+	if (! table)
+		return false;
+	self->table = table;
+
+	// create shadow heap
+	auto heap_shadow = heap_allocate();
+
+	// take table exclusive lock
+	lock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+
+	// find partition by id
+	auto origin = engine_find(&table->engine, id);
+	if (! origin)
+	{
+		unlock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+		heap_free(heap_shadow);
+		return false;
+	}
+	self->origin = origin;
+
+	// commit pending prepared transactions
+	auto consensus = &origin->track.consensus;
+	track_sync(&origin->track, consensus);
+
+	// switch partition shadow heap and begin heap snapshot
+	assert(! origin->heap_shadow);
+	origin->heap_shadow = heap_shadow;
+	heap_snapshot(origin->heap, heap_shadow, true);
+
+	unlock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+	return true;
+}
+
+static void
+indexate_job(intptr_t* argv)
+{
+	auto self   = (Indexate*)argv[0];
+	auto origin = self->origin;
+	auto heap   = origin->heap;
+
+	// indexate heap
+	HeapIterator it;
+	heap_iterator_init(&it);
+	heap_iterator_open(&it, heap, NULL);
+	while (heap_iterator_has(&it))
+	{
+		auto row = heap_iterator_at(&it);
+		auto prev = index_replace_by(self->index, row);
+		if (unlikely(prev))
+			error("indexate: index unique constraint violation");
+	}
+
+	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
+	auto id = &origin->id;
+	info("indexate: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
+	     id->storage->storage->config->name.pos,
+	     id->tier->name.pos,
+	     id->id,
+	     total);
+}
+
+static void
+indexate_complete_job(intptr_t* argv)
+{
+	auto self = (Indexate*)argv[0];
+
+	// free shadow heap
+	auto origin = self->origin;
+	auto shadow = origin->heap_shadow;
+	origin->heap_shadow = NULL;
+	heap_free(shadow);
+}
+
+static void
+indexate_apply(Indexate* self)
+{
+	auto lock_mgr = &self->db->lock_mgr;
+	auto table    = self->table;
+	auto origin   = self->origin;
+
+	// take table exclusive lock
+	lock(lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+
+	// force commit prepared transactions
+	track_sync(&origin->track, &origin->track.consensus);
+
+	// snapshot complete
+	heap_snapshot(origin->heap, NULL, false);
+
+	// apply updates during heap snapshot
+	HeapIterator it;
+	heap_iterator_init(&it);
+	heap_iterator_open(&it, origin->heap_shadow, NULL);
+	while (heap_iterator_has(&it))
+	{
+		auto chunk = heap_iterator_at_chunk(&it);
+		if (chunk->is_shadow_free)
+		{
+			// delayed heap removal
+			heap_remove(origin->heap, *(void**)chunk->data);
+			continue;
+		}
+
+		// copy row
+		auto row_shadow = heap_iterator_at(&it);
+		auto row = row_copy(origin->heap, row_shadow);
+
+		// update existing indexes using row copy (replace shadow copy)
+		part_apply(origin, row, false);
+
+		// update new index
+		auto prev = index_replace_by(self->index, row);
+		if (unlikely(prev))
+		{
+			unlock(lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+			error("indexate: index unique constraint violation");
+		}
+	}
+
+	// attach index to the partition
+	part_index_add(self->origin, self->index);
+	self->index = NULL;
+
+	unlock(lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+}
+
+void
+indexate_init(Indexate* self, Db* db)
+{
+	part_lock_init(&self->lock);
+	self->origin = NULL;
+	self->table  = NULL;
+	self->index  = NULL;
+	self->db     = db;
+}
+
+void
+indexate_reset(Indexate* self)
+{
+	part_lock_init(&self->lock);
+	self->origin = NULL;
+	self->table  = NULL;
+	if (self->index)
+	{
+		index_free(self->index);
+		self->index = NULL;
+	}
+}
+
+void
+indexate_run(Indexate* self, Uuid* id_table, uint64_t id,
+             IndexConfig* config)
+{
+	indexate_reset(self);
+
+	// get catalog shared lock and partition service lock
+	db_lock(self->db, &self->lock, id);
+
+	// find and rotate partition
+	if (! indexate_begin(self, id_table, id, config))
+	{
+		db_unlock(self->db, &self->lock);
+		error("partition not found");
+	}
+
+	// create heap index
+	auto on_error = error_catch
+	(
+		// create heap index in background
+		run(indexate_job, 1, self);
+
+		// apply
+		indexate_apply(self);
+
+		// finilize and cleanup
+		run(indexate_complete_job, 1, self);
+	);
+
+	// unlock
+	db_unlock(self->db, &self->lock);
+
+	if (on_error)
+	{
+		index_free(self->index);
+		self->index = NULL;
+
+		rethrow();
+	}
+}

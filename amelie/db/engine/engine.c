@@ -72,7 +72,7 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 		list_foreach(indexes)
 		{
 			auto config = list_at(IndexConfig, link);
-			part_index_add(part, config);
+			part_index_create(part, config);
 		}
 	}
 

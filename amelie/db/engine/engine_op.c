@@ -41,12 +41,12 @@ engine_truncate(Engine* self)
 }
 
 void
-engine_index_add(Engine* self, IndexConfig* config)
+engine_index_create(Engine* self, IndexConfig* config)
 {
 	list_foreach(&engine_main(self)->list)
 	{
 		auto part = list_at(Part, link);
-		part_index_add(part, config);
+		part_index_create(part, config);
 	}
 }
 

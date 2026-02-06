@@ -91,7 +91,21 @@ part_truncate(Part* self)
 }
 
 void
-part_index_add(Part* self, IndexConfig* config)
+part_index_add(Part* self, Index* index)
+{
+	// link index
+	auto tail = self->indexes;
+	while (tail && tail->next)
+		tail = tail->next;
+	if (tail)
+		tail->next = index;
+	else
+		self->indexes = index;
+	self->indexes_count++;
+}
+
+void
+part_index_create(Part* self, IndexConfig* config)
 {
 	Index* index;
 	if (config->type == INDEX_TREE)
@@ -102,15 +116,7 @@ part_index_add(Part* self, IndexConfig* config)
 	else
 		error("unrecognized index type");
 
-	// link index
-	auto tail = self->indexes;
-	while (tail && tail->next)
-		tail = tail->next;
-	if (tail)
-		tail->next = index;
-	else
-		self->indexes = index;
-	self->indexes_count++;
+	part_index_add(self, index);
 }
 
 void
