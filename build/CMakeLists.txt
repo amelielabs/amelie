@@ -212,6 +212,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/refresh.c
     ${AMELIE_ROOT}/db/db/indexate.c
     ${AMELIE_ROOT}/db/db/op.c
+    ${AMELIE_ROOT}/db/db/op_index.c
     ${AMELIE_ROOT}/db/db/recover.c)
 
 set(AMELIE_SOURCES_REPL

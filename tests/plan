@@ -59,7 +59,7 @@ test table_create
 test table_drop
 test table_alter
 test table_migration
-#test index
+test index
 test tier
 test partition
 test function
@@ -133,16 +133,16 @@ directory executor
 group executor
 test abort
 
-## backend
-#directory backend
-#group backend
-#test indexate
+# backend
+directory backend
+group backend
+test indexate
 
-## recovery
-#directory recovery
-#group recovery
-#test wal_dml
-#test wal_ddl
+# recovery
+directory recovery
+group recovery
+test wal_dml
+test wal_ddl
 #test checkpoint
 
 # tls

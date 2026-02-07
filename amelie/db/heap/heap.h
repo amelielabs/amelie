@@ -96,7 +96,7 @@ heap_first(Heap* self)
 {
 	if (unlikely(! self->last))
 		return NULL;
-	return (HeapChunk*)((uintptr_t)self->page_header + sizeof(PageHeader));
+	return (HeapChunk*)page_mgr_pointer_of(&self->page_mgr, 0, sizeof(PageHeader));
 }
 
 Heap* heap_allocate(void);

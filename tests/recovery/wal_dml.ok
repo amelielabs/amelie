@@ -10,8 +10,7 @@ show wal;
   "slots_min": -1,
   "writes": 0,
   "writes_bytes": 0,
-  "ops": 0,
-  "checkpoint": 1
+  "ops": 0
 }]
 select show('wal');
 [{
@@ -22,8 +21,7 @@ select show('wal');
   "slots_min": -1,
   "writes": 0,
   "writes_bytes": 0,
-  "ops": 0,
-  "checkpoint": 1
+  "ops": 0
 }]
 select show('state').lsn;
 [1]
@@ -50,6 +48,7 @@ show all;
   "limit_write": 0,
   "frontends": 1,
   "backends": 3,
+  "jobs": 3,
   "cpu_affinity": true,
   "wal_worker": false,
   "wal_crc": true,
@@ -59,13 +58,12 @@ show all;
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
-  "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000,
+  "storage_crc": true,
+  "storage_sync": false,
+  "catalog_sync": false,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint_crc": true,
-  "checkpoint_compression": "zstd",
-  "checkpoint_sync": false
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000
 }]
 # test: restart
 disconnect S0;
@@ -74,30 +72,28 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 show wal;
 [{
-  "lsn": 1,
+  "lsn": 0,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1,
   "writes": 0,
   "writes_bytes": 0,
-  "ops": 0,
-  "checkpoint": 1
+  "ops": 0
 }]
 select show('wal');
 [{
-  "lsn": 1,
+  "lsn": 0,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1,
   "writes": 0,
   "writes_bytes": 0,
-  "ops": 0,
-  "checkpoint": 1
+  "ops": 0
 }]
 select show('state').lsn;
-[1]
+[0]
 show all;
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
@@ -121,6 +117,7 @@ show all;
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
+  "jobs": 3,
   "cpu_affinity": true,
   "wal_worker": false,
   "wal_crc": true,
@@ -130,18 +127,17 @@ show all;
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
-  "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000,
+  "storage_crc": true,
+  "storage_sync": false,
+  "catalog_sync": false,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint_crc": true,
-  "checkpoint_compression": "zstd",
-  "checkpoint_sync": false
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000
 }]
 # test: create table
 create table test (id serial primary key, data int default 0);
 select show('state').lsn;
-[2]
+[1]
 select identity_of("test");
 [0]
 # test: restart
@@ -151,13 +147,13 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[2]
+[1]
 select identity_of("test");
 [0]
 # test: insert
 insert into test () values (), (), ();
 select show('state').lsn;
-[3]
+[2]
 select identity_of("test");
 [3]
 select * from test;
@@ -169,7 +165,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[3]
+[2]
 select identity_of("test");
 [3]
 select * from test;
@@ -177,7 +173,7 @@ select * from test;
 # test: update
 update test set data = id;
 select show('state').lsn;
-[4]
+[3]
 select identity_of("test");
 [3]
 select * from test;
@@ -189,7 +185,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[4]
+[3]
 select identity_of("test");
 [3]
 select * from test;
@@ -197,7 +193,7 @@ select * from test;
 # test: upsert
 insert into test values (2, 0) on conflict do update set data = data + 1;
 select show('state').lsn;
-[5]
+[4]
 select identity_of("test");
 [3]
 select * from test;
@@ -209,7 +205,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[5]
+[4]
 select identity_of("test");
 [3]
 select * from test;
@@ -217,7 +213,7 @@ select * from test;
 # test: delete
 delete from test where id in (0, 1);
 select show('state').lsn;
-[6]
+[5]
 select identity_of("test");
 [3]
 select * from test;
@@ -229,7 +225,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[6]
+[5]
 select identity_of("test");
 [3]
 select * from test;

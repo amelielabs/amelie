@@ -370,17 +370,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_INDEX_CREATE:
 	{
-		Str  db;
-		Str  name;
-		auto config_pos = table_op_index_create_read(op, &db, &name);
-
-		// create and build index
-		auto table  = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto config = index_config_read(table_columns(table), &config_pos);
-		defer(index_config_free, config);
-
+		// build indexes on partitions
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = table_index_create(table, tr, config, if_not_exists);
+		write = self->iface->index_create(self, tr, op, if_not_exists);
 		break;
 	}
 	case DDL_INDEX_DROP:

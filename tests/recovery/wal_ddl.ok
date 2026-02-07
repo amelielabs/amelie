@@ -70,14 +70,14 @@ select * from test2;
 # test: alter table column add
 insert into test2() values (), (), ();
 select * from test2;
-[[0, 0], [1, 0], [2, 0]]
+[[2, 0], [0, 0], [1, 0]]
 select show('state').lsn;
 [6]
 select identity_of("test2");
 [3]
 alter table test2 add column obj json;
 select * from test2;
-[[0, 0, null], [1, 0, null], [2, 0, null]]
+[[2, 0, null], [0, 0, null], [1, 0, null]]
 select obj from test2;
 [null, null, null]
 # test: restart
@@ -89,13 +89,13 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 [7]
 select identity_of("test2");
-[0]
+[3]
 select * from test2;
-[[0, 0, null], [1, 0, null], [2, 0, null]]
+[[2, 0, null], [0, 0, null], [1, 0, null]]
 # test: alter table column rename
 alter table test2 rename column data to abc;
 select * from test2;
-[[0, 0, null], [1, 0, null], [2, 0, null]]
+[[2, 0, null], [0, 0, null], [1, 0, null]]
 select data from test2;
 {"msg": "select ❰data❱ ⟵ column not found"}
 select abc from test2;
@@ -109,7 +109,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 [8]
 select identity_of("test2");
-[0]
+[3]
 select data from test2;
 {"msg": "select ❰data❱ ⟵ column not found"}
 select abc from test2;
@@ -121,17 +121,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["default", 123]]
+  "dropped": false,
+  "constraints": [["default", true]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: restart
 disconnect S0;
@@ -146,17 +149,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["default", 123]]
+  "dropped": false,
+  "constraints": [["default", true]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: alter table unset default
 alter table test2 unset column abc default;
@@ -165,17 +171,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: restart
 disconnect S0;
@@ -190,17 +199,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: restart
 disconnect S0;
@@ -215,17 +227,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: alter table set stored
 alter table test2 set column abc as (1 + 1) stored;
@@ -234,17 +249,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["as_stored", "1 + 1"], ["default", null]]
+  "dropped": false,
+  "constraints": [["as_stored", "1 + 1"]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: restart
 disconnect S0;
@@ -259,17 +277,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["as_stored", "1 + 1"], ["default", null]]
+  "dropped": false,
+  "constraints": [["as_stored", "1 + 1"]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: alter table unset stored
 alter table test2 unset column abc as stored;
@@ -278,17 +299,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: restart
 disconnect S0;
@@ -303,17 +327,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: alter table set resolved
 alter table test2 set column abc as (1 + 1) resolved;
@@ -322,17 +349,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["as_resolved", "1 + 1"], ["default", null]]
+  "dropped": false,
+  "constraints": [["as_resolved", "1 + 1"]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: restart
 disconnect S0;
@@ -347,17 +377,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["as_resolved", "1 + 1"], ["default", null]]
+  "dropped": false,
+  "constraints": [["as_resolved", "1 + 1"]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: alter table unset resolved
 alter table test2 unset column abc as resolved;
@@ -366,17 +399,20 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: restart
 disconnect S0;
@@ -391,24 +427,27 @@ select show('table', 'test2', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": [["default", null]]
+  "dropped": false,
+  "constraints": []
 }]]
 # test: alter table column drop
 alter table test2 drop column abc;
 select abc from test2;
 {"msg": "select ❰abc❱ ⟵ column not found"}
 select * from test2;
-[[0, null], [1, null], [2, null]]
+[[2, null], [0, null], [1, null]]
 # test: restart
 disconnect S0;
 close E0;
@@ -418,13 +457,13 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 [15]
 select identity_of("test2");
-[0]
+[3]
 select * from test2;
-[[0, null], [1, null], [2, null]]
+[[2, null], [0, null], [1, null]]
 # test: create index
 create index i on test2 (id);
 select * from test2 use index (i);
-[[0, null], [1, null], [2, null]]
+[[2, null], [0, null], [1, null]]
 # test: restart
 disconnect S0;
 close E0;
@@ -434,15 +473,15 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 [16]
 select identity_of("test2");
-[0]
+[3]
 select * from test2 use index (i);
-[[0, null], [1, null], [2, null]]
+[[2, null], [0, null], [1, null]]
 # test: alter index rename
 alter index i on test2 rename to i2;
 select show('state').lsn;
 [17]
 select * from test2 use index (i2);
-[[0, null], [1, null], [2, null]]
+[[2, null], [0, null], [1, null]]
 # test: restart
 disconnect S0;
 close E0;
@@ -452,9 +491,9 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 [17]
 select identity_of("test2");
-[0]
+[3]
 select * from test2 use index (i2);
-[[0, null], [1, null], [2, null]]
+[[2, null], [0, null], [1, null]]
 # test: drop index
 drop index i2 on test2;
 select * from test2 use index (i);
@@ -462,7 +501,7 @@ select * from test2 use index (i);
 select * from test2 use index (i2);
 {"msg": "index 'i2': not exists"}
 select * from test2;
-[[0, null], [1, null], [2, null]]
+[[2, null], [0, null], [1, null]]
 # test: restart
 disconnect S0;
 close E0;
@@ -472,13 +511,13 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 [18]
 select identity_of("test2");
-[0]
+[3]
 select * from test2 use index (i);
 {"msg": "index 'i': not exists"}
 select * from test2 use index (i2);
 {"msg": "index 'i2': not exists"}
 select * from test2;
-[[0, null], [1, null], [2, null]]
+[[2, null], [0, null], [1, null]]
 # test: truncate
 truncate test2;
 select * from test2;
@@ -492,7 +531,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 [19]
 select identity_of("test2");
-[0]
+[3]
 select * from test2;
 []
 # test: drop table
@@ -602,7 +641,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]
@@ -626,7 +666,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]
@@ -664,7 +705,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]
@@ -688,7 +730,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]
@@ -723,7 +766,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]

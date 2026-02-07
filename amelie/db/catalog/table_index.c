@@ -34,14 +34,14 @@ table_index_delete(Table* table, IndexConfig* index)
 }
 
 static void
-create_if_commit(Log* self, LogOp* op)
+add_if_commit(Log* self, LogOp* op)
 {
 	unused(self);
 	unused(op);
 }
 
 static void
-create_if_abort(Log* self, LogOp* op)
+add_if_abort(Log* self, LogOp* op)
 {
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
@@ -49,41 +49,19 @@ create_if_abort(Log* self, LogOp* op)
 	table_index_delete(table, index);
 }
 
-static LogIf create_if =
+static LogIf add_if =
 {
-	.commit = create_if_commit,
-	.abort  = create_if_abort
+	.commit = add_if_commit,
+	.abort  = add_if_abort
 };
 
-bool
-table_index_create(Table*       self,
-                   Tr*          tr,
-                   IndexConfig* config,
-                   bool         if_not_exists)
+void
+table_index_add(Table* self, Tr* tr, IndexConfig* config)
 {
-	auto index = table_index_find(self, &config->name, false);
-	if (index)
-	{
-		if (! if_not_exists)
-			error("table '%.*s' index '%.*s': already exists",
-			      str_size(&self->config->name),
-			      str_of(&self->config->name),
-			      str_size(&config->name),
-			      str_of(&config->name));
-		return false;
-	}
-
-	// save index config copy to table config
-	index = index_config_copy(config, &self->config->columns);
-	keys_set_primary(&index->keys, false);
-	table_config_index_add(self->config, index);
+	table_config_index_add(self->config, config);
 
 	// update table
-	log_relation(&tr->log, &create_if, index, &self->rel);
-
-	// create index for each partition
-	engine_index_create(&self->engine, index);
-	return true;
+	log_relation(&tr->log, &add_if, index, &self->rel);
 }
 
 static void

@@ -11,12 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-// db
-#include "db/db.h"
-#include "db/refresh.h"
-#include "db/indexate.h"
-#include "db/op.h"
-#include "db/op_index.h"
-
-// recover
-#include "db/recover.h"
+bool db_create_index(Db*, Tr*, uint8_t*, bool);

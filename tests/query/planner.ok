@@ -128,7 +128,7 @@ explain select * from test where data = 2;
   "access": [["test", "shared"]]
 }]
 select * from test where data = 2;
-[]
+[[0, 2]]
 explain select * from test where id = 1;
 [{
   "main": {

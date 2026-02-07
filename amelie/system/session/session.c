@@ -187,7 +187,7 @@ session_execute_utility(Session* self, Output* output)
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// switch session lock to use program utility lock
-	session_lock(self, program->utility_lock);
+	/*session_lock(self, program->utility_lock);*/
 
 	// [PROFILE]
 	auto profile = &self->profile;
