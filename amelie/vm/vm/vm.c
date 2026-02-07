@@ -113,6 +113,7 @@ vm_run(Vm*       self,
 		// stack
 		&&cpush,
 		&&cpush_ref,
+		&&cpush_default,
 		&&cpush_var,
 		&&cpush_nulls,
 		&&cpush_bool,
@@ -403,6 +404,7 @@ vm_run(Vm*       self,
 	uint8_t*  json;
 	void*     ptr;
 	Fn        fn;
+	Column*   column;
 	str_init(&string);
 
 	auto stack = &self->stack;
@@ -495,6 +497,16 @@ cpush_ref:
 	}
 	op_next;
 
+cpush_default:
+	// [column*]
+	column = (Column*)op->a;
+	// encode default value (can be empty)
+	a = stack_push(stack);
+	value_init(a);
+	buf = &column->constraints.value;
+	value_data_decode(a, column, buf->start, buf_size(buf));
+	op_next;
+
 cpush_var:
 	// [var, is_arg, not_null]
 	b = stack_push(stack);
@@ -515,7 +527,7 @@ cpush_nulls:
 	op_next;
 
 cpush_bool:
-	// [value, value]
+	// [value]
 	a = stack_push(stack);
 	value_init(a);
 	value_set_bool(a, op->a);

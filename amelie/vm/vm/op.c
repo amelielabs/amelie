@@ -39,6 +39,7 @@ OpDesc ops[] =
 	// stack
 	{ CPUSH, "push" },
 	{ CPUSH_REF, "push_ref" },
+	{ CPUSH_DEFAULT, "push_default" },
 	{ CPUSH_VAR, "push_var" },
 	{ CPUSH_NULLS, "push_nulls" },
 	{ CPUSH_BOOL, "push_bool" },

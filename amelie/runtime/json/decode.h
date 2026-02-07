@@ -25,7 +25,8 @@ enum
 	DECODE_ARRAY       = 1 << 7,
 	DECODE_OBJ         = 1 << 8,
 	DECODE_DATA        = 1 << 9,
-	DECODE_FOUND       = 1 << 10
+	DECODE_BASE64      = 1 << 10,
+	DECODE_FOUND       = 1 << 11
 };
 
 struct Decode
@@ -143,6 +144,17 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 				auto start = *pos;
 				json_skip(pos);
 				buf_write(value, start, *pos - start);
+				break;
+			}
+			case DECODE_BASE64:
+			{
+				if (unlikely(! json_is_string(*pos)))
+					error("%s: string expected for '%s'", context,
+					      ref->key);
+				auto value = (Buf*)ref->value;
+				Str str;
+				json_read_string(pos, &str);
+				base64url_decode(value, &str);
 				break;
 			}
 			default:

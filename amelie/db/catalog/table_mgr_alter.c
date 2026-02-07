@@ -407,7 +407,6 @@ table_mgr_column_drop(TableMgr* self,
 	// drop constraints
 	constraints_free(&column->constraints);
 	constraints_init(&column->constraints);
-	encode_null(&column->constraints.value);
 
 	columns_sync(&table->config->columns);
 	return true;

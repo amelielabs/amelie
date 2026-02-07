@@ -78,58 +78,22 @@ parse_primary_key(Stmt* self)
 }
 
 static void
-parse_default(Stmt* self, Column* column, Buf* value)
+parse_default(Stmt* self, Column* column, Buf* buf)
 {
-	buf_reset(value);
-	auto expr = parse_expr(self, NULL);
-	if (expr->id == KNULL)
-	{
-		encode_null(value);
+	buf_reset(buf);
+
+	// DEFAULT value
+	Value value;
+	value_init(&value);
+	defer(value_free, &value);
+	parse_value(self, NULL, column, &value);
+
+	// encode value as row data
+	auto size = value_data_size(&value, column, NULL);
+	if (! size)
 		return;
-	}
-	bool type_match = false;
-	switch (column->type) {
-	case TYPE_BOOL:
-		if (expr->id != KTRUE && expr->id != KFALSE)
-			break;
-		encode_bool(value, expr->id == KTRUE);
-		type_match = true;
-		break;
-	case TYPE_INT:
-		if (expr->id != KINT)
-			break;
-		encode_integer(value, expr->integer);
-		type_match = true;
-		break;
-	case TYPE_DOUBLE:
-		if (expr->id != KINT && expr->id != KREAL)
-			break;
-		if (expr->id == KINT)
-			encode_integer(value, expr->integer);
-		else
-			encode_real(value, expr->real);
-		type_match = true;
-		break;
-	case TYPE_STRING:
-		if (expr->id != KSTRING)
-			break;
-		encode_string(value, &expr->string);
-		type_match = true;
-		break;
-	case TYPE_JSON:
-		ast_encode(expr, self->lex, self->parser->local, value);
-		type_match = true;
-		break;
-	case TYPE_TIMESTAMP:
-	case TYPE_INTERVAL:
-	case TYPE_DATE:
-	case TYPE_VECTOR:
-	case TYPE_UUID:
-		stmt_error(self, expr, "DEFAULT for this column type is not supported");
-		break;
-	}
-	if (! type_match)
-		stmt_error(self, expr, "DEFAULT value must be a const and match the column type");
+	buf_reserve(buf, size);
+	value_data_encode(&value, column, NULL, NULL, &buf->position);
 }
 
 static void
@@ -139,7 +103,6 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 	auto cons = &column->constraints;
 
 	bool has_primary_key = false;
-	bool has_default     = false;
 	bool done = false;
 	while (! done)
 	{
@@ -158,7 +121,6 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		case KDEFAULT:
 		{
 			parse_default(self, column, &cons->value);
-			has_default = true;
 			break;
 		}
 
@@ -286,9 +248,9 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		}
 	}
 
-	// set DEFAULT NULL by default
-	if (! has_default)
-		encode_null(&cons->value);
+	// do not allow identity columns and default values together
+	if (cons->as_identity && !buf_empty(&cons->value))
+		stmt_error(self, NULL, "identity column cannot have default value");
 }
 
 static void
@@ -347,7 +309,8 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		parse_constraints(self, keys, column);
 
 		// ensure identity column only one
-		if (column->constraints.as_identity)
+		auto cons = &column->constraints;
+		if (cons->as_identity)
 		{
 			if (identity)
 				stmt_error(self, name, "only one IDENTITY column is allowed");
@@ -570,6 +533,8 @@ parse_table_alter(Stmt* self)
 		// [NOT NULL | DEFAULT | AS]
 		parse_constraints(self, NULL, column);
 
+		// todo: require DEFAULT for NOT NULL
+
 		// validate column
 		auto cons = &stmt->column->constraints;
 		if (cons->not_null)
@@ -750,7 +715,6 @@ parse_table_alter(Stmt* self)
 			{
 				auto value = buf_create();
 				errdefer_buf(value);
-				encode_null(value);
 				stmt->value_buf = value;
 				buf_str(value, &stmt->value);
 				stmt->type = TABLE_ALTER_COLUMN_UNSET_DEFAULT;

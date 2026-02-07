@@ -15,13 +15,13 @@ select show('table', 'test', true).columns;
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["not_null", true], ["default", null]]
+    "constraints": [["not_null", true]]
   }, {
     "name": "a",
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }]
 }]
 select * from test;
@@ -38,19 +38,19 @@ select show('table', 'test', true).columns;
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["not_null", true], ["default", null]]
+    "constraints": [["not_null", true]]
   }, {
     "name": "a",
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }, {
     "name": "b",
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }]
 }]
 select * from test;
@@ -87,19 +87,19 @@ select show('table', 'test', true).columns;
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["not_null", true], ["default", null]]
+    "constraints": [["not_null", true]]
   }, {
     "name": "a",
     "type": 2,
     "type_size": 4,
     "dropped": true,
-    "constraints": [["default", null]]
+    "constraints": []
   }, {
     "name": "b",
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }]
 }]
 # test: select (dropped column)
@@ -208,25 +208,25 @@ select show('table', 'test', true).columns;
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["not_null", true], ["default", null]]
+    "constraints": [["not_null", true]]
   }, {
     "name": "a",
     "type": 2,
     "type_size": 4,
     "dropped": true,
-    "constraints": [["default", null]]
+    "constraints": []
   }, {
     "name": "b",
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }, {
     "name": "a",
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }]
 }]
 select * from test;
@@ -316,25 +316,25 @@ select show('table', 'test', true).columns;
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["not_null", true], ["default", null]]
+    "constraints": [["not_null", true]]
   }, {
     "name": "a",
     "type": 2,
     "type_size": 4,
     "dropped": true,
-    "constraints": [["default", null]]
+    "constraints": []
   }, {
     "name": "b",
     "type": 2,
     "type_size": 4,
     "dropped": true,
-    "constraints": [["default", null]]
+    "constraints": []
   }, {
     "name": "a",
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }]
 }]
 select * from test;

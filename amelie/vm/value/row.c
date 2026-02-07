@@ -38,7 +38,7 @@ row_create(Heap*  heap, Columns* columns,
 	{
 		auto column = list_at(Column, link);
 		auto offset = pos - (uint8_t*)row;
-		if (value_data_write(&values[column->order], column, refs, identity, &pos))
+		if (value_data_encode(&values[column->order], column, refs, identity, &pos))
 			row_set(row, column->order, offset);
 		else
 			row_set_null(row, column->order);
@@ -49,6 +49,7 @@ row_create(Heap*  heap, Columns* columns,
 hot Row*
 row_create_key(Buf* buf, Keys* self, Value* values, int count)
 {
+	// create a row which has only key columns (others are set to NULL)
 	int size = 0;
 	list_foreach(&self->list)
 	{
@@ -80,11 +81,14 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 	list_foreach(&self->columns->list)
 	{
 		auto column = list_at(Column, link);
+
+		// column is not a key
 		if (! column->refs)
 		{
 			row_set_null(row, column->order);
 			continue;
 		}
+
 		auto key = keys_find_column(self, column->order);
 		if (! key)
 		{
@@ -241,7 +245,7 @@ row_update(Heap* heap, Row* self, Columns* columns, Value* values, int count)
 		auto offset = pos - (uint8_t*)row;
 		if (value)
 		{
-			if (value_data_write(value, column, NULL, NULL, &pos))
+			if (value_data_encode(value, column, NULL, NULL, &pos))
 				row_set(row, column->order, offset);
 			else
 				row_set_null(row, column->order);

@@ -65,19 +65,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 1,
   "type_size": 1,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 1,
   "type_size": 1,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column int8/i8
@@ -88,19 +88,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 1,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "id3",
   "type": 2,
   "type_size": 1,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column int16/i16
@@ -111,19 +111,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 2,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "id3",
   "type": 2,
   "type_size": 2,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column int/integer/int32/i32
@@ -134,25 +134,25 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "id3",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "id4",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column int64/i64
@@ -163,13 +163,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column float/f32
@@ -180,19 +180,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 3,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 3,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column double/f64
@@ -203,19 +203,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 3,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 3,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column text/string
@@ -226,19 +226,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 4,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 4,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column varchar/char
@@ -249,31 +249,31 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 4,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 4,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "c",
   "type": 4,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "d",
   "type": 4,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column json
@@ -284,19 +284,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 5,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 5,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column timestamp
@@ -307,13 +307,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 7,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column interval
@@ -324,13 +324,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 8,
   "type_size": 16,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column date
@@ -341,13 +341,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 6,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column vector
@@ -358,13 +358,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 9,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column uuid
@@ -375,13 +375,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 10,
   "type_size": 16,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: column redefined
@@ -421,7 +421,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 drop table test;
 # test: primary key redefined #2
@@ -445,7 +445,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 drop table test;
 select show('table', 'test', true).columns;
@@ -463,13 +463,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", 1]]
+  "constraints": [["default", true]]
 }]]
 drop table test;
 # test: constraint default with key
@@ -480,7 +480,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", 1]]
+  "constraints": [["not_null", true], ["default", true]]
 }]]
 drop table test;
 # test: constraint default with key #2
@@ -491,30 +491,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", 1]]
+  "constraints": [["not_null", true], ["default", true]]
 }]]
 drop table test;
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1);
-{"msg": "create table test (id int primary key, data int default 1 ❰+❱ ⟵ DEFAULT value must be a const and match the column type"}
-# test: constraint default (type not supported)
-create table test (id int primary key, data vector default 1);
-{"msg": "create table test (id int primary key, data vector default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
-create table test (id int primary key, data timestamp default 1);
-{"msg": "create table test (id int primary key, data timestamp default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
-create table test (id int primary key, data interval default 1);
-{"msg": "create table test (id int primary key, data interval default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
-create table test (id int primary key, data date default 1);
-{"msg": "create table test (id int primary key, data date default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
-create table test (id int primary key, data uuid default '');
-{"msg": "create table test (id int primary key, data uuid default ❰''❱ ⟵ DEFAULT for this column type is not supported"}
+{"msg": "create table test (id int primary key, data int default 1 ❰+❱ ⟵ ) expected"}
 # test: constraint default (type validate)
 create table test (id int primary key, data int default 'string');
-{"msg": "create table test (id int primary key, data int default ❰'string'❱ ⟵ DEFAULT value must be a const and match the column type"}
-create table test (id int primary key, data int default 3.4);
-{"msg": "create table test (id int primary key, data int default ❰3.4❱ ⟵ DEFAULT value must be a const and match the column type"}
+{"msg": "create table test (id int primary key, data int default ❰'string'❱ ⟵ 'int' expected for column 'data'"}
 create table test (id int primary key, data string default 1);
-{"msg": "create table test (id int primary key, data string default ❰1❱ ⟵ DEFAULT value must be a const and match the column type"}
+{"msg": "create table test (id int primary key, data string default ❰1❱ ⟵ 'string' expected for column 'data'"}
+create table test (id int primary key, data int default 3.4);
+drop table test;
 # test: constraint default (json)
 create table test (id int primary key, data json default {"id": 48, "data": [1,2,3]});
 drop table test;
@@ -526,7 +515,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 drop table test;
 # test: constraint not null forced for keys
@@ -537,13 +526,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: constraint not null forced for keys #2
@@ -554,13 +543,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: constraint not null
@@ -573,13 +562,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 insert into test values(1, 1);
 insert into test values(2, null);
@@ -595,20 +584,21 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", 123]]
+  "constraints": [["not_null", true], ["default", true]]
 }]]
 insert into test values(1, 1);
 insert into test values(2, null);
 {"msg": "insert into test values(2, ❰null❱ ⟵ column 'data' value cannot be NULL"}
 insert into test (id) values(3);
+insert into test values(4, default);
 select * from test;
-[[1, 1], [3, 123]]
+[[1, 1], [3, 123], [4, 123]]
 drop table test;
 # test: constraint not null default (json)
 create table test (id int primary key, data json default {"id": 48, "data": [1,2,3]});
@@ -642,7 +632,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }]]
 drop table test;
 # test: constraint serial multiple columns
@@ -726,7 +716,7 @@ show tiers on test;
 }]
 show partitions on test;
 [{
-  "id": 33,
+  "id": 34,
   "tier": "a",
   "storage": "main",
   "ram": true,

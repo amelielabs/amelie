@@ -112,13 +112,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", 0]]
+  "constraints": [["default", true]]
 }]]
 alter table test rename column data to data2;
 select show('table', 'test', true).columns;
@@ -127,13 +127,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "data2",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", 0]]
+  "constraints": [["default", true]]
 }]]
 select data2 from test;
 []
@@ -147,7 +147,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 alter table test rename column id to id2;
 select show('table', 'test', true).columns;
@@ -156,7 +156,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 select * from test;
 [1, 2, 3]
@@ -171,13 +171,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", 0]]
+  "constraints": [["default", true]]
 }]]
 alter table test rename column data to data;
 {"msg": "table 'test': column 'data' already exists"}
@@ -187,13 +187,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", 0]]
+  "constraints": [["default", true]]
 }]]
 drop table test;
 # test: rename column (if table exists)
@@ -241,7 +241,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 alter table test add column data int;
 select show('table', 'test', true).columns;
@@ -250,13 +250,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 insert into test values (1,1), (2,2), (3,3);
 select data from test;
@@ -272,13 +272,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 select data from test;
 [null, null, null]
@@ -297,7 +297,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 drop table test;
 # test: add column (default)
@@ -310,13 +310,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", 123]]
+  "constraints": [["default", true]]
 }]]
 select data from test;
 [null, null, null]
@@ -338,7 +338,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 drop table test;
 # test: add column (serial)
@@ -351,13 +351,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 8,
   "dropped": false,
-  "constraints": [["as_identity", 1], ["default", null]]
+  "constraints": [["as_identity", 1]]
 }]]
 select data from test;
 [null, null, null]
@@ -412,13 +412,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 alter table test drop column a;
 select show('table', 'test', true).columns;
@@ -427,13 +427,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 2,
   "type_size": 4,
   "dropped": true,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: drop column (empty, reorder)
@@ -444,19 +444,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 alter table test drop column a;
 select show('table', 'test', true).columns;
@@ -465,19 +465,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 2,
   "type_size": 4,
   "dropped": true,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 drop table test;
 # test: drop column
@@ -488,19 +488,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 4,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 insert into test values (1,"id",1), (2,"a",2), (3,"b",3);
 select * from test;
@@ -516,19 +516,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 4,
   "type_size": 0,
   "dropped": true,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 select * from test;
 [[1, 1], [2, 2], [3, 3]]
@@ -542,19 +542,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 4,
   "type_size": 0,
   "dropped": true,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 alter table test drop column b;
 select show('table', 'test', true).columns;
@@ -563,19 +563,19 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "a",
   "type": 4,
   "type_size": 0,
   "dropped": true,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
   "dropped": true,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 select * from test;
 [1, 2, 3]
@@ -594,19 +594,19 @@ select show('table', 'test', true).columns;
   "type": 4,
   "type_size": 0,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "id",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 insert into test values ("id",1, 1), ("a",2, 2), ("b",3, 3);
 select * from test;
@@ -624,19 +624,19 @@ select show('table', 'test', true).columns;
   "type": 4,
   "type_size": 0,
   "dropped": true,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "id",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 select * from test;
 [[1, 1], [2, 2], [3, 3]]
@@ -652,19 +652,19 @@ select show('table', 'test', true).columns;
   "type": 4,
   "type_size": 0,
   "dropped": true,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "id",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 alter table test drop column b;
 select show('table', 'test', true).columns;
@@ -673,19 +673,19 @@ select show('table', 'test', true).columns;
   "type": 4,
   "type_size": 0,
   "dropped": true,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
   "dropped": true,
-  "constraints": [["default", null]]
+  "constraints": []
 }, {
   "name": "id",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 select * from test;
 [1, 2, 3]
@@ -716,13 +716,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", 0]]
+  "constraints": [["default", true]]
 }]]
 # test: unset default
 alter table test unset column data default;
@@ -735,13 +735,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 # test: set stored
 alter table test set column data as (1 + 1) stored;
@@ -754,13 +754,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["as_stored", "1 + 1"], ["default", null]]
+  "constraints": [["as_stored", "1 + 1"]]
 }]]
 # test: unset stored
 alter table test unset column data as stored;
@@ -773,13 +773,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", null]]
+  "constraints": []
 }]]
 # test: set resolved
 alter table test set column data default 0;
@@ -795,13 +795,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["as_resolved", "data + 1"], ["default", 0]]
+  "constraints": [["as_resolved", "data + 1"], ["default", true]]
 }]]
 # test: unset resolved
 alter table test unset column data as resolved;
@@ -815,13 +815,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["default", 0]]
+  "constraints": [["default", true]]
 }]]
 drop table test;
 # test: rename with udf dep

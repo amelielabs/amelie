@@ -300,19 +300,19 @@ show functions extended;
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }, {
     "name": "b",
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }, {
     "name": "c",
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }]
 }]
 drop function test;
@@ -585,7 +585,7 @@ show functions extended;
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }],
   "returning": []
 }, {
@@ -598,7 +598,7 @@ show functions extended;
     "type": 5,
     "type_size": 0,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }],
   "returning": []
 }]

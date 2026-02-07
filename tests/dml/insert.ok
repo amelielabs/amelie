@@ -47,13 +47,13 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", null]]
+  "constraints": [["not_null", true]]
 }]]
 insert into test values (123);
 {"msg": "insert into test values (123❰)❱ ⟵ 'int' expected for column 'id2'"}

@@ -269,25 +269,31 @@ parse_value_default(Stmt* self, Column* column, Value* column_value)
 	unused(self);
 	auto cons = &column->constraints;
 	if (cons->as_identity)
+	{
 		value_set_null(column_value);
-	else
-		value_decode(column_value, cons->value.start, NULL);
+		return;
+	}
+
+	// set default value (can be empty)
+	value_data_decode(column_value, column, cons->value.start,
+	                  buf_size(&cons->value));
 }
 
 void
 parse_value_validate(Stmt* self, Column* column, Value* value, Ast* expr)
 {
-	// ensure NOT NULL constraint
-	if (value->type == TYPE_NULL)
-	{
-		// value can be NULL for generated column (will be rechecked later)
-		auto cons = &column->constraints;
-		if (! str_empty(&cons->as_stored))
-			return;
+	// value can be NULL for generated column (will be rechecked later)
 
-		if (cons->not_null && !cons->as_identity)
-			stmt_error(self, expr, "column '%.*s' value cannot be NULL",
-			           str_size(&column->name),
-			           str_of(&column->name));
-	}
+	// ensure NOT NULL constraint
+	if (value->type != TYPE_NULL)
+		return;
+
+	auto cons = &column->constraints;
+	if (! str_empty(&cons->as_stored))
+		return;
+
+	if (cons->not_null && !cons->as_identity)
+		stmt_error(self, expr, "column '%.*s' value cannot be NULL",
+		           str_size(&column->name),
+		           str_of(&column->name));
 }

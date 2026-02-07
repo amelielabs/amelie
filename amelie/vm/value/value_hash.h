@@ -12,14 +12,14 @@
 //
 
 hot static inline uint32_t
-value_hash(Value* self, int type_size, uint32_t hash)
+value_hash(Value* self, Column* column, uint32_t hash)
 {
 	void*   data;
 	int     data_size;
 	int32_t integer_32;
 	if (self->type == TYPE_INT || self->type == TYPE_TIMESTAMP)
 	{
-		if (type_size == 4)
+		if (column->type_size == 4)
 		{
 			integer_32 = self->integer;
 			data = &integer_32;
@@ -35,10 +35,12 @@ value_hash(Value* self, int type_size, uint32_t hash)
 		data = &self->uuid;
 		data_size = sizeof(self->uuid);
 	} else
+	if (self->type == TYPE_STRING)
 	{
-		assert(self->type == TYPE_STRING);
 		data = str_u8(&self->string);
 		data_size = str_size(&self->string);
+	} else {
+		abort();
 	}
 	return hash_murmur3_32(data, data_size, hash);
 }
@@ -54,7 +56,7 @@ value_hash_refs(Value*   self, Column*  column,
 	if (column->constraints.as_identity)
 		self = identity;
 	assert(self->type != TYPE_NULL);
-	return value_hash(self, column->type_size, hash);
+	return value_hash(self, column, hash);
 }
 
 hot static inline uint32_t

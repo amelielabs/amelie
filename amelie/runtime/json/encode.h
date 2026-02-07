@@ -137,3 +137,18 @@ encode_uuid(Buf* self, Uuid* uuid)
 	uuid_get(uuid, uuid_sz, sizeof(uuid_sz));
 	encode_raw(self, uuid_sz, sizeof(uuid_sz) - 1);
 }
+
+always_inline hot static inline void
+encode_base64(Buf* self, Buf* data)
+{
+	auto offset = buf_size(self);
+	encode_string32(self, 0);
+
+	Str str;
+	buf_str(data, &str);
+	base64url_encode(self, &str);
+
+	// update generated string size
+	auto start = self->start + offset;
+	json_write_string32(&start, buf_size(self) - (offset + json_size_string32()));
+}

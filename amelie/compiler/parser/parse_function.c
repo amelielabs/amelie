@@ -38,7 +38,6 @@ parse_function_args(Stmt* self, Columns* columns)
 		// add argument
 		arg = column_allocate();
 		column_set_name(arg, &name->string);
-		encode_null(&arg->constraints.value);
 		columns_add(columns, arg);
 
 		// type

@@ -213,7 +213,7 @@ show functions extended;
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }],
   "returning": []
 }]
@@ -236,7 +236,7 @@ show function test_fn extended;
     "type": 2,
     "type_size": 4,
     "dropped": false,
-    "constraints": [["default", null]]
+    "constraints": []
   }],
   "returning": []
 }]
@@ -249,7 +249,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 4,
-  "writes_bytes": 786,
+  "writes_bytes": 764,
   "ops": 4
 }]
 # test: show replicas

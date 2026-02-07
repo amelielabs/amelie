@@ -22,7 +22,7 @@ value_data_size(Value* self, Column* column, Value* refs)
 	if (self->type == TYPE_REF)
 		self = &refs[self->integer];
 
-	// null
+	// NULL
 	if (self->type == TYPE_NULL)
 		return 0;
 
@@ -50,10 +50,10 @@ value_data_size(Value* self, Column* column, Value* refs)
 }
 
 hot static inline bool
-value_data_write(Value*    self, Column* column,
-                 Value*    refs,
-                 Value*    identity,
-                 uint8_t** pos)
+value_data_encode(Value*    self, Column* column,
+                  Value*    refs,
+                  Value*    identity,
+                  uint8_t** pos)
 {
 	// use reference
 	if (self->type == TYPE_REF)
@@ -62,7 +62,7 @@ value_data_write(Value*    self, Column* column,
 	if (column->constraints.as_identity)
 		self = identity;
 
-	// null
+	// NULL
 	if (self->type == TYPE_NULL)
 	{
 		// NOT NULL constraint
@@ -137,6 +137,117 @@ value_data_write(Value*    self, Column* column,
 		*(Uuid*)*pos = self->uuid;
 		*pos += sizeof(Uuid);
 		break;
+	}
+	return true;
+}
+
+hot static inline bool
+value_data_decode(Value* self, Column* column, uint8_t* data, int data_size)
+{
+	// NULL
+	if (! data_size)
+	{
+		auto cons = &column->constraints;
+		if (! cons->not_null)
+		{
+			value_set_null(self);
+			return false;
+		}
+
+		// should not happen
+		if (buf_empty(&cons->value))
+		{
+			value_set_null(self);
+			return false;
+		}
+
+		// using default data
+		data = cons->value.start;
+		data_size = buf_size(&cons->value);
+	}
+
+	switch (column->type) {
+	case TYPE_BOOL:
+	{
+		value_set_bool(self, *(int8_t*)data);
+		break;
+	}
+	case TYPE_INT:
+	{
+		switch (column->type_size) {
+		case 1:
+			value_set_int(self, *(int8_t*)data);
+			break;
+		case 2:
+			value_set_int(self, *(int16_t*)data);
+			break;
+		case 4:
+			value_set_int(self, *(int32_t*)data);
+			break;
+		case 8:
+			value_set_int(self, *(int64_t*)data);
+			break;
+		default:
+			abort();
+			break;
+		}
+		break;
+	}
+	case TYPE_TIMESTAMP:
+	{
+		value_set_timestamp(self, *(int64_t*)data);
+		break;
+	}
+	case TYPE_DATE:
+	{
+		value_set_timestamp(self, *(int32_t*)data);
+		break;
+	}
+	case TYPE_DOUBLE:
+	{
+		switch (column->type_size) {
+		case 4:
+			value_set_double(self, *(float*)data);
+			break;
+		case 8:
+			value_set_double(self, *(double*)data);
+			break;
+		default:
+			abort();
+			break;
+		}
+		break;
+	}
+	case TYPE_INTERVAL:
+		value_set_interval(self, (Interval*)data);
+		break;
+	case TYPE_STRING:
+	{
+		value_init(self);
+		json_read_string(&data, &self->string);
+		self->type = TYPE_STRING;
+		break;
+	}
+	case TYPE_JSON:
+	{
+		value_set_json(self, data, json_sizeof(data), NULL);
+		break;
+	}
+	case TYPE_VECTOR:
+	{
+		value_set_vector(self, (Vector*)data, NULL);
+		break;
+	}
+	case TYPE_UUID:
+	{
+		value_set_uuid(self, (Uuid*)data);
+		break;
+	}
+	default:
+	{
+		abort();
+		break;
+	}
 	}
 	return true;
 }

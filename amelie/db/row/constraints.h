@@ -136,9 +136,10 @@ constraints_read(Constraints* self, uint8_t** pos)
 		else
 		if (str_is_case(&name, "default", 7))
 		{
-			auto start = *pos;
-			json_skip(pos);
-			buf_write(&self->value, start, *pos - start);
+			Str str;
+			json_read_string(pos, &str);
+			buf_reset(&self->value);
+			base64url_decode(&self->value, &str);
 		} else {
 			error("unrecognized constraint %.*s", str_size(&name),
 			      str_of(&name));
@@ -151,7 +152,6 @@ constraints_read(Constraints* self, uint8_t** pos)
 static inline void
 constraints_write(Constraints* self, Buf* buf, int flags)
 {
-	unused(flags);
 	encode_array(buf);
 
 	// not_null
@@ -204,7 +204,10 @@ constraints_write(Constraints* self, Buf* buf, int flags)
 	{
 		encode_array(buf);
 		encode_raw(buf, "default", 7);
-		buf_write(buf, self->value.start, buf_size(&self->value));
+		if (flags_has(flags, FMETRICS))
+			encode_bool(buf, true);
+		else
+			encode_base64(buf, &self->value);
 		encode_array_end(buf);
 	}
 

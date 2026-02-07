@@ -97,12 +97,8 @@ emit_update_target(Compiler* self, From* from, Ast* expr)
 		if (op->r->id == KDEFAULT)
 		{
 			// SET column = DEFAULT
-			int offset = code_data_offset(self->code_data);
-			buf_write_buf(&self->code_data->data, &column->constraints.value);
-			rexpr = op2pin(self, CJSON, column->type, offset);
-			type  = column->type;
-			op1(self, CPUSH, rexpr);
-			runpin(self, rexpr);
+			op1(self, CPUSH_DEFAULT, (intptr_t)column);
+			type = column->type;
 		} else
 		{
 			// SET column = expr

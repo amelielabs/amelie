@@ -19,7 +19,7 @@ select show('table', 'test', true).columns;
   "type": 2,
   "type_size": 4,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
+  "constraints": [["not_null", true], ["as_identity", 1]]
 }]]
 insert into test () values ();
 insert into test () values ();
