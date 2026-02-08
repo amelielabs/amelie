@@ -60,7 +60,7 @@ row_map_keys(Table* table, Value* values)
 {
 	// values are row keys
 	auto mapping = &table->engine.mapping;
-	auto hash_partition = value_hash_keys(mapping->keys, NULL, values, 0);
+	auto hash_partition = value_hash_keys(mapping->keys, NULL, values, NULL);
 	hash_partition %= PART_MAPPING_MAX;
 	return mapping->map[hash_partition];
 }

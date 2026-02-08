@@ -53,7 +53,7 @@ value_hash_refs(Value*   self, Column*  column,
 {
 	if (self->type == TYPE_REF)
 		self = &refs[self->integer];
-	if (column->constraints.as_identity)
+	if (self->type == TYPE_NULL && column->constraints.as_identity)
 		self = identity;
 	assert(self->type != TYPE_NULL);
 	return value_hash(self, column, hash);
