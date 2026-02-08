@@ -160,18 +160,12 @@ lock_system(LockCategory category, LockId lock)
 hot static inline void
 unlock(Lock* self)
 {
-	if (! self)
-		return;
 	lock_mgr_unlock(&runtime()->lock_mgr, self);
 }
 
 hot static inline void
 unlock_all(void)
 {
-	list_foreach_reverse_safe(&am_self()->locks)
-	{
-		auto lock = list_at(Lock, link);
-		unlock(lock);
-	}
+	lock_mgr_unlock_list(&runtime()->lock_mgr, &am_self()->locks);
 	list_init(&am_self()->locks);
 }

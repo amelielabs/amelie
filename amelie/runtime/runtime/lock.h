@@ -13,10 +13,19 @@
 
 typedef struct Lock Lock;
 
+typedef enum
+{
+	LOCK_TYPE_NONE,
+	LOCK_TYPE_REL,
+	LOCK_TYPE_ACCESS
+} LockType;
+
 struct Lock
 {
+	LockType   type;
 	Event      event;
-	bool       access_lock;
+	List       link;
+	List       link_mgr;
 	Coroutine* coro;
 	union
 	{
@@ -26,8 +35,6 @@ struct Lock
 			LockId    rel_lock;
 		};
 	};
-	List       link;
-	List       link_mgr;
 };
 
 static inline void
@@ -43,6 +50,7 @@ lock_allocate(Relation* rel, LockId rel_lock)
 {
 	auto self = (Lock*)palloc(sizeof(Lock));
 	lock_init(self);
+	self->type     = LOCK_TYPE_REL;
 	self->rel      = rel;
 	self->rel_lock = rel_lock;
 	return self;
@@ -53,57 +61,71 @@ lock_allocate_access(Access* access)
 {
 	auto self = (Lock*)palloc(sizeof(Lock));
 	lock_init(self);
-	self->access_lock = true;
-	self->access      = access;
+	self->type   = LOCK_TYPE_ACCESS;
+	self->access = access;
 	return self;
 }
 
 hot static inline void
 lock_set(Lock* self)
 {
+	switch (self->type) {
+	case LOCK_TYPE_NONE:
+		return;
+	case LOCK_TYPE_REL:
+	{
+		// single relation
+		self->rel->lock[self->rel_lock]++;
+		break;
+	}
+	case LOCK_TYPE_ACCESS:
+	{
+		// relations from the access list
+		auto access = self->access;
+		for (auto i = 0; i < access->list_count; i++)
+		{
+			auto record = access_at(access, i);
+			record->rel->lock[record->lock]++;
+		}
+		break;
+	}
+	}
+
 	// attach to the coroutine
 	assert(! self->coro);
 	self->coro = am_self();
 	list_append(&self->coro->locks, &self->link);
-
-	// single relation
-	if (! self->access_lock)
-	{
-		self->rel->lock[self->rel_lock]++;
-		return;
-	}
-
-	// relations from the access list
-	auto access = self->access;
-	for (auto i = 0; i < access->list_count; i++)
-	{
-		auto record = access_at(access, i);
-		record->rel->lock[record->lock]++;
-	}
 }
 
 hot static inline void
 lock_unset(Lock* self)
 {
+	switch (self->type) {
+	case LOCK_TYPE_NONE:
+		return;
+	case LOCK_TYPE_REL:
+	{
+		// single relation
+		self->rel->lock[self->rel_lock]--;
+		break;
+	}
+	case LOCK_TYPE_ACCESS:
+	{
+		// relations from the access list
+		auto access = self->access;
+		for (auto i = 0; i < access->list_count; i++)
+		{
+			auto record = access_at(access, i);
+			record->rel->lock[record->lock]--;
+		}
+		break;
+	}
+	}
+	self->type = LOCK_TYPE_NONE;
+
 	// detach from coroutine
 	assert(self->coro == am_self());
-	self->coro = NULL;
 	list_unlink(&self->link);
-
-	// single relation
-	if (! self->access_lock)
-	{
-		self->rel->lock[self->rel_lock]--;
-		return;
-	}
-
-	// relations from the access list
-	auto access = self->access;
-	for (auto i = 0; i < access->list_count; i++)
-	{
-		auto record = access_at(access, i);
-		record->rel->lock[record->lock]--;
-	}
 }
 
 hot static inline bool

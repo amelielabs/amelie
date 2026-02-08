@@ -140,7 +140,7 @@ lock_mgr_lock_access(LockMgr* self, Access* access)
 hot static inline void
 lock_mgr_unlock(LockMgr* self, Lock* lock)
 {
-	if (unlikely(! lock->coro))
+	if (!lock || lock->type == LOCK_TYPE_NONE)
 		return;
 
 	spinlock_lock(&self->lock);
@@ -148,6 +148,34 @@ lock_mgr_unlock(LockMgr* self, Lock* lock)
 	// unlock relations and detach the lock
 	lock_unset(lock);
 	list_unlink(&lock->link_mgr);
+
+	// wakeup waiters
+	list_foreach(&self->list_wait)
+	{
+		auto ref = list_at(Lock, link);
+		// todo: wakeup only related locks
+		list_unlink(&ref->link);
+		event_signal(&ref->event);
+	}
+
+	spinlock_unlock(&self->lock);
+}
+
+hot static inline void
+lock_mgr_unlock_list(LockMgr* self, List* list)
+{
+	if (list_empty(list))
+		return;
+
+	spinlock_lock(&self->lock);
+
+	// unlock relations and detach the lock
+	list_foreach_reverse_safe(list)
+	{
+		auto lock = list_at(Lock, link);
+		lock_unset(lock);
+		list_unlink(&lock->link_mgr);
+	}
 
 	// wakeup waiters
 	list_foreach(&self->list_wait)
