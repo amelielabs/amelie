@@ -47,13 +47,13 @@ indexate_begin(Indexate* self, Uuid* id_table, uint64_t id,
 	auto heap_shadow = heap_allocate();
 
 	// take table exclusive lock
-	lock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
+	defer(unlock, lock_table);
 
 	// find partition by id
 	auto origin = engine_find(&table->engine, id);
 	if (! origin)
 	{
-		unlock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 		heap_free(heap_shadow);
 		return false;
 	}
@@ -67,8 +67,6 @@ indexate_begin(Indexate* self, Uuid* id_table, uint64_t id,
 	assert(! origin->heap_shadow);
 	origin->heap_shadow = heap_shadow;
 	heap_snapshot(origin->heap, heap_shadow, true);
-
-	unlock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 	return true;
 }
 
@@ -115,12 +113,12 @@ indexate_complete_job(intptr_t* argv)
 static void
 indexate_apply(Indexate* self)
 {
-	auto lock_mgr = &self->db->lock_mgr;
-	auto table    = self->table;
-	auto origin   = self->origin;
+	auto table  = self->table;
+	auto origin = self->origin;
 
 	// take table exclusive lock
-	lock(lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
+	defer(unlock, lock_table);
 
 	// force commit prepared transactions
 	track_sync(&origin->track, &origin->track.consensus);
@@ -152,17 +150,12 @@ indexate_apply(Indexate* self)
 		// update new index
 		auto prev = index_replace_by(self->index, row);
 		if (unlikely(prev))
-		{
-			unlock(lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 			error("indexate: index unique constraint violation");
-		}
 	}
 
 	// attach index to the partition
 	part_index_add(self->origin, self->index);
 	self->index = NULL;
-
-	unlock(lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 }
 
 void

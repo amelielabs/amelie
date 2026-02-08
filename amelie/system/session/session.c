@@ -25,7 +25,7 @@ session_create(void)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->program = program_allocate();
-	self->lock = LOCK_NONE;
+	self->lock = NULL;
 	local_init(&self->local);
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
@@ -45,6 +45,7 @@ session_reset_query(Session* self)
 static inline void
 session_reset(Session* self)
 {
+	self->lock = NULL;
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	dtr_reset(&self->dtr);
@@ -55,7 +56,6 @@ session_reset(Session* self)
 void
 session_free(Session *self)
 {
-	assert(self->lock == LOCK_NONE);
 	session_reset_query(self);
 	session_reset(self);
 	compiler_free(&self->compiler);
@@ -65,36 +65,6 @@ session_free(Session *self)
 	dtr_free(&self->dtr);
 	local_free(&self->local);
 	am_free(self);
-}
-
-void
-session_lock(Session* self, LockId lock)
-{
-	if (self->lock == lock)
-		return;
-
-	// downgrade or upgrade lock request
-	auto lock_mgr = &share()->db->lock_mgr;
-	if (self->lock != LOCK_NONE)
-		unlock_catalog(lock_mgr, self->lock);
-
-	lock_catalog(lock_mgr, lock);
-	self->lock = lock;
-}
-
-void
-session_unlock(Session* self)
-{
-	if (self->lock == LOCK_NONE)
-		return;
-
-	// main dtr unlock happens on the executor commit
-	auto db = share()->db;
-	if (self->dtr.locked)
-		dtr_unlock(&self->dtr, db);
-
-	unlock_catalog(&db->lock_mgr, self->lock);
-	self->lock = LOCK_NONE;
 }
 
 static void
@@ -129,7 +99,7 @@ session_execute_distributed(Session* self, Output* output)
 	dtr_create(dtr, program);
 
 	// take transaction locks
-	dtr_lock(dtr, share()->db);
+	lock_access(&program->access);
 
 	// [PROFILE]
 	if (compiler->program_profile)
@@ -187,7 +157,11 @@ session_execute_utility(Session* self, Output* output)
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// switch session lock to use program utility lock
-	/*session_lock(self, program->utility_lock);*/
+		/*session_lock(self, program->utility_lock);*/
+		/*
+		unlock(self->lock);
+		self->lock = NULL;
+		*/
 
 	// [PROFILE]
 	auto profile = &self->profile;
@@ -346,7 +320,7 @@ session_execute(Session*  self,
 		session_reset(self);
 
 		// take shared catalog lock
-		session_lock(self, LOCK_SHARED);
+		self->lock = lock_system(LOCK_CATALOG, LOCK_SHARED);
 
 		// set local settings
 		session_set(self, endpoint, output);
@@ -355,17 +329,17 @@ session_execute(Session*  self,
 		session_endpoint(self, endpoint, content, output);
 
 		// done
-		session_unlock(self);
+		unlock_all();
 	);
-
-	session_reset_query(self);
 
 	if (on_error)
 	{
 		buf_reset(output->buf);
 		output_write_error(output, &am_self()->error);
-		session_unlock(self);
+		unlock_all();
 	}
+
+	session_reset_query(self);
 
 	// cancellation point
 	cancel_resume();

@@ -15,7 +15,6 @@ typedef struct Db Db;
 
 struct Db
 {
-	LockMgr     lock_mgr;
 	PartLockMgr lock_mgr_part;
 	Catalog     catalog;
 	WalMgr      wal_mgr;

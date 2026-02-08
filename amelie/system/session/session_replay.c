@@ -23,8 +23,8 @@
 void
 session_execute_replay(Session* self, Primary* primary, Buf* data)
 {
-	session_lock(self, LOCK_SHARED);
-	defer(session_unlock, self);
+	auto lock = lock_system(LOCK_CATALOG, LOCK_SHARED);
+	defer(unlock, lock);
 
 	// validate request fields and check current replication state
 
@@ -58,7 +58,8 @@ session_execute_replay(Session* self, Primary* primary, Buf* data)
 		} else
 		{
 			// upgrade
-			session_lock(self, LOCK_EXCLUSIVE);
+			unlock(lock);
+			defer(unlock, lock_system(LOCK_CATALOG, LOCK_EXCLUSIVE));
 
 			// execute DDL
 			recover_next(primary->recover, record);

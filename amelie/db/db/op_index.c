@@ -58,8 +58,7 @@ db_create_index_do(Db* self, Tr* tr, uint8_t* op, bool if_not_exists)
 	auto list = buf_create();
 	defer_buf(list);
 
-	auto lock_mgr = &self->lock_mgr;
-	lock(lock_mgr, &table->rel, LOCK_SHARED);
+	auto table_lock = lock(&table->rel, LOCK_SHARED);
 
 	list_foreach(&engine_main(&table->engine)->list)
 	{
@@ -68,7 +67,7 @@ db_create_index_do(Db* self, Tr* tr, uint8_t* op, bool if_not_exists)
 			buf_write(list, &part->id, sizeof(part->id));
 	}
 
-	unlock(lock_mgr, &table->rel, LOCK_SHARED);
+	unlock(table_lock);
 
 	// create partition indexes
 	Indexate ix;
@@ -93,17 +92,17 @@ db_create_index_do(Db* self, Tr* tr, uint8_t* op, bool if_not_exists)
 bool
 db_create_index(Db* self, Tr* tr, uint8_t* op, bool if_not_exists)
 {
-	auto lock_mgr = &self->lock_mgr;
-	lock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
-	lock_catalog(lock_mgr, LOCK_SHARED);
+	auto lock_cp      = lock_system(LOCK_CHECKPOINT, LOCK_EXCLUSIVE);
+	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_SHARED);
 
 	auto exists = false;
 	auto on_error = error_catch (
 		exists = db_create_index_do(self, tr, op, if_not_exists);
 	);
 
-	unlock_catalog(lock_mgr, LOCK_SHARED);
-	unlock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
+	unlock(lock_catalog);
+	unlock(lock_cp);
+
 	if (on_error)
 		rethrow();
 

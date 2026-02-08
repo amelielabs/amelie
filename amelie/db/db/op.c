@@ -34,15 +34,13 @@ db_refresh(Db* self, Uuid* id_table, uint64_t id, Str* storage)
 static Buf*
 db_pending(Db* self)
 {
-	auto lock_mgr = &self->lock_mgr;
-
 	// create a list of all pending partitions
 	auto list = buf_create();
 	errdefer_buf(list);
 	list_foreach(&self->catalog.table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		lock(lock_mgr, &table->rel, LOCK_SHARED);
+		auto table_lock = lock(&table->rel, LOCK_SHARED);
 
 		list_foreach(&engine_main(&table->engine)->list)
 		{
@@ -51,7 +49,7 @@ db_pending(Db* self)
 				buf_write(list, &part->id, sizeof(part->id));
 		}
 
-		unlock(lock_mgr, &table->rel, LOCK_SHARED);
+		unlock(table_lock);
 	}
 	return list;
 }
@@ -59,9 +57,8 @@ db_pending(Db* self)
 void
 db_checkpoint(Db* self)
 {
-	auto lock_mgr = &self->lock_mgr;
-	lock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
-	lock_catalog(lock_mgr, LOCK_SHARED);
+	auto lock_cp      = lock_system(LOCK_CHECKPOINT, LOCK_EXCLUSIVE);
+	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_SHARED);
 
 	Buf* list = NULL;
 	auto on_error = error_catch
@@ -73,8 +70,8 @@ db_checkpoint(Db* self)
 		// create a list of all pending partitions
 		list = db_pending(self);
 	);
-	unlock_catalog(lock_mgr, LOCK_SHARED);
-	unlock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
+	unlock(lock_catalog);
+	unlock(lock_cp);
 
 	if (on_error)
 		rethrow();
@@ -99,9 +96,8 @@ db_gc(Db* self)
 {
 	// taking exclusive checkpoint lock to prevent
 	// the catalog lsn change
-	auto lock_mgr = &self->lock_mgr;
-	lock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
-	lock_catalog(lock_mgr, LOCK_SHARED);
+	auto lock_cp      = lock_system(LOCK_CHECKPOINT, LOCK_EXCLUSIVE);
+	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_SHARED);
 
 	// include catalog lsn if there are any pending catalog
 	// operations in the wal
@@ -119,8 +115,7 @@ db_gc(Db* self)
 	list_foreach(&self->catalog.table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		lock(lock_mgr, &table->rel, LOCK_SHARED);
-
+		auto table_lock = lock(&table->rel, LOCK_SHARED);
 		list_foreach(&engine_main(&table->engine)->list)
 		{
 			auto part = list_at(Part, link);
@@ -128,12 +123,11 @@ db_gc(Db* self)
 			if (object_lsn < lsn)
 				lsn = object_lsn;
 		}
-
-		unlock(lock_mgr, &table->rel, LOCK_SHARED);
+		unlock(table_lock);
 	}
 
-	unlock_catalog(lock_mgr, LOCK_SHARED);
-	unlock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
+	unlock(lock_catalog);
+	unlock(lock_cp);
 
 	// remove wal files < lsn
 	wal_gc(&self->wal_mgr.wal, lsn);

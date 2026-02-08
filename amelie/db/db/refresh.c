@@ -36,14 +36,14 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	// create shadow heap
 	auto heap_shadow = heap_allocate();
 
-	// take table exclusive lock
-	lock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+	// take table exclusive lock (unlock on return)
+	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
+	defer(unlock, lock_table);
 
 	// find partition by id
 	auto origin = engine_find(&table->engine, id);
 	if (! origin)
 	{
-		unlock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 		heap_free(heap_shadow);
 		return false;
 	}
@@ -61,7 +61,6 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 		auto ref = tier_storage_find(self->id.tier, storage);
 		if (! ref)
 		{
-			unlock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 			heap_free(heap_shadow);
 			return false;
 		}
@@ -82,8 +81,6 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	assert(! origin->heap_shadow);
 	origin->heap_shadow = heap_shadow;
 	heap_snapshot(origin->heap, heap_shadow, true);
-
-	unlock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 	return true;
 }
 
@@ -155,12 +152,12 @@ refresh_complete_job(intptr_t* argv)
 static void
 refresh_apply(Refresh* self)
 {
-	auto lock_mgr = &self->db->lock_mgr;
-	auto table    = self->table;
-	auto origin   = self->origin;
+	auto table  = self->table;
+	auto origin = self->origin;
 
-	// take table exclusive lock
-	lock(lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+	// take table exclusive lock (unlock on return)
+	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
+	defer(unlock, lock_table);
 
 	// force commit prepared transactions
 	track_sync(&origin->track, &origin->track.consensus);
@@ -196,8 +193,6 @@ refresh_apply(Refresh* self)
 
 	// update partition id
 	origin->id = self->id;
-
-	unlock(lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 }
 
 void

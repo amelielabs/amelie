@@ -21,13 +21,11 @@ struct Session
 	SetCache set_cache;
 	Dtr      dtr;
 	Profile  profile;
-	LockId   lock;
+	Lock*    lock;
 	Local    local;
 };
 
 Session*
 session_create(void);
 void session_free(Session*);
-void session_lock(Session*, LockId);
-void session_unlock(Session*);
 bool session_execute(Session*, Endpoint*, Str*, Output*);

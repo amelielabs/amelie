@@ -22,7 +22,6 @@ struct Dtr
 	Program*    program;
 	Buf*        error;
 	bool        abort;
-	bool        locked;
 	Write       write;
 	Event       on_commit;
 	Limit       limit;
@@ -40,7 +39,6 @@ dtr_init(Dtr* self, Local* local)
 	self->program     = NULL;
 	self->error       = NULL;
 	self->abort       = false;
-	self->locked      = false;
 	self->local       = local;
 	self->link_group  = NULL;
 	dispatch_mgr_init(&self->dispatch_mgr, self);
@@ -59,7 +57,6 @@ dtr_reset(Dtr* self)
 	self->group_order = 0;
 	self->program     = NULL;
 	self->abort       = false;
-	self->locked      = false;
 	self->link_group  = NULL;
 	if (self->error)
 	{
@@ -87,22 +84,6 @@ dtr_create(Dtr* self, Program* program)
 	self->program = program;
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
-}
-
-static inline void
-dtr_lock(Dtr* self, Db* db)
-{
-	assert(! self->locked);
-	lock_access(&db->lock_mgr, &self->program->access);
-	self->locked = true;
-}
-
-static inline void
-dtr_unlock(Dtr* self, Db* db)
-{
-	assert(self->locked);
-	unlock_access(&db->lock_mgr, &self->program->access);
-	self->locked = false;
 }
 
 static inline bool

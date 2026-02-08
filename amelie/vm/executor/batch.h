@@ -166,12 +166,11 @@ batch_abort(Batch* self)
 }
 
 hot static inline void
-batch_complete(Batch* self, Db* db)
+batch_complete(Batch* self)
 {
 	for (auto it = 0; it < self->list_count; it++)
 	{
 		auto dtr = batch_at(self, it);
-		dtr_unlock(dtr, db);
 		event_signal(&dtr->on_commit);
 	}
 }

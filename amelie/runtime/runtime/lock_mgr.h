@@ -140,7 +140,9 @@ lock_mgr_lock_access(LockMgr* self, Access* access)
 hot static inline void
 lock_mgr_unlock(LockMgr* self, Lock* lock)
 {
-	assert(lock->coro);
+	if (unlikely(! lock->coro))
+		return;
+
 	spinlock_lock(&self->lock);
 
 	// unlock relations and detach the lock

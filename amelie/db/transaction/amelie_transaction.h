@@ -35,11 +35,5 @@
 #include "transaction/consensus.h"
 #include "transaction/track.h"
 
-// relation
-#include "transaction/lock_id.h"
-#include "transaction/relation.h"
+// relation manager
 #include "transaction/relation_mgr.h"
-
-// lock manager
-#include "transaction/access.h"
-#include "transaction/lock_mgr.h"

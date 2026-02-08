@@ -18,6 +18,7 @@ struct PartLock
 {
 	uint64_t  id;
 	Event     event;
+	Lock*     lock;
 	PartLock* waiter;
 	List      link;
 };
@@ -32,6 +33,7 @@ static inline void
 part_lock_init(PartLock* self)
 {
 	self->id     = 0;
+	self->lock   = NULL;
 	self->waiter = NULL;
 	event_init(&self->event);
 	list_init(&self->link);
