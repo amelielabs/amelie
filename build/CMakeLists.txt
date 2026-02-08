@@ -152,14 +152,14 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/timestamp.c
     ${AMELIE_ROOT}/runtime/lib/vector.c
     ${AMELIE_ROOT}/runtime/lib/codec_compression.c
+    ${AMELIE_ROOT}/runtime/lib/job_worker.c
+    ${AMELIE_ROOT}/runtime/lib/job_mgr.c
     ${AMELIE_ROOT}/runtime/lib/logger.c
     ${AMELIE_ROOT}/runtime/lib/load.c
     ${AMELIE_ROOT}/runtime/lib/console.c
     ${AMELIE_ROOT}/runtime/lib/histogram.c
     ${AMELIE_ROOT}/runtime/json/json_parser.c
     ${AMELIE_ROOT}/runtime/json/json_export.c
-    ${AMELIE_ROOT}/runtime/runtime/job_worker.c
-    ${AMELIE_ROOT}/runtime/runtime/job_mgr.c
     ${AMELIE_ROOT}/runtime/runtime/opts.c
     ${AMELIE_ROOT}/runtime/runtime/config.c
     ${AMELIE_ROOT}/runtime/runtime/state.c

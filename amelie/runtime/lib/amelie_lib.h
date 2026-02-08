@@ -51,6 +51,11 @@
 #include "lib/codec_cache.h"
 #include "lib/codec_compression.h"
 
+// background jobs
+#include "lib/job.h"
+#include "lib/job_worker.h"
+#include "lib/job_mgr.h"
+
 // logger
 #include "lib/logger.h"
 
