@@ -12,6 +12,7 @@
 //
 
 // palloc
+
 static inline void*
 palloc(size_t size)
 {
@@ -25,6 +26,7 @@ palloc_reset(void)
 }
 
 // buf
+
 static inline Buf*
 buf_create(void)
 {
@@ -47,6 +49,7 @@ buf_free(Buf* self)
 }
 
 // event
+
 static inline void
 event_attach(Event* self)
 {
@@ -76,6 +79,7 @@ event_wait(Event* self, int time_ms)
 }
 
 // coroutine
+
 static inline uint64_t
 coroutine_create(MainFunction function, void* arg)
 {
@@ -148,6 +152,7 @@ cancel_resume(void)
 }
 
 // task
+
 static inline void
 task_create(Task*        self,
             char*        name,
@@ -184,6 +189,7 @@ task_send(Task* dest, Msg* msg)
 }
 
 // time
+
 static inline uint64_t
 time_ms(void)
 {

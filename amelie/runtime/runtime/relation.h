@@ -27,8 +27,8 @@ struct Relation
 static inline void
 relation_init(Relation* self)
 {
-	self->db            = NULL;
-	self->name          = NULL;
+	self->db   = NULL;
+	self->name = NULL;
 	self->free_function = NULL;
 	memset(self->lock, 0, sizeof(self->lock));
 	list_init(&self->link);

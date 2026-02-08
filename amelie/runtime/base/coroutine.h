@@ -20,6 +20,7 @@ struct Coroutine
 	ContextStack stack;
 	ExceptionMgr exception_mgr;
 	Arena        arena;
+	List         locks;
 	bool         cancel;
 	int          cancel_pause;
 	int          cancel_pause_recv;
@@ -51,6 +52,7 @@ coroutine_init(Coroutine* self, void* mgr)
 	exception_mgr_init(&self->exception_mgr);
 	error_init(&self->error);
 	arena_init(&self->arena, 4096 - sizeof(ArenaPage));
+	list_init(&self->locks);
 	list_init(&self->link);
 	list_init(&self->link_ready);
 	event_init(&self->on_exit);

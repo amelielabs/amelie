@@ -32,6 +32,7 @@ struct RuntimeIf
 struct Runtime
 {
 	BufMgr      buf_mgr;
+	LockMgr     lock_mgr;
 	Config      config;
 	State       state;
 	RuntimeIf*  iface;

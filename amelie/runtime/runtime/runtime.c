@@ -23,6 +23,7 @@ runtime_init(Runtime* self)
 	self->crc      = crc32_sse_supported() ? crc32_sse : crc32;
 	self->iface    = NULL;
 	buf_mgr_init(&self->buf_mgr);
+	lock_mgr_init(&self->lock_mgr);
 	config_init(&self->config);
 	state_init(&self->state);
 	timezone_mgr_init(&self->timezone_mgr);
@@ -36,6 +37,7 @@ runtime_init(Runtime* self)
 void
 runtime_free(Runtime* self)
 {
+	lock_mgr_free(&self->lock_mgr);
 	task_free(&self->task);
 	job_mgr_free(&self->job_mgr);
 	config_free(&self->config);
