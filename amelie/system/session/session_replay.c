@@ -63,7 +63,9 @@ session_execute_replay(Session* self, Primary* primary, Buf* data)
 		{
 			// upgrade to the exclusive lock
 			unlock(lock);
-			defer(unlock, lock_system(LOCK_CATALOG, LOCK_EXCLUSIVE));
+
+			// (unlocked by recover commit)
+			lock_system(LOCK_CATALOG, LOCK_EXCLUSIVE);
 
 			// execute DDL
 			recover_next(primary->recover, record);

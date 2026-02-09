@@ -170,6 +170,9 @@ recover_next_record(Recover* self, Record* record)
 	{
 		state_lsn_follow(record->lsn);
 	}
+
+	// unlock catalog after create index
+	unlock_all();
 }
 
 void

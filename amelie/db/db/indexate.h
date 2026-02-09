@@ -24,4 +24,4 @@ struct Indexate
 
 void indexate_init(Indexate*, Db*);
 void indexate_reset(Indexate*);
-void indexate_run(Indexate*, Uuid*, uint64_t, IndexConfig*);
+bool indexate_next(Indexate*, Table*, IndexConfig*);

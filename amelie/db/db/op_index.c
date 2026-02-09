@@ -22,14 +22,18 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
-static void
-db_create_index_do(Db* self, Tr* tr, uint8_t* op, int flags)
+void
+db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 {
 	auto if_not_exists = ddl_if_not_exists(flags);
 
 	Str  name_db;
 	Str  name;
 	auto pos = table_op_index_create_read(op, &name_db, &name);
+
+	// take shared catalog lock
+	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_SHARED);
+	defer(unlock, lock_catalog);
 
 	// find table
 	auto table = table_mgr_find(&self->catalog.table_mgr, &name_db, &name, false);
@@ -56,52 +60,17 @@ db_create_index_do(Db* self, Tr* tr, uint8_t* op, int flags)
 		return;
 	}
 
-	// create a list of all pending partitions
-	auto list = buf_create();
-	defer_buf(list);
-
-	auto table_lock = lock(&table->rel, LOCK_SHARED);
-
-	list_foreach(&engine_main(&table->engine)->list)
-	{
-		auto part = list_at(Part, link);
-		if (! part_index_find(part, &config->name, false))
-			buf_write(list, &part->id, sizeof(part->id));
-	}
-
-	unlock(table_lock);
-
-	// create partition indexes
+	// incrementally create indexes on every table partition
 	Indexate ix;
 	indexate_init(&ix, self);
-	auto end = (Id*)list->position;
-	auto it  = (Id*)list->start;
-	for (; it < end; it++)
-	{
-		indexate_reset(&ix);
-		indexate_run(&ix, &it->id_table, it->id, config);
-	}
+	while (indexate_next(&ix, table, config));
 
-	// todo: rollback on error
+	unlock(lock_catalog);
 
-	// todo: exclusive lock
+	// take exclusive catalog lock (HELD till completion)
+	lock_catalog = lock_system(LOCK_CATALOG, LOCK_EXCLUSIVE);
 
 	// attach index to the table
 	table_index_add(table, tr, config);
 	log_persist_relation(&tr->log, op);
-}
-
-void
-db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
-{
-	auto lock_cp      = lock_system(LOCK_CHECKPOINT, LOCK_EXCLUSIVE);
-	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_SHARED);
-	auto on_error = error_catch (
-		db_create_index_do(self, tr, op, flags);
-	);
-	unlock(lock_catalog);
-	unlock(lock_cp);
-
-	if (on_error)
-		rethrow();
 }

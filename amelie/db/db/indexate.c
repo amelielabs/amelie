@@ -23,43 +23,75 @@
 #include <amelie_db.h>
 
 static bool
-indexate_begin(Indexate* self, Uuid* id_table, uint64_t id,
-               IndexConfig* config)
+indexate_match(Indexate* self, IndexConfig* config)
 {
-	auto db = self->db;
+	// find next partition which does not yet have index
+	auto table = self->table;
+	for (;;)
+	{
+		// take table shared lock
+		auto lock_table = lock(&table->rel, LOCK_SHARED);
 
-	// create index object
+		uint64_t id = UINT64_MAX;
+		list_foreach(&engine_main(&table->engine)->list)
+		{
+			auto part = list_at(Part, link);
+			auto index = part_index_find(part, &config->name, false);
+			if (index)
+				continue;
+			id = part->id.id;
+		}
+
+		unlock(lock_table);
+
+		// nothing left to do
+		if (id == UINT64_MAX)
+			break;
+
+		// get partition service lock
+		db_lock(self->db, &self->lock, id);
+
+		// find partition by id
+		auto origin = engine_find(&table->engine, id);
+		if (origin)
+		{
+			self->origin = origin;
+			return true;
+		}
+
+		// partition id no longer available, retry
+		db_unlock(self->db, &self->lock);
+	}
+
+	return false;
+}
+
+static bool
+indexate_begin(Indexate* self, Table* table, IndexConfig* config)
+{
+	self->table = table;
+
+	// find next partition which does not yet have index
+	if  (! indexate_match(self, config))
+		return false;
+
+	// allocate index
 	if (config->type == INDEX_TREE)
 		self->index = index_tree_allocate(config, self->origin);
 	else
 	if (config->type == INDEX_HASH)
 		self->index = index_hash_allocate(config, self->origin);
 	else
-		error("unrecognized index type");
-
-	// find table by uuid
-	auto table = table_mgr_find_by(&db->catalog.table_mgr, id_table, false);
-	if (! table)
-		return false;
-	self->table = table;
+		abort();
 
 	// create shadow heap
 	auto heap_shadow = heap_allocate();
 
 	// take table exclusive lock
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
-	defer(unlock, lock_table);
-
-	// find partition by id
-	auto origin = engine_find(&table->engine, id);
-	if (! origin)
-	{
-		heap_free(heap_shadow);
-		return false;
-	}
-	self->origin = origin;
 
 	// commit pending prepared transactions
+	auto origin = self->origin;
 	auto consensus = &origin->track.consensus;
 	track_sync(&origin->track, consensus);
 
@@ -67,6 +99,8 @@ indexate_begin(Indexate* self, Uuid* id_table, uint64_t id,
 	assert(! origin->heap_shadow);
 	origin->heap_shadow = heap_shadow;
 	heap_snapshot(origin->heap, heap_shadow, true);
+
+	unlock(lock_table);
 	return true;
 }
 
@@ -158,6 +192,25 @@ indexate_apply(Indexate* self)
 	self->index = NULL;
 }
 
+static void
+indexate_abort(Indexate* self, IndexConfig* config)
+{
+	// take table exclusive lock
+	auto table = self->table;
+	auto table_lock = lock(&table->rel, LOCK_EXCLUSIVE);
+	defer(unlock, table_lock);
+
+	list_foreach(&engine_main(&table->engine)->list)
+	{
+		auto part  = list_at(Part, link);
+		auto index = part_index_find(part, &config->name, false);
+		if (! index)
+			continue;
+		// todo: free indexes out of the lock
+		part_index_drop(part, &config->name);
+	}
+}
+
 void
 indexate_init(Indexate* self, Db* db)
 {
@@ -181,21 +234,14 @@ indexate_reset(Indexate* self)
 	}
 }
 
-void
-indexate_run(Indexate* self, Uuid* id_table, uint64_t id,
-             IndexConfig* config)
+bool
+indexate_next(Indexate* self, Table* table, IndexConfig* config)
 {
 	indexate_reset(self);
 
-	// get catalog shared lock and partition service lock
-	db_lock(self->db, &self->lock, id);
-
-	// find and rotate partition
-	if (! indexate_begin(self, id_table, id, config))
-	{
-		db_unlock(self->db, &self->lock);
-		error("partition not found");
-	}
+	// find next partition
+	if (! indexate_begin(self, table, config))
+		return false;
 
 	// create heap index
 	auto on_error = error_catch
@@ -215,9 +261,16 @@ indexate_run(Indexate* self, Uuid* id_table, uint64_t id,
 
 	if (on_error)
 	{
-		index_free(self->index);
-		self->index = NULL;
+		// drop all created indexes from the table partitions
+		indexate_abort(self, config);
+		if (self->index)
+		{
+			index_free(self->index);
+			self->index = NULL;
+		}
 
 		rethrow();
 	}
+
+	return true;
 }
