@@ -48,8 +48,8 @@ struct HeapBucket
 	uint64_t list: 19;
 	uint64_t list_offset: 21;
 	uint64_t list_count: 40;
-	uint64_t id: 8;
-	uint64_t unused: 16;
+	uint64_t id: 9;
+	uint64_t unused: 15;
 } packed;
 
 #define HEAP_MAGIC   0x20849610
