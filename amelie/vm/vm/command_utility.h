@@ -32,3 +32,4 @@ void crepl_unsubscribe(Vm*, Op*);
 
 // ddl
 void cddl(Vm*, Op*);
+void cddl_create_index(Vm*, Op*);

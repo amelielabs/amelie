@@ -370,9 +370,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_INDEX_CREATE:
 	{
-		// build indexes on partitions
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = self->iface->index_create(self, tr, op, if_not_exists);
+		// create index has different processing path and must be
+		// done using the db_create_index()
+		abort();
 		break;
 	}
 	case DDL_INDEX_DROP:

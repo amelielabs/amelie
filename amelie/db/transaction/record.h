@@ -20,7 +20,8 @@ typedef enum
 	CMD_REPLACE,
 	CMD_DELETE,
 	// DDL
-	CMD_DDL
+	CMD_DDL,
+	CMD_DDL_CREATE_INDEX
 } Cmd;
 
 struct Record

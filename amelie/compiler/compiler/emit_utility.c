@@ -201,9 +201,8 @@ emit_ddl(Compiler* self)
 	// index
 	case STMT_CREATE_INDEX:
 	{
-		auto arg = ast_index_create_of(stmt->ast);
-		offset = table_op_index_create(data, db, &arg->table_name, arg->config);
-		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		// handled separately
+		abort();
 		break;
 	}
 	case STMT_DROP_INDEX:
@@ -486,6 +485,21 @@ emit_utility(Compiler* self)
 			auto offset = code_data_add_string(self->code_data, &arg->storage);
 			op3(self, CREFRESH, (intptr_t)table, arg->id, offset);
 		}
+		break;
+	}
+
+	// create index
+	case STMT_CREATE_INDEX:
+	{
+		auto arg    = ast_index_create_of(stmt->ast);
+		auto db     = self->parser.db;
+		auto offset = table_op_index_create(data, db, &arg->table_name, arg->config);
+		auto flags  = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		op2(self, CDDL_CREATE_INDEX, offset, flags);
+
+		// start without locks and require manual locking control
+		// during execution
+		lock = LOCK_NONE;
 		break;
 	}
 

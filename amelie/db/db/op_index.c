@@ -22,9 +22,11 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
-static bool
-db_create_index_do(Db* self, Tr* tr, uint8_t* op, bool if_not_exists)
+static void
+db_create_index_do(Db* self, Tr* tr, uint8_t* op, int flags)
 {
+	auto if_not_exists = ddl_if_not_exists(flags);
+
 	Str  name_db;
 	Str  name;
 	auto pos = table_op_index_create_read(op, &name_db, &name);
@@ -51,7 +53,7 @@ db_create_index_do(Db* self, Tr* tr, uint8_t* op, bool if_not_exists)
 			      str_of(&config->name));
 
 		index_config_free(config);
-		return false;
+		return;
 	}
 
 	// create a list of all pending partitions
@@ -86,25 +88,20 @@ db_create_index_do(Db* self, Tr* tr, uint8_t* op, bool if_not_exists)
 
 	// attach index to the table
 	table_index_add(table, tr, config);
-	return true;
+	log_persist_relation(&tr->log, op);
 }
 
-bool
-db_create_index(Db* self, Tr* tr, uint8_t* op, bool if_not_exists)
+void
+db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 {
 	auto lock_cp      = lock_system(LOCK_CHECKPOINT, LOCK_EXCLUSIVE);
 	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_SHARED);
-
-	auto exists = false;
 	auto on_error = error_catch (
-		exists = db_create_index_do(self, tr, op, if_not_exists);
+		db_create_index_do(self, tr, op, flags);
 	);
-
 	unlock(lock_catalog);
 	unlock(lock_cp);
 
 	if (on_error)
 		rethrow();
-
-	return exists;
 }

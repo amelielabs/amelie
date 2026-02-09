@@ -186,3 +186,13 @@ cddl(Vm* self, Op* op)
 	auto flags = op->b;
 	catalog_execute(&share()->db->catalog, self->tr, pos, flags);
 }
+
+void
+cddl_create_index(Vm* self, Op* op)
+{
+	// [op, flags]
+	unused(self);
+	auto pos = code_data_at(self->code_data, op->a);
+	auto flags = op->b;
+	db_create_index(share()->db, self->tr, pos, flags);
+}

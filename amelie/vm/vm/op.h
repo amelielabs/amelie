@@ -287,6 +287,7 @@ enum
 
 	// ddl
 	CDDL,
+	CDDL_CREATE_INDEX,
 	CREFRESH,
 
 	// result

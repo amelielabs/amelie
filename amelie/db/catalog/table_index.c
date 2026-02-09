@@ -62,6 +62,10 @@ table_index_add(Table* self, Tr* tr, IndexConfig* config)
 
 	// update table
 	log_relation(&tr->log, &add_if, index, &self->rel);
+
+	// use separate log command for create
+	// index processing
+	log_last(&tr->log)->cmd = CMD_DDL_CREATE_INDEX;
 }
 
 static void

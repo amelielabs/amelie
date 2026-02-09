@@ -21,13 +21,6 @@
 #include <amelie_session.h>
 #include <amelie_system.h>
 
-static bool
-catalog_if_index_create(Catalog* self, Tr* tr, uint8_t* op, bool if_not_exists)
-{
-	System* system = self->iface_arg;
-	return db_create_index(&system->db, tr, op, if_not_exists);
-}
-
 static void
 catalog_if_udf_compile(Catalog* self, Udf* udf)
 {
@@ -91,7 +84,6 @@ catalog_if_udf_depends(Udf* udf, Str* name)
 
 static CatalogIf catalog_if =
 {
-	.index_create = catalog_if_index_create,
 	.udf_compile  = catalog_if_udf_compile,
 	.udf_free     = catalog_if_udf_free,
 	.udf_depends  = catalog_if_udf_depends

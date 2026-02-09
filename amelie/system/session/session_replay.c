@@ -49,20 +49,34 @@ session_execute_replay(Session* self, Primary* primary, Buf* data)
 				error("repl: record crc mismatch, system LSN is: %" PRIu64,
 				      state_lsn());
 
-		if (likely(record_cmd_is_dml(record_cmd(record))))
+		switch (record_cmd(record)->cmd) {
+		case CMD_REPLACE:
+		case CMD_DELETE:
 		{
 			// execute DML
 			dtr_reset(dtr);
 			dtr_create(dtr, program);
 			replay(dtr, record);
-		} else
+			break;
+		}
+		case CMD_DDL:
 		{
-			// upgrade
+			// upgrade to the exclusive lock
 			unlock(lock);
 			defer(unlock, lock_system(LOCK_CATALOG, LOCK_EXCLUSIVE));
 
 			// execute DDL
 			recover_next(primary->recover, record);
+			break;
+		}
+		case CMD_DDL_CREATE_INDEX:
+		{
+			unlock(lock);
+
+			// execute CREATE INDEX
+			recover_next(primary->recover, record);
+			break;
+		}
 		}
 		pos += record->size;
 	}

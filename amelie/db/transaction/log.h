@@ -107,6 +107,12 @@ log_reset(Log* self)
 	list_init(&self->link);
 }
 
+static inline LogOp*
+log_last(Log* self)
+{
+	return log_of(self, self->count - 1);
+}
+
 static inline void
 log_truncate(Log* self)
 {
@@ -142,7 +148,7 @@ log_row(Log*   self,
 hot static inline void
 log_persist(Log* self, Uuid* id)
 {
-	auto op = log_of(self, self->count - 1);
+	auto op = log_last(self);
 	// [cmd, id, row]
 	auto ref = log_row_of(self, op);
 	write_log_add(&self->write_log, op->cmd, id, ref->row);
@@ -173,5 +179,6 @@ hot static inline void
 log_persist_relation(Log* self, uint8_t* data)
 {
 	// [cmd, data]
-	write_log_add_op(&self->write_log, CMD_DDL, data);
+	auto op = log_last(self);
+	write_log_add_op(&self->write_log, op->cmd, data);
 }

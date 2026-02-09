@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-bool db_create_index(Db*, Tr*, uint8_t*, bool);
+void db_create_index(Db*, Tr*, uint8_t*, int);

@@ -112,6 +112,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		break;
 	}
 	case CMD_DDL:
+	case CMD_DDL_CREATE_INDEX:
 	{
 		// skip ddl commands before the last catalog lsn
 		if (record->lsn <= state_catalog())
@@ -120,8 +121,11 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			break;
 		}
 
-		// replay ddl command
-		catalog_execute(&db->catalog, tr, *pos, 0);
+		// execute ddl command
+		if (cmd->cmd == CMD_DDL_CREATE_INDEX)
+			db_create_index(db, tr, *pos, 0);
+		else
+			catalog_execute(&db->catalog, tr, *pos, 0);
 		json_skip(pos);
 
 		// update catalog pending lsn

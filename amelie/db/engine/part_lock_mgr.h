@@ -105,5 +105,8 @@ part_lock_mgr_unlock(PartLockMgr* self, PartLock* lock)
 	if (waiter)
 		event_signal(&waiter->event);
 
-	part_lock_init(lock);
+	lock->id     = 0;
+	lock->waiter = NULL;
+	event_init(&lock->event);
+	list_init(&lock->link);
 }

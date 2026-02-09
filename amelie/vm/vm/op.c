@@ -294,6 +294,7 @@ OpDesc ops[] =
 
 	// ddl
 	{ CDDL, "ddl" },
+	{ CDDL_CREATE_INDEX, "ddl_create_index" },
 	{ CREFRESH, "refresh" },
 
 	// result

@@ -369,6 +369,7 @@ vm_run(Vm*       self,
 
 		// ddl
 		&&cddl,
+		&&cddl_create_index,
 		&&crefresh,
 
 		// executor
@@ -1922,6 +1923,10 @@ crepl_unsubscribe:
 
 cddl:
 	cddl(self, op);
+	op_next;
+
+cddl_create_index:
+	cddl_create_index(self, op);
 	op_next;
 
 crefresh:
