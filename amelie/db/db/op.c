@@ -57,7 +57,6 @@ db_pending(Db* self)
 void
 db_checkpoint(Db* self)
 {
-	auto lock_cp      = lock_system(LOCK_CHECKPOINT, LOCK_EXCLUSIVE);
 	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_SHARED);
 
 	Buf* list = NULL;
@@ -71,7 +70,6 @@ db_checkpoint(Db* self)
 		list = db_pending(self);
 	);
 	unlock(lock_catalog);
-	unlock(lock_cp);
 
 	if (on_error)
 		rethrow();
@@ -94,9 +92,6 @@ db_checkpoint(Db* self)
 void
 db_gc(Db* self)
 {
-	// taking exclusive checkpoint lock to prevent
-	// the catalog lsn change
-	auto lock_cp      = lock_system(LOCK_CHECKPOINT, LOCK_EXCLUSIVE);
 	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_SHARED);
 
 	// include catalog lsn if there are any pending catalog
@@ -127,7 +122,6 @@ db_gc(Db* self)
 	}
 
 	unlock(lock_catalog);
-	unlock(lock_cp);
 
 	// remove wal files < lsn
 	wal_gc(&self->wal_mgr.wal, lsn);

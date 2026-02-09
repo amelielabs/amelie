@@ -16,7 +16,7 @@ typedef struct LockMgr LockMgr;
 typedef enum
 {
 	LOCK_CATALOG,
-	LOCK_CHECKPOINT,
+	LOCK_DDL,
 	LOCK_CATEGORY_MAX
 } LockCategory;
 

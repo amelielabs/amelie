@@ -25,7 +25,8 @@ struct Program
 	bool     snapshot;
 	bool     repl;
 	bool     utility;
-	LockId   utility_lock;
+	LockId   lock_catalog;
+	LockId   lock_ddl;
 };
 
 static inline Program*
@@ -36,7 +37,8 @@ program_allocate(void)
 	self->snapshot     = false;
 	self->repl         = false;
 	self->utility      = false;
-	self->utility_lock = LOCK_SHARED;
+	self->lock_catalog = LOCK_SHARED;
+	self->lock_ddl     = LOCK_NONE;
 	code_init(&self->code);
 	code_init(&self->code_backend);
 	code_data_init(&self->code_data);
@@ -66,7 +68,8 @@ program_reset(Program* self, SetCache* cache)
 	self->snapshot     = false;
 	self->repl         = false;
 	self->utility      = false;
-	self->utility_lock = LOCK_SHARED;
+	self->lock_catalog = LOCK_SHARED;
+	self->lock_ddl     = LOCK_NONE;
 	code_reset(&self->code);
 	code_reset(&self->code_backend);
 	code_data_reset(&self->code_data);

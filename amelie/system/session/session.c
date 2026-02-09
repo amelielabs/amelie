@@ -156,11 +156,14 @@ session_execute_utility(Session* self, Output* output)
 	auto program  = compiler->program;
 	reg_prepare(&self->vm.r, program->code.regs);
 
+	// prevent concurrent ddls
+	lock_system(LOCK_DDL, program->lock_ddl);
+
 	// switch session lock to use program utility lock
-	if (program->utility_lock != LOCK_SHARED)
+	if (program->lock_catalog != LOCK_SHARED)
 	{
 		unlock(self->lock);
-		self->lock = lock_system(LOCK_CATALOG, program->utility_lock);
+		self->lock = lock_system(LOCK_CATALOG, program->lock_catalog);
 	}
 
 	// [PROFILE]

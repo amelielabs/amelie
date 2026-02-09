@@ -359,7 +359,8 @@ emit_utility(Compiler* self)
 	// explicily set program to have exclusive lock for majority of
 	// the utility/ddl commands with some exceptions below
 	program->utility = true;
-	auto lock = LOCK_EXCLUSIVE;
+	auto lock_catalog = LOCK_EXCLUSIVE;
+	auto lock_ddl     = LOCK_EXCLUSIVE;
 
 	int r = -1;
 	switch (stmt->id) {
@@ -368,8 +369,9 @@ emit_utility(Compiler* self)
 	{
 		r = emit_show(self);
 
-		// shared lock
-		lock = LOCK_SHARED;
+		// lock
+		lock_catalog = LOCK_SHARED;
+		lock_ddl     = LOCK_NONE;
 		break;
 	}
 	case STMT_CHECKPOINT:
@@ -378,8 +380,9 @@ emit_utility(Compiler* self)
 		unused(arg);
 		op0(self, CCHECKPOINT);
 
-		// shared lock
-		lock = LOCK_SHARED;
+		// lock
+		lock_catalog = LOCK_NONE;
+		lock_ddl     = LOCK_EXCLUSIVE;
 		break;
 	}
 
@@ -397,8 +400,9 @@ emit_utility(Compiler* self)
 		}
 		r = op2pin(self, CUSER_CREATE_TOKEN, TYPE_JSON, offset);
 
-		// shared lock
-		lock = LOCK_SHARED;
+		// lock
+		lock_catalog = LOCK_SHARED;
+		lock_ddl     = LOCK_EXCLUSIVE;
 		break;
 	}
 	case STMT_CREATE_USER:
@@ -472,7 +476,6 @@ emit_utility(Compiler* self)
 	case STMT_ALTER_PARTITION:
 	{
 		auto arg = ast_part_alter_of(stmt->ast);
-		lock = LOCK_SHARED;
 		auto table = table_mgr_find(&share()->db->catalog.table_mgr,
 		                            self->parser.db,
 		                            &arg->table->string, true);
@@ -485,6 +488,10 @@ emit_utility(Compiler* self)
 			auto offset = code_data_add_string(self->code_data, &arg->storage);
 			op3(self, CREFRESH, (intptr_t)table, arg->id, offset);
 		}
+
+		// lock
+		lock_catalog = LOCK_SHARED;
+		lock_ddl     = LOCK_EXCLUSIVE;
 		break;
 	}
 
@@ -499,7 +506,8 @@ emit_utility(Compiler* self)
 
 		// start without locks and require manual locking control
 		// during execution
-		lock = LOCK_NONE;
+		lock_catalog = LOCK_NONE;
+		lock_ddl     = LOCK_EXCLUSIVE;
 		break;
 	}
 
@@ -517,5 +525,6 @@ emit_utility(Compiler* self)
 		runpin(self, r);
 
 	// set catalog lock
-	program->utility_lock = lock;
+	program->lock_catalog = lock_catalog;
+	program->lock_ddl     = lock_ddl;
 }
