@@ -32,7 +32,7 @@ show user test;
 show storages;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]
 # test: show storage
 show storage;
@@ -40,12 +40,12 @@ show storage;
 show storage main;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]
 show storage main extended;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]
 # test: show databases
 create database test;

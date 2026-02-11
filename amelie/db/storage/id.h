@@ -77,6 +77,7 @@ id_path(Id* self, char* path, int state)
 	char id_tier[UUID_SZ];
 	uuid_get(&self->id_tier, id_tier, sizeof(id_tier));
 
+	// <base>/storage/<storage_name>/<id_tier>
 	auto storage = self->storage->storage;
 	switch (state) {
 	case ID_SERVICE:

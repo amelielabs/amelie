@@ -92,12 +92,21 @@ static void
 rename_if_abort(Log* self, LogOp* op)
 {
 	auto relation = log_relation_of(self, op);
-	auto mgr = storage_of(relation->relation);
+	auto storage = storage_of(relation->relation);
 	// set previous name
 	uint8_t* pos = relation->data;
 	Str name;
 	json_read_string(&pos, &name);
-	storage_config_set_name(mgr->config, &name);
+
+	char path_from[PATH_MAX];
+	storage_pathfmt(storage, path_from, "", NULL);
+
+	// rename storage directory or symlink
+	storage_config_set_name(storage->config, &name);
+
+	char path_to[PATH_MAX];
+	storage_pathfmt(storage, path_to, "", NULL);
+	fs_rename(path_from, "%s", path_to);
 }
 
 static LogIf rename_if =
@@ -141,8 +150,16 @@ storage_mgr_rename(StorageMgr* self,
 	// save name for rollback
 	encode_string(&tr->log.data, name);
 
+	char path_from[PATH_MAX];
+	storage_pathfmt(storage, path_from, "", NULL);
+
 	// set new name
 	storage_config_set_name(storage->config, name_new);
+
+	// rename storage directory or symlink
+	char path_to[PATH_MAX];
+	storage_pathfmt(storage, path_to, "", NULL);
+	fs_rename(path_from, "%s", path_to);
 	return true;
 }
 

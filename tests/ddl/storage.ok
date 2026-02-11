@@ -4,17 +4,17 @@ connect E0 S0 127.0.0.1:3485;
 select show('storage', 'main');
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]
 show storage main;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]
 show storages;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]
 # test: create storage statement parsing
 create;
@@ -40,18 +40,18 @@ create storage test;
 show storages;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }, {
   "name": "test",
-  "path": "test"
+  "path": ""
 }]
 select show('storages');
 [[{
   "name": "main",
-  "path": "main"
+  "path": ""
 }, {
   "name": "test",
-  "path": "test"
+  "path": ""
 }]]
 # test: create storage if not exists
 create storage test;
@@ -60,10 +60,10 @@ create storage if not exists test;
 show storages;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }, {
   "name": "test",
-  "path": "test"
+  "path": ""
 }]
 # test: create storage ()
 create storage test2 ();
@@ -107,7 +107,7 @@ drop storage test;
 show storages;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]
 # test: drop storage if exists
 drop storage test;
@@ -116,7 +116,7 @@ drop storage if exists test;
 show storages;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]
 # test: drop main storage
 drop storage main;
@@ -124,7 +124,7 @@ drop storage main;
 show storages;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]
 # test: alter storage statment parsing
 alter storage;
@@ -144,19 +144,19 @@ create storage test;
 show storages;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }, {
   "name": "test",
-  "path": "test"
+  "path": ""
 }]
 alter storage test rename to test2;
 show storages;
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }, {
   "name": "test2",
-  "path": "test"
+  "path": ""
 }]
 drop storage test2;
 # test: alter storage main

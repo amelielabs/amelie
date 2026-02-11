@@ -329,7 +329,7 @@ tier_storage_mkdir(Tier* self, TierStorage* storage)
 	if (! storage->storage)
 		return;
 
-	// <storage_path>/<id_tier>
+	// <base>/storage/<storage_name>/<id_tier>
 	char id[UUID_SZ];
 	uuid_get(&self->id, id, sizeof(id));
 
@@ -345,7 +345,7 @@ tier_storage_rmdir(Tier* self, TierStorage* storage)
 	if (! storage->storage)
 		return;
 
-	// <storage_path>/<id_tier>
+	// <base>/storage/<storage_name>/<id_tier>
 	char id[UUID_SZ];
 	uuid_get(&self->id, id, sizeof(id));
 

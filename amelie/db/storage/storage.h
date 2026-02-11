@@ -72,26 +72,37 @@ storage_pathfmt(Storage* self, char* buf, char* fmt, ...)
 	vsfmt(relative, sizeof(relative), fmt, args);
 	va_end(args);
 
-	auto path = &self->config->path;
-	if (*str_of(path) == '/')
-	{
-		// <absolute_path>/<relative>
-		sfmt(buf, PATH_MAX, "%.*s/%s", str_size(path),
-		     str_of(path), relative);
-	} else
-	{
-		// <base>/<path>/<relative>
-		sfmt(buf, PATH_MAX, "%s/%.*s/%s", state_directory(),
-		     str_size(path), str_of(path), relative);
-	}
+	// <base>/storage/<name>
+	auto name = &self->config->name;
+	sfmt(buf, PATH_MAX, "%s/storage/%.*s%s%s", state_directory(),
+	     str_size(name), str_of(name),
+	     *relative? "/" : "",
+	      relative);
 }
 
 static inline void
 storage_mkdir(Storage* self)
 {
-	// create storage directory, if not exists
+	// <base>/storage/<name>
 	char path[PATH_MAX];
 	storage_pathfmt(self, path, "", NULL);
-	if (! fs_exists("%s", path))
+	if (fs_exists("%s", path))
+		return;
+
+	// <base>/storage/<name> (directory)
+	auto path_storage = &self->config->path;
+	if (str_empty(path_storage))
+	{
 		fs_mkdir(0755, "%s", path);
+		return;
+	}
+
+	// create storage directory, if not exists
+	if (! fs_exists("%s", str_of(path_storage)))
+		fs_mkdir(0755, "%s", str_of(path_storage));
+
+	// <base>/storage/<name> -> /storage/path (symlink)
+	auto rc = symlink(str_of(path_storage), path);
+	if (rc == -1)
+		error_system();
 }

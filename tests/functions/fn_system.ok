@@ -169,13 +169,13 @@ select show('replication');
 select show('storages');
 [[{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]]
 # test: storage
 select show('storage', 'main');
 [{
   "name": "main",
-  "path": "main"
+  "path": ""
 }]
 # test: databases
 select show('databases');

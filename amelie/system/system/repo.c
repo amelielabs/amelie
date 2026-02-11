@@ -33,6 +33,7 @@ repo_create(Repo* self, char* directory)
 	{
 		fs_mkdir(0755, "%s", state_directory());
 		fs_mkdir(0755, "%s/certs", state_directory());
+		fs_mkdir(0755, "%s/storage", state_directory());
 	}
 
 	// open directory fd

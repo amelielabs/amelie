@@ -33,7 +33,6 @@ parse_storage_create(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	storage_config_set_name(stmt->config, &name->string);
-	storage_config_set_path(stmt->config, &name->string);
 
 	// ()
 	if (!stmt_if(self, '(') || stmt_if(self, ')'))
