@@ -87,10 +87,10 @@ include_directories("${AMELIE_ROOT}/db/catalog")
 include_directories("${AMELIE_ROOT}/db/wal")
 include_directories("${AMELIE_ROOT}/db/db")
 
-# repl
-include_directories("${AMELIE_ROOT}/repl")
-include_directories("${AMELIE_ROOT}/repl/backup")
-include_directories("${AMELIE_ROOT}/repl/repl")
+# sync
+include_directories("${AMELIE_ROOT}/sync")
+include_directories("${AMELIE_ROOT}/sync/repl")
+include_directories("${AMELIE_ROOT}/sync/backup")
 
 # vm
 include_directories("${AMELIE_ROOT}/vm")
@@ -215,13 +215,13 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/op_index.c
     ${AMELIE_ROOT}/db/db/recover.c)
 
-set(AMELIE_SOURCES_REPL
-    ${AMELIE_ROOT}/repl/backup/backup.c
-    ${AMELIE_ROOT}/repl/backup/restore.c
-    ${AMELIE_ROOT}/repl/repl/streamer.c
-    ${AMELIE_ROOT}/repl/repl/replica_mgr.c
-    ${AMELIE_ROOT}/repl/repl/primary.c
-    ${AMELIE_ROOT}/repl/repl/repl.c)
+set(AMELIE_SOURCES_SYNC
+    ${AMELIE_ROOT}/sync/repl/streamer.c
+    ${AMELIE_ROOT}/sync/repl/replica_mgr.c
+    ${AMELIE_ROOT}/sync/repl/primary.c
+    ${AMELIE_ROOT}/sync/repl/repl.c
+    ${AMELIE_ROOT}/sync/backup/backup.c
+    ${AMELIE_ROOT}/sync/backup/restore.c)
 
 set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/value/update.c
@@ -327,7 +327,7 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_RUNTIME}
     ${AMELIE_SOURCES_SERVER}
     ${AMELIE_SOURCES_DB}
-    ${AMELIE_SOURCES_REPL}
+    ${AMELIE_SOURCES_SYNC}
     ${AMELIE_SOURCES_VM}
     ${AMELIE_SOURCES_COMPILER}
     ${AMELIE_SOURCES_SYSTEM})

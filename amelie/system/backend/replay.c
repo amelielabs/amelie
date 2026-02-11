@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_repl>
+#include <amelie_sync>
 #include <amelie_vm>
 #include <amelie_frontend.h>
 #include <amelie_backend.h>

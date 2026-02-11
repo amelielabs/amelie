@@ -13,7 +13,6 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_backup.h>
 #include <amelie_repl.h>
 
 void
