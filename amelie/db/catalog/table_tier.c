@@ -90,7 +90,7 @@ table_tier_create(Table* self,
 	// resolve tier storages
 	tier_ref(tier, self->engine.storage_mgr);
 
-	// create directories
+	// create tier storage directories
 	tier_mkdir(tier);
 
 	// update engine
@@ -240,7 +240,7 @@ storage_add_if_abort(Log* self, LogOp* op)
 	assert(tier_storage);
 	storage_unref(tier_storage->storage);
 	error_catch (
-		tier_storage_rmdir(tier, tier_storage);
+		tier_storage_rmdir(tier_storage);
 	);
 	tier_storage_remove(tier, tier_storage);
 	tier_storage_free(tier_storage);
@@ -253,12 +253,12 @@ static LogIf storage_add_if =
 };
 
 bool
-table_tier_storage_add(Table* self,
-                       Tr*    tr,
-                       Str*   name,
-                       Str*   name_storage,
-                       bool   if_exists,
-                       bool   if_not_exists_storage)
+table_tier_storage_add(Table*       self,
+                       Tr*          tr,
+                       Str*         name,
+                       TierStorage* config,
+                       bool         if_exists,
+                       bool         if_not_exists_storage)
 {
 	// find tier
 	auto tier = table_tier_find(self, name, false);
@@ -274,10 +274,10 @@ table_tier_storage_add(Table* self,
 	}
 
 	// find storage
-	auto storage = storage_mgr_find(self->engine.storage_mgr, name_storage, true);
+	auto storage = storage_mgr_find(self->engine.storage_mgr, &config->name, true);
 
 	// ensure storage not exists
-	auto tier_storage = tier_storage_find(tier, name_storage);
+	auto tier_storage = tier_storage_find(tier, &config->name);
 	if (tier_storage)
 	{
 		if (! if_not_exists_storage)
@@ -286,8 +286,8 @@ table_tier_storage_add(Table* self,
 			      str_of(&self->config->name),
 			      str_size(name),
 			      str_of(name),
-			      str_size(name_storage),
-			      str_of(name_storage));
+			      str_size(&config->name),
+			      str_of(&config->name));
 		return false;
 	}
 
@@ -295,17 +295,16 @@ table_tier_storage_add(Table* self,
 	log_relation(&tr->log, &storage_add_if, tier, &self->rel);
 
 	// save storage name
-	encode_string(&tr->log.data, name_storage);
+	encode_string(&tr->log.data, &config->name);
 
 	// add storage to the tier
-	tier_storage = tier_storage_allocate();
-	tier_storage_set_name(tier_storage, name_storage);
+	tier_storage = tier_storage_copy(config);
 	tier_storage->storage = storage;
-	tier_storage_add(tier, tier_storage);
 	storage_ref(storage);
+	tier_storage_add(tier, tier_storage);
 
 	// create directory
-	tier_storage_mkdir(tier, tier_storage);
+	tier_storage_mkdir(tier_storage);
 	return true;
 }
 
@@ -322,7 +321,7 @@ storage_drop_if_commit(Log* self, LogOp* op)
 	assert(tier_storage);
 	storage_unref(tier_storage->storage);
 	error_catch (
-		tier_storage_rmdir(tier, tier_storage);
+		tier_storage_rmdir(tier_storage);
 	);
 	tier_storage_remove(tier, tier_storage);
 	tier_storage_free(tier_storage);

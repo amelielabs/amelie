@@ -13,7 +13,7 @@ alter partition 1 on xyz qwerty;
 
 # test: alter partition refresh
 create table test (id int primary key) partitions 1
-        tier main (id "00000000-0000-0000-0000-000000000000");
+        tier main using main (id "00000000-0000-0000-0000-000000000000");
 show partitions on test;
 insert into test values (123);
 alter partition 1 on test refresh;
@@ -21,7 +21,7 @@ show partitions on test;
 
 # test: alter partition move
 create storage b;
-alter tier main on test add storage b;
+alter tier main on test add storage b (id "00000000-0000-0000-0000-000000000001");
 show tiers on test;
 show partitions on test;
 

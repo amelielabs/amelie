@@ -24,6 +24,7 @@ struct Snapshot
 struct SnapshotMgr
 {
 	List     list;
+	List     list_gc;
 	int      list_count;
 	Catalog* catalog;
 	Wal*     wal;

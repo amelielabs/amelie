@@ -12,4 +12,4 @@
 //
 
 void catalog_snapshot(Catalog*, Buf*);
-void catalog_snapshot_cleanup(Catalog*);
+void catalog_snapshot_cleanup(Buf*);

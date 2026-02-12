@@ -257,20 +257,24 @@ drop table test;
 create table test (id int primary key) tier;
 
 create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main;
+	    tier a using main (id "00000000-0000-0000-0000-000000000000");
 show tiers on test;
 drop table test;
 
 create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using xyz;
+	    tier a using xyz (id "00000000-0000-0000-0000-000000000000") ;
 
 # test: create table tier a, b
 create storage x;
 create storage y;
 create storage z;
 create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main
-	    tier b (id "00000000-0000-0000-0000-000000000001") using x, y, z;
+	    tier a using main (id "00000000-0000-0000-0000-000000000000")
+	    tier b using
+	         x (id "00000000-0000-0000-0000-000000000001"),
+	         y (id "00000000-0000-0000-0000-000000000002"),
+	         z (id "00000000-0000-0000-0000-000000000003");
+
 show tiers on test;
 show partitions on test;
 drop table test;
@@ -280,8 +284,8 @@ drop storage z;
 
 # test: create table tier redefined
 create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main;
+	    tier a using main (id "00000000-0000-0000-0000-000000000000")
+	    tier a using main (id "00000000-0000-0000-0000-000000000000");
 
 disconnect S0;
 close E0;

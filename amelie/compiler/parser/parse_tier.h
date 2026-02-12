@@ -43,17 +43,18 @@ enum
 
 struct AstTierAlter
 {
-	Ast   ast;
-	bool  if_exists;
-	bool  if_exists_storage;
-	bool  if_not_exists_storage;
-	int   type;
-	Str   table_name;
-	Str   name;
-	Str   name_new;
-	Str   name_storage;
-	Tier* set;
-	int   set_mask;
+	Ast          ast;
+	bool         if_exists;
+	bool         if_exists_storage;
+	bool         if_not_exists_storage;
+	int          type;
+	Str          table_name;
+	Str          name;
+	Str          name_new;
+	Str          name_storage;
+	TierStorage* storage;
+	Tier*        set;
+	int          set_mask;
 };
 
 static inline AstTierCreate*
@@ -105,6 +106,7 @@ ast_tier_alter_allocate(void)
 	self->if_exists_storage     = false;
 	self->if_not_exists_storage = false;
 	self->type                  = -1;
+	self->storage               = NULL;
 	self->set                   = NULL;
 	self->set_mask              = 0;
 	str_init(&self->table_name);

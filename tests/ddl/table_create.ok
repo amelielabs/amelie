@@ -654,62 +654,67 @@ drop table test;
 create table test (id int primary key) tier;
 {"msg": "create table test (id int primary key) tier❰;❱ ⟵ name expected"}
 create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main;
+	    tier a using main (id "00000000-0000-0000-0000-000000000000");
 show tiers on test;
 [{
   "name": "a",
-  "id": "00000000-0000-0000-0000-000000000000",
   "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
   "storages": [{
     "name": "main",
+    "id": "00000000-0000-0000-0000-000000000000",
     "pause": false,
     "partitions": 1
   }]
 }]
 drop table test;
 create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using xyz;
+	    tier a using xyz (id "00000000-0000-0000-0000-000000000000") ;
 {"msg": "storage 'xyz': not exists"}
 # test: create table tier a, b
 create storage x;
 create storage y;
 create storage z;
 create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main
-	    tier b (id "00000000-0000-0000-0000-000000000001") using x, y, z;
+	    tier a using main (id "00000000-0000-0000-0000-000000000000")
+	    tier b using
+	         x (id "00000000-0000-0000-0000-000000000001"),
+	         y (id "00000000-0000-0000-0000-000000000002"),
+	         z (id "00000000-0000-0000-0000-000000000003");
 show tiers on test;
 [{
   "name": "a",
-  "id": "00000000-0000-0000-0000-000000000000",
   "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
   "storages": [{
     "name": "main",
+    "id": "00000000-0000-0000-0000-000000000000",
     "pause": false,
     "partitions": 1
   }]
 }, {
   "name": "b",
-  "id": "00000000-0000-0000-0000-000000000001",
   "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
   "storages": [{
     "name": "x",
+    "id": "00000000-0000-0000-0000-000000000001",
     "pause": false,
     "partitions": 0
   }, {
     "name": "y",
+    "id": "00000000-0000-0000-0000-000000000002",
     "pause": false,
     "partitions": 0
   }, {
     "name": "z",
+    "id": "00000000-0000-0000-0000-000000000003",
     "pause": false,
     "partitions": 0
   }]
@@ -732,8 +737,8 @@ drop storage y;
 drop storage z;
 # test: create table tier redefined
 create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main;
-{"msg": "create table test (id int primary key)\n\t    tier a (id \"00000000-0000-0000-0000-000000000000\") using main\n\t    tier ❰a❱ ⟵ tier is redefined"}
+	    tier a using main (id "00000000-0000-0000-0000-000000000000")
+	    tier a using main (id "00000000-0000-0000-0000-000000000000");
+{"msg": "create table test (id int primary key)\n\t    tier a using main (id \"00000000-0000-0000-0000-000000000000\")\n\t    tier ❰a❱ ⟵ tier is redefined"}
 disconnect S0;
 close E0;

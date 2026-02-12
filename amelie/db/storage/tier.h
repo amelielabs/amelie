@@ -15,17 +15,15 @@ typedef struct Tier  Tier;
 
 enum
 {
-	TIER_ID                = 1 << 0,
-	TIER_COMPRESSION       = 1 << 1,
-	TIER_COMPRESSION_LEVEL = 1 << 2,
-	TIER_REGION_SIZE       = 1 << 3,
-	TIER_OBJECT_SIZE       = 1 << 4
+	TIER_COMPRESSION       = 1 << 0,
+	TIER_COMPRESSION_LEVEL = 1 << 1,
+	TIER_REGION_SIZE       = 1 << 2,
+	TIER_OBJECT_SIZE       = 1 << 3
 };
 
 struct Tier
 {
 	Str     name;
-	Uuid    id;
 	Str     compression;
 	int64_t compression_level;
 	int64_t region_size;
@@ -45,7 +43,6 @@ tier_init(Tier* self)
 	self->storages_count    = 0;
 	self->system            = false;
 	str_init(&self->name);
-	uuid_init(&self->id);
 	str_init(&self->compression);
 	list_init(&self->storages);
 	list_init(&self->link);
@@ -85,12 +82,6 @@ tier_set_name(Tier* self, Str* name)
 {
 	str_free(&self->name);
 	str_copy(&self->name, name);
-}
-
-static inline void
-tier_set_id(Tier* self, Uuid* id)
-{
-	self->id = *id;
 }
 
 static inline void
@@ -142,7 +133,6 @@ static inline void
 tier_copy_to(Tier* self, Tier* copy)
 {
 	tier_set_name(copy, &self->name);
-	tier_set_id(copy, &self->id);
 	tier_set_compression(copy, &self->compression);
 	tier_set_compression_level(copy, self->compression_level);
 	tier_set_region_size(copy, self->region_size);
@@ -190,7 +180,6 @@ tier_read(uint8_t** pos)
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "name",              &self->name              },
-		{ DECODE_UUID,   "id",                &self->id                },
 		{ DECODE_STRING, "compression",       &self->compression       },
 		{ DECODE_INT,    "compression_level", &self->compression_level },
 		{ DECODE_INT,    "region_size",       &self->region_size       },
@@ -218,10 +207,6 @@ tier_write(Tier* self, Buf* buf, int flags)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
-
-	// id
-	encode_raw(buf, "id", 2);
-	encode_uuid(buf, &self->id);
 
 	// compression
 	encode_raw(buf, "compression", 11);
@@ -324,43 +309,12 @@ tier_storage(Tier* self)
 }
 
 static inline void
-tier_storage_mkdir(Tier* self, TierStorage* storage)
-{
-	if (! storage->storage)
-		return;
-
-	// <base>/storage/<storage_name>/<id_tier>
-	char id[UUID_SZ];
-	uuid_get(&self->id, id, sizeof(id));
-
-	char path[PATH_MAX];
-	storage_pathfmt(storage->storage, path, "%s", id);
-	if (! fs_exists("%s", path))
-		fs_mkdir(0755, "%s", path);
-}
-
-static inline void
-tier_storage_rmdir(Tier* self, TierStorage* storage)
-{
-	if (! storage->storage)
-		return;
-
-	// <base>/storage/<storage_name>/<id_tier>
-	char id[UUID_SZ];
-	uuid_get(&self->id, id, sizeof(id));
-
-	char path[PATH_MAX];
-	storage_pathfmt(storage->storage, path, "%s", id);
-	fs_rmdir(true, "%s", path);
-}
-
-static inline void
 tier_mkdir(Tier* self)
 {
 	list_foreach(&self->storages)
 	{
 		auto storage = list_at(TierStorage, link);
-		tier_storage_mkdir(self, storage);
+		tier_storage_mkdir(storage);
 	}
 }
 
@@ -370,6 +324,6 @@ tier_rmdir(Tier* self)
 	list_foreach(&self->storages)
 	{
 		auto storage = list_at(TierStorage, link);
-		tier_storage_rmdir(self, storage);
+		tier_storage_rmdir(storage);
 	}
 }

@@ -100,9 +100,6 @@ catalog_open(Catalog* self, bool bootstrap)
 		catalog_write(self);
 	else
 		catalog_read(self);
-
-	// remove any snapshot files
-	catalog_snapshot_cleanup(self);
 }
 
 void
@@ -449,16 +446,17 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TIER_STORAGE_ADD:
 	{
-		Str db;
-		Str name;
-		Str name_tier;
-		Str name_storage;
-		table_op_tier_storage_add_read(op, &db, &name, &name_tier, &name_storage);
+		Str  db;
+		Str  name;
+		Str  name_tier;
+		auto config_pos = table_op_tier_storage_add_read(op, &db, &name, &name_tier);
+		auto config = tier_storage_read(&config_pos);
+		defer(tier_storage_free, config);
 
 		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
 		auto if_exists = ddl_if_exists(flags);
 		auto if_not_exists_storage = ddl_if_storage_not_exists(flags);
-		write = table_tier_storage_add(table, tr, &name_tier, &name_storage,
+		write = table_tier_storage_add(table, tr, &name_tier, config,
 		                               if_exists,
 		                               if_not_exists_storage);
 		break;

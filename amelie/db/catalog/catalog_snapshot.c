@@ -57,8 +57,8 @@ catalog_snapshot(Catalog* self, Buf* data)
 		list_foreach(&engine_main(&table->engine)->list)
 		{
 			auto part = list_at(Part, link);
-			id_snapshot(&part->id, ID_RAM);
-			id_encode(&part->id, ID_RAM, data);
+			id_snapshot(&part->id, ID_RAM, ID_RAM_SNAPSHOT);
+			id_path_encode(&part->id, ID_RAM, data);
 		}
 	}
 
@@ -66,11 +66,29 @@ catalog_snapshot(Catalog* self, Buf* data)
 }
 
 void
-catalog_snapshot_cleanup(Catalog* self)
+catalog_snapshot_cleanup(Buf* data)
 {
-	list_foreach(&self->storage_mgr.mgr.list)
+	auto pos = data->start;
+	uint8_t* pos_partitions = NULL;
+	Decode obj[] =
 	{
-		auto storage = storage_of(list_at(Relation, link));
-		storage_snapshot_cleanup(storage);
+		{ DECODE_ARRAY, "partitions", &pos_partitions },
+		{ 0,             NULL,        NULL            },
+	};
+	decode_obj(obj, "snapshot", &pos);
+
+	// drop partitions snapshots files (hard links)
+	json_read_array(&pos_partitions);
+	while (! json_read_array_end(&pos_partitions))
+	{
+		Str ref;
+		json_read_string(&pos_partitions, &ref);
+
+		char path[PATH_MAX];
+		sfmt(path, sizeof(path), "%s/%.*s.snapshot", state_directory(),
+		     str_size(&ref), str_of(&ref));
+		if (! fs_exists("%s", path))
+			continue;
+		fs_unlink("%s", path);
 	}
 }

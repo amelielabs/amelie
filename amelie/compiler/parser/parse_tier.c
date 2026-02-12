@@ -26,16 +26,6 @@ parse_tier_options(Stmt* self, Tier* tier)
 		// name value
 		auto name = stmt_expect(self, KNAME);
 
-		if (str_is(&name->string, "id", 2))
-		{
-			auto value = stmt_expect(self, KSTRING);
-			Uuid id;
-			uuid_init(&id);
-			if (uuid_set_nothrow(&id, &value->string) == -1)
-				stmt_error(self, value, "failed to parse uuid");
-			tier_set_id(tier, &id);
-			mask |= TIER_ID;
-		} else
 		if (str_is(&name->string, "compression", 11))
 		{
 			auto value = stmt_expect(self, KSTRING);
@@ -74,6 +64,36 @@ parse_tier_options(Stmt* self, Tier* tier)
 	return mask;
 }
 
+static void
+parse_tier_storage_options(Stmt* self, TierStorage* storage)
+{
+	for (;;)
+	{
+		// name value
+		auto name = stmt_expect(self, KNAME);
+
+		if (str_is(&name->string, "id", 2))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			Uuid id;
+			uuid_init(&id);
+			if (uuid_set_nothrow(&id, &value->string) == -1)
+				stmt_error(self, value, "failed to parse uuid");
+			tier_storage_set_id(storage, &id);
+		} else
+		{
+			stmt_error(self, name, "unknown option");
+		}
+
+		// )
+		if (stmt_if(self, ')'))
+			break;
+
+		// ,
+		stmt_expect(self, ',');
+	}
+}
+
 Tier*
 parse_tier(Stmt* self, Str* name)
 {
@@ -81,12 +101,6 @@ parse_tier(Stmt* self, Str* name)
 	auto tier = tier_allocate();
 	tier_set_name(tier, name);
 	errdefer(tier_free, tier);
-
-	// generate id
-	Uuid id;
-	uuid_init(&id);
-	uuid_generate(&id, &runtime()->random);
-	tier_set_id(tier, &id);
 
 	// set compression by default
 	Str compression;
@@ -109,7 +123,18 @@ parse_tier(Stmt* self, Str* name)
 				stmt_error(self, name, "storage used twice");
 			storage = tier_storage_allocate();
 			tier_storage_set_name(storage, &name->string);
+
+			// generate tier storage id
+			Uuid id;
+			uuid_init(&id);
+			uuid_generate(&id, &runtime()->random);
+			tier_storage_set_id(storage, &id);
+
 			tier_storage_add(tier, storage);
+
+			// [(options)]
+			if (stmt_if(self, '(') && !stmt_if(self, ')'))
+				parse_tier_storage_options(self, storage);
 
 			// ,
 			if (stmt_if(self, ','))
@@ -134,7 +159,7 @@ void
 parse_tier_create(Stmt* self)
 {
 	// CREATE TIER [IF NOT EXISTS] name ON table_name [(options)]
-	// [USING storage, ...]
+	// [USING storage [(options)], ...]
 	auto stmt = ast_tier_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -181,7 +206,7 @@ void
 parse_tier_alter(Stmt* self)
 {
 	// ALTER TIER [IF EXISTS] name ON table_name RENAME TO name
-	// ALTER TIER [IF EXISTS] name ON table_name ADD STORAGE [IF NOT EXISTS] name
+	// ALTER TIER [IF EXISTS] name ON table_name ADD STORAGE [IF NOT EXISTS] name [(options])
 	// ALTER TIER [IF EXISTS] name ON table_name DROP STORAGE [IF EXISTS] name
 	// ALTER TIER [IF EXISTS] name ON table_name PAUSE STORAGE [IF EXISTS] name
 	// ALTER TIER [IF EXISTS] name ON table_name RESUME STORAGE [IF EXISTS] name
@@ -227,7 +252,22 @@ parse_tier_alter(Stmt* self)
 
 		// name
 		auto name = stmt_expect(self, KNAME);
-		stmt->name_storage = name->string;
+
+		// allocate tier storage
+		auto storage = tier_storage_allocate();
+		stmt->storage = storage;
+		tier_storage_set_name(storage, &name->string);
+
+		// generate tier storage id
+		Uuid id;
+		uuid_init(&id);
+		uuid_generate(&id, &runtime()->random);
+		tier_storage_set_id(storage, &id);
+
+		// [(options)]
+		if (stmt_if(self, '(') && !stmt_if(self, ')'))
+			parse_tier_storage_options(self, storage);
+
 	} else
 	if (stmt_if(self, KDROP))
 	{
@@ -282,9 +322,6 @@ parse_tier_alter(Stmt* self)
 		// (options)
 		stmt_expect(self, '(');
 		stmt->set_mask = parse_tier_options(self, stmt->set);
-
-		if ((stmt->set_mask & TIER_ID) > 0)
-			stmt_error(self, name, "tier id cannot be changed");
 	} else
 	{
 		stmt_error(self, NULL, "RENAME | ADD | DROP | PAUSE | RESUME | SET expected");

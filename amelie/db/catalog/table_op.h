@@ -464,7 +464,7 @@ table_op_tier_rename_read(uint8_t* op, Str* db, Str* name,
 }
 
 static inline int
-table_op_tier_storage_add(Buf* self, Str* db, Str* table, Str* tier, Str* storage)
+table_op_tier_storage_add(Buf* self, Str* db, Str* table, Str* tier, TierStorage* config)
 {
 	// [op, db, table, storage]
 	auto offset = buf_size(self);
@@ -473,13 +473,13 @@ table_op_tier_storage_add(Buf* self, Str* db, Str* table, Str* tier, Str* storag
 	encode_string(self, db);
 	encode_string(self, table);
 	encode_string(self, tier);
-	encode_string(self, storage);
+	tier_storage_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }
 
-static inline void
-table_op_tier_storage_add_read(uint8_t* op, Str* db, Str* table, Str* tier, Str* storage)
+static inline uint8_t*
+table_op_tier_storage_add_read(uint8_t* op, Str* db, Str* table, Str* tier)
 {
 	int64_t cmd;
 	json_read_array(&op);
@@ -488,8 +488,10 @@ table_op_tier_storage_add_read(uint8_t* op, Str* db, Str* table, Str* tier, Str*
 	json_read_string(&op, db);
 	json_read_string(&op, table);
 	json_read_string(&op, tier);
-	json_read_string(&op, storage);
+	auto config_pos = op;
+	json_skip(&op);
 	json_read_array_end(&op);
+	return config_pos;
 }
 
 static inline int

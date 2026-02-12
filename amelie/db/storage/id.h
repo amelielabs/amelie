@@ -19,13 +19,13 @@ enum
 	ID_SERVICE,
 	ID_SERVICE_INCOMPLETE,
 	ID_RAM,
-	ID_RAM_INCOMPLETE
+	ID_RAM_INCOMPLETE,
+	ID_RAM_SNAPSHOT
 };
 
 struct Id
 {
 	uint64_t     id;
-	Uuid         id_tier;
 	Uuid         id_table;
 	TierStorage* storage;
 	Tier*        tier;
@@ -44,6 +44,7 @@ id_of(const char* name, int64_t* id)
 	// <id>.service.incomplete
 	// <id>.ram
 	// <id>.ram.incomplete
+	// <id>.ram.snapshot
 	*id = 0;
 	while (*name && *name != '.')
 	{
@@ -63,6 +64,9 @@ id_of(const char* name, int64_t* id)
 	if (! strcmp(name, ".ram.incomplete"))
 		state = ID_RAM_INCOMPLETE;
 	else
+	if (! strcmp(name, ".ram.snapshot"))
+		state = ID_RAM_SNAPSHOT;
+	else
 	if (! strcmp(name, ".ram"))
 		state = ID_RAM;
 	else
@@ -78,6 +82,7 @@ id_extension_of(int state)
 	case ID_SERVICE_INCOMPLETE: return ".service.incomplete";
 	case ID_RAM:                return ".ram";
 	case ID_RAM_INCOMPLETE:     return ".ram.incomplete";
+	case ID_RAM_SNAPSHOT:       return ".ram.snapshot";
 	}
 	abort();
 	return NULL;
@@ -86,61 +91,25 @@ id_extension_of(int state)
 static inline void
 id_path(Id* self, char* path, int state)
 {
-	// tier id (uuid)
-	char id_tier[UUID_SZ];
-	uuid_get(&self->id_tier, id_tier, sizeof(id_tier));
+	// tier storage id (uuid)
+	char uuid[UUID_SZ];
+	uuid_get(&self->storage->id, uuid, sizeof(uuid));
 
-	// <base>/storage/<storage_name>/<id_tier>
-	auto storage = self->storage->storage;
-	switch (state) {
-	case ID_SERVICE:
-		// <storage_path>/<id_tier>/<id>.service
-		storage_pathfmt(storage, path, "%s/%05" PRIu64 ".service",
-		                id_tier, self->id);
-		break;
-	case ID_SERVICE_INCOMPLETE:
-		// <storage_path>/<id_tier>/<id>.service.incomplete
-		storage_pathfmt(storage, path, "%s/%05" PRIu64 ".service.incomplete",
-		                id_tier, self->id);
-		break;
-	case ID_RAM:
-		// <storage_path>/<id_tier>/<id>.ram
-		storage_pathfmt(storage, path, "%s/%05" PRIu64 ".ram",
-		                id_tier, self->id);
-		break;
-	case ID_RAM_INCOMPLETE:
-		// <storage_path>/<id_tier>/<id>.ram.incomplete
-		storage_pathfmt(storage, path, "%s/%05" PRIu64 ".ram.incomplete",
-		                id_tier, self->id);
-		break;
-	default:
-		abort();
-		break;
-	}
+	// <base>/storage/<id_tier_storage>/<id>.<type>
+	sfmt(path, PATH_MAX, "%s/storage/%s/%05" PRIu64 "%s", state_directory(),
+	     uuid, self->id, id_extension_of(state));
 }
 
 static inline void
-id_encode(Id* self, int state, Buf* buf)
+id_path_encode(Id* self, int state, Buf* buf)
 {
-	encode_obj(buf);
+	char uuid[UUID_SZ];
+	uuid_get(&self->storage->id, uuid, sizeof(uuid));
 
-	// id
-	encode_raw(buf, "id", 2);
-	encode_integer(buf, self->id);
-
-	// state
-	encode_raw(buf, "state", 5);
-	encode_integer(buf, state);
-
-	// storage
-	encode_raw(buf, "storage", 7);
-	encode_string(buf, &self->storage->storage->config->name);
-
-	// tier
-	encode_raw(buf, "tier", 4);
-	encode_uuid(buf, &self->id_tier);
-
-	encode_obj_end(buf);
+	char path[PATH_MAX];
+	sfmt(path, sizeof(path), "storage/%s/%05" PRIu64 "%s",
+	     uuid, self->id, id_extension_of(state));
+	encode_cstr(buf, path);
 }
 
 static inline void
@@ -181,20 +150,17 @@ id_rename(Id* self, int from, int to)
 }
 
 static inline void
-id_snapshot(Id* self, int state)
+id_snapshot(Id* self, int state, int state_snapshot)
 {
-	// create file snapshot in the corresponding storage
-	// snapshot directory
+	// create file snapshot
 
-	// <storage_path>/<id_tier>/<id>.extension
+	// <base>/storage/<id_tier_storage>/<id>.type
 	char path[PATH_MAX];
 	id_path(self, path, state);
 
-	// <storage_path>/snapshot/<id>.extension
-	auto storage = self->storage->storage;
+	// <base>/storage/<id_tier_storage>/<id>.snapshot
 	char path_snapshot[PATH_MAX];
-	storage_pathfmt(storage, path_snapshot, "snapshot/%05" PRIu64 "%s", self->id,
-	                id_extension_of(state));
+	id_path(self, path_snapshot, state_snapshot);
 
 	// hard link
 	auto rc = link(path, path_snapshot);

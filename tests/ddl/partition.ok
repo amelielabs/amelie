@@ -15,7 +15,7 @@ alter partition 1 on xyz qwerty;
 {"msg": "alter partition 1 on xyz ❰qwerty❱ ⟵ unknown command"}
 # test: alter partition refresh
 create table test (id int primary key) partitions 1
-        tier main (id "00000000-0000-0000-0000-000000000000");
+        tier main using main (id "00000000-0000-0000-0000-000000000000");
 show partitions on test;
 [{
   "id": 1,
@@ -44,21 +44,22 @@ show partitions on test;
 }]
 # test: alter partition move
 create storage b;
-alter tier main on test add storage b;
+alter tier main on test add storage b (id "00000000-0000-0000-0000-000000000001");
 show tiers on test;
 [{
   "name": "main",
-  "id": "00000000-0000-0000-0000-000000000000",
   "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
   "storages": [{
     "name": "main",
+    "id": "00000000-0000-0000-0000-000000000000",
     "pause": false,
     "partitions": 1
   }, {
     "name": "b",
+    "id": "00000000-0000-0000-0000-000000000001",
     "pause": false,
     "partitions": 0
   }]

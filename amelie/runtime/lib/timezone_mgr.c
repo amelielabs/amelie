@@ -49,7 +49,7 @@ timezone_mgr_read(TimezoneMgr* self, char* location, char* location_nested)
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))
 		return;
-	defer(fs_opendir_defer, dir);
+	defer(fs_closedir_defer, dir);
 	for (;;)
 	{
 		auto entry = readdir(dir);

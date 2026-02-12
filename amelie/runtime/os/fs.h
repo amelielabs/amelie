@@ -73,7 +73,7 @@ fs_size(const char* fmt, ...)
 }
 
 static void
-fs_opendir_defer(DIR* self)
+fs_closedir_defer(DIR* self)
 {
 	closedir(self);
 }
@@ -91,7 +91,7 @@ fs_rmdir(bool with_directory, const char* fmt, ...)
 	auto dir = opendir(path);
 	if (unlikely(! dir))
 		error_system();
-	defer(fs_opendir_defer, dir);
+	defer(fs_closedir_defer, dir);
 	for (;;)
 	{
 		auto entry = readdir(dir);

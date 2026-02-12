@@ -165,7 +165,7 @@ wal_open_directory(Wal* self)
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error("wal: directory '%s' open error", path);
-	defer(fs_opendir_defer, dir);
+	defer(fs_closedir_defer, dir);
 	for (;;)
 	{
 		auto entry = readdir(dir);

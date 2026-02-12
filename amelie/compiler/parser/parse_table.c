@@ -438,11 +438,6 @@ parse_table_create(Stmt* self, bool unlogged)
 		str_set_cstr(&tier_name, "main");
 		tier_set_name(tier, &tier_name);
 
-		// tier id
-		uuid_init(&id);
-		uuid_generate(&id, &runtime()->random);
-		tier_set_id(tier, &id);
-
 		// tier compression (enable by default)
 		Str tier_compression;
 		str_set(&tier_compression, "zstd", 4);
@@ -452,6 +447,12 @@ parse_table_create(Stmt* self, bool unlogged)
 		// create main tier storage (use main storage)
 		auto tier_storage = tier_storage_allocate();
 		tier_storage_set_name(tier_storage, &tier_name);
+
+		// tier storage id
+		uuid_init(&id);
+		uuid_generate(&id, &runtime()->random);
+		tier_storage_set_id(tier_storage, &id);
+
 		tier_storage_add(tier, tier_storage);
 	}
 }

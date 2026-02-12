@@ -247,7 +247,7 @@ emit_ddl(Compiler* self)
 		if (arg->type == TIER_ALTER_STORAGE_ADD)
 			offset = table_op_tier_storage_add(data, db, &arg->table_name,
 			                                   &arg->name,
-			                                   &arg->name_storage);
+			                                    arg->storage);
 		else
 		if (arg->type == TIER_ALTER_STORAGE_DROP)
 			offset = table_op_tier_storage_drop(data, db, &arg->table_name,

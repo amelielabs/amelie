@@ -46,6 +46,7 @@ snapshot_mgr_init(SnapshotMgr* self, Catalog* catalog, Wal* wal)
 	self->wal        = wal;
 	self->list_count = 0;
 	list_init(&self->list);
+	list_init(&self->list_gc);
 }
 
 void
@@ -89,6 +90,21 @@ snapshot_mgr_create(SnapshotMgr* self)
 	return snapshot;
 }
 
+static void
+snapshot_mgr_gc(SnapshotMgr* self)
+{
+	list_foreach_safe(&self->list_gc)
+	{
+		auto snapshot = list_at(Snapshot, link);
+		auto data = &snapshot->data;
+		if (! buf_empty(data)) {
+			error_catch ( catalog_snapshot_cleanup(data) );
+		}
+		snapshot_free(snapshot);
+	}
+	list_init(&self->list_gc);
+}
+
 void
 snapshot_mgr_drop(SnapshotMgr* self, Snapshot* snapshot)
 {
@@ -98,11 +114,13 @@ snapshot_mgr_drop(SnapshotMgr* self, Snapshot* snapshot)
 	list_unlink(&snapshot->link);
 	self->list_count--;
 
-	snapshot_free(snapshot);
+	// add to the delayed gc list
+	list_append(&self->list_gc, &snapshot->link);
 
 	// cleanup snapshot files
 	if (self->list_count > 0)
 		return;
 
-	error_catch ( catalog_snapshot_cleanup(self->catalog) );
+	// do gc once there are no active snapshots left
+	snapshot_mgr_gc(self);
 }

@@ -91,6 +91,8 @@ parse_stmt_free(Stmt* stmt)
 		auto ast = ast_tier_alter_of(stmt->ast);
 		if (ast->set)
 			tier_free(ast->set);
+		if (ast->storage)
+			tier_storage_free(ast->storage);
 		break;
 	}
 	case STMT_CREATE_FUNCTION:

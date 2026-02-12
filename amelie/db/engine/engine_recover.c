@@ -19,26 +19,18 @@
 #include <amelie_object.h>
 #include <amelie_engine.h>
 
-static void
-closedir_defer(DIR* self)
-{
-	closedir(self);
-}
-
 static bool
 engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 {
-	// <storage_path>/<tier>
+	// <base>/storage/<id_tier_storage>
 	char id[UUID_SZ];
-	uuid_get(&level->tier->id, id, sizeof(id));
+	uuid_get(&storage->id, id, sizeof(id));
 
 	char path[PATH_MAX];
-	storage_pathfmt(storage->storage, path, "%s", id);
-
-	// create tier directory, if not exists
+	sfmt(path, PATH_MAX, "%s/storage/%s", state_directory(), id);
 	if (! fs_exists("%s", path))
 	{
-		fs_mkdir(0755, "%s", path);
+		tier_storage_mkdir(storage);
 		return true;
 	}
 
@@ -46,7 +38,7 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error("tier: directory '%s' open error", path);
-	defer(closedir_defer, dir);
+	defer(fs_closedir_defer, dir);
 	for (;;)
 	{
 		auto entry = readdir(dir);
@@ -69,7 +61,6 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 		Id id =
 		{
 			.id       = psn,
-			.id_tier  = level->tier->id,
 			.id_table = *self->id_table,
 			.storage  = storage,
 			.tier     = level->tier
@@ -95,8 +86,9 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 			break;
 		}
 		case ID_RAM_INCOMPLETE:
+		case ID_RAM_SNAPSHOT:
 		{
-			// remove incomplete file
+			// remove incomplete and snapshot files
 			id_delete(&id, state);
 			break;
 		}
@@ -140,7 +132,6 @@ engine_create(Engine* self, int count)
 		Id id =
 		{
 			.id       = state_psn_next(),
-			.id_tier  = main->tier->id,
 			.id_table = *self->id_table,
 			.storage  = storage,
 			.tier     = main->tier
