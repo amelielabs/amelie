@@ -21,26 +21,10 @@ struct Storage
 	List           link;
 };
 
-static inline void
-storage_free(Storage* self, bool drop)
-{
-	unused(drop);
-	storage_config_free(self->config);
-	am_free(self);
-}
-
 static inline Storage*
-storage_allocate(StorageConfig* config)
+storage_of(Relation* self)
 {
-	auto self = (Storage*)am_malloc(sizeof(Storage));
-	self->config = storage_config_copy(config);
-	self->refs   = 0;
-	list_init(&self->link);
-	relation_init(&self->rel);
-	relation_set_db(&self->rel, NULL);
-	relation_set_name(&self->rel, &self->config->name);
-	relation_set_free_function(&self->rel, (RelationFree)storage_free);
-	return self;
+	return (Storage*)self;
 }
 
 static inline void
@@ -54,12 +38,6 @@ storage_unref(Storage* self)
 {
 	self->refs--;
 	assert(self->refs >= 0);
-}
-
-static inline Storage*
-storage_of(Relation* self)
-{
-	return (Storage*)self;
 }
 
 static inline void
@@ -83,9 +61,11 @@ storage_pathfmt(Storage* self, char* buf, char* fmt, ...)
 static inline void
 storage_mkdir(Storage* self)
 {
+	// create storage directory and symlink
+
 	// <base>/storage/<name>
 	char path[PATH_MAX];
-	storage_pathfmt(self, path, "", NULL);
+	storage_pathfmt(self, path, "");
 	if (fs_exists("%s", path))
 		return;
 
@@ -94,15 +74,94 @@ storage_mkdir(Storage* self)
 	if (str_empty(path_storage))
 	{
 		fs_mkdir(0755, "%s", path);
+		fs_mkdir(0755, "%s/snapshot", path);
 		return;
 	}
 
 	// create storage directory, if not exists
 	if (! fs_exists("%s", str_of(path_storage)))
+	{
 		fs_mkdir(0755, "%s", str_of(path_storage));
+		fs_mkdir(0755, "%s/snapshot", str_of(path_storage));
+	}
 
 	// <base>/storage/<name> -> /storage/path (symlink)
 	auto rc = symlink(str_of(path_storage), path);
 	if (rc == -1)
 		error_system();
+}
+
+static inline void
+storage_rmdir(Storage* self)
+{
+	auto name = &self->config->name;
+	char path[PATH_MAX];
+	sfmt(path, PATH_MAX, "%s/storage/%s", state_directory(),
+	     str_of(name));
+	auto rc = vfs_is_directory(path);
+	if (rc == -1)
+	{
+		if (errno == ENOENT)
+			return;
+		error_system();
+	}
+
+	// symlink
+	if (! rc)
+	{
+		rc = vfs_unlink(path);
+		if (rc == -1)
+			error_system();
+		return;
+	}
+
+	// directory
+	sfmt(path, PATH_MAX, "%s/storage/%s/snapshot", state_directory(),
+	     str_of(name));
+	if (vfs_rmdir(path) == -1)
+		error_system();
+
+	sfmt(path, PATH_MAX, "%s/storage/%s", state_directory(),
+	     str_of(name));
+	rc = vfs_rmdir(path);
+	if (rc == -1)
+		error_system();
+}
+
+static inline void
+storage_snapshot_cleanup(Storage* self)
+{
+	// remove all files in the storage snapshot directory
+
+	// <base>/storage/<name>/snapshot/
+	char path[PATH_MAX];
+	storage_pathfmt(self, path, "/snapshot/");
+	fs_rmdir(false, "%s", path);
+}
+
+static inline void
+storage_free(Storage* self, bool drop)
+{
+	// drop <base>/storage/<name> (symlink or empty directory)
+	if (drop) {
+		error_catch (
+			storage_rmdir(self);
+		);
+	}
+	storage_config_free(self->config);
+	am_free(self);
+}
+
+static inline Storage*
+storage_allocate(StorageConfig* config)
+{
+	auto self = (Storage*)am_malloc(sizeof(Storage));
+	self->config = storage_config_copy(config);
+	self->refs   = 0;
+	list_init(&self->link);
+	relation_init(&self->rel);
+	relation_set_db(&self->rel, NULL);
+	relation_set_name(&self->rel, &self->config->name);
+	relation_set_free_function(&self->rel, (RelationFree)storage_free);
+	return self;
 }

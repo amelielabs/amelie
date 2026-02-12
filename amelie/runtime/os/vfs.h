@@ -34,6 +34,7 @@ int64_t vfs_pwritev(int, uint64_t, struct iovec*, int);
 int64_t vfs_seek(int, uint64_t);
 int64_t vfs_size_fd(int);
 int64_t vfs_size(char*);
+int     vfs_is_directory(char*);
 void   *vfs_mmap(int, uint64_t);
 void   *vfs_mremap(void*, uint64_t, uint64_t);
 int     vfs_munmap(void*, uint64_t);

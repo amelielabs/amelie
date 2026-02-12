@@ -49,7 +49,7 @@ storage_mgr_create(StorageMgr*    self,
 	// register storage
 	relation_mgr_create(&self->mgr, tr, &storage->rel);
 
-	// create storage directory, if not exists
+	// create storage directory and symlink, if not exists
 	storage_mkdir(storage);
 	return true;
 }
@@ -93,11 +93,11 @@ rename_if_abort(Log* self, LogOp* op)
 {
 	auto relation = log_relation_of(self, op);
 	auto storage = storage_of(relation->relation);
+
 	// set previous name
 	uint8_t* pos = relation->data;
 	Str name;
 	json_read_string(&pos, &name);
-
 	char path_from[PATH_MAX];
 	storage_pathfmt(storage, path_from, "", NULL);
 

@@ -78,16 +78,18 @@ fs_opendir_defer(DIR* self)
 	closedir(self);
 }
 
-static inline void format_validate(1, 2)
-fs_rmdir(const char* fmt, ...)
+static inline void format_validate(2, 3)
+fs_rmdir(bool with_directory, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 	char path[PATH_MAX];
 	vsfmt(path, sizeof(path), fmt, args);
 	va_end(args);
-	DIR* dir = opendir(path);
-	if (unlikely(dir == NULL))
+	if (! fs_exists("%s", path))
+		return;
+	auto dir = opendir(path);
+	if (unlikely(! dir))
 		error_system();
 	defer(fs_opendir_defer, dir);
 	for (;;)
@@ -101,7 +103,9 @@ fs_rmdir(const char* fmt, ...)
 			continue;
 		fs_unlink("%s/%s", path, entry->d_name);
 	}
-	int rc = vfs_rmdir(path);
-	if (unlikely(rc == -1))
-		error_system();
+	if (with_directory)
+	{
+		if (vfs_rmdir(path) == -1)
+			error_system();
+	}
 }

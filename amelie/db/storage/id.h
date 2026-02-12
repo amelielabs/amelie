@@ -70,6 +70,19 @@ id_of(const char* name, int64_t* id)
 	return state;
 }
 
+static inline const char*
+id_extension_of(int state)
+{
+	switch (state) {
+	case ID_SERVICE:            return ".service";
+	case ID_SERVICE_INCOMPLETE: return ".service.incomplete";
+	case ID_RAM:                return ".ram";
+	case ID_RAM_INCOMPLETE:     return ".ram.incomplete";
+	}
+	abort();
+	return NULL;
+}
+
 static inline void
 id_path(Id* self, char* path, int state)
 {
@@ -107,6 +120,30 @@ id_path(Id* self, char* path, int state)
 }
 
 static inline void
+id_encode(Id* self, int state, Buf* buf)
+{
+	encode_obj(buf);
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_integer(buf, self->id);
+
+	// state
+	encode_raw(buf, "state", 5);
+	encode_integer(buf, state);
+
+	// storage
+	encode_raw(buf, "storage", 7);
+	encode_string(buf, &self->storage->storage->config->name);
+
+	// tier
+	encode_raw(buf, "tier", 4);
+	encode_uuid(buf, &self->id_tier);
+
+	encode_obj_end(buf);
+}
+
+static inline void
 id_create(Id* self, File* file, int state)
 {
 	char path[PATH_MAX];
@@ -141,4 +178,26 @@ id_rename(Id* self, int from, int to)
 	id_path(self, path_to, to);
 	if (fs_exists("%s", path_from))
 		fs_rename(path_from, "%s", path_to);
+}
+
+static inline void
+id_snapshot(Id* self, int state)
+{
+	// create file snapshot in the corresponding storage
+	// snapshot directory
+
+	// <storage_path>/<id_tier>/<id>.extension
+	char path[PATH_MAX];
+	id_path(self, path, state);
+
+	// <storage_path>/snapshot/<id>.extension
+	auto storage = self->storage->storage;
+	char path_snapshot[PATH_MAX];
+	storage_pathfmt(storage, path_snapshot, "snapshot/%05" PRIu64 "%s", self->id,
+	                id_extension_of(state));
+
+	// hard link
+	auto rc = link(path, path_snapshot);
+	if (rc == -1)
+		error_system();
 }

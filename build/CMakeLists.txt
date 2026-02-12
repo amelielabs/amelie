@@ -202,12 +202,14 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/udf_mgr.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/catalog_file.c
+    ${AMELIE_ROOT}/db/catalog/catalog_snapshot.c
     ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/wal/wal.c
     ${AMELIE_ROOT}/db/wal/wal_cursor.c
     ${AMELIE_ROOT}/db/wal/wal_worker.c
     ${AMELIE_ROOT}/db/wal/wal_periodic.c
     ${AMELIE_ROOT}/db/wal/wal_mgr.c
+    ${AMELIE_ROOT}/db/db/snapshot_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/refresh.c
     ${AMELIE_ROOT}/db/db/indexate.c

@@ -39,11 +39,11 @@ create storage test2 (path 1;
 create storage test2 (path true;
 create storage test2 (path '';
 
-create storage test2 (path 'test_');
+create storage test2 (path '_output/test_');
 show storage test2;
 drop storage test2;
 
-create storage test2 (path 'test_', path '_test');
+create storage test2 (path '_output/test_', path '_output/_test');
 show storage test2;
 drop storage test2;
 

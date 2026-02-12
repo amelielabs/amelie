@@ -184,7 +184,7 @@ catalog_read(Catalog* self)
 	catalog_restore(self, &pos);
 }
 
-static Buf*
+Buf*
 catalog_write_prepare(Catalog* self, uint64_t lsn)
 {
 	// { lsn, storages, databases, tables, udfs }

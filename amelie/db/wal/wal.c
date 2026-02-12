@@ -418,7 +418,7 @@ wal_detach(Wal* self, WalSlot* slot)
 }
 
 void
-wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
+wal_snapshot(Wal* self, WalSlot* slot, Buf* data)
 {
 	mutex_lock(&self->lock);
 	defer(mutex_unlock, &self->lock);
@@ -435,12 +435,10 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 	for (int i = 0; i < self->list.list_count; i++)
 	{
 		auto id = buf_u64(&self->list.list)[i];
-		encode_array(buf);
+		encode_array(data);
 
-		// path
-		char path[PATH_MAX];
-		sfmt(path, sizeof(path), "wal/%" PRIu64, id);
-		encode_cstr(buf, path);
+		// id
+		encode_integer(data, id);
 
 		// size
 		int64_t size;
@@ -452,8 +450,8 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 			if (size == -1)
 				error_system();
 		}
-		encode_integer(buf, size);
-		encode_array_end(buf);
+		encode_integer(data, size);
+		encode_array_end(data);
 	}
 }
 

@@ -34,6 +34,7 @@ db_init(Db*        self,
 	             iface_engine,
 	             iface_engine_arg);
 	wal_mgr_init(&self->wal_mgr);
+	snapshot_mgr_init(&self->snapshot_mgr, &self->catalog, &self->wal_mgr.wal);
 }
 
 void
@@ -41,6 +42,7 @@ db_free(Db* self)
 {
 	catalog_free(&self->catalog);
 	wal_mgr_free(&self->wal_mgr);
+	snapshot_mgr_free(&self->snapshot_mgr);
 }
 
 void

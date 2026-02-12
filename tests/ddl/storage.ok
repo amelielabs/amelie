@@ -77,18 +77,18 @@ create storage test2 (path true;
 {"msg": "create storage test2 (path ❰true❱ ⟵ string expected"}
 create storage test2 (path '';
 {"msg": "create storage test2 (path ''❰;❱ ⟵ , expected"}
-create storage test2 (path 'test_');
+create storage test2 (path '_output/test_');
 show storage test2;
 [{
   "name": "test2",
-  "path": "test_"
+  "path": "_output/test_"
 }]
 drop storage test2;
-create storage test2 (path 'test_', path '_test');
+create storage test2 (path '_output/test_', path '_output/_test');
 show storage test2;
 [{
   "name": "test2",
-  "path": "_test"
+  "path": "_output/_test"
 }]
 drop storage test2;
 # test: drop storage statement parsing

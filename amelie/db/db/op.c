@@ -126,3 +126,24 @@ db_gc(Db* self)
 	// remove wal files < lsn
 	wal_gc(&self->wal_mgr.wal, lsn);
 }
+
+Snapshot*
+db_snapshot(Db* self)
+{
+	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_EXCLUSIVE);
+	defer(unlock, lock_catalog);
+	return snapshot_mgr_create(&self->snapshot_mgr);
+}
+
+void
+db_snapshot_drop(Db* self, Snapshot* snapshot)
+{
+	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_EXCLUSIVE);
+	error_catch (
+		snapshot_mgr_drop(&self->snapshot_mgr, snapshot);
+	);
+	unlock(lock_catalog);
+
+	// wal gc
+	db_gc(self);
+}

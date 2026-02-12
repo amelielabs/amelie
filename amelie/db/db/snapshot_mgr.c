@@ -1,0 +1,108 @@
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+#include <amelie_runtime>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
+#include <amelie_index.h>
+#include <amelie_object.h>
+#include <amelie_engine.h>
+#include <amelie_catalog.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+
+static inline Snapshot*
+snapshot_allocate(void)
+{
+	auto self = (Snapshot*)am_malloc(sizeof(Snapshot));
+	buf_init(&self->data);
+	wal_slot_init(&self->wal_snapshot);
+	list_init(&self->link);
+	return self;
+}
+
+static inline void
+snapshot_free(Snapshot* self)
+{
+	buf_free(&self->data);
+	am_free(self);
+}
+
+void
+snapshot_mgr_init(SnapshotMgr* self, Catalog* catalog, Wal* wal)
+{
+	self->catalog    = catalog;
+	self->wal        = wal;
+	self->list_count = 0;
+	list_init(&self->list);
+}
+
+void
+snapshot_mgr_free(SnapshotMgr* self)
+{
+	list_foreach_safe(&self->list)
+	{
+		auto snapshot = list_at(Snapshot, link);
+		snapshot_free(snapshot);
+	}
+}
+
+Snapshot*
+snapshot_mgr_create(SnapshotMgr* self)
+{
+	// create and register snapshot
+	auto snapshot = snapshot_allocate();
+	list_append(&self->list, &snapshot->link);
+	self->list_count++;
+
+	auto on_error = error_catch
+	(
+		// {}
+		encode_obj(&snapshot->data);
+
+		// create catalog dump and take partitions snapshots
+		catalog_snapshot(self->catalog, &snapshot->data);
+
+		// create wal list and take the wal snapshot
+		wal_snapshot(self->wal, &snapshot->wal_snapshot, &snapshot->data);
+
+		encode_obj_end(&snapshot->data);
+	);
+
+	if (on_error)
+	{
+		snapshot_mgr_drop(self, snapshot);
+		rethrow();
+	}
+
+	return snapshot;
+}
+
+void
+snapshot_mgr_drop(SnapshotMgr* self, Snapshot* snapshot)
+{
+	// detach wal slot
+	wal_del(self->wal, &snapshot->wal_snapshot);
+
+	list_unlink(&snapshot->link);
+	self->list_count--;
+
+	snapshot_free(snapshot);
+
+	// cleanup snapshot files
+	if (self->list_count > 0)
+		return;
+
+	error_catch ( catalog_snapshot_cleanup(self->catalog) );
+}

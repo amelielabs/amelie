@@ -18,6 +18,7 @@ struct Db
 	PartLockMgr lock_mgr_part;
 	Catalog     catalog;
 	WalMgr      wal_mgr;
+	SnapshotMgr snapshot_mgr;
 };
 
 void db_init(Db*, CatalogIf*, void*, EngineIf*, void*);

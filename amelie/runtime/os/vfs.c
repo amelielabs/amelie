@@ -272,6 +272,16 @@ vfs_size(char* path)
 	return st.st_size;
 }
 
+int
+vfs_is_directory(char* path)
+{
+	struct stat st;
+	int rc = lstat(path, &st);
+	if (unlikely(rc == -1))
+		return -1;
+	return (st.st_mode & S_IFMT) == S_IFDIR;
+}
+
 void*
 vfs_mmap(int fd, uint64_t size)
 {

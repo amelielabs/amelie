@@ -100,6 +100,9 @@ catalog_open(Catalog* self, bool bootstrap)
 		catalog_write(self);
 	else
 		catalog_read(self);
+
+	// remove any snapshot files
+	catalog_snapshot_cleanup(self);
 }
 
 void
