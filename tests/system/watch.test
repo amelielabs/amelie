@@ -8,8 +8,8 @@ watch;
 
 # test: watch
 show state;
-explain watch show('state').lsn::int = 1;
-watch show('state').lsn::int = 1;
+explain watch show('state').lsn::int = 0;
+watch show('state').lsn::int = 0;
 
 disconnect S0;
 close E0;

@@ -243,7 +243,7 @@ show function test_fn extended;
 # test: show wal
 show wal;
 [{
-  "lsn": 5,
+  "lsn": 4,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
@@ -270,10 +270,10 @@ show state;
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 5,
+  "lsn": 4,
   "psn": 1,
   "catalog": 0,
-  "catalog_pending": 5,
+  "catalog_pending": 4,
   "read_only": false
 }]
 select show('state');
@@ -283,10 +283,10 @@ select show('state');
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 5,
+  "lsn": 4,
   "psn": 1,
   "catalog": 0,
-  "catalog_pending": 5,
+  "catalog_pending": 4,
   "read_only": false
 }]
 select show('state').directory;

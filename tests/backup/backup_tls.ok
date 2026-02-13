@@ -60,10 +60,10 @@ show state;
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 3,
+  "lsn": 2,
   "psn": 3,
-  "catalog": 2,
-  "catalog_pending": 2,
+  "catalog": 1,
+  "catalog_pending": 1,
   "read_only": false
 }]
 select count(*) from test;

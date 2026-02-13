@@ -10025,13 +10025,13 @@ show repl;
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "https://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10001,
+    "lsn": 10000,
     "lag": 0
   }]
 }]
 # test: validate
 select show('state').lsn;
-[10001]
+[10000]
 select count(*) from test;
 [9999]
 switch S1;
@@ -10043,7 +10043,7 @@ show repl;
   "replicas": []
 }]
 select show('state').lsn;
-[10001]
+[10000]
 select count(*) from test;
 [9999]
 disconnect S1;

@@ -3,7 +3,7 @@ connect E0 S0 127.0.0.1:3485;
 # test: create wal on start
 show wal;
 [{
-  "lsn": 1,
+  "lsn": 0,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
@@ -14,7 +14,7 @@ show wal;
 }]
 select show('wal');
 [{
-  "lsn": 1,
+  "lsn": 0,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
@@ -24,7 +24,7 @@ select show('wal');
   "ops": 0
 }]
 select show('state').lsn;
-[1]
+[0]
 show all;
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",

@@ -11,13 +11,13 @@ show state;
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 1,
+  "lsn": 0,
   "psn": 0,
   "catalog": 0,
   "catalog_pending": 0,
   "read_only": false
 }]
-explain watch show('state').lsn::int = 1;
+explain watch show('state').lsn::int = 0;
 [{
   "main": {
     "00": "push_string         0      0      0     # state",
@@ -26,7 +26,7 @@ explain watch show('state').lsn::int = 1;
     "03": "dotjs               2      0      1     ",
     "04": "push                2      0      0     ",
     "05": "call                0      -      1     # int()",
-    "06": "int                 1      -      0     # 1",
+    "06": "int                 1      -      0     # 0",
     "07": "equii               2      0      1     ",
     "08": "jtr                 13     2      0     ",
     "09": "int                 0      -      0     # 1000",
@@ -38,6 +38,6 @@ explain watch show('state').lsn::int = 1;
   },
   "access": []
 }]
-watch show('state').lsn::int = 1;
+watch show('state').lsn::int = 0;
 disconnect S0;
 close E0;

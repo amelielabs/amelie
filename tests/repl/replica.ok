@@ -19,7 +19,7 @@ show replicas;
   "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
-  "lag": 1
+  "lag": 0
 }]
 # test: create replica if not exists
 create replica if not exists "00000000-0000-0000-0000-000000000000" "127.0.0.1";
@@ -29,7 +29,7 @@ show replicas;
   "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
-  "lag": 1
+  "lag": 0
 }]
 # test: drop replica statement parsing
 drop replica;
@@ -55,13 +55,13 @@ show replicas;
   "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
-  "lag": 1
+  "lag": 0
 }, {
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
-  "lag": 1
+  "lag": 0
 }]
 disconnect S0;
 close E0;
@@ -73,13 +73,13 @@ show replicas;
   "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
-  "lag": 1
+  "lag": 0
 }, {
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
-  "lag": 1
+  "lag": 0
 }]
 disconnect S0;
 close E0;

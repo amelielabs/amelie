@@ -48,7 +48,7 @@ show state;
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 1,
+  "lsn": 0,
   "psn": 0,
   "catalog": 0,
   "catalog_pending": 0,

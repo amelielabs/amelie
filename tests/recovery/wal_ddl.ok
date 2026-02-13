@@ -3,7 +3,7 @@ connect E0 S0 127.0.0.1:3485;
 # test: create table
 create table test (id serial primary key, data int default 0);
 select show('state').lsn;
-[2]
+[1]
 select identity_of("test");
 [0]
 # test: restart
@@ -13,13 +13,13 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[2]
+[1]
 select identity_of("test");
 [0]
 # test: alter table rename
 alter table test rename to test2;
 select show('state').lsn;
-[3]
+[2]
 select identity_of("test");
 {"msg": "table 'test': not exists"}
 select identity_of("test2");
@@ -31,7 +31,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[3]
+[2]
 select identity_of("test");
 {"msg": "table 'test': not exists"}
 select identity_of("test2");
@@ -49,7 +49,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('table', 'test2', true).unlogged;
 [true]
 select show('state').lsn;
-[4]
+[3]
 insert into test2 () values ();
 insert into test2 () values ();
 insert into test2 () values ();
@@ -64,7 +64,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[5]
+[4]
 select * from test2;
 []
 # test: alter table column add
@@ -72,7 +72,7 @@ insert into test2() values (), (), ();
 select * from test2;
 [[2, 0], [0, 0], [1, 0]]
 select show('state').lsn;
-[6]
+[5]
 select identity_of("test2");
 [3]
 alter table test2 add column obj json;
@@ -87,7 +87,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[7]
+[6]
 select identity_of("test2");
 [3]
 select * from test2;
@@ -107,7 +107,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[8]
+[7]
 select identity_of("test2");
 [3]
 select data from test2;
@@ -143,7 +143,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[9]
+[8]
 select show('table', 'test2', true).columns;
 [[{
   "name": "id",
@@ -193,7 +193,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[10]
+[9]
 select show('table', 'test2', true).columns;
 [[{
   "name": "id",
@@ -221,7 +221,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[10]
+[9]
 select show('table', 'test2', true).columns;
 [[{
   "name": "id",
@@ -271,7 +271,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[11]
+[10]
 select show('table', 'test2', true).columns;
 [[{
   "name": "id",
@@ -321,7 +321,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[12]
+[11]
 select show('table', 'test2', true).columns;
 [[{
   "name": "id",
@@ -371,7 +371,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[13]
+[12]
 select show('table', 'test2', true).columns;
 [[{
   "name": "id",
@@ -421,7 +421,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[14]
+[13]
 select show('table', 'test2', true).columns;
 [[{
   "name": "id",
@@ -455,7 +455,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[15]
+[14]
 select identity_of("test2");
 [3]
 select * from test2;
@@ -471,7 +471,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[16]
+[15]
 select identity_of("test2");
 [3]
 select * from test2 use index (i);
@@ -479,7 +479,7 @@ select * from test2 use index (i);
 # test: alter index rename
 alter index i on test2 rename to i2;
 select show('state').lsn;
-[17]
+[16]
 select * from test2 use index (i2);
 [[2, null], [0, null], [1, null]]
 # test: restart
@@ -489,7 +489,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[17]
+[16]
 select identity_of("test2");
 [3]
 select * from test2 use index (i2);
@@ -509,7 +509,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[18]
+[17]
 select identity_of("test2");
 [3]
 select * from test2 use index (i);
@@ -529,7 +529,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[19]
+[18]
 select identity_of("test2");
 [3]
 select * from test2;
@@ -537,7 +537,7 @@ select * from test2;
 # test: drop table
 drop table test2;
 select show('state').lsn;
-[20]
+[19]
 select identity_of("test2");
 {"msg": "table 'test2': not exists"}
 # test: restart
@@ -547,7 +547,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[20]
+[19]
 select * from test2;
 {"msg": "select * from ❰test2❱ ⟵ relation not found"}
 show tables;
@@ -561,7 +561,7 @@ show databases;
   "name": "test"
 }]
 select show('state').lsn;
-[21]
+[20]
 # test: restart
 disconnect S0;
 close E0;
@@ -569,7 +569,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[21]
+[20]
 show databases;
 [{
   "name": "main"
@@ -585,7 +585,7 @@ show databases;
   "name": "test2"
 }]
 select show('state').lsn;
-[22]
+[21]
 # test: restart
 disconnect S0;
 close E0;
@@ -593,7 +593,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[22]
+[21]
 show databases;
 [{
   "name": "main"
@@ -603,7 +603,7 @@ show databases;
 # test: drop database
 drop database test2;
 select show('state').lsn;
-[23]
+[22]
 show databases;
 [{
   "name": "main"
@@ -615,7 +615,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[23]
+[22]
 show databases;
 [{
   "name": "main"
@@ -630,7 +630,7 @@ begin
 	return rev;
 end;
 select show('state').lsn;
-[24]
+[23]
 show functions extended;
 [{
   "db": "main",
@@ -655,7 +655,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[24]
+[23]
 show functions extended;
 [{
   "db": "main",
@@ -694,7 +694,7 @@ begin
 	return rev;
 end;
 select show('state').lsn;
-[25]
+[24]
 show functions extended;
 [{
   "db": "main",
@@ -719,7 +719,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[25]
+[24]
 show functions extended;
 [{
   "db": "main",
@@ -745,7 +745,7 @@ show functions;
   "name": "reverse2"
 }]
 select show('state').lsn;
-[26]
+[25]
 select [1,2,3]::reverse2;
 [[-3, -2, -1]]
 # test: restart
@@ -755,7 +755,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
-[26]
+[25]
 show functions extended;
 [{
   "db": "main",
@@ -776,7 +776,7 @@ select [1,2,3]::reverse2;
 # test: drop function
 drop function reverse2;
 select show('state').lsn;
-[27]
+[26]
 show functions extended;
 []
 # test: restart
@@ -788,6 +788,6 @@ connect E0 S0 127.0.0.1:3485;
 show functions extended;
 []
 select show('state').lsn;
-[27]
+[26]
 disconnect S0;
 close E0;

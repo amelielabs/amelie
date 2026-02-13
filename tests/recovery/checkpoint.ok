@@ -1,34 +1,43 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
 connect E0 S0 127.0.0.1:3485;
 # test: default checkpoint
-select show('state').checkpoint;
-[1]
-# test: default checkpoint_compression
-select show().checkpoint_compression;
-["zstd"]
+select show('state').lsn;
+[0]
+select show('state').catalog;
+[0]
+select show('state').catalog_pending;
+[0]
 # test: checkpoint (no data)
 checkpoint;
-select show('state').checkpoint;
-[1]
+select show('state').lsn;
+[0]
+select show('state').catalog;
+[0]
+select show('state').catalog_pending;
+[0]
 # test: create table
 create table test (id serial primary key);
 select show('state').lsn;
-[2]
+[1]
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-[2]
-select show('state').checkpoint;
-[2]
+[1]
+select show('state').catalog;
+[1]
+select show('state').catalog_pending;
+[1]
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[2]
-select show('state').checkpoint;
-[2]
+[1]
+select show('state').catalog;
+[1]
+select show('state').catalog_pending;
+[1]
 select * from test;
 []
 # test: insert
@@ -41,28 +50,34 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[3]
-select show('state').checkpoint;
 [2]
+select show('state').catalog;
+[1]
+select show('state').catalog_pending;
+[1]
 select identity_of("test");
 [3]
 select * from test;
-[0, 1, 2]
+[2, 0, 1]
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-[3]
-select show('state').checkpoint;
-[3]
+[2]
+select show('state').catalog;
+[1]
+select show('state').catalog_pending;
+[1]
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[3]
-select show('state').checkpoint;
-[3]
+[2]
+select show('state').catalog;
+[1]
+select show('state').catalog_pending;
+[1]
 select identity_of("test");
 [3]
 select * from test;
@@ -86,7 +101,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]
@@ -98,8 +114,10 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[4]
-select show('state').checkpoint;
+[3]
+select show('state').catalog;
+[1]
+select show('state').catalog_pending;
 [3]
 show functions extended;
 [{
@@ -111,7 +129,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]
@@ -120,18 +139,22 @@ select [1,2,3]::reverse;
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-[4]
-select show('state').checkpoint;
-[4]
+[3]
+select show('state').catalog;
+[3]
+select show('state').catalog_pending;
+[3]
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[4]
-select show('state').checkpoint;
-[4]
+[3]
+select show('state').catalog;
+[3]
+select show('state').catalog_pending;
+[3]
 show functions extended;
 [{
   "db": "main",
@@ -142,7 +165,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]
@@ -167,7 +191,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]
@@ -179,8 +204,10 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[5]
-select show('state').checkpoint;
+[4]
+select show('state').catalog;
+[3]
+select show('state').catalog_pending;
 [4]
 show functions extended;
 [{
@@ -192,7 +219,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]
@@ -201,18 +229,22 @@ select [1,2,3]::reverse;
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-[5]
-select show('state').checkpoint;
-[5]
+[4]
+select show('state').catalog;
+[4]
+select show('state').catalog_pending;
+[4]
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[5]
-select show('state').checkpoint;
-[5]
+[4]
+select show('state').catalog;
+[4]
+select show('state').catalog_pending;
+[4]
 show functions extended;
 [{
   "db": "main",
@@ -223,7 +255,8 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
-    "constraints": [["default", null]]
+    "dropped": false,
+    "constraints": []
   }],
   "returning": []
 }]
@@ -232,15 +265,17 @@ select [1,2,3]::reverse;
 # test: create database
 create database test;
 select show('state').lsn;
-[6]
+[5]
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[6]
-select show('state').checkpoint;
+[5]
+select show('state').catalog;
+[4]
+select show('state').catalog_pending;
 [5]
 show databases;
 [{
@@ -253,18 +288,22 @@ select identity_of("test");
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-[6]
-select show('state').checkpoint;
-[6]
+[5]
+select show('state').catalog;
+[5]
+select show('state').catalog_pending;
+[5]
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[6]
-select show('state').checkpoint;
-[6]
+[5]
+select show('state').catalog;
+[5]
+select show('state').catalog_pending;
+[5]
 show databases;
 [{
   "name": "main"
@@ -275,22 +314,3 @@ select identity_of("test");
 [3]
 disconnect S0;
 close E0;
-# test: checkpoint (compression none)
-open E1 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3, "checkpoint_compression": "none";
-connect E1 S1 127.0.0.1:3485;
-show checkpoint_compression;
-["none"]
-create table test (id serial primary key);
-insert into test values (1), (2), (3);
-checkpoint;
-# test: restart/recover (checkpoint)
-disconnect S1;
-close E1;
-open E1;
-connect E1 S1 127.0.0.1:3485;
-show checkpoint_compression;
-["none"]
-select * from test;
-[1, 2, 3]
-disconnect S1;
-close E1;

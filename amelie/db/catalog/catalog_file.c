@@ -142,6 +142,8 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	// set catalog lsn
 	opt_int_set(&state()->catalog, lsn);
 	opt_int_set(&state()->catalog_pending, lsn);
+
+	state_lsn_follow(lsn);
 }
 
 void

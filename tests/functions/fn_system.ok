@@ -129,7 +129,7 @@ select show('state');
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 1,
+  "lsn": 0,
   "psn": 0,
   "catalog": 0,
   "catalog_pending": 0,
@@ -255,7 +255,7 @@ select show('function', 'test');
 # test: wal
 select show('wal');
 [{
-  "lsn": 2,
+  "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,

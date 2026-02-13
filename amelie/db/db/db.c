@@ -48,9 +48,6 @@ db_free(Db* self)
 void
 db_open(Db* self, bool bootstrap)
 {
-	if (bootstrap)
-		state_lsn_set(1);
-
 	// prepare system catalog
 	catalog_open(&self->catalog, bootstrap);
 }

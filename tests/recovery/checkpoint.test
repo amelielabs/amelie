@@ -4,14 +4,15 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 
 # test: default checkpoint
-select show('state').checkpoint;
-
-# test: default checkpoint_compression
-select show().checkpoint_compression;
+select show('state').lsn;
+select show('state').catalog;
+select show('state').catalog_pending;
 
 # test: checkpoint (no data)
 checkpoint;
-select show('state').checkpoint;
+select show('state').lsn;
+select show('state').catalog;
+select show('state').catalog_pending;
 
 # test: create table
 create table test (id serial primary key);
@@ -20,7 +21,8 @@ select show('state').lsn;
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 
 # test: restart/recover
 disconnect S0;
@@ -28,7 +30,8 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 select * from test;
 
 # test: insert
@@ -42,14 +45,16 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 select identity_of("test");
 select * from test;
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -58,7 +63,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 select identity_of("test");
 select * from test;
 
@@ -81,14 +87,16 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 show functions extended;
 select [1,2,3]::reverse;
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -97,7 +105,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 show functions extended;
 select [1,2,3]::reverse;
 
@@ -120,14 +129,16 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 show functions extended;
 select [1,2,3]::reverse;
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -136,7 +147,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 show functions extended;
 select [1,2,3]::reverse;
 
@@ -151,14 +163,16 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 show databases;
 select identity_of("test");
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -167,32 +181,10 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 show databases;
 select identity_of("test");
 
 disconnect S0;
 close E0;
-
-# test: checkpoint (compression none)
-open E1 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3, "checkpoint_compression": "none";
-connect E1 S1 127.0.0.1:3485;
-
-show checkpoint_compression;
-
-create table test (id serial primary key);
-insert into test values (1), (2), (3);
-checkpoint;
-
-# test: restart/recover (checkpoint)
-disconnect S1;
-close E1;
-
-open E1;
-connect E1 S1 127.0.0.1:3485;
-
-show checkpoint_compression;
-select * from test;
-
-disconnect S1;
-close E1;
