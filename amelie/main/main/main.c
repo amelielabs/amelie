@@ -39,6 +39,7 @@ main_init(Main* self, int argc, char** argv)
 	console_init(&self->console);
 	bookmark_mgr_init(&self->bookmark_mgr);
 	endpoint_init(&self->endpoint);
+	opt_int_set(&self->endpoint.debug, true);
 }
 
 void

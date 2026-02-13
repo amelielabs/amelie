@@ -432,27 +432,16 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* data)
 	self->slots_count++;
 	slot->added = true;
 
+	// [[path, size, mode], ...]
+	encode_array(data);
+	char path[PATH_MAX];
 	for (int i = 0; i < self->list.list_count; i++)
 	{
 		auto id = buf_u64(&self->list.list)[i];
-		encode_array(data);
-
-		// id
-		encode_integer(data, id);
-
-		// size
-		int64_t size;
-		if (id == self->current->id) {
-			size = self->current->file.size;
-		} else
-		{
-			size = fs_size("%s/wal/%" PRIu64, state_directory(), id);
-			if (size == -1)
-				error_system();
-		}
-		encode_integer(data, size);
-		encode_array_end(data);
+		sfmt(path, sizeof(path), "wal/%" PRIu64, id);
+		encode_basefile(data, path);
 	}
+	encode_array_end(data);
 }
 
 bool

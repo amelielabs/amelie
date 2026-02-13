@@ -15,17 +15,11 @@ typedef struct Backup Backup;
 
 struct Backup
 {
-	int      state_step;
-	int      state_step_total;
-	uint8_t* state_pos;
-	Buf      state;
-	Buf*     state_file;
-	bool     snapshot;
-	WalSlot  wal_slot;
-	Client*  client;
-	Event    on_complete;
-	Task     task;
-	Db*      db;
+	Snapshot* snapshot;
+	Client*   client;
+	Event     on_complete;
+	Task      task;
+	Db*       db;
 };
 
 void backup_init(Backup*, Db*);

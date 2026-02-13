@@ -70,15 +70,40 @@ snapshot_mgr_create(SnapshotMgr* self)
 	auto on_error = error_catch
 	(
 		// {}
-		encode_obj(&snapshot->data);
+		auto data = &snapshot->data;
+		encode_obj(data);
+
+		// version
+		encode_raw(data, "version", 7);
+		encode_obj(data);
+		encode_raw(data, "version", 7);
+		encode_string(data, &state()->version.string);
+		encode_obj_end(data);
+
+		// config
+		encode_raw(data, "config", 6);
+		auto buf = opts_list_persistent(&runtime()->config.opts);
+		defer_buf(buf);
+		buf_write_buf(data, buf);
+
+		// state
+		encode_raw(data, "state", 5);
+		buf = opts_list_persistent(&runtime()->state.opts);
+		defer_buf(buf);
+		buf_write_buf(data, buf);
 
 		// create catalog dump and take partitions snapshots
-		catalog_snapshot(self->catalog, &snapshot->data);
+		//
+		// catalog, storage, partitions
+		catalog_snapshot(self->catalog, data);
 
 		// create wal list and take the wal snapshot
-		wal_snapshot(self->wal, &snapshot->wal_snapshot, &snapshot->data);
+		//
+		// wal
+		encode_raw(data, "wal", 3);
+		wal_snapshot(self->wal, &snapshot->wal_snapshot, data);
 
-		encode_obj_end(&snapshot->data);
+		encode_obj_end(data);
 	);
 
 	if (on_error)

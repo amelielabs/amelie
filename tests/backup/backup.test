@@ -86,10 +86,12 @@ open E0;
 connect E0 S0 127.0.0.1:3480;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 
 backup E4 http://127.0.0.1:3480;
 close E4;
@@ -102,7 +104,8 @@ open E4;
 connect E4 S0 127.0.0.1:3480;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 select * from test;
 select [1,2,3]::reverse;
 
@@ -115,7 +118,8 @@ connect E0 S0 127.0.0.1:3480;
 
 insert into test values (5),(6),(7);
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 
 backup E5 http://127.0.0.1:3480;
 close E5;
@@ -128,7 +132,8 @@ open E5;
 connect E5 S0 127.0.0.1:3480;
 
 select show('state').lsn;
-select show('state').checkpoint;
+select show('state').catalog;
+select show('state').catalog_pending;
 select * from test;
 select [1,2,3]::reverse;
 

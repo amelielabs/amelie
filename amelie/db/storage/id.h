@@ -101,18 +101,6 @@ id_path(Id* self, char* path, int state)
 }
 
 static inline void
-id_path_encode(Id* self, int state, Buf* buf)
-{
-	char uuid[UUID_SZ];
-	uuid_get(&self->storage->id, uuid, sizeof(uuid));
-
-	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "storage/%s/%05" PRIu64 "%s",
-	     uuid, self->id, id_extension_of(state));
-	encode_cstr(buf, path);
-}
-
-static inline void
 id_create(Id* self, File* file, int state)
 {
 	char path[PATH_MAX];
@@ -166,4 +154,18 @@ id_snapshot(Id* self, int state, int state_snapshot)
 	auto rc = link(path, path_snapshot);
 	if (rc == -1)
 		error_system();
+}
+
+static inline void
+id_encode(Id* self, int state, Buf* buf)
+{
+	char uuid[UUID_SZ];
+	uuid_get(&self->storage->id, uuid, sizeof(uuid));
+
+	char path[PATH_MAX];
+	sfmt(path, sizeof(path), "storage/%s/%05" PRIu64 "%s",
+	     uuid, self->id, id_extension_of(state));
+
+	// [path, size, mode]
+	encode_basefile(buf, path);
 }

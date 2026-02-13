@@ -89,8 +89,8 @@ include_directories("${AMELIE_ROOT}/db/db")
 
 # sync
 include_directories("${AMELIE_ROOT}/sync")
-include_directories("${AMELIE_ROOT}/sync/repl")
 include_directories("${AMELIE_ROOT}/sync/backup")
+include_directories("${AMELIE_ROOT}/sync/repl")
 
 # vm
 include_directories("${AMELIE_ROOT}/vm")
@@ -218,12 +218,12 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/recover.c)
 
 set(AMELIE_SOURCES_SYNC
+    ${AMELIE_ROOT}/sync/backup/backup.c
+    ${AMELIE_ROOT}/sync/backup/restore.c
     ${AMELIE_ROOT}/sync/repl/streamer.c
     ${AMELIE_ROOT}/sync/repl/replica_mgr.c
     ${AMELIE_ROOT}/sync/repl/primary.c
-    ${AMELIE_ROOT}/sync/repl/repl.c
-    ${AMELIE_ROOT}/sync/backup/backup.c
-    ${AMELIE_ROOT}/sync/backup/restore.c)
+    ${AMELIE_ROOT}/sync/repl/repl.c)
 
 set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/value/update.c

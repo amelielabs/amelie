@@ -36,6 +36,7 @@ show all;
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
+  "jobs": 3,
   "cpu_affinity": true,
   "wal_worker": false,
   "wal_crc": true,
@@ -45,13 +46,12 @@ show all;
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
-  "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000,
+  "storage_crc": true,
+  "storage_sync": false,
+  "catalog_sync": false,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint_crc": true,
-  "checkpoint_compression": "zstd",
-  "checkpoint_sync": false
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000
 }]
 show state;
 [{
@@ -60,9 +60,10 @@ show state;
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "checkpoint": 1,
   "lsn": 3,
   "psn": 3,
+  "catalog": 2,
+  "catalog_pending": 2,
   "read_only": false
 }]
 select count(*) from test;

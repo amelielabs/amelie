@@ -150,11 +150,11 @@ directory tls
 group tls
 test tls
 
-## backup
-#directory backup
-#group backup
-#test backup
-#test backup_tls
+# backup
+directory backup
+group backup
+test backup
+test backup_tls
 
 ## replication
 #directory repl

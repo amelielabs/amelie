@@ -23,42 +23,52 @@
 void
 catalog_snapshot(Catalog* self, Buf* data)
 {
-	// config
-	encode_raw(data, "config", 6);
-	auto buf = opts_list_persistent(&runtime()->config.opts);
-	defer_buf(buf);
-	buf_write_buf(data, buf);
-
-	// state
-	encode_raw(data, "state", 5);
-	buf = opts_list_persistent(&runtime()->state.opts);
-	defer_buf(buf);
-	buf_write_buf(data, buf);
-
 	// catalog
 	encode_raw(data, "catalog", 7);
 	auto lsn = state_catalog_pending();
-	buf = catalog_write_prepare(self, lsn);
+	auto buf = catalog_write_prepare(self, lsn);
 	defer_buf(buf);
 	buf_write_buf(data, buf);
+
+	// storage (directories)
+	encode_raw(data, "storage", 7);
+	encode_array(data);
+	list_foreach(&self->table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Relation, link));
+		list_foreach(&table->config->tiers)
+		{
+			auto tier = list_at(Tier, link);
+			list_foreach(&tier->storages)
+			{
+				auto tier_storage = list_at(TierStorage, link);
+				char id[UUID_SZ];
+				uuid_get(&tier_storage->id, id, sizeof(id));
+				char path[256];
+				auto path_size = sfmt(path, sizeof(path), "storage/%s", id);
+				encode_raw(data, path, path_size);
+			}
+		}
+	}
+	encode_array_end(data);
 
 	// partitions
 	encode_raw(data, "partitions", 10);
 	encode_array(data);
 
-	// create partitions files snapshots
+	// create partitions files snapshots (hard links)
 	list_foreach(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
 		defer(unlock, table_lock);
 
-		// create <storage_path>/snapshot/<id> hard link
 		list_foreach(&engine_main(&table->engine)->list)
 		{
 			auto part = list_at(Part, link);
 			id_snapshot(&part->id, ID_RAM, ID_RAM_SNAPSHOT);
-			id_path_encode(&part->id, ID_RAM, data);
+			// [path, size, mode]
+			id_encode(&part->id, ID_RAM_SNAPSHOT, data);
 		}
 	}
 
@@ -73,7 +83,7 @@ catalog_snapshot_cleanup(Buf* data)
 	Decode obj[] =
 	{
 		{ DECODE_ARRAY, "partitions", &pos_partitions },
-		{ 0,             NULL,        NULL            },
+		{ 0,             NULL,         NULL           },
 	};
 	decode_obj(obj, "snapshot", &pos);
 
@@ -81,14 +91,14 @@ catalog_snapshot_cleanup(Buf* data)
 	json_read_array(&pos_partitions);
 	while (! json_read_array_end(&pos_partitions))
 	{
-		Str ref;
-		json_read_string(&pos_partitions, &ref);
-
-		char path[PATH_MAX];
-		sfmt(path, sizeof(path), "%s/%.*s.snapshot", state_directory(),
-		     str_size(&ref), str_of(&ref));
-		if (! fs_exists("%s", path))
+		Str     path_relative;
+		int64_t size;
+		int64_t mode;
+		decode_basefile(&pos_partitions, &path_relative, &size, &mode);
+		if (! fs_exists("%s/%.*s", state_directory(), str_size(&path_relative),
+		                str_of(&path_relative)))
 			continue;
-		fs_unlink("%s", path);
+		fs_unlink("%s/%.*s", state_directory(), str_size(&path_relative),
+		          str_of(&path_relative));
 	}
 }

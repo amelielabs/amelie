@@ -21,6 +21,7 @@
 #include "storage/tier.h"
 
 // tier file id
+#include "storage/basefile.h"
 #include "storage/id.h"
 
 // encoding
