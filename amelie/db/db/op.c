@@ -114,9 +114,12 @@ db_gc(Db* self)
 		list_foreach(&engine_main(&table->engine)->list)
 		{
 			auto part = list_at(Part, link);
-			auto object_lsn = part->heap->header->lsn;
-			if (object_lsn < lsn)
-				lsn = object_lsn;
+			// include partition only if it has pending updates
+			if (! part_has_updates(part))
+				continue;
+			auto part_lsn = part->heap->header->lsn;
+			if (part_lsn < lsn)
+				lsn = part_lsn;
 		}
 		unlock(table_lock);
 	}

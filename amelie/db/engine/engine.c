@@ -86,7 +86,9 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 		part_mapping_add(&self->mapping, part);
 
 		// update metrics
-		track_lsn_set(&part->track, part->heap->header->lsn);
+		auto lsn = part->heap->header->lsn;
+		state_lsn_follow(lsn);
+		track_lsn_set(&part->track, lsn);
 	}
 }
 
