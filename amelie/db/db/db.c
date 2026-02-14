@@ -119,7 +119,7 @@ void
 db_lock(Db* self, PartLock* lock, uint64_t id)
 {
 	// get shared catalog lock and hold till unlock
-	lock->lock = lock_system(LOCK_CATALOG, LOCK_SHARED);
+	lock->lock = lock_system(SYSTEM_CATALOG, LOCK_SHARED);
 
 	// get service lock for partition id
 	part_lock_mgr_lock(&self->lock_mgr_part, lock, id);

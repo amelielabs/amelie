@@ -78,6 +78,7 @@ table_allocate(TableConfig* config, StorageMgr* storage_mgr,
 	relation_set_db(&self->rel, &self->config->db);
 	relation_set_name(&self->rel, &self->config->name);
 	relation_set_free_function(&self->rel, (RelationFree)table_free);
+	relation_set_rsn(&self->rel, state_rsn_next());
 	return self;
 }
 

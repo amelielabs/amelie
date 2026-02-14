@@ -885,4 +885,7 @@ compiler_emit(Compiler* self)
 	// this includes nested udf calls
 	if (program->access.count > 1)
 		program->snapshot = true;
+
+	// sort relations by rsn
+	access_sort(&program->access);
 }

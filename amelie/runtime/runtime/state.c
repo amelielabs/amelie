@@ -35,26 +35,27 @@ state_prepare(State* self)
 	OptsDef defs[] =
 	{
 		// system
-		{ "version",         OPT_STRING, OPT_E, &self->version,        "0.9.0", 0     },
-		{ "directory",       OPT_STRING, OPT_E, &self->directory,       NULL,   0     },
-		{ "lsn",             OPT_INT,    OPT_E, &self->lsn,             NULL,   0     },
-		{ "psn",             OPT_INT,    OPT_E, &self->psn,             NULL,   0     },
-		{ "catalog",         OPT_INT,    OPT_E, &self->catalog,         NULL,   0     },
-		{ "catalog_pending", OPT_INT,    OPT_E, &self->catalog_pending, NULL,   0     },
-		{ "read_only",       OPT_BOOL,   OPT_E, &self->read_only,       NULL,   false },
+		{ "version",         OPT_STRING, OPT_E, &self->version,        "0.9.0", 0          },
+		{ "directory",       OPT_STRING, OPT_E, &self->directory,       NULL,   0          },
+		{ "lsn",             OPT_INT,    OPT_E, &self->lsn,             NULL,   0          },
+		{ "psn",             OPT_INT,    OPT_E, &self->psn,             NULL,   0          },
+		{ "rsn",             OPT_INT,    OPT_E, &self->rsn,             NULL,   SYSTEM_MAX },
+		{ "catalog",         OPT_INT,    OPT_E, &self->catalog,         NULL,   0          },
+		{ "catalog_pending", OPT_INT,    OPT_E, &self->catalog_pending, NULL,   0          },
+		{ "read_only",       OPT_BOOL,   OPT_E, &self->read_only,       NULL,   false      },
 		// persistent
-		{ "repl",            OPT_BOOL,   OPT_C, &self->repl,            0,      false },
-		{ "repl_primary",    OPT_STRING, OPT_C, &self->repl_primary,    NULL,   0     },
-		{ "replicas",        OPT_JSON,   OPT_C, &self->replicas,        NULL,   0     },
-		{ "users",           OPT_JSON,   OPT_C, &self->users,           NULL,   0     },
+		{ "repl",            OPT_BOOL,   OPT_C, &self->repl,            0,      false      },
+		{ "repl_primary",    OPT_STRING, OPT_C, &self->repl_primary,    NULL,   0          },
+		{ "replicas",        OPT_JSON,   OPT_C, &self->replicas,        NULL,   0          },
+		{ "users",           OPT_JSON,   OPT_C, &self->users,           NULL,   0          },
 		// stats
-		{ "connections",     OPT_INT,    OPT_E, &self->connections,     NULL,   0     },
-		{ "sent_bytes",      OPT_INT,    OPT_E, &self->sent_bytes,      NULL,   0     },
-		{ "recv_bytes",      OPT_INT,    OPT_E, &self->recv_bytes,      NULL,   0     },
-		{ "writes",          OPT_INT,    OPT_E, &self->writes,          NULL,   0     },
-		{ "writes_bytes",    OPT_INT,    OPT_E, &self->writes_bytes,    NULL,   0     },
-		{ "ops",             OPT_INT,    OPT_E, &self->ops,             NULL,   0     },
-		{  NULL,             0,          0,      NULL,                  NULL,   0     },
+		{ "connections",     OPT_INT,    OPT_E, &self->connections,     NULL,   0          },
+		{ "sent_bytes",      OPT_INT,    OPT_E, &self->sent_bytes,      NULL,   0          },
+		{ "recv_bytes",      OPT_INT,    OPT_E, &self->recv_bytes,      NULL,   0          },
+		{ "writes",          OPT_INT,    OPT_E, &self->writes,          NULL,   0          },
+		{ "writes_bytes",    OPT_INT,    OPT_E, &self->writes_bytes,    NULL,   0          },
+		{ "ops",             OPT_INT,    OPT_E, &self->ops,             NULL,   0          },
+		{  NULL,             0,          0,      NULL,                  NULL,   0          },
 	};
 	opts_define(&self->opts, defs);
 }

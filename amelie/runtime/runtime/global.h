@@ -16,7 +16,6 @@
 #define state()   (&runtime()->state)
 
 // control
-
 static inline void
 control_save_state(void)
 {
@@ -24,7 +23,6 @@ control_save_state(void)
 }
 
 // directory
-
 static inline const char*
 state_directory(void)
 {
@@ -32,7 +30,6 @@ state_directory(void)
 }
 
 // catalog
-
 static inline uint64_t
 state_catalog(void)
 {
@@ -46,7 +43,6 @@ state_catalog_pending(void)
 }
 
 // lsn
-
 static inline uint64_t
 state_lsn(void)
 {
@@ -72,7 +68,6 @@ state_lsn_follow(uint64_t value)
 }
 
 // psn
-
 static inline uint64_t
 state_psn(void)
 {
@@ -97,8 +92,14 @@ state_psn_follow(uint64_t value)
 	return opt_int_follow(&state()->psn, value);
 }
 
-// background jobs manager
+// rsn
+static inline uint64_t
+state_rsn_next(void)
+{
+	return opt_int_set_next(&state()->rsn);
+}
 
+// background jobs manager
 static inline void
 run(JobFunction main, int argc, ...)
 {
@@ -136,36 +137,9 @@ resolve(char* addr, int port, struct addrinfo** result)
 	run(socket_getaddrinfo_job, 3, addr, port, result);
 }
 
-// lock manager
-
+// system locking
 hot static inline Lock*
-lock(Relation* rel, LockId rel_lock)
+lock_system(LockSystemId rel_system, LockId rel_lock)
 {
-	return lock_mgr_lock(&runtime()->lock_mgr, rel, rel_lock);
-}
-
-hot static inline Lock*
-lock_access(Access* access)
-{
-	return lock_mgr_lock_access(&runtime()->lock_mgr, access);
-}
-
-hot static inline Lock*
-lock_system(LockCategory category, LockId lock)
-{
-	auto mgr = &runtime()->lock_mgr;
-	return lock_mgr_lock(mgr, &mgr->rels[category], lock);
-}
-
-hot static inline void
-unlock(Lock* self)
-{
-	lock_mgr_unlock(&runtime()->lock_mgr, self);
-}
-
-hot static inline void
-unlock_all(void)
-{
-	lock_mgr_unlock_list(&runtime()->lock_mgr, &am_self()->locks);
-	list_init(&am_self()->locks);
+	return lock(&runtime()->lock_system.rels[rel_system], rel_lock);
 }

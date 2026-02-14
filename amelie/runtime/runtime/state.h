@@ -20,6 +20,7 @@ struct State
 	Opt  directory;
 	Opt  lsn;
 	Opt  psn;
+	Opt  rsn;
 	Opt  catalog;
 	Opt  catalog_pending;
 	Opt  read_only;

@@ -32,7 +32,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	auto pos = table_op_index_create_read(op, &name_db, &name);
 
 	// take shared catalog lock
-	auto lock_catalog = lock_system(LOCK_CATALOG, LOCK_SHARED);
+	auto lock_catalog = lock_system(SYSTEM_CATALOG, LOCK_SHARED);
 	defer(unlock, lock_catalog);
 
 	// find table
@@ -68,7 +68,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	unlock(lock_catalog);
 
 	// take exclusive catalog lock (HELD till completion)
-	lock_catalog = lock_system(LOCK_CATALOG, LOCK_EXCLUSIVE);
+	lock_catalog = lock_system(SYSTEM_CATALOG, LOCK_EXCLUSIVE);
 
 	// attach index to the table
 	table_index_add(table, tr, config);

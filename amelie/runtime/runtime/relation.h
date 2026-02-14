@@ -19,18 +19,26 @@ struct Relation
 {
 	Str*         db;
 	Str*         name;
-	int          lock[LOCK_MAX];
 	RelationFree free_function;
+	Spinlock     lock;
+	uint64_t     lock_order;
+	int          lock_set[LOCK_MAX];
+	List         lock_wait;
+	int          lock_wait_count;
 	List         link;
 };
 
 static inline void
 relation_init(Relation* self)
 {
-	self->db   = NULL;
-	self->name = NULL;
-	self->free_function = NULL;
-	memset(self->lock, 0, sizeof(self->lock));
+	self->db              = NULL;
+	self->name            = NULL;
+	self->free_function   = NULL;
+	self->lock_order      = 0;
+	self->lock_wait_count = 0;
+	spinlock_init(&self->lock);
+	memset(self->lock_set, 0, sizeof(self->lock_set));
+	list_init(&self->lock_wait);
 	list_init(&self->link);
 }
 
@@ -53,8 +61,15 @@ relation_set_free_function(Relation* self, RelationFree func)
 }
 
 static inline void
+relation_set_rsn(Relation* self, uint64_t value)
+{
+	self->lock_order = value;
+}
+
+static inline void
 relation_free(Relation* self)
 {
+	spinlock_free(&self->lock);
 	if (self->free_function)
 		self->free_function(self, false);
 }
@@ -62,6 +77,7 @@ relation_free(Relation* self)
 static inline void
 relation_drop(Relation* self)
 {
+	spinlock_free(&self->lock);
 	if (self->free_function)
 		self->free_function(self, true);
 }

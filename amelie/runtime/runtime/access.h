@@ -23,6 +23,7 @@ struct AccessRecord
 struct Access
 {
 	Buf list;
+	Buf list_ordered;
 	int list_count;
 	int count;
 };
@@ -33,18 +34,27 @@ access_at(Access* self, int order)
 	return &((AccessRecord*)self->list.start)[order];
 }
 
+static inline AccessRecord*
+access_at_ordered(Access* self, int order)
+{
+	auto ref = ((int*)self->list_ordered.start)[order];
+	return access_at(self, ref);
+}
+
 static inline void
 access_init(Access* self)
 {
 	self->list_count = 0;
 	self->count      = 0;
 	buf_init(&self->list);
+	buf_init(&self->list_ordered);
 }
 
 static inline void
 access_free(Access* self)
 {
 	buf_free(&self->list);
+	buf_free(&self->list_ordered);
 }
 
 static inline void
@@ -82,7 +92,24 @@ access_add(Access* self, Relation* rel, LockId lock)
 	auto record = (AccessRecord*)buf_emplace(&self->list, sizeof(AccessRecord));
 	record->rel  = rel;
 	record->lock = lock;
+	buf_write(&self->list_ordered, &self->list_count, sizeof(int));
 	self->list_count++;
+}
+
+hot static int
+access_cmp(const void* p1, const void* p2, void* arg)
+{
+	Access* self = arg;
+	auto a = access_at(self, *(int*)p1);
+	auto b = access_at(self, *(int*)p2);
+	return compare_uint64(a->rel->lock_order, b->rel->lock_order);
+}
+
+static inline void
+access_sort(Access* self)
+{
+	qsort_r(self->list_ordered.start, self->list_count, sizeof(int),
+	        access_cmp, self);
 }
 
 hot static inline void
@@ -93,6 +120,9 @@ access_merge(Access* self, Access* access)
 		auto record = access_at(access, i);
 		access_add(self, record->rel, record->lock);
 	}
+
+	// order relations by lock_order
+	access_sort(self);
 }
 
 hot static inline AccessRecord*

@@ -156,15 +156,15 @@ session_execute_utility(Session* self, Output* output)
 	auto program  = compiler->program;
 	reg_prepare(&self->vm.r, program->code.regs);
 
-	// prevent concurrent ddls
-	lock_system(LOCK_DDL, program->lock_ddl);
-
 	// switch session lock to use program utility lock
 	if (program->lock_catalog != LOCK_SHARED)
 	{
 		unlock(self->lock);
-		self->lock = lock_system(LOCK_CATALOG, program->lock_catalog);
+		self->lock = lock_system(SYSTEM_CATALOG, program->lock_catalog);
 	}
+
+	// prevent concurrent ddls
+	lock_system(SYSTEM_DDL, program->lock_ddl);
 
 	// [PROFILE]
 	auto profile = &self->profile;
@@ -323,7 +323,7 @@ session_execute(Session*  self,
 		session_reset(self);
 
 		// take shared catalog lock
-		self->lock = lock_system(LOCK_CATALOG, LOCK_SHARED);
+		self->lock = lock_system(SYSTEM_CATALOG, LOCK_SHARED);
 
 		// set local settings
 		session_set(self, endpoint, output);

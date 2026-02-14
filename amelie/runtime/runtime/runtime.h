@@ -32,7 +32,6 @@ struct RuntimeIf
 struct Runtime
 {
 	BufMgr      buf_mgr;
-	LockMgr     lock_mgr;
 	Config      config;
 	State       state;
 	RuntimeIf*  iface;
@@ -43,6 +42,7 @@ struct Runtime
 	CodecCache  cache_compression;
 	JobMgr      job_mgr;
 	Logger      logger;
+	LockSystem  lock_system;
 	Task        task;
 };
 
