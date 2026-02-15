@@ -146,7 +146,7 @@ resolve(char* addr, int port, struct addrinfo** result)
 
 #define lock_system(rel_id, rel_lock) \
 	lock_mgr_lock(&runtime()->lock_mgr, \
-	              &runtime()->lockable_mgr.rels[(rel_id)].rel, (rel_lock), \
+	              &runtime()->lockable_mgr.list[(rel_id)].rel, (rel_lock), \
 	              NULL, \
 	              source_function, \
 	              source_line)
@@ -155,6 +155,16 @@ resolve(char* addr, int port, struct addrinfo** result)
 	lock_mgr_lock_access(&runtime()->lock_mgr, (access), \
 	                     source_function, \
 	                     source_line)
+
+#define breakpoint(rel_id) \
+({ \
+	auto ref = &runtime()->lockable_mgr.list[(rel_id)]; \
+	if (unlikely(atomic_u32_of(&ref->bp_refs > 0))) \
+		unlock(lock_mgr_lock(&runtime()->lock_mgr, ref->rel, LOCK_SHARED, \
+		       NULL, \
+		       source_function, \
+		       source_line)) \
+})
 
 hot static inline void
 unlock(Lock* self)

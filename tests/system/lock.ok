@@ -24,7 +24,7 @@ show locks;
   "relation": "xyz",
   "lock": "shared",
   "function": "clock_rel",
-  "line": 237
+  "line": 255
 }, {
   "relation": "catalog",
   "lock": "shared",
@@ -40,7 +40,7 @@ show locks;
   "relation": "xyz",
   "lock": "shared",
   "function": "clock_rel",
-  "line": 237
+  "line": 255
 }, {
   "relation": "catalog",
   "lock": "shared",
@@ -55,19 +55,22 @@ show locks;
   "relation": "xyz",
   "lock": "shared",
   "function": "clock_rel",
-  "line": 237
+  "line": 255
 }, {
   "name": "test1",
   "relation": "xyz",
   "lock": "shared",
   "function": "clock_rel",
-  "line": 237
+  "line": 255
 }, {
   "relation": "catalog",
   "lock": "shared",
   "function": "session_execute",
   "line": 326
 }]
+# test: create lock (catalog)
+create lock test2 on catalog (shared);
+{"msg": "lock: relation 'test2' cannot be locked this way"}
 # test: create lock if not exists
 create lock test on xyz (shared);
 {"msg": "lock: 'test' already exists"}
@@ -91,7 +94,7 @@ show locks;
   "relation": "xyz",
   "lock": "shared",
   "function": "clock_rel",
-  "line": 237
+  "line": 255
 }, {
   "relation": "catalog",
   "lock": "shared",

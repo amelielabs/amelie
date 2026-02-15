@@ -225,13 +225,31 @@ clock_rel(Vm* self, Op* op)
 		return;
 	}
 
-	// find table
-	auto table = table_mgr_find(&share()->db->catalog.table_mgr,
-	                            &self->local->db,
-	                            &name_rel, true);
+	Relation* rel;
+
+	// find breakpoint
+	auto ref = lockable_mgr_find(&runtime()->lockable_mgr, &name_rel);
+	if (ref)
+	{
+		// ensure relation is a breakpoint
+		if (! ref->bp)
+			error("lock: relation '%.*s' cannot be locked this way",
+			      str_size(&name), str_of(&name));
+		rel = &ref->rel;
+
+		// enable breakpoint
+		lockable_breakpoint_ref(ref);
+	} else
+	{
+		// find table
+		auto table = table_mgr_find(&share()->db->catalog.table_mgr,
+		                            &self->local->db,
+		                            &name_rel, true);
+		rel = &table->rel;
+	}
 
 	// create detached lock
-	lock_mgr_lock(&runtime()->lock_mgr, &table->rel, lock_id,
+	lock_mgr_lock(&runtime()->lock_mgr, rel, lock_id,
 	              &name,
 	              source_function,
 	              source_line);
@@ -254,5 +272,13 @@ cunlock_rel(Vm* self, Op* op)
 			      str_of(&name));
 		return;
 	}
+
+	// derefence breakpoint (disable on zero)
+	if (lock->rel->lock_order < REL_MAX)
+	{
+		auto ref = &runtime()->lockable_mgr.list[lock->rel->lock_order];
+		lockable_breakpoint_unref(ref);
+	}
+
 	unlock(lock);
 }

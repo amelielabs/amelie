@@ -23,18 +23,22 @@ typedef enum
 
 struct Lockable
 {
-	Relation rel;
-	Str      rel_name;
+	Relation   rel;
+	Str        rel_name;
+	bool       bp;
+	atomic_u32 bp_refs;
 };
 
 struct LockableMgr
 {
-	Lockable* rels;
+	Lockable* list;
 };
 
 static inline void
-lockable_init(Lockable* self, Rel id, const char* name)
+lockable_init(Lockable* self, Rel id, const char* name, bool bp)
 {
+	self->bp      = bp;
+	self->bp_refs = 0;
 	str_set_cstr(&self->rel_name, name);
 	auto rel = &self->rel;
 	relation_init(rel);
@@ -43,18 +47,42 @@ lockable_init(Lockable* self, Rel id, const char* name)
 }
 
 static inline void
+lockable_breakpoint_ref(Lockable* self)
+{
+	atomic_u32_inc(&self->bp_refs);
+}
+
+static inline void
+lockable_breakpoint_unref(Lockable* self)
+{
+	atomic_u32_dec(&self->bp_refs);
+}
+
+static inline void
 lockable_mgr_init(LockableMgr* self)
 {
-	self->rels = am_malloc(sizeof(Lockable) * REL_MAX);
-	lockable_init(&self->rels[REL_CATALOG], REL_CATALOG, "catalog");
-	lockable_init(&self->rels[REL_DDL], REL_DDL, "ddl");
+	self->list = am_malloc(sizeof(Lockable) * REL_MAX);
+	lockable_init(&self->list[REL_CATALOG], REL_CATALOG, "catalog", false);
+	lockable_init(&self->list[REL_DDL], REL_DDL, "ddl", false);
 }
 
 static inline void
 lockable_mgr_free(LockableMgr* self)
 {
 	for (auto i = 0; i < REL_MAX; i++)
-		relation_free(&self->rels[i].rel);
-	am_free(self->rels);
-	self->rels = NULL;
+		relation_free(&self->list[i].rel);
+	am_free(self->list);
+	self->list = NULL;
+}
+
+static inline Lockable*
+lockable_mgr_find(LockableMgr* self, Str* name)
+{
+	for (auto i = 0; i < REL_MAX; i++)
+	{
+		auto ref = &self->list[i];
+		if (str_compare(ref->rel.name, name))
+			return ref;
+	}
+	return NULL;
 }
