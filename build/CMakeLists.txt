@@ -373,6 +373,7 @@ set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_sleep.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_benchmark.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_heap.c
+    ${CMAKE_SOURCE_DIR}/tests/unit/test_lock.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_api.c)
 
 # libamelie.a
