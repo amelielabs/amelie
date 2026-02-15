@@ -146,7 +146,7 @@ resolve(char* addr, int port, struct addrinfo** result)
 
 #define lock_system(rel_id, rel_lock) \
 	lock_mgr_lock(&runtime()->lock_mgr, \
-	              &runtime()->lock_mgr.rels[(rel_id)].rel, (rel_lock), \
+	              &runtime()->lockable_mgr.rels[(rel_id)].rel, (rel_lock), \
 	              NULL, \
 	              source_function, \
 	              source_line)

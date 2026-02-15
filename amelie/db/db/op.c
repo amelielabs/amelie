@@ -57,7 +57,7 @@ db_pending(Db* self)
 void
 db_checkpoint(Db* self)
 {
-	auto lock_catalog = lock_system(SYSTEM_CATALOG, LOCK_SHARED);
+	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
 
 	Buf* list = NULL;
 	auto on_error = error_catch
@@ -92,7 +92,7 @@ db_checkpoint(Db* self)
 void
 db_gc(Db* self)
 {
-	auto lock_catalog = lock_system(SYSTEM_CATALOG, LOCK_SHARED);
+	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
 
 	// include catalog lsn if there are any pending catalog
 	// operations in the wal
@@ -133,7 +133,7 @@ db_gc(Db* self)
 Snapshot*
 db_snapshot(Db* self)
 {
-	auto lock_catalog = lock_system(SYSTEM_CATALOG, LOCK_EXCLUSIVE);
+	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
 	defer(unlock, lock_catalog);
 	return snapshot_mgr_create(&self->snapshot_mgr);
 }
@@ -141,7 +141,7 @@ db_snapshot(Db* self)
 void
 db_snapshot_drop(Db* self, Snapshot* snapshot)
 {
-	auto lock_catalog = lock_system(SYSTEM_CATALOG, LOCK_EXCLUSIVE);
+	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
 	error_catch (
 		snapshot_mgr_drop(&self->snapshot_mgr, snapshot);
 	);

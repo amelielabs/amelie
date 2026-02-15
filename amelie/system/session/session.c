@@ -160,11 +160,11 @@ session_execute_utility(Session* self, Output* output)
 	if (program->lock_catalog != LOCK_SHARED)
 	{
 		unlock(self->lock);
-		self->lock = lock_system(SYSTEM_CATALOG, program->lock_catalog);
+		self->lock = lock_system(REL_CATALOG, program->lock_catalog);
 	}
 
 	// prevent concurrent ddls
-	lock_system(SYSTEM_DDL, program->lock_ddl);
+	lock_system(REL_DDL, program->lock_ddl);
 
 	// [PROFILE]
 	auto profile = &self->profile;
@@ -323,7 +323,7 @@ session_execute(Session*  self,
 		session_reset(self);
 
 		// take shared catalog lock
-		self->lock = lock_system(SYSTEM_CATALOG, LOCK_SHARED);
+		self->lock = lock_system(REL_CATALOG, LOCK_SHARED);
 
 		// set local settings
 		session_set(self, endpoint, output);

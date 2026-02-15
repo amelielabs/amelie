@@ -32,12 +32,14 @@ runtime_init(Runtime* self)
 	logger_init(&self->logger);
 	task_init(&self->task);
 	lock_mgr_init(&self->lock_mgr);
+	lockable_mgr_init(&self->lockable_mgr);
 }
 
 void
 runtime_free(Runtime* self)
 {
 	lock_mgr_free(&self->lock_mgr);
+	lockable_mgr_free(&self->lockable_mgr);
 	task_free(&self->task);
 	job_mgr_free(&self->job_mgr);
 	config_free(&self->config);

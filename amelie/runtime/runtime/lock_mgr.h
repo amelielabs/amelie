@@ -11,47 +11,18 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct LockRel LockRel;
 typedef struct LockMgr LockMgr;
-
-typedef enum
-{
-	SYSTEM_CATALOG,
-	SYSTEM_DDL,
-	SYSTEM_MAX
-} LockRelId;
-
-struct LockRel
-{
-	Relation rel;
-	Str      rel_name;
-};
 
 struct LockMgr
 {
 	Spinlock  lock;
 	List      list;
 	int       list_count;
-	LockRel*  rels;
 };
-
-static inline void
-lock_mgr_init_rel(LockMgr* self, LockRelId id, char* name)
-{
-	auto rel = &self->rels[id];
-	str_set_cstr(&rel->rel_name, name);
-	relation_init(&rel->rel);
-	relation_set_rsn(&rel->rel, id);
-	relation_set_name(&rel->rel, &rel->rel_name);
-}
 
 static inline void
 lock_mgr_init(LockMgr* self)
 {
-	self->rels = am_malloc(sizeof(LockRel) * SYSTEM_MAX);
-	lock_mgr_init_rel(self, SYSTEM_CATALOG, "catalog");
-	lock_mgr_init_rel(self, SYSTEM_DDL, "ddl");
-
 	self->list_count = 0;
 	list_init(&self->list);
 	spinlock_init(&self->lock);
@@ -60,10 +31,6 @@ lock_mgr_init(LockMgr* self)
 static inline void
 lock_mgr_free(LockMgr* self)
 {
-	for (auto i = 0; i < SYSTEM_MAX; i++)
-		relation_free(&self->rels[i].rel);
-	am_free(self->rels);
-	self->rels = NULL;
 	spinlock_free(&self->lock);
 }
 

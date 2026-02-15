@@ -23,7 +23,7 @@
 void
 session_execute_replay(Session* self, Primary* primary, Buf* data)
 {
-	auto lock = lock_system(SYSTEM_CATALOG, LOCK_SHARED);
+	auto lock = lock_system(REL_CATALOG, LOCK_SHARED);
 	defer(unlock, lock);
 
 	// validate request fields and check current replication state
@@ -65,7 +65,7 @@ session_execute_replay(Session* self, Primary* primary, Buf* data)
 			unlock(lock);
 
 			// (unlocked by recover commit)
-			lock_system(SYSTEM_CATALOG, LOCK_EXCLUSIVE);
+			lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
 
 			// execute DDL
 			recover_next(primary->recover, record);
