@@ -1,0 +1,36 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
+
+# test: concurrent insert
+create table test (id int primary key);
+
+connect_async E0 S1 127.0.0.1:3485;
+connect_async E0 S2 127.0.0.1:3485;
+connect_async E0 S3 127.0.0.1:3485;
+
+switch S1;
+insert into test (id) values (0), (1), (2), (3) returning *;
+
+switch S2;
+insert into test (id) values (4), (5), (6), (7) returning *;
+
+switch S3;
+insert into test (id) values (8), (9), (10) returning *;
+
+recv S1;
+recv S2;
+recv S3;
+
+disconnect S1;
+disconnect S2;
+disconnect S3;
+
+switch S0;
+select * from test;
+
+drop table test;
+
+disconnect S0;
+close E0;

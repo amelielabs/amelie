@@ -181,9 +181,8 @@ test_command_backup(TestSuite* self, Str* arg)
 }
 
 static void
-test_command_connect(TestSuite* self, Str* arg)
+test_command_connect_as(TestSuite* self, Str* arg, bool async)
 {
-	// connnect <env> <name> <uri> [cafile]
 	Str env_name;
 	Str name;
 	Str uri;
@@ -200,10 +199,24 @@ test_command_connect(TestSuite* self, Str* arg)
 	if (! env)
 		test_error(self, "env does not exists");
 
-	auto session = test_session_create(&name, env);
+	auto session = test_session_create(&name, env, async);
 	test_plan_add_session(&self->plan, session);
 	test_session_connect(session, &uri, &cafile);
 	self->current_session = session;
+}
+
+static void
+test_command_connect_async(TestSuite* self, Str* arg)
+{
+	// connnect_async <env> <name> <uri> [cafile]
+	test_command_connect_as(self, arg, true);
+}
+
+static void
+test_command_connect(TestSuite* self, Str* arg)
+{
+	// connnect <env> <name> <uri> [cafile]
+	test_command_connect_as(self, arg, false);
 }
 
 static void
@@ -222,6 +235,28 @@ test_command_disconnect(TestSuite* self, Str* arg)
 	test_session_free(session);
 	if (self->current_session == session)
 		self->current_session = NULL;
+}
+
+static void
+test_command_recv(TestSuite* self, Str* arg)
+{
+	// recv [name]
+	Str name;
+	str_arg(arg, &name);
+
+	TestSession* session;
+	if (str_empty(&name))
+	{
+		if (! self->current_session)
+			test_error(self, "session is not defined");
+		session = self->current_session;
+	} else
+	{
+		session = test_plan_find_session(&self->plan, &name);
+		if (! session)
+			test_error(self, "session does not exists");
+	}
+	test_session_recv(session, &self->current_test_result);
 }
 
 static void
@@ -310,17 +345,19 @@ test_command_debug(TestSuite* self, Str* arg)
 static TestCommand
 test_commands[] =
 {
-	{ "unit",       4,  test_command_unit        },
-	{ "open",       4,  test_command_open        },
-	{ "close",      5,  test_command_close       },
-	{ "backup",     6,  test_command_backup      },
-	{ "connect",    7,  test_command_connect     },
-	{ "disconnect", 10, test_command_disconnect  },
-	{ "switch",     6,  test_command_switch      },
-	{ "option",     6,  test_command_option      },
-	{ "post",       4,  test_command_post        },
-	{ "debug",      5,  test_command_debug       },
-	{  NULL,        0,  NULL                     }
+	{ "unit",          4,  test_command_unit          },
+	{ "open",          4,  test_command_open          } ,
+	{ "close",         5,  test_command_close         },
+	{ "backup",        6,  test_command_backup        },
+	{ "connect_async", 13, test_command_connect_async },
+	{ "connect",       7,  test_command_connect       },
+	{ "disconnect",    10, test_command_disconnect    },
+	{ "recv",          4,  test_command_recv          },
+	{ "switch",        6,  test_command_switch        },
+	{ "option",        6,  test_command_option        },
+	{ "post",          4,  test_command_post          },
+	{ "debug",         5,  test_command_debug         },
+	{  NULL,           0,  NULL                       }
 };
 
 void

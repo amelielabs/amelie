@@ -133,6 +133,7 @@ test hash
 directory executor
 group executor
 test abort
+test async
 
 # backend
 directory backend

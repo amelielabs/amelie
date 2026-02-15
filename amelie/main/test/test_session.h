@@ -19,14 +19,16 @@ struct TestSession
 	Client*  client;
 	Endpoint endpoint;
 	TestEnv* env;
+	bool     async;
 	List     link;
 };
 
 static inline TestSession*
-test_session_create(Str* name, TestEnv* env)
+test_session_create(Str* name, TestEnv* env, bool async)
 {
 	TestSession* self = am_malloc(sizeof(*self));
 	self->client = NULL;
+	self->async  = async;
 	self->env    = env;
 	endpoint_init(&self->endpoint);
 	str_copy(&self->name, name);
@@ -71,11 +73,11 @@ test_session_connect(TestSession* self, Str* uri, Str* cafile)
 }
 
 static inline void
-test_session_execute(TestSession* self, Str* content, File* output)
+test_session_recv(TestSession* self, File* output)
 {
 	auto client = self->client;
 	auto reply  = &client->reply;
-	client_execute(client, content, &reply->content);
+	client_recv(client, &reply->content);
 
 	if (buf_size(&reply->content))
 	{
@@ -94,6 +96,15 @@ test_session_execute(TestSession* self, Str* content, File* output)
 		file_write(output, str_of(msg), str_size(msg));
 		file_write(output, "\n", 1);
 	}
+}
+
+static inline void
+test_session_execute(TestSession* self, Str* content, File* output)
+{
+	auto client = self->client;
+	client_send(client, content);
+	if (! self->async)
+		test_session_recv(self, output);
 }
 
 static inline void
