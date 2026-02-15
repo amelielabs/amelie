@@ -388,6 +388,11 @@ vm_run(Vm*       self,
 		// call / return
 		&&ccall,
 		&&ccall_udf,
+
+		// locking
+		&&clock,
+		&&cunlock,
+
 		&&cret
 	};
 
@@ -2005,6 +2010,14 @@ ccall:
 ccall_udf:
 	// [result, udf*]
 	ccall_udf(self, op);
+	op_next;
+
+clock:
+	clock_rel(self, op);
+	op_next;
+
+cunlock:
+	cunlock_rel(self, op);
 	op_next;
 
 cret:

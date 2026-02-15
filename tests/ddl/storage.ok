@@ -18,7 +18,7 @@ show storages;
 }]
 # test: create storage statement parsing
 create;
-{"msg": "create❰;❱ ⟵ USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION expected"}
+{"msg": "create❰;❱ ⟵ USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION|LOCK expected"}
 create storage;
 {"msg": "create storage❰;❱ ⟵ name expected"}
 create storage 123;

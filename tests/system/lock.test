@@ -1,0 +1,50 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: create lock statement parsing
+create lock;
+create lock 123;
+create lock if;
+create lock if not;
+create lock if not 123;
+create lock if not exists;
+create lock test abc;
+
+# test: create lock
+create table xyz (id int primary key);
+create lock test on xyz (shared);
+show locks;
+
+# test: create lock (unknown)
+create lock test on xyz (invalid);
+show locks;
+
+# test: create lock (shared)
+create lock test1 on xyz (shared);
+show locks;
+
+# test: create lock if not exists
+create lock test on xyz (shared);
+create lock if not exists test on xyz (shared);
+
+# test: drop lock statment parsing
+drop lock;
+drop lock 123;
+drop lock if;
+drop lock if exists;
+drop lock if exists 123;
+
+# test: drop lock
+drop lock test;
+show locks;
+drop lock test1;
+show locks;
+
+# test: drop lock if exists
+drop lock test;
+drop lock if exists test;
+
+disconnect S0;
+close E0;

@@ -65,6 +65,7 @@
 #include "parser/parse_replica.h"
 #include "parser/parse_repl.h"
 #include "parser/parse_watch.h"
+#include "parser/parse_lock.h"
 
 // ddl
 #include "parser/parse_storage.h"

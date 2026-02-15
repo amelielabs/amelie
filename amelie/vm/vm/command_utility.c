@@ -196,3 +196,63 @@ cddl_create_index(Vm* self, Op* op)
 	auto flags = op->b;
 	db_create_index(share()->db, self->tr, pos, flags);
 }
+
+void
+clock_rel(Vm* self, Op* op)
+{
+	// [name, name_rel, name_lock, if_not_exists]
+	Str name;
+	Str name_rel;
+	Str name_lock;
+	code_data_at_string(self->code_data, op->a, &name);
+	code_data_at_string(self->code_data, op->b, &name_rel);
+	code_data_at_string(self->code_data, op->c, &name_lock);
+
+	// validate lock type
+	auto lock_id = lock_id_of(&name_lock);
+	if (lock_id == LOCK_NONE)
+		error("lock: unrecognized lock type '%.*s'", str_size(&name_lock),
+		      str_of(&name_lock));
+
+	// ensure lock does not exists
+	auto lock_mgr = &runtime()->lock_mgr;
+	auto lock = lock_mgr_find(lock_mgr, &name);
+	if (lock)
+	{
+		if (! op->d)
+			error("lock: '%.*s' already exists", str_size(&name),
+			      str_of(&name));
+		return;
+	}
+
+	// find table
+	auto table = table_mgr_find(&share()->db->catalog.table_mgr,
+	                            &self->local->db,
+	                            &name_rel, true);
+
+	// create detached lock
+	lock_mgr_lock(&runtime()->lock_mgr, &table->rel, lock_id,
+	              &name,
+	              source_function,
+	              source_line);
+}
+
+void
+cunlock_rel(Vm* self, Op* op)
+{
+	// [name, if_exists]
+	Str name;
+	code_data_at_string(self->code_data, op->a, &name);
+
+	// ensure lock exists
+	auto lock_mgr = &runtime()->lock_mgr;
+	auto lock = lock_mgr_find(lock_mgr, &name);
+	if (! lock)
+	{
+		if (! op->b)
+			error("lock: '%.*s' not exists", str_size(&name),
+			      str_of(&name));
+		return;
+	}
+	unlock(lock);
+}

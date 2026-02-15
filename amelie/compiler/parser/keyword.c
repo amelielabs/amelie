@@ -115,6 +115,7 @@ Keyword keywords[] =
 	{ KLEFT,                  "left",                  4  },
 	{ KLOCAL,                 "local",                 5  },
 	{ KLOGGED,                "logged",                6  },
+	{ KLOCK,                  "lock",                  4  },
 
 	// m
 	{ KMIN,                   "min",                   3  },

@@ -1,0 +1,114 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: create lock statement parsing
+create lock;
+{"msg": "create lock❰;❱ ⟵ name expected"}
+create lock 123;
+{"msg": "create lock ❰123❱ ⟵ name expected"}
+create lock if;
+{"msg": "create lock if❰;❱ ⟵ NOT expected"}
+create lock if not;
+{"msg": "create lock if not❰;❱ ⟵ EXISTS expected"}
+create lock if not 123;
+{"msg": "create lock if not ❰123❱ ⟵ EXISTS expected"}
+create lock if not exists;
+{"msg": "create lock if not exists❰;❱ ⟵ name expected"}
+create lock test abc;
+{"msg": "create lock test ❰abc❱ ⟵ ON expected"}
+# test: create lock
+create table xyz (id int primary key);
+create lock test on xyz (shared);
+show locks;
+[{
+  "name": "test",
+  "relation": "xyz",
+  "lock": "shared",
+  "function": "clock_rel",
+  "line": 237
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "function": "session_execute",
+  "line": 326
+}]
+# test: create lock (unknown)
+create lock test on xyz (invalid);
+{"msg": "lock: unrecognized lock type 'invalid'"}
+show locks;
+[{
+  "name": "test",
+  "relation": "xyz",
+  "lock": "shared",
+  "function": "clock_rel",
+  "line": 237
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "function": "session_execute",
+  "line": 326
+}]
+# test: create lock (shared)
+create lock test1 on xyz (shared);
+show locks;
+[{
+  "name": "test",
+  "relation": "xyz",
+  "lock": "shared",
+  "function": "clock_rel",
+  "line": 237
+}, {
+  "name": "test1",
+  "relation": "xyz",
+  "lock": "shared",
+  "function": "clock_rel",
+  "line": 237
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "function": "session_execute",
+  "line": 326
+}]
+# test: create lock if not exists
+create lock test on xyz (shared);
+{"msg": "lock: 'test' already exists"}
+create lock if not exists test on xyz (shared);
+# test: drop lock statment parsing
+drop lock;
+{"msg": "drop lock❰;❱ ⟵ name expected"}
+drop lock 123;
+{"msg": "drop lock ❰123❱ ⟵ name expected"}
+drop lock if;
+{"msg": "drop lock if❰;❱ ⟵ EXISTS expected"}
+drop lock if exists;
+{"msg": "drop lock if exists❰;❱ ⟵ name expected"}
+drop lock if exists 123;
+{"msg": "drop lock if exists ❰123❱ ⟵ name expected"}
+# test: drop lock
+drop lock test;
+show locks;
+[{
+  "name": "test1",
+  "relation": "xyz",
+  "lock": "shared",
+  "function": "clock_rel",
+  "line": 237
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "function": "session_execute",
+  "line": 326
+}]
+drop lock test1;
+show locks;
+[{
+  "relation": "catalog",
+  "lock": "shared",
+  "function": "session_execute",
+  "line": 326
+}]
+# test: drop lock if exists
+drop lock test;
+{"msg": "lock: 'test' not exists"}
+drop lock if exists test;
+disconnect S0;
+close E0;

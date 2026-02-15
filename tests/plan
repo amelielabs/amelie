@@ -49,6 +49,7 @@ test bootstrap
 test show
 test user
 test watch
+test lock
 
 # ddl
 directory ddl

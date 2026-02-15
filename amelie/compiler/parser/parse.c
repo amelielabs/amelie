@@ -280,7 +280,7 @@ parse_stmt(Stmt* self)
 			stmt_push(self, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | STORAGE | DATABASE | TABLE | INDEX | TIER | FUNCTION
+		// CREATE USER | TOKEN | REPLICA | STORAGE | DATABASE | TABLE | INDEX | TIER | FUNCTION | LOCK
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_CREATE_USER;
@@ -326,15 +326,20 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_FUNCTION;
 			parse_function_create(self, or_replace);
 		} else
+		if (stmt_if(self, KLOCK))
 		{
-			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION expected");
+			self->id = STMT_CREATE_LOCK;
+			parse_lock_create(self);
+		} else
+		{
+			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION|LOCK expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | STORAGE | DATABASE | TABLE | INDEX | TIER | FUNCTION
+		// DROP USER | REPLICA | STORAGE | DATABASE | TABLE | INDEX | TIER | FUNCTION | LOCK
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_DROP_USER;
@@ -374,8 +379,14 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
-		} else {
-			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION expected");
+		} else
+		if (stmt_if(self, KLOCK))
+		{
+			self->id = STMT_DROP_LOCK;
+			parse_lock_drop(self);
+		} else
+		{
+			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION|LOCK expected");
 		}
 		break;
 	}

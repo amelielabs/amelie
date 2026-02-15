@@ -150,6 +150,7 @@ enum
 	KLEFT,
 	KLOCAL,
 	KLOGGED,
+	KLOCK,
 
 	// m
 	KMIN,

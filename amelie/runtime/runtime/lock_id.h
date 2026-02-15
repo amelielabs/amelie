@@ -22,29 +22,39 @@ typedef enum
 	LOCK_MAX
 } LockId;
 
-static inline void
-lock_id_encode(Buf* buf, LockId id)
+static inline LockId
+lock_id_of(Str* name)
 {
-	switch (id) {
-	case LOCK_NONE:
-		encode_raw(buf, "none", 4);
-		break;
-	case LOCK_SHARED:
-		encode_raw(buf, "shared", 6);
-		break;
-	case LOCK_SHARED_RW:
-		encode_raw(buf, "shared_rw", 9);
-		break;
-	case LOCK_EXCLUSIVE_RO:
-		encode_raw(buf, "exclusive_ro", 12);
-		break;
-	case LOCK_EXCLUSIVE:
-		encode_raw(buf, "exclusive", 9);
-		break;
-	case LOCK_CALL:
-		encode_raw(buf, "call", 4);
-		break;
+	if (str_is_case(name, "none", 4))
+		return LOCK_NONE;
+	if (str_is_case(name, "shared", 6))
+		return LOCK_SHARED;
+	if (str_is_case(name, "shared_rw", 9))
+		return LOCK_SHARED_RW;
+	if (str_is_case(name, "exclusive_ro", 12))
+		return LOCK_EXCLUSIVE_RO;
+	if (str_is_case(name, "exclusive", 9))
+		return LOCK_EXCLUSIVE;
+	return LOCK_NONE;
+}
+
+static inline const char*
+lock_id_cstr(LockId self)
+{
+	switch (self) {
+	case LOCK_NONE:         return "none";
+	case LOCK_SHARED:       return "shared";
+	case LOCK_SHARED_RW:    return "shared_rw";
+	case LOCK_EXCLUSIVE_RO: return "exclusive_ro";
+	case LOCK_EXCLUSIVE:    return "exclusive";
+	case LOCK_CALL:         return "call";
 	default:
 		abort();
 	}
+}
+
+static inline void
+lock_id_encode(Buf* buf, LockId id)
+{
+	encode_cstr(buf, lock_id_cstr(id));
 }
