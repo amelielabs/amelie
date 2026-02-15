@@ -18,6 +18,7 @@ struct Lock
 	Relation*   rel;
 	LockId      rel_lock;
 	Event       event;
+	Str         name;
 	Coroutine*  coro;
 	const char* func;
 	int         func_line;
@@ -26,27 +27,46 @@ struct Lock
 };
 
 static inline void
-lock_init(Lock* self)
+lock_init(Lock*       self, Relation* rel, LockId rel_lock,
+          Str*        name,
+          const char* func,
+          int         func_line)
 {
-	self->rel       = NULL;
-	self->rel_lock  = LOCK_NONE;
+	self->rel       = rel;
+	self->rel_lock  = rel_lock;
 	self->coro      = NULL;
-	self->func      = NULL;
-	self->func_line = 0;
+	self->func      = func;
+	self->func_line = func_line;
+	str_init(&self->name);
+	if (unlikely(name))
+		str_copy(&self->name, name);
 	event_init(&self->event);
 	list_init(&self->link_mgr);
 	list_init(&self->link);
 }
 
-static inline Lock*
-lock_allocate(Relation* rel, LockId rel_lock, const char* func, int func_line)
+static inline void
+lock_free(Lock* self)
 {
-	auto self = (Lock*)palloc(sizeof(Lock));
-	lock_init(self);
-	self->rel       = rel;
-	self->rel_lock  = rel_lock;
-	self->func      = func;
-	self->func_line = func_line;
+	if (likely(str_empty(&self->name)))
+		return;
+	// detached lock
+	str_free(&self->name);
+	am_free(self);
+}
+
+static inline Lock*
+lock_allocate(Relation*   rel, LockId rel_lock,
+              Str*        name,
+              const char* func,
+              int         func_line)
+{
+	Lock* self;
+	if (unlikely(name))
+		self = (Lock*)malloc(sizeof(Lock));
+	else
+		self = (Lock*)palloc(sizeof(Lock));
+	lock_init(self, rel, rel_lock, name, func, func_line);
 	return self;
 }
 
@@ -55,6 +75,13 @@ lock_write(Lock* self, Buf* buf)
 {
 	// {}
 	encode_obj(buf);
+
+	// name
+	if (! str_empty(&self->name))
+	{
+		encode_raw(buf, "name", 4);
+		encode_string(buf, &self->name);
+	}
 
 	// relation
 	encode_raw(buf, "relation", 8);

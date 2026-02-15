@@ -114,26 +114,20 @@ lock_resolve(Relation* rel, LockId lock)
 	return false;
 }
 
-hot static inline Lock*
-lock_mgr_lock(LockMgr*    self, Relation* rel, LockId rel_lock,
-              const char* func,
-              int         func_line)
+hot static inline void
+lock_mgr_lock_of(LockMgr* self, Lock* lock)
 {
-	if (unlikely(rel_lock == LOCK_NONE))
-		return NULL;
-
-	// create lock
-	auto lock = lock_allocate(rel, rel_lock, func, func_line);
+	auto rel = lock->rel;
 
 	// try to lock the relation
 	spinlock_lock(&rel->lock);
 
 	// always wait if there are waiters
-	auto pass = !rel->lock_wait_count && lock_resolve(rel, rel_lock);
+	auto pass = !rel->lock_wait_count && lock_resolve(rel, lock->rel_lock);
 	if (likely(pass))
 	{
 		// success
-		rel->lock_set[rel_lock]++;
+		rel->lock_set[lock->rel_lock]++;
 
 		// add lock to the lock manager
 		lock_mgr_add(self, lock);
@@ -153,11 +147,29 @@ lock_mgr_lock(LockMgr*    self, Relation* rel, LockId rel_lock,
 		event_attach(event);
 		event_wait(event, -1);
 	}
+}
 
-	// attach lock to the coroutine list
-	lock->coro = am_self();
-	list_init(&lock->link);
-	list_append(&lock->coro->locks, &lock->link);
+hot static inline Lock*
+lock_mgr_lock(LockMgr*    self, Relation* rel, LockId rel_lock,
+              Str*        name,
+              const char* func,
+              int         func_line)
+{
+	if (unlikely(rel_lock == LOCK_NONE))
+		return NULL;
+
+	// create lock
+	auto lock = lock_allocate(rel, rel_lock, name, func, func_line);
+	lock_mgr_lock_of(self, lock);
+
+	// attach lock to the coroutine (unless detached)
+	if (likely(! name))
+	{
+		lock->coro = am_self();
+		list_init(&lock->link);
+		list_append(&lock->coro->locks, &lock->link);
+	}
+
 	return lock;
 }
 
@@ -178,7 +190,7 @@ lock_mgr_lock_access(LockMgr*    self, Access* access,
 	for (auto at = 0; at < access->list_count; at++)
 	{
 		auto record = access_at_ordered(access, at);
-		lock_mgr_lock(self, record->rel, record->lock, func, func_line);
+		lock_mgr_lock(self, record->rel, record->lock, NULL, func, func_line);
 	}
 }
 
@@ -219,9 +231,30 @@ lock_mgr_unlock(LockMgr* self, Lock* lock)
 	lock->rel_lock = LOCK_NONE;
 
 	// detach from the coroutine
-	assert(lock->coro == am_self());
-	lock->coro = NULL;
-	list_unlink(&lock->link);
+	if (lock->coro)
+	{
+		assert(lock->coro == am_self());
+		lock->coro = NULL;
+		list_unlink(&lock->link);
+	}
+	lock_free(lock);
+}
+
+hot static inline Lock*
+lock_mgr_find(LockMgr* self, Str* name)
+{
+	spinlock_lock(&self->lock);
+	defer(spinlock_unlock, &self->lock);
+
+	list_foreach(&self->list)
+	{
+		auto lock = list_at(Lock, link_mgr);
+		if (str_empty(&lock->name))
+			continue;
+		if (str_compare(&lock->name, name))
+			return lock;
+	}
+	return NULL;
 }
 
 static inline void
