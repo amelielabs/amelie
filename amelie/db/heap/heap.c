@@ -255,14 +255,21 @@ heap_remove(Heap* self, void* pointer)
 	auto chunk = heap_chunk_of(pointer);
 	assert(! chunk->is_free);
 
-	// collect all frees of main heap into shadow heap
-	if (self->shadow_free && !chunk->is_shadow)
+	// switch to the shadow heap
+	if (chunk->is_shadow)
 	{
-		auto ptr = heap_add(self->shadow, sizeof(void*));
-		memcpy(ptr, &pointer, sizeof(void*));
-		heap_chunk_of(ptr)->is_shadow = true;
-		heap_chunk_of(ptr)->is_shadow_free = true;
-		return;
+		self = self->shadow;
+	} else
+	{
+		// collect all frees of main heap into shadow heap
+		if (self->shadow_free)
+		{
+			auto ptr = heap_add(self->shadow, sizeof(void*));
+			memcpy(ptr, &pointer, sizeof(void*));
+			heap_chunk_of(ptr)->is_shadow = true;
+			heap_chunk_of(ptr)->is_shadow_free = true;
+			return;
+		}
 	}
 
 	// add chunk to the free list

@@ -76,10 +76,8 @@ lock(Relation* rel, LockId rel_lock)
 	if (unlikely(rel_lock == LOCK_NONE))
 		return NULL;
 
-	// create lock and attach it to the coroutine list
+	// create lock
 	auto self = lock_allocate(rel, rel_lock);
-	self->coro = am_self();
-	list_append(&self->coro->locks, &self->link);
 
 	// try to lock the relation
 	spinlock_lock(&rel->lock);
@@ -107,6 +105,10 @@ lock(Relation* rel, LockId rel_lock)
 		event_wait(event, -1);
 	}
 
+	// attach lock to the coroutine list
+	self->coro = am_self();
+	list_init(&self->link);
+	list_append(&self->coro->locks, &self->link);
 	return self;
 }
 
