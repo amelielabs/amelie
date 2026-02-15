@@ -120,11 +120,14 @@ show asdf;
 # test: explain show
 explain show log_enable;
 
-## test: show (local shadow)
+# test: show (local shadow)
 disconnect S0;
 connect E0 S0 127.0.0.1:3485/main?timezone=Asia/Tokyo&format=full;
 show all;
 show timezone;
+
+# test: show locks
+show locks;
 
 disconnect S0;
 close E0;

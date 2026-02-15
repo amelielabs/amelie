@@ -137,9 +137,35 @@ resolve(char* addr, int port, struct addrinfo** result)
 	run(socket_getaddrinfo_job, 3, addr, port, result);
 }
 
-// system locking
-hot static inline Lock*
-lock_system(LockSystemId rel_system, LockId rel_lock)
+// lock manager
+#define lock(rel, rel_lock) \
+	lock_mgr_lock(&runtime()->lock_mgr, (rel), (rel_lock), \
+	              source_function, \
+	              source_line)
+
+#define lock_system(rel_id, rel_lock) \
+	lock_mgr_lock(&runtime()->lock_mgr, \
+	              &runtime()->lock_mgr.rels[(rel_id)].rel, (rel_lock), \
+	              source_function, \
+	              source_line)
+
+#define lock_access(access) \
+	lock_mgr_lock_access(&runtime()->lock_mgr, (access), \
+	                     source_function, \
+	                     source_line)
+
+hot static inline void
+unlock(Lock* self)
 {
-	return lock(&runtime()->lock_system.rels[rel_system], rel_lock);
+	lock_mgr_unlock(&runtime()->lock_mgr, self);
+}
+
+hot static inline void
+unlock_all(void)
+{
+	// unlock all locks taken by the coroutine
+	auto locks = &am_self()->locks;
+	list_foreach_reverse_safe(locks)
+		unlock(list_at(Lock, link));
+	list_init(locks);
 }

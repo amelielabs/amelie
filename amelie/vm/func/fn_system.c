@@ -45,7 +45,8 @@ enum
 	SHOW_FUNCTION,
 	SHOW_STATE,
 	SHOW_ALL,
-	SHOW_CONFIG
+	SHOW_CONFIG,
+	SHOW_LOCKS
 };
 
 typedef struct ShowCmd ShowCmd;
@@ -86,6 +87,7 @@ static ShowCmd show_cmds[] =
 	{ SHOW_STATE,      "state",       5,  false, false },
 	{ SHOW_ALL,        "all",         3,  false, false },
 	{ SHOW_CONFIG,     "config",      6,  false, false },
+	{ SHOW_LOCKS,      "locks",       5,  false, false },
 	{ 0,                NULL,         0,  false, false }
 };
 
@@ -346,6 +348,12 @@ fn_show(Fn* self)
 			local_encode_opt(self->local, buf, opt);
 		}
 		encode_obj_end(buf);
+		break;
+	}
+	case SHOW_LOCKS:
+	{
+		buf = buf_create();
+		lock_mgr_list(&runtime()->lock_mgr, buf);
 		break;
 	}
 	default:

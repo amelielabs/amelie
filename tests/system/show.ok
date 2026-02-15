@@ -402,11 +402,15 @@ explain show log_enable;
   },
   "access": []
 }]
+# test: show (local shadow)
 disconnect S0;
 connect E0 S0 127.0.0.1:3485/main?timezone=Asia/Tokyo&format=full;
 show all;
 [{"result": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "Asia/Tokyo", "format": "full", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "jobs": 3, "cpu_affinity": true, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "wal_truncate": 0, "storage_crc": true, "storage_sync": false, "catalog_sync": false, "checkpoint_interval": "5 min", "repl_readahead": 262144, "repl_reconnect_ms": 3000}}]
 show timezone;
 [{"result": "Asia/Tokyo"}]
+# test: show locks
+show locks;
+{"result": [{"relation": "catalog", "lock": "shared", "function": "session_execute", "line": 326}]}
 disconnect S0;
 close E0;

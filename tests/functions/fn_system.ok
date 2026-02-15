@@ -267,5 +267,13 @@ select show('wal');
 # test: metrics
 select show('metrics')::size;
 [9]
+# test: locks
+select show('locks');
+[[{
+  "relation": "catalog",
+  "lock": "shared",
+  "function": "session_execute",
+  "line": 326
+}]]
 disconnect S0;
 close E0;

@@ -15,166 +15,62 @@ typedef struct Lock Lock;
 
 struct Lock
 {
-	Relation*  rel;
-	LockId     rel_lock;
-	Event      event;
-	Coroutine* coro;
-	List       link;
+	Relation*   rel;
+	LockId      rel_lock;
+	Event       event;
+	Coroutine*  coro;
+	const char* func;
+	int         func_line;
+	List        link_mgr;
+	List        link;
 };
 
 static inline void
 lock_init(Lock* self)
 {
-	self->rel      = NULL;
-	self->rel_lock = LOCK_NONE;
-	self->coro     = NULL;
+	self->rel       = NULL;
+	self->rel_lock  = LOCK_NONE;
+	self->coro      = NULL;
+	self->func      = NULL;
+	self->func_line = 0;
 	event_init(&self->event);
+	list_init(&self->link_mgr);
 	list_init(&self->link);
 }
 
 static inline Lock*
-lock_allocate(Relation* rel, LockId rel_lock)
+lock_allocate(Relation* rel, LockId rel_lock, const char* func, int func_line)
 {
 	auto self = (Lock*)palloc(sizeof(Lock));
 	lock_init(self);
-	self->rel      = rel;
-	self->rel_lock = rel_lock;
+	self->rel       = rel;
+	self->rel_lock  = rel_lock;
+	self->func      = func;
+	self->func_line = func_line;
 	return self;
 }
 
-hot static inline bool
-lock_resolve(Relation* rel, LockId lock)
+static inline void
+lock_write(Lock* self, Buf* buf)
 {
-	// validate lock against currently active locks
-	auto set = rel->lock_set;
-	if (set[LOCK_EXCLUSIVE])
-		return false;
-	switch (lock) {
-	case LOCK_SHARED:
-		return true;
-	case LOCK_SHARED_RW:
-		return !set[LOCK_EXCLUSIVE_RO];
-	case LOCK_EXCLUSIVE_RO:
-		return !set[LOCK_SHARED_RW];
-	case LOCK_EXCLUSIVE:
-		return !set[LOCK_SHARED]       &&
-		       !set[LOCK_SHARED_RW]    &&
-		       !set[LOCK_EXCLUSIVE_RO] &&
-		       !set[LOCK_CALL];
-	case LOCK_CALL:
-		return true;
-	default:
-		abort();
-	}
-	// conflict
-	return false;
-}
+	// {}
+	encode_obj(buf);
 
-hot static inline Lock*
-lock(Relation* rel, LockId rel_lock)
-{
-	if (unlikely(rel_lock == LOCK_NONE))
-		return NULL;
+	// relation
+	encode_raw(buf, "relation", 8);
+	encode_string(buf, self->rel->name);
 
-	// create lock
-	auto self = lock_allocate(rel, rel_lock);
+	// lock
+	encode_raw(buf, "lock", 4);
+	lock_id_encode(buf, self->rel_lock);
 
-	// try to lock the relation
-	spinlock_lock(&rel->lock);
+	// function
+	encode_raw(buf, "function", 8);
+	encode_cstr(buf, self->func);
 
-	// always wait if there are waiters
-	auto pass = !rel->lock_wait_count && lock_resolve(rel, rel_lock);
-	if (likely(pass))
-	{
-		// success
-		rel->lock_set[rel_lock]++;
-	} else
-	{
-		// add lock to the relation wait list
-		list_append(&rel->lock_wait, &self->link);
-		rel->lock_wait_count++;
-	}
+	// line
+	encode_raw(buf, "line", 4);
+	encode_integer(buf, self->func_line);
 
-	spinlock_unlock(&rel->lock);
-
-	// wait for the lock
-	if (unlikely(! pass))
-	{
-		auto event = &self->event;
-		event_attach(event);
-		event_wait(event, -1);
-	}
-
-	// attach lock to the coroutine list
-	self->coro = am_self();
-	list_init(&self->link);
-	list_append(&self->coro->locks, &self->link);
-	return self;
-}
-
-hot static inline void
-lock_access(Access* access)
-{
-	// do nothing if the access list is empty
-	if (access_empty(access))
-		return;
-
-	// lock all relations from the access list
-	//
-	// all access relations are ordered by relation->lock_order,
-	// which should prevent deadlocks
-	//
-	for (auto at = 0; at < access->list_count; at++)
-	{
-		auto record = access_at_ordered(access, at);
-		lock(record->rel, record->lock);
-	}
-}
-
-hot static inline void
-unlock(Lock* self)
-{
-	if (!self || self->rel_lock == LOCK_NONE)
-		return;
-
-	auto rel = self->rel;
-	spinlock_lock(&rel->lock);
-
-	// detach from the relation lock set
-	rel->lock_set[self->rel_lock]--;
-
-	// batch wakeup non-conflicting waiters
-	while (rel->lock_wait_count > 0)
-	{
-		auto lock = container_of(list_first(&rel->lock_wait), Lock, link);
-		if (lock_resolve(lock->rel, lock->rel_lock))
-		{
-			rel->lock_set[lock->rel_lock]++;
-			rel->lock_wait_count--;
-			list_unlink(&lock->link);
-			event_signal(&lock->event);
-			continue;
-		}
-		break;
-	}
-
-	spinlock_unlock(&self->rel->lock);
-
-	self->rel      = NULL;
-	self->rel_lock = LOCK_NONE;
-
-	// detach from the coroutine
-	assert(self->coro == am_self());
-	self->coro = NULL;
-	list_unlink(&self->link);
-}
-
-hot static inline void
-unlock_all(void)
-{
-	// unlock all locks taken by the coroutine
-	auto locks = &am_self()->locks;
-	list_foreach_reverse_safe(locks)
-		unlock(list_at(Lock, link));
-	list_init(locks);
+	encode_obj_end(buf);
 }

@@ -1,0 +1,240 @@
+#pragma once
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+typedef struct LockRel LockRel;
+typedef struct LockMgr LockMgr;
+
+typedef enum
+{
+	SYSTEM_CATALOG,
+	SYSTEM_DDL,
+	SYSTEM_MAX
+} LockRelId;
+
+struct LockRel
+{
+	Relation rel;
+	Str      rel_name;
+};
+
+struct LockMgr
+{
+	Spinlock  lock;
+	List      list;
+	int       list_count;
+	LockRel*  rels;
+};
+
+static inline void
+lock_mgr_init_rel(LockMgr* self, LockRelId id, char* name)
+{
+	auto rel = &self->rels[id];
+	str_set_cstr(&rel->rel_name, name);
+	relation_init(&rel->rel);
+	relation_set_rsn(&rel->rel, id);
+	relation_set_name(&rel->rel, &rel->rel_name);
+}
+
+static inline void
+lock_mgr_init(LockMgr* self)
+{
+	self->rels = am_malloc(sizeof(LockRel) * SYSTEM_MAX);
+	lock_mgr_init_rel(self, SYSTEM_CATALOG, "catalog");
+	lock_mgr_init_rel(self, SYSTEM_DDL, "ddl");
+
+	self->list_count = 0;
+	list_init(&self->list);
+	spinlock_init(&self->lock);
+}
+
+static inline void
+lock_mgr_free(LockMgr* self)
+{
+	for (auto i = 0; i < SYSTEM_MAX; i++)
+		relation_free(&self->rels[i].rel);
+	am_free(self->rels);
+	self->rels = NULL;
+	spinlock_free(&self->lock);
+}
+
+hot static inline void
+lock_mgr_add(LockMgr* self, Lock* lock)
+{
+	spinlock_lock(&self->lock);
+	list_append(&self->list, &lock->link_mgr);
+	self->list_count++;
+	spinlock_unlock(&self->lock);
+}
+
+hot static inline void
+lock_mgr_remove(LockMgr* self, Lock* lock)
+{
+	spinlock_lock(&self->lock);
+	list_unlink(&lock->link_mgr);
+	self->list_count--;
+	assert(self->list_count >= 0);
+	spinlock_unlock(&self->lock);
+}
+
+hot static inline bool
+lock_resolve(Relation* rel, LockId lock)
+{
+	// validate lock against currently active locks
+	auto set = rel->lock_set;
+	if (set[LOCK_EXCLUSIVE])
+		return false;
+	switch (lock) {
+	case LOCK_SHARED:
+		return true;
+	case LOCK_SHARED_RW:
+		return !set[LOCK_EXCLUSIVE_RO];
+	case LOCK_EXCLUSIVE_RO:
+		return !set[LOCK_SHARED_RW];
+	case LOCK_EXCLUSIVE:
+		return !set[LOCK_SHARED]       &&
+		       !set[LOCK_SHARED_RW]    &&
+		       !set[LOCK_EXCLUSIVE_RO] &&
+		       !set[LOCK_CALL];
+	case LOCK_CALL:
+		return true;
+	default:
+		abort();
+	}
+	// conflict
+	return false;
+}
+
+hot static inline Lock*
+lock_mgr_lock(LockMgr*    self, Relation* rel, LockId rel_lock,
+              const char* func,
+              int         func_line)
+{
+	if (unlikely(rel_lock == LOCK_NONE))
+		return NULL;
+
+	// create lock
+	auto lock = lock_allocate(rel, rel_lock, func, func_line);
+
+	// try to lock the relation
+	spinlock_lock(&rel->lock);
+
+	// always wait if there are waiters
+	auto pass = !rel->lock_wait_count && lock_resolve(rel, rel_lock);
+	if (likely(pass))
+	{
+		// success
+		rel->lock_set[rel_lock]++;
+
+		// add lock to the lock manager
+		lock_mgr_add(self, lock);
+	} else
+	{
+		// add lock to the relation wait list
+		list_append(&rel->lock_wait, &lock->link);
+		rel->lock_wait_count++;
+	}
+
+	spinlock_unlock(&rel->lock);
+
+	// wait for the lock
+	if (unlikely(! pass))
+	{
+		auto event = &lock->event;
+		event_attach(event);
+		event_wait(event, -1);
+	}
+
+	// attach lock to the coroutine list
+	lock->coro = am_self();
+	list_init(&lock->link);
+	list_append(&lock->coro->locks, &lock->link);
+	return lock;
+}
+
+hot static inline void
+lock_mgr_lock_access(LockMgr*    self, Access* access,
+                     const char* func,
+                     int         func_line)
+{
+	// do nothing if the access list is empty
+	if (access_empty(access))
+		return;
+
+	// lock all relations from the access list
+	//
+	// all access relations are ordered by relation->lock_order,
+	// which should prevent deadlocks
+	//
+	for (auto at = 0; at < access->list_count; at++)
+	{
+		auto record = access_at_ordered(access, at);
+		lock_mgr_lock(self, record->rel, record->lock, func, func_line);
+	}
+}
+
+hot static inline void
+lock_mgr_unlock(LockMgr* self, Lock* lock)
+{
+	if (!lock || lock->rel_lock == LOCK_NONE)
+		return;
+
+	auto rel = lock->rel;
+	spinlock_lock(&rel->lock);
+
+	// detach from the relation lock set
+	rel->lock_set[lock->rel_lock]--;
+
+	// detach from the lock manager
+	lock_mgr_remove(self, lock);
+
+	// batch wakeup non-conflicting waiters
+	while (rel->lock_wait_count > 0)
+	{
+		auto lock = container_of(list_first(&rel->lock_wait), Lock, link);
+		if (lock_resolve(lock->rel, lock->rel_lock))
+		{
+			lock_mgr_add(self, lock);
+			rel->lock_set[lock->rel_lock]++;
+			rel->lock_wait_count--;
+			list_unlink(&lock->link);
+			event_signal(&lock->event);
+			continue;
+		}
+		break;
+	}
+
+	spinlock_unlock(&lock->rel->lock);
+
+	lock->rel      = NULL;
+	lock->rel_lock = LOCK_NONE;
+
+	// detach from the coroutine
+	assert(lock->coro == am_self());
+	lock->coro = NULL;
+	list_unlink(&lock->link);
+}
+
+static inline void
+lock_mgr_list(LockMgr* self, Buf* buf)
+{
+	spinlock_lock(&self->lock);
+	defer(spinlock_unlock, &self->lock);
+
+	encode_array(buf);
+	list_foreach(&self->list)
+	{
+		auto lock = list_at(Lock, link_mgr);
+		lock_write(lock, buf);
+	}
+	encode_array_end(buf);
+}

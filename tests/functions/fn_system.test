@@ -80,5 +80,8 @@ select show('wal');
 # test: metrics
 select show('metrics')::size;
 
+# test: locks
+select show('locks');
+
 disconnect S0;
 close E0;
