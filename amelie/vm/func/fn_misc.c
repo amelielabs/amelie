@@ -245,6 +245,16 @@ fn_jwt(Fn* self)
 	value_set_string(self->result, &string, buf);
 }
 
+static void
+fn_locks_count(Fn* self)
+{
+	auto argv = self->argv;
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_STRING);
+	auto count = lock_mgr_count(&runtime()->lock_mgr, &argv[0].string);
+	value_set_int(self->result, count);
+}
+
 void
 fn_misc_register(FunctionMgr* self)
 {
@@ -292,5 +302,10 @@ fn_misc_register(FunctionMgr* self)
 
 	// jwt()
 	func = function_allocate(TYPE_STRING, "jwt", fn_jwt);
+	function_mgr_add(self, func);
+
+	// locks_count()
+	func = function_allocate(TYPE_INT, "locks_count", fn_locks_count);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 }

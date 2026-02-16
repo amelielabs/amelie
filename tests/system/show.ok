@@ -411,6 +411,6 @@ show timezone;
 [{"result": "Asia/Tokyo"}]
 # test: show locks
 show locks;
-{"result": [{"relation": "catalog", "lock": "shared", "function": "session_execute", "line": 326}]}
+{"result": [{"relation": "catalog", "lock": "shared", "waiting": false, "function": "session_execute"}]}
 disconnect S0;
 close E0;

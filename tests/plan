@@ -135,6 +135,11 @@ group executor
 test abort
 test async
 
+# engine
+directory engine
+group engine
+test refresh
+
 # backend
 directory backend
 group backend

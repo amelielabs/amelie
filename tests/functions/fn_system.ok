@@ -272,8 +272,8 @@ select show('locks');
 [[{
   "relation": "catalog",
   "lock": "shared",
-  "function": "session_execute",
-  "line": 326
+  "waiting": false,
+  "function": "session_execute"
 }]]
 disconnect S0;
 close E0;

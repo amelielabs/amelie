@@ -23,13 +23,13 @@ show locks;
   "name": "test",
   "relation": "xyz",
   "lock": "shared",
-  "function": "clock_rel",
-  "line": 255
+  "waiting": false,
+  "function": "clock_rel"
 }, {
   "relation": "catalog",
   "lock": "shared",
-  "function": "session_execute",
-  "line": 326
+  "waiting": false,
+  "function": "session_execute"
 }]
 # test: create lock (unknown)
 create lock test on xyz (invalid);
@@ -39,13 +39,13 @@ show locks;
   "name": "test",
   "relation": "xyz",
   "lock": "shared",
-  "function": "clock_rel",
-  "line": 255
+  "waiting": false,
+  "function": "clock_rel"
 }, {
   "relation": "catalog",
   "lock": "shared",
-  "function": "session_execute",
-  "line": 326
+  "waiting": false,
+  "function": "session_execute"
 }]
 # test: create lock (shared)
 create lock test1 on xyz (shared);
@@ -54,19 +54,19 @@ show locks;
   "name": "test",
   "relation": "xyz",
   "lock": "shared",
-  "function": "clock_rel",
-  "line": 255
+  "waiting": false,
+  "function": "clock_rel"
 }, {
   "name": "test1",
   "relation": "xyz",
   "lock": "shared",
-  "function": "clock_rel",
-  "line": 255
+  "waiting": false,
+  "function": "clock_rel"
 }, {
   "relation": "catalog",
   "lock": "shared",
-  "function": "session_execute",
-  "line": 326
+  "waiting": false,
+  "function": "session_execute"
 }]
 # test: create lock (catalog)
 create lock test2 on catalog (shared);
@@ -93,21 +93,21 @@ show locks;
   "name": "test1",
   "relation": "xyz",
   "lock": "shared",
-  "function": "clock_rel",
-  "line": 255
+  "waiting": false,
+  "function": "clock_rel"
 }, {
   "relation": "catalog",
   "lock": "shared",
-  "function": "session_execute",
-  "line": 326
+  "waiting": false,
+  "function": "session_execute"
 }]
 drop lock test1;
 show locks;
 [{
   "relation": "catalog",
   "lock": "shared",
-  "function": "session_execute",
-  "line": 326
+  "waiting": false,
+  "function": "session_execute"
 }]
 # test: drop lock if exists
 drop lock test;

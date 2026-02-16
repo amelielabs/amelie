@@ -1,0 +1,154 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: case 1: concurrent partition refresh
+create table test (id int primary key) partitions 1;
+insert into test values (1), (2), (3), (4);
+show partitions on test;
+[{
+  "id": 1,
+  "tier": "main",
+  "storage": "main",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 0,
+  "size": 524288,
+  "compression": 1
+}]
+create lock bp_refresh_1 on bp_refresh_1 (exclusive);
+show locks;
+[{
+  "name": "bp_refresh_1",
+  "relation": "bp_refresh_1",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "clock_rel"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 1 on test refresh;
+switch S0;
+watch 'part_1'::locks_count = 1;
+show locks;
+[{
+  "name": "bp_refresh_1",
+  "relation": "bp_refresh_1",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "clock_rel"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "part_1",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "bp_refresh_1",
+  "lock": "shared",
+  "waiting": true,
+  "function": "refresh_run"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+connect_async E0 S2 127.0.0.1:3485;
+switch S2;
+alter partition 1 on test refresh;
+switch S0;
+watch 'part_1'::locks_count = 2;
+show locks;
+[{
+  "name": "bp_refresh_1",
+  "relation": "bp_refresh_1",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "clock_rel"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "part_1",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "bp_refresh_1",
+  "lock": "shared",
+  "waiting": true,
+  "function": "refresh_run"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "part_1",
+  "lock": "exclusive",
+  "waiting": true,
+  "function": "ops_lock"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+switch S0;
+drop lock bp_refresh_1;
+switch S1;
+recv;
+switch S2;
+recv;
+{"msg": "partition or tier storage not found"}
+switch S0;
+show locks;
+[{
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+show partitions on test;
+[{
+  "id": 2,
+  "tier": "main",
+  "storage": "main",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 2,
+  "size": 524288,
+  "compression": 1
+}]
+disconnect S2;
+disconnect S1;
+drop table test;
+disconnect S0;
+close E0;

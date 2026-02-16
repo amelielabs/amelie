@@ -29,7 +29,7 @@ explain watch show('state').lsn::int = 0;
     "06": "int                 1      -      0     # 0",
     "07": "equii               2      0      1     ",
     "08": "jtr                 13     2      0     ",
-    "09": "int                 0      -      0     # 1000",
+    "09": "int                 0      -      0     # 333",
     "10": "push                0      0      0     ",
     "11": "call                0      -      1     # sleep()",
     "12": "jmp                 0      0      0     ",

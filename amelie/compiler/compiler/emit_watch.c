@@ -43,8 +43,8 @@ emit_watch(Compiler* self, Ast* ast)
 	auto func = function_mgr_find(share()->function_mgr, &name);
 	assert(func);
 
-	// call sleep(1000)
-	int r = op2pin(self, CINT, TYPE_INT, 1000);
+	// call sleep()
+	int r = op2pin(self, CINT, TYPE_INT, 333);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 

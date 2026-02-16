@@ -17,6 +17,7 @@ struct Lock
 {
 	Relation*   rel;
 	LockId      rel_lock;
+	bool        waiting;
 	Event       event;
 	Str         name;
 	Coroutine*  coro;
@@ -34,6 +35,7 @@ lock_init(Lock*       self, Relation* rel, LockId rel_lock,
 {
 	self->rel       = rel;
 	self->rel_lock  = rel_lock;
+	self->waiting   = false;
 	self->coro      = NULL;
 	self->func      = func;
 	self->func_line = func_line;
@@ -90,6 +92,10 @@ lock_write(Lock* self, Buf* buf)
 	// lock
 	encode_raw(buf, "lock", 4);
 	lock_id_encode(buf, self->rel_lock);
+
+	// waiting
+	encode_raw(buf, "waiting", 7);
+	encode_bool(buf, self->waiting);
 
 	// function
 	encode_raw(buf, "function", 8);

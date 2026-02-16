@@ -101,6 +101,7 @@ lock_mgr_lock_of(LockMgr* self, Lock* lock)
 	} else
 	{
 		// add lock to the relation wait list
+		lock->waiting = true;
 		list_append(&rel->lock_wait, &lock->link);
 		rel->lock_wait_count++;
 	}
@@ -184,6 +185,7 @@ lock_mgr_unlock(LockMgr* self, Lock* lock)
 		{
 			rel->lock_set[lock->rel_lock]++;
 			rel->lock_wait_count--;
+			lock->waiting = false;
 			list_unlink(&lock->link);
 			event_signal(&lock->event);
 			continue;
@@ -236,4 +238,20 @@ lock_mgr_list(LockMgr* self, Buf* buf)
 		lock_write(lock, buf);
 	}
 	encode_array_end(buf);
+}
+
+static inline int
+lock_mgr_count(LockMgr* self, Str* rel_name)
+{
+	spinlock_lock(&self->lock);
+	defer(spinlock_unlock, &self->lock);
+
+	auto count = 0;
+	list_foreach(&self->list)
+	{
+		auto lock = list_at(Lock, link_mgr);
+		if (str_compare(lock->rel->name, rel_name))
+			count++;
+	}
+	return count;
 }

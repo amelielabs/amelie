@@ -491,7 +491,7 @@ emit_utility(Compiler* self)
 
 		// lock
 		lock_catalog = LOCK_SHARED;
-		lock_ddl     = LOCK_EXCLUSIVE;
+		lock_ddl     = LOCK_NONE;
 		break;
 	}
 
