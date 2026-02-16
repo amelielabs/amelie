@@ -15,11 +15,11 @@ typedef struct Indexate Indexate;
 
 struct Indexate
 {
-	PartLock lock;
-	Part*    origin;
-	Index*   index;
-	Table*   table;
-	Db*      db;
+	OpsLock lock;
+	Part*   origin;
+	Index*  index;
+	Table*  table;
+	Db*     db;
 };
 
 void indexate_init(Indexate*, Db*);

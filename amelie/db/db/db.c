@@ -29,7 +29,7 @@ db_init(Db*        self,
         EngineIf*  iface_engine,
         void*      iface_engine_arg)
 {
-	part_lock_mgr_init(&self->lock_mgr_part);
+	ops_init(&self->ops);
 	catalog_init(&self->catalog, iface, iface_arg,
 	             iface_engine,
 	             iface_engine_arg);
@@ -43,6 +43,7 @@ db_free(Db* self)
 	catalog_free(&self->catalog);
 	wal_mgr_free(&self->wal_mgr);
 	snapshot_mgr_free(&self->snapshot_mgr);
+	ops_free(&self->ops);
 }
 
 void
@@ -113,28 +114,4 @@ db_state(Db* self)
 
 	encode_obj_end(buf);
 	return buf;
-}
-
-void
-db_lock(Db* self, PartLock* lock, uint64_t id)
-{
-	// get shared catalog lock and hold till unlock
-	lock->lock = lock_system(REL_CATALOG, LOCK_SHARED);
-
-	// get service lock for partition id
-	part_lock_mgr_lock(&self->lock_mgr_part, lock, id);
-}
-
-void
-db_unlock(Db* self, PartLock* lock)
-{
-	if (! lock->lock)
-		return;
-
-	// unlock partition
-	part_lock_mgr_unlock(&self->lock_mgr_part, lock);
-
-	// unlock catalog
-	unlock(lock->lock);
-	lock->lock = NULL;
 }

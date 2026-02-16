@@ -198,7 +198,7 @@ refresh_apply(Refresh* self)
 void
 refresh_init(Refresh* self, Db* db)
 {
-	part_lock_init(&self->lock);
+	ops_lock_init(&self->lock);
 	self->origin     = NULL;
 	self->origin_lsn = 0;
 	self->table      = NULL;
@@ -219,7 +219,7 @@ refresh_free(Refresh* self)
 void
 refresh_reset(Refresh* self)
 {
-	part_lock_init(&self->lock);
+	ops_lock_init(&self->lock);
 	self->origin     = NULL;
 	self->origin_lsn = 0;
 	self->table      = NULL;
@@ -238,17 +238,15 @@ refresh_run(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	refresh_reset(self);
 
 	// get catalog shared lock and partition service lock
-	db_lock(self->db, &self->lock, id);
+	ops_lock(&self->db->ops, &self->lock, id);
+	defer(ops_unlock, &self->lock);
 
 	// case 1: concurrent partition refresh
 	breakpoint(REL_BP_REFRESH_1);
 
 	// find and rotate partition
 	if (! refresh_begin(self, id_table, id, storage))
-	{
-		db_unlock(self->db, &self->lock);
 		error("partition or tier storage not found");
-	}
 
 	// create heap snapshot
 	auto on_error = error_catch
@@ -262,9 +260,6 @@ refresh_run(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 		// finilize and cleanup
 		run(refresh_complete_job, 1, self);
 	);
-
-	// unlock
-	db_unlock(self->db, &self->lock);
 
 	if (on_error)
 		rethrow();

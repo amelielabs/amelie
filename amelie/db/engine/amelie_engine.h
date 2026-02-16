@@ -21,6 +21,3 @@
 #include "engine/engine.h"
 #include "engine/engine_recover.h"
 #include "engine/engine_op.h"
-
-// global engine locking
-#include "engine/part_lock_mgr.h"

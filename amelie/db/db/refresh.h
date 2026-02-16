@@ -15,7 +15,7 @@ typedef struct Refresh Refresh;
 
 struct Refresh
 {
-	PartLock lock;
+	OpsLock  lock;
 	Part*    origin;
 	uint64_t origin_lsn;
 	Id       id_origin;

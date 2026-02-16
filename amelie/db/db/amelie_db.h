@@ -14,6 +14,9 @@
 // db snapshot
 #include "db/snapshot_mgr.h"
 
+// service
+#include "db/ops.h"
+
 // db
 #include "db/db.h"
 #include "db/refresh.h"

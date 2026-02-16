@@ -15,7 +15,7 @@ typedef struct Db Db;
 
 struct Db
 {
-	PartLockMgr lock_mgr_part;
+	Ops         ops;
 	Catalog     catalog;
 	WalMgr      wal_mgr;
 	SnapshotMgr snapshot_mgr;
@@ -26,5 +26,3 @@ void db_free(Db*);
 void db_open(Db*, bool);
 void db_close(Db*);
 Buf* db_state(Db*);
-void db_lock(Db*, PartLock*, uint64_t);
-void db_unlock(Db*, PartLock*);
