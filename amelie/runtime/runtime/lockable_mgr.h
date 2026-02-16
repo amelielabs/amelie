@@ -19,6 +19,7 @@ typedef enum
 	REL_CATALOG,
 	REL_DDL,
 	REL_BP_REFRESH_1,
+	REL_BP_REFRESH_2,
 	REL_MAX
 } Rel;
 
@@ -68,6 +69,7 @@ lockable_mgr_init(LockableMgr* self)
 
 	// breakpoints
 	lockable_init(&self->list[REL_BP_REFRESH_1], REL_BP_REFRESH_1, "bp_refresh_1", true);
+	lockable_init(&self->list[REL_BP_REFRESH_2], REL_BP_REFRESH_2, "bp_refresh_2", true);
 }
 
 static inline void

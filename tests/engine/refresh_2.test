@@ -1,0 +1,302 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: read during refresh
+create table test (id int primary key, data int) partitions 1;
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+show partitions on test;
+
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+
+# begin refresh and lock on breakpoint after
+# partition synced and rotated
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 1 on test refresh;
+
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+
+# update shadow heap
+
+# return data from the original heap
+select * from test;
+
+# test: insert during refresh
+insert into test values (5, 0), (6, 0), (7, 0);
+
+# test: return data from the original and shadow heap
+select * from test;
+
+# test: apply
+
+# resume S1 and force to apply shadow heap updates into the main heap
+drop lock bp_refresh_2;
+
+switch S1;
+recv;
+disconnect S1;
+
+switch S0;
+show locks;
+
+# test: validate after refresh
+select * from test;
+update test set data = id;
+update test set data = id + 1;
+select * from test;
+delete from test;
+select * from test;
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+
+# test: delete during refresh
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+
+# begin refresh and lock on breakpoint after
+# partition synced and rotated
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 2 on test refresh;
+
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+
+# delete
+#
+# updates index only and collects deletes in the shadow heap,
+# original heap remains untouched
+delete from test where id = 2 or id = 4;
+
+# test: read during refresh after delete
+select * from test;
+
+# test: apply
+
+# resume S1 and force to apply shadow heap deletes into the main heap
+drop lock bp_refresh_2;
+
+switch S1;
+recv;
+disconnect S1;
+
+switch S0;
+show locks;
+
+# test: validate after refresh
+select * from test;
+update test set data = id;
+update test set data = id + 1;
+select * from test;
+delete from test;
+select * from test;
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+
+# test: update during refresh
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+
+# begin refresh and lock on breakpoint after
+# partition synced and rotated
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 3 on test refresh;
+
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+
+# update
+#
+# updated rows will be held in the shadow heap as well as
+# information about deletes, which will be used during apply
+update test set data = id where id = 2 or id = 4;
+
+# test: read during refresh after update
+select * from test;
+
+# test: apply
+
+# resume S1 and force to apply shadow heap updates as well as deletes
+# into the main heap, this will update index pointers and copy rows
+drop lock bp_refresh_2;
+
+switch S1;
+recv;
+disconnect S1;
+
+switch S0;
+show locks;
+
+# test: validate after refresh
+select * from test;
+update test set data = id;
+update test set data = id + 1;
+select * from test;
+delete from test;
+select * from test;
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+
+# test: upsert during refresh
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+
+# begin refresh and lock on breakpoint after
+# partition synced and rotated
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 4 on test refresh;
+
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+
+# upsert
+#
+# this updates existing rows and creates new ones, then updates
+# new ones once again
+insert into test values (0, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0) on conflict do update set data = data + 1;
+insert into test values (2, 0) on conflict do update set data = data + 1;
+insert into test values (3, 0) on conflict do update set data = data + 1;
+insert into test values (4, 0) on conflict do update set data = data + 1;
+insert into test values (5, 0) on conflict do update set data = data + 1;
+insert into test values (6, 0) on conflict do update set data = data + 1;
+insert into test values (7, 0) on conflict do update set data = data + 1;
+insert into test values (8, 0) on conflict do update set data = data + 1;
+insert into test values (9, 0) on conflict do update set data = data + 1;
+
+insert into test values (0, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0) on conflict do update set data = data + 1;
+insert into test values (2, 0) on conflict do update set data = data + 1;
+insert into test values (3, 0) on conflict do update set data = data + 1;
+insert into test values (4, 0) on conflict do update set data = data + 1;
+insert into test values (5, 0) on conflict do update set data = data + 1;
+insert into test values (6, 0) on conflict do update set data = data + 1;
+insert into test values (7, 0) on conflict do update set data = data + 1;
+insert into test values (8, 0) on conflict do update set data = data + 1;
+insert into test values (9, 0) on conflict do update set data = data + 1;
+
+# test: read during refresh after upsert
+select * from test;
+
+# test: apply
+
+# resume S1 and force to apply shadow heap updates
+drop lock bp_refresh_2;
+
+switch S1;
+recv;
+disconnect S1;
+
+switch S0;
+show locks;
+
+# test: validate after refresh
+select * from test;
+update test set data = id;
+update test set data = id + 1;
+select * from test;
+delete from test;
+select * from test;
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+
+# test: abort during refresh
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+
+# begin refresh and lock on breakpoint after
+# partition synced and rotated
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 5 on test refresh;
+
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+
+# abort
+#
+# forces to restore previous values
+#
+begin;
+	insert into test values (0, 0) on conflict do update set data = data + 1;
+	insert into test values (1, 0) on conflict do update set data = data + 1;
+	insert into test values (2, 0) on conflict do update set data = data + 1;
+	insert into test values (3, 0) on conflict do update set data = data + 1;
+	insert into test values (4, 0) on conflict do update set data = data + 1;
+	insert into test values (5, 0) on conflict do update set data = data + 1;
+	insert into test values (6, 0) on conflict do update set data = data + 1;
+	delete from test where id = 2 or id = 4 or id = 8;
+	select error("abort");
+end;
+
+# test: read during refresh after abort
+select * from test;
+
+# test: apply
+
+# resume S1 and force to apply shadow heap updates
+drop lock bp_refresh_2;
+
+switch S1;
+recv;
+disconnect S1;
+
+switch S0;
+show locks;
+
+# test: validate after refresh
+select * from test;
+update test set data = id;
+update test set data = id + 1;
+select * from test;
+delete from test;
+select * from test;
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+
+# test: multi commit during refresh
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+
+# begin refresh and lock on breakpoint after
+# partition synced and rotated
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 6 on test refresh;
+
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+
+# transactions
+insert into test values (0, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0) on conflict do update set data = data + 1;
+insert into test values (2, 0) on conflict do update set data = data + 1;
+
+delete from test where id = 4;
+delete from test where id = 0;
+select * from test;
+update test set data = data + 1;
+
+# test: read during refresh
+select * from test;
+
+# test: apply
+
+# resume S1 and force to apply shadow heap updates
+drop lock bp_refresh_2;
+
+switch S1;
+recv;
+disconnect S1;
+
+switch S0;
+show locks;
+
+# test: validate after refresh
+select * from test;
+
+drop table test;
+
+disconnect S0;
+close E0;

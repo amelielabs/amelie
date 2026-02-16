@@ -1,0 +1,459 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: read during refresh
+create table test (id int primary key, data int) partitions 1;
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+show partitions on test;
+[{
+  "id": 1,
+  "tier": "main",
+  "storage": "main",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 0,
+  "size": 524288,
+  "compression": 1
+}]
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 1 on test refresh;
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+[{
+  "name": "bp_refresh_2",
+  "relation": "bp_refresh_2",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "clock_rel"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "part_1",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "bp_refresh_2",
+  "lock": "shared",
+  "waiting": true,
+  "function": "refresh_run"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+select * from test;
+[[1, 0], [2, 0], [3, 0], [4, 0]]
+# test: insert during refresh
+insert into test values (5, 0), (6, 0), (7, 0);
+# test: return data from the original and shadow heap
+select * from test;
+[[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0]]
+# test: apply
+drop lock bp_refresh_2;
+switch S1;
+recv;
+disconnect S1;
+switch S0;
+show locks;
+[{
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+# test: validate after refresh
+select * from test;
+[[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0]]
+update test set data = id;
+update test set data = id + 1;
+select * from test;
+[[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8]]
+delete from test;
+select * from test;
+[]
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+# test: delete during refresh
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 2 on test refresh;
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+[{
+  "name": "bp_refresh_2",
+  "relation": "bp_refresh_2",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "clock_rel"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "part_2",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "bp_refresh_2",
+  "lock": "shared",
+  "waiting": true,
+  "function": "refresh_run"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+delete from test where id = 2 or id = 4;
+# test: read during refresh after delete
+select * from test;
+[[1, 0], [3, 0]]
+# test: apply
+drop lock bp_refresh_2;
+switch S1;
+recv;
+disconnect S1;
+switch S0;
+show locks;
+[{
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+# test: validate after refresh
+select * from test;
+[[1, 0], [3, 0]]
+update test set data = id;
+update test set data = id + 1;
+select * from test;
+[[1, 2], [3, 4]]
+delete from test;
+select * from test;
+[]
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+# test: update during refresh
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 3 on test refresh;
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+[{
+  "name": "bp_refresh_2",
+  "relation": "bp_refresh_2",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "clock_rel"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "part_3",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "bp_refresh_2",
+  "lock": "shared",
+  "waiting": true,
+  "function": "refresh_run"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+update test set data = id where id = 2 or id = 4;
+# test: read during refresh after update
+select * from test;
+[[1, 0], [2, 2], [3, 0], [4, 4]]
+# test: apply
+drop lock bp_refresh_2;
+switch S1;
+recv;
+disconnect S1;
+switch S0;
+show locks;
+[{
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+# test: validate after refresh
+select * from test;
+[[1, 0], [2, 2], [3, 0], [4, 4]]
+update test set data = id;
+update test set data = id + 1;
+select * from test;
+[[1, 2], [2, 3], [3, 4], [4, 5]]
+delete from test;
+select * from test;
+[]
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+# test: upsert during refresh
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 4 on test refresh;
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+[{
+  "name": "bp_refresh_2",
+  "relation": "bp_refresh_2",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "clock_rel"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "part_4",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "bp_refresh_2",
+  "lock": "shared",
+  "waiting": true,
+  "function": "refresh_run"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+insert into test values (0, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0) on conflict do update set data = data + 1;
+insert into test values (2, 0) on conflict do update set data = data + 1;
+insert into test values (3, 0) on conflict do update set data = data + 1;
+insert into test values (4, 0) on conflict do update set data = data + 1;
+insert into test values (5, 0) on conflict do update set data = data + 1;
+insert into test values (6, 0) on conflict do update set data = data + 1;
+insert into test values (7, 0) on conflict do update set data = data + 1;
+insert into test values (8, 0) on conflict do update set data = data + 1;
+insert into test values (9, 0) on conflict do update set data = data + 1;
+insert into test values (0, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0) on conflict do update set data = data + 1;
+insert into test values (2, 0) on conflict do update set data = data + 1;
+insert into test values (3, 0) on conflict do update set data = data + 1;
+insert into test values (4, 0) on conflict do update set data = data + 1;
+insert into test values (5, 0) on conflict do update set data = data + 1;
+insert into test values (6, 0) on conflict do update set data = data + 1;
+insert into test values (7, 0) on conflict do update set data = data + 1;
+insert into test values (8, 0) on conflict do update set data = data + 1;
+insert into test values (9, 0) on conflict do update set data = data + 1;
+# test: read during refresh after upsert
+select * from test;
+[[0, 1], [1, 2], [2, 2], [3, 2], [4, 2], [5, 1], [6, 1], [7, 1], [8, 1], [9, 1]]
+# test: apply
+drop lock bp_refresh_2;
+switch S1;
+recv;
+disconnect S1;
+switch S0;
+show locks;
+[{
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+# test: validate after refresh
+select * from test;
+[[0, 1], [1, 2], [2, 2], [3, 2], [4, 2], [5, 1], [6, 1], [7, 1], [8, 1], [9, 1]]
+update test set data = id;
+update test set data = id + 1;
+select * from test;
+[[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [9, 10]]
+delete from test;
+select * from test;
+[]
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+# test: abort during refresh
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 5 on test refresh;
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+[{
+  "name": "bp_refresh_2",
+  "relation": "bp_refresh_2",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "clock_rel"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "part_5",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "bp_refresh_2",
+  "lock": "shared",
+  "waiting": true,
+  "function": "refresh_run"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+begin;
+	insert into test values (0, 0) on conflict do update set data = data + 1;
+	insert into test values (1, 0) on conflict do update set data = data + 1;
+	insert into test values (2, 0) on conflict do update set data = data + 1;
+	insert into test values (3, 0) on conflict do update set data = data + 1;
+	insert into test values (4, 0) on conflict do update set data = data + 1;
+	insert into test values (5, 0) on conflict do update set data = data + 1;
+	insert into test values (6, 0) on conflict do update set data = data + 1;
+	delete from test where id = 2 or id = 4 or id = 8;
+	select error("abort");
+end;
+{"msg": "abort"}
+# test: read during refresh after abort
+select * from test;
+[[1, 0], [2, 0], [3, 0], [4, 0]]
+# test: apply
+drop lock bp_refresh_2;
+switch S1;
+recv;
+disconnect S1;
+switch S0;
+show locks;
+[{
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+# test: validate after refresh
+select * from test;
+[[1, 0], [2, 0], [3, 0], [4, 0]]
+update test set data = id;
+update test set data = id + 1;
+select * from test;
+[[1, 2], [2, 3], [3, 4], [4, 5]]
+delete from test;
+select * from test;
+[]
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+# test: multi commit during refresh
+create lock bp_refresh_2 on bp_refresh_2 (exclusive);
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 6 on test refresh;
+switch S0;
+watch 'bp_refresh_2'::locks_count = 2;
+show locks;
+[{
+  "name": "bp_refresh_2",
+  "relation": "bp_refresh_2",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "clock_rel"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "part_6",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "bp_refresh_2",
+  "lock": "shared",
+  "waiting": true,
+  "function": "refresh_run"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+insert into test values (0, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0) on conflict do update set data = data + 1;
+insert into test values (2, 0) on conflict do update set data = data + 1;
+delete from test where id = 4;
+delete from test where id = 0;
+select * from test;
+[[1, 1], [2, 1], [3, 0]]
+update test set data = data + 1;
+# test: read during refresh
+select * from test;
+[[1, 2], [2, 2], [3, 1]]
+# test: apply
+drop lock bp_refresh_2;
+switch S1;
+recv;
+disconnect S1;
+switch S0;
+show locks;
+[{
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+# test: validate after refresh
+select * from test;
+[[1, 2], [2, 2], [3, 1]]
+drop table test;
+disconnect S0;
+close E0;

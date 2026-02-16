@@ -203,16 +203,18 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 hot void
 part_delete(Part* self, Tr* tr, Iterator* it)
 {
+#if 0
 	// handle deletes as updates for non in-memory partitions and
 	// during compaction
 	if (heap_snapshot_has(self->heap))
 	{
 		auto row = iterator_at(it);
-		auto row_delete = row_copy(self->heap, row);
+		auto row_delete = row_copy(self->heap->shadow, row);
 		row_delete->is_delete = true;
 		part_update(self, tr, it, row_delete);
 		return;
 	}
+#endif
 
 	// add log record
 	auto primary = part_primary(self);

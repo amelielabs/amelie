@@ -138,7 +138,8 @@ test async
 # engine
 directory engine
 group engine
-test refresh
+test refresh_1
+test refresh_2
 
 # backend
 directory backend

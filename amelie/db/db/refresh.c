@@ -248,6 +248,9 @@ refresh_run(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	if (! refresh_begin(self, id_table, id, storage))
 		error("partition or tier storage not found");
 
+	// case 2: update during refresh
+	breakpoint(REL_BP_REFRESH_2);
+
 	// create heap snapshot
 	auto on_error = error_catch
 	(
