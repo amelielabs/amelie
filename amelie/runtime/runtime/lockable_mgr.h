@@ -18,6 +18,7 @@ typedef enum
 {
 	REL_CATALOG,
 	REL_DDL,
+	REL_BP_REFRESH_1,
 	REL_MAX
 } Rel;
 
@@ -64,6 +65,9 @@ lockable_mgr_init(LockableMgr* self)
 	self->list = am_malloc(sizeof(Lockable) * REL_MAX);
 	lockable_init(&self->list[REL_CATALOG], REL_CATALOG, "catalog", false);
 	lockable_init(&self->list[REL_DDL], REL_DDL, "ddl", false);
+
+	// breakpoints
+	lockable_init(&self->list[REL_BP_REFRESH_1], REL_BP_REFRESH_1, "bp_refresh_1", true);
 }
 
 static inline void

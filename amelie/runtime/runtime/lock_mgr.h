@@ -89,15 +89,15 @@ lock_mgr_lock_of(LockMgr* self, Lock* lock)
 	// try to lock the relation
 	spinlock_lock(&rel->lock);
 
+	// add lock to the lock manager
+	lock_mgr_add(self, lock);
+
 	// always wait if there are waiters
 	auto pass = !rel->lock_wait_count && lock_resolve(rel, lock->rel_lock);
 	if (likely(pass))
 	{
 		// success
 		rel->lock_set[lock->rel_lock]++;
-
-		// add lock to the lock manager
-		lock_mgr_add(self, lock);
 	} else
 	{
 		// add lock to the relation wait list
@@ -182,7 +182,6 @@ lock_mgr_unlock(LockMgr* self, Lock* lock)
 		auto lock = container_of(list_first(&rel->lock_wait), Lock, link);
 		if (lock_resolve(lock->rel, lock->rel_lock))
 		{
-			lock_mgr_add(self, lock);
 			rel->lock_set[lock->rel_lock]++;
 			rel->lock_wait_count--;
 			list_unlink(&lock->link);

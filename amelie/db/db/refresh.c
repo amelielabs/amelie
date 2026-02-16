@@ -240,6 +240,9 @@ refresh_run(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	// get catalog shared lock and partition service lock
 	db_lock(self->db, &self->lock, id);
 
+	// case 1: concurrent partition refresh
+	breakpoint(REL_BP_REFRESH_1);
+
 	// find and rotate partition
 	if (! refresh_begin(self, id_table, id, storage))
 	{

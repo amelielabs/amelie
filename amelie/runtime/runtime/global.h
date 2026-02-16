@@ -159,11 +159,11 @@ resolve(char* addr, int port, struct addrinfo** result)
 #define breakpoint(rel_id) \
 ({ \
 	auto ref = &runtime()->lockable_mgr.list[(rel_id)]; \
-	if (unlikely(atomic_u32_of(&ref->bp_refs > 0))) \
-		unlock(lock_mgr_lock(&runtime()->lock_mgr, ref->rel, LOCK_SHARED, \
+	if (unlikely(atomic_u32_of(&ref->bp_refs) > 0)) \
+		unlock(lock_mgr_lock(&runtime()->lock_mgr, &ref->rel, LOCK_SHARED, \
 		       NULL, \
 		       source_function, \
-		       source_line)) \
+		       source_line)); \
 })
 
 hot static inline void

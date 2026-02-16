@@ -95,9 +95,5 @@ lock_write(Lock* self, Buf* buf)
 	encode_raw(buf, "function", 8);
 	encode_cstr(buf, self->func);
 
-	// line
-	encode_raw(buf, "line", 4);
-	encode_integer(buf, self->func_line);
-
 	encode_obj_end(buf);
 }
