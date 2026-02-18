@@ -43,11 +43,6 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "catalog",
-  "lock": "shared",
-  "waiting": false,
-  "function": "ops_lock"
-}, {
   "relation": "part_1",
   "lock": "exclusive",
   "waiting": false,
@@ -92,11 +87,6 @@ show locks;
   "lock": "shared",
   "waiting": false,
   "function": "session_execute"
-}, {
-  "relation": "catalog",
-  "lock": "shared",
-  "waiting": false,
-  "function": "ops_lock"
 }, {
   "relation": "part_1",
   "lock": "exclusive",

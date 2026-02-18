@@ -128,12 +128,23 @@ unit test_sleep;
 # test: test heap
 unit test_heap;
 
-# test: test lock
+# test: test lock0
 unit test_lock0;
+
+# test: test lock1
 unit test_lock1;
+
+# test: test lock2
 unit test_lock2;
+
+# test: test lock3
 unit test_lock3;
+
+# test: test lock4
 unit test_lock4;
+
+# test: test lock5
+unit test_lock5;
 
 # test: test api init
 unit test_api_init;

@@ -210,3 +210,29 @@ test_lock4(void* arg)
 
 	test(total == 100);
 }
+
+void
+test_lock5(void* arg)
+{
+	unused(arg);
+	total  = 0;
+	active = 0;
+
+	// reentrant
+	Relation rel;
+	relation_init(&rel);
+
+	auto l0 = lock(&rel, LOCK_SHARED);
+	auto l1 = lock(&rel, LOCK_SHARED);
+	test(l0 == l1);
+
+	unlock(l1);
+	unlock(l0);
+
+	l0 = lock(&rel, LOCK_EXCLUSIVE);
+	l1 = lock(&rel, LOCK_EXCLUSIVE);
+	test(l0 == l1);
+
+	unlock(l1);
+	unlock(l0);
+}

@@ -381,7 +381,7 @@ emit_utility(Compiler* self)
 		op0(self, CCHECKPOINT);
 
 		// lock
-		lock_catalog = LOCK_NONE;
+		lock_catalog = LOCK_SHARED;
 		lock_ddl     = LOCK_EXCLUSIVE;
 		break;
 	}

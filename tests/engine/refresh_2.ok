@@ -34,11 +34,6 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "catalog",
-  "lock": "shared",
-  "waiting": false,
-  "function": "ops_lock"
-}, {
   "relation": "part_1",
   "lock": "exclusive",
   "waiting": false,
@@ -105,11 +100,6 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "catalog",
-  "lock": "shared",
-  "waiting": false,
-  "function": "ops_lock"
-}, {
   "relation": "part_2",
   "lock": "exclusive",
   "waiting": false,
@@ -173,11 +163,6 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "catalog",
-  "lock": "shared",
-  "waiting": false,
-  "function": "ops_lock"
-}, {
   "relation": "part_3",
   "lock": "exclusive",
   "waiting": false,
@@ -240,11 +225,6 @@ show locks;
   "lock": "shared",
   "waiting": false,
   "function": "session_execute"
-}, {
-  "relation": "catalog",
-  "lock": "shared",
-  "waiting": false,
-  "function": "ops_lock"
 }, {
   "relation": "part_4",
   "lock": "exclusive",
@@ -328,11 +308,6 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "catalog",
-  "lock": "shared",
-  "waiting": false,
-  "function": "ops_lock"
-}, {
   "relation": "part_5",
   "lock": "exclusive",
   "waiting": false,
@@ -406,11 +381,6 @@ show locks;
   "lock": "shared",
   "waiting": false,
   "function": "session_execute"
-}, {
-  "relation": "catalog",
-  "lock": "shared",
-  "waiting": false,
-  "function": "ops_lock"
 }, {
   "relation": "part_6",
   "lock": "exclusive",

@@ -17,12 +17,12 @@ struct Lock
 {
 	Relation*   rel;
 	LockId      rel_lock;
+	int         refs;
 	bool        waiting;
 	Event       event;
 	Str         name;
 	Coroutine*  coro;
 	const char* func;
-	int         func_line;
 	List        link_mgr;
 	List        link;
 };
@@ -30,15 +30,14 @@ struct Lock
 static inline void
 lock_init(Lock*       self, Relation* rel, LockId rel_lock,
           Str*        name,
-          const char* func,
-          int         func_line)
+          const char* func)
 {
 	self->rel       = rel;
 	self->rel_lock  = rel_lock;
+	self->refs      = 0;
 	self->waiting   = false;
 	self->coro      = NULL;
 	self->func      = func;
-	self->func_line = func_line;
 	str_init(&self->name);
 	if (unlikely(name))
 		str_copy(&self->name, name);
@@ -60,15 +59,14 @@ lock_free(Lock* self)
 static inline Lock*
 lock_allocate(Relation*   rel, LockId rel_lock,
               Str*        name,
-              const char* func,
-              int         func_line)
+              const char* func)
 {
 	Lock* self;
 	if (unlikely(name))
 		self = (Lock*)malloc(sizeof(Lock));
 	else
 		self = (Lock*)palloc(sizeof(Lock));
-	lock_init(self, rel, rel_lock, name, func, func_line);
+	lock_init(self, rel, rel_lock, name, func);
 	return self;
 }
 

@@ -120,20 +120,31 @@ lock_mgr_lock_of(LockMgr* self, Lock* lock)
 hot static inline Lock*
 lock_mgr_lock(LockMgr*    self, Relation* rel, LockId rel_lock,
               Str*        name,
-              const char* func,
-              int         func_line)
+              const char* func)
 {
 	if (unlikely(rel_lock == LOCK_NONE))
 		return NULL;
 
+	// reentrant support
+	list_foreach(&am_self()->locks)
+	{
+		auto lock = list_at(Lock, link);
+		if (lock->rel == rel && lock->rel_lock == rel_lock)
+		{
+			lock->refs++;
+			return lock;
+		}
+	}
+
 	// create lock
-	auto lock = lock_allocate(rel, rel_lock, name, func, func_line);
+	auto lock = lock_allocate(rel, rel_lock, name, func);
 	lock_mgr_lock_of(self, lock);
 
 	// attach lock to the coroutine (unless detached)
-	if (likely(! name))
+	if (! name)
 	{
 		lock->coro = am_self();
+		lock->refs++;
 		list_init(&lock->link);
 		list_append(&lock->coro->locks, &lock->link);
 	}
@@ -143,8 +154,7 @@ lock_mgr_lock(LockMgr*    self, Relation* rel, LockId rel_lock,
 
 hot static inline void
 lock_mgr_lock_access(LockMgr*    self, Access* access,
-                     const char* func,
-                     int         func_line)
+                     const char* func)
 {
 	// do nothing if the access list is empty
 	if (access_empty(access))
@@ -158,7 +168,7 @@ lock_mgr_lock_access(LockMgr*    self, Access* access,
 	for (auto at = 0; at < access->list_count; at++)
 	{
 		auto record = access_at_ordered(access, at);
-		lock_mgr_lock(self, record->rel, record->lock, NULL, func, func_line);
+		lock_mgr_lock(self, record->rel, record->lock, NULL, func);
 	}
 }
 
@@ -167,6 +177,20 @@ lock_mgr_unlock(LockMgr* self, Lock* lock)
 {
 	if (!lock || lock->rel_lock == LOCK_NONE)
 		return;
+
+	// detach from the coroutine
+	if (lock->coro)
+	{
+		// reentrant support
+		lock->refs--;
+		if (lock->refs > 0)
+			return;
+		assert(! lock->refs);
+
+		assert(lock->coro == am_self());
+		lock->coro = NULL;
+		list_unlink(&lock->link);
+	}
 
 	auto rel = lock->rel;
 	spinlock_lock(&rel->lock);
@@ -198,13 +222,6 @@ lock_mgr_unlock(LockMgr* self, Lock* lock)
 	lock->rel      = NULL;
 	lock->rel_lock = LOCK_NONE;
 
-	// detach from the coroutine
-	if (lock->coro)
-	{
-		assert(lock->coro == am_self());
-		lock->coro = NULL;
-		list_unlink(&lock->link);
-	}
 	lock_free(lock);
 }
 

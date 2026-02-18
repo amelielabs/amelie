@@ -141,20 +141,17 @@ resolve(char* addr, int port, struct addrinfo** result)
 #define lock(rel, rel_lock) \
 	lock_mgr_lock(&runtime()->lock_mgr, (rel), (rel_lock), \
 	              NULL, \
-	              source_function, \
-	              source_line)
+	              source_function) \
 
 #define lock_system(rel_id, rel_lock) \
 	lock_mgr_lock(&runtime()->lock_mgr, \
 	              &runtime()->lockable_mgr.list[(rel_id)].rel, (rel_lock), \
 	              NULL, \
-	              source_function, \
-	              source_line)
+	              source_function) \
 
 #define lock_access(access) \
 	lock_mgr_lock_access(&runtime()->lock_mgr, (access), \
-	                     source_function, \
-	                     source_line)
+	                     source_function) \
 
 #define breakpoint(rel_id) \
 ({ \
@@ -162,8 +159,7 @@ resolve(char* addr, int port, struct addrinfo** result)
 	if (unlikely(atomic_u32_of(&ref->bp_refs) > 0)) \
 		unlock(lock_mgr_lock(&runtime()->lock_mgr, &ref->rel, LOCK_SHARED, \
 		       NULL, \
-		       source_function, \
-		       source_line)); \
+		       source_function)); \
 })
 
 hot static inline void
