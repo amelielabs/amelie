@@ -140,6 +140,8 @@ directory engine
 group engine
 test refresh_1
 test refresh_2
+test refresh_3
+test refresh_4
 
 # backend
 directory backend

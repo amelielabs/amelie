@@ -1,0 +1,99 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: commit after apply
+create table test (id int primary key, data int) partitions 1;
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+show partitions on test;
+[{
+  "id": 1,
+  "tier": "main",
+  "storage": "main",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 0,
+  "size": 524288,
+  "compression": 1
+}]
+create lock bp_refresh_4 ON bp_refresh_4 (exclusive);
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 1 on test refresh;
+switch S0;
+watch 'bp_refresh_4'::locks_count = 2;
+connect_async E0 S2 127.0.0.1:3485;
+switch S2;
+update test set data = id;
+switch S0;
+watch 'test'::locks_count = 2;
+show locks;
+[{
+  "name": "bp_refresh_4",
+  "relation": "bp_refresh_4",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "clock_rel"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "part_1",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "ops_lock"
+}, {
+  "relation": "test",
+  "lock": "exclusive",
+  "waiting": false,
+  "function": "refresh_apply"
+}, {
+  "relation": "bp_refresh_4",
+  "lock": "shared",
+  "waiting": true,
+  "function": "refresh_apply"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}, {
+  "relation": "test",
+  "lock": "shared_rw",
+  "waiting": true,
+  "function": "session_execute_distributed"
+}, {
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+drop lock bp_refresh_4;
+watch 'bp_refresh_4'::locks_count = 0;
+switch S1;
+recv;
+disconnect S1;
+switch S0;
+watch 'test'::locks_count = 0;
+switch S2;
+recv;
+disconnect S2;
+switch S0;
+show locks;
+[{
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
+select * from test;
+[[1, 1], [2, 2], [3, 3], [4, 4]]
+drop table test;
+disconnect S0;
+close E0;

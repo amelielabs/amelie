@@ -96,7 +96,7 @@ session_execute_distributed(Session* self, Output* output)
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// prepare distributed transaction
-	dtr_create(dtr, program);
+	dtr_prepare(dtr, program);
 
 	// take transaction locks
 	lock_access(&program->access);

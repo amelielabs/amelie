@@ -1,0 +1,57 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: commit after apply
+create table test (id int primary key, data int) partitions 1;
+insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
+show partitions on test;
+
+# lock refresh during apply
+create lock bp_refresh_4 ON bp_refresh_4 (exclusive);
+
+# begin refresh and lock during apply (breakpoint)
+connect_async E0 S1 127.0.0.1:3485;
+switch S1;
+alter partition 1 on test refresh;
+
+switch S0;
+watch 'bp_refresh_4'::locks_count = 2;
+
+# client locks on the shared table lock
+connect_async E0 S2 127.0.0.1:3485;
+switch S2;
+update test set data = id;
+
+switch S0;
+
+# wait till client locks
+watch 'test'::locks_count = 2;
+show locks;
+
+# resume and finish refresh
+drop lock bp_refresh_4;
+watch 'bp_refresh_4'::locks_count = 0;
+
+switch S1;
+recv;
+disconnect S1;
+
+# client resumes and finishes after apply
+switch S0;
+watch 'test'::locks_count = 0;
+
+switch S2;
+recv;
+disconnect S2;
+
+switch S0;
+
+show locks;
+select * from test;
+
+drop table test;
+
+disconnect S0;
+close E0;

@@ -254,7 +254,7 @@ part_delete_by(Part* self, Tr* tr, Row* row)
 	part_delete(self, tr, it);
 }
 
-hot void
+hot Row*
 part_apply(Part* self, Row* row, bool delete)
 {
 	auto primary = part_primary(self);
@@ -263,10 +263,11 @@ part_apply(Part* self, Row* row, bool delete)
 	part_sync_sequence(self, row, index_keys(primary)->columns);
 
 	// update primary index
+	Row* prev;
 	if (delete)
-		index_delete_by(primary, row);
+		prev = index_delete_by(primary, row);
 	else
-		index_replace_by(primary, row);
+		prev = index_replace_by(primary, row);
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
@@ -276,4 +277,5 @@ part_apply(Part* self, Row* row, bool delete)
 		else
 			index_replace_by(index, row);
 	}
+	return prev;
 }

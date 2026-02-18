@@ -75,6 +75,7 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
 	track_sync(&origin->track, consensus);
+	assert(! origin->track.prepared.list_count);
 	self->origin_lsn = origin->track.lsn;
 
 	// switch partition shadow heap and begin heap snapshot
@@ -96,7 +97,7 @@ refresh_snapshot_job(intptr_t* argv)
 	heap->header->lsn = self->origin_lsn;
 	heap_create(heap, &self->file, id, ID_RAM_INCOMPLETE);
 
-	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
+	auto total = (double)self->file.size / 1024 / 1024;
 	info("checkpoint: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
 	     id->storage->storage->config->name.pos,
 	     id->tier->name.pos,
@@ -155,12 +156,19 @@ refresh_apply(Refresh* self)
 	auto table  = self->table;
 	auto origin = self->origin;
 
+	// case 3: access before apply
+	breakpoint(REL_BP_REFRESH_3);
+
 	// take table exclusive lock (unlock on return)
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
 	defer(unlock, lock_table);
 
+	// case 4: access during apply
+	breakpoint(REL_BP_REFRESH_4);
+
 	// force commit prepared transactions
 	track_sync(&origin->track, &origin->track.consensus);
+	assert(! origin->track.prepared.list_count);
 
 	// snapshot complete
 	heap_snapshot(origin->heap, NULL, false);
@@ -184,7 +192,8 @@ refresh_apply(Refresh* self)
 		auto row = row_copy(origin->heap, row_shadow);
 
 		// update indexes using row copy (replace shadow copy)
-		part_apply(origin, row, false);
+		auto prev = part_apply(origin, row, false);
+		assert(prev == row_shadow);
 	}
 
 	// update storage refs

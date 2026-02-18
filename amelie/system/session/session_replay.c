@@ -55,7 +55,7 @@ session_execute_replay(Session* self, Primary* primary, Buf* data)
 		{
 			// execute DML
 			dtr_reset(dtr);
-			dtr_create(dtr, program);
+			dtr_prepare(dtr, program);
 			replay(dtr, record);
 			break;
 		}

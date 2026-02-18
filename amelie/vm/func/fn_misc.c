@@ -255,6 +255,13 @@ fn_locks_count(Fn* self)
 	value_set_int(self->result, count);
 }
 
+static void
+fn_breakpoint(Fn* self)
+{
+	fn_expect(self, 0);
+	breakpoint(REL_BP_QUERY);
+}
+
 void
 fn_misc_register(FunctionMgr* self)
 {
@@ -306,6 +313,11 @@ fn_misc_register(FunctionMgr* self)
 
 	// locks_count()
 	func = function_allocate(TYPE_INT, "locks_count", fn_locks_count);
+	function_unset(func, FN_CONST);
+	function_mgr_add(self, func);
+
+	// breakpoint()
+	func = function_allocate(TYPE_NULL, "breakpoint", fn_breakpoint);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 }

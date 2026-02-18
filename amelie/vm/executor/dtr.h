@@ -79,7 +79,7 @@ dtr_free(Dtr* self)
 }
 
 static inline void
-dtr_create(Dtr* self, Program* program)
+dtr_prepare(Dtr* self, Program* program)
 {
 	self->program = program;
 	if (! event_attached(&self->on_commit))
