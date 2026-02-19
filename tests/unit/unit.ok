@@ -78,6 +78,10 @@ unit test_sleep;
 # test: test benchmark_mutex
 # test: test heap
 unit test_heap;
+# test: test heap lru0
+unit test_heap_lru0;
+# test: test heap lru1
+unit test_heap_lru1;
 # test: test lock0
 unit test_lock0;
 # test: test lock1

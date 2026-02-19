@@ -59,7 +59,7 @@ heap_iterator_open(HeapIterator* self, Heap* heap, Row* key)
 	self->page_mgr   = &heap->page_mgr;
 	self->page       = page_mgr_at(self->page_mgr, 0);
 	self->page_order = 0;
-	self->current    = heap_first(heap);
+	self->current    = heap_chunk_at(heap, 0, sizeof(PageHeader));
 	heap_iterator_next_allocated(self);
 	return self->current != NULL;
 }

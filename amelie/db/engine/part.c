@@ -28,7 +28,7 @@ part_allocate(Id*       id,
 	self->id            = *id;
 	self->indexes       = NULL;
 	self->indexes_count = 0;
-	self->heap          = heap_allocate();
+	self->heap          = heap_allocate(false);
 	self->heap_shadow   = NULL;
 	self->seq           = seq;
 	self->unlogged      = unlogged;

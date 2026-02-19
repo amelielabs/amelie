@@ -44,14 +44,18 @@ heap_prepare(Heap* self)
 	// header + buckets[]
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	auto header = (HeapHeader*)am_malloc(size);
-	header->crc         = 0;
-	header->magic       = HEAP_MAGIC;
-	header->version     = 0;
-	header->lsn         = 0;
-	header->hash_min    = 0;
-	header->hash_max    = 0;
-	header->compression = COMPRESSION_NONE;
-	header->count       = 0;
+	header->crc             = 0;
+	header->magic           = HEAP_MAGIC;
+	header->version         = 0;
+	header->lru             = 0;
+	header->lru_offset      = 0;
+	header->lru_tail        = 0;
+	header->lru_tail_offset = 0;
+	header->lsn             = 0;
+	header->hash_min        = 0;
+	header->hash_max        = 0;
+	header->compression     = COMPRESSION_NONE;
+	header->count           = 0;
 
 	self->header  = header;
 	self->buckets = header->buckets;
@@ -91,7 +95,7 @@ heap_prepare(Heap* self)
 }
 
 Heap*
-heap_allocate(void)
+heap_allocate(bool lru)
 {
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets     = NULL;
@@ -100,6 +104,7 @@ heap_allocate(void)
 	self->header      = NULL;
 	self->shadow      = NULL;
 	self->shadow_free = false;
+	self->lru         = lru;
 	page_mgr_init(&self->page_mgr);
 	heap_prepare(self);
 	return self;
@@ -241,9 +246,15 @@ heap_add(Heap* self, int size)
 	}
 	chunk->prev           = 0;
 	chunk->prev_offset    = 0;
+	chunk->next           = 0;
+	chunk->next_offset    = 0;
 	chunk->is_free        = false;
 	chunk->is_shadow      = self->shadow != NULL;
 	chunk->is_shadow_free = false;
+
+	// support lru (place chunk on top of the list)
+	if (self->lru)
+		heap_push(self, chunk);
 
 	assert(misalign_of(chunk->data) == 0);
 	return chunk->data;
@@ -271,6 +282,10 @@ heap_remove(Heap* self, void* pointer)
 			return;
 		}
 	}
+
+	// support lru (remove chunk from the lru list)
+	if (self->lru)
+		heap_unlink(self, chunk);
 
 	// add chunk to the free list
 	auto bucket = &self->buckets[chunk->bucket];
