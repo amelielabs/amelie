@@ -1,5 +1,86 @@
 # Amelie Changelog.
 
+## 0.9.0 (19-02-2026)
+
+This release opens a path for the upcoming major release
+which will anchor Amelie as a product with a unique feature set and
+modern vision for the high-performance OLTP processing, like
+nothing else.
+
+**TOWARDS SEAMLESS STORAGE ACROSS SSD/NVME, DISKS, S3, AND RAM.**
+
+Amelie is becoming a multi-tiered memory-first database, where first
+tier is always memory keeping hot data and acting like a persistent
+LRU cache, solving the problem of cold starts at the per-row level and
+without downgrading in-memory processing speeds.
+
+Colder data transparently moved to the optional secondary tiers,
+which will include a secondary SSD/DISK storage and S3.
+
+This release introduces the first major steps and features towards that vision.
+
+**CREATE/DROP/ALTER STORAGE.**
+
+Allows the creation and definition of additional storage repositories online to
+extend storage capacity and increase IOPS without downtime.
+
+**CREATE/DROP/ALTER TIER ON TABLE.**
+
+All tables are multi-tiered now, with at least one tier that is always RAM.
+Each tier defines compaction and compression settings, as well as capacity.
+Each tier has its own set of associated storages, which allows for redistributing partitions,
+increasing capacity, and scaling IO operations between them.
+
+**CHECKPOINT and CONCURRENT CREATE INDEX.**
+
+Redesigned using background compaction logic, and the CREATE INDEX operation is implemented
+as an incremental operation without blocking clients.
+Catalog decoupled from data, allowing compaction to proceed independently without blocking
+each other.
+
+**INSTANT ALTER TABLE ADD/DROP COLUMN.**
+
+The ADD/DROP column is now a metadata-only operation, without the need to update rows in place.
+Dropped columns data remain in rows (but are not accessible) till the background compaction
+cleans them eventually. Column DEFAULT processing is also changed, and now
+the value is stored in the catalog. This optimizes storage for NOT NULL DEFAULT columns.
+
+**HOT BACKUP REDESIGNED FOR TIERING AND INCREMENTAL SUPPORT.**
+
+Backup and storage consistent snapshotting redesigned entirely to support disk storage and
+multi-tiering. The backup protocol now supports incremental operations.
+The incremental backup support will be fully available in the next release.
+
+**CREATE/DROP/SHOW LOCK AND NEW LOCK MANAGER IMPLEMENTATION.**
+
+New lock manager implementation needed to coordinate DDL operations, background
+compaction, and client operations. CREATE/DROP LOCK is mostly used to support isolation tests
+and some rare cases.
+
+**SCALE COMPUTE UP AND DOWN WITHOUT DOWNTIME AND REPARTITIONING.**
+
+Executor, transaction processing, and group commit were redesigned and switched to per-partition
+processing instead of per-backend processing.
+
+This allowed running partitions inside backends as pods (a single coroutine per partition).
+This approach allowed to decouple partitions from backends and move or deploy them on different
+backend threads. This allows scaling up or down processing performance by putting more or
+fewer backend threads. This approach also opens interesting possibilities for
+a Cloud deployment.
+
+**NOVEL DETERMINISTIC TRANSACTION PROTOCOL.**
+
+Because transaction processing is per-partition, it is now possible to track
+non-overlapping partitions and process and commit them independently. This means that transactions
+that do longer-running disk storage operations will not block in-memory-only partitions.
+
+Besides that, some interesting R&D work been done which resulted in the development of an entirely
+new deterministic transactional protocol for concurrent strict serializable processing as an
+alternative to MVCC. This is a large topic to cover here. It might be introduced in the future to handle less
+contention workloads to achieve even better parallelism. As of now, I would like to focus on true,
+strictly serialized transactions to solve high contention cases as much as possible without
+introducing serialized conflicts.
+
 ## 0.8.0 (12-12-2025)
 
 This release introduces a switch to separate databases, greatly improved HTTP/endpoints support, a
