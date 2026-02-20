@@ -92,6 +92,18 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 			id_delete(&id, state);
 			break;
 		}
+		case ID_PENDING_INCOMPLETE:
+		{
+			// remove incomplete object file
+			id_delete(&id, state);
+			break;
+		}
+		case ID_PENDING:
+		{
+			auto obj = object_allocate(&id);
+			level_add_pending(level, obj);
+			break;
+		}
 		}
 	}
 	return false;
@@ -254,4 +266,13 @@ engine_recover(Engine* self, int count)
 	}
 	main->list_service_count = 0;
 	list_init(&main->list_service);
+
+	// todo: sort pending objects by id
+
+	// open pending objects
+	list_foreach_safe(&main->list_pending)
+	{
+		auto obj = list_at(Object, link);
+		object_open(obj, ID_PENDING, true);
+	}
 }

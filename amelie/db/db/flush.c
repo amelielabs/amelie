@@ -91,7 +91,7 @@ flush_job(intptr_t* argv)
 	heap_temp->header->hash_max = heap->header->hash_max;
 	heap_temp->header->lsn      = self->origin_lsn;
 	auto id = &self->id_ram;
-	heap_create(heap, &self->file_ram, id, ID_RAM_INCOMPLETE);
+	heap_create(heap_temp, &self->file_ram, id, ID_RAM_INCOMPLETE);
 
 	auto total = (double)self->file_ram.size / 1024 / 1024;
 	info("flush: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
@@ -257,12 +257,13 @@ flush_apply(Flush* self)
 	// update storage refs
 	tier_storage_unref(origin->id.storage);
 	tier_storage_ref(self->id_ram.storage);
-	tier_storage_ref(self->id_pending.storage);
+
+	// register object
+	level_add_pending(engine_main(&self->table->engine), self->object);
+	self->object = NULL;
 
 	// update partition id
 	origin->id = self->id_ram;
-
-	// todo: register object
 }
 
 void
@@ -311,9 +312,6 @@ flush_reset(Flush* self)
 	file_close(&self->file_ram);
 	file_close(&self->file_pending);
 	file_close(&self->file_service);
-	file_init(&self->file_ram);
-	file_init(&self->file_pending);
-	file_init(&self->file_service);
 	buf_init(&self->heap_index);
 }
 

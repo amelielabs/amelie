@@ -99,6 +99,7 @@ file_close(File* self)
 		vfs_close(self->fd);
 		self->fd = -1;
 	}
+	self->size = 0;
 	str_free(&self->path);
 }
 
