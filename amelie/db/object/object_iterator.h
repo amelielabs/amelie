@@ -22,6 +22,7 @@ struct ObjectIterator
 	Object*        object;
 	Keys*          keys;
 	Reader         reader;
+	bool           allocated;
 };
 
 hot static inline bool
@@ -98,6 +99,8 @@ object_iterator_free(ObjectIterator* self)
 {
 	reader_reset(&self->reader);
 	reader_free(&self->reader);
+	if (self->allocated)
+		am_free(self);
 }
 
 static inline void
@@ -110,8 +113,9 @@ object_iterator_reset(ObjectIterator* self)
 static inline void
 object_iterator_init(ObjectIterator* self)
 {
-	self->object  = NULL;
-	self->current = NULL;
+	self->object    = NULL;
+	self->current   = NULL;
+	self->allocated = false;
 	reader_init(&self->reader);
 	meta_iterator_init(&self->meta_iterator);
 	region_iterator_init(&self->region_iterator);
@@ -120,4 +124,13 @@ object_iterator_init(ObjectIterator* self)
 	it->at    = (IteratorAt)object_iterator_at;
 	it->next  = (IteratorNext)object_iterator_next;
 	it->close = (IteratorClose)object_iterator_free;
+}
+
+static inline ObjectIterator*
+object_iterator_allocate(void)
+{
+	auto self = (ObjectIterator*)am_malloc(sizeof(ObjectIterator));
+	object_iterator_init(self);
+	self->allocated = true;
+	return self;
 }

@@ -116,7 +116,7 @@ flush_job(intptr_t* argv)
 	id = &self->id_pending;
 	auto writer = self->writer;
 	writer_reset(writer);
-	writer_start(writer, &self->file_pending, id->storage->storage, id->tier, 0);
+	writer_start(writer, &self->file_pending, id->storage->storage, id->tier);
 	while (heap_index_iterator_has(&it))
 	{
 		auto row = heap_index_iterator_at(&it);

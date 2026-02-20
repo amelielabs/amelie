@@ -89,11 +89,11 @@ writer_stop_region(Writer* self)
 void
 writer_start(Writer*   self, File* file,
              Storage*  storage,
-             Tier*     tier, int region_size)
+             Tier*     tier)
 {
 	self->file        = file;
 	self->storage     = storage;
-	self->region_size = region_size;
+	self->region_size = tier->region_size;
 
 	// set compression
 	meta_writer_open(&self->meta_writer, tier);

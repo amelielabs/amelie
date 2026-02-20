@@ -74,38 +74,56 @@ codec_zstd_encode(Codec*   codec, Buf* buf,
 	auto self = (CodecZstd*)codec;
 	buf_reserve(buf, data_size);
 
-	ZSTD_outBuffer out;
-	out.dst  = buf->position;
-	out.size = buf_size_unused(buf);
-	out.pos  = 0;
+	const auto min = ZSTD_CStreamOutSize();
+	ZSTD_inBuffer input =
+	{
+		.src  = data,
+		.size = data_size,
+		.pos  = 0
+	};
+	while (input.pos < input.size)
+	{
+		buf_reserve(buf, min);
 
-	ZSTD_inBuffer in;
-	in.src   = data;
-	in.size  = data_size;
-	in.pos   = 0;
+		ZSTD_outBuffer output =
+		{
+			.dst  = buf->position,
+			.size = buf_size_unused(buf),
+			.pos  = 0
+		};
+		auto rc = ZSTD_compressStream2(self->ctx, &output, &input, ZSTD_e_continue);
+		if (ZSTD_isError(rc))
+			error("zstd: encode failed: %s", ZSTD_getErrorName(rc));
 
-	auto rc = ZSTD_compressStream2(self->ctx, &out, &in, ZSTD_e_continue);
-	assert(rc == 0);
-	unused(rc);
-
-	buf_advance(buf, out.pos);
+		buf_advance(buf, output.pos);
+	}
 }
 
 hot static void
 codec_zstd_encode_end(Codec* codec, Buf* buf)
 {
 	auto self = (CodecZstd*)codec;
-	ZSTD_outBuffer out;
-	out.dst  = buf->position;
-	out.size = buf_size_unused(buf);
-	out.pos  = 0;
 
-	ZSTD_inBuffer in;
-	memset(&in, 0, sizeof(in));
-	auto rc = ZSTD_compressStream2(self->ctx, &out, &in, ZSTD_e_end);
-	unused(rc);
+	const auto min = ZSTD_CStreamOutSize();
+	ZSTD_inBuffer input = { NULL, 0, 0 };
+	for (;;)
+	{
+		buf_reserve(buf, min);
 
-	buf_advance(buf, out.pos);
+		ZSTD_outBuffer output =
+		{
+			.dst  = buf->position,
+			.size = buf_size_unused(buf),
+			.pos  = 0
+		};
+		auto rc = ZSTD_compressStream2(self->ctx, &output, &input, ZSTD_e_end);
+		if (ZSTD_isError(rc))
+			error("zstd: encode failed: %s", ZSTD_getErrorName(rc));
+		buf_advance(buf, output.pos);
+
+		if (! rc)
+			break;
+	}
 }
 
 hot static void
@@ -118,7 +136,7 @@ codec_zstd_decode(Codec*   codec,
 	unused(codec);
 	int rc = ZSTD_decompress(dst, dst_size, src, src_size);
 	if (unlikely(ZSTD_isError(rc)))
-		error("zstd: decodec failed");
+		error("zstd: decode failed: %s", ZSTD_getErrorName(rc));
 	assert(rc == dst_size);
 }
 
