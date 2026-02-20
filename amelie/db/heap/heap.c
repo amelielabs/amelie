@@ -56,6 +56,8 @@ heap_prepare(Heap* self)
 	header->hash_max        = 0;
 	header->compression     = COMPRESSION_NONE;
 	header->count           = 0;
+	header->count_used      = 0;
+	header->size_used       = 0;
 
 	self->header  = header;
 	self->buckets = header->buckets;
@@ -252,6 +254,10 @@ heap_add(Heap* self, int size)
 	chunk->is_shadow      = self->shadow != NULL;
 	chunk->is_shadow_free = false;
 
+	// update total used metrics
+	self->header->count_used++;
+	self->header->size_used += bucket->size;
+
 	// support lru (place chunk on top of the list)
 	if (self->lru)
 		heap_push(self, chunk);
@@ -296,6 +302,10 @@ heap_remove(Heap* self, void* pointer)
 	bucket->list        = heap_page_of(chunk)->order;
 	bucket->list_offset = chunk->offset;
 	bucket->list_count++;
+
+	// update total used metrics
+	self->header->count_used--;
+	self->header->size_used -= bucket->size;
 
 	// if not first, merge left  if left->free (use chunk->bucket_left to match)
 	// if not last,  merge right if right->free

@@ -77,6 +77,8 @@ struct HeapHeader
 	uint16_t   hash_max;
 	uint8_t    compression;
 	uint32_t   count;
+	uint32_t   count_used;
+	uint64_t   size_used;
 	HeapBucket buckets[];
 } packed;
 
