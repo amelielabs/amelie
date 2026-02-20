@@ -31,6 +31,15 @@ db_refresh(Db* self, Uuid* id_table, uint64_t id, Str* storage)
 	refresh_run(&refresh, id_table, id, storage);
 }
 
+void
+db_flush(Db* self, Uuid* id_table, uint64_t id)
+{
+	Flush flush;
+	flush_init(&flush, self);
+	defer(flush_free, &flush);
+	flush_run(&flush, id_table, id);
+}
+
 static Buf*
 db_pending(Db* self)
 {

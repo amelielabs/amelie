@@ -295,7 +295,8 @@ OpDesc ops[] =
 	// ddl
 	{ CDDL, "ddl" },
 	{ CDDL_CREATE_INDEX, "ddl_create_index" },
-	{ CREFRESH, "refresh" },
+	{ CDDL_REFRESH, "ddl_refresh" },
+	{ CDDL_FLUSH, "ddl_flush" },
 
 	// result
 	{ CSEND_SHARD, "send_shard" },

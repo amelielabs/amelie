@@ -20,7 +20,9 @@ enum
 	ID_SERVICE_INCOMPLETE,
 	ID_RAM,
 	ID_RAM_INCOMPLETE,
-	ID_RAM_SNAPSHOT
+	ID_RAM_SNAPSHOT,
+	ID_PENDING,
+	ID_PENDING_INCOMPLETE
 };
 
 struct Id
@@ -45,6 +47,8 @@ id_of(const char* name, int64_t* id)
 	// <id>.ram
 	// <id>.ram.incomplete
 	// <id>.ram.snapshot
+	// <id>.pending
+	// <id>.pending.incomplete
 	*id = 0;
 	while (*name && *name != '.')
 	{
@@ -70,6 +74,12 @@ id_of(const char* name, int64_t* id)
 	if (! strcmp(name, ".ram"))
 		state = ID_RAM;
 	else
+	if (! strcmp(name, ".pending.incomplete"))
+		state = ID_PENDING_INCOMPLETE;
+	else
+	if (! strcmp(name, ".pending"))
+		state = ID_PENDING;
+	else
 		state = -1;
 	return state;
 }
@@ -83,6 +93,8 @@ id_extension_of(int state)
 	case ID_RAM:                return ".ram";
 	case ID_RAM_INCOMPLETE:     return ".ram.incomplete";
 	case ID_RAM_SNAPSHOT:       return ".ram.snapshot";
+	case ID_PENDING_INCOMPLETE: return ".pending.incomplete";
+	case ID_PENDING:            return ".pending";
 	}
 	abort();
 	return NULL;

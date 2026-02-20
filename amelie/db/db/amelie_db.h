@@ -21,6 +21,7 @@
 #include "db/db.h"
 #include "db/refresh.h"
 #include "db/indexate.h"
+#include "db/flush.h"
 #include "db/op.h"
 #include "db/op_index.h"
 

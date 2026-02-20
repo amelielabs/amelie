@@ -370,7 +370,8 @@ vm_run(Vm*       self,
 		// ddl
 		&&cddl,
 		&&cddl_create_index,
-		&&crefresh,
+		&&cddl_refresh,
+		&&cddl_flush,
 
 		// executor
 		&&csend_shard,
@@ -1934,13 +1935,18 @@ cddl_create_index:
 	cddl_create_index(self, op);
 	op_next;
 
-crefresh:
+cddl_refresh:
 	// [table*, id, storage_name]
 	str_init(&string);
 	if (op->c != -1)
 		code_data_at_string(code_data, op->c, &string);
 	db_refresh(share()->db, &((Table*)op->a)->config->id, op->b,
 	           str_empty(&string) ? NULL : &string);
+	op_next;
+
+cddl_flush:
+	// [table*, id]
+	db_flush(share()->db, &((Table*)op->a)->config->id, op->b);
 	op_next;
 
 csend_shard:

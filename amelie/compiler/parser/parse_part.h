@@ -16,6 +16,7 @@ typedef struct AstPartAlter AstPartAlter;
 enum
 {
 	PARTITION_ALTER_REFRESH,
+	PARTITION_ALTER_FLUSH,
 	PARTITION_ALTER_MOVE
 };
 

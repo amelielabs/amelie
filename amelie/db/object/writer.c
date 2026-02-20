@@ -115,11 +115,14 @@ writer_stop(Writer* self)
 		writer_stop_region(self);
 	meta_writer_stop(&self->meta_writer);
 
-	// write region
+	// write meta
 	auto encoder = &self->meta_writer.encoder;
 	auto iov = encoder_iov(encoder);
 	auto iov_count = encoder_iov_count(encoder);
 	file_writev(self->file, iov, iov_count);
+
+	// write meta footer
+	file_write(self->file, &self->meta_writer.meta, sizeof(Meta));
 }
 
 void

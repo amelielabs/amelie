@@ -1,0 +1,348 @@
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+#include <amelie_runtime>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
+#include <amelie_index.h>
+#include <amelie_object.h>
+#include <amelie_engine.h>
+#include <amelie_catalog.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+
+static bool
+flush_begin(Flush* self, Uuid* id_table, uint64_t id)
+{
+	auto db = self->db;
+
+	// find table by uuid
+	auto table = table_mgr_find_by(&db->catalog.table_mgr, id_table, false);
+	if (! table)
+		return false;
+	self->table = table;
+
+	// create shadow heap
+	auto heap_shadow = heap_allocate(false);
+
+	// take table exclusive lock (unlock on return)
+	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
+	defer(unlock, lock_table);
+
+	// find partition by id
+	auto origin = engine_find(&table->engine, id);
+	if (! origin)
+	{
+		heap_free(heap_shadow);
+		return false;
+	}
+	self->origin = origin;
+
+	// set shadow heap hash min/max
+	heap_shadow->header->hash_min = origin->heap->header->hash_min;
+	heap_shadow->header->hash_max = origin->heap->header->hash_max;
+
+	// set id
+	self->id_origin     = origin->id;
+	self->id_ram        = origin->id;
+	self->id_ram.id     = state_psn_next();
+	self->id_pending    = origin->id;
+	self->id_pending.id = state_psn_next();
+
+	// pick storage to use
+	auto tier = origin->id.tier;
+	self->id_ram.storage     = tier_storage_next(tier);
+	self->id_pending.storage = tier_storage_next(tier);
+
+	// commit pending prepared transactions
+	auto consensus = &origin->track.consensus;
+	track_sync(&origin->track, consensus);
+	assert(! origin->track.prepared.list_count);
+	self->origin_lsn = origin->track.lsn;
+
+	// switch partition shadow heap and begin heap snapshot
+	assert(! origin->heap_shadow);
+	origin->heap_shadow = heap_shadow;
+	heap_snapshot(origin->heap, heap_shadow, true);
+	return true;
+}
+
+static void
+flush_job(intptr_t* argv)
+{
+	auto self = (Flush*)argv[0];
+	auto heap = self->origin->heap;
+
+	// create <id>.ram.incomplete file
+	auto heap_temp = heap_allocate(false);
+	defer(heap_free, heap_temp);
+	heap_temp->header->hash_min = heap->header->hash_min;
+	heap_temp->header->hash_max = heap->header->hash_max;
+	heap_temp->header->lsn      = self->origin_lsn;
+	auto id = &self->id_ram;
+	heap_create(heap, &self->file_ram, id, ID_RAM_INCOMPLETE);
+
+	auto total = (double)self->file_ram.size / 1024 / 1024;
+	info("flush: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
+	     id->storage->storage->config->name.pos,
+	     id->tier->name.pos,
+	     id->id,
+	     total);
+
+	// create <id>.pending.incomplete file
+	id_create(&self->id_pending, &self->file_pending, ID_PENDING_INCOMPLETE);	
+
+	// create heap index
+	auto keys = index_keys(part_primary(self->origin));
+	heap_index(heap, keys, &self->heap_index);
+
+	// prepare heap index iterator
+	HeapIndexIterator it;
+	heap_index_iterator_init(&it);
+	heap_index_iterator_open(&it, &self->heap_index);
+
+	// write pending object
+	id = &self->id_pending;
+	auto writer = self->writer;
+	writer_reset(writer);
+	writer_start(writer, &self->file_pending, id->storage->storage, id->tier, 0);
+	while (heap_index_iterator_has(&it))
+	{
+		auto row = heap_index_iterator_at(&it);
+		writer_add(writer, row);
+		heap_index_iterator_next(&it);
+	}
+	writer_stop(writer);
+
+	total = (double)self->file_pending.size / 1024 / 1024;
+	info("flush: %s/%s/%05" PRIu64 ".pending (%.2f MiB)",
+	     id->storage->storage->config->name.pos,
+	     id->tier->name.pos,
+	     id->id,
+	     total);
+
+	// create and open object
+	self->object = object_allocate(&self->id_pending);
+	object_open(self->object, ID_PENDING_INCOMPLETE, true);
+
+	// create <id>.service.incomplete file
+	auto service = self->service;
+	service_set_id(service, &self->id_pending);
+	service_begin(service);
+	service_add_input(service, self->id_origin.id);
+	service_add_output(service, self->id_ram.id);
+	service_add_output(service, self->id_pending.id);
+	service_end(service);
+	service_create(service, &self->file_service, ID_SERVICE_INCOMPLETE);
+}
+
+static void
+flush_complete_job(intptr_t* argv)
+{
+	auto self = (Flush*)argv[0];
+
+	// free shadow heap (former main heap)
+	auto origin = self->origin;
+	auto shadow = origin->heap_shadow;
+	origin->heap_shadow = NULL;
+	heap_free(shadow);
+
+	// free indexes
+	auto index = self->indexes;
+	while (index)
+	{
+		auto next = index->next;
+		index_free(index);
+		index = next;
+	}
+	self->indexes = NULL;
+
+	// sync incomplete service file
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&self->file_service);
+
+	file_close(&self->file_service);
+
+	// rename
+	id_rename(&self->id_pending, ID_SERVICE_INCOMPLETE, ID_SERVICE);
+
+	// heap
+
+	// sync incomplete heap file
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&self->file_ram);
+
+	file_close(&self->file_ram);
+
+	// unlink origin heap file
+	id_delete(&self->id_origin, ID_RAM);
+
+	// rename
+	id_rename(&self->id_ram, ID_RAM_INCOMPLETE, ID_RAM);
+
+	// pending
+
+	// sync incomplete pending file
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&self->file_pending);
+
+	file_close(&self->file_pending);
+
+	// rename
+	id_rename(&self->id_pending, ID_PENDING_INCOMPLETE, ID_PENDING);
+
+	// remove service files (complete)
+	id_delete(&self->id_pending, ID_SERVICE);
+}
+
+static void
+flush_apply(Flush* self)
+{
+	auto table  = self->table;
+	auto origin = self->origin;
+
+	// take table exclusive lock (unlock on return)
+	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
+	defer(unlock, lock_table);
+
+	// force commit prepared transactions
+	track_sync(&origin->track, &origin->track.consensus);
+	assert(! origin->track.prepared.list_count);
+
+	// snapshot complete
+	heap_snapshot(origin->heap, NULL, false);
+
+	// create a new set of indexes
+	self->indexes         = origin->indexes;
+	origin->indexes       = NULL;
+	origin->indexes_count = 0;
+	auto index = self->indexes;
+	while (index)
+	{
+		part_index_create(origin, index->config);
+		index = index->next;
+	}
+
+	// use shadow heap as main
+	auto heap = origin->heap;
+	origin->heap = origin->heap_shadow;
+	origin->heap_shadow = heap;
+
+	// recreate indexes
+	HeapIterator it;
+	heap_iterator_init(&it);
+	heap_iterator_open(&it, origin->heap, NULL);
+	for (; heap_iterator_has(&it); heap_iterator_next(&it))
+	{
+		auto chunk = heap_iterator_at_chunk(&it);
+		if (chunk->is_shadow_free)
+			continue;
+		chunk->is_shadow = false;
+		auto row = heap_iterator_at(&it);
+		auto prev = part_apply(origin, row, false);
+		assert(! prev);
+	}
+
+	// update storage refs
+	tier_storage_unref(origin->id.storage);
+	tier_storage_ref(self->id_ram.storage);
+	tier_storage_ref(self->id_pending.storage);
+
+	// update partition id
+	origin->id = self->id_ram;
+
+	// todo: register object
+}
+
+void
+flush_init(Flush* self, Db* db)
+{
+	ops_lock_init(&self->lock);
+	self->origin     = NULL;
+	self->origin_lsn = 0;
+	self->object     = NULL;
+	self->indexes    = NULL;
+	self->table      = NULL;
+	self->service    = service_allocate();
+	self->writer     = writer_allocate();
+	self->db         = db;
+	id_init(&self->id_origin);
+	id_init(&self->id_ram);
+	id_init(&self->id_pending);
+	file_init(&self->file_ram);
+	file_init(&self->file_pending);
+	file_init(&self->file_service);
+	buf_reset(&self->heap_index);
+}
+
+void
+flush_free(Flush* self)
+{
+	service_free(self->service);
+	writer_free(self->writer);
+	buf_free(&self->heap_index);
+}
+
+void
+flush_reset(Flush* self)
+{
+	ops_lock_init(&self->lock);
+	self->origin     = NULL;
+	self->origin_lsn = 0;
+	self->object     = NULL;
+	self->indexes    = NULL;
+	self->table      = NULL;
+	service_reset(self->service);
+	writer_reset(self->writer);
+	id_init(&self->id_origin);
+	id_init(&self->id_ram);
+	id_init(&self->id_pending);
+	file_close(&self->file_ram);
+	file_close(&self->file_pending);
+	file_close(&self->file_service);
+	file_init(&self->file_ram);
+	file_init(&self->file_pending);
+	file_init(&self->file_service);
+	buf_init(&self->heap_index);
+}
+
+void
+flush_run(Flush* self, Uuid* id_table, uint64_t id)
+{
+	flush_reset(self);
+
+	// get catalog shared lock and partition service lock
+	ops_lock(&self->db->ops, &self->lock, id);
+	defer(ops_unlock, &self->lock);
+
+	// find and rotate partition
+	if (! flush_begin(self, id_table, id))
+		error("partition not found");
+
+	// create heap snapshot
+	auto on_error = error_catch
+	(
+		// run heap snapshot in background
+		run(flush_job, 1, self);
+
+		// apply
+		flush_apply(self);
+
+		// finilize and cleanup
+		run(flush_complete_job, 1, self);
+	);
+
+	if (on_error)
+		rethrow();
+}

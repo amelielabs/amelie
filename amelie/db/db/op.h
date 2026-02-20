@@ -12,6 +12,7 @@
 //
 
 void      db_refresh(Db*, Uuid*, uint64_t, Str*);
+void      db_flush(Db*, Uuid*, uint64_t);
 void      db_checkpoint(Db*);
 void      db_gc(Db*);
 Snapshot* db_snapshot(Db*);

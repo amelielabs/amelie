@@ -481,12 +481,16 @@ emit_utility(Compiler* self)
 		                            &arg->table->string, true);
 		if (arg->type == PARTITION_ALTER_REFRESH)
 		{
-			op3(self, CREFRESH, (intptr_t)table, arg->id, -1);
+			op3(self, CDDL_REFRESH, (intptr_t)table, arg->id, -1);
+		} else
+		if (arg->type == PARTITION_ALTER_FLUSH)
+		{
+			op2(self, CDDL_FLUSH, (intptr_t)table, arg->id);
 		} else
 		if (arg->type == PARTITION_ALTER_MOVE)
 		{
 			auto offset = code_data_add_string(self->code_data, &arg->storage);
-			op3(self, CREFRESH, (intptr_t)table, arg->id, offset);
+			op3(self, CDDL_REFRESH, (intptr_t)table, arg->id, offset);
 		}
 
 		// lock

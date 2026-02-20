@@ -184,6 +184,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/storage/storage_mgr.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/heap_file.c
+    ${AMELIE_ROOT}/db/heap/heap_index.c
     ${AMELIE_ROOT}/db/index/tree.c
     ${AMELIE_ROOT}/db/index/index_tree.c
     ${AMELIE_ROOT}/db/index/index_hash.c
@@ -212,6 +213,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/snapshot_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/refresh.c
+    ${AMELIE_ROOT}/db/db/flush.c
     ${AMELIE_ROOT}/db/db/indexate.c
     ${AMELIE_ROOT}/db/db/op.c
     ${AMELIE_ROOT}/db/db/op_index.c

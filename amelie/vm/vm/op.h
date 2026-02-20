@@ -288,7 +288,8 @@ enum
 	// ddl
 	CDDL,
 	CDDL_CREATE_INDEX,
-	CREFRESH,
+	CDDL_REFRESH,
+	CDDL_FLUSH,
 
 	// result
 	CSEND_SHARD,
