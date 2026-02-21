@@ -22,7 +22,8 @@ enum
 	ID_RAM_INCOMPLETE,
 	ID_RAM_SNAPSHOT,
 	ID_PENDING,
-	ID_PENDING_INCOMPLETE
+	ID_PENDING_INCOMPLETE,
+	ID_PENDING_SNAPSHOT
 };
 
 typedef void (*IdFree)(Id*);
@@ -86,6 +87,7 @@ id_of(const char* name, int64_t* id)
 	// <id>.ram.snapshot
 	// <id>.pending
 	// <id>.pending.incomplete
+	// <id>.pending.snapshot
 	*id = 0;
 	while (*name && *name != '.')
 	{
@@ -114,6 +116,9 @@ id_of(const char* name, int64_t* id)
 	if (! strcmp(name, ".pending.incomplete"))
 		state = ID_PENDING_INCOMPLETE;
 	else
+	if (! strcmp(name, ".pending.snapshot"))
+		state = ID_PENDING_SNAPSHOT;
+	else
 	if (! strcmp(name, ".pending"))
 		state = ID_PENDING;
 	else
@@ -130,8 +135,9 @@ id_extension_of(int state)
 	case ID_RAM:                return ".ram";
 	case ID_RAM_INCOMPLETE:     return ".ram.incomplete";
 	case ID_RAM_SNAPSHOT:       return ".ram.snapshot";
-	case ID_PENDING_INCOMPLETE: return ".pending.incomplete";
 	case ID_PENDING:            return ".pending";
+	case ID_PENDING_INCOMPLETE: return ".pending.incomplete";
+	case ID_PENDING_SNAPSHOT:   return ".pending.snapshot";
 	}
 	abort();
 	return NULL;
@@ -203,6 +209,18 @@ id_snapshot(Id* self, int state, int state_snapshot)
 	auto rc = link(path, path_snapshot);
 	if (rc == -1)
 		error_system();
+}
+
+static inline int
+id_snapshot_of(int state)
+{
+	switch (state) {
+	case ID_RAM:     return ID_RAM_SNAPSHOT;
+	case ID_PENDING: return ID_PENDING_SNAPSHOT;
+	default:
+		abort();
+	}
+	return ID_NONE;
 }
 
 static inline void

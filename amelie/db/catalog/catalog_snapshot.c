@@ -63,12 +63,16 @@ catalog_snapshot(Catalog* self, Buf* data)
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
 		defer(unlock, table_lock);
 
-		list_foreach(&engine_main(&table->engine)->list_ram)
+		list_foreach(&table->engine.list)
 		{
-			auto part = list_at(Part, id.link);
-			id_snapshot(&part->id, ID_RAM, ID_RAM_SNAPSHOT);
+			auto id = list_at(Id, link_mgr);
+			auto id_snap = id_snapshot_of(id->type);
+
+			// create snapshot file
+			id_snapshot(id, id->type, id_snap);
+
 			// [path, size, mode]
-			id_encode(&part->id, ID_RAM_SNAPSHOT, data);
+			id_encode(id, id_snap, data);
 		}
 	}
 

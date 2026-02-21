@@ -93,8 +93,9 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 			break;
 		}
 		case ID_PENDING_INCOMPLETE:
+		case ID_PENDING_SNAPSHOT:
 		{
-			// remove incomplete object file
+			// remove incomplete and snapshot files
 			id_delete(&id, state);
 			break;
 		}
