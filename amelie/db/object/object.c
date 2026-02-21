@@ -21,12 +21,14 @@ Object*
 object_allocate(Id* id)
 {
 	auto self = (Object*)am_malloc(sizeof(Object));
-	self->id = *id;
+	id_init(&self->id);
+	id_set_free(&self->id, (IdFree)object_free);
+	id_copy(&self->id, id);
+
 	meta_init(&self->meta);
 	buf_init(&self->meta_data);
 	file_init(&self->file);
 	rbtree_init_node(&self->link_mapping);
-	list_init(&self->link);
 	return self;
 }
 
@@ -157,10 +159,10 @@ object_rename(Object* self, int from, int to)
 }
 
 void
-object_status(Object* self, int state, Buf* buf, bool extended)
+object_status(Object* self, Buf* buf, bool extended)
 {
 	auto meta = &self->meta;
-	id_status(&self->id, state, buf, extended,
+	id_status(&self->id, buf, extended,
 	          0, // hash_min
 	          0, // hash_max
 	          0, // lsn

@@ -29,14 +29,16 @@ engine_init(Engine*     self,
             bool        unlogged,
             Keys*       keys)
 {
-	self->iface        = iface;
-	self->iface_arg    = iface_arg;
-	self->storage_mgr  = storage_mgr;
 	self->levels_count = 0;
+	self->list_count   = 0;
 	self->id_table     = id_table;
 	self->seq          = seq;
 	self->unlogged     = unlogged;
+	self->iface        = iface;
+	self->iface_arg    = iface_arg;
+	self->storage_mgr  = storage_mgr;
 	list_init(&self->levels);
+	list_init(&self->list);
 	part_mapping_init(&self->mapping, keys);
 }
 
@@ -47,6 +49,11 @@ engine_free(Engine* self)
 	{
 		auto level = list_at(Level, link);
 		level_free(level);
+	}
+	list_foreach_safe(&self->list)
+	{
+		auto id = list_at(Id, link_mgr);
+		id_free(id);
 	}
 	part_mapping_free(&self->mapping);
 }
@@ -66,9 +73,9 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 
 	// create indexes
 	auto main = engine_main(self);
-	list_foreach(&main->list)
+	list_foreach(&main->list_ram)
 	{
-		auto part = list_at(Part, link);
+		auto part = list_at(Part, id.link);
 		list_foreach(indexes)
 		{
 			auto config = list_at(IndexConfig, link);
@@ -80,9 +87,9 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 	self->iface->attach(self, main);
 
 	// map hash partitions
-	list_foreach(&main->list)
+	list_foreach(&main->list_ram)
 	{
-		auto part = list_at(Part, link);
+		auto part = list_at(Part, id.link);
 		part_mapping_add(&self->mapping, part);
 
 		// update metrics
@@ -103,26 +110,29 @@ engine_close(Engine* self, bool drop)
 	self->iface->detach(self, main);
 
 	// delete partition files on drop
-	if (drop)
+	if (! drop)
+		return;
+
+	list_foreach(&self->list)
 	{
-		list_foreach(&main->list)
-		{
-			auto part = list_at(Part, link);
-			id_delete(&part->id, ID_RAM);
-		}
+		auto id = list_at(Id, link_mgr);
+		id_delete(id, id->type);
 	}
 }
 
-Part*
-engine_find(Engine* self, uint64_t id)
+static inline void
+engine_status_of(Id* id, Buf* buf, bool extended)
 {
-	list_foreach(&engine_main(self)->list)
-	{
-		auto part = list_at(Part, link);
-		if (part->id.id == id)
-			return part;
+	switch (id->type) {
+	case ID_RAM:
+		part_status(part_of(id), buf, extended);
+		break;
+	case ID_PENDING:
+		object_status(object_of(id), buf, extended);
+		break;
+	default:
+		abort();
 	}
-	return NULL;
 }
 
 Buf*
@@ -134,31 +144,24 @@ engine_status(Engine* self, Str* ref, bool extended)
 	// show partition id on table
 	if (ref)
 	{
-		int64_t id;
-		if (str_toint(ref, &id) == -1)
+		int64_t psn;
+		if (str_toint(ref, &psn) == -1)
 			error("invalid partition id");
 
-		auto part = engine_find(self, id);
-		if (! part)
+		auto id = engine_find(self, psn);
+		if (! id)
 			encode_null(buf);
 		else
-			part_status(part, buf, extended);
+			engine_status_of(id, buf, extended);
 		return buf;
 	}
 
 	// show partitions on table
 	encode_array(buf);
-	auto main = engine_main(self);
-	list_foreach(&main->list)
+	list_foreach(&self->list)
 	{
-		auto part = list_at(Part, link);
-		part_status(part, buf, extended);
-	}
-
-	list_foreach(&main->list_pending)
-	{
-		auto obj = list_at(Object, link);
-		object_status(obj, ID_PENDING, buf, extended);
+		auto id = list_at(Id, link_mgr);
+		engine_status_of(id, buf, extended);
 	}
 	encode_array_end(buf);
 	return buf;

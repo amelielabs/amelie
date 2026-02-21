@@ -23,7 +23,6 @@ struct Part
 	Heap*     heap_shadow;
 	Sequence* seq;
 	bool      unlogged;
-	List      link;
 };
 
 Part*  part_allocate(Id*, Sequence*, bool);
@@ -46,4 +45,10 @@ static inline bool
 part_has_updates(Part* self)
 {
 	return track_lsn(&self->track) > self->heap->header->lsn;
+}
+
+static inline Part*
+part_of(Id* self)
+{
+	return (Part*)self;
 }

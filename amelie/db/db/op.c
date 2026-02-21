@@ -51,9 +51,9 @@ db_pending(Db* self)
 		auto table = table_of(list_at(Relation, link));
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
 
-		list_foreach(&engine_main(&table->engine)->list)
+		list_foreach(&engine_main(&table->engine)->list_ram)
 		{
-			auto part = list_at(Part, link);
+			auto part = list_at(Part, id.link);
 			if (part_has_updates(part))
 				buf_write(list, &part->id, sizeof(part->id));
 		}
@@ -120,9 +120,9 @@ db_gc(Db* self)
 	{
 		auto table = table_of(list_at(Relation, link));
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
-		list_foreach(&engine_main(&table->engine)->list)
+		list_foreach(&engine_main(&table->engine)->list_ram)
 		{
-			auto part = list_at(Part, link);
+			auto part = list_at(Part, id.link);
 			// include partition only if it has pending updates
 			if (! part_has_updates(part))
 				continue;

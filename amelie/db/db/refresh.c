@@ -41,24 +41,34 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	defer(unlock, lock_table);
 
 	// find partition by id
-	auto origin = engine_find(&table->engine, id);
-	if (! origin)
+	auto origin_id = engine_find(&table->engine, id);
+	if (! origin_id)
 	{
 		heap_free(heap_shadow);
 		return false;
 	}
+	if (origin_id->type != ID_RAM)
+	{
+		heap_free(heap_shadow);
+		return false;
+	}
+	auto origin  = part_of(origin_id);
 	self->origin = origin;
 
 	// set id
-	self->id_origin = origin->id;
-	self->id = origin->id;
-	self->id.id = state_psn_next();
+	id_copy(&self->id_origin, &origin->id);
+	id_copy(&self->id_ram, &origin->id);
+	id_copy(&self->id_service, &origin->id);
+	id_set_type(&self->id_service, ID_SERVICE);
+
+	self->id_ram.id     = state_psn_next();
+	self->id_service.id = self->id_ram.id;
 
 	// pick storage to use
 	TierStorage* storage_ref;
 	if (storage)
 	{
-		auto ref = tier_storage_find(self->id.tier, storage);
+		auto ref = tier_storage_find(self->id_ram.tier, storage);
 		if (! ref)
 		{
 			heap_free(heap_shadow);
@@ -68,9 +78,9 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	} else
 	{
 		// choose next available storage to use
-		storage_ref = tier_storage_next(self->id.tier);
+		storage_ref = tier_storage_next(self->id_ram.tier);
 	}
-	self->id.storage = storage_ref;
+	self->id_ram.storage = storage_ref;
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -93,11 +103,11 @@ refresh_snapshot_job(intptr_t* argv)
 	auto heap   = origin->heap;
 
 	// create <id>.ram.incomplete file
-	auto id = &self->id;
+	auto id = &self->id_ram;
 	heap->header->lsn = self->origin_lsn;
-	heap_create(heap, &self->file, id, ID_RAM_INCOMPLETE);
+	heap_create(heap, &self->file_ram, id, ID_RAM_INCOMPLETE);
 
-	auto total = (double)self->file.size / 1024 / 1024;
+	auto total = (double)self->file_ram.size / 1024 / 1024;
 	info("checkpoint: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
 	     id->storage->storage->config->name.pos,
 	     id->tier->name.pos,
@@ -106,10 +116,10 @@ refresh_snapshot_job(intptr_t* argv)
 
 	// create <id>.service.incomplete file
 	auto service = self->service;
-	service_set_id(service, id);
+	service_set_id(service, &self->id_service);
 	service_begin(service);
 	service_add_input(service, self->id_origin.id);
-	service_add_output(service, self->id.id);
+	service_add_output(service, self->id_ram.id);
 	service_end(service);
 	service_create(service, &self->file_service, ID_SERVICE_INCOMPLETE);
 }
@@ -132,22 +142,22 @@ refresh_complete_job(intptr_t* argv)
 	file_close(&self->file_service);
 
 	// rename
-	id_rename(&self->id, ID_SERVICE_INCOMPLETE, ID_SERVICE);
+	id_rename(&self->id_service, ID_SERVICE_INCOMPLETE, ID_SERVICE);
 
 	// sync incomplete heap file
 	if (opt_int_of(&config()->storage_sync))
-		file_sync(&self->file);
+		file_sync(&self->file_ram);
 
-	file_close(&self->file);
+	file_close(&self->file_ram);
 
 	// unlink origin heap file
 	id_delete(&self->id_origin, ID_RAM);
 
 	// rename
-	id_rename(&self->id, ID_RAM_INCOMPLETE, ID_RAM);
+	id_rename(&self->id_ram, ID_RAM_INCOMPLETE, ID_RAM);
 
 	// remove service files (complete)
-	id_delete(&self->id, ID_SERVICE);
+	id_delete(&self->id_service, ID_SERVICE);
 }
 
 static void
@@ -198,10 +208,10 @@ refresh_apply(Refresh* self)
 
 	// update storage refs
 	tier_storage_unref(origin->id.storage);
-	tier_storage_ref(self->id.storage);
+	tier_storage_ref(self->id_ram.storage);
 
 	// update partition id
-	origin->id = self->id;
+	id_copy(&origin->id, &self->id_ram);
 }
 
 void
@@ -214,8 +224,9 @@ refresh_init(Refresh* self, Db* db)
 	self->service    = service_allocate();
 	self->db         = db;
 	id_init(&self->id_origin);
-	id_init(&self->id);
-	file_init(&self->file);
+	id_init(&self->id_ram);
+	id_init(&self->id_service);
+	file_init(&self->file_ram);
 	file_init(&self->file_service);
 }
 
@@ -234,11 +245,10 @@ refresh_reset(Refresh* self)
 	self->table      = NULL;
 	service_reset(self->service);
 	id_init(&self->id_origin);
-	id_init(&self->id);
-	file_close(&self->file);
+	id_init(&self->id_ram);
+	id_init(&self->id_service);
+	file_close(&self->file_ram);
 	file_close(&self->file_service);
-	file_init(&self->file);
-	file_init(&self->file_service);
 }
 
 void

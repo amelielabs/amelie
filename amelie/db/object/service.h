@@ -15,22 +15,10 @@ typedef struct Service Service;
 
 struct Service
 {
-	Id   id;
-	Buf  input;
-	Buf  output;
-	List link;
+	Id  id;
+	Buf input;
+	Buf output;
 };
-
-static inline Service*
-service_allocate(void)
-{
-	auto self = (Service*)am_malloc(sizeof(Service));
-	id_init(&self->id);
-	buf_init(&self->input);
-	buf_init(&self->output);
-	list_init(&self->link);
-	return self;
-}
 
 static inline void
 service_free(Service* self)
@@ -38,6 +26,17 @@ service_free(Service* self)
 	buf_free(&self->input);
 	buf_free(&self->output);
 	am_free(self);
+}
+
+static inline Service*
+service_allocate(void)
+{
+	auto self = (Service*)am_malloc(sizeof(Service));
+	id_init(&self->id);
+	id_set_free(&self->id, (IdFree)service_free);
+	buf_init(&self->input);
+	buf_init(&self->output);
+	return self;
 }
 
 static inline void
@@ -50,7 +49,7 @@ service_reset(Service* self)
 static inline void
 service_set_id(Service* self, Id* id)
 {
-	self->id = *id;
+	id_copy(&self->id, id);
 }
 
 static inline void

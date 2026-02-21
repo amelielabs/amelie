@@ -25,18 +25,55 @@ enum
 	ID_PENDING_INCOMPLETE
 };
 
+typedef void (*IdFree)(Id*);
+
 struct Id
 {
 	uint64_t     id;
 	Uuid         id_table;
+	int          type;
 	TierStorage* storage;
 	Tier*        tier;
+	IdFree       free_function;
+	List         link_mgr;
+	List         link;
 };
 
 static inline void
 id_init(Id* self)
 {
 	memset(self, 0, sizeof(*self));
+	list_init(&self->link_mgr);
+	list_init(&self->link);
+}
+
+static inline void
+id_free(Id* self)
+{
+	if (self->free_function)
+		self->free_function(self);
+}
+
+static inline void
+id_set_type(Id* self, int type)
+{
+	self->type = type;
+}
+
+static inline void
+id_set_free(Id* self, IdFree function)
+{
+	self->free_function = function;
+}
+
+static inline void
+id_copy(Id* self, Id* id)
+{
+	self->id       = id->id;
+	self->id_table = id->id_table;
+	self->storage  = id->storage;
+	self->tier     = id->tier;
+	self->type     = id->type;
 }
 
 static inline int
@@ -183,7 +220,7 @@ id_encode(Id* self, int state, Buf* buf)
 }
 
 static inline void
-id_status(Id*      self, int state, Buf* buf, bool extended,
+id_status(Id*      self, Buf* buf, bool extended,
           int      hash_min,
           int      hash_max,
           uint64_t lsn,
@@ -207,11 +244,11 @@ id_status(Id*      self, int state, Buf* buf, bool extended,
 
 	// ram
 	encode_raw(buf, "ram", 3);
-	encode_bool(buf, state == ID_RAM);
+	encode_bool(buf, self->type == ID_RAM);
 
 	// pending
 	encode_raw(buf, "pending", 7);
-	encode_bool(buf, state == ID_PENDING);
+	encode_bool(buf, self->type == ID_PENDING);
 
 	// min
 	encode_raw(buf, "min", 3);

@@ -145,7 +145,7 @@ table_tier_drop(Table* self,
 	// validate engine tiers
 	auto level = engine_tier_find(&self->engine, name);
 	assert(level);
-	if (level->list_count > 0)
+	if (! level_empty(level))
 		error("table '%.*s' tier '%.*s': is not empty",
 		      str_size(&self->config->name),
 		      str_of(&self->config->name),

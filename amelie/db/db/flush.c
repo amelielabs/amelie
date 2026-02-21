@@ -41,12 +41,18 @@ flush_begin(Flush* self, Uuid* id_table, uint64_t id)
 	defer(unlock, lock_table);
 
 	// find partition by id
-	auto origin = engine_find(&table->engine, id);
-	if (! origin)
+	auto origin_id = engine_find(&table->engine, id);
+	if (! origin_id)
 	{
 		heap_free(heap_shadow);
 		return false;
 	}
+	if (origin_id->type != ID_RAM)
+	{
+		heap_free(heap_shadow);
+		return false;
+	}
+	auto origin  = part_of(origin_id);
 	self->origin = origin;
 
 	// set shadow heap hash min/max
@@ -54,11 +60,16 @@ flush_begin(Flush* self, Uuid* id_table, uint64_t id)
 	heap_shadow->header->hash_max = origin->heap->header->hash_max;
 
 	// set id
-	self->id_origin     = origin->id;
-	self->id_ram        = origin->id;
+	id_copy(&self->id_origin, &origin->id);
+	id_copy(&self->id_ram, &origin->id);
+	id_copy(&self->id_pending, &origin->id);
+	id_copy(&self->id_service, &origin->id);
+
 	self->id_ram.id     = state_psn_next();
-	self->id_pending    = origin->id;
 	self->id_pending.id = state_psn_next();
+	self->id_service.id = self->id_pending.id;
+	id_set_type(&self->id_pending, ID_PENDING);
+	id_set_type(&self->id_service, ID_SERVICE);
 
 	// pick storage to use
 	auto tier = origin->id.tier;
@@ -138,7 +149,7 @@ flush_job(intptr_t* argv)
 
 	// create <id>.service.incomplete file
 	auto service = self->service;
-	service_set_id(service, &self->id_pending);
+	service_set_id(service, &self->id_service);
 	service_begin(service);
 	service_add_input(service, self->id_origin.id);
 	service_add_output(service, self->id_ram.id);
@@ -175,7 +186,7 @@ flush_complete_job(intptr_t* argv)
 	file_close(&self->file_service);
 
 	// rename
-	id_rename(&self->id_pending, ID_SERVICE_INCOMPLETE, ID_SERVICE);
+	id_rename(&self->id_service, ID_SERVICE_INCOMPLETE, ID_SERVICE);
 
 	// heap
 
@@ -203,7 +214,7 @@ flush_complete_job(intptr_t* argv)
 	id_rename(&self->id_pending, ID_PENDING_INCOMPLETE, ID_PENDING);
 
 	// remove service files (complete)
-	id_delete(&self->id_pending, ID_SERVICE);
+	id_delete(&self->id_service, ID_SERVICE);
 }
 
 static void
@@ -259,11 +270,11 @@ flush_apply(Flush* self)
 	tier_storage_ref(self->id_ram.storage);
 
 	// register object
-	level_add_pending(engine_main(&self->table->engine), self->object);
+	engine_add(&self->table->engine, &self->object->id);
 	self->object = NULL;
 
 	// update partition id
-	origin->id = self->id_ram;
+	id_copy(&origin->id, &self->id_ram);
 }
 
 void
@@ -281,6 +292,7 @@ flush_init(Flush* self, Db* db)
 	id_init(&self->id_origin);
 	id_init(&self->id_ram);
 	id_init(&self->id_pending);
+	id_init(&self->id_service);
 	file_init(&self->file_ram);
 	file_init(&self->file_pending);
 	file_init(&self->file_service);
@@ -309,6 +321,7 @@ flush_reset(Flush* self)
 	id_init(&self->id_origin);
 	id_init(&self->id_ram);
 	id_init(&self->id_pending);
+	id_init(&self->id_service);
 	file_close(&self->file_ram);
 	file_close(&self->file_pending);
 	file_close(&self->file_service);

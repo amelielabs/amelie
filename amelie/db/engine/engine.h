@@ -25,6 +25,8 @@ struct Engine
 	PartMapping mapping;
 	List        levels;
 	int         levels_count;
+	List        list;
+	int         list_count;
 	Uuid*       id_table;
 	Sequence*   seq;
 	bool        unlogged;
@@ -39,9 +41,8 @@ engine_main(Engine* self)
 	return container_of(list_first(&self->levels), Level, link);
 }
 
-void  engine_init(Engine*, EngineIf*, void*, StorageMgr*, Uuid*, Sequence*, bool, Keys*);
-void  engine_free(Engine*);
-void  engine_open(Engine*, List*, List*, int);
-void  engine_close(Engine*, bool);
-Part* engine_find(Engine*, uint64_t);
-Buf*  engine_status(Engine*, Str*, bool);
+void engine_init(Engine*, EngineIf*, void*, StorageMgr*, Uuid*, Sequence*, bool, Keys*);
+void engine_free(Engine*);
+void engine_open(Engine*, List*, List*, int);
+void engine_close(Engine*, bool);
+Buf* engine_status(Engine*, Str*, bool);

@@ -20,20 +20,19 @@
 #include <amelie_engine.h>
 
 Part*
-part_allocate(Id*       id,
-              Sequence* seq,
-              bool      unlogged)
+part_allocate(Id* id, Sequence* seq, bool unlogged)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
-	self->id            = *id;
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->heap          = heap_allocate(false);
 	self->heap_shadow   = NULL;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
+	id_init(&self->id);
+	id_set_free(&self->id, (IdFree)part_free);
+	id_copy(&self->id, id);
 	track_init(&self->track);
-	list_init(&self->link);
 	return self;
 }
 
@@ -161,7 +160,7 @@ void
 part_status(Part* self, Buf* buf, bool extended)
 {
 	auto heap = self->heap->header;
-	id_status(&self->id, ID_RAM, buf, extended,
+	id_status(&self->id, buf, extended,
 	          heap->hash_min,
 	          heap->hash_max,
 	          heap->lsn,

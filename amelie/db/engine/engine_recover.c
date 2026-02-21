@@ -58,19 +58,19 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 		}
 		state_psn_follow(psn);
 
-		Id id =
-		{
-			.id       = psn,
-			.id_table = *self->id_table,
-			.storage  = storage,
-			.tier     = level->tier
-		};
+		Id id;
+		id_init(&id);
+		id.id       = psn;
+		id.id_table = *self->id_table;
+		id.type     = state;
+		id.storage  = storage;
+		id.tier     = level->tier;
 		switch (state) {
 		case ID_SERVICE:
 		{
 			auto service = service_allocate();
 			service_set_id(service, &id);
-			level_add_service(level, service);
+			engine_add(self, &service->id);
 			break;
 		}
 		case ID_SERVICE_INCOMPLETE:
@@ -82,7 +82,7 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 		case ID_RAM:
 		{
 			auto part = part_allocate(&id, self->seq, self->unlogged);
-			level_add(level, part);
+			engine_add(self, &part->id);
 			break;
 		}
 		case ID_RAM_INCOMPLETE:
@@ -101,7 +101,7 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 		case ID_PENDING:
 		{
 			auto obj = object_allocate(&id);
-			level_add_pending(level, obj);
+			engine_add(self, &obj->id);
 			break;
 		}
 		}
@@ -141,15 +141,16 @@ engine_create(Engine* self, int count)
 		auto storage = tier_storage_next(main->tier);
 
 		// create partition
-		Id id =
-		{
-			.id       = state_psn_next(),
-			.id_table = *self->id_table,
-			.storage  = storage,
-			.tier     = main->tier
-		};
+		Id id;
+		id_init(&id);
+		id.id       = state_psn_next();
+		id.id_table = *self->id_table;
+		id.type     = ID_RAM;
+		id.storage  = storage;
+		id.tier     = main->tier;
+
 		auto part = part_allocate(&id, self->seq, self->unlogged);
-		level_add(main, part);
+		engine_add(self, &part->id);
 
 		// set hash range
 		int range_step;
@@ -184,18 +185,17 @@ static void
 engine_recover_gc(Engine* self, uint8_t* pos)
 {
 	// remove all existing partitions and their files
-	auto main = engine_main(self);
 	json_read_array(&pos);
 	while (! json_read_array_end(&pos))
 	{
-		int64_t id;
-		json_read_integer(&pos, &id);
-		auto part = engine_find(self, id);
-		if (! part)
+		int64_t psn;
+		json_read_integer(&pos, &psn);
+		auto id = engine_find(self, psn);
+		if (! id)
 			continue;
-		id_delete(&part->id, ID_RAM);
-		level_remove(main, part);
-		part_free(part);
+		id_delete(id, id->type);
+		engine_remove(self, id);
+		id_free(id);
 	}
 }
 
@@ -214,10 +214,10 @@ engine_recover_service(Engine* self, Service* service)
 	json_read_array(&pos);
 	while (! json_read_array_end(&pos))
 	{
-		int64_t id;
-		json_read_integer(&pos, &id);
-		auto part = engine_find(self, id);
-		if (part)
+		int64_t psn;
+		json_read_integer(&pos, &psn);
+		auto id = engine_find(self, psn);
+		if (id)
 			continue;
 		engine_recover_gc(self, service->output.start);
 		goto done;
@@ -235,7 +235,7 @@ done:
 	id_delete(&service->id, ID_SERVICE);
 
 	// remove from the list
-	level_remove_service(engine_main(self), service);
+	engine_remove(self, &service->id);
 
 	// done
 	service_free(service);
@@ -261,18 +261,16 @@ engine_recover(Engine* self, int count)
 	auto main = engine_main(self);
 	list_foreach_safe(&main->list_service)
 	{
-		auto service = list_at(Service, link);
+		auto service = list_at(Service, id.link);
 		engine_recover_service(self, service);
 	}
-	main->list_service_count = 0;
-	list_init(&main->list_service);
 
 	// todo: sort pending objects by id
 
 	// open pending objects
 	list_foreach_safe(&main->list_pending)
 	{
-		auto obj = list_at(Object, link);
+		auto obj = list_at(Object, id.link);
 		object_open(obj, ID_PENDING, true);
 	}
 }

@@ -137,7 +137,7 @@ static void
 engine_if_attach(Engine* self, Level* level)
 {
 	System* system = self->iface_arg;
-	if (level->list_count > PART_MAPPING_MAX)
+	if (level->list_ram_count > PART_MAPPING_MAX)
 		error("exceeded the maximum number of hash partitions per table");
 
 	// create pods on backends

@@ -126,12 +126,12 @@ backend_mgr_deploy_all(BackendMgr* self, Level* level)
 	RpcSet set;
 	rpc_set_init(&set);
 	defer(rpc_set_free, &set);
-	rpc_set_prepare(&set, level->list_count);
+	rpc_set_prepare(&set, level->list_ram_count);
 
 	auto order = 0;
-	list_foreach(&level->list)
+	list_foreach(&level->list_ram)
 	{
-		auto part = list_at(Part, link);
+		auto part = list_at(Part, id.link);
 		auto rpc = rpc_set_add(&set, order, MSG_DEPLOY, part);
 		auto backend = backend_mgr_next(self);
 		rpc_send(rpc, &backend->task);
@@ -154,9 +154,9 @@ static inline void
 backend_mgr_undeploy_all(BackendMgr* self, Level* level)
 {
 	auto count = 0;
-	list_foreach(&level->list)
+	list_foreach(&level->list_ram)
 	{
-		auto part = list_at(Part, link);
+		auto part = list_at(Part, id.link);
 		if (part->track.backend)
 			count++;
 	}
@@ -169,9 +169,9 @@ backend_mgr_undeploy_all(BackendMgr* self, Level* level)
 	rpc_set_prepare(&set, count);
 
 	auto order = 0;
-	list_foreach(&level->list)
+	list_foreach(&level->list_ram)
 	{
-		auto part = list_at(Part, link);
+		auto part = list_at(Part, id.link);
 		if (! part->track.backend)
 			continue;
 		auto rpc = rpc_set_add(&set, order, MSG_UNDEPLOY, part);

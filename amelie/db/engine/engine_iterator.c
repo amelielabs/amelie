@@ -45,7 +45,7 @@ engine_iterator_lookup(Engine*      self,
 	// check pending objects
 	list_foreach(&main->list_pending)
 	{
-		auto obj = list_at(Object, link);
+		auto obj = list_at(Object, id.link);
 		object_iterator_reset(obj_it);
 		if (object_iterator_open(obj_it, &config->keys, obj, key))
 		{
@@ -85,7 +85,7 @@ engine_iterator_range(Engine*      self,
 	merge_iterator_add(merge_it, it);
 	list_foreach(&main->list_pending)
 	{
-		auto obj = list_at(Object, link);
+		auto obj = list_at(Object, id.link);
 		auto obj_it = object_iterator_allocate();
 		merge_iterator_add(merge_it, &obj_it->it);
 		object_iterator_open(obj_it, &config->keys, obj, key);
@@ -106,9 +106,9 @@ engine_iterator_range_cross(Engine*      self,
 
 	// prepare heap merge iterators per partition
 	Iterator* it = NULL;
-	list_foreach(&main->list)
+	list_foreach(&main->list_ram)
 	{
-		auto part = list_at(Part, link);
+		auto part = list_at(Part, id.link);
 		auto index = part_index_find(part, &config->name, true);
 		it = index_iterator_merge(index, it);
 	}
@@ -128,7 +128,7 @@ engine_iterator_range_cross(Engine*      self,
 	merge_iterator_add(merge_it, it);
 	list_foreach(&main->list_pending)
 	{
-		auto obj = list_at(Object, link);
+		auto obj = list_at(Object, id.link);
 		auto obj_it = object_iterator_allocate();
 		merge_iterator_add(merge_it, &obj_it->it);
 		object_iterator_open(obj_it, &config->keys, obj, key);

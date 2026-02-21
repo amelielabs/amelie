@@ -33,9 +33,9 @@ indexate_match(Indexate* self, IndexConfig* config)
 		auto lock_table = lock(&table->rel, LOCK_SHARED);
 
 		uint64_t id = UINT64_MAX;
-		list_foreach(&engine_main(&table->engine)->list)
+		list_foreach(&engine_main(&table->engine)->list_ram)
 		{
-			auto part = list_at(Part, link);
+			auto part = list_at(Part, id.link);
 			auto index = part_index_find(part, &config->name, false);
 			if (index)
 				continue;
@@ -52,10 +52,10 @@ indexate_match(Indexate* self, IndexConfig* config)
 		ops_lock(&self->db->ops, &self->lock, id);
 
 		// find partition by id
-		auto origin = engine_find(&table->engine, id);
-		if (origin)
+		auto origin_id = engine_find(&table->engine, id);
+		if (origin_id && origin_id->type == ID_RAM)
 		{
-			self->origin = origin;
+			self->origin = part_of(origin_id);
 			return true;
 		}
 
@@ -200,9 +200,9 @@ indexate_abort(Indexate* self, IndexConfig* config)
 	auto table_lock = lock(&table->rel, LOCK_EXCLUSIVE);
 	defer(unlock, table_lock);
 
-	list_foreach(&engine_main(&table->engine)->list)
+	list_foreach(&engine_main(&table->engine)->list_ram)
 	{
-		auto part  = list_at(Part, link);
+		auto part  = list_at(Part, id.link);
 		auto index = part_index_find(part, &config->name, false);
 		if (! index)
 			continue;

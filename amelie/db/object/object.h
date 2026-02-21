@@ -21,7 +21,6 @@ struct Object
 	Buf        meta_data;
 	File       file;
 	RbtreeNode link_mapping;
-	List       link;
 };
 
 Object* object_allocate(Id*);
@@ -30,7 +29,7 @@ void    object_open(Object*, int, bool);
 void    object_create(Object*, int);
 void    object_delete(Object*, int);
 void    object_rename(Object*, int, int);
-void    object_status(Object*, int, Buf*, bool);
+void    object_status(Object*, Buf*, bool);
 
 hot always_inline static inline Row*
 object_min(Object* self)
@@ -46,4 +45,10 @@ object_max(Object* self)
 	if (unlikely(! self->meta.regions))
 		return NULL;
 	return meta_region_max(meta_max(&self->meta, &self->meta_data));
+}
+
+static inline Object*
+object_of(Id* self)
+{
+	return (Object*)self;
 }

@@ -21,6 +21,7 @@ struct Flush
 	Id       id_origin;
 	Id       id_ram;
 	Id       id_pending;
+	Id       id_service;
 	File     file_ram;
 	File     file_pending;
 	File     file_service;
