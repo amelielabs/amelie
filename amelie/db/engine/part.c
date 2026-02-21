@@ -160,45 +160,11 @@ part_index_find(Part* self, Str* name, bool error_if_not_exists)
 void
 part_status(Part* self, Buf* buf, bool extended)
 {
-	unused(extended);
-	encode_obj(buf);
-
-	// id
-	encode_raw(buf, "id", 2);
-	encode_integer(buf, self->id.id);
-
-	// tier
-	encode_raw(buf, "tier", 4);
-	encode_string(buf, &self->id.tier->name);
-
-	// tier
-	encode_raw(buf, "storage", 7);
-	encode_string(buf, &self->id.storage->storage->config->name);
-
-	// ram
-	encode_raw(buf, "ram", 3);
-	encode_bool(buf, true);
-
-	// min
 	auto heap = self->heap->header;
-	encode_raw(buf, "min", 3);
-	encode_integer(buf, heap->hash_min);
-
-	// max
-	encode_raw(buf, "max", 3);
-	encode_integer(buf, heap->hash_max);
-
-	// lsn
-	encode_raw(buf, "lsn", 3);
-	encode_integer(buf, heap->lsn);
-
-	// size
-	encode_raw(buf, "size", 4);
-	encode_integer(buf, page_mgr_used(&self->heap->page_mgr));
-
-	// compression
-	encode_raw(buf, "compression", 11);
-	encode_integer(buf, heap->compression);
-
-	encode_obj_end(buf);
+	id_status(&self->id, ID_RAM, buf, extended,
+	          heap->hash_min,
+	          heap->hash_max,
+	          heap->lsn,
+	          page_mgr_used(&self->heap->page_mgr),
+	          heap->compression);
 }

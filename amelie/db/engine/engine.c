@@ -148,10 +148,17 @@ engine_status(Engine* self, Str* ref, bool extended)
 
 	// show partitions on table
 	encode_array(buf);
-	list_foreach(&engine_main(self)->list)
+	auto main = engine_main(self);
+	list_foreach(&main->list)
 	{
 		auto part = list_at(Part, link);
 		part_status(part, buf, extended);
+	}
+
+	list_foreach(&main->list_pending)
+	{
+		auto obj = list_at(Object, link);
+		object_status(obj, ID_PENDING, buf, extended);
 	}
 	encode_array_end(buf);
 	return buf;

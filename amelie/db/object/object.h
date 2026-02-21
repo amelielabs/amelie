@@ -30,6 +30,7 @@ void    object_open(Object*, int, bool);
 void    object_create(Object*, int);
 void    object_delete(Object*, int);
 void    object_rename(Object*, int, int);
+void    object_status(Object*, int, Buf*, bool);
 
 hot always_inline static inline Row*
 object_min(Object* self)

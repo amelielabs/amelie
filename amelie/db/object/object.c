@@ -155,3 +155,15 @@ object_rename(Object* self, int from, int to)
 {
 	id_rename(&self->id, from, to);
 }
+
+void
+object_status(Object* self, int state, Buf* buf, bool extended)
+{
+	auto meta = &self->meta;
+	id_status(&self->id, state, buf, extended,
+	          0, // hash_min
+	          0, // hash_max
+	          0, // lsn
+	          self->file.size,
+	          meta->compression);
+}

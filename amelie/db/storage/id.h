@@ -181,3 +181,57 @@ id_encode(Id* self, int state, Buf* buf)
 	// [path, size, mode]
 	encode_basefile(buf, path);
 }
+
+static inline void
+id_status(Id*      self, int state, Buf* buf, bool extended,
+          int      hash_min,
+          int      hash_max,
+          uint64_t lsn,
+          uint64_t size,
+          int      compression)
+{
+	unused(extended);
+	encode_obj(buf);
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_integer(buf, self->id);
+
+	// tier
+	encode_raw(buf, "tier", 4);
+	encode_string(buf, &self->tier->name);
+
+	// tier
+	encode_raw(buf, "storage", 7);
+	encode_string(buf, &self->storage->storage->config->name);
+
+	// ram
+	encode_raw(buf, "ram", 3);
+	encode_bool(buf, state == ID_RAM);
+
+	// pending
+	encode_raw(buf, "pending", 7);
+	encode_bool(buf, state == ID_PENDING);
+
+	// min
+	encode_raw(buf, "min", 3);
+	encode_integer(buf, hash_min);
+
+	// max
+	encode_raw(buf, "max", 3);
+	encode_integer(buf, hash_max);
+
+	// lsn
+	encode_raw(buf, "lsn", 3);
+	encode_integer(buf, lsn);
+
+	// size
+	encode_raw(buf, "size", 4);
+	encode_integer(buf, size);
+
+	// compression
+	encode_raw(buf, "compression", 11);
+	encode_integer(buf, compression);
+
+	encode_obj_end(buf);
+}
