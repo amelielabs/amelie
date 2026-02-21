@@ -27,6 +27,8 @@ struct MergeIterator
 	Buf       list;
 	int       list_count;
 	Keys*     keys;
+	bool      free_sources;
+	bool      allocated;
 };
 
 static inline void
@@ -112,7 +114,15 @@ merge_iterator_next(MergeIterator* self)
 static inline void
 merge_iterator_free(MergeIterator* self)
 {
+	if (self->free_sources && self->list_count > 0)
+	{
+		auto list = (MergeIteratorRef*)self->list.start;
+		for (auto pos = 0; pos < self->list_count; pos++)
+			iterator_close(list[pos].it);
+	}
 	buf_free(&self->list);
+	if (self->allocated)
+		am_free(self);
 }
 
 static inline void
@@ -127,13 +137,25 @@ merge_iterator_reset(MergeIterator* self)
 static inline void
 merge_iterator_init(MergeIterator* self)
 {
-	self->current    = NULL;
-	self->keys       = NULL;
-	self->list_count = 0;
+	self->current      = NULL;
+	self->keys         = NULL;
+	self->list_count   = 0;
+	self->allocated    = false;
+	self->free_sources = false;
 	buf_init(&self->list);
 	auto it = &self->it;
 	it->has   = (IteratorHas)merge_iterator_has;
 	it->at    = (IteratorAt)merge_iterator_at;
 	it->next  = (IteratorNext)merge_iterator_next;
 	it->close = (IteratorClose)merge_iterator_free;
+}
+
+static inline MergeIterator*
+merge_iterator_allocate(bool free_sources)
+{
+	auto self = (MergeIterator*)am_malloc(sizeof(MergeIterator));
+	merge_iterator_init(self);
+	self->free_sources = free_sources;
+	self->allocated    = true;
+	return self;
 }

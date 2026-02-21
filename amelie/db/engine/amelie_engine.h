@@ -19,5 +19,6 @@
 
 // engine
 #include "engine/engine.h"
+#include "engine/engine_iterator.h"
 #include "engine/engine_recover.h"
 #include "engine/engine_op.h"
