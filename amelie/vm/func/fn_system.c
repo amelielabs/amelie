@@ -310,13 +310,13 @@ fn_show(Fn* self)
 	case SHOW_PARTITIONS:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = engine_status(&table->engine, NULL, flags);
+		buf = part_mgr_status(&table->part_mgr, NULL, flags);
 		break;
 	}
 	case SHOW_PARTITION:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = engine_status(&table->engine, name, flags);
+		buf = part_mgr_status(&table->part_mgr, name, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:

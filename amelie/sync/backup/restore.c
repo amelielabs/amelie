@@ -236,23 +236,23 @@ restore_run(Restore* self, char* directory)
 
 	// parse data
 	auto pos = self->data.start;
-	uint8_t* pos_version    = NULL;
-	uint8_t* pos_config     = NULL;
-	uint8_t* pos_state      = NULL;
-	uint8_t* pos_catalog    = NULL;
-	uint8_t* pos_storage    = NULL;
-	uint8_t* pos_partitions = NULL;
-	uint8_t* pos_wal        = NULL;
+	uint8_t* pos_version = NULL;
+	uint8_t* pos_config  = NULL;
+	uint8_t* pos_state   = NULL;
+	uint8_t* pos_catalog = NULL;
+	uint8_t* pos_volumes = NULL;
+	uint8_t* pos_files   = NULL;
+	uint8_t* pos_wal     = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_OBJ,   "version",    &pos_version    },
-		{ DECODE_OBJ,   "config",     &pos_config     },
-		{ DECODE_OBJ,   "state",      &pos_state      },
-		{ DECODE_OBJ,   "catalog",    &pos_catalog    },
-		{ DECODE_ARRAY, "storage",    &pos_storage    },
-		{ DECODE_ARRAY, "partitions", &pos_partitions },
-		{ DECODE_ARRAY, "wal",        &pos_wal        },
-		{ 0,             NULL,        NULL            },
+		{ DECODE_OBJ,   "version", &pos_version },
+		{ DECODE_OBJ,   "config",  &pos_config  },
+		{ DECODE_OBJ,   "state",   &pos_state   },
+		{ DECODE_OBJ,   "catalog", &pos_catalog },
+		{ DECODE_ARRAY, "volumes", &pos_volumes },
+		{ DECODE_ARRAY, "files",   &pos_files   },
+		{ DECODE_ARRAY, "wal",     &pos_wal     },
+		{ 0,             NULL,      NULL        },
 	};
 	decode_obj(obj, "snapshot", &pos);
 
@@ -268,24 +268,24 @@ restore_run(Restore* self, char* directory)
 	// write catalog
 	restore_file("catalog.json", pos_catalog);
 
-	// create tier storage directories
-	json_read_array(&pos_storage);
-	while (! json_read_array_end(&pos_storage))
+	// create volumes
+	json_read_array(&pos_volumes);
+	while (! json_read_array_end(&pos_volumes))
 	{
 		Str path_relative;
-		json_read_string(&pos_storage, &path_relative);
+		json_read_string(&pos_volumes, &path_relative);
 		restore_dir_str(&path_relative);
 	}
 
-	// fetch partitions files
-	json_read_array(&pos_partitions);
-	while (! json_read_array_end(&pos_partitions))
+	// fetch files
+	json_read_array(&pos_files);
+	while (! json_read_array_end(&pos_files))
 	{
 		// [path_relative, size, mode]
 		Str     path_relative;
 		int64_t size;
 		int64_t mode;
-		decode_basefile(&pos_partitions, &path_relative, &size, &mode);
+		decode_basefile(&pos_files, &path_relative, &size, &mode);
 		restore_file_remote(self, &path_relative, size, mode);
 	}
 
