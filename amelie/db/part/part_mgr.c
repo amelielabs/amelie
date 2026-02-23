@@ -173,7 +173,7 @@ part_mgr_index_remove(PartMgr* self, Str* name)
 }
 
 Buf*
-part_mgr_status(PartMgr* self, Str* ref, bool extended)
+part_mgr_list(PartMgr* self, Str* ref, int flags)
 {
 	auto buf = buf_create();
 	errdefer_buf(buf);
@@ -189,7 +189,7 @@ part_mgr_status(PartMgr* self, Str* ref, bool extended)
 		if (! id)
 			encode_null(buf);
 		else
-			part_status(part_of(id), buf, extended);
+			part_status(part_of(id), buf, flags);
 		return buf;
 	}
 
@@ -198,7 +198,7 @@ part_mgr_status(PartMgr* self, Str* ref, bool extended)
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, id.link);
-		part_status(part, buf, extended);
+		part_status(part, buf, flags);
 	}
 	encode_array_end(buf);
 	return buf;

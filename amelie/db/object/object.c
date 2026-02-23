@@ -156,3 +156,44 @@ object_rename(Object* self, int from, int to)
 {
 	id_rename(&self->id, from, to);
 }
+
+void
+object_status(Object* self, Buf* buf, int flags, Str* tier)
+{
+	unused(flags);
+	encode_obj(buf);
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_integer(buf, self->id.id);
+
+	// tier
+	encode_raw(buf, "tier", 4);
+	encode_string(buf, tier);
+
+	// storage
+	encode_raw(buf, "storage", 7);
+	encode_string(buf, &self->id.volume->storage->config->name);
+
+	// min
+	encode_raw(buf, "min", 3);
+	encode_integer(buf, 0);
+
+	// max
+	encode_raw(buf, "max", 3);
+	encode_integer(buf, 0);
+
+	// lsn
+	encode_raw(buf, "lsn", 3);
+	encode_integer(buf, 0);
+
+	// size
+	encode_raw(buf, "size", 4);
+	encode_integer(buf, self->file.size);
+
+	// compression
+	encode_raw(buf, "compression", 11);
+	encode_integer(buf, self->meta.compression);
+
+	encode_obj_end(buf);
+}

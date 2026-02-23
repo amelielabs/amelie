@@ -33,6 +33,7 @@ void  tier_mgr_remove_by(TierMgr*, Str*);
 Tier* tier_mgr_find(TierMgr*, Str*);
 Tier* tier_mgr_find_by(TierMgr*, Volume*);
 Id*   tier_mgr_find_object(TierMgr*, Tier**, uint64_t);
+Buf*  tier_mgr_list(TierMgr*, Str*, int);
 
 static inline Tier*
 tier_mgr_first(TierMgr* self)

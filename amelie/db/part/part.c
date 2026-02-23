@@ -156,9 +156,9 @@ part_index_find(Part* self, Str* name, bool error_if_not_exists)
 }
 
 void
-part_status(Part* self, Buf* buf, bool extended)
+part_status(Part* self, Buf* buf, int flags)
 {
-	unused(extended);
+	unused(flags);
 	auto heap = self->heap->header;
 
 	encode_obj(buf);

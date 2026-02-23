@@ -159,3 +159,40 @@ tier_mgr_find_object(TierMgr* self, Tier** ref, uint64_t psn)
 	}
 	return NULL;
 }
+
+Buf*
+tier_mgr_list(TierMgr* self, Str* ref, int flags)
+{
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
+	// show object id on table
+	if (ref)
+	{
+		int64_t psn;
+		if (str_toint(ref, &psn) == -1)
+			error("invalid object id");
+
+		Tier* tier = NULL;
+		auto id = tier_mgr_find_object(self, &tier, psn);
+		if (! id)
+			encode_null(buf);
+		else
+			object_status(object_of(id), buf, flags, &tier->config->name);
+		return buf;
+	}
+
+	// show objects on table
+	encode_array(buf);
+	list_foreach(&self->list)
+	{
+		auto tier = list_at(Tier, link);
+		list_foreach(&tier->list_pending)
+		{
+			auto obj = list_at(Object, id.link);
+			object_status(obj, buf, flags, &tier->config->name);
+		}
+	}
+	encode_array_end(buf);
+	return buf;
+}
