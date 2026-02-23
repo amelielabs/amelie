@@ -30,21 +30,17 @@ typedef void (*IdFree)(Id*);
 
 struct Id
 {
-	uint64_t     id;
-	Uuid         id_table;
-	int          type;
-	TierStorage* storage;
-	Tier*        tier;
-	IdFree       free_function;
-	List         link_mgr;
-	List         link;
+	uint64_t id;
+	int      type;
+	Volume*  volume;
+	IdFree   free_function;
+	List     link;
 };
 
 static inline void
 id_init(Id* self)
 {
 	memset(self, 0, sizeof(*self));
-	list_init(&self->link_mgr);
 	list_init(&self->link);
 }
 
@@ -56,25 +52,32 @@ id_free(Id* self)
 }
 
 static inline void
-id_set_type(Id* self, int type)
-{
-	self->type = type;
-}
-
-static inline void
 id_set_free(Id* self, IdFree function)
 {
 	self->free_function = function;
 }
 
 static inline void
+id_prepare_in(Id* self, int type, Volume* volume)
+{
+	self->id     = state_psn_next();
+	self->type   = type;
+	self->volume = volume;
+}
+
+static inline void
+id_prepare(Id* self, int type, VolumeMgr* volumes)
+{
+	auto volume = volume_mgr_next(volumes);
+	id_prepare_in(self, type, volume);
+}
+
+static inline void
 id_copy(Id* self, Id* id)
 {
-	self->id       = id->id;
-	self->id_table = id->id_table;
-	self->storage  = id->storage;
-	self->tier     = id->tier;
-	self->type     = id->type;
+	self->id     = id->id;
+	self->type   = id->type;
+	self->volume = id->volume;
 }
 
 static inline int
@@ -146,11 +149,11 @@ id_extension_of(int state)
 static inline void
 id_path(Id* self, char* path, int state)
 {
-	// tier storage id (uuid)
+	// volume id
 	char uuid[UUID_SZ];
-	uuid_get(&self->storage->id, uuid, sizeof(uuid));
+	uuid_get(&self->volume->id, uuid, sizeof(uuid));
 
-	// <base>/storage/<id_tier_storage>/<id>.<type>
+	// <base>/storage/<volume_id>/<id>.<type>
 	sfmt(path, PATH_MAX, "%s/storage/%s/%05" PRIu64 "%s", state_directory(),
 	     uuid, self->id, id_extension_of(state));
 }
@@ -197,11 +200,11 @@ id_snapshot(Id* self, int state, int state_snapshot)
 {
 	// create file snapshot
 
-	// <base>/storage/<id_tier_storage>/<id>.type
+	// <base>/storage/<volume_id>/<id>.type
 	char path[PATH_MAX];
 	id_path(self, path, state);
 
-	// <base>/storage/<id_tier_storage>/<id>.snapshot
+	// <base>/storage/<volume_id>/<id>.snapshot
 	char path_snapshot[PATH_MAX];
 	id_path(self, path_snapshot, state_snapshot);
 
@@ -227,7 +230,7 @@ static inline void
 id_encode(Id* self, int state, Buf* buf)
 {
 	char uuid[UUID_SZ];
-	uuid_get(&self->storage->id, uuid, sizeof(uuid));
+	uuid_get(&self->volume->id, uuid, sizeof(uuid));
 
 	char path[PATH_MAX];
 	sfmt(path, sizeof(path), "storage/%s/%05" PRIu64 "%s",
@@ -235,58 +238,4 @@ id_encode(Id* self, int state, Buf* buf)
 
 	// [path, size, mode]
 	encode_basefile(buf, path);
-}
-
-static inline void
-id_status(Id*      self, Buf* buf, bool extended,
-          int      hash_min,
-          int      hash_max,
-          uint64_t lsn,
-          uint64_t size,
-          int      compression)
-{
-	unused(extended);
-	encode_obj(buf);
-
-	// id
-	encode_raw(buf, "id", 2);
-	encode_integer(buf, self->id);
-
-	// tier
-	encode_raw(buf, "tier", 4);
-	encode_string(buf, &self->tier->name);
-
-	// tier
-	encode_raw(buf, "storage", 7);
-	encode_string(buf, &self->storage->storage->config->name);
-
-	// ram
-	encode_raw(buf, "ram", 3);
-	encode_bool(buf, self->type == ID_RAM);
-
-	// pending
-	encode_raw(buf, "pending", 7);
-	encode_bool(buf, self->type == ID_PENDING);
-
-	// min
-	encode_raw(buf, "min", 3);
-	encode_integer(buf, hash_min);
-
-	// max
-	encode_raw(buf, "max", 3);
-	encode_integer(buf, hash_max);
-
-	// lsn
-	encode_raw(buf, "lsn", 3);
-	encode_integer(buf, lsn);
-
-	// size
-	encode_raw(buf, "size", 4);
-	encode_integer(buf, size);
-
-	// compression
-	encode_raw(buf, "compression", 11);
-	encode_integer(buf, compression);
-
-	encode_obj_end(buf);
 }

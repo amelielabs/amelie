@@ -37,4 +37,4 @@ struct Flush
 void flush_init(Flush*, Db*);
 void flush_free(Flush*);
 void flush_reset(Flush*);
-void flush_run(Flush*, Uuid*, uint64_t);
+void flush_run(Flush*, Table*, uint64_t);

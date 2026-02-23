@@ -17,11 +17,11 @@ struct TableMgr
 {
 	RelationMgr mgr;
 	StorageMgr* storage_mgr;
-	EngineIf*   iface;
+	PartMgrIf*  iface;
 	void*       iface_arg;
 };
 
-void   table_mgr_init(TableMgr*, StorageMgr*, EngineIf*, void*);
+void   table_mgr_init(TableMgr*, StorageMgr*, PartMgrIf*, void*);
 void   table_mgr_free(TableMgr*);
 bool   table_mgr_create(TableMgr*, Tr*, TableConfig*, bool);
 bool   table_mgr_drop(TableMgr*, Tr*, Str*, Str*, bool);

@@ -14,21 +14,21 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 
 Part*
-part_allocate(Id* id, Sequence* seq, bool unlogged)
+part_allocate(Id* id, PartArg* arg)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->heap          = heap_allocate(false);
 	self->heap_shadow   = NULL;
-	self->seq           = seq;
-	self->unlogged      = unlogged;
+	self->arg           = arg;
 	id_init(&self->id);
 	id_set_free(&self->id, (IdFree)part_free);
 	id_copy(&self->id, id);
@@ -75,9 +75,8 @@ part_open(Part* self)
 
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
 	auto id = &self->id;
-	info("recover: %s/%s/%05" PRIu64 ".ram (%.2f MiB, %" PRIu64 " rows)",
-	     id->storage->storage->config->name.pos,
-	     id->tier->name.pos,
+	info("recover: %s/%05" PRIu64 ".ram (%.2f MiB, %" PRIu64 " rows)",
+	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total, count);
 }
@@ -159,11 +158,38 @@ part_index_find(Part* self, Str* name, bool error_if_not_exists)
 void
 part_status(Part* self, Buf* buf, bool extended)
 {
+	unused(extended);
 	auto heap = self->heap->header;
-	id_status(&self->id, buf, extended,
-	          heap->hash_min,
-	          heap->hash_max,
-	          heap->lsn,
-	          page_mgr_used(&self->heap->page_mgr),
-	          heap->compression);
+
+	encode_obj(buf);
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_integer(buf, self->id.id);
+
+	// storage
+	encode_raw(buf, "storage", 7);
+	encode_string(buf, &self->id.volume->storage->config->name);
+
+	// min
+	encode_raw(buf, "min", 3);
+	encode_integer(buf, heap->hash_min);
+
+	// max
+	encode_raw(buf, "max", 3);
+	encode_integer(buf, heap->hash_max);
+
+	// lsn
+	encode_raw(buf, "lsn", 3);
+	encode_integer(buf, heap->lsn);
+
+	// size
+	encode_raw(buf, "size", 4);
+	encode_integer(buf, page_mgr_used(&self->heap->page_mgr));
+
+	// compression
+	encode_raw(buf, "compression", 11);
+	encode_integer(buf, heap->compression);
+
+	encode_obj_end(buf);
 }

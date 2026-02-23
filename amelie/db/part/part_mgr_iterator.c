@@ -14,16 +14,17 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 
 hot static Iterator*
-engine_iterator_lookup(Engine*      self,
-                       Part*        part,
-                       IndexConfig* config,
-                       Row*         key)
+part_mgr_iterator_lookup(PartMgr*     self,
+                         Part*        part,
+                         IndexConfig* config,
+                         Row*         key)
 {
 	auto index = part_index_find(part, &config->name, true);
 
@@ -34,8 +35,8 @@ engine_iterator_lookup(Engine*      self,
 		return it;
 
 	// single tier (heap only)
-	auto main = engine_main(self);
-	if (!main->list_pending_count && self->levels_count == 1)
+	auto tier_mgr = self->tier_mgr;
+	if (tier_mgr_empty(tier_mgr))
 		return it;
 
 	// multi-tiering
@@ -43,7 +44,8 @@ engine_iterator_lookup(Engine*      self,
 	errdefer(iterator_close, obj_it);
 
 	// check pending objects
-	list_foreach(&main->list_pending)
+	auto tier = tier_mgr_first(tier_mgr);
+	list_foreach(&tier->list_pending)
 	{
 		auto obj = list_at(Object, id.link);
 		object_iterator_reset(obj_it);
@@ -61,18 +63,18 @@ engine_iterator_lookup(Engine*      self,
 }
 
 hot static Iterator*
-engine_iterator_range(Engine*      self,
-                      Part*        part,
-                      IndexConfig* config,
-                      Row*         key)
+part_mgr_iterator_range(PartMgr*     self,
+                        Part*        part,
+                        IndexConfig* config,
+                        Row*         key)
 {
 	auto index = part_index_find(part, &config->name, true);
 	auto it = index_iterator(index);
 	iterator_open(it, key);
 
 	// single tier (heap only)
-	auto main = engine_main(self);
-	if (!main->list_pending_count && self->levels_count == 1)
+	auto tier_mgr = self->tier_mgr;
+	if (tier_mgr_empty(tier_mgr))
 		return it;
 
 	// todo: different path for hash
@@ -81,9 +83,10 @@ engine_iterator_range(Engine*      self,
 	// merge heap with pending objects
 	auto merge_it = merge_iterator_allocate(true);
 	errdefer(merge_iterator_free, merge_it);
-
 	merge_iterator_add(merge_it, it);
-	list_foreach(&main->list_pending)
+
+	auto tier = tier_mgr_first(tier_mgr);
+	list_foreach(&tier->list_pending)
 	{
 		auto obj = list_at(Object, id.link);
 		auto obj_it = object_iterator_allocate();
@@ -98,15 +101,13 @@ engine_iterator_range(Engine*      self,
 }
 
 hot static Iterator*
-engine_iterator_range_cross(Engine*      self,
-                            IndexConfig* config,
-                            Row*         key)
+part_mgr_iterator_range_cross(PartMgr*     self,
+                              IndexConfig* config,
+                              Row*         key)
 {
-	auto main = engine_main(self);
-
 	// prepare heap merge iterators per partition
 	Iterator* it = NULL;
-	list_foreach(&main->list_ram)
+	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, id.link);
 		auto index = part_index_find(part, &config->name, true);
@@ -115,7 +116,8 @@ engine_iterator_range_cross(Engine*      self,
 	iterator_open(it, key);
 
 	// single tier (heap only)
-	if (!main->list_pending_count && self->levels_count == 1)
+	auto tier_mgr = self->tier_mgr;
+	if (tier_mgr_empty(tier_mgr))
 		return it;
 
 	// todo: different path for hash
@@ -124,9 +126,10 @@ engine_iterator_range_cross(Engine*      self,
 	// merge all partitions heaps with pending objects
 	auto merge_it = merge_iterator_allocate(true);
 	errdefer(merge_iterator_free, merge_it);
-
 	merge_iterator_add(merge_it, it);
-	list_foreach(&main->list_pending)
+
+	auto tier = tier_mgr_first(tier_mgr);
+	list_foreach(&tier->list_pending)
 	{
 		auto obj = list_at(Object, id.link);
 		auto obj_it = object_iterator_allocate();
@@ -141,21 +144,21 @@ engine_iterator_range_cross(Engine*      self,
 }
 
 hot Iterator*
-engine_iterator(Engine*      self,
-                Part*        part,
-                IndexConfig* config,
-                bool         point_lookup,
-                Row*         key)
+part_mgr_iterator(PartMgr*     self,
+                  Part*        part,
+                  IndexConfig* config,
+                  bool         point_lookup,
+                  Row*         key)
 {
 	// partition query
 	if (part)
 	{
 		// point lookup
 		if (point_lookup)
-			return engine_iterator_lookup(self, part, config, key);
+			return part_mgr_iterator_lookup(self, part, config, key);
 
 		// range scan
-		return engine_iterator_range(self, part, config, key);
+		return part_mgr_iterator_range(self, part, config, key);
 	}
 
 	// cross-partition query
@@ -164,7 +167,7 @@ engine_iterator(Engine*      self,
 	if (point_lookup)
 	{
 		part = part_mapping_map(&self->mapping, key);
-		return engine_iterator_lookup(self, part, config, key);
+		return part_mgr_iterator_lookup(self, part, config, key);
 	}
 
 	// range scan
@@ -172,5 +175,5 @@ engine_iterator(Engine*      self,
 	// merge all hash partitions (without key)
 	// merge all tree partitions (without key, ordered)
 	// merge all tree partitions (with key, ordered)
-	return engine_iterator_range_cross(self, config, key);
+	return part_mgr_iterator_range_cross(self, config, key);
 }

@@ -15,17 +15,16 @@ typedef struct Part Part;
 
 struct Part
 {
-	Id        id;
-	Index*    indexes;
-	int       indexes_count;
-	Track     track;
-	Heap*     heap;
-	Heap*     heap_shadow;
-	Sequence* seq;
-	bool      unlogged;
+	Id       id;
+	Index*   indexes;
+	int      indexes_count;
+	Track    track;
+	Heap*    heap;
+	Heap*    heap_shadow;
+	PartArg* arg;
 };
 
-Part*  part_allocate(Id*, Sequence*, bool);
+Part*  part_allocate(Id*, PartArg*);
 void   part_free(Part*);
 void   part_open(Part*);
 void   part_truncate(Part*);

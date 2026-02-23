@@ -14,7 +14,6 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
-#include <amelie_heap.h>
 #include <amelie_object.h>
 
 Object*
@@ -103,7 +102,7 @@ object_read_index(Object* self)
 	Encoder encoder;
 	encoder_init(&encoder);
 	defer(encoder_free, &encoder);
-	encoder_open(&encoder, self->id.tier);
+	encoder_open(&encoder, self->id.volume->storage);
 	encoder_set_compression(&encoder, meta->compression);
 
 	// no compression
@@ -156,16 +155,4 @@ void
 object_rename(Object* self, int from, int to)
 {
 	id_rename(&self->id, from, to);
-}
-
-void
-object_status(Object* self, Buf* buf, bool extended)
-{
-	auto meta = &self->meta;
-	id_status(&self->id, buf, extended,
-	          0, // hash_min
-	          0, // hash_max
-	          0, // lsn
-	          self->file.size,
-	          meta->compression);
 }

@@ -14,16 +14,17 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 #include <amelie_catalog.h>
 
 void
-table_mgr_init(TableMgr* self, StorageMgr* storage_mgr,
-               EngineIf* iface,
-               void*     iface_arg)
+table_mgr_init(TableMgr*  self, StorageMgr* storage_mgr,
+               PartMgrIf* iface,
+               void*      iface_arg)
 {
 	self->storage_mgr = storage_mgr;
 	self->iface       = iface;
@@ -94,8 +95,10 @@ truncate_if_commit(Log* self, LogOp* op)
 {
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
-	// truncate all partitions
-	engine_truncate(&table->engine);
+
+	// truncate all objects and partitions
+	tier_mgr_truncate(&table->tier_mgr);
+	part_mgr_truncate(&table->part_mgr);
 }
 
 static void

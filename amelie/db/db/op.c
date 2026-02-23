@@ -14,10 +14,11 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
@@ -25,74 +26,61 @@
 void
 db_refresh(Db* self, Uuid* id_table, uint64_t id, Str* storage)
 {
+	auto table = table_mgr_find_by(&self->catalog.table_mgr, id_table, true);
 	Refresh refresh;
 	refresh_init(&refresh, self);
 	defer(refresh_free, &refresh);
-	refresh_run(&refresh, id_table, id, storage);
+	refresh_run(&refresh, table, id, storage);
 }
 
 void
 db_flush(Db* self, Uuid* id_table, uint64_t id)
 {
+	auto table = table_mgr_find_by(&self->catalog.table_mgr, id_table, true);
 	Flush flush;
 	flush_init(&flush, self);
 	defer(flush_free, &flush);
-	flush_run(&flush, id_table, id);
-}
-
-static Buf*
-db_pending(Db* self)
-{
-	// create a list of all pending partitions
-	auto list = buf_create();
-	errdefer_buf(list);
-	list_foreach(&self->catalog.table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Relation, link));
-		auto table_lock = lock(&table->rel, LOCK_SHARED);
-
-		list_foreach(&engine_main(&table->engine)->list_ram)
-		{
-			auto part = list_at(Part, id.link);
-			if (part_has_updates(part))
-				buf_write(list, &part->id, sizeof(part->id));
-		}
-
-		unlock(table_lock);
-	}
-	return list;
+	flush_run(&flush, table, id);
 }
 
 void
 db_checkpoint(Db* self)
 {
-	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
+	// note: executed under shared catalog lock
 
-	Buf* list = NULL;
-	auto on_error = error_catch
-	(
-		// update catalog file if there are pending ddls
-		if (state_catalog() < state_catalog_pending())
-			catalog_write(&self->catalog);
-
-		// create a list of all pending partitions
-		list = db_pending(self);
-	);
-	unlock(lock_catalog);
-
-	if (on_error)
-		rethrow();
-
-	defer_buf(list);
+	// update catalog file if there are pending ddls
+	if (state_catalog() < state_catalog_pending())
+		catalog_write(&self->catalog);
 
 	// refresh partitions
 	Refresh refresh;
 	refresh_init(&refresh, self);
 	defer(refresh_free, &refresh);
-	auto end = (Id*)list->position;
-	auto it  = (Id*)list->start;
-	for (; it < end; it++)
-		refresh_run(&refresh, &it->id_table, it->id, NULL);
+
+	list_foreach(&self->catalog.table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Relation, link));
+		for (;;)
+		{
+			uint64_t id = UINT64_MAX;
+			auto table_lock = lock(&table->rel, LOCK_SHARED);
+			list_foreach(&table->part_mgr.list)
+			{
+				auto part = list_at(Part, id.link);
+				if (part_has_updates(part))
+				{
+					id = part->id.id;
+					break;
+				}
+			}
+			unlock(table_lock);
+
+			if (id == UINT64_MAX)
+				break;
+
+			refresh_run(&refresh, table, id, NULL);
+		}
+	}
 
 	// wal gc
 	db_gc(self);
@@ -120,7 +108,7 @@ db_gc(Db* self)
 	{
 		auto table = table_of(list_at(Relation, link));
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
-		list_foreach(&engine_main(&table->engine)->list_ram)
+		list_foreach(&table->part_mgr.list)
 		{
 			auto part = list_at(Part, id.link);
 			// include partition only if it has pending updates

@@ -375,7 +375,7 @@ table_op_index_rename_read(uint8_t* op, Str* db, Str* name,
 }
 
 static inline int
-table_op_tier_create(Buf* self, Str* db, Str* name, Tier* tier)
+table_op_tier_create(Buf* self, Str* db, Str* name, TierConfig* config)
 {
 	// [op, db, name, config]
 	auto offset = buf_size(self);
@@ -383,7 +383,7 @@ table_op_tier_create(Buf* self, Str* db, Str* name, Tier* tier)
 	encode_integer(self, DDL_TIER_CREATE);
 	encode_string(self, db);
 	encode_string(self, name);
-	tier_write(tier, self, 0);
+	tier_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }
@@ -464,7 +464,7 @@ table_op_tier_rename_read(uint8_t* op, Str* db, Str* name,
 }
 
 static inline int
-table_op_tier_storage_add(Buf* self, Str* db, Str* table, Str* tier, TierStorage* config)
+table_op_tier_storage_add(Buf* self, Str* db, Str* table, Str* tier, Volume* config)
 {
 	// [op, db, table, storage]
 	auto offset = buf_size(self);
@@ -473,7 +473,7 @@ table_op_tier_storage_add(Buf* self, Str* db, Str* table, Str* tier, TierStorage
 	encode_string(self, db);
 	encode_string(self, table);
 	encode_string(self, tier);
-	tier_storage_write(config, self, 0);
+	volume_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }
@@ -556,7 +556,7 @@ table_op_tier_storage_pause_read(uint8_t* op, Str* db, Str* table, Str* tier, St
 }
 
 static inline int
-table_op_tier_set(Buf* self, Str* db, Str* name, Tier* tier, int mask)
+table_op_tier_set(Buf* self, Str* db, Str* name, TierConfig* config, int mask)
 {
 	// [op, db, name, config, mask]
 	auto offset = buf_size(self);
@@ -564,7 +564,7 @@ table_op_tier_set(Buf* self, Str* db, Str* name, Tier* tier, int mask)
 	encode_integer(self, DDL_TIER_SET);
 	encode_string(self, db);
 	encode_string(self, name);
-	tier_write(tier, self, 0);
+	tier_config_write(config, self, 0);
 	encode_integer(self, mask);
 	encode_array_end(self);
 	return offset;

@@ -16,7 +16,9 @@ typedef struct Table Table;
 struct Table
 {
 	Relation     rel;
-	Engine       engine;
+	PartMgr      part_mgr;
+	PartArg      part_arg;
+	TierMgr      tier_mgr;
 	Sequence     seq;
 	TableConfig* config;
 };
@@ -42,17 +44,16 @@ table_keys(Table* self)
 static inline void
 table_free(Table* self, bool drop)
 {
-	engine_close(&self->engine, drop);
-	engine_free(&self->engine);
+	auto part_mgr = &self->part_mgr;
+	part_mgr_close(part_mgr);
+	if (drop)
+		part_mgr_drop(part_mgr);
+	part_mgr_free(part_mgr);
 
-	// maybe drop and unref storages
-	list_foreach(&self->config->tiers)
-	{
-		auto tier = list_at(Tier, link);
-		if (drop)
-			tier_rmdir(tier);
-		tier_unref(tier);
-	}
+	auto tier_mgr = &self->tier_mgr;
+	if (drop)
+		tier_mgr_drop(tier_mgr);
+	tier_mgr_free(tier_mgr);
 
 	sequence_free(&self->seq);
 	if (self->config)
@@ -61,18 +62,29 @@ table_free(Table* self, bool drop)
 }
 
 static inline Table*
-table_allocate(TableConfig* config, StorageMgr* storage_mgr,
-               EngineIf*    iface,
+table_allocate(TableConfig* config,
+               StorageMgr*  storage_mgr,
+               PartMgrIf*   iface,
                void*        iface_arg)
 {
-	Table* self = am_malloc(sizeof(Table));
+	auto self = (Table*)am_malloc(sizeof(Table));
 	self->config = table_config_copy(config);
 	sequence_init(&self->seq);
+
+	// part context
+	auto arg = &self->part_arg;
+	arg->seq      = &self->seq;
+	arg->unlogged =  self->config->unlogged;
+	arg->id_table = &self->config->id;
+
+	// tiering
 	auto primary = table_primary(self);
-	engine_init(&self->engine, iface, iface_arg, storage_mgr,
-	            &self->config->id,
-	            &self->seq, self->config->unlogged,
-	            &primary->keys);
+	tier_mgr_init(&self->tier_mgr, storage_mgr, &primary->keys);
+
+	// partition manager
+	part_mgr_init(&self->part_mgr, iface, iface_arg,
+	              &self->config->part_mgr_config, arg, &self->tier_mgr,
+	              &primary->keys);
 
 	relation_init(&self->rel);
 	relation_set_db(&self->rel, &self->config->db);
@@ -85,24 +97,22 @@ table_allocate(TableConfig* config, StorageMgr* storage_mgr,
 static inline void
 table_open(Table* self)
 {
-	// resolve storages on the tiers
-	list_foreach(&self->config->tiers)
-	{
-		auto tier = list_at(Tier, link);
-		tier_ref(tier, self->engine.storage_mgr);
-	}
+	// restore tiers and objects
+	auto config = self->config;
+	tier_mgr_open(&self->tier_mgr, &config->tiers);
 
 	// recover, map and deploy partitions
-	auto config = self->config;
-	engine_open(&self->engine, &config->tiers, &config->indexes,
-	            config->partitions);
+	part_mgr_open(&self->part_mgr, &config->indexes);
+
+	// load objects
+	tier_mgr_load(&self->tier_mgr);
 }
 
 static inline void
 table_set_unlogged(Table* self, bool value)
 {
 	table_config_set_unlogged(self->config, value);
-	engine_set_unlogged(&self->engine, value);
+	self->part_arg.unlogged = value;
 }
 
 static inline Table*

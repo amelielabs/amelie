@@ -18,7 +18,6 @@ struct Storage
 	Relation       rel;
 	StorageConfig* config;
 	int            refs;
-	List           link;
 };
 
 static inline void
@@ -35,12 +34,13 @@ storage_allocate(StorageConfig* config)
 	auto self = (Storage*)am_malloc(sizeof(Storage));
 	self->config = storage_config_copy(config);
 	self->refs   = 0;
-	list_init(&self->link);
-	relation_init(&self->rel);
-	relation_set_db(&self->rel, NULL);
-	relation_set_name(&self->rel, &self->config->name);
-	relation_set_free_function(&self->rel, (RelationFree)storage_free);
-	relation_set_rsn(&self->rel, state_rsn_next());
+
+	auto rel = &self->rel;
+	relation_init(rel);
+	relation_set_db(rel, NULL);
+	relation_set_name(rel, &self->config->name);
+	relation_set_free_function(rel, (RelationFree)storage_free);
+	relation_set_rsn(rel, state_rsn_next());
 	return self;
 }
 

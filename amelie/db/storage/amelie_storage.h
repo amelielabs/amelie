@@ -16,11 +16,11 @@
 #include "storage/storage.h"
 #include "storage/storage_mgr.h"
 
-// tier
-#include "storage/tier_storage.h"
-#include "storage/tier.h"
+// volume (storage directory)
+#include "storage/volume.h"
+#include "storage/volume_mgr.h"
 
-// tier file id
+// volume file id
 #include "storage/basefile.h"
 #include "storage/id.h"
 

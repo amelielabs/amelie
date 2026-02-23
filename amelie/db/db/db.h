@@ -21,7 +21,7 @@ struct Db
 	SnapshotMgr snapshot_mgr;
 };
 
-void db_init(Db*, CatalogIf*, void*, EngineIf*, void*);
+void db_init(Db*, CatalogIf*, void*, PartMgrIf*, void*);
 void db_free(Db*);
 void db_open(Db*, bool);
 void db_close(Db*);

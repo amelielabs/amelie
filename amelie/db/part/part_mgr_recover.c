@@ -14,30 +14,31 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 
 static bool
-engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
+part_mgr_recover_volume(PartMgr* self, Volume* volume)
 {
-	// <base>/storage/<id_tier_storage>
+	// <base>/storage/<volume_id>
 	char id[UUID_SZ];
-	uuid_get(&storage->id, id, sizeof(id));
+	uuid_get(&volume->id, id, sizeof(id));
 
 	char path[PATH_MAX];
 	sfmt(path, PATH_MAX, "%s/storage/%s", state_directory(), id);
 	if (! fs_exists("%s", path))
 	{
-		tier_storage_mkdir(storage);
+		volume_mkdir(volume);
 		return true;
 	}
 
 	// read directory
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
-		error("tier: directory '%s' open error", path);
+		error("part_mgr: directory '%s' open error", path);
 	defer(fs_closedir_defer, dir);
 	for (;;)
 	{
@@ -52,7 +53,7 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 		auto state = id_of(entry->d_name, &psn);
 		if (state == -1)
 		{
-			info("tier: skipping unknown file: '%s%s'", path,
+			info("part_mgr: skipping unknown file: '%s%s'", path,
 			     entry->d_name);
 			continue;
 		}
@@ -60,29 +61,22 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 
 		Id id;
 		id_init(&id);
-		id.id       = psn;
-		id.id_table = *self->id_table;
-		id.type     = state;
-		id.storage  = storage;
-		id.tier     = level->tier;
+		id.id     = psn;
+		id.type   = state;
+		id.volume = volume;
+
 		switch (state) {
 		case ID_SERVICE:
 		{
 			auto service = service_allocate();
 			service_set_id(service, &id);
-			engine_add(self, &service->id);
+			part_mgr_add(self, &service->id);
 			break;
 		}
 		case ID_SERVICE_INCOMPLETE:
 		{
 			// remove incomplete file
 			id_delete(&id, state);
-			break;
-		}
-		case ID_RAM:
-		{
-			auto part = part_allocate(&id, self->seq, self->unlogged);
-			engine_add(self, &part->id);
 			break;
 		}
 		case ID_RAM_INCOMPLETE:
@@ -92,45 +86,28 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 			id_delete(&id, state);
 			break;
 		}
-		case ID_PENDING_INCOMPLETE:
-		case ID_PENDING_SNAPSHOT:
+		case ID_RAM:
 		{
-			// remove incomplete and snapshot files
-			id_delete(&id, state);
+			auto part = part_allocate(&id, self->arg);
+			part_mgr_add(self, &part->id);
 			break;
 		}
-		case ID_PENDING:
-		{
-			auto obj = object_allocate(&id);
-			engine_add(self, &obj->id);
-			break;
-		}
+		default:
+			info("part_mgr: unexpected file: '%s%s'", path,
+			     entry->d_name);
+			continue;
 		}
 	}
 	return false;
 }
 
-static bool
-engine_recover_level(Engine* self, Level* level)
-{
-	auto bootstrap = false;
-	list_foreach(&level->tier->storages)
-	{
-		auto storage = list_at(TierStorage, link);
-		if (engine_recover_storage(self, level, storage))
-			bootstrap = true;
-	}
-	return bootstrap;
-}
-
 static void
-engine_create(Engine* self, int count)
+part_mgr_create(PartMgr* self)
 {
 	// create initial hash partitions
+	auto count = self->config->count;
 	if (count < 1 || count > PART_MAPPING_MAX)
 		error("table has invalid partitions number");
-
-	auto main = engine_main(self);
 
 	// hash partition_max / hash partitions
 	int range_max      = PART_MAPPING_MAX;
@@ -138,20 +115,17 @@ engine_create(Engine* self, int count)
 	int range_start    = 0;
 	for (auto order = 0; order < count; order++)
 	{
-		// choose next storagee
-		auto storage = tier_storage_next(main->tier);
+		// choose next volume
+		auto volume = volume_mgr_next(&self->config->volumes);
 
 		// create partition
 		Id id;
 		id_init(&id);
 		id.id       = state_psn_next();
-		id.id_table = *self->id_table;
 		id.type     = ID_RAM;
-		id.storage  = storage;
-		id.tier     = main->tier;
-
-		auto part = part_allocate(&id, self->seq, self->unlogged);
-		engine_add(self, &part->id);
+		id.volume   = volume;
+		auto part = part_allocate(&id, self->arg);
+		part_mgr_add(self, &part->id);
 
 		// set hash range
 		int range_step;
@@ -183,25 +157,38 @@ engine_create(Engine* self, int count)
 }
 
 static void
-engine_recover_gc(Engine* self, uint8_t* pos)
+part_mgr_recover_gc(PartMgr* self, uint8_t* pos)
 {
-	// remove all existing partitions and their files
+	// remove all existing partitions and objects
 	json_read_array(&pos);
 	while (! json_read_array_end(&pos))
 	{
 		int64_t psn;
 		json_read_integer(&pos, &psn);
-		auto id = engine_find(self, psn);
-		if (! id)
+
+		Tier* tier = NULL;
+		auto id = tier_mgr_find_object(self->tier_mgr, &tier, psn);
+		if (id)
+		{
+			id_delete(id, id->type);
+			tier_remove(tier, id);
+			id_free(id);
 			continue;
-		id_delete(id, id->type);
-		engine_remove(self, id);
-		id_free(id);
+		}
+
+		id = part_mgr_find(self, psn);
+		if (id)
+		{
+			id_delete(id, id->type);
+			part_mgr_remove(self, id);
+			id_free(id);
+			continue;
+		}
 	}
 }
 
 static void
-engine_recover_service(Engine* self, Service* service)
+part_mgr_recover_service(PartMgr* self, Service* service)
 {
 	// read service file
 	service_open(service, ID_SERVICE);
@@ -217,10 +204,12 @@ engine_recover_service(Engine* self, Service* service)
 	{
 		int64_t psn;
 		json_read_integer(&pos, &psn);
-		auto id = engine_find(self, psn);
+		auto id = tier_mgr_find_object(self->tier_mgr, NULL, psn);
+		if (! id)
+			id = part_mgr_find(self, psn);
 		if (id)
 			continue;
-		engine_recover_gc(self, service->output.start);
+		part_mgr_recover_gc(self, service->output.start);
 		goto done;
 	}
 
@@ -229,49 +218,46 @@ engine_recover_service(Engine* self, Service* service)
 	//
 	// case: crash after output files synced and renamed
 	//
-	engine_recover_gc(self, service->input.start);
+	part_mgr_recover_gc(self, service->input.start);
 
 done:
 	// remove service file
 	id_delete(&service->id, ID_SERVICE);
 
 	// remove from the list
-	engine_remove(self, &service->id);
+	part_mgr_remove(self, &service->id);
 
 	// done
 	service_free(service);
 }
 
 void
-engine_recover(Engine* self, int count)
+part_mgr_recover(PartMgr* self)
 {
+	// resolve storages
+	volume_mgr_ref(&self->config->volumes, self->tier_mgr->storage_mgr);
+
 	// read files
 	auto bootstrap = false;
-	list_foreach(&self->levels)
+	list_foreach(&self->config->volumes.list)
 	{
-		auto level = list_at(Level, link);
-		if (engine_recover_level(self, level))
+		auto volume = list_at(Volume, link);
+		if (part_mgr_recover_volume(self, volume))
 			bootstrap = true;
 	}
 
 	// create initial partitions
 	if (bootstrap)
-		engine_create(self, count);
+		part_mgr_create(self);
 
 	// recover service files
-	auto main = engine_main(self);
-	list_foreach_safe(&main->list_service)
+	list_foreach_safe(&self->list)
 	{
-		auto service = list_at(Service, id.link);
-		engine_recover_service(self, service);
-	}
-
-	// todo: sort pending objects by id
-
-	// open pending objects
-	list_foreach_safe(&main->list_pending)
-	{
-		auto obj = list_at(Object, id.link);
-		object_open(obj, ID_PENDING, true);
+		auto id = list_at(Id, link);
+		if (id->type == ID_SERVICE)
+		{
+			auto service = list_at(Service, id.link);
+			part_mgr_recover_service(self, service);
+		}
 	}
 }

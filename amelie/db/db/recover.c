@@ -14,10 +14,11 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
@@ -56,7 +57,7 @@ recover_map(Recover* self, Record* record, RecordCmd* cmd, Row* row)
 	auto table = table_mgr_find_by(&db->catalog.table_mgr, &cmd->id, false);
 	if  (! table)
 		return NULL;
-	auto part = part_mapping_map(&table->engine.mapping, row);
+	auto part = part_mapping_map(&table->part_mgr.mapping, row);
 	if (! part)
 		error("recover: partition mapping failed");
 

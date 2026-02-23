@@ -31,7 +31,7 @@ struct Catalog
 	void*       iface_arg;
 };
 
-void catalog_init(Catalog*, CatalogIf*, void*, EngineIf*, void*);
+void catalog_init(Catalog*, CatalogIf*, void*, PartMgrIf*, void*);
 void catalog_free(Catalog*);
 void catalog_open(Catalog*, bool);
 void catalog_close(Catalog*);

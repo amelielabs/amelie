@@ -14,10 +14,11 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 
 static Row*
 log_if_rollback(Log* self, LogOp* op)
@@ -93,7 +94,7 @@ part_sync_sequence(Part* self, Row* row, Columns* columns)
 		value = *(int32_t*)row_column(row, columns->identity);
 	else
 		value = *(int64_t*)row_column(row, columns->identity);
-	sequence_sync(self->seq, value);
+	sequence_sync(self->arg->seq, value);
 }
 
 hot void
@@ -102,8 +103,8 @@ part_insert(Part* self, Tr* tr, bool replace, Row* row)
 	// add log record
 	auto primary = part_primary(self);
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
-	if (! self->unlogged)
-		log_persist(&tr->log, &self->id.id_table);
+	if (! self->arg->unlogged)
+		log_persist(&tr->log, self->arg->id_table);
 
 	// update primary index
 	op->row_prev = index_replace_by(primary, row);
@@ -148,8 +149,8 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 
 	// add log record
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
-	if (! self->unlogged)
-		log_persist(&tr->log, &self->id.id_table);
+	if (! self->arg->unlogged)
+		log_persist(&tr->log, self->arg->id_table);
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
@@ -176,8 +177,8 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 	// add log record
 	auto primary = part_primary(self);
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
-	if (! self->unlogged)
-		log_persist(&tr->log, &self->id.id_table);
+	if (! self->arg->unlogged)
+		log_persist(&tr->log, self->arg->id_table);
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
@@ -223,8 +224,8 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);
-	if (! self->unlogged)
-		log_persist(&tr->log, &self->id.id_table);
+	if (! self->arg->unlogged)
+		log_persist(&tr->log, self->arg->id_table);
 
 	// secondary indexes
 	for (auto index = primary->next; index; index = index->next)

@@ -14,17 +14,18 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 #include <amelie_catalog.h>
 
 static void
 table_index_delete(Table* table, IndexConfig* index)
 {
 	// remove index from partitions
-	engine_index_remove(&table->engine, &index->name);
+	part_mgr_index_remove(&table->part_mgr, &index->name);
 
 	// remove index from table config
 	table_config_index_remove(table->config, index);

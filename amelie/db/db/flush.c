@@ -14,23 +14,18 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
 static bool
-flush_begin(Flush* self, Uuid* id_table, uint64_t id)
+flush_begin(Flush* self, Table* table, uint64_t id)
 {
-	auto db = self->db;
-
-	// find table by uuid
-	auto table = table_mgr_find_by(&db->catalog.table_mgr, id_table, false);
-	if (! table)
-		return false;
 	self->table = table;
 
 	// create shadow heap
@@ -41,7 +36,7 @@ flush_begin(Flush* self, Uuid* id_table, uint64_t id)
 	defer(unlock, lock_table);
 
 	// find partition by id
-	auto origin_id = engine_find(&table->engine, id);
+	auto origin_id = part_mgr_find(&table->part_mgr, id);
 	if (! origin_id)
 	{
 		heap_free(heap_shadow);
@@ -54,27 +49,20 @@ flush_begin(Flush* self, Uuid* id_table, uint64_t id)
 	}
 	auto origin  = part_of(origin_id);
 	self->origin = origin;
+	id_copy(&self->id_origin, &origin->id);
 
 	// set shadow heap hash min/max
 	heap_shadow->header->hash_min = origin->heap->header->hash_min;
 	heap_shadow->header->hash_max = origin->heap->header->hash_max;
 
-	// set id
-	id_copy(&self->id_origin, &origin->id);
-	id_copy(&self->id_ram, &origin->id);
-	id_copy(&self->id_pending, &origin->id);
-	id_copy(&self->id_service, &origin->id);
+	// set id and volumes
+	auto volumes = &table->part_mgr.config->volumes;
+	id_prepare(&self->id_ram, ID_RAM, volumes);
 
-	self->id_ram.id     = state_psn_next();
-	self->id_pending.id = state_psn_next();
-	self->id_service.id = self->id_pending.id;
-	id_set_type(&self->id_pending, ID_PENDING);
-	id_set_type(&self->id_service, ID_SERVICE);
-
-	// pick storage to use
-	auto tier = origin->id.tier;
-	self->id_ram.storage     = tier_storage_next(tier);
-	self->id_pending.storage = tier_storage_next(tier);
+	auto tier = tier_mgr_first(&table->tier_mgr);
+	volumes = &tier->config->volumes;
+	id_prepare(&self->id_pending, ID_PENDING, volumes);
+	id_prepare(&self->id_service, ID_SERVICE, volumes);
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -105,9 +93,8 @@ flush_job(intptr_t* argv)
 	heap_create(heap_temp, &self->file_ram, id, ID_RAM_INCOMPLETE);
 
 	auto total = (double)self->file_ram.size / 1024 / 1024;
-	info("flush: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
-	     id->storage->storage->config->name.pos,
-	     id->tier->name.pos,
+	info("flush: %s/%05" PRIu64 ".ram (%.2f MiB)",
+	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);
 
@@ -125,9 +112,12 @@ flush_job(intptr_t* argv)
 
 	// write pending object
 	id = &self->id_pending;
+	auto tier = tier_mgr_first(&self->table->tier_mgr);
+
 	auto writer = self->writer;
 	writer_reset(writer);
-	writer_start(writer, &self->file_pending, id->storage->storage, id->tier);
+	writer_start(writer, &self->file_pending, id->volume->storage,
+	             tier->config->region_size);
 	while (heap_index_iterator_has(&it))
 	{
 		auto row = heap_index_iterator_at(&it);
@@ -138,8 +128,8 @@ flush_job(intptr_t* argv)
 
 	total = (double)self->file_pending.size / 1024 / 1024;
 	info("flush: %s/%s/%05" PRIu64 ".pending (%.2f MiB)",
-	     id->storage->storage->config->name.pos,
-	     id->tier->name.pos,
+	     id->volume->storage->config->name.pos,
+	     tier->config->name.pos,
 	     id->id,
 	     total);
 
@@ -265,12 +255,13 @@ flush_apply(Flush* self)
 		assert(! prev);
 	}
 
-	// update storage refs
-	tier_storage_unref(origin->id.storage);
-	tier_storage_ref(self->id_ram.storage);
+	// update volume refs
+	volume_unref(origin->id.volume);
+	volume_ref(self->id_ram.volume);
 
-	// register object
-	engine_add(&self->table->engine, &self->object->id);
+	// add object to the tier
+	auto tier = tier_mgr_first(&table->tier_mgr);
+	tier_add(tier, &self->object->id);
 	self->object = NULL;
 
 	// update partition id
@@ -329,7 +320,7 @@ flush_reset(Flush* self)
 }
 
 void
-flush_run(Flush* self, Uuid* id_table, uint64_t id)
+flush_run(Flush* self, Table* table, uint64_t id)
 {
 	flush_reset(self);
 
@@ -338,7 +329,7 @@ flush_run(Flush* self, Uuid* id_table, uint64_t id)
 	defer(ops_unlock, &self->lock);
 
 	// find and rotate partition
-	if (! flush_begin(self, id_table, id))
+	if (! flush_begin(self, table, id))
 		error("partition not found");
 
 	// create heap snapshot

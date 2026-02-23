@@ -23,7 +23,7 @@ heap_create(Heap* self, File* file, Id* id, int state)
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
-	encoder_open(&ec, id->tier);
+	encoder_open(&ec, id->volume->storage);
 
 	// prepare header (including buckets)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
@@ -98,7 +98,7 @@ heap_open(Heap* self, Id* id, int state)
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
-	encoder_open(&ec, id->tier);
+	encoder_open(&ec, id->volume->storage);
 	encoder_set_compression(&ec, header->compression);
 
 	// read pages

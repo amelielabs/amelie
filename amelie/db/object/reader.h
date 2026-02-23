@@ -50,7 +50,7 @@ static inline void
 reader_open(Reader* self, Object* object)
 {
 	self->object = object;
-	encoder_open(&self->encoder, object->id.tier);
+	encoder_open(&self->encoder, object->id.volume->storage);
 }
 
 hot static inline Region*

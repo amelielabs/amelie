@@ -19,7 +19,6 @@ struct Writer
 	int          region_size;
 	RegionWriter region_writer;
 	MetaWriter   meta_writer;
-	Tier*        tier;
 	Storage*     storage;
 	Writer*      next;
 };
@@ -28,7 +27,7 @@ Writer*
 writer_allocate(void);
 void writer_free(Writer*);
 void writer_reset(Writer*);
-void writer_start(Writer*, File*, Storage*, Tier*);
+void writer_start(Writer*, File*, Storage*, int);
 void writer_stop(Writer*);
 void writer_add(Writer*, Row*);
 

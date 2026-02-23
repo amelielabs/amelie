@@ -14,10 +14,11 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
@@ -26,13 +27,13 @@ void
 db_init(Db*        self,
         CatalogIf* iface,
         void*      iface_arg,
-        EngineIf*  iface_engine,
-        void*      iface_engine_arg)
+        PartMgrIf* iface_part_mgr,
+        void*      iface_part_mgr_arg)
 {
 	ops_init(&self->ops);
 	catalog_init(&self->catalog, iface, iface_arg,
-	             iface_engine,
-	             iface_engine_arg);
+	             iface_part_mgr,
+	             iface_part_mgr_arg);
 	wal_mgr_init(&self->wal_mgr);
 	snapshot_mgr_init(&self->snapshot_mgr, &self->catalog, &self->wal_mgr.wal);
 }

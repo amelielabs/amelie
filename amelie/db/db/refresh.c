@@ -14,23 +14,18 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
 static bool
-refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
+refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 {
-	auto db = self->db;
-
-	// find table by uuid
-	auto table = table_mgr_find_by(&db->catalog.table_mgr, id_table, false);
-	if (! table)
-		return false;
 	self->table = table;
 
 	// create shadow heap
@@ -41,7 +36,8 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	defer(unlock, lock_table);
 
 	// find partition by id
-	auto origin_id = engine_find(&table->engine, id);
+	auto part_mgr = &table->part_mgr;
+	auto origin_id = part_mgr_find(part_mgr, id);
 	if (! origin_id)
 	{
 		heap_free(heap_shadow);
@@ -54,33 +50,25 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	}
 	auto origin  = part_of(origin_id);
 	self->origin = origin;
-
-	// set id
 	id_copy(&self->id_origin, &origin->id);
-	id_copy(&self->id_ram, &origin->id);
-	id_copy(&self->id_service, &origin->id);
-	id_set_type(&self->id_service, ID_SERVICE);
 
-	self->id_ram.id     = state_psn_next();
-	self->id_service.id = self->id_ram.id;
-
-	// pick storage to use
-	TierStorage* storage_ref;
+	// set id and volumes
+	auto volumes = &part_mgr->config->volumes;
 	if (storage)
 	{
-		auto ref = tier_storage_find(self->id_ram.tier, storage);
-		if (! ref)
+		auto volume = volume_mgr_find(volumes, storage);
+		if (! volume)
 		{
 			heap_free(heap_shadow);
 			return false;
 		}
-		storage_ref = ref;
+		id_prepare_in(&self->id_ram, ID_RAM, volume);
+		id_prepare_in(&self->id_service, ID_SERVICE, volume);
 	} else
 	{
-		// choose next available storage to use
-		storage_ref = tier_storage_next(self->id_ram.tier);
+		id_prepare(&self->id_ram, ID_RAM, volumes);
+		id_prepare(&self->id_service, ID_SERVICE, volumes);
 	}
-	self->id_ram.storage = storage_ref;
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -108,9 +96,8 @@ refresh_snapshot_job(intptr_t* argv)
 	heap_create(heap, &self->file_ram, id, ID_RAM_INCOMPLETE);
 
 	auto total = (double)self->file_ram.size / 1024 / 1024;
-	info("checkpoint: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
-	     id->storage->storage->config->name.pos,
-	     id->tier->name.pos,
+	info("checkpoint: %s/%05" PRIu64 ".ram (%.2f MiB)",
+	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);
 
@@ -206,9 +193,9 @@ refresh_apply(Refresh* self)
 		assert(prev == row_shadow);
 	}
 
-	// update storage refs
-	tier_storage_unref(origin->id.storage);
-	tier_storage_ref(self->id_ram.storage);
+	// update volume refs
+	volume_unref(origin->id.volume);
+	volume_ref(self->id_ram.volume);
 
 	// update partition id
 	id_copy(&origin->id, &self->id_ram);
@@ -252,7 +239,7 @@ refresh_reset(Refresh* self)
 }
 
 void
-refresh_run(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
+refresh_run(Refresh* self, Table* table, uint64_t id, Str* storage)
 {
 	refresh_reset(self);
 
@@ -264,7 +251,7 @@ refresh_run(Refresh* self, Uuid* id_table, uint64_t id, Str* storage)
 	breakpoint(REL_BP_REFRESH_1);
 
 	// find and rotate partition
-	if (! refresh_begin(self, id_table, id, storage))
+	if (! refresh_begin(self, table, id, storage))
 		error("partition or tier storage not found");
 
 	// case 2: update during refresh

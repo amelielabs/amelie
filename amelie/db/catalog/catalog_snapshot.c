@@ -14,10 +14,11 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 #include <amelie_catalog.h>
 
 void
@@ -30,30 +31,23 @@ catalog_snapshot(Catalog* self, Buf* data)
 	defer_buf(buf);
 	buf_write_buf(data, buf);
 
-	// storage (directories)
-	encode_raw(data, "storage", 7);
+	// volumes
+	encode_raw(data, "volumes", 7);
 	encode_array(data);
 	list_foreach(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
+		volume_mgr_list(&table->config->part_mgr_config.volumes, data);
 		list_foreach(&table->config->tiers)
 		{
-			auto tier = list_at(Tier, link);
-			list_foreach(&tier->storages)
-			{
-				auto tier_storage = list_at(TierStorage, link);
-				char id[UUID_SZ];
-				uuid_get(&tier_storage->id, id, sizeof(id));
-				char path[256];
-				auto path_size = sfmt(path, sizeof(path), "storage/%s", id);
-				encode_raw(data, path, path_size);
-			}
+			auto config = list_at(TierConfig, link);
+			volume_mgr_list(&config->volumes, data);
 		}
 	}
 	encode_array_end(data);
 
-	// partitions
-	encode_raw(data, "partitions", 10);
+	// files
+	encode_raw(data, "files", 5);
 	encode_array(data);
 
 	// create partitions files snapshots (hard links)
@@ -63,16 +57,26 @@ catalog_snapshot(Catalog* self, Buf* data)
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
 		defer(unlock, table_lock);
 
-		list_foreach(&table->engine.list)
+		// partitions
+		list_foreach(&table->part_mgr.list)
 		{
-			auto id = list_at(Id, link_mgr);
+			auto id = list_at(Id, link);
 			auto id_snap = id_snapshot_of(id->type);
-
-			// create snapshot file
 			id_snapshot(id, id->type, id_snap);
-
-			// [path, size, mode]
 			id_encode(id, id_snap, data);
+		}
+
+		// objects
+		list_foreach(&table->tier_mgr.list)
+		{
+			auto tier = list_at(Tier, link);
+			list_foreach(&tier->list_pending)
+			{
+				auto id = list_at(Id, link);
+				auto id_snap = id_snapshot_of(id->type);
+				id_snapshot(id, id->type, id_snap);
+				id_encode(id, id_snap, data);
+			}
 		}
 	}
 
@@ -83,22 +87,22 @@ void
 catalog_snapshot_cleanup(Buf* data)
 {
 	auto pos = data->start;
-	uint8_t* pos_partitions = NULL;
+	uint8_t* pos_files = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_ARRAY, "partitions", &pos_partitions },
-		{ 0,             NULL,         NULL           },
+		{ DECODE_ARRAY, "files", &pos_files },
+		{ 0,             NULL,    NULL      },
 	};
 	decode_obj(obj, "snapshot", &pos);
 
-	// drop partitions snapshots files (hard links)
-	json_read_array(&pos_partitions);
-	while (! json_read_array_end(&pos_partitions))
+	// drop snapshots files (hard links)
+	json_read_array(&pos_files);
+	while (! json_read_array_end(&pos_files))
 	{
 		Str     path_relative;
 		int64_t size;
 		int64_t mode;
-		decode_basefile(&pos_partitions, &path_relative, &size, &mode);
+		decode_basefile(&pos_files, &path_relative, &size, &mode);
 		if (! fs_exists("%s/%.*s", state_directory(), str_size(&path_relative),
 		                str_of(&path_relative)))
 			continue;

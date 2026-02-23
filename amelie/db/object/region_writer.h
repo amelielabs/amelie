@@ -64,9 +64,9 @@ region_writer_size(RegionWriter* self)
 }
 
 static inline void
-region_writer_open(RegionWriter* self, Tier* tier)
+region_writer_open(RegionWriter* self, Storage* storage)
 {
-	encoder_open(&self->encoder, tier);
+	encoder_open(&self->encoder, storage);
 }
 
 static inline void

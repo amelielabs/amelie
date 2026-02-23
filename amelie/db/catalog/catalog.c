@@ -14,26 +14,27 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 #include <amelie_catalog.h>
 
 void
 catalog_init(Catalog*   self,
              CatalogIf* iface,
              void*      iface_arg,
-             EngineIf*  iface_engine,
-             void*      iface_engine_arg)
+             PartMgrIf* iface_part_mgr,
+             void*      iface_part_mgr_arg)
 {
 	self->iface = iface;
 	self->iface_arg = iface_arg;
 	storage_mgr_init(&self->storage_mgr);
 	database_mgr_init(&self->db_mgr);
 	table_mgr_init(&self->table_mgr, &self->storage_mgr,
-	               iface_engine,
-	               iface_engine_arg);
+	               iface_part_mgr,
+	               iface_part_mgr_arg);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 }
 
@@ -413,10 +414,10 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		// create tier
 		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto tier = tier_read(&config_pos);
-		defer(tier_free, tier);
+		auto config = tier_config_read(&config_pos);
+		defer(tier_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = table_tier_create(table, tr, tier, if_not_exists);
+		write = table_tier_create(table, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_TIER_DROP:
@@ -450,8 +451,8 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str  name;
 		Str  name_tier;
 		auto config_pos = table_op_tier_storage_add_read(op, &db, &name, &name_tier);
-		auto config = tier_storage_read(&config_pos);
-		defer(tier_storage_free, config);
+		auto config = volume_read(&config_pos);
+		defer(volume_free, config);
 
 		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
 		auto if_exists = ddl_if_exists(flags);
@@ -470,10 +471,10 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		// create tier
 		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto tier = tier_read(&config_pos);
-		defer(tier_free, tier);
+		auto config = tier_config_read(&config_pos);
+		defer(tier_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = table_tier_set(table, tr, tier, mask, if_not_exists);
+		write = table_tier_set(table, tr, config, mask, if_not_exists);
 		break;
 	}
 	case DDL_TIER_STORAGE_DROP:

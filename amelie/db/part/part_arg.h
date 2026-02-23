@@ -11,5 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-Iterator*
-engine_iterator(Engine*, Part*, IndexConfig*, bool, Row*);
+typedef struct PartArg PartArg;
+
+struct PartArg
+{
+	Sequence* seq;
+	bool      unlogged;
+	Uuid*     id_table;
+};

@@ -13,7 +13,7 @@
 
 typedef struct PartMapping PartMapping;
 
-#define PART_MAPPING_MAX 8096
+#define PART_MAPPING_MAX 8192
 
 struct PartMapping
 {
@@ -24,7 +24,7 @@ struct PartMapping
 static inline void
 part_mapping_init(PartMapping* self, Keys* keys)
 {
-	self->map = NULL;
+	self->map  = NULL;
 	self->keys = keys;
 }
 

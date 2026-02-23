@@ -14,10 +14,11 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
-#include <amelie_object.h>
-#include <amelie_engine.h>
+#include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
@@ -33,7 +34,7 @@ indexate_match(Indexate* self, IndexConfig* config)
 		auto lock_table = lock(&table->rel, LOCK_SHARED);
 
 		uint64_t id = UINT64_MAX;
-		list_foreach(&engine_main(&table->engine)->list_ram)
+		list_foreach(&table->part_mgr.list)
 		{
 			auto part = list_at(Part, id.link);
 			auto index = part_index_find(part, &config->name, false);
@@ -52,7 +53,7 @@ indexate_match(Indexate* self, IndexConfig* config)
 		ops_lock(&self->db->ops, &self->lock, id);
 
 		// find partition by id
-		auto origin_id = engine_find(&table->engine, id);
+		auto origin_id = part_mgr_find(&table->part_mgr, id);
 		if (origin_id && origin_id->type == ID_RAM)
 		{
 			self->origin = part_of(origin_id);
@@ -125,9 +126,8 @@ indexate_job(intptr_t* argv)
 
 	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
 	auto id = &origin->id;
-	info("indexate: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
-	     id->storage->storage->config->name.pos,
-	     id->tier->name.pos,
+	info("indexate: %s/%05" PRIu64 ".ram (%.2f MiB)",
+	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);
 }
@@ -200,7 +200,7 @@ indexate_abort(Indexate* self, IndexConfig* config)
 	auto table_lock = lock(&table->rel, LOCK_EXCLUSIVE);
 	defer(unlock, table_lock);
 
-	list_foreach(&engine_main(&table->engine)->list_ram)
+	list_foreach(&table->part_mgr.list)
 	{
 		auto part  = list_at(Part, id.link);
 		auto index = part_index_find(part, &config->name, false);
