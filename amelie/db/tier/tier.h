@@ -115,3 +115,5 @@ tier_find(Tier* self, uint64_t psn)
 	}
 	return NULL;
 }
+
+void tier_recover(Tier*, StorageMgr*);

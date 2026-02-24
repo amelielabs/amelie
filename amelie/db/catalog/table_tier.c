@@ -79,13 +79,6 @@ table_tier_create(Table*      self,
 		return false;
 	}
 
-	// ensure storages exists
-	list_foreach(&config->volumes.list)
-	{
-		auto volume = list_at(Volume, link);
-		storage_mgr_find(self->tier_mgr.storage_mgr, &volume->name, true);
-	}
-
 	// save tier copy to the table config
 	auto config_copy = tier_config_copy(config);
 	table_config_tier_add(self->config, config_copy);
@@ -95,6 +88,9 @@ table_tier_create(Table*      self,
 
 	// update table
 	log_relation(&tr->log, &create_if, tier, &self->rel);
+
+	// resolve storages and recover tiers
+	tier_recover(tier, self->tier_mgr.storage_mgr);
 
 	// create volumes directories
 	volume_mgr_mkdir(&config_copy->volumes);

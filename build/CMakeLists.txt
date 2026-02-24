@@ -185,8 +185,8 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/storage/storage_mgr.c
     ${AMELIE_ROOT}/db/object/writer.c
     ${AMELIE_ROOT}/db/object/object.c
+    ${AMELIE_ROOT}/db/tier/tier.c
     ${AMELIE_ROOT}/db/tier/tier_mgr.c
-    ${AMELIE_ROOT}/db/tier/tier_mgr_recover.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/heap_file.c
     ${AMELIE_ROOT}/db/heap/heap_index.c

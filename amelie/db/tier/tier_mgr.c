@@ -40,15 +40,13 @@ tier_mgr_free(TierMgr* self)
 void
 tier_mgr_open(TierMgr* self, List* tiers)
 {
-	// create tiers
+	// create and recover tiers
 	list_foreach(tiers)
 	{
 		auto config = list_at(TierConfig, link);
-		tier_mgr_create(self, config);
+		auto tier = tier_mgr_create(self, config);
+		tier_recover(tier, self->storage_mgr);
 	}
-
-	// recover tiers and create object lists
-	tier_mgr_recover(self);
 }
 
 void
@@ -94,9 +92,6 @@ tier_mgr_create(TierMgr* self, TierConfig* config)
 	auto tier = tier_allocate(config, self->keys);
 	list_append(&self->list, &tier->link);
 	self->list_count++;
-
-	// resolve storages
-	volume_mgr_ref(&tier->config->volumes, self->storage_mgr);
 	return tier;
 }
 

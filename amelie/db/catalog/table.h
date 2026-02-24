@@ -103,9 +103,6 @@ table_open(Table* self)
 
 	// recover, map and deploy partitions
 	part_mgr_open(&self->part_mgr, &config->indexes);
-
-	// load objects
-	tier_mgr_load(&self->tier_mgr);
 }
 
 static inline void

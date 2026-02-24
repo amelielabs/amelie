@@ -18,7 +18,7 @@
 #include <amelie_tier.h>
 
 static bool
-tier_mgr_recover_volume(Tier* tier, Volume* volume)
+tier_recover_volume(Tier* tier, Volume* volume)
 {
 	// <base>/storage/<volume_id>
 	char id[UUID_SZ];
@@ -86,17 +86,16 @@ tier_mgr_recover_volume(Tier* tier, Volume* volume)
 }
 
 void
-tier_mgr_recover(TierMgr* self)
+tier_recover(Tier* self, StorageMgr* storage_mgr)
 {
-	// read volumes
-	list_foreach(&self->list)
+	// resolve storages
+	volume_mgr_ref(&self->config->volumes, storage_mgr);
+
+	// recover volumes
+	list_foreach(&self->config->volumes.list)
 	{
-		auto tier = list_at(Tier, link);
-		list_foreach(&tier->config->volumes.list)
-		{
-			auto volume = list_at(Volume, link);
-			tier_mgr_recover_volume(tier, volume);
-		}
+		auto volume = list_at(Volume, link);
+		tier_recover_volume(self, volume);
 	}
 
 	// todo: sort pending objects by id

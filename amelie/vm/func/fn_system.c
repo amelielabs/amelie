@@ -41,6 +41,8 @@ enum
 	SHOW_TIER,
 	SHOW_PARTITIONS,
 	SHOW_PARTITION,
+	SHOW_OBJECTS,
+	SHOW_OBJECT,
 	SHOW_FUNCTIONS,
 	SHOW_FUNCTION,
 	SHOW_STATE,
@@ -82,6 +84,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_TIER,       "tier",        4,  true,  true  },
 	{ SHOW_PARTITIONS, "partitions",  10, false, true  },
 	{ SHOW_PARTITION,  "partition",   9,  true,  true  },
+	{ SHOW_OBJECTS,    "objects",     7,  false, true  },
+	{ SHOW_OBJECT,     "object",      6,  true,  true  },
 	{ SHOW_FUNCTIONS,  "functions",   9,  false, false },
 	{ SHOW_FUNCTION,   "function",    8,  true,  false },
 	{ SHOW_STATE,      "state",       5,  false, false },
@@ -317,6 +321,18 @@ fn_show(Fn* self)
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
 		buf = part_mgr_list(&table->part_mgr, name, flags);
+		break;
+	}
+	case SHOW_OBJECTS:
+	{
+		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
+		buf = tier_mgr_list(&table->tier_mgr, NULL, flags);
+		break;
+	}
+	case SHOW_OBJECT:
+	{
+		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
+		buf = tier_mgr_list(&table->tier_mgr, name, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:
