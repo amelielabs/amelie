@@ -149,6 +149,14 @@ id_extension_of(int state)
 static inline void
 id_path(Id* self, char* path, int state)
 {
+	if (! self->volume)
+	{
+		// <base>/storage/<id>.<type>
+		sfmt(path, PATH_MAX, "%s/storage/%05" PRIu64 "%s", state_directory(),
+		     self->id, id_extension_of(state));
+		return;
+	}
+
 	// volume id
 	char uuid[UUID_SZ];
 	uuid_get(&self->volume->id, uuid, sizeof(uuid));
@@ -238,4 +246,18 @@ id_encode(Id* self, int state, Buf* buf)
 
 	// [path, size, mode]
 	encode_basefile(buf, path);
+}
+
+static inline void
+id_encode_path(Id* self, int state, Buf* buf)
+{
+	char uuid[UUID_SZ];
+	uuid_get(&self->volume->id, uuid, sizeof(uuid));
+
+	char path[PATH_MAX];
+	sfmt(path, sizeof(path), "storage/%s/%05" PRIu64 "%s",
+	     uuid, self->id, id_extension_of(state));
+
+	// path
+	encode_basepath(buf, path);
 }

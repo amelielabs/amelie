@@ -12,6 +12,23 @@
 //
 
 static inline void
+encode_basepath(Buf* self, char* path_relative)
+{
+	// <base>/<path_relative>
+	char path[PATH_MAX];
+	sfmt(path, sizeof(path), "%s/%s", state_directory(),
+	     path_relative);
+	encode_cstr(self, path_relative);
+}
+
+static inline void
+decode_basepath(uint8_t** pos, Str* path_relative)
+{
+	// path_relative
+	json_read_string(pos, path_relative);
+}
+
+static inline void
 encode_basefile(Buf* self, char* path_relative)
 {
 	// <base>/<path_relative>

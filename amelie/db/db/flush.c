@@ -62,7 +62,6 @@ flush_begin(Flush* self, Table* table, uint64_t id)
 	auto tier = tier_mgr_first(&table->tier_mgr);
 	volumes = &tier->config->volumes;
 	id_prepare(&self->id_pending, ID_PENDING, volumes);
-	id_prepare(&self->id_service, ID_SERVICE, volumes);
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -136,16 +135,6 @@ flush_job(intptr_t* argv)
 	// create and open object
 	self->object = object_allocate(&self->id_pending);
 	object_open(self->object, ID_PENDING_INCOMPLETE, true);
-
-	// create <id>.service.incomplete file
-	auto service = self->service;
-	service_set_id(service, &self->id_service);
-	service_begin(service);
-	service_add_input(service, self->id_origin.id);
-	service_add_output(service, self->id_ram.id);
-	service_add_output(service, self->id_pending.id);
-	service_end(service);
-	service_create(service, &self->file_service, ID_SERVICE_INCOMPLETE);
 }
 
 static void
@@ -169,14 +158,14 @@ flush_complete_job(intptr_t* argv)
 	}
 	self->indexes = NULL;
 
-	// sync incomplete service file
-	if (opt_int_of(&config()->storage_sync))
-		file_sync(&self->file_service);
-
-	file_close(&self->file_service);
-
-	// rename
-	id_rename(&self->id_service, ID_SERVICE_INCOMPLETE, ID_SERVICE);
+	// create <id>.service.incomplete file
+	auto service = self->service;
+	service_begin(service);
+	service_add_input(service,  &self->id_origin);
+	service_add_output(service, &self->id_ram);
+	service_add_output(service, &self->id_pending);
+	service_end(service);
+	service_create(service);
 
 	// heap
 
@@ -203,8 +192,8 @@ flush_complete_job(intptr_t* argv)
 	// rename
 	id_rename(&self->id_pending, ID_PENDING_INCOMPLETE, ID_PENDING);
 
-	// remove service files (complete)
-	id_delete(&self->id_service, ID_SERVICE);
+	// remove service file (complete)
+	service_delete(service);
 }
 
 static void
@@ -283,10 +272,8 @@ flush_init(Flush* self, Db* db)
 	id_init(&self->id_origin);
 	id_init(&self->id_ram);
 	id_init(&self->id_pending);
-	id_init(&self->id_service);
 	file_init(&self->file_ram);
 	file_init(&self->file_pending);
-	file_init(&self->file_service);
 	buf_reset(&self->heap_index);
 }
 
@@ -312,10 +299,8 @@ flush_reset(Flush* self)
 	id_init(&self->id_origin);
 	id_init(&self->id_ram);
 	id_init(&self->id_pending);
-	id_init(&self->id_service);
 	file_close(&self->file_ram);
 	file_close(&self->file_pending);
-	file_close(&self->file_service);
 	buf_init(&self->heap_index);
 }
 

@@ -47,16 +47,22 @@ service_reset(Service* self)
 }
 
 static inline void
-service_set_id(Service* self, Id* id)
-{
-	id_copy(&self->id, id);
-}
-
-static inline void
 service_begin(Service* self)
 {
 	encode_array(&self->input);
 	encode_array(&self->output);
+}
+
+static inline void
+service_add_input(Service* self, Id* id)
+{
+	id_encode_path(id, id->type, &self->input);
+}
+
+static inline void
+service_add_output(Service* self, Id* id)
+{
+	id_encode_path(id, id->type, &self->output);
 }
 
 static inline void
@@ -67,19 +73,7 @@ service_end(Service* self)
 }
 
 static inline void
-service_add_input(Service* self, uint64_t id)
-{
-	encode_integer(&self->input, id);
-}
-
-static inline void
-service_add_output(Service* self, uint64_t id)
-{
-	encode_integer(&self->output, id);
-}
-
-static inline void
-service_create(Service* self, File* file, int state)
+service_create(Service* self)
 {
 	// prepare file data
 	auto buf = buf_create();
@@ -104,19 +98,43 @@ service_create(Service* self, File* file, int state)
 	auto pos = buf->start;
 	json_export_pretty(&text, NULL, &pos);
 
+	// set id
+	auto id = &self->id;
+	id->id     = state_psn_next();
+	id->type   = ID_SERVICE;
+	id->volume = NULL;
+
 	// create <id>.service.incomplete
-	id_create(&self->id, file, state);
-	file_write_buf(file, &text);
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	id_create(id, &file, ID_SERVICE_INCOMPLETE);
+	file_write_buf(&file, &text);
+
+	// sync incomplete service file
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&file);
+
+	file_close(&file);
+
+	// rename as completed
+	id_rename(&self->id, ID_SERVICE_INCOMPLETE, ID_SERVICE);
 }
 
 static inline void
-service_open(Service* self, int state)
+service_delete(Service* self)
+{
+	id_delete(&self->id, ID_SERVICE);
+}
+
+static inline void
+service_open(Service* self, Id* id)
 {
 	// open <id>.service file
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
-	id_open(&self->id, &file, state);
+	id_open(id, &file, ID_SERVICE);
 
 	// read text
 	auto buf = buf_create();

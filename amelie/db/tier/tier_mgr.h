@@ -24,7 +24,6 @@ struct TierMgr
 void  tier_mgr_init(TierMgr*, StorageMgr*, Keys*);
 void  tier_mgr_free(TierMgr*);
 void  tier_mgr_open(TierMgr*, List*);
-void  tier_mgr_load(TierMgr*);
 void  tier_mgr_drop(TierMgr*);
 void  tier_mgr_truncate(TierMgr*);
 Tier* tier_mgr_create(TierMgr*, TierConfig*);

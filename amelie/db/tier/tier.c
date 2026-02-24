@@ -99,4 +99,11 @@ tier_recover(Tier* self, StorageMgr* storage_mgr)
 	}
 
 	// todo: sort pending objects by id
+
+	// open pending objects
+	list_foreach(&self->list_pending)
+	{
+		auto obj = list_at(Object, id.link);
+		object_open(obj, ID_PENDING, true);
+	}
 }

@@ -24,5 +24,9 @@
 #include "storage/basefile.h"
 #include "storage/id.h"
 
+// service
+#include "storage/service.h"
+#include "storage/service_mgr.h"
+
 // encoding
 #include "storage/encoder.h"

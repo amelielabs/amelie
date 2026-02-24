@@ -50,6 +50,9 @@ db_free(Db* self)
 void
 db_open(Db* self, bool bootstrap)
 {
+	// do compaction crash recovery
+	service_mgr_open();
+
 	// prepare system catalog
 	catalog_open(&self->catalog, bootstrap);
 }

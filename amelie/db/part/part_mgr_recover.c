@@ -66,19 +66,6 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 		id.volume = volume;
 
 		switch (state) {
-		case ID_SERVICE:
-		{
-			auto service = service_allocate();
-			service_set_id(service, &id);
-			part_mgr_add(self, &service->id);
-			break;
-		}
-		case ID_SERVICE_INCOMPLETE:
-		{
-			// remove incomplete file
-			id_delete(&id, state);
-			break;
-		}
 		case ID_RAM_INCOMPLETE:
 		case ID_RAM_SNAPSHOT:
 		{
@@ -156,81 +143,6 @@ part_mgr_create(PartMgr* self)
 	}
 }
 
-static void
-part_mgr_recover_gc(PartMgr* self, uint8_t* pos)
-{
-	// remove all existing partitions and objects
-	json_read_array(&pos);
-	while (! json_read_array_end(&pos))
-	{
-		int64_t psn;
-		json_read_integer(&pos, &psn);
-
-		Tier* tier = NULL;
-		auto id = tier_mgr_find_object(self->tier_mgr, &tier, psn);
-		if (id)
-		{
-			id_delete(id, id->type);
-			tier_remove(tier, id);
-			id_free(id);
-			continue;
-		}
-
-		id = part_mgr_find(self, psn);
-		if (id)
-		{
-			id_delete(id, id->type);
-			part_mgr_remove(self, id);
-			id_free(id);
-			continue;
-		}
-	}
-}
-
-static void
-part_mgr_recover_service(PartMgr* self, Service* service)
-{
-	// read service file
-	service_open(service, ID_SERVICE);
-
-	// if any of the output files are missing (removed as incomplete before),
-	// then remove the rest of them
-	//
-	// case: crash after service file sync/rename
-	//
-	auto pos = service->output.start;
-	json_read_array(&pos);
-	while (! json_read_array_end(&pos))
-	{
-		int64_t psn;
-		json_read_integer(&pos, &psn);
-		auto id = tier_mgr_find_object(self->tier_mgr, NULL, psn);
-		if (! id)
-			id = part_mgr_find(self, psn);
-		if (id)
-			continue;
-		part_mgr_recover_gc(self, service->output.start);
-		goto done;
-	}
-
-	// output files considered valid, remove all remaining
-	// input files
-	//
-	// case: crash after output files synced and renamed
-	//
-	part_mgr_recover_gc(self, service->input.start);
-
-done:
-	// remove service file
-	id_delete(&service->id, ID_SERVICE);
-
-	// remove from the list
-	part_mgr_remove(self, &service->id);
-
-	// done
-	service_free(service);
-}
-
 void
 part_mgr_recover(PartMgr* self)
 {
@@ -249,15 +161,4 @@ part_mgr_recover(PartMgr* self)
 	// create initial partitions
 	if (bootstrap)
 		part_mgr_create(self);
-
-	// recover service files
-	list_foreach_safe(&self->list)
-	{
-		auto id = list_at(Id, link);
-		if (id->type == ID_SERVICE)
-		{
-			auto service = list_at(Service, id.link);
-			part_mgr_recover_service(self, service);
-		}
-	}
 }

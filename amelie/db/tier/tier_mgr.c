@@ -50,21 +50,6 @@ tier_mgr_open(TierMgr* self, List* tiers)
 }
 
 void
-tier_mgr_load(TierMgr* self)
-{
-	// open pending objects
-	list_foreach_safe(&self->list)
-	{
-		auto tier = list_at(Tier, link);
-		list_foreach_safe(&tier->list_pending)
-		{
-			auto obj = list_at(Object, id.link);
-			object_open(obj, ID_PENDING, true);
-		}
-	}
-}
-
-void
 tier_mgr_drop(TierMgr* self)
 {
 	// delete all objects and volumes

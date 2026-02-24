@@ -63,11 +63,9 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 			return false;
 		}
 		id_prepare_in(&self->id_ram, ID_RAM, volume);
-		id_prepare_in(&self->id_service, ID_SERVICE, volume);
 	} else
 	{
 		id_prepare(&self->id_ram, ID_RAM, volumes);
-		id_prepare(&self->id_service, ID_SERVICE, volumes);
 	}
 
 	// commit pending prepared transactions
@@ -100,15 +98,6 @@ refresh_snapshot_job(intptr_t* argv)
 	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);
-
-	// create <id>.service.incomplete file
-	auto service = self->service;
-	service_set_id(service, &self->id_service);
-	service_begin(service);
-	service_add_input(service, self->id_origin.id);
-	service_add_output(service, self->id_ram.id);
-	service_end(service);
-	service_create(service, &self->file_service, ID_SERVICE_INCOMPLETE);
 }
 
 static void
@@ -122,14 +111,13 @@ refresh_complete_job(intptr_t* argv)
 	origin->heap_shadow = NULL;
 	heap_free(shadow);
 
-	// sync incomplete service file
-	if (opt_int_of(&config()->storage_sync))
-		file_sync(&self->file_service);
-
-	file_close(&self->file_service);
-
-	// rename
-	id_rename(&self->id_service, ID_SERVICE_INCOMPLETE, ID_SERVICE);
+	// create <id>.service.incoplete file
+	auto service = self->service;
+	service_begin(service);
+	service_add_input(service,  &self->id_origin);
+	service_add_output(service, &self->id_ram);
+	service_end(service);
+	service_create(service);
 
 	// sync incomplete heap file
 	if (opt_int_of(&config()->storage_sync))
@@ -143,8 +131,8 @@ refresh_complete_job(intptr_t* argv)
 	// rename
 	id_rename(&self->id_ram, ID_RAM_INCOMPLETE, ID_RAM);
 
-	// remove service files (complete)
-	id_delete(&self->id_service, ID_SERVICE);
+	// remove service file (complete)
+	service_delete(service);
 }
 
 static void
@@ -212,9 +200,7 @@ refresh_init(Refresh* self, Db* db)
 	self->db         = db;
 	id_init(&self->id_origin);
 	id_init(&self->id_ram);
-	id_init(&self->id_service);
 	file_init(&self->file_ram);
-	file_init(&self->file_service);
 }
 
 void
@@ -233,9 +219,7 @@ refresh_reset(Refresh* self)
 	service_reset(self->service);
 	id_init(&self->id_origin);
 	id_init(&self->id_ram);
-	id_init(&self->id_service);
 	file_close(&self->file_ram);
-	file_close(&self->file_service);
 }
 
 void
