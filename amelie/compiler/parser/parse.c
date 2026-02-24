@@ -82,17 +82,17 @@ parse_stmt_free(Stmt* stmt)
 	case STMT_CREATE_TIER:
 	{
 		auto ast = ast_tier_create_of(stmt->ast);
-		if (ast->tier)
-			tier_free(ast->tier);
+		if (ast->config)
+			tier_config_free(ast->config);
 		break;
 	}
 	case STMT_ALTER_TIER:
 	{
 		auto ast = ast_tier_alter_of(stmt->ast);
 		if (ast->set)
-			tier_free(ast->set);
-		if (ast->storage)
-			tier_storage_free(ast->storage);
+			tier_config_free(ast->set);
+		if (ast->volume)
+			volume_free(ast->volume);
 		break;
 	}
 	case STMT_CREATE_FUNCTION:

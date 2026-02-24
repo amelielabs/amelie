@@ -17,10 +17,10 @@ typedef struct AstTierAlter  AstTierAlter;
 
 struct AstTierCreate
 {
-	Ast   ast;
-	bool  if_not_exists;
-	Str   table_name;
-	Tier* tier;
+	Ast         ast;
+	bool        if_not_exists;
+	Str         table_name;
+	TierConfig* config;
 };
 
 struct AstTierDrop
@@ -43,18 +43,18 @@ enum
 
 struct AstTierAlter
 {
-	Ast          ast;
-	bool         if_exists;
-	bool         if_exists_storage;
-	bool         if_not_exists_storage;
-	int          type;
-	Str          table_name;
-	Str          name;
-	Str          name_new;
-	Str          name_storage;
-	TierStorage* storage;
-	Tier*        set;
-	int          set_mask;
+	Ast         ast;
+	bool        if_exists;
+	bool        if_exists_storage;
+	bool        if_not_exists_storage;
+	int         type;
+	Str         table_name;
+	Str         name;
+	Str         name_new;
+	Str         name_storage;
+	Volume*     volume;
+	TierConfig* set;
+	int         set_mask;
 };
 
 static inline AstTierCreate*
@@ -69,7 +69,7 @@ ast_tier_create_allocate(void)
 	AstTierCreate* self;
 	self = ast_allocate(0, sizeof(AstTierCreate));
 	self->if_not_exists = false;
-	self->tier          = NULL;
+	self->config        = NULL;
 	str_init(&self->table_name);
 	return self;
 }
@@ -106,7 +106,7 @@ ast_tier_alter_allocate(void)
 	self->if_exists_storage     = false;
 	self->if_not_exists_storage = false;
 	self->type                  = -1;
-	self->storage               = NULL;
+	self->volume                = NULL;
 	self->set                   = NULL;
 	self->set_mask              = 0;
 	str_init(&self->table_name);
@@ -116,7 +116,6 @@ ast_tier_alter_allocate(void)
 	return self;
 }
 
-void  parse_tier_create(Stmt*);
-void  parse_tier_drop(Stmt*);
-void  parse_tier_alter(Stmt*);
-Tier* parse_tier(Stmt*, Str*);
+void parse_tier_create(Stmt*);
+void parse_tier_drop(Stmt*);
+void parse_tier_alter(Stmt*);

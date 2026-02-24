@@ -86,6 +86,8 @@ ast_storage_alter_allocate(void)
 	return self;
 }
 
-void parse_storage_create(Stmt*);
-void parse_storage_drop(Stmt*);
-void parse_storage_alter(Stmt*);
+void    parse_storage_create(Stmt*);
+void    parse_storage_drop(Stmt*);
+void    parse_storage_alter(Stmt*);
+Volume* parse_volume(Stmt*);
+void    parse_volumes(Stmt*, VolumeMgr*);

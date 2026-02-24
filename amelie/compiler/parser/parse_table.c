@@ -349,12 +349,64 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 	}
 }
 
+static void
+parse_table_create_with(Stmt* self)
+{
+	auto stmt = ast_table_create_of(self->ast);
+	auto config = stmt->config;
+	auto config_part = &stmt->config->part_mgr_config;
+
+	// (
+	stmt_expect(self, '(');
+
+	for (;;)
+	{
+		// name value
+		auto name = stmt_expect(self, KNAME);
+
+		if (str_is(&name->string, "id", 2))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			Uuid id;
+			uuid_init(&id);
+			if (uuid_set_nothrow(&id, &value->string) == -1)
+				stmt_error(self, value, "failed to parse uuid");
+			table_config_set_id(config, &id);
+		} else
+		if (str_is(&name->string, "compression", 11))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			part_mgr_config_set_compression(config_part, &value->string);
+		} else
+		if (str_is(&name->string, "compression_level", 17))
+		{
+			auto value = stmt_expect(self, KINT);
+			part_mgr_config_set_compression_level(config_part, value->integer);
+		} else
+		if (str_is(&name->string, "partitions", 10))
+		{
+			auto value = stmt_expect(self, KINT);
+			part_mgr_config_set_partitions(config_part, value->integer);
+		} else {
+			stmt_error(self, name, "unknown option");
+		}
+
+		// )
+		if (stmt_if(self, ')'))
+			break;
+
+		// ,
+		stmt_expect(self, ',');
+	}
+}
+
 void
 parse_table_create(Stmt* self, bool unlogged)
 {
 	// CREATE [UNLOGGED] TABLE [IF NOT EXISTS] name (key)
 	// [PARTITIONS n]
-	// [TIER ...]
+	// [WITH (options)]
+	// [STORAGES (storages)]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -402,59 +454,15 @@ parse_table_create(Stmt* self, bool unlogged)
 	if (hash_partitions < 1 || hash_partitions >= PART_MAPPING_MAX)
 		stmt_error(self, NULL, "table has invalid hash partitions number");
 
-	table_config_set_partitions(config, hash_partitions);
+	auto config_part = &config->part_mgr_config;
+	part_mgr_config_set_partitions(config_part, hash_partitions);
 
-	// [TIER]
-	if (stmt_if(self, KTIER))
-	{
-		for (;;)
-		{
-			// name
-			auto name = stmt_expect(self, KNAME);
+	// [WITH]
+	if (stmt_if(self, KWITH))
+		parse_table_create_with(self);
 
-			// ensure tier is not redefined
-			auto tier = table_config_find_tier(config, &name->string);
-			if (tier)
-				stmt_error(self, name, "tier is redefined");
-
-			// [(options)] [USING storage, ...]
-			tier = parse_tier(self, &name->string);
-			table_config_tier_add(config, tier);
-
-			// next tier
-			if (stmt_if(self, KTIER))
-				continue;
-			break;
-		}
-	} else
-	{
-		// create main tier config
-		auto tier = tier_allocate();
-		stmt->tier = tier;
-		table_config_tier_add(config, tier);
-
-		// tier name
-		Str tier_name;
-		str_set_cstr(&tier_name, "main");
-		tier_set_name(tier, &tier_name);
-
-		// tier compression (enable by default)
-		Str tier_compression;
-		str_set(&tier_compression, "zstd", 4);
-		tier_set_compression(tier, &tier_compression);
-		tier_set_compression_level(tier, 0);
-
-		// create main tier storage (use main storage)
-		auto tier_storage = tier_storage_allocate();
-		tier_storage_set_name(tier_storage, &tier_name);
-
-		// tier storage id
-		uuid_init(&id);
-		uuid_generate(&id, &runtime()->random);
-		tier_storage_set_id(tier_storage, &id);
-
-		tier_storage_add(tier, tier_storage);
-	}
+	// [STORAGES]
+	parse_volumes(self, &config_part->volumes);
 }
 
 void

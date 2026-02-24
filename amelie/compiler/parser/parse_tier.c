@@ -18,7 +18,7 @@
 #include <amelie_parser.h>
 
 static int
-parse_tier_options(Stmt* self, Tier* tier)
+parse_tier_options(Stmt* self, TierConfig* config)
 {
 	int mask = 0;
 	for (;;)
@@ -26,28 +26,16 @@ parse_tier_options(Stmt* self, Tier* tier)
 		// name value
 		auto name = stmt_expect(self, KNAME);
 
-		if (str_is(&name->string, "compression", 11))
-		{
-			auto value = stmt_expect(self, KSTRING);
-			tier_set_compression(tier, &value->string);
-			mask |= TIER_COMPRESSION;
-		} else
-		if (str_is(&name->string, "compression_level", 17))
-		{
-			auto value = stmt_expect(self, KINT);
-			tier_set_compression_level(tier, value->integer);
-			mask |= TIER_COMPRESSION_LEVEL;
-		} else
 		if (str_is(&name->string, "region_size", 11))
 		{
 			auto value = stmt_expect(self, KINT);
-			tier_set_region_size(tier, value->integer);
+			tier_config_set_region_size(config, value->integer);
 			mask |= TIER_REGION_SIZE;
 		} else
 		if (str_is(&name->string, "object_size", 11))
 		{
 			auto value = stmt_expect(self, KINT);
-			tier_set_object_size(tier, value->integer);
+			tier_config_set_object_size(config, value->integer);
 			mask |= TIER_OBJECT_SIZE;
 		} else
 		{
@@ -64,102 +52,11 @@ parse_tier_options(Stmt* self, Tier* tier)
 	return mask;
 }
 
-static void
-parse_tier_storage_options(Stmt* self, TierStorage* storage)
-{
-	for (;;)
-	{
-		// name value
-		auto name = stmt_expect(self, KNAME);
-
-		if (str_is(&name->string, "id", 2))
-		{
-			auto value = stmt_expect(self, KSTRING);
-			Uuid id;
-			uuid_init(&id);
-			if (uuid_set_nothrow(&id, &value->string) == -1)
-				stmt_error(self, value, "failed to parse uuid");
-			tier_storage_set_id(storage, &id);
-		} else
-		{
-			stmt_error(self, name, "unknown option");
-		}
-
-		// )
-		if (stmt_if(self, ')'))
-			break;
-
-		// ,
-		stmt_expect(self, ',');
-	}
-}
-
-Tier*
-parse_tier(Stmt* self, Str* name)
-{
-	// allocate tier
-	auto tier = tier_allocate();
-	tier_set_name(tier, name);
-	errdefer(tier_free, tier);
-
-	// set compression by default
-	Str compression;
-	str_set(&compression, "zstd", 4);
-	tier_set_compression(tier, &compression);
-	tier_set_compression_level(tier, 0);
-
-	// [(options)]
-	if (stmt_if(self, '(') && !stmt_if(self, ')'))
-		parse_tier_options(self, tier);
-
-	// [USING storage, ...]
-	if (stmt_if(self, KUSING))
-	{
-		for (;;)
-		{
-			auto name = stmt_expect(self, KNAME);
-			auto storage = tier_storage_find(tier, &name->string);
-			if (storage)
-				stmt_error(self, name, "storage used twice");
-			storage = tier_storage_allocate();
-			tier_storage_set_name(storage, &name->string);
-
-			// generate tier storage id
-			Uuid id;
-			uuid_init(&id);
-			uuid_generate(&id, &runtime()->random);
-			tier_storage_set_id(storage, &id);
-
-			tier_storage_add(tier, storage);
-
-			// [(options)]
-			if (stmt_if(self, '(') && !stmt_if(self, ')'))
-				parse_tier_storage_options(self, storage);
-
-			// ,
-			if (stmt_if(self, ','))
-				continue;
-
-			break;
-		}
-	} else
-	{
-		// add main storage by default
-		Str main;
-		str_set(&main, "main", 4);
-		auto storage = tier_storage_allocate();
-		tier_storage_set_name(storage, &main);
-		tier_storage_add(tier, storage);
-	}
-
-	return tier;
-}
-
 void
 parse_tier_create(Stmt* self)
 {
 	// CREATE TIER [IF NOT EXISTS] name ON table_name [(options)]
-	// [USING storage [(options)], ...]
+	// [STORAGES]
 	auto stmt = ast_tier_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -176,8 +73,18 @@ parse_tier_create(Stmt* self)
 	auto target = stmt_expect(self, KNAME);
 	stmt->table_name = target->string;
 
-	// allocate and parse tier
-	stmt->tier = parse_tier(self, &name->string);
+	// allocate tier
+	auto config = tier_config_allocate();
+	errdefer(tier_config_free, config);
+	stmt->config = config;
+	tier_config_set_name(config, &name->string);
+
+	// [(options)]
+	if (stmt_if(self, '(') && !stmt_if(self, ')'))
+		parse_tier_options(self, config);
+
+	// [STORAGES]
+	parse_volumes(self, &config->volumes);
 }
 
 void
@@ -250,23 +157,8 @@ parse_tier_alter(Stmt* self)
 		// [IF NOT EXISTS]
 		stmt->if_not_exists_storage = parse_if_not_exists(self);
 
-		// name
-		auto name = stmt_expect(self, KNAME);
-
-		// allocate tier storage
-		auto storage = tier_storage_allocate();
-		stmt->storage = storage;
-		tier_storage_set_name(storage, &name->string);
-
-		// generate tier storage id
-		Uuid id;
-		uuid_init(&id);
-		uuid_generate(&id, &runtime()->random);
-		tier_storage_set_id(storage, &id);
-
-		// [(options)]
-		if (stmt_if(self, '(') && !stmt_if(self, ')'))
-			parse_tier_storage_options(self, storage);
+		// name ([options])
+		stmt->volume = parse_volume(self);
 
 	} else
 	if (stmt_if(self, KDROP))
@@ -316,8 +208,8 @@ parse_tier_alter(Stmt* self)
 		stmt->type = TIER_ALTER_SET;
 
 		// allocate tier
-		stmt->set = tier_allocate();
-		tier_set_name(stmt->set, &name->string);
+		stmt->set = tier_config_allocate();
+		tier_config_set_name(stmt->set, &name->string);
 
 		// (options)
 		stmt_expect(self, '(');

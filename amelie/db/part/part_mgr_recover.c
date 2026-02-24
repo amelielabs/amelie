@@ -105,7 +105,7 @@ static void
 part_mgr_create(PartMgr* self)
 {
 	// create initial hash partitions
-	auto count = self->config->count;
+	auto count = self->config->partitions;
 	if (count < 1 || count > PART_MAPPING_MAX)
 		error("table has invalid partitions number");
 

@@ -206,6 +206,7 @@ enum
 	KSECRET,
 	KSTORED,
 	KSTORAGE,
+	KSTORAGES,
 
 	// t
 	KTRUE,

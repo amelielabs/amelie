@@ -17,7 +17,7 @@ struct PartMgrConfig
 {
 	Str       compression;
 	int64_t   compression_level;
-	int64_t   count;
+	int64_t   partitions;
 	VolumeMgr volumes;
 };
 
@@ -25,7 +25,7 @@ static inline void
 part_mgr_config_init(PartMgrConfig* self)
 {
 	self->compression_level = 0;
-	self->count             = 0;
+	self->partitions        = 0;
 	str_init(&self->compression);
 	volume_mgr_init(&self->volumes);
 }
@@ -51,9 +51,9 @@ part_mgr_config_set_compression_level(PartMgrConfig* self, int value)
 }
 
 static inline void
-part_mgr_config_set_count(PartMgrConfig* self, int value)
+part_mgr_config_set_partitions(PartMgrConfig* self, int value)
 {
-	self->count = value;
+	self->partitions = value;
 }
 
 static inline void
@@ -61,7 +61,7 @@ part_mgr_config_copy(PartMgrConfig* self, PartMgrConfig* copy)
 {
 	part_mgr_config_set_compression(copy, &self->compression);
 	part_mgr_config_set_compression_level(copy, self->compression_level);
-	part_mgr_config_set_count(copy, self->count);
+	part_mgr_config_set_partitions(copy, self->partitions);
 }
 
 static inline void
@@ -72,7 +72,7 @@ part_mgr_config_read(PartMgrConfig* self, uint8_t** pos)
 	{
 		{ DECODE_STRING, "compression",       &self->compression       },
 		{ DECODE_INT,    "compression_level", &self->compression_level },
-		{ DECODE_INT,    "count",             &self->count             },
+		{ DECODE_INT,    "partitiions",       &self->partitions        },
 		{ DECODE_ARRAY,  "volumes",           &pos_volumes             },
 		{ 0,              NULL,                NULL                    },
 	};
@@ -95,9 +95,9 @@ part_mgr_config_write(PartMgrConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "compression_level", 17);
 	encode_integer(buf, self->compression_level);
 
-	// count
-	encode_raw(buf, "count", 5);
-	encode_integer(buf, self->count);
+	// partitions
+	encode_raw(buf, "partitions", 10);
+	encode_integer(buf, self->partitions);
 
 	// volumes
 	encode_raw(buf, "volumes", 7);
