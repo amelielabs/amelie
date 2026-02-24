@@ -142,7 +142,7 @@ show partition '10' on test;
 }]
 # test: alter partition move (storage not exists)
 alter partition 10 on test move to xyz;
-{"msg": "partition or tier storage not found"}
+{"msg": "partition or storage not found"}
 show partition '10' on test;
 [{
   "id": 10,

@@ -304,7 +304,7 @@ flush_reset(Flush* self)
 	buf_init(&self->heap_index);
 }
 
-void
+bool
 flush_run(Flush* self, Table* table, uint64_t id)
 {
 	flush_reset(self);
@@ -315,7 +315,7 @@ flush_run(Flush* self, Table* table, uint64_t id)
 
 	// find and rotate partition
 	if (! flush_begin(self, table, id))
-		error("partition not found");
+		return false;
 
 	// create heap snapshot
 	auto on_error = error_catch
@@ -332,4 +332,6 @@ flush_run(Flush* self, Table* table, uint64_t id)
 
 	if (on_error)
 		rethrow();
+
+	return true;
 }

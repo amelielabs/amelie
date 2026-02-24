@@ -30,7 +30,8 @@ db_refresh(Db* self, Uuid* id_table, uint64_t id, Str* storage)
 	Refresh refresh;
 	refresh_init(&refresh, self);
 	defer(refresh_free, &refresh);
-	refresh_run(&refresh, table, id, storage);
+	if (! refresh_run(&refresh, table, id, storage))
+		error("partition or storage not found");
 }
 
 void
@@ -40,13 +41,15 @@ db_flush(Db* self, Uuid* id_table, uint64_t id)
 	Flush flush;
 	flush_init(&flush, self);
 	defer(flush_free, &flush);
-	flush_run(&flush, table, id);
+	if (! flush_run(&flush, table, id))
+		error("partition not found");
 }
 
 void
 db_checkpoint(Db* self)
 {
 	// note: executed under shared catalog lock
+	auto lsn = state_lsn();
 
 	// update catalog file if there are pending ddls
 	if (state_catalog() < state_catalog_pending())
@@ -67,7 +70,7 @@ db_checkpoint(Db* self)
 			list_foreach(&table->part_mgr.list)
 			{
 				auto part = list_at(Part, id.link);
-				if (part_has_updates(part))
+				if (part->heap->header->lsn < lsn && part_has_updates(part))
 				{
 					id = part->id.id;
 					break;

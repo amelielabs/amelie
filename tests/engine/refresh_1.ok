@@ -109,7 +109,7 @@ switch S1;
 recv;
 switch S2;
 recv;
-{"msg": "partition or tier storage not found"}
+{"msg": "partition or storage not found"}
 switch S0;
 show locks;
 [{

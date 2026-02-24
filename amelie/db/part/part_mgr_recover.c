@@ -20,7 +20,7 @@
 #include <amelie_index.h>
 #include <amelie_part.h>
 
-static bool
+static void
 part_mgr_recover_volume(PartMgr* self, Volume* volume)
 {
 	// <base>/storage/<volume_id>
@@ -32,7 +32,7 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 	if (! fs_exists("%s", path))
 	{
 		volume_mkdir(volume);
-		return true;
+		return;
 	}
 
 	// read directory
@@ -85,7 +85,6 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 			continue;
 		}
 	}
-	return false;
 }
 
 static void
@@ -150,15 +149,13 @@ part_mgr_recover(PartMgr* self)
 	volume_mgr_ref(&self->config->volumes, self->tier_mgr->storage_mgr);
 
 	// read files
-	auto bootstrap = false;
 	list_foreach(&self->config->volumes.list)
 	{
 		auto volume = list_at(Volume, link);
-		if (part_mgr_recover_volume(self, volume))
-			bootstrap = true;
+		part_mgr_recover_volume(self, volume);
 	}
 
 	// create initial partitions
-	if (bootstrap)
+	if (! self->list_count)
 		part_mgr_create(self);
 }

@@ -26,7 +26,18 @@
 static bool
 refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 {
+	auto part_mgr = &table->part_mgr;
 	self->table = table;
+
+	// find storage
+	auto volumes = &part_mgr->config->volumes;
+	Volume* volume = NULL;
+	if (storage)
+	{
+		volume = volume_mgr_find(volumes, storage);
+		if (! volume)
+			return false;
+	}
 
 	// create shadow heap
 	auto heap_shadow = heap_allocate(false);
@@ -36,7 +47,6 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	defer(unlock, lock_table);
 
 	// find partition by id
-	auto part_mgr = &table->part_mgr;
 	auto origin_id = part_mgr_find(part_mgr, id);
 	if (! origin_id)
 	{
@@ -53,20 +63,10 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	id_copy(&self->id_origin, &origin->id);
 
 	// set id and volumes
-	auto volumes = &part_mgr->config->volumes;
-	if (storage)
-	{
-		auto volume = volume_mgr_find(volumes, storage);
-		if (! volume)
-		{
-			heap_free(heap_shadow);
-			return false;
-		}
+	if (volume)
 		id_prepare_in(&self->id_ram, ID_RAM, volume);
-	} else
-	{
+	else
 		id_prepare(&self->id_ram, ID_RAM, volumes);
-	}
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -222,7 +222,7 @@ refresh_reset(Refresh* self)
 	file_close(&self->file_ram);
 }
 
-void
+bool
 refresh_run(Refresh* self, Table* table, uint64_t id, Str* storage)
 {
 	refresh_reset(self);
@@ -236,7 +236,7 @@ refresh_run(Refresh* self, Table* table, uint64_t id, Str* storage)
 
 	// find and rotate partition
 	if (! refresh_begin(self, table, id, storage))
-		error("partition or tier storage not found");
+		return false;
 
 	// case 2: update during refresh
 	breakpoint(REL_BP_REFRESH_2);
@@ -256,4 +256,6 @@ refresh_run(Refresh* self, Table* table, uint64_t id, Str* storage)
 
 	if (on_error)
 		rethrow();
+
+	return true;
 }
