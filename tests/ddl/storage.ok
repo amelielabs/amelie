@@ -4,17 +4,23 @@ connect E0 S0 127.0.0.1:3485;
 select show('storage', 'main');
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 show storage main;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 show storages;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 # test: create storage statement parsing
 create;
@@ -40,18 +46,26 @@ create storage test;
 show storages;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }, {
   "name": "test",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 select show('storages');
 [[{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }, {
   "name": "test",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]]
 # test: create storage if not exists
 create storage test;
@@ -60,10 +74,14 @@ create storage if not exists test;
 show storages;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }, {
   "name": "test",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 # test: create storage ()
 create storage test2 ();
@@ -81,14 +99,18 @@ create storage test2 (path '_output/test_');
 show storage test2;
 [{
   "name": "test2",
-  "path": "_output/test_"
+  "path": "_output/test_",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 drop storage test2;
 create storage test2 (path '_output/test_', path '_output/_test');
 show storage test2;
 [{
   "name": "test2",
-  "path": "_output/_test"
+  "path": "_output/_test",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 drop storage test2;
 # test: drop storage statement parsing
@@ -107,7 +129,9 @@ drop storage test;
 show storages;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 # test: drop storage if exists
 drop storage test;
@@ -116,7 +140,9 @@ drop storage if exists test;
 show storages;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 # test: drop main storage
 drop storage main;
@@ -124,7 +150,9 @@ drop storage main;
 show storages;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 # test: alter storage statment parsing
 alter storage;
@@ -144,19 +172,27 @@ create storage test;
 show storages;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }, {
   "name": "test",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 alter storage test rename to test2;
 show storages;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }, {
   "name": "test2",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 drop storage test2;
 # test: alter storage main

@@ -56,7 +56,7 @@ void
 parse_tier_create(Stmt* self)
 {
 	// CREATE TIER [IF NOT EXISTS] name ON table_name [(options)]
-	// [STORAGES]
+	// [ON STORAGE]
 	auto stmt = ast_tier_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -75,7 +75,6 @@ parse_tier_create(Stmt* self)
 
 	// allocate tier
 	auto config = tier_config_allocate();
-	errdefer(tier_config_free, config);
 	stmt->config = config;
 	tier_config_set_name(config, &name->string);
 
@@ -83,7 +82,7 @@ parse_tier_create(Stmt* self)
 	if (stmt_if(self, '(') && !stmt_if(self, ')'))
 		parse_tier_options(self, config);
 
-	// [STORAGES]
+	// [ON STORAGE]
 	parse_volumes(self, &config->volumes);
 }
 

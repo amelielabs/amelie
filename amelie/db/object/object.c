@@ -175,6 +175,10 @@ object_status(Object* self, Buf* buf, int flags, Str* tier)
 	encode_raw(buf, "storage", 7);
 	encode_string(buf, &self->id.volume->storage->config->name);
 
+	// pending
+	encode_raw(buf, "pending", 7);
+	encode_bool(buf, self->id.type == ID_PENDING);
+
 	// min
 	encode_raw(buf, "min", 3);
 	encode_integer(buf, 0);

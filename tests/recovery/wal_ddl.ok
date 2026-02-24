@@ -70,14 +70,14 @@ select * from test2;
 # test: alter table column add
 insert into test2() values (), (), ();
 select * from test2;
-[[2, 0], [0, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0]]
 select show('state').lsn;
 [5]
 select identity_of("test2");
 [3]
 alter table test2 add column obj json;
 select * from test2;
-[[2, 0, null], [0, 0, null], [1, 0, null]]
+[[0, 0, null], [1, 0, null], [2, 0, null]]
 select obj from test2;
 [null, null, null]
 # test: restart
@@ -91,11 +91,11 @@ select show('state').lsn;
 select identity_of("test2");
 [3]
 select * from test2;
-[[2, 0, null], [0, 0, null], [1, 0, null]]
+[[0, 0, null], [1, 0, null], [2, 0, null]]
 # test: alter table column rename
 alter table test2 rename column data to abc;
 select * from test2;
-[[2, 0, null], [0, 0, null], [1, 0, null]]
+[[0, 0, null], [1, 0, null], [2, 0, null]]
 select data from test2;
 {"msg": "select ❰data❱ ⟵ column not found"}
 select abc from test2;
@@ -447,7 +447,7 @@ alter table test2 drop column abc;
 select abc from test2;
 {"msg": "select ❰abc❱ ⟵ column not found"}
 select * from test2;
-[[2, null], [0, null], [1, null]]
+[[0, null], [1, null], [2, null]]
 # test: restart
 disconnect S0;
 close E0;
@@ -459,11 +459,11 @@ select show('state').lsn;
 select identity_of("test2");
 [3]
 select * from test2;
-[[2, null], [0, null], [1, null]]
+[[0, null], [1, null], [2, null]]
 # test: create index
 create index i on test2 (id);
 select * from test2 use index (i);
-[[2, null], [0, null], [1, null]]
+[[0, null], [1, null], [2, null]]
 # test: restart
 disconnect S0;
 close E0;
@@ -475,13 +475,13 @@ select show('state').lsn;
 select identity_of("test2");
 [3]
 select * from test2 use index (i);
-[[2, null], [0, null], [1, null]]
+[[0, null], [1, null], [2, null]]
 # test: alter index rename
 alter index i on test2 rename to i2;
 select show('state').lsn;
 [16]
 select * from test2 use index (i2);
-[[2, null], [0, null], [1, null]]
+[[0, null], [1, null], [2, null]]
 # test: restart
 disconnect S0;
 close E0;
@@ -493,7 +493,7 @@ select show('state').lsn;
 select identity_of("test2");
 [3]
 select * from test2 use index (i2);
-[[2, null], [0, null], [1, null]]
+[[0, null], [1, null], [2, null]]
 # test: drop index
 drop index i2 on test2;
 select * from test2 use index (i);
@@ -501,7 +501,7 @@ select * from test2 use index (i);
 select * from test2 use index (i2);
 {"msg": "index 'i2': not exists"}
 select * from test2;
-[[2, null], [0, null], [1, null]]
+[[0, null], [1, null], [2, null]]
 # test: restart
 disconnect S0;
 close E0;
@@ -517,7 +517,7 @@ select * from test2 use index (i);
 select * from test2 use index (i2);
 {"msg": "index 'i2': not exists"}
 select * from test2;
-[[2, null], [0, null], [1, null]]
+[[0, null], [1, null], [2, null]]
 # test: truncate
 truncate test2;
 select * from test2;

@@ -41,6 +41,7 @@ recv;
 disconnect S1;
 
 switch S0;
+show partitions on test;
 show locks;
 
 # test: validate after refresh
@@ -84,6 +85,7 @@ recv;
 disconnect S1;
 
 switch S0;
+show partitions on test;
 show locks;
 
 # test: validate after refresh
@@ -102,7 +104,7 @@ create lock bp_refresh_2 on bp_refresh_2 (exclusive);
 # partition synced and rotated
 connect_async E0 S1 127.0.0.1:3485;
 switch S1;
-alter partition 3 on test refresh;
+alter partition 4 on test refresh;
 
 switch S0;
 watch 'bp_refresh_2'::locks_count = 2;
@@ -128,6 +130,7 @@ recv;
 disconnect S1;
 
 switch S0;
+show partitions on test;
 show locks;
 
 # test: validate after refresh
@@ -146,7 +149,7 @@ create lock bp_refresh_2 on bp_refresh_2 (exclusive);
 # partition synced and rotated
 connect_async E0 S1 127.0.0.1:3485;
 switch S1;
-alter partition 4 on test refresh;
+alter partition 6 on test refresh;
 
 switch S0;
 watch 'bp_refresh_2'::locks_count = 2;
@@ -191,6 +194,7 @@ recv;
 disconnect S1;
 
 switch S0;
+show partitions on test;
 show locks;
 
 # test: validate after refresh
@@ -209,7 +213,7 @@ create lock bp_refresh_2 on bp_refresh_2 (exclusive);
 # partition synced and rotated
 connect_async E0 S1 127.0.0.1:3485;
 switch S1;
-alter partition 5 on test refresh;
+alter partition 8 on test refresh;
 
 switch S0;
 watch 'bp_refresh_2'::locks_count = 2;
@@ -244,6 +248,7 @@ recv;
 disconnect S1;
 
 switch S0;
+show partitions on test;
 show locks;
 
 # test: validate after refresh
@@ -262,7 +267,7 @@ create lock bp_refresh_2 on bp_refresh_2 (exclusive);
 # partition synced and rotated
 connect_async E0 S1 127.0.0.1:3485;
 switch S1;
-alter partition 6 on test refresh;
+alter partition 10 on test refresh;
 
 switch S0;
 watch 'bp_refresh_2'::locks_count = 2;
@@ -291,6 +296,7 @@ recv;
 disconnect S1;
 
 switch S0;
+show partitions on test;
 show locks;
 
 # test: validate after refresh

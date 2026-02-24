@@ -59,8 +59,8 @@ table_config_free(TableConfig* self)
 
 	list_foreach_safe(&self->tiers)
 	{
-		auto tier = list_at(Tier, link);
-		tier_free(tier);
+		auto config = list_at(TierConfig, link);
+		tier_config_free(config);
 	}
 
 	columns_free(&self->columns);

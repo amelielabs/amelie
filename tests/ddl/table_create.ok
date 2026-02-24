@@ -650,96 +650,101 @@ create table test (id int primary key using tree);
 drop table test;
 create table test (id int primary key using hash);
 drop table test;
-# test: create table tier a
-create table test (id int primary key) tier;
-{"msg": "create table test (id int primary key) tier❰;❱ ⟵ name expected"}
-create table test (id int primary key)
-	    tier a using main (id "00000000-0000-0000-0000-000000000000");
-show tiers on test;
-[{
-  "name": "a",
-  "compression": "zstd",
-  "compression_level": 0,
-  "region_size": 65536,
-  "object_size": 67108864,
-  "storages": [{
-    "name": "main",
-    "id": "00000000-0000-0000-0000-000000000000",
-    "pause": false,
-    "partitions": 1
-  }]
-}]
+# test: partitions
+create table test (id int primary key) partitions;
+{"msg": "create table test (id int primary key) partitions❰;❱ ⟵ int expected"}
+create table test (id int primary key) partitions 4;
+select show('table', 'test', true).partitions.partitions;
+[4]
 drop table test;
-create table test (id int primary key)
-	    tier a using xyz (id "00000000-0000-0000-0000-000000000000") ;
-{"msg": "storage 'xyz': not exists"}
-# test: create table tier a, b
+# test: with
+create table test (id int primary key) partitions 3 with;
+{"msg": "create table test (id int primary key) partitions 3 with❰;❱ ⟵ ( expected"}
+create table test (id int primary key) partitions 3 with (;
+{"msg": "create table test (id int primary key) partitions 3 with (❰;❱ ⟵ name expected"}
+create table test (id int primary key) partitions 3 with ();
+{"msg": "create table test (id int primary key) partitions 3 with (❰)❱ ⟵ name expected"}
+create table test (id int primary key) partitions 3 with (id "00000000-0000-0000-0000-000000000000");
+select show('table', 'test', true).id;
+["00000000-0000-0000-0000-000000000000"]
+drop table test;
+# test: on storage
 create storage x;
 create storage y;
 create storage z;
-create table test (id int primary key)
-	    tier a using main (id "00000000-0000-0000-0000-000000000000")
-	    tier b using
-	         x (id "00000000-0000-0000-0000-000000000001"),
-	         y (id "00000000-0000-0000-0000-000000000002"),
-	         z (id "00000000-0000-0000-0000-000000000003");
-show tiers on test;
+show storages;
 [{
-  "name": "a",
+  "name": "main",
+  "path": "",
   "compression": "zstd",
-  "compression_level": 0,
-  "region_size": 65536,
-  "object_size": 67108864,
-  "storages": [{
-    "name": "main",
-    "id": "00000000-0000-0000-0000-000000000000",
-    "pause": false,
-    "partitions": 1
-  }]
+  "compression_level": 0
 }, {
-  "name": "b",
+  "name": "x",
+  "path": "",
   "compression": "zstd",
-  "compression_level": 0,
-  "region_size": 65536,
-  "object_size": 67108864,
-  "storages": [{
-    "name": "x",
-    "id": "00000000-0000-0000-0000-000000000001",
-    "pause": false,
-    "partitions": 0
-  }, {
-    "name": "y",
-    "id": "00000000-0000-0000-0000-000000000002",
-    "pause": false,
-    "partitions": 0
-  }, {
-    "name": "z",
-    "id": "00000000-0000-0000-0000-000000000003",
-    "pause": false,
-    "partitions": 0
-  }]
+  "compression_level": 0
+}, {
+  "name": "y",
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
+}, {
+  "name": "z",
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
-show partitions on test;
+create table test (id int primary key) storages;
+{"msg": "create table test (id int primary key) ❰storages❱ ⟵ ; expected"}
+create table test (id int primary key)
+  with (id "00000000-0000-0000-0000-000000000000")
+  on storage x (id "00000000-0000-0000-0000-000000000000"),
+             y (id "00000000-0000-0000-0000-000000000001"),
+             z (id "00000000-0000-0000-0000-000000000002");
+show tables extended;
 [{
-  "id": 34,
-  "tier": "a",
-  "storage": "main",
-  "ram": true,
-  "pending": false,
-  "min": 0,
-  "max": 8096,
-  "lsn": 0,
-  "size": 0,
-  "compression": 1
+  "db": "main",
+  "name": "test",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "unlogged": false,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": [["not_null", true]]
+  }],
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "unique": true,
+    "primary": true,
+    "keys": [{
+      "column": 0,
+      "asc": true
+    }]
+  }],
+  "partitions": {
+    "partitions": 1,
+    "volumes": [{
+      "name": "x",
+      "id": "00000000-0000-0000-0000-000000000000",
+      "pause": false
+    }, {
+      "name": "y",
+      "id": "00000000-0000-0000-0000-000000000001",
+      "pause": false
+    }, {
+      "name": "z",
+      "id": "00000000-0000-0000-0000-000000000002",
+      "pause": false
+    }]
+  },
+  "tiers": []
 }]
 drop table test;
 drop storage x;
 drop storage y;
 drop storage z;
-# test: create table tier redefined
-create table test (id int primary key)
-	    tier a using main (id "00000000-0000-0000-0000-000000000000")
-	    tier a using main (id "00000000-0000-0000-0000-000000000000");
-{"msg": "create table test (id int primary key)\n\t    tier a using main (id \"00000000-0000-0000-0000-000000000000\")\n\t    tier ❰a❱ ⟵ tier is redefined"}
 disconnect S0;
 close E0;

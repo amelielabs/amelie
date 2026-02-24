@@ -70,6 +70,10 @@ catalog_prepare(Catalog* self)
 		auto storage_config = storage_config_allocate();
 		defer(storage_config_free, storage_config);
 		storage_config_set_name(storage_config, &name);
+		Str compression;
+		str_set(&compression, "zstd", 4);
+		storage_config_set_compression(storage_config, &compression);
+		storage_config_set_compression_level(storage_config, 0);
 		storage_config_set_system(storage_config, true);
 		storage_mgr_create(&self->storage_mgr, &tr, storage_config, false);
 

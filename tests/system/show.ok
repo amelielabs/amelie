@@ -32,7 +32,9 @@ show user test;
 show storages;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 # test: show storage
 show storage;
@@ -40,12 +42,16 @@ show storage;
 show storage main;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 show storage main extended;
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 # test: show databases
 create database test;
@@ -125,21 +131,22 @@ select show('index', 'primary', 'test', false);
 show index xyz on test;
 [null]
 # test: show tiers
-select show('tiers', '', 'test', false)[0].name;
-["main"]
+show tiers on test;
+[]
+select show('tiers', '', 'test', false);
+[[]]
 # test: show tier
-select show('tier', 'main', 'test', false).name;
-["main"]
+show tier xyz on test;
+[null]
+select show('tier', 'main', 'test', false);
+[null]
 # test: show partitions
 show partitions on test;
 [{
   "id": 1,
-  "tier": "main",
   "storage": "main",
-  "ram": true,
-  "pending": false,
   "min": 0,
-  "max": 8096,
+  "max": 8192,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -147,12 +154,9 @@ show partitions on test;
 select show('partitions', '', 'test', false);
 [[{
   "id": 1,
-  "tier": "main",
   "storage": "main",
-  "ram": true,
-  "pending": false,
   "min": 0,
-  "max": 8096,
+  "max": 8192,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -161,12 +165,9 @@ select show('partitions', '', 'test', false);
 show partition '1' on test;
 [{
   "id": 1,
-  "tier": "main",
   "storage": "main",
-  "ram": true,
-  "pending": false,
   "min": 0,
-  "max": 8096,
+  "max": 8192,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -174,12 +175,9 @@ show partition '1' on test;
 select show('partition', '1', 'test', false);
 [{
   "id": 1,
-  "tier": "main",
   "storage": "main",
-  "ram": true,
-  "pending": false,
   "min": 0,
-  "max": 8096,
+  "max": 8192,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -253,7 +251,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 4,
-  "writes_bytes": 764,
+  "writes_bytes": 694,
   "ops": 4
 }]
 # test: show replicas

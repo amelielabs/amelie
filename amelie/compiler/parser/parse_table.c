@@ -373,16 +373,6 @@ parse_table_create_with(Stmt* self)
 				stmt_error(self, value, "failed to parse uuid");
 			table_config_set_id(config, &id);
 		} else
-		if (str_is(&name->string, "compression", 11))
-		{
-			auto value = stmt_expect(self, KSTRING);
-			part_mgr_config_set_compression(config_part, &value->string);
-		} else
-		if (str_is(&name->string, "compression_level", 17))
-		{
-			auto value = stmt_expect(self, KINT);
-			part_mgr_config_set_compression_level(config_part, value->integer);
-		} else
 		if (str_is(&name->string, "partitions", 10))
 		{
 			auto value = stmt_expect(self, KINT);
@@ -406,7 +396,7 @@ parse_table_create(Stmt* self, bool unlogged)
 	// CREATE [UNLOGGED] TABLE [IF NOT EXISTS] name (key)
 	// [PARTITIONS n]
 	// [WITH (options)]
-	// [STORAGES (storages)]
+	// [ON STORAGE storage, ...)]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -461,7 +451,7 @@ parse_table_create(Stmt* self, bool unlogged)
 	if (stmt_if(self, KWITH))
 		parse_table_create_with(self);
 
-	// [STORAGES]
+	// [ON STORAGE]
 	parse_volumes(self, &config_part->volumes);
 }
 

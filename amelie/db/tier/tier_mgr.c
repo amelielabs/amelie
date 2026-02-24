@@ -29,10 +29,11 @@ tier_mgr_init(TierMgr* self, StorageMgr* storage_mgr, Keys* keys)
 void
 tier_mgr_free(TierMgr* self)
 {
+	// unref storages and free tiers
 	list_foreach_safe(&self->list)
 	{
 		auto tier = list_at(Tier, link);
-		tier_free(tier);
+		tier_mgr_remove(self, tier);
 	}
 }
 

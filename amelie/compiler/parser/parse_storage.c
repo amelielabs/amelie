@@ -147,10 +147,11 @@ parse_volume(Stmt* self)
 	auto volume = volume_allocate();
 	errdefer(volume_free, volume);
 
+	// set name (same as storage name)
 	auto name = stmt_expect(self, KNAME);
 	volume_set_name(volume, &name->string);
 
-	// generate tier storage id
+	// generate volume id
 	Uuid id;
 	uuid_init(&id);
 	uuid_generate(&id, &runtime()->random);
@@ -166,8 +167,10 @@ parse_volume(Stmt* self)
 void
 parse_volumes(Stmt* self, VolumeMgr* volumes)
 {
-	// [STORAGES storage, ...]
-	if (! stmt_if(self, KSTORAGES))
+	// [ON STORAGE storage, ...]
+
+	// [ON]
+	if (! stmt_if(self, KON))
 	{
 		// add main storage by default
 		Str main;
@@ -182,6 +185,9 @@ parse_volumes(Stmt* self, VolumeMgr* volumes)
 		volume_mgr_add(volumes, volume);
 		return;
 	}
+
+	// STORAGE
+	stmt_expect(self, KSTORAGE);
 
 	for (;;)
 	{

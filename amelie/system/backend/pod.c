@@ -37,8 +37,6 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 			if (unlikely(! record_validate_cmd(cmd, data)))
 				error("replay: record command crc mismatch");
 
-		assert(uuid_is(&self->part->id.id_table, &cmd->id));
-
 		// replay writes
 		auto end = data + cmd->size;
 		if (cmd->cmd == CMD_REPLACE)

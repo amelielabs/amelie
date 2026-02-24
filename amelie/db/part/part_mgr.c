@@ -110,8 +110,8 @@ part_mgr_drop(PartMgr* self)
 	list_init(&self->list);
 
 	// delete volumes
-	volume_mgr_unref(&self->config->volumes);
 	volume_mgr_rmdir(&self->config->volumes);
+	volume_mgr_unref(&self->config->volumes);
 }
 
 void

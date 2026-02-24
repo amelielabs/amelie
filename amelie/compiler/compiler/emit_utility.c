@@ -225,7 +225,7 @@ emit_ddl(Compiler* self)
 	case STMT_CREATE_TIER:
 	{
 		auto arg = ast_tier_create_of(stmt->ast);
-		offset = table_op_tier_create(data, db, &arg->table_name, arg->tier);
+		offset = table_op_tier_create(data, db, &arg->table_name, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		break;
 	}
@@ -247,7 +247,7 @@ emit_ddl(Compiler* self)
 		if (arg->type == TIER_ALTER_STORAGE_ADD)
 			offset = table_op_tier_storage_add(data, db, &arg->table_name,
 			                                   &arg->name,
-			                                    arg->storage);
+			                                    arg->volume);
 		else
 		if (arg->type == TIER_ALTER_STORAGE_DROP)
 			offset = table_op_tier_storage_drop(data, db, &arg->table_name,

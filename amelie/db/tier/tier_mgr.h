@@ -44,5 +44,7 @@ tier_mgr_first(TierMgr* self)
 static inline bool
 tier_mgr_empty(TierMgr* self)
 {
-	return tier_mgr_first(self)->list_pending_count > 0;
+	if (! self->list_count)
+		return true;
+	return !tier_mgr_first(self)->list_pending_count;
 }

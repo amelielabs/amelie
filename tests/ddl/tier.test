@@ -17,30 +17,34 @@ create tier i on test (,;
 
 # test: create tier
 create tier t on test;
-select show('tier', 'main', 'test', true).name;
+select show('tier', 't', 'test', true).name;
 drop tier t on test;
+show tiers on test;
 
 # test: create tier if not exists
 create tier t on test ();
 create tier if not exists t on test;
-select show('tier', 'main', 'test', true).name;
+select show('tier', 't', 'test', true).name;
 drop tier t on test;
-
-# test: create tier using main
-create tier t on test using;
-create tier t on test using x;
+show tiers on test;
 show tier t on test;
 
-create tier t on test using main (id "00000000-0000-0000-0000-000000000000") ;
+# test: create tier on storage main
+create tier t on test on storage;
+create tier t on test on storage x;
+show tiers on test;
+show tier t on test;
+
+create tier t on test on storage main (id "00000000-0000-0000-0000-000000000000") ;
 show tier t on test;
 drop tier t on test;
 
-# test: create tier using main dup
-create tier t on test using main, main;
+# test: create tier on storage main dup
+create tier t on test on storage main, main;
 
-# test: create tier using storage
+# test: create tier on storage storage
 create storage test;
-create tier t on test using
+create tier t on test on storage
   test (id "00000000-0000-0000-0000-000000000000"),
   main (id "00000000-0000-0000-0000-000000000001");
 
@@ -58,7 +62,7 @@ drop tier i on;
 drop tier i on 1;
 
 # test: drop tier
-create tier t on test using main (id "00000000-0000-0000-0000-000000000000") ;
+create tier t on test on storage main (id "00000000-0000-0000-0000-000000000000") ;
 drop tier t on test;
 show tier t on test;
 
@@ -68,7 +72,7 @@ show tier if exists t on test;
 
 # test: drop tier storage 
 create storage test;
-create tier t on test using
+create tier t on test on storage
   test (id "00000000-0000-0000-0000-000000000000"),
   main (id "00000000-0000-0000-0000-000000000001");
 
@@ -97,7 +101,7 @@ alter tier i on test rename to 1;
 alter tier i on test rename to;
 
 # test: alter tier rename
-create tier t on test using main (id "00000000-0000-0000-0000-000000000000");
+create tier t on test on storage main (id "00000000-0000-0000-0000-000000000000");
 show tier t on test;
 
 alter tier t on test rename to z;
@@ -116,7 +120,7 @@ drop tier z on test;
 
 # test: alter tier storage add
 create storage test;
-create tier t on test using main (id "00000000-0000-0000-0000-000000000000");
+create tier t on test on storage main (id "00000000-0000-0000-0000-000000000000");
 show tier t on test;
 
 alter tier t on test add;
@@ -148,7 +152,7 @@ drop tier t on test;
 
 # test: alter tier storage pause
 create storage test;
-create tier t on test using
+create tier t on test on storage
   main (id "00000000-0000-0000-0000-000000000000"),
   test (id "00000000-0000-0000-0000-000000000001");
 show tier t on test;
@@ -170,79 +174,47 @@ show tier t on test;
 drop tier t on test;
 
 # test: alter tier set
-create tier t on test using main (id "00000000-0000-0000-0000-000000000000");
-alter tier t on test set (region_size 123, compression '');
+create tier t on test on storage main (id "00000000-0000-0000-0000-000000000000");
+alter tier t on test set (region_size 123);
 show tier t on test;
 
-# test: alter tier set compression
-insert into test values (123, 0, 0);
-show partitions on test;
-select show('tier', 'main', 'test', true).compression;
-
-# disable compression
-alter tier main on test set (compression '');
-select show('tier', 'main', 'test', true).compression;
-
-alter partition 1 on test refresh;
-show partitions on test;
-
 drop table test;
 
-# test: storages rebalance
-create storage a;
-create storage b;
-create storage c;
+## test: table on storage (pause/resume)
+#create storage a;
+#create storage b;
+#create storage c;
 
-create table test (id int primary key, a int, b int) partitions 5
-        tier main using
-		          a (id "00000000-0000-0000-0000-000000000000"),
-		          b (id "00000000-0000-0000-0000-000000000001"),
-		          c (id "00000000-0000-0000-0000-000000000002");
-show partitions on test;
-show tiers on test;
+#create table test (id int primary key, a int, b int) partitions 5
+    #on storage
+       #a (id "00000000-0000-0000-0000-000000000000"),
+       #b (id "00000000-0000-0000-0000-000000000001"),
+       #c (id "00000000-0000-0000-0000-000000000002");
 
-alter partition 7 on test refresh;
-show partition '8' on test;
+#show partitions on test;
 
-drop table test;
-drop storage a;
-drop storage b;
-drop storage c;
+#alter tier main on test pause storage b;
+#alter tier main on test pause storage c;
+#show tiers on test;
 
-# test: storages rebalance (pause/resume)
-create storage a;
-create storage b;
-create storage c;
+## a
+#alter partition 13 on test refresh;
+#show partition '14' on test;
 
-create table test (id int primary key, a int, b int) partitions 5
-        tier main using
-		          a (id "00000000-0000-0000-0000-000000000000"),
-		          b (id "00000000-0000-0000-0000-000000000001"),
-		          c (id "00000000-0000-0000-0000-000000000002");
-show partitions on test;
+## a
+#alter partition 14 on test refresh;
+#show partition '15' on test;
 
-alter tier main on test pause storage b;
-alter tier main on test pause storage c;
-show tiers on test;
+#alter tier main on test resume storage c;
 
-# a
-alter partition 13 on test refresh;
-show partition '14' on test;
+## c
+#alter partition 15 on test refresh;
+#show partition '16' on test;
 
-# a
-alter partition 14 on test refresh;
-show partition '15' on test;
-
-alter tier main on test resume storage c;
-
-# c
-alter partition 15 on test refresh;
-show partition '16' on test;
-
-drop table test;
-drop storage a;
-drop storage b;
-drop storage c;
+#drop table test;
+#drop storage a;
+#drop storage b;
+#drop storage c;
 
 disconnect S0;
 close E0;

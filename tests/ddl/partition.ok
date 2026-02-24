@@ -13,108 +13,151 @@ alter partition 1 on xyz;
 {"msg": "alter partition 1 on xyz❰;❱ ⟵ command expected"}
 alter partition 1 on xyz qwerty;
 {"msg": "alter partition 1 on xyz ❰qwerty❱ ⟵ unknown command"}
-# test: alter partition refresh
-create table test (id int primary key) partitions 1
-        tier main using main (id "00000000-0000-0000-0000-000000000000");
+create storage a;
+create storage b;
+create storage c;
+create table test (id int primary key, a int, b int) partitions 5
+    on storage
+       a (id "00000000-0000-0000-0000-000000000000"),
+       b (id "00000000-0000-0000-0000-000000000001"),
+       c (id "00000000-0000-0000-0000-000000000002");
 show partitions on test;
 [{
   "id": 1,
-  "tier": "main",
-  "storage": "main",
-  "ram": true,
-  "pending": false,
+  "storage": "a",
   "min": 0,
-  "max": 8096,
+  "max": 1638,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 2,
+  "storage": "b",
+  "min": 1638,
+  "max": 3276,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 3,
+  "storage": "c",
+  "min": 3276,
+  "max": 4914,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 4,
+  "storage": "a",
+  "min": 4914,
+  "max": 6552,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 5,
+  "storage": "b",
+  "min": 6552,
+  "max": 8192,
   "lsn": 0,
   "size": 0,
   "compression": 1
 }]
-insert into test values (123);
 alter partition 1 on test refresh;
 show partitions on test;
 [{
-  "id": 2,
-  "tier": "main",
-  "storage": "main",
-  "ram": true,
-  "pending": false,
+  "id": 6,
+  "storage": "c",
   "min": 0,
-  "max": 8096,
-  "lsn": 2,
-  "size": 524288,
+  "max": 1638,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 2,
+  "storage": "b",
+  "min": 1638,
+  "max": 3276,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 3,
+  "storage": "c",
+  "min": 3276,
+  "max": 4914,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 4,
+  "storage": "a",
+  "min": 4914,
+  "max": 6552,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}, {
+  "id": 5,
+  "storage": "b",
+  "min": 6552,
+  "max": 8192,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}]
+show partition '6' on test;
+[{
+  "id": 6,
+  "storage": "c",
+  "min": 0,
+  "max": 1638,
+  "lsn": 0,
+  "size": 0,
   "compression": 1
 }]
 # test: alter partition move
-create storage b;
-alter tier main on test add storage b (id "00000000-0000-0000-0000-000000000001");
-show tiers on test;
+alter partition 6 on test move to b;
+show partition '8' on test;
 [{
-  "name": "main",
-  "compression": "zstd",
-  "compression_level": 0,
-  "region_size": 65536,
-  "object_size": 67108864,
-  "storages": [{
-    "name": "main",
-    "id": "00000000-0000-0000-0000-000000000000",
-    "pause": false,
-    "partitions": 1
-  }, {
-    "name": "b",
-    "id": "00000000-0000-0000-0000-000000000001",
-    "pause": false,
-    "partitions": 0
-  }]
-}]
-show partitions on test;
-[{
-  "id": 2,
-  "tier": "main",
-  "storage": "main",
-  "ram": true,
-  "pending": false,
-  "min": 0,
-  "max": 8096,
-  "lsn": 2,
-  "size": 524288,
-  "compression": 1
-}]
-alter partition 2 on test move;
-{"msg": "alter partition 2 on test move❰;❱ ⟵ TO expected"}
-alter partition 2 on test move to;
-{"msg": "alter partition 2 on test move to❰;❱ ⟵ name expected"}
-alter partition 2 on test move to b;
-show partitions on test;
-[{
-  "id": 3,
-  "tier": "main",
+  "id": 8,
   "storage": "b",
-  "ram": true,
-  "pending": false,
   "min": 0,
-  "max": 8096,
-  "lsn": 2,
-  "size": 524288,
+  "max": 1638,
+  "lsn": 0,
+  "size": 0,
   "compression": 1
 }]
 # test: alter partition move (same partition)
-alter partition 3 on test move to b;
-show partitions on test;
+alter partition 8 on test move to b;
+show partition '10' on test;
 [{
-  "id": 4,
-  "tier": "main",
+  "id": 10,
   "storage": "b",
-  "ram": true,
-  "pending": false,
   "min": 0,
-  "max": 8096,
-  "lsn": 2,
-  "size": 524288,
+  "max": 1638,
+  "lsn": 0,
+  "size": 0,
   "compression": 1
 }]
 # test: alter partition move (storage not exists)
-alter partition 4 on test move to c;
+alter partition 10 on test move to xyz;
 {"msg": "partition or tier storage not found"}
+show partition '10' on test;
+[{
+  "id": 10,
+  "storage": "b",
+  "min": 0,
+  "max": 1638,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}]
+show partition '12' on test;
+[null]
 drop table test;
+drop storage a;
+drop storage b;
+drop storage c;
 disconnect S0;
 close E0;

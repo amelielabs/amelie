@@ -1069,7 +1069,7 @@ insert into test values (0, 0);
 insert into test values (1, 0);
 insert into test values (2, 0);
 with a as (update test set data = data + 1 returning *) select * from a;
-[[0, 1], [1, 1], [2, 1]]
+[[1, 1], [0, 1], [2, 1]]
 explain with a as (update test set data = data + 1 returning *) select * from a;
 [{
   "main": {
@@ -1117,7 +1117,7 @@ insert into test values (0, 0);
 insert into test values (1, 0);
 insert into test values (2, 0);
 with a as (delete from test returning *) select * from a;
-[[0, 0], [1, 0], [2, 0]]
+[[1, 0], [0, 0], [2, 0]]
 explain with a as (delete from test returning *) select * from a;
 [{
   "main": {

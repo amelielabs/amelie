@@ -134,28 +134,28 @@ system_on_server_connect(Server* server, Client* client)
 }
 
 static void
-engine_if_attach(Engine* self, Level* level)
+part_mgr_if_attach(PartMgr* self)
 {
 	System* system = self->iface_arg;
-	if (level->list_ram_count > PART_MAPPING_MAX)
+	if (self->list_count > PART_MAPPING_MAX)
 		error("exceeded the maximum number of hash partitions per table");
 
 	// create pods on backends
-	backend_mgr_deploy_all(&system->backend_mgr, level);
+	backend_mgr_deploy_all(&system->backend_mgr, self);
 }
 
 static void
-engine_if_detach(Engine* self, Level* level)
+part_mgr_if_detach(PartMgr* self)
 {
 	// drop pods on backends
 	System* system = self->iface_arg;
-	backend_mgr_undeploy_all(&system->backend_mgr, level);
+	backend_mgr_undeploy_all(&system->backend_mgr, self);
 }
 
-static EngineIf engine_if =
+static PartMgrIf part_mgr_if =
 {
-	.attach = engine_if_attach,
-	.detach = engine_if_detach
+	.attach = part_mgr_if_attach,
+	.detach = part_mgr_if_detach
 };
 
 static void
@@ -204,7 +204,7 @@ system_create(void)
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, &catalog_if, self, &engine_if, self);
+	db_init(&self->db, &catalog_if, self, &part_mgr_if, self);
 
 	// replication
 	repl_init(&self->repl, &self->db);

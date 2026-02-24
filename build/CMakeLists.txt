@@ -79,10 +79,11 @@ include_directories("${AMELIE_ROOT}/db")
 include_directories("${AMELIE_ROOT}/db/row")
 include_directories("${AMELIE_ROOT}/db/transaction")
 include_directories("${AMELIE_ROOT}/db/storage")
+include_directories("${AMELIE_ROOT}/db/object")
+include_directories("${AMELIE_ROOT}/db/tier")
 include_directories("${AMELIE_ROOT}/db/heap")
 include_directories("${AMELIE_ROOT}/db/index")
-include_directories("${AMELIE_ROOT}/db/object")
-include_directories("${AMELIE_ROOT}/db/engine")
+include_directories("${AMELIE_ROOT}/db/part")
 include_directories("${AMELIE_ROOT}/db/catalog")
 include_directories("${AMELIE_ROOT}/db/wal")
 include_directories("${AMELIE_ROOT}/db/db")
@@ -182,20 +183,21 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/transaction/commit.c
     ${AMELIE_ROOT}/db/transaction/relation_mgr.c
     ${AMELIE_ROOT}/db/storage/storage_mgr.c
+    ${AMELIE_ROOT}/db/object/writer.c
+    ${AMELIE_ROOT}/db/object/object.c
+    ${AMELIE_ROOT}/db/tier/tier_mgr.c
+    ${AMELIE_ROOT}/db/tier/tier_mgr_recover.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/heap_file.c
     ${AMELIE_ROOT}/db/heap/heap_index.c
     ${AMELIE_ROOT}/db/index/tree.c
     ${AMELIE_ROOT}/db/index/index_tree.c
     ${AMELIE_ROOT}/db/index/index_hash.c
-    ${AMELIE_ROOT}/db/object/writer.c
-    ${AMELIE_ROOT}/db/object/object.c
-    ${AMELIE_ROOT}/db/engine/part.c
-    ${AMELIE_ROOT}/db/engine/part_op.c
-    ${AMELIE_ROOT}/db/engine/engine.c
-    ${AMELIE_ROOT}/db/engine/engine_iterator.c
-    ${AMELIE_ROOT}/db/engine/engine_recover.c
-    ${AMELIE_ROOT}/db/engine/engine_op.c
+    ${AMELIE_ROOT}/db/part/part.c
+    ${AMELIE_ROOT}/db/part/part_op.c
+    ${AMELIE_ROOT}/db/part/part_mgr.c
+    ${AMELIE_ROOT}/db/part/part_mgr_recover.c
+    ${AMELIE_ROOT}/db/part/part_mgr_iterator.c
     ${AMELIE_ROOT}/db/catalog/database_mgr.c
     ${AMELIE_ROOT}/db/catalog/table_mgr.c
     ${AMELIE_ROOT}/db/catalog/table_mgr_alter.c

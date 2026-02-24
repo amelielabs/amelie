@@ -169,13 +169,17 @@ select show('replication');
 select show('storages');
 [[{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]]
 # test: storage
 select show('storage', 'main');
 [{
   "name": "main",
-  "path": ""
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
 # test: databases
 select show('databases');
@@ -225,21 +229,18 @@ select show('index', 'primary', 'test', false);
   }]
 }]
 # test: tiers
-select show('tiers', '', 'test', false)[0].name;
-["main"]
+select show('tiers', '', 'test', false);
+[[]]
 # test: tier
-select show('tier', 'main', 'test', false).name;
-["main"]
+select show('tier', 'main', 'test', false);
+[null]
 # test: partitions
 select show('partitions', '', 'test', false);
 [[{
   "id": 1,
-  "tier": "main",
   "storage": "main",
-  "ram": true,
-  "pending": false,
   "min": 0,
-  "max": 8096,
+  "max": 8192,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -262,7 +263,7 @@ select show('wal');
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 438,
+  "writes_bytes": 368,
   "ops": 1
 }]
 # test: metrics

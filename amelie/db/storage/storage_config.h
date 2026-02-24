@@ -39,6 +39,7 @@ storage_config_free(StorageConfig* self)
 {
 	str_free(&self->name);
 	str_free(&self->path);
+	str_free(&self->compression);
 	am_free(self);
 }
 

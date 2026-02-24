@@ -253,39 +253,39 @@ drop table test;
 create table test (id int primary key using hash);
 drop table test;
 
-# test: create table tier a
-create table test (id int primary key) tier;
-
-create table test (id int primary key)
-	    tier a using main (id "00000000-0000-0000-0000-000000000000");
-show tiers on test;
+# test: partitions
+create table test (id int primary key) partitions;
+create table test (id int primary key) partitions 4;
+select show('table', 'test', true).partitions.partitions;
 drop table test;
 
-create table test (id int primary key)
-	    tier a using xyz (id "00000000-0000-0000-0000-000000000000") ;
+# test: with
+create table test (id int primary key) partitions 3 with;
+create table test (id int primary key) partitions 3 with (;
+create table test (id int primary key) partitions 3 with ();
 
-# test: create table tier a, b
+create table test (id int primary key) partitions 3 with (id "00000000-0000-0000-0000-000000000000");
+select show('table', 'test', true).id;
+drop table test;
+
+# test: on storage
 create storage x;
 create storage y;
 create storage z;
-create table test (id int primary key)
-	    tier a using main (id "00000000-0000-0000-0000-000000000000")
-	    tier b using
-	         x (id "00000000-0000-0000-0000-000000000001"),
-	         y (id "00000000-0000-0000-0000-000000000002"),
-	         z (id "00000000-0000-0000-0000-000000000003");
+show storages;
 
-show tiers on test;
-show partitions on test;
+create table test (id int primary key) storages;
+create table test (id int primary key)
+  with (id "00000000-0000-0000-0000-000000000000")
+  on storage x (id "00000000-0000-0000-0000-000000000000"),
+             y (id "00000000-0000-0000-0000-000000000001"),
+             z (id "00000000-0000-0000-0000-000000000002");
+show tables extended;
 drop table test;
+
 drop storage x;
 drop storage y;
 drop storage z;
-
-# test: create table tier redefined
-create table test (id int primary key)
-	    tier a using main (id "00000000-0000-0000-0000-000000000000")
-	    tier a using main (id "00000000-0000-0000-0000-000000000000");
 
 disconnect S0;
 close E0;

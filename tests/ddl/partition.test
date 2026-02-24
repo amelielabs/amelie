@@ -11,32 +11,42 @@ alter partition 1 on;
 alter partition 1 on xyz;
 alter partition 1 on xyz qwerty;
 
-# test: alter partition refresh
-create table test (id int primary key) partitions 1
-        tier main using main (id "00000000-0000-0000-0000-000000000000");
+## test: alter partition refresh
+create storage a;
+create storage b;
+create storage c;
+
+create table test (id int primary key, a int, b int) partitions 5
+    on storage
+       a (id "00000000-0000-0000-0000-000000000000"),
+       b (id "00000000-0000-0000-0000-000000000001"),
+       c (id "00000000-0000-0000-0000-000000000002");
+
 show partitions on test;
-insert into test values (123);
+
 alter partition 1 on test refresh;
 show partitions on test;
+show partition '6' on test;
 
 # test: alter partition move
-create storage b;
-alter tier main on test add storage b (id "00000000-0000-0000-0000-000000000001");
-show tiers on test;
-show partitions on test;
+alter partition 6 on test move to b;
 
-alter partition 2 on test move;
-alter partition 2 on test move to;
-alter partition 2 on test move to b;
-show partitions on test;
+# 7 used by the service file
+show partition '8' on test;
 
 # test: alter partition move (same partition)
-alter partition 3 on test move to b;
-show partitions on test;
+alter partition 8 on test move to b;
+show partition '10' on test;
 
 # test: alter partition move (storage not exists)
-alter partition 4 on test move to c;
+alter partition 10 on test move to xyz;
+show partition '10' on test;
+show partition '12' on test;
+
 drop table test;
+drop storage a;
+drop storage b;
+drop storage c;
 
 disconnect S0;
 close E0;

@@ -6,12 +6,9 @@ insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
 show partitions on test;
 [{
   "id": 1,
-  "tier": "main",
   "storage": "main",
-  "ram": true,
-  "pending": false,
   "min": 0,
-  "max": 8096,
+  "max": 8192,
   "lsn": 0,
   "size": 524288,
   "compression": 1
@@ -63,6 +60,16 @@ switch S1;
 recv;
 disconnect S1;
 switch S0;
+show partitions on test;
+[{
+  "id": 2,
+  "storage": "main",
+  "min": 0,
+  "max": 8192,
+  "lsn": 2,
+  "size": 524288,
+  "compression": 1
+}]
 show locks;
 [{
   "relation": "catalog",
@@ -126,6 +133,16 @@ switch S1;
 recv;
 disconnect S1;
 switch S0;
+show partitions on test;
+[{
+  "id": 4,
+  "storage": "main",
+  "min": 0,
+  "max": 8192,
+  "lsn": 7,
+  "size": 524288,
+  "compression": 1
+}]
 show locks;
 [{
   "relation": "catalog",
@@ -148,7 +165,7 @@ insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
 create lock bp_refresh_2 on bp_refresh_2 (exclusive);
 connect_async E0 S1 127.0.0.1:3485;
 switch S1;
-alter partition 3 on test refresh;
+alter partition 4 on test refresh;
 switch S0;
 watch 'bp_refresh_2'::locks_count = 2;
 show locks;
@@ -164,7 +181,7 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_3",
+  "relation": "part_4",
   "lock": "exclusive",
   "waiting": false,
   "function": "ops_lock"
@@ -189,6 +206,16 @@ switch S1;
 recv;
 disconnect S1;
 switch S0;
+show partitions on test;
+[{
+  "id": 6,
+  "storage": "main",
+  "min": 0,
+  "max": 8192,
+  "lsn": 12,
+  "size": 524288,
+  "compression": 1
+}]
 show locks;
 [{
   "relation": "catalog",
@@ -211,7 +238,7 @@ insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
 create lock bp_refresh_2 on bp_refresh_2 (exclusive);
 connect_async E0 S1 127.0.0.1:3485;
 switch S1;
-alter partition 4 on test refresh;
+alter partition 6 on test refresh;
 switch S0;
 watch 'bp_refresh_2'::locks_count = 2;
 show locks;
@@ -227,7 +254,7 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_4",
+  "relation": "part_6",
   "lock": "exclusive",
   "waiting": false,
   "function": "ops_lock"
@@ -271,6 +298,16 @@ switch S1;
 recv;
 disconnect S1;
 switch S0;
+show partitions on test;
+[{
+  "id": 8,
+  "storage": "main",
+  "min": 0,
+  "max": 8192,
+  "lsn": 17,
+  "size": 524288,
+  "compression": 1
+}]
 show locks;
 [{
   "relation": "catalog",
@@ -293,7 +330,7 @@ insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
 create lock bp_refresh_2 on bp_refresh_2 (exclusive);
 connect_async E0 S1 127.0.0.1:3485;
 switch S1;
-alter partition 5 on test refresh;
+alter partition 8 on test refresh;
 switch S0;
 watch 'bp_refresh_2'::locks_count = 2;
 show locks;
@@ -309,7 +346,7 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_5",
+  "relation": "part_8",
   "lock": "exclusive",
   "waiting": false,
   "function": "ops_lock"
@@ -345,6 +382,16 @@ switch S1;
 recv;
 disconnect S1;
 switch S0;
+show partitions on test;
+[{
+  "id": 10,
+  "storage": "main",
+  "min": 0,
+  "max": 8192,
+  "lsn": 41,
+  "size": 524288,
+  "compression": 1
+}]
 show locks;
 [{
   "relation": "catalog",
@@ -367,7 +414,7 @@ insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
 create lock bp_refresh_2 on bp_refresh_2 (exclusive);
 connect_async E0 S1 127.0.0.1:3485;
 switch S1;
-alter partition 6 on test refresh;
+alter partition 10 on test refresh;
 switch S0;
 watch 'bp_refresh_2'::locks_count = 2;
 show locks;
@@ -383,7 +430,7 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_6",
+  "relation": "part_10",
   "lock": "exclusive",
   "waiting": false,
   "function": "ops_lock"
@@ -415,6 +462,16 @@ switch S1;
 recv;
 disconnect S1;
 switch S0;
+show partitions on test;
+[{
+  "id": 12,
+  "storage": "main",
+  "min": 0,
+  "max": 8192,
+  "lsn": 45,
+  "size": 524288,
+  "compression": 1
+}]
 show locks;
 [{
   "relation": "catalog",
