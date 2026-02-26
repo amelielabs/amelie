@@ -11,11 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-// locking
-#include "service/ops.h"
-
 // service file
 #include "service/service_file.h"
+
+// service lock manager
+#include "service/service_lock_mgr.h"
 
 // service
 #include "service/service.h"

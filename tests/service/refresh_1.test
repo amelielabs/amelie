@@ -18,7 +18,7 @@ switch S1;
 alter partition 1 on test refresh;
 
 switch S0;
-watch 'part_1'::locks_count = 1;
+watch 'service_1'::locks_count = 1;
 show locks;
 
 connect_async E0 S2 127.0.0.1:3485;
@@ -27,7 +27,7 @@ alter partition 1 on test refresh;
 
 # ensure second session locked on the partition lock
 switch S0;
-watch 'part_1'::locks_count = 2;
+watch 'service_1'::locks_count = 2;
 show locks;
 
 # drop breakpoint and resume S1

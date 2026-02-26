@@ -192,7 +192,7 @@ refresh_apply(Refresh* self)
 void
 refresh_init(Refresh* self, Service* service)
 {
-	ops_lock_init(&self->lock);
+	service_lock_init(&self->lock);
 	self->origin       = NULL;
 	self->origin_lsn   = 0;
 	self->service_file = service_file_allocate();
@@ -212,7 +212,7 @@ refresh_free(Refresh* self)
 void
 refresh_reset(Refresh* self)
 {
-	ops_lock_init(&self->lock);
+	service_lock_init(&self->lock);
 	self->origin     = NULL;
 	self->origin_lsn = 0;
 	self->table      = NULL;
@@ -228,8 +228,8 @@ refresh_run(Refresh* self, Table* table, uint64_t id, Str* storage)
 	refresh_reset(self);
 
 	// get catalog shared lock and partition service lock
-	ops_lock(&self->service->ops, &self->lock, id);
-	defer(ops_unlock, &self->lock);
+	service_lock(self->service, &self->lock, id);
+	defer(service_unlock, &self->lock);
 
 	// case 1: concurrent partition refresh
 	breakpoint(REL_BP_REFRESH_1);

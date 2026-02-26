@@ -50,7 +50,7 @@ indexate_match(Indexate* self, IndexConfig* config)
 			break;
 
 		// get partition service lock
-		ops_lock(&self->service->ops, &self->lock, id);
+		service_lock(self->service, &self->lock, id);
 
 		// find partition by id
 		auto origin_id = part_mgr_find(&table->part_mgr, id);
@@ -61,7 +61,7 @@ indexate_match(Indexate* self, IndexConfig* config)
 		}
 
 		// partition id no longer available, retry
-		ops_unlock(&self->lock);
+		service_unlock(&self->lock);
 	}
 
 	return false;
@@ -214,7 +214,7 @@ indexate_abort(Indexate* self, IndexConfig* config)
 void
 indexate_init(Indexate* self, Service* service)
 {
-	ops_lock_init(&self->lock);
+	service_lock_init(&self->lock);
 	self->origin  = NULL;
 	self->table   = NULL;
 	self->index   = NULL;
@@ -224,7 +224,7 @@ indexate_init(Indexate* self, Service* service)
 void
 indexate_reset(Indexate* self)
 {
-	ops_lock_init(&self->lock);
+	service_lock_init(&self->lock);
 	self->origin = NULL;
 	self->table  = NULL;
 	if (self->index)
@@ -257,7 +257,7 @@ indexate_next(Indexate* self, Table* table, IndexConfig* config)
 	);
 
 	// unlock
-	ops_unlock(&self->lock);
+	service_unlock(&self->lock);
 
 	if (on_error)
 	{

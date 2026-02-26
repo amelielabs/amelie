@@ -15,7 +15,7 @@ typedef struct Flush Flush;
 
 struct Flush
 {
-	OpsLock      lock;
+	ServiceLock  lock;
 	Part*        origin;
 	uint64_t     origin_lsn;
 	Id           id_origin;

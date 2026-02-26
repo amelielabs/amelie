@@ -28,11 +28,11 @@ service_init(Service* self, Catalog* catalog, WalMgr* wal_mgr)
 {
 	self->catalog = catalog;
 	self->wal_mgr = wal_mgr;
-	ops_init(&self->ops);
+	service_lock_mgr_init(&self->lock_mgr);
 }
 
 void
 service_free(Service* self)
 {
-	ops_free(&self->ops);
+	service_lock_mgr_free(&self->lock_mgr);
 }

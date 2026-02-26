@@ -31,7 +31,7 @@ connect_async E0 S1 127.0.0.1:3485;
 switch S1;
 alter partition 1 on test refresh;
 switch S0;
-watch 'part_1'::locks_count = 1;
+watch 'service_1'::locks_count = 1;
 show locks;
 [{
   "name": "bp_refresh_1",
@@ -45,10 +45,10 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_1",
+  "relation": "service_1",
   "lock": "exclusive",
   "waiting": false,
-  "function": "ops_lock"
+  "function": "service_lock_mgr_lock"
 }, {
   "relation": "bp_refresh_1",
   "lock": "shared",
@@ -64,7 +64,7 @@ connect_async E0 S2 127.0.0.1:3485;
 switch S2;
 alter partition 1 on test refresh;
 switch S0;
-watch 'part_1'::locks_count = 2;
+watch 'service_1'::locks_count = 2;
 show locks;
 [{
   "name": "bp_refresh_1",
@@ -78,10 +78,10 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_1",
+  "relation": "service_1",
   "lock": "exclusive",
   "waiting": false,
-  "function": "ops_lock"
+  "function": "service_lock_mgr_lock"
 }, {
   "relation": "bp_refresh_1",
   "lock": "shared",
@@ -93,10 +93,10 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_1",
+  "relation": "service_1",
   "lock": "exclusive",
   "waiting": true,
-  "function": "ops_lock"
+  "function": "service_lock_mgr_lock"
 }, {
   "relation": "catalog",
   "lock": "shared",

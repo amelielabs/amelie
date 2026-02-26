@@ -32,10 +32,10 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_1",
+  "relation": "service_1",
   "lock": "exclusive",
   "waiting": false,
-  "function": "ops_lock"
+  "function": "service_lock_mgr_lock"
 }, {
   "relation": "bp_refresh_2",
   "lock": "shared",
@@ -108,10 +108,10 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_2",
+  "relation": "service_2",
   "lock": "exclusive",
   "waiting": false,
-  "function": "ops_lock"
+  "function": "service_lock_mgr_lock"
 }, {
   "relation": "bp_refresh_2",
   "lock": "shared",
@@ -181,10 +181,10 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_4",
+  "relation": "service_4",
   "lock": "exclusive",
   "waiting": false,
-  "function": "ops_lock"
+  "function": "service_lock_mgr_lock"
 }, {
   "relation": "bp_refresh_2",
   "lock": "shared",
@@ -254,10 +254,10 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_6",
+  "relation": "service_6",
   "lock": "exclusive",
   "waiting": false,
-  "function": "ops_lock"
+  "function": "service_lock_mgr_lock"
 }, {
   "relation": "bp_refresh_2",
   "lock": "shared",
@@ -346,10 +346,10 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_8",
+  "relation": "service_8",
   "lock": "exclusive",
   "waiting": false,
-  "function": "ops_lock"
+  "function": "service_lock_mgr_lock"
 }, {
   "relation": "bp_refresh_2",
   "lock": "shared",
@@ -430,10 +430,10 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_10",
+  "relation": "service_10",
   "lock": "exclusive",
   "waiting": false,
-  "function": "ops_lock"
+  "function": "service_lock_mgr_lock"
 }, {
   "relation": "bp_refresh_2",
   "lock": "shared",

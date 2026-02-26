@@ -15,10 +15,22 @@ typedef struct Service Service;
 
 struct Service
 {
-	Ops      ops;
-	Catalog* catalog;
-	WalMgr*  wal_mgr;
+	ServiceLockMgr lock_mgr;
+	Catalog*       catalog;
+	WalMgr*        wal_mgr;
 };
 
 void service_init(Service*, Catalog*, WalMgr*);
 void service_free(Service*);
+
+hot static inline void
+service_lock(Service* self, ServiceLock* lock, uint64_t id)
+{
+	service_lock_mgr_lock(&self->lock_mgr, lock, id);
+}
+
+hot static inline void
+service_unlock(ServiceLock* lock)
+{
+	service_lock_mgr_unlock(lock);
+}

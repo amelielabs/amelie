@@ -37,10 +37,10 @@ show locks;
   "waiting": false,
   "function": "session_execute"
 }, {
-  "relation": "part_1",
+  "relation": "service_1",
   "lock": "exclusive",
   "waiting": false,
-  "function": "ops_lock"
+  "function": "service_lock_mgr_lock"
 }, {
   "relation": "test",
   "lock": "exclusive",

@@ -260,7 +260,7 @@ flush_apply(Flush* self)
 void
 flush_init(Flush* self, Service* service)
 {
-	ops_lock_init(&self->lock);
+	service_lock_init(&self->lock);
 	self->origin       = NULL;
 	self->origin_lsn   = 0;
 	self->object       = NULL;
@@ -288,7 +288,7 @@ flush_free(Flush* self)
 void
 flush_reset(Flush* self)
 {
-	ops_lock_init(&self->lock);
+	service_lock_init(&self->lock);
 	self->origin     = NULL;
 	self->origin_lsn = 0;
 	self->object     = NULL;
@@ -310,8 +310,8 @@ flush_run(Flush* self, Table* table, uint64_t id)
 	flush_reset(self);
 
 	// get catalog shared lock and partition service lock
-	ops_lock(&self->service->ops, &self->lock, id);
-	defer(ops_unlock, &self->lock);
+	service_lock(self->service, &self->lock, id);
+	defer(service_unlock, &self->lock);
 
 	// find and rotate partition
 	if (! flush_begin(self, table, id))
