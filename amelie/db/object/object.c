@@ -20,10 +20,12 @@ Object*
 object_allocate(Id* id)
 {
 	auto self = (Object*)am_malloc(sizeof(Object));
+	self->branches_count = 0;
+	self->branches       = NULL;
+	self->next           = NULL;
 	id_init(&self->id);
 	id_set_free(&self->id, (IdFree)object_free);
 	id_copy(&self->id, id);
-
 	meta_init(&self->meta);
 	buf_init(&self->meta_data);
 	file_init(&self->file);

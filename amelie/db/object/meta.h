@@ -36,6 +36,7 @@ struct Meta
 	uint32_t crc_data;
 	uint32_t magic;
 	uint32_t version;
+	uint64_t parent;
 	uint32_t size;
 	uint32_t size_origin;
 	uint64_t size_regions;

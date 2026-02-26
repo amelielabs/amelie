@@ -22,15 +22,18 @@
 #include <amelie_catalog.h>
 
 static void
-table_tier_delete(Table* table, Tier* tier)
+table_tier_delete(Table* table, Tier* tier, bool drop)
 {
 	// remove and free tier
 	auto config = tier->config;
 
 	// delete objects and volumes
-	error_catch (
-		tier_drop(tier);
-	);
+	if (drop)
+	{
+		error_catch (
+			tier_drop(tier);
+		);
+	}
 	tier_mgr_remove(&table->tier_mgr, tier);
 
 	// remove tier from the table config
@@ -51,7 +54,7 @@ create_if_abort(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
 	Tier* tier = op->iface_arg;
-	table_tier_delete(table, tier);
+	table_tier_delete(table, tier, false);
 }
 
 static LogIf create_if =
@@ -103,7 +106,7 @@ drop_if_commit(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
 	Tier* tier = op->iface_arg;
-	table_tier_delete(table, tier);
+	table_tier_delete(table, tier, true);
 }
 
 static void

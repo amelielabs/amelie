@@ -302,6 +302,9 @@ flush_reset(Flush* self)
 bool
 flush_run(Flush* self, Table* table, uint64_t id)
 {
+	if (! table->tier_mgr.list_count)
+		error("flush: table has no tiers");
+
 	flush_reset(self);
 
 	// get catalog shared lock and partition service lock

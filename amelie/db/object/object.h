@@ -19,7 +19,10 @@ struct Object
 	Meta       meta;
 	Buf        meta_data;
 	File       file;
+	Object*    branches;
+	int        branches_count;
 	RbtreeNode link_mapping;
+	Object*    next;
 };
 
 Object* object_allocate(Id*);
@@ -29,6 +32,12 @@ void    object_create(Object*, int);
 void    object_delete(Object*, int);
 void    object_rename(Object*, int, int);
 void    object_status(Object*, Buf*, int, Str*);
+
+static inline Object*
+object_of(Id* self)
+{
+	return (Object*)self;
+}
 
 hot always_inline static inline Row*
 object_min(Object* self)
@@ -46,8 +55,20 @@ object_max(Object* self)
 	return meta_region_max(meta_max(&self->meta, &self->meta_data));
 }
 
-static inline Object*
-object_of(Id* self)
+static inline void
+object_attach(Object* self, Object* branch)
 {
-	return (Object*)self;
+	// ordered by id (highest first)
+	auto head = self->branches;
+	while (head && head->next && head->id.id > branch->id.id)
+		head = head->next;
+	if (head)
+	{
+		head->next = branch;
+	} else
+	{
+		branch = self->branches;
+		self->branches = branch;
+	}
+	self->branches_count++;
 }

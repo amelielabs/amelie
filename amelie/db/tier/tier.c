@@ -112,8 +112,7 @@ tier_recover_volume(Tier* self, Volume* volume)
 			break;
 		}
 		default:
-			info("tier: unexpected file: '%s%s'", path,
-			     entry->d_name);
+			info("tier: unexpected file: '%s%s'", path, entry->d_name);
 			continue;
 		}
 	}
@@ -140,11 +139,17 @@ tier_recover(Tier* self, StorageMgr* storage_mgr)
 		object_open(obj, ID_OBJECT, true);
 	}
 
-	// todo: sort branch objects by id
-	// todo: match objects
+	// open branches and attach them to the parent objects
+	//
+	// branches are ordered by id (highest first)
 	list_foreach(&self->list_branch)
 	{
 		auto obj = list_at(Object, id.link);
 		object_open(obj, ID_BRANCH, true);
+		auto parent = tier_find(self, obj->meta.parent);
+		if (! parent)
+			error("tier: parent object %" PRIu64 " not found",
+			      obj->meta.parent);
+		object_attach(object_of(parent), obj);
 	}
 }
