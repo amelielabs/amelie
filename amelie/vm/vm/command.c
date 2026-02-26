@@ -412,7 +412,7 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 		cursor->part = self->part;
 	else
 		cursor->part = NULL;
-	cursor->cursor = part_mgr_iterator(&table->part_mgr, cursor->part, index, point_lookup, key_ref);
+	cursor->cursor = cursor_open(&table->part_mgr, cursor->part, index, point_lookup, key_ref);
 	cursor->table  = table;
 	cursor->type   = TYPE_CURSOR;
 

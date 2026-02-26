@@ -12,4 +12,4 @@
 //
 
 Iterator*
-part_mgr_iterator(PartMgr*, Part*, IndexConfig*, bool, Row*);
+cursor_open(PartMgr*, Part*, IndexConfig*, bool, Row*);

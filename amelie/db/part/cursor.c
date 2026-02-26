@@ -21,10 +21,10 @@
 #include <amelie_part.h>
 
 hot static Iterator*
-part_mgr_iterator_lookup(PartMgr*     self,
-                         Part*        part,
-                         IndexConfig* config,
-                         Row*         key)
+cursor_lookup(PartMgr*     self,
+              Part*        part,
+              IndexConfig* config,
+              Row*         key)
 {
 	auto index = part_index_find(part, &config->name, true);
 
@@ -63,10 +63,10 @@ part_mgr_iterator_lookup(PartMgr*     self,
 }
 
 hot static Iterator*
-part_mgr_iterator_range(PartMgr*     self,
-                        Part*        part,
-                        IndexConfig* config,
-                        Row*         key)
+cursor_scan(PartMgr*     self,
+            Part*        part,
+            IndexConfig* config,
+            Row*         key)
 {
 	auto index = part_index_find(part, &config->name, true);
 	auto it = index_iterator(index);
@@ -101,9 +101,9 @@ part_mgr_iterator_range(PartMgr*     self,
 }
 
 hot static Iterator*
-part_mgr_iterator_range_cross(PartMgr*     self,
-                              IndexConfig* config,
-                              Row*         key)
+cursor_scan_cross(PartMgr*     self,
+                  IndexConfig* config,
+                  Row*         key)
 {
 	// prepare heap merge iterators per partition
 	Iterator* it = NULL;
@@ -144,21 +144,21 @@ part_mgr_iterator_range_cross(PartMgr*     self,
 }
 
 hot Iterator*
-part_mgr_iterator(PartMgr*     self,
-                  Part*        part,
-                  IndexConfig* config,
-                  bool         point_lookup,
-                  Row*         key)
+cursor_open(PartMgr*     self,
+            Part*        part,
+            IndexConfig* config,
+            bool         point_lookup,
+            Row*         key)
 {
 	// partition query
 	if (part)
 	{
 		// point lookup
 		if (point_lookup)
-			return part_mgr_iterator_lookup(self, part, config, key);
+			return cursor_lookup(self, part, config, key);
 
 		// range scan
-		return part_mgr_iterator_range(self, part, config, key);
+		return cursor_scan(self, part, config, key);
 	}
 
 	// cross-partition query
@@ -167,7 +167,7 @@ part_mgr_iterator(PartMgr*     self,
 	if (point_lookup)
 	{
 		part = part_mapping_map(&self->mapping, key);
-		return part_mgr_iterator_lookup(self, part, config, key);
+		return cursor_lookup(self, part, config, key);
 	}
 
 	// range scan
@@ -175,5 +175,5 @@ part_mgr_iterator(PartMgr*     self,
 	// merge all hash partitions (without key)
 	// merge all tree partitions (without key, ordered)
 	// merge all tree partitions (with key, ordered)
-	return part_mgr_iterator_range_cross(self, config, key);
+	return cursor_scan_cross(self, config, key);
 }

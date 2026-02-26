@@ -21,4 +21,6 @@
 #include "part/part_mgr_config.h"
 #include "part/part_mgr.h"
 #include "part/part_mgr_recover.h"
-#include "part/part_mgr_iterator.h"
+
+// cursor
+#include "part/cursor.h"
