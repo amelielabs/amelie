@@ -58,7 +58,7 @@ select show('state').catalog_pending;
 select identity_of("test");
 [3]
 select * from test;
-[0, 1, 2]
+[1, 0, 2]
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
@@ -81,7 +81,7 @@ select show('state').catalog_pending;
 select identity_of("test");
 [3]
 select * from test;
-[1, 2, 0]
+[2, 1, 0]
 # test: create function
 create function reverse(array json) return json
 begin

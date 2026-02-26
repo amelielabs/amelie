@@ -42,11 +42,6 @@ flush_begin(Flush* self, Table* table, uint64_t id)
 		heap_free(heap_shadow);
 		return false;
 	}
-	if (origin_id->type != ID_RAM)
-	{
-		heap_free(heap_shadow);
-		return false;
-	}
 	auto origin  = part_of(origin_id);
 	self->origin = origin;
 	id_copy(&self->id_origin, &origin->id);
@@ -57,7 +52,7 @@ flush_begin(Flush* self, Table* table, uint64_t id)
 
 	// set id and volumes
 	auto volumes = &table->part_mgr.config->volumes;
-	id_prepare(&self->id_ram, ID_RAM, volumes);
+	id_prepare(&self->id_part, ID_PART, volumes);
 
 	auto tier = tier_mgr_first(&table->tier_mgr);
 	volumes = &tier->config->volumes;
@@ -82,17 +77,17 @@ flush_job(intptr_t* argv)
 	auto self = (Flush*)argv[0];
 	auto heap = self->origin->heap;
 
-	// create <id>.ram.incomplete file
+	// create <id>.partition.incomplete file
 	auto heap_temp = heap_allocate(false);
 	defer(heap_free, heap_temp);
 	heap_temp->header->hash_min = heap->header->hash_min;
 	heap_temp->header->hash_max = heap->header->hash_max;
 	heap_temp->header->lsn      = self->origin_lsn;
-	auto id = &self->id_ram;
-	heap_create(heap_temp, &self->file_ram, id, ID_RAM_INCOMPLETE);
+	auto id = &self->id_part;
+	heap_create(heap_temp, &self->file_part, id, ID_PART_INCOMPLETE);
 
-	auto total = (double)self->file_ram.size / 1024 / 1024;
-	info("flush: %s/%05" PRIu64 ".ram (%.2f MiB)",
+	auto total = (double)self->file_part.size / 1024 / 1024;
+	info("flush: %s/%05" PRIu64 ".partition (%.2f MiB)",
 	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);
@@ -162,7 +157,7 @@ flush_complete_job(intptr_t* argv)
 	auto service = self->service_file;
 	service_file_begin(service);
 	service_file_add_input(service,  &self->id_origin);
-	service_file_add_output(service, &self->id_ram);
+	service_file_add_output(service, &self->id_part);
 	service_file_add_output(service, &self->id_pending);
 	service_file_end(service);
 	service_file_create(service);
@@ -171,15 +166,15 @@ flush_complete_job(intptr_t* argv)
 
 	// sync incomplete heap file
 	if (opt_int_of(&config()->storage_sync))
-		file_sync(&self->file_ram);
+		file_sync(&self->file_part);
 
-	file_close(&self->file_ram);
+	file_close(&self->file_part);
 
 	// unlink origin heap file
-	id_delete(&self->id_origin, ID_RAM);
+	id_delete(&self->id_origin, ID_PART);
 
 	// rename
-	id_rename(&self->id_ram, ID_RAM_INCOMPLETE, ID_RAM);
+	id_rename(&self->id_part, ID_PART_INCOMPLETE, ID_PART);
 
 	// pending
 
@@ -246,7 +241,7 @@ flush_apply(Flush* self)
 
 	// update volume refs
 	volume_unref(origin->id.volume);
-	volume_ref(self->id_ram.volume);
+	volume_ref(self->id_part.volume);
 
 	// add object to the tier
 	auto tier = tier_mgr_first(&table->tier_mgr);
@@ -254,7 +249,7 @@ flush_apply(Flush* self)
 	self->object = NULL;
 
 	// update partition id
-	id_copy(&origin->id, &self->id_ram);
+	id_copy(&origin->id, &self->id_part);
 }
 
 void
@@ -270,9 +265,9 @@ flush_init(Flush* self, Service* service)
 	self->service_file = service_file_allocate();
 	self->service      = service;
 	id_init(&self->id_origin);
-	id_init(&self->id_ram);
+	id_init(&self->id_part);
 	id_init(&self->id_pending);
-	file_init(&self->file_ram);
+	file_init(&self->file_part);
 	file_init(&self->file_pending);
 	buf_reset(&self->heap_index);
 }
@@ -297,9 +292,9 @@ flush_reset(Flush* self)
 	service_file_reset(self->service_file);
 	writer_reset(self->writer);
 	id_init(&self->id_origin);
-	id_init(&self->id_ram);
+	id_init(&self->id_part);
 	id_init(&self->id_pending);
-	file_close(&self->file_ram);
+	file_close(&self->file_part);
 	file_close(&self->file_pending);
 	buf_init(&self->heap_index);
 }

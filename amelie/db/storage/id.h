@@ -18,9 +18,9 @@ enum
 	ID_NONE,
 	ID_SERVICE,
 	ID_SERVICE_INCOMPLETE,
-	ID_RAM,
-	ID_RAM_INCOMPLETE,
-	ID_RAM_SNAPSHOT,
+	ID_PART,
+	ID_PART_INCOMPLETE,
+	ID_PART_SNAPSHOT,
 	ID_PENDING,
 	ID_PENDING_INCOMPLETE,
 	ID_PENDING_SNAPSHOT
@@ -85,9 +85,9 @@ id_of(const char* name, int64_t* id)
 {
 	// <id>.service
 	// <id>.service.incomplete
-	// <id>.ram
-	// <id>.ram.incomplete
-	// <id>.ram.snapshot
+	// <id>.partition
+	// <id>.partition.incomplete
+	// <id>.partition.snapshot
 	// <id>.pending
 	// <id>.pending.incomplete
 	// <id>.pending.snapshot
@@ -107,14 +107,14 @@ id_of(const char* name, int64_t* id)
 	if (! strcmp(name, ".service"))
 		state = ID_SERVICE;
 	else
-	if (! strcmp(name, ".ram.incomplete"))
-		state = ID_RAM_INCOMPLETE;
+	if (! strcmp(name, ".partition.incomplete"))
+		state = ID_PART_INCOMPLETE;
 	else
-	if (! strcmp(name, ".ram.snapshot"))
-		state = ID_RAM_SNAPSHOT;
+	if (! strcmp(name, ".partition.snapshot"))
+		state = ID_PART_SNAPSHOT;
 	else
-	if (! strcmp(name, ".ram"))
-		state = ID_RAM;
+	if (! strcmp(name, ".partition"))
+		state = ID_PART;
 	else
 	if (! strcmp(name, ".pending.incomplete"))
 		state = ID_PENDING_INCOMPLETE;
@@ -135,9 +135,9 @@ id_extension_of(int state)
 	switch (state) {
 	case ID_SERVICE:            return ".service";
 	case ID_SERVICE_INCOMPLETE: return ".service.incomplete";
-	case ID_RAM:                return ".ram";
-	case ID_RAM_INCOMPLETE:     return ".ram.incomplete";
-	case ID_RAM_SNAPSHOT:       return ".ram.snapshot";
+	case ID_PART:               return ".partition";
+	case ID_PART_INCOMPLETE:    return ".partition.incomplete";
+	case ID_PART_SNAPSHOT:      return ".partition.snapshot";
 	case ID_PENDING:            return ".pending";
 	case ID_PENDING_INCOMPLETE: return ".pending.incomplete";
 	case ID_PENDING_SNAPSHOT:   return ".pending.snapshot";
@@ -226,7 +226,7 @@ static inline int
 id_snapshot_of(int state)
 {
 	switch (state) {
-	case ID_RAM:     return ID_RAM_SNAPSHOT;
+	case ID_PART:    return ID_PART_SNAPSHOT;
 	case ID_PENDING: return ID_PENDING_SNAPSHOT;
 	default:
 		abort();

@@ -66,14 +66,14 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 		id.volume = volume;
 
 		switch (state) {
-		case ID_RAM_INCOMPLETE:
-		case ID_RAM_SNAPSHOT:
+		case ID_PART_INCOMPLETE:
+		case ID_PART_SNAPSHOT:
 		{
 			// remove incomplete and snapshot files
 			id_delete(&id, state);
 			break;
 		}
-		case ID_RAM:
+		case ID_PART:
 		{
 			auto part = part_allocate(&id, self->arg);
 			part_mgr_add(self, &part->id);
@@ -108,7 +108,7 @@ part_mgr_create(PartMgr* self)
 		Id id;
 		id_init(&id);
 		id.id       = state_psn_next();
-		id.type     = ID_RAM;
+		id.type     = ID_PART;
 		id.volume   = volume;
 		auto part = part_allocate(&id, self->arg);
 		part_mgr_add(self, &part->id);
@@ -127,18 +127,18 @@ part_mgr_create(PartMgr* self)
 		part->heap->header->hash_max = range_start + range_step;
 		range_start += range_step;
 
-		// create <id>.ram.incomplete file
+		// create <id>.partition.incomplete file
 		File file;
 		file_init(&file);
 		defer(file_close, &file);
-		heap_create(part->heap, &file, &part->id, ID_RAM_INCOMPLETE);
+		heap_create(part->heap, &file, &part->id, ID_PART_INCOMPLETE);
 
 		// sync
 		if (opt_int_of(&config()->storage_sync))
 			file_sync(&file);
 
 		// rename
-		id_rename(&part->id, ID_RAM_INCOMPLETE, ID_RAM);
+		id_rename(&part->id, ID_PART_INCOMPLETE, ID_PART);
 	}
 }
 

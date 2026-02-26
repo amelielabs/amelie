@@ -19,9 +19,9 @@ struct Flush
 	Part*        origin;
 	uint64_t     origin_lsn;
 	Id           id_origin;
-	Id           id_ram;
+	Id           id_part;
 	Id           id_pending;
-	File         file_ram;
+	File         file_part;
 	File         file_pending;
 	Index*       indexes;
 	Buf          heap_index;

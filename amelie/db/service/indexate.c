@@ -54,7 +54,7 @@ indexate_match(Indexate* self, IndexConfig* config)
 
 		// find partition by id
 		auto origin_id = part_mgr_find(&table->part_mgr, id);
-		if (origin_id && origin_id->type == ID_RAM)
+		if (origin_id)
 		{
 			self->origin = part_of(origin_id);
 			return true;
@@ -126,7 +126,7 @@ indexate_job(intptr_t* argv)
 
 	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
 	auto id = &origin->id;
-	info("indexate: %s/%05" PRIu64 ".ram (%.2f MiB)",
+	info("indexate: %s/%05" PRIu64 ".partition (%.2f MiB)",
 	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);

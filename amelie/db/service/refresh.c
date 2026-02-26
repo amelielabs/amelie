@@ -53,20 +53,15 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 		heap_free(heap_shadow);
 		return false;
 	}
-	if (origin_id->type != ID_RAM)
-	{
-		heap_free(heap_shadow);
-		return false;
-	}
 	auto origin  = part_of(origin_id);
 	self->origin = origin;
 	id_copy(&self->id_origin, &origin->id);
 
 	// set id and volumes
 	if (volume)
-		id_prepare_in(&self->id_ram, ID_RAM, volume);
+		id_prepare_in(&self->id_part, ID_PART, volume);
 	else
-		id_prepare(&self->id_ram, ID_RAM, volumes);
+		id_prepare(&self->id_part, ID_PART, volumes);
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -88,13 +83,13 @@ refresh_snapshot_job(intptr_t* argv)
 	auto origin = self->origin;
 	auto heap   = origin->heap;
 
-	// create <id>.ram.incomplete file
-	auto id = &self->id_ram;
+	// create <id>.partition.incomplete file
+	auto id = &self->id_part;
 	heap->header->lsn = self->origin_lsn;
-	heap_create(heap, &self->file_ram, id, ID_RAM_INCOMPLETE);
+	heap_create(heap, &self->file_part, id, ID_PART_INCOMPLETE);
 
-	auto total = (double)self->file_ram.size / 1024 / 1024;
-	info("checkpoint: %s/%05" PRIu64 ".ram (%.2f MiB)",
+	auto total = (double)self->file_part.size / 1024 / 1024;
+	info("checkpoint: %s/%05" PRIu64 ".partition (%.2f MiB)",
 	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);
@@ -115,21 +110,21 @@ refresh_complete_job(intptr_t* argv)
 	auto service = self->service_file;
 	service_file_begin(service);
 	service_file_add_input(service,  &self->id_origin);
-	service_file_add_output(service, &self->id_ram);
+	service_file_add_output(service, &self->id_part);
 	service_file_end(service);
 	service_file_create(service);
 
 	// sync incomplete heap file
 	if (opt_int_of(&config()->storage_sync))
-		file_sync(&self->file_ram);
+		file_sync(&self->file_part);
 
-	file_close(&self->file_ram);
+	file_close(&self->file_part);
 
 	// unlink origin heap file
-	id_delete(&self->id_origin, ID_RAM);
+	id_delete(&self->id_origin, ID_PART);
 
 	// rename
-	id_rename(&self->id_ram, ID_RAM_INCOMPLETE, ID_RAM);
+	id_rename(&self->id_part, ID_PART_INCOMPLETE, ID_PART);
 
 	// remove service file (complete)
 	service_file_delete(service);
@@ -183,10 +178,10 @@ refresh_apply(Refresh* self)
 
 	// update volume refs
 	volume_unref(origin->id.volume);
-	volume_ref(self->id_ram.volume);
+	volume_ref(self->id_part.volume);
 
 	// update partition id
-	id_copy(&origin->id, &self->id_ram);
+	id_copy(&origin->id, &self->id_part);
 }
 
 void
@@ -199,8 +194,8 @@ refresh_init(Refresh* self, Service* service)
 	self->service      = service;
 	self->table        = NULL;
 	id_init(&self->id_origin);
-	id_init(&self->id_ram);
-	file_init(&self->file_ram);
+	id_init(&self->id_part);
+	file_init(&self->file_part);
 }
 
 void
@@ -218,8 +213,8 @@ refresh_reset(Refresh* self)
 	self->table      = NULL;
 	service_file_reset(self->service_file);
 	id_init(&self->id_origin);
-	id_init(&self->id_ram);
-	file_close(&self->file_ram);
+	id_init(&self->id_part);
+	file_close(&self->file_part);
 }
 
 bool
