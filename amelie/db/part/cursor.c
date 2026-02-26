@@ -43,9 +43,9 @@ cursor_lookup(PartMgr*     self,
 	auto obj_it = object_iterator_allocate();
 	errdefer(iterator_close, obj_it);
 
-	// check pending objects
+	// check branches
 	auto tier = tier_mgr_first(tier_mgr);
-	list_foreach(&tier->list_pending)
+	list_foreach(&tier->list_branch)
 	{
 		auto obj = list_at(Object, id.link);
 		object_iterator_reset(obj_it);
@@ -80,13 +80,13 @@ cursor_scan(PartMgr*     self,
 	// todo: different path for hash
 	assert(config->type == INDEX_TREE);
 
-	// merge heap with pending objects
+	// merge heap with branches
 	auto merge_it = merge_iterator_allocate(true);
 	errdefer(merge_iterator_free, merge_it);
 	merge_iterator_add(merge_it, it);
 
 	auto tier = tier_mgr_first(tier_mgr);
-	list_foreach(&tier->list_pending)
+	list_foreach(&tier->list_branch)
 	{
 		auto obj = list_at(Object, id.link);
 		auto obj_it = object_iterator_allocate();
@@ -123,13 +123,13 @@ cursor_scan_cross(PartMgr*     self,
 	// todo: different path for hash
 	assert(config->type == INDEX_TREE);
 
-	// merge all partitions heaps with pending objects
+	// merge all partitions heaps with branches
 	auto merge_it = merge_iterator_allocate(true);
 	errdefer(merge_iterator_free, merge_it);
 	merge_iterator_add(merge_it, it);
 
 	auto tier = tier_mgr_first(tier_mgr);
-	list_foreach(&tier->list_pending)
+	list_foreach(&tier->list_branch)
 	{
 		auto obj = list_at(Object, id.link);
 		auto obj_it = object_iterator_allocate();

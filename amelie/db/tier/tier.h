@@ -16,8 +16,8 @@ typedef struct Tier Tier;
 struct Tier
 {
 	Mapping     mapping;
-	List        list_pending;
-	int         list_pending_count;
+	List        list_branch;
+	int         list_branch_count;
 	TierConfig* config;
 	List        link;
 };
@@ -26,10 +26,10 @@ static inline Tier*
 tier_allocate(TierConfig* config, Keys* keys)
 {
 	auto self = (Tier*)am_malloc(sizeof(Tier));
-	self->list_pending_count = 0;
+	self->list_branch_count = 0;
 	self->config             = config;
 	mapping_init(&self->mapping, keys);
-	list_init(&self->list_pending);
+	list_init(&self->list_branch);
 	list_init(&self->link);
 	return self;
 }
@@ -37,7 +37,7 @@ tier_allocate(TierConfig* config, Keys* keys)
 static inline void
 tier_free(Tier* self)
 {
-	list_foreach_safe(&self->list_pending)
+	list_foreach_safe(&self->list_branch)
 	{
 		auto id = list_at(Id, link);
 		id_free(id);
@@ -48,16 +48,16 @@ tier_free(Tier* self)
 static inline bool
 tier_empty(Tier* self)
 {
-	return !self->list_pending_count;
+	return !self->list_branch_count;
 }
 
 static inline void
 tier_add(Tier* self, Id* id)
 {
 	switch (id->type) {
-	case ID_PENDING:
-		list_append(&self->list_pending, &id->link);
-		self->list_pending_count++;
+	case ID_BRANCH:
+		list_append(&self->list_branch, &id->link);
+		self->list_branch_count++;
 		break;
 	default:
 		abort();
@@ -69,8 +69,8 @@ static inline void
 tier_remove(Tier* self, Id* id)
 {
 	switch (id->type) {
-	case ID_PENDING:
-		self->list_pending_count--;
+	case ID_BRANCH:
+		self->list_branch_count--;
 		break;
 	default:
 		abort();
@@ -82,15 +82,15 @@ tier_remove(Tier* self, Id* id)
 static inline void
 tier_truncate(Tier* self)
 {
-	list_foreach_safe(&self->list_pending)
+	list_foreach_safe(&self->list_branch)
 	{
 		auto id = list_at(Id, link);
 		tier_remove(self, id);
 		id_delete(id, id->type);
 		id_free(id);
 	}
-	assert(! self->list_pending_count);
-	list_init(&self->list_pending);
+	assert(! self->list_branch_count);
+	list_init(&self->list_branch);
 }
 
 static inline void
@@ -107,7 +107,7 @@ tier_drop(Tier* self)
 static inline Id*
 tier_find(Tier* self, uint64_t psn)
 {
-	list_foreach_safe(&self->list_pending)
+	list_foreach_safe(&self->list_branch)
 	{
 		auto id = list_at(Id, link);
 		if (id->id == psn)

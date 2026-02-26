@@ -45,5 +45,5 @@ tier_mgr_empty(TierMgr* self)
 {
 	if (! self->list_count)
 		return true;
-	return !tier_mgr_first(self)->list_pending_count;
+	return !tier_mgr_first(self)->list_branch_count;
 }

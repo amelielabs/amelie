@@ -168,7 +168,7 @@ tier_mgr_list(TierMgr* self, Str* ref, int flags)
 	list_foreach(&self->list)
 	{
 		auto tier = list_at(Tier, link);
-		list_foreach(&tier->list_pending)
+		list_foreach(&tier->list_branch)
 		{
 			auto obj = list_at(Object, id.link);
 			object_status(obj, buf, flags, &tier->config->name);

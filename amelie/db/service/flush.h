@@ -20,9 +20,9 @@ struct Flush
 	uint64_t     origin_lsn;
 	Id           id_origin;
 	Id           id_part;
-	Id           id_pending;
+	Id           id_branch;
 	File         file_part;
-	File         file_pending;
+	File         file_branch;
 	Index*       indexes;
 	Buf          heap_index;
 	Object*      object;

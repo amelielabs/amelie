@@ -63,14 +63,14 @@ tier_recover_volume(Tier* tier, Volume* volume)
 		id.volume = volume;
 
 		switch (state) {
-		case ID_PENDING_INCOMPLETE:
-		case ID_PENDING_SNAPSHOT:
+		case ID_BRANCH_INCOMPLETE:
+		case ID_BRANCH_SNAPSHOT:
 		{
 			// remove incomplete and snapshot files
 			id_delete(&id, state);
 			break;
 		}
-		case ID_PENDING:
+		case ID_BRANCH:
 		{
 			auto obj = object_allocate(&id);
 			tier_add(tier, &obj->id);
@@ -98,12 +98,12 @@ tier_recover(Tier* self, StorageMgr* storage_mgr)
 		tier_recover_volume(self, volume);
 	}
 
-	// todo: sort pending objects by id
+	// todo: sort branch objects by id
 
-	// open pending objects
-	list_foreach(&self->list_pending)
+	// open branch objects
+	list_foreach(&self->list_branch)
 	{
 		auto obj = list_at(Object, id.link);
-		object_open(obj, ID_PENDING, true);
+		object_open(obj, ID_BRANCH, true);
 	}
 }

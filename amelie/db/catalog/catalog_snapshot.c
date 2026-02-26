@@ -70,7 +70,7 @@ catalog_snapshot(Catalog* self, Buf* data)
 		list_foreach(&table->tier_mgr.list)
 		{
 			auto tier = list_at(Tier, link);
-			list_foreach(&tier->list_pending)
+			list_foreach(&tier->list_branch)
 			{
 				auto id = list_at(Id, link);
 				auto id_snap = id_snapshot_of(id->type);

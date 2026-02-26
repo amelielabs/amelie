@@ -56,7 +56,7 @@ flush_begin(Flush* self, Table* table, uint64_t id)
 
 	auto tier = tier_mgr_first(&table->tier_mgr);
 	volumes = &tier->config->volumes;
-	id_prepare(&self->id_pending, ID_PENDING, volumes);
+	id_prepare(&self->id_branch, ID_BRANCH, volumes);
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -92,8 +92,8 @@ flush_job(intptr_t* argv)
 	     id->id,
 	     total);
 
-	// create <id>.pending.incomplete file
-	id_create(&self->id_pending, &self->file_pending, ID_PENDING_INCOMPLETE);	
+	// create <id>.branch.incomplete file
+	id_create(&self->id_branch, &self->file_branch, ID_BRANCH_INCOMPLETE);
 
 	// create heap index
 	auto keys = index_keys(part_primary(self->origin));
@@ -104,13 +104,13 @@ flush_job(intptr_t* argv)
 	heap_index_iterator_init(&it);
 	heap_index_iterator_open(&it, &self->heap_index);
 
-	// write pending object
-	id = &self->id_pending;
+	// write branch object
+	id = &self->id_branch;
 	auto tier = tier_mgr_first(&self->table->tier_mgr);
 
 	auto writer = self->writer;
 	writer_reset(writer);
-	writer_start(writer, &self->file_pending, id->volume->storage,
+	writer_start(writer, &self->file_branch, id->volume->storage,
 	             tier->config->region_size);
 	while (heap_index_iterator_has(&it))
 	{
@@ -120,16 +120,16 @@ flush_job(intptr_t* argv)
 	}
 	writer_stop(writer);
 
-	total = (double)self->file_pending.size / 1024 / 1024;
-	info("flush: %s/%s/%05" PRIu64 ".pending (%.2f MiB)",
+	total = (double)self->file_branch.size / 1024 / 1024;
+	info("flush: %s/%s/%05" PRIu64 ".branch (%.2f MiB)",
 	     id->volume->storage->config->name.pos,
 	     tier->config->name.pos,
 	     id->id,
 	     total);
 
 	// create and open object
-	self->object = object_allocate(&self->id_pending);
-	object_open(self->object, ID_PENDING_INCOMPLETE, true);
+	self->object = object_allocate(&self->id_branch);
+	object_open(self->object, ID_BRANCH_INCOMPLETE, true);
 }
 
 static void
@@ -158,7 +158,7 @@ flush_complete_job(intptr_t* argv)
 	service_file_begin(service);
 	service_file_add_input(service,  &self->id_origin);
 	service_file_add_output(service, &self->id_part);
-	service_file_add_output(service, &self->id_pending);
+	service_file_add_output(service, &self->id_branch);
 	service_file_end(service);
 	service_file_create(service);
 
@@ -176,16 +176,16 @@ flush_complete_job(intptr_t* argv)
 	// rename
 	id_rename(&self->id_part, ID_PART_INCOMPLETE, ID_PART);
 
-	// pending
+	// branch
 
-	// sync incomplete pending file
+	// sync incomplete branch file
 	if (opt_int_of(&config()->storage_sync))
-		file_sync(&self->file_pending);
+		file_sync(&self->file_branch);
 
-	file_close(&self->file_pending);
+	file_close(&self->file_branch);
 
 	// rename
-	id_rename(&self->id_pending, ID_PENDING_INCOMPLETE, ID_PENDING);
+	id_rename(&self->id_branch, ID_BRANCH_INCOMPLETE, ID_BRANCH);
 
 	// remove service file (complete)
 	service_file_delete(service);
@@ -266,9 +266,9 @@ flush_init(Flush* self, Service* service)
 	self->service      = service;
 	id_init(&self->id_origin);
 	id_init(&self->id_part);
-	id_init(&self->id_pending);
+	id_init(&self->id_branch);
 	file_init(&self->file_part);
-	file_init(&self->file_pending);
+	file_init(&self->file_branch);
 	buf_reset(&self->heap_index);
 }
 
@@ -293,9 +293,9 @@ flush_reset(Flush* self)
 	writer_reset(self->writer);
 	id_init(&self->id_origin);
 	id_init(&self->id_part);
-	id_init(&self->id_pending);
+	id_init(&self->id_branch);
 	file_close(&self->file_part);
-	file_close(&self->file_pending);
+	file_close(&self->file_branch);
 	buf_init(&self->heap_index);
 }
 
