@@ -16,6 +16,8 @@ typedef struct Tier Tier;
 struct Tier
 {
 	Mapping     mapping;
+	List        list;
+	int         list_count;
 	List        list_branch;
 	int         list_branch_count;
 	TierConfig* config;
@@ -26,9 +28,11 @@ static inline Tier*
 tier_allocate(TierConfig* config, Keys* keys)
 {
 	auto self = (Tier*)am_malloc(sizeof(Tier));
+	self->list_count        = 0;
 	self->list_branch_count = 0;
-	self->config             = config;
+	self->config            = config;
 	mapping_init(&self->mapping, keys);
+	list_init(&self->list);
 	list_init(&self->list_branch);
 	list_init(&self->link);
 	return self;
@@ -37,6 +41,11 @@ tier_allocate(TierConfig* config, Keys* keys)
 static inline void
 tier_free(Tier* self)
 {
+	list_foreach_safe(&self->list)
+	{
+		auto id = list_at(Id, link);
+		id_free(id);
+	}
 	list_foreach_safe(&self->list_branch)
 	{
 		auto id = list_at(Id, link);
@@ -48,13 +57,17 @@ tier_free(Tier* self)
 static inline bool
 tier_empty(Tier* self)
 {
-	return !self->list_branch_count;
+	return !self->list_count && !self->list_branch_count;
 }
 
 static inline void
 tier_add(Tier* self, Id* id)
 {
 	switch (id->type) {
+	case ID_OBJECT:
+		list_append(&self->list, &id->link);
+		self->list_count++;
+		break;
 	case ID_BRANCH:
 		list_append(&self->list_branch, &id->link);
 		self->list_branch_count++;
@@ -69,6 +82,9 @@ static inline void
 tier_remove(Tier* self, Id* id)
 {
 	switch (id->type) {
+	case ID_OBJECT:
+		self->list_count--;
+		break;
 	case ID_BRANCH:
 		self->list_branch_count--;
 		break;
@@ -82,6 +98,13 @@ tier_remove(Tier* self, Id* id)
 static inline void
 tier_truncate(Tier* self)
 {
+	list_foreach_safe(&self->list)
+	{
+		auto id = list_at(Id, link);
+		tier_remove(self, id);
+		id_delete(id, id->type);
+		id_free(id);
+	}
 	list_foreach_safe(&self->list_branch)
 	{
 		auto id = list_at(Id, link);
@@ -103,10 +126,15 @@ tier_drop(Tier* self)
 	volume_mgr_rmdir(&self->config->volumes);
 }
 
-
 static inline Id*
 tier_find(Tier* self, uint64_t psn)
 {
+	list_foreach_safe(&self->list)
+	{
+		auto id = list_at(Id, link);
+		if (id->id == psn)
+			return id;
+	}
 	list_foreach_safe(&self->list_branch)
 	{
 		auto id = list_at(Id, link);

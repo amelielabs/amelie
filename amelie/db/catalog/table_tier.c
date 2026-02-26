@@ -137,12 +137,6 @@ table_tier_drop(Table* self,
 			      str_of(name));
 		return false;
 	}
-	if (! tier_empty(tier))
-		error("table '%.*s' tier '%.*s': is not empty",
-		      str_size(&self->config->name),
-		      str_of(&self->config->name),
-		      str_size(name),
-		      str_of(name));
 
 	// update table
 	log_relation(&tr->log, &drop_if, tier, &self->rel);

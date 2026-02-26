@@ -17,8 +17,43 @@
 #include <amelie_object.h>
 #include <amelie_tier.h>
 
+static void
+tier_create(Volume* volume)
+{
+	// create volume directory
+	volume_mkdir(volume);
+
+	// create empty object
+
+	// create <id>.object.incomplete file
+	Id id;
+	id_init(&id);
+	id.id     = state_psn_next();
+	id.type   = ID_OBJECT;
+	id.volume = volume;
+
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	id_create(&id, &file, ID_OBJECT_INCOMPLETE);
+
+	auto writer = writer_allocate();
+	defer(writer_free, writer);
+	writer_start(writer, &file, volume->storage, 0);
+	writer_stop(writer);
+
+	// sync incomplete file
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&file);
+
+	file_close(&file);
+
+	// rename
+	id_rename(&id, ID_OBJECT_INCOMPLETE, ID_OBJECT);
+}
+
 static bool
-tier_recover_volume(Tier* tier, Volume* volume)
+tier_recover_volume(Tier* self, Volume* volume)
 {
 	// <base>/storage/<volume_id>
 	char id[UUID_SZ];
@@ -27,10 +62,7 @@ tier_recover_volume(Tier* tier, Volume* volume)
 	char path[PATH_MAX];
 	sfmt(path, PATH_MAX, "%s/storage/%s", state_directory(), id);
 	if (! fs_exists("%s", path))
-	{
-		volume_mkdir(volume);
-		return true;
-	}
+		tier_create(volume);
 
 	// read directory
 	auto dir = opendir(path);
@@ -63,6 +95,8 @@ tier_recover_volume(Tier* tier, Volume* volume)
 		id.volume = volume;
 
 		switch (state) {
+		case ID_OBJECT_INCOMPLETE:
+		case ID_OBJECT_SNAPSHOT:
 		case ID_BRANCH_INCOMPLETE:
 		case ID_BRANCH_SNAPSHOT:
 		{
@@ -70,10 +104,11 @@ tier_recover_volume(Tier* tier, Volume* volume)
 			id_delete(&id, state);
 			break;
 		}
+		case ID_OBJECT:
 		case ID_BRANCH:
 		{
 			auto obj = object_allocate(&id);
-			tier_add(tier, &obj->id);
+			tier_add(self, &obj->id);
 			break;
 		}
 		default:
@@ -98,9 +133,15 @@ tier_recover(Tier* self, StorageMgr* storage_mgr)
 		tier_recover_volume(self, volume);
 	}
 
-	// todo: sort branch objects by id
+	// open files objects
+	list_foreach(&self->list)
+	{
+		auto obj = list_at(Object, id.link);
+		object_open(obj, ID_OBJECT, true);
+	}
 
-	// open branch objects
+	// todo: sort branch objects by id
+	// todo: match objects
 	list_foreach(&self->list_branch)
 	{
 		auto obj = list_at(Object, id.link);
