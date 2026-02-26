@@ -14,9 +14,17 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_object.h>
+#include <amelie_tier.h>
+#include <amelie_heap.h>
+#include <amelie_index.h>
+#include <amelie_part.h>
+#include <amelie_catalog.h>
+#include <amelie_wal.h>
+#include <amelie_service.h>
 
 static void
-service_mgr_gc(uint8_t* pos)
+service_recover_gc(uint8_t* pos)
 {
 	// remove all existing files from the list
 	json_read_array(&pos);
@@ -37,20 +45,20 @@ service_mgr_gc(uint8_t* pos)
 }
 
 static void
-service_mgr_recover(Id* id)
+service_recover_of(Id* id)
 {
-	auto service = service_allocate();
-	defer(service_free, service);
+	auto file = service_file_allocate();
+	defer(service_file_free, file);
 
 	// read service file
-	service_open(service, id);
+	service_file_open(file, id);
 
 	// if any of the output files are missing then remove the rest of them
 	// (incomplete files will be removed during tier/part mgr recovery)
 	//
 	// case: crash after service file sync/rename
 	//
-	auto pos = service->output.start;
+	auto pos = file->output.start;
 	json_read_array(&pos);
 	while (! json_read_array_end(&pos))
 	{
@@ -62,7 +70,7 @@ service_mgr_recover(Id* id)
 		              str_of(&path_relative)))
 			continue;
 
-		service_mgr_gc(service->output.start);
+		service_recover_gc(file->output.start);
 
 		// remove service file
 		id_delete(id, ID_SERVICE);
@@ -74,15 +82,17 @@ service_mgr_recover(Id* id)
 	//
 	// case: crash after output files synced and renamed
 	//
-	service_mgr_gc(service->input.start);
+	service_recover_gc(file->input.start);
 
 	// remove service file
 	id_delete(id, ID_SERVICE);
 }
 
 void
-service_mgr_open(void)
+service_recover(Service* self)
 {
+	unused(self);
+
 	// <base>/storage
 	char path[PATH_MAX];
 	sfmt(path, PATH_MAX, "%s/storage", state_directory());
@@ -90,7 +100,7 @@ service_mgr_open(void)
 	// read directory
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
-		error("service_mgr: directory '%s' open error", path);
+		error("service: directory '%s' open error", path);
 	defer(fs_closedir_defer, dir);
 	for (;;)
 	{
@@ -124,11 +134,11 @@ service_mgr_open(void)
 		case ID_SERVICE:
 		{
 			// recover service file
-			service_mgr_recover(&id);
+			service_recover_of(&id);
 			break;
 		}
 		default:
-			info("service_mgr: unexpected file: '%s%s'", path,
+			info("service: unexpected file: '%s%s'", path,
 			     entry->d_name);
 			continue;
 		}

@@ -21,7 +21,7 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_db.h>
+#include <amelie_service.h>
 
 static bool
 indexate_match(Indexate* self, IndexConfig* config)
@@ -50,7 +50,7 @@ indexate_match(Indexate* self, IndexConfig* config)
 			break;
 
 		// get partition service lock
-		ops_lock(&self->db->ops, &self->lock, id);
+		ops_lock(&self->service->ops, &self->lock, id);
 
 		// find partition by id
 		auto origin_id = part_mgr_find(&table->part_mgr, id);
@@ -212,13 +212,13 @@ indexate_abort(Indexate* self, IndexConfig* config)
 }
 
 void
-indexate_init(Indexate* self, Db* db)
+indexate_init(Indexate* self, Service* service)
 {
 	ops_lock_init(&self->lock);
-	self->origin = NULL;
-	self->table  = NULL;
-	self->index  = NULL;
-	self->db     = db;
+	self->origin  = NULL;
+	self->table   = NULL;
+	self->index   = NULL;
+	self->service = service;
 }
 
 void

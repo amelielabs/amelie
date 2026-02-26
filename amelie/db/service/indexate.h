@@ -15,13 +15,13 @@ typedef struct Indexate Indexate;
 
 struct Indexate
 {
-	OpsLock lock;
-	Part*   origin;
-	Index*  index;
-	Table*  table;
-	Db*     db;
+	OpsLock  lock;
+	Part*    origin;
+	Index*   index;
+	Table*   table;
+	Service* service;
 };
 
-void indexate_init(Indexate*, Db*);
+void indexate_init(Indexate*, Service*);
 void indexate_reset(Indexate*);
 bool indexate_next(Indexate*, Table*, IndexConfig*);

@@ -135,9 +135,9 @@ group executor
 test abort
 test async
 
-# engine
-directory engine
-group engine
+# service
+directory service
+group service
 test refresh_1
 test refresh_2
 test refresh_3

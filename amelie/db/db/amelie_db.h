@@ -14,16 +14,6 @@
 // db snapshot
 #include "db/snapshot_mgr.h"
 
-// service
-#include "db/ops.h"
-
 // db
 #include "db/db.h"
-#include "db/refresh.h"
-#include "db/indexate.h"
-#include "db/flush.h"
-#include "db/op.h"
-#include "db/op_index.h"
-
-// recover
 #include "db/recover.h"

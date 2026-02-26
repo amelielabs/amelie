@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void service_mgr_open(void);
+void service_recover(Service*);

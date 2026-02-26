@@ -86,6 +86,7 @@ include_directories("${AMELIE_ROOT}/db/index")
 include_directories("${AMELIE_ROOT}/db/part")
 include_directories("${AMELIE_ROOT}/db/catalog")
 include_directories("${AMELIE_ROOT}/db/wal")
+include_directories("${AMELIE_ROOT}/db/service")
 include_directories("${AMELIE_ROOT}/db/db")
 
 # sync
@@ -183,7 +184,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/transaction/commit.c
     ${AMELIE_ROOT}/db/transaction/relation_mgr.c
     ${AMELIE_ROOT}/db/storage/storage_mgr.c
-    ${AMELIE_ROOT}/db/storage/service_mgr.c
     ${AMELIE_ROOT}/db/object/writer.c
     ${AMELIE_ROOT}/db/object/object.c
     ${AMELIE_ROOT}/db/tier/tier.c
@@ -214,13 +214,14 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/wal/wal_worker.c
     ${AMELIE_ROOT}/db/wal/wal_periodic.c
     ${AMELIE_ROOT}/db/wal/wal_mgr.c
+    ${AMELIE_ROOT}/db/service/service.c
+    ${AMELIE_ROOT}/db/service/service_recover.c
+    ${AMELIE_ROOT}/db/service/refresh.c
+    ${AMELIE_ROOT}/db/service/flush.c
+    ${AMELIE_ROOT}/db/service/indexate.c
+    ${AMELIE_ROOT}/db/service/op.c
     ${AMELIE_ROOT}/db/db/snapshot_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
-    ${AMELIE_ROOT}/db/db/refresh.c
-    ${AMELIE_ROOT}/db/db/flush.c
-    ${AMELIE_ROOT}/db/db/indexate.c
-    ${AMELIE_ROOT}/db/db/op.c
-    ${AMELIE_ROOT}/db/db/op_index.c
     ${AMELIE_ROOT}/db/db/recover.c)
 
 set(AMELIE_SOURCES_SYNC

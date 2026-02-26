@@ -21,12 +21,12 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_db.h>
+#include <amelie_service.h>
 
 void
-db_refresh(Db* self, Uuid* id_table, uint64_t id, Str* storage)
+service_refresh(Service* self, Uuid* id_table, uint64_t id, Str* storage)
 {
-	auto table = table_mgr_find_by(&self->catalog.table_mgr, id_table, true);
+	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
 	Refresh refresh;
 	refresh_init(&refresh, self);
 	defer(refresh_free, &refresh);
@@ -35,9 +35,9 @@ db_refresh(Db* self, Uuid* id_table, uint64_t id, Str* storage)
 }
 
 void
-db_flush(Db* self, Uuid* id_table, uint64_t id)
+service_flush(Service* self, Uuid* id_table, uint64_t id)
 {
-	auto table = table_mgr_find_by(&self->catalog.table_mgr, id_table, true);
+	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
 	Flush flush;
 	flush_init(&flush, self);
 	defer(flush_free, &flush);
@@ -46,21 +46,21 @@ db_flush(Db* self, Uuid* id_table, uint64_t id)
 }
 
 void
-db_checkpoint(Db* self)
+service_checkpoint(Service* self)
 {
 	// note: executed under shared catalog lock
 	auto lsn = state_lsn();
 
 	// update catalog file if there are pending ddls
 	if (state_catalog() < state_catalog_pending())
-		catalog_write(&self->catalog);
+		catalog_write(self->catalog);
 
 	// refresh partitions
 	Refresh refresh;
 	refresh_init(&refresh, self);
 	defer(refresh_free, &refresh);
 
-	list_foreach(&self->catalog.table_mgr.mgr.list)
+	list_foreach(&self->catalog->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
 		for (;;)
@@ -86,11 +86,11 @@ db_checkpoint(Db* self)
 	}
 
 	// wal gc
-	db_gc(self);
+	service_gc(self);
 }
 
 void
-db_gc(Db* self)
+service_gc(Service* self)
 {
 	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
 
@@ -107,7 +107,7 @@ db_gc(Db* self)
 		lsn = catalog;
 
 	// calculate min lsn accross partitions files (merged)
-	list_foreach(&self->catalog.table_mgr.mgr.list)
+	list_foreach(&self->catalog->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
@@ -127,26 +127,58 @@ db_gc(Db* self)
 	unlock(lock_catalog);
 
 	// remove wal files < lsn
-	wal_gc(&self->wal_mgr.wal, lsn);
-}
-
-Snapshot*
-db_snapshot(Db* self)
-{
-	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
-	defer(unlock, lock_catalog);
-	return snapshot_mgr_create(&self->snapshot_mgr);
+	wal_gc(&self->wal_mgr->wal, lsn);
 }
 
 void
-db_snapshot_drop(Db* self, Snapshot* snapshot)
+service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
 {
-	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
-	error_catch (
-		snapshot_mgr_drop(&self->snapshot_mgr, snapshot);
-	);
+	auto if_not_exists = ddl_if_not_exists(flags);
+
+	Str  name_db;
+	Str  name;
+	auto pos = table_op_index_create_read(op, &name_db, &name);
+
+	// take shared catalog lock
+	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
+	defer(unlock, lock_catalog);
+
+	// find table
+	auto table = table_mgr_find(&self->catalog->table_mgr, &name_db, &name, false);
+	if (! table)
+		error("table '%.*s': not exists", str_size(&name),
+		      str_of(&name));
+
+	auto config = index_config_read(table_columns(table), &pos);
+	errdefer(index_config_free, config);
+	keys_set_primary(&config->keys, false);
+
+	// find index
+	auto index = table_index_find(table, &config->name, false);
+	if (index)
+	{
+		if (! if_not_exists)
+			error("table '%.*s' index '%.*s': already exists",
+			      str_size(&table->config->name),
+			      str_of(&table->config->name),
+			      str_size(&config->name),
+			      str_of(&config->name));
+
+		index_config_free(config);
+		return;
+	}
+
+	// incrementally create indexes on every table partition
+	Indexate ix;
+	indexate_init(&ix, self);
+	while (indexate_next(&ix, table, config));
+
 	unlock(lock_catalog);
 
-	// wal gc
-	db_gc(self);
+	// take exclusive catalog lock (HELD till completion)
+	lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
+
+	// attach index to the table
+	table_index_add(table, tr, config);
+	log_persist_relation(&tr->log, op);
 }

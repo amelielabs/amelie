@@ -21,6 +21,7 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
+#include <amelie_service.h>
 #include <amelie_db.h>
 
 void
@@ -30,28 +31,28 @@ db_init(Db*        self,
         PartMgrIf* iface_part_mgr,
         void*      iface_part_mgr_arg)
 {
-	ops_init(&self->ops);
 	catalog_init(&self->catalog, iface, iface_arg,
 	             iface_part_mgr,
 	             iface_part_mgr_arg);
 	wal_mgr_init(&self->wal_mgr);
+	service_init(&self->service, &self->catalog, &self->wal_mgr);
 	snapshot_mgr_init(&self->snapshot_mgr, &self->catalog, &self->wal_mgr.wal);
 }
 
 void
 db_free(Db* self)
 {
+	service_free(&self->service);
+	snapshot_mgr_free(&self->snapshot_mgr);
 	catalog_free(&self->catalog);
 	wal_mgr_free(&self->wal_mgr);
-	snapshot_mgr_free(&self->snapshot_mgr);
-	ops_free(&self->ops);
 }
 
 void
 db_open(Db* self, bool bootstrap)
 {
 	// do compaction crash recovery
-	service_mgr_open();
+	service_recover(&self->service);
 
 	// prepare system catalog
 	catalog_open(&self->catalog, bootstrap);
@@ -65,6 +66,27 @@ db_close(Db* self)
 
 	// stop wal mgr
 	wal_mgr_stop(&self->wal_mgr);
+}
+
+Snapshot*
+db_snapshot(Db* self)
+{
+	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
+	defer(unlock, lock_catalog);
+	return snapshot_mgr_create(&self->snapshot_mgr);
+}
+
+void
+db_snapshot_drop(Db* self, Snapshot* snapshot)
+{
+	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
+	error_catch (
+		snapshot_mgr_drop(&self->snapshot_mgr, snapshot);
+	);
+	unlock(lock_catalog);
+
+	// wal gc
+	service_gc(&self->service);
 }
 
 Buf*

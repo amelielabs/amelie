@@ -1940,13 +1940,17 @@ cddl_refresh:
 	str_init(&string);
 	if (op->c != -1)
 		code_data_at_string(code_data, op->c, &string);
-	db_refresh(share()->db, &((Table*)op->a)->config->id, op->b,
-	           str_empty(&string) ? NULL : &string);
+	service_refresh(&share()->db->service,
+	                &((Table*)op->a)->config->id,
+	                op->b,
+	                str_empty(&string) ? NULL : &string);
 	op_next;
 
 cddl_flush:
 	// [table*, id]
-	db_flush(share()->db, &((Table*)op->a)->config->id, op->b);
+	service_flush(&share()->db->service,
+	              &((Table*)op->a)->config->id,
+	              op->b);
 	op_next;
 
 csend_shard:

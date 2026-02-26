@@ -21,7 +21,7 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_db.h>
+#include <amelie_service.h>
 
 static bool
 flush_begin(Flush* self, Table* table, uint64_t id)
@@ -159,13 +159,13 @@ flush_complete_job(intptr_t* argv)
 	self->indexes = NULL;
 
 	// create <id>.service.incomplete file
-	auto service = self->service;
-	service_begin(service);
-	service_add_input(service,  &self->id_origin);
-	service_add_output(service, &self->id_ram);
-	service_add_output(service, &self->id_pending);
-	service_end(service);
-	service_create(service);
+	auto service = self->service_file;
+	service_file_begin(service);
+	service_file_add_input(service,  &self->id_origin);
+	service_file_add_output(service, &self->id_ram);
+	service_file_add_output(service, &self->id_pending);
+	service_file_end(service);
+	service_file_create(service);
 
 	// heap
 
@@ -193,7 +193,7 @@ flush_complete_job(intptr_t* argv)
 	id_rename(&self->id_pending, ID_PENDING_INCOMPLETE, ID_PENDING);
 
 	// remove service file (complete)
-	service_delete(service);
+	service_file_delete(service);
 }
 
 static void
@@ -258,17 +258,17 @@ flush_apply(Flush* self)
 }
 
 void
-flush_init(Flush* self, Db* db)
+flush_init(Flush* self, Service* service)
 {
 	ops_lock_init(&self->lock);
-	self->origin     = NULL;
-	self->origin_lsn = 0;
-	self->object     = NULL;
-	self->indexes    = NULL;
-	self->table      = NULL;
-	self->service    = service_allocate();
-	self->writer     = writer_allocate();
-	self->db         = db;
+	self->origin       = NULL;
+	self->origin_lsn   = 0;
+	self->object       = NULL;
+	self->indexes      = NULL;
+	self->writer       = writer_allocate();
+	self->table        = NULL;
+	self->service_file = service_file_allocate();
+	self->service      = service;
 	id_init(&self->id_origin);
 	id_init(&self->id_ram);
 	id_init(&self->id_pending);
@@ -280,7 +280,7 @@ flush_init(Flush* self, Db* db)
 void
 flush_free(Flush* self)
 {
-	service_free(self->service);
+	service_file_free(self->service_file);
 	writer_free(self->writer);
 	buf_free(&self->heap_index);
 }
@@ -294,7 +294,7 @@ flush_reset(Flush* self)
 	self->object     = NULL;
 	self->indexes    = NULL;
 	self->table      = NULL;
-	service_reset(self->service);
+	service_file_reset(self->service_file);
 	writer_reset(self->writer);
 	id_init(&self->id_origin);
 	id_init(&self->id_ram);
@@ -310,7 +310,7 @@ flush_run(Flush* self, Table* table, uint64_t id)
 	flush_reset(self);
 
 	// get catalog shared lock and partition service lock
-	ops_lock(&self->db->ops, &self->lock, id);
+	ops_lock(&self->service->ops, &self->lock, id);
 	defer(ops_unlock, &self->lock);
 
 	// find and rotate partition

@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Service Service;
+typedef struct ServiceFile ServiceFile;
 
-struct Service
+struct ServiceFile
 {
 	Id  id;
 	Buf input;
@@ -21,59 +21,59 @@ struct Service
 };
 
 static inline void
-service_free(Service* self)
+service_file_free(ServiceFile* self)
 {
 	buf_free(&self->input);
 	buf_free(&self->output);
 	am_free(self);
 }
 
-static inline Service*
-service_allocate(void)
+static inline ServiceFile*
+service_file_allocate(void)
 {
-	auto self = (Service*)am_malloc(sizeof(Service));
+	auto self = (ServiceFile*)am_malloc(sizeof(ServiceFile));
 	id_init(&self->id);
-	id_set_free(&self->id, (IdFree)service_free);
+	id_set_free(&self->id, (IdFree)service_file_free);
 	buf_init(&self->input);
 	buf_init(&self->output);
 	return self;
 }
 
 static inline void
-service_reset(Service* self)
+service_file_reset(ServiceFile* self)
 {
 	buf_reset(&self->input);
 	buf_reset(&self->output);
 }
 
 static inline void
-service_begin(Service* self)
+service_file_begin(ServiceFile* self)
 {
 	encode_array(&self->input);
 	encode_array(&self->output);
 }
 
 static inline void
-service_add_input(Service* self, Id* id)
+service_file_add_input(ServiceFile* self, Id* id)
 {
 	id_encode_path(id, id->type, &self->input);
 }
 
 static inline void
-service_add_output(Service* self, Id* id)
+service_file_add_output(ServiceFile* self, Id* id)
 {
 	id_encode_path(id, id->type, &self->output);
 }
 
 static inline void
-service_end(Service* self)
+service_file_end(ServiceFile* self)
 {
 	encode_array_end(&self->input);
 	encode_array_end(&self->output);
 }
 
 static inline void
-service_create(Service* self)
+service_file_create(ServiceFile* self)
 {
 	// prepare file data
 	auto buf = buf_create();
@@ -122,13 +122,13 @@ service_create(Service* self)
 }
 
 static inline void
-service_delete(Service* self)
+service_file_delete(ServiceFile* self)
 {
 	id_delete(&self->id, ID_SERVICE);
 }
 
 static inline void
-service_open(Service* self, Id* id)
+service_file_open(ServiceFile* self, Id* id)
 {
 	// open <id>.service file
 	File file;

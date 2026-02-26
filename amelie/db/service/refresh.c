@@ -21,7 +21,7 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_db.h>
+#include <amelie_service.h>
 
 static bool
 refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
@@ -112,12 +112,12 @@ refresh_complete_job(intptr_t* argv)
 	heap_free(shadow);
 
 	// create <id>.service.incoplete file
-	auto service = self->service;
-	service_begin(service);
-	service_add_input(service,  &self->id_origin);
-	service_add_output(service, &self->id_ram);
-	service_end(service);
-	service_create(service);
+	auto service = self->service_file;
+	service_file_begin(service);
+	service_file_add_input(service,  &self->id_origin);
+	service_file_add_output(service, &self->id_ram);
+	service_file_end(service);
+	service_file_create(service);
 
 	// sync incomplete heap file
 	if (opt_int_of(&config()->storage_sync))
@@ -132,7 +132,7 @@ refresh_complete_job(intptr_t* argv)
 	id_rename(&self->id_ram, ID_RAM_INCOMPLETE, ID_RAM);
 
 	// remove service file (complete)
-	service_delete(service);
+	service_file_delete(service);
 }
 
 static void
@@ -190,14 +190,14 @@ refresh_apply(Refresh* self)
 }
 
 void
-refresh_init(Refresh* self, Db* db)
+refresh_init(Refresh* self, Service* service)
 {
 	ops_lock_init(&self->lock);
-	self->origin     = NULL;
-	self->origin_lsn = 0;
-	self->table      = NULL;
-	self->service    = service_allocate();
-	self->db         = db;
+	self->origin       = NULL;
+	self->origin_lsn   = 0;
+	self->service_file = service_file_allocate();
+	self->service      = service;
+	self->table        = NULL;
 	id_init(&self->id_origin);
 	id_init(&self->id_ram);
 	file_init(&self->file_ram);
@@ -206,7 +206,7 @@ refresh_init(Refresh* self, Db* db)
 void
 refresh_free(Refresh* self)
 {
-	service_free(self->service);
+	service_file_free(self->service_file);
 }
 
 void
@@ -216,7 +216,7 @@ refresh_reset(Refresh* self)
 	self->origin     = NULL;
 	self->origin_lsn = 0;
 	self->table      = NULL;
-	service_reset(self->service);
+	service_file_reset(self->service_file);
 	id_init(&self->id_origin);
 	id_init(&self->id_ram);
 	file_close(&self->file_ram);
@@ -228,7 +228,7 @@ refresh_run(Refresh* self, Table* table, uint64_t id, Str* storage)
 	refresh_reset(self);
 
 	// get catalog shared lock and partition service lock
-	ops_lock(&self->db->ops, &self->lock, id);
+	ops_lock(&self->service->ops, &self->lock, id);
 	defer(ops_unlock, &self->lock);
 
 	// case 1: concurrent partition refresh

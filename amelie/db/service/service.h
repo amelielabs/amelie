@@ -1,0 +1,24 @@
+#pragma once
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+typedef struct Service Service;
+
+struct Service
+{
+	Ops      ops;
+	Catalog* catalog;
+	WalMgr*  wal_mgr;
+};
+
+void service_init(Service*, Catalog*, WalMgr*);
+void service_free(Service*);

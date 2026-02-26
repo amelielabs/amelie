@@ -26,7 +26,7 @@ ccheckpoint(Vm* self, Op* op)
 {
 	unused(self);
 	unused(op);
-	db_checkpoint(share()->db);
+	service_checkpoint(&share()->db->service);
 }
 
 void
@@ -194,7 +194,7 @@ cddl_create_index(Vm* self, Op* op)
 	unused(self);
 	auto pos = code_data_at(self->code_data, op->a);
 	auto flags = op->b;
-	db_create_index(share()->db, self->tr, pos, flags);
+	service_create_index(&share()->db->service, self->tr, pos, flags);
 }
 
 void

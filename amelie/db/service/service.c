@@ -1,4 +1,3 @@
-#pragma once
 
 //
 // amelie.
@@ -23,4 +22,17 @@
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_service.h>
-#include <amelie_db.h>
+
+void
+service_init(Service* self, Catalog* catalog, WalMgr* wal_mgr)
+{
+	self->catalog = catalog;
+	self->wal_mgr = wal_mgr;
+	ops_init(&self->ops);
+}
+
+void
+service_free(Service* self)
+{
+	ops_free(&self->ops);
+}

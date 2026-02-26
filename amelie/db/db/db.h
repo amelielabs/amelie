@@ -15,14 +15,16 @@ typedef struct Db Db;
 
 struct Db
 {
-	Ops         ops;
 	Catalog     catalog;
 	WalMgr      wal_mgr;
+	Service     service;
 	SnapshotMgr snapshot_mgr;
 };
 
-void db_init(Db*, CatalogIf*, void*, PartMgrIf*, void*);
-void db_free(Db*);
-void db_open(Db*, bool);
-void db_close(Db*);
-Buf* db_state(Db*);
+void      db_init(Db*, CatalogIf*, void*, PartMgrIf*, void*);
+void      db_free(Db*);
+void      db_open(Db*, bool);
+void      db_close(Db*);
+Snapshot* db_snapshot(Db*);
+void      db_snapshot_drop(Db*, Snapshot*);
+Buf*      db_state(Db*);
