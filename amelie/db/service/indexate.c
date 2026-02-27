@@ -50,12 +50,13 @@ indexate_match(Indexate* self, IndexConfig* config)
 			break;
 
 		// get partition service lock
-		service_lock(self->service, &self->lock, id);
+		service_lock(self->service, &self->lock, LOCK_EXCLUSIVE, id);
 
 		// find partition by id
 		auto origin_id = part_mgr_find(&table->part_mgr, id);
 		if (origin_id)
 		{
+			// (lock is kept till completion)
 			self->origin = part_of(origin_id);
 			return true;
 		}

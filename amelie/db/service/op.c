@@ -26,6 +26,7 @@
 void
 service_refresh(Service* self, Uuid* id_table, uint64_t id, Str* storage)
 {
+	// note: executed under shared catalog lock
 	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
 	Refresh refresh;
 	refresh_init(&refresh, self);
@@ -37,6 +38,7 @@ service_refresh(Service* self, Uuid* id_table, uint64_t id, Str* storage)
 void
 service_flush(Service* self, Uuid* id_table, uint64_t id)
 {
+	// note: executed under shared catalog lock
 	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
 	Flush flush;
 	flush_init(&flush, self);
@@ -133,6 +135,7 @@ service_gc(Service* self)
 void
 service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
 {
+	// note: no catalog lock
 	auto if_not_exists = ddl_if_not_exists(flags);
 
 	Str  name_db;

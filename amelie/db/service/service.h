@@ -24,9 +24,12 @@ void service_init(Service*, Catalog*, WalMgr*);
 void service_free(Service*);
 
 hot static inline void
-service_lock(Service* self, ServiceLock* lock, uint64_t id)
+service_lock(Service*     self,
+             ServiceLock* lock,
+             LockId       lock_type,
+             uint64_t     id)
 {
-	service_lock_mgr_lock(&self->lock_mgr, lock, id);
+	service_lock_mgr_lock(&self->lock_mgr, lock, lock_type, id);
 }
 
 hot static inline void

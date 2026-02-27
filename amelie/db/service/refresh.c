@@ -222,8 +222,8 @@ refresh_run(Refresh* self, Table* table, uint64_t id, Str* storage)
 {
 	refresh_reset(self);
 
-	// get catalog shared lock and partition service lock
-	service_lock(self->service, &self->lock, id);
+	// lock partition by id
+	service_lock(self->service, &self->lock, LOCK_EXCLUSIVE, id);
 	defer(service_unlock, &self->lock);
 
 	// case 1: concurrent partition refresh

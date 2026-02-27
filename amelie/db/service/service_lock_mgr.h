@@ -28,9 +28,8 @@ struct ServiceRel
 struct ServiceLock
 {
 	Lock*           lock;
-	Lock*           lock_catalog;
 	ServiceRel*     rel;
-	ServiceLockMgr* ops;
+	ServiceLockMgr* lock_mgr;
 };
 
 struct ServiceLockMgr
@@ -69,10 +68,9 @@ service_rel_set(ServiceRel* self, uint64_t id)
 static inline void
 service_lock_init(ServiceLock* self)
 {
-	self->lock         = NULL;
-	self->lock_catalog = NULL;
-	self->rel          = NULL;
-	self->ops          = NULL;
+	self->lock     = NULL;
+	self->rel      = NULL;
+	self->lock_mgr = NULL;
 }
 
 static inline void
@@ -125,11 +123,13 @@ service_lock_mgr_create(ServiceLockMgr* self, uint64_t id)
 }
 
 hot static inline void
-service_lock_mgr_lock(ServiceLockMgr* self, ServiceLock* lock, uint64_t id)
+service_lock_mgr_lock(ServiceLockMgr* self,
+                      ServiceLock*    lock,
+                      LockId          lock_type,
+                      uint64_t        id)
 {
 	// lock catalog (shared)
-	lock->ops          = self;
-	lock->lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
+	lock->lock_mgr = self;
 
 	// find existing or create a new relation for locking
 	spinlock_lock(&self->lock);
@@ -137,13 +137,13 @@ service_lock_mgr_lock(ServiceLockMgr* self, ServiceLock* lock, uint64_t id)
 	spinlock_unlock(&self->lock);
 
 	// lock relation
-	lock->lock = lock(&lock->rel->rel, LOCK_EXCLUSIVE);
+	lock->lock = lock(&lock->rel->rel, lock_type);
 }
 
 hot static inline void
 service_lock_mgr_unlock(ServiceLock* lock)
 {
-	auto self = lock->ops;
+	auto self = lock->lock_mgr;
 	if (! self)
 		return;
 
@@ -172,12 +172,5 @@ service_lock_mgr_unlock(ServiceLock* lock)
 		lock->rel = NULL;
 	}
 
-	// unlock catalog
-	if (lock->lock_catalog)
-	{
-		unlock(lock->lock_catalog);
-		lock->lock_catalog = NULL;
-	}
-
-	lock->ops = NULL;
+	lock->lock_mgr = NULL;
 }
