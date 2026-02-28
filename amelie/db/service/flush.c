@@ -56,7 +56,7 @@ flush_begin(Flush* self, Table* table, uint64_t id)
 
 	auto tier = tier_mgr_first(&table->tier_mgr);
 	volumes = &tier->config->volumes;
-	id_prepare(&self->id_branch, ID_BRANCH, volumes);
+	id_prepare(&self->id_branch, ID_OBJECT, volumes);
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -92,8 +92,8 @@ flush_job(intptr_t* argv)
 	     id->id,
 	     total);
 
-	// create <id>.branch.incomplete file
-	id_create(&self->id_branch, &self->file_branch, ID_BRANCH_INCOMPLETE);
+	// create <id>.object.incomplete file
+	id_create(&self->id_branch, &self->file_branch, ID_OBJECT_INCOMPLETE);
 
 	// create heap index
 	auto keys = index_keys(part_primary(self->origin));
@@ -121,7 +121,7 @@ flush_job(intptr_t* argv)
 	writer_stop(writer);
 
 	total = (double)self->file_branch.size / 1024 / 1024;
-	info("flush: %s/%s/%05" PRIu64 ".branch (%.2f MiB)",
+	info("flush: %s/%s/%05" PRIu64 ".object (%.2f MiB)",
 	     id->volume->storage->config->name.pos,
 	     tier->config->name.pos,
 	     id->id,
@@ -129,7 +129,7 @@ flush_job(intptr_t* argv)
 
 	// create and open object
 	self->object = object_allocate(&self->id_branch);
-	object_open(self->object, ID_BRANCH_INCOMPLETE, true);
+	object_open(self->object, ID_OBJECT_INCOMPLETE, true);
 }
 
 static void
@@ -185,7 +185,7 @@ flush_complete_job(intptr_t* argv)
 	file_close(&self->file_branch);
 
 	// rename
-	id_rename(&self->id_branch, ID_BRANCH_INCOMPLETE, ID_BRANCH);
+	id_rename(&self->id_branch, ID_OBJECT_INCOMPLETE, ID_OBJECT);
 
 	// remove service file (complete)
 	service_file_delete(service);

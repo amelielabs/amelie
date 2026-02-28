@@ -44,8 +44,11 @@ cursor_lookup(PartMgr*     self,
 	errdefer(iterator_close, obj_it);
 
 	// check branches
+
+	// todo:
+
 	auto tier = tier_mgr_first(tier_mgr);
-	list_foreach(&tier->list_branch)
+	list_foreach(&tier->list)
 	{
 		auto obj = list_at(Object, id.link);
 		object_iterator_reset(obj_it);
@@ -85,8 +88,10 @@ cursor_scan(PartMgr*     self,
 	errdefer(merge_iterator_free, merge_it);
 	merge_iterator_add(merge_it, it);
 
+	// todo:
+
 	auto tier = tier_mgr_first(tier_mgr);
-	list_foreach(&tier->list_branch)
+	list_foreach(&tier->list)
 	{
 		auto obj = list_at(Object, id.link);
 		auto obj_it = object_iterator_allocate();
@@ -128,8 +133,10 @@ cursor_scan_cross(PartMgr*     self,
 	errdefer(merge_iterator_free, merge_it);
 	merge_iterator_add(merge_it, it);
 
+	// todo:
+
 	auto tier = tier_mgr_first(tier_mgr);
-	list_foreach(&tier->list_branch)
+	list_foreach(&tier->list)
 	{
 		auto obj = list_at(Object, id.link);
 		auto obj_it = object_iterator_allocate();

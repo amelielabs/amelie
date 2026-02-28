@@ -173,11 +173,6 @@ tier_mgr_list(TierMgr* self, Str* ref, int flags)
 			auto obj = list_at(Object, id.link);
 			object_status(obj, buf, flags, &tier->config->name);
 		}
-		list_foreach(&tier->list_branch)
-		{
-			auto obj = list_at(Object, id.link);
-			object_status(obj, buf, flags, &tier->config->name);
-		}
 	}
 	encode_array_end(buf);
 	return buf;

@@ -97,15 +97,12 @@ tier_recover_volume(Tier* self, Volume* volume)
 		switch (state) {
 		case ID_OBJECT_INCOMPLETE:
 		case ID_OBJECT_SNAPSHOT:
-		case ID_BRANCH_INCOMPLETE:
-		case ID_BRANCH_SNAPSHOT:
 		{
 			// remove incomplete and snapshot files
 			id_delete(&id, state);
 			break;
 		}
 		case ID_OBJECT:
-		case ID_BRANCH:
 		{
 			auto obj = object_allocate(&id);
 			tier_add(self, &obj->id);
@@ -137,19 +134,17 @@ tier_recover(Tier* self, StorageMgr* storage_mgr)
 	{
 		auto obj = list_at(Object, id.link);
 		object_open(obj, ID_OBJECT, true);
-	}
 
-	// open branches and attach them to the parent objects
-	//
-	// branches are ordered by id (highest first)
-	list_foreach(&self->list_branch)
-	{
-		auto obj = list_at(Object, id.link);
-		object_open(obj, ID_BRANCH, true);
-		auto parent = tier_find(self, obj->meta.parent);
-		if (! parent)
-			error("tier: parent object %" PRIu64 " not found",
-			      obj->meta.parent);
-		object_attach(object_of(parent), obj);
+		// branch
+		if (obj->meta.parent != 0)
+		{
+			auto parent = tier_find(self, obj->meta.parent);
+			if (! parent)
+				error("tier: parent object %" PRIu64 " not found",
+				      obj->meta.parent);
+
+			// branches are ordered by id (highest first)
+			object_attach(object_of(parent), obj);
+		}
 	}
 }

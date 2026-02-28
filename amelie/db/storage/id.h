@@ -23,10 +23,7 @@ enum
 	ID_PART_SNAPSHOT,
 	ID_OBJECT,
 	ID_OBJECT_INCOMPLETE,
-	ID_OBJECT_SNAPSHOT,
-	ID_BRANCH,
-	ID_BRANCH_INCOMPLETE,
-	ID_BRANCH_SNAPSHOT
+	ID_OBJECT_SNAPSHOT
 };
 
 typedef void (*IdFree)(Id*);
@@ -94,9 +91,6 @@ id_of(const char* name, int64_t* id)
 	// <id>.object
 	// <id>.object.incomplete
 	// <id>.object.snapshot
-	// <id>.branch
-	// <id>.branch.incomplete
-	// <id>.branch.snapshot
 	*id = 0;
 	while (*name && *name != '.')
 	{
@@ -131,15 +125,6 @@ id_of(const char* name, int64_t* id)
 	if (! strcmp(name, ".object"))
 		state = ID_OBJECT;
 	else
-	if (! strcmp(name, ".branch.incomplete"))
-		state = ID_BRANCH_INCOMPLETE;
-	else
-	if (! strcmp(name, ".branch.snapshot"))
-		state = ID_BRANCH_SNAPSHOT;
-	else
-	if (! strcmp(name, ".branch"))
-		state = ID_BRANCH;
-	else
 		state = -1;
 	return state;
 }
@@ -156,9 +141,6 @@ id_extension_of(int state)
 	case ID_OBJECT:             return ".object";
 	case ID_OBJECT_INCOMPLETE:  return ".object.incomplete";
 	case ID_OBJECT_SNAPSHOT:    return ".object.snapshot";
-	case ID_BRANCH:             return ".branch";
-	case ID_BRANCH_INCOMPLETE:  return ".branch.incomplete";
-	case ID_BRANCH_SNAPSHOT:    return ".branch.snapshot";
 	}
 	abort();
 	return NULL;
@@ -246,7 +228,6 @@ id_snapshot_of(int state)
 	switch (state) {
 	case ID_PART:   return ID_PART_SNAPSHOT;
 	case ID_OBJECT: return ID_OBJECT_SNAPSHOT;
-	case ID_BRANCH: return ID_BRANCH_SNAPSHOT;
 	default:
 		abort();
 	}
