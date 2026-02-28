@@ -54,27 +54,15 @@ tier_empty(Tier* self)
 static inline void
 tier_add(Tier* self, Id* id)
 {
-	switch (id->type) {
-	case ID_OBJECT:
-		list_append(&self->list, &id->link);
-		self->list_count++;
-		break;
-	default:
-		abort();
-	}
+	list_append(&self->list, &id->link);
+	self->list_count++;
 	volume_ref(id->volume);
 }
 
 static inline void
 tier_remove(Tier* self, Id* id)
 {
-	switch (id->type) {
-	case ID_OBJECT:
-		self->list_count--;
-		break;
-	default:
-		abort();
-	}
+	self->list_count--;
 	list_unlink(&id->link);
 	volume_unref(id->volume);
 }

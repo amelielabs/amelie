@@ -61,7 +61,7 @@ reader_execute(Reader* self, MetaRegion* meta_region)
 	encoder_reset(encoder);
 
 	// read region data from file
-	file_pread_buf(&object->file, &self->buf_read, meta_region->size,
+	file_pread_buf(&object->file->file, &self->buf_read, meta_region->size,
 	               meta_region->offset);
 
 	// decrypt/decompress or read raw

@@ -84,7 +84,10 @@ writer_stop_region(Writer* self)
 }
 
 void
-writer_start(Writer* self, File* file, Storage* storage, int region_size)
+writer_start(Writer*  self, File* file, Storage* storage,
+             int      region_size,
+             uint64_t id,
+             uint64_t id_parent)
 {
 	self->file        = file;
 	self->storage     = storage;
@@ -97,6 +100,11 @@ writer_start(Writer* self, File* file, Storage* storage, int region_size)
 	// start new meta data
 	meta_writer_reset(&self->meta_writer);
 	meta_writer_start(&self->meta_writer, opt_int_of(&config()->storage_crc));
+
+	// set id
+	auto meta = &self->meta_writer.meta;
+	meta->id = id;
+	meta->id_parent = id_parent;
 }
 
 void

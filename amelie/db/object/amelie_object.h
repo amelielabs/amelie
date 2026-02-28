@@ -28,6 +28,7 @@
 #include "object/writer.h"
 
 // object
+#include "object/object_file.h"
 #include "object/object.h"
 
 // object iterator

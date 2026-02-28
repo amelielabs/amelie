@@ -89,7 +89,6 @@ meta_writer_stop(MetaWriter* self)
 	meta->crc_data          = 0;
 	meta->magic             = META_MAGIC;
 	meta->version           = META_VERSION;
-	meta->parent            = 0;
 	meta->size_origin       = meta->size;
 	meta->size              = encoder_iov(encoder)->iov_len;
 	meta->size_total        =

@@ -23,33 +23,70 @@ tier_create(Volume* volume)
 	// create volume directory
 	volume_mkdir(volume);
 
-	// create empty object
-
 	// create <id>.object.incomplete file
 	Id id;
 	id_init(&id);
 	id.id     = state_psn_next();
 	id.type   = ID_OBJECT;
 	id.volume = volume;
+	auto file = object_file_allocate(&id);
+	errdefer(object_file_free, file);
+	object_file_create(file, ID_OBJECT_INCOMPLETE);
 
-	File file;
-	file_init(&file);
-	defer(file_close, &file);
-	id_create(&id, &file, ID_OBJECT_INCOMPLETE);
-
+	// create empty object
 	auto writer = writer_allocate();
 	defer(writer_free, writer);
-	writer_start(writer, &file, volume->storage, 0);
+	writer_start(writer, &file->file, volume->storage, 0, id.id, 0);
 	writer_stop(writer);
 
 	// sync incomplete file
 	if (opt_int_of(&config()->storage_sync))
-		file_sync(&file);
-
-	file_close(&file);
+		file_sync(&file->file);
 
 	// rename
-	id_rename(&id, ID_OBJECT_INCOMPLETE, ID_OBJECT);
+	object_file_rename(file, ID_OBJECT_INCOMPLETE, ID_OBJECT);
+	object_file_unref(file, false);
+}
+
+static void
+tier_recover_open(Tier* self, Id* id, Volume* volume)
+{
+	auto file = object_file_allocate(id);
+	errdefer(object_file_free, file);
+
+	// <id>.object
+	object_file_open(file, ID_OBJECT);
+
+	// restore object
+	ssize_t offset = file->file.size;
+	while (offset > 0)
+	{
+		auto object = object_allocate(file);
+		errdefer(object_free, object);
+
+		// open object
+		object_file_read(file, &object->meta, &object->meta_data, offset, true);
+
+		// set object id
+		Id id;
+		id_init(&id);
+		id.id     = object->meta.id;
+		id.type   = ID_OBJECT;
+		id.volume = volume;
+		id_copy(&object->id, &id);
+
+		state_psn_follow(object->meta.id);
+		state_psn_follow(object->meta.id_parent);
+
+		// add to the tier
+		tier_add(self, &object->id);
+
+		// skip to the next object
+		offset -= object->meta.size_total;
+	}
+
+	if (offset != 0)
+		error("tier: object file %" PRIu64 " is invalid", id->id);
 }
 
 static bool
@@ -97,17 +134,13 @@ tier_recover_volume(Tier* self, Volume* volume)
 		switch (state) {
 		case ID_OBJECT_INCOMPLETE:
 		case ID_OBJECT_SNAPSHOT:
-		{
 			// remove incomplete and snapshot files
 			id_delete(&id, state);
 			break;
-		}
 		case ID_OBJECT:
-		{
-			auto obj = object_allocate(&id);
-			tier_add(self, &obj->id);
+			// restore objects
+			tier_recover_open(self, &id, volume);
 			break;
-		}
 		default:
 			info("tier: unexpected file: '%s%s'", path, entry->d_name);
 			continue;
@@ -129,22 +162,20 @@ tier_recover(Tier* self, StorageMgr* storage_mgr)
 		tier_recover_volume(self, volume);
 	}
 
-	// open files objects
+	// find branches
 	list_foreach(&self->list)
 	{
 		auto obj = list_at(Object, id.link);
-		object_open(obj, ID_OBJECT, true);
+		if (obj->meta.id_parent == 0)
+			continue;
 
 		// branch
-		if (obj->meta.parent != 0)
-		{
-			auto parent = tier_find(self, obj->meta.parent);
-			if (! parent)
-				error("tier: parent object %" PRIu64 " not found",
-				      obj->meta.parent);
+		auto parent = tier_find(self, obj->meta.id_parent);
+		if (! parent)
+			error("tier: parent object %" PRIu64 " not found",
+			      obj->meta.id_parent);
 
-			// branches are ordered by id (highest first)
-			object_attach(object_of(parent), obj);
-		}
+		// branches are ordered by id (highest first)
+		object_attach(object_of(parent), obj);
 	}
 }
