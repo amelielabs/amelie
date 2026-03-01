@@ -21,18 +21,18 @@ struct TierMgr
 	StorageMgr* storage_mgr;
 };
 
-void  tier_mgr_init(TierMgr*, StorageMgr*, Keys*);
-void  tier_mgr_free(TierMgr*);
-void  tier_mgr_open(TierMgr*, List*);
-void  tier_mgr_drop(TierMgr*);
-void  tier_mgr_truncate(TierMgr*);
-Tier* tier_mgr_create(TierMgr*, TierConfig*);
-void  tier_mgr_remove(TierMgr*, Tier*);
-void  tier_mgr_remove_by(TierMgr*, Str*);
-Tier* tier_mgr_find(TierMgr*, Str*);
-Tier* tier_mgr_find_by(TierMgr*, Volume*);
-Id*   tier_mgr_find_object(TierMgr*, Tier**, uint64_t);
-Buf*  tier_mgr_list(TierMgr*, Str*, int);
+void    tier_mgr_init(TierMgr*, StorageMgr*, Keys*);
+void    tier_mgr_free(TierMgr*);
+void    tier_mgr_open(TierMgr*, List*);
+void    tier_mgr_drop(TierMgr*);
+void    tier_mgr_truncate(TierMgr*);
+Tier*   tier_mgr_create(TierMgr*, TierConfig*);
+void    tier_mgr_remove(TierMgr*, Tier*);
+void    tier_mgr_remove_by(TierMgr*, Str*);
+Tier*   tier_mgr_find(TierMgr*, Str*);
+Tier*   tier_mgr_find_by(TierMgr*, Volume*);
+Object* tier_mgr_find_object(TierMgr*, Tier**, uint64_t);
+Buf*    tier_mgr_list(TierMgr*, Str*, int);
 
 static inline Tier*
 tier_mgr_first(TierMgr* self)

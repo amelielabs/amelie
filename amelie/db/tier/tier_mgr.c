@@ -45,7 +45,7 @@ tier_mgr_open(TierMgr* self, List* tiers)
 	{
 		auto config = list_at(TierConfig, link);
 		auto tier = tier_mgr_create(self, config);
-		tier_recover(tier, self->storage_mgr);
+		tier_open(tier, self->storage_mgr);
 	}
 }
 
@@ -124,18 +124,18 @@ tier_mgr_find_by(TierMgr* self, Volume* volume)
 	return NULL;
 }
 
-Id*
+Object*
 tier_mgr_find_object(TierMgr* self, Tier** ref, uint64_t psn)
 {
 	list_foreach(&self->list)
 	{
 		auto tier = list_at(Tier, link);
-		auto id = tier_find(tier, psn);
-		if (id)
+		auto object = tier_find(tier, psn);
+		if (object)
 		{
 			if (ref)
 				*ref = tier;
-			return id;
+			return object;
 		}
 	}
 	return NULL;
@@ -155,11 +155,11 @@ tier_mgr_list(TierMgr* self, Str* ref, int flags)
 			error("invalid object id");
 
 		Tier* tier = NULL;
-		auto id = tier_mgr_find_object(self, &tier, psn);
-		if (! id)
+		auto object = tier_mgr_find_object(self, &tier, psn);
+		if (! object)
 			encode_null(buf);
 		else
-			object_status(object_of(id), buf, flags, &tier->config->name);
+			object_status(object, buf, flags, &tier->config->name);
 		return buf;
 	}
 
@@ -170,8 +170,8 @@ tier_mgr_list(TierMgr* self, Str* ref, int flags)
 		auto tier = list_at(Tier, link);
 		list_foreach(&tier->list)
 		{
-			auto obj = list_at(Object, id.link);
-			object_status(obj, buf, flags, &tier->config->name);
+			auto object = list_at(Object, link);
+			object_status(object, buf, flags, &tier->config->name);
 		}
 	}
 	encode_array_end(buf);
