@@ -92,8 +92,8 @@ table_tier_create(Table*      self,
 	// update table
 	log_relation(&tr->log, &create_if, tier, &self->rel);
 
-	// resolve storages and recover tiers
-	tier_recover(tier, self->tier_mgr.storage_mgr);
+	// resolve storages and recover objects
+	tier_open(tier, self->tier_mgr.storage_mgr);
 
 	// create volumes directories
 	volume_mgr_mkdir(&config_copy->volumes);
@@ -308,6 +308,7 @@ storage_drop_if_commit(Log* self, LogOp* op)
 
 	auto volume = volume_mgr_find(&tier->config->volumes, &storage_name);
 	assert(volume);
+	tier_truncate(tier);
 	error_catch (
 		volume_rmdir(volume);
 	);
@@ -365,6 +366,7 @@ table_tier_storage_drop(Table* self,
 		return false;
 	}
 
+#if 0
 	// ensure volume has no deps
 	if (volume->refs > 0)
 		error("table '%.*s' tier '%.*s' storage '%.*s': is not empty",
@@ -374,6 +376,7 @@ table_tier_storage_drop(Table* self,
 		      str_of(name),
 		      str_size(name_storage),
 		      str_of(name_storage));
+#endif
 
 	// update table
 	log_relation(&tr->log, &storage_drop_if, tier, &self->rel);

@@ -50,7 +50,7 @@ catalog_snapshot(Catalog* self, Buf* data)
 	encode_raw(data, "files", 5);
 	encode_array(data);
 
-	// create partitions files snapshots (hard links)
+	// create snapshot files (hard links)
 	list_foreach(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
@@ -60,10 +60,9 @@ catalog_snapshot(Catalog* self, Buf* data)
 		// partitions
 		list_foreach(&table->part_mgr.list)
 		{
-			auto id = list_at(Id, link);
-			auto id_snap = id_snapshot_of(id->type);
-			id_snapshot(id, id->type, id_snap);
-			id_encode(id, id_snap, data);
+			auto part = list_at(Part, link);
+			id_snapshot(&part->id, STATE_COMPLETE, STATE_SNAPSHOT);
+			id_encode(&part->id, STATE_SNAPSHOT, data);
 		}
 
 		// objects
@@ -72,10 +71,9 @@ catalog_snapshot(Catalog* self, Buf* data)
 			auto tier = list_at(Tier, link);
 			list_foreach(&tier->list)
 			{
-				auto id = list_at(Id, link);
-				auto id_snap = id_snapshot_of(id->type);
-				id_snapshot(id, id->type, id_snap);
-				id_encode(id, id_snap, data);
+				auto object = list_at(Object, link);
+				id_snapshot(&object->id, STATE_COMPLETE, STATE_SNAPSHOT);
+				id_encode(&object->id, STATE_SNAPSHOT, data);
 			}
 		}
 	}
