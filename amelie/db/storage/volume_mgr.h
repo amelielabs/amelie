@@ -144,10 +144,9 @@ volume_mgr_next(VolumeMgr* self)
 		auto ref = list_at(Volume, link);
 		if (ref->pause)
 			continue;
-		if (!volume || atomic_u32_of(&ref->pins) < atomic_u32_of(&volume->pins))
+		if (!volume || ref->list_count < volume->list_count)
 			volume = ref;
 	}
-	volume_pin(volume);
 	return volume;
 }
 

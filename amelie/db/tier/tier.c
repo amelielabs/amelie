@@ -45,8 +45,8 @@ tier_add(Tier* self, Object* object)
 {
 	list_append(&self->list, &object->link);
 	self->list_count++;
+	volume_add(object->id.volume, &object->link_volume);
 	mapping_add(&self->mapping, object);
-	volume_pin(object->id.volume);
 }
 
 void
@@ -54,6 +54,7 @@ tier_remove(Tier* self, Object* object)
 {
 	self->list_count--;
 	list_unlink(&object->link);
+	volume_remove(object->id.volume, &object->link_volume);
 	mapping_remove(&self->mapping, object);
 }
 

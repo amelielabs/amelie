@@ -366,9 +366,8 @@ table_tier_storage_drop(Table* self,
 		return false;
 	}
 
-#if 0
 	// ensure volume has no deps
-	if (volume->refs > 0)
+	if (volume->list_count > 0)
 		error("table '%.*s' tier '%.*s' storage '%.*s': is not empty",
 		      str_size(&self->config->name),
 		      str_of(&self->config->name),
@@ -376,7 +375,6 @@ table_tier_storage_drop(Table* self,
 		      str_of(name),
 		      str_size(name_storage),
 		      str_of(name_storage));
-#endif
 
 	// update table
 	log_relation(&tr->log, &storage_drop_if, tier, &self->rel);

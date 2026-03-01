@@ -21,6 +21,7 @@ struct Object
 	Branch*    root;
 	File       file;
 	RbtreeNode link_mapping;
+	List       link_volume;
 	List       link;
 };
 

@@ -26,6 +26,7 @@ object_allocate(Id* id)
 	self->root           = NULL;
 	file_init(&self->file);
 	rbtree_init_node(&self->link_mapping);
+	list_init(&self->link_volume);
 	list_init(&self->link);
 	return self;
 }

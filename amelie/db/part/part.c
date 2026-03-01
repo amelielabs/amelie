@@ -31,6 +31,7 @@ part_allocate(Id* id, PartArg* arg)
 	self->heap_shadow   = NULL;
 	self->arg           = arg;
 	track_init(&self->track);
+	list_init(&self->link_volume);
 	list_init(&self->link);
 	return self;
 }

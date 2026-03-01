@@ -15,12 +15,13 @@ typedef struct Volume Volume;
 
 struct Volume
 {
-	Str        name;
-	Uuid       id;
-	Storage*   storage;
-	bool       pause;
-	atomic_u32 pins;
-	List       link;
+	Str      name;
+	Uuid     id;
+	Storage* storage;
+	bool     pause;
+	List     list;
+	int      list_count;
+	List     link;
 };
 
 static inline Volume*
@@ -29,7 +30,8 @@ volume_allocate(void)
 	auto self = (Volume*)am_malloc(sizeof(Volume));
 	self->storage = NULL;
 	self->pause   = false;
-	self->pins    = 0;
+	self->list_count = 0;
+	list_init(&self->list);
 	uuid_init(&self->id);
 	str_init(&self->name);
 	list_init(&self->link);
@@ -39,14 +41,24 @@ volume_allocate(void)
 static inline void
 volume_free(Volume* self)
 {
+	assert(! self->list_count);
 	str_free(&self->name);
 	am_free(self);
 }
 
 static inline void
-volume_pin(Volume* self)
+volume_add(Volume* self, List* link)
 {
-	atomic_u32_of(&self->pins);
+	list_append(&self->list, link);
+	self->list_count++;
+}
+
+static inline void
+volume_remove(Volume* self, List* link)
+{
+	list_unlink(link);
+	self->list_count--;
+	assert(self->list_count >= 0);
 }
 
 static inline void

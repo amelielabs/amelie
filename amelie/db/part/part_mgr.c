@@ -129,7 +129,7 @@ part_mgr_add(PartMgr* self, Part* part)
 {
 	list_append(&self->list, &part->link);
 	self->list_count++;
-	volume_pin(part->id.volume);
+	volume_add(part->id.volume, &part->link_volume);
 }
 
 void
@@ -137,6 +137,7 @@ part_mgr_remove(PartMgr* self, Part* part)
 {
 	list_unlink(&part->link);
 	self->list_count--;
+	volume_remove(part->id.volume, &part->link_volume);
 }
 
 Part*
