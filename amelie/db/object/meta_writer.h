@@ -75,7 +75,7 @@ meta_writer_start(MetaWriter* self, bool crc)
 static inline void
 meta_writer_stop(MetaWriter* self)
 {
-	// [[offsets][meta_regions]] [meta]
+	// [meta] [regions] [[offsets][meta_regions]]
 	auto meta = &self->meta;
 
 	// compress meta data (without header)
@@ -160,7 +160,7 @@ meta_writer_total(MetaWriter* self)
 {
 	if (unlikely(! meta_writer_started(self)))
 		return 0;
-	// total compressed size (actual file size)
+	// total compressed size (actual stored size)
 	auto meta = &self->meta;
 	return meta->size_regions + meta->size + sizeof(Meta);
 }

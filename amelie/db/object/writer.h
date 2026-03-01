@@ -27,7 +27,7 @@ Writer*
 writer_allocate(void);
 void writer_free(Writer*);
 void writer_reset(Writer*);
-void writer_start(Writer*, File*, Storage*, int, uint64_t, uint64_t);
+void writer_start(Writer*, File*, Storage*, int);
 void writer_stop(Writer*);
 void writer_add(Writer*, Row*);
 

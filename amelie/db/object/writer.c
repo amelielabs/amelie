@@ -84,10 +84,8 @@ writer_stop_region(Writer* self)
 }
 
 void
-writer_start(Writer*  self, File* file, Storage* storage,
-             int      region_size,
-             uint64_t id,
-             uint64_t id_parent)
+writer_start(Writer* self, File* file, Storage* storage,
+             int     region_size)
 {
 	self->file        = file;
 	self->storage     = storage;
@@ -101,10 +99,10 @@ writer_start(Writer*  self, File* file, Storage* storage,
 	meta_writer_reset(&self->meta_writer);
 	meta_writer_start(&self->meta_writer, opt_int_of(&config()->storage_crc));
 
-	// set id
-	auto meta = &self->meta_writer.meta;
-	meta->id = id;
-	meta->id_parent = id_parent;
+	// [[meta] [regions] [meta_data]], ...
+
+	// write empty meta header (reserve)
+	file_write(self->file, &self->meta_writer.meta, sizeof(Meta));
 }
 
 void
@@ -118,14 +116,16 @@ writer_stop(Writer* self)
 		writer_stop_region(self);
 	meta_writer_stop(&self->meta_writer);
 
-	// write meta
+	// write meta data
 	auto encoder = &self->meta_writer.encoder;
 	auto iov = encoder_iov(encoder);
 	auto iov_count = encoder_iov_count(encoder);
 	file_writev(self->file, iov, iov_count);
 
-	// write meta footer
-	file_write(self->file, &self->meta_writer.meta, sizeof(Meta));
+	// write meta (update in-place)
+	auto meta   = &self->meta_writer.meta;
+	auto offset = self->file->size - meta->size_total;
+	file_pwrite(self->file, meta, sizeof(Meta), offset);
 }
 
 void

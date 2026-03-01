@@ -27,13 +27,13 @@
 // writer
 #include "object/writer.h"
 
-// object
-#include "object/object_file.h"
-#include "object/object.h"
+// branch
+#include "object/branch.h"
 
-// object iterator
+// branch iterator
 #include "object/reader.h"
-#include "object/object_iterator.h"
+#include "object/branch_iterator.h"
 
-// mapping
+// object
+#include "object/object.h"
 #include "object/mapping.h"
