@@ -34,34 +34,35 @@ cursor_lookup(PartMgr*     self,
 	if (iterator_open(it, key))
 		return it;
 
-	// single tier (heap only)
+	// no tiering (heap only)
 	auto tier_mgr = self->tier_mgr;
-	if (tier_mgr_empty(tier_mgr))
+	if (! tier_mgr_created(tier_mgr))
 		return it;
 
 	// multi-tiering
-	auto obj_it = object_iterator_allocate();
-	errdefer(iterator_close, obj_it);
+	auto branch_it = branch_iterator_allocate();
+	errdefer(branch_iterator_free, branch_it);
 
-	// check branches
-
-	// todo:
-
-	auto tier = tier_mgr_first(tier_mgr);
-	list_foreach(&tier->list)
+	list_foreach(&tier_mgr->list)
 	{
-		auto obj = list_at(Object, id.link);
-		object_iterator_reset(obj_it);
-		if (object_iterator_open(obj_it, &config->keys, obj, key))
+		auto tier = list_at(Tier, link);
+		auto object = mapping_map(&tier->mapping, key);
+
+		// iterate branches (from hot to cold)
+		auto branch = object->branches;
+		while (branch)
 		{
-			iterator_close(it);
-			return &obj_it->it;
+			branch_iterator_reset(branch_it);
+			if (branch_iterator_open(branch_it, &config->keys, branch, key))
+			{
+				iterator_close(it);
+				return &branch_it->it;
+			}
 		}
 	}
 
-	// todo: other tiers (include object mapping)
-
-	object_iterator_free(obj_it);
+	// not found
+	branch_iterator_free(branch_it);
 	return it;
 }
 
@@ -75,31 +76,36 @@ cursor_scan(PartMgr*     self,
 	auto it = index_iterator(index);
 	iterator_open(it, key);
 
-	// single tier (heap only)
+	// no tiering (heap only)
 	auto tier_mgr = self->tier_mgr;
-	if (tier_mgr_empty(tier_mgr))
+	if (! tier_mgr_created(tier_mgr))
 		return it;
 
 	// todo: different path for hash
 	assert(config->type == INDEX_TREE);
 
-	// merge heap with branches
+	// merge heap with objects
 	auto merge_it = merge_iterator_allocate(true);
 	errdefer(merge_iterator_free, merge_it);
 	merge_iterator_add(merge_it, it);
 
-	// todo:
-
-	auto tier = tier_mgr_first(tier_mgr);
-	list_foreach(&tier->list)
+	list_foreach(&tier_mgr->list)
 	{
-		auto obj = list_at(Object, id.link);
-		auto obj_it = object_iterator_allocate();
-		merge_iterator_add(merge_it, &obj_it->it);
-		object_iterator_open(obj_it, &config->keys, obj, key);
-	}
+		auto tier = list_at(Tier, link);
 
-	// todo: other tiers (include object mapping)
+		// todo: switch to tier iterator
+		// match object
+		auto object = mapping_map(&tier->mapping, key);
+
+		// add branches (from hot to cold)
+		auto branch = object->branches;
+		while (branch)
+		{
+			auto branch_it = branch_iterator_allocate();
+			merge_iterator_add(merge_it, &branch_it->it);
+			branch_iterator_open(branch_it, &config->keys, branch, key);
+		}
+	}
 
 	merge_iterator_open(merge_it, &config->keys);
 	return &merge_it->it;
@@ -114,37 +120,42 @@ cursor_scan_cross(PartMgr*     self,
 	Iterator* it = NULL;
 	list_foreach(&self->list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		auto index = part_index_find(part, &config->name, true);
 		it = index_iterator_merge(index, it);
 	}
 	iterator_open(it, key);
 
-	// single tier (heap only)
+	// no tiering (heap only)
 	auto tier_mgr = self->tier_mgr;
-	if (tier_mgr_empty(tier_mgr))
+	if (! tier_mgr_created(tier_mgr))
 		return it;
 
 	// todo: different path for hash
 	assert(config->type == INDEX_TREE);
 
-	// merge all partitions heaps with branches
+	// merge all partitions heaps with objects
 	auto merge_it = merge_iterator_allocate(true);
 	errdefer(merge_iterator_free, merge_it);
 	merge_iterator_add(merge_it, it);
 
-	// todo:
-
-	auto tier = tier_mgr_first(tier_mgr);
-	list_foreach(&tier->list)
+	list_foreach(&tier_mgr->list)
 	{
-		auto obj = list_at(Object, id.link);
-		auto obj_it = object_iterator_allocate();
-		merge_iterator_add(merge_it, &obj_it->it);
-		object_iterator_open(obj_it, &config->keys, obj, key);
-	}
+		auto tier = list_at(Tier, link);
 
-	// todo: other tiers (include object mapping)
+		// todo: switch to tier iterator
+		// match object
+		auto object = mapping_map(&tier->mapping, key);
+
+		// add branches (from hot to cold)
+		auto branch = object->branches;
+		while (branch)
+		{
+			auto branch_it = branch_iterator_allocate();
+			merge_iterator_add(merge_it, &branch_it->it);
+			branch_iterator_open(branch_it, &config->keys, branch, key);
+		}
+	}
 
 	merge_iterator_open(merge_it, &config->keys);
 	return &merge_it->it;

@@ -44,8 +44,8 @@ part_mgr_free(PartMgr* self)
 {
 	list_foreach_safe(&self->list)
 	{
-		auto id = list_at(Id, link);
-		id_free(id);
+		auto part = list_at(Part, link);
+		part_free(part);
 	}
 	part_mapping_free(&self->mapping);
 }
@@ -59,7 +59,7 @@ part_mgr_open(PartMgr* self, List* indexes)
 	// create indexes
 	list_foreach(&self->list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		list_foreach(indexes)
 		{
 			auto config = list_at(IndexConfig, link);
@@ -73,7 +73,7 @@ part_mgr_open(PartMgr* self, List* indexes)
 	// map hash partitions
 	list_foreach(&self->list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		part_mapping_add(&self->mapping, part);
 
 		// update metrics
@@ -101,10 +101,10 @@ part_mgr_drop(PartMgr* self)
 
 	list_foreach_safe(&self->list)
 	{
-		auto id = list_at(Id, link);
-		part_mgr_remove(self, id);
-		id_delete(id, id->type);
-		id_free(id);
+		auto part = list_at(Part, link);
+		part_mgr_remove(self, part);
+		id_delete(&part->id, STATE_COMPLETE);
+		part_free(part);
 	}
 	assert(! self->list_count);
 	list_init(&self->list);
@@ -119,35 +119,34 @@ part_mgr_truncate(PartMgr* self)
 {
 	list_foreach(&self->list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		part_truncate(part);
 	}
 }
 
 void
-part_mgr_add(PartMgr* self, Id* id)
+part_mgr_add(PartMgr* self, Part* part)
 {
-	list_append(&self->list, &id->link);
+	list_append(&self->list, &part->link);
 	self->list_count++;
-	volume_ref(id->volume);
+	volume_pin(part->id.volume);
 }
 
 void
-part_mgr_remove(PartMgr* self, Id* id)
+part_mgr_remove(PartMgr* self, Part* part)
 {
-	list_unlink(&id->link);
+	list_unlink(&part->link);
 	self->list_count--;
-	volume_unref(id->volume);
 }
 
-Id*
+Part*
 part_mgr_find(PartMgr* self, uint64_t psn)
 {
 	list_foreach_safe(&self->list)
 	{
-		auto id = list_at(Id, link);
-		if (id->id == psn)
-			return id;
+		auto part = list_at(Part, link);
+		if (part->id.id == psn)
+			return part;
 	}
 	return NULL;
 }
@@ -157,7 +156,7 @@ part_mgr_index_create(PartMgr* self, IndexConfig* config)
 {
 	list_foreach(&self->list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		part_index_create(part, config);
 	}
 }
@@ -167,7 +166,7 @@ part_mgr_index_remove(PartMgr* self, Str* name)
 {
 	list_foreach(&self->list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		part_index_drop(part, name);
 	}
 }
@@ -185,11 +184,11 @@ part_mgr_list(PartMgr* self, Str* ref, int flags)
 		if (str_toint(ref, &psn) == -1)
 			error("invalid partition id");
 
-		auto id = part_mgr_find(self, psn);
-		if (! id)
+		auto part = part_mgr_find(self, psn);
+		if (! part)
 			encode_null(buf);
 		else
-			part_status(part_of(id), buf, flags);
+			part_status(part, buf, flags);
 		return buf;
 	}
 
@@ -197,7 +196,7 @@ part_mgr_list(PartMgr* self, Str* ref, int flags)
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		part_status(part, buf, flags);
 	}
 	encode_array_end(buf);

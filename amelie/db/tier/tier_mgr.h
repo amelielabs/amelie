@@ -34,16 +34,14 @@ Tier*   tier_mgr_find_by(TierMgr*, Volume*);
 Object* tier_mgr_find_object(TierMgr*, Tier**, uint64_t);
 Buf*    tier_mgr_list(TierMgr*, Str*, int);
 
+static inline bool
+tier_mgr_created(TierMgr* self)
+{
+	return !self->list_count;
+}
+
 static inline Tier*
 tier_mgr_first(TierMgr* self)
 {
 	return container_of(list_first(&self->list), Tier, link);
-}
-
-static inline bool
-tier_mgr_empty(TierMgr* self)
-{
-	if (! self->list_count)
-		return true;
-	return !tier_mgr_first(self)->list_count;
 }

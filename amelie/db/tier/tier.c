@@ -45,6 +45,7 @@ tier_add(Tier* self, Object* object)
 {
 	list_append(&self->list, &object->link);
 	self->list_count++;
+	mapping_add(&self->mapping, object);
 	volume_pin(object->id.volume);
 }
 
@@ -53,6 +54,7 @@ tier_remove(Tier* self, Object* object)
 {
 	self->list_count--;
 	list_unlink(&object->link);
+	mapping_remove(&self->mapping, object);
 }
 
 void
@@ -174,6 +176,7 @@ tier_open_volume(Tier* self, Volume* volume)
 
 			// recover branches
 			object_open(object, STATE_COMPLETE);
+
 			break;
 		}
 		case STATE_INCOMPLETE:

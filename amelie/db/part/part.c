@@ -24,15 +24,14 @@ Part*
 part_allocate(Id* id, PartArg* arg)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
+	self->id            = *id;
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->heap          = heap_allocate(false);
 	self->heap_shadow   = NULL;
 	self->arg           = arg;
-	id_init(&self->id);
-	id_set_free(&self->id, (IdFree)part_free);
-	id_copy(&self->id, id);
 	track_init(&self->track);
+	list_init(&self->link);
 	return self;
 }
 
@@ -58,7 +57,7 @@ void
 part_open(Part* self)
 {
 	// read heap file
-	heap_open(self->heap, &self->id, ID_PART);
+	heap_open(self->heap, &self->id, STATE_COMPLETE);
 
 	// rebuild indexes
 	HeapIterator it;
@@ -75,7 +74,7 @@ part_open(Part* self)
 
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
 	auto id = &self->id;
-	info("recover: %s/%05" PRIu64 ".partition (%.2f MiB, %" PRIu64 " rows)",
+	info("recover: %s/%05" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
 	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total, count);
