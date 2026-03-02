@@ -37,7 +37,7 @@ Buf*    tier_mgr_list(TierMgr*, Str*, int);
 static inline bool
 tier_mgr_created(TierMgr* self)
 {
-	return !self->list_count;
+	return self->list_count > 0;
 }
 
 static inline Tier*

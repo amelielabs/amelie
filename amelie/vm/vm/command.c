@@ -171,7 +171,7 @@ csend_all(Vm* self, Op* op)
 	// send to all table backends
 	list_foreach(&table->part_mgr.list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		auto req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
 		                        REQ_EXECUTE,
 		                        send->start,

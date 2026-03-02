@@ -95,47 +95,17 @@ tier_find(Tier* self, uint64_t psn)
 }
 
 static void
-tier_create(Volume* volume)
-{
-	// create volume directory
-	volume_mkdir(volume);
-
-	// create <id>.1.object.incomplete file
-	Id id =
-	{
-		.id      = state_psn_next(),
-		.version = 1,
-		.volume  = volume,
-	};
-	auto object = object_allocate(&id);
-	defer(object_free, object);
-	object_create(object, STATE_INCOMPLETE);
-
-	// create empty branch
-	auto writer = writer_allocate();
-	defer(writer_free, writer);
-	writer_start(writer, &object->file, volume->storage, 0);
-	writer_stop(writer);
-
-	// sync incomplete file
-	if (opt_int_of(&config()->storage_sync))
-		file_sync(&object->file);
-
-	// rename
-	object_rename(object, STATE_INCOMPLETE, STATE_COMPLETE);
-}
-
-static void
 tier_open_volume(Tier* self, Volume* volume)
 {
 	// <base>/storage/<volume_id>
 	char id[UUID_SZ];
 	uuid_get(&volume->id, id, sizeof(id));
 
+	// create volume directory
 	char path[PATH_MAX];
 	sfmt(path, PATH_MAX, "%s/storage/%s", state_directory(), id);
 	if (! fs_exists("%s", path))
-		tier_create(volume);
+		volume_mkdir(volume);
 
 	// read directory
 	auto dir = opendir(path);
@@ -173,11 +143,12 @@ tier_open_volume(Tier* self, Volume* volume)
 		{
 			// add object to the tier
 			auto object = object_allocate(&id);
-			tier_add(self, object);
+			errdefer(object_free, object);
 
 			// recover branches
 			object_open(object, STATE_COMPLETE);
 
+			tier_add(self, object);
 			break;
 		}
 		case STATE_INCOMPLETE:
@@ -189,6 +160,35 @@ tier_open_volume(Tier* self, Volume* volume)
 		}
 		}
 	}
+}
+
+static void
+tier_create(Tier* self)
+{
+	// create <id>.1.object.incomplete file
+	Id id =
+	{
+		.id      = state_psn_next(),
+		.version = 1,
+		.volume  = volume_mgr_next(&self->config->volumes)
+	};
+
+	auto object = object_allocate(&id);
+	defer(object_free, object);
+	object_create(object, STATE_INCOMPLETE);
+
+	// create empty branch
+	auto writer = writer_allocate();
+	defer(writer_free, writer);
+	writer_start(writer, &object->file, id.volume->storage, 0);
+	writer_stop(writer);
+
+	// sync incomplete file
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&object->file);
+
+	// rename
+	object_rename(object, STATE_INCOMPLETE, STATE_COMPLETE);
 }
 
 void
@@ -203,4 +203,8 @@ tier_open(Tier* self, StorageMgr* storage_mgr)
 		auto volume = list_at(Volume, link);
 		tier_open_volume(self, volume);
 	}
+
+	// create empty object on bootstrap
+	if (! self->list_count)
+		tier_create(self);
 }

@@ -147,7 +147,7 @@ dispatch_mgr_snapshot(DispatchMgr* self, Access* access)
 		auto table = table_of(ac->rel);
 		list_foreach(&table->part_mgr.list)
 		{
-			auto part = list_at(Part, id.link);
+			auto part = list_at(Part, link);
 			auto ltr = ltr_create(&self->cache_ltr, part, self->dtr, &self->complete);
 			list_append(&self->ltrs, &ltr->link);
 			self->ltrs_count++;

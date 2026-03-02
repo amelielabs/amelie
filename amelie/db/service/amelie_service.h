@@ -23,8 +23,6 @@
 
 // service operations
 #include "service/refresh.h"
-#if 0
-#include "service/flush.h"
 #include "service/indexate.h"
+#include "service/flush.h"
 #include "service/op.h"
-#endif

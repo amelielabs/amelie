@@ -46,9 +46,9 @@ object_free(Object* self)
 }
 
 static void
-object_validate_index(Object* self, Branch* branch)
+object_validate_index(Object* self, Branch* branch, Buf* meta_data)
 {
-	uint32_t crc = runtime()->crc(0, branch->meta_data.start, buf_size(&branch->meta_data));
+	uint32_t crc = runtime()->crc(0, meta_data->start, buf_size(meta_data));
 	if (crc != branch->meta.crc_data)
 		error("object: file meta data '%s' crc mismatch",
 		      str_of(&self->file.path));
@@ -73,7 +73,7 @@ object_read_index(Object* self, Branch* branch, size_t offset)
 	if (! encoder_active(&encoder))
 	{
 		file_pread_buf(file, meta_data, meta->size, offset);
-		object_validate_index(self, branch);
+		object_validate_index(self, branch, meta_data);
 		return;
 	}
 
@@ -81,7 +81,7 @@ object_read_index(Object* self, Branch* branch, size_t offset)
 	auto buf = buf_create();
 	defer_buf(buf);
 	file_pread_buf(file, buf, meta->size, offset);
-	object_validate_index(self, branch);
+	object_validate_index(self, branch, buf);
 
 	// decompress index
 	buf_emplace(meta_data, meta->size_origin);
@@ -147,17 +147,16 @@ object_open(Object* self, int state)
 		auto branch = object_read(self, &offset);
 		object_add(self, branch);
 	}
+	if (offset == self->file.size)
+		return;
 
 	// cut branches that are not represented in its versions id
 	// (compaction crash)
-	if (offset == self->file.size)
-	{
-		file_truncate(&self->file, offset);
-		if (opt_int_of(&config()->storage_sync))
-			file_sync(&self->file);
-		info("object: file '%s' truncated to %d branches", str_of(&self->file.path),
-		     self->branches_count);
-	}
+	file_truncate(&self->file, offset);
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&self->file);
+	info("object: file '%s' truncated to %d branches", str_of(&self->file.path),
+	     self->branches_count);
 }
 
 void

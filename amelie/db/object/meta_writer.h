@@ -90,7 +90,7 @@ meta_writer_stop(MetaWriter* self)
 	meta->magic             = META_MAGIC;
 	meta->version           = META_VERSION;
 	meta->size_origin       = meta->size;
-	meta->size              = encoder_iov(encoder)->iov_len;
+	meta->size              = encoder_iov_size(encoder);
 	meta->size_total        =
 		meta->size_regions + meta->size + sizeof(Meta);
 	meta->size_total_origin =
@@ -109,7 +109,7 @@ meta_writer_add(MetaWriter*   self,
 	assert(region->rows > 0);
 
 	// get region size
-	uint32_t size = encoder_iov(&region_writer->encoder)->iov_len;
+	uint32_t size = encoder_iov_size(&region_writer->encoder);
 
 	// calculate region crc
 	uint32_t crc = 0;

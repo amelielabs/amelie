@@ -214,7 +214,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/wal/wal_worker.c
     ${AMELIE_ROOT}/db/wal/wal_periodic.c
     ${AMELIE_ROOT}/db/wal/wal_mgr.c
-    ${AMELIE_ROOT}/db/service/service.c
     ${AMELIE_ROOT}/db/service/service_recover.c
     ${AMELIE_ROOT}/db/service/refresh.c
     ${AMELIE_ROOT}/db/service/flush.c

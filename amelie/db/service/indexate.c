@@ -36,7 +36,7 @@ indexate_match(Indexate* self, IndexConfig* config)
 		uint64_t id = UINT64_MAX;
 		list_foreach(&table->part_mgr.list)
 		{
-			auto part = list_at(Part, id.link);
+			auto part = list_at(Part, link);
 			auto index = part_index_find(part, &config->name, false);
 			if (index)
 				continue;
@@ -53,11 +53,11 @@ indexate_match(Indexate* self, IndexConfig* config)
 		service_lock(self->service, &self->lock, LOCK_EXCLUSIVE, id);
 
 		// find partition by id
-		auto origin_id = part_mgr_find(&table->part_mgr, id);
-		if (origin_id)
+		auto origin = part_mgr_find(&table->part_mgr, id);
+		if (origin)
 		{
 			// (lock is kept till completion)
-			self->origin = part_of(origin_id);
+			self->origin = origin;
 			return true;
 		}
 
@@ -127,7 +127,7 @@ indexate_job(intptr_t* argv)
 
 	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
 	auto id = &origin->id;
-	info("indexate: %s/%05" PRIu64 ".partition (%.2f MiB)",
+	info("indexate: %s/%05" PRIu64 " (%.2f MiB)",
 	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);
@@ -203,7 +203,7 @@ indexate_abort(Indexate* self, IndexConfig* config)
 
 	list_foreach(&table->part_mgr.list)
 	{
-		auto part  = list_at(Part, id.link);
+		auto part  = list_at(Part, link);
 		auto index = part_index_find(part, &config->name, false);
 		if (! index)
 			continue;

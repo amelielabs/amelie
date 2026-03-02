@@ -68,7 +68,7 @@ mapping_add(Mapping* self, Object* object)
 {
 	const auto key = branch_min(object->root);
 	RbtreeNode* node;
-	auto rc = mapping_find(&self->tree, NULL, key, &node);
+	auto rc = mapping_find(&self->tree, self, key, &node);
 	if (rc == 0 && node)
 		assert(0);
 	rbtree_set(&self->tree, node, rc, &object->link_mapping);

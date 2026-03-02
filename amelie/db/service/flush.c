@@ -23,6 +23,7 @@
 #include <amelie_wal.h>
 #include <amelie_service.h>
 
+#if 0
 static bool
 flush_begin(Flush* self, Table* table, uint64_t id)
 {
@@ -331,5 +332,15 @@ flush_run(Flush* self, Table* table, uint64_t id)
 	if (on_error)
 		rethrow();
 
+	return true;
+}
+#endif
+
+bool
+flush_run(Flush* self, Table* table, uint64_t id)
+{
+	(void)self;
+	(void)table;
+	(void)id;
 	return true;
 }

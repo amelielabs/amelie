@@ -41,7 +41,6 @@ volume_allocate(void)
 static inline void
 volume_free(Volume* self)
 {
-	assert(! self->list_count);
 	str_free(&self->name);
 	am_free(self);
 }

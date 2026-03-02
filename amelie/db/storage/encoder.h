@@ -114,6 +114,16 @@ encoder_iov_count(Encoder* self)
 	return self->iov.iov_count;
 }
 
+static inline size_t
+encoder_iov_size(Encoder* self)
+{
+	size_t size = 0;
+	auto iov = encoder_iov(self);
+	for (auto i = 0; i < self->iov.iov_count; i++)
+		size += iov[i].iov_len;
+	return size;
+}
+
 static inline uint32_t
 encoder_iov_crc(Encoder* self)
 {

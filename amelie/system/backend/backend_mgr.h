@@ -131,7 +131,7 @@ backend_mgr_deploy_all(BackendMgr* self, PartMgr* part_mgr)
 	auto order = 0;
 	list_foreach(&part_mgr->list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		auto rpc = rpc_set_add(&set, order, MSG_DEPLOY, part);
 		auto backend = backend_mgr_next(self);
 		rpc_send(rpc, &backend->task);
@@ -156,7 +156,7 @@ backend_mgr_undeploy_all(BackendMgr* self, PartMgr* part_mgr)
 	auto count = 0;
 	list_foreach(&part_mgr->list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		if (part->track.backend)
 			count++;
 	}
@@ -171,7 +171,7 @@ backend_mgr_undeploy_all(BackendMgr* self, PartMgr* part_mgr)
 	auto order = 0;
 	list_foreach(&part_mgr->list)
 	{
-		auto part = list_at(Part, id.link);
+		auto part = list_at(Part, link);
 		if (! part->track.backend)
 			continue;
 		auto rpc = rpc_set_add(&set, order, MSG_UNDEPLOY, part);

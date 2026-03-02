@@ -58,7 +58,7 @@ select show('state').catalog_pending;
 select identity_of("test");
 [3]
 select * from test;
-[1, 0, 2]
+[0, 1, 2]
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
