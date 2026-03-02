@@ -82,8 +82,9 @@ id_of(const char* name, int64_t* id, int64_t* version)
 	name = id_of_next(name, id);
 	if (! name)
 		return -1;
-	if (! *name)
-		return STATE_COMPLETE;
+	auto state = id_state_of(name);
+	if (state != -1)
+		return state;
 
 	// .
 	name++;
@@ -97,8 +98,6 @@ id_of(const char* name, int64_t* id, int64_t* version)
 		if (! name)
 			return -1;
 	}
-	if (unlikely(! *name))
-		return STATE_COMPLETE;
 
 	return id_state_of(name);
 }

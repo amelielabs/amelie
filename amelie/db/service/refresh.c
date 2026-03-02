@@ -29,6 +29,13 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	auto part_mgr = &table->part_mgr;
 	self->table = table;
 
+	// create shadow heap
+	auto heap_shadow = heap_allocate(false);
+
+	// take table exclusive lock (unlock on return)
+	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
+	defer(unlock, lock_table);
+
 	// find storage
 	auto volumes = &part_mgr->config->volumes;
 	Volume* volume = NULL;
@@ -46,13 +53,6 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	part_id->id      = state_psn_next();
 	part_id->version = 0;
 	part_id->volume  = volume;
-
-	// create shadow heap
-	auto heap_shadow = heap_allocate(false);
-
-	// take table exclusive lock (unlock on return)
-	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
-	defer(unlock, lock_table);
 
 	// find partition by id
 	auto origin = part_mgr_find(part_mgr, id);

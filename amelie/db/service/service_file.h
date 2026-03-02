@@ -88,11 +88,26 @@ service_file_add_rename(ServiceFile* self, Id* a, int a_state, Id* b, int b_stat
 }
 
 static inline void
-service_file_add_rename_version(ServiceFile* self, Id* id, int version)
+service_file_add_rename_version(ServiceFile* self,
+                                uint64_t     psn,
+                                Volume*      volume,
+                                int          version_from,
+                                int          version_to)
 {
-	Id to = *id;
-	to.version = version;
-	service_file_add_rename(self, id, STATE_COMPLETE, &to, STATE_COMPLETE);
+	Id id_from =
+	{
+		.id      = psn,
+		.version = version_from,
+		.volume  = volume
+	};
+	Id id_to =
+	{
+		.id      = psn,
+		.version = version_to,
+		.volume  = volume
+	};
+	service_file_add_rename(self, &id_from, STATE_COMPLETE,
+	                        &id_to, STATE_COMPLETE);
 }
 
 static inline void

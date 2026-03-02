@@ -223,7 +223,7 @@ service_recover(Service* self)
 		}
 
 		// .service
-		if (! strcmp(ext, ".service."))
+		if (! strcmp(ext, ".service"))
 		{
 			// recover service file
 			state_psn_follow(id);

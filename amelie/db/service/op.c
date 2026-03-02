@@ -38,10 +38,6 @@ service_refresh(Service* self, Uuid* id_table, uint64_t id, Str* storage)
 void
 service_flush(Service* self, Uuid* id_table, uint64_t id)
 {
-	(void)self;
-	(void)id_table;
-	(void)id;
-#if 0
 	// note: executed under shared catalog lock
 	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
 	Flush flush;
@@ -49,7 +45,6 @@ service_flush(Service* self, Uuid* id_table, uint64_t id)
 	defer(flush_free, &flush);
 	if (! flush_run(&flush, table, id))
 		error("partition not found");
-#endif
 }
 
 void

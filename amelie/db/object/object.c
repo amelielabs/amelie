@@ -147,16 +147,19 @@ object_open(Object* self, int state)
 		auto branch = object_read(self, &offset);
 		object_add(self, branch);
 	}
-	if (offset == self->file.size)
-		return;
 
 	// cut branches that are not represented in its versions id
 	// (compaction crash)
-	file_truncate(&self->file, offset);
-	if (opt_int_of(&config()->storage_sync))
-		file_sync(&self->file);
-	info("object: file '%s' truncated to %d branches", str_of(&self->file.path),
-	     self->branches_count);
+	if (offset != self->file.size)
+	{
+		file_truncate(&self->file, offset);
+		if (opt_int_of(&config()->storage_sync))
+			file_sync(&self->file);
+		info("object: file '%s' truncated to %d branches", str_of(&self->file.path),
+		     self->branches_count);
+	}
+
+	file_seek_to_end(&self->file);
 }
 
 void

@@ -45,6 +45,13 @@ flush_begin(Flush* self, Table* table, uint64_t id)
 	self->origin    = origin;
 	self->origin_id = origin->id;
 
+	// set new partition id
+	auto volumes = &table->part_mgr.config->volumes;
+	auto part_id = &self->part_id;
+	part_id->id      = state_psn_next();
+	part_id->version = 0;
+	part_id->volume  = volume_mgr_next(volumes);
+
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
 	track_sync(&origin->track, consensus);
@@ -128,6 +135,11 @@ flush_stop(Flush* self, FlushBranch* branch)
 	auto tier = tier_mgr_first(&self->table->tier_mgr);
 	writer_stop(self->writer);
 
+	// set branch meta data
+	meta_writer_copy(&self->writer->meta_writer,
+	                 &branch->branch->meta,
+	                 &branch->branch->meta_data);
+
 	auto id    = &branch->parent->id;
 	auto total = (double)branch->parent->file.size / 1024 / 1024;
 	info("flush: %s/%s/%05" PRIu64 ".%02" PRIu64 " (%.2f MiB)",
@@ -144,12 +156,6 @@ flush_partition(Flush* self)
 	auto part_id   = &self->part_id;
 	auto part_file = &self->part_file;
 	auto heap      =  self->origin->heap;
-
-	// set new partition id
-	auto volumes = &self->table->part_mgr.config->volumes;
-	part_id->id      = state_psn_next();
-	part_id->version = 0;
-	part_id->volume  = volume_mgr_next(volumes);
 
 	// create <id>.incomplete file
 	auto heap_temp = heap_allocate(false);
@@ -188,14 +194,14 @@ flush_job(intptr_t* argv)
 	FlushBranch* branch = NULL;
 	for (;;)
 	{
-		auto row = heap_index_iterator_at(&it);
-		if (! row)
+		if (! heap_index_iterator_has(&it))
 		{
 			if (branch)
 				flush_stop(self, branch);
 			break;
 		}
 
+		auto row = heap_index_iterator_at(&it);
 		if (branch)
 		{
 			// todo: if not in range -> break
@@ -205,7 +211,8 @@ flush_job(intptr_t* argv)
 		}
 
 		// close writer (finish previous object)
-		flush_stop(self, branch);
+		if (branch)
+			flush_stop(self, branch);
 
 		// create new branch and find the parent object
 		branch = flush_start(self, row);
@@ -249,8 +256,11 @@ flush_complete_job(intptr_t* argv)
 	auto end = (FlushBranch*)self->branches.position;
 	for (; it < end; it++)
 	{
-		auto version = it->parent->id.version + 1;
-		service_file_add_rename_version(service, &it->parent->id, version);
+		// (parent object version is already updated)
+		auto id = &it->parent->id;
+		service_file_add_rename_version(service, id->id, id->volume,
+		                                id->version - 1,
+		                                id->version);
 	}
 	service_file_end(service);
 	service_file_create(service);
@@ -273,13 +283,15 @@ flush_complete_job(intptr_t* argv)
 	it = (FlushBranch*)self->branches.start;
 	for (; it < end; it++)
 	{
-		// sync incomplete branch file
+		// sync object file
 		if (opt_int_of(&config()->storage_sync))
 			file_sync(&it->parent->file);
 
-		// rename (parent object version is already updated)
+		// (parent object version is already updated)
 		auto id = &it->parent->id;
-		id_rename_version(id->id, id->volume, id->version - 1, id->version);
+		id_rename_version(id->id, id->volume,
+		                  id->version - 1,
+		                  id->version);
 	}
 
 	// remove service file (done)
@@ -314,7 +326,6 @@ flush_apply(Flush* self)
 		part_index_create(origin, index->config);
 		index = index->next;
 	}
-
 	// use shadow heap as main
 	auto heap = origin->heap;
 	origin->heap = origin->heap_shadow;

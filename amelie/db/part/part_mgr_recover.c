@@ -48,7 +48,7 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 		if (entry->d_name[0] == '.')
 			continue;
 
-		// <id>.<version>[.state]
+		// <id>[.state]
 		int64_t psn     = 0;
 		int64_t version = 0;
 		auto    state   = id_of(entry->d_name, &psn, &version);
