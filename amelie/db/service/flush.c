@@ -23,7 +23,6 @@
 #include <amelie_wal.h>
 #include <amelie_service.h>
 
-#if 0
 static bool
 flush_begin(Flush* self, Table* table, uint64_t id)
 {
@@ -37,27 +36,14 @@ flush_begin(Flush* self, Table* table, uint64_t id)
 	defer(unlock, lock_table);
 
 	// find partition by id
-	auto origin_id = part_mgr_find(&table->part_mgr, id);
-	if (! origin_id)
+	auto origin = part_mgr_find(&table->part_mgr, id);
+	if (! origin)
 	{
 		heap_free(heap_shadow);
 		return false;
 	}
-	auto origin  = part_of(origin_id);
-	self->origin = origin;
-	id_copy(&self->id_origin, &origin->id);
-
-	// set shadow heap hash min/max
-	heap_shadow->header->hash_min = origin->heap->header->hash_min;
-	heap_shadow->header->hash_max = origin->heap->header->hash_max;
-
-	// set id and volumes
-	auto volumes = &table->part_mgr.config->volumes;
-	id_prepare(&self->id_part, ID_PART, volumes);
-
-	auto tier = tier_mgr_first(&table->tier_mgr);
-	volumes = &tier->config->volumes;
-	id_prepare(&self->id_branch, ID_OBJECT, volumes);
+	self->origin    = origin;
+	self->origin_id = origin->id;
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -69,75 +55,166 @@ flush_begin(Flush* self, Table* table, uint64_t id)
 	assert(! origin->heap_shadow);
 	origin->heap_shadow = heap_shadow;
 	heap_snapshot(origin->heap, heap_shadow, true);
+
+	// set shadow heap hash min/max
+	heap_shadow->header->hash_min = origin->heap->header->hash_min;
+	heap_shadow->header->hash_max = origin->heap->header->hash_max;
 	return true;
+}
+
+static void
+flush_map(Flush* self, FlushBranch* branch, Row* key)
+{
+	// find object matching the key
+	auto table = self->table;
+	auto tier  = tier_mgr_first(&table->tier_mgr);
+	for (;;)
+	{
+		// map object matching the key
+		auto lock_table = lock(&table->rel, LOCK_SHARED);
+		branch->parent = mapping_map(&tier->mapping, key);
+		auto parent_id = branch->parent->id.id;
+		unlock(lock_table);
+
+		// get the object shared lock
+		service_lock(self->service, &branch->lock, LOCK_SHARED, parent_id);
+
+		// ensure the object is still exists
+		lock_table = lock(&table->rel, LOCK_SHARED);
+		auto match = tier_find(tier, parent_id);
+		unlock(lock_table);
+
+		// shared object lock is held till flush completion
+		if (match)
+			break;
+
+		// object is no longer valid, retry
+		service_unlock(&branch->lock);
+		branch->parent = NULL;
+	}
+}
+
+static FlushBranch*
+flush_start(Flush* self, Row* key)
+{
+	// create new branch
+	auto branch = (FlushBranch*)buf_emplace(&self->branches, sizeof(FlushBranch));
+	branch->parent = NULL;
+	branch->branch = NULL;
+	service_lock_init(&branch->lock);
+	self->branches_count++;
+
+	// find parent object
+	flush_map(self, branch, key);
+
+	// create new branch
+	branch->branch = branch_allocate(&branch->parent->id, &branch->parent->file);
+
+	// start writer
+	auto tier = tier_mgr_first(&self->table->tier_mgr);
+	auto writer = self->writer;
+	writer_reset(writer);
+	writer_start(writer,
+	             &branch->parent->file,
+	              branch->parent->id.volume->storage,
+	             tier->config->region_size);
+
+	return branch;
+}
+
+static void
+flush_stop(Flush* self, FlushBranch* branch)
+{
+	auto tier = tier_mgr_first(&self->table->tier_mgr);
+	writer_stop(self->writer);
+
+	auto id    = &branch->parent->id;
+	auto total = (double)branch->parent->file.size / 1024 / 1024;
+	info("flush: %s/%s/%05" PRIu64 ".%02" PRIu64 " (%.2f MiB)",
+	     id->volume->storage->config->name.pos,
+	     tier->config->name.pos,
+	     id->id,
+	     id->version,
+	     total);
+}
+
+static void
+flush_partition(Flush* self)
+{
+	auto part_id   = &self->part_id;
+	auto part_file = &self->part_file;
+	auto heap      =  self->origin->heap;
+
+	// set new partition id
+	auto volumes = &self->table->part_mgr.config->volumes;
+	part_id->id      = state_psn_next();
+	part_id->version = 0;
+	part_id->volume  = volume_mgr_next(volumes);
+
+	// create <id>.incomplete file
+	auto heap_temp = heap_allocate(false);
+	defer(heap_free, heap_temp);
+	heap_temp->header->hash_min = heap->header->hash_min;
+	heap_temp->header->hash_max = heap->header->hash_max;
+	heap_temp->header->lsn      = self->origin_lsn;
+	heap_create(heap_temp, part_file, part_id, STATE_INCOMPLETE);
+
+	auto total = (double)part_file->size / 1024 / 1024;
+	info("flush: %s/%05" PRIu64 " (%.2f MiB)",
+	     part_id->volume->storage->config->name.pos,
+	     part_id->id,
+	     total);
 }
 
 static void
 flush_job(intptr_t* argv)
 {
 	auto self = (Flush*)argv[0];
-	auto heap = self->origin->heap;
 
-	// create <id>.partition.incomplete file
-	auto heap_temp = heap_allocate(false);
-	defer(heap_free, heap_temp);
-	heap_temp->header->hash_min = heap->header->hash_min;
-	heap_temp->header->hash_max = heap->header->hash_max;
-	heap_temp->header->lsn      = self->origin_lsn;
-	auto id = &self->id_part;
-	heap_create(heap_temp, &self->file_part, id, ID_PART_INCOMPLETE);
-
-	auto total = (double)self->file_part.size / 1024 / 1024;
-	info("flush: %s/%05" PRIu64 ".partition (%.2f MiB)",
-	     id->volume->storage->config->name.pos,
-	     id->id,
-	     total);
-
-	// create <id>.object.incomplete file
-	id_create(&self->id_branch, &self->file_branch, ID_OBJECT_INCOMPLETE);
+	// create <id>.incomplete file
+	flush_partition(self);
 
 	// create heap index
 	auto keys = index_keys(part_primary(self->origin));
-	heap_index(heap, keys, &self->heap_index);
+	auto heap = self->origin->heap;
+	heap_index(heap, keys, &self->origin_heap_index);
 
 	// prepare heap index iterator
 	HeapIndexIterator it;
 	heap_index_iterator_init(&it);
-	heap_index_iterator_open(&it, &self->heap_index);
+	heap_index_iterator_open(&it, &self->origin_heap_index);
 
-	// write branch object
-	id = &self->id_branch;
-	auto tier = tier_mgr_first(&self->table->tier_mgr);
-
-	auto writer = self->writer;
-	writer_reset(writer);
-	writer_start(writer, &self->file_branch, id->volume->storage,
-	             tier->config->region_size);
-	while (heap_index_iterator_has(&it))
+	// create branches for every matching objects
+	FlushBranch* branch = NULL;
+	for (;;)
 	{
 		auto row = heap_index_iterator_at(&it);
-		writer_add(writer, row);
-		heap_index_iterator_next(&it);
+		if (! row)
+		{
+			if (branch)
+				flush_stop(self, branch);
+			break;
+		}
+
+		if (branch)
+		{
+			// todo: if not in range -> break
+			writer_add(self->writer, row);
+			heap_index_iterator_next(&it);
+			continue;
+		}
+
+		// close writer (finish previous object)
+		flush_stop(self, branch);
+
+		// create new branch and find the parent object
+		branch = flush_start(self, row);
 	}
-	writer_stop(writer);
-
-	total = (double)self->file_branch.size / 1024 / 1024;
-	info("flush: %s/%s/%05" PRIu64 ".object (%.2f MiB)",
-	     id->volume->storage->config->name.pos,
-	     tier->config->name.pos,
-	     id->id,
-	     total);
-
-	// create and open object
-	self->object = object_allocate(&self->id_branch);
-	object_open(self->object, ID_OBJECT_INCOMPLETE, true);
 }
 
 static void
-flush_complete_job(intptr_t* argv)
+flush_gc(Flush* self)
 {
-	auto self = (Flush*)argv[0];
-
 	// free shadow heap (former main heap)
 	auto origin = self->origin;
 	auto shadow = origin->heap_shadow;
@@ -145,50 +222,67 @@ flush_complete_job(intptr_t* argv)
 	heap_free(shadow);
 
 	// free indexes
-	auto index = self->indexes;
+	auto index = self->origin_indexes;
 	while (index)
 	{
 		auto next = index->next;
 		index_free(index);
 		index = next;
 	}
-	self->indexes = NULL;
+	self->origin_indexes = NULL;
+}
+
+static void
+flush_complete_job(intptr_t* argv)
+{
+	auto self = (Flush*)argv[0];
+
+	// free shadow heap and indexes
+	flush_gc(self);
 
 	// create <id>.service.incomplete file
 	auto service = self->service_file;
 	service_file_begin(service);
-	service_file_add_input(service,  &self->id_origin);
-	service_file_add_output(service, &self->id_part);
-	service_file_add_output(service, &self->id_branch);
+	service_file_add_origin(service, &self->origin_id);
+	service_file_add_create(service, &self->part_id);
+	auto it  = (FlushBranch*)self->branches.start;
+	auto end = (FlushBranch*)self->branches.position;
+	for (; it < end; it++)
+	{
+		auto version = it->parent->id.version + 1;
+		service_file_add_rename_version(service, &it->parent->id, version);
+	}
 	service_file_end(service);
 	service_file_create(service);
 
-	// heap
+	// complete partition file
 
-	// sync incomplete heap file
+	// sync incomplete partition file
 	if (opt_int_of(&config()->storage_sync))
-		file_sync(&self->file_part);
+		file_sync(&self->part_file);
 
-	file_close(&self->file_part);
+	file_close(&self->part_file);
 
-	// unlink origin heap file
-	id_delete(&self->id_origin, ID_PART);
+	// unlink origin partition file
+	id_delete(&self->origin_id, STATE_COMPLETE);
 
 	// rename
-	id_rename(&self->id_part, ID_PART_INCOMPLETE, ID_PART);
+	id_rename(&self->part_id, STATE_INCOMPLETE, STATE_COMPLETE);
 
-	// branch
+	// rename parent object file
+	it = (FlushBranch*)self->branches.start;
+	for (; it < end; it++)
+	{
+		// sync incomplete branch file
+		if (opt_int_of(&config()->storage_sync))
+			file_sync(&it->parent->file);
 
-	// sync incomplete branch file
-	if (opt_int_of(&config()->storage_sync))
-		file_sync(&self->file_branch);
+		// rename (parent object version is already updated)
+		auto id = &it->parent->id;
+		id_rename_version(id->id, id->volume, id->version - 1, id->version);
+	}
 
-	file_close(&self->file_branch);
-
-	// rename
-	id_rename(&self->id_branch, ID_OBJECT_INCOMPLETE, ID_OBJECT);
-
-	// remove service file (complete)
+	// remove service file (done)
 	service_file_delete(service);
 }
 
@@ -210,10 +304,11 @@ flush_apply(Flush* self)
 	heap_snapshot(origin->heap, NULL, false);
 
 	// create a new set of indexes
-	self->indexes         = origin->indexes;
+	self->origin_indexes  = origin->indexes;
 	origin->indexes       = NULL;
 	origin->indexes_count = 0;
-	auto index = self->indexes;
+
+	auto index = self->origin_indexes;
 	while (index)
 	{
 		part_index_create(origin, index->config);
@@ -241,69 +336,80 @@ flush_apply(Flush* self)
 	}
 
 	// update volume refs
-	volume_unref(origin->id.volume);
-	volume_ref(self->id_part.volume);
+	volume_remove(origin->id.volume, &origin->link_volume);
 
-	// add object to the tier
-	auto tier = tier_mgr_first(&table->tier_mgr);
-	tier_add(tier, &self->object->id);
-	self->object = NULL;
+	// update partition id and volume link
+	origin->id = self->part_id;
+	volume_add(origin->id.volume, &origin->link_volume);
 
-	// update partition id
-	id_copy(&origin->id, &self->id_part);
+	// attach branches to the corresponding objects
+	auto at  = (FlushBranch*)self->branches.start;
+	auto end = (FlushBranch*)self->branches.position;
+	for (; at < end; at++)
+	{
+		object_add(at->parent, at->branch);
+
+		// update object version
+		at->parent->id.version++;
+	}
 }
 
 void
 flush_init(Flush* self, Service* service)
 {
+	self->origin         = NULL;
+	self->origin_lsn     = 0;
+	self->origin_indexes = NULL;
+	self->branches_count = 0;
+	self->writer         = writer_allocate();
+	self->table          = NULL;
+	self->service_file   = service_file_allocate();
+	self->service        = service;
+
 	service_lock_init(&self->lock);
-	self->origin       = NULL;
-	self->origin_lsn   = 0;
-	self->object       = NULL;
-	self->indexes      = NULL;
-	self->writer       = writer_allocate();
-	self->table        = NULL;
-	self->service_file = service_file_allocate();
-	self->service      = service;
-	id_init(&self->id_origin);
-	id_init(&self->id_part);
-	id_init(&self->id_branch);
-	file_init(&self->file_part);
-	file_init(&self->file_branch);
-	buf_reset(&self->heap_index);
+	buf_init(&self->origin_heap_index);
+	id_init(&self->origin_id);
+	id_init(&self->part_id);
+	file_init(&self->part_file);
+	buf_init(&self->branches);
 }
 
 void
 flush_free(Flush* self)
 {
-	service_file_free(self->service_file);
+	flush_reset(self);
+
+	buf_free(&self->origin_heap_index);
+	buf_free(&self->branches);
 	writer_free(self->writer);
-	buf_free(&self->heap_index);
+	service_file_free(self->service_file);
 }
 
 void
 flush_reset(Flush* self)
 {
-	service_lock_init(&self->lock);
-	self->origin     = NULL;
-	self->origin_lsn = 0;
-	self->object     = NULL;
-	self->indexes    = NULL;
-	self->table      = NULL;
+	file_close(&self->part_file);
+
+	self->origin         = NULL;
+	self->origin_lsn     = 0;
+	self->origin_indexes = NULL;
+	self->branches_count = 0;
+	self->table          = NULL;
+
 	service_file_reset(self->service_file);
+	service_lock_init(&self->lock);
 	writer_reset(self->writer);
-	id_init(&self->id_origin);
-	id_init(&self->id_part);
-	id_init(&self->id_branch);
-	file_close(&self->file_part);
-	file_close(&self->file_branch);
-	buf_init(&self->heap_index);
+	buf_reset(&self->origin_heap_index);
+	id_init(&self->origin_id);
+	id_init(&self->part_id);
+	file_init(&self->part_file);
+	buf_reset(&self->branches);
 }
 
 bool
 flush_run(Flush* self, Table* table, uint64_t id)
 {
-	if (! table->tier_mgr.list_count)
+	if (! tier_mgr_created(&table->tier_mgr))
 		error("flush: table has no tiers");
 
 	flush_reset(self);
@@ -329,18 +435,16 @@ flush_run(Flush* self, Table* table, uint64_t id)
 		run(flush_complete_job, 1, self);
 	);
 
+	// unlock parent objects
+	auto it  = (FlushBranch*)self->branches.start;
+	auto end = (FlushBranch*)self->branches.position;
+	for (; it < end; it++)
+		service_unlock(&it->lock);
+
+	// todo: abort
+
 	if (on_error)
 		rethrow();
 
-	return true;
-}
-#endif
-
-bool
-flush_run(Flush* self, Table* table, uint64_t id)
-{
-	(void)self;
-	(void)table;
-	(void)id;
 	return true;
 }

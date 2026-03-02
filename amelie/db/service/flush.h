@@ -11,21 +11,31 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Flush Flush;
+typedef struct Flush       Flush;
+typedef struct FlushBranch FlushBranch;
+
+struct FlushBranch
+{
+	ServiceLock lock;
+	Object*     parent;
+	Branch*     branch;
+};
 
 struct Flush
 {
 	ServiceLock  lock;
+	// origin
 	Part*        origin;
+	Id           origin_id;
 	uint64_t     origin_lsn;
-	Id           id_origin;
-	Id           id_part;
-	Id           id_branch;
-	File         file_part;
-	File         file_branch;
-	Index*       indexes;
-	Buf          heap_index;
-	Object*      object;
+	Index*       origin_indexes;
+	Buf          origin_heap_index;
+	// updated partition
+	Id           part_id;
+	File         part_file;
+	// branches
+	Buf          branches;
+	int          branches_count;
 	Writer*      writer;
 	Table*       table;
 	ServiceFile* service_file;

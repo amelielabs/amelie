@@ -173,6 +173,26 @@ id_rename(Id* self, int from, int to)
 }
 
 static inline void
+id_rename_version(uint64_t psn,
+                  Volume*  volume,
+                  int      version_from,
+                  int      version_to)
+{
+	Id id =
+	{
+		.id      = psn,
+		.version = version_from,
+		.volume  = volume
+	};
+	char path_from[PATH_MAX];
+	char path_to[PATH_MAX];
+	id_path(&id, path_from, STATE_COMPLETE, false);
+	id.version = version_to;
+	id_path(&id, path_to, STATE_COMPLETE, false);
+	fs_rename(path_from, "%s", path_to);
+}
+
+static inline void
 id_snapshot(Id* self, int state, int state_snapshot)
 {
 	// create file snapshot
