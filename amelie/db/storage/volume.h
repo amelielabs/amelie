@@ -49,6 +49,7 @@ volume_free(Volume* self)
 static inline void
 volume_add(Volume* self, List* link)
 {
+	list_init(link);
 	list_append(&self->list, link);
 	self->list_count++;
 }
@@ -59,6 +60,7 @@ volume_remove(Volume* self, List* link)
 	list_unlink(link);
 	self->list_count--;
 	assert(self->list_count >= 0);
+	list_init(link);
 }
 
 static inline void

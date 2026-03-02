@@ -18,9 +18,10 @@ struct Refresh
 	ServiceLock  lock;
 	Part*        origin;
 	uint64_t     origin_lsn;
-	Id           id_origin;
-	Id           id_part;
-	File         file_part;
+	Id           origin_id;
+
+	Id           part_id;
+	File         part_file;
 	ServiceFile* service_file;
 	Service*     service;
 	Table*       table;

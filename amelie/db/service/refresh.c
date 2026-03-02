@@ -37,7 +37,15 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 		volume = volume_mgr_find(volumes, storage);
 		if (! volume)
 			return false;
+	} else {
+		volume = volume_mgr_next(volumes);
 	}
+
+	// set new partition id
+	auto part_id = &self->part_id;
+	part_id->id      = state_psn_next();
+	part_id->version = 0;
+	part_id->volume  = volume;
 
 	// create shadow heap
 	auto heap_shadow = heap_allocate(false);
@@ -47,21 +55,14 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	defer(unlock, lock_table);
 
 	// find partition by id
-	auto origin_id = part_mgr_find(part_mgr, id);
-	if (! origin_id)
+	auto origin = part_mgr_find(part_mgr, id);
+	if (! origin)
 	{
 		heap_free(heap_shadow);
 		return false;
 	}
-	auto origin  = part_of(origin_id);
-	self->origin = origin;
-	id_copy(&self->id_origin, &origin->id);
-
-	// set id and volumes
-	if (volume)
-		id_prepare_in(&self->id_part, ID_PART, volume);
-	else
-		id_prepare(&self->id_part, ID_PART, volumes);
+	self->origin    = origin;
+	self->origin_id = origin->id;
 
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
@@ -83,13 +84,13 @@ refresh_snapshot_job(intptr_t* argv)
 	auto origin = self->origin;
 	auto heap   = origin->heap;
 
-	// create <id>.partition.incomplete file
-	auto id = &self->id_part;
+	// create <id>.incomplete file
+	auto id = &self->part_id;
 	heap->header->lsn = self->origin_lsn;
-	heap_create(heap, &self->file_part, id, ID_PART_INCOMPLETE);
+	heap_create(heap, &self->part_file, id, STATE_INCOMPLETE);
 
-	auto total = (double)self->file_part.size / 1024 / 1024;
-	info("checkpoint: %s/%05" PRIu64 ".partition (%.2f MiB)",
+	auto total = (double)self->part_file.size / 1024 / 1024;
+	info("refresh: %s/%05" PRIu64 " (%.2f MiB)",
 	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);
@@ -106,25 +107,25 @@ refresh_complete_job(intptr_t* argv)
 	origin->heap_shadow = NULL;
 	heap_free(shadow);
 
-	// create <id>.service.incoplete file
+	// create <id>.service.incomplete file
 	auto service = self->service_file;
 	service_file_begin(service);
-	service_file_add_input(service,  &self->id_origin);
-	service_file_add_output(service, &self->id_part);
+	service_file_add_origin(service, &self->origin_id);
+	service_file_add_create(service, &self->part_id);
 	service_file_end(service);
 	service_file_create(service);
 
 	// sync incomplete heap file
 	if (opt_int_of(&config()->storage_sync))
-		file_sync(&self->file_part);
+		file_sync(&self->part_file);
 
-	file_close(&self->file_part);
+	file_close(&self->part_file);
 
 	// unlink origin heap file
-	id_delete(&self->id_origin, ID_PART);
+	id_delete(&self->origin_id, STATE_COMPLETE);
 
 	// rename
-	id_rename(&self->id_part, ID_PART_INCOMPLETE, ID_PART);
+	id_rename(&self->part_id, STATE_INCOMPLETE, STATE_COMPLETE);
 
 	// remove service file (complete)
 	service_file_delete(service);
@@ -177,11 +178,11 @@ refresh_apply(Refresh* self)
 	}
 
 	// update volume refs
-	volume_unref(origin->id.volume);
-	volume_ref(self->id_part.volume);
+	volume_remove(origin->id.volume, &origin->link_volume);
 
-	// update partition id
-	id_copy(&origin->id, &self->id_part);
+	// update partition id and volume link
+	origin->id = self->part_id;
+	volume_add(origin->id.volume, &origin->link_volume);
 }
 
 void
@@ -193,9 +194,9 @@ refresh_init(Refresh* self, Service* service)
 	self->service_file = service_file_allocate();
 	self->service      = service;
 	self->table        = NULL;
-	id_init(&self->id_origin);
-	id_init(&self->id_part);
-	file_init(&self->file_part);
+	id_init(&self->origin_id);
+	id_init(&self->part_id);
+	file_init(&self->part_file);
 }
 
 void
@@ -212,9 +213,9 @@ refresh_reset(Refresh* self)
 	self->origin_lsn = 0;
 	self->table      = NULL;
 	service_file_reset(self->service_file);
-	id_init(&self->id_origin);
-	id_init(&self->id_part);
-	file_close(&self->file_part);
+	id_init(&self->origin_id);
+	id_init(&self->part_id);
+	file_close(&self->part_file);
 }
 
 bool

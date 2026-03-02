@@ -21,9 +21,9 @@
 #include "service/service.h"
 #include "service/service_recover.h"
 
-#if 0
 // service operations
 #include "service/refresh.h"
+#if 0
 #include "service/flush.h"
 #include "service/indexate.h"
 #include "service/op.h"

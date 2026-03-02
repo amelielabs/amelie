@@ -27,6 +27,12 @@ struct Id
 	Volume*  volume;
 };
 
+static inline void
+id_init(Id* self)
+{
+	memset(self, 0, sizeof(*self));
+}
+
 static inline int
 id_state_of(const char* name)
 {
