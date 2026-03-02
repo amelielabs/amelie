@@ -23,17 +23,127 @@
 #include <amelie_wal.h>
 #include <amelie_service.h>
 
-static void
-service_recover_gc(uint8_t* pos)
+static bool
+service_recover_validate(ServiceFile* self)
 {
-	// remove all existing files from the list
+	// [[action, ...], ...]
+	auto pos = self->actions.start;
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
+	{
+		json_read_array(&pos);
+
+		// action
+		Str action;
+		json_read_string(&pos, &action);
+
+		bool valid = false;
+		if (str_is(&action, "create", 6))
+		{
+			// [create, path]
+			Str path;
+			json_read_string(&pos, &path);
+
+			// valid if created file exists
+
+			// <base>/path
+			valid = fs_exists("%s/%.*s", state_directory(),
+			                  str_size(&path),
+			                  str_of(&path));
+		} else
+		if (str_is(&action, "rename", 6))
+		{
+			// [rename, from, to]
+			json_skip(&pos);
+			Str path;
+			json_read_string(&pos, &path);
+
+			// valid if renamed file exists
+
+			// <base>/path
+			valid = fs_exists("%s/%.*s", state_directory(),
+			                  str_size(&path),
+			                  str_of(&path));
+		} else {
+			error("service: unknown action type");
+		}
+
+		json_read_array_end(&pos);
+		if (! valid)
+			return false;
+	}
+	return true;
+}
+
+static void
+service_recover_abort(ServiceFile* self)
+{
+	// [[action, ...], ...]
+	auto pos = self->actions.start;
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
+	{
+		json_read_array(&pos);
+
+		// action
+		Str action;
+		json_read_string(&pos, &action);
+
+		if (str_is(&action, "create", 6))
+		{
+			// [create, path]
+			Str path;
+			json_read_string(&pos, &path);
+
+			// remove file
+			fs_unlink_if_exists("%s/%.*s", state_directory(),
+			                    str_size(&path),
+			                    str_of(&path));
+		} else
+		if (str_is(&action, "rename", 6))
+		{
+			// [rename, from, to]
+			Str from;
+			Str to;
+			json_read_string(&pos, &from);
+			json_read_string(&pos, &to);
+
+			char path_from[PATH_MAX];
+			sfmt(path_from, sizeof(path_from),
+			     "%s/%.*s", state_directory(), str_size(&from),
+			     str_of(&from));
+
+			char path_to[PATH_MAX];
+			sfmt(path_to, sizeof(path_to),
+			     "%s/%.*s", state_directory(), str_size(&to),
+			     str_of(&to));
+
+			// rename file back, if it exists
+			if (fs_exists("%s", path_to))
+				fs_rename(path_to, "%s", path_from);
+
+		} else {
+			error("service: unknown action type");
+		}
+
+		json_read_array_end(&pos);
+	}
+}
+
+static void
+service_recover_resume(ServiceFile* self)
+{
+	// remove all existing origin files from the list
+
+	// [path, ...]
+	auto pos = self->origins.start;
 	json_read_array(&pos);
 	while (! json_read_array_end(&pos))
 	{
 		Str path_relative;
 		decode_basepath(&pos, &path_relative);
 
-		// <base>/storage/<volume_id>/id
+		// <base>/path
 		char path[PATH_MAX];
 		sfmt(path, sizeof(path), "%s/%.*s", state_directory(),
 		     str_size(&path_relative),
@@ -45,7 +155,7 @@ service_recover_gc(uint8_t* pos)
 }
 
 static void
-service_recover_of(Id* id)
+service_recover_file(uint64_t id)
 {
 	auto file = service_file_allocate();
 	defer(service_file_free, file);
@@ -53,39 +163,26 @@ service_recover_of(Id* id)
 	// read service file
 	service_file_open(file, id);
 
-	// if any of the output files are missing then remove the rest of them
+	// if any of the actions are were not completed, rollback the rest of them
 	// (incomplete files will be removed during tier/part mgr recovery)
 	//
 	// case: crash after service file sync/rename
 	//
-	auto pos = file->output.start;
-	json_read_array(&pos);
-	while (! json_read_array_end(&pos))
+	if (! service_recover_validate(file))
 	{
-		Str path_relative;
-		decode_basepath(&pos, &path_relative);
-
-		// <base>/storage/<volume_id>/id
-		if (fs_exists("%s/%.*s", state_directory(), str_size(&path_relative),
-		              str_of(&path_relative)))
-			continue;
-
-		service_recover_gc(file->output.start);
-
-		// remove service file
-		id_delete(id, ID_SERVICE);
-		return;
+		// abort actions
+		service_recover_abort(file);
+	} else
+	{
+		// actions considered valid, remove all remaining origins
+		//
+		// case: crash after actions completed (synced and renamed)
+		//
+		service_recover_resume(file);
 	}
 
-	// output files considered valid, remove all remaining
-	// input files
-	//
-	// case: crash after output files synced and renamed
-	//
-	service_recover_gc(file->input.start);
-
 	// remove service file
-	id_delete(id, ID_SERVICE);
+	service_file_delete(file);
 }
 
 void
@@ -97,7 +194,7 @@ service_recover(Service* self)
 	char path[PATH_MAX];
 	sfmt(path, PATH_MAX, "%s/storage", state_directory());
 
-	// read directory
+	// read storage directory
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error("service: directory '%s' open error", path);
@@ -110,37 +207,27 @@ service_recover(Service* self)
 		if (entry->d_name[0] == '.')
 			continue;
 
-		// <id>.type[.incomplete]
-		int64_t psn;
-		auto state = id_of(entry->d_name, &psn);
-		if (state == -1)
+		// <id>.service[.incomplete]
+		int64_t id = 0;
+		auto ext = id_of_next(entry->d_name, &id);
+		if  (!ext || *ext != '.')
 			continue;
 
-		state_psn_follow(psn);
-
-		Id id;
-		id_init(&id);
-		id.id     = psn;
-		id.type   = state;
-		id.volume = NULL;
-
-		switch (state) {
-		case ID_SERVICE_INCOMPLETE:
+		// .service.incomplete
+		if (! strcmp(ext, ".service.incomplete"))
 		{
 			// remove incomplete service file
-			id_delete(&id, state);
-			break;
+			state_psn_follow(id);
+			fs_unlink("%s/%s", path, entry->d_name);
+			continue;
 		}
-		case ID_SERVICE:
+
+		// .service
+		if (! strcmp(ext, ".service."))
 		{
 			// recover service file
-			service_recover_of(&id);
-			break;
-		}
-		default:
-			info("service: unexpected file: '%s%s'", path,
-			     entry->d_name);
-			continue;
+			state_psn_follow(id);
+			service_recover_file(id);
 		}
 	}
 }

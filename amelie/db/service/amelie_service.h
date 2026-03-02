@@ -11,18 +11,20 @@
 // AGPL-3.0 Licensed.
 //
 
-// service file
-#include "service/service_file.h"
-
 // service lock manager
 #include "service/service_lock_mgr.h"
+
+// service file
+#include "service/service_file.h"
 
 // service
 #include "service/service.h"
 #include "service/service_recover.h"
 
+#if 0
 // service operations
 #include "service/refresh.h"
 #include "service/flush.h"
 #include "service/indexate.h"
 #include "service/op.h"
+#endif

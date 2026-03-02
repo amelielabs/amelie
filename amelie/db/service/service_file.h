@@ -15,61 +15,84 @@ typedef struct ServiceFile ServiceFile;
 
 struct ServiceFile
 {
-	Id  id;
-	Buf input;
-	Buf output;
+	uint64_t id;
+	Buf      origins;
+	Buf      actions;
 };
-
-static inline void
-service_file_free(ServiceFile* self)
-{
-	buf_free(&self->input);
-	buf_free(&self->output);
-	am_free(self);
-}
 
 static inline ServiceFile*
 service_file_allocate(void)
 {
 	auto self = (ServiceFile*)am_malloc(sizeof(ServiceFile));
-	id_init(&self->id);
-	id_set_free(&self->id, (IdFree)service_file_free);
-	buf_init(&self->input);
-	buf_init(&self->output);
+	self->id = 0;
+	buf_init(&self->origins);
+	buf_init(&self->actions);
 	return self;
+}
+
+static inline void
+service_file_free(ServiceFile* self)
+{
+	buf_free(&self->origins);
+	buf_free(&self->actions);
+	am_free(self);
 }
 
 static inline void
 service_file_reset(ServiceFile* self)
 {
-	buf_reset(&self->input);
-	buf_reset(&self->output);
+	self->id = 0;
+	buf_reset(&self->origins);
+	buf_reset(&self->actions);
 }
 
 static inline void
 service_file_begin(ServiceFile* self)
 {
-	encode_array(&self->input);
-	encode_array(&self->output);
-}
-
-static inline void
-service_file_add_input(ServiceFile* self, Id* id)
-{
-	id_encode_path(id, id->type, &self->input);
-}
-
-static inline void
-service_file_add_output(ServiceFile* self, Id* id)
-{
-	id_encode_path(id, id->type, &self->output);
+	encode_array(&self->origins);
+	encode_array(&self->actions);
 }
 
 static inline void
 service_file_end(ServiceFile* self)
 {
-	encode_array_end(&self->input);
-	encode_array_end(&self->output);
+	encode_array_end(&self->origins);
+	encode_array_end(&self->actions);
+}
+
+static inline void
+service_file_add_origin(ServiceFile* self, Id* id)
+{
+	id_encode_path(id, STATE_COMPLETE, &self->origins);
+}
+
+static inline void
+service_file_add_create(ServiceFile* self, Id* id)
+{
+	// [create, path]
+	encode_array(&self->actions);
+	encode_raw(&self->actions, "create", 6);
+	id_encode_path(id, STATE_COMPLETE, &self->actions);
+	encode_array_end(&self->actions);
+}
+
+static inline void
+service_file_add_rename(ServiceFile* self, Id* a, int a_state, Id* b, int b_state)
+{
+	// [rename, from, to]
+	encode_array(&self->actions);
+	encode_raw(&self->actions, "rename", 6);
+	id_encode_path(a, a_state, &self->actions);
+	id_encode_path(b, b_state, &self->actions);
+	encode_array_end(&self->actions);
+}
+
+static inline void
+service_file_add_rename_version(ServiceFile* self, Id* id, int version)
+{
+	Id to = *id;
+	to.version = version;
+	service_file_add_rename(self, id, STATE_COMPLETE, &to, STATE_COMPLETE);
 }
 
 static inline void
@@ -82,13 +105,13 @@ service_file_create(ServiceFile* self)
 	// {}
 	encode_obj(buf);
 
-	// input
-	encode_raw(buf, "input", 5);
-	buf_write_buf(buf, &self->input);
+	// origins
+	encode_raw(buf, "origins", 7);
+	buf_write_buf(buf, &self->origins);
 
-	// output
-	encode_raw(buf, "output", 6);
-	buf_write_buf(buf, &self->output);
+	// actions
+	encode_raw(buf, "actions", 7);
+	buf_write_buf(buf, &self->actions);
 	encode_obj_end(buf);
 
 	// convert data to json text
@@ -99,16 +122,17 @@ service_file_create(ServiceFile* self)
 	json_export_pretty(&text, NULL, &pos);
 
 	// set id
-	auto id = &self->id;
-	id->id     = state_psn_next();
-	id->type   = ID_SERVICE;
-	id->volume = NULL;
+	self->id = state_psn_next();
 
 	// create <id>.service.incomplete
+	char path[PATH_MAX];
+	sfmt(path, PATH_MAX, "%s/storage/%" PRIu64 ".service.incomplete",
+	     state_directory(), self->id);
+
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
-	id_create(id, &file, ID_SERVICE_INCOMPLETE);
+	file_create(&file, path);
 	file_write_buf(&file, &text);
 
 	// sync incomplete service file
@@ -118,23 +142,31 @@ service_file_create(ServiceFile* self)
 	file_close(&file);
 
 	// rename as completed
-	id_rename(&self->id, ID_SERVICE_INCOMPLETE, ID_SERVICE);
+	fs_rename(path, "%s/storage/%" PRIu64 ".service",
+	          state_directory(), self->id);
 }
 
 static inline void
 service_file_delete(ServiceFile* self)
 {
-	id_delete(&self->id, ID_SERVICE);
+	fs_unlink("%s/storage/%" PRIu64 ".service",
+	          state_directory(), self->id);
 }
 
 static inline void
-service_file_open(ServiceFile* self, Id* id)
+service_file_open(ServiceFile* self, uint64_t id)
 {
+	self->id = id;
+
 	// open <id>.service file
+	char path[PATH_MAX];
+	sfmt(path, PATH_MAX, "%s/storage/%" PRIu64 ".service",
+	     state_directory(), self->id);
+
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
-	id_open(id, &file, ID_SERVICE);
+	file_open(&file, path);
 
 	// read text
 	auto buf = buf_create();
@@ -151,23 +183,23 @@ service_file_open(ServiceFile* self, Id* id)
 	auto pos = json.buf->start;
 
 	// decode service file
-	uint8_t* pos_input;
-	uint8_t* pos_output;
+	uint8_t* pos_origins;
+	uint8_t* pos_actions;
 	Decode obj[] =
 	{
-		{ DECODE_ARRAY, "input",  &pos_input  },
-		{ DECODE_ARRAY, "output", &pos_output },
-		{ 0,             NULL,     NULL       },
+		{ DECODE_ARRAY, "origins", &pos_origins },
+		{ DECODE_ARRAY, "actions", &pos_actions },
+		{ 0,             NULL,     NULL         },
 	};
 	decode_obj(obj, "service", &pos);
 
-	// write input
-	auto end = pos_input;
+	// write origins
+	auto end = pos_origins;
 	json_skip(&end);
-	buf_write(&self->input, pos_input, end - pos_input);
+	buf_write(&self->origins, pos_origins, end - pos_origins);
 
-	// write output
-	end = pos_output;
+	// write actions
+	end = pos_actions;
 	json_skip(&end);
-	buf_write(&self->output, pos_output, end - pos_output);
+	buf_write(&self->actions, pos_actions, end - pos_actions);
 }

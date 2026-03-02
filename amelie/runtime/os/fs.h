@@ -48,6 +48,19 @@ fs_unlink(const char* fmt, ...)
 		error_system();
 }
 
+static inline void format_validate(1, 2)
+fs_unlink_if_exists(const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	char path[PATH_MAX];
+	vsfmt(path, sizeof(path), fmt, args);
+	va_end(args);
+	int rc = vfs_unlink(path);
+	if (unlikely(rc == -1 && errno != ENOENT))
+		error_system();
+}
+
 static inline void format_validate(2, 3)
 fs_rename(const char* old, const char* fmt, ...)
 {
