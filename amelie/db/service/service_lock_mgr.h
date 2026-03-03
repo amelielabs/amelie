@@ -138,6 +138,7 @@ service_lock_mgr_lock(ServiceLockMgr* self,
 
 	// lock relation
 	lock->lock = lock(&lock->rel->rel, lock_type);
+	lock_detach(lock->lock);
 }
 
 hot static inline void

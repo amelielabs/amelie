@@ -50,7 +50,7 @@ cursor_lookup(PartMgr*     self,
 
 		// iterate branches (from hot to cold)
 		auto branch = object->branches;
-		while (branch)
+		for (; branch; branch = branch->next)
 		{
 			branch_iterator_reset(branch_it);
 			if (branch_iterator_open(branch_it, &config->keys, branch, key))
@@ -99,7 +99,7 @@ cursor_scan(PartMgr*     self,
 
 		// add branches (from hot to cold)
 		auto branch = object->branches;
-		while (branch)
+		for (; branch; branch = branch->next)
 		{
 			auto branch_it = branch_iterator_allocate();
 			merge_iterator_add(merge_it, &branch_it->it);
@@ -149,7 +149,7 @@ cursor_scan_cross(PartMgr*     self,
 
 		// add branches (from hot to cold)
 		auto branch = object->branches;
-		while (branch)
+		for (; branch; branch = branch->next)
 		{
 			auto branch_it = branch_iterator_allocate();
 			merge_iterator_add(merge_it, &branch_it->it);
