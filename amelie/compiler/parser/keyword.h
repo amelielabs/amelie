@@ -168,6 +168,7 @@ enum
 	KORDER,
 	KOUTER,
 	KOUT,
+	KOBJECT,
 
 	// p
 	KPROFILE,

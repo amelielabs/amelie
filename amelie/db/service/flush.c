@@ -420,9 +420,7 @@ flush_reset(Flush* self)
 bool
 flush_run(Flush* self, Table* table, uint64_t id)
 {
-	if (! tier_mgr_created(&table->tier_mgr))
-		error("flush: table has no tiers");
-
+	assert(tier_mgr_created(&table->tier_mgr));
 	flush_reset(self);
 
 	// lock partition by id
@@ -433,10 +431,9 @@ flush_run(Flush* self, Table* table, uint64_t id)
 	if (! flush_begin(self, table, id))
 		return false;
 
-	// create heap snapshot
 	auto on_error = error_catch
 	(
-		// run heap snapshot in background
+		// run flush in background
 		run(flush_job, 1, self);
 
 		// apply

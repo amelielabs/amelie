@@ -133,7 +133,7 @@ drop tier t on test;
 drop storage test;
 # test: alter tier parsing
 alter;
-{"msg": "alter❰;❱ ⟵ USER|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION expected"}
+{"msg": "alter❰;❱ ⟵ USER|STORAGE|DATABASE|TABLE|INDEX|TIER|PARTITION|OBJECT|FUNCTION expected"}
 alter tier;
 {"msg": "alter tier❰;❱ ⟵ name expected"}
 alter tier 1;

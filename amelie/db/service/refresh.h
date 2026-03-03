@@ -19,7 +19,6 @@ struct Refresh
 	Part*        origin;
 	uint64_t     origin_lsn;
 	Id           origin_id;
-
 	Id           part_id;
 	File         part_file;
 	ServiceFile* service_file;

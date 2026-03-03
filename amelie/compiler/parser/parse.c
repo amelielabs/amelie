@@ -393,7 +393,7 @@ parse_stmt(Stmt* self)
 
 	case KALTER:
 	{
-		// ALTER USER | STORAGE | DATABASE | TABLE | INDEX | TIER | PARTITION | FUNCTION
+		// ALTER USER | STORAGE | DATABASE | TABLE | INDEX | TIER | PARTITION | OBJECT | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_ALTER_USER;
@@ -429,12 +429,17 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_PARTITION;
 			parse_part_alter(self);
 		} else
+		if (stmt_if(self, KOBJECT))
+		{
+			self->id = STMT_ALTER_OBJECT;
+			parse_object_alter(self);
+		} else
 		if (stmt_if(self, KFUNCTION))
 		{
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION expected");
+			stmt_error(self, NULL, "USER|STORAGE|DATABASE|TABLE|INDEX|TIER|PARTITION|OBJECT|FUNCTION expected");
 		}
 		break;
 	}

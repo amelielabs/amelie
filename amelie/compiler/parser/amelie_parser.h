@@ -74,6 +74,7 @@
 #include "parser/parse_index.h"
 #include "parser/parse_tier.h"
 #include "parser/parse_part.h"
+#include "parser/parse_object.h"
 #include "parser/parse_function.h"
 
 // dml

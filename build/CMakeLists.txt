@@ -218,6 +218,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/service/refresh.c
     ${AMELIE_ROOT}/db/service/flush.c
     ${AMELIE_ROOT}/db/service/indexate.c
+    ${AMELIE_ROOT}/db/service/split.c
     ${AMELIE_ROOT}/db/service/op.c
     ${AMELIE_ROOT}/db/db/snapshot_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
@@ -286,6 +287,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
     ${AMELIE_ROOT}/compiler/parser/parse_tier.c
     ${AMELIE_ROOT}/compiler/parser/parse_part.c
+    ${AMELIE_ROOT}/compiler/parser/parse_object.c
     ${AMELIE_ROOT}/compiler/parser/parse_function.c
     ${AMELIE_ROOT}/compiler/parser/parse_from.c
     ${AMELIE_ROOT}/compiler/parser/parse_returning.c

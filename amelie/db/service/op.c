@@ -36,10 +36,38 @@ service_refresh(Service* self, Uuid* id_table, uint64_t id, Str* storage)
 }
 
 void
+service_refresh_object(Service* self, Uuid* id_table, uint64_t id, Str* storage)
+{
+	// note: executed under shared catalog lock
+	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
+	Split split;
+	split_init(&split, self);
+	defer(split_free, &split);
+	unused(storage);
+	if (! split_run(&split, table, id, true))
+		error("object or storage not found");
+}
+
+void
+service_split(Service* self, Uuid* id_table, uint64_t id)
+{
+	// note: executed under shared catalog lock
+	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
+	Split split;
+	split_init(&split, self);
+	defer(split_free, &split);
+	if (! split_run(&split, table, id, false))
+		error("object or storage not found");
+}
+
+void
 service_flush(Service* self, Uuid* id_table, uint64_t id)
 {
 	// note: executed under shared catalog lock
 	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
+	if (! tier_mgr_created(&table->tier_mgr))
+		error("flush: table has no tiers");
+
 	Flush flush;
 	flush_init(&flush, self);
 	defer(flush_free, &flush);
