@@ -18,6 +18,7 @@ struct LockMgr
 	Spinlock  lock;
 	List      list;
 	int       list_count;
+	LockCache cache;
 };
 
 static inline void
@@ -26,12 +27,14 @@ lock_mgr_init(LockMgr* self)
 	self->list_count = 0;
 	list_init(&self->list);
 	spinlock_init(&self->lock);
+	lock_cache_init(&self->cache);
 }
 
 static inline void
 lock_mgr_free(LockMgr* self)
 {
 	spinlock_free(&self->lock);
+	lock_cache_free(&self->cache);
 }
 
 hot static inline void
@@ -137,18 +140,12 @@ lock_mgr_lock(LockMgr*    self, Relation* rel, LockId rel_lock,
 	}
 
 	// create lock
-	auto lock = lock_allocate(rel, rel_lock, name, func);
+	auto lock = lock_cache_create(&self->cache, rel, rel_lock, name, func);
 	lock_mgr_lock_of(self, lock);
 
-	// attach lock to the coroutine (unless detached)
-	if (! name)
-	{
-		lock->coro = am_self();
-		lock->refs++;
-		list_init(&lock->link);
-		list_append(&lock->coro->locks, &lock->link);
-	}
-
+	// attach lock to the coroutine
+	lock_attach(lock);
+	lock->refs++;
 	return lock;
 }
 
@@ -178,19 +175,14 @@ lock_mgr_unlock(LockMgr* self, Lock* lock)
 	if (!lock || lock->rel_lock == LOCK_NONE)
 		return;
 
+	// reentrant support
+	lock->refs--;
+	if (lock->refs > 0)
+		return;
+
 	// detach from the coroutine
 	if (lock->coro)
-	{
-		// reentrant support
-		lock->refs--;
-		if (lock->refs > 0)
-			return;
-		assert(! lock->refs);
-
-		assert(lock->coro == am_self());
-		lock->coro = NULL;
-		list_unlink(&lock->link);
-	}
+		lock_detach(lock);
 
 	auto rel = lock->rel;
 	spinlock_lock(&rel->lock);
@@ -222,7 +214,7 @@ lock_mgr_unlock(LockMgr* self, Lock* lock)
 	lock->rel      = NULL;
 	lock->rel_lock = LOCK_NONE;
 
-	lock_free(lock);
+	lock_cache_push(&self->cache, lock);
 }
 
 hot static inline Lock*

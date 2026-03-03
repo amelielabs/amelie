@@ -28,9 +28,8 @@ struct Lock
 };
 
 static inline void
-lock_init(Lock*       self, Relation* rel, LockId rel_lock,
-          Str*        name,
-          const char* func)
+lock_init(Lock* self, Relation* rel, LockId rel_lock,
+          Str*  name, const char* func)
 {
 	self->rel       = rel;
 	self->rel_lock  = rel_lock;
@@ -49,25 +48,30 @@ lock_init(Lock*       self, Relation* rel, LockId rel_lock,
 static inline void
 lock_free(Lock* self)
 {
-	if (likely(str_empty(&self->name)))
-		return;
-	// detached lock
 	str_free(&self->name);
 	am_free(self);
 }
 
-static inline Lock*
-lock_allocate(Relation*   rel, LockId rel_lock,
-              Str*        name,
-              const char* func)
+static inline void
+lock_reset(Lock* self)
 {
-	Lock* self;
-	if (unlikely(name))
-		self = (Lock*)malloc(sizeof(Lock));
-	else
-		self = (Lock*)palloc(sizeof(Lock));
-	lock_init(self, rel, rel_lock, name, func);
-	return self;
+	str_free(&self->name);
+}
+
+static inline void
+lock_attach(Lock* self)
+{
+	assert(! self->coro);
+	self->coro = am_self();
+	list_append(&self->coro->locks, &self->link);
+}
+
+static inline void
+lock_detach(Lock* self)
+{
+	assert(self->coro == am_self());
+	self->coro = NULL;
+	list_unlink(&self->link);
 }
 
 static inline void

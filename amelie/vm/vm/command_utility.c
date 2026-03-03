@@ -249,9 +249,9 @@ clock_rel(Vm* self, Op* op)
 	}
 
 	// create detached lock
-	lock_mgr_lock(&runtime()->lock_mgr, rel, lock_id,
-	              &name,
-	              source_function);
+	lock = lock_mgr_lock(&runtime()->lock_mgr, rel, lock_id,
+	                     &name, source_function);
+	lock_detach(lock);
 }
 
 void

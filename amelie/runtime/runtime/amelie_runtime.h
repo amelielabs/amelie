@@ -16,6 +16,7 @@
 #include "runtime/relation.h"
 #include "runtime/access.h"
 #include "runtime/lock.h"
+#include "runtime/lock_cache.h"
 #include "runtime/lock_mgr.h"
 #include "runtime/lockable_mgr.h"
 
