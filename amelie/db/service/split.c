@@ -86,7 +86,6 @@ split_write(Split* self, Iterator* it, Object* object, uint64_t limit)
 	writer_reset(writer);
 	writer_start(writer, &object->file, object->id.volume->storage,
 	             self->tier->config->region_size);
-
 	while (iterator_has(it))
 	{
 		auto row = iterator_at(it);
@@ -192,15 +191,17 @@ split_complete_job(intptr_t* argv)
 	// sync and rename objects
 	for (auto at = 0; at < self->objects_count; at++)
 	{
-		auto object = objects[at];
-
 		// sync object file
+		auto object = objects[at];
 		if (opt_int_of(&config()->storage_sync))
 			file_sync(&object->file);
 
 		// rename
 		object_rename(object, STATE_INCOMPLETE, STATE_COMPLETE);
 	}
+
+	// unlink origin object file
+	object_delete(self->origin, STATE_COMPLETE);
 
 	// remove service file (done)
 	service_file_delete(service);
@@ -265,7 +266,6 @@ split_reset(Split* self)
 bool
 split_run(Split* self, Table* table, uint64_t id, bool refresh)
 {
-
 	split_reset(self);
 
 	// lock object by id

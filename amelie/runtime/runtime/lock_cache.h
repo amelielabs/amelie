@@ -35,6 +35,7 @@ lock_cache_free(LockCache* self)
 		lock_free(lock);
 	}
 	list_init(&self->list);
+	spinlock_free(&self->lock);
 }
 
 static inline Lock*
@@ -61,8 +62,8 @@ lock_cache_push(LockCache* self, Lock* lock)
 }
 
 static inline Lock*
-lock_cache_create(LockCache* self, Relation* rel, LockId rel_lock,
-                  Str*       name, const char* func)
+lock_create(LockCache* self, Relation* rel, LockId rel_lock,
+            Str*       name, const char* func)
 {
 	auto lock = lock_cache_pop(self);
 	if (unlikely(! lock))

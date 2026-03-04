@@ -140,7 +140,7 @@ lock_mgr_lock(LockMgr*    self, Relation* rel, LockId rel_lock,
 	}
 
 	// create lock
-	auto lock = lock_cache_create(&self->cache, rel, rel_lock, name, func);
+	auto lock = lock_create(&self->cache, rel, rel_lock, name, func);
 	lock_mgr_lock_of(self, lock);
 
 	// attach lock to the coroutine
