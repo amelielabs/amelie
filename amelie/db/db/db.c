@@ -61,6 +61,9 @@ db_open(Db* self, bool bootstrap)
 void
 db_close(Db* self)
 {
+	// stop service
+	service_stop(&self->service);
+
 	// close catalog
 	catalog_close(&self->catalog);
 

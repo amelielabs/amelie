@@ -97,17 +97,17 @@ service_queue_next(ServiceQueue* self, Action* action)
 {
 	spinlock_lock(&self->lock);
 
-	// shutdown
-	if (self->shutdown)
-	{
-		spinlock_unlock(&self->lock);
-		return true;
-	}
-
 	// choose next target to work on
 	ServiceReq* req = NULL;
 	for (;;)
 	{
+		// shutdown
+		if (self->shutdown)
+		{
+			spinlock_unlock(&self->lock);
+			return true;
+		}
+
 		list_foreach_safe(&self->list)
 		{
 			auto at = list_at(ServiceReq, link);

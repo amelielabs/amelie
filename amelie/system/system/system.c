@@ -284,8 +284,8 @@ system_start(System* self, bool bootstrap)
 	// do parallel recover of catalog and wal
 	system_recover(self, bootstrap);
 
-	// start checkpointer service
-	// checkpointer_start(&self->storage.checkpointer);
+	// start service
+	service_start(&self->db.service);
 
 	// start periodic async wal fsync
 	wal_periodic_start(&self->db.wal_mgr.wal_periodic);

@@ -30,7 +30,7 @@ service_schedule(Service* self, Action* action)
 
 	// find table
 	auto table = table_mgr_find_by(&self->catalog->table_mgr, &action->req->id_table, false);
-	if (! table)
+	if (!table || !tier_mgr_created(&table->tier_mgr))
 		return;
 
 	// take shared table lock
