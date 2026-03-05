@@ -11,6 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
+// service queue
+#include "service/service_req.h"
+#include "service/service_req_cache.h"
+#include "service/service_work.h"
+#include "service/service_queue.h"
+
 // service lock manager
 #include "service/service_lock_mgr.h"
 
@@ -19,6 +25,7 @@
 
 // service
 #include "service/service.h"
+#include "service/service_worker.h"
 #include "service/service_recover.h"
 
 // service operations

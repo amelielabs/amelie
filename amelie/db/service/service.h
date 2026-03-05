@@ -16,25 +16,26 @@ typedef struct Service Service;
 struct Service
 {
 	ServiceLockMgr lock_mgr;
+	ServiceQueue   queue;
+	List           workers;
+	int            workers_count;
 	Catalog*       catalog;
 	WalMgr*        wal_mgr;
 };
 
+void service_init(Service*, Catalog*, WalMgr*);
+void service_free(Service*);
+void service_start(Service*);
+void service_stop(Service*);
+
 static inline void
-service_init(Service* self, Catalog* catalog, WalMgr* wal_mgr)
+service_add(Service* self, Uuid* id_table)
 {
-	self->catalog = catalog;
-	self->wal_mgr = wal_mgr;
-	service_lock_mgr_init(&self->lock_mgr);
+	if (self->workers_count > 0)
+		service_queue_add(&self->queue, id_table);
 }
 
 static inline void
-service_free(Service* self)
-{
-	service_lock_mgr_free(&self->lock_mgr);
-}
-
-hot static inline void
 service_lock(Service*     self,
              ServiceLock* lock,
              LockId       lock_type,
@@ -43,7 +44,7 @@ service_lock(Service*     self,
 	service_lock_mgr_lock(&self->lock_mgr, lock, lock_type, id);
 }
 
-hot static inline void
+static inline void
 service_unlock(ServiceLock* lock)
 {
 	service_lock_mgr_unlock(lock);
