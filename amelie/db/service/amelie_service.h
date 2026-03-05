@@ -12,9 +12,9 @@
 //
 
 // service queue
+#include "service/action.h"
 #include "service/service_req.h"
 #include "service/service_req_cache.h"
-#include "service/service_work.h"
 #include "service/service_queue.h"
 
 // service lock manager
@@ -34,3 +34,4 @@
 #include "service/flush.h"
 #include "service/split.h"
 #include "service/op.h"
+#include "service/execute.h"

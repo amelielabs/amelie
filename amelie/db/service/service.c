@@ -45,18 +45,19 @@ static void
 service_main(void* arg)
 {
 	ServiceWorker* self = arg;
-	ServiceWork work;
-	service_work_init(&work);
 	auto queue = &self->service->queue;
+
+	Action action;
+	action_init(&action);
 	for (;;)
 	{
-		auto shutdown = service_queue_next(queue, &work);
+		auto shutdown = service_queue_next(queue, &action);
 		if (unlikely(shutdown))
 			break;
 		error_catch (
-			service_execute(self->service, &work)
+			service_execute(self->service, &action)
 		);
-		service_queue_complete(queue, &work);
+		service_queue_complete(queue, &action);
 	}
 }
 

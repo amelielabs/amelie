@@ -214,12 +214,14 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/wal/wal_worker.c
     ${AMELIE_ROOT}/db/wal/wal_periodic.c
     ${AMELIE_ROOT}/db/wal/wal_mgr.c
+    ${AMELIE_ROOT}/db/service/service.c
     ${AMELIE_ROOT}/db/service/service_recover.c
     ${AMELIE_ROOT}/db/service/refresh.c
     ${AMELIE_ROOT}/db/service/flush.c
     ${AMELIE_ROOT}/db/service/indexate.c
     ${AMELIE_ROOT}/db/service/split.c
     ${AMELIE_ROOT}/db/service/op.c
+    ${AMELIE_ROOT}/db/service/execute.c
     ${AMELIE_ROOT}/db/db/snapshot_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/recover.c)

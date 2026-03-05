@@ -47,7 +47,7 @@ service_queue_shutdown(ServiceQueue* self)
 	self->shutdown = true;
 	list_foreach_safe(&self->list_waiters)
 	{
-		auto ref = list_at(ServiceWork, link);
+		auto ref = list_at(Action, link);
 		list_unlink(&ref->link);
 		event_signal(&ref->event);
 	}
@@ -60,7 +60,7 @@ service_queue_wakeup(ServiceQueue* self)
 	if (list_empty(&self->list_waiters))
 		return;
 	auto first = list_pop(&self->list_waiters);
-	auto ref   = container_of(first, ServiceWork, link);
+	auto ref   = container_of(first, Action, link);
 	event_signal(&ref->event);
 }
 
@@ -93,7 +93,7 @@ service_queue_add(ServiceQueue* self, Uuid* id_table)
 }
 
 hot static inline bool
-service_queue_next(ServiceQueue* self, ServiceWork* work)
+service_queue_next(ServiceQueue* self, Action* action)
 {
 	spinlock_lock(&self->lock);
 
@@ -101,7 +101,7 @@ service_queue_next(ServiceQueue* self, ServiceWork* work)
 	if (self->shutdown)
 	{
 		spinlock_unlock(&self->lock);
-		return false;
+		return true;
 	}
 
 	// choose next target to work on
@@ -126,36 +126,36 @@ service_queue_next(ServiceQueue* self, ServiceWork* work)
 		}
 
 		// add to the wait list
-		event_init(&work->event);
-		event_attach(&work->event);
-		list_append(&self->list_waiters, &work->link);
+		event_init(&action->event);
+		event_attach(&action->event);
+		list_append(&self->list_waiters, &action->link);
 
 		spinlock_unlock(&self->lock);
-		event_wait(&work->event, -1);
+		event_wait(&action->event, -1);
 		spinlock_lock(&self->lock);
 	}
 
-	work->req     = req;
-	work->pending = req->pending;
-	work->worked  = false;
+	action->req     = req;
+	action->pending = req->pending;
+	action->type    = ACTION_NONE;
 	req->refs++;
 
 	spinlock_unlock(&self->lock);
-	return true;
+	return false;
 }
 
 static inline void
-service_queue_complete(ServiceQueue* self, ServiceWork* work)
+service_queue_complete(ServiceQueue* self, Action* action)
 {
 	spinlock_lock(&self->lock);
 
-	auto req = work->req;
+	auto req = action->req;
 	req->refs--;
 	assert(req->refs >= 0);
 
 	// if no work been done and the request has no new notifications,
 	// set its pending counter to zero to avoid picking it up again
-	if (!work->worked && req->pending <= work->pending)
+	if (action->type == ACTION_NONE && req->pending <= action->pending)
 		req->pending = 0;
 
 	// remove request if it has no active workers and no

@@ -29,13 +29,6 @@ void service_start(Service*);
 void service_stop(Service*);
 
 static inline void
-service_add(Service* self, Uuid* id_table)
-{
-	if (self->workers_count > 0)
-		service_queue_add(&self->queue, id_table);
-}
-
-static inline void
 service_lock(Service*     self,
              ServiceLock* lock,
              LockId       lock_type,
@@ -48,4 +41,11 @@ static inline void
 service_unlock(ServiceLock* lock)
 {
 	service_lock_mgr_unlock(lock);
+}
+
+hot static inline void
+service_add(Service* self, Table* table)
+{
+	if (self->workers_count > 0 && tier_mgr_created(&table->tier_mgr))
+		service_queue_add(&self->queue, &table->config->id);
 }

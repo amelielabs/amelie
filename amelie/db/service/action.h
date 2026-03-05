@@ -11,23 +11,33 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct ServiceWork ServiceWork;
+typedef struct ServiceReq ServiceReq;
+typedef struct Action     Action;
 
-struct ServiceWork
+enum
+{
+	ACTION_NONE,
+	ACTION_FLUSH,
+	ACTION_REFRESH
+};
+
+struct Action
 {
 	ServiceReq* req;
 	int         pending;
-	bool        worked;
+	int         type;
+	uint64_t    id;
 	Event       event;
 	List        link;
 };
 
 static inline void
-service_work_init(ServiceWork* self)
+action_init(Action* self)
 {
 	self->req     = NULL;
 	self->pending = 0;
-	self->worked  = false;
+	self->type    = ACTION_NONE;
+	self->id      = 0;
 	event_init(&self->event);
 	list_init(&self->link);
 }

@@ -213,10 +213,3 @@ service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
 	table_index_add(table, tr, config);
 	log_persist_relation(&tr->log, op);
 }
-
-void
-service_execute(Service* self, ServiceWork* work)
-{
-	(void)self;
-	(void)work;
-}
