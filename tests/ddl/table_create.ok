@@ -726,6 +726,7 @@ show tables extended;
   }],
   "partitions": {
     "partitions": 1,
+    "size": 0,
     "volumes": [{
       "name": "x",
       "id": "00000000-0000-0000-0000-000000000000",

@@ -301,8 +301,9 @@ flush_complete_job(intptr_t* argv)
 static void
 flush_apply(Flush* self)
 {
-	auto table  = self->table;
 	auto origin = self->origin;
+	auto table  = self->table;
+	auto tier   = tier_mgr_first(&table->tier_mgr);
 
 	// take table exclusive lock (unlock on return)
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
@@ -354,6 +355,7 @@ flush_apply(Flush* self)
 	volume_add(origin->id.volume, &origin->link_volume);
 
 	// attach branches to the corresponding objects
+	auto service = false;
 	auto at  = (FlushBranch*)self->branches.start;
 	auto end = (FlushBranch*)self->branches.position;
 	for (; at < end; at++)
@@ -362,7 +364,14 @@ flush_apply(Flush* self)
 
 		// update object version
 		at->parent->id.version++;
+
+		// schedule additional service for the table
+		if (at->parent->branches_count > tier->config->branches)
+			service = true;
 	}
+
+	if (service)
+		service_add(self->service, &table->config->id);
 }
 
 void

@@ -8,7 +8,7 @@ show partitions on test;
   "id": 1,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 0,
   "size": 524288,
   "compression": 1
@@ -123,7 +123,7 @@ show partitions on test;
   "id": 2,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 2,
   "size": 524288,
   "compression": 1

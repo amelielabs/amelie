@@ -44,8 +44,7 @@ service_unlock(ServiceLock* lock)
 }
 
 hot static inline void
-service_add(Service* self, Table* table)
+service_add(Service* self, Uuid* id_table)
 {
-	if (self->workers_count > 0 && tier_mgr_created(&table->tier_mgr))
-		service_queue_add(&self->queue, &table->config->id);
+	service_queue_add(&self->queue, id_table);
 }

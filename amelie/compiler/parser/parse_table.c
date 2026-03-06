@@ -377,6 +377,11 @@ parse_table_create_with(Stmt* self)
 		{
 			auto value = stmt_expect(self, KINT);
 			part_mgr_config_set_partitions(config_part, value->integer);
+		} else
+		if (str_is(&name->string, "size", 4))
+		{
+			auto value = stmt_expect(self, KINT);
+			part_mgr_config_set_size(config_part, value->integer);
 		} else {
 			stmt_error(self, name, "unknown option");
 		}

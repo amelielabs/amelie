@@ -25,7 +25,6 @@
 
 // service
 #include "service/service.h"
-#include "service/service_worker.h"
 #include "service/service_recover.h"
 
 // service operations

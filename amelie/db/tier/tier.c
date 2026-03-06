@@ -174,8 +174,11 @@ tier_create(Tier* self)
 	};
 
 	auto object = object_allocate(&id);
-	defer(object_free, object);
+	errdefer(object_free, object);
 	object_create(object, STATE_INCOMPLETE);
+
+	auto branch = branch_allocate(&object->id, &object->file);
+	object_add(object, branch);
 
 	// create empty branch
 	auto writer = writer_allocate();
@@ -183,12 +186,18 @@ tier_create(Tier* self)
 	writer_start(writer, &object->file, id.volume->storage, 0);
 	writer_stop(writer);
 
+	meta_writer_copy(&writer->meta_writer,
+	                 &branch->meta,
+	                 &branch->meta_data);
+
 	// sync incomplete file
 	if (opt_int_of(&config()->storage_sync))
 		file_sync(&object->file);
 
 	// rename
 	object_rename(object, STATE_INCOMPLETE, STATE_COMPLETE);
+
+	tier_add(self, object);
 }
 
 void

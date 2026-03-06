@@ -17,5 +17,6 @@ struct PartArg
 {
 	Sequence* seq;
 	bool      unlogged;
+	uint64_t  size;
 	Uuid*     id_table;
 };

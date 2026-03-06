@@ -147,6 +147,18 @@ pod_run(Pod* self, Ltr* ltr)
 	ltr_complete(ltr);
 }
 
+hot static inline void
+pod_service(Pod* self)
+{
+	auto part = self->part;
+	auto size_wm = part->arg->size;
+	if (! size_wm)
+		return;
+	auto used = part->heap->header->size_used;
+	if (used >= size_wm)
+		service_add(&share()->db->service, part->arg->id_table);
+}
+
 static void
 pod_main(void* arg)
 {
@@ -164,6 +176,9 @@ pod_main(void* arg)
 
 		// execute transaction
 		pod_run(self, ltr);
+
+		// schedule partition service
+		pod_service(self);
 	}
 }
 

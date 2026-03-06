@@ -223,7 +223,10 @@ split_apply(Split* self)
 	// add new objects
 	auto objects = (Object**)self->objects.start;	
 	for (auto at = 0; at < self->objects_count; at++)
-		tier_add(self->tier, objects[at]);
+	{
+		auto object = objects[at];
+		tier_add(self->tier, object);
+	}
 }
 
 void

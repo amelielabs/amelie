@@ -8,7 +8,7 @@ show partitions on test;
   "id": 1,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 0,
   "size": 524288,
   "compression": 1
@@ -65,7 +65,7 @@ show partitions on test;
   "id": 2,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 2,
   "size": 524288,
   "compression": 1
@@ -138,7 +138,7 @@ show partitions on test;
   "id": 4,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 7,
   "size": 524288,
   "compression": 1
@@ -211,7 +211,7 @@ show partitions on test;
   "id": 6,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 12,
   "size": 524288,
   "compression": 1
@@ -303,7 +303,7 @@ show partitions on test;
   "id": 8,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 17,
   "size": 524288,
   "compression": 1
@@ -387,7 +387,7 @@ show partitions on test;
   "id": 10,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 41,
   "size": 524288,
   "compression": 1
@@ -467,7 +467,7 @@ show partitions on test;
   "id": 12,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 45,
   "size": 524288,
   "compression": 1

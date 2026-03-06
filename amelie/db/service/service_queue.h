@@ -82,6 +82,7 @@ service_queue_add(ServiceQueue* self, Uuid* id_table)
 	if (! req)
 	{
 		req = service_req_create(&self->cache);
+		service_req_set(req, id_table);
 		list_append(&self->list, &req->link);
 	}
 	req->pending++;

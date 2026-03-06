@@ -146,7 +146,7 @@ show partitions on test;
   "id": 1,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -156,7 +156,7 @@ select show('partitions', '', 'test', false);
   "id": 1,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -167,7 +167,7 @@ show partition '1' on test;
   "id": 1,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -177,7 +177,7 @@ select show('partition', '1', 'test', false);
   "id": 1,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -251,7 +251,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 4,
-  "writes_bytes": 694,
+  "writes_bytes": 700,
   "ops": 4
 }]
 # test: show replicas

@@ -26,39 +26,39 @@ show partitions on test;
   "id": 1,
   "storage": "a",
   "min": 0,
-  "max": 1638,
+  "max": 1619,
   "lsn": 0,
   "size": 0,
   "compression": 1
 }, {
   "id": 2,
   "storage": "b",
-  "min": 1638,
-  "max": 3276,
+  "min": 1619,
+  "max": 3238,
   "lsn": 0,
   "size": 0,
   "compression": 1
 }, {
   "id": 3,
   "storage": "c",
-  "min": 3276,
-  "max": 4914,
+  "min": 3238,
+  "max": 4857,
   "lsn": 0,
   "size": 0,
   "compression": 1
 }, {
   "id": 4,
   "storage": "a",
-  "min": 4914,
-  "max": 6552,
+  "min": 4857,
+  "max": 6476,
   "lsn": 0,
   "size": 0,
   "compression": 1
 }, {
   "id": 5,
   "storage": "b",
-  "min": 6552,
-  "max": 8192,
+  "min": 6476,
+  "max": 8096,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -69,39 +69,39 @@ show partitions on test;
   "id": 6,
   "storage": "c",
   "min": 0,
-  "max": 1638,
+  "max": 1619,
   "lsn": 0,
   "size": 0,
   "compression": 1
 }, {
   "id": 2,
   "storage": "b",
-  "min": 1638,
-  "max": 3276,
+  "min": 1619,
+  "max": 3238,
   "lsn": 0,
   "size": 0,
   "compression": 1
 }, {
   "id": 3,
   "storage": "c",
-  "min": 3276,
-  "max": 4914,
+  "min": 3238,
+  "max": 4857,
   "lsn": 0,
   "size": 0,
   "compression": 1
 }, {
   "id": 4,
   "storage": "a",
-  "min": 4914,
-  "max": 6552,
+  "min": 4857,
+  "max": 6476,
   "lsn": 0,
   "size": 0,
   "compression": 1
 }, {
   "id": 5,
   "storage": "b",
-  "min": 6552,
-  "max": 8192,
+  "min": 6476,
+  "max": 8096,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -111,7 +111,7 @@ show partition '6' on test;
   "id": 6,
   "storage": "c",
   "min": 0,
-  "max": 1638,
+  "max": 1619,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -123,7 +123,7 @@ show partition '8' on test;
   "id": 8,
   "storage": "b",
   "min": 0,
-  "max": 1638,
+  "max": 1619,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -135,7 +135,7 @@ show partition '10' on test;
   "id": 10,
   "storage": "b",
   "min": 0,
-  "max": 1638,
+  "max": 1619,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -148,7 +148,7 @@ show partition '10' on test;
   "id": 10,
   "storage": "b",
   "min": 0,
-  "max": 1638,
+  "max": 1619,
   "lsn": 0,
   "size": 0,
   "compression": 1

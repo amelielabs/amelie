@@ -16,6 +16,7 @@ typedef struct PartMgrConfig PartMgrConfig;
 struct PartMgrConfig
 {
 	int64_t   partitions;
+	int64_t   size;
 	VolumeMgr volumes;
 };
 
@@ -23,6 +24,7 @@ static inline void
 part_mgr_config_init(PartMgrConfig* self)
 {
 	self->partitions = 0;
+	self->size       = 0;
 	volume_mgr_init(&self->volumes);
 }
 
@@ -39,9 +41,16 @@ part_mgr_config_set_partitions(PartMgrConfig* self, int value)
 }
 
 static inline void
+part_mgr_config_set_size(PartMgrConfig* self, int value)
+{
+	self->size = value;
+}
+
+static inline void
 part_mgr_config_copy(PartMgrConfig* self, PartMgrConfig* copy)
 {
 	part_mgr_config_set_partitions(copy, self->partitions);
+	part_mgr_config_set_size(copy, self->size);
 	volume_mgr_copy(&self->volumes, &copy->volumes);
 }
 
@@ -51,9 +60,10 @@ part_mgr_config_read(PartMgrConfig* self, uint8_t** pos)
 	uint8_t* pos_volumes = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_INT,    "partitions", &self->partitions },
-		{ DECODE_ARRAY,  "volumes",    &pos_volumes      },
-		{ 0,              NULL,         NULL             },
+		{ DECODE_INT,   "partitions", &self->partitions },
+		{ DECODE_ARRAY, "volumes",    &pos_volumes      },
+		{ DECODE_INT,   "size",       &self->size       },
+		{ 0,             NULL,         NULL             },
 	};
 	decode_obj(obj, "part_mgr_config", pos);
 
@@ -69,6 +79,10 @@ part_mgr_config_write(PartMgrConfig* self, Buf* buf, int flags)
 	// partitions
 	encode_raw(buf, "partitions", 10);
 	encode_integer(buf, self->partitions);
+
+	// size
+	encode_raw(buf, "size", 4);
+	encode_integer(buf, self->size);
 
 	// volumes
 	encode_raw(buf, "volumes", 7);

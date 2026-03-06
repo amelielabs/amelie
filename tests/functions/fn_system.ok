@@ -240,7 +240,7 @@ select show('partitions', '', 'test', false);
   "id": 1,
   "storage": "main",
   "min": 0,
-  "max": 8192,
+  "max": 8096,
   "lsn": 0,
   "size": 0,
   "compression": 1
@@ -263,7 +263,7 @@ select show('wal');
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 368,
+  "writes_bytes": 374,
   "ops": 1
 }]
 # test: metrics

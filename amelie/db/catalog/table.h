@@ -75,6 +75,7 @@ table_allocate(TableConfig* config,
 	auto arg = &self->part_arg;
 	arg->seq      = &self->seq;
 	arg->unlogged =  self->config->unlogged;
+	arg->size     =  self->config->part_mgr_config.size;
 	arg->id_table = &self->config->id;
 
 	// tiering
