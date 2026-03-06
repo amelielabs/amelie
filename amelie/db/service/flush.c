@@ -79,6 +79,7 @@ flush_map(Flush* self, FlushBranch* branch, Row* key)
 	{
 		// map object matching the key
 		auto lock_table = lock(&table->rel, LOCK_SHARED);
+		branch->parent_last = false;
 		branch->parent = mapping_map(&tier->mapping, key);
 		auto parent_id = branch->parent->id.id;
 		unlock(lock_table);
@@ -89,6 +90,7 @@ flush_map(Flush* self, FlushBranch* branch, Row* key)
 		// ensure the object is still exists
 		lock_table = lock(&table->rel, LOCK_SHARED);
 		auto match = tier_find(tier, parent_id);
+		branch->parent_last = !mapping_next(&tier->mapping, branch->parent);
 		unlock(lock_table);
 
 		// shared object lock is held till flush completion
@@ -106,8 +108,9 @@ flush_start(Flush* self, Row* key)
 {
 	// create new branch
 	auto branch = (FlushBranch*)buf_emplace(&self->branches, sizeof(FlushBranch));
-	branch->parent = NULL;
-	branch->branch = NULL;
+	branch->parent      = NULL;
+	branch->parent_last = false;
+	branch->branch      = NULL;
 	service_lock_init(&branch->lock);
 	self->branches_count++;
 
@@ -204,10 +207,13 @@ flush_job(intptr_t* argv)
 		auto row = heap_index_iterator_at(&it);
 		if (branch)
 		{
-			// todo: if not in range -> break
-			writer_add(self->writer, row);
-			heap_index_iterator_next(&it);
-			continue;
+			// object is last or row <= branch max
+			if (branch->parent_last || branch_in(branch->parent->root, keys, row))
+			{
+				writer_add(self->writer, row);
+				heap_index_iterator_next(&it);
+				continue;
+			}
 		}
 
 		// close writer (finish previous object)

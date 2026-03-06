@@ -18,6 +18,7 @@ struct FlushBranch
 {
 	ServiceLock lock;
 	Object*     parent;
+	bool        parent_last;
 	Branch*     branch;
 };
 

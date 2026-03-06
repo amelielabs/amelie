@@ -57,6 +57,13 @@ branch_max(Branch* self)
 	return meta_region_max(meta_max(&self->meta, &self->meta_data));
 }
 
+hot always_inline static inline bool
+branch_in(Branch* self, Keys* keys, Row* key)
+{
+	// key <= branch_max
+	return compare(keys, key, branch_max(self)) <= 0;
+}
+
 static inline void
 branch_status(Branch* self, Buf* buf, int flags)
 {
