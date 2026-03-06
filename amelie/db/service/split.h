@@ -20,7 +20,6 @@ struct Split
 	Buf          objects;
 	int          objects_count;
 	Writer*      writer;
-	bool         refresh;
 	Table*       table;
 	Tier*        tier;
 	ServiceFile* service_file;
@@ -30,4 +29,4 @@ struct Split
 void split_init(Split*, Service*);
 void split_free(Split*);
 void split_reset(Split*);
-bool split_run(Split*, Table*, uint64_t, bool);
+bool split_run(Split*, Table*, uint64_t);

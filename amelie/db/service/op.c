@@ -44,7 +44,7 @@ service_refresh_object(Service* self, Uuid* id_table, uint64_t id, Str* storage)
 	split_init(&split, self);
 	defer(split_free, &split);
 	unused(storage);
-	if (! split_run(&split, table, id, true))
+	if (! split_run(&split, table, id))
 		error("object or storage not found");
 }
 
@@ -56,7 +56,7 @@ service_split(Service* self, Uuid* id_table, uint64_t id)
 	Split split;
 	split_init(&split, self);
 	defer(split_free, &split);
-	if (! split_run(&split, table, id, false))
+	if (! split_run(&split, table, id))
 		error("object or storage not found");
 }
 

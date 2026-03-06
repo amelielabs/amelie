@@ -116,7 +116,7 @@ service_execute(Service* self, ServiceWorker* worker, Action* action)
 			break;
 		break;
 	case ACTION_REFRESH:
-		if (! split_run(&worker->split, table, action->id, true))
+		if (! split_run(&worker->split, table, action->id))
 			break;
 		break;
 	case ACTION_NONE:

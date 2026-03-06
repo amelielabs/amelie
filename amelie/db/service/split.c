@@ -24,10 +24,9 @@
 #include <amelie_service.h>
 
 static bool
-split_begin(Split* self, Table* table, uint64_t id, bool refresh)
+split_begin(Split* self, Table* table, uint64_t id)
 {
-	self->table   = table;
-	self->refresh = refresh;
+	self->table = table;
 
 	// take table shared lock
 	auto lock_table = lock(&table->rel, LOCK_SHARED);
@@ -48,11 +47,14 @@ split_begin(Split* self, Table* table, uint64_t id, bool refresh)
 	if (! self->origin)
 		return false;
 
-	// allow refresh only with 1 branch
-	if (!refresh && self->origin->branches_count > 1)
-		error("split: object has more then one branch");
-
 	return true;
+}
+
+static void
+split_add(Split* self, Object* object)
+{
+	buf_write(&self->objects, &object, sizeof(Object**));
+	self->objects_count++;
 }
 
 static Object*
@@ -66,8 +68,7 @@ split_create(Split* self)
 		.volume  = volume_mgr_next(&self->tier->config->volumes)
 	};
 	auto object = object_allocate(&id);
-	buf_write(&self->objects, &object, sizeof(Object**));
-	self->objects_count++;
+	errdefer(object_free, object);
 
 	// create root branch
 	auto branch = branch_allocate(&object->id, &object->file);
@@ -116,10 +117,9 @@ split_write(Split* self, Iterator* it, Object* object, uint64_t limit)
 	     total);
 }
 
-static void
-split_refresh_job(intptr_t* argv)
+static Object*
+split_refresh(Split* self)
 {
-	auto self = (Split*)argv[0];
 	auto keys = table_keys(self->table);
 
 	// create merge iterator and include all branches
@@ -137,40 +137,91 @@ split_refresh_job(intptr_t* argv)
 
 	// no data (delete after merge)
 	if (! merge_iterator_has(&it))
-		return;
+		return NULL;
 
 	// create and write new object
 	auto object = split_create(self);
+	errdefer(object_free, object);
 	split_write(self, &it.it, object, UINT64_MAX);
+	return object;
 }
 
 static void
-split_job(intptr_t* argv)
+split_of(Split* self, Object* parent)
 {
-	auto self = (Split*)argv[0];
 	auto keys = table_keys(self->table);
+
+	// check if object requires split
+	auto object_size = (size_t)self->tier->config->object_size;
+	if (parent->root->meta.size_total <= object_size)
+		return;
 
 	// create merge iterator and include all branches
 	auto it = branch_iterator_allocate();
 	defer(branch_iterator_free, it);
-	branch_iterator_open(it, keys, self->origin->root, NULL);
-
-	// no data (delete after merge)
-	if (! branch_iterator_has(it))
-		return;
+	branch_iterator_open(it, keys, parent->root, NULL);
 
 	// split into 1 or N new objects
-	auto object_size = (size_t)self->tier->config->object_size;
 	auto left = (size_t)self->origin->file.size;
 	while (branch_iterator_has(it))
 	{
 		auto object = split_create(self);
+		split_add(self, object);
 		uint64_t limit = object_size;
 		if (left > object_size)
 			limit = object_size / 2;
 		split_write(self, &it->it, object, limit);
 		left -= object->file.size;
 	}
+}
+
+static void
+split_job(intptr_t* argv)
+{
+	auto self = (Split*)argv[0];
+
+	// SPLIT
+	auto origin = self->origin;
+	auto object_size = (size_t)self->tier->config->object_size;
+	if (origin->branches_count == 1)
+	{
+		// split origin object, if it reaches watermark
+		if (origin->root->meta.size_total > object_size)
+		{
+			split_of(self, origin);
+			return;
+		}
+
+		// refresh
+		auto object = split_refresh(self);
+		if (! object)
+			return;
+		split_add(self, object);
+		return;
+	}
+
+	// REFRESH + SPLIT
+
+	// origin requires refresh first (more then one branch)
+
+	// create new object
+	auto object = split_refresh(self);
+	if (! object)
+		return;
+
+	// new object does not require split, use it as is
+	if (object->root->meta.size_total <= object_size)
+	{
+		split_add(self, object);
+		return;
+	}
+
+	// split new object
+	defer(object_free, object);
+	split_of(self, object);
+
+	// remove temporary object
+	object_delete(object, STATE_INCOMPLETE);
 }
 
 static void
@@ -235,7 +286,6 @@ split_init(Split* self, Service* service)
 	self->origin        = NULL;
 	self->objects_count = 0;
 	self->writer        = writer_allocate();
-	self->refresh       = false;
 	self->table         = NULL;
 	self->tier          = NULL;
 	self->service_file  = service_file_allocate();
@@ -267,7 +317,7 @@ split_reset(Split* self)
 }
 
 bool
-split_run(Split* self, Table* table, uint64_t id, bool refresh)
+split_run(Split* self, Table* table, uint64_t id)
 {
 	split_reset(self);
 
@@ -276,16 +326,13 @@ split_run(Split* self, Table* table, uint64_t id, bool refresh)
 	defer(service_unlock, &self->lock);
 
 	// find object
-	if (! split_begin(self, table, id, refresh))
+	if (! split_begin(self, table, id))
 		return false;
 
 	auto on_error = error_catch
 	(
 		// run split in background
-	 	if (refresh)
-			run(split_refresh_job, 1, self);
-		else
-			run(split_job, 1, self);
+		run(split_job, 1, self);
 
 		// apply
 		split_apply(self);
