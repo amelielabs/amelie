@@ -38,6 +38,12 @@ parse_tier_options(Stmt* self, TierConfig* config)
 			tier_config_set_object_size(config, value->integer);
 			mask |= TIER_OBJECT_SIZE;
 		} else
+		if (str_is(&name->string, "branches", 8))
+		{
+			auto value = stmt_expect(self, KINT);
+			tier_config_set_branches(config, value->integer);
+			mask |= TIER_BRANCHES;
+		} else
 		{
 			stmt_error(self, name, "unknown option");
 		}

@@ -16,7 +16,8 @@ typedef struct TierConfig TierConfig;
 enum
 {
 	TIER_REGION_SIZE = 1 << 0,
-	TIER_OBJECT_SIZE = 1 << 1
+	TIER_OBJECT_SIZE = 1 << 1,
+	TIER_BRANCHES    = 1 << 2
 };
 
 struct TierConfig
@@ -24,6 +25,7 @@ struct TierConfig
 	Str       name;
 	int64_t   region_size;
 	int64_t   object_size;
+	int64_t   branches;
 	VolumeMgr volumes;
 	List      link;
 };
@@ -33,6 +35,7 @@ tier_config_init(TierConfig* self)
 {
 	self->region_size = 64 * 1024;
 	self->object_size = 64 * 1024 * 1024;
+	self->branches    = 8;
 	volume_mgr_init(&self->volumes);
 	str_init(&self->name);
 	list_init(&self->link);
@@ -73,6 +76,12 @@ tier_config_set_object_size(TierConfig* self, int value)
 	self->object_size = value;
 }
 
+static inline void
+tier_config_set_branches(TierConfig* self, int value)
+{
+	self->branches = value;
+}
+
 static inline TierConfig*
 tier_config_copy(TierConfig* self)
 {
@@ -80,6 +89,7 @@ tier_config_copy(TierConfig* self)
 	tier_config_set_name(copy, &self->name);
 	tier_config_set_region_size(copy, self->region_size);
 	tier_config_set_object_size(copy, self->object_size);
+	tier_config_set_branches(copy, self->branches);
 	volume_mgr_copy(&self->volumes, &copy->volumes);
 	return copy;
 }
@@ -92,6 +102,9 @@ tier_config_set(TierConfig* self, TierConfig* alter, int mask)
 
 	if ((mask & TIER_OBJECT_SIZE) > 0)
 		tier_config_set_object_size(self, alter->object_size);
+
+	if ((mask & TIER_BRANCHES) > 0)
+		tier_config_set_branches(self, alter->branches);
 }
 
 static inline TierConfig*
@@ -106,6 +119,7 @@ tier_config_read(uint8_t** pos)
 		{ DECODE_STRING, "name",        &self->name        },
 		{ DECODE_INT,    "region_size", &self->region_size },
 		{ DECODE_INT,    "object_size", &self->object_size },
+		{ DECODE_INT,    "branches",    &self->branches    },
 		{ DECODE_ARRAY,  "volumes",     &pos_volumes       },
 		{ 0,              NULL,          NULL              },
 	};
@@ -132,6 +146,10 @@ tier_config_write(TierConfig* self, Buf* buf, int flags)
 	// object_size
 	encode_raw(buf, "object_size", 11);
 	encode_integer(buf, self->object_size);
+
+	// branches
+	encode_raw(buf, "branches", 8);
+	encode_integer(buf, self->branches);
 
 	// volumes
 	encode_raw(buf, "volumes", 7);
