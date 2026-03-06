@@ -28,7 +28,7 @@ typedef struct ServiceWorker ServiceWorker;
 struct ServiceWorker
 {
 	Flush    flush;
-	Split    split;
+	Merge    merge;
 	Service* service;
 	int64_t  coroutine_id;
 	List     link;
@@ -41,7 +41,7 @@ service_worker_allocate(Service* service)
 	self->service      = service;
 	self->coroutine_id = -1;
 	flush_init(&self->flush, service);
-	split_init(&self->split, service);
+	merge_init(&self->merge, service);
 	list_init(&self->link);
 	return self;
 }
@@ -50,7 +50,7 @@ static inline void
 service_worker_free(ServiceWorker* self)
 {
 	flush_free(&self->flush);
-	split_free(&self->split);
+	merge_free(&self->merge);
 	am_free(self);
 }
 
@@ -77,7 +77,7 @@ service_schedule(Table* table, Action* action)
 		}
 	}
 
-	// schedule object refresh/split
+	// schedule object merge (refresh/split)
 	Object* match = NULL;
 	auto tier = tier_mgr_first(&table->tier_mgr);
 	list_foreach(&tier->list)
@@ -89,7 +89,7 @@ service_schedule(Table* table, Action* action)
 
 	if (match && match->branches_count > tier->config->branches)
 	{
-		action->type = ACTION_REFRESH;
+		action->type = ACTION_MERGE;
 		action->id   = match->id.id;
 	}
 }
@@ -115,8 +115,8 @@ service_execute(Service* self, ServiceWorker* worker, Action* action)
 		if (! flush_run(&worker->flush, table, action->id))
 			break;
 		break;
-	case ACTION_REFRESH:
-		if (! split_run(&worker->split, table, action->id))
+	case ACTION_MERGE:
+		if (! merge_run(&worker->merge, table, action->id))
 			break;
 		break;
 	case ACTION_NONE:

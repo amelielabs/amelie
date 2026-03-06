@@ -505,13 +505,7 @@ emit_utility(Compiler* self)
 		                            self->parser.db,
 		                            &arg->table->string, true);
 		if (arg->type == OBJECT_ALTER_REFRESH)
-		{
 			op4(self, CDDL_REFRESH, (intptr_t)table, arg->id, -1, true);
-		} else
-		if (arg->type == OBJECT_ALTER_SPLIT)
-		{
-			op2(self, CDDL_SPLIT, (intptr_t)table, arg->id);
-		}
 
 		// lock
 		lock_catalog = LOCK_SHARED;

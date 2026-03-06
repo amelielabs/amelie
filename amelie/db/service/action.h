@@ -18,7 +18,7 @@ enum
 {
 	ACTION_NONE,
 	ACTION_FLUSH,
-	ACTION_REFRESH
+	ACTION_MERGE
 };
 
 struct Action

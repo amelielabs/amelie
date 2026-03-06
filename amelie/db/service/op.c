@@ -36,27 +36,14 @@ service_refresh(Service* self, Uuid* id_table, uint64_t id, Str* storage)
 }
 
 void
-service_refresh_object(Service* self, Uuid* id_table, uint64_t id, Str* storage)
+service_refresh_object(Service* self, Uuid* id_table, uint64_t id)
 {
 	// note: executed under shared catalog lock
 	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
-	Split split;
-	split_init(&split, self);
-	defer(split_free, &split);
-	unused(storage);
-	if (! split_run(&split, table, id))
-		error("object or storage not found");
-}
-
-void
-service_split(Service* self, Uuid* id_table, uint64_t id)
-{
-	// note: executed under shared catalog lock
-	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
-	Split split;
-	split_init(&split, self);
-	defer(split_free, &split);
-	if (! split_run(&split, table, id))
+	Merge merge;
+	merge_init(&merge, self);
+	defer(merge_free, &merge);
+	if (! merge_run(&merge, table, id))
 		error("object or storage not found");
 }
 

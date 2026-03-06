@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Split Split;
+typedef struct Merge Merge;
 
-struct Split
+struct Merge
 {
 	ServiceLock  lock;
 	Object*      origin;
@@ -26,7 +26,7 @@ struct Split
 	Service*     service;
 };
 
-void split_init(Split*, Service*);
-void split_free(Split*);
-void split_reset(Split*);
-bool split_run(Split*, Table*, uint64_t);
+void merge_init(Merge*, Service*);
+void merge_free(Merge*);
+void merge_reset(Merge*);
+bool merge_run(Merge*, Table*, uint64_t);

@@ -289,7 +289,6 @@ enum
 	CDDL,
 	CDDL_CREATE_INDEX,
 	CDDL_REFRESH,
-	CDDL_SPLIT,
 	CDDL_FLUSH,
 
 	// result

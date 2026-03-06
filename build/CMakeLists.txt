@@ -219,7 +219,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/service/refresh.c
     ${AMELIE_ROOT}/db/service/flush.c
     ${AMELIE_ROOT}/db/service/indexate.c
-    ${AMELIE_ROOT}/db/service/split.c
+    ${AMELIE_ROOT}/db/service/merge.c
     ${AMELIE_ROOT}/db/service/op.c
     ${AMELIE_ROOT}/db/service/execute.c
     ${AMELIE_ROOT}/db/db/snapshot_mgr.c

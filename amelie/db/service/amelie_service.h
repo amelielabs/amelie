@@ -31,6 +31,6 @@
 #include "service/refresh.h"
 #include "service/indexate.h"
 #include "service/flush.h"
-#include "service/split.h"
+#include "service/merge.h"
 #include "service/op.h"
 #include "service/execute.h"

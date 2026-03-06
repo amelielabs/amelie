@@ -371,7 +371,6 @@ vm_run(Vm*       self,
 		&&cddl,
 		&&cddl_create_index,
 		&&cddl_refresh,
-		&&cddl_split,
 		&&cddl_flush,
 
 		// executor
@@ -1947,14 +1946,9 @@ cddl_refresh:
 		                op->b,
 		                str_empty(&string) ? NULL : &string);
 	else
-		service_refresh_object(&share()->db->service, &((Table*)op->a)->config->id,
-		                       op->b,
-		                       str_empty(&string) ? NULL : &string);
-	op_next;
-
-cddl_split:
-	// [table*, id]
-	service_split(&share()->db->service, &((Table*)op->a)->config->id, op->b);
+		service_refresh_object(&share()->db->service,
+		                       &((Table*)op->a)->config->id,
+		                       op->b);
 	op_next;
 
 cddl_flush:

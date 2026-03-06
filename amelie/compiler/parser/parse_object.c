@@ -20,7 +20,7 @@
 void
 parse_object_alter(Stmt* self)
 {
-	// ALTER OBJECT id ON table REFRESH | SPLIT
+	// ALTER OBJECT id ON table REFRESH
 	auto stmt = ast_object_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -39,14 +39,10 @@ parse_object_alter(Stmt* self)
 	if  (cmd->id != KNAME)
 		stmt_error(self, cmd, "command expected");
 
-	// REFRESH | SPLIT
+	// REFRESH
 	if (str_is_case(&cmd->string, "refresh", 7))
 	{
 		stmt->type = OBJECT_ALTER_REFRESH;
-	} else
-	if (str_is_case(&cmd->string, "split", 5))
-	{
-		stmt->type = OBJECT_ALTER_SPLIT;
 	} else {
 		stmt_error(self, cmd, "unknown command");
 	}

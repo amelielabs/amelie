@@ -15,8 +15,7 @@ typedef struct AstObjectAlter AstObjectAlter;
 
 enum
 {
-	OBJECT_ALTER_REFRESH,
-	OBJECT_ALTER_SPLIT
+	OBJECT_ALTER_REFRESH
 };
 
 struct AstObjectAlter
