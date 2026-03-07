@@ -55,8 +55,6 @@ mapping_max(Mapping* self)
 hot always_inline static inline int
 mapping_compare(Mapping* self, Object* object, Row* key)
 {
-	if (self->tree_count == 1)
-		return 0;
 	return compare(self->keys, branch_min(object->root), key);
 }
 
@@ -110,6 +108,13 @@ mapping_prev(Mapping* self, Object* object)
 hot static inline Object*
 mapping_map(Mapping* self, Row* key)
 {
+	if (self->tree_count == 1)
+	{
+		auto first = mapping_min(self);
+		if (! first->root->meta.rows)
+			return first;
+	}
+
 	// part[n].min >= key && key < part[n + 1].min
 	RbtreeNode* node = NULL;
 	int rc = mapping_find(&self->tree, self, key, &node);

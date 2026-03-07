@@ -33,7 +33,6 @@ reader_init(Reader* self)
 static inline void
 reader_reset(Reader* self)
 {
-	self->branch = NULL;
 	buf_reset(&self->buf_read);
 	buf_reset(&self->buf);
 	encoder_reset(&self->encoder);
@@ -59,7 +58,7 @@ reader_execute(Reader* self, MetaRegion* meta_region)
 {
 	auto branch  = self->branch;
 	auto encoder = &self->encoder;
-	encoder_reset(encoder);
+	reader_reset(self);
 
 	// read region data from file
 	file_pread_buf(branch->object_file, &self->buf_read, meta_region->size,
@@ -67,7 +66,7 @@ reader_execute(Reader* self, MetaRegion* meta_region)
 
 	// decrypt/decompress or read raw
 	Region* region = NULL;
-	if (encoder_active(&self->encoder))
+	if (encoder_active(encoder))
 	{
 		auto buf = &self->buf;
 		buf_reset(buf);

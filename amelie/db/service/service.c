@@ -114,6 +114,7 @@ service_execute(Service* self, ServiceWorker* worker, Action* action)
 	case ACTION_FLUSH:
 		if (! flush_run(&worker->flush, table, action->id))
 			break;
+		service_gc(self);
 		break;
 	case ACTION_MERGE:
 		if (! merge_run(&worker->merge, table, action->id))
