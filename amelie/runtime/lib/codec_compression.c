@@ -13,6 +13,8 @@
 #include <amelie_base.h>
 #include <amelie_os.h>
 #include <amelie_lib.h>
+
+#define ZSTD_STATIC_LINKING_ONLY
 #include <zstd.h>
 
 typedef struct CodecZstd CodecZstd;
@@ -20,7 +22,8 @@ typedef struct CodecZstd CodecZstd;
 struct CodecZstd
 {
 	Codec      codec;
-	ZSTD_CCtx* ctx;
+	ZSTD_CCtx* cctx;
+	ZSTD_DCtx* dctx;
 	int        level;
 };
 
@@ -31,9 +34,16 @@ codec_zstd_allocate(CodecIf* iface)
 	self->codec.iface = iface;
 	list_init(&self->codec.link);
 
-	self->ctx = ZSTD_createCCtx();
-	if (self->ctx == NULL)
+	self->cctx = ZSTD_createCCtx();
+	if (self->cctx == NULL)
 	{
+		am_free(self);
+		error("zstd: failed to create codec context");
+	}
+	self->dctx = ZSTD_createDCtx();
+	if (self->dctx == NULL)
+	{
+		ZSTD_freeCCtx(self->cctx);
 		am_free(self);
 		error("zstd: failed to create codec context");
 	}
@@ -44,8 +54,8 @@ static void
 codec_zstd_free(Codec* codec)
 {
 	auto self = (CodecZstd*)codec;
-	if (self->ctx)
-		ZSTD_freeCCtx(self->ctx);
+	ZSTD_freeCCtx(self->cctx);
+	ZSTD_freeDCtx(self->dctx);
 	am_free(self);
 }
 
@@ -61,9 +71,9 @@ codec_zstd_encode_begin(Codec* codec, Buf* buf)
 {
 	unused(buf);
 	auto self = (CodecZstd*)codec;
-	ZSTD_CCtx_reset(self->ctx, ZSTD_reset_session_only);
+	ZSTD_CCtx_reset(self->cctx, ZSTD_reset_session_only);
 	if (self->level > 0)
-		ZSTD_CCtx_setParameter(self->ctx, ZSTD_c_compressionLevel, self->level);
+		ZSTD_CCtx_setParameter(self->cctx, ZSTD_c_compressionLevel, self->level);
 }
 
 hot static void
@@ -91,7 +101,7 @@ codec_zstd_encode(Codec*   codec, Buf* buf,
 			.size = buf_size_unused(buf),
 			.pos  = 0
 		};
-		auto rc = ZSTD_compressStream2(self->ctx, &output, &input, ZSTD_e_continue);
+		auto rc = ZSTD_compressStream2(self->cctx, &output, &input, ZSTD_e_continue);
 		if (ZSTD_isError(rc))
 			error("zstd: encode failed: %s", ZSTD_getErrorName(rc));
 
@@ -116,7 +126,7 @@ codec_zstd_encode_end(Codec* codec, Buf* buf)
 			.size = buf_size_unused(buf),
 			.pos  = 0
 		};
-		auto rc = ZSTD_compressStream2(self->ctx, &output, &input, ZSTD_e_end);
+		auto rc = ZSTD_compressStream2(self->cctx, &output, &input, ZSTD_e_end);
 		if (ZSTD_isError(rc))
 			error("zstd: encode failed: %s", ZSTD_getErrorName(rc));
 		buf_advance(buf, output.pos);
@@ -133,11 +143,27 @@ codec_zstd_decode(Codec*   codec,
                   uint8_t* src,
                   int      src_size)
 {
-	unused(codec);
-	int rc = ZSTD_decompress(dst, dst_size, src, src_size);
-	if (unlikely(ZSTD_isError(rc)))
+	auto self = (CodecZstd*)codec;
+	ZSTD_DCtx_reset(self->dctx, ZSTD_reset_session_only);
+	ZSTD_DCtx_setParameter(self->dctx, ZSTD_d_stableOutBuffer, 1);
+
+	ZSTD_outBuffer output =
+	{
+		.dst  = dst,
+		.size = dst_size,
+		.pos  = 0
+	};
+
+	ZSTD_inBuffer input =
+	{
+		.src  = src,
+		.size = src_size,
+		.pos  = 0
+	};
+
+	auto rc = ZSTD_decompressStream(self->dctx, &output, &input);
+	if (ZSTD_isError(rc))
 		error("zstd: decode failed: %s", ZSTD_getErrorName(rc));
-	assert(rc == dst_size);
 }
 
 static CodecIf codec_zstd =
