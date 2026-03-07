@@ -378,10 +378,31 @@ parse_table_create_with(Stmt* self)
 			auto value = stmt_expect(self, KINT);
 			part_mgr_config_set_partitions(config_part, value->integer);
 		} else
-		if (str_is(&name->string, "size", 4))
+		if (str_is(&name->string, "cache", 5))
+		{
+			auto value = stmt_if(self, KTRUE);
+			if (! value)
+			{
+				value = stmt_if(self, KFALSE);
+				if (! value)
+					stmt_error(self, NULL, "bool expected");
+			}
+			part_mgr_config_set_cache(config_part, value->integer);
+		} else
+		if (str_is(&name->string, "cache_size", 10))
 		{
 			auto value = stmt_expect(self, KINT);
-			part_mgr_config_set_size(config_part, value->integer);
+			part_mgr_config_set_cache_size(config_part, value->integer);
+		} else
+		if (str_is(&name->string, "cache_evict", 11))
+		{
+			auto value = stmt_expect(self, KINT);
+			part_mgr_config_set_cache_evict(config_part, value->integer);
+		} else
+		if (str_is(&name->string, "cache_evict_wm", 14))
+		{
+			auto value = stmt_expect(self, KINT);
+			part_mgr_config_set_cache_evict_wm(config_part, value->integer);
 		} else {
 			stmt_error(self, name, "unknown option");
 		}

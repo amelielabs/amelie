@@ -61,8 +61,9 @@ service_schedule(Table* table, Action* action)
 	auto lock_table = lock(&table->rel, LOCK_SHARED);
 	defer(unlock, lock_table);
 
+#if 0
 	// schedule partition flush
-	auto part_wm = (uint64_t)table->part_mgr.config->size;
+	auto part_wm = (uint64_t)table->part_mgr.config->cache-size;
 	if (part_wm > 0)
 	{
 		list_foreach(&table->part_mgr.list)
@@ -76,6 +77,7 @@ service_schedule(Table* table, Action* action)
 			}
 		}
 	}
+#endif
 
 	// schedule object merge (refresh/split)
 	Object* match = NULL;
