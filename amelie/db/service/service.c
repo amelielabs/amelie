@@ -27,7 +27,7 @@ typedef struct ServiceWorker ServiceWorker;
 
 struct ServiceWorker
 {
-	Flush    flush;
+	Evict    evict;
 	Merge    merge;
 	Service* service;
 	int64_t  coroutine_id;
@@ -40,7 +40,7 @@ service_worker_allocate(Service* service)
 	auto self = (ServiceWorker*)am_malloc(sizeof(ServiceWorker));
 	self->service      = service;
 	self->coroutine_id = -1;
-	flush_init(&self->flush, service);
+	evict_init(&self->evict, service);
 	merge_init(&self->merge, service);
 	list_init(&self->link);
 	return self;
@@ -49,7 +49,7 @@ service_worker_allocate(Service* service)
 static inline void
 service_worker_free(ServiceWorker* self)
 {
-	flush_free(&self->flush);
+	evict_free(&self->evict);
 	merge_free(&self->merge);
 	am_free(self);
 }
@@ -62,7 +62,7 @@ service_schedule(Table* table, Action* action)
 	defer(unlock, lock_table);
 
 #if 0
-	// schedule partition flush
+	// schedule partition evict
 	auto part_wm = (uint64_t)table->part_mgr.config->cache-size;
 	if (part_wm > 0)
 	{
@@ -113,8 +113,8 @@ service_execute(Service* self, ServiceWorker* worker, Action* action)
 
 	// execute
 	switch (action->type) {
-	case ACTION_FLUSH:
-		if (! flush_run(&worker->flush, table, action->id))
+	case ACTION_EVICT:
+		if (! evict_run(&worker->evict, table, action->id))
 			break;
 		service_gc(self);
 		break;

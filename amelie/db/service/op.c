@@ -48,17 +48,17 @@ service_refresh_object(Service* self, Uuid* id_table, uint64_t id)
 }
 
 void
-service_flush(Service* self, Uuid* id_table, uint64_t id)
+service_evict(Service* self, Uuid* id_table, uint64_t id)
 {
 	// note: executed under shared catalog lock
 	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
 	if (! tier_mgr_created(&table->tier_mgr))
-		error("flush: table has no tiers");
+		error("evict: table has no tiers");
 
-	Flush flush;
-	flush_init(&flush, self);
-	defer(flush_free, &flush);
-	if (! flush_run(&flush, table, id))
+	Evict evict;
+	evict_init(&evict, self);
+	defer(evict_free, &evict);
+	if (! evict_run(&evict, table, id))
 		error("partition not found");
 }
 

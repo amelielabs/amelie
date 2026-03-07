@@ -13,7 +13,7 @@
 
 void service_refresh(Service*, Uuid*, uint64_t, Str*);
 void service_refresh_object(Service*, Uuid*, uint64_t);
-void service_flush(Service*, Uuid*, uint64_t);
+void service_evict(Service*, Uuid*, uint64_t);
 void service_checkpoint(Service*);
 void service_gc(Service*);
 void service_create_index(Service*, Tr*, uint8_t*, int);

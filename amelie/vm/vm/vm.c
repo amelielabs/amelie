@@ -371,7 +371,7 @@ vm_run(Vm*       self,
 		&&cddl,
 		&&cddl_create_index,
 		&&cddl_refresh,
-		&&cddl_flush,
+		&&cddl_evict,
 
 		// executor
 		&&csend_shard,
@@ -1951,9 +1951,9 @@ cddl_refresh:
 		                       op->b);
 	op_next;
 
-cddl_flush:
+cddl_evict:
 	// [table*, id]
-	service_flush(&share()->db->service,
+	service_evict(&share()->db->service,
 	              &((Table*)op->a)->config->id,
 	              op->b);
 	op_next;

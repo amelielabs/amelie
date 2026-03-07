@@ -21,7 +21,7 @@ void
 parse_part_alter(Stmt* self)
 {
 	// ALTER PARTITION id ON table REFRESH
-	// ALTER PARTITION id ON table FLUSH
+	// ALTER PARTITION id ON table EVICT
 	// ALTER PARTITION id ON table MOVE TO storage
 	auto stmt = ast_part_alter_allocate();
 	self->ast = &stmt->ast;
@@ -41,14 +41,14 @@ parse_part_alter(Stmt* self)
 	if  (cmd->id != KNAME)
 		stmt_error(self, cmd, "command expected");
 
-	// REFRESH | FLUSH | MOVE
+	// REFRESH | EVICT | MOVE
 	if (str_is_case(&cmd->string, "refresh", 7))
 	{
 		stmt->type = PARTITION_ALTER_REFRESH;
 	} else
-	if (str_is_case(&cmd->string, "flush", 5))
+	if (str_is_case(&cmd->string, "evict", 5))
 	{
-		stmt->type = PARTITION_ALTER_FLUSH;
+		stmt->type = PARTITION_ALTER_EVICT;
 	} else
 	if (str_is_case(&cmd->string, "move", 4))
 	{

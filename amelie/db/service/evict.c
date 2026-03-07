@@ -24,7 +24,7 @@
 #include <amelie_service.h>
 
 static bool
-flush_begin(Flush* self, Table* table, uint64_t id)
+evict_begin(Evict* self, Table* table, uint64_t id)
 {
 	self->table = table;
 
@@ -70,7 +70,7 @@ flush_begin(Flush* self, Table* table, uint64_t id)
 }
 
 static void
-flush_map(Flush* self, FlushBranch* branch, Row* key)
+evict_map(Evict* self, EvictBranch* branch, Row* key)
 {
 	// find object matching the key
 	auto table = self->table;
@@ -93,7 +93,7 @@ flush_map(Flush* self, FlushBranch* branch, Row* key)
 		branch->parent_last = !mapping_next(&tier->mapping, branch->parent);
 		unlock(lock_table);
 
-		// shared object lock is held till flush completion
+		// shared object lock is held till evict completion
 		if (match)
 			break;
 
@@ -103,11 +103,11 @@ flush_map(Flush* self, FlushBranch* branch, Row* key)
 	}
 }
 
-static FlushBranch*
-flush_start(Flush* self, Row* key)
+static EvictBranch*
+evict_start(Evict* self, Row* key)
 {
 	// create new branch
-	auto branch = (FlushBranch*)buf_emplace(&self->branches, sizeof(FlushBranch));
+	auto branch = (EvictBranch*)buf_emplace(&self->branches, sizeof(EvictBranch));
 	branch->parent      = NULL;
 	branch->parent_last = false;
 	branch->branch      = NULL;
@@ -115,7 +115,7 @@ flush_start(Flush* self, Row* key)
 	self->branches_count++;
 
 	// find parent object
-	flush_map(self, branch, key);
+	evict_map(self, branch, key);
 
 	// create new branch
 	branch->branch = branch_allocate(&branch->parent->id, &branch->parent->file);
@@ -133,7 +133,7 @@ flush_start(Flush* self, Row* key)
 }
 
 static void
-flush_stop(Flush* self, FlushBranch* branch)
+evict_stop(Evict* self, EvictBranch* branch)
 {
 	auto tier = tier_mgr_first(&self->table->tier_mgr);
 	writer_stop(self->writer);
@@ -145,7 +145,7 @@ flush_stop(Flush* self, FlushBranch* branch)
 
 	auto id    = &branch->parent->id;
 	auto total = (double)branch->parent->file.size / 1024 / 1024;
-	info("flush: %s/%s/%05" PRIu64 ".%02" PRIu64 " (%.2f MiB)",
+	info("evict: %s/%s/%05" PRIu64 ".%02" PRIu64 " (%.2f MiB)",
 	     id->volume->storage->config->name.pos,
 	     tier->config->name.pos,
 	     id->id,
@@ -154,7 +154,7 @@ flush_stop(Flush* self, FlushBranch* branch)
 }
 
 static void
-flush_partition(Flush* self)
+evict_partition(Evict* self)
 {
 	auto part_id   = &self->part_id;
 	auto part_file = &self->part_file;
@@ -169,19 +169,19 @@ flush_partition(Flush* self)
 	heap_create(heap_temp, part_file, part_id, STATE_INCOMPLETE);
 
 	auto total = (double)part_file->size / 1024 / 1024;
-	info("flush: %s/%05" PRIu64 " (%.2f MiB)",
+	info("evict: %s/%05" PRIu64 " (%.2f MiB)",
 	     part_id->volume->storage->config->name.pos,
 	     part_id->id,
 	     total);
 }
 
 static void
-flush_job(intptr_t* argv)
+evict_job(intptr_t* argv)
 {
-	auto self = (Flush*)argv[0];
+	auto self = (Evict*)argv[0];
 
 	// create <id>.incomplete file
-	flush_partition(self);
+	evict_partition(self);
 
 	// create heap index
 	auto keys = index_keys(part_primary(self->origin));
@@ -194,13 +194,13 @@ flush_job(intptr_t* argv)
 	heap_index_iterator_open(&it, &self->origin_heap_index);
 
 	// create branches for every matching objects
-	FlushBranch* branch = NULL;
+	EvictBranch* branch = NULL;
 	for (;;)
 	{
 		if (! heap_index_iterator_has(&it))
 		{
 			if (branch)
-				flush_stop(self, branch);
+				evict_stop(self, branch);
 			break;
 		}
 
@@ -218,15 +218,15 @@ flush_job(intptr_t* argv)
 
 		// close writer (finish previous object)
 		if (branch)
-			flush_stop(self, branch);
+			evict_stop(self, branch);
 
 		// create new branch and find the parent object
-		branch = flush_start(self, row);
+		branch = evict_start(self, row);
 	}
 }
 
 static void
-flush_gc(Flush* self)
+evict_gc(Evict* self)
 {
 	// free shadow heap (former main heap)
 	auto origin = self->origin;
@@ -246,20 +246,20 @@ flush_gc(Flush* self)
 }
 
 static void
-flush_complete_job(intptr_t* argv)
+evict_complete_job(intptr_t* argv)
 {
-	auto self = (Flush*)argv[0];
+	auto self = (Evict*)argv[0];
 
 	// free shadow heap and indexes
-	flush_gc(self);
+	evict_gc(self);
 
 	// create <id>.service.incomplete file
 	auto service = self->service_file;
 	service_file_begin(service);
 	service_file_add_origin(service, &self->origin_id);
 	service_file_add_create(service, &self->part_id);
-	auto it  = (FlushBranch*)self->branches.start;
-	auto end = (FlushBranch*)self->branches.position;
+	auto it  = (EvictBranch*)self->branches.start;
+	auto end = (EvictBranch*)self->branches.position;
 	for (; it < end; it++)
 	{
 		// (parent object version is already updated)
@@ -286,7 +286,7 @@ flush_complete_job(intptr_t* argv)
 	id_rename(&self->part_id, STATE_INCOMPLETE, STATE_COMPLETE);
 
 	// rename parent object file
-	it = (FlushBranch*)self->branches.start;
+	it = (EvictBranch*)self->branches.start;
 	for (; it < end; it++)
 	{
 		// sync object file
@@ -305,7 +305,7 @@ flush_complete_job(intptr_t* argv)
 }
 
 static void
-flush_apply(Flush* self)
+evict_apply(Evict* self)
 {
 	auto origin = self->origin;
 	auto table  = self->table;
@@ -362,8 +362,8 @@ flush_apply(Flush* self)
 
 	// attach branches to the corresponding objects
 	auto service = false;
-	auto at  = (FlushBranch*)self->branches.start;
-	auto end = (FlushBranch*)self->branches.position;
+	auto at  = (EvictBranch*)self->branches.start;
+	auto end = (EvictBranch*)self->branches.position;
 	for (; at < end; at++)
 	{
 		object_add(at->parent, at->branch);
@@ -381,7 +381,7 @@ flush_apply(Flush* self)
 }
 
 void
-flush_init(Flush* self, Service* service)
+evict_init(Evict* self, Service* service)
 {
 	self->origin         = NULL;
 	self->origin_lsn     = 0;
@@ -401,9 +401,9 @@ flush_init(Flush* self, Service* service)
 }
 
 void
-flush_free(Flush* self)
+evict_free(Evict* self)
 {
-	flush_reset(self);
+	evict_reset(self);
 
 	buf_free(&self->origin_heap_index);
 	buf_free(&self->branches);
@@ -412,7 +412,7 @@ flush_free(Flush* self)
 }
 
 void
-flush_reset(Flush* self)
+evict_reset(Evict* self)
 {
 	file_close(&self->part_file);
 
@@ -433,34 +433,34 @@ flush_reset(Flush* self)
 }
 
 bool
-flush_run(Flush* self, Table* table, uint64_t id)
+evict_run(Evict* self, Table* table, uint64_t id)
 {
 	assert(tier_mgr_created(&table->tier_mgr));
-	flush_reset(self);
+	evict_reset(self);
 
 	// lock partition by id
 	service_lock(self->service, &self->lock, LOCK_EXCLUSIVE, id);
 	defer(service_unlock, &self->lock);
 
 	// find and rotate partition
-	if (! flush_begin(self, table, id))
+	if (! evict_begin(self, table, id))
 		return false;
 
 	auto on_error = error_catch
 	(
-		// run flush in background
-		run(flush_job, 1, self);
+		// run evict in background
+		run(evict_job, 1, self);
 
 		// apply
-		flush_apply(self);
+		evict_apply(self);
 
 		// finilize and cleanup
-		run(flush_complete_job, 1, self);
+		run(evict_complete_job, 1, self);
 	);
 
 	// unlock parent objects
-	auto it  = (FlushBranch*)self->branches.start;
-	auto end = (FlushBranch*)self->branches.position;
+	auto it  = (EvictBranch*)self->branches.start;
+	auto end = (EvictBranch*)self->branches.position;
 	for (; it < end; it++)
 		service_unlock(&it->lock);
 

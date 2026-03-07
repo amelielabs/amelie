@@ -11,10 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Flush       Flush;
-typedef struct FlushBranch FlushBranch;
+typedef struct Evict       Evict;
+typedef struct EvictBranch EvictBranch;
 
-struct FlushBranch
+struct EvictBranch
 {
 	ServiceLock lock;
 	Object*     parent;
@@ -22,7 +22,7 @@ struct FlushBranch
 	Branch*     branch;
 };
 
-struct Flush
+struct Evict
 {
 	ServiceLock  lock;
 	// origin
@@ -43,7 +43,7 @@ struct Flush
 	Service*     service;
 };
 
-void flush_init(Flush*, Service*);
-void flush_free(Flush*);
-void flush_reset(Flush*);
-bool flush_run(Flush*, Table*, uint64_t);
+void evict_init(Evict*, Service*);
+void evict_free(Evict*);
+void evict_reset(Evict*);
+bool evict_run(Evict*, Table*, uint64_t);

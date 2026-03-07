@@ -30,6 +30,6 @@
 // service operations
 #include "service/refresh.h"
 #include "service/indexate.h"
-#include "service/flush.h"
+#include "service/evict.h"
 #include "service/merge.h"
 #include "service/op.h"

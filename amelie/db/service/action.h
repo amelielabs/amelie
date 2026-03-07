@@ -17,7 +17,7 @@ typedef struct Action     Action;
 enum
 {
 	ACTION_NONE,
-	ACTION_FLUSH,
+	ACTION_EVICT,
 	ACTION_MERGE
 };
 

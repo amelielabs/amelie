@@ -483,9 +483,9 @@ emit_utility(Compiler* self)
 		{
 			op4(self, CDDL_REFRESH, (intptr_t)table, arg->id, -1, false);
 		} else
-		if (arg->type == PARTITION_ALTER_FLUSH)
+		if (arg->type == PARTITION_ALTER_EVICT)
 		{
-			op2(self, CDDL_FLUSH, (intptr_t)table, arg->id);
+			op2(self, CDDL_EVICT, (intptr_t)table, arg->id);
 		} else
 		if (arg->type == PARTITION_ALTER_MOVE)
 		{
