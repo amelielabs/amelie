@@ -55,29 +55,76 @@ service_worker_free(ServiceWorker* self)
 }
 
 static void
+service_schedule_evict(Table* table, Action* action)
+{
+	auto config = &table->config->partitioning;
+	auto req = action->req;
+
+	// eviction
+	auto cache_usage = atomic_u64_of(&table->part_mgr.heap_total);
+	auto start = (uint64_t)(config->cache_size * config->cache_evict_wm) / 100;
+	auto stop  = (uint64_t)(config->cache_size * config->cache_evict)    / 100;
+	if (req->evict)
+	{
+		// disable eviction on reaching the target or if the global memory
+		// usage drops below threshold
+		if (cache_usage <= stop)
+			req->evict = false;
+	} else
+	{
+		// start eviction if the total current cache usage reaches cache_evict_wm
+		// percents out of the total cache size
+		if (cache_usage >= start)
+			req->evict = true;
+	}
+	if (! req->evict)
+		return;
+
+	// get the largest partition
+	Part* part = NULL;
+	list_foreach(&table->part_mgr.list)
+	{
+		auto ref = list_at(Part, link);
+		if (!part || ref->heap->header->size_used > part->heap->header->size_used)
+			part = ref;
+	}
+	assert(part);
+
+	// evict up to cache_evict percent from the partition heap or less,
+	// if the total cache usage drops less than that
+	auto cache_used_part = part->heap->header->size_used;
+	auto size = (uint64_t)(cache_used_part * config->cache_evict) / 100;
+	if (stop - cache_usage < size)
+		size = stop - cache_usage;
+
+	// stop eviction, if the size is <= cache_evict_min to prevent
+	// creating small branches
+	if (size <= (uint64_t)config->cache_evict_min)
+	{
+		req->evict = false;
+		return;
+	}
+
+	action->type  = ACTION_EVICT;
+	action->id    = part->id.id;
+	action->evict = size;
+}
+
+static void
 service_schedule(Table* table, Action* action)
 {
 	// take shared table lock
 	auto lock_table = lock(&table->rel, LOCK_SHARED);
 	defer(unlock, lock_table);
 
-#if 0
-	// schedule partition evict
-	auto part_wm = (uint64_t)table->part_mgr.config->cache-size;
-	if (part_wm > 0)
+	// schedule eviction
+	auto config = &table->config->partitioning;
+	if (config->cache)
 	{
-		list_foreach(&table->part_mgr.list)
-		{
-			auto part = list_at(Part, link);
-			if (part->heap->header->size_used > part_wm)
-			{
-				action->type = ACTION_FLUSH;
-				action->id   = part->id.id;
-				return;
-			}
-		}
+		service_schedule_evict(table, action);
+		if (action->type != ACTION_NONE)
+			return;
 	}
-#endif
 
 	// schedule object merge (refresh/split)
 	Object* match = NULL;
@@ -114,7 +161,7 @@ service_execute(Service* self, ServiceWorker* worker, Action* action)
 	// execute
 	switch (action->type) {
 	case ACTION_EVICT:
-		if (! evict_run(&worker->evict, table, action->id, UINT64_MAX))
+		if (! evict_run(&worker->evict, table, action->id, action->evict))
 			break;
 		service_gc(self);
 		break;

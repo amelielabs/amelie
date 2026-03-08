@@ -730,6 +730,7 @@ show tables extended;
     "cache_size": 4294967296,
     "cache_evict": 40,
     "cache_evict_wm": 90,
+    "cache_evict_min": 16777216,
     "volumes": [{
       "name": "x",
       "id": "00000000-0000-0000-0000-000000000000",

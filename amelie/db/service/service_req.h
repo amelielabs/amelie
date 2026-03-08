@@ -18,14 +18,16 @@ struct ServiceReq
 	Uuid id_table;
 	int  refs;
 	int  pending;
+	bool evict;
 	List link;
 };
 
 static inline void
 service_req_init(ServiceReq* self)
 {
-	self->refs = 0;
+	self->refs    = 0;
 	self->pending = 0;
+	self->evict   = false;
 	uuid_init(&self->id_table);
 	list_init(&self->link);
 }
@@ -45,7 +47,8 @@ service_req_free(ServiceReq* self)
 }
 
 static inline void
-service_req_set(ServiceReq* self, Uuid* id_table)
+service_req_prepare(ServiceReq* self, Uuid* id_table)
 {
 	self->id_table = *id_table;
+	self->evict    = false;
 }

@@ -403,6 +403,11 @@ parse_table_create_with(Stmt* self)
 		{
 			auto value = stmt_expect(self, KINT);
 			partitioning_set_cache_evict_wm(config_part, value->integer);
+		} else
+		if (str_is(&name->string, "cache_evict_min", 15))
+		{
+			auto value = stmt_expect(self, KINT);
+			partitioning_set_cache_evict_min(config_part, value->integer);
 		} else {
 			stmt_error(self, name, "unknown option");
 		}
