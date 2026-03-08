@@ -26,19 +26,21 @@
 static bool
 evict_begin(Evict* self, Table* table, uint64_t id, uint64_t size)
 {
+	auto part_mgr = &table->part_mgr;
+
 	self->table    = table;
 	self->lru_size = size;
 
 	// create shadow heap
-	auto lru_on = table->config->part_mgr_config.cache;
-	auto heap_shadow = heap_allocate(lru_on);
+	auto lru_on = part_mgr->config->cache;
+	auto heap_shadow = heap_allocate(&part_mgr->heap_total, lru_on);
 
 	// take table exclusive lock (unlock on return)
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
 	defer(unlock, lock_table);
 
 	// find partition by id
-	auto origin = part_mgr_find(&table->part_mgr, id);
+	auto origin = part_mgr_find(part_mgr, id);
 	if (! origin)
 	{
 		heap_free(heap_shadow);
@@ -49,7 +51,7 @@ evict_begin(Evict* self, Table* table, uint64_t id, uint64_t size)
 	self->origin_indexes = origin->indexes;
 
 	// set new partition id
-	auto volumes = &table->part_mgr.config->volumes;
+	auto volumes = &part_mgr->config->volumes;
 	auto part_id = &self->part_id;
 	part_id->id      = state_psn_next();
 	part_id->version = 0;

@@ -15,16 +15,16 @@ typedef struct TableConfig TableConfig;
 
 struct TableConfig
 {
-	Str           db;
-	Str           name;
-	Uuid          id;
-	Columns       columns;
-	List          indexes;
-	int           indexes_count;
-	bool          unlogged;
-	PartMgrConfig part_mgr_config;
-	List          tiers;
-	int           tiers_count;
+	Str          db;
+	Str          name;
+	Uuid         id;
+	Columns      columns;
+	List         indexes;
+	int          indexes_count;
+	bool         unlogged;
+	Partitioning partitioning;
+	List         tiers;
+	int          tiers_count;
 };
 
 static inline TableConfig*
@@ -39,7 +39,7 @@ table_config_allocate(void)
 	str_init(&self->name);
 	uuid_init(&self->id);
 	columns_init(&self->columns);
-	part_mgr_config_init(&self->part_mgr_config);
+	partitioning_init(&self->partitioning);
 	list_init(&self->indexes);
 	list_init(&self->tiers);
 	return self;
@@ -64,7 +64,7 @@ table_config_free(TableConfig* self)
 	}
 
 	columns_free(&self->columns);
-	part_mgr_config_free(&self->part_mgr_config);
+	partitioning_free(&self->partitioning);
 	am_free(self);
 }
 
@@ -130,7 +130,7 @@ table_config_copy(TableConfig* self)
 	table_config_set_name(copy, &self->name);
 	table_config_set_id(copy, &self->id);
 	table_config_set_unlogged(copy, self->unlogged);
-	part_mgr_config_copy(&self->part_mgr_config, &copy->part_mgr_config);
+	partitioning_copy(&self->partitioning, &copy->partitioning);
 	columns_copy(&copy->columns, &self->columns);
 
 	Keys* primary_keys = NULL;
@@ -160,21 +160,21 @@ table_config_read(uint8_t** pos)
 	auto self = table_config_allocate();
 	errdefer(table_config_free, self);
 
-	uint8_t* pos_columns    = NULL;
-	uint8_t* pos_indexes    = NULL;
-	uint8_t* pos_partitions = NULL;
-	uint8_t* pos_tiers      = NULL;
+	uint8_t* pos_columns      = NULL;
+	uint8_t* pos_indexes      = NULL;
+	uint8_t* pos_partitioning = NULL;
+	uint8_t* pos_tiers        = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "db",         &self->db       },
-		{ DECODE_STRING, "name",       &self->name     },
-		{ DECODE_UUID,   "id",         &self->id       },
-		{ DECODE_BOOL,   "unlogged",   &self->unlogged },
-		{ DECODE_ARRAY,  "columns",    &pos_columns    },
-		{ DECODE_ARRAY,  "indexes",    &pos_indexes    },
-		{ DECODE_OBJ,    "partitions", &pos_partitions },
-		{ DECODE_ARRAY,  "tiers",      &pos_tiers      },
-		{ 0,              NULL,         NULL           },
+		{ DECODE_STRING, "db",           &self->db         },
+		{ DECODE_STRING, "name",         &self->name       },
+		{ DECODE_UUID,   "id",           &self->id         },
+		{ DECODE_BOOL,   "unlogged",     &self->unlogged   },
+		{ DECODE_ARRAY,  "columns",      &pos_columns      },
+		{ DECODE_ARRAY,  "indexes",      &pos_indexes      },
+		{ DECODE_OBJ,    "partitioning", &pos_partitioning },
+		{ DECODE_ARRAY,  "tiers",        &pos_tiers        },
+		{ 0,              NULL,           NULL             },
 	};
 	decode_obj(obj, "table", pos);
 
@@ -189,8 +189,8 @@ table_config_read(uint8_t** pos)
 		table_config_index_add(self, config);
 	}
 
-	// partitions
-	part_mgr_config_read(&self->part_mgr_config, &pos_partitions);
+	// partitioning
+	partitioning_read(&self->partitioning, &pos_partitioning);
 
 	// tiers
 	json_read_array(&pos_tiers);
@@ -244,9 +244,9 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	}
 	encode_array_end(buf);
 
-	// partitions
-	encode_raw(buf, "partitions", 10);
-	part_mgr_config_write(&self->part_mgr_config, buf, flags);
+	// partitioning
+	encode_raw(buf, "partitioning", 12);
+	partitioning_write(&self->partitioning, buf, flags);
 
 	// tiers
 	encode_raw(buf, "tiers", 5);

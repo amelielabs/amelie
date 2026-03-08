@@ -18,7 +18,8 @@ test_heap(void* arg)
 {
 	unused(arg);
 
-	auto heap = heap_allocate(false);
+	atomic_u64 total = 0;
+	auto heap = heap_allocate(&total, false);
 	defer(heap_free, heap);
 
 	auto ptr = heap_add(heap, 903);
@@ -35,7 +36,8 @@ test_heap_lru0(void* arg)
 {
 	unused(arg);
 
-	auto heap = heap_allocate(true);
+	atomic_u64 total = 0;
+	auto heap = heap_allocate(&total, true);
 	defer(heap_free, heap);
 
 	// add and iterate forward
@@ -137,7 +139,8 @@ test_heap_lru1(void* arg)
 {
 	unused(arg);
 
-	auto heap = heap_allocate(true);
+	atomic_u64 total = 0;
+	auto heap = heap_allocate(&total, true);
 	defer(heap_free, heap);
 
 	// up

@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PartMgrConfig PartMgrConfig;
+typedef struct Partitioning Partitioning;
 
-struct PartMgrConfig
+struct Partitioning
 {
 	int64_t   partitions;
 	bool      cache;
@@ -24,7 +24,7 @@ struct PartMgrConfig
 };
 
 static inline void
-part_mgr_config_init(PartMgrConfig* self)
+partitioning_init(Partitioning* self)
 {
 	self->partitions     = 0;
 	self->cache          = false;
@@ -35,54 +35,54 @@ part_mgr_config_init(PartMgrConfig* self)
 }
 
 static inline void
-part_mgr_config_free(PartMgrConfig* self)
+partitioning_free(Partitioning* self)
 {
 	volume_mgr_free(&self->volumes);
 }
 
 static inline void
-part_mgr_config_set_partitions(PartMgrConfig* self, int value)
+partitioning_set_partitions(Partitioning* self, int value)
 {
 	self->partitions = value;
 }
 
 static inline void
-part_mgr_config_set_cache(PartMgrConfig* self, bool value)
+partitioning_set_cache(Partitioning* self, bool value)
 {
 	self->cache = value;
 }
 
 static inline void
-part_mgr_config_set_cache_size(PartMgrConfig* self, int64_t value)
+partitioning_set_cache_size(Partitioning* self, int64_t value)
 {
 	self->cache_size = value;
 }
 
 static inline void
-part_mgr_config_set_cache_evict(PartMgrConfig* self, int value)
+partitioning_set_cache_evict(Partitioning* self, int value)
 {
 	self->cache_evict = value;
 }
 
 static inline void
-part_mgr_config_set_cache_evict_wm(PartMgrConfig* self, int value)
+partitioning_set_cache_evict_wm(Partitioning* self, int value)
 {
 	self->cache_evict_wm = value;
 }
 
 static inline void
-part_mgr_config_copy(PartMgrConfig* self, PartMgrConfig* copy)
+partitioning_copy(Partitioning* self, Partitioning* copy)
 {
-	part_mgr_config_set_partitions(copy, self->partitions);
-	part_mgr_config_set_cache(copy, self->cache);
-	part_mgr_config_set_cache_size(copy, self->cache_size);
-	part_mgr_config_set_cache_evict(copy, self->cache_evict);
-	part_mgr_config_set_cache_evict_wm(copy, self->cache_evict_wm);
+	partitioning_set_partitions(copy, self->partitions);
+	partitioning_set_cache(copy, self->cache);
+	partitioning_set_cache_size(copy, self->cache_size);
+	partitioning_set_cache_evict(copy, self->cache_evict);
+	partitioning_set_cache_evict_wm(copy, self->cache_evict_wm);
 	volume_mgr_copy(&self->volumes, &copy->volumes);
 }
 
 static inline void
-part_mgr_config_read(PartMgrConfig* self, uint8_t** pos)
+partitioning_read(Partitioning* self, uint8_t** pos)
 {
 	uint8_t* pos_volumes = NULL;
 	Decode obj[] =
@@ -95,14 +95,14 @@ part_mgr_config_read(PartMgrConfig* self, uint8_t** pos)
 		{ DECODE_ARRAY, "volumes",        &pos_volumes          },
 		{ 0,             NULL,             NULL                 },
 	};
-	decode_obj(obj, "part_mgr_config", pos);
+	decode_obj(obj, "partitioning", pos);
 
 	// volumes
 	volume_mgr_read(&self->volumes, &pos_volumes);
 }
 
 static inline void
-part_mgr_config_write(PartMgrConfig* self, Buf* buf, int flags)
+partitioning_write(Partitioning* self, Buf* buf, int flags)
 {
 	encode_obj(buf);
 

@@ -654,7 +654,7 @@ drop table test;
 create table test (id int primary key) partitions;
 {"msg": "create table test (id int primary key) partitions❰;❱ ⟵ int expected"}
 create table test (id int primary key) partitions 4;
-select show('table', 'test', true).partitions.partitions;
+select show('table', 'test', true).partitioning.partitions;
 [4]
 drop table test;
 # test: with
@@ -724,7 +724,7 @@ show tables extended;
       "asc": true
     }]
   }],
-  "partitions": {
+  "partitioning": {
     "partitions": 1,
     "cache": false,
     "cache_size": 4294967296,

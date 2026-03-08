@@ -354,7 +354,7 @@ parse_table_create_with(Stmt* self)
 {
 	auto stmt = ast_table_create_of(self->ast);
 	auto config = stmt->config;
-	auto config_part = &stmt->config->part_mgr_config;
+	auto config_part = &stmt->config->partitioning;
 
 	// (
 	stmt_expect(self, '(');
@@ -376,7 +376,7 @@ parse_table_create_with(Stmt* self)
 		if (str_is(&name->string, "partitions", 10))
 		{
 			auto value = stmt_expect(self, KINT);
-			part_mgr_config_set_partitions(config_part, value->integer);
+			partitioning_set_partitions(config_part, value->integer);
 		} else
 		if (str_is(&name->string, "cache", 5))
 		{
@@ -387,22 +387,22 @@ parse_table_create_with(Stmt* self)
 				if (! value)
 					stmt_error(self, NULL, "bool expected");
 			}
-			part_mgr_config_set_cache(config_part, value->integer);
+			partitioning_set_cache(config_part, value->integer);
 		} else
 		if (str_is(&name->string, "cache_size", 10))
 		{
 			auto value = stmt_expect(self, KINT);
-			part_mgr_config_set_cache_size(config_part, value->integer);
+			partitioning_set_cache_size(config_part, value->integer);
 		} else
 		if (str_is(&name->string, "cache_evict", 11))
 		{
 			auto value = stmt_expect(self, KINT);
-			part_mgr_config_set_cache_evict(config_part, value->integer);
+			partitioning_set_cache_evict(config_part, value->integer);
 		} else
 		if (str_is(&name->string, "cache_evict_wm", 14))
 		{
 			auto value = stmt_expect(self, KINT);
-			part_mgr_config_set_cache_evict_wm(config_part, value->integer);
+			partitioning_set_cache_evict_wm(config_part, value->integer);
 		} else {
 			stmt_error(self, name, "unknown option");
 		}
@@ -470,8 +470,8 @@ parse_table_create(Stmt* self, bool unlogged)
 	if (hash_partitions < 1 || hash_partitions >= PART_MAPPING_MAX)
 		stmt_error(self, NULL, "table has invalid hash partitions number");
 
-	auto config_part = &config->part_mgr_config;
-	part_mgr_config_set_partitions(config_part, hash_partitions);
+	auto config_part = &config->partitioning;
+	partitioning_set_partitions(config_part, hash_partitions);
 
 	// [WITH]
 	if (stmt_if(self, KWITH))

@@ -15,8 +15,9 @@ typedef struct PartArg PartArg;
 
 struct PartArg
 {
-	Sequence* seq;
-	bool      unlogged;
-	uint64_t  size;
-	Uuid*     id_table;
+	atomic_u64*   heap_total;
+	Sequence*     seq;
+	bool          unlogged;
+	Uuid*         id_table;
+	Partitioning* config;
 };

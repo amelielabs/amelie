@@ -97,7 +97,7 @@ heap_prepare(Heap* self)
 }
 
 Heap*
-heap_allocate(bool lru)
+heap_allocate(atomic_u64* total_size, bool lru)
 {
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets     = NULL;
@@ -107,6 +107,7 @@ heap_allocate(bool lru)
 	self->shadow      = NULL;
 	self->shadow_free = false;
 	self->lru         = lru;
+	self->total_size  = total_size;
 	page_mgr_init(&self->page_mgr);
 	heap_prepare(self);
 	return self;
@@ -116,7 +117,10 @@ void
 heap_free(Heap* self)
 {
 	if (self->header)
+	{
+		atomic_u64_sub(self->total_size, self->header->size_used);
 		am_free(self->header);
+	}
 	page_mgr_free(&self->page_mgr);
 	am_free(self);
 }
@@ -258,6 +262,7 @@ heap_add(Heap* self, int size)
 	// update total used metrics
 	self->header->count_used++;
 	self->header->size_used += bucket->size;
+	atomic_u64_add(self->total_size, bucket->size);
 
 	// support lru (place chunk on top of the list)
 	if (self->lru)
@@ -308,6 +313,7 @@ heap_remove(Heap* self, void* pointer)
 	// update total used metrics
 	self->header->count_used--;
 	self->header->size_used -= bucket->size;
+	atomic_u64_sub(self->total_size, bucket->size);
 
 	// if not first, merge left  if left->free (use chunk->bucket_left to match)
 	// if not last,  merge right if right->free

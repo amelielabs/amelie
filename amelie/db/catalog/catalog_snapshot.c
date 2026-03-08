@@ -37,7 +37,7 @@ catalog_snapshot(Catalog* self, Buf* data)
 	list_foreach(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		volume_mgr_list(&table->config->part_mgr_config.volumes, data);
+		volume_mgr_list(&table->config->partitioning.volumes, data);
 		list_foreach(&table->config->tiers)
 		{
 			auto config = list_at(TierConfig, link);

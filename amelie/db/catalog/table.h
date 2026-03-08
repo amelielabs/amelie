@@ -73,10 +73,11 @@ table_allocate(TableConfig* config,
 
 	// part context
 	auto arg = &self->part_arg;
-	arg->seq      = &self->seq;
-	arg->unlogged =  self->config->unlogged;
-	arg->size     =  self->config->part_mgr_config.cache_size;
-	arg->id_table = &self->config->id;
+	arg->heap_total = &self->part_mgr.heap_total;
+	arg->seq        = &self->seq;
+	arg->unlogged   =  self->config->unlogged;
+	arg->id_table   = &self->config->id;
+	arg->config     =  &self->config->partitioning;
 
 	// tiering
 	auto primary = table_primary(self);
@@ -84,7 +85,7 @@ table_allocate(TableConfig* config,
 
 	// partition manager
 	part_mgr_init(&self->part_mgr, iface, iface_arg,
-	              &self->config->part_mgr_config, arg, &self->tier_mgr,
+	              &self->config->partitioning, arg, &self->tier_mgr,
 	              &primary->keys);
 
 	relation_init(&self->rel);

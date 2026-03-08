@@ -21,15 +21,16 @@
 #include <amelie_part.h>
 
 void
-part_mgr_init(PartMgr*       self,
-              PartMgrIf*     iface,
-              void*          iface_arg,
-              PartMgrConfig* config,
-              PartArg*       arg,
-              TierMgr*       tier_mgr,
-              Keys*          keys)
+part_mgr_init(PartMgr*      self,
+              PartMgrIf*    iface,
+              void*         iface_arg,
+              Partitioning* config,
+              PartArg*      arg,
+              TierMgr*      tier_mgr,
+              Keys*         keys)
 {
 	self->list_count = 0;
+	self->heap_total = 0;
 	self->config     = config;
 	self->arg        = arg;
 	self->iface      = iface;

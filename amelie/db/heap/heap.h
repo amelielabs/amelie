@@ -87,12 +87,13 @@ struct Heap
 {
 	HeapBucket* buckets;
 	PageHeader* page_header;
-	HeapChunk*  last;
 	HeapHeader* header;
+	HeapChunk*  last;
 	Heap*       shadow;
 	bool        shadow_free;
-	bool        lru;
 	PageMgr     page_mgr;
+	bool        lru;
+	atomic_u64* total_size;
 };
 
 always_inline static inline HeapChunk*
@@ -113,7 +114,7 @@ heap_page_of(HeapChunk* self)
 	return (PageHeader*)((uintptr_t)self - self->offset);
 }
 
-Heap* heap_allocate(bool);
+Heap* heap_allocate(atomic_u64*, bool);
 void  heap_free(Heap*);
 void* heap_add(Heap*, int);
 void  heap_remove(Heap*, void*);
