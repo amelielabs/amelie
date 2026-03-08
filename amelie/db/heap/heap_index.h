@@ -11,4 +11,24 @@
 // AGPL-3.0 Licensed.
 //
 
-void heap_index(Heap*, Keys*, Buf*);
+static inline void
+heap_index(Heap* self, Keys* keys, Collection* col)
+{
+	collection_reset(col);
+
+	// collect rows
+	HeapIterator it;
+	heap_iterator_init(&it);
+	heap_iterator_open(&it, self, NULL);
+	for (; heap_iterator_has(&it); heap_iterator_next(&it))
+	{
+		auto chunk = heap_iterator_at_chunk(&it);
+		auto row   = heap_iterator_at(&it);
+		if (chunk->is_shadow_free)
+			continue;
+		collection_add(col, row);
+	}
+
+	// sort
+	collection_sort(col, keys);
+}

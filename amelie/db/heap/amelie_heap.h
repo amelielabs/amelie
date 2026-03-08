@@ -17,4 +17,3 @@
 #include "heap/heap_file.h"
 #include "heap/heap_row.h"
 #include "heap/heap_index.h"
-#include "heap/heap_index_iterator.h"

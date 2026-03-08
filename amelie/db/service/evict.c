@@ -186,32 +186,32 @@ evict_job(intptr_t* argv)
 	// create heap index
 	auto keys = index_keys(part_primary(self->origin));
 	auto heap = self->origin->heap;
-	heap_index(heap, keys, &self->origin_heap_index);
+	heap_index(heap, keys, &self->origin_col);
 
 	// prepare heap index iterator
-	HeapIndexIterator it;
-	heap_index_iterator_init(&it);
-	heap_index_iterator_open(&it, &self->origin_heap_index);
+	CollectionIterator it;
+	collection_iterator_init(&it);
+	collection_iterator_open(&it, &self->origin_col);
 
 	// create branches for every matching objects
 	EvictBranch* branch = NULL;
 	for (;;)
 	{
-		if (! heap_index_iterator_has(&it))
+		if (! collection_iterator_has(&it))
 		{
 			if (branch)
 				evict_stop(self, branch);
 			break;
 		}
 
-		auto row = heap_index_iterator_at(&it);
+		auto row = collection_iterator_at(&it);
 		if (branch)
 		{
 			// object is last or row <= branch max
 			if (branch->parent_last || branch_in(branch->parent->root, keys, row))
 			{
 				writer_add(self->writer, row);
-				heap_index_iterator_next(&it);
+				collection_iterator_next(&it);
 				continue;
 			}
 		}
@@ -393,7 +393,7 @@ evict_init(Evict* self, Service* service)
 	self->service        = service;
 
 	service_lock_init(&self->lock);
-	buf_init(&self->origin_heap_index);
+	collection_init(&self->origin_col);
 	id_init(&self->origin_id);
 	id_init(&self->part_id);
 	file_init(&self->part_file);
@@ -405,7 +405,7 @@ evict_free(Evict* self)
 {
 	evict_reset(self);
 
-	buf_free(&self->origin_heap_index);
+	collection_free(&self->origin_col);
 	buf_free(&self->branches);
 	writer_free(self->writer);
 	service_file_free(self->service_file);
@@ -425,7 +425,7 @@ evict_reset(Evict* self)
 	service_file_reset(self->service_file);
 	service_lock_init(&self->lock);
 	writer_reset(self->writer);
-	buf_reset(&self->origin_heap_index);
+	collection_reset(&self->origin_col);
 	id_init(&self->origin_id);
 	id_init(&self->part_id);
 	file_init(&self->part_file);

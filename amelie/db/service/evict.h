@@ -30,7 +30,7 @@ struct Evict
 	Id           origin_id;
 	uint64_t     origin_lsn;
 	Index*       origin_indexes;
-	Buf          origin_heap_index;
+	Collection   origin_col;
 	// updated partition
 	Id           part_id;
 	File         part_file;

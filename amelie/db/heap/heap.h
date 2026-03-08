@@ -39,7 +39,8 @@ struct HeapChunk
 	uint64_t is_last: 1;
 	uint64_t is_shadow: 1;
 	uint64_t is_shadow_free: 1;
-	uint64_t padding: 5;
+	uint64_t is_evicted: 1;
+	uint64_t padding: 4;
 
 	// row data
 	uint8_t  data[];

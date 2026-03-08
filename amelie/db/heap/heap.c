@@ -253,6 +253,7 @@ heap_add(Heap* self, int size)
 	chunk->is_free        = false;
 	chunk->is_shadow      = self->shadow != NULL;
 	chunk->is_shadow_free = false;
+	chunk->is_evicted     = false;
 
 	// update total used metrics
 	self->header->count_used++;

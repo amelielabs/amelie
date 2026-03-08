@@ -190,7 +190,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/tier/tier_mgr.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/heap_file.c
-    ${AMELIE_ROOT}/db/heap/heap_index.c
     ${AMELIE_ROOT}/db/index/tree.c
     ${AMELIE_ROOT}/db/index/index_tree.c
     ${AMELIE_ROOT}/db/index/index_hash.c
