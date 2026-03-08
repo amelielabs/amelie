@@ -30,7 +30,8 @@ evict_begin(Evict* self, Table* table, uint64_t id, uint64_t size)
 	self->lru_size = size;
 
 	// create shadow heap
-	auto heap_shadow = heap_allocate(false);
+	auto lru_on = table->config->part_mgr_config.cache;
+	auto heap_shadow = heap_allocate(lru_on);
 
 	// take table exclusive lock (unlock on return)
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);

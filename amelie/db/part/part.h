@@ -26,7 +26,7 @@ struct Part
 	List     link;
 };
 
-Part*  part_allocate(Id*, PartArg*);
+Part*  part_allocate(Id*, PartArg*, bool);
 void   part_free(Part*);
 void   part_open(Part*);
 void   part_truncate(Part*);

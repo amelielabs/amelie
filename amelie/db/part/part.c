@@ -21,13 +21,13 @@
 #include <amelie_part.h>
 
 Part*
-part_allocate(Id* id, PartArg* arg)
+part_allocate(Id* id, PartArg* arg, bool lru)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
 	self->id            = *id;
 	self->indexes       = NULL;
 	self->indexes_count = 0;
-	self->heap          = heap_allocate(false);
+	self->heap          = heap_allocate(lru);
 	self->heap_shadow   = NULL;
 	self->arg           = arg;
 	track_init(&self->track);
@@ -67,9 +67,17 @@ part_open(Part* self)
 	uint64_t count = 0;
 	while (heap_iterator_has(&it))
 	{
-		auto row = heap_iterator_at(&it);
-		part_apply(self, row, false);
-		count++;
+		auto chunk = heap_iterator_at_chunk(&it);
+		if (chunk->is_evicted)
+		{
+			// cleanup evicted rows during load
+			heap_remove(self->heap, chunk->data);
+		} else
+		{
+			auto row = heap_iterator_at(&it);
+			part_apply(self, row, false);
+			count++;
+		}
 		heap_iterator_next(&it);
 	}
 
