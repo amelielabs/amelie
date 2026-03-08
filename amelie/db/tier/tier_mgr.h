@@ -43,5 +43,7 @@ tier_mgr_created(TierMgr* self)
 static inline Tier*
 tier_mgr_first(TierMgr* self)
 {
+	if (! tier_mgr_created(self))
+		return NULL;
 	return container_of(list_first(&self->list), Tier, link);
 }

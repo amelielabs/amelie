@@ -300,6 +300,7 @@ heap_remove(Heap* self, void* pointer)
 	chunk->prev         = bucket->list;
 	chunk->prev_offset  = bucket->list_offset;
 	chunk->is_free      = true;
+	chunk->is_evicted   = false;
 	bucket->list        = heap_page_of(chunk)->order;
 	bucket->list_offset = chunk->offset;
 	bucket->list_count++;

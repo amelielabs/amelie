@@ -30,10 +30,13 @@ struct Evict
 	Id           origin_id;
 	uint64_t     origin_lsn;
 	Index*       origin_indexes;
-	Collection   origin_col;
+	// origin lru
+	Collection   lru;
+	uint64_t     lru_size;
 	// updated partition
 	Id           part_id;
 	File         part_file;
+	Index*       part_indexes;
 	// branches
 	Buf          branches;
 	int          branches_count;
@@ -46,4 +49,4 @@ struct Evict
 void evict_init(Evict*, Service*);
 void evict_free(Evict*);
 void evict_reset(Evict*);
-bool evict_run(Evict*, Table*, uint64_t);
+bool evict_run(Evict*, Table*, uint64_t, uint64_t);

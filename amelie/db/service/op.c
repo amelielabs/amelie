@@ -52,13 +52,10 @@ service_evict(Service* self, Uuid* id_table, uint64_t id)
 {
 	// note: executed under shared catalog lock
 	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
-	if (! tier_mgr_created(&table->tier_mgr))
-		error("evict: table has no tiers");
-
 	Evict evict;
 	evict_init(&evict, self);
 	defer(evict_free, &evict);
-	if (! evict_run(&evict, table, id))
+	if (! evict_run(&evict, table, id, UINT64_MAX))
 		error("partition not found");
 }
 

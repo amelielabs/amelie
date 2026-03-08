@@ -24,9 +24,10 @@
 #include <amelie_service.h>
 
 static bool
-evict_begin(Evict* self, Table* table, uint64_t id)
+evict_begin(Evict* self, Table* table, uint64_t id, uint64_t size)
 {
-	self->table = table;
+	self->table    = table;
+	self->lru_size = size;
 
 	// create shadow heap
 	auto heap_shadow = heap_allocate(false);
@@ -42,8 +43,9 @@ evict_begin(Evict* self, Table* table, uint64_t id)
 		heap_free(heap_shadow);
 		return false;
 	}
-	self->origin    = origin;
-	self->origin_id = origin->id;
+	self->origin         = origin;
+	self->origin_id      = origin->id;
+	self->origin_indexes = origin->indexes;
 
 	// set new partition id
 	auto volumes = &table->part_mgr.config->volumes;
@@ -154,46 +156,17 @@ evict_stop(Evict* self, EvictBranch* branch)
 }
 
 static void
-evict_partition(Evict* self)
+evict_flush(Evict* self)
 {
-	auto part_id   = &self->part_id;
-	auto part_file = &self->part_file;
-	auto heap      =  self->origin->heap;
-
-	// create <id>.incomplete file
-	auto heap_temp = heap_allocate(false);
-	defer(heap_free, heap_temp);
-	heap_temp->header->hash_min = heap->header->hash_min;
-	heap_temp->header->hash_max = heap->header->hash_max;
-	heap_temp->header->lsn      = self->origin_lsn;
-	heap_create(heap_temp, part_file, part_id, STATE_INCOMPLETE);
-
-	auto total = (double)part_file->size / 1024 / 1024;
-	info("evict: %s/%05" PRIu64 " (%.2f MiB)",
-	     part_id->volume->storage->config->name.pos,
-	     part_id->id,
-	     total);
-}
-
-static void
-evict_job(intptr_t* argv)
-{
-	auto self = (Evict*)argv[0];
-
-	// create <id>.incomplete file
-	evict_partition(self);
-
-	// create heap index
+	// sort evicted rows
 	auto keys = index_keys(part_primary(self->origin));
-	auto heap = self->origin->heap;
-	heap_index(heap, keys, &self->origin_col);
-
-	// prepare heap index iterator
-	CollectionIterator it;
-	collection_iterator_init(&it);
-	collection_iterator_open(&it, &self->origin_col);
+	collection_sort(&self->lru, keys);
 
 	// create branches for every matching objects
+	CollectionIterator it;
+	collection_iterator_init(&it);
+	collection_iterator_open(&it, &self->lru);
+
 	EvictBranch* branch = NULL;
 	for (;;)
 	{
@@ -226,15 +199,94 @@ evict_job(intptr_t* argv)
 }
 
 static void
+evict_partition(Evict* self)
+{
+	auto part_id   = &self->part_id;
+	auto part_file = &self->part_file;
+	auto heap      =  self->origin->heap;
+
+	// create <id>.incomplete file
+	heap_create(heap, part_file, part_id, STATE_INCOMPLETE);
+
+	auto total = (double)part_file->size / 1024 / 1024;
+	info("evict: %s/%05" PRIu64 " (%.2f MiB)",
+	     part_id->volume->storage->config->name.pos,
+	     part_id->id,
+	     total);
+}
+
+hot static void
+evict_reindex(Evict* self)
+{
+	// create a new set of indexes
+	auto   index = self->origin_indexes;
+	Index* tail  = NULL;
+	for (; index; index = index->next)
+	{
+		auto config = index->config;
+		Index* copy;
+		if (config->type == INDEX_TREE)
+			copy = index_tree_allocate(config, self);
+		else
+		if (config->type == INDEX_HASH)
+			copy = index_hash_allocate(config, self);
+		else
+			abort();
+		if (tail)
+			tail->next = copy;
+		else
+			self->part_indexes = copy;
+	}
+
+	// rebuild indexes (excluding evicted rows)
+	auto     heap      = self->origin->heap;
+	uint32_t at        = heap->header->lru;
+	uint32_t at_offset = heap->header->lru_offset;
+	while (at)
+	{
+		auto chunk = heap_chunk_at(heap, at, at_offset);
+		if (chunk->is_evicted)
+			break;
+
+		auto row = (Row*)chunk->data;
+		for (auto index = self->part_indexes; index; index = index->next)
+			index_replace_by(index, row);
+
+		at = chunk->prev;
+		at_offset = chunk->prev_offset;
+	}
+}
+
+hot static void
+evict_job(intptr_t* argv)
+{
+	auto self = (Evict*)argv[0];
+	auto heap = self->origin->heap;
+
+	// collect evicted rows
+	heap_evict(heap, &self->lru, self->lru_size);
+
+	// create branches out of the evicted rows for every matching objects
+	if (tier_mgr_created(&self->table->tier_mgr))
+		evict_flush(self);
+
+	// create <id>.incomplete file
+	evict_partition(self);
+
+	// create a new set of indexes (excluding evicted rows)
+	evict_reindex(self);
+}
+
+static void
 evict_gc(Evict* self)
 {
-	// free shadow heap (former main heap)
+	// free shadow heap
 	auto origin = self->origin;
 	auto shadow = origin->heap_shadow;
 	origin->heap_shadow = NULL;
 	heap_free(shadow);
 
-	// free indexes
+	// free original set of indexes
 	auto index = self->origin_indexes;
 	while (index)
 	{
@@ -304,12 +356,11 @@ evict_complete_job(intptr_t* argv)
 	service_file_delete(service);
 }
 
-static void
+hot static void
 evict_apply(Evict* self)
 {
 	auto origin = self->origin;
 	auto table  = self->table;
-	auto tier   = tier_mgr_first(&table->tier_mgr);
 
 	// take table exclusive lock (unlock on return)
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
@@ -322,35 +373,48 @@ evict_apply(Evict* self)
 	// snapshot complete
 	heap_snapshot(origin->heap, NULL, false);
 
-	// create a new set of indexes
-	self->origin_indexes  = origin->indexes;
-	origin->indexes       = NULL;
-	origin->indexes_count = 0;
+	// use new indexes
+	origin->indexes = self->part_indexes;
 
-	auto index = self->origin_indexes;
-	while (index)
+	// remove evicted rows from the main heap
+	auto     heap      = self->origin->heap;
+	uint32_t at        = heap->header->lru_tail;
+	uint32_t at_offset = heap->header->lru_tail_offset;
+	while (at)
 	{
-		part_index_create(origin, index->config);
-		index = index->next;
+		auto chunk = heap_chunk_at(heap, at, at_offset);
+		if (! chunk->is_evicted)
+			break;
+		at = chunk->prev;
+		at_offset = chunk->prev_offset;
+		heap_remove(heap, chunk->data);
 	}
-	// use shadow heap as main
-	auto heap = origin->heap;
-	origin->heap = origin->heap_shadow;
-	origin->heap_shadow = heap;
 
-	// recreate indexes
-	HeapIterator it;
-	heap_iterator_init(&it);
-	heap_iterator_open(&it, origin->heap, NULL);
-	for (; heap_iterator_has(&it); heap_iterator_next(&it))
+	// apply shadow heap updates respecting its lru order
+	heap      = self->origin->heap_shadow;
+	at        = heap->header->lru_tail;
+	at_offset = heap->header->lru_tail_offset;
+	while (at)
 	{
-		auto chunk = heap_iterator_at_chunk(&it);
+		auto chunk = heap_chunk_at(heap, at, at_offset);
 		if (chunk->is_shadow_free)
+		{
+			// delayed heap removal (skip evicted rows)
+			auto row = *(Row**)chunk->data;
+			if (heap_chunk_of(row)->is_free)
+				continue;
+			heap_remove(origin->heap, row);
 			continue;
-		chunk->is_shadow = false;
-		auto row = heap_iterator_at(&it);
+		}
+
+		// copy row
+		auto row_shadow = (Row*)chunk->data;
+		auto row = row_copy(origin->heap, row_shadow);
 		auto prev = part_apply(origin, row, false);
 		assert(! prev);
+
+		at = chunk->prev;
+		at_offset = chunk->prev_offset;
 	}
 
 	// update volume refs
@@ -361,18 +425,19 @@ evict_apply(Evict* self)
 	volume_add(origin->id.volume, &origin->link_volume);
 
 	// attach branches to the corresponding objects
+	auto tier    = tier_mgr_first(&table->tier_mgr);
 	auto service = false;
-	auto at  = (EvictBranch*)self->branches.start;
-	auto end = (EvictBranch*)self->branches.position;
-	for (; at < end; at++)
+	auto it      = (EvictBranch*)self->branches.start;
+	auto end     = (EvictBranch*)self->branches.position;
+	for (; it < end; it++)
 	{
-		object_add(at->parent, at->branch);
+		object_add(it->parent, it->branch);
 
 		// update object version
-		at->parent->id.version++;
+		it->parent->id.version++;
 
 		// schedule additional service for the table
-		if (at->parent->branches_count > tier->config->branches)
+		if (it->parent->branches_count > tier->config->branches)
 			service = true;
 	}
 
@@ -386,6 +451,8 @@ evict_init(Evict* self, Service* service)
 	self->origin         = NULL;
 	self->origin_lsn     = 0;
 	self->origin_indexes = NULL;
+	self->lru_size       = 0;
+	self->part_indexes   = NULL;
 	self->branches_count = 0;
 	self->writer         = writer_allocate();
 	self->table          = NULL;
@@ -393,7 +460,7 @@ evict_init(Evict* self, Service* service)
 	self->service        = service;
 
 	service_lock_init(&self->lock);
-	collection_init(&self->origin_col);
+	collection_init(&self->lru);
 	id_init(&self->origin_id);
 	id_init(&self->part_id);
 	file_init(&self->part_file);
@@ -405,7 +472,7 @@ evict_free(Evict* self)
 {
 	evict_reset(self);
 
-	collection_free(&self->origin_col);
+	collection_free(&self->lru);
 	buf_free(&self->branches);
 	writer_free(self->writer);
 	service_file_free(self->service_file);
@@ -418,14 +485,16 @@ evict_reset(Evict* self)
 
 	self->origin         = NULL;
 	self->origin_lsn     = 0;
+	self->lru_size       = 0;
 	self->origin_indexes = NULL;
+	self->part_indexes   = NULL;
 	self->branches_count = 0;
 	self->table          = NULL;
 
 	service_file_reset(self->service_file);
 	service_lock_init(&self->lock);
 	writer_reset(self->writer);
-	collection_reset(&self->origin_col);
+	collection_reset(&self->lru);
 	id_init(&self->origin_id);
 	id_init(&self->part_id);
 	file_init(&self->part_file);
@@ -433,9 +502,8 @@ evict_reset(Evict* self)
 }
 
 bool
-evict_run(Evict* self, Table* table, uint64_t id)
+evict_run(Evict* self, Table* table, uint64_t id, uint64_t size)
 {
-	assert(tier_mgr_created(&table->tier_mgr));
 	evict_reset(self);
 
 	// lock partition by id
@@ -443,7 +511,7 @@ evict_run(Evict* self, Table* table, uint64_t id)
 	defer(service_unlock, &self->lock);
 
 	// find and rotate partition
-	if (! evict_begin(self, table, id))
+	if (! evict_begin(self, table, id, size))
 		return false;
 
 	auto on_error = error_catch

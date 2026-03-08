@@ -114,7 +114,7 @@ service_execute(Service* self, ServiceWorker* worker, Action* action)
 	// execute
 	switch (action->type) {
 	case ACTION_EVICT:
-		if (! evict_run(&worker->evict, table, action->id))
+		if (! evict_run(&worker->evict, table, action->id, UINT64_MAX))
 			break;
 		service_gc(self);
 		break;
