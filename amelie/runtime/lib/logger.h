@@ -16,9 +16,9 @@ typedef struct Logger Logger;
 struct Logger
 {
 	bool      enable;
-	bool      to_stdout;
-	bool      cli;
-	bool      cli_lf;
+	bool      stdout_enable;
+	bool      stdout_time;
+	bool      stdout_lf;
 	int       fd;
 	Timezone* timezone;
 };
@@ -26,8 +26,9 @@ struct Logger
 void logger_init(Logger*);
 void logger_open(Logger*, const char*);
 void logger_set_enable(Logger*, bool);
-void logger_set_cli(Logger*, bool, bool);
-void logger_set_to_stdout(Logger*, bool);
+void logger_set_stdout(Logger*, bool);
+void logger_set_stdout_time(Logger*, bool);
+void logger_set_stdout_lf(Logger*, bool);
 void logger_set_timezone(Logger*, Timezone*);
 void logger_close(Logger*);
 void logger_write(TaskLog*, const char*, va_list);

@@ -65,8 +65,9 @@ runtime_prepare(Runtime* self)
 	// prepare default logger settings
 	auto logger = &self->logger;
 	logger_set_enable(logger, true);
-	logger_set_cli(logger, true, true);
-	logger_set_to_stdout(logger, true);
+	logger_set_stdout(logger, true);
+	logger_set_stdout_time(logger, false);
+	logger_set_stdout_lf(logger, true);
 
 	// init ssl library
 	tls_lib_init();

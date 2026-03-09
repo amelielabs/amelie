@@ -21,8 +21,9 @@ struct Config
 	Opt  format;
 	// log
 	Opt  log_enable;
-	Opt  log_to_file;
-	Opt  log_to_stdout;
+	Opt  log_file;
+	Opt  log_stdout;
+	Opt  log_stdout_time;
 	Opt  log_connections;
 	Opt  log_options;
 	// server

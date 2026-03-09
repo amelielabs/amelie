@@ -80,7 +80,7 @@ test_command_open(TestSuite* self, Str* arg)
 		"start",
 		path,
 		"--log_enable=true",
-		"--log_to_stdout=false",
+		"--log_stdout=false",
 		"--log_options=true",
 		"--timezone=UTC",
 		"--wal_worker=false",

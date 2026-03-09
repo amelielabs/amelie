@@ -205,7 +205,7 @@ repo_open_client_mode(int argc, char** argv)
 	// prepare logger
 	auto logger = &runtime->logger;
 	logger_set_enable(logger, true);
-	logger_set_cli(logger, false, false);
+	logger_set_stdout(logger, false);
 
 	// set default settings
 	repo_bootstrap();
@@ -221,8 +221,9 @@ repo_open_client_mode(int argc, char** argv)
 
 	// reconfigure logger
 	logger_set_enable(logger, opt_int_of(&config->log_enable));
-	logger_set_to_stdout(logger, opt_int_of(&config->log_to_stdout));
 	logger_set_timezone(logger, runtime->timezone);
+	logger_set_stdout(logger, opt_int_of(&config->log_stdout));
+	logger_set_stdout_time(logger, opt_int_of(&config->log_stdout_time));
 }
 
 void
@@ -255,7 +256,7 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	// open log with default settings
 	auto logger = &runtime->logger;
 	logger_set_enable(logger, true);
-	logger_set_cli(logger, false, false);
+	logger_set_stdout(logger, false);
 	char path[PATH_MAX];
 	sfmt(path, sizeof(path), "%s/log", state_directory());
 	logger_open(logger, path);
@@ -313,9 +314,10 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 
 	// reconfigure logger
 	logger_set_enable(logger, opt_int_of(&config->log_enable));
-	logger_set_to_stdout(logger, opt_int_of(&config->log_to_stdout));
 	logger_set_timezone(logger, runtime->timezone);
-	if (! opt_int_of(&config->log_to_file))
+	logger_set_stdout(logger, opt_int_of(&config->log_stdout));
+	logger_set_stdout_time(logger, opt_int_of(&config->log_stdout_time));
+	if (! opt_int_of(&config->log_file))
 		logger_close(logger);
 
 	// reconfigure jobs manager

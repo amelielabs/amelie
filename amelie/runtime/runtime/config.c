@@ -39,8 +39,9 @@ config_prepare(Config* self)
 		{ "format",                  OPT_STRING, OPT_C,                   &self->format,                  "pretty-minimal", 0                   },
 		// log
 		{ "log_enable",              OPT_BOOL,   OPT_C,                   &self->log_enable,              NULL,             true                },
-		{ "log_to_file",             OPT_BOOL,   OPT_C,                   &self->log_to_file,             NULL,             true                },
-		{ "log_to_stdout",           OPT_BOOL,   OPT_C,                   &self->log_to_stdout,           NULL,             true                },
+		{ "log_file",                OPT_BOOL,   OPT_C,                   &self->log_file,                NULL,             true                },
+		{ "log_stdout",              OPT_BOOL,   OPT_C,                   &self->log_stdout,              NULL,             true                },
+		{ "log_stdout_time",         OPT_BOOL,   OPT_C,                   &self->log_stdout_time,         NULL,             true                },
 		{ "log_connections",         OPT_BOOL,   OPT_C,                   &self->log_connections,         NULL,             true                },
 		{ "log_options",             OPT_BOOL,   OPT_C,                   &self->log_options,             NULL,             false               },
 		// server

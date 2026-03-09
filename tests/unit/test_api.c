@@ -32,7 +32,7 @@ test_api_open(void* arg)
 	int   argc   = 10;
 	char* argv[] =
 	{
-		"--log_to_stdout=false",
+		"--log_stdout=false",
 		"--wal_worker=false",
 		"--wal_sync_on_create=false",
 		"--wal_sync_on_close=false",
@@ -61,7 +61,7 @@ test_api_connect(void* arg)
 	int   argc   = 10;
 	char* argv[] =
 	{
-		"--log_to_stdout=false",
+		"--log_stdout=false",
 		"--wal_worker=false",
 		"--wal_sync_on_create=false",
 		"--wal_sync_on_close=false",
@@ -99,7 +99,7 @@ test_api_execute(void* arg)
 	int   argc   = 10;
 	char* argv[] =
 	{
-		"--log_to_stdout=false",
+		"--log_stdout=false",
 		"--wal_worker=false",
 		"--wal_sync_on_create=false",
 		"--wal_sync_on_close=false",
@@ -172,7 +172,7 @@ test_api_execute_error(void* arg)
 	int   argc   = 10;
 	char* argv[] =
 	{
-		"--log_to_stdout=false",
+		"--log_stdout=false",
 		"--wal_worker=false",
 		"--wal_sync_on_create=false",
 		"--wal_sync_on_close=false",

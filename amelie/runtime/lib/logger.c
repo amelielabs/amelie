@@ -17,12 +17,12 @@
 void
 logger_init(Logger* self)
 {
-	self->enable    = true;
-	self->to_stdout = false;
-	self->cli       = false;
-	self->cli_lf    = true;
-	self->fd        = -1;
-	self->timezone  = NULL;
+	self->enable        = true;
+	self->stdout_enable = false;
+	self->stdout_time   = false;
+	self->stdout_lf     = false;
+	self->fd            = -1;
+	self->timezone      = NULL;
 }
 
 void
@@ -52,16 +52,21 @@ logger_set_enable(Logger* self, bool enable)
 }
 
 void
-logger_set_cli(Logger* self, bool enable, bool lf)
+logger_set_stdout(Logger *self, bool enable)
 {
-	self->cli = enable;
-	self->cli_lf = lf;
+	self->stdout_enable = enable;
 }
 
 void
-logger_set_to_stdout(Logger *self, bool enable)
+logger_set_stdout_time(Logger *self, bool enable)
 {
-	self->to_stdout = enable;
+	self->stdout_time = enable;
+}
+
+void
+logger_set_stdout_lf(Logger *self, bool enable)
+{
+	self->stdout_lf = enable;
 }
 
 void
@@ -98,19 +103,22 @@ logger_write(TaskLog* arg, const char* fmt, va_list args)
 	if (self->fd != -1)
 		vfs_write(self->fd, buf->start, buf_size(buf));
 
-	if (! self->to_stdout)
+	if (! self->stdout_enable)
 		return;
 
-	// do not print timestamp for cli
 	auto data = buf->start;
 	auto data_size = buf_size(buf);
-	if (self->cli)
+
+	// print timestamp
+	if (! self->stdout_time)
 	{
 		data += timestamp_offset;
 		data_size -= timestamp_offset;
-		if (! self->cli_lf)
-			data_size--;
 	}
+
+	// print lf
+	if (! self->stdout_lf)
+		data_size--;
 
 	// write to stdout
 	vfs_write(STDOUT_FILENO, data, data_size);

@@ -18,7 +18,9 @@ void
 cmd_test(Main* self)
 {
 	main_advance(self, -2);
-	logger_set_cli(&runtime()->logger, true, false);
+	logger_set_stdout(&runtime()->logger, true);
+	logger_set_stdout_lf(&runtime()->logger, false);
+	logger_set_stdout_time(&runtime()->logger, false);
 
 	TestSuite suite;
 	test_suite_init(&suite);

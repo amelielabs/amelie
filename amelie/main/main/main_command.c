@@ -73,7 +73,7 @@ cmd_backup(Main* self)
 
 	// disable log output
 	if (! self->endpoint.debug.integer)
-		logger_set_to_stdout(&runtime()->logger, false);
+		logger_set_stdout(&runtime()->logger, false);
 
 	// create backup
 	opt_int_set(&config()->log_connections, false);
@@ -92,7 +92,9 @@ cmd_import(Main* self)
 	main_open(self, MAIN_OPEN_ANY_NOOPTS, &import.opts);
 	defer(main_close, self);
 
-	logger_set_cli(&runtime()->logger, true, false);
+	logger_set_stdout(&runtime()->logger, true);
+	logger_set_stdout_time(&runtime()->logger, false);
+	logger_set_stdout_lf(&runtime()->logger, false);
 
 	opt_int_set(&config()->log_connections, false);
 	import_run(&import);
