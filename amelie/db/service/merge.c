@@ -109,7 +109,8 @@ merge_write(Merge* self, Iterator* it, Object* object, uint64_t limit)
 
 	auto id    = &object->id;
 	auto total = (double)object->file.size / 1024 / 1024;
-	info("merge: %s/%s/%05" PRIu64 ".%02" PRIu64 " (%.2f MiB)",
+	info("merge: %05" PRIu64 " ⟶ %s/%s/%05" PRIu64 ".%02" PRIu64 " (%.2f MiB)",
+	     self->origin->id.id,
 	     id->volume->storage->config->name.pos,
 	     self->tier->config->name.pos,
 	     id->id,

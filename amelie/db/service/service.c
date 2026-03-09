@@ -126,6 +126,9 @@ service_schedule(Table* table, Action* action)
 			return;
 	}
 
+	if (! tier_mgr_created(&table->tier_mgr))
+		return;
+
 	// schedule object merge (refresh/split)
 	Object* match = NULL;
 	auto tier = tier_mgr_first(&table->tier_mgr);
@@ -152,7 +155,7 @@ service_execute(Service* self, ServiceWorker* worker, Action* action)
 
 	// find table
 	auto table = table_mgr_find_by(&self->catalog->table_mgr, &action->req->id_table, false);
-	if (!table || !tier_mgr_created(&table->tier_mgr))
+	if (! table)
 		return;
 
 	// find table and schedule next service action

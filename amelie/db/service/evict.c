@@ -150,7 +150,8 @@ evict_stop(Evict* self, EvictBranch* branch)
 
 	auto id    = &branch->parent->id;
 	auto total = (double)branch->parent->file.size / 1024 / 1024;
-	info("evict: %s/%s/%05" PRIu64 ".%02" PRIu64 " (%.2f MiB)",
+	info("evict: %05" PRIu64 " ⟶ %s/%s/%05" PRIu64 ".%02" PRIu64 " (%.2f MiB)",
+	     self->origin->id.id,
 	     id->volume->storage->config->name.pos,
 	     tier->config->name.pos,
 	     id->id,
@@ -212,7 +213,8 @@ evict_partition(Evict* self)
 	heap_create(heap, part_file, part_id, STATE_INCOMPLETE);
 
 	auto total = (double)part_file->size / 1024 / 1024;
-	info("evict: %s/%05" PRIu64 " (%.2f MiB)",
+	info("evict: %05" PRIu64 " ⟶ %s/%05" PRIu64 " (%.2f MiB)",
+	     self->origin->id.id,
 	     part_id->volume->storage->config->name.pos,
 	     part_id->id,
 	     total);
@@ -245,7 +247,7 @@ evict_reindex(Evict* self)
 	auto     heap      = self->origin->heap;
 	uint32_t at        = heap->header->lru;
 	uint32_t at_offset = heap->header->lru_offset;
-	while (at)
+	while (at_offset)
 	{
 		auto chunk = heap_chunk_at(heap, at, at_offset);
 		if (chunk->is_evicted)
@@ -255,8 +257,8 @@ evict_reindex(Evict* self)
 		for (auto index = self->part_indexes; index; index = index->next)
 			index_replace_by(index, row);
 
-		at = chunk->prev;
-		at_offset = chunk->prev_offset;
+		at = chunk->next;
+		at_offset = chunk->next_offset;
 	}
 }
 
@@ -383,7 +385,7 @@ evict_apply(Evict* self)
 	auto     heap      = self->origin->heap;
 	uint32_t at        = heap->header->lru_tail;
 	uint32_t at_offset = heap->header->lru_tail_offset;
-	while (at)
+	while (at_offset)
 	{
 		auto chunk = heap_chunk_at(heap, at, at_offset);
 		if (! chunk->is_evicted)
@@ -397,7 +399,7 @@ evict_apply(Evict* self)
 	heap      = self->origin->heap_shadow;
 	at        = heap->header->lru_tail;
 	at_offset = heap->header->lru_tail_offset;
-	while (at)
+	while (at_offset)
 	{
 		auto chunk = heap_chunk_at(heap, at, at_offset);
 		if (chunk->is_shadow_free)

@@ -19,7 +19,7 @@ heap_evict(Heap* self, Collection* col, uint64_t up_to)
 	// collect cold rows
 	uint32_t at = self->header->lru_tail;
 	uint32_t at_offset = self->header->lru_tail_offset;
-	while (at)
+	while (at_offset)
 	{
 		auto chunk = heap_chunk_at(self, at, at_offset);
 		auto row   = (Row*)chunk->data;

@@ -260,13 +260,13 @@ heap_add(Heap* self, int size)
 	chunk->is_evicted     = false;
 
 	// update total used metrics
-	self->header->count_used++;
-	self->header->size_used += bucket->size;
-	atomic_u64_add(self->total_size, bucket->size);
+	heap->header->count_used++;
+	heap->header->size_used += bucket->size;
+	atomic_u64_add(heap->total_size, bucket->size);
 
 	// support lru (place chunk on top of the list)
-	if (self->lru)
-		heap_push(self, chunk);
+	if (heap->lru)
+		heap_push(heap, chunk);
 
 	assert(misalign_of(chunk->data) == 0);
 	return chunk->data;
