@@ -418,7 +418,7 @@ table_op_storage_drop(Buf* self, Str* db, Str* table, Str* storage)
 }
 
 static inline void
-table_op_tier_storage_drop_read(uint8_t* op, Str* db, Str* table, Str* storage)
+table_op_storage_drop_read(uint8_t* op, Str* db, Str* table, Str* storage)
 {
 	int64_t cmd;
 	json_read_array(&op);
@@ -431,7 +431,7 @@ table_op_tier_storage_drop_read(uint8_t* op, Str* db, Str* table, Str* storage)
 }
 
 static inline int
-table_op_tier_storage_pause(Buf* self, Str* db, Str* table, Str* storage, bool pause)
+table_op_storage_pause(Buf* self, Str* db, Str* table, Str* storage, bool pause)
 {
 	// [op, db, table, storage, pause]
 	auto offset = buf_size(self);
@@ -446,8 +446,8 @@ table_op_tier_storage_pause(Buf* self, Str* db, Str* table, Str* storage, bool p
 }
 
 static inline void
-table_op_tier_storage_pause_read(uint8_t* op, Str* db, Str* table, Str* storage,
-                                 bool* pause)
+table_op_storage_pause_read(uint8_t* op, Str* db, Str* table, Str* storage,
+                            bool* pause)
 {
 	int64_t cmd;
 	json_read_array(&op);

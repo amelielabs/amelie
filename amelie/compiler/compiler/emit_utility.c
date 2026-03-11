@@ -108,6 +108,38 @@ emit_alter_table(Compiler* self)
 			flags |= DDL_IF_COLUMN_EXISTS;
 		break;
 	}
+	case TABLE_ALTER_STORAGE_ADD:
+	{
+		offset = table_op_storage_add(data, db, &arg->name, arg->volume);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_storage_not_exists)
+			flags |= DDL_IF_STORAGE_NOT_EXISTS;
+		break;
+	}
+	case TABLE_ALTER_STORAGE_DROP:
+	{
+		offset = table_op_storage_drop(data, db, &arg->name, &arg->storage_name);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_storage_exists)
+			flags |= DDL_IF_STORAGE_EXISTS;
+		break;
+	}
+	case TABLE_ALTER_STORAGE_PAUSE:
+	{
+		offset = table_op_storage_pause(data, db, &arg->name, &arg->storage_name, true);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_storage_exists)
+			flags |= DDL_IF_STORAGE_EXISTS;
+		break;
+	}
+	case TABLE_ALTER_STORAGE_RESUME:
+	{
+		offset = table_op_storage_pause(data, db, &arg->name, &arg->storage_name, false);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_storage_exists)
+			flags |= DDL_IF_STORAGE_EXISTS;
+		break;
+	}
 	default:
 		abort();
 		break;

@@ -482,6 +482,10 @@ parse_table_alter(Stmt* self)
 	// ALTER TABLE [IF EXISTS] name SET COLUMN [IF EXISTS] name AS (expr) <STORED|RESOLVED>
 	// ALTER TABLE [IF EXISTS] name UNSET COLUMN [IF EXISTS] name DEFAULT
 	// ALTER TABLE [IF EXISTS] name UNSET COLUMN [IF EXISTS] name AS <IDENTITY|STORED|RESOLVED>
+	// ALTER TABLE [IF EXISTS] name ADD STORAGE [IF NOT EXISTS] name [(options])
+	// ALTER TABLE [IF EXISTS] name DROP STORAGE [IF EXISTS] name
+	// ALTER TABLE [IF EXISTS] name PAUSE STORAGE [IF EXISTS] name
+	// ALTER TABLE [IF EXISTS] name RESUME STORAGE [IF EXISTS] name
 	auto stmt = ast_table_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -492,70 +496,125 @@ parse_table_alter(Stmt* self)
 	auto target = stmt_expect(self, KNAME);
 	stmt->name = target->string;
 
-	// [ADD COLUMN]
+	// [ADD COLUMN | STORAGE]
 	if (stmt_if(self, KADD))
 	{
-		stmt_expect(self, KCOLUMN);
-
-		// [if not exists]
-		stmt->if_column_not_exists = parse_if_not_exists(self);
-
-		// name type [constraint]
-
-		// name
-		auto name = stmt_expect(self, KNAME);
-
-		// create column
-		stmt->column = column_allocate();
-		auto column = stmt->column;
-		column_set_name(column, &name->string);
-
-		// SERIAL | type
-		auto ast = stmt_next_shadow(self);
-		if (ast->id != KNAME)
-			stmt_error(self, ast, "unrecognized data type");
-
-		int type_size;
-		int type;
-		if (str_is_case(&ast->string, "serial", 6))
+		if (stmt_if(self, KCOLUMN))
 		{
-			type = TYPE_INT;
-			type_size = sizeof(int64_t);
-			constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
+			// [if not exists]
+			stmt->if_column_not_exists = parse_if_not_exists(self);
+
+			// name type [constraint]
+
+			// name
+			auto name = stmt_expect(self, KNAME);
+
+			// create column
+			stmt->column = column_allocate();
+			auto column = stmt->column;
+			column_set_name(column, &name->string);
+
+			// SERIAL | type
+			auto ast = stmt_next_shadow(self);
+			if (ast->id != KNAME)
+				stmt_error(self, ast, "unrecognized data type");
+
+			int type_size;
+			int type;
+			if (str_is_case(&ast->string, "serial", 6))
+			{
+				type = TYPE_INT;
+				type_size = sizeof(int64_t);
+				constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
+			} else
+			{
+				stmt_push(self, ast);
+				type = parse_type(self->lex, &type_size);
+			}
+			column_set_type(column, type, type_size);
+
+			// [NOT NULL | DEFAULT | AS]
+			parse_constraints(self, NULL, column);
+
+			// todo: require DEFAULT for NOT NULL
+
+			// validate column
+			auto cons = &stmt->column->constraints;
+			if (cons->not_null)
+				stmt_error(self, NULL, "NOT NULL currently not supported with ALTER");
+
+			stmt->type = TABLE_ALTER_COLUMN_ADD;
 		} else
+		if (stmt_if(self, KSTORAGE))
 		{
-			stmt_push(self, ast);
-			type = parse_type(self->lex, &type_size);
+			// [IF NOT EXISTS]
+			stmt->if_storage_not_exists = parse_if_not_exists(self);
+
+			// name ([options])
+			stmt->volume = parse_volume(self);
+			stmt->type = TABLE_ALTER_STORAGE_ADD;
+		} else {
+			stmt_error(self, NULL, "COLUMN or STORAGE expected");
 		}
-		column_set_type(column, type, type_size);
-
-		// [NOT NULL | DEFAULT | AS]
-		parse_constraints(self, NULL, column);
-
-		// todo: require DEFAULT for NOT NULL
-
-		// validate column
-		auto cons = &stmt->column->constraints;
-		if (cons->not_null)
-			stmt_error(self, NULL, "NOT NULL currently not supported with ALTER");
-
-		stmt->type = TABLE_ALTER_COLUMN_ADD;
 		return;
 	}
 
-	// [DROP COLUMN]
+	// [DROP COLUMN | STORAGE]
 	if (stmt_if(self, KDROP))
 	{
-		stmt_expect(self, KCOLUMN);
+		if (stmt_if(self, KCOLUMN))
+		{
+			// [if exists]
+			stmt->if_column_exists = parse_if_exists(self);
 
-		// [if exists]
-		stmt->if_column_exists = parse_if_exists(self);
+			// name
+			auto name = stmt_expect(self, KNAME);
+			str_set_str(&stmt->column_name, &name->string);
+
+			stmt->type = TABLE_ALTER_COLUMN_DROP;
+		} else
+		if (stmt_if(self, KSTORAGE))
+		{
+			// [IF EXISTS]
+			stmt->if_storage_exists = parse_if_exists(self);
+
+			// name
+			auto name = stmt_expect(self, KNAME);
+			stmt->storage_name = name->string;
+			stmt->type = TABLE_ALTER_STORAGE_DROP;
+		} else {
+			stmt_error(self, NULL, "COLUMN or STORAGE expected");
+		}
+		return;
+	}
+
+	// [PAUSE STORAGE]
+	if (stmt_if(self, KPAUSE))
+	{
+		stmt_expect(self, KSTORAGE);
+
+		// [IF EXISTS]
+		stmt->if_storage_exists = parse_if_exists(self);
 
 		// name
 		auto name = stmt_expect(self, KNAME);
-		str_set_str(&stmt->column_name, &name->string);
+		stmt->storage_name = name->string;
+		stmt->type = TABLE_ALTER_STORAGE_PAUSE;
+		return;
+	}
 
-		stmt->type = TABLE_ALTER_COLUMN_DROP;
+	// [RESUME STORAGE]
+	if (stmt_if(self, KPAUSE))
+	{
+		stmt_expect(self, KSTORAGE);
+
+		// [IF EXISTS]
+		stmt->if_storage_exists = parse_if_exists(self);
+
+		// name
+		auto name = stmt_expect(self, KNAME);
+		stmt->storage_name = name->string;
+		stmt->type = TABLE_ALTER_STORAGE_RESUME;
 		return;
 	}
 

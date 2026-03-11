@@ -209,9 +209,9 @@ alter table;
 alter table test;
 {"msg": "alter table test❰;❱ ⟵ 'RENAME | ADD | DROP | SET | UNSET' expected"}
 alter table test add;
-{"msg": "alter table test add❰;❱ ⟵ COLUMN expected"}
+{"msg": "alter table test add❰;❱ ⟵ COLUMN or STORAGE expected"}
 alter table test add 1;
-{"msg": "alter table test add ❰1❱ ⟵ COLUMN expected"}
+{"msg": "alter table test add ❰1❱ ⟵ COLUMN or STORAGE expected"}
 alter table test add column;
 {"msg": "alter table test add column❰;❱ ⟵ name expected"}
 drop table test;
@@ -377,7 +377,7 @@ alter table;
 alter table test;
 {"msg": "alter table test❰;❱ ⟵ 'RENAME | ADD | DROP | SET | UNSET' expected"}
 alter table test drop;
-{"msg": "alter table test drop❰;❱ ⟵ COLUMN expected"}
+{"msg": "alter table test drop❰;❱ ⟵ COLUMN or STORAGE expected"}
 alter table test drop column;
 {"msg": "alter table test drop column❰;❱ ⟵ name expected"}
 alter table test drop column 1;

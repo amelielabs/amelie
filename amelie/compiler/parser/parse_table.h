@@ -53,7 +53,11 @@ enum
 	TABLE_ALTER_COLUMN_UNSET_DEFAULT,
 	TABLE_ALTER_COLUMN_UNSET_IDENTITY,
 	TABLE_ALTER_COLUMN_UNSET_STORED,
-	TABLE_ALTER_COLUMN_UNSET_RESOLVED
+	TABLE_ALTER_COLUMN_UNSET_RESOLVED,
+	TABLE_ALTER_STORAGE_ADD,
+	TABLE_ALTER_STORAGE_DROP,
+	TABLE_ALTER_STORAGE_PAUSE,
+	TABLE_ALTER_STORAGE_RESUME
 };
 
 struct AstTableAlter
@@ -62,6 +66,8 @@ struct AstTableAlter
 	bool    if_exists;
 	bool    if_column_exists;
 	bool    if_column_not_exists;
+	bool    if_storage_exists;
+	bool    if_storage_not_exists;
 	int     type;
 	Str     name;
 	Str     name_new;
@@ -71,6 +77,8 @@ struct AstTableAlter
 	Str     value;
 	bool    unlogged;
 	Ast*    identity;
+	Volume* volume;
+	Str     storage_name;
 };
 
 static inline AstTableCreate*
@@ -130,18 +138,6 @@ ast_table_alter_allocate(void)
 {
 	AstTableAlter* self;
 	self = ast_allocate(0, sizeof(AstTableAlter));
-	self->if_exists            = false;
-	self->if_column_exists     = false;
-	self->if_column_not_exists = false;
-	self->type                 = 0;
-	self->column               = NULL;
-	self->value_buf            = NULL;
-	self->identity             = NULL;
-	self->unlogged             = false;
-	str_init(&self->name);
-	str_init(&self->name_new);
-	str_init(&self->column_name);
-	str_init(&self->value);
 	return self;
 }
 

@@ -392,7 +392,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str db;
 		Str name;
 		Str name_storage;
-		table_op_tier_storage_drop_read(op, &db, &name, &name_storage);
+		table_op_storage_drop_read(op, &db, &name, &name_storage);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_exists_storage = ddl_if_storage_exists(flags);
@@ -409,7 +409,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str  name;
 		Str  name_storage;
 		bool pause;
-		table_op_tier_storage_pause_read(op, &db, &name, &name_storage, &pause);
+		table_op_storage_pause_read(op, &db, &name, &name_storage, &pause);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_exists_storage = ddl_if_storage_exists(flags);

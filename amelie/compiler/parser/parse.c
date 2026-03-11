@@ -68,6 +68,8 @@ parse_stmt_free(Stmt* stmt)
 		auto ast = ast_table_alter_of(stmt->ast);
 		if (ast->column)
 			column_free(ast->column);
+		if (ast->volume)
+			volume_free(ast->volume);
 		if (ast->value_buf)
 			buf_free(ast->value_buf);
 		break;
