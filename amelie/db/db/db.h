@@ -18,6 +18,7 @@ struct Db
 	Catalog     catalog;
 	WalMgr      wal_mgr;
 	Service     service;
+	Cron        cron;
 	SnapshotMgr snapshot_mgr;
 };
 

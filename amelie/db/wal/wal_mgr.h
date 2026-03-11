@@ -15,9 +15,8 @@ typedef struct WalMgr WalMgr;
 
 struct WalMgr
 {
-	Wal         wal;
-	WalWorker   wal_worker;
-	WalPeriodic wal_periodic;
+	Wal       wal;
+	WalWorker wal_worker;
 };
 
 void wal_mgr_init(WalMgr*);

@@ -288,7 +288,7 @@ system_start(System* self, bool bootstrap)
 	service_start(&self->db.service);
 
 	// start periodic async wal fsync
-	wal_periodic_start(&self->db.wal_mgr.wal_periodic);
+	cron_start(&self->db.cron);
 
 	// start frontends
 	workers = opt_int_of(&config()->frontends);

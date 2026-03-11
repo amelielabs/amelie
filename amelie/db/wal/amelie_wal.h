@@ -16,5 +16,4 @@
 #include "wal/wal.h"
 #include "wal/wal_cursor.h"
 #include "wal/wal_worker.h"
-#include "wal/wal_periodic.h"
 #include "wal/wal_mgr.h"

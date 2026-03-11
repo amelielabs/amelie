@@ -26,7 +26,6 @@ wal_mgr_init(WalMgr* self)
 {
 	wal_init(&self->wal);
 	wal_worker_init(&self->wal_worker, &self->wal);
-	wal_periodic_init(&self->wal_periodic, &self->wal_worker);
 }
 
 void
@@ -50,9 +49,6 @@ wal_mgr_start(WalMgr* self)
 void
 wal_mgr_stop(WalMgr* self)
 {
-	// stop periodic sync
-	wal_periodic_stop(&self->wal_periodic);
-
 	// stop wal worker
 	if (opt_int_of(&config()->wal_worker))
 	{
