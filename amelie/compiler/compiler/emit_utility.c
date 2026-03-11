@@ -221,63 +221,6 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
-	// tier
-	case STMT_CREATE_TIER:
-	{
-		auto arg = ast_tier_create_of(stmt->ast);
-		offset = table_op_tier_create(data, db, &arg->table_name, arg->config);
-		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
-		break;
-	}
-	case STMT_DROP_TIER:
-	{
-		auto arg = ast_tier_drop_of(stmt->ast);
-		offset = table_op_tier_drop(data, db, &arg->table_name, &arg->name);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-	case STMT_ALTER_TIER:
-	{
-		auto arg = ast_tier_alter_of(stmt->ast);
-		if (arg->type == TIER_ALTER_RENAME)
-			offset = table_op_tier_rename(data, db, &arg->table_name,
-			                              &arg->name,
-			                              &arg->name_new);
-		else
-		if (arg->type == TIER_ALTER_STORAGE_ADD)
-			offset = table_op_tier_storage_add(data, db, &arg->table_name,
-			                                   &arg->name,
-			                                    arg->volume);
-		else
-		if (arg->type == TIER_ALTER_STORAGE_DROP)
-			offset = table_op_tier_storage_drop(data, db, &arg->table_name,
-			                                    &arg->name,
-			                                    &arg->name_storage);
-		else
-		if (arg->type == TIER_ALTER_STORAGE_PAUSE)
-			offset = table_op_tier_storage_pause(data, db, &arg->table_name,
-			                                     &arg->name,
-			                                     &arg->name_storage, true);
-		else
-		if (arg->type == TIER_ALTER_STORAGE_RESUME)
-			offset = table_op_tier_storage_pause(data, db, &arg->table_name,
-			                                     &arg->name,
-			                                     &arg->name_storage, false);
-		else
-		if (arg->type == TIER_ALTER_SET)
-			offset = table_op_tier_set(data, db, &arg->table_name,
-			                           arg->set,
-			                           arg->set_mask);
-		else
-			abort();
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		if (arg->if_exists_storage)
-			flags |= DDL_IF_STORAGE_EXISTS;
-		if (arg->if_not_exists_storage)
-			flags |= DDL_IF_STORAGE_NOT_EXISTS;
-		break;
-	}
-
 	// function
 	case STMT_CREATE_FUNCTION:
 	{

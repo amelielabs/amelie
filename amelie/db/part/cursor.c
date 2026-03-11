@@ -15,7 +15,6 @@
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -26,43 +25,13 @@ cursor_lookup(PartMgr*     self,
               IndexConfig* config,
               Row*         key)
 {
+	unused(self);
 	auto index = part_index_find(part, &config->name, true);
 
 	// check heap first
 	auto it = index_iterator(index);
 	errdefer(iterator_close, it);
-	if (iterator_open(it, key))
-		return it;
-
-	// no tiering (heap only)
-	auto tier_mgr = self->tier_mgr;
-	if (! tier_mgr_created(tier_mgr))
-		return it;
-
-	// multi-tiering
-	auto branch_it = branch_iterator_allocate();
-	errdefer(branch_iterator_free, branch_it);
-
-	list_foreach(&tier_mgr->list)
-	{
-		auto tier = list_at(Tier, link);
-		auto object = mapping_map(&tier->mapping, key);
-
-		// iterate branches (from hot to cold)
-		auto branch = object->branches;
-		for (; branch; branch = branch->next)
-		{
-			branch_iterator_reset(branch_it);
-			if (branch_iterator_open(branch_it, &config->keys, branch, key))
-			{
-				iterator_close(it);
-				return &branch_it->it;
-			}
-		}
-	}
-
-	// not found
-	branch_iterator_free(branch_it);
+	iterator_open(it, key);
 	return it;
 }
 
@@ -72,43 +41,11 @@ cursor_scan(PartMgr*     self,
             IndexConfig* config,
             Row*         key)
 {
+	unused(self);
 	auto index = part_index_find(part, &config->name, true);
 	auto it = index_iterator(index);
 	iterator_open(it, key);
-
-	// no tiering (heap only)
-	auto tier_mgr = self->tier_mgr;
-	if (! tier_mgr_created(tier_mgr))
-		return it;
-
-	// todo: different path for hash
-	assert(config->type == INDEX_TREE);
-
-	// merge heap with objects
-	auto merge_it = merge_iterator_allocate(true);
-	errdefer(merge_iterator_free, merge_it);
-	merge_iterator_add(merge_it, it);
-
-	list_foreach(&tier_mgr->list)
-	{
-		auto tier = list_at(Tier, link);
-
-		// todo: switch to tier iterator
-		// match object
-		auto object = mapping_map(&tier->mapping, key);
-
-		// add branches (from hot to cold)
-		auto branch = object->branches;
-		for (; branch; branch = branch->next)
-		{
-			auto branch_it = branch_iterator_allocate();
-			merge_iterator_add(merge_it, &branch_it->it);
-			branch_iterator_open(branch_it, &config->keys, branch, key);
-		}
-	}
-
-	merge_iterator_open(merge_it, &config->keys);
-	return &merge_it->it;
+	return it;
 }
 
 hot static Iterator*
@@ -125,40 +62,7 @@ cursor_scan_cross(PartMgr*     self,
 		it = index_iterator_merge(index, it);
 	}
 	iterator_open(it, key);
-
-	// no tiering (heap only)
-	auto tier_mgr = self->tier_mgr;
-	if (! tier_mgr_created(tier_mgr))
-		return it;
-
-	// todo: different path for hash
-	assert(config->type == INDEX_TREE);
-
-	// merge all partitions heaps with objects
-	auto merge_it = merge_iterator_allocate(true);
-	errdefer(merge_iterator_free, merge_it);
-	merge_iterator_add(merge_it, it);
-
-	list_foreach(&tier_mgr->list)
-	{
-		auto tier = list_at(Tier, link);
-
-		// todo: switch to tier iterator
-		// match object
-		auto object = mapping_map(&tier->mapping, key);
-
-		// add branches (from hot to cold)
-		auto branch = object->branches;
-		for (; branch; branch = branch->next)
-		{
-			auto branch_it = branch_iterator_allocate();
-			merge_iterator_add(merge_it, &branch_it->it);
-			branch_iterator_open(branch_it, &config->keys, branch, key);
-		}
-	}
-
-	merge_iterator_open(merge_it, &config->keys);
-	return &merge_it->it;
+	return it;
 }
 
 hot Iterator*

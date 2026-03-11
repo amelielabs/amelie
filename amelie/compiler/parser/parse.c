@@ -79,22 +79,6 @@ parse_stmt_free(Stmt* stmt)
 			index_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_TIER:
-	{
-		auto ast = ast_tier_create_of(stmt->ast);
-		if (ast->config)
-			tier_config_free(ast->config);
-		break;
-	}
-	case STMT_ALTER_TIER:
-	{
-		auto ast = ast_tier_alter_of(stmt->ast);
-		if (ast->set)
-			tier_config_free(ast->set);
-		if (ast->volume)
-			volume_free(ast->volume);
-		break;
-	}
 	case STMT_CREATE_FUNCTION:
 	{
 		auto ast = ast_function_create_of(stmt->ast);
@@ -280,7 +264,7 @@ parse_stmt(Stmt* self)
 			stmt_push(self, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | STORAGE | DATABASE | TABLE | INDEX | TIER | FUNCTION | LOCK
+		// CREATE USER | TOKEN | REPLICA | STORAGE | DATABASE | TABLE | INDEX | FUNCTION | LOCK
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_CREATE_USER;
@@ -316,11 +300,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_INDEX;
 			parse_index_create(self, unique);
 		} else
-		if (stmt_if(self, KTIER))
-		{
-			self->id = STMT_CREATE_TIER;
-			parse_tier_create(self);
-		} else
 		if (stmt_if(self, KFUNCTION))
 		{
 			self->id = STMT_CREATE_FUNCTION;
@@ -332,14 +311,14 @@ parse_stmt(Stmt* self)
 			parse_lock_create(self);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION|LOCK expected");
+			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION|LOCK expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | STORAGE | DATABASE | TABLE | INDEX | TIER | FUNCTION | LOCK
+		// DROP USER | REPLICA | STORAGE | DATABASE | TABLE | INDEX | FUNCTION | LOCK
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_DROP_USER;
@@ -370,11 +349,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_INDEX;
 			parse_index_drop(self);
 		} else
-		if (stmt_if(self, KTIER))
-		{
-			self->id = STMT_DROP_TIER;
-			parse_tier_drop(self);
-		} else
 		if (stmt_if(self, KFUNCTION))
 		{
 			self->id = STMT_DROP_FUNCTION;
@@ -386,14 +360,14 @@ parse_stmt(Stmt* self)
 			parse_lock_drop(self);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION|LOCK expected");
+			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION|LOCK expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | STORAGE | DATABASE | TABLE | INDEX | TIER | PARTITION | OBJECT | FUNCTION
+		// ALTER USER | STORAGE | DATABASE | TABLE | INDEX | PARTITION | OBJECT | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_ALTER_USER;
@@ -419,11 +393,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_INDEX;
 			parse_index_alter(self);
 		} else
-		if (stmt_if(self, KTIER))
-		{
-			self->id = STMT_ALTER_TIER;
-			parse_tier_alter(self);
-		} else
 		if (stmt_if(self, KPARTITION))
 		{
 			self->id = STMT_ALTER_PARTITION;
@@ -434,7 +403,7 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|STORAGE|DATABASE|TABLE|INDEX|TIER|PARTITION|OBJECT|FUNCTION expected");
+			stmt_error(self, NULL, "USER|STORAGE|DATABASE|TABLE|INDEX|PARTITION|OBJECT|FUNCTION expected");
 		}
 		break;
 	}

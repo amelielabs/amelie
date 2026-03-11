@@ -15,7 +15,6 @@
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -26,15 +25,15 @@ part_mgr_init(PartMgr*      self,
               void*         iface_arg,
               Partitioning* config,
               PartArg*      arg,
-              TierMgr*      tier_mgr,
+              StorageMgr*   storage_mgr,
               Keys*         keys)
 {
-	self->list_count = 0;
-	self->config     = config;
-	self->arg        = arg;
-	self->iface      = iface;
-	self->iface_arg  = iface_arg;
-	self->tier_mgr   = tier_mgr;
+	self->list_count  = 0;
+	self->config      = config;
+	self->arg         = arg;
+	self->iface       = iface;
+	self->iface_arg   = iface_arg;
+	self->storage_mgr = storage_mgr;
 	list_init(&self->list);
 	part_mapping_init(&self->mapping, keys);
 }

@@ -15,7 +15,6 @@
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -38,11 +37,6 @@ catalog_snapshot(Catalog* self, Buf* data)
 	{
 		auto table = table_of(list_at(Relation, link));
 		volume_mgr_list(&table->config->partitioning.volumes, data);
-		list_foreach(&table->config->tiers)
-		{
-			auto config = list_at(TierConfig, link);
-			volume_mgr_list(&config->volumes, data);
-		}
 	}
 	encode_array_end(data);
 
@@ -63,18 +57,6 @@ catalog_snapshot(Catalog* self, Buf* data)
 			auto part = list_at(Part, link);
 			id_snapshot(&part->id, STATE_COMPLETE, STATE_SNAPSHOT);
 			id_encode(&part->id, STATE_SNAPSHOT, data);
-		}
-
-		// objects
-		list_foreach(&table->tier_mgr.list)
-		{
-			auto tier = list_at(Tier, link);
-			list_foreach(&tier->list)
-			{
-				auto object = list_at(Object, link);
-				id_snapshot(&object->id, STATE_COMPLETE, STATE_SNAPSHOT);
-				id_encode(&object->id, STATE_SNAPSHOT, data);
-			}
 		}
 	}
 

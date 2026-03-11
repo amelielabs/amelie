@@ -33,4 +33,4 @@ void object_create(Object*, int);
 void object_delete(Object*, int);
 void object_rename(Object*, int, int);
 void object_add(Object*, Branch*);
-void object_status(Object*, Buf*, int, Str*);
+void object_status(Object*, Buf*, int);

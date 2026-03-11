@@ -29,11 +29,11 @@ struct PartMgr
 	PartArg*      arg;
 	PartMgrIf*    iface;
 	void*         iface_arg;
-	TierMgr*      tier_mgr;
+	StorageMgr*   storage_mgr;
 };
 
 void  part_mgr_init(PartMgr*, PartMgrIf*, void*, Partitioning*,
-                    PartArg*, TierMgr*, Keys*);
+                    PartArg*, StorageMgr*, Keys*);
 void  part_mgr_free(PartMgr*);
 void  part_mgr_open(PartMgr*, List*);
 void  part_mgr_close(PartMgr*);

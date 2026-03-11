@@ -15,7 +15,6 @@
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -97,7 +96,7 @@ catalog_prepare(Catalog* self)
 void
 catalog_open(Catalog* self, bool bootstrap)
 {
-	// prepare main tier and db
+	// prepare main db
 	catalog_prepare(self);
 
 	// read catalog file and restore objects
@@ -408,111 +407,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
 		auto if_exists = ddl_if_exists(flags);
 		write = table_index_rename(table, tr, &name_index, &name_index_new, if_exists);
-		break;
-	}
-	case DDL_TIER_CREATE:
-	{
-		Str  db;
-		Str  name;
-		auto config_pos = table_op_tier_create_read(op, &db, &name);
-
-		// create tier
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto config = tier_config_read(&config_pos);
-		defer(tier_config_free, config);
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = table_tier_create(table, tr, config, if_not_exists);
-		break;
-	}
-	case DDL_TIER_DROP:
-	{
-		Str db;
-		Str name;
-		Str name_tier;
-		table_op_tier_drop_read(op, &db, &name, &name_tier);
-
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto if_exists = ddl_if_exists(flags);
-		write = table_tier_drop(table, tr, &name_tier, if_exists);
-		break;
-	}
-	case DDL_TIER_RENAME:
-	{
-		Str db;
-		Str name;
-		Str name_tier;
-		Str name_tier_new;
-		table_op_tier_rename_read(op, &db, &name, &name_tier, &name_tier_new);
-
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto if_exists = ddl_if_exists(flags);
-		write = table_tier_rename(table, tr, &name_tier, &name_tier_new, if_exists);
-		break;
-	}
-	case DDL_TIER_STORAGE_ADD:
-	{
-		Str  db;
-		Str  name;
-		Str  name_tier;
-		auto config_pos = table_op_tier_storage_add_read(op, &db, &name, &name_tier);
-		auto config = volume_read(&config_pos);
-		defer(volume_free, config);
-
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto if_exists = ddl_if_exists(flags);
-		auto if_not_exists_storage = ddl_if_storage_not_exists(flags);
-		write = table_tier_storage_add(table, tr, &name_tier, config,
-		                               if_exists,
-		                               if_not_exists_storage);
-		break;
-	}
-	case DDL_TIER_SET:
-	{
-		Str     db;
-		Str     name;
-		int64_t mask;
-		auto    config_pos = table_op_tier_set_read(op, &db, &name, &mask);
-
-		// create tier
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto config = tier_config_read(&config_pos);
-		defer(tier_config_free, config);
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = table_tier_set(table, tr, config, mask, if_not_exists);
-		break;
-	}
-	case DDL_TIER_STORAGE_DROP:
-	{
-		Str db;
-		Str name;
-		Str name_tier;
-		Str name_storage;
-		table_op_tier_storage_drop_read(op, &db, &name, &name_tier, &name_storage);
-
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto if_exists = ddl_if_exists(flags);
-		auto if_exists_storage = ddl_if_storage_exists(flags);
-		write = table_tier_storage_drop(table, tr, &name_tier, &name_storage,
-		                                if_exists,
-		                                if_exists_storage);
-		break;
-	}
-	case DDL_TIER_STORAGE_PAUSE:
-	{
-		Str  db;
-		Str  name;
-		Str  name_tier;
-		Str  name_storage;
-		bool pause;
-		table_op_tier_storage_pause_read(op, &db, &name, &name_tier, &name_storage, &pause);
-
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto if_exists = ddl_if_exists(flags);
-		auto if_exists_storage = ddl_if_storage_exists(flags);
-		write = table_tier_storage_pause(table, tr, &name_tier, &name_storage,
-		                                 pause,
-		                                 if_exists,
-		                                 if_exists_storage);
 		break;
 	}
 	case DDL_UDF_CREATE:

@@ -80,7 +80,6 @@ include_directories("${AMELIE_ROOT}/db/row")
 include_directories("${AMELIE_ROOT}/db/transaction")
 include_directories("${AMELIE_ROOT}/db/storage")
 include_directories("${AMELIE_ROOT}/db/object")
-include_directories("${AMELIE_ROOT}/db/tier")
 include_directories("${AMELIE_ROOT}/db/heap")
 include_directories("${AMELIE_ROOT}/db/index")
 include_directories("${AMELIE_ROOT}/db/part")
@@ -186,8 +185,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/storage/storage_mgr.c
     ${AMELIE_ROOT}/db/object/writer.c
     ${AMELIE_ROOT}/db/object/object.c
-    ${AMELIE_ROOT}/db/tier/tier.c
-    ${AMELIE_ROOT}/db/tier/tier_mgr.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/heap_file.c
     ${AMELIE_ROOT}/db/index/tree.c
@@ -202,7 +199,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/table_mgr.c
     ${AMELIE_ROOT}/db/catalog/table_mgr_alter.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
-    ${AMELIE_ROOT}/db/catalog/table_tier.c
     ${AMELIE_ROOT}/db/catalog/udf_mgr.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/catalog_file.c
@@ -283,7 +279,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_db.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
-    ${AMELIE_ROOT}/compiler/parser/parse_tier.c
     ${AMELIE_ROOT}/compiler/parser/parse_part.c
     ${AMELIE_ROOT}/compiler/parser/parse_function.c
     ${AMELIE_ROOT}/compiler/parser/parse_from.c

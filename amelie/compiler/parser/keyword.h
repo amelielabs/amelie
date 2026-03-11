@@ -168,7 +168,6 @@ enum
 	KORDER,
 	KOUTER,
 	KOUT,
-	KOBJECT,
 
 	// p
 	KPROFILE,
@@ -217,7 +216,6 @@ enum
 	KTABLE,
 	KTRUNCATE,
 	KTOKEN,
-	KTIER,
 
 	// u
 	KUPDATE,

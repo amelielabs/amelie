@@ -18,7 +18,6 @@ struct Table
 	Relation     rel;
 	PartMgr      part_mgr;
 	PartArg      part_arg;
-	TierMgr      tier_mgr;
 	Sequence     seq;
 	TableConfig* config;
 };
@@ -50,11 +49,6 @@ table_free(Table* self, bool drop)
 		part_mgr_drop(part_mgr);
 	part_mgr_free(part_mgr);
 
-	auto tier_mgr = &self->tier_mgr;
-	if (drop)
-		tier_mgr_drop(tier_mgr);
-	tier_mgr_free(tier_mgr);
-
 	sequence_free(&self->seq);
 	if (self->config)
 		table_config_free(self->config);
@@ -78,13 +72,10 @@ table_allocate(TableConfig* config,
 	arg->id_table = &self->config->id;
 	arg->config   =  &self->config->partitioning;
 
-	// tiering
-	auto primary = table_primary(self);
-	tier_mgr_init(&self->tier_mgr, storage_mgr, &primary->keys);
-
 	// partition manager
+	auto primary = table_primary(self);
 	part_mgr_init(&self->part_mgr, iface, iface_arg,
-	              &self->config->partitioning, arg, &self->tier_mgr,
+	              &self->config->partitioning, arg, storage_mgr,
 	              &primary->keys);
 
 	relation_init(&self->rel);
@@ -98,12 +89,8 @@ table_allocate(TableConfig* config,
 static inline void
 table_open(Table* self)
 {
-	// restore tiers and objects
-	auto config = self->config;
-	tier_mgr_open(&self->tier_mgr, &config->tiers);
-
 	// recover, map and deploy partitions
-	part_mgr_open(&self->part_mgr, &config->indexes);
+	part_mgr_open(&self->part_mgr, &self->config->indexes);
 }
 
 static inline void

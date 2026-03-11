@@ -61,7 +61,6 @@ test table_drop
 test table_alter
 test table_migration
 test index
-test tier
 test partition
 test function
 

@@ -15,7 +15,6 @@
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -164,7 +163,7 @@ service_recover_file(uint64_t id)
 	service_file_open(file, id);
 
 	// if any of the actions are were not completed, rollback the rest of them
-	// (incomplete files will be removed during tier/part mgr recovery)
+	// (incomplete files will be removed during part mgr recovery)
 	//
 	// case: crash after service file sync/rename
 	//

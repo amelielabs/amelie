@@ -15,7 +15,6 @@
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -145,7 +144,7 @@ void
 part_mgr_recover(PartMgr* self)
 {
 	// resolve storages
-	volume_mgr_ref(&self->config->volumes, self->tier_mgr->storage_mgr);
+	volume_mgr_ref(&self->config->volumes, self->storage_mgr);
 
 	// read files
 	list_foreach(&self->config->volumes.list)

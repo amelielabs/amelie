@@ -52,14 +52,6 @@ show index primary on test;
 select show('index', 'primary', 'test', false);
 show index xyz on test;
 
-# test: show tiers
-show tiers on test;
-select show('tiers', '', 'test', false);
-
-# test: show tier
-show tier xyz on test;
-select show('tier', 'main', 'test', false);
-
 # test: show partitions
 show partitions on test;
 select show('partitions', '', 'test', false);

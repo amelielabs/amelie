@@ -191,17 +191,13 @@ object_add(Object* self, Branch* branch)
 }
 
 void
-object_status(Object* self, Buf* buf, int flags, Str* tier)
+object_status(Object* self, Buf* buf, int flags)
 {
 	encode_obj(buf);
 
 	// id
 	encode_raw(buf, "id", 2);
 	encode_integer(buf, self->id.id);
-
-	// tier
-	encode_raw(buf, "tier", 4);
-	encode_string(buf, tier);
 
 	// storage
 	encode_raw(buf, "storage", 7);

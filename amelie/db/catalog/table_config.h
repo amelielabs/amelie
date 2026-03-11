@@ -23,8 +23,6 @@ struct TableConfig
 	int          indexes_count;
 	bool         unlogged;
 	Partitioning partitioning;
-	List         tiers;
-	int          tiers_count;
 };
 
 static inline TableConfig*
@@ -34,14 +32,12 @@ table_config_allocate(void)
 	self = am_malloc(sizeof(TableConfig));
 	self->indexes_count = 0;
 	self->unlogged      = false;
-	self->tiers_count   = 0;
 	str_init(&self->db);
 	str_init(&self->name);
 	uuid_init(&self->id);
 	columns_init(&self->columns);
 	partitioning_init(&self->partitioning);
 	list_init(&self->indexes);
-	list_init(&self->tiers);
 	return self;
 }
 
@@ -55,12 +51,6 @@ table_config_free(TableConfig* self)
 	{
 		auto config = list_at(IndexConfig, link);
 		index_config_free(config);
-	}
-
-	list_foreach_safe(&self->tiers)
-	{
-		auto config = list_at(TierConfig, link);
-		tier_config_free(config);
 	}
 
 	columns_free(&self->columns);
@@ -108,20 +98,6 @@ table_config_index_remove(TableConfig* self, IndexConfig* config)
 	self->indexes_count--;
 }
 
-static inline void
-table_config_tier_add(TableConfig* self, TierConfig* config)
-{
-	list_append(&self->tiers, &config->link);
-	self->tiers_count++;
-}
-
-static inline void
-table_config_tier_remove(TableConfig* self, TierConfig* config)
-{
-	list_unlink(&config->link);
-	self->tiers_count--;
-}
-
 static inline TableConfig*
 table_config_copy(TableConfig* self)
 {
@@ -143,14 +119,6 @@ table_config_copy(TableConfig* self)
 		if (primary_keys == NULL)
 			primary_keys = &config_copy->keys;
 	}
-
-	list_foreach(&self->tiers)
-	{
-		auto config = list_at(TierConfig, link);
-		auto config_dup = tier_config_copy(config);
-		table_config_tier_add(copy, config_dup);
-	}
-
 	return copy;
 }
 
@@ -163,7 +131,6 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_columns      = NULL;
 	uint8_t* pos_indexes      = NULL;
 	uint8_t* pos_partitioning = NULL;
-	uint8_t* pos_tiers        = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "db",           &self->db         },
@@ -173,7 +140,6 @@ table_config_read(uint8_t** pos)
 		{ DECODE_ARRAY,  "columns",      &pos_columns      },
 		{ DECODE_ARRAY,  "indexes",      &pos_indexes      },
 		{ DECODE_OBJ,    "partitioning", &pos_partitioning },
-		{ DECODE_ARRAY,  "tiers",        &pos_tiers        },
 		{ 0,              NULL,           NULL             },
 	};
 	decode_obj(obj, "table", pos);
@@ -191,14 +157,6 @@ table_config_read(uint8_t** pos)
 
 	// partitioning
 	partitioning_read(&self->partitioning, &pos_partitioning);
-
-	// tiers
-	json_read_array(&pos_tiers);
-	while (! json_read_array_end(&pos_tiers))
-	{
-		auto config = tier_config_read(&pos_tiers);
-		table_config_tier_add(self, config);
-	}
 	return self;
 }
 
@@ -248,15 +206,6 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "partitioning", 12);
 	partitioning_write(&self->partitioning, buf, flags);
 
-	// tiers
-	encode_raw(buf, "tiers", 5);
-	encode_array(buf);
-	list_foreach(&self->tiers)
-	{
-		auto config = list_at(TierConfig, link);
-		tier_config_write(config, buf, flags);
-	}
-	encode_array_end(buf);
 	encode_obj_end(buf);
 }
 
@@ -266,18 +215,6 @@ table_config_find(TableConfig* self, Str* name)
 	list_foreach(&self->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
-		if (str_compare_case(&config->name, name))
-			return config;
-	}
-	return NULL;
-}
-
-static inline TierConfig*
-table_config_find_tier(TableConfig* self, Str* name)
-{
-	list_foreach(&self->tiers)
-	{
-		auto config = list_at(TierConfig, link);
 		if (str_compare_case(&config->name, name))
 			return config;
 	}

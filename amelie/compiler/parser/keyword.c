@@ -133,7 +133,6 @@ Keyword keywords[] =
 	{ KORDER,                 "order",                 5  },
 	{ KOUTER,                 "outer",                 5  },
 	{ KOUT,                   "out",                   3  },
-	{ KOBJECT,                "object",                6  },
 
 	// p
 	{ KPROFILE,               "profile",               7  },
@@ -180,7 +179,6 @@ Keyword keywords[] =
 	{ KTABLE,                 "table",                 5  },
 	{ KTRUNCATE,              "truncate",              8  },
 	{ KTOKEN,                 "token",                 5  },
-	{ KTIER,                  "tier",                  4  },
 
 	// u
 	{ KUPDATE,                "update",                6  },
