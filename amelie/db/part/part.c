@@ -27,7 +27,7 @@ part_allocate(Id* id, PartArg* arg, bool lru)
 	self->id            = *id;
 	self->indexes       = NULL;
 	self->indexes_count = 0;
-	self->heap          = heap_allocate(arg->heap_total, lru);
+	self->heap          = heap_allocate(lru);
 	self->heap_shadow   = NULL;
 	self->arg           = arg;
 	track_init(&self->track);

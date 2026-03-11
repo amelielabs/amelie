@@ -16,9 +16,7 @@ typedef struct Action     Action;
 
 enum
 {
-	ACTION_NONE,
-	ACTION_EVICT,
-	ACTION_MERGE
+	ACTION_NONE
 };
 
 struct Action
@@ -27,7 +25,6 @@ struct Action
 	int         pending;
 	int         type;
 	uint64_t    id;
-	uint64_t    evict;
 	Event       event;
 	List        link;
 };
@@ -39,7 +36,6 @@ action_init(Action* self)
 	self->pending = 0;
 	self->type    = ACTION_NONE;
 	self->id      = 0;
-	self->evict   = 0;
 	event_init(&self->event);
 	list_init(&self->link);
 }

@@ -371,7 +371,6 @@ vm_run(Vm*       self,
 		&&cddl,
 		&&cddl_create_index,
 		&&cddl_refresh,
-		&&cddl_evict,
 
 		// executor
 		&&csend_shard,
@@ -1936,26 +1935,14 @@ cddl_create_index:
 	op_next;
 
 cddl_refresh:
-	// [table*, id, storage_name, is_object]
+	// [table*, id, storage_name]
 	str_init(&string);
 	if (op->c != -1)
 		code_data_at_string(code_data, op->c, &string);
-	if (! op->d)
-		service_refresh(&share()->db->service,
-		                &((Table*)op->a)->config->id,
-		                op->b,
-		                str_empty(&string) ? NULL : &string);
-	else
-		service_refresh_object(&share()->db->service,
-		                       &((Table*)op->a)->config->id,
-		                       op->b);
-	op_next;
-
-cddl_evict:
-	// [table*, id]
-	service_evict(&share()->db->service,
-	              &((Table*)op->a)->config->id,
-	              op->b);
+	service_refresh(&share()->db->service,
+	                &((Table*)op->a)->config->id,
+	                op->b,
+	                str_empty(&string) ? NULL : &string);
 	op_next;
 
 csend_shard:

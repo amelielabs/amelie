@@ -73,11 +73,10 @@ table_allocate(TableConfig* config,
 
 	// part context
 	auto arg = &self->part_arg;
-	arg->heap_total = &self->part_mgr.heap_total;
-	arg->seq        = &self->seq;
-	arg->unlogged   =  self->config->unlogged;
-	arg->id_table   = &self->config->id;
-	arg->config     =  &self->config->partitioning;
+	arg->seq      = &self->seq;
+	arg->unlogged =  self->config->unlogged;
+	arg->id_table = &self->config->id;
+	arg->config   =  &self->config->partitioning;
 
 	// tiering
 	auto primary = table_primary(self);

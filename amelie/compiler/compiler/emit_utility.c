@@ -481,31 +481,13 @@ emit_utility(Compiler* self)
 		                            &arg->table->string, true);
 		if (arg->type == PARTITION_ALTER_REFRESH)
 		{
-			op4(self, CDDL_REFRESH, (intptr_t)table, arg->id, -1, false);
-		} else
-		if (arg->type == PARTITION_ALTER_EVICT)
-		{
-			op2(self, CDDL_EVICT, (intptr_t)table, arg->id);
+			op3(self, CDDL_REFRESH, (intptr_t)table, arg->id, -1);
 		} else
 		if (arg->type == PARTITION_ALTER_MOVE)
 		{
 			auto offset = code_data_add_string(self->code_data, &arg->storage);
 			op3(self, CDDL_REFRESH, (intptr_t)table, arg->id, offset);
 		}
-
-		// lock
-		lock_catalog = LOCK_SHARED;
-		lock_ddl     = LOCK_NONE;
-		break;
-	}
-	case STMT_ALTER_OBJECT:
-	{
-		auto arg = ast_object_alter_of(stmt->ast);
-		auto table = table_mgr_find(&share()->db->catalog.table_mgr,
-		                            self->parser.db,
-		                            &arg->table->string, true);
-		if (arg->type == OBJECT_ALTER_REFRESH)
-			op4(self, CDDL_REFRESH, (intptr_t)table, arg->id, -1, true);
 
 		// lock
 		lock_catalog = LOCK_SHARED;

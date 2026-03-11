@@ -70,7 +70,7 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 		case STATE_COMPLETE:
 		{
 			// add partition
-			auto part = part_allocate(&id, self->arg, self->config->cache);
+			auto part = part_allocate(&id, self->arg, false);
 			part_mgr_add(self, part);
 			break;
 		}
@@ -109,7 +109,7 @@ part_mgr_create(PartMgr* self)
 			.version = 0,
 			.volume  = volume
 		};
-		auto part = part_allocate(&id, self->arg, self->config->cache);
+		auto part = part_allocate(&id, self->arg, false);
 		part_mgr_add(self, part);
 
 		// set hash range

@@ -25,7 +25,6 @@ struct PartMgr
 	PartMapping   mapping;
 	List          list;
 	int           list_count;
-	atomic_u64    heap_total;
 	Partitioning* config;
 	PartArg*      arg;
 	PartMgrIf*    iface;

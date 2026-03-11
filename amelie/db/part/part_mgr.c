@@ -30,7 +30,6 @@ part_mgr_init(PartMgr*      self,
               Keys*         keys)
 {
 	self->list_count = 0;
-	self->heap_total = 0;
 	self->config     = config;
 	self->arg        = arg;
 	self->iface      = iface;

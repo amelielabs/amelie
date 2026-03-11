@@ -148,9 +148,6 @@ heap_open(Heap* self, Id* id, int state)
 		}
 	}
 
-	// update global usage
-	atomic_u64_add(self->total_size, self->header->size_used);
-
 	// restore last page position
 	if (! header->count)
 		return;

@@ -147,20 +147,6 @@ pod_run(Pod* self, Ltr* ltr)
 	ltr_complete(ltr);
 }
 
-hot static inline void
-pod_service(Pod* self)
-{
-	// schedule service if global cache used reaches eviction threshold
-	auto part = self->part;
-	auto config = part->arg->config;
-	if (! config->cache)
-		return;
-	auto used = atomic_u64_of(part->heap->total_size);
-	auto threshold = (uint64_t)(config->cache_size * config->cache_evict_wm) / 100;
-	if (used >= threshold)
-		service_add(&share()->db->service, part->arg->id_table);
-}
-
 static void
 pod_main(void* arg)
 {
@@ -178,9 +164,6 @@ pod_main(void* arg)
 
 		// execute transaction
 		pod_run(self, ltr);
-
-		// schedule partition service
-		pod_service(self);
 	}
 }
 
