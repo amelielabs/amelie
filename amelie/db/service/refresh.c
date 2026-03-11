@@ -49,9 +49,8 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 
 	// set new partition id
 	auto part_id = &self->part_id;
-	part_id->id      = state_psn_next();
-	part_id->version = 0;
-	part_id->volume  = volume;
+	part_id->id     = state_psn_next();
+	part_id->volume = volume;
 
 	// find partition by id
 	auto origin = part_mgr_find(part_mgr, id);
@@ -86,10 +85,10 @@ refresh_snapshot_job(intptr_t* argv)
 	// create <id>.incomplete file
 	auto id = &self->part_id;
 	heap->header->lsn = self->origin_lsn;
-	heap_create(heap, &self->part_file, id, STATE_INCOMPLETE);
+	heap_create(heap, &self->part_file, id, ID_PARTITION_INCOMPLETE);
 
 	auto total = (double)self->part_file.size / 1024 / 1024;
-	info("refresh: %s/%05" PRIu64 " (%.2f MiB)",
+	info("refresh: %s/%05" PRIu64 ".partition (%.2f MiB)",
 	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);
@@ -109,8 +108,8 @@ refresh_complete_job(intptr_t* argv)
 	// create <id>.service.incomplete file
 	auto service = self->service_file;
 	service_file_begin(service);
-	service_file_add_origin(service, &self->origin_id);
-	service_file_add_create(service, &self->part_id);
+	service_file_add_origin(service, &self->origin_id, ID_PARTITION);
+	service_file_add_create(service, &self->part_id, ID_PARTITION);
 	service_file_end(service);
 	service_file_create(service);
 
@@ -121,10 +120,10 @@ refresh_complete_job(intptr_t* argv)
 	file_close(&self->part_file);
 
 	// unlink origin heap file
-	id_delete(&self->origin_id, STATE_COMPLETE);
+	id_delete(&self->origin_id, ID_PARTITION);
 
 	// rename
-	id_rename(&self->part_id, STATE_INCOMPLETE, STATE_COMPLETE);
+	id_rename(&self->part_id, ID_PARTITION_INCOMPLETE, ID_PARTITION);
 
 	// remove service file (complete)
 	service_file_delete(service);

@@ -184,6 +184,22 @@ service_recover_file(uint64_t id)
 	service_file_delete(file);
 }
 
+static inline const char*
+service_id_of(const char* name, int64_t* id)
+{
+	// <id>.<extension>
+	*id = 0;
+	while (*name && *name != '.')
+	{
+		if (unlikely(! isdigit(*name)))
+			return NULL;
+		if (unlikely(int64_mul_add_overflow(id, *id, 10, *name - '0')))
+			return NULL;
+		name++;
+	}
+	return name;
+}
+
 void
 service_recover(Service* self)
 {
@@ -208,7 +224,7 @@ service_recover(Service* self)
 
 		// <id>.service[.incomplete]
 		int64_t id = 0;
-		auto ext = id_of_next(entry->d_name, &id);
+		auto ext = service_id_of(entry->d_name, &id);
 		if  (!ext || *ext != '.')
 			continue;
 

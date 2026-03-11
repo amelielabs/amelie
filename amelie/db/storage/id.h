@@ -15,15 +15,14 @@ typedef struct Id Id;
 
 enum
 {
-	STATE_COMPLETE,
-	STATE_INCOMPLETE,
-	STATE_SNAPSHOT,
+	ID_PARTITION,
+	ID_PARTITION_INCOMPLETE,
+	ID_PARTITION_SNAPSHOT
 };
 
 struct Id
 {
 	uint64_t id;
-	uint64_t version;
 	Volume*  volume;
 };
 
@@ -36,12 +35,12 @@ id_init(Id* self)
 static inline int
 id_state_of(const char* name)
 {
-	if (! *name)
-		return STATE_COMPLETE;
-	if (! strcmp(name, ".incomplete"))
-		return STATE_INCOMPLETE;
-	if (! strcmp(name, ".snapshot"))
-		return STATE_SNAPSHOT;
+	if (! strcmp(name, ".partition"))
+		return ID_PARTITION;
+	if (! strcmp(name, ".partition.incomplete"))
+		return ID_PARTITION_INCOMPLETE;
+	if (! strcmp(name, ".partition.snapshot"))
+		return ID_PARTITION_SNAPSHOT;
 	return -1;
 }
 
@@ -49,56 +48,27 @@ static inline const char*
 id_state(int state)
 {
 	switch (state) {
-	case STATE_COMPLETE:   return "";
-	case STATE_INCOMPLETE: return ".incomplete";
-	case STATE_SNAPSHOT:   return ".snapshot";
+	case ID_PARTITION:            return ".partition";
+	case ID_PARTITION_INCOMPLETE: return ".partition.incomplete";
+	case ID_PARTITION_SNAPSHOT:   return ".partition.snapshot";
 	}
 	abort();
 	return NULL;
 }
 
-static inline const char*
-id_of_next(const char* name, int64_t* id)
+static inline int
+id_of(const char* name, int64_t* id)
 {
+	// <id>.<state>
+	*id = 0;
 	while (*name && *name != '.')
 	{
 		if (unlikely(! isdigit(*name)))
-			return NULL;
+			return -1;
 		if (unlikely(int64_mul_add_overflow(id, *id, 10, *name - '0')))
-			return NULL;
+			return -1;
 		name++;
 	}
-	return name;
-}
-
-static inline int
-id_of(const char* name, int64_t* id, int64_t* version)
-{
-	// <id>[.<version>][.state]
-	*id      = 0;
-	*version = 0;
-
-	// <id>[.]
-	name = id_of_next(name, id);
-	if (! name)
-		return -1;
-	auto state = id_state_of(name);
-	if (state != -1)
-		return state;
-
-	// .
-	name++;
-	if (unlikely(! *name))
-		return -1;
-
-	// <version>[.]
-	if (isdigit(*name))
-	{
-		name = id_of_next(name, version);
-		if (! name)
-			return -1;
-	}
-
 	return id_state_of(name);
 }
 
@@ -109,29 +79,18 @@ id_path(Id* self, char* path, int state, bool relative)
 	char uuid[UUID_SZ];
 	uuid_get(&self->volume->id, uuid, sizeof(uuid));
 
-	// storage/<volume_id>/<id>.<version>[.state]
-	// storage/<volume_id>/<id>[.<state>]
+	// storage/<volume_id>/<id>.<state>
 	if (relative)
 	{
-		if (self->version > 0)
-			sfmt(path, PATH_MAX, "storage/%s/%05" PRIu64 ".%02" PRIu64 "%s",
-			     uuid, self->id, self->version, id_state(state));
-		else
-			sfmt(path, PATH_MAX, "storage/%s/%05" PRIu64 "%s",
-			     uuid, self->id, id_state(state));
+		sfmt(path, PATH_MAX, "storage/%s/%05" PRIu64 "%s",
+		     uuid, self->id, id_state(state));
 		return;
 	}
 
-	// <base>/storage/<volume_id>/<id>.<version>[.state]
-	// <base>/storage/<volume_id>/<id>[.<state>]
-	if (self->version > 0)
-		sfmt(path, PATH_MAX, "%s/storage/%s/%05" PRIu64 ".%02" PRIu64 "%s",
-		     state_directory(),
-		     uuid, self->id, self->version, id_state(state));
-	else
-		sfmt(path, PATH_MAX, "%s/storage/%s/%05" PRIu64 "%s",
-		     state_directory(),
-		     uuid, self->id, id_state(state));
+	// <base>/storage/<volume_id>/<id>.<state>
+	sfmt(path, PATH_MAX, "%s/storage/%s/%05" PRIu64 "%s",
+	     state_directory(),
+	     uuid, self->id, id_state(state));
 }
 
 static inline void
@@ -172,35 +131,15 @@ id_rename(Id* self, int from, int to)
 }
 
 static inline void
-id_rename_version(uint64_t psn,
-                  Volume*  volume,
-                  int      version_from,
-                  int      version_to)
-{
-	Id id =
-	{
-		.id      = psn,
-		.version = version_from,
-		.volume  = volume
-	};
-	char path_from[PATH_MAX];
-	char path_to[PATH_MAX];
-	id_path(&id, path_from, STATE_COMPLETE, false);
-	id.version = version_to;
-	id_path(&id, path_to, STATE_COMPLETE, false);
-	fs_rename(path_from, "%s", path_to);
-}
-
-static inline void
 id_snapshot(Id* self, int state, int state_snapshot)
 {
 	// create file snapshot
 
-	// <base>/storage/<volume_id>/<id>[.<version>]
+	// <base>/storage/<volume_id>/<id>.<state>
 	char path[PATH_MAX];
 	id_path(self, path, state, false);
 
-	// <base>/storage/<volume_id>/<id>[.<version>].snapshot
+	// <base>/storage/<volume_id>/<id>.<state>.snapshot
 	char path_snapshot[PATH_MAX];
 	id_path(self, path_snapshot, state_snapshot, false);
 

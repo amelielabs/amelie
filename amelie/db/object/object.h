@@ -28,7 +28,7 @@ struct Object
 Object*
 object_allocate(Id*);
 void object_free(Object*);
-void object_open(Object*, int);
+void object_open(Object*, int, int);
 void object_create(Object*, int);
 void object_delete(Object*, int);
 void object_rename(Object*, int, int);

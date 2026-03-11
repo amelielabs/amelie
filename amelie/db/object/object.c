@@ -136,13 +136,13 @@ object_read(Object* self, size_t* offset)
 }
 
 void
-object_open(Object* self, int state)
+object_open(Object* self, int count, int state)
 {
 	id_open(&self->id, &self->file, state);
 
 	// read branches
 	size_t offset = 0;
-	while (self->branches_count < (int)self->id.version)
+	while (self->branches_count < count)
 	{
 		auto branch = object_read(self, &offset);
 		object_add(self, branch);

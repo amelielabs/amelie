@@ -61,18 +61,18 @@ service_file_end(ServiceFile* self)
 }
 
 static inline void
-service_file_add_origin(ServiceFile* self, Id* id)
+service_file_add_origin(ServiceFile* self, Id* id, int state)
 {
-	id_encode_path(id, STATE_COMPLETE, &self->origins);
+	id_encode_path(id, state, &self->origins);
 }
 
 static inline void
-service_file_add_create(ServiceFile* self, Id* id)
+service_file_add_create(ServiceFile* self, Id* id, int state)
 {
 	// [create, path]
 	encode_array(&self->actions);
 	encode_raw(&self->actions, "create", 6);
-	id_encode_path(id, STATE_COMPLETE, &self->actions);
+	id_encode_path(id, state, &self->actions);
 	encode_array_end(&self->actions);
 }
 
@@ -91,23 +91,15 @@ static inline void
 service_file_add_rename_version(ServiceFile* self,
                                 uint64_t     psn,
                                 Volume*      volume,
-                                int          version_from,
-                                int          version_to)
+                                int          state_from,
+                                int          state_to)
 {
-	Id id_from =
+	Id id =
 	{
-		.id      = psn,
-		.version = version_from,
-		.volume  = volume
+		.id     = psn,
+		.volume = volume
 	};
-	Id id_to =
-	{
-		.id      = psn,
-		.version = version_to,
-		.volume  = volume
-	};
-	service_file_add_rename(self, &id_from, STATE_COMPLETE,
-	                        &id_to, STATE_COMPLETE);
+	service_file_add_rename(self, &id, state_from, &id, state_to);
 }
 
 static inline void

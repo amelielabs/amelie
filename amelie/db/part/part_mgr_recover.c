@@ -48,10 +48,9 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 			continue;
 
 		// <id>[.state]
-		int64_t psn     = 0;
-		int64_t version = 0;
-		auto    state   = id_of(entry->d_name, &psn, &version);
-		if (state == -1 || version > 0)
+		int64_t psn   = 0;
+		auto    state = id_of(entry->d_name, &psn);
+		if (state == -1)
 		{
 			info("part_mgr: skipping unknown file: '%s%s'", path,
 			     entry->d_name);
@@ -61,20 +60,19 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 
 		Id id =
 		{
-			.id      = psn,
-			.version = 0,
-			.volume  = volume
+			.id     = psn,
+			.volume = volume
 		};
 		switch (state) {
-		case STATE_COMPLETE:
+		case ID_PARTITION:
 		{
 			// add partition
 			auto part = part_allocate(&id, self->arg, false);
 			part_mgr_add(self, part);
 			break;
 		}
-		case STATE_INCOMPLETE:
-		case STATE_SNAPSHOT:
+		case ID_PARTITION_INCOMPLETE:
+		case ID_PARTITION_SNAPSHOT:
 		{
 			// remove incomplete and snapshot files
 			id_delete(&id, state);
@@ -104,9 +102,8 @@ part_mgr_create(PartMgr* self)
 		// create partition
 		Id id =
 		{
-			.id      = state_psn_next(),
-			.version = 0,
-			.volume  = volume
+			.id     = state_psn_next(),
+			.volume = volume
 		};
 		auto part = part_allocate(&id, self->arg, false);
 		part_mgr_add(self, part);
@@ -129,14 +126,14 @@ part_mgr_create(PartMgr* self)
 		File file;
 		file_init(&file);
 		defer(file_close, &file);
-		heap_create(part->heap, &file, &part->id, STATE_INCOMPLETE);
+		heap_create(part->heap, &file, &part->id, ID_PARTITION_INCOMPLETE);
 
 		// sync
 		if (opt_int_of(&config()->storage_sync))
 			file_sync(&file);
 
 		// rename
-		id_rename(&part->id, STATE_INCOMPLETE, STATE_COMPLETE);
+		id_rename(&part->id, ID_PARTITION_INCOMPLETE, ID_PARTITION);
 	}
 }
 

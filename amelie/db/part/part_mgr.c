@@ -102,7 +102,7 @@ part_mgr_drop(PartMgr* self)
 	{
 		auto part = list_at(Part, link);
 		part_mgr_remove(self, part);
-		id_delete(&part->id, STATE_COMPLETE);
+		id_delete(&part->id, ID_PARTITION);
 		part_free(part);
 	}
 	assert(! self->list_count);

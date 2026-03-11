@@ -55,8 +55,8 @@ catalog_snapshot(Catalog* self, Buf* data)
 		list_foreach(&table->part_mgr.list)
 		{
 			auto part = list_at(Part, link);
-			id_snapshot(&part->id, STATE_COMPLETE, STATE_SNAPSHOT);
-			id_encode(&part->id, STATE_SNAPSHOT, data);
+			id_snapshot(&part->id, ID_PARTITION, ID_PARTITION_SNAPSHOT);
+			id_encode(&part->id, ID_PARTITION_SNAPSHOT, data);
 		}
 	}
 
