@@ -373,3 +373,89 @@ table_op_index_rename_read(uint8_t* op, Str* db, Str* name,
 	json_read_string(&op, name_index_new);
 	json_read_array_end(&op);
 }
+
+static inline int
+table_op_storage_add(Buf* self, Str* db, Str* table, Volume* config)
+{
+	// [op, db, table, storage]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_TABLE_STORAGE_ADD);
+	encode_string(self, db);
+	encode_string(self, table);
+	volume_write(config, self, 0);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline uint8_t*
+table_op_storage_add_read(uint8_t* op, Str* db, Str* table)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_TABLE_STORAGE_ADD);
+	json_read_string(&op, db);
+	json_read_string(&op, table);
+	auto config_pos = op;
+	json_skip(&op);
+	json_read_array_end(&op);
+	return config_pos;
+}
+
+static inline int
+table_op_storage_drop(Buf* self, Str* db, Str* table, Str* storage)
+{
+	// [op, db, table, storage]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_TABLE_STORAGE_DROP);
+	encode_string(self, db);
+	encode_string(self, table);
+	encode_string(self, storage);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+table_op_tier_storage_drop_read(uint8_t* op, Str* db, Str* table, Str* storage)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_TABLE_STORAGE_DROP);
+	json_read_string(&op, db);
+	json_read_string(&op, table);
+	json_read_string(&op, storage);
+	json_read_array_end(&op);
+}
+
+static inline int
+table_op_tier_storage_pause(Buf* self, Str* db, Str* table, Str* storage, bool pause)
+{
+	// [op, db, table, storage, pause]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_TABLE_STORAGE_PAUSE);
+	encode_string(self, db);
+	encode_string(self, table);
+	encode_string(self, storage);
+	encode_bool(self, pause);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+table_op_tier_storage_pause_read(uint8_t* op, Str* db, Str* table, Str* storage,
+                                 bool* pause)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_TABLE_STORAGE_PAUSE);
+	json_read_string(&op, db);
+	json_read_string(&op, table);
+	json_read_string(&op, storage);
+	json_read_bool(&op, pause);
+	json_read_array_end(&op);
+}

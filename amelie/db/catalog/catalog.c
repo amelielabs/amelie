@@ -371,6 +371,56 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                             if_column_exists);
 		break;
 	}
+	case DDL_TABLE_STORAGE_ADD:
+	{
+		Str  db;
+		Str  name;
+		auto config_pos = table_op_storage_add_read(op, &db, &name);
+		auto config = volume_read(&config_pos);
+		defer(volume_free, config);
+
+		auto if_exists = ddl_if_exists(flags);
+		auto if_not_exists_storage = ddl_if_storage_not_exists(flags);
+		auto table = table_mgr_find(&self->table_mgr, &db, &name, !if_exists);
+		if (! table)
+			break;
+		write = table_storage_add(table, tr, config, if_not_exists_storage);
+		break;
+	}
+	case DDL_TABLE_STORAGE_DROP:
+	{
+		Str db;
+		Str name;
+		Str name_storage;
+		table_op_tier_storage_drop_read(op, &db, &name, &name_storage);
+
+		auto if_exists = ddl_if_exists(flags);
+		auto if_exists_storage = ddl_if_storage_exists(flags);
+		auto table = table_mgr_find(&self->table_mgr, &db, &name, !if_exists);
+		if (! table)
+			break;
+		write = table_storage_drop(table, tr, &name_storage,
+		                           if_exists_storage);
+		break;
+	}
+	case DDL_TABLE_STORAGE_PAUSE:
+	{
+		Str  db;
+		Str  name;
+		Str  name_storage;
+		bool pause;
+		table_op_tier_storage_pause_read(op, &db, &name, &name_storage, &pause);
+
+		auto if_exists = ddl_if_exists(flags);
+		auto if_exists_storage = ddl_if_storage_exists(flags);
+		auto table = table_mgr_find(&self->table_mgr, &db, &name, !if_exists);
+		if (! table)
+			break;
+		write = table_storage_pause(table, tr, &name_storage,
+		                            pause,
+		                            if_exists_storage);
+		break;
+	}
 	case DDL_INDEX_CREATE:
 	{
 		// create index has different processing path and must be
