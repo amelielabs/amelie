@@ -15,7 +15,7 @@ typedef struct Reader Reader;
 
 struct Reader
 {
-	Branch* branch;
+	Object* object;
 	Buf     buf_read;
 	Buf     buf;
 	Encoder encoder;
@@ -24,7 +24,7 @@ struct Reader
 static inline void
 reader_init(Reader* self)
 {
-	self->branch = NULL;
+	self->object = NULL;
 	buf_init(&self->buf_read);
 	buf_init(&self->buf);
 	encoder_init(&self->encoder);
@@ -47,21 +47,21 @@ reader_free(Reader* self)
 }
 
 static inline void
-reader_open(Reader* self, Branch* branch)
+reader_open(Reader* self, Object* object)
 {
-	self->branch = branch;
-	encoder_open(&self->encoder, branch->object_id->volume->storage);
+	self->object = object;
+	encoder_open(&self->encoder, object->id.volume->storage);
 }
 
 hot static inline Region*
 reader_execute(Reader* self, MetaRegion* meta_region)
 {
-	auto branch  = self->branch;
+	auto object  = self->object;
 	auto encoder = &self->encoder;
 	reader_reset(self);
 
 	// read region data from file
-	file_pread_buf(branch->object_file, &self->buf_read, meta_region->size,
+	file_pread_buf(&object->file, &self->buf_read, meta_region->size,
 	               meta_region->offset);
 
 	// decrypt/decompress or read raw

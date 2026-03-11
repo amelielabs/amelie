@@ -16,9 +16,8 @@ typedef struct Object Object;
 struct Object
 {
 	Id         id;
-	Branch*    branches;
-	int        branches_count;
-	Branch*    root;
+	Meta       meta;
+	Buf        meta_data;
 	File       file;
 	RbtreeNode link_mapping;
 	List       link_volume;
@@ -28,9 +27,31 @@ struct Object
 Object*
 object_allocate(Id*);
 void object_free(Object*);
-void object_open(Object*, int, int);
+void object_open(Object*, int);
 void object_create(Object*, int);
 void object_delete(Object*, int);
 void object_rename(Object*, int, int);
-void object_add(Object*, Branch*);
 void object_status(Object*, Buf*, int);
+
+hot always_inline static inline Row*
+object_min(Object* self)
+{
+	if (unlikely(! self->meta.regions))
+		return NULL;
+	return meta_region_min(meta_min(&self->meta, &self->meta_data));
+}
+
+hot always_inline static inline Row*
+object_max(Object* self)
+{
+	if (unlikely(! self->meta.regions))
+		return NULL;
+	return meta_region_max(meta_max(&self->meta, &self->meta_data));
+}
+
+hot always_inline static inline bool
+object_in(Object* self, Keys* keys, Row* key)
+{
+	// key <= object_max
+	return compare(keys, key, object_max(self)) <= 0;
+}

@@ -55,7 +55,7 @@ mapping_max(Mapping* self)
 hot always_inline static inline int
 mapping_compare(Mapping* self, Object* object, Row* key)
 {
-	return compare(self->keys, branch_min(object->root), key);
+	return compare(self->keys, object_min(object), key);
 }
 
 hot static inline
@@ -64,7 +64,7 @@ rbtree_get(mapping_find, mapping_compare(arg, mapping_of(n), key))
 static inline void
 mapping_add(Mapping* self, Object* object)
 {
-	const auto key = branch_min(object->root);
+	const auto key = object_min(object);
 	RbtreeNode* node;
 	auto rc = mapping_find(&self->tree, self, key, &node);
 	if (rc == 0 && node)
@@ -111,7 +111,7 @@ mapping_map(Mapping* self, Row* key)
 	if (self->tree_count == 1)
 	{
 		auto first = mapping_min(self);
-		if (! first->root->meta.rows)
+		if (! first->meta.rows)
 			return first;
 	}
 
@@ -133,7 +133,7 @@ mapping_gte(Mapping* self, Row* key)
 	if (unlikely(! self->tree_count))
 		return NULL;
 	auto object = mapping_map(self, key);
-	if (compare(self->keys, branch_max(object->root), key) > 0)
+	if (compare(self->keys, object_max(object), key) > 0)
 		return mapping_next(self, object);
 	return object;
 }

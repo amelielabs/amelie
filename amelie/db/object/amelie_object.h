@@ -27,13 +27,8 @@
 // writer
 #include "object/writer.h"
 
-// branch
-#include "object/branch.h"
-
-// branch iterator
-#include "object/reader.h"
-#include "object/branch_iterator.h"
-
 // object
 #include "object/object.h"
+#include "object/reader.h"
+#include "object/object_iterator.h"
 #include "object/mapping.h"

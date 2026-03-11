@@ -89,7 +89,7 @@ connect E3 S0 127.0.0.1:3480;
 show uuid;
 ["00000000-0000-0000-0000-000000000000"]
 select * from test;
-[4, 2, 1, 3]
+[2, 4, 1, 3]
 select [1,2,3]::reverse;
 [[3, 2, 1]]
 select show('state').lsn;

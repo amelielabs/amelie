@@ -20,10 +20,9 @@ Object*
 object_allocate(Id* id)
 {
 	auto self = (Object*)am_malloc(sizeof(Object));
-	self->id             = *id;
-	self->branches       = NULL;
-	self->branches_count = 0;
-	self->root           = NULL;
+	self->id = *id;
+	meta_init(&self->meta);
+	buf_init(&self->meta_data);
 	file_init(&self->file);
 	rbtree_init_node(&self->link_mapping);
 	list_init(&self->link_volume);
@@ -34,32 +33,26 @@ object_allocate(Id* id)
 void
 object_free(Object* self)
 {
-	auto branch = self->branches;
-	while (branch)
-	{
-		auto next = branch->next;
-		branch_free(branch);
-		branch = next;
-	}
+	buf_free(&self->meta_data);
 	file_close(&self->file);
 	am_free(self);
 }
 
 static void
-object_validate_index(Object* self, Branch* branch, Buf* meta_data)
+object_validate_index(Object* self, Buf* meta_data)
 {
 	uint32_t crc = runtime()->crc(0, meta_data->start, buf_size(meta_data));
-	if (crc != branch->meta.crc_data)
+	if (crc != self->meta.crc_data)
 		error("object: file meta data '%s' crc mismatch",
 		      str_of(&self->file.path));
 }
 
 static void
-object_read_index(Object* self, Branch* branch, size_t offset)
+object_read_index(Object* self, size_t offset)
 {
 	auto file      = &self->file;
-	auto meta      = &branch->meta;
-	auto meta_data = &branch->meta_data;
+	auto meta      = &self->meta;
+	auto meta_data = &self->meta_data;
 	offset -= meta->size;
 
 	// prepare encoder
@@ -73,7 +66,7 @@ object_read_index(Object* self, Branch* branch, size_t offset)
 	if (! encoder_active(&encoder))
 	{
 		file_pread_buf(file, meta_data, meta->size, offset);
-		object_validate_index(self, branch, meta_data);
+		object_validate_index(self, meta_data);
 		return;
 	}
 
@@ -81,7 +74,7 @@ object_read_index(Object* self, Branch* branch, size_t offset)
 	auto buf = buf_create();
 	defer_buf(buf);
 	file_pread_buf(file, buf, meta->size, offset);
-	object_validate_index(self, branch, buf);
+	object_validate_index(self, buf);
 
 	// decompress index
 	buf_emplace(meta_data, meta->size_origin);
@@ -89,21 +82,19 @@ object_read_index(Object* self, Branch* branch, size_t offset)
 	               buf->start, buf_size(buf));
 }
 
-static Branch*
-object_read(Object* self, size_t* offset)
+static void
+object_read(Object* self)
 {
 	// [[meta] [regions] [meta_data]], ...
-	auto branch = branch_allocate(&self->id, &self->file);
-	errdefer(branch_free, branch);
-
+	uint64_t offset = 0;
 	auto file = &self->file;
-	if (unlikely((file->size - *offset) < sizeof(Meta)))
+	if (unlikely((file->size - offset) < sizeof(Meta)))
 		error("object: file '%s' has incorrect size",
 		      str_of(&file->path));
 
 	// read header
-	auto meta = &branch->meta;
-	file_pread(file, meta, sizeof(Meta), *offset);
+	auto meta = &self->meta;
+	file_pread(file, meta, sizeof(Meta), offset);
 
 	// check header magic
 	if (unlikely(meta->magic != META_MAGIC))
@@ -122,44 +113,23 @@ object_read(Object* self, size_t* offset)
 		error("object: file '%s' version is not compatible",
 		      str_of(&file->path));
 
-	// set offset to the end of the branch
-	*offset += meta->size_total;
+	// set offset to the end of the object
+	offset += meta->size_total;
 
 	// validate file size according to the meta and the file type
-	if (*offset > file->size)
+	if (offset > file->size)
 		error("object: file '%s' size mismatch",
 		      str_of(&file->path));
 
 	// read region index
-	object_read_index(self, branch, *offset);
-	return branch;
+	object_read_index(self, offset);
 }
 
 void
-object_open(Object* self, int count, int state)
+object_open(Object* self, int state)
 {
 	id_open(&self->id, &self->file, state);
-
-	// read branches
-	size_t offset = 0;
-	while (self->branches_count < count)
-	{
-		auto branch = object_read(self, &offset);
-		object_add(self, branch);
-	}
-
-	// cut branches that are not represented in its versions id
-	// (compaction crash)
-	if (offset != self->file.size)
-	{
-		file_truncate(&self->file, offset);
-		if (opt_int_of(&config()->storage_sync))
-			file_sync(&self->file);
-		info("object: file '%s' truncated to %d branches", str_of(&self->file.path),
-		     self->branches_count);
-	}
-
-	file_seek_to_end(&self->file);
+	object_read(self);
 }
 
 void
@@ -181,18 +151,9 @@ object_rename(Object* self, int from, int to)
 }
 
 void
-object_add(Object* self, Branch* branch)
-{
-	branch->next = self->branches;
-	self->branches = branch;
-	self->branches_count++;
-	if (! self->root)
-		self->root = branch;
-}
-
-void
 object_status(Object* self, Buf* buf, int flags)
 {
+	unused(flags);
 	encode_obj(buf);
 
 	// id
@@ -203,12 +164,25 @@ object_status(Object* self, Buf* buf, int flags)
 	encode_raw(buf, "storage", 7);
 	encode_string(buf, &self->id.volume->storage->config->name);
 
-	// branches
-	encode_raw(buf, "branches", 8);
-	encode_array(buf);
-	for (auto branch = self->branches; branch; branch = branch->next)
-		branch_status(branch, buf, flags);
-	encode_array_end(buf);
+	// min
+	encode_raw(buf, "min", 3);
+	encode_integer(buf, 0);
+
+	// max
+	encode_raw(buf, "max", 3);
+	encode_integer(buf, 0);
+
+	// lsn
+	encode_raw(buf, "lsn", 3);
+	encode_integer(buf, 0);
+
+	// size
+	encode_raw(buf, "size", 4);
+	encode_integer(buf, self->meta.size_total);
+
+	// compression
+	encode_raw(buf, "compression", 11);
+	encode_integer(buf, self->meta.compression);
 
 	encode_obj_end(buf);
 }
