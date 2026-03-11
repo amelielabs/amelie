@@ -17,15 +17,17 @@ heap_evict(Heap* self, Collection* col, uint64_t up_to)
 	collection_reset(col);
 
 	// collect cold rows
+	uint64_t total = 0;
 	uint32_t at = self->header->lru_tail;
 	uint32_t at_offset = self->header->lru_tail_offset;
 	while (at_offset)
 	{
 		auto chunk = heap_chunk_at(self, at, at_offset);
 		auto row   = (Row*)chunk->data;
-		if (col->size + row_size(row) >= up_to)
+		if (total + row_size(row) >= up_to)
 			break;
 		collection_add(col, row);
+		total += self->buckets[chunk->bucket].size;
 		chunk->is_evicted = true;
 		at = chunk->prev;
 		at_offset = chunk->prev_offset;

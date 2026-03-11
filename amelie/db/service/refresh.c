@@ -165,7 +165,7 @@ refresh_apply(Refresh* self)
 		if (chunk->is_shadow_free)
 		{
 			// delayed heap removal
-			heap_remove(origin->heap, *(void**)chunk->data);
+			row_free(origin->heap, *(Row**)chunk->data);
 			continue;
 		}
 

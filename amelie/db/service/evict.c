@@ -89,8 +89,8 @@ evict_map(Evict* self, EvictBranch* branch, Row* key)
 		auto parent_id = branch->parent->id.id;
 		unlock(lock_table);
 
-		// get the object shared lock
-		service_lock(self->service, &branch->lock, LOCK_SHARED, parent_id);
+		// get the object lock
+		service_lock(self->service, &branch->lock, LOCK_EXCLUSIVE, parent_id);
 
 		// ensure the object is still exists
 		lock_table = lock(&table->rel, LOCK_SHARED);
@@ -98,7 +98,7 @@ evict_map(Evict* self, EvictBranch* branch, Row* key)
 		branch->parent_last = !mapping_next(&tier->mapping, branch->parent);
 		unlock(lock_table);
 
-		// shared object lock is held till evict completion
+		// object lock is held till evict completion
 		if (match)
 			break;
 
@@ -390,9 +390,10 @@ evict_apply(Evict* self)
 		auto chunk = heap_chunk_at(heap, at, at_offset);
 		if (! chunk->is_evicted)
 			break;
+		auto row = (Row*)chunk->data;
 		at = chunk->prev;
 		at_offset = chunk->prev_offset;
-		heap_remove(heap, chunk->data);
+		row_free(heap, row);
 	}
 
 	// apply shadow heap updates respecting its lru order
@@ -408,7 +409,7 @@ evict_apply(Evict* self)
 			auto row = *(Row**)chunk->data;
 			if (heap_chunk_of(row)->is_free)
 				continue;
-			heap_remove(origin->heap, row);
+			row_free(origin->heap, row);
 			continue;
 		}
 

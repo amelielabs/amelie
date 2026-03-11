@@ -68,13 +68,13 @@ part_open(Part* self)
 	while (heap_iterator_has(&it))
 	{
 		auto chunk = heap_iterator_at_chunk(&it);
+		auto row = heap_iterator_at(&it);
 		if (chunk->is_evicted)
 		{
 			// cleanup evicted rows during load
-			heap_remove(self->heap, chunk->data);
+			row_free(self->heap, row);
 		} else
 		{
-			auto row = heap_iterator_at(&it);
 			part_apply(self, row, false);
 			count++;
 		}
