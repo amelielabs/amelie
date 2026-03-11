@@ -48,37 +48,78 @@ service_worker_free(ServiceWorker* self)
 }
 
 static void
-service_schedule(Table* table, Action* action)
+service_next(Table* table, Action* action)
 {
 	// take shared table lock
 	auto lock_table = lock(&table->rel, LOCK_SHARED);
 	defer(unlock, lock_table);
 
-	// schedule eviction
+	// todo:
 	auto config = &table->config->partitioning;
 	unused(config);
 	unused(action);
 }
 
 void
-service_execute(Service* self, ServiceWorker* worker, Action* action)
+service_relation(ServiceWorker* self, Action* action)
 {
+	auto service = self->service;
+
 	// take shared catalog lock
 	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
 	defer(unlock, lock_catalog);
 
 	// find table
-	auto table = table_mgr_find_by(&self->catalog->table_mgr, &action->req->id_table, false);
+	auto table = table_mgr_find_by(&service->catalog->table_mgr, &action->req->id_table, false);
 	if (! table)
 		return;
 
-	// find table and schedule next service action
-	service_schedule(table, action);
+	//  find table and schedule next service action
+	service_next(table, action);
 
 	// execute
 	switch (action->type) {
 	case ACTION_NONE:
-		unused(worker);
+		break;
+	}
+}
+
+static void
+service_wal_sync_job(intptr_t* argv)
+{
+	auto service = (Service*)argv[0];
+	auto wal     = &service->wal_mgr->wal;
+	wal_sync(wal, false);
+}
+
+static void
+service_wal_create_job(intptr_t* argv)
+{
+	auto service = (Service*)argv[0];
+	auto wal     = &service->wal_mgr->wal;
+	if (opt_int_of(&config()->wal_sync_on_close))
+		wal_sync(wal, false);
+	wal_create(wal, state_lsn() + 1);
+	if (opt_int_of(&config()->wal_sync_on_create))
+		wal_sync(wal, true);
+}
+
+static void
+service_execute(ServiceWorker* self, int op, Action* action)
+{
+	Service* service = self->service;
+	switch (op) {
+	case SERVICE_WAL_SYNC:
+		run(service_wal_sync_job, 1, service);
+		break;
+	case SERVICE_WAL_CREATE:
+		run(service_wal_create_job, 1, service);
+		break;
+	case SERVICE_CHECKPOINT:
+		service_checkpoint(service);
+		break;
+	case SERVICE_RELATION:
+		service_relation(self, action);
 		break;
 	}
 }
@@ -86,19 +127,17 @@ service_execute(Service* self, ServiceWorker* worker, Action* action)
 static void
 service_main(void* arg)
 {
-	ServiceWorker* self = arg;
-	auto queue = &self->service->queue;
+	ServiceWorker* self  = arg;
+	auto           queue = &self->service->queue;
 
 	Action action;
 	action_init(&action);
 	for (;;)
 	{
-		auto shutdown = service_queue_next(queue, &action);
-		if (unlikely(shutdown))
+		auto op = service_queue_next(queue, &action);
+		if (op == -1)
 			break;
-		error_catch (
-			service_execute(self->service, self, &action)
-		);
+		service_execute(self, op, &action);
 		service_queue_complete(queue, &action);
 	}
 }

@@ -27,6 +27,9 @@
 #include "service/service.h"
 #include "service/service_recover.h"
 
+// service periodic
+#include "service/cron.h"
+
 // service operations
 #include "service/refresh.h"
 #include "service/indexate.h"

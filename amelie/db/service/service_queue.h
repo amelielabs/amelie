@@ -13,18 +13,28 @@
 
 typedef struct ServiceQueue ServiceQueue;
 
+enum
+{
+	SERVICE_WAL_SYNC   = 1 << 0,
+	SERVICE_WAL_CREATE = 1 << 1,
+	SERVICE_CHECKPOINT = 1 << 2,
+	SERVICE_RELATION   = 1 << 3
+};
+
 struct ServiceQueue
 {
 	Spinlock        lock;
+	int             flags;
+	bool            shutdown;
 	List            list;
 	List            list_waiters;
-	bool            shutdown;
 	ServiceReqCache cache;
 };
 
 static inline void
 service_queue_init(ServiceQueue* self)
 {
+	self->flags = 0;
 	self->shutdown = false;
 	list_init(&self->list);
 	list_init(&self->list_waiters);
@@ -39,29 +49,35 @@ service_queue_free(ServiceQueue* self)
 	spinlock_free(&self->lock);
 }
 
-static inline void
-service_queue_shutdown(ServiceQueue* self)
+hot static inline void
+service_queue_wakeup(ServiceQueue* self, bool all)
 {
-	spinlock_lock(&self->lock);
-	// set shutdown and wakeup waiters
-	self->shutdown = true;
 	list_foreach_safe(&self->list_waiters)
 	{
 		auto ref = list_at(Action, link);
 		list_unlink(&ref->link);
 		event_signal(&ref->event);
+		if (! all)
+			break;
 	}
+}
+
+static inline void
+service_queue_shutdown(ServiceQueue* self)
+{
+	spinlock_lock(&self->lock);
+	self->shutdown = true;
+	service_queue_wakeup(self, true);
 	spinlock_unlock(&self->lock);
 }
 
-hot static inline void
-service_queue_wakeup(ServiceQueue* self)
+static inline void
+service_queue_add_flags(ServiceQueue* self, int flags)
 {
-	if (list_empty(&self->list_waiters))
-		return;
-	auto first = list_pop(&self->list_waiters);
-	auto ref   = container_of(first, Action, link);
-	event_signal(&ref->event);
+	spinlock_lock(&self->lock);
+	self->flags |= flags;
+	service_queue_wakeup(self, false);
+	spinlock_unlock(&self->lock);
 }
 
 hot static inline void
@@ -88,12 +104,12 @@ service_queue_add(ServiceQueue* self, Uuid* id_table)
 	req->pending++;
 
 	// wakeup one worker
-	service_queue_wakeup(self);
+	service_queue_wakeup(self, false);
 
 	spinlock_unlock(&self->lock);
 }
 
-hot static inline bool
+hot static inline int
 service_queue_next(ServiceQueue* self, Action* action)
 {
 	spinlock_lock(&self->lock);
@@ -106,9 +122,28 @@ service_queue_next(ServiceQueue* self, Action* action)
 		if (self->shutdown)
 		{
 			spinlock_unlock(&self->lock);
-			return true;
+			return -1;
 		}
 
+		// system service
+		if (self->flags > 0)
+		{
+			int match = 0;
+			if (self->flags & SERVICE_WAL_SYNC)
+				match = SERVICE_WAL_SYNC;
+			else
+			if (self->flags & SERVICE_WAL_CREATE)
+				match = SERVICE_WAL_CREATE;
+			else
+			if (self->flags & SERVICE_CHECKPOINT)
+				match = SERVICE_CHECKPOINT;
+			self->flags &= ~match;
+
+			spinlock_unlock(&self->lock);
+			return match;
+		}
+
+		// tables
 		list_foreach_safe(&self->list)
 		{
 			auto at = list_at(ServiceReq, link);
@@ -142,12 +177,15 @@ service_queue_next(ServiceQueue* self, Action* action)
 	req->refs++;
 
 	spinlock_unlock(&self->lock);
-	return false;
+	return SERVICE_RELATION;
 }
 
 static inline void
 service_queue_complete(ServiceQueue* self, Action* action)
 {
+	if (! action->req)
+		return;
+
 	spinlock_lock(&self->lock);
 
 	auto req = action->req;
@@ -167,10 +205,13 @@ service_queue_complete(ServiceQueue* self, Action* action)
 
 	// wakeup one additional worker, if there is still work to do
 	if (! list_empty(&self->list))
-		service_queue_wakeup(self);
+		service_queue_wakeup(self, false);
 
 	spinlock_unlock(&self->lock);
 
+	action->req     = NULL;
+	action->pending = 0;
+	action->type    = ACTION_NONE;
 	if (gc)
 		service_req_cache_push(&self->cache, req);
 }

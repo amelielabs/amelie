@@ -48,3 +48,9 @@ service_add(Service* self, Uuid* id_table)
 {
 	service_queue_add(&self->queue, id_table);
 }
+
+hot static inline void
+service_schedule(Service* self, int flags)
+{
+	service_queue_add_flags(&self->queue, flags);
+}
