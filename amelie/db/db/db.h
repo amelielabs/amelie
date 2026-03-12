@@ -16,7 +16,7 @@ typedef struct Db Db;
 struct Db
 {
 	Catalog     catalog;
-	WalMgr      wal_mgr;
+	Wal         wal;
 	Service     service;
 	Syncer      syncer;
 	SnapshotMgr snapshot_mgr;
@@ -28,4 +28,5 @@ void      db_open(Db*, bool);
 void      db_close(Db*);
 Snapshot* db_snapshot(Db*);
 void      db_snapshot_drop(Db*, Snapshot*);
+void      db_write(Db*, WriteList*);
 Buf*      db_state(Db*);

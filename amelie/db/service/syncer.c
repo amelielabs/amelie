@@ -35,7 +35,7 @@ syncer_main(void* arg)
 		auto lsn = state_lsn();
 		if (lsn == lsn_last)
 			continue;
-		service_schedule(self->service, SERVICE_WAL_SYNC);
+		service_schedule(self->service, ACTION_WAL_SYNC);
 		lsn_last = lsn;
 	}
 }

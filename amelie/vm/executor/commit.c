@@ -64,8 +64,7 @@ commit_main(void* arg)
 		//
 		if (batch.write.list_count)
 		{
-			auto wal = &self->db->wal_mgr;
-			if (error_catch( wal_mgr_write(wal, &batch.write) ))
+			if (error_catch( db_write(self->db, &batch.write) ))
 				batch_abort(&batch);
 		}
 

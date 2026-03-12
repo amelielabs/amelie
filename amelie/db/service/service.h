@@ -16,14 +16,14 @@ typedef struct Service Service;
 struct Service
 {
 	ServiceLockMgr lock_mgr;
-	ServiceQueue   queue;
+	ActionMgr      action_mgr;
 	List           workers;
 	int            workers_count;
 	Catalog*       catalog;
-	WalMgr*        wal_mgr;
+	Wal*           wal;
 };
 
-void service_init(Service*, Catalog*, WalMgr*);
+void service_init(Service*, Catalog*, Wal*);
 void service_free(Service*);
 void service_start(Service*);
 void service_stop(Service*);
@@ -44,13 +44,7 @@ service_unlock(ServiceLock* lock)
 }
 
 hot static inline void
-service_add(Service* self, Uuid* id_table)
+service_schedule(Service* self, int type)
 {
-	service_queue_add(&self->queue, id_table);
-}
-
-hot static inline void
-service_schedule(Service* self, int flags)
-{
-	service_queue_add_flags(&self->queue, flags);
+	action_mgr_create(&self->action_mgr, type);
 }

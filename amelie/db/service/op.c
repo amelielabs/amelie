@@ -74,12 +74,11 @@ service_checkpoint(Service* self)
 		}
 	}
 
-	// wal gc
-	service_gc(self);
+	service_wal_gc(self);
 }
 
 void
-service_gc(Service* self)
+service_wal_gc(Service* self)
 {
 	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
 
@@ -116,59 +115,65 @@ service_gc(Service* self)
 	unlock(lock_catalog);
 
 	// remove wal files < lsn
-	wal_gc(&self->wal_mgr->wal, lsn);
+	wal_gc(self->wal, lsn);
+}
+
+static void
+service_wal_sync_job(intptr_t* argv)
+{
+	auto service = (Service*)argv[0];
+	wal_sync(service->wal, false);
 }
 
 void
-service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
+service_wal_sync(Service* self)
 {
-	// note: no catalog lock
-	auto if_not_exists = ddl_if_not_exists(flags);
+	run(service_wal_sync_job, 1, self);
+}
 
-	Str  name_db;
-	Str  name;
-	auto pos = table_op_index_create_read(op, &name_db, &name);
+static void
+service_wal_create_job(intptr_t* argv)
+{
+	auto service = (Service*)argv[0];
+	auto wal     =  service->wal;
+	if (opt_int_of(&config()->wal_sync_on_close))
+		wal_sync(wal, false);
+	wal_create(wal, state_lsn() + 1);
+	if (opt_int_of(&config()->wal_sync_on_create))
+		wal_sync(wal, true);
+}
 
-	// take shared catalog lock
-	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
-	defer(unlock, lock_catalog);
+void
+service_wal_create(Service* self)
+{
+	run(service_wal_create_job, 1, self);
+}
 
-	// find table
-	auto table = table_mgr_find(&self->catalog->table_mgr, &name_db, &name, false);
-	if (! table)
-		error("table '%.*s': not exists", str_size(&name),
-		      str_of(&name));
-
-	auto config = index_config_read(table_columns(table), &pos);
-	errdefer(index_config_free, config);
-	keys_set_primary(&config->keys, false);
-
-	// find index
-	auto index = table_index_find(table, &config->name, false);
-	if (index)
-	{
-		if (! if_not_exists)
-			error("table '%.*s' index '%.*s': already exists",
-			      str_size(&table->config->name),
-			      str_of(&table->config->name),
-			      str_size(&config->name),
-			      str_of(&config->name));
-
-		index_config_free(config);
-		return;
+static void
+service_execute(Service* self, Action* action)
+{
+	switch (action->type) {
+	case ACTION_WAL_SYNC:
+		service_wal_sync(self);
+		break;
+	case ACTION_WAL_CREATE:
+		service_wal_create(self);
+		break;
+	case ACTION_CHECKPOINT:
+		service_checkpoint(self);
+		break;
 	}
+}
 
-	// incrementally create indexes on every table partition
-	Indexate ix;
-	indexate_init(&ix, self);
-	while (indexate_next(&ix, table, config));
-
-	unlock(lock_catalog);
-
-	// take exclusive catalog lock (HELD till completion)
-	lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
-
-	// attach index to the table
-	table_index_add(table, tr, config);
-	log_persist_relation(&tr->log, op);
+bool
+service_step(Service* self)
+{
+	auto action = action_mgr_next(&self->action_mgr);
+	if (! action)
+		return false;
+	error_catch (
+		service_execute(self, action);
+	);
+	action_mgr_complete(&self->action_mgr, action);
+	return true;
 }

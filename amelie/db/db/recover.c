@@ -166,7 +166,7 @@ recover_next_record(Recover* self, Record* record)
 		write_add(write, &self->tr.log.write_log);
 		write_list_reset(write_list);
 		write_list_add(write_list, write);
-		wal_mgr_write(&self->db->wal_mgr, write_list);
+		db_write(self->db, write_list);
 	} else
 	{
 		state_lsn_follow(record->lsn);
@@ -204,8 +204,8 @@ recover_wal_main(Recover* self)
 {
 	// open wal files and maybe truncate wal files according
 	// to the wal_truncate option
-	auto wal_mgr = &self->db->wal_mgr;
-	wal_mgr_start(wal_mgr);
+	auto wal = &self->db->wal;
+	wal_open(wal);
 
 	// replay all wals
 	uint64_t id = 0;
@@ -218,7 +218,7 @@ recover_wal_main(Recover* self)
 		defer(wal_cursor_close, &cursor);
 
 		auto wal_crc = opt_int_of(&config()->wal_crc);
-		wal_cursor_open(&cursor, &wal_mgr->wal, id, false, wal_crc);
+		wal_cursor_open(&cursor, wal, id, false, wal_crc);
 		for (;;)
 		{
 			if (! wal_cursor_next(&cursor))
@@ -233,7 +233,7 @@ recover_wal_main(Recover* self)
 		     (double)self->size / 1024 / 1024,
 		     self->ops);
 
-		id = id_mgr_next(&wal_mgr->wal.list, cursor.file->id);
+		id = id_mgr_next(&wal->list, cursor.file->id);
 		if (id == UINT64_MAX)
 			break;
 	}

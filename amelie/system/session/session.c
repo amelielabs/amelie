@@ -233,7 +233,7 @@ session_execute_utility(Session* self, Output* output)
 		WriteList write_list;
 		write_list_init(&write_list);
 		write_list_add(&write_list, &write);
-		wal_mgr_write(&share()->db->wal_mgr, &write_list);
+		db_write(share()->db, &write_list);
 
 		// update catalog pending lsn
 		opt_int_set(&state()->catalog_pending, write.header.lsn);

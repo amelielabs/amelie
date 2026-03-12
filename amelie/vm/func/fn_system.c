@@ -241,7 +241,7 @@ fn_show(Fn* self)
 	}
 	case SHOW_WAL:
 	{
-		buf = wal_status(&share()->db->wal_mgr.wal);
+		buf = wal_status(&share()->db->wal);
 		break;
 	}
 	case SHOW_METRICS:

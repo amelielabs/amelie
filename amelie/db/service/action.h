@@ -11,31 +11,41 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct ServiceReq ServiceReq;
-typedef struct Action     Action;
+typedef struct Action Action;
 
 enum
 {
-	ACTION_NONE
+	ACTION_NONE,
+	ACTION_WAL_SYNC,
+	ACTION_WAL_CREATE,
+	ACTION_CHECKPOINT
 };
 
 struct Action
 {
-	ServiceReq* req;
-	int         pending;
-	int         type;
-	uint64_t    id;
-	Event       event;
-	List        link;
+	int  type;
+	bool in_progress;
+	List link;
 };
 
 static inline void
 action_init(Action* self)
 {
-	self->req     = NULL;
-	self->pending = 0;
-	self->type    = ACTION_NONE;
-	self->id      = 0;
-	event_init(&self->event);
+	self->type        = ACTION_NONE;
+	self->in_progress = false;
 	list_init(&self->link);
+}
+
+static inline Action*
+action_allocate(void)
+{
+	auto self = (Action*)am_malloc(sizeof(Action));
+	action_init(self);
+	return self;
+}
+
+static inline void
+action_free(Action* self)
+{
+	am_free(self);
 }

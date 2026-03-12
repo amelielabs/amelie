@@ -11,7 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "wal/wal_file.h"
-#include "wal/wal_slot.h"
-#include "wal/wal.h"
-#include "wal/wal_cursor.h"
+void service_create_index(Service*, Tr*, uint8_t*, int);

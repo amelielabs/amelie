@@ -207,14 +207,13 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/wal/wal.c
     ${AMELIE_ROOT}/db/wal/wal_cursor.c
-    ${AMELIE_ROOT}/db/wal/wal_worker.c
-    ${AMELIE_ROOT}/db/wal/wal_mgr.c
     ${AMELIE_ROOT}/db/service/service.c
     ${AMELIE_ROOT}/db/service/service_recover.c
     ${AMELIE_ROOT}/db/service/syncer.c
     ${AMELIE_ROOT}/db/service/refresh.c
-    ${AMELIE_ROOT}/db/service/indexate.c
     ${AMELIE_ROOT}/db/service/op.c
+    ${AMELIE_ROOT}/db/service/indexate.c
+    ${AMELIE_ROOT}/db/service/op_create_index.c
     ${AMELIE_ROOT}/db/db/snapshot_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/recover.c)

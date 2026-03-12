@@ -33,10 +33,10 @@ db_init(Db*        self,
 	catalog_init(&self->catalog, iface, iface_arg,
 	             iface_part_mgr,
 	             iface_part_mgr_arg);
-	wal_mgr_init(&self->wal_mgr);
-	service_init(&self->service, &self->catalog, &self->wal_mgr);
+	wal_init(&self->wal);
+	service_init(&self->service, &self->catalog, &self->wal);
 	syncer_init(&self->syncer, &self->service);
-	snapshot_mgr_init(&self->snapshot_mgr, &self->catalog, &self->wal_mgr.wal);
+	snapshot_mgr_init(&self->snapshot_mgr, &self->catalog, &self->wal);
 }
 
 void
@@ -45,7 +45,7 @@ db_free(Db* self)
 	service_free(&self->service);
 	snapshot_mgr_free(&self->snapshot_mgr);
 	catalog_free(&self->catalog);
-	wal_mgr_free(&self->wal_mgr);
+	wal_free(&self->wal);
 }
 
 void
@@ -70,8 +70,8 @@ db_close(Db* self)
 	// close catalog
 	catalog_close(&self->catalog);
 
-	// stop wal mgr
-	wal_mgr_stop(&self->wal_mgr);
+	// stop wal
+	wal_close(&self->wal);
 }
 
 Snapshot*
@@ -92,7 +92,19 @@ db_snapshot_drop(Db* self, Snapshot* snapshot)
 	unlock(lock_catalog);
 
 	// wal gc
-	service_gc(&self->service);
+	service_wal_gc(&self->service);
+}
+
+void
+db_write(Db* self, WriteList* write_list)
+{
+	if (! write_list->list_count)
+		return;
+	auto wal_rotate = wal_write(&self->wal, write_list);
+	if (opt_int_of(&config()->wal_sync_on_write))
+		wal_sync(&self->wal, false);
+	if (wal_rotate)
+		service_schedule(&self->service, ACTION_WAL_CREATE);
 }
 
 Buf*

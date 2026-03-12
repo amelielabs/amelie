@@ -285,6 +285,9 @@ reopen:
 void
 wal_close(Wal* self)
 {
+	if (opt_int_of(&config()->wal_sync_on_close))
+		wal_sync(self, true);
+
 	if (self->dirfd != -1)
 	{
 		close(self->dirfd);
