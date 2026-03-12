@@ -23,10 +23,10 @@
 #include <amelie_service.h>
 
 static void
-cron_main(void* arg)
+syncer_main(void* arg)
 {
-	Cron* self = arg;
-	coroutine_set_name(am_self(), "cron");
+	Syncer* self = arg;
+	coroutine_set_name(am_self(), "syncer");
 	coroutine_set_cancel_log(am_self(), false);
 	uint64_t lsn_last = 0;
 	for (;;)
@@ -41,7 +41,7 @@ cron_main(void* arg)
 }
 
 void
-cron_init(Cron* self, Service* service)
+syncer_init(Syncer* self, Service* service)
 {
 	self->interval_us  =  0;
 	self->coroutine_id = -1;
@@ -49,7 +49,7 @@ cron_init(Cron* self, Service* service)
 }
 
 void
-cron_start(Cron* self)
+syncer_start(Syncer* self)
 {
 	if (! opt_int_of(&config()->wal_worker))
 		return;
@@ -64,11 +64,11 @@ cron_start(Cron* self)
 	// start periodic fsync notification
 	self->interval_us = interval.us / 1000;
 	if (self->interval_us != 0)
-		self->coroutine_id = coroutine_create(cron_main, self);
+		self->coroutine_id = coroutine_create(syncer_main, self);
 }
 
 void
-cron_stop(Cron* self)
+syncer_stop(Syncer* self)
 {
 	if (self->coroutine_id != -1)
 	{

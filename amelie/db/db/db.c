@@ -35,7 +35,7 @@ db_init(Db*        self,
 	             iface_part_mgr_arg);
 	wal_mgr_init(&self->wal_mgr);
 	service_init(&self->service, &self->catalog, &self->wal_mgr);
-	cron_init(&self->cron, &self->service);
+	syncer_init(&self->syncer, &self->service);
 	snapshot_mgr_init(&self->snapshot_mgr, &self->catalog, &self->wal_mgr.wal);
 }
 
@@ -61,8 +61,8 @@ db_open(Db* self, bool bootstrap)
 void
 db_close(Db* self)
 {
-	// stop cron
-	cron_stop(&self->cron);
+	// stop syncer
+	syncer_stop(&self->syncer);
 
 	// stop service
 	service_stop(&self->service);

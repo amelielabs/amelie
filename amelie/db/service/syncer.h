@@ -11,15 +11,15 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Cron Cron;
+typedef struct Syncer Syncer;
 
-struct Cron
+struct Syncer
 {
 	int      interval_us;
 	int64_t  coroutine_id;
 	Service* service;
 };
 
-void cron_init(Cron*, Service*);
-void cron_start(Cron*);
-void cron_stop(Cron*);
+void syncer_init(Syncer*, Service*);
+void syncer_start(Syncer*);
+void syncer_stop(Syncer*);
