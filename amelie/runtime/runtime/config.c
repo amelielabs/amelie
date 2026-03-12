@@ -62,17 +62,17 @@ config_prepare(Config* self)
 		// wal
 		{ "wal_worker",              OPT_BOOL,   OPT_C,                   &self->wal_worker,              NULL,             true                },
 		{ "wal_crc",                 OPT_BOOL,   OPT_C,                   &self->wal_crc,                 NULL,             true                },
-		{ "wal_sync_on_create",      OPT_BOOL,   OPT_C,                   &self->wal_sync_on_create,      NULL,             true                },
-		{ "wal_sync_on_close",       OPT_BOOL,   OPT_C,                   &self->wal_sync_on_close,       NULL,             true                },
-		{ "wal_sync_on_write",       OPT_BOOL,   OPT_C,                   &self->wal_sync_on_write,       NULL,             false               },
+		{ "wal_sync_create",         OPT_BOOL,   OPT_C,                   &self->wal_sync_create,         NULL,             true                },
+		{ "wal_sync_close",          OPT_BOOL,   OPT_C,                   &self->wal_sync_close,          NULL,             true                },
+		{ "wal_sync_write",          OPT_BOOL,   OPT_C,                   &self->wal_sync_write,          NULL,             false               },
 		{ "wal_sync_interval",       OPT_STRING, OPT_C,                   &self->wal_sync_interval,       "1 sec",          0                   },
 		{ "wal_size",                OPT_INT,    OPT_C,                   &self->wal_size,                NULL,             67108864            },
+		{ "wal_checkpoint",          OPT_INT,    OPT_C,                   &self->wal_checkpoint,          NULL,             100                 },
 		{ "wal_truncate",            OPT_INT,    OPT_C,                   &self->wal_truncate,            NULL,             0                   },
 		// storage
 		{ "storage_crc",             OPT_BOOL,   OPT_C,                   &self->storage_crc,             NULL,             true                },
 		{ "storage_sync",            OPT_BOOL,   OPT_C,                   &self->storage_sync,            NULL,             true                },
 		{ "catalog_sync",            OPT_BOOL,   OPT_C,                   &self->catalog_sync,            NULL,             true                },
-		{ "checkpoint_interval",     OPT_STRING, OPT_C,                   &self->checkpoint_interval,     "5 min",          0                   },
 		// replication
 		{ "repl_readahead",          OPT_INT,    OPT_C|OPT_Z,             &self->repl_readahead,          NULL,             256 * 1024          },
 		{ "repl_reconnect_ms",       OPT_INT,    OPT_C,                   &self->repl_reconnect_ms,       NULL,             3000                },

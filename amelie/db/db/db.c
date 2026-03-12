@@ -102,7 +102,7 @@ db_write(Db* self, WriteList* write_list)
 		return;
 	auto wal = &self->wal;
 	auto wal_rotate = wal_write(wal, write_list);
-	if (opt_int_of(&config()->wal_sync_on_write))
+	if (opt_int_of(&config()->wal_sync_write))
 		wal_sync(wal, false);
 
 	if (likely(! wal_rotate))
@@ -116,11 +116,14 @@ db_write(Db* self, WriteList* write_list)
 	}
 
 	// do sync/rotate directly
-	if (opt_int_of(&config()->wal_sync_on_close))
+	if (opt_int_of(&config()->wal_sync_close))
 		wal_sync(wal, false);
-	wal_create(wal, state_lsn() + 1);
-	if (opt_int_of(&config()->wal_sync_on_create))
+	auto files = wal_create(wal, state_lsn() + 1);
+	if (opt_int_of(&config()->wal_sync_create))
 		wal_sync(wal, true);
+	// schedule checkpoint on reaching wal_checkpoint threshold
+	if (files >= (int)opt_int_of(&config()->wal_checkpoint))
+		service_schedule(&self->service, ACTION_CHECKPOINT);
 }
 
 Buf*

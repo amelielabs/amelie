@@ -66,7 +66,7 @@ wal_overflow(Wal* self)
 	return self->current->file.size >= opt_int_of(&config()->wal_size);
 }
 
-void
+int
 wal_create(Wal* self, uint64_t lsn)
 {
 	// create new wal file
@@ -94,12 +94,14 @@ wal_create(Wal* self, uint64_t lsn)
 	mutex_unlock(&self->lock);
 
 	// close prev file
-	if (! file_prev)
-		return;
-	error_catch (
-		wal_file_close(file_prev);
-	);
-	wal_file_free(file_prev);
+	if (file_prev)
+	{
+		error_catch (
+			wal_file_close(file_prev);
+		);
+		wal_file_free(file_prev);
+	}
+	return self->list.list_count;
 }
 
 void
@@ -260,7 +262,7 @@ reopen:
 	if (! self->list.list_count)
 	{
 		wal_create(self, 1);
-		if (opt_int_of(&config()->wal_sync_on_create))
+		if (opt_int_of(&config()->wal_sync_create))
 			wal_sync(self, true);
 		return;
 	}
@@ -285,7 +287,7 @@ reopen:
 void
 wal_close(Wal* self)
 {
-	if (opt_int_of(&config()->wal_sync_on_close))
+	if (opt_int_of(&config()->wal_sync_close))
 		wal_sync(self, true);
 
 	if (self->dirfd != -1)

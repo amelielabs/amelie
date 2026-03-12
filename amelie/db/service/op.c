@@ -135,12 +135,22 @@ static void
 service_wal_create_job(intptr_t* argv)
 {
 	auto service = (Service*)argv[0];
-	auto wal     =  service->wal;
-	if (opt_int_of(&config()->wal_sync_on_close))
+
+	// sync current wal file before close
+	auto wal = service->wal;
+	if (opt_int_of(&config()->wal_sync_close))
 		wal_sync(wal, false);
-	wal_create(wal, state_lsn() + 1);
-	if (opt_int_of(&config()->wal_sync_on_create))
+
+	// create new wal file
+	auto files = wal_create(wal, state_lsn() + 1);
+
+	// sync after creation
+	if (opt_int_of(&config()->wal_sync_create))
 		wal_sync(wal, true);
+
+	// schedule checkpoint on reaching wal_checkpoint threshold
+	if (files >= (int)opt_int_of(&config()->wal_checkpoint))
+		service_schedule(service, ACTION_CHECKPOINT);
 }
 
 void

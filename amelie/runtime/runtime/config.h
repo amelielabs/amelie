@@ -44,17 +44,17 @@ struct Config
 	// wal
 	Opt  wal_worker;
 	Opt  wal_crc;
-	Opt  wal_sync_on_create;
-	Opt  wal_sync_on_close;
-	Opt  wal_sync_on_write;
+	Opt  wal_sync_create;
+	Opt  wal_sync_close;
+	Opt  wal_sync_write;
 	Opt  wal_sync_interval;
 	Opt  wal_size;
+	Opt  wal_checkpoint;
 	Opt  wal_truncate;
 	// storage
 	Opt  storage_crc;
 	Opt  storage_sync;
 	Opt  catalog_sync;
-	Opt  checkpoint_interval;
 	// replication
 	Opt  repl_readahead;
 	Opt  repl_reconnect_ms;
