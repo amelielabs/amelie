@@ -100,11 +100,27 @@ db_write(Db* self, WriteList* write_list)
 {
 	if (! write_list->list_count)
 		return;
-	auto wal_rotate = wal_write(&self->wal, write_list);
+	auto wal = &self->wal;
+	auto wal_rotate = wal_write(wal, write_list);
 	if (opt_int_of(&config()->wal_sync_on_write))
-		wal_sync(&self->wal, false);
-	if (wal_rotate)
+		wal_sync(wal, false);
+
+	if (likely(! wal_rotate))
+		return;
+
+	// do background sync/rotate by service
+	if (opt_int_of(&config()->wal_worker))
+	{
 		service_schedule(&self->service, ACTION_WAL_CREATE);
+		return;
+	}
+
+	// do sync/rotate directly
+	if (opt_int_of(&config()->wal_sync_on_close))
+		wal_sync(wal, false);
+	wal_create(wal, state_lsn() + 1);
+	if (opt_int_of(&config()->wal_sync_on_create))
+		wal_sync(wal, true);
 }
 
 Buf*
