@@ -13,7 +13,6 @@
 
 void service_refresh(Service*, Uuid*, uint64_t, Str*);
 void service_checkpoint(Service*);
-void service_wal_gc(Service*);
-void service_wal_sync(Service*);
-void service_wal_create(Service*);
+void service_gc(Service*);
+void service_sync(Service*, uint64_t);
 bool service_step(Service*);

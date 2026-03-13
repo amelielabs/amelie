@@ -233,9 +233,11 @@ recover_wal_main(Recover* self)
 		     (double)self->size / 1024 / 1024,
 		     self->ops);
 
-		id = id_mgr_next(&wal->list, cursor.file->id);
-		if (id == UINT64_MAX)
+		auto next = wal_find(wal, cursor.file->id, true);
+		if (! next)
 			break;
+		id = next->id;
+		wal_file_unpin(next);
 	}
 }
 

@@ -25,22 +25,26 @@ streamer_collect(Streamer* self)
 		if (wal_cursor_readahead(&self->wal_cursor, size, &self->lsn, lsn_max) > 0)
 			break;
 
-		// wait for new wal write, client disconnect or cancel
-		Event on_event;
-		event_init(&on_event);
+		Event event;
+		event_init(&event);
+		event_attach(&event);
+
+		// subscribe for wal writes
+		WalSub sub;
+		wal_sub_init(&sub, &event, self->lsn);
+		wal_subscribe(self->wal, &sub);
+
+		// wait for wal write, client disconnect or cancel
 		Event on_disconnect;
 		event_init(&on_disconnect);
-		event_set_parent(&on_disconnect, &on_event);
-		event_set_parent(&self->wal_slot->on_write, &on_event);
-
+		event_set_parent(&on_disconnect, &event);
 		auto on_error = error_catch
 		(
 			poll_read_start(&self->client->tcp.fd, &on_disconnect);
-			event_wait(&on_event, -1);
+			event_wait(&event, -1);
 		);
-
-		event_set_parent(&self->wal_slot->on_write, NULL);
 		poll_read_stop(&self->client->tcp.fd);
+		wal_unsubscribe(self->wal, &sub);
 
 		if (on_error)
 			rethrow();
@@ -123,11 +127,17 @@ streamer_connect(Streamer* self)
 	// update wal slot according to the replica state
 
 	// ensure replica is not outdated
-	if (lsn > 0 && !wal_in_range(self->wal, lsn))
-		error("replica is outdated");
+	if (lsn > 0)
+	{
+		auto min = wal_find(self->wal, 0, false);
+		assert(min);
+		defer(wal_file_unpin_defer, min);
+		if (min->id > lsn)
+			error("replica is outdated");
+	}
+
 	self->lsn = lsn;
 	wal_slot_set(self->wal_slot, lsn);
-	wal_attach(self->wal, self->wal_slot);
 
 	// open cursor to the next record
 	wal_cursor_open(&self->wal_cursor, self->wal, lsn + 1, true, false);
@@ -141,7 +151,6 @@ streamer_close(Streamer* self)
 {
 	atomic_u32_set(&self->connected, false);
 
-	wal_detach(self->wal, self->wal_slot);
 	wal_cursor_close(&self->wal_cursor);
 	client_close(self->client);
 }

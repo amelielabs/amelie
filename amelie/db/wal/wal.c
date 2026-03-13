@@ -24,447 +24,172 @@
 void
 wal_init(Wal* self)
 {
-	self->dirfd       = -1;
-	self->current     = NULL;
-	self->slots_count = 0;
-	mutex_init(&self->lock);
-	id_mgr_init(&self->list);
+	self->current          = NULL;
+	self->files            = NULL;
+	self->files_count      = 0;
+	self->slots_count      = 0;
+	self->subscribes_count = 0;
+	self->dirfd            = -1;
 	list_init(&self->slots);
+	list_init(&self->subscribes);
+	spinlock_init(&self->lock);
 }
 
 void
 wal_free(Wal* self)
 {
 	assert(! self->current);
-	id_mgr_free(&self->list);
-	mutex_free(&self->lock);
-}
-
-static int
-wal_slots(Wal* self, uint64_t* min)
-{
-	mutex_lock(&self->lock);
-	int count = self->slots_count;
-	list_foreach(&self->slots)
-	{
-		auto slot = list_at(WalSlot, link);
-		uint64_t lsn = atomic_u64_of(&slot->lsn);
-		if (*min < lsn)
-			*min = lsn;
-	}
-	mutex_unlock(&self->lock);
-	return count;
-}
-
-bool
-wal_overflow(Wal* self)
-{
-	mutex_lock(&self->lock);
-	defer(mutex_unlock, &self->lock);
-	if (! self->current)
-		return true;
-	return self->current->file.size >= opt_int_of(&config()->wal_size);
-}
-
-int
-wal_create(Wal* self, uint64_t lsn)
-{
-	// create new wal file
-	WalFile* file = NULL;
-	auto on_error = error_catch
-	(
-		file = wal_file_allocate(lsn);
-		wal_file_create(file);
-	);
-	if (on_error)
-	{
-		if (file)
-		{
-			wal_file_close(file);
-			wal_file_free(file);
-		}
-		rethrow();
-	}
-	id_mgr_add(&self->list, lsn);
-
-	// add to the list and set as current
-	mutex_lock(&self->lock);
-	auto file_prev = self->current;
-	self->current = file;
-	mutex_unlock(&self->lock);
-
-	// close prev file
-	if (file_prev)
-	{
-		error_catch (
-			wal_file_close(file_prev);
-		);
-		wal_file_free(file_prev);
-	}
-	return self->list.list_count;
-}
-
-void
-wal_gc(Wal* self, uint64_t min)
-{
-	wal_slots(self, &min);
-
-	// remove wal files < min
-	Buf list;
-	buf_init(&list);
-	defer_buf(&list);
-
-	int list_count;
-	list_count = id_mgr_gc_between(&self->list, &list, min);
-	if (list_count > 0)
-	{
-		size_t size  = 0;
-		auto id_list = buf_u64(&list);
-		for (int i = 0; i < list_count; i++)
-		{
-			char path[PATH_MAX];
-			sfmt(path, sizeof(path), "%s/wal/%" PRIu64,
-			     state_directory(),
-			     id_list[i]);
-			size += fs_size("%s", path);
-			fs_unlink("%s", path);
-		}
-		info("wal: %d files removed (%.2f MiB)", list_count,
-		     (double)size / 1024 / 1024);
-	}
-}
-
-static inline int64_t
-wal_file_id_of(const char* path)
-{
-	int64_t id = 0;
-	while (*path)
-	{
-		if (unlikely(! isdigit(*path)))
-			return -1;
-		if (unlikely(int64_mul_add_overflow(&id, id, 10, *path - '0')))
-			return -1;
-		path++;
-	}
-	return id;
-}
-
-static void
-wal_open_directory(Wal* self)
-{
-	// create directory
-	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/wal", state_directory());
-	if (! fs_exists("%s", path))
-		fs_mkdir(0755, "%s", path);
-
-	// open and keep directory fd to support sync
-	self->dirfd = vfs_open(path, O_DIRECTORY|O_RDONLY, 0);
-	if (self->dirfd == -1)
-		error_system();
-
-	// open and read log directory
-	DIR* dir = opendir(path);
-	if (unlikely(dir == NULL))
-		error("wal: directory '%s' open error", path);
-	defer(fs_closedir_defer, dir);
-	for (;;)
-	{
-		auto entry = readdir(dir);
-		if (entry == NULL)
-			break;
-		if (entry->d_name[0] == '.')
-			continue;
-		int64_t id = wal_file_id_of(entry->d_name);
-		if (unlikely(id == -1))
-			continue;
-		id_mgr_add(&self->list, id);
-	}
-}
-
-static void
-wal_truncate(Wal* self, uint64_t lsn)
-{
-	// if set, truncate logs by lsn
-	if (lsn == 0)
-		return;
-
-	// find nearest file with id <= lsn
-	auto id = id_mgr_find(&self->list, lsn);
-	if (id == UINT64_MAX)
-		id = id_mgr_min(&self->list);
-
-	info("wal: truncate wal (%" PRIu64 " lsn)", lsn);
-
-	auto file = wal_file_allocate(id);
-	defer(wal_file_close, file);
-	wal_file_open(file);
-
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
-
-	// rewind to the lsn
-	auto crc = opt_int_of(&config()->wal_crc);
-	uint64_t offset = 0;
-	for (;;)
-	{
-		buf_reset(&buf);
-		if (! wal_file_pread(file, offset, &buf))
-			break;
-
-		// validate crc (header + commands)
-		auto record = (Record*)(buf.start);
-		if (crc)
-		{
-			if (unlikely(! record_validate(record)))
-				error("wal/%" PRIu64 " (record crc mismatch)", id);
-		}
-		if (record->lsn > lsn)
-			break;
-		offset += record->size;
-		if (record->lsn == lsn)
-			break;
-	}
-
-	// truncate matched wal file to the record offset
-	if (offset != file->file.size)
-	{
-		wal_file_truncate(file, offset);
-		info(" %" PRIu64 " (truncated to %" PRIu64 " bytes)",
-		     id, offset);
-	}
-
-	// remove all wal files after it
-	for (;;)
-	{
-		id = id_mgr_next(&self->list, id);
-		if (id == UINT64_MAX)
-			break;
-		char path[PATH_MAX];
-		sfmt(path, sizeof(path), "%s/wal/%" PRIu64,
-		     state_directory(), id);
-		fs_unlink("%s", path);
-		info(" %" PRIu64 " (file removed)", id);
-	}
-
-	info("");
+	spinlock_free(&self->lock);
 }
 
 void
 wal_open(Wal* self)
 {
 	// open or create directory and add existing files
-reopen:
-	wal_open_directory(self);
-
-	// create new wal file
-	if (! self->list.list_count)
-	{
-		wal_create(self, 1);
-		if (opt_int_of(&config()->wal_sync_create))
-			wal_sync(self, true);
-		return;
-	}
-
-	// truncate wals to the specified lsn, if set
-	uint64_t lsn = opt_int_of(&config()->wal_truncate);
-	if (lsn != 0)
-	{
-		wal_truncate(self, lsn);
-		wal_close(self);
-		opt_int_set(&config()->wal_truncate, 0);
-		goto reopen;
-	}
-
-	// open last log file and set it as current
-	uint64_t last = id_mgr_max(&self->list);
-	self->current = wal_file_allocate(last);
-	wal_file_open(self->current);
-	file_seek_to_end(&self->current->file);
+	wal_recovery(self);
 }
 
 void
 wal_close(Wal* self)
 {
-	if (opt_int_of(&config()->wal_sync_close))
-		wal_sync(self, true);
+	// sync on close
+	if (self->files && opt_int_of(&config()->wal_sync_close))
+	{
+		error_catch (
+			wal_file_sync(self->files);
+		);
+	}
 
+	// close all files
+	auto file = self->files;
+	while (file)
+	{
+		auto next = file->next;
+		error_catch (
+			wal_file_close(file);
+		);
+		wal_file_free(file);
+		file = next;
+	}
+	self->files       = NULL;
+	self->files_count = 0;
+	self->current     = NULL;
+
+	// close wal dir
 	if (self->dirfd != -1)
 	{
-		close(self->dirfd);
+		vfs_close(self->dirfd);
 		self->dirfd = -1;
 	}
-	if (self->current)
-	{
-		auto file = self->current;
-		error_catch( wal_file_close(file) );
-		wal_file_free(file);
-		self->current = NULL;
-	}
-	id_mgr_reset(&self->list);
 }
 
-hot static inline uint64_t
-wal_write_list(Wal* self, WriteList* list)
+void
+wal_gc(Wal* self, uint64_t min)
 {
-	auto current = self->current;
-	auto lsn = state_lsn();
-	list_foreach(&list->list)
+	// set min between the provided min and slots
+	wal_slots(self, &min);
+
+	// collect wal files < min (current file always remains)
+	spinlock_lock(&self->lock);
+	assert(self->current);
+
+	// [1, 2, 3]
+	WalFile* list = NULL;
+	WalFile* head = self->files;
+	while (head->next)
 	{
-		auto write = list_at(Write, link);
+		auto next = head->next;
+		if (min < next->id)
+			break;
+		head->next = list;
+		list = head;
+		self->files_count--;
+		head = next;
+	}
+	self->files = head;
+	assert(head);
 
-		// update stats
-		opt_int_add(&state()->writes, 1);
-		opt_int_add(&state()->writes_bytes, write->header.size);
-		opt_int_add(&state()->ops, write->header.ops);
+	spinlock_unlock(&self->lock);
+	if (! list)
+		return;
 
-		// finilize wal record
-		lsn++;
-		write_end(write, lsn);
-
-		// write wal file
-
-		// [header][commands][rows or ops]
-		wal_file_write(current, &write->iov);
-		list_foreach(&write->list)
+	// remove collected wal files
+	uint64_t total = 0;
+	auto     total_count = 0;
+	auto     file = list;
+	while (file)
+	{
+		auto next = file->next;
+		auto size = file->file.size;
+		if (wal_file_unpin(file))
 		{
-			auto write_log = list_at(WriteLog, link);
-			wal_file_write(current, &write_log->iov);
+			total += size;
+			total_count++;
 		}
+		file = next;
 	}
-
-	return lsn;
+	info("wal: %d files removed (%.2f MiB)", total_count,
+	     (double)total / 1024 / 1024);
 }
 
-hot bool
-wal_write(Wal* self, WriteList* list)
+WalFile*
+wal_find(Wal* self, uint64_t lsn, bool next_after)
 {
-	mutex_lock(&self->lock);
-	defer(mutex_unlock, &self->lock);
+	WalFile* match = NULL;
+	spinlock_lock(&self->lock);
 
-	// do atomical write of a list of wal records
-	auto current = self->current;
-	auto current_offset = current->file.size;
-	auto on_error = error_catch(
-		list->lsn = wal_write_list(self, list)
-	);
-	if (unlikely(on_error)) {
-		if (error_catch(wal_file_truncate(current, current_offset)))
-			panic("wal: failed to truncate wal file after failed write");
-		rethrow();
-	}
-
-	// update lsn globally
-	state_lsn_set(list->lsn);
-
-	// notify pending slots
-	list_foreach(&self->slots)
+	// find wal file
+	switch (lsn) {
+	case 0:
+		// min
+		match = self->files;
+		assert(match);
+		break;
+	case UINT64_MAX:
+		// max (current)
+		match = self->current;
+		assert(match);
+		break;
+	default:
 	{
-		auto slot = list_at(WalSlot, link);
-		wal_slot_signal(slot, list->lsn);
+		// find max file.id <= lsn < file_next.id
+		match = self->files;
+		while (match->next)
+		{
+			if (match->next->id > lsn)
+				break;
+			match = match->next;
+		}
+		break;
+	}
 	}
 
-	return self->current->file.size >= opt_int_of(&config()->wal_size);
-}
+	if (match && next_after)
+		match = match->next;
 
-hot void
-wal_sync(Wal* self, bool sync_dir)
-{
-	wal_file_sync(self->current);
-	if (! sync_dir)
-		return;
-	auto rc = vfs_fsync(self->dirfd);
-	if (rc == -1)
-		error_system();
-}
+	if (match)
+		wal_file_pin(match);
 
-void
-wal_add(Wal* self, WalSlot* slot)
-{
-	assert(! slot->added);
-	mutex_lock(&self->lock);
-	list_append(&self->slots, &slot->link);
-	self->slots_count++;
-	slot->added = true;
-	mutex_unlock(&self->lock);
-}
-
-void
-wal_del(Wal* self, WalSlot* slot)
-{
-	if (! slot->added)
-		return;
-	mutex_lock(&self->lock);
-	list_unlink(&slot->link);
-	self->slots_count--;
-	slot->added = false;
-	mutex_unlock(&self->lock);
-}
-
-void
-wal_attach(Wal* self, WalSlot* slot)
-{
-	mutex_lock(&self->lock);
-	event_attach(&slot->on_write);
-	mutex_unlock(&self->lock);
-}
-
-void
-wal_detach(Wal* self, WalSlot* slot)
-{
-	(void)self;
-	(void)slot;
-	/*
-	mutex_lock(&self->lock);
-	event_detach(&slot->on_write);
-	mutex_unlock(&self->lock);
-	*/
-}
-
-void
-wal_snapshot(Wal* self, WalSlot* slot, Buf* data)
-{
-	mutex_lock(&self->lock);
-	defer(mutex_unlock, &self->lock);
-
-	spinlock_lock(&self->list.lock);
-	defer(spinlock_unlock, &self->list.lock);
-
-	// create wal slot to ensure listed files exists
-	wal_slot_set(slot, 0);
-	list_append(&self->slots, &slot->link);
-	self->slots_count++;
-	slot->added = true;
-
-	// [[path, size, mode], ...]
-	encode_array(data);
-	char path[PATH_MAX];
-	for (int i = 0; i < self->list.list_count; i++)
-	{
-		auto id = buf_u64(&self->list.list)[i];
-		sfmt(path, sizeof(path), "wal/%" PRIu64, id);
-		encode_basefile(data, path);
-	}
-	encode_array_end(data);
-}
-
-bool
-wal_in_range(Wal* self, uint64_t lsn)
-{
-	int      list_count;
-	uint64_t list_min;
-	id_mgr_stats(&self->list, &list_count, &list_min);
-	return lsn >= list_min;
+	spinlock_unlock(&self->lock);
+	return match;
 }
 
 Buf*
 wal_status(Wal* self)
 {
-	int      list_count;
-	uint64_t list_min;
-	id_mgr_stats(&self->list, &list_count, &list_min);
+	// get min file id and total count
+	spinlock_lock(&self->lock);
+	auto list_min   = UINT64_MAX;
+	auto list_count = 0;
+	for (auto file = self->files; file; file = file->next)
+	{
+		if (file->id < list_min)
+			list_min = file->id;
+	}
+	list_count = self->files_count;
+	spinlock_unlock(&self->lock);
 
+	// get min slot and total count
 	uint64_t slots_min = UINT64_MAX;
 	int      slots_count;
 	slots_count = wal_slots(self, &slots_min);

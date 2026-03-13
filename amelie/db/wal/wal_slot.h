@@ -16,17 +16,15 @@ typedef struct WalSlot WalSlot;
 struct WalSlot
 {
 	atomic_u64 lsn;
-	bool       added;
-	Event      on_write;
+	bool       active;
 	List       link;
 };
 
 static inline void
 wal_slot_init(WalSlot* self)
 {
-	self->lsn      = 0;
-	self->added    = false;
-	event_init(&self->on_write);
+	self->lsn    = 0;
+	self->active = false;
 	list_init(&self->link);
 }
 
@@ -36,17 +34,7 @@ wal_slot_set(WalSlot* self, uint64_t lsn)
 	atomic_u64_set(&self->lsn, lsn);
 }
 
-static inline void
-wal_slot_wait(WalSlot* self)
-{
-	event_wait(&self->on_write, -1);
-}
-
-static inline void
-wal_slot_signal(WalSlot* self, uint64_t lsn)
-{
-	if (! event_attached(&self->on_write))
-		return;
-	if (lsn > atomic_u64_of(&self->lsn))
-		event_signal(&self->on_write);
-}
+void wal_attach(Wal*, WalSlot*);
+void wal_detach(Wal*, WalSlot*);
+void wal_snapshot(Wal*, WalSlot*, Buf*);
+int  wal_slots(Wal*, uint64_t*);

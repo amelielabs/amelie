@@ -74,11 +74,11 @@ service_checkpoint(Service* self)
 		}
 	}
 
-	service_wal_gc(self);
+	service_gc(self);
 }
 
 void
-service_wal_gc(Service* self)
+service_gc(Service* self)
 {
 	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
 
@@ -119,55 +119,29 @@ service_wal_gc(Service* self)
 }
 
 static void
-service_wal_sync_job(intptr_t* argv)
+service_sync_job(intptr_t* argv)
 {
 	auto service = (Service*)argv[0];
-	wal_sync(service->wal, false);
+	auto id      = argv[1];
+	auto file = wal_find(service->wal, id, false);
+	if (! file)
+		return;
+	defer(wal_file_unpin_defer, file);
+	wal_file_sync(file);
 }
 
 void
-service_wal_sync(Service* self)
+service_sync(Service* self, uint64_t id)
 {
-	run(service_wal_sync_job, 1, self);
-}
-
-static void
-service_wal_create_job(intptr_t* argv)
-{
-	auto service = (Service*)argv[0];
-
-	// sync current wal file before close
-	auto wal = service->wal;
-	if (opt_int_of(&config()->wal_sync_close))
-		wal_sync(wal, false);
-
-	// create new wal file
-	auto files = wal_create(wal, state_lsn() + 1);
-
-	// sync after creation
-	if (opt_int_of(&config()->wal_sync_create))
-		wal_sync(wal, true);
-
-	// schedule checkpoint on reaching wal_checkpoint threshold
-	if (files >= (int)opt_int_of(&config()->wal_checkpoint))
-		service_schedule(service, ACTION_CHECKPOINT);
-}
-
-void
-service_wal_create(Service* self)
-{
-	run(service_wal_create_job, 1, self);
+	run(service_sync_job, 2, self, id);
 }
 
 static void
 service_execute(Service* self, Action* action)
 {
 	switch (action->type) {
-	case ACTION_WAL_SYNC:
-		service_wal_sync(self);
-		break;
-	case ACTION_WAL_CREATE:
-		service_wal_create(self);
+	case ACTION_SYNC:
+		service_sync(self, action->id);
 		break;
 	case ACTION_CHECKPOINT:
 		service_checkpoint(self);

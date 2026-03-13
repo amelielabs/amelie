@@ -44,7 +44,7 @@ service_unlock(ServiceLock* lock)
 }
 
 hot static inline void
-service_schedule(Service* self, int type)
+service_schedule(Service* self, int type, uint64_t id)
 {
-	action_mgr_create(&self->action_mgr, type);
+	action_mgr_create(&self->action_mgr, type, id);
 }

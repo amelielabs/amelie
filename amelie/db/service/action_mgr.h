@@ -62,7 +62,7 @@ action_mgr_shutdown(ActionMgr* self)
 }
 
 hot static inline void
-action_mgr_create(ActionMgr* self, int type)
+action_mgr_create(ActionMgr* self, int type, uint64_t id)
 {
 	spinlock_lock(&self->lock);
 
@@ -70,7 +70,7 @@ action_mgr_create(ActionMgr* self, int type)
 	list_foreach(&self->list)
 	{
 		auto at = list_at(Action, link);
-		if (at->type == type)
+		if (at->type == type && at->id == id)
 		{
 			action = at;
 			break;
@@ -80,6 +80,7 @@ action_mgr_create(ActionMgr* self, int type)
 	{
 		action = action_create(&self->cache);
 		action->type = type;
+		action->id   = id;
 		list_append(&self->list, &action->link);
 	}
 

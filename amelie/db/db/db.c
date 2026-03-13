@@ -92,38 +92,34 @@ db_snapshot_drop(Db* self, Snapshot* snapshot)
 	unlock(lock_catalog);
 
 	// wal gc
-	service_wal_gc(&self->service);
+	service_gc(&self->service);
 }
 
-void
+hot void
 db_write(Db* self, WriteList* write_list)
 {
 	if (! write_list->list_count)
 		return;
-	auto wal = &self->wal;
-	auto wal_rotate = wal_write(wal, write_list);
-	if (opt_int_of(&config()->wal_sync_write))
-		wal_sync(wal, false);
 
-	if (likely(! wal_rotate))
-		return;
-
-	// do background sync/rotate by service
-	if (opt_int_of(&config()->wal_worker))
+	WalContext context =
 	{
-		service_schedule(&self->service, ACTION_WAL_CREATE);
-		return;
-	}
+		.list       = write_list,
+		.lsn        = 0,
+		.sync_close = 0,
+		.sync       = 0,
+		.checkpoint = false
+	};
+	wal_write(&self->wal, &context);
 
-	// do sync/rotate directly
-	if (opt_int_of(&config()->wal_sync_close))
-		wal_sync(wal, false);
-	auto files = wal_create(wal, state_lsn() + 1);
-	if (opt_int_of(&config()->wal_sync_create))
-		wal_sync(wal, true);
-	// schedule checkpoint on reaching wal_checkpoint threshold
-	if (files >= (int)opt_int_of(&config()->wal_checkpoint))
-		service_schedule(&self->service, ACTION_CHECKPOINT);
+	// schedule sync and checkpoint service
+	if (unlikely(context.sync_close))
+		service_schedule(&self->service, ACTION_SYNC, context.sync_close);
+
+	if (unlikely(context.sync))
+		service_schedule(&self->service, ACTION_SYNC, context.sync);
+
+	if (unlikely(context.checkpoint))
+		service_schedule(&self->service, ACTION_CHECKPOINT, 0);
 }
 
 Buf*

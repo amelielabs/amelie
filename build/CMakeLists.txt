@@ -206,7 +206,11 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/catalog_snapshot.c
     ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/wal/wal.c
+    ${AMELIE_ROOT}/db/wal/wal_recovery.c
+    ${AMELIE_ROOT}/db/wal/wal_write.c
     ${AMELIE_ROOT}/db/wal/wal_cursor.c
+    ${AMELIE_ROOT}/db/wal/wal_slot.c
+    ${AMELIE_ROOT}/db/wal/wal_subscribe.c
     ${AMELIE_ROOT}/db/service/service.c
     ${AMELIE_ROOT}/db/service/service_recover.c
     ${AMELIE_ROOT}/db/service/syncer.c

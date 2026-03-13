@@ -10107,6 +10107,8 @@ insert into test values (7);
 insert into test values (8);
 insert into test values (9);
 insert into test values (10);
+show state;
+
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 

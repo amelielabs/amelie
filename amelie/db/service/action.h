@@ -16,22 +16,23 @@ typedef struct Action Action;
 enum
 {
 	ACTION_NONE,
-	ACTION_WAL_SYNC,
-	ACTION_WAL_CREATE,
+	ACTION_SYNC,
 	ACTION_CHECKPOINT
 };
 
 struct Action
 {
-	int  type;
-	bool in_progress;
-	List link;
+	int      type;
+	bool     in_progress;
+	uint64_t id;
+	List     link;
 };
 
 static inline void
 action_init(Action* self)
 {
 	self->type        = ACTION_NONE;
+	self->id          = 0;
 	self->in_progress = false;
 	list_init(&self->link);
 }

@@ -11,7 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
+// wal
 #include "wal/wal_file.h"
-#include "wal/wal_slot.h"
 #include "wal/wal.h"
+#include "wal/wal_recovery.h"
+#include "wal/wal_write.h"
 #include "wal/wal_cursor.h"
+
+// snapshot and subscribe
+#include "wal/wal_slot.h"
+#include "wal/wal_subscribe.h"

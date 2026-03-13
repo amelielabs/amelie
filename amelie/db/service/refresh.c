@@ -172,6 +172,7 @@ refresh_apply(Refresh* self)
 
 		// update indexes using row copy (replace shadow copy)
 		auto prev = part_apply(origin, row, false);
+		unused(prev);
 		assert(prev == row_shadow);
 	}
 

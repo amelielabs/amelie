@@ -44,14 +44,13 @@ wal_cursor_open(WalCursor* self, Wal* wal, uint64_t lsn,
 	self->wal         = wal;
 
 	// find nearest file with id <= lsn
-	uint64_t id;
-	if (lsn == 0)
-		id = id_mgr_min(&wal->list);
-	else
-		id = id_mgr_find(&wal->list, lsn);
-	if (id == UINT64_MAX)
+	auto ref = wal_find(wal, lsn, false);
+	if (! ref)
 		return;
-	self->file = wal_file_allocate(id);
+	defer(wal_file_unpin_defer, ref);
+
+	// open wal file separately
+	self->file = wal_file_allocate(ref->id);
 	wal_file_open(self->file);
 
 	// rewind to the start lsn
@@ -126,10 +125,11 @@ wal_cursor_read(WalCursor* self)
 			break;
 
 		// get to the next file id
-		uint64_t id;
-		id = id_mgr_next(&wal->list, file->id);
-		if (id == UINT64_MAX)
+		auto ref = wal_find(wal, file->id, true);
+		if (! ref)
 			break;
+		auto id = ref->id;
+		wal_file_unpin(ref);
 
 		// close previous file
 		wal_file_close(file);

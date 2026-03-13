@@ -15,15 +15,19 @@ typedef struct WalFile WalFile;
 
 struct WalFile
 {
-	uint64_t id;
-	File     file;
+	uint64_t   id;
+	atomic_u32 pins;
+	File       file;
+	WalFile*   next;
 };
 
 static inline WalFile*
 wal_file_allocate(uint64_t id)
 {
 	WalFile* self = am_malloc(sizeof(WalFile));
-	self->id = id;
+	self->id   = id;
+	self->pins = 0;
+	self->next = NULL;
 	file_init(&self->file);
 	return self;
 }
@@ -61,15 +65,35 @@ wal_file_close(WalFile* self)
 }
 
 static inline void
-wal_file_sync(WalFile* self)
+wal_file_delete(WalFile* self)
 {
-	file_sync(&self->file);
+	fs_unlink("%s/wal/%" PRIu64, state_directory(), self->id);
 }
 
 static inline void
-wal_file_truncate(WalFile* self, uint64_t size)
+wal_file_pin(WalFile* self)
 {
-	file_truncate(&self->file, size);
+	atomic_u32_inc(&self->pins);
+}
+
+static inline bool
+wal_file_unpin(WalFile* self)
+{
+	if (atomic_u32_dec(&self->pins) > 1)
+		return false;
+	error_catch
+	(
+		wal_file_close(self);
+		wal_file_delete(self);
+	);
+	wal_file_free(self);
+	return true;
+}
+
+static inline void
+wal_file_unpin_defer(WalFile* self)
+{
+	wal_file_unpin(self);
 }
 
 static inline void
@@ -109,4 +133,16 @@ wal_file_pread(WalFile* self, uint64_t offset, Buf* buf)
 	size_data = size - size_header;
 	file_pread_buf(&self->file, buf, size_data, offset + size_header);
 	return true;
+}
+
+static inline void
+wal_file_sync(WalFile* self)
+{
+	file_sync(&self->file);
+}
+
+static inline void
+wal_file_truncate(WalFile* self, uint64_t size)
+{
+	file_truncate(&self->file, size);
 }

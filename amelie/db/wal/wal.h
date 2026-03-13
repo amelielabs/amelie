@@ -15,30 +15,21 @@ typedef struct Wal Wal;
 
 struct Wal
 {
-	Mutex    lock;
-	IdMgr    list;
+	Spinlock lock;
+	WalFile* current;
+	WalFile* files;
+	int      files_count;
 	List     slots;
 	int      slots_count;
-	WalFile* current;
+	List     subscribes;
+	int      subscribes_count;
 	int      dirfd;
 };
 
-// main
 void     wal_init(Wal*);
 void     wal_free(Wal*);
 void     wal_open(Wal*);
 void     wal_close(Wal*);
-bool     wal_overflow(Wal*);
-int      wal_create(Wal*, uint64_t);
 void     wal_gc(Wal*, uint64_t);
-void     wal_sync(Wal*, bool);
-bool     wal_write(Wal*, WriteList*);
+WalFile* wal_find(Wal*, uint64_t, bool);
 Buf*     wal_status(Wal*);
-
-// slots and snapshot
-void     wal_add(Wal*, WalSlot*);
-void     wal_del(Wal*, WalSlot*);
-void     wal_attach(Wal*, WalSlot*);
-void     wal_detach(Wal*, WalSlot*);
-void     wal_snapshot(Wal*, WalSlot*, Buf*);
-bool     wal_in_range(Wal*, uint64_t);

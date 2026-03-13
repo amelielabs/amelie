@@ -10171,6 +10171,19 @@ insert into test values (7);
 insert into test values (8);
 insert into test values (9);
 insert into test values (10);
+show state;
+[{
+  "version": "1.0.0-rc1",
+  "directory": "_output/E0",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "frontends": 1,
+  "backends": 3,
+  "lsn": 10015,
+  "psn": 3,
+  "catalog": 0,
+  "catalog_pending": 10005,
+  "read_only": false
+}]
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 [{

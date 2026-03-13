@@ -46,7 +46,7 @@ show all;
   "wal_sync_write": false,
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
-  "wal_checkpoint": 30,
+  "wal_checkpoint": 100,
   "wal_truncate": 0,
   "storage_crc": true,
   "storage_sync": false,

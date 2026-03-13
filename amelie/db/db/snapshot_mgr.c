@@ -135,7 +135,7 @@ void
 snapshot_mgr_drop(SnapshotMgr* self, Snapshot* snapshot)
 {
 	// detach wal slot
-	wal_del(self->wal, &snapshot->wal_snapshot);
+	wal_detach(self->wal, &snapshot->wal_snapshot);
 
 	list_unlink(&snapshot->link);
 	self->list_count--;
