@@ -42,12 +42,12 @@ struct Config
 	Opt  jobs;
 	Opt  cpu_affinity;
 	// wal
-	Opt  wal_worker;
 	Opt  wal_crc;
 	Opt  wal_sync_create;
 	Opt  wal_sync_close;
 	Opt  wal_sync_write;
 	Opt  wal_sync_interval;
+	Opt  wal_service;
 	Opt  wal_size;
 	Opt  wal_checkpoint;
 	Opt  wal_truncate;

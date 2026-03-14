@@ -60,12 +60,12 @@ config_prepare(Config* self)
 		{ "jobs",                    OPT_INT,    OPT_C|OPT_Z,             &self->jobs,                    NULL,             3                   },
 		{ "cpu_affinity",            OPT_BOOL,   OPT_C,                   &self->cpu_affinity,            NULL,             true                },
 		// wal
-		{ "wal_worker",              OPT_BOOL,   OPT_C,                   &self->wal_worker,              NULL,             true                },
 		{ "wal_crc",                 OPT_BOOL,   OPT_C,                   &self->wal_crc,                 NULL,             true                },
 		{ "wal_sync_create",         OPT_BOOL,   OPT_C,                   &self->wal_sync_create,         NULL,             true                },
 		{ "wal_sync_close",          OPT_BOOL,   OPT_C,                   &self->wal_sync_close,          NULL,             true                },
 		{ "wal_sync_write",          OPT_BOOL,   OPT_C,                   &self->wal_sync_write,          NULL,             false               },
 		{ "wal_sync_interval",       OPT_STRING, OPT_C,                   &self->wal_sync_interval,       "1 sec",          0                   },
+		{ "wal_service",             OPT_BOOL,   OPT_C,                   &self->wal_service,             NULL,             true                },
 		{ "wal_size",                OPT_INT,    OPT_C,                   &self->wal_size,                NULL,             67108864            },
 		{ "wal_checkpoint",          OPT_INT,    OPT_C,                   &self->wal_checkpoint,          NULL,             100                 },
 		{ "wal_truncate",            OPT_INT,    OPT_C,                   &self->wal_truncate,            NULL,             0                   },

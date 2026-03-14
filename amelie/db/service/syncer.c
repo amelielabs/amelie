@@ -51,7 +51,7 @@ syncer_init(Syncer* self, Service* service)
 void
 syncer_start(Syncer* self)
 {
-	if (! opt_int_of(&config()->wal_worker))
+	if (! opt_int_of(&config()->wal_service))
 		return;
 
 	// prepare periodic interval

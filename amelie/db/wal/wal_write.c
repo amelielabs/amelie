@@ -53,7 +53,7 @@ wal_create(Wal* self, WalContext* context, uint64_t id)
 	defer(wal_file_unpin_defer, prev);
 
 	// sync and close previous file
-	auto service = opt_int_of(&config()->wal_worker);
+	auto service = opt_int_of(&config()->wal_service);
 	auto close = true;
 	if (opt_int_of(&config()->wal_sync_close))
 	{

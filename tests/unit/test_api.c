@@ -33,10 +33,10 @@ test_api_open(void* arg)
 	char* argv[] =
 	{
 		"--log_stdout=false",
-		"--wal_worker=false",
 		"--wal_sync_create=false",
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
+		"--wal_service=false",
 		"--storage_sync=false",
 		"--catalog_sync=false",
 		"--frontends=1",
@@ -62,10 +62,10 @@ test_api_connect(void* arg)
 	char* argv[] =
 	{
 		"--log_stdout=false",
-		"--wal_worker=false",
 		"--wal_sync_create=false",
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
+		"--wal_service=false",
 		"--storage_sync=false",
 		"--catalog_sync=false",
 		"--frontends=1",
@@ -100,10 +100,10 @@ test_api_execute(void* arg)
 	char* argv[] =
 	{
 		"--log_stdout=false",
-		"--wal_worker=false",
 		"--wal_sync_create=false",
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
+		"--wal_service=false",
 		"--storage_sync=false",
 		"--catalog_sync=false",
 		"--frontends=1",
@@ -173,10 +173,10 @@ test_api_execute_error(void* arg)
 	char* argv[] =
 	{
 		"--log_stdout=false",
-		"--wal_worker=false",
 		"--wal_sync_create=false",
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
+		"--wal_service=false",
 		"--storage_sync=false",
 		"--catalog_sync=false",
 		"--frontends=1",
