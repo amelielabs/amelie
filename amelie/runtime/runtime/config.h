@@ -50,7 +50,8 @@ struct Config
 	Opt  wal_service;
 	Opt  wal_size;
 	Opt  wal_checkpoint;
-	Opt  wal_truncate;
+	Opt  wal_rewind;
+	Opt  wal_rewind_pos;
 	// storage
 	Opt  storage_crc;
 	Opt  storage_sync;

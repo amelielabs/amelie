@@ -318,7 +318,8 @@ show config;
   "wal_service": false,
   "wal_size": 67108864,
   "wal_checkpoint": 100,
-  "wal_truncate": 0,
+  "wal_rewind": false,
+  "wal_rewind_pos": 0,
   "storage_crc": true,
   "storage_sync": false,
   "catalog_sync": false,
@@ -360,7 +361,8 @@ show all;
   "wal_service": false,
   "wal_size": 67108864,
   "wal_checkpoint": 100,
-  "wal_truncate": 0,
+  "wal_rewind": false,
+  "wal_rewind_pos": 0,
   "storage_crc": true,
   "storage_sync": false,
   "catalog_sync": false,
@@ -400,7 +402,7 @@ explain show log_enable;
 disconnect S0;
 connect E0 S0 127.0.0.1:3485/main?timezone=Asia/Tokyo&format=full;
 show all;
-[{"result": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "Asia/Tokyo", "format": "full", "log_enable": true, "log_file": true, "log_stdout": false, "log_stdout_time": true, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "jobs": 3, "cpu_affinity": true, "wal_crc": true, "wal_sync_create": false, "wal_sync_close": false, "wal_sync_write": false, "wal_sync_interval": "1 sec", "wal_service": false, "wal_size": 67108864, "wal_checkpoint": 100, "wal_truncate": 0, "storage_crc": true, "storage_sync": false, "catalog_sync": false, "repl_readahead": 262144, "repl_reconnect_ms": 3000}}]
+[{"result": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "Asia/Tokyo", "format": "full", "log_enable": true, "log_file": true, "log_stdout": false, "log_stdout_time": true, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "jobs": 3, "cpu_affinity": true, "wal_crc": true, "wal_sync_create": false, "wal_sync_close": false, "wal_sync_write": false, "wal_sync_interval": "1 sec", "wal_service": false, "wal_size": 67108864, "wal_checkpoint": 100, "wal_rewind": false, "wal_rewind_pos": 0, "storage_crc": true, "storage_sync": false, "catalog_sync": false, "repl_readahead": 262144, "repl_reconnect_ms": 3000}}]
 show timezone;
 [{"result": "Asia/Tokyo"}]
 # test: show locks

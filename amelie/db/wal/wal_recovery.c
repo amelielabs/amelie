@@ -91,37 +91,17 @@ wal_open_directory(Wal* self)
 		auto file = wal_file_allocate(id);
 		wal_file_add(self, file);
 	}
-
-	if (! self->files_count)
-		return;
-
-	// set and open current
-	self->current = self->files;
-	while (self->current->next)
-		self->current = self->current->next;
-
-	wal_file_open(self->current);
-	file_seek_to_end(&self->current->file);
 }
 
 static void
-wal_truncate(Wal* self, uint64_t lsn)
+wal_rewind(Wal* self, uint64_t lsn)
 {
-	// if set, truncate logs by lsn
-	if (lsn == 0)
-		return;
-	(void)self;
-
-#if 0
 	// find nearest file with id <= lsn
-	auto id = id_mgr_find(&self->list, lsn);
-	if (id == UINT64_MAX)
-		id = id_mgr_min(&self->list);
+	auto file = wal_find(self, lsn, false);
+	assert(file);
+	defer(wal_file_unpin_defer, file);
 
-	info("wal: truncate wal (%" PRIu64 " lsn)", lsn);
-
-	auto file = wal_file_allocate(id);
-	defer(wal_file_close, file);
+	info("wal: rewind wal (%" PRIu64 " lsn)", lsn);
 	wal_file_open(file);
 
 	Buf buf;
@@ -142,7 +122,7 @@ wal_truncate(Wal* self, uint64_t lsn)
 		if (crc)
 		{
 			if (unlikely(! record_validate(record)))
-				error("wal/%" PRIu64 " (record crc mismatch)", id);
+				error("wal/%" PRIu64 " (record crc mismatch)", file->id);
 		}
 		if (record->lsn > lsn)
 			break;
@@ -155,25 +135,28 @@ wal_truncate(Wal* self, uint64_t lsn)
 	if (offset != file->file.size)
 	{
 		wal_file_truncate(file, offset);
+		wal_file_sync(file);
 		info(" %" PRIu64 " (truncated to %" PRIu64 " bytes)",
-		     id, offset);
+		     file->id, offset);
 	}
+	wal_file_close(file);
 
 	// remove all wal files after it
-	for (;;)
+	auto count = 0;
+	auto ref = file->next;
+	file->next = NULL;
+	while (ref)
 	{
-		id = id_mgr_next(&self->list, id);
-		if (id == UINT64_MAX)
-			break;
-		char path[PATH_MAX];
-		sfmt(path, sizeof(path), "%s/wal/%" PRIu64,
-		     state_directory(), id);
-		fs_unlink("%s", path);
+		auto next = ref->next;
+		auto id = ref->id;
+		wal_file_delete(ref);
+		wal_file_free(ref);
 		info(" %" PRIu64 " (file removed)", id);
+		ref = next;
 	}
+	self->files_count -= count;
 
 	info("");
-#endif
 }
 
 void
@@ -197,9 +180,18 @@ wal_recovery(Wal* self)
 	}
 
 	// truncate wals to the specified lsn, if set
-	uint64_t lsn = opt_int_of(&config()->wal_truncate);
-	if (! lsn)
-		return;
-	wal_truncate(self, lsn);
-	opt_int_set(&config()->wal_truncate, 0);
+	if (opt_int_of(&config()->wal_rewind))
+	{
+		uint64_t lsn = opt_int_of(&config()->wal_rewind_pos);
+		wal_rewind(self, lsn);
+		opt_int_set(&config()->wal_rewind, false);
+	}
+
+	// set and open current
+	self->current = self->files;
+	while (self->current->next)
+		self->current = self->current->next;
+
+	wal_file_open(self->current);
+	file_seek_to_end(&self->current->file);
 }

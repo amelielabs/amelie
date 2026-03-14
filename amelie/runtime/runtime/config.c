@@ -68,7 +68,8 @@ config_prepare(Config* self)
 		{ "wal_service",             OPT_BOOL,   OPT_C,                   &self->wal_service,             NULL,             true                },
 		{ "wal_size",                OPT_INT,    OPT_C,                   &self->wal_size,                NULL,             67108864            },
 		{ "wal_checkpoint",          OPT_INT,    OPT_C,                   &self->wal_checkpoint,          NULL,             100                 },
-		{ "wal_truncate",            OPT_INT,    OPT_C,                   &self->wal_truncate,            NULL,             0                   },
+		{ "wal_rewind",              OPT_BOOL,   OPT_C|OPT_E,             &self->wal_rewind,              NULL,             false               },
+		{ "wal_rewind_pos",          OPT_INT,    OPT_C|OPT_E,             &self->wal_rewind_pos,          NULL,             0                   },
 		// storage
 		{ "storage_crc",             OPT_BOOL,   OPT_C,                   &self->storage_crc,             NULL,             true                },
 		{ "storage_sync",            OPT_BOOL,   OPT_C,                   &self->storage_sync,            NULL,             true                },
