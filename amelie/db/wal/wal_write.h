@@ -17,8 +17,8 @@ struct WalContext
 {
 	WriteList* list;
 	uint64_t   lsn;
-	uint64_t   sync_close;
 	uint64_t   sync;
+	uint64_t   sync_close;
 	bool       checkpoint;
 };
 

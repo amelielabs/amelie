@@ -90,17 +90,18 @@ wal_open_directory(Wal* self)
 			continue;
 		auto file = wal_file_allocate(id);
 		wal_file_add(self, file);
-		wal_file_open(file);
-		file_seek_to_end(&file->file);
 	}
 
-	// set current (max)
-	if (self->files_count > 0)
-	{
-		self->current = self->files;
-		while (self->current->next)
-			self->current = self->current->next;
-	}
+	if (! self->files_count)
+		return;
+
+	// set and open current
+	self->current = self->files;
+	while (self->current->next)
+		self->current = self->current->next;
+
+	wal_file_open(self->current);
+	file_seek_to_end(&self->current->file);
 }
 
 static void

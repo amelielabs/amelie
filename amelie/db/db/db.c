@@ -112,14 +112,15 @@ db_write(Db* self, WriteList* write_list)
 	wal_write(&self->wal, &context);
 
 	// schedule sync and checkpoint service
+	auto service = &self->service;
 	if (unlikely(context.sync_close))
-		service_schedule(&self->service, ACTION_SYNC, context.sync_close);
+		service_schedule(service, ACTION_SYNC_CLOSE, context.sync_close);
 
 	if (unlikely(context.sync))
-		service_schedule(&self->service, ACTION_SYNC, context.sync);
+		service_schedule(service, ACTION_SYNC, context.sync);
 
 	if (unlikely(context.checkpoint))
-		service_schedule(&self->service, ACTION_CHECKPOINT, 0);
+		service_schedule(service, ACTION_CHECKPOINT, 0);
 }
 
 Buf*

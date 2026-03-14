@@ -29,9 +29,6 @@
 // utf8
 #include "lib/utf8.h"
 
-// id manager
-#include "lib/id_mgr.h"
-
 // time
 #include "lib/timezone.h"
 #include "lib/timezone_mgr.h"

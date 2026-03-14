@@ -123,17 +123,20 @@ service_sync_job(intptr_t* argv)
 {
 	auto service = (Service*)argv[0];
 	auto id      = argv[1];
+	auto close   = argv[2];
 	auto file = wal_find(service->wal, id, false);
 	if (! file)
 		return;
 	defer(wal_file_unpin_defer, file);
 	wal_file_sync(file);
+	if (close)
+		wal_file_close(file);
 }
 
 void
-service_sync(Service* self, uint64_t id)
+service_sync(Service* self, uint64_t id, bool close)
 {
-	run(service_sync_job, 2, self, id);
+	run(service_sync_job, 3, self, id, close);
 }
 
 static void
@@ -141,7 +144,10 @@ service_execute(Service* self, Action* action)
 {
 	switch (action->type) {
 	case ACTION_SYNC:
-		service_sync(self, action->id);
+		service_sync(self, action->id, false);
+		break;
+	case ACTION_SYNC_CLOSE:
+		service_sync(self, action->id, true);
 		break;
 	case ACTION_CHECKPOINT:
 		service_checkpoint(self);

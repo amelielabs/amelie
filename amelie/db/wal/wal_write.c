@@ -52,15 +52,20 @@ wal_create(Wal* self, WalContext* context, uint64_t id)
 	spinlock_unlock(&self->lock);
 	defer(wal_file_unpin_defer, prev);
 
-	// sync previous file
+	// sync and close previous file
 	auto service = opt_int_of(&config()->wal_worker);
+	auto close = true;
 	if (opt_int_of(&config()->wal_sync_close))
 	{
-		if (service)
+		if (service) {
 			context->sync_close = prev->id;
-		else
+			close = false;
+		} else {
 			wal_file_sync(prev);
+		}
 	}
+	if (close)
+		wal_file_close(prev);
 
 	// sync new file
 	if (opt_int_of(&config()->wal_sync_create))

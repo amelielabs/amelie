@@ -52,20 +52,16 @@ wal_open(Wal* self)
 void
 wal_close(Wal* self)
 {
-	// sync on close
-	if (self->files && opt_int_of(&config()->wal_sync_close))
-	{
-		error_catch (
-			wal_file_sync(self->files);
-		);
-	}
-
 	// close all files
+	auto sync_on_close = opt_int_of(&config()->wal_sync_close);
 	auto file = self->files;
 	while (file)
 	{
 		auto next = file->next;
-		error_catch (
+		error_catch
+		(
+			if (sync_on_close)
+				wal_file_sync(file);
 			wal_file_close(file);
 		);
 		wal_file_free(file);

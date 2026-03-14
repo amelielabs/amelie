@@ -138,7 +138,8 @@ wal_file_pread(WalFile* self, uint64_t offset, Buf* buf)
 static inline void
 wal_file_sync(WalFile* self)
 {
-	file_sync(&self->file);
+	if (self->file.fd != -1)
+		file_sync(&self->file);
 }
 
 static inline void
