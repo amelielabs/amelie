@@ -75,10 +75,6 @@ main_configure(Main* self, Opts* opts)
 		if (arg_parse(argv[arg], &name, &value) == -1)
 			error("invalid argument '%s'", argv[arg]);
 
-		if (str_empty(&value))
-			error("argument '%.*s' value is missing", str_size(&name),
-			      str_of(&name));
-
 		// --json={options}
 		if (str_is_cstr(&name, "json"))
 		{

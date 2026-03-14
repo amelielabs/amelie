@@ -249,10 +249,6 @@ opt_set(Opt* self, Str* value)
 {
 	// ensure value is defined
 	auto name = &self->name;
-	if (self->type != OPT_BOOL && str_empty(value))
-		error("option '%.*s': value is not defined",
-		      str_size(name), str_of(name));
-
 	switch (self->type) {
 	case OPT_BOOL:
 	{
@@ -273,6 +269,9 @@ opt_set(Opt* self, Str* value)
 	}
 	case OPT_INT:
 	{
+		if (str_empty(value))
+			error("option '%.*s': value is not defined",
+			      str_size(name), str_of(name));
 		int64_t result = 0;
 		if (str_toint(value, &result) == -1)
 			error("option '%.*s': integer value expected",
@@ -290,6 +289,9 @@ opt_set(Opt* self, Str* value)
 	}
 	case OPT_JSON:
 	{
+		if (str_empty(value))
+			error("option '%.*s': value is not defined",
+			      str_size(name), str_of(name));
 		Json json;
 		json_init(&json);
 		defer(json_free, &json);

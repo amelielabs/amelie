@@ -28,6 +28,12 @@ interval_init(Interval* self)
 	self->us = 0;
 }
 
+static inline bool
+interval_empty(Interval* self)
+{
+	return !self->m && !self->d && !self->us;
+}
+
 void     interval_set(Interval*, Str*);
 int      interval_get(Interval*, char*, int);
 int      interval_compare(Interval*, Interval*);

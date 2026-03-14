@@ -58,6 +58,8 @@ syncer_start(Syncer* self)
 	Interval interval;
 	interval_init(&interval);
 	interval_set(&interval, &config()->wal_sync_interval.string);
+	if (interval_empty(&interval))
+		return;
 	if (interval.m > 0 || interval.d > 0)
 		error("wal: sync interval cannot include day or month");
 
