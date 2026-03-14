@@ -459,3 +459,59 @@ table_op_storage_pause_read(uint8_t* op, Str* db, Str* table, Str* storage,
 	json_read_bool(&op, pause);
 	json_read_array_end(&op);
 }
+
+static inline int
+table_op_branch_create(Buf* self, Str* db, Str* table, Branch* config)
+{
+	// [op, db, table, branch]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_BRANCH_CREATE);
+	encode_string(self, db);
+	encode_string(self, table);
+	branch_write(config, self, 0);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline uint8_t*
+table_op_branch_create_read(uint8_t* op, Str* db, Str* table)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_BRANCH_CREATE);
+	json_read_string(&op, db);
+	json_read_string(&op, table);
+	auto config_pos = op;
+	json_skip(&op);
+	json_read_array_end(&op);
+	return config_pos;
+}
+
+static inline int
+table_op_branch_drop(Buf* self, Str* db, Str* table, Str* branch)
+{
+	// [op, db, table, branch]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_BRANCH_DROP);
+	encode_string(self, db);
+	encode_string(self, table);
+	encode_string(self, branch);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+table_op_branch_drop_read(uint8_t* op, Str* db, Str* table, Str* branch)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_BRANCH_DROP);
+	json_read_string(&op, db);
+	json_read_string(&op, table);
+	json_read_string(&op, branch);
+	json_read_array_end(&op);
+}

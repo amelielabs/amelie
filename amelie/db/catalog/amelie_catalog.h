@@ -31,6 +31,7 @@
 #include "catalog/table_mgr_alter.h"
 #include "catalog/table_storage.h"
 #include "catalog/table_index.h"
+#include "catalog/table_branch.h"
 
 // udf
 #include "catalog/udf_config.h"

@@ -726,6 +726,7 @@ show tables extended;
   }],
   "partitioning": {
     "partitions": 1,
+    "branches": [],
     "volumes": [{
       "name": "x",
       "id": "00000000-0000-0000-0000-000000000000",

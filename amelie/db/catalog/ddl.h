@@ -47,6 +47,10 @@ enum
 	DDL_INDEX_DROP,
 	DDL_INDEX_RENAME,
 
+	// branch
+	DDL_BRANCH_CREATE,
+	DDL_BRANCH_DROP,
+
 	// udf
 	DDL_UDF_CREATE,
 	DDL_UDF_REPLACE,
@@ -61,7 +65,9 @@ enum
 	DDL_IF_COLUMN_NOT_EXISTS  = 1 << 2,
 	DDL_IF_COLUMN_EXISTS      = 1 << 3,
 	DDL_IF_STORAGE_NOT_EXISTS = 1 << 4,
-	DDL_IF_STORAGE_EXISTS     = 1 << 5
+	DDL_IF_STORAGE_EXISTS     = 1 << 5,
+	DDL_IF_BRANCH_NOT_EXISTS  = 1 << 6,
+	DDL_IF_BRANCH_EXISTS      = 1 << 7
 };
 
 static inline bool
@@ -98,6 +104,18 @@ static inline bool
 ddl_if_storage_exists(int flags)
 {
 	return (flags & DDL_IF_STORAGE_EXISTS) > 0;
+}
+
+static inline bool
+ddl_if_branch_not_exists(int flags)
+{
+	return (flags & DDL_IF_BRANCH_NOT_EXISTS) > 0;
+}
+
+static inline bool
+ddl_if_branch_exists(int flags)
+{
+	return (flags & DDL_IF_BRANCH_EXISTS) > 0;
 }
 
 static inline int

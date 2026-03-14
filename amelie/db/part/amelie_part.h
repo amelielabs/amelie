@@ -11,6 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
+// branching
+#include "part/branch.h"
+#include "part/branch_mgr.h"
+
 // partitioning
 #include "part/partitioning.h"
 
