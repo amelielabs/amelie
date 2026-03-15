@@ -179,27 +179,6 @@ catalog_validate_synonyms(Catalog* self, Str* db, Str* name)
 	}
 }
 
-hot Rel*
-catalog_find(Catalog* self, Str* db, Str* name, bool error_if_not_exists)
-{
-	auto table = table_mgr_find(&self->table_mgr, db, name, false);
-	if (table)
-		return &table->rel;
-
-	auto synonym = synonym_mgr_find(&self->synonym_mgr, db, name, false);
-	if (synonym)
-		return &synonym->rel;
-
-	auto udf = udf_mgr_find(&self->udf_mgr, db, name, false);
-	if (udf)
-		return &udf->rel;
-
-	if (error_if_not_exists)
-		error("relation '%.*s': not exists", str_size(name),
-		       str_of(name));
-	return NULL;
-}
-
 bool
 catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 {
@@ -682,4 +661,47 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		return true;
 	}
 	return false;
+}
+
+hot Rel*
+catalog_find(Catalog* self, Str* db, Str* name, bool error_if_not_exists)
+{
+	auto table = table_mgr_find(&self->table_mgr, db, name, false);
+	if (table)
+		return &table->rel;
+
+	auto synonym = synonym_mgr_find(&self->synonym_mgr, db, name, false);
+	if (synonym)
+		return &synonym->rel;
+
+	auto udf = udf_mgr_find(&self->udf_mgr, db, name, false);
+	if (udf)
+		return &udf->rel;
+
+	if (error_if_not_exists)
+		error("relation '%.*s': not exists", str_size(name),
+		       str_of(name));
+	return NULL;
+}
+
+hot Table*
+catalog_find_table(Catalog* self, Str* db, Str* name,
+                   bool     error_if_not_exists)
+{
+	auto rel = catalog_find(self, db, name, false);
+	if (! rel)
+	{
+		if (error_if_not_exists)
+			error("relation '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return NULL;
+	}
+	if (rel->type == REL_SYNONYM)
+		rel = synonym_of(rel)->ref;
+
+	if (unlikely(rel->type != REL_TABLE))
+		error("relation '%.*s': is not a table", str_size(name),
+		      str_of(name));
+
+	return table_of(rel);
 }

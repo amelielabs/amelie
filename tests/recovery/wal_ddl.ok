@@ -21,7 +21,7 @@ alter table test rename to test2;
 select show('state').lsn;
 [2]
 select identity_of("test");
-{"msg": "table 'test': not exists"}
+{"msg": "relation 'test': not exists"}
 select identity_of("test2");
 [0]
 # test: restart
@@ -33,7 +33,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 [2]
 select identity_of("test");
-{"msg": "table 'test': not exists"}
+{"msg": "relation 'test': not exists"}
 select identity_of("test2");
 [0]
 # test: alter table set unlogged
@@ -539,7 +539,7 @@ drop table test2;
 select show('state').lsn;
 [19]
 select identity_of("test2");
-{"msg": "table 'test2': not exists"}
+{"msg": "relation 'test2': not exists"}
 # test: restart
 disconnect S0;
 close E0;

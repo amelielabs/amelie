@@ -390,7 +390,7 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 	json_read_string(&pos, &name_index);
 
 	// find table, partition and index
-	auto table = table_mgr_find(&share()->db->catalog.table_mgr, &name_db, &name_table, true);
+	auto table = catalog_find_table(&share()->db->catalog, &name_db, &name_table, true);
 	auto index = table_index_find(table, &name_index, true);
 	auto keys  = &index->keys;
 	auto keys_count = op->d;

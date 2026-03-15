@@ -242,9 +242,9 @@ clock_rel(Vm* self, Op* op)
 	} else
 	{
 		// find table
-		auto table = table_mgr_find(&share()->db->catalog.table_mgr,
-		                            &self->local->db,
-		                            &name_rel, true);
+		auto table = catalog_find_table(&share()->db->catalog,
+		                                &self->local->db,
+		                                &name_rel, true);
 		rel = &table->rel;
 	}
 

@@ -698,9 +698,9 @@ parse_table_alter(Stmt* self)
 			if (stmt_if(self, KDEFAULT))
 			{
 				// find table and column
-				auto table  = table_mgr_find(&share()->db->catalog.table_mgr,
-				                             self->parser->db,
-				                             &stmt->name, false);
+				auto table  = catalog_find_table(&share()->db->catalog,
+				                                 self->parser->db,
+				                                 &stmt->name, false);
 				if (! table)
 					stmt_error(self, target, "table not found");
 				auto column = columns_find(table_columns(table), &stmt->column_name);

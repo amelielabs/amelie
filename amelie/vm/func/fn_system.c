@@ -285,25 +285,25 @@ fn_show(Fn* self)
 	}
 	case SHOW_INDEXES:
 	{
-		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
+		auto table = catalog_find_table(catalog, db, on, true);
 		buf = table_index_list(table, NULL, flags);
 		break;
 	}
 	case SHOW_INDEX:
 	{
-		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
+		auto table = catalog_find_table(catalog, db, on, true);
 		buf = table_index_list(table, name, flags);
 		break;
 	}
 	case SHOW_PARTITIONS:
 	{
-		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
+		auto table = catalog_find_table(catalog, db, on, true);
 		buf = part_mgr_list(&table->part_mgr, NULL, flags);
 		break;
 	}
 	case SHOW_PARTITION:
 	{
-		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
+		auto table = catalog_find_table(catalog, db, on, true);
 		buf = part_mgr_list(&table->part_mgr, name, flags);
 		break;
 	}

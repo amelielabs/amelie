@@ -71,7 +71,7 @@ create table test5 (id serial primary key, data json not null);
 create table test6 (id int primary key as (data.id::int) stored, data json not null);
 # test: POST /v1/db/test/table (not exists)
 post /v1/db/test/xyz plain/text - 123;
-{"msg": "relation 'xyz': not found"}
+{"msg": "relation 'xyz': not exists"}
 # test: POST /v1/db/test/test (invalid content-type)
 post /v1/db/test/test plain/text - 123;
 {"msg": "❰123❱ ⟵ unsupported operation content type"}

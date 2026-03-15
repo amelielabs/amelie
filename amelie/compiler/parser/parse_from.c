@@ -151,9 +151,8 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 	}
 
 	// table
-	auto table = table_mgr_find(&share()->db->catalog.table_mgr,
-	                            self->parser->db,
-	                            &name->string, false);
+	auto table = catalog_find_table(&share()->db->catalog, self->parser->db,
+	                                &name->string, false);
 	if (table)
 	{
 		target->type       = TARGET_TABLE;

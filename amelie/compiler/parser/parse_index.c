@@ -59,10 +59,10 @@ parse_index_create(Stmt* self, bool unique)
 	stmt->table_name = target->string;
 
 	// find table
-	auto table = table_mgr_find(&share()->db->catalog.table_mgr,
-	                            self->parser->db,
-	                            &stmt->table_name,
-	                            false);
+	auto table = catalog_find_table(&share()->db->catalog,
+	                                self->parser->db,
+	                                &stmt->table_name,
+	                                false);
 	if (! table)
 		stmt_error(self, target, "table not found");
 

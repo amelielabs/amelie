@@ -110,23 +110,32 @@ parse_endpoint_set(ParseEndpoint* self)
 	// find relation
 	auto db       = &endpoint->db.string;
 	auto relation = &endpoint->relation.string;
-	auto table    = table_mgr_find(&share()->db->catalog.table_mgr,
-	                               db, relation, false);
-	if (table)
+	auto rel      = catalog_find(&share()->db->catalog, db, relation, true);
+
+	if (rel->type == REL_SYNONYM)
+		rel = synonym_of(rel)->ref;
+
+	switch (rel->type) {
+	case REL_TABLE:
 	{
 		self->target_type    = ENDPOINT_TABLE;
-		self->target         = &table->rel;
-		self->columns_target = &table->config->columns;
-	} else
+		self->target         = rel;
+		self->columns_target = &table_of(rel)->config->columns;
+		break;
+	}
+	case REL_UDF:
 	{
-		auto udf = udf_mgr_find(&share()->db->catalog.udf_mgr,
-		                        db, relation, false);
-		if (! udf)
-			error("relation '%.*s': not found", str_size(relation),
-			      str_of(relation));
 		self->target_type    = ENDPOINT_UDF;
-		self->target         = &udf->rel;
-		self->columns_target = &udf->config->args;
+		self->target         = rel;
+		self->columns_target = &udf_of(rel)->config->args;
+		break;
+	}
+	default:
+	{
+		error("relation '%.*s': unsupported relation", str_size(relation),
+		      str_of(relation));
+		break;
+	}
 	}
 
 	// set column list

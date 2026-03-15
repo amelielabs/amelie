@@ -474,9 +474,9 @@ emit_utility(Compiler* self)
 	case STMT_ALTER_PARTITION:
 	{
 		auto arg = ast_part_alter_of(stmt->ast);
-		auto table = table_mgr_find(&share()->db->catalog.table_mgr,
-		                            self->parser.db,
-		                            &arg->table->string, true);
+		auto table = catalog_find_table(&share()->db->catalog,
+		                                self->parser.db,
+		                                &arg->table->string, true);
 		if (arg->type == PARTITION_ALTER_REFRESH)
 		{
 			op3(self, CDDL_REFRESH, (intptr_t)table, arg->id, -1);

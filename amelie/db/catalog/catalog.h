@@ -32,10 +32,11 @@ struct Catalog
 	void*       iface_arg;
 };
 
-void catalog_init(Catalog*, CatalogIf*, void*, PartMgrIf*, void*);
-void catalog_free(Catalog*);
-void catalog_open(Catalog*, bool);
-void catalog_close(Catalog*);
-bool catalog_execute(Catalog*, Tr*, uint8_t*, int);
-Buf* catalog_status(Catalog*);
-Rel* catalog_find(Catalog*, Str*, Str*, bool);
+void   catalog_init(Catalog*, CatalogIf*, void*, PartMgrIf*, void*);
+void   catalog_free(Catalog*);
+void   catalog_open(Catalog*, bool);
+void   catalog_close(Catalog*);
+bool   catalog_execute(Catalog*, Tr*, uint8_t*, int);
+Buf*   catalog_status(Catalog*);
+Rel*   catalog_find(Catalog*, Str*, Str*, bool);
+Table* catalog_find_table(Catalog*, Str*, Str*, bool);
