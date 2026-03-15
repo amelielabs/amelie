@@ -15,10 +15,23 @@ typedef struct Rel Rel;
 
 typedef void (*RelFree)(Rel*, bool);
 
+typedef enum
+{
+	REL_UNDEF,
+	REL_STORAGE,
+	REL_DATABASE,
+	REL_TABLE,
+	REL_UDF,
+	REL_SYNONYM,
+	REL_LOCK,
+	REL_SYSTEM
+} RelType;
+
 struct Rel
 {
 	Str*         db;
 	Str*         name;
+	RelType      type;
 	RelFree free_function;
 	Spinlock     lock;
 	uint64_t     lock_order;
@@ -29,10 +42,11 @@ struct Rel
 };
 
 static inline void
-rel_init(Rel* self)
+rel_init(Rel* self, RelType type)
 {
 	self->db              = NULL;
 	self->name            = NULL;
+	self->type            = type;
 	self->free_function   = NULL;
 	self->lock_order      = 0;
 	self->lock_wait_count = 0;

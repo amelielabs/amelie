@@ -11,9 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-// lock manager
+// relation
 #include "runtime/lock_id.h"
 #include "runtime/rel.h"
+
+// lock manager
 #include "runtime/access.h"
 #include "runtime/lock.h"
 #include "runtime/lock_cache.h"

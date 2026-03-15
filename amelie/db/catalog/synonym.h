@@ -37,7 +37,7 @@ synonym_allocate(SynonymConfig* config)
 
 	// set relation
 	auto rel = &self->rel;
-	rel_init(rel);
+	rel_init(rel, REL_SYNONYM);
 	rel_set_db(rel, &self->config->db);
 	rel_set_name(rel, &self->config->name);
 	rel_set_free_function(rel, (RelFree)synonym_free);

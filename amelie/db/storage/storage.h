@@ -36,7 +36,7 @@ storage_allocate(StorageConfig* config)
 	self->refs   = 0;
 
 	auto rel = &self->rel;
-	rel_init(rel);
+	rel_init(rel, REL_STORAGE);
 	rel_set_db(rel, NULL);
 	rel_set_name(rel, &self->config->name);
 	rel_set_free_function(rel, (RelFree)storage_free);

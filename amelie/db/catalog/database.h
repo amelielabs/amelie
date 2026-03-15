@@ -36,7 +36,7 @@ database_allocate(DatabaseConfig* config)
 
 	// set relation
 	auto rel = &self->rel;
-	rel_init(rel);
+	rel_init(rel, REL_DATABASE);
 	rel_set_db(rel, NULL);
 	rel_set_name(rel, &self->config->name);
 	rel_set_free_function(rel, (RelFree)database_free);

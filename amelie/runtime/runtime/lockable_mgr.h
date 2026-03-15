@@ -46,7 +46,7 @@ lockable_init(Lockable* self, uint64_t rsn, const char* name, bool bp)
 	self->bp_refs = 0;
 	str_set_cstr(&self->rel_name, name);
 	auto rel = &self->rel;
-	rel_init(rel);
+	rel_init(rel, REL_SYSTEM);
 	rel_set_rsn(rel, rsn);
 	rel_set_name(rel, &self->rel_name);
 }

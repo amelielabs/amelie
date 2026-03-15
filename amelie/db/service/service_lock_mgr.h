@@ -44,7 +44,7 @@ service_rel_allocate(void)
 {
 	auto self = (ServiceRel*)am_malloc(sizeof(ServiceRel));
 	memset(self, 0, sizeof(ServiceRel));
-	rel_init(&self->rel);
+	rel_init(&self->rel, REL_LOCK);
 	rel_set_name(&self->rel, &self->rel_name);
 	list_init(&self->link);
 	return self;

@@ -43,7 +43,7 @@ test_lock0(void* arg)
 	active = 0;
 
 	Rel rel;
-	rel_init(&rel);
+	rel_init(&rel, REL_LOCK);
 
 	Task task[10];
 	for (auto i = 0; i < 10; i++)
@@ -69,7 +69,7 @@ test_lock1(void* arg)
 	active = 0;
 
 	Rel rel;
-	rel_init(&rel);
+	rel_init(&rel, REL_LOCK);
 
 	auto l = lock(&rel, LOCK_SHARED);
 
@@ -102,7 +102,7 @@ test_lock2(void* arg)
 	active = 0;
 
 	Rel rel;
-	rel_init(&rel);
+	rel_init(&rel, REL_LOCK);
 
 	auto l = lock(&rel, LOCK_EXCLUSIVE);
 
@@ -135,7 +135,7 @@ test_lock3(void* arg)
 	active = 0;
 
 	Rel rel;
-	rel_init(&rel);
+	rel_init(&rel, REL_LOCK);
 
 	auto l0 = lock(&rel, LOCK_SHARED);
 	auto l1 = lock(&rel, LOCK_EXCLUSIVE_RO);
@@ -180,7 +180,7 @@ test_lock4(void* arg)
 	active = 0;
 
 	Rel rel;
-	rel_init(&rel);
+	rel_init(&rel, REL_LOCK);
 
 	auto l0 = lock(&rel, LOCK_SHARED);
 	auto l1 = lock(&rel, LOCK_EXCLUSIVE_RO);
@@ -220,7 +220,7 @@ test_lock5(void* arg)
 
 	// reentrant
 	Rel rel;
-	rel_init(&rel);
+	rel_init(&rel, REL_LOCK);
 
 	auto l0 = lock(&rel, LOCK_SHARED);
 	auto l1 = lock(&rel, LOCK_SHARED);
