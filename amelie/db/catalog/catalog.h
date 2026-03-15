@@ -27,6 +27,7 @@ struct Catalog
 	DatabaseMgr db_mgr;
 	TableMgr    table_mgr;
 	UdfMgr      udf_mgr;
+	SynonymMgr  synonym_mgr;
 	CatalogIf*  iface;
 	void*       iface_arg;
 };

@@ -202,6 +202,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/table_index.c
     ${AMELIE_ROOT}/db/catalog/table_branch.c
     ${AMELIE_ROOT}/db/catalog/udf_mgr.c
+    ${AMELIE_ROOT}/db/catalog/synonym_mgr.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/catalog_file.c
     ${AMELIE_ROOT}/db/catalog/catalog_snapshot.c

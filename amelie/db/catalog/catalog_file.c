@@ -25,7 +25,8 @@ enum
 	RESTORE_STORAGE,
 	RESTORE_DATABASE,
 	RESTORE_TABLE,
-	RESTORE_UDF
+	RESTORE_UDF,
+	RESTORE_SYNONYM
 };
 
 static void
@@ -75,6 +76,16 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		self->iface->udf_compile(self, udf);
 		break;
 	}
+	case RESTORE_SYNONYM:
+	{
+		// read synonym config
+		auto config = synonym_config_read(pos);
+		defer(synonym_config_free, config);
+
+		// create synonym
+		synonym_mgr_create(&self->synonym_mgr, tr, config, false);
+		break;
+	}
 	}
 }
 
@@ -102,12 +113,13 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 static void
 catalog_restore(Catalog* self, uint8_t** pos)
 {
-	// { lsn, storages, databases, tables, udfs }
+	// { lsn, storages, databases, tables, udfs, synonyms }
 	int64_t  lsn           = 0;
 	uint8_t* pos_storages  = NULL;
 	uint8_t* pos_databases = NULL;
 	uint8_t* pos_tables    = NULL;
 	uint8_t* pos_udfs      = NULL;
+	uint8_t* pos_synonyms  = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_INT,   "lsn",       &lsn           },
@@ -115,6 +127,7 @@ catalog_restore(Catalog* self, uint8_t** pos)
 		{ DECODE_ARRAY, "databases", &pos_databases },
 		{ DECODE_ARRAY, "tables",    &pos_tables    },
 		{ DECODE_ARRAY, "udfs",      &pos_udfs      },
+		{ DECODE_ARRAY, "synonyms",  &pos_synonyms  },
 		{ 0,             NULL,        NULL          },
 	};
 	decode_obj(obj, "catalog", pos);
@@ -138,6 +151,11 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	json_read_array(&pos_udfs);
 	while (! json_read_array_end(&pos_udfs))
 		catalog_restore_object(self, RESTORE_UDF, &pos_udfs);
+
+	// synonyms
+	json_read_array(&pos_synonyms);
+	while (! json_read_array_end(&pos_synonyms))
+		catalog_restore_object(self, RESTORE_SYNONYM, &pos_synonyms);
 
 	// set catalog lsn
 	opt_int_set(&state()->catalog, lsn);
@@ -189,7 +207,7 @@ catalog_read(Catalog* self)
 Buf*
 catalog_write_prepare(Catalog* self, uint64_t lsn)
 {
-	// { lsn, storages, databases, tables, udfs }
+	// { lsn, storages, databases, tables, udfs, synonyms }
 	auto buf = buf_create();
 	encode_obj(buf);
 
@@ -212,6 +230,10 @@ catalog_write_prepare(Catalog* self, uint64_t lsn)
 	// udfs
 	encode_raw(buf, "udfs", 4);
 	udf_mgr_dump(&self->udf_mgr, buf);
+
+	// synonyms
+	encode_raw(buf, "synonyms", 8);
+	synonym_mgr_dump(&self->synonym_mgr, buf);
 
 	encode_obj_end(buf);
 	return buf;

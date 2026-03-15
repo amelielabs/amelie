@@ -35,11 +35,13 @@ catalog_init(Catalog*   self,
 	               iface_part_mgr,
 	               iface_part_mgr_arg);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
+	synonym_mgr_init(&self->synonym_mgr);
 }
 
 void
 catalog_free(Catalog* self)
 {
+	synonym_mgr_free(&self->synonym_mgr);
 	udf_mgr_free(&self->udf_mgr);
 	table_mgr_free(&self->table_mgr);
 	database_mgr_free(&self->db_mgr);
@@ -572,6 +574,49 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto if_exists = ddl_if_exists(flags);
 		write = udf_mgr_rename(&self->udf_mgr, tr, &db, &name,
 		                       &db_new, &name_new, if_exists);
+		break;
+	}
+
+	case DDL_SYNONYM_CREATE:
+	{
+		auto config = synonym_op_create_read(op);
+		defer(synonym_config_free, config);
+
+		// create or replace
+		write = synonym_mgr_create(&self->synonym_mgr, tr, config, false);
+		break;
+	}
+	case DDL_SYNONYM_DROP:
+	{
+		Str db;
+		Str name;
+		synonym_op_drop_read(op, &db, &name);
+
+		// ensure no other udf depend on it
+		catalog_validate_udfs(self, &name);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = synonym_mgr_drop(&self->synonym_mgr, tr, &db, &name, if_exists);
+		break;
+	}
+	case DDL_SYNONYM_RENAME:
+	{
+		Str db;
+		Str name;
+		Str db_new;
+		Str name_new;
+		synonym_op_rename_read(op, &db, &name, &db_new, &name_new);
+
+		// ensure db exists and not system
+		database_mgr_find(&self->db_mgr, &db_new, true);
+
+		// ensure no other udfs depend on it
+		catalog_validate_udfs(self, &name);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = synonym_mgr_rename(&self->synonym_mgr, tr, &db, &name,
+		                           &db_new, &name_new,
+		                           if_exists);
 		break;
 	}
 	default:
