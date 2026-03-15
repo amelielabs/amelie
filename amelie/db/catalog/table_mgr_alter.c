@@ -30,9 +30,9 @@ rename_if_commit(Log* self, LogOp* op)
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	auto table = table_of(relation->relation);
-	uint8_t* pos = relation->data;
+	auto rel = log_rel_of(self, op);
+	auto table = table_of(rel->rel);
+	uint8_t* pos = rel->data;
 	Str db;
 	Str name;
 	json_read_string(&pos, &db);
@@ -71,7 +71,7 @@ table_mgr_rename(TableMgr* self,
 		      str_of(name_new));
 
 	// update table
-	log_relation(&tr->log, &rename_if, NULL, &table->rel);
+	log_rel(&tr->log, &rename_if, NULL, &table->rel);
 
 	// save previous name
 	encode_string(&tr->log.data, &table->config->db);
@@ -97,9 +97,9 @@ set_identity_if_commit(Log* self, LogOp* op)
 static void
 set_identity_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	auto table = table_of(relation->relation);
-	uint8_t* pos = relation->data;
+	auto rel = log_rel_of(self, op);
+	auto table = table_of(rel->rel);
+	uint8_t* pos = rel->data;
 	int64_t value;
 	json_read_integer(&pos, &value);
 	sequence_set(&table->seq, value);
@@ -129,7 +129,7 @@ table_mgr_set_identity(TableMgr* self,
 	}
 
 	// update table
-	log_relation(&tr->log, &set_identity_if, NULL, &table->rel);
+	log_rel(&tr->log, &set_identity_if, NULL, &table->rel);
 
 	// save previous sequence value
 	encode_integer(&tr->log.data, sequence_get(&table->seq));
@@ -149,8 +149,8 @@ set_unlogged_if_commit(Log* self, LogOp* op)
 static void
 set_unlogged_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	auto table = table_of(relation->relation);
+	auto rel = log_rel_of(self, op);
+	auto table = table_of(rel->rel);
 	table_set_unlogged(table, !table->config->unlogged);
 }
 
@@ -178,7 +178,7 @@ table_mgr_set_unlogged(TableMgr* self,
 	}
 
 	// update table
-	log_relation(&tr->log, &set_unlogged_if, NULL, &table->rel);
+	log_rel(&tr->log, &set_unlogged_if, NULL, &table->rel);
 
 	// set table and partitions as unlogged
 	table_set_unlogged(table, value);
@@ -195,9 +195,9 @@ column_rename_if_commit(Log* self, LogOp* op)
 static void
 column_rename_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
+	auto rel = log_rel_of(self, op);
 	Column* column = op->iface_arg;
-	uint8_t* pos = relation->data;
+	uint8_t* pos = rel->data;
 	Str name_column;
 	json_read_string(&pos, &name_column);
 	column_set_name(column, &name_column);
@@ -251,7 +251,7 @@ table_mgr_column_rename(TableMgr* self,
 	}
 
 	// update table
-	log_relation(&tr->log, &column_rename_if, column, &table->rel);
+	log_rel(&tr->log, &column_rename_if, column, &table->rel);
 
 	// save previous column name
 	encode_string(&tr->log.data, &column->name);
@@ -271,8 +271,8 @@ column_add_if_commit(Log* self, LogOp* op)
 static void
 column_add_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	auto table = table_of(relation->relation);
+	auto rel = log_rel_of(self, op);
+	auto table = table_of(rel->rel);
 	Column* column = op->iface_arg;
 	columns_del(&table->config->columns, column);
 	column_free(column);
@@ -325,7 +325,7 @@ table_mgr_column_add(TableMgr* self,
 	columns_sync(&table->config->columns);
 
 	// update log (old table is still present)
-	log_relation(&tr->log, &column_add_if, column_new, &table->rel);
+	log_rel(&tr->log, &column_add_if, column_new, &table->rel);
 	return true;
 }
 
@@ -344,13 +344,13 @@ column_drop_if_abort(Log* self, LogOp* op)
 	column_set_dropped(column, false);
 
 	// restore constraints
-	auto relation = log_relation_of(self, op);
-	uint8_t* pos = relation->data;
+	auto rel = log_rel_of(self, op);
+	uint8_t* pos = rel->data;
 	auto cons = &column->constraints;
 	constraints_free(cons);
 	constraints_init(cons);
 	constraints_read(cons, &pos);
-	columns_sync(&table_of(relation->relation)->config->columns);
+	columns_sync(&table_of(rel->rel)->config->columns);
 }
 
 static LogIf column_drop_if =
@@ -396,7 +396,7 @@ table_mgr_column_drop(TableMgr* self,
 		      str_of(name_column));
 
 	// update log
-	log_relation(&tr->log, &column_drop_if, column, &table->rel);
+	log_rel(&tr->log, &column_drop_if, column, &table->rel);
 
 	// mark column as being dropped
 	column_set_dropped(column, true);
@@ -422,14 +422,14 @@ column_set_if_commit(Log* self, LogOp* op)
 static void
 column_set_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
+	auto rel = log_rel_of(self, op);
 	Column* column = op->iface_arg;
-	uint8_t* pos = relation->data;
+	uint8_t* pos = rel->data;
 	auto cons = &column->constraints;
 	constraints_free(cons);
 	constraints_init(cons);
 	constraints_read(cons, &pos);
-	columns_sync(&table_of(relation->relation)->config->columns);
+	columns_sync(&table_of(rel->rel)->config->columns);
 }
 
 static LogIf column_set_if =
@@ -470,7 +470,7 @@ table_mgr_column_set(TableMgr* self,
 	}
 
 	// update table
-	log_relation(&tr->log, &column_set_if, column, &table->rel);
+	log_rel(&tr->log, &column_set_if, column, &table->rel);
 
 	// save previous constraints
 	constraints_write(&column->constraints, &tr->log.data, 0);

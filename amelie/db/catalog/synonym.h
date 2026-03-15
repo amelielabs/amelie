@@ -15,8 +15,8 @@ typedef struct Synonym Synonym;
 
 struct Synonym
 {
-	Relation       rel;
-	Relation*      ref;
+	Rel            rel;
+	Rel*           ref;
 	SynonymConfig* config;
 };
 
@@ -24,7 +24,6 @@ static inline void
 synonym_free(Synonym* self, bool drop)
 {
 	unused(drop);
-	// todo: unref?
 	synonym_config_free(self->config);
 	am_free(self);
 }
@@ -35,16 +34,19 @@ synonym_allocate(SynonymConfig* config)
 	auto self = (Synonym*)am_malloc(sizeof(Synonym));
 	self->config = synonym_config_copy(config);
 	self->ref    = NULL;
-	relation_init(&self->rel);
-	relation_set_db(&self->rel, &self->config->db);
-	relation_set_name(&self->rel, &self->config->name);
-	relation_set_free_function(&self->rel, (RelationFree)synonym_free);
-	relation_set_rsn(&self->rel, state_rsn_next());
+
+	// set relation
+	auto rel = &self->rel;
+	rel_init(rel);
+	rel_set_db(rel, &self->config->db);
+	rel_set_name(rel, &self->config->name);
+	rel_set_free_function(rel, (RelFree)synonym_free);
+	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 
 static inline Synonym*
-synonym_of(Relation* self)
+synonym_of(Rel* self)
 {
 	return (Synonym*)self;
 }

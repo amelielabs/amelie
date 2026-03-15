@@ -125,7 +125,7 @@ catalog_status(Catalog* self)
 	int tables_secondary_indexes = 0;
 	list_foreach(&self->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Relation, link));
+		auto table = table_of(list_at(Rel, link));
 		tables++;
 		tables_secondary_indexes += (table->config->indexes_count - 1);
 	}
@@ -156,7 +156,7 @@ catalog_validate_udfs(Catalog* self, Str* name)
 	// validate udfs dependencies on the relation
 	list_foreach(&self->udf_mgr.mgr.list)
 	{
-		auto udf = udf_of(list_at(Relation, link));
+		auto udf = udf_of(list_at(Rel, link));
 		if (self->iface->udf_depends(udf, name))
 			error("function '%.*s' depends on relation '%.*s",
 			      str_size(udf->rel.name), str_of(udf->rel.name),
@@ -170,7 +170,7 @@ catalog_validate_synonyms(Catalog* self, Str* db, Str* name)
 	// validate synonyms dependencies on the relation
 	list_foreach(&self->synonym_mgr.mgr.list)
 	{
-		auto synonym = synonym_of(list_at(Relation, link));
+		auto synonym = synonym_of(list_at(Rel, link));
 		if (str_compare_case(&synonym->config->for_db, db) ||
 		    str_compare_case(&synonym->config->for_name, name))
 			error("synonym '%.*s' depends on relation '%.*s",
@@ -179,7 +179,7 @@ catalog_validate_synonyms(Catalog* self, Str* db, Str* name)
 	}
 }
 
-hot Relation*
+hot Rel*
 catalog_find(Catalog* self, Str* db, Str* name, bool error_if_not_exists)
 {
 	auto table = table_mgr_find(&self->table_mgr, db, name, false);
@@ -563,7 +563,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 			// create and compile new udf
 			auto replace = udf_allocate(config, self->udf_mgr.free, self->udf_mgr.free_arg);
-			defer(relation_free, replace);
+			defer(rel_free, replace);
 			self->iface->udf_compile(self, replace);
 
 			udf_mgr_replace(&self->udf_mgr, tr, udf, replace);
@@ -678,7 +678,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 	if (write)
 	{
-		log_persist_relation(&tr->log, op);
+		log_persist_rel(&tr->log, op);
 		return true;
 	}
 	return false;

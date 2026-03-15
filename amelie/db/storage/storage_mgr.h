@@ -15,7 +15,7 @@ typedef struct StorageMgr StorageMgr;
 
 struct StorageMgr
 {
-	RelationMgr mgr;
+	RelMgr mgr;
 };
 
 void storage_mgr_init(StorageMgr*);

@@ -15,7 +15,7 @@ typedef struct Table Table;
 
 struct Table
 {
-	Relation     rel;
+	Rel          rel;
 	PartMgr      part_mgr;
 	PartArg      part_arg;
 	Sequence     seq;
@@ -78,11 +78,13 @@ table_allocate(TableConfig* config,
 	              &self->config->partitioning, arg, storage_mgr,
 	              &primary->keys);
 
-	relation_init(&self->rel);
-	relation_set_db(&self->rel, &self->config->db);
-	relation_set_name(&self->rel, &self->config->name);
-	relation_set_free_function(&self->rel, (RelationFree)table_free);
-	relation_set_rsn(&self->rel, state_rsn_next());
+	// set relation
+	auto rel = &self->rel;
+	rel_init(rel);
+	rel_set_db(rel, &self->config->db);
+	rel_set_name(rel, &self->config->name);
+	rel_set_free_function(rel, (RelFree)table_free);
+	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 
@@ -101,7 +103,7 @@ table_set_unlogged(Table* self, bool value)
 }
 
 static inline Table*
-table_of(Relation* self)
+table_of(Rel* self)
 {
 	return (Table*)self;
 }

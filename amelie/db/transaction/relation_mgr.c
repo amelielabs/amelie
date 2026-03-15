@@ -15,59 +15,59 @@
 #include <amelie_transaction.h>
 
 void
-relation_mgr_init(RelationMgr* self)
+rel_mgr_init(RelMgr* self)
 {
 	self->list_count = 0;
 	list_init(&self->list);
 }
 
 void
-relation_mgr_free(RelationMgr* self)
+rel_mgr_free(RelMgr* self)
 {
 	list_foreach_safe(&self->list)
 	{
-		auto relation = list_at(Relation, link);
-		relation_free(relation);
+		auto rel = list_at(Rel, link);
+		rel_free(rel);
 	}
 	self->list_count = 0;
 	list_init(&self->list);
 }
 
 static inline void
-relation_mgr_set(RelationMgr* self, Relation* relation)
+rel_mgr_set(RelMgr* self, Rel* rel)
 {
 	// previous version should not exists
-	list_append(&self->list, &relation->link);
+	list_append(&self->list, &rel->link);
 	self->list_count++;
 }
 
 static inline void
-relation_mgr_delete(RelationMgr* self, Relation* relation)
+rel_mgr_delete(RelMgr* self, Rel* rel)
 {
-	list_unlink(&relation->link);
-	list_init(&relation->link);
+	list_unlink(&rel->link);
+	list_init(&rel->link);
 	self->list_count--;
 }
 
-Relation*
-relation_mgr_get(RelationMgr* self, Str* db, Str* name)
+Rel*
+rel_mgr_get(RelMgr* self, Str* db, Str* name)
 {
 	list_foreach(&self->list)
 	{
-		auto relation = list_at(Relation, link);
-		if (db && !str_compare_case(relation->db, db))
+		auto rel = list_at(Rel, link);
+		if (db && !str_compare_case(rel->db, db))
 			continue;
-		if (str_compare_case(relation->name, name))
-			return relation;
+		if (str_compare_case(rel->name, name))
+			return rel;
 	}
 	return NULL;
 }
 
 void
-relation_mgr_replace(RelationMgr* self, Relation* prev, Relation* relation)
+rel_mgr_replace(RelMgr* self, Rel* prev, Rel* rel)
 {
-	relation_mgr_delete(self, prev);
-	relation_mgr_set(self, relation);
+	rel_mgr_delete(self, prev);
+	rel_mgr_set(self, rel);
 }
 
 static void
@@ -80,10 +80,10 @@ create_if_commit(Log* self, LogOp* op)
 static void
 create_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	RelationMgr* mgr = op->iface_arg;
-	relation_mgr_delete(mgr, relation->relation);
-	relation_drop(relation->relation);
+	auto rel = log_rel_of(self, op);
+	RelMgr* mgr = op->iface_arg;
+	rel_mgr_delete(mgr, rel->rel);
+	rel_drop(rel->rel);
 }
 
 static LogIf create_if =
@@ -93,30 +93,28 @@ static LogIf create_if =
 };
 
 void
-relation_mgr_create(RelationMgr* self,
-                    Tr*          tr,
-                    Relation*    relation)
+rel_mgr_create(RelMgr* self, Tr* tr, Rel* rel)
 {
-	// update relation mgr
-	relation_mgr_set(self, relation);
+	// update rel mgr
+	rel_mgr_set(self, rel);
 
 	// update transaction log
-	log_relation(&tr->log, &create_if, self, relation);
+	log_rel(&tr->log, &create_if, self, rel);
 }
 
 static void
 drop_if_commit(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	relation_drop(relation->relation);
+	auto rel = log_rel_of(self, op);
+	rel_drop(rel->rel);
 }
 
 static void
 drop_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	RelationMgr* mgr = op->iface_arg;
-	relation_mgr_set(mgr, relation->relation);
+	auto rel = log_rel_of(self, op);
+	RelMgr* mgr = op->iface_arg;
+	rel_mgr_set(mgr, rel->rel);
 }
 
 static LogIf drop_if =
@@ -126,13 +124,11 @@ static LogIf drop_if =
 };
 
 void
-relation_mgr_drop(RelationMgr* self,
-                  Tr*          tr,
-                  Relation*    relation)
+rel_mgr_drop(RelMgr* self, Tr* tr, Rel* rel)
 {
-	// update relation mgr
-	relation_mgr_delete(self, relation);
+	// update rel mgr
+	rel_mgr_delete(self, rel);
 
 	// update transaction log
-	log_relation(&tr->log, &drop_if, self, relation);
+	log_rel(&tr->log, &drop_if, self, rel);
 }

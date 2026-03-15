@@ -25,13 +25,13 @@ udf_mgr_init(UdfMgr* self, UdfFree free, void* free_arg)
 {
 	self->free     = free;
 	self->free_arg = free_arg;
-	relation_mgr_init(&self->mgr);
+	rel_mgr_init(&self->mgr);
 }
 
 void
 udf_mgr_free(UdfMgr* self)
 {
-	relation_mgr_free(&self->mgr);
+	rel_mgr_free(&self->mgr);
 }
 
 bool
@@ -52,7 +52,7 @@ udf_mgr_create(UdfMgr*    self,
 
 	// create udf
 	auto udf = udf_allocate(config, self->free, self->free_arg);
-	relation_mgr_create(&self->mgr, tr, &udf->rel);
+	rel_mgr_create(&self->mgr, tr, &udf->rel);
 	return true;
 }
 
@@ -62,8 +62,8 @@ replace_if_commit(Log* self, LogOp* op)
 	// free previous config and data by constructing
 	// temprorary udf object
 	UdfMgr* mgr = op->iface_arg;
-	auto relation = log_relation_of(self, op);
-	auto data = (void**)relation->data;
+	auto rel = log_rel_of(self, op);
+	auto data = (void**)rel->data;
 	auto tmp = udf_allocate_as(data[0], data[1], mgr->free, mgr->free_arg);
 	udf_free(tmp, false);
 }
@@ -74,20 +74,20 @@ replace_if_abort(Log* self, LogOp* op)
 	// free current config and data by constructing
 	// temprorary udf object
 	UdfMgr* mgr = op->iface_arg;
-	auto relation = log_relation_of(self, op);
-	auto udf = udf_of(relation->relation);
+	auto rel = log_rel_of(self, op);
+	auto udf = udf_of(rel->rel);
 
 	auto tmp = udf_allocate_as(udf->config, udf->data, mgr->free, mgr->free_arg);
 	udf_free(tmp, false);
 
 	// set previous config and data
-	auto data = (void**)relation->data;
+	auto data = (void**)rel->data;
 	udf->config = data[0];
 	udf->data   = data[1];
 
-	// update relation data
-	relation_set_db(&udf->rel, &udf->config->db);
-	relation_set_name(&udf->rel, &udf->config->name);
+	// update rel data
+	rel_set_db(&udf->rel, &udf->config->db);
+	rel_set_name(&udf->rel, &udf->config->name);
 }
 
 static LogIf replace_if =
@@ -128,7 +128,7 @@ udf_mgr_replace(UdfMgr* self,
 	assert(udf_new->data);
 
 	// update log
-	log_relation(&tr->log, &replace_if, self, &udf->rel);
+	log_rel(&tr->log, &replace_if, self, &udf->rel);
 
 	buf_write(&tr->log.data, &udf->config, sizeof(void**));
 	buf_write(&tr->log.data, &udf->data, sizeof(void**));
@@ -139,16 +139,16 @@ udf_mgr_replace(UdfMgr* self,
 	udf_new->config = NULL;
 	udf_new->data   = NULL;
 
-	// update relation data
-	relation_set_db(&udf->rel, &udf->config->db);
-	relation_set_name(&udf->rel, &udf->config->name);
+	// update rel data
+	rel_set_db(&udf->rel, &udf->config->db);
+	rel_set_name(&udf->rel, &udf->config->name);
 }
 
 void
 udf_mgr_drop_of(UdfMgr* self, Tr* tr, Udf* udf)
 {
 	// drop udf by object
-	relation_mgr_drop(&self->mgr, tr, &udf->rel);
+	rel_mgr_drop(&self->mgr, tr, &udf->rel);
 }
 
 bool
@@ -177,9 +177,9 @@ rename_if_commit(Log* self, LogOp* op)
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	auto udf = udf_of(relation->relation);
-	uint8_t* pos = relation->data;
+	auto rel = log_rel_of(self, op);
+	auto udf = udf_of(rel->rel);
+	uint8_t* pos = rel->data;
 	Str db;
 	Str name;
 	json_read_string(&pos, &db);
@@ -218,7 +218,7 @@ udf_mgr_rename(UdfMgr* self,
 		      str_of(name_new));
 
 	// update udf
-	log_relation(&tr->log, &rename_if, NULL, &udf->rel);
+	log_rel(&tr->log, &rename_if, NULL, &udf->rel);
 
 	// save previous name
 	encode_string(&tr->log.data, &udf->config->db);
@@ -241,7 +241,7 @@ udf_mgr_dump(UdfMgr* self, Buf* buf)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto udf = udf_of(list_at(Relation, link));
+		auto udf = udf_of(list_at(Rel, link));
 		udf_config_write(udf->config, buf, 0);
 	}
 	encode_array_end(buf);
@@ -251,15 +251,15 @@ Udf*
 udf_mgr_find(UdfMgr* self, Str* db, Str* name,
              bool    error_if_not_exists)
 {
-	auto relation = relation_mgr_get(&self->mgr, db, name);
-	if (! relation)
+	auto rel = rel_mgr_get(&self->mgr, db, name);
+	if (! rel)
 	{
 		if (error_if_not_exists)
 			error("function '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return NULL;
 	}
-	return udf_of(relation);
+	return udf_of(rel);
 }
 
 Buf*
@@ -281,7 +281,7 @@ udf_mgr_list(UdfMgr* self, Str* db, Str* name, int flags)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto udf = udf_of(list_at(Relation, link));
+		auto udf = udf_of(list_at(Rel, link));
 		if (db && !str_compare_case(&udf->config->db, db))
 			continue;
 		udf_config_write(udf->config, buf, flags);

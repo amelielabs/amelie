@@ -23,13 +23,13 @@
 void
 database_mgr_init(DatabaseMgr* self)
 {
-	relation_mgr_init(&self->mgr);
+	rel_mgr_init(&self->mgr);
 }
 
 void
 database_mgr_free(DatabaseMgr* self)
 {
-	relation_mgr_free(&self->mgr);
+	rel_mgr_free(&self->mgr);
 }
 
 bool
@@ -52,7 +52,7 @@ database_mgr_create(DatabaseMgr*    self,
 	auto db = database_allocate(config);
 
 	// register db
-	relation_mgr_create(&self->mgr, tr, &db->rel);
+	rel_mgr_create(&self->mgr, tr, &db->rel);
 	return true;
 }
 
@@ -75,7 +75,7 @@ database_mgr_drop(DatabaseMgr* self,
 		      str_of(name));
 
 	// drop db by object
-	relation_mgr_drop(&self->mgr, tr, &db->rel);
+	rel_mgr_drop(&self->mgr, tr, &db->rel);
 	return true;
 }
 
@@ -89,10 +89,10 @@ rename_if_commit(Log* self, LogOp* op)
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	auto mgr = database_of(relation->relation);
+	auto rel = log_rel_of(self, op);
+	auto mgr = database_of(rel->rel);
 	// set previous name
-	uint8_t* pos = relation->data;
+	uint8_t* pos = rel->data;
 	Str name;
 	json_read_string(&pos, &name);
 	database_config_set_name(mgr->config, &name);
@@ -130,7 +130,7 @@ database_mgr_rename(DatabaseMgr* self,
 		      str_of(name_new));
 
 	// update db
-	log_relation(&tr->log, &rename_if, NULL, &db->rel);
+	log_rel(&tr->log, &rename_if, NULL, &db->rel);
 
 	// save name for rollback
 	encode_string(&tr->log.data, name);
@@ -147,7 +147,7 @@ database_mgr_dump(DatabaseMgr* self, Buf* buf)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto db = database_of(list_at(Relation, link));
+		auto db = database_of(list_at(Rel, link));
 		if (db->config->system)
 			continue;
 		database_config_write(db->config, buf, 0);
@@ -158,15 +158,15 @@ database_mgr_dump(DatabaseMgr* self, Buf* buf)
 Database*
 database_mgr_find(DatabaseMgr* self, Str* name, bool error_if_not_exists)
 {
-	auto relation = relation_mgr_get(&self->mgr, NULL, name);
-	if (! relation)
+	auto rel = rel_mgr_get(&self->mgr, NULL, name);
+	if (! rel)
 	{
 		if (error_if_not_exists)
 			error("database '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return NULL;
 	}
-	return database_of(relation);
+	return database_of(rel);
 }
 
 Buf*
@@ -185,7 +185,7 @@ database_mgr_list(DatabaseMgr* self, Str* name, int flags)
 		encode_array(buf);
 		list_foreach(&self->mgr.list)
 		{
-			auto db = database_of(list_at(Relation, link));
+			auto db = database_of(list_at(Rel, link));
 			database_config_write(db->config, buf, flags);
 		}
 		encode_array_end(buf);

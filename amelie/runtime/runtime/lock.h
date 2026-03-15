@@ -15,7 +15,7 @@ typedef struct Lock Lock;
 
 struct Lock
 {
-	Relation*   rel;
+	Rel*        rel;
 	LockId      rel_lock;
 	int         refs;
 	bool        waiting;
@@ -28,7 +28,7 @@ struct Lock
 };
 
 static inline void
-lock_init(Lock* self, Relation* rel, LockId rel_lock,
+lock_init(Lock* self, Rel* rel, LockId rel_lock,
           Str*  name, const char* func)
 {
 	self->rel       = rel;

@@ -17,7 +17,7 @@ typedef void (*UdfFree)(Udf*);
 
 struct Udf
 {
-	Relation   rel;
+	Rel        rel;
 	UdfFree    free;
 	void*      free_arg;
 	void*      data;
@@ -43,11 +43,14 @@ udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
 	self->free_arg = free_arg;
 	self->data     = data;
 	self->config   = config;
-	relation_init(&self->rel);
-	relation_set_db(&self->rel, &self->config->db);
-	relation_set_name(&self->rel, &self->config->name);
-	relation_set_free_function(&self->rel, (RelationFree)udf_free);
-	relation_set_rsn(&self->rel, state_rsn_next());
+
+	// set relation
+	auto rel = &self->rel;
+	rel_init(rel);
+	rel_set_db(rel, &self->config->db);
+	rel_set_name(rel, &self->config->name);
+	rel_set_free_function(rel, (RelFree)udf_free);
+	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 
@@ -58,7 +61,7 @@ udf_allocate(UdfConfig* config, UdfFree free, void* free_arg)
 }
 
 static inline Udf*
-udf_of(Relation* self)
+udf_of(Rel* self)
 {
 	return (Udf*)self;
 }

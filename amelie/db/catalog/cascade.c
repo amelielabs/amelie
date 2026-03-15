@@ -28,7 +28,7 @@ cascade_db_drop_execute(Catalog* self, Tr* tr, Str* db, bool drop)
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Relation, link));
+		auto table = table_of(list_at(Rel, link));
 		if (! str_compare_case(&table->config->db, db))
 			continue;
 		if (drop)
@@ -42,7 +42,7 @@ cascade_db_drop_execute(Catalog* self, Tr* tr, Str* db, bool drop)
 	// udfs
 	list_foreach_safe(&self->udf_mgr.mgr.list)
 	{
-		auto udf = udf_of(list_at(Relation, link));
+		auto udf = udf_of(list_at(Rel, link));
 		if (! str_compare_case(&udf->config->db, db))
 			continue;
 		if (drop)
@@ -56,7 +56,7 @@ cascade_db_drop_execute(Catalog* self, Tr* tr, Str* db, bool drop)
 	// synonyms
 	list_foreach_safe(&self->synonym_mgr.mgr.list)
 	{
-		auto synonym = synonym_of(list_at(Relation, link));
+		auto synonym = synonym_of(list_at(Rel, link));
 		if (! str_compare_case(&synonym->config->db, db))
 			continue;
 		if (drop)
@@ -99,7 +99,7 @@ cascade_db_rename_execute(Catalog* self, Tr* tr, Str* db, Str* db_new)
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Relation, link));
+		auto table = table_of(list_at(Rel, link));
 		if (str_compare_case(&table->config->db, db))
 			table_mgr_rename(&self->table_mgr, tr, &table->config->db,
 			                 &table->config->name,
@@ -110,7 +110,7 @@ cascade_db_rename_execute(Catalog* self, Tr* tr, Str* db, Str* db_new)
 	// udfs
 	list_foreach_safe(&self->udf_mgr.mgr.list)
 	{
-		auto udf = udf_of(list_at(Relation, link));
+		auto udf = udf_of(list_at(Rel, link));
 		if (str_compare_case(&udf->config->db, db))
 			error("function '%.*s' is using database '%.*s",
 			      str_size(udf->rel.name), str_of(udf->rel.name),
@@ -120,7 +120,7 @@ cascade_db_rename_execute(Catalog* self, Tr* tr, Str* db, Str* db_new)
 	// synonyms
 	list_foreach_safe(&self->synonym_mgr.mgr.list)
 	{
-		auto synonym = synonym_of(list_at(Relation, link));
+		auto synonym = synonym_of(list_at(Rel, link));
 		if (str_compare_case(&synonym->config->db, db) ||
 		    str_compare_case(&synonym->config->for_db, db))
 			error("synonym '%.*s' is using database '%.*s",

@@ -62,7 +62,7 @@ lock_cache_push(LockCache* self, Lock* lock)
 }
 
 static inline Lock*
-lock_create(LockCache* self, Relation* rel, LockId rel_lock,
+lock_create(LockCache* self, Rel* rel, LockId rel_lock,
             Str*       name, const char* func)
 {
 	auto lock = lock_cache_pop(self);

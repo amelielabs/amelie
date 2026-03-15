@@ -11,15 +11,15 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Relation Relation;
+typedef struct Rel Rel;
 
-typedef void (*RelationFree)(Relation*, bool);
+typedef void (*RelFree)(Rel*, bool);
 
-struct Relation
+struct Rel
 {
 	Str*         db;
 	Str*         name;
-	RelationFree free_function;
+	RelFree free_function;
 	Spinlock     lock;
 	uint64_t     lock_order;
 	int          lock_set[LOCK_MAX];
@@ -29,7 +29,7 @@ struct Relation
 };
 
 static inline void
-relation_init(Relation* self)
+rel_init(Rel* self)
 {
 	self->db              = NULL;
 	self->name            = NULL;
@@ -43,31 +43,31 @@ relation_init(Relation* self)
 }
 
 static inline void
-relation_set_db(Relation* self, Str* db)
+rel_set_db(Rel* self, Str* db)
 {
 	self->db = db;
 }
 
 static inline void
-relation_set_name(Relation* self, Str* name)
+rel_set_name(Rel* self, Str* name)
 {
 	self->name = name;
 }
 
 static inline void
-relation_set_free_function(Relation* self, RelationFree func)
+rel_set_free_function(Rel* self, RelFree func)
 {
 	self->free_function = func;
 }
 
 static inline void
-relation_set_rsn(Relation* self, uint64_t value)
+rel_set_rsn(Rel* self, uint64_t value)
 {
 	self->lock_order = value;
 }
 
 static inline void
-relation_free(Relation* self)
+rel_free(Rel* self)
 {
 	spinlock_free(&self->lock);
 	if (self->free_function)
@@ -75,7 +75,7 @@ relation_free(Relation* self)
 }
 
 static inline void
-relation_drop(Relation* self)
+rel_drop(Rel* self)
 {
 	spinlock_free(&self->lock);
 	if (self->free_function)

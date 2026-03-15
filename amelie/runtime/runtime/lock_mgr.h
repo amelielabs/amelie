@@ -57,7 +57,7 @@ lock_mgr_remove(LockMgr* self, Lock* lock)
 }
 
 hot static inline bool
-lock_resolve(Relation* rel, LockId lock)
+lock_resolve(Rel* rel, LockId lock)
 {
 	// validate lock against currently active locks
 	auto set = rel->lock_set;
@@ -121,7 +121,7 @@ lock_mgr_lock_of(LockMgr* self, Lock* lock)
 }
 
 hot static inline Lock*
-lock_mgr_lock(LockMgr*    self, Relation* rel, LockId rel_lock,
+lock_mgr_lock(LockMgr*    self, Rel* rel, LockId rel_lock,
               Str*        name,
               const char* func)
 {

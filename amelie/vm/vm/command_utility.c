@@ -225,7 +225,7 @@ clock_rel(Vm* self, Op* op)
 		return;
 	}
 
-	Relation* rel;
+	Rel* rel;
 
 	// find breakpoint
 	auto ref = lockable_mgr_find(&runtime()->lockable_mgr, &name_rel);

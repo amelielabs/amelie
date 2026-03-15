@@ -35,7 +35,7 @@ struct ParseEndpoint
 	Columns*  columns_target;
 	Str*      content;
 	int       target_type;
-	Relation* target;
+	Rel*      target;
 	Set*      values;
 };
 

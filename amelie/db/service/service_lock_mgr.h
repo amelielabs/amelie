@@ -18,7 +18,7 @@ typedef struct ServiceLockMgr ServiceLockMgr;
 struct ServiceRel
 {
 	uint64_t id;
-	Relation rel;
+	Rel      rel;
 	Str      rel_name;
 	char     rel_id[32];
 	int      refs;
@@ -44,8 +44,8 @@ service_rel_allocate(void)
 {
 	auto self = (ServiceRel*)am_malloc(sizeof(ServiceRel));
 	memset(self, 0, sizeof(ServiceRel));
-	relation_init(&self->rel);
-	relation_set_name(&self->rel, &self->rel_name);
+	rel_init(&self->rel);
+	rel_set_name(&self->rel, &self->rel_name);
 	list_init(&self->link);
 	return self;
 }
@@ -53,7 +53,7 @@ service_rel_allocate(void)
 static inline void
 service_rel_free(ServiceRel* self)
 {
-	relation_free(&self->rel);
+	rel_free(&self->rel);
 	am_free(self);
 }
 

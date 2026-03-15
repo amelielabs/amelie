@@ -19,7 +19,7 @@ static int active = 0;
 static void
 test_lock_main0(void* arg)
 {
-	Relation* rel = arg;
+	Rel* rel = arg;
 	auto l = lock(rel, LOCK_EXCLUSIVE);
 	defer(unlock, l);
 
@@ -42,8 +42,8 @@ test_lock0(void* arg)
 	total  = 0;
 	active = 0;
 
-	Relation rel;
-	relation_init(&rel);
+	Rel rel;
+	rel_init(&rel);
 
 	Task task[10];
 	for (auto i = 0; i < 10; i++)
@@ -68,8 +68,8 @@ test_lock1(void* arg)
 	total  = 0;
 	active = 0;
 
-	Relation rel;
-	relation_init(&rel);
+	Rel rel;
+	rel_init(&rel);
 
 	auto l = lock(&rel, LOCK_SHARED);
 
@@ -101,8 +101,8 @@ test_lock2(void* arg)
 	total  = 0;
 	active = 0;
 
-	Relation rel;
-	relation_init(&rel);
+	Rel rel;
+	rel_init(&rel);
 
 	auto l = lock(&rel, LOCK_EXCLUSIVE);
 
@@ -134,8 +134,8 @@ test_lock3(void* arg)
 	total  = 0;
 	active = 0;
 
-	Relation rel;
-	relation_init(&rel);
+	Rel rel;
+	rel_init(&rel);
 
 	auto l0 = lock(&rel, LOCK_SHARED);
 	auto l1 = lock(&rel, LOCK_EXCLUSIVE_RO);
@@ -179,8 +179,8 @@ test_lock4(void* arg)
 	total  = 0;
 	active = 0;
 
-	Relation rel;
-	relation_init(&rel);
+	Rel rel;
+	rel_init(&rel);
 
 	auto l0 = lock(&rel, LOCK_SHARED);
 	auto l1 = lock(&rel, LOCK_EXCLUSIVE_RO);
@@ -219,8 +219,8 @@ test_lock5(void* arg)
 	active = 0;
 
 	// reentrant
-	Relation rel;
-	relation_init(&rel);
+	Rel rel;
+	rel_init(&rel);
 
 	auto l0 = lock(&rel, LOCK_SHARED);
 	auto l1 = lock(&rel, LOCK_SHARED);

@@ -15,7 +15,7 @@ typedef struct TableMgr TableMgr;
 
 struct TableMgr
 {
-	RelationMgr mgr;
+	RelMgr      mgr;
 	StorageMgr* storage_mgr;
 	PartMgrIf*  iface;
 	void*       iface_arg;

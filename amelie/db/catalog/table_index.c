@@ -43,8 +43,8 @@ add_if_commit(Log* self, LogOp* op)
 static void
 add_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	auto table = table_of(relation->relation);
+	auto rel = log_rel_of(self, op);
+	auto table = table_of(rel->rel);
 	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
 }
@@ -61,7 +61,7 @@ table_index_add(Table* self, Tr* tr, IndexConfig* config)
 	table_config_index_add(self->config, config);
 
 	// update table
-	log_relation(&tr->log, &add_if, index, &self->rel);
+	log_rel(&tr->log, &add_if, index, &self->rel);
 
 	// use separate log command for create
 	// index processing
@@ -71,8 +71,8 @@ table_index_add(Table* self, Tr* tr, IndexConfig* config)
 static void
 drop_if_commit(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	auto table = table_of(relation->relation);
+	auto rel = log_rel_of(self, op);
+	auto table = table_of(rel->rel);
 	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
 }
@@ -109,7 +109,7 @@ table_index_drop(Table* self,
 	}
 
 	// update table
-	log_relation(&tr->log, &drop_if, index, &self->rel);
+	log_rel(&tr->log, &drop_if, index, &self->rel);
 	return true;
 }
 
@@ -124,8 +124,8 @@ static void
 rename_if_abort(Log* self, LogOp* op)
 {
 	IndexConfig* index = op->iface_arg;
-	auto relation = log_relation_of(self, op);
-	uint8_t* pos = relation->data;
+	auto rel = log_rel_of(self, op);
+	uint8_t* pos = rel->data;
 	Str index_name;
 	json_read_string(&pos, &index_name);
 	index_config_set_name(index, &index_name);
@@ -165,7 +165,7 @@ table_index_rename(Table* self,
 		      str_of(name_new));
 
 	// update table
-	log_relation(&tr->log, &rename_if, index, &self->rel);
+	log_rel(&tr->log, &rename_if, index, &self->rel);
 
 	// save previous name
 	encode_string(&tr->log.data, &index->name);

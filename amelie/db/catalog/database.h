@@ -15,7 +15,7 @@ typedef struct Database Database;
 
 struct Database
 {
-	Relation        rel;
+	Rel             rel;
 	DatabaseConfig* config;
 };
 
@@ -33,16 +33,19 @@ database_allocate(DatabaseConfig* config)
 {
 	Database* self = am_malloc(sizeof(Database));
 	self->config = database_config_copy(config);
-	relation_init(&self->rel);
-	relation_set_db(&self->rel, NULL);
-	relation_set_name(&self->rel, &self->config->name);
-	relation_set_free_function(&self->rel, (RelationFree)database_free);
-	relation_set_rsn(&self->rel, state_rsn_next());
+
+	// set relation
+	auto rel = &self->rel;
+	rel_init(rel);
+	rel_set_db(rel, NULL);
+	rel_set_name(rel, &self->config->name);
+	rel_set_free_function(rel, (RelFree)database_free);
+	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 
 static inline Database*
-database_of(Relation* self)
+database_of(Rel* self)
 {
 	return (Database*)self;
 }

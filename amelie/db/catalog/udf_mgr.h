@@ -15,9 +15,9 @@ typedef struct UdfMgr UdfMgr;
 
 struct UdfMgr
 {
-	RelationMgr mgr;
-	UdfFree     free;
-	void*       free_arg;
+	RelMgr  mgr;
+	UdfFree free;
+	void*   free_arg;
 };
 
 void udf_mgr_init(UdfMgr*, UdfFree, void*);

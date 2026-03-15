@@ -73,5 +73,5 @@ service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
 
 	// attach index to the table
 	table_index_add(table, tr, config);
-	log_persist_relation(&tr->log, op);
+	log_persist_rel(&tr->log, op);
 }

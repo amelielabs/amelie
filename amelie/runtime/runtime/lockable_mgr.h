@@ -14,7 +14,7 @@
 typedef struct Lockable    Lockable;
 typedef struct LockableMgr LockableMgr;
 
-typedef enum
+enum
 {
 	REL_CATALOG,
 	REL_DDL,
@@ -24,11 +24,11 @@ typedef enum
 	REL_BP_REFRESH_3,
 	REL_BP_REFRESH_4,
 	REL_MAX
-} Rel;
+};
 
 struct Lockable
 {
-	Relation   rel;
+	Rel        rel;
 	Str        rel_name;
 	bool       bp;
 	atomic_u32 bp_refs;
@@ -40,15 +40,15 @@ struct LockableMgr
 };
 
 static inline void
-lockable_init(Lockable* self, Rel id, const char* name, bool bp)
+lockable_init(Lockable* self, uint64_t rsn, const char* name, bool bp)
 {
 	self->bp      = bp;
 	self->bp_refs = 0;
 	str_set_cstr(&self->rel_name, name);
 	auto rel = &self->rel;
-	relation_init(rel);
-	relation_set_rsn(rel, id);
-	relation_set_name(rel, &self->rel_name);
+	rel_init(rel);
+	rel_set_rsn(rel, rsn);
+	rel_set_name(rel, &self->rel_name);
 }
 
 static inline void
@@ -82,7 +82,7 @@ static inline void
 lockable_mgr_free(LockableMgr* self)
 {
 	for (auto i = 0; i < REL_MAX; i++)
-		relation_free(&self->list[i].rel);
+		rel_free(&self->list[i].rel);
 	am_free(self->list);
 	self->list = NULL;
 }

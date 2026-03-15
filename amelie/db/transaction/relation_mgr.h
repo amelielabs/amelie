@@ -11,17 +11,17 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct RelationMgr RelationMgr;
+typedef struct RelMgr RelMgr;
 
-struct RelationMgr
+struct RelMgr
 {
 	List list;
 	int  list_count;
 };
 
-void      relation_mgr_init(RelationMgr*);
-void      relation_mgr_free(RelationMgr*);
-Relation* relation_mgr_get(RelationMgr*, Str*, Str*);
-void      relation_mgr_replace(RelationMgr*, Relation*, Relation*);
-void      relation_mgr_create(RelationMgr*, Tr*, Relation*);
-void      relation_mgr_drop(RelationMgr*, Tr*, Relation*);
+void rel_mgr_init(RelMgr*);
+void rel_mgr_free(RelMgr*);
+Rel* rel_mgr_get(RelMgr*, Str*, Str*);
+void rel_mgr_replace(RelMgr*, Rel*, Rel*);
+void rel_mgr_create(RelMgr*, Tr*, Rel*);
+void rel_mgr_drop(RelMgr*, Tr*, Rel*);

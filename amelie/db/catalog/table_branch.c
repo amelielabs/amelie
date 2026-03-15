@@ -31,8 +31,8 @@ static void
 branch_create_if_abort(Log* self, LogOp* op)
 {
 	Table* table = op->iface_arg;
-	auto relation = log_relation_of(self, op);
-	uint8_t* pos = relation->data;
+	auto rel = log_rel_of(self, op);
+	uint8_t* pos = rel->data;
 	Str branch_name;
 	json_read_string(&pos, &branch_name);
 
@@ -70,7 +70,7 @@ table_branch_create(Table*  self,
 	}
 
 	// update table
-	log_relation(&tr->log, &branch_create_if, self, &self->rel);
+	log_rel(&tr->log, &branch_create_if, self, &self->rel);
 
 	// save branch name
 	encode_string(&tr->log.data, &config->name);
@@ -85,8 +85,8 @@ static void
 branch_drop_if_commit(Log* self, LogOp* op)
 {
 	Table* table = op->iface_arg;
-	auto relation = log_relation_of(self, op);
-	uint8_t* pos = relation->data;
+	auto rel = log_rel_of(self, op);
+	uint8_t* pos = rel->data;
 	Str branch_name;
 	json_read_string(&pos, &branch_name);
 
@@ -131,7 +131,7 @@ table_branch_drop(Table* self,
 	}
 
 	// update table
-	log_relation(&tr->log, &branch_drop_if, self, &self->rel);
+	log_rel(&tr->log, &branch_drop_if, self, &self->rel);
 
 	// save branch name
 	encode_string(&tr->log.data, name);

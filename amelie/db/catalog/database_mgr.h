@@ -15,7 +15,7 @@ typedef struct DatabaseMgr DatabaseMgr;
 
 struct DatabaseMgr
 {
-	RelationMgr mgr;
+	RelMgr mgr;
 };
 
 void database_mgr_init(DatabaseMgr*);

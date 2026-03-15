@@ -31,8 +31,8 @@ static void
 storage_add_if_abort(Log* self, LogOp* op)
 {
 	Table* table = op->iface_arg;
-	auto relation = log_relation_of(self, op);
-	uint8_t* pos = relation->data;
+	auto rel = log_rel_of(self, op);
+	uint8_t* pos = rel->data;
 	Str storage_name;
 	json_read_string(&pos, &storage_name);
 
@@ -77,7 +77,7 @@ table_storage_add(Table*  self,
 	}
 
 	// update table
-	log_relation(&tr->log, &storage_add_if, self, &self->rel);
+	log_rel(&tr->log, &storage_add_if, self, &self->rel);
 
 	// save storage name
 	encode_string(&tr->log.data, &config->name);
@@ -97,8 +97,8 @@ static void
 storage_drop_if_commit(Log* self, LogOp* op)
 {
 	Table* table = op->iface_arg;
-	auto relation = log_relation_of(self, op);
-	uint8_t* pos = relation->data;
+	auto rel = log_rel_of(self, op);
+	uint8_t* pos = rel->data;
 	Str storage_name;
 	json_read_string(&pos, &storage_name);
 
@@ -155,7 +155,7 @@ table_storage_drop(Table* self,
 		      str_of(name));
 
 	// update table
-	log_relation(&tr->log, &storage_drop_if, self, &self->rel);
+	log_rel(&tr->log, &storage_drop_if, self, &self->rel);
 
 	// save storage name
 	encode_string(&tr->log.data, name);
@@ -173,8 +173,8 @@ static void
 storage_pause_if_abort(Log* self, LogOp* op)
 {
 	Table* table = op->iface_arg;
-	auto relation = log_relation_of(self, op);
-	uint8_t* pos = relation->data;
+	auto rel = log_rel_of(self, op);
+	uint8_t* pos = rel->data;
 	Str storage_name;
 	json_read_string(&pos, &storage_name);
 
@@ -221,7 +221,7 @@ table_storage_pause(Table* self,
 		      str_of(&self->config->name));
 
 	// update table
-	log_relation(&tr->log, &storage_pause_if, self, &self->rel);
+	log_rel(&tr->log, &storage_pause_if, self, &self->rel);
 
 	// apply
 	volume_set_pause(volume, pause);

@@ -16,8 +16,8 @@ typedef struct Access       Access;
 
 struct AccessRecord
 {
-	Relation* rel;
-	LockId    lock;
+	Rel*   rel;
+	LockId lock;
 };
 
 struct Access
@@ -73,7 +73,7 @@ access_empty(Access* self)
 }
 
 hot static inline void
-access_add(Access* self, Relation* rel, LockId lock)
+access_add(Access* self, Rel* rel, LockId lock)
 {
 	// count total number of accesses, exclusive calls
 	if (lock != LOCK_CALL)

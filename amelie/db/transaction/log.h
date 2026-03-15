@@ -11,11 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct LogIf       LogIf;
-typedef struct LogOp       LogOp;
-typedef struct LogRow      LogRow;
-typedef struct LogRelation LogRelation;
-typedef struct Log         Log;
+typedef struct LogIf  LogIf;
+typedef struct LogOp  LogOp;
+typedef struct LogRow LogRow;
+typedef struct LogRel LogRel;
+typedef struct Log    Log;
 
 struct LogIf
 {
@@ -37,9 +37,9 @@ struct LogRow
 	Row* row_prev;
 };
 
-struct LogRelation
+struct LogRel
 {
-	void*   relation;
+	Rel*    rel;
 	uint8_t data[];
 };
 
@@ -48,7 +48,7 @@ struct Log
 	Buf      op;
 	Buf      data;
 	int      count;
-	int      count_relation;
+	int      count_rel;
 	WriteLog write_log;
 	List     link;
 };
@@ -71,8 +71,8 @@ log_row_of(Log* self, LogOp* op)
 	return log_data_of(self, op);
 }
 
-always_inline static inline LogRelation*
-log_relation_of(Log* self, LogOp* op)
+always_inline static inline LogRel*
+log_rel_of(Log* self, LogOp* op)
 {
 	return log_data_of(self, op);
 }
@@ -80,8 +80,8 @@ log_relation_of(Log* self, LogOp* op)
 static inline void
 log_init(Log* self)
 {
-	self->count          = 0;
-	self->count_relation = 0;
+	self->count     = 0;
+	self->count_rel = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
 	write_log_init(&self->write_log);
@@ -99,8 +99,8 @@ log_free(Log* self)
 static inline void
 log_reset(Log* self)
 {
-	self->count          = 0;
-	self->count_relation = 0;
+	self->count     = 0;
+	self->count_rel = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
 	write_log_reset(&self->write_log);
@@ -154,11 +154,11 @@ log_persist(Log* self, Uuid* id)
 	write_log_add(&self->write_log, op->cmd, id, ref->row);
 }
 
-static inline LogRelation*
-log_relation(Log*   self,
-             LogIf* iface,
-             void*  iface_arg,
-             void*  relation)
+static inline LogRel*
+log_rel(Log*   self,
+        LogIf* iface,
+        void*  iface_arg,
+        Rel*   rel)
 {
 	// op
 	LogOp* op = buf_emplace(&self->op, sizeof(LogOp));
@@ -167,16 +167,16 @@ log_relation(Log*   self,
 	op->iface_arg = iface_arg;
 	op->pos       = buf_size(&self->data);
 	self->count++;
-	self->count_relation++;
+	self->count_rel++;
 
 	// relation data
-	LogRelation* ref = buf_emplace(&self->data, sizeof(LogRelation));
-	ref->relation = relation;
+	LogRel* ref = buf_emplace(&self->data, sizeof(LogRel));
+	ref->rel = rel;
 	return ref;
 }
 
 hot static inline void
-log_persist_relation(Log* self, uint8_t* data)
+log_persist_rel(Log* self, uint8_t* data)
 {
 	// [cmd, data]
 	auto op = log_last(self);

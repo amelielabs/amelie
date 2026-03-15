@@ -51,7 +51,7 @@ service_checkpoint(Service* self)
 
 	list_foreach(&self->catalog->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Relation, link));
+		auto table = table_of(list_at(Rel, link));
 		for (;;)
 		{
 			uint64_t id = UINT64_MAX;
@@ -97,7 +97,7 @@ service_gc(Service* self)
 	// calculate min lsn accross partitions files (merged)
 	list_foreach(&self->catalog->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Relation, link));
+		auto table = table_of(list_at(Rel, link));
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
 		list_foreach(&table->part_mgr.list)
 		{

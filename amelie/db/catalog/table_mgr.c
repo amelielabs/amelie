@@ -28,13 +28,13 @@ table_mgr_init(TableMgr*  self, StorageMgr* storage_mgr,
 	self->storage_mgr = storage_mgr;
 	self->iface       = iface;
 	self->iface_arg   = iface_arg;
-	relation_mgr_init(&self->mgr);
+	rel_mgr_init(&self->mgr);
 }
 
 void
 table_mgr_free(TableMgr* self)
 {
-	relation_mgr_free(&self->mgr);
+	rel_mgr_free(&self->mgr);
 }
 
 bool
@@ -59,7 +59,7 @@ table_mgr_create(TableMgr*    self,
 	                            self->iface_arg);
 
 	// update tables
-	relation_mgr_create(&self->mgr, tr, &table->rel);
+	rel_mgr_create(&self->mgr, tr, &table->rel);
 
 	// prepare partitions
 	table_open(table);
@@ -70,7 +70,7 @@ void
 table_mgr_drop_of(TableMgr* self, Tr* tr, Table* table)
 {
 	// drop table by object
-	relation_mgr_drop(&self->mgr, tr, &table->rel);
+	rel_mgr_drop(&self->mgr, tr, &table->rel);
 }
 
 bool
@@ -92,8 +92,8 @@ table_mgr_drop(TableMgr* self, Tr* tr, Str* db, Str* name,
 static void
 truncate_if_commit(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	auto table = table_of(relation->relation);
+	auto rel = log_rel_of(self, op);
+	auto table = table_of(rel->rel);
 
 	// truncate partitions
 	part_mgr_truncate(&table->part_mgr);
@@ -129,7 +129,7 @@ table_mgr_truncate(TableMgr* self,
 	}
 
 	// update table
-	log_relation(&tr->log, &truncate_if, NULL, &table->rel);
+	log_rel(&tr->log, &truncate_if, NULL, &table->rel);
 
 	// do nothing (actual truncate will happen on commit)
 	return true;
@@ -142,7 +142,7 @@ table_mgr_dump(TableMgr* self, Buf* buf)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto table = table_of(list_at(Relation, link));
+		auto table = table_of(list_at(Rel, link));
 		table_config_write(table->config, buf, 0);
 	}
 	encode_array_end(buf);
@@ -151,15 +151,15 @@ table_mgr_dump(TableMgr* self, Buf* buf)
 Table*
 table_mgr_find(TableMgr* self, Str* db, Str* name, bool error_if_not_exists)
 {
-	auto relation = relation_mgr_get(&self->mgr, db, name);
-	if (! relation)
+	auto rel = rel_mgr_get(&self->mgr, db, name);
+	if (! rel)
 	{
 		if (error_if_not_exists)
 			error("table '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return NULL;
 	}
-	return table_of(relation);
+	return table_of(rel);
 }
 
 Table*
@@ -167,7 +167,7 @@ table_mgr_find_by(TableMgr* self, Uuid* id, bool error_if_not_exists)
 {
 	list_foreach(&self->mgr.list)
 	{
-		auto table = table_of(list_at(Relation, link));
+		auto table = table_of(list_at(Rel, link));
 		if (uuid_is(&table->config->id, id))
 			return table;
 	}
@@ -199,7 +199,7 @@ table_mgr_list(TableMgr* self, Str* db, Str* name, int flags)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto table = table_of(list_at(Relation, link));
+		auto table = table_of(list_at(Rel, link));
 		if (db && !str_compare_case(&table->config->db, db))
 			continue;
 		table_config_write(table->config, buf, flags);

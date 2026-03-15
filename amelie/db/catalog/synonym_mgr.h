@@ -15,7 +15,7 @@ typedef struct SynonymMgr SynonymMgr;
 
 struct SynonymMgr
 {
-	RelationMgr mgr;
+	RelMgr mgr;
 };
 
 void synonym_mgr_init(SynonymMgr*);

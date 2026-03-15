@@ -18,13 +18,13 @@
 void
 storage_mgr_init(StorageMgr* self)
 {
-	relation_mgr_init(&self->mgr);
+	rel_mgr_init(&self->mgr);
 }
 
 void
 storage_mgr_free(StorageMgr* self)
 {
-	relation_mgr_free(&self->mgr);
+	rel_mgr_free(&self->mgr);
 }
 
 bool
@@ -47,7 +47,7 @@ storage_mgr_create(StorageMgr*    self,
 	auto storage = storage_allocate(config);
 
 	// register storage
-	relation_mgr_create(&self->mgr, tr, &storage->rel);
+	rel_mgr_create(&self->mgr, tr, &storage->rel);
 	return true;
 }
 
@@ -74,7 +74,7 @@ storage_mgr_drop(StorageMgr* self,
 		      str_of(name));
 
 	// drop storage by object
-	relation_mgr_drop(&self->mgr, tr, &storage->rel);
+	rel_mgr_drop(&self->mgr, tr, &storage->rel);
 	return true;
 }
 
@@ -88,11 +88,11 @@ rename_if_commit(Log* self, LogOp* op)
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	auto storage = storage_of(relation->relation);
+	auto rel = log_rel_of(self, op);
+	auto storage = storage_of(rel->rel);
 
 	// set previous name
-	uint8_t* pos = relation->data;
+	uint8_t* pos = rel->data;
 	Str name;
 	json_read_string(&pos, &name);
 	storage_config_set_name(storage->config, &name);
@@ -134,7 +134,7 @@ storage_mgr_rename(StorageMgr* self,
 		      str_of(name_new));
 
 	// update storage
-	log_relation(&tr->log, &rename_if, NULL, &storage->rel);
+	log_rel(&tr->log, &rename_if, NULL, &storage->rel);
 
 	// save name for rollback
 	encode_string(&tr->log.data, name);
@@ -151,7 +151,7 @@ storage_mgr_dump(StorageMgr* self, Buf* buf)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto storage = storage_of(list_at(Relation, link));
+		auto storage = storage_of(list_at(Rel, link));
 		if (storage->config->system)
 			continue;
 		storage_config_write(storage->config, buf, 0);
@@ -162,15 +162,15 @@ storage_mgr_dump(StorageMgr* self, Buf* buf)
 Storage*
 storage_mgr_find(StorageMgr* self, Str* name, bool error_if_not_exists)
 {
-	auto relation = relation_mgr_get(&self->mgr, NULL, name);
-	if (! relation)
+	auto rel = rel_mgr_get(&self->mgr, NULL, name);
+	if (! rel)
 	{
 		if (error_if_not_exists)
 			error("storage '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return NULL;
 	}
-	return storage_of(relation);
+	return storage_of(rel);
 }
 
 Buf*
@@ -189,7 +189,7 @@ storage_mgr_list(StorageMgr* self, Str* name, int flags)
 		encode_array(buf);
 		list_foreach(&self->mgr.list)
 		{
-			auto storage = storage_of(list_at(Relation, link));
+			auto storage = storage_of(list_at(Rel, link));
 			storage_config_write(storage->config, buf, flags);
 		}
 		encode_array_end(buf);

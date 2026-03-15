@@ -15,7 +15,7 @@ typedef struct Storage Storage;
 
 struct Storage
 {
-	Relation       rel;
+	Rel            rel;
 	StorageConfig* config;
 	int            refs;
 };
@@ -36,11 +36,11 @@ storage_allocate(StorageConfig* config)
 	self->refs   = 0;
 
 	auto rel = &self->rel;
-	relation_init(rel);
-	relation_set_db(rel, NULL);
-	relation_set_name(rel, &self->config->name);
-	relation_set_free_function(rel, (RelationFree)storage_free);
-	relation_set_rsn(rel, state_rsn_next());
+	rel_init(rel);
+	rel_set_db(rel, NULL);
+	rel_set_name(rel, &self->config->name);
+	rel_set_free_function(rel, (RelFree)storage_free);
+	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 
@@ -58,7 +58,7 @@ storage_unref(Storage* self)
 }
 
 static inline Storage*
-storage_of(Relation* self)
+storage_of(Rel* self)
 {
 	return (Storage*)self;
 }

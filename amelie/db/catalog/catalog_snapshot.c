@@ -35,7 +35,7 @@ catalog_snapshot(Catalog* self, Buf* data)
 	encode_array(data);
 	list_foreach(&self->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Relation, link));
+		auto table = table_of(list_at(Rel, link));
 		volume_mgr_list(&table->config->partitioning.volumes, data);
 	}
 	encode_array_end(data);
@@ -47,7 +47,7 @@ catalog_snapshot(Catalog* self, Buf* data)
 	// create snapshot files (hard links)
 	list_foreach(&self->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Relation, link));
+		auto table = table_of(list_at(Rel, link));
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
 		defer(unlock, table_lock);
 

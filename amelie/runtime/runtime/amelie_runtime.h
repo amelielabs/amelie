@@ -13,7 +13,7 @@
 
 // lock manager
 #include "runtime/lock_id.h"
-#include "runtime/relation.h"
+#include "runtime/rel.h"
 #include "runtime/access.h"
 #include "runtime/lock.h"
 #include "runtime/lock_cache.h"
