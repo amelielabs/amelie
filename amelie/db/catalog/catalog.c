@@ -153,7 +153,7 @@ catalog_status(Catalog* self)
 static void
 catalog_validate_udfs(Catalog* self, Str* name)
 {
-	// validate udf dependencies on the relation
+	// validate udfs dependencies on the relation
 	list_foreach(&self->udf_mgr.mgr.list)
 	{
 		auto udf = udf_of(list_at(Relation, link));
@@ -162,6 +162,42 @@ catalog_validate_udfs(Catalog* self, Str* name)
 			      str_size(udf->rel.name), str_of(udf->rel.name),
 			      str_size(name), str_of(name));
 	}
+}
+
+static void
+catalog_validate_synonyms(Catalog* self, Str* db, Str* name)
+{
+	// validate synonyms dependencies on the relation
+	list_foreach(&self->synonym_mgr.mgr.list)
+	{
+		auto synonym = synonym_of(list_at(Relation, link));
+		if (str_compare_case(&synonym->config->for_db, db) ||
+		    str_compare_case(&synonym->config->for_name, name))
+			error("synonym '%.*s' depends on relation '%.*s",
+			      str_size(synonym->rel.name), str_of(synonym->rel.name),
+			      str_size(name), str_of(name));
+	}
+}
+
+hot Relation*
+catalog_find(Catalog* self, Str* db, Str* name, bool error_if_not_exists)
+{
+	auto table = table_mgr_find(&self->table_mgr, db, name, false);
+	if (table)
+		return &table->rel;
+
+	auto synonym = synonym_mgr_find(&self->synonym_mgr, db, name, false);
+	if (synonym)
+		return &synonym->rel;
+
+	auto udf = udf_mgr_find(&self->udf_mgr, db, name, false);
+	if (udf)
+		return &udf->rel;
+
+	if (error_if_not_exists)
+		error("relation '%.*s': not exists", str_size(name),
+		       str_of(name));
+	return NULL;
 }
 
 bool
@@ -245,6 +281,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
+		catalog_validate_synonyms(self, &db, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = table_mgr_drop(&self->table_mgr, tr, &db, &name, if_exists);
@@ -263,6 +300,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
+		catalog_validate_synonyms(self, &db, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = table_mgr_rename(&self->table_mgr, tr, &db, &name,
@@ -552,6 +590,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		// ensure no other udfs depend on it
 		catalog_validate_udfs(self, &name);
+		catalog_validate_synonyms(self, &db, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = udf_mgr_drop(&self->udf_mgr, tr, &db, &name, if_exists);
@@ -570,20 +609,33 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		// ensure no other udfs depend on it
 		catalog_validate_udfs(self, &name);
+		catalog_validate_synonyms(self, &db, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = udf_mgr_rename(&self->udf_mgr, tr, &db, &name,
 		                       &db_new, &name_new, if_exists);
 		break;
 	}
-
 	case DDL_SYNONYM_CREATE:
 	{
 		auto config = synonym_op_create_read(op);
 		defer(synonym_config_free, config);
 
-		// create or replace
+		// ensure synonym relation name is unique
+		if (catalog_find(self, &config->db, &config->name, false))
+		{
+			// todo: skip synonyms
+			error("synonym '%.*s': conflicts with existing relation", str_size(&config->name),
+			      str_of(&config->name));
+		}
+
+		// create synonym
 		write = synonym_mgr_create(&self->synonym_mgr, tr, config, false);
+		auto synonym = synonym_mgr_find(&self->synonym_mgr, &config->db,
+		                                &config->name, true);
+
+		// resolve
+		synonym->ref = catalog_find(self, &config->for_db, &config->for_name, true);
 		break;
 	}
 	case DDL_SYNONYM_DROP:

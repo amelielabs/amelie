@@ -52,6 +52,20 @@ cascade_db_drop_execute(Catalog* self, Tr* tr, Str* db, bool drop)
 			      str_size(&udf->config->name), str_of(&udf->config->name),
 			      str_size(db), str_of(db));
 	}
+
+	// synonyms
+	list_foreach_safe(&self->synonym_mgr.mgr.list)
+	{
+		auto synonym = synonym_of(list_at(Relation, link));
+		if (! str_compare_case(&synonym->config->db, db))
+			continue;
+		if (drop)
+			synonym_mgr_drop_of(&self->synonym_mgr, tr, synonym);
+		else
+			error("synonym '%.*s' depends on db '%.*s",
+			      str_size(&synonym->config->name), str_of(&synonym->config->name),
+			      str_size(db), str_of(db));
+	}
 }
 
 bool
@@ -100,6 +114,17 @@ cascade_db_rename_execute(Catalog* self, Tr* tr, Str* db, Str* db_new)
 		if (str_compare_case(&udf->config->db, db))
 			error("function '%.*s' is using database '%.*s",
 			      str_size(udf->rel.name), str_of(udf->rel.name),
+			      str_size(db), str_of(db));
+	}
+
+	// synonyms
+	list_foreach_safe(&self->synonym_mgr.mgr.list)
+	{
+		auto synonym = synonym_of(list_at(Relation, link));
+		if (str_compare_case(&synonym->config->db, db) ||
+		    str_compare_case(&synonym->config->for_db, db))
+			error("synonym '%.*s' is using database '%.*s",
+			      str_size(synonym->rel.name), str_of(synonym->rel.name),
 			      str_size(db), str_of(db));
 	}
 }

@@ -38,3 +38,5 @@ void catalog_open(Catalog*, bool);
 void catalog_close(Catalog*);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);
 Buf* catalog_status(Catalog*);
+Relation*
+catalog_find(Catalog*, Str*, Str*, bool);
