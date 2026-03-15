@@ -169,6 +169,7 @@ Keyword keywords[] =
 	{ KSECRET,                "secret",                6  },
 	{ KSTORED,                "stored",                6  },
 	{ KSTORAGE,               "storage",               7  },
+	{ KSYNONYM,               "synonym",               7  },
 
 	// t
 	{ KTRUE,                  "true",                  4  },

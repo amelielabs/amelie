@@ -88,6 +88,13 @@ parse_stmt_free(Stmt* stmt)
 			udf_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_SYNONYM:
+	{
+		auto ast = ast_synonym_create_of(stmt->ast);
+		if (ast->config)
+			synonym_config_free(ast->config);
+		break;
+	}
 	case STMT_WHILE:
 	{
 		auto ast = ast_while_of(stmt->ast);
@@ -266,7 +273,7 @@ parse_stmt(Stmt* self)
 			stmt_push(self, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | STORAGE | DATABASE | TABLE | INDEX | FUNCTION | LOCK
+		// CREATE [type]
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_CREATE_USER;
@@ -307,20 +314,25 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_FUNCTION;
 			parse_function_create(self, or_replace);
 		} else
+		if (stmt_if(self, KSYNONYM))
+		{
+			self->id = STMT_CREATE_SYNONYM;
+			parse_synonym_create(self);
+		} else
 		if (stmt_if(self, KLOCK))
 		{
 			self->id = STMT_CREATE_LOCK;
 			parse_lock_create(self);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION|LOCK expected");
+			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION|SYNONYM|LOCK expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | STORAGE | DATABASE | TABLE | INDEX | FUNCTION | LOCK
+		// DROP [type]
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_DROP_USER;
@@ -356,20 +368,25 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
 		} else
+		if (stmt_if(self, KSYNONYM))
+		{
+			self->id = STMT_DROP_SYNONYM;
+			parse_synonym_drop(self);
+		} else
 		if (stmt_if(self, KLOCK))
 		{
 			self->id = STMT_DROP_LOCK;
 			parse_lock_drop(self);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION|LOCK expected");
+			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION|SYNONYM|LOCK expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | STORAGE | DATABASE | TABLE | INDEX | PARTITION | OBJECT | FUNCTION
+		// ALTER [type]
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_ALTER_USER;
@@ -404,8 +421,13 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
+		} else
+		if (stmt_if(self, KSYNONYM))
+		{
+			self->id = STMT_ALTER_SYNONYM;
+			parse_synonym_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|STORAGE|DATABASE|TABLE|INDEX|PARTITION|OBJECT|FUNCTION expected");
+			stmt_error(self, NULL, "USER|STORAGE|DATABASE|TABLE|INDEX|PARTITION|FUNCTION|SYNONYM expected");
 		}
 		break;
 	}

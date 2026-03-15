@@ -118,7 +118,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		// skip ddl commands before the last catalog lsn
 		if (record->lsn <= state_catalog())
 		{
-			record_cmd_skip(cmd, pos);
+			json_skip(pos);
 			break;
 		}
 

@@ -40,3 +40,33 @@ parse_set_target_column(Str* self, Str* target, Str* column)
 	memcpy(name + str_size(target) + 1, column->pos, str_size(column));
 	str_set(self, name, size);
 }
+
+static inline void
+parse_target(Stmt* self, Str* db, Str* target)
+{
+	auto name = stmt_next(self);
+	switch (name->id) {
+	case KNAME:
+	{
+		// name
+		*db = *self->parser->db;
+		*target = name->string;
+		break;
+	}
+	case KNAME_COMPOUND:
+	{
+		// db.name
+		str_init(db);
+		str_split(&name->string, db, '.');
+
+		*target = name->string;
+		str_advance(target, str_size(db) + 1);
+		if (str_chr(target, '.'))
+			stmt_error(self, name, "invalid target name");
+		break;
+	}
+	default:
+		stmt_error(self, name, "target name expected");
+		break;
+	}
+}
