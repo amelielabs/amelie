@@ -17,6 +17,7 @@ struct Branch
 {
 	Str     name;
 	int64_t id;
+	int64_t id_parent;
 	int64_t snapshot;
 	List    link;
 };
@@ -25,8 +26,9 @@ static inline Branch*
 branch_allocate(void)
 {
 	auto self = (Branch*)am_malloc(sizeof(Branch));
-	self->id = 0;
-	self->snapshot = 0;
+	self->id        = 0;
+	self->id_parent = 0;
+	self->snapshot  = 0;
 	str_init(&self->name);
 	list_init(&self->link);
 	return self;
@@ -53,6 +55,12 @@ branch_set_id(Branch* self, uint64_t value)
 }
 
 static inline void
+branch_set_id_parent(Branch* self, uint64_t value)
+{
+	self->id_parent = value;
+}
+
+static inline void
 branch_set_snapshot(Branch* self, uint64_t value)
 {
 	self->snapshot = value;
@@ -64,6 +72,7 @@ branch_copy(Branch* from)
 	auto self = branch_allocate();
 	branch_set_name(self, &from->name);
 	branch_set_id(self, from->id);
+	branch_set_id_parent(self, from->id_parent);
 	branch_set_snapshot(self, from->snapshot);
 	return self;
 }
@@ -75,10 +84,11 @@ branch_read(uint8_t** pos)
 	errdefer(branch_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "name",     &self->name     },
-		{ DECODE_INT,    "id",       &self->id       },
-		{ DECODE_INT,    "snapshot", &self->snapshot },
-		{ 0,              NULL,       NULL           },
+		{ DECODE_STRING, "name",      &self->name      },
+		{ DECODE_INT,    "id",        &self->id        },
+		{ DECODE_INT,    "id_parent", &self->id_parent },
+		{ DECODE_INT,    "snapshot",  &self->snapshot  },
+		{ 0,              NULL,        NULL            },
 	};
 	decode_obj(obj, "branch", pos);
 	return self;
@@ -99,6 +109,10 @@ branch_write(Branch* self, Buf* buf, int flags)
 	// id
 	encode_raw(buf, "id", 2);
 	encode_integer(buf, self->id);
+
+	// id_parent
+	encode_raw(buf, "id_parent", 9);
+	encode_integer(buf, self->id_parent);
 
 	// snapshot
 	encode_raw(buf, "snapshot", 8);

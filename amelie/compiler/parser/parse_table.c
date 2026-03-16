@@ -453,6 +453,15 @@ parse_table_create(Stmt* self, bool unlogged)
 
 	// [ON STORAGE]
 	parse_volumes(self, &config_part->volumes);
+
+	// create main branch
+	auto branch = branch_allocate();
+	branch_mgr_add(&config_part->branches, branch);
+	Str branch_name;
+	str_set_cstr(&branch_name, "main");
+	branch_set_name(branch, &branch_name);
+	branch_set_id(branch, 0);
+	branch_set_snapshot(branch, 0);
 }
 
 void

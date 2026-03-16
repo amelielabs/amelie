@@ -31,6 +31,7 @@ partitioning_init(Partitioning* self)
 static inline void
 partitioning_free(Partitioning* self)
 {
+	branch_mgr_free(&self->branches);
 	volume_mgr_free(&self->volumes);
 }
 
@@ -44,6 +45,7 @@ static inline void
 partitioning_copy(Partitioning* self, Partitioning* copy)
 {
 	partitioning_set_partitions(copy, self->partitions);
+	branch_mgr_copy(&self->branches, &copy->branches);
 	volume_mgr_copy(&self->volumes, &copy->volumes);
 }
 

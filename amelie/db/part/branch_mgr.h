@@ -109,3 +109,15 @@ branch_mgr_find_by(BranchMgr* self, int64_t id)
 	}
 	return NULL;
 }
+
+static inline Branch*
+branch_mgr_find_parent(BranchMgr* self, int64_t id)
+{
+	list_foreach(&self->list)
+	{
+		auto ref = list_at(Branch, link);
+		if (ref->id_parent == id)
+			return ref;
+	}
+	return NULL;
+}

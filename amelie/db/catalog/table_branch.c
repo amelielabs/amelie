@@ -130,6 +130,22 @@ table_branch_drop(Table* self,
 		return false;
 	}
 
+	// main branch cannot be dropped
+	if (branch->id == 0)
+		error("table '%.*s' branch '%.*s': cannot be dropped",
+		      str_size(&self->config->name),
+		      str_of(&self->config->name),
+		      str_size(name),
+		      str_of(name));
+
+	// parent branch cannot be dropped
+	if (branch_mgr_find_parent(branches, branch->id))
+		error("table '%.*s' branch '%.*s': is a parent branch",
+		      str_size(&self->config->name),
+		      str_of(&self->config->name),
+		      str_size(name),
+		      str_of(name));
+
 	// update table
 	log_rel(&tr->log, &branch_drop_if, self, &self->rel);
 
