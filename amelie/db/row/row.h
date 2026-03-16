@@ -15,10 +15,19 @@ typedef struct Row Row;
 
 struct Row
 {
-	uint8_t  size_factor: 2;
-	uint8_t  is_delete: 1;
-	uint8_t  unused: 5;
+	// 14 bytes (30 with heap chunk)
+
+	// meta with tsn
+	uint64_t size_factor: 2;
+	uint64_t is_delete:   1;
+	uint64_t tsn:         61;
+
+	// branch
+	uint32_t branch;
+
+	// columns in the row
 	uint16_t columns;
+
 	uint8_t  data[];
 } packed;
 
@@ -27,7 +36,8 @@ row_init(Row* self, int columns, int size_factor, int size)
 {
 	self->size_factor = size_factor;
 	self->is_delete   = false;
-	self->unused      = 0;
+	self->tsn         = 0;
+	self->branch      = 0;
 	self->columns     = columns;
 	if (size_factor == 0)
 		*self->data = size;

@@ -230,18 +230,12 @@ heap_add(Heap* self, int size)
 			heap->header->count++;
 		}
 		chunk = (HeapChunk*)((uintptr_t)page_header + page_header->size);
-		chunk->tsn     = 0;
 		chunk->offset  = page_header->size;
 		chunk->bucket  = bucket->id;
 		chunk->is_last = true;
 		chunk->padding = 0;
 		if (likely(heap->last))
-		{
-			chunk->bucket_left  = heap->last->bucket;
 			heap->last->is_last = false;
-		} else {
-			chunk->bucket_left = 0;
-		}
 		heap->last = chunk;
 		page_header->last = page_header->size;
 		page_header->size += bucket->size;
@@ -296,7 +290,6 @@ heap_remove(Heap* self, void* pointer)
 
 	// add chunk to the free list
 	auto bucket = &self->buckets[chunk->bucket];
-	chunk->tsn          = 0;
 	chunk->prev         = bucket->list;
 	chunk->prev_offset  = bucket->list_offset;
 	chunk->is_free      = true;

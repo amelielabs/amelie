@@ -18,29 +18,27 @@ typedef struct Heap       Heap;
 
 struct HeapChunk
 {
-	// 24 bytes
+	// 16 bytes
 
-	// transaction id (64 bits)
-	uint64_t tsn;
-
-	// previous version (40 bits)
+	// previous version (38 bits)
 	uint64_t prev: 19;
-	uint64_t prev_offset: 21;
+	uint64_t prev_offset: 19;
 
-	// next version (40 bits)
+	// next version (38 bits)
 	uint64_t next: 19;
-	uint64_t next_offset: 21;
+	uint64_t next_offset: 19;
 
-	// chunk (43 + 5 bits)
-	uint64_t offset: 21;
+	// chunk (33 + 19 bits)
+	uint64_t offset: 19;
 	uint64_t bucket: 9;
-	uint64_t bucket_left: 9;
 	uint64_t is_free: 1;
 	uint64_t is_last: 1;
 	uint64_t is_shadow: 1;
 	uint64_t is_shadow_free: 1;
 	uint64_t is_evicted: 1;
-	uint64_t padding: 4;
+
+	// unused
+	uint64_t padding: 19;
 
 	// row data
 	uint8_t  data[];
