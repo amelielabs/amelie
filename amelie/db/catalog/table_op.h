@@ -515,3 +515,36 @@ table_op_branch_drop_read(uint8_t* op, Str* db, Str* table, Str* branch)
 	json_read_string(&op, branch);
 	json_read_array_end(&op);
 }
+
+static inline int
+table_op_branch_rename(Buf* self, Str* db, Str* name,
+                       Str* name_branch,
+                       Str* name_branch_new)
+{
+	// [op, db, name, name_branch, name_branch_new]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_BRANCH_RENAME);
+	encode_string(self, db);
+	encode_string(self, name);
+	encode_string(self, name_branch);
+	encode_string(self, name_branch_new);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+table_op_branch_rename_read(uint8_t* op, Str* db, Str* name,
+                            Str*     name_branch,
+                            Str*     name_branch_new)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_BRANCH_RENAME);
+	json_read_string(&op, db);
+	json_read_string(&op, name);
+	json_read_string(&op, name_branch);
+	json_read_string(&op, name_branch_new);
+	json_read_array_end(&op);
+}

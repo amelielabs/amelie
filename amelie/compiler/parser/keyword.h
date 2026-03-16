@@ -71,6 +71,7 @@ enum
 	KBETWEEN,
 	KBY,
 	KBREAK,
+	KBRANCH,
 
 	// c
 	KCURRENT_TIMESTAMP,

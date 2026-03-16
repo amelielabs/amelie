@@ -50,6 +50,7 @@ enum
 	// branch
 	DDL_BRANCH_CREATE,
 	DDL_BRANCH_DROP,
+	DDL_BRANCH_RENAME,
 
 	// udf
 	DDL_UDF_CREATE,

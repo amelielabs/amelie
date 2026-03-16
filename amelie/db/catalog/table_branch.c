@@ -153,3 +153,106 @@ table_branch_drop(Table* self,
 	encode_string(&tr->log.data, name);
 	return true;
 }
+
+static void
+rename_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+rename_if_abort(Log* self, LogOp* op)
+{
+	Branch* branch = op->iface_arg;
+	auto rel = log_rel_of(self, op);
+	uint8_t* pos = rel->data;
+	Str branch_name;
+	json_read_string(&pos, &branch_name);
+	branch_set_name(branch, &branch_name);
+}
+
+static LogIf rename_if =
+{
+	.commit = rename_if_commit,
+	.abort  = rename_if_abort
+};
+
+bool
+table_branch_rename(Table* self,
+                    Tr*    tr,
+                    Str*   name,
+                    Str*   name_new,
+                    bool   if_exists)
+{
+	auto branch = table_branch_find(self, name, false);
+	if (! branch)
+	{
+		if (! if_exists)
+			error("table '%.*s' branch '%.*s': not exists",
+			      str_size(&self->config->name),
+			      str_of(&self->config->name),
+			      str_size(name),
+			      str_of(name));
+		return false;
+	}
+
+	// main branch cannot be renamed
+	if (branch->id == 0)
+		error("table '%.*s' branch '%.*s': cannot be renamed",
+		      str_size(&self->config->name),
+		      str_of(&self->config->name),
+		      str_size(name),
+		      str_of(name));
+
+	// ensure new branch not exists
+	if (table_branch_find(self, name_new, false))
+		error("table '%.*s' branch '%.*s': already exists",
+		      str_size(&self->config->name),
+		      str_of(&self->config->name),
+		      str_size(name_new),
+		      str_of(name_new));
+
+	// update table
+	log_rel(&tr->log, &rename_if, branch, &self->rel);
+
+	// save previous name
+	encode_string(&tr->log.data, &branch->name);
+
+	// rename branch
+	branch_set_name(branch, name_new);
+	return true;
+}
+
+hot Branch*
+table_branch_find(Table* self, Str* name, bool error_if_not_exists)
+{
+	auto branch = branch_mgr_find(&self->config->partitioning.branches, name);
+
+	if (!branch && error_if_not_exists)
+		error("branch '%.*s': not exists", str_size(name),
+		       str_of(name));
+	return branch;
+}
+
+Buf*
+table_branch_list(Table* self, Str* ref, int flags)
+{
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
+	// show branch name on table
+	if (ref)
+	{
+		auto branch = table_branch_find(self, ref, false);
+		if (! branch)
+			encode_null(buf);
+		else
+			branch_write(branch, buf, flags);
+		return buf;
+	}
+
+	// show branches on table
+	branch_mgr_write(&self->config->partitioning.branches, buf, flags);
+	return buf;
+}

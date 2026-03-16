@@ -37,6 +37,8 @@ enum
 	SHOW_TABLE,
 	SHOW_INDEXES,
 	SHOW_INDEX,
+	SHOW_BRANCHES,
+	SHOW_BRANCH,
 	SHOW_PARTITIONS,
 	SHOW_PARTITION,
 	SHOW_FUNCTIONS,
@@ -78,6 +80,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_TABLE,      "table",       5,  true,  false },
 	{ SHOW_INDEXES,    "indexes",     7,  false, true  },
 	{ SHOW_INDEX,      "index",       5,  true,  true  },
+	{ SHOW_BRANCHES,   "branches",    8,  false, true  },
+	{ SHOW_BRANCH,     "branch",      6,  true,  true  },
 	{ SHOW_PARTITIONS, "partitions",  10, false, true  },
 	{ SHOW_PARTITION,  "partition",   9,  true,  true  },
 	{ SHOW_FUNCTIONS,  "functions",   9,  false, false },
@@ -293,6 +297,18 @@ fn_show(Fn* self)
 	{
 		auto table = catalog_find_table(catalog, db, on, true);
 		buf = table_index_list(table, name, flags);
+		break;
+	}
+	case SHOW_BRANCHES:
+	{
+		auto table = catalog_find_table(catalog, db, on, true);
+		buf = table_branch_list(table, NULL, flags);
+		break;
+	}
+	case SHOW_BRANCH:
+	{
+		auto table = catalog_find_table(catalog, db, on, true);
+		buf = table_branch_list(table, name, flags);
 		break;
 	}
 	case SHOW_PARTITIONS:

@@ -11,5 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-bool table_branch_create(Table*, Tr*, Branch*, bool);
-bool table_branch_drop(Table*, Tr*, Str*, bool);
+bool    table_branch_create(Table*, Tr*, Branch*, bool);
+bool    table_branch_drop(Table*, Tr*, Str*, bool);
+bool    table_branch_rename(Table*, Tr*, Str*, Str*, bool);
+Buf*    table_branch_list(Table*, Str*, int);
+Branch* table_branch_find(Table*, Str*, bool);

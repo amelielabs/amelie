@@ -253,6 +253,30 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
+	// branch
+	case STMT_CREATE_BRANCH:
+	{
+		auto arg = ast_branch_create_of(stmt->ast);
+		offset = table_op_branch_create(data, db, &arg->table_name, arg->config);
+		flags  = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		break;
+	}
+	case STMT_DROP_BRANCH:
+	{
+		auto arg = ast_branch_drop_of(stmt->ast);
+		offset = table_op_branch_drop(data, db, &arg->table_name, &arg->name);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+	case STMT_ALTER_BRANCH:
+	{
+		auto arg = ast_branch_alter_of(stmt->ast);
+		offset = table_op_branch_rename(data, db, &arg->table_name, &arg->name,
+		                                &arg->name_new);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+
 	// function
 	case STMT_CREATE_FUNCTION:
 	{

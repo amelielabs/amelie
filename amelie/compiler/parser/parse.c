@@ -81,6 +81,13 @@ parse_stmt_free(Stmt* stmt)
 			index_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_BRANCH:
+	{
+		auto ast = ast_branch_create_of(stmt->ast);
+		if (ast->config)
+			branch_free(ast->config);
+		break;
+	}
 	case STMT_CREATE_FUNCTION:
 	{
 		auto ast = ast_function_create_of(stmt->ast);
@@ -309,6 +316,11 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_INDEX;
 			parse_index_create(self, unique);
 		} else
+		if (stmt_if(self, KBRANCH))
+		{
+			self->id = STMT_CREATE_BRANCH;
+			parse_branch_create(self);
+		} else
 		if (stmt_if(self, KFUNCTION))
 		{
 			self->id = STMT_CREATE_FUNCTION;
@@ -325,7 +337,7 @@ parse_stmt(Stmt* self)
 			parse_lock_create(self);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION|SYNONYM|LOCK expected");
+			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|BRANCH|FUNCTION|SYNONYM|LOCK expected");
 		}
 		break;
 	}
@@ -363,6 +375,11 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_INDEX;
 			parse_index_drop(self);
 		} else
+		if (stmt_if(self, KBRANCH))
+		{
+			self->id = STMT_DROP_BRANCH;
+			parse_branch_drop(self);
+		} else
 		if (stmt_if(self, KFUNCTION))
 		{
 			self->id = STMT_DROP_FUNCTION;
@@ -379,7 +396,7 @@ parse_stmt(Stmt* self)
 			parse_lock_drop(self);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION|SYNONYM|LOCK expected");
+			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|BRANCH|FUNCTION|SYNONYM|LOCK expected");
 		}
 		break;
 	}
@@ -412,6 +429,11 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_INDEX;
 			parse_index_alter(self);
 		} else
+		if (stmt_if(self, KBRANCH))
+		{
+			self->id = STMT_ALTER_BRANCH;
+			parse_branch_alter(self);
+		} else
 		if (stmt_if(self, KPARTITION))
 		{
 			self->id = STMT_ALTER_PARTITION;
@@ -427,7 +449,7 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_SYNONYM;
 			parse_synonym_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|STORAGE|DATABASE|TABLE|INDEX|PARTITION|FUNCTION|SYNONYM expected");
+			stmt_error(self, NULL, "USER|STORAGE|DATABASE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected");
 		}
 		break;
 	}

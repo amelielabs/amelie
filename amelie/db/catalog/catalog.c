@@ -509,6 +509,23 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = table_branch_drop(table, tr, &name_branch, if_exists_branch);
 		break;
 	}
+	case DDL_BRANCH_RENAME:
+	{
+		Str db;
+		Str name;
+		Str name_branch;
+		Str name_branch_new;
+		table_op_branch_rename_read(op, &db, &name, &name_branch, &name_branch_new);
+
+		auto if_exists = ddl_if_exists(flags);
+		auto if_exists_branch = ddl_if_branch_exists(flags);
+		auto table = table_mgr_find(&self->table_mgr, &db, &name, !if_exists);
+		if (! table)
+			break;
+		write = table_branch_rename(table, tr, &name_branch, &name_branch_new,
+		                            if_exists_branch);
+		break;
+	}
 	case DDL_UDF_CREATE:
 	{
 		auto config = udf_op_create_read(op);
