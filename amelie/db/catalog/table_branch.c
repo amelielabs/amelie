@@ -69,6 +69,15 @@ table_branch_create(Table*  self,
 		return false;
 	}
 
+	// find parent
+	auto parent = branch_mgr_find_by(branches, config->id_parent);
+	if (! parent)
+		error("table '%.*s' branch '%.*s': parent not found",
+		      str_size(&self->config->name),
+		      str_of(&self->config->name),
+		      str_size(&config->name),
+		      str_of(&config->name));
+
 	// update table
 	log_rel(&tr->log, &branch_create_if, self, &self->rel);
 
@@ -77,6 +86,7 @@ table_branch_create(Table*  self,
 
 	// add branch
 	branch = branch_copy(config);
+	branch->parent = parent;
 	branch_mgr_add(branches, branch);
 	return true;
 }

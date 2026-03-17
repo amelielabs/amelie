@@ -19,6 +19,7 @@ struct Branch
 	int64_t id;
 	int64_t id_parent;
 	int64_t snapshot;
+	Branch* parent;
 	List    link;
 };
 
@@ -29,6 +30,7 @@ branch_allocate(void)
 	self->id        = 0;
 	self->id_parent = 0;
 	self->snapshot  = 0;
+	self->parent    = NULL;
 	str_init(&self->name);
 	list_init(&self->link);
 	return self;

@@ -11,6 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
+// branching
+#include "heap/branch.h"
+#include "heap/branch_mgr.h"
+
 // heap
 #include "heap/page_mgr.h"
 #include "heap/heap.h"

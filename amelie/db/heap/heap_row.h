@@ -52,3 +52,29 @@ row_tsn(Row* self)
 {
 	return heap_chunk_of(self)->tsn;
 }
+
+hot static inline Row*
+row_visible(Row* row, Heap* heap, Branch* branch)
+{
+	// row is a head of version chain
+	while (row)
+	{
+		// update by this branch
+		if (row->branch == branch->id)
+			break;
+
+		// update by one of the derived parent branches
+		auto chunk = heap_chunk_of(row);
+
+		auto parent = branch->parent;
+		for (; parent; parent = parent->parent)
+			if (row->branch == parent->id && chunk->tsn <= (uint64_t)parent->snapshot)
+				break;
+		if (! chunk->prev_offset)
+			return NULL;
+
+		// previous version
+		row = (Row*)heap_chunk_at(heap, chunk->prev, chunk->prev_offset)->data;
+	}
+	return row;
+}
