@@ -123,38 +123,24 @@ scan_table(Scan* self, Target* target)
 	// set target origin
 	target_set_origin(target, cp->origin);
 
-	// save db, table and index name
-	auto name_offset = code_data_offset(cp->code_data);
-	auto data = &cp->code_data->data;
-	encode_string(data, &table->config->db);
-	encode_string(data, &table->config->name);
-	encode_string(data, &index->name);
-
-	// push cursor keys
+	// push keys
 	auto keys_count = scan_key(self, target);
 
-	// table_open (open a single partition or do table scan)
-	int _open = op_pos(cp);
-	int  open_op;
-	if (target->from_lock == LOCK_EXCLUSIVE_RO)
-	{
-		// subquery or inner join target
-		if (point_lookup)
-			open_op = CTABLE_OPENL;
-		else
-			open_op = CTABLE_OPEN;
-	} else
-	{
-		if (point_lookup)
-			open_op = CTABLE_OPEN_PARTL;
-		else
-			open_op = CTABLE_OPEN_PART;
-	}
+	// create table open argument
+	//
+	// open a single partition or do table scan
+	int  open_offset;
+	auto open = open_create(cp->code_data, &open_offset);
+	open->table        = table;
+	open->index        = index;
+	open->keys_count   = keys_count;
+	open->point_lookup = point_lookup;
+	open->open_part    = target->from_lock != LOCK_EXCLUSIVE_RO;
 
-	// create table cursor
-	target->rcursor = op4pin(cp, open_op, TYPE_CURSOR,
-	                         name_offset, 0 /* _eof */,
-	                         keys_count);
+	// table_open
+	int _open = op_pos(cp);
+	target->rcursor = op3pin(cp, CTABLE_OPEN, TYPE_CURSOR,
+	                         open_offset, 0 /* _eof */);
 
 	// _where:
 	int _where = op_pos(cp);

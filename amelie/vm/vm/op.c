@@ -230,9 +230,6 @@ OpDesc ops[] =
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },
-	{ CTABLE_OPENL, "table_openl" },
-	{ CTABLE_OPEN_PART, "table_open_part" },
-	{ CTABLE_OPEN_PARTL, "table_open_partl" },
 	{ CTABLE_PREPARE, "table_prepare" },
 	{ CTABLE_NEXT, "table_next" },
 	{ CTABLE_READB, "table_readb" },
@@ -458,23 +455,26 @@ op_dump(Program* self, Code* code, Buf* buf)
 			break;
 		}
 		case CTABLE_OPEN:
-		case CTABLE_OPENL:
-		case CTABLE_OPEN_PART:
-		case CTABLE_OPEN_PARTL:
 		{
-			Str name_db;
-			Str name_table;
-			Str name_index;
-			uint8_t* ref = code_data_at(data, op->b);
-			json_read_string(&ref, &name_db);
-			json_read_string(&ref, &name_table);
-			json_read_string(&ref, &name_index);
+			auto open = open_at(data, op->b);
+			auto desc = buf_create();
+			defer_buf(desc);
+			if (open->point_lookup)
+				buf_write(desc, "point_lookup", 12);
+			if (open->open_part)
+			{
+				if (! buf_empty(desc))
+					buf_write(desc, ", ", 2);
+				buf_write(desc, "part", 4);
+			}
 			op_write(output, op, true, true, true,
-			         "%.*s (%.*s)",
-			         str_size(&name_table),
-			         str_of(&name_table),
-			         str_size(&name_index),
-			         str_of(&name_index));
+			         "%.*s (%.*s) %.*s",
+			         str_size(&open->table->config->name),
+			         str_of(&open->table->config->name),
+			         str_size(&open->index->name),
+			         str_of(&open->index->name),
+			         buf_size(desc),
+			         buf_cstr(desc));
 			break;
 		}
 		case CTABLE_PREPARE:

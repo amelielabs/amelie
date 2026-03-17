@@ -8,15 +8,15 @@ insert into test (id) values (1), (2), (3);
 explain select test.*, ref.* from test, ref;
 [{
   "main": {
-    "00": "send_all            0      0      35    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      4      0     ",
-    "01": "table_open_part     1      0      15    # test (primary)",
-    "02": "table_open          2      18     13    # ref (primary)",
+    "01": "table_open          1      0      15    # test (primary) part",
+    "02": "table_open          2      24     13    # ref (primary) ",
     "03": "table_readi32       3      1      -     # id",
     "04": "push                3      0      0     ",
     "05": "table_readi32       3      1      -     # data",
@@ -40,15 +40,15 @@ select test.*, ref.* from test, ref;
 explain select test.*, ref.* from ref, test;
 [{
   "main": {
-    "00": "send_all            0      0      35    # ref (select, closing)",
+    "00": "send_all            0      0      48    # ref (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      4      0     ",
-    "01": "table_open_part     1      0      15    # ref (primary)",
-    "02": "table_open          2      17     13    # test (primary)",
+    "01": "table_open          1      0      15    # ref (primary) part",
+    "02": "table_open          2      24     13    # test (primary) ",
     "03": "table_readi32       3      2      -     # id",
     "04": "push                3      0      0     ",
     "05": "table_readi32       3      2      -     # data",
@@ -72,15 +72,15 @@ select test.*, ref.* from ref, test;
 explain select t.* from test, test t;
 [{
   "main": {
-    "00": "send_all            0      0      36    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      11    # test (primary)",
-    "02": "table_open          2      18     9     # test (primary)",
+    "01": "table_open          1      0      11    # test (primary) part",
+    "02": "table_open          2      24     9     # test (primary) ",
     "03": "table_readi32       3      2      -     # id",
     "04": "push                3      0      0     ",
     "05": "table_readi32       3      2      -     # data",
@@ -100,15 +100,15 @@ select t.* from test, test t;
 explain select test.id, ref.id from test join ref on true;
 [{
   "main": {
-    "00": "send_all            0      0      35    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      13    # test (primary)",
-    "02": "table_open          2      18     11    # ref (primary)",
+    "01": "table_open          1      0      13    # test (primary) part",
+    "02": "table_open          2      24     11    # ref (primary) ",
     "03": "bool                3      1      0     ",
     "04": "jntr                10     3      0     ",
     "05": "table_readi32       3      1      -     # id",
@@ -130,17 +130,17 @@ select test.id, ref.id from test join ref on true;
 explain select test.id, ref.id from test join ref on test.id = ref.id;
 [{
   "main": {
-    "00": "send_all            0      0      35    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      16    # test (primary)",
+    "01": "table_open          1      0      16    # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      18     14    # ref (primary)",
+    "04": "table_open          2      24     14    # ref (primary) point_lookup",
     "05": "table_readi32       3      1      -     # id",
     "06": "table_readi32       4      2      -     # id",
     "07": "equii               5      3      4     ",
@@ -163,20 +163,20 @@ select test.id, ref.id from test join ref on test.id = ref.id;
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
 [{
   "main": {
-    "00": "send_all            0      0      52    # test (select, closing)",
+    "00": "send_all            0      0      72    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      24    # test (primary)",
+    "01": "table_open          1      0      24    # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      18     22    # ref (primary)",
+    "04": "table_open          2      24     22    # ref (primary) point_lookup",
     "05": "table_readi32       3      1      -     # id",
     "06": "push                3      0      0     ",
-    "07": "table_openl         3      35     21    # ref (primary)",
+    "07": "table_open          3      48     21    # ref (primary) point_lookup",
     "08": "table_readi32       4      1      -     # id",
     "09": "table_readi32       5      2      -     # id",
     "10": "equii               6      4      5     ",
@@ -204,7 +204,7 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
 [{
   "main": {
-    "00": "send_all            0      0      52    # test (select, closing)",
+    "00": "send_all            0      0      72    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -212,13 +212,13 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 0",
-    "02": "table_open_part     1      0      29    # test (primary)",
+    "02": "table_open          1      0      29    # test (primary) part",
     "03": "table_readi32       2      1      -     # id",
     "04": "push                2      0      0     ",
-    "05": "table_openl         2      18     27    # ref (primary)",
+    "05": "table_open          2      24     27    # ref (primary) point_lookup",
     "06": "table_readi32       3      1      -     # id",
     "07": "push                3      0      0     ",
-    "08": "table_openl         3      35     26    # ref (primary)",
+    "08": "table_open          3      48     26    # ref (primary) point_lookup",
     "09": "table_readi32       4      1      -     # id",
     "10": "table_readi32       5      2      -     # id",
     "11": "equii               6      4      5     ",
@@ -250,17 +250,17 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test, ref where test.id = ref.id;
 [{
   "main": {
-    "00": "send_all            0      0      35    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      16    # test (primary)",
+    "01": "table_open          1      0      16    # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      18     14    # ref (primary)",
+    "04": "table_open          2      24     14    # ref (primary) point_lookup",
     "05": "table_readi32       3      1      -     # id",
     "06": "table_readi32       4      2      -     # id",
     "07": "equii               5      3      4     ",
@@ -282,17 +282,17 @@ select test.id, ref.id from test, ref where test.id = ref.id;
 explain select test.id, ref.id from test, ref where ref.id = test.id;
 [{
   "main": {
-    "00": "send_all            0      0      35    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      16    # test (primary)",
+    "01": "table_open          1      0      16    # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      18     14    # ref (primary)",
+    "04": "table_open          2      24     14    # ref (primary) point_lookup",
     "05": "table_readi32       3      2      -     # id",
     "06": "table_readi32       4      1      -     # id",
     "07": "equii               5      3      4     ",
@@ -314,16 +314,16 @@ select test.id, ref.id from test, ref where ref.id = test.id;
 explain select test.id, ref.id from test, ref where ref.id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      35    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      15    # test (primary)",
+    "01": "table_open          1      0      15    # test (primary) part",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_openl         2      18     13    # ref (primary)",
+    "03": "table_open          2      24     13    # ref (primary) point_lookup",
     "04": "table_readi32       3      2      -     # id",
     "05": "int                 4      -      0     # 1",
     "06": "equii               5      3      4     ",
@@ -346,7 +346,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 [{
   "main": {
     "00": "push_int            -      0      0     # 1",
-    "01": "send_lookup         0      -      35    # test (select, closing)",
+    "01": "send_lookup         0      -      48    # test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
@@ -354,9 +354,9 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open_partl    1      0      19    # test (primary)",
+    "02": "table_open          1      0      19    # test (primary) point_lookup, part",
     "03": "push_int            -      0      0     # 1",
-    "04": "table_openl         2      18     18    # ref (primary)",
+    "04": "table_open          2      24     18    # ref (primary) point_lookup",
     "05": "table_readi32       3      2      -     # id",
     "06": "int                 4      -      0     # 1",
     "07": "equii               5      3      4     ",
@@ -381,17 +381,17 @@ select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 explain select test.id, ref.id from test, ref where ref.id >= test.id;
 [{
   "main": {
-    "00": "send_all            0      0      35    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      17    # test (primary)",
+    "01": "table_open          1      0      17    # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_open          2      18     15    # ref (primary)",
+    "04": "table_open          2      24     15    # ref (primary) ",
     "05": "table_readi32       3      2      -     # id",
     "06": "table_readi32       4      1      -     # id",
     "07": "gteii               5      3      4     ",
@@ -423,17 +423,17 @@ explain select test.id, ref.id from test join ref using(id;
 explain select test.id, ref.id from test join ref using(id);
 [{
   "main": {
-    "00": "send_all            0      0      35    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      16    # test (primary)",
+    "01": "table_open          1      0      16    # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      18     14    # ref (primary)",
+    "04": "table_open          2      24     14    # ref (primary) point_lookup",
     "05": "table_readi32       3      1      -     # id",
     "06": "table_readi32       4      2      -     # id",
     "07": "equii               5      3      4     ",
@@ -459,7 +459,7 @@ select test.id, ref.id from test join ref using(unknown);
 explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
 [{
   "main": {
-    "00": "send_all            0      0      52    # test (select, closing)",
+    "00": "send_all            0      0      72    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -467,13 +467,13 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 0",
-    "02": "table_open_part     1      0      29    # test (primary)",
+    "02": "table_open          1      0      29    # test (primary) part",
     "03": "table_readi32       2      1      -     # id",
     "04": "push                2      0      0     ",
-    "05": "table_openl         2      18     27    # ref (primary)",
+    "05": "table_open          2      24     27    # ref (primary) point_lookup",
     "06": "table_readi32       3      2      -     # id",
     "07": "push                3      0      0     ",
-    "08": "table_openl         3      35     26    # ref (primary)",
+    "08": "table_open          3      48     26    # ref (primary) point_lookup",
     "09": "table_readi32       4      1      -     # id",
     "10": "table_readi32       5      2      -     # id",
     "11": "equii               6      4      5     ",
@@ -507,18 +507,18 @@ select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) w
 explain with a as (select * from test) select * from test, a where test.id = a.id;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
+    "00": "send_all            0      0      24    # test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "push_ref            1      1      0     ",
-    "04": "send_all            0      1      60    # test (select, closing)",
+    "04": "send_all            0      1      72    # test (select, closing)",
     "05": "union               2      0      0     ",
     "06": "recv                2      0      0     ",
     "07": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -528,7 +528,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
     "10": "set                 0      4      0     ",
-    "11": "table_open_part     2      42     31    # test (primary)",
+    "11": "table_open          2      48     31    # test (primary) part",
     "12": "ref                 3      0      0     ",
     "13": "store_open          4      3      28    ",
     "14": "table_readi32       5      2      -     # id",
@@ -559,19 +559,19 @@ with a as (select * from test) select * from test, a where test.id = a.id;
 explain with a as (select * from test) select * from test, a where test.id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
+    "00": "send_all            0      0      24    # test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "push_ref            1      1      0     ",
     "04": "push_int            -      0      0     # 1",
-    "05": "send_lookup         0      -      60    # test (select, closing)",
+    "05": "send_lookup         0      -      72    # test (select, closing)",
     "06": "union               2      0      0     ",
     "07": "recv                2      0      0     ",
     "08": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -582,7 +582,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "09": "ret                 0      0      -     ",
     "10": "set                 0      4      0     ",
     "11": "push_int            -      0      0     # 1",
-    "12": "table_open_partl    2      42     31    # test (primary)",
+    "12": "table_open          2      48     31    # test (primary) point_lookup, part",
     "13": "ref                 3      0      0     ",
     "14": "store_open          4      3      29    ",
     "15": "table_readi32       5      2      -     # id",
@@ -612,7 +612,7 @@ with a as (select * from test) select * from test, a where test.id = 1;
 explain with a as (select * from test) select * from a, test where test.id = a.id;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      4      0     ",
@@ -620,7 +620,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
     "05": "store_open          3      2      24    ",
     "06": "store_read          4      3      0     ",
     "07": "push                4      0      0     ",
-    "08": "table_openl         4      42     22    # test (primary)",
+    "08": "table_open          4      48     22    # test (primary) point_lookup",
     "09": "table_readi32       5      4      -     # id",
     "10": "store_read          6      3      0     ",
     "11": "equii               7      5      6     ",
@@ -642,7 +642,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -660,14 +660,14 @@ with a as (select * from test) select * from a, test where test.id = a.id;
 explain with a as (select * from test) select * from a, test where test.id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      4      0     ",
     "04": "dup                 2      1      0     ",
     "05": "store_open          3      2      23    ",
     "06": "push_int            -      0      0     # 1",
-    "07": "table_openl         4      42     21    # test (primary)",
+    "07": "table_open          4      48     21    # test (primary) point_lookup",
     "08": "table_readi32       5      4      -     # id",
     "09": "int                 6      -      0     # 1",
     "10": "equii               7      5      6     ",
@@ -689,7 +689,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -717,8 +717,8 @@ select ref.id from test join ref on (test.id = ref.id) group by id;
 explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
 [{
   "main": {
-    "00": "send_all            0      0      35    # test (select, closing)",
-    "01": "recv_aggs           1      0      35    ",
+    "00": "send_all            0      0      48    # test (select, closing)",
+    "01": "recv_aggs           1      0      48    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
     "04": "store_read          4      3      0     ",
@@ -731,10 +731,10 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      14    # test (primary)",
+    "01": "table_open          1      0      14    # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      18     12    # ref (primary)",
+    "04": "table_open          2      24     12    # ref (primary) point_lookup",
     "05": "table_readi32       3      1      -     # id",
     "06": "table_readi32       4      2      -     # id",
     "07": "equii               5      3      4     ",

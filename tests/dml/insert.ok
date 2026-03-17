@@ -407,14 +407,14 @@ select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      12    # test (primary)",
+    "01": "table_open          1      0      12    # test (primary) part",
     "02": "table_readt         2      1      -     # ts",
     "03": "value               3      -      0     # timestamp",
     "04": "gtii                4      2      3     ",
@@ -435,14 +435,14 @@ select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      12    # test (primary)",
+    "01": "table_open          1      0      12    # test (primary) part",
     "02": "table_readt         2      1      -     # ts",
     "03": "timestamp           3      -      0     # 4379909090",
     "04": "gtii                4      2      3     ",
@@ -484,14 +484,14 @@ insert into test values ("1970-01-01 00:00:04.000000");
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readt         2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -510,7 +510,7 @@ select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -518,7 +518,7 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_timestamp      -      0      0     # 1000002",
-    "02": "table_open_part     1      0      11    # test (primary)",
+    "02": "table_open          1      0      11    # test (primary) part",
     "03": "table_readt         2      1      -     # id",
     "04": "timestamp           3      -      0     # 1000002",
     "05": "gtii                4      2      3     ",
@@ -537,7 +537,7 @@ select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -545,7 +545,7 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_timestamp      -      0      0     # 1000002",
-    "02": "table_open_part     1      0      11    # test (primary)",
+    "02": "table_open          1      0      11    # test (primary) part",
     "03": "table_readt         2      1      -     # id",
     "04": "timestamp           3      -      0     # 1000002",
     "05": "gteii               4      2      3     ",
@@ -564,14 +564,14 @@ select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 explain select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      14    # test (primary)",
+    "01": "table_open          1      0      14    # test (primary) part",
     "02": "table_readt         2      1      -     # id",
     "03": "timestamp           3      -      0     # 1000003",
     "04": "ltii                4      2      3     ",
@@ -595,7 +595,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
     "00": "push_timestamp      -      0      0     # 1000003",
-    "01": "send_lookup         0      -      18    # test (select, closing)",
+    "01": "send_lookup         0      -      24    # test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
@@ -603,7 +603,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_timestamp      -      0      0     # 1000003",
-    "02": "table_open_partl    1      0      10    # test (primary)",
+    "02": "table_open          1      0      10    # test (primary) point_lookup, part",
     "03": "table_readt         2      1      -     # id",
     "04": "timestamp           3      -      0     # 1000003",
     "05": "equii               4      2      3     ",
@@ -629,14 +629,14 @@ select * from test where i > "1 year 1 day 10 hour"::interval;
 explain select * from test where i > "1 year 1 day 10 hour"::interval;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      12    # test (primary)",
+    "01": "table_open          1      0      12    # test (primary) part",
     "02": "table_readl         2      1      -     # i",
     "03": "value               3      -      0     # interval",
     "04": "gtll                4      2      3     ",
@@ -680,14 +680,14 @@ select * from test where d >= date '1970-01-01';
 explain select * from test where d >= date '1970-01-01';
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      12    # test (primary)",
+    "01": "table_open          1      0      12    # test (primary) part",
     "02": "table_readd         2      1      -     # d",
     "03": "date                3      2440588 0     ",
     "04": "gteii               4      2      3     ",
@@ -776,18 +776,18 @@ select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 explain select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 [{
   "main": {
-    "00": "push_uuid           74     0      0     ",
-    "01": "send_lookup         0      -      50    # test (select, closing)",
+    "00": "push_uuid           80     0      0     ",
+    "01": "send_lookup         0      -      56    # test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "push_uuid           18     0      0     ",
-    "02": "table_open_partl    1      0      10    # test (primary)",
+    "01": "push_uuid           0      0      0     ",
+    "02": "table_open          1      16     10    # test (primary) point_lookup, part",
     "03": "table_readu         2      1      -     # id",
-    "04": "uuid                3      34     0     ",
+    "04": "uuid                3      40     0     ",
     "05": "equuu               4      2      3     ",
     "06": "jntr                10     4      0     ",
     "07": "table_readu         2      1      -     # id",
@@ -851,14 +851,14 @@ insert into test values (4, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -875,14 +875,14 @@ select * from test;
 explain select * from test use index (i);
 [{
   "main": {
-    "00": "send_all            0      0      12    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (i)",
+    "01": "table_open          1      0      8     # test (i) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -984,7 +984,7 @@ insert into src values (3, 0), (4, 0), (5, 0);
 explain insert into test select * from src;
 [{
   "main": {
-    "00": "send_all            0      0      17    # src (select)",
+    "00": "send_all            0      0      24    # src (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "dup                 2      1      0     ",
@@ -993,7 +993,7 @@ explain insert into test select * from src;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # src (primary)",
+    "01": "table_open          1      0      8     # src (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",

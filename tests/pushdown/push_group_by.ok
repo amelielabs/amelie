@@ -12,8 +12,8 @@ create table test (id int primary key);
 explain select * from test group by id;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
     "04": "store_read          4      3      0     ",
@@ -26,7 +26,7 @@ explain select * from test group by id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -53,8 +53,8 @@ select * from test;
 explain select id from test group by id;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
     "04": "store_read          4      3      0     ",
@@ -67,7 +67,7 @@ explain select id from test group by id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -96,8 +96,8 @@ select id, 100 + id from test group by id;
 explain select * from (select id from test group by id) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
     "04": "store_read          4      3      0     ",
@@ -119,7 +119,7 @@ explain select * from (select id from test group by id) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -137,8 +137,8 @@ select x from (select id, 100 + id as x from test group by id) t;
 explain select id from test group by id limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "store_open          4      1      10    ",
@@ -153,7 +153,7 @@ explain select id from test group by id limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -173,8 +173,8 @@ select id from test group by id limit 4;
 explain select id from test group by id limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "int                 4      -      0     # 1",
@@ -191,7 +191,7 @@ explain select id from test group by id limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -213,8 +213,8 @@ select id from test group by id limit 1 offset 4;
 explain select id from test group by id offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "store_open          4      1      10    ",
@@ -229,7 +229,7 @@ explain select id from test group by id offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -251,8 +251,8 @@ select id from test group by id offset 4;
 explain select * from (select id from test group by id limit 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "store_open          4      1      10    ",
@@ -276,7 +276,7 @@ explain select * from (select id from test group by id limit 1) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -298,8 +298,8 @@ select * from (select id from test group by id limit 4) t;
 explain select * from (select id from test group by id limit 1 offset 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "int                 4      -      0     # 1",
@@ -325,7 +325,7 @@ explain select * from (select id from test group by id limit 1 offset 1) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -347,8 +347,8 @@ select * from (select id from test group by id limit 1 offset 4) t;
 explain select * from (select id from test group by id offset 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "store_open          4      1      10    ",
@@ -372,7 +372,7 @@ explain select * from (select id from test group by id offset 1) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -394,8 +394,8 @@ select * from (select id from test group by id offset 4) t;
 explain select id from test group by id having id >= 3;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      12    ",
     "04": "store_read          4      3      0     ",
@@ -412,7 +412,7 @@ explain select id from test group by id having id >= 3;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -442,8 +442,8 @@ select id from test group by id having id >= 1 and id <= 3;
 explain select id from test group by id having id >= 1 limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "store_open          4      1      14    ",
@@ -462,7 +462,7 @@ explain select id from test group by id having id >= 1 limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -480,8 +480,8 @@ select id from test group by id having id >= 1 limit 2;
 explain select id from test group by id having id >= 1 limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "int                 4      -      0     # 1",
@@ -502,7 +502,7 @@ explain select id from test group by id having id >= 1 limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -522,8 +522,8 @@ select id from test group by id having id >= 1 limit 1 offset 3;
 explain select id from test group by id having id >= 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "store_open          4      1      14    ",
@@ -542,7 +542,7 @@ explain select id from test group by id having id >= 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -562,8 +562,8 @@ select id from test group by id having id >= 1 offset 3;
 explain select * from (select id from test group by id having id >= 3) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      12    ",
     "04": "store_read          4      3      0     ",
@@ -589,7 +589,7 @@ explain select * from (select id from test group by id having id >= 3) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -605,8 +605,8 @@ select * from (select id from test group by id having id >= 3) t;
 explain select * from (select id from test group by id having id >= 1 limit 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "store_open          4      1      14    ",
@@ -634,7 +634,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -652,8 +652,8 @@ select * from (select id from test group by id having id >= 1 limit 2) t;
 explain select * from (select id from test group by id having id >= 1 limit 1 offset 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "int                 4      -      0     # 1",
@@ -683,7 +683,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -703,8 +703,8 @@ select * from (select id from test group by id having id >= 1 limit 1 offset 3) 
 explain select * from (select id from test group by id having id >= 1 offset 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "store_open          4      1      14    ",
@@ -732,7 +732,7 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -752,8 +752,8 @@ select * from (select id from test group by id having id >= 1 offset 3) t;
 explain select id from test group by id order by id;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -769,7 +769,7 @@ explain select id from test group by id order by id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -788,8 +788,8 @@ select id from test group by id order by data;
 explain select id from test group by id order by id desc;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -805,7 +805,7 @@ explain select id from test group by id order by id desc;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -821,8 +821,8 @@ select id from test group by id order by id desc;
 explain select * from (select id from test group by id order by id desc) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -847,7 +847,7 @@ explain select * from (select id from test group by id order by id desc) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -863,8 +863,8 @@ select * from (select id from test group by id order by id desc) t;
 explain select id from test group by id order by id asc limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -884,7 +884,7 @@ explain select id from test group by id order by id asc limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -904,8 +904,8 @@ select id from test group by id order by id asc limit 3;
 explain select id from test group by id order by id asc limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -927,7 +927,7 @@ explain select id from test group by id order by id asc limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -947,8 +947,8 @@ select id from test group by id order by id asc limit 1 offset 3;
 explain select id from test group by id order by id asc offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -968,7 +968,7 @@ explain select id from test group by id order by id asc offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -988,8 +988,8 @@ select id from test group by id order by id asc offset 3;
 explain select id from test group by id order by id desc limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -1009,7 +1009,7 @@ explain select id from test group by id order by id desc limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1029,8 +1029,8 @@ select id from test group by id order by id desc limit 3;
 explain select id from test group by id order by id desc limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -1052,7 +1052,7 @@ explain select id from test group by id order by id desc limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1072,8 +1072,8 @@ select id from test group by id order by id desc limit 1 offset 3;
 explain select id from test group by id order by id desc offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -1093,7 +1093,7 @@ explain select id from test group by id order by id desc offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1115,8 +1115,8 @@ select id from test group by id order by id desc offset 3;
 explain select * from (select id from test group by id order by id asc limit 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -1145,7 +1145,7 @@ explain select * from (select id from test group by id order by id asc limit 1) 
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1167,8 +1167,8 @@ select * from (select id from test group by id order by id asc limit 3) t;
 explain select * from (select id from test group by id order by id asc limit 1 offset 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -1199,7 +1199,7 @@ explain select * from (select id from test group by id order by id asc limit 1 o
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1219,8 +1219,8 @@ select * from (select id from test group by id order by id asc limit 1 offset 3)
 explain select * from (select id from test group by id order by id asc offset 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -1249,7 +1249,7 @@ explain select * from (select id from test group by id order by id asc offset 1)
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1271,8 +1271,8 @@ select * from (select id from test group by id order by id asc offset 3) t;
 explain select * from (select id from test group by id order by id desc limit 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -1301,7 +1301,7 @@ explain select * from (select id from test group by id order by id desc limit 1)
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1323,8 +1323,8 @@ select * from (select id from test group by id order by id desc limit 3) t;
 explain select * from (select id from test group by id order by id desc limit 1 offset 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -1355,7 +1355,7 @@ explain select * from (select id from test group by id order by id desc limit 1 
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1375,8 +1375,8 @@ select * from (select id from test group by id order by id desc limit 1 offset 3
 explain select * from (select id from test group by id order by id desc offset 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -1405,7 +1405,7 @@ explain select * from (select id from test group by id order by id desc offset 1
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1427,8 +1427,8 @@ select * from (select id from test group by id order by id desc offset 3) t;
 explain select data from test where data > 0 group by data having data >= 1 order by data;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
     "04": "store_read          4      3      0     ",
@@ -1448,7 +1448,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      10    # test (primary)",
+    "01": "table_open          1      0      10    # test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1468,8 +1468,8 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select data from test where data > 0 group by data having data >= 1 order by data limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
     "04": "store_read          4      3      0     ",
@@ -1493,7 +1493,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      10    # test (primary)",
+    "01": "table_open          1      0      10    # test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1513,8 +1513,8 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
     "04": "store_read          4      3      0     ",
@@ -1540,7 +1540,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      10    # test (primary)",
+    "01": "table_open          1      0      10    # test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1560,8 +1560,8 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select data from test where data > 0 group by data having data >= 1 order by data offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select, closing)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
     "04": "store_read          4      3      0     ",
@@ -1585,7 +1585,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      10    # test (primary)",
+    "01": "table_open          1      0      10    # test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1605,8 +1605,8 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
     "04": "store_read          4      3      0     ",
@@ -1635,7 +1635,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      10    # test (primary)",
+    "01": "table_open          1      0      10    # test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1655,8 +1655,8 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
     "04": "store_read          4      3      0     ",
@@ -1689,7 +1689,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      10    # test (primary)",
+    "01": "table_open          1      0      10    # test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1709,8 +1709,8 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
     "04": "store_read          4      3      0     ",
@@ -1743,7 +1743,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      10    # test (primary)",
+    "01": "table_open          1      0      10    # test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1763,8 +1763,8 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
     "04": "store_read          4      3      0     ",
@@ -1799,7 +1799,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      10    # test (primary)",
+    "01": "table_open          1      0      10    # test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1819,8 +1819,8 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      24    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
     "04": "store_read          4      3      0     ",
@@ -1853,7 +1853,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      10    # test (primary)",
+    "01": "table_open          1      0      10    # test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1876,8 +1876,8 @@ insert into test generate 10000;
 explain select * from (select count(*), sum(2 * id) from test group by id) t;
 [{
   "main": {
-    "00": "send_all            0      0      34    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      40    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
     "04": "count               4      3      0     ",
@@ -1903,7 +1903,7 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t;
   },
   "pushdown": {
     "00": "set                 0      2      1     ",
-    "01": "table_open_part     1      0      12    # test (primary)",
+    "01": "table_open          1      0      12    # test (primary) part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1912,7 +1912,7 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t;
     "07": "table_readi64       4      1      -     # id",
     "08": "mulii               5      3      4     ",
     "09": "push                5      0      0     ",
-    "10": "set_agg             0      2      18    ",
+    "10": "set_agg             0      2      24    ",
     "11": "table_next          1      2      0     ",
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
@@ -1924,8 +1924,8 @@ select * from (select count(*), sum(2 * id) from test group by id) t;
 explain select count(*) from (select count(*) from test group by id) t;
 [{
   "main": {
-    "00": "send_all            0      0      26    # test (select)",
-    "01": "recv_aggs           1      0      18    ",
+    "00": "send_all            0      0      32    # test (select)",
+    "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
     "04": "count               4      3      0     ",
@@ -1940,15 +1940,15 @@ explain select count(*) from (select count(*) from test group by id) t;
     "13": "push_bool           1      0      0     ",
     "14": "set_get             4      0      0     ",
     "15": "push_int            -      0      0     # 1",
-    "16": "set_agg             0      4      50    ",
+    "16": "set_agg             0      4      56    ",
     "17": "store_next          3      13     0     ",
     "18": "free                3      0      0     ",
     "19": "free                1      0      0     ",
     "20": "push_bool           1      0      0     ",
     "21": "set_get             1      0      0     ",
     "22": "push_nulls          1      0      0     ",
-    "23": "set_agg             0      1      50    ",
-    "24": "set_agg_merge       0      50     0     ",
+    "23": "set_agg             0      1      56    ",
+    "24": "set_agg_merge       0      56     0     ",
     "25": "set                 1      1      0     ",
     "26": "store_open          3      0      31    ",
     "27": "count               4      3      0     ",
@@ -1961,12 +1961,12 @@ explain select count(*) from (select count(*) from test group by id) t;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
     "05": "push_int            -      0      0     # 1",
-    "06": "set_agg             0      2      18    ",
+    "06": "set_agg             0      2      24    ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "

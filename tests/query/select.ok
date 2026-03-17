@@ -70,14 +70,14 @@ insert into test () values ();
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -110,14 +110,14 @@ select * from test;
 explain select id, data from test;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -150,16 +150,16 @@ select * from test;
 explain select data.data from test;
 [{
   "main": {
-    "00": "send_all            0      0      23    # test (select, closing)",
+    "00": "send_all            0      0      29    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readj         2      1      -     # data",
-    "03": "string              3      18     0     # data",
+    "03": "string              3      24     0     # data",
     "04": "dotjs               4      2      3     ",
     "05": "push                4      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -194,16 +194,16 @@ select * from test;
 explain select data.data.data from test;
 [{
   "main": {
-    "00": "send_all            0      0      28    # test (select, closing)",
+    "00": "send_all            0      0      34    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readj         2      1      -     # data",
-    "03": "string              3      18     0     # data.data",
+    "03": "string              3      24     0     # data.data",
     "04": "dotjs               4      2      3     ",
     "05": "push                4      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -224,14 +224,14 @@ insert into test () values ();
 explain select test.id, test.data from test;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -254,16 +254,16 @@ insert into test (data) values ({"data": 123});
 explain select test.data.data from test;
 [{
   "main": {
-    "00": "send_all            0      0      23    # test (select, closing)",
+    "00": "send_all            0      0      29    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readj         2      1      -     # data",
-    "03": "string              3      18     0     # data",
+    "03": "string              3      24     0     # data",
     "04": "dotjs               4      2      3     ",
     "05": "push                4      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -308,14 +308,14 @@ select * from test;
 explain select alias.id, alias.data from test alias;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -338,16 +338,16 @@ insert into test (data) values ({"data": 123});
 explain select alias.data.data from test alias;
 [{
   "main": {
-    "00": "send_all            0      0      23    # test (select, closing)",
+    "00": "send_all            0      0      29    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readj         2      1      -     # data",
-    "03": "string              3      18     0     # data",
+    "03": "string              3      24     0     # data",
     "04": "dotjs               4      2      3     ",
     "05": "push                4      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -372,14 +372,14 @@ select * from test;
 explain select alias.id, alias.data from test alias;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
+    "01": "table_open          1      0      8     # test (primary) part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",

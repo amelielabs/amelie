@@ -307,9 +307,6 @@ vm_run(Vm*       self,
 
 		// table cursor
 		&&ctable_open,
-		&&ctable_open_lookup,
-		&&ctable_open_part,
-		&&ctable_open_part_lookup,
 		&&ctable_prepare,
 		&&ctable_next,
 		&&ctable_readb,
@@ -1610,19 +1607,7 @@ crecv:
 
 // table cursor
 ctable_open:
-	op = ctable_open(self, op, false, false);
-	op_jmp;
-
-ctable_open_lookup:
-	op = ctable_open(self, op, true, false);
-	op_jmp;
-
-ctable_open_part:
-	op = ctable_open(self, op, false, true);
-	op_jmp;
-
-ctable_open_part_lookup:
-	op = ctable_open(self, op, true, true);
+	op = ctable_open(self, op);
 	op_jmp;
 
 ctable_prepare:

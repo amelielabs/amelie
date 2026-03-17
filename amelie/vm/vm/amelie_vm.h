@@ -14,8 +14,9 @@
 // bytecode
 #include "vm/op.h"
 
-// dispatch context
+// command arguments
 #include "vm/send.h"
+#include "vm/open.h"
 
 // vm
 #include "vm/return.h"

@@ -87,7 +87,7 @@ explain begin declare x int; select id into x from test; select x; end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      18    # test (select, closing)",
+    "01": "send_all            0      0      24    # test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "var_set             0      0      1     ",
@@ -97,7 +97,7 @@ explain begin declare x int; select id into x from test; select x; end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -803,7 +803,7 @@ explain select test();
     "function": "test",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      17    # src (select, closing)",
+      "01": "send_all            0      0      24    # src (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_set             0      0      1     ",
@@ -821,7 +821,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # src (primary)",
+      "01": "table_open          1      0      6     # src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -857,7 +857,7 @@ explain select test();
     "function": "test",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      17    # src (select, closing)",
+      "01": "send_all            0      0      24    # src (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_set             0      0      1     ",
@@ -875,7 +875,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # src (primary)",
+      "01": "table_open          1      0      6     # src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -912,7 +912,7 @@ explain select test();
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      1      0     ",
       "02": "jntr                10     0      0     ",
-      "03": "send_all            0      0      17    # src (select)",
+      "03": "send_all            0      0      24    # src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "var_set             0      0      1     ",
@@ -925,7 +925,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # src (primary)",
+      "01": "table_open          1      0      6     # src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -962,7 +962,7 @@ explain select test();
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      0      0     ",
       "02": "jntr                10     0      0     ",
-      "03": "send_all            0      0      17    # src (select)",
+      "03": "send_all            0      0      24    # src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "var_set             0      0      1     ",
@@ -975,7 +975,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # src (primary)",
+      "01": "table_open          1      0      6     # src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1015,7 +1015,7 @@ explain select test();
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 0",
       "02": "var_set             0      0      0     ",
-      "03": "send_all            0      0      17    # src (select)",
+      "03": "send_all            0      0      24    # src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "dup                 0      1      0     ",
@@ -1038,7 +1038,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # src (primary)",
+      "01": "table_open          1      0      6     # src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1078,7 +1078,7 @@ explain select test();
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 0",
       "02": "var_set             0      0      0     ",
-      "03": "send_all            0      0      17    # src (select)",
+      "03": "send_all            0      0      24    # src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "dup                 0      1      0     ",
@@ -1101,7 +1101,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # src (primary)",
+      "01": "table_open          1      0      6     # src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1743,7 +1743,7 @@ explain select test();
     "function": "test",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      17    # src (select, closing)",
+      "01": "send_all            0      0      24    # src (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_mov             0      0      1     ",
@@ -1752,7 +1752,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # src (primary)",
+      "01": "table_open          1      0      6     # src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",

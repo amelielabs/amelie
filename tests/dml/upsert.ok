@@ -556,7 +556,7 @@ insert into src values (0, 0), (1, 0);
 explain insert into test select * from src on conflict do update set data = data + 1 returning *;
 [{
   "main": {
-    "00": "send_all            0      0      17    # src (select)",
+    "00": "send_all            0      0      24    # src (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "dup                 2      1      0     ",
@@ -567,7 +567,7 @@ explain insert into test select * from src on conflict do update set data = data
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # src (primary)",
+    "01": "table_open          1      0      8     # src (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",

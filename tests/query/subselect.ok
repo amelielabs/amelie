@@ -61,14 +61,14 @@ select (select *) from test;
 explain select (select test.*) from test;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -91,14 +91,14 @@ select (select t) from test t;
 explain select (select test.id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -116,14 +116,14 @@ select (select id) from test;
 explain select (select t.id) from test t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
+    "00": "send_all            0      0      24    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -218,7 +218,7 @@ select * from (select * from test) t;
 explain select * from (select * from test) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
+    "00": "send_all            0      0      24    # test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -234,7 +234,7 @@ explain select * from (select * from test) t;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -348,7 +348,7 @@ explain select (select * from test);
 [{
   "main": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) ",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -368,16 +368,16 @@ select (select * from test where false);
 explain select (select * from test) from test;
 [{
   "main": {
-    "00": "send_all            0      0      36    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      13    # test (primary)",
+    "01": "table_open          1      0      13    # test (primary) part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      18     8     # test (primary)",
+    "03": "table_open          3      24     8     # test (primary) ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -402,17 +402,17 @@ select (select * from test t limit 1) from test;
 explain select (select i.* from test i limit 1) from test;
 [{
   "main": {
-    "00": "send_all            0      0      36    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      15    # test (primary)",
+    "01": "table_open          1      0      15    # test (primary) part",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
-    "04": "table_open          4      18     10    # test (primary)",
+    "04": "table_open          4      24     10    # test (primary) ",
     "05": "cjltd               10     3      0     ",
     "06": "table_readi32       5      4      -     # id",
     "07": "push                5      0      0     ",
@@ -432,18 +432,18 @@ explain select (select i.* from test i limit 1) from test;
 explain select (select i.* from test i where test.id = i.id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      36    # test (select, closing)",
+    "00": "send_all            0      0      48    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      18    # test (primary)",
+    "01": "table_open          1      0      18    # test (primary) part",
     "02": "set                 2      1      0     ",
     "03": "table_readi32       3      1      -     # id",
     "04": "push                3      0      0     ",
-    "05": "table_openl         3      18     13    # test (primary)",
+    "05": "table_open          3      24     13    # test (primary) point_lookup",
     "06": "table_readi32       4      1      -     # id",
     "07": "table_readi32       5      3      -     # id",
     "08": "equii               6      4      5     ",
@@ -482,18 +482,18 @@ select (select b.id from b where a.id = b.id)::type from a;
 explain select * from a where (select true from b where a.id = b.id);
 [{
   "main": {
-    "00": "send_all            0      0      30    # a (select, closing)",
+    "00": "send_all            0      0      48    # a (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      21    # a (primary)",
+    "01": "table_open          1      0      21    # a (primary) part",
     "02": "set                 2      1      0     ",
     "03": "table_readi64       3      1      -     # id",
     "04": "push                3      0      0     ",
-    "05": "table_openl         3      15     12    # b (primary)",
+    "05": "table_open          3      24     12    # b (primary) point_lookup",
     "06": "table_readi64       4      1      -     # id",
     "07": "table_readi64       5      3      -     # id",
     "08": "equii               6      4      5     ",
@@ -522,7 +522,7 @@ select t.x from (select z.id as x from (select id from test) z) t;
 explain select t.x from (select z.id as x from (select id from test) z) t;
 [{
   "main": {
-    "00": "send_all            0      0      18    # test (select)",
+    "00": "send_all            0      0      24    # test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -547,7 +547,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # test (primary)",
+    "01": "table_open          1      0      6     # test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",

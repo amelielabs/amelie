@@ -376,44 +376,35 @@ cfirst(Vm* self, Op* op)
 }
 
 hot Op*
-ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
+ctable_open(Vm* self, Op* op)
 {
-	// [cursor, name_offset, _eof, keys_count]
-
-	// read names
-	uint8_t* pos = code_data_at(self->code_data, op->b);
-	Str name_db;
-	Str name_table;
-	Str name_index;
-	json_read_string(&pos, &name_db);
-	json_read_string(&pos, &name_table);
-	json_read_string(&pos, &name_index);
-
-	// find table, partition and index
-	auto table = catalog_find_table(&share()->db->catalog, &name_db, &name_table, true);
-	auto index = table_index_find(table, &name_index, true);
-	auto keys  = &index->keys;
-	auto keys_count = op->d;
+	// [cursor, open_offset, _eof]
+	auto open = open_at(self->code_data, op->b);
 
 	// create cursor key
 	auto buf = buf_create();
 	defer_buf(buf);
-	auto key = row_create_key(buf, keys, stack_at(&self->stack, keys_count), keys_count);
+	auto keys = &open->index->keys;
+	auto keys_count = open->keys_count;
+	auto key = row_create_key(buf, keys, stack_at(&self->stack, keys_count),
+	                          keys_count);
 	stack_popn(&self->stack, keys_count);
 
 	// in case of hash index, use key only for point-lookup
 	auto key_ref = key;
-	if (index->type == INDEX_HASH && !point_lookup)
+	if (open->index->type == INDEX_HASH && !open->point_lookup)
 		key_ref = NULL;
 
 	// open cursor
 	auto cursor = reg_at(&self->r, op->a);
-	if (open_part)
+	if (open->open_part)
 		cursor->part = self->part;
 	else
 		cursor->part = NULL;
-	cursor->cursor = cursor_open(&table->part_mgr, cursor->part, index, point_lookup, key_ref);
-	cursor->table  = table;
+	cursor->cursor = cursor_open(&open->table->part_mgr, cursor->part,
+	                              open->index,
+	                              open->point_lookup, key_ref);
+	cursor->table  = open->table;
 	cursor->type   = TYPE_CURSOR;
 
 	// jmp to next op if has data
