@@ -27,9 +27,8 @@ struct HeapChunk
 	uint64_t prev: 19;
 	uint64_t prev_offset: 19;
 
-	// next version (38 bits)
-	uint64_t next: 19;
-	uint64_t next_offset: 19;
+	// reserve (38 bits)
+	uint64_t reserved: 38;
 
 	// chunk (33 + 19 bits)
 	uint64_t offset: 19;
@@ -67,12 +66,6 @@ struct HeapHeader
 	uint32_t   magic;
 	uint32_t   version;
 
-	// lru
-	uint64_t   lru: 19;
-	uint64_t   lru_offset: 21;
-	uint64_t   lru_tail: 19;
-	uint64_t   lru_tail_offset: 21;
-
 	// meta
 	uint64_t   lsn;
 	uint64_t   tsn;
@@ -94,7 +87,6 @@ struct Heap
 	Heap*       shadow;
 	bool        shadow_free;
 	PageMgr     page_mgr;
-	bool        lru;
 };
 
 always_inline static inline HeapChunk*
@@ -115,92 +107,8 @@ heap_page_of(HeapChunk* self)
 	return (PageHeader*)((uintptr_t)self - self->offset);
 }
 
-Heap* heap_allocate(bool);
+Heap* heap_allocate(void);
 void  heap_free(Heap*);
 void* heap_add(Heap*, int);
 void  heap_remove(Heap*, void*);
 void  heap_snapshot(Heap*, Heap*, bool);
-
-hot always_inline static inline void
-heap_push(Heap* self, HeapChunk* chunk)
-{
-	// push chunk to the head of the lru list
-	auto     header      = self->header;
-	uint32_t head        = header->lru;
-	uint32_t head_offset = header->lru_offset;
-
-	// chunk->next = head
-	chunk->prev        = 0;
-	chunk->prev_offset = 0;
-	chunk->next        = head;
-	chunk->next_offset = head_offset;
-
-	auto chunk_page = heap_page_of(chunk)->order;
-	if (likely(head_offset))
-	{
-		// head->prev = chunk
-		auto head_chunk = heap_chunk_at(self, head, head_offset);
-		head_chunk->prev        = chunk_page;
-		head_chunk->prev_offset = chunk->offset;
-	} else
-	{
-		// tail = chunk
-		header->lru_tail        = chunk_page;
-		header->lru_tail_offset = chunk->offset;
-	}
-
-	// head = chunk
-	header->lru        = chunk_page;
-	header->lru_offset = chunk->offset;
-}
-
-hot always_inline static inline void
-heap_unlink(Heap* self, HeapChunk* chunk)
-{
-	// chunk->prev->next = chunk->next
-	if (chunk->prev_offset)
-	{
-		auto prev = heap_chunk_at(self, chunk->prev, chunk->prev_offset);
-		prev->next        = chunk->next;
-		prev->next_offset = chunk->next_offset;
-	}
-
-	// chunk->next->prev = chunk->prev
-	if (chunk->next_offset)
-	{
-		auto next = heap_chunk_at(self, chunk->next, chunk->next_offset);
-		next->prev        = chunk->prev;
-		next->prev_offset = chunk->prev_offset;
-	}
-
-	// replace head (chunk is a head)
-	auto chunk_page = heap_page_of(chunk)->order;
-	auto header     = self->header;
-	if (header->lru == chunk_page &&
-	    header->lru_offset == chunk->offset)
-	{
-		// head = chunk->next
-		header->lru        = chunk->next;
-		header->lru_offset = chunk->next_offset;
-	}
-
-	// replace tail (chunk is a tail)
-	if (header->lru_tail == chunk_page &&
-	    header->lru_tail_offset == chunk->offset)
-	{
-		// tail = chunk->prev
-		header->lru_tail        = chunk->prev;
-		header->lru_tail_offset = chunk->prev_offset;
-	}
-}
-
-hot always_inline static inline void
-heap_up(Heap* self, void* pointer)
-{
-	if (! self->lru)
-		return;
-	// move to the top of the lru list
-	auto chunk = heap_chunk_of(pointer);
-	heap_unlink(self, chunk);
-	heap_push(self, chunk);
-}

@@ -67,7 +67,7 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 		case ID_PARTITION:
 		{
 			// add partition
-			auto part = part_allocate(&id, self->arg, false);
+			auto part = part_allocate(&id, self->arg);
 			part_mgr_add(self, part);
 			break;
 		}
@@ -105,7 +105,7 @@ part_mgr_create(PartMgr* self)
 			.id     = state_psn_next(),
 			.volume = volume
 		};
-		auto part = part_allocate(&id, self->arg, false);
+		auto part = part_allocate(&id, self->arg);
 		part_mgr_add(self, part);
 
 		// set hash range

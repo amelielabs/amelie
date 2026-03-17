@@ -86,7 +86,7 @@ indexate_begin(Indexate* self, Table* table, IndexConfig* config)
 		abort();
 
 	// create shadow heap
-	auto heap_shadow = heap_allocate(false);
+	auto heap_shadow = heap_allocate();
 
 	// take table exclusive lock
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
