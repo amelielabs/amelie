@@ -241,7 +241,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 4,
-  "writes_bytes": 736,
+  "writes_bytes": 768,
   "ops": 4
 }]
 # test: show replicas
@@ -263,6 +263,7 @@ show state;
   "frontends": 1,
   "backends": 1,
   "lsn": 4,
+  "tsn": 0,
   "psn": 1,
   "catalog": 0,
   "catalog_pending": 4,
@@ -276,6 +277,7 @@ select show('state');
   "frontends": 1,
   "backends": 1,
   "lsn": 4,
+  "tsn": 0,
   "psn": 1,
   "catalog": 0,
   "catalog_pending": 4,

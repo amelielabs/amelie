@@ -61,8 +61,9 @@ recover_map(Recover* self, Record* record, RecordCmd* cmd, Row* row)
 	if (! part)
 		error("recover: partition mapping failed");
 
-	// update track lsn
+	// update track lsn/tsn
 	track_lsn_follow(&part->track, record->lsn);
+	track_tsn_follow(&part->track, record->tsn);
 
 	// skip partition if it is already includes lsn
 	if (record->lsn <= part->heap->header->lsn)
@@ -170,6 +171,7 @@ recover_next_record(Recover* self, Record* record)
 	} else
 	{
 		state_lsn_follow(record->lsn);
+		state_tsn_follow(record->tsn);
 	}
 
 	// unlock catalog after create index

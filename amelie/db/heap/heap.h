@@ -18,7 +18,10 @@ typedef struct Heap       Heap;
 
 struct HeapChunk
 {
-	// 16 bytes
+	// 24 bytes
+
+	// transaction id
+	uint64_t tsn;
 
 	// previous version (38 bits)
 	uint64_t prev: 19;
@@ -72,6 +75,7 @@ struct HeapHeader
 
 	// meta
 	uint64_t   lsn;
+	uint64_t   tsn;
 	uint16_t   hash_min;
 	uint16_t   hash_max;
 	uint8_t    compression;

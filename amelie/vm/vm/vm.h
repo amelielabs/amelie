@@ -32,8 +32,8 @@ struct Vm
 	FnMgr     fn_mgr;
 };
 
-void vm_init(Vm*, Part*, Dtr*);
+void vm_init(Vm*, Part*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Tr*, Program*, Code*, CodeData*, Buf*,
+void vm_run(Vm*, Local*, Dtr*, Tr*, Program*, Code*, CodeData*, Buf*,
             Value*, Value*, Return*, bool, int);

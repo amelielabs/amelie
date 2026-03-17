@@ -54,6 +54,7 @@ write_begin(Write* self)
 	auto header = &self->header;
 	header->crc   = 0;
 	header->lsn   = 0;
+	header->tsn   = 0;
 	header->size  = sizeof(self->header);
 	header->count = 0;
 	header->ops   = 0;
@@ -61,10 +62,11 @@ write_begin(Write* self)
 }
 
 static inline void
-write_end(Write* self, uint64_t lsn)
+write_end(Write* self, uint64_t lsn, uint64_t tsn)
 {
 	auto header = &self->header;
 	header->lsn = lsn;
+	header->tsn = tsn;
 
 	// calculate header crc (header + commands)
 	if (opt_int_of(&config()->wal_crc))

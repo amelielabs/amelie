@@ -29,7 +29,7 @@ session_create(void)
 	local_init(&self->local);
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
-	vm_init(&self->vm, NULL, &self->dtr);
+	vm_init(&self->vm, NULL);
 	profile_init(&self->profile);
 	dtr_init(&self->dtr, &self->local);
 	return self;
@@ -111,6 +111,7 @@ session_execute_distributed(Session* self, Output* output)
 	auto on_error = error_catch
 	(
 		vm_run(&self->vm, &self->local,
+		       dtr,
 		       NULL,
 		       program,
 		       &program->code,
@@ -184,6 +185,7 @@ session_execute_utility(Session* self, Output* output)
 		tr_begin(&tr);
 
 		vm_run(&self->vm, &self->local,
+		       &self->dtr,
 		       &tr,
 		       program,
 		       &program->code,

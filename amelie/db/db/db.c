@@ -51,6 +51,9 @@ db_free(Db* self)
 void
 db_open(Db* self, bool bootstrap)
 {
+	// first valid transaction id starts from 1
+	state_tsn_set(0);
+
 	// do compaction crash recovery
 	service_recover(&self->service);
 
@@ -155,6 +158,10 @@ db_state(Db* self)
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_integer(buf, state_lsn());
+
+	// tsn
+	encode_raw(buf, "tsn", 3);
+	encode_integer(buf, state_tsn());
 
 	// psn
 	encode_raw(buf, "psn", 3);

@@ -136,6 +136,7 @@ select show('state');
   "frontends": 1,
   "backends": 1,
   "lsn": 0,
+  "tsn": 0,
   "psn": 0,
   "catalog": 0,
   "catalog_pending": 0,
@@ -263,7 +264,7 @@ select show('wal');
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 410,
+  "writes_bytes": 418,
   "ops": 1
 }]
 # test: metrics

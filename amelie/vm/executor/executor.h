@@ -39,6 +39,13 @@ executor_attach(Executor* self, Dtr* dtr, Dispatch* dispatch)
 {
 	spinlock_lock(&self->lock);
 
+	// set transaction id
+	//
+	// the id must not be modified globally for replica
+	//
+	if (! opt_int_of(&state()->read_only))
+		dtr->id = state_tsn_next();
+
 	// match overlapping transaction group
 	auto is_snapshot = dtr->program->snapshot;
 	list_foreach_reverse(&self->list)

@@ -466,7 +466,8 @@ cinsert(Vm* self, Op* op)
 		pos += sizeof(Value*) + sizeof(int64_t);
 		value_set_int(&identity, value_id);
 
-		auto row = row_create(part->heap, columns, value, self->refs, &identity);
+		auto row = row_create(part->heap, self->dtr->id, columns, value,
+		                      self->refs, &identity);
 		part_insert(part, self->tr, false, row);
 	}
 }
@@ -481,6 +482,7 @@ cupsert(Vm* self, Op* op)
 	Value identity;
 	value_init(&identity);
 
+	auto dtr = self->dtr;
 	auto columns = table_columns(cursor->table);
 	auto end = self->code_arg->position;
 	while (self->upsert < end)
@@ -491,7 +493,8 @@ cupsert(Vm* self, Op* op)
 		self->upsert += sizeof(Value*) + sizeof(int64_t);
 		value_set_int(&identity, value_id);
 
-		auto row = row_create(cursor->part->heap, columns, value, self->refs, &identity);
+		auto row = row_create(cursor->part->heap, dtr->id, columns, value,
+		                      self->refs, &identity);
 
 		// insert or get (open iterator in both cases)
 		auto exists = part_upsert(cursor->part, self->tr, cursor->cursor, row);
@@ -529,9 +532,11 @@ cupdate(Vm* self, Op* op)
 	// [cursor, order/value count]
 	auto cursor = reg_at(&self->r, op->a);
 	assert(cursor->type == TYPE_CURSOR);
+	auto dtr = self->dtr;
 	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
-	auto row = row_update(cursor->part->heap, row_src, table_columns(cursor->table),
+	auto row = row_update(cursor->part->heap, dtr->id,
+	                      table_columns(cursor->table), row_src,
 	                      row_values, op->b);
 	part_update(cursor->part, self->tr, cursor->cursor, row);
 	stack_popn(&self->stack, op->b * 2);
@@ -569,11 +574,13 @@ ccall_udf(Vm* self, Op* op)
 
 	// execute udf
 	Vm vm;
-	vm_init(&vm, self->part, self->dtr);
+	vm_init(&vm, self->part);
 	defer(vm_free, &vm);
 	reg_prepare(&vm.r, program->code.regs);
 
-	vm_run(&vm, self->local, self->tr,
+	vm_run(&vm, self->local,
+	       self->dtr,
+	       self->tr,
 	       program, &program->code, &program->code_data, NULL,
 	       NULL, // refs
 	       argv,

@@ -17,36 +17,6 @@
 #include <amelie_value.h>
 
 hot Row*
-row_create(Heap*  heap, Columns* columns,
-           Value* values,
-           Value* refs,
-           Value* identity)
-{
-	// calculate row size
-	auto size = 0;
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-		auto value  = values + column->order;
-		size += value_data_size(value, column, refs);
-	}
-
-	// create and write row
-	auto     row = row_allocate(heap, columns->count, size);
-	uint8_t* pos = row_data(row, columns->count);
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-		auto offset = pos - (uint8_t*)row;
-		if (value_data_encode(&values[column->order], column, refs, identity, &pos))
-			row_set(row, column->order, offset);
-		else
-			row_set_null(row, column->order);
-	}
-	return row;
-}
-
-hot Row*
 row_create_key(Buf* buf, Keys* self, Value* values, int count)
 {
 	// create a row which has only key columns (others are set to NULL)
@@ -164,6 +134,38 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 	return row;
 }
 
+hot Row*
+row_create(Heap*    heap,
+           uint64_t tsn,
+           Columns* columns,
+           Value*   values,
+           Value*   refs,
+           Value*   identity)
+{
+	// calculate row size
+	auto size = 0;
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		auto value  = values + column->order;
+		size += value_data_size(value, column, refs);
+	}
+
+	// create and write row
+	auto     row = row_allocate(heap, tsn, columns->count, size);
+	uint8_t* pos = row_data(row, columns->count);
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		auto offset = pos - (uint8_t*)row;
+		if (value_data_encode(&values[column->order], column, refs, identity, &pos))
+			row_set(row, column->order, offset);
+		else
+			row_set_null(row, column->order);
+	}
+	return row;
+}
+
 hot static inline int
 row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 {
@@ -220,14 +222,19 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 }
 
 hot Row*
-row_update(Heap* heap, Row* self, Columns* columns, Value* values, int count)
+row_update(Heap*    heap,
+           uint64_t tsn,
+           Columns* columns,
+           Row*     origin,
+           Value*   values,
+           int      count)
 {
 	// merge source row columns data with updated values
 	//
 	// [order, value, order, value, ...]
 	//
-	auto     row_size = row_update_prepare(self, columns, values, count);
-	auto     row      = row_allocate(heap, columns->count, row_size);
+	auto     row_size = row_update_prepare(origin, columns, values, count);
+	auto     row      = row_allocate(heap, tsn, columns->count, row_size);
 	uint8_t* pos      = row_data(row, columns->count);
 
 	auto order = 0;
@@ -253,7 +260,7 @@ row_update(Heap* heap, Row* self, Columns* columns, Value* values, int count)
 		}
 
 		// null
-		uint8_t* pos_src = row_column(self, column);
+		uint8_t* pos_src = row_column(origin, column);
 		if (! pos_src)
 		{
 			row_set_null(row, column->order);

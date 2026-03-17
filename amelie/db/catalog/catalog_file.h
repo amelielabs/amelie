@@ -13,4 +13,4 @@
 
 void catalog_read(Catalog*);
 void catalog_write(Catalog*);
-Buf* catalog_write_prepare(Catalog*, uint64_t);
+Buf* catalog_write_prepare(Catalog*, uint64_t, uint64_t);

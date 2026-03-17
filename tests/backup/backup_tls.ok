@@ -63,6 +63,7 @@ show state;
   "frontends": 1,
   "backends": 1,
   "lsn": 2,
+  "tsn": 1,
   "psn": 3,
   "catalog": 1,
   "catalog_pending": 1,

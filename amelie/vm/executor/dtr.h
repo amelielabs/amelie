@@ -16,6 +16,7 @@ typedef struct Dtr Dtr;
 struct Dtr
 {
 	Msg         msg;
+	uint64_t    id;
 	uint64_t    group;
 	uint64_t    group_order;
 	DispatchMgr dispatch_mgr;
@@ -34,6 +35,7 @@ struct Dtr
 static inline void
 dtr_init(Dtr* self, Local* local)
 {
+	self->id          = 0;
 	self->group       = 0;
 	self->group_order = 0;
 	self->program     = NULL;
@@ -53,6 +55,7 @@ dtr_init(Dtr* self, Local* local)
 static inline void
 dtr_reset(Dtr* self)
 {
+	self->id          = 0;
 	self->group       = 0;
 	self->group_order = 0;
 	self->program     = NULL;

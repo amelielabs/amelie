@@ -22,7 +22,7 @@
 #include <amelie_vm.h>
 
 void
-vm_init(Vm* self, Part* part, Dtr* dtr)
+vm_init(Vm* self, Part* part)
 {
 	self->code        = NULL;
 	self->code_data   = NULL;
@@ -32,7 +32,7 @@ vm_init(Vm* self, Part* part, Dtr* dtr)
 	self->refs        = NULL;
 	self->args        = NULL;
 	self->part        = part;
-	self->dtr         = dtr;
+	self->dtr         = NULL;
 	self->program     = NULL;
 	self->tr          = NULL;
 	self->local       = NULL;
@@ -73,6 +73,7 @@ vm_reset(Vm* self)
 hot void
 vm_run(Vm*       self,
        Local*    local,
+       Dtr*      dtr,
        Tr*       tr,
        Program*  program,
        Code*     code,
@@ -85,6 +86,7 @@ vm_run(Vm*       self,
        int       start)
 {
 	self->local       = local;
+	self->dtr         = dtr;
 	self->tr          = tr;
 	self->program     = program;
 	self->code        = code;

@@ -42,7 +42,10 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	{
 		volume = volume_mgr_find(volumes, storage);
 		if (! volume)
+		{
+			heap_free(heap_shadow);
 			return false;
+		}
 	} else {
 		volume = volume_mgr_next(volumes);
 	}
@@ -67,6 +70,7 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	track_sync(&origin->track, consensus);
 	assert(! origin->track.prepared.list_count);
 	self->origin_lsn = origin->track.lsn;
+	self->origin_tsn = origin->track.tsn;
 
 	// switch partition shadow heap and begin heap snapshot
 	assert(! origin->heap_shadow);
@@ -85,6 +89,7 @@ refresh_snapshot_job(intptr_t* argv)
 	// create <id>.incomplete file
 	auto id = &self->part_id;
 	heap->header->lsn = self->origin_lsn;
+	heap->header->tsn = self->origin_tsn;
 	heap_create(heap, &self->part_file, id, ID_PARTITION_INCOMPLETE);
 
 	auto total = (double)self->part_file.size / 1024 / 1024;
@@ -190,6 +195,7 @@ refresh_init(Refresh* self, Service* service)
 	service_lock_init(&self->lock);
 	self->origin       = NULL;
 	self->origin_lsn   = 0;
+	self->origin_tsn   = 0;
 	self->service_file = service_file_allocate();
 	self->service      = service;
 	self->table        = NULL;
@@ -210,6 +216,7 @@ refresh_reset(Refresh* self)
 	service_lock_init(&self->lock);
 	self->origin     = NULL;
 	self->origin_lsn = 0;
+	self->origin_tsn = 0;
 	self->table      = NULL;
 	service_file_reset(self->service_file);
 	id_init(&self->origin_id);

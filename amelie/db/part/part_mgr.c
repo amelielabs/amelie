@@ -76,9 +76,16 @@ part_mgr_open(PartMgr* self, List* indexes)
 		part_mapping_add(&self->mapping, part);
 
 		// update metrics
+
+		// lsn
 		auto lsn = part->heap->header->lsn;
 		state_lsn_follow(lsn);
-		track_lsn_set(&part->track, lsn);
+		track_lsn_follow(&part->track, lsn);
+
+		// tsn
+		auto tsn = part->heap->header->lsn;
+		state_tsn_follow(tsn);
+		track_tsn_follow(&part->track, tsn);
 	}
 }
 

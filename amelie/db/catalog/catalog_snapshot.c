@@ -26,7 +26,8 @@ catalog_snapshot(Catalog* self, Buf* data)
 	// catalog
 	encode_raw(data, "catalog", 7);
 	auto lsn = state_catalog_pending();
-	auto buf = catalog_write_prepare(self, lsn);
+	auto tsn = state_tsn();
+	auto buf = catalog_write_prepare(self, lsn, tsn);
 	defer_buf(buf);
 	buf_write_buf(data, buf);
 

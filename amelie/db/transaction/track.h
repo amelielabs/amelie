@@ -22,6 +22,7 @@ struct Track
 	Consensus  consensus_pod;
 	Consensus  consensus;
 	atomic_u64 lsn;
+	atomic_u64 tsn;
 	bool       pending;
 	Consensus  pending_consensus;
 	Track*     pending_link;
@@ -33,6 +34,7 @@ track_init(Track* self)
 {
 	self->seq          = 1;
 	self->lsn          = 0;
+	self->tsn          = 0;
 	self->pending      = false;
 	self->pending_link = NULL;
 	self->backend      = NULL;
@@ -74,6 +76,25 @@ track_lsn_follow(Track* self, uint64_t lsn)
 {
 	if (atomic_u64_of(&self->lsn) < lsn)
 		atomic_u64_set(&self->lsn, lsn);
+}
+
+static inline uint64_t
+track_tsn(Track* self)
+{
+	return atomic_u64_of(&self->tsn);
+}
+
+static inline void
+track_tsn_set(Track* self, uint64_t tsn)
+{
+	atomic_u64_set(&self->tsn, tsn);
+}
+
+static inline void
+track_tsn_follow(Track* self, uint64_t tsn)
+{
+	if (atomic_u64_of(&self->tsn) < tsn)
+		atomic_u64_set(&self->tsn, tsn);
 }
 
 static inline Msg*

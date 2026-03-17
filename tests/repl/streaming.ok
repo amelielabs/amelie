@@ -10179,6 +10179,7 @@ show state;
   "frontends": 1,
   "backends": 3,
   "lsn": 10015,
+  "tsn": 10015,
   "psn": 3,
   "catalog": 0,
   "catalog_pending": 10005,

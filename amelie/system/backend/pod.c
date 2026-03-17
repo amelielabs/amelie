@@ -85,6 +85,7 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 		return_init(&ret);
 
 		vm_run(&self->vm, dtr->local,
+		        dtr,
 		        ltr->tr,
 		        NULL,
 		        req->code,
@@ -174,7 +175,7 @@ pod_allocate(Part* part)
 	self->part      =  part;
 	self->track     = &part->track;
 	self->worker_id = -1;
-	vm_init(&self->vm, part, NULL);
+	vm_init(&self->vm, part);
 	list_init(&self->link);
 	return self;
 }
