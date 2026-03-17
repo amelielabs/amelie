@@ -9,7 +9,7 @@ insert into test values (2, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -45,7 +45,7 @@ select * from test use index (123;
 explain select * from test use index (i);
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -78,7 +78,7 @@ insert into test values (2, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -104,7 +104,7 @@ create unique index j on test (data) using hash;
 explain select * from test where data = 2;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -132,7 +132,7 @@ select * from test where data = 2;
 explain select * from test where id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -163,7 +163,7 @@ explain select * from test where id = 1 and data = 1;
   "main": {
     "00": "push_int            -      0      0     # 1",
     "01": "push_int            -      0      0     # 1",
-    "02": "send_lookup         0      -      24    # test (select, closing)",
+    "02": "send_lookup         0      -      32    # test (select, closing)",
     "03": "union               1      0      0     ",
     "04": "recv                1      0      0     ",
     "05": "ret                 1      0      -     "
@@ -198,7 +198,7 @@ explain select * from test where data = 1 and id = 1;
   "main": {
     "00": "push_int            -      0      0     # 1",
     "01": "push_int            -      0      0     # 1",
-    "02": "send_lookup         0      -      24    # test (select, closing)",
+    "02": "send_lookup         0      -      32    # test (select, closing)",
     "03": "union               1      0      0     ",
     "04": "recv                1      0      0     ",
     "05": "ret                 1      0      -     "
@@ -239,7 +239,7 @@ explain select * from test where id = 1;
 [{
   "main": {
     "00": "push_int            -      0      0     # 1",
-    "01": "send_lookup         0      -      24    # test (select, closing)",
+    "01": "send_lookup         0      -      32    # test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
@@ -267,7 +267,7 @@ select * from test where id = 1;
 explain select * from test where id > 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -296,7 +296,7 @@ select * from test where id > 1;
 explain select * from test where data > 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -325,7 +325,7 @@ select * from test where data > 1;
 explain select * from test where data = 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -377,7 +377,7 @@ explain select * from test where data = 1 and id = 1;
 [{
   "main": {
     "00": "push_int            -      0      0     # 1",
-    "01": "send_lookup         0      -      24    # test (select, closing)",
+    "01": "send_lookup         0      -      32    # test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
@@ -413,7 +413,7 @@ explain select * from test where id = 1 and data = 1;
 [{
   "main": {
     "00": "push_int            -      0      0     # 1",
-    "01": "send_lookup         0      -      24    # test (select, closing)",
+    "01": "send_lookup         0      -      32    # test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
@@ -455,7 +455,7 @@ insert into test values (2, 0);
 explain select * from test where id > 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -484,7 +484,7 @@ select * from test where id > 1;
 explain select * from test where data > 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -514,7 +514,7 @@ select * from test where data > 1;
 explain select * from test where data < 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -546,7 +546,7 @@ select * from test where data < 1;
 explain select * from test where id < 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -578,7 +578,7 @@ select * from test where id < 1;
 explain select * from test where id < 1 and data < 2;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "

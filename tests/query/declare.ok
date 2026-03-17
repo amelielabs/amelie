@@ -270,7 +270,7 @@ end;
     "02": "var_set             0      0      0     ",
     "03": "push_var            0      0      0     ",
     "04": "push_var            0      0      0     ",
-    "05": "send_all            0      2      24    # test (select, closing)",
+    "05": "send_all            0      2      32    # test (select, closing)",
     "06": "union               1      0      0     ",
     "07": "recv                1      0      0     ",
     "08": "ret                 1      0      -     "
@@ -309,7 +309,7 @@ end;
     "02": "var_set             0      0      0     ",
     "03": "push_var            0      0      0     ",
     "04": "push_var            0      0      0     ",
-    "05": "send_lookup         0      -      24    # test (select, closing)",
+    "05": "send_lookup         0      -      32    # test (select, closing)",
     "06": "union               1      0      0     ",
     "07": "recv                1      0      0     ",
     "08": "ret                 1      0      -     "
@@ -359,7 +359,7 @@ end;
     "02": "var_set             0      0      0     ",
     "03": "push_var            0      0      0     ",
     "04": "push_var            0      0      0     ",
-    "05": "send_lookup         0      -      24    # test (select, closing)",
+    "05": "send_lookup         0      -      32    # test (select, closing)",
     "06": "union               1      0      0     ",
     "07": "recv                1      0      0     ",
     "08": "ret                 1      0      -     "
@@ -626,7 +626,7 @@ end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      24    # test (select, closing)",
+    "01": "send_all            0      0      32    # test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "var_mov             0      0      1     ",

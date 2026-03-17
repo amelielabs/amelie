@@ -6,7 +6,7 @@ insert into test (id) values (1), (2), (3);
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -31,7 +31,7 @@ select * from test;
 explain select * from test where id > 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -66,7 +66,7 @@ explain select * from test where id = 1;
 [{
   "main": {
     "00": "push_int            -      0      0     # 1",
-    "01": "send_lookup         0      -      24    # test (select, closing)",
+    "01": "send_lookup         0      -      32    # test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
@@ -106,7 +106,7 @@ select (select test.id) from test;
 explain select (select (select (test.id))) from test;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -128,7 +128,7 @@ select (select (select (test.id))) from test;
 explain select (select (select test.id)) from test;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (select, closing)",
+    "00": "send_all            0      0      32    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -151,7 +151,7 @@ select (select (select test.id)) from test;
 explain select (select (select id from test t)) from test;
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      64    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -160,7 +160,7 @@ explain select (select (select id from test t)) from test;
     "00": "set                 0      1      0     ",
     "01": "table_open          1      0      13    # test (primary) part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      24     8     # test (primary) ",
+    "03": "table_open          3      32     8     # test (primary) ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -181,7 +181,7 @@ insert into ref (id) values (1), (2), (3);
 explain select (select (select id from ref)) from test;
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      64    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -190,7 +190,7 @@ explain select (select (select id from ref)) from test;
     "00": "set                 0      1      0     ",
     "01": "table_open          1      0      13    # test (primary) part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      24     8     # ref (primary) ",
+    "03": "table_open          3      32     8     # ref (primary) ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -213,7 +213,7 @@ explain select * from test where (select * from test t);
 explain select * from test where (select id from test t);
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      64    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -222,7 +222,7 @@ explain select * from test where (select id from test t);
     "00": "set                 0      2      0     ",
     "01": "table_open          1      0      17    # test (primary) part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      24     8     # test (primary) ",
+    "03": "table_open          3      32     8     # test (primary) ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -245,7 +245,7 @@ explain select * from test where (select id from test t);
 explain select * from test where (select id from ref);
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      64    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -254,7 +254,7 @@ explain select * from test where (select id from ref);
     "00": "set                 0      2      0     ",
     "01": "table_open          1      0      17    # test (primary) part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      24     8     # ref (primary) ",
+    "03": "table_open          3      32     8     # ref (primary) ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -279,7 +279,7 @@ select * from test where (select id from ref);
 explain select * from test where exists (select 1 from ref where test.id = ref.id);
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      64    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -290,7 +290,7 @@ explain select * from test where exists (select 1 from ref where test.id = ref.i
     "02": "set                 2      1      0     ",
     "03": "table_readi32       3      1      -     # id",
     "04": "push                3      0      0     ",
-    "05": "table_open          3      24     12    # ref (primary) point_lookup",
+    "05": "table_open          3      32     12    # ref (primary) point_lookup",
     "06": "table_readi32       4      1      -     # id",
     "07": "table_readi32       5      3      -     # id",
     "08": "equii               6      4      5     ",

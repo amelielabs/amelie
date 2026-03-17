@@ -144,5 +144,5 @@ emit_insert(Compiler* self, Ast* ast)
 	auto table  = target->from_table;
 	// set target origin
 	target_set_origin(target, self->origin);
-	op1(self, CINSERT, (intptr_t)table);
+	op2(self, CINSERT, (intptr_t)table, (intptr_t)NULL);
 }

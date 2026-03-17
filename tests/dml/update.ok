@@ -37,7 +37,7 @@ insert into test values (2, 1);
 explain update test set data = data + 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (update, closing)",
+    "00": "send_all            0      0      32    # test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -85,7 +85,7 @@ insert into test values (2, 1, 1);
 explain update test set a = a + 1, b = b - 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (update, closing)",
+    "00": "send_all            0      0      32    # test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -132,16 +132,16 @@ update test set data = {"id": data.id::int + 1};
 explain update test set data = {"id": data.id::int + 1};
 [{
   "main": {
-    "00": "send_all            0      0      30    # test (update, closing)",
+    "00": "send_all            0      0      38    # test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_open          0      0      16    # test (primary) part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
-    "03": "push_string         24     0      0     # id",
+    "03": "push_string         32     0      0     # id",
     "04": "table_readj         1      0      -     # data",
-    "05": "string              2      27     0     # id",
+    "05": "string              2      35     0     # id",
     "06": "dotjs               3      1      2     ",
     "07": "push                3      0      0     ",
     "08": "call                1      -      1     # int()",
@@ -200,7 +200,7 @@ update test set id.path = 0;
 explain update test set data.id = data.id::int + 1;
 [{
   "main": {
-    "00": "send_all            0      0      30    # test (update, closing)",
+    "00": "send_all            0      0      38    # test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -209,9 +209,9 @@ explain update test set data.id = data.id::int + 1;
     "02": "push                1      0      0     ",
     "03": "table_readj         1      0      -     # data",
     "04": "push                1      0      0     ",
-    "05": "push_string         24     0      0     # id",
+    "05": "push_string         32     0      0     # id",
     "06": "table_readj         1      0      -     # data",
-    "07": "string              2      27     0     # id",
+    "07": "string              2      35     0     # id",
     "08": "dotjs               3      1      2     ",
     "09": "push                3      0      0     ",
     "10": "call                1      -      1     # int()",
@@ -308,7 +308,7 @@ explain update test set data = data + 1 where id = 0;
 [{
   "main": {
     "00": "push_int            -      0      0     # 0",
-    "01": "send_lookup         0      -      24    # test (update, closing)",
+    "01": "send_lookup         0      -      32    # test (update, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -344,7 +344,7 @@ insert into test values (2, 1);
 explain update test set data = data + 1 where id >= 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (update, closing)",
+    "00": "send_all            0      0      32    # test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -418,7 +418,7 @@ insert into test values (2, 0);
 explain update test set data = data + 1 returning *;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (update, closing)",
+    "00": "send_all            0      0      32    # test (update, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "

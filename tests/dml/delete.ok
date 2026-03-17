@@ -35,7 +35,7 @@ explain delete from test where id = 3;
 [{
   "main": {
     "00": "push_int            -      0      0     # 3",
-    "01": "send_lookup         0      -      24    # test (delete, closing)",
+    "01": "send_lookup         0      -      32    # test (delete, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -86,7 +86,7 @@ select * from test;
 explain delete from test where id > 0 and id < 1;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (delete, closing)",
+    "00": "send_all            0      0      32    # test (delete, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {

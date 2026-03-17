@@ -137,6 +137,7 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 hot Row*
 row_create(Heap*    heap,
            uint64_t tsn,
+           uint32_t branch,
            Columns* columns,
            Value*   values,
            Value*   refs,
@@ -152,7 +153,7 @@ row_create(Heap*    heap,
 	}
 
 	// create and write row
-	auto     row = row_allocate(heap, tsn, columns->count, size);
+	auto     row = row_allocate(heap, tsn, branch, columns->count, size);
 	uint8_t* pos = row_data(row, columns->count);
 	list_foreach(&columns->list)
 	{
@@ -224,6 +225,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 hot Row*
 row_update(Heap*    heap,
            uint64_t tsn,
+           uint32_t branch,
            Columns* columns,
            Row*     origin,
            Value*   values,
@@ -234,7 +236,7 @@ row_update(Heap*    heap,
 	// [order, value, order, value, ...]
 	//
 	auto     row_size = row_update_prepare(origin, columns, values, count);
-	auto     row      = row_allocate(heap, tsn, columns->count, row_size);
+	auto     row      = row_allocate(heap, tsn, branch, columns->count, row_size);
 	uint8_t* pos      = row_data(row, columns->count);
 
 	auto order = 0;

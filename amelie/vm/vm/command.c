@@ -395,17 +395,17 @@ ctable_open(Vm* self, Op* op)
 	if (open->index->type == INDEX_HASH && !open->point_lookup)
 		key_ref = NULL;
 
-	// open cursor
+	// create iterator (per or cross partitions)
+	auto part = self->part;
+	if (! open->open_part)
+		part = NULL;
+	auto it = cursor_open(&open->table->part_mgr, part,
+	                       open->index,
+	                       open->point_lookup, key_ref);
+
+	// set cursor
 	auto cursor = reg_at(&self->r, op->a);
-	if (open->open_part)
-		cursor->part = self->part;
-	else
-		cursor->part = NULL;
-	cursor->cursor = cursor_open(&open->table->part_mgr, cursor->part,
-	                              open->index,
-	                              open->point_lookup, key_ref);
-	cursor->table  = open->table;
-	cursor->type   = TYPE_CURSOR;
+	value_set_cursor(cursor, open->table, open->branch, part, it);
 
 	// jmp to next op if has data
 	if (likely(iterator_has(cursor->cursor)))
@@ -418,26 +418,23 @@ ctable_open(Vm* self, Op* op)
 hot void
 ctable_prepare(Vm* self, Op* op)
 {
-	// [cursor, table*]
-
-	// find partition
-	Table* table = (Table*)op->b;
-
-	// prepare cursor and primary index iterator for related partition
+	// [cursor, table*, branch*]
 	auto cursor = reg_at(&self->r, op->a);
-	cursor->table  = table;
-	cursor->part   = self->part;
-	cursor->cursor = index_iterator(part_primary(cursor->part));
-	cursor->type   = TYPE_CURSOR;
+
+	// create primary index iterator for related partition
+	auto it = index_iterator(part_primary(self->part));
+
+	// set cursor
+	value_set_cursor(cursor, (Table*)op->b, (Branch*)op->c, self->part, it);
 
 	// prepare upsert state
-	self->upsert   = self->code_arg->start;
+	self->upsert = self->code_arg->start;
 }
 
 hot void
 cinsert(Vm* self, Op* op)
 {
-	// [table*]
+	// [table*, branch*]
 
 	// find related table partition
 	auto table   = (Table*)op->a;
@@ -457,7 +454,7 @@ cinsert(Vm* self, Op* op)
 		pos += sizeof(Value*) + sizeof(int64_t);
 		value_set_int(&identity, value_id);
 
-		auto row = row_create(part->heap, self->dtr->id, columns, value,
+		auto row = row_create(part->heap, self->dtr->id, 0, columns, value,
 		                      self->refs, &identity);
 		part_insert(part, self->tr, false, row);
 	}
@@ -484,8 +481,9 @@ cupsert(Vm* self, Op* op)
 		self->upsert += sizeof(Value*) + sizeof(int64_t);
 		value_set_int(&identity, value_id);
 
-		auto row = row_create(cursor->part->heap, dtr->id, columns, value,
-		                      self->refs, &identity);
+		auto row = row_create(cursor->part->heap, dtr->id, 0,
+		                      columns, value, self->refs,
+		                      &identity);
 
 		// insert or get (open iterator in both cases)
 		auto exists = part_upsert(cursor->part, self->tr, cursor->cursor, row);
@@ -526,7 +524,7 @@ cupdate(Vm* self, Op* op)
 	auto dtr = self->dtr;
 	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
-	auto row = row_update(cursor->part->heap, dtr->id,
+	auto row = row_update(cursor->part->heap, dtr->id, 0,
 	                      table_columns(cursor->table), row_src,
 	                      row_values, op->b);
 	part_update(cursor->part, self->tr, cursor->cursor, row);

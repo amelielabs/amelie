@@ -449,7 +449,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CINSERT:
 		{
 			auto table = (Table*)op->a;
-			op_write(output, op, false, true, true,
+			op_write(output, op, false, false, false,
 			         "%.*s", str_size(&table->config->name),
 			         str_of(&table->config->name));
 			break;
@@ -480,7 +480,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CTABLE_PREPARE:
 		{
 			auto table = (Table*)op->b;
-			op_write(output, op, true, false, true,
+			op_write(output, op, true, false, false,
 			         "%.*s", str_size(&table->config->name),
 			         str_of(&table->config->name));
 			break;

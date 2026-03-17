@@ -35,8 +35,9 @@ emit_upsert(Compiler* self, Ast* ast)
 		rset = op3pin(self, CSET, TYPE_STORE, insert->ret.count, 0);
 
 	// CTABLE_PREPARE
-	target->rcursor = op2pin(self, CTABLE_PREPARE, TYPE_CURSOR,
-	                         (intptr_t)table);
+	target->rcursor = op3pin(self, CTABLE_PREPARE, TYPE_CURSOR,
+	                         (intptr_t)table,
+	                         (intptr_t)NULL);
 
 	// jmp _start
 	int jmp_start = op_pos(self);

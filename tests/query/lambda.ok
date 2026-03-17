@@ -26,8 +26,8 @@ select 0 -> id, 0 -> data from test;
 explain select 0 -> id, 0 -> data from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
-    "01": "recv_aggs           1      0      24    ",
+    "00": "send_all            0      0      48    # test (select, closing)",
+    "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
     "04": "store_read          4      3      0     ",
@@ -51,14 +51,14 @@ explain select 0 -> id, 0 -> data from test;
     "07": "push                5      0      0     ",
     "08": "table_readi32       5      3      -     # data",
     "09": "push                5      0      0     ",
-    "10": "set_agg             0      4      24    ",
+    "10": "set_agg             0      4      32    ",
     "11": "table_next          3      4      0     ",
     "12": "free                3      0      0     ",
     "13": "push_bool           1      0      0     ",
     "14": "set_get             3      0      0     ",
     "15": "push_nulls          1      0      0     ",
     "16": "push_nulls          1      0      0     ",
-    "17": "set_agg             0      3      24    ",
+    "17": "set_agg             0      3      32    ",
     "18": "ret                 0      0      -     "
   },
   "access": [["test", "shared"]]
@@ -74,8 +74,8 @@ select 0 -> self + 1 from test;
 explain select 0 -> self + 1 from test;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (select, closing)",
-    "01": "recv_aggs           1      0      24    ",
+    "00": "send_all            0      0      40    # test (select, closing)",
+    "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
     "04": "store_read          4      3      0     ",
@@ -96,13 +96,13 @@ explain select 0 -> self + 1 from test;
     "06": "int                 5      -      0     # 1",
     "07": "addii               6      4      5     ",
     "08": "push                6      0      0     ",
-    "09": "set_agg             0      3      24    ",
+    "09": "set_agg             0      3      32    ",
     "10": "table_next          2      3      0     ",
     "11": "free                2      0      0     ",
     "12": "push_bool           1      0      0     ",
     "13": "set_get             2      0      0     ",
     "14": "push_nulls          1      0      0     ",
-    "15": "set_agg             0      2      24    ",
+    "15": "set_agg             0      2      32    ",
     "16": "ret                 0      0      -     "
   },
   "access": [["test", "shared"]]
@@ -170,8 +170,8 @@ insert into test values (5, 3);
 explain select 0 -> self + 1 from test;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (select, closing)",
-    "01": "recv_aggs           1      0      24    ",
+    "00": "send_all            0      0      40    # test (select, closing)",
+    "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
     "04": "store_read          4      3      0     ",
@@ -192,13 +192,13 @@ explain select 0 -> self + 1 from test;
     "06": "int                 5      -      0     # 1",
     "07": "addii               6      4      5     ",
     "08": "push                6      0      0     ",
-    "09": "set_agg             0      3      24    ",
+    "09": "set_agg             0      3      32    ",
     "10": "table_next          2      3      0     ",
     "11": "free                2      0      0     ",
     "12": "push_bool           1      0      0     ",
     "13": "set_get             2      0      0     ",
     "14": "push_nulls          1      0      0     ",
-    "15": "set_agg             0      2      24    ",
+    "15": "set_agg             0      2      32    ",
     "16": "ret                 0      0      -     "
   },
   "access": [["test", "shared"]]

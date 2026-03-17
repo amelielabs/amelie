@@ -169,7 +169,7 @@ end;
     "function": "fn",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      24    # test (select, closing)",
+      "01": "send_all            0      0      32    # test (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_set             0      0      1     ",

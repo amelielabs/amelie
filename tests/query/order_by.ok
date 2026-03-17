@@ -8,7 +8,7 @@ insert into test values (3, 2);
 explain select * from test order by data;
 [{
   "main": {
-    "00": "send_all            0      0      25    # test (select, closing)",
+    "00": "send_all            0      0      33    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -59,7 +59,7 @@ select * from test order by id desc, data;
 explain select id from test order by id;
 [{
   "main": {
-    "00": "send_all            0      0      25    # test (select, closing)",
+    "00": "send_all            0      0      33    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "

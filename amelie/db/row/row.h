@@ -29,11 +29,11 @@ struct Row
 } packed;
 
 always_inline hot static inline void
-row_init(Row* self, int columns, int size_factor, int size)
+row_init(Row* self, uint32_t branch, int columns, int size_factor, int size)
 {
 	self->size_factor = size_factor;
 	self->is_delete   = false;
-	self->branch      = 0;
+	self->branch      = branch;
 	self->columns     = columns;
 	if (size_factor == 0)
 		*self->data = size;

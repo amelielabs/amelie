@@ -87,7 +87,7 @@ explain begin declare x int; select id into x from test; select x; end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      24    # test (select, closing)",
+    "01": "send_all            0      0      32    # test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "var_set             0      0      1     ",
@@ -803,7 +803,7 @@ explain select test();
     "function": "test",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      24    # src (select, closing)",
+      "01": "send_all            0      0      32    # src (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_set             0      0      1     ",
@@ -857,7 +857,7 @@ explain select test();
     "function": "test",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      24    # src (select, closing)",
+      "01": "send_all            0      0      32    # src (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_set             0      0      1     ",
@@ -912,7 +912,7 @@ explain select test();
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      1      0     ",
       "02": "jntr                10     0      0     ",
-      "03": "send_all            0      0      24    # src (select)",
+      "03": "send_all            0      0      32    # src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "var_set             0      0      1     ",
@@ -962,7 +962,7 @@ explain select test();
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      0      0     ",
       "02": "jntr                10     0      0     ",
-      "03": "send_all            0      0      24    # src (select)",
+      "03": "send_all            0      0      32    # src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "var_set             0      0      1     ",
@@ -1015,7 +1015,7 @@ explain select test();
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 0",
       "02": "var_set             0      0      0     ",
-      "03": "send_all            0      0      24    # src (select)",
+      "03": "send_all            0      0      32    # src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "dup                 0      1      0     ",
@@ -1078,7 +1078,7 @@ explain select test();
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 0",
       "02": "var_set             0      0      0     ",
-      "03": "send_all            0      0      24    # src (select)",
+      "03": "send_all            0      0      32    # src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "dup                 0      1      0     ",
@@ -1237,7 +1237,7 @@ explain select test();
       "04": "ret                 -1     0      -     "
     },
     "pushdown": {
-      "00": "insert              -      0      0     # src",
+      "00": "insert              -      -      -     # src",
       "01": "ret                 -1     0      -     "
     },
     "access": [["src", "shared_rw"]]
@@ -1274,7 +1274,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      0     # src",
+      "01": "table_prepare       1      -      -     # src",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1329,7 +1329,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      0     # src",
+      "01": "table_prepare       1      -      -     # src",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1385,7 +1385,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      0     # src",
+      "01": "table_prepare       1      -      -     # src",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1441,7 +1441,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      0     # src",
+      "01": "table_prepare       1      -      -     # src",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1743,7 +1743,7 @@ explain select test();
     "function": "test",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      24    # src (select, closing)",
+      "01": "send_all            0      0      32    # src (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_mov             0      0      1     ",

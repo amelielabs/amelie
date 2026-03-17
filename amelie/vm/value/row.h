@@ -12,8 +12,8 @@
 //
 
 Row* row_create_key(Buf*, Keys*, Value*, int);
-Row* row_create(Heap*, uint64_t, Columns*, Value*, Value*, Value*);
-Row* row_update(Heap*, uint64_t, Columns*, Row*, Value*, int);
+Row* row_create(Heap*, uint64_t, uint32_t, Columns*, Value*, Value*, Value*);
+Row* row_update(Heap*, uint64_t, uint32_t, Columns*, Row*, Value*, int);
 
 static inline void
 row_get_identity(Table* table, Value* refs, Value* row, Value* identity)

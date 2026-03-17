@@ -10,7 +10,7 @@ explain insert into test (id) values (1), (2), (3);
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      0      0     # test",
+    "00": "insert              -      -      -     # test",
     "01": "ret                 -1     0      -     "
   },
   "access": [["test", "shared_rw"]]
@@ -22,7 +22,7 @@ select * from test;
 explain delete from test;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (delete, closing)",
+    "00": "send_all            0      0      32    # test (delete, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -42,7 +42,7 @@ insert into test (id) values (1), (2), (3);
 explain update test set data = id;
 [{
   "main": {
-    "00": "send_all            0      0      24    # test (update, closing)",
+    "00": "send_all            0      0      32    # test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -70,7 +70,7 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      0     # test",
+    "00": "table_prepare       0      -      -     # test",
     "01": "jmp                 9      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
