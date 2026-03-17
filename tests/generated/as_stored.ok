@@ -55,7 +55,7 @@ explain insert into test values (0, null);
     "14": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test",
+    "00": "insert              -      -      -     # test [main]",
     "01": "ret                 -1     0      -     "
   },
   "access": [["test", "shared_rw"]]
@@ -140,7 +140,7 @@ explain insert into test (id) values (0) on conflict do update set data = data +
     "14": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # test",
+    "00": "table_prepare       0      -      -     # test [main]",
     "01": "jmp                 9      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -212,7 +212,7 @@ explain insert into test select * from src;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # src (primary) part",
+    "01": "table_open          1      0      8     # src (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -221,7 +221,7 @@ explain insert into test select * from src;
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
-    "10": "insert              -      -      -     # test",
+    "10": "insert              -      -      -     # test [main]",
     "11": "ret                 -1     0      -     "
   },
   "access": [["test", "shared_rw"], ["src", "shared"]]

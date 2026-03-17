@@ -497,9 +497,9 @@ select * from test2 use index (i2);
 # test: drop index
 drop index i2 on test2;
 select * from test2 use index (i);
-{"msg": "index 'i': not exists"}
+{"msg": "select * from test2 use index (❰i❱ ⟵ index not found"}
 select * from test2 use index (i2);
-{"msg": "index 'i2': not exists"}
+{"msg": "select * from test2 use index (❰i2❱ ⟵ index not found"}
 select * from test2;
 [[2, null], [0, null], [1, null]]
 # test: restart
@@ -513,9 +513,9 @@ select show('state').lsn;
 select identity_of("test2");
 [3]
 select * from test2 use index (i);
-{"msg": "index 'i': not exists"}
+{"msg": "select * from test2 use index (❰i❱ ⟵ index not found"}
 select * from test2 use index (i2);
-{"msg": "index 'i2': not exists"}
+{"msg": "select * from test2 use index (❰i2❱ ⟵ index not found"}
 select * from test2;
 [[2, null], [0, null], [1, null]]
 # test: truncate

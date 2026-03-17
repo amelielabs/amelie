@@ -28,6 +28,12 @@ table_primary(Table* self)
 	return container_of(self->config->indexes.next, IndexConfig, link);
 }
 
+static inline Branch*
+table_main(Table* self)
+{
+	return branch_mgr_first(&self->config->partitioning.branches);
+}
+
 static inline Columns*
 table_columns(Table* self)
 {

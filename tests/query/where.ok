@@ -19,7 +19,7 @@ explain select * from test where id >= 0;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 0",
-    "02": "table_open          1      0      13    # test (primary) part",
+    "02": "table_open          1      0      13    # test (primary) [main] part",
     "03": "table_readi64       2      1      -     # id",
     "04": "int                 3      -      0     # 0",
     "05": "gteii               4      2      3     ",
@@ -63,7 +63,7 @@ explain select * from test where data.data::int >= 0;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # test (primary) part",
+    "01": "table_open          1      0      16    # test (primary) [main] part",
     "02": "table_readj         2      1      -     # data",
     "03": "string              3      32     0     # data",
     "04": "dotjs               4      2      3     ",
@@ -121,7 +121,7 @@ explain select * from test where data.data.data::int >= 0;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # test (primary) part",
+    "01": "table_open          1      0      16    # test (primary) [main] part",
     "02": "table_readj         2      1      -     # data",
     "03": "string              3      32     0     # data.data",
     "04": "dotjs               4      2      3     ",
@@ -172,7 +172,7 @@ explain select * from test where test.id >= 0;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 0",
-    "02": "table_open          1      0      13    # test (primary) part",
+    "02": "table_open          1      0      13    # test (primary) [main] part",
     "03": "table_readi64       2      1      -     # id",
     "04": "int                 3      -      0     # 0",
     "05": "gteii               4      2      3     ",
@@ -206,7 +206,7 @@ explain select * from test where test.data.data::int >= 0;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # test (primary) part",
+    "01": "table_open          1      0      16    # test (primary) [main] part",
     "02": "table_readj         2      1      -     # data",
     "03": "string              3      32     0     # data",
     "04": "dotjs               4      2      3     ",
@@ -251,7 +251,7 @@ explain select * from test alias where alias.id >= 0;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 0",
-    "02": "table_open          1      0      13    # test (primary) part",
+    "02": "table_open          1      0      13    # test (primary) [main] part",
     "03": "table_readi64       2      1      -     # id",
     "04": "int                 3      -      0     # 0",
     "05": "gteii               4      2      3     ",
@@ -285,7 +285,7 @@ explain select * from test alias where alias.data.data::int >= 0;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # test (primary) part",
+    "01": "table_open          1      0      16    # test (primary) [main] part",
     "02": "table_readj         2      1      -     # data",
     "03": "string              3      32     0     # data",
     "04": "dotjs               4      2      3     ",
@@ -335,7 +335,7 @@ explain select * from test where true;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "bool                2      1      0     ",
     "03": "jntr                7      2      0     ",
     "04": "table_readi32       2      1      -     # id",
@@ -366,7 +366,7 @@ explain select * from test where id >= 0;
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_int            -      0      0     # 0",
-    "02": "table_open          1      0      11    # test (primary) part",
+    "02": "table_open          1      0      11    # test (primary) [main] part",
     "03": "table_readi32       2      1      -     # id",
     "04": "int                 3      -      0     # 0",
     "05": "gteii               4      2      3     ",
@@ -412,7 +412,7 @@ explain select * from test where id <= 0;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      14    # test (primary) part",
+    "01": "table_open          1      0      14    # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "int                 3      -      0     # 0",
     "04": "lteii               4      2      3     ",
@@ -451,7 +451,7 @@ explain select * from test where id < 0;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      14    # test (primary) part",
+    "01": "table_open          1      0      14    # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "int                 3      -      0     # 0",
     "04": "ltii                4      2      3     ",
@@ -495,7 +495,7 @@ explain select * from test where id = 2;
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_int            -      0      0     # 2",
-    "02": "table_open          1      0      10    # test (primary) point_lookup, part",
+    "02": "table_open          1      0      10    # test (primary) [main] point_lookup, part",
     "03": "table_readi32       2      1      -     # id",
     "04": "int                 3      -      0     # 2",
     "05": "equii               4      2      3     ",

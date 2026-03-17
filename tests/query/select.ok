@@ -77,7 +77,7 @@ explain select * from test;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -117,7 +117,7 @@ explain select id, data from test;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -157,7 +157,7 @@ explain select data.data from test;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "table_readj         2      1      -     # data",
     "03": "string              3      32     0     # data",
     "04": "dotjs               4      2      3     ",
@@ -201,7 +201,7 @@ explain select data.data.data from test;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "table_readj         2      1      -     # data",
     "03": "string              3      32     0     # data.data",
     "04": "dotjs               4      2      3     ",
@@ -231,7 +231,7 @@ explain select test.id, test.data from test;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -261,7 +261,7 @@ explain select test.data.data from test;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "table_readj         2      1      -     # data",
     "03": "string              3      32     0     # data",
     "04": "dotjs               4      2      3     ",
@@ -315,7 +315,7 @@ explain select alias.id, alias.data from test alias;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -345,7 +345,7 @@ explain select alias.data.data from test alias;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "table_readj         2      1      -     # data",
     "03": "string              3      32     0     # data",
     "04": "dotjs               4      2      3     ",
@@ -379,7 +379,7 @@ explain select alias.id, alias.data from test alias;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",

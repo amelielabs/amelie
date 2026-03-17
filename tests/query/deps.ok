@@ -120,7 +120,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -153,7 +153,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -190,7 +190,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -228,7 +228,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -236,7 +236,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 1      1      0     ",
-    "09": "table_open          2      56     14    # test (primary) part",
+    "09": "table_open          2      56     14    # test (primary) [main] part",
     "10": "table_readi32       3      2      -     # id",
     "11": "push                3      0      0     ",
     "12": "set_add             1      0      0     ",
@@ -285,7 +285,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -325,7 +325,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -333,7 +333,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     13    # test (primary) part",
+    "09": "table_open          1      56     13    # test (primary) [main] part",
     "10": "push_int            -      0      0     # 123",
     "11": "set_add             0      0      0     ",
     "12": "table_next          1      10     0     ",
@@ -372,7 +372,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -380,7 +380,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     13    # test (primary) part",
+    "09": "table_open          1      56     13    # test (primary) [main] part",
     "10": "push_int            -      0      0     # 123",
     "11": "set_add             0      0      0     ",
     "12": "table_next          1      10     0     ",
@@ -416,7 +416,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -453,7 +453,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -492,7 +492,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -531,7 +531,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -573,7 +573,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -618,7 +618,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -667,7 +667,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -711,7 +711,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -752,7 +752,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -794,7 +794,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -836,7 +836,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -882,7 +882,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -929,7 +929,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -971,7 +971,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1017,7 +1017,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1068,7 +1068,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1123,7 +1123,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1169,7 +1169,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1219,7 +1219,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1227,7 +1227,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     16    # test (primary) part",
+    "09": "table_open          1      56     16    # test (primary) [main] part",
     "10": "int                 2      -      0     # 7",
     "11": "table_readi32       3      1      -     # id",
     "12": "addii               4      2      3     ",
@@ -1280,7 +1280,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1288,7 +1288,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     16    # test (primary) part",
+    "09": "table_open          1      56     16    # test (primary) [main] part",
     "10": "int                 2      -      0     # 7",
     "11": "table_readi32       3      1      -     # id",
     "12": "addii               4      2      3     ",
@@ -1348,7 +1348,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1356,7 +1356,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     16    # test (primary) part",
+    "09": "table_open          1      56     16    # test (primary) [main] part",
     "10": "int                 2      -      0     # 5",
     "11": "table_readi32       3      1      -     # id",
     "12": "addii               4      2      3     ",
@@ -1366,7 +1366,7 @@ end;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     ",
     "18": "set                 0      1      0     ",
-    "19": "table_open          1      112    26    # test (primary) part",
+    "19": "table_open          1      112    26    # test (primary) [main] part",
     "20": "int                 2      -      0     # 10",
     "21": "table_readi32       3      1      -     # id",
     "22": "addii               4      2      3     ",
@@ -1426,7 +1426,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1434,7 +1434,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     16    # test (primary) part",
+    "09": "table_open          1      56     16    # test (primary) [main] part",
     "10": "int                 2      -      0     # 5",
     "11": "table_readi32       3      1      -     # id",
     "12": "addii               4      2      3     ",
@@ -1444,7 +1444,7 @@ end;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     ",
     "18": "set                 0      1      0     ",
-    "19": "table_open          1      112    26    # test (primary) part",
+    "19": "table_open          1      112    26    # test (primary) [main] part",
     "20": "int                 2      -      0     # 10",
     "21": "table_readi32       3      1      -     # id",
     "22": "addii               4      2      3     ",
@@ -1493,7 +1493,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1533,7 +1533,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1580,7 +1580,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1634,7 +1634,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1682,7 +1682,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1727,7 +1727,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1771,7 +1771,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1827,7 +1827,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1969,7 +1969,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2020,7 +2020,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2075,7 +2075,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2125,7 +2125,7 @@ end;
     "16": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test",
+    "00": "insert              -      -      -     # test [main]",
     "01": "ret                 -1     0      -     "
   },
   "access": [["test", "shared_rw"]]
@@ -2168,10 +2168,10 @@ end;
     "18": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test",
+    "00": "insert              -      -      -     # test [main]",
     "01": "ret                 -1     0      -     ",
     "02": "set                 0      1      0     ",
-    "03": "table_open          1      24     8     # test (primary) part",
+    "03": "table_open          1      24     8     # test (primary) [main] part",
     "04": "table_readi32       2      1      -     # id",
     "05": "push                2      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -2216,7 +2216,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2265,7 +2265,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2316,7 +2316,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2370,7 +2370,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2430,7 +2430,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2512,7 +2512,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2569,7 +2569,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2619,7 +2619,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -2668,7 +2668,7 @@ end;
   },
   "pushdown": {
     "00": "set                 2      1      0     ",
-    "01": "table_open          3      3      6     # test (primary) part",
+    "01": "table_open          3      3      6     # test (primary) [main] part",
     "02": "table_readi32       4      3      -     # id",
     "03": "push                4      0      0     ",
     "04": "set_add             2      0      0     ",
@@ -2726,7 +2726,7 @@ end;
   },
   "pushdown": {
     "00": "set                 2      1      0     ",
-    "01": "table_open          3      3      6     # test (primary) part",
+    "01": "table_open          3      3      6     # test (primary) [main] part",
     "02": "table_readi32       4      3      -     # id",
     "03": "push                4      0      0     ",
     "04": "set_add             2      0      0     ",
@@ -2788,7 +2788,7 @@ end;
   },
   "pushdown": {
     "00": "set                 2      1      0     ",
-    "01": "table_open          3      4      6     # test (primary) part",
+    "01": "table_open          3      4      6     # test (primary) [main] part",
     "02": "table_readi32       4      3      -     # id",
     "03": "push                4      0      0     ",
     "04": "set_add             2      0      0     ",
@@ -2848,7 +2848,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readi32       3      1      -     # id",
@@ -2861,10 +2861,10 @@ end;
     "11": "push_nulls          1      0      0     ",
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     ",
-    "14": "insert              -      -      -     # test",
+    "14": "insert              -      -      -     # test [main]",
     "15": "ret                 -1     0      -     ",
     "16": "set                 0      1      0     ",
-    "17": "table_open          1      88     22    # test (primary) part",
+    "17": "table_open          1      88     22    # test (primary) [main] part",
     "18": "table_readi32       2      1      -     # id",
     "19": "push                2      0      0     ",
     "20": "set_add             0      0      0     ",

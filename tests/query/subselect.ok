@@ -68,7 +68,7 @@ explain select (select test.*) from test;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -98,7 +98,7 @@ explain select (select test.id) from test;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -123,7 +123,7 @@ explain select (select t.id) from test t;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -234,7 +234,7 @@ explain select * from (select * from test) t;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -348,7 +348,7 @@ explain select (select * from test);
 [{
   "main": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) ",
+    "01": "table_open          1      0      6     # test (primary) [main] ",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -375,9 +375,9 @@ explain select (select * from test) from test;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      13    # test (primary) part",
+    "01": "table_open          1      0      13    # test (primary) [main] part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      32     8     # test (primary) ",
+    "03": "table_open          3      32     8     # test (primary) [main] ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -409,10 +409,10 @@ explain select (select i.* from test i limit 1) from test;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      15    # test (primary) part",
+    "01": "table_open          1      0      15    # test (primary) [main] part",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
-    "04": "table_open          4      32     10    # test (primary) ",
+    "04": "table_open          4      32     10    # test (primary) [main] ",
     "05": "cjltd               10     3      0     ",
     "06": "table_readi32       5      4      -     # id",
     "07": "push                5      0      0     ",
@@ -439,11 +439,11 @@ explain select (select i.* from test i where test.id = i.id) from test;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      18    # test (primary) part",
+    "01": "table_open          1      0      18    # test (primary) [main] part",
     "02": "set                 2      1      0     ",
     "03": "table_readi32       3      1      -     # id",
     "04": "push                3      0      0     ",
-    "05": "table_open          3      32     13    # test (primary) point_lookup",
+    "05": "table_open          3      32     13    # test (primary) [main] point_lookup",
     "06": "table_readi32       4      1      -     # id",
     "07": "table_readi32       5      3      -     # id",
     "08": "equii               6      4      5     ",
@@ -489,11 +489,11 @@ explain select * from a where (select true from b where a.id = b.id);
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      21    # a (primary) part",
+    "01": "table_open          1      0      21    # a (primary) [main] part",
     "02": "set                 2      1      0     ",
     "03": "table_readi64       3      1      -     # id",
     "04": "push                3      0      0     ",
-    "05": "table_open          3      32     12    # b (primary) point_lookup",
+    "05": "table_open          3      32     12    # b (primary) [main] point_lookup",
     "06": "table_readi64       4      1      -     # id",
     "07": "table_readi64       5      3      -     # id",
     "08": "equii               6      4      5     ",
@@ -547,7 +547,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",

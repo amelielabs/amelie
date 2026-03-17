@@ -12,7 +12,7 @@ explain select distinct * from test;
   },
   "pushdown": {
     "00": "set_ordered         0      2      2     ",
-    "01": "table_open          1      2      12    # test (primary) part",
+    "01": "table_open          1      2      12    # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -48,7 +48,7 @@ explain select distinct * from test;
   },
   "pushdown": {
     "00": "set_ordered         0      2      2     ",
-    "01": "table_open          1      2      12    # test (primary) part",
+    "01": "table_open          1      2      12    # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -78,7 +78,7 @@ explain select distinct id from test;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      -     # id",
@@ -105,7 +105,7 @@ explain select distinct id, data from test;
   },
   "pushdown": {
     "00": "set_ordered         0      2      2     ",
-    "01": "table_open          1      2      12    # test (primary) part",
+    "01": "table_open          1      2      12    # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -137,7 +137,7 @@ explain select distinct data from test limit 4;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -165,7 +165,7 @@ explain select distinct data from test limit 0;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -195,7 +195,7 @@ explain select distinct data from test limit 1 offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -229,7 +229,7 @@ explain select distinct data from test offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -282,7 +282,7 @@ explain select * from test order by data;
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
-    "01": "table_open          1      1      10    # test (primary) part",
+    "01": "table_open          1      1      10    # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -307,7 +307,7 @@ explain select distinct on (data) * from test;
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
-    "01": "table_open          1      1      10    # test (primary) part",
+    "01": "table_open          1      1      10    # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",

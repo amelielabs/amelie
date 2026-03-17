@@ -52,6 +52,7 @@ struct Target
 		struct {
 			LockId       from_lock;
 			Table*       from_table;
+			Branch*      from_branch;
 			IndexConfig* from_index;
 		};
 		AstList* from_group_by;

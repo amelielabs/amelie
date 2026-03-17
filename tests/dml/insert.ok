@@ -265,7 +265,7 @@ explain insert into test values (1),(2),(3) returning *;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_prepare       1      -      -     # test",
+    "01": "table_prepare       1      -      -     # test [main]",
     "02": "jmp                 9      0      0     ",
     "03": "string              2      0      0     # unique key constraint violation",
     "04": "push                2      0      0     ",
@@ -297,7 +297,7 @@ explain insert into test () values (), (), () returning *;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_prepare       1      -      -     # test",
+    "01": "table_prepare       1      -      -     # test [main]",
     "02": "jmp                 9      0      0     ",
     "03": "string              2      0      0     # unique key constraint violation",
     "04": "push                2      0      0     ",
@@ -414,7 +414,7 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      12    # test (primary) part",
+    "01": "table_open          1      0      12    # test (primary) [main] part",
     "02": "table_readt         2      1      -     # ts",
     "03": "value               3      -      0     # timestamp",
     "04": "gtii                4      2      3     ",
@@ -442,7 +442,7 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      12    # test (primary) part",
+    "01": "table_open          1      0      12    # test (primary) [main] part",
     "02": "table_readt         2      1      -     # ts",
     "03": "timestamp           3      -      0     # 4379909090",
     "04": "gtii                4      2      3     ",
@@ -491,7 +491,7 @@ explain select * from test;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readt         2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -518,7 +518,7 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_timestamp      -      0      0     # 1000002",
-    "02": "table_open          1      0      11    # test (primary) part",
+    "02": "table_open          1      0      11    # test (primary) [main] part",
     "03": "table_readt         2      1      -     # id",
     "04": "timestamp           3      -      0     # 1000002",
     "05": "gtii                4      2      3     ",
@@ -545,7 +545,7 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_timestamp      -      0      0     # 1000002",
-    "02": "table_open          1      0      11    # test (primary) part",
+    "02": "table_open          1      0      11    # test (primary) [main] part",
     "03": "table_readt         2      1      -     # id",
     "04": "timestamp           3      -      0     # 1000002",
     "05": "gteii               4      2      3     ",
@@ -571,7 +571,7 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003';
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      14    # test (primary) part",
+    "01": "table_open          1      0      14    # test (primary) [main] part",
     "02": "table_readt         2      1      -     # id",
     "03": "timestamp           3      -      0     # 1000003",
     "04": "ltii                4      2      3     ",
@@ -603,7 +603,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_timestamp      -      0      0     # 1000003",
-    "02": "table_open          1      0      10    # test (primary) point_lookup, part",
+    "02": "table_open          1      0      10    # test (primary) [main] point_lookup, part",
     "03": "table_readt         2      1      -     # id",
     "04": "timestamp           3      -      0     # 1000003",
     "05": "equii               4      2      3     ",
@@ -636,7 +636,7 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      12    # test (primary) part",
+    "01": "table_open          1      0      12    # test (primary) [main] part",
     "02": "table_readl         2      1      -     # i",
     "03": "value               3      -      0     # interval",
     "04": "gtll                4      2      3     ",
@@ -687,7 +687,7 @@ explain select * from test where d >= date '1970-01-01';
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      12    # test (primary) part",
+    "01": "table_open          1      0      12    # test (primary) [main] part",
     "02": "table_readd         2      1      -     # d",
     "03": "date                3      2440588 0     ",
     "04": "gteii               4      2      3     ",
@@ -785,7 +785,7 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_uuid           0      0      0     ",
-    "02": "table_open          1      16     10    # test (primary) point_lookup, part",
+    "02": "table_open          1      16     10    # test (primary) [main] point_lookup, part",
     "03": "table_readu         2      1      -     # id",
     "04": "uuid                3      48     0     ",
     "05": "equuu               4      2      3     ",
@@ -858,7 +858,7 @@ explain select * from test;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # test (primary) part",
+    "01": "table_open          1      0      8     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -882,7 +882,7 @@ explain select * from test use index (i);
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # test (i) part",
+    "01": "table_open          1      0      8     # test (i) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -936,7 +936,7 @@ explain insert into test select 1, 0;
     "06": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test",
+    "00": "insert              -      -      -     # test [main]",
     "01": "ret                 -1     0      -     "
   },
   "access": [["test", "shared_rw"]]
@@ -970,7 +970,7 @@ explain insert into test select * from (select 2, 0) t;
     "17": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test",
+    "00": "insert              -      -      -     # test [main]",
     "01": "ret                 -1     0      -     "
   },
   "access": [["test", "shared_rw"]]
@@ -993,7 +993,7 @@ explain insert into test select * from src;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # src (primary) part",
+    "01": "table_open          1      0      8     # src (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -1002,7 +1002,7 @@ explain insert into test select * from src;
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
-    "10": "insert              -      -      -     # test",
+    "10": "insert              -      -      -     # test [main]",
     "11": "ret                 -1     0      -     "
   },
   "access": [["test", "shared_rw"], ["src", "shared"]]

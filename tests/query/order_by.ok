@@ -15,7 +15,7 @@ explain select * from test order by data;
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
-    "01": "table_open          1      1      10    # test (primary) part",
+    "01": "table_open          1      1      10    # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -66,7 +66,7 @@ explain select id from test order by id;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # id",
@@ -84,7 +84,7 @@ explain select (select id from test order by id);
 [{
   "main": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      8     # test (primary) ",
+    "01": "table_open          1      0      8     # test (primary) [main] ",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # id",
@@ -106,7 +106,7 @@ explain select (select id from test order by id desc);
 [{
   "main": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) ",
+    "01": "table_open          1      1      8     # test (primary) [main] ",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # id",
@@ -127,7 +127,7 @@ explain select (select id from test order by data);
 [{
   "main": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) ",
+    "01": "table_open          1      1      8     # test (primary) [main] ",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",

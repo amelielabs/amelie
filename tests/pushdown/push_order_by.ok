@@ -15,7 +15,7 @@ explain select * from test order by id;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      -     # id",
@@ -40,7 +40,7 @@ explain select * from test order by id asc;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      -     # id",
@@ -65,7 +65,7 @@ explain select * from test order by id desc;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      -     # id",
@@ -94,7 +94,7 @@ explain select * from test order by id limit 1;
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
     "01": "int                 1      -      0     # 1",
-    "02": "table_open          2      1      10    # test (primary) part",
+    "02": "table_open          2      1      10    # test (primary) [main] part",
     "03": "cjltd               10     1      0     ",
     "04": "table_readi64       3      2      -     # id",
     "05": "push                3      0      0     ",
@@ -133,7 +133,7 @@ explain select * from test order by id limit 0;
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
     "01": "int                 1      -      0     # 0",
-    "02": "table_open          2      1      10    # test (primary) part",
+    "02": "table_open          2      1      10    # test (primary) [main] part",
     "03": "cjltd               10     1      0     ",
     "04": "table_readi64       3      2      -     # id",
     "05": "push                3      0      0     ",
@@ -163,7 +163,7 @@ explain select * from test order by id desc limit 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      -     # id",
@@ -206,7 +206,7 @@ explain select * from test order by id limit 1 offset 0;
     "01": "int                 1      -      0     # 1",
     "02": "int                 2      -      0     # 0",
     "03": "addii               3      1      2     ",
-    "04": "table_open          1      1      12    # test (primary) part",
+    "04": "table_open          1      1      12    # test (primary) [main] part",
     "05": "cjltd               12     3      0     ",
     "06": "table_readi64       2      1      -     # id",
     "07": "push                2      0      0     ",
@@ -239,7 +239,7 @@ explain select * from test order by id limit 1 offset 1;
     "01": "int                 1      -      0     # 1",
     "02": "int                 2      -      0     # 1",
     "03": "addii               3      1      2     ",
-    "04": "table_open          1      1      12    # test (primary) part",
+    "04": "table_open          1      1      12    # test (primary) [main] part",
     "05": "cjltd               12     3      0     ",
     "06": "table_readi64       2      1      -     # id",
     "07": "push                2      0      0     ",
@@ -275,7 +275,7 @@ explain select * from test order by id desc limit 1 offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      -     # id",
@@ -309,7 +309,7 @@ explain select * from test order by id offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      -     # id",
@@ -346,7 +346,7 @@ explain select * from test order by id desc offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # test (primary) part",
+    "01": "table_open          1      1      8     # test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      -     # id",

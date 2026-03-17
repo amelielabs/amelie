@@ -448,10 +448,14 @@ op_dump(Program* self, Code* code, Buf* buf)
 			break;
 		case CINSERT:
 		{
-			auto table = (Table*)op->a;
+			auto table  = (Table*)op->a;
+			auto branch = (Branch*)op->b;
 			op_write(output, op, false, false, false,
-			         "%.*s", str_size(&table->config->name),
-			         str_of(&table->config->name));
+			         "%.*s [%.*s]",
+			         str_size(&table->config->name),
+			         str_of(&table->config->name),
+			         str_size(&branch->name),
+			         str_of(&branch->name));
 			break;
 		}
 		case CTABLE_OPEN:
@@ -468,21 +472,27 @@ op_dump(Program* self, Code* code, Buf* buf)
 				buf_write(desc, "part", 4);
 			}
 			op_write(output, op, true, true, true,
-			         "%.*s (%.*s) %.*s",
+			         "%.*s (%.*s) [%.*s] %.*s",
 			         str_size(&open->table->config->name),
 			         str_of(&open->table->config->name),
 			         str_size(&open->index->name),
 			         str_of(&open->index->name),
+			         str_size(&open->branch->name),
+			         str_of(&open->branch->name),
 			         buf_size(desc),
 			         buf_cstr(desc));
 			break;
 		}
 		case CTABLE_PREPARE:
 		{
-			auto table = (Table*)op->b;
+			auto table  = (Table*)op->b;
+			auto branch = (Branch*)op->c;
 			op_write(output, op, true, false, false,
-			         "%.*s", str_size(&table->config->name),
-			         str_of(&table->config->name));
+			         "%.*s [%.*s]",
+			         str_size(&table->config->name),
+			         str_of(&table->config->name),
+			         str_size(&branch->name),
+			         str_of(&branch->name));
 			break;
 		}
 		case CTABLE_READB:

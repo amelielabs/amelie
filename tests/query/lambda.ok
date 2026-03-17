@@ -44,7 +44,7 @@ explain select 0 -> id, 0 -> data from test;
     "00": "set                 0      2      1     ",
     "01": "int                 1      -      0     # 0",
     "02": "int                 2      -      0     # 0",
-    "03": "table_open          3      0      12    # test (primary) part",
+    "03": "table_open          3      0      12    # test (primary) [main] part",
     "04": "push_bool           1      0      0     ",
     "05": "set_get             4      0      0     ",
     "06": "table_readi32       5      3      -     # id",
@@ -89,7 +89,7 @@ explain select 0 -> self + 1 from test;
   "pushdown": {
     "00": "set                 0      1      1     ",
     "01": "int                 1      -      0     # 0",
-    "02": "table_open          2      0      11    # test (primary) part",
+    "02": "table_open          2      0      11    # test (primary) [main] part",
     "03": "push_bool           1      0      0     ",
     "04": "set_get             3      0      0     ",
     "05": "self                4      0      3     ",
@@ -185,7 +185,7 @@ explain select 0 -> self + 1 from test;
   "pushdown": {
     "00": "set                 0      1      1     ",
     "01": "int                 1      -      0     # 0",
-    "02": "table_open          2      0      11    # test (primary) part",
+    "02": "table_open          2      0      11    # test (primary) [main] part",
     "03": "push_bool           1      0      0     ",
     "04": "set_get             3      0      0     ",
     "05": "self                4      0      3     ",

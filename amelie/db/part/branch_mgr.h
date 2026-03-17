@@ -121,3 +121,10 @@ branch_mgr_find_parent(BranchMgr* self, int64_t id)
 	}
 	return NULL;
 }
+
+static inline Branch*
+branch_mgr_first(BranchMgr* self)
+{
+	assert(self->list_count > 0);
+	return container_of(list_first(&self->list), Branch, link);
+}

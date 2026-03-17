@@ -374,9 +374,9 @@ end;
     "07": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test",
+    "00": "insert              -      -      -     # test [main]",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # test",
+    "02": "insert              -      -      -     # test [main]",
     "03": "ret                 -1     0      -     "
   },
   "access": [["test", "shared_rw"]]
@@ -415,12 +415,12 @@ end;
     "11": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test",
+    "00": "insert              -      -      -     # test [main]",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # test",
+    "02": "insert              -      -      -     # test [main]",
     "03": "ret                 -1     0      -     ",
     "04": "set                 0      1      0     ",
-    "05": "table_open          1      48     10    # test (primary) part",
+    "05": "table_open          1      48     10    # test (primary) [main] part",
     "06": "table_readi32       2      1      -     # id",
     "07": "push                2      0      0     ",
     "08": "set_add             0      0      0     ",
@@ -477,12 +477,12 @@ end;
     "10": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test",
+    "00": "insert              -      -      -     # test [main]",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # test",
+    "02": "insert              -      -      -     # test [main]",
     "03": "ret                 -1     0      -     ",
     "04": "set                 0      1      0     ",
-    "05": "table_open          1      48     10    # test (primary) part",
+    "05": "table_open          1      48     10    # test (primary) [main] part",
     "06": "table_readi32       2      1      -     # id",
     "07": "push                2      0      0     ",
     "08": "set_add             0      0      0     ",
@@ -551,14 +551,14 @@ end;
     "22": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test",
+    "00": "insert              -      -      -     # test [main]",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # test",
+    "02": "insert              -      -      -     # test [main]",
     "03": "ret                 -1     0      -     ",
-    "04": "insert              -      -      -     # test",
+    "04": "insert              -      -      -     # test [main]",
     "05": "ret                 -1     0      -     ",
     "06": "set                 0      1      0     ",
-    "07": "table_open          1      72     12    # test (primary) part",
+    "07": "table_open          1      72     12    # test (primary) [main] part",
     "08": "table_readi32       2      1      -     # id",
     "09": "push                2      0      0     ",
     "10": "set_add             0      0      0     ",
@@ -633,7 +633,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_prepare       1      -      -     # test",
+    "01": "table_prepare       1      -      -     # test [main]",
     "02": "jmp                 9      0      0     ",
     "03": "string              2      0      0     # unique key constraint violation",
     "04": "push                2      0      0     ",
@@ -681,10 +681,10 @@ end;
     "11": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test",
+    "00": "insert              -      -      -     # test [main]",
     "01": "ret                 -1     0      -     ",
     "02": "set                 0      1      0     ",
-    "03": "table_open          1      24     8     # test (primary) part",
+    "03": "table_open          1      24     8     # test (primary) [main] part",
     "04": "table_readi32       2      1      -     # id",
     "05": "push                2      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -731,7 +731,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -781,7 +781,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test (primary) part",
+    "01": "table_open          1      0      7     # test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -838,7 +838,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test (primary) part",
+    "01": "table_open          1      0      7     # test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -898,7 +898,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test (primary) part",
+    "01": "table_open          1      0      7     # test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -958,7 +958,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test (primary) part",
+    "01": "table_open          1      0      7     # test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -971,7 +971,7 @@ end;
     "11": "set_agg             0      1      32    ",
     "12": "ret                 0      0      -     ",
     "13": "set                 0      1      0     ",
-    "14": "table_open          1      64     19    # test (primary) part",
+    "14": "table_open          1      64     19    # test (primary) [main] part",
     "15": "table_readi32       2      1      -     # id",
     "16": "push                2      0      0     ",
     "17": "set_add             0      0      0     ",
@@ -1020,7 +1020,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",

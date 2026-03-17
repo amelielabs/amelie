@@ -40,7 +40,7 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # test",
+    "00": "table_prepare       0      -      -     # test [main]",
     "01": "jmp                 2      0      0     ",
     "02": "upsert              0      2      -1    ",
     "03": "free                0      0      0     ",
@@ -68,7 +68,7 @@ explain insert into test values(1, 0) on conflict do nothing;
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # test",
+    "00": "table_prepare       0      -      -     # test [main]",
     "01": "jmp                 2      0      0     ",
     "02": "upsert              0      2      -1    ",
     "03": "free                0      0      0     ",
@@ -84,7 +84,7 @@ explain insert into test values(1, 0) on conflict do resolve;
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # test",
+    "00": "table_prepare       0      -      -     # test [main]",
     "01": "jmp                 5      0      0     ",
     "02": "string              1      0      0     # unique key constraint violation",
     "03": "push                1      0      0     ",
@@ -111,7 +111,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1;
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # test",
+    "00": "table_prepare       0      -      -     # test [main]",
     "01": "jmp                 9      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -152,7 +152,7 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # test",
+    "00": "table_prepare       0      -      -     # test [main]",
     "01": "jmp                 9      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -188,7 +188,7 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # test",
+    "00": "table_prepare       0      -      -     # test [main]",
     "01": "jmp                 11     0      0     ",
     "02": "bool                1      1      0     ",
     "03": "jntr                11     1      0     ",
@@ -227,7 +227,7 @@ explain insert into test values (1, 123) on conflict do update set data = data +
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # test",
+    "00": "table_prepare       0      -      -     # test [main]",
     "01": "jmp                 9      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -257,7 +257,7 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # test",
+    "00": "table_prepare       0      -      -     # test [main]",
     "01": "jmp                 13     0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -348,7 +348,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_prepare       1      -      -     # test",
+    "01": "table_prepare       1      -      -     # test [main]",
     "02": "jmp                 15     0      0     ",
     "03": "int                 2      -      0     # 1",
     "04": "push                2      0      0     ",
@@ -391,7 +391,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_prepare       1      -      -     # test",
+    "01": "table_prepare       1      -      -     # test [main]",
     "02": "jmp                 8      0      0     ",
     "03": "table_readi32       2      1      -     # id",
     "04": "push                2      0      0     ",
@@ -426,7 +426,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_prepare       1      -      -     # test",
+    "01": "table_prepare       1      -      -     # test [main]",
     "02": "jmp                 15     0      0     ",
     "03": "int                 2      -      0     # 1",
     "04": "push                2      0      0     ",
@@ -468,7 +468,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_prepare       1      -      -     # test",
+    "01": "table_prepare       1      -      -     # test [main]",
     "02": "jmp                 8      0      0     ",
     "03": "table_readi32       2      1      -     # id",
     "04": "push                2      0      0     ",
@@ -567,7 +567,7 @@ explain insert into test select * from src on conflict do update set data = data
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # src (primary) part",
+    "01": "table_open          1      0      8     # src (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -577,7 +577,7 @@ explain insert into test select * from src on conflict do update set data = data
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
     "10": "set                 0      2      0     ",
-    "11": "table_prepare       2      -      -     # test",
+    "11": "table_prepare       2      -      -     # test [main]",
     "12": "jmp                 25     0      0     ",
     "13": "int                 3      -      0     # 1",
     "14": "push                3      0      0     ",

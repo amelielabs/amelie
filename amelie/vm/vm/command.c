@@ -438,6 +438,7 @@ cinsert(Vm* self, Op* op)
 
 	// find related table partition
 	auto table   = (Table*)op->a;
+	auto branch  = (Branch*)op->b;
 	auto part    = self->part;
 	auto columns = table_columns(table);
 
@@ -454,7 +455,7 @@ cinsert(Vm* self, Op* op)
 		pos += sizeof(Value*) + sizeof(int64_t);
 		value_set_int(&identity, value_id);
 
-		auto row = row_create(part->heap, self->dtr->id, 0, columns, value,
+		auto row = row_create(part->heap, self->dtr->id, branch->id, columns, value,
 		                      self->refs, &identity);
 		part_insert(part, self->tr, false, row);
 	}
@@ -481,7 +482,7 @@ cupsert(Vm* self, Op* op)
 		self->upsert += sizeof(Value*) + sizeof(int64_t);
 		value_set_int(&identity, value_id);
 
-		auto row = row_create(cursor->part->heap, dtr->id, 0,
+		auto row = row_create(cursor->part->heap, dtr->id, cursor->branch->id,
 		                      columns, value, self->refs,
 		                      &identity);
 
@@ -524,7 +525,7 @@ cupdate(Vm* self, Op* op)
 	auto dtr = self->dtr;
 	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
-	auto row = row_update(cursor->part->heap, dtr->id, 0,
+	auto row = row_update(cursor->part->heap, dtr->id, cursor->branch->id,
 	                      table_columns(cursor->table), row_src,
 	                      row_values, op->b);
 	part_update(cursor->part, self->tr, cursor->cursor, row);

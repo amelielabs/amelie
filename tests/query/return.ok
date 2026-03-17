@@ -97,7 +97,7 @@ explain begin declare x int; select id into x from test; select x; end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) part",
+    "01": "table_open          1      0      6     # test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -821,7 +821,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # src (primary) part",
+      "01": "table_open          1      0      6     # src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -875,7 +875,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # src (primary) part",
+      "01": "table_open          1      0      6     # src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -925,7 +925,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # src (primary) part",
+      "01": "table_open          1      0      6     # src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -975,7 +975,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # src (primary) part",
+      "01": "table_open          1      0      6     # src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1038,7 +1038,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # src (primary) part",
+      "01": "table_open          1      0      6     # src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1101,7 +1101,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # src (primary) part",
+      "01": "table_open          1      0      6     # src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1237,7 +1237,7 @@ explain select test();
       "04": "ret                 -1     0      -     "
     },
     "pushdown": {
-      "00": "insert              -      -      -     # src",
+      "00": "insert              -      -      -     # src [main]",
       "01": "ret                 -1     0      -     "
     },
     "access": [["src", "shared_rw"]]
@@ -1274,7 +1274,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # src",
+      "01": "table_prepare       1      -      -     # src [main]",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1329,7 +1329,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # src",
+      "01": "table_prepare       1      -      -     # src [main]",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1385,7 +1385,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # src",
+      "01": "table_prepare       1      -      -     # src [main]",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1441,7 +1441,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # src",
+      "01": "table_prepare       1      -      -     # src [main]",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1752,7 +1752,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # src (primary) part",
+      "01": "table_open          1      0      6     # src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",

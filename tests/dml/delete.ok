@@ -40,7 +40,7 @@ explain delete from test where id = 3;
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 3",
-    "01": "table_open          0      0      7     # test (primary) point_lookup, part",
+    "01": "table_open          0      0      7     # test (primary) [main] point_lookup, part",
     "02": "table_readi32       1      0      -     # id",
     "03": "int                 2      -      0     # 3",
     "04": "equii               3      1      2     ",
@@ -91,7 +91,7 @@ explain delete from test where id > 0 and id < 1;
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 0",
-    "01": "table_open          0      0      16    # test (primary) part",
+    "01": "table_open          0      0      16    # test (primary) [main] part",
     "02": "table_readi32       1      0      -     # id",
     "03": "int                 2      -      0     # 1",
     "04": "ltii                3      1      2     ",

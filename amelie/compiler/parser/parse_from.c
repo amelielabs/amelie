@@ -155,13 +155,24 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 	                                &name->string, false);
 	if (table)
 	{
-		target->type       = TARGET_TABLE;
-		target->from_lock  = lock;
-		target->from_table = table;
-		target->columns    = &table->config->columns;
+		target->type        = TARGET_TABLE;
+		target->from_lock   = lock;
+		target->from_table  = table;
+		target->from_branch = table_main(table);
+		target->columns     = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
-
 		access_add(&self->parser->program->access, &table->rel, lock);
+
+		// [BRANCH name]
+		if (stmt_if(self, KBRANCH))
+		{
+			auto name_branch = stmt_next_shadow(self);
+			if (name_branch->id != KNAME)
+				stmt_error(self, name_branch, "branch name expected");
+			target->from_branch = table_branch_find(target->from_table, &name_branch->string, false);
+			if (! target->from_branch)
+				stmt_error(self, name_branch, "branch not found");
+		}
 
 		// [USE INDEX (name)]
 		if (stmt_if(self, KUSE))
@@ -170,9 +181,11 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 			stmt_expect(self, '(');
 			auto name_index = stmt_next_shadow(self);
 			if (name_index->id != KNAME)
-				stmt_error(self, name_index, "<index name> expected");
+				stmt_error(self, name_index, "index name expected");
 			stmt_expect(self, ')');
-			target->from_index = table_index_find(target->from_table, &name_index->string, true);
+			target->from_index = table_index_find(target->from_table, &name_index->string, false);
+			if (! target->from_index)
+				stmt_error(self, name_index, "index not found");
 		}
 		return target;
 	}

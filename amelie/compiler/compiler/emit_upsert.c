@@ -24,7 +24,6 @@ emit_upsert(Compiler* self, Ast* ast)
 {
 	auto insert = ast_insert_of(ast);
 	auto target = from_first(&insert->from);
-	auto table  = target->from_table;
 
 	// set target origin
 	target_set_origin(target, self->origin);
@@ -36,8 +35,8 @@ emit_upsert(Compiler* self, Ast* ast)
 
 	// CTABLE_PREPARE
 	target->rcursor = op3pin(self, CTABLE_PREPARE, TYPE_CURSOR,
-	                         (intptr_t)table,
-	                         (intptr_t)NULL);
+	                         (intptr_t)target->from_table,
+	                         (intptr_t)target->from_branch);
 
 	// jmp _start
 	int jmp_start = op_pos(self);
