@@ -30,13 +30,13 @@ rename_if_commit(Log* self, LogOp* op)
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	auto table = table_of(rel->rel);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str db;
 	Str name;
 	json_read_string(&pos, &db);
 	json_read_string(&pos, &name);
+
+	auto table = table_of(op->rel);
 	table_config_set_db(table->config, &db);
 	table_config_set_name(table->config, &name);
 }
@@ -97,11 +97,11 @@ set_identity_if_commit(Log* self, LogOp* op)
 static void
 set_identity_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	auto table = table_of(rel->rel);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	int64_t value;
 	json_read_integer(&pos, &value);
+
+	auto table = table_of(op->rel);
 	sequence_set(&table->seq, value);
 }
 
@@ -149,8 +149,8 @@ set_unlogged_if_commit(Log* self, LogOp* op)
 static void
 set_unlogged_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	auto table = table_of(rel->rel);
+	unused(self);
+	auto table = table_of(op->rel);
 	table_set_unlogged(table, !table->config->unlogged);
 }
 
@@ -195,11 +195,11 @@ column_rename_if_commit(Log* self, LogOp* op)
 static void
 column_rename_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	Column* column = op->iface_arg;
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str name_column;
 	json_read_string(&pos, &name_column);
+
+	Column* column = op->iface_arg;
 	column_set_name(column, &name_column);
 }
 
@@ -271,8 +271,8 @@ column_add_if_commit(Log* self, LogOp* op)
 static void
 column_add_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	auto table = table_of(rel->rel);
+	unused(self);
+	auto table = table_of(op->rel);
 	Column* column = op->iface_arg;
 	columns_del(&table->config->columns, column);
 	column_free(column);
@@ -344,13 +344,12 @@ column_drop_if_abort(Log* self, LogOp* op)
 	column_set_dropped(column, false);
 
 	// restore constraints
-	auto rel = log_rel_of(self, op);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	auto cons = &column->constraints;
 	constraints_free(cons);
 	constraints_init(cons);
 	constraints_read(cons, &pos);
-	columns_sync(&table_of(rel->rel)->config->columns);
+	columns_sync(&table_of(op->rel)->config->columns);
 }
 
 static LogIf column_drop_if =
@@ -422,14 +421,13 @@ column_set_if_commit(Log* self, LogOp* op)
 static void
 column_set_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
 	Column* column = op->iface_arg;
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	auto cons = &column->constraints;
 	constraints_free(cons);
 	constraints_init(cons);
 	constraints_read(cons, &pos);
-	columns_sync(&table_of(rel->rel)->config->columns);
+	columns_sync(&table_of(op->rel)->config->columns);
 }
 
 static LogIf column_set_if =

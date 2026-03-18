@@ -11,11 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct LogIf  LogIf;
-typedef struct LogOp  LogOp;
-typedef struct LogRow LogRow;
-typedef struct LogRel LogRel;
-typedef struct Log    Log;
+typedef struct LogIf LogIf;
+typedef struct LogOp LogOp;
+typedef struct Log   Log;
 
 struct LogIf
 {
@@ -25,22 +23,20 @@ struct LogIf
 
 struct LogOp
 {
-	Cmd    cmd;
 	LogIf* iface;
 	void*  iface_arg;
-	int    pos;
-};
-
-struct LogRow
-{
-	Row* row;
-	Row* row_prev;
-};
-
-struct LogRel
-{
-	Rel*    rel;
-	uint8_t data[];
+	Cmd    cmd;
+	union {
+		struct {
+			Row*    row;
+			Row*    row_prev;
+			Branch* branch;
+		};
+		struct {
+			Rel*    rel;
+			int     rel_data;
+		};
+	};
 };
 
 struct Log
@@ -48,9 +44,7 @@ struct Log
 	Buf      op;
 	Buf      data;
 	int      count;
-	int      count_rel;
 	WriteLog write_log;
-	List     link;
 };
 
 always_inline static inline LogOp*
@@ -62,30 +56,16 @@ log_of(Log* self, int pos)
 always_inline static inline void*
 log_data_of(Log* self, LogOp* op)
 {
-	return self->data.start + op->pos;
-}
-
-always_inline static inline LogRow*
-log_row_of(Log* self, LogOp* op)
-{
-	return log_data_of(self, op);
-}
-
-always_inline static inline LogRel*
-log_rel_of(Log* self, LogOp* op)
-{
-	return log_data_of(self, op);
+	return self->data.start + op->rel_data;
 }
 
 static inline void
 log_init(Log* self)
 {
-	self->count     = 0;
-	self->count_rel = 0;
+	self->count = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
 	write_log_init(&self->write_log);
-	list_init(&self->link);
 }
 
 static inline void
@@ -99,12 +79,10 @@ log_free(Log* self)
 static inline void
 log_reset(Log* self)
 {
-	self->count     = 0;
-	self->count_rel = 0;
+	self->count = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
 	write_log_reset(&self->write_log);
-	list_init(&self->link);
 }
 
 static inline LogOp*
@@ -113,72 +91,53 @@ log_last(Log* self)
 	return log_of(self, self->count - 1);
 }
 
-static inline void
-log_truncate(Log* self)
+hot static inline LogOp*
+log_row(Log*    self,
+        Cmd     cmd,
+        LogIf*  iface,
+        void*   iface_arg,
+        Row*    row,
+        Row*    row_prev,
+        Branch* branch)
 {
-	self->count--;
-	auto op = log_of(self, self->count);
-	buf_truncate(&self->op, sizeof(LogOp));
-	buf_truncate(&self->data, buf_size(&self->data) - op->pos);
-}
-
-hot static inline LogRow*
-log_row(Log*   self,
-        Cmd    cmd,
-        LogIf* iface,
-        void*  iface_arg,
-        Row*   row,
-        Row*   row_prev)
-{
-	// op
-	LogOp* op = buf_emplace(&self->op, sizeof(LogOp));
-	op->cmd       = cmd;
+	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
 	op->iface     = iface;
 	op->iface_arg = iface_arg;
-	op->pos       = buf_size(&self->data);
+	op->cmd       = cmd;
+	op->row       = row;
+	op->row_prev  = row_prev;
+	op->branch    = branch;
 	self->count++;
-
-	// row data
-	LogRow* ref = buf_emplace(&self->data, sizeof(LogRow));
-	ref->row      = row;
-	ref->row_prev = row_prev;
-	return ref;
+	return op;
 }
 
 hot static inline void
 log_persist(Log* self, Uuid* id)
 {
-	auto op = log_last(self);
 	// [cmd, id, row]
-	auto ref = log_row_of(self, op);
-	write_log_add(&self->write_log, op->cmd, id, ref->row);
+	auto last = log_last(self);
+	write_log_add(&self->write_log, last->cmd, id, last->row);
 }
 
-static inline LogRel*
+static inline void
 log_rel(Log*   self,
         LogIf* iface,
         void*  iface_arg,
         Rel*   rel)
 {
-	// op
-	LogOp* op = buf_emplace(&self->op, sizeof(LogOp));
-	op->cmd       = CMD_DDL;
+	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
 	op->iface     = iface;
 	op->iface_arg = iface_arg;
-	op->pos       = buf_size(&self->data);
+	op->cmd       = CMD_DDL;
+	op->rel       = rel;
+	op->rel_data  = buf_size(&self->data);
 	self->count++;
-	self->count_rel++;
-
-	// relation data
-	LogRel* ref = buf_emplace(&self->data, sizeof(LogRel));
-	ref->rel = rel;
-	return ref;
 }
 
 hot static inline void
 log_persist_rel(Log* self, uint8_t* data)
 {
 	// [cmd, data]
-	auto op = log_last(self);
-	write_log_add_op(&self->write_log, op->cmd, data);
+	auto last = log_last(self);
+	write_log_add_op(&self->write_log, last->cmd, data);
 }

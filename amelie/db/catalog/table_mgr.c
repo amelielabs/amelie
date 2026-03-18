@@ -92,10 +92,9 @@ table_mgr_drop(TableMgr* self, Tr* tr, Str* db, Str* name,
 static void
 truncate_if_commit(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	auto table = table_of(rel->rel);
-
+	unused(self);
 	// truncate partitions
+	auto table = table_of(op->rel);
 	part_mgr_truncate(&table->part_mgr);
 }
 

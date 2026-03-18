@@ -26,6 +26,10 @@
 #include "row/key.h"
 #include "row/keys.h"
 
+// branching
+#include "row/branch.h"
+#include "row/branch_mgr.h"
+
 // row
 #include "row/row.h"
 #include "row/compare.h"

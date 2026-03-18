@@ -89,12 +89,12 @@ rename_if_commit(Log* self, LogOp* op)
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	auto mgr = database_of(rel->rel);
 	// set previous name
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str name;
 	json_read_string(&pos, &name);
+
+	auto mgr = database_of(op->rel);
 	database_config_set_name(mgr->config, &name);
 }
 

@@ -30,12 +30,11 @@ storage_add_if_commit(Log* self, LogOp* op)
 static void
 storage_add_if_abort(Log* self, LogOp* op)
 {
-	Table* table = op->iface_arg;
-	auto rel = log_rel_of(self, op);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str storage_name;
 	json_read_string(&pos, &storage_name);
 
+	Table* table = op->iface_arg;
 	auto volumes = &table->config->partitioning.volumes;
 	auto volume = volume_mgr_find(volumes, &storage_name);
 	assert(volume);
@@ -96,12 +95,11 @@ table_storage_add(Table*  self,
 static void
 storage_drop_if_commit(Log* self, LogOp* op)
 {
-	Table* table = op->iface_arg;
-	auto rel = log_rel_of(self, op);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str storage_name;
 	json_read_string(&pos, &storage_name);
 
+	Table* table = op->iface_arg;
 	auto volumes = &table->config->partitioning.volumes;
 	auto volume = volume_mgr_find(volumes, &storage_name);
 	assert(volume);
@@ -172,12 +170,11 @@ storage_pause_if_commit(Log* self, LogOp* op)
 static void
 storage_pause_if_abort(Log* self, LogOp* op)
 {
-	Table* table = op->iface_arg;
-	auto rel = log_rel_of(self, op);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str storage_name;
 	json_read_string(&pos, &storage_name);
 
+	Table* table = op->iface_arg;
 	auto volumes = &table->config->partitioning.volumes;
 	auto volume = volume_mgr_find(volumes, &storage_name);
 	assert(volume);

@@ -30,12 +30,11 @@ branch_create_if_commit(Log* self, LogOp* op)
 static void
 branch_create_if_abort(Log* self, LogOp* op)
 {
-	Table* table = op->iface_arg;
-	auto rel = log_rel_of(self, op);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str branch_name;
 	json_read_string(&pos, &branch_name);
 
+	Table* table = op->iface_arg;
 	auto branches = &table->config->partitioning.branches;
 	auto branch = branch_mgr_find(branches, &branch_name);
 	assert(branch);
@@ -94,12 +93,11 @@ table_branch_create(Table*  self,
 static void
 branch_drop_if_commit(Log* self, LogOp* op)
 {
-	Table* table = op->iface_arg;
-	auto rel = log_rel_of(self, op);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str branch_name;
 	json_read_string(&pos, &branch_name);
 
+	Table* table = op->iface_arg;
 	auto branches = &table->config->partitioning.branches;
 	auto branch = branch_mgr_find(branches, &branch_name);
 	assert(branch);
@@ -174,11 +172,11 @@ rename_if_commit(Log* self, LogOp* op)
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	Branch* branch = op->iface_arg;
-	auto rel = log_rel_of(self, op);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str branch_name;
 	json_read_string(&pos, &branch_name);
+
+	Branch* branch = op->iface_arg;
 	branch_set_name(branch, &branch_name);
 }
 

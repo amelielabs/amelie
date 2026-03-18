@@ -62,8 +62,7 @@ replace_if_commit(Log* self, LogOp* op)
 	// free previous config and data by constructing
 	// temprorary udf object
 	UdfMgr* mgr = op->iface_arg;
-	auto rel = log_rel_of(self, op);
-	auto data = (void**)rel->data;
+	auto data = (void**)log_data_of(self, op);
 	auto tmp = udf_allocate_as(data[0], data[1], mgr->free, mgr->free_arg);
 	udf_free(tmp, false);
 }
@@ -74,14 +73,13 @@ replace_if_abort(Log* self, LogOp* op)
 	// free current config and data by constructing
 	// temprorary udf object
 	UdfMgr* mgr = op->iface_arg;
-	auto rel = log_rel_of(self, op);
-	auto udf = udf_of(rel->rel);
+	auto udf = udf_of(op->rel);
 
 	auto tmp = udf_allocate_as(udf->config, udf->data, mgr->free, mgr->free_arg);
 	udf_free(tmp, false);
 
 	// set previous config and data
-	auto data = (void**)rel->data;
+	auto data = (void**)log_data_of(self, op);
 	udf->config = data[0];
 	udf->data   = data[1];
 
@@ -177,13 +175,13 @@ rename_if_commit(Log* self, LogOp* op)
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	auto udf = udf_of(rel->rel);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str db;
 	Str name;
 	json_read_string(&pos, &db);
 	json_read_string(&pos, &name);
+
+	auto udf = udf_of(op->rel);
 	udf_config_set_db(udf->config, &db);
 	udf_config_set_name(udf->config, &name);
 }

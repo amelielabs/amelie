@@ -43,8 +43,8 @@ add_if_commit(Log* self, LogOp* op)
 static void
 add_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	auto table = table_of(rel->rel);
+	unused(self);
+	auto table = table_of(op->rel);
 	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
 }
@@ -71,8 +71,8 @@ table_index_add(Table* self, Tr* tr, IndexConfig* config)
 static void
 drop_if_commit(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	auto table = table_of(rel->rel);
+	unused(self);
+	auto table = table_of(op->rel);
 	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
 }
@@ -123,11 +123,11 @@ rename_if_commit(Log* self, LogOp* op)
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	IndexConfig* index = op->iface_arg;
-	auto rel = log_rel_of(self, op);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str index_name;
 	json_read_string(&pos, &index_name);
+
+	IndexConfig* index = op->iface_arg;
 	index_config_set_name(index, &index_name);
 }
 

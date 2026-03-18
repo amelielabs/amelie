@@ -73,17 +73,17 @@ rel_mgr_replace(RelMgr* self, Rel* prev, Rel* rel)
 static void
 create_if_commit(Log* self, LogOp* op)
 {
-	(void)self;
-	(void)op;
+	unused(self);
+	unused(op);
 }
 
 static void
 create_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
+	unused(self);
 	RelMgr* mgr = op->iface_arg;
-	rel_mgr_delete(mgr, rel->rel);
-	rel_drop(rel->rel);
+	rel_mgr_delete(mgr, op->rel);
+	rel_drop(op->rel);
 }
 
 static LogIf create_if =
@@ -105,16 +105,16 @@ rel_mgr_create(RelMgr* self, Tr* tr, Rel* rel)
 static void
 drop_if_commit(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	rel_drop(rel->rel);
+	unused(self);
+	rel_drop(op->rel);
 }
 
 static void
 drop_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
+	unused(self);
 	RelMgr* mgr = op->iface_arg;
-	rel_mgr_set(mgr, rel->rel);
+	rel_mgr_set(mgr, op->rel);
 }
 
 static LogIf drop_if =

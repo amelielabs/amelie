@@ -87,13 +87,13 @@ rename_if_commit(Log* self, LogOp* op)
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	auto rel = log_rel_of(self, op);
-	auto synonym = synonym_of(rel->rel);
-	uint8_t* pos = rel->data;
+	uint8_t* pos = log_data_of(self, op);
 	Str db;
 	Str name;
 	json_read_string(&pos, &db);
 	json_read_string(&pos, &name);
+
+	auto synonym = synonym_of(op->rel);
 	synonym_config_set_db(synonym->config, &db);
 	synonym_config_set_name(synonym->config, &name);
 }
