@@ -45,6 +45,8 @@ executor_attach(Executor* self, Dtr* dtr, Dispatch* dispatch)
 	//
 	if (! opt_int_of(&state()->read_only))
 		dtr->id = state_tsn_next();
+	else
+		dtr->id = state_tsn();
 
 	// match overlapping transaction group
 	auto is_snapshot = dtr->program->snapshot;

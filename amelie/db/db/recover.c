@@ -63,7 +63,7 @@ recover_map(Recover* self, Record* record, RecordCmd* cmd, Row* row)
 
 	// update track lsn/tsn
 	track_lsn_follow(&part->track, record->lsn);
-	track_tsn_follow(&part->track, record->tsn);
+	track_follow(&part->track, record->tsn);
 
 	// skip partition if it is already includes lsn
 	if (record->lsn <= part->heap->header->lsn)
@@ -163,7 +163,7 @@ recover_next_record(Recover* self, Record* record)
 		auto write = &self->write;
 		auto write_list = &self->write_list;
 		write_reset(write);
-		write_begin(write);
+		write_begin(write, record->tsn);
 		write_add(write, &self->tr.log.write_log);
 		write_list_reset(write_list);
 		write_list_add(write_list, write);

@@ -85,7 +85,7 @@ part_mgr_open(PartMgr* self, List* indexes)
 		// tsn
 		auto tsn = part->heap->header->lsn;
 		state_tsn_follow(tsn);
-		track_tsn_follow(&part->track, tsn);
+		track_follow(&part->track, tsn);
 	}
 }
 

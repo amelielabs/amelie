@@ -16,13 +16,14 @@ typedef struct Track Track;
 struct Track
 {
 	Mailbox    queue;
-	uint64_t   seq;
 	TrList     prepared;
 	TrCache    cache;
+	// commited by pod (stale)
 	Consensus  consensus_pod;
+	// commited by executor
 	Consensus  consensus;
 	atomic_u64 lsn;
-	atomic_u64 tsn;
+	// pending commit state
 	bool       pending;
 	Consensus  pending_consensus;
 	Track*     pending_link;
@@ -32,9 +33,7 @@ struct Track
 static inline void
 track_init(Track* self)
 {
-	self->seq          = 1;
 	self->lsn          = 0;
-	self->tsn          = 0;
 	self->pending      = false;
 	self->pending_link = NULL;
 	self->backend      = NULL;
@@ -78,25 +77,6 @@ track_lsn_follow(Track* self, uint64_t lsn)
 		atomic_u64_set(&self->lsn, lsn);
 }
 
-static inline uint64_t
-track_tsn(Track* self)
-{
-	return atomic_u64_of(&self->tsn);
-}
-
-static inline void
-track_tsn_set(Track* self, uint64_t tsn)
-{
-	atomic_u64_set(&self->tsn, tsn);
-}
-
-static inline void
-track_tsn_follow(Track* self, uint64_t tsn)
-{
-	if (atomic_u64_of(&self->tsn) < tsn)
-		atomic_u64_set(&self->tsn, tsn);
-}
-
 static inline Msg*
 track_read(Track* self)
 {
@@ -136,4 +116,12 @@ track_sync(Track* self, Consensus* consensus)
 		tr_commit_list(&self->prepared, &self->cache, id);
 		consensus_pod->commit = id;
 	}
+}
+
+hot static inline void
+track_follow(Track* self, uint64_t tsn)
+{
+	auto consensus = &self->consensus;
+	if (consensus->commit < tsn)
+		consensus->commit = tsn;
 }

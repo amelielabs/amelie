@@ -70,7 +70,7 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	track_sync(&origin->track, consensus);
 	assert(! origin->track.prepared.list_count);
 	self->origin_lsn = origin->track.lsn;
-	self->origin_tsn = origin->track.tsn;
+	self->origin_tsn = origin->track.consensus.commit;
 
 	// switch partition shadow heap and begin heap snapshot
 	assert(! origin->heap_shadow);

@@ -77,6 +77,9 @@ replay(Dtr* dtr, Record* record)
 		rethrow();
 	}
 
+	// sync global tsn
+	state_tsn_follow(record->tsn);
+
 	executor_send(share()->executor, dtr, dispatch);
 	commit(share()->commit, dtr, NULL);
 }

@@ -71,7 +71,7 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 			auto track = self->track;
 			auto tr = tr_create(&track->cache);
 			tr_begin(tr);
-			tr_set_id(tr, track->seq++);
+			tr_set_id(tr, dtr->id);
 			tr_set_limit(tr, &dtr->limit);
 			tr_list_add(&track->prepared, tr);
 			ltr->tr = tr;
@@ -109,7 +109,7 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 			auto track = self->track;
 			auto tr = tr_create(&track->cache);
 			tr_begin(tr);
-			tr_set_id(tr, track->seq++);
+			tr_set_id(tr, dtr->id);
 			tr_set_limit(tr, &dtr->limit);
 			tr_list_add(&track->prepared, tr);
 			ltr->tr = tr;

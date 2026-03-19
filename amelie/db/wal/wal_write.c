@@ -98,7 +98,7 @@ wal_flush(WalFile* current, WalContext* context)
 		opt_int_add(&state()->ops, write->header.ops);
 
 		// finilize wal record
-		write_end(write, context->lsn, write->header.tsn);
+		write_end(write, context->lsn);
 
 		// write wal file
 
