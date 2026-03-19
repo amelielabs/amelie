@@ -883,8 +883,30 @@ compiler_emit(Compiler* self)
 
 	// set snapshot if the program access relations more than once,
 	// this includes nested udf calls
-	if (program->access.count > 1)
+	auto access = &program->access;
+	if (access->count > 1)
 		program->snapshot = true;
+
+	// set program ro flags
+	program->ro = true;
+	for (auto i = 0; i < access->list_count; i++)
+	{
+		auto record = access_at(access, i);
+		switch (record->lock) {
+		case LOCK_NONE:
+		case LOCK_SHARED:
+		case LOCK_EXCLUSIVE_RO:
+			continue;
+		case LOCK_CALL:
+			if (((Program*)udf_of(record->rel)->data)->ro)
+				continue;
+			break;
+		default:
+			break;
+		}
+		program->ro = false;
+		break;
+	}
 
 	// sort relations by rsn
 	access_sort(&program->access);

@@ -93,6 +93,10 @@ session_execute_distributed(Session* self, Output* output)
 	auto profile  = &self->profile;
 	auto dtr      = &self->dtr;
 
+	// prevent writes on replica
+	if (!program->ro && opt_int_of(&state()->read_only))
+		error("system is in read-only mode");
+
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// prepare distributed transaction

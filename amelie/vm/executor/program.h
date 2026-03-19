@@ -23,8 +23,8 @@ struct Program
 	SetList  sets;
 	int      send_last;
 	bool     snapshot;
-	bool     repl;
 	bool     utility;
+	bool     ro;
 	LockId   lock_catalog;
 	LockId   lock_ddl;
 };
@@ -35,8 +35,8 @@ program_allocate(void)
 	auto self = (Program*)am_malloc(sizeof(Program));
 	self->send_last    = -1;
 	self->snapshot     = false;
-	self->repl         = false;
 	self->utility      = false;
+	self->ro           = false;
 	self->lock_catalog = LOCK_SHARED;
 	self->lock_ddl     = LOCK_NONE;
 	code_init(&self->code);
@@ -66,8 +66,8 @@ program_reset(Program* self, SetCache* cache)
 {
 	self->send_last    = -1;
 	self->snapshot     = false;
-	self->repl         = false;
 	self->utility      = false;
+	self->ro           = false;
 	self->lock_catalog = LOCK_SHARED;
 	self->lock_ddl     = LOCK_NONE;
 	code_reset(&self->code);

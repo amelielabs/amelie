@@ -204,9 +204,8 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 }
 
 hot static inline Buf*
-dispatch_mgr_complete(DispatchMgr* self, bool* write)
+dispatch_mgr_complete(DispatchMgr* self)
 {
-	*write = false;
 	if (! self->ltrs_count)
 		return NULL;
 
@@ -226,10 +225,6 @@ dispatch_mgr_complete(DispatchMgr* self, bool* write)
 		auto tr = ltr->tr;
 		if (! tr)
 			continue;
-
-		// is writing transaction
-		if (! tr_read_only(tr))
-			*write = true;
 	}
 	return error;
 }
