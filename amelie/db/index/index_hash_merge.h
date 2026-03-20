@@ -15,11 +15,11 @@ typedef struct IndexHashMerge IndexHashMerge;
 
 struct IndexHashMerge
 {
-	Iterator      it;
-	HashIterator* current_it;
-	int           current_it_order;
-	Buf           list;
-	int           list_count;
+	Iterator           it;
+	IndexHashIterator* current_it;
+	int                current_it_order;
+	Buf                list;
+	int                list_count;
 };
 
 always_inline static inline IndexHashMerge*
@@ -36,11 +36,11 @@ index_hash_merge_open(Iterator* arg, Row* key)
 	assert(! key);
 
 	auto self = index_hash_merge_of(arg);
-	auto list = (HashIterator*)self->list.start;
+	auto list = (IndexHashIterator*)self->list.start;
 	for (auto i = 0; i < self->list_count; i++)
 	{
-		hash_iterator_open(&list[i], key);
-		if (!self->current_it && hash_iterator_has(&list[i]))
+		index_hash_iterator_open(&list[i].it, key);
+		if (!self->current_it && iterator_has(&list[i].it))
 		{
 			self->current_it_order = i;
 			self->current_it = &list[i];
@@ -48,7 +48,7 @@ index_hash_merge_open(Iterator* arg, Row* key)
 	}
 
 	if (self->current_it)
-		arg->current = hash_iterator_at(self->current_it);
+		arg->current = iterator_at(&self->current_it->it);
 	return false;
 }
 
@@ -59,29 +59,29 @@ index_hash_merge_next(Iterator* arg)
 	if (unlikely(! self->current_it))
 		return;
 
-	hash_iterator_next(self->current_it);
-	if (hash_iterator_has(self->current_it))
+	index_hash_iterator_next(&self->current_it->it);
+	if (iterator_has(&self->current_it->it))
 	{
 		arg->current = NULL;
 		return;
 	}
 
 	self->current_it = NULL;
-	auto list = (HashIterator*)self->list.start;
+	auto list = (IndexHashIterator*)self->list.start;
 	for (;;)
 	{
 		self->current_it_order++;
 		if (self->current_it_order < self->list_count)
 			break;
 		auto at = &list[self->current_it_order];
-		if (hash_iterator_has(at))
+		if (iterator_has(&at->it))
 		{
 			self->current_it = at;
 			break;
 		}
 	}
 	if (self->current_it)
-		arg->current = hash_iterator_at(self->current_it);
+		arg->current = iterator_at(&self->current_it->it);
 }
 
 static inline void
@@ -100,19 +100,17 @@ index_hash_merge_allocate(void)
 	self->current_it_order = 0;
 	self->list_count       = 0;
 	buf_init(&self->list);
-
-	auto it = &self->it;
-	it->current = NULL;
-	it->open    = index_hash_merge_open;
-	it->close   = index_hash_merge_close;
-	it->next    = index_hash_merge_next;
+	iterator_init(&self->it,
+	              index_hash_merge_open,
+	              index_hash_merge_close,
+	              index_hash_merge_next);
 	return &self->it;
 }
 
 static inline void
 index_hash_merge_add(IndexHashMerge* self, IndexHash* index)
 {
-	auto it = (HashIterator*)buf_emplace(&self->list, sizeof(HashIterator));
-	hash_iterator_init(it, &index->hash);
+	auto it = (IndexHashIterator*)buf_emplace(&self->list, sizeof(IndexHashIterator));
+	index_hash_iterator_init(it, index);
 	self->list_count++;
 }

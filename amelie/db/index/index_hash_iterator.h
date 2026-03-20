@@ -51,15 +51,21 @@ index_hash_iterator_close(Iterator* arg)
 	am_free(arg);
 }
 
-static inline Iterator*
-index_hash_iterator_allocate(IndexHash* index)
+static inline void
+index_hash_iterator_init(IndexHashIterator* self, IndexHash* index)
 {
-	IndexHashIterator* self = am_malloc(sizeof(*self));
-	self->index    = index;
+	self->index = index;
 	hash_iterator_init(&self->iterator, &index->hash);
 	iterator_init(&self->it,
 	              index_hash_iterator_open,
 	              index_hash_iterator_close,
 	              index_hash_iterator_next);
+}
+
+static inline Iterator*
+index_hash_iterator_allocate(IndexHash* index)
+{
+	IndexHashIterator* self = am_malloc(sizeof(*self));
+	index_hash_iterator_init(self, index);
 	return &self->it;
 }

@@ -15,10 +15,10 @@ typedef struct IndexTreeMerge IndexTreeMerge;
 
 struct IndexTreeMerge
 {
-	Iterator      it;
-	TreeIterator* current_it;
-	Buf           list;
-	int           list_count;
+	Iterator           it;
+	IndexTreeIterator* current_it;
+	Buf                list;
+	int                list_count;
 };
 
 always_inline static inline IndexTreeMerge*
@@ -32,17 +32,17 @@ index_tree_merge_step(IndexTreeMerge* self)
 {
 	if (self->current_it)
 	{
-		tree_iterator_next(self->current_it);
+		index_tree_iterator_next(&self->current_it->it);
 		self->current_it = NULL;
 	}
 
-	auto list = (TreeIterator*)self->list.start;
-	TreeIterator* min_iterator = NULL;
-	Row*          min = NULL;
+	auto list = (IndexTreeIterator*)self->list.start;
+	IndexTreeIterator* min_iterator = NULL;
+	Row*               min = NULL;
 	for (auto pos = 0; pos < self->list_count; pos++)
 	{
 		auto current = &list[pos];
-		auto row = tree_iterator_at(current);
+		auto row = iterator_at(&current->it);
 		if (! row)
 			continue;
 
@@ -53,7 +53,7 @@ index_tree_merge_step(IndexTreeMerge* self)
 			continue;
 		}
 
-		auto rc = compare(current->tree->keys, min, row);
+		auto rc = compare(current->index->tree.keys, min, row);
 		switch (rc) {
 		case 0:
 			break;
@@ -68,7 +68,7 @@ index_tree_merge_step(IndexTreeMerge* self)
 
 	self->current_it = min_iterator;
 	if (self->current_it)
-		self->it.current = tree_iterator_at(self->current_it);
+		self->it.current = iterator_at(&self->current_it->it);
 	else
 		self->it.current = NULL;
 }
@@ -81,10 +81,10 @@ index_tree_merge_open(Iterator* arg, Row* key)
 		return  false;
 
 	auto match = false;
-	auto list  = (TreeIterator*)self->list.start;
+	auto list  = (IndexTreeIterator*)self->list.start;
 	for (auto i = 0; i < self->list_count; i++)
 	{
-		if (tree_iterator_open(&list[i], key))
+		if (index_tree_iterator_open(&list[i].it, key))
 			match = true;
 	}
 	index_tree_merge_step(self);
@@ -123,7 +123,7 @@ index_tree_merge_allocate(void)
 static inline void
 index_tree_merge_add(IndexTreeMerge* self, IndexTree* index)
 {
-	auto it = (TreeIterator*)buf_emplace(&self->list, sizeof(TreeIterator));
-	tree_iterator_init(it, &index->tree);
+	auto it = (IndexTreeIterator*)buf_emplace(&self->list, sizeof(IndexTreeIterator));
+	index_tree_iterator_init(it, index);
 	self->list_count++;
 }
