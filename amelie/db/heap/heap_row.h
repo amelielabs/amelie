@@ -64,7 +64,7 @@ row_visible(Row* row, Heap* heap, Branch* branch)
 		auto parent = branch->parent;
 		for (; parent; parent = parent->parent)
 		{
-			if (row->branch == parent->id && row->tsn <= (uint64_t)parent->snapshot)
+			if (row->branch == parent->id && row->tsn <= (uint64_t)branch->snapshot)
 				return row;
 		}
 
