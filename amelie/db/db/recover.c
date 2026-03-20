@@ -66,7 +66,9 @@ recover_map(Recover*   self,
 
 	// update track lsn/tsn
 	track_lsn_follow(&part->track, record->lsn);
-	track_follow(&part->track, record->tsn);
+
+	state_tsn_follow(row->tsn);
+	track_follow(&part->track, row->tsn);
 
 	// skip partition if it is already includes lsn
 	if (record->lsn <= part->heap->header->lsn)
@@ -121,6 +123,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			auto row = (Row*)(*pos);
 			if (!branch || branch->id != row->branch)
 				branch = table_branch_find_by(table, row->branch, true);
+			heap_follow(part->heap, row->tsn);
 			part_delete_by(part, tr, branch, row);
 			*pos += row_size(row);
 		}
@@ -176,7 +179,7 @@ recover_next_record(Recover* self, Record* record)
 		auto write = &self->write;
 		auto write_list = &self->write_list;
 		write_reset(write);
-		write_begin(write, record->tsn);
+		write_begin(write);
 		write_add(write, &self->tr.log.write_log);
 		write_list_reset(write_list);
 		write_list_add(write_list, write);
@@ -184,7 +187,6 @@ recover_next_record(Recover* self, Record* record)
 	} else
 	{
 		state_lsn_follow(record->lsn);
-		state_tsn_follow(record->tsn);
 	}
 
 	// unlock catalog after create index

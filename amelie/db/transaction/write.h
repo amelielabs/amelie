@@ -49,12 +49,11 @@ write_reset(Write* self)
 }
 
 static inline void
-write_begin(Write* self, uint64_t tsn)
+write_begin(Write* self)
 {
 	auto header = &self->header;
 	header->crc   = 0;
 	header->lsn   = 0;
-	header->tsn   = tsn;
 	header->size  = sizeof(self->header);
 	header->count = 0;
 	header->ops   = 0;

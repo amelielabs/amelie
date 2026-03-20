@@ -236,7 +236,6 @@ heap_add(Heap* self, int size)
 		page_header->last = page_header->size;
 		page_header->size += bucket->size;
 	}
-	chunk->tsn            = 0;
 	chunk->prev           = 0;
 	chunk->prev_offset    = 0;
 	chunk->reserved       = 0;
@@ -279,7 +278,6 @@ heap_remove(Heap* self, void* pointer)
 
 	// add chunk to the free list
 	auto bucket = &self->buckets[chunk->bucket];
-	chunk->tsn            = 0;
 	chunk->prev           = bucket->list;
 	chunk->prev_offset    = bucket->list_offset;
 	chunk->is_free        = true;
@@ -302,6 +300,7 @@ heap_remove(Heap* self, void* pointer)
 void
 heap_snapshot(Heap* self, Heap* shadow, bool shadow_free)
 {
-	self->shadow = shadow;
+	assert((!self->shadow && shadow) || !shadow);
+	self->shadow      = shadow;
 	self->shadow_free = shadow_free;
 }

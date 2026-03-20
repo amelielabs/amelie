@@ -18,10 +18,7 @@ typedef struct Heap       Heap;
 
 struct HeapChunk
 {
-	// 24 bytes
-
-	// transaction id
-	uint64_t tsn;
+	// 16 bytes
 
 	// previous version (38 bits)
 	uint64_t prev: 19;
@@ -66,7 +63,6 @@ struct HeapHeader
 	uint32_t   crc;
 	uint32_t   magic;
 	uint32_t   version;
-	// meta
 	uint64_t   lsn;
 	uint64_t   tsn;
 	uint16_t   hash_min;
@@ -112,3 +108,12 @@ void  heap_free(Heap*);
 void* heap_add(Heap*, int);
 void  heap_remove(Heap*, void*);
 void  heap_snapshot(Heap*, Heap*, bool);
+
+static inline void
+heap_follow(Heap* self, uint64_t tsn)
+{
+	if (self->shadow)
+		self = self->shadow;
+	if (tsn > self->header->tsn)
+		self->header->tsn = tsn;
+}

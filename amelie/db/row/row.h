@@ -15,12 +15,17 @@ typedef struct Row Row;
 
 struct Row
 {
-	// 6 bytes (30 total with heap chunk)
+	// 12 bytes (28 with heap chunk)
 
-	// meta with branch id
-	uint32_t size_factor: 2;
-	uint32_t is_delete:   1;
-	uint32_t branch:      29;
+	// meta data
+	uint64_t size_factor: 2;
+	uint64_t is_delete:   1;
+
+	// transaction id
+	uint64_t tsn:         61;
+
+	// branch id
+	uint32_t branch;
 
 	// columns in the row
 	uint16_t columns;
@@ -29,10 +34,11 @@ struct Row
 } packed;
 
 always_inline hot static inline void
-row_init(Row* self, uint32_t branch, int columns, int size_factor, int size)
+row_init(Row* self, uint64_t tsn, uint32_t branch, int columns, int size_factor, int size)
 {
 	self->size_factor = size_factor;
 	self->is_delete   = false;
+	self->tsn         = tsn;
 	self->branch      = branch;
 	self->columns     = columns;
 	if (size_factor == 0)

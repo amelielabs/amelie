@@ -17,8 +17,6 @@ struct Refresh
 {
 	ServiceLock  lock;
 	Part*        origin;
-	uint64_t     origin_lsn;
-	uint64_t     origin_tsn;
 	Id           origin_id;
 	Id           part_id;
 	File         part_file;

@@ -17,8 +17,8 @@ row_allocate(Heap* heap, uint64_t tsn, uint32_t branch, int columns, int data_si
 	int  size_factor;
 	auto size = row_measure(columns, data_size, &size_factor);
 	auto self = (Row*)heap_add(heap, size);
-	row_init(self, branch, columns, size_factor, size);
-	heap_chunk_of(self)->tsn = tsn;
+	row_init(self, tsn, branch, columns, size_factor, size);
+	heap_follow(heap, tsn);
 	return self;
 }
 
@@ -28,7 +28,7 @@ row_allocate_buf(Buf* buf, int columns, int data_size)
 	int  size_factor;
 	auto size = row_measure(columns, data_size, &size_factor);
 	auto self = (Row*)buf_emplace(buf, size);
-	row_init(self, 0, columns, size_factor, size);
+	row_init(self, 0, 0, columns, size_factor, size);
 	return self;
 }
 
@@ -44,13 +44,8 @@ row_copy(Heap* heap, Row* self)
 	auto size = row_size(self);
 	auto row  = (Row*)heap_add(heap, size);
 	memcpy(row, self, size);
+	heap_follow(heap, self->tsn);
 	return row;
-}
-
-always_inline static inline uint64_t
-row_tsn(Row* self)
-{
-	return heap_chunk_of(self)->tsn;
 }
 
 hot static inline Row*
@@ -69,7 +64,7 @@ row_visible(Row* row, Heap* heap, Branch* branch)
 		auto parent = branch->parent;
 		for (; parent; parent = parent->parent)
 		{
-			if (row->branch == parent->id && chunk->tsn <= (uint64_t)parent->snapshot)
+			if (row->branch == parent->id && row->tsn <= (uint64_t)parent->snapshot)
 				return row;
 		}
 

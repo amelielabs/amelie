@@ -86,7 +86,7 @@ indexate_begin(Indexate* self, Table* table, IndexConfig* config)
 		abort();
 
 	// create shadow heap
-	auto heap_shadow = heap_allocate();
+	auto shadow = heap_allocate();
 
 	// take table exclusive lock
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
@@ -96,9 +96,8 @@ indexate_begin(Indexate* self, Table* table, IndexConfig* config)
 	track_sync(&origin->track, consensus);
 
 	// switch partition shadow heap and begin heap snapshot
-	assert(! origin->heap_shadow);
-	origin->heap_shadow = heap_shadow;
-	heap_snapshot(origin->heap, heap_shadow, true);
+	origin->heap_shadow = shadow;
+	heap_snapshot(origin->heap, shadow, true);
 
 	unlock(lock_table);
 	return true;

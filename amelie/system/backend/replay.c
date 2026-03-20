@@ -31,9 +31,14 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 	auto pos = record_data(record);
 	for (auto i = record->count; i > 0; i--)
 	{
+		auto row = (Row*)pos;
+
+		// sync tsn
+		state_tsn_follow(row->tsn);
+
 		// match partition
 		auto table = table_mgr_find_by(&db->catalog.table_mgr, &cmd->id, true);
-		auto part  = part_mapping_map(&table->part_mgr.mapping, (Row*)pos);
+		auto part  = part_mapping_map(&table->part_mgr.mapping, row);
 		if (! part)
 			error("replay: failed to find partition");
 
@@ -76,9 +81,6 @@ replay(Dtr* dtr, Record* record)
 		dispatch_free(dispatch);
 		rethrow();
 	}
-
-	// sync global tsn
-	state_tsn_follow(record->tsn);
 
 	executor_send(share()->executor, dtr, dispatch);
 	commit(share()->commit, dtr, NULL);

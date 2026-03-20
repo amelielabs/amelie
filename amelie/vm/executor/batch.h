@@ -107,7 +107,7 @@ batch_process(Batch* self)
 		// sync metrics and prepare dtr for wal write
 		auto write = &dtr->write;
 		write_reset(write);
-		write_begin(write, dtr->id);
+		write_begin(write);
 		list_foreach(&dtr->dispatch_mgr.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);

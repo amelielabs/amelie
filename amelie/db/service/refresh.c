@@ -28,7 +28,7 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	self->table = table;
 
 	// create shadow heap
-	auto heap_shadow = heap_allocate();
+	auto shadow = heap_allocate();
 
 	// take table exclusive lock (unlock on return)
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
@@ -42,7 +42,7 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 		volume = volume_mgr_find(volumes, storage);
 		if (! volume)
 		{
-			heap_free(heap_shadow);
+			heap_free(shadow);
 			return false;
 		}
 	} else {
@@ -58,7 +58,7 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	auto origin = part_mgr_find(part_mgr, id);
 	if (! origin)
 	{
-		heap_free(heap_shadow);
+		heap_free(shadow);
 		return false;
 	}
 	self->origin    = origin;
@@ -68,13 +68,13 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	auto consensus = &origin->track.consensus;
 	track_sync(&origin->track, consensus);
 	assert(! origin->track.prepared.list_count);
-	self->origin_lsn = origin->track.lsn;
-	self->origin_tsn = origin->track.consensus.commit;
 
 	// switch partition shadow heap and begin heap snapshot
-	assert(! origin->heap_shadow);
-	origin->heap_shadow = heap_shadow;
-	heap_snapshot(origin->heap, heap_shadow, true);
+	auto heap = origin->heap;
+	heap->header->lsn = origin->track.lsn;
+
+	origin->heap_shadow = shadow;
+	heap_snapshot(heap, shadow, true);
 	return true;
 }
 
@@ -87,8 +87,6 @@ refresh_snapshot_job(intptr_t* argv)
 
 	// create <id>.incomplete file
 	auto id = &self->part_id;
-	heap->header->lsn = self->origin_lsn;
-	heap->header->tsn = self->origin_tsn;
 	heap_create(heap, &self->part_file, id, ID_PARTITION_INCOMPLETE);
 
 	auto total = (double)self->part_file.size / 1024 / 1024;
@@ -193,8 +191,6 @@ refresh_init(Refresh* self, Service* service)
 {
 	service_lock_init(&self->lock);
 	self->origin       = NULL;
-	self->origin_lsn   = 0;
-	self->origin_tsn   = 0;
 	self->service_file = service_file_allocate();
 	self->service      = service;
 	self->table        = NULL;
@@ -213,10 +209,8 @@ void
 refresh_reset(Refresh* self)
 {
 	service_lock_init(&self->lock);
-	self->origin     = NULL;
-	self->origin_lsn = 0;
-	self->origin_tsn = 0;
-	self->table      = NULL;
+	self->origin = NULL;
+	self->table  = NULL;
 	service_file_reset(self->service_file);
 	id_init(&self->origin_id);
 	id_init(&self->part_id);
