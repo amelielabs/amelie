@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-void part_insert(Part*, Tr*, bool, Row*);
-bool part_upsert(Part*, Tr*, Iterator*, Row*);
-void part_update(Part*, Tr*, Iterator*, Row*);
-void part_delete(Part*, Tr*, Iterator*);
-void part_delete_by(Part*, Tr*, Row*);
+void part_insert(Part*, Tr*, bool, Branch*, Row*);
+bool part_upsert(Part*, Tr*, Iterator*, Branch*, Row*);
+void part_update(Part*, Tr*, Iterator*, Branch*, Row*);
+void part_delete(Part*, Tr*, Iterator*, Branch*);
+void part_delete_by(Part*, Tr*, Branch*, Row*);
 Row* part_apply(Part*, Row*, bool);

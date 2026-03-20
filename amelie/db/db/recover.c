@@ -49,14 +49,18 @@ recover_reset_stats(Recover* self)
 }
 
 static inline Part*
-recover_map(Recover* self, Record* record, RecordCmd* cmd, Row* row)
+recover_map(Recover*   self,
+            Record*    record,
+            RecordCmd* cmd,
+            Row*       row,
+            Table**    table)
 {
 	// find table by id and map partition
 	auto db = self->db;
-	auto table = table_mgr_find_by(&db->catalog.table_mgr, &cmd->id, false);
-	if  (! table)
+	*table = table_mgr_find_by(&db->catalog.table_mgr, &cmd->id, false);
+	if  (! *table)
 		return NULL;
-	auto part = part_mapping_map(&table->part_mgr.mapping, row);
+	auto part = part_mapping_map(&(*table)->part_mgr.mapping, row);
 	if (! part)
 		error("recover: partition mapping failed");
 
@@ -79,17 +83,22 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 	case CMD_REPLACE:
 	{
 		// map partition
-		auto part = recover_map(self, record, cmd, (Row*)*pos);
+		Table* table;
+		auto part = recover_map(self, record, cmd, (Row*)*pos, &table);
 		if (! part)
 		{
 			record_cmd_skip(cmd, pos);
 			break;
 		}
+
+		Branch* branch = NULL;
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{
 			auto row = row_copy(part->heap, (Row*)*pos);
-			part_insert(part, tr, true, row);
+			if (!branch || branch->id != row->branch)
+				branch = table_branch_find_by(table, row->branch, true);
+			part_insert(part, tr, true, branch, row);
 			*pos += row_size(row);
 		}
 		break;
@@ -97,17 +106,22 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 	case CMD_DELETE:
 	{
 		// map partition
-		auto part = recover_map(self, record, cmd, (Row*)*pos);
+		Table* table;
+		auto part = recover_map(self, record, cmd, (Row*)*pos, &table);
 		if (! part)
 		{
 			record_cmd_skip(cmd, pos);
 			break;
 		}
+
+		Branch* branch = NULL;
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{
 			auto row = (Row*)(*pos);
-			part_delete_by(part, tr, row);
+			if (!branch || branch->id != row->branch)
+				branch = table_branch_find_by(table, row->branch, true);
+			part_delete_by(part, tr, branch, row);
 			*pos += row_size(row);
 		}
 		break;

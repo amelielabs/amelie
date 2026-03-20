@@ -96,11 +96,13 @@ part_sync_sequence(Part* self, Row* row, Columns* columns)
 }
 
 hot void
-part_insert(Part* self, Tr* tr, bool replace, Row* row)
+part_insert(Part*   self, Tr* tr, bool replace,
+            Branch* branch,
+            Row*    row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, NULL);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, branch);
 	if (! self->arg->unlogged)
 		log_persist(&tr->log, self->arg->id_table);
 
@@ -115,7 +117,7 @@ part_insert(Part* self, Tr* tr, bool replace, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, NULL);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, branch);
 		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev && !replace))
 			error("index '%.*s': unique key constraint violation",
@@ -133,7 +135,7 @@ part_insert(Part* self, Tr* tr, bool replace, Row* row)
 }
 
 hot bool
-part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
+part_upsert(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 {
 	// get if exists (iterator is openned in both cases)
 	auto primary = part_primary(self);
@@ -146,7 +148,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	// insert
 
 	// add log record
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, NULL);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, branch);
 	if (! self->arg->unlogged)
 		log_persist(&tr->log, self->arg->id_table);
 
@@ -154,7 +156,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, NULL);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, branch);
 		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev))
 			error("index '%.*s': unique key constraint violation",
@@ -170,11 +172,11 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 }
 
 hot void
-part_update(Part* self, Tr* tr, Iterator* it, Row* row)
+part_update(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, NULL);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, branch);
 	if (! self->arg->unlogged)
 		log_persist(&tr->log, self->arg->id_table);
 
@@ -185,7 +187,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, NULL);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, branch);
 
 		// find and replace existing secondary row (keys are not updated)
 		auto index_it = index_iterator(index);
@@ -200,7 +202,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 }
 
 hot void
-part_delete(Part* self, Tr* tr, Iterator* it)
+part_delete(Part* self, Tr* tr, Iterator* it, Branch* branch)
 {
 #if 0
 	// handle deletes as updates for non in-memory partitions and
@@ -218,7 +220,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	// add log record
 	auto primary = part_primary(self);
 	auto row = iterator_at(it);
-	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, row, NULL, NULL);
+	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, row, NULL, branch);
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);
@@ -229,7 +231,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_DELETE, &log_if_secondary, index, row, NULL, NULL);
+		op = log_row(&tr->log, CMD_DELETE, &log_if_secondary, index, row, NULL, branch);
 
 		// delete by key
 		op->row_prev = index_delete_by(index, row);
@@ -241,7 +243,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 }
 
 hot void
-part_delete_by(Part* self, Tr* tr, Row* row)
+part_delete_by(Part* self, Tr* tr, Branch* branch, Row* row)
 {
 	// note: transaction memory limit is not ensured here
 	// since this operation is used for recovery
@@ -250,7 +252,7 @@ part_delete_by(Part* self, Tr* tr, Row* row)
 	defer(iterator_close, it);
 	if (unlikely(! iterator_open(it, row)))
 		error("delete by key does not match");
-	part_delete(self, tr, it);
+	part_delete(self, tr, it, branch);
 }
 
 hot Row*

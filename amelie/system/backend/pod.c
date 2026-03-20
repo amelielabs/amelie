@@ -21,6 +21,7 @@
 hot static void
 pod_replay(Pod* self, Tr* tr, Buf* arg)
 {
+	auto branches = &self->part->arg->config->branches;
 	auto pos = arg->start;
 	while (pos < arg->position)
 	{
@@ -38,20 +39,33 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 				error("replay: record command crc mismatch");
 
 		// replay writes
+		Branch* branch = NULL;
 		auto end = data + cmd->size;
 		if (cmd->cmd == CMD_REPLACE)
 		{
 			while (data < end)
 			{
 				auto row = row_copy(self->part->heap, (Row*)data);
-				part_insert(self->part, tr, true, row);
+				if (!branch || branch->id != row->branch)
+				{
+					branch = branch_mgr_find_by(branches, row->branch);
+					if (unlikely(! branch))
+						error("replay: failed to find branch %" PRIu32, row->branch);
+				}
+				part_insert(self->part, tr, true, branch, row);
 				data += row_size(row);
 			}
 		} else {
 			while (data < end)
 			{
 				auto row = (Row*)(data);
-				part_delete_by(self->part, tr, row);
+				if (!branch || branch->id != row->branch)
+				{
+					branch = branch_mgr_find_by(branches, row->branch);
+					if (unlikely(! branch))
+						error("replay: failed to find branch %" PRIu32, row->branch);
+				}
+				part_delete_by(self->part, tr, branch, row);
 				data += row_size(row);
 			}
 		}

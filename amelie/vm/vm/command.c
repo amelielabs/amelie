@@ -457,7 +457,7 @@ cinsert(Vm* self, Op* op)
 
 		auto row = row_create(part->heap, self->dtr->id, branch->id, columns, value,
 		                      self->refs, &identity);
-		part_insert(part, self->tr, false, row);
+		part_insert(part, self->tr, false, branch, row);
 	}
 }
 
@@ -487,7 +487,9 @@ cupsert(Vm* self, Op* op)
 		                      &identity);
 
 		// insert or get (open iterator in both cases)
-		auto exists = part_upsert(cursor->part, self->tr, cursor->cursor, row);
+		auto exists = part_upsert(cursor->part, self->tr,
+		                          cursor->cursor,
+		                          cursor->branch, row);
 		if (exists)
 		{
 			// upsert
@@ -513,7 +515,7 @@ cdelete(Vm* self, Op* op)
 {
 	// [cursor]
 	auto cursor = reg_at(&self->r, op->a);
-	part_delete(cursor->part, self->tr, cursor->cursor);
+	part_delete(cursor->part, self->tr, cursor->cursor, cursor->branch);
 }
 
 hot void
@@ -528,7 +530,7 @@ cupdate(Vm* self, Op* op)
 	auto row = row_update(cursor->part->heap, dtr->id, cursor->branch->id,
 	                      table_columns(cursor->table), row_src,
 	                      row_values, op->b);
-	part_update(cursor->part, self->tr, cursor->cursor, row);
+	part_update(cursor->part, self->tr, cursor->cursor, cursor->branch, row);
 	stack_popn(&self->stack, op->b * 2);
 }
 

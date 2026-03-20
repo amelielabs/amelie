@@ -242,6 +242,15 @@ table_branch_find(Table* self, Str* name, bool error_if_not_exists)
 	return branch;
 }
 
+hot Branch*
+table_branch_find_by(Table* self, uint32_t id, bool error_if_not_exists)
+{
+	auto branch = branch_mgr_find_by(&self->config->partitioning.branches, id);
+	if (!branch && error_if_not_exists)
+		error("branch %" PRIu32 ": not exists", id);
+	return branch;
+}
+
 Buf*
 table_branch_list(Table* self, Str* ref, int flags)
 {
