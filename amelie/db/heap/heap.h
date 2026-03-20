@@ -30,17 +30,18 @@ struct HeapChunk
 	// reserve (38 bits)
 	uint64_t reserved: 38;
 
-	// chunk (33 + 19 bits)
+	// chunk (34 + 18 bits)
 	uint64_t offset: 19;
 	uint64_t bucket: 9;
 	uint64_t is_free: 1;
 	uint64_t is_last: 1;
 	uint64_t is_shadow: 1;
 	uint64_t is_shadow_free: 1;
+	uint64_t is_shadow_prev: 1;
 	uint64_t is_evicted: 1;
 
 	// unused
-	uint64_t padding: 19;
+	uint64_t padding: 18;
 
 	// row data
 	uint8_t  data[];
@@ -65,7 +66,6 @@ struct HeapHeader
 	uint32_t   crc;
 	uint32_t   magic;
 	uint32_t   version;
-
 	// meta
 	uint64_t   lsn;
 	uint64_t   tsn;

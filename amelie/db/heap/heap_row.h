@@ -74,7 +74,10 @@ row_visible(Row* row, Heap* heap, Branch* branch)
 			return NULL;
 
 		// previous version
-		row = (Row*)heap_chunk_at(heap, chunk->prev, chunk->prev_offset)->data;
+		if (unlikely(chunk->is_shadow_prev))
+			row = (Row*)heap_chunk_at(heap->shadow, chunk->prev, chunk->prev_offset)->data;
+		else
+			row = (Row*)heap_chunk_at(heap, chunk->prev, chunk->prev_offset)->data;
 	}
 	return row;
 }
