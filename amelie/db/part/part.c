@@ -65,7 +65,7 @@ part_open(Part* self)
 	uint64_t count = 0;
 	for (;;)
 	{
-		auto row = iterator_at(&it.it);
+		auto row = heap_iterator_at(&it);
 		if (! row)
 			break;
 		auto chunk = heap_chunk_of(row);
@@ -115,10 +115,10 @@ part_index_create(Part* self, IndexConfig* config)
 {
 	Index* index;
 	if (config->type == INDEX_TREE)
-		index = index_tree_allocate(config, self->heap, self);
+		index = index_tree_allocate(config, self);
 	else
 	if (config->type == INDEX_HASH)
-		index = index_hash_allocate(config, self->heap, self);
+		index = index_hash_allocate(config, self);
 	else
 		error("unrecognized index type");
 

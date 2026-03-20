@@ -22,6 +22,7 @@ hot static Iterator*
 cursor_lookup(PartMgr*     self,
               Part*        part,
               IndexConfig* config,
+              Branch*      branch,
               Row*         key)
 {
 	unused(self);
@@ -30,7 +31,7 @@ cursor_lookup(PartMgr*     self,
 	// check heap first
 	auto it = index_iterator(index);
 	errdefer(iterator_close, it);
-	iterator_open(it, key);
+	iterator_open(it, part->heap, branch, key);
 	return it;
 }
 
@@ -38,18 +39,20 @@ hot static Iterator*
 cursor_scan(PartMgr*     self,
             Part*        part,
             IndexConfig* config,
+            Branch*      branch,
             Row*         key)
 {
 	unused(self);
 	auto index = part_index_find(part, &config->name, true);
 	auto it = index_iterator(index);
-	iterator_open(it, key);
+	iterator_open(it, part->heap, branch, key);
 	return it;
 }
 
 hot static Iterator*
 cursor_scan_cross(PartMgr*     self,
                   IndexConfig* config,
+                  Branch*      branch,
                   Row*         key)
 {
 	// prepare heap merge iterators per partition
@@ -58,9 +61,11 @@ cursor_scan_cross(PartMgr*     self,
 	{
 		auto part = list_at(Part, link);
 		auto index = part_index_find(part, &config->name, true);
-		it = index_iterator_merge(index, it);
+		it = index_iterator_merge(index, it, part->heap);
 	}
-	iterator_open(it, key);
+
+	// iterator use per partition heaps
+	iterator_open(it, NULL, branch, key);
 	return it;
 }
 
@@ -69,6 +74,7 @@ cursor_open(PartMgr*     self,
             Part*        part,
             IndexConfig* config,
             bool         point_lookup,
+            Branch*      branch,
             Row*         key)
 {
 	// partition query
@@ -76,10 +82,10 @@ cursor_open(PartMgr*     self,
 	{
 		// point lookup
 		if (point_lookup)
-			return cursor_lookup(self, part, config, key);
+			return cursor_lookup(self, part, config, branch, key);
 
 		// range scan
-		return cursor_scan(self, part, config, key);
+		return cursor_scan(self, part, config, branch, key);
 	}
 
 	// cross-partition query
@@ -88,7 +94,7 @@ cursor_open(PartMgr*     self,
 	if (point_lookup)
 	{
 		part = part_mapping_map(&self->mapping, key);
-		return cursor_lookup(self, part, config, key);
+		return cursor_lookup(self, part, config, branch, key);
 	}
 
 	// range scan
@@ -96,5 +102,5 @@ cursor_open(PartMgr*     self,
 	// merge all hash partitions (without key)
 	// merge all tree partitions (without key, ordered)
 	// merge all tree partitions (with key, ordered)
-	return cursor_scan_cross(self, config, key);
+	return cursor_scan_cross(self, config, branch, key);
 }

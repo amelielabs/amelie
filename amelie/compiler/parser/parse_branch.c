@@ -60,7 +60,7 @@ parse_branch_create(Stmt* self)
 	branch_set_name(config, &name->string);
 	branch_set_id(config, max + 1);
 	branch_set_id_parent(config, 0);
-	branch_set_snapshot(config, 0);
+	branch_set_snapshot(config, state_tsn());
 
 	// [FROM]
 	if (stmt_if(self, KFROM))

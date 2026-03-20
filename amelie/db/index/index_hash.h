@@ -25,4 +25,4 @@ index_hash_of(Index* self)
 	return (IndexHash*)self;
 }
 
-Index* index_hash_allocate(IndexConfig*, Heap*, void*);
+Index* index_hash_allocate(IndexConfig*, void*);

@@ -77,12 +77,12 @@ index_tree_iterator(Index* arg)
 }
 
 hot static Iterator*
-index_tree_iterator_merge(Index* arg, Iterator* it)
+index_tree_iterator_merge(Index* arg, Iterator* it, Heap* heap)
 {
 	auto self = index_tree_of(arg);
 	if (! it)
 		it = index_tree_merge_allocate();
-	index_tree_merge_add(index_tree_merge_of(it), self);
+	index_tree_merge_add(index_tree_merge_of(it), self, heap);
 	return it;
 }
 
@@ -102,10 +102,10 @@ index_tree_free(Index* arg)
 }
 
 Index*
-index_tree_allocate(IndexConfig* config, Heap* heap, void* arg)
+index_tree_allocate(IndexConfig* config, void* arg)
 {
 	auto self = (IndexTree*)am_malloc(sizeof(IndexTree));
-	index_init(&self->index, config, heap, arg);
+	index_init(&self->index, config, arg);
 	tree_init(&self->tree, 512, 256, &config->keys);
 
 	auto iface = &self->index.iface;

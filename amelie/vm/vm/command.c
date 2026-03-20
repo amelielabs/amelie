@@ -401,7 +401,9 @@ ctable_open(Vm* self, Op* op)
 		part = NULL;
 	auto it = cursor_open(&open->table->part_mgr, part,
 	                       open->index,
-	                       open->point_lookup, key_ref);
+	                       open->point_lookup,
+	                       open->branch,
+	                       key_ref);
 
 	// set cursor
 	auto cursor = reg_at(&self->r, op->a);

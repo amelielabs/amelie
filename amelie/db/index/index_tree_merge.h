@@ -15,10 +15,10 @@ typedef struct IndexTreeMerge IndexTreeMerge;
 
 struct IndexTreeMerge
 {
-	Iterator           it;
-	IndexTreeIterator* current_it;
-	Buf                list;
-	int                list_count;
+	Iterator  it;
+	Iterator* current_it;
+	Buf       list;
+	int       list_count;
 };
 
 always_inline static inline IndexTreeMerge*
@@ -32,17 +32,19 @@ index_tree_merge_step(IndexTreeMerge* self)
 {
 	if (self->current_it)
 	{
-		index_tree_iterator_next(&self->current_it->it);
+		iterator_next(self->current_it);
 		self->current_it = NULL;
 	}
 
 	auto list = (IndexTreeIterator*)self->list.start;
-	IndexTreeIterator* min_iterator = NULL;
-	Row*               min = NULL;
+	auto keys = list->index->tree.keys;
+
+	Iterator* min_iterator = NULL;
+	Row*      min = NULL;
 	for (auto pos = 0; pos < self->list_count; pos++)
 	{
-		auto current = &list[pos];
-		auto row = iterator_at(&current->it);
+		auto current = &list[pos].it;
+		auto row = iterator_at(current);
 		if (! row)
 			continue;
 
@@ -53,7 +55,7 @@ index_tree_merge_step(IndexTreeMerge* self)
 			continue;
 		}
 
-		auto rc = compare(current->index->tree.keys, min, row);
+		auto rc = compare(keys, min, row);
 		switch (rc) {
 		case 0:
 			break;
@@ -68,7 +70,7 @@ index_tree_merge_step(IndexTreeMerge* self)
 
 	self->current_it = min_iterator;
 	if (self->current_it)
-		self->it.current = iterator_at(&self->current_it->it);
+		self->it.current = iterator_at(self->current_it);
 	else
 		self->it.current = NULL;
 }
@@ -84,7 +86,9 @@ index_tree_merge_open(Iterator* arg, Row* key)
 	auto list  = (IndexTreeIterator*)self->list.start;
 	for (auto i = 0; i < self->list_count; i++)
 	{
-		if (index_tree_iterator_open(&list[i].it, key))
+		// iterator is using per iterator heap
+		auto it = &list[i];
+		if (iterator_open(&it->it, it->it.heap, arg->branch, key))
 			match = true;
 	}
 	index_tree_merge_step(self);
@@ -121,9 +125,10 @@ index_tree_merge_allocate(void)
 }
 
 static inline void
-index_tree_merge_add(IndexTreeMerge* self, IndexTree* index)
+index_tree_merge_add(IndexTreeMerge* self, IndexTree* index, Heap* heap)
 {
 	auto it = (IndexTreeIterator*)buf_emplace(&self->list, sizeof(IndexTreeIterator));
 	index_tree_iterator_init(it, index);
+	it->it.heap = heap;
 	self->list_count++;
 }

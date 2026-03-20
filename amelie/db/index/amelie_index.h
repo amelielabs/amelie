@@ -11,6 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
+// iterator
+#include "index/iterator.h"
+
 // index
 #include "index/index_config.h"
 #include "index/index.h"

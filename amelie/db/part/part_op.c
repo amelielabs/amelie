@@ -192,7 +192,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 		// find and replace existing secondary row (keys are not updated)
 		auto index_it = index_iterator(index);
 		defer(iterator_close, index_it);
-		iterator_open(index_it, row);
+		iterator_open(index_it, self->heap, branch, row);
 		op->row_prev = index_replace(index, row, index_it);
 	}
 
@@ -250,7 +250,7 @@ part_delete_by(Part* self, Tr* tr, Branch* branch, Row* row)
 	auto primary = part_primary(self);
 	auto it = index_iterator(primary);
 	defer(iterator_close, it);
-	if (unlikely(! iterator_open(it, row)))
+	if (unlikely(! iterator_open(it, self->heap, branch, row)))
 		error("delete by key does not match");
 	part_delete(self, tr, it, branch);
 }

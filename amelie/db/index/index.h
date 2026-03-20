@@ -22,7 +22,7 @@ struct IndexIf
 	Row*      (*delete_by)(Index*, Row*);
 	Row*      (*delete)(Index*, Iterator*);
 	Iterator* (*iterator)(Index*);
-	Iterator* (*iterator_merge)(Index*, Iterator*);
+	Iterator* (*iterator_merge)(Index*, Iterator*, Heap*);
 	void      (*truncate)(Index*);
 	void      (*free)(Index*);
 };
@@ -31,16 +31,14 @@ struct Index
 {
 	IndexIf      iface;
 	void*        iface_arg;
-	Heap*        heap;
 	IndexConfig* config;
 	Index*       next;
 };
 
 static inline void
-index_init(Index* self, IndexConfig* config, Heap* heap, void* arg)
+index_init(Index* self, IndexConfig* config, void* arg)
 {
 	memset(self, 0, sizeof(*self));
-	self->heap      = heap;
 	self->config    = config;
 	self->iface_arg = arg;
 	self->next      = NULL;
@@ -89,9 +87,9 @@ index_iterator(Index* self)
 }
 
 static inline Iterator*
-index_iterator_merge(Index* self, Iterator* it)
+index_iterator_merge(Index* self, Iterator* it, Heap* heap)
 {
-	return self->iface.iterator_merge(self, it);
+	return self->iface.iterator_merge(self, it, heap);
 }
 
 static inline void

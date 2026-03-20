@@ -15,11 +15,11 @@ typedef struct IndexHashMerge IndexHashMerge;
 
 struct IndexHashMerge
 {
-	Iterator           it;
-	IndexHashIterator* current_it;
-	int                current_it_order;
-	Buf                list;
-	int                list_count;
+	Iterator  it;
+	Iterator* current_it;
+	int       current_it_order;
+	Buf       list;
+	int       list_count;
 };
 
 always_inline static inline IndexHashMerge*
@@ -39,16 +39,17 @@ index_hash_merge_open(Iterator* arg, Row* key)
 	auto list = (IndexHashIterator*)self->list.start;
 	for (auto i = 0; i < self->list_count; i++)
 	{
-		index_hash_iterator_open(&list[i].it, key);
-		if (!self->current_it && iterator_has(&list[i].it))
+		auto it = &list[i];
+		iterator_open(&it->it, it->it.heap, arg->branch, NULL);
+		if (!self->current_it && iterator_has(&it->it))
 		{
 			self->current_it_order = i;
-			self->current_it = &list[i];
+			self->current_it = &it->it;
 		}
 	}
 
 	if (self->current_it)
-		arg->current = iterator_at(&self->current_it->it);
+		arg->current = iterator_at(self->current_it);
 	return false;
 }
 
@@ -59,10 +60,10 @@ index_hash_merge_next(Iterator* arg)
 	if (unlikely(! self->current_it))
 		return;
 
-	index_hash_iterator_next(&self->current_it->it);
-	if (iterator_has(&self->current_it->it))
+	iterator_next(self->current_it);
+	if (iterator_has(self->current_it))
 	{
-		arg->current = NULL;
+		arg->current = iterator_at(self->current_it);
 		return;
 	}
 
@@ -76,12 +77,14 @@ index_hash_merge_next(Iterator* arg)
 		auto at = &list[self->current_it_order];
 		if (iterator_has(&at->it))
 		{
-			self->current_it = at;
+			self->current_it = &at->it;
 			break;
 		}
 	}
 	if (self->current_it)
-		arg->current = iterator_at(&self->current_it->it);
+		arg->current = iterator_at(self->current_it);
+	else
+		arg->current = NULL;
 }
 
 static inline void
@@ -108,9 +111,10 @@ index_hash_merge_allocate(void)
 }
 
 static inline void
-index_hash_merge_add(IndexHashMerge* self, IndexHash* index)
+index_hash_merge_add(IndexHashMerge* self, IndexHash* index, Heap* heap)
 {
 	auto it = (IndexHashIterator*)buf_emplace(&self->list, sizeof(IndexHashIterator));
 	index_hash_iterator_init(it, index);
+	it->it.heap = heap;
 	self->list_count++;
 }

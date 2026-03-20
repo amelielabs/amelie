@@ -71,12 +71,12 @@ index_hash_iterator(Index* arg)
 }
 
 hot static Iterator*
-index_hash_iterator_merge(Index* arg, Iterator* it)
+index_hash_iterator_merge(Index* arg, Iterator* it, Heap* heap)
 {
 	auto self = index_hash_of(arg);
 	if (! it)
 		it = index_hash_merge_allocate();
-	index_hash_merge_add(index_hash_merge_of(it), self);
+	index_hash_merge_add(index_hash_merge_of(it), self, heap);
 	return it;
 }
 
@@ -97,10 +97,10 @@ index_hash_free(Index* arg)
 }
 
 Index*
-index_hash_allocate(IndexConfig* config, Heap* heap, void* arg)
+index_hash_allocate(IndexConfig* config, void* arg)
 {
 	auto self = (IndexHash*)am_malloc(sizeof(IndexHash));
-	index_init(&self->index, config, heap, arg);
+	index_init(&self->index, config, arg);
 	hash_init(&self->hash);
 
 	auto iface = &self->index.iface;

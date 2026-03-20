@@ -15,7 +15,6 @@ typedef struct HeapIterator HeapIterator;
 
 struct HeapIterator
 {
-	Iterator   it;
 	HeapChunk* current;
 	Page*      page;
 	int        page_order;
@@ -47,10 +46,6 @@ heap_iterator_next_allocated(HeapIterator* self)
 {
 	while (self->current && self->current->is_free)
 		heap_iterator_next_chunk(self);
-	if (self->current)
-		self->it.current = (Row*)self->current->data;
-	else
-		self->it.current = NULL;
 }
 
 static inline bool
@@ -68,7 +63,21 @@ heap_iterator_open(HeapIterator* self, Heap* heap, Row* key)
 	return self->current != NULL;
 }
 
-static inline HeapChunk*
+always_inline static inline bool
+heap_iterator_has(HeapIterator* self)
+{
+	return self->current != NULL;
+}
+
+always_inline static inline Row*
+heap_iterator_at(HeapIterator* self)
+{
+	if (! self->current)
+		return NULL;
+	return (Row*)self->current->data;
+}
+
+always_inline static inline HeapChunk*
 heap_iterator_at_chunk(HeapIterator* self)
 {
 	return self->current;
@@ -89,8 +98,6 @@ heap_iterator_init(HeapIterator* self)
 	self->page_order = 0;
 	self->page_mgr   = NULL;
 	self->heap       = NULL;
-	iterator_init(&self->it, NULL, NULL,
-	              (IteratorNext)heap_iterator_next);
 }
 
 static inline void
@@ -101,5 +108,4 @@ heap_iterator_reset(HeapIterator* self)
 	self->page_order = 0;
 	self->page_mgr   = NULL;
 	self->heap       = NULL;
-	iterator_reset(&self->it);
 }

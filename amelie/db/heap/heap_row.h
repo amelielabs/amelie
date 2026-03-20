@@ -54,24 +54,27 @@ row_tsn(Row* self)
 }
 
 hot static inline Row*
-visible_row(Row* row, Heap* heap, Branch* branch)
+row_visible(Row* row, Heap* heap, Branch* branch)
 {
 	// row is a head of version chain
 	while (row)
 	{
-		// update by this branch
+		// this branch
 		if (row->branch == branch->id)
-			break;
+			return row;
 
-		// update by one of the derived parent branches
+		// derived parent branches
 		auto chunk = heap_chunk_of(row);
 
 		auto parent = branch->parent;
 		for (; parent; parent = parent->parent)
+		{
 			if (row->branch == parent->id && chunk->tsn <= (uint64_t)parent->snapshot)
-				break;
+				return row;
+		}
+
 		if (! chunk->prev_offset)
-			return NULL;
+			break;
 
 		// previous version
 		if (unlikely(chunk->is_shadow_prev))
@@ -79,21 +82,5 @@ visible_row(Row* row, Heap* heap, Branch* branch)
 		else
 			row = (Row*)heap_chunk_at(heap, chunk->prev, chunk->prev_offset)->data;
 	}
-	return row;
-}
-
-hot static inline Row*
-visible_next(Iterator* it, Heap* heap, Branch* branch)
-{
-	while (it->current)
-	{
-		auto visible = visible_row(it->current, heap, branch);
-		if (visible)
-		{
-			it->current = visible;
-			break;
-		}
-		iterator_next(it);
-	}
-	return it->current;
+	return NULL;
 }
