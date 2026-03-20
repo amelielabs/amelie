@@ -12,6 +12,9 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 
 hot static bool
@@ -94,10 +97,10 @@ index_hash_free(Index* arg)
 }
 
 Index*
-index_hash_allocate(IndexConfig* config, void* arg)
+index_hash_allocate(IndexConfig* config, Heap* heap, void* arg)
 {
 	auto self = (IndexHash*)am_malloc(sizeof(IndexHash));
-	index_init(&self->index, config, arg);
+	index_init(&self->index, config, heap, arg);
 	hash_init(&self->hash);
 
 	auto iface = &self->index.iface;

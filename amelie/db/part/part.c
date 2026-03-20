@@ -116,10 +116,10 @@ part_index_create(Part* self, IndexConfig* config)
 {
 	Index* index;
 	if (config->type == INDEX_TREE)
-		index = index_tree_allocate(config, self);
+		index = index_tree_allocate(config, self->heap, self);
 	else
 	if (config->type == INDEX_HASH)
-		index = index_hash_allocate(config, self);
+		index = index_hash_allocate(config, self->heap, self);
 	else
 		error("unrecognized index type");
 

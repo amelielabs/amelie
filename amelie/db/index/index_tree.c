@@ -12,6 +12,9 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 
 always_inline static inline IndexTree*
@@ -99,10 +102,10 @@ index_tree_free(Index* arg)
 }
 
 Index*
-index_tree_allocate(IndexConfig* config, void* arg)
+index_tree_allocate(IndexConfig* config, Heap* heap, void* arg)
 {
 	auto self = (IndexTree*)am_malloc(sizeof(IndexTree));
-	index_init(&self->index, config, arg);
+	index_init(&self->index, config, heap, arg);
 	tree_init(&self->tree, 512, 256, &config->keys);
 
 	auto iface = &self->index.iface;

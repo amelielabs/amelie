@@ -77,11 +77,12 @@ indexate_begin(Indexate* self, Table* table, IndexConfig* config)
 		return false;
 
 	// allocate index
+	auto origin = self->origin;
 	if (config->type == INDEX_TREE)
-		self->index = index_tree_allocate(config, self->origin);
+		self->index = index_tree_allocate(config, origin->heap, origin);
 	else
 	if (config->type == INDEX_HASH)
-		self->index = index_hash_allocate(config, self->origin);
+		self->index = index_hash_allocate(config, origin->heap, origin);
 	else
 		abort();
 
@@ -92,7 +93,6 @@ indexate_begin(Indexate* self, Table* table, IndexConfig* config)
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
 
 	// commit pending prepared transactions
-	auto origin = self->origin;
 	auto consensus = &origin->track.consensus;
 	track_sync(&origin->track, consensus);
 
