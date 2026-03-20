@@ -67,25 +67,27 @@ index_tree_merge_step(IndexTreeMerge* self)
 	}
 
 	self->current_it = min_iterator;
+	if (self->current_it)
+		self->it.current = tree_iterator_at(self->current_it);
+	else
+		self->it.current = NULL;
 }
 
 static inline bool
 index_tree_merge_open(Iterator* arg, Row* key)
 {
-	auto self  = index_tree_merge_of(arg);
+	auto self = index_tree_merge_of(arg);
+	if (! self->list_count)
+		return  false;
+
 	auto match = false;
-	auto list = (TreeIterator*)self->list.start;
+	auto list  = (TreeIterator*)self->list.start;
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		if (tree_iterator_open(&list[i], key))
 			match = true;
 	}
 	index_tree_merge_step(self);
-
-	if (self->current_it)
-		arg->current = tree_iterator_at(self->current_it);
-	else
-		arg->current = NULL;
 	return match;
 }
 
@@ -94,11 +96,6 @@ index_tree_merge_next(Iterator* arg)
 {
 	auto self = index_tree_merge_of(arg);
 	index_tree_merge_step(self);
-
-	if (likely(self->current_it))
-		arg->current = tree_iterator_at(self->current_it);
-	else
-		arg->current = NULL;
 }
 
 static inline void
@@ -116,12 +113,10 @@ index_tree_merge_allocate(void)
 	self->current_it = NULL;
 	self->list_count = 0;
 	buf_init(&self->list);
-
-	auto it = &self->it;
-	it->current = NULL;
-	it->open    = index_tree_merge_open;
-	it->close   = index_tree_merge_close;
-	it->next    = index_tree_merge_next;
+	iterator_init(&self->it,
+	              index_tree_merge_open,
+	              index_tree_merge_close,
+	              index_tree_merge_next);
 	return &self->it;
 }
 

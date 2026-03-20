@@ -54,7 +54,7 @@ row_tsn(Row* self)
 }
 
 hot static inline Row*
-row_visible(Row* row, Heap* heap, Branch* branch)
+visible_row(Row* row, Heap* heap, Branch* branch)
 {
 	// row is a head of version chain
 	while (row)
@@ -80,4 +80,20 @@ row_visible(Row* row, Heap* heap, Branch* branch)
 			row = (Row*)heap_chunk_at(heap, chunk->prev, chunk->prev_offset)->data;
 	}
 	return row;
+}
+
+hot static inline Row*
+visible_next(Iterator* it, Heap* heap, Branch* branch)
+{
+	while (it->current)
+	{
+		auto visible = visible_row(it->current, heap, branch);
+		if (visible)
+		{
+			it->current = visible;
+			break;
+		}
+		iterator_next(it);
+	}
+	return it->current;
 }

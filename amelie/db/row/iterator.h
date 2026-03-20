@@ -25,6 +25,18 @@ struct Iterator
 	IteratorClose close;
 };
 
+static inline void
+iterator_init(Iterator*     self,
+              IteratorOpen  open,
+              IteratorClose close,
+              IteratorNext  next)
+{
+	self->current = NULL;
+	self->next    = next;
+	self->open    = open;
+	self->close   = close;
+}
+
 static inline bool
 iterator_open(Iterator* self, Row* key)
 {

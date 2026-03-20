@@ -57,11 +57,9 @@ index_hash_iterator_allocate(IndexHash* index)
 	IndexHashIterator* self = am_malloc(sizeof(*self));
 	self->index    = index;
 	hash_iterator_init(&self->iterator, &index->hash);
-
-	auto it = &self->it;
-	it->current = NULL;
-	it->open    = index_hash_iterator_open;
-	it->close   = index_hash_iterator_close;
-	it->next    = index_hash_iterator_next;
+	iterator_init(&self->it,
+	              index_hash_iterator_open,
+	              index_hash_iterator_close,
+	              index_hash_iterator_next);
 	return &self->it;
 }

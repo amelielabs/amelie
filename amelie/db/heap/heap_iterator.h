@@ -89,12 +89,8 @@ heap_iterator_init(HeapIterator* self)
 	self->page_order = 0;
 	self->page_mgr   = NULL;
 	self->heap       = NULL;
-
-	auto it = &self->it;
-	it->current = NULL;
-	it->open    = NULL;
-	it->close   = NULL;
-	it->next    = (IteratorNext)heap_iterator_next;
+	iterator_init(&self->it, NULL, NULL,
+	              (IteratorNext)heap_iterator_next);
 }
 
 static inline void
