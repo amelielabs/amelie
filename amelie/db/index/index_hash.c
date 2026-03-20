@@ -22,6 +22,7 @@ index_hash_upsert(Index* arg, Row* key, Iterator* it)
 	auto exists = hash_get_or_set(&self->hash, key, &pos);
 	auto hash_it = index_hash_iterator_of(it);
 	hash_iterator_open_at(&hash_it->iterator, pos);
+	it->current = hash_iterator_at(&hash_it->iterator);
 	return exists;
 }
 
@@ -37,7 +38,9 @@ index_hash_replace(Index* arg, Row* key, Iterator* it)
 {
 	unused(arg);
 	auto hash_it = index_hash_iterator_of(it);
-	return hash_iterator_replace(&hash_it->iterator, key);
+	auto row = hash_iterator_replace(&hash_it->iterator, key);
+	it->current = hash_iterator_at(&hash_it->iterator);
+	return row;
 }
 
 hot static Row*
@@ -52,7 +55,9 @@ index_hash_delete(Index* arg, Iterator* it)
 {
 	unused(arg);
 	auto hash_it = index_hash_iterator_of(it);
-	return hash_iterator_delete(&hash_it->iterator);
+	auto row = hash_iterator_delete(&hash_it->iterator);
+	it->current = hash_iterator_at(&hash_it->iterator);
+	return row;
 }
 
 hot static Iterator*

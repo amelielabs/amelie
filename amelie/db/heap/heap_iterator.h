@@ -47,6 +47,10 @@ heap_iterator_next_allocated(HeapIterator* self)
 {
 	while (self->current && self->current->is_free)
 		heap_iterator_next_chunk(self);
+	if (self->current)
+		self->it.current = (Row*)self->current->data;
+	else
+		self->it.current = NULL;
 }
 
 static inline bool
@@ -64,22 +68,10 @@ heap_iterator_open(HeapIterator* self, Heap* heap, Row* key)
 	return self->current != NULL;
 }
 
-static inline bool
-heap_iterator_has(HeapIterator* self)
-{
-	return self->current != NULL;
-}
-
 static inline HeapChunk*
 heap_iterator_at_chunk(HeapIterator* self)
 {
 	return self->current;
-}
-
-static inline Row*
-heap_iterator_at(HeapIterator* self)
-{
-	return (Row*)self->current->data;
 }
 
 static inline void
@@ -97,11 +89,12 @@ heap_iterator_init(HeapIterator* self)
 	self->page_order = 0;
 	self->page_mgr   = NULL;
 	self->heap       = NULL;
+
 	auto it = &self->it;
-	it->has   = (IteratorHas)heap_iterator_has;
-	it->at    = (IteratorAt)heap_iterator_at;
-	it->next  = (IteratorNext)heap_iterator_next;
-	it->close = NULL;
+	it->current = NULL;
+	it->open    = NULL;
+	it->close   = NULL;
+	it->next    = (IteratorNext)heap_iterator_next;
 }
 
 static inline void
@@ -112,4 +105,5 @@ heap_iterator_reset(HeapIterator* self)
 	self->page_order = 0;
 	self->page_mgr   = NULL;
 	self->heap       = NULL;
+	iterator_reset(&self->it);
 }

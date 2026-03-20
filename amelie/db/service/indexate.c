@@ -116,9 +116,9 @@ indexate_job(intptr_t* argv)
 	HeapIterator it;
 	heap_iterator_init(&it);
 	heap_iterator_open(&it, heap, NULL);
-	for (; heap_iterator_has(&it); heap_iterator_next(&it))
+	for (; iterator_has(&it.it); heap_iterator_next(&it))
 	{
-		auto row  = heap_iterator_at(&it);
+		auto row  = it.it.current;
 		auto prev = index_replace_by(self->index, row);
 		if (unlikely(prev))
 			error("indexate: index unique constraint violation");
@@ -164,7 +164,7 @@ indexate_apply(Indexate* self)
 	HeapIterator it;
 	heap_iterator_init(&it);
 	heap_iterator_open(&it, origin->heap_shadow, NULL);
-	for (; heap_iterator_has(&it); heap_iterator_next(&it))
+	for (; iterator_has(&it.it); heap_iterator_next(&it))
 	{
 		auto chunk = heap_iterator_at_chunk(&it);
 		if (chunk->is_shadow_free)
@@ -175,7 +175,7 @@ indexate_apply(Indexate* self)
 		}
 
 		// copy row
-		auto row_shadow = heap_iterator_at(&it);
+		auto row_shadow = it.it.current;
 		auto row = row_copy(origin->heap, row_shadow);
 
 		// update existing indexes using row copy (replace shadow copy)

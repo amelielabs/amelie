@@ -55,13 +55,13 @@ tree_iterator_open_at(TreeIterator* self, TreePos* pos)
 	self->current  = self->page->rows[self->page_pos];
 }
 
-static inline bool
+always_inline static inline bool
 tree_iterator_has(TreeIterator* self)
 {
 	return self->current != NULL;
 }
 
-static inline Row*
+always_inline static inline Row*
 tree_iterator_at(TreeIterator* self)
 {
 	return self->current;

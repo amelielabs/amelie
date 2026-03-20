@@ -18,7 +18,6 @@ struct RegionIterator
 	Iterator it;
 	Region*  region;
 	int      pos;
-	Row*     current;
 	Keys*    keys;
 };
 
@@ -27,12 +26,12 @@ region_iterator_set_pos(RegionIterator* self, int pos)
 {
 	if (unlikely(pos < 0 || pos >= (int)self->region->rows))
 	{
-		self->current = NULL;
+		self->it.current = NULL;
 		self->pos = 0;
 		return;
 	}
-	self->current = region_row(self->region, pos);
-	self->pos     = pos;
+	self->it.current = region_row(self->region, pos);
+	self->pos        = pos;
 }
 
 always_inline hot static inline int
@@ -71,10 +70,9 @@ region_iterator_open(RegionIterator* self,
                      Keys*           keys,
                      Row*            row)
 {
-	self->region  = region;
-	self->pos     = 0;
-	self->current = NULL;
-	self->keys    = keys;
+	self->region = region;
+	self->pos    = 0;
+	self->keys   = keys;
 	if (unlikely(self->region->rows == 0))
 		return false;
 	bool match = false;
@@ -87,22 +85,10 @@ region_iterator_open(RegionIterator* self,
 	return match;
 }
 
-static inline bool
-region_iterator_has(RegionIterator* self)
-{
-	return self->current != NULL;
-}
-
-static inline Row*
-region_iterator_at(RegionIterator* self)
-{
-	return self->current;
-}
-
 hot static inline void
 region_iterator_next(RegionIterator* self)
 {
-	if (unlikely(self->current == NULL))
+	if (unlikely(! self->it.current))
 		return;
 	region_iterator_set_pos(self, self->pos + 1);
 }
@@ -110,22 +96,22 @@ region_iterator_next(RegionIterator* self)
 static inline void
 region_iterator_init(RegionIterator* self)
 {
-	self->current = NULL;
-	self->pos     = 0;
-	self->region  = NULL;
-	self->keys    = NULL;
+	self->pos    = 0;
+	self->region = NULL;
+	self->keys   = NULL;
+
 	auto it = &self->it;
-	it->has   = (IteratorHas)region_iterator_has;
-	it->at    = (IteratorAt)region_iterator_at;
-	it->next  = (IteratorNext)region_iterator_next;
+	it->current = NULL;
+	it->open  = NULL;
 	it->close = NULL;
+	it->next  = (IteratorNext)region_iterator_next;
 }
 
 static inline void
 region_iterator_reset(RegionIterator* self)
 {
-	self->current = NULL;
-	self->pos     = 0;
-	self->region  = NULL;
-	self->keys    = NULL;
+	self->pos    = 0;
+	self->region = NULL;
+	self->keys   = NULL;
+	iterator_reset(&self->it);
 }

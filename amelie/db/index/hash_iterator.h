@@ -78,13 +78,13 @@ hash_iterator_open_at(HashIterator* self, uint64_t pos)
 	self->pos           = pos;
 }
 
-static inline bool
+always_inline static inline bool
 hash_iterator_has(HashIterator* self)
 {
 	return self->current != NULL;
 }
 
-static inline Row*
+always_inline static inline Row*
 hash_iterator_at(HashIterator* self)
 {
 	return self->current;

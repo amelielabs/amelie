@@ -28,6 +28,7 @@ index_tree_upsert(Index* arg, Row* key, Iterator* it)
 	auto exists = tree_upsert(&self->tree, &pos, key);
 	auto tree_it = index_tree_iterator_of(it);
 	tree_iterator_open_at(&tree_it->iterator, &pos);
+	it->current = tree_iterator_at(&tree_it->iterator);
 	return exists;
 }
 
@@ -43,7 +44,9 @@ index_tree_replace(Index* arg, Row* key, Iterator* it)
 {
 	unused(arg);
 	auto tree_it = index_tree_iterator_of(it);
-	return tree_iterator_replace(&tree_it->iterator, key);
+	auto row = tree_iterator_replace(&tree_it->iterator, key);
+	it->current = tree_iterator_at(&tree_it->iterator);
+	return row;
 }
 
 hot static Row*
@@ -58,7 +61,9 @@ index_tree_delete(Index* arg, Iterator* it)
 {
 	unused(arg);
 	auto tree_it = index_tree_iterator_of(it);
-	return tree_iterator_delete(&tree_it->iterator);
+	auto row = tree_iterator_delete(&tree_it->iterator);
+	it->current = tree_iterator_at(&tree_it->iterator);
+	return row;
 }
 
 hot static Iterator*

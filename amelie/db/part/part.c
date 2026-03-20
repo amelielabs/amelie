@@ -64,10 +64,12 @@ part_open(Part* self)
 	heap_iterator_init(&it);
 	heap_iterator_open(&it, self->heap, NULL);
 	uint64_t count = 0;
-	while (heap_iterator_has(&it))
+	for (;;)
 	{
-		auto chunk = heap_iterator_at_chunk(&it);
-		auto row = heap_iterator_at(&it);
+		auto row = iterator_at(&it.it);
+		if (! row)
+			break;
+		auto chunk = heap_chunk_of(row);
 		if (chunk->is_evicted)
 		{
 			// cleanup evicted rows during load

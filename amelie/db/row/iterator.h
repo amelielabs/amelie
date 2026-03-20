@@ -14,17 +14,14 @@
 typedef struct Iterator Iterator;
 
 typedef bool (*IteratorOpen)(Iterator*, Row*);
-typedef bool (*IteratorHas)(Iterator*);
-typedef Row* (*IteratorAt)(Iterator*);
 typedef void (*IteratorNext)(Iterator*);
 typedef void (*IteratorClose)(Iterator*);
 
 struct Iterator
 {
-	IteratorOpen  open;
-	IteratorHas   has;
-	IteratorAt    at;
+	Row*          current;
 	IteratorNext  next;
+	IteratorOpen  open;
 	IteratorClose close;
 };
 
@@ -34,16 +31,17 @@ iterator_open(Iterator* self, Row* key)
 	return self->open(self, key);
 }
 
-static inline bool
-iterator_has(Iterator* self)
+static inline void
+iterator_close(Iterator* self)
 {
-	return self->has(self);
+	if (self->close)
+		self->close(self);
 }
 
-static inline Row*
-iterator_at(Iterator* self)
+static inline void
+iterator_reset(Iterator* self)
 {
-	return self->at(self);
+	self->current = NULL;
 }
 
 static inline void
@@ -52,9 +50,14 @@ iterator_next(Iterator* self)
 	self->next(self);
 }
 
-static inline void
-iterator_close(Iterator* self)
+always_inline static inline bool
+iterator_has(Iterator* self)
 {
-	if (self->close)
-		self->close(self);
+	return self->current != NULL;
+}
+
+always_inline static inline Row*
+iterator_at(Iterator* self)
+{
+	return self->current;
 }

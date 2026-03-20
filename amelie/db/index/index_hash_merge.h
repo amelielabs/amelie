@@ -46,23 +46,10 @@ index_hash_merge_open(Iterator* arg, Row* key)
 			self->current_it = &list[i];
 		}
 	}
+
+	if (self->current_it)
+		arg->current = hash_iterator_at(self->current_it);
 	return false;
-}
-
-static inline bool
-index_hash_merge_has(Iterator* arg)
-{
-	auto self = index_hash_merge_of(arg);
-	return self->current_it != NULL;
-}
-
-static inline Row*
-index_hash_merge_at(Iterator* arg)
-{
-	auto self = index_hash_merge_of(arg);
-	if (unlikely(! self->current_it))
-		return NULL;
-	return hash_iterator_at(self->current_it);
 }
 
 hot static inline void
@@ -74,7 +61,10 @@ index_hash_merge_next(Iterator* arg)
 
 	hash_iterator_next(self->current_it);
 	if (hash_iterator_has(self->current_it))
+	{
+		arg->current = NULL;
 		return;
+	}
 
 	self->current_it = NULL;
 	auto list = (HashIterator*)self->list.start;
@@ -90,6 +80,8 @@ index_hash_merge_next(Iterator* arg)
 			break;
 		}
 	}
+	if (self->current_it)
+		arg->current = hash_iterator_at(self->current_it);
 }
 
 static inline void
@@ -104,15 +96,16 @@ static inline Iterator*
 index_hash_merge_allocate(void)
 {
 	IndexHashMerge* self = am_malloc(sizeof(*self));
-	self->it.open  = index_hash_merge_open;
-	self->it.has   = index_hash_merge_has;
-	self->it.at    = index_hash_merge_at;
-	self->it.next  = index_hash_merge_next;
-	self->it.close = index_hash_merge_close;
-	self->current_it = NULL;
+	self->current_it       = NULL;
 	self->current_it_order = 0;
-	self->list_count = 0;
+	self->list_count       = 0;
 	buf_init(&self->list);
+
+	auto it = &self->it;
+	it->current = NULL;
+	it->open    = index_hash_merge_open;
+	it->close   = index_hash_merge_close;
+	it->next    = index_hash_merge_next;
 	return &self->it;
 }
 

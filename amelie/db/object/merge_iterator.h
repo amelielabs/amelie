@@ -22,13 +22,12 @@ struct MergeIteratorRef
 
 struct MergeIterator
 {
-	Iterator  it;
-	Iterator* current;
-	Buf       list;
-	int       list_count;
-	Keys*     keys;
-	bool      free_sources;
-	bool      allocated;
+	Iterator it;
+	Buf      list;
+	int      list_count;
+	Keys*    keys;
+	bool     free_sources;
+	bool     allocated;
 };
 
 static inline void
@@ -50,20 +49,6 @@ merge_iterator_open(MergeIterator* self, Keys* keys)
 	iterator_next(&self->it);
 }
 
-static inline bool
-merge_iterator_has(MergeIterator* self)
-{
-	return self->current != NULL;
-}
-
-static inline Row*
-merge_iterator_at(MergeIterator* self)
-{
-	if (unlikely(self->current == NULL))
-		return NULL;
-	return iterator_at(self->current);
-}
-
 hot static inline void
 merge_iterator_next(MergeIterator* self)
 {
@@ -77,7 +62,6 @@ merge_iterator_next(MergeIterator* self)
 			current->advance = false;
 		}
 	}
-	self->current = NULL;
 
 	Iterator* min_iterator = NULL;
 	Row*      min = NULL;
@@ -108,7 +92,12 @@ merge_iterator_next(MergeIterator* self)
 			min = row;
 		}
 	}
-	self->current = min_iterator;
+
+	// set current row
+	if (min_iterator)
+		self->it.current = iterator_at(min_iterator);
+	else
+		self->it.current = NULL;
 }
 
 static inline void
@@ -128,26 +117,26 @@ merge_iterator_free(MergeIterator* self)
 static inline void
 merge_iterator_reset(MergeIterator* self)
 {
-	self->current    = NULL;
 	self->keys       = NULL;
 	self->list_count = 0;
+	iterator_reset(&self->it);
 	buf_reset(&self->list);
 }
 
 static inline void
 merge_iterator_init(MergeIterator* self)
 {
-	self->current      = NULL;
 	self->keys         = NULL;
 	self->list_count   = 0;
 	self->allocated    = false;
 	self->free_sources = false;
 	buf_init(&self->list);
+
 	auto it = &self->it;
-	it->has   = (IteratorHas)merge_iterator_has;
-	it->at    = (IteratorAt)merge_iterator_at;
-	it->next  = (IteratorNext)merge_iterator_next;
-	it->close = (IteratorClose)merge_iterator_free;
+	it->current = NULL;
+	it->open    = NULL;
+	it->close   = (IteratorClose)merge_iterator_free;
+	it->next    = (IteratorNext)merge_iterator_next;
 }
 
 static inline MergeIterator*

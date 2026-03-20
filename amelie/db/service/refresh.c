@@ -161,7 +161,7 @@ refresh_apply(Refresh* self)
 	HeapIterator it;
 	heap_iterator_init(&it);
 	heap_iterator_open(&it, origin->heap_shadow, NULL);
-	for (; heap_iterator_has(&it); heap_iterator_next(&it))
+	for (; iterator_has(&it.it); heap_iterator_next(&it))
 	{
 		auto chunk = heap_iterator_at_chunk(&it);
 		if (chunk->is_shadow_free)
@@ -172,7 +172,7 @@ refresh_apply(Refresh* self)
 		}
 
 		// copy row
-		auto row_shadow = heap_iterator_at(&it);
+		auto row_shadow = it.it.current;
 		auto row = row_copy(origin->heap, row_shadow);
 
 		// update indexes using row copy (replace shadow copy)

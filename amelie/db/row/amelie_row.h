@@ -34,7 +34,3 @@
 #include "row/row.h"
 #include "row/compare.h"
 #include "row/iterator.h"
-
-// row collection
-#include "row/collection.h"
-#include "row/collection_iterator.h"

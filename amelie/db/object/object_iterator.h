@@ -55,19 +55,10 @@ object_iterator_open(ObjectIterator* self, Keys* keys, Object* object, Row* row)
 		return false;
 
 	reader_open(&self->reader, object);
-	return object_iterator_open_region(self, row);
-}
+	auto match = object_iterator_open_region(self, row);
 
-hot static inline bool
-object_iterator_has(ObjectIterator* self)
-{
-	return region_iterator_has(&self->region_iterator);
-}
-
-hot static inline Row*
-object_iterator_at(ObjectIterator* self)
-{
-	return region_iterator_at(&self->region_iterator);
+	self->it.current = iterator_at(&self->region_iterator.it);
+	return match;
 }
 
 hot static inline void
@@ -81,7 +72,7 @@ object_iterator_next(ObjectIterator* self)
 
 	for (;;)
 	{
-		if (likely(region_iterator_has(&self->region_iterator)))
+		if (likely(iterator_has(&self->region_iterator.it)))
 			break;
 
 		// read next region
@@ -92,6 +83,8 @@ object_iterator_next(ObjectIterator* self)
 
 		object_iterator_open_region(self, NULL);
 	}
+
+	self->it.current = iterator_at(&self->region_iterator.it);
 }
 
 static inline void
@@ -108,6 +101,7 @@ object_iterator_reset(ObjectIterator* self)
 {
 	reader_reset(&self->reader);
 	region_iterator_reset(&self->region_iterator);
+	iterator_reset(&self->it);
 }
 
 static inline void
@@ -119,11 +113,12 @@ object_iterator_init(ObjectIterator* self)
 	reader_init(&self->reader);
 	meta_iterator_init(&self->meta_iterator);
 	region_iterator_init(&self->region_iterator);
+
 	auto it = &self->it;
-	it->has   = (IteratorHas)object_iterator_has;
-	it->at    = (IteratorAt)object_iterator_at;
-	it->next  = (IteratorNext)object_iterator_next;
-	it->close = (IteratorClose)object_iterator_free;
+	it->current = NULL;
+	it->open    = NULL;
+	it->close   = (IteratorClose)object_iterator_free;
+	it->next    = (IteratorNext)object_iterator_next;
 }
 
 static inline ObjectIterator*
