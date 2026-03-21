@@ -47,35 +47,3 @@ row_copy(Heap* heap, Row* self)
 	heap_follow(heap, self->tsn);
 	return row;
 }
-
-hot static inline Row*
-row_visible(Row* row, Heap* heap, Branch* branch)
-{
-	// row is a head of version chain
-	while (row)
-	{
-		// this branch
-		if (row->branch == branch->id)
-			return row;
-
-		// derived parent branches
-		auto chunk = heap_chunk_of(row);
-
-		auto parent = branch->parent;
-		for (; parent; parent = parent->parent)
-		{
-			if (row->branch == parent->id && row->tsn <= (uint64_t)branch->snapshot)
-				return row;
-		}
-
-		if (! chunk->prev_offset)
-			break;
-
-		// previous version
-		if (unlikely(chunk->is_shadow_prev))
-			row = (Row*)heap_chunk_at(heap->shadow, chunk->prev, chunk->prev_offset)->data;
-		else
-			row = (Row*)heap_chunk_at(heap, chunk->prev, chunk->prev_offset)->data;
-	}
-	return NULL;
-}
