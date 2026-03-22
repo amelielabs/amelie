@@ -58,27 +58,39 @@ part_open(Part* self)
 	// read heap file
 	heap_open(self->heap, &self->id, ID_PARTITION);
 
-	// rebuild indexes
+	// create primary index iterator for upsert
+	auto primary = part_primary(self);
+	auto columns = index_keys(primary)->columns;
+	auto it_upsert = index_iterator(primary);
+	defer(iterator_close, it_upsert);
+
+	// create heap iterator
 	HeapIterator it;
 	heap_iterator_init(&it);
 	heap_iterator_open(&it, self->heap, NULL);
+
+	// build indexes
 	uint64_t count = 0;
-	for (;;)
+	for (;; heap_iterator_next(&it))
 	{
 		auto row = heap_iterator_at(&it);
 		if (! row)
 			break;
-		auto chunk = heap_chunk_of(row);
-		if (chunk->is_evicted)
+
+		// sync last identity column value during recover
+		part_follow(self, row, columns);
+		count++;
+
+		// update index to track the latest version
+		if (index_upsert(primary, row, it_upsert))
 		{
-			// cleanup evicted rows during load
-			row_free(self->heap, row);
-		} else
-		{
-			part_apply(self, row, false);
-			count++;
+			auto at = iterator_at(it_upsert);
+			if (at->tsn > row->tsn)
+				continue;
+			index_replace(primary, row, it_upsert);
 		}
-		heap_iterator_next(&it);
+		for (auto index = primary->next; index; index = index->next)
+			index_replace_by(index, row);
 	}
 
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;

@@ -151,32 +151,8 @@ refresh_apply(Refresh* self)
 	track_sync(&origin->track, &origin->track.consensus);
 	assert(! origin->track.prepared.list_count);
 
-	// snapshot complete
-	heap_snapshot(origin->heap, NULL, false);
-
-	// apply updates during heap snapshot
-	HeapIterator it;
-	heap_iterator_init(&it);
-	heap_iterator_open(&it, origin->heap_shadow, NULL);
-	for (; heap_iterator_has(&it); heap_iterator_next(&it))
-	{
-		auto chunk = heap_iterator_at_chunk(&it);
-		if (chunk->is_shadow_free)
-		{
-			// delayed heap removal
-			row_free(origin->heap, *(Row**)chunk->data);
-			continue;
-		}
-
-		// copy row
-		auto row_shadow = heap_iterator_at(&it);
-		auto row = row_copy(origin->heap, row_shadow);
-
-		// update indexes using row copy (replace shadow copy)
-		auto prev = part_apply(origin, row, false);
-		unused(prev);
-		assert(prev == row_shadow);
-	}
+	// complete heap snapshot and apply heap updates
+	part_apply(origin, NULL);
 
 	// update volume refs
 	volume_remove(origin->id.volume, &origin->link_volume);

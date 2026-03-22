@@ -43,6 +43,12 @@ branch_mgr_add(BranchMgr* self, Branch* branch)
 {
 	list_append(&self->list, &branch->link);
 	self->list_count++;
+
+	// update parent snapshot_max (max of children snapshot)
+	if (! branch->parent)
+		return;
+	if (branch->snapshot > branch->parent->snapshot_max)
+		branch->parent->snapshot_max = branch->snapshot;
 }
 
 static inline void
@@ -50,6 +56,20 @@ branch_mgr_remove(BranchMgr* self, Branch* branch)
 {
 	list_unlink(&branch->link);
 	self->list_count--;
+
+	auto parent = branch->parent;
+	assert(parent);
+
+	// update parent branch snapshot_max
+	int64_t snapshot_max = 0;
+	list_foreach(&self->list)
+	{
+		auto branch = list_at(Branch, link);
+		if (branch->parent == parent)
+			if (branch->snapshot > snapshot_max)
+				snapshot_max = branch->snapshot;
+	}
+	parent->snapshot_max = snapshot_max;
 }
 
 static inline void

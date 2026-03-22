@@ -19,6 +19,7 @@ struct Branch
 	int64_t id;
 	int64_t id_parent;
 	int64_t snapshot;
+	int64_t snapshot_max;
 	Branch* parent;
 	List    link;
 };
@@ -27,10 +28,11 @@ static inline Branch*
 branch_allocate(void)
 {
 	auto self = (Branch*)am_malloc(sizeof(Branch));
-	self->id        = 0;
-	self->id_parent = 0;
-	self->snapshot  = 0;
-	self->parent    = NULL;
+	self->id           = 0;
+	self->id_parent    = 0;
+	self->snapshot     = 0;
+	self->snapshot_max = 0;
+	self->parent       = NULL;
 	str_init(&self->name);
 	list_init(&self->link);
 	return self;
@@ -99,8 +101,6 @@ branch_read(uint8_t** pos)
 static inline void
 branch_write(Branch* self, Buf* buf, int flags)
 {
-	unused(flags);
-
 	// map
 	encode_obj(buf);
 
@@ -119,6 +119,13 @@ branch_write(Branch* self, Buf* buf, int flags)
 	// snapshot
 	encode_raw(buf, "snapshot", 8);
 	encode_integer(buf, self->snapshot);
+
+	// snapshot_max
+	if (flags_has(flags, FMETRICS))
+	{
+		encode_raw(buf, "snapshot_max", 12);
+		encode_integer(buf, self->snapshot_max);
+	}
 
 	encode_obj_end(buf);
 }

@@ -110,15 +110,22 @@ indexate_job(intptr_t* argv)
 	auto origin = self->origin;
 	auto heap   = origin->heap;
 
+	auto it_upsert = index_iterator(self->index);
+	defer(iterator_close, it_upsert);
+
 	// indexate heap
 	HeapIterator it;
 	heap_iterator_init(&it);
 	heap_iterator_open(&it, heap, NULL);
 	for (; heap_iterator_has(&it); heap_iterator_next(&it))
 	{
-		auto row  = heap_iterator_at(&it);
-		auto prev = index_replace_by(self->index, row);
-		if (unlikely(prev))
+		auto row = heap_iterator_at(&it);
+		// get index head
+		if (! index_upsert(self->index, row, it_upsert))
+			continue;
+		// check unique constraint violation
+		auto head = iterator_at(it_upsert);
+		if (row_unique(head, heap, NULL))
 			error("indexate: index unique constraint violation");
 	}
 
@@ -155,35 +162,9 @@ indexate_apply(Indexate* self)
 	// force commit prepared transactions
 	track_sync(&origin->track, &origin->track.consensus);
 
-	// snapshot complete
-	heap_snapshot(origin->heap, NULL, false);
-
-	// apply updates during heap snapshot
-	HeapIterator it;
-	heap_iterator_init(&it);
-	heap_iterator_open(&it, origin->heap_shadow, NULL);
-	for (; heap_iterator_has(&it); heap_iterator_next(&it))
-	{
-		auto chunk = heap_iterator_at_chunk(&it);
-		if (chunk->is_shadow_free)
-		{
-			// delayed heap removal
-			row_free(origin->heap, *(Row**)chunk->data);
-			continue;
-		}
-
-		// copy row
-		auto row_shadow = heap_iterator_at(&it);
-		auto row = row_copy(origin->heap, row_shadow);
-
-		// update existing indexes using row copy (replace shadow copy)
-		part_apply(origin, row, false);
-
-		// update new index
-		auto prev = index_replace_by(self->index, row);
-		if (unlikely(prev))
-			error("indexate: index unique constraint violation");
-	}
+	// complete heap snapshot and apply heap updates
+	if (! part_apply(origin, self->index))
+		error("indexate: index unique constraint violation");
 
 	// attach index to the partition
 	part_index_add(self->origin, self->index);

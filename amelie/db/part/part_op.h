@@ -16,4 +16,5 @@ bool part_upsert(Part*, Tr*, Iterator*, Branch*, Row*);
 void part_update(Part*, Tr*, Iterator*, Branch*, Row*);
 void part_delete(Part*, Tr*, Iterator*, Branch*);
 void part_delete_by(Part*, Tr*, Branch*, Row*);
-Row* part_apply(Part*, Row*, bool);
+void part_follow(Part*, Row*, Columns*);
+bool part_apply(Part*, Index*);

@@ -243,7 +243,6 @@ heap_add(Heap* self, int size)
 	chunk->is_shadow      = self->shadow != NULL;
 	chunk->is_shadow_free = false;
 	chunk->is_shadow_prev = false;
-	chunk->is_evicted     = false;
 
 	// update total used metrics
 	heap->header->count_used++;
@@ -282,7 +281,6 @@ heap_remove(Heap* self, void* pointer)
 	chunk->prev_offset    = bucket->list_offset;
 	chunk->is_free        = true;
 	chunk->is_shadow_prev = false;
-	chunk->is_evicted     = false;
 	bucket->list          = heap_page_of(chunk)->order;
 	bucket->list_offset   = chunk->offset;
 	bucket->list_count++;

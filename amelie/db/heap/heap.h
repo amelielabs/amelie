@@ -27,7 +27,7 @@ struct HeapChunk
 	// reserve (38 bits)
 	uint64_t reserved: 38;
 
-	// chunk (34 + 18 bits)
+	// chunk (33 + 19 bits)
 	uint64_t offset: 19;
 	uint64_t bucket: 9;
 	uint64_t is_free: 1;
@@ -35,10 +35,9 @@ struct HeapChunk
 	uint64_t is_shadow: 1;
 	uint64_t is_shadow_free: 1;
 	uint64_t is_shadow_prev: 1;
-	uint64_t is_evicted: 1;
 
 	// unused
-	uint64_t padding: 18;
+	uint64_t padding: 19;
 
 	// row data
 	uint8_t  data[];

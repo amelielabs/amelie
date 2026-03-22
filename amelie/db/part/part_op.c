@@ -18,10 +18,9 @@
 #include <amelie_index.h>
 #include <amelie_part.h>
 
-static Row*
-log_if_rollback(Log* self, LogOp* op)
+static inline Row*
+rollback(LogOp* op)
 {
-	unused(self);
 	auto index = (Index*)op->iface_arg;
 	if (op->row_prev)
 		index_replace_by(index, op->row_prev);
@@ -34,19 +33,36 @@ log_if_rollback(Log* self, LogOp* op)
 hot static void
 log_if_commit(Log* self, LogOp* op)
 {
-	unused(self);
 	auto index = (Index*)op->iface_arg;
-	if (op->row_prev)
+	auto part  = (Part*)index->iface_arg;
+	auto heap  = part->heap;
+	if (op->cmd == CMD_DELETE)
 	{
-		auto part = (Part*)index->iface_arg;
-		row_free(part->heap, op->row_prev);
+		// no branches or versions
+		row_free(heap, op->row);
+		return;
+	}
+
+	// cleanup row chain
+	auto tr = container_of(self, Tr, log);
+	row_gc(op->row, heap, op->branch, tr->id);
+
+	// last delete in the chain
+	if (op->row->is_delete && !row_prev(op->row, heap, heap->shadow))
+	{
+		index_delete_by(index, op->row);
+		for (index = index->next; index; index = index->next)
+			index_delete_by(index, op->row);
+
+		row_free(heap, op->row);
 	}
 }
 
 static void
 log_if_abort(Log* self, LogOp* op)
 {
-	auto row = log_if_rollback(self, op);
+	unused(self);
+	auto row = rollback(op);
 	if (op->cmd != CMD_DELETE && row)
 	{
 		auto index = (Index*)op->iface_arg;
@@ -66,7 +82,8 @@ log_if_secondary_commit(Log* self, LogOp* op)
 static void
 log_if_secondary_abort(Log* self, LogOp* op)
 {
-	log_if_rollback(self, op);
+	unused(self);
+	rollback(op);
 }
 
 static LogIf log_if =
@@ -81,20 +98,6 @@ static LogIf log_if_secondary =
 	.abort  = log_if_secondary_abort
 };
 
-static inline void
-part_sync_sequence(Part* self, Row* row, Columns* columns)
-{
-	// use first identity column to sync the sequence
-	if (! columns->identity)
-		return;
-	int64_t value;
-	if (columns->identity->type_size == 4)
-		value = *(int32_t*)row_column(row, columns->identity);
-	else
-		value = *(int64_t*)row_column(row, columns->identity);
-	sequence_sync(self->arg->seq, value);
-}
-
 hot void
 part_insert(Part*   self, Tr* tr, bool replace,
             Branch* branch,
@@ -108,10 +111,17 @@ part_insert(Part*   self, Tr* tr, bool replace,
 
 	// update primary index
 	op->row_prev = index_replace_by(primary, row);
-	if (unlikely(op->row_prev && !replace))
-		error("index '%.*s': unique key constraint violation",
-		      str_size(&primary->config->name),
-		      str_of(&primary->config->name));
+	if (op->row_prev)
+	{
+		// check unique constraint
+		if (!replace && row_visible(op->row_prev, self->heap, branch))
+			error("index '%.*s': unique key constraint violation",
+			      str_size(&primary->config->name),
+			      str_of(&primary->config->name));
+
+		// chain head row
+		row_prev_set(row, op->row_prev);
+	}
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
@@ -120,14 +130,15 @@ part_insert(Part*   self, Tr* tr, bool replace,
 		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, branch);
 		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev && !replace))
-			error("index '%.*s': unique key constraint violation",
-			      str_size(&index->config->name),
-			      str_of(&index->config->name));
+			if (row_visible(op->row_prev, self->heap, branch))
+				error("index '%.*s': unique key constraint violation",
+				      str_size(&index->config->name),
+				      str_of(&index->config->name));
 	}
 
 	// sync last identity column value during recover
 	if (replace)
-		part_sync_sequence(self, row, index_keys(primary)->columns);
+		part_follow(self, row, index_keys(primary)->columns);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -158,10 +169,12 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 		// add log record (not persisted)
 		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, branch);
 		op->row_prev = index_replace_by(index, row);
+
 		if (unlikely(op->row_prev))
-			error("index '%.*s': unique key constraint violation",
-			      str_size(&index->config->name),
-			      str_of(&index->config->name));
+			if (row_visible(op->row_prev, self->heap, branch))
+				error("index '%.*s': unique key constraint violation",
+				      str_size(&index->config->name),
+				      str_of(&index->config->name));
 	}
 
 	// ensure transaction log limit
@@ -182,6 +195,9 @@ part_update(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
+
+	// chain head row
+	row_prev_set(row, op->row_prev);
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
@@ -204,18 +220,23 @@ part_update(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 hot void
 part_delete(Part* self, Tr* tr, Iterator* it, Branch* branch)
 {
-#if 0
-	// handle deletes as updates for non in-memory partitions and
-	// during compaction
-	if (heap_snapshot_has(self->heap))
+	// handle delete as update to support branching
+	if (self->arg->config->branches.list_count > 1)
 	{
 		auto row = iterator_at(it);
-		auto row_delete = row_copy(self->heap->shadow, row);
+		row = row_visible(row, self->heap, branch);
+		if (! row)
+			return;
+
+		// todo: copy key
+		auto row_delete = row_copy(self->heap, row);
 		row_delete->is_delete = true;
-		part_update(self, tr, it, row_delete);
+		row_delete->tsn       = tr->id;
+		row_delete->branch    = branch->id;
+
+		part_update(self, tr, it, branch, row_delete);
 		return;
 	}
-#endif
 
 	// add log record
 	auto primary = part_primary(self);
@@ -255,28 +276,108 @@ part_delete_by(Part* self, Tr* tr, Branch* branch, Row* row)
 	part_delete(self, tr, it, branch);
 }
 
-hot Row*
-part_apply(Part* self, Row* row, bool delete)
+void
+part_follow(Part* self, Row* row, Columns* columns)
 {
-	auto primary = part_primary(self);
-
-	// sync last identity column value during recover
-	part_sync_sequence(self, row, index_keys(primary)->columns);
-
-	// update primary index
-	Row* prev;
-	if (delete)
-		prev = index_delete_by(primary, row);
+	// use first identity column to sync the sequence
+	if (! columns->identity)
+		return;
+	int64_t value;
+	if (columns->identity->type_size == 4)
+		value = *(int32_t*)row_column(row, columns->identity);
 	else
-		prev = index_replace_by(primary, row);
+		value = *(int64_t*)row_column(row, columns->identity);
+	sequence_sync(self->arg->seq, value);
+}
 
-	// update secondary indexes
-	for (auto index = primary->next; index; index = index->next)
+hot bool
+part_apply(Part* self, Index* secondary)
+{
+	// complete heap snapshot, copy new rows to the main heap,
+	// update indexes and row chains
+
+	// snapshot complete
+	heap_snapshot(self->heap, NULL, false);
+
+	// create primary index iterator for upsert
+	auto primary   = part_primary(self);
+	auto it_upsert = index_iterator(primary);
+
+	// create secondaryindex iterator for upsert
+	bool pass = true;
+	Iterator* it_upsert_secondary = NULL;
+	if (secondary)
+		it_upsert_secondary = index_iterator(secondary);
+
+	// apply shadow updates
+	HeapIterator it;
+	heap_iterator_init(&it);
+	heap_iterator_open(&it, self->heap_shadow, NULL);
+	for (; heap_iterator_has(&it); heap_iterator_next(&it))
 	{
-		if (delete)
-			index_delete_by(index, row);
-		else
-			index_replace_by(index, row);
+		auto chunk = heap_iterator_at_chunk(&it);
+		if (chunk->is_shadow_free)
+		{
+			// delayed heap removal
+			row_free(self->heap, *(Row**)chunk->data);
+			continue;
+		}
+
+		// copy row
+		auto row  = heap_iterator_at(&it);
+		auto copy = row_copy(self->heap, row);
+
+		// get index head
+		index_upsert(primary, copy, it_upsert);
+
+		// row is head
+		auto head = iterator_at(it_upsert);
+		assert(head);
+		if (row == head)
+		{
+			// update indexes to set the copy
+			index_replace(primary, copy, it_upsert);
+			for (auto index = primary->next; index; index = index->next)
+				index_replace_by(index, copy);
+		} else
+		{
+			// find prev of the row
+			while (head)
+			{
+				auto prev = row_prev(head, self->heap, self->heap_shadow);
+				if (prev == row)
+					break;
+				head = prev;
+			}
+
+			// set prev->next = copy
+			assert(head);
+			row_prev_set(head, copy);
+		}
+
+		// set copy->prev = row->prev
+		auto prev = row_prev(row, self->heap, self->heap_shadow);
+		if (prev)
+			row_prev_set(copy, prev);
+
+		// update new secondary index
+		if (secondary)
+		{
+			// get index head
+			if (! index_upsert(secondary, copy, it_upsert_secondary))
+				continue;
+			// check unique constraint violation
+			auto head = iterator_at(it_upsert_secondary);
+			if (row_unique(head, self->heap, self->heap_shadow))
+			{
+				pass = false;
+				break;
+			}
+		}
 	}
-	return prev;
+
+	iterator_close(it_upsert);
+	if (it_upsert_secondary)
+		iterator_close(it_upsert_secondary);
+	return pass;
 }

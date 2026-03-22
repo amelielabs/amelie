@@ -730,7 +730,8 @@ show tables extended;
       "name": "main",
       "id": 0,
       "id_parent": 0,
-      "snapshot": 0
+      "snapshot": 0,
+      "snapshot_max": 0
     }],
     "volumes": [{
       "name": "x",
