@@ -64,6 +64,7 @@ struct HeapHeader
 	uint32_t   version;
 	uint64_t   lsn;
 	uint64_t   tsn;
+	uint32_t   bsn;
 	uint16_t   hash_min;
 	uint16_t   hash_max;
 	uint8_t    compression;
@@ -109,10 +110,12 @@ void  heap_remove(Heap*, void*);
 void  heap_snapshot(Heap*, Heap*, bool);
 
 static inline void
-heap_follow(Heap* self, uint64_t tsn)
+heap_follow(Heap* self, uint64_t tsn, uint32_t branch)
 {
 	if (self->shadow)
 		self = self->shadow;
 	if (tsn > self->header->tsn)
 		self->header->tsn = tsn;
+	if (branch > self->header->bsn)
+		self->header->bsn = branch;
 }

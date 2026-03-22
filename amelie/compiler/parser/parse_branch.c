@@ -44,21 +44,28 @@ parse_branch_create(Stmt* self)
 	if (! table)
 		stmt_error(self, target, "table not found");
 
-	// get max branch id
+	// calculate branch id
+	uint32_t id = 0;
 	auto branches = &table->config->partitioning.branches;
-	auto max = 0;
 	list_foreach(&branches->list)
 	{
 		auto branch = list_at(Branch, link);
-		if (branch->id > max)
-			max = branch->id;
+		if (branch->id > id)
+			id = branch->id;
 	}
+	list_foreach(&table->part_mgr.list)
+	{
+		auto part = list_at(Part, link);
+		if (part->heap->header->bsn > id)
+			id = part->heap->header->bsn;
+	}
+	id++;
 
 	// create branch config
 	auto config = branch_allocate();
 	stmt->config = config;
 	branch_set_name(config, &name->string);
-	branch_set_id(config, max + 1);
+	branch_set_id(config, id);
 	branch_set_id_parent(config, 0);
 	branch_set_snapshot(config, state_tsn());
 

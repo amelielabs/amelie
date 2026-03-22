@@ -123,7 +123,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			auto row = (Row*)(*pos);
 			if (!branch || branch->id != row->branch)
 				branch = table_branch_find_by(table, row->branch, true);
-			heap_follow(part->heap, row->tsn);
+			heap_follow(part->heap, row->tsn, row->branch);
 			part_delete_by(part, tr, branch, row);
 			*pos += row_size(row);
 		}

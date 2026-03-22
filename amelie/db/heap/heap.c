@@ -49,6 +49,7 @@ heap_prepare(Heap* self)
 	header->version         = 0;
 	header->lsn             = 0;
 	header->tsn             = 0;
+	header->bsn             = 0;
 	header->hash_min        = 0;
 	header->hash_max        = 0;
 	header->compression     = COMPRESSION_NONE;

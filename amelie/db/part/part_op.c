@@ -323,7 +323,7 @@ part_apply(Part* self, Index* secondary)
 			continue;
 		}
 
-		// copy row
+		// copy row (also updates tsn/bsn on the heap)
 		auto row  = heap_iterator_at(&it);
 		auto copy = row_copy(self->heap, row);
 
