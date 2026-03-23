@@ -59,10 +59,7 @@ relay_connect(Relay* self, Str* uri)
 	// parse uri and configure endpoint
 	uri_parse(endpoint, uri);
 
-	// set missing defaults
-	if (opt_string_empty(&endpoint->user))
-		opt_string_set_raw(&endpoint->user, "main", 4);
-
+	// set defaults
 	if (opt_string_empty(&endpoint->content_type))
 		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
 

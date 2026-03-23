@@ -75,7 +75,7 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 	auto token = &endpoint->token.string;
 	auto token_allow_empty = opt_int_of(&endpoint->auth);
 	auto user = auth(&self->frontend->auth, token, token_allow_empty);
-	endpoint->user.string = user->config->name;
+	str_set_str(&endpoint->user.string, &user->config->name);
 
 	// set timezone / format
 	auto local = &self->local;

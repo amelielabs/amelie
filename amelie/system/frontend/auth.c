@@ -94,12 +94,12 @@ auth_run(Auth* self, Str* token)
 }
 
 hot static inline User*
-auth_main(Auth* self, Str* token, bool token_allow_empty)
+auth_main(Auth* self, Str* token, bool token_required)
 {
 	User* user;
 	if (str_empty(token))
 	{
-		if (! token_allow_empty)
+		if (token_required)
 			error("auth: authentication token is missing");
 
 		// trusted by the server listen configuration
@@ -114,12 +114,12 @@ auth_main(Auth* self, Str* token, bool token_allow_empty)
 }
 
 hot User*
-auth(Auth* self, Str* token, bool token_allow_empty)
+auth(Auth* self, Str* token, bool token_required)
 {
 	User* user = NULL;
 	auto on_error = error_catch
 	(
-		user = auth_main(self, token, token_allow_empty)
+		user = auth_main(self, token, token_required)
 	);
 	if (on_error)
 	{

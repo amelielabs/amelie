@@ -18,7 +18,7 @@ user_op_create(Buf* self, UserConfig* config)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_USER_CREATE);
-	user_config_write(config, self, 0);
+	user_config_write(config, self, FSECRETS);
 	encode_array_end(self);
 	return offset;
 }

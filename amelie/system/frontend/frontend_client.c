@@ -27,7 +27,6 @@ frontend_client_primary_on_write(Primary* self, Buf* data)
 static void
 frontend_client_primary(Frontend* self, Client* client, void* session)
 {
-
 	Recover recover;
 	recover_init(&recover, share()->db, true);
 	defer(recover_free, &recover);
@@ -68,7 +67,7 @@ frontend_endpoint(Client* client, Output* output)
 	// set token
 	auto auth = http_find(request, "Authorization", 13);
 	if (auth)
-		endpoint->token.string = auth->value;
+		str_set_str(&endpoint->token.string, &auth->value);
 
 	// if client auth required
 	opt_int_set(&endpoint->auth, client->auth);
