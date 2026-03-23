@@ -11,8 +11,7 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_user.h>
-#include <amelie_auth.h>
+#include <amelie_jwt.h>
 
 Buf*
 jwt_create(Str* user, Str* secret, Timestamp* expire)

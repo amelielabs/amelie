@@ -11,7 +11,6 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_user.h>
 #include <amelie_http.h>
 #include <amelie_client.h>
 #include <amelie_server.h>

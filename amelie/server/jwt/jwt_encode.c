@@ -11,8 +11,7 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_user.h>
-#include <amelie_auth.h>
+#include <amelie_jwt.h>
 
 #include <openssl/hmac.h>
 #include <openssl/evp.h>

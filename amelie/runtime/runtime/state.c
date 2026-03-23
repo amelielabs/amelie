@@ -48,7 +48,6 @@ state_prepare(State* self)
 		{ "repl",            OPT_BOOL,   OPT_C, &self->repl,            0,          false   },
 		{ "repl_primary",    OPT_STRING, OPT_C, &self->repl_primary,    NULL,       0       },
 		{ "replicas",        OPT_JSON,   OPT_C, &self->replicas,        NULL,       0       },
-		{ "users",           OPT_JSON,   OPT_C, &self->users,           NULL,       0       },
 		// stats
 		{ "connections",     OPT_INT,    OPT_E, &self->connections,     NULL,       0       },
 		{ "sent_bytes",      OPT_INT,    OPT_E, &self->sent_bytes,      NULL,       0       },

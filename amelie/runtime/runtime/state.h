@@ -29,7 +29,6 @@ struct State
 	Opt  repl;
 	Opt  repl_primary;
 	Opt  replicas;
-	Opt  users;
 	// stats
 	Opt  connections;
 	Opt  sent_bytes;
