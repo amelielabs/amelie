@@ -65,6 +65,14 @@ frontend_endpoint(Client* client, Output* output)
 	else
 		str_set(&endpoint->accept.string, "application/json", 16);
 
+	// set token
+	auto auth = http_find(request, "Authorization", 13);
+	if (auth)
+		endpoint->token.string = auth->value;
+
+	// if client auth required
+	opt_int_set(&endpoint->auth, client->auth);
+
 	// parse uri endpoint
 	return error_catch
 	(

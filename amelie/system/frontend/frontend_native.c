@@ -69,6 +69,8 @@ relay_connect(Relay* self, Str* uri)
 	if (opt_string_empty(&endpoint->accept))
 		opt_string_set_raw(&endpoint->accept, "application/json", 16);
 
+	opt_int_set(&endpoint->auth, true);
+
 	// configure output
 	output_reset(&self->output);
 	output_set(&self->output, &self->endpoint);

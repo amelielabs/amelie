@@ -93,12 +93,38 @@ auth_run(Auth* self, Str* token)
 	return user;
 }
 
+hot static inline User*
+auth_main(Auth* self, Str* token, bool token_allow_empty)
+{
+	User* user;
+	if (str_empty(token))
+	{
+		if (! token_allow_empty)
+			error("auth: authentication token is missing");
+
+		// trusted by the server listen configuration
+		Str main;
+		str_set(&main, "main", 4);
+		user = user_mgr_find(&share()->db->catalog.user_mgr, &main, true);
+	} else
+	{
+		user = auth_run(self, token);
+	}
+	return user;
+}
+
 hot User*
-auth(Auth* self, Str* token)
+auth(Auth* self, Str* token, bool token_allow_empty)
 {
 	User* user = NULL;
-	error_catch(
-		user = auth_run(self, token)
+	auto on_error = error_catch
+	(
+		user = auth_main(self, token, token_allow_empty)
 	);
+	if (on_error)
+	{
+		am_self()->error.code = ERROR_AUTH;
+		rethrow();
+	}
 	return user;
 }

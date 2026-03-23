@@ -17,6 +17,7 @@ enum
 {
 	ERROR_NONE,
 	ERROR,
+	ERROR_AUTH,
 	CANCEL
 };
 

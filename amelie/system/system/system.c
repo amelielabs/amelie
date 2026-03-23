@@ -28,7 +28,7 @@ catalog_if_udf_compile(Catalog* self, Udf* udf)
 
 	Local local;
 	local_init(&local);
-	local.db = udf->config->db;
+	local.user = udf->config->user;
 	local_update_time(&local);
 
 	auto program = program_allocate();
@@ -77,7 +77,7 @@ catalog_if_udf_depends(Udf* udf, Str* name)
 {
 	Program* program = udf->data;
 	assert(program);
-	if (access_find(&program->access, &udf->config->db, name))
+	if (access_find(&program->access, &udf->config->user, name))
 		return true;
 	return false;
 }
@@ -94,7 +94,7 @@ frontend_if_session_create(Frontend* self, void* arg)
 {
 	unused(self);
 	unused(arg);
-	return session_create();
+	return session_create(self);
 }
 
 static void
@@ -103,7 +103,7 @@ frontend_if_session_free(void* ptr)
 	return session_free(ptr);
 }
 
-static bool
+static SessionStatus
 frontend_if_session_execute(void*     ptr,
                             Endpoint* endpoint,
                             Str*      content,
@@ -184,14 +184,12 @@ system_create(void)
 	share->commit       = &self->commit;
 	share->repl         = &self->repl;
 	share->function_mgr = &self->function_mgr;
-	share->user_mgr     = &self->user_mgr;
 	share->db           = &self->db;
 
 	// share shared context globally
 	am_share = share;
 
 	// server
-	user_mgr_init(&self->user_mgr);
 	server_init(&self->server);
 
 	// frontend/backend mgr
@@ -220,7 +218,6 @@ system_free(System* self)
 	db_free(&self->db);
 	function_mgr_free(&self->function_mgr);
 	server_free(&self->server);
-	user_mgr_free(&self->user_mgr);
 	am_free(self);
 }
 
@@ -261,8 +258,7 @@ system_start(System* self, bool bootstrap)
 
 		// start frontends to handle relay clients
 		auto workers = opt_int_of(&config()->frontends);
-		frontend_mgr_start(&self->frontend_mgr,
-		                   &frontend_if,
+		frontend_mgr_start(&self->frontend_mgr, &frontend_if,
 		                   self,
 		                   workers);
 		return;
@@ -270,9 +266,6 @@ system_start(System* self, bool bootstrap)
 
 	// register builtin functions
 	fn_register(&self->function_mgr);
-
-	// open user manager
-	user_mgr_open(&self->user_mgr);
 
 	// start backend workers
 	auto workers = opt_int_of(&config()->backends);
@@ -292,13 +285,9 @@ system_start(System* self, bool bootstrap)
 
 	// start frontends
 	workers = opt_int_of(&config()->frontends);
-	frontend_mgr_start(&self->frontend_mgr,
-	                   &frontend_if,
+	frontend_mgr_start(&self->frontend_mgr, &frontend_if,
 	                   self,
 	                   workers);
-
-	// synchronize caches
-	frontend_mgr_sync_users(&self->frontend_mgr, &self->user_mgr.cache);
 
 	// prepare replication manager
 	repl_open(&self->repl);
@@ -348,12 +337,6 @@ system_rpc(Rpc* rpc, void* arg)
 	{
 		Buf** buf = rpc->arg;
 		*buf = system_metrics(self);
-		break;
-	}
-	case MSG_SYNC_USERS:
-	{
-		UserCache* cache = rpc->arg;
-		frontend_mgr_sync_users(&self->frontend_mgr, cache);
 		break;
 	}
 	default:

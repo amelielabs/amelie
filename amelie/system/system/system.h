@@ -29,7 +29,6 @@ struct System
 	Db          db;
 	// server
 	Server      server;
-	UserMgr     user_mgr;
 	// runtime control
 	RuntimeIf   runtime_if;
 };

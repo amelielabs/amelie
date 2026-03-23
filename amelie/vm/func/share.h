@@ -19,7 +19,6 @@ struct Share
 	Commit*      commit;
 	Repl*        repl;
 	FunctionMgr* function_mgr;
-	UserMgr*     user_mgr;
 	Db*          db;
 };
 

@@ -21,11 +21,12 @@
 #include <amelie_session.h>
 
 Session*
-session_create(void)
+session_create(Frontend* frontend)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
-	self->program = program_allocate();
-	self->lock = NULL;
+	self->program  = program_allocate();
+	self->lock     = NULL;
+	self->frontend = frontend;
 	local_init(&self->local);
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
@@ -67,22 +68,23 @@ session_free(Session *self)
 	am_free(self);
 }
 
-static void
-session_set(Session* self, Endpoint* endpoint, Output* output)
+hot static inline void
+session_auth(Session* self, Endpoint* endpoint, Output* output)
 {
+	// authenticate request
+	auto token = &endpoint->token.string;
+	auto token_allow_empty = opt_int_of(&endpoint->auth);
+	auto user = auth(&self->frontend->auth, token, token_allow_empty);
+	endpoint->user.string = user->config->name;
+
 	// set timezone / format
 	auto local = &self->local;
 	local->timezone = output->timezone;
 	local->format   = output->format;
-	local->db       = endpoint->db.string;
+	local->user     = endpoint->user.string;
 
 	// update transaction time
 	local_update_time(local);
-
-	// validate database
-	if (str_empty(&local->db))
-		error("database is not defined");
-	database_mgr_find(&share()->db->catalog.db_mgr, &local->db, true);
 }
 
 hot static inline void
@@ -262,11 +264,8 @@ session_endpoint(Session*  self,
                  Str*      content,
                  Output*   output)
 {
-	// POST /v1/db/<db>
-	// POST /v1/db/<db>/<relation>
-	auto db = &endpoint->db.string;
-	if (unlikely(str_empty(db)))
-		error("database is not specified");
+	// POST /v1/db
+	// POST /v1/db/<relation>
 
 	// parse request
 	auto compiler = &self->compiler;
@@ -314,12 +313,13 @@ session_endpoint(Session*  self,
 		session_execute_distributed(self, output);
 }
 
-hot bool
+hot SessionStatus
 session_execute(Session*  self,
                 Endpoint* endpoint,
                 Str*      content,
                 Output*   output)
 {
+	SessionStatus status = SESSION_OK;
 	cancel_pause();
 
 	// execute request based on the content-type
@@ -331,8 +331,8 @@ session_execute(Session*  self,
 		// take shared catalog lock
 		self->lock = lock_system(REL_CATALOG, LOCK_SHARED);
 
-		// set local settings
-		session_set(self, endpoint, output);
+		// authenticate and set session local settings
+		session_auth(self, endpoint, output);
 
 		// parse and execute request
 		session_endpoint(self, endpoint, content, output);
@@ -343,6 +343,11 @@ session_execute(Session*  self,
 
 	if (on_error)
 	{
+		auto error = &am_self()->error;
+		if (error->code == ERROR_AUTH)
+			status = SESSION_ERROR_AUTH;
+		else
+			status = SESSION_ERROR;
 		buf_reset(output->buf);
 		output_write_error(output, &am_self()->error);
 		unlock_all();
@@ -352,5 +357,5 @@ session_execute(Session*  self,
 
 	// cancellation point
 	cancel_resume();
-	return on_error;
+	return status;
 }
