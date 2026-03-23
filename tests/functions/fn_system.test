@@ -11,12 +11,6 @@ select show('all');
 # test: state
 select show('state');
 
-# test: users
-select show('users');
-
-# test: user
-select show('user', 'test');
-
 # test: replicas
 select show('replicas');
 
@@ -30,17 +24,17 @@ select show('repl');
 # test: replication
 select show('replication');
 
+# test: users
+select show('users');
+
+# test: user
+select show('user', 'test');
+
 # test: storages
 select show('storages');
 
 # test: storage
 select show('storage', 'main');
-
-# test: databases
-select show('databases');
-
-# test: database
-select show('database', 'main');
 
 create table test (id int primary key);
 

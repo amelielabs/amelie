@@ -47,15 +47,14 @@ directory system
 group system
 test bootstrap
 test show
-test user
 test watch
 test lock
 
 # ddl
 directory ddl
 group ddl
+test user
 test storage
-test database
 test table_create
 test table_drop
 test table_alter

@@ -552,9 +552,9 @@ select * from test2;
 {"msg": "select * from ❰test2❱ ⟵ relation not found"}
 show tables;
 []
-# test: create database
-create database test;
-show databases;
+# test: create user
+create user test;
+show users;
 [{
   "name": "main"
 }, {
@@ -570,15 +570,15 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 [20]
-show databases;
+show users;
 [{
   "name": "main"
 }, {
   "name": "test"
 }]
-# test: alter database rename
-alter database test rename to test2;
-show databases;
+# test: alter user rename
+alter user test rename to test2;
+show users;
 [{
   "name": "main"
 }, {
@@ -594,17 +594,17 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 [21]
-show databases;
+show users;
 [{
   "name": "main"
 }, {
   "name": "test2"
 }]
-# test: drop database
-drop database test2;
+# test: drop user
+drop user test2;
 select show('state').lsn;
 [22]
-show databases;
+show users;
 [{
   "name": "main"
 }]
@@ -616,7 +616,7 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 [22]
-show databases;
+show users;
 [{
   "name": "main"
 }]
@@ -633,7 +633,7 @@ select show('state').lsn;
 [23]
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -658,7 +658,7 @@ select show('state').lsn;
 [23]
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -697,7 +697,7 @@ select show('state').lsn;
 [24]
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -722,7 +722,7 @@ select show('state').lsn;
 [24]
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -741,7 +741,7 @@ select [1,2,3]::reverse;
 alter function reverse rename to reverse2;
 show functions;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse2"
 }]
 select show('state').lsn;
@@ -758,7 +758,7 @@ select show('state').lsn;
 [25]
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse2",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,

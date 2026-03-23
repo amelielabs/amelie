@@ -485,7 +485,7 @@ create function test() return json
 begin
 	declare list json := [];
 	for it in (show('tables')) do
-		list := list::append([it.db, it.name]);
+		list := list::append([it.user, it.name]);
 	end;
 	return list;
 end;
@@ -493,13 +493,13 @@ explain select test();
 select test();
 drop function test;
 
-select `db`, name from show('tables');
+select `user`, name from show('tables');
 
 create function test() return json
 begin
 	declare list json := [];
 	for it in (show('tables')) do
-		list := list::append({"schema": it.db, "name": it.name});
+		list := list::append({"schema": it.user, "name": it.name});
 	end;
 	return list;
 end;
@@ -509,7 +509,7 @@ drop function test;
 
 select
 [] -> self::append ({
-	"schema": it.db,
+	"user": it.user,
 	"name": it.name
 })
 from
@@ -519,7 +519,7 @@ create function test() return json
 begin
 	declare list json;
 	select
-		[] -> self::append({"schema": it.db, "name": it.name})
+		[] -> self::append({"schema": it.user, "name": it.name})
 	into
 		list from show('tables') as it;
 	return list;
@@ -531,7 +531,7 @@ drop function test;
 create function test() return json
 begin
 	declare list json;
-	select [] -> append(self, {"schema": it.db, "name": it.name})
+	select [] -> append(self, {"schema": it.user, "name": it.name})
 	  into list
 	  from show('tables') as it;
 	return list;

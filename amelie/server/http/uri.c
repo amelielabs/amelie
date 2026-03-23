@@ -165,7 +165,10 @@ uri_parse_path_next(Uri* self, Str* value)
 static inline void
 uri_parse_path(Uri* self)
 {
-	if (!*self->pos || *self->pos == '?' || *self->pos == '/')
+	if (*self->pos == '/')
+		self->pos++;
+
+	if (!*self->pos || *self->pos == '?')
 		return;
 
 	// relation

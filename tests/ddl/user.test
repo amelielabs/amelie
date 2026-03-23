@@ -3,78 +3,78 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-# test: ensure system databases exists
-show databases;
+# test: ensure system users exists
+show users;
 
-# test: create database statement parsing
+# test: create user statement parsing
 create;
-create database;
-create database 123;
-create database if;
-create database if not;
-create database if not 123;
-create database if not exists;
-create database test abc;
+create user;
+create user 123;
+create user if;
+create user if not;
+create user if not 123;
+create user if not exists;
+create user test abc;
 
-# test: create database
-create database test;
+# test: create user
+create user test;
 
-show databases;
-select show('databases');
+show users;
+select show('users');
 
-# test: create database if not exists
-create database test;
-create database if not exists test;
-show databases;
+# test: create user if not exists
+create user test;
+create user if not exists test;
+show users;
 
-# test: drop database statement parsing
-drop database;
-drop database 123;
-drop database if;
-drop database if exists;
-drop database test abc;
+# test: drop user statement parsing
+drop user;
+drop user 123;
+drop user if;
+drop user if exists;
+drop user test abc;
 
-# test: drop database
-drop database test;
-show databases;
+# test: drop user
+drop user test;
+show users;
 
-# test: drop database if exists
-drop database test;
-drop database if exists test;
-show databases;
+# test: drop user if exists
+drop user test;
+drop user if exists test;
+show users;
 
-# test: drop main database
-drop database main;
-show databases;
+# test: drop main user
+drop user main;
+show users;
 
-# test: drop database cascade
-create database test;
-drop database test cascade;
-show databases;
+# test: drop user cascade
+create user test;
+drop user test cascade;
+show users;
 
-# test: drop connected database
-create database test;
-show databases;
+# test: drop connected user
+create user test;
+show users;
 
-connect E0 S1 127.0.0.1:3485/test;
+connect E0 S1 test@127.0.0.1:3485;
 switch S1;
-drop database test;
+drop user test;
 select 1;
 
 disconnect S1;
 switch S0;
 
-# test: drop database cascade (with relations)
-create database test;
-connect E0 S1 127.0.0.1:3485/test;
+# test: drop user cascade (with relations)
+create user test;
+connect E0 S1 test@127.0.0.1:3485;
 switch S1;
 
 create table a(id int primary key);
 create table b(id int primary key);
 create function fn() begin select * from a; end;
 
-drop database test;
-drop database test cascade;
+drop user test;
+drop user test cascade;
 select 1;
 
 disconnect S1;
@@ -82,30 +82,30 @@ switch S0;
 
 show tables;
 show functions;
-show databases;
+show users;
 
-# test: alter database statment parsing
-alter database;
-alter database 123;
-alter database test;
-alter database test rename;
-alter database test rename to;
-alter database test rename "hello";
+# test: alter user statment parsing
+alter user;
+alter user 123;
+alter user test;
+alter user test rename;
+alter user test rename to;
+alter user test rename "hello";
 
-# test: alter database rename
-create database test;
-show databases;
+# test: alter user rename
+create user test;
+show users;
 
-alter database test rename to test2;
-show databases;
-drop database test2;
+alter user test rename to test2;
+show users;
+drop user test2;
 
-# test: alter database main
-alter database main rename to _public;
+# test: alter user main
+alter user main rename to _public;
 
-# test: alter database rename cascade (udf dep)
-create database test;
-connect E0 S1 127.0.0.1:3485/test;
+# test: alter user rename cascade (udf dep)
+create user test;
+connect E0 S1 test@127.0.0.1:3485;
 switch S1;
 
 create table a(id int primary key);
@@ -121,30 +121,30 @@ end;
 select fn();
 
 # error
-alter database test rename to test2;
+alter user test rename to test2;
 drop function fn;
 
-# test: alter database rename cascade
-alter database test rename to test2;
+# test: alter user rename cascade
+alter user test rename to test2;
 select 1;
 
 disconnect S1;
-connect E0 S1 127.0.0.1:3485/test2;
+connect E0 S1 test2@127.0.0.1:3485;
 switch S1;
 
 show tables;
 show functions;
-show databases;
+show users;
 
 disconnect S1;
 switch S0;
 
 show tables;
 show functions;
-show databases;
+show users;
 
-drop database test2;
-drop database test2 cascade;
+drop user test2;
+drop user test2 cascade;
 
 disconnect S0;
 close E0;

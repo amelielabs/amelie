@@ -142,12 +142,6 @@ select show('state');
   "catalog_pending": 0,
   "read_only": false
 }]
-# test: users
-select show('users');
-[[]]
-# test: user
-select show('user', 'test');
-[null]
 # test: replicas
 select show('replicas');
 [[]]
@@ -172,6 +166,14 @@ select show('replication');
   "primary": null,
   "replicas": []
 }]
+# test: users
+select show('users');
+[[{
+  "name": "main"
+}]]
+# test: user
+select show('user', 'test');
+[null]
 # test: storages
 select show('storages');
 [[{
@@ -188,27 +190,17 @@ select show('storage', 'main');
   "compression": "zstd",
   "compression_level": 0
 }]
-# test: databases
-select show('databases');
-[[{
-  "name": "main"
-}]]
-# test: database
-select show('database', 'main');
-[{
-  "name": "main"
-}]
 create table test (id int primary key);
 # test: tables
 select show('tables');
 [[{
-  "db": "main",
+  "user": "main",
   "name": "test"
 }]]
 # test: table
 select show('table', 'test');
 [{
-  "db": "main",
+  "user": "main",
   "name": "test"
 }]
 # test: indexes
@@ -264,7 +256,7 @@ select show('wal');
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 410,
+  "writes_bytes": 412,
   "ops": 1
 }]
 # test: metrics

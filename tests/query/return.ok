@@ -1464,7 +1464,7 @@ create function test() return json
 begin
 	declare list json := [];
 	for it in (show('tables')) do
-		list := list::append([it.db, it.name]);
+		list := list::append([it.user, it.name]);
 	end;
 	return list;
 end;
@@ -1486,11 +1486,11 @@ explain select test();
       "05": "call                0      -      1     # show()",
       "06": "json_open           1      0      22    ",
       "07": "push_var            0      0      0     ",
-      "08": "string              2      9      0     # db",
+      "08": "string              2      9      0     # user",
       "09": "json_read           3      1      0     ",
       "10": "dotjs               4      3      2     ",
       "11": "push                4      0      0     ",
-      "12": "string              2      12     0     # name",
+      "12": "string              2      14     0     # name",
       "13": "json_read           3      1      0     ",
       "14": "dotjs               4      3      2     ",
       "15": "push                4      0      0     ",
@@ -1510,13 +1510,13 @@ explain select test();
 select test();
 [[["main", "src"]]]
 drop function test;
-select `db`, name from show('tables');
+select `user`, name from show('tables');
 [["main", "src"]]
 create function test() return json
 begin
 	declare list json := [];
 	for it in (show('tables')) do
-		list := list::append({"schema": it.db, "name": it.name});
+		list := list::append({"schema": it.user, "name": it.name});
 	end;
 	return list;
 end;
@@ -1539,12 +1539,12 @@ explain select test();
       "06": "json_open           1      0      24    ",
       "07": "push_var            0      0      0     ",
       "08": "push_string         9      0      0     # schema",
-      "09": "string              2      16     0     # db",
+      "09": "string              2      16     0     # user",
       "10": "json_read           3      1      0     ",
       "11": "dotjs               4      3      2     ",
       "12": "push                4      0      0     ",
-      "13": "push_string         19     0      0     # name",
-      "14": "string              2      24     0     # name",
+      "13": "push_string         21     0      0     # name",
+      "14": "string              2      26     0     # name",
       "15": "json_read           3      1      0     ",
       "16": "dotjs               4      3      2     ",
       "17": "push                4      0      0     ",
@@ -1569,20 +1569,20 @@ select test();
 drop function test;
 select
 [] -> self::append ({
-	"schema": it.db,
+	"user": it.user,
 	"name": it.name
 })
 from
 	show('tables') as it;
 [[{
-  "schema": "main",
+  "user": "main",
   "name": "src"
 }]]
 create function test() return json
 begin
 	declare list json;
 	select
-		[] -> self::append({"schema": it.db, "name": it.name})
+		[] -> self::append({"schema": it.user, "name": it.name})
 	into
 		list from show('tables') as it;
 	return list;
@@ -1608,12 +1608,12 @@ explain select test();
       "08": "self                5      0      4     ",
       "09": "push                5      0      0     ",
       "10": "push_string         17     0      0     # schema",
-      "11": "string              5      24     0     # db",
+      "11": "string              5      24     0     # user",
       "12": "json_read           6      3      0     ",
       "13": "dotjs               7      6      5     ",
       "14": "push                7      0      0     ",
-      "15": "push_string         27     0      0     # name",
-      "16": "string              5      32     0     # name",
+      "15": "push_string         29     0      0     # name",
+      "16": "string              5      34     0     # name",
       "17": "json_read           6      3      0     ",
       "18": "dotjs               7      6      5     ",
       "19": "push                7      0      0     ",
@@ -1655,7 +1655,7 @@ drop function test;
 create function test() return json
 begin
 	declare list json;
-	select [] -> append(self, {"schema": it.db, "name": it.name})
+	select [] -> append(self, {"schema": it.user, "name": it.name})
 	  into list
 	  from show('tables') as it;
 	return list;
@@ -1681,12 +1681,12 @@ explain select test();
       "08": "self                5      0      4     ",
       "09": "push                5      0      0     ",
       "10": "push_string         17     0      0     # schema",
-      "11": "string              5      24     0     # db",
+      "11": "string              5      24     0     # user",
       "12": "json_read           6      3      0     ",
       "13": "dotjs               7      6      5     ",
       "14": "push                7      0      0     ",
-      "15": "push_string         27     0      0     # name",
-      "16": "string              5      32     0     # name",
+      "15": "push_string         29     0      0     # name",
+      "16": "string              5      34     0     # name",
       "17": "json_read           6      3      0     ",
       "18": "dotjs               7      6      5     ",
       "19": "push                7      0      0     ",

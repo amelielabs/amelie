@@ -31,7 +31,7 @@ create function test (x int) 1;
 create function test () begin end;
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test",
   "text": "begin end",
   "type": 0,
@@ -290,7 +290,7 @@ begin
 end;
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test",
   "text": "begin\nend",
   "type": 13,
@@ -576,7 +576,7 @@ begin
 end;
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test",
   "text": "begin\n\tdeclare total int := 0;\n\tdeclare i int := 0;\n\twhile i < x do\n\t\ttotal := total + i;\n\t\ti := i + 1;\n\tend;\n\treturn total;\nend",
   "type": 2,
@@ -589,7 +589,7 @@ show functions extended;
   }],
   "returning": []
 }, {
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -669,7 +669,7 @@ begin
 end;
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test",
   "text": "begin\n\treturn 123;\nend",
   "type": 2,
@@ -685,7 +685,7 @@ begin
 end;
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test",
   "text": "begin\n\treturn 321;\nend",
   "type": 2,
@@ -766,7 +766,7 @@ drop function test;
 drop function test_dep;
 # test: alter function statement parsing
 alter;
-{"msg": "alter❰;❱ ⟵ USER|STORAGE|DATABASE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected"}
+{"msg": "alter❰;❱ ⟵ USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected"}
 alter function;
 {"msg": "alter function❰;❱ ⟵ name expected"}
 alter function 123;
@@ -783,7 +783,7 @@ alter function test rename to test2;
 alter function if exists test rename to test2;
 show functions;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test2"
 }]
 # test: alter function rename

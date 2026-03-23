@@ -93,7 +93,7 @@ begin
 end;
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -121,7 +121,7 @@ select show('state').catalog_pending;
 [3]
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -157,7 +157,7 @@ select show('state').catalog_pending;
 [3]
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -183,7 +183,7 @@ begin
 end;
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -211,7 +211,7 @@ select show('state').catalog_pending;
 [4]
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -247,7 +247,7 @@ select show('state').catalog_pending;
 [4]
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -262,8 +262,8 @@ show functions extended;
 }]
 select [1,2,3]::reverse;
 [[-3, -2, -1]]
-# test: create database
-create database test;
+# test: create user
+create user test;
 select show('state').lsn;
 [5]
 # test: restart/recover (checkpoint + wal)
@@ -277,7 +277,7 @@ select show('state').catalog;
 [4]
 select show('state').catalog_pending;
 [5]
-show databases;
+show users;
 [{
   "name": "main"
 }, {
@@ -304,7 +304,7 @@ select show('state').catalog;
 [5]
 select show('state').catalog_pending;
 [5]
-show databases;
+show users;
 [{
   "name": "main"
 }, {

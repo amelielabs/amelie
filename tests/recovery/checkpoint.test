@@ -152,8 +152,8 @@ select show('state').catalog_pending;
 show functions extended;
 select [1,2,3]::reverse;
 
-# test: create database
-create database test;
+# test: create user
+create user test;
 select show('state').lsn;
 
 # test: restart/recover (checkpoint + wal)
@@ -165,7 +165,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('state').catalog;
 select show('state').catalog_pending;
-show databases;
+show users;
 select identity_of("test");
 
 # test: checkpoint
@@ -183,7 +183,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('state').catalog;
 select show('state').catalog_pending;
-show databases;
+show users;
 select identity_of("test");
 
 disconnect S0;

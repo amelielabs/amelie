@@ -296,7 +296,7 @@ create index i on test (a);
 create function dep() begin insert into test values (1,2,3); end;
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "dep",
   "text": "begin insert into test values (1,2,3); end",
   "type": 0,
@@ -310,7 +310,7 @@ drop function dep;
 drop index i on test;
 # test: alter index parsing
 alter;
-{"msg": "alter❰;❱ ⟵ USER|STORAGE|DATABASE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected"}
+{"msg": "alter❰;❱ ⟵ USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected"}
 alter index;
 {"msg": "alter index❰;❱ ⟵ name expected"}
 alter index 1;

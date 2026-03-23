@@ -147,7 +147,7 @@ user_mgr_dump(UserMgr* self, Buf* buf)
 		auto user = user_of(list_at(Rel, link));
 		if (user->config->system)
 			continue;
-		user_config_write(user->config, buf, 0);
+		user_config_write(user->config, buf, FSECRETS);
 	}
 	encode_array_end(buf);
 }

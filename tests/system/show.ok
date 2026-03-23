@@ -13,6 +13,8 @@ show users abc;
 {"msg": "show() ⟵ unexpected name argument"}
 show users;
 [{
+  "name": "main"
+}, {
   "name": "test"
 }]
 # test: show user
@@ -53,25 +55,11 @@ show storage main extended;
   "compression": "zstd",
   "compression_level": 0
 }]
-# test: show databases
-create database test;
-show databases;
-[{
-  "name": "main"
-}, {
-  "name": "test"
-}]
-# test: show database
-show database test;
-[{
-  "name": "test"
-}]
-drop database test;
 # test: show tables
 create table test (id int primary key);
 show tables;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test"
 }]
 # test: show table
@@ -79,7 +67,7 @@ show table;
 {"msg": "show() ⟵ name argument is missing for 'table'"}
 show table test;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test"
 }]
 # test: show indexes
@@ -191,12 +179,12 @@ select 123::test_fn().a;
 [4]
 show functions;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test_fn"
 }]
 show functions extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test_fn",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
   "type": 5,
@@ -214,12 +202,12 @@ show function;
 {"msg": "show() ⟵ name argument is missing for 'function'"}
 show function test_fn;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test_fn"
 }]
 show function test_fn extended;
 [{
-  "db": "main",
+  "user": "main",
   "name": "test_fn",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
   "type": 5,
@@ -235,14 +223,14 @@ show function test_fn extended;
 # test: show wal
 show wal;
 [{
-  "lsn": 4,
+  "lsn": 3,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1,
-  "writes": 4,
-  "writes_bytes": 736,
-  "ops": 4
+  "writes": 3,
+  "writes_bytes": 690,
+  "ops": 3
 }]
 # test: show replicas
 show replicas;
@@ -262,11 +250,11 @@ show state;
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 4,
+  "lsn": 3,
   "tsn": 0,
   "psn": 1,
   "catalog": 0,
-  "catalog_pending": 4,
+  "catalog_pending": 3,
   "read_only": false
 }]
 select show('state');
@@ -276,11 +264,11 @@ select show('state');
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 4,
+  "lsn": 3,
   "tsn": 0,
   "psn": 1,
   "catalog": 0,
-  "catalog_pending": 4,
+  "catalog_pending": 3,
   "read_only": false
 }]
 select show('state').directory;
@@ -402,7 +390,7 @@ explain show log_enable;
 }]
 # test: show (local shadow)
 disconnect S0;
-connect E0 S0 127.0.0.1:3485/main?timezone=Asia/Tokyo&format=full;
+connect E0 S0 127.0.0.1:3485/?timezone=Asia/Tokyo&format=full;
 show all;
 [{"result": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "Asia/Tokyo", "format": "full", "log_enable": true, "log_file": true, "log_stdout": false, "log_stdout_time": true, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "jobs": 3, "cpu_affinity": true, "wal_crc": true, "wal_sync_create": false, "wal_sync_close": false, "wal_sync_write": false, "wal_sync_interval": "1 sec", "wal_service": false, "wal_size": 67108864, "wal_checkpoint": 100, "wal_rewind": false, "wal_rewind_pos": 0, "storage_crc": true, "storage_sync": false, "catalog_sync": false, "repl_readahead": 262144, "repl_reconnect_ms": 3000}}]
 show timezone;
