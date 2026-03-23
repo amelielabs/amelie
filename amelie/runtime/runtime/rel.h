@@ -18,8 +18,8 @@ typedef void (*RelFree)(Rel*, bool);
 typedef enum
 {
 	REL_UNDEF,
+	REL_USER,
 	REL_STORAGE,
-	REL_DATABASE,
 	REL_TABLE,
 	REL_UDF,
 	REL_SYNONYM,
@@ -29,8 +29,8 @@ typedef enum
 
 struct Rel
 {
-	Str*         db;
 	Str*         name;
+	Str*         owner;
 	RelType      type;
 	RelFree free_function;
 	Spinlock     lock;
@@ -44,8 +44,8 @@ struct Rel
 static inline void
 rel_init(Rel* self, RelType type)
 {
-	self->db              = NULL;
 	self->name            = NULL;
+	self->owner           = NULL;
 	self->type            = type;
 	self->free_function   = NULL;
 	self->lock_order      = 0;
@@ -57,15 +57,15 @@ rel_init(Rel* self, RelType type)
 }
 
 static inline void
-rel_set_db(Rel* self, Str* db)
-{
-	self->db = db;
-}
-
-static inline void
 rel_set_name(Rel* self, Str* name)
 {
 	self->name = name;
+}
+
+static inline void
+rel_set_owner(Rel* self, Str* owner)
+{
+	self->owner = owner;
 }
 
 static inline void
