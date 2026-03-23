@@ -24,10 +24,11 @@ parse_user_create(Stmt* self)
 	auto stmt = ast_user_create_allocate();
 	self->ast = &stmt->ast;
 
-	stmt->config = user_config_allocate();
-
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
+
+	// create user config
+	stmt->config = user_config_allocate();
 
 	// name
 	auto name = stmt_expect(self, KNAME);
@@ -45,7 +46,7 @@ parse_user_create(Stmt* self)
 void
 parse_user_drop(Stmt* self)
 {
-	// DROP USER [IF EXISTS] name
+	// DROP USER [IF EXISTS] name [CASCADE]
 	auto stmt = ast_user_drop_allocate();
 	self->ast = &stmt->ast;
 
@@ -54,25 +55,31 @@ parse_user_drop(Stmt* self)
 
 	// name
 	stmt->name = stmt_expect(self, KNAME);
+
+	// [CASCADE]
+	if (stmt_if(self, KCASCADE))
+		stmt->cascade = true;
 }
 
 void
 parse_user_alter(Stmt* self)
 {
-	// ALTER USER name SECRET expr
+	// ALTER USER [IF EXISTS] name RENAME name
 	auto stmt = ast_user_alter_allocate();
 	self->ast = &stmt->ast;
 
-	stmt->config = user_config_allocate();
+	// if exists
+	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	auto name = stmt_expect(self, KNAME);
-	user_config_set_name(stmt->config, &name->string);
+	stmt->name = stmt_expect(self, KNAME);
 
-	// SECRET
-	stmt_expect(self, KSECRET);
+	// RENAME
+	stmt_expect(self, KRENAME);
 
-	// value
-	auto value = stmt_expect(self, KSTRING);
-	user_config_set_secret(stmt->config, &value->string);
+	// TO
+	stmt_expect(self, KTO);
+
+	// name
+	stmt->name_new = stmt_expect(self, KNAME);
 }

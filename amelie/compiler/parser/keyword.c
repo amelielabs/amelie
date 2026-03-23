@@ -63,7 +63,6 @@ Keyword keywords[] =
 	{ KDEBUG,                 "debug",                 5  },
 	{ KDEFAULT,               "default",               7  },
 	{ KDATE,                  "date",                  4  },
-	{ KDATABASE,              "database",              8  },
 
 	// e
 	{ KEXTRACT,               "extract",               7  },

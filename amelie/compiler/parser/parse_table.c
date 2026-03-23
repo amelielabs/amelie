@@ -410,7 +410,7 @@ parse_table_create(Stmt* self, bool unlogged)
 	auto config = table_config_allocate();
 	stmt->config = config;
 	table_config_set_unlogged(config, unlogged);
-	table_config_set_db(config, self->parser->db);
+	table_config_set_user(config, self->parser->user);
 	table_config_set_name(config, &name->string);
 	Uuid id;
 	uuid_init(&id);
@@ -708,7 +708,7 @@ parse_table_alter(Stmt* self)
 			{
 				// find table and column
 				auto table  = catalog_find_table(&share()->db->catalog,
-				                                 self->parser->db,
+				                                 self->parser->user,
 				                                 &stmt->name, false);
 				if (! table)
 					stmt_error(self, target, "table not found");

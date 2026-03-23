@@ -338,7 +338,7 @@ expr_func(Stmt* self, Expr* expr, Ast* name, bool with_args)
 	{
 		// find udf
 		func->udf = udf_mgr_find(&share()->db->catalog.udf_mgr,
-		                         self->parser->db,
+		                         self->parser->user,
 		                         &name->string,
 		                         false);
 		if (! func->udf)

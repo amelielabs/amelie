@@ -273,11 +273,8 @@ OpDesc ops[] =
 	// system
 	{ CCHECKPOINT, "checkpoint" },
 
-	// user
-	{ CUSER_CREATE_TOKEN, "user_create_token" },
-	{ CUSER_CREATE, "user_create" },
-	{ CUSER_DROP, "user_drop" },
-	{ CUSER_ALTER, "user_alter" },
+	// token
+	{ CCREATE_TOKEN, "create_token" },
 
 	// replica
 	{ CREPLICA_CREATE, "replica_create" },

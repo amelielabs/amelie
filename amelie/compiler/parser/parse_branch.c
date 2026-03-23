@@ -38,7 +38,7 @@ parse_branch_create(Stmt* self)
 	stmt->table_name = target->string;
 
 	// find table
-	auto table = catalog_find_table(&share()->db->catalog, self->parser->db,
+	auto table = catalog_find_table(&share()->db->catalog, self->parser->user,
 	                                &stmt->table_name,
 	                                false);
 	if (! table)

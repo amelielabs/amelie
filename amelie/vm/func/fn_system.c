@@ -22,17 +22,15 @@
 
 enum
 {
-	SHOW_USERS,
-	SHOW_USER,
 	SHOW_REPLICAS,
 	SHOW_REPLICA,
 	SHOW_REPL,
 	SHOW_WAL,
 	SHOW_METRICS,
+	SHOW_USERS,
+	SHOW_USER,
 	SHOW_STORAGES,
 	SHOW_STORAGE,
-	SHOW_DATABASES,
-	SHOW_DATABASE,
 	SHOW_TABLES,
 	SHOW_TABLE,
 	SHOW_INDEXES,
@@ -64,18 +62,16 @@ struct ShowCmd
 
 static ShowCmd show_cmds[] =
 {
-	{ SHOW_USERS,      "users",       5,  false, false },
-	{ SHOW_USER,       "user",        4,  true,  false },
 	{ SHOW_REPLICAS,   "replicas",    8,  false, false },
 	{ SHOW_REPLICA,    "replica",     7,  true,  false },
 	{ SHOW_REPL,       "repl",        4,  false, false },
 	{ SHOW_REPL,       "replication", 11, false, false },
 	{ SHOW_WAL,        "wal",         3,  false, false },
 	{ SHOW_METRICS,    "metrics",     7,  false, false },
+	{ SHOW_USERS,      "users",       5,  false, false },
+	{ SHOW_USER,       "user",        4,  true,  false },
 	{ SHOW_STORAGES,   "storages",    8,  false, false },
 	{ SHOW_STORAGE,    "storage",     7,  true,  false },
-	{ SHOW_DATABASES,  "databases",   9,  false, false },
-	{ SHOW_DATABASE,   "database",    8,  true,  false },
 	{ SHOW_TABLES,     "tables",      6,  false, false },
 	{ SHOW_TABLE,      "table",       5,  true,  false },
 	{ SHOW_INDEXES,    "indexes",     7,  false, true  },
@@ -110,7 +106,7 @@ show_cmd_find(Str* section)
 static void
 fn_show(Fn* self)
 {
-	auto db = &self->local->db;
+	auto user = &self->local->user;
 
 	// [section, name, on, extended]
 	Str  section_none;
@@ -220,16 +216,6 @@ fn_show(Fn* self)
 
 	auto catalog = &share()->db->catalog;
 	switch (cmd->id) {
-	case SHOW_USERS:
-	{
-		buf = user_mgr_list(share()->user_mgr, NULL, flags);
-		break;
-	}
-	case SHOW_USER:
-	{
-		buf = user_mgr_list(share()->user_mgr, name, flags);
-		break;
-	}
 	case SHOW_REPLICAS:
 	{
 		buf = replica_mgr_list(&share()->repl->replica_mgr, NULL, flags);
@@ -257,6 +243,16 @@ fn_show(Fn* self)
 		rpc(&runtime()->task, MSG_SHOW_METRICS, &buf);
 		break;
 	}
+	case SHOW_USERS:
+	{
+		buf = user_mgr_list(&catalog->user_mgr, NULL, flags);
+		break;
+	}
+	case SHOW_USER:
+	{
+		buf = user_mgr_list(&catalog->user_mgr, name, flags);
+		break;
+	}
 	case SHOW_STORAGES:
 	{
 		buf = storage_mgr_list(&catalog->storage_mgr, NULL, flags);
@@ -267,80 +263,70 @@ fn_show(Fn* self)
 		buf = storage_mgr_list(&catalog->storage_mgr, name, flags);
 		break;
 	}
-	case SHOW_DATABASES:
-	{
-		buf = database_mgr_list(&catalog->db_mgr, NULL, flags);
-		break;
-	}
-	case SHOW_DATABASE:
-	{
-		buf = database_mgr_list(&catalog->db_mgr, name, flags);
-		break;
-	}
 	case SHOW_TABLES:
 	{
-		buf = table_mgr_list(&catalog->table_mgr, db, NULL, flags);
+		buf = table_mgr_list(&catalog->table_mgr, user, NULL, flags);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		buf = table_mgr_list(&catalog->table_mgr, db, name, flags);
+		buf = table_mgr_list(&catalog->table_mgr, user, name, flags);
 		break;
 	}
 	case SHOW_INDEXES:
 	{
-		auto table = catalog_find_table(catalog, db, on, true);
+		auto table = catalog_find_table(catalog, user, on, true);
 		buf = table_index_list(table, NULL, flags);
 		break;
 	}
 	case SHOW_INDEX:
 	{
-		auto table = catalog_find_table(catalog, db, on, true);
+		auto table = catalog_find_table(catalog, user, on, true);
 		buf = table_index_list(table, name, flags);
 		break;
 	}
 	case SHOW_BRANCHES:
 	{
-		auto table = catalog_find_table(catalog, db, on, true);
+		auto table = catalog_find_table(catalog, user, on, true);
 		buf = table_branch_list(table, NULL, flags);
 		break;
 	}
 	case SHOW_BRANCH:
 	{
-		auto table = catalog_find_table(catalog, db, on, true);
+		auto table = catalog_find_table(catalog, user, on, true);
 		buf = table_branch_list(table, name, flags);
 		break;
 	}
 	case SHOW_PARTITIONS:
 	{
-		auto table = catalog_find_table(catalog, db, on, true);
+		auto table = catalog_find_table(catalog, user, on, true);
 		buf = part_mgr_list(&table->part_mgr, NULL, flags);
 		break;
 	}
 	case SHOW_PARTITION:
 	{
-		auto table = catalog_find_table(catalog, db, on, true);
+		auto table = catalog_find_table(catalog, user, on, true);
 		buf = part_mgr_list(&table->part_mgr, name, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:
 	{
-		buf = udf_mgr_list(&catalog->udf_mgr, db, NULL, flags);
+		buf = udf_mgr_list(&catalog->udf_mgr, user, NULL, flags);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		buf = udf_mgr_list(&catalog->udf_mgr, db, name, flags);
+		buf = udf_mgr_list(&catalog->udf_mgr, user, name, flags);
 		break;
 	}
 	case SHOW_SYNONYMS:
 	{
-		buf = synonym_mgr_list(&catalog->synonym_mgr, db, NULL, flags);
+		buf = synonym_mgr_list(&catalog->synonym_mgr, user, NULL, flags);
 		break;
 	}
 	case SHOW_SYNONYM:
 	{
-		buf = synonym_mgr_list(&catalog->synonym_mgr, db, name, flags);
+		buf = synonym_mgr_list(&catalog->synonym_mgr, user, name, flags);
 		break;
 	}
 	case SHOW_STATE:

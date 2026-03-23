@@ -21,20 +21,6 @@ void
 parse_stmt_free(Stmt* stmt)
 {
 	switch (stmt->id) {
-	case STMT_CREATE_USER:
-	{
-		auto ast = ast_user_create_of(stmt->ast);
-		if (ast->config)
-			user_config_free(ast->config);
-		break;
-	}
-	case STMT_ALTER_USER:
-	{
-		auto ast = ast_user_alter_of(stmt->ast);
-		if (ast->config)
-			user_config_free(ast->config);
-		break;
-	}
 	case STMT_CREATE_REPLICA:
 	{
 		auto ast = ast_replica_create_of(stmt->ast);
@@ -49,11 +35,11 @@ parse_stmt_free(Stmt* stmt)
 			storage_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_DB:
+	case STMT_CREATE_USER:
 	{
-		auto ast = ast_db_create_of(stmt->ast);
+		auto ast = ast_user_create_of(stmt->ast);
 		if (ast->config)
-			database_config_free(ast->config);
+			user_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_TABLE:
@@ -281,11 +267,6 @@ parse_stmt(Stmt* self)
 		}
 
 		// CREATE [type]
-		if (stmt_if(self, KUSER))
-		{
-			self->id = STMT_CREATE_USER;
-			parse_user_create(self);
-		} else
 		if (stmt_if(self, KTOKEN))
 		{
 			self->id = STMT_CREATE_TOKEN;
@@ -296,15 +277,15 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_REPLICA;
 			parse_replica_create(self);
 		} else
+		if (stmt_if(self, KUSER))
+		{
+			self->id = STMT_CREATE_USER;
+			parse_user_create(self);
+		} else
 		if (stmt_if(self, KSTORAGE))
 		{
 			self->id = STMT_CREATE_STORAGE;
 			parse_storage_create(self);
-		} else
-		if (stmt_if(self, KDATABASE))
-		{
-			self->id = STMT_CREATE_DB;
-			parse_db_create(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{
@@ -337,7 +318,7 @@ parse_stmt(Stmt* self)
 			parse_lock_create(self);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|BRANCH|FUNCTION|SYNONYM|LOCK expected");
+			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|SYNONYM|LOCK expected");
 		}
 		break;
 	}
@@ -345,25 +326,20 @@ parse_stmt(Stmt* self)
 	case KDROP:
 	{
 		// DROP [type]
-		if (stmt_if(self, KUSER))
-		{
-			self->id = STMT_DROP_USER;
-			parse_user_drop(self);
-		} else
 		if (stmt_if(self, KREPLICA))
 		{
 			self->id = STMT_DROP_REPLICA;
 			parse_replica_drop(self);
 		} else
+		if (stmt_if(self, KUSER))
+		{
+			self->id = STMT_DROP_USER;
+			parse_user_drop(self);
+		} else
 		if (stmt_if(self, KSTORAGE))
 		{
 			self->id = STMT_DROP_STORAGE;
 			parse_storage_drop(self);
-		} else
-		if (stmt_if(self, KDATABASE))
-		{
-			self->id = STMT_DROP_DB;
-			parse_db_drop(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{
@@ -396,7 +372,7 @@ parse_stmt(Stmt* self)
 			parse_lock_drop(self);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|BRANCH|FUNCTION|SYNONYM|LOCK expected");
+			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|SYNONYM|LOCK expected");
 		}
 		break;
 	}
@@ -413,11 +389,6 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_STORAGE;
 			parse_storage_alter(self);
-		} else
-		if (stmt_if(self, KDATABASE))
-		{
-			self->id = STMT_ALTER_DB;
-			parse_db_alter(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{
@@ -449,7 +420,7 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_SYNONYM;
 			parse_synonym_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|STORAGE|DATABASE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected");
+			stmt_error(self, NULL, "USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected");
 		}
 		break;
 	}
@@ -755,7 +726,7 @@ parse_udf(Parser* self, Program* program, Udf* udf)
 	auto end = lex_expect(lex, KEND);
 
 	// ensure udf has no recursion
-	if (access_find(&program->access, &udf->config->db, &udf->config->name))
+	if (access_find(&program->access, &udf->config->user, &udf->config->name))
 		lex_error(lex, end, "UDF recursion is not supported");
 
 	// ensure main stmt is not utility when using CTE

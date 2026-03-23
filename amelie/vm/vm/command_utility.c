@@ -30,7 +30,7 @@ ccheckpoint(Vm* self, Op* op)
 }
 
 void
-cuser_create_token(Vm* self, Op* op)
+ccreate_token(Vm* self, Op* op)
 {
 	// [result, options_offset]
 	auto pos = code_data_at(self->code_data, op->b);
@@ -40,10 +40,7 @@ cuser_create_token(Vm* self, Op* op)
 	json_read_string(&pos, &interval);
 
 	// find user
-	auto user_mgr = share()->user_mgr;
-	auto user = user_cache_find(&user_mgr->cache, &name);
-	if (! user)
-		error("user '%.*s' not found", str_size(&name), str_of(&name));
+	auto user = user_mgr_find(&share()->db->catalog.user_mgr, &name, true);
 
 	// ensure user has a secret
 	if (str_empty(&user->config->secret))
@@ -66,49 +63,6 @@ cuser_create_token(Vm* self, Op* op)
 	encode_buf(buf, jwt);
 
 	value_set_json_buf(reg_at(&self->r, op->a), buf);
-}
-
-void
-cuser_create(Vm* self, Op* op)
-{
-	// [config_offset, if_not_exists]
-	auto pos = code_data_at(self->code_data, op->a);
-	auto config = user_config_read(&pos);
-	defer(user_config_free, config);
-
-	bool if_not_exists = op->b;
-	user_mgr_create(share()->user_mgr, config, if_not_exists);
-
-	// sync user caches among frontends
-	rpc(&runtime()->task, MSG_SYNC_USERS, &share()->user_mgr->cache);
-}
-
-void
-cuser_drop(Vm* self, Op* op)
-{
-	// [name, if_exists]
-	auto pos = code_data_at(self->code_data, op->a);
-	Str name;
-	json_read_string(&pos, &name);
-
-	bool if_exists = op->b;
-	user_mgr_drop(share()->user_mgr, &name, if_exists);
-
-	// sync user caches among frontends
-	rpc(&runtime()->task, MSG_SYNC_USERS, &share()->user_mgr->cache);
-}
-
-void
-cuser_alter(Vm* self, Op* op)
-{
-	// [config_offset]
-	auto pos = code_data_at(self->code_data, op->a);
-	auto config = user_config_read(&pos);
-	defer(user_config_free, config);
-	user_mgr_alter(share()->user_mgr, config);
-
-	// sync user caches among frontends
-	rpc(&runtime()->task, MSG_SYNC_USERS, &share()->user_mgr->cache);
 }
 
 void
@@ -242,8 +196,7 @@ clock_rel(Vm* self, Op* op)
 	} else
 	{
 		// find table
-		auto table = catalog_find_table(&share()->db->catalog,
-		                                &self->local->db,
+		auto table = catalog_find_table(&share()->db->catalog, &self->local->user,
 		                                &name_rel, true);
 		rel = &table->rel;
 	}

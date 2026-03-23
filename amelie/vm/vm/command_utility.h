@@ -15,10 +15,7 @@
 void ccheckpoint(Vm*, Op*);
 
 // users
-void cuser_create_token(Vm*, Op*);
-void cuser_create(Vm*, Op*);
-void cuser_drop(Vm*, Op*);
-void cuser_alter(Vm*, Op*);
+void ccreate_token(Vm*, Op*);
 
 // replica
 void creplica_create(Vm*, Op*);

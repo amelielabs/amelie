@@ -151,7 +151,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 	}
 
 	// table
-	auto table = catalog_find_table(&share()->db->catalog, self->parser->db,
+	auto table = catalog_find_table(&share()->db->catalog, self->parser->user,
 	                                &name->string, false);
 	if (table)
 	{

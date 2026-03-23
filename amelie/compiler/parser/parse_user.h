@@ -26,13 +26,16 @@ struct AstUserDrop
 {
 	Ast  ast;
 	bool if_exists;
+	bool cascade;
 	Ast* name;
 };
 
 struct AstUserAlter
 {
-	Ast         ast;
-	UserConfig* config;
+	Ast  ast;
+	bool if_exists;
+	Ast* name;
+	Ast* name_new;
 };
 
 static inline AstUserCreate*
@@ -63,6 +66,7 @@ ast_user_drop_allocate(void)
 	AstUserDrop* self;
 	self = ast_allocate(0, sizeof(AstUserDrop));
 	self->if_exists = false;
+	self->cascade   = false;
 	self->name      = NULL;
 	return self;
 }
@@ -78,7 +82,9 @@ ast_user_alter_allocate(void)
 {
 	AstUserAlter* self;
 	self = ast_allocate(0, sizeof(AstUserAlter));
-	self->config = NULL;
+	self->if_exists = false;
+	self->name      = NULL;
+	self->name_new  = NULL;
 	return self;
 }
 

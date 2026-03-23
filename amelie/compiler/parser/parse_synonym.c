@@ -20,7 +20,7 @@
 void
 parse_synonym_create(Stmt* self)
 {
-	// CREATE SYNONYM [db.]name FOR [db.]name
+	// CREATE SYNONYM [user.]name FOR [user.]name
 	auto stmt = ast_synonym_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -30,19 +30,19 @@ parse_synonym_create(Stmt* self)
 	// create synonym config
 	stmt->config = synonym_config_allocate();
 
-	// [db.]name
-	Str db;
+	// [user.]name
+	Str user;
 	Str target;
-	parse_target(self, &db, &target);
-	synonym_config_set_db(stmt->config, &db);
+	parse_target(self, &user, &target);
+	synonym_config_set_user(stmt->config, &user);
 	synonym_config_set_name(stmt->config, &target);
 
 	// TO
 	stmt_expect(self, KTO);
 
-	// [db.]name
-	parse_target(self, &db, &target);
-	synonym_config_set_for_db(stmt->config, &db);
+	// [user.]name
+	parse_target(self, &user, &target);
+	synonym_config_set_for_user(stmt->config, &user);
 	synonym_config_set_for_name(stmt->config, &target);
 }
 

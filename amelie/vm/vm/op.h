@@ -266,11 +266,8 @@ enum
 	// system
 	CCHECKPOINT,
 
-	// user
-	CUSER_CREATE_TOKEN,
-	CUSER_CREATE,
-	CUSER_DROP,
-	CUSER_ALTER,
+	// token
+	CCREATE_TOKEN,
 
 	// replica
 	CREPLICA_CREATE,

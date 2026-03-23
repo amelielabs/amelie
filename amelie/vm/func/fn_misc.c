@@ -182,8 +182,7 @@ fn_identity_of(Fn* self)
 	auto argv = self->argv;
 	fn_expect(self, 1);
 	fn_expect_arg(self, 0, TYPE_STRING);
-	auto table = catalog_find_table(&share()->db->catalog,
-	                                &self->local->db,
+	auto table = catalog_find_table(&share()->db->catalog, &self->local->user,
 	                                &argv[0].string, true);
 	value_set_int(self->result, sequence_get(&table->seq));
 }

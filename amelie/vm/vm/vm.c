@@ -350,11 +350,8 @@ vm_run(Vm*       self,
 		// system
 		&&ccheckpoint,
 
-		// user
-		&&cuser_create_token,
-		&&cuser_create,
-		&&cuser_drop,
-		&&cuser_alter,
+		// token
+		&&ccreate_token,
 
 		// replica
 		&&creplica_create,
@@ -1873,20 +1870,8 @@ ccheckpoint:
 	ccheckpoint(self, op);
 	op_next;
 
-cuser_create_token:
-	cuser_create_token(self, op);
-	op_next;
-
-cuser_create:
-	cuser_create(self, op);
-	op_next;
-
-cuser_drop:
-	cuser_drop(self, op);
-	op_next;
-
-cuser_alter:
-	cuser_alter(self, op);
+ccreate_token:
+	ccreate_token(self, op);
 	op_next;
 
 creplica_create:

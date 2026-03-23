@@ -42,25 +42,25 @@ parse_set_target_column(Str* self, Str* target, Str* column)
 }
 
 static inline void
-parse_target(Stmt* self, Str* db, Str* target)
+parse_target(Stmt* self, Str* user, Str* target)
 {
 	auto name = stmt_next(self);
 	switch (name->id) {
 	case KNAME:
 	{
 		// name
-		*db = *self->parser->db;
+		*user = *self->parser->user;
 		*target = name->string;
 		break;
 	}
 	case KNAME_COMPOUND:
 	{
-		// db.name
-		str_init(db);
-		str_split(&name->string, db, '.');
+		// user.name
+		str_init(user);
+		str_split(&name->string, user, '.');
 
 		*target = name->string;
-		str_advance(target, str_size(db) + 1);
+		str_advance(target, str_size(user) + 1);
 		if (str_chr(target, '.'))
 			stmt_error(self, name, "invalid target name");
 		break;

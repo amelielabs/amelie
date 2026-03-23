@@ -60,7 +60,7 @@ parse_index_create(Stmt* self, bool unique)
 
 	// find table
 	auto table = catalog_find_table(&share()->db->catalog,
-	                                self->parser->db,
+	                                self->parser->user,
 	                                &stmt->table_name,
 	                                false);
 	if (! table)

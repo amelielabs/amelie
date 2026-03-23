@@ -37,10 +37,12 @@ struct ParseEndpoint
 	int       target_type;
 	Rel*      target;
 	Set*      values;
+	Parser*   parser;
 };
 
 static inline void
-parse_endpoint_init(ParseEndpoint* self, Endpoint* endpoint, Str* content)
+parse_endpoint_init(ParseEndpoint* self, Endpoint* endpoint, Str* content,
+                    Parser*        parser)
 {
 	self->endpoint       = endpoint;
 	self->columns        = NULL;
@@ -52,6 +54,7 @@ parse_endpoint_init(ParseEndpoint* self, Endpoint* endpoint, Str* content)
 	self->target_type    = -1;
 	self->target         = NULL;
 	self->values         = NULL;
+	self->parser         = parser;
 }
 
 static inline bool
@@ -108,9 +111,9 @@ parse_endpoint_set(ParseEndpoint* self)
 	auto endpoint = self->endpoint;
 
 	// find relation
-	auto db       = &endpoint->db.string;
 	auto relation = &endpoint->relation.string;
-	auto rel      = catalog_find(&share()->db->catalog, db, relation, true);
+	auto rel      = catalog_find(&share()->db->catalog, self->parser->user,
+	                             relation, true);
 
 	if (rel->type == REL_SYNONYM)
 		rel = synonym_of(rel)->ref;
@@ -455,7 +458,7 @@ parse_endpoint(Parser* self, Program* program, Endpoint* endpoint, Str* content)
 
 	// find relation, set columns
 	ParseEndpoint pe;
-	parse_endpoint_init(&pe, endpoint, content);
+	parse_endpoint_init(&pe, endpoint, content, self);
 	parse_endpoint_set(&pe);
 	switch (pe.target_type) {
 	case ENDPOINT_TABLE:

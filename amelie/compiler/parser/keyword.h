@@ -98,7 +98,6 @@ enum
 	KDEBUG,
 	KDEFAULT,
 	KDATE,
-	KDATABASE,
 
 	// e
 	KEXTRACT,

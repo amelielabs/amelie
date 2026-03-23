@@ -69,7 +69,7 @@
 
 // ddl
 #include "parser/parse_storage.h"
-#include "parser/parse_db.h"
+#include "parser/parse_user.h"
 #include "parser/parse_table.h"
 #include "parser/parse_index.h"
 #include "parser/parse_branch.h"
