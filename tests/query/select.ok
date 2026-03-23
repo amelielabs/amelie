@@ -403,9 +403,11 @@ select * from show('wal');
 create user test;
 select * from show('users');
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]
 explain select * from show('users');
 [{

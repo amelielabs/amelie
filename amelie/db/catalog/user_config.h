@@ -17,6 +17,7 @@ struct UserConfig
 {
 	Str  name;
 	Str  secret;
+	bool agent;
 	bool system;
 };
 
@@ -25,6 +26,7 @@ user_config_allocate()
 {
 	UserConfig* self;
 	self = am_malloc(sizeof(UserConfig));
+	self->agent  = false;
 	self->system = false;
 	str_init(&self->name);
 	str_init(&self->secret);
@@ -53,6 +55,12 @@ user_config_set_name(UserConfig* self, Str* value)
 }
 
 static inline void
+user_config_set_agent(UserConfig* self, bool value)
+{
+	self->agent = value;
+}
+
+static inline void
 user_config_set_secret(UserConfig* self, Str* value)
 {
 	str_free(&self->secret);
@@ -65,6 +73,7 @@ user_config_copy(UserConfig* self)
 	auto copy = user_config_allocate();
 	user_config_set_name(copy, &self->name);
 	user_config_set_secret(copy, &self->secret);
+	user_config_set_agent(copy, self->agent);
 	user_config_set_system(copy, self->system);
 	return copy;
 }
@@ -78,6 +87,7 @@ user_config_read(uint8_t** pos)
 	{
 		{ DECODE_STRING, "name",   &self->name   },
 		{ DECODE_STRING, "secret", &self->secret },
+		{ DECODE_BOOL,   "agent",  &self->agent  },
 		{ 0,              NULL,     NULL         },
 	};
 	decode_obj(obj, "user", pos);
@@ -95,6 +105,10 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
+
+	// agent
+	encode_raw(buf, "agent", 5);
+	encode_bool(buf, self->agent);
 
 	// secret
 	if (flags_has(flags, FSECRETS))

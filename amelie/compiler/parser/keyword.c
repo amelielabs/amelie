@@ -30,6 +30,7 @@ Keyword keywords[] =
 	{ KAS,                    "as",                    2  },
 	{ KAT,                    "at",                    2  },
 	{ KALWAYS,                "always",                6  },
+	{ KAGENT,                 "agent",                 5  },
 
 	// b
 	{ KBEGIN,                 "begin",                 5  },

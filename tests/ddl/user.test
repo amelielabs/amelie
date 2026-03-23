@@ -146,5 +146,10 @@ show users;
 drop user test2;
 drop user test2 cascade;
 
+# test: create agent
+create agent test;
+show users;
+drop agent test;
+
 disconnect S0;
 close E0;

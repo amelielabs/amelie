@@ -279,9 +279,11 @@ select show('state').catalog_pending;
 [5]
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]
 select identity_of("test");
 [3]
@@ -306,9 +308,11 @@ select show('state').catalog_pending;
 [5]
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]
 select identity_of("test");
 [3]

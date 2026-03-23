@@ -75,7 +75,7 @@ jwt_encode(JwtEncode* self, Str* header, Str* payload, Str* secret)
 	// validate data
 	jwt_encode_validate(self, header, payload);
 
-	// b64url(header).b64url(payload).b64url(hmacsha256(b64url(header).b64url(payload)))
+	// b64url(hmacsha256(b64url(header).b64url(payload)))
 	auto jwt = buf_create();
 
 	// do baseu64url encoding of header and payload

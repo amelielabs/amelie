@@ -3,7 +3,8 @@ connect E0 S0 127.0.0.1:3485;
 # test: ensure system users exists
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }]
 # test: create user statement parsing
 create;
@@ -26,15 +27,19 @@ create user test abc;
 create user test;
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]
 select show('users');
 [[{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]]
 # test: create user if not exists
 create user test;
@@ -42,9 +47,11 @@ create user test;
 create user if not exists test;
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]
 # test: drop user statement parsing
 drop user;
@@ -61,7 +68,8 @@ drop user test abc;
 drop user test;
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }]
 # test: drop user if exists
 drop user test;
@@ -69,29 +77,34 @@ drop user test;
 drop user if exists test;
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }]
 # test: drop main user
 drop user main;
 {"msg": "user 'main': system user cannot be dropped"}
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }]
 # test: drop user cascade
 create user test;
 drop user test cascade;
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }]
 # test: drop connected user
 create user test;
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
@@ -120,7 +133,8 @@ show functions;
 []
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }]
 # test: alter user statment parsing
 alter user;
@@ -139,16 +153,20 @@ alter user test rename "hello";
 create user test;
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]
 alter user test rename to test2;
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test2"
+  "name": "test2",
+  "agent": false
 }]
 drop user test2;
 # test: alter user main
@@ -191,9 +209,11 @@ show functions;
 []
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test2"
+  "name": "test2",
+  "agent": false
 }]
 disconnect S1;
 switch S0;
@@ -203,12 +223,25 @@ show functions;
 []
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test2"
+  "name": "test2",
+  "agent": false
 }]
 drop user test2;
 {"msg": "user 'test2' still has relations"}
 drop user test2 cascade;
+# test: create agent
+create agent test;
+show users;
+[{
+  "name": "main",
+  "agent": false
+}, {
+  "name": "test",
+  "agent": true
+}]
+drop agent test;
 disconnect S0;
 close E0;

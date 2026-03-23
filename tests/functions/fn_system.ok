@@ -169,7 +169,8 @@ select show('replication');
 # test: users
 select show('users');
 [[{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }]]
 # test: user
 select show('user', 'test');

@@ -280,7 +280,12 @@ parse_stmt(Stmt* self)
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_CREATE_USER;
-			parse_user_create(self);
+			parse_user_create(self, false);
+		} else
+		if (stmt_if(self, KAGENT))
+		{
+			self->id = STMT_CREATE_USER;
+			parse_user_create(self, true);
 		} else
 		if (stmt_if(self, KSTORAGE))
 		{
@@ -331,7 +336,7 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_REPLICA;
 			parse_replica_drop(self);
 		} else
-		if (stmt_if(self, KUSER))
+		if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
 		{
 			self->id = STMT_DROP_USER;
 			parse_user_drop(self);
@@ -380,7 +385,7 @@ parse_stmt(Stmt* self)
 	case KALTER:
 	{
 		// ALTER [type]
-		if (stmt_if(self, KUSER))
+		if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
 		{
 			self->id = STMT_ALTER_USER;
 			parse_user_alter(self);

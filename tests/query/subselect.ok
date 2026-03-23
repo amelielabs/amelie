@@ -32,11 +32,13 @@ select (select [1,2,3]);
 # test: select (select function())
 select show('users');
 [[{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }]]
 select select (show('users'));
 [[{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }]]
 # test: select (select {})
 select (select {});

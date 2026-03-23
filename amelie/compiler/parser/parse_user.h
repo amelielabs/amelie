@@ -88,6 +88,6 @@ ast_user_alter_allocate(void)
 	return self;
 }
 
-void parse_user_create(Stmt*);
+void parse_user_create(Stmt*, bool);
 void parse_user_drop(Stmt*);
 void parse_user_alter(Stmt*);

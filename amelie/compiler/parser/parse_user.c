@@ -18,9 +18,9 @@
 #include <amelie_parser.h>
 
 void
-parse_user_create(Stmt* self)
+parse_user_create(Stmt* self, bool agent)
 {
-	// CREATE USER [IF NOT EXISTS] name [SECRET value]
+	// CREATE USER|AGENT [IF NOT EXISTS] name [SECRET value]
 	auto stmt = ast_user_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -33,6 +33,7 @@ parse_user_create(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	user_config_set_name(stmt->config, &name->string);
+	user_config_set_agent(stmt->config, agent);
 
 	// [SECRET]
 	if (stmt_if(self, KSECRET))
@@ -46,7 +47,7 @@ parse_user_create(Stmt* self)
 void
 parse_user_drop(Stmt* self)
 {
-	// DROP USER [IF EXISTS] name [CASCADE]
+	// DROP USER|AGENT [IF EXISTS] name [CASCADE]
 	auto stmt = ast_user_drop_allocate();
 	self->ast = &stmt->ast;
 
@@ -64,7 +65,7 @@ parse_user_drop(Stmt* self)
 void
 parse_user_alter(Stmt* self)
 {
-	// ALTER USER [IF EXISTS] name RENAME name
+	// ALTER USER|AGENT [IF EXISTS] name RENAME name
 	auto stmt = ast_user_alter_allocate();
 	self->ast = &stmt->ast;
 

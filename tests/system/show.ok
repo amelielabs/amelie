@@ -13,9 +13,11 @@ show users abc;
 {"msg": "show() ⟵ unexpected name argument"}
 show users;
 [{
-  "name": "main"
+  "name": "main",
+  "agent": false
 }, {
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]
 # test: show user
 show user;
@@ -24,11 +26,13 @@ show user unknown;
 [null]
 show user test;
 [{
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]
 show user test;
 [{
-  "name": "test"
+  "name": "test",
+  "agent": false
 }]
 # test: show storages
 show storages;
@@ -229,7 +233,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 690,
+  "writes_bytes": 697,
   "ops": 3
 }]
 # test: show replicas
