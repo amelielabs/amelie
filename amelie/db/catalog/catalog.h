@@ -16,6 +16,7 @@ typedef struct Catalog   Catalog;
 
 struct CatalogIf
 {
+	void (*user_invalidate)(Catalog*, User*);
 	void (*udf_compile)(Catalog*, Udf*);
 	void (*udf_free)(Udf*);
 	bool (*udf_depends)(Udf*, Str*);

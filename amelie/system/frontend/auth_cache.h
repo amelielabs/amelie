@@ -33,5 +33,6 @@ void auth_cache_reset(AuthCache*);
 void auth_cache_prepare(AuthCache*);
 void auth_cache_add(AuthCache*, User*, Str*, int64_t);
 void auth_cache_del(AuthCache*, AuthCacheNode*);
+void auth_cache_invalidate(AuthCache*, User*);
 AuthCacheNode*
 auth_cache_find(AuthCache*, Str*);

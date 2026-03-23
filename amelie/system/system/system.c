@@ -22,10 +22,17 @@
 #include <amelie_system.h>
 
 static void
-catalog_if_udf_compile(Catalog* self, Udf* udf)
+catalog_if_user_invalidate(Catalog* catalog, User* user)
 {
-	unused(self);
+	// note: exclusive catalog lock must be held
+	System* self = catalog->iface_arg;
+	frontend_mgr_invalidate(&self->frontend_mgr, user);
+}
 
+static void
+catalog_if_udf_compile(Catalog* catalog, Udf* udf)
+{
+	unused(catalog);
 	Local local;
 	local_init(&local);
 	local.user = udf->config->user;
@@ -84,9 +91,10 @@ catalog_if_udf_depends(Udf* udf, Str* name)
 
 static CatalogIf catalog_if =
 {
-	.udf_compile  = catalog_if_udf_compile,
-	.udf_free     = catalog_if_udf_free,
-	.udf_depends  = catalog_if_udf_depends
+	.user_invalidate = catalog_if_user_invalidate,
+	.udf_compile     = catalog_if_udf_compile,
+	.udf_free        = catalog_if_udf_free,
+	.udf_depends     = catalog_if_udf_depends
 };
 
 static void*

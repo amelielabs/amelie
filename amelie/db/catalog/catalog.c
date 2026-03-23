@@ -195,6 +195,11 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		bool cascade;
 		user_op_drop_read(op, &name, &cascade);
 
+		// invalidate auth caches
+		auto user = user_mgr_find(&self->user_mgr, &name, false);
+		if (user)
+			self->iface->user_invalidate(self, user);
+
 		auto if_exists = ddl_if_exists(flags);
 		write = cascade_user_drop(self, tr, &name, cascade, if_exists);
 		break;

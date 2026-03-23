@@ -69,7 +69,7 @@ frontend_mgr_stop(FrontendMgr* self)
 	if (self->workers == NULL)
 		return;
 	for (int i = 0; i < self->workers_count; i++)
-   	{
+	{
 		frontend_stop(&self->workers[i]);
 		frontend_free(&self->workers[i]);
 	}
@@ -92,4 +92,16 @@ frontend_mgr_forward(FrontendMgr* self, Msg* msg)
 	assert(self->workers_count > 0);
 	int pos = frontend_mgr_next(self);
 	frontend_add(&self->workers[pos], msg);
+}
+
+static inline void
+frontend_mgr_invalidate(FrontendMgr* self, User* user)
+{
+	if (self->workers == NULL)
+		return;
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		auto frontend = self->workers[i];
+		auth_cache_invalidate(&frontend.auth.cache, user);
+	}
 }

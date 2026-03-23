@@ -83,6 +83,22 @@ auth_cache_del(AuthCache* self, AuthCacheNode* node)
 	hashtable_delete(&self->ht, &node->node);
 }
 
+void
+auth_cache_invalidate(AuthCache* self, User* user)
+{
+	if (! self->ht.count)
+		return;
+	auto index = (AuthCacheNode**)(self->ht.buf.start);
+	for (int i = 0; i < self->ht.size; i++)
+	{
+		auto node = index[i];
+		if (node == NULL)
+			continue;
+		if (node->user == user)
+			hashtable_delete(&self->ht, &node->node);
+	}
+}
+
 hot static inline bool
 auth_cache_cmp(HashtableNode* node, void* ptr)
 {
