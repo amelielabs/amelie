@@ -27,16 +27,16 @@ service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
 	// note: no catalog lock
 	auto if_not_exists = ddl_if_not_exists(flags);
 
-	Str  name_db;
+	Str  name_user;
 	Str  name;
-	auto pos = table_op_index_create_read(op, &name_db, &name);
+	auto pos = table_op_index_create_read(op, &name_user, &name);
 
 	// take shared catalog lock
 	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
 	defer(unlock, lock_catalog);
 
 	// find table
-	auto table = table_mgr_find(&self->catalog->table_mgr, &name_db, &name, false);
+	auto table = table_mgr_find(&self->catalog->table_mgr, &name_user, &name, false);
 	if (! table)
 		error("table '%.*s': not exists", str_size(&name),
 		      str_of(&name));

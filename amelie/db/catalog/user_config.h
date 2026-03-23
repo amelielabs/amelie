@@ -80,7 +80,7 @@ user_config_read(uint8_t** pos)
 		{ DECODE_STRING, "secret", &self->secret },
 		{ 0,              NULL,     NULL         },
 	};
-	decode_obj(obj, "db", pos);
+	decode_obj(obj, "user", pos);
 	return self;
 }
 
