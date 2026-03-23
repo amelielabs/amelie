@@ -165,28 +165,11 @@ uri_parse_path_next(Uri* self, Str* value)
 static inline void
 uri_parse_path(Uri* self)
 {
-	if (!*self->pos || *self->pos == '?')
-		return;
-
-	// db
-	Str name;
-	uri_parse_path_next(self, &name);
-	if (str_empty(&name))
-		return;
-	opt_string_set(&self->endpoint->db, &name);
-
-	// db?
-	if (!*self->pos || *self->pos == '?')
-		return;
-
-	// db/
-	self->pos++;
-
-	// db/?
-	if (!*self->pos || *self->pos == '?')
+	if (!*self->pos || *self->pos == '?' || *self->pos == '/')
 		return;
 
 	// relation
+	Str name;
 	uri_parse_path_next(self, &name);
 	if (str_empty(&name))
 		uri_error();
@@ -364,7 +347,7 @@ uri_parse(Endpoint* endpoint, Str* spec)
 	if (endpoint->proto.integer != PROTO_AMELIE)
 		uri_parse_host(&self);
 
-	// [db [/relation]]
+	// [/relation]
 	uri_parse_path(&self);
 
 	// ?name=value[& ...]
@@ -374,8 +357,8 @@ uri_parse(Endpoint* endpoint, Str* spec)
 void
 uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
-	// /v1/db/<db>
-	// /v1/db/<db>/<relation>
+	// /v1/db
+	// /v1/db/<relation>
 	// /v1/backup
 	// /v1/repl
 
@@ -386,10 +369,10 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 		.endpoint = endpoint
 	};
 
-	// /v1/db/
-	if (likely(str_is_prefix(spec, "/v1/db/", 7)))
+	// /v1/db
+	if (likely(str_is_prefix(spec, "/v1/db", 6)))
 	{
-		self.pos += 7;
+		self.pos += 6;
 		uri_parse_path(&self);
 	} else
 	if (str_is(spec, "/v1/backup", 10))
@@ -447,7 +430,7 @@ uri_export(Endpoint* self, Buf* buf)
 		if (! opt_string_empty(&self->secret))
 		{
 			buf_write(buf, ":", 1);
-			buf_write_str(buf, &self->user.string);
+			buf_write_str(buf, &self->secret.string);
 		}
 		buf_write(buf, "@", 1);
 	}
@@ -464,18 +447,9 @@ uri_export(Endpoint* self, Buf* buf)
 		buf_write(buf, "/", 1);
 	}
 
-	// [db[/relation]]
-	if (! opt_string_empty(&self->db))
-	{
-		buf_write_str(buf, &self->db.string);
-
-		// relation
-		if (! opt_string_empty(&self->relation))
-		{
-			buf_write(buf, "/", 1);
-			buf_write_str(buf, &self->relation.string);
-		}
-	}
+	// relation
+	if (! opt_string_empty(&self->relation))
+		buf_write_str(buf, &self->relation.string);
 
 	// arguments
 	bool first = true;

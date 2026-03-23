@@ -271,11 +271,10 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 	auto buf = &self->raw;
 	buf_reset(buf);
 
-	// POST /v1/db/<db>
-	// POST /v1/db/<db>/<relation>
 	// POST /v1/<service>
+	// POST /v1/db
+	// POST /v1/db/<relation>
 	auto service  = opt_string_of(&endpoint->service);
-	auto db       = opt_string_of(&endpoint->db);
 	auto relation = opt_string_of(&endpoint->relation);
 
 	buf_write(buf, "POST /", 6);
@@ -284,10 +283,8 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 		buf_write(buf, "v1/", 3);
 		buf_write_str(buf, service);
 	} else
-	if (! str_empty(db))
 	{
-		buf_write(buf, "v1/db/", 6);
-		buf_write_str(buf, db);
+		buf_write(buf, "v1/db", 5);
 		if (! str_empty(relation))
 		{
 			buf_write(buf, "/", 1);

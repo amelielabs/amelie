@@ -43,7 +43,6 @@ struct Endpoint
 	Opt  uri;
 	Opt  content_type;
 	Opt  accept;
-	Opt  db;
 	Opt  relation;
 	Opt  service;
 	// args

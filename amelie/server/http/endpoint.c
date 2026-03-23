@@ -40,7 +40,6 @@ endpoint_init(Endpoint* self)
 		{ "uri",          OPT_STRING,  OPT_C, &self->uri,          NULL, 0    },
 		{ "content_type", OPT_STRING,  OPT_C, &self->content_type, NULL, 0    },
 		{ "accept",       OPT_STRING,  OPT_C, &self->accept,       NULL, 0    },
-		{ "db",           OPT_STRING,  OPT_C, &self->db,           NULL, 0    },
 		{ "relation",     OPT_STRING,  OPT_C, &self->relation,     NULL, 0    },
 		{ "service",      OPT_STRING,  OPT_C, &self->service,      NULL, 0    },
 		// args
