@@ -303,6 +303,15 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 
 	buf_write(buf, " HTTP/1.1\r\n", 11);
 
+	// user
+	auto user = opt_string_of(&endpoint->user);
+	if (! str_empty(user))
+	{
+		buf_write(buf, "X-User-ID: ", 11);
+		buf_write_str(buf, user);
+		buf_write(buf, "\r\n", 2);
+	}
+
 	// token
 	auto token = opt_string_of(&endpoint->token);
 	if (! str_empty(token))

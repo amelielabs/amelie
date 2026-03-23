@@ -32,7 +32,7 @@ auth_free(Auth* self)
 }
 
 hot static inline User*
-auth_run(Auth* self, Str* token)
+auth_run(Auth* self, Str* user_id, Str* token)
 {
 	auto jwt = &self->jwt;
 	jwt_decode_reset(jwt);
@@ -79,6 +79,11 @@ auth_run(Auth* self, Str* token)
 		error("auth: user '%.*s' token has expired",
 		      str_size(&sub), str_of(&sub));
 
+	// ensure user_id matches sub
+	if (! str_compare(&sub, user_id))
+		error("auth: user '%.*s' does not match sub field",
+		      str_size(&sub), str_of(&sub));
+
 	// find user
 	auto user = user_mgr_find(&share()->db->catalog.user_mgr, &sub, false);
 	if (! user)
@@ -86,7 +91,9 @@ auth_run(Auth* self, Str* token)
 		      str_of(&sub));
 
 	// validate digest using user secret
-	jwt_decode_validate(jwt, &user->config->secret);
+	if (! jwt_decode_validate(jwt, &user->config->secret))
+		error("auth: user '%.*s' token is invalid", str_size(&sub),
+		      str_of(&sub));
 
 	// add user and token digest to the cache
 	auth_cache_add(&self->cache, user, &jwt->digest, exp);
@@ -94,8 +101,11 @@ auth_run(Auth* self, Str* token)
 }
 
 hot static inline User*
-auth_main(Auth* self, Str* token, bool token_required)
+auth_main(Auth* self, Str* user_id, Str* token, bool token_required)
 {
+	if (unlikely(str_empty(user_id)))
+		error("auth: user id is missing");
+
 	User* user;
 	if (str_empty(token))
 	{
@@ -103,23 +113,21 @@ auth_main(Auth* self, Str* token, bool token_required)
 			error("auth: authentication token is missing");
 
 		// trusted by the server listen configuration
-		Str main;
-		str_set(&main, "main", 4);
-		user = user_mgr_find(&share()->db->catalog.user_mgr, &main, true);
+		user = user_mgr_find(&share()->db->catalog.user_mgr, user_id, true);
 	} else
 	{
-		user = auth_run(self, token);
+		user = auth_run(self, user_id, token);
 	}
 	return user;
 }
 
 hot User*
-auth(Auth* self, Str* token, bool token_required)
+auth(Auth* self, Str* user_id, Str* token, bool token_required)
 {
 	User* user = NULL;
 	auto on_error = error_catch
 	(
-		user = auth_main(self, token, token_required)
+		user = auth_main(self, user_id, token, token_required)
 	);
 	if (on_error)
 	{

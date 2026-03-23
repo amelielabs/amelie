@@ -71,17 +71,17 @@ session_free(Session *self)
 hot static inline void
 session_auth(Session* self, Endpoint* endpoint, Output* output)
 {
-	// authenticate request
+	// authenticate user request
 	auto token = &endpoint->token.string;
-	auto token_allow_empty = opt_int_of(&endpoint->auth);
-	auto user = auth(&self->frontend->auth, token, token_allow_empty);
-	str_set_str(&endpoint->user.string, &user->config->name);
+	auto token_required = opt_int_of(&endpoint->auth);
+	auto user_id = &endpoint->user.string;
+	auth(&self->frontend->auth, user_id, token, token_required);
 
 	// set timezone / format
 	auto local = &self->local;
 	local->timezone = output->timezone;
 	local->format   = output->format;
-	local->user     = endpoint->user.string;
+	str_set_str(&local->user, user_id);
 
 	// update transaction time
 	local_update_time(local);

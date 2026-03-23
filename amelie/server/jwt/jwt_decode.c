@@ -156,14 +156,14 @@ jwt_decode_data(JwtDecode* self, Str* sub,
 	jwt_decode_payload(self, sub, iat, exp);
 }
 
-hot void
+hot bool
 jwt_decode_validate(JwtDecode* self, Str* secret)
 {
 	// decode digest from base64url
 	buf_reset(&self->data);
 	base64url_decode(&self->data, &self->digest);
 	if (unlikely(buf_size(&self->data) != 32))
-		error("jwt: digest has unexpected size");
+		return false;
 
 	// HMACSHA256
 	uint8_t digest[32];
@@ -172,6 +172,5 @@ jwt_decode_validate(JwtDecode* self, Str* secret)
 	     str_size(&self->digest_origin),
 	     digest, NULL);
 
-	if (memcmp(self->data.start, digest, 32) != 0)
-		error("jwt: digest mismatch");
+	return memcmp(self->data.start, digest, 32) == 0;
 }

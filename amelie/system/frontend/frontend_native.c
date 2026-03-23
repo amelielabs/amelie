@@ -60,13 +60,17 @@ relay_connect(Relay* self, Str* uri)
 	uri_parse(endpoint, uri);
 
 	// set defaults
+	if (opt_string_empty(&endpoint->user))
+		str_set(&endpoint->user.string, "main", 4);
+
 	if (opt_string_empty(&endpoint->content_type))
 		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
 
 	if (opt_string_empty(&endpoint->accept))
 		opt_string_set_raw(&endpoint->accept, "application/json", 16);
 
-	opt_int_set(&endpoint->auth, true);
+	// authentication is not required
+	opt_int_set(&endpoint->auth, false);
 
 	// configure output
 	output_reset(&self->output);
