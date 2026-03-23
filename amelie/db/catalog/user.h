@@ -11,41 +11,40 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Database Database;
+typedef struct User User;
 
-struct Database
+struct User
 {
-	Rel             rel;
-	DatabaseConfig* config;
+	Rel         rel;
+	UserConfig* config;
 };
 
 static inline void
-database_free(Database* self, bool drop)
+user_free(User* self, bool drop)
 {
 	unused(drop);
 	if (self->config)
-		database_config_free(self->config);
+		user_config_free(self->config);
 	am_free(self);
 }
 
-static inline Database*
-database_allocate(DatabaseConfig* config)
+static inline User*
+user_allocate(UserConfig* config)
 {
-	Database* self = am_malloc(sizeof(Database));
-	self->config = database_config_copy(config);
+	User* self = am_malloc(sizeof(User));
+	self->config = user_config_copy(config);
 
 	// set relation
 	auto rel = &self->rel;
-	rel_init(rel, REL_DATABASE);
-	rel_set_db(rel, NULL);
+	rel_init(rel, REL_USER);
 	rel_set_name(rel, &self->config->name);
-	rel_set_free_function(rel, (RelFree)database_free);
+	rel_set_free_function(rel, (RelFree)user_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 
-static inline Database*
-database_of(Rel* self)
+static inline User*
+user_of(Rel* self)
 {
-	return (Database*)self;
+	return (User*)self;
 }

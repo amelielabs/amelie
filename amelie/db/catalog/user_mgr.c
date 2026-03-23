@@ -20,61 +20,59 @@
 #include <amelie_catalog.h>
 
 void
-database_mgr_init(DatabaseMgr* self)
+user_mgr_init(UserMgr* self)
 {
 	rel_mgr_init(&self->mgr);
 }
 
 void
-database_mgr_free(DatabaseMgr* self)
+user_mgr_free(UserMgr* self)
 {
 	rel_mgr_free(&self->mgr);
 }
 
 bool
-database_mgr_create(DatabaseMgr*    self,
-                    Tr*             tr,
-                    DatabaseConfig* config,
-                    bool            if_not_exists)
+user_mgr_create(UserMgr*    self,
+                Tr*         tr,
+                UserConfig* config,
+                bool        if_not_exists)
 {
-	// make sure db does not exists
-	auto current = database_mgr_find(self, &config->name, false);
+	// make sure user does not exists
+	auto current = user_mgr_find(self, &config->name, false);
 	if (current)
 	{
 		if (! if_not_exists)
-			error("database '%.*s': already exists", str_size(&config->name),
+			error("user '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
 		return false;
 	}
 
-	// allocate db and init
-	auto db = database_allocate(config);
-
-	// register db
-	rel_mgr_create(&self->mgr, tr, &db->rel);
+	// create user
+	auto user = user_allocate(config);
+	rel_mgr_create(&self->mgr, tr, &user->rel);
 	return true;
 }
 
 bool
-database_mgr_drop(DatabaseMgr* self,
-                  Tr*          tr,
-                  Str*         name,
-                  bool         if_exists)
+user_mgr_drop(UserMgr* self,
+              Tr*      tr,
+              Str*     name,
+              bool     if_exists)
 {
-	auto db = database_mgr_find(self, name, false);
-	if (! db)
+	auto user = user_mgr_find(self, name, false);
+	if (! user)
 	{
 		if (! if_exists)
-			error("database '%.*s': not exists", str_size(name),
+			error("user '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return false;
 	}
-	if (db->config->system)
-		error("database '%.*s': system db cannot be dropped", str_size(name),
+	if (user->config->system)
+		error("user '%.*s': system user cannot be dropped", str_size(name),
 		      str_of(name));
 
-	// drop db by object
-	rel_mgr_drop(&self->mgr, tr, &db->rel);
+	// drop user by object
+	rel_mgr_drop(&self->mgr, tr, &user->rel);
 	return true;
 }
 
@@ -93,8 +91,8 @@ rename_if_abort(Log* self, LogOp* op)
 	Str name;
 	json_read_string(&pos, &name);
 
-	auto mgr = database_of(op->rel);
-	database_config_set_name(mgr->config, &name);
+	auto mgr = user_of(op->rel);
+	user_config_set_name(mgr->config, &name);
 }
 
 static LogIf rename_if =
@@ -104,88 +102,90 @@ static LogIf rename_if =
 };
 
 bool
-database_mgr_rename(DatabaseMgr* self,
-                    Tr*          tr,
-                    Str*         name,
-                    Str*         name_new,
-                    bool         if_exists)
+user_mgr_rename(UserMgr* self,
+                Tr*      tr,
+                Str*     name,
+                Str*     name_new,
+                bool     if_exists)
 {
-	auto db = database_mgr_find(self, name, false);
-	if (! db)
+	auto user = user_mgr_find(self, name, false);
+	if (! user)
 	{
 		if (! if_exists)
-			error("database '%.*s': not exists", str_size(name),
+			error("user '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return false;
 	}
 
-	if (db->config->system)
-		error("database '%.*s': system db cannot be renamed", str_size(name),
+	if (user->config->system)
+		error("user '%.*s': system user cannot be renamed", str_size(name),
 		       str_of(name));
 
-	// ensure new db does not exists
-	if (database_mgr_find(self, name_new, false))
-		error("database '%.*s': already exists", str_size(name_new),
+	// ensure new user does not exists
+	if (user_mgr_find(self, name_new, false))
+		error("user '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
-	// update db
-	log_rel(&tr->log, &rename_if, NULL, &db->rel);
+	// update user
+	log_rel(&tr->log, &rename_if, NULL, &user->rel);
 
 	// save name for rollback
 	encode_string(&tr->log.data, name);
 
 	// set new name
-	database_config_set_name(db->config, name_new);
+	user_config_set_name(user->config, name_new);
 	return true;
 }
 
 void
-database_mgr_dump(DatabaseMgr* self, Buf* buf)
+user_mgr_dump(UserMgr* self, Buf* buf)
 {
 	// array
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto db = database_of(list_at(Rel, link));
-		if (db->config->system)
+		auto user = user_of(list_at(Rel, link));
+		if (user->config->system)
 			continue;
-		database_config_write(db->config, buf, 0);
+		user_config_write(user->config, buf, 0);
 	}
 	encode_array_end(buf);
 }
 
-Database*
-database_mgr_find(DatabaseMgr* self, Str* name, bool error_if_not_exists)
+User*
+user_mgr_find(UserMgr* self, Str* name, bool error_if_not_exists)
 {
 	auto rel = rel_mgr_get(&self->mgr, NULL, name);
 	if (! rel)
 	{
 		if (error_if_not_exists)
-			error("database '%.*s': not exists", str_size(name),
+			error("user '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return NULL;
 	}
-	return database_of(rel);
+	return user_of(rel);
 }
 
 Buf*
-database_mgr_list(DatabaseMgr* self, Str* name, int flags)
+user_mgr_list(UserMgr* self, Str* name, int flags)
 {
 	auto buf = buf_create();
 	if (name)
 	{
-		auto db = database_mgr_find(self, name, false);
-		if (db)
-			database_config_write(db->config, buf, flags);
+		// show user
+		auto user = user_mgr_find(self, name, false);
+		if (user)
+			user_config_write(user->config, buf, flags);
 		else
 			encode_null(buf);
 	} else
 	{
+		// show users
 		encode_array(buf);
 		list_foreach(&self->mgr.list)
 		{
-			auto db = database_of(list_at(Rel, link));
-			database_config_write(db->config, buf, flags);
+			auto user = user_of(list_at(Rel, link));
+			user_config_write(user->config, buf, flags);
 		}
 		encode_array_end(buf);
 	}

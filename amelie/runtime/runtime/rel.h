@@ -29,8 +29,8 @@ typedef enum
 
 struct Rel
 {
+	Str*         user;
 	Str*         name;
-	Str*         owner;
 	RelType      type;
 	RelFree free_function;
 	Spinlock     lock;
@@ -44,8 +44,8 @@ struct Rel
 static inline void
 rel_init(Rel* self, RelType type)
 {
+	self->user            = NULL;
 	self->name            = NULL;
-	self->owner           = NULL;
 	self->type            = type;
 	self->free_function   = NULL;
 	self->lock_order      = 0;
@@ -57,15 +57,15 @@ rel_init(Rel* self, RelType type)
 }
 
 static inline void
-rel_set_name(Rel* self, Str* name)
+rel_set_user(Rel* self, Str* user)
 {
-	self->name = name;
+	self->user = user;
 }
 
 static inline void
-rel_set_owner(Rel* self, Str* owner)
+rel_set_name(Rel* self, Str* name)
 {
-	self->owner = owner;
+	self->name = name;
 }
 
 static inline void

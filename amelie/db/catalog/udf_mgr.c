@@ -40,7 +40,7 @@ udf_mgr_create(UdfMgr*    self,
                bool       if_not_exists)
 {
 	// make sure udf does not exists
-	auto current = udf_mgr_find(self, &config->db, &config->name, false);
+	auto current = udf_mgr_find(self, &config->user, &config->name, false);
 	if (current)
 	{
 		if (! if_not_exists)
@@ -83,7 +83,7 @@ replace_if_abort(Log* self, LogOp* op)
 	udf->data   = data[1];
 
 	// update rel data
-	rel_set_db(&udf->rel, &udf->config->db);
+	rel_set_user(&udf->rel, &udf->config->user);
 	rel_set_name(&udf->rel, &udf->config->name);
 }
 
@@ -137,7 +137,7 @@ udf_mgr_replace(UdfMgr* self,
 	udf_new->data   = NULL;
 
 	// update rel data
-	rel_set_db(&udf->rel, &udf->config->db);
+	rel_set_user(&udf->rel, &udf->config->user);
 	rel_set_name(&udf->rel, &udf->config->name);
 }
 
@@ -149,10 +149,10 @@ udf_mgr_drop_of(UdfMgr* self, Tr* tr, Udf* udf)
 }
 
 bool
-udf_mgr_drop(UdfMgr* self, Tr* tr, Str* db, Str* name,
+udf_mgr_drop(UdfMgr* self, Tr* tr, Str* user, Str* name,
              bool    if_exists)
 {
-	auto udf = udf_mgr_find(self, db, name, false);
+	auto udf = udf_mgr_find(self, user, name, false);
 	if (! udf)
 	{
 		if (! if_exists)
@@ -175,13 +175,13 @@ static void
 rename_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
-	Str db;
+	Str user;
 	Str name;
-	json_read_string(&pos, &db);
+	json_read_string(&pos, &user);
 	json_read_string(&pos, &name);
 
 	auto udf = udf_of(op->rel);
-	udf_config_set_db(udf->config, &db);
+	udf_config_set_user(udf->config, &user);
 	udf_config_set_name(udf->config, &name);
 }
 
@@ -194,13 +194,13 @@ static LogIf rename_if =
 bool
 udf_mgr_rename(UdfMgr* self,
                Tr*     tr,
-               Str*    db,
+               Str*    user,
                Str*    name,
-               Str*    db_new,
+               Str*    user_new,
                Str*    name_new,
                bool    if_exists)
 {
-	auto udf = udf_mgr_find(self, db, name, false);
+	auto udf = udf_mgr_find(self, user, name, false);
 	if (! udf)
 	{
 		if (! if_exists)
@@ -210,7 +210,7 @@ udf_mgr_rename(UdfMgr* self,
 	}
 
 	// ensure new udf does not exists
-	if (udf_mgr_find(self, db_new, name_new, false))
+	if (udf_mgr_find(self, user_new, name_new, false))
 		error("function '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
@@ -218,12 +218,12 @@ udf_mgr_rename(UdfMgr* self,
 	log_rel(&tr->log, &rename_if, NULL, &udf->rel);
 
 	// save previous name
-	encode_string(&tr->log.data, &udf->config->db);
+	encode_string(&tr->log.data, &udf->config->user);
 	encode_string(&tr->log.data, &udf->config->name);
 
 	// set new name
-	if (! str_compare_case(&udf->config->db, db_new))
-		udf_config_set_db(udf->config, db_new);
+	if (! str_compare_case(&udf->config->user, user_new))
+		udf_config_set_user(udf->config, user_new);
 
 	if (! str_compare_case(&udf->config->name, name_new))
 		udf_config_set_name(udf->config, name_new);
@@ -245,10 +245,10 @@ udf_mgr_dump(UdfMgr* self, Buf* buf)
 }
 
 Udf*
-udf_mgr_find(UdfMgr* self, Str* db, Str* name,
+udf_mgr_find(UdfMgr* self, Str* user, Str* name,
              bool    error_if_not_exists)
 {
-	auto rel = rel_mgr_get(&self->mgr, db, name);
+	auto rel = rel_mgr_get(&self->mgr, user, name);
 	if (! rel)
 	{
 		if (error_if_not_exists)
@@ -260,13 +260,13 @@ udf_mgr_find(UdfMgr* self, Str* db, Str* name,
 }
 
 Buf*
-udf_mgr_list(UdfMgr* self, Str* db, Str* name, int flags)
+udf_mgr_list(UdfMgr* self, Str* user, Str* name, int flags)
 {
 	auto buf = buf_create();
-	if (db && name)
+	if (user && name)
 	{
 		// show udf
-		auto udf = udf_mgr_find(self, db, name, false);
+		auto udf = udf_mgr_find(self, user, name, false);
 		if (udf)
 			udf_config_write(udf->config, buf, flags);
 		else
@@ -279,7 +279,7 @@ udf_mgr_list(UdfMgr* self, Str* db, Str* name, int flags)
 	list_foreach(&self->mgr.list)
 	{
 		auto udf = udf_of(list_at(Rel, link));
-		if (db && !str_compare_case(&udf->config->db, db))
+		if (user && !str_compare_case(&udf->config->user, user))
 			continue;
 		udf_config_write(udf->config, buf, flags);
 	}

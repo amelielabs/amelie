@@ -15,7 +15,7 @@ typedef struct TableConfig TableConfig;
 
 struct TableConfig
 {
-	Str          db;
+	Str          user;
 	Str          name;
 	Uuid         id;
 	Columns      columns;
@@ -32,8 +32,8 @@ table_config_allocate(void)
 	self = am_malloc(sizeof(TableConfig));
 	self->indexes_count = 0;
 	self->unlogged      = false;
-	str_init(&self->db);
 	str_init(&self->name);
+	str_init(&self->user);
 	uuid_init(&self->id);
 	columns_init(&self->columns);
 	partitioning_init(&self->partitioning);
@@ -44,7 +44,7 @@ table_config_allocate(void)
 static inline void
 table_config_free(TableConfig* self)
 {
-	str_free(&self->db);
+	str_free(&self->user);
 	str_free(&self->name);
 
 	list_foreach_safe(&self->indexes)
@@ -59,17 +59,17 @@ table_config_free(TableConfig* self)
 }
 
 static inline void
-table_config_set_db(TableConfig* self, Str* db)
+table_config_set_user(TableConfig* self, Str* value)
 {
-	str_free(&self->db);
-	str_copy(&self->db, db);
+	str_free(&self->user);
+	str_copy(&self->user, value);
 }
 
 static inline void
-table_config_set_name(TableConfig* self, Str* name)
+table_config_set_name(TableConfig* self, Str* value)
 {
 	str_free(&self->name);
-	str_copy(&self->name, name);
+	str_copy(&self->name, value);
 }
 
 static inline void
@@ -102,8 +102,8 @@ static inline TableConfig*
 table_config_copy(TableConfig* self)
 {
 	auto copy = table_config_allocate();
-	table_config_set_db(copy, &self->db);
 	table_config_set_name(copy, &self->name);
+	table_config_set_user(copy, &self->user);
 	table_config_set_id(copy, &self->id);
 	table_config_set_unlogged(copy, self->unlogged);
 	partitioning_copy(&self->partitioning, &copy->partitioning);
@@ -133,7 +133,7 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_partitioning = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "db",           &self->db         },
+		{ DECODE_STRING, "user",         &self->user       },
 		{ DECODE_STRING, "name",         &self->name       },
 		{ DECODE_UUID,   "id",           &self->id         },
 		{ DECODE_BOOL,   "unlogged",     &self->unlogged   },
@@ -166,9 +166,9 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	// obj
 	encode_obj(buf);
 
-	// db
-	encode_raw(buf, "db", 2);
-	encode_string(buf, &self->db);
+	// user
+	encode_raw(buf, "user", 4);
+	encode_string(buf, &self->user);
 
 	// name
 	encode_raw(buf, "name", 4);

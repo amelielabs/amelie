@@ -38,7 +38,7 @@ synonym_mgr_create(SynonymMgr*    self,
                    bool           if_not_exists)
 {
 	// make sure synonym does not exists
-	auto current = synonym_mgr_find(self, &config->db, &config->name, false);
+	auto current = synonym_mgr_find(self, &config->user, &config->name, false);
 	if (current)
 	{
 		if (! if_not_exists)
@@ -61,10 +61,10 @@ synonym_mgr_drop_of(SynonymMgr* self, Tr* tr, Synonym* synonym)
 }
 
 bool
-synonym_mgr_drop(SynonymMgr* self, Tr* tr, Str* db, Str* name,
+synonym_mgr_drop(SynonymMgr* self, Tr* tr, Str* user, Str* name,
                  bool        if_exists)
 {
-	auto synonym = synonym_mgr_find(self, db, name, false);
+	auto synonym = synonym_mgr_find(self, user, name, false);
 	if (! synonym)
 	{
 		if (! if_exists)
@@ -87,13 +87,13 @@ static void
 rename_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
-	Str db;
+	Str user;
 	Str name;
-	json_read_string(&pos, &db);
+	json_read_string(&pos, &user);
 	json_read_string(&pos, &name);
 
 	auto synonym = synonym_of(op->rel);
-	synonym_config_set_db(synonym->config, &db);
+	synonym_config_set_user(synonym->config, &user);
 	synonym_config_set_name(synonym->config, &name);
 }
 
@@ -106,13 +106,13 @@ static LogIf rename_if =
 bool
 synonym_mgr_rename(SynonymMgr* self,
                    Tr*         tr,
-                   Str*        db,
+                   Str*        user,
                    Str*        name,
-                   Str*        db_new,
+                   Str*        user_new,
                    Str*        name_new,
                    bool        if_exists)
 {
-	auto synonym = synonym_mgr_find(self, db, name, false);
+	auto synonym = synonym_mgr_find(self, user, name, false);
 	if (! synonym)
 	{
 		if (! if_exists)
@@ -122,7 +122,7 @@ synonym_mgr_rename(SynonymMgr* self,
 	}
 
 	// ensure new synonym does not exists
-	if (synonym_mgr_find(self, db_new, name_new, false))
+	if (synonym_mgr_find(self, user_new, name_new, false))
 		error("synonym '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
@@ -130,12 +130,12 @@ synonym_mgr_rename(SynonymMgr* self,
 	log_rel(&tr->log, &rename_if, NULL, &synonym->rel);
 
 	// save previous name
-	encode_string(&tr->log.data, &synonym->config->db);
+	encode_string(&tr->log.data, &synonym->config->user);
 	encode_string(&tr->log.data, &synonym->config->name);
 
 	// set new name
-	if (! str_compare_case(&synonym->config->db, db_new))
-		synonym_config_set_db(synonym->config, db_new);
+	if (! str_compare_case(&synonym->config->user, user_new))
+		synonym_config_set_user(synonym->config, user_new);
 
 	if (! str_compare_case(&synonym->config->name, name_new))
 		synonym_config_set_name(synonym->config, name_new);
@@ -157,10 +157,10 @@ synonym_mgr_dump(SynonymMgr* self, Buf* buf)
 }
 
 Synonym*
-synonym_mgr_find(SynonymMgr* self, Str* db, Str* name,
+synonym_mgr_find(SynonymMgr* self, Str* user, Str* name,
              bool    error_if_not_exists)
 {
-	auto rel = rel_mgr_get(&self->mgr, db, name);
+	auto rel = rel_mgr_get(&self->mgr, user, name);
 	if (! rel)
 	{
 		if (error_if_not_exists)
@@ -172,13 +172,13 @@ synonym_mgr_find(SynonymMgr* self, Str* db, Str* name,
 }
 
 Buf*
-synonym_mgr_list(SynonymMgr* self, Str* db, Str* name, int flags)
+synonym_mgr_list(SynonymMgr* self, Str* user, Str* name, int flags)
 {
 	auto buf = buf_create();
-	if (db && name)
+	if (user && name)
 	{
 		// show synonym
-		auto synonym = synonym_mgr_find(self, db, name, false);
+		auto synonym = synonym_mgr_find(self, user, name, false);
 		if (synonym)
 			synonym_config_write(synonym->config, buf, flags);
 		else
@@ -191,7 +191,7 @@ synonym_mgr_list(SynonymMgr* self, Str* db, Str* name, int flags)
 	list_foreach(&self->mgr.list)
 	{
 		auto synonym = synonym_of(list_at(Rel, link));
-		if (db && !str_compare_case(&synonym->config->db, db))
+		if (user && !str_compare_case(&synonym->config->user, user))
 			continue;
 		synonym_config_write(synonym->config, buf, flags);
 	}

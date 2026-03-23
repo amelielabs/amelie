@@ -47,7 +47,7 @@ udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
 	// set relation
 	auto rel = &self->rel;
 	rel_init(rel, REL_UDF);
-	rel_set_db(rel, &self->config->db);
+	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_free_function(rel, (RelFree)udf_free);
 	rel_set_rsn(rel, state_rsn_next());

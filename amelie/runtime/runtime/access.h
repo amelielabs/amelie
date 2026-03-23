@@ -127,24 +127,24 @@ access_merge(Access* self, Access* access)
 }
 
 hot static inline AccessRecord*
-access_find_owner(Access* self, Str* owner)
+access_find_user(Access* self, Str* user)
 {
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
-		if (str_compare(record->rel->owner, owner))
+		if (str_compare(record->rel->user, user))
 			return record;
 	}
 	return NULL;
 }
 
 hot static inline AccessRecord*
-access_find(Access* self, Str* owner, Str* name)
+access_find(Access* self, Str* user, Str* name)
 {
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
-		if (str_compare(record->rel->owner, owner) &&
+		if (str_compare(record->rel->user, user) &&
 		    str_compare(record->rel->name, name))
 			return record;
 	}

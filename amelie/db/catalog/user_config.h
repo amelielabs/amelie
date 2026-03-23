@@ -11,69 +11,81 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct DatabaseConfig DatabaseConfig;
+typedef struct UserConfig UserConfig;
 
-struct DatabaseConfig
+struct UserConfig
 {
 	Str  name;
+	Str  secret;
 	bool system;
 };
 
-static inline DatabaseConfig*
-database_config_allocate()
+static inline UserConfig*
+user_config_allocate()
 {
-	DatabaseConfig* self;
-	self = am_malloc(sizeof(DatabaseConfig));
+	UserConfig* self;
+	self = am_malloc(sizeof(UserConfig));
 	self->system = false;
 	str_init(&self->name);
+	str_init(&self->secret);
 	return self;
 }
 
 static inline void
-database_config_free(DatabaseConfig* self)
+user_config_free(UserConfig* self)
 {
 	str_free(&self->name);
+	str_free(&self->secret);
 	am_free(self);
 }
 
 static inline void
-database_config_set_system(DatabaseConfig* self, bool system)
+user_config_set_system(UserConfig* self, bool system)
 {
 	self->system = system;
 }
 
 static inline void
-database_config_set_name(DatabaseConfig* self, Str* name)
+user_config_set_name(UserConfig* self, Str* value)
 {
 	str_free(&self->name);
-	str_copy(&self->name, name);
+	str_copy(&self->name, value);
 }
 
-static inline DatabaseConfig*
-database_config_copy(DatabaseConfig* self)
+static inline void
+user_config_set_secret(UserConfig* self, Str* value)
 {
-	auto copy = database_config_allocate();
-	database_config_set_name(copy, &self->name);
-	database_config_set_system(copy, self->system);
+	str_free(&self->secret);
+	str_copy(&self->secret, value);
+}
+
+static inline UserConfig*
+user_config_copy(UserConfig* self)
+{
+	auto copy = user_config_allocate();
+	user_config_set_name(copy, &self->name);
+	user_config_set_secret(copy, &self->secret);
+	user_config_set_system(copy, self->system);
 	return copy;
 }
 
-static inline DatabaseConfig*
-database_config_read(uint8_t** pos)
+static inline UserConfig*
+user_config_read(uint8_t** pos)
 {
-	auto self = database_config_allocate();
-	errdefer(database_config_free, self);
+	auto self = user_config_allocate();
+	errdefer(user_config_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "name", &self->name },
-		{ 0,              NULL,   NULL       },
+		{ DECODE_STRING, "name",   &self->name   },
+		{ DECODE_STRING, "secret", &self->secret },
+		{ 0,              NULL,     NULL         },
 	};
 	decode_obj(obj, "db", pos);
 	return self;
 }
 
 static inline void
-database_config_write(DatabaseConfig* self, Buf* buf, int flags)
+user_config_write(UserConfig* self, Buf* buf, int flags)
 {
 	unused(flags);
 
@@ -83,6 +95,13 @@ database_config_write(DatabaseConfig* self, Buf* buf, int flags)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
+
+	// secret
+	if (flags_has(flags, FSECRETS))
+	{
+		encode_raw(buf, "secret", 6);
+		encode_string(buf, &self->secret);
+	}
 
 	encode_obj_end(buf);
 }

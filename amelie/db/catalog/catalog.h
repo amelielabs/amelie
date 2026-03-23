@@ -23,8 +23,8 @@ struct CatalogIf
 
 struct Catalog
 {
+	UserMgr     user_mgr;
 	StorageMgr  storage_mgr;
-	DatabaseMgr db_mgr;
 	TableMgr    table_mgr;
 	UdfMgr      udf_mgr;
 	SynonymMgr  synonym_mgr;

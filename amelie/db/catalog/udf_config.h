@@ -15,7 +15,7 @@ typedef struct UdfConfig UdfConfig;
 
 struct UdfConfig
 {
-	Str     db;
+	Str     user;
 	Str     name;
 	Str     text;
 	Columns args;
@@ -29,7 +29,7 @@ udf_config_allocate(void)
 	UdfConfig* self;
 	self = am_malloc(sizeof(UdfConfig));
 	self->type = TYPE_NULL;
-	str_init(&self->db);
+	str_init(&self->user);
 	str_init(&self->name);
 	str_init(&self->text);
 	columns_init(&self->args);
@@ -40,7 +40,7 @@ udf_config_allocate(void)
 static inline void
 udf_config_free(UdfConfig* self)
 {
-	str_free(&self->db);
+	str_free(&self->user);
 	str_free(&self->name);
 	str_free(&self->text);
 	columns_free(&self->args);
@@ -49,10 +49,10 @@ udf_config_free(UdfConfig* self)
 }
 
 static inline void
-udf_config_set_db(UdfConfig* self, Str* db)
+udf_config_set_user(UdfConfig* self, Str* user)
 {
-	str_free(&self->db);
-	str_copy(&self->db, db);
+	str_free(&self->user);
+	str_copy(&self->user, user);
 }
 
 static inline void
@@ -78,7 +78,7 @@ static inline UdfConfig*
 udf_config_copy(UdfConfig* self)
 {
 	auto copy = udf_config_allocate();
-	udf_config_set_db(copy, &self->db);
+	udf_config_set_user(copy, &self->user);
 	udf_config_set_name(copy, &self->name);
 	udf_config_set_text(copy, &self->text);
 	udf_config_set_type(copy, self->type);
@@ -96,7 +96,7 @@ udf_config_read(uint8_t** pos)
 	uint8_t* returning = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "db",        &self->db   },
+		{ DECODE_STRING, "user",      &self->user },
 		{ DECODE_STRING, "name",      &self->name },
 		{ DECODE_STRING, "text",      &self->text },
 		{ DECODE_ARRAY,  "args",      &args       },
@@ -116,9 +116,9 @@ udf_config_write(UdfConfig* self, Buf* buf, int flags)
 	// map
 	encode_obj(buf);
 
-	// db
-	encode_raw(buf, "db", 2);
-	encode_string(buf, &self->db);
+	// user
+	encode_raw(buf, "user", 4);
+	encode_string(buf, &self->user);
 
 	// name
 	encode_raw(buf, "name", 4);

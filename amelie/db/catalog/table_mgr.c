@@ -43,7 +43,7 @@ table_mgr_create(TableMgr*    self,
                  bool         if_not_exists)
 {
 	// make sure table does not exists
-	auto current = table_mgr_find(self, &config->db, &config->name, false);
+	auto current = table_mgr_find(self, &config->user, &config->name, false);
 	if (current)
 	{
 		if (! if_not_exists)
@@ -73,10 +73,10 @@ table_mgr_drop_of(TableMgr* self, Tr* tr, Table* table)
 }
 
 bool
-table_mgr_drop(TableMgr* self, Tr* tr, Str* db, Str* name,
+table_mgr_drop(TableMgr* self, Tr* tr, Str* user, Str* name,
                bool if_exists)
 {
-	auto table = table_mgr_find(self, db, name, false);
+	auto table = table_mgr_find(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -113,11 +113,11 @@ static LogIf truncate_if =
 bool
 table_mgr_truncate(TableMgr* self,
                    Tr*       tr,
-                   Str*      db,
+                   Str*      user,
                    Str*      name,
                    bool      if_exists)
 {
-	auto table = table_mgr_find(self, db, name, false);
+	auto table = table_mgr_find(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -147,9 +147,9 @@ table_mgr_dump(TableMgr* self, Buf* buf)
 }
 
 Table*
-table_mgr_find(TableMgr* self, Str* db, Str* name, bool error_if_not_exists)
+table_mgr_find(TableMgr* self, Str* user, Str* name, bool error_if_not_exists)
 {
-	auto rel = rel_mgr_get(&self->mgr, db, name);
+	auto rel = rel_mgr_get(&self->mgr, user, name);
 	if (! rel)
 	{
 		if (error_if_not_exists)
@@ -179,13 +179,13 @@ table_mgr_find_by(TableMgr* self, Uuid* id, bool error_if_not_exists)
 }
 
 Buf*
-table_mgr_list(TableMgr* self, Str* db, Str* name, int flags)
+table_mgr_list(TableMgr* self, Str* user, Str* name, int flags)
 {
 	auto buf = buf_create();
-	if (db && name)
+	if (user && name)
 	{
 		// show table
-		auto table = table_mgr_find(self, db, name, false);
+		auto table = table_mgr_find(self, user, name, false);
 		if (table)
 			table_config_write(table->config, buf, flags);
 		else
@@ -198,7 +198,7 @@ table_mgr_list(TableMgr* self, Str* db, Str* name, int flags)
 	list_foreach(&self->mgr.list)
 	{
 		auto table = table_of(list_at(Rel, link));
-		if (db && !str_compare_case(&table->config->db, db))
+		if (user && !str_compare_case(&table->config->user, user))
 			continue;
 		table_config_write(table->config, buf, flags);
 	}

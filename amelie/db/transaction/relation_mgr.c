@@ -50,12 +50,12 @@ rel_mgr_delete(RelMgr* self, Rel* rel)
 }
 
 Rel*
-rel_mgr_get(RelMgr* self, Str* db, Str* name)
+rel_mgr_get(RelMgr* self, Str* user, Str* name)
 {
 	list_foreach(&self->list)
 	{
 		auto rel = list_at(Rel, link);
-		if (db && !str_compare_case(rel->db, db))
+		if (user && !str_compare_case(rel->user, user))
 			continue;
 		if (str_compare_case(rel->name, name))
 			return rel;

@@ -15,9 +15,9 @@ typedef struct SynonymConfig SynonymConfig;
 
 struct SynonymConfig
 {
-	Str db;
+	Str user;
 	Str name;
-	Str for_db;
+	Str for_user;
 	Str for_name;
 };
 
@@ -26,9 +26,9 @@ synonym_config_allocate(void)
 {
 	SynonymConfig* self;
 	self = am_malloc(sizeof(SynonymConfig));
-	str_init(&self->db);
+	str_init(&self->user);
 	str_init(&self->name);
-	str_init(&self->for_db);
+	str_init(&self->for_user);
 	str_init(&self->for_name);
 	return self;
 }
@@ -36,18 +36,18 @@ synonym_config_allocate(void)
 static inline void
 synonym_config_free(SynonymConfig* self)
 {
-	str_free(&self->db);
+	str_free(&self->user);
 	str_free(&self->name);
-	str_free(&self->for_db);
+	str_free(&self->for_user);
 	str_free(&self->for_name);
 	am_free(self);
 }
 
 static inline void
-synonym_config_set_db(SynonymConfig* self, Str* db)
+synonym_config_set_user(SynonymConfig* self, Str* user)
 {
-	str_free(&self->db);
-	str_copy(&self->db, db);
+	str_free(&self->user);
+	str_copy(&self->user, user);
 }
 
 static inline void
@@ -58,10 +58,10 @@ synonym_config_set_name(SynonymConfig* self, Str* name)
 }
 
 static inline void
-synonym_config_set_for_db(SynonymConfig* self, Str* name)
+synonym_config_set_for_user(SynonymConfig* self, Str* name)
 {
-	str_free(&self->for_db);
-	str_copy(&self->for_db, name);
+	str_free(&self->for_user);
+	str_copy(&self->for_user, name);
 }
 
 static inline void
@@ -75,9 +75,9 @@ static inline SynonymConfig*
 synonym_config_copy(SynonymConfig* self)
 {
 	auto copy = synonym_config_allocate();
-	synonym_config_set_db(copy, &self->db);
+	synonym_config_set_user(copy, &self->user);
 	synonym_config_set_name(copy, &self->name);
-	synonym_config_set_for_db(copy, &self->for_db);
+	synonym_config_set_for_user(copy, &self->for_user);
 	synonym_config_set_for_name(copy, &self->for_name);
 	return copy;
 }
@@ -89,9 +89,9 @@ synonym_config_read(uint8_t** pos)
 	errdefer(synonym_config_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "db",       &self->db       },
+		{ DECODE_STRING, "user",     &self->user     },
 		{ DECODE_STRING, "name",     &self->name     },
-		{ DECODE_STRING, "for_db"  , &self->for_db   },
+		{ DECODE_STRING, "for_user", &self->for_user },
 		{ DECODE_STRING, "for_name", &self->for_name },
 		{ 0,              NULL,       NULL           },
 	};
@@ -107,17 +107,17 @@ synonym_config_write(SynonymConfig* self, Buf* buf, int flags)
 	// map
 	encode_obj(buf);
 
-	// db
-	encode_raw(buf, "db", 2);
-	encode_string(buf, &self->db);
+	// user
+	encode_raw(buf, "user", 4);
+	encode_string(buf, &self->user);
 
 	// name
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
-	// for_db
-	encode_raw(buf, "for_db", 6);
-	encode_string(buf, &self->for_db);
+	// for_user
+	encode_raw(buf, "for_user", 8);
+	encode_string(buf, &self->for_user);
 
 	// for_name
 	encode_raw(buf, "for_name", 8);

@@ -28,8 +28,8 @@ catalog_init(Catalog*   self,
 {
 	self->iface = iface;
 	self->iface_arg = iface_arg;
+	user_mgr_init(&self->user_mgr);
 	storage_mgr_init(&self->storage_mgr);
-	database_mgr_init(&self->db_mgr);
 	table_mgr_init(&self->table_mgr, &self->storage_mgr,
 	               iface_part_mgr,
 	               iface_part_mgr_arg);
@@ -43,8 +43,8 @@ catalog_free(Catalog* self)
 	synonym_mgr_free(&self->synonym_mgr);
 	udf_mgr_free(&self->udf_mgr);
 	table_mgr_free(&self->table_mgr);
-	database_mgr_free(&self->db_mgr);
 	storage_mgr_free(&self->storage_mgr);
+	user_mgr_free(&self->user_mgr);
 }
 
 static void
@@ -66,6 +66,13 @@ catalog_prepare(Catalog* self)
 		str_init(&name);
 		str_set_cstr(&name, "main");
 
+		// create main user
+		auto user_config = user_config_allocate();
+		defer(user_config_free, user_config);
+		user_config_set_name(user_config, &name);
+		user_config_set_system(user_config, true);
+		user_mgr_create(&self->user_mgr, &tr, user_config, false);
+
 		// create main storage
 		auto storage_config = storage_config_allocate();
 		defer(storage_config_free, storage_config);
@@ -76,13 +83,6 @@ catalog_prepare(Catalog* self)
 		storage_config_set_compression_level(storage_config, 0);
 		storage_config_set_system(storage_config, true);
 		storage_mgr_create(&self->storage_mgr, &tr, storage_config, false);
-
-		// create main database
-		auto db_config = database_config_allocate();
-		defer(database_config_free, db_config);
-		database_config_set_name(db_config, &name);
-		database_config_set_system(db_config, true);
-		database_mgr_create(&self->db_mgr, &tr, db_config, false);
 
 		// commit
 		tr_commit(&tr);
@@ -97,7 +97,7 @@ catalog_prepare(Catalog* self)
 void
 catalog_open(Catalog* self, bool bootstrap)
 {
-	// prepare main db
+	// prepare catalog
 	catalog_prepare(self);
 
 	// read catalog file and restore objects
@@ -120,30 +120,25 @@ catalog_status(Catalog* self)
 	auto buf = buf_create();
 	encode_obj(buf);
 
-	int tables = 0;
-	int tables_secondary_indexes = 0;
-	list_foreach(&self->table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Rel, link));
-		tables++;
-		tables_secondary_indexes += (table->config->indexes_count - 1);
-	}
+	// users
+	encode_raw(buf, "users", 5);
+	encode_integer(buf, self->user_mgr.mgr.list_count);
 
 	// storages
 	encode_raw(buf, "storages", 8);
 	encode_integer(buf, self->storage_mgr.mgr.list_count);
 
-	// databases
-	encode_raw(buf, "databases", 9);
-	encode_integer(buf, self->db_mgr.mgr.list_count);
-
 	// tables
 	encode_raw(buf, "tables", 6);
-	encode_integer(buf, tables);
+	encode_integer(buf, self->table_mgr.mgr.list_count);
 
-	// indexes
-	encode_raw(buf, "secondary_indexes", 17);
-	encode_integer(buf, tables_secondary_indexes);
+	// udfs
+	encode_raw(buf, "udfs", 4);
+	encode_integer(buf, self->udf_mgr.mgr.list_count);
+
+	// synonyms
+	encode_raw(buf, "synonyms", 8);
+	encode_integer(buf, self->synonym_mgr.mgr.list_count);
 
 	encode_obj_end(buf);
 	return buf;
@@ -164,13 +159,13 @@ catalog_validate_udfs(Catalog* self, Str* name)
 }
 
 static void
-catalog_validate_synonyms(Catalog* self, Str* db, Str* name)
+catalog_validate_synonyms(Catalog* self, Str* user, Str* name)
 {
 	// validate synonyms dependencies on the relation
 	list_foreach(&self->synonym_mgr.mgr.list)
 	{
 		auto synonym = synonym_of(list_at(Rel, link));
-		if (str_compare_case(&synonym->config->for_db, db) ||
+		if (str_compare_case(&synonym->config->for_user, user) ||
 		    str_compare_case(&synonym->config->for_name, name))
 			error("synonym '%.*s' depends on relation '%.*s",
 			      str_size(synonym->rel.name), str_of(synonym->rel.name),
@@ -185,6 +180,35 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	auto cmd = ddl_of(op);
 	bool write = false;
 	switch (cmd) {
+	case DDL_USER_CREATE:
+	{
+		auto config = user_op_create_read(op);
+		defer(user_config_free, config);
+
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = user_mgr_create(&self->user_mgr, tr, config, if_not_exists);
+		break;
+	}
+	case DDL_USER_DROP:
+	{
+		Str  name;
+		bool cascade;
+		user_op_drop_read(op, &name, &cascade);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = cascade_user_drop(self, tr, &name, cascade, if_exists);
+		break;
+	}
+	case DDL_USER_RENAME:
+	{
+		Str name;
+		Str name_new;
+		user_op_rename_read(op, &name, &name_new);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = cascade_user_rename(self, tr, &name, &name_new, if_exists);
+		break;
+	}
 	case DDL_STORAGE_CREATE:
 	{
 		auto config = storage_op_create_read(op);
@@ -213,35 +237,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = storage_mgr_rename(&self->storage_mgr, tr, &name, &name_new, if_exists);
 		break;
 	}
-	case DDL_DATABASE_CREATE:
-	{
-		auto config = database_op_create_read(op);
-		defer(database_config_free, config);
-
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = database_mgr_create(&self->db_mgr, tr, config, if_not_exists);
-		break;
-	}
-	case DDL_DATABASE_DROP:
-	{
-		Str  name;
-		bool cascade;
-		database_op_drop_read(op, &name, &cascade);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = cascade_db_drop(self, tr, &name, cascade, if_exists);
-		break;
-	}
-	case DDL_DATABASE_RENAME:
-	{
-		Str name;
-		Str name_new;
-		database_op_rename_read(op, &name, &name_new);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = cascade_db_rename(self, tr, &name, &name_new, if_exists);
-		break;
-	}
 	case DDL_TABLE_CREATE:
 	{
 		auto config = table_op_create_read(op);
@@ -253,82 +248,82 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_DROP:
 	{
-		Str db;
+		Str user;
 		Str name;
-		table_op_drop_read(op, &db, &name);
+		table_op_drop_read(op, &user, &name);
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
-		catalog_validate_synonyms(self, &db, &name);
+		catalog_validate_synonyms(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_drop(&self->table_mgr, tr, &db, &name, if_exists);
+		write = table_mgr_drop(&self->table_mgr, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_TABLE_RENAME:
 	{
-		Str db;
+		Str user;
 		Str name;
-		Str db_new;
+		Str user_new;
 		Str name_new;
-		table_op_rename_read(op, &db, &name, &db_new, &name_new);
+		table_op_rename_read(op, &user, &name, &user_new, &name_new);
 
-		// ensure db exists
-		database_mgr_find(&self->db_mgr, &db_new, true);
+		// ensure user exists
+		user_mgr_find(&self->user_mgr, &user_new, true);
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
-		catalog_validate_synonyms(self, &db, &name);
+		catalog_validate_synonyms(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_rename(&self->table_mgr, tr, &db, &name,
-		                         &db_new, &name_new, if_exists);
+		write = table_mgr_rename(&self->table_mgr, tr, &user, &name,
+		                         &user_new, &name_new, if_exists);
 		break;
 	}
 	case DDL_TABLE_TRUNCATE:
 	{
-		Str db;
+		Str user;
 		Str name;
-		table_op_truncate_read(op, &db, &name);
+		table_op_truncate_read(op, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_truncate(&self->table_mgr, tr, &db, &name, if_exists);
+		write = table_mgr_truncate(&self->table_mgr, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_TABLE_SET_IDENTITY:
 	{
-		Str     db;
+		Str     user;
 		Str     name;
 		int64_t value;
-		table_op_set_identity_read(op, &db, &name, &value);
+		table_op_set_identity_read(op, &user, &name, &value);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_set_identity(&self->table_mgr, tr, &db, &name,
+		write = table_mgr_set_identity(&self->table_mgr, tr, &user, &name,
 		                               value, if_exists);
 		break;
 	}
 	case DDL_TABLE_SET_UNLOGGED:
 	{
-		Str  db;
+		Str  user;
 		Str  name;
 		bool value;
-		table_op_set_unlogged_read(op, &db, &name, &value);
+		table_op_set_unlogged_read(op, &user, &name, &value);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_set_unlogged(&self->table_mgr, tr, &db, &name,
+		write = table_mgr_set_unlogged(&self->table_mgr, tr, &user, &name,
 		                               value, if_exists);
 		break;
 	}
 	case DDL_TABLE_COLUMN_ADD:
 	{
-		Str  db;
+		Str  user;
 		Str  name;
-		auto column = table_op_column_add_read(op, &db, &name);
+		auto column = table_op_column_add_read(op, &user, &name);
 		defer(column_free, column);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_not_exists = ddl_if_column_not_exists(flags);
-		write = table_mgr_column_add(&self->table_mgr, tr, &db, &name,
+		write = table_mgr_column_add(&self->table_mgr, tr, &user, &name,
 		                             column,
 		                             if_exists,
 		                             if_column_not_exists);
@@ -336,17 +331,17 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_COLUMN_DROP:
 	{
-		Str db;
+		Str user;
 		Str name;
 		Str name_column;
-		table_op_column_drop_read(op, &db, &name, &name_column);
+		table_op_column_drop_read(op, &user, &name, &name_column);
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
-		write = table_mgr_column_drop(&self->table_mgr, tr, &db, &name,
+		write = table_mgr_column_drop(&self->table_mgr, tr, &user, &name,
 		                              &name_column,
 		                              if_exists,
 		                              if_column_exists);
@@ -354,18 +349,18 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_COLUMN_RENAME:
 	{
-		Str db;
+		Str user;
 		Str name;
 		Str name_column;
 		Str name_column_new;
-		table_op_column_set_read(op, &db, &name, &name_column, &name_column_new);
+		table_op_column_set_read(op, &user, &name, &name_column, &name_column_new);
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
-		write = table_mgr_column_rename(&self->table_mgr, tr, &db, &name, &name_column,
+		write = table_mgr_column_rename(&self->table_mgr, tr, &user, &name, &name_column,
 		                                &name_column_new,
 		                                if_exists,
 		                                if_column_exists);
@@ -375,15 +370,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	case DDL_TABLE_COLUMN_SET_STORED:
 	case DDL_TABLE_COLUMN_SET_RESOLVED:
 	{
-		Str db;
+		Str user;
 		Str name;
 		Str name_column;
 		Str value;
-		table_op_column_set_read(op, &db, &name, &name_column, &value);
+		table_op_column_set_read(op, &user, &name, &name_column, &value);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
-		write = table_mgr_column_set(&self->table_mgr, tr, &db, &name, &name_column,
+		write = table_mgr_column_set(&self->table_mgr, tr, &user, &name, &name_column,
 		                             &value, cmd,
 		                             if_exists,
 		                             if_column_exists);
@@ -391,15 +386,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_STORAGE_ADD:
 	{
-		Str  db;
+		Str  user;
 		Str  name;
-		auto config_pos = table_op_storage_add_read(op, &db, &name);
+		auto config_pos = table_op_storage_add_read(op, &user, &name);
 		auto config = volume_read(&config_pos);
 		defer(volume_free, config);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_not_exists_storage = ddl_if_storage_not_exists(flags);
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, !if_exists);
+		auto table = table_mgr_find(&self->table_mgr, &user, &name, !if_exists);
 		if (! table)
 			break;
 		write = table_storage_add(table, tr, config, if_not_exists_storage);
@@ -407,14 +402,14 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_STORAGE_DROP:
 	{
-		Str db;
+		Str user;
 		Str name;
 		Str name_storage;
-		table_op_storage_drop_read(op, &db, &name, &name_storage);
+		table_op_storage_drop_read(op, &user, &name, &name_storage);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_exists_storage = ddl_if_storage_exists(flags);
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, !if_exists);
+		auto table = table_mgr_find(&self->table_mgr, &user, &name, !if_exists);
 		if (! table)
 			break;
 		write = table_storage_drop(table, tr, &name_storage,
@@ -423,15 +418,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_STORAGE_PAUSE:
 	{
-		Str  db;
+		Str  user;
 		Str  name;
 		Str  name_storage;
 		bool pause;
-		table_op_storage_pause_read(op, &db, &name, &name_storage, &pause);
+		table_op_storage_pause_read(op, &user, &name, &name_storage, &pause);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_exists_storage = ddl_if_storage_exists(flags);
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, !if_exists);
+		auto table = table_mgr_find(&self->table_mgr, &user, &name, !if_exists);
 		if (! table)
 			break;
 		write = table_storage_pause(table, tr, &name_storage,
@@ -442,52 +437,52 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	case DDL_INDEX_CREATE:
 	{
 		// create index has different processing path and must be
-		// done using the db_create_index()
+		// done using the user_create_index()
 		abort();
 		break;
 	}
 	case DDL_INDEX_DROP:
 	{
-		Str db;
+		Str user;
 		Str name;
 		Str name_index;
-		table_op_index_drop_read(op, &db, &name, &name_index);
+		table_op_index_drop_read(op, &user, &name, &name_index);
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
 
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
+		auto table = table_mgr_find(&self->table_mgr, &user, &name, true);
 		auto if_exists = ddl_if_exists(flags);
 		write = table_index_drop(table, tr, &name_index, if_exists);
 		break;
 	}
 	case DDL_INDEX_RENAME:
 	{
-		Str db;
+		Str user;
 		Str name;
 		Str name_index;
 		Str name_index_new;
-		table_op_index_rename_read(op, &db, &name, &name_index, &name_index_new);
+		table_op_index_rename_read(op, &user, &name, &name_index, &name_index_new);
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
 
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
+		auto table = table_mgr_find(&self->table_mgr, &user, &name, true);
 		auto if_exists = ddl_if_exists(flags);
 		write = table_index_rename(table, tr, &name_index, &name_index_new, if_exists);
 		break;
 	}
 	case DDL_BRANCH_CREATE:
 	{
-		Str  db;
+		Str  user;
 		Str  name;
-		auto config_pos = table_op_branch_create_read(op, &db, &name);
+		auto config_pos = table_op_branch_create_read(op, &user, &name);
 		auto config = branch_read(&config_pos);
 		defer(branch_free, config);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_not_exists_branch = ddl_if_branch_not_exists(flags);
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, !if_exists);
+		auto table = table_mgr_find(&self->table_mgr, &user, &name, !if_exists);
 		if (! table)
 			break;
 		write = table_branch_create(table, tr, config, if_not_exists_branch);
@@ -495,14 +490,14 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_BRANCH_DROP:
 	{
-		Str db;
+		Str user;
 		Str name;
 		Str name_branch;
-		table_op_branch_drop_read(op, &db, &name, &name_branch);
+		table_op_branch_drop_read(op, &user, &name, &name_branch);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_exists_branch = ddl_if_branch_exists(flags);
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, !if_exists);
+		auto table = table_mgr_find(&self->table_mgr, &user, &name, !if_exists);
 		if (! table)
 			break;
 		write = table_branch_drop(table, tr, &name_branch, if_exists_branch);
@@ -510,15 +505,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_BRANCH_RENAME:
 	{
-		Str db;
+		Str user;
 		Str name;
 		Str name_branch;
 		Str name_branch_new;
-		table_op_branch_rename_read(op, &db, &name, &name_branch, &name_branch_new);
+		table_op_branch_rename_read(op, &user, &name, &name_branch, &name_branch_new);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_exists_branch = ddl_if_branch_exists(flags);
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, !if_exists);
+		auto table = table_mgr_find(&self->table_mgr, &user, &name, !if_exists);
 		if (! table)
 			break;
 		write = table_branch_rename(table, tr, &name_branch, &name_branch_new,
@@ -536,7 +531,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		// compile on creation
 		if (write)
 		{
-			auto udf = udf_mgr_find(&self->udf_mgr, &config->db, &config->name, true);
+			auto udf = udf_mgr_find(&self->udf_mgr, &config->user, &config->name, true);
 			self->iface->udf_compile(self, udf);
 		}
 		break;
@@ -550,7 +545,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		// and return type
 
 		// create or replace
-		auto udf = udf_mgr_find(&self->udf_mgr, &config->db, &config->name, false);
+		auto udf = udf_mgr_find(&self->udf_mgr, &config->user, &config->name, false);
 		if (udf)
 		{
 			// validate types
@@ -572,43 +567,43 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		// compile on creation
 		if (write)
 		{
-			udf = udf_mgr_find(&self->udf_mgr, &config->db, &config->name, true);
+			udf = udf_mgr_find(&self->udf_mgr, &config->user, &config->name, true);
 			self->iface->udf_compile(self, udf);
 		}
 		break;
 	}
 	case DDL_UDF_DROP:
 	{
-		Str db;
+		Str user;
 		Str name;
-		udf_op_drop_read(op, &db, &name);
+		udf_op_drop_read(op, &user, &name);
 
 		// ensure no other udfs depend on it
 		catalog_validate_udfs(self, &name);
-		catalog_validate_synonyms(self, &db, &name);
+		catalog_validate_synonyms(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = udf_mgr_drop(&self->udf_mgr, tr, &db, &name, if_exists);
+		write = udf_mgr_drop(&self->udf_mgr, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_UDF_RENAME:
 	{
-		Str db;
+		Str user;
 		Str name;
-		Str db_new;
+		Str user_new;
 		Str name_new;
-		udf_op_rename_read(op, &db, &name, &db_new, &name_new);
+		udf_op_rename_read(op, &user, &name, &user_new, &name_new);
 
-		// ensure db exists and not system
-		database_mgr_find(&self->db_mgr, &db_new, true);
+		// ensure user exists and not system
+		user_mgr_find(&self->user_mgr, &user_new, true);
 
 		// ensure no other udfs depend on it
 		catalog_validate_udfs(self, &name);
-		catalog_validate_synonyms(self, &db, &name);
+		catalog_validate_synonyms(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = udf_mgr_rename(&self->udf_mgr, tr, &db, &name,
-		                       &db_new, &name_new, if_exists);
+		write = udf_mgr_rename(&self->udf_mgr, tr, &user, &name,
+		                       &user_new, &name_new, if_exists);
 		break;
 	}
 	case DDL_SYNONYM_CREATE:
@@ -617,7 +612,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		defer(synonym_config_free, config);
 
 		// ensure synonym relation name is unique
-		if (catalog_find(self, &config->db, &config->name, false))
+		if (catalog_find(self, &config->user, &config->name, false))
 		{
 			// todo: skip synonyms
 			error("synonym '%.*s': conflicts with existing relation", str_size(&config->name),
@@ -626,43 +621,43 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		// create synonym
 		write = synonym_mgr_create(&self->synonym_mgr, tr, config, false);
-		auto synonym = synonym_mgr_find(&self->synonym_mgr, &config->db,
+		auto synonym = synonym_mgr_find(&self->synonym_mgr, &config->user,
 		                                &config->name, true);
 
 		// resolve
-		synonym->ref = catalog_find(self, &config->for_db, &config->for_name, true);
+		synonym->ref = catalog_find(self, &config->for_user, &config->for_name, true);
 		break;
 	}
 	case DDL_SYNONYM_DROP:
 	{
-		Str db;
+		Str user;
 		Str name;
-		synonym_op_drop_read(op, &db, &name);
+		synonym_op_drop_read(op, &user, &name);
 
 		// ensure no other udf depend on it
 		catalog_validate_udfs(self, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = synonym_mgr_drop(&self->synonym_mgr, tr, &db, &name, if_exists);
+		write = synonym_mgr_drop(&self->synonym_mgr, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_SYNONYM_RENAME:
 	{
-		Str db;
+		Str user;
 		Str name;
-		Str db_new;
+		Str user_new;
 		Str name_new;
-		synonym_op_rename_read(op, &db, &name, &db_new, &name_new);
+		synonym_op_rename_read(op, &user, &name, &user_new, &name_new);
 
-		// ensure db exists and not system
-		database_mgr_find(&self->db_mgr, &db_new, true);
+		// ensure user exists and not system
+		user_mgr_find(&self->user_mgr, &user_new, true);
 
 		// ensure no other udfs depend on it
 		catalog_validate_udfs(self, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = synonym_mgr_rename(&self->synonym_mgr, tr, &db, &name,
-		                           &db_new, &name_new,
+		write = synonym_mgr_rename(&self->synonym_mgr, tr, &user, &name,
+		                           &user_new, &name_new,
 		                           if_exists);
 		break;
 	}
@@ -680,17 +675,17 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 }
 
 hot Rel*
-catalog_find(Catalog* self, Str* db, Str* name, bool error_if_not_exists)
+catalog_find(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 {
-	auto table = table_mgr_find(&self->table_mgr, db, name, false);
+	auto table = table_mgr_find(&self->table_mgr, user, name, false);
 	if (table)
 		return &table->rel;
 
-	auto synonym = synonym_mgr_find(&self->synonym_mgr, db, name, false);
+	auto synonym = synonym_mgr_find(&self->synonym_mgr, user, name, false);
 	if (synonym)
 		return &synonym->rel;
 
-	auto udf = udf_mgr_find(&self->udf_mgr, db, name, false);
+	auto udf = udf_mgr_find(&self->udf_mgr, user, name, false);
 	if (udf)
 		return &udf->rel;
 
@@ -701,10 +696,10 @@ catalog_find(Catalog* self, Str* db, Str* name, bool error_if_not_exists)
 }
 
 hot Table*
-catalog_find_table(Catalog* self, Str* db, Str* name,
+catalog_find_table(Catalog* self, Str* user, Str* name,
                    bool     error_if_not_exists)
 {
-	auto rel = catalog_find(self, db, name, false);
+	auto rel = catalog_find(self, user, name, false);
 	if (! rel)
 	{
 		if (error_if_not_exists)

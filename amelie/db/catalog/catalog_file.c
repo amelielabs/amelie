@@ -21,8 +21,8 @@
 
 enum
 {
+	RESTORE_USER,
 	RESTORE_STORAGE,
-	RESTORE_DATABASE,
 	RESTORE_TABLE,
 	RESTORE_UDF,
 	RESTORE_SYNONYM
@@ -32,6 +32,16 @@ static void
 catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 {
 	switch (type) {
+	case RESTORE_USER:
+	{
+		// read user config
+		auto config = user_config_read(pos);
+		defer(user_config_free, config);
+
+		// create user
+		user_mgr_create(&self->user_mgr, tr, config, false);
+		break;
+	}
 	case RESTORE_STORAGE:
 	{
 		// read storage config
@@ -40,16 +50,6 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 
 		// create storage
 		storage_mgr_create(&self->storage_mgr, tr, config, false);
-		break;
-	}
-	case RESTORE_DATABASE:
-	{
-		// read db config
-		auto config = database_config_read(pos);
-		defer(database_config_free, config);
-
-		// create db
-		database_mgr_create(&self->db_mgr, tr, config, false);
 		break;
 	}
 	case RESTORE_TABLE:
@@ -71,7 +71,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		// create udf
 		udf_mgr_create(&self->udf_mgr, tr, config, false);
 
-		auto udf = udf_mgr_find(&self->udf_mgr, &config->db, &config->name, true);
+		auto udf = udf_mgr_find(&self->udf_mgr, &config->user, &config->name, true);
 		self->iface->udf_compile(self, udf);
 		break;
 	}
@@ -112,36 +112,36 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 static void
 catalog_restore(Catalog* self, uint8_t** pos)
 {
-	// { lsn, tsn, storages, databases, tables, udfs, synonyms }
-	int64_t  lsn           = 0;
-	int64_t  tsn           = 0;
-	uint8_t* pos_storages  = NULL;
-	uint8_t* pos_databases = NULL;
-	uint8_t* pos_tables    = NULL;
-	uint8_t* pos_udfs      = NULL;
-	uint8_t* pos_synonyms  = NULL;
+	// { lsn, tsn, users, storages, tables, udfs, synonyms }
+	int64_t  lsn          = 0;
+	int64_t  tsn          = 0;
+	uint8_t* pos_users    = NULL;
+	uint8_t* pos_storages = NULL;
+	uint8_t* pos_tables   = NULL;
+	uint8_t* pos_udfs     = NULL;
+	uint8_t* pos_synonyms = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_INT,   "lsn",       &lsn           },
-		{ DECODE_INT,   "tsn",       &tsn           },
-		{ DECODE_ARRAY, "storages",  &pos_storages  },
-		{ DECODE_ARRAY, "databases", &pos_databases },
-		{ DECODE_ARRAY, "tables",    &pos_tables    },
-		{ DECODE_ARRAY, "udfs",      &pos_udfs      },
-		{ DECODE_ARRAY, "synonyms",  &pos_synonyms  },
-		{ 0,             NULL,        NULL          },
+		{ DECODE_INT,   "lsn",      &lsn          },
+		{ DECODE_INT,   "tsn",      &tsn          },
+		{ DECODE_ARRAY, "users",    &pos_users    },
+		{ DECODE_ARRAY, "storages", &pos_storages },
+		{ DECODE_ARRAY, "tables",   &pos_tables   },
+		{ DECODE_ARRAY, "udfs",     &pos_udfs     },
+		{ DECODE_ARRAY, "synonyms", &pos_synonyms },
+		{ 0,             NULL,       NULL         },
 	};
 	decode_obj(obj, "catalog", pos);
+
+	// users
+	json_read_array(&pos_users);
+	while (! json_read_array_end(&pos_users))
+		catalog_restore_object(self, RESTORE_USER, &pos_users);
 
 	// storages
 	json_read_array(&pos_storages);
 	while (! json_read_array_end(&pos_storages))
 		catalog_restore_object(self, RESTORE_STORAGE, &pos_storages);
-
-	// databases
-	json_read_array(&pos_databases);
-	while (! json_read_array_end(&pos_databases))
-		catalog_restore_object(self, RESTORE_DATABASE, &pos_databases);
 
 	// tables
 	json_read_array(&pos_tables);
@@ -209,7 +209,7 @@ catalog_read(Catalog* self)
 Buf*
 catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 {
-	// { lsn, tsn, storages, databases, tables, udfs, synonyms }
+	// { lsn, tsn, users, storages, tables, udfs, synonyms }
 	auto buf = buf_create();
 	encode_obj(buf);
 
@@ -221,13 +221,13 @@ catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 	encode_raw(buf, "tsn", 3);
 	encode_integer(buf, tsn);
 
+	// users
+	encode_raw(buf, "users", 5);
+	user_mgr_dump(&self->user_mgr, buf);
+
 	// storages
 	encode_raw(buf, "storages", 8);
 	storage_mgr_dump(&self->storage_mgr, buf);
-
-	// databases
-	encode_raw(buf, "databases", 9);
-	database_mgr_dump(&self->db_mgr, buf);
 
 	// tables
 	encode_raw(buf, "tables", 6);
