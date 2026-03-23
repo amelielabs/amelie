@@ -11,6 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
+// auth
+#include "frontend/auth_cache.h"
+#include "frontend/auth.h"
+
 // frontend
 #include "frontend/frontend.h"
 #include "frontend/frontend_mgr.h"

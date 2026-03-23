@@ -55,13 +55,6 @@ frontend_rpc(Rpc* rpc, void* arg)
 {
 	Frontend* self = arg;
 	switch (rpc->msg.id) {
-	case MSG_SYNC_USERS:
-	{
-		// sync user caches
-		UserCache* with = rpc->arg;
-		auth_sync(&self->auth, with);
-		break;
-	}
 	case MSG_STOP:
 	{
 		// disconnect clients

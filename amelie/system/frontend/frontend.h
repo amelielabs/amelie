@@ -14,12 +14,19 @@
 typedef struct FrontendIf FrontendIf;
 typedef struct Frontend   Frontend;
 
+typedef enum
+{
+	SESSION_OK,
+	SESSION_ERROR,
+	SESSION_ERROR_AUTH,
+} SessionStatus;
+
 struct FrontendIf
 {
-	void* (*session_create)(Frontend*, void*);
-	void  (*session_free)(void*);
-	bool  (*session_execute)(void*, Endpoint*, Str*, Output*);
-	void  (*session_execute_replay)(void*, Primary*, Buf*);
+	void*         (*session_create)(Frontend*, void*);
+	void          (*session_free)(void*);
+	SessionStatus (*session_execute)(void*, Endpoint*, Str*, Output*);
+	void          (*session_execute_replay)(void*, Primary*, Buf*);
 };
 
 struct Frontend

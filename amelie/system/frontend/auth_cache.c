@@ -11,8 +11,11 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_user.h>
-#include <amelie_auth.h>
+#include <amelie_server>
+#include <amelie_db>
+#include <amelie_sync>
+#include <amelie_vm>
+#include <amelie_frontend.h>
 
 static inline void
 auth_cache_node_free(AuthCacheNode* self)

@@ -60,8 +60,8 @@ relay_connect(Relay* self, Str* uri)
 	uri_parse(endpoint, uri);
 
 	// set missing defaults
-	if (opt_string_empty(&endpoint->db))
-		opt_string_set_raw(&endpoint->db, "main", 4);
+	if (opt_string_empty(&endpoint->user))
+		opt_string_set_raw(&endpoint->user, "main", 4);
 
 	if (opt_string_empty(&endpoint->content_type))
 		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
@@ -94,22 +94,27 @@ relay_connect(Relay* self, Str* uri)
 hot static inline int
 relay_execute_session(Relay* self, Str* command)
 {
-	auto ctl      = self->fe->iface;
-	auto is_error = ctl->session_execute(self->session, &self->endpoint, command,
-	                                     &self->output);
-	auto code     = 0;
-	if (is_error)
-	{
-		// 400 Bad Request
-		code = 400;
-	} else
-	{
+	auto ctl    = self->fe->iface;
+	auto status = ctl->session_execute(self->session, &self->endpoint, command,
+	                                   &self->output);
+	auto code   = 0;
+	switch (status) {
+	case SESSION_OK:
 		// 204 No Content
 		// 200 OK
 		if (buf_empty(self->output.buf))
 			code = 204;
 		else
 			code = 200;
+		break;
+	case SESSION_ERROR:
+		// 400 Bad Request
+		code = 400;
+		break;
+	case SESSION_ERROR_AUTH:
+		// 403 Forbidden
+		code = 403;
+		break;
 	}
 	return code;
 }

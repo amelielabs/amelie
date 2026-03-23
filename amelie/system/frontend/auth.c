@@ -11,15 +11,17 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_user.h>
-#include <amelie_auth.h>
+#include <amelie_server>
+#include <amelie_db>
+#include <amelie_sync>
+#include <amelie_vm>
+#include <amelie_frontend.h>
 
 void
 auth_init(Auth* self)
 {
 	jwt_decode_init(&self->jwt);
 	auth_cache_init(&self->cache);
-	user_cache_init(&self->user_cache);
 }
 
 void
@@ -27,14 +29,6 @@ auth_free(Auth* self)
 {
 	jwt_decode_free(&self->jwt);
 	auth_cache_free(&self->cache);
-	user_cache_free(&self->user_cache);
-}
-
-void
-auth_sync(Auth* self, UserCache* cache)
-{
-	auth_cache_reset(&self->cache);
-	user_cache_sync(&self->user_cache, cache);
 }
 
 hot static inline User*
@@ -86,7 +80,7 @@ auth_run(Auth* self, Str* token)
 		      str_size(&sub), str_of(&sub));
 
 	// find user
-	auto user = user_cache_find(&self->user_cache, &sub);
+	auto user = user_mgr_find(&share()->db->catalog.user_mgr, &sub, false);
 	if (! user)
 		error("auth: user '%.*s' not found", str_size(&sub),
 		      str_of(&sub));

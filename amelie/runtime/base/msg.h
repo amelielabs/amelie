@@ -36,7 +36,6 @@ typedef enum
 	MSG_UNDEPLOY,
 
 	// system
-	MSG_SYNC_USERS,
 	MSG_SHOW_METRICS
 } MsgId;
 

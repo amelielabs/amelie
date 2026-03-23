@@ -27,6 +27,7 @@ frontend_client_primary_on_write(Primary* self, Buf* data)
 static void
 frontend_client_primary(Frontend* self, Client* client, void* session)
 {
+
 	Recover recover;
 	recover_init(&recover, share()->db, true);
 	defer(recover_free, &recover);
@@ -38,34 +39,14 @@ frontend_client_primary(Frontend* self, Client* client, void* session)
 }
 
 hot static inline bool
-frontend_auth(Frontend* self, Client* client)
-{
-	auto request = &client->request;
-	auto auth_header = http_find(request, "Authorization", 13);
-	if (! auth_header)
-	{
-		// trusted by the server listen configuration
-		if (! client->auth)
-			return false;
-	} else
-	{
-		auto user = auth(&self->auth, &auth_header->value);
-		if (likely(user))
-			return false;
-	}
-	// error
-	return true;
-}
-
-hot static inline bool
 frontend_endpoint(Client* client, Output* output)
 {
 	auto request  = &client->request;
 	auto endpoint = client->endpoint;
 	endpoint_reset(endpoint);
 
-	// POST /v1/db/<db>
-	// POST /v1/db/<db>/<relation>
+	// POST /v1/db
+	// POST /v1/db/<relation>
 	// POST /v1/backup
 	// POST /v1/repl
 	auto method = &request->options[HTTP_METHOD];
@@ -137,14 +118,6 @@ frontend_client(Frontend* self, Client* client)
 			break;
 		}
 
-		// authenticate
-		if (frontend_auth(self, client))
-		{
-			// 403 Forbidden
-			client_403(client);
-			continue;
-		}
-
 		// parse endpoint and prepare output
 		if (frontend_endpoint(client, &output))
 		{
@@ -156,6 +129,7 @@ frontend_client(Frontend* self, Client* client)
 		// handle service requests (backup or primary server connection)
 		if (! opt_string_empty(&endpoint.service))
 		{
+			// todo: authenticate
 			auto service = &endpoint.service.string;
 			if (str_is(service, "backup", 6))
 				backup(share()->db, client);
@@ -168,19 +142,24 @@ frontend_client(Frontend* self, Client* client)
 		// execute request
 		Str content;
 		buf_str(&request->content, &content);
-		auto on_error = ctl->session_execute(session, &endpoint, &content, &output);
-		if (unlikely(on_error))
-		{
-			// 400 Bad Request
-			client_400(client, output.buf);
-		} else
-		{
+		auto status = ctl->session_execute(session, &endpoint, &content, &output);
+		switch (status) {
+		case SESSION_OK:
 			// 204 No Content
 			// 200 OK
 			if (buf_empty(output.buf))
 				client_204(client);
 			else
 				client_200(client, output.buf);
+			break;
+		case SESSION_ERROR:
+			// 400 Bad Request
+			client_400(client, output.buf);
+			break;
+		case SESSION_ERROR_AUTH:
+			// 403 Forbidden
+			client_403(client);
+			break;
 		}
 	}
 }
