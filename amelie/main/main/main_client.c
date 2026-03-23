@@ -134,7 +134,7 @@ main_local_connect(MainClient* ptr)
 	auto self = (MainLocal*)ptr;
 	auto endpoint = &self->obj.main->endpoint;
 
-	// create native connection string amelie://db?opts...
+	// create native connection string amelie://user?opts...
 	Endpoint local;
 	endpoint_init(&local);
 	defer(endpoint_free, &local);

@@ -102,7 +102,7 @@ import_send(Import* self, Buf* buf)
 	// read reply from previous request
 	import_sync(self, next);
 
-	// POST /v1/db/db_name/relation
+	// POST /v1/db/relation
 	Str content;
 	buf_str(buf, &content);
 	next->iface->send(next, &content);

@@ -131,13 +131,13 @@ bench_free(Bench* self)
 static void
 bench_service_prepare(MainClient* client, bool create)
 {
-	// recreate bench database
+	// recreate bench user
 	Str str;
-	str_set_cstr(&str, "drop database if exists bench cascade");
+	str_set_cstr(&str, "drop user if exists bench cascade");
 	main_client_execute(client, &str, NULL);
 	if (create)
 	{
-		str_set_cstr(&str, "create database bench");
+		str_set_cstr(&str, "create user bench");
 		main_client_execute(client, &str, NULL);
 	}
 }
@@ -154,8 +154,9 @@ bench_service(Bench* self, bool create)
 	);
 	if (create)
 	{
-		// connect to the bench db for deploy
-		str_set_cstr(&self->main->endpoint.db.string, "bench");
+		// connect as bench user for deploy
+		str_set_cstr(&self->main->endpoint.user.string, "bench");
+
 		auto client = main_client_create(self->main);
 		defer(main_client_free, client);
 		error_catch(
@@ -235,9 +236,9 @@ bench_run(Bench* self)
 		}
 	}
 
-	// switch to using bench db
+	// switch to bench user
 	auto endpoint = &self->main->endpoint;
-	str_set_cstr(&endpoint->db.string, "bench");
+	str_set_cstr(&endpoint->user.string, "bench");
 	opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
 
 	// begin

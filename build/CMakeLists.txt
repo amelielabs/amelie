@@ -68,8 +68,7 @@ include_directories("${AMELIE_ROOT}/runtime/runtime")
 
 # server
 include_directories("${AMELIE_ROOT}/server")
-include_directories("${AMELIE_ROOT}/server/user")
-include_directories("${AMELIE_ROOT}/server/auth")
+include_directories("${AMELIE_ROOT}/server/jwt")
 include_directories("${AMELIE_ROOT}/server/http")
 include_directories("${AMELIE_ROOT}/server/client")
 include_directories("${AMELIE_ROOT}/server/server")
@@ -166,12 +165,9 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/runtime/runtime.c)
 
 set(AMELIE_SOURCES_SERVER
-    ${AMELIE_ROOT}/server/user/user_mgr.c
-    ${AMELIE_ROOT}/server/auth/jwt_decode.c
-    ${AMELIE_ROOT}/server/auth/jwt_encode.c
-    ${AMELIE_ROOT}/server/auth/jwt.c
-    ${AMELIE_ROOT}/server/auth/auth_cache.c
-    ${AMELIE_ROOT}/server/auth/auth.c
+    ${AMELIE_ROOT}/server/jwt/jwt_decode.c
+    ${AMELIE_ROOT}/server/jwt/jwt_encode.c
+    ${AMELIE_ROOT}/server/jwt/jwt.c
     ${AMELIE_ROOT}/server/http/endpoint.c
     ${AMELIE_ROOT}/server/http/uri.c
     ${AMELIE_ROOT}/server/http/http.c
@@ -192,7 +188,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/part/part_mgr.c
     ${AMELIE_ROOT}/db/part/part_mgr_recover.c
     ${AMELIE_ROOT}/db/part/cursor.c
-    ${AMELIE_ROOT}/db/catalog/database_mgr.c
+    ${AMELIE_ROOT}/db/catalog/user_mgr.c
     ${AMELIE_ROOT}/db/catalog/table_mgr.c
     ${AMELIE_ROOT}/db/catalog/table_mgr_alter.c
     ${AMELIE_ROOT}/db/catalog/table_storage.c
@@ -272,14 +268,13 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_break.c
     ${AMELIE_ROOT}/compiler/parser/parse_show.c
     ${AMELIE_ROOT}/compiler/parser/parse_system.c
-    ${AMELIE_ROOT}/compiler/parser/parse_user.c
     ${AMELIE_ROOT}/compiler/parser/parse_token.c
     ${AMELIE_ROOT}/compiler/parser/parse_replica.c
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
     ${AMELIE_ROOT}/compiler/parser/parse_watch.c
     ${AMELIE_ROOT}/compiler/parser/parse_lock.c
     ${AMELIE_ROOT}/compiler/parser/parse_storage.c
-    ${AMELIE_ROOT}/compiler/parser/parse_db.c
+    ${AMELIE_ROOT}/compiler/parser/parse_user.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
     ${AMELIE_ROOT}/compiler/parser/parse_branch.c
@@ -318,6 +313,8 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_utility.c)
 
 set(AMELIE_SOURCES_SYSTEM
+    ${AMELIE_ROOT}/system/frontend/auth_cache.c
+    ${AMELIE_ROOT}/system/frontend/auth.c
     ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/frontend/frontend_client.c
     ${AMELIE_ROOT}/system/frontend/frontend_native.c

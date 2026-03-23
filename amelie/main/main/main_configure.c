@@ -105,19 +105,15 @@ main_configure(Main* self, Opts* opts)
 	if (str_empty(uri) && str_empty(path))
 		error("uri or path is not defined");
 
-	// set default db
-	auto db = opt_string_of(&endpoint->db);
-	if (str_empty(db))
-		opt_string_set_raw(&endpoint->db, "main", 4);
+	// set default user
+	auto user = opt_string_of(&endpoint->user);
+	if (str_empty(user))
+		opt_string_set_raw(&endpoint->user, "main", 4);
 
 	// generate auth token
-	auto user   = opt_string_of(&endpoint->user);
 	auto secret = opt_string_of(&endpoint->secret);
-	if (!str_empty(user) || !str_empty(secret))
+	if (! str_empty(secret))
 	{
-		if (str_empty(user) || str_empty(secret))
-			error("bookmark: both user and secret options are expected");
-
 		// create jwt one-time token
 
 		// set expire timestamp to 1 year

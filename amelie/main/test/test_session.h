@@ -60,8 +60,8 @@ test_session_connect(TestSession* self, Str* uri, Str* cafile)
 		opt_string_set(&endpoint->tls_ca, cafile);
 
 	// set defaults
-	if (opt_string_empty(&endpoint->db))
-		opt_string_set_raw(&endpoint->db, "main", 4);
+	if (opt_string_empty(&endpoint->user))
+		opt_string_set_raw(&endpoint->user, "main", 4);
 	if (opt_string_empty(&endpoint->content_type))
 		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
 	if (opt_string_empty(&endpoint->accept))

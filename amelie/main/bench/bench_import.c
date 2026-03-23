@@ -34,17 +34,6 @@ bench_import_main(BenchWorker* self, MainClient* client)
 	auto bench = self->bench;
 	auto batch = opt_int_of(&bench->batch);
 
-
-	/*
-	// path
-	Str path;
-	str_set_cstr(&path, "/v1/db/__bench/test?columns=");
-
-	// content type
-	Str content_type;
-	str_set_cstr(&content_type, "application/json");
-	*/
-
 	// content
 
 	// [[], ...]
