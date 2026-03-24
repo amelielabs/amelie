@@ -26,7 +26,6 @@ struct Endpoint
 	Opt  proto;
 	// auth
 	Opt  user;
-	Opt  secret;
 	Opt  token;
 	// host
 	Opt  host;

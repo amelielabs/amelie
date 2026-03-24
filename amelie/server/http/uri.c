@@ -56,26 +56,21 @@ uri_parse_protocol(Uri* self)
 static inline void
 uri_parse_user(Uri* self)
 {
-	// [user[:password]@]
+	// [user@]
 	char* at = strstr(self->pos, "@");
 	if (! at)
 		return;
 	if (unlikely(at == self->pos))
 		uri_error();
 
-	auto endpoint = self->endpoint;
+	// ensure user:password@ is not supported
 	auto sep = (char*)memchr(self->pos, ':', at - self->pos);
 	if (sep)
-	{
-		// user:password
-		opt_string_set_raw(&endpoint->user, self->pos, sep - self->pos);
-		sep++;
-		opt_string_set_raw(&endpoint->secret, sep, at - sep);
-	} else
-	{
-		// user
-		opt_string_set_raw(&endpoint->user, self->pos, at - self->pos);
-	}
+		uri_error();
+
+	// user
+	auto endpoint = self->endpoint;
+	opt_string_set_raw(&endpoint->user, self->pos, at - self->pos);
 	self->pos = at + 1;
 }
 
@@ -426,16 +421,12 @@ uri_export(Endpoint* self, Buf* buf)
 		break;
 	}
 
-	// [user[:password]@]
+	// [user [@]]
 	if (! opt_string_empty(&self->user))
 	{
 		buf_write_str(buf, &self->user.string);
-		if (! opt_string_empty(&self->secret))
-		{
-			buf_write(buf, ":", 1);
-			buf_write_str(buf, &self->secret.string);
-		}
-		buf_write(buf, "@", 1);
+		if (proto != PROTO_AMELIE)
+			buf_write(buf, "@", 1);
 	}
 
 	// [hostname[:port]]
@@ -452,7 +443,11 @@ uri_export(Endpoint* self, Buf* buf)
 
 	// relation
 	if (! opt_string_empty(&self->relation))
+	{
+		if (proto == PROTO_AMELIE)
+			buf_write(buf, "/", 1);
 		buf_write_str(buf, &self->relation.string);
+	}
 
 	// arguments
 	bool first = true;
@@ -466,6 +461,7 @@ uri_export(Endpoint* self, Buf* buf)
 		uri_export_arg(&self->tls_key, buf, &first);
 		uri_export_arg(&self->tls_server, buf, &first);
 	}
+	uri_export_arg(&self->token, buf, &first);
 	uri_export_arg(&self->columns, buf, &first);
 	uri_export_arg(&self->timezone, buf, &first);
 	uri_export_arg(&self->format, buf, &first);

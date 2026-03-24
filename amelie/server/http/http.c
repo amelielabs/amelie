@@ -316,7 +316,7 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 	auto token = opt_string_of(&endpoint->token);
 	if (! str_empty(token))
 	{
-		buf_write(buf, "Authorization: Bearer ", 21);
+		buf_write(buf, "Authorization: Bearer ", 22);
 		buf_write_str(buf, token);
 		buf_write(buf, "\r\n", 2);
 	}

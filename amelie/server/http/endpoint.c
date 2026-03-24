@@ -23,7 +23,6 @@ endpoint_init(Endpoint* self)
 		{ "proto",        OPT_INT,     OPT_C, &self->proto,        NULL, 0    },
 		// auth
 		{ "user",         OPT_STRING,  OPT_C, &self->user,         NULL, 0    },
-		{ "secret",       OPT_STRING,  OPT_C, &self->secret,       NULL, 0    },
 		{ "token",        OPT_STRING,  OPT_C, &self->token,        NULL, 0    },
 		// host
 		{ "host",         OPT_STRING,  OPT_C, &self->host,         NULL, 0    },

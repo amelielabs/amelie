@@ -105,39 +105,6 @@ main_configure(Main* self, Opts* opts)
 	if (str_empty(uri) && str_empty(path))
 		error("uri or path is not defined");
 
-	// set default user
-	auto user = opt_string_of(&endpoint->user);
-	if (str_empty(user))
-		opt_string_set_raw(&endpoint->user, "main", 4);
-
-	// generate auth token
-	auto secret = opt_string_of(&endpoint->secret);
-	if (! str_empty(secret))
-	{
-		// create jwt one-time token
-
-		// set expire timestamp to 1 year
-		Timestamp expire;
-		timestamp_init(&expire);
-		timestamp_set_unixtime(&expire, time_us());
-		Interval iv;
-		interval_init(&iv);
-		Str str;
-		str_set_cstr(&str, "1 year");
-		interval_set(&iv, &str);
-		timestamp_add(&expire, &iv);
-
-		auto jwt = jwt_create(user, secret, &expire);
-		defer_buf(jwt);
-		Str jwt_str;
-		buf_str(jwt, &jwt_str);
-		opt_string_set(&endpoint->token, &jwt_str);
-
-		// reset user and secret, keep only token
-		str_free(user);
-		str_free(secret);
-	}
-
 	// point to the db options
 	main_advance(self, arg);
 }
