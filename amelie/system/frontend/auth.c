@@ -91,7 +91,8 @@ auth_run(Auth* self, Str* user_id, Str* token)
 		      str_of(&sub));
 
 	// validate digest using user secret
-	if (! jwt_decode_validate(jwt, &user->config->secret))
+	auto secret = opt_string_of(&state()->secret);
+	if (! jwt_decode_validate(jwt, secret))
 		error("auth: user '%.*s' token is invalid", str_size(&sub),
 		      str_of(&sub));
 

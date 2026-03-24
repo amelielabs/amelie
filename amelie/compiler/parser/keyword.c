@@ -167,7 +167,6 @@ Keyword keywords[] =
 	{ KSTOP,                  "stop",                  4  },
 	{ KSUBSCRIBE,             "subscribe",             9  },
 	{ KSWITCH,                "switch",                6  },
-	{ KSECRET,                "secret",                6  },
 	{ KSTORED,                "stored",                6  },
 	{ KSTORAGE,               "storage",               7  },
 	{ KSYNONYM,               "synonym",               7  },

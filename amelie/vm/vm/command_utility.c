@@ -43,8 +43,7 @@ ccreate_token(Vm* self, Op* op)
 	auto user = user_mgr_find(&share()->db->catalog.user_mgr, &name, true);
 
 	// ensure user has a secret
-	if (str_empty(&user->config->secret))
-		error("user '%.*s' has no secret", str_size(&name), str_of(&name));
+	auto secret = opt_string_of(&state()->secret);
 
 	// set expire interval
 	Interval iv;
@@ -57,7 +56,7 @@ ccreate_token(Vm* self, Op* op)
 	timestamp_add(&expire, &iv);
 
 	// generate token
-	auto jwt = jwt_create(&user->config->name, &user->config->secret, &expire);
+	auto jwt = jwt_create(&user->config->name, secret, &expire);
 	defer_buf(jwt);
 	auto buf = buf_create();
 	encode_buf(buf, jwt);

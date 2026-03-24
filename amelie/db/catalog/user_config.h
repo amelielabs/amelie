@@ -16,7 +16,6 @@ typedef struct UserConfig UserConfig;
 struct UserConfig
 {
 	Str  name;
-	Str  secret;
 	bool agent;
 	bool system;
 };
@@ -29,7 +28,6 @@ user_config_allocate()
 	self->agent  = false;
 	self->system = false;
 	str_init(&self->name);
-	str_init(&self->secret);
 	return self;
 }
 
@@ -37,7 +35,6 @@ static inline void
 user_config_free(UserConfig* self)
 {
 	str_free(&self->name);
-	str_free(&self->secret);
 	am_free(self);
 }
 
@@ -60,19 +57,11 @@ user_config_set_agent(UserConfig* self, bool value)
 	self->agent = value;
 }
 
-static inline void
-user_config_set_secret(UserConfig* self, Str* value)
-{
-	str_free(&self->secret);
-	str_copy(&self->secret, value);
-}
-
 static inline UserConfig*
 user_config_copy(UserConfig* self)
 {
 	auto copy = user_config_allocate();
 	user_config_set_name(copy, &self->name);
-	user_config_set_secret(copy, &self->secret);
 	user_config_set_agent(copy, self->agent);
 	user_config_set_system(copy, self->system);
 	return copy;
@@ -86,7 +75,6 @@ user_config_read(uint8_t** pos)
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "name",   &self->name   },
-		{ DECODE_STRING, "secret", &self->secret },
 		{ DECODE_BOOL,   "agent",  &self->agent  },
 		{ 0,              NULL,     NULL         },
 	};
@@ -109,13 +97,6 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 	// agent
 	encode_raw(buf, "agent", 5);
 	encode_bool(buf, self->agent);
-
-	// secret
-	if (flags_has(flags, FSECRETS))
-	{
-		encode_raw(buf, "secret", 6);
-		encode_string(buf, &self->secret);
-	}
 
 	encode_obj_end(buf);
 }

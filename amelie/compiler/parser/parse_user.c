@@ -20,7 +20,7 @@
 void
 parse_user_create(Stmt* self, bool agent)
 {
-	// CREATE USER|AGENT [IF NOT EXISTS] name [SECRET value]
+	// CREATE USER|AGENT [IF NOT EXISTS] name
 	auto stmt = ast_user_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -34,14 +34,6 @@ parse_user_create(Stmt* self, bool agent)
 	auto name = stmt_expect(self, KNAME);
 	user_config_set_name(stmt->config, &name->string);
 	user_config_set_agent(stmt->config, agent);
-
-	// [SECRET]
-	if (stmt_if(self, KSECRET))
-	{
-		// value
-		auto value = stmt_expect(self, KSTRING);
-		user_config_set_secret(stmt->config, &value->string);
-	}
 }
 
 void

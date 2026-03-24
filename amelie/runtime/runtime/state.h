@@ -26,6 +26,7 @@ struct State
 	Opt  catalog_pending;
 	Opt  read_only;
 	// persistent
+	Opt  secret;
 	Opt  repl;
 	Opt  repl_primary;
 	Opt  replicas;

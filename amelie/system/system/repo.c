@@ -187,6 +187,11 @@ repo_bootstrap(void)
 		opt_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
 	}
 
+	// generate secret
+	uint8_t secret[32];
+	random_generate_alnum(&runtime()->random, secret, sizeof(secret));
+	opt_string_set_raw(&state()->secret, (char*)secret, sizeof(secret));
+
 	// set default timezone using system timezone
 	if (opt_string_empty(&config->timezone))
 		opt_string_set(&config->timezone, &runtime()->timezone_mgr.system->name);
