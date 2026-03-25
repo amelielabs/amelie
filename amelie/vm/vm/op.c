@@ -270,10 +270,11 @@ OpDesc ops[] =
 	{ CUPDATE, "update" },
 	{ CUPDATE_STORE, "update_store" },
 
-	// system
+	// storage
 	{ CCHECKPOINT, "checkpoint" },
 
-	// token
+	// system
+	{ CCREATE_SECRET, "create_secret" },
 	{ CCREATE_TOKEN, "create_token" },
 
 	// replica

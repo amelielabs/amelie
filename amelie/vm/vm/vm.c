@@ -347,10 +347,11 @@ vm_run(Vm*       self,
 		&&cupdate,
 		&&cupdate_store,
 
-		// system
+		// storage
 		&&ccheckpoint,
 
-		// token
+		// system
+		&&ccreate_secret,
 		&&ccreate_token,
 
 		// replica
@@ -1868,6 +1869,10 @@ cupdate_store:
 
 ccheckpoint:
 	ccheckpoint(self, op);
+	op_next;
+
+ccreate_secret:
+	ccreate_secret(self, op);
 	op_next;
 
 ccreate_token:

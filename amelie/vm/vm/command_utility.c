@@ -30,6 +30,20 @@ ccheckpoint(Vm* self, Op* op)
 }
 
 void
+ccreate_secret(Vm* self, Op* op)
+{
+	// create new system secret
+	unused(self);
+	unused(op);
+	uint8_t secret[32];
+	random_generate_alnum(&runtime()->random, secret, sizeof(secret));
+	opt_string_set_raw(&state()->secret, (char*)secret, sizeof(secret));
+
+	control_save_state();
+	control_invalidate_auth();
+}
+
+void
 ccreate_token(Vm* self, Op* op)
 {
 	// [result, options_offset]

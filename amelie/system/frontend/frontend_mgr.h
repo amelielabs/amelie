@@ -101,7 +101,19 @@ frontend_mgr_invalidate(FrontendMgr* self, User* user)
 		return;
 	for (int i = 0; i < self->workers_count; i++)
 	{
-		auto frontend = self->workers[i];
-		auth_cache_invalidate(&frontend.auth.cache, user);
+		auto frontend = &self->workers[i];
+		auth_cache_invalidate(&frontend->auth.cache, user);
+	}
+}
+
+static inline void
+frontend_mgr_invalidate_all(FrontendMgr* self)
+{
+	if (self->workers == NULL)
+		return;
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		auto frontend = &self->workers[i];
+		auth_reset(&frontend->auth);
 	}
 }

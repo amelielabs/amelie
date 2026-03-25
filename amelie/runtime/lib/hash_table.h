@@ -48,7 +48,7 @@ static inline void
 hashtable_free(Hashtable* self)
 {
 	buf_free(&self->buf);
-	buf_init(&self->buf);
+	hashtable_init(self);
 }
 
 static inline void

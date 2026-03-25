@@ -18,9 +18,21 @@
 #include <amelie_parser.h>
 
 void
-parse_checkpoint(Stmt* self)
+parse_system_alter(Stmt* self)
 {
-	// CHECKPOINT
-	auto stmt = ast_checkpoint_allocate();
+	// ALTER SYSTEM SECRET ROTATE
+	auto stmt = ast_system_alter_allocate();
 	self->ast = &stmt->ast;
+
+	// SECRET
+	auto ast = stmt_next_shadow(self);
+	if (ast->id != KNAME && !str_is_case(&ast->string, "SECRET", 6))
+		stmt_error(self, ast, "SECRET expected");
+
+	// ROTATE
+	ast = stmt_next_shadow(self);
+	if (ast->id != KNAME && !str_is_case(&ast->string, "ROTATE", 6))
+		stmt_error(self, ast, "ROTATE expected");
+
+	stmt->type = SYSTEM_ALTER_SECRET_ROTATE;
 }

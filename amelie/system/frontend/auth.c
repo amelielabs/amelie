@@ -31,6 +31,12 @@ auth_free(Auth* self)
 	auth_cache_free(&self->cache);
 }
 
+void
+auth_reset(Auth* self)
+{
+	auth_cache_reset(&self->cache);
+}
+
 hot static inline User*
 auth_run(Auth* self, Str* user_id, Str* token)
 {

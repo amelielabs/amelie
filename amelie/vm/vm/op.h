@@ -263,10 +263,11 @@ enum
 	CUPDATE,
 	CUPDATE_STORE,
 
-	// system
+	// storage
 	CCHECKPOINT,
 
-	// token
+	// system
+	CCREATE_SECRET,
 	CCREATE_TOKEN,
 
 	// replica

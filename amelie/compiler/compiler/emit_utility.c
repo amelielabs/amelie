@@ -396,6 +396,16 @@ emit_utility(Compiler* self)
 		lock_ddl     = LOCK_NONE;
 		break;
 	}
+	case STMT_ALTER_SYSTEM:
+	{
+		auto arg = ast_system_alter_of(stmt->ast);
+		unused(arg);
+		op0(self, CCREATE_SECRET);
+
+		lock_catalog = LOCK_NONE;
+		lock_ddl     = LOCK_NONE;
+		break;
+	}
 	case STMT_CHECKPOINT:
 	{
 		auto arg = ast_checkpoint_of(stmt->ast);

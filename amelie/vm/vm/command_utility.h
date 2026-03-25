@@ -11,10 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-// system
+// storage
 void ccheckpoint(Vm*, Op*);
 
-// users
+// system
+void ccreate_secret(Vm*, Op*);
 void ccreate_token(Vm*, Op*);
 
 // replica

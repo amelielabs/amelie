@@ -11,24 +11,31 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct AstCheckpoint AstCheckpoint;
+typedef struct AstSystemAlter  AstSystemAlter;
 
-struct AstCheckpoint
+enum
 {
-	Ast ast;
+	SYSTEM_ALTER_SECRET_ROTATE
 };
 
-static inline AstCheckpoint*
-ast_checkpoint_of(Ast* ast)
+struct AstSystemAlter
 {
-	return (AstCheckpoint*)ast;
+	Ast ast;
+	int type;
+};
+
+static inline AstSystemAlter*
+ast_system_alter_of(Ast* ast)
+{
+	return (AstSystemAlter*)ast;
 }
 
-static inline AstCheckpoint*
-ast_checkpoint_allocate(void)
+static inline AstSystemAlter*
+ast_system_alter_allocate(void)
 {
-	AstCheckpoint* self = ast_allocate(0, sizeof(AstCheckpoint));
+	AstSystemAlter* self;
+	self = ast_allocate(0, sizeof(AstSystemAlter));
 	return self;
 }
 
-void parse_checkpoint(Stmt*);
+void parse_system_alter(Stmt*);

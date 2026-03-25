@@ -26,6 +26,7 @@ typedef enum
 struct RuntimeIf
 {
 	void (*save_state)(void*);
+	void (*invalidate_auth)(void*);
 	void*  arg;
 };
 

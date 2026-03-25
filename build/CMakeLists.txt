@@ -268,6 +268,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_break.c
     ${AMELIE_ROOT}/compiler/parser/parse_show.c
     ${AMELIE_ROOT}/compiler/parser/parse_system.c
+    ${AMELIE_ROOT}/compiler/parser/parse_checkpoint.c
     ${AMELIE_ROOT}/compiler/parser/parse_token.c
     ${AMELIE_ROOT}/compiler/parser/parse_replica.c
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c

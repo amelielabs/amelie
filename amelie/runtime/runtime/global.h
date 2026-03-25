@@ -22,6 +22,12 @@ control_save_state(void)
 	runtime()->iface->save_state(runtime()->iface->arg);
 }
 
+static inline void
+control_invalidate_auth(void)
+{
+	runtime()->iface->invalidate_auth(runtime()->iface->arg);
+}
+
 // directory
 static inline const char*
 state_directory(void)

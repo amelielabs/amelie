@@ -59,6 +59,7 @@
 
 // system
 #include "parser/parse_system.h"
+#include "parser/parse_checkpoint.h"
 #include "parser/parse_show.h"
 #include "parser/parse_user.h"
 #include "parser/parse_token.h"

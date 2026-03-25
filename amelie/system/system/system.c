@@ -175,6 +175,14 @@ system_save_state(void* arg)
 	state_save(state(), path);
 }
 
+static void
+system_invalidate_auth(void* arg)
+{
+	// note: exclusive catalog lock must be held
+	System* self = arg;
+	frontend_mgr_invalidate_all(&self->frontend_mgr);
+}
+
 System*
 system_create(void)
 {
@@ -182,9 +190,10 @@ system_create(void)
 
 	// set runtime control
 	auto control = &self->runtime_if;
-	control->save_state = system_save_state;
-	control->arg        = self;
-	runtime()->iface    = control;
+	control->save_state      = system_save_state;
+	control->invalidate_auth = system_invalidate_auth;
+	control->arg             = self;
+	runtime()->iface         = control;
 
 	// prepare shared context
 	auto share = &self->share;

@@ -45,7 +45,7 @@ auth_cache_free(AuthCache* self)
 		}
 	}
 	hashtable_free(&self->ht);
-	hashtable_init(&self->ht);
+	memset(self, 0, sizeof(*self));
 }
 
 void
@@ -62,8 +62,7 @@ auth_cache_reset(AuthCache* self)
 }
 
 void
-auth_cache_add(AuthCache* self, User* user, Str* digest,
-               int64_t expire)
+auth_cache_add(AuthCache* self, User* user, Str* digest, int64_t expire)
 {
 	auto node = (AuthCacheNode*)am_malloc(sizeof(AuthCacheNode));
 	hashtable_node_init(&node->node);
@@ -81,6 +80,7 @@ void
 auth_cache_del(AuthCache* self, AuthCacheNode* node)
 {
 	hashtable_delete(&self->ht, &node->node);
+	auth_cache_node_free(node);
 }
 
 void
@@ -95,7 +95,7 @@ auth_cache_invalidate(AuthCache* self, User* user)
 		if (node == NULL)
 			continue;
 		if (node->user == user)
-			hashtable_delete(&self->ht, &node->node);
+			auth_cache_del(self, node);
 	}
 }
 

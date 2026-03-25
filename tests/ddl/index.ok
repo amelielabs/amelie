@@ -310,7 +310,7 @@ drop function dep;
 drop index i on test;
 # test: alter index parsing
 alter;
-{"msg": "alter❰;❱ ⟵ USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected"}
+{"msg": "alter❰;❱ ⟵ SYSTEM|USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected"}
 alter index;
 {"msg": "alter index❰;❱ ⟵ name expected"}
 alter index 1;

@@ -385,6 +385,11 @@ parse_stmt(Stmt* self)
 	case KALTER:
 	{
 		// ALTER [type]
+		if (stmt_if(self, KSYSTEM))
+		{
+			self->id = STMT_ALTER_SYSTEM;
+			parse_system_alter(self);
+		} else
 		if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
 		{
 			self->id = STMT_ALTER_USER;
@@ -425,7 +430,7 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_SYNONYM;
 			parse_synonym_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected");
+			stmt_error(self, NULL, "SYSTEM|USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected");
 		}
 		break;
 	}

@@ -207,6 +207,7 @@ enum
 	KSTORED,
 	KSTORAGE,
 	KSYNONYM,
+	KSYSTEM,
 
 	// t
 	KTRUE,

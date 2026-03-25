@@ -21,4 +21,5 @@ struct Auth
 
 void  auth_init(Auth*);
 void  auth_free(Auth*);
+void  auth_reset(Auth*);
 User* auth(Auth*, Str*, Str*, bool);
