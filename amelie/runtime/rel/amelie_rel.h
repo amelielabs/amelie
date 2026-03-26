@@ -11,6 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
+// grants
+#include "rel/grants.h"
+
 // relation
 #include "rel/lock_id.h"
 #include "rel/rel.h"
