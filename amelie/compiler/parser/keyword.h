@@ -207,7 +207,6 @@ enum
 	KSWITCH,
 	KSTORED,
 	KSTORAGE,
-	KSYNONYM,
 	KSYSTEM,
 
 	// t

@@ -195,7 +195,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/table_index.c
     ${AMELIE_ROOT}/db/catalog/table_branch.c
     ${AMELIE_ROOT}/db/catalog/udf_mgr.c
-    ${AMELIE_ROOT}/db/catalog/synonym_mgr.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/catalog_file.c
     ${AMELIE_ROOT}/db/catalog/catalog_snapshot.c
@@ -281,7 +280,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_branch.c
     ${AMELIE_ROOT}/compiler/parser/parse_part.c
     ${AMELIE_ROOT}/compiler/parser/parse_function.c
-    ${AMELIE_ROOT}/compiler/parser/parse_synonym.c
     ${AMELIE_ROOT}/compiler/parser/parse_from.c
     ${AMELIE_ROOT}/compiler/parser/parse_returning.c
     ${AMELIE_ROOT}/compiler/parser/parse_value.c

@@ -76,7 +76,6 @@
 #include "parser/parse_branch.h"
 #include "parser/parse_part.h"
 #include "parser/parse_function.h"
-#include "parser/parse_synonym.h"
 
 // dml
 #include "parser/parse_from.h"

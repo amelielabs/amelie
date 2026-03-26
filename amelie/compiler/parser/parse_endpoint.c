@@ -114,10 +114,6 @@ parse_endpoint_set(ParseEndpoint* self)
 	auto relation = &endpoint->relation.string;
 	auto rel      = catalog_find(&share()->db->catalog, self->parser->user,
 	                             relation, true);
-
-	if (rel->type == REL_SYNONYM)
-		rel = synonym_of(rel)->ref;
-
 	switch (rel->type) {
 	case REL_TABLE:
 	{

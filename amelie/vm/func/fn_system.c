@@ -42,8 +42,6 @@ enum
 	SHOW_PARTITION,
 	SHOW_FUNCTIONS,
 	SHOW_FUNCTION,
-	SHOW_SYNONYMS,
-	SHOW_SYNONYM,
 	SHOW_STATE,
 	SHOW_ALL,
 	SHOW_CONFIG,
@@ -84,8 +82,6 @@ static ShowCmd show_cmds[] =
 	{ SHOW_PARTITION,  "partition",   9,  true,  true  },
 	{ SHOW_FUNCTIONS,  "functions",   9,  false, false },
 	{ SHOW_FUNCTION,   "function",    8,  true,  false },
-	{ SHOW_SYNONYMS,   "synonyms",    8,  false, false },
-	{ SHOW_SYNONYM,    "synonym",     7,  true,  false },
 	{ SHOW_STATE,      "state",       5,  false, false },
 	{ SHOW_ALL,        "all",         3,  false, false },
 	{ SHOW_CONFIG,     "config",      6,  false, false },
@@ -324,16 +320,6 @@ fn_show(Fn* self)
 	case SHOW_FUNCTION:
 	{
 		buf = udf_mgr_list(&catalog->udf_mgr, user, name, flags);
-		break;
-	}
-	case SHOW_SYNONYMS:
-	{
-		buf = synonym_mgr_list(&catalog->synonym_mgr, user, NULL, flags);
-		break;
-	}
-	case SHOW_SYNONYM:
-	{
-		buf = synonym_mgr_list(&catalog->synonym_mgr, user, name, flags);
 		break;
 	}
 	case SHOW_STATE:

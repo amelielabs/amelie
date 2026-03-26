@@ -53,18 +53,6 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 		else
 			cascade_user_error(user);
 	}
-
-	// synonyms
-	list_foreach_safe(&self->synonym_mgr.mgr.list)
-	{
-		auto synonym = synonym_of(list_at(Rel, link));
-		if (! str_compare_case(&synonym->config->user, user))
-			continue;
-		if (drop)
-			synonym_mgr_drop_of(&self->synonym_mgr, tr, synonym);
-		else
-			cascade_user_error(user);
-	}
 }
 
 bool
@@ -113,17 +101,6 @@ cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 		if (str_compare_case(&udf->config->user, user))
 			error("function '%.*s' depends on user '%.*s",
 			      str_size(udf->rel.name), str_of(udf->rel.name),
-			      str_size(user), str_of(user));
-	}
-
-	// synonyms
-	list_foreach_safe(&self->synonym_mgr.mgr.list)
-	{
-		auto synonym = synonym_of(list_at(Rel, link));
-		if (str_compare_case(&synonym->config->user, user) ||
-		    str_compare_case(&synonym->config->for_user, user))
-			error("synonym '%.*s' depends on user '%.*s",
-			      str_size(synonym->rel.name), str_of(synonym->rel.name),
 			      str_size(user), str_of(user));
 	}
 }

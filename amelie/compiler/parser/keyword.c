@@ -170,7 +170,6 @@ Keyword keywords[] =
 	{ KSWITCH,                "switch",                6  },
 	{ KSTORED,                "stored",                6  },
 	{ KSTORAGE,               "storage",               7  },
-	{ KSYNONYM,               "synonym",               7  },
 	{ KSYSTEM,                "system",                6  },
 
 	// t

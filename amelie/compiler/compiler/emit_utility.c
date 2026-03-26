@@ -307,29 +307,6 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
-	// synonym
-	case STMT_CREATE_SYNONYM:
-	{
-		auto arg = ast_synonym_create_of(stmt->ast);
-		offset = synonym_op_create(data, arg->config);
-		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
-		break;
-	}
-	case STMT_DROP_SYNONYM:
-	{
-		auto arg = ast_synonym_drop_of(stmt->ast);
-		offset = synonym_op_drop(data, user, &arg->name);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-	case STMT_ALTER_SYNONYM:
-	{
-		auto arg = ast_synonym_alter_of(stmt->ast);
-		offset = synonym_op_rename(data, user, &arg->name, user, &arg->name_new);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-
 	default:
 		abort();
 		break;

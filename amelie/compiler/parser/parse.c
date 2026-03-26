@@ -81,13 +81,6 @@ parse_stmt_free(Stmt* stmt)
 			udf_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_SYNONYM:
-	{
-		auto ast = ast_synonym_create_of(stmt->ast);
-		if (ast->config)
-			synonym_config_free(ast->config);
-		break;
-	}
 	case STMT_WHILE:
 	{
 		auto ast = ast_while_of(stmt->ast);
@@ -312,18 +305,13 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_FUNCTION;
 			parse_function_create(self, or_replace);
 		} else
-		if (stmt_if(self, KSYNONYM))
-		{
-			self->id = STMT_CREATE_SYNONYM;
-			parse_synonym_create(self);
-		} else
 		if (stmt_if(self, KLOCK))
 		{
 			self->id = STMT_CREATE_LOCK;
 			parse_lock_create(self);
 		} else
 		{
-			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|SYNONYM|LOCK expected");
+			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|LOCK expected");
 		}
 		break;
 	}
@@ -366,18 +354,13 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
 		} else
-		if (stmt_if(self, KSYNONYM))
-		{
-			self->id = STMT_DROP_SYNONYM;
-			parse_synonym_drop(self);
-		} else
 		if (stmt_if(self, KLOCK))
 		{
 			self->id = STMT_DROP_LOCK;
 			parse_lock_drop(self);
 		} else
 		{
-			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|SYNONYM|LOCK expected");
+			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|LOCK expected");
 		}
 		break;
 	}
@@ -424,13 +407,8 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
-		} else
-		if (stmt_if(self, KSYNONYM))
-		{
-			self->id = STMT_ALTER_SYNONYM;
-			parse_synonym_alter(self);
 		} else {
-			stmt_error(self, NULL, "SYSTEM|USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|SYNONYM expected");
+			stmt_error(self, NULL, "SYSTEM|USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION expected");
 		}
 		break;
 	}

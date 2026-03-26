@@ -39,12 +39,6 @@
 #include "catalog/udf_op.h"
 #include "catalog/udf_mgr.h"
 
-// synonym
-#include "catalog/synonym_config.h"
-#include "catalog/synonym.h"
-#include "catalog/synonym_op.h"
-#include "catalog/synonym_mgr.h"
-
 // catalog
 #include "catalog/catalog.h"
 #include "catalog/catalog_file.h"
