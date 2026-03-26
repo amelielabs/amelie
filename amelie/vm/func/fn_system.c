@@ -27,6 +27,7 @@ enum
 	SHOW_REPL,
 	SHOW_WAL,
 	SHOW_METRICS,
+	SHOW_AGENTS,
 	SHOW_USERS,
 	SHOW_USER,
 	SHOW_STORAGES,
@@ -68,6 +69,7 @@ static ShowCmd show_cmds[] =
 	{ SHOW_REPL,       "replication", 11, false, false },
 	{ SHOW_WAL,        "wal",         3,  false, false },
 	{ SHOW_METRICS,    "metrics",     7,  false, false },
+	{ SHOW_AGENTS,     "agents",      6,  false, false },
 	{ SHOW_USERS,      "users",       5,  false, false },
 	{ SHOW_USER,       "user",        4,  true,  false },
 	{ SHOW_STORAGES,   "storages",    8,  false, false },
@@ -243,14 +245,19 @@ fn_show(Fn* self)
 		rpc(&runtime()->task, MSG_SHOW_METRICS, &buf);
 		break;
 	}
+	case SHOW_AGENTS:
+	{
+		buf = user_mgr_list(&catalog->user_mgr, NULL, true, flags);
+		break;
+	}
 	case SHOW_USERS:
 	{
-		buf = user_mgr_list(&catalog->user_mgr, NULL, flags);
+		buf = user_mgr_list(&catalog->user_mgr, NULL, false, flags);
 		break;
 	}
 	case SHOW_USER:
 	{
-		buf = user_mgr_list(&catalog->user_mgr, name, flags);
+		buf = user_mgr_list(&catalog->user_mgr, name, false, flags);
 		break;
 	}
 	case SHOW_STORAGES:

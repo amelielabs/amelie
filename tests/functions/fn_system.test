@@ -24,6 +24,9 @@ select show('repl');
 # test: replication
 select show('replication');
 
+# test: agents
+select show('agents');
+
 # test: users
 select show('users')[0].name;
 

@@ -5,6 +5,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: ensure system users exists
 select show('users')[0].name;
+select show('agents');
 
 # test: create user statement parsing
 create;
@@ -156,6 +157,7 @@ drop user test2 cascade;
 create agent test;
 select show('user', 'main').name;
 select show('user', 'test').name;
+select show('agents')[0].name;
 drop agent test;
 
 disconnect S0;

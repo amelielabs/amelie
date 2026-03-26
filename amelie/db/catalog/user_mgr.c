@@ -167,7 +167,7 @@ user_mgr_find(UserMgr* self, Str* name, bool error_if_not_exists)
 }
 
 Buf*
-user_mgr_list(UserMgr* self, Str* name, int flags)
+user_mgr_list(UserMgr* self, Str* name, bool agents_only, int flags)
 {
 	auto buf = buf_create();
 	if (name)
@@ -180,11 +180,13 @@ user_mgr_list(UserMgr* self, Str* name, int flags)
 			encode_null(buf);
 	} else
 	{
-		// show users
+		// show users/agents
 		encode_array(buf);
 		list_foreach(&self->mgr.list)
 		{
 			auto user = user_of(list_at(Rel, link));
+			if (agents_only && !user->config->agent)
+				continue;
 			user_config_write(user->config, buf, flags);
 		}
 		encode_array_end(buf);

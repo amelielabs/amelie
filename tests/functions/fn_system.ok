@@ -166,6 +166,9 @@ select show('replication');
   "primary": null,
   "replicas": []
 }]
+# test: agents
+select show('agents');
+[[]]
 # test: users
 select show('users')[0].name;
 ["main"]
