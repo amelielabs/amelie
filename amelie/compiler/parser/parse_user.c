@@ -34,6 +34,14 @@ parse_user_create(Stmt* self, bool agent)
 	auto name = stmt_expect(self, KNAME);
 	user_config_set_name(stmt->config, &name->string);
 	user_config_set_agent(stmt->config, agent);
+
+	// set timestamp
+	char ts[64];
+	auto time = time_us();
+	auto size = timestamp_get(time, runtime()->timezone, ts, sizeof(ts));
+	Str created_at;
+	str_set(&created_at, ts, size);
+	user_config_set_created_at(stmt->config, &created_at);
 }
 
 void

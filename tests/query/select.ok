@@ -400,20 +400,18 @@ select * from unknown();
 # test: select * from function() (unsupported json type)
 select * from show('wal');
 {"msg": "FROM: json array expected"}
-create user test;
-select * from show('users');
+select * from show('storages');
 [{
   "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]
-explain select * from show('users');
+explain select * from show('storages');
 [{
   "main": {
     "00": "set                 0      1      0     ",
-    "01": "push_string         0      0      0     # users",
+    "01": "push_string         0      0      0     # storages",
     "02": "call                1      -      1     # show()",
     "03": "json_open           2      1      8     ",
     "04": "json_read           3      2      0     ",
@@ -426,6 +424,7 @@ explain select * from show('users');
   "access": []
 }]
 # test: select column from function()
+create user test;
 select name from show('users');
 ["main", "test"]
 explain select name from show('users');

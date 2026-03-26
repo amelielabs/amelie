@@ -165,7 +165,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('state').catalog;
 select show('state').catalog_pending;
-show users;
+select show('user', 'test').name;
 select identity_of("test");
 
 # test: checkpoint
@@ -183,7 +183,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('state').catalog;
 select show('state').catalog_pending;
-show users;
+select show('user', 'test').name;
 select identity_of("test");
 
 disconnect S0;

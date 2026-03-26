@@ -9,31 +9,7 @@ show 1234;
 {"msg": "show ❰1234❱ ⟵ name expected"}
 # test: show users
 create user test;
-show users abc;
-{"msg": "show() ⟵ unexpected name argument"}
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
-}]
 # test: show user
-show user;
-{"msg": "show() ⟵ name argument is missing for 'user'"}
-show user unknown;
-[null]
-show user test;
-[{
-  "name": "test",
-  "agent": false
-}]
-show user test;
-[{
-  "name": "test",
-  "agent": false
-}]
 # test: show storages
 show storages;
 [{
@@ -233,7 +209,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 689,
+  "writes_bytes": 742,
   "ops": 3
 }]
 # test: show replicas

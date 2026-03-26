@@ -554,14 +554,8 @@ show tables;
 []
 # test: create user
 create user test;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
-}]
+select show('user', 'test').name;
+["test"]
 select show('state').lsn;
 [20]
 # test: restart
@@ -572,24 +566,14 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 [20]
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
-}]
+select show('user', 'test').name;
+["test"]
 # test: alter user rename
 alter user test rename to test2;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test2",
-  "agent": false
-}]
+select show('user', 'test').name;
+[null]
+select show('user', 'test2').name;
+["test2"]
 select show('state').lsn;
 [21]
 # test: restart
@@ -600,23 +584,14 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 [21]
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test2",
-  "agent": false
-}]
+select show('user', 'test2').name;
+["test2"]
 # test: drop user
 drop user test2;
 select show('state').lsn;
 [22]
-show users;
-[{
-  "name": "main",
-  "agent": false
-}]
+select show('user', 'test2').name;
+[null]
 # test: restart
 disconnect S0;
 close E0;
@@ -625,11 +600,10 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 [22]
-show users;
-[{
-  "name": "main",
-  "agent": false
-}]
+select show('user', 'test').name;
+[null]
+select show('user', 'test2').name;
+[null]
 # test: create function
 create function reverse(array json) return json
 begin

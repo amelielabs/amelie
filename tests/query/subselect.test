@@ -23,8 +23,8 @@ select (select [1]);
 select (select [1,2,3]);
 
 # test: select (select function())
-select show('users');
-select select (show('users'));
+select show('storages');
+select select (show('storages'));
 
 # test: select (select {})
 select (select {});

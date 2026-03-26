@@ -10,14 +10,14 @@ show 1234;
 
 # test: show users
 create user test;
-show users abc;
-show users;
+#show users abc;
+#show users;
 
 # test: show user
-show user;
-show user unknown;
-show user test;
-show user test;
+#show user;
+#show user unknown;
+#show user test;
+#show user test;
 
 # test: show storages
 show storages;

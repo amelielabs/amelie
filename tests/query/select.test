@@ -138,11 +138,11 @@ select * from unknown();
 # test: select * from function() (unsupported json type)
 select * from show('wal');
 
-create user test;
-select * from show('users');
-explain select * from show('users');
+select * from show('storages');
+explain select * from show('storages');
 
 # test: select column from function()
+create user test;
 select name from show('users');
 explain select name from show('users');
 

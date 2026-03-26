@@ -167,14 +167,11 @@ select show('replication');
   "replicas": []
 }]
 # test: users
-select show('users');
-[[{
-  "name": "main",
-  "agent": false
-}]]
+select show('users')[0].name;
+["main"]
 # test: user
-select show('user', 'test');
-[null]
+select show('user', 'main').name;
+["main"]
 # test: storages
 select show('storages');
 [[{

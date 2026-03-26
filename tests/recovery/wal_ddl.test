@@ -298,7 +298,7 @@ show tables;
 
 # test: create user
 create user test;
-show users;
+select show('user', 'test').name;
 select show('state').lsn;
 
 # test: restart
@@ -309,11 +309,12 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show users;
+select show('user', 'test').name;
 
 # test: alter user rename
 alter user test rename to test2;
-show users;
+select show('user', 'test').name;
+select show('user', 'test2').name;
 select show('state').lsn;
 
 # test: restart
@@ -324,12 +325,12 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show users;
+select show('user', 'test2').name;
 
 # test: drop user
 drop user test2;
 select show('state').lsn;
-show users;
+select show('user', 'test2').name;
 
 # test: restart
 disconnect S0;
@@ -339,7 +340,8 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show users;
+select show('user', 'test').name;
+select show('user', 'test2').name;
 
 # test: create function
 create function reverse(array json) return json

@@ -30,15 +30,19 @@ select (select [1]);
 select (select [1,2,3]);
 [[1, 2, 3]]
 # test: select (select function())
-select show('users');
+select show('storages');
 [[{
   "name": "main",
-  "agent": false
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]]
-select select (show('users'));
+select select (show('storages'));
 [[{
   "name": "main",
-  "agent": false
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
 }]]
 # test: select (select {})
 select (select {});

@@ -277,14 +277,8 @@ select show('state').catalog;
 [4]
 select show('state').catalog_pending;
 [5]
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
-}]
+select show('user', 'test').name;
+["test"]
 select identity_of("test");
 [3]
 # test: checkpoint
@@ -306,14 +300,8 @@ select show('state').catalog;
 [5]
 select show('state').catalog_pending;
 [5]
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
-}]
+select show('user', 'test').name;
+["test"]
 select identity_of("test");
 [3]
 disconnect S0;

@@ -1,11 +1,8 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: ensure system users exists
-show users;
-[{
-  "name": "main",
-  "agent": false
-}]
+select show('users')[0].name;
+["main"]
 # test: create user statement parsing
 create;
 {"msg": "create❰;❱ ⟵ REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|SYNONYM|LOCK expected"}
@@ -25,34 +22,14 @@ create user test abc;
 {"msg": "create user test ❰abc❱ ⟵ ; expected"}
 # test: create user
 create user test;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
-}]
-select show('users');
-[[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
-}]]
+select show('user', 'test').name;
+["test"]
 # test: create user if not exists
 create user test;
 {"msg": "user 'test': already exists"}
 create user if not exists test;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
-}]
+select show('user', 'test').name;
+["test"]
 # test: drop user statement parsing
 drop user;
 {"msg": "drop user❰;❱ ⟵ name expected"}
@@ -66,49 +43,35 @@ drop user test abc;
 {"msg": "drop user test ❰abc❱ ⟵ ; expected"}
 # test: drop user
 drop user test;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}]
+select show('user', 'test').name;
+[null]
 # test: drop user if exists
 drop user test;
 {"msg": "user 'test': not exists"}
 drop user if exists test;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}]
+select show('user', 'test').name;
+[null]
 # test: drop main user
 drop user main;
 {"msg": "user 'main': system user cannot be dropped"}
-show users;
-[{
-  "name": "main",
-  "agent": false
-}]
+select show('user', 'test').name;
+[null]
+select show('user', 'main').name;
+["main"]
 # test: drop user cascade
 create user test;
 drop user test cascade;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}]
+select show('user', 'test').name;
+[null]
 # test: drop connected user
 create user test;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
-}]
+select show('user', 'test').name;
+["test"]
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
 drop user test;
+select show('user', 'test').name;
+Forbidden
 select 1;
 Forbidden
 disconnect S1;
@@ -131,11 +94,10 @@ show tables;
 []
 show functions;
 []
-show users;
-[{
-  "name": "main",
-  "agent": false
-}]
+select show('user', 'test').name;
+[null]
+select show('user', 'main').name;
+["main"]
 # test: alter user statment parsing
 alter user;
 {"msg": "alter user❰;❱ ⟵ name expected"}
@@ -151,27 +113,21 @@ alter user test rename "hello";
 {"msg": "alter user test rename ❰\"hello\"❱ ⟵ TO expected"}
 # test: alter user rename
 create user test;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": false
-}]
+select show('user', 'test').name;
+["test"]
+select show('user', 'hello').name;
+[null]
 alter user test rename to test2;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test2",
-  "agent": false
-}]
+select show('user', 'test').name;
+[null]
+select show('user', 'test2').name;
+["test2"]
 drop user test2;
 # test: alter user main
 alter user main rename to _public;
 {"msg": "user 'main': system user cannot be renamed"}
+select show('user', 'main').name;
+["main"]
 # test: alter user rename cascade (udf dep)
 create user test;
 connect E0 S1 test@127.0.0.1:3485;
@@ -207,41 +163,29 @@ show tables;
 }]
 show functions;
 []
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test2",
-  "agent": false
-}]
+select show('user', 'main').name;
+["main"]
+select show('user', 'test2').name;
+["test2"]
 disconnect S1;
 switch S0;
 show tables;
 []
 show functions;
 []
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test2",
-  "agent": false
-}]
+select show('user', 'main').name;
+["main"]
+select show('user', 'test2').name;
+["test2"]
 drop user test2;
 {"msg": "user 'test2' still has relations"}
 drop user test2 cascade;
 # test: create agent
 create agent test;
-show users;
-[{
-  "name": "main",
-  "agent": false
-}, {
-  "name": "test",
-  "agent": true
-}]
+select show('user', 'main').name;
+["main"]
+select show('user', 'test').name;
+["test"]
 drop agent test;
 disconnect S0;
 close E0;

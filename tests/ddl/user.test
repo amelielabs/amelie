@@ -4,7 +4,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 
 # test: ensure system users exists
-show users;
+select show('users')[0].name;
 
 # test: create user statement parsing
 create;
@@ -18,14 +18,12 @@ create user test abc;
 
 # test: create user
 create user test;
-
-show users;
-select show('users');
+select show('user', 'test').name;
 
 # test: create user if not exists
 create user test;
 create user if not exists test;
-show users;
+select show('user', 'test').name;
 
 # test: drop user statement parsing
 drop user;
@@ -36,29 +34,31 @@ drop user test abc;
 
 # test: drop user
 drop user test;
-show users;
+select show('user', 'test').name;
 
 # test: drop user if exists
 drop user test;
 drop user if exists test;
-show users;
+select show('user', 'test').name;
 
 # test: drop main user
 drop user main;
-show users;
+select show('user', 'test').name;
+select show('user', 'main').name;
 
 # test: drop user cascade
 create user test;
 drop user test cascade;
-show users;
+select show('user', 'test').name;
 
 # test: drop connected user
 create user test;
-show users;
+select show('user', 'test').name;
 
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
 drop user test;
+select show('user', 'test').name;
 select 1;
 
 disconnect S1;
@@ -82,7 +82,8 @@ switch S0;
 
 show tables;
 show functions;
-show users;
+select show('user', 'test').name;
+select show('user', 'main').name;
 
 # test: alter user statment parsing
 alter user;
@@ -94,14 +95,17 @@ alter user test rename "hello";
 
 # test: alter user rename
 create user test;
-show users;
+select show('user', 'test').name;
+select show('user', 'hello').name;
 
 alter user test rename to test2;
-show users;
+select show('user', 'test').name;
+select show('user', 'test2').name;
 drop user test2;
 
 # test: alter user main
 alter user main rename to _public;
+select show('user', 'main').name;
 
 # test: alter user rename cascade (udf dep)
 create user test;
@@ -134,21 +138,24 @@ switch S1;
 
 show tables;
 show functions;
-show users;
+select show('user', 'main').name;
+select show('user', 'test2').name;
 
 disconnect S1;
 switch S0;
 
 show tables;
 show functions;
-show users;
+select show('user', 'main').name;
+select show('user', 'test2').name;
 
 drop user test2;
 drop user test2 cascade;
 
 # test: create agent
 create agent test;
-show users;
+select show('user', 'main').name;
+select show('user', 'test').name;
 drop agent test;
 
 disconnect S0;

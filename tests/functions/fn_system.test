@@ -25,10 +25,10 @@ select show('repl');
 select show('replication');
 
 # test: users
-select show('users');
+select show('users')[0].name;
 
 # test: user
-select show('user', 'test');
+select show('user', 'main').name;
 
 # test: storages
 select show('storages');

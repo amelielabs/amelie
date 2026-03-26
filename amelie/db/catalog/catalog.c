@@ -71,6 +71,14 @@ catalog_prepare(Catalog* self)
 		defer(user_config_free, user_config);
 		user_config_set_name(user_config, &name);
 		user_config_set_system(user_config, true);
+
+		// set timestamp
+		char ts[64];
+		auto time = time_us();
+		auto size = timestamp_get(time, runtime()->timezone, ts, sizeof(ts));
+		Str created_at;
+		str_set(&created_at, ts, size);
+		user_config_set_created_at(user_config, &created_at);
 		user_mgr_create(&self->user_mgr, &tr, user_config, false);
 
 		// create main storage
