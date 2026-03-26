@@ -96,6 +96,11 @@ auth_run(Auth* self, Str* user_id, Str* token)
 		error("auth: user '%.*s' not found", str_size(&sub),
 		      str_of(&sub));
 
+	// check issued time against user revoked_at
+	if (iat <= user->revoked_at)
+		error("auth: user '%.*s' token has been revoked", str_size(&sub),
+		      str_of(&sub));
+
 	// validate digest using user secret
 	auto secret = opt_string_of(&state()->secret);
 	if (! jwt_decode_validate(jwt, secret))

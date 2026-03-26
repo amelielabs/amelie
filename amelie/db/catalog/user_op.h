@@ -84,3 +84,28 @@ user_op_rename_read(uint8_t* op, Str* name, Str* name_new)
 	json_read_string(&op, name_new);
 	json_read_array_end(&op);
 }
+
+static inline int
+user_op_revoke(Buf* self, Str* name, Str* revoked_at)
+{
+	// [op, name, name_new]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_USER_REVOKE);
+	encode_string(self, name);
+	encode_string(self, revoked_at);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+user_op_revoke_read(uint8_t* op, Str* name, Str* revoked_at)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_USER_REVOKE);
+	json_read_string(&op, name);
+	json_read_string(&op, revoked_at);
+	json_read_array_end(&op);
+}

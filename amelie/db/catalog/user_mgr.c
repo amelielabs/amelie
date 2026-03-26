@@ -50,6 +50,9 @@ user_mgr_create(UserMgr*    self,
 	// create user
 	auto user = user_allocate(config);
 	rel_mgr_create(&self->mgr, tr, &user->rel);
+
+	// update timestamps
+	user_sync(user);
 	return true;
 }
 
@@ -91,8 +94,8 @@ rename_if_abort(Log* self, LogOp* op)
 	Str name;
 	json_read_string(&pos, &name);
 
-	auto mgr = user_of(op->rel);
-	user_config_set_name(mgr->config, &name);
+	auto user = user_of(op->rel);
+	user_config_set_name(user->config, &name);
 }
 
 static LogIf rename_if =
@@ -134,6 +137,62 @@ user_mgr_rename(UserMgr* self,
 
 	// set new name
 	user_config_set_name(user->config, name_new);
+	return true;
+}
+
+static void
+revoke_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+revoke_if_abort(Log* self, LogOp* op)
+{
+	// set previous revoked_at
+	uint8_t* pos = log_data_of(self, op);
+	Str value;
+	json_read_string(&pos, &value);
+
+	auto user = user_of(op->rel);
+	user_config_set_revoked_at(user->config, &value);
+	user_sync(user);
+}
+
+static LogIf revoke_if =
+{
+	.commit = revoke_if_commit,
+	.abort  = revoke_if_abort
+};
+
+bool
+user_mgr_revoke(UserMgr* self,
+                Tr*      tr,
+                Str*     name,
+                Str*     revoked_at,
+                bool     if_exists)
+{
+	auto user = user_mgr_find(self, name, false);
+	if (! user)
+	{
+		if (! if_exists)
+			error("user '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return false;
+	}
+
+	// update user
+	log_rel(&tr->log, &revoke_if, NULL, &user->rel);
+
+	// save previous revoked_at for rollback
+	encode_string(&tr->log.data, &user->config->revoked_at);
+
+	// set revoked_at
+	user_config_set_revoked_at(user->config, revoked_at);
+
+	// update timestamps
+	user_sync(user);
 	return true;
 }
 

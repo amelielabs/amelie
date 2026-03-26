@@ -193,6 +193,7 @@ enum
 	KRESOLVE,
 	KRESOLVED,
 	KRESUME,
+	KREVOKE,
 
 	// s
 	KSELECT,

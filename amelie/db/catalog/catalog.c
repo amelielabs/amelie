@@ -224,6 +224,21 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = cascade_user_rename(self, tr, &name, &name_new, if_exists);
 		break;
 	}
+	case DDL_USER_REVOKE:
+	{
+		Str name;
+		Str revoked_at;
+		user_op_revoke_read(op, &name, &revoked_at);
+
+		// invalidate auth caches
+		auto user = user_mgr_find(&self->user_mgr, &name, false);
+		if (user)
+			self->iface->user_invalidate(self, user);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_mgr_revoke(&self->user_mgr, tr, &name, &revoked_at, if_exists);
+		break;
+	}
 	case DDL_STORAGE_CREATE:
 	{
 		auto config = storage_op_create_read(op);

@@ -156,6 +156,7 @@ Keyword keywords[] =
 	{ KRESOLVE,               "resolve",               7  },
 	{ KRESOLVED,              "resolved",              8  },
 	{ KRESUME,                "resume",                6  },
+	{ KREVOKE,                "revoke",                6  },
 
 	// s
 	{ KSELECT,                "select",                6  },

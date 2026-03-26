@@ -66,6 +66,7 @@ void
 parse_user_alter(Stmt* self)
 {
 	// ALTER USER|AGENT [IF EXISTS] name RENAME name
+	// ALTER USER|AGENT [IF EXISTS] name REVOKE
 	auto stmt = ast_user_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -75,12 +76,30 @@ parse_user_alter(Stmt* self)
 	// name
 	stmt->name = stmt_expect(self, KNAME);
 
-	// RENAME
-	stmt_expect(self, KRENAME);
+	// RENAME | REVOKE
+	if (stmt_if(self, KRENAME))
+	{
+		// RENAME
+		stmt->type = USER_ALTER_RENAME;
 
-	// TO
-	stmt_expect(self, KTO);
+		// TO
+		stmt_expect(self, KTO);
 
-	// name
-	stmt->name_new = stmt_expect(self, KNAME);
+		// name
+		stmt->name_new = stmt_expect(self, KNAME);
+	} else
+	if (stmt_if(self, KREVOKE))
+	{
+		// REVOKE
+		stmt->type = USER_ALTER_REVOKE;
+
+		// set timestamp
+		auto ts = palloc(64);
+		auto time = time_us();
+		auto size = timestamp_get(time, runtime()->timezone, ts, 64);
+		str_set(&stmt->revoked_at, ts, size);
+	} else
+	{
+		stmt_error(self, NULL, "RENAME or REVOKE expected");
+	}
 }

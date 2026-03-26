@@ -30,12 +30,20 @@ struct AstUserDrop
 	Ast* name;
 };
 
+enum
+{
+	USER_ALTER_RENAME,
+	USER_ALTER_REVOKE
+};
+
 struct AstUserAlter
 {
 	Ast  ast;
 	bool if_exists;
+	int  type;
 	Ast* name;
 	Ast* name_new;
+	Str  revoked_at;
 };
 
 static inline AstUserCreate*
@@ -49,8 +57,6 @@ ast_user_create_allocate(void)
 {
 	AstUserCreate* self;
 	self = ast_allocate(0, sizeof(AstUserCreate));
-	self->if_not_exists = false;
-	self->config        = NULL;
 	return self;
 }
 
@@ -65,9 +71,6 @@ ast_user_drop_allocate(void)
 {
 	AstUserDrop* self;
 	self = ast_allocate(0, sizeof(AstUserDrop));
-	self->if_exists = false;
-	self->cascade   = false;
-	self->name      = NULL;
 	return self;
 }
 
@@ -82,9 +85,6 @@ ast_user_alter_allocate(void)
 {
 	AstUserAlter* self;
 	self = ast_allocate(0, sizeof(AstUserAlter));
-	self->if_exists = false;
-	self->name      = NULL;
-	self->name_new  = NULL;
 	return self;
 }
 

@@ -197,7 +197,11 @@ emit_ddl(Compiler* self)
 	case STMT_ALTER_USER:
 	{
 		auto arg = ast_user_alter_of(stmt->ast);
-		offset = user_op_rename(data, &arg->name->string, &arg->name_new->string);
+		if (arg->type == USER_ALTER_RENAME)
+			offset = user_op_rename(data, &arg->name->string, &arg->name_new->string);
+		else
+		if (arg->type == USER_ALTER_REVOKE)
+			offset = user_op_revoke(data, &arg->name->string, &arg->revoked_at);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

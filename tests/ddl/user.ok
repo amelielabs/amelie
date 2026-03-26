@@ -106,7 +106,7 @@ alter user;
 alter user 123;
 {"msg": "alter user ❰123❱ ⟵ name expected"}
 alter user test;
-{"msg": "alter user test❰;❱ ⟵ RENAME expected"}
+{"msg": "alter user test❰;❱ ⟵ RENAME or REVOKE expected"}
 alter user test rename;
 {"msg": "alter user test rename❰;❱ ⟵ TO expected"}
 alter user test rename to;
