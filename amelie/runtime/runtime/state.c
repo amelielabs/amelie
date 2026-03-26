@@ -14,6 +14,7 @@
 #include <amelie_os.h>
 #include <amelie_lib.h>
 #include <amelie_json.h>
+#include <amelie_rel.h>
 #include <amelie_runtime.h>
 
 void

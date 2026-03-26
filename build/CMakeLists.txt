@@ -64,6 +64,7 @@ include_directories("${AMELIE_ROOT}/runtime/base")
 include_directories("${AMELIE_ROOT}/runtime/os")
 include_directories("${AMELIE_ROOT}/runtime/lib")
 include_directories("${AMELIE_ROOT}/runtime/json")
+include_directories("${AMELIE_ROOT}/runtime/rel")
 include_directories("${AMELIE_ROOT}/runtime/runtime")
 
 # server
