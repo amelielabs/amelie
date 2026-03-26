@@ -42,31 +42,38 @@ parse_set_target_column(Str* self, Str* target, Str* column)
 }
 
 static inline void
-parse_target(Stmt* self, Str* user, Str* target)
+parse_target_path(Stmt* self, Ast* path, Str* user, Str* target)
 {
-	auto name = stmt_next(self);
-	switch (name->id) {
+	switch (path->id) {
 	case KNAME:
 	{
 		// name
 		*user = *self->parser->user;
-		*target = name->string;
+		*target = path->string;
 		break;
 	}
 	case KNAME_COMPOUND:
 	{
 		// user.name
 		str_init(user);
-		str_split(&name->string, user, '.');
+		str_split(&path->string, user, '.');
 
-		*target = name->string;
+		*target = path->string;
 		str_advance(target, str_size(user) + 1);
 		if (str_chr(target, '.'))
-			stmt_error(self, name, "invalid target name");
+			stmt_error(self, path, "invalid target name");
 		break;
 	}
 	default:
-		stmt_error(self, name, "target name expected");
+		stmt_error(self, path, "target name expected");
 		break;
 	}
+}
+
+static inline Ast*
+parse_target(Stmt* self, Str* user, Str* target)
+{
+	auto path = stmt_next(self);
+	parse_target_path(self, path, user, target);
+	return path;
 }

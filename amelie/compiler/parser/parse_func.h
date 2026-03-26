@@ -31,7 +31,5 @@ ast_func_allocate(void)
 {
 	AstFunc* self;
 	self = ast_allocate(KFUNC, sizeof(AstFunc));
-	self->fn  = NULL;
-	self->udf = NULL;
 	return self;
 }

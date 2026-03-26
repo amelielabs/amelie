@@ -38,6 +38,7 @@ end;
 explain select test();
 select test();
 select test()::type;
+select main.test();
 
 explain execute test();
 execute test();

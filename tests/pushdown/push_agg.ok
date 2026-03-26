@@ -15,7 +15,7 @@ insert into test values (6, 3, 3.1);
 explain select count(*) from test_empty;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test_empty (select, closing)",
+    "00": "send_all            0      0      40    # main.test_empty (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -29,7 +29,7 @@ explain select count(*) from test_empty;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test_empty (primary) [main] part",
+    "01": "table_open          1      0      7     # main.test_empty (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -42,7 +42,7 @@ explain select count(*) from test_empty;
     "11": "set_agg             0      1      32    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test_empty", "shared"]]
+  "access": [["main.test_empty", "shared"]]
 }]
 select count(*) from test_empty;
 [0]
@@ -52,7 +52,7 @@ select * from test;
 explain select count(*) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -66,7 +66,7 @@ explain select count(*) from test;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test (primary) [main] part",
+    "01": "table_open          1      0      7     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -79,7 +79,7 @@ explain select count(*) from test;
     "11": "set_agg             0      1      32    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select count(*) from test;
 [7]
@@ -87,7 +87,7 @@ select count(*) from test;
 explain select count(id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -101,7 +101,7 @@ explain select count(id) from test;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readi32       3      1      -     # id",
@@ -115,7 +115,7 @@ explain select count(id) from test;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select count(id) from test;
 [7]
@@ -123,7 +123,7 @@ select count(id) from test;
 explain select count(data) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -137,7 +137,7 @@ explain select count(data) from test;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readi32       3      1      -     # data",
@@ -151,14 +151,14 @@ explain select count(data) from test;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select count(data) from test;
 [6]
 explain select count(data) from test_null;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test_null (select, closing)",
+    "00": "send_all            0      0      40    # main.test_null (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -172,7 +172,7 @@ explain select count(data) from test_null;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test_null (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test_null (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readi32       3      1      -     # data",
@@ -186,7 +186,7 @@ explain select count(data) from test_null;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_null", "shared"]]
+  "access": [["main.test_null", "shared"]]
 }]
 select count(data) from test_null;
 [0]
@@ -202,7 +202,7 @@ explain select count(distinct *) from test;
 explain select count(distinct id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -217,7 +217,7 @@ explain select count(distinct id) from test;
   "pushdown": {
     "00": "set                 0      1      1     ",
     "01": "set_distinct        0      1      3     ",
-    "02": "table_open          1      0      9     # test (primary) [main] part",
+    "02": "table_open          1      0      9     # main.test (primary) [main] part",
     "03": "push_bool           1      0      0     ",
     "04": "set_get             2      0      0     ",
     "05": "table_readi32       3      1      -     # id",
@@ -231,7 +231,7 @@ explain select count(distinct id) from test;
     "13": "set_agg             0      1      32    ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select count(distinct id) from test;
 [7]
@@ -249,7 +249,7 @@ select count(distinct 1), count(1), count(distinct null) from test;
 explain select sum(id) from test_empty;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test_empty (select, closing)",
+    "00": "send_all            0      0      40    # main.test_empty (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -263,7 +263,7 @@ explain select sum(id) from test_empty;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test_empty (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test_empty (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readi32       3      1      -     # id",
@@ -277,7 +277,7 @@ explain select sum(id) from test_empty;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_empty", "shared"]]
+  "access": [["main.test_empty", "shared"]]
 }]
 select sum(id) from test_empty;
 [null]
@@ -285,7 +285,7 @@ select sum(id) from test_empty;
 explain select sum(id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -299,7 +299,7 @@ explain select sum(id) from test;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readi32       3      1      -     # id",
@@ -313,7 +313,7 @@ explain select sum(id) from test;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select sum(id) from test;
 [21]
@@ -323,7 +323,7 @@ select sum(data) from test;
 explain select sum(data2) from test_empty;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test_empty (select, closing)",
+    "00": "send_all            0      0      40    # main.test_empty (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -337,7 +337,7 @@ explain select sum(data2) from test_empty;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test_empty (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test_empty (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readf64       3      1      -     # data2",
@@ -351,7 +351,7 @@ explain select sum(data2) from test_empty;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_empty", "shared"]]
+  "access": [["main.test_empty", "shared"]]
 }]
 select sum(data2) from test_empty;
 [null]
@@ -359,7 +359,7 @@ select sum(data2) from test_empty;
 explain select sum(data2) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -373,7 +373,7 @@ explain select sum(data2) from test;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readf64       3      1      -     # data2",
@@ -387,7 +387,7 @@ explain select sum(data2) from test;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select sum(data2) from test_empty;
 [null]
@@ -400,7 +400,7 @@ select sum('string') from test;
 explain select sum(data) from test_null;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test_null (select, closing)",
+    "00": "send_all            0      0      40    # main.test_null (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -414,7 +414,7 @@ explain select sum(data) from test_null;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test_null (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test_null (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readi32       3      1      -     # data",
@@ -428,7 +428,7 @@ explain select sum(data) from test_null;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_null", "shared"]]
+  "access": [["main.test_null", "shared"]]
 }]
 select sum(data) from test_null;
 [null]
@@ -439,7 +439,7 @@ select avg(id) from test_empty;
 explain select avg(id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -453,7 +453,7 @@ explain select avg(id) from test;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readi32       3      1      -     # id",
@@ -467,7 +467,7 @@ explain select avg(id) from test;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select avg(id) from test;
 [3]
@@ -488,7 +488,7 @@ select avg('string') from test;
 explain select avg(data2) from test_null;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test_null (select, closing)",
+    "00": "send_all            0      0      40    # main.test_null (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -502,7 +502,7 @@ explain select avg(data2) from test_null;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test_null (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test_null (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readf64       3      1      -     # data2",
@@ -516,7 +516,7 @@ explain select avg(data2) from test_null;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_null", "shared"]]
+  "access": [["main.test_null", "shared"]]
 }]
 select avg(data2) from test_null;
 [null]
@@ -538,7 +538,7 @@ select min(data2) from test;
 explain select min(data2) from test_null;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test_null (select, closing)",
+    "00": "send_all            0      0      40    # main.test_null (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -552,7 +552,7 @@ explain select min(data2) from test_null;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test_null (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test_null (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readf64       3      1      -     # data2",
@@ -566,7 +566,7 @@ explain select min(data2) from test_null;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_null", "shared"]]
+  "access": [["main.test_null", "shared"]]
 }]
 select min(data2) from test_null;
 [null]
@@ -588,7 +588,7 @@ select max(data2) from test;
 explain select max(data2) from test_null;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test_null (select, closing)",
+    "00": "send_all            0      0      40    # main.test_null (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -602,7 +602,7 @@ explain select max(data2) from test_null;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test_null (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test_null (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "table_readf64       3      1      -     # data2",
@@ -616,7 +616,7 @@ explain select max(data2) from test_null;
     "12": "set_agg             0      1      32    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_null", "shared"]]
+  "access": [["main.test_null", "shared"]]
 }]
 select max(data2) from test_null;
 [null]
@@ -629,7 +629,7 @@ select count(*), min(id), max(id), avg(id) from test;
 explain select id, count(*) from test group by id;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
@@ -645,7 +645,7 @@ explain select id, count(*) from test group by id;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -655,7 +655,7 @@ explain select id, count(*) from test group by id;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select id, count(*) from test group by id;
 [[0, 1], [1, 1], [3, 1], [6, 1], [4, 1], [5, 1], [2, 1]]
@@ -671,7 +671,7 @@ select data, count(*) from test_null group by data;
 explain select id, count(*) from test group by 1;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
@@ -687,7 +687,7 @@ explain select id, count(*) from test group by 1;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -697,7 +697,7 @@ explain select id, count(*) from test group by 1;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select id, count(*) from test group by 1;
 [[0, 1], [1, 1], [3, 1], [6, 1], [4, 1], [5, 1], [2, 1]]
@@ -713,7 +713,7 @@ select data, count(*) from test_null group by 1;
 explain select * from (select count(*) from test) t;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select)",
+    "00": "send_all            0      0      40    # main.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -736,7 +736,7 @@ explain select * from (select count(*) from test) t;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test (primary) [main] part",
+    "01": "table_open          1      0      7     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -749,7 +749,7 @@ explain select * from (select count(*) from test) t;
     "11": "set_agg             0      1      32    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select * from (select count(*) from test) t;
 [7]
@@ -757,7 +757,7 @@ select * from (select count(*) from test) t;
 explain select * from (select id, count(*) from test group by id) t;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select)",
+    "00": "send_all            0      0      40    # main.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
@@ -784,7 +784,7 @@ explain select * from (select id, count(*) from test group by id) t;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -794,7 +794,7 @@ explain select * from (select id, count(*) from test group by id) t;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select * from (select id, count(*) from test group by id) t;
 [[0, 1], [1, 1], [3, 1], [6, 1], [4, 1], [5, 1], [2, 1]]
@@ -821,7 +821,7 @@ select count(*) as c from test order by c;
 explain select id, count(*) from test group by id order by id;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      2      1     ",
     "03": "store_open          3      1      12    ",
@@ -840,7 +840,7 @@ explain select id, count(*) from test group by id order by id;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -850,7 +850,7 @@ explain select id, count(*) from test group by id order by id;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select id, count(*) from test group by id order by id;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -860,7 +860,7 @@ select id, count(*) from test group by id order by data;
 explain select id, count(*) from test group by 1 order by 1;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      2      1     ",
     "03": "store_open          3      1      12    ",
@@ -879,7 +879,7 @@ explain select id, count(*) from test group by 1 order by 1;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -889,7 +889,7 @@ explain select id, count(*) from test group by 1 order by 1;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select id, count(*) from test group by 1 order by 1;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -918,7 +918,7 @@ select id, count(*) from test group by id having id > 5;
 explain select id, count(*) from test group by 1 having id > 5;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -938,7 +938,7 @@ explain select id, count(*) from test group by 1 having id > 5;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -948,7 +948,7 @@ explain select id, count(*) from test group by 1 having id > 5;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 # test: select from table group by order by having
 select id, count(*) from test group by 1 order by 1;
@@ -966,7 +966,7 @@ select id, count(*) from test group by 1 having id >= 3 and id < 6 order by 1;
 explain select id from test group by id having count(id) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      12    ",
@@ -984,7 +984,7 @@ explain select id from test group by id having count(id) > 0;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      9     # test (primary) [main] part",
+    "01": "table_open          1      0      9     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -995,7 +995,7 @@ explain select id from test group by id having count(id) > 0;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select id from test group by id having count(id) > 0;
 [0, 1, 3, 6, 4, 5, 2]
@@ -1009,7 +1009,7 @@ select data from test group by data having count(data) > 1;
 explain select id from test group by id having count(*) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      12    ",
@@ -1027,7 +1027,7 @@ explain select id from test group by id having count(*) > 0;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1037,14 +1037,14 @@ explain select id from test group by id having count(*) > 0;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select id from test group by id having count(*) > 0;
 [0, 1, 3, 6, 4, 5, 2]
 explain select id, count(*) from test group by id having count(*) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      48    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1064,7 +1064,7 @@ explain select id, count(*) from test group by id having count(*) > 0;
   },
   "pushdown": {
     "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # test (primary) [main] part",
+    "01": "table_open          1      0      9     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1075,14 +1075,14 @@ explain select id, count(*) from test group by id having count(*) > 0;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select id, count(*) from test group by id having count(*) > 0;
 [[0, 1], [1, 1], [3, 1], [6, 1], [4, 1], [5, 1], [2, 1]]
 explain select id, count(*) from test group by 1 having count(*) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      48    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1102,7 +1102,7 @@ explain select id, count(*) from test group by 1 having count(*) > 0;
   },
   "pushdown": {
     "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # test (primary) [main] part",
+    "01": "table_open          1      0      9     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1113,12 +1113,12 @@ explain select id, count(*) from test group by 1 having count(*) > 0;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 explain select data, count(*) from test group by data having count(*) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      48    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1138,7 +1138,7 @@ explain select data, count(*) from test group by data having count(*) > 0;
   },
   "pushdown": {
     "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # test (primary) [main] part",
+    "01": "table_open          1      0      9     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1149,14 +1149,14 @@ explain select data, count(*) from test group by data having count(*) > 0;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select data, count(*) from test group by data having count(*) > 0;
 [[0, 2], [1, 2], [null, 1], [2, 1], [3, 1]]
 explain select data, count(*) from test group by 1 having count(*) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      48    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1176,7 +1176,7 @@ explain select data, count(*) from test group by 1 having count(*) > 0;
   },
   "pushdown": {
     "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # test (primary) [main] part",
+    "01": "table_open          1      0      9     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1187,12 +1187,12 @@ explain select data, count(*) from test group by 1 having count(*) > 0;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 explain select data, count(*) from test group by data having count(*) > 1;
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      48    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1212,7 +1212,7 @@ explain select data, count(*) from test group by data having count(*) > 1;
   },
   "pushdown": {
     "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # test (primary) [main] part",
+    "01": "table_open          1      0      9     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1223,14 +1223,14 @@ explain select data, count(*) from test group by data having count(*) > 1;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select data, count(*) from test group by data having count(*) > 1;
 [[0, 2], [1, 2]]
 explain select data, count(*) from test group by 1  having count(*) > 1;
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      48    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1250,7 +1250,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1;
   },
   "pushdown": {
     "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # test (primary) [main] part",
+    "01": "table_open          1      0      9     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1261,7 +1261,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 # test: select as from table group by having alias (unsupported)
 select data, count(*) as c from test group by data having c > 1;
@@ -1270,7 +1270,7 @@ select data, count(*) as c from test group by data having c > 1;
 explain select data, count(*) from test group by data order by data;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      2      1     ",
     "03": "store_open          3      1      12    ",
@@ -1289,7 +1289,7 @@ explain select data, count(*) from test group by data order by data;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1299,14 +1299,14 @@ explain select data, count(*) from test group by data order by data;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select data, count(*) from test group by data order by data;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
 explain select count(*) from test group by data order by data;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1323,7 +1323,7 @@ explain select count(*) from test group by data order by data;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # test (primary) [main] part",
+    "01": "table_open          1      0      8     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1333,7 +1333,7 @@ explain select count(*) from test group by data order by data;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select count(*) from test group by data order by data;
 [1, 2, 2, 1, 1]
@@ -1366,7 +1366,7 @@ explain select (select count(distinct data) from test group by id);
   "main": {
     "00": "set                 0      1      1     ",
     "01": "set_distinct        0      1      3     ",
-    "02": "table_open          1      0      10    # test (primary) [main] ",
+    "02": "table_open          1      0      10    # main.test (primary) [main] ",
     "03": "table_readi32       2      1      -     # id",
     "04": "push                2      0      0     ",
     "05": "set_get             2      0      0     ",
@@ -1387,7 +1387,7 @@ explain select (select count(distinct data) from test group by id);
     "20": "first               0      1      0     ",
     "21": "ret                 0      0      -     "
   },
-  "access": [["test", "exclusive_ro"]]
+  "access": [["main.test", "exclusive_ro"]]
 }]
 select (select count(distinct data) from test group by id);
 [1]

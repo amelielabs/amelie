@@ -355,7 +355,8 @@ op_dump_send(Program* self, Code* code, Op* op, Buf* buf, Send* send,
 	auto is_last = self->send_last == code_posof(code, op);
 	auto config = send->table->config;
 	op_write(buf, op, a, b, c,
-	         "%.*s (%s%s)",
+	         "%.*s.%.*s (%s%s)",
+	         str_size(&config->user), str_of(&config->user),
 	         str_size(&config->name), str_of(&config->name),
 	         send_of(send),
 	         is_last ? ", closing" : "");
@@ -449,7 +450,9 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto table  = (Table*)op->a;
 			auto branch = (Branch*)op->b;
 			op_write(output, op, false, false, false,
-			         "%.*s [%.*s]",
+			         "%.*s.%.*s [%.*s]",
+			         str_size(&table->config->user),
+			         str_of(&table->config->user),
 			         str_size(&table->config->name),
 			         str_of(&table->config->name),
 			         str_size(&branch->name),
@@ -470,7 +473,9 @@ op_dump(Program* self, Code* code, Buf* buf)
 				buf_write(desc, "part", 4);
 			}
 			op_write(output, op, true, true, true,
-			         "%.*s (%.*s) [%.*s] %.*s",
+			         "%.*s.%.*s (%.*s) [%.*s] %.*s",
+			         str_size(&open->table->config->user),
+			         str_of(&open->table->config->user),
 			         str_size(&open->table->config->name),
 			         str_of(&open->table->config->name),
 			         str_size(&open->index->name),
@@ -486,7 +491,9 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto table  = (Table*)op->b;
 			auto branch = (Branch*)op->c;
 			op_write(output, op, true, false, false,
-			         "%.*s [%.*s]",
+			         "%.*s.%.*s [%.*s]",
+			         str_size(&table->config->user),
+			         str_of(&table->config->user),
 			         str_size(&table->config->name),
 			         str_of(&table->config->name),
 			         str_size(&branch->name),
@@ -518,7 +525,8 @@ op_dump(Program* self, Code* code, Buf* buf)
 		{
 			auto function = (Function*)op->b;
 			op_write(output, op, true, false, true,
-			         "%.*s()", str_size(&function->name),
+			         "%.*s()",
+			         str_size(&function->name),
 			         str_of(&function->name));
 			break;
 		}
@@ -526,7 +534,10 @@ op_dump(Program* self, Code* code, Buf* buf)
 		{
 			auto udf = (Udf*)op->b;
 			op_write(output, op, true, false, false,
-			         "%.*s()", str_size(&udf->config->name),
+			         "%.*s.%.*s()",
+			         str_size(&udf->config->user),
+			         str_of(&udf->config->user),
+			         str_size(&udf->config->name),
 			         str_of(&udf->config->name));
 			break;
 		}

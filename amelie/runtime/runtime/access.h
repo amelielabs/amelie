@@ -174,7 +174,7 @@ access_encode(Access* self, Buf* buf)
 	{
 		auto record = access_at(self, i);
 		encode_array(buf);
-		encode_string(buf, record->rel->name);
+		encode_target(buf, record->rel->user, record->rel->name);
 		lock_id_encode(buf, record->lock);
 		if (record->lock == LOCK_CALL)
 			call = true;

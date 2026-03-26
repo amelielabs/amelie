@@ -367,19 +367,19 @@ end;
     "00": "bool                0      1      0     ",
     "01": "jntr                6      0      0     ",
     "02": "set_ptr             1      -      0     ",
-    "03": "send_shard          0      1      0     # test (insert)",
+    "03": "send_shard          0      1      0     # main.test (insert)",
     "04": "set_ptr             1      -      0     ",
-    "05": "send_shard          0      1      0     # test (insert)",
+    "05": "send_shard          0      1      0     # main.test (insert)",
     "06": "close               0      0      0     ",
     "07": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test [main]",
+    "00": "insert              -      -      -     # main.test [main]",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # test [main]",
+    "02": "insert              -      -      -     # main.test [main]",
     "03": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 begin
 	if true then
@@ -404,23 +404,23 @@ end;
     "00": "bool                0      1      0     ",
     "01": "jntr                4      0      0     ",
     "02": "set_ptr             1      -      0     ",
-    "03": "send_shard          0      1      0     # test (insert)",
+    "03": "send_shard          0      1      0     # main.test (insert)",
     "04": "bool                0      0      0     ",
     "05": "jntr                8      0      0     ",
     "06": "set_ptr             1      -      0     ",
-    "07": "send_shard          0      1      0     # test (insert)",
-    "08": "send_all            0      0      80    # test (select, closing)",
+    "07": "send_shard          0      1      0     # main.test (insert)",
+    "08": "send_all            0      0      80    # main.test (select, closing)",
     "09": "union               1      0      0     ",
     "10": "recv                1      0      0     ",
     "11": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test [main]",
+    "00": "insert              -      -      -     # main.test [main]",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # test [main]",
+    "02": "insert              -      -      -     # main.test [main]",
     "03": "ret                 -1     0      -     ",
     "04": "set                 0      1      0     ",
-    "05": "table_open          1      48     10    # test (primary) [main] part",
+    "05": "table_open          1      48     10    # main.test (primary) [main] part",
     "06": "table_readi32       2      1      -     # id",
     "07": "push                2      0      0     ",
     "08": "set_add             0      0      0     ",
@@ -428,7 +428,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 begin
 	if true then
@@ -467,22 +467,22 @@ end;
     "00": "bool                0      1      0     ",
     "01": "jntr                5      0      0     ",
     "02": "set_ptr             1      -      0     ",
-    "03": "send_shard          0      1      0     # test (insert)",
+    "03": "send_shard          0      1      0     # main.test (insert)",
     "04": "jmp                 7      0      0     ",
     "05": "set_ptr             1      -      0     ",
-    "06": "send_shard          0      1      0     # test (insert)",
-    "07": "send_all            0      0      80    # test (select, closing)",
+    "06": "send_shard          0      1      0     # main.test (insert)",
+    "07": "send_all            0      0      80    # main.test (select, closing)",
     "08": "union               1      0      0     ",
     "09": "recv                1      0      0     ",
     "10": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test [main]",
+    "00": "insert              -      -      -     # main.test [main]",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # test [main]",
+    "02": "insert              -      -      -     # main.test [main]",
     "03": "ret                 -1     0      -     ",
     "04": "set                 0      1      0     ",
-    "05": "table_open          1      48     10    # test (primary) [main] part",
+    "05": "table_open          1      48     10    # main.test (primary) [main] part",
     "06": "table_readi32       2      1      -     # id",
     "07": "push                2      0      0     ",
     "08": "set_add             0      0      0     ",
@@ -490,7 +490,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 begin
 	if true then
@@ -534,31 +534,31 @@ end;
     "05": "equii               2      0      1     ",
     "06": "jntr                10     2      0     ",
     "07": "set_ptr             1      -      0     ",
-    "08": "send_shard          0      1      0     # test (insert)",
+    "08": "send_shard          0      1      0     # main.test (insert)",
     "09": "jmp                 19     0      0     ",
     "10": "var                 0      0      0     ",
     "11": "int                 1      -      0     # 1",
     "12": "equii               2      0      1     ",
     "13": "jntr                17     2      0     ",
     "14": "set_ptr             1      -      0     ",
-    "15": "send_shard          0      1      0     # test (insert)",
+    "15": "send_shard          0      1      0     # main.test (insert)",
     "16": "jmp                 19     0      0     ",
     "17": "set_ptr             1      -      0     ",
-    "18": "send_shard          0      1      0     # test (insert)",
-    "19": "send_all            0      0      104   # test (select, closing)",
+    "18": "send_shard          0      1      0     # main.test (insert)",
+    "19": "send_all            0      0      104   # main.test (select, closing)",
     "20": "union               1      0      0     ",
     "21": "recv                1      0      0     ",
     "22": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test [main]",
+    "00": "insert              -      -      -     # main.test [main]",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # test [main]",
+    "02": "insert              -      -      -     # main.test [main]",
     "03": "ret                 -1     0      -     ",
-    "04": "insert              -      -      -     # test [main]",
+    "04": "insert              -      -      -     # main.test [main]",
     "05": "ret                 -1     0      -     ",
     "06": "set                 0      1      0     ",
-    "07": "table_open          1      72     12    # test (primary) [main] part",
+    "07": "table_open          1      72     12    # main.test (primary) [main] part",
     "08": "table_readi32       2      1      -     # id",
     "09": "push                2      0      0     ",
     "10": "set_add             0      0      0     ",
@@ -566,7 +566,7 @@ end;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 begin
 	declare x int := 0;
@@ -622,7 +622,7 @@ end;
     "03": "bool                0      1      0     ",
     "04": "jntr                11     0      0     ",
     "05": "set_ptr             1      -      0     ",
-    "06": "send_shard          0      1      0     # test (insert)",
+    "06": "send_shard          0      1      0     # main.test (insert)",
     "07": "union               1      0      0     ",
     "08": "recv                1      0      0     ",
     "09": "var_set             0      0      1     ",
@@ -633,7 +633,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_prepare       1      -      -     # test [main]",
+    "01": "table_prepare       1      -      -     # main.test [main]",
     "02": "jmp                 9      0      0     ",
     "03": "string              2      0      0     # unique key constraint violation",
     "04": "push                2      0      0     ",
@@ -645,7 +645,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 begin
 	declare x int := 0;
@@ -674,17 +674,17 @@ end;
     "04": "jntr                8      0      0     ",
     "05": "push_var            0      0      1     ",
     "06": "set_ptr             1      -      0     ",
-    "07": "send_shard          0      1      1     # test (insert)",
-    "08": "send_all            0      0      56    # test (select, closing)",
+    "07": "send_shard          0      1      1     # main.test (insert)",
+    "08": "send_all            0      0      56    # main.test (select, closing)",
     "09": "union               1      0      0     ",
     "10": "recv                1      0      0     ",
     "11": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test [main]",
+    "00": "insert              -      -      -     # main.test [main]",
     "01": "ret                 -1     0      -     ",
     "02": "set                 0      1      0     ",
-    "03": "table_open          1      24     8     # test (primary) [main] part",
+    "03": "table_open          1      24     8     # main.test (primary) [main] part",
     "04": "table_readi32       2      1      -     # id",
     "05": "push                2      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -692,7 +692,7 @@ end;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 begin
 	declare x int := 0;
@@ -720,7 +720,7 @@ end;
     "02": "var_set             0      0      0     ",
     "03": "bool                0      1      0     ",
     "04": "jntr                10     0      0     ",
-    "05": "send_all            0      0      32    # test (select)",
+    "05": "send_all            0      0      32    # main.test (select)",
     "06": "union               1      0      0     ",
     "07": "recv                1      0      0     ",
     "08": "var_set             0      0      1     ",
@@ -731,7 +731,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) [main] part",
+    "01": "table_open          1      0      6     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -739,7 +739,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 begin
 	declare x int := 0;
@@ -763,7 +763,7 @@ end;
     "02": "var_set             0      0      0     ",
     "03": "bool                0      1      0     ",
     "04": "jntr                17     0      0     ",
-    "05": "send_all            0      0      40    # test (select)",
+    "05": "send_all            0      0      40    # main.test (select)",
     "06": "recv_aggs           1      0      32    ",
     "07": "set                 2      1      0     ",
     "08": "store_open          3      1      13    ",
@@ -781,7 +781,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test (primary) [main] part",
+    "01": "table_open          1      0      7     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -794,7 +794,7 @@ end;
     "11": "set_agg             0      1      32    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 begin
 	declare x int := 0;
@@ -820,7 +820,7 @@ end;
     "03": "bool                0      0      0     ",
     "04": "jntr                6      0      0     ",
     "05": "jmp                 18     0      0     ",
-    "06": "send_all            0      0      40    # test (select)",
+    "06": "send_all            0      0      40    # main.test (select)",
     "07": "recv_aggs           1      0      32    ",
     "08": "set                 2      1      0     ",
     "09": "store_open          3      1      14    ",
@@ -838,7 +838,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test (primary) [main] part",
+    "01": "table_open          1      0      7     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -851,7 +851,7 @@ end;
     "11": "set_agg             0      1      32    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 begin
 	declare x int := 0;
@@ -879,7 +879,7 @@ end;
     "03": "bool                0      0      0     ",
     "04": "jntr                6      0      0     ",
     "05": "jmp                 18     0      0     ",
-    "06": "send_all            0      0      40    # test (select)",
+    "06": "send_all            0      0      40    # main.test (select)",
     "07": "recv_aggs           1      0      32    ",
     "08": "set                 2      1      0     ",
     "09": "store_open          3      1      14    ",
@@ -898,7 +898,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test (primary) [main] part",
+    "01": "table_open          1      0      7     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -911,7 +911,7 @@ end;
     "11": "set_agg             0      1      32    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 begin
 	declare x int := 0;
@@ -940,7 +940,7 @@ end;
     "03": "bool                0      0      0     ",
     "04": "jntr                6      0      0     ",
     "05": "jmp                 18     0      0     ",
-    "06": "send_all            0      0      40    # test (select)",
+    "06": "send_all            0      0      40    # main.test (select)",
     "07": "recv_aggs           1      0      32    ",
     "08": "set                 2      1      0     ",
     "09": "store_open          3      1      14    ",
@@ -952,13 +952,13 @@ end;
     "15": "free                1      0      0     ",
     "16": "var_set             0      0      2     ",
     "17": "free                2      0      0     ",
-    "18": "send_all            0      0      96    # test (select, closing)",
+    "18": "send_all            0      0      96    # main.test (select, closing)",
     "19": "var                 1      0      0     ",
     "20": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # test (primary) [main] part",
+    "01": "table_open          1      0      7     # main.test (primary) [main] part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -971,7 +971,7 @@ end;
     "11": "set_agg             0      1      32    ",
     "12": "ret                 0      0      -     ",
     "13": "set                 0      1      0     ",
-    "14": "table_open          1      64     19    # test (primary) [main] part",
+    "14": "table_open          1      64     19    # main.test (primary) [main] part",
     "15": "table_readi32       2      1      -     # id",
     "16": "push                2      0      0     ",
     "17": "set_add             0      0      0     ",
@@ -979,7 +979,7 @@ end;
     "19": "free                1      0      0     ",
     "20": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 begin
 	declare x int := 0;
@@ -1009,7 +1009,7 @@ end;
     "04": "jntr                12     0      0     ",
     "05": "bool                0      0      0     ",
     "06": "jntr                12     0      0     ",
-    "07": "send_all            0      0      32    # test (select)",
+    "07": "send_all            0      0      32    # main.test (select)",
     "08": "union               1      0      0     ",
     "09": "recv                1      0      0     ",
     "10": "var_set             0      0      1     ",
@@ -1020,7 +1020,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) [main] part",
+    "01": "table_open          1      0      6     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -1028,7 +1028,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 begin
 	declare x int := 0;

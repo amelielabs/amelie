@@ -327,26 +327,28 @@ expr_func_constify(Stmt* self, Ast* ast, Ast* first_arg)
 }
 
 static Ast*
-expr_func(Stmt* self, Expr* expr, Ast* name, bool with_args)
+expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 {
-	// function_name[(expr, ...)]
+	// [user.]function_name[(expr, ...)]
 	auto func = ast_func_allocate();
+	Str user;
+	Str name;
+	parse_target_path(self, path, &user, &name);
 
 	// find and call function
-	func->fn = function_mgr_find(share()->function_mgr, &name->string);
+	if (path->id == KNAME)
+		func->fn = function_mgr_find(share()->function_mgr, &name);
 	if (! func->fn)
 	{
 		// find udf
 		func->udf = udf_mgr_find(&share()->db->catalog.udf_mgr,
-		                         self->parser->user,
-		                         &name->string,
-		                         false);
+		                         &user, &name, false);
 		if (! func->udf)
-			stmt_error(self, name, "function not found");
+			stmt_error(self, path, "function not found");
 
 		// ensure udf can be used here
 		if (!expr || !expr->udf)
-			stmt_error(self, name, "UDF cannot be used here");
+			stmt_error(self, path, "UDF cannot be used here");
 
 		// track udf access
 		auto access = &self->parser->program->access;
@@ -369,8 +371,8 @@ expr_func(Stmt* self, Expr* expr, Ast* name, bool with_args)
 		func->ast.r = args;
 	}
 
-	func->ast.pos_start = name->pos_start;
-	func->ast.pos_end   = name->pos_end;
+	func->ast.pos_start = path->pos_start;
+	func->ast.pos_end   = path->pos_end;
 	return &func->ast;
 }
 
@@ -818,6 +820,14 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// name.path.*
 	case KNAME_COMPOUND:
 	{
+		// function(expr, ...)
+		if (stmt_if(self,'('))
+		{
+			value = expr_func(self, expr, value, true);
+			value = expr_func_constify(self, value, NULL);
+			break;
+		}
+
 		// find variable by name
 		Str name;
 		str_split(&value->string, &name, '.');

@@ -20,7 +20,7 @@
 hot void
 parse_delete(Stmt* self)
 {
-	// DELETE FROM name
+	// DELETE FROM [user.]name
 	// [WHERE expr]
 	// [RETURNING expr]
 	auto stmt = ast_delete_allocate(self->block);

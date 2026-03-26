@@ -20,18 +20,18 @@
 #include <amelie_compiler.h>
 
 void
-explain(Compiler* self, Str* function)
+explain(Compiler* self, Str* user, Str* name)
 {
 	auto program = self->program;
 	auto buf = &self->program->explain;
 
 	encode_obj(buf);
 
-	// [function]
-	if (function)
+	// [user.function]
+	if (name)
 	{
 		encode_raw(buf, "function", 8);
-		encode_string(buf, function);
+		encode_target(buf, user, name);
 	}
 
 	// main
@@ -51,7 +51,7 @@ explain(Compiler* self, Str* function)
 	auto has_call = access_encode(access, buf);
 
 	// calls
-	if (!function && has_call)
+	if (!name && has_call)
 	{
 		encode_raw(buf, "calls", 5);
 		encode_array(buf);

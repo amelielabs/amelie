@@ -15,7 +15,7 @@ delete from test where true limit;
 create table test(id int primary key);
 insert into test values (0);
 insert into test values (1);
-insert into test values (2);
+insert into main.test values (2);
 select * from test;
 delete from test;
 select * from test;

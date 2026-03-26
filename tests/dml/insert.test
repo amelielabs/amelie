@@ -37,7 +37,7 @@ create table test (id int, id2 int, primary key (id, id2));
 select show('table', 'test', true).columns;
 insert into test values (123);
 insert into test values (1, 2, 3);
-insert into test values (1, 2);
+insert into main.test values (1, 2);
 select * from test;
 drop table test;
 

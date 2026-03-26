@@ -67,14 +67,14 @@ select (select *) from test;
 explain select (select test.*) from test;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (select, closing)",
+    "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) [main] part",
+    "01": "table_open          1      0      6     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -82,7 +82,7 @@ explain select (select test.*) from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select (select test.*) from test;
 [1, 2, 3]
@@ -97,14 +97,14 @@ select (select t) from test t;
 explain select (select test.id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (select, closing)",
+    "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) [main] part",
+    "01": "table_open          1      0      6     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -112,7 +112,7 @@ explain select (select test.id) from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select (select test.id) from test;
 [1, 2, 3]
@@ -122,14 +122,14 @@ select (select id) from test;
 explain select (select t.id) from test t;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (select, closing)",
+    "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) [main] part",
+    "01": "table_open          1      0      6     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -137,7 +137,7 @@ explain select (select t.id) from test t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select (select t.id) from test;
 {"msg": "select (select ❰t.id❱ ⟵ target not found"}
@@ -224,7 +224,7 @@ select * from (select * from test) t;
 explain select * from (select * from test) t;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (select)",
+    "00": "send_all            0      0      32    # main.test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -240,7 +240,7 @@ explain select * from (select * from test) t;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) [main] part",
+    "01": "table_open          1      0      6     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -248,7 +248,7 @@ explain select * from (select * from test) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 # test: select target.* from (select from table)
 select test.* from (select * from test);
@@ -354,7 +354,7 @@ explain select (select * from test);
 [{
   "main": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) [main] ",
+    "01": "table_open          1      0      6     # main.test (primary) [main] ",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -363,7 +363,7 @@ explain select (select * from test);
     "07": "first               1      0      0     ",
     "08": "ret                 1      0      -     "
   },
-  "access": [["test", "exclusive_ro"]]
+  "access": [["main.test", "exclusive_ro"]]
 }]
 select (select * from test);
 [1]
@@ -374,16 +374,16 @@ select (select * from test where false);
 explain select (select * from test) from test;
 [{
   "main": {
-    "00": "send_all            0      0      64    # test (select, closing)",
+    "00": "send_all            0      0      64    # main.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      13    # test (primary) [main] part",
+    "01": "table_open          1      0      13    # main.test (primary) [main] part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      32     8     # test (primary) [main] ",
+    "03": "table_open          3      32     8     # main.test (primary) [main] ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -396,7 +396,7 @@ explain select (select * from test) from test;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "exclusive_ro"]]
+  "access": [["main.test", "exclusive_ro"]]
 }]
 select (select * from test) from test;
 [1, 1, 1]
@@ -408,17 +408,17 @@ select (select * from test t limit 1) from test;
 explain select (select i.* from test i limit 1) from test;
 [{
   "main": {
-    "00": "send_all            0      0      64    # test (select, closing)",
+    "00": "send_all            0      0      64    # main.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      15    # test (primary) [main] part",
+    "01": "table_open          1      0      15    # main.test (primary) [main] part",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
-    "04": "table_open          4      32     10    # test (primary) [main] ",
+    "04": "table_open          4      32     10    # main.test (primary) [main] ",
     "05": "cjltd               10     3      0     ",
     "06": "table_readi32       5      4      -     # id",
     "07": "push                5      0      0     ",
@@ -432,24 +432,24 @@ explain select (select i.* from test i limit 1) from test;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["test", "exclusive_ro"]]
+  "access": [["main.test", "exclusive_ro"]]
 }]
 # test: select (select from table) from table #2
 explain select (select i.* from test i where test.id = i.id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      64    # test (select, closing)",
+    "00": "send_all            0      0      64    # main.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      18    # test (primary) [main] part",
+    "01": "table_open          1      0      18    # main.test (primary) [main] part",
     "02": "set                 2      1      0     ",
     "03": "table_readi32       3      1      -     # id",
     "04": "push                3      0      0     ",
-    "05": "table_open          3      32     13    # test (primary) [main] point_lookup",
+    "05": "table_open          3      32     13    # main.test (primary) [main] point_lookup",
     "06": "table_readi32       4      1      -     # id",
     "07": "table_readi32       5      3      -     # id",
     "08": "equii               6      4      5     ",
@@ -465,7 +465,7 @@ explain select (select i.* from test i where test.id = i.id) from test;
     "18": "free                1      0      0     ",
     "19": "ret                 0      0      -     "
   },
-  "access": [["test", "exclusive_ro"]]
+  "access": [["main.test", "exclusive_ro"]]
 }]
 select (select i.* from test i where test.id = i.id) from test;
 [1, 2, 3]
@@ -488,18 +488,18 @@ select (select b.id from b where a.id = b.id)::type from a;
 explain select * from a where (select true from b where a.id = b.id);
 [{
   "main": {
-    "00": "send_all            0      0      64    # a (select, closing)",
+    "00": "send_all            0      0      64    # main.a (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      21    # a (primary) [main] part",
+    "01": "table_open          1      0      21    # main.a (primary) [main] part",
     "02": "set                 2      1      0     ",
     "03": "table_readi64       3      1      -     # id",
     "04": "push                3      0      0     ",
-    "05": "table_open          3      32     12    # b (primary) [main] point_lookup",
+    "05": "table_open          3      32     12    # main.b (primary) [main] point_lookup",
     "06": "table_readi64       4      1      -     # id",
     "07": "table_readi64       5      3      -     # id",
     "08": "equii               6      4      5     ",
@@ -518,7 +518,7 @@ explain select * from a where (select true from b where a.id = b.id);
     "21": "free                1      0      0     ",
     "22": "ret                 0      0      -     "
   },
-  "access": [["a", "shared"], ["b", "exclusive_ro"]]
+  "access": [["main.a", "shared"], ["main.b", "exclusive_ro"]]
 }]
 select * from a where (select true from b where a.id = b.id);
 [[0, 0], [1, 0], [2, 0]]
@@ -528,7 +528,7 @@ select t.x from (select z.id as x from (select id from test) z) t;
 explain select t.x from (select z.id as x from (select id from test) z) t;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (select)",
+    "00": "send_all            0      0      32    # main.test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -553,7 +553,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # test (primary) [main] part",
+    "01": "table_open          1      0      6     # main.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -561,7 +561,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 # test: select from (select from), (select from)
 select * from (select * from a) a, (select * from a) b;

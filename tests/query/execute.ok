@@ -26,7 +26,7 @@ execute reverse(1, );
 # test: execute
 explain execute reverse([1,2,3]);
 [{
-  "function": "reverse",
+  "function": "main.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",
@@ -87,12 +87,12 @@ explain select reverse([1,2,3]);
 [{
   "main": {
     "00": "push_json           0      0      0     ",
-    "01": "call_udf            0      -      -     # reverse()",
+    "01": "call_udf            0      -      -     # main.reverse()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["reverse", "call"]],
+  "access": [["main.reverse", "call"]],
   "calls": [{
-    "function": "reverse",
+    "function": "main.reverse",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "json                0      0      0     ",
@@ -159,17 +159,17 @@ end;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
-    "01": "call_udf            1      -      -     # fn()",
+    "01": "call_udf            1      -      -     # main.fn()",
     "02": "close               0      0      0     ",
     "03": "int                 2      -      0     # 1",
     "04": "ret                 2      0      -     "
   },
-  "access": [["fn", "call"], ["test", "shared"]],
+  "access": [["main.fn", "call"], ["main.test", "shared"]],
   "calls": [{
-    "function": "fn",
+    "function": "main.fn",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      32    # test (select, closing)",
+      "01": "send_all            0      0      32    # main.test (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_set             0      0      1     ",
@@ -179,7 +179,7 @@ end;
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # test (primary) [main] part",
+      "01": "table_open          1      0      6     # main.test (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -187,7 +187,7 @@ end;
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["test", "shared"]]
+    "access": [["main.test", "shared"]]
   }]
 }]
 begin
@@ -217,28 +217,28 @@ explain select c(123);
 [{
   "main": {
     "00": "push_int            -      0      0     # 123",
-    "01": "call_udf            0      -      -     # c()",
+    "01": "call_udf            0      -      -     # main.c()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["c", "call"], ["b", "call"], ["a", "call"]],
+  "access": [["main.c", "call"], ["main.b", "call"], ["main.a", "call"]],
   "calls": [{
-    "function": "c",
+    "function": "main.c",
     "main": {
       "00": "push_var            0      1      0     ",
-      "01": "call_udf            0      -      -     # b()",
+      "01": "call_udf            0      -      -     # main.b()",
       "02": "ret                 0      0      -     "
     },
-    "access": [["b", "call"], ["a", "call"]]
+    "access": [["main.b", "call"], ["main.a", "call"]]
   }, {
-    "function": "b",
+    "function": "main.b",
     "main": {
       "00": "push_var            0      1      0     ",
-      "01": "call_udf            0      -      -     # a()",
+      "01": "call_udf            0      -      -     # main.a()",
       "02": "ret                 0      0      -     "
     },
-    "access": [["a", "call"]]
+    "access": [["main.a", "call"]]
   }, {
-    "function": "a",
+    "function": "main.a",
     "main": {
       "00": "var                 0      0      1     ",
       "01": "ret                 0      0      -     "

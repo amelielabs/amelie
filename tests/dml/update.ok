@@ -3,13 +3,13 @@ connect E0 S0 127.0.0.1:3485;
 # test: update statement parsing
 create table test(id int primary key);
 update;
-{"msg": "update❰;❱ ⟵ name expected"}
+{"msg": "update❰;❱ ⟵ target name expected"}
 update;
-{"msg": "update❰;❱ ⟵ name expected"}
+{"msg": "update❰;❱ ⟵ target name expected"}
 update 1;
-{"msg": "update ❰1❱ ⟵ name expected"}
+{"msg": "update ❰1❱ ⟵ target name expected"}
 update "name";
-{"msg": "update ❰\"name\"❱ ⟵ name expected"}
+{"msg": "update ❰\"name\"❱ ⟵ target name expected"}
 update test;
 {"msg": "update test❰;❱ ⟵ SET expected"}
 update test "path";
@@ -33,15 +33,15 @@ drop table test;
 create table test(id int primary key, data int);
 insert into test values (0, 3);
 insert into test values (1, 2);
-insert into test values (2, 1);
+insert into main.test values (2, 1);
 explain update test set data = data + 1;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (update, closing)",
+    "00": "send_all            0      0      32    # main.test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      9     # test (primary) [main] part",
+    "00": "table_open          0      0      9     # main.test (primary) [main] part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
     "03": "table_readi32       1      0      -     # data",
@@ -53,7 +53,7 @@ explain update test set data = data + 1;
     "09": "free                0      0      0     ",
     "10": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 update test set data = data + 1;
 select * from test;
@@ -85,11 +85,11 @@ insert into test values (2, 1, 1);
 explain update test set a = a + 1, b = b - 1;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (update, closing)",
+    "00": "send_all            0      0      32    # main.test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      15    # test (primary) [main] part",
+    "00": "table_open          0      0      15    # main.test (primary) [main] part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
     "03": "table_readi32       1      0      -     # a",
@@ -107,7 +107,7 @@ explain update test set a = a + 1, b = b - 1;
     "15": "free                0      0      0     ",
     "16": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 update test set a = a + 1, b = b - 1;
 select * from test;
@@ -132,11 +132,11 @@ update test set data = {"id": data.id::int + 1};
 explain update test set data = {"id": data.id::int + 1};
 [{
   "main": {
-    "00": "send_all            0      0      38    # test (update, closing)",
+    "00": "send_all            0      0      38    # main.test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      16    # test (primary) [main] part",
+    "00": "table_open          0      0      16    # main.test (primary) [main] part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
     "03": "push_string         32     0      0     # id",
@@ -155,7 +155,7 @@ explain update test set data = {"id": data.id::int + 1};
     "16": "free                0      0      0     ",
     "17": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 select * from test;
 [[0, {
@@ -200,11 +200,11 @@ update test set id.path = 0;
 explain update test set data.id = data.id::int + 1;
 [{
   "main": {
-    "00": "send_all            0      0      38    # test (update, closing)",
+    "00": "send_all            0      0      38    # main.test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      18    # test (primary) [main] part",
+    "00": "table_open          0      0      18    # main.test (primary) [main] part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
     "03": "table_readj         1      0      -     # data",
@@ -225,7 +225,7 @@ explain update test set data.id = data.id::int + 1;
     "18": "free                0      0      0     ",
     "19": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 update test set data.id = data.id::int + 1;
 select * from test;
@@ -308,12 +308,12 @@ explain update test set data = data + 1 where id = 0;
 [{
   "main": {
     "00": "push_int            -      0      0     # 0",
-    "01": "send_lookup         0      -      32    # test (update, closing)",
+    "01": "send_lookup         0      -      32    # main.test (update, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 0",
-    "01": "table_open          0      0      13    # test (primary) [main] point_lookup, part",
+    "01": "table_open          0      0      13    # main.test (primary) [main] point_lookup, part",
     "02": "table_readi32       1      0      -     # id",
     "03": "int                 2      -      0     # 0",
     "04": "equii               3      1      2     ",
@@ -328,7 +328,7 @@ explain update test set data = data + 1 where id = 0;
     "13": "free                0      0      0     ",
     "14": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 update test set data = data + 1 where id = 0;
 update test set data = data + 1 where id = 1;
@@ -344,12 +344,12 @@ insert into test values (2, 1);
 explain update test set data = data + 1 where id >= 1;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (update, closing)",
+    "00": "send_all            0      0      32    # main.test (update, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 1",
-    "01": "table_open          0      0      14    # test (primary) [main] part",
+    "01": "table_open          0      0      14    # main.test (primary) [main] part",
     "02": "table_readi32       1      0      -     # id",
     "03": "int                 2      -      0     # 1",
     "04": "gteii               3      1      2     ",
@@ -365,7 +365,7 @@ explain update test set data = data + 1 where id >= 1;
     "14": "free                0      0      0     ",
     "15": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 update test set data = data + 1 where id > 2;
 select * from test;
@@ -418,14 +418,14 @@ insert into test values (2, 0);
 explain update test set data = data + 1 returning *;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (update, closing)",
+    "00": "send_all            0      0      32    # main.test (update, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      15    # test (primary) [main] part",
+    "01": "table_open          1      0      15    # main.test (primary) [main] part",
     "02": "int                 2      -      0     # 1",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -442,7 +442,7 @@ explain update test set data = data + 1 returning *;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 update test set data = data + 1 returning *;
 [[0, 1], [1, 1], [2, 1]]

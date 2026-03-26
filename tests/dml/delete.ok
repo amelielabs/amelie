@@ -8,9 +8,9 @@ delete junk;
 delete 1;
 {"msg": "delete ❰1❱ ⟵ FROM expected"}
 delete from 1;
-{"msg": "delete from ❰1❱ ⟵ name expected"}
+{"msg": "delete from ❰1❱ ⟵ target name expected"}
 delete from "name";
-{"msg": "delete from ❰\"name\"❱ ⟵ name expected"}
+{"msg": "delete from ❰\"name\"❱ ⟵ target name expected"}
 delete from test junk;
 {"msg": "delete from ❰test❱ ⟵ relation not found"}
 delete from test where true limit;
@@ -19,7 +19,7 @@ delete from test where true limit;
 create table test(id int primary key);
 insert into test values (0);
 insert into test values (1);
-insert into test values (2);
+insert into main.test values (2);
 select * from test;
 [0, 1, 2]
 delete from test;
@@ -35,12 +35,12 @@ explain delete from test where id = 3;
 [{
   "main": {
     "00": "push_int            -      0      0     # 3",
-    "01": "send_lookup         0      -      32    # test (delete, closing)",
+    "01": "send_lookup         0      -      32    # main.test (delete, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 3",
-    "01": "table_open          0      0      7     # test (primary) [main] point_lookup, part",
+    "01": "table_open          0      0      7     # main.test (primary) [main] point_lookup, part",
     "02": "table_readi32       1      0      -     # id",
     "03": "int                 2      -      0     # 3",
     "04": "equii               3      1      2     ",
@@ -49,7 +49,7 @@ explain delete from test where id = 3;
     "07": "free                0      0      0     ",
     "08": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 delete from test where id = 3;
 select * from test;
@@ -86,12 +86,12 @@ select * from test;
 explain delete from test where id > 0 and id < 1;
 [{
   "main": {
-    "00": "send_all            0      0      32    # test (delete, closing)",
+    "00": "send_all            0      0      32    # main.test (delete, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 0",
-    "01": "table_open          0      0      16    # test (primary) [main] part",
+    "01": "table_open          0      0      16    # main.test (primary) [main] part",
     "02": "table_readi32       1      0      -     # id",
     "03": "int                 2      -      0     # 1",
     "04": "ltii                3      1      2     ",
@@ -109,7 +109,7 @@ explain delete from test where id > 0 and id < 1;
     "16": "free                0      0      0     ",
     "17": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 delete from test where id > 0 and id < 1;
 select * from test;

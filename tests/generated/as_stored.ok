@@ -51,14 +51,14 @@ explain insert into test values (0, null);
     "10": "store_next          3      3      0     ",
     "11": "free                3      0      0     ",
     "12": "free                2      0      0     ",
-    "13": "send_shard          0      1      0     # test (insert, closing)",
+    "13": "send_shard          0      1      0     # main.test (insert, closing)",
     "14": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # test [main]",
+    "00": "insert              -      -      -     # main.test [main]",
     "01": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 insert into test values (0, null);
 insert into test values (1, null), (2, 42), (3, 43);
@@ -136,11 +136,11 @@ explain insert into test (id) values (0) on conflict do update set data = data +
     "10": "store_next          3      3      0     ",
     "11": "free                3      0      0     ",
     "12": "free                2      0      0     ",
-    "13": "send_shard          0      1      0     # test (insert, closing)",
+    "13": "send_shard          0      1      0     # main.test (insert, closing)",
     "14": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # test [main]",
+    "00": "table_prepare       0      -      -     # main.test [main]",
     "01": "jmp                 9      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -153,7 +153,7 @@ explain insert into test (id) values (0) on conflict do update set data = data +
     "10": "free                0      0      0     ",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"]]
+  "access": [["main.test", "shared_rw"]]
 }]
 insert into test (id) values (0) on conflict do update set data = data + 1;
 select * from test;
@@ -191,7 +191,7 @@ insert into src values (1, 0), (2, 0);
 explain insert into test select * from src;
 [{
   "main": {
-    "00": "send_all            0      0      32    # src (select)",
+    "00": "send_all            0      0      32    # main.src (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "dup                 2      1      0     ",
@@ -207,12 +207,12 @@ explain insert into test select * from src;
     "13": "store_next          4      6      0     ",
     "14": "free                4      0      0     ",
     "15": "free                3      0      0     ",
-    "16": "send_shard          0      2      0     # test (insert, closing)",
+    "16": "send_shard          0      2      0     # main.test (insert, closing)",
     "17": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # src (primary) [main] part",
+    "01": "table_open          1      0      8     # main.src (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -221,10 +221,10 @@ explain insert into test select * from src;
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
-    "10": "insert              -      -      -     # test [main]",
+    "10": "insert              -      -      -     # main.test [main]",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["test", "shared_rw"], ["src", "shared"]]
+  "access": [["main.test", "shared_rw"], ["main.src", "shared"]]
 }]
 insert into test select * from src returning *;
 [[1, 2], [2, 2]]

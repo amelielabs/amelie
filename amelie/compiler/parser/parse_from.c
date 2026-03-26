@@ -85,9 +85,11 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 		return target;
 	}
 
-	// FROM name [(args)]
-	auto name = stmt_expect(self, KNAME);
-	target->ast = name;
+	// FROM [user.]name [(args)]
+	Str user;
+	Str name;
+	auto path = parse_target(self, &user, &name);
+	target->ast = path;
 
 	// function()
 	if ((self->id == STMT_SELECT || self->id == STMT_FOR) &&
@@ -95,9 +97,9 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 	{
 		// find function
 		auto func = ast_func_allocate();
-		func->fn = function_mgr_find(share()->function_mgr, &name->string);
+		func->fn = function_mgr_find(share()->function_mgr, &name);
 		if (! func->fn)
-			stmt_error(self, name, "function not found");
+			stmt_error(self, path, "function not found");
 
 		// parse args ()
 		func->ast.r = parse_expr_args(self, NULL, ')', false);
@@ -115,7 +117,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 	}
 
 	// var
-	auto var = namespace_find_var(self->block->ns, &name->string);
+	auto var = namespace_find_var(self->block->ns, &name);
 	if (var)
 	{
 		target->type     = TARGET_VAR;
@@ -137,11 +139,11 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 	}
 
 	// cte
-	auto stmt = block_find_cte(self->block, &name->string);
+	auto stmt = block_find_cte(self->block, &name);
 	if (stmt)
 	{
 		if (stmt == self)
-			stmt_error(self, name, "recursive CTE are not supported");
+			stmt_error(self, path, "recursive CTE are not supported");
 		target->type      = TARGET_STMT;
 		target->from_stmt = stmt;
 		target->columns   = &stmt->cte_columns;
@@ -151,8 +153,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 	}
 
 	// table
-	auto table = catalog_find_table(&share()->db->catalog, self->parser->user,
-	                                &name->string, false);
+	auto table = catalog_find_table(&share()->db->catalog, &user, &name, false);
 	if (table)
 	{
 		target->type        = TARGET_TABLE;
@@ -190,7 +191,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 		return target;
 	}
 
-	stmt_error(self, name, "relation not found");
+	stmt_error(self, path, "relation not found");
 	return NULL;
 }
 

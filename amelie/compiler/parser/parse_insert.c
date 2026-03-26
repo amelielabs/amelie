@@ -199,7 +199,7 @@ parse_generated(Stmt* self)
 hot void
 parse_insert(Stmt* self)
 {
-	// INSERT INTO name [(column_list)]
+	// INSERT INTO [user.]name [(column_list)]
 	// [GENERATE | VALUES (value, ..), ... | SELECT ...]
 	// [ON CONFLICT DO NOTHING | ERROR | UPDATE | RESOLVE]
 	// [RETURNING expr]

@@ -147,7 +147,7 @@ parse_update_resolved(Stmt* self, Columns* columns)
 hot void
 parse_update(Stmt* self)
 {
-	// UPDATE name SET column = expr [, ... ]
+	// UPDATE [user.]name SET column = expr [, ... ]
 	// [WHERE expr]
 	// [RETURNING expr]
 	auto stmt = ast_update_allocate(self->block);

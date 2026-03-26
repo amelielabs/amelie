@@ -41,12 +41,12 @@ show functions extended;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # test()",
+    "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["test", "call"]],
+  "access": [["main.test", "call"]],
   "calls": [{
-    "function": "test",
+    "function": "main.test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -57,7 +57,7 @@ select test();
 [null]
 explain execute test();
 [{
-  "function": "test",
+  "function": "main.test",
   "main": {
     "00": "ret                 -1     0      -     "
   },
@@ -72,12 +72,12 @@ end;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # test()",
+    "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["test", "call"]],
+  "access": [["main.test", "call"]],
   "calls": [{
-    "function": "test",
+    "function": "main.test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -88,9 +88,11 @@ select test();
 [null]
 select test()::type;
 ["null"]
+select main.test();
+[null]
 explain execute test();
 [{
-  "function": "test",
+  "function": "main.test",
   "main": {
     "00": "ret                 -1     0      -     "
   },
@@ -108,12 +110,12 @@ end;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # test()",
+    "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["test", "call"]],
+  "access": [["main.test", "call"]],
   "calls": [{
-    "function": "test",
+    "function": "main.test",
     "main": {
       "00": "int                 0      -      0     # 123",
       "01": "ret                 0      0      -     "
@@ -125,7 +127,7 @@ select test();
 [123]
 explain execute test();
 [{
-  "function": "test",
+  "function": "main.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 0      0      -     "
@@ -145,12 +147,12 @@ end;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # test()",
+    "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["test", "call"]],
+  "access": [["main.test", "call"]],
   "calls": [{
-    "function": "test",
+    "function": "main.test",
     "main": {
       "00": "int                 0      -      0     # 123",
       "01": "ret                 -1     0      -     "
@@ -162,7 +164,7 @@ select test();
 [null]
 explain execute test();
 [{
-  "function": "test",
+  "function": "main.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 -1     0      -     "
@@ -181,12 +183,12 @@ end;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # test()",
+    "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["test", "call"]],
+  "access": [["main.test", "call"]],
   "calls": [{
-    "function": "test",
+    "function": "main.test",
     "main": {
       "00": "int                 0      -      0     # 123",
       "01": "ret                 0      0      -     "
@@ -198,7 +200,7 @@ select test();
 [123]
 explain execute test();
 [{
-  "function": "test",
+  "function": "main.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 0      0      -     "
@@ -355,12 +357,12 @@ explain select test(123);
 [{
   "main": {
     "00": "push_int            -      0      0     # 123",
-    "01": "call_udf            0      -      -     # test()",
+    "01": "call_udf            0      -      -     # main.test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["test", "call"]],
+  "access": [["main.test", "call"]],
   "calls": [{
-    "function": "test",
+    "function": "main.test",
     "main": {
       "00": "var                 0      0      1     ",
       "01": "ret                 0      0      -     "
@@ -400,12 +402,12 @@ explain select test(10);
 [{
   "main": {
     "00": "push_int            -      0      0     # 10",
-    "01": "call_udf            0      -      -     # test()",
+    "01": "call_udf            0      -      -     # main.test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["test", "call"]],
+  "access": [["main.test", "call"]],
   "calls": [{
-    "function": "test",
+    "function": "main.test",
     "main": {
       "00": "push_nulls          2      0      0     ",
       "01": "int                 0      -      0     # 0",
@@ -435,7 +437,7 @@ select test(10);
 [45]
 explain execute test(10);
 [{
-  "function": "test",
+  "function": "main.test",
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -473,12 +475,12 @@ explain select [1,2,3]::reverse;
 [{
   "main": {
     "00": "push_json           0      0      0     ",
-    "01": "call_udf            0      -      -     # reverse()",
+    "01": "call_udf            0      -      -     # main.reverse()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["reverse", "call"]],
+  "access": [["main.reverse", "call"]],
   "calls": [{
-    "function": "reverse",
+    "function": "main.reverse",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "set                 0      1      1     ",
@@ -524,7 +526,7 @@ select [1,2,3]::reverse::reverse;
 [[1, 2, 3]]
 explain execute reverse([1,2,3]);
 [{
-  "function": "reverse",
+  "function": "main.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "set                 0      1      1     ",
@@ -606,12 +608,12 @@ explain select [1,2,3]::reverse;
 [{
   "main": {
     "00": "push_json           0      0      0     ",
-    "01": "call_udf            0      -      -     # reverse()",
+    "01": "call_udf            0      -      -     # main.reverse()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["reverse", "call"]],
+  "access": [["main.reverse", "call"]],
   "calls": [{
-    "function": "reverse",
+    "function": "main.reverse",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "json                0      0      0     ",
@@ -637,7 +639,7 @@ select [1,2,3]::reverse;
 [[3, 2, 1]]
 explain execute reverse([1,2,3]);
 [{
-  "function": "reverse",
+  "function": "main.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",
@@ -740,19 +742,19 @@ create function test() begin select test_dep(); end;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # test()",
+    "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["test", "call"], ["test_dep", "call"]],
+  "access": [["main.test", "call"], ["main.test_dep", "call"]],
   "calls": [{
-    "function": "test",
+    "function": "main.test",
     "main": {
-      "00": "call_udf            0      -      -     # test_dep()",
+      "00": "call_udf            0      -      -     # main.test_dep()",
       "01": "ret                 -1     0      -     "
     },
-    "access": [["test_dep", "call"]]
+    "access": [["main.test_dep", "call"]]
   }, {
-    "function": "test_dep",
+    "function": "main.test_dep",
     "main": {
       "00": "ret                 -1     0      -     "
     },

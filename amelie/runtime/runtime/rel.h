@@ -22,7 +22,6 @@ typedef enum
 	REL_STORAGE,
 	REL_TABLE,
 	REL_UDF,
-	REL_SYNONYM,
 	REL_LOCK,
 	REL_SYSTEM
 } RelType;

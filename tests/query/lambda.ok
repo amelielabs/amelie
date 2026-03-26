@@ -26,7 +26,7 @@ select 0 -> id, 0 -> data from test;
 explain select 0 -> id, 0 -> data from test;
 [{
   "main": {
-    "00": "send_all            0      0      48    # test (select, closing)",
+    "00": "send_all            0      0      48    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
@@ -44,7 +44,7 @@ explain select 0 -> id, 0 -> data from test;
     "00": "set                 0      2      1     ",
     "01": "int                 1      -      0     # 0",
     "02": "int                 2      -      0     # 0",
-    "03": "table_open          3      0      12    # test (primary) [main] part",
+    "03": "table_open          3      0      12    # main.test (primary) [main] part",
     "04": "push_bool           1      0      0     ",
     "05": "set_get             4      0      0     ",
     "06": "table_readi32       5      3      -     # id",
@@ -61,7 +61,7 @@ explain select 0 -> id, 0 -> data from test;
     "17": "set_agg             0      3      32    ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 # test: select self
 select self;
@@ -74,7 +74,7 @@ select 0 -> self + 1 from test;
 explain select 0 -> self + 1 from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -89,7 +89,7 @@ explain select 0 -> self + 1 from test;
   "pushdown": {
     "00": "set                 0      1      1     ",
     "01": "int                 1      -      0     # 0",
-    "02": "table_open          2      0      11    # test (primary) [main] part",
+    "02": "table_open          2      0      11    # main.test (primary) [main] part",
     "03": "push_bool           1      0      0     ",
     "04": "set_get             3      0      0     ",
     "05": "self                4      0      3     ",
@@ -105,7 +105,7 @@ explain select 0 -> self + 1 from test;
     "15": "set_agg             0      2      32    ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select 0 -> (self + 1) + self from test;
 [31]
@@ -170,7 +170,7 @@ insert into test values (5, 3);
 explain select 0 -> self + 1 from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # test (select, closing)",
+    "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -185,7 +185,7 @@ explain select 0 -> self + 1 from test;
   "pushdown": {
     "00": "set                 0      1      1     ",
     "01": "int                 1      -      0     # 0",
-    "02": "table_open          2      0      11    # test (primary) [main] part",
+    "02": "table_open          2      0      11    # main.test (primary) [main] part",
     "03": "push_bool           1      0      0     ",
     "04": "set_get             3      0      0     ",
     "05": "self                4      0      3     ",
@@ -201,7 +201,7 @@ explain select 0 -> self + 1 from test;
     "15": "set_agg             0      2      32    ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["test", "shared"]]
+  "access": [["main.test", "shared"]]
 }]
 select 0 -> self + 1 from test;
 {"msg": "distributed operation on lambda is not supported"}
