@@ -151,8 +151,6 @@ storage_mgr_dump(StorageMgr* self, Buf* buf)
 	list_foreach(&self->mgr.list)
 	{
 		auto storage = storage_of(list_at(Rel, link));
-		if (storage->config->system)
-			continue;
 		storage_config_write(storage->config, buf, 0);
 	}
 	encode_array_end(buf);

@@ -48,7 +48,7 @@ catalog_free(Catalog* self)
 }
 
 static void
-catalog_prepare(Catalog* self)
+catalog_create(Catalog* self)
 {
 	Buf buf;
 	buf_init(&buf);
@@ -105,14 +105,16 @@ catalog_prepare(Catalog* self)
 void
 catalog_open(Catalog* self, bool bootstrap)
 {
-	// prepare catalog
-	catalog_prepare(self);
-
 	// read catalog file and restore objects
 	if (bootstrap)
+	{
+		// create catalog
+		catalog_create(self);
 		catalog_write(self);
-	else
+	} else
+	{
 		catalog_read(self);
+	}
 }
 
 void
