@@ -12,6 +12,7 @@
 //
 
 // grants
+#include "rel/permissions.h"
 #include "rel/grants.h"
 
 // relation
