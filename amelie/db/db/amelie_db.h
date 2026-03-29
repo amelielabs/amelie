@@ -11,9 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-// db snapshot
-#include "db/snapshot_mgr.h"
-
 // db
 #include "db/db.h"
+#include "db/db_snapshot.h"
 #include "db/recover.h"

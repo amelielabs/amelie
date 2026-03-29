@@ -19,8 +19,8 @@ void
 backup_init(Backup* self, Db* db)
 {
 	self->snapshot = NULL;
-	self->client   = NULL;
 	self->db       = db;
+	self->client   = NULL;
 	event_init(&self->on_complete);
 	task_init(&self->task);
 }

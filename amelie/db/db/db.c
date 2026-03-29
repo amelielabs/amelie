@@ -29,20 +29,23 @@ db_init(Db*        self,
         PartMgrIf* iface_part_mgr,
         void*      iface_part_mgr_arg)
 {
+	self->snapshots_count = 0;
 	catalog_init(&self->catalog, iface, iface_arg,
 	             iface_part_mgr,
 	             iface_part_mgr_arg);
 	wal_init(&self->wal);
+	list_init(&self->snapshots);
+	list_init(&self->snapshots_gc);
 	service_init(&self->service, &self->catalog, &self->wal);
 	syncer_init(&self->syncer, &self->service);
-	snapshot_mgr_init(&self->snapshot_mgr, &self->catalog, &self->wal);
+
 }
 
 void
 db_free(Db* self)
 {
+	assert(! self->snapshots_count);
 	service_free(&self->service);
-	snapshot_mgr_free(&self->snapshot_mgr);
 	catalog_free(&self->catalog);
 	wal_free(&self->wal);
 }
@@ -74,27 +77,6 @@ db_close(Db* self)
 
 	// stop wal
 	wal_close(&self->wal);
-}
-
-Snapshot*
-db_snapshot(Db* self)
-{
-	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
-	defer(unlock, lock_catalog);
-	return snapshot_mgr_create(&self->snapshot_mgr);
-}
-
-void
-db_snapshot_drop(Db* self, Snapshot* snapshot)
-{
-	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
-	error_catch (
-		snapshot_mgr_drop(&self->snapshot_mgr, snapshot);
-	);
-	unlock(lock_catalog);
-
-	// wal gc
-	service_gc(&self->service);
 }
 
 hot void

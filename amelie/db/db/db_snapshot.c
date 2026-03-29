@@ -22,10 +22,10 @@
 #include <amelie_service.h>
 #include <amelie_db.h>
 
-static inline Snapshot*
-snapshot_allocate(void)
+static inline DbSnapshot*
+db_snapshot_allocate(void)
 {
-	auto self = (Snapshot*)am_malloc(sizeof(Snapshot));
+	auto self = (DbSnapshot*)am_malloc(sizeof(DbSnapshot));
 	buf_init(&self->data);
 	wal_slot_init(&self->wal_snapshot);
 	list_init(&self->link);
@@ -33,39 +33,57 @@ snapshot_allocate(void)
 }
 
 static inline void
-snapshot_free(Snapshot* self)
+db_snapshot_free(DbSnapshot* self)
 {
 	buf_free(&self->data);
 	am_free(self);
 }
 
-void
-snapshot_mgr_init(SnapshotMgr* self, Catalog* catalog, Wal* wal)
+static void
+db_snapshot_gc(Db* self)
 {
-	self->catalog    = catalog;
-	self->wal        = wal;
-	self->list_count = 0;
-	list_init(&self->list);
-	list_init(&self->list_gc);
-}
-
-void
-snapshot_mgr_free(SnapshotMgr* self)
-{
-	list_foreach_safe(&self->list)
+	list_foreach_safe(&self->snapshots_gc)
 	{
-		auto snapshot = list_at(Snapshot, link);
-		snapshot_free(snapshot);
+		auto snapshot = list_at(DbSnapshot, link);
+		auto data = &snapshot->data;
+		if (! buf_empty(data)) {
+			error_catch ( catalog_snapshot_cleanup(data) );
+		}
+		db_snapshot_free(snapshot);
 	}
+	list_init(&self->snapshots_gc);
 }
 
-Snapshot*
-snapshot_mgr_create(SnapshotMgr* self)
+static void
+db_snapshot_detach(Db* self, DbSnapshot* snapshot)
 {
+	// detach wal slot
+	wal_detach(&self->wal, &snapshot->wal_snapshot);
+
+	list_unlink(&snapshot->link);
+	self->snapshots_count--;
+
+	// add to the delayed gc list
+	list_append(&self->snapshots_gc, &snapshot->link);
+
+	// cleanup snapshot files
+	if (self->snapshots_count > 0)
+		return;
+
+	// do gc once there are no active snapshots left
+	db_snapshot_gc(self);
+}
+
+DbSnapshot*
+db_snapshot(Db* self)
+{
+	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
+	defer(unlock, lock_catalog);
+
 	// create and register snapshot
-	auto snapshot = snapshot_allocate();
-	list_append(&self->list, &snapshot->link);
-	self->list_count++;
+	auto snapshot = db_snapshot_allocate();
+	list_append(&self->snapshots, &snapshot->link);
+	self->snapshots_count++;
 
 	auto on_error = error_catch
 	(
@@ -95,57 +113,35 @@ snapshot_mgr_create(SnapshotMgr* self)
 		// create catalog dump and take partitions snapshots
 		//
 		// catalog, storage, partitions
-		catalog_snapshot(self->catalog, data);
+		catalog_snapshot(&self->catalog, data);
 
 		// create wal list and take the wal snapshot
 		//
 		// wal
 		encode_raw(data, "wal", 3);
-		wal_snapshot(self->wal, &snapshot->wal_snapshot, data);
+		wal_snapshot(&self->wal, &snapshot->wal_snapshot, data);
 
 		encode_obj_end(data);
 	);
 
 	if (on_error)
 	{
-		snapshot_mgr_drop(self, snapshot);
+		db_snapshot_drop(self, snapshot);
 		rethrow();
 	}
 
 	return snapshot;
 }
 
-static void
-snapshot_mgr_gc(SnapshotMgr* self)
-{
-	list_foreach_safe(&self->list_gc)
-	{
-		auto snapshot = list_at(Snapshot, link);
-		auto data = &snapshot->data;
-		if (! buf_empty(data)) {
-			error_catch ( catalog_snapshot_cleanup(data) );
-		}
-		snapshot_free(snapshot);
-	}
-	list_init(&self->list_gc);
-}
-
 void
-snapshot_mgr_drop(SnapshotMgr* self, Snapshot* snapshot)
+db_snapshot_drop(Db* self, DbSnapshot* snapshot)
 {
-	// detach wal slot
-	wal_detach(self->wal, &snapshot->wal_snapshot);
+	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
+	error_catch (
+		db_snapshot_detach(self, snapshot);
+	);
+	unlock(lock_catalog);
 
-	list_unlink(&snapshot->link);
-	self->list_count--;
-
-	// add to the delayed gc list
-	list_append(&self->list_gc, &snapshot->link);
-
-	// cleanup snapshot files
-	if (self->list_count > 0)
-		return;
-
-	// do gc once there are no active snapshots left
-	snapshot_mgr_gc(self);
+	// wal gc
+	service_gc(&self->service);
 }

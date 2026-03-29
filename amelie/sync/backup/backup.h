@@ -15,11 +15,11 @@ typedef struct Backup Backup;
 
 struct Backup
 {
-	Snapshot* snapshot;
-	Client*   client;
-	Event     on_complete;
-	Task      task;
-	Db*       db;
+	DbSnapshot* snapshot;
+	Db*         db;
+	Client*     client;
+	Event       on_complete;
+	Task        task;
 };
 
 void backup_init(Backup*, Db*);

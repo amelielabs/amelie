@@ -213,8 +213,8 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/service/op.c
     ${AMELIE_ROOT}/db/service/indexate.c
     ${AMELIE_ROOT}/db/service/op_create_index.c
-    ${AMELIE_ROOT}/db/db/snapshot_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
+    ${AMELIE_ROOT}/db/db/db_snapshot.c
     ${AMELIE_ROOT}/db/db/recover.c)
 
 set(AMELIE_SOURCES_SYNC
