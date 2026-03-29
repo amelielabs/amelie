@@ -142,7 +142,7 @@ dispatch_mgr_snapshot(DispatchMgr* self, Access* access)
 	for (auto i = 0; i < access->list_count; i++)
 	{
 		auto ac = access_at(access, i);
-		if (ac->lock == LOCK_CALL)
+		if (ac->rel->type != REL_TABLE)
 			continue;
 		auto table = table_of(ac->rel);
 		list_foreach(&table->part_mgr.list)

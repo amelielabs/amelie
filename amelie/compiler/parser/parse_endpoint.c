@@ -37,6 +37,7 @@ struct ParseEndpoint
 	int       target_type;
 	Rel*      target;
 	Snapshot* target_snapshot;
+	Branch*   target_branch;
 	Set*      values;
 	Parser*   parser;
 };
@@ -55,6 +56,7 @@ parse_endpoint_init(ParseEndpoint* self, Endpoint* endpoint, Str* content,
 	self->target_type     = -1;
 	self->target          = NULL;
 	self->target_snapshot = NULL;
+	self->target_branch   = NULL;
 	self->values          = NULL;
 	self->parser          = parser;
 }
@@ -132,6 +134,7 @@ parse_endpoint_set(ParseEndpoint* self)
 		self->target_type     = ENDPOINT_TABLE;
 		self->target          = rel;
 		self->target_snapshot = &branch->config->snapshot;
+		self->target_branch   =  branch;
 		self->columns_target  = &branch->table->config->columns;
 		break;
 	}
@@ -376,7 +379,11 @@ import_insert(Parser* self, ParseEndpoint* pe)
 	target->columns       = columns;
 	str_set_str(&target->name, &table->config->name);
 	from_add(&insert->from, target);
+
+	// add table/branch to the access list
 	access_add(&self->program->access, &table->rel, LOCK_SHARED_RW);
+	if (pe->target_branch)
+		access_add(&self->program->access, &pe->target_branch->rel, LOCK_NONE);
 
 	// prepare result set
 	insert->values = set_cache_create(self->set_cache, &self->program->sets);

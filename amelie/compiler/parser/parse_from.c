@@ -192,6 +192,8 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 		target->columns       = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
 		access_add(&self->parser->program->access, &table->rel, lock);
+		// adding branch for dependency
+		access_add(&self->parser->program->access, &branch->rel, LOCK_NONE);
 		return target;
 	}
 
