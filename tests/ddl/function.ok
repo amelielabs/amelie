@@ -762,7 +762,7 @@ explain select test();
   }]
 }]
 drop function test_dep;
-{"msg": "function 'test' depends on relation 'test_dep"}
+{"msg": "function 'test' depends on relation 'main.test_dep"}
 # test: drop function after dep drop
 drop function test;
 drop function test_dep;
@@ -807,7 +807,7 @@ drop function test;
 create function test_dep() begin end;
 create function test() begin select test_dep(); end;
 alter function test_dep rename to test_dep2;
-{"msg": "function 'test' depends on relation 'test_dep"}
+{"msg": "function 'test' depends on relation 'main.test_dep"}
 # test: alter function rename after after dep drop
 drop function test;
 alter function test_dep rename to test_dep2;

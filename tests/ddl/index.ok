@@ -304,7 +304,7 @@ show functions extended;
   "returning": []
 }]
 drop index i on test;
-{"msg": "function 'dep' depends on relation 'test"}
+{"msg": "function 'dep' depends on relation 'main.test"}
 # test: drop index after udf drop
 drop function dep;
 drop index i on test;

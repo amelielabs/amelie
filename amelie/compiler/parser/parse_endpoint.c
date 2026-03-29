@@ -36,6 +36,7 @@ struct ParseEndpoint
 	Str*      content;
 	int       target_type;
 	Rel*      target;
+	Snapshot* target_snapshot;
 	Set*      values;
 	Parser*   parser;
 };
@@ -44,17 +45,18 @@ static inline void
 parse_endpoint_init(ParseEndpoint* self, Endpoint* endpoint, Str* content,
                     Parser*        parser)
 {
-	self->endpoint       = endpoint;
-	self->columns        = NULL;
-	self->columns_tail   = NULL;
-	self->columns_count  = 0;
-	self->columns_has    = false;
-	self->columns_target = NULL;
-	self->content        = content;
-	self->target_type    = -1;
-	self->target         = NULL;
-	self->values         = NULL;
-	self->parser         = parser;
+	self->endpoint        = endpoint;
+	self->columns         = NULL;
+	self->columns_tail    = NULL;
+	self->columns_count   = 0;
+	self->columns_has     = false;
+	self->columns_target  = NULL;
+	self->content         = content;
+	self->target_type     = -1;
+	self->target          = NULL;
+	self->target_snapshot = NULL;
+	self->values          = NULL;
+	self->parser          = parser;
 }
 
 static inline bool
@@ -117,9 +119,20 @@ parse_endpoint_set(ParseEndpoint* self)
 	switch (rel->type) {
 	case REL_TABLE:
 	{
-		self->target_type    = ENDPOINT_TABLE;
-		self->target         = rel;
-		self->columns_target = &table_of(rel)->config->columns;
+		auto table = table_of(rel);
+		self->target_type     = ENDPOINT_TABLE;
+		self->target          = rel;
+		self->target_snapshot = table_main(table);
+		self->columns_target  = &table->config->columns;
+		break;
+	}
+	case REL_BRANCH:
+	{
+		auto branch = branch_of(rel);
+		self->target_type     = ENDPOINT_TABLE;
+		self->target          = rel;
+		self->target_snapshot = &branch->config->snapshot;
+		self->columns_target  = &branch->table->config->columns;
 		break;
 	}
 	case REL_UDF:

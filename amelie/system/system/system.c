@@ -80,11 +80,11 @@ catalog_if_udf_free(Udf* udf)
 }
 
 static bool
-catalog_if_udf_depends(Udf* udf, Str* name)
+catalog_if_udf_depends(Udf* udf, Str* user, Str* name)
 {
 	Program* program = udf->data;
 	assert(program);
-	if (access_find(&program->access, &udf->config->user, name))
+	if (access_find(&program->access, user, name))
 		return true;
 	return false;
 }

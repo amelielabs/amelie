@@ -837,7 +837,7 @@ show functions extended;
   "returning": []
 }]
 alter table test rename to test2;
-{"msg": "function 'dep' depends on relation 'test"}
+{"msg": "function 'dep' depends on relation 'main.test"}
 # test: rename after udf drop
 drop function dep;
 alter table test rename to test2;
@@ -855,7 +855,7 @@ show functions extended;
   "returning": []
 }]
 alter table test rename column data to data2;
-{"msg": "function 'dep' depends on relation 'test"}
+{"msg": "function 'dep' depends on relation 'main.test"}
 # test: rename column after udf drop
 drop function dep;
 alter table test rename column data to data2;

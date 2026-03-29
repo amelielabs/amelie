@@ -155,15 +155,16 @@ catalog_status(Catalog* self)
 }
 
 static void
-catalog_validate_udfs(Catalog* self, Str* name)
+catalog_validate_udfs(Catalog* self, Str* user, Str* name)
 {
 	// validate udfs dependencies on the relation
 	list_foreach(&self->udf_mgr.mgr.list)
 	{
 		auto udf = udf_of(list_at(Rel, link));
-		if (self->iface->udf_depends(udf, name))
-			error("function '%.*s' depends on relation '%.*s",
+		if (self->iface->udf_depends(udf, user, name))
+			error("function '%.*s' depends on relation '%.*s.%.*s",
 			      str_size(udf->rel.name), str_of(udf->rel.name),
+			      str_size(user), str_of(user),
 			      str_size(name), str_of(name));
 	}
 }
@@ -268,7 +269,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		table_op_drop_read(op, &user, &name);
 
 		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &name);
+		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = table_mgr_drop(&self->table_mgr, tr, &user, &name, if_exists);
@@ -286,7 +287,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		user_mgr_find(&self->user_mgr, &user_new, true);
 
 		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &name);
+		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = table_mgr_rename(&self->table_mgr, tr, &user, &name,
@@ -350,7 +351,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		table_op_column_drop_read(op, &user, &name, &name_column);
 
 		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &name);
+		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
@@ -369,7 +370,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		table_op_column_set_read(op, &user, &name, &name_column, &name_column_new);
 
 		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &name);
+		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
@@ -462,7 +463,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		table_op_index_drop_read(op, &user, &name, &name_index);
 
 		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &name);
+		catalog_validate_udfs(self, &user, &name);
 
 		auto table = table_mgr_find(&self->table_mgr, &user, &name, true);
 		auto if_exists = ddl_if_exists(flags);
@@ -478,7 +479,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		table_op_index_rename_read(op, &user, &name, &name_index, &name_index_new);
 
 		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &name);
+		catalog_validate_udfs(self, &user, &name);
 
 		auto table = table_mgr_find(&self->table_mgr, &user, &name, true);
 		auto if_exists = ddl_if_exists(flags);
@@ -501,7 +502,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		branch_op_drop_read(op, &user, &name);
 
 		// ensure no other udfs depend on the branch
-		catalog_validate_udfs(self, &name);
+		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = branch_mgr_drop(&self->branch_mgr, tr, &user, &name, if_exists);
@@ -516,7 +517,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		branch_op_rename_read(op, &user, &name, &user_new, &name_new);
 
 		// ensure no other udfs depend on the branch
-		catalog_validate_udfs(self, &name);
+		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = branch_mgr_rename(&self->branch_mgr, tr, &user, &name, &user_new, &name_new, if_exists);
@@ -581,7 +582,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		udf_op_drop_read(op, &user, &name);
 
 		// ensure no other udfs depend on it
-		catalog_validate_udfs(self, &name);
+		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = udf_mgr_drop(&self->udf_mgr, tr, &user, &name, if_exists);
@@ -599,7 +600,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		user_mgr_find(&self->user_mgr, &user_new, true);
 
 		// ensure no other udfs depend on it
-		catalog_validate_udfs(self, &name);
+		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = udf_mgr_rename(&self->udf_mgr, tr, &user, &name,
