@@ -93,14 +93,14 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			break;
 		}
 
-		Branch* branch = NULL;
+		Snapshot* snapshot = NULL;
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{
 			auto row = row_copy(part->heap, (Row*)*pos);
-			if (!branch || branch->id != row->branch)
-				branch = table_branch_find_by(table, row->branch, true);
-			part_insert(part, tr, true, branch, row);
+			if (!snapshot || snapshot->id != row->snapshot)
+				snapshot = table_find_snapshot(table, row->snapshot, true);
+			part_insert(part, tr, true, snapshot, row);
 			*pos += row_size(row);
 		}
 		break;
@@ -116,15 +116,15 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			break;
 		}
 
-		Branch* branch = NULL;
+		Snapshot* snapshot = NULL;
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{
 			auto row = (Row*)(*pos);
-			if (!branch || branch->id != row->branch)
-				branch = table_branch_find_by(table, row->branch, true);
-			heap_follow(part->heap, row->tsn, row->branch);
-			part_delete_by(part, tr, branch, row);
+			if (!snapshot || snapshot->id != row->snapshot)
+				snapshot = table_find_snapshot(table, row->snapshot, true);
+			heap_follow(part->heap, row->tsn, row->snapshot);
+			part_delete_by(part, tr, snapshot, row);
 			*pos += row_size(row);
 		}
 		break;

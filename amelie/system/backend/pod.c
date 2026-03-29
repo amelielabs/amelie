@@ -21,7 +21,7 @@
 hot static void
 pod_replay(Pod* self, Tr* tr, Buf* arg)
 {
-	auto branches = &self->part->arg->config->branches;
+	auto snapshots = self->part->arg->snapshots;
 	auto pos = arg->start;
 	while (pos < arg->position)
 	{
@@ -39,33 +39,33 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 				error("replay: record command crc mismatch");
 
 		// replay writes
-		Branch* branch = NULL;
+		Snapshot* snapshot = NULL;
 		auto end = data + cmd->size;
 		if (cmd->cmd == CMD_REPLACE)
 		{
 			while (data < end)
 			{
 				auto row = row_copy(self->part->heap, (Row*)data);
-				if (!branch || branch->id != row->branch)
+				if (!snapshot || snapshot->id != row->snapshot)
 				{
-					branch = branch_mgr_find_by(branches, row->branch);
-					if (unlikely(! branch))
-						error("replay: failed to find branch %" PRIu32, row->branch);
+					snapshot = snapshot_mgr_find(snapshots, row->snapshot);
+					if (unlikely(! snapshot))
+						error("replay: failed to find snapshot %" PRIu32, row->snapshot);
 				}
-				part_insert(self->part, tr, true, branch, row);
+				part_insert(self->part, tr, true, snapshot, row);
 				data += row_size(row);
 			}
 		} else {
 			while (data < end)
 			{
 				auto row = (Row*)(data);
-				if (!branch || branch->id != row->branch)
+				if (!snapshot || snapshot->id != row->snapshot)
 				{
-					branch = branch_mgr_find_by(branches, row->branch);
-					if (unlikely(! branch))
-						error("replay: failed to find branch %" PRIu32, row->branch);
+					snapshot = snapshot_mgr_find(snapshots, row->snapshot);
+					if (unlikely(! snapshot))
+						error("replay: failed to find snapshot %" PRIu32, row->snapshot);
 				}
-				part_delete_by(self->part, tr, branch, row);
+				part_delete_by(self->part, tr, snapshot, row);
 				data += row_size(row);
 			}
 		}

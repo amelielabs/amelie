@@ -38,14 +38,14 @@ log_if_commit(Log* self, LogOp* op)
 	auto heap  = part->heap;
 	if (op->cmd == CMD_DELETE)
 	{
-		// no branches or versions
+		// no snapshots or versions
 		row_free(heap, op->row);
 		return;
 	}
 
 	// cleanup row chain
 	auto tr = container_of(self, Tr, log);
-	row_gc(op->row, heap, op->branch, tr->id);
+	row_gc(op->row, heap, op->snapshot, tr->id);
 
 	// last delete in the chain
 	if (op->row->is_delete && !row_prev(op->row, heap, heap->shadow))
@@ -99,13 +99,13 @@ static LogIf log_if_secondary =
 };
 
 hot void
-part_insert(Part*   self, Tr* tr, bool replace,
-            Branch* branch,
-            Row*    row)
+part_insert(Part*     self, Tr* tr, bool replace,
+            Snapshot* snapshot,
+            Row*      row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, branch);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 	if (! self->arg->unlogged)
 		log_persist(&tr->log, self->arg->id_table);
 
@@ -114,7 +114,7 @@ part_insert(Part*   self, Tr* tr, bool replace,
 	if (op->row_prev)
 	{
 		// check unique constraint
-		if (!replace && row_visible(op->row_prev, self->heap, branch))
+		if (!replace && row_visible(op->row_prev, self->heap, snapshot))
 			error("index '%.*s': unique key constraint violation",
 			      str_size(&primary->config->name),
 			      str_of(&primary->config->name));
@@ -127,10 +127,10 @@ part_insert(Part*   self, Tr* tr, bool replace,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, branch);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
 		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev && !replace))
-			if (row_visible(op->row_prev, self->heap, branch))
+			if (row_visible(op->row_prev, self->heap, snapshot))
 				error("index '%.*s': unique key constraint violation",
 				      str_size(&index->config->name),
 				      str_of(&index->config->name));
@@ -146,7 +146,9 @@ part_insert(Part*   self, Tr* tr, bool replace,
 }
 
 hot bool
-part_upsert(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
+part_upsert(Part*     self, Tr* tr, Iterator* it,
+            Snapshot* snapshot,
+            Row*      row)
 {
 	// get if exists (iterator is openned in both cases)
 	auto primary = part_primary(self);
@@ -159,7 +161,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 	// insert
 
 	// add log record
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, branch);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 	if (! self->arg->unlogged)
 		log_persist(&tr->log, self->arg->id_table);
 
@@ -167,11 +169,11 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, branch);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
 		op->row_prev = index_replace_by(index, row);
 
 		if (unlikely(op->row_prev))
-			if (row_visible(op->row_prev, self->heap, branch))
+			if (row_visible(op->row_prev, self->heap, snapshot))
 				error("index '%.*s': unique key constraint violation",
 				      str_size(&index->config->name),
 				      str_of(&index->config->name));
@@ -185,11 +187,13 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 }
 
 hot void
-part_update(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
+part_update(Part*     self, Tr* tr, Iterator* it,
+            Snapshot* snapshot,
+            Row*      row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, branch);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 	if (! self->arg->unlogged)
 		log_persist(&tr->log, self->arg->id_table);
 
@@ -203,12 +207,12 @@ part_update(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, branch);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
 
 		// find and replace existing secondary row (keys are not updated)
 		auto index_it = index_iterator(index);
 		defer(iterator_close, index_it);
-		iterator_open(index_it, self->heap, branch, row);
+		iterator_open(index_it, self->heap, snapshot, row);
 		op->row_prev = index_replace(index, row, index_it);
 	}
 
@@ -218,13 +222,13 @@ part_update(Part* self, Tr* tr, Iterator* it, Branch* branch, Row* row)
 }
 
 hot void
-part_delete(Part* self, Tr* tr, Iterator* it, Branch* branch)
+part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 {
 	// handle delete as update to support branching
-	if (self->arg->config->branches.list_count > 1)
+	if (self->arg->snapshots->list_count > 1)
 	{
 		auto row = iterator_at(it);
-		row = row_visible(row, self->heap, branch);
+		row = row_visible(row, self->heap, snapshot);
 		if (! row)
 			return;
 
@@ -232,16 +236,16 @@ part_delete(Part* self, Tr* tr, Iterator* it, Branch* branch)
 		auto row_delete = row_copy(self->heap, row);
 		row_delete->is_delete = true;
 		row_delete->tsn       = tr->id;
-		row_delete->branch    = branch->id;
+		row_delete->snapshot  = snapshot->id;
 
-		part_update(self, tr, it, branch, row_delete);
+		part_update(self, tr, it, snapshot, row_delete);
 		return;
 	}
 
 	// add log record
 	auto primary = part_primary(self);
 	auto row = iterator_at(it);
-	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, row, NULL, branch);
+	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, row, NULL, snapshot);
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);
@@ -252,7 +256,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Branch* branch)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_DELETE, &log_if_secondary, index, row, NULL, branch);
+		op = log_row(&tr->log, CMD_DELETE, &log_if_secondary, index, row, NULL, snapshot);
 
 		// delete by key
 		op->row_prev = index_delete_by(index, row);
@@ -264,16 +268,16 @@ part_delete(Part* self, Tr* tr, Iterator* it, Branch* branch)
 }
 
 hot void
-part_delete_by(Part* self, Tr* tr, Branch* branch, Row* row)
+part_delete_by(Part* self, Tr* tr, Snapshot* snapshot, Row* row)
 {
 	// note: transaction memory limit is not ensured here
 	// since this operation is used for recovery
 	auto primary = part_primary(self);
 	auto it = index_iterator(primary);
 	defer(iterator_close, it);
-	if (unlikely(! iterator_open(it, self->heap, branch, row)))
+	if (unlikely(! iterator_open(it, self->heap, snapshot, row)))
 		error("delete by key does not match");
-	part_delete(self, tr, it, branch);
+	part_delete(self, tr, it, snapshot);
 }
 
 void

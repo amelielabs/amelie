@@ -20,7 +20,7 @@
 void
 parse_branch_create(Stmt* self)
 {
-	// CREATE BRANCH [IF NOT EXISTS] name ON table_name [FROM name]
+	// CREATE BRANCH [IF NOT EXISTS] name FROM relation
 	auto stmt = ast_branch_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -30,61 +30,71 @@ parse_branch_create(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 
-	// ON
-	stmt_expect(self, KON);
+	// FROM
+	stmt_expect(self, KFROM);
 
-	// table_name
-	auto target = stmt_expect(self, KNAME);
-	stmt->table_name = target->string;
+	// target
+	Str target_user;
+	Str target;
+	auto path = parse_target(self, &target_user, &target);
 
-	// find table
-	auto table = catalog_find_table(&share()->db->catalog, self->parser->user,
-	                                &stmt->table_name,
-	                                false);
-	if (! table)
-		stmt_error(self, target, "table not found");
+	// find target
+	auto rel = catalog_find(&share()->db->catalog, &target_user, &target, false);
+	if (! rel)
+		stmt_error(self, path, "relation not found");
+
+	Table*    table  = NULL;
+	Snapshot* parent = NULL;
+	switch (rel->type) {
+	case REL_TABLE:
+	{
+		table  = table_of(rel);
+		parent = table_main(table);
+		break;
+	}
+	case REL_BRANCH:
+	{
+		auto branch = branch_of(rel);
+		table  = branch->table;
+		parent = &branch->config->snapshot;
+		break;
+	}
+	default:
+	{
+		stmt_error(self, path, "unsupported relation");
+		break;
+	}
+	}
 
 	// calculate branch id
-	uint32_t id = 0;
-	auto branches = &table->config->partitioning.branches;
-	list_foreach(&branches->list)
-	{
-		auto branch = list_at(Branch, link);
-		if (branch->id > id)
-			id = branch->id;
-	}
+	uint32_t id = snapshot_mgr_max(&table->snapshot_mgr);
 	list_foreach(&table->part_mgr.list)
 	{
 		auto part = list_at(Part, link);
-		if (part->heap->header->bsn > id)
-			id = part->heap->header->bsn;
+		if (part->heap->header->ssn > id)
+			id = part->heap->header->ssn;
 	}
 	id++;
 
 	// create branch config
-	auto config = branch_allocate();
+	auto config = branch_config_allocate();
 	stmt->config = config;
-	branch_set_name(config, &name->string);
-	branch_set_id(config, id);
-	branch_set_id_parent(config, 0);
-	branch_set_snapshot(config, state_tsn());
+	branch_config_set_user(config, self->parser->user);
+	branch_config_set_name(config, &name->string);
+	branch_config_set_table_user(config, &table->config->user);
+	branch_config_set_table(config, &table->config->name);
 
-	// [FROM]
-	if (stmt_if(self, KFROM))
-	{
-		name = stmt_expect(self, KNAME);
-		auto branch = branch_mgr_find(&table->config->partitioning.branches,
-		                              &name->string);
-		if (! branch)
-			stmt_error(self, name, "branch not found");
-		branch_set_id_parent(config, branch->id);
-	}
+	// set branch snapshot
+	auto snapshot = &config->snapshot;
+	snapshot_set_id(snapshot, id);
+	snapshot_set_id_parent(snapshot, parent->id);
+	snapshot_set_snapshot(snapshot, state_tsn());
 }
 
 void
 parse_branch_drop(Stmt* self)
 {
-	// DROP BRANCH [IF EXISTS] name ON table_name
+	// DROP BRANCH [IF EXISTS] name
 	auto stmt = ast_branch_drop_allocate();
 	self->ast = &stmt->ast;
 
@@ -94,19 +104,12 @@ parse_branch_drop(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
-
-	// ON
-	stmt_expect(self, KON);
-
-	// table
-	auto name_table  = stmt_expect(self, KNAME);
-	stmt->table_name = name_table->string;
 }
 
 void
 parse_branch_alter(Stmt* self)
 {
-	// ALTER BRANCH [IF EXISTS] name ON table_name RENAME TO name
+	// ALTER BRANCH [IF EXISTS] name RENAME TO name
 	auto stmt = ast_branch_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -116,13 +119,6 @@ parse_branch_alter(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
-
-	// ON
-	stmt_expect(self, KON);
-
-	// table
-	auto name_table  = stmt_expect(self, KNAME);
-	stmt->table_name = name_table->string;
 
 	// RENAME
 	stmt_expect(self, KRENAME);

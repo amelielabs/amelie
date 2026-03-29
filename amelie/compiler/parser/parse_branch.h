@@ -17,17 +17,15 @@ typedef struct AstBranchAlter  AstBranchAlter;
 
 struct AstBranchCreate
 {
-	Ast     ast;
-	bool    if_not_exists;
-	Str     table_name;
-	Branch* config;
+	Ast           ast;
+	bool          if_not_exists;
+	BranchConfig* config;
 };
 
 struct AstBranchDrop
 {
 	Ast  ast;
 	bool if_exists;
-	Str  table_name;
 	Str  name;
 };
 
@@ -35,7 +33,6 @@ struct AstBranchAlter
 {
 	Ast  ast;
 	bool if_exists;
-	Str  table_name;
 	Str  name;
 	Str  name_new;
 };
@@ -51,9 +48,6 @@ ast_branch_create_allocate(void)
 {
 	AstBranchCreate* self;
 	self = ast_allocate(0, sizeof(AstBranchCreate));
-	self->if_not_exists = false;
-	self->config        = NULL;
-	str_init(&self->table_name);
 	return self;
 }
 
@@ -68,9 +62,6 @@ ast_branch_drop_allocate(void)
 {
 	AstBranchDrop* self;
 	self = ast_allocate(0, sizeof(AstBranchDrop));
-	self->if_exists = false;
-	str_init(&self->table_name);
-	str_init(&self->name);
 	return self;
 }
 
@@ -85,10 +76,6 @@ ast_branch_alter_allocate(void)
 {
 	AstBranchAlter* self;
 	self = ast_allocate(0, sizeof(AstBranchAlter));
-	self->if_exists = false;
-	str_init(&self->table_name);
-	str_init(&self->name);
-	str_init(&self->name_new);
 	return self;
 }
 

@@ -355,12 +355,12 @@ import_insert(Parser* self, ParseEndpoint* pe)
 	auto table   = (Table*)pe->target;
 	auto columns = table_columns(table);
 	auto target  = target_allocate();
-	target->type        = TARGET_TABLE;
-	target->ast         = stmt->ast;
-	target->from_lock   = LOCK_SHARED_RW;
-	target->from_table  = table;
-	target->from_branch = table_main(table);
-	target->columns     = columns;
+	target->type          = TARGET_TABLE;
+	target->ast           = stmt->ast;
+	target->from_lock     = LOCK_SHARED_RW;
+	target->from_table    = table;
+	target->from_snapshot = table_main(table);
+	target->columns       = columns;
 	str_set_str(&target->name, &table->config->name);
 	from_add(&insert->from, target);
 	access_add(&self->program->access, &table->rel, LOCK_SHARED_RW);

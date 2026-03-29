@@ -24,8 +24,8 @@ struct Row
 	// transaction id
 	uint64_t tsn:         61;
 
-	// branch id
-	uint32_t branch;
+	// snapshot id
+	uint32_t snapshot;
 
 	// columns in the row
 	uint16_t columns;
@@ -34,12 +34,16 @@ struct Row
 } packed;
 
 always_inline hot static inline void
-row_init(Row* self, uint64_t tsn, uint32_t branch, int columns, int size_factor, int size)
+row_init(Row*     self,
+         uint64_t tsn,
+         uint32_t snapshot,
+         int      columns,
+         int      size_factor, int size)
 {
 	self->size_factor = size_factor;
 	self->is_delete   = false;
 	self->tsn         = tsn;
-	self->branch      = branch;
+	self->snapshot    = snapshot;
 	self->columns     = columns;
 	if (size_factor == 0)
 		*self->data = size;

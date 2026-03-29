@@ -33,6 +33,7 @@ catalog_init(Catalog*   self,
 	table_mgr_init(&self->table_mgr, &self->storage_mgr,
 	               iface_part_mgr,
 	               iface_part_mgr_arg);
+	branch_mgr_init(&self->branch_mgr, &self->table_mgr);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 }
 
@@ -40,6 +41,7 @@ void
 catalog_free(Catalog* self)
 {
 	udf_mgr_free(&self->udf_mgr);
+	branch_mgr_free(&self->branch_mgr);
 	table_mgr_free(&self->table_mgr);
 	storage_mgr_free(&self->storage_mgr);
 	user_mgr_free(&self->user_mgr);
@@ -139,6 +141,10 @@ catalog_status(Catalog* self)
 	// tables
 	encode_raw(buf, "tables", 6);
 	encode_integer(buf, self->table_mgr.mgr.list_count);
+
+	// branches
+	encode_raw(buf, "branches", 8);
+	encode_integer(buf, self->branch_mgr.mgr.list_count);
 
 	// udfs
 	encode_raw(buf, "udfs", 4);
@@ -481,50 +487,39 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_BRANCH_CREATE:
 	{
-		Str  user;
-		Str  name;
-		auto config_pos = table_op_branch_create_read(op, &user, &name);
-		auto config = branch_read(&config_pos);
-		defer(branch_free, config);
+		auto config = branch_op_create_read(op);
+		defer(branch_config_free, config);
 
-		auto if_exists = ddl_if_exists(flags);
-		auto if_not_exists_branch = ddl_if_branch_not_exists(flags);
-		auto table = table_mgr_find(&self->table_mgr, &user, &name, !if_exists);
-		if (! table)
-			break;
-		write = table_branch_create(table, tr, config, if_not_exists_branch);
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = branch_mgr_create(&self->branch_mgr, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_BRANCH_DROP:
 	{
 		Str user;
 		Str name;
-		Str name_branch;
-		table_op_branch_drop_read(op, &user, &name, &name_branch);
+		branch_op_drop_read(op, &user, &name);
+
+		// ensure no other udfs depend on the branch
+		catalog_validate_udfs(self, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		auto if_exists_branch = ddl_if_branch_exists(flags);
-		auto table = table_mgr_find(&self->table_mgr, &user, &name, !if_exists);
-		if (! table)
-			break;
-		write = table_branch_drop(table, tr, &name_branch, if_exists_branch);
+		write = branch_mgr_drop(&self->branch_mgr, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_BRANCH_RENAME:
 	{
 		Str user;
 		Str name;
-		Str name_branch;
-		Str name_branch_new;
-		table_op_branch_rename_read(op, &user, &name, &name_branch, &name_branch_new);
+		Str user_new;
+		Str name_new;
+		branch_op_rename_read(op, &user, &name, &user_new, &name_new);
+
+		// ensure no other udfs depend on the branch
+		catalog_validate_udfs(self, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		auto if_exists_branch = ddl_if_branch_exists(flags);
-		auto table = table_mgr_find(&self->table_mgr, &user, &name, !if_exists);
-		if (! table)
-			break;
-		write = table_branch_rename(table, tr, &name_branch, &name_branch_new,
-		                            if_exists_branch);
+		write = branch_mgr_rename(&self->branch_mgr, tr, &user, &name, &user_new, &name_new, if_exists);
 		break;
 	}
 	case DDL_UDF_CREATE:
@@ -630,6 +625,10 @@ catalog_find(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 	auto table = table_mgr_find(&self->table_mgr, user, name, false);
 	if (table)
 		return &table->rel;
+
+	auto branch = branch_mgr_find(&self->branch_mgr, user, name, false);
+	if (branch)
+		return &branch->rel;
 
 	auto udf = udf_mgr_find(&self->udf_mgr, user, name, false);
 	if (udf)

@@ -19,6 +19,7 @@ struct Table
 	PartMgr      part_mgr;
 	PartArg      part_arg;
 	Sequence     seq;
+	SnapshotMgr  snapshot_mgr;
 	TableConfig* config;
 };
 
@@ -28,10 +29,10 @@ table_primary(Table* self)
 	return container_of(self->config->indexes.next, IndexConfig, link);
 }
 
-static inline Branch*
+static inline Snapshot*
 table_main(Table* self)
 {
-	return branch_mgr_first(&self->config->partitioning.branches);
+	return &self->snapshot_mgr.main;
 }
 
 static inline Columns*
@@ -73,16 +74,20 @@ table_allocate(TableConfig* config,
 
 	// part context
 	auto arg = &self->part_arg;
-	arg->seq      = &self->seq;
-	arg->unlogged =  self->config->unlogged;
-	arg->id_table = &self->config->id;
-	arg->config   =  &self->config->partitioning;
+	arg->seq       = &self->seq;
+	arg->unlogged  =  self->config->unlogged;
+	arg->id_table  = &self->config->id;
+	arg->snapshots = &self->snapshot_mgr;
+	arg->config    =  &self->config->partitioning;
 
 	// partition manager
 	auto primary = table_primary(self);
 	part_mgr_init(&self->part_mgr, iface, iface_arg,
 	              &self->config->partitioning, arg, storage_mgr,
 	              &primary->keys);
+
+	// snapshot manager
+	snapshot_mgr_init(&self->snapshot_mgr);
 
 	// set relation
 	auto rel = &self->rel;
@@ -112,4 +117,20 @@ static inline Table*
 table_of(Rel* self)
 {
 	return (Table*)self;
+}
+
+static inline Snapshot*
+table_find_snapshot(Table* self, int id, bool error_if_not_exists)
+{
+	auto snapshot = snapshot_mgr_find(&self->snapshot_mgr, id);
+	if (! snapshot)
+	{
+		if (error_if_not_exists)
+			error("table '%.*s': snapshot %d not found",
+			      str_size(&self->config->name),
+			      str_of(&self->config->name),
+			      id);
+	}
+
+	return snapshot;
 }

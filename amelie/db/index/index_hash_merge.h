@@ -40,7 +40,7 @@ index_hash_merge_open(Iterator* arg, Row* key)
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto it = &list[i];
-		iterator_open(&it->it, it->it.heap, arg->branch, NULL);
+		iterator_open(&it->it, it->it.heap, arg->snapshot, NULL);
 		if (!self->current_it && iterator_has(&it->it))
 		{
 			self->current_it_order = i;

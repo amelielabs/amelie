@@ -19,4 +19,4 @@
 
 // row
 #include "heap/row.h"
-#include "heap/row_branch.h"
+#include "heap/row_snapshot.h"

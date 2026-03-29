@@ -88,7 +88,7 @@ index_tree_merge_open(Iterator* arg, Row* key)
 	{
 		// iterator is using per iterator heap
 		auto it = &list[i];
-		if (iterator_open(&it->it, it->it.heap, arg->branch, key))
+		if (iterator_open(&it->it, it->it.heap, arg->snapshot, key))
 			match = true;
 	}
 	index_tree_merge_step(self);

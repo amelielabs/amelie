@@ -76,8 +76,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_TABLE,      "table",       5,  true,  false },
 	{ SHOW_INDEXES,    "indexes",     7,  false, true  },
 	{ SHOW_INDEX,      "index",       5,  true,  true  },
-	{ SHOW_BRANCHES,   "branches",    8,  false, true  },
-	{ SHOW_BRANCH,     "branch",      6,  true,  true  },
+	{ SHOW_BRANCHES,   "branches",    8,  false, false },
+	{ SHOW_BRANCH,     "branch",      6,  true,  false },
 	{ SHOW_PARTITIONS, "partitions",  10, false, true  },
 	{ SHOW_PARTITION,  "partition",   9,  true,  true  },
 	{ SHOW_FUNCTIONS,  "functions",   9,  false, false },
@@ -290,14 +290,12 @@ fn_show(Fn* self)
 	}
 	case SHOW_BRANCHES:
 	{
-		auto table = catalog_find_table(catalog, user, on, true);
-		buf = table_branch_list(table, NULL, flags);
+		buf = branch_mgr_list(&catalog->branch_mgr, user, NULL, flags);
 		break;
 	}
 	case SHOW_BRANCH:
 	{
-		auto table = catalog_find_table(catalog, user, on, true);
-		buf = table_branch_list(table, name, flags);
+		buf = branch_mgr_list(&catalog->branch_mgr, user, name, flags);
 		break;
 	}
 	case SHOW_PARTITIONS:

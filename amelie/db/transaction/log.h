@@ -28,9 +28,9 @@ struct LogOp
 	Cmd    cmd;
 	union {
 		struct {
-			Row*    row;
-			Row*    row_prev;
-			Branch* branch;
+			Row*      row;
+			Row*      row_prev;
+			Snapshot* snapshot;
 		};
 		struct {
 			Rel*    rel;
@@ -92,13 +92,13 @@ log_last(Log* self)
 }
 
 hot static inline LogOp*
-log_row(Log*    self,
-        Cmd     cmd,
-        LogIf*  iface,
-        void*   iface_arg,
-        Row*    row,
-        Row*    row_prev,
-        Branch* branch)
+log_row(Log*      self,
+        Cmd       cmd,
+        LogIf*    iface,
+        void*     iface_arg,
+        Row*      row,
+        Row*      row_prev,
+        Snapshot* snapshot)
 {
 	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
 	op->iface     = iface;
@@ -106,7 +106,7 @@ log_row(Log*    self,
 	op->cmd       = cmd;
 	op->row       = row;
 	op->row_prev  = row_prev;
-	op->branch    = branch;
+	op->snapshot  = snapshot;
 	self->count++;
 	return op;
 }

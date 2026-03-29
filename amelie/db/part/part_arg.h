@@ -18,5 +18,6 @@ struct PartArg
 	Sequence*     seq;
 	bool          unlogged;
 	Uuid*         id_table;
+	SnapshotMgr*  snapshots;
 	Partitioning* config;
 };

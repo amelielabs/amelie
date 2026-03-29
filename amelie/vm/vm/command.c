@@ -402,12 +402,12 @@ ctable_open(Vm* self, Op* op)
 	auto it = cursor_open(&open->table->part_mgr, part,
 	                       open->index,
 	                       open->point_lookup,
-	                       open->branch,
+	                       open->snapshot,
 	                       key_ref);
 
 	// set cursor
 	auto cursor = reg_at(&self->r, op->a);
-	value_set_cursor(cursor, open->table, open->branch, part, it);
+	value_set_cursor(cursor, open->table, open->snapshot, part, it);
 
 	// jmp to next op if has data
 	if (likely(iterator_has(cursor->cursor)))
@@ -420,14 +420,14 @@ ctable_open(Vm* self, Op* op)
 hot void
 ctable_prepare(Vm* self, Op* op)
 {
-	// [cursor, table*, branch*]
+	// [cursor, table*, snapshot*]
 	auto cursor = reg_at(&self->r, op->a);
 
 	// create primary index iterator for related partition
 	auto it = index_iterator(part_primary(self->part));
 
 	// set cursor
-	value_set_cursor(cursor, (Table*)op->b, (Branch*)op->c, self->part, it);
+	value_set_cursor(cursor, (Table*)op->b, (Snapshot*)op->c, self->part, it);
 
 	// prepare upsert state
 	self->upsert = self->code_arg->start;
@@ -436,13 +436,13 @@ ctable_prepare(Vm* self, Op* op)
 hot void
 cinsert(Vm* self, Op* op)
 {
-	// [table*, branch*]
+	// [table*, snapshot*]
 
 	// find related table partition
-	auto table   = (Table*)op->a;
-	auto branch  = (Branch*)op->b;
-	auto part    = self->part;
-	auto columns = table_columns(table);
+	auto table    = (Table*)op->a;
+	auto snapshot = (Snapshot*)op->b;
+	auto part     = self->part;
+	auto columns  = table_columns(table);
 
 	Value identity;
 	value_init(&identity);
@@ -457,9 +457,9 @@ cinsert(Vm* self, Op* op)
 		pos += sizeof(Value*) + sizeof(int64_t);
 		value_set_int(&identity, value_id);
 
-		auto row = row_create(part->heap, self->dtr->id, branch->id, columns, value,
+		auto row = row_create(part->heap, self->dtr->id, snapshot->id, columns, value,
 		                      self->refs, &identity);
-		part_insert(part, self->tr, false, branch, row);
+		part_insert(part, self->tr, false, snapshot, row);
 	}
 }
 
@@ -484,14 +484,15 @@ cupsert(Vm* self, Op* op)
 		self->upsert += sizeof(Value*) + sizeof(int64_t);
 		value_set_int(&identity, value_id);
 
-		auto row = row_create(cursor->part->heap, dtr->id, cursor->branch->id,
+		auto row = row_create(cursor->part->heap, dtr->id, cursor->snapshot->id,
 		                      columns, value, self->refs,
 		                      &identity);
 
 		// insert or get (open iterator in both cases)
 		auto exists = part_upsert(cursor->part, self->tr,
 		                          cursor->cursor,
-		                          cursor->branch, row);
+		                          cursor->snapshot,
+		                          row);
 		if (exists)
 		{
 			// upsert
@@ -517,7 +518,7 @@ cdelete(Vm* self, Op* op)
 {
 	// [cursor]
 	auto cursor = reg_at(&self->r, op->a);
-	part_delete(cursor->part, self->tr, cursor->cursor, cursor->branch);
+	part_delete(cursor->part, self->tr, cursor->cursor, cursor->snapshot);
 }
 
 hot void
@@ -529,10 +530,10 @@ cupdate(Vm* self, Op* op)
 	auto dtr = self->dtr;
 	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
-	auto row = row_update(cursor->part->heap, dtr->id, cursor->branch->id,
+	auto row = row_update(cursor->part->heap, dtr->id, cursor->snapshot->id,
 	                      table_columns(cursor->table), row_src,
 	                      row_values, op->b);
-	part_update(cursor->part, self->tr, cursor->cursor, cursor->branch, row);
+	part_update(cursor->part, self->tr, cursor->cursor, cursor->snapshot, row);
 	stack_popn(&self->stack, op->b * 2);
 }
 

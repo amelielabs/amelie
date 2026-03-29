@@ -24,6 +24,7 @@ enum
 	RESTORE_USER,
 	RESTORE_STORAGE,
 	RESTORE_TABLE,
+	RESTORE_BRANCH,
 	RESTORE_UDF
 };
 
@@ -59,6 +60,16 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 
 		// create table
 		table_mgr_create(&self->table_mgr, tr, config, false);
+		break;
+	}
+	case RESTORE_BRANCH:
+	{
+		// read branch config
+		auto config = branch_config_read(pos);
+		defer(branch_config_free, config);
+
+		// create branch
+		branch_mgr_create(&self->branch_mgr, tr, config, false);
 		break;
 	}
 	case RESTORE_UDF:
@@ -101,12 +112,13 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 static void
 catalog_restore(Catalog* self, uint8_t** pos)
 {
-	// { lsn, tsn, users, storages, tables, udfs }
+	// { lsn, tsn, users, storages, tables, branches, udfs }
 	int64_t  lsn          = 0;
 	int64_t  tsn          = 0;
 	uint8_t* pos_users    = NULL;
 	uint8_t* pos_storages = NULL;
 	uint8_t* pos_tables   = NULL;
+	uint8_t* pos_branches = NULL;
 	uint8_t* pos_udfs     = NULL;
 	Decode obj[] =
 	{
@@ -115,6 +127,7 @@ catalog_restore(Catalog* self, uint8_t** pos)
 		{ DECODE_ARRAY, "users",    &pos_users    },
 		{ DECODE_ARRAY, "storages", &pos_storages },
 		{ DECODE_ARRAY, "tables",   &pos_tables   },
+		{ DECODE_ARRAY, "branches", &pos_branches },
 		{ DECODE_ARRAY, "udfs",     &pos_udfs     },
 		{ 0,             NULL,       NULL         },
 	};
@@ -134,6 +147,11 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	json_read_array(&pos_tables);
 	while (! json_read_array_end(&pos_tables))
 		catalog_restore_object(self, RESTORE_TABLE, &pos_tables);
+
+	// branches
+	json_read_array(&pos_branches);
+	while (! json_read_array_end(&pos_branches))
+		catalog_restore_object(self, RESTORE_BRANCH, &pos_branches);
 
 	// udfs
 	json_read_array(&pos_udfs);
@@ -191,7 +209,7 @@ catalog_read(Catalog* self)
 Buf*
 catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 {
-	// { lsn, tsn, users, storages, tables, udfs }
+	// { lsn, tsn, users, storages, tables, branches, udfs }
 	auto buf = buf_create();
 	encode_obj(buf);
 
@@ -214,6 +232,10 @@ catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 	// tables
 	encode_raw(buf, "tables", 6);
 	table_mgr_dump(&self->table_mgr, buf);
+
+	// branches
+	encode_raw(buf, "branches", 8);
+	branch_mgr_dump(&self->branch_mgr, buf);
 
 	// udfs
 	encode_raw(buf, "udfs", 4);

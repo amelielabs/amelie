@@ -261,24 +261,23 @@ emit_ddl(Compiler* self)
 	case STMT_CREATE_BRANCH:
 	{
 		auto arg = ast_branch_create_of(stmt->ast);
-		offset = table_op_branch_create(data, user, &arg->table_name, arg->config);
-		flags  = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		offset = branch_op_create(data, arg->config);
+		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		break;
 	}
 	case STMT_DROP_BRANCH:
 	{
 		auto arg = ast_branch_drop_of(stmt->ast);
-		offset = table_op_branch_drop(data, user, &arg->table_name, &arg->name);
+		offset = branch_op_drop(data, user, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case STMT_ALTER_BRANCH:
 	{
 		auto arg = ast_branch_alter_of(stmt->ast);
-		offset = table_op_branch_rename(data, user, &arg->table_name, &arg->name,
-		                                &arg->name_new);
+		offset = branch_op_rename(data, user, &arg->name, user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
+		return;
 	}
 
 	// function

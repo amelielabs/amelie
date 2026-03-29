@@ -20,7 +20,7 @@ typedef void (*IteratorClose)(Iterator*);
 struct Iterator
 {
 	Row*          current;
-	Branch*       branch;
+	Snapshot*     snapshot;
 	Heap*         heap;
 	IteratorNext  next;
 	IteratorOpen  open;
@@ -47,7 +47,7 @@ iterator_next(Iterator* self)
 		return;
 	while (self->current)
 	{
-		auto visible = row_visible(self->current, self->heap, self->branch);
+		auto visible = row_visible(self->current, self->heap, self->snapshot);
 		if (visible)
 		{
 			self->current = visible;
@@ -58,10 +58,10 @@ iterator_next(Iterator* self)
 }
 
 static inline bool
-iterator_open(Iterator* self, Heap* heap, Branch* branch, Row* key)
+iterator_open(Iterator* self, Heap* heap, Snapshot* snapshot, Row* key)
 {
-	self->branch = branch;
-	self->heap   = heap;
+	self->snapshot = snapshot;
+	self->heap     = heap;
 
 	auto match = self->open(self, key);
 	if (! self->current)
@@ -70,7 +70,7 @@ iterator_open(Iterator* self, Heap* heap, Branch* branch, Row* key)
 		return match;
 
 	// set visible version
-	auto visible = row_visible(self->current, heap, branch);
+	auto visible = row_visible(self->current, heap, snapshot);
 	if (visible)
 	{
 		self->current = visible;
@@ -90,9 +90,9 @@ iterator_close(Iterator* self)
 static inline void
 iterator_reset(Iterator* self)
 {
-	self->current = NULL;
-	self->branch  = NULL;
-	self->heap    = NULL;
+	self->current  = NULL;
+	self->snapshot = NULL;
+	self->heap     = NULL;
 }
 
 static inline void
@@ -101,10 +101,10 @@ iterator_init(Iterator*     self,
               IteratorClose close,
               IteratorNext  next)
 {
-	self->current = NULL;
-	self->branch  = NULL;
-	self->heap    = NULL;
-	self->next    = next;
-	self->open    = open;
-	self->close   = close;
+	self->current  = NULL;
+	self->snapshot = NULL;
+	self->heap     = NULL;
+	self->next     = next;
+	self->open     = open;
+	self->close    = close;
 }

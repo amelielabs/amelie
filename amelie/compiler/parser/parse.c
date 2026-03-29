@@ -71,7 +71,7 @@ parse_stmt_free(Stmt* stmt)
 	{
 		auto ast = ast_branch_create_of(stmt->ast);
 		if (ast->config)
-			branch_free(ast->config);
+			branch_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_FUNCTION:

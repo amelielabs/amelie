@@ -18,6 +18,7 @@
 #include <amelie_index.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
+
 static void
 cascade_user_error(Str* user)
 {
@@ -30,18 +31,6 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 {
 	// validate or drop all objects matching the user
 
-	// tables
-	list_foreach_safe(&self->table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Rel, link));
-		if (! str_compare_case(&table->config->user, user))
-			continue;
-		if (drop)
-			table_mgr_drop_of(&self->table_mgr, tr, table);
-		else
-			cascade_user_error(user);
-	}
-
 	// udfs
 	list_foreach_safe(&self->udf_mgr.mgr.list)
 	{
@@ -50,6 +39,30 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 			continue;
 		if (drop)
 			udf_mgr_drop_of(&self->udf_mgr, tr, udf);
+		else
+			cascade_user_error(user);
+	}
+
+	// branches
+	list_foreach_safe(&self->branch_mgr.mgr.list)
+	{
+		auto branch = branch_of(list_at(Rel, link));
+		if (! str_compare_case(&branch->config->user, user))
+			continue;
+		if (drop)
+			branch_mgr_drop_of(&self->branch_mgr, tr, branch);
+		else
+			cascade_user_error(user);
+	}
+
+	// tables
+	list_foreach_safe(&self->table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Rel, link));
+		if (! str_compare_case(&table->config->user, user))
+			continue;
+		if (drop)
+			table_mgr_drop_of(&self->table_mgr, tr, table);
 		else
 			cascade_user_error(user);
 	}
@@ -83,6 +96,17 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
 static void
 cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 {
+	// branches
+	list_foreach_safe(&self->branch_mgr.mgr.list)
+	{
+		auto branch = branch_of(list_at(Rel, link));
+		if (str_compare_case(&branch->config->user, user))
+			branch_mgr_rename(&self->branch_mgr, tr, &branch->config->user,
+			                  &branch->config->name,
+			                  user_new,
+			                  &branch->config->name, false);
+	}
+
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{

@@ -45,23 +45,24 @@ row_prev(Row* row, Heap* heap, Heap* shadow)
 }
 
 hot static inline Row*
-row_visible(Row* row, Heap* heap, Branch* branch)
+row_visible(Row* row, Heap* heap, Snapshot* snapshot)
 {
 	// note: row is a head of the version chain
 	for (; row; row = row_prev(row, heap, heap->shadow))
 	{
-		// row created inside this branch
-		if (row->branch == branch->id)
+		// row created inside this snapshot (branch)
+		if (row->snapshot == snapshot->id)
 			break;
 
-		// row created by one of the branch parents
-		auto parent = branch->parent;
+		// row created by one of the snapshot parents
+		auto parent = snapshot->parent;
 		for (; parent; parent = parent->parent)
 		{
-			if (row->branch == parent->id && row->tsn <= (uint64_t)branch->snapshot)
-				break;
+			if (row->snapshot == parent->id && row->tsn <= (uint64_t)snapshot->snapshot)
+				goto match;
 		}
 	}
+match:
 	if (row && row->is_delete)
 		row = NULL;
 	return row;
@@ -72,18 +73,18 @@ row_unique(Row* row, Heap* heap, Heap* shadow)
 {
 	// note: row is a head of the version chain
 
-	// ensure row has no duplicate with the same branch id
+	// ensure row has no duplicates with the same snapshot id
 	for (auto a = row; a; a = row_prev(a, heap, shadow))
 	{
 		for (auto b = row; b; b = row_prev(b, heap, shadow))
-			if (a != b && a->branch == b->branch)
+			if (a != b && a->snapshot == b->snapshot)
 				return false;
 	}
 	return true;
 }
 
 hot static inline void
-row_gc(Row* row, Heap* heap, Branch* branch, uint64_t tsn)
+row_gc(Row* row, Heap* heap, Snapshot* snapshot, uint64_t tsn)
 {
 	// note: row is a head of the version chain
 	auto head = row;
@@ -94,8 +95,8 @@ row_gc(Row* row, Heap* heap, Branch* branch, uint64_t tsn)
 	{
 		auto prev = row_prev(row, heap, heap->shadow);
 		if (row->tsn == tsn ||
-		    row->tsn <= (uint64_t)branch->snapshot ||
-		    row->tsn >= (uint64_t)branch->snapshot_max)
+		    row->tsn <= (uint64_t)snapshot->snapshot ||
+		    row->tsn >= (uint64_t)snapshot->snapshot_max)
 		{
 			// set head->prev = row->prev
 			row_prev_set(head, prev);

@@ -132,7 +132,7 @@ scan_table(Scan* self, Target* target)
 	int  open_offset;
 	auto open = open_create(cp->code_data, &open_offset);
 	open->table        = table;
-	open->branch       = target->from_branch;
+	open->snapshot     = target->from_snapshot;
 	open->index        = index;
 	open->keys_count   = keys_count;
 	open->point_lookup = point_lookup;
