@@ -16,8 +16,9 @@ typedef struct Access       Access;
 
 struct AccessRecord
 {
-	Rel*   rel;
-	LockId lock;
+	Rel*     rel;
+	LockId   lock;
+	uint32_t perm;
 };
 
 struct Access
@@ -73,7 +74,7 @@ access_empty(Access* self)
 }
 
 hot static inline void
-access_add(Access* self, Rel* rel, LockId lock)
+access_add(Access* self, Rel* rel, LockId lock, uint32_t perm)
 {
 	// count total number of accesses, exclusive calls
 	if (lock != LOCK_CALL)
@@ -87,12 +88,14 @@ access_add(Access* self, Rel* rel, LockId lock)
 		{
 			if (record->lock < lock)
 				record->lock = lock;
+			record->perm |= perm;
 			return;
 		}
 	}
 	auto record = (AccessRecord*)buf_emplace(&self->list, sizeof(AccessRecord));
 	record->rel  = rel;
 	record->lock = lock;
+	record->perm = perm;
 	buf_write(&self->list_ordered, &self->list_count, sizeof(int));
 	self->list_count++;
 }
@@ -119,7 +122,7 @@ access_merge(Access* self, Access* access)
 	for (auto i = 0; i < access->list_count; i++)
 	{
 		auto record = access_at(access, i);
-		access_add(self, record->rel, record->lock);
+		access_add(self, record->rel, record->lock, record->perm);
 	}
 
 	// order relations by lock_order
@@ -166,7 +169,7 @@ access_tables(Access* self)
 }
 
 static inline bool
-access_encode(Access* self, Buf* buf)
+access_list(Access* self, Buf* buf)
 {
 	auto call = false;
 	encode_array(buf);
@@ -174,10 +177,22 @@ access_encode(Access* self, Buf* buf)
 	{
 		auto record = access_at(self, i);
 		encode_array(buf);
+
+		// target
 		encode_target(buf, record->rel->user, record->rel->name);
+
+		// lock
 		lock_id_encode(buf, record->lock);
 		if (record->lock == LOCK_CALL)
 			call = true;
+
+		// permissions
+		uint32_t perm = record->perm;
+		while (perm > 0)
+		{
+			auto name = permission_next(&perm);
+			encode_cstr(buf, name);
+		}
 		encode_array_end(buf);
 	}
 	encode_array_end(buf);

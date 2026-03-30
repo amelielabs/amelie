@@ -23,7 +23,7 @@ explain select * from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test;
 [[1, 0], [3, 0], [2, 0]]
@@ -53,7 +53,7 @@ explain select * from test where id > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id > 1;
 [[3, 0], [2, 0]]
@@ -87,7 +87,7 @@ explain select * from test where id = 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id = 1;
 [[1, 0]]
@@ -121,7 +121,7 @@ explain select (select (select (test.id))) from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select (select (select (test.id))) from test;
 [1, 3, 2]
@@ -143,7 +143,7 @@ explain select (select (select test.id)) from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select (select (select test.id)) from test;
 [1, 3, 2]
@@ -173,7 +173,7 @@ explain select (select (select id from test t)) from test;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro"]]
+  "access": [["main.test", "exclusive_ro", "select"]]
 }]
 # test: select (select (select from table)) from table
 create table ref (id int primary key, data int default 0);
@@ -203,7 +203,7 @@ explain select (select (select id from ref)) from test;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.ref", "exclusive_ro"], ["main.test", "shared"]]
+  "access": [["main.ref", "exclusive_ro", "select"], ["main.test", "shared", "select"]]
 }]
 select (select (select id from ref)) from test;
 [1, 1, 1]
@@ -239,7 +239,7 @@ explain select * from test where (select id from test t);
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro"]]
+  "access": [["main.test", "exclusive_ro", "select"]]
 }]
 # test: select from table where (select from table)
 explain select * from test where (select id from ref);
@@ -271,7 +271,7 @@ explain select * from test where (select id from ref);
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"], ["main.ref", "exclusive_ro"]]
+  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
 }]
 select * from test where (select id from ref);
 [[1, 0], [3, 0], [2, 0]]
@@ -309,7 +309,7 @@ explain select * from test where exists (select 1 from ref where test.id = ref.i
     "21": "free                1      0      0     ",
     "22": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"], ["main.ref", "exclusive_ro"]]
+  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
 }]
 select * from test where exists (select 1 from ref where test.id = ref.id);
 [[1, 0], [3, 0], [2, 0]]

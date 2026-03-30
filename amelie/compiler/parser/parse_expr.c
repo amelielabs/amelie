@@ -352,7 +352,7 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 
 		// track udf access
 		auto access = &self->parser->program->access;
-		access_add(access, &func->udf->rel, LOCK_CALL);
+		access_add(access, &func->udf->rel, LOCK_CALL, PERM_EXECUTE);
 
 		// import access from the udf
 		auto access_udf = &((Program*)func->udf->data)->access;

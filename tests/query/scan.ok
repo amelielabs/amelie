@@ -28,7 +28,7 @@ explain select * from test where id > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id > 1;
 [[2, 1], [3, 1]]
@@ -57,7 +57,7 @@ explain select * from test where id >= 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id >= 1;
 [[1, 1], [2, 1], [3, 1]]
@@ -90,7 +90,7 @@ explain select * from test where test.id > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where test.id > 1;
 [[2, 1], [3, 1]]
@@ -119,7 +119,7 @@ explain select * from test where test.id > -1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where test.id > -1;
 [[1, 1], [2, 1], [3, 1]]
@@ -152,7 +152,7 @@ explain select * from test alias where alias.id > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test alias where alias.id > 1;
 [[2, 1], [3, 1]]
@@ -199,7 +199,7 @@ explain select * from test where id > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id > 1;
 [[2, 1], [3, 1]]
@@ -233,7 +233,7 @@ explain select * from test where id > 1 and id > 1;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id > 1 and id > 1;
 [[2, 1], [3, 1]]
@@ -267,7 +267,7 @@ explain select * from test where id > 2 and id > 1;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id > 2 and id > 1;
 [[3, 1]]
@@ -301,7 +301,7 @@ explain select * from test where id > 1 and id > 2;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id > 1 and id > 2;
 [[3, 1]]
@@ -335,7 +335,7 @@ explain select * from test where id > 1 and id = 2;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id > 1 and id = 2;
 [[2, 1]]
@@ -368,7 +368,7 @@ explain select * from test where id < 1;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id < 1;
 []
@@ -400,7 +400,7 @@ explain select * from test where id <= 2;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id <= 2;
 [[1, 1], [2, 1]]
@@ -437,7 +437,7 @@ explain select * from test where id < 1 and id < 1;
     "20": "free                1      0      0     ",
     "21": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id < 1 and id < 1;
 []
@@ -474,7 +474,7 @@ explain select * from test where id < 2 and id < 1;
     "20": "free                1      0      0     ",
     "21": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id < 2 and id < 1;
 []
@@ -511,7 +511,7 @@ explain select * from test where id < 1 and id < 2;
     "20": "free                1      0      0     ",
     "21": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id < 1 and id < 2;
 []
@@ -549,7 +549,7 @@ explain select * from test where id < 1 and id = 2;
     "20": "free                1      0      0     ",
     "21": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id < 1 and id = 2;
 []
@@ -587,7 +587,7 @@ explain select * from test where id > 1 and id < 1;
     "21": "free                1      0      0     ",
     "22": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id > 1 and id < 1;
 []
@@ -624,7 +624,7 @@ explain select * from test where id >= 1 and id <= 2;
     "21": "free                1      0      0     ",
     "22": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id >= 1 and id <= 2;
 [[1, 1], [2, 1]]
@@ -666,7 +666,7 @@ explain select * from test where id > 1 and id < 1 and id = 1;
     "24": "free                1      0      0     ",
     "25": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id > 1 and id < 1 and id = 1;
 []
@@ -708,7 +708,7 @@ explain select * from test where id > 1 and id < 1 and data = 1;
     "25": "free                1      0      0     ",
     "26": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id > 1 and id < 1 and data = 1;
 []
@@ -738,7 +738,7 @@ explain select * from test where id = 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id = 0;
 []
@@ -776,7 +776,7 @@ explain select * from test where id = 3::int;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id = 3::int;
 [[3, 1]]
@@ -805,7 +805,7 @@ explain select * from test where data = 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where data = 1;
 [[1, 1], [2, 1], [3, 1]]
@@ -839,7 +839,7 @@ explain select * from test where id = 1 and id > 0;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id = 1 and id > 0;
 [[1, 1]]
@@ -881,7 +881,7 @@ explain select * from test where id = 1 and id > 0 and id < 10;
     "24": "free                1      0      0     ",
     "25": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id = 1 and id > 0 and id < 10;
 [[1, 1]]
@@ -915,7 +915,7 @@ explain select * from test where id = 1 and id = 2;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id = 1 and id = 2;
 []
@@ -948,7 +948,7 @@ explain select * from test where a > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where a > 1;
 [[2, 2], [3, 3]]
@@ -983,7 +983,7 @@ explain select * from test where a > 1 and b > 1;
     "18": "free                1      0      0     ",
     "19": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where a > 1 and b > 1;
 [[2, 2], [3, 3]]
@@ -1017,7 +1017,7 @@ explain select * from test where a > 1 and b < 1;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where a > 1 and b < 1;
 []
@@ -1059,7 +1059,7 @@ explain select * from test where a > 1 and b < 2 and a < 10;
     "25": "free                1      0      0     ",
     "26": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where a > 1 and b < 2 and a < 10;
 []
@@ -1094,7 +1094,7 @@ explain select * from test where a > 1 and b = 10;
     "18": "free                1      0      0     ",
     "19": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where a > 1 and b = 10;
 []
@@ -1133,7 +1133,7 @@ explain select * from test where a > 1 and b = 10 and b = 20;
     "22": "free                1      0      0     ",
     "23": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where a > 1 and b = 10 and b = 20;
 []
@@ -1173,7 +1173,7 @@ explain select * from test where a > 1 and b = 10 and a = 20;
     "21": "free                1      0      0     ",
     "22": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where a > 1 and b = 10 and a = 20;
 []
@@ -1209,7 +1209,7 @@ explain select * from test where a = 1 and b = 10;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where a = 1 and b = 10;
 []
@@ -1244,7 +1244,7 @@ explain select * from test where a = 1 and b > 1;
     "18": "free                1      0      0     ",
     "19": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where a = 1 and b > 1;
 []
@@ -1285,7 +1285,7 @@ explain select * from test where id between 1 and 2;
     "21": "free                1      0      0     ",
     "22": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id between 1 and 2;
 [[1, 1], [2, 1]]
@@ -1317,7 +1317,7 @@ explain select * from test where data between 1 and 2;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where data between 1 and 2;
 [[1, 1], [2, 1], [3, 1]]
@@ -1351,7 +1351,7 @@ explain select * from test where id not between 1 and 2;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from test where id not between 1 and 2;
 [[3, 1]]

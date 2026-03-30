@@ -33,7 +33,7 @@ parse_for(Stmt* self)
 	stmt_expect(self, KIN);
 
 	// identical to FROM target
-	auto target = parse_from_add(self, &stmt->from, LOCK_SHARED, &as->string, false);
+	auto target = parse_from_add(self, &stmt->from, LOCK_SHARED, PERM_NONE, &as->string, false);
 	if (target->type == TARGET_TABLE)
 		stmt_error(self, NULL, "tables are not supported here");
 

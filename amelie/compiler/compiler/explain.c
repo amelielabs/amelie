@@ -48,7 +48,7 @@ explain(Compiler* self, Str* user, Str* name)
 	// access
 	auto access = &program->access;
 	encode_raw(buf, "access", 6);
-	auto has_call = access_encode(access, buf);
+	auto has_call = access_list(access, buf);
 
 	// calls
 	if (!name && has_call)

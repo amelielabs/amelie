@@ -140,6 +140,7 @@ parse_select(Stmt* self, From* outer, bool subquery)
 	{
 		parse_from(self, &select->from,
 		           subquery ? LOCK_EXCLUSIVE_RO : LOCK_SHARED,
+		           PERM_SELECT,
 		           subquery);
 	}
 

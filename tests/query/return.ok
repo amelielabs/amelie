@@ -105,7 +105,7 @@ explain begin declare x int; select id into x from test; select x; end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 begin declare x int; select id into x from test; select x; end;
 [1]
@@ -132,7 +132,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -153,7 +153,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -176,7 +176,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -206,7 +206,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -229,7 +229,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -252,7 +252,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -282,7 +282,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -306,7 +306,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -355,7 +355,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -378,7 +378,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -400,7 +400,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -424,7 +424,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -466,7 +466,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -505,7 +505,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -575,7 +575,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -612,7 +612,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -655,7 +655,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -688,7 +688,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -723,7 +723,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -758,7 +758,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -798,7 +798,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -829,7 +829,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared"]]
+    "access": [["main.src", "shared", "select"]]
   }]
 }]
 select test();
@@ -852,7 +852,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -883,7 +883,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared"]]
+    "access": [["main.src", "shared", "select"]]
   }]
 }]
 select test();
@@ -905,7 +905,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -933,7 +933,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared"]]
+    "access": [["main.src", "shared", "select"]]
   }]
 }]
 select test();
@@ -955,7 +955,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -983,7 +983,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared"]]
+    "access": [["main.src", "shared", "select"]]
   }]
 }]
 select test();
@@ -1008,7 +1008,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1046,7 +1046,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared"]]
+    "access": [["main.src", "shared", "select"]]
   }]
 }]
 select test();
@@ -1071,7 +1071,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1109,7 +1109,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared"]]
+    "access": [["main.src", "shared", "select"]]
   }]
 }]
 select test();
@@ -1132,7 +1132,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1181,7 +1181,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1226,7 +1226,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared_rw"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared_rw", "insert"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1240,7 +1240,7 @@ explain select test();
       "00": "insert              -      -      -     # main.src [main]",
       "01": "ret                 -1     0      -     "
     },
-    "access": [["main.src", "shared_rw"]]
+    "access": [["main.src", "shared_rw", "insert"]]
   }]
 }]
 select test();
@@ -1259,7 +1259,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared_rw"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared_rw", "insert"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1286,7 +1286,7 @@ explain select test();
       "10": "free                1      0      0     ",
       "11": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared_rw"]]
+    "access": [["main.src", "shared_rw", "insert"]]
   }]
 }]
 select test();
@@ -1313,7 +1313,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared_rw"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared_rw", "insert"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1341,7 +1341,7 @@ explain select test();
       "10": "free                1      0      0     ",
       "11": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared_rw"]]
+    "access": [["main.src", "shared_rw", "insert"]]
   }]
 }]
 select test();
@@ -1364,7 +1364,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared_rw"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared_rw", "insert"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1397,7 +1397,7 @@ explain select test();
       "10": "free                1      0      0     ",
       "11": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared_rw"]]
+    "access": [["main.src", "shared_rw", "insert"]]
   }]
 }]
 select test();
@@ -1420,7 +1420,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared_rw"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared_rw", "insert"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1453,7 +1453,7 @@ explain select test();
       "10": "free                1      0      0     ",
       "11": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared_rw"]]
+    "access": [["main.src", "shared_rw", "insert"]]
   }]
 }]
 select test();
@@ -1474,7 +1474,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1526,7 +1526,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1593,7 +1593,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1666,7 +1666,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1738,7 +1738,7 @@ explain select test();
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.src", "shared"]],
+  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1760,7 +1760,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared"]]
+    "access": [["main.src", "shared", "select"]]
   }]
 }]
 select test();
@@ -1787,7 +1787,7 @@ explain select test(123);
     "01": "call_udf            0      -      -     # main.test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -1817,7 +1817,7 @@ explain select test(-1);
     "01": "call_udf            0      -      -     # main.test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {

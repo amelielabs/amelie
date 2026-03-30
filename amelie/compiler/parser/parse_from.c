@@ -18,7 +18,7 @@
 #include <amelie_parser.h>
 
 static Target*
-parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
+parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 {
 	auto target = target_allocate();
 
@@ -162,7 +162,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 		target->from_snapshot = table_main(table);
 		target->columns       = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
-		access_add(&self->parser->program->access, &table->rel, lock);
+		access_add(&self->parser->program->access, &table->rel, lock, perms);
 
 		// [USE INDEX (name)]
 		if (stmt_if(self, KUSE))
@@ -191,9 +191,10 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 		target->from_snapshot = &branch->config->snapshot;
 		target->columns       = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
-		access_add(&self->parser->program->access, &table->rel, lock);
-		// adding branch for dependency
-		access_add(&self->parser->program->access, &branch->rel, LOCK_NONE);
+		// adding branch relation to the access list for dependency
+		// tracking and permissions check
+		access_add(&self->parser->program->access, &table->rel, lock, PERM_NONE);
+		access_add(&self->parser->program->access, &branch->rel, LOCK_NONE, perms);
 		return target;
 	}
 
@@ -202,12 +203,12 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 }
 
 Target*
-parse_from_add(Stmt* self, From* from, LockId lock,
+parse_from_add(Stmt* self, From* from, LockId lock, int perms,
                Str*  as,
                bool  subquery)
 {
 	// FROM name | (SELECT) [AS] [alias] [USE INDEX (name)]
-	auto target = parse_from_target(self, from, lock, subquery);
+	auto target = parse_from_target(self, from, lock, perms, subquery);
 
 	// [AS] [alias]
 	if (as)
@@ -259,13 +260,13 @@ parse_from_add(Stmt* self, From* from, LockId lock,
 }
 
 void
-parse_from(Stmt* self, From* from, LockId lock, bool subquery)
+parse_from(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 {
 	// FROM <name | (SELECT)> [AS] [alias]> [, ...]
 	// FROM <name | (SELECT)> [AS] [alias]> [JOIN <..> ON (expr) ...]
 
 	// FROM name | expr
-	parse_from_add(self, from, lock, NULL, subquery);
+	parse_from_add(self, from, lock, perms, NULL, subquery);
 
 	Ast* join_on = NULL;
 	for (;;)
@@ -274,7 +275,7 @@ parse_from(Stmt* self, From* from, LockId lock, bool subquery)
 		if (stmt_if(self, ','))
 		{
 			// name | expr
-			parse_from_add(self, from, LOCK_EXCLUSIVE_RO, NULL, subquery);
+			parse_from_add(self, from, LOCK_EXCLUSIVE_RO, perms, NULL, subquery);
 			continue;
 		}
 
@@ -314,7 +315,7 @@ parse_from(Stmt* self, From* from, LockId lock, bool subquery)
 			stmt_error(self, NULL, "outer joins currently are not supported");
 
 		// JOIN target
-		auto target = parse_from_add(self, from, LOCK_EXCLUSIVE_RO, NULL, subquery);
+		auto target = parse_from_add(self, from, LOCK_EXCLUSIVE_RO, perms, NULL, subquery);
 
 		// save the names count for AND before processing the next expression
 		auto names_count = from->list_names.count;

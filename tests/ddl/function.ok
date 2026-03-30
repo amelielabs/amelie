@@ -44,7 +44,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -75,7 +75,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -113,7 +113,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -150,7 +150,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -186,7 +186,7 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -360,7 +360,7 @@ explain select test(123);
     "01": "call_udf            0      -      -     # main.test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -405,7 +405,7 @@ explain select test(10);
     "01": "call_udf            0      -      -     # main.test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"]],
+  "access": [["main.test", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
@@ -478,7 +478,7 @@ explain select [1,2,3]::reverse;
     "01": "call_udf            0      -      -     # main.reverse()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.reverse", "call"]],
+  "access": [["main.reverse", "call", "execute"]],
   "calls": [{
     "function": "main.reverse",
     "main": {
@@ -611,7 +611,7 @@ explain select [1,2,3]::reverse;
     "01": "call_udf            0      -      -     # main.reverse()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.reverse", "call"]],
+  "access": [["main.reverse", "call", "execute"]],
   "calls": [{
     "function": "main.reverse",
     "main": {
@@ -745,14 +745,14 @@ explain select test();
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call"], ["main.test_dep", "call"]],
+  "access": [["main.test", "call", "execute"], ["main.test_dep", "call", "execute"]],
   "calls": [{
     "function": "main.test",
     "main": {
       "00": "call_udf            0      -      -     # main.test_dep()",
       "01": "ret                 -1     0      -     "
     },
-    "access": [["main.test_dep", "call"]]
+    "access": [["main.test_dep", "call", "execute"]]
   }, {
     "function": "main.test_dep",
     "main": {

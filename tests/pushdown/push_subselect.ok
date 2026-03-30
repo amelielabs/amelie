@@ -16,7 +16,7 @@ explain select (select id from test);
     "07": "first               1      0      0     ",
     "08": "ret                 1      0      -     "
   },
-  "access": [["main.test", "exclusive_ro"]]
+  "access": [["main.test", "exclusive_ro", "select"]]
 }]
 select (select id from test);
 [1]
@@ -48,7 +48,7 @@ explain select (select id from test) from test2;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro"], ["main.test2", "shared"]]
+  "access": [["main.test", "exclusive_ro", "select"], ["main.test2", "shared", "select"]]
 }]
 select (select id from test) from test2;
 [1, 1, 1]
@@ -87,7 +87,7 @@ explain select (select id from test) from (select * from test2) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro"], ["main.test2", "shared"]]
+  "access": [["main.test", "exclusive_ro", "select"], ["main.test2", "shared", "select"]]
 }]
 select (select id from test) from (select * from test2) t;
 [1, 1, 1]
@@ -124,7 +124,7 @@ explain select * from (select * from test) t;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 select * from (select * from test) t;
 [[1, 0], [3, 0], [2, 0]]
@@ -165,7 +165,7 @@ explain select * from (select (select id from test2) from test) t;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test2", "exclusive_ro"], ["main.test", "shared"]]
+  "access": [["main.test2", "exclusive_ro", "select"], ["main.test", "shared", "select"]]
 }]
 select * from (select (select id from test2) from test) t;
 [1, 1, 1]
@@ -205,7 +205,7 @@ explain select * from (select (select id from test t) from test) g;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro"]]
+  "access": [["main.test", "exclusive_ro", "select"]]
 }]
 select * from (select (select id from test t) from test) g;
 [1, 1, 1]
@@ -253,7 +253,7 @@ explain select (select t.id from test2) from (select * from test) t;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test2", "exclusive_ro"], ["main.test", "shared"]]
+  "access": [["main.test2", "exclusive_ro", "select"], ["main.test", "shared", "select"]]
 }]
 select (select t.id from test2) from (select * from test) t;
 [1, 3, 2]
@@ -295,7 +295,7 @@ explain select (select t.id from test z) from (select * from test) t;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro"]]
+  "access": [["main.test", "exclusive_ro", "select"]]
 }]
 select (select t.id from test z) from (select * from test) t;
 [1, 3, 2]
@@ -355,7 +355,7 @@ explain select * from (select * from test) a, (select * from test) b;
     "18": "free                2      0      0     ",
     "19": "ret                 1      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 # test: insert returning (select from table) (unsupported)
 explain insert into test (id) values (4) returning (select * from test t);

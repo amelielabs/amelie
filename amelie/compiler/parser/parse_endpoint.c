@@ -381,9 +381,13 @@ import_insert(Parser* self, ParseEndpoint* pe)
 	from_add(&insert->from, target);
 
 	// add table/branch to the access list
-	access_add(&self->program->access, &table->rel, LOCK_SHARED_RW);
 	if (pe->target_branch)
-		access_add(&self->program->access, &pe->target_branch->rel, LOCK_NONE);
+	{
+		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_NONE);
+		access_add(&self->program->access, &pe->target_branch->rel, LOCK_NONE, PERM_INSERT);
+	} else {
+		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_INSERT);
+	}
 
 	// prepare result set
 	insert->values = set_cache_create(self->set_cache, &self->program->sets);
@@ -415,6 +419,15 @@ import_insert(Parser* self, ParseEndpoint* pe)
 	// and apply the resolve expressions on conflicts
 	if (columns->count_resolved > 0)
 		parse_resolved(stmt);
+
+	// update requested permissions to UPDATE
+	if (insert->on_conflict == ON_CONFLICT_UPDATE)
+	{
+		auto access = access_find(&self->program->access,
+		                          &table->config->user,
+		                          &table->config->name);
+		access->perm |= PERM_UPDATE;
+	}
 }
 
 static void

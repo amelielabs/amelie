@@ -211,7 +211,7 @@ parse_insert(Stmt* self)
 	auto into = stmt_expect(self, KINTO);
 
 	// table
-	parse_from(self, &stmt->from, LOCK_SHARED_RW, false);
+	parse_from(self, &stmt->from, LOCK_SHARED_RW, PERM_INSERT, false);
 	if (from_empty(&stmt->from) || from_is_join(&stmt->from))
 		stmt_error(self, into, "table name expected");
 	auto target = from_first(&stmt->from);
@@ -285,5 +285,14 @@ parse_insert(Stmt* self)
 		// convert insert to upsert ON CONFLICT ERROR to support returning
 		if (stmt->on_conflict == ON_CONFLICT_NONE)
 			stmt->on_conflict = ON_CONFLICT_ERROR;
+	}
+
+	// update requested permissions to UPDATE
+	if (stmt->on_conflict == ON_CONFLICT_UPDATE)
+	{
+		auto access = access_find(&self->parser->program->access,
+		                          &table->config->user,
+		                          &table->config->name);
+		access->perm |= PERM_UPDATE;
 	}
 }

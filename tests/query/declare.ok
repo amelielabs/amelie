@@ -289,7 +289,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 begin
 	declare id int;
@@ -329,7 +329,7 @@ end;
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 begin
 	declare id int; id := 1;
@@ -379,7 +379,7 @@ end;
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 # test: := with cte
 begin
@@ -655,7 +655,7 @@ end;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared"]]
+  "access": [["main.test", "shared", "select"]]
 }]
 begin
 	declare x table (a int, b int);

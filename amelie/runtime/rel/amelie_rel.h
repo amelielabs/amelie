@@ -19,8 +19,10 @@
 #include "rel/lock_id.h"
 #include "rel/rel.h"
 
-// lock manager
+// relation list
 #include "rel/access.h"
+
+// lock manager
 #include "rel/lock.h"
 #include "rel/lock_cache.h"
 #include "rel/lock_mgr.h"
