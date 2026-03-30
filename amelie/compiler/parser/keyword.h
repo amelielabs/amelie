@@ -122,6 +122,7 @@ enum
 	KGROUP,
 	KGENERATE,
 	KGENERATED,
+	KGRANT,
 
 	// h
 	KHAVING,

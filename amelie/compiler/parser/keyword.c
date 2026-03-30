@@ -87,6 +87,7 @@ Keyword keywords[] =
 	{ KGROUP,                 "group",                 5  },
 	{ KGENERATE,              "generate",              8  },
 	{ KGENERATED,             "generated",             9  },
+	{ KGRANT,                 "grant",                 5  },
 
 	// h
 	{ KHAVING,                "having",                6  },

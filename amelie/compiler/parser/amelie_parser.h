@@ -68,6 +68,9 @@
 #include "parser/parse_watch.h"
 #include "parser/parse_lock.h"
 
+// grants
+#include "parser/parse_grant.h"
+
 // ddl
 #include "parser/parse_storage.h"
 #include "parser/parse_user.h"

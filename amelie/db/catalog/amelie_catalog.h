@@ -14,6 +14,9 @@
 // ddl
 #include "catalog/ddl.h"
 
+// grant
+#include "catalog/grant_op.h"
+
 // storage
 #include "catalog/storage_op.h"
 

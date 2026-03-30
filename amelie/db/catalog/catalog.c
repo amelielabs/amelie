@@ -176,6 +176,19 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	auto cmd = ddl_of(op);
 	bool write = false;
 	switch (cmd) {
+	case DDL_GRANT:
+	{
+		Str     user;
+		Str     name;
+		Str     to;
+		bool    grant;
+		int64_t perms;
+		grant_op_grant_read(op, &user, &name, &to, &grant, &perms);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = table_mgr_grant(&self->table_mgr, tr, &user, &name, &to, grant, perms, if_exists);
+		break;
+	}
 	case DDL_USER_CREATE:
 	{
 		auto config = user_op_create_read(op);
@@ -292,19 +305,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto if_exists = ddl_if_exists(flags);
 		write = table_mgr_rename(&self->table_mgr, tr, &user, &name,
 		                         &user_new, &name_new, if_exists);
-		break;
-	}
-	case DDL_TABLE_GRANT:
-	{
-		Str     user;
-		Str     name;
-		Str     to;
-		bool    grant;
-		int64_t perms;
-		table_op_grant_read(op, &user, &name, &to, &grant, &perms);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_grant(&self->table_mgr, tr, &user, &name, &to, grant, perms, if_exists);
 		break;
 	}
 	case DDL_TABLE_TRUNCATE:

@@ -47,7 +47,7 @@ permission_of(Str* name, uint32_t* id)
 	if (str_is_case(name, "none", 4) || str_empty(name))
 		*id = PERM_NONE;
 	else
-	if (str_is_case(name, "select", 5))
+	if (str_is_case(name, "select", 6))
 		*id = PERM_SELECT;
 	else
 	if (str_is_case(name, "insert", 5))

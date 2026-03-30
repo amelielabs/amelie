@@ -47,6 +47,8 @@ grants_reset(Grants* self)
 always_inline static inline Grant*
 grants_first(Grants* self)
 {
+	if (buf_empty(&self->list))
+		return NULL;
 	return (Grant*)self->list.start;
 }
 

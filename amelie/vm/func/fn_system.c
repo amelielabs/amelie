@@ -27,6 +27,7 @@ enum
 	SHOW_REPL,
 	SHOW_WAL,
 	SHOW_METRICS,
+	SHOW_GRANTS,
 	SHOW_AGENTS,
 	SHOW_USERS,
 	SHOW_USER,
@@ -67,6 +68,7 @@ static ShowCmd show_cmds[] =
 	{ SHOW_REPL,       "replication", 11, false, false },
 	{ SHOW_WAL,        "wal",         3,  false, false },
 	{ SHOW_METRICS,    "metrics",     7,  false, false },
+	{ SHOW_GRANTS,     "grants",      6,  false, true  },
 	{ SHOW_AGENTS,     "agents",      6,  false, false },
 	{ SHOW_USERS,      "users",       5,  false, false },
 	{ SHOW_USER,       "user",        4,  true,  false },
@@ -239,6 +241,19 @@ fn_show(Fn* self)
 	case SHOW_METRICS:
 	{
 		rpc(&runtime()->task, MSG_SHOW_METRICS, &buf);
+		break;
+	}
+	case SHOW_GRANTS:
+	{
+		auto rel = catalog_find(catalog, user, on, true);
+		if (rel->type == REL_TABLE)
+		{
+			auto table = table_of(rel);
+			buf = buf_create();
+			grants_write(&table->config->grants, buf, 0);
+		} else
+		{
+		}
 		break;
 	}
 	case SHOW_AGENTS:
