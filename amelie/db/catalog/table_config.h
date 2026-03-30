@@ -23,6 +23,7 @@ struct TableConfig
 	int          indexes_count;
 	bool         unlogged;
 	Partitioning partitioning;
+	Grants       grants;
 };
 
 static inline TableConfig*
@@ -38,6 +39,7 @@ table_config_allocate(void)
 	columns_init(&self->columns);
 	partitioning_init(&self->partitioning);
 	list_init(&self->indexes);
+	grants_init(&self->grants);
 	return self;
 }
 
@@ -55,6 +57,7 @@ table_config_free(TableConfig* self)
 
 	columns_free(&self->columns);
 	partitioning_free(&self->partitioning);
+	grants_free(&self->grants);
 	am_free(self);
 }
 
@@ -119,6 +122,7 @@ table_config_copy(TableConfig* self)
 		if (primary_keys == NULL)
 			primary_keys = &config_copy->keys;
 	}
+	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
@@ -131,6 +135,7 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_columns      = NULL;
 	uint8_t* pos_indexes      = NULL;
 	uint8_t* pos_partitioning = NULL;
+	uint8_t* pos_grants       = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "user",         &self->user       },
@@ -140,6 +145,7 @@ table_config_read(uint8_t** pos)
 		{ DECODE_ARRAY,  "columns",      &pos_columns      },
 		{ DECODE_ARRAY,  "indexes",      &pos_indexes      },
 		{ DECODE_OBJ,    "partitioning", &pos_partitioning },
+		{ DECODE_ARRAY,  "grants",       &pos_grants       },
 		{ 0,              NULL,           NULL             },
 	};
 	decode_obj(obj, "table", pos);
@@ -157,6 +163,9 @@ table_config_read(uint8_t** pos)
 
 	// partitioning
 	partitioning_read(&self->partitioning, &pos_partitioning);
+
+	// grants
+	grants_read(&self->grants, &pos_grants);
 	return self;
 }
 
@@ -205,6 +214,10 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	// partitioning
 	encode_raw(buf, "partitioning", 12);
 	partitioning_write(&self->partitioning, buf, flags);
+
+	// grants
+	encode_raw(buf, "grants", 6);
+	grants_write(&self->grants, buf, 0);
 
 	encode_obj_end(buf);
 }

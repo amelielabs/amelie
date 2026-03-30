@@ -257,7 +257,7 @@ select show('wal');
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 364,
+  "writes_bytes": 373,
   "ops": 1
 }]
 # test: metrics

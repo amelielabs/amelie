@@ -87,6 +87,64 @@ table_mgr_rename(TableMgr* self,
 }
 
 static void
+grant_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+grant_if_abort(Log* self, LogOp* op)
+{
+	// restore grants
+	uint8_t* pos = log_data_of(self, op);
+	auto table = table_of(op->rel);
+	auto grants = &table->config->grants;
+	grants_reset(grants);
+	grants_read(grants, &pos);
+}
+
+static LogIf grant_if =
+{
+	.commit = grant_if_commit,
+	.abort  = grant_if_abort
+};
+
+bool
+table_mgr_grant(TableMgr* self,
+                Tr*       tr,
+                Str*      user,
+                Str*      name,
+                Str*      to,
+                bool      grant,
+                uint32_t  perms,
+                bool      if_exists)
+{
+	auto table = table_mgr_find(self, user, name, false);
+	if (! table)
+	{
+		if (! if_exists)
+			error("table '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return false;
+	}
+
+	// update table
+	log_rel(&tr->log, &grant_if, NULL, &table->rel);
+
+	// save previous grants
+	auto grants = &table->config->grants;
+	grants_write(grants, &tr->log.data, 0);
+
+	// set new grants
+	if (grant)
+		grants_add(grants, to, perms);
+	else
+		grants_remove(grants, to, perms);
+	return true;
+}
+
+static void
 set_identity_if_commit(Log* self, LogOp* op)
 {
 	unused(self);

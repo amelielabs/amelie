@@ -13,6 +13,7 @@
 
 // alter table
 bool table_mgr_rename(TableMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
+bool table_mgr_grant(TableMgr*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 bool table_mgr_set_identity(TableMgr*, Tr*, Str*, Str*, int64_t, bool);
 bool table_mgr_set_unlogged(TableMgr*, Tr*, Str*, Str*, bool, bool);
 

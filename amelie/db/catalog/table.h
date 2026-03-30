@@ -94,6 +94,7 @@ table_allocate(TableConfig* config,
 	rel_init(rel, REL_TABLE);
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
+	rel_set_grants(rel, &self->config->grants);
 	rel_set_free_function(rel, (RelFree)table_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;

@@ -29,16 +29,17 @@ typedef enum
 
 struct Rel
 {
-	Str*         user;
-	Str*         name;
-	RelType      type;
-	RelFree free_function;
-	Spinlock     lock;
-	uint64_t     lock_order;
-	int          lock_set[LOCK_MAX];
-	List         lock_wait;
-	int          lock_wait_count;
-	List         link;
+	Str*     user;
+	Str*     name;
+	RelType  type;
+	Grants*  grants;
+	RelFree  free_function;
+	Spinlock lock;
+	uint64_t lock_order;
+	int      lock_set[LOCK_MAX];
+	List     lock_wait;
+	int      lock_wait_count;
+	List     link;
 };
 
 static inline void
@@ -47,6 +48,7 @@ rel_init(Rel* self, RelType type)
 	self->user            = NULL;
 	self->name            = NULL;
 	self->type            = type;
+	self->grants          = NULL;
 	self->free_function   = NULL;
 	self->lock_order      = 0;
 	self->lock_wait_count = 0;
@@ -66,6 +68,12 @@ static inline void
 rel_set_name(Rel* self, Str* name)
 {
 	self->name = name;
+}
+
+static inline void
+rel_set_grants(Rel* self, Grants* grants)
+{
+	self->grants = grants;
 }
 
 static inline void

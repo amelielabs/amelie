@@ -739,7 +739,8 @@ show tables extended;
       "id": "00000000-0000-0000-0000-000000000002",
       "pause": false
     }]
-  }
+  },
+  "grants": []
 }]
 drop table test;
 drop storage x;

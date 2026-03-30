@@ -92,6 +92,19 @@ grants_add(Grants* self, Str* user, uint32_t permissions)
 }
 
 hot static inline void
+grants_copy(Grants* self, Grants* from)
+{
+	auto grant = grants_first(from);
+	while (grant)
+	{
+		Str name;
+		str_set(&name, (char*)grant->name, grant->name_size);
+		grants_add(self, &name, grant->permissions);
+		grant = grants_next(from, grant);
+	}
+}
+
+hot static inline void
 grants_remove(Grants* self, Str* user, uint32_t permissions)
 {
 	// update existing user grants
