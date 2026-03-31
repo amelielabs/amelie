@@ -274,6 +274,10 @@ udf_mgr_grant(UdfMgr*  self,
 		return false;
 	}
 
+	// validate permissions
+	auto perms_all = PERM_EXECUTE;
+	perms = permission_validate(user, name, perms, perms_all);
+
 	// update udf
 	log_rel(&tr->log, &grant_if, NULL, &udf->rel);
 

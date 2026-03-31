@@ -190,7 +190,8 @@ access_list(Access* self, Buf* buf)
 		uint32_t perm = record->perm;
 		while (perm > 0)
 		{
-			auto name = permission_next(&perm);
+			auto id = permission_next(&perm);
+			auto name = permission_name_of(id);
 			encode_cstr(buf, name);
 		}
 		encode_array_end(buf);

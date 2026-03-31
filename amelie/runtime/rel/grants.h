@@ -172,7 +172,8 @@ grants_write(Grants* self, Buf* buf, int flags)
 		uint32_t permissions = grant->permissions;
 		while (permissions > 0)
 		{
-			auto name = permission_next(&permissions);
+			auto id = permission_next(&permissions);
+			auto name = permission_name_of(id);
 			encode_cstr(buf, name);
 		}
 		encode_array_end(buf);

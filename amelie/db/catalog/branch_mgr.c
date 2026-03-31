@@ -215,6 +215,12 @@ branch_mgr_grant(BranchMgr* self,
 		return false;
 	}
 
+	// validate permissions
+	auto perms_all =
+		 PERM_SELECT | PERM_INSERT | PERM_UPDATE |
+		 PERM_DELETE;
+	perms = permission_validate(user, name, perms, perms_all);
+
 	// update branch
 	log_rel(&tr->log, &grant_if, NULL, &branch->rel);
 

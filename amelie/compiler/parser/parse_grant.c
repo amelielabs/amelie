@@ -32,18 +32,21 @@ parse_grant(Stmt* self, bool grant)
 	for (;;)
 	{
 		// name
-		auto next = stmt_next_shadow(self);
-		if (next->id != KNAME)
-			stmt_error(self, next, "name expected");
-
-		// [ON]
-		if (str_is_case(&next->string, "ON", 2))
-			break;
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+			stmt_error(self, name, "name expected");
 
 		uint32_t id = 0;
-		if (permission_of(&next->string, &id) == -1)
-			stmt_error(self, next, "uknown permission name");
+		if (permission_of(&name->string, &id) == -1)
+			stmt_error(self, name, "unknown permission name");
 		stmt->perms |= id;
+
+		// [ON]
+		if (stmt_if(self, KON))
+			break;
+
+		// ,
+		stmt_expect(self, ',');
 	}
 
 	// relation

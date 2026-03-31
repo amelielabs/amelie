@@ -72,46 +72,44 @@ permission_of(Str* name, uint32_t* id)
 	return 0;
 }
 
-static inline const char*
+static inline uint32_t
 permission_next(uint32_t* permissions)
 {
-	if (*permissions == PERM_NONE)
-		return "";
+	if (! *permissions)
+		return PERM_NONE;
 	if (*permissions == PERM_ALL)
 	{
 		*permissions = 0;
-		return "all";
+		return PERM_ALL;
 	}
-	if (*permissions & PERM_SELECT)
+	auto next_bit = __builtin_ffsl(*permissions) - 1;
+	auto next = 1u << next_bit;
+	*permissions &= ~next;
+	return next;
+}
+
+static inline uint32_t
+permission_validate(Str* user, Str* name, uint32_t permissions, uint32_t mask)
+{
+	// ALL returns only supported permissions
+	if (permissions == PERM_ALL)
+		return mask;
+
+	// validate the list against supported permissions
+	auto perms = permissions;
+	while (perms > 0)
 	{
-		*permissions &= ~PERM_SELECT;
-		return "select";
+		auto id = permission_next(&perms);
+		if (id == PERM_NONE)
+			break;
+		if ((id & mask) != id)
+		{
+			auto id_name = permission_name_of(id);
+			error("relation %.*s.%.*s: does not support '%s' grant",
+			      str_size(user), str_of(user),
+			      str_size(name), str_of(name),
+			      id_name);
+		}
 	}
-	if (*permissions & PERM_INSERT)
-	{
-		*permissions &= ~PERM_INSERT;
-		return "insert";
-	}
-	if (*permissions & PERM_UPDATE)
-	{
-		*permissions &= ~PERM_UPDATE;
-		return "update";
-	}
-	if (*permissions & PERM_DELETE)
-	{
-		*permissions &= ~PERM_DELETE;
-		return "delete";
-	}
-	if (*permissions & PERM_TRUNCATE)
-	{
-		*permissions &= ~PERM_TRUNCATE;
-		return "truncate";
-	}
-	if (*permissions & PERM_EXECUTE)
-	{
-		*permissions &= ~PERM_EXECUTE;
-		return "execute";
-	}
-	abort();
-	return NULL;
+	return permissions;
 }

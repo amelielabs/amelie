@@ -129,6 +129,12 @@ table_mgr_grant(TableMgr* self,
 		return false;
 	}
 
+	// validate permissions
+	auto perms_all =
+		 PERM_SELECT | PERM_INSERT | PERM_UPDATE |
+		 PERM_DELETE | PERM_TRUNCATE;
+	perms = permission_validate(user, name, perms, perms_all);
+
 	// update table
 	log_rel(&tr->log, &grant_if, NULL, &table->rel);
 
