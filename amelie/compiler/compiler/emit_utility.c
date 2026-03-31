@@ -156,12 +156,13 @@ emit_ddl(Compiler* self)
 	auto offset = 0;
 	auto flags  = 0;
 	switch (stmt->id) {
-	// grants
+	// grant
 	case STMT_GRANT:
 	case STMT_REVOKE:
 	{
 		auto arg = ast_grant_of(stmt->ast);
-		offset = grant_op_grant(data, &arg->rel_user, &arg->rel, &arg->to, arg->grant, arg->perms);
+		offset = grant_op_grant(data, &arg->rel_user, &arg->rel, &arg->to,
+		                        arg->grant, arg->perms);
 		break;
 	}
 

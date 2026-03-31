@@ -186,7 +186,27 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		grant_op_grant_read(op, &user, &name, &to, &grant, &perms);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_grant(&self->table_mgr, tr, &user, &name, &to, grant, perms, if_exists);
+		auto rel = catalog_find(self, &user, &name, false);
+		if (! rel)
+		{
+			if (! if_exists)
+				error("relation '%.*s': not exists", str_size(&name),
+				      str_of(&name));
+			break;
+		}
+		switch (rel->type) {
+		case REL_TABLE:
+			write = table_mgr_grant(&self->table_mgr, tr, &user, &name, &to,
+			                        grant, perms, if_exists);
+			break;
+		case REL_BRANCH:
+			write = branch_mgr_grant(&self->branch_mgr, tr, &user, &name, &to,
+			                         grant, perms, if_exists);
+			break;
+		default:
+			abort();
+			break;
+		}
 		break;
 	}
 	case DDL_USER_CREATE:

@@ -172,6 +172,64 @@ branch_mgr_rename(BranchMgr* self,
 	return true;
 }
 
+static void
+grant_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+grant_if_abort(Log* self, LogOp* op)
+{
+	// restore grants
+	uint8_t* pos = log_data_of(self, op);
+	auto branch = branch_of(op->rel);
+	auto grants = &branch->config->grants;
+	grants_reset(grants);
+	grants_read(grants, &pos);
+}
+
+static LogIf grant_if =
+{
+	.commit = grant_if_commit,
+	.abort  = grant_if_abort
+};
+
+bool
+branch_mgr_grant(BranchMgr* self,
+                 Tr*        tr,
+                 Str*       user,
+                 Str*       name,
+                 Str*       to,
+                 bool       grant,
+                 uint32_t   perms,
+                 bool       if_exists)
+{
+	auto branch = branch_mgr_find(self, user, name, false);
+	if (! branch)
+	{
+		if (! if_exists)
+			error("branch '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return false;
+	}
+
+	// update branch
+	log_rel(&tr->log, &grant_if, NULL, &branch->rel);
+
+	// save previous grants
+	auto grants = &branch->config->grants;
+	grants_write(grants, &tr->log.data, 0);
+
+	// set new grants
+	if (grant)
+		grants_add(grants, to, perms);
+	else
+		grants_remove(grants, to, perms);
+	return true;
+}
+
 void
 branch_mgr_dump(BranchMgr* self, Buf* buf)
 {

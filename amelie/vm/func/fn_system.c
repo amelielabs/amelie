@@ -246,14 +246,11 @@ fn_show(Fn* self)
 	case SHOW_GRANTS:
 	{
 		auto rel = catalog_find(catalog, user, on, true);
-		if (rel->type == REL_TABLE)
-		{
-			auto table = table_of(rel);
-			buf = buf_create();
-			grants_write(&table->config->grants, buf, 0);
-		} else
-		{
-		}
+		buf = buf_create();
+		if (rel->grants)
+			grants_write(rel->grants, buf, 0);
+		else
+			encode_null(buf);
 		break;
 	}
 	case SHOW_AGENTS:
