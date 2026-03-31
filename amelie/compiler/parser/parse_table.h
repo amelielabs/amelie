@@ -33,9 +33,9 @@ struct AstTableDrop
 
 struct AstTableTruncate
 {
-	Ast  ast;
-	bool if_exists;
-	Str  name;
+	Ast ast;
+	Str user;
+	Str name;
 };
 
 enum
@@ -106,8 +106,6 @@ ast_table_drop_allocate(void)
 {
 	AstTableDrop* self;
 	self = ast_allocate(0, sizeof(AstTableDrop));
-	self->if_exists = false;
-	str_init(&self->name);
 	return self;
 }
 
@@ -122,8 +120,6 @@ ast_table_truncate_allocate(void)
 {
 	AstTableTruncate* self;
 	self = ast_allocate(0, sizeof(AstTableTruncate));
-	self->if_exists = false;
-	str_init(&self->name);
 	return self;
 }
 

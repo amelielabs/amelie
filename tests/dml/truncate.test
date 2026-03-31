@@ -6,9 +6,6 @@ connect E0 S0 127.0.0.1:3485;
 # test: truncate parsing
 truncate;
 truncate if not;
-truncate if not not;
-truncate if not exists;
-truncate if exists;
 
 # test: truncate
 create table test (id int primary key);
@@ -37,10 +34,6 @@ truncate test;
 select * from test;
 
 drop table test;
-
-# test: truncate if exists
-truncate test;
-truncate if exists test;
 
 # test: truncate (hash)
 create table test (id int primary key using hash);

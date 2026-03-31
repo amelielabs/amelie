@@ -239,8 +239,7 @@ emit_ddl(Compiler* self)
 	case STMT_TRUNCATE:
 	{
 		auto arg = ast_table_truncate_of(stmt->ast);
-		offset = table_op_truncate(data, user, &arg->name);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		offset = table_op_truncate(data, &arg->user, &arg->name);
 		break;
 	}
 

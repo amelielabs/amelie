@@ -2,15 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: truncate parsing
 truncate;
-{"msg": "truncate❰;❱ ⟵ name expected"}
+{"msg": "truncate❰;❱ ⟵ target name expected"}
 truncate if not;
-{"msg": "truncate if ❰not❱ ⟵ EXISTS expected"}
-truncate if not not;
-{"msg": "truncate if ❰not❱ ⟵ EXISTS expected"}
-truncate if not exists;
-{"msg": "truncate if ❰not❱ ⟵ EXISTS expected"}
-truncate if exists;
-{"msg": "truncate if exists❰;❱ ⟵ name expected"}
+{"msg": "truncate ❰if❱ ⟵ target name expected"}
 # test: truncate
 create table test (id int primary key);
 insert into test values (1),(2),(3),(4),(5);
@@ -41,10 +35,6 @@ truncate test;
 select * from test;
 []
 drop table test;
-# test: truncate if exists
-truncate test;
-{"msg": "table 'test': not exists"}
-truncate if exists test;
 # test: truncate (hash)
 create table test (id int primary key using hash);
 insert into test values (1),(2),(3),(4);

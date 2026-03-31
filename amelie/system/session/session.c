@@ -125,9 +125,6 @@ session_execute_distributed(Session* self, Output* output)
 	if (!program->ro && opt_int_of(&state()->read_only))
 		error("system is in read-only mode");
 
-	// check grants
-	session_access(self, &program->access);
-
 	// take transaction locks
 	lock_access(&program->access);
 
@@ -334,6 +331,9 @@ session_endpoint(Session*  self,
 		output_write_json(output, &column, program->explain.start, false);
 		return;
 	}
+
+	// validate permissions
+	session_access(self, &program->access);
 
 	// execute utility, DDL, DML or Query
 	if (program->utility)

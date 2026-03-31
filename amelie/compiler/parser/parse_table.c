@@ -802,14 +802,16 @@ parse_table_alter(Stmt* self)
 void
 parse_table_truncate(Stmt* self)
 {
-	// TRUNCATE [IF EXISTS] name
+	// TRUNCATE name
 	auto stmt = ast_table_truncate_allocate();
 	self->ast = &stmt->ast;
 
-	// if exists
-	stmt->if_exists = parse_if_exists(self);
+	// [user.]name
+	auto path = parse_target(self, &stmt->user, &stmt->name);
+	auto table = catalog_find_table(&share()->db->catalog, &stmt->user, &stmt->name, false);
+	if (! table)
+		stmt_error(self, path, "table not found");
 
-	// name
-	auto name  = stmt_expect(self, KNAME);
-	stmt->name = name->string;
+	// request for TRUNCATE permissions
+	access_add(&self->parser->program->access, &table->rel, LOCK_NONE, PERM_TRUNCATE);
 }
