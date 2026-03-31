@@ -21,6 +21,7 @@ enum
 	PERM_TRUNCATE = 1u << 4,
 	PERM_BRANCH   = 1u << 5,
 	PERM_EXECUTE  = 1u << 6,
+	PERM_CREATE   = 1u << 7,
 	PERM_ALL      = 0xFFFFFFFFu
 };
 
@@ -36,6 +37,7 @@ permission_name_of(uint32_t id)
 	case PERM_TRUNCATE: return "truncate";
 	case PERM_BRANCH:   return "branch";
 	case PERM_EXECUTE:  return "execute";
+	case PERM_CREATE:   return "create";
 	case PERM_ALL:      return "all";
 	}
 	abort();
@@ -69,6 +71,9 @@ permission_of(Str* name, uint32_t* id)
 	else
 	if (str_is_case(name, "execute", 7))
 		*id = PERM_EXECUTE;
+	else
+	if (str_is_case(name, "create", 6))
+		*id = PERM_CREATE;
 	else
 	if (str_is_case(name, "all", 3))
 		*id = PERM_ALL;
@@ -110,10 +115,15 @@ permission_validate(Str* user, Str* name, uint32_t permissions, uint32_t mask)
 		if ((id & mask) != id)
 		{
 			auto id_name = permission_name_of(id);
-			error("relation %.*s.%.*s: does not support '%s' grant",
-			      str_size(user), str_of(user),
-			      str_size(name), str_of(name),
-			      id_name);
+			if (user)
+				error("relation %.*s.%.*s: does not support '%s' grant",
+				      str_size(user), str_of(user),
+				      str_size(name), str_of(name),
+				      id_name);
+			else
+				error("relation %.*s: does not support '%s' grant",
+				      str_size(name), str_of(name),
+				      id_name);
 		}
 	}
 	return permissions;

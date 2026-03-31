@@ -133,6 +133,15 @@ grants_check(Grants* self, Str* user, uint32_t permissions)
 	return (grant->permissions & permissions) == permissions;
 }
 
+hot static inline bool
+grants_check_first(Grants* self, uint32_t permissions)
+{
+	auto grant = grants_first(self);
+	if (unlikely(! grant))
+		return false;
+	return (grant->permissions & permissions) == permissions;
+}
+
 static inline void
 grants_read(Grants* self, uint8_t** pos)
 {

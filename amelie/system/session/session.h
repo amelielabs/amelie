@@ -22,6 +22,7 @@ struct Session
 	Dtr       dtr;
 	Profile   profile;
 	Lock*     lock;
+	User*     user;
 	Local     local;
 	Frontend* frontend;
 };

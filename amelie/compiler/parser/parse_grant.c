@@ -20,8 +20,8 @@
 void
 parse_grant(Stmt* self, bool grant)
 {
-	// GRANT  perm, ... ON name TO user
-	// REVOKE perm, ... ON name FROM user
+	// GRANT  perm, ... [ON name] TO user
+	// REVOKE perm, ... [ON name] FROM user
 	auto stmt = ast_grant_allocate();
 	self->ast = &stmt->ast;
 
@@ -41,16 +41,17 @@ parse_grant(Stmt* self, bool grant)
 			stmt_error(self, name, "unknown permission name");
 		stmt->perms |= id;
 
-		// [ON]
-		if (stmt_if(self, KON))
-			break;
-
 		// ,
-		stmt_expect(self, ',');
+		if (! stmt_if(self, ','))
+			break;
 	}
 
-	// relation
-	parse_target(self, &stmt->rel_user, &stmt->rel);
+	// [ON]
+	if (stmt_if(self, KON))
+	{
+		// relation
+		parse_target(self, &stmt->rel_user, &stmt->rel);
+	}
 
 	// TO | FROM
 	if (grant)

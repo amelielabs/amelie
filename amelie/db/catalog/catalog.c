@@ -71,6 +71,10 @@ catalog_create(Catalog* self)
 		defer(user_config_free, user_config);
 		user_config_set_name(user_config, &name);
 		user_config_set_system(user_config, true);
+		auto perms_all = PERM_CREATE | PERM_EXECUTE;
+		Str user;
+		str_set_cstr(&user, "self");
+		grants_add(&user_config->grants, &user, perms_all);
 
 		// set timestamp
 		char ts[64];
@@ -185,27 +189,27 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		int64_t perms;
 		grant_op_grant_read(op, &user, &name, &to, &grant, &perms);
 
-		auto if_exists = ddl_if_exists(flags);
-		auto rel = catalog_find(self, &user, &name, false);
-		if (! rel)
+		// user grants
+		if (str_empty(&user))
 		{
-			if (! if_exists)
-				error("relation '%.*s': not exists", str_size(&name),
-				      str_of(&name));
+			write = user_mgr_grant(&self->user_mgr, tr, &to, grant, perms, 0);
 			break;
 		}
+
+		// relations
+		auto rel = catalog_find(self, &user, &name, true);
 		switch (rel->type) {
 		case REL_TABLE:
 			write = table_mgr_grant(&self->table_mgr, tr, &user, &name, &to,
-			                        grant, perms, if_exists);
+			                        grant, perms, 0);
 			break;
 		case REL_BRANCH:
 			write = branch_mgr_grant(&self->branch_mgr, tr, &user, &name, &to,
-			                         grant, perms, if_exists);
+			                         grant, perms, 0);
 			break;
 		case REL_UDF:
 			write = udf_mgr_grant(&self->udf_mgr, tr, &user, &name, &to,
-			                      grant, perms, if_exists);
+			                      grant, perms, 0);
 			break;
 		default:
 			abort();

@@ -42,6 +42,12 @@ parse_user_create(Stmt* self, bool agent)
 	Str created_at;
 	str_set(&created_at, ts, size);
 	user_config_set_created_at(stmt->config, &created_at);
+
+	// set default grants
+	auto perms_all = PERM_CREATE | PERM_EXECUTE;
+	Str user;
+	str_set_cstr(&user, "self");
+	grants_add(&stmt->config->grants, &user, perms_all);
 }
 
 void

@@ -141,6 +141,68 @@ user_mgr_rename(UserMgr* self,
 }
 
 static void
+grant_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+grant_if_abort(Log* self, LogOp* op)
+{
+	// restore grants
+	uint8_t* pos = log_data_of(self, op);
+	auto user = user_of(op->rel);
+	auto grants = &user->config->grants;
+	grants_reset(grants);
+	grants_read(grants, &pos);
+}
+
+static LogIf grant_if =
+{
+	.commit = grant_if_commit,
+	.abort  = grant_if_abort
+};
+
+bool
+user_mgr_grant(UserMgr* self,
+               Tr*      tr,
+               Str*     name,
+               bool     grant,
+               uint32_t perms,
+               bool     if_exists)
+{
+	auto user = user_mgr_find(self, name, false);
+	if (! user)
+	{
+		if (! if_exists)
+			error("user '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return false;
+	}
+
+	// validate permissions
+	auto perms_all = PERM_CREATE | PERM_EXECUTE;
+	perms = permission_validate(NULL, name, perms, perms_all);
+
+	// update user
+	log_rel(&tr->log, &grant_if, NULL, &user->rel);
+
+	// save previous grants
+	auto grants = &user->config->grants;
+	grants_write(grants, &tr->log.data, 0);
+
+	// set new grants
+	Str to;
+	str_set(&to, "self", 4);
+	if (grant)
+		grants_add(grants, &to, perms);
+	else
+		grants_remove(grants, &to, perms);
+	return true;
+}
+
+static void
 revoke_if_commit(Log* self, LogOp* op)
 {
 	unused(self);

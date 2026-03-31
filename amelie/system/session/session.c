@@ -26,6 +26,7 @@ session_create(Frontend* frontend)
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->program  = program_allocate();
 	self->lock     = NULL;
+	self->user     = NULL;
 	self->frontend = frontend;
 	local_init(&self->local);
 	set_cache_init(&self->set_cache);
@@ -47,6 +48,7 @@ static inline void
 session_reset(Session* self)
 {
 	self->lock = NULL;
+	self->user = NULL;
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	dtr_reset(&self->dtr);
@@ -75,7 +77,7 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 	auto token = &endpoint->token.string;
 	auto token_required = opt_int_of(&endpoint->auth);
 	auto user_id = &endpoint->user.string;
-	auth(&self->frontend->auth, user_id, token, token_required);
+	self->user = auth(&self->frontend->auth, user_id, token, token_required);
 
 	// set timezone / format
 	auto local = &self->local;
@@ -88,9 +90,19 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 }
 
 hot static inline void
-session_access(Session* self, Access* access)
+session_access(Session* self, Endpoint* endpoint, Access* access)
 {
-	// check grants
+	auto user = &self->local.user;
+
+	unused(endpoint);
+	uint32_t user_perm = PERM_NONE;
+
+	// check user permissions
+	if (unlikely(! grants_check_first(&self->user->config->grants, user_perm)))
+		error("user '%.*s': permission denied",
+		      str_size(user), str_of(user));
+
+	// check permissions on relations
 	for (auto i = 0; i < access->list_count; i++)
 	{
 		auto record = access_at(access, i);
@@ -102,14 +114,16 @@ session_access(Session* self, Access* access)
 			continue;
 
 		// owner
-		if (str_compare_case(rel->user, &self->local.user))
+		if (str_compare_case(rel->user, user))
 			continue;
 
 		// check permissions
-		if (! grants_check(rel->grants, &self->local.user, record->perm))
-			error("relation '%.*s.%.*s': permission denied",
-			      str_size(rel->user), str_of(rel->user),
-			      str_size(rel->name), str_of(rel->name));
+		if (likely(grants_check(rel->grants, user, record->perm)))
+			continue;
+
+		error("relation '%.*s.%.*s': permission denied",
+		      str_size(rel->user), str_of(rel->user),
+		      str_size(rel->name), str_of(rel->name));
 	}
 }
 
@@ -190,6 +204,7 @@ session_execute_utility(Session* self, Output* output)
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// switch session lock to use program utility lock
+	self->user = NULL;
 	if (program->lock_catalog != LOCK_SHARED)
 	{
 		unlock(self->lock);
@@ -333,7 +348,7 @@ session_endpoint(Session*  self,
 	}
 
 	// validate permissions
-	session_access(self, &program->access);
+	session_access(self, endpoint, &program->access);
 
 	// execute utility, DDL, DML or Query
 	if (program->utility)

@@ -15,11 +15,12 @@ typedef struct UserConfig UserConfig;
 
 struct UserConfig
 {
-	Str  name;
-	Str  created_at;
-	Str  revoked_at;
-	bool agent;
-	bool system;
+	Str    name;
+	Str    created_at;
+	Str    revoked_at;
+	bool   agent;
+	bool   system;
+	Grants grants;
 };
 
 static inline UserConfig*
@@ -29,9 +30,10 @@ user_config_allocate()
 	self = am_malloc(sizeof(UserConfig));
 	self->agent  = false;
 	self->system = false;
+	str_init(&self->name);
 	str_init(&self->created_at);
 	str_init(&self->revoked_at);
-	str_init(&self->name);
+	grants_init(&self->grants);
 	return self;
 }
 
@@ -41,6 +43,7 @@ user_config_free(UserConfig* self)
 	str_free(&self->name);
 	str_free(&self->created_at);
 	str_free(&self->revoked_at);
+	grants_free(&self->grants);
 	am_free(self);
 }
 
@@ -86,6 +89,7 @@ user_config_copy(UserConfig* self)
 	user_config_set_revoked_at(copy, &self->revoked_at);
 	user_config_set_agent(copy, self->agent);
 	user_config_set_system(copy, self->system);
+	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
@@ -94,15 +98,20 @@ user_config_read(uint8_t** pos)
 {
 	auto self = user_config_allocate();
 	errdefer(user_config_free, self);
+	uint8_t* pos_grants = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "name",       &self->name       },
 		{ DECODE_STRING, "created_at", &self->created_at },
 		{ DECODE_STRING, "revoked_at", &self->revoked_at },
 		{ DECODE_BOOL,   "agent",      &self->agent      },
+		{ DECODE_ARRAY,  "grants",     &pos_grants       },
 		{ 0,              NULL,         NULL             },
 	};
 	decode_obj(obj, "user", pos);
+
+	// grants
+	grants_read(&self->grants, &pos_grants);
 	return self;
 }
 
@@ -129,6 +138,10 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 	// agent
 	encode_raw(buf, "agent", 5);
 	encode_bool(buf, self->agent);
+
+	// grants
+	encode_raw(buf, "grants", 6);
+	grants_write(&self->grants, buf, 0);
 
 	encode_obj_end(buf);
 }
