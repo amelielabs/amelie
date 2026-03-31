@@ -88,6 +88,32 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 }
 
 hot static inline void
+session_access(Session* self, Access* access)
+{
+	// check grants
+	for (auto i = 0; i < access->list_count; i++)
+	{
+		auto record = access_at(access, i);
+		if (record->perm == PERM_NONE)
+			continue;
+
+		auto rel = record->rel;
+		if (! rel->grants)
+			continue;
+
+		// owner
+		if (str_compare_case(rel->user, &self->local.user))
+			continue;
+
+		// check permissions
+		if (! grants_check(rel->grants, &self->local.user, record->perm))
+			error("relation '%.*s.%.*s': permission denied",
+			      str_size(rel->user), str_of(rel->user),
+			      str_size(rel->name), str_of(rel->name));
+	}
+}
+
+hot static inline void
 session_execute_distributed(Session* self, Output* output)
 {
 	auto compiler = &self->compiler;
@@ -99,13 +125,16 @@ session_execute_distributed(Session* self, Output* output)
 	if (!program->ro && opt_int_of(&state()->read_only))
 		error("system is in read-only mode");
 
+	// check grants
+	session_access(self, &program->access);
+
+	// take transaction locks
+	lock_access(&program->access);
+
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// prepare distributed transaction
 	dtr_prepare(dtr, program);
-
-	// take transaction locks
-	lock_access(&program->access);
 
 	// [PROFILE]
 	if (compiler->program_profile)

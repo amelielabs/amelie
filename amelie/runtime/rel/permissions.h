@@ -50,13 +50,13 @@ permission_of(Str* name, uint32_t* id)
 	if (str_is_case(name, "select", 6))
 		*id = PERM_SELECT;
 	else
-	if (str_is_case(name, "insert", 5))
+	if (str_is_case(name, "insert", 6))
 		*id = PERM_INSERT;
 	else
-	if (str_is_case(name, "update", 5))
+	if (str_is_case(name, "update", 6))
 		*id = PERM_UPDATE;
 	else
-	if (str_is_case(name, "delete", 5))
+	if (str_is_case(name, "delete", 6))
 		*id = PERM_DELETE;
 	else
 	if (str_is_case(name, "truncate", 8))
