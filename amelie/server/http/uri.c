@@ -158,7 +158,7 @@ uri_parse_path_next(Uri* self, Str* value)
 }
 
 static inline void
-uri_parse_path(Uri* self)
+uri_parse_path(Uri* self, Opt* to)
 {
 	if (*self->pos == '/')
 		self->pos++;
@@ -166,18 +166,18 @@ uri_parse_path(Uri* self)
 	if (!*self->pos || *self->pos == '?')
 		return;
 
-	// relation
+	// name
 	Str name;
 	uri_parse_path_next(self, &name);
 	if (str_empty(&name))
 		uri_error();
-	opt_string_set(&self->endpoint->relation, &name);
+	opt_string_set(to, &name);
 
-	// relation?
+	// name?
 	if (!*self->pos || *self->pos == '?')
 		return;
 
-	// relation/
+	// name/
 	self->pos++;
 }
 
@@ -338,15 +338,22 @@ uri_parse(Endpoint* endpoint, Str* spec)
 	// [proto://]
 	uri_parse_protocol(&self);
 
-	// [user[:password]@]
-	uri_parse_user(&self);
+	if (endpoint->proto.integer == PROTO_AMELIE)
+	{
+		// [/user]
+		uri_parse_path(&self, &endpoint->user);
+	} else
+	{
+		// [user@]
+		uri_parse_user(&self);
 
-	// hostname[:port]
-	if (endpoint->proto.integer != PROTO_AMELIE)
-		uri_parse_host(&self);
+		// hostname[:port]
+		if (endpoint->proto.integer != PROTO_AMELIE)
+			uri_parse_host(&self);
 
-	// [/relation]
-	uri_parse_path(&self);
+		// [/relation]
+		uri_parse_path(&self, &endpoint->relation);
+	}
 
 	// ?name=value[& ...]
 	uri_parse_args(&self);
@@ -371,7 +378,7 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 	if (likely(str_is_prefix(spec, "/v1/db", 6)))
 	{
 		self.pos += 6;
-		uri_parse_path(&self);
+		uri_parse_path(&self, &endpoint->relation);
 	} else
 	if (str_is(spec, "/v1/backup", 10))
 	{
