@@ -127,6 +127,12 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
+	if (flags_has(flags, FMINIMAL))
+	{
+		encode_obj_end(buf);
+		return;
+	}
+
 	// created_at
 	encode_raw(buf, "created_at", 10);
 	encode_string(buf, &self->created_at);

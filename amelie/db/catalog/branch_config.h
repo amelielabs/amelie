@@ -136,6 +136,12 @@ branch_config_write(BranchConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "table", 5);
 	encode_string(buf, &self->table);
 
+	if (flags_has(flags, FMINIMAL))
+	{
+		encode_obj_end(buf);
+		return;
+	}
+
 	// snapshot
 	encode_raw(buf, "snapshot", 8);
 	snapshot_write(&self->snapshot, buf, flags);
