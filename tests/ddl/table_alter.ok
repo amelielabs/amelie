@@ -827,7 +827,7 @@ drop table test;
 # test: rename with udf dep
 create table test (id int primary key, data int);
 create function dep() begin insert into test values (1, 2); end;
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "dep",
@@ -845,7 +845,7 @@ drop table test2;
 # test: rename column with udf dep
 create table test (id int primary key, data int);
 create function dep() begin insert into test values (1, 2); end;
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "dep",

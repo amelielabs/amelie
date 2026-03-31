@@ -20,7 +20,7 @@
 void
 parse_show(Stmt* self)
 {
-	// SHOW <section> [name] [ON name] [extended]
+	// SHOW <section> [name] [ON name] [ALL]
 	auto stmt = ast_show_allocate();
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;
@@ -47,8 +47,8 @@ parse_show(Stmt* self)
 		stmt->on = name->string;
 	}
 
-	// [EXTENDED]
-	stmt->extended = stmt_if(self, KEXTENDED) != NULL;
+	// [ALL]
+	stmt->all = stmt_if(self, KALL) != NULL;
 
 	// set returning column
 	auto column = column_allocate();

@@ -28,7 +28,7 @@ show storage main;
   "compression": "zstd",
   "compression_level": 0
 }]
-show storage main extended;
+show storage main all;
 [{
   "name": "main",
   "path": "",
@@ -162,7 +162,7 @@ show functions;
   "user": "main",
   "name": "test_fn"
 }]
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "test_fn",
@@ -177,7 +177,7 @@ show functions extended;
   }],
   "returning": []
 }]
-# test: show function;
+# test: show function
 show function;
 {"msg": "show() ⟵ name argument is missing for 'function'"}
 show function test_fn;
@@ -185,7 +185,7 @@ show function test_fn;
   "user": "main",
   "name": "test_fn"
 }]
-show function test_fn extended;
+show function test_fn all;
 [{
   "user": "main",
   "name": "test_fn",

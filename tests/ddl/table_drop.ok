@@ -40,7 +40,7 @@ drop table test;
 # test: drop table with udf dep
 create table test (id int primary key);
 create function dep() begin insert into test values (123); end;
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "dep",

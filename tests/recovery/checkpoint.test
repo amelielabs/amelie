@@ -77,7 +77,7 @@ begin
 	end;
 	return rev;
 end;
-show functions extended;
+show functions all;
 select [1,2,3]::reverse;
 
 # test: restart/recover (checkpoint + wal)
@@ -89,7 +89,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('state').catalog;
 select show('state').catalog_pending;
-show functions extended;
+show functions all;
 select [1,2,3]::reverse;
 
 # test: checkpoint
@@ -107,7 +107,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('state').catalog;
 select show('state').catalog_pending;
-show functions extended;
+show functions all;
 select [1,2,3]::reverse;
 
 # test: create or replace function
@@ -119,7 +119,7 @@ begin
 	end;
 	return rev;
 end;
-show functions extended;
+show functions all;
 select [1,2,3]::reverse;
 
 # test: restart/recover (checkpoint + wal)
@@ -131,7 +131,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('state').catalog;
 select show('state').catalog_pending;
-show functions extended;
+show functions all;
 select [1,2,3]::reverse;
 
 # test: checkpoint
@@ -149,7 +149,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('state').catalog;
 select show('state').catalog_pending;
-show functions extended;
+show functions all;
 select [1,2,3]::reverse;
 
 # test: create user

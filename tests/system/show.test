@@ -25,7 +25,7 @@ show storages;
 # test: show storage
 show storage;
 show storage main;
-show storage main extended;
+show storage main all;
 
 # test: show tables
 create table test (id int primary key);
@@ -64,12 +64,12 @@ select test_fn(123);
 select test_fn(123).a;
 select 123::test_fn().a;
 show functions;
-show functions extended;
+show functions all;
 
-# test: show function;
+# test: show function
 show function;
 show function test_fn;
-show function test_fn extended;
+show function test_fn all;
 
 # test: show wal
 show wal;

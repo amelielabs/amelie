@@ -91,7 +91,7 @@ begin
 	end;
 	return rev;
 end;
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse",
@@ -119,7 +119,7 @@ select show('state').catalog;
 [1]
 select show('state').catalog_pending;
 [3]
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse",
@@ -155,7 +155,7 @@ select show('state').catalog;
 [3]
 select show('state').catalog_pending;
 [3]
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse",
@@ -181,7 +181,7 @@ begin
 	end;
 	return rev;
 end;
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse",
@@ -209,7 +209,7 @@ select show('state').catalog;
 [3]
 select show('state').catalog_pending;
 [4]
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse",
@@ -245,7 +245,7 @@ select show('state').catalog;
 [4]
 select show('state').catalog_pending;
 [4]
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse",

@@ -20,7 +20,7 @@ create function test (x int) 1;
 
 # test: create function (empty, no return)
 create function test () begin end;
-show functions extended;
+show functions all;
 
 explain select test();
 select test();
@@ -162,7 +162,7 @@ drop function test;
 create function test () return table(a int, b int, c int)
 begin
 end;
-show functions extended;
+show functions all;
 drop function test;
 
 create function test () return table(a int, a int)
@@ -258,7 +258,7 @@ begin
 	return rev;
 end;
 
-show functions extended;
+show functions all;
 
 explain select [1,2,3]::reverse;
 select [1,2,3]::reverse;
@@ -273,7 +273,7 @@ create or replace function test() return int
 begin
 	return 123;
 end;
-show functions extended;
+show functions all;
 select test();
 
 # test: create or replace function
@@ -281,7 +281,7 @@ create or replace function test() return int
 begin
 	return 321;
 end;
-show functions extended;
+show functions all;
 select test();
 
 # test: create or replace function (return type mismatch)

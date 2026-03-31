@@ -21,7 +21,7 @@ struct AstShow
 	Str       section;
 	Str       name;
 	Str       on;
-	bool      extended;
+	bool      all;
 };
 
 static inline AstShow*

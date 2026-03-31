@@ -615,7 +615,7 @@ begin
 end;
 select show('state').lsn;
 [23]
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse",
@@ -640,7 +640,7 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 [23]
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse",
@@ -679,7 +679,7 @@ begin
 end;
 select show('state').lsn;
 [24]
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse",
@@ -704,7 +704,7 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 [24]
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse",
@@ -740,7 +740,7 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 [25]
-show functions extended;
+show functions all;
 [{
   "user": "main",
   "name": "reverse2",
@@ -761,7 +761,7 @@ select [1,2,3]::reverse2;
 drop function reverse2;
 select show('state').lsn;
 [26]
-show functions extended;
+show functions all;
 []
 # test: restart
 disconnect S0;
@@ -769,7 +769,7 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
-show functions extended;
+show functions all;
 []
 select show('state').lsn;
 [26]
