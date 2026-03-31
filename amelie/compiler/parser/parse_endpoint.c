@@ -383,7 +383,7 @@ import_insert(Parser* self, ParseEndpoint* pe)
 	// add table/branch to the access list
 	if (pe->target_branch)
 	{
-		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_NONE);
+		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_BRANCH);
 		access_add(&self->program->access, &pe->target_branch->rel, LOCK_NONE, PERM_INSERT);
 	} else {
 		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_INSERT);

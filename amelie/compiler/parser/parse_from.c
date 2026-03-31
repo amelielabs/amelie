@@ -193,7 +193,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		str_set_str(&target->name, &table->config->name);
 		// adding branch relation to the access list for dependency
 		// tracking and permissions check
-		access_add(&self->parser->program->access, &table->rel, lock, PERM_NONE);
+		access_add(&self->parser->program->access, &table->rel, lock, PERM_BRANCH);
 		access_add(&self->parser->program->access, &branch->rel, LOCK_NONE, perms);
 		return target;
 	}

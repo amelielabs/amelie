@@ -132,7 +132,8 @@ table_mgr_grant(TableMgr* self,
 	// validate permissions
 	auto perms_all =
 		 PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-		 PERM_DELETE | PERM_TRUNCATE;
+		 PERM_DELETE | PERM_TRUNCATE |
+		 PERM_BRANCH;
 	perms = permission_validate(user, name, perms, perms_all);
 
 	// update table

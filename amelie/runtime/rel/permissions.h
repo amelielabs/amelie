@@ -19,7 +19,8 @@ enum
 	PERM_UPDATE   = 1u << 2,
 	PERM_DELETE   = 1u << 3,
 	PERM_TRUNCATE = 1u << 4,
-	PERM_EXECUTE  = 1u << 5,
+	PERM_BRANCH   = 1u << 5,
+	PERM_EXECUTE  = 1u << 6,
 	PERM_ALL      = 0xFFFFFFFFu
 };
 
@@ -33,6 +34,7 @@ permission_name_of(uint32_t id)
 	case PERM_UPDATE:   return "update";
 	case PERM_DELETE:   return "delete";
 	case PERM_TRUNCATE: return "truncate";
+	case PERM_BRANCH:   return "branch";
 	case PERM_EXECUTE:  return "execute";
 	case PERM_ALL:      return "all";
 	}
@@ -61,6 +63,9 @@ permission_of(Str* name, uint32_t* id)
 	else
 	if (str_is_case(name, "truncate", 8))
 		*id = PERM_TRUNCATE;
+	else
+	if (str_is_case(name, "branch", 6))
+		*id = PERM_BRANCH;
 	else
 	if (str_is_case(name, "execute", 7))
 		*id = PERM_EXECUTE;

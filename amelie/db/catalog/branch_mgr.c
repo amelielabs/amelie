@@ -218,7 +218,7 @@ branch_mgr_grant(BranchMgr* self,
 	// validate permissions
 	auto perms_all =
 		 PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-		 PERM_DELETE;
+		 PERM_DELETE | PERM_BRANCH;
 	perms = permission_validate(user, name, perms, perms_all);
 
 	// update branch
