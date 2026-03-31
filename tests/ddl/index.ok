@@ -301,7 +301,8 @@ show functions all;
   "text": "begin insert into test values (1,2,3); end",
   "type": 0,
   "args": [],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 drop index i on test;
 {"msg": "function 'dep' depends on relation 'main.test"}

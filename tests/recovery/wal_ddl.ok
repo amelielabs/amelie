@@ -628,7 +628,8 @@ show functions all;
     "dropped": false,
     "constraints": []
   }],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 select [1,2,3]::reverse;
 [[3, 2, 1]]
@@ -653,7 +654,8 @@ show functions all;
     "dropped": false,
     "constraints": []
   }],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 select [1,2,3]::reverse;
 [[3, 2, 1]]
@@ -692,7 +694,8 @@ show functions all;
     "dropped": false,
     "constraints": []
   }],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 select [1,2,3]::reverse;
 [[-3, -2, -1]]
@@ -717,7 +720,8 @@ show functions all;
     "dropped": false,
     "constraints": []
   }],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 select [1,2,3]::reverse;
 [[-3, -2, -1]]
@@ -753,7 +757,8 @@ show functions all;
     "dropped": false,
     "constraints": []
   }],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 select [1,2,3]::reverse2;
 [[-3, -2, -1]]

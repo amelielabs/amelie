@@ -21,6 +21,7 @@ struct UdfConfig
 	Columns args;
 	int64_t type;
 	Columns returning;
+	Grants  grants;
 };
 
 static inline UdfConfig*
@@ -34,6 +35,7 @@ udf_config_allocate(void)
 	str_init(&self->text);
 	columns_init(&self->args);
 	columns_init(&self->returning);
+	grants_init(&self->grants);
 	return self;
 }
 
@@ -45,6 +47,7 @@ udf_config_free(UdfConfig* self)
 	str_free(&self->text);
 	columns_free(&self->args);
 	columns_free(&self->returning);
+	grants_free(&self->grants);
 	am_free(self);
 }
 
@@ -84,6 +87,7 @@ udf_config_copy(UdfConfig* self)
 	udf_config_set_type(copy, self->type);
 	columns_copy(&copy->args, &self->args);
 	columns_copy(&copy->returning, &self->returning);
+	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
@@ -92,21 +96,26 @@ udf_config_read(uint8_t** pos)
 {
 	auto self = udf_config_allocate();
 	errdefer(udf_config_free, self);
-	uint8_t* args = NULL;
-	uint8_t* returning = NULL;
+	uint8_t* pos_args      = NULL;
+	uint8_t* pos_returning = NULL;
+	uint8_t* pos_grants    = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "user",      &self->user },
-		{ DECODE_STRING, "name",      &self->name },
-		{ DECODE_STRING, "text",      &self->text },
-		{ DECODE_ARRAY,  "args",      &args       },
-		{ DECODE_INT,    "type",      &self->type },
-		{ DECODE_ARRAY,  "returning", &returning  },
-		{ 0,              NULL,        NULL       },
+		{ DECODE_STRING, "user",      &self->user    },
+		{ DECODE_STRING, "name",      &self->name    },
+		{ DECODE_STRING, "text",      &self->text    },
+		{ DECODE_ARRAY,  "args",      &pos_args      },
+		{ DECODE_INT,    "type",      &self->type    },
+		{ DECODE_ARRAY,  "returning", &pos_returning },
+		{ DECODE_ARRAY,  "grants",    &pos_grants    },
+		{ 0,              NULL,        NULL          },
 	};
 	decode_obj(obj, "udf", pos);
-	columns_read(&self->args, &args);
-	columns_read(&self->returning, &returning);
+	columns_read(&self->args, &pos_args);
+	columns_read(&self->returning, &pos_returning);
+
+	// grants
+	grants_read(&self->grants, &pos_grants);
 	return self;
 }
 
@@ -142,9 +151,13 @@ udf_config_write(UdfConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "args", 4);
 	columns_write(&self->args, buf, flags);
 
-	// args
+	// returning
 	encode_raw(buf, "returning", 9);
 	columns_write(&self->returning, buf, flags);
+
+	// grants
+	encode_raw(buf, "grants", 6);
+	grants_write(&self->grants, buf, 0);
 
 	encode_obj_end(buf);
 }

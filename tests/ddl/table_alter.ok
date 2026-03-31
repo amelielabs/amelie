@@ -834,7 +834,8 @@ show functions all;
   "text": "begin insert into test values (1, 2); end",
   "type": 0,
   "args": [],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 alter table test rename to test2;
 {"msg": "function 'dep' depends on relation 'main.test"}
@@ -852,7 +853,8 @@ show functions all;
   "text": "begin insert into test values (1, 2); end",
   "type": 0,
   "args": [],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 alter table test rename column data to data2;
 {"msg": "function 'dep' depends on relation 'main.test"}

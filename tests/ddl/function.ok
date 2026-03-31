@@ -36,7 +36,8 @@ show functions all;
   "text": "begin end",
   "type": 0,
   "args": [],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 explain select test();
 [{
@@ -315,7 +316,8 @@ show functions all;
     "type_size": 4,
     "dropped": false,
     "constraints": []
-  }]
+  }],
+  "grants": []
 }]
 drop function test;
 create function test () return table(a int, a int)
@@ -589,7 +591,8 @@ show functions all;
     "dropped": false,
     "constraints": []
   }],
-  "returning": []
+  "returning": [],
+  "grants": []
 }, {
   "user": "main",
   "name": "reverse",
@@ -602,7 +605,8 @@ show functions all;
     "dropped": false,
     "constraints": []
   }],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 explain select [1,2,3]::reverse;
 [{
@@ -676,7 +680,8 @@ show functions all;
   "text": "begin\n\treturn 123;\nend",
   "type": 2,
   "args": [],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 select test();
 [123]
@@ -692,7 +697,8 @@ show functions all;
   "text": "begin\n\treturn 321;\nend",
   "type": 2,
   "args": [],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 select test();
 [321]

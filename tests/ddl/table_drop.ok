@@ -47,7 +47,8 @@ show functions all;
   "text": "begin insert into test values (123); end",
   "type": 0,
   "args": [],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 drop table test;
 {"msg": "function 'dep' depends on relation 'main.test"}

@@ -175,7 +175,8 @@ show functions all;
     "dropped": false,
     "constraints": []
   }],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 # test: show function
 show function;
@@ -198,7 +199,8 @@ show function test_fn all;
     "dropped": false,
     "constraints": []
   }],
-  "returning": []
+  "returning": [],
+  "grants": []
 }]
 # test: show wal
 show wal;
@@ -209,7 +211,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 703,
+  "writes_bytes": 712,
   "ops": 3
 }]
 # test: show replicas

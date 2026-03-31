@@ -203,6 +203,10 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 			write = branch_mgr_grant(&self->branch_mgr, tr, &user, &name, &to,
 			                         grant, perms, if_exists);
 			break;
+		case REL_UDF:
+			write = udf_mgr_grant(&self->udf_mgr, tr, &user, &name, &to,
+			                      grant, perms, if_exists);
+			break;
 		default:
 			abort();
 			break;
