@@ -33,6 +33,7 @@ parse_user_create(Stmt* self, bool agent)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	user_config_set_name(stmt->config, &name->string);
+	user_config_set_parent(stmt->config, self->parser->user);
 	user_config_set_agent(stmt->config, agent);
 
 	// set timestamp

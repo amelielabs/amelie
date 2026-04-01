@@ -73,9 +73,10 @@ ccreate_token(Vm* self, Op* op)
 	// find user
 	auto user = user_mgr_find(&share()->db->catalog.user_mgr, &name, true);
 
-	// allow to create token for self or child user
+	// allow to create token for self or child users
 	auto user_local = &self->local->user;
-	if (! str_compare(&user->config->name, user_local))
+	if (!str_compare(&user->config->name, user_local) &&
+	    !str_compare(&user->config->parent, user_local))
 		error("user '%.*s': permission denied",
 		      str_size(&user->config->name),
 		      str_of(&user->config->name));
