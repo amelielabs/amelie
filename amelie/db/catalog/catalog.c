@@ -178,6 +178,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	switch (cmd) {
 	case DDL_GRANT:
 	{
+		// PERM_GRANT
+		check_user(tr, PERM_GRANT);
+
 		Str     user;
 		Str     name;
 		Str     to;
@@ -188,6 +191,10 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		// user grants
 		if (str_empty(&user))
 		{
+			// PERM_SYSTEM for system wide grants
+			if (((perms & PERM_SYSTEM) > 0) ||
+			    ((perms & PERM_CREATE_USER) > 0))
+				check_user(tr, PERM_SYSTEM);
 			write = user_mgr_grant(&self->user_mgr, tr, &to, grant, perms, 0);
 			break;
 		}
@@ -215,9 +222,11 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_USER_CREATE:
 	{
+		// PERM_CREATE_USER
+		check_user(tr, PERM_CREATE_USER);
+
 		auto config = user_op_create_read(op);
 		defer(user_config_free, config);
-
 		auto if_not_exists = ddl_if_not_exists(flags);
 		write = user_mgr_create(&self->user_mgr, tr, config, if_not_exists);
 		break;
@@ -264,37 +273,45 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_STORAGE_CREATE:
 	{
+		// PERM_SYSTEM
+		check_user(tr, PERM_SYSTEM);
+
 		auto config = storage_op_create_read(op);
 		defer(storage_config_free, config);
-
 		auto if_not_exists = ddl_if_not_exists(flags);
 		write = storage_mgr_create(&self->storage_mgr, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_STORAGE_DROP:
 	{
+		// PERM_SYSTEM
+		check_user(tr, PERM_SYSTEM);
+
 		Str  name;
 		storage_op_drop_read(op, &name);
-
 		auto if_exists = ddl_if_exists(flags);
 		write = storage_mgr_drop(&self->storage_mgr, tr, &name, if_exists);
 		break;
 	}
 	case DDL_STORAGE_RENAME:
 	{
+		// PERM_SYSTEM
+		check_user(tr, PERM_SYSTEM);
+
 		Str name;
 		Str name_new;
 		storage_op_rename_read(op, &name, &name_new);
-
 		auto if_exists = ddl_if_exists(flags);
 		write = storage_mgr_rename(&self->storage_mgr, tr, &name, &name_new, if_exists);
 		break;
 	}
 	case DDL_TABLE_CREATE:
 	{
+		// PERM_CREATE_TABLE
+		check_user(tr, PERM_CREATE_TABLE);
+
 		auto config = table_op_create_read(op);
 		defer(table_config_free, config);
-
 		auto if_not_exists = ddl_if_not_exists(flags);
 		write = table_mgr_create(&self->table_mgr, tr, config, if_not_exists);
 		break;
@@ -525,9 +542,11 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_BRANCH_CREATE:
 	{
+		// PERM_CREATE_BRANCH
+		check_user(tr, PERM_CREATE_BRANCH);
+
 		auto config = branch_op_create_read(op);
 		defer(branch_config_free, config);
-
 		auto if_not_exists = ddl_if_not_exists(flags);
 		write = branch_mgr_create(&self->branch_mgr, tr, config, if_not_exists);
 		break;
@@ -562,6 +581,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_UDF_CREATE:
 	{
+		// PERM_CREATE_FUNCTION
+		check_user(tr, PERM_CREATE_FUNCTION);
+
 		auto config = udf_op_create_read(op);
 		defer(udf_config_free, config);
 
@@ -589,7 +611,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		if (udf)
 		{
 			// validate types
-			udf_mgr_replace_validate(&self->udf_mgr, config, udf);
+			udf_mgr_replace_validate(&self->udf_mgr, tr, config, udf);
 
 			// create and compile new udf
 			auto replace = udf_allocate(config, self->udf_mgr.free, self->udf_mgr.free_arg);

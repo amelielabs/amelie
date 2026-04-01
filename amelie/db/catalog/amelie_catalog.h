@@ -25,6 +25,7 @@
 #include "catalog/user.h"
 #include "catalog/user_op.h"
 #include "catalog/user_mgr.h"
+#include "catalog/check.h"
 
 // table
 #include "catalog/table_config.h"

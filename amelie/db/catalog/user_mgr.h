@@ -28,15 +28,3 @@ bool  user_mgr_grant(UserMgr*, Tr*, Str*, bool, uint32_t, bool);
 void  user_mgr_dump(UserMgr*, Buf*);
 Buf*  user_mgr_list(UserMgr*, Str*, bool, int);
 User* user_mgr_find(UserMgr*, Str*, bool);
-
-static inline void
-user_mgr_access(UserMgr* self, Str* name, uint32_t perms)
-{
-	auto user = user_mgr_find(self, name, true);
-	if (user->config->superuser)
-		return;
-	if (! grants_check_first(&user->config->grants, perms))
-		error("user '%.*s': permission denied",
-		      str_size(&user->config->name),
-		      str_of(&user->config->name));
-}

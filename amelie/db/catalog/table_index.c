@@ -57,6 +57,9 @@ static LogIf add_if =
 void
 table_index_add(Table* self, Tr* tr, IndexConfig* config)
 {
+	// only owner or superuser
+	check_ownership(tr, &self->rel);
+
 	table_config_index_add(self->config, config);
 
 	// update table
@@ -95,6 +98,9 @@ table_index_drop(Table* self,
                  Str*   name,
                  bool   if_exists)
 {
+	// only owner or superuser
+	check_ownership(tr, &self->rel);
+
 	auto index = table_index_find(self, name, false);
 	if (! index)
 	{
@@ -143,6 +149,9 @@ table_index_rename(Table* self,
                    Str*   name_new,
                    bool   if_exists)
 {
+	// only owner or superuser
+	check_ownership(tr, &self->rel);
+
 	auto index = table_index_find(self, name, false);
 	if (! index)
 	{

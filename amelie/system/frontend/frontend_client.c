@@ -144,6 +144,7 @@ frontend_client(Frontend* self, Client* client)
 		if (! opt_string_empty(&endpoint.service))
 		{
 			// todo: authenticate
+			// todo: check BACKUP/REPLICA user permissions
 			auto service = &endpoint.service.string;
 			if (str_is(service, "backup", 6))
 				backup(share()->db, client);

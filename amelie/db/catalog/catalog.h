@@ -24,13 +24,13 @@ struct CatalogIf
 
 struct Catalog
 {
-	UserMgr     user_mgr;
-	StorageMgr  storage_mgr;
-	TableMgr    table_mgr;
-	BranchMgr   branch_mgr;
-	UdfMgr      udf_mgr;
-	CatalogIf*  iface;
-	void*       iface_arg;
+	UserMgr    user_mgr;
+	StorageMgr storage_mgr;
+	TableMgr   table_mgr;
+	BranchMgr  branch_mgr;
+	UdfMgr     udf_mgr;
+	CatalogIf* iface;
+	void*      iface_arg;
 };
 
 void   catalog_init(Catalog*, CatalogIf*, void*, PartMgrIf*, void*);

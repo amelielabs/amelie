@@ -39,7 +39,9 @@ user_allocate(UserConfig* config)
 	// set relation
 	auto rel = &self->rel;
 	rel_init(rel, REL_USER);
+	rel_set_user(rel, &self->config->parent);
 	rel_set_name(rel, &self->config->name);
+	rel_set_grants(rel, &self->config->grants);
 	rel_set_free_function(rel, (RelFree)user_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
@@ -64,4 +66,11 @@ static inline User*
 user_of(Rel* self)
 {
 	return (User*)self;
+}
+
+static inline void
+user_permission_error(User* self)
+{
+	error("user '%.*s': permission denied", str_size(&self->config->name),
+	      str_of(&self->config->name));
 }

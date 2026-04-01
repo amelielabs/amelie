@@ -84,6 +84,10 @@ table_mgr_drop(TableMgr* self, Tr* tr, Str* user, Str* name,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
+
 	table_mgr_drop_of(self, tr, table);
 	return true;
 }
@@ -125,6 +129,9 @@ table_mgr_truncate(TableMgr* self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
 
 	// update table
 	log_rel(&tr->log, &truncate_if, NULL, &table->rel);

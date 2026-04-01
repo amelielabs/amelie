@@ -72,12 +72,14 @@ select show('user', 'test').name;
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
 drop user test;
+{"msg": "user 'test': permission denied"}
 select show('user', 'test').name;
-Forbidden
+["test"]
 select 1;
-Forbidden
+[1]
 disconnect S1;
 switch S0;
+drop user test;
 # test: drop user cascade (with relations)
 create user test;
 connect E0 S1 test@127.0.0.1:3485;
@@ -85,13 +87,13 @@ switch S1;
 create table a(id int primary key);
 create table b(id int primary key);
 create function fn() begin select * from a; end;
+disconnect S1;
+switch S0;
 drop user test;
 {"msg": "user 'test' still has relations"}
 drop user test cascade;
 select 1;
-Forbidden
-disconnect S1;
-switch S0;
+[1]
 show tables;
 []
 show functions;
@@ -145,13 +147,13 @@ begin
 end;
 select fn();
 [3]
-alter user test rename to test2;
-{"msg": "function 'fn' depends on user 'test"}
 drop function fn;
 # test: alter user rename cascade
+switch S0;
 alter user test rename to test2;
 select 1;
-Forbidden
+[1]
+switch S1;
 disconnect S1;
 connect E0 S1 test2@127.0.0.1:3485;
 switch S1;

@@ -16,11 +16,12 @@ typedef struct Tr Tr;
 struct Tr
 {
 	uint64_t id;
+	Log      log;
+	Limit*   limit;
+	Rel*     user;
 	bool     active;
 	bool     aborted;
 	bool     allocated;
-	Log      log;
-	Limit*   limit;
 	void*    arg;
 	List     link;
 };
@@ -29,10 +30,11 @@ static inline void
 tr_init(Tr* self)
 {
 	self->id        = 0;
+	self->limit     = NULL;
+	self->user      = NULL;
 	self->active    = false;
 	self->aborted   = false;
 	self->allocated = false;
-	self->limit     = NULL;
 	self->arg       = NULL;
 	log_init(&self->log);
 	list_init(&self->link);
@@ -42,9 +44,10 @@ static inline void
 tr_reset(Tr* self)
 {
 	self->id      = 0;
+	self->limit   = NULL;
+	self->user    = NULL;
 	self->active  = false;
 	self->aborted = false;
-	self->limit   = NULL;
 	self->arg     = NULL;
 	log_reset(&self->log);
 	list_init(&self->link);
@@ -77,6 +80,12 @@ static inline void
 tr_set_limit(Tr* self, Limit* limit)
 {
 	self->limit = limit;
+}
+
+static inline void
+tr_set_user(Tr* self, Rel* user)
+{
+	self->user = user;
 }
 
 static inline bool

@@ -29,6 +29,9 @@ recover_init(Recover* self, Db* db, bool write_wal)
 	self->size      = 0;
 	self->write_wal = write_wal;
 	self->db        = db;
+	Str main;
+	str_set(&main, "main", 4);
+	self->main      = user_mgr_find(&db->catalog.user_mgr, &main, true);
 	tr_init(&self->tr);
 	write_init(&self->write);
 	write_list_init(&self->write_list);
@@ -202,6 +205,7 @@ recover_next(Recover* self, Record* record)
 	(
 		// begin
 		tr_begin(tr);
+		tr_set_user(tr, &self->main->rel);
 
 		// replay
 		recover_next_record(self, record);

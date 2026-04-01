@@ -79,6 +79,15 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 	auto user_id = &endpoint->user.string;
 	self->user = auth(&self->frontend->auth, user_id, token, token_required);
 
+	/*
+	// PERM_CONNECT permission
+	if (token_required)
+	{
+		if (unlikely(! grants_check_first(&self->user->config->grants, PERM_CONNECT)))
+			user_permission_error(self->user);
+	}
+	*/
+
 	// set timezone / format
 	auto local = &self->local;
 	local->timezone = output->timezone;
@@ -90,19 +99,11 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 }
 
 hot static inline void
-session_access(Session* self, Endpoint* endpoint, Access* access, uint32_t perms)
+session_access(Session* self, Access* access)
 {
-	// main user
-	if (self->user->config->superuser)
+	auto user = self->user;
+	if (user->config->superuser)
 		return;
-
-	auto user = &self->local.user;
-	unused(endpoint);
-
-	// check user permissions
-	if (unlikely(! grants_check_first(&self->user->config->grants, perms)))
-		error("user '%.*s': permission denied",
-		      str_size(user), str_of(user));
 
 	// check permissions on relations
 	for (auto i = 0; i < access->list_count; i++)
@@ -110,7 +111,7 @@ session_access(Session* self, Endpoint* endpoint, Access* access, uint32_t perms
 		auto record = access_at(access, i);
 		if (record->perm == PERM_NONE)
 			continue;
-		rel_access(record->rel, user, record->perm);
+		check_permission_for(user, record->rel, record->perm);
 	}
 }
 
@@ -191,7 +192,6 @@ session_execute_utility(Session* self, Output* output)
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// switch session lock to use program utility lock
-	self->user = NULL;
 	if (program->lock_catalog != LOCK_SHARED)
 	{
 		unlock(self->lock);
@@ -217,6 +217,7 @@ session_execute_utility(Session* self, Output* output)
 	(
 		// begin
 		tr_begin(&tr);
+		tr_set_user(&tr, &self->user->rel);
 
 		vm_run(&self->vm, &self->local,
 		       &self->dtr,
@@ -335,7 +336,7 @@ session_endpoint(Session*  self,
 	}
 
 	// validate permissions
-	session_access(self, endpoint, &program->access, PERM_NONE);
+	session_access(self, &program->access);
 
 	// execute utility, DDL, DML or Query
 	if (program->utility)

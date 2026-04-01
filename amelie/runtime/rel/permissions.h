@@ -32,18 +32,17 @@ enum
 	PERM_INSERT          = 1ul << 7,
 	PERM_UPDATE          = 1ul << 8,
 	PERM_DELETE          = 1ul << 9,
-	PERM_TRUNCATE        = 1ul << 10,
 
 	// Query
-	PERM_SELECT          = 1ul << 11,
+	PERM_SELECT          = 1ul << 10,
 
 	// UDF
-	PERM_EXECUTE         = 1ul << 12,
+	PERM_EXECUTE         = 1ul << 11,
 
 	// Connections
-	PERM_CONNECT         = 1ul << 13,
-	PERM_BACKUP          = 1ul << 14,
-	PERM_REPLICA         = 1ul << 15,
+	PERM_CONNECT         = 1ul << 12,
+	PERM_BACKUP          = 1ul << 13,
+	PERM_REPLICA         = 1ul << 14,
 
 	// all
 	PERM_ALL             = UINT32_MAX,

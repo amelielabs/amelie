@@ -64,6 +64,9 @@ table_mgr_rename(TableMgr* self,
 		return false;
 	}
 
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
+
 	// ensure new table does not exists
 	if (table_mgr_find(self, user_new, name_new, false))
 		error("table '%.*s': already exists", str_size(name_new),
@@ -129,11 +132,13 @@ table_mgr_grant(TableMgr* self,
 		return false;
 	}
 
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
+
 	// validate permissions
 	auto perms_all =
 		 PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-		 PERM_DELETE | PERM_TRUNCATE |
-		 PERM_CREATE_BRANCH;
+		 PERM_DELETE | PERM_CREATE_BRANCH;
 	perms = permission_validate(user, name, perms, perms_all);
 
 	// update table
@@ -192,6 +197,9 @@ table_mgr_set_identity(TableMgr* self,
 		return false;
 	}
 
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
+
 	// update table
 	log_rel(&tr->log, &set_identity_if, NULL, &table->rel);
 
@@ -240,6 +248,9 @@ table_mgr_set_unlogged(TableMgr* self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
 
 	// update table
 	log_rel(&tr->log, &set_unlogged_if, NULL, &table->rel);
@@ -291,6 +302,9 @@ table_mgr_column_rename(TableMgr* self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
 
 	// ensure column does not exists
 	auto column = columns_find(&table->config->columns, name_column);
@@ -367,6 +381,9 @@ table_mgr_column_add(TableMgr* self,
 		return false;
 	}
 
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
+
 	// ensure column does not exists
 	if (columns_find(&table->config->columns, &column->name))
 	{
@@ -439,6 +456,9 @@ table_mgr_column_drop(TableMgr* self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
 
 	auto column = columns_find(&table->config->columns, name_column);
 	if (! column)
@@ -519,6 +539,9 @@ table_mgr_column_set(TableMgr* self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
 
 	auto column = columns_find(&table->config->columns, name_column);
 	if (! column)

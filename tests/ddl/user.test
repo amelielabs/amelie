@@ -64,6 +64,7 @@ select 1;
 
 disconnect S1;
 switch S0;
+drop user test;
 
 # test: drop user cascade (with relations)
 create user test;
@@ -74,12 +75,12 @@ create table a(id int primary key);
 create table b(id int primary key);
 create function fn() begin select * from a; end;
 
+disconnect S1;
+switch S0;
+
 drop user test;
 drop user test cascade;
 select 1;
-
-disconnect S1;
-switch S0;
 
 show tables;
 show functions;
@@ -125,14 +126,15 @@ begin
 end;
 select fn();
 
-# error
-alter user test rename to test2;
 drop function fn;
 
 # test: alter user rename cascade
+switch S0;
+
 alter user test rename to test2;
 select 1;
 
+switch S1;
 disconnect S1;
 connect E0 S1 test2@127.0.0.1:3485;
 switch S1;

@@ -82,6 +82,9 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
 		return false;
 	}
 
+	// only user owner can do that or superuser
+	check_ownership_user(tr, &user->rel);
+
 	if (user->config->superuser)
 		error("user '%.*s': system user cannot be dropped", str_size(name),
 		      str_of(name));
@@ -143,6 +146,9 @@ cascade_user_rename(Catalog* self, Tr* tr,
 			      str_of(name));
 		return false;
 	}
+
+	// only user owner can do that or superuser
+	check_ownership_user(tr, &user->rel);
 
 	if (user->config->superuser)
 		error("user '%.*s': system user cannot be renamed", str_size(name),

@@ -52,6 +52,9 @@ branch_mgr_create(BranchMgr*    self,
 	auto table = table_mgr_find(self->table_mgr, &config->table_user,
 	                            &config->table, true);
 
+	// ensure permission to create branch on the table
+	check_permission(tr, &table->rel, PERM_CREATE_BRANCH);
+
 	// find parent branch
 	auto parent = snapshot_mgr_find(&table->snapshot_mgr, config->snapshot.id_parent);
 	if (! parent)
@@ -89,6 +92,9 @@ branch_mgr_drop(BranchMgr* self, Tr* tr, Str* user, Str* name,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &branch->rel);
 
 	// ensure branch is not a parent branch
 	list_foreach_safe(&self->mgr.list)
@@ -149,6 +155,9 @@ branch_mgr_rename(BranchMgr* self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &branch->rel);
 
 	// ensure new branch does not exists
 	if (branch_mgr_find(self, user_new, name_new, false))
@@ -214,6 +223,9 @@ branch_mgr_grant(BranchMgr* self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &branch->rel);
 
 	// validate permissions
 	auto perms_all =

@@ -94,9 +94,12 @@ static LogIf replace_if =
 };
 
 void
-udf_mgr_replace_validate(UdfMgr* self, UdfConfig* config, Udf* udf)
+udf_mgr_replace_validate(UdfMgr* self, Tr* tr, UdfConfig* config, Udf* udf)
 {
 	unused(self);
+
+	// only owner or superuser
+	check_ownership(tr, &udf->rel);
 
 	// validate arguments
 	if (! columns_compare(&udf->config->args, &config->args))
@@ -160,6 +163,10 @@ udf_mgr_drop(UdfMgr* self, Tr* tr, Str* user, Str* name,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &udf->rel);
+
 	udf_mgr_drop_of(self, tr, udf);
 	return true;
 }
@@ -208,6 +215,9 @@ udf_mgr_rename(UdfMgr* self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &udf->rel);
 
 	// ensure new udf does not exists
 	if (udf_mgr_find(self, user_new, name_new, false))
@@ -273,6 +283,9 @@ udf_mgr_grant(UdfMgr*  self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership(tr, &udf->rel);
 
 	// validate permissions
 	auto perms_all = PERM_EXECUTE;

@@ -41,7 +41,8 @@ service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
 		error("table '%.*s': not exists", str_size(&name),
 		      str_of(&name));
 
-	// todo: check permissions
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
 
 	auto config = index_config_read(table_columns(table), &pos);
 	errdefer(index_config_free, config);

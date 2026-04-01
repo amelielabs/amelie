@@ -57,6 +57,9 @@ table_storage_add(Table*  self,
                   Volume* config,
                   bool    if_not_exists)
 {
+	// only owner or superuser
+	check_ownership(tr, &self->rel);
+
 	// find storage
 	auto storage = storage_mgr_find(self->part_mgr.storage_mgr, &config->name, true);
 
@@ -129,6 +132,9 @@ table_storage_drop(Table* self,
                    Str*   name,
                    bool   if_exists)
 {
+	// only owner or superuser
+	check_ownership(tr, &self->rel);
+
 	// ensure volume exists
 	auto volumes = &self->config->partitioning.volumes;
 	auto volume = volume_mgr_find(volumes, name);
@@ -193,6 +199,9 @@ table_storage_pause(Table* self,
                     bool   pause,
                     bool   if_exists)
 {
+	// only owner or superuser
+	check_ownership(tr, &self->rel);
+
 	// ensure storage exists
 	auto volumes = &self->config->partitioning.volumes;
 	auto volume = volume_mgr_find(volumes, name);

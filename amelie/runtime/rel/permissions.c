@@ -46,7 +46,6 @@ static Permission perms[] =
 	{ PERM_INSERT,          "insert",          6  },
 	{ PERM_UPDATE,          "update",          6  },
 	{ PERM_DELETE,          "delete",          6  },
-	{ PERM_TRUNCATE,        "truncate",        8  },
 
 	// Query
 	{ PERM_SELECT,          "select",          6  },

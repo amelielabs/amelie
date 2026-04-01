@@ -70,6 +70,11 @@ user_mgr_drop(UserMgr* self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership_user(tr, &user->rel);
+
+	// main user is immutable
 	if (user->config->superuser)
 		error("user '%.*s': system user cannot be dropped", str_size(name),
 		      str_of(name));
@@ -120,6 +125,10 @@ user_mgr_rename(UserMgr* self,
 		return false;
 	}
 
+	// only owner or superuser
+	check_ownership_user(tr, &user->rel);
+
+	// main user is immutable
 	if (user->config->superuser)
 		error("user '%.*s': system user cannot be renamed", str_size(name),
 		       str_of(name));
@@ -181,6 +190,10 @@ user_mgr_grant(UserMgr* self,
 		return false;
 	}
 
+	// only owner or superuser
+	check_ownership_user(tr, &user->rel);
+
+	// main user is immutable
 	if (user->config->superuser)
 		error("user '%.*s': system user cannot change grants", str_size(name),
 		       str_of(name));
@@ -188,9 +201,14 @@ user_mgr_grant(UserMgr* self,
 	// validate permissions
 	auto perms_all =
 	     PERM_GRANT           |
+	     PERM_SYSTEM          |
+	     PERM_CREATE_USER     |
 	     PERM_CREATE_TOKEN    |
 	     PERM_CREATE_TABLE    |
-	     PERM_CREATE_FUNCTION;
+	     PERM_CREATE_FUNCTION |
+	     PERM_CONNECT         |
+	     PERM_BACKUP          |
+	     PERM_REPLICA;
 	perms = permission_validate(NULL, name, perms, perms_all);
 
 	// update user
@@ -251,6 +269,9 @@ user_mgr_revoke(UserMgr* self,
 			      str_of(name));
 		return false;
 	}
+
+	// only owner or superuser
+	check_ownership_user(tr, &user->rel);
 
 	// update user
 	log_rel(&tr->log, &revoke_if, NULL, &user->rel);
