@@ -70,7 +70,7 @@ user_mgr_drop(UserMgr* self,
 			      str_of(name));
 		return false;
 	}
-	if (user->config->system)
+	if (user->config->superuser)
 		error("user '%.*s': system user cannot be dropped", str_size(name),
 		      str_of(name));
 
@@ -120,7 +120,7 @@ user_mgr_rename(UserMgr* self,
 		return false;
 	}
 
-	if (user->config->system)
+	if (user->config->superuser)
 		error("user '%.*s': system user cannot be renamed", str_size(name),
 		       str_of(name));
 
@@ -181,8 +181,16 @@ user_mgr_grant(UserMgr* self,
 		return false;
 	}
 
+	if (user->config->superuser)
+		error("user '%.*s': system user cannot change grants", str_size(name),
+		       str_of(name));
+
 	// validate permissions
-	auto perms_all = PERM_CREATE | PERM_EXECUTE;
+	auto perms_all =
+	     PERM_GRANT           |
+	     PERM_CREATE_TOKEN    |
+	     PERM_CREATE_TABLE    |
+	     PERM_CREATE_FUNCTION;
 	perms = permission_validate(NULL, name, perms, perms_all);
 
 	// update user

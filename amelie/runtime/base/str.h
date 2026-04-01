@@ -127,7 +127,7 @@ str_is_prefix(Str* self, const void* string, int size)
 static inline bool
 str_is_prefix_case(Str* self, const void* string, int size)
 {
-	return str_size(self) >= size && !memcmp(self->pos, string, size);
+	return str_size(self) >= size && !strncasecmp(self->pos, string, size);
 }
 
 static inline bool

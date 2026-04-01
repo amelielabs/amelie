@@ -428,7 +428,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "select", "insert"]]
+  "access": [["main.test", "shared_rw", "insert", "select"]]
 }]
 begin
 	if true then
@@ -490,7 +490,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "select", "insert"]]
+  "access": [["main.test", "shared_rw", "insert", "select"]]
 }]
 begin
 	if true then
@@ -566,7 +566,7 @@ end;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "select", "insert"]]
+  "access": [["main.test", "shared_rw", "insert", "select"]]
 }]
 begin
 	declare x int := 0;
@@ -692,7 +692,7 @@ end;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "select", "insert"]]
+  "access": [["main.test", "shared_rw", "insert", "select"]]
 }]
 begin
 	declare x int := 0;

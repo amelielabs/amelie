@@ -70,11 +70,7 @@ catalog_create(Catalog* self)
 		auto user_config = user_config_allocate();
 		defer(user_config_free, user_config);
 		user_config_set_name(user_config, &name);
-		user_config_set_system(user_config, true);
-		auto perms_all = PERM_CREATE | PERM_EXECUTE;
-		Str user;
-		str_set_cstr(&user, "self");
-		grants_add(&user_config->grants, &user, perms_all);
+		user_config_set_superuser(user_config, true);
 
 		// set timestamp
 		char ts[64];

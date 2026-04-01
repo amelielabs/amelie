@@ -310,7 +310,7 @@ end;
     "24": "free                1      0      0     ",
     "25": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "select", "insert"]]
+  "access": [["main.test", "shared_rw", "insert", "select"]]
 }]
 begin
 	declare i int := 0;
@@ -420,7 +420,7 @@ end;
     "24": "free                1      0      0     ",
     "25": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "select", "insert"]]
+  "access": [["main.test", "shared_rw", "insert", "select"]]
 }]
 begin
 	declare i int := 0;

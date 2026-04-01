@@ -2179,7 +2179,7 @@ end;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "select", "insert"]]
+  "access": [["main.test", "shared_rw", "insert", "select"]]
 }]
 begin
 	declare x int := 8;
@@ -2872,7 +2872,7 @@ end;
     "22": "free                1      0      0     ",
     "23": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "select", "insert"]]
+  "access": [["main.test", "shared_rw", "insert", "select"]]
 }]
 begin
 	declare id int;

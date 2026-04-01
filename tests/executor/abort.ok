@@ -209,7 +209,7 @@ end;
     "36": "free                2      0      0     ",
     "37": "ret                 1      0      -     "
   },
-  "access": [["main.a", "shared_rw", "select", "update"], ["main.b", "shared_rw", "select", "update"]]
+  "access": [["main.a", "shared_rw", "update", "select"], ["main.b", "shared_rw", "update", "select"]]
 }]
 begin
 	update a set data = id;
@@ -273,7 +273,7 @@ end;
     "29": "free                1      0      0     ",
     "30": "ret                 0      0      -     "
   },
-  "access": [["main.a", "shared_rw", "select", "insert", "update"], ["main.b", "shared_rw", "update"]]
+  "access": [["main.a", "shared_rw", "insert", "update", "select"], ["main.b", "shared_rw", "update"]]
 }]
 begin
 	insert into a values (1, 0), (3, 0) on conflict do update set data = id;

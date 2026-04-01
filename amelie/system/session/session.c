@@ -92,8 +92,11 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 hot static inline void
 session_access(Session* self, Endpoint* endpoint, Access* access)
 {
-	auto user = &self->local.user;
+	// main user
+	if (self->user->config->superuser)
+		return;
 
+	auto user = &self->local.user;
 	unused(endpoint);
 	uint32_t user_perm = PERM_NONE;
 

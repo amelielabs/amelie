@@ -19,7 +19,7 @@ struct UserConfig
 	Str    created_at;
 	Str    revoked_at;
 	bool   agent;
-	bool   system;
+	bool   superuser;
 	Grants grants;
 };
 
@@ -28,8 +28,8 @@ user_config_allocate()
 {
 	UserConfig* self;
 	self = am_malloc(sizeof(UserConfig));
-	self->agent  = false;
-	self->system = false;
+	self->agent     = false;
+	self->superuser = false;
 	str_init(&self->name);
 	str_init(&self->created_at);
 	str_init(&self->revoked_at);
@@ -75,9 +75,9 @@ user_config_set_agent(UserConfig* self, bool value)
 }
 
 static inline void
-user_config_set_system(UserConfig* self, bool system)
+user_config_set_superuser(UserConfig* self, bool value)
 {
-	self->system = system;
+	self->superuser = value;
 }
 
 static inline UserConfig*
@@ -88,7 +88,7 @@ user_config_copy(UserConfig* self)
 	user_config_set_created_at(copy, &self->created_at);
 	user_config_set_revoked_at(copy, &self->revoked_at);
 	user_config_set_agent(copy, self->agent);
-	user_config_set_system(copy, self->system);
+	user_config_set_superuser(copy, self->superuser);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -105,6 +105,7 @@ user_config_read(uint8_t** pos)
 		{ DECODE_STRING, "created_at", &self->created_at },
 		{ DECODE_STRING, "revoked_at", &self->revoked_at },
 		{ DECODE_BOOL,   "agent",      &self->agent      },
+		{ DECODE_BOOL,   "superuser",  &self->superuser  },
 		{ DECODE_ARRAY,  "grants",     &pos_grants       },
 		{ 0,              NULL,         NULL             },
 	};
@@ -144,6 +145,10 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 	// agent
 	encode_raw(buf, "agent", 5);
 	encode_bool(buf, self->agent);
+
+	// superuser
+	encode_raw(buf, "superuser", 9);
+	encode_bool(buf, self->superuser);
 
 	// grants
 	encode_raw(buf, "grants", 6);

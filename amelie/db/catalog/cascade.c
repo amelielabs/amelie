@@ -82,7 +82,7 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
 		return false;
 	}
 
-	if (user->config->system)
+	if (user->config->superuser)
 		error("user '%.*s': system user cannot be dropped", str_size(name),
 		      str_of(name));
 
@@ -144,7 +144,7 @@ cascade_user_rename(Catalog* self, Tr* tr,
 		return false;
 	}
 
-	if (user->config->system)
+	if (user->config->superuser)
 		error("user '%.*s': system user cannot be renamed", str_size(name),
 		      str_of(name));
 

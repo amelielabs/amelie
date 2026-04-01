@@ -68,7 +68,7 @@ parse_branch_create(Stmt* self)
 
 	// request for BRANCH permissions
 	access_add(&self->parser->program->access, rel,
-	           LOCK_NONE, PERM_BRANCH);
+	           LOCK_NONE, PERM_CREATE_BRANCH);
 
 	// calculate branch id
 	uint32_t id = snapshot_mgr_max(&table->snapshot_mgr);

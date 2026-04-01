@@ -834,7 +834,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "select", "insert"]]
+  "access": [["main.test", "shared_rw", "insert", "select"]]
 }]
 begin
 	declare v int;
@@ -894,7 +894,7 @@ end;
     "18": "free                1      0      0     ",
     "19": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "select", "insert", "update"]]
+  "access": [["main.test", "shared_rw", "insert", "update", "select"]]
 }]
 begin
 	declare v int;

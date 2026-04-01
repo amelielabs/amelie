@@ -44,7 +44,11 @@ parse_user_create(Stmt* self, bool agent)
 	user_config_set_created_at(stmt->config, &created_at);
 
 	// set default grants
-	auto perms_all = PERM_CREATE | PERM_EXECUTE;
+	auto perms_all =
+	     PERM_GRANT           |
+	     PERM_CREATE_TOKEN    |
+	     PERM_CREATE_TABLE    |
+	     PERM_CREATE_FUNCTION;
 	Str user;
 	str_set_cstr(&user, "self");
 	grants_add(&stmt->config->grants, &user, perms_all);
@@ -72,7 +76,7 @@ void
 parse_user_alter(Stmt* self)
 {
 	// ALTER USER|AGENT [IF EXISTS] name RENAME name
-	// ALTER USER|AGENT [IF EXISTS] name REVOKE
+	// ALTER USER|AGENT [IF EXISTS] name REVOKE TOKEN
 	auto stmt = ast_user_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -96,6 +100,9 @@ parse_user_alter(Stmt* self)
 	} else
 	if (stmt_if(self, KREVOKE))
 	{
+		// TOKEN
+		stmt_expect(self, KTOKEN);
+
 		// REVOKE
 		stmt->type = USER_ALTER_REVOKE;
 

@@ -133,7 +133,7 @@ table_mgr_grant(TableMgr* self,
 	auto perms_all =
 		 PERM_SELECT | PERM_INSERT | PERM_UPDATE |
 		 PERM_DELETE | PERM_TRUNCATE |
-		 PERM_BRANCH;
+		 PERM_CREATE_BRANCH;
 	perms = permission_validate(user, name, perms, perms_all);
 
 	// update table
