@@ -90,7 +90,7 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 }
 
 hot static inline void
-session_access(Session* self, Endpoint* endpoint, Access* access)
+session_access(Session* self, Endpoint* endpoint, Access* access, uint32_t perms)
 {
 	// main user
 	if (self->user->config->superuser)
@@ -98,10 +98,9 @@ session_access(Session* self, Endpoint* endpoint, Access* access)
 
 	auto user = &self->local.user;
 	unused(endpoint);
-	uint32_t user_perm = PERM_NONE;
 
 	// check user permissions
-	if (unlikely(! grants_check_first(&self->user->config->grants, user_perm)))
+	if (unlikely(! grants_check_first(&self->user->config->grants, perms)))
 		error("user '%.*s': permission denied",
 		      str_size(user), str_of(user));
 
@@ -351,7 +350,7 @@ session_endpoint(Session*  self,
 	}
 
 	// validate permissions
-	session_access(self, endpoint, &program->access);
+	session_access(self, endpoint, &program->access, PERM_NONE);
 
 	// execute utility, DDL, DML or Query
 	if (program->utility)

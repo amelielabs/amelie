@@ -286,7 +286,7 @@ emit_ddl(Compiler* self)
 		auto arg = ast_branch_alter_of(stmt->ast);
 		offset = branch_op_rename(data, user, &arg->name, user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		return;
+		break;
 	}
 
 	// function

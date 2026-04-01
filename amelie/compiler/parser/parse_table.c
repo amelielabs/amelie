@@ -811,7 +811,4 @@ parse_table_truncate(Stmt* self)
 	auto table = catalog_find_table(&share()->db->catalog, &stmt->user, &stmt->name, false);
 	if (! table)
 		stmt_error(self, path, "table not found");
-
-	// request for TRUNCATE permissions
-	access_add(&self->parser->program->access, &table->rel, LOCK_NONE, PERM_TRUNCATE);
 }
