@@ -110,22 +110,7 @@ session_access(Session* self, Endpoint* endpoint, Access* access, uint32_t perms
 		auto record = access_at(access, i);
 		if (record->perm == PERM_NONE)
 			continue;
-
-		auto rel = record->rel;
-		if (! rel->grants)
-			continue;
-
-		// owner
-		if (str_compare_case(rel->user, user))
-			continue;
-
-		// check permissions
-		if (likely(grants_check(rel->grants, user, record->perm)))
-			continue;
-
-		error("relation '%.*s.%.*s': permission denied",
-		      str_size(rel->user), str_of(rel->user),
-		      str_size(rel->name), str_of(rel->name));
+		rel_access(record->rel, user, record->perm);
 	}
 }
 

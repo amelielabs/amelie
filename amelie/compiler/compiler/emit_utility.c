@@ -391,7 +391,7 @@ emit_utility(Compiler* self)
 		unused(arg);
 		op0(self, CCREATE_SECRET);
 
-		lock_catalog = LOCK_NONE;
+		lock_catalog = LOCK_SHARED;
 		lock_ddl     = LOCK_NONE;
 		break;
 	}

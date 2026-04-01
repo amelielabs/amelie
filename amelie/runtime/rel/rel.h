@@ -103,3 +103,22 @@ rel_drop(Rel* self)
 	if (self->free_function)
 		self->free_function(self, true);
 }
+
+static inline void
+rel_access(Rel* self, Str* user, uint32_t perms)
+{
+	if (unlikely(! self->grants))
+		return;
+
+	// owner
+	if (str_compare_case(self->user, user))
+		return;
+
+	// check permissions
+	if (likely(grants_check(self->grants, user, perms)))
+		return;
+
+	error("relation '%.*s.%.*s': permission denied",
+	      str_size(self->user), str_of(self->user),
+	      str_size(self->name), str_of(self->name));
+}

@@ -21,20 +21,34 @@
 #include <amelie_func.h>
 #include <amelie_vm.h>
 
+static inline void
+vm_access(Vm* self, uint32_t perms)
+{
+	user_mgr_access(&share()->db->catalog.user_mgr,
+	                &self->local->user,
+	                perms);
+}
+
 void
 ccheckpoint(Vm* self, Op* op)
 {
-	unused(self);
 	unused(op);
+
+	// PERM_SYSTEM
+	vm_access(self, PERM_SYSTEM);
+
 	service_checkpoint(&share()->db->service);
 }
 
 void
 ccreate_secret(Vm* self, Op* op)
 {
-	// create new system secret
-	unused(self);
 	unused(op);
+
+	// PERM_SYSTEM
+	vm_access(self, PERM_SYSTEM);
+
+	// create new system secret
 	uint8_t secret[32];
 	random_generate_alnum(&runtime()->random, secret, sizeof(secret));
 	opt_string_set_raw(&state()->secret, (char*)secret, sizeof(secret));
@@ -46,6 +60,9 @@ ccreate_secret(Vm* self, Op* op)
 void
 ccreate_token(Vm* self, Op* op)
 {
+	// PERM_CREATE_TOKEN
+	vm_access(self, PERM_CREATE_TOKEN);
+
 	// [result, options_offset]
 	auto pos = code_data_at(self->code_data, op->b);
 	Str  name;
@@ -55,6 +72,13 @@ ccreate_token(Vm* self, Op* op)
 
 	// find user
 	auto user = user_mgr_find(&share()->db->catalog.user_mgr, &name, true);
+
+	// allow to create token for self or child user
+	auto user_local = &self->local->user;
+	if (! str_compare(&user->config->name, user_local))
+		error("user '%.*s': permission denied",
+		      str_size(&user->config->name),
+		      str_of(&user->config->name));
 
 	// ensure user has a secret
 	auto secret = opt_string_of(&state()->secret);
@@ -81,6 +105,9 @@ ccreate_token(Vm* self, Op* op)
 void
 creplica_create(Vm* self, Op* op)
 {
+	// PERM_SYSTEM
+	vm_access(self, PERM_SYSTEM);
+
 	// [config_offset, if_not_exists]
 	auto pos = code_data_at(self->code_data, op->a);
 	auto config = replica_config_read(&pos);
@@ -94,6 +121,9 @@ creplica_create(Vm* self, Op* op)
 void
 creplica_drop(Vm* self, Op* op)
 {
+	// PERM_SYSTEM
+	vm_access(self, PERM_SYSTEM);
+
 	// [id, if_exists]
 	auto pos = code_data_at(self->code_data, op->a);
 	Str  id_str;
@@ -109,7 +139,9 @@ creplica_drop(Vm* self, Op* op)
 void
 crepl_start(Vm* self, Op* op)
 {
-	unused(self);
+	// PERM_SYSTEM
+	vm_access(self, PERM_SYSTEM);
+
 	unused(op);
 	repl_start(share()->repl);
 	control_save_state();
@@ -118,7 +150,9 @@ crepl_start(Vm* self, Op* op)
 void
 crepl_stop(Vm* self, Op* op)
 {
-	unused(self);
+	// PERM_SYSTEM
+	vm_access(self, PERM_SYSTEM);
+
 	unused(op);
 	repl_stop(share()->repl);
 	control_save_state();
@@ -127,6 +161,9 @@ crepl_stop(Vm* self, Op* op)
 void
 crepl_subscribe(Vm* self, Op* op)
 {
+	// PERM_SYSTEM
+	vm_access(self, PERM_SYSTEM);
+
 	// [id, if_exists]
 	auto pos = code_data_at(self->code_data, op->a);
 	Str  id;
@@ -138,6 +175,9 @@ crepl_subscribe(Vm* self, Op* op)
 void
 crepl_unsubscribe(Vm* self, Op* op)
 {
+	// PERM_SYSTEM
+	vm_access(self, PERM_SYSTEM);
+
 	unused(self);
 	unused(op);
 	repl_subscribe(share()->repl, NULL);
@@ -167,6 +207,9 @@ cddl_create_index(Vm* self, Op* op)
 void
 clock_rel(Vm* self, Op* op)
 {
+	// PERM_SYSTEM
+	vm_access(self, PERM_SYSTEM);
+
 	// [name, name_rel, name_lock, if_not_exists]
 	Str name;
 	Str name_rel;
@@ -223,6 +266,9 @@ clock_rel(Vm* self, Op* op)
 void
 cunlock_rel(Vm* self, Op* op)
 {
+	// PERM_SYSTEM
+	vm_access(self, PERM_SYSTEM);
+
 	// [name, if_exists]
 	Str name;
 	code_data_at_string(self->code_data, op->a, &name);
