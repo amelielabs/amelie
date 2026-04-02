@@ -171,6 +171,7 @@ Keyword keywords[] =
 	{ KSTORED,                "stored",                6  },
 	{ KSTORAGE,               "storage",               7  },
 	{ KSYSTEM,                "system",                6  },
+	{ KSTREAM,                "stream",                6  },
 
 	// t
 	{ KTRUE,                  "true",                  4  },

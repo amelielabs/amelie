@@ -284,6 +284,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_branch.c
     ${AMELIE_ROOT}/compiler/parser/parse_part.c
     ${AMELIE_ROOT}/compiler/parser/parse_function.c
+    ${AMELIE_ROOT}/compiler/parser/parse_stream.c
     ${AMELIE_ROOT}/compiler/parser/parse_from.c
     ${AMELIE_ROOT}/compiler/parser/parse_returning.c
     ${AMELIE_ROOT}/compiler/parser/parse_value.c

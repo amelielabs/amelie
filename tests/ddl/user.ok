@@ -7,7 +7,7 @@ select show('agents');
 [[]]
 # test: create user statement parsing
 create;
-{"msg": "create❰;❱ ⟵ REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|LOCK expected"}
+{"msg": "create❰;❱ ⟵ REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|STREAM|LOCK expected"}
 create user;
 {"msg": "create user❰;❱ ⟵ name expected"}
 create user 123;

@@ -81,6 +81,13 @@ parse_stmt_free(Stmt* stmt)
 			udf_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_STREAM:
+	{
+		auto ast = ast_stream_create_of(stmt->ast);
+		if (ast->config)
+			stream_config_free(ast->config);
+		break;
+	}
 	case STMT_WHILE:
 	{
 		auto ast = ast_while_of(stmt->ast);
@@ -320,13 +327,18 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_FUNCTION;
 			parse_function_create(self, or_replace);
 		} else
+		if (stmt_if(self, KSTREAM))
+		{
+			self->id = STMT_CREATE_STREAM;
+			parse_stream_create(self);
+		} else
 		if (stmt_if(self, KLOCK))
 		{
 			self->id = STMT_CREATE_LOCK;
 			parse_lock_create(self);
 		} else
 		{
-			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|LOCK expected");
+			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|STREAM|LOCK expected");
 		}
 		break;
 	}
@@ -369,13 +381,18 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
 		} else
+		if (stmt_if(self, KSTREAM))
+		{
+			self->id = STMT_DROP_STREAM;
+			parse_stream_drop(self);
+		} else
 		if (stmt_if(self, KLOCK))
 		{
 			self->id = STMT_DROP_LOCK;
 			parse_lock_drop(self);
 		} else
 		{
-			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|LOCK expected");
+			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|STREAM|LOCK expected");
 		}
 		break;
 	}
@@ -422,8 +439,13 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
+		} else
+		if (stmt_if(self, KSTREAM))
+		{
+			self->id = STMT_ALTER_STREAM;
+			parse_stream_alter(self);
 		} else {
-			stmt_error(self, NULL, "SYSTEM|USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION expected");
+			stmt_error(self, NULL, "SYSTEM|USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|STREAM expected");
 		}
 		break;
 	}

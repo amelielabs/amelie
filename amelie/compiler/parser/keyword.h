@@ -208,6 +208,7 @@ enum
 	KSTORED,
 	KSTORAGE,
 	KSYSTEM,
+	KSTREAM,
 
 	// t
 	KTRUE,
