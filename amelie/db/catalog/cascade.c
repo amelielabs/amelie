@@ -31,6 +31,18 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 {
 	// validate or drop all objects matching the user
 
+	// streams
+	list_foreach_safe(&self->stream_mgr.mgr.list)
+	{
+		auto stream = stream_of(list_at(Rel, link));
+		if (! str_compare_case(&stream->config->user, user))
+			continue;
+		if (drop)
+			stream_mgr_drop_of(&self->stream_mgr, tr, stream);
+		else
+			cascade_user_error(user);
+	}
+
 	// udfs
 	list_foreach_safe(&self->udf_mgr.mgr.list)
 	{
@@ -99,6 +111,27 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
 static void
 cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 {
+	// udfs
+	list_foreach_safe(&self->udf_mgr.mgr.list)
+	{
+		auto udf = udf_of(list_at(Rel, link));
+		if (str_compare_case(&udf->config->user, user))
+			error("function '%.*s' depends on user '%.*s",
+			      str_size(udf->rel.name), str_of(udf->rel.name),
+			      str_size(user), str_of(user));
+	}
+
+	// streams
+	list_foreach_safe(&self->stream_mgr.mgr.list)
+	{
+		auto stream = stream_of(list_at(Rel, link));
+		if (str_compare_case(&stream->config->user, user))
+			stream_mgr_rename(&self->stream_mgr, tr, &stream->config->user,
+			                  &stream->config->name,
+			                  user_new,
+			                  &stream->config->name, false);
+	}
+
 	// branches
 	list_foreach_safe(&self->branch_mgr.mgr.list)
 	{
@@ -121,15 +154,6 @@ cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 			                 &table->config->name, false);
 	}
 
-	// udfs
-	list_foreach_safe(&self->udf_mgr.mgr.list)
-	{
-		auto udf = udf_of(list_at(Rel, link));
-		if (str_compare_case(&udf->config->user, user))
-			error("function '%.*s' depends on user '%.*s",
-			      str_size(udf->rel.name), str_of(udf->rel.name),
-			      str_size(user), str_of(user));
-	}
 }
 
 bool

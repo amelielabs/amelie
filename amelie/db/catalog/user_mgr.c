@@ -206,6 +206,7 @@ user_mgr_grant(UserMgr* self,
 	     PERM_CREATE_TOKEN    |
 	     PERM_CREATE_TABLE    |
 	     PERM_CREATE_FUNCTION |
+	     PERM_CREATE_STREAM   |
 	     PERM_CONNECT         |
 	     PERM_BACKUP          |
 	     PERM_REPLICA;

@@ -25,7 +25,8 @@ enum
 	RESTORE_STORAGE,
 	RESTORE_TABLE,
 	RESTORE_BRANCH,
-	RESTORE_UDF
+	RESTORE_UDF,
+	RESTORE_STREAM
 };
 
 static void
@@ -85,6 +86,18 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		self->iface->udf_compile(self, udf);
 		break;
 	}
+	case RESTORE_STREAM:
+	{
+		// read stream config
+		auto config = stream_config_read(pos);
+		defer(stream_config_free, config);
+
+		// create stream
+		stream_mgr_create(&self->stream_mgr, tr, config, false);
+
+		// todo: attach
+		break;
+	}
 	}
 }
 
@@ -112,7 +125,7 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 static void
 catalog_restore(Catalog* self, uint8_t** pos)
 {
-	// { lsn, tsn, users, storages, tables, branches, udfs }
+	// { lsn, tsn, users, storages, tables, branches, udfs, streams }
 	int64_t  lsn          = 0;
 	int64_t  tsn          = 0;
 	uint8_t* pos_users    = NULL;
@@ -120,6 +133,7 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	uint8_t* pos_tables   = NULL;
 	uint8_t* pos_branches = NULL;
 	uint8_t* pos_udfs     = NULL;
+	uint8_t* pos_streams  = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_INT,   "lsn",      &lsn          },
@@ -129,6 +143,7 @@ catalog_restore(Catalog* self, uint8_t** pos)
 		{ DECODE_ARRAY, "tables",   &pos_tables   },
 		{ DECODE_ARRAY, "branches", &pos_branches },
 		{ DECODE_ARRAY, "udfs",     &pos_udfs     },
+		{ DECODE_ARRAY, "streams",  &pos_streams  },
 		{ 0,             NULL,       NULL         },
 	};
 	decode_obj(obj, "catalog", pos);
@@ -157,6 +172,11 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	json_read_array(&pos_udfs);
 	while (! json_read_array_end(&pos_udfs))
 		catalog_restore_object(self, RESTORE_UDF, &pos_udfs);
+
+	// streams
+	json_read_array(&pos_streams);
+	while (! json_read_array_end(&pos_streams))
+		catalog_restore_object(self, RESTORE_STREAM, &pos_streams);
 
 	// set catalog lsn and tsn
 	opt_int_set(&state()->catalog, lsn);
@@ -209,7 +229,7 @@ catalog_read(Catalog* self)
 Buf*
 catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 {
-	// { lsn, tsn, users, storages, tables, branches, udfs }
+	// { lsn, tsn, users, storages, tables, branches, udfs, streams }
 	auto buf = buf_create();
 	encode_obj(buf);
 
@@ -240,6 +260,10 @@ catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 	// udfs
 	encode_raw(buf, "udfs", 4);
 	udf_mgr_dump(&self->udf_mgr, buf);
+
+	// streams
+	encode_raw(buf, "streams", 7);
+	stream_mgr_dump(&self->stream_mgr, buf);
 
 	encode_obj_end(buf);
 	return buf;
