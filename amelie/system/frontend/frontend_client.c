@@ -140,20 +140,6 @@ frontend_client(Frontend* self, Client* client)
 			continue;
 		}
 
-		// handle service requests (backup or primary server connection)
-		if (! opt_string_empty(&endpoint.service))
-		{
-			// todo: authenticate
-			// todo: check BACKUP/REPLICA user permissions
-			auto service = &endpoint.service.string;
-			if (str_is(service, "backup", 6))
-				backup(share()->db, client);
-			else
-			if (str_is(service, "repl", 4))
-				frontend_client_primary(self, client, session);
-			break;
-		}
-
 		// execute request
 		Str content;
 		buf_str(&request->content, &content);
@@ -175,6 +161,12 @@ frontend_client(Frontend* self, Client* client)
 			// 403 Forbidden
 			client_403(client);
 			break;
+		case SESSION_BACKUP:
+			// remote backup
+			return backup(share()->db, client);
+		case SESSION_REPL:
+			// primary connection
+			return frontend_client_primary(self, client, session);
 		}
 	}
 }

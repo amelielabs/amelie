@@ -208,8 +208,7 @@ user_mgr_grant(UserMgr* self,
 	     PERM_CREATE_FUNCTION |
 	     PERM_CREATE_STREAM   |
 	     PERM_CONNECT         |
-	     PERM_BACKUP          |
-	     PERM_REPLICA;
+	     PERM_SERVICE;
 	perms = permission_validate(NULL, name, perms, perms_all);
 
 	// update user

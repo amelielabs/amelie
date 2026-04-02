@@ -42,8 +42,7 @@ enum
 
 	// Connections
 	PERM_CONNECT         = 1ul << 13,
-	PERM_BACKUP          = 1ul << 14,
-	PERM_REPLICA         = 1ul << 15,
+	PERM_SERVICE         = 1ul << 14,
 
 	// all
 	PERM_ALL             = UINT32_MAX,

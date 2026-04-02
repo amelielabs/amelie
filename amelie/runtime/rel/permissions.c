@@ -56,8 +56,7 @@ static Permission perms[] =
 
 	// Connections
 	{ PERM_CONNECT,         "connect",         7  },
-	{ PERM_BACKUP,          "backup",          6  },
-	{ PERM_REPLICA,         "replica",         7  },
+	{ PERM_SERVICE,         "service",         7  },
 
 	// all
 	{ PERM_ALL,             "all",             3  },

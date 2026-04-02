@@ -82,11 +82,12 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 	/*
 	// PERM_CONNECT permission
 	if (token_required)
-	{
-		if (unlikely(! grants_check_first(&self->user->config->grants, PERM_CONNECT)))
-			user_permission_error(self->user);
-	}
+		user_check(self->user, PERM_CONNECT);
 	*/
+
+	// check service grants
+	if (unlikely(! opt_string_empty(&endpoint->service)))
+		user_check(self->user, PERM_SERVICE);
 
 	// set timezone / format
 	auto local = &self->local;
@@ -96,23 +97,6 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 
 	// update transaction time
 	local_update_time(local);
-}
-
-hot static inline void
-session_access(Session* self, Access* access)
-{
-	auto user = self->user;
-	if (user->config->superuser)
-		return;
-
-	// check permissions on relations
-	for (auto i = 0; i < access->list_count; i++)
-	{
-		auto record = access_at(access, i);
-		if (record->perm == PERM_NONE)
-			continue;
-		check_permission_for(user, record->rel, record->perm);
-	}
 }
 
 hot static inline void
@@ -287,12 +271,25 @@ session_execute_utility(Session* self, Output* output)
 	}
 }
 
-hot static void
+hot static SessionStatus
 session_endpoint(Session*  self,
                  Endpoint* endpoint,
                  Str*      content,
                  Output*   output)
 {
+	// POST /v1/backup
+	// POST /v1/repl
+	auto service = &endpoint->service.string;
+	if (unlikely(! str_empty(service)))
+	{
+		// backup or primary server connection
+		if (str_is(service, "backup", 6))
+			return SESSION_BACKUP;
+		if (str_is(service, "repl", 4))
+			return SESSION_REPL;
+		return SESSION_ERROR;
+	}
+
 	// POST /v1/db
 	// POST /v1/db/<relation>
 
@@ -320,7 +317,7 @@ session_endpoint(Session*  self,
 
 	auto program = compiler->program;
 	if (program_empty(program))
-		return;
+		return SESSION_OK;
 
 	// [EXPLAIN]
 	if (compiler->program_explain || compiler->program_profile)
@@ -332,17 +329,18 @@ session_endpoint(Session*  self,
 		Str column;
 		str_set(&column, "explain", 7);
 		output_write_json(output, &column, program->explain.start, false);
-		return;
+		return SESSION_OK;
 	}
 
-	// validate permissions
-	session_access(self, &program->access);
+	// validate user permissions
+	user_check_access(self->user, &program->access);
 
 	// execute utility, DDL, DML or Query
 	if (program->utility)
 		session_execute_utility(self, output);
 	else
 		session_execute_distributed(self, output);
+	return SESSION_OK;
 }
 
 hot SessionStatus
@@ -367,7 +365,7 @@ session_execute(Session*  self,
 		session_auth(self, endpoint, output);
 
 		// parse and execute request
-		session_endpoint(self, endpoint, content, output);
+		status = session_endpoint(self, endpoint, content, output);
 
 		// done
 		unlock_all();

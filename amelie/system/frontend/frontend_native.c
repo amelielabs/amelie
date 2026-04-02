@@ -118,6 +118,11 @@ proxy_execute_session(Proxy* self, Str* command)
 		// 403 Forbidden
 		code = 403;
 		break;
+	case SESSION_BACKUP:
+	case SESSION_REPL:
+		// 403 Forbidden
+		code = 403;
+		break;
 	}
 	return code;
 }

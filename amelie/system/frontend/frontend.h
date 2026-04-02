@@ -19,6 +19,8 @@ typedef enum
 	SESSION_OK,
 	SESSION_ERROR,
 	SESSION_ERROR_AUTH,
+	SESSION_BACKUP,
+	SESSION_REPL
 } SessionStatus;
 
 struct FrontendIf
