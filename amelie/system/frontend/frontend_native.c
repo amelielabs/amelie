@@ -17,9 +17,9 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
-typedef struct Relay Relay;
+typedef struct Proxy Proxy;
 
-struct Relay
+struct Proxy
 {
 	void*     session;
 	Client*   client;
@@ -30,7 +30,7 @@ struct Relay
 };
 
 static inline void
-relay_init(Relay* self, Frontend* fe)
+proxy_init(Proxy* self, Frontend* fe)
 {
 	self->session   = NULL;
 	self->client    = NULL;
@@ -41,7 +41,7 @@ relay_init(Relay* self, Frontend* fe)
 }
 
 static inline void
-relay_free(Relay* self)
+proxy_free(Proxy* self)
 {
 	if (self->client)
 		client_free(self->client);
@@ -51,7 +51,7 @@ relay_free(Relay* self)
 }
 
 static inline void
-relay_connect(Relay* self, Str* uri)
+proxy_connect(Proxy* self, Str* uri)
 {
 	auto endpoint = &self->endpoint;
 	endpoint_reset(endpoint);
@@ -95,7 +95,7 @@ relay_connect(Relay* self, Str* uri)
 }
 
 hot static inline int
-relay_execute_session(Relay* self, Str* command)
+proxy_execute_session(Proxy* self, Str* command)
 {
 	auto ctl    = self->fe->iface;
 	auto status = ctl->session_execute(self->session, &self->endpoint, command,
@@ -123,7 +123,7 @@ relay_execute_session(Relay* self, Str* command)
 }
 
 hot static inline int
-relay_execute_client(Relay* self, Str* command)
+proxy_execute_client(Proxy* self, Str* command)
 {
 	auto client = self->client;
 	client_execute(client, command, self->output.buf);
@@ -133,7 +133,7 @@ relay_execute_client(Relay* self, Str* command)
 }
 
 hot static inline int
-relay_execute(Relay* self, Str* uri, Request* req)
+proxy_execute(Proxy* self, Str* uri, Request* req)
 {
 	auto output = &self->output;
 	output_set_buf(output, &req->output);
@@ -141,11 +141,11 @@ relay_execute(Relay* self, Str* uri, Request* req)
 	auto on_error = error_catch
 	(
 		if (! self->connected)
-			relay_connect(self, uri);
+			proxy_connect(self, uri);
 		if (self->endpoint.proto.integer == PROTO_AMELIE)
-			code = relay_execute_session(self, &req->cmd);
+			code = proxy_execute_session(self, &req->cmd);
 		else
-			code = relay_execute_client(self, &req->cmd);
+			code = proxy_execute_client(self, &req->cmd);
 	);
 	if (on_error)
 	{
@@ -163,9 +163,9 @@ relay_execute(Relay* self, Str* uri, Request* req)
 void
 frontend_native(Frontend* self, Native* native)
 {
-	Relay relay;
-	relay_init(&relay, self);
-	defer(relay_free, &relay);
+	Proxy proxy;
+	proxy_init(&proxy, self);
+	defer(proxy_free, &proxy);
 	for (auto connected = true; connected;)
 	{
 		auto code = 0;
@@ -178,7 +178,7 @@ frontend_native(Frontend* self, Native* native)
 			connected = false;
 			break;
 		case REQUEST_EXECUTE:
-			code = relay_execute(&relay, &native->uri, req);
+			code = proxy_execute(&proxy, &native->uri, req);
 			break;
 		}
 		request_complete(req, code);
