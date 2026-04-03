@@ -66,6 +66,32 @@ readahead_read(Readahead* self, int size, uint8_t** pos)
 	return size;
 }
 
+hot static inline bool
+readahead_recv(Readahead* self, uint8_t* data, int size)
+{
+	for (auto at = 0; at < size; )
+	{
+		uint8_t* pos;
+		auto rc = readahead_read(self, size, &pos);
+		if (rc == 0)
+			return false;
+		memcpy(data + at, pos, rc);
+		at += rc;
+		size -= rc;
+	}
+	return true;
+}
+
+hot static inline bool
+readahead_recv_buf(Readahead* self, Buf* buf, int size)
+{
+	buf_reserve(buf, size);
+	if (! readahead_recv(self, buf->position, size))
+		return false;
+	buf_advance(buf, size);
+	return true;
+}
+
 static inline void
 readahead_pushback(Readahead* self, int size)
 {

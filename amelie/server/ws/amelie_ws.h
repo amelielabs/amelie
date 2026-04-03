@@ -12,3 +12,4 @@
 //
 
 #include "ws/handshake.h"
+#include "ws/ws.h"

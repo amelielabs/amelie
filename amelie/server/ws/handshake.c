@@ -20,9 +20,11 @@ static void
 ws_generate_key(Buf* self)
 {
 	// key = base64(rand)
-	uint64_t rand = random_generate(&runtime()->random);
+	uint64_t rand[2];
+	rand[0] = random_generate(&runtime()->random);
+	rand[1] = random_generate(&runtime()->random);
 	Str rand_str;
-	str_set(&rand_str, (char*)&rand, sizeof(rand));
+	str_set(&rand_str, (char*)&rand[0], sizeof(rand));
 	base64_encode(self, &rand_str);
 }
 
