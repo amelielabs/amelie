@@ -72,6 +72,7 @@ include_directories("${AMELIE_ROOT}/server")
 include_directories("${AMELIE_ROOT}/server/jwt")
 include_directories("${AMELIE_ROOT}/server/http")
 include_directories("${AMELIE_ROOT}/server/client")
+include_directories("${AMELIE_ROOT}/server/ws")
 include_directories("${AMELIE_ROOT}/server/server")
 
 # db
@@ -174,6 +175,7 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/http/uri.c
     ${AMELIE_ROOT}/server/http/http.c
     ${AMELIE_ROOT}/server/client/client.c
+    ${AMELIE_ROOT}/server/ws/handshake.c
     ${AMELIE_ROOT}/server/server/server.c)
 
 set(AMELIE_SOURCES_DB

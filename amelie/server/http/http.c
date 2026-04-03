@@ -43,19 +43,6 @@ http_reset(Http* self)
 	buf_reset(&self->content);
 }
 
-HttpHeader*
-http_find(Http* self, char* name, int name_size)
-{
-	auto pos = (HttpHeader*)self->headers.start;
-	auto end = (HttpHeader*)self->headers.position;
-	for (; pos < end; pos++)
-	{
-		if (str_is_case(&pos->name, name, name_size))
-			return pos;
-	}
-	return NULL;
-}
-
 void
 http_log(Http* self)
 {
@@ -389,4 +376,17 @@ void
 http_end(Buf* buf)
 {
 	buf_write(buf, "\r\n", 2);
+}
+
+hot HttpHeader*
+http_find(Http* self, char* name, int name_size)
+{
+	auto pos = (HttpHeader*)self->headers.start;
+	auto end = (HttpHeader*)self->headers.position;
+	for (; pos < end; pos++)
+	{
+		if (str_is_case(&pos->name, name, name_size))
+			return pos;
+	}
+	return NULL;
 }

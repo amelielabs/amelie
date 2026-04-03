@@ -46,9 +46,8 @@ void http_log(Http*);
 bool http_read(Http*, Readahead*, bool);
 void http_read_content(Http*, Readahead*, Buf*);
 bool http_read_content_limit(Http*, Readahead*, Buf*, uint64_t);
-HttpHeader*
-http_find(Http*, char*, int);
-
 Buf* http_begin_request(Http*, Endpoint*, uint64_t);
 Buf* http_begin_reply(Http*, Endpoint*, char*, int, uint64_t);
 void http_end(Buf*);
+HttpHeader*
+http_find(Http*, char*, int);

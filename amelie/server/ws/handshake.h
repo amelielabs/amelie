@@ -11,8 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_jwt.h>
-#include <amelie_http.h>
-#include <amelie_client.h>
-#include <amelie_ws.h>
-#include <amelie_server.h>
+void ws_connect(Client*, Str*);
+void ws_accept(Client*, Str*);
