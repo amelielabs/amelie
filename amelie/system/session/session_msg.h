@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void session_execute_replay(Session*, Primary*, Buf*);
+void session_execute_msg(Session*, Node*, NodeMsg*, Buf*);

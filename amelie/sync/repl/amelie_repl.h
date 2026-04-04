@@ -12,15 +12,16 @@
 //
 
 // streamer
+#include "repl/protocol.h"
 #include "repl/streamer.h"
+
+// node
+#include "repl/node.h"
 
 // replica
 #include "repl/replica_config.h"
 #include "repl/replica.h"
 #include "repl/replica_mgr.h"
-
-// primary
-#include "repl/primary.h"
 
 // replication
 #include "repl/repl.h"

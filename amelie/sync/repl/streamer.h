@@ -22,7 +22,8 @@ struct Streamer
 	WalSlot*   wal_slot;
 	Wal*       wal;
 	Endpoint*  endpoint;
-	char       replica_id[UUID_SZ];
+	Uuid       id_primary;
+	Uuid       id_replica;
 	Task       task;
 	List       link;
 };

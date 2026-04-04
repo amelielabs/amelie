@@ -18,10 +18,10 @@
 #include <amelie_frontend.h>
 
 hot static void
-frontend_client_primary_on_write(Primary* self, Buf* data)
+frontend_client_primary_on_write(Node* self, NodeMsg* msg, Buf* data)
 {
-	auto fe = (Frontend*)((void**)self->replay_arg)[0];
-	fe->iface->session_execute_replay(((void**)self->replay_arg)[1], self, data);
+	auto fe = (Frontend*)((void**)self->execute_arg)[0];
+	fe->iface->session_execute_msg(((void**)self->execute_arg)[1], self, msg, data);
 }
 
 static void
@@ -32,9 +32,9 @@ frontend_client_primary(Frontend* self, Client* client, void* session)
 	defer(recover_free, &recover);
 
 	void* args[] = {self, session};
-	Primary primary;
-	primary_init(&primary, &recover, client, frontend_client_primary_on_write, args);
-	primary_main(&primary);
+	Node node;
+	node_init(&node, frontend_client_primary_on_write, args, &recover, client);
+	node_main(&node);
 }
 
 hot static inline bool

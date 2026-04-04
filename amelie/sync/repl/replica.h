@@ -44,7 +44,8 @@ replica_free(Replica* self)
 static inline void
 replica_start(Replica* self)
 {
-	streamer_start(&self->streamer, &self->config->id, &self->config->endpoint);
+	streamer_start(&self->streamer, &self->config->id,
+	               &self->config->endpoint);
 }
 
 static inline void

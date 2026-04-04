@@ -21,16 +21,13 @@
 #include <amelie_session.h>
 
 void
-session_execute_replay(Session* self, Primary* primary, Buf* data)
+session_execute_msg(Session* self, Node* primary, NodeMsg* msg, Buf* data)
 {
 	auto lock = lock_system(REL_CATALOG, LOCK_SHARED);
 	defer(unlock, lock);
 
-	// validate request fields and check current replication state
-
-	// first join request has no data
-	if (! primary_next(primary))
-		return;
+	// validate msg
+	node_validate(primary, msg);
 
 	// switch distributed transaction to replication state to write wal
 	// while in read-only mode

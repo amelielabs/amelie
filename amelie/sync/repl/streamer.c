@@ -56,70 +56,41 @@ streamer_collect(Streamer* self)
 }
 
 static inline void
-streamer_write(Streamer* self, Buf* content)
+streamer_write(Streamer* self, uint64_t lsn, Buf* content)
 {
-	// push updates to the replica node
-	auto client  = self->client;
-	auto id      = &config()->uuid.string;
-
-	// POST /
-	//
-	// application/octet-stream
-	auto request = &client->request;
-	auto buf = http_begin_request(request, client->endpoint, content? buf_size(content): 0);
-	buf_printf(buf, "Am-Id: %.*s\r\n", str_size(id), str_of(id));
-	if (content)
-		buf_printf(buf, "Am-Lsn: %" PRIu64 "\r\n", self->wal_slot->lsn);
-	http_end(buf);
-	if (content)
-		tcp_write_pair(&client->tcp, buf, content);
-	else
-		tcp_write_buf(&client->tcp, buf);
+	// NODE_WRITE
+	WsFrame frame;
+	node_send(self->client, &frame, true, NODE_WRITE, &self->id_primary,
+	          lsn, content);
 }
 
 static inline uint64_t
 streamer_read(Streamer* self)
 {
-	auto client = self->client;
-
-	// get replica state
-	auto reply = &client->reply;
-	http_reset(reply);
-	auto eof = http_read(reply, &client->readahead, false);
-	if (eof)
-		error("unexpected eof");
-	if (! str_is(&reply->options[HTTP_CODE], "200", 3))
-		error("unexpected reply code");
-	http_read_content(reply, &client->readahead, &reply->content);
-
-	// todo: validate endpoint /v1/repl
-
-	// Am-Id
-	auto am_id = http_find(reply, "Am-Id", 5);
-	if (unlikely(! am_id))
-		error("replica Am-Id field is missing");
-	if (unlikely(! str_is(&am_id->value, self->replica_id,
-	             sizeof(self->replica_id) - 1)))
-		error("replica Am-Id mismatch");
-
-	// Am-Lsn
-	auto am_lsn = http_find(reply, "Am-Lsn", 6);
-	if (unlikely(! am_lsn))
-		error("replica Am-Lsn field is missing");
-	int64_t lsn;
-	if (unlikely(str_toint(&am_lsn->value, &lsn) == -1))
-		error("replica Am-Lsn is invalid");
-
-	return lsn;
+	// NODE_ACK
+	NodeMsg msg;
+	WsFrame frame;
+	node_recv(self->client, &frame, &msg, NULL);
+	if (msg.op != NODE_ACK)
+		error("streamer: unexpected replica response");
+	if (uuid_compare(&msg.id, &self->id_replica))
+		error("streamer: replica id mismatch");
+	return msg.lsn;
 }
 
 static void
 streamer_connect(Streamer* self)
 {
-	client_connect(self->client);
+	// POST /v1/repl
+	auto client = self->client;
+	opt_string_set_raw(&client->endpoint->service, "repl", 4);
+	client_connect(client);
 
-	// POST / with empty content and current slot lsn
-	streamer_write(self, NULL);
+	// do websocket handshake
+	node_connect(client);
+
+	// NODE_WRITE (empty write request)
+	streamer_write(self, 0, NULL);
 
 	// get replica state
 	uint64_t lsn = streamer_read(self);
@@ -179,7 +150,7 @@ streamer_client(Streamer* self)
 		// collect and send wal records, read replica reply
 		if (! streamer_collect(self))
 			break;
-		streamer_write(self, &self->wal_cursor.buf);
+		streamer_write(self, self->wal_slot->lsn, &self->wal_cursor.buf);
 		streamer_next(self);
 	}
 }
@@ -251,13 +222,14 @@ streamer_task_main(void* arg)
 void
 streamer_init(Streamer* self, Wal* wal, WalSlot* wal_slot)
 {
-	self->client        = NULL;
-	self->connected     = false;
-	self->lsn           = 0;
-	self->wal           = wal;
-	self->wal_slot      = wal_slot;
-	self->endpoint      = NULL;
-	self->replica_id[0] = 0;
+	self->client    = NULL;
+	self->connected = false;
+	self->lsn       = 0;
+	self->wal       = wal;
+	self->wal_slot  = wal_slot;
+	self->endpoint  = NULL;
+	uuid_init(&self->id_primary);
+	uuid_init(&self->id_replica);
 	wal_cursor_init(&self->wal_cursor);
 	task_init(&self->task);
 	list_init(&self->link);
@@ -270,10 +242,11 @@ streamer_free(Streamer* self)
 }
 
 void
-streamer_start(Streamer* self, Uuid* id, Endpoint* endpoint)
+streamer_start(Streamer* self, Uuid* id_replica, Endpoint* endpoint)
 {
-	uuid_get(id, self->replica_id, sizeof(self->replica_id));
-	self->endpoint = endpoint;
+	uuid_set(&self->id_primary, &config()->uuid.string);
+	self->id_replica = *id_replica;
+	self->endpoint   = endpoint;
 	task_create(&self->task, "streamer", streamer_task_main, self);
 }
 
