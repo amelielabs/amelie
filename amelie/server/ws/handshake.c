@@ -39,7 +39,7 @@ ws_generate_token(Buf* self, Str* key)
 	unsigned char hash[20];
 	SHA1((unsigned char*)concat, len, hash);
 	Str hash_str;
-	str_set(&hash_str, (char*)&hash, sizeof(rand));
+	str_set(&hash_str, (char*)&hash, sizeof(hash));
 	base64_encode(self, &hash_str);
 }
 

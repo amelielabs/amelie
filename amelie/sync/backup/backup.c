@@ -37,109 +37,90 @@ backup_free(Backup* self)
 }
 
 static void
-backup_send_snapshot(Backup* self)
+backup_push(Backup* self, Str* name, size_t size)
 {
-	auto client = self->client;
-	auto reply  = &client->reply;
-	auto data   = &self->snapshot->data;
+	info("backup: %.*s (%.2f MiB)", str_size(name), str_of(name),
+	     (double)size / 1024 / 1024);
 
-	// application/octet-stream
-	auto buf = http_begin_reply(reply, client->endpoint, "200 OK", 6,
-	                            buf_size(data));
-	http_end(buf);
-	tcp_write_pair(&client->tcp, buf, data);
-}
+	// todo: validate name
 
-static void
-backup_send_file(Backup* self, Str* name, size_t size)
-{
+	// open file
 	char path[PATH_MAX];
 	sfmt(path, sizeof(path), "%s/%.*s", state_directory(),
 	     str_size(name), str_of(name));
 
-	// prepare and send header
-	auto client = self->client;
-	auto reply  = &client->reply;
-	auto tcp    = &client->tcp;
-
-	// reply application/octet-stream
-	auto buf = http_begin_reply(reply, client->endpoint, "200 OK", 6, size);
-	buf_printf(buf, "Am-File: %.*s\r\n", str_size(name), str_of(name));
-	http_end(buf);
-	tcp_write_buf(tcp, buf);
-
-	// transfer file content
-	buf = &reply->content;
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
 	file_open(&file, path);
 	if (size > file.size)
-		error("backup: requested file '%.*s'' size mismatch", str_size(name),
-		      str_of(name));
+		error("backup: requested file '%.*s'' size mismatch",
+		      str_size(name), str_of(name));
 
+	// [file, size]
+	auto buf = &self->client->reply.content;
+	buf_reset(buf);
+	encode_array(buf);
+	encode_string(buf, name);
+	encode_integer(buf, size);
+	encode_array_end(buf);
+
+	// transfer file content
+	WsFrame frame;
+	backup_send(self->client, &frame, true, BACKUP_PUSH, buf, size);
+
+	auto chunk = 256u * 1024;
 	while (size > 0)
 	{
 		buf_reset(buf);
-		size_t chunk = 256 * 1024;
 		if (size < chunk)
 			chunk = size;
 		file_read_buf(&file, buf, chunk);
-		tcp_write_buf(tcp, buf);
-		buf_reset(buf);
+		tcp_write_buf(&self->client->tcp, buf);
 		size -= chunk;
 	}
 }
 
-static void
-backup_send(Backup* self)
+static inline void
+backup_process(Backup* self)
 {
 	auto client = self->client;
-	auto request = &client->request;
 
-	// Am-File
-	auto am_file = http_find(request, "Am-File", 7);
-	if (unlikely(! am_file))
-		error("backup: Am-File field is missing");
-
-	// Am-FileSize
-	auto am_filesize = http_find(request, "Am-FileSize", 11);
-	if (unlikely(! am_filesize))
-		error("backup: Am-FileSize field is missing");
-
-	// todo: validate file path
-
-	int64_t size;
-	if (str_toint(&am_filesize->value, &size) == -1)
-		error("backup: Am-FileSize is invalid");
-
-	info("backup: %.*s (%.2f MiB)", str_size(&am_file->value), str_of(&am_file->value),
-	     (double)size / 1024 / 1024);
-
-	// transmit file
-	backup_send_file(self, &am_file->value, size);
-}
-
-static inline void
-backup_process(Backup* self, Client* client)
-{
 	// create db snapshot
 	self->snapshot = db_snapshot(self->db);
 
 	// create and send snapshot data
-	backup_send_snapshot(self);
+	WsFrame frame;
+	backup_send(client, &frame, true, BACKUP_JOIN,
+	            &self->snapshot->data, 0);
 
-	// process file requests (till disconnect)
-	auto request = &client->request;
-	auto readahead = &client->readahead;
+	auto buf = &self->client->request.content;
 	for (;;)
 	{
-		http_reset(request);
-		auto eof = http_read(request, readahead, true);
-		if (eof)
+		buf_reset(buf);
+
+		WsFrame frame;
+		auto op = backup_recv(client, &frame, buf);
+		if (op == BACKUP_DONE)
 			break;
-		http_read_content(request, readahead, &request->content);
-		backup_send(self);
+
+		// file request
+		if (op == BACKUP_PULL)
+		{
+			// [file, size]
+			auto pos = buf->start;
+			Str     name;
+			int64_t size;
+			json_read_array(&pos);
+			json_read_string(&pos, &name);
+			json_read_integer(&pos, &size);
+			json_read_array_end(&pos);
+			backup_push(self, &name, size);
+			continue;
+		}
+
+		error("backup: unexpected response");
+		break;
 	}
 }
 
@@ -158,7 +139,10 @@ backup_main(void* arg)
 	error_catch
 	(
 		tcp_attach(tcp);
-		backup_process(self, client);
+
+		// do websocket handshake
+		backup_accept(client);
+		backup_process(self);
 	);
 	tcp_detach(tcp);
 

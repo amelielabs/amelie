@@ -11,5 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
+#include "backup/protocol.h"
 #include "backup/backup.h"
 #include "backup/restore.h"

@@ -18,6 +18,8 @@
 hot static inline int
 ws_create(WsFrame* self, uint8_t header[14])
 {
+	// RFC6455 The WebSocket Protocol
+
 	// 1 bit fin + 4 bits opcode
     auto pos = 0;
 	header[pos++] = (self->fin ? 0x80 : 0x00) | (self->opcode & 0x0F);
@@ -100,8 +102,9 @@ ws_send(Client* client, WsFrame* frame, int op, bool mask, uint64_t size)
 void
 ws_recv(Client* client, WsFrame* frame)
 {
-	auto readahead = &client->readahead;
+	// RFC6455 The WebSocket Protocol
 
+	auto readahead = &client->readahead;
 	uint8_t data[2];
 	if (! readahead_recv(readahead, data, 2))
 		error("ws: unexpected eof");

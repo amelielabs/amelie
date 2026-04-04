@@ -98,29 +98,22 @@ restore_connect(Restore* self)
 }
 
 static void
-restore_snapshot(Restore* self)
+restore_join(Restore* self)
 {
-	auto client    = self->client;
-	auto tcp       = &client->tcp;
-	auto readahead = &client->readahead;
-
-	// POST /v1/backup (application/octet-stream)
+	// POST /v1/backup
+	auto client = self->client;
 	opt_string_set_raw(&client->endpoint->service, "backup", 6);
 
-	auto request = &client->request;
-	auto buf = http_begin_request(request, client->endpoint, 0);
-	http_end(buf);
-	tcp_write_buf(tcp, buf);
+	// do websocket handshake
+	backup_connect(client);
+
+	// BACKUP_JOIN
 
 	// read snapshot data
-	auto reply = &client->reply;
-	http_reset(reply);
-	auto eof = http_read(reply, readahead, false);
-	if (eof)
-		error("unexpected eof");
-	if (! str_is(&reply->options[HTTP_CODE], "200", 3))
-		error("unexpected reply code");
-	http_read_content(reply, readahead, &self->data);
+	WsFrame frame;
+	auto op = backup_recv(client, &frame, &self->data);
+	if (op != BACKUP_JOIN)
+		error("restore: unexpected server response");
 }
 
 static void
@@ -145,53 +138,34 @@ restore_file(char* path_relative, uint8_t* data)
 }
 
 static void
-restore_file_remote(Restore* self, Str* path_relative, int64_t size, int mode)
+restore_pull(Restore* self, Str* path_relative, int64_t size, int mode)
 {
-	auto client    = self->client;
-	auto tcp       = &client->tcp;
-	auto readahead = &client->readahead;
+	// BACKUP_PULL
 
-	// POST /v1/backup
-	//
-	// accept application/octet-stream
-	auto request = &client->request;
-	auto buf = http_begin_request(request, client->endpoint, 0);
-	buf_printf(buf, "Am-File: %.*s" "\r\n", str_size(path_relative),
-	           str_of(path_relative));
-	buf_printf(buf, "Am-FileSize: %" PRIu64 "\r\n", size);
-	http_end(buf);
-	tcp_write_buf(tcp, buf);
+	// [file, size]
+	auto client = self->client;
+	auto buf = &client->request.content;
+	buf_reset(buf);
+	encode_array(buf);
+	encode_string(buf, path_relative);
+	encode_integer(buf, size);
+	encode_array_end(buf);
+	WsFrame frame;
+	backup_send(client, &frame, true, BACKUP_PULL, buf, 0);
 
-	// read response
-	auto reply = &client->reply;
-	http_reset(reply);
-	auto eof = http_read(reply, readahead, false);
-	if (eof)
-		error("unexpected eof");
-	if (! str_is(&reply->options[HTTP_CODE], "200", 3))
-		error("unexpected reply code");
-
-	// todo: validate endpoint /v1/backup
-
-	// Am-File
-	auto am_file = http_find(reply, "Am-File", 7);
-	if (unlikely(! am_file))
-		error("backup Am-File field is missing");
-
-	// read content header
-
-	// content-length might be missing for empty files
-	int64_t len = 0;
-	auto content_len = http_find(reply, "Content-Length", 14);
-	if (content_len)
-	{
-		if (str_toint(&content_len->value, &len) == -1)
-			error("failed to parse Content-Length");
-	}
+	// recv BACKUP_PUSH
+	buf_reset(buf);
+	auto op = backup_recv(client, &frame, buf);
+	if (op != BACKUP_PUSH)
+		error("restore: unexpected server response");
 
 	// cut of the .snapshot extensions
 	if (str_size(path_relative) > 9 && !strncmp(path_relative->end - 9, ".snapshot", 9))
 		str_truncate(path_relative, 9);
+
+	info("backup: %.*s (%.2f MiB)", str_size(path_relative),
+	     str_of(path_relative),
+	     (double)size / 1024 / 1024);
 
 	// create and transfer the file
 	char path[PATH_MAX];
@@ -199,26 +173,21 @@ restore_file_remote(Restore* self, Str* path_relative, int64_t size, int mode)
 	     str_size(path_relative),
 	     str_of(path_relative));
 
-
-	info("backup: %.*s (%.2f MiB)", str_size(path_relative),
-	     str_of(path_relative),
-	     (double)len / 1024 / 1024);
-
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_EXCL|O_RDWR, mode);
-	while (len > 0)
+	while (size > 0)
 	{
-		int to_read = readahead->readahead;
-		if (len < to_read)
-			to_read = len;
+		auto to_read = client->readahead.readahead;
+		if (size < to_read)
+			to_read = size;
 		uint8_t* pos = NULL;
-		auto rc = readahead_read(readahead, to_read, &pos);
+		auto rc = readahead_read(&client->readahead, to_read, &pos);
 		if (rc == 0)
 			error("unexpected eof");
 		file_write(&file, pos, rc);
-		len -= rc;
+		size -= rc;
 	}
 }
 
@@ -232,7 +201,7 @@ restore_run(Restore* self, char* directory)
 	restore_basedir(directory);
 
 	// create and read remote snapshot data
-	restore_snapshot(self);
+	restore_join(self);
 
 	// parse data
 	auto pos = self->data.start;
@@ -277,7 +246,7 @@ restore_run(Restore* self, char* directory)
 		restore_dir_str(&path_relative);
 	}
 
-	// fetch files
+	// pull files
 	json_read_array(&pos_files);
 	while (! json_read_array_end(&pos_files))
 	{
@@ -286,10 +255,10 @@ restore_run(Restore* self, char* directory)
 		int64_t size;
 		int64_t mode;
 		decode_basefile(&pos_files, &path_relative, &size, &mode);
-		restore_file_remote(self, &path_relative, size, mode);
+		restore_pull(self, &path_relative, size, mode);
 	}
 
-	// fetch wal files
+	// pull wal files
 	json_read_array(&pos_wal);
 	while (! json_read_array_end(&pos_wal))
 	{
@@ -298,8 +267,12 @@ restore_run(Restore* self, char* directory)
 		int64_t size;
 		int64_t mode;
 		decode_basefile(&pos_wal, &path_relative, &size, &mode);
-		restore_file_remote(self, &path_relative, size, mode);
+		restore_pull(self, &path_relative, size, mode);
 	}
+
+	// BACKUP_DONE
+	WsFrame frame;
+	backup_send(self->client, &frame, true, BACKUP_DONE, NULL, 0);
 }
 
 void
