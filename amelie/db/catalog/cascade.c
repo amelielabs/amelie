@@ -31,14 +31,14 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 {
 	// validate or drop all objects matching the user
 
-	// streams
-	list_foreach_safe(&self->stream_mgr.mgr.list)
+	// channels
+	list_foreach_safe(&self->channel_mgr.mgr.list)
 	{
-		auto stream = stream_of(list_at(Rel, link));
-		if (! str_compare_case(&stream->config->user, user))
+		auto channel = channel_of(list_at(Rel, link));
+		if (! str_compare_case(&channel->config->user, user))
 			continue;
 		if (drop)
-			stream_mgr_drop_of(&self->stream_mgr, tr, stream);
+			channel_mgr_drop_of(&self->channel_mgr, tr, channel);
 		else
 			cascade_user_error(user);
 	}
@@ -121,15 +121,15 @@ cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 			      str_size(user), str_of(user));
 	}
 
-	// streams
-	list_foreach_safe(&self->stream_mgr.mgr.list)
+	// channels
+	list_foreach_safe(&self->channel_mgr.mgr.list)
 	{
-		auto stream = stream_of(list_at(Rel, link));
-		if (str_compare_case(&stream->config->user, user))
-			stream_mgr_rename(&self->stream_mgr, tr, &stream->config->user,
-			                  &stream->config->name,
-			                  user_new,
-			                  &stream->config->name, false);
+		auto channel = channel_of(list_at(Rel, link));
+		if (str_compare_case(&channel->config->user, user))
+			channel_mgr_rename(&self->channel_mgr, tr, &channel->config->user,
+			                   &channel->config->name,
+			                   user_new,
+			                   &channel->config->name, false);
 	}
 
 	// branches

@@ -53,6 +53,7 @@ Keyword keywords[] =
 	{ KCASCADE,               "cascade",               7  },
 	{ KCOLUMN ,               "column",                6  },
 	{ KCONTINUE,              "continue",              8  },
+	{ KCHANNEL,               "channel",               7  },
 
 	// d
 	{ KDELETE,                "delete",                6  },
@@ -171,7 +172,6 @@ Keyword keywords[] =
 	{ KSTORED,                "stored",                6  },
 	{ KSTORAGE,               "storage",               7  },
 	{ KSYSTEM,                "system",                6  },
-	{ KSTREAM,                "stream",                6  },
 
 	// t
 	{ KTRUE,                  "true",                  4  },

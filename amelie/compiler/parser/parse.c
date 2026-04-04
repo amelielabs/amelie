@@ -81,11 +81,11 @@ parse_stmt_free(Stmt* stmt)
 			udf_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_STREAM:
+	case STMT_CREATE_CHANNEL:
 	{
-		auto ast = ast_stream_create_of(stmt->ast);
+		auto ast = ast_channel_create_of(stmt->ast);
 		if (ast->config)
-			stream_config_free(ast->config);
+			channel_config_free(ast->config);
 		break;
 	}
 	case STMT_WHILE:
@@ -327,10 +327,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_FUNCTION;
 			parse_function_create(self, or_replace);
 		} else
-		if (stmt_if(self, KSTREAM))
+		if (stmt_if(self, KCHANNEL))
 		{
-			self->id = STMT_CREATE_STREAM;
-			parse_stream_create(self);
+			self->id = STMT_CREATE_CHANNEL;
+			parse_channel_create(self);
 		} else
 		if (stmt_if(self, KLOCK))
 		{
@@ -338,7 +338,7 @@ parse_stmt(Stmt* self)
 			parse_lock_create(self);
 		} else
 		{
-			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|STREAM|LOCK expected");
+			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|CHANNEL|LOCK expected");
 		}
 		break;
 	}
@@ -381,10 +381,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
 		} else
-		if (stmt_if(self, KSTREAM))
+		if (stmt_if(self, KCHANNEL))
 		{
-			self->id = STMT_DROP_STREAM;
-			parse_stream_drop(self);
+			self->id = STMT_DROP_CHANNEL;
+			parse_channel_drop(self);
 		} else
 		if (stmt_if(self, KLOCK))
 		{
@@ -392,7 +392,7 @@ parse_stmt(Stmt* self)
 			parse_lock_drop(self);
 		} else
 		{
-			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|STREAM|LOCK expected");
+			stmt_error(self, NULL, "REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|CHANNEL|LOCK expected");
 		}
 		break;
 	}
@@ -440,12 +440,12 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
 		} else
-		if (stmt_if(self, KSTREAM))
+		if (stmt_if(self, KCHANNEL))
 		{
-			self->id = STMT_ALTER_STREAM;
-			parse_stream_alter(self);
+			self->id = STMT_ALTER_CHANNEL;
+			parse_channel_alter(self);
 		} else {
-			stmt_error(self, NULL, "SYSTEM|USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|STREAM expected");
+			stmt_error(self, NULL, "SYSTEM|USER|STORAGE|TABLE|INDEX|BRANCH|PARTITION|FUNCTION|CHANNEL expected");
 		}
 		break;
 	}

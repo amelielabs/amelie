@@ -35,14 +35,14 @@ catalog_init(Catalog*   self,
 	               iface_part_mgr_arg);
 	branch_mgr_init(&self->branch_mgr, &self->table_mgr);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
-	stream_mgr_init(&self->stream_mgr);
+	channel_mgr_init(&self->channel_mgr);
 }
 
 void
 catalog_free(Catalog* self)
 {
 	udf_mgr_free(&self->udf_mgr);
-	stream_mgr_free(&self->stream_mgr);
+	channel_mgr_free(&self->channel_mgr);
 	branch_mgr_free(&self->branch_mgr);
 	table_mgr_free(&self->table_mgr);
 	storage_mgr_free(&self->storage_mgr);
@@ -216,9 +216,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 			write = udf_mgr_grant(&self->udf_mgr, tr, &user, &name, &to,
 			                      grant, perms, 0);
 			break;
-		case REL_STREAM:
-			write = stream_mgr_grant(&self->stream_mgr, tr, &user, &name, &to,
-			                         grant, perms, 0);
+		case REL_CHANNEL:
+			write = channel_mgr_grant(&self->channel_mgr, tr, &user, &name, &to,
+			                           grant, perms, 0);
 			break;
 		default:
 			abort();
@@ -672,47 +672,49 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                       &user_new, &name_new, if_exists);
 		break;
 	}
-	case DDL_STREAM_CREATE:
+	case DDL_CHANNEL_CREATE:
 	{
-		// PERM_CREATE_STREAM
-		check_user(tr, PERM_CREATE_STREAM);
+		// PERM_CREATE_CHANNEL
+		check_user(tr, PERM_CREATE_CHANNEL);
 
-		auto config = stream_op_create_read(op);
-		defer(stream_config_free, config);
+		auto config = channel_op_create_read(op);
+		defer(channel_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = stream_mgr_create(&self->stream_mgr, tr, config, if_not_exists);
+		write = channel_mgr_create(&self->channel_mgr, tr, config, if_not_exists);
 
 		// todo: attach
 		break;
 	}
-	case DDL_STREAM_DROP:
+	case DDL_CHANNEL_DROP:
 	{
 		Str user;
 		Str name;
-		stream_op_drop_read(op, &user, &name);
+		channel_op_drop_read(op, &user, &name);
 
-		// ensure no other udfs depend on the stream
+		// ensure no other udfs depend on the channel
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = stream_mgr_drop(&self->stream_mgr, tr, &user, &name, if_exists);
+		write = channel_mgr_drop(&self->channel_mgr, tr, &user, &name, if_exists);
 
 		// todo: detach
 		break;
 	}
-	case DDL_STREAM_RENAME:
+	case DDL_CHANNEL_RENAME:
 	{
 		Str user;
 		Str name;
 		Str user_new;
 		Str name_new;
-		stream_op_rename_read(op, &user, &name, &user_new, &name_new);
+		channel_op_rename_read(op, &user, &name, &user_new, &name_new);
 
-		// ensure no other udfs depend on the stream
+		// ensure no other udfs depend on the channel
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = stream_mgr_rename(&self->stream_mgr, tr, &user, &name, &user_new, &name_new, if_exists);
+		write = channel_mgr_rename(&self->channel_mgr, tr, &user, &name,
+		                           &user_new, &name_new,
+		                           if_exists);
 		break;
 	}
 	default:
@@ -743,9 +745,9 @@ catalog_find(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 	if (udf)
 		return &udf->rel;
 
-	auto stream = stream_mgr_find(&self->stream_mgr, user, name, false);
-	if (stream)
-		return &stream->rel;
+	auto channel = channel_mgr_find(&self->channel_mgr, user, name, false);
+	if (channel)
+		return &channel->rel;
 
 	if (error_if_not_exists)
 		error("relation '%.*s': not exists", str_size(name),

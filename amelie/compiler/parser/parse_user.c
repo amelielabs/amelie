@@ -50,7 +50,7 @@ parse_user_create(Stmt* self, bool agent)
 	     PERM_CREATE_TOKEN    |
 	     PERM_CREATE_TABLE    |
 	     PERM_CREATE_FUNCTION |
-	     PERM_CREATE_STREAM   |
+	     PERM_CREATE_CHANNEL  |
 	     PERM_CONNECT;
 	Str user;
 	str_set_cstr(&user, "self");

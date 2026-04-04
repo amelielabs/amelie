@@ -88,6 +88,7 @@ enum
 	KCASCADE,
 	KCOLUMN,
 	KCONTINUE,
+	KCHANNEL,
 
 	// d
 	KDELETE,
@@ -208,7 +209,6 @@ enum
 	KSTORED,
 	KSTORAGE,
 	KSYSTEM,
-	KSTREAM,
 
 	// t
 	KTRUE,

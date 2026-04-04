@@ -43,8 +43,8 @@ enum
 	SHOW_PARTITION,
 	SHOW_FUNCTIONS,
 	SHOW_FUNCTION,
-	SHOW_STREAMS,
-	SHOW_STREAM,
+	SHOW_CHANNELS,
+	SHOW_CHANNEL,
 	SHOW_STATE,
 	SHOW_ALL,
 	SHOW_CONFIG,
@@ -86,8 +86,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_PARTITION,  "partition",   9,  true,  true  },
 	{ SHOW_FUNCTIONS,  "functions",   9,  false, false },
 	{ SHOW_FUNCTION,   "function",    8,  true,  false },
-	{ SHOW_STREAMS,    "streams",     7,  false, false },
-	{ SHOW_STREAM,     "stream",      6,  true,  false },
+	{ SHOW_CHANNELS,   "channels",    8,  false, false },
+	{ SHOW_CHANNEL,    "channel",     7,  true,  false },
 	{ SHOW_STATE,      "state",       5,  false, false },
 	{ SHOW_ALL,        "all",         3,  false, false },
 	{ SHOW_CONFIG,     "config",      6,  false, false },
@@ -336,14 +336,14 @@ fn_show(Fn* self)
 		buf = udf_mgr_list(&catalog->udf_mgr, user, name, flags);
 		break;
 	}
-	case SHOW_STREAMS:
+	case SHOW_CHANNELS:
 	{
-		buf = stream_mgr_list(&catalog->stream_mgr, user, NULL, flags);
+		buf = channel_mgr_list(&catalog->channel_mgr, user, NULL, flags);
 		break;
 	}
-	case SHOW_STREAM:
+	case SHOW_CHANNEL:
 	{
-		buf = stream_mgr_list(&catalog->stream_mgr, user, name, flags);
+		buf = channel_mgr_list(&catalog->channel_mgr, user, name, flags);
 		break;
 	}
 	case SHOW_STATE:

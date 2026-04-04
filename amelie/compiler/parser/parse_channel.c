@@ -18,10 +18,10 @@
 #include <amelie_parser.h>
 
 void
-parse_stream_create(Stmt* self)
+parse_channel_create(Stmt* self)
 {
-	// CREATE STREAM [IF NOT EXISTS] name
-	auto stmt = ast_stream_create_allocate();
+	// CREATE CHANNEL [IF NOT EXISTS] name
+	auto stmt = ast_channel_create_allocate();
 	self->ast = &stmt->ast;
 
 	// if not exists
@@ -30,18 +30,18 @@ parse_stream_create(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 
-	// create stream config
-	auto config = stream_config_allocate();
+	// create channel config
+	auto config = channel_config_allocate();
 	stmt->config = config;
-	stream_config_set_user(config, self->parser->user);
-	stream_config_set_name(config, &name->string);
+	channel_config_set_user(config, self->parser->user);
+	channel_config_set_name(config, &name->string);
 }
 
 void
-parse_stream_drop(Stmt* self)
+parse_channel_drop(Stmt* self)
 {
-	// DROP STREAM [IF EXISTS] name
-	auto stmt = ast_stream_drop_allocate();
+	// DROP CHANNEL [IF EXISTS] name
+	auto stmt = ast_channel_drop_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
@@ -53,10 +53,10 @@ parse_stream_drop(Stmt* self)
 }
 
 void
-parse_stream_alter(Stmt* self)
+parse_channel_alter(Stmt* self)
 {
-	// ALTER STREAM [IF EXISTS] name RENAME TO name
-	auto stmt = ast_stream_alter_allocate();
+	// ALTER CHANNEL [IF EXISTS] name RENAME TO name
+	auto stmt = ast_channel_alter_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
