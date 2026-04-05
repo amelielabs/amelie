@@ -15,6 +15,7 @@ typedef struct Streamer Streamer;
 
 struct Streamer
 {
+	Websocket  websocket;
 	Client*    client;
 	atomic_u32 connected;
 	uint64_t   lsn;

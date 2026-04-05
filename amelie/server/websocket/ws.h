@@ -11,7 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct WsFrame WsFrame;
+typedef struct Ws Ws;
 
 enum
 {
@@ -23,14 +23,22 @@ enum
 	WS_PONG         = 10
 };
 
-struct WsFrame
+struct Ws
 {
 	bool     fin;
 	uint8_t  opcode;
 	bool     mask;
 	uint32_t mask_key;
 	uint64_t size;
+	uint8_t  header[14];
+	int      header_size;
 };
 
-void ws_send(Client*, WsFrame*, int, bool, uint64_t);
-void ws_recv(Client*, WsFrame*);
+static inline void
+ws_init(Ws* self)
+{
+	memset(self, 0, sizeof(*self));
+}
+
+void ws_create(Ws*);
+bool ws_recv(Ws*, Client*);

@@ -20,6 +20,7 @@ typedef struct Restore Restore;
 struct Restore
 {
 	Buf       data;
+	Websocket websocket;
 	Client*   client;
 	Endpoint* endpoint;
 };
@@ -30,6 +31,7 @@ restore_init(Restore* self, Endpoint* endpoint)
 	self->client   = NULL;
 	self->endpoint = endpoint;
 	buf_init(&self->data);
+	websocket_init(&self->websocket);
 }
 
 static void
@@ -37,6 +39,7 @@ restore_free(Restore* self)
 {
 	if (self->client)
 		client_free(self->client);
+	websocket_free(&self->websocket);
 	buf_free(&self->data);
 }
 
@@ -95,23 +98,27 @@ restore_connect(Restore* self)
 	client->readahead.readahead = 256 * 1024;
 	client_set_endpoint(client, self->endpoint);
 	client_connect(client);
+
+	// set websocket
+	Str protocol;
+	str_set(&protocol, "amelie-v1-backup", 16);
+	websocket_set(&self->websocket, &protocol, client, true);
 }
 
 static void
 restore_join(Restore* self)
 {
 	// POST /v1/backup
-	auto client = self->client;
-	opt_string_set_raw(&client->endpoint->service, "backup", 6);
+	auto websocket = &self->websocket;
+	opt_string_set_raw(&websocket->client->endpoint->service, "backup", 6);
 
 	// do websocket handshake
-	backup_connect(client);
+	websocket_connect(websocket);
 
 	// BACKUP_JOIN
 
 	// read snapshot data
-	WsFrame frame;
-	auto op = backup_recv(client, &frame, &self->data);
+	auto op = backup_recv(websocket, &self->data);
 	if (op != BACKUP_JOIN)
 		error("restore: unexpected server response");
 }
@@ -143,6 +150,7 @@ restore_pull(Restore* self, Str* path_relative, int64_t size, int mode)
 	// BACKUP_PULL
 
 	// [file, size]
+	auto websocket = &self->websocket;
 	auto client = self->client;
 	auto buf = &client->request.content;
 	buf_reset(buf);
@@ -150,12 +158,11 @@ restore_pull(Restore* self, Str* path_relative, int64_t size, int mode)
 	encode_string(buf, path_relative);
 	encode_integer(buf, size);
 	encode_array_end(buf);
-	WsFrame frame;
-	backup_send(client, &frame, true, BACKUP_PULL, buf, 0);
+	backup_send(websocket, BACKUP_PULL, buf, 0);
 
 	// recv BACKUP_PUSH
 	buf_reset(buf);
-	auto op = backup_recv(client, &frame, buf);
+	auto op = backup_recv(websocket, buf);
 	if (op != BACKUP_PUSH)
 		error("restore: unexpected server response");
 
@@ -271,8 +278,7 @@ restore_run(Restore* self, char* directory)
 	}
 
 	// BACKUP_DONE
-	WsFrame frame;
-	backup_send(self->client, &frame, true, BACKUP_DONE, NULL, 0);
+	backup_send(&self->websocket, BACKUP_DONE, NULL, 0);
 }
 
 void

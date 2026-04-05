@@ -29,6 +29,12 @@ node_init(Node*       self,
 	uuid_init(&self->id_primary);
 	uuid_init(&self->id_self);
 	uuid_set(&self->id_self, &config()->uuid.string);
+
+	// set websocket
+	websocket_init(&self->websocket);
+	Str protocol;
+	str_set(&protocol, "amelie-v1-repl", 14);
+	websocket_set(&self->websocket, &protocol, client, false);
 }
 
 void
@@ -37,17 +43,18 @@ node_main(Node* self)
 	info("node connected.");
 
 	// do websocket handshake
-	auto client = self->client;
-	node_accept(client);
+	auto websocket = &self->websocket;
+	websocket_accept(websocket);
 
-	auto buf = &client->request.content;
+	auto buf = &self->client->request.content;
 	for (;;)
 	{
 		// NODE_WRITE
 		buf_reset(buf);
-		WsFrame frame;
+
 		NodeMsg msg;
-		node_recv(client, &frame, &msg, buf);
+		if (! node_recv(websocket, &msg, buf))
+			break;
 		if (msg.op != NODE_WRITE)
 			error("node: unexpected message");
 
@@ -60,7 +67,7 @@ node_main(Node* self)
 		}
 
 		// NODE_ACK
-		node_send(client, &frame, false, NODE_ACK, &self->id_self,
+		node_send(websocket, NODE_ACK, &self->id_self,
 		          state_lsn(), NULL);
 	}
 }

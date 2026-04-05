@@ -13,12 +13,13 @@
 #include <amelie_runtime>
 #include <amelie_http.h>
 #include <amelie_client.h>
-#include <amelie_ws.h>
+#include <amelie_websocket.h>
 
-hot static inline int
-ws_create(WsFrame* self, uint8_t header[14])
+hot void
+ws_create(Ws* self)
 {
 	// RFC6455 The WebSocket Protocol
+	auto header = self->header;
 
 	// 1 bit fin + 4 bits opcode
     auto pos = 0;
@@ -73,46 +74,22 @@ ws_create(WsFrame* self, uint8_t header[14])
 		header[pos++] = (uint8_t)(key);
 	}
 
-	return pos;
+	self->header_size = pos;
 }
 
-void
-ws_send(Client* client, WsFrame* frame, int op, bool mask, uint64_t size)
-{
-	// fill the frame
-	frame->fin      = false;
-	frame->opcode   = op;
-	frame->mask     = mask;
-	frame->mask_key = 0;
-	frame->size     = size;
-	if (mask)
-		frame->mask_key = random_generate(&runtime()->random);
-	
-	// create and write websocket frame
-	uint8_t header[14];
-	auto    header_size = ws_create(frame, header);
-	struct iovec iov =
-	{
-		.iov_base = header,
-		.iov_len  = header_size
-	};
-	tcp_write(&client->tcp, &iov, 1);
-}
-
-void
-ws_recv(Client* client, WsFrame* frame)
+bool
+ws_recv(Ws* self, Client* client)
 {
 	// RFC6455 The WebSocket Protocol
-
 	auto readahead = &client->readahead;
 	uint8_t data[2];
 	if (! readahead_recv(readahead, data, 2))
-		error("ws: unexpected eof");
+		return false;
 
 	// 1 bit fin + 4 bits opcode + 1 bit mask
-	frame->fin    = (data[0] & 0x80) != 0;
-	frame->opcode =  data[0] & 0x0F;
-	frame->mask   = (data[1] & 0x80) != 0;
+	self->fin    = (data[0] & 0x80) != 0;
+	self->opcode =  data[0] & 0x0F;
+	self->mask   = (data[1] & 0x80) != 0;
 
 	// 7 bits len
 	uint8_t len = data[1] & 0x7F;
@@ -122,8 +99,8 @@ ws_recv(Client* client, WsFrame* frame)
 		// 16 bit len (big-endian)
 		uint8_t size[2];
 		if (! readahead_recv(readahead, size, 2))
-			error("ws: unexpected eof");
-		frame->size = ((uint64_t)size[0] << 8) | size[1];
+			error("websocket: unexpected eof");
+		self->size = ((uint64_t)size[0] << 8) | size[1];
 		break;
 	}
 	case 127:
@@ -132,7 +109,7 @@ ws_recv(Client* client, WsFrame* frame)
 		uint8_t size[8];
 		if (! readahead_recv(readahead, size, 8))
 			error("ws: unexpected eof");
-		frame->size = 
+		self->size =
 			((uint64_t)size[0] << 56) | ((uint64_t)size[1] << 48) |
 			((uint64_t)size[2] << 40) | ((uint64_t)size[3] << 32) |
 			((uint64_t)size[4] << 24) | ((uint64_t)size[5] << 16) |
@@ -143,22 +120,23 @@ ws_recv(Client* client, WsFrame* frame)
 	{
 		if (len <= 125)
 		{
-			frame->size = len;
+			self->size = len;
 			break;
 		}
-		error("ws: invalid frame length");
+		error("websocket: invalid frame length");
 		break;
 	}
 	}
 
 	// 32 bits mask (big-endian, only if supplied)
-	if (frame->mask)
+	if (self->mask)
 	{
 		uint8_t mask[4];
 		if (! readahead_recv(readahead, mask, 4))
-			error("ws: unexpected eof");
-		frame->mask_key = 
+			error("websocket: unexpected eof");
+		self->mask_key =
 			((uint32_t)mask[0] << 24) | ((uint32_t)mask[1] << 16) |
 			((uint32_t)mask[2] << 8)  |  mask[3];
 	}
+	return true;
 }

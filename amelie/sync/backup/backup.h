@@ -17,7 +17,7 @@ struct Backup
 {
 	DbSnapshot* snapshot;
 	Db*         db;
-	Client*     client;
+	Websocket   websocket;
 	Event       on_complete;
 	Task        task;
 };

@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "ws/handshake.h"
-#include "ws/ws.h"
+#include "websocket/ws.h"
+#include "websocket/websocket.h"

@@ -20,7 +20,7 @@ backup_init(Backup* self, Db* db)
 {
 	self->snapshot = NULL;
 	self->db       = db;
-	self->client   = NULL;
+	websocket_init(&self->websocket);
 	event_init(&self->on_complete);
 	task_init(&self->task);
 }
@@ -33,6 +33,7 @@ backup_free(Backup* self)
 		db_snapshot_drop(self->db, self->snapshot);
 		self->snapshot = NULL;
 	}
+	websocket_free(&self->websocket);
 	task_free(&self->task);
 }
 
@@ -58,7 +59,8 @@ backup_push(Backup* self, Str* name, size_t size)
 		      str_size(name), str_of(name));
 
 	// [file, size]
-	auto buf = &self->client->reply.content;
+	auto client = self->websocket.client;
+	auto buf = &client->reply.content;
 	buf_reset(buf);
 	encode_array(buf);
 	encode_string(buf, name);
@@ -66,8 +68,7 @@ backup_push(Backup* self, Str* name, size_t size)
 	encode_array_end(buf);
 
 	// transfer file content
-	WsFrame frame;
-	backup_send(self->client, &frame, true, BACKUP_PUSH, buf, size);
+	backup_send(&self->websocket, BACKUP_PUSH, buf, size);
 
 	auto chunk = 256u * 1024;
 	while (size > 0)
@@ -76,7 +77,7 @@ backup_push(Backup* self, Str* name, size_t size)
 		if (size < chunk)
 			chunk = size;
 		file_read_buf(&file, buf, chunk);
-		tcp_write_buf(&self->client->tcp, buf);
+		tcp_write_buf(&client->tcp, buf);
 		size -= chunk;
 	}
 }
@@ -84,23 +85,20 @@ backup_push(Backup* self, Str* name, size_t size)
 static inline void
 backup_process(Backup* self)
 {
-	auto client = self->client;
+	auto websocket = &self->websocket;
 
 	// create db snapshot
 	self->snapshot = db_snapshot(self->db);
 
 	// create and send snapshot data
-	WsFrame frame;
-	backup_send(client, &frame, true, BACKUP_JOIN,
-	            &self->snapshot->data, 0);
+	backup_send(websocket, BACKUP_JOIN, &self->snapshot->data, 0);
 
-	auto buf = &self->client->request.content;
+	auto buf = &websocket->client->request.content;
 	for (;;)
 	{
 		buf_reset(buf);
 
-		WsFrame frame;
-		auto op = backup_recv(client, &frame, buf);
+		auto op = backup_recv(websocket, buf);
 		if (op == BACKUP_DONE)
 			break;
 
@@ -127,9 +125,9 @@ backup_process(Backup* self)
 static void
 backup_main(void* arg)
 {
-	Backup* self   = arg;
-	auto    client = self->client;
-	auto    tcp    = &client->tcp;
+	Backup* self      = arg;
+	auto    websocket = &self->websocket;
+	auto    client    = websocket->client;
 
 	char addr[128];
 	tcp_getpeername(&client->tcp, addr, sizeof(addr));
@@ -138,13 +136,14 @@ backup_main(void* arg)
 	info("backup: sending to %s", addr);
 	error_catch
 	(
-		tcp_attach(tcp);
+		client_attach(client);
 
 		// do websocket handshake
-		backup_accept(client);
+		websocket_accept(&self->websocket);
+
 		backup_process(self);
 	);
-	tcp_detach(tcp);
+	client_detach(client);
 
 	event_signal(&self->on_complete);
 	info("");
@@ -155,7 +154,11 @@ backup_run(Backup* self, Client* client)
 {
 	// detach client from current task
 	tcp_detach(&client->tcp);
-	self->client = client;
+
+	// set as websocket
+	Str protocol;
+	str_set(&protocol, "amelie-v1-backup", 16);
+	websocket_set(&self->websocket, &protocol, client, false);
 
 	// prepare on wait condition
 	event_attach(&self->on_complete);

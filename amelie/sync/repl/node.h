@@ -17,6 +17,7 @@ typedef void (*NodeExecute)(Node*, NodeMsg*, Buf*);
 
 struct Node
 {
+	Websocket   websocket;
 	Client*     client;
 	NodeExecute execute;
 	void*       execute_arg;

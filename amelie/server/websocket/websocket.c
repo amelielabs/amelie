@@ -13,11 +13,35 @@
 #include <amelie_runtime>
 #include <amelie_http.h>
 #include <amelie_client.h>
-
+#include <amelie_websocket.h>
 #include <openssl/sha.h>
 
+void
+websocket_init(Websocket* self)
+{
+	self->client      = NULL;
+	self->client_mode = false;
+	iov_init(&self->iov);
+	ws_init(&self->frame);
+	str_init(&self->protocol);
+}
+
+void
+websocket_free(Websocket* self)
+{
+	iov_free(&self->iov);
+}
+
+void
+websocket_set(Websocket* self, Str* protocol, Client* client, bool client_mode)
+{
+	self->client      = client;
+	self->client_mode = client_mode;
+	str_set_str(&self->protocol, protocol);
+}
+
 static void
-ws_generate_key(Buf* self)
+websocket_generate_key(Buf* self)
 {
 	// key = base64(rand)
 	uint64_t rand[2];
@@ -29,7 +53,7 @@ ws_generate_key(Buf* self)
 }
 
 static void
-ws_generate_token(Buf* self, Str* key)
+websocket_generate_token(Buf* self, Str* key)
 {
 	// base64(sha1(key + magic))
 	const char* magic = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
@@ -44,13 +68,15 @@ ws_generate_token(Buf* self, Str* key)
 }
 
 void
-ws_connect(Client* self, Str* protocol)
+websocket_connect(Websocket* self)
 {
+	auto client = self->client;
+
 	// generate websocket key = base64(rand)
 	Buf key;
 	buf_init(&key);
 	defer_buf(&key);
-	ws_generate_key(&key);
+	websocket_generate_key(&key);
 
 	// generate websocket token
 	Buf token;
@@ -58,30 +84,35 @@ ws_connect(Client* self, Str* protocol)
 	defer_buf(&token);
 	Str key_str;
 	buf_str(&key, &key_str);
-	ws_generate_token(&token, &key_str);
+	websocket_generate_token(&token, &key_str);
 	Str token_str;
 	buf_str(&token, &token_str);
 
 	// send
-	auto request = &self->request;
-	auto buf = http_begin_request(request, self->endpoint, 0);
+	auto request = &client->request;
+	http_reset(request);
+	auto buf = http_begin_request(request, client->endpoint, 0);
 	buf_printf(buf, "Upgrade: websocket\r\n");
 	buf_printf(buf, "Connection: Upgrade\r\n");
 	buf_printf(buf, "Sec-WebSocket-Key: %.*s\r\n", buf_size(&key), buf_cstr(&key));
 	buf_printf(buf, "Sec-WebSocket-Version: 13\r\n");
-	buf_printf(buf, "Sec-WebSocket-Protocol: %.*s\r\n", str_size(protocol),
-	           str_of(protocol));
+	buf_printf(buf, "Sec-WebSocket-Protocol: %.*s\r\n", str_size(&self->protocol),
+	           str_of(&self->protocol));
 	http_end(buf);
-	tcp_write_buf(&self->tcp, buf);
+	tcp_write_buf(&client->tcp, buf);
 
 	// read response
-	auto reply = &self->reply;
+	auto reply = &client->reply;
 	http_reset(reply);
-	auto eof = http_read(reply, &self->readahead, false);
+	auto eof = http_read(reply, &client->readahead, false);
 	if (eof)
-		error("unexpected eof");
+		error("websocket: unexpected eof");
 	if (! str_is(&reply->options[HTTP_CODE], "101", 3))
-		error("unexpected reply code");
+		error("websocket: %.*s %.*s",
+		      str_size(&reply->options[HTTP_CODE]),
+		      str_of(&reply->options[HTTP_CODE]),
+		      str_size(&reply->options[HTTP_MSG]),
+		      str_of(&reply->options[HTTP_MSG]));
 
 	// validate reply headers
 
@@ -102,15 +133,17 @@ ws_connect(Client* self, Str* protocol)
 
 	// Sec-WebSocket-Protocol
 	hdr = http_find(reply, "Sec-WebSocket-Protocol", 22);
-	if (!hdr || !str_compare(&hdr->value, protocol))
+	if (!hdr || !str_compare(&hdr->value, &self->protocol))
 		error("websocket: invalid Sec-WebSocket-Protocol header");
 }
 
 void
-ws_accept(Client* self, Str* protocol)
+websocket_accept(Websocket* self)
 {
+	auto client = self->client;
+
 	// recv (already available)
-	auto req = &self->request;
+	auto req = &client->request;
 
 	// Upgrade
 	auto hdr = http_find(req, "Upgrade", 7);
@@ -129,7 +162,7 @@ ws_accept(Client* self, Str* protocol)
 
 	// Sec-WebSocket-Protocol
 	hdr = http_find(req, "Sec-WebSocket-Protocol", 22);
-	if (!hdr || !str_compare(&hdr->value, protocol))
+	if (!hdr || !str_compare(&hdr->value, &self->protocol))
 		error("websocket: invalid Sec-WebSocket-Protocol header");
 
 	// Sec-WebSocket-Key
@@ -141,18 +174,71 @@ ws_accept(Client* self, Str* protocol)
 	Buf token;
 	buf_init(&token);
 	defer_buf(&token);
-	ws_generate_token(&token, &key->value);
+	websocket_generate_token(&token, &key->value);
 	Str token_str;
 	buf_str(&token, &token_str);
 
 	// reply
-	auto reply = &self->reply;
-	auto buf = http_begin_reply(reply, self->endpoint, "101 Switching Protocols", 23, 0);
+	auto reply = &client->reply;
+	http_reset(reply);
+	auto buf = http_begin_reply(reply, client->endpoint, "101 Switching Protocols", 23, 0);
 	buf_printf(buf, "Upgrade: websocket\r\n");
 	buf_printf(buf, "Connection: Upgrade\r\n");
 	buf_printf(buf, "Sec-WebSocket-Accept: %.*s\r\n", str_size(&token_str), token_str.pos);
-	buf_printf(buf, "Sec-WebSocket-Protocol: %.*s\r\n", str_size(protocol),
-	           str_of(protocol));
+	buf_printf(buf, "Sec-WebSocket-Protocol: %.*s\r\n", str_size(&self->protocol),
+	           str_of(&self->protocol));
 	http_end(buf);
-	tcp_write_buf(&self->tcp, buf);
+	tcp_write_buf(&client->tcp, buf);
+}
+
+hot void
+websocket_send(Websocket*    self, int op,
+               struct iovec* data,
+               int           data_count,
+               uint64_t      size)
+{
+	// prepare frame
+	auto frame = &self->frame;
+	frame->fin      = false;
+	frame->opcode   = op;
+	frame->mask     = self->client_mode;
+	frame->mask_key = 0;
+	if (self->client_mode)
+		frame->mask_key = random_generate(&runtime()->random);
+
+	// additional size beside data (not included here)
+	frame->size     = size;
+
+	// add frame with data to iov
+	auto iov = &self->iov;
+	iov_reset(iov);
+	iov_add(iov, frame->header, 0);
+	if (data)
+	{
+		for (auto i = 0; i < data_count; i++)
+		{
+			iov_add(iov, data[i].iov_base, data[i].iov_len);
+			frame->size += data[i].iov_len;
+		}
+	}
+
+	// create websocket frame
+	ws_create(frame);
+
+	// update frame size
+	iov_pointer(iov)->iov_len = frame->header_size;
+
+	// send frame with data
+	tcp_write(&self->client->tcp, iov_pointer(iov), iov->iov_count);
+}
+
+bool
+websocket_recv(Websocket* self, uint8_t* data, int data_size)
+{
+	// [websocket header][data]
+	if (! ws_recv(&self->frame, self->client))
+		return false;
+	if (data_size > 0)
+		readahead_recv(&self->client->readahead, data, data_size);
+	return true;
 }
