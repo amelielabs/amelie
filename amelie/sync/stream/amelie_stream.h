@@ -11,6 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_stream.h>
-#include <amelie_backup.h>
-#include <amelie_repl.h>
+// stream
+#include "stream/stream_waiter.h"
+#include "stream/stream_slot.h"
+#include "stream/stream.h"
+#include "stream/stream_cursor.h"
