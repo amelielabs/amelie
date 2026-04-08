@@ -53,7 +53,6 @@ Keyword keywords[] =
 	{ KCASCADE,               "cascade",               7  },
 	{ KCOLUMN ,               "column",                6  },
 	{ KCONTINUE,              "continue",              8  },
-	{ KCHANNEL,               "channel",               7  },
 
 	// d
 	{ KDELETE,                "delete",                6  },
@@ -182,6 +181,7 @@ Keyword keywords[] =
 	{ KTABLE,                 "table",                 5  },
 	{ KTRUNCATE,              "truncate",              8  },
 	{ KTOKEN,                 "token",                 5  },
+	{ KTOPIC,                 "topic",                 5  },
 
 	// u
 	{ KUPDATE,                "update",                6  },

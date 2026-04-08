@@ -79,7 +79,7 @@
 #include "parser/parse_branch.h"
 #include "parser/parse_part.h"
 #include "parser/parse_function.h"
-#include "parser/parse_channel.h"
+#include "parser/parse_topic.h"
 
 // dml
 #include "parser/parse_from.h"

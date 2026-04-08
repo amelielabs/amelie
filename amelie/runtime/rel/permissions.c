@@ -41,7 +41,7 @@ static Permission perms[] =
 	{ PERM_CREATE_TABLE,    "create_table",    12 },
 	{ PERM_CREATE_BRANCH,   "create_branch",   13 },
 	{ PERM_CREATE_FUNCTION, "create_function", 15 },
-	{ PERM_CREATE_CHANNEL,  "create_channel",  14 },
+	{ PERM_CREATE_TOPIC,    "create_topic",    12 },
 
 	// DML
 	{ PERM_INSERT,          "insert",          6  },

@@ -18,10 +18,10 @@
 #include <amelie_parser.h>
 
 void
-parse_channel_create(Stmt* self)
+parse_topic_create(Stmt* self)
 {
-	// CREATE CHANNEL [IF NOT EXISTS] name
-	auto stmt = ast_channel_create_allocate();
+	// CREATE TOPIC [IF NOT EXISTS] name
+	auto stmt = ast_topic_create_allocate();
 	self->ast = &stmt->ast;
 
 	// if not exists
@@ -30,18 +30,18 @@ parse_channel_create(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 
-	// create channel config
-	auto config = channel_config_allocate();
+	// create topic config
+	auto config = topic_config_allocate();
 	stmt->config = config;
-	channel_config_set_user(config, self->parser->user);
-	channel_config_set_name(config, &name->string);
+	topic_config_set_user(config, self->parser->user);
+	topic_config_set_name(config, &name->string);
 }
 
 void
-parse_channel_drop(Stmt* self)
+parse_topic_drop(Stmt* self)
 {
-	// DROP CHANNEL [IF EXISTS] name
-	auto stmt = ast_channel_drop_allocate();
+	// DROP TOPIC [IF EXISTS] name
+	auto stmt = ast_topic_drop_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
@@ -53,10 +53,10 @@ parse_channel_drop(Stmt* self)
 }
 
 void
-parse_channel_alter(Stmt* self)
+parse_topic_alter(Stmt* self)
 {
-	// ALTER CHANNEL [IF EXISTS] name RENAME TO name
-	auto stmt = ast_channel_alter_allocate();
+	// ALTER TOPIC [IF EXISTS] name RENAME TO name
+	auto stmt = ast_topic_alter_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists

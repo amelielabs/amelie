@@ -35,14 +35,14 @@ catalog_init(Catalog*   self,
 	               iface_part_mgr_arg);
 	branch_mgr_init(&self->branch_mgr, &self->table_mgr);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
-	channel_mgr_init(&self->channel_mgr);
+	topic_mgr_init(&self->topic_mgr);
 }
 
 void
 catalog_free(Catalog* self)
 {
 	udf_mgr_free(&self->udf_mgr);
-	channel_mgr_free(&self->channel_mgr);
+	topic_mgr_free(&self->topic_mgr);
 	branch_mgr_free(&self->branch_mgr);
 	table_mgr_free(&self->table_mgr);
 	storage_mgr_free(&self->storage_mgr);
@@ -216,9 +216,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 			write = udf_mgr_grant(&self->udf_mgr, tr, &user, &name, &to,
 			                      grant, perms, 0);
 			break;
-		case REL_CHANNEL:
-			write = channel_mgr_grant(&self->channel_mgr, tr, &user, &name, &to,
-			                           grant, perms, 0);
+		case REL_TOPIC:
+			write = topic_mgr_grant(&self->topic_mgr, tr, &user, &name, &to,
+			                        grant, perms, 0);
 			break;
 		default:
 			abort();
@@ -672,49 +672,49 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                       &user_new, &name_new, if_exists);
 		break;
 	}
-	case DDL_CHANNEL_CREATE:
+	case DDL_TOPIC_CREATE:
 	{
-		// PERM_CREATE_CHANNEL
-		check_user(tr, PERM_CREATE_CHANNEL);
+		// PERM_CREATE_TOPIC
+		check_user(tr, PERM_CREATE_TOPIC);
 
-		auto config = channel_op_create_read(op);
-		defer(channel_config_free, config);
+		auto config = topic_op_create_read(op);
+		defer(topic_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = channel_mgr_create(&self->channel_mgr, tr, config, if_not_exists);
+		write = topic_mgr_create(&self->topic_mgr, tr, config, if_not_exists);
 
 		// todo: attach
 		break;
 	}
-	case DDL_CHANNEL_DROP:
+	case DDL_TOPIC_DROP:
 	{
 		Str user;
 		Str name;
-		channel_op_drop_read(op, &user, &name);
+		topic_op_drop_read(op, &user, &name);
 
-		// ensure no other udfs depend on the channel
+		// ensure no other udfs depend on the topic
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = channel_mgr_drop(&self->channel_mgr, tr, &user, &name, if_exists);
+		write = topic_mgr_drop(&self->topic_mgr, tr, &user, &name, if_exists);
 
 		// todo: detach
 		break;
 	}
-	case DDL_CHANNEL_RENAME:
+	case DDL_TOPIC_RENAME:
 	{
 		Str user;
 		Str name;
 		Str user_new;
 		Str name_new;
-		channel_op_rename_read(op, &user, &name, &user_new, &name_new);
+		topic_op_rename_read(op, &user, &name, &user_new, &name_new);
 
-		// ensure no other udfs depend on the channel
+		// ensure no other udfs depend on the topic
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = channel_mgr_rename(&self->channel_mgr, tr, &user, &name,
-		                           &user_new, &name_new,
-		                           if_exists);
+		write = topic_mgr_rename(&self->topic_mgr, tr, &user, &name,
+		                         &user_new, &name_new,
+		                         if_exists);
 		break;
 	}
 	default:
@@ -745,13 +745,13 @@ catalog_find(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 	if (udf)
 		return &udf->rel;
 
-	auto channel = channel_mgr_find(&self->channel_mgr, user, name, false);
-	if (channel)
-		return &channel->rel;
+	auto topic = topic_mgr_find(&self->topic_mgr, user, name, false);
+	if (topic)
+		return &topic->rel;
 
 	if (error_if_not_exists)
 		error("relation '%.*s': not exists", str_size(name),
-		       str_of(name));
+		      str_of(name));
 	return NULL;
 }
 

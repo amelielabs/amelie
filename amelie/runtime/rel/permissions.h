@@ -27,7 +27,7 @@ enum
 	PERM_CREATE_TABLE    = 1ul << 4,
 	PERM_CREATE_BRANCH   = 1ul << 5,
 	PERM_CREATE_FUNCTION = 1ul << 6,
-	PERM_CREATE_CHANNEL  = 1ul << 7,
+	PERM_CREATE_TOPIC    = 1ul << 7,
 
 	// DML
 	PERM_INSERT          = 1ul << 8,

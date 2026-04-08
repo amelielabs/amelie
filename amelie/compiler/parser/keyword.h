@@ -88,7 +88,6 @@ enum
 	KCASCADE,
 	KCOLUMN,
 	KCONTINUE,
-	KCHANNEL,
 
 	// d
 	KDELETE,
@@ -219,6 +218,7 @@ enum
 	KTABLE,
 	KTRUNCATE,
 	KTOKEN,
+	KTOPIC,
 
 	// u
 	KUPDATE,

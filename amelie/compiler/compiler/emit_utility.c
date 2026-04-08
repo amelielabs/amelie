@@ -315,25 +315,25 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
-	// channel
-	case STMT_CREATE_CHANNEL:
+	// topic
+	case STMT_CREATE_TOPIC:
 	{
-		auto arg = ast_channel_create_of(stmt->ast);
-		offset = channel_op_create(data, arg->config);
+		auto arg = ast_topic_create_of(stmt->ast);
+		offset = topic_op_create(data, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		break;
 	}
-	case STMT_DROP_CHANNEL:
+	case STMT_DROP_TOPIC:
 	{
-		auto arg = ast_channel_drop_of(stmt->ast);
-		offset = channel_op_drop(data, user, &arg->name);
+		auto arg = ast_topic_drop_of(stmt->ast);
+		offset = topic_op_drop(data, user, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
-	case STMT_ALTER_CHANNEL:
+	case STMT_ALTER_TOPIC:
 	{
-		auto arg = ast_channel_alter_of(stmt->ast);
-		offset = channel_op_rename(data, user, &arg->name, user, &arg->name_new);
+		auto arg = ast_topic_alter_of(stmt->ast);
+		offset = topic_op_rename(data, user, &arg->name, user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

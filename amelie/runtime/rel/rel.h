@@ -23,7 +23,7 @@ typedef enum
 	REL_TABLE,
 	REL_BRANCH,
 	REL_UDF,
-	REL_CHANNEL,
+	REL_TOPIC,
 	REL_LOCK,
 	REL_SYSTEM
 } RelType;
