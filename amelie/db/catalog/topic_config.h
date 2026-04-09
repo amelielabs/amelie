@@ -17,6 +17,7 @@ struct TopicConfig
 {
 	Str    user;
 	Str    name;
+	Uuid   id;
 	Grants grants;
 };
 
@@ -27,6 +28,7 @@ topic_config_allocate(void)
 	self = am_malloc(sizeof(TopicConfig));
 	str_init(&self->user);
 	str_init(&self->name);
+	uuid_init(&self->id);
 	grants_init(&self->grants);
 	return self;
 }
@@ -54,12 +56,19 @@ topic_config_set_name(TopicConfig* self, Str* name)
 	str_copy(&self->name, name);
 }
 
+static inline void
+topic_config_set_id(TopicConfig* self, Uuid* value)
+{
+	self->id = *value;
+}
+
 static inline TopicConfig*
 topic_config_copy(TopicConfig* self)
 {
 	auto copy = topic_config_allocate();
 	topic_config_set_user(copy, &self->user);
 	topic_config_set_name(copy, &self->name);
+	topic_config_set_id(copy, &self->id);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -74,6 +83,7 @@ topic_config_read(uint8_t** pos)
 	{
 		{ DECODE_STRING, "user",   &self->user },
 		{ DECODE_STRING, "name",   &self->name },
+		{ DECODE_UUID,   "id",     &self->id   },
 		{ DECODE_ARRAY,  "grants", &pos_grants },
 		{ 0,              NULL,     NULL       },
 	};
@@ -103,6 +113,10 @@ topic_config_write(TopicConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_uuid(buf, &self->id);
 
 	// grants
 	encode_raw(buf, "grants", 6);
