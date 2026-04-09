@@ -17,9 +17,9 @@
 #include <amelie_sub.h>
 
 void
-sub_mgr_init(SubMgr* self, PubMgr* pub_mgr)
+sub_mgr_init(SubMgr* self, Pub* pub)
 {
-	self->pub_mgr    = pub_mgr;
+	self->pub        = pub;
 	self->list_count = 0;
 	list_init(&self->list);
 }
@@ -30,8 +30,7 @@ sub_mgr_free(SubMgr* self)
 	list_foreach_safe(&self->list)
 	{
 		auto sub = list_at(Sub, link);
-		if (sub->pub)
-			pub_detach(sub->pub, &sub->pub_slot);
+		pub_detach(self->pub, &sub->slot);
 		// todo: unref?
 		sub_free(sub);
 	}
@@ -76,9 +75,8 @@ sub_mgr_open(SubMgr* self)
 		list_append(&self->list, &sub->link);
 		self->list_count++;
 
-		// find pub and attach slot
-		sub->pub = pub_mgr_find(self->pub_mgr, &sub->config->pub_id, true);
-		pub_attach(sub->pub, &sub->pub_slot);
+		// attach slot
+		pub_attach(self->pub, &sub->slot);
 	}
 }
 
@@ -99,9 +97,8 @@ sub_mgr_create(SubMgr* self, SubConfig* config, bool if_not_exists)
 
 	// todo: set lsn and prepare slot
 
-	// find pub and attach slot
-	sub->pub = pub_mgr_find(self->pub_mgr, &sub->config->pub_id, true);
-	pub_attach(sub->pub, &sub->pub_slot);
+	// attach slot
+	pub_attach(self->pub, &sub->slot);
 
 	sub_mgr_save(self);
 }
@@ -121,7 +118,7 @@ sub_mgr_drop(SubMgr* self, Str* user, Str* name, bool if_exists)
 	self->list_count--;
 
 	// detach slot
-	pub_detach(sub->pub, &sub->pub_slot);
+	pub_detach(self->pub, &sub->slot);
 
 	sub_mgr_save(self);
 

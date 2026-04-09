@@ -15,8 +15,7 @@ typedef struct Sub Sub;
 
 struct Sub
 {
-	Pub*       pub;
-	PubSlot    pub_slot;
+	PubSlot    slot;
 	SubConfig* config;
 	List       link;
 };
@@ -25,9 +24,8 @@ static inline Sub*
 sub_allocate(SubConfig* config)
 {
 	auto self = (Sub*)am_malloc(sizeof(Sub));
-	self->pub    = NULL;
 	self->config = sub_config_copy(config);
-	pub_slot_init(&self->pub_slot);
+	pub_slot_init(&self->slot);
 	list_init(&self->link);
 	return self;
 }

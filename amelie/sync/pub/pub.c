@@ -35,11 +35,9 @@ pub_page_add(Pub* self)
 	self->current = page;
 }
 
-Pub*
-pub_allocate(Uuid* id)
+void
+pub_init(Pub* self)
 {
-	auto self = (Pub*)am_malloc(sizeof(Pub));
-	self->id            = *id;
 	self->lsn           = 0;
 	self->current       = NULL;
 	self->shutdown      = false;
@@ -53,7 +51,6 @@ pub_allocate(Uuid* id)
 	list_init(&self->link);
 
 	pub_page_add(self);
-	return self;
 }
 
 void
@@ -65,7 +62,6 @@ pub_free(Pub* self)
 		vfs_munmap(page, page->end + sizeof(PubPage));
 	}
 	spinlock_free(&self->lock);
-	am_free(self);
 }
 
 void

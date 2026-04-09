@@ -15,12 +15,12 @@ typedef struct SubMgr SubMgr;
 
 struct SubMgr
 {
-	int     list_count;
-	List    list;
-	PubMgr* pub_mgr;
+	int  list_count;
+	List list;
+	Pub* pub;
 };
 
-void sub_mgr_init(SubMgr*, PubMgr*);
+void sub_mgr_init(SubMgr*, Pub*);
 void sub_mgr_free(SubMgr*);
 void sub_mgr_open(SubMgr*);
 void sub_mgr_create(SubMgr*, SubConfig*, bool);

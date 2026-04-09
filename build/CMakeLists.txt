@@ -232,7 +232,6 @@ set(AMELIE_SOURCES_SYNC
     ${AMELIE_ROOT}/sync/repl/replica_mgr.c
     ${AMELIE_ROOT}/sync/repl/repl.c
     ${AMELIE_ROOT}/sync/pub/pub.c
-    ${AMELIE_ROOT}/sync/pub/pub_mgr.c
     ${AMELIE_ROOT}/sync/sub/sub_mgr.c)
 
 set(AMELIE_SOURCES_VM

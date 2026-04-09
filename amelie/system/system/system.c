@@ -199,7 +199,7 @@ system_create(void)
 	auto share = &self->share;
 	share->executor     = &self->executor;
 	share->commit       = &self->commit;
-	share->pub_mgr      = &self->pub_mgr;
+	share->pub          = &self->pub;
 	share->sub_mgr      = &self->sub_mgr;
 	share->repl         = &self->repl;
 	share->function_mgr = &self->function_mgr;
@@ -227,8 +227,8 @@ system_create(void)
 	repl_init(&self->repl, &self->db);
 
 	// pub/sub
-	pub_mgr_init(&self->pub_mgr);
-	sub_mgr_init(&self->sub_mgr, &self->pub_mgr);
+	pub_init(&self->pub);
+	sub_mgr_init(&self->sub_mgr, &self->pub);
 	return self;
 }
 
@@ -237,7 +237,7 @@ system_free(System* self)
 {
 	repl_free(&self->repl);
 	sub_mgr_free(&self->sub_mgr);
-	pub_mgr_free(&self->pub_mgr);
+	pub_free(&self->pub);
 	commit_free(&self->commit);
 	executor_free(&self->executor);
 	db_free(&self->db);

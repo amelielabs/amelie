@@ -19,7 +19,7 @@ struct System
 	// vm
 	FunctionMgr function_mgr;
 	// pub/sub
-	PubMgr      pub_mgr;
+	Pub         pub;
 	SubMgr      sub_mgr;
 	// repl
 	Repl        repl;

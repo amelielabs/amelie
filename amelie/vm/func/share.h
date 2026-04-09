@@ -18,7 +18,7 @@ struct Share
 	Executor*    executor;
 	Commit*      commit;
 	Repl*        repl;
-	PubMgr*      pub_mgr;
+	Pub*         pub;
 	SubMgr*      sub_mgr;
 	FunctionMgr* function_mgr;
 	Db*          db;
