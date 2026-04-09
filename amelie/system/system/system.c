@@ -199,6 +199,8 @@ system_create(void)
 	auto share = &self->share;
 	share->executor     = &self->executor;
 	share->commit       = &self->commit;
+	share->pub_mgr      = &self->pub_mgr;
+	share->sub_mgr      = &self->sub_mgr;
 	share->repl         = &self->repl;
 	share->function_mgr = &self->function_mgr;
 	share->db           = &self->db;
@@ -223,6 +225,10 @@ system_create(void)
 
 	// replication
 	repl_init(&self->repl, &self->db);
+
+	// pub/sub
+	pub_mgr_init(&self->pub_mgr);
+	sub_mgr_init(&self->sub_mgr, &self->pub_mgr);
 	return self;
 }
 
@@ -230,6 +236,8 @@ void
 system_free(System* self)
 {
 	repl_free(&self->repl);
+	sub_mgr_free(&self->sub_mgr);
+	pub_mgr_free(&self->pub_mgr);
 	commit_free(&self->commit);
 	executor_free(&self->executor);
 	db_free(&self->db);
@@ -305,6 +313,9 @@ system_start(System* self, bool bootstrap)
 	frontend_mgr_start(&self->frontend_mgr, &frontend_if,
 	                   self,
 	                   workers);
+
+	// prepare subscriptions
+	sub_mgr_open(&self->sub_mgr);
 
 	// prepare replication manager
 	repl_open(&self->repl);

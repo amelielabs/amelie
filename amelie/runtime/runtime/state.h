@@ -30,6 +30,7 @@ struct State
 	Opt  repl;
 	Opt  repl_primary;
 	Opt  replicas;
+	Opt  subs;
 	// stats
 	Opt  connections;
 	Opt  sent_bytes;

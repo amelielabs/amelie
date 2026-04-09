@@ -15,4 +15,5 @@
 #include "pub/pub_waiter.h"
 #include "pub/pub_slot.h"
 #include "pub/pub.h"
+#include "pub/pub_mgr.h"
 #include "pub/pub_cursor.h"

@@ -45,6 +45,8 @@ enum
 	SHOW_FUNCTION,
 	SHOW_TOPICS,
 	SHOW_TOPIC,
+	SHOW_SUBSCRIPTIONS,
+	SHOW_SUBSCRIPTION,
 	SHOW_STATE,
 	SHOW_ALL,
 	SHOW_CONFIG,
@@ -64,35 +66,39 @@ struct ShowCmd
 
 static ShowCmd show_cmds[] =
 {
-	{ SHOW_REPLICAS,   "replicas",    8,  false, false },
-	{ SHOW_REPLICA,    "replica",     7,  true,  false },
-	{ SHOW_REPL,       "repl",        4,  false, false },
-	{ SHOW_REPL,       "replication", 11, false, false },
-	{ SHOW_WAL,        "wal",         3,  false, false },
-	{ SHOW_METRICS,    "metrics",     7,  false, false },
-	{ SHOW_GRANTS,     "grants",      6,  false, true  },
-	{ SHOW_AGENTS,     "agents",      6,  false, false },
-	{ SHOW_USERS,      "users",       5,  false, false },
-	{ SHOW_USER,       "user",        4,  true,  false },
-	{ SHOW_STORAGES,   "storages",    8,  false, false },
-	{ SHOW_STORAGE,    "storage",     7,  true,  false },
-	{ SHOW_TABLES,     "tables",      6,  false, false },
-	{ SHOW_TABLE,      "table",       5,  true,  false },
-	{ SHOW_INDEXES,    "indexes",     7,  false, true  },
-	{ SHOW_INDEX,      "index",       5,  true,  true  },
-	{ SHOW_BRANCHES,   "branches",    8,  false, false },
-	{ SHOW_BRANCH,     "branch",      6,  true,  false },
-	{ SHOW_PARTITIONS, "partitions",  10, false, true  },
-	{ SHOW_PARTITION,  "partition",   9,  true,  true  },
-	{ SHOW_FUNCTIONS,  "functions",   9,  false, false },
-	{ SHOW_FUNCTION,   "function",    8,  true,  false },
-	{ SHOW_TOPICS,     "topics",      6,  false, false },
-	{ SHOW_TOPIC,      "topic",       7,  true,  false },
-	{ SHOW_STATE,      "state",       5,  false, false },
-	{ SHOW_ALL,        "all",         3,  false, false },
-	{ SHOW_CONFIG,     "config",      6,  false, false },
-	{ SHOW_LOCKS,      "locks",       5,  false, false },
-	{ 0,                NULL,         0,  false, false }
+	{ SHOW_REPLICAS,      "replicas",      8,  false, false },
+	{ SHOW_REPLICA,       "replica",       7,  true,  false },
+	{ SHOW_REPL,          "repl",          4,  false, false },
+	{ SHOW_REPL,          "replication",   11, false, false },
+	{ SHOW_WAL,           "wal",           3,  false, false },
+	{ SHOW_METRICS,       "metrics",       7,  false, false },
+	{ SHOW_GRANTS,        "grants",        6,  false, true  },
+	{ SHOW_AGENTS,        "agents",        6,  false, false },
+	{ SHOW_USERS,         "users",         5,  false, false },
+	{ SHOW_USER,          "user",          4,  true,  false },
+	{ SHOW_STORAGES,      "storages",      8,  false, false },
+	{ SHOW_STORAGE,       "storage",       7,  true,  false },
+	{ SHOW_TABLES,        "tables",        6,  false, false },
+	{ SHOW_TABLE,         "table",         5,  true,  false },
+	{ SHOW_INDEXES,       "indexes",       7,  false, true  },
+	{ SHOW_INDEX,         "index",         5,  true,  true  },
+	{ SHOW_BRANCHES,      "branches",      8,  false, false },
+	{ SHOW_BRANCH,        "branch",        6,  true,  false },
+	{ SHOW_PARTITIONS,    "partitions",    10, false, true  },
+	{ SHOW_PARTITION,     "partition",     9,  true,  true  },
+	{ SHOW_FUNCTIONS,     "functions",     9,  false, false },
+	{ SHOW_FUNCTION,      "function",      8,  true,  false },
+	{ SHOW_TOPICS,        "topics",        6,  false, false },
+	{ SHOW_TOPIC,         "topic",         7,  true,  false },
+	{ SHOW_SUBSCRIPTIONS, "subscriptions", 13, false, false },
+	{ SHOW_SUBSCRIPTION,  "subscription",  12, true,  false },
+	{ SHOW_SUBSCRIPTIONS, "subs",          4,  false, false },
+	{ SHOW_SUBSCRIPTION,  "sub",           3,  true,  false },
+	{ SHOW_STATE,         "state",         5,  false, false },
+	{ SHOW_ALL,           "all",           3,  false, false },
+	{ SHOW_CONFIG,        "config",        6,  false, false },
+	{ SHOW_LOCKS,         "locks",         5,  false, false },
+	{ 0,                   NULL,           0,  false, false }
 };
 
 static inline ShowCmd*
@@ -344,6 +350,16 @@ fn_show(Fn* self)
 	case SHOW_TOPIC:
 	{
 		buf = topic_mgr_list(&catalog->topic_mgr, user, name, flags);
+		break;
+	}
+	case SHOW_SUBSCRIPTIONS:
+	{
+		buf = sub_mgr_list(share()->sub_mgr, user, NULL, flags);
+		break;
+	}
+	case SHOW_SUBSCRIPTION:
+	{
+		buf = sub_mgr_list(share()->sub_mgr, user, name, flags);
 		break;
 	}
 	case SHOW_STATE:

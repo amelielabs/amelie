@@ -11,7 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_pub.h>
-#include <amelie_sub.h>
-#include <amelie_backup.h>
-#include <amelie_repl.h>
+// sub
+#include "sub/sub_config.h"
+#include "sub/sub.h"
+#include "sub/sub_mgr.h"

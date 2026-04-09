@@ -35,6 +35,7 @@ struct Pub
 	Spinlock lock;
 	uint64_t lsn;
 	bool     shutdown;
+	Uuid     id;
 	PubPage* current;
 	List     waiters;
 	int      waiters_count;
@@ -42,9 +43,10 @@ struct Pub
 	int      pages_count;
 	List     slots;
 	int      slots_count;
+	List     link;
 };
 
-Pub* pub_allocate(void);
+Pub* pub_allocate(Uuid*);
 void pub_free(Pub*);
 void pub_attach(Pub*, PubSlot*);
 void pub_detach(Pub*, PubSlot*);

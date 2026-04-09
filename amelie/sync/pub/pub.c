@@ -36,9 +36,10 @@ pub_page_add(Pub* self)
 }
 
 Pub*
-pub_allocate(void)
+pub_allocate(Uuid* id)
 {
 	auto self = (Pub*)am_malloc(sizeof(Pub));
+	self->id            = *id;
 	self->lsn           = 0;
 	self->current       = NULL;
 	self->shutdown      = false;
@@ -49,6 +50,7 @@ pub_allocate(void)
 	list_init(&self->waiters);
 	list_init(&self->pages);
 	list_init(&self->slots);
+	list_init(&self->link);
 
 	pub_page_add(self);
 	return self;
