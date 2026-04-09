@@ -11,56 +11,56 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct StreamCursor StreamCursor;
+typedef struct PubCursor PubCursor;
 
-struct StreamCursor
+struct PubCursor
 {
-	uint64_t    lsn;
-	uint32_t    offset;
-	StreamPage* page;
-	Stream*     stream;
+	uint64_t lsn;
+	uint32_t offset;
+	PubPage* page;
+	Pub*     pub;
 };
 
 static inline void
-stream_cursor_init(StreamCursor* self)
+pub_cursor_init(PubCursor* self)
 {
 	self->lsn    = 0;
 	self->offset = 0;
 	self->page   = NULL;
-	self->stream = NULL;
+	self->pub    = NULL;
 }
 
 static inline void
-stream_cursor_open(StreamCursor* self, Stream* stream, uint64_t lsn)
+pub_cursor_open(PubCursor* self, Pub* pub, uint64_t lsn)
 {
 	// lsn to find after
-	self->lsn    = lsn;
-	self->stream = stream;
+	self->lsn = lsn;
+	self->pub = pub;
 }
 
-always_inline static inline StreamEvent*
-stream_cursor_at(StreamCursor* self)
+always_inline static inline PubEvent*
+pub_cursor_at(PubCursor* self)
 {
 	if (unlikely(! self->page))
 		return NULL;
-	return (StreamEvent*)(self->page->data + self->offset);
+	return (PubEvent*)(self->page->data + self->offset);
 }
 
 hot static inline bool
-stream_cursor_next(StreamCursor* self)
+pub_cursor_next(PubCursor* self)
 {
-	auto stream = self->stream;
-	auto lock   = &stream->lock;
+	auto pub  = self->pub;
+	auto lock = &pub->lock;
 
 	spinlock_lock(lock);
 
 	// wait for the next available lsn (or shutdown)
-	StreamWaiter waiter;
-	while (self->lsn <= stream->lsn && !stream->shutdown)
+	PubWaiter waiter;
+	while (self->lsn <= pub->lsn && !pub->shutdown)
 	{
-		stream_waiter_init(&waiter);
-		list_append(&stream->waiters, &waiter.link);
-		stream->waiters_count++;
+		pub_waiter_init(&waiter);
+		list_append(&pub->waiters, &waiter.link);
+		pub->waiters_count++;
 
 		spinlock_unlock(lock);
 		event_wait(&waiter.event, -1);
@@ -68,7 +68,7 @@ stream_cursor_next(StreamCursor* self)
 	}
 
 	// shutdown request
-	if (unlikely(stream->shutdown))
+	if (unlikely(pub->shutdown))
 	{
 		spinlock_unlock(lock);
 		return false;
@@ -78,7 +78,7 @@ stream_cursor_next(StreamCursor* self)
 	auto page = self->page;
 	if (unlikely(! page))
 	{
-		page = container_of(list_first(&stream->pages), StreamPage, link);
+		page = container_of(list_first(&pub->pages), PubPage, link);
 		self->page   = page;
 		self->offset = 0;
 	}
@@ -86,7 +86,7 @@ stream_cursor_next(StreamCursor* self)
 	// rewind to the next visible event
 	for (;;)
 	{
-		auto at = stream_cursor_at(self);
+		auto at = pub_cursor_at(self);
 		if (at->lsn > self->lsn)
 		{
 			self->lsn = at->lsn;
@@ -95,7 +95,7 @@ stream_cursor_next(StreamCursor* self)
 		self->offset += at->data_size;
 		if (unlikely(self->offset == self->page->pos))
 		{
-			self->page = container_of(self->page->link.next, StreamPage, link);
+			self->page = container_of(self->page->link.next, PubPage, link);
 			self->offset = 0;
 		}
 	}

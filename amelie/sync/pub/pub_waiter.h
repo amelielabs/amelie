@@ -11,16 +11,16 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct StreamWaiter StreamWaiter;
+typedef struct PubWaiter PubWaiter;
 
-struct StreamWaiter
+struct PubWaiter
 {
 	Event event;
 	List  link;
 };
 
 static inline void
-stream_waiter_init(StreamWaiter* self)
+pub_waiter_init(PubWaiter* self)
 {
 	event_init(&self->event);
 	event_attach(&self->event);

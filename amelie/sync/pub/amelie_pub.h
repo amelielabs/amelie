@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-// stream
-#include "stream/stream_waiter.h"
-#include "stream/stream_slot.h"
-#include "stream/stream.h"
-#include "stream/stream_cursor.h"
+// pub
+#include "pub/pub_waiter.h"
+#include "pub/pub_slot.h"
+#include "pub/pub.h"
+#include "pub/pub_cursor.h"

@@ -11,23 +11,23 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct StreamSlot StreamSlot;
+typedef struct PubSlot PubSlot;
 
-struct StreamSlot
+struct PubSlot
 {
 	atomic_u64 lsn;
 	List       link;
 };
 
 static inline void
-stream_slot_init(StreamSlot* self)
+pub_slot_init(PubSlot* self)
 {
 	self->lsn = 0;
 	list_init(&self->link);
 }
 
 static inline void
-stream_slot_set(StreamSlot* self, uint64_t value)
+pub_slot_set(PubSlot* self, uint64_t value)
 {
 	atomic_u64_set(&self->lsn, value);
 }
