@@ -17,7 +17,7 @@ struct SubConfig
 {
 	Str    user;
 	Str    name;
-	// topics_ids[]
+	Buf    topics;
 	Grants grants;
 };
 
@@ -28,6 +28,7 @@ sub_config_allocate(void)
 	self = am_malloc(sizeof(SubConfig));
 	str_init(&self->user);
 	str_init(&self->name);
+	buf_init(&self->topics);
 	grants_init(&self->grants);
 	return self;
 }
@@ -37,6 +38,7 @@ sub_config_free(SubConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
+	buf_free(&self->topics);
 	grants_free(&self->grants);
 	am_free(self);
 }
@@ -61,6 +63,7 @@ sub_config_copy(SubConfig* self)
 	auto copy = sub_config_allocate();
 	sub_config_set_user(copy, &self->user);
 	sub_config_set_name(copy, &self->name);
+	buf_write_buf(&copy->topics, &self->topics);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -70,15 +73,28 @@ sub_config_read(uint8_t** pos)
 {
 	auto self = sub_config_allocate();
 	errdefer(sub_config_free, self);
-	uint8_t* pos_grants   = NULL;
+	uint8_t* pos_topics = NULL;
+	uint8_t* pos_grants = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "user",   &self->user   },
-		{ DECODE_STRING, "name",   &self->name   },
-		{ DECODE_ARRAY,  "grants", &pos_grants   },
-		{ 0,              NULL,     NULL         },
+		{ DECODE_STRING, "user",   &self->user },
+		{ DECODE_STRING, "name",   &self->name },
+		{ DECODE_ARRAY,  "topics", &pos_topics },
+		{ DECODE_ARRAY,  "grants", &pos_grants },
+		{ 0,              NULL,     NULL       },
 	};
 	decode_obj(obj, "sub", pos);
+
+	// topics
+	json_read_array(&pos_topics);
+	while (! json_read_array_end(&pos_topics))
+	{
+		Str str;
+		json_read_string(&pos_topics, &str);
+		Uuid id;
+		uuid_set(&id, &str);
+		buf_write(&self->topics, &id, sizeof(id));
+	}
 
 	// grants
 	grants_read(&self->grants, &pos_grants);
@@ -104,6 +120,15 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
+
+	// topics
+	encode_raw(buf, "topics", 6);
+	encode_array(buf);
+	auto id  = (Uuid*)self->topics.start;
+	auto end = (Uuid*)self->topics.position;
+	for (; id < end; id++)
+		encode_uuid(buf, id);
+	encode_array_end(buf);
 
 	// grants
 	encode_raw(buf, "grants", 6);
