@@ -48,11 +48,11 @@
 #include "catalog/udf_op.h"
 #include "catalog/udf_mgr.h"
 
-// topic
-#include "catalog/topic_config.h"
-#include "catalog/topic_op.h"
-#include "catalog/topic.h"
-#include "catalog/topic_mgr.h"
+// channel
+#include "catalog/channel_config.h"
+#include "catalog/channel_op.h"
+#include "catalog/channel.h"
+#include "catalog/channel_mgr.h"
 
 // catalog
 #include "catalog/catalog.h"

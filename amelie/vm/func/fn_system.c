@@ -43,8 +43,8 @@ enum
 	SHOW_PARTITION,
 	SHOW_FUNCTIONS,
 	SHOW_FUNCTION,
-	SHOW_TOPICS,
-	SHOW_TOPIC,
+	SHOW_CHANNELS,
+	SHOW_CHANNEL,
 	SHOW_SUBSCRIPTIONS,
 	SHOW_SUBSCRIPTION,
 	SHOW_STATE,
@@ -88,8 +88,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_PARTITION,     "partition",     9,  true,  true  },
 	{ SHOW_FUNCTIONS,     "functions",     9,  false, false },
 	{ SHOW_FUNCTION,      "function",      8,  true,  false },
-	{ SHOW_TOPICS,        "topics",        6,  false, false },
-	{ SHOW_TOPIC,         "topic",         7,  true,  false },
+	{ SHOW_CHANNELS,      "channels",      8,  false, false },
+	{ SHOW_CHANNEL,       "channel",       7,  true,  false },
 	{ SHOW_SUBSCRIPTIONS, "subscriptions", 13, false, false },
 	{ SHOW_SUBSCRIPTION,  "subscription",  12, true,  false },
 	{ SHOW_SUBSCRIPTIONS, "subs",          4,  false, false },
@@ -342,14 +342,14 @@ fn_show(Fn* self)
 		buf = udf_mgr_list(&catalog->udf_mgr, user, name, flags);
 		break;
 	}
-	case SHOW_TOPICS:
+	case SHOW_CHANNELS:
 	{
-		buf = topic_mgr_list(&catalog->topic_mgr, user, NULL, flags);
+		buf = channel_mgr_list(&catalog->channel_mgr, user, NULL, flags);
 		break;
 	}
-	case SHOW_TOPIC:
+	case SHOW_CHANNEL:
 	{
-		buf = topic_mgr_list(&catalog->topic_mgr, user, name, flags);
+		buf = channel_mgr_list(&catalog->channel_mgr, user, name, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTIONS:

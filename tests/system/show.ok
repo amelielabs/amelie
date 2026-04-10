@@ -211,7 +211,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 820,
+  "writes_bytes": 822,
   "ops": 3
 }]
 # test: show replicas

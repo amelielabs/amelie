@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct TopicConfig TopicConfig;
+typedef struct ChannelConfig ChannelConfig;
 
-struct TopicConfig
+struct ChannelConfig
 {
 	Str    user;
 	Str    name;
@@ -21,11 +21,11 @@ struct TopicConfig
 	Grants grants;
 };
 
-static inline TopicConfig*
-topic_config_allocate(void)
+static inline ChannelConfig*
+channel_config_allocate(void)
 {
-	TopicConfig* self;
-	self = am_malloc(sizeof(TopicConfig));
+	ChannelConfig* self;
+	self = am_malloc(sizeof(ChannelConfig));
 	str_init(&self->user);
 	str_init(&self->name);
 	uuid_init(&self->id);
@@ -34,7 +34,7 @@ topic_config_allocate(void)
 }
 
 static inline void
-topic_config_free(TopicConfig* self)
+channel_config_free(ChannelConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
@@ -43,41 +43,41 @@ topic_config_free(TopicConfig* self)
 }
 
 static inline void
-topic_config_set_user(TopicConfig* self, Str* name)
+channel_config_set_user(ChannelConfig* self, Str* name)
 {
 	str_free(&self->user);
 	str_copy(&self->user, name);
 }
 
 static inline void
-topic_config_set_name(TopicConfig* self, Str* name)
+channel_config_set_name(ChannelConfig* self, Str* name)
 {
 	str_free(&self->name);
 	str_copy(&self->name, name);
 }
 
 static inline void
-topic_config_set_id(TopicConfig* self, Uuid* value)
+channel_config_set_id(ChannelConfig* self, Uuid* value)
 {
 	self->id = *value;
 }
 
-static inline TopicConfig*
-topic_config_copy(TopicConfig* self)
+static inline ChannelConfig*
+channel_config_copy(ChannelConfig* self)
 {
-	auto copy = topic_config_allocate();
-	topic_config_set_user(copy, &self->user);
-	topic_config_set_name(copy, &self->name);
-	topic_config_set_id(copy, &self->id);
+	auto copy = channel_config_allocate();
+	channel_config_set_user(copy, &self->user);
+	channel_config_set_name(copy, &self->name);
+	channel_config_set_id(copy, &self->id);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
-static inline TopicConfig*
-topic_config_read(uint8_t** pos)
+static inline ChannelConfig*
+channel_config_read(uint8_t** pos)
 {
-	auto self = topic_config_allocate();
-	errdefer(topic_config_free, self);
+	auto self = channel_config_allocate();
+	errdefer(channel_config_free, self);
 	uint8_t* pos_grants   = NULL;
 	Decode obj[] =
 	{
@@ -87,7 +87,7 @@ topic_config_read(uint8_t** pos)
 		{ DECODE_ARRAY,  "grants", &pos_grants },
 		{ 0,              NULL,     NULL       },
 	};
-	decode_obj(obj, "topic", pos);
+	decode_obj(obj, "channel", pos);
 
 	// grants
 	grants_read(&self->grants, &pos_grants);
@@ -95,7 +95,7 @@ topic_config_read(uint8_t** pos)
 }
 
 static inline void
-topic_config_write(TopicConfig* self, Buf* buf, int flags)
+channel_config_write(ChannelConfig* self, Buf* buf, int flags)
 {
 	// {}
 	encode_obj(buf);
