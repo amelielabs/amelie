@@ -168,6 +168,7 @@ Keyword keywords[] =
 	{ KSTART,                 "start",                 5  },
 	{ KSTOP,                  "stop",                  4  },
 	{ KSUBSCRIBE,             "subscribe",             9  },
+	{ KSUBSCRIPTION,          "subscription",          12 },
 	{ KSWITCH,                "switch",                6  },
 	{ KSTORED,                "stored",                6  },
 	{ KSTORAGE,               "storage",               7  },

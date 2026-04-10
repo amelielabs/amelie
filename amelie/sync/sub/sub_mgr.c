@@ -29,10 +29,10 @@ sub_mgr_free(SubMgr* self)
 {
 	list_foreach_safe(&self->list)
 	{
-		auto sub = list_at(Sub, link);
+		auto sub = list_at(Sub, rel.link);
 		pub_detach(self->pub, &sub->slot);
 		// todo: unref?
-		sub_free(sub);
+		sub_free(sub, false);
 	}
 }
 
@@ -46,7 +46,7 @@ sub_mgr_save(SubMgr* self)
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
-		auto sub = list_at(Sub, link);
+		auto sub = list_at(Sub, rel.link);
 		sub_config_write(sub->config, buf, 0);
 	}
 	encode_array_end(buf);
@@ -72,7 +72,7 @@ sub_mgr_open(SubMgr* self)
 		defer(sub_config_free, config);
 
 		auto sub = sub_allocate(config);
-		list_append(&self->list, &sub->link);
+		list_append(&self->list, &sub->rel.link);
 		self->list_count++;
 
 		// attach slot
@@ -92,10 +92,11 @@ sub_mgr_create(SubMgr* self, SubConfig* config, bool if_not_exists)
 		return;
 	}
 	sub = sub_allocate(config);
-	list_append(&self->list, &sub->link);
+	list_append(&self->list, &sub->rel.link);
 	self->list_count++;
 
-	// todo: set lsn and prepare slot
+	// set lsn and prepare slot
+	pub_slot_set(&sub->slot, state_lsn());
 
 	// attach slot
 	pub_attach(self->pub, &sub->slot);
@@ -114,7 +115,8 @@ sub_mgr_drop(SubMgr* self, Str* user, Str* name, bool if_exists)
 			      str_of(name));
 		return;
 	}
-	list_unlink(&sub->link);
+
+	list_unlink(&sub->rel.link);
 	self->list_count--;
 
 	// detach slot
@@ -145,7 +147,7 @@ sub_mgr_list(SubMgr* self, Str* user, Str* name, int flags)
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
-		auto sub = list_at(Sub, link);
+		auto sub = list_at(Sub, rel.link);
 		if (user && !str_compare_case(&sub->config->user, user))
 			continue;
 		sub_config_write(sub->config, buf, flags);
@@ -160,7 +162,7 @@ sub_mgr_find(SubMgr* self, Str* user, Str* name,
 {
 	list_foreach(&self->list)
 	{
-		auto sub = list_at(Sub, link);
+		auto sub = list_at(Sub, rel.link);
 		if (str_compare_case(&sub->config->user, user) &&
 		    str_compare_case(&sub->config->name, name))
 			return sub;

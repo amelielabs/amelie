@@ -287,6 +287,10 @@ OpDesc ops[] =
 	{ CREPL_SUBSCRIBE, "repl_subscribe" },
 	{ CREPL_UNSUBSCRIBE, "repl_unsubscribe" },
 
+	// subscription
+	{ CSUB_CREATE, "sub_create" },
+	{ CSUB_DROP, "sub_drop" },
+
 	// ddl
 	{ CDDL, "ddl" },
 	{ CDDL_CREATE_INDEX, "ddl_create_index" },

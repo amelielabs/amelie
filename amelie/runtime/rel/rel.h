@@ -24,6 +24,7 @@ typedef enum
 	REL_BRANCH,
 	REL_UDF,
 	REL_CHANNEL,
+	REL_SUBSCRIPTION,
 	REL_LOCK,
 	REL_SYSTEM
 } RelType;

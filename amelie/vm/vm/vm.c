@@ -364,6 +364,10 @@ vm_run(Vm*       self,
 		&&crepl_subscribe,
 		&&crepl_unsubscribe,
 
+		// subscription
+		&&csub_create,
+		&&csub_drop,
+
 		// ddl
 		&&cddl,
 		&&cddl_create_index,
@@ -1901,6 +1905,14 @@ crepl_subscribe:
 
 crepl_unsubscribe:
 	crepl_unsubscribe(self, op);
+	op_next;
+
+csub_create:
+	csub_create(self, op);
+	op_next;
+
+csub_drop:
+	csub_drop(self, op);
 	op_next;
 
 cddl:

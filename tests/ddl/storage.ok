@@ -24,7 +24,7 @@ show storages;
 }]
 # test: create storage statement parsing
 create;
-{"msg": "create❰;❱ ⟵ REPLICA|USER|STORAGE|TABLE|INDEX|BRANCH|FUNCTION|CHANNEL|LOCK expected"}
+{"msg": "create❰;❱ ⟵ relation type expected"}
 create storage;
 {"msg": "create storage❰;❱ ⟵ name expected"}
 create storage 123;

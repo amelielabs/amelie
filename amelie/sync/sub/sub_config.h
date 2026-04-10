@@ -15,10 +15,9 @@ typedef struct SubConfig SubConfig;
 
 struct SubConfig
 {
-	Str    user;
-	Str    name;
-	Buf    channels;
-	Grants grants;
+	Str user;
+	Str name;
+	Buf channels;
 };
 
 static inline SubConfig*
@@ -29,7 +28,6 @@ sub_config_allocate(void)
 	str_init(&self->user);
 	str_init(&self->name);
 	buf_init(&self->channels);
-	grants_init(&self->grants);
 	return self;
 }
 
@@ -39,7 +37,6 @@ sub_config_free(SubConfig* self)
 	str_free(&self->user);
 	str_free(&self->name);
 	buf_free(&self->channels);
-	grants_free(&self->grants);
 	am_free(self);
 }
 
@@ -64,7 +61,6 @@ sub_config_copy(SubConfig* self)
 	sub_config_set_user(copy, &self->user);
 	sub_config_set_name(copy, &self->name);
 	buf_write_buf(&copy->channels, &self->channels);
-	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
@@ -74,13 +70,11 @@ sub_config_read(uint8_t** pos)
 	auto self = sub_config_allocate();
 	errdefer(sub_config_free, self);
 	uint8_t* pos_channels = NULL;
-	uint8_t* pos_grants = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "user",     &self->user   },
 		{ DECODE_STRING, "name",     &self->name   },
 		{ DECODE_ARRAY,  "channels", &pos_channels },
-		{ DECODE_ARRAY,  "grants",   &pos_grants   },
 		{ 0,              NULL,       NULL         },
 	};
 	decode_obj(obj, "sub", pos);
@@ -95,9 +89,6 @@ sub_config_read(uint8_t** pos)
 		uuid_set(&id, &str);
 		buf_write(&self->channels, &id, sizeof(id));
 	}
-
-	// grants
-	grants_read(&self->grants, &pos_grants);
 	return self;
 }
 
@@ -129,10 +120,6 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 	for (; id < end; id++)
 		encode_uuid(buf, id);
 	encode_array_end(buf);
-
-	// grants
-	encode_raw(buf, "grants", 6);
-	grants_write(&self->grants, buf, 0);
 
 	encode_obj_end(buf);
 }

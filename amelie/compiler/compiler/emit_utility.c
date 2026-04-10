@@ -492,6 +492,24 @@ emit_utility(Compiler* self)
 		break;
 	}
 
+	// subscription
+	case STMT_CREATE_SUBSCRIPTION:
+	{
+		auto arg = ast_sub_create_of(stmt->ast);
+		auto offset = buf_size(data);
+		sub_config_write(arg->config, data, 0);
+		op2(self, CSUB_CREATE, offset, arg->if_not_exists);
+		break;
+	}
+	case STMT_DROP_SUBSCRIPTION:
+	{
+		auto arg = ast_sub_drop_of(stmt->ast);
+		auto offset = buf_size(data);
+		encode_string(data, &arg->name);
+		op2(self, CSUB_DROP, offset, arg->if_exists);
+		break;
+	}
+
 	// service
 	case STMT_ALTER_PARTITION:
 	{

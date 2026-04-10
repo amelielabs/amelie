@@ -27,39 +27,40 @@ struct Permission
 
 static Permission perms[] =
 {
-	{ PERM_NONE,            "none",            4  },
+	{ PERM_NONE,            "none",                4  },
 
 	// System
-	{ PERM_SYSTEM,          "system",          6  },
+	{ PERM_SYSTEM,          "system",              6  },
 
 	// Grants
-	{ PERM_GRANT,           "grant",           5  },
+	{ PERM_GRANT,           "grant",               5  },
 
 	// DDL
-	{ PERM_CREATE_USER,     "create_user",     11 },
-	{ PERM_CREATE_TOKEN,    "create_token",    12 },
-	{ PERM_CREATE_TABLE,    "create_table",    12 },
-	{ PERM_CREATE_BRANCH,   "create_branch",   13 },
-	{ PERM_CREATE_FUNCTION, "create_function", 15 },
-	{ PERM_CREATE_CHANNEL,  "create_channel",  14 },
+	{ PERM_CREATE_USER,     "create_user",         11 },
+	{ PERM_CREATE_TOKEN,    "create_token",        12 },
+	{ PERM_CREATE_TABLE,    "create_table",        12 },
+	{ PERM_CREATE_BRANCH,   "create_branch",       13 },
+	{ PERM_CREATE_FUNCTION, "create_function",     15 },
+	{ PERM_CREATE_CHANNEL,  "create_channel",      14 },
+	{ PERM_CREATE_SUB,      "create_subscription", 19 },
 
 	// DML
-	{ PERM_INSERT,          "insert",          6  },
-	{ PERM_UPDATE,          "update",          6  },
-	{ PERM_DELETE,          "delete",          6  },
+	{ PERM_INSERT,          "insert",              6  },
+	{ PERM_UPDATE,          "update",              6  },
+	{ PERM_DELETE,          "delete",              6  },
 
 	// Query
-	{ PERM_SELECT,          "select",          6  },
+	{ PERM_SELECT,          "select",              6  },
 
 	// UDF
-	{ PERM_EXECUTE,         "execute",         7  },
+	{ PERM_EXECUTE,         "execute",             7  },
 
 	// Connections
-	{ PERM_CONNECT,         "connect",         7  },
-	{ PERM_SERVICE,         "service",         7  },
+	{ PERM_CONNECT,         "connect",             7  },
+	{ PERM_SERVICE,         "service",             7  },
 
 	// all
-	{ PERM_ALL,             "all",             3  },
+	{ PERM_ALL,             "all",                 3  },
 };
 
 int

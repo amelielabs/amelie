@@ -283,6 +283,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
     ${AMELIE_ROOT}/compiler/parser/parse_watch.c
     ${AMELIE_ROOT}/compiler/parser/parse_lock.c
+    ${AMELIE_ROOT}/compiler/parser/parse_subscription.c
     ${AMELIE_ROOT}/compiler/parser/parse_grant.c
     ${AMELIE_ROOT}/compiler/parser/parse_storage.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c
