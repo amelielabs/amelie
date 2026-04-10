@@ -313,6 +313,9 @@ OpDesc ops[] =
 	{ CCALL, "call" },
 	{ CCALL_UDF, "call_udf" },
 
+	// publish
+	{ CPUBLISH, "publish" },
+
 	// locking
 	{ CLOCK, "lock" },
 	{ CUNLOCK, "unlock" },
@@ -543,6 +546,17 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&udf->config->user),
 			         str_size(&udf->config->name),
 			         str_of(&udf->config->name));
+			break;
+		}
+		case CPUBLISH:
+		{
+			auto channel = (Channel*)op->a;
+			op_write(output, op, false, true, false,
+			         "%.*s.%.*s",
+			         str_size(&channel->config->user),
+			         str_of(&channel->config->user),
+			         str_size(&channel->config->name),
+			         str_of(&channel->config->name));
 			break;
 		}
 		case CVALUE:

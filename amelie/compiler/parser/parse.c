@@ -509,6 +509,12 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
+	case KPUBLISH:
+		self->id = STMT_PUBLISH;
+		parse_publish(self);
+		self->block->stmts.last_send = self;
+		break;
+
 	case KIF:
 	{
 		self->id = STMT_IF;

@@ -588,3 +588,10 @@ ccall_udf(Vm* self, Op* op)
 
 	stack_popn(&self->stack, argc);
 }
+
+void
+cpublish(Vm* self, Op* op)
+{
+	(void)self;
+	(void)op;
+}

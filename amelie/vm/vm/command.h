@@ -34,3 +34,4 @@ void cupdate(Vm*, Op*);
 void cupdate_store(Vm*, Op*);
 
 void ccall_udf(Vm*, Op*);
+void cpublish(Vm*, Op*);

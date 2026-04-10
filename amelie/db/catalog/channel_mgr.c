@@ -197,7 +197,7 @@ channel_mgr_grant(ChannelMgr* self,
 	check_ownership(tr, &channel->rel);
 
 	// validate permissions
-	auto perms_all = PERM_NONE;
+	auto perms_all = PERM_PUBLISH;
 	perms = permission_validate(user, name, perms, perms_all);
 
 	// update channel

@@ -41,9 +41,12 @@ enum
 	// UDF
 	PERM_EXECUTE         = 1ul << 13,
 
+	// Channels
+	PERM_PUBLISH         = 1ul << 14,
+
 	// Connections
-	PERM_CONNECT         = 1ul << 14,
-	PERM_SERVICE         = 1ul << 15,
+	PERM_CONNECT         = 1ul << 15,
+	PERM_SERVICE         = 1ul << 16,
 
 	// all
 	PERM_ALL             = UINT32_MAX,

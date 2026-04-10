@@ -55,6 +55,9 @@ static Permission perms[] =
 	// UDF
 	{ PERM_EXECUTE,         "execute",             7  },
 
+	// Channels
+	{ PERM_PUBLISH,         "publish",             7  },
+
 	// Connections
 	{ PERM_CONNECT,         "connect",             7  },
 	{ PERM_SERVICE,         "service",             7  },

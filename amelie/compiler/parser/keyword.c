@@ -137,6 +137,7 @@ Keyword keywords[] =
 	{ KOUT,                   "out",                   3  },
 
 	// p
+	{ KPUBLISH,               "publish",               7  },
 	{ KPROFILE,               "profile",               7  },
 	{ KPARTITIONS,            "partitions",            10 },
 	{ KPARTITION,             "partition",             9  },
@@ -229,7 +230,7 @@ Keyword* keywords_alpha[26] =
 	&keywords[KMIN - KKEYWORD - 1],
 	&keywords[KNULL - KKEYWORD - 1],
 	&keywords[KOR - KKEYWORD - 1],
-	&keywords[KPROFILE - KKEYWORD - 1],
+	&keywords[KPUBLISH - KKEYWORD - 1],
 	NULL,
 	&keywords[KRIGHT - KKEYWORD - 1],
 	&keywords[KSELECT - KKEYWORD - 1],

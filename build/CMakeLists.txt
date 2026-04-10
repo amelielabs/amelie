@@ -301,6 +301,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_update.c
     ${AMELIE_ROOT}/compiler/parser/parse_delete.c
     ${AMELIE_ROOT}/compiler/parser/parse_select.c
+    ${AMELIE_ROOT}/compiler/parser/parse_publish.c
     ${AMELIE_ROOT}/compiler/parser/parse_declare.c
     ${AMELIE_ROOT}/compiler/parser/parse_with.c
     ${AMELIE_ROOT}/compiler/parser/parse_execute.c
@@ -321,6 +322,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_update.c
     ${AMELIE_ROOT}/compiler/compiler/emit_delete.c
     ${AMELIE_ROOT}/compiler/compiler/emit_select.c
+    ${AMELIE_ROOT}/compiler/compiler/emit_publish.c
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
     ${AMELIE_ROOT}/compiler/compiler/emit_utility.c)
 
