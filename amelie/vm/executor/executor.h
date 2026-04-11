@@ -53,6 +53,7 @@ executor_attach(Executor* self, Dtr* dtr, Dispatch* dispatch)
 	list_foreach_reverse(&self->list)
 	{
 		auto ref = list_at(Dtr, link);
+
 		// find overlapping partitions
 		bool overlaps;
 		if (is_snapshot)

@@ -116,7 +116,8 @@ log_persist(Log* self, Uuid* id)
 {
 	// [cmd, id, row]
 	auto last = log_last(self);
-	write_log_add(&self->write_log, last->cmd, id, last->row);
+	auto row  = last->row;
+	write_log_add(&self->write_log, last->cmd, id, (uint8_t*)row, row_size(row));
 }
 
 static inline void

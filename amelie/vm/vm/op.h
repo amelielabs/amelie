@@ -289,10 +289,11 @@ enum
 	CDDL_CREATE_INDEX,
 	CDDL_REFRESH,
 
-	// result
+	// executor
 	CSEND_SHARD,
 	CSEND_LOOKUP,
 	CSEND_ALL,
+	CSEND_PUB,
 	CCLOSE,
 
 	// var
@@ -305,9 +306,6 @@ enum
 	// call/return
 	CCALL,
 	CCALL_UDF,
-
-	// publish
-	CPUBLISH,
 
 	// locking
 	CLOCK,

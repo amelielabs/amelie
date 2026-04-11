@@ -145,13 +145,12 @@ pub_gc(Pub* self)
 	spinlock_unlock(&self->lock);
 }
 
-void
-pub_write(Pub*     self, uint64_t lsn,
-          uint8_t* data,
-          uint32_t data_size)
+hot static inline void
+pub_add(Pub*     self, uint64_t lsn,
+        Uuid*    channel,
+        uint8_t* data,
+        uint32_t data_size)
 {
-	spinlock_lock(&self->lock);
-
 	// maybe create new page
 	auto left = self->current->end - self->current->pos;
 	if (unlikely(left < data_size))
@@ -165,13 +164,48 @@ pub_write(Pub*     self, uint64_t lsn,
 	// write event data
 	auto event = (PubEvent*)at;
 	event->lsn       = lsn;
+	event->channel   = *channel;
 	event->data_size = data_size;
 	memcpy(event->data, data, data_size);
 
 	// set last lsn
 	self->lsn = lsn;
 
+}
+
+void
+pub_write(Pub*     self, uint64_t lsn,
+          Uuid*    channel,
+          uint8_t* data,
+          uint32_t data_size)
+{
+	spinlock_lock(&self->lock);
+
+	// add event to the queue
+	pub_add(self, lsn, channel, data, data_size);
+
 	// wakeup waiters
 	pub_notify(self);
+
+	spinlock_unlock(&self->lock);
+}
+
+hot void
+pub_write_list(Pub* self, uint64_t lsn, List* list)
+{
+	spinlock_lock(&self->lock);
+
+	// add events to the queue
+	list_foreach(list)
+	{
+		auto publish = list_at(Publish, link);
+		pub_add(self, lsn, &publish->channel->config->id,
+		        publish->data.start,
+		        buf_size(&publish->data));
+	}
+
+	// wakeup waiters
+	pub_notify(self);
+
 	spinlock_unlock(&self->lock);
 }

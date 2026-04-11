@@ -50,7 +50,7 @@ write_log_empty(WriteLog* self)
 }
 
 hot static inline void
-write_log_add(WriteLog* self, int cmd, Uuid* id, Row* row)
+write_log_add(WriteLog* self, int cmd, Uuid* id, uint8_t* data, int data_size)
 {
 	// prepare and reuse last command header
 	RecordCmd* hdr = NULL;
@@ -69,13 +69,13 @@ write_log_add(WriteLog* self, int cmd, Uuid* id, Row* row)
 		hdr->id   = *id;
 	}
 
-	// add row
-	iov_add(&self->iov, row, row_size(row));
-	hdr->size += row_size(row);
+	// add data
+	iov_add(&self->iov, data, data_size);
+	hdr->size += data_size;
 
 	// calculate crc
 	if (opt_int_of(&config()->wal_crc))
-		hdr->crc = runtime()->crc(hdr->crc, row, row_size(row));
+		hdr->crc = runtime()->crc(hdr->crc, data, data_size);
 }
 
 hot static inline void

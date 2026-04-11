@@ -41,7 +41,8 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 		// replay writes
 		Snapshot* snapshot = NULL;
 		auto end = data + cmd->size;
-		if (cmd->cmd == CMD_REPLACE)
+		switch (cmd->cmd) {
+		case CMD_REPLACE:
 		{
 			while (data < end)
 			{
@@ -55,7 +56,10 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 				part_insert(self->part, tr, true, snapshot, row);
 				data += row_size(row);
 			}
-		} else {
+			break;
+		}
+		case CMD_DELETE:
+		{
 			while (data < end)
 			{
 				auto row = (Row*)(data);
@@ -68,6 +72,13 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 				part_delete_by(self->part, tr, snapshot, row);
 				data += row_size(row);
 			}
+			break;
+		}
+		case CMD_PUBLISH:
+		{
+			// todo:
+			break;
+		}
 		}
 	}
 }

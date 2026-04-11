@@ -12,6 +12,7 @@
 //
 
 // pub
+#include "pub/publish.h"
 #include "pub/pub_waiter.h"
 #include "pub/pub_slot.h"
 #include "pub/pub.h"

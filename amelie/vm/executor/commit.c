@@ -13,6 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
+#include <amelie_sync>
 #include <amelie_value.h>
 #include <amelie_set.h>
 #include <amelie_output.h>
@@ -76,7 +77,7 @@ commit_main(void* arg)
 		auto group_min = executor_detach(self->executor, &batch);
 
 		// wakeup and unlock prepared transaction
-		batch_complete(&batch);
+		batch_complete(&batch, self->pub);
 
 		// remove all groups < group_min
 		dtr_queue_gc(&queue, group_min);
@@ -126,10 +127,11 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 }
 
 void
-commit_init(Commit* self, Db* db, Executor* executor)
+commit_init(Commit* self, Pub* pub, Db* db, Executor* executor)
 {
 	self->db       = db;
 	self->executor = executor;
+	self->pub      = pub;
 	task_init(&self->task);
 }
 

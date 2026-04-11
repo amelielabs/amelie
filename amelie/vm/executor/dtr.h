@@ -24,6 +24,7 @@ struct Dtr
 	Buf*        error;
 	bool        abort;
 	Write       write;
+	WriteLog    write_pub;
 	Event       on_commit;
 	Limit       limit;
 	Local*      local;
@@ -47,6 +48,7 @@ dtr_init(Dtr* self, Local* local)
 	event_init(&self->on_commit);
 	limit_init(&self->limit, opt_int_of(&config()->limit_write));
 	write_init(&self->write);
+	write_log_init(&self->write_pub);
 	list_init(&self->link_batch);
 	list_init(&self->link);
 	msg_init(&self->msg, MSG_DTR);
@@ -69,6 +71,7 @@ dtr_reset(Dtr* self)
 	dispatch_mgr_reset(&self->dispatch_mgr);
 	limit_reset(&self->limit, opt_int_of(&config()->limit_write));
 	write_reset(&self->write);
+	write_log_reset(&self->write_pub);
 	list_init(&self->link_batch);
 	list_init(&self->link);
 }
@@ -79,6 +82,7 @@ dtr_free(Dtr* self)
 	dtr_reset(self);
 	dispatch_mgr_free(&self->dispatch_mgr);
 	write_free(&self->write);
+	write_log_free(&self->write_pub);
 }
 
 static inline void

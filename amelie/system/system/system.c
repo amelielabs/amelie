@@ -211,11 +211,17 @@ system_create(void)
 	// server
 	server_init(&self->server);
 
+	// pub/sub
+	pub_init(&self->pub);
+	sub_mgr_init(&self->sub_mgr, &self->pub);
+
 	// frontend/backend mgr
 	frontend_mgr_init(&self->frontend_mgr);
 	backend_mgr_init(&self->backend_mgr);
+
+	// executor
 	executor_init(&self->executor);
-	commit_init(&self->commit, &self->db, &self->executor);
+	commit_init(&self->commit, &self->pub, &self->db, &self->executor);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
@@ -225,10 +231,6 @@ system_create(void)
 
 	// replication
 	repl_init(&self->repl, &self->db);
-
-	// pub/sub
-	pub_init(&self->pub);
-	sub_mgr_init(&self->sub_mgr, &self->pub);
 	return self;
 }
 

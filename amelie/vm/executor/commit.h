@@ -17,10 +17,11 @@ struct Commit
 {
 	Executor* executor;
 	Db*       db;
+	Pub*      pub;
 	Task      task;
 };
 
-void commit_init(Commit*, Db*, Executor*);
+void commit_init(Commit*, Pub*, Db*, Executor*);
 void commit_free(Commit*);
 void commit_start(Commit*);
 void commit_stop(Commit*);

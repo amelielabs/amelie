@@ -132,6 +132,11 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		}
 		break;
 	}
+	case CMD_PUBLISH:
+	{
+		// todo:
+		break;
+	}
 	case CMD_DDL:
 	case CMD_DDL_CREATE_INDEX:
 	{

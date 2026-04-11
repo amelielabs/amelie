@@ -192,6 +192,46 @@ csend_all(Vm* self, Op* op)
 }
 
 void
+csend_pub(Vm* self, Op* op)
+{
+	// [channel*, value]
+
+	// create dispatch
+	auto dtr = self->dtr;
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+
+	if (self->allow_close &&
+	    self->program->send_last == code_posof(self->code, op))
+		dispatch_set_close(dispatch);
+
+	// prepare dispatch publish
+	auto pub = &dispatch->pub;
+	pub->channel = (Channel*)op->a;
+
+	// value
+	if (op->b != -1)
+	{
+		auto value = reg_at(&self->r, op->b);
+		value_encode(value, self->local->timezone, &pub->data);
+		value_free(value);
+	} else {
+		encode_null(&pub->data);
+	}
+
+	// todo: only if persistent
+
+	// prepare publish for wal write
+	write_log_add(&dtr->write_pub, CMD_PUBLISH, &pub->channel->config->id,
+	              pub->data.start, buf_size(&pub->data));
+
+	// (dispatch has no partitions)
+
+	// execute
+	executor_send(share()->executor, dtr, dispatch);
+}
+
+void
 cclose(Vm* self, Op* op)
 {
 	unused(op);
@@ -587,11 +627,4 @@ ccall_udf(Vm* self, Op* op)
 		value_move(result, ret.value);
 
 	stack_popn(&self->stack, argc);
-}
-
-void
-cpublish(Vm* self, Op* op)
-{
-	(void)self;
-	(void)op;
 }

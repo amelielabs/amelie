@@ -26,6 +26,7 @@ struct PubPage
 struct PubEvent
 {
 	uint64_t lsn;
+	Uuid     channel;
 	uint32_t data_size;
 	uint8_t  data[];
 } packed;
@@ -51,4 +52,5 @@ void pub_attach(Pub*, PubSlot*);
 void pub_detach(Pub*, PubSlot*);
 void pub_shutdown(Pub*);
 void pub_gc(Pub*);
-void pub_write(Pub*, uint64_t, uint8_t*, uint32_t);
+void pub_write(Pub*, uint64_t, Uuid*, uint8_t*, uint32_t);
+void pub_write_list(Pub*, uint64_t, List*);

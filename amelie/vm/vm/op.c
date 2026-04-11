@@ -296,10 +296,11 @@ OpDesc ops[] =
 	{ CDDL_CREATE_INDEX, "ddl_create_index" },
 	{ CDDL_REFRESH, "ddl_refresh" },
 
-	// result
+	// executor
 	{ CSEND_SHARD, "send_shard" },
 	{ CSEND_LOOKUP, "send_lookup" },
 	{ CSEND_ALL, "send_all" },
+	{ CSEND_PUB, "send_pub" },
 	{ CCLOSE, "close" },
 
 	// var
@@ -312,9 +313,6 @@ OpDesc ops[] =
 	// call / return
 	{ CCALL, "call" },
 	{ CCALL_UDF, "call_udf" },
-
-	// publish
-	{ CPUBLISH, "publish" },
 
 	// locking
 	{ CLOCK, "lock" },
@@ -452,6 +450,17 @@ op_dump(Program* self, Code* code, Buf* buf)
 			op_dump_send(self, code, op, output, send_at(data, op->c),
 			             true, true, true);
 			break;
+		case CSEND_PUB:
+		{
+			auto channel = (Channel*)op->a;
+			op_write(output, op, false, true, false,
+			         "%.*s.%.*s",
+			         str_size(&channel->config->user),
+			         str_of(&channel->config->user),
+			         str_size(&channel->config->name),
+			         str_of(&channel->config->name));
+			break;
+		}
 		case CINSERT:
 		{
 			auto table    = (Table*)op->a;
@@ -546,17 +555,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&udf->config->user),
 			         str_size(&udf->config->name),
 			         str_of(&udf->config->name));
-			break;
-		}
-		case CPUBLISH:
-		{
-			auto channel = (Channel*)op->a;
-			op_write(output, op, false, true, false,
-			         "%.*s.%.*s",
-			         str_size(&channel->config->user),
-			         str_of(&channel->config->user),
-			         str_size(&channel->config->name),
-			         str_of(&channel->config->name));
 			break;
 		}
 		case CVALUE:

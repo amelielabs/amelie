@@ -29,6 +29,8 @@ emit_publish(Compiler* self, Ast* ast)
 	if (publish->expr)
 		rexpr = emit_expr(self, NULL, publish->expr);
 
-	// CPUBLISH
-	op2(self, CPUBLISH, (intptr_t)publish->channel, rexpr);
+	// CSEND_PUB
+	op2(self, CSEND_PUB, (intptr_t)publish->channel, rexpr);
+	if (rexpr != -1)
+		runpin(self, rexpr);
 }

@@ -377,6 +377,7 @@ vm_run(Vm*       self,
 		&&csend_shard,
 		&&csend_lookup,
 		&&csend_all,
+		&&csend_pub,
 		&&cclose,
 
 		// var
@@ -389,9 +390,6 @@ vm_run(Vm*       self,
 		// call / return
 		&&ccall,
 		&&ccall_udf,
-
-		// publish
-		&&cpublish,
 
 		// locking
 		&&clock,
@@ -1949,6 +1947,10 @@ csend_all:
 	csend_all(self, op);
 	op_next;
 
+csend_pub:
+	csend_pub(self, op);
+	op_next;
+
 cclose:
 	cclose(self, op);
 	op_next;
@@ -2004,10 +2006,6 @@ ccall:
 ccall_udf:
 	// [result, udf*]
 	ccall_udf(self, op);
-	op_next;
-
-cpublish:
-	cpublish(self, op);
 	op_next;
 
 clock:
