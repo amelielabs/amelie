@@ -11,11 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PubPage  PubPage;
-typedef struct PubEvent PubEvent;
-typedef struct Pub      Pub;
+typedef struct CdcPage  CdcPage;
+typedef struct CdcEvent CdcEvent;
+typedef struct Cdc      Cdc;
 
-struct PubPage
+struct CdcPage
 {
 	List     link;
 	uint32_t pos;
@@ -23,20 +23,20 @@ struct PubPage
 	uint8_t  data[];
 };
 
-struct PubEvent
+struct CdcEvent
 {
 	uint64_t lsn;
-	Uuid     channel;
+	Uuid     id;
 	uint32_t data_size;
 	uint8_t  data[];
-} packed;
+};
 
-struct Pub
+struct Cdc
 {
 	Spinlock lock;
 	uint64_t lsn;
 	bool     shutdown;
-	PubPage* current;
+	CdcPage* current;
 	List     waiters;
 	int      waiters_count;
 	List     pages;
@@ -46,11 +46,10 @@ struct Pub
 	List     link;
 };
 
-void pub_init(Pub*);
-void pub_free(Pub*);
-void pub_attach(Pub*, PubSlot*);
-void pub_detach(Pub*, PubSlot*);
-void pub_shutdown(Pub*);
-void pub_gc(Pub*);
-void pub_write(Pub*, uint64_t, Uuid*, uint8_t*, uint32_t);
-void pub_write_list(Pub*, uint64_t, List*);
+void cdc_init(Cdc*);
+void cdc_free(Cdc*);
+void cdc_attach(Cdc*, CdcSlot*);
+void cdc_detach(Cdc*, CdcSlot*);
+void cdc_shutdown(Cdc*);
+void cdc_gc(Cdc*);
+void cdc_write(Cdc*, uint64_t, Uuid*, uint8_t*, uint32_t);

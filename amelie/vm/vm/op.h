@@ -280,10 +280,6 @@ enum
 	CREPL_SUBSCRIBE,
 	CREPL_UNSUBSCRIBE,
 
-	// subscription
-	CSUB_CREATE,
-	CSUB_DROP,
-
 	// ddl
 	CDDL,
 	CDDL_CREATE_INDEX,
@@ -293,7 +289,6 @@ enum
 	CSEND_SHARD,
 	CSEND_LOOKUP,
 	CSEND_ALL,
-	CSEND_PUB,
 	CCLOSE,
 
 	// var

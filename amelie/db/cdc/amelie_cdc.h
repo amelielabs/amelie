@@ -11,9 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-// pub
-#include "pub/publish.h"
-#include "pub/pub_waiter.h"
-#include "pub/pub_slot.h"
-#include "pub/pub.h"
-#include "pub/pub_cursor.h"
+// cdc
+#include "cdc/cdc_waiter.h"
+#include "cdc/cdc_slot.h"
+#include "cdc/cdc.h"
+#include "cdc/cdc_cursor.h"

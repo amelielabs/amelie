@@ -11,23 +11,25 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PubSlot PubSlot;
+typedef struct CdcSlot CdcSlot;
 
-struct PubSlot
+struct CdcSlot
 {
 	atomic_u64 lsn;
+	bool       attached;
 	List       link;
 };
 
 static inline void
-pub_slot_init(PubSlot* self)
+cdc_slot_init(CdcSlot* self)
 {
 	self->lsn = 0;
+	self->attached = false;
 	list_init(&self->link);
 }
 
 static inline void
-pub_slot_set(PubSlot* self, uint64_t value)
+cdc_slot_set(CdcSlot* self, uint64_t value)
 {
 	atomic_u64_set(&self->lsn, value);
 }

@@ -11,16 +11,16 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PubWaiter PubWaiter;
+typedef struct CdcWaiter CdcWaiter;
 
-struct PubWaiter
+struct CdcWaiter
 {
 	Event event;
 	List  link;
 };
 
 static inline void
-pub_waiter_init(PubWaiter* self)
+cdc_waiter_init(CdcWaiter* self)
 {
 	event_init(&self->event);
 	event_attach(&self->event);

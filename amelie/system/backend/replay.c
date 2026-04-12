@@ -29,13 +29,6 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 	// replay transaction log record
 	auto cmd = record_cmd(record);
 
-	// PUBLISH
-	if (cmd->cmd == CMD_PUBLISH)
-	{
-		// todo:
-		return;
-	}
-
 	// REPLACE, DELETE
 	auto pos = record_data(record);
 	for (auto i = record->count; i > 0; i--)

@@ -369,7 +369,6 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 		// do nothing (frontend only)
 		return -1;
 	}
-	case STMT_PUBLISH:
 	case STMT_WATCH:
 		// do nothing (frontend only)
 		return -1;
@@ -445,10 +444,6 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		stmt->r = emit_select(self, stmt->ast, false);
 		break;
 	}
-	case STMT_PUBLISH:
-		// no targets
-		emit_publish(self, stmt->ast);
-		break;
 	case STMT_WATCH:
 		// no targets
 		emit_watch(self, stmt->ast);

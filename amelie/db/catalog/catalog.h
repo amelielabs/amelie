@@ -29,12 +29,12 @@ struct Catalog
 	TableMgr   table_mgr;
 	BranchMgr  branch_mgr;
 	UdfMgr     udf_mgr;
-	ChannelMgr channel_mgr;
+	SubMgr     sub_mgr;
 	CatalogIf* iface;
 	void*      iface_arg;
 };
 
-void   catalog_init(Catalog*, CatalogIf*, void*, PartMgrIf*, void*);
+void   catalog_init(Catalog*, CatalogIf*, void*, PartMgrIf*, void*, Cdc*);
 void   catalog_free(Catalog*);
 void   catalog_open(Catalog*, bool);
 void   catalog_close(Catalog*);

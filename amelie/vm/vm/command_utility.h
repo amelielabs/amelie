@@ -28,10 +28,6 @@ void crepl_stop(Vm*, Op*);
 void crepl_subscribe(Vm*, Op*);
 void crepl_unsubscribe(Vm*, Op*);
 
-// subscription
-void csub_create(Vm*, Op*);
-void csub_drop(Vm*, Op*);
-
 // ddl
 void cddl(Vm*, Op*);
 void cddl_create_index(Vm*, Op*);

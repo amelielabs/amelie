@@ -19,7 +19,6 @@ typedef enum
 	// DML
 	CMD_REPLACE,
 	CMD_DELETE,
-	CMD_PUBLISH,
 	// DDL
 	CMD_DDL,
 	CMD_DDL_CREATE_INDEX
@@ -66,8 +65,7 @@ static inline bool
 record_cmd_is_dml(RecordCmd* self)
 {
 	return self->cmd == CMD_REPLACE ||
-	       self->cmd == CMD_DELETE  ||
-	       self->cmd == CMD_PUBLISH;
+	       self->cmd == CMD_DELETE;
 }
 
 static inline bool

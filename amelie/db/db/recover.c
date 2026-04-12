@@ -13,6 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
+#include <amelie_cdc.h>
 #include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
@@ -130,11 +131,6 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			part_delete_by(part, tr, snapshot, row);
 			*pos += row_size(row);
 		}
-		break;
-	}
-	case CMD_PUBLISH:
-	{
-		// todo:
 		break;
 	}
 	case CMD_DDL:

@@ -135,10 +135,6 @@ batch_process(Batch* self)
 			}
 		}
 
-		// include publish commands
-		if (! write_log_empty(&dtr->write_pub))
-			write_add(write, &dtr->write_pub);
-
 		if (write->header.count > 0)
 			write_list_add(&self->write, write);
 	}
@@ -171,16 +167,11 @@ batch_abort(Batch* self)
 }
 
 hot static inline void
-batch_complete(Batch* self, Pub* pub)
+batch_complete(Batch* self)
 {
 	for (auto it = 0; it < self->list_count; it++)
 	{
 		auto dtr = batch_at(self, it);
-
-		// publish messages
-		if (dtr->dispatch_mgr.pubs_count > 0)
-			pub_write_list(pub, dtr->write.header.lsn, &dtr->dispatch_mgr.pubs);
-
 		event_signal(&dtr->on_commit);
 	}
 }

@@ -11,20 +11,20 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_server>
-#include <amelie_db>
-#include <amelie_pub.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_cdc.h>
 
 static inline void
-pub_page_add(Pub* self)
+cdc_page_add(Cdc* self)
 {
 	// allocate new page
 	const auto page_size = 256ul * 1024;
-	auto page = (PubPage*)vfs_mmap(-1, page_size);
+	auto page = (CdcPage*)vfs_mmap(-1, page_size);
 	if (unlikely(page == NULL))
 		error_system();
 	page->pos = 0;
-	page->end = page_size - sizeof(PubPage);
+	page->end = page_size - sizeof(CdcPage);
 	list_init(&page->link);
 
 	// attach
@@ -36,7 +36,7 @@ pub_page_add(Pub* self)
 }
 
 void
-pub_init(Pub* self)
+cdc_init(Cdc* self)
 {
 	self->lsn           = 0;
 	self->current       = NULL;
@@ -50,61 +50,65 @@ pub_init(Pub* self)
 	list_init(&self->slots);
 	list_init(&self->link);
 
-	pub_page_add(self);
+	cdc_page_add(self);
 }
 
 void
-pub_free(Pub* self)
+cdc_free(Cdc* self)
 {
 	list_foreach_safe(&self->pages)
 	{
-		auto page = list_at(PubPage, link);
-		vfs_munmap(page, page->end + sizeof(PubPage));
+		auto page = list_at(CdcPage, link);
+		vfs_munmap(page, page->end + sizeof(CdcPage));
 	}
 	spinlock_free(&self->lock);
 }
 
 void
-pub_attach(Pub* self, PubSlot* slot)
+cdc_attach(Cdc* self, CdcSlot* slot)
 {
 	spinlock_lock(&self->lock);
 	list_append(&self->slots, &slot->link);
 	self->slots_count++;
 	spinlock_unlock(&self->lock);
+	slot->attached = true;
 }
 
 void
-pub_detach(Pub* self, PubSlot* slot)
+cdc_detach(Cdc* self, CdcSlot* slot)
 {
+	if (! slot->attached)
+		return;
 	spinlock_lock(&self->lock);
 	list_unlink(&slot->link);
 	self->slots_count--;
 	spinlock_unlock(&self->lock);
+	slot->attached = false;
 }
 
 static void
-pub_notify(Pub* self)
+cdc_notify(Cdc* self)
 {
 	// wakeup waiters
 	while (self->waiters_count > 0)
 	{
-		auto waiter = container_of(list_pop(&self->waiters), PubWaiter, link);
+		auto waiter = container_of(list_pop(&self->waiters), CdcWaiter, link);
 		self->waiters_count--;
 		event_signal(&waiter->event);
 	}
 }
 
 void
-pub_shutdown(Pub* self)
+cdc_shutdown(Cdc* self)
 {
 	spinlock_lock(&self->lock);
 	self->shutdown = true;
-	pub_notify(self);
+	cdc_notify(self);
 	spinlock_unlock(&self->lock);
 }
 
 void
-pub_gc(Pub* self)
+cdc_gc(Cdc* self)
 {
 	spinlock_lock(&self->lock);
 
@@ -112,7 +116,7 @@ pub_gc(Pub* self)
 	uint64_t min = UINT64_MAX;
 	list_foreach_safe(&self->slots)
 	{
-		auto slot = list_at(PubSlot, link);
+		auto slot = list_at(CdcSlot, link);
 		auto lsn  = atomic_u64_of(&slot->lsn);
 		if (lsn < min)
 			min = lsn;
@@ -122,19 +126,19 @@ pub_gc(Pub* self)
 	while (self->pages_count > 1)
 	{
 		auto first  = list_first(&self->pages);
-		auto second = container_of(first->next, PubPage, link);
+		auto second = container_of(first->next, CdcPage, link);
 
 		// first event on the second page
-		auto ev = (PubEvent*)second->data;
+		auto ev = (CdcEvent*)second->data;
 		if (ev->lsn <= min)
 		{
 			list_unlink(first);
 			self->pages_count--;
 
-			auto ref = container_of(first, PubPage, link);
+			auto ref = container_of(first, CdcPage, link);
 			spinlock_unlock(&self->lock);
 
-			vfs_munmap(ref, ref->end + sizeof(PubPage));
+			vfs_munmap(ref, ref->end + sizeof(CdcPage));
 
 			spinlock_lock(&self->lock);
 			continue;
@@ -146,15 +150,15 @@ pub_gc(Pub* self)
 }
 
 hot static inline void
-pub_add(Pub*     self, uint64_t lsn,
-        Uuid*    channel,
+cdc_add(Cdc*     self, uint64_t lsn,
+        Uuid*    id,
         uint8_t* data,
         uint32_t data_size)
 {
 	// maybe create new page
 	auto left = self->current->end - self->current->pos;
 	if (unlikely(left < data_size))
-		pub_page_add(self);
+		cdc_page_add(self);
 
 	// reserve
 	auto page = self->current;
@@ -162,50 +166,29 @@ pub_add(Pub*     self, uint64_t lsn,
 	page->pos += data_size;
 
 	// write event data
-	auto event = (PubEvent*)at;
+	auto event = (CdcEvent*)at;
 	event->lsn       = lsn;
-	event->channel   = *channel;
+	event->id        = *id;
 	event->data_size = data_size;
 	memcpy(event->data, data, data_size);
 
 	// set last lsn
 	self->lsn = lsn;
-
 }
 
 void
-pub_write(Pub*     self, uint64_t lsn,
-          Uuid*    channel,
+cdc_write(Cdc*     self, uint64_t lsn,
+          Uuid*    id,
           uint8_t* data,
           uint32_t data_size)
 {
 	spinlock_lock(&self->lock);
 
 	// add event to the queue
-	pub_add(self, lsn, channel, data, data_size);
+	cdc_add(self, lsn, id, data, data_size);
 
 	// wakeup waiters
-	pub_notify(self);
-
-	spinlock_unlock(&self->lock);
-}
-
-hot void
-pub_write_list(Pub* self, uint64_t lsn, List* list)
-{
-	spinlock_lock(&self->lock);
-
-	// add events to the queue
-	list_foreach(list)
-	{
-		auto publish = list_at(Publish, link);
-		pub_add(self, lsn, &publish->channel->config->id,
-		        publish->data.start,
-		        buf_size(&publish->data));
-	}
-
-	// wakeup waiters
-	pub_notify(self);
+	cdc_notify(self);
 
 	spinlock_unlock(&self->lock);
 }

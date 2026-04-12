@@ -175,35 +175,6 @@ crepl_unsubscribe(Vm* self, Op* op)
 }
 
 void
-csub_create(Vm* self, Op* op)
-{
-	// PERM_CREATE_SUB
-	check_user(self->tr, PERM_CREATE_SUB);
-
-	// [config_offset, if_not_exists]
-	auto pos = code_data_at(self->code_data, op->a);
-	auto config = sub_config_read(&pos);
-	defer(sub_config_free, config);
-
-	bool if_not_exists = op->b;
-	sub_mgr_create(share()->sub_mgr, config, if_not_exists);
-	control_save_state();
-}
-
-void
-csub_drop(Vm* self, Op* op)
-{
-	// [offset, if_exists]
-	auto pos = code_data_at(self->code_data, op->a);
-	Str  name;
-	json_read_string(&pos, &name);
-
-	bool if_exists = op->b;
-	sub_mgr_drop(share()->sub_mgr, &self->local->user, &name, if_exists);
-	control_save_state();
-}
-
-void
 cddl(Vm* self, Op* op)
 {
 	// [op, flags]

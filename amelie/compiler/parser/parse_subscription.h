@@ -13,6 +13,7 @@
 
 typedef struct AstSubCreate AstSubCreate;
 typedef struct AstSubDrop   AstSubDrop;
+typedef struct AstSubAlter  AstSubAlter;
 
 struct AstSubCreate
 {
@@ -26,6 +27,14 @@ struct AstSubDrop
 	Ast  ast;
 	bool if_exists;
 	Str  name;
+};
+
+struct AstSubAlter
+{
+	Ast  ast;
+	bool if_exists;
+	Str  name;
+	Str  name_new;
 };
 
 static inline AstSubCreate*
@@ -56,5 +65,20 @@ ast_sub_drop_allocate(void)
 	return self;
 }
 
+static inline AstSubAlter*
+ast_sub_alter_of(Ast* ast)
+{
+	return (AstSubAlter*)ast;
+}
+
+static inline AstSubAlter*
+ast_sub_alter_allocate(void)
+{
+	AstSubAlter* self;
+	self = ast_allocate(0, sizeof(AstSubAlter));
+	return self;
+}
+
 void parse_sub_create(Stmt*);
 void parse_sub_drop(Stmt*);
+void parse_sub_alter(Stmt*);

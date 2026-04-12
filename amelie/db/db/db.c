@@ -13,6 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
+#include <amelie_cdc.h>
 #include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
@@ -27,12 +28,14 @@ db_init(Db*        self,
         CatalogIf* iface,
         void*      iface_arg,
         PartMgrIf* iface_part_mgr,
-        void*      iface_part_mgr_arg)
+        void*      iface_part_mgr_arg,
+        Cdc*       cdc)
 {
 	self->snapshots_count = 0;
 	catalog_init(&self->catalog, iface, iface_arg,
 	             iface_part_mgr,
-	             iface_part_mgr_arg);
+	             iface_part_mgr_arg,
+	             cdc);
 	wal_init(&self->wal);
 	list_init(&self->snapshots);
 	list_init(&self->snapshots_gc);

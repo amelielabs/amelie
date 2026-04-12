@@ -13,6 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
+#include <amelie_cdc.h>
 #include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
@@ -24,7 +25,8 @@ catalog_init(Catalog*   self,
              CatalogIf* iface,
              void*      iface_arg,
              PartMgrIf* iface_part_mgr,
-             void*      iface_part_mgr_arg)
+             void*      iface_part_mgr_arg,
+             Cdc*       cdc)
 {
 	self->iface = iface;
 	self->iface_arg = iface_arg;
@@ -35,14 +37,14 @@ catalog_init(Catalog*   self,
 	               iface_part_mgr_arg);
 	branch_mgr_init(&self->branch_mgr, &self->table_mgr);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
-	channel_mgr_init(&self->channel_mgr);
+	sub_mgr_init(&self->sub_mgr, cdc);
 }
 
 void
 catalog_free(Catalog* self)
 {
 	udf_mgr_free(&self->udf_mgr);
-	channel_mgr_free(&self->channel_mgr);
+	sub_mgr_free(&self->sub_mgr);
 	branch_mgr_free(&self->branch_mgr);
 	table_mgr_free(&self->table_mgr);
 	storage_mgr_free(&self->storage_mgr);
@@ -216,9 +218,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 			write = udf_mgr_grant(&self->udf_mgr, tr, &user, &name, &to,
 			                      grant, perms, 0);
 			break;
-		case REL_CHANNEL:
-			write = channel_mgr_grant(&self->channel_mgr, tr, &user, &name, &to,
-			                          grant, perms, 0);
+		case REL_SUBSCRIPTION:
+			write = sub_mgr_grant(&self->sub_mgr, tr, &user, &name, &to,
+			                      grant, perms, 0);
 			break;
 		default:
 			abort();
@@ -672,45 +674,45 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                       &user_new, &name_new, if_exists);
 		break;
 	}
-	case DDL_CHANNEL_CREATE:
+	case DDL_SUB_CREATE:
 	{
-		// PERM_CREATE_CHANNEL
-		check_user(tr, PERM_CREATE_CHANNEL);
+		// PERM_CREATE_SUB
+		check_user(tr, PERM_CREATE_SUB);
 
-		auto config = channel_op_create_read(op);
-		defer(channel_config_free, config);
+		auto config = sub_op_create_read(op);
+		defer(sub_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = channel_mgr_create(&self->channel_mgr, tr, config, if_not_exists);
+		write = sub_mgr_create(&self->sub_mgr, tr, config, if_not_exists);
 		break;
 	}
-	case DDL_CHANNEL_DROP:
+	case DDL_SUB_DROP:
 	{
 		Str user;
 		Str name;
-		channel_op_drop_read(op, &user, &name);
+		sub_op_drop_read(op, &user, &name);
 
-		// ensure no other udfs depend on the channel
+		// ensure no other udfs depend on the sub
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = channel_mgr_drop(&self->channel_mgr, tr, &user, &name, if_exists);
+		write = sub_mgr_drop(&self->sub_mgr, tr, &user, &name, if_exists);
 		break;
 	}
-	case DDL_CHANNEL_RENAME:
+	case DDL_SUB_RENAME:
 	{
 		Str user;
 		Str name;
 		Str user_new;
 		Str name_new;
-		channel_op_rename_read(op, &user, &name, &user_new, &name_new);
+		sub_op_rename_read(op, &user, &name, &user_new, &name_new);
 
-		// ensure no other udfs depend on the channel
+		// ensure no other udfs depend on the sub
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = channel_mgr_rename(&self->channel_mgr, tr, &user, &name,
-		                           &user_new, &name_new,
-		                           if_exists);
+		write = sub_mgr_rename(&self->sub_mgr, tr, &user, &name,
+		                       &user_new, &name_new,
+		                       if_exists);
 		break;
 	}
 	default:
@@ -741,9 +743,9 @@ catalog_find(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 	if (udf)
 		return &udf->rel;
 
-	auto channel = channel_mgr_find(&self->channel_mgr, user, name, false);
-	if (channel)
-		return &channel->rel;
+	auto sub = sub_mgr_find(&self->sub_mgr, user, name, false);
+	if (sub)
+		return &sub->rel;
 
 	if (error_if_not_exists)
 		error("relation '%.*s': not exists", str_size(name),

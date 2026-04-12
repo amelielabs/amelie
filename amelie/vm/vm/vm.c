@@ -364,10 +364,6 @@ vm_run(Vm*       self,
 		&&crepl_subscribe,
 		&&crepl_unsubscribe,
 
-		// subscription
-		&&csub_create,
-		&&csub_drop,
-
 		// ddl
 		&&cddl,
 		&&cddl_create_index,
@@ -377,7 +373,6 @@ vm_run(Vm*       self,
 		&&csend_shard,
 		&&csend_lookup,
 		&&csend_all,
-		&&csend_pub,
 		&&cclose,
 
 		// var
@@ -1908,14 +1903,6 @@ crepl_unsubscribe:
 	crepl_unsubscribe(self, op);
 	op_next;
 
-csub_create:
-	csub_create(self, op);
-	op_next;
-
-csub_drop:
-	csub_drop(self, op);
-	op_next;
-
 cddl:
 	cddl(self, op);
 	op_next;
@@ -1945,10 +1932,6 @@ csend_lookup:
 
 csend_all:
 	csend_all(self, op);
-	op_next;
-
-csend_pub:
-	csend_pub(self, op);
 	op_next;
 
 cclose:

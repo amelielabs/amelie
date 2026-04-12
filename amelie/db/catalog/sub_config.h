@@ -15,9 +15,10 @@ typedef struct SubConfig SubConfig;
 
 struct SubConfig
 {
-	Str user;
-	Str name;
-	Buf channels;
+	Str    user;
+	Str    name;
+	Grants grants;
+	Buf    rels;
 };
 
 static inline SubConfig*
@@ -27,7 +28,8 @@ sub_config_allocate(void)
 	self = am_malloc(sizeof(SubConfig));
 	str_init(&self->user);
 	str_init(&self->name);
-	buf_init(&self->channels);
+	grants_init(&self->grants);
+	buf_init(&self->rels);
 	return self;
 }
 
@@ -36,7 +38,8 @@ sub_config_free(SubConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
-	buf_free(&self->channels);
+	grants_free(&self->grants);
+	buf_free(&self->rels);
 	am_free(self);
 }
 
@@ -60,7 +63,8 @@ sub_config_copy(SubConfig* self)
 	auto copy = sub_config_allocate();
 	sub_config_set_user(copy, &self->user);
 	sub_config_set_name(copy, &self->name);
-	buf_write_buf(&copy->channels, &self->channels);
+	grants_copy(&copy->grants, &self->grants);
+	buf_write_buf(&copy->rels, &self->rels);
 	return copy;
 }
 
@@ -69,25 +73,30 @@ sub_config_read(uint8_t** pos)
 {
 	auto self = sub_config_allocate();
 	errdefer(sub_config_free, self);
-	uint8_t* pos_channels = NULL;
+	uint8_t* pos_grants = NULL;
+	uint8_t* pos_rels   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "user",     &self->user   },
-		{ DECODE_STRING, "name",     &self->name   },
-		{ DECODE_ARRAY,  "channels", &pos_channels },
-		{ 0,              NULL,       NULL         },
+		{ DECODE_STRING, "user",   &self->user },
+		{ DECODE_STRING, "name",   &self->name },
+		{ DECODE_ARRAY,  "grants", &pos_grants },
+		{ DECODE_ARRAY,  "rels",   &pos_rels   },
+		{ 0,              NULL,     NULL       },
 	};
 	decode_obj(obj, "sub", pos);
 
-	// channels
-	json_read_array(&pos_channels);
-	while (! json_read_array_end(&pos_channels))
+	// grants
+	grants_read(&self->grants, &pos_grants);
+
+	// rels
+	json_read_array(&pos_rels);
+	while (! json_read_array_end(&pos_rels))
 	{
 		Str str;
-		json_read_string(&pos_channels, &str);
+		json_read_string(&pos_rels, &str);
 		Uuid id;
 		uuid_set(&id, &str);
-		buf_write(&self->channels, &id, sizeof(id));
+		buf_write(&self->rels, &id, sizeof(id));
 	}
 	return self;
 }
@@ -112,11 +121,15 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 		return;
 	}
 
-	// channels
-	encode_raw(buf, "channels", 8);
+	// grants
+	encode_raw(buf, "grants", 6);
+	grants_write(&self->grants, buf, 0);
+
+	// rels
+	encode_raw(buf, "rels", 4);
 	encode_array(buf);
-	auto id  = (Uuid*)self->channels.start;
-	auto end = (Uuid*)self->channels.position;
+	auto id  = (Uuid*)self->rels.start;
+	auto end = (Uuid*)self->rels.position;
 	for (; id < end; id++)
 		encode_uuid(buf, id);
 	encode_array_end(buf);

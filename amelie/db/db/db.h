@@ -24,7 +24,7 @@ struct Db
 	Syncer  syncer;
 };
 
-void db_init(Db*, CatalogIf*, void*, PartMgrIf*, void*);
+void db_init(Db*, CatalogIf*, void*, PartMgrIf*, void*, Cdc*);
 void db_free(Db*);
 void db_open(Db*, bool);
 void db_close(Db*);

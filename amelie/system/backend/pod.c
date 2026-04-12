@@ -74,11 +74,6 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 			}
 			break;
 		}
-		case CMD_PUBLISH:
-		{
-			// todo:
-			break;
-		}
 		}
 	}
 }

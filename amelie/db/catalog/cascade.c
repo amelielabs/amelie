@@ -13,6 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
+#include <amelie_cdc.h>
 #include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
@@ -31,14 +32,14 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 {
 	// validate or drop all objects matching the user
 
-	// channels
-	list_foreach_safe(&self->channel_mgr.mgr.list)
+	// subs
+	list_foreach_safe(&self->sub_mgr.mgr.list)
 	{
-		auto channel = channel_of(list_at(Rel, link));
-		if (! str_compare_case(&channel->config->user, user))
+		auto sub = sub_of(list_at(Rel, link));
+		if (! str_compare_case(&sub->config->user, user))
 			continue;
 		if (drop)
-			channel_mgr_drop_of(&self->channel_mgr, tr, channel);
+			sub_mgr_drop_of(&self->sub_mgr, tr, sub);
 		else
 			cascade_user_error(user);
 	}
@@ -121,15 +122,15 @@ cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 			      str_size(user), str_of(user));
 	}
 
-	// channels
-	list_foreach_safe(&self->channel_mgr.mgr.list)
+	// subs
+	list_foreach_safe(&self->sub_mgr.mgr.list)
 	{
-		auto channel = channel_of(list_at(Rel, link));
-		if (str_compare_case(&channel->config->user, user))
-			channel_mgr_rename(&self->channel_mgr, tr, &channel->config->user,
-			                   &channel->config->name,
-			                   user_new,
-			                   &channel->config->name, false);
+		auto sub = sub_of(list_at(Rel, link));
+		if (str_compare_case(&sub->config->user, user))
+			sub_mgr_rename(&self->sub_mgr, tr, &sub->config->user,
+			               &sub->config->name,
+			               user_new,
+			               &sub->config->name, false);
 	}
 
 	// branches

@@ -315,25 +315,25 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
-	// channel
-	case STMT_CREATE_CHANNEL:
+	// subscription
+	case STMT_CREATE_SUBSCRIPTION:
 	{
-		auto arg = ast_channel_create_of(stmt->ast);
-		offset = channel_op_create(data, arg->config);
+		auto arg = ast_sub_create_of(stmt->ast);
+		offset = sub_op_create(data, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		break;
 	}
-	case STMT_DROP_CHANNEL:
+	case STMT_DROP_SUBSCRIPTION:
 	{
-		auto arg = ast_channel_drop_of(stmt->ast);
-		offset = channel_op_drop(data, user, &arg->name);
+		auto arg = ast_sub_drop_of(stmt->ast);
+		offset = sub_op_drop(data, user, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
-	case STMT_ALTER_CHANNEL:
+	case STMT_ALTER_SUBSCRIPTION:
 	{
-		auto arg = ast_channel_alter_of(stmt->ast);
-		offset = channel_op_rename(data, user, &arg->name, user, &arg->name_new);
+		auto arg = ast_sub_alter_of(stmt->ast);
+		offset = sub_op_rename(data, user, &arg->name, user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -489,24 +489,6 @@ emit_utility(Compiler* self)
 	case STMT_UNSUBSCRIBE:
 	{
 		op0(self, CREPL_UNSUBSCRIBE);
-		break;
-	}
-
-	// subscription
-	case STMT_CREATE_SUBSCRIPTION:
-	{
-		auto arg = ast_sub_create_of(stmt->ast);
-		auto offset = buf_size(data);
-		sub_config_write(arg->config, data, 0);
-		op2(self, CSUB_CREATE, offset, arg->if_not_exists);
-		break;
-	}
-	case STMT_DROP_SUBSCRIPTION:
-	{
-		auto arg = ast_sub_drop_of(stmt->ast);
-		auto offset = buf_size(data);
-		encode_string(data, &arg->name);
-		op2(self, CSUB_DROP, offset, arg->if_exists);
 		break;
 	}
 

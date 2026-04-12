@@ -20,7 +20,7 @@
 void
 parse_sub_create(Stmt* self)
 {
-	// CREATE SUBSCRIPTION [IF NOT EXISTS] name ON [user.]channel, ...
+	// CREATE SUBSCRIPTION [IF NOT EXISTS] name ON [user.]table, ...
 	auto stmt = ast_sub_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -39,16 +39,16 @@ parse_sub_create(Stmt* self)
 	// ON
 	stmt_expect(self, KON);
 
-	// [user.]channel, ...
+	// [user.]table, ...
 	for (;;)
 	{
 		Str user;
 		Str target;
 		auto path = parse_target(self, &user, &target);
-		auto channel = channel_mgr_find(&share()->db->catalog.channel_mgr, &user, &target, false);
-		if (! channel)
-			stmt_error(self, path, "channel not found");
-		buf_write(&config->channels, &channel->config->id, sizeof(Uuid));
+		auto table = catalog_find_table(&share()->db->catalog, &user, &target, false);
+		if (! table)
+			stmt_error(self, path, "table not found");
+		buf_write(&config->rels, &table->config->id, sizeof(Uuid));
 		if (stmt_if(self, ','))
 			continue;
 		break;
@@ -68,4 +68,29 @@ parse_sub_drop(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
+}
+
+void
+parse_sub_alter(Stmt* self)
+{
+	// ALTER SUBSCRIPTION [IF EXISTS] name RENAME TO name
+	auto stmt = ast_sub_alter_allocate();
+	self->ast = &stmt->ast;
+
+	// if exists
+	stmt->if_exists = parse_if_exists(self);
+
+	// name
+	auto name = stmt_expect(self, KNAME);
+	stmt->name = name->string;
+
+	// RENAME
+	stmt_expect(self, KRENAME);
+
+	// TO
+	stmt_expect(self, KTO);
+
+	// name
+	name = stmt_expect(self, KNAME);
+	stmt->name_new = name->string;
 }

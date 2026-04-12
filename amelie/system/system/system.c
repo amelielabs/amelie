@@ -199,8 +199,7 @@ system_create(void)
 	auto share = &self->share;
 	share->executor     = &self->executor;
 	share->commit       = &self->commit;
-	share->pub          = &self->pub;
-	share->sub_mgr      = &self->sub_mgr;
+	share->cdc          = &self->cdc;
 	share->repl         = &self->repl;
 	share->function_mgr = &self->function_mgr;
 	share->db           = &self->db;
@@ -211,9 +210,8 @@ system_create(void)
 	// server
 	server_init(&self->server);
 
-	// pub/sub
-	pub_init(&self->pub);
-	sub_mgr_init(&self->sub_mgr, &self->pub);
+	// cdc
+	cdc_init(&self->cdc);
 
 	// frontend/backend mgr
 	frontend_mgr_init(&self->frontend_mgr);
@@ -221,13 +219,13 @@ system_create(void)
 
 	// executor
 	executor_init(&self->executor);
-	commit_init(&self->commit, &self->pub, &self->db, &self->executor);
+	commit_init(&self->commit, &self->db, &self->executor);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, &catalog_if, self, &part_mgr_if, self);
+	db_init(&self->db, &catalog_if, self, &part_mgr_if, self, &self->cdc);
 
 	// replication
 	repl_init(&self->repl, &self->db);
@@ -238,11 +236,10 @@ void
 system_free(System* self)
 {
 	repl_free(&self->repl);
-	sub_mgr_free(&self->sub_mgr);
-	pub_free(&self->pub);
 	commit_free(&self->commit);
 	executor_free(&self->executor);
 	db_free(&self->db);
+	cdc_free(&self->cdc);
 	function_mgr_free(&self->function_mgr);
 	server_free(&self->server);
 	am_free(self);
@@ -315,9 +312,6 @@ system_start(System* self, bool bootstrap)
 	frontend_mgr_start(&self->frontend_mgr, &frontend_if,
 	                   self,
 	                   workers);
-
-	// prepare subscriptions
-	sub_mgr_open(&self->sub_mgr);
 
 	// prepare replication manager
 	repl_open(&self->repl);

@@ -29,7 +29,6 @@
 #include "compiler/emit_update.h"
 #include "compiler/emit_delete.h"
 #include "compiler/emit_select.h"
-#include "compiler/emit_publish.h"
 #include "compiler/emit_watch.h"
 #include "compiler/emit_utility.h"
 

@@ -18,9 +18,8 @@ struct System
 	Share       share;
 	// vm
 	FunctionMgr function_mgr;
-	// pub/sub
-	Pub         pub;
-	SubMgr      sub_mgr;
+	// cdc
+	Cdc         cdc;
 	// repl
 	Repl        repl;
 	// executor

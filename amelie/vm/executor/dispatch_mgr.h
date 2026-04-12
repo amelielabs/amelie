@@ -20,8 +20,6 @@ struct DispatchMgr
 	int           list_count;
 	List          ltrs;
 	int           ltrs_count;
-	List          pubs;
-	int           pubs_count;
 	Complete      complete;
 	Dtr*          dtr;
 	ReqCache      cache_req;
@@ -47,11 +45,9 @@ dispatch_mgr_init(DispatchMgr* self, Dtr* dtr)
 {
 	self->list_count = 0;
 	self->ltrs_count = 0;
-	self->pubs_count = 0;
 	self->dtr        = dtr;
 	buf_init(&self->list);
 	list_init(&self->ltrs);
-	list_init(&self->pubs);
 	req_cache_init(&self->cache_req);
 	ltr_cache_init(&self->cache_ltr);
 	dispatch_cache_init(&self->cache);
@@ -76,9 +72,6 @@ dispatch_mgr_reset(DispatchMgr* self)
 	}
 	list_init(&self->ltrs);
 	self->ltrs_count = 0;
-
-	list_init(&self->pubs);
-	self->pubs_count = 0;
 
 	complete_reset(&self->complete);
 }
@@ -203,13 +196,6 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 		ltr->closed = dispatch->close;
 		req->ltr = ltr;
 		track_send(track, &req->msg);
-	}
-
-	// add publish
-	if (! publish_empty(&dispatch->pub))
-	{
-		list_append(&self->pubs, &dispatch->pub.link);
-		self->pubs_count++;
 	}
 
 	// send early close requests

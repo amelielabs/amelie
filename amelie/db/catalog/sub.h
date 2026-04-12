@@ -16,7 +16,8 @@ typedef struct Sub Sub;
 struct Sub
 {
 	Rel        rel;
-	PubSlot    slot;
+	CdcSlot    slot;
+	Cdc*       cdc;
 	SubConfig* config;
 };
 
@@ -24,16 +25,18 @@ static inline void
 sub_free(Sub* self, bool drop)
 {
 	unused(drop);
+	cdc_detach(self->cdc, &self->slot);
 	sub_config_free(self->config);
 	am_free(self);
 }
 
 static inline Sub*
-sub_allocate(SubConfig* config)
+sub_allocate(SubConfig* config, Cdc* cdc)
 {
 	auto self = (Sub*)am_malloc(sizeof(Sub));
 	self->config = sub_config_copy(config);
-	pub_slot_init(&self->slot);
+	self->cdc    = cdc;
+	cdc_slot_init(&self->slot);
 
 	// set relation
 	auto rel = &self->rel;

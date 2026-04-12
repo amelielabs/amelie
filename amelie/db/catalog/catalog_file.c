@@ -13,6 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
+#include <amelie_cdc.h>
 #include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
@@ -26,7 +27,7 @@ enum
 	RESTORE_TABLE,
 	RESTORE_BRANCH,
 	RESTORE_UDF,
-	RESTORE_CHANNEL
+	RESTORE_SUB
 };
 
 static void
@@ -86,14 +87,14 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		self->iface->udf_compile(self, udf);
 		break;
 	}
-	case RESTORE_CHANNEL:
+	case RESTORE_SUB:
 	{
-		// read channel config
-		auto config = channel_config_read(pos);
-		defer(channel_config_free, config);
+		// read subscription config
+		auto config = sub_config_read(pos);
+		defer(sub_config_free, config);
 
-		// create channel
-		channel_mgr_create(&self->channel_mgr, tr, config, false);
+		// create subscription
+		sub_mgr_create(&self->sub_mgr, tr, config, false);
 		break;
 	}
 	}
@@ -123,7 +124,7 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 static void
 catalog_restore(Catalog* self, uint8_t** pos)
 {
-	// { lsn, tsn, users, storages, tables, branches, udfs, channels }
+	// { lsn, tsn, users, storages, tables, branches, udfs, subs }
 	int64_t  lsn          = 0;
 	int64_t  tsn          = 0;
 	uint8_t* pos_users    = NULL;
@@ -131,7 +132,7 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	uint8_t* pos_tables   = NULL;
 	uint8_t* pos_branches = NULL;
 	uint8_t* pos_udfs     = NULL;
-	uint8_t* pos_channels = NULL;
+	uint8_t* pos_subs     = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_INT,   "lsn",      &lsn          },
@@ -141,7 +142,7 @@ catalog_restore(Catalog* self, uint8_t** pos)
 		{ DECODE_ARRAY, "tables",   &pos_tables   },
 		{ DECODE_ARRAY, "branches", &pos_branches },
 		{ DECODE_ARRAY, "udfs",     &pos_udfs     },
-		{ DECODE_ARRAY, "channels", &pos_channels },
+		{ DECODE_ARRAY, "subs",     &pos_subs     },
 		{ 0,             NULL,       NULL         },
 	};
 	decode_obj(obj, "catalog", pos);
@@ -171,10 +172,10 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	while (! json_read_array_end(&pos_udfs))
 		catalog_restore_object(self, RESTORE_UDF, &pos_udfs);
 
-	// channels
-	json_read_array(&pos_channels);
-	while (! json_read_array_end(&pos_channels))
-		catalog_restore_object(self, RESTORE_CHANNEL, &pos_channels);
+	// subs
+	json_read_array(&pos_subs);
+	while (! json_read_array_end(&pos_subs))
+		catalog_restore_object(self, RESTORE_SUB, &pos_subs);
 
 	// set catalog lsn and tsn
 	opt_int_set(&state()->catalog, lsn);
@@ -227,7 +228,7 @@ catalog_read(Catalog* self)
 Buf*
 catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 {
-	// { lsn, tsn, users, storages, tables, branches, udfs, channels }
+	// { lsn, tsn, users, storages, tables, branches, udfs, subs }
 	auto buf = buf_create();
 	encode_obj(buf);
 
@@ -259,9 +260,9 @@ catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 	encode_raw(buf, "udfs", 4);
 	udf_mgr_dump(&self->udf_mgr, buf);
 
-	// channels
-	encode_raw(buf, "channels", 8);
-	channel_mgr_dump(&self->channel_mgr, buf);
+	// subs
+	encode_raw(buf, "subs", 4);
+	sub_mgr_dump(&self->sub_mgr, buf);
 
 	encode_obj_end(buf);
 	return buf;

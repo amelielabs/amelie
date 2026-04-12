@@ -11,56 +11,56 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PubCursor PubCursor;
+typedef struct CdcCursor CdcCursor;
 
-struct PubCursor
+struct CdcCursor
 {
 	uint64_t lsn;
 	uint32_t offset;
-	PubPage* page;
-	Pub*     pub;
+	CdcPage* page;
+	Cdc*     cdc;
 };
 
 static inline void
-pub_cursor_init(PubCursor* self)
+cdc_cursor_init(CdcCursor* self)
 {
 	self->lsn    = 0;
 	self->offset = 0;
 	self->page   = NULL;
-	self->pub    = NULL;
+	self->cdc    = NULL;
 }
 
 static inline void
-pub_cursor_open(PubCursor* self, Pub* pub, uint64_t lsn)
+cdc_cursor_open(CdcCursor* self, Cdc* cdc, uint64_t lsn)
 {
 	// lsn to find after
 	self->lsn = lsn;
-	self->pub = pub;
+	self->cdc = cdc;
 }
 
-always_inline static inline PubEvent*
-pub_cursor_at(PubCursor* self)
+always_inline static inline CdcEvent*
+cdc_cursor_at(CdcCursor* self)
 {
 	if (unlikely(! self->page))
 		return NULL;
-	return (PubEvent*)(self->page->data + self->offset);
+	return (CdcEvent*)(self->page->data + self->offset);
 }
 
 hot static inline bool
-pub_cursor_next(PubCursor* self)
+cdc_cursor_next(CdcCursor* self)
 {
-	auto pub  = self->pub;
-	auto lock = &pub->lock;
+	auto cdc  = self->cdc;
+	auto lock = &cdc->lock;
 
 	spinlock_lock(lock);
 
 	// wait for the next available lsn (or shutdown)
-	PubWaiter waiter;
-	while (self->lsn <= pub->lsn && !pub->shutdown)
+	CdcWaiter waiter;
+	while (self->lsn <= cdc->lsn && !cdc->shutdown)
 	{
-		pub_waiter_init(&waiter);
-		list_append(&pub->waiters, &waiter.link);
-		pub->waiters_count++;
+		cdc_waiter_init(&waiter);
+		list_append(&cdc->waiters, &waiter.link);
+		cdc->waiters_count++;
 
 		spinlock_unlock(lock);
 		event_wait(&waiter.event, -1);
@@ -68,7 +68,7 @@ pub_cursor_next(PubCursor* self)
 	}
 
 	// shutdown request
-	if (unlikely(pub->shutdown))
+	if (unlikely(cdc->shutdown))
 	{
 		spinlock_unlock(lock);
 		return false;
@@ -78,7 +78,7 @@ pub_cursor_next(PubCursor* self)
 	auto page = self->page;
 	if (unlikely(! page))
 	{
-		page = container_of(list_first(&pub->pages), PubPage, link);
+		page = container_of(list_first(&cdc->pages), CdcPage, link);
 		self->page   = page;
 		self->offset = 0;
 	}
@@ -86,7 +86,7 @@ pub_cursor_next(PubCursor* self)
 	// rewind to the next visible event
 	for (;;)
 	{
-		auto at = pub_cursor_at(self);
+		auto at = cdc_cursor_at(self);
 		if (at->lsn > self->lsn)
 		{
 			self->lsn = at->lsn;
@@ -95,7 +95,7 @@ pub_cursor_next(PubCursor* self)
 		self->offset += at->data_size;
 		if (unlikely(self->offset == self->page->pos))
 		{
-			self->page = container_of(self->page->link.next, PubPage, link);
+			self->page = container_of(self->page->link.next, CdcPage, link);
 			self->offset = 0;
 		}
 	}

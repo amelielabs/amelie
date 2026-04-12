@@ -287,10 +287,6 @@ OpDesc ops[] =
 	{ CREPL_SUBSCRIBE, "repl_subscribe" },
 	{ CREPL_UNSUBSCRIBE, "repl_unsubscribe" },
 
-	// subscription
-	{ CSUB_CREATE, "sub_create" },
-	{ CSUB_DROP, "sub_drop" },
-
 	// ddl
 	{ CDDL, "ddl" },
 	{ CDDL_CREATE_INDEX, "ddl_create_index" },
@@ -300,7 +296,6 @@ OpDesc ops[] =
 	{ CSEND_SHARD, "send_shard" },
 	{ CSEND_LOOKUP, "send_lookup" },
 	{ CSEND_ALL, "send_all" },
-	{ CSEND_PUB, "send_pub" },
 	{ CCLOSE, "close" },
 
 	// var
@@ -450,17 +445,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 			op_dump_send(self, code, op, output, send_at(data, op->c),
 			             true, true, true);
 			break;
-		case CSEND_PUB:
-		{
-			auto channel = (Channel*)op->a;
-			op_write(output, op, false, true, false,
-			         "%.*s.%.*s",
-			         str_size(&channel->config->user),
-			         str_of(&channel->config->user),
-			         str_size(&channel->config->name),
-			         str_of(&channel->config->name));
-			break;
-		}
 		case CINSERT:
 		{
 			auto table    = (Table*)op->a;
