@@ -87,6 +87,21 @@ encode_string_unescape(Buf* self, Str* string)
 }
 
 always_inline hot static inline void
+encode_base64(Buf* self, Buf* buf)
+{
+	auto offset = buf_size(self);
+	encode_string32(self, 0);
+
+	Str str;
+	buf_str(buf, &str);
+	base64url_encode(self, &str);
+
+	// update generated string size
+	auto start = self->start + offset;
+	json_write_string32(&start, buf_size(self) - (offset + json_size_string32()));
+}
+
+always_inline hot static inline void
 encode_target(Buf* self, Str* user, Str* name)
 {
 	//  user.name
@@ -130,25 +145,55 @@ encode_null(Buf* self)
 	json_write_null(pos);
 }
 
+hot static inline void
+encode_date(Buf* self, int64_t value)
+{
+	auto offset = buf_size(self);
+	encode_string32(self, 0);
+	buf_reserve(self, 32);
+	auto size = date_get(value, (char*)self->position, 32);
+	buf_advance(self, size);
+	auto pos = self->start + offset;
+	json_write_string32(&pos, size);
+}
+
+hot static inline void
+encode_timestamp(Buf* self, Timezone* tz, int64_t value)
+{
+	auto offset = buf_size(self);
+	encode_string32(self, 0);
+	buf_reserve(self, 64);
+	auto size = timestamp_get(value, tz, (char*)self->position, 64);
+	buf_advance(self, size);
+	auto pos = self->start + offset;
+	json_write_string32(&pos, size);
+}
+
+hot static inline void
+encode_interval(Buf* self, Interval* value)
+{
+	auto offset = buf_size(self);
+	encode_string32(self, 0);
+	buf_reserve(self, 128);
+	auto size = interval_get(value, (char*)self->position, 128);
+	buf_advance(self, size);
+	auto pos = self->start + offset;
+	json_write_string32(&pos, size);
+}
+
+hot static inline void
+encode_vector(Buf* self, Vector* value)
+{
+	encode_array(self);
+	for (uint32_t i = 0; i < value->size; i++)
+		encode_real(self, value->value[i]);
+	encode_array_end(self);
+}
+
 always_inline hot static inline void
 encode_uuid(Buf* self, Uuid* uuid)
 {
 	char uuid_sz[UUID_SZ];
 	uuid_get(uuid, uuid_sz, sizeof(uuid_sz));
 	encode_raw(self, uuid_sz, sizeof(uuid_sz) - 1);
-}
-
-always_inline hot static inline void
-encode_base64(Buf* self, Buf* data)
-{
-	auto offset = buf_size(self);
-	encode_string32(self, 0);
-
-	Str str;
-	buf_str(data, &str);
-	base64url_encode(self, &str);
-
-	// update generated string size
-	auto start = self->start + offset;
-	json_write_string32(&start, buf_size(self) - (offset + json_size_string32()));
 }

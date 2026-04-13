@@ -181,6 +181,7 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/server/server.c)
 
 set(AMELIE_SOURCES_DB
+    ${AMELIE_ROOT}/db/row/row_encode.c
     ${AMELIE_ROOT}/db/transaction/commit.c
     ${AMELIE_ROOT}/db/transaction/relation_mgr.c
     ${AMELIE_ROOT}/db/cdc/cdc.c

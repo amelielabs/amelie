@@ -34,51 +34,20 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		buf_write(buf, self->json, json_sizeof(self->json));
 		break;
 	case TYPE_DATE:
-	{
-		auto offset = buf_size(buf);
-		encode_string32(buf, 0);
-		buf_reserve(buf, 128);
-		int size = date_get(self->integer, (char*)buf->position, 128);
-		buf_advance(buf, size);
-		uint8_t* pos = buf->start + offset;
-		json_write_string32(&pos, size);
+		encode_date(buf, self->integer);
 		break;
-	}
 	case TYPE_TIMESTAMP:
-	{
-		auto offset = buf_size(buf);
-		encode_string32(buf, 0);
-		buf_reserve(buf, 128);
-		int size = timestamp_get(self->integer, tz, (char*)buf->position, 128);
-		buf_advance(buf, size);
-		uint8_t* pos = buf->start + offset;
-		json_write_string32(&pos, size);
+		encode_timestamp(buf, tz, self->integer);
 		break;
-	}
 	case TYPE_INTERVAL:
-	{
-		auto offset = buf_size(buf);
-		encode_string32(buf, 0);
-		buf_reserve(buf, 256);
-		int size = interval_get(&self->interval, (char*)buf->position, 256);
-		buf_advance(buf, size);
-		uint8_t* pos = buf->start + offset;
-		json_write_string32(&pos, size);
+		encode_interval(buf, &self->interval);
 		break;
-	}
 	case TYPE_VECTOR:
-	{
-		encode_array(buf);
-		for (uint32_t i = 0; i < self->vector->size; i++)
-			encode_real(buf, self->vector->value[i]);
-		encode_array_end(buf);
+		encode_vector(buf, self->vector);
 		break;
-	}
 	case TYPE_UUID:
-	{
 		encode_uuid(buf, &self->uuid);
 		break;
-	}
 	// TYPE_STORE
 	// TYPE_CURSOR
 	// TYPE_CURSOR_STORE

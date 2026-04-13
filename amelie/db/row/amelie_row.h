@@ -32,4 +32,5 @@
 
 // row
 #include "row/row.h"
+#include "row/row_encode.h"
 #include "row/compare.h"
