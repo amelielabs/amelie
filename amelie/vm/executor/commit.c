@@ -30,7 +30,7 @@ commit_add(DtrQueue* queue, Batch* batch, Dtr* dtr)
 	}
 }
 
-static void
+hot static void
 commit_main(void* arg)
 {
 	Commit* self = arg;
@@ -76,8 +76,8 @@ commit_main(void* arg)
 		//
 		auto group_min = executor_detach(self->executor, &batch);
 
-		// wakeup and unlock prepared transaction
-		batch_complete(&batch);
+		// publish cdc events and wakeup transactions
+		batch_complete(&batch, self->db->cdc);
 
 		// remove all groups < group_min
 		dtr_queue_gc(&queue, group_min);

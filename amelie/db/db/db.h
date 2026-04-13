@@ -22,6 +22,7 @@ struct Db
 	int     snapshots_count;
 	Service service;
 	Syncer  syncer;
+	Cdc*    cdc;
 };
 
 void db_init(Db*, CatalogIf*, void*, PartMgrIf*, void*, Cdc*);

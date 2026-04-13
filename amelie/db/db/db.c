@@ -32,6 +32,7 @@ db_init(Db*        self,
         Cdc*       cdc)
 {
 	self->snapshots_count = 0;
+	self->cdc             = cdc;
 	catalog_init(&self->catalog, iface, iface_arg,
 	             iface_part_mgr,
 	             iface_part_mgr_arg,

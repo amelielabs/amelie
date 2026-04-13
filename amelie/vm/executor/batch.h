@@ -133,7 +133,9 @@ batch_process(Batch* self)
 				if (tr_persists(tr))
 					write_add(write, &tr->log.write_log);
 
-				// todo: add tr logs for cdc
+				// collect cdc per dtr
+				if (! write_cdc_empty(&tr->log.write_cdc))
+					list_append(&dtr->write_cdc, &tr->log.write_cdc.link);
 			}
 		}
 
@@ -169,11 +171,14 @@ batch_abort(Batch* self)
 }
 
 hot static inline void
-batch_complete(Batch* self)
+batch_complete(Batch* self, Cdc* cdc)
 {
+	// publish cdc events and wakeup transactions
 	for (auto it = 0; it < self->list_count; it++)
 	{
 		auto dtr = batch_at(self, it);
+		if (! list_empty(&dtr->write_cdc))
+			cdc_write_batch(cdc, dtr->write.header.lsn, &dtr->write_cdc);
 		event_signal(&dtr->on_commit);
 	}
 }

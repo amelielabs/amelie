@@ -107,8 +107,13 @@ part_insert(Part*     self, Tr* tr, bool replace,
 	// add log record
 	auto primary = part_primary(self);
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
-	if (! self->arg->unlogged)
-		log_persist(&tr->log, self->arg->id_table);
+
+	// handle unlogged tables and cdc
+	auto arg = self->arg;
+	if (! arg->unlogged)
+		log_persist(&tr->log, arg->id_table);
+	if (arg->cdc)
+		log_cdc(&tr->log, arg->id_table);
 
 	// update primary index
 	op->row_prev = index_replace_by(primary, row);
@@ -163,8 +168,13 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 
 	// add log record
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
-	if (! self->arg->unlogged)
-		log_persist(&tr->log, self->arg->id_table);
+
+	// handle unlogged tables and cdc
+	auto arg = self->arg;
+	if (! arg->unlogged)
+		log_persist(&tr->log, arg->id_table);
+	if (arg->cdc)
+		log_cdc(&tr->log, arg->id_table);
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
@@ -195,8 +205,13 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	// add log record
 	auto primary = part_primary(self);
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
-	if (! self->arg->unlogged)
-		log_persist(&tr->log, self->arg->id_table);
+
+	// handle unlogged tables and cdc
+	auto arg = self->arg;
+	if (! arg->unlogged)
+		log_persist(&tr->log, arg->id_table);
+	if (arg->cdc)
+		log_cdc(&tr->log, arg->id_table);
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
@@ -226,7 +241,8 @@ hot void
 part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 {
 	// handle delete as update to support branching
-	if (self->arg->snapshots->list_count > 1)
+	auto arg = self->arg;
+	if (arg->snapshots->list_count > 1)
 	{
 		auto row = iterator_at(it);
 		row = row_visible(row, self->heap, snapshot);
@@ -248,10 +264,14 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 	auto row = iterator_at(it);
 	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, row, NULL, snapshot);
 
+	// handle unlogged tables and cdc
+	if (! arg->unlogged)
+		log_persist(&tr->log, arg->id_table);
+	if (arg->cdc)
+		log_cdc(&tr->log, arg->id_table);
+
 	// update primary index
 	op->row_prev = index_delete(primary, it);
-	if (! self->arg->unlogged)
-		log_persist(&tr->log, self->arg->id_table);
 
 	// secondary indexes
 	for (auto index = primary->next; index; index = index->next)

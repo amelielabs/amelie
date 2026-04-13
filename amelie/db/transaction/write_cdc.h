@@ -48,6 +48,12 @@ write_cdc_reset(WriteCdc* self)
 	list_init(&self->link);
 }
 
+static inline bool
+write_cdc_empty(WriteCdc* self)
+{
+	return buf_empty(&self->data);
+}
+
 hot static inline void
 write_cdc_add(WriteCdc* self, Cmd cmd, Uuid* id, uint8_t* data, uint32_t data_size)
 {
