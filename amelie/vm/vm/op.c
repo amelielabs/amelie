@@ -309,6 +309,9 @@ OpDesc ops[] =
 	{ CCALL, "call" },
 	{ CCALL_UDF, "call_udf" },
 
+	// subscription
+	{ CSUBSCRIPTION, "subscription" },
+
 	// locking
 	{ CLOCK, "lock" },
 	{ CUNLOCK, "unlock" },
@@ -541,6 +544,17 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&udf->config->name));
 			break;
 		}
+		case CSUBSCRIPTION:
+		{
+			auto sub = (Sub*)op->b;
+			op_write(output, op, true, false, false,
+			         "%.*s.%.*s",
+			         str_size(&sub->config->user),
+			         str_of(&sub->config->user),
+			         str_size(&sub->config->name),
+			         str_of(&sub->config->name));
+			break;
+		};
 		case CVALUE:
 		{
 			auto value = (Value*)op->b;

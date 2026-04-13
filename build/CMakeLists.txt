@@ -243,6 +243,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/set/any.c
     ${AMELIE_ROOT}/vm/set/all.c
     ${AMELIE_ROOT}/vm/set/in.c
+    ${AMELIE_ROOT}/vm/set/sub.c
     ${AMELIE_ROOT}/vm/output/output.c
     ${AMELIE_ROOT}/vm/output/output_json.c
     ${AMELIE_ROOT}/vm/output/output_text.c

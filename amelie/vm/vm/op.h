@@ -302,6 +302,9 @@ enum
 	CCALL,
 	CCALL_UDF,
 
+	// subscription
+	CSUBSCRIPTION,
+
 	// locking
 	CLOCK,
 	CUNLOCK,

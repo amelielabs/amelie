@@ -157,14 +157,15 @@ cdc_add(Cdc*     self, uint64_t lsn,
         uint32_t data_size)
 {
 	// maybe create new page
+	auto size = sizeof(CdcEvent) + data_size;
 	auto left = self->current->end - self->current->pos;
-	if (unlikely(left < data_size))
+	if (unlikely(left < size))
 		cdc_page_add(self);
 
 	// reserve
 	auto page = self->current;
 	auto at   = page->data + page->pos;
-	page->pos += data_size;
+	page->pos += size;
 
 	// write event data
 	auto event = (CdcEvent*)at;

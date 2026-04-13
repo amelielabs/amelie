@@ -386,6 +386,9 @@ vm_run(Vm*       self,
 		&&ccall,
 		&&ccall_udf,
 
+		// subscription
+		&&csubscription,
+
 		// locking
 		&&clock,
 		&&cunlock,
@@ -1989,6 +1992,11 @@ ccall:
 ccall_udf:
 	// [result, udf*]
 	ccall_udf(self, op);
+	op_next;
+
+csubscription:
+	// [r, sub*]
+	value_set_store(&r[op->a], &sub_store_create((Sub*)op->b, share()->cdc)->store);
 	op_next;
 
 clock:

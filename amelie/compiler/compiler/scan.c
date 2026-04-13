@@ -240,6 +240,14 @@ scan_expr(Scan* self, Target* target)
 			target_set_origin(target, ORIGIN_FRONTEND);
 			break;
 		}
+		case TARGET_SUB:
+		{
+			// subscription
+			type = TYPE_STORE;
+			r = op2pin(cp, CSUBSCRIPTION, type, (intptr_t)target->from_sub);
+			target_set_origin(target, cp->origin);
+			break;
+		}
 		default:
 			abort();
 			break;

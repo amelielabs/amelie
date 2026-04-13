@@ -198,6 +198,19 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		return target;
 	}
 
+	// subscription
+	auto sub = sub_mgr_find(&share()->db->catalog.sub_mgr, &user, &name, false);
+	if (sub)
+	{
+		target->type     = TARGET_SUB;
+		target->from_sub = sub;
+		target->columns  = &share()->db->catalog.sub_mgr.columns;
+		str_set_str(&target->name, &sub->config->name);
+		access_add(&self->parser->program->access, &sub->rel,
+		           LOCK_SHARED, PERM_SELECT);
+		return target;
+	}
+
 	stmt_error(self, path, "relation not found");
 	return NULL;
 }

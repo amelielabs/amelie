@@ -54,21 +54,7 @@ cdc_cursor_next(CdcCursor* self)
 
 	spinlock_lock(lock);
 
-	// wait for the next available lsn (or shutdown)
-	CdcWaiter waiter;
-	while (self->lsn <= cdc->lsn && !cdc->shutdown)
-	{
-		cdc_waiter_init(&waiter);
-		list_append(&cdc->waiters, &waiter.link);
-		cdc->waiters_count++;
-
-		spinlock_unlock(lock);
-		event_wait(&waiter.event, -1);
-		spinlock_lock(lock);
-	}
-
-	// shutdown request
-	if (unlikely(cdc->shutdown))
+	if (cdc->lsn <= self->lsn || cdc->shutdown)
 	{
 		spinlock_unlock(lock);
 		return false;
@@ -92,7 +78,7 @@ cdc_cursor_next(CdcCursor* self)
 			self->lsn = at->lsn;
 			break;
 		}
-		self->offset += at->data_size;
+		self->offset += sizeof(CdcEvent) + at->data_size;
 		if (unlikely(self->offset == self->page->pos))
 		{
 			self->page = container_of(self->page->link.next, CdcPage, link);

@@ -16,6 +16,7 @@ typedef struct SubMgr SubMgr;
 struct SubMgr
 {
 	RelMgr    mgr;
+	Columns   columns;
 	TableMgr* table_mgr;
 	Cdc*      cdc;
 };

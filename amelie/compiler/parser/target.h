@@ -24,7 +24,8 @@ typedef enum
 	TARGET_GROUP_BY,
 	TARGET_STMT,
 	TARGET_VAR,
-	TARGET_VALUES
+	TARGET_VALUES,
+	TARGET_SUB
 } TargetType;
 
 typedef enum
@@ -59,6 +60,7 @@ struct Target
 		Stmt*    from_stmt;
 		Var*     from_var;
 		Ast*     from_function;
+		Sub*     from_sub;
 	};
 	// target
 	Columns*     columns;

@@ -26,12 +26,38 @@ sub_mgr_init(SubMgr* self, TableMgr* table_mgr, Cdc* cdc)
 	self->table_mgr = table_mgr;
 	self->cdc = cdc;
 	rel_mgr_init(&self->mgr);
+
+	// prepare subscription columns
+	columns_init(&self->columns);
+
+	// lsn
+	auto column = column_allocate();
+	Str name;
+	str_set(&name, "lsn", 3);
+	column_set_name(column, &name);
+	column_set_type(column, TYPE_INT, sizeof(int64_t));
+	columns_add(&self->columns, column);
+
+	// cmd
+	column = column_allocate();
+	str_set(&name, "cmd", 3);
+	column_set_name(column, &name);
+	column_set_type(column, TYPE_STRING, 0);
+	columns_add(&self->columns, column);
+
+	// row
+	column = column_allocate();
+	str_set(&name, "row", 3);
+	column_set_name(column, &name);
+	column_set_type(column, TYPE_JSON, 0);
+	columns_add(&self->columns, column);
 }
 
 void
 sub_mgr_free(SubMgr* self)
 {
 	rel_mgr_free(&self->mgr);
+	columns_free(&self->columns);
 }
 
 bool

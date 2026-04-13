@@ -30,3 +30,7 @@
 #include "set/all.h"
 #include "set/in.h"
 #include "set/exists.h"
+
+// subscription
+#include "set/sub.h"
+#include "set/sub_iterator.h"
