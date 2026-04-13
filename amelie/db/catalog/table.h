@@ -76,6 +76,7 @@ table_allocate(TableConfig* config,
 	auto arg = &self->part_arg;
 	arg->seq       = &self->seq;
 	arg->unlogged  =  self->config->unlogged;
+	arg->cdc       = 0;
 	arg->id_table  = &self->config->id;
 	arg->snapshots = &self->snapshot_mgr;
 	arg->config    =  &self->config->partitioning;

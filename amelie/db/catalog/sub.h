@@ -18,6 +18,7 @@ struct Sub
 	Rel        rel;
 	CdcSlot    slot;
 	Cdc*       cdc;
+	TableMgr*  table_mgr;
 	SubConfig* config;
 };
 
@@ -25,17 +26,29 @@ static inline void
 sub_free(Sub* self, bool drop)
 {
 	unused(drop);
+	// unref tables
+	auto id  = (Uuid*)self->config->rels.start;
+	auto end = (Uuid*)self->config->rels.position;
+	for (; id < end; id++)
+	{
+		auto table = table_mgr_find_by(self->table_mgr, id, false);
+		if (! table)
+			continue;
+		table->part_arg.cdc--;
+		assert(table->part_arg.cdc >= 0);
+	}
 	cdc_detach(self->cdc, &self->slot);
 	sub_config_free(self->config);
 	am_free(self);
 }
 
 static inline Sub*
-sub_allocate(SubConfig* config, Cdc* cdc)
+sub_allocate(SubConfig* config, TableMgr* table_mgr, Cdc* cdc)
 {
 	auto self = (Sub*)am_malloc(sizeof(Sub));
-	self->config = sub_config_copy(config);
-	self->cdc    = cdc;
+	self->config    = sub_config_copy(config);
+	self->cdc       = cdc;
+	self->table_mgr = table_mgr;
 	cdc_slot_init(&self->slot);
 
 	// set relation

@@ -37,7 +37,7 @@ catalog_init(Catalog*   self,
 	               iface_part_mgr_arg);
 	branch_mgr_init(&self->branch_mgr, &self->table_mgr);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
-	sub_mgr_init(&self->sub_mgr, cdc);
+	sub_mgr_init(&self->sub_mgr, &self->table_mgr, cdc);
 }
 
 void

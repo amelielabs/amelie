@@ -17,6 +17,7 @@ struct PartArg
 {
 	Sequence*     seq;
 	bool          unlogged;
+	int           cdc;
 	Uuid*         id_table;
 	SnapshotMgr*  snapshots;
 	Partitioning* config;

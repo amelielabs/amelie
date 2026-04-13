@@ -21,8 +21,9 @@
 #include <amelie_catalog.h>
 
 void
-sub_mgr_init(SubMgr* self, Cdc* cdc)
+sub_mgr_init(SubMgr* self, TableMgr* table_mgr, Cdc* cdc)
 {
+	self->table_mgr = table_mgr;
 	self->cdc = cdc;
 	rel_mgr_init(&self->mgr);
 }
@@ -45,8 +46,22 @@ sub_mgr_create(SubMgr* self, Tr* tr, SubConfig* config, bool if_not_exists)
 		return false;
 	}
 
+	// ensure tables exists
+	auto id  = (Uuid*)config->rels.start;
+	auto end = (Uuid*)config->rels.position;
+	for (; id < end; id++)
+		table_mgr_find_by(self->table_mgr, id, true);
+
+	// mark for cdc
+	id = (Uuid*)config->rels.start;
+	for (; id < end; id++)
+	{
+		auto table = table_mgr_find_by(self->table_mgr, id, true);
+		table->part_arg.cdc++;
+	}
+
 	// allocate storage
-	sub = sub_allocate(config, self->cdc);
+	sub = sub_allocate(config, self->table_mgr, self->cdc);
 
 	// set lsn and prepare slot
 	cdc_slot_set(&sub->slot, state_lsn());
