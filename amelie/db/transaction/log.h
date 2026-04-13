@@ -33,8 +33,8 @@ struct LogOp
 			Snapshot* snapshot;
 		};
 		struct {
-			Rel*    rel;
-			int     rel_data;
+			Rel*      rel;
+			int       rel_data;
 		};
 	};
 };
@@ -45,6 +45,7 @@ struct Log
 	Buf      data;
 	int      count;
 	WriteLog write_log;
+	WriteCdc write_cdc;
 };
 
 always_inline static inline LogOp*
@@ -66,6 +67,7 @@ log_init(Log* self)
 	buf_init(&self->op);
 	buf_init(&self->data);
 	write_log_init(&self->write_log);
+	write_cdc_init(&self->write_cdc);
 }
 
 static inline void
@@ -74,6 +76,7 @@ log_free(Log* self)
 	buf_free(&self->op);
 	buf_free(&self->data);
 	write_log_free(&self->write_log);
+	write_cdc_free(&self->write_cdc);
 }
 
 static inline void
@@ -83,6 +86,7 @@ log_reset(Log* self)
 	buf_reset(&self->op);
 	buf_reset(&self->data);
 	write_log_reset(&self->write_log);
+	write_cdc_reset(&self->write_cdc);
 }
 
 static inline LogOp*
@@ -141,4 +145,13 @@ log_persist_rel(Log* self, uint8_t* data)
 	// [cmd, data]
 	auto last = log_last(self);
 	write_log_add_op(&self->write_log, last->cmd, data);
+}
+
+hot static inline void
+log_cdc(Log* self, Uuid* id)
+{
+	// [cmd, id, data, data_size]
+	auto last = log_last(self);
+	auto row  = last->row;
+	write_cdc_add(&self->write_cdc, last->cmd, id, (uint8_t*)row, row_size(row));
 }

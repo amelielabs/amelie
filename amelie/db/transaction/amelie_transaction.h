@@ -19,6 +19,7 @@
 #include "transaction/write_log.h"
 #include "transaction/write.h"
 #include "transaction/write_list.h"
+#include "transaction/write_cdc.h"
 
 // transaction log
 #include "transaction/log.h"

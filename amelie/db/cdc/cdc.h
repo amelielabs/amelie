@@ -26,10 +26,11 @@ struct CdcPage
 struct CdcEvent
 {
 	uint64_t lsn;
+	uint8_t  cmd;
 	Uuid     id;
 	uint32_t data_size;
 	uint8_t  data[];
-};
+} packed;
 
 struct Cdc
 {
@@ -52,4 +53,5 @@ void cdc_attach(Cdc*, CdcSlot*);
 void cdc_detach(Cdc*, CdcSlot*);
 void cdc_shutdown(Cdc*);
 void cdc_gc(Cdc*);
-void cdc_write(Cdc*, uint64_t, Uuid*, uint8_t*, uint32_t);
+void cdc_write(Cdc*, uint64_t, Cmd, Uuid*, uint8_t*, uint32_t);
+void cdc_write_batch(Cdc*, uint64_t, List*);

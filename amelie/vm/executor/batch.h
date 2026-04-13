@@ -132,6 +132,8 @@ batch_process(Batch* self)
 				// add to the wal write list
 				if (tr_persists(tr))
 					write_add(write, &tr->log.write_log);
+
+				// todo: add tr logs for cdc
 			}
 		}
 

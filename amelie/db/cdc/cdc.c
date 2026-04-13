@@ -151,6 +151,7 @@ cdc_gc(Cdc* self)
 
 hot static inline void
 cdc_add(Cdc*     self, uint64_t lsn,
+        Cmd      cmd,
         Uuid*    id,
         uint8_t* data,
         uint32_t data_size)
@@ -168,6 +169,7 @@ cdc_add(Cdc*     self, uint64_t lsn,
 	// write event data
 	auto event = (CdcEvent*)at;
 	event->lsn       = lsn;
+	event->cmd       = cmd;
 	event->id        = *id;
 	event->data_size = data_size;
 	memcpy(event->data, data, data_size);
@@ -176,8 +178,9 @@ cdc_add(Cdc*     self, uint64_t lsn,
 	self->lsn = lsn;
 }
 
-void
+hot void
 cdc_write(Cdc*     self, uint64_t lsn,
+          Cmd      cmd,
           Uuid*    id,
           uint8_t* data,
           uint32_t data_size)
@@ -185,7 +188,28 @@ cdc_write(Cdc*     self, uint64_t lsn,
 	spinlock_lock(&self->lock);
 
 	// add event to the queue
-	cdc_add(self, lsn, id, data, data_size);
+	cdc_add(self, lsn, cmd, id, data, data_size);
+
+	// wakeup waiters
+	cdc_notify(self);
+
+	spinlock_unlock(&self->lock);
+}
+
+hot void
+cdc_write_batch(Cdc* self, uint64_t lsn, List* batch)
+{
+	spinlock_lock(&self->lock);
+
+	// add all records from the batch
+	list_foreach(batch)
+	{
+		auto ref = list_at(WriteCdc, link);
+		auto pos = (WriteCdcRecord*)ref->data.start;
+		auto end = (WriteCdcRecord*)ref->data.end;
+		for (; pos < end; pos++)
+			cdc_add(self, lsn, pos->cmd, pos->id, pos->data, pos->data_size);
+	}
 
 	// wakeup waiters
 	cdc_notify(self);
