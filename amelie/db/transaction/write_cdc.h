@@ -16,11 +16,11 @@ typedef struct WriteCdc       WriteCdc;
 
 struct WriteCdcRecord
 {
-	Cmd      cmd;
+	uint8_t  cmd;
 	Uuid*    id;
 	uint32_t data_size;
-	uint8_t* data;
-};
+	uint8_t  data[];
+} packed;
 
 struct WriteCdc
 {
@@ -55,11 +55,17 @@ write_cdc_empty(WriteCdc* self)
 }
 
 hot static inline void
-write_cdc_add(WriteCdc* self, Cmd cmd, Uuid* id, uint8_t* data, uint32_t data_size)
+write_cdc_add_row(WriteCdc* self, Cmd cmd, Uuid* id, Row* row,
+                  Columns*  columns,
+                  Timezone* tz)
 {
+	auto offset = buf_size(&self->data);
 	auto record = (WriteCdcRecord*)buf_emplace(&self->data, sizeof(WriteCdcRecord));
 	record->cmd       = cmd;
 	record->id        = id;
-	record->data_size = data_size;
-	record->data      = data;
+	record->data_size = 0;
+	row_encode(row, columns, tz, &self->data);
+
+	record = (WriteCdcRecord*)(self->data.start + offset);
+	record->data_size = buf_size(&self->data) - offset - sizeof(WriteCdcRecord);
 }

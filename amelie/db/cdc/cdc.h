@@ -53,5 +53,5 @@ void cdc_attach(Cdc*, CdcSlot*);
 void cdc_detach(Cdc*, CdcSlot*);
 void cdc_shutdown(Cdc*);
 void cdc_gc(Cdc*);
-void cdc_write(Cdc*, uint64_t, Cmd, Uuid*, uint8_t*, uint32_t);
+void cdc_write(Cdc*, uint64_t, WriteCdc*);
 void cdc_write_batch(Cdc*, uint64_t, List*);

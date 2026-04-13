@@ -211,6 +211,10 @@ recover_next(Recover* self, Record* record)
 		// replay
 		recover_next_record(self, record);
 
+		// publish cdc
+		if (! write_cdc_empty(&tr->log.write_cdc))
+			cdc_write(self->db->cdc, record->lsn, &tr->log.write_cdc);
+
 		// commit
 		tr_commit(tr);
 	);

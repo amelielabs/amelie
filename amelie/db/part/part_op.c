@@ -99,6 +99,18 @@ static LogIf log_if_secondary =
 	.abort  = log_if_secondary_abort
 };
 
+static inline void
+part_persist(Part* self, Tr* tr, Index* primary)
+{
+	// handle unlogged tables and cdc
+	auto arg = self->arg;
+	if (! arg->unlogged)
+		log_persist(&tr->log, arg->id_table);
+	if (arg->cdc)
+		log_cdc(&tr->log, arg->id_table, index_keys(primary)->columns,
+		        runtime()->timezone);
+}
+
 hot void
 part_insert(Part*     self, Tr* tr, bool replace,
             Snapshot* snapshot,
@@ -109,11 +121,7 @@ part_insert(Part*     self, Tr* tr, bool replace,
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
-	auto arg = self->arg;
-	if (! arg->unlogged)
-		log_persist(&tr->log, arg->id_table);
-	if (arg->cdc)
-		log_cdc(&tr->log, arg->id_table);
+	part_persist(self, tr, primary);
 
 	// update primary index
 	op->row_prev = index_replace_by(primary, row);
@@ -170,11 +178,7 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
-	auto arg = self->arg;
-	if (! arg->unlogged)
-		log_persist(&tr->log, arg->id_table);
-	if (arg->cdc)
-		log_cdc(&tr->log, arg->id_table);
+	part_persist(self, tr, primary);
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
@@ -207,11 +211,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
-	auto arg = self->arg;
-	if (! arg->unlogged)
-		log_persist(&tr->log, arg->id_table);
-	if (arg->cdc)
-		log_cdc(&tr->log, arg->id_table);
+	part_persist(self, tr, primary);
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
@@ -265,10 +265,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
-	if (! arg->unlogged)
-		log_persist(&tr->log, arg->id_table);
-	if (arg->cdc)
-		log_cdc(&tr->log, arg->id_table);
+	part_persist(self, tr, primary);
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);

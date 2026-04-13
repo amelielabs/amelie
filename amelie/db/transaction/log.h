@@ -148,10 +148,10 @@ log_persist_rel(Log* self, uint8_t* data)
 }
 
 hot static inline void
-log_cdc(Log* self, Uuid* id)
+log_cdc(Log* self, Uuid* id, Columns* columns, Timezone* tz)
 {
 	// [cmd, id, data, data_size]
 	auto last = log_last(self);
 	auto row  = last->row;
-	write_cdc_add(&self->write_cdc, last->cmd, id, (uint8_t*)row, row_size(row));
+	write_cdc_add_row(&self->write_cdc, last->cmd, id, row, columns, tz);
 }
