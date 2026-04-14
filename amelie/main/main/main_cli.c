@@ -65,13 +65,14 @@ main_execute(MainClient* client, Str* request)
 static void
 main_console(Main* self, MainClient* client)
 {
-	auto name = opt_string_of(&self->endpoint.name);
-	auto uri  = opt_string_of(&self->endpoint.uri);
-	auto path = opt_string_of(&self->endpoint.path);
-
 	Separator sep;
 	separator_init(&sep);
 	defer(separator_free, &sep);
+
+#if 0
+	auto name = opt_string_of(&self->endpoint.name);
+	auto uri  = opt_string_of(&self->endpoint.uri);
+	auto path = opt_string_of(&self->endpoint.path);
 
 	// set prompt
 	Str* prompt_text;
@@ -83,17 +84,19 @@ main_console(Main* self, MainClient* client)
 	else
 		prompt_text = uri;
 
+	info("connected to %.*s", str_size(prompt_text),
+	     str_of(prompt_text));
+#endif
+
 	// ›
 	// ❯
-	char prompt_str[128];
-	sfmt(prompt_str, sizeof(prompt_str), "%.*s> ", str_size(prompt_text),
-	     str_of(prompt_text));
+	char prompt_str[6];
+	char prompt_str_pending[6];
+	sfmt(prompt_str, sizeof(prompt_str), "❯ ");
+	sfmt(prompt_str_pending, sizeof(prompt_str_pending), "- ");
+
 	Str prompt;
 	str_set_cstr(&prompt, prompt_str);
-
-	char prompt_str_pending[128];
-	sfmt(prompt_str_pending, sizeof(prompt_str_pending), "%.*s- ",
-	     str_size(prompt_text), str_of(prompt_text));
 	Str prompt_pending;
 	str_set_cstr(&prompt_pending, prompt_str_pending);
 
