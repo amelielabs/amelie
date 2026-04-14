@@ -21,6 +21,7 @@
 static void
 output_text_write(Output* self, Columns* columns, Value* value)
 {
+	auto pretty = self->format_pretty && columns->count == 1;
 	auto buf = self->buf;
 	if (value->type == TYPE_STORE)
 	{
@@ -41,7 +42,7 @@ output_text_write(Output* self, Columns* columns, Value* value)
 				auto column = list_at(Column, link);
 				if (column->order > 0)
 					buf_write(buf, ", ", 2);
-				value_export(row + column->order, self->timezone, self->format_pretty, buf);
+				value_export(row + column->order, self->timezone, pretty, buf);
 				output_ensure_limit(self);
 			}
 
@@ -55,7 +56,7 @@ output_text_write(Output* self, Columns* columns, Value* value)
 		auto column = list_at(Column, link);
 		if (column->order > 0)
 			buf_write(buf, ", ", 2);
-		value_export(value + column->order, self->timezone, self->format_pretty, buf);
+		value_export(value + column->order, self->timezone, pretty, buf);
 		output_ensure_limit(self);
 	}
 }

@@ -66,6 +66,7 @@ enum
 	KAT,
 	KALWAYS,
 	KAGENT,
+	KACKNOWLEDGE,
 
 	// b
 	KBEGIN,

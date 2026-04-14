@@ -778,6 +778,15 @@ emit_return(Compiler* self, Stmt* stmt)
 }
 
 hot static void
+emit_acknowledge(Compiler* self, Stmt* stmt)
+{
+	compiler_switch_frontend(self);
+
+	auto ack = ast_ack_of(stmt->ast);
+	op2(self, CACK, (intptr_t)ack->sub, ack->to);
+}
+
+hot static void
 emit_end(Compiler* self, Block* block)
 {
 	auto stmt = block->stmts.list;
@@ -829,6 +838,9 @@ emit_block(Compiler* self, Block* block)
 		case STMT_EXECUTE:
 			// never handled here
 			abort();
+			break;
+		case STMT_ACKNOWLEDGE:
+			emit_acknowledge(self, stmt);
 			break;
 		default:
 			emit_stmt(self, stmt);

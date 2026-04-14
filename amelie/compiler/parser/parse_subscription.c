@@ -92,3 +92,31 @@ parse_sub_alter(Stmt* self)
 	name = stmt_expect(self, KNAME);
 	stmt->name_new = name->string;
 }
+
+void
+parse_acknowledge(Stmt* self)
+{
+	// ACKNOWLEDGE name TO value
+	auto stmt = ast_ack_allocate();
+	self->ast = &stmt->ast;
+
+	// name
+	auto name = stmt_expect(self, KNAME);
+	stmt->name = name->string;
+
+	// TO
+	stmt_expect(self, KTO);
+
+	// name
+	auto value = stmt_expect(self, KINT);
+	stmt->to = value->integer;
+
+	// subscription
+	stmt->sub = sub_mgr_find(&share()->db->catalog.sub_mgr, self->parser->user, &name->string, false);
+	if (! stmt->sub)
+		stmt_error(self, name, "subscription not found");
+
+	// require exclusive lock
+	access_add(&self->parser->program->access, &stmt->sub->rel,
+	           LOCK_EXCLUSIVE, PERM_SELECT);
+}

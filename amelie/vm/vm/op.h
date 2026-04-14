@@ -304,6 +304,7 @@ enum
 
 	// subscription
 	CSUBSCRIPTION,
+	CACK,
 
 	// locking
 	CLOCK,

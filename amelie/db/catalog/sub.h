@@ -62,3 +62,19 @@ sub_of(Rel* self)
 {
 	return (Sub*)self;
 }
+
+static inline void
+sub_ack(Sub* self, Tr* tr, uint64_t to)
+{
+	unused(tr);
+
+	auto current = atomic_u64_of(&self->slot.lsn);
+	if (to == current)
+		return;
+
+	if (unlikely(to < current || to > state_lsn()))
+		error("subscription '%.*s': ack lsn is out of range",
+		      str_size(&self->config->name), str_of(&self->config->name));
+
+	cdc_slot_set(&self->slot, to);
+}

@@ -311,6 +311,7 @@ OpDesc ops[] =
 
 	// subscription
 	{ CSUBSCRIPTION, "subscription" },
+	{ CACK, "ack" },
 
 	// locking
 	{ CLOCK, "lock" },
@@ -548,6 +549,17 @@ op_dump(Program* self, Code* code, Buf* buf)
 		{
 			auto sub = (Sub*)op->b;
 			op_write(output, op, true, false, false,
+			         "%.*s.%.*s",
+			         str_size(&sub->config->user),
+			         str_of(&sub->config->user),
+			         str_size(&sub->config->name),
+			         str_of(&sub->config->name));
+			break;
+		};
+		case CACK:
+		{
+			auto sub = (Sub*)op->a;
+			op_write(output, op, false, true, false,
 			         "%.*s.%.*s",
 			         str_size(&sub->config->user),
 			         str_of(&sub->config->user),

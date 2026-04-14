@@ -450,6 +450,13 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
+	case KACKNOWLEDGE:
+	{
+		self->id = STMT_ACKNOWLEDGE;
+		parse_acknowledge(self);
+		break;
+	}
+
 	case KTRUNCATE:
 	{
 		self->id = STMT_TRUNCATE;

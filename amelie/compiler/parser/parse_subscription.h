@@ -14,6 +14,7 @@
 typedef struct AstSubCreate AstSubCreate;
 typedef struct AstSubDrop   AstSubDrop;
 typedef struct AstSubAlter  AstSubAlter;
+typedef struct AstAck       AstAck;
 
 struct AstSubCreate
 {
@@ -35,6 +36,14 @@ struct AstSubAlter
 	bool if_exists;
 	Str  name;
 	Str  name_new;
+};
+
+struct AstAck
+{
+	Ast      ast;
+	Str      name;
+	uint64_t to;
+	Sub*     sub;
 };
 
 static inline AstSubCreate*
@@ -79,6 +88,21 @@ ast_sub_alter_allocate(void)
 	return self;
 }
 
+static inline AstAck*
+ast_ack_of(Ast* ast)
+{
+	return (AstAck*)ast;
+}
+
+static inline AstAck*
+ast_ack_allocate(void)
+{
+	AstAck* self;
+	self = ast_allocate(0, sizeof(AstAck));
+	return self;
+}
+
 void parse_sub_create(Stmt*);
 void parse_sub_drop(Stmt*);
 void parse_sub_alter(Stmt*);
+void parse_acknowledge(Stmt*);
