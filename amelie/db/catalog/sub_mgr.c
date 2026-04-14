@@ -72,19 +72,9 @@ sub_mgr_create(SubMgr* self, Tr* tr, SubConfig* config, bool if_not_exists)
 		return false;
 	}
 
-	// ensure tables exists
-	auto id  = (Uuid*)config->rels.start;
-	auto end = (Uuid*)config->rels.position;
-	for (; id < end; id++)
-		table_mgr_find_by(self->table_mgr, id, true);
-
-	// mark for cdc
-	id = (Uuid*)config->rels.start;
-	for (; id < end; id++)
-	{
-		auto table = table_mgr_find_by(self->table_mgr, id, true);
-		table->part_arg.cdc++;
-	}
+	// mark table for cdc
+	auto table = table_mgr_find_by(self->table_mgr, &config->rel, true);
+	table->part_arg.cdc++;
 
 	// allocate storage
 	sub = sub_allocate(config, self->table_mgr, self->cdc);

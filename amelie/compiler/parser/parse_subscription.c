@@ -39,20 +39,14 @@ parse_sub_create(Stmt* self)
 	// ON
 	stmt_expect(self, KON);
 
-	// [user.]table, ...
-	for (;;)
-	{
-		Str user;
-		Str target;
-		auto path = parse_target(self, &user, &target);
-		auto table = catalog_find_table(&share()->db->catalog, &user, &target, false);
-		if (! table)
-			stmt_error(self, path, "table not found");
-		buf_write(&config->rels, &table->config->id, sizeof(Uuid));
-		if (stmt_if(self, ','))
-			continue;
-		break;
-	}
+	// [user.]table
+	Str user;
+	Str target;
+	auto path = parse_target(self, &user, &target);
+	auto table = catalog_find_table(&share()->db->catalog, &user, &target, false);
+	if (! table)
+		stmt_error(self, path, "table not found");
+	sub_config_set_rel(config, &table->config->id);
 }
 
 void

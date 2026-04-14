@@ -26,14 +26,10 @@ static inline void
 sub_free(Sub* self, bool drop)
 {
 	unused(drop);
-	// unref tables
-	auto id  = (Uuid*)self->config->rels.start;
-	auto end = (Uuid*)self->config->rels.position;
-	for (; id < end; id++)
+	// unref table
+	auto table = table_mgr_find_by(self->table_mgr, &self->config->rel, false);
+	if (table)
 	{
-		auto table = table_mgr_find_by(self->table_mgr, id, false);
-		if (! table)
-			continue;
 		table->part_arg.cdc--;
 		assert(table->part_arg.cdc >= 0);
 	}
