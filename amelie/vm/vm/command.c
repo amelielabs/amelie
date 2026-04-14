@@ -588,3 +588,32 @@ ccall_udf(Vm* self, Op* op)
 
 	stack_popn(&self->stack, argc);
 }
+
+void
+csubscription(Vm* self, Op* op)
+{
+	// [r, sub*]
+	auto r = reg_at(&self->r, op->a);
+	value_set_store(r, &sub_store_create((Sub*)op->b, share()->cdc)->store);
+}
+
+void
+cack(Vm* self, Op* op)
+{
+	// [sub*, offset]
+	auto data = code_data_at(self->code_data, op->b);
+
+	// execute
+	if (! acknowledge((Sub*)op->a, self->tr, data))
+		return;
+
+	// create dispatch (for wal writer)
+	auto dtr = self->dtr;
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+
+	// (dispatch has no partitions)
+
+	// register transaction
+	executor_send(share()->executor, dtr, dispatch);
+}

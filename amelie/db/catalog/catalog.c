@@ -719,7 +719,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 	if (write)
 	{
-		log_persist_rel(&tr->log, op);
+		log_persist_cmd(&tr->log, NULL, op);
 		return true;
 	}
 	return false;

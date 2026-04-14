@@ -133,6 +133,15 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		}
 		break;
 	}
+	case CMD_ACK:
+	{
+		// find and update subscription
+		auto sub = sub_mgr_find_by(&db->catalog.sub_mgr, &cmd->id, false);
+		if  (sub)
+			acknowledge(sub, tr, *pos);
+		json_skip(pos);
+		break;
+	}
 	case CMD_DDL:
 	case CMD_DDL_CREATE_INDEX:
 	{

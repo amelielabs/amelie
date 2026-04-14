@@ -781,9 +781,9 @@ hot static void
 emit_acknowledge(Compiler* self, Stmt* stmt)
 {
 	compiler_switch_frontend(self);
-
 	auto ack = ast_ack_of(stmt->ast);
-	op2(self, CACK, (intptr_t)ack->sub, ack->to);
+	auto offset = acknowledge_op(&self->code_data->data, ack->to);
+	op2(self, CACK, (intptr_t)ack->sub, offset);
 }
 
 hot static void

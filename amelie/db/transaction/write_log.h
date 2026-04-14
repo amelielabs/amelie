@@ -79,19 +79,22 @@ write_log_add(WriteLog* self, int cmd, Uuid* id, uint8_t* data, int data_size)
 }
 
 hot static inline void
-write_log_add_op(WriteLog* self, int cmd, uint8_t* op)
+write_log_add_cmd(WriteLog* self, int cmd, Uuid* id, uint8_t* data, int data_size)
 {
 	// prepare command header
 	auto hdr = (RecordCmd*)buf_emplace(&self->meta, sizeof(RecordCmd));
 	hdr->cmd  = cmd;
-	hdr->size = json_sizeof(op);
+	hdr->size = data_size;
 	hdr->crc  = 0;
-	uuid_init(&hdr->id);
+	if (id)
+		hdr->id = *id;
+	else
+		uuid_init(&hdr->id);
 
 	// op
-	iov_add(&self->iov, op, hdr->size);
+	iov_add(&self->iov, data, data_size);
 
 	// calculate crc
 	if (opt_int_of(&config()->wal_crc))
-		hdr->crc = runtime()->crc(0, op, hdr->size);
+		hdr->crc = runtime()->crc(0, data, data_size);
 }

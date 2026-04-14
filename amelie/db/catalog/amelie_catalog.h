@@ -53,6 +53,7 @@
 #include "catalog/sub_op.h"
 #include "catalog/sub.h"
 #include "catalog/sub_mgr.h"
+#include "catalog/acknowledge.h"
 
 // catalog
 #include "catalog/catalog.h"

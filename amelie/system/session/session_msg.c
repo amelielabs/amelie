@@ -48,6 +48,7 @@ session_execute_msg(Session* self, Node* primary, NodeMsg* msg, Buf* data)
 		switch (record_cmd(record)->cmd) {
 		case CMD_REPLACE:
 		case CMD_DELETE:
+		case CMD_ACK:
 		{
 			// execute DML
 			dtr_reset(dtr);

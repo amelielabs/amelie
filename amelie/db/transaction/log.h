@@ -115,13 +115,20 @@ log_dml(Log*      self,
 	return op;
 }
 
-hot static inline void
-log_persist(Log* self, Uuid* id)
+static inline void
+log_cmd(Log*   self,
+        Cmd    cmd,
+        LogIf* iface,
+        void*  iface_arg,
+        Rel*   rel)
 {
-	// [cmd, id, row]
-	auto last = log_last(self);
-	auto row  = last->row;
-	write_log_add(&self->write_log, last->cmd, id, (uint8_t*)row, row_size(row));
+	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
+	op->iface     = iface;
+	op->iface_arg = iface_arg;
+	op->cmd       = cmd;
+	op->rel       = rel;
+	op->rel_data  = buf_size(&self->data);
+	self->count++;
 }
 
 static inline void
@@ -130,21 +137,7 @@ log_ddl(Log*   self,
         void*  iface_arg,
         Rel*   rel)
 {
-	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
-	op->iface     = iface;
-	op->iface_arg = iface_arg;
-	op->cmd       = CMD_DDL;
-	op->rel       = rel;
-	op->rel_data  = buf_size(&self->data);
-	self->count++;
-}
-
-hot static inline void
-log_persist_rel(Log* self, uint8_t* data)
-{
-	// [cmd, data]
-	auto last = log_last(self);
-	write_log_add_op(&self->write_log, last->cmd, data);
+	log_cmd(self, CMD_DDL, iface, iface_arg, rel);
 }
 
 hot static inline void
@@ -154,4 +147,21 @@ log_cdc(Log* self, Uuid* id, Columns* columns, Timezone* tz)
 	auto last = log_last(self);
 	auto row  = last->row;
 	write_cdc_add_row(&self->write_cdc, last->cmd, id, row, columns, tz);
+}
+
+hot static inline void
+log_persist_dml(Log* self, Uuid* id)
+{
+	// [cmd, id, row]
+	auto last = log_last(self);
+	auto row  = last->row;
+	write_log_add(&self->write_log, last->cmd, id, (uint8_t*)row, row_size(row));
+}
+
+hot static inline void
+log_persist_cmd(Log* self, Uuid* id, uint8_t* data)
+{
+	// [cmd, id, data]
+	auto last = log_last(self);
+	write_log_add_cmd(&self->write_log, last->cmd, id, data, json_sizeof(data));
 }

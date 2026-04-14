@@ -1996,14 +1996,11 @@ ccall_udf:
 	op_next;
 
 csubscription:
-	// [r, sub*]
-	value_set_store(&r[op->a], &sub_store_create((Sub*)op->b, share()->cdc)->store);
+	csubscription(self, op);
 	op_next;
 
 cack:
-	// [sub*, lsn]
-	/*check_ownership_user(self->tr, &((Sub*)op->a)->rel);*/
-	sub_ack((Sub*)op->a, self->tr, op->b);
+	cack(self, op);
 	op_next;
 
 clock:

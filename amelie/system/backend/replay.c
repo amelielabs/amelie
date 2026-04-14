@@ -29,8 +29,16 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 	// replay transaction log record
 	auto cmd = record_cmd(record);
 
-	// REPLACE, DELETE
+	// ACK
 	auto pos = record_data(record);
+	if (cmd->cmd == CMD_ACK)
+	{
+		auto sub = sub_mgr_find_by(&db->catalog.sub_mgr, &cmd->id, true);
+		acknowledge(sub, &dtr->tr, pos);
+		return;
+	}
+
+	// REPLACE, DELETE
 	for (auto i = record->count; i > 0; i--)
 	{
 		auto row = (Row*)pos;

@@ -105,7 +105,7 @@ part_persist(Part* self, Tr* tr, Index* primary)
 	// handle unlogged tables and cdc
 	auto arg = self->arg;
 	if (! arg->unlogged)
-		log_persist(&tr->log, arg->id_table);
+		log_persist_dml(&tr->log, arg->id_table);
 	if (arg->cdc)
 		log_cdc(&tr->log, arg->id_table, index_keys(primary)->columns,
 		        runtime()->timezone);

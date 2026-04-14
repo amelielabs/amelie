@@ -131,7 +131,7 @@ session_execute_distributed(Session* self, Output* output)
 	(
 		vm_run(&self->vm, &self->local,
 		       dtr,
-		       NULL,
+		       &dtr->tr,
 		       program,
 		       &program->code,
 		       &program->code_data,

@@ -88,3 +88,17 @@ sub_op_rename_read(uint8_t* op, Str* user, Str* name, Str* user_new, Str* name_n
 	json_read_string(&op, name_new);
 	json_read_array_end(&op);
 }
+
+static inline int
+acknowledge_op(Buf* self, uint64_t lsn)
+{
+	auto offset = buf_size(self);
+	encode_integer(self, lsn);
+	return offset;
+}
+
+static inline void
+acknowledge_op_read(uint8_t* op, int64_t* lsn)
+{
+	json_read_integer(&op, lsn);
+}
