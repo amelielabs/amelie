@@ -73,7 +73,7 @@ sub_mgr_create(SubMgr* self, Tr* tr, SubConfig* config, bool if_not_exists)
 	}
 
 	// find table
-	auto table = table_mgr_find_by(self->table_mgr, &config->rel, true);
+	auto table = table_mgr_find_by(self->table_mgr, &config->id_rel, true);
 
 	// ensure permission to create subscription on the table
 	check_permission(tr, &table->rel, PERM_CREATE_SUB);
@@ -310,4 +310,22 @@ sub_mgr_find(SubMgr* self, Str* user, Str* name,
 		return NULL;
 	}
 	return sub_of(rel);
+}
+
+Sub*
+sub_mgr_find_by(SubMgr* self, Uuid* id, bool error_if_not_exists)
+{
+	list_foreach(&self->mgr.list)
+	{
+		auto sub = sub_of(list_at(Rel, link));
+		if (uuid_is(&sub->config->id, id))
+			return sub;
+	}
+	if (error_if_not_exists)
+	{
+		char uuid[UUID_SZ];
+		uuid_get(id, uuid, sizeof(uuid));
+		error("subscription with uuid '%s' not found", uuid);
+	}
+	return NULL;
 }

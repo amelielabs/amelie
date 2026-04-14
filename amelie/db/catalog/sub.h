@@ -27,7 +27,7 @@ sub_free(Sub* self, bool drop)
 {
 	unused(drop);
 	// unref table
-	auto table = table_mgr_find_by(self->table_mgr, &self->config->rel, false);
+	auto table = table_mgr_find_by(self->table_mgr, &self->config->id_rel, false);
 	if (table)
 	{
 		table->part_arg.cdc--;

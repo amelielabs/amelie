@@ -35,6 +35,10 @@ parse_sub_create(Stmt* self)
 	stmt->config = config;
 	sub_config_set_user(config, self->parser->user);
 	sub_config_set_name(config, &name->string);
+	Uuid id;
+	uuid_init(&id);
+	uuid_generate(&id, &runtime()->random);
+	sub_config_set_id(config, &id);
 
 	// ON
 	stmt_expect(self, KON);
@@ -46,7 +50,7 @@ parse_sub_create(Stmt* self)
 	auto table = catalog_find_table(&share()->db->catalog, &user, &target, false);
 	if (! table)
 		stmt_error(self, path, "table not found");
-	sub_config_set_rel(config, &table->config->id);
+	sub_config_set_id_rel(config, &table->config->id);
 }
 
 void

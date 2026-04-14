@@ -18,7 +18,8 @@ struct SubConfig
 	Str    user;
 	Str    name;
 	Grants grants;
-	Uuid   rel;
+	Uuid   id;
+	Uuid   id_rel;
 };
 
 static inline SubConfig*
@@ -29,7 +30,8 @@ sub_config_allocate(void)
 	str_init(&self->user);
 	str_init(&self->name);
 	grants_init(&self->grants);
-	uuid_init(&self->rel);
+	uuid_init(&self->id_rel);
+	uuid_init(&self->id_rel);
 	return self;
 }
 
@@ -57,9 +59,15 @@ sub_config_set_name(SubConfig* self, Str* name)
 }
 
 static inline void
-sub_config_set_rel(SubConfig* self, Uuid* id)
+sub_config_set_id(SubConfig* self, Uuid* id)
 {
-	self->rel = *id;
+	self->id = *id;
+}
+
+static inline void
+sub_config_set_id_rel(SubConfig* self, Uuid* id)
+{
+	self->id_rel = *id;
 }
 
 static inline SubConfig*
@@ -68,7 +76,8 @@ sub_config_copy(SubConfig* self)
 	auto copy = sub_config_allocate();
 	sub_config_set_user(copy, &self->user);
 	sub_config_set_name(copy, &self->name);
-	sub_config_set_rel(copy, &self->rel);
+	sub_config_set_id(copy, &self->id);
+	sub_config_set_id_rel(copy, &self->id_rel);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -81,11 +90,12 @@ sub_config_read(uint8_t** pos)
 	uint8_t* pos_grants = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "user",   &self->user },
-		{ DECODE_STRING, "name",   &self->name },
-		{ DECODE_ARRAY,  "grants", &pos_grants },
-		{ DECODE_UUID,   "rel",    &self->rel  },
-		{ 0,              NULL,     NULL       },
+		{ DECODE_STRING, "user",   &self->user   },
+		{ DECODE_STRING, "name",   &self->name   },
+		{ DECODE_ARRAY,  "grants", &pos_grants   },
+		{ DECODE_UUID,   "id",     &self->id     },
+		{ DECODE_UUID,   "id_rel", &self->id_rel },
+		{ 0,              NULL,     NULL         },
 	};
 	decode_obj(obj, "sub", pos);
 
@@ -118,9 +128,13 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "grants", 6);
 	grants_write(&self->grants, buf, 0);
 
-	// rel
-	encode_raw(buf, "rel", 3);
-	encode_uuid(buf, &self->rel);
+	// id
+	encode_raw(buf, "id", 2);
+	encode_uuid(buf, &self->id);
+
+	// id_rel
+	encode_raw(buf, "id_rel", 6);
+	encode_uuid(buf, &self->id_rel);
 
 	encode_obj_end(buf);
 }

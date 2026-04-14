@@ -32,3 +32,4 @@ bool sub_mgr_grant(SubMgr*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 void sub_mgr_dump(SubMgr*, Buf*);
 Buf* sub_mgr_list(SubMgr*, Str*, Str*, int);
 Sub* sub_mgr_find(SubMgr*, Str*, Str*, bool);
+Sub* sub_mgr_find_by(SubMgr*, Uuid*, bool);
