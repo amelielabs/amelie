@@ -22,7 +22,6 @@ struct Tr
 	bool     active;
 	bool     aborted;
 	bool     allocated;
-	void*    arg;
 	List     link;
 };
 
@@ -35,7 +34,6 @@ tr_init(Tr* self)
 	self->active    = false;
 	self->aborted   = false;
 	self->allocated = false;
-	self->arg       = NULL;
 	log_init(&self->log);
 	list_init(&self->link);
 }
@@ -48,7 +46,6 @@ tr_reset(Tr* self)
 	self->user    = NULL;
 	self->active  = false;
 	self->aborted = false;
-	self->arg     = NULL;
 	log_reset(&self->log);
 	list_init(&self->link);
 }

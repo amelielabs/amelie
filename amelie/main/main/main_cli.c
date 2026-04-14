@@ -93,7 +93,7 @@ main_console(Main* self, MainClient* client)
 	char prompt_str[6];
 	char prompt_str_pending[6];
 	sfmt(prompt_str, sizeof(prompt_str), "❯ ");
-	sfmt(prompt_str_pending, sizeof(prompt_str_pending), "- ");
+	sfmt(prompt_str_pending, sizeof(prompt_str_pending), "→ ");
 
 	Str prompt;
 	str_set_cstr(&prompt, prompt_str);
