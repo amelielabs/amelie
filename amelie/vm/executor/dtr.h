@@ -23,6 +23,7 @@ struct Dtr
 	Program*    program;
 	Buf*        error;
 	bool        abort;
+	Tr          tr;
 	Write       write;
 	List        write_cdc;
 	Event       on_commit;
@@ -47,6 +48,7 @@ dtr_init(Dtr* self, Local* local)
 	dispatch_mgr_init(&self->dispatch_mgr, self);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, opt_int_of(&config()->limit_write));
+	tr_init(&self->tr);
 	write_init(&self->write);
 	list_init(&self->write_cdc);
 	list_init(&self->link_batch);
@@ -70,6 +72,7 @@ dtr_reset(Dtr* self)
 	}
 	dispatch_mgr_reset(&self->dispatch_mgr);
 	limit_reset(&self->limit, opt_int_of(&config()->limit_write));
+	tr_reset(&self->tr);
 	write_reset(&self->write);
 	list_init(&self->write_cdc);
 	list_init(&self->link_batch);
@@ -81,6 +84,7 @@ dtr_free(Dtr* self)
 {
 	dtr_reset(self);
 	dispatch_mgr_free(&self->dispatch_mgr);
+	tr_free(&self->tr);
 	write_free(&self->write);
 }
 

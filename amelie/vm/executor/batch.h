@@ -139,6 +139,10 @@ batch_process(Batch* self)
 			}
 		}
 
+		// add utility operations, such as acknowledge
+		if (tr_persists(&dtr->tr))
+			write_add(write, &dtr->tr.log.write_log);
+
 		if (write->header.count > 0)
 			write_list_add(&self->write, write);
 	}
@@ -151,6 +155,11 @@ batch_abort(Batch* self)
 	for (auto it = 0; it < self->list_count; it++)
 	{
 		auto dtr = batch_at(self, it);
+
+		// abort utility transaction
+		if (unlikely(tr_pending(&dtr->tr)))
+			tr_abort(&dtr->tr);
+
 		if (dtr->abort)
 			continue;
 		dtr_set_abort(dtr);
@@ -173,12 +182,19 @@ batch_abort(Batch* self)
 hot static inline void
 batch_complete(Batch* self, Cdc* cdc)
 {
-	// publish cdc events and wakeup transactions
 	for (auto it = 0; it < self->list_count; it++)
 	{
 		auto dtr = batch_at(self, it);
+
+		// commit utility transaction
+		if (unlikely(tr_pending(&dtr->tr)))
+			tr_commit(&dtr->tr);
+
+		// publish cdc events
 		if (! list_empty(&dtr->write_cdc))
 			cdc_write_batch(cdc, dtr->write.header.lsn, &dtr->write_cdc);
+
+		// wakeup
 		event_signal(&dtr->on_commit);
 	}
 }

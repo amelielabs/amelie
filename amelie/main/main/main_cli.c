@@ -83,6 +83,8 @@ main_console(Main* self, MainClient* client)
 	else
 		prompt_text = uri;
 
+	// ›
+	// ❯
 	char prompt_str[128];
 	sfmt(prompt_str, sizeof(prompt_str), "%.*s> ", str_size(prompt_text),
 	     str_of(prompt_text));

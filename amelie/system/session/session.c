@@ -239,7 +239,7 @@ session_execute_utility(Session* self, Output* output)
 	}
 
 	// wal write
-	if (! tr_read_only(&tr))
+	if (tr_pending(&tr))
 	{
 		// respect system read-only state
 		if (opt_int_of(&state()->read_only))

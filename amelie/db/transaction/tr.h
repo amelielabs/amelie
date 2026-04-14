@@ -88,25 +88,25 @@ tr_set_user(Tr* self, Rel* user)
 	self->user = user;
 }
 
-static inline bool
+always_inline static inline bool
 tr_active(Tr* self)
 {
 	return self->active;
 }
 
-static inline bool
+always_inline static inline bool
 tr_aborted(Tr* self)
 {
 	return self->aborted;
 }
 
-static inline bool
-tr_read_only(Tr* self)
+always_inline static inline bool
+tr_pending(Tr* self)
 {
-	return self->log.count == 0;
+	return self->log.count > 0;
 }
 
-static inline bool
+always_inline static inline bool
 tr_persists(Tr* self)
 {
 	return self->log.count > 0 && !write_log_empty(&self->log.write_log);
