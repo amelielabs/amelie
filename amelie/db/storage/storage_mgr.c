@@ -134,7 +134,7 @@ storage_mgr_rename(StorageMgr* self,
 		      str_of(name_new));
 
 	// update storage
-	log_rel(&tr->log, &rename_if, NULL, &storage->rel);
+	log_ddl(&tr->log, &rename_if, NULL, &storage->rel);
 
 	// save name for rollback
 	encode_string(&tr->log.data, name);

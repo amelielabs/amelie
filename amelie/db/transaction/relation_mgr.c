@@ -99,7 +99,7 @@ rel_mgr_create(RelMgr* self, Tr* tr, Rel* rel)
 	rel_mgr_set(self, rel);
 
 	// update transaction log
-	log_rel(&tr->log, &create_if, self, rel);
+	log_ddl(&tr->log, &create_if, self, rel);
 }
 
 static void
@@ -130,5 +130,5 @@ rel_mgr_drop(RelMgr* self, Tr* tr, Rel* rel)
 	rel_mgr_delete(self, rel);
 
 	// update transaction log
-	log_rel(&tr->log, &drop_if, self, rel);
+	log_ddl(&tr->log, &drop_if, self, rel);
 }

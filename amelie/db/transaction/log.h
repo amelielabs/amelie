@@ -96,7 +96,7 @@ log_last(Log* self)
 }
 
 hot static inline LogOp*
-log_row(Log*      self,
+log_dml(Log*      self,
         Cmd       cmd,
         LogIf*    iface,
         void*     iface_arg,
@@ -125,7 +125,7 @@ log_persist(Log* self, Uuid* id)
 }
 
 static inline void
-log_rel(Log*   self,
+log_ddl(Log*   self,
         LogIf* iface,
         void*  iface_arg,
         Rel*   rel)

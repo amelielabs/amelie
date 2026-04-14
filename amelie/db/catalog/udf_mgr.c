@@ -129,7 +129,7 @@ udf_mgr_replace(UdfMgr* self,
 	assert(udf_new->data);
 
 	// update log
-	log_rel(&tr->log, &replace_if, self, &udf->rel);
+	log_ddl(&tr->log, &replace_if, self, &udf->rel);
 
 	buf_write(&tr->log.data, &udf->config, sizeof(void**));
 	buf_write(&tr->log.data, &udf->data, sizeof(void**));
@@ -226,7 +226,7 @@ udf_mgr_rename(UdfMgr* self,
 		      str_of(name_new));
 
 	// update udf
-	log_rel(&tr->log, &rename_if, NULL, &udf->rel);
+	log_ddl(&tr->log, &rename_if, NULL, &udf->rel);
 
 	// save previous name
 	encode_string(&tr->log.data, &udf->config->user);
@@ -293,7 +293,7 @@ udf_mgr_grant(UdfMgr*  self,
 	perms = permission_validate(user, name, perms, perms_all);
 
 	// update udf
-	log_rel(&tr->log, &grant_if, NULL, &udf->rel);
+	log_ddl(&tr->log, &grant_if, NULL, &udf->rel);
 
 	// save previous grants
 	auto grants = &udf->config->grants;

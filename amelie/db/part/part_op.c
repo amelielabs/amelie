@@ -118,7 +118,7 @@ part_insert(Part*     self, Tr* tr, bool replace,
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
+	auto op = log_dml(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
 	part_persist(self, tr, primary);
@@ -141,7 +141,7 @@ part_insert(Part*     self, Tr* tr, bool replace,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
+		op = log_dml(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
 		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev && !replace))
 			if (row_visible(op->row_prev, self->heap, snapshot))
@@ -175,7 +175,7 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	// insert
 
 	// add log record
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
+	auto op = log_dml(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
 	part_persist(self, tr, primary);
@@ -184,7 +184,7 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
+		op = log_dml(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
 		op->row_prev = index_replace_by(index, row);
 
 		if (unlikely(op->row_prev))
@@ -208,7 +208,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
+	auto op = log_dml(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
 	part_persist(self, tr, primary);
@@ -223,7 +223,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
+		op = log_dml(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
 
 		// find and replace existing secondary row (keys are not updated)
 		auto index_it = index_iterator(index);
@@ -262,7 +262,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 	// add log record
 	auto primary = part_primary(self);
 	auto row = iterator_at(it);
-	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, row, NULL, snapshot);
+	auto op = log_dml(&tr->log, CMD_DELETE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
 	part_persist(self, tr, primary);
@@ -274,7 +274,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_row(&tr->log, CMD_DELETE, &log_if_secondary, index, row, NULL, snapshot);
+		op = log_dml(&tr->log, CMD_DELETE, &log_if_secondary, index, row, NULL, snapshot);
 
 		// delete by key
 		op->row_prev = index_delete_by(index, row);

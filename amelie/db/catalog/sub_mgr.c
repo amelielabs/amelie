@@ -175,7 +175,7 @@ sub_mgr_rename(SubMgr* self,
 		      str_of(name_new));
 
 	// update sub
-	log_rel(&tr->log, &rename_if, NULL, &sub->rel);
+	log_ddl(&tr->log, &rename_if, NULL, &sub->rel);
 
 	// save previous name
 	encode_string(&tr->log.data, &sub->config->user);
@@ -242,7 +242,7 @@ sub_mgr_grant(SubMgr*  self,
 	perms = permission_validate(user, name, perms, perms_all);
 
 	// update sub
-	log_rel(&tr->log, &grant_if, NULL, &sub->rel);
+	log_ddl(&tr->log, &grant_if, NULL, &sub->rel);
 
 	// save previous grants
 	auto grants = &sub->config->grants;

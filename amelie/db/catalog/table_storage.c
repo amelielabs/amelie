@@ -79,7 +79,7 @@ table_storage_add(Table*  self,
 	}
 
 	// update table
-	log_rel(&tr->log, &storage_add_if, self, &self->rel);
+	log_ddl(&tr->log, &storage_add_if, self, &self->rel);
 
 	// save storage name
 	encode_string(&tr->log.data, &config->name);
@@ -159,7 +159,7 @@ table_storage_drop(Table* self,
 		      str_of(name));
 
 	// update table
-	log_rel(&tr->log, &storage_drop_if, self, &self->rel);
+	log_ddl(&tr->log, &storage_drop_if, self, &self->rel);
 
 	// save storage name
 	encode_string(&tr->log.data, name);
@@ -227,7 +227,7 @@ table_storage_pause(Table* self,
 		      str_of(&self->config->name));
 
 	// update table
-	log_rel(&tr->log, &storage_pause_if, self, &self->rel);
+	log_ddl(&tr->log, &storage_pause_if, self, &self->rel);
 
 	// apply
 	volume_set_pause(volume, pause);

@@ -135,7 +135,7 @@ table_mgr_truncate(TableMgr* self,
 	check_ownership(tr, &table->rel);
 
 	// update table
-	log_rel(&tr->log, &truncate_if, NULL, &table->rel);
+	log_ddl(&tr->log, &truncate_if, NULL, &table->rel);
 
 	// do nothing (actual truncate will happen on commit)
 	return true;

@@ -64,7 +64,7 @@ table_index_add(Table* self, Tr* tr, IndexConfig* config)
 	table_config_index_add(self->config, config);
 
 	// update table
-	log_rel(&tr->log, &add_if, index, &self->rel);
+	log_ddl(&tr->log, &add_if, index, &self->rel);
 
 	// use separate log command for create
 	// index processing
@@ -115,7 +115,7 @@ table_index_drop(Table* self,
 	}
 
 	// update table
-	log_rel(&tr->log, &drop_if, index, &self->rel);
+	log_ddl(&tr->log, &drop_if, index, &self->rel);
 	return true;
 }
 
@@ -174,7 +174,7 @@ table_index_rename(Table* self,
 		      str_of(name_new));
 
 	// update table
-	log_rel(&tr->log, &rename_if, index, &self->rel);
+	log_ddl(&tr->log, &rename_if, index, &self->rel);
 
 	// save previous name
 	encode_string(&tr->log.data, &index->name);

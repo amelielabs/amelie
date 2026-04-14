@@ -166,7 +166,7 @@ branch_mgr_rename(BranchMgr* self,
 		      str_of(name_new));
 
 	// update branch
-	log_rel(&tr->log, &rename_if, NULL, &branch->rel);
+	log_ddl(&tr->log, &rename_if, NULL, &branch->rel);
 
 	// save previous name
 	encode_string(&tr->log.data, &branch->config->user);
@@ -235,7 +235,7 @@ branch_mgr_grant(BranchMgr* self,
 	perms = permission_validate(user, name, perms, perms_all);
 
 	// update branch
-	log_rel(&tr->log, &grant_if, NULL, &branch->rel);
+	log_ddl(&tr->log, &grant_if, NULL, &branch->rel);
 
 	// save previous grants
 	auto grants = &branch->config->grants;

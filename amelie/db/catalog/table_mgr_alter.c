@@ -74,7 +74,7 @@ table_mgr_rename(TableMgr* self,
 		      str_of(name_new));
 
 	// update table
-	log_rel(&tr->log, &rename_if, NULL, &table->rel);
+	log_ddl(&tr->log, &rename_if, NULL, &table->rel);
 
 	// save previous name
 	encode_string(&tr->log.data, &table->config->user);
@@ -143,7 +143,7 @@ table_mgr_grant(TableMgr* self,
 	perms = permission_validate(user, name, perms, perms_all);
 
 	// update table
-	log_rel(&tr->log, &grant_if, NULL, &table->rel);
+	log_ddl(&tr->log, &grant_if, NULL, &table->rel);
 
 	// save previous grants
 	auto grants = &table->config->grants;
@@ -202,7 +202,7 @@ table_mgr_set_identity(TableMgr* self,
 	check_ownership(tr, &table->rel);
 
 	// update table
-	log_rel(&tr->log, &set_identity_if, NULL, &table->rel);
+	log_ddl(&tr->log, &set_identity_if, NULL, &table->rel);
 
 	// save previous sequence value
 	encode_integer(&tr->log.data, sequence_get(&table->seq));
@@ -254,7 +254,7 @@ table_mgr_set_unlogged(TableMgr* self,
 	check_ownership(tr, &table->rel);
 
 	// update table
-	log_rel(&tr->log, &set_unlogged_if, NULL, &table->rel);
+	log_ddl(&tr->log, &set_unlogged_if, NULL, &table->rel);
 
 	// set table and partitions as unlogged
 	table_set_unlogged(table, value);
@@ -330,7 +330,7 @@ table_mgr_column_rename(TableMgr* self,
 	}
 
 	// update table
-	log_rel(&tr->log, &column_rename_if, column, &table->rel);
+	log_ddl(&tr->log, &column_rename_if, column, &table->rel);
 
 	// save previous column name
 	encode_string(&tr->log.data, &column->name);
@@ -407,7 +407,7 @@ table_mgr_column_add(TableMgr* self,
 	columns_sync(&table->config->columns);
 
 	// update log (old table is still present)
-	log_rel(&tr->log, &column_add_if, column_new, &table->rel);
+	log_ddl(&tr->log, &column_add_if, column_new, &table->rel);
 	return true;
 }
 
@@ -480,7 +480,7 @@ table_mgr_column_drop(TableMgr* self,
 		      str_of(name_column));
 
 	// update log
-	log_rel(&tr->log, &column_drop_if, column, &table->rel);
+	log_ddl(&tr->log, &column_drop_if, column, &table->rel);
 
 	// mark column as being dropped
 	column_set_dropped(column, true);
@@ -556,7 +556,7 @@ table_mgr_column_set(TableMgr* self,
 	}
 
 	// update table
-	log_rel(&tr->log, &column_set_if, column, &table->rel);
+	log_ddl(&tr->log, &column_set_if, column, &table->rel);
 
 	// save previous constraints
 	constraints_write(&column->constraints, &tr->log.data, 0);

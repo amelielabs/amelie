@@ -140,7 +140,7 @@ user_mgr_rename(UserMgr* self,
 		      str_of(name_new));
 
 	// update user
-	log_rel(&tr->log, &rename_if, NULL, &user->rel);
+	log_ddl(&tr->log, &rename_if, NULL, &user->rel);
 
 	// save name for rollback
 	encode_string(&tr->log.data, name);
@@ -213,7 +213,7 @@ user_mgr_grant(UserMgr* self,
 	perms = permission_validate(NULL, name, perms, perms_all);
 
 	// update user
-	log_rel(&tr->log, &grant_if, NULL, &user->rel);
+	log_ddl(&tr->log, &grant_if, NULL, &user->rel);
 
 	// save previous grants
 	auto grants = &user->config->grants;
@@ -275,7 +275,7 @@ user_mgr_revoke(UserMgr* self,
 	check_ownership_user(tr, &user->rel);
 
 	// update user
-	log_rel(&tr->log, &revoke_if, NULL, &user->rel);
+	log_ddl(&tr->log, &revoke_if, NULL, &user->rel);
 
 	// save previous revoked_at for rollback
 	encode_string(&tr->log.data, &user->config->revoked_at);
