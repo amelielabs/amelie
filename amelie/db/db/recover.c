@@ -202,12 +202,9 @@ recover_next(Recover* self, Record* record)
 {
 	auto tr = &self->tr;
 	tr_reset(tr);
+	tr_set_user(tr, &self->main->rel);
 	auto on_error = error_catch
 	(
-		// begin
-		tr_begin(tr);
-		tr_set_user(tr, &self->main->rel);
-
 		// replay
 		recover_next_record(self, record);
 

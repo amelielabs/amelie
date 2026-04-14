@@ -63,9 +63,6 @@ catalog_create(Catalog* self)
 	defer(tr_free, &tr);
 	auto on_error = error_catch
 	(
-		// begin
-		tr_begin(&tr);
-
 		Str name;
 		str_init(&name);
 		str_set_cstr(&name, "main");

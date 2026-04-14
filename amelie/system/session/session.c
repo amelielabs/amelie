@@ -118,6 +118,7 @@ session_execute_distributed(Session* self, Output* output)
 
 	// prepare distributed transaction
 	dtr_prepare(dtr, program);
+	tr_set_user(&dtr->tr, &self->user->rel);
 
 	// [PROFILE]
 	if (compiler->program_profile)
@@ -193,16 +194,13 @@ session_execute_utility(Session* self, Output* output)
 	// execute utility/ddl transaction
 	Tr tr;
 	tr_init(&tr);
+	tr_set_user(&tr, &self->user->rel);
 	defer(tr_free, &tr);
 
 	Return ret;
 	return_init(&ret);
 	auto on_error = error_catch
 	(
-		// begin
-		tr_begin(&tr);
-		tr_set_user(&tr, &self->user->rel);
-
 		vm_run(&self->vm, &self->local,
 		       &self->dtr,
 		       &tr,
@@ -239,7 +237,7 @@ session_execute_utility(Session* self, Output* output)
 	}
 
 	// wal write
-	if (tr_pending(&tr))
+	if (tr_active(&tr))
 	{
 		// respect system read-only state
 		if (opt_int_of(&state()->read_only))

@@ -108,9 +108,6 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 	defer(tr_free, &tr);
 	if (error_catch
 	(
-		// start transaction
-		tr_begin(&tr);
-
 		catalog_restore_relation(self, &tr, type, pos);
 
 		// commit (without wal write)

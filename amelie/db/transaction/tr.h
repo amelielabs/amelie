@@ -19,8 +19,6 @@ struct Tr
 	Log      log;
 	Limit*   limit;
 	Rel*     user;
-	bool     active;
-	bool     aborted;
 	bool     allocated;
 	List     link;
 };
@@ -31,8 +29,6 @@ tr_init(Tr* self)
 	self->id        = 0;
 	self->limit     = NULL;
 	self->user      = NULL;
-	self->active    = false;
-	self->aborted   = false;
 	self->allocated = false;
 	log_init(&self->log);
 	list_init(&self->link);
@@ -41,11 +37,9 @@ tr_init(Tr* self)
 static inline void
 tr_reset(Tr* self)
 {
-	self->id      = 0;
-	self->limit   = NULL;
-	self->user    = NULL;
-	self->active  = false;
-	self->aborted = false;
+	self->id    = 0;
+	self->limit = NULL;
+	self->user  = NULL;
 	log_reset(&self->log);
 	list_init(&self->link);
 }
@@ -88,23 +82,11 @@ tr_set_user(Tr* self, Rel* user)
 always_inline static inline bool
 tr_active(Tr* self)
 {
-	return self->active;
-}
-
-always_inline static inline bool
-tr_aborted(Tr* self)
-{
-	return self->aborted;
-}
-
-always_inline static inline bool
-tr_pending(Tr* self)
-{
 	return self->log.count > 0;
 }
 
 always_inline static inline bool
 tr_persists(Tr* self)
 {
-	return self->log.count > 0 && !write_log_empty(&self->log.write_log);
+	return !write_log_empty(&self->log.write_log);
 }

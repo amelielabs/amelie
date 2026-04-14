@@ -90,7 +90,6 @@ batch_process(Batch* self)
 			auto tr  = ltr->tr;
 			if (! tr)
 				continue;
-			assert(tr->active);
 
 			// collect unique partitions across batch
 			batch_add_partition(self, ltr);
@@ -114,7 +113,6 @@ batch_process(Batch* self)
 			auto tr  = ltr->tr;
 			if (! tr)
 				continue;
-			assert(tr->active);
 
 			// sync metrics
 			auto pending = &ltr->part->track.pending_consensus;
@@ -157,8 +155,7 @@ batch_abort(Batch* self)
 		auto dtr = batch_at(self, it);
 
 		// abort utility transaction
-		if (unlikely(tr_pending(&dtr->tr)))
-			tr_abort(&dtr->tr);
+		tr_abort(&dtr->tr);
 
 		if (dtr->abort)
 			continue;
@@ -187,8 +184,7 @@ batch_complete(Batch* self, Cdc* cdc)
 		auto dtr = batch_at(self, it);
 
 		// commit utility transaction
-		if (unlikely(tr_pending(&dtr->tr)))
-			tr_commit(&dtr->tr);
+		tr_commit(&dtr->tr);
 
 		// publish cdc events
 		if (! list_empty(&dtr->write_cdc))

@@ -11,31 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-static inline void
-tr_begin(Tr* self)
-{
-	if (unlikely(tr_active(self)))
-		error("transaction is active");
-	self->active  = true;
-	self->aborted = false;
-}
-
-static inline void
-tr_end(Tr* self, bool aborted)
-{
-	// reset log
-	log_reset(&self->log);
-
-	// done
-	self->active  = false;
-	self->aborted = aborted;
-}
-
 hot static inline void
 tr_commit(Tr* self)
 {
-	if (unlikely(! tr_active(self)))
-		error("transaction is not active");
+	if (! tr_active(self))
+		return;
 
 	auto log = &self->log;
 	for (int pos = 0; pos < log->count; pos++)
@@ -44,14 +24,15 @@ tr_commit(Tr* self)
 		op->iface->commit(log, op);
 	}
 
-	tr_end(self, false);
+	// reset log
+	log_reset(&self->log);
 }
 
 static inline void
 tr_abort(Tr* self)
 {
-	if (unlikely(! tr_active(self)))
-		error("transaction is not active");
+	if (! tr_active(self))
+		return;
 
 	auto log = &self->log;
 	for (int pos = self->log.count - 1; pos >= 0; pos--)
@@ -60,7 +41,8 @@ tr_abort(Tr* self)
 		op->iface->abort(log, op);
 	}
 
-	tr_end(self, true);
+	// reset log
+	log_reset(&self->log);
 }
 
 hot static inline void
