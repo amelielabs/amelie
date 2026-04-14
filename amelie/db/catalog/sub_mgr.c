@@ -72,8 +72,13 @@ sub_mgr_create(SubMgr* self, Tr* tr, SubConfig* config, bool if_not_exists)
 		return false;
 	}
 
-	// mark table for cdc
+	// find table
 	auto table = table_mgr_find_by(self->table_mgr, &config->rel, true);
+
+	// ensure permission to create subscription on the table
+	check_permission(tr, &table->rel, PERM_CREATE_SUB);
+
+	// mark table for cdc;
 	table->part_arg.cdc++;
 
 	// allocate storage
