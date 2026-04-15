@@ -48,6 +48,12 @@
 #include "catalog/udf_op.h"
 #include "catalog/udf_mgr.h"
 
+// topic
+#include "catalog/topic_config.h"
+#include "catalog/topic_op.h"
+#include "catalog/topic.h"
+#include "catalog/topic_mgr.h"
+
 // subscription
 #include "catalog/sub_config.h"
 #include "catalog/sub_op.h"

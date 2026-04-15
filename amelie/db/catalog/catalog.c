@@ -37,6 +37,7 @@ catalog_init(Catalog*   self,
 	               iface_part_mgr_arg);
 	branch_mgr_init(&self->branch_mgr, &self->table_mgr);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
+	topic_mgr_init(&self->topic_mgr);
 	sub_mgr_init(&self->sub_mgr, &self->table_mgr, cdc);
 }
 
@@ -47,6 +48,7 @@ catalog_free(Catalog* self)
 	sub_mgr_free(&self->sub_mgr);
 	branch_mgr_free(&self->branch_mgr);
 	table_mgr_free(&self->table_mgr);
+	topic_mgr_free(&self->topic_mgr);
 	storage_mgr_free(&self->storage_mgr);
 	user_mgr_free(&self->user_mgr);
 }
@@ -151,6 +153,14 @@ catalog_status(Catalog* self)
 	encode_raw(buf, "udfs", 4);
 	encode_integer(buf, self->udf_mgr.mgr.list_count);
 
+	// topics
+	encode_raw(buf, "topics", 6);
+	encode_integer(buf, self->topic_mgr.mgr.list_count);
+
+	// subscriptions
+	encode_raw(buf, "subscriptions", 13);
+	encode_integer(buf, self->sub_mgr.mgr.list_count);
+
 	encode_obj_end(buf);
 	return buf;
 }
@@ -214,6 +224,10 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		case REL_UDF:
 			write = udf_mgr_grant(&self->udf_mgr, tr, &user, &name, &to,
 			                      grant, perms, 0);
+			break;
+		case REL_TOPIC:
+			write = topic_mgr_grant(&self->topic_mgr, tr, &user, &name, &to,
+			                        grant, perms, 0);
 			break;
 		case REL_SUBSCRIPTION:
 			write = sub_mgr_grant(&self->sub_mgr, tr, &user, &name, &to,
@@ -669,6 +683,47 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto if_exists = ddl_if_exists(flags);
 		write = udf_mgr_rename(&self->udf_mgr, tr, &user, &name,
 		                       &user_new, &name_new, if_exists);
+		break;
+	}
+	case DDL_TOPIC_CREATE:
+	{
+		// PERM_CREATE_TOPIC
+		check_user(tr, PERM_CREATE_TOPIC);
+
+		auto config = topic_op_create_read(op);
+		defer(topic_config_free, config);
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = topic_mgr_create(&self->topic_mgr, tr, config, if_not_exists);
+		break;
+	}
+	case DDL_TOPIC_DROP:
+	{
+		Str user;
+		Str name;
+		topic_op_drop_read(op, &user, &name);
+
+		// ensure no other udfs depend on the topic
+		catalog_validate_udfs(self, &user, &name);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = topic_mgr_drop(&self->topic_mgr, tr, &user, &name, if_exists);
+		break;
+	}
+	case DDL_TOPIC_RENAME:
+	{
+		Str user;
+		Str name;
+		Str user_new;
+		Str name_new;
+		topic_op_rename_read(op, &user, &name, &user_new, &name_new);
+
+		// ensure no other udfs depend on the topic
+		catalog_validate_udfs(self, &user, &name);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = topic_mgr_rename(&self->topic_mgr, tr, &user, &name,
+		                         &user_new, &name_new,
+		                         if_exists);
 		break;
 	}
 	case DDL_SUB_CREATE:

@@ -27,25 +27,26 @@ enum
 	PERM_CREATE_TABLE    = 1ul << 4,
 	PERM_CREATE_BRANCH   = 1ul << 5,
 	PERM_CREATE_FUNCTION = 1ul << 6,
-	PERM_CREATE_SUB      = 1ul << 7,
+	PERM_CREATE_TOPIC    = 1ul << 7,
+	PERM_CREATE_SUB      = 1ul << 8,
 
 	// DML
-	PERM_INSERT          = 1ul << 8,
-	PERM_UPDATE          = 1ul << 9,
-	PERM_DELETE          = 1ul << 10,
+	PERM_INSERT          = 1ul << 9,
+	PERM_UPDATE          = 1ul << 10,
+	PERM_DELETE          = 1ul << 11,
 
 	// Query
-	PERM_SELECT          = 1ul << 11,
+	PERM_SELECT          = 1ul << 12,
 
 	// UDF
-	PERM_EXECUTE         = 1ul << 12,
+	PERM_EXECUTE         = 1ul << 13,
 
-	// Channels
-	PERM_PUBLISH         = 1ul << 13,
+	// Topic
+	PERM_PUBLISH         = 1ul << 14,
 
 	// Connections
-	PERM_CONNECT         = 1ul << 14,
-	PERM_SERVICE         = 1ul << 15,
+	PERM_CONNECT         = 1ul << 15,
+	PERM_SERVICE         = 1ul << 16,
 
 	// all
 	PERM_ALL             = UINT32_MAX,

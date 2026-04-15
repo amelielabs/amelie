@@ -62,6 +62,11 @@ enum
 	DDL_UDF_DROP,
 	DDL_UDF_RENAME,
 
+	// topic
+	DDL_TOPIC_CREATE,
+	DDL_TOPIC_DROP,
+	DDL_TOPIC_RENAME,
+
 	// subscription
 	DDL_SUB_CREATE,
 	DDL_SUB_DROP,

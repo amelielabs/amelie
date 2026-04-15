@@ -207,6 +207,7 @@ user_mgr_grant(UserMgr* self,
 	     PERM_CREATE_TOKEN    |
 	     PERM_CREATE_TABLE    |
 	     PERM_CREATE_FUNCTION |
+	     PERM_CREATE_TOPIC    |
 	     PERM_CREATE_SUB      |
 	     PERM_CONNECT         |
 	     PERM_SERVICE;

@@ -315,6 +315,29 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
+	// topic
+	case STMT_CREATE_TOPIC:
+	{
+		auto arg = ast_topic_create_of(stmt->ast);
+		offset = topic_op_create(data, arg->config);
+		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		break;
+	}
+	case STMT_DROP_TOPIC:
+	{
+		auto arg = ast_topic_drop_of(stmt->ast);
+		offset = topic_op_drop(data, user, &arg->name);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+	case STMT_ALTER_TOPIC:
+	{
+		auto arg = ast_topic_alter_of(stmt->ast);
+		offset = topic_op_rename(data, user, &arg->name, user, &arg->name_new);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+
 	// subscription
 	case STMT_CREATE_SUBSCRIPTION:
 	{

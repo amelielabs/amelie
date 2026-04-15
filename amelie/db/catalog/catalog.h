@@ -29,6 +29,7 @@ struct Catalog
 	TableMgr   table_mgr;
 	BranchMgr  branch_mgr;
 	UdfMgr     udf_mgr;
+	TopicMgr   topic_mgr;
 	SubMgr     sub_mgr;
 	CatalogIf* iface;
 	void*      iface_arg;

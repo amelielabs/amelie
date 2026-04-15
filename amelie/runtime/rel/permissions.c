@@ -41,6 +41,7 @@ static Permission perms[] =
 	{ PERM_CREATE_TABLE,    "create_table",        12 },
 	{ PERM_CREATE_BRANCH,   "create_branch",       13 },
 	{ PERM_CREATE_FUNCTION, "create_function",     15 },
+	{ PERM_CREATE_TOPIC,    "create_topic",        12 },
 	{ PERM_CREATE_SUB,      "create_subscription", 19 },
 
 	// DML
@@ -54,7 +55,7 @@ static Permission perms[] =
 	// UDF
 	{ PERM_EXECUTE,         "execute",             7  },
 
-	// Channels
+	// Topic
 	{ PERM_PUBLISH,         "publish",             7  },
 
 	// Connections

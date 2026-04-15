@@ -27,6 +27,7 @@ enum
 	RESTORE_TABLE,
 	RESTORE_BRANCH,
 	RESTORE_UDF,
+	RESTORE_TOPIC,
 	RESTORE_SUB
 };
 
@@ -93,6 +94,16 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		self->iface->udf_compile(self, udf);
 		break;
 	}
+	case RESTORE_TOPIC:
+	{
+		// read topic config
+		auto config = topic_config_read(pos);
+		defer(topic_config_free, config);
+
+		// create topic
+		topic_mgr_create(&self->topic_mgr, tr, config, false);
+		break;
+	}
 	case RESTORE_SUB:
 	{
 		// read subscription config
@@ -127,7 +138,7 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 static void
 catalog_restore(Catalog* self, uint8_t** pos)
 {
-	// { lsn, tsn, users, storages, tables, branches, udfs, subs }
+	// { lsn, tsn, users, storages, tables, branches, udfs, topics, subs }
 	int64_t  lsn          = 0;
 	int64_t  tsn          = 0;
 	uint8_t* pos_users    = NULL;
@@ -135,6 +146,7 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	uint8_t* pos_tables   = NULL;
 	uint8_t* pos_branches = NULL;
 	uint8_t* pos_udfs     = NULL;
+	uint8_t* pos_topics   = NULL;
 	uint8_t* pos_subs     = NULL;
 	Decode obj[] =
 	{
@@ -145,6 +157,7 @@ catalog_restore(Catalog* self, uint8_t** pos)
 		{ DECODE_ARRAY, "tables",   &pos_tables   },
 		{ DECODE_ARRAY, "branches", &pos_branches },
 		{ DECODE_ARRAY, "udfs",     &pos_udfs     },
+		{ DECODE_ARRAY, "topics",   &pos_topics   },
 		{ DECODE_ARRAY, "subs",     &pos_subs     },
 		{ 0,             NULL,       NULL         },
 	};
@@ -174,6 +187,11 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	json_read_array(&pos_udfs);
 	while (! json_read_array_end(&pos_udfs))
 		catalog_restore_object(self, RESTORE_UDF, &pos_udfs);
+
+	// topics
+	json_read_array(&pos_topics);
+	while (! json_read_array_end(&pos_topics))
+		catalog_restore_object(self, RESTORE_TOPIC, &pos_topics);
 
 	// subs
 	json_read_array(&pos_subs);
@@ -231,7 +249,7 @@ catalog_read(Catalog* self)
 Buf*
 catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 {
-	// { lsn, tsn, users, storages, tables, branches, udfs, subs }
+	// { lsn, tsn, users, storages, tables, branches, udfs, topics, subs }
 	auto buf = buf_create();
 	encode_obj(buf);
 
@@ -262,6 +280,10 @@ catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 	// udfs
 	encode_raw(buf, "udfs", 4);
 	udf_mgr_dump(&self->udf_mgr, buf);
+
+	// topics
+	encode_raw(buf, "topics", 6);
+	topic_mgr_dump(&self->topic_mgr, buf);
 
 	// subs
 	encode_raw(buf, "subs", 4);

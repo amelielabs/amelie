@@ -32,6 +32,18 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 {
 	// validate or drop all objects matching the user
 
+	// topics
+	list_foreach_safe(&self->topic_mgr.mgr.list)
+	{
+		auto topic = topic_of(list_at(Rel, link));
+		if (! str_compare_case(&topic->config->user, user))
+			continue;
+		if (drop)
+			topic_mgr_drop_of(&self->topic_mgr, tr, topic);
+		else
+			cascade_user_error(user);
+	}
+
 	// subs
 	list_foreach_safe(&self->sub_mgr.mgr.list)
 	{
@@ -120,6 +132,17 @@ cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 			error("function '%.*s' depends on user '%.*s",
 			      str_size(udf->rel.name), str_of(udf->rel.name),
 			      str_size(user), str_of(user));
+	}
+
+	// topics
+	list_foreach_safe(&self->topic_mgr.mgr.list)
+	{
+		auto topic = topic_of(list_at(Rel, link));
+		if (str_compare_case(&topic->config->user, user))
+			topic_mgr_rename(&self->topic_mgr, tr, &topic->config->user,
+			                 &topic->config->name,
+			                 user_new,
+			                 &topic->config->name, false);
 	}
 
 	// subs

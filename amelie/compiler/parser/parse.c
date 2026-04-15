@@ -81,6 +81,13 @@ parse_stmt_free(Stmt* stmt)
 			udf_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_TOPIC:
+	{
+		auto ast = ast_topic_create_of(stmt->ast);
+		if (ast->config)
+			topic_config_free(ast->config);
+		break;
+	}
 	case STMT_CREATE_SUBSCRIPTION:
 	{
 		auto ast = ast_sub_create_of(stmt->ast);
@@ -327,6 +334,11 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_FUNCTION;
 			parse_function_create(self, or_replace);
 		} else
+		if (stmt_if(self, KTOPIC))
+		{
+			self->id = STMT_CREATE_TOPIC;
+			parse_topic_create(self);
+		} else
 		if (stmt_if(self, KSUBSCRIPTION))
 		{
 			self->id = STMT_CREATE_SUBSCRIPTION;
@@ -380,6 +392,11 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
+		} else
+		if (stmt_if(self, KTOPIC))
+		{
+			self->id = STMT_DROP_TOPIC;
+			parse_topic_drop(self);
 		} else
 		if (stmt_if(self, KSUBSCRIPTION))
 		{
@@ -439,6 +456,11 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
+		} else
+		if (stmt_if(self, KTOPIC))
+		{
+			self->id = STMT_ALTER_TOPIC;
+			parse_topic_alter(self);
 		} else
 		if (stmt_if(self, KSUBSCRIPTION))
 		{
