@@ -39,7 +39,7 @@ parse_sub_create(Stmt* self)
 	uuid_init(&id);
 	uuid_generate(&id, &runtime()->random);
 	sub_config_set_id(config, &id);
-	sub_config_set_lsn(config, state_lsn());
+	sub_config_set_pos(config, state_lsn(), 0);
 
 	// ON
 	stmt_expect(self, KON);
@@ -108,9 +108,17 @@ parse_acknowledge(Stmt* self)
 	// TO
 	stmt_expect(self, KTO);
 
-	// name
+	// lsn
 	auto value = stmt_expect(self, KINT);
-	stmt->to = value->integer;
+	stmt->to_lsn = value->integer;
+	stmt->to_op  = 0;
+
+	// [, op]
+	if (stmt_if(self, ','))
+	{
+		value = stmt_expect(self, KINT);
+		stmt->to_op = value->integer;
+	}
 
 	// subscription
 	stmt->sub = sub_mgr_find(&share()->db->catalog.sub_mgr, self->parser->user, &name->string, false);

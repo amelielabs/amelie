@@ -38,6 +38,13 @@ sub_mgr_init(SubMgr* self, TableMgr* table_mgr, Cdc* cdc)
 	column_set_type(column, TYPE_INT, sizeof(int64_t));
 	columns_add(&self->columns, column);
 
+	// op
+	column = column_allocate();
+	str_set(&name, "op", 2);
+	column_set_name(column, &name);
+	column_set_type(column, TYPE_INT, sizeof(int32_t));
+	columns_add(&self->columns, column);
+
 	// cmd
 	column = column_allocate();
 	str_set(&name, "cmd", 3);
@@ -84,8 +91,8 @@ sub_mgr_create(SubMgr* self, Tr* tr, SubConfig* config, bool if_not_exists)
 	// allocate storage
 	sub = sub_allocate(config, self->table_mgr, self->cdc);
 
-	// set lsn and prepare slot
-	cdc_slot_set(&sub->slot, config->lsn);
+	// set pos and prepare slot
+	cdc_slot_set(&sub->slot, config->lsn, config->op);
 
 	// attach slot
 	cdc_attach(self->cdc, &sub->slot);

@@ -20,6 +20,7 @@ struct SubConfig
 	Uuid    id;
 	Uuid    id_rel;
 	int64_t lsn;
+	int64_t op;
 	Grants  grants;
 };
 
@@ -28,7 +29,8 @@ sub_config_allocate(void)
 {
 	SubConfig* self;
 	self = am_malloc(sizeof(SubConfig));
-	self->lsn = 0;;
+	self->lsn = 0;
+	self->op  = 0;
 	str_init(&self->user);
 	str_init(&self->name);
 	uuid_init(&self->id_rel);
@@ -73,9 +75,10 @@ sub_config_set_id_rel(SubConfig* self, Uuid* id)
 }
 
 static inline void
-sub_config_set_lsn(SubConfig* self, int64_t lsn)
+sub_config_set_pos(SubConfig* self, int64_t lsn, int64_t op)
 {
 	self->lsn = lsn;
+	self->op  = op;
 }
 
 static inline SubConfig*
@@ -86,7 +89,7 @@ sub_config_copy(SubConfig* self)
 	sub_config_set_name(copy, &self->name);
 	sub_config_set_id(copy, &self->id);
 	sub_config_set_id_rel(copy, &self->id_rel);
-	sub_config_set_lsn(copy, self->lsn);
+	sub_config_set_pos(copy, self->lsn, self->op);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -104,6 +107,7 @@ sub_config_read(uint8_t** pos)
 		{ DECODE_UUID,   "id",     &self->id     },
 		{ DECODE_UUID,   "id_rel", &self->id_rel },
 		{ DECODE_INT,    "lsn",    &self->lsn    },
+		{ DECODE_INT,    "op",     &self->op     },
 		{ DECODE_ARRAY,  "grants", &pos_grants   },
 		{ 0,              NULL,     NULL         },
 	};
@@ -145,6 +149,10 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_integer(buf, self->lsn);
+
+	// op
+	encode_raw(buf, "op", 2);
+	encode_integer(buf, self->op);
 
 	// grants
 	encode_raw(buf, "grants", 6);

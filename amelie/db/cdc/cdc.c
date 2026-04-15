@@ -166,7 +166,9 @@ cdc_gc(Cdc* self)
 }
 
 hot static inline void
-cdc_add(Cdc*     self, uint64_t lsn,
+cdc_add(Cdc*     self,
+        uint64_t lsn,
+        uint32_t op,
         Cmd      cmd,
         Uuid*    id,
         uint8_t* data,
@@ -186,6 +188,7 @@ cdc_add(Cdc*     self, uint64_t lsn,
 	// write event data
 	auto event = (CdcEvent*)at;
 	event->lsn       = lsn;
+	event->op        = op;
 	event->cmd       = cmd;
 	event->id        = *id;
 	event->data_size = data_size;
@@ -201,11 +204,13 @@ cdc_write(Cdc* self, uint64_t lsn, WriteCdc* write)
 	spinlock_lock(&self->lock);
 
 	// add event to the queue
+	uint32_t op = 0;
 	auto pos = (WriteCdcRecord*)write->data.start;
 	auto end = (WriteCdcRecord*)write->data.position;
 	while (pos < end)
 	{
-		cdc_add(self, lsn, pos->cmd, pos->id, pos->data, pos->data_size);
+		cdc_add(self, lsn, op, pos->cmd, pos->id, pos->data, pos->data_size);
+		op++;
 		pos = (WriteCdcRecord*)(pos->data + pos->data_size);
 	}
 
@@ -221,6 +226,7 @@ cdc_write_batch(Cdc* self, uint64_t lsn, List* batch)
 	spinlock_lock(&self->lock);
 
 	// add all records from the batch
+	uint32_t op = 0;
 	list_foreach(batch)
 	{
 		auto ref = list_at(WriteCdc, link);
@@ -228,7 +234,8 @@ cdc_write_batch(Cdc* self, uint64_t lsn, List* batch)
 		auto end = (WriteCdcRecord*)ref->data.position;
 		while (pos < end)
 		{
-			cdc_add(self, lsn, pos->cmd, pos->id, pos->data, pos->data_size);
+			cdc_add(self, lsn, op, pos->cmd, pos->id, pos->data, pos->data_size);
+			op++;
 			pos = (WriteCdcRecord*)(pos->data + pos->data_size);
 		}
 	}

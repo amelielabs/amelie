@@ -17,7 +17,7 @@ struct SubIterator
 {
 	StoreIterator it;
 	CdcCursor     cursor;
-	Value         value[3];
+	Value         value[4];
 	Sub*          sub;
 };
 
@@ -38,6 +38,9 @@ sub_store_iterator_set(SubIterator* self)
 	// lsn
 	value_set_int(&self->value[0], at->lsn);
 
+	// op
+	value_set_int(&self->value[1], at->op);
+
 	// cmd
 	Str cmd;
 	switch (at->cmd) {
@@ -48,10 +51,10 @@ sub_store_iterator_set(SubIterator* self)
 		str_set(&cmd, "delete", 6);
 		break;
 	}
-	value_set_string(&self->value[1], &cmd, NULL);
+	value_set_string(&self->value[2], &cmd, NULL);
 
 	// row
-	value_set_json(&self->value[2], at->data, at->data_size, NULL);
+	value_set_json(&self->value[3], at->data, at->data_size, NULL);
 }
 
 hot static inline void
@@ -83,6 +86,7 @@ sub_store_iterator_allocate(Sub* sub, Cdc* cdc)
 	value_init(&self->value[0]);
 	value_init(&self->value[1]);
 	value_init(&self->value[2]);
+	value_init(&self->value[3]);
 
 	cdc_cursor_init(&self->cursor);
 	cdc_cursor_open(&self->cursor, cdc, sub->slot.lsn);

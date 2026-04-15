@@ -90,15 +90,17 @@ sub_op_rename_read(uint8_t* op, Str* user, Str* name, Str* user_new, Str* name_n
 }
 
 static inline int
-acknowledge_op(Buf* self, uint64_t lsn)
+acknowledge_op(Buf* self, uint64_t pos_lsn, uint32_t pos_op)
 {
 	auto offset = buf_size(self);
-	encode_integer(self, lsn);
+	encode_integer(self, pos_lsn);
+	encode_integer(self, pos_op);
 	return offset;
 }
 
 static inline void
-acknowledge_op_read(uint8_t* op, int64_t* lsn)
+acknowledge_op_read(uint8_t* op, int64_t* pos_lsn, int64_t* pos_op)
 {
-	json_read_integer(&op, lsn);
+	json_read_integer(&op, pos_lsn);
+	json_read_integer(&op, pos_op);
 }

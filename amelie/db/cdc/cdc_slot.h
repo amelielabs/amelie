@@ -16,6 +16,7 @@ typedef struct CdcSlot CdcSlot;
 struct CdcSlot
 {
 	atomic_u64 lsn;
+	atomic_u32 op;
 	bool       attached;
 	List       link;
 };
@@ -23,13 +24,15 @@ struct CdcSlot
 static inline void
 cdc_slot_init(CdcSlot* self)
 {
-	self->lsn = 0;
+	self->lsn      = 0;
+	self->op       = 0;
 	self->attached = false;
 	list_init(&self->link);
 }
 
 static inline void
-cdc_slot_set(CdcSlot* self, uint64_t value)
+cdc_slot_set(CdcSlot* self, uint64_t lsn, uint32_t op)
 {
-	atomic_u64_set(&self->lsn, value);
+	atomic_u64_set(&self->lsn, lsn);
+	atomic_u32_set(&self->op, op);
 }

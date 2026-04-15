@@ -34,12 +34,15 @@ ack_if_abort(Log* self, LogOp* op)
 {
 	// restore subscription
 	uint8_t* pos = log_data_of(self, op);
-	int64_t prev;
-	json_read_integer(&pos, &prev);
+
+	int64_t pos_lsn;
+	int64_t pos_op;
+	json_read_integer(&pos, &pos_lsn);
+	json_read_integer(&pos, &pos_op);
 
 	auto sub = sub_of(op->rel);
-	sub_config_set_lsn(sub->config, prev);
-	cdc_slot_set(&sub->slot, prev);
+	sub_config_set_pos(sub->config, pos_lsn, pos_op);
+	cdc_slot_set(&sub->slot, pos_lsn, pos_op);
 }
 
 static LogIf ack_if =
@@ -54,17 +57,20 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 	// only owner or superuser
 	check_ownership_user(tr, &self->rel);
 
-	int64_t to;
-	acknowledge_op_read(op, &to);
+	int64_t to_lsn;
+	int64_t to_op;
+	acknowledge_op_read(op, &to_lsn, &to_op);
 
 	// do nothing, if value is the same
-	int64_t current = atomic_u64_of(&self->slot.lsn);
-	if (to == current)
+	int64_t current_lsn = atomic_u64_of(&self->slot.lsn);
+	int32_t current_op  = atomic_u32_of(&self->slot.op);
+	if (to_lsn == current_lsn && to_op == current_op)
 		return false;
 
 	// ensure value is valid
-	if (unlikely(to < current || to > (int64_t)state_lsn()))
-		error("subscription '%.*s': ack lsn is out of range",
+	if (unlikely(to_lsn < current_lsn || to_lsn > (int64_t)state_lsn() ||
+	             to_op  < current_op))
+		error("subscription '%.*s': ack position is out of range",
 		      str_size(&self->config->name), str_of(&self->config->name));
 
 	// update subscription slot
@@ -72,7 +78,8 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 	log_persist_cmd(&tr->log, &self->config->id, op);
 
 	// save previous value
-	encode_integer(&tr->log.data, current);
+	encode_integer(&tr->log.data, current_lsn);
+	encode_integer(&tr->log.data, current_op);
 
 	// update slot
 	//
@@ -80,7 +87,7 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 	// avoid any concurrent wal gc/checkpoint till this transaction
 	// completes
 	//
-	sub_config_set_lsn(self->config, to);
-	cdc_slot_set(&self->slot, to);
+	sub_config_set_pos(self->config, to_lsn, to_op);
+	cdc_slot_set(&self->slot, to_lsn, to_op);
 	return true;
 }
