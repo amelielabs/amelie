@@ -38,6 +38,7 @@ ack_if_abort(Log* self, LogOp* op)
 	json_read_integer(&pos, &prev);
 
 	auto sub = sub_of(op->rel);
+	sub_config_set_lsn(sub->config, prev);
 	cdc_slot_set(&sub->slot, prev);
 }
 
@@ -79,6 +80,7 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 	// avoid any concurrent wal gc/checkpoint till this transaction
 	// completes
 	//
+	sub_config_set_lsn(self->config, to);
 	cdc_slot_set(&self->slot, to);
 	return true;
 }

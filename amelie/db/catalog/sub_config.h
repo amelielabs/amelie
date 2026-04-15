@@ -15,11 +15,12 @@ typedef struct SubConfig SubConfig;
 
 struct SubConfig
 {
-	Str    user;
-	Str    name;
-	Grants grants;
-	Uuid   id;
-	Uuid   id_rel;
+	Str     user;
+	Str     name;
+	Uuid    id;
+	Uuid    id_rel;
+	int64_t lsn;
+	Grants  grants;
 };
 
 static inline SubConfig*
@@ -27,11 +28,12 @@ sub_config_allocate(void)
 {
 	SubConfig* self;
 	self = am_malloc(sizeof(SubConfig));
+	self->lsn = 0;;
 	str_init(&self->user);
 	str_init(&self->name);
+	uuid_init(&self->id_rel);
+	uuid_init(&self->id_rel);
 	grants_init(&self->grants);
-	uuid_init(&self->id_rel);
-	uuid_init(&self->id_rel);
 	return self;
 }
 
@@ -70,6 +72,12 @@ sub_config_set_id_rel(SubConfig* self, Uuid* id)
 	self->id_rel = *id;
 }
 
+static inline void
+sub_config_set_lsn(SubConfig* self, int64_t lsn)
+{
+	self->lsn = lsn;
+}
+
 static inline SubConfig*
 sub_config_copy(SubConfig* self)
 {
@@ -78,6 +86,7 @@ sub_config_copy(SubConfig* self)
 	sub_config_set_name(copy, &self->name);
 	sub_config_set_id(copy, &self->id);
 	sub_config_set_id_rel(copy, &self->id_rel);
+	sub_config_set_lsn(copy, self->lsn);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -92,9 +101,10 @@ sub_config_read(uint8_t** pos)
 	{
 		{ DECODE_STRING, "user",   &self->user   },
 		{ DECODE_STRING, "name",   &self->name   },
-		{ DECODE_ARRAY,  "grants", &pos_grants   },
 		{ DECODE_UUID,   "id",     &self->id     },
 		{ DECODE_UUID,   "id_rel", &self->id_rel },
+		{ DECODE_INT,    "lsn",    &self->lsn    },
+		{ DECODE_ARRAY,  "grants", &pos_grants   },
 		{ 0,              NULL,     NULL         },
 	};
 	decode_obj(obj, "sub", pos);
@@ -124,10 +134,6 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 		return;
 	}
 
-	// grants
-	encode_raw(buf, "grants", 6);
-	grants_write(&self->grants, buf, 0);
-
 	// id
 	encode_raw(buf, "id", 2);
 	encode_uuid(buf, &self->id);
@@ -135,6 +141,14 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 	// id_rel
 	encode_raw(buf, "id_rel", 6);
 	encode_uuid(buf, &self->id_rel);
+
+	// lsn
+	encode_raw(buf, "lsn", 3);
+	encode_integer(buf, self->lsn);
+
+	// grants
+	encode_raw(buf, "grants", 6);
+	grants_write(&self->grants, buf, 0);
 
 	encode_obj_end(buf);
 }

@@ -39,6 +39,7 @@ parse_sub_create(Stmt* self)
 	uuid_init(&id);
 	uuid_generate(&id, &runtime()->random);
 	sub_config_set_id(config, &id);
+	sub_config_set_lsn(config, state_lsn());
 
 	// ON
 	stmt_expect(self, KON);

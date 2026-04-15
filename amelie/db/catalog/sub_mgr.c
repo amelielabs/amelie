@@ -85,7 +85,7 @@ sub_mgr_create(SubMgr* self, Tr* tr, SubConfig* config, bool if_not_exists)
 	sub = sub_allocate(config, self->table_mgr, self->cdc);
 
 	// set lsn and prepare slot
-	cdc_slot_set(&sub->slot, state_lsn());
+	cdc_slot_set(&sub->slot, config->lsn);
 
 	// attach slot
 	cdc_attach(self->cdc, &sub->slot);
