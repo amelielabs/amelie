@@ -17,8 +17,9 @@ struct Write
 {
 	Record header;
 	Iov    iov;
-	int    list_count;
 	List   list;
+	int    list_count;
+	int    ops;
 	List   link;
 };
 
@@ -27,6 +28,7 @@ write_init(Write* self)
 {
 	memset(&self->header, 0, sizeof(self->header));
 	self->list_count = 0;
+	self->ops        = 0;
 	list_init(&self->list);
 	iov_init(&self->iov);
 	list_init(&self->link);
@@ -44,6 +46,7 @@ write_reset(Write* self)
 	memset(&self->header, 0, sizeof(self->header));
 	iov_reset(&self->iov);
 	self->list_count = 0;
+	self->ops        = 0;
 	list_init(&self->list);
 	list_init(&self->link);
 }
@@ -56,7 +59,6 @@ write_begin(Write* self)
 	header->lsn   = 0;
 	header->size  = sizeof(self->header);
 	header->count = 0;
-	header->ops   = 0;
 	iov_add(&self->iov, header, sizeof(self->header));
 }
 
@@ -78,6 +80,7 @@ write_add(Write* self, WriteLog* write_log)
 	// [header][commands][rows or ops]
 	list_append(&self->list, &write_log->link);
 	self->list_count++;
+	self->ops += write_log->iov.iov_count;
 
 	// append commands
 	iov_add_buf(&self->iov, &write_log->meta);
@@ -85,7 +88,6 @@ write_add(Write* self, WriteLog* write_log)
 	auto header = &self->header;
 	header->size  += buf_size(&write_log->meta) + write_log->iov.size;
 	header->count += buf_size(&write_log->meta) / sizeof(RecordCmd);
-	header->ops   += write_log->iov.iov_count;
 
 	// calculate crc
 	if (opt_int_of(&config()->wal_crc))

@@ -31,7 +31,6 @@ struct Record
 	uint64_t lsn;
 	uint32_t size;
 	uint32_t count;
-	uint32_t ops;
 } packed;
 
 struct RecordCmd

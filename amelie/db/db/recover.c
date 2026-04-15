@@ -198,9 +198,9 @@ recover_next_record(Recover* self, Record* record)
 			if (unlikely(! record_validate_cmd(cmd, pos)))
 				error("recover: record command mismatch");
 		recover_cmd(self, record, cmd, &pos);
+		self->ops++;
 		cmd++;
 	}
-	self->ops  += record->ops;
 	self->size += record->size;
 
 	// wal write, if necessary
