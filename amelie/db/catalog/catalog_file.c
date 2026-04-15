@@ -33,6 +33,12 @@ enum
 static void
 catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 {
+	Str main;
+	str_set(&main, "main", 4);
+	auto user = user_mgr_find(&self->user_mgr, &main, false);
+	if (user)
+		tr_set_user(tr, &user->rel);
+
 	switch (type) {
 	case RESTORE_USER:
 	{

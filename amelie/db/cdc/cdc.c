@@ -107,11 +107,9 @@ cdc_shutdown(Cdc* self)
 	spinlock_unlock(&self->lock);
 }
 
-void
-cdc_gc(Cdc* self)
+static inline uint64_t
+cdc_minof(Cdc* self)
 {
-	spinlock_lock(&self->lock);
-
 	// get min across all slots
 	uint64_t min = UINT64_MAX;
 	list_foreach_safe(&self->slots)
@@ -121,6 +119,24 @@ cdc_gc(Cdc* self)
 		if (lsn < min)
 			min = lsn;
 	}
+	return min;
+}
+
+void
+cdc_min(Cdc* self, uint64_t* minref)
+{
+	spinlock_lock(&self->lock);
+	*minref = cdc_minof(self);
+	spinlock_unlock(&self->lock);
+}
+
+void
+cdc_gc(Cdc* self)
+{
+	spinlock_lock(&self->lock);
+
+	// get min across all slots
+	uint64_t min = cdc_minof(self);
 
 	// remove all pages < min (keep at least one)
 	while (self->pages_count > 1)

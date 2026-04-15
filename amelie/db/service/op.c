@@ -94,6 +94,13 @@ service_gc(Service* self)
 	if (catalog_pending > catalog)
 		lsn = catalog;
 
+	// get min cdc slot lsn
+	uint64_t cdc_lsn;
+	auto     cdc = self->catalog->sub_mgr.cdc;
+	cdc_min(cdc, &cdc_lsn);
+	if (cdc_lsn < lsn)
+		lsn = cdc_lsn;
+
 	// calculate min lsn accross partitions files (merged)
 	list_foreach(&self->catalog->table_mgr.mgr.list)
 	{
@@ -116,6 +123,9 @@ service_gc(Service* self)
 
 	// remove wal files < lsn
 	wal_gc(self->wal, lsn);
+
+	// cdc gc
+	cdc_gc(cdc);
 }
 
 static void

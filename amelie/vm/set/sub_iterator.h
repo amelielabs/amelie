@@ -28,17 +28,12 @@ sub_store_iterator_of(StoreIterator* self)
 }
 
 hot static inline void
-sub_store_iterator_next(StoreIterator* arg)
+sub_store_iterator_set(SubIterator* self)
 {
-	// apply limit
-	auto self = sub_store_iterator_of(arg);
-	arg->current = NULL;
-
-	if (! cdc_cursor_next(&self->cursor))
-		return;
 	auto at = cdc_cursor_at(&self->cursor);
-	assert(at);
-	arg->current = &self->value[0];
+	if (! at)
+		return;
+	self->it.current = &self->value[0];
 
 	// lsn
 	value_set_int(&self->value[0], at->lsn);
@@ -57,6 +52,15 @@ sub_store_iterator_next(StoreIterator* arg)
 
 	// row
 	value_set_json(&self->value[2], at->data, at->data_size, NULL);
+}
+
+hot static inline void
+sub_store_iterator_next(StoreIterator* arg)
+{
+	auto self = sub_store_iterator_of(arg);
+	arg->current = NULL;
+	if (cdc_cursor_next(&self->cursor))
+		sub_store_iterator_set(self);
 }
 
 static inline void
@@ -82,7 +86,6 @@ sub_store_iterator_allocate(Sub* sub, Cdc* cdc)
 
 	cdc_cursor_init(&self->cursor);
 	cdc_cursor_open(&self->cursor, cdc, sub->slot.lsn);
-
-	sub_store_iterator_next(&self->it);
+	sub_store_iterator_set(self);
 	return &self->it;
 }

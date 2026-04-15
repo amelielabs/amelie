@@ -24,7 +24,9 @@ static void
 ack_if_commit(Log* self, LogOp* op)
 {
 	unused(self);
-	unused(op);
+	// cdc gc
+	auto sub = sub_of(op->rel);
+	cdc_gc(sub->cdc);
 }
 
 static void
