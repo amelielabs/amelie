@@ -28,11 +28,18 @@ recover_init(Recover* self, Db* db, bool write_wal)
 {
 	self->ops       = 0;
 	self->size      = 0;
+	self->min_sub   = UINT64_MAX;
 	self->write_wal = write_wal;
 	self->db        = db;
+
+	// set min subscription
+	cdc_min(db->cdc, &self->min_sub);
+
+	// set main user
 	Str main;
 	str_set(&main, "main", 4);
 	self->main      = user_mgr_find(&db->catalog.user_mgr, &main, true);
+
 	tr_init(&self->tr);
 	write_init(&self->write);
 	write_list_init(&self->write_list);
@@ -75,9 +82,19 @@ recover_map(Recover*   self,
 	track_follow(&part->track, row->tsn);
 
 	// skip partition if it is already includes lsn
-	if (record->lsn <= part->heap->header->lsn)
-		part = NULL;
-	return part;
+	if (record->lsn > part->heap->header->lsn)
+		return part;
+
+	// apply cdc
+	auto arg = part->arg;
+	if (arg->cdc && record->lsn > self->min_sub)
+	{
+		auto primary = part_primary(part);
+		log_cdc(&self->tr.log, cmd->cmd, arg->id_table, row,
+		        index_keys(primary)->columns,
+		        runtime()->timezone);
+	}
+	return NULL;
 }
 
 hot static void

@@ -21,6 +21,7 @@ struct Recover
 	bool      write_wal;
 	uint64_t  ops;
 	uint64_t  size;
+	uint64_t  min_sub;
 	User*     main;
 	Db*       db;
 };

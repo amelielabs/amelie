@@ -141,12 +141,10 @@ log_ddl(Log*   self,
 }
 
 hot static inline void
-log_cdc(Log* self, Uuid* id, Columns* columns, Timezone* tz)
+log_cdc(Log* self, Cmd cmd, Uuid* id, Row* row, Columns* columns, Timezone* tz)
 {
 	// [cmd, id, data, data_size]
-	auto last = log_last(self);
-	auto row  = last->row;
-	write_cdc_add_row(&self->write_cdc, last->cmd, id, row, columns, tz);
+	write_cdc_add_row(&self->write_cdc, cmd, id, row, columns, tz);
 }
 
 hot static inline void

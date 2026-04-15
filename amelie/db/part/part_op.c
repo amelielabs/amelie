@@ -107,8 +107,12 @@ part_persist(Part* self, Tr* tr, Index* primary)
 	if (! arg->unlogged)
 		log_persist_dml(&tr->log, arg->id_table);
 	if (arg->cdc)
-		log_cdc(&tr->log, arg->id_table, index_keys(primary)->columns,
+	{
+		auto last = log_last(&tr->log);
+		log_cdc(&tr->log, last->cmd, arg->id_table, last->row,
+		        index_keys(primary)->columns,
 		        runtime()->timezone);
+	}
 }
 
 hot void
