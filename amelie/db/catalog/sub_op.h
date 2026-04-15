@@ -93,14 +93,18 @@ static inline int
 acknowledge_op(Buf* self, uint64_t pos_lsn, uint32_t pos_op)
 {
 	auto offset = buf_size(self);
+	encode_array(self);
 	encode_integer(self, pos_lsn);
 	encode_integer(self, pos_op);
+	encode_array_end(self);
 	return offset;
 }
 
 static inline void
 acknowledge_op_read(uint8_t* op, int64_t* pos_lsn, int64_t* pos_op)
 {
+	json_read_array(&op);
 	json_read_integer(&op, pos_lsn);
 	json_read_integer(&op, pos_op);
+	json_read_array_end(&op);
 }

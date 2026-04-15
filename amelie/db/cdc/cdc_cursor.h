@@ -16,6 +16,7 @@ typedef struct CdcCursor CdcCursor;
 struct CdcCursor
 {
 	uint64_t lsn;
+	uint32_t op;
 	uint32_t offset;
 	CdcPage* page;
 	Cdc*     cdc;
@@ -25,6 +26,7 @@ static inline void
 cdc_cursor_init(CdcCursor* self)
 {
 	self->lsn    = 0;
+	self->op     = 0;
 	self->offset = 0;
 	self->page   = NULL;
 	self->cdc    = NULL;
@@ -39,10 +41,11 @@ cdc_cursor_at(CdcCursor* self)
 }
 
 static inline void
-cdc_cursor_open(CdcCursor* self, Cdc* cdc, uint64_t lsn)
+cdc_cursor_open(CdcCursor* self, Cdc* cdc, uint64_t lsn, uint32_t op)
 {
 	// lsn to find after
 	self->lsn = lsn;
+	self->op  = op;
 	self->cdc = cdc;
 
 	auto lock = &cdc->lock;
@@ -72,6 +75,12 @@ cdc_cursor_open(CdcCursor* self, Cdc* cdc, uint64_t lsn)
 		if (at->lsn > self->lsn)
 		{
 			self->lsn = at->lsn;
+			self->op  = 0;
+			break;
+		}
+		if (at->lsn == self->lsn && at->op > self->op)
+		{
+			self->op = at->op;
 			break;
 		}
 		self->offset += sizeof(CdcEvent) + at->data_size;

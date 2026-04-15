@@ -89,7 +89,7 @@ sub_store_iterator_allocate(Sub* sub, Cdc* cdc)
 	value_init(&self->value[3]);
 
 	cdc_cursor_init(&self->cursor);
-	cdc_cursor_open(&self->cursor, cdc, sub->slot.lsn);
+	cdc_cursor_open(&self->cursor, cdc, sub->slot.lsn, sub->slot.op);
 	sub_store_iterator_set(self);
 	return &self->it;
 }
