@@ -309,6 +309,9 @@ OpDesc ops[] =
 	{ CCALL, "call" },
 	{ CCALL_UDF, "call_udf" },
 
+	// topic
+	{ CPUBLISH, "publish" },
+
 	// subscription
 	{ CSUBSCRIPTION, "subscription" },
 	{ CACK, "ack" },
@@ -543,6 +546,17 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&udf->config->user),
 			         str_size(&udf->config->name),
 			         str_of(&udf->config->name));
+			break;
+		}
+		case CPUBLISH:
+		{
+			auto topic = (Topic*)op->a;
+			op_write(output, op, false, true, false,
+			         "%.*s.%.*s",
+			         str_size(&topic->config->user),
+			         str_of(&topic->config->user),
+			         str_size(&topic->config->name),
+			         str_of(&topic->config->name));
 			break;
 		}
 		case CSUBSCRIPTION:

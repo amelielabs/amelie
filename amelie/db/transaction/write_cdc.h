@@ -69,3 +69,13 @@ write_cdc_add_row(WriteCdc* self, Cmd cmd, Uuid* id, Row* row,
 	record = (WriteCdcRecord*)(self->data.start + offset);
 	record->data_size = buf_size(&self->data) - offset - sizeof(WriteCdcRecord);
 }
+
+hot static inline void
+write_cdc_add(WriteCdc* self, Cmd cmd, Uuid* id, uint8_t* data, int data_size)
+{
+	auto record = (WriteCdcRecord*)buf_emplace(&self->data, sizeof(WriteCdcRecord) + data_size);
+	record->cmd       = cmd;
+	record->id        = id;
+	record->data_size = data_size;
+	memcpy(record->data, data, data_size);
+}

@@ -50,6 +50,9 @@ sub_store_iterator_set(SubIterator* self)
 	case CMD_DELETE:
 		str_set(&cmd, "delete", 6);
 		break;
+	case CMD_PUBLISH:
+		str_set(&cmd, "publish", 7);
+		break;
 	}
 	value_set_string(&self->value[2], &cmd, NULL);
 

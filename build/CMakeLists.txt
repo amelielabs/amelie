@@ -203,6 +203,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/branch_mgr.c
     ${AMELIE_ROOT}/db/catalog/udf_mgr.c
     ${AMELIE_ROOT}/db/catalog/topic_mgr.c
+    ${AMELIE_ROOT}/db/catalog/publish.c
     ${AMELIE_ROOT}/db/catalog/sub_mgr.c
     ${AMELIE_ROOT}/db/catalog/acknowledge.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
@@ -305,6 +306,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_declare.c
     ${AMELIE_ROOT}/compiler/parser/parse_with.c
     ${AMELIE_ROOT}/compiler/parser/parse_execute.c
+    ${AMELIE_ROOT}/compiler/parser/parse_publish.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
     ${AMELIE_ROOT}/compiler/parser/parse_endpoint.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
@@ -322,6 +324,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_update.c
     ${AMELIE_ROOT}/compiler/compiler/emit_delete.c
     ${AMELIE_ROOT}/compiler/compiler/emit_select.c
+    ${AMELIE_ROOT}/compiler/compiler/emit_publish.c
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
     ${AMELIE_ROOT}/compiler/compiler/emit_utility.c)
 

@@ -53,6 +53,7 @@
 #include "catalog/topic_op.h"
 #include "catalog/topic.h"
 #include "catalog/topic_mgr.h"
+#include "catalog/publish.h"
 
 // subscription
 #include "catalog/sub_config.h"

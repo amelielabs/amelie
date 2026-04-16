@@ -29,8 +29,15 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 	// replay transaction log record
 	auto cmd = record_cmd(record);
 
-	// ACK
+	// PUBLISH
 	auto pos = record_data(record);
+	if (cmd->cmd == CMD_PUBLISH)
+	{
+		auto topic = topic_mgr_find_by(&db->catalog.topic_mgr, &cmd->id, true);
+		publish(topic, &dtr->tr, pos, json_sizeof(pos));
+		return;
+	}
+
 	if (cmd->cmd == CMD_ACK)
 	{
 		auto sub = sub_mgr_find_by(&db->catalog.sub_mgr, &cmd->id, true);

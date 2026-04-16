@@ -36,5 +36,6 @@ void cupdate_store(Vm*, Op*);
 
 void ccall_udf(Vm*, Op*);
 
+void cpublish(Vm*, Op*);
 void csubscription(Vm*, Op*);
 void cack(Vm*, Op*);

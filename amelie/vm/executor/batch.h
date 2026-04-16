@@ -137,9 +137,12 @@ batch_process(Batch* self)
 			}
 		}
 
-		// add utility operations, such as acknowledge
+		// add operations, such as acknowledge and publish
 		if (tr_persists(&dtr->tr))
 			write_add(write, &dtr->tr.log.write_log);
+
+		if (! write_cdc_empty(&dtr->tr.log.write_cdc))
+			list_append(&dtr->write_cdc, &dtr->tr.log.write_cdc.link);
 
 		if (write->header.count > 0)
 			write_list_add(&self->write, write);
@@ -183,12 +186,12 @@ batch_complete(Batch* self, Cdc* cdc)
 	{
 		auto dtr = batch_at(self, it);
 
-		// commit utility transaction
-		tr_commit(&dtr->tr);
-
 		// publish cdc events
 		if (! list_empty(&dtr->write_cdc))
 			cdc_write_batch(cdc, dtr->write.header.lsn, &dtr->write_cdc);
+
+		// commit utility transaction
+		tr_commit(&dtr->tr);
 
 		// wakeup
 		event_signal(&dtr->on_commit);

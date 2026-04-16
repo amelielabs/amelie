@@ -18,6 +18,7 @@ struct Dispatch
 	int      order;
 	List     list;
 	int      list_count;
+	Buf      publish;
 	Complete complete;
 	bool     close;
 	bool     returning;
@@ -34,6 +35,7 @@ dispatch_allocate(void)
 	self->close      = false;
 	list_init(&self->list);
 	list_init(&self->link);
+	buf_init(&self->publish);
 	complete_init(&self->complete);
 	return self;
 }
@@ -42,6 +44,7 @@ static inline void
 dispatch_free(Dispatch* self)
 {
 	assert(! self->list_count);
+	buf_free(&self->publish);
 	am_free(self);
 }
 
@@ -57,6 +60,7 @@ dispatch_reset(Dispatch* self, ReqCache* cache)
 	self->list_count = 0;
 	self->returning  = false;
 	self->close      = false;
+	buf_reset(&self->publish);
 	complete_reset(&self->complete);
 }
 

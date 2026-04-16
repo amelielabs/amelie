@@ -150,6 +150,16 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		}
 		break;
 	}
+	case CMD_PUBLISH:
+	{
+		// find topic
+		auto topic = topic_mgr_find_by(&db->catalog.topic_mgr, &cmd->id, false);
+		auto size = json_sizeof(*pos);
+		if  (topic)
+			publish(topic, tr, *pos, size);
+		*pos += size;
+		break;
+	}
 	case CMD_ACK:
 	{
 		// find and update subscription

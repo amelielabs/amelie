@@ -590,6 +590,38 @@ ccall_udf(Vm* self, Op* op)
 }
 
 void
+cpublish(Vm* self, Op* op)
+{
+	// [topic*, r]
+
+	// create dispatch
+	auto dtr = self->dtr;
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+
+	// prepare publish
+	auto buf = &dispatch->publish;
+
+	// encode value
+	if (op->b != -1)
+	{
+		auto value = reg_at(&self->r, op->b);
+		value_encode(value, self->local->timezone, buf);
+		value_free(value);
+	} else {
+		encode_null(buf);
+	}
+
+	// prepare command for wal/cdc
+	publish((Topic*)op->a, self->tr, buf->start, buf_size(buf));
+
+	// (dispatch has no partitions)
+
+	// register transaction
+	executor_send(share()->executor, dtr, dispatch);
+}
+
+void
 csubscription(Vm* self, Op* op)
 {
 	// [r, sub*]

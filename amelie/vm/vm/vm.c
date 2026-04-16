@@ -386,6 +386,9 @@ vm_run(Vm*       self,
 		&&ccall,
 		&&ccall_udf,
 
+		// topic
+		&&cpublish,
+
 		// subscription
 		&&csubscription,
 		&&cack,
@@ -1993,6 +1996,10 @@ ccall:
 ccall_udf:
 	// [result, udf*]
 	ccall_udf(self, op);
+	op_next;
+
+cpublish:
+	cpublish(self, op);
 	op_next;
 
 csubscription:

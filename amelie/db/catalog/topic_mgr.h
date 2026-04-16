@@ -28,3 +28,4 @@ bool   topic_mgr_grant(TopicMgr*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 void   topic_mgr_dump(TopicMgr*, Buf*);
 Buf*   topic_mgr_list(TopicMgr*, Str*, Str*, int);
 Topic* topic_mgr_find(TopicMgr*, Str*, Str*, bool);
+Topic* topic_mgr_find_by(TopicMgr*, Uuid*, bool);

@@ -302,6 +302,9 @@ enum
 	CCALL,
 	CCALL_UDF,
 
+	// topic
+	CPUBLISH,
+
 	// subscription
 	CSUBSCRIPTION,
 	CACK,

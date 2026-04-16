@@ -271,3 +271,21 @@ topic_mgr_list(TopicMgr* self, Str* user, Str* name, int flags)
 	encode_array_end(buf);
 	return buf;
 }
+
+Topic*
+topic_mgr_find_by(TopicMgr* self, Uuid* id, bool error_if_not_exists)
+{
+	list_foreach(&self->mgr.list)
+	{
+		auto topic = topic_of(list_at(Rel, link));
+		if (uuid_is(&topic->config->id, id))
+			return topic;
+	}
+	if (error_if_not_exists)
+	{
+		char uuid[UUID_SZ];
+		uuid_get(id, uuid, sizeof(uuid));
+		error("topic with uuid '%s' not found", uuid);
+	}
+	return NULL;
+}

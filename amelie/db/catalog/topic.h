@@ -16,6 +16,7 @@ typedef struct Topic Topic;
 struct Topic
 {
 	Rel          rel;
+	int          cdc;
 	TopicConfig* config;
 };
 
@@ -31,6 +32,7 @@ static inline Topic*
 topic_allocate(TopicConfig* config)
 {
 	auto self = (Topic*)am_malloc(sizeof(Topic));
+	self->cdc    = 0;
 	self->config = topic_config_copy(config);
 
 	// set relation

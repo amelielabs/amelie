@@ -19,6 +19,7 @@ typedef enum
 	// DML
 	CMD_REPLACE,
 	CMD_DELETE,
+	CMD_PUBLISH,
 	CMD_ACK,
 	// DDL
 	CMD_DDL,
@@ -66,6 +67,7 @@ record_cmd_is_dml(RecordCmd* self)
 {
 	return self->cmd == CMD_REPLACE ||
 	       self->cmd == CMD_DELETE  ||
+	       self->cmd == CMD_PUBLISH ||
 	       self->cmd == CMD_ACK;
 }
 
