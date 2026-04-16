@@ -204,6 +204,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/udf_mgr.c
     ${AMELIE_ROOT}/db/catalog/topic_mgr.c
     ${AMELIE_ROOT}/db/catalog/publish.c
+    ${AMELIE_ROOT}/db/catalog/sub.c
     ${AMELIE_ROOT}/db/catalog/sub_mgr.c
     ${AMELIE_ROOT}/db/catalog/acknowledge.c
     ${AMELIE_ROOT}/db/catalog/catalog.c

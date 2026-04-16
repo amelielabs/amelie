@@ -15,13 +15,13 @@ typedef struct SubMgr SubMgr;
 
 struct SubMgr
 {
-	RelMgr    mgr;
-	Columns   columns;
-	TableMgr* table_mgr;
-	Cdc*      cdc;
+	RelMgr   mgr;
+	Columns  columns;
+	Catalog* catalog;
+	Cdc*     cdc;
 };
 
-void sub_mgr_init(SubMgr*, TableMgr*, Cdc*);
+void sub_mgr_init(SubMgr*, Catalog*, Cdc*);
 void sub_mgr_free(SubMgr*);
 void sub_mgr_open(SubMgr*);
 bool sub_mgr_create(SubMgr*, Tr*, SubConfig*, bool);

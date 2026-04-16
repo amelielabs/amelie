@@ -46,9 +46,10 @@ publish(Topic* self, Tr* tr, uint8_t* data, int data_size)
 	// ensure permission to publish
 	check_permission(tr, &self->rel, PERM_PUBLISH);
 
-	/*if (topic->cdc)*/
-
 	// publish command
+	if (! self->cdc)
+		return;
+
 	log_cmd(&tr->log, CMD_PUBLISH, &publish_if, NULL, &self->rel);
 	log_persist_cmd(&tr->log, &self->config->id, data);
 

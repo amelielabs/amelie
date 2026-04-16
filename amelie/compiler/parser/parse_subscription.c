@@ -47,13 +47,9 @@ parse_sub_create(Stmt* self)
 	// [user.]table
 	Str user;
 	Str target;
-	auto path = parse_target(self, &user, &target);
-	auto table = catalog_find_table(&share()->db->catalog, &user, &target, false);
-	if (! table)
-		stmt_error(self, path, "table not found");
-	if (table->config->unlogged)
-		stmt_error(self, path, "unlogged tables cannot be used with subscription");
-	sub_config_set_id_rel(config, &table->config->id);
+	parse_target(self, &user, &target);
+	sub_config_set_on_user(config, &user);
+	sub_config_set_on(config, &target);
 }
 
 void

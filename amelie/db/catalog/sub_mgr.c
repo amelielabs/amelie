@@ -21,10 +21,10 @@
 #include <amelie_catalog.h>
 
 void
-sub_mgr_init(SubMgr* self, TableMgr* table_mgr, Cdc* cdc)
+sub_mgr_init(SubMgr* self, Catalog* catalog, Cdc* cdc)
 {
-	self->table_mgr = table_mgr;
-	self->cdc = cdc;
+	self->catalog = catalog;
+	self->cdc     = cdc;
 	rel_mgr_init(&self->mgr);
 
 	// prepare subscription columns
@@ -79,26 +79,47 @@ sub_mgr_create(SubMgr* self, Tr* tr, SubConfig* config, bool if_not_exists)
 		return false;
 	}
 
-	// find table
-	auto table = table_mgr_find_by(self->table_mgr, &config->id_rel, true);
+	auto rel = catalog_find(self->catalog, &config->on_user, &config->on, true);
 
-	// ensure permission to create subscription on the table
-	check_permission(tr, &table->rel, PERM_CREATE_SUB);
-
-	// mark table for cdc;
-	table->part_arg.cdc++;
+	// check permission to create subscription on the relation
+	check_permission(tr, rel, PERM_CREATE_SUB);
 
 	// allocate storage
-	sub = sub_allocate(config, self->table_mgr, self->cdc);
+	sub = sub_allocate(config, self->catalog, self->cdc);
+
+	// register storage
+	rel_mgr_create(&self->mgr, tr, &sub->rel);
+
+	// reference relation being used for cdc
+	switch (rel->type) {
+	case REL_TABLE:
+	{
+		auto table = table_of(rel);
+		if (table->config->unlogged)
+			error("subscription '%.*s': unlogged table are not supported",
+			      str_size(&config->name), str_of(&config->name));
+		table->part_arg.cdc++;
+		sub->on_id = table->config->id;
+		break;
+	}
+	case REL_TOPIC:
+	{
+		auto topic = topic_of(rel);
+		topic->cdc++;
+		sub->on_id = topic->config->id;
+		break;
+	}
+	default:
+		error("relation '%.*s': cannot be used with subscription",
+		      str_size(&config->on), str_of(&config->on));
+		break;
+	}
 
 	// set pos and prepare slot
 	cdc_slot_set(&sub->slot, config->lsn, config->op);
 
 	// attach slot
 	cdc_attach(self->cdc, &sub->slot);
-
-	// register storage
-	rel_mgr_create(&self->mgr, tr, &sub->rel);
 	return true;
 }
 

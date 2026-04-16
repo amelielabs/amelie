@@ -38,7 +38,7 @@ catalog_init(Catalog*   self,
 	branch_mgr_init(&self->branch_mgr, &self->table_mgr);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 	topic_mgr_init(&self->topic_mgr);
-	sub_mgr_init(&self->sub_mgr, &self->table_mgr, cdc);
+	sub_mgr_init(&self->sub_mgr, self, cdc);
 }
 
 void
@@ -795,6 +795,10 @@ catalog_find(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 	if (udf)
 		return &udf->rel;
 
+	auto topic = topic_mgr_find(&self->topic_mgr, user, name, false);
+	if (topic)
+		return &topic->rel;
+
 	auto sub = sub_mgr_find(&self->sub_mgr, user, name, false);
 	if (sub)
 		return &sub->rel;
@@ -802,6 +806,7 @@ catalog_find(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 	if (error_if_not_exists)
 		error("relation '%.*s': not exists", str_size(name),
 		      str_of(name));
+
 	return NULL;
 }
 

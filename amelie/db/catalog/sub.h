@@ -11,51 +11,20 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Sub Sub;
+typedef struct Catalog Catalog;
+typedef struct Sub     Sub;
 
 struct Sub
 {
 	Rel        rel;
 	CdcSlot    slot;
+	Uuid       on_id;
 	Cdc*       cdc;
-	TableMgr*  table_mgr;
+	Catalog*   catalog;
 	SubConfig* config;
 };
 
-static inline void
-sub_free(Sub* self, bool drop)
-{
-	unused(drop);
-	// unref table
-	auto table = table_mgr_find_by(self->table_mgr, &self->config->id_rel, false);
-	if (table)
-	{
-		table->part_arg.cdc--;
-		assert(table->part_arg.cdc >= 0);
-	}
-	cdc_detach(self->cdc, &self->slot);
-	sub_config_free(self->config);
-	am_free(self);
-}
-
-static inline Sub*
-sub_allocate(SubConfig* config, TableMgr* table_mgr, Cdc* cdc)
-{
-	auto self = (Sub*)am_malloc(sizeof(Sub));
-	self->config    = sub_config_copy(config);
-	self->cdc       = cdc;
-	self->table_mgr = table_mgr;
-	cdc_slot_init(&self->slot);
-
-	// set relation
-	auto rel = &self->rel;
-	rel_init(rel, REL_SUBSCRIPTION);
-	rel_set_user(rel, &self->config->user);
-	rel_set_name(rel, &self->config->name);
-	rel_set_free_function(rel, (RelFree)sub_free);
-	rel_set_rsn(rel, state_rsn_next());
-	return self;
-}
+Sub* sub_allocate(SubConfig*, Catalog*, Cdc*);
 
 static inline Sub*
 sub_of(Rel* self)
