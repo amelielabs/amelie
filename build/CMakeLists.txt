@@ -70,6 +70,7 @@ include_directories("${AMELIE_ROOT}/runtime/runtime")
 # server
 include_directories("${AMELIE_ROOT}/server")
 include_directories("${AMELIE_ROOT}/server/jwt")
+include_directories("${AMELIE_ROOT}/server/jsonrpc")
 include_directories("${AMELIE_ROOT}/server/http")
 include_directories("${AMELIE_ROOT}/server/client")
 include_directories("${AMELIE_ROOT}/server/websocket")
@@ -172,6 +173,7 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/jwt/jwt_decode.c
     ${AMELIE_ROOT}/server/jwt/jwt_encode.c
     ${AMELIE_ROOT}/server/jwt/jwt.c
+    ${AMELIE_ROOT}/server/jsonrpc/jsonrpc.c
     ${AMELIE_ROOT}/server/http/endpoint.c
     ${AMELIE_ROOT}/server/http/uri.c
     ${AMELIE_ROOT}/server/http/http.c

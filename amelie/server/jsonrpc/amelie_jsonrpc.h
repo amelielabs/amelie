@@ -11,9 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_jwt.h>
-#include <amelie_jsonrpc.h>
-#include <amelie_http.h>
-#include <amelie_client.h>
-#include <amelie_websocket.h>
-#include <amelie_server.h>
+#include "jsonrpc/jsonrpc.h"
