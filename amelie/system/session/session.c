@@ -279,9 +279,9 @@ session_endpoint(Session*  self,
 	auto compiler = &self->compiler;
 	compiler_set(compiler, self->program);
 
+	// POST /v1/sql
 	// POST /v1/backup
 	// POST /v1/repl
-	// POST /v1/db
 	auto service = opt_string_of(&endpoint->service);
 	if (str_is(service, "backup", 6))
 		return SESSION_BACKUP;
@@ -289,10 +289,10 @@ session_endpoint(Session*  self,
 	if (str_is(service, "repl", 4))
 		return SESSION_REPL;
 	else
-	if (! str_is(service, "db", 2))
+	if (! str_is(service, "sql", 3))
 		return SESSION_ERROR;
 
-	// /v1/db
+	// /v1/sql
 
 	// validate content-type
 	auto content_type = &endpoint->content_type.string;

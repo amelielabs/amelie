@@ -44,8 +44,7 @@ frontend_endpoint(Client* client, Output* output)
 	auto endpoint = client->endpoint;
 	endpoint_reset(endpoint);
 
-	// POST /v1/db
-	// POST /v1/import
+	// POST /v1/sql
 	// POST /v1/backup
 	// POST /v1/repl
 	auto method = &request->options[HTTP_METHOD];

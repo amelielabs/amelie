@@ -1,0 +1,62 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: POST uri parsing
+post / - - -;
+400 Bad Request
+post /db - - -;
+400 Bad Request
+post /v1 - - -;
+400 Bad Request
+post /v1/ - - -;
+400 Bad Request
+post /v1/ - - -;
+400 Bad Request
+post /v1/d - - -;
+400 Bad Request
+post /sql - - -;
+400 Bad Request
+# test: POST /v1/sql
+post /v1/sql - - -;
+{"msg": "unsupported operation content-type"}
+post /v1/sql/ - - -;
+{"msg": "unsupported operation content-type"}
+# test: POST /v1/sql (invalid content type)
+post /v1/sql - - -;
+{"msg": "unsupported operation content-type"}
+post /v1/sql json - -;
+{"msg": "unsupported operation content-type"}
+post /v1/sql/ application/json - -;
+{"msg": "unsupported operation content-type"}
+# test: POST /v1/sql (plain/text, no accept, no content)
+post /v1/sql plain/text - -;
+# test: POST /v1/sql (plain/text, no accept)
+post /v1/sql plain/text - select 1;
+[1]
+# test: POST /v1/sql (plain/text, invalid accept)
+post /v1/sql plain/text xyz select 1;
+400 Bad Request
+# test: POST /v1/sql (plain/text)
+post /v1/sql plain/text application/json select 1;
+[1]
+# test: POST /v1/sql?args parsing
+post /v1/sql? plain/text application/json select 1;
+400 Bad Request
+post /v1/sql?a plain/text application/json select 1;
+400 Bad Request
+post /v1/sql?format plain/text application/json select 1;
+400 Bad Request
+# test: POST /v1/sql?format
+post /v1/sql/?format= plain/text application/json select 1;
+[1]
+post /v1/sql/?format=full plain/text application/json select 1;
+[{"col1": 1}]
+post /v1/sql/?format=full-pretty plain/text - select 1;
+[{
+  "col1": 1
+}]
+post /v1/sql/?format=full-pretty plain/text - show tables;
+{
+  "result": []
+}
+disconnect S0;
+close E0;

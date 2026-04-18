@@ -259,12 +259,12 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 	buf_reset(buf);
 
 	// POST /v1/<service>
-	// POST /v1/db
+	// POST /v1/sql
 	buf_write(buf, "POST /v1/", 9);
 
 	auto service = opt_string_of(&endpoint->service);
 	if (str_empty(service))
-		buf_write(buf, "db", 2);
+		buf_write(buf, "sql", 3);
 	else
 		buf_write_str(buf, service);
 

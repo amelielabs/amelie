@@ -363,7 +363,7 @@ uri_parse(Endpoint* endpoint, Str* spec)
 void
 uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
-	// /v1/db
+	// /v1/sql
 	// /v1/backup
 	// /v1/repl
 
@@ -374,10 +374,10 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 		.endpoint = endpoint
 	};
 
-	if (str_is_prefix(spec, "/v1/db", 6))
+	if (str_is_prefix(spec, "/v1/sql", 7))
 	{
-		str_set(&endpoint->service.string, "db", 2);
-		self.pos += 6;
+		str_set(&endpoint->service.string, "sql", 3);
+		self.pos += 7;
 	} else
 	if (str_is_prefix(spec, "/v1/backup", 10))
 	{
