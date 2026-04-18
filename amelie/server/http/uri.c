@@ -363,7 +363,7 @@ void
 uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
 	// /v1/db
-	// /v1/db/<relation>
+	// /v1/import
 	// /v1/backup
 	// /v1/repl
 
@@ -374,24 +374,32 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 		.endpoint = endpoint
 	};
 
-	// /v1/db
-	if (likely(str_is_prefix(spec, "/v1/db", 6)))
+	if (str_is_prefix(spec, "/v1/db", 6))
 	{
+		str_set(&endpoint->service.string, "db", 2);
 		self.pos += 6;
-		uri_parse_path(&self, &endpoint->relation);
 	} else
-	if (str_is(spec, "/v1/backup", 10))
+	if (str_is_prefix(spec, "/v1/import", 10))
+	{
+		str_set(&endpoint->service.string, "import", 6);
+		self.pos += 10;
+	} else
+	if (str_is_prefix(spec, "/v1/backup", 10))
 	{
 		str_set(&endpoint->service.string, "backup", 6);
 		self.pos += 10;
 	} else
-	if (str_is(spec, "/v1/repl", 8))
+	if (str_is_prefix(spec, "/v1/repl", 8))
 	{
 		str_set(&endpoint->service.string, "repl", 4);
 		self.pos += 8;
 	} else {
 		error("failed to parse uri endpoint");
 	}
+
+	// /
+	if (*self.pos == '/')
+		self.pos++;
 
 	// ?name=value[& ...]
 	uri_parse_args(&self);
@@ -469,6 +477,7 @@ uri_export(Endpoint* self, Buf* buf)
 		uri_export_arg(&self->tls_server, buf, &first);
 	}
 	uri_export_arg(&self->token, buf, &first);
+	uri_export_arg(&self->type, buf, &first);
 	uri_export_arg(&self->columns, buf, &first);
 	uri_export_arg(&self->timezone, buf, &first);
 	uri_export_arg(&self->format, buf, &first);

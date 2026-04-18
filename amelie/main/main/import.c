@@ -102,7 +102,7 @@ import_send(Import* self, Buf* buf)
 	// read reply from previous request
 	import_sync(self, next);
 
-	// POST /v1/db/relation
+	// POST /v1/import
 	Str content;
 	buf_str(buf, &content);
 	next->iface->send(next, &content);
@@ -206,43 +206,43 @@ import_file(Import* self, char* path)
 }
 
 static void
-import_set_content_type(Import* self)
+import_set_type(Import* self)
 {
 	auto endpoint = &self->main->endpoint;
-	if (! opt_string_empty(&endpoint->content_type))
+	if (! opt_string_empty(&endpoint->type))
 		return;
 
 	auto argc = self->main->argc;
 	auto argv = self->main->argv;
 	if (! argc)
-		error("import: content-type is not set\n");
+		error("import: type is not set\n");
 
-	Str content_type;
-	str_init(&content_type);
+	Str type;
+	str_init(&type);
 	for (auto i = 0; i < argc; i++)
 	{
 		Str file_type;
 		str_init(&file_type);
 		auto file = argv[i];
 		if (strstr(file, ".jsonl"))
-			str_set_cstr(&file_type, "application/jsonl");
+			str_set_cstr(&file_type, "jsonl");
 		else
 		if (strstr(file, ".json"))
-			str_set_cstr(&file_type, "application/json");
+			str_set_cstr(&file_type, "json");
 		else
 		if (strstr(file, ".csv"))
-			str_set_cstr(&file_type, "text/csv");
+			str_set_cstr(&file_type, "csv");
 		else
-			error("import: unrecognized file '%s' content-type\n", file);
+			error("import: unrecognized file '%s' type\n", file);
 
-		if (str_empty(&content_type))
-			content_type = file_type;
+		if (str_empty(&type))
+			type = file_type;
 		else
-		if (! str_compare(&content_type, &file_type))
+		if (! str_compare(&type, &file_type))
 			error("import: file types must match\n");
 	}
 
-	opt_string_set(&endpoint->content_type, &content_type);
+	opt_string_set(&endpoint->type, &type);
 }
 
 static void
@@ -252,8 +252,13 @@ import_main(Import* self)
 	if (opt_string_empty(&self->main->endpoint.relation))
 		error("import: target relation is not set\n");
 
-	// set endpoint content type
-	import_set_content_type(self);
+	// set endpoint service as import
+	Str service;
+	str_set(&service, "import", 6);
+	opt_string_set(&self->main->endpoint.service, &service);
+
+	// set endpoint type
+	import_set_type(self);
 
 	// create clients and connect
 	import_connect(self);

@@ -21,8 +21,15 @@ typedef struct ParseEndpoint ParseEndpoint;
 
 enum
 {
-	ENDPOINT_TABLE,
-	ENDPOINT_UDF
+	IMPORT_TABLE,
+	IMPORT_UDF
+};
+
+enum
+{
+	IMPORT_JSON,
+	IMPORT_JSONL,
+	IMPORT_CSV
 };
 
 struct ParseEndpoint
@@ -34,6 +41,7 @@ struct ParseEndpoint
 	bool      columns_has;
 	Columns*  columns_target;
 	Str*      content;
+	int       type;
 	int       target_type;
 	Rel*      target;
 	Snapshot* target_snapshot;
@@ -53,6 +61,7 @@ parse_endpoint_init(ParseEndpoint* self, Endpoint* endpoint, Str* content,
 	self->columns_has     = false;
 	self->columns_target  = NULL;
 	self->content         = content;
+	self->type            = -1;
 	self->target_type     = -1;
 	self->target          = NULL;
 	self->target_snapshot = NULL;
@@ -110,19 +119,38 @@ parse_endpoint_set_columns(ParseEndpoint* self, Str* spec)
 }
 
 static inline void
+parse_endpoint_set_type(ParseEndpoint* self, Str* type)
+{
+	if (str_empty(type))
+		error("type argument is missing");
+	if (str_is(type, "json", 4))
+		self->type = IMPORT_JSON;
+	else
+	if (str_is(type, "jsonl", 5))
+		self->type = IMPORT_JSONL;
+	else
+	if (str_is(type, "csv", 3))
+		self->type = IMPORT_CSV;
+	else
+		error("unrecognized type '%.*s'", str_size(type),
+		      str_of(type));
+}
+
+static inline void
 parse_endpoint_set(ParseEndpoint* self)
 {
-	auto endpoint = self->endpoint;
-
 	// find relation
+	auto endpoint = self->endpoint;
 	auto relation = &endpoint->relation.string;
-	auto rel      = catalog_find(&share()->db->catalog, self->parser->user,
-	                             relation, true);
+	if (str_empty(relation))
+		error("relation argument is not defined");
+	auto rel = catalog_find(&share()->db->catalog, self->parser->user,
+	                        relation, true);
 	switch (rel->type) {
 	case REL_TABLE:
 	{
 		auto table = table_of(rel);
-		self->target_type     = ENDPOINT_TABLE;
+		self->target_type     = IMPORT_TABLE;
 		self->target          = rel;
 		self->target_snapshot = table_main(table);
 		self->columns_target  = &table->config->columns;
@@ -131,7 +159,7 @@ parse_endpoint_set(ParseEndpoint* self)
 	case REL_BRANCH:
 	{
 		auto branch = branch_of(rel);
-		self->target_type     = ENDPOINT_TABLE;
+		self->target_type     = IMPORT_TABLE;
 		self->target          = rel;
 		self->target_snapshot = &branch->config->snapshot;
 		self->target_branch   =  branch;
@@ -140,7 +168,7 @@ parse_endpoint_set(ParseEndpoint* self)
 	}
 	case REL_UDF:
 	{
-		self->target_type    = ENDPOINT_UDF;
+		self->target_type    = IMPORT_UDF;
 		self->target         = rel;
 		self->columns_target = &udf_of(rel)->config->args;
 		break;
@@ -152,6 +180,9 @@ parse_endpoint_set(ParseEndpoint* self)
 		break;
 	}
 	}
+
+	// set type
+	parse_endpoint_set_type(self, opt_string_of(&endpoint->type));
 
 	// set column list
 	parse_endpoint_set_columns(self, opt_string_of(&endpoint->columns));
@@ -394,18 +425,20 @@ import_insert(Parser* self, ParseEndpoint* pe)
 	pe->values = insert->values;
 	set_prepare(insert->values, columns->count, 0, NULL);
 
-	// parse rows according to the content type
-	auto content_type = &pe->endpoint->content_type.string;
-	if (str_is(content_type, "text/csv", 8))
-		import_csv(stmt, pe);
-	else
-	if (str_is(content_type, "application/jsonl", 17))
-		import_jsonl(stmt, pe);
-	else
-	if (str_is(content_type, "application/json", 16))
+	// parse rows according to the type argument
+	switch (pe->type) {
+	case IMPORT_JSON:
 		import_json(stmt, pe);
-	else
-		stmt_error(stmt, NULL, "unsupported operation content type");
+		break;
+	case IMPORT_JSONL:
+		import_jsonl(stmt, pe);
+		break;
+	case IMPORT_CSV:
+		import_csv(stmt, pe);
+		break;
+	default:
+		abort();
+	}
 
 	// ensure there are no data left
 	if (! stmt_if(stmt, KEOF))
@@ -454,16 +487,19 @@ import_execute(Parser* self, ParseEndpoint* pe)
 	pe->values = execute->args;
 	set_prepare(execute->args, udf->config->args.count, 0, NULL);
 
-	// parse rows according to the content type
-	auto content_type = &pe->endpoint->content_type.string;
-	if (str_is(content_type, "text/csv", 8))
-		import_csv(stmt, pe);
-	else
-	if (str_is(content_type, "application/jsonl", 17) ||
-	    str_is(content_type, "application/json", 16))
+	// parse rows according to the type argument
+	switch (pe->type) {
+	case IMPORT_JSON:
+	case IMPORT_JSONL:
 		import_json_row(stmt, pe);
-	else
-		stmt_error(stmt, NULL, "unsupported operation content type");
+		break;
+	case IMPORT_CSV:
+		import_csv(stmt, pe);
+		break;
+	default:
+		abort();
+		break;
+	}
 
 	// ensure there are no data left
 	if (! stmt_if(stmt, KEOF))
@@ -480,7 +516,7 @@ import_execute(Parser* self, ParseEndpoint* pe)
 }
 
 void
-parse_endpoint(Parser* self, Program* program, Endpoint* endpoint, Str* content)
+parse_import(Parser* self, Program* program, Endpoint* endpoint, Str* content)
 {
 	self->program = program;
 	lex_start(&self->lex, content);
@@ -490,10 +526,10 @@ parse_endpoint(Parser* self, Program* program, Endpoint* endpoint, Str* content)
 	parse_endpoint_init(&pe, endpoint, content, self);
 	parse_endpoint_set(&pe);
 	switch (pe.target_type) {
-	case ENDPOINT_TABLE:
+	case IMPORT_TABLE:
 		import_insert(self, &pe);
 		break;
-	case ENDPOINT_UDF:
+	case IMPORT_UDF:
 		import_execute(self, &pe);
 		break;
 	default:

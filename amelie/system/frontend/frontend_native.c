@@ -69,6 +69,8 @@ proxy_connect(Proxy* self, Str* uri)
 	if (opt_string_empty(&endpoint->accept))
 		opt_string_set_raw(&endpoint->accept, "application/json", 16);
 
+	opt_string_set_raw(&endpoint->service, "db", 2);
+
 	// authentication is not required
 	opt_int_set(&endpoint->auth, false);
 

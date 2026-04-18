@@ -1,0 +1,136 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+create table test (id int primary key, a int, b int);
+create table test2 (id int primary key, a int as (id * 2) stored);
+create table test3 (id int primary key, a int as (a + 1) resolved);
+create table test4 (id serial primary key, a int default 777);
+create table test5 (id serial primary key, data json not null);
+create table test6 (id int primary key as (data.id::int) stored, data json not null);
+# test: POST /v1/import (relation is missing)
+post /v1/import plain/text - 123;
+{"msg": "relation argument is not defined"}
+# test: POST /v1/import (relation not exists)
+post /v1/import?relation=xyz plain/text - 123;
+{"msg": "relation 'xyz': not exists"}
+post /v1/import?relation=test plain/text - 123;
+{"msg": "type argument is missing"}
+post /v1/import?relation=test&type=xyz plain/text - 123;
+{"msg": "unrecognized type 'xyz'"}
+# test: POST /v1/import (csv)
+post /v1/import?relation=test&type=csv - - 0,0,0;
+post /v1/import?relation=test&type=csv - - 1,0,0;
+post /v1/import?relation=test&type=csv - - 2,0,0;
+select * from test;
+[[0, 0, 0], [1, 0, 0], [2, 0, 0]]
+# test: POST /v1/import (csv, columns)
+post /v1/import?relation=test&type=csv&columns=id - - 3;
+post /v1/import?relation=test&type=csv&columns=id - - 4;
+post /v1/import?relation=test&type=csv&columns=id - - 5;
+select * from test;
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null]]
+post /v1/import?relation=test&type=csv&columns=id,a - - 6,0;
+post /v1/import?relation=test&type=csv&columns=id,a,b - - 7,0,0;
+select * from test;
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0]]
+# test: POST /v1/import (csv, column list dups)
+post /v1/import?relation=test&type=csv&columns=id,a,a - - 8,0,0;
+{"msg": "column list must be ordered"}
+# test: POST /v1/import (csv, column list unordered)
+post /v1/import?relation=test&type=csv&columns=id,b,a - - 8,0,0;
+{"msg": "column list must be ordered"}
+# test: POST /v1/import (csv, column list empty)
+post /v1/import?relation=test4&type=csv&columns= - - -;
+{"msg": " ⟵ 'int' expected for column 'id'"}
+# test: POST /v1/import (csv, generated columns)
+post /v1/import?relation=test2&type=csv - - 0,null;
+post /v1/import?relation=test2&type=csv - - 1,null;
+post /v1/import?relation=test2&type=csv - - 2,null;
+select * from test2;
+[[0, 0], [1, 2], [2, 4]]
+# test: POST /v1/import (csv, resolved columns)
+post /v1/import?relation=test3&type=csv - - 0,0;
+post /v1/import?relation=test3&type=csv - - 0,0;
+post /v1/import?relation=test3&type=csv - - 0,0;
+post /v1/import?relation=test3&type=csv - - 1,0;
+post /v1/import?relation=test3&type=csv - - 1,0;
+post /v1/import?relation=test3&type=csv - - 1,0;
+select * from test3;
+[[0, 2], [1, 2]]
+# test: POST /v1/import (jsonl, not null)
+post /v1/import?relation=test5&type=jsonl - - {"id": 1} {"id": 2} {"id": 3};
+{"msg": "{\"id\": 1❰}❱ ⟵ column 'data' value cannot be NULL"}
+# test: POST /v1/import (jsonl, default)
+post /v1/import?relation=test5&type=jsonl - - {"data": 0} {"data": 0} {"data": 0};
+select * from test5;
+[[0, 0], [1, 0], [2, 0]]
+# test: POST /v1/import (jsonl)
+post /v1/import?relation=test5&type=jsonl - - {"id": 3, "data": 0} {"id": 4, "data": 0} {"id": 5, "data": 0};
+select * from test5;
+[[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]]
+# test: POST /v1/import (jsonl)
+post /v1/import?relation=test&type=jsonl - - {"id": 20};
+post /v1/import?relation=test&type=jsonl - - {"id": 20, "a";
+{"msg": "{\"id\": 20, \"a\" ⟵ : expected"}
+post /v1/import?relation=test&type=jsonl - - {"id": 20,;
+{"msg": "{\"id\": 20, ⟵ } expected"}
+post /v1/import?relation=test&type=jsonl - - {"id": 20, 1;
+{"msg": "{\"id\": 20, ❰1❱ ⟵ } expected"}
+post /v1/import?relation=test&type=jsonl - - {"id": 20, "a";
+{"msg": "{\"id\": 20, \"a\" ⟵ : expected"}
+post /v1/import?relation=test&type=jsonl - - {"id": 20, "a":;
+{"msg": "{\"id\": 20, \"a\": ⟵ 'int' expected for column 'a'"}
+post /v1/import?relation=test&type=jsonl - - {"id": 20, "a": 0;
+{"msg": "{\"id\": 20, \"a\": 0 ⟵ } expected"}
+post /v1/import?relation=test&type=jsonl - - {"id": 20, "a": 0,;
+{"msg": "{\"id\": 20, \"a\": 0, ⟵ } expected"}
+post /v1/import?relation=test&type=jsonl - - {"id": 20, "a": 0, "b";
+{"msg": "{\"id\": 20, \"a\": 0, \"b\" ⟵ : expected"}
+post /v1/import?relation=test&type=jsonl - - {"id": 20, "a": 0, "b": 0};
+{"msg": "index 'primary': unique key constraint violation"}
+post /v1/import?relation=test&type=jsonl - - {"id": 21, "a": 0, "b": 0};
+post /v1/import?relation=test&type=jsonl - - {"id": 22, "b": 0};
+post /v1/import?relation=test&type=jsonl - - {"id": 23};
+post /v1/import?relation=test&type=jsonl - - {"id": 22, "b": 0, "b": 1};
+{"msg": "{\"id\": 22, \"b\": 0, ❰\"b\"❱ ⟵ column value is redefined"}
+post /v1/import?relation=test&type=jsonl - - {"id": 24} {"id": 25} {"id": 26};
+select * from test;
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [20, null, null], [21, 0, 0], [22, null, 0], [23, null, null], [24, null, null], [25, null, null], [26, null, null]]
+# test: POST /v1/import (json)
+post /v1/import?relation=test&type=json - - [{"id": 27}, {"id": 28}];
+select * from test;
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [20, null, null], [21, 0, 0], [22, null, 0], [23, null, null], [24, null, null], [25, null, null], [26, null, null], [27, null, null], [28, null, null]]
+# test: POST /v1/import (json)
+post /v1/import?relation=test5&type=json - - [{"id": 4}, {"id": 5}];
+{"msg": "[{\"id\": 4❰}❱ ⟵ column 'data' value cannot be NULL"}
+post /v1/import?relation=test5&type=json - - [{"id": 40, "data": 77}, {"id": 50, "data": 77}];
+select * from test5;
+[[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [40, 77], [50, 77]]
+# test: POST /v1/import (json, generated)
+post /v1/import?relation=test6&type=json - - [{"id": 2, "data": {"id": 55}}];
+select * from test6;
+[[55, {
+  "id": 55
+}]]
+# test: POST /v1/import (csv, function)
+create function test_fn(a int, b int, c int) return int
+begin
+	return a + b + c;
+end;
+post /v1/import?relation=test_fn&type=csv - - 1,2,3;
+[6]
+# test: POST /v1/import (csv, function, column list)
+post /v1/import?relation=test_fn&type=csv&columns=a - - 1,2,3;
+{"msg": "1❰,❱ ⟵ 'int' expected for column 'a'"}
+post /v1/import?relation=test_fn&type=csv&columns=a - - 4;
+[null]
+# test: POST /v1/import (json, function, empty)
+post /v1/import?relation=test_fn&type=json - - {};
+[null]
+# test: POST /v1/import (json, function)
+post /v1/import?relation=test_fn&type=json - - {"a": 1, "b": 2, "c": 3};
+[6]
+# test: POST /v1/import (jsonl, function)
+post /v1/import?relation=test_fn&type=jsonl - - {"a": 1, "b": 2, "c": 3};
+[6]
+disconnect S0;
+close E0;

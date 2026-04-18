@@ -42,9 +42,10 @@ struct Endpoint
 	Opt  uri;
 	Opt  content_type;
 	Opt  accept;
-	Opt  relation;
 	Opt  service;
 	// args
+	Opt  relation;
+	Opt  type;
 	Opt  columns;
 	Opt  timezone;
 	Opt  format;

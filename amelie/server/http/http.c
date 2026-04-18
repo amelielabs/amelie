@@ -260,30 +260,21 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 
 	// POST /v1/<service>
 	// POST /v1/db
-	// POST /v1/db/<relation>
-	auto service  = opt_string_of(&endpoint->service);
-	auto relation = opt_string_of(&endpoint->relation);
+	buf_write(buf, "POST /v1/", 9);
 
-	buf_write(buf, "POST /", 6);
-	if (! str_empty(service))
-	{
-		buf_write(buf, "v1/", 3);
+	auto service = opt_string_of(&endpoint->service);
+	if (str_empty(service))
+		buf_write(buf, "db", 2);
+	else
 		buf_write_str(buf, service);
-	} else
-	{
-		buf_write(buf, "v1/db", 5);
-		if (! str_empty(relation))
-		{
-			buf_write(buf, "/", 1);
-			buf_write_str(buf, relation);
-		}
-	}
 
 	// arguments
 	//
-	// columns, timezone, format
+	// relation, type, columns, timezone, format
 	//
 	bool first = true;
+	uri_export_arg(&endpoint->relation, buf, &first);
+	uri_export_arg(&endpoint->type, buf, &first);
 	uri_export_arg(&endpoint->columns, buf, &first);
 	uri_export_arg(&endpoint->timezone, buf, &first);
 	uri_export_arg(&endpoint->format, buf, &first);

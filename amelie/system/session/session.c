@@ -86,7 +86,8 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 	*/
 
 	// check service grants
-	if (unlikely(! opt_string_empty(&endpoint->service)))
+	auto service = opt_string_of(&endpoint->service);
+	if (str_is(service, "backup", 6) && str_is(service, "repl", 4))
 		user_check(self->user, PERM_SERVICE);
 
 	// set timezone / format
@@ -275,27 +276,15 @@ session_endpoint(Session*  self,
                  Str*      content,
                  Output*   output)
 {
-	// POST /v1/backup
-	// POST /v1/repl
-	auto service = &endpoint->service.string;
-	if (unlikely(! str_empty(service)))
-	{
-		// backup or primary server connection
-		if (str_is(service, "backup", 6))
-			return SESSION_BACKUP;
-		if (str_is(service, "repl", 4))
-			return SESSION_REPL;
-		return SESSION_ERROR;
-	}
-
-	// POST /v1/db
-	// POST /v1/db/<relation>
-
-	// parse request
 	auto compiler = &self->compiler;
 	compiler_set(compiler, self->program);
 
-	if (str_empty(&endpoint->relation.string))
+	// POST /v1/db
+	// POST /v1/import
+	// POST /v1/backup
+	// POST /v1/repl
+	auto service = opt_string_of(&endpoint->service);
+	if (str_is(service, "db", 2))
 	{
 		// validate content-type
 		auto content_type = &endpoint->content_type.string;
@@ -303,10 +292,18 @@ session_endpoint(Session*  self,
 			error("unsupported operation content-type");
 		compiler_parse(compiler, content);
 	} else
+	if (str_is(service, "import", 6))
 	{
 		// parse and translate request into statements
-		compiler_parse_endpoint(compiler, endpoint, content);
-	}
+		compiler_parse_import(compiler, endpoint, content);
+	} else
+	if (str_is(service, "backup", 6))
+		return SESSION_BACKUP;
+	else
+	if (str_is(service, "repl", 4))
+		return SESSION_REPL;
+	else
+		return SESSION_ERROR;
 
 	// generate bytecode (unless EXECUTE)
 	auto stmt = compiler_stmt(compiler);

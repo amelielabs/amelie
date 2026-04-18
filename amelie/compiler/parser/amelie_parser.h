@@ -103,5 +103,5 @@
 #include "parser/parse_execute.h"
 #include "parser/parse.h"
 
-// endpoint
-#include "parser/parse_endpoint.h"
+// import
+#include "parser/parse_import.h"
