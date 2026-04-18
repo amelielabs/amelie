@@ -36,7 +36,6 @@ void compiler_reset(Compiler*);
 void compiler_set(Compiler*, Program*);
 void compiler_parse(Compiler*, Str*);
 void compiler_parse_udf(Compiler*, Udf*);
-void compiler_parse_import(Compiler*, Endpoint*, Str*);
 void compiler_emit(Compiler*);
 
 static inline void

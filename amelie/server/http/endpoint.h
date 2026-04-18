@@ -44,9 +44,6 @@ struct Endpoint
 	Opt  accept;
 	Opt  service;
 	// args
-	Opt  relation;
-	Opt  type;
-	Opt  columns;
 	Opt  timezone;
 	Opt  format;
 	// misc

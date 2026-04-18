@@ -270,12 +270,9 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 
 	// arguments
 	//
-	// relation, type, columns, timezone, format
+	// timezone, format
 	//
 	bool first = true;
-	uri_export_arg(&endpoint->relation, buf, &first);
-	uri_export_arg(&endpoint->type, buf, &first);
-	uri_export_arg(&endpoint->columns, buf, &first);
 	uri_export_arg(&endpoint->timezone, buf, &first);
 	uri_export_arg(&endpoint->format, buf, &first);
 

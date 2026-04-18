@@ -279,31 +279,26 @@ session_endpoint(Session*  self,
 	auto compiler = &self->compiler;
 	compiler_set(compiler, self->program);
 
-	// POST /v1/db
-	// POST /v1/import
 	// POST /v1/backup
 	// POST /v1/repl
+	// POST /v1/db
 	auto service = opt_string_of(&endpoint->service);
-	if (str_is(service, "db", 2))
-	{
-		// validate content-type
-		auto content_type = &endpoint->content_type.string;
-		if (! str_is(content_type, "plain/text", 10))
-			error("unsupported operation content-type");
-		compiler_parse(compiler, content);
-	} else
-	if (str_is(service, "import", 6))
-	{
-		// parse and translate request into statements
-		compiler_parse_import(compiler, endpoint, content);
-	} else
 	if (str_is(service, "backup", 6))
 		return SESSION_BACKUP;
 	else
 	if (str_is(service, "repl", 4))
 		return SESSION_REPL;
 	else
+	if (! str_is(service, "db", 2))
 		return SESSION_ERROR;
+
+	// /v1/db
+
+	// validate content-type
+	auto content_type = &endpoint->content_type.string;
+	if (! str_is(content_type, "plain/text", 10))
+		error("unsupported operation content-type");
+	compiler_parse(compiler, content);
 
 	// generate bytecode (unless EXECUTE)
 	auto stmt = compiler_stmt(compiler);

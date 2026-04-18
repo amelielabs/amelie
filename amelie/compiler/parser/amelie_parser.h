@@ -102,6 +102,3 @@
 #include "parser/parse_with.h"
 #include "parser/parse_execute.h"
 #include "parser/parse.h"
-
-// import
-#include "parser/parse_import.h"

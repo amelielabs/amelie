@@ -177,4 +177,3 @@ test streaming_tls_2
 directory http
 group http
 test http_db
-test http_import

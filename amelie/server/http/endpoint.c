@@ -41,9 +41,6 @@ endpoint_init(Endpoint* self)
 		{ "accept",       OPT_STRING,  OPT_C, &self->accept,       NULL, 0    },
 		{ "service",      OPT_STRING,  OPT_C, &self->service,      NULL, 0    },
 		// args
-		{ "relation",     OPT_STRING,  OPT_C, &self->relation,     NULL, 0    },
-		{ "type",         OPT_STRING,  OPT_C, &self->type,         NULL, 0    },
-		{ "columns",      OPT_STRING,  OPT_C, &self->columns,      NULL, 0    },
 		{ "timezone",     OPT_STRING,  OPT_C, &self->timezone,     NULL, 0    },
 		{ "format",       OPT_STRING,  OPT_C, &self->format,       NULL, 0    },
 		// misc

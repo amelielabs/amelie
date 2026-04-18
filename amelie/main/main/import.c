@@ -43,6 +43,7 @@ import_free(Import* self)
 	opts_free(&self->opts);
 }
 
+#if 0
 static void
 import_connect(Import* self)
 {
@@ -291,4 +292,11 @@ import_run(Import* self)
 
 	// disconnect clients
 	import_disconnect(self);
+}
+#endif
+
+void
+import_run(Import* self)
+{
+	(void)self;
 }

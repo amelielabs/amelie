@@ -116,13 +116,6 @@ compiler_parse_udf(Compiler* self, Udf* udf)
 	compiler_parse_complete(self);
 }
 
-void
-compiler_parse_import(Compiler* self, Endpoint* endpoint, Str* text)
-{
-	parse_import(&self->parser, self->program, endpoint, text);
-	compiler_parse_complete(self);
-}
-
 static void
 emit_close(Compiler* self, Stmt* stmt)
 {

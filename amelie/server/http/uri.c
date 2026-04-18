@@ -350,10 +350,11 @@ uri_parse(Endpoint* endpoint, Str* spec)
 		// hostname[:port]
 		if (endpoint->proto.integer != PROTO_AMELIE)
 			uri_parse_host(&self);
-
-		// [/relation]
-		uri_parse_path(&self, &endpoint->relation);
 	}
+
+	// /
+	if (*self.pos == '/')
+		self.pos++;
 
 	// ?name=value[& ...]
 	uri_parse_args(&self);
@@ -363,7 +364,6 @@ void
 uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
 	// /v1/db
-	// /v1/import
 	// /v1/backup
 	// /v1/repl
 
@@ -378,11 +378,6 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 	{
 		str_set(&endpoint->service.string, "db", 2);
 		self.pos += 6;
-	} else
-	if (str_is_prefix(spec, "/v1/import", 10))
-	{
-		str_set(&endpoint->service.string, "import", 6);
-		self.pos += 10;
 	} else
 	if (str_is_prefix(spec, "/v1/backup", 10))
 	{
@@ -456,14 +451,6 @@ uri_export(Endpoint* self, Buf* buf)
 		buf_write(buf, "/", 1);
 	}
 
-	// relation
-	if (! opt_string_empty(&self->relation))
-	{
-		if (proto == PROTO_AMELIE)
-			buf_write(buf, "/", 1);
-		buf_write_str(buf, &self->relation.string);
-	}
-
 	// arguments
 	bool first = true;
 	if (proto == PROTO_AMELIE)
@@ -477,8 +464,6 @@ uri_export(Endpoint* self, Buf* buf)
 		uri_export_arg(&self->tls_server, buf, &first);
 	}
 	uri_export_arg(&self->token, buf, &first);
-	uri_export_arg(&self->type, buf, &first);
-	uri_export_arg(&self->columns, buf, &first);
 	uri_export_arg(&self->timezone, buf, &first);
 	uri_export_arg(&self->format, buf, &first);
 }
