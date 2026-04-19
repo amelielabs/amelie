@@ -17,6 +17,6 @@
 #include "client/client_mgr.h"
 
 // native
-#include "client/request.h"
-#include "client/request_queue.h"
+#include "client/native_req.h"
+#include "client/native_queue.h"
 #include "client/native.h"

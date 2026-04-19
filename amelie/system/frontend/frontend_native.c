@@ -140,7 +140,7 @@ proxy_execute_client(Proxy* self, Str* command)
 }
 
 hot static inline int
-proxy_execute(Proxy* self, Str* uri, Request* req)
+proxy_execute(Proxy* self, Str* uri, NativeReq* req)
 {
 	auto output = &self->output;
 	output_set_buf(output, &req->output);
@@ -176,18 +176,18 @@ frontend_native(Frontend* self, Native* native)
 	for (auto connected = true; connected;)
 	{
 		auto code = 0;
-		auto req  = request_queue_pop(&native->queue);
+		auto req  = native_queue_pop(&native->queue);
 		assert(req);
 		switch (req->type) {
-		case REQUEST_CONNECT:
+		case NATIVE_CONNECT:
 			break;
-		case REQUEST_DISCONNECT:
+		case NATIVE_DISCONNECT:
 			connected = false;
 			break;
-		case REQUEST_EXECUTE:
+		case NATIVE_EXECUTE:
 			code = proxy_execute(&proxy, &native->uri, req);
 			break;
 		}
-		request_complete(req, code);
+		native_req_complete(req, code);
 	}
 }

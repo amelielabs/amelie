@@ -15,17 +15,17 @@ typedef struct Native Native;
 
 struct Native
 {
-	Msg          msg;
-	RequestQueue queue;
-	Str          uri;
-	void*        arg;
+	Msg         msg;
+	NativeQueue queue;
+	Str         uri;
+	void*       arg;
 };
 
 static inline void
 native_init(Native* self)
 {
 	str_init(&self->uri);
-	request_queue_init(&self->queue);
+	native_queue_init(&self->queue);
 	msg_init(&self->msg, MSG_NATIVE);
 }
 
@@ -33,7 +33,7 @@ static inline void
 native_free(Native* self)
 {
 	str_free(&self->uri);
-	request_queue_free(&self->queue);
+	native_queue_free(&self->queue);
 }
 
 static inline void
@@ -46,5 +46,5 @@ native_set_uri(Native* self, char* uri)
 static inline void
 native_attach(Native* self)
 {
-	request_queue_attach(&self->queue);
+	native_queue_attach(&self->queue);
 }

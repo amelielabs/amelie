@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct RequestQueue RequestQueue;
+typedef struct NativeQueue NativeQueue;
 
-struct RequestQueue
+struct NativeQueue
 {
 	Spinlock lock;
 	List     list;
@@ -21,7 +21,7 @@ struct RequestQueue
 };
 
 static inline void
-request_queue_init(RequestQueue* self)
+native_queue_init(NativeQueue* self)
 {
 	spinlock_init(&self->lock);
 	list_init(&self->list);
@@ -29,20 +29,20 @@ request_queue_init(RequestQueue* self)
 }
 
 static inline void
-request_queue_free(RequestQueue* self)
+native_queue_free(NativeQueue* self)
 {
 	assert(list_empty(&self->list));
 	spinlock_free(&self->lock);
 }
 
 static inline void
-request_queue_attach(RequestQueue* self)
+native_queue_attach(NativeQueue* self)
 {
 	event_attach(&self->on_write);
 }
 
 hot static inline void
-request_queue_push(RequestQueue* self, Request* req, bool signal)
+native_queue_push(NativeQueue* self, NativeReq* req, bool signal)
 {
 	spinlock_lock(&self->lock);
 	list_init(&req->link);
@@ -52,23 +52,23 @@ request_queue_push(RequestQueue* self, Request* req, bool signal)
 		event_signal(&self->on_write);
 }
 
-static inline Request*
-request_queue_peek(RequestQueue* self)
+static inline NativeReq*
+native_queue_peek(NativeQueue* self)
 {
-	Request* req = NULL;
+	NativeReq* req = NULL;
 	spinlock_lock(&self->lock);
 	if (! list_empty(&self->list))
-		req = container_of(list_pop(&self->list), Request, link);
+		req = container_of(list_pop(&self->list), NativeReq, link);
 	spinlock_unlock(&self->lock);
 	return req;
 }
 
-static inline Request*
-request_queue_pop(RequestQueue* self)
+static inline NativeReq*
+native_queue_pop(NativeQueue* self)
 {
 	assert(self->on_write.bus);
-	Request* req;
-	while ((req = request_queue_peek(self)) == NULL)
+	NativeReq* req;
+	while ((req = native_queue_peek(self)) == NULL)
 		event_wait(&self->on_write, -1);
 	return req;
 }

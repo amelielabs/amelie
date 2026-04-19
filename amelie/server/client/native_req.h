@@ -11,35 +11,35 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Request Request;
+typedef struct NativeReq NativeReq;
 
-typedef enum
+enum
 {
-	REQUEST_CONNECT,
-	REQUEST_DISCONNECT,
-	REQUEST_EXECUTE
-} RequestType;
+	NATIVE_CONNECT,
+	NATIVE_DISCONNECT,
+	NATIVE_EXECUTE
+};
 
-typedef void (*RequestNotify)(void*);
+typedef void (*NativeNotify)(void*);
 
-struct Request
+struct NativeReq
 {
-	Mutex         lock;
-	CondVar       cond_var;
-	RequestType   type;
-	bool          complete;
-	int           code;
-	Buf           output;
-	Str           cmd;
-	RequestNotify on_complete;
-	void*         on_complete_arg;
-	List          link;
+	Mutex        lock;
+	CondVar      cond_var;
+	int          type;
+	bool         complete;
+	int          code;
+	Buf          output;
+	Str          cmd;
+	NativeNotify on_complete;
+	void*        on_complete_arg;
+	List         link;
 };
 
 static inline void
-request_init(Request* self)
+native_req_init(NativeReq* self)
 {
-	self->type            = REQUEST_EXECUTE;
+	self->type            = NATIVE_EXECUTE;
 	self->complete        = false;
 	self->code            = 0;
 	self->on_complete     = NULL;
@@ -52,7 +52,7 @@ request_init(Request* self)
 }
 
 static inline void
-request_free(Request* self)
+native_req_free(NativeReq* self)
 {
 	buf_free_memory(&self->output);
 	mutex_free(&self->lock);
@@ -60,9 +60,9 @@ request_free(Request* self)
 }
 
 static inline void
-request_reset(Request* self)
+native_req_reset(NativeReq* self)
 {
-	self->type            = REQUEST_EXECUTE;
+	self->type            = NATIVE_EXECUTE;
 	self->complete        = false;
 	self->code            = 0;
 	self->on_complete     = NULL;
@@ -72,7 +72,7 @@ request_reset(Request* self)
 }
 
 static inline void
-request_complete(Request* self, int code)
+native_req_complete(NativeReq* self, int code)
 {
 	mutex_lock(&self->lock);
 	self->complete = true;
@@ -84,7 +84,7 @@ request_complete(Request* self, int code)
 }
 
 static inline bool
-request_wait(Request* self, uint32_t time_ms)
+native_req_wait(NativeReq* self, uint32_t time_ms)
 {
 	// blocking wait
 	if (time_ms == UINT32_MAX)

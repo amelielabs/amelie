@@ -38,7 +38,7 @@ struct amelie_session
 struct amelie_request
 {
 	int               type;
-	Request           request;
+	NativeReq         req;
 	amelie_session_t* session;
 	List              link;
 };
@@ -68,19 +68,19 @@ amelie_free(void* ptr)
 	{
 		// all requests must be completed at this point
 		amelie_session_t* self = ptr;
-		Request req;
-		request_init(&req);
-		req.type = REQUEST_DISCONNECT;
-		request_queue_push(&self->native.queue, &req, true);
-		request_wait(&req, -1);
-		request_free(&req);
+		NativeReq req;
+		native_req_init(&req);
+		req.type = NATIVE_DISCONNECT;
+		native_queue_push(&self->native.queue, &req, true);
+		native_req_wait(&req, -1);
+		native_req_free(&req);
 		native_free(&self->native);
 
 		// cleanup request cache
 		list_foreach_safe(&self->req_cache)
 		{
 			auto req = list_at(amelie_request_t, link);
-			request_free(&req->request);
+			native_req_free(&req->req);
 			am_free(req);
 		}
 		break;
@@ -89,7 +89,7 @@ amelie_free(void* ptr)
 	{
 		// place request object to the session request cache
 		amelie_request_t* self = ptr;
-		assert(self->request.complete);
+		assert(self->req.complete);
 		auto session = self->session;
 		list_append(&session->req_cache, &self->link);
 		session->req_cache_count++;
@@ -180,17 +180,17 @@ amelie_connect(amelie_t* self, const char* uri)
 	native_set_uri(&session->native, (char*)uri);
 
 	// prepare connect event before the native registration
-	Request req;
-	request_init(&req);
-	req.type = REQUEST_CONNECT;
-	request_queue_push(&session->native.queue, &req, false);
+	NativeReq req;
+	native_req_init(&req);
+	req.type = NATIVE_CONNECT;
+	native_queue_push(&session->native.queue, &req, false);
 
 	// register native client in the frontend pool
 	task_send(&self->runtime.task, &session->native.msg);
 
 	// wait for completion
-	request_wait(&req, -1);
-	request_free(&req);
+	native_req_wait(&req, -1);
+	native_req_free(&req);
 	return session;
 }
 
@@ -215,23 +215,23 @@ amelie_execute(amelie_session_t*    self,
 	{
 		req = container_of(list_pop(&self->req_cache), amelie_request_t, link);
 		self->req_cache_count--;
-		request_reset(&req->request);
+		native_req_reset(&req->req);
 	} else
 	{
 		req = am_malloc(sizeof(amelie_request_t));
 		req->session = self;
-		request_init(&req->request);
+		native_req_init(&req->req);
 		list_init(&req->link);
 	}
 
 	// prepare request
 	req->type = AMELIE_OBJ_REQUEST;
-	str_set_cstr(&req->request.cmd, command);
-	req->request.on_complete     = (RequestNotify)on_complete;
-	req->request.on_complete_arg = on_complete_arg;
+	str_set_cstr(&req->req.cmd, command);
+	req->req.on_complete     = (NativeNotify)on_complete;
+	req->req.on_complete_arg = on_complete_arg;
 
 	// schedule for execution
-	request_queue_push(&self->native.queue, &req->request, true);
+	native_queue_push(&self->native.queue, &req->req, true);
 	return req;
 }
 
@@ -239,12 +239,12 @@ AMELIE_API int
 amelie_wait(amelie_request_t* self, uint32_t time_ms, amelie_arg_t* result)
 {
 	// 408 Request Timeout
-	if (! request_wait(&self->request, time_ms))
+	if (! native_req_wait(&self->req, time_ms))
 		return 408;
 	if (result)
 	{
-		result->data = buf_cstr(&self->request.output);
-		result->data_size = buf_size(&self->request.output);
+		result->data = buf_cstr(&self->req.output);
+		result->data_size = buf_size(&self->req.output);
 	}
-	return self->request.code;
+	return self->req.code;
 }
