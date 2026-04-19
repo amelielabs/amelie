@@ -98,11 +98,11 @@ static CatalogIf catalog_if =
 };
 
 static void*
-frontend_if_session_create(Frontend* self, void* arg)
+frontend_if_session_create(Frontend* fe, void* arg)
 {
-	unused(self);
+	unused(fe);
 	unused(arg);
-	return session_create(self);
+	return session_create();
 }
 
 static void
@@ -111,13 +111,10 @@ frontend_if_session_free(void* ptr)
 	return session_free(ptr);
 }
 
-static SessionStatus
-frontend_if_session_execute(void*     ptr,
-                            Endpoint* endpoint,
-                            Str*      content,
-                            Output*   output)
+static bool
+frontend_if_session_execute(void* ptr, Request* req)
 {
-	return session_execute(ptr, endpoint, content, output);
+	return session_execute(ptr, req);
 }
 
 static void

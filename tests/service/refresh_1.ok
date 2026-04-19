@@ -25,7 +25,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 connect_async E0 S1 127.0.0.1:3485;
 switch S1;
@@ -43,7 +43,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_1",
   "lock": "exclusive",
@@ -58,7 +58,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 connect_async E0 S2 127.0.0.1:3485;
 switch S2;
@@ -76,7 +76,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_1",
   "lock": "exclusive",
@@ -91,7 +91,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_1",
   "lock": "exclusive",
@@ -101,7 +101,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 switch S0;
 drop lock bp_refresh_1;
@@ -116,7 +116,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 show partitions on test;
 [{

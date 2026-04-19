@@ -39,7 +39,7 @@ endpoint_init(Endpoint* self)
 		{ "uri",          OPT_STRING,  OPT_C, &self->uri,          NULL, 0    },
 		{ "content_type", OPT_STRING,  OPT_C, &self->content_type, NULL, 0    },
 		{ "accept",       OPT_STRING,  OPT_C, &self->accept,       NULL, 0    },
-		{ "service",      OPT_STRING,  OPT_C, &self->service,      NULL, 0    },
+		{ "endpoint",     OPT_INT,     OPT_C, &self->endpoint,     NULL, 0    },
 		// args
 		{ "timezone",     OPT_STRING,  OPT_C, &self->timezone,     NULL, 0    },
 		// misc

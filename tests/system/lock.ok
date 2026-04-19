@@ -29,7 +29,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 # test: create lock (unknown)
 create lock test on xyz (invalid);
@@ -45,7 +45,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 # test: create lock (shared)
 create lock test1 on xyz (shared);
@@ -66,7 +66,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 # test: create lock (catalog)
 create lock test2 on catalog (shared);
@@ -99,7 +99,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 drop lock test1;
 show locks;
@@ -107,7 +107,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 # test: drop lock if exists
 drop lock test;

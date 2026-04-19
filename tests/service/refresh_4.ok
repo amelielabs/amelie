@@ -35,7 +35,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_1",
   "lock": "exclusive",
@@ -55,17 +55,17 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "test",
   "lock": "shared_rw",
   "waiting": true,
-  "function": "session_execute_distributed"
+  "function": "session_run"
 }, {
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 drop lock bp_refresh_4;
 watch 'bp_refresh_4'::locks_count = 0;
@@ -83,7 +83,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 select * from test;
 1 │ 1

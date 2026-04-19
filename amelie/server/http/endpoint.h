@@ -20,6 +20,13 @@ enum
 	PROTO_AMELIE
 };
 
+enum
+{
+	ENDPOINT_SQL,
+	ENDPOINT_BACKUP,
+	ENDPOINT_REPL
+};
+
 struct Endpoint
 {
 	// protocol
@@ -42,7 +49,7 @@ struct Endpoint
 	Opt  uri;
 	Opt  content_type;
 	Opt  accept;
-	Opt  service;
+	Opt  endpoint;
 	// args
 	Opt  timezone;
 	// misc

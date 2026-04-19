@@ -21,13 +21,11 @@
 #include <amelie_session.h>
 
 Session*
-session_create(Frontend* frontend)
+session_create(void)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
-	self->program  = program_allocate();
-	self->lock     = NULL;
-	self->user     = NULL;
-	self->frontend = frontend;
+	self->program = program_allocate();
+	self->req     = NULL;
 	local_init(&self->local);
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
@@ -47,8 +45,7 @@ session_reset_query(Session* self)
 static inline void
 session_reset(Session* self)
 {
-	self->lock = NULL;
-	self->user = NULL;
+	self->req = NULL;
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	dtr_reset(&self->dtr);
@@ -71,36 +68,22 @@ session_free(Session *self)
 }
 
 hot static inline void
-session_auth(Session* self, Endpoint* endpoint, Output* output)
+session_set(Session* self, Request* req)
 {
-	// authenticate user request
-	auto token = &endpoint->token.string;
-	auto token_required = opt_int_of(&endpoint->auth);
-	auto user_id = &endpoint->user.string;
-	self->user = auth(&self->frontend->auth, user_id, token, token_required);
-
-	/*
-	// PERM_CONNECT permission
-	if (token_required)
-		user_check(self->user, PERM_CONNECT);
-	*/
-
-	// check service grants
-	auto service = opt_string_of(&endpoint->service);
-	if (str_is(service, "backup", 6) && str_is(service, "repl", 4))
-		user_check(self->user, PERM_SERVICE);
+	// set request
+	self->req = req;
 
 	// set timezone
 	auto local = &self->local;
-	local->timezone = output->timezone;
-	str_set_str(&local->user, user_id);
+	local->timezone = req->output.timezone;
+	str_set_str(&local->user, &req->user->config->name);
 
 	// update transaction time
 	local_update_time(local);
 }
 
 hot static inline void
-session_execute_distributed(Session* self, Output* output)
+session_run(Session* self)
 {
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
@@ -118,7 +101,7 @@ session_execute_distributed(Session* self, Output* output)
 
 	// prepare distributed transaction
 	dtr_prepare(dtr, program);
-	tr_set_user(&dtr->tr, &self->user->rel);
+	tr_set_user(&dtr->tr, &self->req->user->rel);
 
 	// [PROFILE]
 	if (compiler->program_profile)
@@ -158,6 +141,7 @@ session_execute_distributed(Session* self, Output* output)
 
 	// write result
 	auto returning = compiler->program_returning;
+	auto output    = &self->req->output;
 	if (returning && ret.value)
 		output_write(output, returning, ret.value);
 
@@ -170,18 +154,17 @@ session_execute_distributed(Session* self, Output* output)
 }
 
 hot static inline void
-session_execute_utility(Session* self, Output* output)
+session_run_utility(Session* self)
 {
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	reg_prepare(&self->vm.r, program->code.regs);
 
-	// switch session lock to use program utility lock
-	if (program->lock_catalog != LOCK_SHARED)
-	{
-		unlock(self->lock);
-		self->lock = lock_system(REL_CATALOG, program->lock_catalog);
-	}
+	// switch session lock to match the program catalog lock
+	//
+	// note: user not changed
+	//
+	request_lock(self->req, program->lock_catalog);
 
 	// prevent concurrent ddls
 	lock_system(REL_DDL, program->lock_ddl);
@@ -194,7 +177,7 @@ session_execute_utility(Session* self, Output* output)
 	// execute utility/ddl transaction
 	Tr tr;
 	tr_init(&tr);
-	tr_set_user(&tr, &self->user->rel);
+	tr_set_user(&tr, &self->req->user->rel);
 	defer(tr_free, &tr);
 
 	Return ret;
@@ -221,6 +204,7 @@ session_execute_utility(Session* self, Output* output)
 		rethrow();
 	}
 
+	auto output = &self->req->output;
 	if (compiler->program_profile)
 	{
 		profile_end(&profile->time_run_us);
@@ -269,35 +253,14 @@ session_execute_utility(Session* self, Output* output)
 	}
 }
 
-hot static SessionStatus
-session_endpoint(Session*  self,
-                 Endpoint* endpoint,
-                 Str*      content,
-                 Output*   output)
+hot static void
+session_sql(Session* self)
 {
+	// parser sql
+	auto req = self->req;
 	auto compiler = &self->compiler;
 	compiler_set(compiler, self->program);
-
-	// POST /v1/sql
-	// POST /v1/backup
-	// POST /v1/repl
-	auto service = opt_string_of(&endpoint->service);
-	if (str_is(service, "backup", 6))
-		return SESSION_BACKUP;
-	else
-	if (str_is(service, "repl", 4))
-		return SESSION_REPL;
-	else
-	if (! str_is(service, "sql", 3))
-		return SESSION_ERROR;
-
-	// /v1/sql
-
-	// validate content-type
-	auto content_type = &endpoint->content_type.string;
-	if (! str_is(content_type, "plain/text", 10))
-		error("unsupported operation content-type");
-	compiler_parse(compiler, content);
+	compiler_parse(compiler, &req->content);
 
 	// generate bytecode (unless EXECUTE)
 	auto stmt = compiler_stmt(compiler);
@@ -306,7 +269,7 @@ session_endpoint(Session*  self,
 
 	auto program = compiler->program;
 	if (program_empty(program))
-		return SESSION_OK;
+		return;
 
 	// [EXPLAIN]
 	if (compiler->program_explain || compiler->program_profile)
@@ -317,28 +280,23 @@ session_endpoint(Session*  self,
 	{
 		Str column;
 		str_set(&column, "explain", 7);
-		output_write_json(output, &column, program->explain.start, false);
-		return SESSION_OK;
+		output_write_json(&req->output, &column, program->explain.start, false);
+		return;
 	}
 
 	// validate user permissions
-	user_check_access(self->user, &program->access);
+	user_check_access(req->user, &program->access);
 
 	// execute utility, DDL, DML or Query
 	if (program->utility)
-		session_execute_utility(self, output);
+		session_run_utility(self);
 	else
-		session_execute_distributed(self, output);
-	return SESSION_OK;
+		session_run(self);
 }
 
-hot SessionStatus
-session_execute(Session*  self,
-                Endpoint* endpoint,
-                Str*      content,
-                Output*   output)
+hot bool
+session_execute(Session* self, Request* req)
 {
-	SessionStatus status = SESSION_OK;
 	cancel_pause();
 
 	// execute request based on the content-type
@@ -347,14 +305,11 @@ session_execute(Session*  self,
 		// reset session session state
 		session_reset(self);
 
-		// take shared catalog lock
-		self->lock = lock_system(REL_CATALOG, LOCK_SHARED);
-
-		// authenticate and set session local settings
-		session_auth(self, endpoint, output);
+		// set session local settings
+		session_set(self, req);
 
 		// parse and execute request
-		status = session_endpoint(self, endpoint, content, output);
+		session_sql(self);
 
 		// done
 		unlock_all();
@@ -362,13 +317,8 @@ session_execute(Session*  self,
 
 	if (on_error)
 	{
-		auto error = &am_self()->error;
-		if (error->code == ERROR_AUTH)
-			status = SESSION_ERROR_AUTH;
-		else
-			status = SESSION_ERROR;
-		buf_reset(output->buf);
-		output_write_error(output, &am_self()->error);
+		buf_reset(req->output.buf);
+		output_write_error(&req->output, &am_self()->error);
 		unlock_all();
 	}
 
@@ -376,5 +326,7 @@ session_execute(Session*  self,
 
 	// cancellation point
 	cancel_resume();
-	return status;
+
+	// note: request keeps catalog lock
+	return !on_error;
 }

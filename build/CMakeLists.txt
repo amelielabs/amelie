@@ -334,8 +334,8 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/auth_cache.c
     ${AMELIE_ROOT}/system/frontend/auth.c
     ${AMELIE_ROOT}/system/frontend/frontend.c
-    ${AMELIE_ROOT}/system/frontend/frontend_client.c
-    ${AMELIE_ROOT}/system/frontend/frontend_native.c
+    ${AMELIE_ROOT}/system/frontend/client.c
+    ${AMELIE_ROOT}/system/frontend/native.c
     ${AMELIE_ROOT}/system/backend/pod.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/backend/replay.c

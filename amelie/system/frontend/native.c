@@ -17,46 +17,66 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
-typedef struct Proxy Proxy;
+typedef struct Relay Relay;
 
-struct Proxy
+struct Relay
 {
 	void*     session;
 	Client*   client;
 	bool      connected;
-	Output    output;
-	Endpoint  endpoint;
+	Request   req;
 	Frontend* fe;
 };
 
 static inline void
-proxy_init(Proxy* self, Frontend* fe)
+relay_init(Relay* self, Frontend* fe)
 {
 	self->session   = NULL;
 	self->client    = NULL;
 	self->connected = false;
 	self->fe        = fe;
-	output_init(&self->output);
-	endpoint_init(&self->endpoint);
+	request_init(&self->req);
 }
 
 static inline void
-proxy_free(Proxy* self)
+relay_free(Relay* self)
 {
 	if (self->client)
 		client_free(self->client);
 	if (self->session)
 		self->fe->iface->session_free(self->session);
-	endpoint_free(&self->endpoint);
+	request_free(&self->req);
 }
 
 static inline void
-proxy_connect(Proxy* self, Str* uri)
+relay_connect(Relay* self)
 {
-	auto endpoint = &self->endpoint;
-	endpoint_reset(endpoint);
+	// create native session or remote connection
+	auto endpoint = &self->req.endpoint;
+	if (endpoint->proto.integer == PROTO_AMELIE)
+	{
+		auto ctl = self->fe->iface;
+		self->session = ctl->session_create(self->fe, self->fe->iface_arg);
+	} else
+	{
+		if (self->client) {
+			client_free(self->client);
+			self->client = NULL;
+		}
+		self->client = client_create();
+		client_set_endpoint(self->client, endpoint);
+		client_connect(self->client);
+	}
+	self->connected = true;
+}
+
+static inline void
+relay_set(Relay* self, Buf* buf, Str* uri)
+{
+	request_reset(&self->req);
 
 	// parse uri and configure endpoint
+	auto endpoint = &self->req.endpoint;
 	uri_parse(endpoint, uri);
 
 	// set defaults
@@ -69,94 +89,91 @@ proxy_connect(Proxy* self, Str* uri)
 	if (opt_string_empty(&endpoint->accept))
 		opt_string_set_raw(&endpoint->accept, "application/json", 16);
 
-	opt_string_set_raw(&endpoint->service, "sql", 3);
+	opt_int_set(&endpoint->endpoint, ENDPOINT_SQL);
 
 	// authentication is not required
 	opt_int_set(&endpoint->auth, false);
 
 	// configure output
-	output_reset(&self->output);
-	output_set(&self->output, &self->endpoint);
-
-	// create native session or remote connection
-	if (self->endpoint.proto.integer == PROTO_AMELIE)
-	{
-		auto ctl = self->fe->iface;
-		self->session = ctl->session_create(self->fe, self->fe->iface_arg);
-	} else
-	{
-		if (self->client) {
-			client_free(self->client);
-			self->client = NULL;
-		}
-		self->client = client_create();
-		client_set_endpoint(self->client, &self->endpoint);
-		client_connect(self->client);
-	}
-	self->connected = true;
+	auto output = &self->req.output;
+	output_reset(output);
+	output_set(output, endpoint);
+	output_set_buf(output, buf);
 }
 
 hot static inline int
-proxy_execute_session(Proxy* self, Str* command)
+relay_execute_session(Relay* self, Str* command)
 {
-	auto ctl    = self->fe->iface;
-	auto status = ctl->session_execute(self->session, &self->endpoint, command,
-	                                   &self->output);
-	auto code   = 0;
-	switch (status) {
-	case SESSION_OK:
+	auto code = 0;
+
+	// authenticate
+	auto req = &self->req;
+	auto on_error = error_catch
+	(
+		request_auth(req, &self->fe->auth);
+	);
+	if (on_error)
+	{
+		// 403 Forbidden
+		code = 403;
+		goto done;
+	}
+
+	// set command
+	req->content = *command;
+
+	// execute
+	auto ctl  = self->fe->iface;
+	if (ctl->session_execute(self->session, req))
+	{
 		// 204 No Content
 		// 200 OK
-		if (buf_empty(self->output.buf))
+		if (buf_empty(req->output.buf))
 			code = 204;
 		else
 			code = 200;
-		break;
-	case SESSION_ERROR:
+	} else
+	{
 		// 400 Bad Request
 		code = 400;
-		break;
-	case SESSION_ERROR_AUTH:
-		// 403 Forbidden
-		code = 403;
-		break;
-	case SESSION_BACKUP:
-	case SESSION_REPL:
-		// 403 Forbidden
-		code = 403;
-		break;
 	}
+
+done:
+	request_unlock(req);
 	return code;
 }
 
 hot static inline int
-proxy_execute_client(Proxy* self, Str* command)
+relay_execute_client(Relay* self, Str* command)
 {
 	auto client = self->client;
-	client_execute(client, command, self->output.buf);
+	client_execute(client, command, self->req.output.buf);
 	int64_t code = 0;
 	str_toint(&client->reply.options[HTTP_CODE], &code);
 	return code;
 }
 
 hot static inline int
-proxy_execute(Proxy* self, Str* uri, NativeReq* req)
+relay_execute(Relay* self, Str* uri, NativeReq* cmd)
 {
-	auto output = &self->output;
-	output_set_buf(output, &req->output);
+	relay_set(self, &cmd->output, uri);
+
 	auto code = 0;
 	auto on_error = error_catch
 	(
 		if (! self->connected)
-			proxy_connect(self, uri);
-		if (self->endpoint.proto.integer == PROTO_AMELIE)
-			code = proxy_execute_session(self, &req->cmd);
+			relay_connect(self);
+
+		if (self->req.endpoint.proto.integer == PROTO_AMELIE)
+			code = relay_execute_session(self, &cmd->cmd);
 		else
-			code = proxy_execute_client(self, &req->cmd);
+			code = relay_execute_client(self, &cmd->cmd);
 	);
 	if (on_error)
 	{
-		buf_reset(&req->output);
+		buf_reset(&cmd->output);
+
+		auto output = &self->req.output;
 		if (output->iface)
 			output_write_error(output, &am_self()->error);
 
@@ -170,9 +187,9 @@ proxy_execute(Proxy* self, Str* uri, NativeReq* req)
 void
 frontend_native(Frontend* self, Native* native)
 {
-	Proxy proxy;
-	proxy_init(&proxy, self);
-	defer(proxy_free, &proxy);
+	Relay relay;
+	relay_init(&relay, self);
+	defer(relay_free, &relay);
 	for (auto connected = true; connected;)
 	{
 		auto code = 0;
@@ -185,7 +202,7 @@ frontend_native(Frontend* self, Native* native)
 			connected = false;
 			break;
 		case NATIVE_EXECUTE:
-			code = proxy_execute(&proxy, &native->uri, req);
+			code = relay_execute(&relay, &native->uri, req);
 			break;
 		}
 		native_req_complete(req, code);

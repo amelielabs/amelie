@@ -15,18 +15,17 @@ typedef struct Session Session;
 
 struct Session
 {
-	Compiler  compiler;
-	Vm        vm;
-	Program*  program;
-	SetCache  set_cache;
-	Dtr       dtr;
-	Profile   profile;
-	Lock*     lock;
-	User*     user;
-	Local     local;
-	Frontend* frontend;
+	Compiler compiler;
+	Vm       vm;
+	Program* program;
+	Dtr      dtr;
+	Request* req;
+	SetCache set_cache;
+	Profile  profile;
+	Local    local;
 };
 
-Session*      session_create(Frontend*);
-void          session_free(Session*);
-SessionStatus session_execute(Session*, Endpoint*, Str*, Output*);
+Session*
+session_create(void);
+void session_free(Session*);
+bool session_execute(Session*, Request*);

@@ -30,7 +30,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_1",
   "lock": "exclusive",
@@ -45,7 +45,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 select * from test;
 1 │ 0
@@ -84,7 +84,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 # test: validate after refresh
 select * from test;
@@ -126,7 +126,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_2",
   "lock": "exclusive",
@@ -141,7 +141,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 delete from test where id = 2 or id = 4;
 # test: read during refresh after delete
@@ -169,7 +169,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 # test: validate after refresh
 select * from test;
@@ -201,7 +201,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_4",
   "lock": "exclusive",
@@ -216,7 +216,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 update test set data = id where id = 2 or id = 4;
 # test: read during refresh after update
@@ -246,7 +246,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 # test: validate after refresh
 select * from test;
@@ -282,7 +282,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_6",
   "lock": "exclusive",
@@ -297,7 +297,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 insert into test values (0, 0) on conflict do update set data = data + 1;
 insert into test values (1, 0) on conflict do update set data = data + 1;
@@ -352,7 +352,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 # test: validate after refresh
 select * from test;
@@ -400,7 +400,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_8",
   "lock": "exclusive",
@@ -415,7 +415,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 begin;
 	insert into test values (0, 0) on conflict do update set data = data + 1;
@@ -456,7 +456,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 # test: validate after refresh
 select * from test;
@@ -492,7 +492,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_10",
   "lock": "exclusive",
@@ -507,7 +507,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 insert into test values (0, 0) on conflict do update set data = data + 1;
 insert into test values (1, 0) on conflict do update set data = data + 1;
@@ -545,7 +545,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 # test: validate after refresh
 select * from test;

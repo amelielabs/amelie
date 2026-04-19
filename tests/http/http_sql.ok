@@ -17,16 +17,16 @@ post /sql - - -;
 400 Bad Request
 # test: POST /v1/sql
 post /v1/sql - - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 post /v1/sql/ - - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 # test: POST /v1/sql (invalid content type)
 post /v1/sql - - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 post /v1/sql json - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 post /v1/sql/ application/json - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 # test: POST /v1/sql (plain/text, no accept, no content)
 post /v1/sql plain/text - -;
 # test: POST /v1/sql (plain/text, no accept)

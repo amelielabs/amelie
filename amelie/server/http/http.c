@@ -261,12 +261,20 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 	// POST /v1/<service>
 	// POST /v1/sql
 	buf_write(buf, "POST /v1/", 9);
-
-	auto service = opt_string_of(&endpoint->service);
-	if (str_empty(service))
+	switch (endpoint->endpoint.integer) {
+	case ENDPOINT_SQL:
 		buf_write(buf, "sql", 3);
-	else
-		buf_write_str(buf, service);
+		break;
+	case ENDPOINT_BACKUP:
+		buf_write(buf, "backup", 6);
+		break;
+	case ENDPOINT_REPL:
+		buf_write(buf, "repl", 4);
+		break;
+	default:
+		abort();
+		break;
+	}
 
 	// arguments
 	//

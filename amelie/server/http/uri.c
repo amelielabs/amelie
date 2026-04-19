@@ -376,17 +376,17 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 
 	if (str_is_prefix(spec, "/v1/sql", 7))
 	{
-		str_set(&endpoint->service.string, "sql", 3);
+		opt_int_set(&endpoint->endpoint, ENDPOINT_SQL);
 		self.pos += 7;
 	} else
 	if (str_is_prefix(spec, "/v1/backup", 10))
 	{
-		str_set(&endpoint->service.string, "backup", 6);
+		opt_int_set(&endpoint->endpoint, ENDPOINT_BACKUP);
 		self.pos += 10;
 	} else
 	if (str_is_prefix(spec, "/v1/repl", 8))
 	{
-		str_set(&endpoint->service.string, "repl", 4);
+		opt_int_set(&endpoint->endpoint, ENDPOINT_REPL);
 		self.pos += 8;
 	} else {
 		error("failed to parse uri endpoint");

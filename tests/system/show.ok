@@ -420,7 +420,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 disconnect S0;
 close E0;

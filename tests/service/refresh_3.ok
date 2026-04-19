@@ -39,7 +39,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_1",
   "lock": "exclusive",
@@ -60,12 +60,12 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "test",
   "lock": "shared_rw",
   "waiting": false,
-  "function": "session_execute_distributed"
+  "function": "session_run"
 }, {
   "relation": "bp_query",
   "lock": "shared",
@@ -75,7 +75,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 drop lock bp_refresh_3;
 watch 'bp_refresh_3'::locks_count = 0;
@@ -84,7 +84,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "service_1",
   "lock": "exclusive",
@@ -100,12 +100,12 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }, {
   "relation": "test",
   "lock": "shared_rw",
   "waiting": false,
-  "function": "session_execute_distributed"
+  "function": "session_run"
 }, {
   "relation": "bp_query",
   "lock": "shared",
@@ -120,7 +120,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 watch 'test'::locks_count = 2;
 drop lock bp_query;
@@ -139,7 +139,7 @@ show locks;
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "session_execute"
+  "function": "request_auth"
 }]
 select * from test;
 1 │ 1

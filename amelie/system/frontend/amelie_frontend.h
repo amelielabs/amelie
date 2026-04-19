@@ -15,10 +15,13 @@
 #include "frontend/auth_cache.h"
 #include "frontend/auth.h"
 
+// request
+#include "frontend/request.h"
+
 // frontend
 #include "frontend/frontend.h"
 #include "frontend/frontend_mgr.h"
 
-// frontend client
-#include "frontend/frontend_client.h"
-#include "frontend/frontend_native.h"
+// client
+#include "frontend/client.h"
+#include "frontend/native.h"

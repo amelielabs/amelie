@@ -110,7 +110,7 @@ restore_join(Restore* self)
 {
 	// POST /v1/backup
 	auto websocket = &self->websocket;
-	opt_string_set_raw(&websocket->client->endpoint->service, "backup", 6);
+	opt_int_set(&websocket->client->endpoint->endpoint, ENDPOINT_BACKUP);
 
 	// do websocket handshake
 	websocket_connect(websocket);
