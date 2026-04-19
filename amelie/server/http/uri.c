@@ -465,5 +465,4 @@ uri_export(Endpoint* self, Buf* buf)
 	}
 	uri_export_arg(&self->token, buf, &first);
 	uri_export_arg(&self->timezone, buf, &first);
-	uri_export_arg(&self->format, buf, &first);
 }

@@ -2,14 +2,14 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: select expr where
 select 1 * where false;
-{"msg": "select 1 ❰*❱ ⟵ bad expression"}
+error: select 1 ❰*❱ ⟵ bad expression
 # test: select from table where column
 create table test (id serial primary key, data int default 0);
 insert into test () values ();
 insert into test () values ();
 insert into test () values ();
 explain select * from test where id >= 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -34,9 +34,11 @@ explain select * from test where id >= 0;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id >= 0;
-[[0, 0], [1, 0], [2, 0]]
+0 │ 0
+1 │ 0
+2 │ 0
 drop table test;
 # test: select from table where column.path
 create table test (id serial primary key, data json);
@@ -44,17 +46,13 @@ insert into test (data) values ({"data": 123});
 insert into test (data) values ({"data": 123});
 insert into test (data) values ({"data": 123});
 select * from test;
-[[0, {
-  "data": 123
-}], [1, {
-  "data": 123
-}], [2, {
-  "data": 123
-}]]
+0 │ {"data": 123}
+1 │ {"data": 123}
+2 │ {"data": 123}
 explain select * from test where data.data >= 0;
-{"msg": "explain select * from test where data.data >= ❰0❱ ⟵ operation json >= int is not supported"}
+error: explain select * from test where data.data >= ❰0❱ ⟵ operation json >= int is not supported
 explain select * from test where data.data::int >= 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      37    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -82,15 +80,11 @@ explain select * from test where data.data::int >= 0;
     "17": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where data.data::int >= 0;
-[[0, {
-  "data": 123
-}], [1, {
-  "data": 123
-}], [2, {
-  "data": 123
-}]]
+0 │ {"data": 123}
+1 │ {"data": 123}
+2 │ {"data": 123}
 drop table test;
 # test: select from table where column.path #2
 create table test (id serial primary key, data json);
@@ -98,21 +92,11 @@ insert into test (data) values ({"data": {"data": 123}});
 insert into test (data) values ({"data": {"data": 123}});
 insert into test (data) values ({"data": {"data": 123}});
 select * from test;
-[[0, {
-  "data": {
-    "data": 123
-  }
-}], [1, {
-  "data": {
-    "data": 123
-  }
-}], [2, {
-  "data": {
-    "data": 123
-  }
-}]]
+0 │ {"data": {"data": 123}}
+1 │ {"data": {"data": 123}}
+2 │ {"data": {"data": 123}}
 explain select * from test where data.data.data::int >= 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      42    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -140,21 +124,11 @@ explain select * from test where data.data.data::int >= 0;
     "17": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where data.data.data::int >= 0;
-[[0, {
-  "data": {
-    "data": 123
-  }
-}], [1, {
-  "data": {
-    "data": 123
-  }
-}], [2, {
-  "data": {
-    "data": 123
-  }
-}]]
+0 │ {"data": {"data": 123}}
+1 │ {"data": {"data": 123}}
+2 │ {"data": {"data": 123}}
 drop table test;
 # test: select from table where target.column
 create table test (id serial primary key, data int default 0);
@@ -162,7 +136,7 @@ insert into test () values ();
 insert into test () values ();
 insert into test () values ();
 explain select * from test where test.id >= 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -187,9 +161,11 @@ explain select * from test where test.id >= 0;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where test.id >= 0;
-[[0, 0], [1, 0], [2, 0]]
+0 │ 0
+1 │ 0
+2 │ 0
 drop table test;
 # test: select from table where target.column.path
 create table test (id serial primary key, data json);
@@ -197,7 +173,7 @@ insert into test (data) values ({"data": 123});
 insert into test (data) values ({"data": 123});
 insert into test (data) values ({"data": 123});
 explain select * from test where test.data.data::int >= 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      37    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -225,15 +201,11 @@ explain select * from test where test.data.data::int >= 0;
     "17": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where test.data.data::int >= 0;
-[[0, {
-  "data": 123
-}], [1, {
-  "data": 123
-}], [2, {
-  "data": 123
-}]]
+0 │ {"data": 123}
+1 │ {"data": 123}
+2 │ {"data": 123}
 drop table test;
 # test: select from table where alias.column
 create table test (id serial primary key, data int default 0);
@@ -241,7 +213,7 @@ insert into test () values ();
 insert into test () values ();
 insert into test () values ();
 explain select * from test alias where alias.id >= 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -266,9 +238,11 @@ explain select * from test alias where alias.id >= 0;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test alias where alias.id >= 0;
-[[0, 0], [1, 0], [2, 0]]
+0 │ 0
+1 │ 0
+2 │ 0
 drop table test;
 # test: select from table where alias.column.path
 create table test (id serial primary key, data json);
@@ -276,7 +250,7 @@ insert into test (data) values ({"data": 123});
 insert into test (data) values ({"data": 123});
 insert into test (data) values ({"data": 123});
 explain select * from test alias where alias.data.data::int >= 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      37    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -304,15 +278,11 @@ explain select * from test alias where alias.data.data::int >= 0;
     "17": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test alias where alias.data.data::int >= 0;
-[[0, {
-  "data": 123
-}], [1, {
-  "data": 123
-}], [2, {
-  "data": 123
-}]]
+0 │ {"data": 123}
+1 │ {"data": 123}
+2 │ {"data": 123}
 drop table test;
 # test: select from table where *
 create table test (id serial primary key, data int default 0);
@@ -320,13 +290,13 @@ insert into test () values ();
 insert into test () values ();
 insert into test () values ();
 explain select * from test alias where *;
-{"msg": "explain select * from test alias where ❰*❱ ⟵ bad expression"}
+error: explain select * from test alias where ❰*❱ ⟵ bad expression
 drop table test;
 # test: select from table where true/false
 create table test (id int primary key);
 insert into test values (1), (2), (3);
 explain select * from test where true;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -346,17 +316,18 @@ explain select * from test where true;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where true;
-[1, 2, 3]
+1
+2
+3
 select * from test where false;
-[]
 drop table test;
 # test: select from table where >=
 create table test (id int primary key);
 insert into test values (1), (2), (3);
 explain select * from test where id >= 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -379,31 +350,36 @@ explain select * from test where id >= 0;
     "12": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id >= 0;
-[1, 2, 3]
+1
+2
+3
 select * from test where id >= 1;
-[1, 2, 3]
+1
+2
+3
 select * from test where id >= 2;
-[2, 3]
+2
+3
 select * from test where id >= 3;
-[3]
+3
 select * from test where id >= 4;
-[]
 # test: select from table where >
 select * from test where id > 0;
-[1, 2, 3]
+1
+2
+3
 select * from test where id > 1;
-[2, 3]
+2
+3
 select * from test where id > 2;
-[3]
+3
 select * from test where id > 3;
-[]
 select * from test where id > 9;
-[]
 # test: select from table where <=
 explain select * from test where id <= 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -429,20 +405,24 @@ explain select * from test where id <= 0;
     "15": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id <= 0;
-[]
 select * from test where id <= 1;
-[1]
+1
 select * from test where id <= 2;
-[1, 2]
+1
+2
 select * from test where id <= 3;
-[1, 2, 3]
+1
+2
+3
 select * from test where id <= 8;
-[1, 2, 3]
+1
+2
+3
 # test: select from table where <
 explain select * from test where id < 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -468,23 +448,24 @@ explain select * from test where id < 0;
     "15": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id < 0;
-[]
 select * from test where id < 1;
-[]
 select * from test where id < 2;
-[1]
+1
 select * from test where id < 3;
-[1, 2]
+1
+2
 select * from test where id < 8;
-[1, 2, 3]
+1
+2
+3
 drop table test;
 # test: select from table where = (point lookup)
 create table test (id int primary key);
 insert into test values (1), (2), (3);
 explain select * from test where id = 2;
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 2",
     "01": "send_lookup         0      -      32    # main.test (select, closing)",
@@ -507,9 +488,9 @@ explain select * from test where id = 2;
     "11": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id = 2;
-[2]
+2
 drop table test;
 disconnect S0;
 close E0;

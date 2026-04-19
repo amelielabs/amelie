@@ -14,7 +14,7 @@ close E0;
 open E1;
 connect E1 S0 127.0.0.1:3480;
 show uuid;
-["00000000-0000-0000-0000-000000000000"]
+"00000000-0000-0000-0000-000000000000"
 disconnect S0;
 close E1;
 # test: backup wal
@@ -23,7 +23,7 @@ connect E0 S0 127.0.0.1:3480;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 select show('state').lsn;
-[2]
+2
 create function reverse(array json) return json
 begin
 	declare rev json := [];
@@ -33,7 +33,7 @@ begin
 	return rev;
 end;
 select show('state').lsn;
-[3]
+3
 backup E2 http://127.0.0.1:3480;
 close E2;
 disconnect S0;
@@ -42,22 +42,24 @@ close E0;
 open E2;
 connect E2 S0 127.0.0.1:3480;
 show uuid;
-["00000000-0000-0000-0000-000000000000"]
+"00000000-0000-0000-0000-000000000000"
 select * from test;
-[2, 1, 3]
+2
+1
+3
 select [1,2,3]::reverse;
-[[3, 2, 1]]
+[3, 2, 1]
 select show('state').lsn;
-[3]
+3
 disconnect S0;
 close E2;
 # test: backup wal #2
 open E0 "wal_size": 0;
 connect E0 S0 127.0.0.1:3480;
 select show('state').lsn;
-[3]
+3
 show wal;
-[{
+{
   "lsn": 3,
   "lsn_min": 1,
   "files": 1,
@@ -66,10 +68,10 @@ show wal;
   "writes": 0,
   "writes_bytes": 0,
   "ops": 0
-}]
+}
 insert into test values (4);
 show wal;
-[{
+{
   "lsn": 4,
   "lsn_min": 1,
   "files": 2,
@@ -78,7 +80,7 @@ show wal;
   "writes": 1,
   "writes_bytes": 65,
   "ops": 1
-}]
+}
 backup E3 http://127.0.0.1:3480;
 close E3;
 disconnect S0;
@@ -87,15 +89,18 @@ close E0;
 open E3 "wal_size": 104857600;
 connect E3 S0 127.0.0.1:3480;
 show uuid;
-["00000000-0000-0000-0000-000000000000"]
+"00000000-0000-0000-0000-000000000000"
 select * from test;
-[2, 4, 1, 3]
+2
+4
+1
+3
 select [1,2,3]::reverse;
-[[3, 2, 1]]
+[3, 2, 1]
 select show('state').lsn;
-[4]
+4
 show wal;
-[{
+{
   "lsn": 4,
   "lsn_min": 1,
   "files": 2,
@@ -104,25 +109,25 @@ show wal;
   "writes": 0,
   "writes_bytes": 0,
   "ops": 0
-}]
+}
 disconnect S0;
 close E3;
 # test: backup checkpoint
 open E0;
 connect E0 S0 127.0.0.1:3480;
 select show('state').lsn;
-[4]
+4
 select show('state').catalog;
-[0]
+0
 select show('state').catalog_pending;
-[3]
+3
 checkpoint;
 select show('state').lsn;
-[4]
+4
 select show('state').catalog;
-[3]
+3
 select show('state').catalog_pending;
-[3]
+3
 backup E4 http://127.0.0.1:3480;
 close E4;
 disconnect S0;
@@ -131,15 +136,18 @@ close E0;
 open E4;
 connect E4 S0 127.0.0.1:3480;
 select show('state').lsn;
-[4]
+4
 select show('state').catalog;
-[3]
+3
 select show('state').catalog_pending;
-[3]
+3
 select * from test;
-[1, 3, 2, 4]
+1
+3
+2
+4
 select [1,2,3]::reverse;
-[[3, 2, 1]]
+[3, 2, 1]
 disconnect S0;
 close E4;
 # test: backup checkpoint with wal
@@ -147,11 +155,11 @@ open E0;
 connect E0 S0 127.0.0.1:3480;
 insert into test values (5),(6),(7);
 select show('state').lsn;
-[5]
+5
 select show('state').catalog;
-[3]
+3
 select show('state').catalog_pending;
-[3]
+3
 backup E5 http://127.0.0.1:3480;
 close E5;
 disconnect S0;
@@ -160,14 +168,20 @@ close E0;
 open E5;
 connect E5 S0 127.0.0.1:3480;
 select show('state').lsn;
-[5]
+5
 select show('state').catalog;
-[3]
+3
 select show('state').catalog_pending;
-[3]
+3
 select * from test;
-[1, 3, 2, 7, 4, 5, 6]
+1
+3
+2
+7
+4
+5
+6
 select [1,2,3]::reverse;
-[[3, 2, 1]]
+[3, 2, 1]
 disconnect S0;
 close E5;

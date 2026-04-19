@@ -2,86 +2,89 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: default checkpoint
 select show('state').lsn;
-[0]
+0
 select show('state').catalog;
-[0]
+0
 select show('state').catalog_pending;
-[0]
+0
 # test: checkpoint (no data)
 checkpoint;
 select show('state').lsn;
-[0]
+0
 select show('state').catalog;
-[0]
+0
 select show('state').catalog_pending;
-[0]
+0
 # test: create table
 create table test (id serial primary key);
 select show('state').lsn;
-[1]
+1
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-[1]
+1
 select show('state').catalog;
-[1]
+1
 select show('state').catalog_pending;
-[1]
+1
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[1]
+1
 select show('state').catalog;
-[1]
+1
 select show('state').catalog_pending;
-[1]
+1
 select * from test;
-[]
 # test: insert
 insert into test () values (), (), ();
 select identity_of("test");
-[3]
+3
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[2]
+2
 select show('state').catalog;
-[1]
+1
 select show('state').catalog_pending;
-[1]
+1
 select identity_of("test");
-[3]
+3
 select * from test;
-[2, 0, 1]
+2
+0
+1
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-[2]
+2
 select show('state').catalog;
-[1]
+1
 select show('state').catalog_pending;
-[1]
+1
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[2]
+2
 select show('state').catalog;
-[1]
+1
 select show('state').catalog_pending;
-[1]
+1
 select identity_of("test");
-[3]
+3
 select * from test;
-[2, 0, 1]
+2
+0
+1
 # test: create function
 create function reverse(array json) return json
 begin
@@ -108,18 +111,18 @@ show functions all;
   "grants": []
 }]
 select [1,2,3]::reverse;
-[[3, 2, 1]]
+[3, 2, 1]
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[3]
+3
 select show('state').catalog;
-[1]
+1
 select show('state').catalog_pending;
-[3]
+3
 show functions all;
 [{
   "user": "main",
@@ -137,26 +140,26 @@ show functions all;
   "grants": []
 }]
 select [1,2,3]::reverse;
-[[3, 2, 1]]
+[3, 2, 1]
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-[3]
+3
 select show('state').catalog;
-[3]
+3
 select show('state').catalog_pending;
-[3]
+3
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[3]
+3
 select show('state').catalog;
-[3]
+3
 select show('state').catalog_pending;
-[3]
+3
 show functions all;
 [{
   "user": "main",
@@ -174,7 +177,7 @@ show functions all;
   "grants": []
 }]
 select [1,2,3]::reverse;
-[[3, 2, 1]]
+[3, 2, 1]
 # test: create or replace function
 create or replace function reverse(array json) return json
 begin
@@ -201,18 +204,18 @@ show functions all;
   "grants": []
 }]
 select [1,2,3]::reverse;
-[[-3, -2, -1]]
+[-3, -2, -1]
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[4]
+4
 select show('state').catalog;
-[3]
+3
 select show('state').catalog_pending;
-[4]
+4
 show functions all;
 [{
   "user": "main",
@@ -230,26 +233,26 @@ show functions all;
   "grants": []
 }]
 select [1,2,3]::reverse;
-[[-3, -2, -1]]
+[-3, -2, -1]
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-[4]
+4
 select show('state').catalog;
-[4]
+4
 select show('state').catalog_pending;
-[4]
+4
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[4]
+4
 select show('state').catalog;
-[4]
+4
 select show('state').catalog_pending;
-[4]
+4
 show functions all;
 [{
   "user": "main",
@@ -267,48 +270,48 @@ show functions all;
   "grants": []
 }]
 select [1,2,3]::reverse;
-[[-3, -2, -1]]
+[-3, -2, -1]
 # test: create user
 create user test;
 select show('state').lsn;
-[5]
+5
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[5]
+5
 select show('state').catalog;
-[4]
+4
 select show('state').catalog_pending;
-[5]
+5
 select show('user', 'test').name;
-["test"]
+"test"
 select identity_of("test");
-[3]
+3
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-[5]
+5
 select show('state').catalog;
-[5]
+5
 select show('state').catalog_pending;
-[5]
+5
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-[5]
+5
 select show('state').catalog;
-[5]
+5
 select show('state').catalog_pending;
-[5]
+5
 select show('user', 'test').name;
-["test"]
+"test"
 select identity_of("test");
-[3]
+3
 disconnect S0;
 close E0;

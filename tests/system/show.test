@@ -108,7 +108,7 @@ explain show log_enable;
 
 # test: show (local shadow)
 disconnect S0;
-connect E0 S0 127.0.0.1:3485/?timezone=Asia/Tokyo&format=full;
+connect E0 S0 127.0.0.1:3485/?timezone=Asia/Tokyo;
 show all;
 show timezone;
 

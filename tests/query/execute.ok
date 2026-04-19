@@ -10,22 +10,22 @@ begin
 	return rev;
 end;
 execute;
-{"msg": "execute❰;❱ ⟵ name expected"}
+error: execute❰;❱ ⟵ name expected
 execute 1;
-{"msg": "execute ❰1❱ ⟵ name expected"}
+error: execute ❰1❱ ⟵ name expected
 execute test;
-{"msg": "execute ❰test❱ ⟵ function not found"}
+error: execute ❰test❱ ⟵ function not found
 execute reverse(;
-{"msg": "unexpected JSON token"}
+error: unexpected JSON token
 execute reverse(1;
-{"msg": "execute reverse(1❰;❱ ⟵ ) expected"}
+error: execute reverse(1❰;❱ ⟵ ) expected
 execute reverse(1, ;
-{"msg": "execute reverse(1, ❰;❱ ⟵ EXECUTE arguments mismatch"}
+error: execute reverse(1, ❰;❱ ⟵ EXECUTE arguments mismatch
 execute reverse(1, );
-{"msg": "execute reverse(1, ❰)❱ ⟵ EXECUTE arguments mismatch"}
+error: execute reverse(1, ❰)❱ ⟵ EXECUTE arguments mismatch
 # test: execute
 explain execute reverse([1,2,3]);
-[{
+{
   "function": "main.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -46,45 +46,45 @@ explain execute reverse([1,2,3]);
     "15": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute reverse([1,2,3]);
-[[3, 2, 1]]
+[3, 2, 1]
 execute reverse(null);
-[[]]
+[]
 execute reverse([]);
-[[]]
+[]
 # test: execute return table
 create function test() return table (a int, b int)
 begin
 	return select 1, 2;
 end;
 execute test();
-[[1, 2]]
+1 │ 2
 drop function test;
 # test: execute (stmt)
 begin execute reverse([1,2,3]); end;
-{"msg": "begin ❰execute❱ ⟵ cannot be used here"}
+error: begin ❰execute❱ ⟵ cannot be used here
 # test: execute (inside cte)
 begin declare x int; with a as (execute reverse([1,2,3])) select 1; end;
-{"msg": "begin declare x int; with a as (❰execute❱ ⟵ cannot be used here"}
+error: begin declare x int; with a as (❰execute❱ ⟵ cannot be used here
 begin declare x int; with a as (select 1) execute reverse([1,2,3]); end;
-{"msg": "begin declare x int; with a as (select 1) ❰execute❱ ⟵ cannot be used here"}
+error: begin declare x int; with a as (select 1) ❰execute❱ ⟵ cannot be used here
 # test: select udf() parsing
 select reverse(;
-{"msg": "select reverse(❰;❱ ⟵ bad expression"}
+error: select reverse(❰;❱ ⟵ bad expression
 select reverse(1;
-{"msg": "select reverse(1❰;❱ ⟵ ) expected"}
+error: select reverse(1❰;❱ ⟵ ) expected
 select reverse(a;
-{"msg": "select reverse(a❰;❱ ⟵ ) expected"}
+error: select reverse(a❰;❱ ⟵ ) expected
 select reverse(a,;
-{"msg": "select reverse(a,❰;❱ ⟵ bad expression"}
+error: select reverse(a,❰;❱ ⟵ bad expression
 select reverse(a,);
-{"msg": "select reverse(a,❰)❱ ⟵ bad expression"}
+error: select reverse(a,❰)❱ ⟵ bad expression
 select reverse();
-{"msg": "select ❰reverse❱ ⟵ invalid number of arguments"}
+error: select ❰reverse❱ ⟵ invalid number of arguments
 # test: select udf()
 explain select reverse([1,2,3]);
-[{
+{
   "main": {
     "00": "push_json           0      0      0     ",
     "01": "call_udf            0      -      -     # main.reverse()",
@@ -133,15 +133,15 @@ explain select reverse([1,2,3]);
     },
     "access": []
   }]
-}]
+}
 select reverse([1,2,3]);
-[[3, 2, 1]]
+[3, 2, 1]
 select [1,2,3]::reverse;
-[[3, 2, 1]]
+[3, 2, 1]
 select [1,2,3]::reverse();
-[[3, 2, 1]]
+[3, 2, 1]
 select [1,2,3]::reverse::reverse;
-[[1, 2, 3]]
+[1, 2, 3]
 # test: select udf() (closing)
 create table test (id int primary key);
 insert into test values (1), (2), (3);
@@ -156,7 +156,7 @@ explain begin
 	select fn();
 	select 1;
 end;
-[{
+{
   "main": {
     "00": "int                 0      -      0     # 1",
     "01": "call_udf            1      -      -     # main.fn()",
@@ -189,15 +189,15 @@ end;
     },
     "access": [["main.test", "shared", "select"]]
   }]
-}]
+}
 begin
 	select 1;
 	select fn();
 	select 1;
 end;
-[1]
+1
 select fn();
-[1]
+1
 drop function fn;
 drop table test;
 # test: select udf() (nested)
@@ -214,7 +214,7 @@ begin
 	return select b(id);
 end;
 explain select c(123);
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 123",
     "01": "call_udf            0      -      -     # main.c()",
@@ -245,29 +245,31 @@ explain select c(123);
     },
     "access": []
   }]
-}]
+}
 select c(123);
-[123]
+123
 drop function c;
 drop function b;
 drop function a;
 # test: select udf() (inside cte)
 begin declare x int; with a as (select reverse([1,2,3])) select * from a; end;
-[3, 2, 1]
+3
+2
+1
 begin declare x int; with a as (select 1) select reverse([1,2,3]); end;
-[[3, 2, 1]]
+[3, 2, 1]
 # test: select udf() from expr (unsupported)
 select x::reverse() from ([1,2,3]) x;
-{"msg": "select x❰::❱ ⟵ UDF cannot be called with FROM clause"}
+error: select x❰::❱ ⟵ UDF cannot be called with FROM clause
 # test: select udf() from table (unsupported)
 create table test (id int primary key);
 select x::reverse() from test;
-{"msg": "select x❰::❱ ⟵ UDF cannot be called with FROM clause"}
+error: select x❰::❱ ⟵ UDF cannot be called with FROM clause
 select * from test where reverse(null);
-{"msg": "select * from test where ❰reverse❱ ⟵ UDF cannot be used here"}
+error: select * from test where ❰reverse❱ ⟵ UDF cannot be used here
 drop table test;
 # test: select from udf() (unsupported)
 select * from reverse(null);
-{"msg": "select * from ❰reverse❱ ⟵ function not found"}
+error: select * from ❰reverse❱ ⟵ function not found
 disconnect S0;
 close E0;

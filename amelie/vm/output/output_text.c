@@ -21,7 +21,8 @@
 static void
 output_text_write(Output* self, Columns* columns, Value* value)
 {
-	auto pretty = self->format_pretty && columns->count == 1;
+	char separator[] = " │ ";
+	auto pretty = columns->count == 1;
 	auto buf = self->buf;
 	if (value->type == TYPE_STORE)
 	{
@@ -41,7 +42,7 @@ output_text_write(Output* self, Columns* columns, Value* value)
 			{
 				auto column = list_at(Column, link);
 				if (column->order > 0)
-					buf_write(buf, ", ", 2);
+					buf_write(buf, separator, sizeof(separator) - 1);
 				value_export(row + column->order, self->timezone, pretty, buf);
 				output_ensure_limit(self);
 			}
@@ -55,7 +56,7 @@ output_text_write(Output* self, Columns* columns, Value* value)
 	{
 		auto column = list_at(Column, link);
 		if (column->order > 0)
-			buf_write(buf, ", ", 2);
+			buf_write(buf, separator, sizeof(separator) - 1);
 		value_export(value + column->order, self->timezone, pretty, buf);
 		output_ensure_limit(self);
 	}
@@ -66,7 +67,7 @@ output_text_write_json(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
 	unused(column);
 	unused(unwrap);
-	json_export_as(self->buf, self->timezone, self->format_pretty, 0, &pos);
+	json_export_as(self->buf, self->timezone, true, 0, &pos);
 }
 
 static void

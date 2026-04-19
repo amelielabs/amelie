@@ -2,15 +2,15 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3480;
 # test: create replica statement parsing
 create replica;
-{"msg": "create replica❰;❱ ⟵ string expected"}
+error: create replica❰;❱ ⟵ string expected
 create replica 123;
-{"msg": "create replica ❰123❱ ⟵ string expected"}
+error: create replica ❰123❱ ⟵ string expected
 create replica "00000000-0000-0000-0000-000000000000";
-{"msg": "create replica \"00000000-0000-0000-0000-000000000000\"❰;❱ ⟵ string expected"}
+error: create replica "00000000-0000-0000-0000-000000000000"❰;❱ ⟵ string expected
 create replica "00000000-0000-0000-0000-000000000000" 1;
-{"msg": "create replica \"00000000-0000-0000-0000-000000000000\" ❰1❱ ⟵ string expected"}
+error: create replica "00000000-0000-0000-0000-000000000000" ❰1❱ ⟵ string expected
 create replica "00000000-0000-0000-0000-000000000000";
-{"msg": "create replica \"00000000-0000-0000-0000-000000000000\"❰;❱ ⟵ string expected"}
+error: create replica "00000000-0000-0000-0000-000000000000"❰;❱ ⟵ string expected
 # test: create replica
 create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
 show replicas;
@@ -33,11 +33,11 @@ show replicas;
 }]
 # test: drop replica statement parsing
 drop replica;
-{"msg": "drop replica❰;❱ ⟵ string expected"}
+error: drop replica❰;❱ ⟵ string expected
 drop replica 123;
-{"msg": "drop replica ❰123❱ ⟵ string expected"}
+error: drop replica ❰123❱ ⟵ string expected
 drop replica "123";
-{"msg": "failed to parse uuid"}
+error: failed to parse uuid
 # test: drop replica
 drop replica "00000000-0000-0000-0000-000000000000";
 show replicas;
@@ -45,7 +45,7 @@ show replicas;
 # test: drop replica if exists
 drop replica if exists "00000000-0000-0000-0000-000000000000";
 drop replica "00000000-0000-0000-0000-000000000000";
-{"msg": "replica '00000000-0000-0000-0000-000000000000': not exists"}
+error: replica '00000000-0000-0000-0000-000000000000': not exists
 # test: recover
 create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
 create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1";

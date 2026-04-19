@@ -4,9 +4,28 @@ connect E0 S0 127.0.0.1:3485;
 create table test (id serial primary key);
 insert into test generate 20;
 select * from test;
-[0, 1, 6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
+0
+1
+6
+7
+8
+14
+15
+17
+2
+9
+10
+12
+18
+19
+3
+4
+5
+11
+13
+16
 explain select * from test order by id;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -26,12 +45,31 @@ explain select * from test order by id;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 # test: select from table order by asc
 explain select * from test order by id asc;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -51,12 +89,31 @@ explain select * from test order by id asc;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id asc;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 # test: select from table order by desc
 explain select * from test order by id desc;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -77,12 +134,31 @@ explain select * from test order by id desc;
     "10": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id desc;
-[19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+19
+18
+17
+16
+15
+14
+13
+12
+11
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
 # test: select from table order by limit
 explain select * from test order by id limit 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -106,22 +182,56 @@ explain select * from test order by id limit 1;
     "11": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id limit 1;
-[0]
+0
 select * from test order by id limit 2;
-[0, 1]
+0
+1
 select * from test order by id limit 3;
-[0, 1, 2]
+0
+1
+2
 select * from test order by id limit 4;
-[0, 1, 2, 3]
+0
+1
+2
+3
 select * from test order by id limit 10;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
 select * from test order by id limit 20;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 # test: select from table order by limit 0
 explain select * from test order by id limit 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -145,14 +255,13 @@ explain select * from test order by id limit 0;
     "11": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id limit 0;
-[]
 select * from test order by id limit -1;
-{"msg": "select * from test order by id limit ❰-1❱ ⟵ positive integer value expected"}
+error: select * from test order by id limit ❰-1❱ ⟵ positive integer value expected
 # test: select from table order by desc limit
 explain select * from test order by id desc limit 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -175,22 +284,56 @@ explain select * from test order by id desc limit 1;
     "10": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id desc limit 1;
-[19]
+19
 select * from test order by id desc limit 2;
-[19, 18]
+19
+18
 select * from test order by id desc limit 3;
-[19, 18, 17]
+19
+18
+17
 select * from test order by id desc limit 4;
-[19, 18, 17, 16]
+19
+18
+17
+16
 select * from test order by id desc limit 10;
-[19, 18, 17, 16, 15, 14, 13, 12, 11, 10]
+19
+18
+17
+16
+15
+14
+13
+12
+11
+10
 select * from test order by id desc limit 20;
-[19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+19
+18
+17
+16
+15
+14
+13
+12
+11
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
 # test: select from table order by limit offset
 explain select * from test order by id limit 1 offset 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -218,12 +361,12 @@ explain select * from test order by id limit 1 offset 0;
     "13": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id limit 1 offset 0;
-[0]
+0
 # test: select from table order by limit offset #2
 explain select * from test order by id limit 1 offset 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -251,18 +394,18 @@ explain select * from test order by id limit 1 offset 1;
     "13": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id limit 1 offset 1;
-[1]
+1
 select * from test order by id limit 1 offset 2;
-[2]
+2
 select * from test order by id limit 1 offset 3;
-[3]
+3
 select * from test order by id limit 1 offset 4;
-[4]
+4
 # test: select from table order by desc limit offset
 explain select * from test order by id desc limit 1 offset 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -287,18 +430,18 @@ explain select * from test order by id desc limit 1 offset 1;
     "10": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id desc limit 1 offset 1;
-[18]
+18
 select * from test order by id desc limit 1 offset 2;
-[17]
+17
 select * from test order by id desc limit 1 offset 3;
-[16]
+16
 select * from test order by id desc limit 1 offset 4;
-[15]
+15
 # test: select from table order by offset
 explain select * from test order by id offset 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -320,22 +463,107 @@ explain select * from test order by id offset 1;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id offset 1;
-[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 select * from test order by id offset 2;
-[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 select * from test order by id offset 3;
-[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 select * from test order by id offset 4;
-[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 select * from test order by id offset 0;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 select * from test order by id offset -1;
-{"msg": "select * from test order by id offset ❰-1❱ ⟵ positive integer value expected"}
+error: select * from test order by id offset ❰-1❱ ⟵ positive integer value expected
 # test: select from table order by desc offset
 explain select * from test order by id desc offset 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -358,40 +586,258 @@ explain select * from test order by id desc offset 1;
     "10": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test order by id desc offset 1;
-[18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+18
+17
+16
+15
+14
+13
+12
+11
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
 select * from test order by id desc offset 2;
-[17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+17
+16
+15
+14
+13
+12
+11
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
 select * from test order by id desc offset 3;
-[16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+16
+15
+14
+13
+12
+11
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
 select * from test order by id desc offset 4;
-[15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+15
+14
+13
+12
+11
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
 select * from test order by id desc offset 0;
-[19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+19
+18
+17
+16
+15
+14
+13
+12
+11
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
 select * from test order by id desc offset -1;
-{"msg": "select * from test order by id desc offset ❰-1❱ ⟵ positive integer value expected"}
+error: select * from test order by id desc offset ❰-1❱ ⟵ positive integer value expected
 # test: select from table order by int
 select id from test order by 0;
-{"msg": "select id from test order by ❰0❱ ⟵ column 0 is not in the SELECT expr list"}
+error: select id from test order by ❰0❱ ⟵ column 0 is not in the SELECT expr list
 select id from test order by 1;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 select id from test order by 2;
-{"msg": "select id from test order by ❰2❱ ⟵ column 2 is not in the SELECT expr list"}
+error: select id from test order by ❰2❱ ⟵ column 2 is not in the SELECT expr list
 # test: select from table order by alias
 select id from test order by id;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 select id as c from test order by c;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 select (id + id) as c from test order by c;
-[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38]
+0
+2
+4
+6
+8
+10
+12
+14
+16
+18
+20
+22
+24
+26
+28
+30
+32
+34
+36
+38
 select (id + id) as c from test order by c desc;
-[38, 36, 34, 32, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0]
+38
+36
+34
+32
+30
+28
+26
+24
+22
+20
+18
+16
+14
+12
+10
+8
+6
+4
+2
+0
 # test: select from table order by alias (conflict)
 select id, id from test order by id;
-[[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10], [11, 11], [12, 12], [13, 13], [14, 14], [15, 15], [16, 16], [17, 17], [18, 18], [19, 19]]
+0 │ 0
+1 │ 1
+2 │ 2
+3 │ 3
+4 │ 4
+5 │ 5
+6 │ 6
+7 │ 7
+8 │ 8
+9 │ 9
+10 │ 10
+11 │ 11
+12 │ 12
+13 │ 13
+14 │ 14
+15 │ 15
+16 │ 16
+17 │ 17
+18 │ 18
+19 │ 19
 select id, 123 as id from test order by id;
-[[0, 123], [1, 123], [2, 123], [3, 123], [4, 123], [5, 123], [6, 123], [7, 123], [8, 123], [9, 123], [10, 123], [11, 123], [12, 123], [13, 123], [14, 123], [15, 123], [16, 123], [17, 123], [18, 123], [19, 123]]
+0 │ 123
+1 │ 123
+2 │ 123
+3 │ 123
+4 │ 123
+5 │ 123
+6 │ 123
+7 │ 123
+8 │ 123
+9 │ 123
+10 │ 123
+11 │ 123
+12 │ 123
+13 │ 123
+14 │ 123
+15 │ 123
+16 │ 123
+17 │ 123
+18 │ 123
+19 │ 123
 drop table test;
 disconnect S0;
 close E0;

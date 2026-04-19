@@ -2,29 +2,30 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: delete statement parsing
 delete;
-{"msg": "delete❰;❱ ⟵ FROM expected"}
+error: delete❰;❱ ⟵ FROM expected
 delete junk;
-{"msg": "delete ❰junk❱ ⟵ FROM expected"}
+error: delete ❰junk❱ ⟵ FROM expected
 delete 1;
-{"msg": "delete ❰1❱ ⟵ FROM expected"}
+error: delete ❰1❱ ⟵ FROM expected
 delete from 1;
-{"msg": "delete from ❰1❱ ⟵ target name expected"}
+error: delete from ❰1❱ ⟵ target name expected
 delete from "name";
-{"msg": "delete from ❰\"name\"❱ ⟵ target name expected"}
+error: delete from ❰"name"❱ ⟵ target name expected
 delete from test junk;
-{"msg": "delete from ❰test❱ ⟵ relation not found"}
+error: delete from ❰test❱ ⟵ relation not found
 delete from test where true limit;
-{"msg": "delete from ❰test❱ ⟵ relation not found"}
+error: delete from ❰test❱ ⟵ relation not found
 # test: delete
 create table test(id int primary key);
 insert into test values (0);
 insert into test values (1);
 insert into main.test values (2);
 select * from test;
-[0, 1, 2]
+0
+1
+2
 delete from test;
 select * from test;
-[]
 drop table test;
 # test: delete point-lookup
 create table test(id int primary key);
@@ -32,7 +33,7 @@ insert into test values (0);
 insert into test values (1);
 insert into test values (2);
 explain delete from test where id = 3;
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 3",
     "01": "send_lookup         0      -      32    # main.test (delete, closing)",
@@ -50,22 +51,24 @@ explain delete from test where id = 3;
     "08": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "delete"]]
-}]
+}
 delete from test where id = 3;
 select * from test;
-[0, 1, 2]
+0
+1
+2
 delete from test where id = 2;
 select * from test;
-[0, 1]
+0
+1
 delete from test where id = 0;
 select * from test;
-[1]
+1
 delete from test where id = -1;
 select * from test;
-[1]
+1
 delete from test where id = 1;
 select * from test;
-[]
 drop table test;
 # test: delete range scan
 create table test(id int primary key);
@@ -73,18 +76,25 @@ insert into test values (0);
 insert into test values (1);
 insert into test values (2);
 select * from test;
-[0, 1, 2]
+0
+1
+2
 delete from test where id > 3;
 select * from test;
-[0, 1, 2]
+0
+1
+2
 delete from test where id > 2;
 select * from test;
-[0, 1, 2]
+0
+1
+2
 delete from test where id >= 2;
 select * from test;
-[0, 1]
+0
+1
 explain delete from test where id > 0 and id < 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (delete, closing)",
     "01": "ret                 -1     0      -     "
@@ -110,16 +120,16 @@ explain delete from test where id > 0 and id < 1;
     "17": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "delete"]]
-}]
+}
 delete from test where id > 0 and id < 1;
 select * from test;
-[0, 1]
+0
+1
 delete from test where id > 0 and id <= 1;
 select * from test;
-[0]
+0
 delete from test where id >= 0 and id <= 1;
 select * from test;
-[]
 drop table test;
 # test: delete null
 create table test(id int primary key, data int);
@@ -128,7 +138,7 @@ insert into test values (1, 2);
 insert into test values (2, null);
 delete from test where data > 0;
 select * from test;
-[[2, null]]
+2 │ null
 drop table test;
 # test: delete insert delete
 create table test(id int primary key, data int);
@@ -137,20 +147,22 @@ insert into test values (1, 2);
 insert into test values (2, 0);
 delete from test;
 select * from test;
-[]
 insert into test values (0, 3);
 insert into test values (1, 2);
 insert into test values (2, 0);
 select * from test;
-[[0, 3], [1, 2], [2, 0]]
+0 │ 3
+1 │ 2
+2 │ 0
 delete from test;
 select * from test;
-[]
 insert into test values (0, 3);
 insert into test values (1, 2);
 insert into test values (2, 0);
 select * from test;
-[[0, 3], [1, 2], [2, 0]]
+0 │ 3
+1 │ 2
+2 │ 0
 drop table test;
 # test: delete returning
 create table test(id int primary key);
@@ -158,19 +170,20 @@ insert into test values (0);
 insert into test values (1);
 insert into test values (2);
 delete from test returning *;
-[0, 1, 2]
+0
+1
+2
 select * from test;
-[]
 insert into test values (0);
 insert into test values (1);
 insert into test values (2);
 delete from test where id >= 1 returning *;
-[1, 2]
+1
+2
 select * from test;
-[0]
+0
 delete from test;
 delete from test returning *;
-[]
 drop table test;
 # test: delete secondary index
 create table test (id int primary key, data int);
@@ -180,14 +193,14 @@ insert into test values (1, 1);
 insert into test values (2, 0);
 delete from test where id = 1;
 select * from test;
-[[0, 2], [2, 0]]
+0 │ 2
+2 │ 0
 select * from test use index (i);
-[[2, 0], [0, 2]]
+2 │ 0
+0 │ 2
 delete from test;
 select * from test;
-[]
 select * from test use index (i);
-[]
 drop table test;
 disconnect S0;
 close E0;

@@ -4,26 +4,36 @@ create table test (id int primary key, data int default 1);
 insert into test (id) values (1), (2), (3);
 # test: select label
 select 1 name;
-[1]
+1
 # test: select as label
 select 1 AS name;
-[1]
+1
 # test: select column as from
 create table test (id int primary key);
-{"msg": "table 'test': already exists"}
+error: table 'test': already exists
 select id as x from test;
-[1, 2, 3]
+1
+2
+3
 select id x from test;
-[1, 2, 3]
+1
+2
+3
 # test: select from (select column as from)
 select t.id from (select id from test) t;
-[1, 2, 3]
+1
+2
+3
 select t.x from (select id as x from test) t;
-[1, 2, 3]
+1
+2
+3
 select t.x from (select z.id as x from (select id from test) z) t;
-[1, 2, 3]
+1
+2
+3
 explain select t.x from (select z.id as x from (select id from test) z) t;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select)",
     "01": "union               1      0      0     ",
@@ -59,7 +69,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 drop table test;
 disconnect S0;
 close E0;

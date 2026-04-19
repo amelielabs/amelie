@@ -2,19 +2,19 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: select var
 explain begin declare x int; select x; end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "var                 0      0      0     ",
     "02": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin declare x int; select x; end;
-[null]
+null
 # test: select var expr
 explain begin declare x int := 0; select x; end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -23,15 +23,15 @@ explain begin declare x int := 0; select x; end;
     "04": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin declare x int := 0; select x; end;
-[0]
+0
 explain begin
 	declare x int := 0;
 	select x; x:= 15;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -43,21 +43,21 @@ end;
     "07": "ret                 1      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare x int := 0;
 	select x;
 	x := 15;
 	select x;
 end;
-[15]
+15
 # test: select into expr
 explain begin
 	declare x int;
 	select 123 into x;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 123",
@@ -66,13 +66,13 @@ end;
     "04": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare x int;
 	select 123 into x;
 	select x;
 end;
-[123]
+123
 explain begin
 	declare x int;
 	select 123 into x;
@@ -80,7 +80,7 @@ explain begin
 	select 15 into x;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 123",
@@ -92,7 +92,7 @@ end;
     "07": "ret                 1      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare x int;
 	select 123 into x;
@@ -100,7 +100,7 @@ begin
 	select 15 into x;
 	select x;
 end;
-[15]
+15
 # test: select from into (no recv)
 create table test (id int primary key);
 insert into test values (1), (2), (3);
@@ -108,7 +108,7 @@ explain begin
 	declare x int;
 	select id into x from test;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -129,7 +129,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -140,7 +140,7 @@ explain begin
 	select id into x from test;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -162,13 +162,13 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	select x;
 end;
-[1]
+1
 # test: select from into / select expr / select var
 explain begin
 	declare x int;
@@ -176,7 +176,7 @@ explain begin
 	select 123;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -199,14 +199,14 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	select 123;
 	select x;
 end;
-[1]
+1
 # test: select from into / select from / select var
 explain begin
 	declare x int;
@@ -214,7 +214,7 @@ explain begin
 	select * from test;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select)",
@@ -245,14 +245,14 @@ end;
     "15": "ret                 1      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	select * from test;
 	select x;
 end;
-[1]
+1
 # test: select from into / select expr / select from var
 explain begin
 	declare x int;
@@ -260,7 +260,7 @@ explain begin
 	select 123;
 	select * from x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -294,21 +294,21 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	select 123;
 	select * from x;
 end;
-[1]
+1
 # test: select from into / select from into
 explain begin
 	declare x int;
 	select id into x from test;
 	select 123 into x from test;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select)",
@@ -341,7 +341,7 @@ end;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -354,7 +354,7 @@ explain begin
 	select 123 into x from test;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select)",
@@ -388,21 +388,21 @@ end;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	select 123 into x from test;
 	select x;
 end;
-[123]
+123
 # test: select expr into / select from into
 explain begin
 	declare x int;
 	select 123 into x;
 	select id into x from test;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 123",
@@ -425,7 +425,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select 123 into x;
@@ -438,7 +438,7 @@ explain begin
 	select id into x from test;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 123",
@@ -462,14 +462,14 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select 123 into x;
 	select id into x from test;
 	select x;
 end;
-[1]
+1
 # test: select from into / if / select var
 explain begin
 	declare x int;
@@ -477,7 +477,7 @@ explain begin
 	if true then end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -501,14 +501,14 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	if true then end;
 	select x;
 end;
-[1]
+1
 # test: select from into / if var / select var
 explain begin
 	declare x int;
@@ -516,7 +516,7 @@ explain begin
 	if x then end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -540,14 +540,14 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	if x then end;
 	select x;
 end;
-[1]
+1
 # test: select from into / if then select var / select var
 explain begin
 	declare x int;
@@ -557,7 +557,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -582,7 +582,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -591,7 +591,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: select from into / if then var := / select var
 explain begin
 	declare x int;
@@ -601,7 +601,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -627,7 +627,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -636,7 +636,7 @@ begin
 	end;
 	select x;
 end;
-[7]
+7
 # test: select from into / if then := var / select var
 explain begin
 	declare x int;
@@ -647,7 +647,7 @@ explain begin
 	end;
 	select x, y;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -676,7 +676,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	declare y int;
@@ -686,7 +686,7 @@ begin
 	end;
 	select x, y;
 end;
-[[1, 1]]
+1 │ 1
 # test: select from into / if .. else select var / select var
 explain begin
 	declare x int;
@@ -694,7 +694,7 @@ explain begin
 	if false then else select x; end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -720,21 +720,21 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	if false then else select x; end;
 	select x;
 end;
-[1]
+1
 explain begin
 	declare x int;
 	select id into x from test;
 	if false then select 1; else select x; end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -761,14 +761,14 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	if false then select 1; else select x; end;
 	select x;
 end;
-[1]
+1
 # test: select from into / if .. else var := / select var
 explain begin
 	declare x int;
@@ -776,7 +776,7 @@ explain begin
 	if false then else x := 7; end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -803,21 +803,21 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	if false then else x := 7; end;
 	select x;
 end;
-[7]
+7
 explain begin
 	declare x int;
 	select id into x from test;
 	if false then select 1; else x := 7; end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -845,14 +845,14 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	if false then select 1; else x := 7; end;
 	select x;
 end;
-[7]
+7
 # test: select from into / if .. else := var / select var
 explain begin
 	declare x int;
@@ -861,7 +861,7 @@ explain begin
 	if false then else y := x; end;
 	select x, y;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -891,7 +891,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	declare y int;
@@ -899,7 +899,7 @@ begin
 	if false then else y := x; end;
 	select x, y;
 end;
-[[1, 1]]
+1 │ 1
 explain begin
 	declare x int;
 	declare y int;
@@ -907,7 +907,7 @@ explain begin
 	if false then select 1; else y := x; end;
 	select x, y;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -938,7 +938,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	declare y int;
@@ -946,7 +946,7 @@ begin
 	if false then select 1; else y := x; end;
 	select x, y;
 end;
-[[1, 1]]
+1 │ 1
 # test: select from into / if if var / select var
 explain begin
 	declare x int;
@@ -954,7 +954,7 @@ explain begin
 	if true then if x then end; end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -980,14 +980,14 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
 	if true then if x then end; end;
 	select x;
 end;
-[1]
+1
 # test: select from into / if then if select var / select var
 explain begin
 	declare x int;
@@ -999,7 +999,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1026,7 +1026,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -1037,7 +1037,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: select from into / if then if select into var / select var
 explain begin
 	declare x int;
@@ -1049,7 +1049,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1077,7 +1077,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -1088,7 +1088,7 @@ begin
 	end;
 	select x;
 end;
-[123]
+123
 explain begin declare x int;
 	declare y int;
 	select id into x from test;
@@ -1100,7 +1100,7 @@ explain begin declare x int;
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1132,7 +1132,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin declare x int;
 	declare y int;
 	select id into x from test;
@@ -1144,7 +1144,7 @@ begin declare x int;
 	end;
 	select x;
 end;
-[124]
+124
 # test: if select into var / select var
 explain begin
 	declare x int;
@@ -1153,7 +1153,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "bool                0      1      0     ",
@@ -1178,7 +1178,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	if true then
@@ -1186,7 +1186,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: if select into var else select into var / select var
 explain begin
 	declare x int;
@@ -1197,7 +1197,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "bool                0      1      0     ",
@@ -1238,7 +1238,7 @@ end;
     "17": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	if true then
@@ -1248,7 +1248,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 explain begin
 	declare x int;
 	if false then
@@ -1258,7 +1258,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "bool                0      0      0     ",
@@ -1299,7 +1299,7 @@ end;
     "17": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	if false then
@@ -1309,7 +1309,7 @@ begin
 	end;
 	select x;
 end;
-[8]
+8
 # test: select from into / if select into var else select into var / select var
 explain begin
 	declare x int;
@@ -1321,7 +1321,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select)",
@@ -1377,7 +1377,7 @@ end;
     "27": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -1388,7 +1388,7 @@ begin
 	end;
 	select x;
 end;
-[6]
+6
 explain begin
 	declare x int;
 	select id into x from test;
@@ -1399,7 +1399,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select)",
@@ -1455,7 +1455,7 @@ end;
     "27": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -1466,14 +1466,14 @@ begin
 	end;
 	select x;
 end;
-[11]
+11
 # test: select from into / for in var
 explain begin
 	declare x int;
 	select id into x from test;
 	for it in x do end;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1502,7 +1502,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -1516,7 +1516,7 @@ explain begin
 		select x;
 	end;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1542,7 +1542,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -1559,7 +1559,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1589,7 +1589,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -1598,7 +1598,7 @@ begin
 	end;
 	select x;
 end;
-[3]
+3
 explain begin
 	declare x int;
 	declare y int;
@@ -1608,7 +1608,7 @@ explain begin
 	end;
 	select x, y;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1643,7 +1643,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	declare y int;
@@ -1653,7 +1653,7 @@ begin
 	end;
 	select x, y;
 end;
-[[1, 4]]
+1 │ 4
 # test: select from into / for / select var
 explain begin
 	declare x int;
@@ -1663,7 +1663,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1691,7 +1691,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -1700,7 +1700,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: select from into / for if var
 explain begin
 	declare x int;
@@ -1709,7 +1709,7 @@ explain begin
 		if x then end;
 	end;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1736,7 +1736,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -1752,7 +1752,7 @@ explain begin
 		if true then select x; end;
 	end;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1780,7 +1780,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -1799,7 +1799,7 @@ explain begin
 	end;
 	select x, y;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1836,7 +1836,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	declare y int;
@@ -1848,7 +1848,7 @@ begin
 	end;
 	select x, y;
 end;
-[[1, 4]]
+1 │ 4
 explain begin
 	declare x int := 0;
 	for it in ([1,2,3]) do
@@ -1858,7 +1858,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -1879,7 +1879,7 @@ end;
     "16": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare x int := 0;
 	for it in ([1,2,3]) do
@@ -1889,7 +1889,7 @@ begin
 	end;
 	select x;
 end;
-[6]
+6
 explain begin
 	declare x int := 0;
 	for it in ([1,2,3]) do
@@ -1897,7 +1897,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -1916,7 +1916,7 @@ end;
     "14": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare x int := 0;
 	for it in ([1,2,3]) do
@@ -1924,7 +1924,7 @@ begin
 	end;
 	select x;
 end;
-[6]
+6
 # test: select from into / for if if then var
 explain begin
 	declare x int;
@@ -1939,7 +1939,7 @@ explain begin
 	end;
 	select x, y;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -1978,7 +1978,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	declare y int;
@@ -1992,7 +1992,7 @@ begin
 	end;
 	select x, y;
 end;
-[[1, 4]]
+1 │ 4
 # test: select from into / while var do var
 explain begin
 	declare x int;
@@ -2001,7 +2001,7 @@ explain begin
 		x := x - 1;
 	end;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -2029,7 +2029,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -2048,7 +2048,7 @@ explain begin
 	end;
 	select x, y;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -2084,7 +2084,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	declare y int;
@@ -2095,7 +2095,7 @@ begin
 	end;
 	select x, y;
 end;
-[[0, 2]]
+0 │ 2
 # test: while / insert
 explain begin
 	declare x int := 4;
@@ -2104,7 +2104,7 @@ explain begin
 		x := x + 1;
 	end;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 4",
@@ -2129,7 +2129,7 @@ end;
     "01": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "insert"]]
-}]
+}
 begin
 	declare x int := 4;
 	while x < 8 do
@@ -2145,7 +2145,7 @@ explain begin
 	end;
 	select * from test;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 8",
@@ -2180,7 +2180,7 @@ end;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared_rw", "insert", "select"]]
-}]
+}
 begin
 	declare x int := 8;
 	while x < 10 do
@@ -2189,7 +2189,15 @@ begin
 	end;
 	select * from test;
 end;
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
+1
+2
+3
+4
+5
+6
+7
+8
+9
 # test: select from into / while break
 explain begin
 	declare x int;
@@ -2199,7 +2207,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -2225,7 +2233,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -2234,7 +2242,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: select from into / while if break
 explain begin
 	declare x int;
@@ -2246,7 +2254,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -2274,7 +2282,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -2285,7 +2293,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: while select from into / break
 explain begin
 	declare x int;
@@ -2296,7 +2304,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "bool                0      1      0     ",
@@ -2325,7 +2333,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	while true do
@@ -2335,7 +2343,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: while select from into / if break
 explain begin
 	declare x int;
@@ -2348,7 +2356,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "bool                0      1      0     ",
@@ -2379,7 +2387,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	while true do
@@ -2391,7 +2399,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: while select from into / if if break
 explain begin
 	declare x int;
@@ -2406,7 +2414,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "bool                0      1      0     ",
@@ -2439,7 +2447,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	while true do
@@ -2453,7 +2461,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: while select from into / if if continue
 explain begin
 	declare i int := 0;
@@ -2474,7 +2482,7 @@ explain begin
 	end;
 	select i, x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -2521,7 +2529,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare i int := 0;
 	declare x int;
@@ -2541,7 +2549,7 @@ begin
 	end;
 	select i, x;
 end;
-[[3, 1]]
+3 │ 1
 # test: select from into / for break
 explain begin
 	declare x int;
@@ -2551,7 +2559,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -2578,7 +2586,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -2587,7 +2595,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: select from into / for if break
 explain begin
 	declare x int;
@@ -2599,7 +2607,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -2628,7 +2636,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	select id into x from test;
@@ -2639,7 +2647,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: for select from into / break
 explain begin
 	declare x int;
@@ -2649,7 +2657,7 @@ explain begin
 	end;
 	select x;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",
@@ -2677,7 +2685,7 @@ end;
     "07": "ret                 2      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare x int;
 	for i in ([1]) do
@@ -2686,7 +2694,7 @@ begin
 	end;
 	select x;
 end;
-[1]
+1
 # test: for select from into / if break
 explain begin
 	declare p int;
@@ -2700,7 +2708,7 @@ explain begin
 	end;
 	select x, p;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "json                0      0      0     ",
@@ -2735,7 +2743,7 @@ end;
     "07": "ret                 2      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare p int;
 	declare x int;
@@ -2748,7 +2756,7 @@ begin
 	end;
 	select x, p;
 end;
-[[1, null]]
+1 │ null
 # test: for select from into / if continue
 explain begin
 	declare p int;
@@ -2762,7 +2770,7 @@ explain begin
 	end;
 	select x, p;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "json                0      0      0     ",
@@ -2797,7 +2805,7 @@ end;
     "07": "ret                 2      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare p int;
 	declare x int;
@@ -2810,7 +2818,7 @@ begin
 	end;
 	select x, p;
 end;
-[[1, null]]
+1 │ null
 drop table test;
 # test: insert var / select
 create table test (id int primary key);
@@ -2821,7 +2829,7 @@ explain begin
 	insert into test values (id);
 	select * from test;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      40    # main.test (select)",
@@ -2873,14 +2881,17 @@ end;
     "23": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared_rw", "insert", "select"]]
-}]
+}
 begin
 	declare id int;
 	select max(test.id) + 1 into id from test;
 	insert into test values (id);
 	select * from test;
 end;
-[1, 2, 3, 4]
+1
+2
+3
+4
 drop table test;
 disconnect S0;
 close E0;

@@ -2,10 +2,10 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: watch parsing
 watch;
-{"msg": "watch❰;❱ ⟵ bad expression"}
+error: watch❰;❱ ⟵ bad expression
 # test: watch
 show state;
-[{
+{
   "version": "1.0.0-rc1",
   "directory": "_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000000",
@@ -17,9 +17,9 @@ show state;
   "catalog": 0,
   "catalog_pending": 0,
   "read_only": false
-}]
+}
 explain watch show('state').lsn::int = 0;
-[{
+{
   "main": {
     "00": "push_string         0      0      0     # state",
     "01": "call                0      -      1     # show()",
@@ -38,7 +38,7 @@ explain watch show('state').lsn::int = 0;
     "14": "ret                 -1     0      -     "
   },
   "access": []
-}]
+}
 watch show('state').lsn::int = 0;
 disconnect S0;
 close E0;

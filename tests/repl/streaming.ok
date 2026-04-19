@@ -10017,7 +10017,7 @@ insert into test values ( 9999 );
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
-[{
+{
   "active": true,
   "role": "primary",
   "primary": null,
@@ -10028,28 +10028,28 @@ show repl;
     "lsn": 10000,
     "lag": 0
   }]
-}]
+}
 # test: validate
 select show('state').lsn;
-[10000]
+10000
 select count(*) from test;
-[9999]
+9999
 switch S1;
 select show('state').lsn;
-[10000]
+10000
 select count(*) from test;
-[9999]
+9999
 # test: ddl (create index)
 switch S0;
 create index i on test (id);
 select count(*) from test;
-[9999]
+9999
 select count(*) from test use index(i);
-[9999]
+9999
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
-[{
+{
   "active": true,
   "role": "primary",
   "primary": null,
@@ -10060,21 +10060,21 @@ show repl;
     "lsn": 10001,
     "lag": 0
   }]
-}]
+}
 switch S1;
 select count(*) from test;
-[9999]
+9999
 select count(*) from test use index(i);
-[9999]
+9999
 # test: ddl (add column)
 switch S0;
 alter table test add column data int default 1;
 select count(data) from test;
-[0]
+0
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
-[{
+{
   "active": true,
   "role": "primary",
   "primary": null,
@@ -10085,21 +10085,21 @@ show repl;
     "lsn": 10002,
     "lag": 0
   }]
-}]
+}
 switch S1;
 select count(data) from test;
-[0]
+0
 # test: ddl (drop column)
 switch S0;
 alter table test drop column data;
 select count(data) from test;
-{"msg": "select count(❰data❱ ⟵ column not found"}
+error: select count(❰data❱ ⟵ column not found
 select count(id) from test;
-[9999]
+9999
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
-[{
+{
   "active": true,
   "role": "primary",
   "primary": null,
@@ -10110,21 +10110,21 @@ show repl;
     "lsn": 10003,
     "lag": 0
   }]
-}]
+}
 switch S1;
 select count(data) from test;
-{"msg": "select count(❰data❱ ⟵ column not found"}
+error: select count(❰data❱ ⟵ column not found
 select count(id) from test;
-[9999]
+9999
 # test: ddl (rename column)
 switch S0;
 alter table test rename column id to id2;
 select count(id2) from test;
-[9999]
+9999
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
-[{
+{
   "active": true,
   "role": "primary",
   "primary": null,
@@ -10135,17 +10135,17 @@ show repl;
     "lsn": 10004,
     "lag": 0
   }]
-}]
+}
 switch S1;
 select count(id2) from test;
-[9999]
+9999
 # test: ddl (truncate)
 switch S0;
 truncate test;
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
-[{
+{
   "active": true,
   "role": "primary",
   "primary": null,
@@ -10156,10 +10156,10 @@ show repl;
     "lsn": 10005,
     "lag": 0
   }]
-}]
+}
 switch S1;
 select count(id2) from test;
-[0]
+0
 switch S0;
 insert into test values (1);
 insert into test values (2);
@@ -10172,7 +10172,7 @@ insert into test values (8);
 insert into test values (9);
 insert into test values (10);
 show state;
-[{
+{
   "version": "1.0.0-rc1",
   "directory": "_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000000",
@@ -10184,10 +10184,10 @@ show state;
   "catalog": 0,
   "catalog_pending": 10005,
   "read_only": false
-}]
+}
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
-[{
+{
   "active": true,
   "role": "primary",
   "primary": null,
@@ -10198,20 +10198,20 @@ show repl;
     "lsn": 10015,
     "lag": 0
   }]
-}]
+}
 switch S1;
 select count(id2) from test;
-[10]
+10
 # test: create table (serial)
 switch S0;
 create table test2 (id serial primary key);
 insert into test2 () values (), (), (), ();
 select identity_of("test2");
-[4]
+4
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
-[{
+{
   "active": true,
   "role": "primary",
   "primary": null,
@@ -10222,10 +10222,10 @@ show repl;
     "lsn": 10017,
     "lag": 0
   }]
-}]
+}
 switch S1;
 select identity_of("test2");
-[4]
+4
 disconnect S1;
 close E1;
 disconnect S0;

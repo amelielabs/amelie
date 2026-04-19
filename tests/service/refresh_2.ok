@@ -48,12 +48,21 @@ show locks;
   "function": "session_execute"
 }]
 select * from test;
-[[1, 0], [2, 0], [3, 0], [4, 0]]
+1 │ 0
+2 │ 0
+3 │ 0
+4 │ 0
 # test: insert during refresh
 insert into test values (5, 0), (6, 0), (7, 0);
 # test: return data from the original and shadow heap
 select * from test;
-[[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0]]
+1 │ 0
+2 │ 0
+3 │ 0
+4 │ 0
+5 │ 0
+6 │ 0
+7 │ 0
 # test: apply
 drop lock bp_refresh_2;
 switch S1;
@@ -79,14 +88,25 @@ show locks;
 }]
 # test: validate after refresh
 select * from test;
-[[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0]]
+1 │ 0
+2 │ 0
+3 │ 0
+4 │ 0
+5 │ 0
+6 │ 0
+7 │ 0
 update test set data = id;
 update test set data = id + 1;
 select * from test;
-[[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8]]
+1 │ 2
+2 │ 3
+3 │ 4
+4 │ 5
+5 │ 6
+6 │ 7
+7 │ 8
 delete from test;
 select * from test;
-[]
 insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
 # test: delete during refresh
 create lock bp_refresh_2 on bp_refresh_2 (exclusive);
@@ -126,7 +146,8 @@ show locks;
 delete from test where id = 2 or id = 4;
 # test: read during refresh after delete
 select * from test;
-[[1, 0], [3, 0]]
+1 │ 0
+3 │ 0
 # test: apply
 drop lock bp_refresh_2;
 switch S1;
@@ -152,14 +173,15 @@ show locks;
 }]
 # test: validate after refresh
 select * from test;
-[[1, 0], [3, 0]]
+1 │ 0
+3 │ 0
 update test set data = id;
 update test set data = id + 1;
 select * from test;
-[[1, 2], [3, 4]]
+1 │ 2
+3 │ 4
 delete from test;
 select * from test;
-[]
 insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
 # test: update during refresh
 create lock bp_refresh_2 on bp_refresh_2 (exclusive);
@@ -199,7 +221,10 @@ show locks;
 update test set data = id where id = 2 or id = 4;
 # test: read during refresh after update
 select * from test;
-[[1, 0], [2, 2], [3, 0], [4, 4]]
+1 │ 0
+2 │ 2
+3 │ 0
+4 │ 4
 # test: apply
 drop lock bp_refresh_2;
 switch S1;
@@ -225,14 +250,19 @@ show locks;
 }]
 # test: validate after refresh
 select * from test;
-[[1, 0], [2, 2], [3, 0], [4, 4]]
+1 │ 0
+2 │ 2
+3 │ 0
+4 │ 4
 update test set data = id;
 update test set data = id + 1;
 select * from test;
-[[1, 2], [2, 3], [3, 4], [4, 5]]
+1 │ 2
+2 │ 3
+3 │ 4
+4 │ 5
 delete from test;
 select * from test;
-[]
 insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
 # test: upsert during refresh
 create lock bp_refresh_2 on bp_refresh_2 (exclusive);
@@ -291,7 +321,16 @@ insert into test values (8, 0) on conflict do update set data = data + 1;
 insert into test values (9, 0) on conflict do update set data = data + 1;
 # test: read during refresh after upsert
 select * from test;
-[[0, 1], [1, 2], [2, 2], [3, 2], [4, 2], [5, 1], [6, 1], [7, 1], [8, 1], [9, 1]]
+0 │ 1
+1 │ 2
+2 │ 2
+3 │ 2
+4 │ 2
+5 │ 1
+6 │ 1
+7 │ 1
+8 │ 1
+9 │ 1
 # test: apply
 drop lock bp_refresh_2;
 switch S1;
@@ -317,14 +356,31 @@ show locks;
 }]
 # test: validate after refresh
 select * from test;
-[[0, 1], [1, 2], [2, 2], [3, 2], [4, 2], [5, 1], [6, 1], [7, 1], [8, 1], [9, 1]]
+0 │ 1
+1 │ 2
+2 │ 2
+3 │ 2
+4 │ 2
+5 │ 1
+6 │ 1
+7 │ 1
+8 │ 1
+9 │ 1
 update test set data = id;
 update test set data = id + 1;
 select * from test;
-[[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [9, 10]]
+0 │ 1
+1 │ 2
+2 │ 3
+3 │ 4
+4 │ 5
+5 │ 6
+6 │ 7
+7 │ 8
+8 │ 9
+9 │ 10
 delete from test;
 select * from test;
-[]
 insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
 # test: abort during refresh
 create lock bp_refresh_2 on bp_refresh_2 (exclusive);
@@ -372,10 +428,13 @@ begin;
 	delete from test where id = 2 or id = 4 or id = 8;
 	select error("abort");
 end;
-{"msg": "abort"}
+error: abort
 # test: read during refresh after abort
 select * from test;
-[[1, 0], [2, 0], [3, 0], [4, 0]]
+1 │ 0
+2 │ 0
+3 │ 0
+4 │ 0
 # test: apply
 drop lock bp_refresh_2;
 switch S1;
@@ -401,14 +460,19 @@ show locks;
 }]
 # test: validate after refresh
 select * from test;
-[[1, 0], [2, 0], [3, 0], [4, 0]]
+1 │ 0
+2 │ 0
+3 │ 0
+4 │ 0
 update test set data = id;
 update test set data = id + 1;
 select * from test;
-[[1, 2], [2, 3], [3, 4], [4, 5]]
+1 │ 2
+2 │ 3
+3 │ 4
+4 │ 5
 delete from test;
 select * from test;
-[]
 insert into test values (1, 0), (2, 0), (3, 0), (4, 0);
 # test: multi commit during refresh
 create lock bp_refresh_2 on bp_refresh_2 (exclusive);
@@ -451,11 +515,15 @@ insert into test values (2, 0) on conflict do update set data = data + 1;
 delete from test where id = 4;
 delete from test where id = 0;
 select * from test;
-[[1, 1], [2, 1], [3, 0]]
+1 │ 1
+2 │ 1
+3 │ 0
 update test set data = data + 1;
 # test: read during refresh
 select * from test;
-[[1, 2], [2, 2], [3, 1]]
+1 │ 2
+2 │ 2
+3 │ 1
 # test: apply
 drop lock bp_refresh_2;
 switch S1;
@@ -481,7 +549,9 @@ show locks;
 }]
 # test: validate after refresh
 select * from test;
-[[1, 2], [2, 2], [3, 1]]
+1 │ 2
+2 │ 2
+3 │ 1
 drop table test;
 disconnect S0;
 close E0;

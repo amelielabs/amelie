@@ -10004,11 +10004,11 @@ insert into test values ( 9999 );
 create index i on test (id);
 # test: validate
 select count(*) from test;
-[9999]
+9999
 select count(*) from test use index (primary);
-[9999]
+9999
 select count(*) from test use index (i);
-[9999]
+9999
 drop table test;
 # test: indexate (unique conflict)
 create table test (id int primary key, data int) partitions 1;
@@ -10025,7 +10025,7 @@ insert into test values (10, 10);
 create index i on test (data);
 insert into test values (11, 10);
 create unique index j on test (data);
-{"msg": "indexate: index unique constraint violation"}
+error: indexate: index unique constraint violation
 insert into test values (12, 10);
 drop table test;
 disconnect S0;

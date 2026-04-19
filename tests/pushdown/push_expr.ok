@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: select * from (select expr)
 explain select * from (select 1) t;
-[{
+{
   "main": {
     "00": "int                 0      -      0     # 1",
     "01": "set                 1      1      0     ",
@@ -20,11 +20,11 @@ explain select * from (select 1) t;
     "13": "ret                 1      0      -     "
   },
   "access": []
-}]
+}
 select * from (select 1) t;
-[1]
+1
 explain select * from (select 1, 2) t;
-[{
+{
   "main": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
@@ -44,12 +44,12 @@ explain select * from (select 1, 2) t;
     "15": "ret                 1      0      -     "
   },
   "access": []
-}]
+}
 select * from (select 1, 2) t;
-[[1, 2]]
+1 │ 2
 # test: select column from (select expr as)
 explain select x from (select 1 as x) t;
-[{
+{
   "main": {
     "00": "int                 0      -      0     # 1",
     "01": "set                 1      1      0     ",
@@ -67,11 +67,11 @@ explain select x from (select 1 as x) t;
     "13": "ret                 1      0      -     "
   },
   "access": []
-}]
+}
 select x from (select 1 as x) t;
-[1]
+1
 explain select a, b from (select 1 as a, 2 as b) t;
-[{
+{
   "main": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
@@ -91,18 +91,18 @@ explain select a, b from (select 1 as a, 2 as b) t;
     "15": "ret                 1      0      -     "
   },
   "access": []
-}]
+}
 select a, b from (select 1 as a, 2 as b) t;
-[[1, 2]]
+1 │ 2
 # test: select * from (select expr as) (conflict)
 explain select * from (select 1 as a, 2 as a) t;
-{"msg": "explain select ❰*❱ ⟵ column name t.a is ambiguous"}
+error: explain select ❰*❱ ⟵ column name t.a is ambiguous
 select * from (select 1 as a, 2 as a) t;
-{"msg": "select ❰*❱ ⟵ column name t.a is ambiguous"}
+error: select ❰*❱ ⟵ column name t.a is ambiguous
 # test: select column from (select expr as) (conflict)
 explain select a from (select 1 as a, 2 as a) t;
-{"msg": "explain select ❰a❱ ⟵ column name is ambiguous"}
+error: explain select ❰a❱ ⟵ column name is ambiguous
 select a from (select 1 as a, 2 as a) t;
-{"msg": "select ❰a❱ ⟵ column name is ambiguous"}
+error: select ❰a❱ ⟵ column name is ambiguous
 disconnect S0;
 close E0;

@@ -2,81 +2,81 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: ensure system users exists
 select show('users')[0].name;
-["main"]
+"main"
 select show('agents');
-[[]]
+[]
 # test: create user statement parsing
 create;
-{"msg": "create❰;❱ ⟵ relation type expected"}
+error: create❰;❱ ⟵ relation type expected
 create user;
-{"msg": "create user❰;❱ ⟵ name expected"}
+error: create user❰;❱ ⟵ name expected
 create user 123;
-{"msg": "create user ❰123❱ ⟵ name expected"}
+error: create user ❰123❱ ⟵ name expected
 create user if;
-{"msg": "create user if❰;❱ ⟵ NOT expected"}
+error: create user if❰;❱ ⟵ NOT expected
 create user if not;
-{"msg": "create user if not❰;❱ ⟵ EXISTS expected"}
+error: create user if not❰;❱ ⟵ EXISTS expected
 create user if not 123;
-{"msg": "create user if not ❰123❱ ⟵ EXISTS expected"}
+error: create user if not ❰123❱ ⟵ EXISTS expected
 create user if not exists;
-{"msg": "create user if not exists❰;❱ ⟵ name expected"}
+error: create user if not exists❰;❱ ⟵ name expected
 create user test abc;
-{"msg": "create user test ❰abc❱ ⟵ ; expected"}
+error: create user test ❰abc❱ ⟵ ; expected
 # test: create user
 create user test;
 select show('user', 'test').name;
-["test"]
+"test"
 # test: create user if not exists
 create user test;
-{"msg": "user 'test': already exists"}
+error: user 'test': already exists
 create user if not exists test;
 select show('user', 'test').name;
-["test"]
+"test"
 # test: drop user statement parsing
 drop user;
-{"msg": "drop user❰;❱ ⟵ name expected"}
+error: drop user❰;❱ ⟵ name expected
 drop user 123;
-{"msg": "drop user ❰123❱ ⟵ name expected"}
+error: drop user ❰123❱ ⟵ name expected
 drop user if;
-{"msg": "drop user if❰;❱ ⟵ EXISTS expected"}
+error: drop user if❰;❱ ⟵ EXISTS expected
 drop user if exists;
-{"msg": "drop user if exists❰;❱ ⟵ name expected"}
+error: drop user if exists❰;❱ ⟵ name expected
 drop user test abc;
-{"msg": "drop user test ❰abc❱ ⟵ ; expected"}
+error: drop user test ❰abc❱ ⟵ ; expected
 # test: drop user
 drop user test;
 select show('user', 'test').name;
-[null]
+null
 # test: drop user if exists
 drop user test;
-{"msg": "user 'test': not exists"}
+error: user 'test': not exists
 drop user if exists test;
 select show('user', 'test').name;
-[null]
+null
 # test: drop main user
 drop user main;
-{"msg": "user 'main': system user cannot be dropped"}
+error: user 'main': system user cannot be dropped
 select show('user', 'test').name;
-[null]
+null
 select show('user', 'main').name;
-["main"]
+"main"
 # test: drop user cascade
 create user test;
 drop user test cascade;
 select show('user', 'test').name;
-[null]
+null
 # test: drop connected user
 create user test;
 select show('user', 'test').name;
-["test"]
+"test"
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
 drop user test;
-{"msg": "user 'test': permission denied"}
+error: user 'test': permission denied
 select show('user', 'test').name;
-["test"]
+"test"
 select 1;
-[1]
+1
 disconnect S1;
 switch S0;
 drop user test;
@@ -90,48 +90,48 @@ create function fn() begin select * from a; end;
 disconnect S1;
 switch S0;
 drop user test;
-{"msg": "user 'test' still has relations"}
+error: user 'test' still has relations
 drop user test cascade;
 select 1;
-[1]
+1
 show tables;
 []
 show functions;
 []
 select show('user', 'test').name;
-[null]
+null
 select show('user', 'main').name;
-["main"]
+"main"
 # test: alter user statment parsing
 alter user;
-{"msg": "alter user❰;❱ ⟵ name expected"}
+error: alter user❰;❱ ⟵ name expected
 alter user 123;
-{"msg": "alter user ❰123❱ ⟵ name expected"}
+error: alter user ❰123❱ ⟵ name expected
 alter user test;
-{"msg": "alter user test❰;❱ ⟵ RENAME or REVOKE expected"}
+error: alter user test❰;❱ ⟵ RENAME or REVOKE expected
 alter user test rename;
-{"msg": "alter user test rename❰;❱ ⟵ TO expected"}
+error: alter user test rename❰;❱ ⟵ TO expected
 alter user test rename to;
-{"msg": "alter user test rename to❰;❱ ⟵ name expected"}
+error: alter user test rename to❰;❱ ⟵ name expected
 alter user test rename "hello";
-{"msg": "alter user test rename ❰\"hello\"❱ ⟵ TO expected"}
+error: alter user test rename ❰"hello"❱ ⟵ TO expected
 # test: alter user rename
 create user test;
 select show('user', 'test').name;
-["test"]
+"test"
 select show('user', 'hello').name;
-[null]
+null
 alter user test rename to test2;
 select show('user', 'test').name;
-[null]
+null
 select show('user', 'test2').name;
-["test2"]
+"test2"
 drop user test2;
 # test: alter user main
 alter user main rename to _public;
-{"msg": "user 'main': system user cannot be renamed"}
+error: user 'main': system user cannot be renamed
 select show('user', 'main').name;
-["main"]
+"main"
 # test: alter user rename cascade (udf dep)
 create user test;
 connect E0 S1 test@127.0.0.1:3485;
@@ -146,13 +146,13 @@ begin
 	return total;
 end;
 select fn();
-[3]
+3
 drop function fn;
 # test: alter user rename cascade
 switch S0;
 alter user test rename to test2;
 select 1;
-[1]
+1
 switch S1;
 disconnect S1;
 connect E0 S1 test2@127.0.0.1:3485;
@@ -168,9 +168,9 @@ show tables;
 show functions;
 []
 select show('user', 'main').name;
-["main"]
+"main"
 select show('user', 'test2').name;
-["test2"]
+"test2"
 disconnect S1;
 switch S0;
 show tables;
@@ -178,20 +178,20 @@ show tables;
 show functions;
 []
 select show('user', 'main').name;
-["main"]
+"main"
 select show('user', 'test2').name;
-["test2"]
+"test2"
 drop user test2;
-{"msg": "user 'test2' still has relations"}
+error: user 'test2' still has relations
 drop user test2 cascade;
 # test: create agent
 create agent test;
 select show('user', 'main').name;
-["main"]
+"main"
 select show('user', 'test').name;
-["test"]
+"test"
 select show('agents')[0].name;
-["test"]
+"test"
 drop agent test;
 disconnect S0;
 close E0;

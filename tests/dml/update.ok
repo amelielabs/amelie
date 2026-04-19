@@ -3,31 +3,31 @@ connect E0 S0 127.0.0.1:3485;
 # test: update statement parsing
 create table test(id int primary key);
 update;
-{"msg": "update❰;❱ ⟵ target name expected"}
+error: update❰;❱ ⟵ target name expected
 update;
-{"msg": "update❰;❱ ⟵ target name expected"}
+error: update❰;❱ ⟵ target name expected
 update 1;
-{"msg": "update ❰1❱ ⟵ target name expected"}
+error: update ❰1❱ ⟵ target name expected
 update "name";
-{"msg": "update ❰\"name\"❱ ⟵ target name expected"}
+error: update ❰"name"❱ ⟵ target name expected
 update test;
-{"msg": "update test❰;❱ ⟵ SET expected"}
+error: update test❰;❱ ⟵ SET expected
 update test "path";
-{"msg": "update test ❰\"path\"❱ ⟵ SET expected"}
+error: update test ❰"path"❱ ⟵ SET expected
 update test 1;
-{"msg": "update test ❰1❱ ⟵ SET expected"}
+error: update test ❰1❱ ⟵ SET expected
 update test path;
-{"msg": "update test path❰;❱ ⟵ SET expected"}
+error: update test path❰;❱ ⟵ SET expected
 update test set path;
-{"msg": "update test set path❰;❱ ⟵ = expected"}
+error: update test set path❰;❱ ⟵ = expected
 update test set path /;
-{"msg": "update test set path ❰/❱ ⟵ = expected"}
+error: update test set path ❰/❱ ⟵ = expected
 update test set path =;
-{"msg": "update test set path =❰;❱ ⟵ bad expression"}
+error: update test set path =❰;❱ ⟵ bad expression
 update test set path = expr;
-{"msg": "update test set ❰path❱ ⟵ column test.path not found"}
+error: update test set ❰path❱ ⟵ column test.path not found
 update test set id = id expr;
-{"msg": "update test set id = id ❰expr❱ ⟵ ; expected"}
+error: update test set id = id ❰expr❱ ⟵ ; expected
 drop table test;
 # test: update
 create table test(id int primary key, data int);
@@ -35,7 +35,7 @@ insert into test values (0, 3);
 insert into test values (1, 2);
 insert into main.test values (2, 1);
 explain update test set data = data + 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (update, closing)",
     "01": "ret                 -1     0      -     "
@@ -54,10 +54,12 @@ explain update test set data = data + 1;
     "10": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "update"]]
-}]
+}
 update test set data = data + 1;
 select * from test;
-[[0, 4], [1, 3], [2, 2]]
+0 │ 4
+1 │ 3
+2 │ 2
 drop table test;
 # test: update default (null)
 create table test(id int primary key, data int);
@@ -66,7 +68,9 @@ insert into test values (1, 2);
 insert into test values (2, 1);
 update test set data = default;
 select * from test;
-[[0, null], [1, null], [2, null]]
+0 │ null
+1 │ null
+2 │ null
 drop table test;
 # test: update default
 create table test(id int primary key, data int default 123);
@@ -75,7 +79,9 @@ insert into test values (1, 2);
 insert into test values (2, 1);
 update test set data = default;
 select * from test;
-[[0, 123], [1, 123], [2, 123]]
+0 │ 123
+1 │ 123
+2 │ 123
 drop table test;
 # test: update multiple ops
 create table test(id int primary key, a int, b int);
@@ -83,7 +89,7 @@ insert into test values (0, 3, 3);
 insert into test values (1, 2, 2);
 insert into test values (2, 1, 1);
 explain update test set a = a + 1, b = b - 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (update, closing)",
     "01": "ret                 -1     0      -     "
@@ -108,10 +114,12 @@ explain update test set a = a + 1, b = b - 1;
     "16": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "update"]]
-}]
+}
 update test set a = a + 1, b = b - 1;
 select * from test;
-[[0, 4, 2], [1, 3, 1], [2, 2, 0]]
+0 │ 4 │ 2
+1 │ 3 │ 1
+2 │ 2 │ 0
 drop table test;
 # test: update same column twice
 create table test(id int primary key, data int);
@@ -119,9 +127,11 @@ insert into test values (0, 3);
 insert into test values (1, 2);
 insert into test values (2, 1);
 update test set data = data + 1, data = data + 1;
-{"msg": "update test set ❰data❱ ⟵ column test.data is redefined in UPDATE"}
+error: update test set ❰data❱ ⟵ column test.data is redefined in UPDATE
 select * from test;
-[[0, 3], [1, 2], [2, 1]]
+0 │ 3
+1 │ 2
+2 │ 1
 drop table test;
 # test: update json
 create table test(id int primary key, data json);
@@ -130,7 +140,7 @@ insert into test values (1, {"id": 49});
 insert into test values (2, {"id": 50});
 update test set data = {"id": data.id::int + 1};
 explain update test set data = {"id": data.id::int + 1};
-[{
+{
   "main": {
     "00": "send_all            0      0      38    # main.test (update, closing)",
     "01": "ret                 -1     0      -     "
@@ -156,15 +166,11 @@ explain update test set data = {"id": data.id::int + 1};
     "17": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "update"]]
-}]
+}
 select * from test;
-[[0, {
-  "id": 49
-}], [1, {
-  "id": 50
-}], [2, {
-  "id": 51
-}]]
+0 │ {"id": 49}
+1 │ {"id": 50}
+2 │ {"id": 51}
 drop table test;
 # test: update json rewrite
 create table test(id serial primary key, data json);
@@ -173,13 +179,9 @@ insert into test (data) values ({"id": 49});
 insert into test (data) values ({"id": 50});
 update test set data = {"id": id};
 select * from test;
-[[0, {
-  "id": 0
-}], [1, {
-  "id": 1
-}], [2, {
-  "id": 2
-}]]
+0 │ {"id": 0}
+1 │ {"id": 1}
+2 │ {"id": 2}
 drop table test;
 # test: update json rewrite #2
 create table test(id serial primary key, data json);
@@ -188,7 +190,9 @@ insert into test (data) values ({"id": 49});
 insert into test (data) values ({"id": 50});
 update test set data = [id, data.id];
 select * from test;
-[[0, [0, 48]], [1, [1, 49]], [2, [2, 50]]]
+0 │ [0, 48]
+1 │ [1, 49]
+2 │ [2, 50]
 drop table test;
 # test: update json path
 create table test(id int primary key, data json);
@@ -196,9 +200,9 @@ insert into test values (0, {"id": 48});
 insert into test values (1, {"id": 49});
 insert into test values (2, {"id": 50});
 update test set id.path = 0;
-{"msg": "update test set ❰id.path❱ ⟵ column test.id used as a part of a key"}
+error: update test set ❰id.path❱ ⟵ column test.id used as a part of a key
 explain update test set data.id = data.id::int + 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      38    # main.test (update, closing)",
     "01": "ret                 -1     0      -     "
@@ -226,68 +230,52 @@ explain update test set data.id = data.id::int + 1;
     "19": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "update"]]
-}]
+}
 update test set data.id = data.id::int + 1;
 select * from test;
-[[0, {
-  "id": 49
-}], [1, {
-  "id": 50
-}], [2, {
-  "id": 51
-}]]
+0 │ {"id": 49}
+1 │ {"id": 50}
+2 │ {"id": 51}
 update test set data.data = [];
 select * from test;
-[[0, {
-  "id": 49,
-  "data": []
-}], [1, {
-  "id": 50,
-  "data": []
-}], [2, {
-  "id": 51,
-  "data": []
-}]]
+0 │ {"id": 49, "data": []}
+1 │ {"id": 50, "data": []}
+2 │ {"id": 51, "data": []}
 update test set data.data = data.data::append(1,2,3);
 select * from test;
-[[0, {
-  "id": 49,
-  "data": [1, 2, 3]
-}], [1, {
-  "id": 50,
-  "data": [1, 2, 3]
-}], [2, {
-  "id": 51,
-  "data": [1, 2, 3]
-}]]
+0 │ {"id": 49, "data": [1, 2, 3]}
+1 │ {"id": 50, "data": [1, 2, 3]}
+2 │ {"id": 51, "data": [1, 2, 3]}
 update test set data.nested = {};
 update test set data.nested.list = data.data::append(1,2,3);
 select data from test;
-[{
+{
   "id": 49,
   "data": [1, 2, 3],
   "nested": {
     "list": [1, 2, 3, 1, 2, 3]
   },
   "nested": [1, 2, 3, 1, 2, 3]
-}, {
+}
+{
   "id": 50,
   "data": [1, 2, 3],
   "nested": {
     "list": [1, 2, 3, 1, 2, 3]
   },
   "nested": [1, 2, 3, 1, 2, 3]
-}, {
+}
+{
   "id": 51,
   "data": [1, 2, 3],
   "nested": {
     "list": [1, 2, 3, 1, 2, 3]
   },
   "nested": [1, 2, 3, 1, 2, 3]
-}]
+}
 # test: update json path default (unsupported)
 update test set data.nested.list = default;
-{"msg": "update test set data.nested.list = ❰default❱ ⟵ DEFAULT cannot be used this way"}
+error: update test set data.nested.list = ❰default❱ ⟵ DEFAULT cannot be used this way
 drop table test;
 # test: update key
 create table test(id int primary key);
@@ -295,9 +283,11 @@ insert into test values (0);
 insert into test values (1);
 insert into test values (2);
 update test set id = id + 1;
-{"msg": "update test set ❰id❱ ⟵ column test.id used as a part of a key"}
+error: update test set ❰id❱ ⟵ column test.id used as a part of a key
 select * from test;
-[0, 1, 2]
+0
+1
+2
 drop table test;
 # test: update point-lookup
 create table test(id int primary key, data int);
@@ -305,7 +295,7 @@ insert into test values (0, 3);
 insert into test values (1, 2);
 insert into test values (2, 1);
 explain update test set data = data + 1 where id = 0;
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 0",
     "01": "send_lookup         0      -      32    # main.test (update, closing)",
@@ -329,12 +319,14 @@ explain update test set data = data + 1 where id = 0;
     "14": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "update"]]
-}]
+}
 update test set data = data + 1 where id = 0;
 update test set data = data + 1 where id = 1;
 update test set data = data + 1 where id = 2;
 select * from test;
-[[0, 4], [1, 3], [2, 2]]
+0 │ 4
+1 │ 3
+2 │ 2
 drop table test;
 # test: update range scan
 create table test(id int primary key, data int);
@@ -342,7 +334,7 @@ insert into test values (0, 3);
 insert into test values (1, 2);
 insert into test values (2, 1);
 explain update test set data = data + 1 where id >= 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (update, closing)",
     "01": "ret                 -1     0      -     "
@@ -366,16 +358,22 @@ explain update test set data = data + 1 where id >= 1;
     "15": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "update"]]
-}]
+}
 update test set data = data + 1 where id > 2;
 select * from test;
-[[0, 3], [1, 2], [2, 1]]
+0 │ 3
+1 │ 2
+2 │ 1
 update test set data = data + 1 where id >= 2;
 select * from test;
-[[0, 3], [1, 2], [2, 2]]
+0 │ 3
+1 │ 2
+2 │ 2
 update test set data = data + 1 where id >= 1;
 select * from test;
-[[0, 3], [1, 3], [2, 3]]
+0 │ 3
+1 │ 3
+2 │ 3
 drop table test;
 # test: update null
 create table test(id int primary key, data int);
@@ -384,31 +382,35 @@ insert into test values (1, 2);
 insert into test values (2, null);
 update test set data = data + 1;
 select * from test;
-[[0, 4], [1, 3], [2, null]]
+0 │ 4
+1 │ 3
+2 │ null
 update test set data = id where data is null;
 select * from test;
-[[0, 4], [1, 3], [2, 2]]
+0 │ 4
+1 │ 3
+2 │ 2
 drop table test;
 # test: update set null
 create table test(id int primary key, data int);
 insert into test values (0, 1);
 update test set data = data + 1;
 select * from test;
-[[0, 2]]
+0 │ 2
 update test set data = null;
 select * from test;
-[[0, null]]
+0 │ null
 drop table test;
 # test: update set null (not null)
 create table test(id int primary key, data int not null);
 insert into test values (0, 1);
 update test set data = data + 1;
 select * from test;
-[[0, 2]]
+0 │ 2
 update test set data = null;
-{"msg": "column 'data' cannot be NULL"}
+error: column 'data' cannot be NULL
 select * from test;
-[[0, 2]]
+0 │ 2
 drop table test;
 # test: update returning
 create table test(id int primary key, data int);
@@ -416,7 +418,7 @@ insert into test values (0, 0);
 insert into test values (1, 0);
 insert into test values (2, 0);
 explain update test set data = data + 1 returning *;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (update, closing)",
     "01": "union               1      0      0     ",
@@ -443,57 +445,75 @@ explain update test set data = data + 1 returning *;
     "16": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared_rw", "update"]]
-}]
+}
 update test set data = data + 1 returning *;
-[[0, 1], [1, 1], [2, 1]]
+0 │ 1
+1 │ 1
+2 │ 1
 update test set data = data + 1 returning *;
-[[0, 2], [1, 2], [2, 2]]
+0 │ 2
+1 │ 2
+2 │ 2
 update test set data = data + 1 returning *;
-[[0, 3], [1, 3], [2, 3]]
+0 │ 3
+1 │ 3
+2 │ 3
 select * from test;
-[[0, 3], [1, 3], [2, 3]]
+0 │ 3
+1 │ 3
+2 │ 3
 drop table test;
 # test: update column (int8)
 create table test (id int primary key, data i8);
 insert into test values (1, 123), (2, 255), (3, 256);
 update test set data = data + 1;
 select * from test;
-[[1, 124], [2, 0], [3, 1]]
+1 │ 124
+2 │ 0
+3 │ 1
 drop table test;
 # test: update column (int16)
 create table test (id int primary key, data i16);
 insert into test values (1, 123), (2, 256), (3, -32768);
 update test set data = data + 1;
 select * from test;
-[[1, 124], [2, 257], [3, -32767]]
+1 │ 124
+2 │ 257
+3 │ -32767
 drop table test;
 # test: update column (int32)
 create table test (id int primary key, data i32);
 insert into test values (1, 123), (2, 256), (3, -32768);
 update test set data = data + 1;
 select * from test;
-[[1, 124], [2, 257], [3, -32767]]
+1 │ 124
+2 │ 257
+3 │ -32767
 drop table test;
 # test: update column (int64)
 create table test (id int primary key, data i64);
 insert into test values (1, 123), (2, 256), (3, -32768);
 update test set data = data + 1;
 select * from test;
-[[1, 124], [2, 257], [3, -32767]]
+1 │ 124
+2 │ 257
+3 │ -32767
 drop table test;
 # test: update column (float)
 create table test (id int primary key, data float);
 insert into test values (1, 123.32), (2, 3.14);
 update test set data = data + 0.01;
 select * from test;
-[[1, 123.33], [2, 3.15]]
+1 │ 123.33
+2 │ 3.15
 drop table test;
 # test: update column (double)
 create table test (id int primary key, data double);
 insert into test values (1, 123.32), (2, 3.14);
 update test set data = data + 0.01;
 select * from test;
-[[1, 123.33], [2, 3.15]]
+1 │ 123.33
+2 │ 3.15
 drop table test;
 # test: update column (text)
 create table test (id int primary key, data text);
@@ -502,42 +522,42 @@ update test set data = data || " world";
 update test set data = data || " world";
 update test set data = data || " world";
 select data from test;
-["hello world world world"]
+"hello world world world"
 drop table test;
 # test: update column (json)
 create table test (id int primary key, data json);
 insert into test values (1, null);
 update test set data = data::append(1,2,3);
 select * from test;
-[[1, null]]
+1 │ null
 drop table test;
 # test: update column (timestamp)
 create table test (id int primary key, ts timestamp);
 insert into test values (0, "1970-01-01 01:12:59.909090");
 update test set ts = ts + interval '5 days';
 select * from test;
-[[0, "1970-01-06 01:12:59.909090+00"]]
+0 │ "1970-01-06 01:12:59.909090+00"
 drop table test;
 # test: update column (interval)
 create table test (id int primary key, i interval);
 insert into test values (0, "1 year 1 day 10 hour");
 update test set i = i + interval '5 days';
 select * from test;
-[[0, "1 year 6 days 10 hours"]]
+0 │ "1 year 6 days 10 hours"
 drop table test;
 # test: update column (date)
 create table test (id int primary key, d date);
 insert into test values (0, "1970-01-01");
 update test set d = d + 5;
 select * from test;
-[[0, "1970-01-06"]]
+0 │ "1970-01-06"
 drop table test;
 # test: update column (vector)
 create table test (id int primary key, vec vector);
 insert into test values (3, [1.0, 1.1]);
 update test set vec = vec + [1.0, 1.1]::vector;
 select * from test;
-[[3, [2, 2.2]]]
+3 │ [2, 2.2]
 drop table test;
 # test: update secondary index
 create table test (id int primary key, data int, value int);
@@ -546,17 +566,25 @@ insert into test values (0, 2, 0);
 insert into test values (1, 1, 0);
 insert into test values (2, 0, 0);
 select * from test;
-[[0, 2, 0], [1, 1, 0], [2, 0, 0]]
+0 │ 2 │ 0
+1 │ 1 │ 0
+2 │ 0 │ 0
 select * from test use index (i);
-[[2, 0, 0], [1, 1, 0], [0, 2, 0]]
+2 │ 0 │ 0
+1 │ 1 │ 0
+0 │ 2 │ 0
 update test set value = data;
 select * from test;
-[[0, 2, 2], [1, 1, 1], [2, 0, 0]]
+0 │ 2 │ 2
+1 │ 1 │ 1
+2 │ 0 │ 0
 select * from test use index (i);
-[[2, 0, 0], [1, 1, 1], [0, 2, 2]]
+2 │ 0 │ 0
+1 │ 1 │ 1
+0 │ 2 │ 2
 # test: update secondary index (key)
 update test set data = id;
-{"msg": "update test set ❰data❱ ⟵ column test.data used as a part of a key"}
+error: update test set ❰data❱ ⟵ column test.data used as a part of a key
 drop table test;
 disconnect S0;
 close E0;

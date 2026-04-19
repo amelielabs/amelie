@@ -86,7 +86,10 @@ show locks;
   "function": "session_execute"
 }]
 select * from test;
-[[1, 1], [2, 2], [3, 3], [4, 4]]
+1 │ 1
+2 │ 2
+3 │ 3
+4 │ 4
 drop table test;
 disconnect S0;
 close E0;

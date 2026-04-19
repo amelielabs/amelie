@@ -10030,7 +10030,7 @@ watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state'
 # test: wait replica 2 sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
-[{
+{
   "active": true,
   "role": "primary",
   "primary": null,
@@ -10047,37 +10047,37 @@ show repl;
     "lsn": 10000,
     "lag": 0
   }]
-}]
+}
 select show('state').lsn;
-[10000]
+10000
 select count(*) from test;
-[9999]
+9999
 # test: validate replica 1
 switch S1;
 show repl;
-[{
+{
   "active": true,
   "role": "replica",
   "primary": "00000000-0000-0000-0000-000000000000",
   "replicas": []
-}]
+}
 select show('state').lsn;
-[10000]
+10000
 select count(*) from test;
-[9999]
+9999
 # test: validate replica 2
 switch S2;
 show repl;
-[{
+{
   "active": true,
   "role": "replica",
   "primary": "00000000-0000-0000-0000-000000000000",
   "replicas": []
-}]
+}
 select show('state').lsn;
-[10000]
+10000
 select count(*) from test;
-[9999]
+9999
 disconnect S1;
 close E1;
 disconnect S2;

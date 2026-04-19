@@ -3,7 +3,7 @@ connect E0 S0 127.0.0.1:3485;
 # test: select distinct * from table empty
 create table test (id serial primary key, data int default 0);
 explain select distinct * from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      34    # main.test (select, closing)",
     "01": "union               1      2      0     ",
@@ -28,18 +28,55 @@ explain select distinct * from test;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select distinct * from test;
-[]
 # test: select distinct * from table
 insert into test generate 20;
 update test set data = id / 2;
 select * from test;
-[[0, 0], [1, 0], [6, 3], [7, 3], [8, 4], [14, 7], [15, 7], [17, 8], [2, 1], [9, 4], [10, 5], [12, 6], [18, 9], [19, 9], [3, 1], [4, 2], [5, 2], [11, 5], [13, 6], [16, 8]]
+0 │ 0
+1 │ 0
+6 │ 3
+7 │ 3
+8 │ 4
+14 │ 7
+15 │ 7
+17 │ 8
+2 │ 1
+9 │ 4
+10 │ 5
+12 │ 6
+18 │ 9
+19 │ 9
+3 │ 1
+4 │ 2
+5 │ 2
+11 │ 5
+13 │ 6
+16 │ 8
 select * from test order by id;
-[[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
+0 │ 0
+1 │ 0
+2 │ 1
+3 │ 1
+4 │ 2
+5 │ 2
+6 │ 3
+7 │ 3
+8 │ 4
+9 │ 4
+10 │ 5
+11 │ 5
+12 │ 6
+13 │ 6
+14 │ 7
+15 │ 7
+16 │ 8
+17 │ 8
+18 │ 9
+19 │ 9
 explain select distinct * from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      34    # main.test (select, closing)",
     "01": "union               1      2      0     ",
@@ -64,12 +101,31 @@ explain select distinct * from test;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select distinct * from test;
-[[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
+0 │ 0
+1 │ 0
+2 │ 1
+3 │ 1
+4 │ 2
+5 │ 2
+6 │ 3
+7 │ 3
+8 │ 4
+9 │ 4
+10 │ 5
+11 │ 5
+12 │ 6
+13 │ 6
+14 │ 7
+15 │ 7
+16 │ 8
+17 │ 8
+18 │ 9
+19 │ 9
 # test: select distinct from table #2
 explain select distinct id from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      2      0     ",
@@ -89,14 +145,42 @@ explain select distinct id from test;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select distinct id from test;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
 select distinct data from test;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
 # test: select distinct from table #3
 explain select distinct id, data from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      34    # main.test (select, closing)",
     "01": "union               1      2      0     ",
@@ -121,12 +205,31 @@ explain select distinct id, data from test;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select distinct id, data from test;
-[[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
+0 │ 0
+1 │ 0
+2 │ 1
+3 │ 1
+4 │ 2
+5 │ 2
+6 │ 3
+7 │ 3
+8 │ 4
+9 │ 4
+10 │ 5
+11 │ 5
+12 │ 6
+13 │ 6
+14 │ 7
+15 │ 7
+16 │ 8
+17 │ 8
+18 │ 9
+19 │ 9
 # test: select distinct from table limit
 explain select distinct data from test limit 4;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      2      0     ",
@@ -149,12 +252,15 @@ explain select distinct data from test limit 4;
     "10": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select distinct data from test limit 4;
-[0, 1, 2, 3]
+0
+1
+2
+3
 # test: select distinct from table limit 0
 explain select distinct data from test limit 0;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      2      0     ",
@@ -177,12 +283,11 @@ explain select distinct data from test limit 0;
     "10": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select distinct data from test limit 0;
-[]
 # test: select distinct from table limit/offset
 explain select distinct data from test limit 1 offset 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      2      0     ",
@@ -207,18 +312,18 @@ explain select distinct data from test limit 1 offset 1;
     "10": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select distinct data from test limit 1 offset 0;
-[0]
+0
 select distinct data from test limit 1 offset 1;
-[1]
+1
 select distinct data from test limit 1 offset 2;
-[2]
+2
 select distinct data from test limit 1 offset 3;
-[3]
+3
 # test: select distinct from table offset
 explain select distinct data from test offset 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      2      0     ",
@@ -241,39 +346,69 @@ explain select distinct data from test offset 1;
     "10": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select distinct data from test offset 0;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
 select distinct data from test offset 1;
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
+1
+2
+3
+4
+5
+6
+7
+8
+9
 select distinct data from test offset 2;
-[2, 3, 4, 5, 6, 7, 8, 9]
+2
+3
+4
+5
+6
+7
+8
+9
 select distinct data from test offset 3;
-[3, 4, 5, 6, 7, 8, 9]
+3
+4
+5
+6
+7
+8
+9
 # test: select distinct from table order by
 explain select distinct data from test order by data;
-{"msg": "explain select distinct data from test order by data❰;❱ ⟵ ORDER BY and DISTINCT cannot be combined"}
+error: explain select distinct data from test order by data❰;❱ ⟵ ORDER BY and DISTINCT cannot be combined
 select distinct data from test order by data;
-{"msg": "select distinct data from test order by data❰;❱ ⟵ ORDER BY and DISTINCT cannot be combined"}
+error: select distinct data from test order by data❰;❱ ⟵ ORDER BY and DISTINCT cannot be combined
 # test: select distinct on
 select distinct;
-{"msg": "select distinct❰;❱ ⟵ bad expression"}
+error: select distinct❰;❱ ⟵ bad expression
 select distinct 123;
-{"msg": "select distinct ❰123❱ ⟵ column 123 is not in the SELECT expr list"}
+error: select distinct ❰123❱ ⟵ column 123 is not in the SELECT expr list
 select distinct on;
-{"msg": "select distinct on❰;❱ ⟵ ( expected"}
+error: select distinct on❰;❱ ⟵ ( expected
 select distinct on (;
-{"msg": "select distinct on (❰;❱ ⟵ bad expression"}
+error: select distinct on (❰;❱ ⟵ bad expression
 select distinct on (123;
-{"msg": "select distinct on (123❰;❱ ⟵ ) expected"}
+error: select distinct on (123❰;❱ ⟵ ) expected
 select distinct on (123,;
-{"msg": "select distinct on (123,❰;❱ ⟵ bad expression"}
+error: select distinct on (123,❰;❱ ⟵ bad expression
 select distinct on (123,);
-{"msg": "select distinct on (123,❰)❱ ⟵ bad expression"}
+error: select distinct on (123,❰)❱ ⟵ bad expression
 select distinct on (123,);
-{"msg": "select distinct on (123,❰)❱ ⟵ bad expression"}
+error: select distinct on (123,❰)❱ ⟵ bad expression
 explain select * from test order by data;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      1      0     ",
@@ -296,9 +431,9 @@ explain select * from test order by data;
     "12": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 explain select distinct on (data) * from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      33    # main.test (select, closing)",
     "01": "union               1      2      0     ",
@@ -321,23 +456,61 @@ explain select distinct on (data) * from test;
     "12": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select distinct on (data) * from test;
-[[0, 0], [2, 1], [4, 2], [6, 3], [8, 4], [10, 5], [12, 6], [14, 7], [17, 8], [18, 9]]
+0 │ 0
+2 │ 1
+4 │ 2
+6 │ 3
+8 │ 4
+10 │ 5
+12 │ 6
+14 │ 7
+17 │ 8
+18 │ 9
 select distinct on (id) * from test;
-[[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
+0 │ 0
+1 │ 0
+2 │ 1
+3 │ 1
+4 │ 2
+5 │ 2
+6 │ 3
+7 │ 3
+8 │ 4
+9 │ 4
+10 │ 5
+11 │ 5
+12 │ 6
+13 │ 6
+14 │ 7
+15 │ 7
+16 │ 8
+17 │ 8
+18 │ 9
+19 │ 9
 # test: select distinct on from table order by
 explain select distinct on (data) * from test order by data, id;
-{"msg": "explain select distinct on (data) * from test order by data, id❰;❱ ⟵ ORDER BY and DISTINCT cannot be combined"}
+error: explain select distinct on (data) * from test order by data, id❰;❱ ⟵ ORDER BY and DISTINCT cannot be combined
 # test: select distinct * from table table #3
 delete from test;
 insert into test values (1, 0), (2, 0), (3, 1), (4, 2), (5, 2);
 select distinct * from test;
-[[1, 0], [2, 0], [3, 1], [4, 2], [5, 2]]
+1 │ 0
+2 │ 0
+3 │ 1
+4 │ 2
+5 │ 2
 select distinct id from test;
-[1, 2, 3, 4, 5]
+1
+2
+3
+4
+5
 select distinct data from test;
-[0, 1, 2]
+0
+1
+2
 drop table test;
 disconnect S0;
 close E0;

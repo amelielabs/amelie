@@ -2,268 +2,268 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: type()
 select 1::type;
-["int"]
+"int"
 select "Hi"::type;
-["string"]
+"string"
 select [1,2,3]::type;
-["json"]
+"json"
 select {}::type;
-["json"]
+"json"
 select (select 1)::type;
-["int"]
+"int"
 select null::type;
-["null"]
+"null"
 # test: int(null)
 select null::int;
-[null]
+null
 # test: int(int)
 select 1::int;
-[1]
+1
 select 1::int(123);
-{"msg": "int(int, int) ⟵ expected 1 argument"}
+error: int(int, int) ⟵ expected 1 argument
 # test: int(double)
 select 3.14::int;
-[3]
+3
 # test: int(bool)
 select true::int;
-[1]
+1
 select false::int;
-[0]
+0
 # test: int(string)
 select '123'::int;
-[123]
+123
 select '1423423423'::int;
-[1423423423]
+1423423423
 select '1423abc'::int;
-{"msg": "int(❰string❱ ⟵ failed to cast string"}
+error: int(❰string❱ ⟵ failed to cast string
 # test: int(json)
 select 123::json::int;
-[123]
+123
 select 'hi'::json::int;
-{"msg": "int(❰json❱ ⟵ failed to cast string"}
+error: int(❰json❱ ⟵ failed to cast string
 # test: int(timestamp)
 select 1722517792056945::timestamp;
-["2024-08-01 13:09:52.056945+00"]
+"2024-08-01 13:09:52.056945+00"
 select 1722517792056945::timestamp::int;
-[1722517792056945]
+1722517792056945
 select 1722517792056945::timestamp::int::timestamp;
-["2024-08-01 13:09:52.056945+00"]
+"2024-08-01 13:09:52.056945+00"
 select '1 hour'::interval::int;
-{"msg": "int(❰interval❱ ⟵ unsupported argument type"}
+error: int(❰interval❱ ⟵ unsupported argument type
 # test: int(date)
 select '2025-01-01'::date::int;
-[2460677]
+2460677
 # test: bool(null)
 select null::bool;
-[null]
+null
 # test: bool(int)
 select 1::bool;
-[true]
+true
 select 0::bool;
-[false]
+false
 select 23431::bool;
-[true]
+true
 # test: bool(double)
 select 3.14::bool;
-[true]
+true
 select 0.14::bool;
-[true]
+true
 select 0.0::bool;
-[false]
+false
 # test: bool(json)
 select true::json::bool;
-[true]
+true
 select false::json::bool;
-[false]
+false
 select '1'::json::bool;
-{"msg": "bool(❰json❱ ⟵ failed to cast string to bool"}
+error: bool(❰json❱ ⟵ failed to cast string to bool
 # test: bool(timestamp)
 select 1722517792056945::timestamp::bool;
-{"msg": "bool(❰timestamp❱ ⟵ unsupported argument type"}
+error: bool(❰timestamp❱ ⟵ unsupported argument type
 # test: bool(interval)
 select '1 hour'::interval::bool;
-[true]
+true
 select '0 secs'::interval::bool;
-[false]
+false
 # test: double(null)
 select 1::double;
-[1]
+1
 # test: double(int)
 select 1::double;
-[1]
+1
 # test: double(double)
 select 3.14::double;
-[3.14]
+3.14
 # test: double(bool)
 select true::double;
-[1]
+1
 select false::double;
-[0]
+0
 # test: double(json)
 select 1.56::json::double;
-[1.56]
+1.56
 # test: double(timestamp)
 select 1722517792056945::timestamp;
-["2024-08-01 13:09:52.056945+00"]
+"2024-08-01 13:09:52.056945+00"
 select 1722517792056945::timestamp::double;
-[1.72252e+15]
+1.72252e+15
 select 1722517792056945::timestamp::double::timestamp;
-{"msg": "timestamp(❰double❱ ⟵ unsupported argument type"}
+error: timestamp(❰double❱ ⟵ unsupported argument type
 # test: string(null)
 select null::string;
-[null]
+null
 # test: string(int)
 select 16384::string;
-["16384"]
+"16384"
 # test: string(string)
 select 'hello'::string;
-["hello"]
+"hello"
 # test: string(interval)
 select '1 hour'::interval::string;
-["1 hour"]
+"1 hour"
 # test: string(timestamp)
 select '2024-07-29 18:40:19'::timestamp::string;
-["2024-07-29 18:40:19+00"]
+"2024-07-29 18:40:19+00"
 # test: string(date)
 select '2024-07-29'::date::string;
-["2024-07-29"]
+"2024-07-29"
 # test: string(json)
 select {"id": 42, "data": [1,2,3]}::string;
-["{\"id\": 42, \"data\": [1, 2, 3]}"]
+"{\"id\": 42, \"data\": [1, 2, 3]}"
 # test: string(uuid)
 select "00000000-0000-0000-0000-000000000001"::uuid::string;
-["00000000-0000-0000-0000-000000000001"]
+"00000000-0000-0000-0000-000000000001"
 # test: json_import(string)
 select '{"id": 42, "data": [1,2,3]}'::json_import;
-[{
+{
   "id": 42,
   "data": [1, 2, 3]
-}]
+}
 select '{"id": 42, "data": [1,2,3]}'::json_import::string;
-["{\"id\": 42, \"data\": [1, 2, 3]}"]
+"{\"id\": 42, \"data\": [1, 2, 3]}"
 select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
-[{
+{
   "id": 42,
   "data": [1, 2, 3]
-}]
+}
 explain select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
-[{
+{
   "main": {
     "00": "value               0      -      0     # json",
     "01": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 select 123::json_import;
-{"msg": "json_import(❰int❱ ⟵ unsupported argument type"}
+error: json_import(❰int❱ ⟵ unsupported argument type
 # test: json(null)
 select null::json;
-[null]
+null
 # test: json(int)
 select 123::json;
-[123]
+123
 select -123::json;
-[-123]
+-123
 select (-123)::json;
-[-123]
+-123
 # test: json(double)
 select 123.321::json;
-[123.321]
+123.321
 select -123.321::json;
-[-123.321]
+-123.321
 select (-123.321)::json;
-[-123.321]
+-123.321
 # test: json(string)
 select '1'::json;
-["1"]
+"1"
 select '1'::json::type;
-["json"]
+"json"
 select [1,2,3]::vector::string::json;
-["[1, 2, 3]"]
+"[1, 2, 3]"
 select '[1,2,3]'::json;
-["[1,2,3]"]
+"[1,2,3]"
 # test: json(json)
 select [1,2,3]::json;
-[[1, 2, 3]]
+[1, 2, 3]
 select {"id":55}::json;
-[{
+{
   "id": 55
-}]
+}
 # test: json(timestamp)
 select '2024-07-29 18:40:19'::timestamp::json;
-["2024-07-29 18:40:19+00"]
+"2024-07-29 18:40:19+00"
 # test: json(interval)
 select '1 hour 55 minutes 5 secs'::interval::json;
-["1 hour 55 minutes 5 seconds"]
+"1 hour 55 minutes 5 seconds"
 # test: json(date)
 select '2025-01-01'::date::json;
-["2025-01-01"]
+"2025-01-01"
 # test: json(vector)
 select [1,2,3]::vector::json;
-[[1, 2, 3]]
+[1, 2, 3]
 # test: interval(null)
 select null::interval;
-[null]
+null
 # test: interval(string)
 select '1 hour 55 minutes 5 secs'::interval;
-["1 hour 55 minutes 5 seconds"]
+"1 hour 55 minutes 5 seconds"
 select '1 hour 55 minutes 5 secs'::interval::string;
-["1 hour 55 minutes 5 seconds"]
+"1 hour 55 minutes 5 seconds"
 # test: timestamp(null)
 select null::timestamp;
-[null]
+null
 # test: timestamp(string)
 select '2024-07-29 18:40:19'::timestamp;
-["2024-07-29 18:40:19+00"]
+"2024-07-29 18:40:19+00"
 # test: timestamp(date)
 select '2024-07-29'::date::timestamp;
-["2024-07-29 00:00:00+00"]
+"2024-07-29 00:00:00+00"
 # test: date(null)
 select null::date;
-[null]
+null
 # test: date(timestamp)
 select '2024-07-29 18:40:19'::timestamp::date;
-["2024-07-29"]
+"2024-07-29"
 # test: date(int)
 select '2024-07-29'::date::int::date;
-["2024-07-29"]
+"2024-07-29"
 # test: vector(null)
 select null::vector;
-[null]
+null
 # test: vector(json)
 select []::vector;
-[[]]
+[]
 select []::vector::length;
-[0]
+0
 select [1.0]::vector;
-[[1]]
+[1]
 select [1]::vector;
-[[1]]
+[1]
 select [1, 2.0, "test"]::vector;
-{"msg": "vector(❰json❱ ⟵ json array values must be int or float"}
+error: vector(❰json❱ ⟵ json array values must be int or float
 select [1, 2.0, "test"]::vector;
-{"msg": "vector(❰json❱ ⟵ json array values must be int or float"}
+error: vector(❰json❱ ⟵ json array values must be int or float
 select [1, 2.0, {}]::vector;
-{"msg": "vector(❰json❱ ⟵ json array values must be int or float"}
+error: vector(❰json❱ ⟵ json array values must be int or float
 select [1, 2.0, null]::vector;
-{"msg": "vector(❰json❱ ⟵ json array values must be int or float"}
+error: vector(❰json❱ ⟵ json array values must be int or float
 select [1,2,3]::vector;
-[[1, 2, 3]]
+[1, 2, 3]
 select [1,2,3]::vector::type;
-["vector"]
+"vector"
 select [1,2,3]::vector::length;
-[3]
+3
 # test: uuid(string)
 select "00000000-0000-0000-0000-000000000001"::uuid;
-["00000000-0000-0000-0000-000000000001"]
+"00000000-0000-0000-0000-000000000001"
 # test: uuid(uuid)
 select "00000000-0000-0000-0000-000000000001"::uuid::uuid;
-["00000000-0000-0000-0000-000000000001"]
+"00000000-0000-0000-0000-000000000001"
 # test: uuid(null)
 select null::uuid;
-[null]
+null
 # test: uuid(unsupported)
 select 1::uuid;
-{"msg": "uuid(❰int❱ ⟵ unsupported argument type"}
+error: uuid(❰int❱ ⟵ unsupported argument type
 disconnect S0;
 close E0;

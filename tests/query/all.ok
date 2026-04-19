@@ -2,171 +2,171 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: all parsing
 select all;
-{"msg": "select all❰;❱ ⟵ bad expression"}
+error: select all❰;❱ ⟵ bad expression
 select all (;
-{"msg": "select all (❰;❱ ⟵ bad expression"}
+error: select all (❰;❱ ⟵ bad expression
 select = all;
-{"msg": "select ❰=❱ ⟵ bad expression"}
+error: select ❰=❱ ⟵ bad expression
 select 1 = all;
-{"msg": "select 1 = all❰;❱ ⟵ ( expected"}
+error: select 1 = all❰;❱ ⟵ ( expected
 select 1 = all (;
-{"msg": "select 1 = all (❰;❱ ⟵ bad expression"}
+error: select 1 = all (❰;❱ ⟵ bad expression
 select 1 = all ();
-{"msg": "select 1 = all (❰)❱ ⟵ bad expression"}
+error: select 1 = all (❰)❱ ⟵ bad expression
 # test: = all ([])
 select 1 = all([]);
-[true]
+true
 select 1 = all([null]);
-[null]
+null
 select 1 = all([1]);
-[true]
+true
 select 1 = all([1, 2]);
-[false]
+false
 select 1 = all([1, 1]);
-[true]
+true
 select 1 = all([1, 2, null]);
-[false]
+false
 select 1 = all([1, 1, null]);
-[null]
+null
 select 0 = all([1, 2, null]);
-[false]
+false
 select 0 = all([1, 1, null]);
-[false]
+false
 # test: >= all ([])
 select 1 >= all([1,2]);
-[false]
+false
 select 0 >= all([1,2]);
-[false]
+false
 select 1 >= all([1,2, null]);
-[false]
+false
 select 0 >= all([1,2, null]);
-[false]
+false
 select 3 >= all([1,2]);
-[true]
+true
 select 3 >= all([1,2, null]);
-[null]
+null
 # test: > all ([])
 select 1 > all([1,2]);
-[false]
+false
 select 0 > all([1,2]);
-[false]
+false
 select 1 > all([1,2, null]);
-[false]
+false
 select 0 > all([1,2, null]);
-[false]
+false
 select 3 > all([1,2]);
-[true]
+true
 select 3 > all([1,2, null]);
-[null]
+null
 # test: <= all ([])
 select 1 <= all([1,2]);
-[true]
+true
 select 0 <= all([1,2]);
-[true]
+true
 select 3 <= all([1,2]);
-[false]
+false
 select 1 <= all([1,2, null]);
-[null]
+null
 select 3 <= all([1,2, null]);
-[false]
+false
 # test: < all ([])
 select 1 < all([1,2]);
-[false]
+false
 select 0 < all([1,2]);
-[true]
+true
 select 3 < all([1,2]);
-[false]
+false
 select 1 < all([1,2, null]);
-[false]
+false
 select 3 < all([1,2, null]);
-[false]
+false
 # test: = all
 create table test (id int primary key, data int);
 select 1 = all(select id from test);
-[true]
+true
 insert into test values (1, 1);
 select 1 = all(select id from test);
-[true]
+true
 insert into test values (2, null);
 select 1 = all(select id from test);
-[false]
+false
 select not (1 = all(select id from test));
-[true]
+true
 select null = all(select id from test);
-[null]
+null
 select 1 = all(select id from test);
-[false]
+false
 select 3 = all(select id from test);
-[false]
+false
 select 3 = all(select data from test);
-[false]
+false
 # test: >= all
 select 1 >= all(select id from test);
-[false]
+false
 select 0 >= all(select id from test);
-[false]
+false
 select null >= all(select id from test);
-[null]
+null
 select 1 >= all(select id from test);
-[false]
+false
 select 3 >= all(select id from test);
-[true]
+true
 select 0 >= all(select data from test);
-[false]
+false
 select 3 >= all(select data from test);
-[null]
+null
 # test: > all
 select 1 > all(select id from test);
-[false]
+false
 select 0 > all(select id from test);
-[false]
+false
 select 3 > all(select id from test);
-[true]
+true
 select null > all(select id from test);
-[null]
+null
 select 1 > all(select id from test);
-[false]
+false
 select 3 > all(select id from test);
-[true]
+true
 select 0 > all(select data from test);
-[false]
+false
 select 3 > all(select data from test);
-[null]
+null
 # test: <= all
 select 1 <= all(select id from test);
-[true]
+true
 select 0 <= all(select id from test);
-[true]
+true
 select 3 <= all(select id from test);
-[false]
+false
 select null <= all(select id from test);
-[null]
+null
 select 1 <= all(select id from test);
-[true]
+true
 select 3 <= all(select id from test);
-[false]
+false
 select 3 <= all(select data from test);
-[false]
+false
 select 0 <= all(select data from test);
-[null]
+null
 # test: < all
 select 1 < all(select id from test);
-[false]
+false
 select 0 < all(select id from test);
-[true]
+true
 select 3 < all(select id from test);
-[false]
+false
 select 0 < all(select data from test);
-[null]
+null
 select null < all(select id from test);
-[null]
+null
 select 1 < all(select id from test);
-[false]
+false
 select 0 < all(select id from test);
-[true]
+true
 select 3 < all(select data from test);
-[false]
+false
 select 0 < all(select data from test);
-[null]
+null
 disconnect S0;
 close E0;

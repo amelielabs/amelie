@@ -2,10 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: config
 select show();
-[{
+{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "pretty-minimal",
   "log_enable": true,
   "log_file": true,
   "log_stdout": false,
@@ -42,12 +41,11 @@ select show();
   "catalog_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
-}]
+}
 select show('config');
-[{
+{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "pretty-minimal",
   "log_enable": true,
   "log_file": true,
   "log_stdout": false,
@@ -84,12 +82,11 @@ select show('config');
   "catalog_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
-}]
+}
 select show('all');
-[{
+{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "pretty-minimal",
   "log_enable": true,
   "log_file": true,
   "log_stdout": false,
@@ -126,10 +123,10 @@ select show('all');
   "catalog_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
-}]
+}
 # test: state
 select show('state');
-[{
+{
   "version": "1.0.0-rc1",
   "directory": "_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000000",
@@ -141,83 +138,71 @@ select show('state');
   "catalog": 0,
   "catalog_pending": 0,
   "read_only": false
-}]
+}
 # test: replicas
 select show('replicas');
-[[]]
+[]
 # test: replica
 select show('replica', '00000000-0000-0000-0000-000000000000');
-[null]
+null
 select show('replica', uuid '00000000-0000-0000-0000-000000000000');
-{"msg": "show(string, ❰uuid❱ ⟵ string or bool expected"}
+error: show(string, ❰uuid❱ ⟵ string or bool expected
 # test: repl
 select show('repl');
-[{
+{
   "active": false,
   "role": "primary",
   "primary": null,
   "replicas": []
-}]
+}
 # test: replication
 select show('replication');
-[{
+{
   "active": false,
   "role": "primary",
   "primary": null,
   "replicas": []
-}]
+}
 # test: agents
 select show('agents');
-[[]]
+[]
 # test: users
 select show('users')[0].name;
-["main"]
+"main"
 # test: user
 select show('user', 'main').name;
-["main"]
+"main"
 # test: storages
 select show('storages');
-[[{
-  "name": "main",
-  "path": "",
-  "compression": "zstd",
-  "compression_level": 0
-}]]
-# test: storage
-select show('storage', 'main');
 [{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
 }]
+# test: storage
+select show('storage', 'main');
+{
+  "name": "main",
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
+}
 create table test (id int primary key);
 # test: tables
 select show('tables');
-[[{
+[{
   "user": "main",
   "name": "test"
-}]]
+}]
 # test: table
 select show('table', 'test');
-[{
+{
   "user": "main",
   "name": "test"
-}]
+}
 # test: indexes
 select show('indexes', '', 'test', false);
-[[{
-  "name": "primary",
-  "type": 2,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }]
-}]]
-# test: index
-select show('index', 'primary', 'test', false);
 [{
   "name": "primary",
   "type": 2,
@@ -228,9 +213,21 @@ select show('index', 'primary', 'test', false);
     "asc": true
   }]
 }]
+# test: index
+select show('index', 'primary', 'test', false);
+{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}
 # test: partitions
 select show('partitions', '', 'test', false);
-[[{
+[{
   "id": 1,
   "storage": "main",
   "min": 0,
@@ -238,19 +235,19 @@ select show('partitions', '', 'test', false);
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]]
+}]
 # test: partition
 select show('partition', '0', 'test', false);
-[null]
+null
 # test: functions
 select show('functions');
-[[]]
+[]
 # test: function
 select show('function', 'test');
-[null]
+null
 # test: wal
 select show('wal');
-[{
+{
   "lsn": 1,
   "lsn_min": 1,
   "files": 1,
@@ -259,17 +256,17 @@ select show('wal');
   "writes": 1,
   "writes_bytes": 369,
   "ops": 1
-}]
+}
 # test: metrics
 select show('metrics')::size;
-[9]
+9
 # test: locks
 select show('locks');
-[[{
+[{
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
   "function": "session_execute"
-}]]
+}]
 disconnect S0;
 close E0;

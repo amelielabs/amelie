@@ -7,7 +7,7 @@ insert into test values (0, 2);
 insert into test values (1, 1);
 insert into test values (2, 0);
 explain select * from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -27,23 +27,25 @@ explain select * from test;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test;
-[[0, 2], [1, 1], [2, 0]]
+0 │ 2
+1 │ 1
+2 │ 0
 select * from test use;
-{"msg": "select * from test use❰;❱ ⟵ INDEX expected"}
+error: select * from test use❰;❱ ⟵ INDEX expected
 select * from test use 1;
-{"msg": "select * from test use ❰1❱ ⟵ INDEX expected"}
+error: select * from test use ❰1❱ ⟵ INDEX expected
 select * from test use index;
-{"msg": "select * from test use index❰;❱ ⟵ ( expected"}
+error: select * from test use index❰;❱ ⟵ ( expected
 select * from test use index 1;
-{"msg": "select * from test use index ❰1❱ ⟵ ( expected"}
+error: select * from test use index ❰1❱ ⟵ ( expected
 select * from test use index (;
-{"msg": "select * from test use index (❰;❱ ⟵ index name expected"}
+error: select * from test use index (❰;❱ ⟵ index name expected
 select * from test use index (123;
-{"msg": "select * from test use index (❰123❱ ⟵ index name expected"}
+error: select * from test use index (❰123❱ ⟵ index name expected
 explain select * from test use index (i);
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -63,9 +65,11 @@ explain select * from test use index (i);
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test use index (i);
-[[2, 0], [1, 1], [0, 2]]
+2 │ 0
+1 │ 1
+0 │ 2
 drop index i on test;
 drop table test;
 # test: hash/hash
@@ -76,7 +80,7 @@ insert into test values (1, 1);
 insert into test values (2, 0);
 # test: hash/hash (scan)
 explain select * from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -96,13 +100,15 @@ explain select * from test;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test;
-[[1, 1], [0, 2], [2, 0]]
+1 │ 1
+0 │ 2
+2 │ 0
 # test: hash/hash (unique point lookup)
 create unique index j on test (data) using hash;
 explain select * from test where data = 2;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -126,11 +132,11 @@ explain select * from test where data = 2;
     "13": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where data = 2;
-[[0, 2]]
+0 │ 2
 explain select * from test where id = 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -155,11 +161,11 @@ explain select * from test where id = 1;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id = 1;
-[[1, 1]]
+1 │ 1
 explain select * from test where id = 1 and data = 1;
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 1",
     "01": "push_int            -      0      0     # 1",
@@ -190,11 +196,11 @@ explain select * from test where id = 1 and data = 1;
     "18": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id = 1 and data = 1;
-[[1, 1]]
+1 │ 1
 explain select * from test where data = 1 and id = 1;
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 1",
     "01": "push_int            -      0      0     # 1",
@@ -225,9 +231,9 @@ explain select * from test where data = 1 and id = 1;
     "18": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where data = 1 and id = 1;
-[[1, 1]]
+1 │ 1
 drop table test;
 # test: tree/hash
 create table test (id int primary key, data int);
@@ -236,7 +242,7 @@ insert into test values (0, 2);
 insert into test values (1, 1);
 insert into test values (2, 0);
 explain select * from test where id = 1;
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 1",
     "01": "send_lookup         0      -      32    # main.test (select, closing)",
@@ -261,11 +267,11 @@ explain select * from test where id = 1;
     "13": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id = 1;
-[[1, 1]]
+1 │ 1
 explain select * from test where id > 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -290,11 +296,11 @@ explain select * from test where id > 1;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id > 1;
-[[2, 0]]
+2 │ 0
 explain select * from test where data > 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -318,12 +324,12 @@ explain select * from test where data > 1;
     "13": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where data > 1;
-[[0, 2]]
+0 │ 2
 # test: tree/hash (point lookup)
 explain select * from test where data = 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -347,11 +353,11 @@ explain select * from test where data = 1;
     "13": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where data = 1;
-[[1, 1]]
+1 │ 1
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -372,9 +378,9 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 explain select * from test where data = 1 and id = 1;
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 1",
     "01": "send_lookup         0      -      32    # main.test (select, closing)",
@@ -405,12 +411,12 @@ explain select * from test where data = 1 and id = 1;
     "19": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where data = 1 and id = 1;
-[[1, 1]]
+1 │ 1
 # test: tree/hash (hash override)
 explain select * from test where id = 1 and data = 1;
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 1",
     "01": "send_lookup         0      -      32    # main.test (select, closing)",
@@ -441,9 +447,9 @@ explain select * from test where id = 1 and data = 1;
     "19": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id = 1 and data = 1;
-[[1, 1]]
+1 │ 1
 drop table test;
 # test: tree/tree
 create table test (id int primary key, data int);
@@ -453,7 +459,7 @@ insert into test values (1, 1);
 insert into test values (2, 0);
 # test: tree/tree (scan)
 explain select * from test where id > 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -478,11 +484,11 @@ explain select * from test where id > 1;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id > 1;
-[[2, 0]]
+2 │ 0
 explain select * from test where data > 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -507,12 +513,12 @@ explain select * from test where data > 1;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where data > 1;
-[[0, 2]]
+0 │ 2
 # test: tree/tree (stop condition)
 explain select * from test where data < 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -540,11 +546,11 @@ explain select * from test where data < 1;
     "17": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where data < 1;
-[[2, 0]]
+2 │ 0
 explain select * from test where id < 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -572,11 +578,11 @@ explain select * from test where id < 1;
     "17": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id < 1;
-[[0, 2]]
+0 │ 2
 explain select * from test where id < 1 and data < 2;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -608,9 +614,8 @@ explain select * from test where id < 1 and data < 2;
     "21": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id < 1 and data < 2;
-[]
 drop table test;
 disconnect S0;
 close E0;

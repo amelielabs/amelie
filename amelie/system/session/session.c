@@ -90,10 +90,9 @@ session_auth(Session* self, Endpoint* endpoint, Output* output)
 	if (str_is(service, "backup", 6) && str_is(service, "repl", 4))
 		user_check(self->user, PERM_SERVICE);
 
-	// set timezone / format
+	// set timezone
 	auto local = &self->local;
 	local->timezone = output->timezone;
-	local->format   = output->format;
 	str_set_str(&local->user, user_id);
 
 	// update transaction time

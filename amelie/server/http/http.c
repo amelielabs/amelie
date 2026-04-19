@@ -270,11 +270,10 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 
 	// arguments
 	//
-	// timezone, format
+	// timezone
 	//
 	bool first = true;
 	uri_export_arg(&endpoint->timezone, buf, &first);
-	uri_export_arg(&endpoint->format, buf, &first);
 
 	buf_write(buf, " HTTP/1.1\r\n", 11);
 

@@ -2,28 +2,28 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: for parsing
 for end;
-{"msg": "for ❰end❱ ⟵ name expected"}
+error: for ❰end❱ ⟵ name expected
 for 1 end;
-{"msg": "for ❰1❱ ⟵ name expected"}
+error: for ❰1❱ ⟵ name expected
 for it end;
-{"msg": "for it ❰end❱ ⟵ IN expected"}
+error: for it ❰end❱ ⟵ IN expected
 for it 1 end;
-{"msg": "for it ❰1❱ ⟵ IN expected"}
+error: for it ❰1❱ ⟵ IN expected
 for it in end;
-{"msg": "for it in ❰end❱ ⟵ relation not found"}
+error: for it in ❰end❱ ⟵ relation not found
 for it in 1 end;
-{"msg": "for it in ❰1❱ ⟵ target name expected"}
+error: for it in ❰1❱ ⟵ target name expected
 for it in ; end;
-{"msg": "for it in ❰;❱ ⟵ target name expected"}
+error: for it in ❰;❱ ⟵ target name expected
 for it in [1,2,3] end;
-{"msg": "for it in ❰[❱ ⟵ target name expected"}
+error: for it in ❰[❱ ⟵ target name expected
 for it in ([1,2,3] end;
-{"msg": "for it in ([1,2,3] ❰end❱ ⟵ ) expected"}
+error: for it in ([1,2,3] ❰end❱ ⟵ ) expected
 for it in (select [1,2,3] end;
-{"msg": "for it in (select [1,2,3] ❰end❱ ⟵ ) expected"}
+error: for it in (select [1,2,3] ❰end❱ ⟵ ) expected
 # test: for
 explain for it in (select [1,2,3]) do end;
-[{
+{
   "main": {
     "00": "json                0      0      0     ",
     "01": "dup                 1      0      0     ",
@@ -33,7 +33,7 @@ explain for it in (select [1,2,3]) do end;
     "05": "ret                 -1     0      -     "
   },
   "access": []
-}]
+}
 for it in (select [1,2,3]) do end;
 begin
 	declare n int := 0;
@@ -42,7 +42,7 @@ begin
 	end;
 	select n;
 end;
-[3]
+3
 # test: for if
 begin
 	declare n int := 0;
@@ -53,7 +53,7 @@ begin
 	end;
 	select n;
 end;
-[2]
+2
 # test: for for
 begin
 	declare n int := 0;
@@ -64,7 +64,7 @@ begin
 	end;
 	select n;
 end;
-[9]
+9
 explain begin
 	declare n int := 0;
 	for i in (select [1,2,3] as i) do
@@ -74,7 +74,7 @@ explain begin
 	end;
 	select n;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -104,7 +104,7 @@ end;
     "25": "ret                 1      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare n int := 0;
 	for i in (select [1,2,3] as i) do
@@ -114,7 +114,7 @@ begin
 	end;
 	select n;
 end;
-[36]
+36
 # test: for for for
 begin
 	declare n int := 0;
@@ -127,7 +127,7 @@ begin
 	end;
 	select n;
 end;
-[27]
+27
 begin
 	declare n int := 0;
 	for i in (select [1,2,3] as i) do
@@ -139,7 +139,7 @@ begin
 	end;
 	select n;
 end;
-[162]
+162
 # test: for in select
 create table test (id int primary key);
 insert into test values (1), (2), (3);
@@ -150,7 +150,7 @@ explain begin
 	end;
 	select n;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -181,7 +181,7 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin declare
 	n int := 0;
 	for i in (select * from test) do
@@ -189,7 +189,7 @@ begin declare
 	end;
 	select n;
 end;
-[3]
+3
 begin
 	declare n int := 0;
 	for i in (select * from test) do
@@ -197,7 +197,7 @@ begin
 	end;
 	select n;
 end;
-[6]
+6
 drop table test;
 # test: for in select for int select
 create table test (id int primary key);
@@ -212,7 +212,7 @@ explain begin
 	end;
 	select n;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -260,7 +260,7 @@ end;
     "15": "ret                 3      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare n int := 0;
 	for i in (select * from test) do
@@ -270,7 +270,7 @@ begin
 	end;
 	select n;
 end;
-[9]
+9
 begin
 	declare n int := 0;
 	for i in (select * from test) do
@@ -280,7 +280,7 @@ begin
 	end;
 	select n;
 end;
-[36]
+36
 drop table test;
 # test: for (select from (select from))
 create table test (id int primary key);
@@ -292,7 +292,7 @@ explain begin
 	end;
 	select n;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -332,20 +332,20 @@ end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare n int := 0; for i in (select * from (select * from test) x) do
 		n := n + 1;
 	end;
 	select n;
 end;
-[3]
+3
 drop table test;
 # test: for table
 create table test (id int primary key);
 insert into test values (1), (2), (3);
 for i in test do end;
-{"msg": "for i in test ❰do❱ ⟵ tables are not supported here"}
+error: for i in test ❰do❱ ⟵ tables are not supported here
 drop table test;
 # test: for var
 begin
@@ -356,7 +356,7 @@ begin
 	end;
 	select list;
 end;
-[[1, 2, 3]]
+[1, 2, 3]
 begin
 	declare list json := [];
 	declare x json := [1,2,3];
@@ -365,7 +365,7 @@ begin
 	end;
 	select list;
 end;
-[[1, 2, 3]]
+[1, 2, 3]
 begin
 	declare list json := [];
 	declare x json := [1,2,3];
@@ -374,7 +374,7 @@ begin
 	end;
 	select list;
 end;
-[[1, 2, 3]]
+[1, 2, 3]
 begin
 	declare x int := 77;
 	declare last int;
@@ -383,7 +383,7 @@ begin
 	end;
 	select last;
 end;
-[77]
+77
 begin
 	declare x int := 77;
 	declare last int;
@@ -392,7 +392,7 @@ begin
 	end;
 	select last;
 end;
-[77]
+77
 begin
 	declare x int := 77;
 	declare last int;
@@ -401,7 +401,7 @@ begin
 	end;
 	select last;
 end;
-[77]
+77
 # test: for var (table)
 create table test (id int primary key);
 insert into test values (1), (2), (3);
@@ -420,7 +420,9 @@ begin
 	end;
 	select list;
 end;
-{"msg": "begin\n\tdeclare list json := []\n   \t❰declare❱ ⟵ ; expected"}
+error: begin
+	declare list json := []
+   	❰declare❱ ⟵ ; expected
 drop table test;
 # test: for .. select
 create table test (id int primary key);
@@ -435,7 +437,7 @@ explain begin
 	end;
 	select total;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -482,7 +484,7 @@ end;
     "13": "ret                 3      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare total int; declare n int;
 	total := 0;
@@ -492,7 +494,7 @@ begin
 	end;
 	select total;
 end;
-[9]
+9
 drop table test;
 # test: for .. select (push target)
 create table test (id int primary key);
@@ -506,7 +508,7 @@ explain begin
 	end;
 	select n;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -553,7 +555,7 @@ end;
     "15": "ret                 2      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare n int := 0;
 	declare r int;
@@ -563,7 +565,7 @@ begin
 	end;
 	select n;
 end;
-[3]
+3
 drop table test;
 # test: for .. select (push target agg)
 create table test (id int primary key);
@@ -577,7 +579,7 @@ explain begin
 	end;
 	select n;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -637,7 +639,7 @@ end;
     "21": "ret                 2      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare n int := 0;
 	declare r int;
@@ -647,7 +649,7 @@ begin
 	end;
 	select n;
 end;
-[3]
+3
 drop table test;
 # test: for .. select (push var)
 create table test (id int primary key);
@@ -663,7 +665,7 @@ explain begin
 	end;
 	select n;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          3      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -706,7 +708,7 @@ end;
     "11": "ret                 2      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin
 	declare n int := 0;
 	declare r int;
@@ -718,7 +720,7 @@ begin
 	end;
 	select n;
 end;
-[3]
+3
 drop table test;
 # test: for .. returning
 create table test (id int primary key, data int);
@@ -732,7 +734,7 @@ explain begin
 	end;
 	select n;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -779,7 +781,7 @@ end;
     "17": "ret                 2      0      -     "
   },
   "access": [["main.test", "shared_rw", "update"]]
-}]
+}
 begin
 	declare n int := 0;
 	declare r int := 0;
@@ -789,7 +791,7 @@ begin
 	end;
 	select n;
 end;
-[3]
+3
 drop table test;
 # test: for .. insert
 create table test (id int primary key, data int);
@@ -801,7 +803,7 @@ explain begin
 	end;
 	select * from test;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",
@@ -835,7 +837,7 @@ end;
     "11": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared_rw", "insert", "select"]]
-}]
+}
 begin
 	declare v int;
 	for i in ([0,1,2,3,4,5,6,7,8,9]) do
@@ -844,7 +846,16 @@ begin
 	end;
 	select * from test;
 end;
-[[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]]
+0 │ 0
+1 │ 0
+2 │ 0
+3 │ 0
+4 │ 0
+5 │ 0
+6 │ 0
+7 │ 0
+8 │ 0
+9 │ 0
 explain begin
 	declare v int;
 	for i in ([0,1,2,3,4,5,6,7,8,9]) do
@@ -853,7 +864,7 @@ explain begin
 	end;
 	select * from test;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",
@@ -895,7 +906,7 @@ end;
     "19": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared_rw", "insert", "update", "select"]]
-}]
+}
 begin
 	declare v int;
 	for i in ([0,1,2,3,4,5,6,7,8,9]) do
@@ -904,7 +915,16 @@ begin
 	end;
 	select * from test;
 end;
-[[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9]]
+0 │ 0
+1 │ 1
+2 │ 2
+3 │ 3
+4 │ 4
+5 │ 5
+6 │ 6
+7 │ 7
+8 │ 8
+9 │ 9
 truncate test;
 begin
 	declare v int;
@@ -914,7 +934,12 @@ begin
 	end;
 	select * from test;
 end;
-[[0, 2], [1, 2], [2, 2], [3, 2], [4, 0], [5, 0]]
+0 │ 2
+1 │ 2
+2 │ 2
+3 │ 2
+4 │ 0
+5 │ 0
 drop table test;
 # test: for .. insert (serial)
 create table test (id serial primary key);
@@ -922,17 +947,46 @@ for i in ([0,1,2,3,4,5,6,7,8,9]) do
 	insert into test () values (), (), ();
 end;
 select * from test;
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
 ;
 drop table test;
 # test: for utility
 for i in ([1,2,3]) do show all; end;
-{"msg": "for i in ([1,2,3]) do ❰show❱ ⟵ utility statement cannot be used here"}
+error: for i in ([1,2,3]) do ❰show❱ ⟵ utility statement cannot be used here
 # test: cte for
 with a as (for i in ([1,2,3]) do end) select 1;
-{"msg": "with a as (❰for❱ ⟵ statement cannot be used inside CTE"}
+error: with a as (❰for❱ ⟵ statement cannot be used inside CTE
 with a as (select 1) for i in ([1,2,3]) do end;
-{"msg": "with a as (select 1) ❰for❱ ⟵ statement cannot be used inside CTE"}
+error: with a as (select 1) ❰for❱ ⟵ statement cannot be used inside CTE
 # test: for break
 explain begin
 	declare last int;
@@ -942,7 +996,7 @@ explain begin
 	end;
 	select last;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",
@@ -958,7 +1012,7 @@ end;
     "11": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare last int;
 	for i in ([0,1,2,3]) do
@@ -967,7 +1021,7 @@ begin
 	end;
 	select last;
 end;
-[0]
+0
 # test: for if break
 explain begin
 	declare last int := 0;
@@ -979,7 +1033,7 @@ explain begin
 	end;
 	select last;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -1001,7 +1055,7 @@ end;
     "17": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare last int := 0;
 	for i in ([0,1,2,3]) do
@@ -1012,7 +1066,7 @@ begin
 	end;
 	select last;
 end;
-[3]
+3
 # test: for for if break
 explain begin
 	declare last int := 0;
@@ -1028,7 +1082,7 @@ explain begin
 	end;
 	select loops, last;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -1063,7 +1117,7 @@ end;
     "30": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare last int := 0;
 	declare loops int := 0;
@@ -1078,7 +1132,7 @@ begin
 	end;
 	select loops, last;
 end;
-[[4, 3]]
+4 │ 3
 # test: for if continue
 explain begin
 	declare last int;
@@ -1091,7 +1145,7 @@ explain begin
 	end;
 	select last;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",
@@ -1114,7 +1168,7 @@ end;
     "18": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare last int;
 	for i in ([0,1,2,3]) do
@@ -1126,7 +1180,7 @@ begin
 	end;
 	select last;
 end;
-[2]
+2
 # test: for for if continue
 explain begin
 	declare last int := 0;
@@ -1143,7 +1197,7 @@ explain begin
 	end;
 	select loops, last;
 end;
-[{
+{
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -1181,7 +1235,7 @@ end;
     "33": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin
 	declare last int := 0;
 	declare loops int := 0;
@@ -1197,6 +1251,6 @@ begin
 	end;
 	select loops, last;
 end;
-[[4, 2]]
+4 │ 2
 disconnect S0;
 close E0;

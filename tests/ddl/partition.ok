@@ -2,17 +2,17 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: alter partition statement parsing
 alter partition;
-{"msg": "alter partition❰;❱ ⟵ int expected"}
+error: alter partition❰;❱ ⟵ int expected
 alter partition xyz;
-{"msg": "alter partition ❰xyz❱ ⟵ int expected"}
+error: alter partition ❰xyz❱ ⟵ int expected
 alter partition 1;
-{"msg": "alter partition 1❰;❱ ⟵ ON expected"}
+error: alter partition 1❰;❱ ⟵ ON expected
 alter partition 1 on;
-{"msg": "alter partition 1 on❰;❱ ⟵ name expected"}
+error: alter partition 1 on❰;❱ ⟵ name expected
 alter partition 1 on xyz;
-{"msg": "alter partition 1 on xyz❰;❱ ⟵ command expected"}
+error: alter partition 1 on xyz❰;❱ ⟵ command expected
 alter partition 1 on xyz qwerty;
-{"msg": "alter partition 1 on xyz ❰qwerty❱ ⟵ unknown command"}
+error: alter partition 1 on xyz ❰qwerty❱ ⟵ unknown command
 create storage a;
 create storage b;
 create storage c;
@@ -107,7 +107,7 @@ show partitions on test;
   "compression": 1
 }]
 show partition '6' on test;
-[{
+{
   "id": 6,
   "storage": "c",
   "min": 0,
@@ -115,11 +115,11 @@ show partition '6' on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]
+}
 # test: alter partition move
 alter partition 6 on test move to b;
 show partition '8' on test;
-[{
+{
   "id": 8,
   "storage": "b",
   "min": 0,
@@ -127,11 +127,11 @@ show partition '8' on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]
+}
 # test: alter partition move (same partition)
 alter partition 8 on test move to b;
 show partition '10' on test;
-[{
+{
   "id": 10,
   "storage": "b",
   "min": 0,
@@ -139,12 +139,12 @@ show partition '10' on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]
+}
 # test: alter partition move (storage not exists)
 alter partition 10 on test move to xyz;
-{"msg": "partition or storage not found"}
+error: partition or storage not found
 show partition '10' on test;
-[{
+{
   "id": 10,
   "storage": "b",
   "min": 0,
@@ -152,9 +152,9 @@ show partition '10' on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]
+}
 show partition '12' on test;
-[null]
+null
 drop table test;
 drop storage a;
 drop storage b;

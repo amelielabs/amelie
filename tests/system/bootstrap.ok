@@ -2,10 +2,9 @@ open E0 "uuid": "abc00000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: ensure custom instance uuid
 show all;
-[{
+{
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "pretty-minimal",
   "log_enable": true,
   "log_file": true,
   "log_stdout": false,
@@ -42,9 +41,9 @@ show all;
   "catalog_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
-}]
+}
 show state;
-[{
+{
   "version": "1.0.0-rc1",
   "directory": "_output/E0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
@@ -56,17 +55,16 @@ show state;
   "catalog": 0,
   "catalog_pending": 0,
   "read_only": false
-}]
+}
 # test: ensure uuid recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 show all;
-[{
+{
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "pretty-minimal",
   "log_enable": true,
   "log_file": true,
   "log_stdout": false,
@@ -103,9 +101,9 @@ show all;
   "catalog_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
-}]
+}
 show state;
-[{
+{
   "version": "1.0.0-rc1",
   "directory": "_output/E0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
@@ -117,6 +115,6 @@ show state;
   "catalog": 0,
   "catalog_pending": 0,
   "read_only": false
-}]
+}
 disconnect S0;
 close E0;

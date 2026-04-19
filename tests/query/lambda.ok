@@ -2,13 +2,13 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: select ->
 select ->;
-{"msg": "select ❰->❱ ⟵ bad expression"}
+error: select ❰->❱ ⟵ bad expression
 select -> 1;
-{"msg": "select ❰->❱ ⟵ bad expression"}
+error: select ❰->❱ ⟵ bad expression
 select 1 ->;
-{"msg": "select 1 ->❰;❱ ⟵ bad expression"}
+error: select 1 ->❰;❱ ⟵ bad expression
 select 1 -> 1;
-{"msg": "select 1 -> 1❰;❱ ⟵ no targets to use with GROUP BY or aggregation"}
+error: select 1 -> 1❰;❱ ⟵ no targets to use with GROUP BY or aggregation
 # test: select int -> from table (partitions 1)
 create table test (id int primary key, data int) partitions 1;
 insert into test values (0, 0);
@@ -17,14 +17,14 @@ insert into test values (2, 2);
 insert into test values (3, 1);
 insert into test values (4, 3);
 select 0 -> id;
-{"msg": "select 0 -> id❰;❱ ⟵ no targets to use with GROUP BY or aggregation"}
+error: select 0 -> id❰;❱ ⟵ no targets to use with GROUP BY or aggregation
 select 0 -> id from test;
-[4]
+4
 # test: select int ->, int -> from table
 select 0 -> id, 0 -> data from test;
-[[4, 3]]
+4 │ 3
 explain select 0 -> id, 0 -> data from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      48    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
@@ -62,17 +62,17 @@ explain select 0 -> id, 0 -> data from test;
     "18": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 # test: select self
 select self;
-{"msg": "select ❰self❱ ⟵ unexpected SELF usage without lambda context"}
+error: select ❰self❱ ⟵ unexpected SELF usage without lambda context
 # test: select int -> self from table
 select 0 -> self from test;
-[0]
+0
 select 0 -> self + 1 from test;
-[5]
+5
 explain select 0 -> self + 1 from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
@@ -106,58 +106,73 @@ explain select 0 -> self + 1 from test;
     "16": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select 0 -> (self + 1) + self from test;
-[31]
+31
 # test: select string -> self from table
 select '' -> self || id::string from test;
-["01234"]
+"01234"
 select '' -> self::concat(id::string) from test;
-["01234"]
+"01234"
 # test: select [] -> self from table
 select [] -> self::append(id) from test;
-[[0, 1, 2, 3, 4]]
+[0, 1, 2, 3, 4]
 select [] -> append(self, id) from test;
-[[0, 1, 2, 3, 4]]
+[0, 1, 2, 3, 4]
 select [] -> self::append(id::string) from test;
-[["0", "1", "2", "3", "4"]]
+["0", "1", "2", "3", "4"]
 # test: select {} -> self from table
 select {} -> self::set('key_' || id::string, data) from test;
-[{
+{
   "key_0": 0,
   "key_1": 1,
   "key_2": 2,
   "key_3": 1,
   "key_4": 3
-}]
+}
 # test: select int -> from table group by
 select * from test;
-[[0, 0], [1, 1], [2, 2], [3, 1], [4, 3]]
+0 │ 0
+1 │ 1
+2 │ 2
+3 │ 1
+4 │ 3
 select data, 0 -> self + 1 from test group by data;
-[[0, 1], [1, 2], [2, 1], [3, 1]]
+0 │ 1
+1 │ 2
+2 │ 1
+3 │ 1
 # test: select column -> from table (unsupported)
 select id -> self + 1 from test;
-{"msg": "select ❰id❱ ⟵ column not found"}
+error: select ❰id❱ ⟵ column not found
 # test: select expr -> from table
 select (select 1 + 2) -> self + 1 from test;
-[8]
+8
 select 1 + 2 -> self + 1 from test;
-[8]
+8
 select null -> 1 from test;
-{"msg": "select null -> ❰1❱ ⟵ lambda expression type mismatch"}
+error: select null -> ❰1❱ ⟵ lambda expression type mismatch
 select null::int -> 1 from test;
-{"msg": "select null::int -> ❰1❱ ⟵ lambda expression type mismatch"}
+error: select null::int -> ❰1❱ ⟵ lambda expression type mismatch
 # test: select subquery -> from table
 select (select data from test t where id = 3) -> self + 1 from test;
-[6]
+6
 # test: select (select column -> from table) from table
 select id, (select o.id -> self + 1 from test) from test as o;
-[[0, 5], [1, 6], [2, 7], [3, 8], [4, 9]]
+0 │ 5
+1 │ 6
+2 │ 7
+3 │ 8
+4 │ 9
 select (select o.id -> self + 1 from test) from test as o;
-[5, 6, 7, 8, 9]
+5
+6
+7
+8
+9
 # test: select -> / ->
 select (0.0 -> self + id) / (0 -> self + 1) from test;
-[2]
+2
 drop table test;
 # test: select int -> self from table (partitions N, unsupported)
 create table test (id int primary key, data int) partitions 2;
@@ -168,7 +183,7 @@ insert into test values (3, 1);
 insert into test values (4, 3);
 insert into test values (5, 3);
 explain select 0 -> self + 1 from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      40    # main.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
@@ -202,20 +217,22 @@ explain select 0 -> self + 1 from test;
     "16": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select 0 -> self + 1 from test;
-{"msg": "distributed operation on lambda is not supported"}
+error: distributed operation on lambda is not supported
 drop table test;
 # test: select expr -> from []
 select 0 -> self + value::int from ([1,2,3]) value;
-[6]
+6
 # test: select (expr -> from column) from table
 create table test (id int primary key, data json);
 insert into test values (0, [1,2,3]);
 insert into test values (1, [4,5,6]);
 insert into test values (2, [7,8,9]);
 select id, (select 0 -> self + value::int from (test.data) value) from test;
-[[0, 6], [1, 15], [2, 24]]
+0 │ 6
+1 │ 15
+2 │ 24
 drop table test;
 disconnect S0;
 close E0;

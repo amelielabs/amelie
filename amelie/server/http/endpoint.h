@@ -45,7 +45,6 @@ struct Endpoint
 	Opt  service;
 	// args
 	Opt  timezone;
-	Opt  format;
 	// misc
 	Opt  auth;
 	Opt  name;

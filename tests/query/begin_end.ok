@@ -4,39 +4,39 @@ connect E0 S0 127.0.0.1:3485;
 begin end;
 begin begin;
 end end;
-{"msg": "begin ❰begin❱ ⟵ cannot be used here"}
+error: begin ❰begin❱ ⟵ cannot be used here
 # test: commit
 commit;
-{"msg": "❰commit❱ ⟵ cannot be used here"}
+error: ❰commit❱ ⟵ cannot be used here
 begin commit end;
-{"msg": "begin ❰commit❱ ⟵ cannot be used here"}
+error: begin ❰commit❱ ⟵ cannot be used here
 # test: begin end
 begin select 1 end;
-{"msg": "begin select 1 ❰end❱ ⟵ ; expected"}
+error: begin select 1 ❰end❱ ⟵ ; expected
 begin; end;
 explain begin; end;
-{"msg": "❰explain❱ ⟵ EXPLAIN without command"}
+error: ❰explain❱ ⟵ EXPLAIN without command
 explain begin; select 1; end;
-[{
+{
   "main": {
     "00": "int                 0      -      0     # 1",
     "01": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin; select 1; end;
-[1]
+1
 # test: begin end last stmt
 explain begin; select 1; select 2; end;
-[{
+{
   "main": {
     "00": "int                 0      -      0     # 1",
     "01": "int                 1      -      0     # 2",
     "02": "ret                 1      0      -     "
   },
   "access": []
-}]
+}
 begin; select 1; select 2; end;
-[2]
+2
 disconnect S0;
 close E0;

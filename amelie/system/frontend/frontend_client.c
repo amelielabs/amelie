@@ -83,7 +83,7 @@ frontend_endpoint(Client* client, Output* output)
 	(
 		uri_parse_endpoint(endpoint, &request->options[HTTP_URL]);
 
-		// configure output mime (using Accept) and format
+		// configure output mime (using Accept)
 		output_reset(output);
 		output_set(output, endpoint);
 	);

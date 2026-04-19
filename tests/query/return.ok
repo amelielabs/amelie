@@ -2,24 +2,24 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: return main implicit by last stmt
 explain select 1;
-[{
+{
   "main": {
     "00": "int                 0      -      0     # 1",
     "01": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 explain begin select 1; select 2; end;
-[{
+{
   "main": {
     "00": "int                 0      -      0     # 1",
     "01": "int                 1      -      0     # 2",
     "02": "ret                 1      0      -     "
   },
   "access": []
-}]
+}
 explain begin select 1; select 2; select 3; end;
-[{
+{
   "main": {
     "00": "int                 0      -      0     # 1",
     "01": "int                 1      -      0     # 2",
@@ -27,22 +27,22 @@ explain begin select 1; select 2; select 3; end;
     "03": "ret                 2      0      -     "
   },
   "access": []
-}]
+}
 begin select 1; select 2; end;
-[2]
+2
 # test: return main implicity, if
 explain if true then end;
-[{
+{
   "main": {
     "00": "bool                0      1      0     ",
     "01": "jntr                2      0      0     ",
     "02": "ret                 -1     0      -     "
   },
   "access": []
-}]
+}
 if true then end;
 explain begin if true then end; select 1; end;
-[{
+{
   "main": {
     "00": "bool                0      1      0     ",
     "01": "jntr                2      0      0     ",
@@ -50,11 +50,11 @@ explain begin if true then end; select 1; end;
     "03": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin if true then end; select 1; end;
-[1]
+1
 explain begin if true then select 1; end; select 2; end;
-[{
+{
   "main": {
     "00": "bool                0      1      0     ",
     "01": "jntr                3      0      0     ",
@@ -63,12 +63,12 @@ explain begin if true then select 1; end; select 2; end;
     "04": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 begin if true then select 1; end; select 2; end;
-[2]
+2
 # test: return main implicit select into
 explain begin declare x int; select 123 into x; end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 123",
@@ -76,15 +76,15 @@ explain begin declare x int; select 123 into x; end;
     "03": "ret                 -1     0      -     "
   },
   "access": []
-}]
+}
 begin declare x int; select 123 into x; end;
 # test: return main implicit var dep
 begin declare x int := 123; select x; end;
-[123]
+123
 create table test (id int primary key);
 insert into test values (1), (2), (3);
 explain begin declare x int; select id into x from test; select x; end;
-[{
+{
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      32    # main.test (select, closing)",
@@ -106,28 +106,28 @@ explain begin declare x int; select id into x from test; select x; end;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 begin declare x int; select id into x from test; select x; end;
-[1]
+1
 drop table test;
 # test: return main explicit
 return;
-{"msg": "❰return❱ ⟵ RETURN can be used only within UDF"}
+error: ❰return❱ ⟵ RETURN can be used only within UDF
 return 123;
-{"msg": "❰return❱ ⟵ RETURN can be used only within UDF"}
+error: ❰return❱ ⟵ RETURN can be used only within UDF
 return select 123;
-{"msg": "❰return❱ ⟵ RETURN can be used only within UDF"}
+error: ❰return❱ ⟵ RETURN can be used only within UDF
 begin declare x int; return x; end;
-{"msg": "begin declare x int; ❰return❱ ⟵ RETURN can be used only within UDF"}
+error: begin declare x int; ❰return❱ ⟵ RETURN can be used only within UDF
 # test: return main explicit cte
 begin declare x int; with a as (return x) select 1; end;
-{"msg": "begin declare x int; with a as (❰return❱ ⟵ RETURN can be used only within UDF"}
+error: begin declare x int; with a as (❰return❱ ⟵ RETURN can be used only within UDF
 begin declare x int; with a as (select 1) return x; end;
-{"msg": "begin declare x int; with a as (select 1) ❰return❱ ⟵ RETURN can be used only within UDF"}
+error: begin declare x int; with a as (select 1) ❰return❱ ⟵ RETURN can be used only within UDF
 # test: return without type, no return
 create function test() begin end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -140,15 +140,15 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: return with type, no return
 create function test() return int
 begin end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -161,9 +161,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: return with type, stmt no return
 create function test() return int
@@ -171,7 +171,7 @@ begin
 	select '123';
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -185,23 +185,24 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: return no type
 create function test()
 begin
 	return 123;
 end;
-{"msg": "begin\n\treturn ❰123❱ ⟵ RETURN type 'int' mismatch function type 'null'"}
+error: begin
+	return ❰123❱ ⟵ RETURN type 'int' mismatch function type 'null'
 # test: return;
 create function test()
 begin
 	return;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -214,9 +215,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: return; with type
 create function test() return int
@@ -224,7 +225,7 @@ begin
 	return;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -237,9 +238,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: return null without type
 create function test()
@@ -247,7 +248,7 @@ begin
 	return null;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -261,23 +262,23 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: return null with type null
 create function test() return null
 begin
 	return null;
 end;
-{"msg": "create function test() return ❰null❱ ⟵ unrecognized data type"}
+error: create function test() return ❰null❱ ⟵ unrecognized data type
 # test: return null with type
 create function test() return int
 begin
 	return null;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -291,9 +292,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: return type check
 create function test() return int
@@ -301,7 +302,7 @@ begin
 	return 123;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -315,42 +316,43 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[123]
+123
 drop function test;
 create function test() return int
 begin
 	return '123';
 end;
-{"msg": "begin\n\treturn ❰'123'❱ ⟵ RETURN type 'string' mismatch function type 'int'"}
+error: begin
+	return ❰'123'❱ ⟵ RETURN type 'string' mismatch function type 'int'
 # test: return table parsing
 create function test() return table;
-{"msg": "create function test() return table❰;❱ ⟵ ( expected"}
+error: create function test() return table❰;❱ ⟵ ( expected
 create function test() return table(;
-{"msg": "create function test() return table(❰;❱ ⟵ name expected"}
+error: create function test() return table(❰;❱ ⟵ name expected
 create function test() return table(a;
-{"msg": "create function test() return table(a❰;❱ ⟵ unrecognized data type"}
+error: create function test() return table(a❰;❱ ⟵ unrecognized data type
 create function test() return table(a,;
-{"msg": "create function test() return table(a❰,❱ ⟵ unrecognized data type"}
+error: create function test() return table(a❰,❱ ⟵ unrecognized data type
 create function test() return table(a 1;
-{"msg": "create function test() return table(a ❰1❱ ⟵ unrecognized data type"}
+error: create function test() return table(a ❰1❱ ⟵ unrecognized data type
 create function test() return table(a int 1;
-{"msg": "create function test() return table(a int ❰1❱ ⟵ ) expected"}
+error: create function test() return table(a int ❰1❱ ⟵ ) expected
 create function test() return table(a int,;
-{"msg": "create function test() return table(a int,❰;❱ ⟵ name expected"}
+error: create function test() return table(a int,❰;❱ ⟵ name expected
 create function test() return table(a int,,;
-{"msg": "create function test() return table(a int,❰,❱ ⟵ name expected"}
+error: create function test() return table(a int,❰,❱ ⟵ name expected
 create function test() return table(a int,);
-{"msg": "create function test() return table(a int,❰)❱ ⟵ name expected"}
+error: create function test() return table(a int,❰)❱ ⟵ name expected
 create function test() return table(a int);
-{"msg": "create function test() return table(a int)❰;❱ ⟵ BEGIN expected"}
+error: create function test() return table(a int)❰;❱ ⟵ BEGIN expected
 # test: return table without return
 create function test() return table(a int)
 begin
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -363,9 +365,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: return table return null
 create function test() return table(a int)
@@ -373,7 +375,7 @@ begin
 	return;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -386,16 +388,16 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 create function test() return table(a int)
 begin
 	return null;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -409,9 +411,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: return table
 create function test() return table(a int, b int)
@@ -419,7 +421,7 @@ begin
 	return select 1, 2;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -436,11 +438,11 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[1]
+1
 explain execute test();
-[{
+{
   "function": "main.test",
   "main": {
     "00": "set                 0      2      0     ",
@@ -450,9 +452,9 @@ explain execute test();
     "04": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute test();
-[[1, 2]]
+1 │ 2
 drop function test;
 # test: return table var null
 create function test() return table(a int, b int)
@@ -461,7 +463,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -476,11 +478,11 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 explain execute test();
-[{
+{
   "function": "main.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -488,9 +490,9 @@ explain execute test();
     "02": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute test();
-[[null, null]]
+null │ null
 drop function test;
 # test: return table var
 create function test() return table(a int, b int)
@@ -500,7 +502,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -520,11 +522,11 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[1]
+1
 explain execute test();
-[{
+{
   "function": "main.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -537,9 +539,9 @@ explain execute test();
     "07": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute test();
-[[1, 2]]
+1 │ 2
 drop function test;
 # test: return table var type mismatch
 create function test() return table(a int, b int)
@@ -548,21 +550,28 @@ begin
 	select 1,2 into x;
 	return x;
 end;
-{"msg": "begin\n\tdeclare x table (x int, y string);\n\t❰select❱ ⟵ variable table columns mismatch"}
+error: begin
+	declare x table (x int, y string);
+	❰select❱ ⟵ variable table columns mismatch
 create function test() return table(a int, b int)
 begin
 	declare x table (x int);
 	select 1 into x;
 	return x;
 end;
-{"msg": "begin\n\tdeclare x table (x int);\n\tselect 1 into x;\n\treturn ❰x❱ ⟵ RETURN columns mismatch function returning columns"}
+error: begin
+	declare x table (x int);
+	select 1 into x;
+	return ❰x❱ ⟵ RETURN columns mismatch function returning columns
 create function test() return table(a int)
 begin
 	declare x table (x int, y string);
 	select 1,2 into x;
 	return x;
 end;
-{"msg": "begin\n\tdeclare x table (x int, y string);\n\t❰select❱ ⟵ variable table columns mismatch"}
+error: begin
+	declare x table (x int, y string);
+	❰select❱ ⟵ variable table columns mismatch
 # test: return var
 create function test() return int
 begin
@@ -570,7 +579,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -585,11 +594,11 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 explain execute test();
-[{
+{
   "function": "main.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -597,9 +606,9 @@ explain execute test();
     "02": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute test();
-[null]
+null
 drop function test;
 create function test() return int
 begin
@@ -607,7 +616,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -624,11 +633,11 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[123]
+123
 explain execute test();
-[{
+{
   "function": "main.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -638,9 +647,9 @@ explain execute test();
     "04": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute test();
-[123]
+123
 drop function test;
 # test: return return
 create function test() return int
@@ -650,7 +659,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -669,9 +678,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[0]
+0
 drop function test;
 # test: if return
 create function test() return int
@@ -683,7 +692,7 @@ begin
 	end;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -703,9 +712,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[12]
+12
 drop function test;
 # test: if return return
 create function test() return int
@@ -718,7 +727,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -739,9 +748,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[12]
+12
 drop function test;
 create function test() return int
 begin
@@ -753,7 +762,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -774,9 +783,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: if return return (dep)
 create table src (id int primary key);
@@ -792,7 +801,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -831,9 +840,9 @@ explain select test();
     },
     "access": [["main.src", "shared", "select"]]
   }]
-}]
+}
 select test();
-[2]
+2
 drop function test;
 create function test() return int
 begin
@@ -846,7 +855,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -885,9 +894,9 @@ explain select test();
     },
     "access": [["main.src", "shared", "select"]]
   }]
-}]
+}
 select test();
-[1]
+1
 drop function test;
 create function test() return int
 begin
@@ -899,7 +908,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -935,9 +944,9 @@ explain select test();
     },
     "access": [["main.src", "shared", "select"]]
   }]
-}]
+}
 select test();
-[1]
+1
 drop function test;
 create function test() return int
 begin
@@ -949,7 +958,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -985,9 +994,9 @@ explain select test();
     },
     "access": [["main.src", "shared", "select"]]
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: for if return
 create function test() return int
@@ -1002,7 +1011,7 @@ begin
 	select x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -1048,9 +1057,9 @@ explain select test();
     },
     "access": [["main.src", "shared", "select"]]
   }]
-}]
+}
 select test();
-[2]
+2
 drop function test;
 insert into src values (4), (5);
 create function test() return int
@@ -1065,7 +1074,7 @@ begin
 	select x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -1111,9 +1120,9 @@ explain select test();
     },
     "access": [["main.src", "shared", "select"]]
   }]
-}]
+}
 select test();
-[2]
+2
 drop function test;
 create function test() return int
 begin
@@ -1127,7 +1136,7 @@ begin
 	select x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -1160,9 +1169,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[2]
+2
 drop function test;
 create function test() return int
 begin
@@ -1176,7 +1185,7 @@ begin
 	select x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -1209,9 +1218,9 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[2]
+2
 drop function test;
 # test: return insert
 create function test() return int
@@ -1220,7 +1229,7 @@ begin
 	select 1;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -1242,9 +1251,9 @@ explain select test();
     },
     "access": [["main.src", "shared_rw", "insert"]]
   }]
-}]
+}
 select test();
-[null]
+null
 drop function test;
 # test: return insert returning
 create function test() return int
@@ -1253,7 +1262,7 @@ begin
 	select 1;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -1288,9 +1297,9 @@ explain select test();
     },
     "access": [["main.src", "shared_rw", "insert"]]
   }]
-}]
+}
 select test();
-[8]
+8
 drop function test;
 # test: return insert returning into
 create function test() return int
@@ -1299,7 +1308,10 @@ begin
 	return insert into src values (8) returning * into x;
 	select 1;
 end;
-{"msg": "create function test() return int\nbegin\n\tdeclare x int;\n\treturn insert into src values (8) returning * ❰into❱ ⟵ INTO and RETURN cannot be used together"}
+error: create function test() return int
+begin
+	declare x int;
+	return insert into src values (8) returning * ❰into❱ ⟵ INTO and RETURN cannot be used together
 create function test() return int
 begin
 	declare x int;
@@ -1307,7 +1319,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -1343,9 +1355,9 @@ explain select test();
     },
     "access": [["main.src", "shared_rw", "insert"]]
   }]
-}]
+}
 select test();
-[9]
+9
 drop function test;
 # test: if return insert returning
 create function test() return int
@@ -1358,7 +1370,7 @@ begin
 	return select 0;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -1399,9 +1411,9 @@ explain select test();
     },
     "access": [["main.src", "shared_rw", "insert"]]
   }]
-}]
+}
 select test();
-[10]
+10
 drop function test;
 # test: if return insert returning
 create function test() return int
@@ -1414,7 +1426,7 @@ begin
 	return select 0;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -1455,9 +1467,9 @@ explain select test();
     },
     "access": [["main.src", "shared_rw", "insert"]]
   }]
-}]
+}
 select test();
-[0]
+0
 drop function test;
 # test: return select
 create function test() return json
@@ -1469,7 +1481,7 @@ begin
 	return list;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -1506,12 +1518,12 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[[["main", "src"]]]
+[["main", "src"]]
 drop function test;
 select `user`, name from show('tables');
-[["main", "src"]]
+"main" │ "src"
 create function test() return json
 begin
 	declare list json := [];
@@ -1521,7 +1533,7 @@ begin
 	return list;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -1560,12 +1572,12 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[[{
+[{
   "schema": "main",
   "name": "src"
-}]]
+}]
 drop function test;
 select
 [] -> self::append ({
@@ -1574,10 +1586,10 @@ select
 })
 from
 	show('tables') as it;
-[[{
+[{
   "user": "main",
   "name": "src"
-}]]
+}]
 create function test() return json
 begin
 	declare list json;
@@ -1588,7 +1600,7 @@ begin
 	return list;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -1645,12 +1657,12 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[[{
+[{
   "schema": "main",
   "name": "src"
-}]]
+}]
 drop function test;
 create function test() return json
 begin
@@ -1661,7 +1673,7 @@ begin
 	return list;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -1718,12 +1730,12 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[[{
+[{
   "schema": "main",
   "name": "src"
-}]]
+}]
 drop function test;
 create function test() return table (id int)
 begin
@@ -1732,7 +1744,7 @@ begin
 	return x;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "close               0      0      0     ",
@@ -1762,16 +1774,24 @@ explain select test();
     },
     "access": [["main.src", "shared", "select"]]
   }]
-}]
+}
 select test();
-[1, 2, 3, 4, 5, 6, 8, 9, 10]
+1
+2
+3
+4
+5
+6
+8
+9
+10
 drop function test;
 create function test(array json) return json
 begin
 	return select [] -> self::push(it) from (array) it;
 end;
 select [1,2,3]::test;
-[[3, 2, 1]]
+[3, 2, 1]
 drop function test;
 # test: return expr
 create function test(arg int) return int
@@ -1779,9 +1799,9 @@ begin
 	return arg * arg;
 end;
 explain select test();
-{"msg": "explain select ❰test❱ ⟵ invalid number of arguments"}
+error: explain select ❰test❱ ⟵ invalid number of arguments
 explain select test(123);
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 123",
     "01": "call_udf            0      -      -     # main.test()",
@@ -1798,9 +1818,9 @@ explain select test(123);
     },
     "access": []
   }]
-}]
+}
 select test(123);
-[15129]
+15129
 drop function test;
 create function test(mul int) return int
 begin
@@ -1811,7 +1831,7 @@ begin
 	return x * mul;
 end;
 explain select test(-1);
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # -1",
     "01": "call_udf            0      -      -     # main.test()",
@@ -1839,9 +1859,9 @@ explain select test(-1);
     },
     "access": []
   }]
-}]
+}
 select test(-1);
-[-3]
+-3
 drop function test;
 drop table src;
 disconnect S0;

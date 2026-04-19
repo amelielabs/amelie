@@ -2,36 +2,44 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: begin abort
 begin; select error("abort"); end;
-{"msg": "abort"}
+error: abort
 # test: insert abort by error
 create table test (id int primary key, data int default 0);
 insert into test (id) values (0), (1), (2), (3), (1);
-{"msg": "index 'primary': unique key constraint violation"}
+error: index 'primary': unique key constraint violation
 select * from test;
-[]
 # test: insert abort by error #2
 insert into test (id) values (0), (1), (2), (3);
 select * from test;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+0 │ 0
+1 │ 0
+3 │ 0
+2 │ 0
 # test: insert abort by error #3
 insert into test (id) values (4), (5), (1), (6);
-{"msg": "index 'primary': unique key constraint violation"}
+error: index 'primary': unique key constraint violation
 select * from test;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+0 │ 0
+1 │ 0
+3 │ 0
+2 │ 0
 # test: insert abort by error #4
 begin
 	insert into test (id) values (4), (5), (1), (6);
 	select error("abort");
 end;
-{"msg": "abort"}
+error: abort
 select * from test;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+0 │ 0
+1 │ 0
+3 │ 0
+2 │ 0
 # test: delete abort
 explain begin
 	delete from test;
 	select error("abort");
 end;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (delete, closing)",
     "01": "push_string         56     0      0     # abort",
@@ -46,20 +54,23 @@ end;
     "04": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "delete"]]
-}]
+}
 begin
 	delete from test;
 	select error("abort");
 end;
-{"msg": "abort"}
+error: abort
 select * from test;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+0 │ 0
+1 │ 0
+3 │ 0
+2 │ 0
 # test: update abort
 explain begin
 	update test set data = id;
 	select error("abort");
 end;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (update, closing)",
     "01": "push_string         56     0      0     # abort",
@@ -78,20 +89,23 @@ end;
     "08": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "update"]]
-}]
+}
 begin
 	update test set data = id;
 	select error("abort");
 end;
-{"msg": "abort"}
+error: abort
 select * from test;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+0 │ 0
+1 │ 0
+3 │ 0
+2 │ 0
 # test: upsert abort
 explain begin
 	insert into test values(1, 0) on conflict do update set data = id;
 	select error("abort");
 end;
-[{
+{
   "main": {
     "00": "set_ptr             1      -      0     ",
     "01": "send_shard          0      1      0     # main.test (insert, closing)",
@@ -112,14 +126,17 @@ end;
     "09": "ret                 -1     0      -     "
   },
   "access": [["main.test", "shared_rw", "insert", "update"]]
-}]
+}
 begin
 	insert into test values(1, 0) on conflict do update set data = id;
 	select error("abort");
 end;
-{"msg": "abort"}
+error: abort
 select * from test;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+0 │ 0
+1 │ 0
+3 │ 0
+2 │ 0
 drop table test;
 create table a (id int primary key, data int default 0);
 create table b (id int primary key, data int default 0);
@@ -130,10 +147,13 @@ begin
 	insert into a (id) values (0), (1), (2), (3);
 	select * from a;
 end;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+0 │ 0
+1 │ 0
+3 │ 0
+2 │ 0
 # test: insert b
 explain insert into b (id) values (10), (20), (30);
-[{
+{
   "main": {
     "00": "set_ptr             1      -      0     ",
     "01": "send_shard          0      1      0     # main.b (insert, closing)",
@@ -144,12 +164,17 @@ explain insert into b (id) values (10), (20), (30);
     "01": "ret                 -1     0      -     "
   },
   "access": [["main.b", "shared_rw", "insert"]]
-}]
+}
 insert into b (id) values (10), (20), (30);
 select * from a;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+0 │ 0
+1 │ 0
+3 │ 0
+2 │ 0
 select * from b;
-[[10, 0], [30, 0], [20, 0]]
+10 │ 0
+30 │ 0
+20 │ 0
 # test: update a update b abort
 update a set data = 0;
 explain begin
@@ -159,7 +184,7 @@ explain begin
 	select * from b;
 	select error("abort");
 end;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.a (update)",
     "01": "send_all            0      0      88    # main.b (update)",
@@ -210,7 +235,7 @@ end;
     "37": "ret                 1      0      -     "
   },
   "access": [["main.a", "shared_rw", "update", "select"], ["main.b", "shared_rw", "update", "select"]]
-}]
+}
 begin
 	update a set data = id;
 	update b set data = id;
@@ -218,11 +243,16 @@ begin
 	select * from b;
 	select error("abort");
 end;
-{"msg": "abort"}
+error: abort
 select * from a;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+0 │ 0
+1 │ 0
+3 │ 0
+2 │ 0
 select * from b;
-[[10, 0], [30, 0], [20, 0]]
+10 │ 0
+30 │ 0
+20 │ 0
 # test: upsert a update b abort
 explain begin
 	insert into a values (1, 0), (3, 0) on conflict do update set data = id;
@@ -230,7 +260,7 @@ explain begin
 	select * from a;
 	select error("abort");
 end;
-[{
+{
   "main": {
     "00": "set_ptr             1      -      0     ",
     "01": "send_shard          0      1      0     # main.a (insert)",
@@ -274,18 +304,23 @@ end;
     "30": "ret                 0      0      -     "
   },
   "access": [["main.a", "shared_rw", "insert", "update", "select"], ["main.b", "shared_rw", "update"]]
-}]
+}
 begin
 	insert into a values (1, 0), (3, 0) on conflict do update set data = id;
 	update b set data = data * 2;
 	select * from a;
 	select error("abort");
 end;
-{"msg": "abort"}
+error: abort
 select * from a;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+0 │ 0
+1 │ 0
+3 │ 0
+2 │ 0
 select * from b;
-[[10, 0], [30, 0], [20, 0]]
+10 │ 0
+30 │ 0
+20 │ 0
 drop table a;
 drop table b;
 drop table ref;
@@ -1320,7 +1355,7 @@ begin
 	update test set data = null;
 	select error("abort");
 end;
-{"msg": "abort"}
+error: abort
 drop table test;
 disconnect S0;
 close E0;

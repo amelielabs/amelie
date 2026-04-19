@@ -2,71 +2,71 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: like parsing
 select like;
-{"msg": "select ❰like❱ ⟵ bad expression"}
+error: select ❰like❱ ⟵ bad expression
 select like 1;
-{"msg": "select ❰like❱ ⟵ bad expression"}
+error: select ❰like❱ ⟵ bad expression
 select like like;
-{"msg": "select ❰like❱ ⟵ bad expression"}
+error: select ❰like❱ ⟵ bad expression
 select 1 like;
-{"msg": "select 1 like❰;❱ ⟵ bad expression"}
+error: select 1 like❰;❱ ⟵ bad expression
 # test: like
 select 1 like 1;
-{"msg": "select 1 like ❰1❱ ⟵ operation int LIKE int is not supported"}
+error: select 1 like ❰1❱ ⟵ operation int LIKE int is not supported
 select '' like '';
-[true]
+true
 select '' like '%';
-[true]
+true
 select '' like '%_';
-[true]
+true
 select '' like '%_';
-[true]
+true
 select 'abc' like 'abc';
-[true]
+true
 select 'abc' like '_b_';
-[true]
+true
 select 'abc' like 'ab_';
-[true]
+true
 select 'abc' like 'abc';
-[true]
+true
 select 'abc' like '__c';
-[true]
+true
 select 'abc' like '___';
-[true]
+true
 select 'abcd' like '___';
-[false]
+false
 select 'abcd' like 'a';
-[false]
+false
 select 'abcd' like 'abc';
-[false]
+false
 select 'abcd' like 'abc';
-[false]
+false
 select 'abcd' like 'abc%';
-[true]
+true
 select 'abcd' like 'abc%d';
-[true]
+true
 select 'abcd' like 'abc%de';
-[false]
+false
 select 'hello, world' like 'hello%world';
-[true]
+true
 select 'http://google.com' like '%google%';
-[true]
+true
 # test: like escape
 select '%' like '\\%';
-[true]
+true
 select '123 %-%-% day' like '%%-%%-%%';
-[true]
+true
 select '123 %_%_% day' like '%%_%%_%%';
-[true]
+true
 # test: not like
 select not like;
-{"msg": "select ❰not❱ ⟵ bad expression"}
+error: select ❰not❱ ⟵ bad expression
 select not;
-{"msg": "select ❰not❱ ⟵ bad expression"}
+error: select ❰not❱ ⟵ bad expression
 select not like 20;
-{"msg": "select ❰not❱ ⟵ bad expression"}
+error: select ❰not❱ ⟵ bad expression
 select 'abcd' like 'abc%d';
-[true]
+true
 select 'abcd' not like 'abc%d';
-[false]
+false
 disconnect S0;
 close E0;

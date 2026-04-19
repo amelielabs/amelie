@@ -131,7 +131,7 @@ switch S0;
 watch 'test'::locks_count = 0;
 switch S2;
 recv;
-[0]
+0
 disconnect S2;
 switch S0;
 show locks;
@@ -142,7 +142,10 @@ show locks;
   "function": "session_execute"
 }]
 select * from test;
-[[1, 1], [2, 2], [3, 3], [4, 4]]
+1 │ 1
+2 │ 2
+3 │ 3
+4 │ 4
 drop table test;
 disconnect S0;
 close E0;

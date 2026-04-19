@@ -65,7 +65,7 @@ test_session_connect(TestSession* self, Str* uri, Str* cafile)
 	if (opt_string_empty(&endpoint->content_type))
 		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
 	if (opt_string_empty(&endpoint->accept))
-		opt_string_set_raw(&endpoint->accept, "application/json", 16);
+		opt_string_set_raw(&endpoint->accept, "plain/text", 10);
 
 	self->client = client_create();
 	client_set_endpoint(self->client, &self->endpoint);

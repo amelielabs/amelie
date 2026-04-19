@@ -31,32 +31,21 @@ post /v1/sql/ application/json - -;
 post /v1/sql plain/text - -;
 # test: POST /v1/sql (plain/text, no accept)
 post /v1/sql plain/text - select 1;
-[1]
+{ "columns": ["col1"], "rows": [[1]] }
 # test: POST /v1/sql (plain/text, invalid accept)
 post /v1/sql plain/text xyz select 1;
 400 Bad Request
 # test: POST /v1/sql (plain/text)
 post /v1/sql plain/text application/json select 1;
-[1]
+{ "columns": ["col1"], "rows": [[1]] }
 # test: POST /v1/sql?args parsing
 post /v1/sql? plain/text application/json select 1;
 400 Bad Request
 post /v1/sql?a plain/text application/json select 1;
 400 Bad Request
-post /v1/sql?format plain/text application/json select 1;
-400 Bad Request
-# test: POST /v1/sql?format
-post /v1/sql/?format= plain/text application/json select 1;
-[1]
-post /v1/sql/?format=full plain/text application/json select 1;
-[{"col1": 1}]
-post /v1/sql/?format=full-pretty plain/text - select 1;
-[{
-  "col1": 1
-}]
-post /v1/sql/?format=full-pretty plain/text - show tables;
-{
-  "result": []
-}
+post /v1/sql plain/text application/json select "2024-07-29 18:40:19"::timestamp;
+{ "columns": ["col1"], "rows": [["2024-07-29 18:40:19+00"]] }
+post /v1/sql?timezone=Asia/Tokyo plain/text application/json select "2024-07-29 18:40:19"::timestamp;
+{ "columns": ["col1"], "rows": [["2024-07-29 18:40:19+09"]] }
 disconnect S0;
 close E0;

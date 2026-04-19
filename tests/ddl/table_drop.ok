@@ -2,40 +2,40 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: drop table statement parsing
 drop;
-{"msg": "drop❰;❱ ⟵ relation type expected"}
+error: drop❰;❱ ⟵ relation type expected
 drop 1;
-{"msg": "drop ❰1❱ ⟵ relation type expected"}
+error: drop ❰1❱ ⟵ relation type expected
 drop table "name";
-{"msg": "drop table ❰\"name\"❱ ⟵ name expected"}
+error: drop table ❰"name"❱ ⟵ name expected
 drop table name junk;
-{"msg": "drop table name ❰junk❱ ⟵ ; expected"}
+error: drop table name ❰junk❱ ⟵ ; expected
 # test: drop non-existing table
 drop table name;
-{"msg": "table 'name': not exists"}
+error: table 'name': not exists
 drop table if exists test;
 # test: drop table
 create table test(id int primary key);
 select show('table', 'test', true).name;
-["test"]
+"test"
 drop table test;
 select show('table', 'test', true).name;
-[null]
+null
 # test: drop table if exists
 create table test(id int primary key);
 select show('table', 'test', true).name;
-["test"]
+"test"
 drop table test;
 select show('table', 'test', true).name;
-[null]
+null
 drop table if exists test;
 # test: recreate same table after drop
 create table test (id int primary key);
 select show('table', 'test', true).name;
-["test"]
+"test"
 drop table test;
 create table test (id int primary key);
 select show('table', 'test', true).name;
-["test"]
+"test"
 drop table test;
 # test: drop table with udf dep
 create table test (id int primary key);
@@ -51,7 +51,7 @@ show functions all;
   "grants": []
 }]
 drop table test;
-{"msg": "function 'dep' depends on relation 'main.test"}
+error: function 'dep' depends on relation 'main.test
 # test: drop table after udf drop
 drop function dep;
 drop table test;

@@ -42,7 +42,6 @@ endpoint_init(Endpoint* self)
 		{ "service",      OPT_STRING,  OPT_C, &self->service,      NULL, 0    },
 		// args
 		{ "timezone",     OPT_STRING,  OPT_C, &self->timezone,     NULL, 0    },
-		{ "format",       OPT_STRING,  OPT_C, &self->format,       NULL, 0    },
 		// misc
 		{ "auth",         OPT_BOOL,    OPT_C, &self->auth,         NULL, true },
 		{ "name",         OPT_STRING,  OPT_C, &self->name,         NULL, 0    },

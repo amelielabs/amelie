@@ -2,26 +2,26 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: exists parsing
 select exists;
-{"msg": "select exists❰;❱ ⟵ ( expected"}
+error: select exists❰;❱ ⟵ ( expected
 select exists 1;
-{"msg": "select exists ❰1❱ ⟵ ( expected"}
+error: select exists ❰1❱ ⟵ ( expected
 select exists (;
-{"msg": "select exists (❰;❱ ⟵ SELECT expected"}
+error: select exists (❰;❱ ⟵ SELECT expected
 select exists ();
-{"msg": "select exists (❰)❱ ⟵ SELECT expected"}
+error: select exists (❰)❱ ⟵ SELECT expected
 select exists (1);
-{"msg": "select exists (❰1❱ ⟵ SELECT expected"}
+error: select exists (❰1❱ ⟵ SELECT expected
 select exists (null);
-{"msg": "select exists (❰null❱ ⟵ SELECT expected"}
+error: select exists (❰null❱ ⟵ SELECT expected
 select exists (false);
-{"msg": "select exists (❰false❱ ⟵ SELECT expected"}
+error: select exists (❰false❱ ⟵ SELECT expected
 select exists ([]);
-{"msg": "select exists (❰[❱ ⟵ SELECT expected"}
+error: select exists (❰[❱ ⟵ SELECT expected
 # test: exists (select)
 create table test (id int primary key, data int);
 insert into test values (1, 0), (2, 0);
 explain select exists (select true from test limit 1);
-[{
+{
   "main": {
     "00": "set                 0      1      0     ",
     "01": "int                 1      -      0     # 1",
@@ -35,19 +35,19 @@ explain select exists (select true from test limit 1);
     "09": "ret                 1      0      -     "
   },
   "access": [["main.test", "exclusive_ro", "select"]]
-}]
+}
 select exists (select true from test limit 1);
-[true]
+true
 select exists (select true from test where false);
-[false]
+false
 # test: exists (select expr)
 select exists (select null);
-[true]
+true
 # test: exists (select) (more then one result)
 select exists (select true from test);
-[true]
+true
 explain select exists (select true from test where false);
-[{
+{
   "main": {
     "00": "set                 0      1      0     ",
     "01": "table_open          1      0      7     # main.test (primary) [main] ",
@@ -61,10 +61,10 @@ explain select exists (select true from test where false);
     "09": "ret                 1      0      -     "
   },
   "access": [["main.test", "exclusive_ro", "select"]]
-}]
+}
 # test: exists (select) (more then one column)
 select exists (select * from test);
-[true]
+true
 drop table test;
 disconnect S0;
 close E0;

@@ -96,7 +96,6 @@ test any
 test all
 test lambda
 test limits
-test format
 test begin_end
 test declare
 test deps

@@ -4,7 +4,7 @@ connect E0 S0 127.0.0.1:3485;
 create table test (id int primary key, data int default 0);
 insert into test (id) values (1), (2), (3);
 explain select * from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -24,12 +24,14 @@ explain select * from test;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test;
-[[1, 0], [3, 0], [2, 0]]
+1 │ 0
+3 │ 0
+2 │ 0
 # test: select from table where
 explain select * from test where id > 1;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -54,16 +56,16 @@ explain select * from test where id > 1;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id > 1;
-[[3, 0], [2, 0]]
+3 │ 0
+2 │ 0
 select * from test where id > 2;
-[[3, 0]]
+3 │ 0
 select * from test where id > 3;
-[]
 # test: select from table where point lookup
 explain select * from test where id = 1;
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 1",
     "01": "send_lookup         0      -      32    # main.test (select, closing)",
@@ -88,23 +90,23 @@ explain select * from test where id = 1;
     "13": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from test where id = 1;
-[[1, 0]]
+1 │ 0
 select * from test where id = 2;
-[[2, 0]]
+2 │ 0
 select * from test where id = 3;
-[[3, 0]]
+3 │ 0
 select * from test where id = 4;
-[]
 select * from test where id = 0;
-[]
 # test: select (select expr) from table
 select (select test.id) from test;
-[1, 3, 2]
+1
+3
+2
 # test: select (select (select expr)) from table
 explain select (select (select (test.id))) from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -122,11 +124,13 @@ explain select (select (select (test.id))) from test;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select (select (select (test.id))) from test;
-[1, 3, 2]
+1
+3
+2
 explain select (select (select test.id)) from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -144,12 +148,14 @@ explain select (select (select test.id)) from test;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select (select (select test.id)) from test;
-[1, 3, 2]
+1
+3
+2
 # test: select (select (select from table)) from table
 explain select (select (select id from test t)) from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      64    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -174,12 +180,12 @@ explain select (select (select id from test t)) from test;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "exclusive_ro", "select"]]
-}]
+}
 # test: select (select (select from table)) from table
 create table ref (id int primary key, data int default 0);
 insert into ref (id) values (1), (2), (3);
 explain select (select (select id from ref)) from test;
-[{
+{
   "main": {
     "00": "send_all            0      0      64    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -204,14 +210,16 @@ explain select (select (select id from ref)) from test;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.ref", "exclusive_ro", "select"], ["main.test", "shared", "select"]]
-}]
+}
 select (select (select id from ref)) from test;
-[1, 1, 1]
+1
+1
+1
 # test: select from table where (select from table)
 explain select * from test where (select * from test t);
-{"msg": "explain select * from test where (❰select❱ ⟵ subquery must return only one column"}
+error: explain select * from test where (❰select❱ ⟵ subquery must return only one column
 explain select * from test where (select id from test t);
-[{
+{
   "main": {
     "00": "send_all            0      0      64    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -240,10 +248,10 @@ explain select * from test where (select id from test t);
     "18": "ret                 0      0      -     "
   },
   "access": [["main.test", "exclusive_ro", "select"]]
-}]
+}
 # test: select from table where (select from table)
 explain select * from test where (select id from ref);
-[{
+{
   "main": {
     "00": "send_all            0      0      64    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -272,12 +280,14 @@ explain select * from test where (select id from ref);
     "18": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
-}]
+}
 select * from test where (select id from ref);
-[[1, 0], [3, 0], [2, 0]]
+1 │ 0
+3 │ 0
+2 │ 0
 # test: select from table where exists (select from table)
 explain select * from test where exists (select 1 from ref where test.id = ref.id);
-[{
+{
   "main": {
     "00": "send_all            0      0      64    # main.test (select, closing)",
     "01": "union               1      0      0     ",
@@ -310,9 +320,11 @@ explain select * from test where exists (select 1 from ref where test.id = ref.i
     "22": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
-}]
+}
 select * from test where exists (select 1 from ref where test.id = ref.id);
-[[1, 0], [3, 0], [2, 0]]
+1 │ 0
+3 │ 0
+2 │ 0
 drop table ref;
 drop table test;
 disconnect S0;

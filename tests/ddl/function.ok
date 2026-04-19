@@ -2,31 +2,31 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: create function parsing
 create function;
-{"msg": "create function❰;❱ ⟵ name expected"}
+error: create function❰;❱ ⟵ name expected
 create function test;
-{"msg": "create function test❰;❱ ⟵ ( expected"}
+error: create function test❰;❱ ⟵ ( expected
 create function test (;
-{"msg": "create function test (❰;❱ ⟵ name expected"}
+error: create function test (❰;❱ ⟵ name expected
 create function test (1;
-{"msg": "create function test (❰1❱ ⟵ name expected"}
+error: create function test (❰1❱ ⟵ name expected
 create function test (x;
-{"msg": "create function test (x❰;❱ ⟵ unrecognized data type"}
+error: create function test (x❰;❱ ⟵ unrecognized data type
 create function test (x 1;
-{"msg": "create function test (x ❰1❱ ⟵ unrecognized data type"}
+error: create function test (x ❰1❱ ⟵ unrecognized data type
 create function test (x int;
-{"msg": "create function test (x int❰;❱ ⟵ ) expected"}
+error: create function test (x int❰;❱ ⟵ ) expected
 create function test (x int,;
-{"msg": "create function test (x int,❰;❱ ⟵ name expected"}
+error: create function test (x int,❰;❱ ⟵ name expected
 create function test (x int, int;
-{"msg": "create function test (x int, int❰;❱ ⟵ unrecognized data type"}
+error: create function test (x int, int❰;❱ ⟵ unrecognized data type
 create function test (x int, y;
-{"msg": "create function test (x int, y❰;❱ ⟵ unrecognized data type"}
+error: create function test (x int, y❰;❱ ⟵ unrecognized data type
 create function test (x int, y);
-{"msg": "create function test (x int, y❰)❱ ⟵ unrecognized data type"}
+error: create function test (x int, y❰)❱ ⟵ unrecognized data type
 create function test (x int);
-{"msg": "create function test (x int)❰;❱ ⟵ BEGIN expected"}
+error: create function test (x int)❰;❱ ⟵ BEGIN expected
 create function test (x int) 1;
-{"msg": "create function test (x int) ❰1❱ ⟵ BEGIN expected"}
+error: create function test (x int) ❰1❱ ⟵ BEGIN expected
 # test: create function (empty, no return)
 create function test () begin end;
 show functions all;
@@ -40,7 +40,7 @@ show functions all;
   "grants": []
 }]
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -53,17 +53,17 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 explain execute test();
-[{
+{
   "function": "main.test",
   "main": {
     "00": "ret                 -1     0      -     "
   },
   "access": []
-}]
+}
 execute test();
 drop function test;
 # test: create function return (empty)
@@ -71,7 +71,7 @@ create function test () return int
 begin
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -84,24 +84,24 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 select test()::type;
-["null"]
+"null"
 select main.test();
-[null]
+null
 explain execute test();
-[{
+{
   "function": "main.test",
   "main": {
     "00": "ret                 -1     0      -     "
   },
   "access": []
-}]
+}
 execute test();
 select test() + 123;
-[null]
+null
 drop function test;
 # test: create function return (return explicit)
 create function test () return int
@@ -109,7 +109,7 @@ begin
 	return 123;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -123,22 +123,22 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[123]
+123
 explain execute test();
-[{
+{
   "function": "main.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute test();
-[123]
+123
 select test() + 123;
-[246]
+246
 drop function test;
 # test: create function return (no return)
 create function test () return int
@@ -146,7 +146,7 @@ begin
 	select 123;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -160,21 +160,21 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[null]
+null
 explain execute test();
-[{
+{
   "function": "main.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 -1     0      -     "
   },
   "access": []
-}]
+}
 execute test();
 select test() + 123;
-[null]
+null
 drop function test;
 # test: create function return (return stmt)
 create function test () return int
@@ -182,7 +182,7 @@ begin
 	return select 123;
 end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -196,50 +196,54 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 select test();
-[123]
+123
 explain execute test();
-[{
+{
   "function": "main.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute test();
-[123]
+123
 select test() + 123;
-[246]
+246
 drop function test;
 # test: create function return (return type mismatch)
 create function test () return int
 begin
 	return '123';
 end;
-{"msg": "begin\n\treturn ❰'123'❱ ⟵ RETURN type 'string' mismatch function type 'int'"}
+error: begin
+	return ❰'123'❱ ⟵ RETURN type 'string' mismatch function type 'int'
 create function test () return int
 begin
 	return select '123';
 end;
-{"msg": "begin\n\treturn ❰select❱ ⟵ RETURN type 'string' mismatch function type 'int'"}
+error: begin
+	return ❰select❱ ⟵ RETURN type 'string' mismatch function type 'int'
 create function test ()
 begin
 	return '123';
 end;
-{"msg": "begin\n\treturn ❰'123'❱ ⟵ RETURN type 'string' mismatch function type 'null'"}
+error: begin
+	return ❰'123'❱ ⟵ RETURN type 'string' mismatch function type 'null'
 create function test ()
 begin
 	return select '123';
 end;
-{"msg": "begin\n\treturn ❰select❱ ⟵ RETURN type 'string' mismatch function type 'null'"}
+error: begin
+	return ❰select❱ ⟵ RETURN type 'string' mismatch function type 'null'
 create function test ()
 begin
 	return null;
 end;
 select test();
-[null]
+null
 execute test();
 drop function test;
 create function test ()
@@ -247,9 +251,9 @@ begin
 	return;
 end;
 select test();
-[null]
+null
 select test();
-[null]
+null
 execute test();
 drop function test;
 create function test ()
@@ -257,28 +261,28 @@ begin
 	select null;
 end;
 select test();
-[null]
+null
 execute test();
 drop function test;
 # test: create function return (return table parse)
 create function test () return table;
-{"msg": "create function test () return table❰;❱ ⟵ ( expected"}
+error: create function test () return table❰;❱ ⟵ ( expected
 create function test () return table(;
-{"msg": "create function test () return table(❰;❱ ⟵ name expected"}
+error: create function test () return table(❰;❱ ⟵ name expected
 create function test () return table(1;
-{"msg": "create function test () return table(❰1❱ ⟵ name expected"}
+error: create function test () return table(❰1❱ ⟵ name expected
 create function test () return table(a;
-{"msg": "create function test () return table(a❰;❱ ⟵ unrecognized data type"}
+error: create function test () return table(a❰;❱ ⟵ unrecognized data type
 create function test () return table(a a;
-{"msg": "create function test () return table(a ❰a❱ ⟵ unrecognized data type"}
+error: create function test () return table(a ❰a❱ ⟵ unrecognized data type
 create function test () return table(a int;
-{"msg": "create function test () return table(a int❰;❱ ⟵ ) expected"}
+error: create function test () return table(a int❰;❱ ⟵ ) expected
 create function test () return table(a int,;
-{"msg": "create function test () return table(a int,❰;❱ ⟵ name expected"}
+error: create function test () return table(a int,❰;❱ ⟵ name expected
 create function test () return table(a int,,;
-{"msg": "create function test () return table(a int,❰,❱ ⟵ name expected"}
+error: create function test () return table(a int,❰,❱ ⟵ name expected
 create function test () return table(a int,);
-{"msg": "create function test () return table(a int,❰)❱ ⟵ name expected"}
+error: create function test () return table(a int,❰)❱ ⟵ name expected
 # test: create function return (return table)
 create function test () return table(a int)
 begin
@@ -323,7 +327,7 @@ drop function test;
 create function test () return table(a int, a int)
 begin
 end;
-{"msg": "create function test () return table(a int, ❰a❱ ⟵ argument redefined"}
+error: create function test () return table(a int, ❰a❱ ⟵ argument redefined
 # test: create function (var return null)
 create function test () return int
 begin
@@ -331,7 +335,7 @@ begin
 	return x;
 end;
 select test();
-[null]
+null
 drop function test;
 # test: create function (var return)
 create function test () return int
@@ -340,7 +344,7 @@ begin
 	return x;
 end;
 select test();
-[123]
+123
 drop function test;
 # test: create function (var redefined)
 create function test () return int
@@ -349,14 +353,17 @@ begin
 	declare x int;
 	return x;
 end;
-{"msg": "create function test () return int\nbegin\n\tdeclare x int;\n\tdeclare ❰x❱ ⟵ variable redefined"}
+error: create function test () return int
+begin
+	declare x int;
+	declare ❰x❱ ⟵ variable redefined
 # test: create function (arg return)
 create function test (x int) return int
 begin
 	return x;
 end;
 explain select test(123);
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 123",
     "01": "call_udf            0      -      -     # main.test()",
@@ -371,24 +378,26 @@ explain select test(123);
     },
     "access": []
   }]
-}]
+}
 select test(123);
-[123]
+123
 execute test(123);
-[123]
+123
 drop function test;
 # test: create function (arg redefined)
 create function test (x int, x int) return int
 begin
 	return x;
 end;
-{"msg": "create function test (x int, ❰x❱ ⟵ argument redefined"}
+error: create function test (x int, ❰x❱ ⟵ argument redefined
 # test: create function (arg/var redefined)
 create function test (x int) return int
 begin
 	declare x int;
 end;
-{"msg": "create function test (x int) return int\nbegin\n\tdeclare ❰x❱ ⟵ variable redefined"}
+error: create function test (x int) return int
+begin
+	declare ❰x❱ ⟵ variable redefined
 # test: create function
 create function test (x int) return int
 begin
@@ -401,7 +410,7 @@ begin
 	return total;
 end;
 explain select test(10);
-[{
+{
   "main": {
     "00": "push_int            -      0      0     # 10",
     "01": "call_udf            0      -      -     # main.test()",
@@ -434,11 +443,11 @@ explain select test(10);
     },
     "access": []
   }]
-}]
+}
 select test(10);
-[45]
+45
 explain execute test(10);
-[{
+{
   "function": "main.test",
   "main": {
     "00": "push_nulls          2      0      0     ",
@@ -463,9 +472,9 @@ explain execute test(10);
     "19": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute test(10);
-[45]
+45
 # test: create function (json)
 create function reverse(array json) return json
 begin
@@ -474,7 +483,7 @@ begin
 	return rev;
 end;
 explain select [1,2,3]::reverse;
-[{
+{
   "main": {
     "00": "push_json           0      0      0     ",
     "01": "call_udf            0      -      -     # main.reverse()",
@@ -521,13 +530,13 @@ explain select [1,2,3]::reverse;
     },
     "access": []
   }]
-}]
+}
 select [1,2,3]::reverse;
-[[3, 2, 1]]
+[3, 2, 1]
 select [1,2,3]::reverse::reverse;
-[[1, 2, 3]]
+[1, 2, 3]
 explain execute reverse([1,2,3]);
-[{
+{
   "function": "main.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -566,9 +575,9 @@ explain execute reverse([1,2,3]);
     "33": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute reverse([1,2,3]);
-[[3, 2, 1]]
+[3, 2, 1]
 drop function reverse;
 create function reverse(array json) return json
 begin
@@ -609,7 +618,7 @@ show functions all;
   "grants": []
 }]
 explain select [1,2,3]::reverse;
-[{
+{
   "main": {
     "00": "push_json           0      0      0     ",
     "01": "call_udf            0      -      -     # main.reverse()",
@@ -638,11 +647,11 @@ explain select [1,2,3]::reverse;
     },
     "access": []
   }]
-}]
+}
 select [1,2,3]::reverse;
-[[3, 2, 1]]
+[3, 2, 1]
 explain execute reverse([1,2,3]);
-[{
+{
   "function": "main.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -663,9 +672,9 @@ explain execute reverse([1,2,3]);
     "15": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 execute reverse([1,2,3]);
-[[3, 2, 1]]
+[3, 2, 1]
 drop function reverse;
 drop function test;
 # test: create or replace function (not exists)
@@ -684,7 +693,7 @@ show functions all;
   "grants": []
 }]
 select test();
-[123]
+123
 # test: create or replace function
 create or replace function test() return int
 begin
@@ -701,52 +710,52 @@ show functions all;
   "grants": []
 }]
 select test();
-[321]
+321
 # test: create or replace function (return type mismatch)
 create or replace function test() return string
 begin
 	return 'string';
 end;
-{"msg": "function replacement 'test' return type mismatch"}
+error: function replacement 'test' return type mismatch
 select test();
-[321]
+321
 # test: create or replace function (arg mismatch)
 create or replace function test(id int) return int
 begin
 	return id;
 end;
-{"msg": "function replacement 'test' arguments mismatch"}
+error: function replacement 'test' arguments mismatch
 select test();
-[321]
+321
 # test: create or replace function (with dep)
 create function dep () return int
 begin
 	return select test();
 end;
 select dep();
-[321]
+321
 create or replace function test() return int
 begin
 	return 777;
 end;
 select dep();
-[777]
+777
 drop function dep;
 drop function test;
 # test: drop function
 create function test () begin end;
 drop function;
-{"msg": "drop function❰;❱ ⟵ name expected"}
+error: drop function❰;❱ ⟵ name expected
 drop function test;
 drop function test;
-{"msg": "function 'test': not exists"}
+error: function 'test': not exists
 # test: drop function if exists
 drop function if exists test;
 # test: drop function with udf dep
 create function test_dep() begin end;
 create function test() begin select test_dep(); end;
 explain select test();
-[{
+{
   "main": {
     "00": "call_udf            0      -      -     # main.test()",
     "01": "ret                 0      0      -     "
@@ -766,25 +775,25 @@ explain select test();
     },
     "access": []
   }]
-}]
+}
 drop function test_dep;
-{"msg": "function 'test' depends on relation 'main.test_dep"}
+error: function 'test' depends on relation 'main.test_dep
 # test: drop function after dep drop
 drop function test;
 drop function test_dep;
 # test: alter function statement parsing
 alter;
-{"msg": "alter❰;❱ ⟵ relation type expected"}
+error: alter❰;❱ ⟵ relation type expected
 alter function;
-{"msg": "alter function❰;❱ ⟵ name expected"}
+error: alter function❰;❱ ⟵ name expected
 alter function 123;
-{"msg": "alter function ❰123❱ ⟵ name expected"}
+error: alter function ❰123❱ ⟵ name expected
 alter function if;
-{"msg": "alter function if❰;❱ ⟵ EXISTS expected"}
+error: alter function if❰;❱ ⟵ EXISTS expected
 alter function if exists;
-{"msg": "alter function if exists❰;❱ ⟵ name expected"}
+error: alter function if exists❰;❱ ⟵ name expected
 alter function if exists 123;
-{"msg": "alter function if exists ❰123❱ ⟵ name expected"}
+error: alter function if exists ❰123❱ ⟵ name expected
 # test: alter function if exists
 create function test() begin end;
 alter function test rename to test2;
@@ -796,24 +805,24 @@ show functions;
 }]
 # test: alter function rename
 alter function test rename;
-{"msg": "alter function test rename❰;❱ ⟵ name expected"}
+error: alter function test rename❰;❱ ⟵ name expected
 alter function test rename to;
-{"msg": "alter function test rename to❰;❱ ⟵ name expected"}
+error: alter function test rename to❰;❱ ⟵ name expected
 alter function test rename to asf junk;
-{"msg": "alter function test rename to asf ❰junk❱ ⟵ ; expected"}
+error: alter function test rename to asf ❰junk❱ ⟵ ; expected
 alter function test2 rename to abc;
 select show('function', 'abc', true).name;
-["abc"]
+"abc"
 # test: alter function rename function exists
 create function test() begin end;
 alter function abc rename to test;
-{"msg": "function 'test': already exists"}
+error: function 'test': already exists
 drop function test;
 # test: alter function rename with udf dep
 create function test_dep() begin end;
 create function test() begin select test_dep(); end;
 alter function test_dep rename to test_dep2;
-{"msg": "function 'test' depends on relation 'main.test_dep"}
+error: function 'test' depends on relation 'main.test_dep
 # test: alter function rename after after dep drop
 drop function test;
 alter function test_dep rename to test_dep2;
@@ -823,6 +832,8 @@ create function test(x int) return int
 begin
 	select test(123);
 end;
-{"msg": "create function test(x int) return int\nbegin\n\tselect ❰test❱ ⟵ function not found"}
+error: create function test(x int) return int
+begin
+	select ❰test❱ ⟵ function not found
 disconnect S0;
 close E0;

@@ -2,84 +2,84 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: date parsing
 select '-'::date;
-{"msg": "invalid date '-'"}
+error: invalid date '-'
 select '--'::date;
-{"msg": "invalid date '--'"}
+error: invalid date '--'
 select '-- ::'::date;
-{"msg": "invalid date '-- ::'"}
+error: invalid date '-- ::'
 select '1969'::date;
-{"msg": "invalid date '1969'"}
+error: invalid date '1969'
 select '1969-'::date;
-{"msg": "invalid date '1969-'"}
+error: invalid date '1969-'
 select '1969-1'::date;
-{"msg": "invalid date '1969-1'"}
+error: invalid date '1969-1'
 select '1969-1-'::date;
-{"msg": "invalid date '1969-1-'"}
+error: invalid date '1969-1-'
 select '1969-1-0'::date;
-{"msg": "invalid date '1969-1-0'"}
+error: invalid date '1969-1-0'
 select '19-1-0'::date;
-{"msg": "invalid date '19-1-0'"}
+error: invalid date '19-1-0'
 select '1970-1-1'::date;
-{"msg": "invalid date '1970-1-1'"}
+error: invalid date '1970-1-1'
 select date '1970-00-00 00:00:00';
-{"msg": "select date ❰'1970-00-00 00:00:00'❱ ⟵ invalid date value"}
+error: select date ❰'1970-00-00 00:00:00'❱ ⟵ invalid date value
 select date ('1970-00-00 00:00:00');
-{"msg": "invalid date '1970-00-00 00:00:00'"}
+error: invalid date '1970-00-00 00:00:00'
 select '1970-01-01'::date;
-["1970-01-01"]
+"1970-01-01"
 select '1970-01-01'::date::type;
-["date"]
+"date"
 select date '1970-01-01';
-["1970-01-01"]
+"1970-01-01"
 # test: casting (string)
 select '1970-01-01'::date;
-["1970-01-01"]
+"1970-01-01"
 select '1970-01-01'::date::string;
-["1970-01-01"]
+"1970-01-01"
 select '1970-01-01'::date::string::date;
-["1970-01-01"]
+"1970-01-01"
 select '1970-01-01'::date::string::date::string;
-["1970-01-01"]
+"1970-01-01"
 select date '1970-01-01'::string::date::string;
-["1970-01-01"]
+"1970-01-01"
 # test: casting (json)
 select ['1970-01-01'::date];
-[["1970-01-01"]]
+["1970-01-01"]
 select ['1970-01-01'::date::string];
-[["1970-01-01"]]
+["1970-01-01"]
 select ['1970-01-01'::date::string::date];
-[["1970-01-01"]]
+["1970-01-01"]
 select ['1970-01-01'::date::string::date::string];
-[["1970-01-01"]]
+["1970-01-01"]
 # test: current_date
 select current_date::type;
-["date"]
+"date"
 select current_date = now()::date;
-[true]
+true
 # test: encoding
 explain select [current_date];
-[{
+{
   "main": {
     "00": "json                0      0      0     ",
     "01": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 explain select [date '1970-01-01'];
-[{
+{
   "main": {
     "00": "json                0      0      0     ",
     "01": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 select [date '1970-01-01'];
-[["1970-01-01"]]
+["1970-01-01"]
 # test: between
 select now()::date between date '0001-01-01' and date '9999-12-31';
-[true]
+true
 explain select now()::date between date '0001-01-01' and date '9999-12-31';
-[{
+{
   "main": {
     "00": "call                0      -      0     # now()",
     "01": "push                0      0      0     ",
@@ -95,9 +95,9 @@ explain select now()::date between date '0001-01-01' and date '9999-12-31';
     "11": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 explain select date '1970-01-01' between date '1970-01-01' and date '1970-01-01';
-[{
+{
   "main": {
     "00": "date                0      2440588 0     ",
     "01": "date                1      2440588 0     ",
@@ -109,197 +109,197 @@ explain select date '1970-01-01' between date '1970-01-01' and date '1970-01-01'
     "07": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 select date '1970-01-01' between date '1970-01-01' and date '1970-01-01';
-[true]
+true
 select date '1970-01-01' between date '1970-01-01' and date '1971-01-01';
-[true]
+true
 select date '1972-01-01' between date '1970-01-01' and date '1971-01-01';
-[false]
+false
 # test: date = int
 select date '1970-01-01' = 123;
-[false]
+false
 select date '1970-01-01' = '1970-01-01'::date::int;
-[true]
+true
 # test: date = date
 select date '1970-01-01' = '1970-01-01'::date;
-[true]
+true
 # test: date = null
 select date '1970-01-01' = null;
-[null]
+null
 # test: date = unsupported
 select date '1970-01-01' = 3.14;
-{"msg": "select date '1970-01-01' = ❰3.14❱ ⟵ operation date = double is not supported"}
+error: select date '1970-01-01' = ❰3.14❱ ⟵ operation date = double is not supported
 # test: date <> int
 select date '1970-01-01' <> 123;
-[true]
+true
 select date '1970-01-01' <> '1970-01-01'::date::int;
-[false]
+false
 # test: date <> date
 select date '1970-01-01' <> '1970-01-01'::date;
-[false]
+false
 # test: date <> null
 select date '1970-01-01' <> null;
-[null]
+null
 # test: date <> unsupported
 select date '1970-01-01' <> 3.14;
-{"msg": "select date '1970-01-01' <> ❰3.14❱ ⟵ operation date = double is not supported"}
+error: select date '1970-01-01' <> ❰3.14❱ ⟵ operation date = double is not supported
 # test: date >= int
 select date '1970-01-01' >= 123;
-[true]
+true
 select date '1970-01-01' >= '1970-01-01'::date::int;
-[true]
+true
 select date '1970-01-01' >= '1969-01-01'::date::int;
-[true]
+true
 # test: date >= date
 select date '1970-01-01' >= '1970-01-01'::date;
-[true]
+true
 select date '1969-01-01' >= '1970-01-01'::date;
-[false]
+false
 # test: date >= null
 select date '1970-01-01' >= null;
-[null]
+null
 # test: date >= unsupported
 select date '1970-01-01' >= '123';
-{"msg": "select date '1970-01-01' >= ❰'123'❱ ⟵ operation date >= string is not supported"}
+error: select date '1970-01-01' >= ❰'123'❱ ⟵ operation date >= string is not supported
 # test: date > int
 select date '1970-01-01' > 123;
-[true]
+true
 select date '1970-01-01' > '1970-01-01'::date::int;
-[false]
+false
 select date '1970-01-01' > '1969-01-01'::date::int;
-[true]
+true
 # test: date > date
 select date '1970-01-01' > '1970-01-01'::date;
-[false]
+false
 select date '1969-01-01' > '1970-01-01'::date;
-[false]
+false
 select date '1970-01-01' > '1969-01-01'::date;
-[true]
+true
 # test: date > null
 select date '1970-01-01' > null;
-[null]
+null
 # test: date > unsupported
 select date '1970-01-01' > 3.14;
-{"msg": "select date '1970-01-01' > ❰3.14❱ ⟵ operation date > double is not supported"}
+error: select date '1970-01-01' > ❰3.14❱ ⟵ operation date > double is not supported
 # test: date <= int
 select date '1970-01-01' <= 123;
-[false]
+false
 select date '1970-01-01' <= '1970-01-01'::date::int;
-[true]
+true
 select date '1970-01-01' <= '1969-01-01'::date::int;
-[false]
+false
 # test: date <= date
 select date '1970-01-01' <= '1970-01-01'::date;
-[true]
+true
 select date '1969-01-01' <= '1970-01-01'::date;
-[true]
+true
 select date '1970-01-01' <= '1969-01-01'::date;
-[false]
+false
 # test: date <= null
 select date '1970-01-01' <= null;
-[null]
+null
 # test: date <= unsupported
 select date '1970-01-01' <= 3.14;
-{"msg": "select date '1970-01-01' <= ❰3.14❱ ⟵ operation date <= double is not supported"}
+error: select date '1970-01-01' <= ❰3.14❱ ⟵ operation date <= double is not supported
 # test: date + int = date
 select date '1970-01-01' + 10;
-["1970-01-11"]
+"1970-01-11"
 select date '1970-01-01' + 35;
-["1970-02-05"]
+"1970-02-05"
 select (date '1970-01-01' + 35)::type;
-["date"]
+"date"
 # test: int + date = date
 select 10 + date '1970-01-01';
-["1970-01-11"]
+"1970-01-11"
 select 35 + date '1970-01-01';
-["1970-02-05"]
+"1970-02-05"
 select (35 + date '1970-01-01')::type;
-["date"]
+"date"
 # test: date - int = date
 select date '1970-01-01' - 10;
-["1969-12-22"]
+"1969-12-22"
 select date '1970-01-01' - 35;
-["1969-11-27"]
+"1969-11-27"
 select (date '1970-01-01' - 35)::type;
-["date"]
+"date"
 # test: int - date (unsupported)
 select 10 - date '1970-01-01';
-{"msg": "select 10 - date ❰'1970-01-01'❱ ⟵ operation int - date is not supported"}
+error: select 10 - date ❰'1970-01-01'❱ ⟵ operation int - date is not supported
 # test: date - date = int
 select current_date - current_date;
-[0]
+0
 select date '1970-05-13' - date '1970-01-01';
-[132]
+132
 select date '1970-01-01' - date '1970-05-13';
-[-132]
+-132
 select date '2025-12-31' - date '2025-01-01';
-[364]
+364
 select date '2024-12-31' - date '2024-01-01';
-[365]
+365
 select date '2023-12-31' - date '2023-01-01';
-[364]
+364
 select date '2022-12-31' - date '2022-01-01';
-[364]
+364
 select date '2021-12-31' - date '2021-01-01';
-[364]
+364
 select date '2020-12-31' - date '2020-01-01';
-[365]
+365
 select date '9999-12-31' - date '0001-01-01';
-[3652058]
+3652058
 # test: date + interval = timestamp
 select date '1970-01-01' + interval '1 us';
-["1970-01-01 00:00:00.000001+00"]
+"1970-01-01 00:00:00.000001+00"
 select date '1970-01-01' + interval '55 years 10 secs';
-["2025-01-01 00:00:10+00"]
+"2025-01-01 00:00:10+00"
 select (date '1970-01-01' + interval '55 years 10 secs')::type;
-["timestamp"]
+"timestamp"
 # test: date + interval = timestamp (timestamp overflow)
 select date '9999-12-31' + interval '1 us';
-["9999-12-31 00:00:00.000001+00"]
+"9999-12-31 00:00:00.000001+00"
 select date '9999-12-31' + interval '1 day';
-{"msg": "timestamp overflow"}
+error: timestamp overflow
 # test: interval + date = timestamp
 select interval '1 us' + date '1970-01-01';
-["1970-01-01 00:00:00.000001+00"]
+"1970-01-01 00:00:00.000001+00"
 select interval '55 years 10 secs' + date '1970-01-01';
-["2025-01-01 00:00:10+00"]
+"2025-01-01 00:00:10+00"
 select (interval '55 years 10 secs' + date '1970-01-01')::type;
-["timestamp"]
+"timestamp"
 # test: interval + date = timestamp (timestamp overflow)
 select interval '1 us' + date '9999-12-31';
-["9999-12-31 00:00:00.000001+00"]
+"9999-12-31 00:00:00.000001+00"
 select interval '1 day' + date '9999-12-31';
-{"msg": "timestamp overflow"}
+error: timestamp overflow
 # test: date - interval = timestamp
 select date '1970-01-02' - interval '1 us';
-["1970-01-01 23:59:59.999999+00"]
+"1970-01-01 23:59:59.999999+00"
 select date '2025-01-01' - interval '55 years';
-["1970-01-01 00:00:00+00"]
+"1970-01-01 00:00:00+00"
 select (date '2025-01-01' - interval '55 years')::type;
-["timestamp"]
+"timestamp"
 # test: date - interval = timestamp (overflow)
 select date '1970-01-01' - interval '1 us';
-{"msg": "timestamp overflow"}
+error: timestamp overflow
 # test: date min (0001-01-01)
 select date '0001-01-01';
-["0001-01-01"]
+"0001-01-01"
 select date '0001-01-01'::int;
-[1721426]
+1721426
 select date '0000-01-01';
-{"msg": "select date ❰'0000-01-01'❱ ⟵ invalid date value"}
+error: select date ❰'0000-01-01'❱ ⟵ invalid date value
 # test: date min overflow
 select (date '0001-01-01'::int - 1)::date;
-{"msg": "date overflow"}
+error: date overflow
 # test: date max (9999-12-31)
 select date '9999-12-31';
-["9999-12-31"]
+"9999-12-31"
 select date '9999-12-31'::int;
-[5373484]
+5373484
 select date '10000-01-01';
-{"msg": "select date ❰'10000-01-01'❱ ⟵ invalid date value"}
+error: select date ❰'10000-01-01'❱ ⟵ invalid date value
 # test: date max overflow
 select (date '9999-12-31'::int + 1)::date;
-{"msg": "date overflow"}
+error: date overflow
 disconnect S0;
 close E0;

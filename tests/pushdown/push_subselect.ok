@@ -4,7 +4,7 @@ create table test (id int primary key, data int default 0);
 insert into test (id) values (1), (2), (3);
 # test: select (select from table)
 explain select (select id from test);
-[{
+{
   "main": {
     "00": "set                 0      1      0     ",
     "01": "table_open          1      0      6     # main.test (primary) [main] ",
@@ -17,14 +17,14 @@ explain select (select id from test);
     "08": "ret                 1      0      -     "
   },
   "access": [["main.test", "exclusive_ro", "select"]]
-}]
+}
 select (select id from test);
-[1]
+1
 # test: select (select from table) from table
 create table test2 (id int primary key);
 insert into test2 (id) values (1), (2), (3);
 explain select (select id from test) from test2;
-[{
+{
   "main": {
     "00": "send_all            0      0      64    # main.test2 (select, closing)",
     "01": "union               1      0      0     ",
@@ -49,12 +49,14 @@ explain select (select id from test) from test2;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "exclusive_ro", "select"], ["main.test2", "shared", "select"]]
-}]
+}
 select (select id from test) from test2;
-[1, 1, 1]
+1
+1
+1
 # test: select (select from table) from (select from table)
 explain select (select id from test) from (select * from test2) t;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test2 (select)",
     "01": "union               1      0      0     ",
@@ -88,13 +90,15 @@ explain select (select id from test) from (select * from test2) t;
     "07": "ret                 0      0      -     "
   },
   "access": [["main.test", "exclusive_ro", "select"], ["main.test2", "shared", "select"]]
-}]
+}
 select (select id from test) from (select * from test2) t;
-[1, 1, 1]
+1
+1
+1
 drop table test2;
 # test: select from (select from table)
 explain select * from (select * from test) t;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select)",
     "01": "union               1      0      0     ",
@@ -125,14 +129,16 @@ explain select * from (select * from test) t;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 select * from (select * from test) t;
-[[1, 0], [3, 0], [2, 0]]
+1 │ 0
+3 │ 0
+2 │ 0
 # test: select from (select (select from table) from table)
 create table test2 (id int primary key);
 insert into test2 (id) values (1), (2), (3);
 explain select * from (select (select id from test2) from test) t;
-[{
+{
   "main": {
     "00": "send_all            0      0      64    # main.test (select)",
     "01": "union               1      0      0     ",
@@ -166,13 +172,15 @@ explain select * from (select (select id from test2) from test) t;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test2", "exclusive_ro", "select"], ["main.test", "shared", "select"]]
-}]
+}
 select * from (select (select id from test2) from test) t;
-[1, 1, 1]
+1
+1
+1
 drop table test2;
 # test: select from (select (select from table) from table)
 explain select * from (select (select id from test t) from test) g;
-[{
+{
   "main": {
     "00": "send_all            0      0      64    # main.test (select)",
     "01": "union               1      0      0     ",
@@ -206,19 +214,23 @@ explain select * from (select (select id from test t) from test) g;
     "14": "ret                 0      0      -     "
   },
   "access": [["main.test", "exclusive_ro", "select"]]
-}]
+}
 select * from (select (select id from test t) from test) g;
-[1, 1, 1]
+1
+1
+1
 # test: select (select expr) from (select from table)
 select (select t.*) from (select * from test) t;
-{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
+error: select (❰select❱ ⟵ subquery must return only one column
 select (select t.id) from (select * from test) t;
-[1, 3, 2]
+1
+3
+2
 # test: select (select from table) from (select from table)
 create table test2 (id int primary key);
 insert into test2 (id) values (1), (2), (3);
 explain select (select t.id from test2) from (select * from test) t;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select)",
     "01": "union               1      0      0     ",
@@ -254,13 +266,15 @@ explain select (select t.id from test2) from (select * from test) t;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test2", "exclusive_ro", "select"], ["main.test", "shared", "select"]]
-}]
+}
 select (select t.id from test2) from (select * from test) t;
-[1, 3, 2]
+1
+3
+2
 drop table test2;
 # test: select (select from table) from (select from table)
 explain select (select t.id from test z) from (select * from test) t;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select)",
     "01": "union               1      0      0     ",
@@ -296,14 +310,24 @@ explain select (select t.id from test z) from (select * from test) t;
     "09": "ret                 0      0      -     "
   },
   "access": [["main.test", "exclusive_ro", "select"]]
-}]
+}
 select (select t.id from test z) from (select * from test) t;
-[1, 3, 2]
+1
+3
+2
 # test: select from (select from table), (select from table)
 select * from (select id from test) a, (select * from test) b;
-[[1, 1, 0], [1, 3, 0], [1, 2, 0], [3, 1, 0], [3, 3, 0], [3, 2, 0], [2, 1, 0], [2, 3, 0], [2, 2, 0]]
+1 │ 1 │ 0
+1 │ 3 │ 0
+1 │ 2 │ 0
+3 │ 1 │ 0
+3 │ 3 │ 0
+3 │ 2 │ 0
+2 │ 1 │ 0
+2 │ 3 │ 0
+2 │ 2 │ 0
 explain select * from (select * from test) a, (select * from test) b;
-[{
+{
   "main": {
     "00": "send_all            0      0      32    # main.test (select)",
     "01": "send_all            1      0      88    # main.test (select)",
@@ -356,23 +380,23 @@ explain select * from (select * from test) a, (select * from test) b;
     "19": "ret                 1      0      -     "
   },
   "access": [["main.test", "shared", "select"]]
-}]
+}
 # test: insert returning (select from table) (unsupported)
 explain insert into test (id) values (4) returning (select * from test t);
-{"msg": "explain insert into test (id) values (4) returning (❰select❱ ⟵ unexpected subquery"}
+error: explain insert into test (id) values (4) returning (❰select❱ ⟵ unexpected subquery
 insert into test (id) values (4) returning (select * from test t);
-{"msg": "insert into test (id) values (4) returning (❰select❱ ⟵ unexpected subquery"}
+error: insert into test (id) values (4) returning (❰select❱ ⟵ unexpected subquery
 # test: insert returning (select from table) (unsupported)
 create table test_ (id int primary key);
 insert into test_ values (1),(2),(3);
 insert into test (id) values (5) returning (select * from test_);
-{"msg": "insert into test (id) values (5) returning (❰select❱ ⟵ unexpected subquery"}
+error: insert into test (id) values (5) returning (❰select❱ ⟵ unexpected subquery
 drop table test_;
 # test: insert returning (select from expr) (unsupported)
 insert into test (id) values (6) returning *, select [1,2,3];
-{"msg": "insert into test (id) values (6) returning *, ❰select❱ ⟵ unexpected subquery"}
+error: insert into test (id) values (6) returning *, ❰select❱ ⟵ unexpected subquery
 insert into test (id) values (7) returning id, select [1,2,3];
-{"msg": "insert into test (id) values (7) returning id, ❰select❱ ⟵ unexpected subquery"}
+error: insert into test (id) values (7) returning id, ❰select❱ ⟵ unexpected subquery
 drop table test;
 disconnect S0;
 close E0;

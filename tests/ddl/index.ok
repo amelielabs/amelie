@@ -3,33 +3,33 @@ connect E0 S0 127.0.0.1:3485;
 create table test (id int primary key, a int, b int);
 # test: create index parsing
 create index;
-{"msg": "create index❰;❱ ⟵ name expected"}
+error: create index❰;❱ ⟵ name expected
 create unique;
-{"msg": "create unique❰;❱ ⟵ INDEX expected"}
+error: create unique❰;❱ ⟵ INDEX expected
 create unique table;
-{"msg": "create unique ❰table❱ ⟵ INDEX expected"}
+error: create unique ❰table❱ ⟵ INDEX expected
 create unique index;
-{"msg": "create unique index❰;❱ ⟵ name expected"}
+error: create unique index❰;❱ ⟵ name expected
 create index 1;
-{"msg": "create index ❰1❱ ⟵ name expected"}
+error: create index ❰1❱ ⟵ name expected
 create index i;
-{"msg": "create index i❰;❱ ⟵ ON expected"}
+error: create index i❰;❱ ⟵ ON expected
 create index i 1;
-{"msg": "create index i ❰1❱ ⟵ ON expected"}
+error: create index i ❰1❱ ⟵ ON expected
 create index i on;
-{"msg": "create index i on❰;❱ ⟵ name expected"}
+error: create index i on❰;❱ ⟵ name expected
 create index i on test;
-{"msg": "create index i on test❰;❱ ⟵ ( expected"}
+error: create index i on test❰;❱ ⟵ ( expected
 create index i on test 1;
-{"msg": "create index i on test ❰1❱ ⟵ ( expected"}
+error: create index i on test ❰1❱ ⟵ ( expected
 create index i on test (;
-{"msg": "create index i on test (❰;❱ ⟵ name expected"}
+error: create index i on test (❰;❱ ⟵ name expected
 create index i on test ();
-{"msg": "create index i on test (❰)❱ ⟵ name expected"}
+error: create index i on test (❰)❱ ⟵ name expected
 # test: create index
 create index i on test (a);
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -50,13 +50,13 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 # test: create index if not exists
 create index i on test (a);
-{"msg": "table 'test' index 'i': already exists"}
+error: table 'test' index 'i': already exists
 create index if not exists i on test (a);
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -77,12 +77,12 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 drop index i on test;
 # test: create index (compound key)
 create index i on test (b, a);
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -106,12 +106,12 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 drop index i on test;
 # test: create index (key reuse)
 create index i on test (a, a);
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -135,14 +135,14 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 drop index i on test;
 # test: create index (unique)
 create unique index i on test (a);
 # test: create index (asc/desc)
 create unique index j on test (a asc, b desc, id);
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -175,15 +175,15 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 drop table test;
 # test: create index using
 create table test (id int primary key, a int, b int);
 create index i on test (a) using;
-{"msg": "create index i on test (a) using❰;❱ ⟵ index type expected"}
+error: create index i on test (a) using❰;❱ ⟵ index type expected
 create index i on test (a) using hash;
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -204,11 +204,11 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 drop index i on test;
 create index i on test (a) using tree;
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -229,31 +229,31 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 drop index i on test;
 create index i on test (a) using unknown;
-{"msg": "create index i on test (a) using ❰unknown❱ ⟵ unrecognized index type"}
+error: create index i on test (a) using ❰unknown❱ ⟵ unrecognized index type
 # test: drop index parsing
 drop index;
-{"msg": "drop index❰;❱ ⟵ name expected"}
+error: drop index❰;❱ ⟵ name expected
 drop index 1;
-{"msg": "drop index ❰1❱ ⟵ name expected"}
+error: drop index ❰1❱ ⟵ name expected
 drop index '1';
-{"msg": "drop index ❰'1'❱ ⟵ name expected"}
+error: drop index ❰'1'❱ ⟵ name expected
 drop index i;
-{"msg": "drop index i❰;❱ ⟵ ON expected"}
+error: drop index i❰;❱ ⟵ ON expected
 drop index i 1;
-{"msg": "drop index i ❰1❱ ⟵ ON expected"}
+error: drop index i ❰1❱ ⟵ ON expected
 drop index i on;
-{"msg": "drop index i on❰;❱ ⟵ name expected"}
+error: drop index i on❰;❱ ⟵ name expected
 drop index i on 1;
-{"msg": "drop index i on ❰1❱ ⟵ name expected"}
+error: drop index i on ❰1❱ ⟵ name expected
 drop index i on test;
-{"msg": "table 'test' index 'i': not exists"}
+error: table 'test' index 'i': not exists
 # test: drop index
 create index i on test (a);
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -274,10 +274,10 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 drop index i on test;
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -286,10 +286,10 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 # test: drop index if exists
 drop index i on test;
-{"msg": "table 'test' index 'i': not exists"}
+error: table 'test' index 'i': not exists
 drop index if exists i on test;
 # test: drop index with udf dep
 create index i on test (a);
@@ -305,47 +305,47 @@ show functions all;
   "grants": []
 }]
 drop index i on test;
-{"msg": "function 'dep' depends on relation 'main.test"}
+error: function 'dep' depends on relation 'main.test
 # test: drop index after udf drop
 drop function dep;
 drop index i on test;
 # test: alter index parsing
 alter;
-{"msg": "alter❰;❱ ⟵ relation type expected"}
+error: alter❰;❱ ⟵ relation type expected
 alter index;
-{"msg": "alter index❰;❱ ⟵ name expected"}
+error: alter index❰;❱ ⟵ name expected
 alter index 1;
-{"msg": "alter index ❰1❱ ⟵ name expected"}
+error: alter index ❰1❱ ⟵ name expected
 alter index if;
-{"msg": "alter index if❰;❱ ⟵ EXISTS expected"}
+error: alter index if❰;❱ ⟵ EXISTS expected
 alter index if not;
-{"msg": "alter index if ❰not❱ ⟵ EXISTS expected"}
+error: alter index if ❰not❱ ⟵ EXISTS expected
 alter index if exists;
-{"msg": "alter index if exists❰;❱ ⟵ name expected"}
+error: alter index if exists❰;❱ ⟵ name expected
 alter index i;
-{"msg": "alter index i❰;❱ ⟵ ON expected"}
+error: alter index i❰;❱ ⟵ ON expected
 alter index i 1;
-{"msg": "alter index i ❰1❱ ⟵ ON expected"}
+error: alter index i ❰1❱ ⟵ ON expected
 alter index i on;
-{"msg": "alter index i on❰;❱ ⟵ name expected"}
+error: alter index i on❰;❱ ⟵ name expected
 alter index i on test;
-{"msg": "alter index i on test❰;❱ ⟵ RENAME expected"}
+error: alter index i on test❰;❱ ⟵ RENAME expected
 alter index i on test 1;
-{"msg": "alter index i on test ❰1❱ ⟵ RENAME expected"}
+error: alter index i on test ❰1❱ ⟵ RENAME expected
 alter index i on test rename;
-{"msg": "alter index i on test rename❰;❱ ⟵ TO expected"}
+error: alter index i on test rename❰;❱ ⟵ TO expected
 alter index i on test rename 1;
-{"msg": "alter index i on test rename ❰1❱ ⟵ TO expected"}
+error: alter index i on test rename ❰1❱ ⟵ TO expected
 alter index i on test rename to;
-{"msg": "alter index i on test rename to❰;❱ ⟵ name expected"}
+error: alter index i on test rename to❰;❱ ⟵ name expected
 alter index i on test rename to 1;
-{"msg": "alter index i on test rename to ❰1❱ ⟵ name expected"}
+error: alter index i on test rename to ❰1❱ ⟵ name expected
 alter index i on test rename to;
-{"msg": "alter index i on test rename to❰;❱ ⟵ name expected"}
+error: alter index i on test rename to❰;❱ ⟵ name expected
 # test: alter index rename
 create index i on test (a);
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -366,10 +366,10 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 alter index i on test rename to j;
 select show('table', 'test', true).indexes;
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -390,13 +390,13 @@ select show('table', 'test', true).indexes;
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 # test: alter index rename if exists
 alter index k on test rename to z;
-{"msg": "table 'test' index 'k': not exists"}
+error: table 'test' index 'k': not exists
 alter index if exists k on test rename to z;
 # test: alter index rename (conflict)
 alter index j on test rename to j;
-{"msg": "table 'test' index 'j': already exists"}
+error: table 'test' index 'j': already exists
 disconnect S0;
 close E0;

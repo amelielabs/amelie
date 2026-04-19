@@ -116,7 +116,7 @@ value_decode_ref(Value* self, uint8_t* json, Buf* buf)
 }
 
 hot static inline void
-value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
+value_export_as(Value* self, Timezone* tz, bool pretty, int deep, Buf* buf)
 {
 	switch (self->type) {
 	case TYPE_NULL:
@@ -142,10 +142,7 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 	case TYPE_JSON:
 	{
 		uint8_t* pos = self->json;
-		if (pretty)
-			json_export_pretty(buf, tz, &pos);
-		else
-			json_export(buf, tz, &pos);
+		json_export_as(buf, tz, pretty, deep, &pos);
 		break;
 	}
 	case TYPE_DATE:
@@ -201,4 +198,10 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		error("operation unsupported");
 		break;
 	}
+}
+
+hot static inline void
+value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
+{
+	value_export_as(self, tz, pretty, 0, buf);
 }

@@ -2,19 +2,19 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: ensure main storage exists
 select show('storage', 'main');
-[{
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 show storage main;
-[{
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 show storages;
 [{
   "name": "main",
@@ -24,23 +24,23 @@ show storages;
 }]
 # test: create storage statement parsing
 create;
-{"msg": "create❰;❱ ⟵ relation type expected"}
+error: create❰;❱ ⟵ relation type expected
 create storage;
-{"msg": "create storage❰;❱ ⟵ name expected"}
+error: create storage❰;❱ ⟵ name expected
 create storage 123;
-{"msg": "create storage ❰123❱ ⟵ name expected"}
+error: create storage ❰123❱ ⟵ name expected
 create storage if;
-{"msg": "create storage if❰;❱ ⟵ NOT expected"}
+error: create storage if❰;❱ ⟵ NOT expected
 create storage if not;
-{"msg": "create storage if not❰;❱ ⟵ EXISTS expected"}
+error: create storage if not❰;❱ ⟵ EXISTS expected
 create storage if not 123;
-{"msg": "create storage if not ❰123❱ ⟵ EXISTS expected"}
+error: create storage if not ❰123❱ ⟵ EXISTS expected
 create storage if not exists;
-{"msg": "create storage if not exists❰;❱ ⟵ name expected"}
+error: create storage if not exists❰;❱ ⟵ name expected
 create storage test abc;
-{"msg": "create storage test ❰abc❱ ⟵ ; expected"}
+error: create storage test ❰abc❱ ⟵ ; expected
 create storage test (;
-{"msg": "create storage test (❰;❱ ⟵ name expected"}
+error: create storage test (❰;❱ ⟵ name expected
 # test: create storage
 create storage test;
 show storages;
@@ -56,7 +56,7 @@ show storages;
   "compression_level": 0
 }]
 select show('storages');
-[[{
+[{
   "name": "main",
   "path": "",
   "compression": "zstd",
@@ -66,10 +66,10 @@ select show('storages');
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]]
+}]
 # test: create storage if not exists
 create storage test;
-{"msg": "storage 'test': already exists"}
+error: storage 'test': already exists
 create storage if not exists test;
 show storages;
 [{
@@ -88,42 +88,42 @@ create storage test2 ();
 drop storage test2;
 # test: create storage (options)
 create storage test2 (path;
-{"msg": "create storage test2 (path❰;❱ ⟵ string expected"}
+error: create storage test2 (path❰;❱ ⟵ string expected
 create storage test2 (path 1;
-{"msg": "create storage test2 (path ❰1❱ ⟵ string expected"}
+error: create storage test2 (path ❰1❱ ⟵ string expected
 create storage test2 (path true;
-{"msg": "create storage test2 (path ❰true❱ ⟵ string expected"}
+error: create storage test2 (path ❰true❱ ⟵ string expected
 create storage test2 (path '';
-{"msg": "create storage test2 (path ''❰;❱ ⟵ , expected"}
+error: create storage test2 (path ''❰;❱ ⟵ , expected
 create storage test2 (path '_output/test_');
 show storage test2;
-[{
+{
   "name": "test2",
   "path": "_output/test_",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 drop storage test2;
 create storage test2 (path '_output/test_', path '_output/_test');
 show storage test2;
-[{
+{
   "name": "test2",
   "path": "_output/_test",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 drop storage test2;
 # test: drop storage statement parsing
 drop storage;
-{"msg": "drop storage❰;❱ ⟵ name expected"}
+error: drop storage❰;❱ ⟵ name expected
 drop storage 123;
-{"msg": "drop storage ❰123❱ ⟵ name expected"}
+error: drop storage ❰123❱ ⟵ name expected
 drop storage if;
-{"msg": "drop storage if❰;❱ ⟵ EXISTS expected"}
+error: drop storage if❰;❱ ⟵ EXISTS expected
 drop storage if exists;
-{"msg": "drop storage if exists❰;❱ ⟵ name expected"}
+error: drop storage if exists❰;❱ ⟵ name expected
 drop storage test abc;
-{"msg": "drop storage test ❰abc❱ ⟵ ; expected"}
+error: drop storage test ❰abc❱ ⟵ ; expected
 # test: drop storage
 drop storage test;
 show storages;
@@ -135,7 +135,7 @@ show storages;
 }]
 # test: drop storage if exists
 drop storage test;
-{"msg": "storage 'test': not exists"}
+error: storage 'test': not exists
 drop storage if exists test;
 show storages;
 [{
@@ -146,7 +146,7 @@ show storages;
 }]
 # test: drop main storage
 drop storage main;
-{"msg": "storage 'main': system storage cannot be dropped"}
+error: storage 'main': system storage cannot be dropped
 show storages;
 [{
   "name": "main",
@@ -156,17 +156,17 @@ show storages;
 }]
 # test: alter storage statment parsing
 alter storage;
-{"msg": "alter storage❰;❱ ⟵ name expected"}
+error: alter storage❰;❱ ⟵ name expected
 alter storage 123;
-{"msg": "alter storage ❰123❱ ⟵ name expected"}
+error: alter storage ❰123❱ ⟵ name expected
 alter storage test;
-{"msg": "alter storage test❰;❱ ⟵ RENAME expected"}
+error: alter storage test❰;❱ ⟵ RENAME expected
 alter storage test rename;
-{"msg": "alter storage test rename❰;❱ ⟵ TO expected"}
+error: alter storage test rename❰;❱ ⟵ TO expected
 alter storage test rename to;
-{"msg": "alter storage test rename to❰;❱ ⟵ name expected"}
+error: alter storage test rename to❰;❱ ⟵ name expected
 alter storage test rename "hello";
-{"msg": "alter storage test rename ❰\"hello\"❱ ⟵ TO expected"}
+error: alter storage test rename ❰"hello"❱ ⟵ TO expected
 # test: alter storage rename
 create storage test;
 show storages;
@@ -197,6 +197,6 @@ show storages;
 drop storage test2;
 # test: alter storage main
 alter storage main rename to _public;
-{"msg": "storage 'main': system storage cannot be renamed"}
+error: storage 'main': system storage cannot be renamed
 disconnect S0;
 close E0;

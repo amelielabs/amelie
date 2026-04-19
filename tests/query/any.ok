@@ -2,151 +2,151 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: any parsing
 select any;
-{"msg": "select ❰any❱ ⟵ bad expression"}
+error: select ❰any❱ ⟵ bad expression
 select any;
-{"msg": "select ❰any❱ ⟵ bad expression"}
+error: select ❰any❱ ⟵ bad expression
 select = any;
-{"msg": "select ❰=❱ ⟵ bad expression"}
+error: select ❰=❱ ⟵ bad expression
 select 1 = any;
-{"msg": "select 1 = any❰;❱ ⟵ ( expected"}
+error: select 1 = any❰;❱ ⟵ ( expected
 select 1 = any (;
-{"msg": "select 1 = any (❰;❱ ⟵ bad expression"}
+error: select 1 = any (❰;❱ ⟵ bad expression
 select 1 = any ();
-{"msg": "select 1 = any (❰)❱ ⟵ bad expression"}
+error: select 1 = any (❰)❱ ⟵ bad expression
 # test: = any ([])
 select 1 = any([]);
-[false]
+false
 select 1 = any([null]);
-[null]
+null
 select 1 = any([1]);
-[true]
+true
 select 1 = any([1, 2]);
-[true]
+true
 select 1 = any([1, 2, null]);
-[true]
+true
 select 0 = any([1, 2, null]);
-[null]
+null
 # test: >= any ([])
 select 1 >= any([1,2]);
-[true]
+true
 select 0 >= any([1,2]);
-[false]
+false
 select 1 >= any([1,2, null]);
-[true]
+true
 select 0 >= any([1,2, null]);
-[null]
+null
 # test: > any ([])
 select 1 > any([1,2]);
-[false]
+false
 select 0 > any([1,2]);
-[false]
+false
 select 1 > any([1,2, null]);
-[null]
+null
 select 0 > any([1,2, null]);
-[null]
+null
 select 3 > any([1,2]);
-[true]
+true
 select 3 > any([1,2, null]);
-[true]
+true
 # test: <= any ([])
 select 1 <= any([1,2]);
-[true]
+true
 select 0 <= any([1,2]);
-[true]
+true
 select 3 <= any([1,2]);
-[false]
+false
 select 1 <= any([1,2, null]);
-[true]
+true
 select 1 <= any([1,2, null]);
-[true]
+true
 # test: < any ([])
 select 1 < any([1,2]);
-[true]
+true
 select 0 < any([1,2]);
-[true]
+true
 select 3 < any([1,2]);
-[false]
+false
 select 1 < any([1,2, null]);
-[true]
+true
 select 3 < any([1,2, null]);
-[null]
+null
 # test: = any
 create table test (id int primary key, data int);
 select 1 = any(select id from test);
-[false]
+false
 insert into test values (1, 1);
 select 1 = any(select id from test);
-[true]
+true
 insert into test values (2, null);
 select 1 = any(select id from test);
-[true]
+true
 select not (1 = any(select id from test));
-[false]
+false
 select null = any(select id from test);
-[null]
+null
 select 1 = any(select id from test);
-[true]
+true
 select 3 = any(select id from test);
-[false]
+false
 select 3 = any(select data from test);
-[null]
+null
 # test: >= any
 select 1 >= any(select id from test);
-[true]
+true
 select 0 >= any(select id from test);
-[false]
+false
 select null >= any(select id from test);
-[null]
+null
 select 1 >= any(select id from test);
-[true]
+true
 select 3 >= any(select id from test);
-[true]
+true
 select 0 >= any(select data from test);
-[null]
+null
 # test: > any
 select 1 > any(select id from test);
-[false]
+false
 select 0 > any(select id from test);
-[false]
+false
 select 3 > any(select id from test);
-[true]
+true
 select null > any(select id from test);
-[null]
+null
 select 1 > any(select id from test);
-[false]
+false
 select 3 > any(select id from test);
-[true]
+true
 select 0 > any(select data from test);
-[null]
+null
 # test: <= any
 select 1 <= any(select id from test);
-[true]
+true
 select 0 <= any(select id from test);
-[true]
+true
 select 3 <= any(select id from test);
-[false]
+false
 select null <= any(select id from test);
-[null]
+null
 select 1 <= any(select id from test);
-[true]
+true
 select 3 <= any(select id from test);
-[false]
+false
 select 3 <= any(select data from test);
-[null]
+null
 # test: < any
 select 1 < any(select id from test);
-[true]
+true
 select 0 < any(select id from test);
-[true]
+true
 select 3 < any(select id from test);
-[false]
+false
 select null < any(select id from test);
-[null]
+null
 select 1 < any(select id from test);
-[true]
+true
 select 3 < any(select id from test);
-[false]
+false
 select 3 < any(select data from test);
-[null]
+null
 disconnect S0;
 close E0;

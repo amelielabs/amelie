@@ -22,83 +22,42 @@ hot static inline void
 output_json_row_array(Output* self, Columns* columns, Value* row)
 {
 	auto buf = self->buf;
-	if (columns->count > 1)
-		buf_write(buf, "[", 1);
+	buf_write(buf, "[", 1);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
 		if (column->order > 0)
 			buf_write(buf, ", ", 2);
-		value_export(row + column->order, self->timezone, self->format_pretty, buf);
+		value_export_as(row + column->order, self->timezone, false, 1, buf);
 		output_ensure_limit(self);
 	}
-	if (columns->count > 1)
-		buf_write(buf, "]", 1);
-}
-
-hot static inline void
-output_json_row_obj(Output* self, Columns* columns, Value* row)
-{
-	auto buf = self->buf;
-	if (self->format_pretty)
-	{
-		buf_write(buf, "{\n", 2);
-		list_foreach(&columns->list)
-		{
-			auto column = list_at(Column, link);
-			if (column->order > 0)
-				buf_write(buf, ",\n", 2);
-
-			// key:
-			buf_write(buf, "  \"", 3);
-			buf_write_str(buf, &column->name);
-			buf_write(buf, "\": ", 3);
-
-			// value
-			auto value = row + column->order;
-			if (value->type == TYPE_JSON)
-			{
-				uint8_t* pos = value->json;
-				json_export_as(buf, self->timezone, true, 1, &pos);
-			} else {
-				value_export(value, self->timezone, true, buf);
-			}
-			output_ensure_limit(self);
-		}
-		buf_write(buf, "\n}", 2);
-		return;
-	}
-
-	buf_write(buf, "{", 1);
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-		if (column->order > 0)
-			buf_write(buf, ", ", 2);
-
-		// key:
-		buf_write(buf, "\"", 1);
-		buf_write_str(buf, &column->name);
-		buf_write(buf, "\": ", 3);
-
-		// value
-		auto value = row + column->order;
-		value_export(value, self->timezone, false, buf);
-		output_ensure_limit(self);
-	}
-	buf_write(buf, "}", 1);
+	buf_write(buf, "]", 1);
 }
 
 static void
 output_json_write(Output* self, Columns* columns, Value* value)
 {
-	// row, ...
 	auto buf = self->buf;
+
+	buf_write(buf, "{ ", 2);
+
+	// columns
+	buf_write(buf, "\"columns\": [", 12);
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		if (column->order > 0)
+			buf_write(buf, ", ", 2);
+		buf_write(buf, "\"", 1);
+		buf_write_str(buf, &column->name);
+		buf_write(buf, "\"", 1);
+	}
+	buf_write(buf, "], ", 3);
+
+	// rows
+	buf_write(buf, "\"rows\": [", 9);
 	if (value->type == TYPE_STORE)
 	{
-		// [
-		buf_write(buf, "[", 1);
-
 		auto it = store_iterator(value->store);
 		defer(store_iterator_close, it);
 
@@ -110,68 +69,39 @@ output_json_write(Output* self, Columns* columns, Value* value)
 				buf_write(buf, ", ", 2);
 			else
 				first = false;
-			if (self->format_minimal)
-				output_json_row_array(self, columns, row);
-			else
-				output_json_row_obj(self, columns, row);
+			output_json_row_array(self, columns, row);
 			store_iterator_next(it);
 		}
-
-		// ]
-		buf_write(buf, "]", 1);
 	} else
 	{
-		// [
-		buf_write(buf, "[", 1);
-		if (self->format_minimal)
-			output_json_row_array(self, columns, value);
-		else
-			output_json_row_obj(self, columns, value);
-		// ]
-		buf_write(buf, "]", 1);
+		output_json_row_array(self, columns, value);
 	}
+	buf_write(buf, "] }", 3);
 }
 
 static void
 output_json_write_json(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
-	// [
-	auto buf  = self->buf;
+	auto buf = self->buf;
+
+	buf_write(buf, "{ ", 2);
+
+	// columns
+	buf_write(buf, "\"columns\": [\"", 13);
+	buf_write_str(buf, column);
+	buf_write(buf, "\"], ", 4);
+
+	// rows
+	buf_write(buf, "\"rows\": ", 8);
 	auto wrap = true;
 	if (unwrap && json_is_array(pos))
 		wrap = false;
 	if (wrap)
 		buf_write(buf, "[", 1);
-
-	if (self->format_minimal)
-	{
-		json_export_as(buf, self->timezone, self->format_pretty, 0, &pos);
-	} else
-	{
-		// {
-		buf_write(buf, "{", 1);
-
-		// column: value
-		if (self->format_pretty)
-		{
-			buf_write(buf, "\n", 1);
-			buf_write(buf, "  \"", 3);
-		} else {
-			buf_write(buf, "\"", 1);
-		}
-		buf_write_str(buf, column);
-		buf_write(buf, "\": ", 3);
-		json_export_as(buf, self->timezone, self->format_pretty, 0, &pos);
-
-		// }
-		if (self->format_pretty)
-			buf_write(buf, "\n", 1);
-		buf_write(buf, "}", 1);
-	}
-
-	// ]
+	json_export_as(buf, self->timezone, false, 1, &pos);
 	if (wrap)
-		buf_write(buf, "]", 1);
+		buf_write(buf, "] ", 2);
+	buf_write(buf, "}", 1);
 }
 
 static void

@@ -2,16 +2,16 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: null
 explain select null;
-[{
+{
   "main": {
     "00": "null                0      0      0     ",
     "01": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 select null;
-[null]
+null
 select null::type;
-["null"]
+"null"
 disconnect S0;
 close E0;

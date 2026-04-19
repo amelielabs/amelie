@@ -2,10 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: default limits
 select show();
-[{
+{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "pretty-minimal",
   "log_enable": true,
   "log_file": true,
   "log_stdout": false,
@@ -42,7 +41,7 @@ select show();
   "catalog_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
-}]
+}
 # test: limit_write
 create table test (id int primary key);
 disconnect S0;
@@ -50,7 +49,7 @@ close E0;
 open E0 "limit_write": 1;
 connect E0 S0 127.0.0.1:3485;
 insert into test values (123);
-{"msg": "transaction log limit reached"}
+error: transaction log limit reached
 disconnect S0;
 close E0;
 open E0;
@@ -62,16 +61,15 @@ close E0;
 open E0 "limit_send": 0;
 connect E0 S0 127.0.0.1:3485;
 select show();
-{"msg": "reply limit reached"}
+error: reply limit reached
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show();
-[{
+{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "pretty-minimal",
   "log_enable": true,
   "log_file": true,
   "log_stdout": false,
@@ -108,7 +106,7 @@ select show();
   "catalog_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
-}]
+}
 # test: limit_recv
 disconnect S0;
 close E0;

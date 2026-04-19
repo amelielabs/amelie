@@ -2,11 +2,11 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: show statement parsing
 show;
-{"msg": "show❰;❱ ⟵ name expected"}
+error: show❰;❱ ⟵ name expected
 show all junk;
-{"msg": "show() ⟵ unexpected name argument"}
+error: show() ⟵ unexpected name argument
 show 1234;
-{"msg": "show ❰1234❱ ⟵ name expected"}
+error: show ❰1234❱ ⟵ name expected
 # test: show users
 create user test;
 # test: show user
@@ -20,21 +20,21 @@ show storages;
 }]
 # test: show storage
 show storage;
-{"msg": "show() ⟵ name argument is missing for 'storage'"}
+error: show() ⟵ name argument is missing for 'storage'
 show storage main;
-[{
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 show storage main all;
-[{
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 # test: show tables
 create table test (id int primary key);
 show tables;
@@ -44,12 +44,12 @@ show tables;
 }]
 # test: show table
 show table;
-{"msg": "show() ⟵ name argument is missing for 'table'"}
+error: show() ⟵ name argument is missing for 'table'
 show table test;
-[{
+{
   "user": "main",
   "name": "test"
-}]
+}
 # test: show indexes
 show indexes on test;
 [{
@@ -63,7 +63,7 @@ show indexes on test;
   }]
 }]
 select show('indexes', '', 'test', false);
-[[{
+[{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -72,10 +72,10 @@ select show('indexes', '', 'test', false);
     "column": 0,
     "asc": true
   }]
-}]]
+}]
 # test: show index
 show index primary on test;
-[{
+{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -84,9 +84,9 @@ show index primary on test;
     "column": 0,
     "asc": true
   }]
-}]
+}
 select show('index', 'primary', 'test', false);
-[{
+{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -95,9 +95,9 @@ select show('index', 'primary', 'test', false);
     "column": 0,
     "asc": true
   }]
-}]
+}
 show index xyz on test;
-[null]
+null
 # test: show partitions
 show partitions on test;
 [{
@@ -110,7 +110,7 @@ show partitions on test;
   "compression": 1
 }]
 select show('partitions', '', 'test', false);
-[[{
+[{
   "id": 1,
   "storage": "main",
   "min": 0,
@@ -118,10 +118,10 @@ select show('partitions', '', 'test', false);
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]]
+}]
 # test: show partition
 show partition '1' on test;
-[{
+{
   "id": 1,
   "storage": "main",
   "min": 0,
@@ -129,9 +129,9 @@ show partition '1' on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]
+}
 select show('partition', '1', 'test', false);
-[{
+{
   "id": 1,
   "storage": "main",
   "min": 0,
@@ -139,7 +139,7 @@ select show('partition', '1', 'test', false);
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]
+}
 # test: show functions
 create function test_fn (id int) return json
 begin
@@ -149,14 +149,14 @@ begin
 	};
 end;
 select test_fn(123);
-[{
+{
   "a": 4,
   "b": 123
-}]
+}
 select test_fn(123).a;
-[4]
+4
 select 123::test_fn().a;
-[4]
+4
 show functions;
 [{
   "user": "main",
@@ -180,14 +180,14 @@ show functions all;
 }]
 # test: show function
 show function;
-{"msg": "show() ⟵ name argument is missing for 'function'"}
+error: show() ⟵ name argument is missing for 'function'
 show function test_fn;
-[{
+{
   "user": "main",
   "name": "test_fn"
-}]
+}
 show function test_fn all;
-[{
+{
   "user": "main",
   "name": "test_fn",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
@@ -201,10 +201,10 @@ show function test_fn all;
   }],
   "returning": [],
   "grants": []
-}]
+}
 # test: show wal
 show wal;
-[{
+{
   "lsn": 3,
   "lsn_min": 1,
   "files": 1,
@@ -213,20 +213,20 @@ show wal;
   "writes": 3,
   "writes_bytes": 828,
   "ops": 3
-}]
+}
 # test: show replicas
 show replicas;
 []
 # test: show replica
 show replica abc;
-{"msg": "failed to parse uuid"}
+error: failed to parse uuid
 show replica 'abc';
-{"msg": "failed to parse uuid"}
+error: failed to parse uuid
 show replica '00000000-0000-0000-0000-000000000000';
-[null]
+null
 # test: show state
 show state;
-[{
+{
   "version": "1.0.0-rc1",
   "directory": "_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000000",
@@ -238,9 +238,9 @@ show state;
   "catalog": 0,
   "catalog_pending": 3,
   "read_only": false
-}]
+}
 select show('state');
-[{
+{
   "version": "1.0.0-rc1",
   "directory": "_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000000",
@@ -252,15 +252,14 @@ select show('state');
   "catalog": 0,
   "catalog_pending": 3,
   "read_only": false
-}]
+}
 select show('state').directory;
-["_output/E0"]
+"_output/E0"
 # test: show config
 show config;
-[{
+{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "pretty-minimal",
   "log_enable": true,
   "log_file": true,
   "log_stdout": false,
@@ -297,13 +296,12 @@ show config;
   "catalog_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
-}]
+}
 # test: show all
 show all;
-[{
+{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "pretty-minimal",
   "log_enable": true,
   "log_file": true,
   "log_stdout": false,
@@ -340,22 +338,22 @@ show all;
   "catalog_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
-}]
+}
 select show('config').uuid;
-["00000000-0000-0000-0000-000000000000"]
+"00000000-0000-0000-0000-000000000000"
 select show('config', '123');
-{"msg": "show() ⟵ unexpected name argument"}
+error: show() ⟵ unexpected name argument
 # test: show name
 show log_enable;
-[true]
+true
 show "log_enable";
-[true]
+true
 # test: show unknown
 show asdf;
-{"msg": "show() ⟵ option 'asdf' is not found"}
+error: show() ⟵ option 'asdf' is not found
 # test: explain show
 explain show log_enable;
-[{
+{
   "main": {
     "00": "string              0      0      0     # log_enable",
     "01": "push                0      0      0     ",
@@ -369,16 +367,60 @@ explain show log_enable;
     "09": "ret                 0      0      -     "
   },
   "access": []
-}]
+}
 # test: show (local shadow)
 disconnect S0;
-connect E0 S0 127.0.0.1:3485/?timezone=Asia/Tokyo&format=full;
+connect E0 S0 127.0.0.1:3485/?timezone=Asia/Tokyo;
 show all;
-[{"result": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "Asia/Tokyo", "format": "full", "log_enable": true, "log_file": true, "log_stdout": false, "log_stdout_time": true, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "jobs": 3, "cpu_affinity": true, "wal_crc": true, "wal_sync_create": false, "wal_sync_close": false, "wal_sync_write": false, "wal_sync_interval": "1 sec", "wal_service": false, "wal_size": 67108864, "wal_checkpoint": 100, "wal_rewind": false, "wal_rewind_pos": 0, "storage_crc": true, "storage_sync": false, "catalog_sync": false, "repl_readahead": 262144, "repl_reconnect_ms": 3000}}]
+{
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "timezone": "Asia/Tokyo",
+  "log_enable": true,
+  "log_file": true,
+  "log_stdout": false,
+  "log_stdout_time": true,
+  "log_connections": true,
+  "log_options": true,
+  "tls_capath": "",
+  "tls_ca": "",
+  "tls_cert": "",
+  "tls_key": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3485
+  }],
+  "limit_send": 3145728,
+  "limit_recv": 1048576,
+  "limit_write": 0,
+  "frontends": 1,
+  "backends": 1,
+  "jobs": 3,
+  "cpu_affinity": true,
+  "wal_crc": true,
+  "wal_sync_create": false,
+  "wal_sync_close": false,
+  "wal_sync_write": false,
+  "wal_sync_interval": "1 sec",
+  "wal_service": false,
+  "wal_size": 67108864,
+  "wal_checkpoint": 100,
+  "wal_rewind": false,
+  "wal_rewind_pos": 0,
+  "storage_crc": true,
+  "storage_sync": false,
+  "catalog_sync": false,
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000
+}
 show timezone;
-[{"result": "Asia/Tokyo"}]
+"Asia/Tokyo"
 # test: show locks
 show locks;
-{"result": [{"relation": "catalog", "lock": "shared", "waiting": false, "function": "session_execute"}]}
+[{
+  "relation": "catalog",
+  "lock": "shared",
+  "waiting": false,
+  "function": "session_execute"
+}]
 disconnect S0;
 close E0;

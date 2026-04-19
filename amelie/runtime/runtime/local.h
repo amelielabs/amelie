@@ -17,7 +17,6 @@ struct Local
 {
 	Timezone* timezone;
 	uint64_t  time_us;
-	Str       format;
 	Str       user;
 };
 
@@ -27,7 +26,6 @@ local_init(Local* self)
 	// derive default configuration
 	self->timezone = runtime()->timezone;
 	self->time_us  = 0;
-	self->format   = config()->format.string;
 	str_init(&self->user);
 }
 
@@ -42,7 +40,6 @@ local_reset(Local* self)
 {
 	// derive default configuration
 	self->timezone = runtime()->timezone;
-	self->format   = config()->format.string;
 	str_init(&self->user);
 }
 
@@ -55,15 +52,10 @@ local_update_time(Local* self)
 static inline void
 local_encode_opt(Local* self, Buf* buf, Opt* opt)
 {
-	// replace timezone/format with local settings
+	// replace timezone with local settings
 	if (opt == &config()->timezone)
 	{
 		encode_string(buf, &self->timezone->name);
-		return;
-	}
-	if (opt == &config()->format)
-	{
-		encode_string(buf, &self->format);
 		return;
 	}
 	opt_encode(opt, buf);

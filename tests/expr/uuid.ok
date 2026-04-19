@@ -2,63 +2,63 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: uuid create
 select uuid "00000000-0000-0000-0000-000000000001";
-["00000000-0000-0000-0000-000000000001"]
+"00000000-0000-0000-0000-000000000001"
 select uuid "00000000-0000-0000-0000-000000000001"::type;
-["uuid"]
+"uuid"
 select "00000000-0000-0000-0000-000000000001"::uuid;
-["00000000-0000-0000-0000-000000000001"]
+"00000000-0000-0000-0000-000000000001"
 select "00000000-0000-0000-0000-000000000001"::uuid::type;
-["uuid"]
+"uuid"
 # test: uuid invalid
 select uuid "00000000-0000-0000-0000-00000000000_";
-{"msg": "select uuid ❰\"00000000-0000-0000-0000-00000000000_\"❱ ⟵ invalid uuid value"}
+error: select uuid ❰"00000000-0000-0000-0000-00000000000_"❱ ⟵ invalid uuid value
 # test: uuid = uuid
 select "00000000-0000-0000-0000-000000000001"::uuid = "00000000-0000-0000-0000-000000000001"::uuid;
-[true]
+true
 select "00000000-0000-0000-0000-000000000001"::uuid = uuid "00000000-0000-0000-0000-000000000000";
-[false]
+false
 # test: uuid = null
 select "00000000-0000-0000-0000-000000000001"::uuid = null;
-[null]
+null
 # test: uuid = unsupported
 select "00000000-0000-0000-0000-000000000001"::uuid = "";
-{"msg": "select \"00000000-0000-0000-0000-000000000001\"::uuid = ❰\"\"❱ ⟵ operation uuid = string is not supported"}
+error: select "00000000-0000-0000-0000-000000000001"::uuid = ❰""❱ ⟵ operation uuid = string is not supported
 # test: uuid <> uuid
 select "00000000-0000-0000-0000-000000000001"::uuid <> "00000000-0000-0000-0000-000000000001"::uuid;
-[false]
+false
 select "00000000-0000-0000-0000-000000000001"::uuid <> uuid "00000000-0000-0000-0000-000000000000";
-[true]
+true
 # test: uuid >= uuid
 select "00000000-0000-0000-0000-000000000001"::uuid >= "00000000-0000-0000-0000-000000000000"::uuid;
-[true]
+true
 select "00000000-0000-0000-0000-000000000001"::uuid >= "00000000-0000-0000-0000-000000000001"::uuid;
-[true]
+true
 # test: uuid >= unsupported
 select "00000000-0000-0000-0000-000000000001"::uuid >= 1;
-{"msg": "select \"00000000-0000-0000-0000-000000000001\"::uuid >= ❰1❱ ⟵ operation uuid >= int is not supported"}
+error: select "00000000-0000-0000-0000-000000000001"::uuid >= ❰1❱ ⟵ operation uuid >= int is not supported
 # test: uuid > uuid
 select "00000000-0000-0000-0000-000000000001"::uuid > "00000000-0000-0000-0000-000000000000"::uuid;
-[true]
+true
 select "00000000-0000-0000-0000-000000000001"::uuid > "00000000-0000-0000-0000-000000000001"::uuid;
-[false]
+false
 # test: uuid > unsupported
 select "00000000-0000-0000-0000-000000000001"::uuid > 1;
-{"msg": "select \"00000000-0000-0000-0000-000000000001\"::uuid > ❰1❱ ⟵ operation uuid > int is not supported"}
+error: select "00000000-0000-0000-0000-000000000001"::uuid > ❰1❱ ⟵ operation uuid > int is not supported
 # test: uuid <= uuid
 select "00000000-0000-0000-0000-000000000001"::uuid <= "00000000-0000-0000-0000-000000000000"::uuid;
-[false]
+false
 select "00000000-0000-0000-0000-000000000001"::uuid <= "00000000-0000-0000-0000-000000000001"::uuid;
-[true]
+true
 # test: uuid <= unsupported
 select "00000000-0000-0000-0000-000000000001"::uuid <= 1;
-{"msg": "select \"00000000-0000-0000-0000-000000000001\"::uuid <= ❰1❱ ⟵ operation uuid <= int is not supported"}
+error: select "00000000-0000-0000-0000-000000000001"::uuid <= ❰1❱ ⟵ operation uuid <= int is not supported
 # test: uuid < uuid
 select "00000000-0000-0000-0000-000000000001"::uuid < "00000000-0000-0000-0000-000000000000"::uuid;
-[false]
+false
 select "00000000-0000-0000-0000-000000000001"::uuid < "00000000-0000-0000-0000-000000000001"::uuid;
-[false]
+false
 # test: uuid < unsupported
 select "00000000-0000-0000-0000-000000000001"::uuid < 1;
-{"msg": "select \"00000000-0000-0000-0000-000000000001\"::uuid < ❰1❱ ⟵ operation uuid < int is not supported"}
+error: select "00000000-0000-0000-0000-000000000001"::uuid < ❰1❱ ⟵ operation uuid < int is not supported
 disconnect S0;
 close E0;
