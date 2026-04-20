@@ -60,7 +60,7 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 			if (unlikely(! json_is_string(*pos)))
 				return false;
 			json_read_string(pos, &value);
-			if (unlikely(! str_is(&name, "2.0", 3)))
+			if (unlikely(! str_is(&value, "2.0", 3)))
 				return false;
 		} else
 		if (str_is(&name, "method", 6))
@@ -71,7 +71,7 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 		} else
 		if (str_is(&name, "params", 6))
 		{
-			req->id = *pos;
+			req->params = *pos;
 			json_skip(pos);
 		} else
 		if (str_is(&name, "id", 2))
@@ -85,6 +85,10 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 		}
 	}
 
+	// ensure method and id are set
+	if (str_empty(&req->method) || !req->id)
+		return false;
+
 	self->reqs_count++;
 	return true;
 }
@@ -92,7 +96,7 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 hot static inline bool
 jsonrpc_parse_request(Jsonrpc* self)
 {
-	auto buf = &self->reqs;
+	auto buf = &self->data;
 	if (unlikely(buf_empty(buf)))
 		return false;
 
@@ -114,7 +118,7 @@ jsonrpc_parse_request(Jsonrpc* self)
 hot void
 jsonrpc_parse(Jsonrpc* self, Str* text)
 {
-	json_parse(&self->parser, text, &self->reqs);
+	json_parse(&self->parser, text, &self->data);
 	if (! jsonrpc_parse_request(self))
-		error("jsonrpc: invalid request field");
+		error("jsonrpc: invalid request");
 }

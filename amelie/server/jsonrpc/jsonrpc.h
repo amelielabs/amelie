@@ -40,7 +40,7 @@ jsonrpc_first(Jsonrpc* self)
 {
 	if (jsonrpc_empty(self))
 		return NULL;
-	return (JsonrpcReq*)self->reqs.start;
+	return (JsonrpcReq*)(self->reqs.start);
 }
 
 static inline JsonrpcReq*
@@ -48,7 +48,7 @@ jsonrpc_last(Jsonrpc* self)
 {
 	if (jsonrpc_empty(self))
 		return NULL;
-	return (JsonrpcReq*)self->reqs.start + self->reqs_count - 1;
+	return (JsonrpcReq*)(self->reqs.start + self->reqs_count - 1);
 }
 
 void jsonrpc_init(Jsonrpc*);

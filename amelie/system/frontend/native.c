@@ -120,7 +120,8 @@ relay_execute_session(Relay* self, Str* command)
 	}
 
 	// set command
-	req->content = *command;
+	req->type = REQUEST_SQL;
+	req->text = *command;
 
 	// execute
 	auto ctl  = self->fe->iface;

@@ -43,6 +43,7 @@ endpoint_init(Endpoint* self)
 		// args
 		{ "timezone",     OPT_STRING,  OPT_C, &self->timezone,     NULL, 0    },
 		// misc
+		{ "id",           OPT_STRING,  OPT_C, &self->id,           NULL, 0    },
 		{ "auth",         OPT_BOOL,    OPT_C, &self->auth,         NULL, true },
 		{ "name",         OPT_STRING,  OPT_C, &self->name,         NULL, 0    },
 		{ "debug",        OPT_BOOL,    OPT_C, &self->debug,        NULL, 0    },

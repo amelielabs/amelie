@@ -260,7 +260,7 @@ session_sql(Session* self)
 	auto req = self->req;
 	auto compiler = &self->compiler;
 	compiler_set(compiler, self->program);
-	compiler_parse(compiler, &req->content);
+	compiler_parse(compiler, &req->text);
 
 	// generate bytecode (unless EXECUTE)
 	auto stmt = compiler_stmt(compiler);
@@ -309,7 +309,8 @@ session_execute(Session* self, Request* req)
 		session_set(self, req);
 
 		// parse and execute request
-		session_sql(self);
+		if (req->type == REQUEST_SQL)
+			session_sql(self);
 
 		// done
 		unlock_all();

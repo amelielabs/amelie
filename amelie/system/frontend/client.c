@@ -38,35 +38,93 @@ frontend_client_primary(Frontend* self, Client* client, void* session)
 }
 
 hot static inline void
-frontend_request(Frontend* self, Request* req, Client* client)
+frontend_endpoint_sql(Request* req, Client* client)
 {
-	unused(self);
 	auto endpoint = &req->endpoint;
 	auto http     = &client->request;
 
 	// /v1/sql (plain/text)
-	if (opt_int_of(&endpoint->endpoint) == ENDPOINT_SQL)
-	{
-		if (! str_is(&endpoint->content_type.string, "plain/text", 10))
-			error("unsupported operation content-type");
-	}
+	if (! str_is(&endpoint->content_type.string, "plain/text", 10))
+		error("unsupported operation content-type");
 
-	// set request content
-	buf_str(&http->content, &req->content);
+	Str content;
+	buf_str(&http->content, &content);
+
+	// sql command
+	req->type = REQUEST_SQL;
+	req->text = content;
+}
+
+hot static inline void
+frontend_endpoint_rpc(Request* req, Client* client)
+{
+	auto endpoint = &req->endpoint;
+	auto http     = &client->request;
+
+	// /v1/rpc (application/json)
+	// /v1/rpc (application/json-rpc)
+	if (!str_is(&endpoint->content_type.string, "application/json", 16) &&
+	    !str_is(&endpoint->content_type.string, "application/json-rpc", 20))
+		error("unsupported operation content-type");
+
+	Str content;
+	buf_str(&http->content, &content);
+
+	// parse jsonrpc request
+	jsonrpc_parse(&req->jsonrpc, &content);
+	if (unlikely(req->jsonrpc.reqs_count > 1))
+		error("jsonrpc: batching is not supported");
+
+	// todo: set id
+
+	// read command
+	auto cmd = jsonrpc_first(&req->jsonrpc);
+	if (str_is(&cmd->method, "sql", 3))
+	{
+		// sql
+		req->type = REQUEST_SQL;
+
+		auto pos = cmd->params;
+		if (unlikely(! pos))
+			error("jsonrpc: sql 'params' are missing");
+
+		if (! json_is_obj(pos))
+			error("jsonrpc: sql 'params' is not an object");
+
+		// parse params
+		json_read_obj(&pos);
+		while (! json_read_obj_end(&pos))
+		{
+			Str name;
+			json_read_string(&pos, &name);
+			if (str_is(&name, "text", 4))
+			{
+				if (unlikely(! json_is_string(pos)))
+					error("jsonrpc: sql 'text' is not a string");
+				json_read_string(&pos, &req->text);
+			} else {
+				error("jsonrpc: unexpected params field");
+			}
+		}
+
+		if (str_empty(&req->text))
+			error("jsonrpc: sql 'text' is not defined");
+	} else
+	{
+		error("jsonrpc: unknown method");
+	}
 }
 
 hot static inline bool
-frontend_endpoint(Frontend* self, Request* req, Client* client)
+frontend_endpoint(Request* req, Client* client)
 {
 	auto endpoint = &req->endpoint;
 	auto http     = &client->request;
 
 	// POST /v1/sql
+	// POST /v1/rpc
 	// POST /v1/backup
 	// POST /v1/repl
-	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(! str_is(method, "POST", 4)))
-		return false;
 
 	// set content-type
 	auto content_type = http_find(http, "Content-Type", 12);
@@ -96,18 +154,37 @@ frontend_endpoint(Frontend* self, Request* req, Client* client)
 	opt_int_set(&endpoint->auth, client->auth);
 
 	// parse uri endpoint request
-	return !error_catch
+	auto output = &req->output;
+	output_reset(output);
+
+	auto on_error = error_catch
 	(
+		// POST
+		auto method = &http->options[HTTP_METHOD];
+		if (unlikely(! str_is(method, "POST", 4)))
+			error("unsupported operation method");
 		uri_parse_endpoint(endpoint, &http->options[HTTP_URL]);
 
 		// configure output mime (using Accept)
-		auto output = &req->output;
-		output_reset(output);
 		output_set(output, endpoint);
 		output_set_buf(output, &client->reply.content);
 
-		frontend_request(self, req, client);
+		// /v1/endpoint
+		auto endpoint_type = opt_int_of(&endpoint->endpoint);
+		if (endpoint_type == ENDPOINT_SQL)
+			frontend_endpoint_sql(req, client);
+		else
+		if (endpoint_type == ENDPOINT_RPC)
+			frontend_endpoint_rpc(req, client);
 	);
+
+	if (on_error)
+	{
+		if (output->iface)
+			output_write_error(output, &am_self()->error);
+	}
+
+	return !on_error;
 }
 
 hot static inline bool
@@ -158,10 +235,10 @@ frontend_client(Frontend* self, Client* client)
 		}
 
 		// parse endpoint and configure request
-		if (! frontend_endpoint(self, &req, client))
+		if (! frontend_endpoint(&req, client))
 		{
 			// 400 Bad Request
-			client_400(client, NULL);
+			client_400(client, req.output.buf);
 			continue;
 		}
 
@@ -176,6 +253,7 @@ frontend_client(Frontend* self, Client* client)
 		// execute
 		switch (opt_int_of(&req.endpoint.endpoint)) {
 		case ENDPOINT_SQL:
+		case ENDPOINT_RPC:
 		{
 			if (ctl->session_execute(session, &req))
 			{

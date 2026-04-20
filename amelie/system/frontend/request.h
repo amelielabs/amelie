@@ -13,23 +13,40 @@
 
 typedef struct Request Request;
 
+typedef enum
+{
+	REQUEST_UNDEF,
+	REQUEST_SQL
+} RequestType;
+
 struct Request
 {
-	User*    user;
-	Lock*    lock;
-	Str      content;
-	Endpoint endpoint;
-	Output   output;
+	RequestType type;
+	Str         text;
+	Str         rel_user;
+	Str         rel;
+	uint8_t*    args;
+	User*       user;
+	Lock*       lock;
+	Endpoint    endpoint;
+	Output      output;
+	Jsonrpc     jsonrpc;
+
 };
 
 static inline void
 request_init(Request* self)
 {
+	self->type = REQUEST_UNDEF;
+	self->args = NULL;
 	self->user = NULL;
 	self->lock = NULL;
-	str_init(&self->content);
+	str_init(&self->text);
+	str_init(&self->rel_user);
+	str_init(&self->rel);
 	endpoint_init(&self->endpoint);
 	output_init(&self->output);
+	jsonrpc_init(&self->jsonrpc);
 }
 
 static inline void
@@ -62,10 +79,15 @@ static inline void
 request_reset(Request* self)
 {
 	self->user = NULL;
+	self->type = REQUEST_UNDEF;
+	self->args = NULL;
+	str_init(&self->text);
+	str_init(&self->rel_user);
+	str_init(&self->rel);
 	request_unlock(self);
 	endpoint_reset(&self->endpoint);
 	output_reset(&self->output);
-	str_init(&self->content);
+	jsonrpc_reset(&self->jsonrpc);
 }
 
 static inline void
@@ -73,6 +95,7 @@ request_free(Request* self)
 {
 	request_reset(self);
 	endpoint_free(&self->endpoint);
+	jsonrpc_free(&self->jsonrpc);
 }
 
 static inline void

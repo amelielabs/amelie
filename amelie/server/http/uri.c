@@ -364,6 +364,7 @@ void
 uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
 	// /v1/sql
+	// /v1/rpc
 	// /v1/backup
 	// /v1/repl
 
@@ -377,6 +378,11 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 	if (str_is_prefix(spec, "/v1/sql", 7))
 	{
 		opt_int_set(&endpoint->endpoint, ENDPOINT_SQL);
+		self.pos += 7;
+	} else
+	if (str_is_prefix(spec, "/v1/rpc", 7))
+	{
+		opt_int_set(&endpoint->endpoint, ENDPOINT_RPC);
 		self.pos += 7;
 	} else
 	if (str_is_prefix(spec, "/v1/backup", 10))

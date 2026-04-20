@@ -23,6 +23,7 @@ enum
 enum
 {
 	ENDPOINT_SQL,
+	ENDPOINT_RPC,
 	ENDPOINT_BACKUP,
 	ENDPOINT_REPL
 };
@@ -53,6 +54,7 @@ struct Endpoint
 	// args
 	Opt  timezone;
 	// misc
+	Opt  id;
 	Opt  auth;
 	Opt  name;
 	Opt  debug;
