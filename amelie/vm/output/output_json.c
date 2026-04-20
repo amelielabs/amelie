@@ -38,7 +38,6 @@ static void
 output_json_write(Output* self, Columns* columns, Value* value)
 {
 	auto buf = self->buf;
-
 	buf_write(buf, "{ ", 2);
 
 	// columns
@@ -141,3 +140,15 @@ OutputIf output_json =
 	.write_json  = output_json_write_json,
 	.write_error = output_json_write_error
 };
+
+void
+output_json_result(Output* self, Columns* columns, Value* value)
+{
+	output_json_write(self, columns, value);
+}
+
+void
+output_json_result_json(Output* self, Str* column, uint8_t* pos, bool unwrap)
+{
+	output_json_write_json(self, column, pos, unwrap);
+}

@@ -11,7 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "output/output.h"
-#include "output/output_json.h"
-#include "output/output_jsonrpc.h"
-#include "output/output_text.h"
+extern OutputIf output_jsonrpc;

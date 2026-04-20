@@ -43,6 +43,9 @@ frontend_endpoint_sql(Request* req, Client* client)
 	auto endpoint = &req->endpoint;
 	auto http     = &client->request;
 
+	// set output
+	output_set(&req->output, endpoint);
+
 	// /v1/sql (plain/text)
 	if (! str_is(&endpoint->content_type.string, "plain/text", 10))
 		error("unsupported operation content-type");
@@ -61,11 +64,20 @@ frontend_endpoint_rpc(Request* req, Client* client)
 	auto endpoint = &req->endpoint;
 	auto http     = &client->request;
 
+	// force require json for accept (auto switch to jsonrpc)
+	if (!str_is(&endpoint->accept.string, "application/json", 16) &&
+	    !str_is(&endpoint->accept.string, "application/json-rpc", 20))
+		error("unsupported operation accept");
+	str_set(&endpoint->accept.string, "application/json-rpc", 20);
+
 	// /v1/rpc (application/json)
 	// /v1/rpc (application/json-rpc)
 	if (!str_is(&endpoint->content_type.string, "application/json", 16) &&
 	    !str_is(&endpoint->content_type.string, "application/json-rpc", 20))
 		error("unsupported operation content-type");
+
+	// set output
+	output_set(&req->output, endpoint);
 
 	Str content;
 	buf_str(&http->content, &content);
@@ -73,9 +85,9 @@ frontend_endpoint_rpc(Request* req, Client* client)
 	// parse jsonrpc request
 	jsonrpc_parse(&req->jsonrpc, &content);
 	if (unlikely(req->jsonrpc.reqs_count > 1))
-		error("jsonrpc: batching is not supported");
+		error("jsonrpc batching is not supported");
 
-	// todo: set id
+	// todo: set endpoint id
 
 	// read command
 	auto cmd = jsonrpc_first(&req->jsonrpc);
@@ -86,10 +98,10 @@ frontend_endpoint_rpc(Request* req, Client* client)
 
 		auto pos = cmd->params;
 		if (unlikely(! pos))
-			error("jsonrpc: sql 'params' are missing");
+			error("sql 'params' are missing");
 
 		if (! json_is_obj(pos))
-			error("jsonrpc: sql 'params' is not an object");
+			error("sql 'params' is not an object");
 
 		// parse params
 		json_read_obj(&pos);
@@ -100,18 +112,18 @@ frontend_endpoint_rpc(Request* req, Client* client)
 			if (str_is(&name, "text", 4))
 			{
 				if (unlikely(! json_is_string(pos)))
-					error("jsonrpc: sql 'text' is not a string");
+					error("sql 'text' is not a string");
 				json_read_string(&pos, &req->text);
 			} else {
-				error("jsonrpc: unexpected params field");
+				error("unexpected params field");
 			}
 		}
 
 		if (str_empty(&req->text))
-			error("jsonrpc: sql 'text' is not defined");
+			error("sql 'text' is not defined");
 	} else
 	{
-		error("jsonrpc: unknown method");
+		error("unknown method");
 	}
 }
 
@@ -156,6 +168,7 @@ frontend_endpoint(Request* req, Client* client)
 	// parse uri endpoint request
 	auto output = &req->output;
 	output_reset(output);
+	output_set_buf(output, &client->reply.content);
 
 	auto on_error = error_catch
 	(
@@ -165,10 +178,6 @@ frontend_endpoint(Request* req, Client* client)
 			error("unsupported operation method");
 		uri_parse_endpoint(endpoint, &http->options[HTTP_URL]);
 
-		// configure output mime (using Accept)
-		output_set(output, endpoint);
-		output_set_buf(output, &client->reply.content);
-
 		// /v1/endpoint
 		auto endpoint_type = opt_int_of(&endpoint->endpoint);
 		if (endpoint_type == ENDPOINT_SQL)
@@ -176,6 +185,8 @@ frontend_endpoint(Request* req, Client* client)
 		else
 		if (endpoint_type == ENDPOINT_RPC)
 			frontend_endpoint_rpc(req, client);
+		else
+			output_set(output, endpoint);
 	);
 
 	if (on_error)

@@ -2,35 +2,35 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: POST /v1/rpc
 post /v1/rpc - - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 post /v1/rpc - - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 # test: POST /v1/rpc (invalid content type)
 post /v1/rpc - - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 post /v1/rpc json - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 # test: POST /v1/rpc (mandatory fields)
 post /v1/rpc application/json - {"jsonrpc": "2.0"} ;
-{"msg": "jsonrpc: invalid request"}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "jsonrpc: invalid request"}}
 post /v1/rpc application/json - {"jsonrpc": "2.0", "id": 11};
-{"msg": "jsonrpc: invalid request"}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "jsonrpc: invalid request"}}
 post /v1/rpc application/json - {"jsonrpc": "2.0", "method": sql};
-{"msg": "unexpected JSON token"}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "unexpected JSON token"}}
 # test: POST /v1/rpc (sql, no params)
 post /v1/rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql"};
-{"msg": "jsonrpc: sql 'params' are missing"}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "sql 'params' are missing"}}
 # test: POST /v1/rpc (sql, params validatation)
 post /v1/rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": 1};
-{"msg": "jsonrpc: sql 'params' is not an object"}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "sql 'params' is not an object"}}
 post /v1/rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": []};
-{"msg": "jsonrpc: sql 'params' is not an object"}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "sql 'params' is not an object"}}
 post /v1/rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {}};
-{"msg": "jsonrpc: sql 'text' is not defined"}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "sql 'text' is not defined"}}
 post /v1/rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"a": "b"}};
-{"msg": "jsonrpc: unexpected params field"}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "unexpected params field"}}
 # test: POST /v1/rpc (sql)
 post /v1/rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
-{ "columns": ["col1"], "rows": [[1]] }
+{ "jsonrpc": "2.0", "id": 0, "result": { "columns": ["col1"], "rows": [[1]] } }
 disconnect S0;
 close E0;

@@ -251,6 +251,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/set/sub.c
     ${AMELIE_ROOT}/vm/output/output.c
     ${AMELIE_ROOT}/vm/output/output_json.c
+    ${AMELIE_ROOT}/vm/output/output_jsonrpc.c
     ${AMELIE_ROOT}/vm/output/output_text.c
     ${AMELIE_ROOT}/vm/executor/commit.c
     ${AMELIE_ROOT}/vm/func/function_mgr.c
