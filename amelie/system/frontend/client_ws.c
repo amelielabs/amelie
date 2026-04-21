@@ -33,7 +33,7 @@ frontend_client_ws(Frontend* self, Client* client, Request* req, void* session)
 	auto buf = &client->request.content;
 	for (;;)
 	{
-		request_reset(req);
+		request_reset(req, false);
 		buf_reset(buf);
 
 		// read jsonrpc request

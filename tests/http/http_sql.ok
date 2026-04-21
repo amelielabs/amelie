@@ -9,16 +9,13 @@ post /xyz - - -;
 400 Bad Request
 # test: POST /sql
 post /sql - - -;
-{"msg": "unsupported operation content-type"}
 post /sql/ - - -;
-{"msg": "unsupported operation content-type"}
 # test: POST /sql (invalid content type)
 post /sql - - -;
-{"msg": "unsupported operation content-type"}
 post /sql json - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 post /sql/ application/json - -;
-{"msg": "unsupported operation content-type"}
+400 Bad Request
 # test: POST /sql (plain/text, no accept, no content)
 post /sql plain/text - -;
 # test: POST /sql (plain/text, no accept)

@@ -7,8 +7,7 @@ connect E0 S0 127.0.0.1:3485;
 post /rpc - - -;
 
 # test: POST /rpc (invalid content type)
-post /rpc - - -;
-post /rpc json - -;
+post /rpc xyx - -;
 
 # test: POST /rpc (mandatory fields)
 post /rpc application/json - {"jsonrpc": "2.0"} ;

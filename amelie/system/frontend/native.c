@@ -73,7 +73,7 @@ relay_connect(Relay* self)
 static inline void
 relay_set(Relay* self, Buf* buf, Str* uri)
 {
-	request_reset(&self->req);
+	request_reset(&self->req, true);
 
 	// parse uri and configure endpoint
 	auto endpoint = &self->req.endpoint;

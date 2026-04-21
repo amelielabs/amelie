@@ -35,22 +35,24 @@ request_init(Request* self)
 void
 request_free(Request* self)
 {
-	request_reset(self);
+	request_reset(self, true);
 	endpoint_free(&self->endpoint);
 	jsonrpc_free(&self->jsonrpc);
 }
 
 void
-request_reset(Request* self)
+request_reset(Request* self, bool with_endpoint)
 {
 	request_unlock(self);
+
 	self->user = NULL;
 	self->type = REQUEST_UNDEF;
 	self->args = NULL;
 	str_init(&self->text);
 	str_init(&self->rel_user);
 	str_init(&self->rel);
-	endpoint_reset(&self->endpoint);
+	if (with_endpoint)
+		endpoint_reset(&self->endpoint);
 	output_reset(&self->output);
 	jsonrpc_reset(&self->jsonrpc);
 }

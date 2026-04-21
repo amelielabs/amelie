@@ -35,7 +35,7 @@ struct Request
 
 void request_init(Request*);
 void request_free(Request*);
-void request_reset(Request*);
+void request_reset(Request*, bool);
 void request_lock(Request*, LockId);
 void request_unlock(Request*);
 void request_auth(Request*, Auth*);

@@ -23,16 +23,23 @@ frontend_endpoint_sql(Request* req, Client* client)
 	auto endpoint = &req->endpoint;
 	auto http     = &client->request;
 
-	// set output
-	output_set(&req->output, endpoint);
-
 	// POST /sql (plain/text)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is(method, "POST", 4)))
 		error("unsupported operation method");
 
-	if (! str_is(&endpoint->content_type.string, "plain/text", 10))
+	// content type
+	auto content_type = &endpoint->content_type.string;
+	if (!str_empty(content_type) && !str_is(content_type, "plain/text", 10))
 		error("unsupported operation content-type");
+
+	// accept (set default)
+	auto accept = &endpoint->accept.string;
+	if (str_empty(accept))
+		str_set(accept, "application/json", 16);
+
+	// set output
+	output_set(&req->output, endpoint);
 
 	Str content;
 	buf_str(&http->content, &content);
@@ -53,28 +60,35 @@ frontend_endpoint_rpc(Request* req, Client* client)
 	// GET  /rpc (application/json)      (websocket)
 	// GET  /rpc (application/json-rpc)  (websocket)
 
-	// force require json for accept (auto switch to jsonrpc)
-	if (!str_is(&endpoint->accept.string, "application/json", 16) &&
-	    !str_is(&endpoint->accept.string, "application/json-rpc", 20))
-		error("unsupported operation accept");
-	str_set(&endpoint->accept.string, "application/json-rpc", 20);
-
-	if (!str_is(&endpoint->content_type.string, "application/json", 16) &&
-	    !str_is(&endpoint->content_type.string, "application/json-rpc", 20))
+	// content type
+	auto content_type = &endpoint->content_type.string;
+	if (!str_empty(content_type) &&
+	    !str_is(content_type, "application/json", 16) &&
+	    !str_is(content_type, "application/json-rpc", 20))
 		error("unsupported operation content-type");
 
-	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(!str_is(method, "POST", 4) &&
-	             !str_is(method, "GET", 4)))
-		error("unsupported operation method");
+	// accept (jsonrpc)
+	auto accept = &endpoint->accept.string;
+	if (!str_empty(accept) &&
+	    !str_is(accept, "application/json", 16) &&
+	    !str_is(accept, "application/json-rpc", 20))
+		error("unsupported operation accept");
+	str_set(accept, "application/json-rpc", 20);
 
 	// set output
 	output_set(&req->output, endpoint);
 
 	// parse jsonrpc request
-	Str content;
-	buf_str(&http->content, &content);
-	request_rpc(req, &content);
+	auto method = &http->options[HTTP_METHOD];
+	if (str_is(method, "POST", 4))
+	{
+		Str content;
+		buf_str(&http->content, &content);
+		request_rpc(req, &content);
+	} else
+	if (! str_is(method, "GET", 3)) {
+		error("unsupported operation method");
+	}
 }
 
 hot static inline void
@@ -88,6 +102,12 @@ frontend_endpoint_service(Request* req, Client* client)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is(method, "GET", 3)))
 		error("unsupported operation method");
+
+	// ignoring content-type
+
+	// accept (jsonrpc)
+	auto accept = &endpoint->accept.string;
+	str_set(accept, "application/json", 16);
 
 	// set output
 	output_set(&req->output, endpoint);
@@ -105,26 +125,24 @@ frontend_endpoint(Request* req, Client* client)
 	// GET  /backup
 	// GET  /repl
 
-	// set content-type
+	// content type
 	auto content_type = http_find(http, "Content-Type", 12);
 	if (likely(content_type))
 		endpoint->content_type.string = content_type->value;
 
-	// set accept
+	// accept
 	auto accept = http_find(http, "Accept", 6);
 	if (likely(accept))
 		endpoint->accept.string = accept->value;
-	else
-		str_set(&endpoint->accept.string, "application/json", 16);
 
-	// set user
+	// user
 	auto user = http_find(http, "X-User-ID", 9);
 	if (user)
 		endpoint->user.string = user->value;
 	else
 		str_set(&endpoint->user.string, "main", 4);
 
-	// set token
+	// token
 	auto auth = http_find(http, "Authorization", 13);
 	if (auth)
 		endpoint->token.string = auth->value;
@@ -189,7 +207,7 @@ frontend_client(Frontend* self, Client* client)
 	defer(ctl->session_free, session);
 	for (;;)
 	{
-		request_reset(&req);
+		request_reset(&req, true);
 
 		// read header
 		http_reset(http);
@@ -231,7 +249,7 @@ frontend_client(Frontend* self, Client* client)
 			// websocket session
 			if (str_is(&http->options[HTTP_METHOD], "GET", 3))
 			{
-				request_reset(&req);
+				request_reset(&req, true);
 				return frontend_client_ws(self, client, &req, session);
 			}
 
@@ -257,13 +275,13 @@ frontend_client(Frontend* self, Client* client)
 		case ENDPOINT_BACKUP:
 		{
 			// restore connection (remote backup)
-			request_reset(&req);
+			request_reset(&req, true);
 			return backup(share()->db, client);
 		}
 		case ENDPOINT_REPL:
 		{
 			// primary connection
-			request_reset(&req);
+			request_reset(&req, true);
 			return frontend_client_primary(self, client, session);
 		}
 		default:
