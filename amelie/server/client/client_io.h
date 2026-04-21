@@ -15,7 +15,7 @@ static inline void
 client_send(Client* self, Str* content)
 {
 	auto request = &self->request;
-	auto buf = http_begin_request(request, self->endpoint, str_size(content));
+	auto buf = http_begin_request(request, HTTP_POST, self->endpoint, str_size(content));
 	http_end(buf);
 	tcp_write_pair_str(&self->tcp, buf, content);
 }

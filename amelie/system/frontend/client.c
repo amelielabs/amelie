@@ -83,14 +83,11 @@ frontend_endpoint_service(Request* req, Client* client)
 	auto endpoint = &req->endpoint;
 	auto http     = &client->request;
 
-	(void)http;
-#if 0
 	// GET /backup
 	// GET /repl
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is(method, "GET", 3)))
 		error("unsupported operation method");
-#endif
 
 	// set output
 	output_set(&req->output, endpoint);

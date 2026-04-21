@@ -91,7 +91,7 @@ websocket_connect(Websocket* self)
 	// send
 	auto request = &client->request;
 	http_reset(request);
-	auto buf = http_begin_request(request, client->endpoint, 0);
+	auto buf = http_begin_request(request, HTTP_GET, client->endpoint, 0);
 	buf_printf(buf, "Upgrade: websocket\r\n");
 	buf_printf(buf, "Connection: Upgrade\r\n");
 	buf_printf(buf, "Sec-WebSocket-Key: %.*s\r\n", buf_size(&key), buf_cstr(&key));

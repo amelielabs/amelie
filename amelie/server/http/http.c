@@ -252,14 +252,23 @@ http_read_content(Http* self, Readahead* readahead, Buf* content)
 }
 
 hot Buf*
-http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
+http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t size)
 {
 	// request
 	auto buf = &self->raw;
 	buf_reset(buf);
 
-	// POST /<endpoint>
-	buf_write(buf, "POST /", 6);
+	// POST/GET
+	switch (method) {
+	case HTTP_POST:
+		buf_write(buf, "POST /", 6);
+		break;;
+	case HTTP_GET:
+		buf_write(buf, "GET /", 5);
+		break;
+	}
+
+	// /endpoint
 	switch (endpoint->endpoint.integer) {
 	case ENDPOINT_SQL:
 		buf_write(buf, "sql", 3);
