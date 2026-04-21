@@ -15,14 +15,14 @@ post /rpc application/json - {"jsonrpc": "2.0", "method": sql};
 {"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "unexpected JSON token"}}
 # test: POST /rpc (sql, no params)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql"};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "sql 'params' are missing"}}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "'params' field is missing"}}
 # test: POST /rpc (sql, params validatation)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": 1};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "sql 'params' is not an object"}}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "'params' field is not an object"}}
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": []};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "sql 'params' is not an object"}}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "'params' field is not an object"}}
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {}};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "sql 'text' is not defined"}}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "'text' field is not defined"}}
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"a": "b"}};
 {"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "unexpected params field"}}
 # test: POST /rpc (sql)

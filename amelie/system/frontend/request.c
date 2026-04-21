@@ -98,6 +98,93 @@ request_auth(Request* self, Auth* auth_ref)
 	self->user = auth(auth_ref, user_id, token, token_required);
 }
 
+static void
+request_rpc_sql(Request* self)
+{
+	// { text }
+	auto cmd = jsonrpc_first(&self->jsonrpc);
+	auto pos = cmd->params;
+	if (unlikely(! pos))
+		error("'params' field is missing");
+	if (! json_is_obj(pos))
+		error("'params' field is not an object");
+
+	// parse params
+	json_read_obj(&pos);
+	while (! json_read_obj_end(&pos))
+	{
+		Str name;
+		json_read_string(&pos, &name);
+		if (str_is(&name, "text", 4))
+		{
+			if (unlikely(! json_is_string(pos)))
+				error("'text' field is not a string");
+			json_read_string(&pos, &self->text);
+		} else {
+			error("unexpected params field");
+		}
+	}
+
+	if (str_empty(&self->text))
+		error("'text' field is not defined");
+
+	self->type = REQUEST_SQL;
+}
+
+static void
+request_rpc_cmd(Request* self, RequestType type, bool with_args)
+{
+	// { [user], rel, args }
+	auto cmd = jsonrpc_first(&self->jsonrpc);
+	auto pos = cmd->params;
+	if (unlikely(! pos))
+		error("'params' are missing");
+	if (! json_is_obj(pos))
+		error("'params' is not an object");
+
+	// parse params
+	json_read_obj(&pos);
+	while (! json_read_obj_end(&pos))
+	{
+		Str name;
+		json_read_string(&pos, &name);
+		if (str_is(&name, "user", 4))
+		{
+			if (unlikely(! json_is_string(pos)))
+				error("'user' is not a string");
+			json_read_string(&pos, &self->rel_user);
+		} else
+		if (str_is(&name, "rel", 3))
+		{
+			if (unlikely(! json_is_string(pos)))
+				error("'rel' is not a string");
+			json_read_string(&pos, &self->rel);
+		} else
+		if (str_is(&name, "args", 4))
+		{
+			if (unlikely(! json_is_array(pos)))
+				error("'args' is not an array");
+			self->args = pos;
+		} else {
+			error("unexpected params field");
+		}
+	}
+
+	// validate options
+	if (str_empty(&self->rel))
+		error("'rel' is not defined");
+
+	if (with_args)
+	{
+		if (! self->args)
+			error("'args' is not defined");
+	} else
+	if (self->args)
+		error("'args' is not expected for this command");
+
+	self->type = type;
+}
+
 void
 request_rpc(Request* self, Str* content)
 {
@@ -110,38 +197,23 @@ request_rpc(Request* self, Str* content)
 
 	// read command
 	auto cmd = jsonrpc_first(&self->jsonrpc);
+
+	// sql
 	if (str_is(&cmd->method, "sql", 3))
-	{
-		// sql
-		self->type = REQUEST_SQL;
+		return request_rpc_sql(self);
 
-		auto pos = cmd->params;
-		if (unlikely(! pos))
-			error("sql 'params' are missing");
+	// insert
+	if (str_is(&cmd->method, "insert", 6))
+		return request_rpc_cmd(self, REQUEST_INSERT, true);
 
-		if (! json_is_obj(pos))
-			error("sql 'params' is not an object");
+	// execute
+	if (str_is(&cmd->method, "execute", 7))
+		return request_rpc_cmd(self, REQUEST_EXECUTE, true);
 
-		// parse params
-		json_read_obj(&pos);
-		while (! json_read_obj_end(&pos))
-		{
-			Str name;
-			json_read_string(&pos, &name);
-			if (str_is(&name, "text", 4))
-			{
-				if (unlikely(! json_is_string(pos)))
-					error("sql 'text' is not a string");
-				json_read_string(&pos, &self->text);
-			} else {
-				error("unexpected params field");
-			}
-		}
+	// publish
+	if (str_is(&cmd->method, "publish", 7))
+		return request_rpc_cmd(self, REQUEST_PUBLISH, true);
 
-		if (str_empty(&self->text))
-			error("sql 'text' is not defined");
-	} else
-	{
-		error("unknown method");
-	}
+	error("unknown jsonrpc method: %.*s", str_size(&cmd->method),
+	      str_of(&cmd->method));
 }

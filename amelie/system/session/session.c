@@ -254,13 +254,25 @@ session_run_utility(Session* self)
 }
 
 hot static void
-session_sql(Session* self)
+session_request(Session* self)
 {
 	// parser sql
 	auto req = self->req;
 	auto compiler = &self->compiler;
 	compiler_set(compiler, self->program);
-	compiler_parse(compiler, &req->text);
+
+	switch (req->type) {
+	case REQUEST_SQL:
+		compiler_parse(compiler, &req->text);
+		break;
+	case REQUEST_INSERT:
+	case REQUEST_EXECUTE:
+	case REQUEST_PUBLISH:
+		break;
+	default:
+		abort();
+		break;
+	}
 
 	// generate bytecode (unless EXECUTE)
 	auto stmt = compiler_stmt(compiler);
@@ -309,8 +321,7 @@ session_execute(Session* self, Request* req)
 		session_set(self, req);
 
 		// parse and execute request
-		if (req->type == REQUEST_SQL)
-			session_sql(self);
+		session_request(self);
 
 		// done
 		unlock_all();

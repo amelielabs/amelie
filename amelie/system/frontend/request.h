@@ -16,7 +16,10 @@ typedef struct Request Request;
 typedef enum
 {
 	REQUEST_UNDEF,
-	REQUEST_SQL
+	REQUEST_SQL,
+	REQUEST_INSERT,
+	REQUEST_EXECUTE,
+	REQUEST_PUBLISH
 } RequestType;
 
 struct Request

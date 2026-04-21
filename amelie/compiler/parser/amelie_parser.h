@@ -102,3 +102,4 @@
 #include "parser/parse_with.h"
 #include "parser/parse_execute.h"
 #include "parser/parse.h"
+#include "parser/parse_rpc.h"
