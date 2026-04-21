@@ -24,5 +24,6 @@
 
 // client
 #include "frontend/client.h"
+#include "frontend/client_ws.h"
 #include "frontend/client_primary.h"
 #include "frontend/native.h"

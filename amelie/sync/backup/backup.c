@@ -157,7 +157,7 @@ backup_run(Backup* self, Client* client)
 
 	// set as websocket
 	Str protocol;
-	str_set(&protocol, "amelie-v1-backup", 16);
+	str_set(&protocol, "amelie-backup", 13);
 	websocket_set(&self->websocket, &protocol, client, false);
 
 	// prepare on wait condition

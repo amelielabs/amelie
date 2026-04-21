@@ -43,13 +43,13 @@ request_free(Request* self)
 void
 request_reset(Request* self)
 {
+	request_unlock(self);
 	self->user = NULL;
 	self->type = REQUEST_UNDEF;
 	self->args = NULL;
 	str_init(&self->text);
 	str_init(&self->rel_user);
 	str_init(&self->rel);
-	request_unlock(self);
 	endpoint_reset(&self->endpoint);
 	output_reset(&self->output);
 	jsonrpc_reset(&self->jsonrpc);

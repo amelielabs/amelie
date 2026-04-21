@@ -363,11 +363,10 @@ uri_parse(Endpoint* endpoint, Str* spec)
 void
 uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
-	// /v1/sql
-	// /v1/rpc
-	// /v1/session
-	// /v1/backup
-	// /v1/repl
+	// /sql
+	// /rpc
+	// /backup
+	// /repl
 
 	// set uri
 	opt_string_set(&endpoint->uri, spec);
@@ -376,30 +375,25 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 		.endpoint = endpoint
 	};
 
-	if (str_is_prefix(spec, "/v1/sql", 7))
+	if (str_is_prefix(spec, "/sql", 4))
 	{
 		opt_int_set(&endpoint->endpoint, ENDPOINT_SQL);
-		self.pos += 7;
+		self.pos += 4;
 	} else
-	if (str_is_prefix(spec, "/v1/rpc", 7))
+	if (str_is_prefix(spec, "/rpc", 4))
 	{
 		opt_int_set(&endpoint->endpoint, ENDPOINT_RPC);
-		self.pos += 7;
+		self.pos += 4;
 	} else
-	if (str_is_prefix(spec, "/v1/session", 11))
-	{
-		opt_int_set(&endpoint->endpoint, ENDPOINT_SESSION);
-		self.pos += 11;
-	} else
-	if (str_is_prefix(spec, "/v1/backup", 10))
+	if (str_is_prefix(spec, "/backup", 7))
 	{
 		opt_int_set(&endpoint->endpoint, ENDPOINT_BACKUP);
-		self.pos += 10;
+		self.pos += 7;
 	} else
-	if (str_is_prefix(spec, "/v1/repl", 8))
+	if (str_is_prefix(spec, "/repl", 5))
 	{
 		opt_int_set(&endpoint->endpoint, ENDPOINT_REPL);
-		self.pos += 8;
+		self.pos += 5;
 	} else {
 		error("failed to parse uri endpoint");
 	}

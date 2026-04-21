@@ -6,39 +6,35 @@ connect E0 S0 127.0.0.1:3485;
 # test: POST uri parsing
 post / - - -;
 post /db - - -;
-post /v1 - - -;
-post /v1/ - - -;
-post /v1/ - - -;
-post /v1/d - - -;
+post /xyz - - -;
+
+# test: POST /sql
 post /sql - - -;
+post /sql/ - - -;
 
-# test: POST /v1/sql
-post /v1/sql - - -;
-post /v1/sql/ - - -;
+# test: POST /sql (invalid content type)
+post /sql - - -;
+post /sql json - -;
+post /sql/ application/json - -;
 
-# test: POST /v1/sql (invalid content type)
-post /v1/sql - - -;
-post /v1/sql json - -;
-post /v1/sql/ application/json - -;
+# test: POST /sql (plain/text, no accept, no content)
+post /sql plain/text - -;
 
-# test: POST /v1/sql (plain/text, no accept, no content)
-post /v1/sql plain/text - -;
+# test: POST /sql (plain/text, no accept)
+post /sql plain/text - select 1;
 
-# test: POST /v1/sql (plain/text, no accept)
-post /v1/sql plain/text - select 1;
+# test: POST /sql (plain/text, invalid accept)
+post /sql plain/text xyz select 1;
 
-# test: POST /v1/sql (plain/text, invalid accept)
-post /v1/sql plain/text xyz select 1;
+# test: POST /sql (plain/text)
+post /sql plain/text application/json select 1;
 
-# test: POST /v1/sql (plain/text)
-post /v1/sql plain/text application/json select 1;
+# test: POST /sql (args parsing)
+post /sql? plain/text application/json select 1;
+post /sql?a plain/text application/json select 1;
 
-# test: POST /v1/sql (args parsing)
-post /v1/sql? plain/text application/json select 1;
-post /v1/sql?a plain/text application/json select 1;
-
-post /v1/sql plain/text application/json select "2024-07-29 18:40:19"::timestamp;
-post /v1/sql?timezone=Asia/Tokyo plain/text application/json select "2024-07-29 18:40:19"::timestamp;
+post /sql plain/text application/json select "2024-07-29 18:40:19"::timestamp;
+post /sql?timezone=Asia/Tokyo plain/text application/json select "2024-07-29 18:40:19"::timestamp;
 
 disconnect S0;
 close E0;

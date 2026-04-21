@@ -58,7 +58,7 @@ websocket_generate_token(Buf* self, Str* key)
 	// base64(sha1(key + magic))
 	const char* magic = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 	char concat[256];
-	auto len = sfmt(concat, sizeof(concat), "%.*ss%s", str_size(key),
+	auto len = sfmt(concat, sizeof(concat), "%.*s%s", str_size(key),
 	                str_of(key), magic);
 	unsigned char hash[20];
 	SHA1((unsigned char*)concat, len, hash);

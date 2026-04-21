@@ -79,7 +79,7 @@ streamer_read(Streamer* self)
 static void
 streamer_connect(Streamer* self)
 {
-	// POST /v1/repl
+	// GET /repl
 	auto websocket = &self->websocket;
 	opt_int_set(&websocket->client->endpoint->endpoint, ENDPOINT_REPL);
 	client_connect(self->client);
@@ -185,7 +185,7 @@ streamer_main(void* arg)
 
 		// set websocket
 		Str protocol;
-		str_set(&protocol, "amelie-v1-repl", 14);
+		str_set(&protocol, "amelie-repl", 11);
 		websocket_set(&self->websocket, &protocol, self->client, true);
 
 		streamer_process(self);

@@ -101,14 +101,14 @@ restore_connect(Restore* self)
 
 	// set websocket
 	Str protocol;
-	str_set(&protocol, "amelie-v1-backup", 16);
+	str_set(&protocol, "amelie-backup", 13);
 	websocket_set(&self->websocket, &protocol, client, true);
 }
 
 static void
 restore_join(Restore* self)
 {
-	// POST /v1/backup
+	// GET /backup
 	auto websocket = &self->websocket;
 	opt_int_set(&websocket->client->endpoint->endpoint, ENDPOINT_BACKUP);
 

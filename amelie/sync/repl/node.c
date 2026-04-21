@@ -33,7 +33,7 @@ node_init(Node*       self,
 	// set websocket
 	websocket_init(&self->websocket);
 	Str protocol;
-	str_set(&protocol, "amelie-v1-repl", 14);
+	str_set(&protocol, "amelie-repl", 11);
 	websocket_set(&self->websocket, &protocol, client, false);
 }
 

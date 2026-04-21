@@ -258,17 +258,14 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 	auto buf = &self->raw;
 	buf_reset(buf);
 
-	// POST /v1/<endpoint>
-	buf_write(buf, "POST /v1/", 9);
+	// POST /<endpoint>
+	buf_write(buf, "POST /", 6);
 	switch (endpoint->endpoint.integer) {
 	case ENDPOINT_SQL:
 		buf_write(buf, "sql", 3);
 		break;
 	case ENDPOINT_RPC:
 		buf_write(buf, "rpc", 3);
-		break;
-	case ENDPOINT_SESSION:
-		buf_write(buf, "session", 7);
 		break;
 	case ENDPOINT_BACKUP:
 		buf_write(buf, "backup", 6);
