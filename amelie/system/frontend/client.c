@@ -17,26 +17,6 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
-hot static void
-frontend_client_primary_on_write(Node* self, NodeMsg* msg, Buf* data)
-{
-	auto fe = (Frontend*)((void**)self->execute_arg)[0];
-	fe->iface->session_execute_msg(((void**)self->execute_arg)[1], self, msg, data);
-}
-
-static void
-frontend_client_primary(Frontend* self, Client* client, void* session)
-{
-	Recover recover;
-	recover_init(&recover, share()->db, true);
-	defer(recover_free, &recover);
-
-	void* args[] = {self, session};
-	Node node;
-	node_init(&node, frontend_client_primary_on_write, args, &recover, client);
-	node_main(&node);
-}
-
 hot static inline void
 frontend_endpoint_sql(Request* req, Client* client)
 {
@@ -79,52 +59,10 @@ frontend_endpoint_rpc(Request* req, Client* client)
 	// set output
 	output_set(&req->output, endpoint);
 
+	// parse jsonrpc request
 	Str content;
 	buf_str(&http->content, &content);
-
-	// parse jsonrpc request
-	jsonrpc_parse(&req->jsonrpc, &content);
-	if (unlikely(req->jsonrpc.reqs_count > 1))
-		error("jsonrpc batching is not supported");
-
-	// todo: set endpoint id
-
-	// read command
-	auto cmd = jsonrpc_first(&req->jsonrpc);
-	if (str_is(&cmd->method, "sql", 3))
-	{
-		// sql
-		req->type = REQUEST_SQL;
-
-		auto pos = cmd->params;
-		if (unlikely(! pos))
-			error("sql 'params' are missing");
-
-		if (! json_is_obj(pos))
-			error("sql 'params' is not an object");
-
-		// parse params
-		json_read_obj(&pos);
-		while (! json_read_obj_end(&pos))
-		{
-			Str name;
-			json_read_string(&pos, &name);
-			if (str_is(&name, "text", 4))
-			{
-				if (unlikely(! json_is_string(pos)))
-					error("sql 'text' is not a string");
-				json_read_string(&pos, &req->text);
-			} else {
-				error("unexpected params field");
-			}
-		}
-
-		if (str_empty(&req->text))
-			error("sql 'text' is not defined");
-	} else
-	{
-		error("unknown method");
-	}
+	request_rpc(req, &content);
 }
 
 hot static inline bool
@@ -178,7 +116,7 @@ frontend_endpoint(Request* req, Client* client)
 			error("unsupported operation method");
 		uri_parse_endpoint(endpoint, &http->options[HTTP_URL]);
 
-		// /v1/endpoint
+		// /v1/<endpoint>
 		auto endpoint_type = opt_int_of(&endpoint->endpoint);
 		if (endpoint_type == ENDPOINT_SQL)
 			frontend_endpoint_sql(req, client);

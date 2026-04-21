@@ -365,6 +365,7 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
 	// /v1/sql
 	// /v1/rpc
+	// /v1/session
 	// /v1/backup
 	// /v1/repl
 
@@ -384,6 +385,11 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 	{
 		opt_int_set(&endpoint->endpoint, ENDPOINT_RPC);
 		self.pos += 7;
+	} else
+	if (str_is_prefix(spec, "/v1/session", 11))
+	{
+		opt_int_set(&endpoint->endpoint, ENDPOINT_SESSION);
+		self.pos += 11;
 	} else
 	if (str_is_prefix(spec, "/v1/backup", 10))
 	{

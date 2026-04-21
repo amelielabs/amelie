@@ -267,6 +267,9 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 	case ENDPOINT_RPC:
 		buf_write(buf, "rpc", 3);
 		break;
+	case ENDPOINT_SESSION:
+		buf_write(buf, "session", 7);
+		break;
 	case ENDPOINT_BACKUP:
 		buf_write(buf, "backup", 6);
 		break;
