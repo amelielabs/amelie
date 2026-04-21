@@ -29,3 +29,4 @@ void websocket_connect(Websocket*);
 void websocket_accept(Websocket*);
 void websocket_send(Websocket*, int, struct iovec*, int, uint64_t);
 bool websocket_recv(Websocket*, uint8_t*, int);
+void websocket_recv_data(Websocket*, Buf*);

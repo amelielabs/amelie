@@ -64,14 +64,14 @@ ws_create(Ws* self)
 		break;
 	}
 
-	// 32 bits mask (big-endian, only if supplied)
+	// 32 bits mask (only if supplied)
 	if (self->mask)
 	{
 		auto key = self->mask_key;
-		header[pos++] = (uint8_t)(key >> 24);
-		header[pos++] = (uint8_t)(key >> 16);
-		header[pos++] = (uint8_t)(key >> 8);
-		header[pos++] = (uint8_t)(key);
+		header[pos++] = key[0];
+		header[pos++] = key[1];
+		header[pos++] = key[2];
+		header[pos++] = key[3];
 	}
 
 	self->header_size = pos;
@@ -128,15 +128,11 @@ ws_recv(Ws* self, Client* client)
 	}
 	}
 
-	// 32 bits mask (big-endian, only if supplied)
+	// 32 bits mask (only if supplied)
 	if (self->mask)
 	{
-		uint8_t mask[4];
-		if (! readahead_recv(readahead, mask, 4))
+		if (! readahead_recv(readahead, self->mask_key, 4))
 			error("websocket: unexpected eof");
-		self->mask_key =
-			((uint32_t)mask[0] << 24) | ((uint32_t)mask[1] << 16) |
-			((uint32_t)mask[2] << 8)  |  mask[3];
 	}
 	return true;
 }

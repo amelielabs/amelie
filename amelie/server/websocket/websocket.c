@@ -199,12 +199,13 @@ websocket_send(Websocket*    self, int op,
 {
 	// prepare frame
 	auto frame = &self->frame;
-	frame->fin      = false;
-	frame->opcode   = op;
-	frame->mask     = self->client_mode;
-	frame->mask_key = 0;
+	frame->fin    = true;
+	frame->opcode = op;
+	frame->mask   = self->client_mode;
 	if (self->client_mode)
-		frame->mask_key = random_generate(&runtime()->random);
+		*(uint32_t*)frame->mask_key = random_generate(&runtime()->random);
+	else
+		*(uint32_t*)frame->mask_key = 0;
 
 	// additional size beside data (not included here)
 	frame->size     = size;
@@ -238,7 +239,23 @@ websocket_recv(Websocket* self, uint8_t* data, int data_size)
 	// [websocket header][data]
 	if (! ws_recv(&self->frame, self->client))
 		return false;
+	if (self->frame.opcode == WS_CLOSE)
+		return false;
 	if (data_size > 0)
 		readahead_recv(&self->client->readahead, data, data_size);
 	return true;
+}
+
+hot void
+websocket_recv_data(Websocket* self, Buf* data)
+{
+	readahead_recv_buf(&self->client->readahead, data, self->frame.size);
+	if (self->frame.mask)
+	{
+		auto key = self->frame.mask_key;
+		auto payload = data->start;
+		auto payload_size = buf_size(data);
+		for (auto i = 0; i < payload_size; i++)
+			payload[i] ^= key[i % 4];
+	}
 }

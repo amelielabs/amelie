@@ -34,23 +34,35 @@ frontend_client_ws(Frontend* self, Client* client, Request* req, void* session)
 	for (;;)
 	{
 		request_reset(req, false);
-		buf_reset(buf);
+		output_set(&req->output, &req->endpoint);
 
 		// read jsonrpc request
 		if (! websocket_recv(&ws, NULL, 0))
 			break;
-		readahead_recv_buf(&client->readahead, buf, ws.frame.size);
+
+		// todo: handle special types
+
+		buf_reset(buf);
+		websocket_recv_data(&ws, buf);
 
 		// auth (take catalog lock)
 		request_auth(req, &self->auth);
 
 		// parse
-		Str content;
-		buf_str(buf, &content);
-		request_rpc(req, &content);
-
-		// execute
-		ctl->session_execute(session, req);
+		auto on_error = error_catch
+		(
+			Str content;
+			buf_str(buf, &content);
+			request_rpc(req, &content);
+		);
+		if (on_error)
+		{
+			output_write_error(&req->output, &am_self()->error);
+		} else
+		{
+			// execute
+			ctl->session_execute(session, req);
+		}
 
 		// reply
 		struct iovec iov =

@@ -28,7 +28,7 @@ struct Ws
 	bool     fin;
 	uint8_t  opcode;
 	bool     mask;
-	uint32_t mask_key;
+	uint8_t  mask_key[4];
 	uint64_t size;
 	uint8_t  header[14];
 	int      header_size;

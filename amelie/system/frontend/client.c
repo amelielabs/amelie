@@ -155,11 +155,11 @@ frontend_endpoint(Request* req, Client* client)
 	output_reset(output);
 	output_set_buf(output, &client->reply.content);
 
+	// /<endpoint>
 	auto on_error = error_catch
 	(
 		uri_parse_endpoint(endpoint, &http->options[HTTP_URL]);
 
-		// /<endpoint>
 		auto endpoint_type = opt_int_of(&endpoint->endpoint);
 		if (endpoint_type == ENDPOINT_SQL)
 			frontend_endpoint_sql(req, client);
@@ -249,7 +249,7 @@ frontend_client(Frontend* self, Client* client)
 			// websocket session
 			if (str_is(&http->options[HTTP_METHOD], "GET", 3))
 			{
-				request_reset(&req, true);
+				request_reset(&req, false);
 				return frontend_client_ws(self, client, &req, session);
 			}
 
