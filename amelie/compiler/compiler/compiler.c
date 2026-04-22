@@ -117,9 +117,9 @@ compiler_parse_udf(Compiler* self, Udf* udf)
 }
 
 void
-compiler_parse_write(Compiler* self, Str* user, Str* rel, uint8_t* args)
+compiler_parse_import(Compiler* self, Str* user, Str* rel, uint8_t* args)
 {
-	parse_write(&self->parser, self->program, user, rel, args);
+	parse_import(&self->parser, self->program, user, rel, args);
 	compiler_parse_complete(self);
 }
 

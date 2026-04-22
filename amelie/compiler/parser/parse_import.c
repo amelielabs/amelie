@@ -18,7 +18,7 @@
 #include <amelie_parser.h>
 
 static void
-write_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
+import_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
 {
 	auto row = set_reserve(values);
 
@@ -72,12 +72,12 @@ write_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
 }
 
 static void
-write_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
+import_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
 {
 	// {}
 	auto pos = args;
 	if (json_is_obj(pos))
-		return write_object(self, columns, values, &pos);
+		return import_object(self, columns, values, &pos);
 
 	// [ {}, ... ]
 	if (json_is_array(pos))
@@ -87,7 +87,7 @@ write_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
 		{
 			if (unlikely(! json_is_obj(pos)))
 				error("write: {} expected");
-			write_object(self, columns, values, &pos);
+			import_object(self, columns, values, &pos);
 		}
 		return;
 	}
@@ -97,7 +97,7 @@ write_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
 }
 
 static void
-write_table(Parser* self, Table* table, Branch* branch, uint8_t* args)
+import_insert(Parser* self, Table* table, Branch* branch, uint8_t* args)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -146,7 +146,7 @@ write_table(Parser* self, Table* table, Branch* branch, uint8_t* args)
 	set_prepare(insert->values, columns->count, 0, NULL);
 
 	// parse and set values
-	write_args(self, columns, insert->values, args);
+	import_args(self, columns, insert->values, args);
 
 	// create a list of generated columns expressions
 	if (columns->count_stored > 0)
@@ -167,9 +167,8 @@ write_table(Parser* self, Table* table, Branch* branch, uint8_t* args)
 	}
 }
 
-#if 0
 static void
-write_udf(Parser* self, ParseEndpoint* pe)
+import_execute(Parser* self, Udf* udf, uint8_t* args)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -186,29 +185,12 @@ write_udf(Parser* self, ParseEndpoint* pe)
 	stmt->ret = &execute->ret;
 
 	// prepare arguments
-	auto udf = (Udf*)pe->target;
 	execute->udf  = udf;
 	execute->args = set_cache_create(self->set_cache, &self->program->sets);
-	pe->values = execute->args;
 	set_prepare(execute->args, udf->config->args.count, 0, NULL);
 
-	// parse rows according to the type argument
-	switch (pe->type) {
-	case IMPORT_JSON:
-	case IMPORT_JSONL:
-		import_json_row(stmt, pe);
-		break;
-	case IMPORT_CSV:
-		import_csv(stmt, pe);
-		break;
-	default:
-		abort();
-		break;
-	}
-
-	// ensure there are no data left
-	if (! stmt_if(stmt, KEOF))
-		stmt_error(stmt, NULL, "eof expected");
+	// parse arguments
+	import_args(self, &udf->config->args, execute->args, args);
 
 	// set returning column
 	if (udf->config->type != TYPE_NULL)
@@ -219,13 +201,12 @@ write_udf(Parser* self, ParseEndpoint* pe)
 		columns_add(&execute->ret.columns, column);
 	}
 }
-#endif
 
 void
-parse_write(Parser*  self, Program* program,
-            Str*     rel_user,
-            Str*     rel,
-            uint8_t* args)
+parse_import(Parser*  self, Program* program,
+             Str*     rel_user,
+             Str*     rel,
+             uint8_t* args)
 {
 	Str* user = rel_user;
 	if (str_empty(rel_user))
@@ -237,13 +218,13 @@ parse_write(Parser*  self, Program* program,
 	case REL_TABLE:
 	{
 		auto table = table_of(ref);
-		write_table(self, table, NULL, args);
+		import_insert(self, table, NULL, args);
 		break;
 	}
 	case REL_BRANCH:
 	{
 		auto branch = branch_of(ref);
-		write_table(self, branch->table, branch, args);
+		import_insert(self, branch->table, branch, args);
 		break;
 	}
 	case REL_TOPIC:
@@ -252,11 +233,8 @@ parse_write(Parser*  self, Program* program,
 	}
 	case REL_UDF:
 	{
-		/*
-		self->target_type    = IMPORT_UDF;
-		self->target         = rel;
-		self->columns_target = &udf_of(rel)->config->args;
-		*/
+		auto udf = udf_of(ref);
+		import_execute(self, udf, args);
 		break;
 	}
 	default:

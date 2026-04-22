@@ -26,7 +26,7 @@ post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "para
 # test: POST /rpc (sql)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
 
-# test: POST /rpc (write)
+# test: POST /rpc (insert)
 create table test (id int primary key, data int default 11);
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [] }};
 select * from test;
@@ -42,6 +42,16 @@ select * from test;
 
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [{"id": 20}, {"id": 21}] }};
 select * from test;
+drop table test;
+
+# test: POST /rpc (execute)
+create function x (a int, b int) return int
+begin
+	return a + b;
+end;
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [] }};
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {} }};
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {"a": 1, "b": 2} }};
 
 disconnect S0;
 close E0;

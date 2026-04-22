@@ -266,7 +266,7 @@ session_request(Session* self)
 		compiler_parse(compiler, &req->text);
 		break;
 	case REQUEST_WRITE:
-		compiler_parse_write(compiler, &req->rel_user, &req->rel, req->args);
+		compiler_parse_import(compiler, &req->rel_user, &req->rel, req->args);
 		break;
 	default:
 		abort();
