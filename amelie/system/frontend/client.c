@@ -85,6 +85,10 @@ frontend_endpoint_rpc(Request* req, Client* client)
 		Str content;
 		buf_str(&http->content, &content);
 		request_rpc(req, &content);
+
+		// subscribe
+		if (req->type == REQUEST_SUBSCRIBE)
+			error("websocket connection required to subscribe");
 	} else
 	if (! str_is(method, "GET", 3)) {
 		error("unsupported operation method");

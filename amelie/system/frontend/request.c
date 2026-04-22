@@ -207,6 +207,10 @@ request_rpc(Request* self, Str* content)
 	if (str_is(&cmd->method, "write", 5))
 		return request_rpc_cmd(self, REQUEST_WRITE, true);
 
+	// subscribe
+	if (str_is(&cmd->method, "subscribe", 9))
+		return request_rpc_cmd(self, REQUEST_SUBSCRIBE, false);
+
 	error("unknown jsonrpc method: %.*s", str_size(&cmd->method),
 	      str_of(&cmd->method));
 }

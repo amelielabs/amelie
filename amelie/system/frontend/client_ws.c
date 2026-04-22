@@ -17,6 +17,40 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
+hot static void
+frontend_subscribe(Frontend* self, Request* req)
+{
+	(void)self;
+	(void)req;
+}
+
+hot static void
+frontend_client_execute(Frontend* self, Request* req, Str* content, void* session)
+{
+	// parse
+	auto on_error = error_catch
+	(
+		// auth (take catalog lock)
+		request_auth(req, &self->auth);
+
+		// parse
+		request_rpc(req, content);
+		if (req->type == REQUEST_SUBSCRIBE)
+			frontend_subscribe(self, req);
+	);
+	if (on_error)
+	{
+		output_write_error(&req->output, &am_self()->error);
+		return;
+	}
+
+	if (req->type != REQUEST_SUBSCRIBE)
+		return;
+
+	// execute
+	self->iface->session_execute(session, req);
+}
+
 hot void
 frontend_client_ws(Frontend* self, Client* client, Request* req, void* session)
 {
@@ -29,7 +63,6 @@ frontend_client_ws(Frontend* self, Client* client, Request* req, void* session)
 	websocket_set(&ws, &protocol, client, false);
 	websocket_accept(&ws);
 
-	auto ctl = self->iface;
 	auto buf = &client->request.content;
 	for (;;)
 	{
@@ -39,30 +72,15 @@ frontend_client_ws(Frontend* self, Client* client, Request* req, void* session)
 		// read jsonrpc request
 		if (! websocket_recv(&ws, NULL, 0))
 			break;
-
 		// todo: handle special types
 
 		buf_reset(buf);
 		websocket_recv_data(&ws, buf);
+		Str content;
+		buf_str(buf, &content);
 
-		// auth (take catalog lock)
-		request_auth(req, &self->auth);
-
-		// parse
-		auto on_error = error_catch
-		(
-			Str content;
-			buf_str(buf, &content);
-			request_rpc(req, &content);
-		);
-		if (on_error)
-		{
-			output_write_error(&req->output, &am_self()->error);
-		} else
-		{
-			// execute
-			ctl->session_execute(session, req);
-		}
+		// parse and execute
+		frontend_client_execute(self, req, &content, session);
 
 		// reply
 		struct iovec iov =
