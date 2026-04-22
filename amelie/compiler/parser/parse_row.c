@@ -48,7 +48,7 @@ parse_row_list(Stmt* self, From* from, Table* table, Set* values, Ast* list)
 		} else
 		{
 			// IDENTITY, RANDOM or DEFAULT
-			parse_value_default(self, column, column_value);
+			parse_value_default(column, column_value);
 		}
 
 		// ensure NOT NULL constraint
@@ -91,7 +91,7 @@ parse_row(Stmt* self, From* from, Table* table, Set* values)
 		} else
 		{
 			// IDENTITY, RANDOM or DEFAULT
-			parse_value_default(self, column, column_value);
+			parse_value_default(column, column_value);
 		}
 
 		// ensure NOT NULL constraint
@@ -127,7 +127,7 @@ parse_row_generate(Stmt* self, Table* table, Set* values, int count)
 			auto column_value = &row[column->order];
 
 			// IDENTITY, RANDOM or DEFAULT
-			parse_value_default(self, column, column_value);
+			parse_value_default(column, column_value);
 
 			// ensure NOT NULL constraint
 			parse_value_validate(self, column, column_value, NULL);

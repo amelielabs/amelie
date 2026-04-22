@@ -116,6 +116,13 @@ compiler_parse_udf(Compiler* self, Udf* udf)
 	compiler_parse_complete(self);
 }
 
+void
+compiler_parse_write(Compiler* self, Str* user, Str* rel, uint8_t* args)
+{
+	parse_write(&self->parser, self->program, user, rel, args);
+	compiler_parse_complete(self);
+}
+
 static void
 emit_close(Compiler* self, Stmt* stmt)
 {

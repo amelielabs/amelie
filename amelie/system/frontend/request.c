@@ -162,9 +162,10 @@ request_rpc_cmd(Request* self, RequestType type, bool with_args)
 		} else
 		if (str_is(&name, "args", 4))
 		{
-			if (unlikely(! json_is_array(pos)))
-				error("'args' is not an array");
+			if (unlikely(!json_is_array(pos) && !json_is_obj(pos)))
+				error("'args' is not an array or object");
 			self->args = pos;
+			json_skip(&pos);
 		} else {
 			error("unexpected params field");
 		}
@@ -202,17 +203,9 @@ request_rpc(Request* self, Str* content)
 	if (str_is(&cmd->method, "sql", 3))
 		return request_rpc_sql(self);
 
-	// insert
-	if (str_is(&cmd->method, "insert", 6))
-		return request_rpc_cmd(self, REQUEST_INSERT, true);
-
-	// execute
-	if (str_is(&cmd->method, "execute", 7))
-		return request_rpc_cmd(self, REQUEST_EXECUTE, true);
-
-	// publish
-	if (str_is(&cmd->method, "publish", 7))
-		return request_rpc_cmd(self, REQUEST_PUBLISH, true);
+	// write
+	if (str_is(&cmd->method, "write", 5))
+		return request_rpc_cmd(self, REQUEST_WRITE, true);
 
 	error("unknown jsonrpc method: %.*s", str_size(&cmd->method),
 	      str_of(&cmd->method));

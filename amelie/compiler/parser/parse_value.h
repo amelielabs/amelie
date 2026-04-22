@@ -13,5 +13,7 @@
 
 void parse_vector(Stmt*, Buf*);
 Ast* parse_value(Stmt*, From*, Column*, Value*);
-void parse_value_default(Stmt*, Column*, Value*);
+void parse_value_decode(Local*, Column*, Value*, uint8_t**);
+
+void parse_value_default(Column*, Value*);
 void parse_value_validate(Stmt*, Column*, Value*, Ast*);

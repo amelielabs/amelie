@@ -265,9 +265,8 @@ session_request(Session* self)
 	case REQUEST_SQL:
 		compiler_parse(compiler, &req->text);
 		break;
-	case REQUEST_INSERT:
-	case REQUEST_EXECUTE:
-	case REQUEST_PUBLISH:
+	case REQUEST_WRITE:
+		compiler_parse_write(compiler, &req->rel_user, &req->rel, req->args);
 		break;
 	default:
 		abort();

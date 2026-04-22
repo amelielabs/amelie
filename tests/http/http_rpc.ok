@@ -28,5 +28,25 @@ post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "para
 # test: POST /rpc (sql)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
 { "jsonrpc": "2.0", "id": 0, "result": { "columns": ["col1"], "rows": [[1]] } }
+# test: POST /rpc (write)
+create table test (id int primary key, data int default 11);
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [] }};
+select * from test;
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {} }};
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "column 'id' value cannot be NULL"}}
+select * from test;
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {"id": 18} }};
+select * from test;
+18 │ 11
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {"id": 19, "data": null} }};
+select * from test;
+18 │ 11
+19 │ null
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [{"id": 20}, {"id": 21}] }};
+select * from test;
+18 │ 11
+19 │ null
+20 │ 11
+21 │ 11
 disconnect S0;
 close E0;
