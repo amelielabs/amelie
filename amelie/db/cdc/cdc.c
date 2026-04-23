@@ -38,14 +38,14 @@ cdc_page_add(Cdc* self)
 void
 cdc_init(Cdc* self)
 {
-	self->lsn           = 0;
-	self->current       = NULL;
-	self->shutdown      = false;
-	self->waiters_count = 0;
-	self->pages_count   = 0;
-	self->slots_count   = 0;
+	self->lsn         = 0;
+	self->current     = NULL;
+	self->shutdown    = false;
+	self->subs_count  = 0;
+	self->pages_count = 0;
+	self->slots_count = 0;
 	spinlock_init(&self->lock);
-	list_init(&self->waiters);
+	list_init(&self->subs);
 	list_init(&self->pages);
 	list_init(&self->slots);
 	list_init(&self->link);
@@ -62,6 +62,28 @@ cdc_free(Cdc* self)
 		vfs_munmap(page, page->end + sizeof(CdcPage));
 	}
 	spinlock_free(&self->lock);
+}
+
+static void
+cdc_notify(Cdc* self)
+{
+	// wakeup subscribers
+	while (self->subs_count > 0)
+	{
+		auto sub = container_of(list_pop(&self->subs), CdcSub, link);
+		self->subs_count--;
+		sub->active = false;
+		cdc_sub_signal(sub);
+	}
+}
+
+void
+cdc_shutdown(Cdc* self)
+{
+	spinlock_lock(&self->lock);
+	self->shutdown = true;
+	cdc_notify(self);
+	spinlock_unlock(&self->lock);
 }
 
 void
@@ -86,24 +108,32 @@ cdc_detach(Cdc* self, CdcSlot* slot)
 	slot->attached = false;
 }
 
-static void
-cdc_notify(Cdc* self)
+void
+cdc_subscribe(Cdc* self, CdcSub* sub)
 {
-	// wakeup waiters
-	while (self->waiters_count > 0)
+	spinlock_lock(&self->lock);
+	if (self->lsn > sub->lsn)
 	{
-		auto waiter = container_of(list_pop(&self->waiters), CdcWaiter, link);
-		self->waiters_count--;
-		event_signal(&waiter->event);
+		cdc_sub_signal(sub);
+		spinlock_unlock(&self->lock);
+		return;
 	}
+	list_append(&self->subs, &sub->link);
+	self->subs_count++;
+	sub->active = true;
+	spinlock_unlock(&self->lock);
 }
 
 void
-cdc_shutdown(Cdc* self)
+cdc_unsubscribe(Cdc* self, CdcSub* sub)
 {
 	spinlock_lock(&self->lock);
-	self->shutdown = true;
-	cdc_notify(self);
+	if (sub->active)
+	{
+		list_unlink(&sub->link);
+		self->subs_count--;
+		sub->active = false;
+	}
 	spinlock_unlock(&self->lock);
 }
 
@@ -214,7 +244,7 @@ cdc_write(Cdc* self, uint64_t lsn, WriteCdc* write)
 		pos = (WriteCdcRecord*)(pos->data + pos->data_size);
 	}
 
-	// wakeup waiters
+	// wakeup subscribers
 	cdc_notify(self);
 
 	spinlock_unlock(&self->lock);
@@ -240,7 +270,7 @@ cdc_write_batch(Cdc* self, uint64_t lsn, List* batch)
 		}
 	}
 
-	// wakeup waiters
+	// wakeup subscribers
 	cdc_notify(self);
 
 	spinlock_unlock(&self->lock);

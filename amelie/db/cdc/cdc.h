@@ -39,8 +39,8 @@ struct Cdc
 	uint64_t lsn;
 	bool     shutdown;
 	CdcPage* current;
-	List     waiters;
-	int      waiters_count;
+	List     subs;
+	int      subs_count;
 	List     pages;
 	int      pages_count;
 	List     slots;
@@ -50,9 +50,11 @@ struct Cdc
 
 void cdc_init(Cdc*);
 void cdc_free(Cdc*);
+void cdc_shutdown(Cdc*);
 void cdc_attach(Cdc*, CdcSlot*);
 void cdc_detach(Cdc*, CdcSlot*);
-void cdc_shutdown(Cdc*);
+void cdc_subscribe(Cdc*, CdcSub*);
+void cdc_unsubscribe(Cdc*, CdcSub*);
 void cdc_min(Cdc*, uint64_t*);
 void cdc_gc(Cdc*);
 void cdc_write(Cdc*, uint64_t, WriteCdc*);
