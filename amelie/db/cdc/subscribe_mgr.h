@@ -63,11 +63,24 @@ subscribe_mgr_remove(SubscribeMgr* self, Subscribe* sub)
 	cdc_detach(self->cdc, &sub->slot);
 }
 
+static inline Subscribe*
+subscribe_mgr_find(SubscribeMgr* self, Str* user, Str* name)
+{
+	list_foreach(&self->list)
+	{
+		auto sub = list_at(Subscribe, link);
+		if (str_compare(&sub->user, user) &&
+		    str_compare(&sub->name, name))
+			return sub;
+	}
+	return NULL;
+}
+
 static inline uint64_t
 subscribe_mgr_min(SubscribeMgr* self)
 {
-	uint64_t min = state_lsn();
-	list_foreach_safe(&self->list)
+	uint64_t min = UINT64_MAX;
+	list_foreach(&self->list)
 	{
 		auto sub = list_at(Subscribe, link);
 		auto lsn = atomic_u64_of(&sub->slot.lsn);
@@ -75,4 +88,23 @@ subscribe_mgr_min(SubscribeMgr* self)
 			min = lsn;
 	}
 	return min;
+}
+
+hot static inline void
+subscribe_mgr_collect(SubscribeMgr* self, Buf* buf)
+{
+	list_foreach(&self->list)
+	{
+		auto sub = list_at(Subscribe, link);
+		for (;;)
+		{
+			if (! cdc_cursor_next(&sub->cursor))
+				break;
+			auto event = cdc_cursor_at(&sub->cursor);
+			cdc_export(buf, &sub->user, &sub->name, event);
+		}
+		cdc_slot_set(&sub->slot, sub->cursor.lsn, 0);
+	}
+
+	// todo: move subs to tail
 }

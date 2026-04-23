@@ -58,10 +58,82 @@ feed_reset(Feed* self)
 	output_set(&req->output, &req->endpoint);
 }
 
+static inline void
+feed_accept(Feed* self)
+{
+	// websocket handshake
+	websocket_accept(&self->ws);
+}
+
 hot static void
 feed_subscribe(Feed* self)
 {
-	(void)self;
+	// todo: check GRANT_SUBSCRIBE
+
+	// find existing subscribe
+	auto req = self->req;
+	Str* user;
+	if (str_empty(&req->rel_user))
+		user = &req->user->config->name;
+	else
+		user = &req->rel_user;
+	auto sub = subscribe_mgr_find(&self->subscribe_mgr, user, &req->rel);
+	if (sub)
+		error("subscribe '%.*s': already exists", str_size(&req->rel),
+		      str_of(&req->rel));
+
+	// find relation
+	auto rel = catalog_find(&share()->db->catalog, user, &req->rel, true);
+
+	uint64_t lsn    = state_lsn();
+	uint32_t lsn_op = 0;
+	Uuid*    uuid;
+	switch (rel->type) {
+	case REL_SUBSCRIPTION:
+	{
+		auto sub = sub_of(rel);
+		lsn    = sub->config->lsn;
+		lsn_op = sub->config->op;
+		uuid   = &sub->config->id;
+		break;
+	}
+	case REL_TABLE:
+	{
+		uuid = &table_of(rel)->config->id;
+		table_of(rel)->part_arg.cdc++;
+		break;
+	}
+	case REL_TOPIC:
+		uuid = &topic_of(rel)->config->id;
+		break;
+	default:
+		error("subscribe '%.*s': unsupported relation type", str_size(&req->rel),
+		      str_of(&req->rel));
+		break;
+	}
+
+	// todo: check grants/ownership
+
+	// create and register sub
+	sub = subscribe_allocate();
+	subscribe_set_user(sub, user);
+	subscribe_set_name(sub, &req->rel);
+	subscribe_mgr_add(&self->subscribe_mgr, sub);
+
+	// open cursor
+	cdc_slot_set(&sub->slot, lsn, lsn_op);
+	cdc_cursor_open(&sub->cursor, share()->cdc, uuid, lsn, lsn_op);
+
+	// reply
+	Str column;
+	str_set(&column, "subscribe", 9);
+
+	// []
+	uint8_t empty_array[8];
+	auto pos = empty_array;
+	json_write_array(&pos);
+	json_write_array_end(&pos);
+	output_write_json(&req->output, &column, empty_array, false);
 }
 
 hot static void
@@ -87,18 +159,18 @@ feed_execute(Feed* self, Str* content)
 	}
 
 	// command handled by feed
-	if (req->type != REQUEST_SUBSCRIBE)
+	if (req->type == REQUEST_SUBSCRIBE)
 		return;
 
 	// execute
 	self->fe->iface->session_execute(self->session, req);
 }
 
-static inline void
-feed_accept(Feed* self)
+hot static void
+feed_collect(Feed* self)
 {
-	// websocket handshake
-	websocket_accept(&self->ws);
+	auto buf = self->req->output.buf;
+	subscribe_mgr_collect(&self->subscribe_mgr, buf);
 }
 
 hot static inline bool
@@ -202,7 +274,8 @@ frontend_feed(Frontend* self, Client* client, Request* req, void* session)
 			feed_execute(&feed, &content);
 		}
 
-		// todo: collect subscriptions
+		// collect pending cdc events
+		feed_collect(&feed);
 
 		// batch send
 		feed_send(&feed);

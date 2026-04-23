@@ -17,7 +17,8 @@ struct CdcCursor
 {
 	uint32_t op;
 	uint32_t offset;
-	Uuid*    id;
+	uint64_t lsn;
+	Uuid     id;
 	CdcPage* page;
 	Cdc*     cdc;
 };
@@ -27,9 +28,10 @@ cdc_cursor_init(CdcCursor* self)
 {
 	self->op     = 0;
 	self->offset = 0;
-	self->id     = NULL;
+	self->lsn    = 0;
 	self->page   = NULL;
 	self->cdc    = NULL;
+	uuid_init(&self->id);
 }
 
 always_inline static inline CdcEvent*
@@ -45,7 +47,7 @@ cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id, uint64_t lsn, uint32_t op)
 {
 	// lsn to find after
 	self->op  = op;
-	self->id  = id;
+	self->id  = *id;
 	self->cdc = cdc;
 
 	auto lock = &cdc->lock;
@@ -54,6 +56,7 @@ cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id, uint64_t lsn, uint32_t op)
 	auto page = container_of(list_first(&cdc->pages), CdcPage, link);
 	self->page   = page;
 	self->offset = 0;
+	self->lsn    = lsn;
 
 	// rewind to the next visible event
 	for (;;)
@@ -62,8 +65,7 @@ cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id, uint64_t lsn, uint32_t op)
 		{
 			if (list_is_last(&cdc->pages, &page->link))
 			{
-				self->page = NULL;
-				self->offset = 0;
+				self->lsn = cdc->lsn;
 				break;
 			}
 
@@ -72,6 +74,8 @@ cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id, uint64_t lsn, uint32_t op)
 			continue;
 		}
 		auto at = cdc_cursor_at(self);
+		self->lsn = at->lsn;
+
 		if (uuid_is(&at->id, id))
 		{
 			if (at->lsn > lsn)
@@ -121,6 +125,7 @@ cdc_cursor_next(CdcCursor* self)
 		{
 			if (list_is_last(&cdc->pages, &self->page->link))
 			{
+				self->lsn = cdc->lsn;
 				spinlock_unlock(lock);
 				return false;
 			}
@@ -130,7 +135,9 @@ cdc_cursor_next(CdcCursor* self)
 		}
 
 		auto at = cdc_cursor_at(self);
-		if (uuid_is(&at->id, self->id))
+		self->lsn = at->lsn;
+
+		if (uuid_is(&at->id, &self->id))
 			break;
 
 		self->offset += sizeof(CdcEvent) + at->data_size;

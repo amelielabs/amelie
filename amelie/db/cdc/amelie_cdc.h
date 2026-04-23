@@ -16,6 +16,7 @@
 #include "cdc/cdc_slot.h"
 #include "cdc/cdc.h"
 #include "cdc/cdc_cursor.h"
+#include "cdc/cdc_export.h"
 
 // subscribe
 #include "cdc/subscribe.h"
