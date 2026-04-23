@@ -48,6 +48,15 @@ feed_free(Feed* self)
 	subscribe_mgr_free(&self->subscribe_mgr);
 }
 
+static inline void
+feed_reset(Feed* self)
+{
+	// unlock catalog
+	auto req = self->req;
+	request_reset(req, false);
+	output_set(&req->output, &req->endpoint);
+}
+
 hot static void
 feed_subscribe(Feed* self)
 {
@@ -83,41 +92,56 @@ feed_execute(Feed* self, Str* content)
 	self->fe->iface->session_execute(self->session, req);
 }
 
+static inline void
+feed_accept(Feed* self)
+{
+	// websocket handshake
+	websocket_accept(&self->ws);
+}
+
+static inline bool
+feed_recv(Feed* self, Str* content)
+{
+	auto ws = &self->ws;
+	if (! websocket_recv(ws, NULL, 0))
+		return false;
+	auto buf = &ws->client->request.content;
+	buf_reset(buf);
+	websocket_recv_data(ws, buf);
+	buf_str(buf, content);
+	return true;
+}
+
+static inline void
+feed_send(Feed* self)
+{
+	struct iovec iov;
+	iov_set_buf(&iov, self->req->output.buf);
+	websocket_send(&self->ws, WS_TEXT, &iov, 1, 0);
+}
+
 hot void
 frontend_feed(Frontend* self, Client* client, Request* req, void* session)
 {
 	Feed feed;
 	feed_init(&feed, self, client, req, session);
 	defer(feed_free, &feed);
+	feed_accept(&feed);
 
-	// websocket handshake
-	websocket_accept(&feed.ws);
-
-	auto buf = &client->request.content;
 	for (;;)
 	{
-		request_reset(req, false);
-		output_set(&req->output, &req->endpoint);
+		// reset and unlock catalog
+		feed_reset(&feed);
 
-		// read jsonrpc request
-		if (! websocket_recv(&feed.ws, NULL, 0))
-			break;
-		// todo: handle special types
-
-		buf_reset(buf);
-		websocket_recv_data(&feed.ws, buf);
+		// recv jsonrpc request
 		Str content;
-		buf_str(buf, &content);
+		if (! feed_recv(&feed, &content))
+			break;
 
 		// parse and execute
 		feed_execute(&feed, &content);
 
-		// reply
-		struct iovec iov =
-		{
-			.iov_base = req->output.buf->start,
-			.iov_len  = buf_size(req->output.buf)
-		};
-		websocket_send(&feed.ws, WS_TEXT, &iov, 1, 0);
+		// batch send
+		feed_send(&feed);
 	}
 }

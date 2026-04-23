@@ -71,3 +71,10 @@ iov_add_buf(Iov* self, Buf* buf)
 {
 	iov_add(self, buf->start, buf_size(buf));
 }
+
+always_inline static inline void
+iov_set_buf(struct iovec* self, Buf* buf)
+{
+	self->iov_base = buf->start;
+	self->iov_len  = buf_size(buf);
+}
