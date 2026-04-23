@@ -254,7 +254,7 @@ frontend_client(Frontend* self, Client* client)
 			if (str_is(&http->options[HTTP_METHOD], "GET", 3))
 			{
 				request_reset(&req, false);
-				return frontend_client_ws(self, client, &req, session);
+				return frontend_feed(self, client, &req, session);
 			}
 
 			// fallthrough
