@@ -41,6 +41,12 @@ subscribe_mgr_free(SubscribeMgr* self)
 	self->list_count = 0;
 }
 
+static inline bool
+subscribe_mgr_empty(SubscribeMgr* self)
+{
+	return !self->list_count;
+}
+
 static inline void
 subscribe_mgr_add(SubscribeMgr* self, Subscribe* sub)
 {
@@ -55,4 +61,18 @@ subscribe_mgr_remove(SubscribeMgr* self, Subscribe* sub)
 	list_unlink(&sub->link);
 	self->list_count--;
 	cdc_detach(self->cdc, &sub->slot);
+}
+
+static inline uint64_t
+subscribe_mgr_min(SubscribeMgr* self)
+{
+	uint64_t min = state_lsn();
+	list_foreach_safe(&self->list)
+	{
+		auto sub = list_at(Subscribe, link);
+		auto lsn = atomic_u64_of(&sub->slot.lsn);
+		if (lsn < min)
+			min = lsn;
+	}
+	return min;
 }

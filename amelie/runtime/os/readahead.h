@@ -43,6 +43,12 @@ readahead_reset(Readahead* self)
 	buf_reset(&self->buf);
 }
 
+hot static inline bool
+readahead_pending(Readahead* self)
+{
+	return (buf_size(&self->buf) - self->offset) > 0;
+}
+
 hot static inline int
 readahead_read(Readahead* self, int size, uint8_t** pos)
 {

@@ -24,6 +24,7 @@ struct Feed
 	Websocket    ws;
 	Request*     req;
 	void*        session;
+	CdcSub       cdc_sub;
 	SubscribeMgr subscribe_mgr;
 	Str          protocol;
 	Frontend*    fe;
@@ -85,6 +86,7 @@ feed_execute(Feed* self, Str* content)
 		return;
 	}
 
+	// command handled by feed
 	if (req->type != REQUEST_SUBSCRIBE)
 		return;
 
@@ -99,7 +101,60 @@ feed_accept(Feed* self)
 	websocket_accept(&self->ws);
 }
 
-static inline bool
+hot static inline bool
+feed_wait(Feed* self)
+{
+	// if no subscriptions, go straight to io wait
+	if (subscribe_mgr_empty(&self->subscribe_mgr))
+		return true;
+
+	// client has pending data
+	auto ws = &self->ws;
+	if (readahead_pending(&ws->client->readahead))
+		return true;
+
+	// parent
+	Event event;
+	event_init(&event);
+	event_attach(&event);
+
+	// prepare client event
+	Event event_client;
+	event_init(&event_client);
+	event_set_parent(&event_client, &event);
+	event_attach(&event_client);
+
+	// prepare sub event
+	Event event_sub;
+	event_init(&event_sub);
+	event_set_parent(&event_sub, &event);
+	event_attach(&event_sub);
+
+	// prepare cdc sub
+	//
+	// get min lsn across all subscribers
+	//
+	uint64_t min = subscribe_mgr_min(&self->subscribe_mgr);
+	CdcSub sub;
+	cdc_sub_init(&sub, &event_sub, min);
+	cdc_subscribe(share()->cdc, &sub);
+
+	// wait
+	auto on_error = error_catch
+	(
+		poll_read_start(&ws->client->tcp.fd, &event_client);
+		event_wait(&event, -1);
+	);
+	poll_read_stop(&ws->client->tcp.fd);
+	cdc_unsubscribe(share()->cdc, &sub);
+
+	if (unlikely(on_error))
+		rethrow();
+
+	return event_client.signal;
+}
+
+hot static inline bool
 feed_recv(Feed* self, Str* content)
 {
 	auto ws = &self->ws;
@@ -115,8 +170,11 @@ feed_recv(Feed* self, Str* content)
 static inline void
 feed_send(Feed* self)
 {
+	auto buf = self->req->output.buf;
+	if (buf_empty(buf))
+		return;
 	struct iovec iov;
-	iov_set_buf(&iov, self->req->output.buf);
+	iov_set_buf(&iov, buf);
 	websocket_send(&self->ws, WS_TEXT, &iov, 1, 0);
 }
 
@@ -133,13 +191,18 @@ frontend_feed(Frontend* self, Client* client, Request* req, void* session)
 		// reset and unlock catalog
 		feed_reset(&feed);
 
-		// recv jsonrpc request
-		Str content;
-		if (! feed_recv(&feed, &content))
-			break;
+		// wait for client io or cdc event
+		if (feed_wait(&feed))
+		{
+			// recv jsonrpc request
+			Str content;
+			if (! feed_recv(&feed, &content))
+				break;
+			// parse and execute
+			feed_execute(&feed, &content);
+		}
 
-		// parse and execute
-		feed_execute(&feed, &content);
+		// todo: collect subscriptions
 
 		// batch send
 		feed_send(&feed);
