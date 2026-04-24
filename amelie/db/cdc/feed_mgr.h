@@ -98,10 +98,11 @@ feed_mgr_collect(FeedMgr* self, Buf* buf)
 		auto feed = list_at(Feed, link);
 		for (;;)
 		{
+			auto event = cdc_cursor_at(&feed->cursor);
+			if (event)
+				cdc_export(buf, &feed->user, &feed->name, event);
 			if (! cdc_cursor_next(&feed->cursor))
 				break;
-			auto event = cdc_cursor_at(&feed->cursor);
-			cdc_export(buf, &feed->user, &feed->name, event);
 		}
 		cdc_slot_set(&feed->slot, feed->cursor.pos, feed->cursor.pos_op);
 	}
