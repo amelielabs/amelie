@@ -218,7 +218,7 @@ import_ack(Parser* self, Sub* sub, uint8_t* args)
 
 	auto ack = ast_ack_of(stmt->ast);
 	ack->name = sub->config->name;
-	ack->sub = sub;
+	ack->sub  = sub;
 
 	// require exclusive lock
 	access_add(&self->program->access, &sub->rel,

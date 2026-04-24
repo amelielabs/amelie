@@ -87,7 +87,7 @@ sub_mgr_create(SubMgr* self, Tr* tr, SubConfig* config, bool if_not_exists)
 	                &id);
 
 	// allocate storage
-	sub = sub_allocate(config, self->catalog, self->cdc);
+	sub = sub_allocate(config, self->catalog, self->cdc, id);
 
 	// register storage
 	rel_mgr_create(&self->mgr, tr, &sub->rel);

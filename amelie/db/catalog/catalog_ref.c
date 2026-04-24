@@ -31,7 +31,7 @@ catalog_cdc_ref(Catalog* self, User* user, Str* rel_user, Str* rel,
 	if (ref->type == REL_SUBSCRIPTION)
 	{
 		auto sub = sub_of(ref);
-		ref_match = catalog_find_by(self, &sub->config->id, true);
+		ref_match = catalog_find_by(self, &sub->on_id, true);
 	}
 
 	// check permission to create subscription on the relation
@@ -41,7 +41,7 @@ catalog_cdc_ref(Catalog* self, User* user, Str* rel_user, Str* rel,
 	switch (ref_match->type) {
 	case REL_TABLE:
 	{
-		auto table = table_of(ref);
+		auto table = table_of(ref_match);
 		if (table->config->unlogged)
 			error("table '%.*s': unlogged table are not supported for cdc",
 			      str_size(rel), str_of(rel));
@@ -51,7 +51,7 @@ catalog_cdc_ref(Catalog* self, User* user, Str* rel_user, Str* rel,
 	}
 	case REL_TOPIC:
 	{
-		auto topic = topic_of(ref);
+		auto topic = topic_of(ref_match);
 		topic->cdc++;
 		*id = &topic->config->id;
 		break;

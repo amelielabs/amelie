@@ -36,7 +36,7 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 	char fmt[] =
 		"\n"
 		"{ \"jsonrpc\": \"2.0\", "
-		   "\"method\": \"cdc\", "
+		   "\"method\": \"event\", "
 		   "\"params\": { "
 			"\"lsn\": %" PRIu64 ", "
 			"\"lsn_op\": %" PRIu32 ", "

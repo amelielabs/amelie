@@ -24,7 +24,7 @@ struct Sub
 	SubConfig* config;
 };
 
-Sub* sub_allocate(SubConfig*, Catalog*, Cdc*);
+Sub* sub_allocate(SubConfig*, Catalog*, Cdc*, Uuid*);
 
 static inline Sub*
 sub_of(Rel* self)

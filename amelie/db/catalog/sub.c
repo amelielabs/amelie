@@ -31,13 +31,13 @@ sub_free(Sub* self, bool drop)
 }
 
 Sub*
-sub_allocate(SubConfig* config, Catalog* catalog, Cdc* cdc)
+sub_allocate(SubConfig* config, Catalog* catalog, Cdc* cdc, Uuid* id)
 {
 	auto self = (Sub*)am_malloc(sizeof(Sub));
 	self->config  = sub_config_copy(config);
 	self->cdc     = cdc;
 	self->catalog = catalog;
-	uuid_init(&self->on_id);
+	self->on_id   = *id;
 	cdc_slot_init(&self->slot);
 
 	// set relation

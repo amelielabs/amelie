@@ -160,6 +160,23 @@ follower_unfollow(Follower* self)
 	output_write_json(&req->output, &column, empty_array, false);
 }
 
+static void
+follower_write(Follower* self)
+{
+	auto req = self->req;
+
+	// reply
+	Str column;
+	str_set(&column, "write", 5);
+
+	// []
+	uint8_t empty_array[8];
+	auto pos = empty_array;
+	json_write_array(&pos);
+	json_write_array_end(&pos);
+	output_write_json(&req->output, &column, empty_array, false);
+}
+
 hot static void
 follower_execute(Follower* self, Str* content)
 {
@@ -192,6 +209,10 @@ follower_execute(Follower* self, Str* content)
 
 	// execute
 	self->fe->iface->session_execute(self->session, req);
+
+	// reply empty write result
+	if (req->type == REQUEST_WRITE)
+		follower_write(self);
 }
 
 hot static void
