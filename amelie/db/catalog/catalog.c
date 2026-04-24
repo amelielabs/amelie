@@ -810,6 +810,26 @@ catalog_find(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 	return NULL;
 }
 
+Rel*
+catalog_find_by(Catalog* self, Uuid* id, bool error_if_not_exists)
+{
+	auto table = table_mgr_find_by(&self->table_mgr, id, false);
+	if (table)
+		return &table->rel;
+
+	auto topic = topic_mgr_find_by(&self->topic_mgr, id, false);
+	if (table)
+		return &topic->rel;
+
+	if (error_if_not_exists)
+	{
+		char uuid[UUID_SZ];
+		uuid_get(id, uuid, sizeof(uuid));
+		error("relation with uuid '%s' not found", uuid);
+	}
+	return NULL;
+}
+
 hot Table*
 catalog_find_table(Catalog* self, Str* user, Str* name,
                    bool     error_if_not_exists)

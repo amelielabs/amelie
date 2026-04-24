@@ -42,4 +42,5 @@ void   catalog_close(Catalog*);
 bool   catalog_execute(Catalog*, Tr*, uint8_t*, int);
 Buf*   catalog_status(Catalog*);
 Rel*   catalog_find(Catalog*, Str*, Str*, bool);
+Rel*   catalog_find_by(Catalog*, Uuid*, bool);
 Table* catalog_find_table(Catalog*, Str*, Str*, bool);

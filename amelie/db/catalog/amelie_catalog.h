@@ -64,6 +64,7 @@
 
 // catalog
 #include "catalog/catalog.h"
+#include "catalog/catalog_ref.h"
 #include "catalog/catalog_file.h"
 
 // catalog snapshot

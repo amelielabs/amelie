@@ -57,3 +57,9 @@ feed_set_name(Feed* self, Str* value)
 	str_free(&self->name);
 	str_copy(&self->name, value);
 }
+
+static inline void
+feed_set_id(Feed* self, Uuid* id)
+{
+	self->id = *id;
+}

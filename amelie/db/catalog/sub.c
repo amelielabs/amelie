@@ -20,30 +20,11 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-static inline void
-sub_unref(Sub* self)
-{
-	auto table = table_mgr_find_by(&self->catalog->table_mgr, &self->on_id, false);
-	if (table)
-	{
-		table->part_arg.cdc--;
-		assert(table->part_arg.cdc >= 0);
-		return;
-	}
-	auto topic = topic_mgr_find_by(&self->catalog->topic_mgr, &self->on_id, false);
-	if (topic)
-	{
-		topic->cdc--;
-		assert(topic->cdc >= 0);
-		return;
-	}
-}
-
 static void
 sub_free(Sub* self, bool drop)
 {
 	unused(drop);
-	sub_unref(self);
+	catalog_cdc_unref(self->catalog, &self->on_id);
 	cdc_detach(self->cdc, &self->slot);
 	sub_config_free(self->config);
 	am_free(self);

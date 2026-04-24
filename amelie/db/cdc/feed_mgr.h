@@ -95,15 +95,15 @@ feed_mgr_collect(FeedMgr* self, Buf* buf)
 {
 	list_foreach(&self->list)
 	{
-		auto sub = list_at(Feed, link);
+		auto feed = list_at(Feed, link);
 		for (;;)
 		{
-			if (! cdc_cursor_next(&sub->cursor))
+			if (! cdc_cursor_next(&feed->cursor))
 				break;
-			auto event = cdc_cursor_at(&sub->cursor);
-			cdc_export(buf, &sub->user, &sub->name, event);
+			auto event = cdc_cursor_at(&feed->cursor);
+			cdc_export(buf, &feed->user, &feed->name, event);
 		}
-		cdc_slot_set(&sub->slot, sub->cursor.pos, sub->cursor.pos_op);
+		cdc_slot_set(&feed->slot, feed->cursor.pos, feed->cursor.pos_op);
 	}
 
 	// todo: move to tail

@@ -45,8 +45,14 @@ follower_init(Follower* self, Frontend* fe, Client* client, Request* req, void* 
 static inline void
 follower_free(Follower* self)
 {
-	websocket_free(&self->ws);
+	// unreference relations
+	list_foreach(&self->feed_mgr.list)
+	{
+		auto feed = list_at(Feed, link);
+		catalog_cdc_unref(&share()->db->catalog, &feed->id);
+	}
 	feed_mgr_free(&self->feed_mgr);
+	websocket_free(&self->ws);
 }
 
 static inline void
@@ -68,10 +74,11 @@ follower_accept(Follower* self)
 hot static void
 follower_follow(Follower* self)
 {
-	// todo: check GRANT_FOLLOW
+	// PERM_CREATE_SUB
+	auto req = self->req;
+	user_check(req->user, PERM_CREATE_SUB);
 
 	// find existing feed
-	auto req = self->req;
 	Str* user;
 	if (str_empty(&req->rel_user))
 		user = &req->user->config->name;
@@ -82,47 +89,30 @@ follower_follow(Follower* self)
 		error("feed '%.*s': already exists", str_size(&req->rel),
 		      str_of(&req->rel));
 
-	// find relation
-	auto rel = catalog_find(&share()->db->catalog, user, &req->rel, true);
+	// reference relation for cdc (check permission)
+	Uuid* id;
+	auto rel = catalog_cdc_ref(&share()->db->catalog, req->user,
+	                           user, &req->rel, &id);
 
 	uint64_t lsn    = state_lsn() + 1;
 	uint32_t lsn_op = 0;
-	Uuid*    uuid;
-	switch (rel->type) {
-	case REL_SUBSCRIPTION:
+	if (rel->type == REL_SUBSCRIPTION)
 	{
 		auto sub = sub_of(rel);
 		lsn    = sub->config->lsn;
 		lsn_op = sub->config->op + 1;
-		uuid   = &sub->config->id;
-		break;
 	}
-	case REL_TABLE:
-	{
-		uuid = &table_of(rel)->config->id;
-		table_of(rel)->part_arg.cdc++;
-		break;
-	}
-	case REL_TOPIC:
-		uuid = &topic_of(rel)->config->id;
-		break;
-	default:
-		error("feed '%.*s': unsupported relation type", str_size(&req->rel),
-		      str_of(&req->rel));
-		break;
-	}
-
-	// todo: check grants/ownership
 
 	// create and register feed
 	feed = feed_allocate();
 	feed_set_user(feed, user);
 	feed_set_name(feed, &req->rel);
+	feed_set_id(feed, id);
 	feed_mgr_add(&self->feed_mgr, feed);
 
 	// open cursor
 	cdc_slot_set(&feed->slot, lsn, lsn_op);
-	cdc_cursor_open(&feed->cursor, share()->cdc, uuid, lsn, lsn_op);
+	cdc_cursor_open(&feed->cursor, share()->cdc, id, lsn, lsn_op);
 
 	// reply
 	Str column;
