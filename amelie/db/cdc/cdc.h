@@ -26,7 +26,7 @@ struct CdcPage
 struct CdcEvent
 {
 	uint64_t lsn;
-	uint32_t op;
+	uint32_t lsn_op;
 	uint8_t  cmd;
 	Uuid     id;
 	uint32_t data_size;

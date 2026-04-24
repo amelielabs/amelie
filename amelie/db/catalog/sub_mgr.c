@@ -38,9 +38,9 @@ sub_mgr_init(SubMgr* self, Catalog* catalog, Cdc* cdc)
 	column_set_type(column, TYPE_INT, sizeof(int64_t));
 	columns_add(&self->columns, column);
 
-	// op
+	// lsn_op
 	column = column_allocate();
-	str_set(&name, "op", 2);
+	str_set(&name, "lsn_op", 6);
 	column_set_name(column, &name);
 	column_set_type(column, TYPE_INT, sizeof(int32_t));
 	columns_add(&self->columns, column);

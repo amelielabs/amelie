@@ -198,7 +198,7 @@ cdc_gc(Cdc* self)
 hot static inline void
 cdc_add(Cdc*     self,
         uint64_t lsn,
-        uint32_t op,
+        uint32_t lsn_op,
         Cmd      cmd,
         Uuid*    id,
         uint8_t* data,
@@ -218,7 +218,7 @@ cdc_add(Cdc*     self,
 	// write event data
 	auto event = (CdcEvent*)at;
 	event->lsn       = lsn;
-	event->op        = op;
+	event->lsn_op    = lsn_op;
 	event->cmd       = cmd;
 	event->id        = *id;
 	event->data_size = data_size;

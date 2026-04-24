@@ -33,23 +33,22 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 		str_set(&cmd, "publish", 7);
 		break;
 	}
-
 	char fmt[] =
 		"\n"
 		"{ \"jsonrpc\": \"2.0\", "
 		   "\"method\": \"cdc\", "
 		   "\"params\": { "
 			"\"lsn\": %" PRIu64 ", "
-			"\"op\": %" PRIu32 ", "
+			"\"lsn_op\": %" PRIu32 ", "
 			"\"cmd\": \"%.*s\", "
 			"\"rel\": \"%.*s\", "
-			"\"row\": [";
-	buf_printf(buf, fmt, event->lsn, event->op,
+			"\"row\": ";
+	buf_printf(buf, fmt, event->lsn, event->lsn_op,
 	           str_size(&cmd),
 	           str_of(&cmd),
 	           str_size(rel),
 	           str_of(rel));
 	uint8_t* pos = event->data;
 	json_export(buf, runtime()->timezone, &pos);
-	buf_write(buf, "]} }", 4);
+	buf_write(buf, "} }", 3);
 }

@@ -38,8 +38,8 @@ sub_store_iterator_set(SubIterator* self)
 	// lsn
 	value_set_int(&self->value[0], at->lsn);
 
-	// op
-	value_set_int(&self->value[1], at->op);
+	// lsn_op
+	value_set_int(&self->value[1], at->lsn_op);
 
 	// cmd
 	Str cmd;
