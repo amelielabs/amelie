@@ -35,7 +35,7 @@ frontend_endpoint_sql(Request* req, Client* client)
 
 	// accept (set default)
 	auto accept = &endpoint->accept.string;
-	if (str_empty(accept))
+	if (str_empty(accept) || str_is(accept, "*/*", 3))
 		str_set(accept, "application/json", 16);
 
 	// set output
@@ -70,9 +70,11 @@ frontend_endpoint_rpc(Request* req, Client* client)
 	// accept (jsonrpc)
 	auto accept = &endpoint->accept.string;
 	if (!str_empty(accept) &&
-	    !str_is(accept, "application/json", 16) &&
-	    !str_is(accept, "application/json-rpc", 20))
+	    !str_is(accept, "application/json", 16)     &&
+	    !str_is(accept, "application/json-rpc", 20) &&
+	    !str_is(accept, "*/*", 3))
 		error("unsupported operation accept");
+
 	str_set(accept, "application/json-rpc", 20);
 
 	// set output

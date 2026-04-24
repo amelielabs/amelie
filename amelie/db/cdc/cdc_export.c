@@ -43,7 +43,7 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 			"\"op\": %" PRIu32 ", "
 			"\"cmd\": \"%.*s\", "
 			"\"rel\": \"%.*s\", "
-			"\"data\": [";
+			"\"row\": [";
 	buf_printf(buf, fmt, event->lsn, event->op,
 	           str_size(&cmd),
 	           str_of(&cmd),

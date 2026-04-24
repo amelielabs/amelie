@@ -85,7 +85,7 @@ follower_follow(Follower* self)
 	// find relation
 	auto rel = catalog_find(&share()->db->catalog, user, &req->rel, true);
 
-	uint64_t lsn    = state_lsn();
+	uint64_t lsn    = state_lsn() + 1;
 	uint32_t lsn_op = 0;
 	Uuid*    uuid;
 	switch (rel->type) {
@@ -93,7 +93,7 @@ follower_follow(Follower* self)
 	{
 		auto sub = sub_of(rel);
 		lsn    = sub->config->lsn;
-		lsn_op = sub->config->op;
+		lsn_op = sub->config->op + 1;
 		uuid   = &sub->config->id;
 		break;
 	}

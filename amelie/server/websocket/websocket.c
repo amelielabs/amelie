@@ -164,6 +164,7 @@ websocket_accept(Websocket* self)
 	hdr = http_find(req, "Sec-WebSocket-Protocol", 22);
 	if (hdr && !str_compare(&hdr->value, &self->protocol))
 		error("websocket: invalid Sec-WebSocket-Protocol header");
+	auto hdr_protocol = hdr;
 
 	// Sec-WebSocket-Key
 	auto key = http_find(req, "Sec-WebSocket-Key", 17);
@@ -185,8 +186,9 @@ websocket_accept(Websocket* self)
 	buf_printf(buf, "Upgrade: websocket\r\n");
 	buf_printf(buf, "Connection: Upgrade\r\n");
 	buf_printf(buf, "Sec-WebSocket-Accept: %.*s\r\n", str_size(&token_str), token_str.pos);
-	buf_printf(buf, "Sec-WebSocket-Protocol: %.*s\r\n", str_size(&self->protocol),
-	           str_of(&self->protocol));
+	if (hdr_protocol)
+		buf_printf(buf, "Sec-WebSocket-Protocol: %.*s\r\n", str_size(&self->protocol),
+		           str_of(&self->protocol));
 	http_end(buf);
 	tcp_write_buf(&client->tcp, buf);
 }

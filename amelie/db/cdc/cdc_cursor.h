@@ -15,84 +15,78 @@ typedef struct CdcCursor CdcCursor;
 
 struct CdcCursor
 {
-	uint32_t op;
-	uint32_t offset;
-	uint64_t lsn;
-	Uuid     id;
-	CdcPage* page;
-	Cdc*     cdc;
+	Uuid      id;
+	uint32_t  offset;
+	uint64_t  pos;
+	uint32_t  pos_op;
+	CdcEvent* current;
+	CdcPage*  page;
+	Cdc*      cdc;
 };
 
 static inline void
 cdc_cursor_init(CdcCursor* self)
 {
-	self->op     = 0;
-	self->offset = 0;
-	self->lsn    = 0;
-	self->page   = NULL;
-	self->cdc    = NULL;
+	self->offset  = 0;
+	self->pos     = 0;
+	self->pos_op  = 0;
+	self->current = NULL;
+	self->page    = NULL;
+	self->cdc     = NULL;
 	uuid_init(&self->id);
 }
 
 always_inline static inline CdcEvent*
 cdc_cursor_at(CdcCursor* self)
 {
-	if (unlikely(! self->page))
-		return NULL;
-	return (CdcEvent*)(self->page->data + self->offset);
+	return self->current;
 }
 
 static inline void
-cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id, uint64_t lsn, uint32_t op)
+cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id,
+                uint64_t   lsn,
+                uint32_t   lsn_op)
 {
-	// lsn to find after
-	self->op  = op;
 	self->id  = *id;
 	self->cdc = cdc;
 
-	auto lock = &cdc->lock;
-	spinlock_lock(lock);
+	spinlock_lock(&cdc->lock);
 
-	auto page = container_of(list_first(&cdc->pages), CdcPage, link);
-	self->page   = page;
+	// rewind to match the position
+	self->page   = container_of(list_first(&cdc->pages), CdcPage, link);
 	self->offset = 0;
-	self->lsn    = lsn;
-
-	// rewind to the next visible event
 	for (;;)
 	{
+		// end of page
 		if (unlikely(self->offset == self->page->pos))
 		{
-			if (list_is_last(&cdc->pages, &page->link))
+			// next page
+			if (! list_is_last(&cdc->pages, &self->page->link))
 			{
-				self->lsn = cdc->lsn;
-				break;
+				self->page   = container_of(self->page->link.next, CdcPage, link);
+				self->offset = 0;
+				continue;
 			}
-
-			self->page = container_of(self->page->link.next, CdcPage, link);
-			self->offset = 0;
-			continue;
+			break;
 		}
-		auto at = cdc_cursor_at(self);
-		self->lsn = at->lsn;
+		auto at = (CdcEvent*)(self->page->data + self->offset);
 
-		if (uuid_is(&at->id, id))
+		// set last seen lsn (not related to the start position)
+		self->pos    = at->lsn;
+		self->pos_op = at->op;
+
+		if (at->lsn >= lsn)
 		{
-			if (at->lsn > lsn)
+			if (at->op >= lsn_op)
 			{
-				self->op = 0;
-				break;
-			}
-			if (at->lsn == lsn && at->op > self->op)
-			{
-				self->op = at->op;
+				self->current = at;
 				break;
 			}
 		}
 		self->offset += sizeof(CdcEvent) + at->data_size;
 	}
 
-	spinlock_unlock(lock);
+	spinlock_unlock(&cdc->lock);
 }
 
 hot static inline bool
@@ -107,42 +101,50 @@ cdc_cursor_next(CdcCursor* self)
 
 	spinlock_lock(lock);
 
-	// eof already
+	// eof
 	if (self->offset == page->pos && list_is_last(&cdc->pages, &page->link))
 	{
 		spinlock_unlock(lock);
 		return false;
 	}
 
-	// set next event
-	auto at = cdc_cursor_at(self);
-	self->offset += sizeof(CdcEvent) + at->data_size;
+	// next event after eof
+	auto at = (CdcEvent*)(self->page->data + self->offset);
+	if (self->current)
+		self->offset += sizeof(CdcEvent) + at->data_size;
 
 	// rewind to the next visible event
+	self->current = NULL;
 	for (;;)
 	{
-		if (unlikely(self->offset == self->page->pos))
+		// end of page
+		if (self->offset == self->page->pos)
 		{
-			if (list_is_last(&cdc->pages, &self->page->link))
+			// next page
+			if (! list_is_last(&cdc->pages, &self->page->link))
 			{
-				self->lsn = cdc->lsn;
-				spinlock_unlock(lock);
-				return false;
+				self->page   = container_of(self->page->link.next, CdcPage, link);
+				self->offset = 0;
+				continue;
 			}
-			self->page   = container_of(self->page->link.next, CdcPage, link);
-			self->offset = 0;
-			continue;
+
+			// no new events
+			break;
 		}
 
-		auto at = cdc_cursor_at(self);
-		self->lsn = at->lsn;
-
+		at = (CdcEvent*)(self->page->data + self->offset);
+		self->pos     = at->lsn;
+		self->pos_op  = at->op;
 		if (uuid_is(&at->id, &self->id))
+		{
+			self->current = at;
 			break;
+		}
 
+		// iterate forward
 		self->offset += sizeof(CdcEvent) + at->data_size;
 	}
 
 	spinlock_unlock(lock);
-	return true;
+	return self->current != NULL;
 }

@@ -103,7 +103,7 @@ feed_mgr_collect(FeedMgr* self, Buf* buf)
 			auto event = cdc_cursor_at(&sub->cursor);
 			cdc_export(buf, &sub->user, &sub->name, event);
 		}
-		cdc_slot_set(&sub->slot, sub->cursor.lsn, 0);
+		cdc_slot_set(&sub->slot, sub->cursor.pos, sub->cursor.pos_op);
 	}
 
 	// todo: move to tail
