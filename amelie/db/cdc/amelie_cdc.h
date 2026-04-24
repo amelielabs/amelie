@@ -18,6 +18,6 @@
 #include "cdc/cdc_cursor.h"
 #include "cdc/cdc_export.h"
 
-// subscribe
-#include "cdc/subscribe.h"
-#include "cdc/subscribe_mgr.h"
+// feed
+#include "cdc/feed.h"
+#include "cdc/feed_mgr.h"

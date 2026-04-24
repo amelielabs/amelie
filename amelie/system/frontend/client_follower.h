@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void frontend_feed(Frontend*, Client*, Request*, void*);
+void frontend_follower(Frontend*, Client*, Request*, void*);

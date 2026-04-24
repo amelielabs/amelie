@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Subscribe Subscribe;
+typedef struct Feed Feed;
 
-struct Subscribe
+struct Feed
 {
 	Str       user;
 	Str       name;
@@ -23,10 +23,10 @@ struct Subscribe
 	List      link;
 };
 
-static inline Subscribe*
-subscribe_allocate(void)
+static inline Feed*
+feed_allocate(void)
 {
-	auto self = (Subscribe*)am_malloc(sizeof(Subscribe));
+	auto self = (Feed*)am_malloc(sizeof(Feed));
 	str_init(&self->user);
 	str_init(&self->name);
 	uuid_init(&self->id);
@@ -37,7 +37,7 @@ subscribe_allocate(void)
 }
 
 static inline void
-subscribe_free(Subscribe* self)
+feed_free(Feed* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
@@ -45,14 +45,14 @@ subscribe_free(Subscribe* self)
 }
 
 static inline void
-subscribe_set_user(Subscribe* self, Str* value)
+feed_set_user(Feed* self, Str* value)
 {
 	str_free(&self->user);
 	str_copy(&self->user, value);
 }
 
 static inline void
-subscribe_set_name(Subscribe* self, Str* value)
+feed_set_name(Feed* self, Str* value)
 {
 	str_free(&self->name);
 	str_copy(&self->name, value);

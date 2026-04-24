@@ -86,9 +86,9 @@ frontend_endpoint_rpc(Request* req, Client* client)
 		buf_str(&http->content, &content);
 		request_rpc(req, &content);
 
-		// subscribe
-		if (req->type == REQUEST_SUBSCRIBE)
-			error("websocket connection required to subscribe");
+		// follow
+		if (req->type == REQUEST_FOLLOW)
+			error("websocket connection required to follow");
 	} else
 	if (! str_is(method, "GET", 3)) {
 		error("unsupported operation method");
@@ -254,7 +254,7 @@ frontend_client(Frontend* self, Client* client)
 			if (str_is(&http->options[HTTP_METHOD], "GET", 3))
 			{
 				request_reset(&req, false);
-				return frontend_feed(self, client, &req, session);
+				return frontend_follower(self, client, &req, session);
 			}
 
 			// fallthrough

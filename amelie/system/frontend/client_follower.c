@@ -17,21 +17,21 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
-typedef struct Feed Feed;
+typedef struct Follower Follower;
 
-struct Feed
+struct Follower
 {
-	Websocket    ws;
-	Request*     req;
-	void*        session;
-	CdcSub       cdc_sub;
-	SubscribeMgr subscribe_mgr;
-	Str          protocol;
-	Frontend*    fe;
+	Websocket ws;
+	Request*  req;
+	void*     session;
+	CdcSub    cdc_sub;
+	FeedMgr   feed_mgr;
+	Str       protocol;
+	Frontend* fe;
 };
 
 static inline void
-feed_init(Feed* self, Frontend* fe, Client* client, Request* req, void* session)
+follower_init(Follower* self, Frontend* fe, Client* client, Request* req, void* session)
 {
 	self->req     = req;
 	self->session = session;
@@ -39,18 +39,18 @@ feed_init(Feed* self, Frontend* fe, Client* client, Request* req, void* session)
 	str_set(&self->protocol, "amelie-v1", 9);
 	websocket_init(&self->ws);
 	websocket_set(&self->ws, &self->protocol, client, false);
-	subscribe_mgr_init(&self->subscribe_mgr, share()->cdc);
+	feed_mgr_init(&self->feed_mgr, share()->cdc);
 }
 
 static inline void
-feed_free(Feed* self)
+follower_free(Follower* self)
 {
 	websocket_free(&self->ws);
-	subscribe_mgr_free(&self->subscribe_mgr);
+	feed_mgr_free(&self->feed_mgr);
 }
 
 static inline void
-feed_reset(Feed* self)
+follower_reset(Follower* self)
 {
 	// unlock catalog
 	auto req = self->req;
@@ -59,27 +59,27 @@ feed_reset(Feed* self)
 }
 
 static inline void
-feed_accept(Feed* self)
+follower_accept(Follower* self)
 {
 	// websocket handshake
 	websocket_accept(&self->ws);
 }
 
 hot static void
-feed_subscribe(Feed* self)
+follower_follow(Follower* self)
 {
-	// todo: check GRANT_SUBSCRIBE
+	// todo: check GRANT_FOLLOW
 
-	// find existing subscribe
+	// find existing feed
 	auto req = self->req;
 	Str* user;
 	if (str_empty(&req->rel_user))
 		user = &req->user->config->name;
 	else
 		user = &req->rel_user;
-	auto sub = subscribe_mgr_find(&self->subscribe_mgr, user, &req->rel);
-	if (sub)
-		error("subscribe '%.*s': already exists", str_size(&req->rel),
+	auto feed = feed_mgr_find(&self->feed_mgr, user, &req->rel);
+	if (feed)
+		error("feed '%.*s': already exists", str_size(&req->rel),
 		      str_of(&req->rel));
 
 	// find relation
@@ -107,26 +107,26 @@ feed_subscribe(Feed* self)
 		uuid = &topic_of(rel)->config->id;
 		break;
 	default:
-		error("subscribe '%.*s': unsupported relation type", str_size(&req->rel),
+		error("feed '%.*s': unsupported relation type", str_size(&req->rel),
 		      str_of(&req->rel));
 		break;
 	}
 
 	// todo: check grants/ownership
 
-	// create and register sub
-	sub = subscribe_allocate();
-	subscribe_set_user(sub, user);
-	subscribe_set_name(sub, &req->rel);
-	subscribe_mgr_add(&self->subscribe_mgr, sub);
+	// create and register feed
+	feed = feed_allocate();
+	feed_set_user(feed, user);
+	feed_set_name(feed, &req->rel);
+	feed_mgr_add(&self->feed_mgr, feed);
 
 	// open cursor
-	cdc_slot_set(&sub->slot, lsn, lsn_op);
-	cdc_cursor_open(&sub->cursor, share()->cdc, uuid, lsn, lsn_op);
+	cdc_slot_set(&feed->slot, lsn, lsn_op);
+	cdc_cursor_open(&feed->cursor, share()->cdc, uuid, lsn, lsn_op);
 
 	// reply
 	Str column;
-	str_set(&column, "subscribe", 9);
+	str_set(&column, "follow", 6);
 
 	// []
 	uint8_t empty_array[8];
@@ -137,7 +137,7 @@ feed_subscribe(Feed* self)
 }
 
 hot static void
-feed_execute(Feed* self, Str* content)
+follower_execute(Follower* self, Str* content)
 {
 	auto req = self->req;
 
@@ -149,8 +149,8 @@ feed_execute(Feed* self, Str* content)
 
 		// parse
 		request_rpc(req, content);
-		if (req->type == REQUEST_SUBSCRIBE)
-			feed_subscribe(self);
+		if (req->type == REQUEST_FOLLOW)
+			follower_follow(self);
 	);
 	if (on_error)
 	{
@@ -158,8 +158,8 @@ feed_execute(Feed* self, Str* content)
 		return;
 	}
 
-	// command handled by feed
-	if (req->type == REQUEST_SUBSCRIBE)
+	// command handled by follower
+	if (req->type == REQUEST_FOLLOW)
 		return;
 
 	// execute
@@ -167,17 +167,17 @@ feed_execute(Feed* self, Str* content)
 }
 
 hot static void
-feed_collect(Feed* self)
+follower_collect(Follower* self)
 {
 	auto buf = self->req->output.buf;
-	subscribe_mgr_collect(&self->subscribe_mgr, buf);
+	feed_mgr_collect(&self->feed_mgr, buf);
 }
 
 hot static inline bool
-feed_wait(Feed* self)
+follower_wait(Follower* self)
 {
-	// if no subscriptions, go straight to io wait
-	if (subscribe_mgr_empty(&self->subscribe_mgr))
+	// if no feeds, go straight to io wait
+	if (feed_mgr_empty(&self->feed_mgr))
 		return true;
 
 	// client has pending data
@@ -204,9 +204,9 @@ feed_wait(Feed* self)
 
 	// prepare cdc sub
 	//
-	// get min lsn across all subscribers
+	// get min lsn across all feeds
 	//
-	uint64_t min = subscribe_mgr_min(&self->subscribe_mgr);
+	uint64_t min = feed_mgr_min(&self->feed_mgr);
 	CdcSub sub;
 	cdc_sub_init(&sub, &event_sub, min);
 	cdc_subscribe(share()->cdc, &sub);
@@ -227,7 +227,7 @@ feed_wait(Feed* self)
 }
 
 hot static inline bool
-feed_recv(Feed* self, Str* content)
+follower_recv(Follower* self, Str* content)
 {
 	auto ws = &self->ws;
 	if (! websocket_recv(ws, NULL, 0))
@@ -240,7 +240,7 @@ feed_recv(Feed* self, Str* content)
 }
 
 static inline void
-feed_send(Feed* self)
+follower_send(Follower* self)
 {
 	auto buf = self->req->output.buf;
 	if (buf_empty(buf))
@@ -251,33 +251,33 @@ feed_send(Feed* self)
 }
 
 hot void
-frontend_feed(Frontend* self, Client* client, Request* req, void* session)
+frontend_follower(Frontend* self, Client* client, Request* req, void* session)
 {
-	Feed feed;
-	feed_init(&feed, self, client, req, session);
-	defer(feed_free, &feed);
-	feed_accept(&feed);
+	Follower follower;
+	follower_init(&follower, self, client, req, session);
+	defer(follower_free, &follower);
+	follower_accept(&follower);
 
 	for (;;)
 	{
 		// reset and unlock catalog
-		feed_reset(&feed);
+		follower_reset(&follower);
 
 		// wait for client io or cdc event
-		if (feed_wait(&feed))
+		if (follower_wait(&follower))
 		{
 			// recv jsonrpc request
 			Str content;
-			if (! feed_recv(&feed, &content))
+			if (! follower_recv(&follower, &content))
 				break;
 			// parse and execute
-			feed_execute(&feed, &content);
+			follower_execute(&follower, &content);
 		}
 
 		// collect pending cdc events
-		feed_collect(&feed);
+		follower_collect(&follower);
 
 		// batch send
-		feed_send(&feed);
+		follower_send(&follower);
 	}
 }
