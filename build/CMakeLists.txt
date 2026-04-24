@@ -340,9 +340,9 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/request.c
     ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/frontend/client.c
-    ${AMELIE_ROOT}/system/frontend/client_follower.c
     ${AMELIE_ROOT}/system/frontend/client_primary.c
     ${AMELIE_ROOT}/system/frontend/native.c
+    ${AMELIE_ROOT}/system/frontend/follower.c
     ${AMELIE_ROOT}/system/backend/pod.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/backend/replay.c

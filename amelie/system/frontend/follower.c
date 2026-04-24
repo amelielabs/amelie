@@ -71,7 +71,7 @@ follower_accept(Follower* self)
 	websocket_accept(&self->ws);
 }
 
-hot static void
+static void
 follower_follow(Follower* self)
 {
 	// PERM_CREATE_SUB
@@ -126,6 +126,40 @@ follower_follow(Follower* self)
 	output_write_json(&req->output, &column, empty_array, false);
 }
 
+static void
+follower_unfollow(Follower* self)
+{
+	auto req = self->req;
+
+	// find existing feed
+	Str* user;
+	if (str_empty(&req->rel_user))
+		user = &req->user->config->name;
+	else
+		user = &req->rel_user;
+	auto feed = feed_mgr_find(&self->feed_mgr, user, &req->rel);
+	if (! feed)
+		error("feed '%.*s': does not exists", str_size(&req->rel),
+		      str_of(&req->rel));
+
+	// unref and remove
+	catalog_cdc_unref(&share()->db->catalog, &feed->id);
+
+	feed_mgr_remove(&self->feed_mgr, feed);
+	feed_free(feed);
+
+	// reply
+	Str column;
+	str_set(&column, "unfollow", 8);
+
+	// []
+	uint8_t empty_array[8];
+	auto pos = empty_array;
+	json_write_array(&pos);
+	json_write_array_end(&pos);
+	output_write_json(&req->output, &column, empty_array, false);
+}
+
 hot static void
 follower_execute(Follower* self, Str* content)
 {
@@ -141,6 +175,9 @@ follower_execute(Follower* self, Str* content)
 		request_rpc(req, content);
 		if (req->type == REQUEST_FOLLOW)
 			follower_follow(self);
+		else
+		if (req->type == REQUEST_UNFOLLOW)
+			follower_unfollow(self);
 	);
 	if (on_error)
 	{
@@ -149,7 +186,8 @@ follower_execute(Follower* self, Str* content)
 	}
 
 	// command handled by follower
-	if (req->type == REQUEST_FOLLOW)
+	if (req->type == REQUEST_FOLLOW ||
+	    req->type == REQUEST_UNFOLLOW)
 		return;
 
 	// execute

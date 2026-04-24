@@ -18,7 +18,8 @@ typedef enum
 	REQUEST_UNDEF,
 	REQUEST_SQL,
 	REQUEST_WRITE,
-	REQUEST_FOLLOW
+	REQUEST_FOLLOW,
+	REQUEST_UNFOLLOW
 } RequestType;
 
 struct Request

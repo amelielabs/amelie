@@ -211,6 +211,10 @@ request_rpc(Request* self, Str* content)
 	if (str_is(&cmd->method, "follow", 6))
 		return request_rpc_cmd(self, REQUEST_FOLLOW, false);
 
+	// unfollow
+	if (str_is(&cmd->method, "unfollow", 8))
+		return request_rpc_cmd(self, REQUEST_UNFOLLOW, false);
+
 	error("unknown jsonrpc method: %.*s", str_size(&cmd->method),
 	      str_of(&cmd->method));
 }

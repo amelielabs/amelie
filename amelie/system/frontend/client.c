@@ -91,7 +91,9 @@ frontend_endpoint_rpc(Request* req, Client* client)
 		request_rpc(req, &content);
 
 		// follow
-		if (req->type == REQUEST_FOLLOW)
+		// unfollow
+		if (req->type == REQUEST_FOLLOW ||
+		    req->type == REQUEST_UNFOLLOW)
 			error("websocket connection required to follow");
 	} else
 	if (! str_is(method, "GET", 3)) {
