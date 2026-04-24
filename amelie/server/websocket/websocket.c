@@ -160,9 +160,9 @@ websocket_accept(Websocket* self)
 	if (!hdr || !str_is(&hdr->value, "13", 2))
 		error("websocket: invalid Sec-WebSocket-Version header");
 
-	// Sec-WebSocket-Protocol
+	// Sec-WebSocket-Protocol (optional)
 	hdr = http_find(req, "Sec-WebSocket-Protocol", 22);
-	if (!hdr || !str_compare(&hdr->value, &self->protocol))
+	if (hdr && !str_compare(&hdr->value, &self->protocol))
 		error("websocket: invalid Sec-WebSocket-Protocol header");
 
 	// Sec-WebSocket-Key
