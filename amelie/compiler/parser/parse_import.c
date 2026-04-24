@@ -202,6 +202,57 @@ import_execute(Parser* self, Udf* udf, uint8_t* args)
 	}
 }
 
+static void
+import_ack(Parser* self, Sub* sub, uint8_t* args)
+{
+	// create main namespace and the main block
+	auto ns    = namespaces_add(&self->nss, NULL, NULL);
+	auto block = blocks_add(&ns->blocks, NULL, NULL);
+
+	// prepare execute stmt
+	auto stmt = stmt_allocate(self, &self->lex, block);
+	stmts_add(&block->stmts, stmt);
+	stmt->id  = STMT_ACKNOWLEDGE;
+	stmt->ast = &ast_ack_allocate()->ast;
+	stmt->is_return = true;
+
+	auto ack = ast_ack_of(stmt->ast);
+	ack->name = sub->config->name;
+	ack->sub = sub;
+
+	// require exclusive lock
+	access_add(&self->program->access, &sub->rel,
+	           LOCK_EXCLUSIVE, PERM_SELECT);
+
+	// parse arguments
+
+	// [lsn, lsn_op]
+	auto pos = args;
+	if (! json_is_array(pos))
+		goto error;
+	json_read_array(&pos);
+
+	int64_t lsn;
+	if (! json_is_integer(pos))
+		goto error;
+	json_read_integer(&pos, &lsn);
+
+	int64_t lsn_op;
+	if (! json_is_integer(pos))
+		goto error;
+
+	json_read_integer(&pos, &lsn_op);
+	if (! json_read_array_end(&pos))
+		goto error;
+
+	ack->to_lsn = lsn;
+	ack->to_op  = lsn_op;
+	return;
+
+error:
+	error("ack: [lsn, lsn_op] expected");
+}
+
 void
 parse_import(Parser*  self, Program* program,
              Str*     rel_user,
@@ -235,6 +286,12 @@ parse_import(Parser*  self, Program* program,
 	{
 		auto udf = udf_of(ref);
 		import_execute(self, udf, args);
+		break;
+	}
+	case REL_SUBSCRIPTION:
+	{
+		auto sub = sub_of(ref);
+		import_ack(self, sub, args);
 		break;
 	}
 	default:
