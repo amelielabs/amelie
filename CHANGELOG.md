@@ -139,7 +139,7 @@ connect to an existing database process via a Unix socket, or connect remotely v
 
 Everything works transparently and is simple to use.
 
-By default, the HTTP API now sets and supports plain/text output, dedicated for console usage.
+By default, the HTTP API now sets and supports text/plain output, dedicated for console usage.
 
 **DEDICATED TEST SUITE FOR SQLite TESTS.**
 

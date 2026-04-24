@@ -16,25 +16,25 @@ post /sql json - -;
 400 Bad Request
 post /sql/ application/json - -;
 400 Bad Request
-# test: POST /sql (plain/text, no accept, no content)
-post /sql plain/text - -;
-# test: POST /sql (plain/text, no accept)
-post /sql plain/text - select 1;
+# test: POST /sql (text/plain, no accept, no content)
+post /sql text/plain - -;
+# test: POST /sql (text/plain, no accept)
+post /sql text/plain - select 1;
 { "columns": ["col1"], "rows": [[1]] }
-# test: POST /sql (plain/text, invalid accept)
-post /sql plain/text xyz select 1;
+# test: POST /sql (text/plain, invalid accept)
+post /sql text/plain xyz select 1;
 400 Bad Request
-# test: POST /sql (plain/text)
-post /sql plain/text application/json select 1;
+# test: POST /sql (text/plain)
+post /sql text/plain application/json select 1;
 { "columns": ["col1"], "rows": [[1]] }
 # test: POST /sql (args parsing)
-post /sql? plain/text application/json select 1;
+post /sql? text/plain application/json select 1;
 400 Bad Request
-post /sql?a plain/text application/json select 1;
+post /sql?a text/plain application/json select 1;
 400 Bad Request
-post /sql plain/text application/json select "2024-07-29 18:40:19"::timestamp;
+post /sql text/plain application/json select "2024-07-29 18:40:19"::timestamp;
 { "columns": ["col1"], "rows": [["2024-07-29 18:40:19+00"]] }
-post /sql?timezone=Asia/Tokyo plain/text application/json select "2024-07-29 18:40:19"::timestamp;
+post /sql?timezone=Asia/Tokyo text/plain application/json select "2024-07-29 18:40:19"::timestamp;
 { "columns": ["col1"], "rows": [["2024-07-29 18:40:19+09"]] }
 disconnect S0;
 close E0;

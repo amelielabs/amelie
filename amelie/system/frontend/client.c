@@ -23,14 +23,16 @@ frontend_endpoint_sql(Request* req, Client* client)
 	auto endpoint = &req->endpoint;
 	auto http     = &client->request;
 
-	// POST /sql (plain/text)
+	// POST /sql (text/plain)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is(method, "POST", 4)))
 		error("unsupported operation method");
 
 	// content type
 	auto content_type = &endpoint->content_type.string;
-	if (!str_empty(content_type) && !str_is(content_type, "plain/text", 10))
+	if (!str_empty(content_type) &&
+	    !str_is(content_type, "text/plain", 10) &&
+	    !str_is(content_type, "application/x-www-form-urlencoded", 33))
 		error("unsupported operation content-type");
 
 	// accept (set default)

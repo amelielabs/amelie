@@ -142,12 +142,12 @@ main_cli(Main* self)
 	auto endpoint = &self->endpoint;
 	auto content_type = opt_string_of(&endpoint->content_type);
 	if (str_empty(content_type))
-		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
+		opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
 
 	// set default accept
 	auto accept = opt_string_of(&endpoint->accept);
 	if (str_empty(accept))
-		opt_string_set_raw(&endpoint->accept, "plain/text", 10);
+		opt_string_set_raw(&endpoint->accept, "text/plain", 10);
 
 	// create client and connect
 	auto client = main_client_create(self);

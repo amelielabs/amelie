@@ -84,7 +84,7 @@ relay_set(Relay* self, Buf* buf, Str* uri)
 		str_set(&endpoint->user.string, "main", 4);
 
 	if (opt_string_empty(&endpoint->content_type))
-		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
+		opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
 
 	if (opt_string_empty(&endpoint->accept))
 		opt_string_set_raw(&endpoint->accept, "application/json", 16);

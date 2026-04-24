@@ -239,7 +239,7 @@ bench_run(Bench* self)
 	// switch to bench user
 	auto endpoint = &self->main->endpoint;
 	str_set_cstr(&endpoint->user.string, "bench");
-	opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
+	opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
 
 	// begin
 	list_foreach_safe(&self->list)
