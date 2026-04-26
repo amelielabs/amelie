@@ -68,7 +68,6 @@ priority_map[KEYWORD_MAX] =
 	[KMETHOD]                  = 12,
 	[KARROW]                   = 12,
 	// values (priority is not used)
-	//
 	['(']                      = priority_value,
 	['{']                      = priority_value,
 	[KCASE]                    = priority_value,
@@ -1059,7 +1058,7 @@ parse_op(Stmt*     self, Expr* expr,
 		// expr :: path [(call, ...)]
 		auto r = stmt_next_shadow(self);
 		if (r->id == KNAME ||
-			r->id == KNAME_COMPOUND)
+		    r->id == KNAME_COMPOUND)
 		{
 			// function[(expr, ...)]
 			auto with_args = stmt_if(self, '(') != NULL;
@@ -1068,6 +1067,7 @@ parse_op(Stmt*     self, Expr* expr,
 			stmt_error(self, r, "function name expected");
 		}
 		ast_push(result, r);
+		expr_pop(self, ops, result);
 		break;
 	}
 	case '[':
@@ -1112,8 +1112,7 @@ parse_expr(Stmt* self, Expr* expr)
 	ast_stack_init(&result);
 
 	bool unary = true;
-	bool done  = false;
-	while (! done)
+	for (;;)
 	{
 		auto ast = stmt_next(self);
 
@@ -1125,14 +1124,15 @@ parse_expr(Stmt* self, Expr* expr)
 				break;
 			}
 		}
+		auto priority = priority_map[ast->id];
 
-		int priority = priority_map[ast->id];
+		// unknown token or eof
 		if (priority == 0)
 		{
-			// unknown token or eof
-			done = true;
 			stmt_push(self, ast);
-		} else
+			break;
+		}
+
 		if (priority == priority_value)
 		{
 			// value

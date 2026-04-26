@@ -68,5 +68,8 @@ select show('state').directory::length;
 10
 select length(show('state').directory);
 10
+# test: expr :: method alias
+select x::int id from ([1]) x;
+1
 disconnect S0;
 close E0;

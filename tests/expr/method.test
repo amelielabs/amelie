@@ -29,10 +29,12 @@ select {}::set("a", 1)::set("b", 2);
 select {}::set("a", 1)::set("b", 2);
 
 # test: expr :: method
-
 explain select show('state').directory::length;
 select show('state').directory::length;
 select length(show('state').directory);
+
+# test: expr :: method alias
+select x::int id from ([1]) x;
 
 disconnect S0;
 close E0;
