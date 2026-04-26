@@ -46,7 +46,7 @@ select * from test;
 1 │ 0
 2 │ 0
 alter table test set;
-error: alter table test set❰;❱ ⟵ 'LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected
+error: alter table test set❰;❱ ⟵ 'COLUMN DEFAULT | COLUMN AS' expected
 alter table test set identity ;
 error: alter table test set identity ❰;❱ ⟵ TO expected
 alter table test set identity 123;
@@ -83,18 +83,6 @@ drop table test;
 alter table if exists test set identity to 0;
 alter table test set identity to 0;
 error: table 'test': not exists
-# test: set unlogged
-create table test (id int primary key);
-select show('table', 'test', true).unlogged;
-false
-alter table test set unlogged;
-select show('table', 'test', true).unlogged;
-true
-# test: set logged
-alter table test set logged;
-select show('table', 'test', true).unlogged;
-false
-drop table test;
 # test: rename column parsing
 alter table rename;
 error: alter table ❰rename❱ ⟵ name expected

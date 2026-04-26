@@ -142,33 +142,6 @@ table_op_set_identity_read(uint8_t* op, Str* user, Str* name, int64_t* value)
 }
 
 static inline int
-table_op_set_unlogged(Buf* self, Str* user, Str* name, bool value)
-{
-	// [op, user, name, value]
-	auto offset = buf_size(self);
-	encode_array(self);
-	encode_integer(self, DDL_TABLE_SET_UNLOGGED);
-	encode_string(self, user);
-	encode_string(self, name);
-	encode_bool(self, value);
-	encode_array_end(self);
-	return offset;
-}
-
-static inline void
-table_op_set_unlogged_read(uint8_t* op, Str* user, Str* name, bool* value)
-{
-	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
-	assert(cmd == DDL_TABLE_SET_UNLOGGED);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
-	json_read_bool(&op, value);
-	json_read_array_end(&op);
-}
-
-static inline int
 table_op_column_add(Buf* self, Str* user, Str* name, Column* column)
 {
 	// [op, user, name, column]

@@ -42,7 +42,6 @@ enum
 {
 	TABLE_ALTER_RENAME,
 	TABLE_ALTER_SET_IDENTITY,
-	TABLE_ALTER_SET_UNLOGGED,
 	TABLE_ALTER_COLUMN_ADD,
 	TABLE_ALTER_COLUMN_DROP,
 	TABLE_ALTER_COLUMN_RENAME,
@@ -75,7 +74,6 @@ struct AstTableAlter
 	Column* column;
 	Buf*    value_buf;
 	Str     value;
-	bool    unlogged;
 	Ast*    identity;
 	Volume* volume;
 	Str     storage_name;

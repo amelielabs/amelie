@@ -213,55 +213,6 @@ table_mgr_set_identity(TableMgr* self,
 }
 
 static void
-set_unlogged_if_commit(Log* self, LogOp* op)
-{
-	unused(self);
-	unused(op);
-}
-
-static void
-set_unlogged_if_abort(Log* self, LogOp* op)
-{
-	unused(self);
-	auto table = table_of(op->rel);
-	table_set_unlogged(table, !table->config->unlogged);
-}
-
-static LogIf set_unlogged_if =
-{
-	.commit = set_unlogged_if_commit,
-	.abort  = set_unlogged_if_abort
-};
-
-bool
-table_mgr_set_unlogged(TableMgr* self,
-                       Tr*       tr,
-                       Str*      user,
-                       Str*      name,
-                       bool      value,
-                       bool      if_exists)
-{
-	auto table = table_mgr_find(self, user, name, false);
-	if (! table)
-	{
-		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
-		return false;
-	}
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
-
-	// update table
-	log_ddl(&tr->log, &set_unlogged_if, NULL, &table->rel);
-
-	// set table and partitions as unlogged
-	table_set_unlogged(table, value);
-	return true;
-}
-
-static void
 column_rename_if_commit(Log* self, LogOp* op)
 {
 	unused(self);

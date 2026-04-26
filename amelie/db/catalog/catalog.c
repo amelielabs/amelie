@@ -389,18 +389,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                               value, if_exists);
 		break;
 	}
-	case DDL_TABLE_SET_UNLOGGED:
-	{
-		Str  user;
-		Str  name;
-		bool value;
-		table_op_set_unlogged_read(op, &user, &name, &value);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_set_unlogged(&self->table_mgr, tr, &user, &name,
-		                               value, if_exists);
-		break;
-	}
 	case DDL_TABLE_COLUMN_ADD:
 	{
 		Str  user;

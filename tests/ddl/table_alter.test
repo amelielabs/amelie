@@ -58,18 +58,6 @@ drop table test;
 alter table if exists test set identity to 0;
 alter table test set identity to 0;
 
-# test: set unlogged
-create table test (id int primary key);
-select show('table', 'test', true).unlogged;
-
-alter table test set unlogged;
-select show('table', 'test', true).unlogged;
-
-# test: set logged
-alter table test set logged;
-select show('table', 'test', true).unlogged;
-drop table test;
-
 # test: rename column parsing
 alter table rename;
 alter table test rename;

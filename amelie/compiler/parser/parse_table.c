@@ -667,22 +667,6 @@ parse_table_alter(Stmt* self)
 			return;
 		}
 
-		// SET LOGGED
-		if (stmt_if(self, KLOGGED))
-		{
-			stmt->type = TABLE_ALTER_SET_UNLOGGED;
-			stmt->unlogged = false;
-			return;
-		}
-
-		// SET UNLOGGED
-		if (stmt_if(self, KUNLOGGED))
-		{
-			stmt->type = TABLE_ALTER_SET_UNLOGGED;
-			stmt->unlogged = true;
-			return;
-		}
-
 		// SET COLUMN DEFAULT
 		// SET COLUMN AS
 		if (stmt_if(self, KCOLUMN))
@@ -749,7 +733,7 @@ parse_table_alter(Stmt* self)
 			}
 		}
 
-		stmt_error(self, NULL, "'LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected");
+		stmt_error(self, NULL, "'COLUMN DEFAULT | COLUMN AS' expected");
 		return;
 	}
 

@@ -35,38 +35,6 @@ select show('state').lsn;
 select identity_of("test");
 select identity_of("test2");
 
-# test: alter table set unlogged
-alter table test2 set unlogged;
-select show('table', 'test2', true).unlogged;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('table', 'test2', true).unlogged;
-select show('state').lsn;
-
-insert into test2 () values ();
-insert into test2 () values ();
-insert into test2 () values ();
-
-# test: alter table set logged
-alter table test2 set logged;
-select show('table', 'test2', true).unlogged;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-select * from test2;
-
 # test: alter table column add
 insert into test2() values (), (), ();
 select * from test2;
