@@ -203,9 +203,12 @@ request_rpc(Request* self, Str* content)
 	if (str_is(&cmd->method, "sql", 3))
 		return request_rpc_sql(self);
 
-	// write, ack
-	if (str_is(&cmd->method, "write", 5) ||
-	    str_is(&cmd->method, "ack", 3))
+	// write, ack, insert, publish, execute
+	if (str_is(&cmd->method, "write", 5)   ||
+	    str_is(&cmd->method, "ack", 3)     ||
+	    str_is(&cmd->method, "insert", 6)  ||
+	    str_is(&cmd->method, "publish", 7) ||
+	    str_is(&cmd->method, "execute", 7))
 		return request_rpc_cmd(self, REQUEST_WRITE, true);
 
 	// follow
