@@ -21,21 +21,21 @@
 static void
 output_jsonrpc_write(Output* self, Columns* columns, Value* value)
 {
-	char header[] = "{ \"jsonrpc\": \"2.0\", \"id\": 0, \"result\": ";
+	char header[] = "{\"jsonrpc\": \"2.0\", \"id\": 0, \"result\": ";
 	auto buf = self->buf;
 	buf_write(buf, header, sizeof(header) - 1);
 	output_json_result(self, columns, value);
-	buf_write(buf, " }", 2);
+	buf_write(buf, "}", 1);
 }
 
 static void
 output_jsonrpc_write_json(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
-	char header[] = "{ \"jsonrpc\": \"2.0\", \"id\": 0, \"result\": ";
+	char header[] = "{\"jsonrpc\": \"2.0\", \"id\": 0, \"result\": ";
 	auto buf = self->buf;
 	buf_write(buf, header, sizeof(header) - 1);
 	output_json_result_json(self, column, pos, unwrap);
-	buf_write(buf, " }", 2);
+	buf_write(buf, "}", 1);
 }
 
 static void

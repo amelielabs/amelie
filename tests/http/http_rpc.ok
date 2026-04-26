@@ -27,7 +27,7 @@ post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "para
 {"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "unexpected params field"}}
 # test: POST /rpc (sql)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
-{ "jsonrpc": "2.0", "id": 0, "result": { "columns": ["col1"], "rows": [[1]] } }
+{"jsonrpc": "2.0", "id": 0, "result": {"columns": ["col1"], "rows": [[1]]}}
 # test: POST /rpc (insert)
 create table test (id int primary key, data int default 11);
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [] }};
@@ -55,10 +55,10 @@ begin
 	return a + b;
 end;
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [] }};
-{ "jsonrpc": "2.0", "id": 0, "result": { "columns": ["x"], "rows": [[null]] } }
+{"jsonrpc": "2.0", "id": 0, "result": {"columns": ["x"], "rows": [[null]]}}
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {} }};
-{ "jsonrpc": "2.0", "id": 0, "result": { "columns": ["x"], "rows": [[null]] } }
+{"jsonrpc": "2.0", "id": 0, "result": {"columns": ["x"], "rows": [[null]]}}
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {"a": 1, "b": 2} }};
-{ "jsonrpc": "2.0", "id": 0, "result": { "columns": ["x"], "rows": [[3]] } }
+{"jsonrpc": "2.0", "id": 0, "result": {"columns": ["x"], "rows": [[3]]}}
 disconnect S0;
 close E0;

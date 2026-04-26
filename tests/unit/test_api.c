@@ -133,8 +133,8 @@ test_api_execute(void* arg)
 		.data_size = 0
 	};
 	test(amelie_wait(req, -1, &result) == 200);
-	test(result.data_size == 46);
-	test(! memcmp(result.data, "{ \"columns\": [\"id\"], \"rows\": [[1], [2], [3]] }", 46));
+	test(result.data_size == 44);
+	test(! memcmp(result.data, "{\"columns\": [\"id\"], \"rows\": [[1], [2], [3]]}", 44));
 	amelie_free(req);
 
 	amelie_free(session);
@@ -152,8 +152,8 @@ test_api_execute(void* arg)
 	result.data_size = 0;
 	req = amelie_execute(session, "select * from test", 0, NULL, NULL, NULL);
 	test(amelie_wait(req, -1, &result) == 200);
-	test(result.data_size == 46);
-	test(! memcmp(result.data, "{ \"columns\": [\"id\"], \"rows\": [[1], [2], [3]] }", 46));
+	test(result.data_size == 44);
+	test(! memcmp(result.data, "{\"columns\": [\"id\"], \"rows\": [[1], [2], [3]]}", 44));
 	amelie_free(req);
 
 	amelie_free(session);

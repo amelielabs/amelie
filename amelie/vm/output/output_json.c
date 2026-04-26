@@ -38,7 +38,7 @@ static void
 output_json_write(Output* self, Columns* columns, Value* value)
 {
 	auto buf = self->buf;
-	buf_write(buf, "{ ", 2);
+	buf_write(buf, "{", 1);
 
 	// columns
 	buf_write(buf, "\"columns\": [", 12);
@@ -75,7 +75,7 @@ output_json_write(Output* self, Columns* columns, Value* value)
 	{
 		output_json_row_array(self, columns, value);
 	}
-	buf_write(buf, "] }", 3);
+	buf_write(buf, "]}", 2);
 }
 
 static void
@@ -83,7 +83,7 @@ output_json_write_json(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
 	auto buf = self->buf;
 
-	buf_write(buf, "{ ", 2);
+	buf_write(buf, "{", 1);
 
 	// columns
 	buf_write(buf, "\"columns\": [\"", 13);
