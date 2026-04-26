@@ -74,18 +74,18 @@ parse_vector_decode(Buf* buf, uint8_t** pos)
 	buf_write_i32(buf, 0);
 
 	auto count = 0;
-	json_read_array(pos);
-	while (! json_read_array_end(pos))
+	unpack_array(pos);
+	while (! unpack_array_end(pos))
 	{
 		double value = 0;
-		if (json_is_real(*pos))
+		if (data_is_real(*pos))
 		{
-			json_read_real(pos, &value);
+			unpack_real(pos, &value);
 		} else
-		if (json_is_integer(*pos))
+		if (data_is_int(*pos))
 		{
 			int64_t ref;
-			json_read_integer(pos, &ref);
+			unpack_int(pos, &ref);
 			value = ref;
 		} else {
 			error("invalid vector value");
@@ -296,9 +296,9 @@ hot void
 parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 {
 	// null
-	if (json_is_null(*pos))
+	if (data_is_null(*pos))
 	{
-		json_read_null(pos);
+		unpack_null(pos);
 		value_set_null(value);
 		return;
 	}
@@ -307,27 +307,27 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	switch (column->type) {
 	case TYPE_BOOL:
 	{
-		if (! json_is_bool(*pos))
+		if (! data_is_bool(*pos))
 			break;
 		bool ref;
-		json_read_bool(pos, &ref);
+		unpack_bool(pos, &ref);
 		value_set_bool(value, ref);
 		return;
 	}
 	case TYPE_INT:
 	{
-		if (json_is_integer(*pos))
+		if (data_is_int(*pos))
 		{
 			int64_t ref;
-			json_read_integer(pos, &ref);
+			unpack_int(pos, &ref);
 			value_set_int(value, ref);
 			return;
 		}
 
-		if (json_is_real(*pos))
+		if (data_is_real(*pos))
 		{
 			double ref;
-			json_read_real(pos, &ref);
+			unpack_real(pos, &ref);
 			value_set_int(value, (int64_t)ref);
 			return;
 		}
@@ -335,18 +335,18 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	}
 	case TYPE_DOUBLE:
 	{
-		if (json_is_integer(*pos))
+		if (data_is_int(*pos))
 		{
 			int64_t ref;
-			json_read_integer(pos, &ref);
+			unpack_int(pos, &ref);
 			value_set_double(value, ref);
 			return;
 		}
 
-		if (json_is_real(*pos))
+		if (data_is_real(*pos))
 		{
 			double ref;
-			json_read_real(pos, &ref);
+			unpack_real(pos, &ref);
 			value_set_double(value, ref);
 			return;
 		}
@@ -354,35 +354,35 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	}
 	case TYPE_STRING:
 	{
-		if (! json_is_string(*pos))
+		if (! data_is_string(*pos))
 			break;
 		Str ref;
-		json_read_string(pos, &ref);
+		unpack_string(pos, &ref);
 		value_set_string(value, &ref, NULL);
 		return;
 	}
 	case TYPE_JSON:
 	{
 		auto at = *pos;
-		json_skip(pos);
+		data_skip(pos);
 		value_set_json(value, at, *pos - at, NULL);
 		return;
 	}
 	case TYPE_TIMESTAMP:
 	{
 		// unixtime
-		if (json_is_integer(*pos))
+		if (data_is_int(*pos))
 		{
 			int64_t ref;
-			json_read_integer(pos, &ref);
+			unpack_int(pos, &ref);
 			value_set_timestamp(value, ref);
 			return;
 		}
 
-		if (! json_is_string(*pos))
+		if (! data_is_string(*pos))
 			break;
 		Str ref;
-		json_read_string(pos, &ref);
+		unpack_string(pos, &ref);
 
 		// current_timestamp
 		if (str_is_case(&ref, "current_timestamp", 17))
@@ -400,10 +400,10 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	}
 	case TYPE_INTERVAL:
 	{
-		if (! json_is_string(*pos))
+		if (! data_is_string(*pos))
 			break;
 		Str ref;
-		json_read_string(pos, &ref);
+		unpack_string(pos, &ref);
 
 		Interval iv;
 		interval_init(&iv);
@@ -415,10 +415,10 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 
 	case TYPE_DATE:
 	{
-		if (! json_is_string(*pos))
+		if (! data_is_string(*pos))
 			break;
 		Str ref;
-		json_read_string(pos, &ref);
+		unpack_string(pos, &ref);
 
 		// current_date
 		if (str_is_case(&ref, "current_date", 12))
@@ -435,7 +435,7 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 
 	case TYPE_VECTOR:
 	{
-		if (! json_is_array(*pos))
+		if (! data_is_array(*pos))
 			break;
 		auto buf = buf_create();
 		errdefer_buf(buf);
@@ -445,10 +445,10 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	}
 	case TYPE_UUID:
 	{
-		if (! json_is_string(*pos))
+		if (! data_is_string(*pos))
 			break;
 		Str ref;
-		json_read_string(pos, &ref);
+		unpack_string(pos, &ref);
 
 		Uuid uuid;
 		uuid_init(&uuid);

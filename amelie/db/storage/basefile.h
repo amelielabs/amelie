@@ -25,7 +25,7 @@ static inline void
 decode_basepath(uint8_t** pos, Str* path_relative)
 {
 	// path_relative
-	json_read_string(pos, path_relative);
+	unpack_string(pos, path_relative);
 }
 
 static inline void
@@ -47,10 +47,10 @@ encode_basefile(Buf* self, char* path_relative)
 	encode_cstr(self, path_relative);
 
 	// size
-	encode_integer(self, st.st_size);
+	encode_int(self, st.st_size);
 
 	// mode
-	encode_integer(self, st.st_mode);
+	encode_int(self, st.st_mode);
 	encode_array_end(self);
 }
 
@@ -58,15 +58,15 @@ static inline void
 decode_basefile(uint8_t** pos, Str* path_relative, int64_t* size, int64_t* mode)
 {
 	// []
-	json_read_array(pos);
+	unpack_array(pos);
 
 	// path_relative
-	json_read_string(pos, path_relative);
+	unpack_string(pos, path_relative);
 
 	// size
-	json_read_integer(pos, size);
+	unpack_int(pos, size);
 
 	// mode
-	json_read_integer(pos, mode);
-	json_read_array_end(pos);
+	unpack_int(pos, mode);
+	unpack_array_end(pos);
 }

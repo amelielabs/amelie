@@ -139,8 +139,8 @@ rename_if_abort(Log* self, LogOp* op)
 	uint8_t* pos = log_data_of(self, op);
 	Str user;
 	Str name;
-	json_read_string(&pos, &user);
-	json_read_string(&pos, &name);
+	unpack_string(&pos, &user);
+	unpack_string(&pos, &name);
 
 	auto sub = sub_of(op->rel);
 	sub_config_set_user(sub->config, &user);

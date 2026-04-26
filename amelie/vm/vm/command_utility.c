@@ -59,8 +59,8 @@ ccreate_token(Vm* self, Op* op)
 	auto pos = code_data_at(self->code_data, op->b);
 	Str  name;
 	Str  interval;
-	json_read_string(&pos, &name);
-	json_read_string(&pos, &interval);
+	unpack_string(&pos, &name);
+	unpack_string(&pos, &interval);
 
 	// find user
 	auto user = user_mgr_find(&share()->db->catalog.user_mgr, &name, true);
@@ -118,7 +118,7 @@ creplica_drop(Vm* self, Op* op)
 	auto pos = code_data_at(self->code_data, op->a);
 	Str  id_str;
 	Uuid id;
-	json_read_string(&pos, &id_str);
+	unpack_string(&pos, &id_str);
 	uuid_set(&id, &id_str);
 
 	bool if_exists = op->b;
@@ -157,7 +157,7 @@ crepl_subscribe(Vm* self, Op* op)
 	// [id, if_exists]
 	auto pos = code_data_at(self->code_data, op->a);
 	Str  id;
-	json_read_string(&pos, &id);
+	unpack_string(&pos, &id);
 	repl_subscribe(share()->repl, &id);
 	control_save_state();
 }

@@ -127,8 +127,8 @@ static inline void
 keys_read(Keys* self, uint8_t** pos)
 {
 	// []
-	json_read_array(pos);
-	while (! json_read_array_end(pos))
+	unpack_array(pos);
+	while (! unpack_array_end(pos))
 	{
 		auto key = key_read(pos);
 		keys_add(self, key);

@@ -202,21 +202,21 @@ opt_set_json(Opt* self, uint8_t** pos)
 	switch (self->type) {
 	case OPT_BOOL:
 	{
-		if (unlikely(! json_is_bool(*pos)))
+		if (unlikely(! data_is_bool(*pos)))
 			error("option '%.*s': bool value expected",
 			      str_size(name), str_of(name));
 		bool value;
-		json_read_bool(pos, &value);
+		unpack_bool(pos, &value);
 		opt_int_set(self, value);
 		break;
 	}
 	case OPT_INT:
 	{
-		if (unlikely(! json_is_integer(*pos)))
+		if (unlikely(! data_is_int(*pos)))
 			error("option '%.*s': integer value expected",
 			      str_size(name), str_of(name));
 		int64_t value;
-		json_read_integer(pos, &value);
+		unpack_int(pos, &value);
 
 		if (unlikely(value == 0 && opt_is(self, OPT_Z)))
 			error("option '%.*s': cannot be set to zero",
@@ -226,18 +226,18 @@ opt_set_json(Opt* self, uint8_t** pos)
 	}
 	case OPT_STRING:
 	{
-		if (unlikely(! json_is_string(*pos)))
+		if (unlikely(! data_is_string(*pos)))
 			error("config: string expected for option '%.*s'",
 			      str_size(name), str_of(name));
 		Str value;
-		json_read_string(pos, &value);
+		unpack_string(pos, &value);
 		opt_string_set(self, &value);
 		break;
 	}
 	case OPT_JSON:
 	{
 		auto start = *pos;
-		json_skip(pos);
+		data_skip(pos);
 		opt_json_set(self, start, *pos - start);
 		break;
 	}
@@ -319,7 +319,7 @@ opt_encode(Opt* self, Buf* buf)
 		encode_bool(buf, opt_int_of(self));
 		break;
 	case OPT_INT:
-		encode_integer(buf, opt_int_of(self));
+		encode_int(buf, opt_int_of(self));
 		break;
 	}
 }

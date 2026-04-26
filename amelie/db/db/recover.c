@@ -154,7 +154,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 	{
 		// find topic
 		auto topic = topic_mgr_find_by(&db->catalog.topic_mgr, &cmd->id, false);
-		auto size = json_sizeof(*pos);
+		auto size = data_sizeof(*pos);
 		if  (topic)
 			publish(topic, tr, *pos, size);
 		*pos += size;
@@ -166,7 +166,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		auto sub = sub_mgr_find_by(&db->catalog.sub_mgr, &cmd->id, false);
 		if  (sub)
 			acknowledge(sub, tr, *pos);
-		json_skip(pos);
+		data_skip(pos);
 		break;
 	}
 	case CMD_DDL:
@@ -175,7 +175,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		// skip ddl commands before the last catalog lsn
 		if (record->lsn <= state_catalog())
 		{
-			json_skip(pos);
+			data_skip(pos);
 			break;
 		}
 
@@ -184,7 +184,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			service_create_index(&db->service, tr, *pos, 0);
 		else
 			catalog_execute(&db->catalog, tr, *pos, 0);
-		json_skip(pos);
+		data_skip(pos);
 
 		// update catalog pending lsn
 		opt_int_set(&state()->catalog_pending, record->lsn);

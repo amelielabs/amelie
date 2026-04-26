@@ -4,7 +4,7 @@ connect E0 S0 127.0.0.1:3485;
 select '123'::json_import;
 123
 select '184467440737095516155'::json_import;
-error: JSON int overflow
+error: json int overflow
 # test: array []
 select [];
 []

@@ -49,37 +49,37 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 	str_init(&req->method);
 
 	// parse object
-	json_read_obj(pos);
-	while (! json_read_obj_end(pos))
+	unpack_obj(pos);
+	while (! unpack_obj_end(pos))
 	{
 		Str name;
 		Str value;
-		json_read_string(pos, &name);
+		unpack_string(pos, &name);
 		if (str_is(&name, "jsonrpc", 7))
 		{
-			if (unlikely(! json_is_string(*pos)))
+			if (unlikely(! data_is_string(*pos)))
 				return false;
-			json_read_string(pos, &value);
+			unpack_string(pos, &value);
 			if (unlikely(! str_is(&value, "2.0", 3)))
 				return false;
 		} else
 		if (str_is(&name, "method", 6))
 		{
-			if (unlikely(! json_is_string(*pos)))
+			if (unlikely(! data_is_string(*pos)))
 				return false;
-			json_read_string(pos, &req->method);
+			unpack_string(pos, &req->method);
 		} else
 		if (str_is(&name, "params", 6))
 		{
 			req->params = *pos;
-			json_skip(pos);
+			data_skip(pos);
 		} else
 		if (str_is(&name, "id", 2))
 		{
-			if (unlikely(!json_is_string(*pos) && !json_is_integer(*pos)))
+			if (unlikely(!data_is_string(*pos) && !data_is_int(*pos)))
 				return false;
 			req->id = *pos;
-			json_skip(pos);
+			data_skip(pos);
 		} else {
 			return false;
 		}
@@ -101,12 +101,12 @@ jsonrpc_parse_request(Jsonrpc* self)
 		return false;
 
 	auto pos = buf->start;
-	if (json_is_obj(pos))
+	if (data_is_obj(pos))
 		return jsonrpc_parse_obj(self, &pos);
 
-	if (json_is_array(pos))
+	if (data_is_array(pos))
 	{
-		while (! json_read_array_end(&pos))
+		while (! unpack_array_end(&pos))
 			if (! jsonrpc_parse_obj(self, &pos))
 				return false;
 		return true;

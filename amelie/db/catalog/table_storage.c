@@ -32,7 +32,7 @@ storage_add_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	Str storage_name;
-	json_read_string(&pos, &storage_name);
+	unpack_string(&pos, &storage_name);
 
 	Table* table = op->iface_arg;
 	auto volumes = &table->config->partitioning.volumes;
@@ -100,7 +100,7 @@ storage_drop_if_commit(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	Str storage_name;
-	json_read_string(&pos, &storage_name);
+	unpack_string(&pos, &storage_name);
 
 	Table* table = op->iface_arg;
 	auto volumes = &table->config->partitioning.volumes;
@@ -178,7 +178,7 @@ storage_pause_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	Str storage_name;
-	json_read_string(&pos, &storage_name);
+	unpack_string(&pos, &storage_name);
 
 	Table* table = op->iface_arg;
 	auto volumes = &table->config->partitioning.volumes;

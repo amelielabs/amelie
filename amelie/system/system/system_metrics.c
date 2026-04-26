@@ -30,15 +30,15 @@ system_metrics_net(System* self, Buf* buf)
 
 	// connections
 	encode_raw(buf, "connections", 11);
-	encode_integer(buf, opt_int_of(&state()->connections));
+	encode_int(buf, opt_int_of(&state()->connections));
 
 	// sent
 	encode_raw(buf, "sent_bytes", 10);
-	encode_integer(buf, opt_int_of(&state()->sent_bytes));
+	encode_int(buf, opt_int_of(&state()->sent_bytes));
 
 	// recv
 	encode_raw(buf, "recv_bytes", 10);
-	encode_integer(buf, opt_int_of(&state()->recv_bytes));
+	encode_int(buf, opt_int_of(&state()->recv_bytes));
 
 	encode_obj_end(buf);
 }
@@ -84,34 +84,34 @@ system_metrics_process(System* self, Buf* buf)
 
 	// uptime
 	encode_raw(buf, "uptime", 6);
-	encode_integer(buf, 0); // todo
+	encode_int(buf, 0); // todo
 
 	// mem_virt
 	encode_raw(buf, "mem_virt", 8);
-	encode_integer(buf, mem_virt);
+	encode_int(buf, mem_virt);
 
 	// mem_resident
 	encode_raw(buf, "mem_resident", 12);
-	encode_integer(buf, mem_resident);
+	encode_int(buf, mem_resident);
 
 	// mem_shared
 	encode_raw(buf, "mem_shared", 10);
-	encode_integer(buf, mem_shared);
+	encode_int(buf, mem_shared);
 
 	// cpus
 	encode_raw(buf, "cpu_count", 9);
-	encode_integer(buf, cpu_count);
+	encode_int(buf, cpu_count);
 
 	// cpu
 	encode_raw(buf, "cpu", 3);
-	encode_integer(buf, cpu_usage);
+	encode_int(buf, cpu_usage);
 
 	// cpu_frontends
 	encode_raw(buf, "cpu_frontends", 13);
 	encode_array(buf);
 	i = 0;
 	for (; i < fe->workers_count; i++)
-		encode_integer(buf, workers_usage[i]);
+		encode_int(buf, workers_usage[i]);
 	encode_array_end(buf);
 
 	// cpu_backends
@@ -120,7 +120,7 @@ system_metrics_process(System* self, Buf* buf)
 	auto j = 0;
 	for (; j < be->workers_count; j++)
 	{
-		encode_integer(buf, workers_usage[i]);
+		encode_int(buf, workers_usage[i]);
 		i++;
 	}
 	encode_array_end(buf);
@@ -146,11 +146,11 @@ system_metrics(System* self)
 
 	// frontends
 	encode_raw(buf, "frontends", 9);
-	encode_integer(buf, opt_int_of(&config()->frontends));
+	encode_int(buf, opt_int_of(&config()->frontends));
 
 	// backends
 	encode_raw(buf, "backends", 8);
-	encode_integer(buf, opt_int_of(&config()->backends));
+	encode_int(buf, opt_int_of(&config()->backends));
 
 	// db
 	encode_raw(buf, "db", 2);

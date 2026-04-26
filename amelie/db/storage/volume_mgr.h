@@ -66,8 +66,8 @@ volume_mgr_copy(VolumeMgr* self, VolumeMgr* copy)
 static inline void
 volume_mgr_read(VolumeMgr* self, uint8_t** pos)
 {
-	json_read_array(pos);
-	while (! json_read_array_end(pos))
+	unpack_array(pos);
+	while (! unpack_array_end(pos))
 	{
 		auto volume = volume_read(pos);
 		volume_mgr_add(self, volume);

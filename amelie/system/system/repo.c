@@ -164,7 +164,7 @@ repo_bootstrap_server(void)
 	encode_cstr(&buf, "*");
 	// port
 	encode_raw(&buf, "port", 4);
-	encode_integer(&buf, 8080);
+	encode_int(&buf, 8080);
 	encode_obj_end(&buf);
 
 	encode_array_end(&buf);

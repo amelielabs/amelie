@@ -131,7 +131,7 @@ rename_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	Str index_name;
-	json_read_string(&pos, &index_name);
+	unpack_string(&pos, &index_name);
 
 	IndexConfig* index = op->iface_arg;
 	index_config_set_name(index, &index_name);

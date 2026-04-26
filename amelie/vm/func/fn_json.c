@@ -33,7 +33,7 @@ fn_append(Fn* self)
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
 		fn_error_arg(self, 0, "json array expected");
-	if (unlikely(! json_is_array(argv[0].json)))
+	if (unlikely(! data_is_array(argv[0].json)))
 		fn_error_arg(self, 0, "json array expected");
 	auto tz = self->local->timezone;
 	value_array_append(self->result, tz, argv[0].json, argv[0].json_size,
@@ -53,7 +53,7 @@ fn_push(Fn* self)
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
 		fn_error_arg(self, 0, "json array expected");
-	if (unlikely(! json_is_array(argv[0].json)))
+	if (unlikely(! data_is_array(argv[0].json)))
 		fn_error_arg(self, 0, "json array expected");
 	auto tz = self->local->timezone;
 	value_array_push(self->result, tz, argv[0].json, argv[0].json_size,
@@ -72,7 +72,7 @@ fn_pop(Fn* self)
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
 		fn_error_arg(self, 0, "json array expected");
-	if (unlikely(! json_is_array(argv[0].json)))
+	if (unlikely(! data_is_array(argv[0].json)))
 		fn_error_arg(self, 0, "json array expected");
 	value_array_pop(self->result, argv[0].json, argv[0].json_size);
 }
@@ -89,7 +89,7 @@ fn_pop_back(Fn* self)
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
 		fn_error_arg(self, 0, "json array expected");
-	if (unlikely(! json_is_array(argv[0].json)))
+	if (unlikely(! data_is_array(argv[0].json)))
 		fn_error_arg(self, 0, "json array expected");
 	value_array_pop_back(self->result, argv[0].json);
 }
@@ -105,7 +105,7 @@ fn_put(Fn* self)
 		return;
 	}
 	fn_expect_arg(self, 0, TYPE_JSON);
-	if (unlikely(! json_is_array(argv[0].json)))
+	if (unlikely(! data_is_array(argv[0].json)))
 		fn_error_arg(self, 0, "json array expected");
 	fn_expect_arg(self, 1, TYPE_INT);
 	auto tz = self->local->timezone;
@@ -123,7 +123,7 @@ fn_remove(Fn* self)
 		return;
 	}
 	fn_expect_arg(self, 0, TYPE_JSON);
-	if (unlikely(! json_is_array(argv[0].json)))
+	if (unlikely(! data_is_array(argv[0].json)))
 		fn_error_arg(self, 0, "json array expected");
 	fn_expect_arg(self, 1, TYPE_INT);
 	value_array_remove(self->result, argv[0].json, argv[1].integer);
@@ -141,7 +141,7 @@ fn_set(Fn* self)
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
 		fn_error_arg(self, 0, "json object expected");
-	if (unlikely(! json_is_obj(argv[0].json)))
+	if (unlikely(! data_is_obj(argv[0].json)))
 		fn_error_arg(self, 0, "json object expected");
 	fn_expect_arg(self, 1, TYPE_STRING);
 	auto tz = self->local->timezone;
@@ -160,7 +160,7 @@ fn_unset(Fn* self)
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
 		fn_error_arg(self, 0, "json object expected");
-	if (unlikely(! json_is_obj(argv[0].json)))
+	if (unlikely(! data_is_obj(argv[0].json)))
 		fn_error_arg(self, 0, "json object expected");
 	fn_expect_arg(self, 1, TYPE_STRING);
 	update_unset(self->result, argv[0].json, &argv[1].string);
@@ -178,7 +178,7 @@ fn_has(Fn* self)
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
 		fn_error_arg(self, 0, "json object expected");
-	if (unlikely(! json_is_obj(argv[0].json)))
+	if (unlikely(! data_is_obj(argv[0].json)))
 		fn_error_arg(self, 0, "json object expected");
 	fn_expect_arg(self, 1, TYPE_STRING);
 	value_obj_has(self->result, argv[0].json, &argv[1].string);

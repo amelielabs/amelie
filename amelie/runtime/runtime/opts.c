@@ -13,7 +13,7 @@
 #include <amelie_base.h>
 #include <amelie_os.h>
 #include <amelie_lib.h>
-#include <amelie_json.h>
+#include <amelie_data.h>
 #include <amelie_rel.h>
 #include <amelie_runtime.h>
 
@@ -106,12 +106,12 @@ bool
 opts_set_json(Opts* self, uint8_t** pos)
 {
 	bool update = false;
-	json_read_obj(pos);
-	while (! json_read_obj_end(pos))
+	unpack_obj(pos);
+	while (! unpack_obj_end(pos))
 	{
 		// key
 		Str name;
-		json_read_string(pos, &name);
+		unpack_string(pos, &name);
 
 		// find optiable and set value
 		auto opt = opts_find(self, &name);

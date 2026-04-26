@@ -34,7 +34,7 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 	if (cmd->cmd == CMD_PUBLISH)
 	{
 		auto topic = topic_mgr_find_by(&db->catalog.topic_mgr, &cmd->id, true);
-		publish(topic, &dtr->tr, pos, json_sizeof(pos));
+		publish(topic, &dtr->tr, pos, data_sizeof(pos));
 		return;
 	}
 

@@ -42,16 +42,16 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 		case TYPE_INT:
 			switch (column->type_size) {
 			case sizeof(int8_t):
-				encode_integer(buf, *(int8_t*)pos);
+				encode_int(buf, *(int8_t*)pos);
 				break;
 			case sizeof(int16_t):
-				encode_integer(buf, *(int16_t*)pos);
+				encode_int(buf, *(int16_t*)pos);
 				break;
 			case sizeof(int32_t):
-				encode_integer(buf, *(int32_t*)pos);
+				encode_int(buf, *(int32_t*)pos);
 				break;
 			case sizeof(int64_t):
-				encode_integer(buf, *(int64_t*)pos);
+				encode_int(buf, *(int64_t*)pos);
 				break;
 			default:
 				abort();
@@ -66,7 +66,7 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 			break;
 		case TYPE_STRING:
 		case TYPE_JSON:
-			buf_write(buf, pos, json_sizeof(pos));
+			buf_write(buf, pos, data_sizeof(pos));
 			break;
 		case TYPE_DATE:
 			encode_date(buf, *(int32_t*)pos);

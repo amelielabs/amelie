@@ -161,5 +161,5 @@ log_persist_cmd(Log* self, Uuid* id, uint8_t* data)
 {
 	// [cmd, id, data]
 	auto last = log_last(self);
-	write_log_add_cmd(&self->write_log, last->cmd, id, data, json_sizeof(data));
+	write_log_add_cmd(&self->write_log, last->cmd, id, data, data_sizeof(data));
 }

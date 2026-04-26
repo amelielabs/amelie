@@ -38,7 +38,7 @@ compare(Keys* self, Row* a, Row* b)
 		} else
 		{
 			// string
-			rc = json_compare_string(row_column(a, column),
+			rc = data_compare_string(row_column(a, column),
 			                         row_column(b, column));
 		}
 		if (rc != 0)

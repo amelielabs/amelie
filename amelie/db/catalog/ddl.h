@@ -123,7 +123,7 @@ ddl_of(uint8_t* op)
 {
 	// [cmd, ...]
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	return cmd;
 }

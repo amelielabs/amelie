@@ -79,16 +79,16 @@ update_unset_next(Update* self)
 
 	auto buf = self->buf;
 	auto pos = &self->pos;
-	if (unlikely(! json_is_obj(*pos)))
-		error("unset: object expected, but got %s", json_typeof(**pos));
-	json_read_obj(pos);
+	if (unlikely(! data_is_obj(*pos)))
+		error("unset: object expected, but got %s", data_typeof(**pos));
+	unpack_obj(pos);
 
 	encode_obj(buf);
-	while (! json_read_obj_end(pos))
+	while (! unpack_obj_end(pos))
 	{
 		// key
 		Str at;
-		json_read_string(pos, &at);
+		unpack_string(pos, &at);
 
 		// match key
 		if (str_compare(&key, &at))
@@ -99,14 +99,14 @@ update_unset_next(Update* self)
 				update_unset_next(self);
 				continue;
 			}
-			json_skip(pos);
+			data_skip(pos);
 			continue;
 		}
 
 		// copy
 		encode_string(buf, &at);
 		uint8_t* start = *pos;
-		json_skip(pos);
+		data_skip(pos);
 		buf_write(buf, start, *pos - start);
 	}
 	encode_obj_end(buf);
@@ -121,16 +121,16 @@ update_set_next(Update* self)
 
 	auto buf = self->buf;
 	auto pos = &self->pos;
-	if (unlikely(! json_is_obj(*pos)))
-		error("set: object expected, but got %s", json_typeof(**pos));
-	json_read_obj(pos);
+	if (unlikely(! data_is_obj(*pos)))
+		error("set: object expected, but got %s", data_typeof(**pos));
+	unpack_obj(pos);
 
 	encode_obj(buf);
-	while (! json_read_obj_end(pos))
+	while (! unpack_obj_end(pos))
 	{
 		// key 
 		Str at;
-		json_read_string(pos, &at);
+		unpack_string(pos, &at);
 		encode_string(buf, &at);
 
 		// match key
@@ -147,13 +147,13 @@ update_set_next(Update* self)
 			assert(! self->found);
 			value_encode(self->value, self->tz, buf);
 			self->found = true;
-			json_skip(pos);
+			data_skip(pos);
 			continue;
 		}
 
 		// value
 		uint8_t* start = *pos;
-		json_skip(pos);
+		data_skip(pos);
 		buf_write(buf, start, *pos - start);
 	}
 

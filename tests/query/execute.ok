@@ -16,7 +16,7 @@ error: execute ❰1❱ ⟵ name expected
 execute test;
 error: execute ❰test❱ ⟵ function not found
 execute reverse(;
-error: unexpected JSON token
+error: unexpected json token
 execute reverse(1;
 error: execute reverse(1❰;❱ ⟵ ) expected
 execute reverse(1, ;

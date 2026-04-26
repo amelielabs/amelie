@@ -154,8 +154,8 @@ table_config_read(uint8_t** pos)
 	columns_read(&self->columns, &pos_columns);
 
 	// indexes
-	json_read_array(&pos_indexes);
-	while (! json_read_array_end(&pos_indexes))
+	unpack_array(&pos_indexes);
+	while (! unpack_array_end(&pos_indexes))
 	{
 		auto config = index_config_read(&self->columns, &pos_indexes);
 		table_config_index_add(self, config);

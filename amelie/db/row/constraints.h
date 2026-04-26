@@ -110,34 +110,34 @@ static inline void
 constraints_read(Constraints* self, uint8_t** pos)
 {
 	// [[name, value], ...]
-	json_read_array(pos);
-	while (! json_read_array_end(pos))
+	unpack_array(pos);
+	while (! unpack_array_end(pos))
 	{
-		json_read_array(pos);
+		unpack_array(pos);
 
 		// name
 		Str name;
-		json_read_string(pos, &name);
+		unpack_string(pos, &name);
 
 		if (str_is_case(&name, "not_null", 8))
-			json_read_bool(pos, &self->not_null);
+			unpack_bool(pos, &self->not_null);
 		else
 		if (str_is_case(&name, "as_identity", 11))
-			json_read_integer(pos, &self->as_identity);
+			unpack_int(pos, &self->as_identity);
 		else
 		if (str_is_case(&name, "as_identity_modulo", 18))
-			json_read_integer(pos, &self->as_identity_modulo);
+			unpack_int(pos, &self->as_identity_modulo);
 		else
 		if (str_is_case(&name, "as_stored", 9))
-			json_read_string_copy(pos, &self->as_stored);
+			unpack_string_copy(pos, &self->as_stored);
 		else
 		if (str_is_case(&name, "as_resolved", 11))
-			json_read_string_copy(pos, &self->as_resolved);
+			unpack_string_copy(pos, &self->as_resolved);
 		else
 		if (str_is_case(&name, "default", 7))
 		{
 			Str str;
-			json_read_string(pos, &str);
+			unpack_string(pos, &str);
 			buf_reset(&self->value);
 			base64url_decode(&self->value, &str);
 		} else {
@@ -145,7 +145,7 @@ constraints_read(Constraints* self, uint8_t** pos)
 			      str_of(&name));
 		}
 
-		json_read_array_end(pos);
+		unpack_array_end(pos);
 	}
 }
 
@@ -168,7 +168,7 @@ constraints_write(Constraints* self, Buf* buf, int flags)
 	{
 		encode_array(buf);
 		encode_raw(buf, "as_identity", 11);
-		encode_integer(buf, self->as_identity);
+		encode_int(buf, self->as_identity);
 		encode_array_end(buf);
 	}
 
@@ -177,7 +177,7 @@ constraints_write(Constraints* self, Buf* buf, int flags)
 	{
 		encode_array(buf);
 		encode_raw(buf, "as_identity_modulo", 18);
-		encode_integer(buf, self->as_identity_modulo);
+		encode_int(buf, self->as_identity_modulo);
 		encode_array_end(buf);
 	}
 

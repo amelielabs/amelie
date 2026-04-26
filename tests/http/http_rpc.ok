@@ -12,7 +12,7 @@ post /rpc application/json - {"jsonrpc": "2.0"} ;
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11};
 {"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "jsonrpc: invalid request"}}
 post /rpc application/json - {"jsonrpc": "2.0", "method": sql};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "unexpected JSON token"}}
+{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "unexpected json token"}}
 # test: POST /rpc (sql, no params)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql"};
 {"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "'params' field is missing"}}

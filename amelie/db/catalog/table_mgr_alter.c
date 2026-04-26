@@ -33,8 +33,8 @@ rename_if_abort(Log* self, LogOp* op)
 	uint8_t* pos = log_data_of(self, op);
 	Str user;
 	Str name;
-	json_read_string(&pos, &user);
-	json_read_string(&pos, &name);
+	unpack_string(&pos, &user);
+	unpack_string(&pos, &name);
 
 	auto table = table_of(op->rel);
 	table_config_set_user(table->config, &user);
@@ -169,7 +169,7 @@ set_identity_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	int64_t value;
-	json_read_integer(&pos, &value);
+	unpack_int(&pos, &value);
 
 	auto table = table_of(op->rel);
 	sequence_set(&table->seq, value);
@@ -205,7 +205,7 @@ table_mgr_set_identity(TableMgr* self,
 	log_ddl(&tr->log, &set_identity_if, NULL, &table->rel);
 
 	// save previous sequence value
-	encode_integer(&tr->log.data, sequence_get(&table->seq));
+	encode_int(&tr->log.data, sequence_get(&table->seq));
 
 	// set new sequence
 	sequence_set(&table->seq, value);
@@ -224,7 +224,7 @@ column_rename_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	Str name_column;
-	json_read_string(&pos, &name_column);
+	unpack_string(&pos, &name_column);
 
 	Column* column = op->iface_arg;
 	column_set_name(column, &name_column);

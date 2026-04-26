@@ -186,11 +186,11 @@ fn_string(Fn* self)
 	}
 	default:
 		// json string without quotes
-		if (arg->type == TYPE_JSON && json_is_string(arg->json))
+		if (arg->type == TYPE_JSON && data_is_string(arg->json))
 		{
 			auto pos = arg->json;
 			Str str;
-			json_read_string(&pos, &str);
+			unpack_string(&pos, &str);
 			buf_write_str(data, &str);
 			break;
 		}
@@ -415,28 +415,28 @@ fn_vector(Fn* self)
 		fn_unsupported(self, 0);
 
 	uint8_t* pos = arg->json;
-	if (! json_is_array(pos))
+	if (! data_is_array(pos))
 		fn_error_arg(self, 0, "json array expected");
 
 	auto buf = buf_create();
 	errdefer_buf(buf);
 	buf_write_i32(buf, 0);
 
-	json_read_array(&pos);
+	unpack_array(&pos);
 	int count = 0;
-	while (! json_read_array_end(&pos))
+	while (! unpack_array_end(&pos))
 	{
 		float value_flt;
-		if (json_is_real(pos))
+		if (data_is_real(pos))
 		{
 			double value;
-			json_read_real(&pos, &value);
+			unpack_real(&pos, &value);
 			value_flt = value;
 		} else
-		if (json_is_integer(pos))
+		if (data_is_int(pos))
 		{
 			int64_t value;
-			json_read_integer(&pos, &value);
+			unpack_int(&pos, &value);
 			value_flt = value;
 		} else {
 			fn_error_arg(self, 0, "json array values must be int or float");

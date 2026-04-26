@@ -13,78 +13,78 @@
 #include <amelie_base.h>
 #include <amelie_os.h>
 #include <amelie_lib.h>
-#include <amelie_json.h>
+#include <amelie_data.h>
 
 void
 json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** pos)
 {
 	switch (**pos) {
-	case JSON_NULL:
-		json_read_null(pos);
+	case DATA_NULL:
+		unpack_null(pos);
 		buf_write(data, "null", 4);
 		break;
-	case JSON_TRUE:
-	case JSON_FALSE:
+	case DATA_TRUE:
+	case DATA_FALSE:
 	{
 		bool value;
-		json_read_bool(pos, &value);
+		unpack_bool(pos, &value);
 		if (value)
 			buf_write(data, "true", 4);
 		else
 			buf_write(data, "false", 5);
 		break;
 	}
-	case JSON_REAL32:
-	case JSON_REAL64:
+	case DATA_REAL32:
+	case DATA_REAL64:
 	{
 		double value;
-		json_read_real(pos, &value);
+		unpack_real(pos, &value);
 		buf_printf(data, "%g", value);
 		break;
 	}
-	case JSON_INTV0 ... JSON_INT64:
+	case DATA_INTV0 ... DATA_INT64:
 	{
 		int64_t value;
-		json_read_integer(pos, &value);
+		unpack_int(pos, &value);
 		buf_printf(data, "%" PRIi64, value);
 		break;
 	}
-	case JSON_STRINGV0 ... JSON_STRING32:
+	case DATA_STRINGV0 ... DATA_STRING32:
 	{
 		Str str;
-		json_read_string(pos, &str);
+		unpack_string(pos, &str);
 		buf_write(data, "\"", 1);
 		escape_str(data, &str);
 		buf_write(data, "\"", 1);
 		break;
 	}
-	case JSON_ARRAY:
+	case DATA_ARRAY:
 	{
-		json_read_array(pos);
+		unpack_array(pos);
 		buf_write(data, "[", 1);
-		while (! json_read_array_end(pos))
+		while (! unpack_array_end(pos))
 		{
 			json_export_as(data, timezone, pretty, deep, pos);
 			// ,
-			if (! json_is_array_end(*pos))
+			if (! data_is_array_end(*pos))
 				buf_write(data, ", ", 2);
 		}
 		buf_write(data, "]", 1);
 		break;
 	}
-	case JSON_OBJ:
+	case DATA_OBJ:
 	{
-		json_read_obj(pos);
+		unpack_obj(pos);
 		if (pretty)
 		{
 			// {}
-			if (json_read_obj_end(pos))
+			if (unpack_obj_end(pos))
 			{
 				buf_write(data, "{}", 2);
 				break;
 			}
 			buf_write(data, "{\n", 2);
-			while (! json_read_obj_end(pos))
+			while (! unpack_obj_end(pos))
 			{
 				for (int i = 0; i < deep + 1; i++)
 					buf_write(data, "  ", 2);
@@ -94,7 +94,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 				// value
 				json_export_as(data, timezone, pretty, deep + 1, pos);
 				// ,
-				if (json_is_obj_end(*pos))
+				if (data_is_obj_end(*pos))
 					buf_write(data, "\n", 1);
 				else
 					buf_write(data, ",\n", 2);
@@ -105,7 +105,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		} else
 		{
 			buf_write(data, "{", 1);
-			while (! json_read_obj_end(pos))
+			while (! unpack_obj_end(pos))
 			{
 				// key
 				json_export_as(data, timezone, pretty, deep + 1, pos);
@@ -113,7 +113,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 				// value
 				json_export_as(data, timezone, pretty, deep + 1, pos);
 				// ,
-				if (! json_is_obj_end(*pos))
+				if (! data_is_obj_end(*pos))
 					buf_write(data, ", ", 2);
 			}
 			buf_write(data, "}", 1);
@@ -121,7 +121,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		break;
 	}
 	default:
-		json_error_read();
+		data_error_read();
 		break;
 	}
 }

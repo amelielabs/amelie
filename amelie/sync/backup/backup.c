@@ -64,7 +64,7 @@ backup_push(Backup* self, Str* name, size_t size)
 	buf_reset(buf);
 	encode_array(buf);
 	encode_string(buf, name);
-	encode_integer(buf, size);
+	encode_int(buf, size);
 	encode_array_end(buf);
 
 	// transfer file content
@@ -109,10 +109,10 @@ backup_process(Backup* self)
 			auto pos = buf->start;
 			Str     name;
 			int64_t size;
-			json_read_array(&pos);
-			json_read_string(&pos, &name);
-			json_read_integer(&pos, &size);
-			json_read_array_end(&pos);
+			unpack_array(&pos);
+			unpack_string(&pos, &name);
+			unpack_int(&pos, &size);
+			unpack_array_end(&pos);
 			backup_push(self, &name, size);
 			continue;
 		}

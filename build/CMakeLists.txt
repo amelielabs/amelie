@@ -63,7 +63,7 @@ include_directories("${AMELIE_ROOT}/runtime")
 include_directories("${AMELIE_ROOT}/runtime/base")
 include_directories("${AMELIE_ROOT}/runtime/os")
 include_directories("${AMELIE_ROOT}/runtime/lib")
-include_directories("${AMELIE_ROOT}/runtime/json")
+include_directories("${AMELIE_ROOT}/runtime/data")
 include_directories("${AMELIE_ROOT}/runtime/rel")
 include_directories("${AMELIE_ROOT}/runtime/runtime")
 
@@ -161,8 +161,8 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/load.c
     ${AMELIE_ROOT}/runtime/lib/console.c
     ${AMELIE_ROOT}/runtime/lib/histogram.c
-    ${AMELIE_ROOT}/runtime/json/json_parser.c
-    ${AMELIE_ROOT}/runtime/json/json_export.c
+    ${AMELIE_ROOT}/runtime/data/json.c
+    ${AMELIE_ROOT}/runtime/data/json_export.c
     ${AMELIE_ROOT}/runtime/rel/permissions.c
     ${AMELIE_ROOT}/runtime/runtime/opts.c
     ${AMELIE_ROOT}/runtime/runtime/config.c

@@ -78,11 +78,11 @@ replica_status(Replica* self, Buf* buf, int flags)
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	uint64_t lsn = atomic_u64_of(&self->wal_slot.lsn);
-	encode_integer(buf, lsn);
+	encode_int(buf, lsn);
 
 	// lag
 	encode_raw(buf, "lag", 3);
-	encode_integer(buf, state_lsn() - lsn);
+	encode_int(buf, state_lsn() - lsn);
 
 	encode_obj_end(buf);
 }

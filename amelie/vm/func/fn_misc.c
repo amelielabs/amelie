@@ -94,7 +94,7 @@ fn_md5(Fn* self)
 	encode_string(buf, &string);
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
-	json_read_string(&pos_str, &string);
+	unpack_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -115,7 +115,7 @@ fn_sha1(Fn* self)
 	encode_string(buf, &string);
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
-	json_read_string(&pos_str, &string);
+	unpack_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -202,7 +202,7 @@ fn_jwt(Fn* self)
 	{
 		// obj
 		auto pos = argv[0].json;
-		if (! json_is_obj(pos))
+		if (! data_is_obj(pos))
 			fn_error_arg(self, 0, "string or JSON object expected");
 		json_export(header, self->local->timezone, &pos);
 		buf_str(header, &header_str);
@@ -221,7 +221,7 @@ fn_jwt(Fn* self)
 	if (argv[1].type == TYPE_JSON)
 	{
 		auto pos = argv[1].json;
-		if (! json_is_obj(pos))
+		if (! data_is_obj(pos))
 		fn_error_arg(self, 1, "string or JSON object expected");
 		json_export(payload, self->local->timezone, &pos);
 		buf_str(payload, &payload_str);

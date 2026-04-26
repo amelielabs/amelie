@@ -121,7 +121,7 @@ index_config_write(IndexConfig* self, Buf* buf, int flags)
 
 	// type
 	encode_raw(buf, "type", 4);
-	encode_integer(buf, self->type);
+	encode_int(buf, self->type);
 
 	// unique
 	encode_raw(buf, "unique", 6);

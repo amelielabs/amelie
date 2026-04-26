@@ -114,11 +114,11 @@ column_write(Column* self, Buf* buf, int flags)
 
 	// type
 	encode_raw(buf, "type", 4);
-	encode_integer(buf, self->type);
+	encode_int(buf, self->type);
 
 	// type_size
 	encode_raw(buf, "type_size", 9);
-	encode_integer(buf, self->type_size);
+	encode_int(buf, self->type_size);
 
 	// dropped
 	encode_raw(buf, "dropped", 7);

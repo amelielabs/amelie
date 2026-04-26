@@ -19,10 +19,10 @@ static void
 slt_result_convert(SltResult* self, uint8_t** pos)
 {
 	auto buf = &self->output;
-	json_read_array(pos);
-	while (! json_read_array_end(pos))
+	unpack_array(pos);
+	while (! unpack_array_end(pos))
 	{
-		if (json_is_array(*pos))
+		if (data_is_array(*pos))
 		{
 			slt_result_convert(self, pos);
 			continue;
@@ -30,36 +30,36 @@ slt_result_convert(SltResult* self, uint8_t** pos)
 
 		// write value as a string
 		auto offset = buf_size(&self->output);
-		if (json_is_bool(*pos))
+		if (data_is_bool(*pos))
 		{
-			buf_printf(buf, "%d", **pos == JSON_TRUE);
+			buf_printf(buf, "%d", **pos == DATA_TRUE);
 		} else
-		if (json_is_integer(*pos))
+		if (data_is_int(*pos))
 		{
 			int64_t value;
-			json_read_integer(pos, &value);
+			unpack_int(pos, &value);
 			buf_printf(buf, "%" PRIi64, value);
 		} else
-		if (json_is_real(*pos))
+		if (data_is_real(*pos))
 		{
 			double value;
-			json_read_real(pos, &value);
+			unpack_real(pos, &value);
 			buf_printf(buf, "%.3f", value);
 		} else
-		if (json_is_string(*pos))
+		if (data_is_string(*pos))
 		{
 			// todo: print control chars as @
 			Str value;
-			json_read_string(pos, &value);
+			unpack_string(pos, &value);
 			if (str_empty(&value))
 				buf_printf(buf, "(empty)");
 			else
 				buf_printf(buf, "%.*s", (int)str_size(&value),
 				           str_of(&value));
 		} else
-		if (json_is_null(*pos))
+		if (data_is_null(*pos))
 		{
-			json_read_null(pos);
+			unpack_null(pos);
 			buf_printf(buf, "NULL");
 		} else {
 			error("unsupported type in result");

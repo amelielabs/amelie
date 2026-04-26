@@ -53,7 +53,7 @@ output_jsonrpc_write_error(Output* self, Error* error)
 
 	// id
 	encode_raw(buf, "id", 2);
-	encode_integer(buf, 0);
+	encode_int(buf, 0);
 
 	// error
 	encode_raw(buf, "error", 5);
@@ -61,7 +61,7 @@ output_jsonrpc_write_error(Output* self, Error* error)
 
 	// code
 	encode_raw(buf, "code", 4);
-	encode_integer(buf, -32000);
+	encode_int(buf, -32000);
 
 	// message
 	encode_raw(buf, "message", 7);

@@ -93,7 +93,7 @@ output_json_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 	// rows
 	buf_write(buf, "\"rows\": ", 8);
 	auto wrap = true;
-	if (unwrap && json_is_array(pos))
+	if (unwrap && data_is_array(pos))
 		wrap = false;
 	if (wrap)
 		buf_write(buf, "[", 1);

@@ -132,7 +132,7 @@ row_hash(Row* self, Keys* keys)
 			hash = hash_murmur3_32(pos, column->type_size, hash);
 		} else {
 			Str str;
-			json_read_string(&pos, &str);
+			unpack_string(&pos, &str);
 			hash = hash_murmur3_32(str_u8(&str), str_size(&str), hash);
 		}
 	}

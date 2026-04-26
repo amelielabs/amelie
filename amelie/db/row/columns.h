@@ -197,8 +197,8 @@ static inline void
 columns_read(Columns* self, uint8_t** pos)
 {
 	// []
-	json_read_array(pos);
-	while (! json_read_array_end(pos))
+	unpack_array(pos);
+	while (! unpack_array_end(pos))
 	{
 		auto column = column_read(pos);
 		columns_add(self, column);

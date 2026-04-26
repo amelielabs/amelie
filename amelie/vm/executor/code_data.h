@@ -71,7 +71,7 @@ code_data_at_string(CodeData* self, int offset, Str* string)
 {
 	assert(self->data.start != NULL);
 	uint8_t* pos = self->data.start + offset;
-	json_read_string(&pos, string);
+	unpack_string(&pos, string);
 }
 
 static inline void*

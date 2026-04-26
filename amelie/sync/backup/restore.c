@@ -156,7 +156,7 @@ restore_pull(Restore* self, Str* path_relative, int64_t size, int mode)
 	buf_reset(buf);
 	encode_array(buf);
 	encode_string(buf, path_relative);
-	encode_integer(buf, size);
+	encode_int(buf, size);
 	encode_array_end(buf);
 	backup_send(websocket, BACKUP_PULL, buf, 0);
 
@@ -245,17 +245,17 @@ restore_run(Restore* self, char* directory)
 	restore_file("catalog.json", pos_catalog);
 
 	// create volumes
-	json_read_array(&pos_volumes);
-	while (! json_read_array_end(&pos_volumes))
+	unpack_array(&pos_volumes);
+	while (! unpack_array_end(&pos_volumes))
 	{
 		Str path_relative;
-		json_read_string(&pos_volumes, &path_relative);
+		unpack_string(&pos_volumes, &path_relative);
 		restore_dir_str(&path_relative);
 	}
 
 	// pull files
-	json_read_array(&pos_files);
-	while (! json_read_array_end(&pos_files))
+	unpack_array(&pos_files);
+	while (! unpack_array_end(&pos_files))
 	{
 		// [path_relative, size, mode]
 		Str     path_relative;
@@ -266,8 +266,8 @@ restore_run(Restore* self, char* directory)
 	}
 
 	// pull wal files
-	json_read_array(&pos_wal);
-	while (! json_read_array_end(&pos_wal))
+	unpack_array(&pos_wal);
+	while (! unpack_array_end(&pos_wal))
 	{
 		// [path_relative, size, mode]
 		Str     path_relative;

@@ -23,7 +23,7 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		encode_real(buf, self->real);
 		break;
 	case KINT:
-		encode_integer(buf, self->integer);
+		encode_int(buf, self->integer);
 		break;
 	case KSTRING:
 		if (self->string_escape)
@@ -39,7 +39,7 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		break;
 	case KNEG:
 		if (self->l->id == KINT)
-			encode_integer(buf, -self->l->integer);
+			encode_int(buf, -self->l->integer);
 		else
 			encode_real(buf, -self->l->real);
 		break;
@@ -60,7 +60,7 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		int size = timestamp_get(local->time_us, local->timezone, (char*)buf->position, 128);
 		buf_advance(buf, size);
 		uint8_t* pos = buf->start + offset;
-		json_write_string32(&pos, size);
+		pack_string32(&pos, size);
 		break;
 	}
 	case KCURRENT_DATE:
@@ -72,14 +72,14 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		int size = date_get(julian, (char*)buf->position, 128);
 		buf_advance(buf, size);
 		uint8_t* pos = buf->start + offset;
-		json_write_string32(&pos, size);
+		pack_string32(&pos, size);
 		break;
 	}
 	// []
 	case KARRAY:
 	{
 		if (! ast_args_of(self->l)->constable)
-			lex_error(lex, self, "JSON value contains expressions");
+			lex_error(lex, self, "DATA value contains expressions");
 		encode_array(buf);
 		auto current = self->l->l;
 		for (; current; current = current->next)
@@ -91,7 +91,7 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 	case '{':
 	{
 		if (! ast_args_of(self->l)->constable)
-			lex_error(lex, self, "JSON value contains expressions");
+			lex_error(lex, self, "DATA value contains expressions");
 		encode_obj(buf);
 		auto current = self->l->l;
 		for (; current; current = current->next)
@@ -106,7 +106,7 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		break;
 
 	default:
-		lex_error(lex, self, "unexpected JSON value");
+		lex_error(lex, self, "unexpected DATA value");
 		break;
 	}
 }
@@ -115,30 +115,30 @@ hot static inline int
 ast_decode(Ast* self, uint8_t* json)
 {
 	switch (*json) {
-	case JSON_TRUE:
+	case DATA_TRUE:
 		self->id = KTRUE;
 		break;
-	case JSON_FALSE:
+	case DATA_FALSE:
 		self->id = KFALSE;
 		break;
-	case JSON_NULL:
+	case DATA_NULL:
 		self->id = KNULL;
 		break;
-	case JSON_REAL32:
-	case JSON_REAL64:
+	case DATA_REAL32:
+	case DATA_REAL64:
 		self->id = KREAL;
-		json_read_real(&json, &self->real);
+		unpack_real(&json, &self->real);
 		break;
-	case JSON_INTV0 ... JSON_INT64:
+	case DATA_INTV0 ... DATA_INT64:
 		self->id = KINT;
-		json_read_integer(&json, &self->integer);
+		unpack_int(&json, &self->integer);
 		break;
-	case JSON_STRINGV0 ... JSON_STRING32:
+	case DATA_STRINGV0 ... DATA_STRING32:
 		self->id = KSTRING;
-		json_read_string(&json, &self->string);
+		unpack_string(&json, &self->string);
 		break;
-	case JSON_OBJ:
-	case JSON_ARRAY:
+	case DATA_OBJ:
+	case DATA_ARRAY:
 	default:
 		return -1;
 	}

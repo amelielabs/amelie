@@ -83,21 +83,21 @@ snapshot_write(Snapshot* self, Buf* buf, int flags)
 
 	// id
 	encode_raw(buf, "id", 2);
-	encode_integer(buf, self->id);
+	encode_int(buf, self->id);
 
 	// id_parent
 	encode_raw(buf, "id_parent", 9);
-	encode_integer(buf, self->id_parent);
+	encode_int(buf, self->id_parent);
 
 	// snapshot
 	encode_raw(buf, "snapshot", 8);
-	encode_integer(buf, self->snapshot);
+	encode_int(buf, self->snapshot);
 
 	// snapshot_max
 	if (flags_has(flags, FMETRICS))
 	{
 		encode_raw(buf, "snapshot_max", 12);
-		encode_integer(buf, self->snapshot_max);
+		encode_int(buf, self->snapshot_max);
 	}
 
 	encode_obj_end(buf);

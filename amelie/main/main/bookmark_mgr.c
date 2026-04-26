@@ -50,11 +50,11 @@ bookmark_mgr_open(BookmarkMgr* self, const char* path)
 
 	// {}
 	uint8_t* pos = json.buf->start;
-	json_read_obj(&pos);
-	while (! json_read_obj_end(&pos))
+	unpack_obj(&pos);
+	while (! unpack_obj_end(&pos))
 	{
 		// name
-		json_skip(&pos);
+		data_skip(&pos);
 
 		// value
 		auto bookmark = bookmark_read(&pos);

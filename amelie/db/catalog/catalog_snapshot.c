@@ -77,8 +77,8 @@ catalog_snapshot_cleanup(Buf* data)
 	decode_obj(obj, "snapshot", &pos);
 
 	// drop snapshots files (hard links)
-	json_read_array(&pos_files);
-	while (! json_read_array_end(&pos_files))
+	unpack_array(&pos_files);
+	while (! unpack_array_end(&pos_files))
 	{
 		Str     path_relative;
 		int64_t size;

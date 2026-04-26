@@ -92,7 +92,7 @@ rename_if_abort(Log* self, LogOp* op)
 	// set previous name
 	uint8_t* pos = log_data_of(self, op);
 	Str name;
-	json_read_string(&pos, &name);
+	unpack_string(&pos, &name);
 
 	auto storage = storage_of(op->rel);
 	storage_config_set_name(storage->config, &name);

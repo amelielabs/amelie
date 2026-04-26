@@ -60,11 +60,11 @@ replica_mgr_open(ReplicaMgr* self)
 	if (opt_json_empty(replicas))
 		return;
 	auto pos = opt_json_of(replicas);
-	if (json_is_null(pos))
+	if (data_is_null(pos))
 		return;
 
-	json_read_array(&pos);
-	while (! json_read_array_end(&pos))
+	unpack_array(&pos);
+	while (! unpack_array_end(&pos))
 	{
 		auto config = replica_config_read(&pos);
 		defer(replica_config_free, config);

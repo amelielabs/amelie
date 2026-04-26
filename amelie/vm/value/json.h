@@ -22,7 +22,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		encode_bool(buf, self->integer);
 		break;
 	case TYPE_INT:
-		encode_integer(buf, self->integer);
+		encode_int(buf, self->integer);
 		break;
 	case TYPE_DOUBLE:
 		encode_real(buf, self->dbl);
@@ -31,7 +31,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		encode_string(buf, &self->string);
 		break;
 	case TYPE_JSON:
-		buf_write(buf, self->json, json_sizeof(self->json));
+		buf_write(buf, self->json, data_sizeof(self->json));
 		break;
 	case TYPE_DATE:
 		encode_date(buf, self->integer);
@@ -62,47 +62,47 @@ hot static inline void
 value_decode(Value* self, uint8_t* json, Buf* buf)
 {
 	switch (*json) {
-	case JSON_TRUE:
-	case JSON_FALSE:
+	case DATA_TRUE:
+	case DATA_FALSE:
 	{
 		bool boolean;
-		json_read_bool(&json, &boolean);
+		unpack_bool(&json, &boolean);
 		value_set_bool(self, boolean);
 		break;
 	}
-	case JSON_NULL:
+	case DATA_NULL:
 	{
 		value_set_null(self);
 		break;
 	}
-	case JSON_REAL32:
-	case JSON_REAL64:
+	case DATA_REAL32:
+	case DATA_REAL64:
 	{
 		double real;
-		json_read_real(&json, &real);
+		unpack_real(&json, &real);
 		value_set_double(self, real);
 		break;
 	}
-	case JSON_INTV0 ... JSON_INT64:
+	case DATA_INTV0 ... DATA_INT64:
 	{
 		int64_t integer;
-		json_read_integer(&json, &integer);
+		unpack_int(&json, &integer);
 		value_set_int(self, integer);
 		break;
 	}
-	case JSON_STRINGV0 ... JSON_STRING32:
+	case DATA_STRINGV0 ... DATA_STRING32:
 	{
 		Str string;
-		json_read_string(&json, &string);
+		unpack_string(&json, &string);
 		value_set_string(self, &string, buf);
 		break;
 	}
-	case JSON_OBJ:
-	case JSON_ARRAY:
-		value_set_json(self, json, json_sizeof(json), buf);
+	case DATA_OBJ:
+	case DATA_ARRAY:
+		value_set_json(self, json, data_sizeof(json), buf);
 		break;
 	default:
-		json_error_read();
+		data_error_read();
 		break;
 	}
 }

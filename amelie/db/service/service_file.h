@@ -202,11 +202,11 @@ service_file_open(ServiceFile* self, uint64_t id)
 
 	// write origins
 	auto end = pos_origins;
-	json_skip(&end);
+	data_skip(&end);
 	buf_write(&self->origins, pos_origins, end - pos_origins);
 
 	// write actions
 	end = pos_actions;
-	json_skip(&end);
+	data_skip(&end);
 	buf_write(&self->actions, pos_actions, end - pos_actions);
 }

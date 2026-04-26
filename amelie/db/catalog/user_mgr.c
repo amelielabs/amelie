@@ -98,7 +98,7 @@ rename_if_abort(Log* self, LogOp* op)
 	// set previous name
 	uint8_t* pos = log_data_of(self, op);
 	Str name;
-	json_read_string(&pos, &name);
+	unpack_string(&pos, &name);
 
 	auto user = user_of(op->rel);
 	user_config_set_name(user->config, &name);
@@ -243,7 +243,7 @@ revoke_if_abort(Log* self, LogOp* op)
 	// set previous revoked_at
 	uint8_t* pos = log_data_of(self, op);
 	Str value;
-	json_read_string(&pos, &value);
+	unpack_string(&pos, &value);
 
 	auto user = user_of(op->rel);
 	user_config_set_revoked_at(user->config, &value);

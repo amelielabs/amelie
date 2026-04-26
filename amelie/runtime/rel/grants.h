@@ -146,17 +146,17 @@ static inline void
 grants_read(Grants* self, uint8_t** pos)
 {
 	// [[name, permission, ...], ...]
-	json_read_array(pos);
-	while (! json_read_array_end(pos))
+	unpack_array(pos);
+	while (! unpack_array_end(pos))
 	{
-		json_read_array(pos);
+		unpack_array(pos);
 		Str user;
-		json_read_string(pos, &user);
+		unpack_string(pos, &user);
 		uint32_t permissions = PERM_NONE;
-		while (! json_read_array_end(pos))
+		while (! unpack_array_end(pos))
 		{
 			Str name;
-			json_read_string(pos, &name);
+			unpack_string(pos, &name);
 			uint32_t permission;
 			if (permission_of(&name, &permission) == -1)
 				error("grants: unrecognized permission '%.*s'",

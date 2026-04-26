@@ -36,17 +36,17 @@ fn_length(Fn* self)
 		rc = utf8_strlen(&arg->string);
 		break;
 	case TYPE_JSON:
-		if (json_is_array(arg->json))
-			rc = json_array_size(arg->json);
+		if (data_is_array(arg->json))
+			rc = data_array_size(arg->json);
 		else
-		if (json_is_obj(arg->json))
-			rc = json_obj_size(arg->json);
+		if (data_is_obj(arg->json))
+			rc = data_obj_size(arg->json);
 		else
-		if (json_is_string(arg->json))
+		if (data_is_string(arg->json))
 		{
 			uint8_t* pos = arg->json;
 			Str str;
-			json_read_string(&pos, &str);
+			unpack_string(&pos, &str);
 			rc = utf8_strlen(&str);
 		} else
 			fn_error_arg(self, 0, "unsupported json value");

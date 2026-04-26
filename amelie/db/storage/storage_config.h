@@ -127,7 +127,7 @@ storage_config_write(StorageConfig* self, Buf* buf, int flags)
 
 	// compression_level
 	encode_raw(buf, "compression_level", 17);
-	encode_integer(buf, self->compression_level);
+	encode_int(buf, self->compression_level);
 
 	encode_obj_end(buf);
 }

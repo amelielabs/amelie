@@ -166,11 +166,11 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
-	encode_integer(buf, self->lsn);
+	encode_int(buf, self->lsn);
 
 	// op
 	encode_raw(buf, "op", 2);
-	encode_integer(buf, self->op);
+	encode_int(buf, self->op);
 
 	// grants
 	encode_raw(buf, "grants", 6);

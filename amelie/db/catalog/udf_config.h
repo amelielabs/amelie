@@ -145,7 +145,7 @@ udf_config_write(UdfConfig* self, Buf* buf, int flags)
 
 	// type
 	encode_raw(buf, "type", 4);
-	encode_integer(buf, self->type);
+	encode_int(buf, self->type);
 
 	// args
 	encode_raw(buf, "args", 4);

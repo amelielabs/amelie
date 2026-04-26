@@ -134,31 +134,31 @@ db_state(Db* self)
 
 	// frontends
 	encode_raw(buf, "frontends", 9);
-	encode_integer(buf, opt_int_of(&config()->frontends));
+	encode_int(buf, opt_int_of(&config()->frontends));
 
 	// backends
 	encode_raw(buf, "backends", 8);
-	encode_integer(buf, opt_int_of(&config()->backends));
+	encode_int(buf, opt_int_of(&config()->backends));
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
-	encode_integer(buf, state_lsn());
+	encode_int(buf, state_lsn());
 
 	// tsn
 	encode_raw(buf, "tsn", 3);
-	encode_integer(buf, state_tsn());
+	encode_int(buf, state_tsn());
 
 	// psn
 	encode_raw(buf, "psn", 3);
-	encode_integer(buf, state_psn());
+	encode_int(buf, state_psn());
 
 	// catalog
 	encode_raw(buf, "catalog", 7);
-	encode_integer(buf, state_catalog());
+	encode_int(buf, state_catalog());
 
 	// catalog_pending
 	encode_raw(buf, "catalog_pending", 15);
-	encode_integer(buf, opt_int_of(&state()->catalog_pending));
+	encode_int(buf, opt_int_of(&state()->catalog_pending));
 
 	// read_only
 	encode_raw(buf, "read_only", 9);

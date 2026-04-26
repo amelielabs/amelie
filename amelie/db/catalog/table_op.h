@@ -17,7 +17,7 @@ table_op_create(Buf* self, TableConfig* config)
 	// [op, config]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_CREATE);
+	encode_int(self, DDL_TABLE_CREATE);
 	table_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
@@ -27,11 +27,11 @@ static inline TableConfig*
 table_op_create_read(uint8_t* op)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_CREATE);
 	auto config = table_config_read(&op);
-	json_read_array_end(&op);
+	unpack_array_end(&op);
 	return config;
 }
 
@@ -41,7 +41,7 @@ table_op_drop(Buf* self, Str* user, Str* name)
 	// [op, user, name]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_DROP);
+	encode_int(self, DDL_TABLE_DROP);
 	encode_string(self, user);
 	encode_string(self, name);
 	encode_array_end(self);
@@ -52,12 +52,12 @@ static inline void
 table_op_drop_read(uint8_t* op, Str* user, Str* name)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_DROP);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
-	json_read_array_end(&op);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
+	unpack_array_end(&op);
 }
 
 static inline int
@@ -66,7 +66,7 @@ table_op_rename(Buf* self, Str* user, Str* name, Str* user_new, Str* name_new)
 	// [op, user, name, user_new, name_new]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_RENAME);
+	encode_int(self, DDL_TABLE_RENAME);
 	encode_string(self, user);
 	encode_string(self, name);
 	encode_string(self, user_new);
@@ -79,14 +79,14 @@ static inline void
 table_op_rename_read(uint8_t* op, Str* user, Str* name, Str* user_new, Str* name_new)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_RENAME);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
-	json_read_string(&op, user_new);
-	json_read_string(&op, name_new);
-	json_read_array_end(&op);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
+	unpack_string(&op, user_new);
+	unpack_string(&op, name_new);
+	unpack_array_end(&op);
 }
 
 static inline int
@@ -95,7 +95,7 @@ table_op_truncate(Buf* self, Str* user, Str* name)
 	// [op, user, name]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_TRUNCATE);
+	encode_int(self, DDL_TABLE_TRUNCATE);
 	encode_string(self, user);
 	encode_string(self, name);
 	encode_array_end(self);
@@ -106,12 +106,12 @@ static inline void
 table_op_truncate_read(uint8_t* op, Str* user, Str* name)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_TRUNCATE);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
-	json_read_array_end(&op);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
+	unpack_array_end(&op);
 }
 
 static inline int
@@ -120,10 +120,10 @@ table_op_set_identity(Buf* self, Str* user, Str* name, int64_t value)
 	// [op, user, name, value]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_SET_IDENTITY);
+	encode_int(self, DDL_TABLE_SET_IDENTITY);
 	encode_string(self, user);
 	encode_string(self, name);
-	encode_integer(self, value);
+	encode_int(self, value);
 	encode_array_end(self);
 	return offset;
 }
@@ -132,13 +132,13 @@ static inline void
 table_op_set_identity_read(uint8_t* op, Str* user, Str* name, int64_t* value)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_SET_IDENTITY);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
-	json_read_integer(&op, value);
-	json_read_array_end(&op);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
+	unpack_int(&op, value);
+	unpack_array_end(&op);
 }
 
 static inline int
@@ -147,7 +147,7 @@ table_op_column_add(Buf* self, Str* user, Str* name, Column* column)
 	// [op, user, name, column]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_COLUMN_ADD);
+	encode_int(self, DDL_TABLE_COLUMN_ADD);
 	encode_string(self, user);
 	encode_string(self, name);
 	column_write(column, self, 0);
@@ -159,13 +159,13 @@ static inline Column*
 table_op_column_add_read(uint8_t* op, Str* user, Str* name)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_COLUMN_ADD);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
 	auto column = column_read(&op);
-	json_read_array_end(&op);
+	unpack_array_end(&op);
 	return column;
 }
 
@@ -175,7 +175,7 @@ table_op_column_drop(Buf* self, Str* user, Str* name, Str* name_column)
 	// [op, user, name, column]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_COLUMN_DROP);
+	encode_int(self, DDL_TABLE_COLUMN_DROP);
 	encode_string(self, user);
 	encode_string(self, name);
 	encode_string(self, name_column);
@@ -187,13 +187,13 @@ static inline void
 table_op_column_drop_read(uint8_t* op, Str* user, Str* name, Str* name_column)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_COLUMN_DROP);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
-	json_read_string(&op, name_column);
-	json_read_array_end(&op);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
+	unpack_string(&op, name_column);
+	unpack_array_end(&op);
 }
 
 static inline int
@@ -202,7 +202,7 @@ table_op_column_set(Buf* self, int op, Str* user, Str* name, Str* column, Str* v
 	// [op, user, name, column, value]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, op);
+	encode_int(self, op);
 	encode_string(self, user);
 	encode_string(self, name);
 	encode_string(self, column);
@@ -215,13 +215,13 @@ static inline int
 table_op_column_set_read(uint8_t* op, Str* user, Str* name, Str* column, Str* value)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
-	json_read_string(&op, column);
-	json_read_string(&op, value);
-	json_read_array_end(&op);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
+	unpack_string(&op, column);
+	unpack_string(&op, value);
+	unpack_array_end(&op);
 	return cmd;
 }
 
@@ -233,7 +233,7 @@ table_op_column_rename(Buf* self, Str* user, Str* name,
 	// [op, user, name, column]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_COLUMN_RENAME);
+	encode_int(self, DDL_TABLE_COLUMN_RENAME);
 	encode_string(self, user);
 	encode_string(self, name);
 	encode_string(self, name_column);
@@ -248,14 +248,14 @@ table_op_column_rename_read(uint8_t* op, Str* user, Str* name,
                             Str* name_column_new)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_COLUMN_RENAME);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
-	json_read_string(&op, name_column);
-	json_read_string(&op, name_column_new);
-	json_read_array_end(&op);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
+	unpack_string(&op, name_column);
+	unpack_string(&op, name_column_new);
+	unpack_array_end(&op);
 }
 
 static inline int
@@ -264,7 +264,7 @@ table_op_index_create(Buf* self, Str* user, Str* name, IndexConfig* config)
 	// [op, user, name, config]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_INDEX_CREATE);
+	encode_int(self, DDL_INDEX_CREATE);
 	encode_string(self, user);
 	encode_string(self, name);
 	index_config_write(config, self, 0);
@@ -276,14 +276,14 @@ static inline uint8_t*
 table_op_index_create_read(uint8_t* op, Str* user, Str* name)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_INDEX_CREATE);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
 	auto config_pos = op;
-	json_skip(&op);
-	json_read_array_end(&op);
+	data_skip(&op);
+	unpack_array_end(&op);
 	return config_pos;
 }
 
@@ -293,7 +293,7 @@ table_op_index_drop(Buf* self, Str* user, Str* name, Str* name_index)
 	// [op, user, name, name_index]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_INDEX_DROP);
+	encode_int(self, DDL_INDEX_DROP);
 	encode_string(self, user);
 	encode_string(self, name);
 	encode_string(self, name_index);
@@ -305,13 +305,13 @@ static inline void
 table_op_index_drop_read(uint8_t* op, Str* user, Str* name, Str* name_index)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_INDEX_DROP);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
-	json_read_string(&op, name_index);
-	json_read_array_end(&op);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
+	unpack_string(&op, name_index);
+	unpack_array_end(&op);
 }
 
 static inline int
@@ -322,7 +322,7 @@ table_op_index_rename(Buf* self, Str* user, Str* name,
 	// [op, user, name, name_index, name_index_new]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_INDEX_RENAME);
+	encode_int(self, DDL_INDEX_RENAME);
 	encode_string(self, user);
 	encode_string(self, name);
 	encode_string(self, name_index);
@@ -337,14 +337,14 @@ table_op_index_rename_read(uint8_t* op, Str* user, Str* name,
                            Str*     name_index_new)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_INDEX_RENAME);
-	json_read_string(&op, user);
-	json_read_string(&op, name);
-	json_read_string(&op, name_index);
-	json_read_string(&op, name_index_new);
-	json_read_array_end(&op);
+	unpack_string(&op, user);
+	unpack_string(&op, name);
+	unpack_string(&op, name_index);
+	unpack_string(&op, name_index_new);
+	unpack_array_end(&op);
 }
 
 static inline int
@@ -353,7 +353,7 @@ table_op_storage_add(Buf* self, Str* user, Str* table, Volume* config)
 	// [op, user, table, storage]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_STORAGE_ADD);
+	encode_int(self, DDL_TABLE_STORAGE_ADD);
 	encode_string(self, user);
 	encode_string(self, table);
 	volume_write(config, self, 0);
@@ -365,14 +365,14 @@ static inline uint8_t*
 table_op_storage_add_read(uint8_t* op, Str* user, Str* table)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_STORAGE_ADD);
-	json_read_string(&op, user);
-	json_read_string(&op, table);
+	unpack_string(&op, user);
+	unpack_string(&op, table);
 	auto config_pos = op;
-	json_skip(&op);
-	json_read_array_end(&op);
+	data_skip(&op);
+	unpack_array_end(&op);
 	return config_pos;
 }
 
@@ -382,7 +382,7 @@ table_op_storage_drop(Buf* self, Str* user, Str* table, Str* storage)
 	// [op, user, table, storage]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_STORAGE_DROP);
+	encode_int(self, DDL_TABLE_STORAGE_DROP);
 	encode_string(self, user);
 	encode_string(self, table);
 	encode_string(self, storage);
@@ -394,13 +394,13 @@ static inline void
 table_op_storage_drop_read(uint8_t* op, Str* user, Str* table, Str* storage)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_STORAGE_DROP);
-	json_read_string(&op, user);
-	json_read_string(&op, table);
-	json_read_string(&op, storage);
-	json_read_array_end(&op);
+	unpack_string(&op, user);
+	unpack_string(&op, table);
+	unpack_string(&op, storage);
+	unpack_array_end(&op);
 }
 
 static inline int
@@ -409,7 +409,7 @@ table_op_storage_pause(Buf* self, Str* user, Str* table, Str* storage, bool paus
 	// [op, user, table, storage, pause]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_integer(self, DDL_TABLE_STORAGE_PAUSE);
+	encode_int(self, DDL_TABLE_STORAGE_PAUSE);
 	encode_string(self, user);
 	encode_string(self, table);
 	encode_string(self, storage);
@@ -423,12 +423,12 @@ table_op_storage_pause_read(uint8_t* op, Str* user, Str* table, Str* storage,
                             bool* pause)
 {
 	int64_t cmd;
-	json_read_array(&op);
-	json_read_integer(&op, &cmd);
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_STORAGE_PAUSE);
-	json_read_string(&op, user);
-	json_read_string(&op, table);
-	json_read_string(&op, storage);
-	json_read_bool(&op, pause);
-	json_read_array_end(&op);
+	unpack_string(&op, user);
+	unpack_string(&op, table);
+	unpack_string(&op, storage);
+	unpack_bool(&op, pause);
+	unpack_array_end(&op);
 }

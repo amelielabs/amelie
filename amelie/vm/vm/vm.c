@@ -800,7 +800,7 @@ cequss:
 cequjj:
 	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		value_set_bool(&r[op->a], !json_compare(r[op->b].json, r[op->c].json));
+		value_set_bool(&r[op->a], !data_compare(r[op->b].json, r[op->c].json));
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -1369,17 +1369,17 @@ cidxjs:
 		b = &r[op->b];
 		c = &r[op->c];
 		json = b->json;
-		if (likely(json_is_obj(json)))
+		if (likely(data_is_obj(json)))
 		{
-			if (! json_obj_find(&json, str_of(&c->string), str_size(&c->string))) {
+			if (! data_obj_find(&json, str_of(&c->string), str_size(&c->string))) {
 				value_set_null(a);
 			} else {
-				value_set_json(a, json, json_sizeof(json), b->buf);
+				value_set_json(a, json, data_sizeof(json), b->buf);
 				if (b->buf)
 					buf_ref(b->buf);
 			}
 		} else
-		if (json_is_null(json)) {
+		if (data_is_null(json)) {
 			value_set_null(a);
 		} else {
 			error("[]: object expected");
@@ -1398,18 +1398,18 @@ cidxji:
 		b = &r[op->b];
 		c = &r[op->c];
 		json = b->json;
-		if (likely(json_is_array(json)))
+		if (likely(data_is_array(json)))
 		{
-			if (! json_array_find(&json, c->integer)) {
+			if (! data_array_find(&json, c->integer)) {
 				value_set_null(a);
 			} else
 			{
-				value_set_json(a, json, json_sizeof(json), b->buf);
+				value_set_json(a, json, data_sizeof(json), b->buf);
 				if (b->buf)
 					buf_ref(b->buf);
 			}
 		} else
-		if (json_is_null(json)) {
+		if (data_is_null(json)) {
 			value_set_null(a);
 		} else {
 			error("[]: array expected");
@@ -1443,17 +1443,17 @@ cdotjs:
 		b = &r[op->b];
 		c = &r[op->c];
 		json = b->json;
-		if (likely(json_is_obj(json)))
+		if (likely(data_is_obj(json)))
 		{
-			if (! json_obj_find_path(&json, &c->string)) {
+			if (! data_obj_find_path(&json, &c->string)) {
 				value_set_null(a);
 			} else {
-				value_set_json(a, json, json_sizeof(json), b->buf);
+				value_set_json(a, json, data_sizeof(json), b->buf);
 				if (b->buf)
 					buf_ref(b->buf);
 			}
 		} else
-		if (json_is_null(json)) {
+		if (data_is_null(json)) {
 			value_set_null(a);
 		} else {
 			error(".: object expected");
@@ -1712,7 +1712,7 @@ ctable_reads:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 	{
-		json_read_string((uint8_t**)&ptr, &r[op->a].string);
+		unpack_string((uint8_t**)&ptr, &r[op->a].string);
 		r[op->a].type = TYPE_STRING;
 		r[op->a].buf  = NULL;
 	} else {
@@ -1723,7 +1723,7 @@ ctable_reads:
 ctable_readj:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
-		value_set_json(&r[op->a], ptr, json_sizeof(ptr), NULL);
+		value_set_json(&r[op->a], ptr, data_sizeof(ptr), NULL);
 	else
 		value_set_null(&r[op->a]);
 	op_next;
@@ -1785,14 +1785,14 @@ cjson_open:
 	a = &r[op->a];
 	if (likely(r[op->b].type == TYPE_JSON))
 	{
-		if (unlikely(! json_is_array(r[op->b].json)))
+		if (unlikely(! data_is_array(r[op->b].json)))
 			error("FROM: json array expected");
 		// jmp on success or skip to the next op on eof
 		a->type = TYPE_CURSOR_JSON;
 		a->json = r[op->b].json;
-		json_read_array(&a->json);
-		if (likely(! json_read_array_end(&a->json))) {
-			a->json_size = json_sizeof(a->json);
+		unpack_array(&a->json);
+		if (likely(! unpack_array_end(&a->json))) {
+			a->json_size = data_sizeof(a->json);
 			op++;
 		} else {
 			op = code_at(self->code, op->c);
@@ -1807,9 +1807,9 @@ cjson_open:
 cjson_next:
 	// [cursor, _on_success]
 	a = &r[op->a];
-	json_skip(&a->json);
-	if (likely(! json_read_array_end(&a->json))) {
-		a->json_size = json_sizeof(a->json);
+	data_skip(&a->json);
+	if (likely(! unpack_array_end(&a->json))) {
+		a->json_size = data_sizeof(a->json);
 		op = code_at(self->code, op->b);
 	} else {
 		op++;

@@ -20,8 +20,8 @@
 hot static inline bool
 value_all_array_equ(uint8_t* pos, Value* value, bool* has_null)
 {
-	for (json_read_array(&pos); !json_read_array_end(&pos);
-	     json_skip(&pos))
+	for (unpack_array(&pos); !unpack_array_end(&pos);
+	     data_skip(&pos))
 	{
 		Value ref;
 		value_init(&ref);
@@ -39,8 +39,8 @@ value_all_array_equ(uint8_t* pos, Value* value, bool* has_null)
 hot static inline bool
 value_all_array_nequ(uint8_t* pos, Value* value, bool* has_null)
 {
-	for (json_read_array(&pos); !json_read_array_end(&pos);
-	     json_skip(&pos))
+	for (unpack_array(&pos); !unpack_array_end(&pos);
+	     data_skip(&pos))
 	{
 		Value ref;
 		value_init(&ref);
@@ -58,8 +58,8 @@ value_all_array_nequ(uint8_t* pos, Value* value, bool* has_null)
 hot static inline bool
 value_all_array_lt(uint8_t* pos, Value* value, bool* has_null)
 {
-	for (json_read_array(&pos); !json_read_array_end(&pos);
-	     json_skip(&pos))
+	for (unpack_array(&pos); !unpack_array_end(&pos);
+	     data_skip(&pos))
 	{
 		Value ref;
 		value_init(&ref);
@@ -77,8 +77,8 @@ value_all_array_lt(uint8_t* pos, Value* value, bool* has_null)
 hot static inline bool
 value_all_array_lte(uint8_t* pos, Value* value, bool* has_null)
 {
-	for (json_read_array(&pos); !json_read_array_end(&pos);
-	     json_skip(&pos))
+	for (unpack_array(&pos); !unpack_array_end(&pos);
+	     data_skip(&pos))
 	{
 		Value ref;
 		value_init(&ref);
@@ -96,8 +96,8 @@ value_all_array_lte(uint8_t* pos, Value* value, bool* has_null)
 hot static inline bool
 value_all_array_gt(uint8_t* pos, Value* value, bool* has_null)
 {
-	for (json_read_array(&pos); !json_read_array_end(&pos);
-	     json_skip(&pos))
+	for (unpack_array(&pos); !unpack_array_end(&pos);
+	     data_skip(&pos))
 	{
 		Value ref;
 		value_init(&ref);
@@ -115,8 +115,8 @@ value_all_array_gt(uint8_t* pos, Value* value, bool* has_null)
 hot static inline bool
 value_all_array_gte(uint8_t* pos, Value* value, bool* has_null)
 {
-	for (json_read_array(&pos); !json_read_array_end(&pos);
-	     json_skip(&pos))
+	for (unpack_array(&pos); !unpack_array_end(&pos);
+	     data_skip(&pos))
 	{
 		Value ref;
 		value_init(&ref);
@@ -236,7 +236,7 @@ value_all(Value* result, Value* a, Value* b, int op)
 	{
 		has_null = true;
 	} else
-	if (b->type == TYPE_JSON && json_is_array(b->json))
+	if (b->type == TYPE_JSON && data_is_array(b->json))
 	{
 		uint8_t* pos = b->json;
 		switch (op) {

@@ -191,13 +191,13 @@ server_configure(Server* self)
 	if (opt_json_empty(listen))
 		return;
 	auto pos = opt_json_of(listen);
-	if (json_is_null(pos))
+	if (data_is_null(pos))
 		return;
-	if (! json_is_array(pos))
+	if (! data_is_array(pos))
 		error("server: <listen> option expected to be array or null"); 
 
-	json_read_array(&pos);
-	while (! json_read_array_end(&pos))
+	unpack_array(&pos);
+	while (! unpack_array_end(&pos))
 	{
 		auto config = server_config_read(&pos);
 		list_append(&self->config, &config->link);

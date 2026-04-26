@@ -37,8 +37,8 @@ ack_if_abort(Log* self, LogOp* op)
 
 	int64_t pos_lsn;
 	int64_t pos_op;
-	json_read_integer(&pos, &pos_lsn);
-	json_read_integer(&pos, &pos_op);
+	unpack_int(&pos, &pos_lsn);
+	unpack_int(&pos, &pos_op);
 
 	auto sub = sub_of(op->rel);
 	sub_config_set_pos(sub->config, pos_lsn, pos_op);
@@ -77,8 +77,8 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 	log_persist_cmd(&tr->log, &self->config->id, op);
 
 	// save previous value
-	encode_integer(&tr->log.data, current_lsn);
-	encode_integer(&tr->log.data, current_op);
+	encode_int(&tr->log.data, current_lsn);
+	encode_int(&tr->log.data, current_op);
 
 	// update slot
 	//

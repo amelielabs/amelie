@@ -33,7 +33,7 @@ value_array_append(Value*   result, Timezone* tz,
                    Value*   argv)
 {
 	auto buf = buf_create();
-	buf_write(buf, json, json_size - json_size_array_end());
+	buf_write(buf, json, json_size - data_size_array_end());
 	for (int i = 0; i < argc; i++)
 		value_encode(&argv[i], tz, buf);
 	encode_array_end(buf);
@@ -51,7 +51,7 @@ value_array_push(Value*   result, Timezone* tz,
 	encode_array(buf);
 	for (int i = 0; i < argc; i++)
 		value_encode(&argv[i], tz, buf);
-	buf_write(buf, json + json_size_array(), json_size - json_size_array());
+	buf_write(buf, json + data_size_array(), json_size - data_size_array());
 	value_set_json_buf(result, buf);
 }
 
@@ -62,9 +62,9 @@ value_array_pop(Value* result, uint8_t* json, int json_size)
 	encode_array(buf);
 	auto end = json + json_size;
 	auto pos = json;
-	json_read_array(&pos);
-	if (! json_is_array_end(pos))
-		json_skip(&pos);
+	unpack_array(&pos);
+	if (! data_is_array_end(pos))
+		data_skip(&pos);
 	buf_write(buf, pos, end - pos);
 	value_set_json_buf(result, buf);
 }
@@ -74,7 +74,7 @@ value_array_pop_back(Value* result, uint8_t* json)
 {
 	auto buf = buf_create();
 	auto start = json;
-	if (json_array_last(&json))
+	if (data_array_last(&json))
 		buf_write(buf, start, json - start);
 	else
 		encode_array(buf);
@@ -88,17 +88,17 @@ value_array_put(Value*   result, Timezone* tz,
                 int      idx,
                 Value*   value)
 {
-	json_read_array(&json);
+	unpack_array(&json);
 
 	auto buf = buf_create();
 	errdefer_buf(buf);
 
 	encode_array(buf);
 	int i = 0;
-	while (! json_read_array_end(&json))
+	while (! unpack_array_end(&json))
 	{
 		uint8_t* start = json;
-		json_skip(&json);
+		data_skip(&json);
 		// replace
 		if (i == idx)
 			value_encode(value, tz, buf);
@@ -118,17 +118,17 @@ value_array_put(Value*   result, Timezone* tz,
 static inline void
 value_array_remove(Value* result, uint8_t* json, int idx)
 {
-	json_read_array(&json);
+	unpack_array(&json);
 
 	auto buf = buf_create();
 	errdefer_buf(buf);
 
 	encode_array(buf);
 	int i = 0;
-	while (! json_read_array_end(&json))
+	while (! unpack_array_end(&json))
 	{
 		uint8_t* start = json;
-		json_skip(&json);
+		data_skip(&json);
 		if (i != idx)
 			buf_write(buf, start, (json - start));
 		i++;

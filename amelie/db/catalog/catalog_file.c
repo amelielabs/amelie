@@ -164,38 +164,38 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	decode_obj(obj, "catalog", pos);
 
 	// users
-	json_read_array(&pos_users);
-	while (! json_read_array_end(&pos_users))
+	unpack_array(&pos_users);
+	while (! unpack_array_end(&pos_users))
 		catalog_restore_object(self, RESTORE_USER, &pos_users);
 
 	// storages
-	json_read_array(&pos_storages);
-	while (! json_read_array_end(&pos_storages))
+	unpack_array(&pos_storages);
+	while (! unpack_array_end(&pos_storages))
 		catalog_restore_object(self, RESTORE_STORAGE, &pos_storages);
 
 	// tables
-	json_read_array(&pos_tables);
-	while (! json_read_array_end(&pos_tables))
+	unpack_array(&pos_tables);
+	while (! unpack_array_end(&pos_tables))
 		catalog_restore_object(self, RESTORE_TABLE, &pos_tables);
 
 	// branches
-	json_read_array(&pos_branches);
-	while (! json_read_array_end(&pos_branches))
+	unpack_array(&pos_branches);
+	while (! unpack_array_end(&pos_branches))
 		catalog_restore_object(self, RESTORE_BRANCH, &pos_branches);
 
 	// udfs
-	json_read_array(&pos_udfs);
-	while (! json_read_array_end(&pos_udfs))
+	unpack_array(&pos_udfs);
+	while (! unpack_array_end(&pos_udfs))
 		catalog_restore_object(self, RESTORE_UDF, &pos_udfs);
 
 	// topics
-	json_read_array(&pos_topics);
-	while (! json_read_array_end(&pos_topics))
+	unpack_array(&pos_topics);
+	while (! unpack_array_end(&pos_topics))
 		catalog_restore_object(self, RESTORE_TOPIC, &pos_topics);
 
 	// subs
-	json_read_array(&pos_subs);
-	while (! json_read_array_end(&pos_subs))
+	unpack_array(&pos_subs);
+	while (! unpack_array_end(&pos_subs))
 		catalog_restore_object(self, RESTORE_SUB, &pos_subs);
 
 	// set catalog lsn and tsn
@@ -255,11 +255,11 @@ catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
-	encode_integer(buf, lsn);
+	encode_int(buf, lsn);
 
 	// tsn
 	encode_raw(buf, "tsn", 3);
-	encode_integer(buf, tsn);
+	encode_int(buf, tsn);
 
 	// users
 	encode_raw(buf, "users", 5);

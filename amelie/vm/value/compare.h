@@ -62,7 +62,7 @@ value_compare(Value* a, Value* b)
 	case TYPE_STRING:
 		return str_compare_fn(&a->string, &b->string);
 	case TYPE_JSON:
-		return json_compare(a->json, b->json);
+		return data_compare(a->json, b->json);
 	case TYPE_INTERVAL:
 		return interval_compare(&a->interval, &b->interval);
 	case TYPE_VECTOR:

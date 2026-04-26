@@ -83,7 +83,7 @@ key_write(Key* self, Buf* buf, int flags)
 
 	// column
 	encode_raw(buf, "column", 6);
-	encode_integer(buf, self->ref);
+	encode_int(buf, self->ref);
 
 	// asc
 	encode_raw(buf, "asc", 3);

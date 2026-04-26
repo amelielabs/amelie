@@ -186,7 +186,7 @@ part_status(Part* self, Buf* buf, int flags)
 
 	// id
 	encode_raw(buf, "id", 2);
-	encode_integer(buf, self->id.id);
+	encode_int(buf, self->id.id);
 
 	// storage
 	encode_raw(buf, "storage", 7);
@@ -194,23 +194,23 @@ part_status(Part* self, Buf* buf, int flags)
 
 	// min
 	encode_raw(buf, "min", 3);
-	encode_integer(buf, heap->hash_min);
+	encode_int(buf, heap->hash_min);
 
 	// max
 	encode_raw(buf, "max", 3);
-	encode_integer(buf, heap->hash_max);
+	encode_int(buf, heap->hash_max);
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
-	encode_integer(buf, heap->lsn);
+	encode_int(buf, heap->lsn);
 
 	// size
 	encode_raw(buf, "size", 4);
-	encode_integer(buf, page_mgr_used(&self->heap->page_mgr));
+	encode_int(buf, page_mgr_used(&self->heap->page_mgr));
 
 	// compression
 	encode_raw(buf, "compression", 11);
-	encode_integer(buf, heap->compression);
+	encode_int(buf, heap->compression);
 
 	encode_obj_end(buf);
 }

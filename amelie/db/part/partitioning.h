@@ -68,7 +68,7 @@ partitioning_write(Partitioning* self, Buf* buf, int flags)
 
 	// partitions
 	encode_raw(buf, "partitions", 10);
-	encode_integer(buf, self->partitions);
+	encode_int(buf, self->partitions);
 
 	// volumes
 	encode_raw(buf, "volumes", 7);

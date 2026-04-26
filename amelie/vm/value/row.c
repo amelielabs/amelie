@@ -37,11 +37,11 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 		if (key->order < count)
 		{
 			auto ref = &values[key->order];
-			size += json_size_string(str_size(&ref->string));
+			size += data_size_string(str_size(&ref->string));
 		} else
 		{
 			// min string
-			size += json_size_string(0);
+			size += data_size_string(0);
 		}
 	}
 
@@ -73,12 +73,12 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 			if (key->order < count)
 			{
 				auto ref = &values[key->order];
-				json_write_string(&pos, &ref->string);
+				pack_string(&pos, &ref->string);
 			} else
 			{
 				Str str;
 				str_init(&str);
-				json_write_string(&pos, &str);
+				pack_string(&pos, &str);
 			}
 			continue;
 		}
@@ -207,7 +207,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		case TYPE_JSON:
 		{
 			auto pos_end = pos_src;
-			json_skip(&pos_end);
+			data_skip(&pos_end);
 			size += pos_end - pos_src;
 			break;
 		}
@@ -275,7 +275,7 @@ row_update(Heap*    heap,
 		case TYPE_JSON:
 		{
 			auto pos_end = pos_src;
-			json_skip(&pos_end);
+			data_skip(&pos_end);
 			memcpy(pos, pos_src, pos_end - pos_src);
 			pos += pos_end - pos_src;
 			break;

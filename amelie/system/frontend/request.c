@@ -106,20 +106,20 @@ request_rpc_sql(Request* self)
 	auto pos = cmd->params;
 	if (unlikely(! pos))
 		error("'params' field is missing");
-	if (! json_is_obj(pos))
+	if (! data_is_obj(pos))
 		error("'params' field is not an object");
 
 	// parse params
-	json_read_obj(&pos);
-	while (! json_read_obj_end(&pos))
+	unpack_obj(&pos);
+	while (! unpack_obj_end(&pos))
 	{
 		Str name;
-		json_read_string(&pos, &name);
+		unpack_string(&pos, &name);
 		if (str_is(&name, "text", 4))
 		{
-			if (unlikely(! json_is_string(pos)))
+			if (unlikely(! data_is_string(pos)))
 				error("'text' field is not a string");
-			json_read_string(&pos, &self->text);
+			unpack_string(&pos, &self->text);
 		} else {
 			error("unexpected params field");
 		}
@@ -139,33 +139,33 @@ request_rpc_cmd(Request* self, RequestType type, bool with_args)
 	auto pos = cmd->params;
 	if (unlikely(! pos))
 		error("'params' are missing");
-	if (! json_is_obj(pos))
+	if (! data_is_obj(pos))
 		error("'params' is not an object");
 
 	// parse params
-	json_read_obj(&pos);
-	while (! json_read_obj_end(&pos))
+	unpack_obj(&pos);
+	while (! unpack_obj_end(&pos))
 	{
 		Str name;
-		json_read_string(&pos, &name);
+		unpack_string(&pos, &name);
 		if (str_is(&name, "user", 4))
 		{
-			if (unlikely(! json_is_string(pos)))
+			if (unlikely(! data_is_string(pos)))
 				error("'user' is not a string");
-			json_read_string(&pos, &self->rel_user);
+			unpack_string(&pos, &self->rel_user);
 		} else
 		if (str_is(&name, "rel", 3))
 		{
-			if (unlikely(! json_is_string(pos)))
+			if (unlikely(! data_is_string(pos)))
 				error("'rel' is not a string");
-			json_read_string(&pos, &self->rel);
+			unpack_string(&pos, &self->rel);
 		} else
 		if (str_is(&name, "args", 4))
 		{
-			if (unlikely(!json_is_array(pos) && !json_is_obj(pos)))
+			if (unlikely(!data_is_array(pos) && !data_is_obj(pos)))
 				error("'args' is not an array or object");
 			self->args = pos;
-			json_skip(&pos);
+			data_skip(&pos);
 		} else {
 			error("unexpected params field");
 		}

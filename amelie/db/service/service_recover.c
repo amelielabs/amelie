@@ -27,21 +27,21 @@ service_recover_validate(ServiceFile* self)
 {
 	// [[action, ...], ...]
 	auto pos = self->actions.start;
-	json_read_array(&pos);
-	while (! json_read_array_end(&pos))
+	unpack_array(&pos);
+	while (! unpack_array_end(&pos))
 	{
-		json_read_array(&pos);
+		unpack_array(&pos);
 
 		// action
 		Str action;
-		json_read_string(&pos, &action);
+		unpack_string(&pos, &action);
 
 		bool valid = false;
 		if (str_is(&action, "create", 6))
 		{
 			// [create, path]
 			Str path;
-			json_read_string(&pos, &path);
+			unpack_string(&pos, &path);
 
 			// valid if created file exists
 
@@ -53,9 +53,9 @@ service_recover_validate(ServiceFile* self)
 		if (str_is(&action, "rename", 6))
 		{
 			// [rename, from, to]
-			json_skip(&pos);
+			data_skip(&pos);
 			Str path;
-			json_read_string(&pos, &path);
+			unpack_string(&pos, &path);
 
 			// valid if renamed file exists
 
@@ -67,7 +67,7 @@ service_recover_validate(ServiceFile* self)
 			error("service: unknown action type");
 		}
 
-		json_read_array_end(&pos);
+		unpack_array_end(&pos);
 		if (! valid)
 			return false;
 	}
@@ -79,20 +79,20 @@ service_recover_abort(ServiceFile* self)
 {
 	// [[action, ...], ...]
 	auto pos = self->actions.start;
-	json_read_array(&pos);
-	while (! json_read_array_end(&pos))
+	unpack_array(&pos);
+	while (! unpack_array_end(&pos))
 	{
-		json_read_array(&pos);
+		unpack_array(&pos);
 
 		// action
 		Str action;
-		json_read_string(&pos, &action);
+		unpack_string(&pos, &action);
 
 		if (str_is(&action, "create", 6))
 		{
 			// [create, path]
 			Str path;
-			json_read_string(&pos, &path);
+			unpack_string(&pos, &path);
 
 			// remove file
 			fs_unlink_if_exists("%s/%.*s", state_directory(),
@@ -104,8 +104,8 @@ service_recover_abort(ServiceFile* self)
 			// [rename, from, to]
 			Str from;
 			Str to;
-			json_read_string(&pos, &from);
-			json_read_string(&pos, &to);
+			unpack_string(&pos, &from);
+			unpack_string(&pos, &to);
 
 			char path_from[PATH_MAX];
 			sfmt(path_from, sizeof(path_from),
@@ -125,7 +125,7 @@ service_recover_abort(ServiceFile* self)
 			error("service: unknown action type");
 		}
 
-		json_read_array_end(&pos);
+		unpack_array_end(&pos);
 	}
 }
 
@@ -136,8 +136,8 @@ service_recover_resume(ServiceFile* self)
 
 	// [path, ...]
 	auto pos = self->origins.start;
-	json_read_array(&pos);
-	while (! json_read_array_end(&pos))
+	unpack_array(&pos);
+	while (! unpack_array_end(&pos))
 	{
 		Str path_relative;
 		decode_basepath(&pos, &path_relative);

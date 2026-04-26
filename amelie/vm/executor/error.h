@@ -37,11 +37,11 @@ static inline void
 error_buf(Buf* buf)
 {
 	auto pos = buf->start;
-	json_read_obj(&pos);
+	unpack_obj(&pos);
 	// msg
-	json_skip(&pos);
+	data_skip(&pos);
 	Str text;
-	json_read_string(&pos, &text);
+	unpack_string(&pos, &text);
 	error("%.*s", str_size(&text), str_of(&text));
 }
 
@@ -49,11 +49,11 @@ static inline void
 rethrow_buf(Buf* buf)
 {
 	auto pos = buf->start;
-	json_read_obj(&pos);
+	unpack_obj(&pos);
 	// msg
-	json_skip(&pos);
+	data_skip(&pos);
 	Str text;
-	json_read_string(&pos, &text);
+	unpack_string(&pos, &text);
 
 	error_set(&am_self()->error,
 	          source_file,

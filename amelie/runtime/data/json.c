@@ -13,7 +13,7 @@
 #include <amelie_base.h>
 #include <amelie_os.h>
 #include <amelie_lib.h>
-#include <amelie_json.h>
+#include <amelie_data.h>
 
 void
 json_init(Json* self)
@@ -60,7 +60,7 @@ hot static inline JsonState
 json_pop(Json* self)
 {
 	if (unlikely(buf_empty(&self->stack)))
-		error("unexpected end of JSON object");
+		error("unexpected end of json object");
 	buf_truncate(&self->stack, sizeof(JsonState));
 	return *(JsonState*)self->stack.position;
 }
@@ -86,7 +86,7 @@ hot static inline void
 json_keyword(Json* self, const char* name, int name_size)
 {
 	if (unlikely(! json_is_keyword(self, name, name_size)))
-		error("unexpected JSON token");
+		error("unexpected json token");
 	self->pos += name_size;
 }
 
@@ -108,7 +108,7 @@ json_string_read(Json* self, Str* str, int string_end, bool* unescape)
 			break;
 		}
 		if (unlikely(*self->pos == '\n'))
-			error("unterminated JSON string");
+			error("unterminated json string");
 		if (*self->pos == '\\') {
 			slash = !slash;
 			*unescape = true;
@@ -116,10 +116,10 @@ json_string_read(Json* self, Str* str, int string_end, bool* unescape)
 			slash = false;
 		}
 		if (unlikely(utf8_next(&self->pos, self->end) == -1))
-			error("invalid JSON string UTF8 encoding");
+			error("invalid json string UTF8 encoding");
 	}
 	if (unlikely(self->pos == self->end))
-		error("unterminated JSON string");
+		error("unterminated json string");
 	auto size = self->pos - start;
 	self->pos++;
 	str_set(str, start, size);
@@ -157,7 +157,7 @@ json_integer_read(Json* self, int64_t* value, double* real)
 		if (! isdigit(*self->pos))
 			break;
 		if (unlikely(int64_mul_add_overflow(value, *value, 10, *self->pos - '0')))
-			error("JSON int overflow");
+			error("json int overflow");
 		self->pos++;
 	}
 	if (minus)
@@ -169,7 +169,7 @@ read_as_double:
 	char* end = NULL;
 	*real = strtod(start, &end);
 	if (errno == ERANGE)
-		error("bad JSON float number");
+		error("bad json float number");
 	self->pos = end;
 	if (minus)
 		*real = -(*real);
@@ -182,7 +182,7 @@ json_integer(Json* self)
 	int64_t value = 0;
 	double  value_real = 0;
 	if (json_integer_read(self, &value, &value_real))
-		encode_integer(self->buf, value);
+		encode_int(self->buf, value);
 	else
 		encode_real(self->buf, value_real);
 }
@@ -232,7 +232,7 @@ json_const(Json* self)
 		}
 		break;
 	}
-	error("unexpected JSON token");
+	error("unexpected json token");
 }
 
 hot void
@@ -366,7 +366,7 @@ json_parse(Json* self, Str* text, Buf* buf)
 			bool unescape = false;
 			Str str;
 			if (! json_string(self, &str, &unescape))
-				error("JSON object key expected");
+				error("json object key expected");
 			if (unescape)
 				encode_string_unescape(self->buf, &str);
 			else
@@ -374,7 +374,7 @@ json_parse(Json* self, Str* text, Buf* buf)
 			// ':'
 			next = json_next(self);
 			if (next != ':')
-				error("unexpected JSON object token");
+				error("unexpected json object token");
 			self->pos++;
 			// value
 			json_push(self, JSON_MAP_NEXT);
@@ -395,7 +395,7 @@ json_parse(Json* self, Str* text, Buf* buf)
 				self->pos++;
 				break;
 			}
-			error("unexpected JSON object token");
+			error("unexpected json object token");
 			break;
 		}
 		}

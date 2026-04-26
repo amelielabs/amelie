@@ -135,31 +135,31 @@ catalog_status(Catalog* self)
 
 	// users
 	encode_raw(buf, "users", 5);
-	encode_integer(buf, self->user_mgr.mgr.list_count);
+	encode_int(buf, self->user_mgr.mgr.list_count);
 
 	// storages
 	encode_raw(buf, "storages", 8);
-	encode_integer(buf, self->storage_mgr.mgr.list_count);
+	encode_int(buf, self->storage_mgr.mgr.list_count);
 
 	// tables
 	encode_raw(buf, "tables", 6);
-	encode_integer(buf, self->table_mgr.mgr.list_count);
+	encode_int(buf, self->table_mgr.mgr.list_count);
 
 	// branches
 	encode_raw(buf, "branches", 8);
-	encode_integer(buf, self->branch_mgr.mgr.list_count);
+	encode_int(buf, self->branch_mgr.mgr.list_count);
 
 	// udfs
 	encode_raw(buf, "udfs", 4);
-	encode_integer(buf, self->udf_mgr.mgr.list_count);
+	encode_int(buf, self->udf_mgr.mgr.list_count);
 
 	// topics
 	encode_raw(buf, "topics", 6);
-	encode_integer(buf, self->topic_mgr.mgr.list_count);
+	encode_int(buf, self->topic_mgr.mgr.list_count);
 
 	// subscriptions
 	encode_raw(buf, "subscriptions", 13);
-	encode_integer(buf, self->sub_mgr.mgr.list_count);
+	encode_int(buf, self->sub_mgr.mgr.list_count);
 
 	encode_obj_end(buf);
 	return buf;

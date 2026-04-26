@@ -40,14 +40,14 @@ jwt_create(Str* user, Str* secret, Timestamp* expire)
 	// iat
 	auto iat = time_ms() / 1000;
 	encode_raw(payload, "iat", 3);
-	encode_integer(payload, iat);
+	encode_int(payload, iat);
 
 	// exp
 	if (expire)
 	{
 		encode_raw(payload, "exp", 3);
 		auto exp = timestamp_get_unixtime(expire, NULL) / 1000 / 1000;
-		encode_integer(payload, exp);
+		encode_int(payload, exp);
 	}
 	encode_obj_end(payload);
 

@@ -31,11 +31,11 @@ import_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
 	auto match_count = 0;
 
 	// {}
-	json_read_obj(pos);
-	while (! json_read_obj_end(pos))
+	unpack_obj(pos);
+	while (! unpack_obj_end(pos))
 	{
 		Str name;
-		json_read_string(pos, &name);
+		unpack_string(pos, &name);
 
 		// match column
 		auto column = columns_find(columns, &name);
@@ -76,16 +76,16 @@ import_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
 {
 	// {}
 	auto pos = args;
-	if (json_is_obj(pos))
+	if (data_is_obj(pos))
 		return import_object(self, columns, values, &pos);
 
-	// [ {}, ... ]
-	if (json_is_array(pos))
+	// [{}, ...]
+	if (data_is_array(pos))
 	{
-		json_read_array(&pos);
-		while (! json_read_array_end(&pos))
+		unpack_array(&pos);
+		while (! unpack_array_end(&pos))
 		{
-			if (unlikely(! json_is_obj(pos)))
+			if (unlikely(! data_is_obj(pos)))
 				error("write: {} expected");
 			import_object(self, columns, values, &pos);
 		}
@@ -228,21 +228,21 @@ import_ack(Parser* self, Sub* sub, uint8_t* args)
 
 	// [lsn, lsn_op]
 	auto pos = args;
-	if (! json_is_array(pos))
+	if (! data_is_array(pos))
 		goto error;
-	json_read_array(&pos);
+	unpack_array(&pos);
 
 	int64_t lsn;
-	if (! json_is_integer(pos))
+	if (! data_is_int(pos))
 		goto error;
-	json_read_integer(&pos, &lsn);
+	unpack_int(&pos, &lsn);
 
 	int64_t lsn_op;
-	if (! json_is_integer(pos))
+	if (! data_is_int(pos))
 		goto error;
 
-	json_read_integer(&pos, &lsn_op);
-	if (! json_read_array_end(&pos))
+	unpack_int(&pos, &lsn_op);
+	if (! unpack_array_end(&pos))
 		goto error;
 
 	ack->to_lsn = lsn;

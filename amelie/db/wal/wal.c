@@ -196,35 +196,35 @@ wal_status(Wal* self)
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
-	encode_integer(buf, state_lsn());
+	encode_int(buf, state_lsn());
 
 	// lsn_min
 	encode_raw(buf, "lsn_min", 7);
-	encode_integer(buf, list_min);
+	encode_int(buf, list_min);
 
 	// files
 	encode_raw(buf, "files", 5);
-	encode_integer(buf, list_count);
+	encode_int(buf, list_count);
 
 	// slots
 	encode_raw(buf, "slots", 5);
-	encode_integer(buf, slots_count);
+	encode_int(buf, slots_count);
 
 	// slots_min
 	encode_raw(buf, "slots_min", 9);
-	encode_integer(buf, slots_min);
+	encode_int(buf, slots_min);
 
 	// writes
 	encode_raw(buf, "writes", 6);
-	encode_integer(buf, opt_int_of(&state()->writes));
+	encode_int(buf, opt_int_of(&state()->writes));
 
 	// writes_bytes
 	encode_raw(buf, "writes_bytes", 12);
-	encode_integer(buf, opt_int_of(&state()->writes_bytes));
+	encode_int(buf, opt_int_of(&state()->writes_bytes));
 
 	// ops
 	encode_raw(buf, "ops", 3);
-	encode_integer(buf, opt_int_of(&state()->ops));
+	encode_int(buf, opt_int_of(&state()->ops));
 
 	encode_obj_end(buf);
 	return buf;
