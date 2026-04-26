@@ -149,7 +149,7 @@ repl_status(Repl* self)
 	if (str_empty(&state()->repl_primary.string))
 		encode_null(buf);
 	else
-		encode_string(buf, &state()->repl_primary.string);
+		encode_str(buf, &state()->repl_primary.string);
 
 	encode_raw(buf, "replicas", 8);
 	auto replicas = replica_mgr_list(&self->replica_mgr, NULL, 0);

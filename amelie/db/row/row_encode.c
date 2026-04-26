@@ -22,7 +22,7 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 		auto column = list_at(Column, link);
 
 		// name
-		encode_string(buf, &column->name);
+		encode_str(buf, &column->name);
 
 		// null
 		uint8_t* pos = row_column(self, column);

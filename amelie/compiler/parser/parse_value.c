@@ -354,10 +354,10 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	}
 	case TYPE_STRING:
 	{
-		if (! data_is_string(*pos))
+		if (! data_is_str(*pos))
 			break;
 		Str ref;
-		unpack_string(pos, &ref);
+		unpack_str(pos, &ref);
 		value_set_string(value, &ref, NULL);
 		return;
 	}
@@ -379,10 +379,10 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 			return;
 		}
 
-		if (! data_is_string(*pos))
+		if (! data_is_str(*pos))
 			break;
 		Str ref;
-		unpack_string(pos, &ref);
+		unpack_str(pos, &ref);
 
 		// current_timestamp
 		if (str_is_case(&ref, "current_timestamp", 17))
@@ -400,10 +400,10 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	}
 	case TYPE_INTERVAL:
 	{
-		if (! data_is_string(*pos))
+		if (! data_is_str(*pos))
 			break;
 		Str ref;
-		unpack_string(pos, &ref);
+		unpack_str(pos, &ref);
 
 		Interval iv;
 		interval_init(&iv);
@@ -415,10 +415,10 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 
 	case TYPE_DATE:
 	{
-		if (! data_is_string(*pos))
+		if (! data_is_str(*pos))
 			break;
 		Str ref;
-		unpack_string(pos, &ref);
+		unpack_str(pos, &ref);
 
 		// current_date
 		if (str_is_case(&ref, "current_date", 12))
@@ -445,10 +445,10 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	}
 	case TYPE_UUID:
 	{
-		if (! data_is_string(*pos))
+		if (! data_is_str(*pos))
 			break;
 		Str ref;
-		unpack_string(pos, &ref);
+		unpack_str(pos, &ref);
 
 		Uuid uuid;
 		uuid_init(&uuid);

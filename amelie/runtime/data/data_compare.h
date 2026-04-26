@@ -28,19 +28,19 @@ data_compare_int(uint8_t* a, uint8_t* b)
 }
 
 always_inline hot static inline int
-data_compare_string_read(uint8_t** a, uint8_t** b)
+data_compare_str_read(uint8_t** a, uint8_t** b)
 {
 	Str str_a;
 	Str str_b;
-	unpack_string(a, &str_a);
-	unpack_string(b, &str_b);
+	unpack_str(a, &str_a);
+	unpack_str(b, &str_b);
 	return str_compare_fn(&str_a, &str_b);
 }
 
 always_inline hot static inline int
-data_compare_string(uint8_t* a, uint8_t* b)
+data_compare_str(uint8_t* a, uint8_t* b)
 {
-	return data_compare_string_read(&a, &b);
+	return data_compare_str_read(&a, &b);
 }
 
 hot static inline int
@@ -96,11 +96,11 @@ data_compare(uint8_t* a, uint8_t* b)
 				return rc;
 			break;
 		}
-		case DATA_STRINGV0 ... DATA_STRING32:
+		case DATA_STRV0 ... DATA_STR32:
 		{
-			if (! data_is_string(b))
+			if (! data_is_str(b))
 				return compare_int64(*a, *b);
-			rc = data_compare_string_read(&a, &b);
+			rc = data_compare_str_read(&a, &b);
 			if (rc != 0)
 				return rc;
 			break;

@@ -98,7 +98,7 @@ rename_if_abort(Log* self, LogOp* op)
 	// set previous name
 	uint8_t* pos = log_data_of(self, op);
 	Str name;
-	unpack_string(&pos, &name);
+	unpack_str(&pos, &name);
 
 	auto user = user_of(op->rel);
 	user_config_set_name(user->config, &name);
@@ -143,7 +143,7 @@ user_mgr_rename(UserMgr* self,
 	log_ddl(&tr->log, &rename_if, NULL, &user->rel);
 
 	// save name for rollback
-	encode_string(&tr->log.data, name);
+	encode_str(&tr->log.data, name);
 
 	// set new name
 	user_config_set_name(user->config, name_new);
@@ -243,7 +243,7 @@ revoke_if_abort(Log* self, LogOp* op)
 	// set previous revoked_at
 	uint8_t* pos = log_data_of(self, op);
 	Str value;
-	unpack_string(&pos, &value);
+	unpack_str(&pos, &value);
 
 	auto user = user_of(op->rel);
 	user_config_set_revoked_at(user->config, &value);
@@ -279,7 +279,7 @@ user_mgr_revoke(UserMgr* self,
 	log_ddl(&tr->log, &revoke_if, NULL, &user->rel);
 
 	// save previous revoked_at for rollback
-	encode_string(&tr->log.data, &user->config->revoked_at);
+	encode_str(&tr->log.data, &user->config->revoked_at);
 
 	// set revoked_at
 	user_config_set_revoked_at(user->config, revoked_at);

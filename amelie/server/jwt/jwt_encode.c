@@ -48,9 +48,9 @@ jwt_encode_validate(JwtEncode* self, Str* header, Str* payload)
 	uint8_t* pos = self->json.buf_data.start;
 	Decode obj[] =
 	{
-		{ DECODE_STRING_READ, "alg", &alg },
-		{ DECODE_STRING_READ, "typ", &typ },
-		{ 0,                   NULL, NULL },
+		{ DECODE_STR_READ, "alg", &alg },
+		{ DECODE_STR_READ, "typ", &typ },
+		{ 0,                NULL, NULL },
 	};
 	decode_obj(obj, "jwt", &pos);
 

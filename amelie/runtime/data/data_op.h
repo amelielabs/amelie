@@ -43,7 +43,7 @@ data_skip(uint8_t** pos)
 			unpack_int(pos, &value);
 			break;
 		}
-		case DATA_STRINGV0 ... DATA_STRING32:
+		case DATA_STRV0 ... DATA_STR32:
 		{
 			int   value_size;
 			char* value;
@@ -84,7 +84,7 @@ data_obj_find(uint8_t** pos, const char* name, int64_t name_size)
 	while (! unpack_obj_end(pos))
 	{
 		Str key;
-		unpack_string(pos, &key);
+		unpack_str(pos, &key);
 		if (str_is(&key, name, name_size))
 			return true;
 		data_skip(pos);

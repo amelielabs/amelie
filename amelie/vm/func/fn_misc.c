@@ -91,10 +91,10 @@ fn_md5(Fn* self)
 	str_set(&string, digest, sizeof(digest));
 
 	auto buf = buf_create();
-	encode_string(buf, &string);
+	encode_str(buf, &string);
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
-	unpack_string(&pos_str, &string);
+	unpack_str(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -112,10 +112,10 @@ fn_sha1(Fn* self)
 	str_set(&string, digest, sizeof(digest));
 
 	auto buf = buf_create();
-	encode_string(buf, &string);
+	encode_str(buf, &string);
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
-	unpack_string(&pos_str, &string);
+	unpack_str(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 

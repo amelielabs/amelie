@@ -174,7 +174,7 @@ fn_regexp_match(Fn* self)
 		Str ref;
 		str_set(&ref, str_of(string) + ovector[2 * i],
 		        ovector[2 * i + 1] - ovector[2*i]);
-		encode_string(buf, &ref);
+		encode_str(buf, &ref);
 	}
 	encode_array_end(buf);
 	value_set_json_buf(self->result, buf);

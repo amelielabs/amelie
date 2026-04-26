@@ -34,7 +34,7 @@ value_data_size(Value* self, Column* column, Value* refs)
 	auto size = 0;
 	switch (column->type) {
 	case TYPE_STRING:
-		size = data_size_string(str_size(&self->string));
+		size = data_size_str(str_size(&self->string));
 		break;
 	case TYPE_JSON:
 		size = self->json_size;
@@ -123,7 +123,7 @@ value_data_encode(Value*    self, Column* column,
 		*pos += sizeof(Interval);
 		break;
 	case TYPE_STRING:
-		pack_string(pos, &self->string);
+		pack_str(pos, &self->string);
 		break;
 	case TYPE_JSON:
 		memcpy(*pos, self->json, self->json_size);
@@ -224,7 +224,7 @@ value_data_decode(Value* self, Column* column, uint8_t* data, int data_size)
 	case TYPE_STRING:
 	{
 		value_init(self);
-		unpack_string(&data, &self->string);
+		unpack_str(&data, &self->string);
 		self->type = TYPE_STRING;
 		break;
 	}

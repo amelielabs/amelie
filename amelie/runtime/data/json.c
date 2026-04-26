@@ -198,9 +198,9 @@ json_const(Json* self)
 		Str str;
 		json_string_read(self, &str, *self->pos, &unescape);
 		if (unescape)
-			encode_string_unescape(self->buf, &str);
+			encode_str_unescape(self->buf, &str);
 		else
-			encode_string(self->buf, &str);
+			encode_str(self->buf, &str);
 		return;
 	}
 	case 'n':
@@ -368,9 +368,9 @@ json_parse(Json* self, Str* text, Buf* buf)
 			if (! json_string(self, &str, &unescape))
 				error("json object key expected");
 			if (unescape)
-				encode_string_unescape(self->buf, &str);
+				encode_str_unescape(self->buf, &str);
 			else
-				encode_string(self->buf, &str);
+				encode_str(self->buf, &str);
 			// ':'
 			next = json_next(self);
 			if (next != ':')

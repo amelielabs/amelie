@@ -185,8 +185,8 @@ rename_if_abort(Log* self, LogOp* op)
 	uint8_t* pos = log_data_of(self, op);
 	Str user;
 	Str name;
-	unpack_string(&pos, &user);
-	unpack_string(&pos, &name);
+	unpack_str(&pos, &user);
+	unpack_str(&pos, &name);
 
 	auto udf = udf_of(op->rel);
 	udf_config_set_user(udf->config, &user);
@@ -229,8 +229,8 @@ udf_mgr_rename(UdfMgr* self,
 	log_ddl(&tr->log, &rename_if, NULL, &udf->rel);
 
 	// save previous name
-	encode_string(&tr->log.data, &udf->config->user);
-	encode_string(&tr->log.data, &udf->config->name);
+	encode_str(&tr->log.data, &udf->config->user);
+	encode_str(&tr->log.data, &udf->config->name);
 
 	// set new name
 	if (! str_compare_case(&udf->config->user, user_new))

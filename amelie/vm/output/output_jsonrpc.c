@@ -72,14 +72,14 @@ output_jsonrpc_write_error(Output* self, Error* error)
 	buf_str(&error->text, &text);
 	if (str_size(&text) > text_max)
 	{
-		encode_string32(buf, 4 + text_max);
+		encode_str32(buf, 4 + text_max);
 		buf_reserve(buf, 4 + text_max);
 		char cut[] = "…\n";
 		buf_write(buf, cut, sizeof(cut) - 1);
 		buf_write(buf, text.end - text_max, text_max);
 	} else
 	{
-		encode_string(buf, &text);
+		encode_str(buf, &text);
 	}
 	encode_obj_end(buf);
 	encode_obj_end(buf);

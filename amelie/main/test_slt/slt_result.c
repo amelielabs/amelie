@@ -46,11 +46,11 @@ slt_result_convert(SltResult* self, uint8_t** pos)
 			unpack_real(pos, &value);
 			buf_printf(buf, "%.3f", value);
 		} else
-		if (data_is_string(*pos))
+		if (data_is_str(*pos))
 		{
 			// todo: print control chars as @
 			Str value;
-			unpack_string(pos, &value);
+			unpack_str(pos, &value);
 			if (str_empty(&value))
 				buf_printf(buf, "(empty)");
 			else

@@ -27,9 +27,9 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		break;
 	case KSTRING:
 		if (self->string_escape)
-			encode_string_unescape(buf, &self->string);
+			encode_str_unescape(buf, &self->string);
 		else
-			encode_string(buf, &self->string);
+			encode_str(buf, &self->string);
 		break;
 	case KTRUE:
 		encode_bool(buf, true);
@@ -44,35 +44,35 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 			encode_real(buf, -self->l->real);
 		break;
 	case KUUID:
-		encode_string(buf, &self->string);
+		encode_str(buf, &self->string);
 		break;
 	// time-related values
 	case KINTERVAL:
 	case KTIMESTAMP:
 	case KDATE:
-		encode_string(buf, &self->string);
+		encode_str(buf, &self->string);
 		break;
 	case KCURRENT_TIMESTAMP:
 	{
 		auto offset = buf_size(buf);
-		encode_string32(buf, 0);
+		encode_str32(buf, 0);
 		buf_reserve(buf, 128);
 		int size = timestamp_get(local->time_us, local->timezone, (char*)buf->position, 128);
 		buf_advance(buf, size);
 		uint8_t* pos = buf->start + offset;
-		pack_string32(&pos, size);
+		pack_str32(&pos, size);
 		break;
 	}
 	case KCURRENT_DATE:
 	{
 		auto offset = buf_size(buf);
-		encode_string32(buf, 0);
+		encode_str32(buf, 0);
 		buf_reserve(buf, 128);
 		auto julian = timestamp_date(local->time_us);
 		int size = date_get(julian, (char*)buf->position, 128);
 		buf_advance(buf, size);
 		uint8_t* pos = buf->start + offset;
-		pack_string32(&pos, size);
+		pack_str32(&pos, size);
 		break;
 	}
 	// []
@@ -133,9 +133,9 @@ ast_decode(Ast* self, uint8_t* json)
 		self->id = KINT;
 		unpack_int(&json, &self->integer);
 		break;
-	case DATA_STRINGV0 ... DATA_STRING32:
+	case DATA_STRV0 ... DATA_STR32:
 		self->id = KSTRING;
-		unpack_string(&json, &self->string);
+		unpack_str(&json, &self->string);
 		break;
 	case DATA_OBJ:
 	case DATA_ARRAY:

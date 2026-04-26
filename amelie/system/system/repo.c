@@ -81,7 +81,7 @@ repo_version_buf_create(void)
 
 	// version
 	encode_raw(buf, "version", 7);
-	encode_string(buf, &state()->version.string);
+	encode_str(buf, &state()->version.string);
 
 	encode_obj_end(buf);
 	return buf;
@@ -130,8 +130,8 @@ repo_version_open(const char* path)
 	str_init(&version);
 	Decode obj[] =
 	{
-		{ DECODE_STRING_READ, "version", &version },
-		{ 0,                   NULL,      NULL    },
+		{ DECODE_STR_READ, "version", &version },
+		{ 0,                NULL,      NULL    },
 	};
 	decode_obj(obj, "version", &pos);
 

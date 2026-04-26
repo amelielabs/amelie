@@ -92,7 +92,7 @@ rename_if_abort(Log* self, LogOp* op)
 	// set previous name
 	uint8_t* pos = log_data_of(self, op);
 	Str name;
-	unpack_string(&pos, &name);
+	unpack_str(&pos, &name);
 
 	auto storage = storage_of(op->rel);
 	storage_config_set_name(storage->config, &name);
@@ -137,7 +137,7 @@ storage_mgr_rename(StorageMgr* self,
 	log_ddl(&tr->log, &rename_if, NULL, &storage->rel);
 
 	// save name for rollback
-	encode_string(&tr->log.data, name);
+	encode_str(&tr->log.data, name);
 
 	// set new name
 	storage_config_set_name(storage->config, name_new);

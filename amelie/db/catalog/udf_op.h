@@ -66,8 +66,8 @@ udf_op_drop(Buf* self, Str* user, Str* name)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_UDF_DROP);
-	encode_string(self, user);
-	encode_string(self, name);
+	encode_str(self, user);
+	encode_str(self, name);
 	encode_array_end(self);
 	return offset;
 }
@@ -79,8 +79,8 @@ udf_op_drop_read(uint8_t* op, Str* user, Str* name)
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_UDF_DROP);
-	unpack_string(&op, user);
-	unpack_string(&op, name);
+	unpack_str(&op, user);
+	unpack_str(&op, name);
 	unpack_array_end(&op);
 }
 
@@ -91,10 +91,10 @@ udf_op_rename(Buf* self, Str* user, Str* name, Str* user_new, Str* name_new)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_UDF_RENAME);
-	encode_string(self, user);
-	encode_string(self, name);
-	encode_string(self, user_new);
-	encode_string(self, name_new);
+	encode_str(self, user);
+	encode_str(self, name);
+	encode_str(self, user_new);
+	encode_str(self, name_new);
 	encode_array_end(self);
 	return offset;
 }
@@ -106,9 +106,9 @@ udf_op_rename_read(uint8_t* op, Str* user, Str* name, Str* user_new, Str* name_n
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_UDF_RENAME);
-	unpack_string(&op, user);
-	unpack_string(&op, name);
-	unpack_string(&op, user_new);
-	unpack_string(&op, name_new);
+	unpack_str(&op, user);
+	unpack_str(&op, name);
+	unpack_str(&op, user_new);
+	unpack_str(&op, name_new);
 	unpack_array_end(&op);
 }

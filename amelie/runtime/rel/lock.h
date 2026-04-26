@@ -84,12 +84,12 @@ lock_write(Lock* self, Buf* buf)
 	if (! str_empty(&self->name))
 	{
 		encode_raw(buf, "name", 4);
-		encode_string(buf, &self->name);
+		encode_str(buf, &self->name);
 	}
 
 	// relation
 	encode_raw(buf, "relation", 8);
-	encode_string(buf, self->rel->name);
+	encode_str(buf, self->rel->name);
 
 	// lock
 	encode_raw(buf, "lock", 4);

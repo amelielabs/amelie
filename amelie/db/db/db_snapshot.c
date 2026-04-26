@@ -96,7 +96,7 @@ db_snapshot(Db* self)
 		encode_raw(data, "version", 7);
 		encode_obj(data);
 		encode_raw(data, "version", 7);
-		encode_string(data, &state()->version.string);
+		encode_str(data, &state()->version.string);
 		encode_obj_end(data);
 
 		// config

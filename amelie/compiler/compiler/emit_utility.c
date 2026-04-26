@@ -452,12 +452,12 @@ emit_utility(Compiler* self)
 	{
 		auto arg = ast_token_create_of(stmt->ast);
 		auto offset = buf_size(data);
-		encode_string(data, &arg->user->string);
+		encode_str(data, &arg->user->string);
 		if (! arg->expire)
 		{
 			Str str;
 			str_set_cstr(&str, "1 year");
-			encode_string(data, &str);
+			encode_str(data, &str);
 		}
 		r = op2pin(self, CCREATE_TOKEN, TYPE_JSON, offset);
 
@@ -480,7 +480,7 @@ emit_utility(Compiler* self)
 	{
 		auto arg = ast_replica_drop_of(stmt->ast);
 		auto offset = buf_size(data);
-		encode_string(data, &arg->id->string);
+		encode_str(data, &arg->id->string);
 		op2(self, CREPLICA_DROP, offset, arg->if_exists);
 		break;
 	}

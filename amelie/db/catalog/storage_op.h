@@ -42,7 +42,7 @@ storage_op_drop(Buf* self, Str* name)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_STORAGE_DROP);
-	encode_string(self, name);
+	encode_str(self, name);
 	encode_array_end(self);
 	return offset;
 }
@@ -54,7 +54,7 @@ storage_op_drop_read(uint8_t* op, Str* name)
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_STORAGE_DROP);
-	unpack_string(&op, name);
+	unpack_str(&op, name);
 	unpack_array_end(&op);
 }
 
@@ -65,8 +65,8 @@ storage_op_rename(Buf* self, Str* name, Str* name_new)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_STORAGE_RENAME);
-	encode_string(self, name);
-	encode_string(self, name_new);
+	encode_str(self, name);
+	encode_str(self, name_new);
 	encode_array_end(self);
 	return offset;
 }
@@ -78,7 +78,7 @@ storage_op_rename_read(uint8_t* op, Str* name, Str* name_new)
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_STORAGE_RENAME);
-	unpack_string(&op, name);
-	unpack_string(&op, name_new);
+	unpack_str(&op, name);
+	unpack_str(&op, name_new);
 	unpack_array_end(&op);
 }

@@ -42,14 +42,14 @@ encode_array_end(Buf* self)
 always_inline hot static inline void
 encode_raw(Buf* self, const char* pointer, int size)
 {
-	auto pos = buf_reserve(self, data_size_string(size));
+	auto pos = buf_reserve(self, data_size_str(size));
 	pack_raw(pos, pointer, size);
 }
 
 always_inline hot static inline void
 encode_buf(Buf* self, Buf* buf)
 {
-	auto pos = buf_reserve(self, data_size_string(buf_size(buf)));
+	auto pos = buf_reserve(self, data_size_str(buf_size(buf)));
 	pack_raw(pos, (char*)buf->start, buf_size(buf));
 }
 
@@ -60,37 +60,37 @@ encode_cstr(Buf* self, const char* pointer)
 }
 
 always_inline hot static inline void
-encode_string(Buf* self, Str* string)
+encode_str(Buf* self, Str* str)
 {
-	auto pos = buf_reserve(self, data_size_string(str_size(string)));
-	pack_string(pos, string);
+	auto pos = buf_reserve(self, data_size_str(str_size(str)));
+	pack_str(pos, str);
 }
 
 always_inline hot static inline void
-encode_string32(Buf* self, int size)
+encode_str32(Buf* self, int size)
 {
-	auto pos = buf_reserve(self, data_size_string32());
-	pack_string32(pos, size);
+	auto pos = buf_reserve(self, data_size_str32());
+	pack_str32(pos, size);
 }
 
 hot static inline void
-encode_string_unescape(Buf* self, Str* string)
+encode_str_unescape(Buf* self, Str* str)
 {
 	auto offset = buf_size(self);
-	encode_string32(self, str_size(string));
-	buf_reserve(self, str_size(string));
-	unescape_str(self, string);
+	encode_str32(self, str_size(str));
+	buf_reserve(self, str_size(str));
+	unescape_str(self, str);
 
 	// update generated string size
 	auto start = self->start + offset;
-	pack_string32(&start, buf_size(self) - (offset + data_size_string32()));
+	pack_str32(&start, buf_size(self) - (offset + data_size_str32()));
 }
 
 always_inline hot static inline void
 encode_base64(Buf* self, Buf* buf)
 {
 	auto offset = buf_size(self);
-	encode_string32(self, 0);
+	encode_str32(self, 0);
 
 	Str str;
 	buf_str(buf, &str);
@@ -98,7 +98,7 @@ encode_base64(Buf* self, Buf* buf)
 
 	// update generated string size
 	auto start = self->start + offset;
-	pack_string32(&start, buf_size(self) - (offset + data_size_string32()));
+	pack_str32(&start, buf_size(self) - (offset + data_size_str32()));
 }
 
 always_inline hot static inline void
@@ -106,8 +106,8 @@ encode_target(Buf* self, Str* user, Str* name)
 {
 	//  user.name
 	auto size = str_size(user) + 1 + str_size(name);
-	auto size_string = data_size_string(size);
-	auto pos = buf_reserve(self, size_string);
+	auto size_str = data_size_str(size);
+	auto pos = buf_reserve(self, size_str);
 	pack_raw(pos, NULL, size);
 	memcpy(*pos, str_of(user), str_size(user));
 	*pos += str_size(user);
@@ -149,36 +149,36 @@ hot static inline void
 encode_date(Buf* self, int64_t value)
 {
 	auto offset = buf_size(self);
-	encode_string32(self, 0);
+	encode_str32(self, 0);
 	buf_reserve(self, 32);
 	auto size = date_get(value, (char*)self->position, 32);
 	buf_advance(self, size);
 	auto pos = self->start + offset;
-	pack_string32(&pos, size);
+	pack_str32(&pos, size);
 }
 
 hot static inline void
 encode_timestamp(Buf* self, Timezone* tz, int64_t value)
 {
 	auto offset = buf_size(self);
-	encode_string32(self, 0);
+	encode_str32(self, 0);
 	buf_reserve(self, 64);
 	auto size = timestamp_get(value, tz, (char*)self->position, 64);
 	buf_advance(self, size);
 	auto pos = self->start + offset;
-	pack_string32(&pos, size);
+	pack_str32(&pos, size);
 }
 
 hot static inline void
 encode_interval(Buf* self, Interval* value)
 {
 	auto offset = buf_size(self);
-	encode_string32(self, 0);
+	encode_str32(self, 0);
 	buf_reserve(self, 128);
 	auto size = interval_get(value, (char*)self->position, 128);
 	buf_advance(self, size);
 	auto pos = self->start + offset;
-	pack_string32(&pos, size);
+	pack_str32(&pos, size);
 }
 
 hot static inline void

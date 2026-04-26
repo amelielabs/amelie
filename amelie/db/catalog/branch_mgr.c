@@ -125,8 +125,8 @@ rename_if_abort(Log* self, LogOp* op)
 	uint8_t* pos = log_data_of(self, op);
 	Str user;
 	Str name;
-	unpack_string(&pos, &user);
-	unpack_string(&pos, &name);
+	unpack_str(&pos, &user);
+	unpack_str(&pos, &name);
 
 	auto branch = branch_of(op->rel);
 	branch_config_set_user(branch->config, &user);
@@ -169,8 +169,8 @@ branch_mgr_rename(BranchMgr* self,
 	log_ddl(&tr->log, &rename_if, NULL, &branch->rel);
 
 	// save previous name
-	encode_string(&tr->log.data, &branch->config->user);
-	encode_string(&tr->log.data, &branch->config->name);
+	encode_str(&tr->log.data, &branch->config->user);
+	encode_str(&tr->log.data, &branch->config->name);
 
 	// set new name
 	if (! str_compare_case(&branch->config->user, user_new))

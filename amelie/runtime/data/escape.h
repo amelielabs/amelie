@@ -12,14 +12,14 @@
 //
 
 hot static inline void
-unescape_str(Buf* self, Str* string)
+unescape_str(Buf* self, Str* str)
 {
-	buf_reserve(self, str_size(string));
+	buf_reserve(self, str_size(str));
 
 	uint8_t* start  = self->position;
 	uint8_t* result = start;
-	char*    pos    = str_of(string);
-	char*    end    = str_of(string) + str_size(string);
+	char*    pos    = str_of(str);
+	char*    end    = str_of(str) + str_size(str);
 
 	bool slash = false;
 	for (; pos < end; pos++)

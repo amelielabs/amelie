@@ -101,14 +101,14 @@ udf_config_read(uint8_t** pos)
 	uint8_t* pos_grants    = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "user",      &self->user    },
-		{ DECODE_STRING, "name",      &self->name    },
-		{ DECODE_STRING, "text",      &self->text    },
-		{ DECODE_ARRAY,  "args",      &pos_args      },
-		{ DECODE_INT,    "type",      &self->type    },
-		{ DECODE_ARRAY,  "returning", &pos_returning },
-		{ DECODE_ARRAY,  "grants",    &pos_grants    },
-		{ 0,              NULL,        NULL          },
+		{ DECODE_STR,   "user",      &self->user    },
+		{ DECODE_STR,   "name",      &self->name    },
+		{ DECODE_STR,   "text",      &self->text    },
+		{ DECODE_ARRAY, "args",      &pos_args      },
+		{ DECODE_INT,   "type",      &self->type    },
+		{ DECODE_ARRAY, "returning", &pos_returning },
+		{ DECODE_ARRAY, "grants",    &pos_grants    },
+		{ 0,             NULL,        NULL          },
 	};
 	decode_obj(obj, "udf", pos);
 	columns_read(&self->args, &pos_args);
@@ -127,11 +127,11 @@ udf_config_write(UdfConfig* self, Buf* buf, int flags)
 
 	// user
 	encode_raw(buf, "user", 4);
-	encode_string(buf, &self->user);
+	encode_str(buf, &self->user);
 
 	// name
 	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
+	encode_str(buf, &self->name);
 
 	if (flags_has(flags, FMINIMAL))
 	{
@@ -141,7 +141,7 @@ udf_config_write(UdfConfig* self, Buf* buf, int flags)
 
 	// text
 	encode_raw(buf, "text", 4);
-	encode_string(buf, &self->text);
+	encode_str(buf, &self->text);
 
 	// type
 	encode_raw(buf, "type", 4);

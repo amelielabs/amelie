@@ -122,15 +122,15 @@ db_state(Db* self)
 
 	// version
 	encode_raw(buf, "version", 7);
-	encode_string(buf, &state()->version.string);
+	encode_str(buf, &state()->version.string);
 
 	// directory
 	encode_raw(buf, "directory", 9);
-	encode_string(buf, &state()->directory.string);
+	encode_str(buf, &state()->directory.string);
 
 	// uuid
 	encode_raw(buf, "uuid", 4);
-	encode_string(buf, &config()->uuid.string);
+	encode_str(buf, &config()->uuid.string);
 
 	// frontends
 	encode_raw(buf, "frontends", 9);

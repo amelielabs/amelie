@@ -37,11 +37,11 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 		if (key->order < count)
 		{
 			auto ref = &values[key->order];
-			size += data_size_string(str_size(&ref->string));
+			size += data_size_str(str_size(&ref->string));
 		} else
 		{
 			// min string
-			size += data_size_string(0);
+			size += data_size_str(0);
 		}
 	}
 
@@ -73,12 +73,12 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 			if (key->order < count)
 			{
 				auto ref = &values[key->order];
-				pack_string(&pos, &ref->string);
+				pack_str(&pos, &ref->string);
 			} else
 			{
 				Str str;
 				str_init(&str);
-				pack_string(&pos, &str);
+				pack_str(&pos, &str);
 			}
 			continue;
 		}

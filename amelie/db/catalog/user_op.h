@@ -42,7 +42,7 @@ user_op_drop(Buf* self, Str* name, bool cascade)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_USER_DROP);
-	encode_string(self, name);
+	encode_str(self, name);
 	encode_bool(self, cascade);
 	encode_array_end(self);
 	return offset;
@@ -55,7 +55,7 @@ user_op_drop_read(uint8_t* op, Str* name, bool* cascade)
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_USER_DROP);
-	unpack_string(&op, name);
+	unpack_str(&op, name);
 	unpack_bool(&op, cascade);
 	unpack_array_end(&op);
 }
@@ -67,8 +67,8 @@ user_op_rename(Buf* self, Str* name, Str* name_new)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_USER_RENAME);
-	encode_string(self, name);
-	encode_string(self, name_new);
+	encode_str(self, name);
+	encode_str(self, name_new);
 	encode_array_end(self);
 	return offset;
 }
@@ -80,8 +80,8 @@ user_op_rename_read(uint8_t* op, Str* name, Str* name_new)
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_USER_RENAME);
-	unpack_string(&op, name);
-	unpack_string(&op, name_new);
+	unpack_str(&op, name);
+	unpack_str(&op, name_new);
 	unpack_array_end(&op);
 }
 
@@ -92,8 +92,8 @@ user_op_revoke(Buf* self, Str* name, Str* revoked_at)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_USER_REVOKE);
-	encode_string(self, name);
-	encode_string(self, revoked_at);
+	encode_str(self, name);
+	encode_str(self, revoked_at);
 	encode_array_end(self);
 	return offset;
 }
@@ -105,7 +105,7 @@ user_op_revoke_read(uint8_t* op, Str* name, Str* revoked_at)
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_USER_REVOKE);
-	unpack_string(&op, name);
-	unpack_string(&op, revoked_at);
+	unpack_str(&op, name);
+	unpack_str(&op, revoked_at);
 	unpack_array_end(&op);
 }

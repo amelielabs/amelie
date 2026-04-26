@@ -25,7 +25,7 @@ static inline void
 decode_basepath(uint8_t** pos, Str* path_relative)
 {
 	// path_relative
-	unpack_string(pos, path_relative);
+	unpack_str(pos, path_relative);
 }
 
 static inline void
@@ -61,7 +61,7 @@ decode_basefile(uint8_t** pos, Str* path_relative, int64_t* size, int64_t* mode)
 	unpack_array(pos);
 
 	// path_relative
-	unpack_string(pos, path_relative);
+	unpack_str(pos, path_relative);
 
 	// size
 	unpack_int(pos, size);

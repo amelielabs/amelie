@@ -65,23 +65,23 @@ server_config_read(uint8_t** pos)
 	{
 		// key
 		Str name;
-		unpack_string(pos, &name);
+		unpack_str(pos, &name);
 
 		// value
 		if (str_is(&name, "path", 4))
 		{
 			// string
-			if (! data_is_string(*pos))
+			if (! data_is_str(*pos))
 				error("server: listen[] <path> must be a string");
-			unpack_string_copy(pos, &self->path);
+			unpack_str_copy(pos, &self->path);
 		} else
 		if (str_is(&name, "path_mode", 9))
 		{
 			// string
-			if (! data_is_string(*pos))
+			if (! data_is_str(*pos))
 				error("server: listen[] <path_mode> must be a string");
 			Str path_mode;
-			unpack_string(pos, &path_mode);
+			unpack_str(pos, &path_mode);
 			errno = 0;
 			auto mode = strtol(str_of(&path_mode), NULL, 8);
 			if (errno != 0)
@@ -91,9 +91,9 @@ server_config_read(uint8_t** pos)
 		if (str_is(&name, "host", 4))
 		{
 			// string
-			if (! data_is_string(*pos))
+			if (! data_is_str(*pos))
 				error("server: listen[] <host> must be a string");
-			unpack_string_copy(pos, &self->host);
+			unpack_str_copy(pos, &self->host);
 		} else
 		if (str_is(&name, "port", 4))
 		{

@@ -112,14 +112,14 @@ user_config_read(uint8_t** pos)
 	uint8_t* pos_grants = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "name",       &self->name       },
-		{ DECODE_STRING, "parent",     &self->parent     },
-		{ DECODE_STRING, "created_at", &self->created_at },
-		{ DECODE_STRING, "revoked_at", &self->revoked_at },
-		{ DECODE_BOOL,   "agent",      &self->agent      },
-		{ DECODE_BOOL,   "superuser",  &self->superuser  },
-		{ DECODE_ARRAY,  "grants",     &pos_grants       },
-		{ 0,              NULL,         NULL             },
+		{ DECODE_STR,   "name",       &self->name       },
+		{ DECODE_STR,   "parent",     &self->parent     },
+		{ DECODE_STR,   "created_at", &self->created_at },
+		{ DECODE_STR,   "revoked_at", &self->revoked_at },
+		{ DECODE_BOOL,  "agent",      &self->agent      },
+		{ DECODE_BOOL,  "superuser",  &self->superuser  },
+		{ DECODE_ARRAY, "grants",     &pos_grants       },
+		{ 0,             NULL,         NULL             },
 	};
 	decode_obj(obj, "user", pos);
 
@@ -138,11 +138,11 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 
 	// name
 	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
+	encode_str(buf, &self->name);
 
 	// parent
 	encode_raw(buf, "parent", 6);
-	encode_string(buf, &self->parent);
+	encode_str(buf, &self->parent);
 
 	if (flags_has(flags, FMINIMAL))
 	{
@@ -152,11 +152,11 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 
 	// created_at
 	encode_raw(buf, "created_at", 10);
-	encode_string(buf, &self->created_at);
+	encode_str(buf, &self->created_at);
 
 	// revoked_at
 	encode_raw(buf, "revoked_at", 10);
-	encode_string(buf, &self->revoked_at);
+	encode_str(buf, &self->revoked_at);
 
 	// agent
 	encode_raw(buf, "agent", 5);

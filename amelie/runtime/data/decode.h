@@ -15,18 +15,18 @@ typedef struct Decode Decode;
 
 enum
 {
-	DECODE_UUID        = 1 << 0,
-	DECODE_STRING      = 1 << 1,
-	DECODE_STRING_READ = 1 << 2,
-	DECODE_INT         = 1 << 3,
-	DECODE_BOOL        = 1 << 4,
-	DECODE_REAL        = 1 << 5,
-	DECODE_NULL        = 1 << 6,
-	DECODE_ARRAY       = 1 << 7,
-	DECODE_OBJ         = 1 << 8,
-	DECODE_DATA        = 1 << 9,
-	DECODE_BASE64      = 1 << 10,
-	DECODE_FOUND       = 1 << 11
+	DECODE_UUID     = 1 << 0,
+	DECODE_STR      = 1 << 1,
+	DECODE_STR_READ = 1 << 2,
+	DECODE_INT      = 1 << 3,
+	DECODE_BOOL     = 1 << 4,
+	DECODE_REAL     = 1 << 5,
+	DECODE_NULL     = 1 << 6,
+	DECODE_ARRAY    = 1 << 7,
+	DECODE_OBJ      = 1 << 8,
+	DECODE_DATA     = 1 << 9,
+	DECODE_BASE64   = 1 << 10,
+	DECODE_FOUND    = 1 << 11
 };
 
 struct Decode
@@ -44,7 +44,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 	while (! unpack_obj_end(pos))
 	{
 		Str key;
-		unpack_string(pos, &key);
+		unpack_str(pos, &key);
 
 		bool found = false;
 		for (auto ref = self; ref->key; ref++)
@@ -55,32 +55,32 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			switch (ref->flags & ~DECODE_FOUND) {
 			case DECODE_UUID:
 			{
-				if (unlikely(! data_is_string(*pos)))
+				if (unlikely(! data_is_str(*pos)))
 					error("%s: string expected for '%s'", context,
 					      ref->key);
 				auto value = (Uuid*)ref->value;
 				Str uuid;
-				unpack_string(pos, &uuid);
+				unpack_str(pos, &uuid);
 				uuid_set(value, &uuid);
 				break;
 			}
-			case DECODE_STRING:
+			case DECODE_STR:
 			{
-				if (unlikely(! data_is_string(*pos)))
+				if (unlikely(! data_is_str(*pos)))
 					error("%s: string expected for '%s'", context,
 					      ref->key);
 				auto value = (Str*)ref->value;
 				str_free(value);
-				unpack_string_copy(pos, value);
+				unpack_str_copy(pos, value);
 				break;
 			}
-			case DECODE_STRING_READ:
+			case DECODE_STR_READ:
 			{
-				if (unlikely(! data_is_string(*pos)))
+				if (unlikely(! data_is_str(*pos)))
 					error("%s: string expected for '%s'", context,
 					      ref->key);
 				auto value = (Str*)ref->value;
-				unpack_string(pos, value);
+				unpack_str(pos, value);
 				break;
 			}
 			case DECODE_INT:
@@ -148,12 +148,12 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			}
 			case DECODE_BASE64:
 			{
-				if (unlikely(! data_is_string(*pos)))
+				if (unlikely(! data_is_str(*pos)))
 					error("%s: string expected for '%s'", context,
 					      ref->key);
 				auto value = (Buf*)ref->value;
 				Str str;
-				unpack_string(pos, &str);
+				unpack_str(pos, &str);
 				base64url_decode(value, &str);
 				break;
 			}

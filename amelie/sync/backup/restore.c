@@ -155,7 +155,7 @@ restore_pull(Restore* self, Str* path_relative, int64_t size, int mode)
 	auto buf = &client->request.content;
 	buf_reset(buf);
 	encode_array(buf);
-	encode_string(buf, path_relative);
+	encode_str(buf, path_relative);
 	encode_int(buf, size);
 	encode_array_end(buf);
 	backup_send(websocket, BACKUP_PULL, buf, 0);
@@ -249,7 +249,7 @@ restore_run(Restore* self, char* directory)
 	while (! unpack_array_end(&pos_volumes))
 	{
 		Str path_relative;
-		unpack_string(&pos_volumes, &path_relative);
+		unpack_str(&pos_volumes, &path_relative);
 		restore_dir_str(&path_relative);
 	}
 

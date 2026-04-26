@@ -35,7 +35,7 @@ jwt_create(Str* user, Str* secret, Timestamp* expire)
 
 	// sub
 	encode_raw(payload, "sub", 3);
-	encode_string(payload, user);
+	encode_str(payload, user);
 
 	// iat
 	auto iat = time_ms() / 1000;

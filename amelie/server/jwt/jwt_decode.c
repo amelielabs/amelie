@@ -103,9 +103,9 @@ jwt_decode_header(JwtDecode* self)
 	uint8_t* pos = self->json.buf_data.start;
 	Decode obj[] =
 	{
-		{ DECODE_STRING_READ, "alg", &alg },
-		{ DECODE_STRING_READ, "typ", &typ },
-		{ 0,                   NULL, NULL },
+		{ DECODE_STR_READ, "alg", &alg },
+		{ DECODE_STR_READ, "typ", &typ },
+		{ 0,                NULL, NULL },
 	};
 	decode_obj(obj, "jwt", &pos);
 
@@ -139,10 +139,10 @@ jwt_decode_payload(JwtDecode* self, Str* sub,
 	uint8_t* pos = self->json.buf_data.start;
 	Decode obj[] =
 	{
-		{ DECODE_STRING_READ, "sub", sub  },
-		{ DECODE_INT,         "iat", iat  },
-		{ DECODE_INT,         "exp", exp  },
-		{ 0,                   NULL, NULL },
+		{ DECODE_STR_READ, "sub", sub  },
+		{ DECODE_INT,      "iat", iat  },
+		{ DECODE_INT,      "exp", exp  },
+		{ 0,                NULL, NULL },
 	};
 	decode_obj(obj, "jwt", &pos);
 }

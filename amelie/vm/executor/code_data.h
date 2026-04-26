@@ -71,7 +71,7 @@ code_data_at_string(CodeData* self, int offset, Str* string)
 {
 	assert(self->data.start != NULL);
 	uint8_t* pos = self->data.start + offset;
-	unpack_string(&pos, string);
+	unpack_str(&pos, string);
 }
 
 static inline void*
@@ -116,7 +116,7 @@ static inline int
 code_data_add_string(CodeData* self, Str* string)
 {
 	int offset = code_data_pos(self);
-	encode_string(&self->data, string);
+	encode_str(&self->data, string);
 	return offset;
 }
 
@@ -124,6 +124,6 @@ static inline int
 code_data_add_string_unescape(CodeData* self, Str* string)
 {
 	int offset = code_data_pos(self);
-	encode_string_unescape(&self->data, string);
+	encode_str_unescape(&self->data, string);
 	return offset;
 }

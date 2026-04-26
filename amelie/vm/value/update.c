@@ -88,14 +88,14 @@ update_unset_next(Update* self)
 	{
 		// key
 		Str at;
-		unpack_string(pos, &at);
+		unpack_str(pos, &at);
 
 		// match key
 		if (str_compare(&key, &at))
 		{
 			if (update_has(self))
 			{
-				encode_string(buf, &at);
+				encode_str(buf, &at);
 				update_unset_next(self);
 				continue;
 			}
@@ -104,7 +104,7 @@ update_unset_next(Update* self)
 		}
 
 		// copy
-		encode_string(buf, &at);
+		encode_str(buf, &at);
 		uint8_t* start = *pos;
 		data_skip(pos);
 		buf_write(buf, start, *pos - start);
@@ -130,8 +130,8 @@ update_set_next(Update* self)
 	{
 		// key 
 		Str at;
-		unpack_string(pos, &at);
-		encode_string(buf, &at);
+		unpack_str(pos, &at);
+		encode_str(buf, &at);
 
 		// match key
 		if (!self->found && str_compare(&key, &at))
@@ -164,7 +164,7 @@ update_set_next(Update* self)
 			error("set: incorrect path");
 
 		// key
-		encode_string(buf, &key);
+		encode_str(buf, &key);
 
 		// value
 		value_encode(self->value, self->tz, buf);

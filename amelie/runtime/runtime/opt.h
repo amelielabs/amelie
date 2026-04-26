@@ -226,11 +226,11 @@ opt_set_json(Opt* self, uint8_t** pos)
 	}
 	case OPT_STRING:
 	{
-		if (unlikely(! data_is_string(*pos)))
+		if (unlikely(! data_is_str(*pos)))
 			error("config: string expected for option '%.*s'",
 			      str_size(name), str_of(name));
 		Str value;
-		unpack_string(pos, &value);
+		unpack_str(pos, &value);
 		opt_string_set(self, &value);
 		break;
 	}
@@ -307,7 +307,7 @@ opt_encode(Opt* self, Buf* buf)
 {
 	switch (self->type) {
 	case OPT_STRING:
-		encode_string(buf, &self->string);
+		encode_str(buf, &self->string);
 		break;
 	case OPT_JSON:
 		if (! opt_json_empty(self))

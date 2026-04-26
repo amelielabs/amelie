@@ -41,7 +41,7 @@ error_buf(Buf* buf)
 	// msg
 	data_skip(&pos);
 	Str text;
-	unpack_string(&pos, &text);
+	unpack_str(&pos, &text);
 	error("%.*s", str_size(&text), str_of(&text));
 }
 
@@ -53,7 +53,7 @@ rethrow_buf(Buf* buf)
 	// msg
 	data_skip(&pos);
 	Str text;
-	unpack_string(&pos, &text);
+	unpack_str(&pos, &text);
 
 	error_set(&am_self()->error,
 	          source_file,

@@ -18,9 +18,9 @@ grant_op_grant(Buf* self, Str* user, Str* name, Str* to, bool grant, uint32_t pe
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_GRANT);
-	encode_string(self, user);
-	encode_string(self, name);
-	encode_string(self, to);
+	encode_str(self, user);
+	encode_str(self, name);
+	encode_str(self, to);
 	encode_bool(self, grant);
 	encode_int(self, perms);
 	encode_array_end(self);
@@ -34,9 +34,9 @@ grant_op_grant_read(uint8_t* op, Str* user, Str* name, Str* to, bool* grant, int
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_GRANT);
-	unpack_string(&op, user);
-	unpack_string(&op, name);
-	unpack_string(&op, to);
+	unpack_str(&op, user);
+	unpack_str(&op, name);
+	unpack_str(&op, to);
 	unpack_bool(&op, grant);
 	unpack_int(&op, perms);
 	unpack_array_end(&op);

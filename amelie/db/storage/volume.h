@@ -98,10 +98,10 @@ volume_read(uint8_t** pos)
 	errdefer(volume_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "name",  &self->name  },
-		{ DECODE_UUID,   "id",    &self->id    },
-		{ DECODE_BOOL,   "pause", &self->pause },
-		{ 0,              NULL,    NULL        },
+		{ DECODE_STR,  "name",  &self->name  },
+		{ DECODE_UUID, "id",    &self->id    },
+		{ DECODE_BOOL, "pause", &self->pause },
+		{ 0,            NULL,    NULL        },
 	};
 	decode_obj(obj, "volume", pos);
 	return self;
@@ -117,7 +117,7 @@ volume_write(Volume* self, Buf* buf, int flags)
 
 	// name
 	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
+	encode_str(buf, &self->name);
 
 	// id
 	encode_raw(buf, "id", 2);

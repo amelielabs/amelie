@@ -84,30 +84,30 @@ unpack_int_at(uint8_t* pos)
 	return value;
 }
 
-// string
+// str
 always_inline hot static inline void
 pack_raw(uint8_t** pos, const char* value, uint32_t size)
 {
 	uint8_t* data = *pos;
 	if (size <= 31)
 	{
-		*data = DATA_STRINGV0 + size;
+		*data = DATA_STRV0 + size;
 		*pos += data_size_type();
 	} else
 	if (size <= INT8_MAX)
 	{
-		*data = DATA_STRING8;
+		*data = DATA_STR8;
 		*(int8_t*)(data + data_size_type()) = size;
 		*pos += data_size8();
 	} else
 	if (size <= INT16_MAX)
 	{
-		*data = DATA_STRING16;
+		*data = DATA_STR16;
 		*(int16_t*)(data + data_size_type()) = size;
 		*pos += data_size16();
 	} else
 	{
-		*data = DATA_STRING32;
+		*data = DATA_STR32;
 		*(int32_t*)(data + data_size_type()) = size;
 		*pos += data_size32();
 	}
@@ -119,36 +119,36 @@ pack_raw(uint8_t** pos, const char* value, uint32_t size)
 }
 
 always_inline hot static inline void
-pack_string(uint8_t** pos, Str* string)
+pack_str(uint8_t** pos, Str* str)
 {
-	pack_raw(pos, str_of(string), str_size(string));
+	pack_raw(pos, str_of(str), str_size(str));
 }
 
 always_inline hot static inline void
-pack_string_cat(uint8_t** pos, char* a, char* b, int a_size, int b_size)
+pack_str_cat(uint8_t** pos, char* a, char* b, int a_size, int b_size)
 {
 	uint8_t* data = *pos;
 	uint32_t size = a_size + b_size;
 	if (size <= 31)
 	{
-		*data = DATA_STRINGV0 + size;
+		*data = DATA_STRV0 + size;
 		*pos += data_size_type();
 	} else
 	if (size <= INT8_MAX)
 	{
-		*data = DATA_STRING8;
+		*data = DATA_STR8;
 		*(int8_t*)(data + data_size_type()) = size;
 		*pos += data_size8();
 	} else
 	if (size <= INT16_MAX)
 	{
-		*data = DATA_STRING16;
+		*data = DATA_STR16;
 		*(int16_t*)(data + data_size_type()) = size;
 		*pos += data_size16();
 	} else
 	if (size <= INT32_MAX)
 	{
-		*data = DATA_STRING32;
+		*data = DATA_STR32;
 		*(int32_t*)(data + data_size_type()) = size;
 		*pos += data_size32();
 	}
@@ -159,10 +159,10 @@ pack_string_cat(uint8_t** pos, char* a, char* b, int a_size, int b_size)
 }
 
 always_inline hot static inline void
-pack_string32(uint8_t** pos, uint32_t size)
+pack_str32(uint8_t** pos, uint32_t size)
 {
 	uint8_t* data = *pos;
-	*data = DATA_STRING32;
+	*data = DATA_STR32;
 	*(int32_t*)(data + data_size_type()) = size;
 	*pos += data_size32();
 }
@@ -171,24 +171,24 @@ always_inline hot static inline void
 unpack_raw(uint8_t** pos, char** value, int* size)
 {
 	switch (**pos) {
-	case DATA_STRINGV0 ... DATA_STRINGV31:
-		*size = **pos - DATA_STRINGV0;
+	case DATA_STRV0 ... DATA_STRV31:
+		*size = **pos - DATA_STRV0;
 		*pos += data_size_type();
 		break;
-	case DATA_STRING8:
+	case DATA_STR8:
 		*size = *(int8_t*)(*pos + data_size_type());
 		*pos += data_size8();
 		break;
-	case DATA_STRING16:
+	case DATA_STR16:
 		*size = *(int16_t*)(*pos + data_size_type());
 		*pos += data_size16();
 		break;
-	case DATA_STRING32:
+	case DATA_STR32:
 		*size = *(int32_t*)(*pos + data_size_type());
 		*pos += data_size32();
 		break;
 	default:
-		data_error(*pos, DATA_STRINGV0);
+		data_error(*pos, DATA_STRV0);
 		break;
 	}
 	*value = (char*)*pos;
@@ -196,21 +196,21 @@ unpack_raw(uint8_t** pos, char** value, int* size)
 }
 
 always_inline hot static inline void
-unpack_string(uint8_t** pos, Str* string)
+unpack_str(uint8_t** pos, Str* str)
 {
 	char* value;
 	int   value_size;
 	unpack_raw(pos, &value, &value_size);
-	str_set(string, value, value_size);
+	str_set(str, value, value_size);
 }
 
 always_inline hot static inline void
-unpack_string_copy(uint8_t** pos, Str* string)
+unpack_str_copy(uint8_t** pos, Str* str)
 {
 	char* value;
 	int   value_size;
 	unpack_raw(pos, &value, &value_size);
-	str_dup(string, value, value_size);
+	str_dup(str, value, value_size);
 }
 
 // bool

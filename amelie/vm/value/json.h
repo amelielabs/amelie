@@ -28,7 +28,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		encode_real(buf, self->dbl);
 		break;
 	case TYPE_STRING:
-		encode_string(buf, &self->string);
+		encode_str(buf, &self->string);
 		break;
 	case TYPE_JSON:
 		buf_write(buf, self->json, data_sizeof(self->json));
@@ -90,10 +90,10 @@ value_decode(Value* self, uint8_t* json, Buf* buf)
 		value_set_int(self, integer);
 		break;
 	}
-	case DATA_STRINGV0 ... DATA_STRING32:
+	case DATA_STRV0 ... DATA_STR32:
 	{
 		Str string;
-		unpack_string(&json, &string);
+		unpack_str(&json, &string);
 		value_set_string(self, &string, buf);
 		break;
 	}

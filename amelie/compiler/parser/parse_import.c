@@ -35,7 +35,7 @@ import_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
 	while (! unpack_obj_end(pos))
 	{
 		Str name;
-		unpack_string(pos, &name);
+		unpack_str(pos, &name);
 
 		// match column
 		auto column = columns_find(columns, &name);

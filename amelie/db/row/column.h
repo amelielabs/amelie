@@ -91,12 +91,12 @@ column_read(uint8_t** pos)
 	uint8_t* constraints = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "name",        &self->name      },
-		{ DECODE_INT,    "type",        &self->type      },
-		{ DECODE_INT,    "type_size",   &self->type_size },
-		{ DECODE_BOOL,   "dropped",     &self->dropped   },
-		{ DECODE_ARRAY,  "constraints", &constraints     },
-		{ 0,              NULL,         NULL             },
+		{ DECODE_STR,   "name",        &self->name      },
+		{ DECODE_INT,   "type",        &self->type      },
+		{ DECODE_INT,   "type_size",   &self->type_size },
+		{ DECODE_BOOL,  "dropped",     &self->dropped   },
+		{ DECODE_ARRAY, "constraints", &constraints     },
+		{ 0,             NULL,         NULL             },
 	};
 	decode_obj(obj, "columns", pos);
 	constraints_read(&self->constraints, &constraints);
@@ -110,7 +110,7 @@ column_write(Column* self, Buf* buf, int flags)
 
 	// name
 	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
+	encode_str(buf, &self->name);
 
 	// type
 	encode_raw(buf, "type", 4);

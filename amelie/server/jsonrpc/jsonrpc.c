@@ -54,20 +54,20 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 	{
 		Str name;
 		Str value;
-		unpack_string(pos, &name);
+		unpack_str(pos, &name);
 		if (str_is(&name, "jsonrpc", 7))
 		{
-			if (unlikely(! data_is_string(*pos)))
+			if (unlikely(! data_is_str(*pos)))
 				return false;
-			unpack_string(pos, &value);
+			unpack_str(pos, &value);
 			if (unlikely(! str_is(&value, "2.0", 3)))
 				return false;
 		} else
 		if (str_is(&name, "method", 6))
 		{
-			if (unlikely(! data_is_string(*pos)))
+			if (unlikely(! data_is_str(*pos)))
 				return false;
-			unpack_string(pos, &req->method);
+			unpack_str(pos, &req->method);
 		} else
 		if (str_is(&name, "params", 6))
 		{
@@ -76,7 +76,7 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 		} else
 		if (str_is(&name, "id", 2))
 		{
-			if (unlikely(!data_is_string(*pos) && !data_is_int(*pos)))
+			if (unlikely(!data_is_str(*pos) && !data_is_int(*pos)))
 				return false;
 			req->id = *pos;
 			data_skip(pos);

@@ -115,15 +115,15 @@ sub_config_read(uint8_t** pos)
 	uint8_t* pos_grants = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "user",    &self->user    },
-		{ DECODE_STRING, "name",    &self->name    },
-		{ DECODE_UUID,   "id",      &self->id      },
-		{ DECODE_STRING, "on_user", &self->on_user },
-		{ DECODE_STRING, "on",      &self->on      },
-		{ DECODE_INT,    "lsn",     &self->lsn     },
-		{ DECODE_INT,    "op",      &self->op      },
-		{ DECODE_ARRAY,  "grants",  &pos_grants    },
-		{ 0,              NULL,      NULL          },
+		{ DECODE_STR,   "user",    &self->user    },
+		{ DECODE_STR,   "name",    &self->name    },
+		{ DECODE_UUID,  "id",      &self->id      },
+		{ DECODE_STR,   "on_user", &self->on_user },
+		{ DECODE_STR,   "on",      &self->on      },
+		{ DECODE_INT,   "lsn",     &self->lsn     },
+		{ DECODE_INT,   "op",      &self->op      },
+		{ DECODE_ARRAY, "grants",  &pos_grants    },
+		{ 0,             NULL,      NULL          },
 	};
 	decode_obj(obj, "sub", pos);
 
@@ -140,11 +140,11 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 
 	// user
 	encode_raw(buf, "user", 4);
-	encode_string(buf, &self->user);
+	encode_str(buf, &self->user);
 
 	// name
 	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
+	encode_str(buf, &self->name);
 
 	if (flags_has(flags, FMINIMAL))
 	{
@@ -158,11 +158,11 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 
 	// on_user
 	encode_raw(buf, "on_user", 7);
-	encode_string(buf, &self->on_user);
+	encode_str(buf, &self->on_user);
 
 	// on
 	encode_raw(buf, "on", 2);
-	encode_string(buf, &self->on);
+	encode_str(buf, &self->on);
 
 	// lsn
 	encode_raw(buf, "lsn", 3);

@@ -81,11 +81,11 @@ topic_config_read(uint8_t** pos)
 	uint8_t* pos_grants   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "user",   &self->user },
-		{ DECODE_STRING, "name",   &self->name },
-		{ DECODE_UUID,   "id",     &self->id   },
-		{ DECODE_ARRAY,  "grants", &pos_grants },
-		{ 0,              NULL,     NULL       },
+		{ DECODE_STR,   "user",   &self->user },
+		{ DECODE_STR,   "name",   &self->name },
+		{ DECODE_UUID,  "id",     &self->id   },
+		{ DECODE_ARRAY, "grants", &pos_grants },
+		{ 0,             NULL,     NULL       },
 	};
 	decode_obj(obj, "topic", pos);
 
@@ -102,11 +102,11 @@ topic_config_write(TopicConfig* self, Buf* buf, int flags)
 
 	// user
 	encode_raw(buf, "user", 4);
-	encode_string(buf, &self->user);
+	encode_str(buf, &self->user);
 
 	// name
 	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
+	encode_str(buf, &self->name);
 
 	if (flags_has(flags, FMINIMAL))
 	{

@@ -95,11 +95,11 @@ storage_config_read(uint8_t** pos)
 	errdefer(storage_config_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "name",              &self->name              },
-		{ DECODE_STRING, "path",              &self->path              },
-		{ DECODE_STRING, "compression",       &self->compression       },
-		{ DECODE_INT,    "compression_level", &self->compression_level },
-		{ 0,              NULL,                NULL                    },
+		{ DECODE_STR, "name",              &self->name              },
+		{ DECODE_STR, "path",              &self->path              },
+		{ DECODE_STR, "compression",       &self->compression       },
+		{ DECODE_INT, "compression_level", &self->compression_level },
+		{ 0,           NULL,                NULL                    },
 	};
 	decode_obj(obj, "storage_config", pos);
 	return self;
@@ -115,15 +115,15 @@ storage_config_write(StorageConfig* self, Buf* buf, int flags)
 
 	// name
 	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
+	encode_str(buf, &self->name);
 
 	// path
 	encode_raw(buf, "path", 4);
-	encode_string(buf, &self->path);
+	encode_str(buf, &self->path);
 
 	// compression
 	encode_raw(buf, "compression", 11);
-	encode_string(buf, &self->compression);
+	encode_str(buf, &self->compression);
 
 	// compression_level
 	encode_raw(buf, "compression_level", 17);

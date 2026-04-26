@@ -117,7 +117,7 @@ constraints_read(Constraints* self, uint8_t** pos)
 
 		// name
 		Str name;
-		unpack_string(pos, &name);
+		unpack_str(pos, &name);
 
 		if (str_is_case(&name, "not_null", 8))
 			unpack_bool(pos, &self->not_null);
@@ -129,15 +129,15 @@ constraints_read(Constraints* self, uint8_t** pos)
 			unpack_int(pos, &self->as_identity_modulo);
 		else
 		if (str_is_case(&name, "as_stored", 9))
-			unpack_string_copy(pos, &self->as_stored);
+			unpack_str_copy(pos, &self->as_stored);
 		else
 		if (str_is_case(&name, "as_resolved", 11))
-			unpack_string_copy(pos, &self->as_resolved);
+			unpack_str_copy(pos, &self->as_resolved);
 		else
 		if (str_is_case(&name, "default", 7))
 		{
 			Str str;
-			unpack_string(pos, &str);
+			unpack_str(pos, &str);
 			buf_reset(&self->value);
 			base64url_decode(&self->value, &str);
 		} else {
@@ -186,7 +186,7 @@ constraints_write(Constraints* self, Buf* buf, int flags)
 	{
 		encode_array(buf);
 		encode_raw(buf, "as_stored", 9);
-		encode_string(buf, &self->as_stored);
+		encode_str(buf, &self->as_stored);
 		encode_array_end(buf);
 	}
 
@@ -195,7 +195,7 @@ constraints_write(Constraints* self, Buf* buf, int flags)
 	{
 		encode_array(buf);
 		encode_raw(buf, "as_resolved", 11);
-		encode_string(buf, &self->as_resolved);
+		encode_str(buf, &self->as_resolved);
 		encode_array_end(buf);
 	}
 

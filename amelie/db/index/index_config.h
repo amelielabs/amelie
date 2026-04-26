@@ -97,12 +97,12 @@ index_config_read(Columns* columns, uint8_t** pos)
 	uint8_t* keys = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "name",    &self->name    },
-		{ DECODE_INT,    "type",    &self->type    },
-		{ DECODE_BOOL,   "unique",  &self->unique  },
-		{ DECODE_BOOL,   "primary", &self->primary },
-		{ DECODE_ARRAY,  "keys",    &keys          },
-		{ 0,              NULL,     NULL           },
+		{ DECODE_STR,   "name",    &self->name    },
+		{ DECODE_INT,   "type",    &self->type    },
+		{ DECODE_BOOL,  "unique",  &self->unique  },
+		{ DECODE_BOOL,  "primary", &self->primary },
+		{ DECODE_ARRAY, "keys",    &keys          },
+		{ 0,             NULL,     NULL           },
 	};
 	decode_obj(obj, "index", pos);
 	keys_read(&self->keys, &keys);
@@ -117,7 +117,7 @@ index_config_write(IndexConfig* self, Buf* buf, int flags)
 
 	// name
 	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
+	encode_str(buf, &self->name);
 
 	// type
 	encode_raw(buf, "type", 4);

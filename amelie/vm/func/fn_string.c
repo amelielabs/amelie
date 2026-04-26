@@ -42,11 +42,11 @@ fn_length(Fn* self)
 		if (data_is_obj(arg->json))
 			rc = data_obj_size(arg->json);
 		else
-		if (data_is_string(arg->json))
+		if (data_is_str(arg->json))
 		{
 			uint8_t* pos = arg->json;
 			Str str;
-			unpack_string(&pos, &str);
+			unpack_str(&pos, &str);
 			rc = utf8_strlen(&str);
 		} else
 			fn_error_arg(self, 0, "unsupported json value");

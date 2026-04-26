@@ -139,8 +139,8 @@ rename_if_abort(Log* self, LogOp* op)
 	uint8_t* pos = log_data_of(self, op);
 	Str user;
 	Str name;
-	unpack_string(&pos, &user);
-	unpack_string(&pos, &name);
+	unpack_str(&pos, &user);
+	unpack_str(&pos, &name);
 
 	auto sub = sub_of(op->rel);
 	sub_config_set_user(sub->config, &user);
@@ -183,8 +183,8 @@ sub_mgr_rename(SubMgr* self,
 	log_ddl(&tr->log, &rename_if, NULL, &sub->rel);
 
 	// save previous name
-	encode_string(&tr->log.data, &sub->config->user);
-	encode_string(&tr->log.data, &sub->config->name);
+	encode_str(&tr->log.data, &sub->config->user);
+	encode_str(&tr->log.data, &sub->config->name);
 
 	// set new name
 	if (! str_compare_case(&sub->config->user, user_new))

@@ -114,12 +114,12 @@ request_rpc_sql(Request* self)
 	while (! unpack_obj_end(&pos))
 	{
 		Str name;
-		unpack_string(&pos, &name);
+		unpack_str(&pos, &name);
 		if (str_is(&name, "text", 4))
 		{
-			if (unlikely(! data_is_string(pos)))
+			if (unlikely(! data_is_str(pos)))
 				error("'text' field is not a string");
-			unpack_string(&pos, &self->text);
+			unpack_str(&pos, &self->text);
 		} else {
 			error("unexpected params field");
 		}
@@ -147,18 +147,18 @@ request_rpc_cmd(Request* self, RequestType type, bool with_args)
 	while (! unpack_obj_end(&pos))
 	{
 		Str name;
-		unpack_string(&pos, &name);
+		unpack_str(&pos, &name);
 		if (str_is(&name, "user", 4))
 		{
-			if (unlikely(! data_is_string(pos)))
+			if (unlikely(! data_is_str(pos)))
 				error("'user' is not a string");
-			unpack_string(&pos, &self->rel_user);
+			unpack_str(&pos, &self->rel_user);
 		} else
 		if (str_is(&name, "rel", 3))
 		{
-			if (unlikely(! data_is_string(pos)))
+			if (unlikely(! data_is_str(pos)))
 				error("'rel' is not a string");
-			unpack_string(&pos, &self->rel);
+			unpack_str(&pos, &self->rel);
 		} else
 		if (str_is(&name, "args", 4))
 		{

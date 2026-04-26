@@ -111,7 +111,7 @@ opts_set_json(Opts* self, uint8_t** pos)
 	{
 		// key
 		Str name;
-		unpack_string(pos, &name);
+		unpack_str(pos, &name);
 
 		// find optiable and set value
 		auto opt = opts_find(self, &name);
@@ -199,7 +199,7 @@ opts_list_persistent(Opts* self)
 		auto opt = list_at(Opt, link);
 		if (opt_is(opt, OPT_E))
 			continue;
-		encode_string(buf, &opt->name);
+		encode_str(buf, &opt->name);
 		opt_encode(opt, buf);
 	}
 	encode_obj_end(buf);
@@ -216,7 +216,7 @@ opts_list(Opts* self)
 		auto opt = list_at(Opt, link);
 		if (opt_is(opt, OPT_H) || opt_is(opt, OPT_S))
 			continue;
-		encode_string(buf, &opt->name);
+		encode_str(buf, &opt->name);
 		opt_encode(opt, buf);
 	}
 	encode_obj_end(buf);

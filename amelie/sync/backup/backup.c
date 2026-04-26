@@ -63,7 +63,7 @@ backup_push(Backup* self, Str* name, size_t size)
 	auto buf = &client->reply.content;
 	buf_reset(buf);
 	encode_array(buf);
-	encode_string(buf, name);
+	encode_str(buf, name);
 	encode_int(buf, size);
 	encode_array_end(buf);
 
@@ -110,7 +110,7 @@ backup_process(Backup* self)
 			Str     name;
 			int64_t size;
 			unpack_array(&pos);
-			unpack_string(&pos, &name);
+			unpack_str(&pos, &name);
 			unpack_int(&pos, &size);
 			unpack_array_end(&pos);
 			backup_push(self, &name, size);

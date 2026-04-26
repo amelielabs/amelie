@@ -49,10 +49,10 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		buf_printf(data, "%" PRIi64, value);
 		break;
 	}
-	case DATA_STRINGV0 ... DATA_STRING32:
+	case DATA_STRV0 ... DATA_STR32:
 	{
 		Str str;
-		unpack_string(pos, &str);
+		unpack_str(pos, &str);
 		buf_write(data, "\"", 1);
 		escape_str(data, &str);
 		buf_write(data, "\"", 1);

@@ -13,30 +13,30 @@
 
 enum
 {
-	DATA_NULL         = 0,
+	DATA_NULL      = 0,
 
-	DATA_TRUE         = 1,
-	DATA_FALSE        = 2,
-	DATA_REAL32       = 3,
-	DATA_REAL64       = 4,
+	DATA_TRUE      = 1,
+	DATA_FALSE     = 2,
+	DATA_REAL32    = 3,
+	DATA_REAL64    = 4,
 
-	DATA_INTV0        = 5,  // reserved values from 0 .. 31
-	DATA_INTV31       = 37,
-	DATA_INT8         = 38,
-	DATA_INT16        = 39,
-	DATA_INT32        = 40,
-	DATA_INT64        = 41,
+	DATA_INTV0     = 5,  // reserved values from 0 .. 31
+	DATA_INTV31    = 37,
+	DATA_INT8      = 38,
+	DATA_INT16     = 39,
+	DATA_INT32     = 40,
+	DATA_INT64     = 41,
 
-	DATA_STRINGV0     = 42, // reserved values from 0 .. 31
-	DATA_STRINGV31    = 74,
-	DATA_STRING8      = 75,
-	DATA_STRING16     = 76,
-	DATA_STRING32     = 77,
+	DATA_STRV0     = 42, // reserved values from 0 .. 31
+	DATA_STRV31    = 74,
+	DATA_STR8      = 75,
+	DATA_STR16     = 76,
+	DATA_STR32     = 77,
 
-	DATA_OBJ          = 78,
-	DATA_OBJ_END      = 79,
-	DATA_ARRAY        = 80,
-	DATA_ARRAY_END    = 81
+	DATA_OBJ       = 78,
+	DATA_OBJ_END   = 79,
+	DATA_ARRAY     = 80,
+	DATA_ARRAY_END = 81
 };
 
 static inline char*
@@ -53,7 +53,7 @@ data_typeof(int type)
 		return "real";
 	case DATA_INTV0 ... DATA_INT64:
 		return "int";
-	case DATA_STRINGV0 ... DATA_STRING32:
+	case DATA_STRV0 ... DATA_STR32:
 		return "string";
 	case DATA_OBJ ... DATA_OBJ_END:
 		return "object";
@@ -128,13 +128,13 @@ data_size_int(uint64_t value)
 }
 
 always_inline hot static inline int
-data_size_string(int value)
+data_size_str(int value)
 {
 	return data_size_of(value) + value;
 }
 
 always_inline hot static inline int
-data_size_string32(void)
+data_size_str32(void)
 {
 	return data_size32();
 }
@@ -190,9 +190,9 @@ data_is_int(uint8_t* data)
 }
 
 always_inline hot static inline bool
-data_is_string(uint8_t* data)
+data_is_str(uint8_t* data)
 {
-	return *data >= DATA_STRINGV0 && *data <= DATA_STRING32;
+	return *data >= DATA_STRV0 && *data <= DATA_STR32;
 }
 
 always_inline hot static inline bool

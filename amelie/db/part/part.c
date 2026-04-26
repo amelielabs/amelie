@@ -190,7 +190,7 @@ part_status(Part* self, Buf* buf, int flags)
 
 	// storage
 	encode_raw(buf, "storage", 7);
-	encode_string(buf, &self->id.volume->storage->config->name);
+	encode_str(buf, &self->id.volume->storage->config->name);
 
 	// min
 	encode_raw(buf, "min", 3);

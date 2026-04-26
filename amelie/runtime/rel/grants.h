@@ -151,12 +151,12 @@ grants_read(Grants* self, uint8_t** pos)
 	{
 		unpack_array(pos);
 		Str user;
-		unpack_string(pos, &user);
+		unpack_str(pos, &user);
 		uint32_t permissions = PERM_NONE;
 		while (! unpack_array_end(pos))
 		{
 			Str name;
-			unpack_string(pos, &name);
+			unpack_str(pos, &name);
 			uint32_t permission;
 			if (permission_of(&name, &permission) == -1)
 				error("grants: unrecognized permission '%.*s'",

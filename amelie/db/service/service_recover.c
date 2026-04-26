@@ -34,14 +34,14 @@ service_recover_validate(ServiceFile* self)
 
 		// action
 		Str action;
-		unpack_string(&pos, &action);
+		unpack_str(&pos, &action);
 
 		bool valid = false;
 		if (str_is(&action, "create", 6))
 		{
 			// [create, path]
 			Str path;
-			unpack_string(&pos, &path);
+			unpack_str(&pos, &path);
 
 			// valid if created file exists
 
@@ -55,7 +55,7 @@ service_recover_validate(ServiceFile* self)
 			// [rename, from, to]
 			data_skip(&pos);
 			Str path;
-			unpack_string(&pos, &path);
+			unpack_str(&pos, &path);
 
 			// valid if renamed file exists
 
@@ -86,13 +86,13 @@ service_recover_abort(ServiceFile* self)
 
 		// action
 		Str action;
-		unpack_string(&pos, &action);
+		unpack_str(&pos, &action);
 
 		if (str_is(&action, "create", 6))
 		{
 			// [create, path]
 			Str path;
-			unpack_string(&pos, &path);
+			unpack_str(&pos, &path);
 
 			// remove file
 			fs_unlink_if_exists("%s/%.*s", state_directory(),
@@ -104,8 +104,8 @@ service_recover_abort(ServiceFile* self)
 			// [rename, from, to]
 			Str from;
 			Str to;
-			unpack_string(&pos, &from);
-			unpack_string(&pos, &to);
+			unpack_str(&pos, &from);
+			unpack_str(&pos, &to);
 
 			char path_from[PATH_MAX];
 			sfmt(path_from, sizeof(path_from),

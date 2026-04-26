@@ -138,11 +138,11 @@ system_metrics(System* self)
 
 	// uuid
 	encode_raw(buf, "uuid", 4);
-	encode_string(buf, &config()->uuid.string);
+	encode_str(buf, &config()->uuid.string);
 
 	// version
 	encode_raw(buf, "version", 7);
-	encode_string(buf, &state()->version.string);
+	encode_str(buf, &state()->version.string);
 
 	// frontends
 	encode_raw(buf, "frontends", 9);

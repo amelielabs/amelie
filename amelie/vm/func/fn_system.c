@@ -377,7 +377,7 @@ fn_show(Fn* self)
 			auto opt = list_at(Opt, link);
 			if (opt_is(opt, OPT_H) || opt_is(opt, OPT_S))
 				continue;
-			encode_string(buf, &opt->name);
+			encode_str(buf, &opt->name);
 			local_encode_opt(self->local, buf, opt);
 		}
 		encode_obj_end(buf);

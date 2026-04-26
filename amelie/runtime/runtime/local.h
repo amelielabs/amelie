@@ -55,7 +55,7 @@ local_encode_opt(Local* self, Buf* buf, Opt* opt)
 	// replace timezone with local settings
 	if (opt == &config()->timezone)
 	{
-		encode_string(buf, &self->timezone->name);
+		encode_str(buf, &self->timezone->name);
 		return;
 	}
 	opt_encode(opt, buf);

@@ -186,11 +186,11 @@ fn_string(Fn* self)
 	}
 	default:
 		// json string without quotes
-		if (arg->type == TYPE_JSON && data_is_string(arg->json))
+		if (arg->type == TYPE_JSON && data_is_str(arg->json))
 		{
 			auto pos = arg->json;
 			Str str;
-			unpack_string(&pos, &str);
+			unpack_str(&pos, &str);
 			buf_write_str(data, &str);
 			break;
 		}

@@ -1712,7 +1712,7 @@ ctable_reads:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 	{
-		unpack_string((uint8_t**)&ptr, &r[op->a].string);
+		unpack_str((uint8_t**)&ptr, &r[op->a].string);
 		r[op->a].type = TYPE_STRING;
 		r[op->a].buf  = NULL;
 	} else {

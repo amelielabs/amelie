@@ -78,7 +78,7 @@ bookmark_mgr_sync(BookmarkMgr* self, const char* path)
 	list_foreach(&self->list)
 	{
 		auto bookmark = list_at(Bookmark, link);
-		encode_string(&buf, opt_string_of(&bookmark->endpoint.name));
+		encode_str(&buf, opt_string_of(&bookmark->endpoint.name));
 		bookmark_write(bookmark, &buf);
 	}
 	encode_obj_end(&buf);

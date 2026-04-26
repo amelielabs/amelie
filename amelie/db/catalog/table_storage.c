@@ -32,7 +32,7 @@ storage_add_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	Str storage_name;
-	unpack_string(&pos, &storage_name);
+	unpack_str(&pos, &storage_name);
 
 	Table* table = op->iface_arg;
 	auto volumes = &table->config->partitioning.volumes;
@@ -82,7 +82,7 @@ table_storage_add(Table*  self,
 	log_ddl(&tr->log, &storage_add_if, self, &self->rel);
 
 	// save storage name
-	encode_string(&tr->log.data, &config->name);
+	encode_str(&tr->log.data, &config->name);
 
 	// add volume to the storage
 	volume = volume_copy(config);
@@ -100,7 +100,7 @@ storage_drop_if_commit(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	Str storage_name;
-	unpack_string(&pos, &storage_name);
+	unpack_str(&pos, &storage_name);
 
 	Table* table = op->iface_arg;
 	auto volumes = &table->config->partitioning.volumes;
@@ -162,7 +162,7 @@ table_storage_drop(Table* self,
 	log_ddl(&tr->log, &storage_drop_if, self, &self->rel);
 
 	// save storage name
-	encode_string(&tr->log.data, name);
+	encode_str(&tr->log.data, name);
 	return true;
 }
 
@@ -178,7 +178,7 @@ storage_pause_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	Str storage_name;
-	unpack_string(&pos, &storage_name);
+	unpack_str(&pos, &storage_name);
 
 	Table* table = op->iface_arg;
 	auto volumes = &table->config->partitioning.volumes;
@@ -233,6 +233,6 @@ table_storage_pause(Table* self,
 	volume_set_pause(volume, pause);
 
 	// save storage name
-	encode_string(&tr->log.data, name);
+	encode_str(&tr->log.data, name);
 	return true;
 }

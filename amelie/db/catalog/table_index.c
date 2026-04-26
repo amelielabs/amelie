@@ -131,7 +131,7 @@ rename_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	Str index_name;
-	unpack_string(&pos, &index_name);
+	unpack_str(&pos, &index_name);
 
 	IndexConfig* index = op->iface_arg;
 	index_config_set_name(index, &index_name);
@@ -177,7 +177,7 @@ table_index_rename(Table* self,
 	log_ddl(&tr->log, &rename_if, index, &self->rel);
 
 	// save previous name
-	encode_string(&tr->log.data, &index->name);
+	encode_str(&tr->log.data, &index->name);
 
 	// rename index
 	index_config_set_name(index, name_new);

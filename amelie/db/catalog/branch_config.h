@@ -98,13 +98,13 @@ branch_config_read(uint8_t** pos)
 	uint8_t* pos_grants   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "user",       &self->user       },
-		{ DECODE_STRING, "name",       &self->name       },
-		{ DECODE_STRING, "table_user", &self->table_user },
-		{ DECODE_STRING, "table",      &self->table      },
-		{ DECODE_OBJ,    "snapshot",   &pos_snapshot     },
-		{ DECODE_ARRAY,  "grants",     &pos_grants       },
-		{ 0,              NULL,         NULL             },
+		{ DECODE_STR,   "user",       &self->user       },
+		{ DECODE_STR,   "name",       &self->name       },
+		{ DECODE_STR,   "table_user", &self->table_user },
+		{ DECODE_STR,   "table",      &self->table      },
+		{ DECODE_OBJ,   "snapshot",   &pos_snapshot     },
+		{ DECODE_ARRAY, "grants",     &pos_grants       },
+		{ 0,             NULL,         NULL             },
 	};
 	decode_obj(obj, "branch", pos);
 	snapshot_read(&self->snapshot, &pos_snapshot);
@@ -122,19 +122,19 @@ branch_config_write(BranchConfig* self, Buf* buf, int flags)
 
 	// user
 	encode_raw(buf, "user", 4);
-	encode_string(buf, &self->user);
+	encode_str(buf, &self->user);
 
 	// name
 	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
+	encode_str(buf, &self->name);
 
 	// table_user
 	encode_raw(buf, "table_user", 10);
-	encode_string(buf, &self->table_user);
+	encode_str(buf, &self->table_user);
 
 	// table
 	encode_raw(buf, "table", 5);
-	encode_string(buf, &self->table);
+	encode_str(buf, &self->table);
 
 	if (flags_has(flags, FMINIMAL))
 	{

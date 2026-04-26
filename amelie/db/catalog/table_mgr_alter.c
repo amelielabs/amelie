@@ -33,8 +33,8 @@ rename_if_abort(Log* self, LogOp* op)
 	uint8_t* pos = log_data_of(self, op);
 	Str user;
 	Str name;
-	unpack_string(&pos, &user);
-	unpack_string(&pos, &name);
+	unpack_str(&pos, &user);
+	unpack_str(&pos, &name);
 
 	auto table = table_of(op->rel);
 	table_config_set_user(table->config, &user);
@@ -77,8 +77,8 @@ table_mgr_rename(TableMgr* self,
 	log_ddl(&tr->log, &rename_if, NULL, &table->rel);
 
 	// save previous name
-	encode_string(&tr->log.data, &table->config->user);
-	encode_string(&tr->log.data, &table->config->name);
+	encode_str(&tr->log.data, &table->config->user);
+	encode_str(&tr->log.data, &table->config->name);
 
 	// set new table name
 	if (! str_compare_case(&table->config->user, user_new))
@@ -224,7 +224,7 @@ column_rename_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
 	Str name_column;
-	unpack_string(&pos, &name_column);
+	unpack_str(&pos, &name_column);
 
 	Column* column = op->iface_arg;
 	column_set_name(column, &name_column);
@@ -284,7 +284,7 @@ table_mgr_column_rename(TableMgr* self,
 	log_ddl(&tr->log, &column_rename_if, column, &table->rel);
 
 	// save previous column name
-	encode_string(&tr->log.data, &column->name);
+	encode_str(&tr->log.data, &column->name);
 
 	// set column name
 	column_set_name(column, name_column_new);
