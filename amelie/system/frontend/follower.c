@@ -123,7 +123,7 @@ follower_follow(Follower* self)
 	auto pos = empty_array;
 	json_write_array(&pos);
 	json_write_array_end(&pos);
-	output_write_json(&req->output, &column, empty_array, false);
+	output_data(&req->output, &column, empty_array, false);
 }
 
 static void
@@ -157,7 +157,7 @@ follower_unfollow(Follower* self)
 	auto pos = empty_array;
 	json_write_array(&pos);
 	json_write_array_end(&pos);
-	output_write_json(&req->output, &column, empty_array, false);
+	output_data(&req->output, &column, empty_array, false);
 }
 
 static void
@@ -174,7 +174,7 @@ follower_write(Follower* self)
 	auto pos = empty_array;
 	json_write_array(&pos);
 	json_write_array_end(&pos);
-	output_write_json(&req->output, &column, empty_array, false);
+	output_data(&req->output, &column, empty_array, false);
 }
 
 hot static void
@@ -198,7 +198,7 @@ follower_execute(Follower* self, Str* content)
 	);
 	if (on_error)
 	{
-		output_write_error(&req->output, &am_self()->error);
+		output_error(&req->output, &am_self()->error);
 		return;
 	}
 

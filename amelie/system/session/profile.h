@@ -95,5 +95,5 @@ profile_create(Profile* self,
 
 	Str column;
 	str_set(&column, "profile", 7);
-	output_write_json(output, &column, buf->start, false);
+	output_data(output, &column, buf->start, false);
 }

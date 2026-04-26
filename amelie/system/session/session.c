@@ -143,7 +143,7 @@ session_run(Session* self)
 	auto returning = compiler->program_returning;
 	auto output    = &self->req->output;
 	if (returning && ret.value)
-		output_write(output, returning, ret.value);
+		output_value(output, returning, ret.value);
 
 	// explain profile
 	if (compiler->program_profile)
@@ -216,7 +216,7 @@ session_run_utility(Session* self)
 		{
 			Str column;
 			str_set(&column, "result", 6);
-			output_write_json(output, &column, ret.value->json, true);
+			output_data(output, &column, ret.value->json, true);
 		}
 	}
 
@@ -291,7 +291,7 @@ session_request(Session* self)
 	{
 		Str column;
 		str_set(&column, "explain", 7);
-		output_write_json(&req->output, &column, program->explain.start, false);
+		output_data(&req->output, &column, program->explain.start, false);
 		return;
 	}
 
@@ -329,7 +329,7 @@ session_execute(Session* self, Request* req)
 	if (on_error)
 	{
 		buf_reset(req->output.buf);
-		output_write_error(&req->output, &am_self()->error);
+		output_error(&req->output, &am_self()->error);
 		unlock_all();
 	}
 

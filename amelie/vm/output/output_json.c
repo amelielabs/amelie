@@ -79,7 +79,7 @@ output_json_write(Output* self, Columns* columns, Value* value)
 }
 
 static void
-output_json_write_json(Output* self, Str* column, uint8_t* pos, bool unwrap)
+output_json_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
 	auto buf = self->buf;
 
@@ -137,7 +137,7 @@ output_json_write_error(Output* self, Error* error)
 OutputIf output_json =
 {
 	.write       = output_json_write,
-	.write_json  = output_json_write_json,
+	.write_data  = output_json_write_data,
 	.write_error = output_json_write_error
 };
 
@@ -150,5 +150,5 @@ output_json_result(Output* self, Columns* columns, Value* value)
 void
 output_json_result_json(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
-	output_json_write_json(self, column, pos, unwrap);
+	output_json_write_data(self, column, pos, unwrap);
 }

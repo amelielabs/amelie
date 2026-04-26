@@ -176,7 +176,7 @@ relay_execute(Relay* self, Str* uri, NativeReq* cmd)
 
 		auto output = &self->req.output;
 		if (output->iface)
-			output_write_error(output, &am_self()->error);
+			output_error(output, &am_self()->error);
 
 		// 502 Bad Gateway (connection or IO error)
 		code = 502;

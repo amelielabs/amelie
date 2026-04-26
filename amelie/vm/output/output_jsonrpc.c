@@ -29,7 +29,7 @@ output_jsonrpc_write(Output* self, Columns* columns, Value* value)
 }
 
 static void
-output_jsonrpc_write_json(Output* self, Str* column, uint8_t* pos, bool unwrap)
+output_jsonrpc_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
 	char header[] = "{\"jsonrpc\": \"2.0\", \"id\": 0, \"result\": ";
 	auto buf = self->buf;
@@ -91,6 +91,6 @@ output_jsonrpc_write_error(Output* self, Error* error)
 OutputIf output_jsonrpc =
 {
 	.write       = output_jsonrpc_write,
-	.write_json  = output_jsonrpc_write_json,
+	.write_data  = output_jsonrpc_write_data,
 	.write_error = output_jsonrpc_write_error
 };

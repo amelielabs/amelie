@@ -63,7 +63,7 @@ output_text_write(Output* self, Columns* columns, Value* value)
 }
 
 static void
-output_text_write_json(Output* self, Str* column, uint8_t* pos, bool unwrap)
+output_text_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
 	unused(column);
 	unused(unwrap);
@@ -95,6 +95,6 @@ output_text_write_error(Output* self, Error* error)
 OutputIf output_text =
 {
 	.write       = output_text_write,
-	.write_json  = output_text_write_json,
+	.write_data  = output_text_write_data,
 	.write_error = output_text_write_error
 };

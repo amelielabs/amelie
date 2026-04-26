@@ -183,7 +183,7 @@ frontend_endpoint(Request* req, Client* client)
 	if (on_error)
 	{
 		if (output->iface)
-			output_write_error(output, &am_self()->error);
+			output_error(output, &am_self()->error);
 	}
 
 	return !on_error;
