@@ -33,8 +33,8 @@ post /sql? text/plain application/json select 1;
 post /sql?a text/plain application/json select 1;
 400 Bad Request
 post /sql text/plain application/json select "2024-07-29 18:40:19"::timestamp;
-{"columns": ["col1"], "rows": [["2024-07-29 18:40:19+00"]]}
+{"columns": ["timestamp"], "rows": [["2024-07-29 18:40:19+00"]]}
 post /sql?timezone=Asia/Tokyo text/plain application/json select "2024-07-29 18:40:19"::timestamp;
-{"columns": ["col1"], "rows": [["2024-07-29 18:40:19+09"]]}
+{"columns": ["timestamp"], "rows": [["2024-07-29 18:40:19+09"]]}
 disconnect S0;
 close E0;

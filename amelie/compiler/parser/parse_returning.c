@@ -56,6 +56,8 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		{
 			if (as_has)
 				stmt_error(stmt, NULL, "label expected");
+
+			// derive name from the expression, if possible
 			if (expr->id == KNAME)
 			{
 				name = ast(KNAME);
@@ -63,12 +65,37 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 			} else
 			if (expr->id == KAGGR)
 			{
-				name = ast(KNAME);
 				auto agg = ast_agg_of(expr);
 				if (agg->function)
+				{
+					name = ast(KNAME);
 					name->string = agg->function->string;
+				}
+			} else
+			if (expr->id == KFUNC)
+			{
+				auto func = ast_func_of(expr);
+				if (func->fn)
+				{
+					name = ast(KNAME);
+					name->string = func->fn->name;
+				}
+			} else
+			if (expr->id == KMETHOD)
+			{
+				auto func = ast_func_of(expr->r);
+				if (func->fn)
+				{
+					name = ast(KNAME);
+					name->string = func->fn->name;
+				}
+			} else
+			if (expr->id == KVALUE)
+			{
+				// constified function
+				name = ast(KNAME);
+				name->string = expr->fn->name;
 			}
-
 		} else
 		{
 			// ensure * has no alias

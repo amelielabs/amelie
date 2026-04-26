@@ -322,6 +322,7 @@ expr_func_constify(Stmt* self, Ast* ast, Ast* first_arg)
 	// return result as KVALUE
 	ast->id  = KVALUE;
 	ast->set = result;
+	ast->fn  = fn.function;
 	return ast;
 }
 
