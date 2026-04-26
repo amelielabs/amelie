@@ -26,7 +26,7 @@ endpoint_init(Endpoint* self)
 		{ "token",        OPT_STRING,  OPT_C, &self->token,        NULL, 0    },
 		// host
 		{ "host",         OPT_STRING,  OPT_C, &self->host,         NULL, 0    },
-		{ "port",         OPT_INT,     OPT_C, &self->port,         NULL, 3485 },
+		{ "port",         OPT_INT,     OPT_C, &self->port,         NULL, 8080 },
 		// repository
 		{ "path",         OPT_STRING,  OPT_C, &self->path,         NULL, 0    },
 		// tls
@@ -69,7 +69,7 @@ endpoint_reset(Endpoint* self)
 		else
 			opt->integer = 0;
 	}
-	self->port.integer = 3485;
+	self->port.integer = 8080;
 }
 
 void

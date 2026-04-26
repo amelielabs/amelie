@@ -30,7 +30,7 @@ server_config_allocate(void)
 {
 	ServerConfig* self;
 	self = am_malloc(sizeof(*self));
-	self->host_port  = 3485;
+	self->host_port  = 8080;
 	self->host_addr  = NULL;
 	self->auth       = false;
 	self->tls        = false;
