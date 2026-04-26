@@ -88,9 +88,18 @@ output_jsonrpc_write_error(Output* self, Error* error)
 	json_export_as(self->buf, self->timezone, false, 0, &pos);
 }
 
+static void
+output_jsonrpc_write_none(Output* self)
+{
+	auto buf = self->buf;
+	char header[] = "{\"jsonrpc\": \"2.0\", \"id\": 0, \"result\": {}}";
+	buf_write(buf, header, sizeof(header) - 1);
+}
+
 OutputIf output_jsonrpc =
 {
 	.write       = output_jsonrpc_write,
 	.write_data  = output_jsonrpc_write_data,
-	.write_error = output_jsonrpc_write_error
+	.write_error = output_jsonrpc_write_error,
+	.write_none  = output_jsonrpc_write_none
 };

@@ -99,7 +99,7 @@ output_json_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 		buf_write(buf, "[", 1);
 	json_export_as(buf, self->timezone, false, 1, &pos);
 	if (wrap)
-		buf_write(buf, "] ", 2);
+		buf_write(buf, "]", 1);
 	buf_write(buf, "}", 1);
 }
 
@@ -138,7 +138,8 @@ OutputIf output_json =
 {
 	.write       = output_json_write,
 	.write_data  = output_json_write_data,
-	.write_error = output_json_write_error
+	.write_error = output_json_write_error,
+	.write_none  = NULL
 };
 
 void

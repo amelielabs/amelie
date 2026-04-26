@@ -113,17 +113,6 @@ follower_follow(Follower* self)
 	// open cursor
 	cdc_slot_set(&feed->slot, lsn, lsn_op);
 	cdc_cursor_open(&feed->cursor, share()->cdc, id, lsn, lsn_op);
-
-	// reply
-	Str column;
-	str_set(&column, "follow", 6);
-
-	// []
-	uint8_t empty_array[8];
-	auto pos = empty_array;
-	json_write_array(&pos);
-	json_write_array_end(&pos);
-	output_data(&req->output, &column, empty_array, false);
 }
 
 static void
@@ -147,34 +136,6 @@ follower_unfollow(Follower* self)
 
 	feed_mgr_remove(&self->feed_mgr, feed);
 	feed_free(feed);
-
-	// reply
-	Str column;
-	str_set(&column, "unfollow", 8);
-
-	// []
-	uint8_t empty_array[8];
-	auto pos = empty_array;
-	json_write_array(&pos);
-	json_write_array_end(&pos);
-	output_data(&req->output, &column, empty_array, false);
-}
-
-static void
-follower_write(Follower* self)
-{
-	auto req = self->req;
-
-	// reply
-	Str column;
-	str_set(&column, "write", 5);
-
-	// []
-	uint8_t empty_array[8];
-	auto pos = empty_array;
-	json_write_array(&pos);
-	json_write_array_end(&pos);
-	output_data(&req->output, &column, empty_array, false);
 }
 
 hot static void
@@ -202,17 +163,14 @@ follower_execute(Follower* self, Str* content)
 		return;
 	}
 
-	// command handled by follower
-	if (req->type == REQUEST_FOLLOW ||
-	    req->type == REQUEST_UNFOLLOW)
-		return;
+	// execute by session, unless follower command
+	if (req->type != REQUEST_FOLLOW &&
+	    req->type != REQUEST_UNFOLLOW)
+		self->fe->iface->session_execute(self->session, req);
 
-	// execute
-	self->fe->iface->session_execute(self->session, req);
-
-	// reply empty write result
-	if (req->type == REQUEST_WRITE)
-		follower_write(self);
+	// handle empty result
+	if (buf_empty(req->output.buf))
+		output_none(&req->output);
 }
 
 hot static void

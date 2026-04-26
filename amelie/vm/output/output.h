@@ -19,6 +19,7 @@ struct OutputIf
 	void (*write)(Output*, Columns*, Value*);
 	void (*write_data)(Output*, Str*, uint8_t*, bool);
 	void (*write_error)(Output*, Error*);
+	void (*write_none)(Output*);
 };
 
 struct Output
@@ -58,4 +59,11 @@ static inline void
 output_error(Output* self, Error* error)
 {
 	self->iface->write_error(self, error);
+}
+
+static inline void
+output_none(Output* self)
+{
+	if (self->iface->write_none)
+		self->iface->write_none(self);
 }

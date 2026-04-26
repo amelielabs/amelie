@@ -96,5 +96,6 @@ OutputIf output_text =
 {
 	.write       = output_text_write,
 	.write_data  = output_text_write_data,
-	.write_error = output_text_write_error
+	.write_error = output_text_write_error,
+	.write_none  = NULL
 };
