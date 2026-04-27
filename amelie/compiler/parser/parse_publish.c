@@ -20,7 +20,7 @@
 void
 parse_publish(Stmt* self)
 {
-	// PUBLISH TO [user.]topic [expr] [WITH expr]
+	// PUBLISH TO [user.]topic [expr]
 	auto stmt = ast_publish_allocate(self->block);
 	self->ast = &stmt->ast;
 
@@ -41,7 +41,7 @@ parse_publish(Stmt* self)
 	access_add(&self->parser->program->access, &topic->rel,
 	           LOCK_SHARED, PERM_PUBLISH);
 
-	// [WITH]
-	if (stmt_if(self, KWITH))
+	// [expr]
+	if (!stmt_if(self, KEOF) && !stmt_if(self, ';'))
 		stmt->expr = parse_expr(self, NULL);
 }
