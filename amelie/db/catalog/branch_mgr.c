@@ -266,14 +266,7 @@ Branch*
 branch_mgr_find(BranchMgr* self, Str* user, Str* name,
                 bool       error_if_not_exists)
 {
-	auto rel = rel_mgr_get(&self->mgr, user, name);
-	if (! rel)
-	{
-		if (error_if_not_exists)
-			error("branch '%.*s': not exists", str_size(name),
-			      str_of(name));
-		return NULL;
-	}
+	auto rel = rel_mgr_find(&self->mgr, user, name, error_if_not_exists);
 	return branch_of(rel);
 }
 

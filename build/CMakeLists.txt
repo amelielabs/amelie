@@ -184,7 +184,7 @@ set(AMELIE_SOURCES_SERVER
 
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/row/row_encode.c
-    ${AMELIE_ROOT}/db/transaction/relation_mgr.c
+    ${AMELIE_ROOT}/db/transaction/rel_mgr.c
     ${AMELIE_ROOT}/db/cdc/cdc.c
     ${AMELIE_ROOT}/db/cdc/cdc_export.c
     ${AMELIE_ROOT}/db/storage/storage_mgr.c

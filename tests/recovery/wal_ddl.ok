@@ -21,7 +21,7 @@ alter table test rename to test2;
 select show('state').lsn;
 2
 select identity_of("test");
-error: table 'test': not exists
+error: relation 'test': not exists
 select identity_of("test2");
 0
 # test: restart
@@ -33,7 +33,7 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 2
 select identity_of("test");
-error: table 'test': not exists
+error: relation 'test': not exists
 select identity_of("test2");
 0
 # test: alter table column add
@@ -536,7 +536,7 @@ drop table test2;
 select show('state').lsn;
 17
 select identity_of("test2");
-error: table 'test2': not exists
+error: relation 'test2': not exists
 # test: restart
 disconnect S0;
 close E0;

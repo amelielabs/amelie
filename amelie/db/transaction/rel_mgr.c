@@ -49,20 +49,6 @@ rel_mgr_delete(RelMgr* self, Rel* rel)
 	self->list_count--;
 }
 
-Rel*
-rel_mgr_get(RelMgr* self, Str* user, Str* name)
-{
-	list_foreach(&self->list)
-	{
-		auto rel = list_at(Rel, link);
-		if (user && !str_compare_case(rel->user, user))
-			continue;
-		if (str_compare_case(rel->name, name))
-			return rel;
-	}
-	return NULL;
-}
-
 void
 rel_mgr_replace(RelMgr* self, Rel* prev, Rel* rel)
 {
@@ -131,4 +117,23 @@ rel_mgr_drop(RelMgr* self, Tr* tr, Rel* rel)
 
 	// update transaction log
 	log_ddl(&tr->log, &drop_if, self, rel);
+}
+
+Rel*
+rel_mgr_find(RelMgr* self, Str* user, Str* name,
+             bool    error_if_not_exists)
+{
+	list_foreach(&self->list)
+	{
+		auto rel = list_at(Rel, link);
+		if (user && !str_compare_case(rel->user, user))
+			continue;
+		if (str_compare_case(rel->name, name))
+			return rel;
+	}
+
+	if (error_if_not_exists)
+		error("relation '%.*s': not exists", str_size(name),
+		      str_of(name));
+	return NULL;
 }

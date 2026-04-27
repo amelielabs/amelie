@@ -304,14 +304,7 @@ Sub*
 sub_mgr_find(SubMgr* self, Str* user, Str* name,
              bool    error_if_not_exists)
 {
-	auto rel = rel_mgr_get(&self->mgr, user, name);
-	if (! rel)
-	{
-		if (error_if_not_exists)
-			error("subscription '%.*s': not exists", str_size(name),
-			      str_of(name));
-		return NULL;
-	}
+	auto rel = rel_mgr_find(&self->mgr, user, name, error_if_not_exists);
 	return sub_of(rel);
 }
 

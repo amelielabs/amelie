@@ -305,14 +305,7 @@ user_mgr_dump(UserMgr* self, Buf* buf)
 User*
 user_mgr_find(UserMgr* self, Str* name, bool error_if_not_exists)
 {
-	auto rel = rel_mgr_get(&self->mgr, NULL, name);
-	if (! rel)
-	{
-		if (error_if_not_exists)
-			error("user '%.*s': not exists", str_size(name),
-			      str_of(name));
-		return NULL;
-	}
+	auto rel = rel_mgr_find(&self->mgr, NULL, name, error_if_not_exists);
 	return user_of(rel);
 }
 
