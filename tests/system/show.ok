@@ -18,6 +18,13 @@ show storages;
   "compression": "zstd",
   "compression_level": 0
 }]
+select * from show storages;
+{
+  "name": "main",
+  "path": "",
+  "compression": "zstd",
+  "compression_level": 0
+}
 # test: show storage
 show storage;
 error: show() ⟵ name argument is missing for 'storage'
@@ -42,6 +49,11 @@ show tables;
   "user": "main",
   "name": "test"
 }]
+select * from show tables;
+{
+  "user": "main",
+  "name": "test"
+}
 # test: show table
 show table;
 error: show() ⟵ name argument is missing for 'table'
@@ -73,6 +85,17 @@ select show('indexes', '', 'test', false);
     "asc": true
   }]
 }]
+select * from show indexes on test;
+{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}
 # test: show index
 show index primary on test;
 {
@@ -119,6 +142,16 @@ select show('partitions', '', 'test', false);
   "size": 0,
   "compression": 1
 }]
+select * from show partitions on test;
+{
+  "id": 1,
+  "storage": "main",
+  "min": 0,
+  "max": 8096,
+  "lsn": 0,
+  "size": 0,
+  "compression": 1
+}
 # test: show partition
 show partition '1' on test;
 {
@@ -178,6 +211,22 @@ show functions all;
   "returning": [],
   "grants": []
 }]
+select * from show functions all;
+{
+  "user": "main",
+  "name": "test_fn",
+  "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
+  "type": 5,
+  "args": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "dropped": false,
+    "constraints": []
+  }],
+  "returning": [],
+  "grants": []
+}
 # test: show function
 show function;
 error: show() ⟵ name argument is missing for 'function'
@@ -217,6 +266,7 @@ show wal;
 # test: show replicas
 show replicas;
 []
+select * from show replicas;
 # test: show replica
 show replica abc;
 error: failed to parse uuid
@@ -297,6 +347,8 @@ show config;
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }
+select * from show config;
+error: FROM: json array expected
 # test: show all
 show all;
 {

@@ -21,6 +21,7 @@ create user test;
 
 # test: show storages
 show storages;
+select * from show storages;
 
 # test: show storage
 show storage;
@@ -30,6 +31,7 @@ show storage main all;
 # test: show tables
 create table test (id int primary key);
 show tables;
+select * from show tables;
 
 # test: show table
 show table;
@@ -38,6 +40,7 @@ show table test;
 # test: show indexes
 show indexes on test;
 select show('indexes', '', 'test', false);
+select * from show indexes on test;
 
 # test: show index
 show index primary on test;
@@ -47,6 +50,7 @@ show index xyz on test;
 # test: show partitions
 show partitions on test;
 select show('partitions', '', 'test', false);
+select * from show partitions on test;
 
 # test: show partition
 show partition '1' on test;
@@ -65,6 +69,7 @@ select test_fn(123).a;
 select 123::test_fn().a;
 show functions;
 show functions all;
+select * from show functions all;
 
 # test: show function
 show function;
@@ -76,6 +81,7 @@ show wal;
 
 # test: show replicas
 show replicas;
+select * from show replicas;
 
 # test: show replica
 show replica abc;
@@ -89,6 +95,7 @@ select show('state').directory;
 
 # test: show config
 show config;
+select * from show config;
 
 # test: show all
 show all;

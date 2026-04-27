@@ -493,7 +493,7 @@ explain select test();
 select test();
 drop function test;
 
-select `user`, name from show('tables');
+select `user`, name from main.show('tables');
 
 create function test() return json
 begin
@@ -513,7 +513,7 @@ select
 	"name": it.name
 })
 from
-	show('tables') as it;
+	main.show('tables') as it;
 
 create function test() return json
 begin
@@ -521,7 +521,7 @@ begin
 	select
 		[] -> self::append({"schema": it.user, "name": it.name})
 	into
-		list from show('tables') as it;
+		list from main.show('tables') as it;
 	return list;
 end;
 explain select test();
@@ -533,7 +533,7 @@ begin
 	declare list json;
 	select [] -> append(self, {"schema": it.user, "name": it.name})
 	  into list
-	  from show('tables') as it;
+	  from main.show('tables') as it;
 	return list;
 end;
 explain select test();

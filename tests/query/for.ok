@@ -10,7 +10,7 @@ error: for it ❰end❱ ⟵ IN expected
 for it 1 end;
 error: for it ❰1❱ ⟵ IN expected
 for it in end;
-error: for it in ❰end❱ ⟵ relation not found
+error: for it in ❰end❱ ⟵ target name expected
 for it in 1 end;
 error: for it in ❰1❱ ⟵ target name expected
 for it in ; end;

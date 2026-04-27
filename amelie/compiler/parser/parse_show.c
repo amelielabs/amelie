@@ -56,3 +56,64 @@ parse_show(Stmt* self)
 	column_set_type(column, TYPE_JSON, -1);
 	columns_add(&stmt->ret.columns, column);
 }
+
+Ast*
+parse_show_func(Stmt* self)
+{
+	// section | option name
+	auto section = stmt_next_shadow(self);
+	if (section->id != KNAME && section->id != KSTRING)
+		stmt_error(self, section, "name expected");
+	section->id = KSTRING;
+
+	// [name]
+	auto name = stmt_next(self);
+	if (! (name->id == KNAME || name->id == KSTRING || name->id == KPRIMARY))
+	{
+		stmt_push(self, name);
+		name = ast(KSTRING);
+	}
+	name->id = KSTRING;
+
+	// [ON name]
+	Ast* on;
+	if (stmt_if(self, KON))
+	{
+		on = stmt_next_shadow(self);
+		if (on->id != KNAME && on->id != KSTRING)
+			stmt_error(self, on, "name expected");
+	} else {
+		on = ast(KSTRING);
+	}
+	on->id = KSTRING;
+
+	// [ALL]
+	auto all = ast(KFALSE);
+	if (stmt_if(self, KALL))
+		all->id = KTRUE;
+
+	// show(section, name, on, all)
+	auto args_list = section;
+	section->next = name;
+	name->next    = on;
+	on->next      = all;
+	all->next     = NULL;
+
+	// args(list_head, NULL)
+	auto args = ast_args_allocate();
+	args->ast.l       = args_list;
+	args->ast.r       = NULL;
+	args->ast.integer = 4;
+	args->constable   = false;
+
+	// func(NULL, args)
+	Str fn;
+	str_set(&fn, "show", 4);
+
+	auto func = ast_func_allocate();
+	func->fn    = function_mgr_find(share()->function_mgr, &fn);
+	func->ast.l = NULL;
+	func->ast.r = &args->ast;
+	assert(func->fn);
+	return &func->ast;
+}

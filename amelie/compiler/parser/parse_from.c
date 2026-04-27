@@ -22,9 +22,6 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 {
 	auto target = target_allocate();
 
-	// force read keywords as names
-	stmt_push(self, stmt_next_shadow(self));
-
 	// FROM (SELECT | expr)
 	if (stmt_if(self, '('))
 	{
@@ -82,6 +79,21 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 			select->ast.pos_end   = target->ast->pos_end;
 			target->columns = &select->ret.columns;
 		}
+		return target;
+	}
+
+	// FROM SHOW ... (handle as function call)
+	if (stmt_if(self, KSHOW))
+	{
+		target->type = TARGET_FUNCTION;
+		target->ast  = parse_show_func(self);
+
+		// allocate select to keep returning columns
+		auto select = ast_select_allocate(self, from->outer, from->block);
+		select->ast.pos_start = target->ast->pos_start;
+		select->ast.pos_end   = target->ast->pos_end;
+		target->columns = &select->ret.columns;
+		str_set(&target->name, "show", 4);
 		return target;
 	}
 

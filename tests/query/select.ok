@@ -406,16 +406,16 @@ drop table test;
 select * from unknown();
 error: select * from ❰unknown❱ ⟵ function not found
 # test: select * from function() (unsupported json type)
-select * from show('wal');
+select * from main.show('wal');
 error: FROM: json array expected
-select * from show('storages');
+select * from main.show('storages');
 {
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
 }
-explain select * from show('storages');
+explain select * from main.show('storages');
 {
   "main": {
     "00": "set                 0      1      0     ",
@@ -433,10 +433,10 @@ explain select * from show('storages');
 }
 # test: select column from function()
 create user test;
-select name from show('users');
+select name from main.show('users');
 "main"
 "test"
-explain select name from show('users');
+explain select name from main.show('users');
 {
   "main": {
     "00": "set                 0      1      0     ",
@@ -454,19 +454,19 @@ explain select name from show('users');
   },
   "access": []
 }
-select non_exists_column from show('users');
+select non_exists_column from main.show('users');
 null
 null
 # test: select alias.column from function()
-select t.name from show('users') t;
+select t.name from main.show('users') t;
 "main"
 "test"
 drop user test;
 # test: select target.column.path from function()
 create table test (id serial primary key);
-select indexes[0].type from show('tables', true);
+select indexes[0].type from main.show('tables', true);
 2
-select t.indexes[0].type from show('tables', true) t;
+select t.indexes[0].type from main.show('tables', true) t;
 2
 drop table test;
 # test: select * from (expr)
