@@ -28,6 +28,12 @@ branch_free(Branch* self, bool drop)
 	am_free(self);
 }
 
+static inline void
+branch_show(Branch* self, Buf* buf, int flags)
+{
+	branch_config_write(self->config, buf, flags);
+}
+
 static inline Branch*
 branch_allocate(BranchConfig* config)
 {
@@ -41,7 +47,8 @@ branch_allocate(BranchConfig* config)
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_grants(rel, &self->config->grants);
-	rel_set_free_function(rel, (RelFree)branch_free);
+	rel_set_show(rel, (RelShow)branch_show);
+	rel_set_free(rel, (RelFree)branch_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }

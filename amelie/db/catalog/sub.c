@@ -30,6 +30,12 @@ sub_free(Sub* self, bool drop)
 	am_free(self);
 }
 
+static inline void
+sub_show(Sub* self, Buf* buf, int flags)
+{
+	sub_config_write(self->config, buf, flags);
+}
+
 Sub*
 sub_allocate(SubConfig* config, Catalog* catalog, Cdc* cdc, Uuid* id)
 {
@@ -45,7 +51,9 @@ sub_allocate(SubConfig* config, Catalog* catalog, Cdc* cdc, Uuid* id)
 	rel_init(rel, REL_SUBSCRIPTION);
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
-	rel_set_free_function(rel, (RelFree)sub_free);
+	rel_set_id(rel, &self->config->id);
+	rel_set_show(rel, (RelShow)sub_show);
+	rel_set_free(rel, (RelFree)sub_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }

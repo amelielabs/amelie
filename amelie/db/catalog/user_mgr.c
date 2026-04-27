@@ -292,14 +292,7 @@ user_mgr_revoke(UserMgr* self,
 void
 user_mgr_dump(UserMgr* self, Buf* buf)
 {
-	// array
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto user = user_of(list_at(Rel, link));
-		user_config_write(user->config, buf, FSECRETS);
-	}
-	encode_array_end(buf);
+	rel_mgr_dump(&self->mgr, buf, FSECRETS);
 }
 
 User*
@@ -310,27 +303,7 @@ user_mgr_find(UserMgr* self, Str* name, bool error_if_not_exists)
 }
 
 void
-user_mgr_list(UserMgr* self, Buf* buf, Str* name, bool agents_only, int flags)
+user_mgr_list(UserMgr* self, Buf* buf, Str* name, int flags)
 {
-	if (name)
-	{
-		// show user
-		auto user = user_mgr_find(self, name, false);
-		if (user)
-			user_config_write(user->config, buf, flags);
-		else
-			encode_null(buf);
-	} else
-	{
-		// show users/agents
-		encode_array(buf);
-		list_foreach(&self->mgr.list)
-		{
-			auto user = user_of(list_at(Rel, link));
-			if (agents_only && !user->config->agent)
-				continue;
-			user_config_write(user->config, buf, flags);
-		}
-		encode_array_end(buf);
-	}
+	rel_mgr_list(&self->mgr, buf, NULL, name, flags);
 }

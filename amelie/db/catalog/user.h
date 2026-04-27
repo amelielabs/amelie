@@ -29,6 +29,12 @@ user_free(User* self, bool drop)
 	am_free(self);
 }
 
+static inline void
+user_show(User* self, Buf* buf, int flags)
+{
+	user_config_write(self->config, buf, flags);
+}
+
 static inline User*
 user_allocate(UserConfig* config)
 {
@@ -42,7 +48,8 @@ user_allocate(UserConfig* config)
 	rel_set_user(rel, &self->config->parent);
 	rel_set_name(rel, &self->config->name);
 	rel_set_grants(rel, &self->config->grants);
-	rel_set_free_function(rel, (RelFree)user_free);
+	rel_set_show(rel, (RelShow)user_show);
+	rel_set_free(rel, (RelFree)user_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }

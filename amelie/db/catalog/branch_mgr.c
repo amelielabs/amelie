@@ -252,14 +252,7 @@ branch_mgr_grant(BranchMgr* self,
 void
 branch_mgr_dump(BranchMgr* self, Buf* buf)
 {
-	// array
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto branch = branch_of(list_at(Rel, link));
-		branch_config_write(branch->config, buf, 0);
-	}
-	encode_array_end(buf);
+	rel_mgr_dump(&self->mgr, buf, 0);
 }
 
 Branch*
@@ -273,25 +266,5 @@ branch_mgr_find(BranchMgr* self, Str* user, Str* name,
 void
 branch_mgr_list(BranchMgr* self, Buf* buf, Str* user, Str* name, int flags)
 {
-	if (user && name)
-	{
-		// show branch
-		auto branch = branch_mgr_find(self, user, name, false);
-		if (branch)
-			branch_config_write(branch->config, buf, flags);
-		else
-			encode_null(buf);
-		return;
-	}
-
-	// show branches
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto branch = branch_of(list_at(Rel, link));
-		if (user && !str_compare_case(&branch->config->user, user))
-			continue;
-		branch_config_write(branch->config, buf, flags);
-	}
-	encode_array_end(buf);
+	rel_mgr_list(&self->mgr, buf, user, name, flags);
 }

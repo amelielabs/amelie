@@ -24,4 +24,7 @@ void rel_mgr_free(RelMgr*);
 void rel_mgr_replace(RelMgr*, Rel*, Rel*);
 void rel_mgr_create(RelMgr*, Tr*, Rel*);
 void rel_mgr_drop(RelMgr*, Tr*, Rel*);
+void rel_mgr_dump(RelMgr*, Buf*, int);
+void rel_mgr_list(RelMgr*, Buf*, Str*, Str*, int);
 Rel* rel_mgr_find(RelMgr*, Str*, Str*, bool);
+Rel* rel_mgr_find_by(RelMgr*, Uuid*, bool);

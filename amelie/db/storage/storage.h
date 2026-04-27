@@ -28,6 +28,12 @@ storage_free(Storage* self, bool drop)
 	am_free(self);
 }
 
+static inline void
+storage_show(Storage* self, Buf* buf, int flags)
+{
+	storage_config_write(self->config, buf, flags);
+}
+
 static inline Storage*
 storage_allocate(StorageConfig* config)
 {
@@ -38,7 +44,8 @@ storage_allocate(StorageConfig* config)
 	auto rel = &self->rel;
 	rel_init(rel, REL_STORAGE);
 	rel_set_name(rel, &self->config->name);
-	rel_set_free_function(rel, (RelFree)storage_free);
+	rel_set_show(rel, (RelShow)storage_show);
+	rel_set_free(rel, (RelFree)storage_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }

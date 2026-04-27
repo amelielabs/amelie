@@ -3,8 +3,6 @@ connect E0 S0 127.0.0.1:3485;
 # test: ensure system users exists
 select show('users')[0].name;
 "main"
-select show('agents');
-[]
 # test: create user statement parsing
 create;
 error: create❰;❱ ⟵ relation type expected
@@ -189,8 +187,6 @@ create agent test;
 select show('user', 'main').name;
 "main"
 select show('user', 'test').name;
-"test"
-select show('agents')[0].name;
 "test"
 drop agent test;
 disconnect S0;

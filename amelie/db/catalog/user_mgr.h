@@ -26,5 +26,5 @@ bool  user_mgr_rename(UserMgr*, Tr*, Str*, Str*, bool);
 bool  user_mgr_revoke(UserMgr*, Tr*, Str*, Str*, bool);
 bool  user_mgr_grant(UserMgr*, Tr*, Str*, bool, uint32_t, bool);
 void  user_mgr_dump(UserMgr*, Buf*);
-void  user_mgr_list(UserMgr*, Buf*, Str*, bool, int);
+void  user_mgr_list(UserMgr*, Buf*, Str*, int);
 User* user_mgr_find(UserMgr*, Str*, bool);

@@ -147,14 +147,7 @@ storage_mgr_rename(StorageMgr* self,
 void
 storage_mgr_dump(StorageMgr* self, Buf* buf)
 {
-	// array
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto storage = storage_of(list_at(Rel, link));
-		storage_config_write(storage->config, buf, 0);
-	}
-	encode_array_end(buf);
+	rel_mgr_dump(&self->mgr, buf, 0);
 }
 
 Storage*
@@ -167,21 +160,5 @@ storage_mgr_find(StorageMgr* self, Str* name, bool error_if_not_exists)
 void
 storage_mgr_list(StorageMgr* self, Buf* buf, Str* name, int flags)
 {
-	if (name)
-	{
-		auto storage = storage_mgr_find(self, name, false);
-		if (storage)
-			storage_config_write(storage->config, buf, flags);
-		else
-			encode_null(buf);
-	} else
-	{
-		encode_array(buf);
-		list_foreach(&self->mgr.list)
-		{
-			auto storage = storage_of(list_at(Rel, link));
-			storage_config_write(storage->config, buf, flags);
-		}
-		encode_array_end(buf);
-	}
+	rel_mgr_list(&self->mgr, buf, NULL, name, flags);
 }

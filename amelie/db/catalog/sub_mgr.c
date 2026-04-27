@@ -264,40 +264,13 @@ sub_mgr_grant(SubMgr*  self,
 void
 sub_mgr_list(SubMgr* self, Buf* buf, Str* user, Str* name, int flags)
 {
-	if (user && name)
-	{
-		// show subscription
-		auto sub = sub_mgr_find(self, user, name, false);
-		if (sub)
-			sub_config_write(sub->config, buf, flags);
-		else
-			encode_null(buf);
-		return;
-	}
-
-	// show subscriptions
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto sub = sub_of(list_at(Rel, link));
-		if (user && !str_compare_case(&sub->config->user, user))
-			continue;
-		sub_config_write(sub->config, buf, flags);
-	}
-	encode_array_end(buf);
+	rel_mgr_list(&self->mgr, buf, user, name, flags);
 }
 
 void
 sub_mgr_dump(SubMgr* self, Buf* buf)
 {
-	// array
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto sub = sub_of(list_at(Rel, link));
-		sub_config_write(sub->config, buf, 0);
-	}
-	encode_array_end(buf);
+	rel_mgr_dump(&self->mgr, buf, 0);
 }
 
 Sub*
@@ -311,17 +284,6 @@ sub_mgr_find(SubMgr* self, Str* user, Str* name,
 Sub*
 sub_mgr_find_by(SubMgr* self, Uuid* id, bool error_if_not_exists)
 {
-	list_foreach(&self->mgr.list)
-	{
-		auto sub = sub_of(list_at(Rel, link));
-		if (uuid_is(&sub->config->id, id))
-			return sub;
-	}
-	if (error_if_not_exists)
-	{
-		char uuid[UUID_SZ];
-		uuid_get(id, uuid, sizeof(uuid));
-		error("subscription with uuid '%s' not found", uuid);
-	}
-	return NULL;
+	auto rel = rel_mgr_find_by(&self->mgr, id, error_if_not_exists);
+	return sub_of(rel);
 }

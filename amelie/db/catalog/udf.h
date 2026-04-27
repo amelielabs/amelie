@@ -35,6 +35,12 @@ udf_free(Udf* self, bool drop)
 	am_free(self);
 }
 
+static inline void
+udf_show(Udf* self, Buf* buf, int flags)
+{
+	udf_config_write(self->config, buf, flags);
+}
+
 static inline Udf*
 udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
 {
@@ -50,7 +56,8 @@ udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_grants(rel, &self->config->grants);
-	rel_set_free_function(rel, (RelFree)udf_free);
+	rel_set_show(rel, (RelShow)udf_show);
+	rel_set_free(rel, (RelFree)udf_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }

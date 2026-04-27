@@ -219,14 +219,7 @@ topic_mgr_grant(TopicMgr* self,
 void
 topic_mgr_dump(TopicMgr* self, Buf* buf)
 {
-	// array
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto topic = topic_of(list_at(Rel, link));
-		topic_config_write(topic->config, buf, 0);
-	}
-	encode_array_end(buf);
+	rel_mgr_dump(&self->mgr, buf, 0);
 }
 
 Topic*
@@ -237,46 +230,15 @@ topic_mgr_find(TopicMgr* self, Str* user, Str* name,
 	return topic_of(rel);
 }
 
-void
-topic_mgr_list(TopicMgr* self, Buf* buf, Str* user, Str* name, int flags)
-{
-	if (user && name)
-	{
-		// show topic
-		auto topic = topic_mgr_find(self, user, name, false);
-		if (topic)
-			topic_config_write(topic->config, buf, flags);
-		else
-			encode_null(buf);
-		return;
-	}
-
-	// show topics
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto topic = topic_of(list_at(Rel, link));
-		if (user && !str_compare_case(&topic->config->user, user))
-			continue;
-		topic_config_write(topic->config, buf, flags);
-	}
-	encode_array_end(buf);
-}
-
 Topic*
 topic_mgr_find_by(TopicMgr* self, Uuid* id, bool error_if_not_exists)
 {
-	list_foreach(&self->mgr.list)
-	{
-		auto topic = topic_of(list_at(Rel, link));
-		if (uuid_is(&topic->config->id, id))
-			return topic;
-	}
-	if (error_if_not_exists)
-	{
-		char uuid[UUID_SZ];
-		uuid_get(id, uuid, sizeof(uuid));
-		error("topic with uuid '%s' not found", uuid);
-	}
-	return NULL;
+	auto rel = rel_mgr_find_by(&self->mgr, id, error_if_not_exists);
+	return topic_of(rel);
+}
+
+void
+topic_mgr_list(TopicMgr* self, Buf* buf, Str* user, Str* name, int flags)
+{
+	rel_mgr_list(&self->mgr, buf, user, name, flags);
 }

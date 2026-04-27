@@ -28,6 +28,12 @@ topic_free(Topic* self, bool drop)
 	am_free(self);
 }
 
+static inline void
+topic_show(Topic* self, Buf* buf, int flags)
+{
+	topic_config_write(self->config, buf, flags);
+}
+
 static inline Topic*
 topic_allocate(TopicConfig* config)
 {
@@ -40,8 +46,10 @@ topic_allocate(TopicConfig* config)
 	rel_init(rel, REL_TOPIC);
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
+	rel_set_id(rel, &self->config->id);
 	rel_set_grants(rel, &self->config->grants);
-	rel_set_free_function(rel, (RelFree)topic_free);
+	rel_set_show(rel, (RelShow)topic_show);
+	rel_set_free(rel, (RelFree)topic_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }

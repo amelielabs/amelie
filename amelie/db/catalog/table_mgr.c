@@ -144,14 +144,7 @@ table_mgr_truncate(TableMgr* self,
 void
 table_mgr_dump(TableMgr* self, Buf* buf)
 {
-	// array
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto table = table_of(list_at(Rel, link));
-		table_config_write(table->config, buf, 0);
-	}
-	encode_array_end(buf);
+	rel_mgr_dump(&self->mgr, buf, 0);
 }
 
 Table*
@@ -164,43 +157,12 @@ table_mgr_find(TableMgr* self, Str* user, Str* name, bool error_if_not_exists)
 Table*
 table_mgr_find_by(TableMgr* self, Uuid* id, bool error_if_not_exists)
 {
-	list_foreach(&self->mgr.list)
-	{
-		auto table = table_of(list_at(Rel, link));
-		if (uuid_is(&table->config->id, id))
-			return table;
-	}
-	if (error_if_not_exists)
-	{
-		char uuid[UUID_SZ];
-		uuid_get(id, uuid, sizeof(uuid));
-		error("table with uuid '%s' not found", uuid);
-	}
-	return NULL;
+	auto rel = rel_mgr_find_by(&self->mgr, id, error_if_not_exists);
+	return table_of(rel);
 }
 
 void
 table_mgr_list(TableMgr* self, Buf* buf, Str* user, Str* name, int flags)
 {
-	if (user && name)
-	{
-		// show table
-		auto table = table_mgr_find(self, user, name, false);
-		if (table)
-			table_config_write(table->config, buf, flags);
-		else
-			encode_null(buf);
-		return;
-	}
-
-	// show tables
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto table = table_of(list_at(Rel, link));
-		if (user && !str_compare_case(&table->config->user, user))
-			continue;
-		table_config_write(table->config, buf, flags);
-	}
-	encode_array_end(buf);
+	rel_mgr_list(&self->mgr, buf, user, name, flags);
 }

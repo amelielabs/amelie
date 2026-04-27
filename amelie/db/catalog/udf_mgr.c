@@ -310,14 +310,7 @@ udf_mgr_grant(UdfMgr*  self,
 void
 udf_mgr_dump(UdfMgr* self, Buf* buf)
 {
-	// array
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto udf = udf_of(list_at(Rel, link));
-		udf_config_write(udf->config, buf, 0);
-	}
-	encode_array_end(buf);
+	rel_mgr_dump(&self->mgr, buf, 0);
 }
 
 Udf*
@@ -331,25 +324,5 @@ udf_mgr_find(UdfMgr* self, Str* user, Str* name,
 void
 udf_mgr_list(UdfMgr* self, Buf* buf, Str* user, Str* name, int flags)
 {
-	if (user && name)
-	{
-		// show udf
-		auto udf = udf_mgr_find(self, user, name, false);
-		if (udf)
-			udf_config_write(udf->config, buf, flags);
-		else
-			encode_null(buf);
-		return;
-	}
-
-	// show udfs
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
-	{
-		auto udf = udf_of(list_at(Rel, link));
-		if (user && !str_compare_case(&udf->config->user, user))
-			continue;
-		udf_config_write(udf->config, buf, flags);
-	}
-	encode_array_end(buf);
+	rel_mgr_list(&self->mgr, buf, user, name, flags);
 }

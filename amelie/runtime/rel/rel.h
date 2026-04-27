@@ -14,6 +14,7 @@
 typedef struct Rel Rel;
 
 typedef void (*RelFree)(Rel*, bool);
+typedef void (*RelShow)(Rel*, Buf*, int);
 
 typedef enum
 {
@@ -34,8 +35,12 @@ struct Rel
 	Str*     user;
 	Str*     name;
 	RelType  type;
+	Uuid*    id;
 	Grants*  grants;
-	RelFree  free_function;
+	RelShow  show;
+	RelFree  free;
+
+	// lock manager
 	Spinlock lock;
 	uint64_t lock_order;
 	int      lock_set[LOCK_MAX];
@@ -49,9 +54,11 @@ rel_init(Rel* self, RelType type)
 {
 	self->user            = NULL;
 	self->name            = NULL;
+	self->id              = NULL;
 	self->type            = type;
 	self->grants          = NULL;
-	self->free_function   = NULL;
+	self->show            = NULL;
+	self->free            = NULL;
 	self->lock_order      = 0;
 	self->lock_wait_count = 0;
 	spinlock_init(&self->lock);
@@ -73,15 +80,27 @@ rel_set_name(Rel* self, Str* name)
 }
 
 static inline void
+rel_set_id(Rel* self, Uuid* id)
+{
+	self->id = id;
+}
+
+static inline void
 rel_set_grants(Rel* self, Grants* grants)
 {
 	self->grants = grants;
 }
 
 static inline void
-rel_set_free_function(Rel* self, RelFree func)
+rel_set_show(Rel* self, RelShow func)
 {
-	self->free_function = func;
+	self->show = func;
+}
+
+static inline void
+rel_set_free(Rel* self, RelFree func)
+{
+	self->free = func;
 }
 
 static inline void
@@ -91,19 +110,26 @@ rel_set_rsn(Rel* self, uint64_t value)
 }
 
 static inline void
+rel_show(Rel* self, Buf* buf, int flags)
+{
+	if (self->show)
+		self->show(self, buf, flags);
+}
+
+static inline void
 rel_free(Rel* self)
 {
 	spinlock_free(&self->lock);
-	if (self->free_function)
-		self->free_function(self, false);
+	if (self->free)
+		self->free(self, false);
 }
 
 static inline void
 rel_drop(Rel* self)
 {
 	spinlock_free(&self->lock);
-	if (self->free_function)
-		self->free_function(self, true);
+	if (self->free)
+		self->free(self, true);
 }
 
 static inline void

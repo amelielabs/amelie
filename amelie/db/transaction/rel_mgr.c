@@ -119,6 +119,45 @@ rel_mgr_drop(RelMgr* self, Tr* tr, Rel* rel)
 	log_ddl(&tr->log, &drop_if, self, rel);
 }
 
+void
+rel_mgr_dump(RelMgr* self, Buf* buf, int flags)
+{
+	// array
+	encode_array(buf);
+	list_foreach(&self->list)
+	{
+		auto rel = list_at(Rel, link);
+		rel_show(rel, buf, flags);
+	}
+	encode_array_end(buf);
+}
+
+void
+rel_mgr_list(RelMgr* self, Buf* buf, Str* user, Str* name, int flags)
+{
+	if (name)
+	{
+		// show rel
+		auto rel = rel_mgr_find(self, user, name, false);
+		if (rel)
+			rel_show(rel, buf, flags);
+		else
+			encode_null(buf);
+		return;
+	}
+
+	// show rels
+	encode_array(buf);
+	list_foreach(&self->list)
+	{
+		auto rel = list_at(Rel, link);
+		if (user && !str_compare_case(rel->user, user))
+			continue;
+		rel_show(rel, buf, flags);
+	}
+	encode_array_end(buf);
+}
+
 Rel*
 rel_mgr_find(RelMgr* self, Str* user, Str* name,
              bool    error_if_not_exists)
@@ -135,5 +174,23 @@ rel_mgr_find(RelMgr* self, Str* user, Str* name,
 	if (error_if_not_exists)
 		error("relation '%.*s': not exists", str_size(name),
 		      str_of(name));
+	return NULL;
+}
+
+Rel*
+rel_mgr_find_by(RelMgr* self, Uuid* id, bool error_if_not_exists)
+{
+	list_foreach(&self->list)
+	{
+		auto rel = list_at(Rel, link);
+		if (rel->id && uuid_is(rel->id, id))
+			return rel;
+	}
+	if (error_if_not_exists)
+	{
+		char uuid[UUID_SZ];
+		uuid_get(id, uuid, sizeof(uuid));
+		error("relation with uuid '%s' not found", uuid);
+	}
 	return NULL;
 }
