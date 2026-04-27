@@ -30,6 +30,6 @@ void sub_mgr_drop_of(SubMgr*, Tr*, Sub*);
 bool sub_mgr_rename(SubMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
 bool sub_mgr_grant(SubMgr*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 void sub_mgr_dump(SubMgr*, Buf*);
-Buf* sub_mgr_list(SubMgr*, Str*, Str*, int);
+void sub_mgr_list(SubMgr*, Buf*, Str*, Str*, int);
 Sub* sub_mgr_find(SubMgr*, Str*, Str*, bool);
 Sub* sub_mgr_find_by(SubMgr*, Uuid*, bool);

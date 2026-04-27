@@ -178,12 +178,9 @@ part_mgr_index_remove(PartMgr* self, Str* name)
 	}
 }
 
-Buf*
-part_mgr_list(PartMgr* self, Str* ref, int flags)
+void
+part_mgr_list(PartMgr* self, Buf* buf, Str* ref, int flags)
 {
-	auto buf = buf_create();
-	errdefer_buf(buf);
-
 	// show partition id on table
 	if (ref)
 	{
@@ -196,7 +193,7 @@ part_mgr_list(PartMgr* self, Str* ref, int flags)
 			encode_null(buf);
 		else
 			part_status(part, buf, flags);
-		return buf;
+		return;
 	}
 
 	// show partitions on table
@@ -207,5 +204,4 @@ part_mgr_list(PartMgr* self, Str* ref, int flags)
 		part_status(part, buf, flags);
 	}
 	encode_array_end(buf);
-	return buf;
 }

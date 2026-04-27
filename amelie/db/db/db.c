@@ -111,13 +111,12 @@ db_write(Db* self, WriteList* write_list)
 		service_schedule(service, ACTION_CHECKPOINT, 0);
 }
 
-Buf*
-db_state(Db* self)
+void
+db_state(Db* self, Buf* buf)
 {
 	unused(self);
 
 	// {}
-	auto buf = buf_create();
 	encode_obj(buf);
 
 	// version
@@ -165,5 +164,4 @@ db_state(Db* self)
 	encode_bool(buf, opt_int_of(&state()->read_only));
 
 	encode_obj_end(buf);
-	return buf;
 }

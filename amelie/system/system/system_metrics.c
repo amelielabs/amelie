@@ -128,11 +128,9 @@ system_metrics_process(System* self, Buf* buf)
 	encode_obj_end(buf);
 }
 
-Buf*
-system_metrics(System* self)
+void
+system_metrics(System* self, Buf* buf)
 {
-	auto buf = buf_create();
-
 	// {}
 	encode_obj(buf);
 
@@ -168,16 +166,11 @@ system_metrics(System* self)
 
 	// wal
 	encode_raw(buf, "wal", 3);
-	auto wal = wal_status(&self->db.wal);
-	defer_buf(wal);
-	buf_write(buf, wal->start, buf_size(wal));
+	wal_status(&self->db.wal, buf);
 
 	// repl
 	encode_raw(buf, "repl", 4);
-	auto repl = repl_status(&self->repl);
-	defer_buf(repl);
-	buf_write(buf, repl->start, buf_size(repl));
+	repl_status(&self->repl, buf);
 
 	encode_obj_end(buf);
-	return buf;
 }

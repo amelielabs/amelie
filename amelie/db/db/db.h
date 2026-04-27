@@ -30,4 +30,4 @@ void db_free(Db*);
 void db_open(Db*, bool);
 void db_close(Db*);
 void db_write(Db*, WriteList*);
-Buf* db_state(Db*);
+void db_state(Db*, Buf*);

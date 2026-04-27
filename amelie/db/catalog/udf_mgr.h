@@ -30,5 +30,5 @@ void udf_mgr_drop_of(UdfMgr*, Tr*, Udf*);
 bool udf_mgr_rename(UdfMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
 bool udf_mgr_grant(UdfMgr*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 void udf_mgr_dump(UdfMgr*, Buf*);
-Buf* udf_mgr_list(UdfMgr*, Str*, Str*, int);
+void udf_mgr_list(UdfMgr*, Buf*, Str*, Str*, int);
 Udf* udf_mgr_find(UdfMgr*, Str*, Str*, bool);

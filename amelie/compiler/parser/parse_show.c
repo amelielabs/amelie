@@ -108,7 +108,7 @@ parse_show_func(Stmt* self)
 
 	// func(NULL, args)
 	Str fn;
-	str_set(&fn, "show", 4);
+	str_set(&fn, "show_from", 9);
 
 	auto func = ast_func_allocate();
 	func->fn    = function_mgr_find(share()->function_mgr, &fn);

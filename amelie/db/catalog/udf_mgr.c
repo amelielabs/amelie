@@ -335,10 +335,9 @@ udf_mgr_find(UdfMgr* self, Str* user, Str* name,
 	return udf_of(rel);
 }
 
-Buf*
-udf_mgr_list(UdfMgr* self, Str* user, Str* name, int flags)
+void
+udf_mgr_list(UdfMgr* self, Buf* buf, Str* user, Str* name, int flags)
 {
-	auto buf = buf_create();
 	if (user && name)
 	{
 		// show udf
@@ -347,7 +346,7 @@ udf_mgr_list(UdfMgr* self, Str* user, Str* name, int flags)
 			udf_config_write(udf->config, buf, flags);
 		else
 			encode_null(buf);
-		return buf;
+		return;
 	}
 
 	// show udfs
@@ -360,5 +359,4 @@ udf_mgr_list(UdfMgr* self, Str* user, Str* name, int flags)
 		udf_config_write(udf->config, buf, flags);
 	}
 	encode_array_end(buf);
-	return buf;
 }

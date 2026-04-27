@@ -32,4 +32,4 @@ void     wal_open(Wal*);
 void     wal_close(Wal*);
 void     wal_gc(Wal*, uint64_t);
 WalFile* wal_find(Wal*, uint64_t, bool);
-Buf*     wal_status(Wal*);
+void     wal_status(Wal*, Buf*);

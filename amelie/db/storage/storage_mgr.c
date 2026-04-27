@@ -171,10 +171,9 @@ storage_mgr_find(StorageMgr* self, Str* name, bool error_if_not_exists)
 	return storage_of(rel);
 }
 
-Buf*
-storage_mgr_list(StorageMgr* self, Str* name, int flags)
+void
+storage_mgr_list(StorageMgr* self, Buf* buf, Str* name, int flags)
 {
-	auto buf = buf_create();
 	if (name)
 	{
 		auto storage = storage_mgr_find(self, name, false);
@@ -192,5 +191,4 @@ storage_mgr_list(StorageMgr* self, Str* name, int flags)
 		}
 		encode_array_end(buf);
 	}
-	return buf;
 }

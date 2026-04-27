@@ -44,4 +44,4 @@ void  part_mgr_remove(PartMgr*, Part*);
 Part* part_mgr_find(PartMgr*, uint64_t);
 void  part_mgr_index_create(PartMgr*, IndexConfig*);
 void  part_mgr_index_remove(PartMgr*, Str*);
-Buf*  part_mgr_list(PartMgr*, Str*, int);
+void  part_mgr_list(PartMgr*, Buf*, Str*, int);

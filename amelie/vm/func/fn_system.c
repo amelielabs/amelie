@@ -173,7 +173,9 @@ fn_show(Fn* self)
 	str_set(&section_none, "all", 3);
 
 	// match command
-	Buf* buf = NULL;
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
 	auto cmd = show_cmd_find(section);
 	if (! cmd)
 	{
@@ -189,7 +191,6 @@ fn_show(Fn* self)
 		if (unlikely(opt == NULL))
 			fn_error_noargs(self, "option '%.*s' is not found", str_size(section),
 			                  str_of(section));
-		buf = buf_create();
 		local_encode_opt(self->local, buf, opt);
 		value_set_json_buf(self->result, buf);
 		return;
@@ -224,28 +225,35 @@ fn_show(Fn* self)
 	if (! all)
 		flags |= FMINIMAL;
 
+	// cover in [] if run as show_from()
+	auto wrap = false;
+	if (cmd->has_name && str_is(&self->function->name, "show_from", 9))
+		wrap = true;
+	if (wrap)
+		encode_array(buf);
+
 	auto catalog = &share()->db->catalog;
 	switch (cmd->id) {
 	case SHOW_REPLICAS:
 	{
-		buf = replica_mgr_list(&share()->repl->replica_mgr, NULL, flags);
+		replica_mgr_list(&share()->repl->replica_mgr, buf, NULL, flags);
 		break;
 	}
 	case SHOW_REPLICA:
 	{
 		Uuid id;
 		uuid_set(&id, name);
-		buf = replica_mgr_list(&share()->repl->replica_mgr, &id, flags);
+		replica_mgr_list(&share()->repl->replica_mgr, buf, &id, flags);
 		break;
 	}
 	case SHOW_REPL:
 	{
-		buf = repl_status(share()->repl);
+		repl_status(share()->repl, buf);
 		break;
 	}
 	case SHOW_WAL:
 	{
-		buf = wal_status(&share()->db->wal);
+		wal_status(&share()->db->wal, buf);
 		break;
 	}
 	case SHOW_METRICS:
@@ -256,7 +264,6 @@ fn_show(Fn* self)
 	case SHOW_GRANTS:
 	{
 		auto rel = catalog_find(catalog, user, on, true);
-		buf = buf_create();
 		if (rel->grants)
 			grants_write(rel->grants, buf, 0);
 		else
@@ -265,112 +272,111 @@ fn_show(Fn* self)
 	}
 	case SHOW_AGENTS:
 	{
-		buf = user_mgr_list(&catalog->user_mgr, NULL, true, flags);
+		user_mgr_list(&catalog->user_mgr, buf, NULL, true, flags);
 		break;
 	}
 	case SHOW_USERS:
 	{
-		buf = user_mgr_list(&catalog->user_mgr, NULL, false, flags);
+		user_mgr_list(&catalog->user_mgr, buf, NULL, false, flags);
 		break;
 	}
 	case SHOW_USER:
 	{
-		buf = user_mgr_list(&catalog->user_mgr, name, false, flags);
+		user_mgr_list(&catalog->user_mgr, buf, name, false, flags);
 		break;
 	}
 	case SHOW_STORAGES:
 	{
-		buf = storage_mgr_list(&catalog->storage_mgr, NULL, flags);
+		storage_mgr_list(&catalog->storage_mgr, buf, NULL, flags);
 		break;
 	}
 	case SHOW_STORAGE:
 	{
-		buf = storage_mgr_list(&catalog->storage_mgr, name, flags);
+		storage_mgr_list(&catalog->storage_mgr, buf, name, flags);
 		break;
 	}
 	case SHOW_TABLES:
 	{
-		buf = table_mgr_list(&catalog->table_mgr, user, NULL, flags);
+		table_mgr_list(&catalog->table_mgr, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		buf = table_mgr_list(&catalog->table_mgr, user, name, flags);
+		table_mgr_list(&catalog->table_mgr, buf, user, name, flags);
 		break;
 	}
 	case SHOW_INDEXES:
 	{
 		auto table = catalog_find_table(catalog, user, on, true);
-		buf = table_index_list(table, NULL, flags);
+		table_index_list(table, buf, NULL, flags);
 		break;
 	}
 	case SHOW_INDEX:
 	{
 		auto table = catalog_find_table(catalog, user, on, true);
-		buf = table_index_list(table, name, flags);
+		table_index_list(table, buf, name, flags);
 		break;
 	}
 	case SHOW_BRANCHES:
 	{
-		buf = branch_mgr_list(&catalog->branch_mgr, user, NULL, flags);
+		branch_mgr_list(&catalog->branch_mgr, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_BRANCH:
 	{
-		buf = branch_mgr_list(&catalog->branch_mgr, user, name, flags);
+		branch_mgr_list(&catalog->branch_mgr, buf, user, name, flags);
 		break;
 	}
 	case SHOW_PARTITIONS:
 	{
 		auto table = catalog_find_table(catalog, user, on, true);
-		buf = part_mgr_list(&table->part_mgr, NULL, flags);
+		part_mgr_list(&table->part_mgr, buf, NULL, flags);
 		break;
 	}
 	case SHOW_PARTITION:
 	{
 		auto table = catalog_find_table(catalog, user, on, true);
-		buf = part_mgr_list(&table->part_mgr, name, flags);
+		part_mgr_list(&table->part_mgr, buf, name, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:
 	{
-		buf = udf_mgr_list(&catalog->udf_mgr, user, NULL, flags);
+		udf_mgr_list(&catalog->udf_mgr, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		buf = udf_mgr_list(&catalog->udf_mgr, user, name, flags);
+		udf_mgr_list(&catalog->udf_mgr, buf, user, name, flags);
 		break;
 	}
 	case SHOW_TOPICS:
 	{
-		buf = topic_mgr_list(&catalog->topic_mgr, user, NULL, flags);
+		topic_mgr_list(&catalog->topic_mgr, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_TOPIC:
 	{
-		buf = topic_mgr_list(&catalog->topic_mgr, user, name, flags);
+		topic_mgr_list(&catalog->topic_mgr, buf, user, name, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTIONS:
 	{
-		buf = sub_mgr_list(&catalog->sub_mgr, user, NULL, flags);
+		sub_mgr_list(&catalog->sub_mgr, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTION:
 	{
-		buf = sub_mgr_list(&catalog->sub_mgr, user, name, flags);
+		sub_mgr_list(&catalog->sub_mgr, buf, user, name, flags);
 		break;
 	}
 	case SHOW_STATE:
 	{
-		buf = db_state(share()->db);
+		db_state(share()->db, buf);
 		break;
 	}
 	case SHOW_ALL:
 	case SHOW_CONFIG:
 	{
-		buf = buf_create();
 		encode_obj(buf);
 		list_foreach(&config()->opts.list)
 		{
@@ -385,13 +391,15 @@ fn_show(Fn* self)
 	}
 	case SHOW_LOCKS:
 	{
-		buf = buf_create();
 		lock_mgr_list(&runtime()->lock_mgr, buf);
 		break;
 	}
 	default:
 		abort();
 	}
+
+	if (wrap)
+		encode_array_end(buf);
 
 	value_set_json_buf(self->result, buf);
 }
@@ -401,6 +409,11 @@ fn_system_register(FunctionMgr* self)
 {
 	// show()
 	auto func = function_allocate(TYPE_JSON, "show", fn_show);
+	function_unset(func, FN_CONST);
+	function_mgr_add(self, func);
+
+	// show_from()
+	func = function_allocate(TYPE_JSON, "show_from", fn_show);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 }

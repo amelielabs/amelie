@@ -186,10 +186,9 @@ table_mgr_find_by(TableMgr* self, Uuid* id, bool error_if_not_exists)
 	return NULL;
 }
 
-Buf*
-table_mgr_list(TableMgr* self, Str* user, Str* name, int flags)
+void
+table_mgr_list(TableMgr* self, Buf* buf, Str* user, Str* name, int flags)
 {
-	auto buf = buf_create();
 	if (user && name)
 	{
 		// show table
@@ -198,7 +197,7 @@ table_mgr_list(TableMgr* self, Str* user, Str* name, int flags)
 			table_config_write(table->config, buf, flags);
 		else
 			encode_null(buf);
-		return buf;
+		return;
 	}
 
 	// show tables
@@ -211,5 +210,4 @@ table_mgr_list(TableMgr* self, Str* user, Str* name, int flags)
 		table_config_write(table->config, buf, flags);
 	}
 	encode_array_end(buf);
-	return buf;
 }

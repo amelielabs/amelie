@@ -261,10 +261,9 @@ sub_mgr_grant(SubMgr*  self,
 	return true;
 }
 
-Buf*
-sub_mgr_list(SubMgr* self, Str* user, Str* name, int flags)
+void
+sub_mgr_list(SubMgr* self, Buf* buf, Str* user, Str* name, int flags)
 {
-	auto buf = buf_create();
 	if (user && name)
 	{
 		// show subscription
@@ -273,7 +272,7 @@ sub_mgr_list(SubMgr* self, Str* user, Str* name, int flags)
 			sub_config_write(sub->config, buf, flags);
 		else
 			encode_null(buf);
-		return buf;
+		return;
 	}
 
 	// show subscriptions
@@ -286,7 +285,6 @@ sub_mgr_list(SubMgr* self, Str* user, Str* name, int flags)
 		sub_config_write(sub->config, buf, flags);
 	}
 	encode_array_end(buf);
-	return buf;
 }
 
 void

@@ -277,10 +277,9 @@ branch_mgr_find(BranchMgr* self, Str* user, Str* name,
 	return branch_of(rel);
 }
 
-Buf*
-branch_mgr_list(BranchMgr* self, Str* user, Str* name, int flags)
+void
+branch_mgr_list(BranchMgr* self, Buf* buf, Str* user, Str* name, int flags)
 {
-	auto buf = buf_create();
 	if (user && name)
 	{
 		// show branch
@@ -289,7 +288,7 @@ branch_mgr_list(BranchMgr* self, Str* user, Str* name, int flags)
 			branch_config_write(branch->config, buf, flags);
 		else
 			encode_null(buf);
-		return buf;
+		return;
 	}
 
 	// show branches
@@ -302,5 +301,4 @@ branch_mgr_list(BranchMgr* self, Str* user, Str* name, int flags)
 		branch_config_write(branch->config, buf, flags);
 	}
 	encode_array_end(buf);
-	return buf;
 }

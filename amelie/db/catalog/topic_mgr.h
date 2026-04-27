@@ -26,6 +26,6 @@ void   topic_mgr_drop_of(TopicMgr*, Tr*, Topic*);
 bool   topic_mgr_rename(TopicMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
 bool   topic_mgr_grant(TopicMgr*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 void   topic_mgr_dump(TopicMgr*, Buf*);
-Buf*   topic_mgr_list(TopicMgr*, Str*, Str*, int);
+void   topic_mgr_list(TopicMgr*, Buf*, Str*, Str*, int);
 Topic* topic_mgr_find(TopicMgr*, Str*, Str*, bool);
 Topic* topic_mgr_find_by(TopicMgr*, Uuid*, bool);

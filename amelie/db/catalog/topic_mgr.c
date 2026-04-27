@@ -244,10 +244,9 @@ topic_mgr_find(TopicMgr* self, Str* user, Str* name,
 	return topic_of(rel);
 }
 
-Buf*
-topic_mgr_list(TopicMgr* self, Str* user, Str* name, int flags)
+void
+topic_mgr_list(TopicMgr* self, Buf* buf, Str* user, Str* name, int flags)
 {
-	auto buf = buf_create();
 	if (user && name)
 	{
 		// show topic
@@ -256,7 +255,7 @@ topic_mgr_list(TopicMgr* self, Str* user, Str* name, int flags)
 			topic_config_write(topic->config, buf, flags);
 		else
 			encode_null(buf);
-		return buf;
+		return;
 	}
 
 	// show topics
@@ -269,7 +268,6 @@ topic_mgr_list(TopicMgr* self, Str* user, Str* name, int flags)
 		topic_config_write(topic->config, buf, flags);
 	}
 	encode_array_end(buf);
-	return buf;
 }
 
 Topic*

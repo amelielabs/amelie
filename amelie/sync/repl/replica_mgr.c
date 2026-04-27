@@ -152,10 +152,9 @@ replica_mgr_drop(ReplicaMgr* self, Uuid* id, bool if_exists)
 	replica_free(replica);
 }
 
-Buf*
-replica_mgr_list(ReplicaMgr* self, Uuid* id, int flags)
+void
+replica_mgr_list(ReplicaMgr* self, Buf* buf, Uuid* id, int flags)
 {
-	auto buf = buf_create();
 	if (id)
 	{
 		auto replica = replica_mgr_find(self, id);
@@ -173,7 +172,6 @@ replica_mgr_list(ReplicaMgr* self, Uuid* id, int flags)
 		}
 		encode_array_end(buf);
 	}
-	return buf;
 }
 
 Replica*

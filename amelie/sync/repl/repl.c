@@ -129,11 +129,10 @@ repl_subscribe(Repl* self, Str* primary_id)
 	info("replication: switch to primary");
 }
 
-Buf*
-repl_status(Repl* self)
+void
+repl_status(Repl* self, Buf* buf)
 {
 	// obj
-	auto buf = buf_create();
 	encode_obj(buf);
 
 	// active
@@ -152,10 +151,7 @@ repl_status(Repl* self)
 		encode_str(buf, &state()->repl_primary.string);
 
 	encode_raw(buf, "replicas", 8);
-	auto replicas = replica_mgr_list(&self->replica_mgr, NULL, 0);
-	defer_buf(replicas);
-	buf_write(buf, replicas->start, buf_size(replicas));
+	replica_mgr_list(&self->replica_mgr, buf, NULL, 0);
 
 	encode_obj_end(buf);
-	return buf;
 }

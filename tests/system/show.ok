@@ -62,6 +62,11 @@ show table test;
   "user": "main",
   "name": "test"
 }
+select * from show table test;
+{
+  "user": "main",
+  "name": "test"
+}
 # test: show indexes
 show indexes on test;
 [{
@@ -121,6 +126,17 @@ select show('index', 'primary', 'test', false);
 }
 show index xyz on test;
 null
+select * from show index primary on test;
+{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}
 # test: show partitions
 show partitions on test;
 [{
@@ -251,6 +267,11 @@ show function test_fn all;
   "returning": [],
   "grants": []
 }
+select * from show function test_fn;
+{
+  "user": "main",
+  "name": "test_fn"
+}
 # test: show wal
 show wal;
 {
@@ -273,6 +294,8 @@ error: failed to parse uuid
 show replica 'abc';
 error: failed to parse uuid
 show replica '00000000-0000-0000-0000-000000000000';
+null
+select * from show replica '00000000-0000-0000-0000-000000000000';
 null
 # test: show state
 show state;

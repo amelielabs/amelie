@@ -316,10 +316,9 @@ user_mgr_find(UserMgr* self, Str* name, bool error_if_not_exists)
 	return user_of(rel);
 }
 
-Buf*
-user_mgr_list(UserMgr* self, Str* name, bool agents_only, int flags)
+void
+user_mgr_list(UserMgr* self, Buf* buf, Str* name, bool agents_only, int flags)
 {
-	auto buf = buf_create();
 	if (name)
 	{
 		// show user
@@ -341,5 +340,4 @@ user_mgr_list(UserMgr* self, Str* name, bool agents_only, int flags)
 		}
 		encode_array_end(buf);
 	}
-	return buf;
 }

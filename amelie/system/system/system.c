@@ -357,7 +357,7 @@ system_rpc(Rpc* rpc, void* arg)
 	case MSG_SHOW_METRICS:
 	{
 		Buf** buf = rpc->arg;
-		*buf = system_metrics(self);
+		system_metrics(self, *buf);
 		break;
 	}
 	default:

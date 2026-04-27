@@ -170,8 +170,8 @@ wal_find(Wal* self, uint64_t lsn, bool next_after)
 	return match;
 }
 
-Buf*
-wal_status(Wal* self)
+void
+wal_status(Wal* self, Buf* buf)
 {
 	// get min file id and total count
 	spinlock_lock(&self->lock);
@@ -191,7 +191,6 @@ wal_status(Wal* self)
 	slots_count = wal_slots(self, &slots_min);
 
 	// obj
-	auto buf = buf_create();
 	encode_obj(buf);
 
 	// lsn
@@ -227,5 +226,4 @@ wal_status(Wal* self)
 	encode_int(buf, opt_int_of(&state()->ops));
 
 	encode_obj_end(buf);
-	return buf;
 }

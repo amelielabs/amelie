@@ -184,12 +184,9 @@ table_index_rename(Table* self,
 	return true;
 }
 
-Buf*
-table_index_list(Table* self, Str* ref, int flags)
+void
+table_index_list(Table* self, Buf* buf, Str* ref, int flags)
 {
-	auto buf = buf_create();
-	errdefer_buf(buf);
-
 	// show index name on table
 	if (ref)
 	{
@@ -198,7 +195,7 @@ table_index_list(Table* self, Str* ref, int flags)
 			encode_null(buf);
 		else
 			index_config_write(index, buf, flags);
-		return buf;
+		return;
 	}
 
 	// show indexes on table
@@ -209,7 +206,6 @@ table_index_list(Table* self, Str* ref, int flags)
 		index_config_write(index, buf, flags);
 	}
 	encode_array_end(buf);
-	return buf;
 }
 
 hot IndexConfig*

@@ -36,6 +36,7 @@ select * from show tables;
 # test: show table
 show table;
 show table test;
+select * from show table test;
 
 # test: show indexes
 show indexes on test;
@@ -46,6 +47,7 @@ select * from show indexes on test;
 show index primary on test;
 select show('index', 'primary', 'test', false);
 show index xyz on test;
+select * from show index primary on test;
 
 # test: show partitions
 show partitions on test;
@@ -75,6 +77,7 @@ select * from show functions all;
 show function;
 show function test_fn;
 show function test_fn all;
+select * from show function test_fn;
 
 # test: show wal
 show wal;
@@ -87,6 +90,7 @@ select * from show replicas;
 show replica abc;
 show replica 'abc';
 show replica '00000000-0000-0000-0000-000000000000';
+select * from show replica '00000000-0000-0000-0000-000000000000';
 
 # test: show state
 show state;

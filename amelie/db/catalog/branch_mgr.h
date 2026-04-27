@@ -27,5 +27,5 @@ void    branch_mgr_drop_of(BranchMgr*, Tr*, Branch*);
 bool    branch_mgr_rename(BranchMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
 bool    branch_mgr_grant(BranchMgr*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 void    branch_mgr_dump(BranchMgr*, Buf*);
-Buf*    branch_mgr_list(BranchMgr*, Str*, Str*, int);
+void    branch_mgr_list(BranchMgr*, Buf*, Str*, Str*, int);
 Branch* branch_mgr_find(BranchMgr*, Str*, Str*, bool);
