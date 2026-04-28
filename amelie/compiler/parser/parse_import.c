@@ -264,7 +264,7 @@ parse_import(Parser*  self, Program* program,
 		user = &self->local->user;
 
 	self->program = program;
-	auto ref = catalog_find(&share()->db->catalog, user, rel, true);
+	auto ref = catalog_find(&share()->db->catalog, REL_UNDEF, user, rel, true);
 	switch (ref->type) {
 	case REL_TABLE:
 	{

@@ -33,7 +33,7 @@ parse_publish(Stmt* self)
 	auto path = parse_target(self, &user, &name);
 
 	// find topic
-	auto topic = topic_mgr_find(&share()->db->catalog.topic_mgr, &user, &name, false);
+	auto topic = catalog_find_topic(&share()->db->catalog, &user, &name, false);
 	if (! topic)
 		stmt_error(self, path, "topic not found");
 	stmt->topic = topic;

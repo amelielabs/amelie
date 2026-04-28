@@ -413,7 +413,7 @@ error: create table test(id int, primary key(❰idd❱ ⟵ column does not exist
 # test: primary key redefined
 create table test(id int, primary key(id, id));
 create table test(id int primary key, primary key(id));
-error: table 'test': already exists
+error: relation 'test': already exists
 create table if not exists test(id int primary key, primary key(id));
 select show('table', 'test', true).columns;
 [{
@@ -434,10 +434,10 @@ create table test(id json, primary key(id));
 error: create table test(id json, primary key(❰id❱ ⟵ supported key types are int32, int64, uuid, timestamp or text
 create table test (id int primary key);
 create table test (id int primary key);
-error: table 'test': already exists
+error: relation 'test': already exists
 # test: table create if not exists
 create table test (id int primary key);
-error: table 'test': already exists
+error: relation 'test': already exists
 create table if not exists test (id int primary key);
 select show('table', 'test', true).columns;
 [{

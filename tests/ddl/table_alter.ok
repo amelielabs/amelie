@@ -34,7 +34,7 @@ select show('table', 'abc', true).name;
 # test: rename table exists
 create table test (id int primary key);
 alter table abc rename to test;
-error: table 'test': already exists
+error: relation 'test': already exists
 drop table test;
 # test: set identity
 create table test (id serial primary key, data int default 0);

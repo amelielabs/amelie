@@ -816,7 +816,7 @@ select show('function', 'abc', true).name;
 # test: alter function rename function exists
 create function test() begin end;
 alter function abc rename to test;
-error: function 'test': already exists
+error: relation 'test': already exists
 drop function test;
 # test: alter function rename with udf dep
 create function test_dep() begin end;

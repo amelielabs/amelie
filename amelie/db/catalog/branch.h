@@ -53,7 +53,7 @@ branch_allocate(BranchConfig* config)
 	return self;
 }
 
-static inline Branch*
+always_inline static inline Branch*
 branch_of(Rel* self)
 {
 	return (Branch*)self;

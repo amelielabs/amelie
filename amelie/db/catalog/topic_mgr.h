@@ -11,21 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct TopicMgr TopicMgr;
-
-struct TopicMgr
-{
-	RelMgr mgr;
-};
-
-void   topic_mgr_init(TopicMgr*);
-void   topic_mgr_free(TopicMgr*);
-bool   topic_mgr_create(TopicMgr*, Tr*, TopicConfig*, bool);
-bool   topic_mgr_drop(TopicMgr*, Tr*, Str*, Str*, bool);
-void   topic_mgr_drop_of(TopicMgr*, Tr*, Topic*);
-bool   topic_mgr_rename(TopicMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
-bool   topic_mgr_grant(TopicMgr*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
-void   topic_mgr_dump(TopicMgr*, Buf*);
-void   topic_mgr_list(TopicMgr*, Buf*, Str*, Str*, int);
-Topic* topic_mgr_find(TopicMgr*, Str*, Str*, bool);
-Topic* topic_mgr_find_by(TopicMgr*, Uuid*, bool);
+bool topic_mgr_create(Catalog*, Tr*, TopicConfig*, bool);
+bool topic_mgr_drop(Catalog*, Tr*, Str*, Str*, bool);
+void topic_mgr_drop_of(Catalog*, Tr*, Topic*);
+bool topic_mgr_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool);
+bool topic_mgr_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
+void topic_mgr_dump(Catalog*, Buf*);

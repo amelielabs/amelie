@@ -48,15 +48,15 @@ static LogIf rename_if =
 };
 
 bool
-table_mgr_rename(TableMgr* self,
-                 Tr*       tr,
-                 Str*      user,
-                 Str*      name,
-                 Str*      user_new,
-                 Str*      name_new,
-                 bool      if_exists)
+table_mgr_rename(Catalog* self,
+                 Tr*      tr,
+                 Str*     user,
+                 Str*     name,
+                 Str*     user_new,
+                 Str*     name_new,
+                 bool     if_exists)
 {
-	auto table = table_mgr_find(self, user, name, false);
+	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -68,9 +68,9 @@ table_mgr_rename(TableMgr* self,
 	// only owner or superuser
 	check_ownership(tr, &table->rel);
 
-	// ensure new table does not exists
-	if (table_mgr_find(self, user_new, name_new, false))
-		error("table '%.*s': already exists", str_size(name_new),
+	// ensure other relation with the same name does not exists
+	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
+		error("relation '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
 	// update table
@@ -115,16 +115,16 @@ static LogIf grant_if =
 };
 
 bool
-table_mgr_grant(TableMgr* self,
-                Tr*       tr,
-                Str*      user,
-                Str*      name,
-                Str*      to,
-                bool      grant,
-                uint32_t  perms,
-                bool      if_exists)
+table_mgr_grant(Catalog* self,
+                Tr*      tr,
+                Str*     user,
+                Str*     name,
+                Str*     to,
+                bool     grant,
+                uint32_t perms,
+                bool     if_exists)
 {
-	auto table = table_mgr_find(self, user, name, false);
+	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -182,14 +182,14 @@ static LogIf set_identity_if =
 };
 
 bool
-table_mgr_set_identity(TableMgr* self,
+table_mgr_set_identity(Catalog* self,
                        Tr*       tr,
                        Str*      user,
                        Str*      name,
                        int64_t   value,
                        bool      if_exists)
 {
-	auto table = table_mgr_find(self, user, name, false);
+	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -237,16 +237,16 @@ static LogIf column_rename_if =
 };
 
 bool
-table_mgr_column_rename(TableMgr* self,
-                        Tr*       tr,
-                        Str*      user,
-                        Str*      name,
-                        Str*      name_column,
-                        Str*      name_column_new,
-                        bool      if_exists,
-                        bool      if_column_exists)
+table_mgr_column_rename(Catalog* self,
+                        Tr*      tr,
+                        Str*     user,
+                        Str*     name,
+                        Str*     name_column,
+                        Str*     name_column_new,
+                        bool     if_exists,
+                        bool     if_column_exists)
 {
-	auto table = table_mgr_find(self, user, name, false);
+	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -316,15 +316,15 @@ static LogIf column_add_if =
 };
 
 bool
-table_mgr_column_add(TableMgr* self,
-                     Tr*       tr,
-                     Str*      user,
-                     Str*      name,
-                     Column*   column,
-                     bool      if_exists,
-                     bool      if_not_exists)
+table_mgr_column_add(Catalog* self,
+                     Tr*      tr,
+                     Str*     user,
+                     Str*     name,
+                     Column*  column,
+                     bool     if_exists,
+                     bool     if_not_exists)
 {
-	auto table = table_mgr_find(self, user, name, false);
+	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -392,15 +392,15 @@ static LogIf column_drop_if =
 };
 
 bool
-table_mgr_column_drop(TableMgr* self,
-                      Tr*       tr,
-                      Str*      user,
-                      Str*      name,
-                      Str*      name_column,
-                      bool      if_exists,
-                      bool      if_column_exists)
+table_mgr_column_drop(Catalog* self,
+                      Tr*      tr,
+                      Str*     user,
+                      Str*     name,
+                      Str*     name_column,
+                      bool     if_exists,
+                      bool     if_column_exists)
 {
-	auto table = table_mgr_find(self, user, name, false);
+	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -473,17 +473,17 @@ static LogIf column_set_if =
 };
 
 bool
-table_mgr_column_set(TableMgr* self,
-                     Tr*       tr,
-                     Str*      user,
-                     Str*      name,
-                     Str*      name_column,
-                     Str*      value,
-                     int       cmd,
-                     bool      if_exists,
-                     bool      if_column_exists)
+table_mgr_column_set(Catalog* self,
+                     Tr*      tr,
+                     Str*     user,
+                     Str*     name,
+                     Str*     name_column,
+                     Str*     value,
+                     int      cmd,
+                     bool     if_exists,
+                     bool     if_column_exists)
 {
-	auto table = table_mgr_find(self, user, name, false);
+	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)

@@ -17,10 +17,7 @@ enum
 	FMINIMAL = 1 << 0,
 
 	// include metrics
-	FMETRICS = 1 << 1,
-
-	// include sensitive information
-	FSECRETS = 1 << 2
+	FMETRICS = 1 << 1
 };
 
 static inline bool

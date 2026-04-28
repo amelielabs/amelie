@@ -63,7 +63,7 @@ storage_unref(Storage* self)
 	assert(self->refs >= 0);
 }
 
-static inline Storage*
+always_inline static inline Storage*
 storage_of(Rel* self)
 {
 	return (Storage*)self;

@@ -20,46 +20,29 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-void
-table_mgr_init(TableMgr*  self, StorageMgr* storage_mgr,
-               PartMgrIf* iface,
-               void*      iface_arg)
-{
-	self->storage_mgr = storage_mgr;
-	self->iface       = iface;
-	self->iface_arg   = iface_arg;
-	rel_mgr_init(&self->mgr);
-}
-
-void
-table_mgr_free(TableMgr* self)
-{
-	rel_mgr_free(&self->mgr);
-}
-
 bool
-table_mgr_create(TableMgr*    self,
+table_mgr_create(Catalog*     self,
                  Tr*          tr,
                  TableConfig* config,
                  bool         if_not_exists)
 {
 	// make sure table does not exists
-	auto current = table_mgr_find(self, &config->user, &config->name, false);
-	if (current)
+	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
+	if (rel)
 	{
 		if (! if_not_exists)
-			error("table '%.*s': already exists", str_size(&config->name),
+			error("relation '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
 		return false;
 	}
 
 	// allocate table
-	auto table = table_allocate(config, self->storage_mgr,
-	                            self->iface,
-	                            self->iface_arg);
+	auto table = table_allocate(config, &self->storage_mgr,
+	                            self->iface_part,
+	                            self->iface_part_arg);
 
 	// update tables
-	rel_mgr_create(&self->mgr, tr, &table->rel);
+	rel_mgr_create(&self->rels, tr, &table->rel);
 
 	// prepare partitions
 	table_open(table);
@@ -67,17 +50,17 @@ table_mgr_create(TableMgr*    self,
 }
 
 void
-table_mgr_drop_of(TableMgr* self, Tr* tr, Table* table)
+table_mgr_drop_of(Catalog* self, Tr* tr, Table* table)
 {
 	// drop table by object
-	rel_mgr_drop(&self->mgr, tr, &table->rel);
+	rel_mgr_drop(&self->rels, tr, &table->rel);
 }
 
 bool
-table_mgr_drop(TableMgr* self, Tr* tr, Str* user, Str* name,
+table_mgr_drop(Catalog* self, Tr* tr, Str* user, Str* name,
                bool if_exists)
 {
-	auto table = table_mgr_find(self, user, name, false);
+	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -116,13 +99,13 @@ static LogIf truncate_if =
 };
 
 bool
-table_mgr_truncate(TableMgr* self,
-                   Tr*       tr,
-                   Str*      user,
-                   Str*      name,
-                   bool      if_exists)
+table_mgr_truncate(Catalog* self,
+                   Tr*      tr,
+                   Str*     user,
+                   Str*     name,
+                   bool     if_exists)
 {
-	auto table = table_mgr_find(self, user, name, false);
+	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -139,30 +122,4 @@ table_mgr_truncate(TableMgr* self,
 
 	// do nothing (actual truncate will happen on commit)
 	return true;
-}
-
-void
-table_mgr_dump(TableMgr* self, Buf* buf)
-{
-	rel_mgr_dump(&self->mgr, buf, 0);
-}
-
-Table*
-table_mgr_find(TableMgr* self, Str* user, Str* name, bool error_if_not_exists)
-{
-	auto rel = rel_mgr_find(&self->mgr, user, name, error_if_not_exists);
-	return table_of(rel);
-}
-
-Table*
-table_mgr_find_by(TableMgr* self, Uuid* id, bool error_if_not_exists)
-{
-	auto rel = rel_mgr_find_by(&self->mgr, id, error_if_not_exists);
-	return table_of(rel);
-}
-
-void
-table_mgr_list(TableMgr* self, Buf* buf, Str* user, Str* name, int flags)
-{
-	rel_mgr_list(&self->mgr, buf, user, name, flags);
 }

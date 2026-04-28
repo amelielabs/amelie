@@ -34,9 +34,12 @@ catalog_snapshot(Catalog* self, Buf* data)
 	// volumes
 	encode_raw(data, "volumes", 7);
 	encode_array(data);
-	list_foreach(&self->table_mgr.mgr.list)
+	list_foreach(&self->rels.list)
 	{
-		auto table = table_of(list_at(Rel, link));
+		auto rel = list_at(Rel, link);
+		if (rel->type != REL_TABLE)
+			continue;
+		auto table = table_of(rel);
 		volume_mgr_list(&table->config->partitioning.volumes, data);
 	}
 	encode_array_end(data);
@@ -46,9 +49,12 @@ catalog_snapshot(Catalog* self, Buf* data)
 	encode_array(data);
 
 	// create snapshot files (hard links)
-	list_foreach(&self->table_mgr.mgr.list)
+	list_foreach(&self->rels.list)
 	{
-		auto table = table_of(list_at(Rel, link));
+		auto rel = list_at(Rel, link);
+		if (rel->type != REL_TABLE)
+			continue;
+		auto table = table_of(rel);
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
 		defer(unlock, table_lock);
 

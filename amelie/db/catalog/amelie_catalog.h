@@ -64,11 +64,10 @@
 
 // catalog
 #include "catalog/catalog.h"
-#include "catalog/catalog_ref.h"
+#include "catalog/catalog_find.h"
 #include "catalog/catalog_file.h"
-
-// catalog snapshot
 #include "catalog/catalog_snapshot.h"
+#include "catalog/catalog_ref.h"
 
 // cascade operations
 #include "catalog/cascade.h"

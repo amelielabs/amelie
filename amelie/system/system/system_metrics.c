@@ -152,9 +152,7 @@ system_metrics(System* self, Buf* buf)
 
 	// db
 	encode_raw(buf, "db", 2);
-	auto db = catalog_status(&self->db.catalog);
-	defer_buf(db);
-	buf_write(buf, db->start, buf_size(db));
+	catalog_status(&self->db.catalog, buf);
 
 	// process
 	encode_raw(buf, "process", 7);

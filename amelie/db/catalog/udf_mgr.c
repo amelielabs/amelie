@@ -20,39 +20,25 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-void
-udf_mgr_init(UdfMgr* self, UdfFree free, void* free_arg)
-{
-	self->free     = free;
-	self->free_arg = free_arg;
-	rel_mgr_init(&self->mgr);
-}
-
-void
-udf_mgr_free(UdfMgr* self)
-{
-	rel_mgr_free(&self->mgr);
-}
-
 bool
-udf_mgr_create(UdfMgr*    self,
+udf_mgr_create(Catalog*   self,
                Tr*        tr,
                UdfConfig* config,
                bool       if_not_exists)
 {
 	// make sure udf does not exists
-	auto current = udf_mgr_find(self, &config->user, &config->name, false);
-	if (current)
+	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
+	if (rel)
 	{
 		if (! if_not_exists)
-			error("function '%.*s': already exists", str_size(&config->name),
+			error("relation '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
 		return false;
 	}
 
 	// create udf
-	auto udf = udf_allocate(config, self->free, self->free_arg);
-	rel_mgr_create(&self->mgr, tr, &udf->rel);
+	auto udf = udf_allocate(config, self->iface->udf_free, self->iface_arg);
+	rel_mgr_create(&self->rels, tr, &udf->rel);
 	return true;
 }
 
@@ -61,9 +47,10 @@ replace_if_commit(Log* self, LogOp* op)
 {
 	// free previous config and data by constructing
 	// temprorary udf object
-	UdfMgr* mgr = op->iface_arg;
+	Catalog* catalog = op->iface_arg;
 	auto data = (void**)log_data_of(self, op);
-	auto tmp = udf_allocate_as(data[0], data[1], mgr->free, mgr->free_arg);
+	auto tmp = udf_allocate_as(data[0], data[1], catalog->iface->udf_free,
+	                           catalog->iface_arg);
 	udf_free(tmp, false);
 }
 
@@ -72,10 +59,10 @@ replace_if_abort(Log* self, LogOp* op)
 {
 	// free current config and data by constructing
 	// temprorary udf object
-	UdfMgr* mgr = op->iface_arg;
+	Catalog* catalog = op->iface_arg;
 	auto udf = udf_of(op->rel);
-
-	auto tmp = udf_allocate_as(udf->config, udf->data, mgr->free, mgr->free_arg);
+	auto tmp = udf_allocate_as(udf->config, udf->data, catalog->iface->udf_free,
+	                           catalog->iface_arg);
 	udf_free(tmp, false);
 
 	// set previous config and data
@@ -95,7 +82,7 @@ static LogIf replace_if =
 };
 
 void
-udf_mgr_replace_validate(UdfMgr* self, Tr* tr, UdfConfig* config, Udf* udf)
+udf_mgr_replace_validate(Catalog* self, Tr* tr, UdfConfig* config, Udf* udf)
 {
 	unused(self);
 
@@ -119,10 +106,10 @@ udf_mgr_replace_validate(UdfMgr* self, Tr* tr, UdfConfig* config, Udf* udf)
 }
 
 void
-udf_mgr_replace(UdfMgr* self,
-                Tr*     tr,
-                Udf*    udf,
-                Udf*    udf_new)
+udf_mgr_replace(Catalog* self,
+                Tr*      tr,
+                Udf*     udf,
+                Udf*     udf_new)
 {
 	// save previous udf config and data
 	assert(udf->data);
@@ -146,17 +133,17 @@ udf_mgr_replace(UdfMgr* self,
 }
 
 void
-udf_mgr_drop_of(UdfMgr* self, Tr* tr, Udf* udf)
+udf_mgr_drop_of(Catalog* self, Tr* tr, Udf* udf)
 {
 	// drop udf by object
-	rel_mgr_drop(&self->mgr, tr, &udf->rel);
+	rel_mgr_drop(&self->rels, tr, &udf->rel);
 }
 
 bool
-udf_mgr_drop(UdfMgr* self, Tr* tr, Str* user, Str* name,
-             bool    if_exists)
+udf_mgr_drop(Catalog* self, Tr* tr, Str* user, Str* name,
+             bool     if_exists)
 {
-	auto udf = udf_mgr_find(self, user, name, false);
+	auto udf = catalog_find_udf(self, user, name, false);
 	if (! udf)
 	{
 		if (! if_exists)
@@ -200,15 +187,15 @@ static LogIf rename_if =
 };
 
 bool
-udf_mgr_rename(UdfMgr* self,
-               Tr*     tr,
-               Str*    user,
-               Str*    name,
-               Str*    user_new,
-               Str*    name_new,
-               bool    if_exists)
+udf_mgr_rename(Catalog* self,
+               Tr*      tr,
+               Str*     user,
+               Str*     name,
+               Str*     user_new,
+               Str*     name_new,
+               bool     if_exists)
 {
-	auto udf = udf_mgr_find(self, user, name, false);
+	auto udf = catalog_find_udf(self, user, name, false);
 	if (! udf)
 	{
 		if (! if_exists)
@@ -220,9 +207,9 @@ udf_mgr_rename(UdfMgr* self,
 	// only owner or superuser
 	check_ownership(tr, &udf->rel);
 
-	// ensure new udf does not exists
-	if (udf_mgr_find(self, user_new, name_new, false))
-		error("function '%.*s': already exists", str_size(name_new),
+	// ensure other relation with the same name does not exists
+	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
+		error("relation '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
 	// update udf
@@ -267,7 +254,7 @@ static LogIf grant_if =
 };
 
 bool
-udf_mgr_grant(UdfMgr*  self,
+udf_mgr_grant(Catalog* self,
               Tr*      tr,
               Str*     user,
               Str*     name,
@@ -276,7 +263,7 @@ udf_mgr_grant(UdfMgr*  self,
               uint32_t perms,
               bool     if_exists)
 {
-	auto udf = udf_mgr_find(self, user, name, false);
+	auto udf = catalog_find_udf(self, user, name, false);
 	if (! udf)
 	{
 		if (! if_exists)
@@ -305,24 +292,4 @@ udf_mgr_grant(UdfMgr*  self,
 	else
 		grants_remove(grants, to, perms);
 	return true;
-}
-
-void
-udf_mgr_dump(UdfMgr* self, Buf* buf)
-{
-	rel_mgr_dump(&self->mgr, buf, 0);
-}
-
-Udf*
-udf_mgr_find(UdfMgr* self, Str* user, Str* name,
-             bool    error_if_not_exists)
-{
-	auto rel = rel_mgr_find(&self->mgr, user, name, error_if_not_exists);
-	return udf_of(rel);
-}
-
-void
-udf_mgr_list(UdfMgr* self, Buf* buf, Str* user, Str* name, int flags)
-{
-	rel_mgr_list(&self->mgr, buf, user, name, flags);
 }

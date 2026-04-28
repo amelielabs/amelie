@@ -261,7 +261,7 @@ fn_show(Fn* self)
 	}
 	case SHOW_GRANTS:
 	{
-		auto rel = catalog_find(catalog, user, on, true);
+		auto rel = catalog_find(catalog, REL_UNDEF, user, on, true);
 		if (rel->grants)
 			grants_write(rel->grants, buf, 0);
 		else
@@ -270,12 +270,12 @@ fn_show(Fn* self)
 	}
 	case SHOW_USERS:
 	{
-		user_mgr_list(&catalog->user_mgr, buf, NULL, flags);
+		rel_mgr_list(&catalog->users, REL_USER, buf, NULL, NULL, flags);
 		break;
 	}
 	case SHOW_USER:
 	{
-		user_mgr_list(&catalog->user_mgr, buf, name, flags);
+		rel_mgr_list(&catalog->users, REL_USER, buf, NULL, name, flags);
 		break;
 	}
 	case SHOW_STORAGES:
@@ -290,12 +290,12 @@ fn_show(Fn* self)
 	}
 	case SHOW_TABLES:
 	{
-		table_mgr_list(&catalog->table_mgr, buf, user, NULL, flags);
+		rel_mgr_list(&catalog->rels, REL_TABLE, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		table_mgr_list(&catalog->table_mgr, buf, user, name, flags);
+		rel_mgr_list(&catalog->rels, REL_TABLE, buf, user, name, flags);
 		break;
 	}
 	case SHOW_INDEXES:
@@ -312,12 +312,12 @@ fn_show(Fn* self)
 	}
 	case SHOW_BRANCHES:
 	{
-		branch_mgr_list(&catalog->branch_mgr, buf, user, NULL, flags);
+		rel_mgr_list(&catalog->rels, REL_BRANCH, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_BRANCH:
 	{
-		branch_mgr_list(&catalog->branch_mgr, buf, user, name, flags);
+		rel_mgr_list(&catalog->rels, REL_BRANCH, buf, user, name, flags);
 		break;
 	}
 	case SHOW_PARTITIONS:
@@ -334,32 +334,32 @@ fn_show(Fn* self)
 	}
 	case SHOW_FUNCTIONS:
 	{
-		udf_mgr_list(&catalog->udf_mgr, buf, user, NULL, flags);
+		rel_mgr_list(&catalog->rels, REL_UDF, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		udf_mgr_list(&catalog->udf_mgr, buf, user, name, flags);
+		rel_mgr_list(&catalog->rels, REL_UDF, buf, user, name, flags);
 		break;
 	}
 	case SHOW_TOPICS:
 	{
-		topic_mgr_list(&catalog->topic_mgr, buf, user, NULL, flags);
+		rel_mgr_list(&catalog->rels, REL_TOPIC, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_TOPIC:
 	{
-		topic_mgr_list(&catalog->topic_mgr, buf, user, name, flags);
+		rel_mgr_list(&catalog->rels, REL_TOPIC, buf, user, name, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTIONS:
 	{
-		sub_mgr_list(&catalog->sub_mgr, buf, user, NULL, flags);
+		rel_mgr_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTION:
 	{
-		sub_mgr_list(&catalog->sub_mgr, buf, user, name, flags);
+		rel_mgr_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, name, flags);
 		break;
 	}
 	case SHOW_STATE:

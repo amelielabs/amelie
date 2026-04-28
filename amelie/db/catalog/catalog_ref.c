@@ -24,14 +24,14 @@ Rel*
 catalog_cdc_ref(Catalog* self, User* user, Str* rel_user, Str* rel,
                 Uuid**   id)
 {
-	auto ref = catalog_find(self, rel_user, rel, true);
+	auto ref = catalog_find(self, REL_UNDEF, rel_user, rel, true);
 	auto ref_match = ref;
 
 	// match existing subscription relation
 	if (ref->type == REL_SUBSCRIPTION)
 	{
 		auto sub = sub_of(ref);
-		ref_match = catalog_find_by(self, &sub->on_id, true);
+		ref_match = catalog_find_by(self, REL_UNDEF, &sub->on_id, true);
 	}
 
 	// check permission to create subscription on the relation
@@ -67,7 +67,7 @@ catalog_cdc_ref(Catalog* self, User* user, Str* rel_user, Str* rel,
 void
 catalog_cdc_unref(Catalog* self, Uuid* id)
 {
-	auto ref = catalog_find_by(self, id, false);
+	auto ref = catalog_find_by(self, REL_UNDEF, id, false);
 	if (! ref)
 		return;
 

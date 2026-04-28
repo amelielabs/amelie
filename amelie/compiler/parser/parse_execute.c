@@ -61,9 +61,8 @@ parse_execute(Stmt* self)
 	auto name = stmt_expect(self, KNAME);
 
 	// find function
-	stmt->udf = udf_mgr_find(&share()->db->catalog.udf_mgr,
-	                         self->parser->user,
-	                         &name->string, false);
+	stmt->udf = catalog_find_udf(&share()->db->catalog, self->parser->user,
+	                             &name->string, false);
 	if (! stmt->udf)
 		stmt_error(self, name, "function not found");
 	auto udf = stmt->udf;

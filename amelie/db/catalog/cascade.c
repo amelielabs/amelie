@@ -31,65 +31,33 @@ static void
 cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 {
 	// validate or drop all objects matching the user
-
-	// topics
-	list_foreach_safe(&self->topic_mgr.mgr.list)
+	list_foreach_safe(&self->rels.list)
 	{
-		auto topic = topic_of(list_at(Rel, link));
-		if (! str_compare_case(&topic->config->user, user))
+		auto rel = list_at(Rel, link);
+		if (! str_compare_case(rel->user, user))
 			continue;
-		if (drop)
-			topic_mgr_drop_of(&self->topic_mgr, tr, topic);
-		else
+		if (! drop)
 			cascade_user_error(user);
-	}
-
-	// subs
-	list_foreach_safe(&self->sub_mgr.mgr.list)
-	{
-		auto sub = sub_of(list_at(Rel, link));
-		if (! str_compare_case(&sub->config->user, user))
-			continue;
-		if (drop)
-			sub_mgr_drop_of(&self->sub_mgr, tr, sub);
-		else
-			cascade_user_error(user);
-	}
-
-	// udfs
-	list_foreach_safe(&self->udf_mgr.mgr.list)
-	{
-		auto udf = udf_of(list_at(Rel, link));
-		if (! str_compare_case(&udf->config->user, user))
-			continue;
-		if (drop)
-			udf_mgr_drop_of(&self->udf_mgr, tr, udf);
-		else
-			cascade_user_error(user);
-	}
-
-	// branches
-	list_foreach_safe(&self->branch_mgr.mgr.list)
-	{
-		auto branch = branch_of(list_at(Rel, link));
-		if (! str_compare_case(&branch->config->user, user))
-			continue;
-		if (drop)
-			branch_mgr_drop_of(&self->branch_mgr, tr, branch);
-		else
-			cascade_user_error(user);
-	}
-
-	// tables
-	list_foreach_safe(&self->table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Rel, link));
-		if (! str_compare_case(&table->config->user, user))
-			continue;
-		if (drop)
-			table_mgr_drop_of(&self->table_mgr, tr, table);
-		else
-			cascade_user_error(user);
+		switch (rel->type) {
+		case REL_TOPIC:
+			topic_mgr_drop_of(self, tr, topic_of(rel));
+			break;
+		case REL_SUBSCRIPTION:
+			sub_mgr_drop_of(self, tr, sub_of(rel));
+			break;
+		case REL_UDF:
+			udf_mgr_drop_of(self, tr, udf_of(rel));
+			break;
+		case REL_BRANCH:
+			branch_mgr_drop_of(self, tr, branch_of(rel));
+			break;
+		case REL_TABLE:
+			table_mgr_drop_of(self, tr, table_of(rel));
+			break;
+		default:
+			abort();
+			break;
+		}
 	}
 }
 
@@ -98,7 +66,7 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
                   bool     cascade,
                   bool     if_exists)
 {
-	auto user = user_mgr_find(&self->user_mgr, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -117,67 +85,68 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
 	// validate or drop all objects matching the user
 	cascade_user_drop_execute(self, tr, name, cascade);
 
-	user_mgr_drop(&self->user_mgr, tr, name, false);
+	user_mgr_drop(self, tr, name, false);
 	return true;
 }
 
 static void
 cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 {
-	// udfs
-	list_foreach_safe(&self->udf_mgr.mgr.list)
+	list_foreach_safe(&self->rels.list)
 	{
-		auto udf = udf_of(list_at(Rel, link));
-		if (str_compare_case(&udf->config->user, user))
+		auto rel = list_at(Rel, link);
+		if (! str_compare_case(rel->user, user))
+			continue;
+		switch (rel->type) {
+		case REL_UDF:
+		{
+			auto udf = udf_of(rel);
 			error("function '%.*s' depends on user '%.*s",
 			      str_size(udf->rel.name), str_of(udf->rel.name),
 			      str_size(user), str_of(user));
-	}
-
-	// topics
-	list_foreach_safe(&self->topic_mgr.mgr.list)
-	{
-		auto topic = topic_of(list_at(Rel, link));
-		if (str_compare_case(&topic->config->user, user))
-			topic_mgr_rename(&self->topic_mgr, tr, &topic->config->user,
+			break;
+		}
+		case REL_TOPIC:
+		{
+			auto topic = topic_of(rel);
+			topic_mgr_rename(self, tr, &topic->config->user,
 			                 &topic->config->name,
 			                 user_new,
 			                 &topic->config->name, false);
-	}
-
-	// subs
-	list_foreach_safe(&self->sub_mgr.mgr.list)
-	{
-		auto sub = sub_of(list_at(Rel, link));
-		if (str_compare_case(&sub->config->user, user))
-			sub_mgr_rename(&self->sub_mgr, tr, &sub->config->user,
+			break;
+		}
+		case REL_SUBSCRIPTION:
+		{
+			auto sub = sub_of(rel);
+			sub_mgr_rename(self, tr, &sub->config->user,
 			               &sub->config->name,
 			               user_new,
 			               &sub->config->name, false);
-	}
-
-	// branches
-	list_foreach_safe(&self->branch_mgr.mgr.list)
-	{
-		auto branch = branch_of(list_at(Rel, link));
-		if (str_compare_case(&branch->config->user, user))
-			branch_mgr_rename(&self->branch_mgr, tr, &branch->config->user,
+			break;
+		}
+		case REL_BRANCH:
+		{
+			auto branch = branch_of(rel);
+			branch_mgr_rename(self, tr, &branch->config->user,
 			                  &branch->config->name,
 			                  user_new,
 			                  &branch->config->name, false);
-	}
-
-	// tables
-	list_foreach_safe(&self->table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Rel, link));
-		if (str_compare_case(&table->config->user, user))
-			table_mgr_rename(&self->table_mgr, tr, &table->config->user,
+			break;
+		}
+		case REL_TABLE:
+		{
+			auto table = table_of(rel);
+			table_mgr_rename(self, tr, &table->config->user,
 			                 &table->config->name,
 			                 user_new,
 			                 &table->config->name, false);
+			break;
+		}
+		default:
+			abort();
+			break;
+		}
 	}
-
 }
 
 bool
@@ -186,7 +155,7 @@ cascade_user_rename(Catalog* self, Tr* tr,
                     Str*     name_new,
                     bool     if_exists)
 {
-	auto user = user_mgr_find(&self->user_mgr, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -206,6 +175,6 @@ cascade_user_rename(Catalog* self, Tr* tr,
 	cascade_user_rename_execute(self, tr, name, name_new);
 
 	// rename user
-	user_mgr_rename(&self->user_mgr, tr, name, name_new, false);
+	user_mgr_rename(self, tr, name, name_new, false);
 	return true;
 }

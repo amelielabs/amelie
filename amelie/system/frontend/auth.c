@@ -91,7 +91,7 @@ auth_run(Auth* self, Str* user_id, Str* token)
 		      str_size(&sub), str_of(&sub));
 
 	// find user
-	auto user = user_mgr_find(&share()->db->catalog.user_mgr, &sub, false);
+	auto user = catalog_find_user(&share()->db->catalog, &sub, false);
 	if (! user)
 		error("auth: user '%.*s' not found", str_size(&sub),
 		      str_of(&sub));
@@ -125,7 +125,7 @@ auth_main(Auth* self, Str* user_id, Str* token, bool token_required)
 			error("auth: authentication token is missing");
 
 		// trusted by the server listen configuration
-		user = user_mgr_find(&share()->db->catalog.user_mgr, user_id, true);
+		user = catalog_find_user(&share()->db->catalog, user_id, true);
 	} else
 	{
 		user = auth_run(self, user_id, token);

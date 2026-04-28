@@ -20,77 +20,30 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-void
-sub_mgr_init(SubMgr* self, Catalog* catalog, Cdc* cdc)
-{
-	self->catalog = catalog;
-	self->cdc     = cdc;
-	rel_mgr_init(&self->mgr);
-
-	// prepare subscription columns
-	columns_init(&self->columns);
-
-	// lsn
-	auto column = column_allocate();
-	Str name;
-	str_set(&name, "lsn", 3);
-	column_set_name(column, &name);
-	column_set_type(column, TYPE_INT, sizeof(int64_t));
-	columns_add(&self->columns, column);
-
-	// lsn_op
-	column = column_allocate();
-	str_set(&name, "lsn_op", 6);
-	column_set_name(column, &name);
-	column_set_type(column, TYPE_INT, sizeof(int32_t));
-	columns_add(&self->columns, column);
-
-	// cmd
-	column = column_allocate();
-	str_set(&name, "cmd", 3);
-	column_set_name(column, &name);
-	column_set_type(column, TYPE_STRING, 0);
-	columns_add(&self->columns, column);
-
-	// row
-	column = column_allocate();
-	str_set(&name, "row", 3);
-	column_set_name(column, &name);
-	column_set_type(column, TYPE_JSON, 0);
-	columns_add(&self->columns, column);
-}
-
-void
-sub_mgr_free(SubMgr* self)
-{
-	rel_mgr_free(&self->mgr);
-	columns_free(&self->columns);
-}
-
 bool
-sub_mgr_create(SubMgr* self, Tr* tr, SubConfig* config, bool if_not_exists)
+sub_mgr_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 {
-	auto sub = sub_mgr_find(self, &config->user, &config->name, false);
-	if (sub)
+	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
+	if (rel)
 	{
 		if (! if_not_exists)
-			error("subscription '%.*s': already exists", str_size(&config->name),
+			error("relation '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
 		return false;
 	}
 
 	// find and use relation for cdc
 	Uuid* id;
-	catalog_cdc_ref(self->catalog, user_of(tr->user),
+	catalog_cdc_ref(self, user_of(tr->user),
 	                &config->on_user,
 	                &config->on,
 	                &id);
 
 	// allocate storage
-	sub = sub_allocate(config, self->catalog, self->cdc, id);
+	auto sub = sub_allocate(config, self, id);
 
 	// register storage
-	rel_mgr_create(&self->mgr, tr, &sub->rel);
+	rel_mgr_create(&self->rels, tr, &sub->rel);
 
 	// set pos and prepare slot
 	cdc_slot_set(&sub->slot, config->lsn, config->op);
@@ -101,16 +54,16 @@ sub_mgr_create(SubMgr* self, Tr* tr, SubConfig* config, bool if_not_exists)
 }
 
 void
-sub_mgr_drop_of(SubMgr* self, Tr* tr, Sub* sub)
+sub_mgr_drop_of(Catalog* self, Tr* tr, Sub* sub)
 {
 	// drop sub by object
-	rel_mgr_drop(&self->mgr, tr, &sub->rel);
+	rel_mgr_drop(&self->rels, tr, &sub->rel);
 }
 
 bool
-sub_mgr_drop(SubMgr* self, Tr* tr, Str* user, Str* name, bool if_exists)
+sub_mgr_drop(Catalog* self, Tr* tr, Str* user, Str* name, bool if_exists)
 {
-	auto sub = sub_mgr_find(self, user, name, false);
+	auto sub = catalog_find_sub(self, user, name, false);
 	if (! sub)
 	{
 		if (! if_exists)
@@ -154,15 +107,15 @@ static LogIf rename_if =
 };
 
 bool
-sub_mgr_rename(SubMgr* self,
-               Tr*     tr,
-               Str*    user,
-               Str*    name,
-               Str*    user_new,
-               Str*    name_new,
-               bool    if_exists)
+sub_mgr_rename(Catalog* self,
+               Tr*      tr,
+               Str*     user,
+               Str*     name,
+               Str*     user_new,
+               Str*     name_new,
+               bool     if_exists)
 {
-	auto sub = sub_mgr_find(self, user, name, false);
+	auto sub = catalog_find_sub(self, user, name, false);
 	if (! sub)
 	{
 		if (! if_exists)
@@ -174,9 +127,9 @@ sub_mgr_rename(SubMgr* self,
 	// only owner or superuser
 	check_ownership(tr, &sub->rel);
 
-	// ensure new sub does not exists
-	if (sub_mgr_find(self, user_new, name_new, false))
-		error("subscription '%.*s': already exists", str_size(name_new),
+	// ensure other relation with the same name does not exists
+	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
+		error("relation '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
 	// update sub
@@ -221,7 +174,7 @@ static LogIf grant_if =
 };
 
 bool
-sub_mgr_grant(SubMgr*  self,
+sub_mgr_grant(Catalog* self,
               Tr*      tr,
               Str*     user,
               Str*     name,
@@ -230,7 +183,7 @@ sub_mgr_grant(SubMgr*  self,
               uint32_t perms,
               bool     if_exists)
 {
-	auto sub = sub_mgr_find(self, user, name, false);
+	auto sub = catalog_find_sub(self, user, name, false);
 	if (! sub)
 	{
 		if (! if_exists)
@@ -259,31 +212,4 @@ sub_mgr_grant(SubMgr*  self,
 	else
 		grants_remove(grants, to, perms);
 	return true;
-}
-
-void
-sub_mgr_list(SubMgr* self, Buf* buf, Str* user, Str* name, int flags)
-{
-	rel_mgr_list(&self->mgr, buf, user, name, flags);
-}
-
-void
-sub_mgr_dump(SubMgr* self, Buf* buf)
-{
-	rel_mgr_dump(&self->mgr, buf, 0);
-}
-
-Sub*
-sub_mgr_find(SubMgr* self, Str* user, Str* name,
-             bool    error_if_not_exists)
-{
-	auto rel = rel_mgr_find(&self->mgr, user, name, error_if_not_exists);
-	return sub_of(rel);
-}
-
-Sub*
-sub_mgr_find_by(SubMgr* self, Uuid* id, bool error_if_not_exists)
-{
-	auto rel = rel_mgr_find_by(&self->mgr, id, error_if_not_exists);
-	return sub_of(rel);
 }

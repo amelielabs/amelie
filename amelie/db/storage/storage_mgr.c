@@ -147,18 +147,18 @@ storage_mgr_rename(StorageMgr* self,
 void
 storage_mgr_dump(StorageMgr* self, Buf* buf)
 {
-	rel_mgr_dump(&self->mgr, buf, 0);
+	rel_mgr_dump(&self->mgr, REL_STORAGE, buf, 0);
 }
 
 Storage*
 storage_mgr_find(StorageMgr* self, Str* name, bool error_if_not_exists)
 {
-	auto rel = rel_mgr_find(&self->mgr, NULL, name, error_if_not_exists);
+	auto rel = rel_mgr_find(&self->mgr, REL_STORAGE, NULL, name, error_if_not_exists);
 	return storage_of(rel);
 }
 
 void
 storage_mgr_list(StorageMgr* self, Buf* buf, Str* name, int flags)
 {
-	rel_mgr_list(&self->mgr, buf, NULL, name, flags);
+	rel_mgr_list(&self->mgr, REL_STORAGE, buf, NULL, name, flags);
 }

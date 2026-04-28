@@ -20,38 +20,25 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-void
-branch_mgr_init(BranchMgr* self, TableMgr* table_mgr)
-{
-	self->table_mgr = table_mgr;
-	rel_mgr_init(&self->mgr);
-}
-
-void
-branch_mgr_free(BranchMgr* self)
-{
-	rel_mgr_free(&self->mgr);
-}
-
 bool
-branch_mgr_create(BranchMgr*    self,
+branch_mgr_create(Catalog*      self,
                   Tr*           tr,
                   BranchConfig* config,
                   bool          if_not_exists)
 {
 	// make sure branch does not exists
-	auto branch = branch_mgr_find(self, &config->user, &config->name, false);
-	if (branch)
+	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
+	if (rel)
 	{
 		if (! if_not_exists)
-			error("branch '%.*s': already exists", str_size(&config->name),
+			error("relation '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
 		return false;
 	}
+	check_type(rel, REL_BRANCH);
 
 	// ensure table exists
-	auto table = table_mgr_find(self->table_mgr, &config->table_user,
-	                            &config->table, true);
+	auto table = catalog_find_table(self, &config->table_user, &config->table, true);
 
 	// ensure permission to create branch on the table
 	check_permission(tr, &table->rel, PERM_CREATE_BRANCH);
@@ -63,11 +50,11 @@ branch_mgr_create(BranchMgr*    self,
 		      str_of(&config->name));
 
 	// create branch
-	branch = branch_allocate(config);
+	auto branch = branch_allocate(config);
 	branch->table = table;
 	branch->config->snapshot.parent = parent;
 	str_set_str(&branch->config->snapshot.alias, &branch->config->name);
-	rel_mgr_create(&self->mgr, tr, &branch->rel);
+	rel_mgr_create(&self->rels, tr, &branch->rel);
 
 	// register branch snapshot
 	snapshot_mgr_add(&table->snapshot_mgr, &branch->config->snapshot);
@@ -75,17 +62,17 @@ branch_mgr_create(BranchMgr*    self,
 }
 
 void
-branch_mgr_drop_of(BranchMgr* self, Tr* tr, Branch* branch)
+branch_mgr_drop_of(Catalog* self, Tr* tr, Branch* branch)
 {
 	// drop branch by object
-	rel_mgr_drop(&self->mgr, tr, &branch->rel);
+	rel_mgr_drop(&self->rels, tr, &branch->rel);
 }
 
 bool
-branch_mgr_drop(BranchMgr* self, Tr* tr, Str* user, Str* name,
-                bool       if_exists)
+branch_mgr_drop(Catalog* self, Tr* tr, Str* user, Str* name,
+                bool     if_exists)
 {
-	auto branch = branch_mgr_find(self, user, name, false);
+	auto branch = catalog_find_branch(self, user, name, false);
 	if (! branch)
 	{
 		if (! if_exists)
@@ -98,9 +85,12 @@ branch_mgr_drop(BranchMgr* self, Tr* tr, Str* user, Str* name,
 	check_ownership(tr, &branch->rel);
 
 	// ensure branch is not a parent branch
-	list_foreach_safe(&self->mgr.list)
+	list_foreach_safe(&self->rels.list)
 	{
-		auto ref = list_at(Branch, rel.link);
+		auto rel = list_at(Rel, link);
+		if (rel->type != REL_BRANCH)
+			continue;
+		auto ref = branch_of(rel);
 		if (ref->table != branch->table)
 			continue;
 		if (ref->config->snapshot.id_parent == branch->config->snapshot.id)
@@ -140,15 +130,15 @@ static LogIf rename_if =
 };
 
 bool
-branch_mgr_rename(BranchMgr* self,
-                  Tr*        tr,
-                  Str*       user,
-                  Str*       name,
-                  Str*       user_new,
-                  Str*       name_new,
-                  bool       if_exists)
+branch_mgr_rename(Catalog* self,
+                  Tr*      tr,
+                  Str*     user,
+                  Str*     name,
+                  Str*     user_new,
+                  Str*     name_new,
+                  bool     if_exists)
 {
-	auto branch = branch_mgr_find(self, user, name, false);
+	auto branch = catalog_find_branch(self, user, name, false);
 	if (! branch)
 	{
 		if (! if_exists)
@@ -160,9 +150,9 @@ branch_mgr_rename(BranchMgr* self,
 	// only owner or superuser
 	check_ownership(tr, &branch->rel);
 
-	// ensure new branch does not exists
-	if (branch_mgr_find(self, user_new, name_new, false))
-		error("branch '%.*s': already exists", str_size(name_new),
+	// ensure other relation with the same name does not exists
+	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
+		error("relation '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
 	// update branch
@@ -207,16 +197,16 @@ static LogIf grant_if =
 };
 
 bool
-branch_mgr_grant(BranchMgr* self,
-                 Tr*        tr,
-                 Str*       user,
-                 Str*       name,
-                 Str*       to,
-                 bool       grant,
-                 uint32_t   perms,
-                 bool       if_exists)
+branch_mgr_grant(Catalog* self,
+                 Tr*      tr,
+                 Str*     user,
+                 Str*     name,
+                 Str*     to,
+                 bool     grant,
+                 uint32_t perms,
+                 bool     if_exists)
 {
-	auto branch = branch_mgr_find(self, user, name, false);
+	auto branch = catalog_find_branch(self, user, name, false);
 	if (! branch)
 	{
 		if (! if_exists)
@@ -247,24 +237,4 @@ branch_mgr_grant(BranchMgr* self,
 	else
 		grants_remove(grants, to, perms);
 	return true;
-}
-
-void
-branch_mgr_dump(BranchMgr* self, Buf* buf)
-{
-	rel_mgr_dump(&self->mgr, buf, 0);
-}
-
-Branch*
-branch_mgr_find(BranchMgr* self, Str* user, Str* name,
-                bool       error_if_not_exists)
-{
-	auto rel = rel_mgr_find(&self->mgr, user, name, error_if_not_exists);
-	return branch_of(rel);
-}
-
-void
-branch_mgr_list(BranchMgr* self, Buf* buf, Str* user, Str* name, int flags)
-{
-	rel_mgr_list(&self->mgr, buf, user, name, flags);
 }

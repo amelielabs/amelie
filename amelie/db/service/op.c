@@ -26,7 +26,8 @@ void
 service_refresh(Service* self, Uuid* id_table, uint64_t id, Str* storage)
 {
 	// note: executed under shared catalog lock
-	auto table = table_mgr_find_by(&self->catalog->table_mgr, id_table, true);
+	auto rel = catalog_find_by(self->catalog, REL_TABLE, id_table, true);
+	auto table = table_of(rel);
 	Refresh refresh;
 	refresh_init(&refresh, self);
 	defer(refresh_free, &refresh);
@@ -49,9 +50,12 @@ service_checkpoint(Service* self)
 	refresh_init(&refresh, self);
 	defer(refresh_free, &refresh);
 
-	list_foreach(&self->catalog->table_mgr.mgr.list)
+	list_foreach(&self->catalog->rels.list)
 	{
-		auto table = table_of(list_at(Rel, link));
+		auto rel = list_at(Rel, link);
+		if (rel->type != REL_TABLE)
+			continue;
+		auto table = table_of(rel);
 		for (;;)
 		{
 			uint64_t id = UINT64_MAX;
@@ -96,15 +100,18 @@ service_gc(Service* self)
 
 	// get min cdc slot lsn
 	uint64_t cdc_lsn;
-	auto     cdc = self->catalog->sub_mgr.cdc;
+	auto     cdc = self->catalog->cdc;
 	cdc_min(cdc, &cdc_lsn);
 	if (cdc_lsn < lsn)
 		lsn = cdc_lsn;
 
 	// calculate min lsn accross partitions files (merged)
-	list_foreach(&self->catalog->table_mgr.mgr.list)
+	list_foreach(&self->catalog->rels.list)
 	{
-		auto table = table_of(list_at(Rel, link));
+		auto rel = list_at(Rel, link);
+		if (rel->type != REL_TABLE)
+			continue;
+		auto table = table_of(rel);
 		auto table_lock = lock(&table->rel, LOCK_SHARED);
 		list_foreach(&table->part_mgr.list)
 		{

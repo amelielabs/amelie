@@ -11,20 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct UserMgr UserMgr;
+typedef struct Catalog Catalog;
 
-struct UserMgr
-{
-	RelMgr mgr;
-};
-
-void  user_mgr_init(UserMgr*);
-void  user_mgr_free(UserMgr*);
-bool  user_mgr_create(UserMgr*, Tr*, UserConfig*, bool);
-bool  user_mgr_drop(UserMgr*, Tr*, Str*, bool);
-bool  user_mgr_rename(UserMgr*, Tr*, Str*, Str*, bool);
-bool  user_mgr_revoke(UserMgr*, Tr*, Str*, Str*, bool);
-bool  user_mgr_grant(UserMgr*, Tr*, Str*, bool, uint32_t, bool);
-void  user_mgr_dump(UserMgr*, Buf*);
-void  user_mgr_list(UserMgr*, Buf*, Str*, int);
-User* user_mgr_find(UserMgr*, Str*, bool);
+bool user_mgr_create(Catalog*, Tr*, UserConfig*, bool);
+bool user_mgr_drop(Catalog*, Tr*, Str*, bool);
+bool user_mgr_rename(Catalog*, Tr*, Str*, Str*, bool);
+bool user_mgr_revoke(Catalog*, Tr*, Str*, Str*, bool);
+bool user_mgr_grant(Catalog*, Tr*, Str*, bool, uint32_t, bool);

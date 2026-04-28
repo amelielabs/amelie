@@ -39,7 +39,7 @@ parse_branch_create(Stmt* self)
 	auto path = parse_target(self, &target_user, &target);
 
 	// find target
-	auto rel = catalog_find(&share()->db->catalog, &target_user, &target, false);
+	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, &target_user, &target, false);
 	if (! rel)
 		stmt_error(self, path, "relation not found");
 

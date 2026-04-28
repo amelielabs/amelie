@@ -39,3 +39,11 @@ check_permission(Tr* tr, Rel* rel, uint32_t perms)
 {
 	user_check_permission(user_of(tr->user), rel, perms);
 }
+
+static inline void
+check_type(Rel* rel, RelType type)
+{
+	if (rel->type != type)
+		error("relation '%.*s': type mismatch", str_size(rel->name),
+		      str_of(rel->name));
+}

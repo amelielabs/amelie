@@ -25,7 +25,7 @@ sub_free(Sub* self, bool drop)
 {
 	unused(drop);
 	catalog_cdc_unref(self->catalog, &self->on_id);
-	cdc_detach(self->cdc, &self->slot);
+	cdc_detach(self->catalog->cdc, &self->slot);
 	sub_config_free(self->config);
 	am_free(self);
 }
@@ -37,11 +37,10 @@ sub_show(Sub* self, Buf* buf, int flags)
 }
 
 Sub*
-sub_allocate(SubConfig* config, Catalog* catalog, Cdc* cdc, Uuid* id)
+sub_allocate(SubConfig* config, Catalog* catalog, Uuid* id)
 {
 	auto self = (Sub*)am_malloc(sizeof(Sub));
 	self->config  = sub_config_copy(config);
-	self->cdc     = cdc;
 	self->catalog = catalog;
 	self->on_id   = *id;
 	cdc_slot_init(&self->slot);

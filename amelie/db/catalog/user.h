@@ -69,7 +69,7 @@ user_sync(User* self)
 	self->revoked_at = time / 1000 / 1000;
 }
 
-static inline User*
+always_inline static inline User*
 user_of(Rel* self)
 {
 	return (User*)self;

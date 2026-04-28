@@ -36,7 +36,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 {
 	Str main;
 	str_set(&main, "main", 4);
-	auto user = user_mgr_find(&self->user_mgr, &main, false);
+	auto user = catalog_find_user(self, &main, false);
 	if (user)
 		tr_set_user(tr, &user->rel);
 
@@ -48,7 +48,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(user_config_free, config);
 
 		// create user
-		user_mgr_create(&self->user_mgr, tr, config, false);
+		user_mgr_create(self, tr, config, false);
 		break;
 	}
 	case RESTORE_STORAGE:
@@ -68,7 +68,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(table_config_free, config);
 
 		// create table
-		table_mgr_create(&self->table_mgr, tr, config, false);
+		table_mgr_create(self, tr, config, false);
 		break;
 	}
 	case RESTORE_BRANCH:
@@ -78,7 +78,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(branch_config_free, config);
 
 		// create branch
-		branch_mgr_create(&self->branch_mgr, tr, config, false);
+		branch_mgr_create(self, tr, config, false);
 		break;
 	}
 	case RESTORE_UDF:
@@ -88,9 +88,9 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(udf_config_free, config);
 
 		// create udf
-		udf_mgr_create(&self->udf_mgr, tr, config, false);
+		udf_mgr_create(self, tr, config, false);
 
-		auto udf = udf_mgr_find(&self->udf_mgr, &config->user, &config->name, true);
+		auto udf = catalog_find_udf(self, &config->user, &config->name, true);
 		self->iface->udf_compile(self, udf);
 		break;
 	}
@@ -101,7 +101,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(topic_config_free, config);
 
 		// create topic
-		topic_mgr_create(&self->topic_mgr, tr, config, false);
+		topic_mgr_create(self, tr, config, false);
 		break;
 	}
 	case RESTORE_SUB:
@@ -111,7 +111,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(sub_config_free, config);
 
 		// create subscription
-		sub_mgr_create(&self->sub_mgr, tr, config, false);
+		sub_mgr_create(self, tr, config, false);
 		break;
 	}
 	}
@@ -263,7 +263,7 @@ catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 
 	// users
 	encode_raw(buf, "users", 5);
-	user_mgr_dump(&self->user_mgr, buf);
+	rel_mgr_dump(&self->users, REL_USER, buf, 0);
 
 	// storages
 	encode_raw(buf, "storages", 8);
@@ -271,23 +271,23 @@ catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 
 	// tables
 	encode_raw(buf, "tables", 6);
-	table_mgr_dump(&self->table_mgr, buf);
+	rel_mgr_dump(&self->rels, REL_TABLE, buf, 0);
 
 	// branches
 	encode_raw(buf, "branches", 8);
-	branch_mgr_dump(&self->branch_mgr, buf);
+	rel_mgr_dump(&self->rels, REL_BRANCH, buf, 0);
 
 	// udfs
 	encode_raw(buf, "udfs", 4);
-	udf_mgr_dump(&self->udf_mgr, buf);
+	rel_mgr_dump(&self->rels, REL_UDF, buf, 0);
 
 	// topics
 	encode_raw(buf, "topics", 6);
-	topic_mgr_dump(&self->topic_mgr, buf);
+	rel_mgr_dump(&self->rels, REL_TOPIC, buf, 0);
 
 	// subs
 	encode_raw(buf, "subs", 4);
-	sub_mgr_dump(&self->sub_mgr, buf);
+	rel_mgr_dump(&self->rels, REL_SUBSCRIPTION, buf, 0);
 
 	encode_obj_end(buf);
 	return buf;

@@ -20,52 +20,40 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-void
-topic_mgr_init(TopicMgr* self)
-{
-	rel_mgr_init(&self->mgr);
-}
-
-void
-topic_mgr_free(TopicMgr* self)
-{
-	rel_mgr_free(&self->mgr);
-}
-
 bool
-topic_mgr_create(TopicMgr*    self,
+topic_mgr_create(Catalog*     self,
                  Tr*          tr,
                  TopicConfig* config,
                  bool         if_not_exists)
 {
 	// make sure topic does not exists
-	auto topic = topic_mgr_find(self, &config->user, &config->name, false);
-	if (topic)
+	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
+	if (rel)
 	{
 		if (! if_not_exists)
-			error("topic '%.*s': already exists", str_size(&config->name),
+			error("relation '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
 		return false;
 	}
 
 	// create topic
-	topic = topic_allocate(config);
-	rel_mgr_create(&self->mgr, tr, &topic->rel);
+	auto topic = topic_allocate(config);
+	rel_mgr_create(&self->rels, tr, &topic->rel);
 	return true;
 }
 
 void
-topic_mgr_drop_of(TopicMgr* self, Tr* tr, Topic* topic)
+topic_mgr_drop_of(Catalog* self, Tr* tr, Topic* topic)
 {
 	// drop topic by object
-	rel_mgr_drop(&self->mgr, tr, &topic->rel);
+	rel_mgr_drop(&self->rels, tr, &topic->rel);
 }
 
 bool
-topic_mgr_drop(TopicMgr* self, Tr* tr, Str* user, Str* name,
-               bool      if_exists)
+topic_mgr_drop(Catalog* self, Tr* tr, Str* user, Str* name,
+               bool     if_exists)
 {
-	auto topic = topic_mgr_find(self, user, name, false);
+	auto topic = catalog_find_topic(self, user, name, false);
 	if (! topic)
 	{
 		if (! if_exists)
@@ -109,15 +97,15 @@ static LogIf rename_if =
 };
 
 bool
-topic_mgr_rename(TopicMgr* self,
-                 Tr*       tr,
-                 Str*      user,
-                 Str*      name,
-                 Str*      user_new,
-                 Str*      name_new,
-                 bool      if_exists)
+topic_mgr_rename(Catalog* self,
+                 Tr*      tr,
+                 Str*     user,
+                 Str*     name,
+                 Str*     user_new,
+                 Str*     name_new,
+                 bool     if_exists)
 {
-	auto topic = topic_mgr_find(self, user, name, false);
+	auto topic = catalog_find_topic(self, user, name, false);
 	if (! topic)
 	{
 		if (! if_exists)
@@ -129,9 +117,9 @@ topic_mgr_rename(TopicMgr* self,
 	// only owner or superuser
 	check_ownership(tr, &topic->rel);
 
-	// ensure new topic does not exists
-	if (topic_mgr_find(self, user_new, name_new, false))
-		error("topic '%.*s': already exists", str_size(name_new),
+	// ensure other relation with the same name does not exists
+	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
+		error("relation '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
 	// update topic
@@ -176,16 +164,16 @@ static LogIf grant_if =
 };
 
 bool
-topic_mgr_grant(TopicMgr* self,
-                Tr*       tr,
-                Str*      user,
-                Str*      name,
-                Str*      to,
-                bool      grant,
-                uint32_t  perms,
-                bool      if_exists)
+topic_mgr_grant(Catalog* self,
+                Tr*      tr,
+                Str*     user,
+                Str*     name,
+                Str*     to,
+                bool     grant,
+                uint32_t perms,
+                bool     if_exists)
 {
-	auto topic = topic_mgr_find(self, user, name, false);
+	auto topic = catalog_find_topic(self, user, name, false);
 	if (! topic)
 	{
 		if (! if_exists)
@@ -214,31 +202,4 @@ topic_mgr_grant(TopicMgr* self,
 	else
 		grants_remove(grants, to, perms);
 	return true;
-}
-
-void
-topic_mgr_dump(TopicMgr* self, Buf* buf)
-{
-	rel_mgr_dump(&self->mgr, buf, 0);
-}
-
-Topic*
-topic_mgr_find(TopicMgr* self, Str* user, Str* name,
-               bool      error_if_not_exists)
-{
-	auto rel = rel_mgr_find(&self->mgr, user, name, error_if_not_exists);
-	return topic_of(rel);
-}
-
-Topic*
-topic_mgr_find_by(TopicMgr* self, Uuid* id, bool error_if_not_exists)
-{
-	auto rel = rel_mgr_find_by(&self->mgr, id, error_if_not_exists);
-	return topic_of(rel);
-}
-
-void
-topic_mgr_list(TopicMgr* self, Buf* buf, Str* user, Str* name, int flags)
-{
-	rel_mgr_list(&self->mgr, buf, user, name, flags);
 }

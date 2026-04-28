@@ -19,12 +19,11 @@ struct Sub
 	Rel        rel;
 	CdcSlot    slot;
 	Uuid       on_id;
-	Cdc*       cdc;
 	Catalog*   catalog;
 	SubConfig* config;
 };
 
-Sub* sub_allocate(SubConfig*, Catalog*, Cdc*, Uuid*);
+Sub* sub_allocate(SubConfig*, Catalog*, Uuid*);
 
 static inline Sub*
 sub_of(Rel* self)

@@ -11,23 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct TableMgr TableMgr;
-
-struct TableMgr
-{
-	RelMgr      mgr;
-	StorageMgr* storage_mgr;
-	PartMgrIf*  iface;
-	void*       iface_arg;
-};
-
-void   table_mgr_init(TableMgr*, StorageMgr*, PartMgrIf*, void*);
-void   table_mgr_free(TableMgr*);
-bool   table_mgr_create(TableMgr*, Tr*, TableConfig*, bool);
-bool   table_mgr_drop(TableMgr*, Tr*, Str*, Str*, bool);
-void   table_mgr_drop_of(TableMgr*, Tr*, Table*);
-bool   table_mgr_truncate(TableMgr*, Tr*, Str*, Str*, bool);
-void   table_mgr_dump(TableMgr*, Buf*);
-Table* table_mgr_find(TableMgr*, Str*, Str*, bool);
-Table* table_mgr_find_by(TableMgr*, Uuid*, bool);
-void   table_mgr_list(TableMgr*, Buf*, Str*, Str*, int);
+bool table_mgr_create(Catalog*, Tr*, TableConfig*, bool);
+bool table_mgr_drop(Catalog*, Tr*, Str*, Str*, bool);
+void table_mgr_drop_of(Catalog*, Tr*, Table*);
+bool table_mgr_truncate(Catalog*, Tr*, Str*, Str*, bool);

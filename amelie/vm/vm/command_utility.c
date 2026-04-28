@@ -63,7 +63,7 @@ ccreate_token(Vm* self, Op* op)
 	unpack_str(&pos, &interval);
 
 	// find user
-	auto user = user_mgr_find(&share()->db->catalog.user_mgr, &name, true);
+	auto user = catalog_find_user(&share()->db->catalog, &name, true);
 
 	// allow to create token for self or child users
 	auto user_local = &self->local->user;

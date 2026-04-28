@@ -119,7 +119,7 @@ parse_acknowledge(Stmt* self)
 	}
 
 	// subscription
-	stmt->sub = sub_mgr_find(&share()->db->catalog.sub_mgr, self->parser->user, &name->string, false);
+	stmt->sub = catalog_find_sub(&share()->db->catalog, self->parser->user, &name->string, false);
 	if (! stmt->sub)
 		stmt_error(self, name, "subscription not found");
 

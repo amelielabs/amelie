@@ -120,25 +120,27 @@ rel_mgr_drop(RelMgr* self, Tr* tr, Rel* rel)
 }
 
 void
-rel_mgr_dump(RelMgr* self, Buf* buf, int flags)
+rel_mgr_dump(RelMgr* self, RelType type, Buf* buf, int flags)
 {
 	// array
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
 		auto rel = list_at(Rel, link);
+		if (rel->type != type)
+			continue;
 		rel_show(rel, buf, flags);
 	}
 	encode_array_end(buf);
 }
 
 void
-rel_mgr_list(RelMgr* self, Buf* buf, Str* user, Str* name, int flags)
+rel_mgr_list(RelMgr* self, RelType type, Buf* buf, Str* user, Str* name, int flags)
 {
 	if (name)
 	{
 		// show rel
-		auto rel = rel_mgr_find(self, user, name, false);
+		auto rel = rel_mgr_find(self, type, user, name, false);
 		if (rel)
 			rel_show(rel, buf, flags);
 		else
@@ -153,18 +155,22 @@ rel_mgr_list(RelMgr* self, Buf* buf, Str* user, Str* name, int flags)
 		auto rel = list_at(Rel, link);
 		if (user && !str_compare_case(rel->user, user))
 			continue;
+		if (rel->type != type)
+			continue;
 		rel_show(rel, buf, flags);
 	}
 	encode_array_end(buf);
 }
 
 Rel*
-rel_mgr_find(RelMgr* self, Str* user, Str* name,
+rel_mgr_find(RelMgr* self, RelType type, Str* user, Str* name,
              bool    error_if_not_exists)
 {
 	list_foreach(&self->list)
 	{
 		auto rel = list_at(Rel, link);
+		if (type != REL_UNDEF && rel->type != type)
+			continue;
 		if (user && !str_compare_case(rel->user, user))
 			continue;
 		if (str_compare_case(rel->name, name))
@@ -178,11 +184,13 @@ rel_mgr_find(RelMgr* self, Str* user, Str* name,
 }
 
 Rel*
-rel_mgr_find_by(RelMgr* self, Uuid* id, bool error_if_not_exists)
+rel_mgr_find_by(RelMgr* self, RelType type, Uuid* id, bool error_if_not_exists)
 {
 	list_foreach(&self->list)
 	{
 		auto rel = list_at(Rel, link);
+		if (type != REL_UNDEF && rel->type != type)
+			continue;
 		if (rel->id && uuid_is(rel->id, id))
 			return rel;
 	}

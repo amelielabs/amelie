@@ -37,7 +37,7 @@ service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
 	defer(unlock, lock_catalog);
 
 	// find table
-	auto table = table_mgr_find(&self->catalog->table_mgr, &name_user, &name, false);
+	auto table = catalog_find_table(self->catalog, &name_user, &name, false);
 	if (! table)
 		error("table '%.*s': not exists", str_size(&name),
 		      str_of(&name));

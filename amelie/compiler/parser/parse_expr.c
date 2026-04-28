@@ -341,8 +341,7 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 	if (! func->fn)
 	{
 		// find udf
-		func->udf = udf_mgr_find(&share()->db->catalog.udf_mgr,
-		                         &user, &name, false);
+		func->udf = catalog_find_udf(&share()->db->catalog, &user, &name, false);
 		if (! func->udf)
 			stmt_error(self, path, "function not found");
 

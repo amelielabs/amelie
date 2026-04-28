@@ -33,14 +33,16 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 	auto pos = record_data(record);
 	if (cmd->cmd == CMD_PUBLISH)
 	{
-		auto topic = topic_mgr_find_by(&db->catalog.topic_mgr, &cmd->id, true);
+		auto rel = catalog_find_by(&db->catalog, REL_TOPIC, &cmd->id, true);
+		auto topic = topic_of(rel);
 		publish(topic, &dtr->tr, pos, data_sizeof(pos));
 		return;
 	}
 
 	if (cmd->cmd == CMD_ACK)
 	{
-		auto sub = sub_mgr_find_by(&db->catalog.sub_mgr, &cmd->id, true);
+		auto rel = catalog_find_by(&db->catalog, REL_SUBSCRIPTION, &cmd->id, true);
+		auto sub = sub_of(rel);
 		acknowledge(sub, &dtr->tr, pos);
 		return;
 	}
@@ -54,7 +56,8 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 		state_tsn_follow(row->tsn);
 
 		// match partition
-		auto table = table_mgr_find_by(&db->catalog.table_mgr, &cmd->id, true);
+		auto rel = catalog_find_by(&db->catalog, REL_TABLE, &cmd->id, true);
+		auto table = table_of(rel);
 		auto part  = part_mapping_map(&table->part_mgr.mapping, row);
 		if (! part)
 			error("replay: failed to find partition");

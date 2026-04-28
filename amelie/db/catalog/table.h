@@ -123,7 +123,7 @@ table_set_unlogged(Table* self, bool value)
 	self->part_arg.unlogged = value;
 }
 
-static inline Table*
+always_inline static inline Table*
 table_of(Rel* self)
 {
 	return (Table*)self;

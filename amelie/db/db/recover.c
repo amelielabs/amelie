@@ -38,7 +38,7 @@ recover_init(Recover* self, Db* db, bool write_wal)
 	// set main user
 	Str main;
 	str_set(&main, "main", 4);
-	self->main      = user_mgr_find(&db->catalog.user_mgr, &main, true);
+	self->main      = catalog_find_user(&db->catalog, &main, true);
 
 	tr_init(&self->tr);
 	write_init(&self->write);
@@ -66,11 +66,14 @@ recover_map(Recover*   self,
             Row*       row,
             Table**    table)
 {
+	*table = NULL;
+
 	// find table by id and map partition
-	auto db = self->db;
-	*table = table_mgr_find_by(&db->catalog.table_mgr, &cmd->id, false);
-	if  (! *table)
+	auto db  = self->db;
+	auto rel = catalog_find_by(&db->catalog, REL_TABLE, &cmd->id, false);
+	if  (! rel)
 		return NULL;
+	*table = table_of(rel);
 	auto part = part_mapping_map(&(*table)->part_mgr.mapping, row);
 	if (! part)
 		error("recover: partition mapping failed");
@@ -153,19 +156,25 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 	case CMD_PUBLISH:
 	{
 		// find topic
-		auto topic = topic_mgr_find_by(&db->catalog.topic_mgr, &cmd->id, false);
+		auto rel = catalog_find_by(&db->catalog, REL_TOPIC, &cmd->id, false);
 		auto size = data_sizeof(*pos);
-		if  (topic)
+		if  (rel)
+		{
+			auto topic = topic_of(rel);
 			publish(topic, tr, *pos, size);
+		}
 		*pos += size;
 		break;
 	}
 	case CMD_ACK:
 	{
 		// find and update subscription
-		auto sub = sub_mgr_find_by(&db->catalog.sub_mgr, &cmd->id, false);
-		if  (sub)
+		auto rel = catalog_find_by(&db->catalog, REL_SUBSCRIPTION, &cmd->id, false);
+		if  (rel)
+		{
+			auto sub = sub_of(rel);
 			acknowledge(sub, tr, *pos);
+		}
 		data_skip(pos);
 		break;
 	}

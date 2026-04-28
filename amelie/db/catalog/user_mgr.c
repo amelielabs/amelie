@@ -20,27 +20,15 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-void
-user_mgr_init(UserMgr* self)
-{
-	rel_mgr_init(&self->mgr);
-}
-
-void
-user_mgr_free(UserMgr* self)
-{
-	rel_mgr_free(&self->mgr);
-}
-
 bool
-user_mgr_create(UserMgr*    self,
+user_mgr_create(Catalog*    self,
                 Tr*         tr,
                 UserConfig* config,
                 bool        if_not_exists)
 {
 	// make sure user does not exists
-	auto current = user_mgr_find(self, &config->name, false);
-	if (current)
+	auto user = catalog_find_user(self, &config->name, false);
+	if (user)
 	{
 		if (! if_not_exists)
 			error("user '%.*s': already exists", str_size(&config->name),
@@ -49,8 +37,8 @@ user_mgr_create(UserMgr*    self,
 	}
 
 	// create user
-	auto user = user_allocate(config);
-	rel_mgr_create(&self->mgr, tr, &user->rel);
+	user = user_allocate(config);
+	rel_mgr_create(&self->users, tr, &user->rel);
 
 	// update timestamps
 	user_sync(user);
@@ -58,12 +46,12 @@ user_mgr_create(UserMgr*    self,
 }
 
 bool
-user_mgr_drop(UserMgr* self,
+user_mgr_drop(Catalog* self,
               Tr*      tr,
               Str*     name,
               bool     if_exists)
 {
-	auto user = user_mgr_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -81,7 +69,7 @@ user_mgr_drop(UserMgr* self,
 		      str_of(name));
 
 	// drop user by object
-	rel_mgr_drop(&self->mgr, tr, &user->rel);
+	rel_mgr_drop(&self->users, tr, &user->rel);
 	return true;
 }
 
@@ -111,13 +99,13 @@ static LogIf rename_if =
 };
 
 bool
-user_mgr_rename(UserMgr* self,
+user_mgr_rename(Catalog* self,
                 Tr*      tr,
                 Str*     name,
                 Str*     name_new,
                 bool     if_exists)
 {
-	auto user = user_mgr_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -135,7 +123,7 @@ user_mgr_rename(UserMgr* self,
 		       str_of(name));
 
 	// ensure new user does not exists
-	if (user_mgr_find(self, name_new, false))
+	if (catalog_find_user(self, name_new, false))
 		error("user '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
@@ -175,14 +163,14 @@ static LogIf grant_if =
 };
 
 bool
-user_mgr_grant(UserMgr* self,
+user_mgr_grant(Catalog* self,
                Tr*      tr,
                Str*     name,
                bool     grant,
                uint32_t perms,
                bool     if_exists)
 {
-	auto user = user_mgr_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -257,13 +245,13 @@ static LogIf revoke_if =
 };
 
 bool
-user_mgr_revoke(UserMgr* self,
+user_mgr_revoke(Catalog* self,
                 Tr*      tr,
                 Str*     name,
                 Str*     revoked_at,
                 bool     if_exists)
 {
-	auto user = user_mgr_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -287,23 +275,4 @@ user_mgr_revoke(UserMgr* self,
 	// update timestamps
 	user_sync(user);
 	return true;
-}
-
-void
-user_mgr_dump(UserMgr* self, Buf* buf)
-{
-	rel_mgr_dump(&self->mgr, buf, FSECRETS);
-}
-
-User*
-user_mgr_find(UserMgr* self, Str* name, bool error_if_not_exists)
-{
-	auto rel = rel_mgr_find(&self->mgr, NULL, name, error_if_not_exists);
-	return user_of(rel);
-}
-
-void
-user_mgr_list(UserMgr* self, Buf* buf, Str* name, int flags)
-{
-	rel_mgr_list(&self->mgr, buf, NULL, name, flags);
 }

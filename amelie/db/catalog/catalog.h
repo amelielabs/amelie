@@ -24,23 +24,20 @@ struct CatalogIf
 
 struct Catalog
 {
-	UserMgr    user_mgr;
+	RelMgr     users;
+	RelMgr     rels;
 	StorageMgr storage_mgr;
-	TableMgr   table_mgr;
-	BranchMgr  branch_mgr;
-	UdfMgr     udf_mgr;
-	TopicMgr   topic_mgr;
-	SubMgr     sub_mgr;
+	Columns    cdc_columns;
+	Cdc*       cdc;
+	PartMgrIf* iface_part;
+	void*      iface_part_arg;
 	CatalogIf* iface;
 	void*      iface_arg;
 };
 
-void   catalog_init(Catalog*, CatalogIf*, void*, PartMgrIf*, void*, Cdc*);
-void   catalog_free(Catalog*);
-void   catalog_open(Catalog*, bool);
-void   catalog_close(Catalog*);
-bool   catalog_execute(Catalog*, Tr*, uint8_t*, int);
-Buf*   catalog_status(Catalog*);
-Rel*   catalog_find(Catalog*, Str*, Str*, bool);
-Rel*   catalog_find_by(Catalog*, Uuid*, bool);
-Table* catalog_find_table(Catalog*, Str*, Str*, bool);
+void catalog_init(Catalog*, CatalogIf*, void*, PartMgrIf*, void*, Cdc*);
+void catalog_free(Catalog*);
+void catalog_open(Catalog*, bool);
+void catalog_close(Catalog*);
+bool catalog_execute(Catalog*, Tr*, uint8_t*, int);
+void catalog_status(Catalog*, Buf*);

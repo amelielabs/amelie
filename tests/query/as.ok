@@ -10,7 +10,7 @@ select 1 AS name;
 1
 # test: select column as from
 create table test (id int primary key);
-error: table 'test': already exists
+error: relation 'test': already exists
 select id as x from test;
 1
 2

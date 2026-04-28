@@ -12,12 +12,12 @@
 //
 
 // alter table
-bool table_mgr_rename(TableMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
-bool table_mgr_grant(TableMgr*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
-bool table_mgr_set_identity(TableMgr*, Tr*, Str*, Str*, int64_t, bool);
+bool table_mgr_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool);
+bool table_mgr_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
+bool table_mgr_set_identity(Catalog*, Tr*, Str*, Str*, int64_t, bool);
 
 // alter column
-bool table_mgr_column_rename(TableMgr*, Tr*, Str*, Str*, Str*, Str*, bool, bool);
-bool table_mgr_column_add(TableMgr*, Tr*, Str*, Str*, Column*, bool, bool);
-bool table_mgr_column_drop(TableMgr*, Tr*, Str*, Str*, Str*, bool, bool);
-bool table_mgr_column_set(TableMgr*, Tr*, Str*, Str*, Str*, Str*, int, bool, bool);
+bool table_mgr_column_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool, bool);
+bool table_mgr_column_add(Catalog*, Tr*, Str*, Str*, Column*, bool, bool);
+bool table_mgr_column_drop(Catalog*, Tr*, Str*, Str*, Str*, bool, bool);
+bool table_mgr_column_set(Catalog*, Tr*, Str*, Str*, Str*, Str*, int, bool, bool);
