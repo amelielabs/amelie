@@ -46,6 +46,8 @@ enum
 	SHOW_TOPIC,
 	SHOW_SUBSCRIPTIONS,
 	SHOW_SUBSCRIPTION,
+	SHOW_RELS,
+	SHOW_REL,
 	SHOW_STATE,
 	SHOW_ALL,
 	SHOW_CONFIG,
@@ -92,6 +94,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_SUBSCRIPTION,  "subscription",  12, true,  false },
 	{ SHOW_SUBSCRIPTIONS, "subs",          4,  false, false },
 	{ SHOW_SUBSCRIPTION,  "sub",           3,  true,  false },
+	{ SHOW_RELS,          "rels",          4,  false, false },
+	{ SHOW_REL,           "rel",           3,  true,  false },
 	{ SHOW_STATE,         "state",         5,  false, false },
 	{ SHOW_ALL,           "all",           3,  false, false },
 	{ SHOW_CONFIG,        "config",        6,  false, false },
@@ -360,6 +364,16 @@ fn_show(Fn* self)
 	case SHOW_SUBSCRIPTION:
 	{
 		rel_mgr_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, name, flags);
+		break;
+	}
+	case SHOW_RELS:
+	{
+		rel_mgr_list(&catalog->rels, REL_UNDEF, buf, user, NULL, flags);
+		break;
+	}
+	case SHOW_REL:
+	{
+		rel_mgr_list(&catalog->rels, REL_UNDEF, buf, user, name, flags);
 		break;
 	}
 	case SHOW_STATE:

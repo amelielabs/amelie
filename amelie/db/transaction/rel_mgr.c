@@ -153,9 +153,9 @@ rel_mgr_list(RelMgr* self, RelType type, Buf* buf, Str* user, Str* name, int fla
 	list_foreach(&self->list)
 	{
 		auto rel = list_at(Rel, link);
-		if (user && !str_compare_case(rel->user, user))
+		if (type != REL_UNDEF && rel->type != type)
 			continue;
-		if (rel->type != type)
+		if (user && !str_compare_case(rel->user, user))
 			continue;
 		rel_show(rel, buf, flags);
 	}
