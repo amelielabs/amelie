@@ -164,10 +164,15 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		return target;
 	}
 
-	// table
-	auto table = catalog_find_table(&share()->db->catalog, &user, &name, false);
-	if (table)
+	// find relation
+	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, &user, &name, false);
+	if (! rel)
+		stmt_error(self, path, "relation not found");
+
+	switch (rel->type) {
+	case REL_TABLE:
 	{
+		auto table = table_of(rel);
 		target->type          = TARGET_TABLE;
 		target->from_lock     = lock;
 		target->from_table    = table;
@@ -189,13 +194,11 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 			if (! target->from_index)
 				stmt_error(self, name_index, "index not found");
 		}
-		return target;
+		break;
 	}
-
-	// branch
-	auto branch = catalog_find_branch(&share()->db->catalog, &user, &name, false);
-	if (branch)
+	case REL_BRANCH:
 	{
+		auto branch = branch_of(rel);
 		auto table = branch->table;
 		target->type          = TARGET_TABLE;
 		target->from_lock     = lock;
@@ -207,24 +210,25 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		// tracking and permissions check
 		access_add(&self->parser->program->access, &table->rel, lock, PERM_SELECT);
 		access_add(&self->parser->program->access, &branch->rel, LOCK_NONE, perms);
-		return target;
+		break;
 	}
-
-	// subscription
-	auto sub = catalog_find_sub(&share()->db->catalog, &user, &name, false);
-	if (sub)
+	case REL_SUBSCRIPTION:
 	{
+		auto sub = sub_of(rel);
 		target->type     = TARGET_SUB;
 		target->from_sub = sub;
 		target->columns  = &share()->db->catalog.cdc_columns;
 		str_set_str(&target->name, &sub->config->name);
 		access_add(&self->parser->program->access, &sub->rel,
 		           LOCK_SHARED, PERM_SELECT);
-		return target;
+		break;
+	}
+	default:
+		stmt_error(self, path, "relation cannot be used here");
+		break;
 	}
 
-	stmt_error(self, path, "relation not found");
-	return NULL;
+	return target;
 }
 
 Target*
