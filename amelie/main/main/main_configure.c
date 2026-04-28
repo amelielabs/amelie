@@ -56,7 +56,10 @@ main_configure(Main* self, Opts* opts)
 		} else
 		{
 			// use as directory path
-			opt_string_set(&endpoint->path, &name);
+			if (str_is_prefix(&name, "/", 1)  ||
+			    str_is_prefix(&name, "./", 2) ||
+			    str_is_prefix(&name, "../", 3))
+				opt_string_set(&endpoint->path, &name);
 		}
 		arg = 1;
 	}
