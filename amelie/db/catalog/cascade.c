@@ -82,6 +82,9 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
 		error("user '%.*s': system user cannot be dropped", str_size(name),
 		      str_of(name));
 
+	// invalidate auth caches
+	self->iface->user_invalidate(self, user);
+
 	// validate or drop all objects matching the user
 	cascade_user_drop_execute(self, tr, name, cascade);
 

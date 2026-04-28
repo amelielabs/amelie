@@ -60,6 +60,9 @@ sub_allocate(SubConfig* config, Catalog* catalog, Uuid* id)
 bool
 sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 {
+	// PERM_CREATE_SUB
+	check_user(tr, PERM_CREATE_SUB);
+
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
 	if (rel)
 	{

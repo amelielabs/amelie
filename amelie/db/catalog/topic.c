@@ -60,6 +60,9 @@ topic_create(Catalog*     self,
              TopicConfig* config,
              bool         if_not_exists)
 {
+	// PERM_CREATE_TOPIC
+	check_user(tr, PERM_CREATE_TOPIC);
+
 	// make sure topic does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
 	if (rel)

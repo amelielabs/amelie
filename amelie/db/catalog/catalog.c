@@ -202,56 +202,17 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	switch (cmd) {
 	case DDL_GRANT:
 	{
-		// PERM_GRANT
-		check_user(tr, PERM_GRANT);
-
 		Str     user;
 		Str     name;
 		Str     to;
 		bool    grant;
 		int64_t perms;
 		grant_op_grant_read(op, &user, &name, &to, &grant, &perms);
-
-		// user grants
-		if (str_empty(&user))
-		{
-			// PERM_SYSTEM for system wide grants
-			if (((perms & PERM_SYSTEM) > 0) ||
-			    ((perms & PERM_CREATE_USER) > 0))
-				check_user(tr, PERM_SYSTEM);
-			write = user_grant(self, tr, &to, grant, perms, 0);
-			break;
-		}
-
-		// relations
-		auto rel = catalog_find(self, REL_UNDEF, &user, &name, true);
-		switch (rel->type) {
-		case REL_TABLE:
-			write = table_grant(self, tr, &user, &name, &to, grant, perms, 0);
-			break;
-		case REL_BRANCH:
-			write = branch_grant(self, tr, &user, &name, &to, grant, perms, 0);
-			break;
-		case REL_UDF:
-			write = udf_grant(self, tr, &user, &name, &to, grant, perms, 0);
-			break;
-		case REL_TOPIC:
-			write = topic_grant(self, tr, &user, &name, &to, grant, perms, 0);
-			break;
-		case REL_SUBSCRIPTION:
-			write = sub_grant(self, tr, &user, &name, &to, grant, perms, 0);
-			break;
-		default:
-			abort();
-			break;
-		}
+		write = catalog_grant(self, tr, &user, &name, &to, grant, perms);
 		break;
 	}
 	case DDL_USER_CREATE:
 	{
-		// PERM_CREATE_USER
-		check_user(tr, PERM_CREATE_USER);
-
 		auto config = user_op_create_read(op);
 		defer(user_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
@@ -263,11 +224,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str  name;
 		bool cascade;
 		user_op_drop_read(op, &name, &cascade);
-
-		// invalidate auth caches
-		auto user = catalog_find_user(self, &name, false);
-		if (user)
-			self->iface->user_invalidate(self, user);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = cascade_user_drop(self, tr, &name, cascade, if_exists);
@@ -288,11 +244,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name;
 		Str revoked_at;
 		user_op_revoke_read(op, &name, &revoked_at);
-
-		// invalidate auth caches
-		auto user = catalog_find_user(self, &name, false);
-		if (user)
-			self->iface->user_invalidate(self, user);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = user_revoke(self, tr, &name, &revoked_at, if_exists);
@@ -334,9 +285,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_CREATE:
 	{
-		// PERM_CREATE_TABLE
-		check_user(tr, PERM_CREATE_TABLE);
-
 		auto config = table_op_create_read(op);
 		defer(table_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
@@ -555,9 +503,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_BRANCH_CREATE:
 	{
-		// PERM_CREATE_BRANCH
-		check_user(tr, PERM_CREATE_BRANCH);
-
 		auto config = branch_op_create_read(op);
 		defer(branch_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
@@ -594,9 +539,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_UDF_CREATE:
 	{
-		// PERM_CREATE_FUNCTION
-		check_user(tr, PERM_CREATE_FUNCTION);
-
 		bool replace;
 		auto config = udf_op_create_read(op, &replace);
 		defer(udf_config_free, config);
@@ -638,9 +580,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TOPIC_CREATE:
 	{
-		// PERM_CREATE_TOPIC
-		check_user(tr, PERM_CREATE_TOPIC);
-
 		auto config = topic_op_create_read(op);
 		defer(topic_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
@@ -668,7 +607,8 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name_new;
 		topic_op_rename_read(op, &user, &name, &user_new, &name_new);
 
-		// ensure no other udfs depend on the topic catalog_validate_udfs(self, &user, &name);
+		// ensure no other udfs depend on the topic
+		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = topic_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
@@ -676,9 +616,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_SUB_CREATE:
 	{
-		// PERM_CREATE_SUB
-		check_user(tr, PERM_CREATE_SUB);
-
 		auto config = sub_op_create_read(op);
 		defer(sub_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);

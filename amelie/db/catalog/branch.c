@@ -59,6 +59,9 @@ branch_create(Catalog*      self,
               BranchConfig* config,
               bool          if_not_exists)
 {
+	// PERM_CREATE_BRANCH
+	check_user(tr, PERM_CREATE_BRANCH);
+
 	// make sure branch does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
 	if (rel)

@@ -164,6 +164,9 @@ udf_create(Catalog*   self,
            UdfConfig* config,
            bool       or_replace)
 {
+	// PERM_CREATE_FUNCTION
+	check_user(tr, PERM_CREATE_FUNCTION);
+
 	// find existing udf
 	auto udf = catalog_find_udf(self, &config->user, &config->name, false);
 	if (udf)

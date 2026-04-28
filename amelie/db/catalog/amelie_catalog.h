@@ -14,9 +14,6 @@
 // ddl
 #include "catalog/ddl.h"
 
-// grant
-#include "catalog/grant_op.h"
-
 // storage
 #include "catalog/storage_op.h"
 
@@ -55,6 +52,10 @@
 #include "catalog/sub_op.h"
 #include "catalog/sub.h"
 #include "catalog/acknowledge.h"
+
+// grant
+#include "catalog/grant_op.h"
+#include "catalog/grant.h"
 
 // catalog
 #include "catalog/catalog.h"

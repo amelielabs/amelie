@@ -60,6 +60,12 @@ user_create(Catalog*    self,
             UserConfig* config,
             bool        if_not_exists)
 {
+	// PERM_CREATE_USER
+	//
+	// (skip user check on bootstrap)
+	if (tr->user)
+		check_user(tr, PERM_CREATE_USER);
+
 	// make sure user does not exists
 	auto user = catalog_find_user(self, &config->name, false);
 	if (user)
@@ -296,6 +302,9 @@ user_revoke(Catalog* self,
 
 	// only owner or superuser
 	check_ownership_user(tr, &user->rel);
+
+	// invalidate auth caches
+	self->iface->user_invalidate(self, user);
 
 	// update user
 	log_ddl(&tr->log, &revoke_if, NULL, &user->rel);
