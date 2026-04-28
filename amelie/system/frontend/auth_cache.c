@@ -65,7 +65,7 @@ void
 auth_cache_add(AuthCache* self, User* user, Str* digest, int64_t expire)
 {
 	auto node = (AuthCacheNode*)am_malloc(sizeof(AuthCacheNode));
-	hashtable_node_init(&node->node);
+	hashnode_init(&node->node);
 	node->node.hash = hash_murmur3_32(str_u8(digest), str_size(digest), 0);
 	node->user   = user;
 	node->expire = expire;
@@ -100,7 +100,7 @@ auth_cache_invalidate(AuthCache* self, User* user)
 }
 
 hot static inline bool
-auth_cache_cmp(HashtableNode* node, void* ptr)
+auth_cache_cmp(Hashnode* node, void* ptr)
 {
 	auto at = container_of(node, AuthCacheNode, node);
 	return str_compare(&at->digest, ptr);

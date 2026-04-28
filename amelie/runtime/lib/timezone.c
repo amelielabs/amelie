@@ -24,7 +24,7 @@ timezone_create(Str* name, char* path)
 
 	str_init(&self->name);
 	str_copy(&self->name, name);
-	hashtable_node_init(&self->node);
+	hashnode_init(&self->node);
 
 	// Based on RFC 8536: The Time Zone Information Format (TZif)
 

@@ -36,9 +36,8 @@ rename_if_abort(Log* self, LogOp* op)
 	unpack_str(&pos, &user);
 	unpack_str(&pos, &name);
 
-	auto table = table_of(op->rel);
-	table_config_set_user(table->config, &user);
-	table_config_set_name(table->config, &name);
+	Catalog* catalog = op->iface_arg;
+	rel_mgr_rename(&catalog->rels, op->rel, &user, &name);
 }
 
 static LogIf rename_if =
@@ -74,19 +73,14 @@ table_rename(Catalog* self,
 		      str_of(name_new));
 
 	// update table
-	log_ddl(&tr->log, &rename_if, NULL, &table->rel);
+	log_ddl(&tr->log, &rename_if, self, &table->rel);
 
 	// save previous name
 	encode_str(&tr->log.data, &table->config->user);
 	encode_str(&tr->log.data, &table->config->name);
 
-	// set new table name
-	if (! str_compare_case(&table->config->user, user_new))
-		table_config_set_user(table->config, user_new);
-
-	if (! str_compare_case(&table->config->name, name_new))
-		table_config_set_name(table->config, name_new);
-
+	// set new name
+	rel_mgr_rename(&self->rels, &table->rel, user_new, name_new);
 	return true;
 }
 

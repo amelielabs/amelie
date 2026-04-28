@@ -128,8 +128,8 @@ rename_if_abort(Log* self, LogOp* op)
 	Str name;
 	unpack_str(&pos, &name);
 
-	auto user = user_of(op->rel);
-	user_config_set_name(user->config, &name);
+	Catalog* catalog = op->iface_arg;
+	rel_mgr_rename(&catalog->users, op->rel, NULL, &name);
 }
 
 static LogIf rename_if =
@@ -168,13 +168,13 @@ user_rename(Catalog* self,
 		      str_of(name_new));
 
 	// update user
-	log_ddl(&tr->log, &rename_if, NULL, &user->rel);
+	log_ddl(&tr->log, &rename_if, self, &user->rel);
 
 	// save name for rollback
 	encode_str(&tr->log.data, name);
 
 	// set new name
-	user_config_set_name(user->config, name_new);
+	rel_mgr_rename(&self->users, &user->rel, NULL, name_new);
 	return true;
 }
 

@@ -154,9 +154,8 @@ rename_if_abort(Log* self, LogOp* op)
 	unpack_str(&pos, &user);
 	unpack_str(&pos, &name);
 
-	auto branch = branch_of(op->rel);
-	branch_config_set_user(branch->config, &user);
-	branch_config_set_name(branch->config, &name);
+	Catalog* catalog = op->iface_arg;
+	rel_mgr_rename(&catalog->rels, op->rel, &user, &name);
 }
 
 static LogIf rename_if =
@@ -199,12 +198,7 @@ branch_rename(Catalog* self,
 	encode_str(&tr->log.data, &branch->config->name);
 
 	// set new name
-	if (! str_compare_case(&branch->config->user, user_new))
-		branch_config_set_user(branch->config, user_new);
-
-	if (! str_compare_case(&branch->config->name, name_new))
-		branch_config_set_name(branch->config, name_new);
-
+	rel_mgr_rename(&self->rels, &branch->rel, user_new, name_new);
 	return true;
 }
 

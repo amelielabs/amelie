@@ -16,10 +16,10 @@ typedef struct AuthCache     AuthCache;
 
 struct AuthCacheNode
 {
-	HashtableNode node;
-	User*         user;
-	int64_t       expire;
-	Str           digest;
+	Hashnode node;
+	User*    user;
+	int64_t  expire;
+	Str      digest;
 };
 
 struct AuthCache

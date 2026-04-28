@@ -13,7 +13,7 @@
 
 // data structures
 #include "lib/rbtree.h"
-#include "lib/hash_table.h"
+#include "lib/hashtable.h"
 
 // misc
 #include "lib/misc.h"

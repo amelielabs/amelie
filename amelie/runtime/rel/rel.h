@@ -39,6 +39,9 @@ struct Rel
 	Grants*  grants;
 	RelShow  show;
 	RelFree  free;
+	Hashnode link_ht;
+	Hashnode link_htid;
+	List     link;
 
 	// lock manager
 	Spinlock lock;
@@ -46,7 +49,6 @@ struct Rel
 	int      lock_set[LOCK_MAX];
 	List     lock_wait;
 	int      lock_wait_count;
-	List     link;
 };
 
 static inline void
@@ -62,9 +64,11 @@ rel_init(Rel* self, RelType type)
 	self->lock_order      = 0;
 	self->lock_wait_count = 0;
 	spinlock_init(&self->lock);
+	hashnode_init(&self->link_ht);
+	hashnode_init(&self->link_htid);
+	list_init(&self->link);
 	memset(self->lock_set, 0, sizeof(self->lock_set));
 	list_init(&self->lock_wait);
-	list_init(&self->link);
 }
 
 static inline void

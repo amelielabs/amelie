@@ -122,9 +122,8 @@ rename_if_abort(Log* self, LogOp* op)
 	unpack_str(&pos, &user);
 	unpack_str(&pos, &name);
 
-	auto topic = topic_of(op->rel);
-	topic_config_set_user(topic->config, &user);
-	topic_config_set_name(topic->config, &name);
+	Catalog* catalog = op->iface_arg;
+	rel_mgr_rename(&catalog->rels, op->rel, &user, &name);
 }
 
 static LogIf rename_if =
@@ -167,12 +166,7 @@ topic_rename(Catalog* self,
 	encode_str(&tr->log.data, &topic->config->name);
 
 	// set new name
-	if (! str_compare_case(&topic->config->user, user_new))
-		topic_config_set_user(topic->config, user_new);
-
-	if (! str_compare_case(&topic->config->name, name_new))
-		topic_config_set_name(topic->config, name_new);
-
+	rel_mgr_rename(&self->rels, &topic->rel, user_new, name_new);
 	return true;
 }
 

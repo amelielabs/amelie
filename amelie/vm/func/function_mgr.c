@@ -67,7 +67,7 @@ function_mgr_del(FunctionMgr* self, Function* func)
 }
 
 hot static inline bool
-function_mgr_cmp(HashtableNode* node, void* ptr)
+function_mgr_cmp(Hashnode* node, void* ptr)
 {
 	Str* name = ptr;
 	auto func = container_of(node, Function, link_ht);

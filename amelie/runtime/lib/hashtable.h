@@ -11,12 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct HashtableNode HashtableNode;
-typedef struct Hashtable     Hashtable;
+typedef struct Hashnode  Hashnode;
+typedef struct Hashtable Hashtable;
 
-typedef bool (*HashtableCompare)(HashtableNode*, void*);
+typedef bool (*HashtableCompare)(Hashnode*, void*);
 
-struct HashtableNode
+struct Hashnode
 {
 	uint32_t hash;
 	uint32_t pos;
@@ -30,7 +30,7 @@ struct Hashtable
 };
 
 static inline void
-hashtable_node_init(HashtableNode* self)
+hashnode_init(Hashnode* self)
 {
 	self->hash = 0;
 	self->pos  = 0;
@@ -54,7 +54,7 @@ hashtable_free(Hashtable* self)
 static inline void
 hashtable_create(Hashtable* self, int to_allocate)
 {
-	int size = sizeof(HashtableNode*) * to_allocate;
+	int size = sizeof(Hashnode*) * to_allocate;
 	buf_reserve(&self->buf, size);
 	memset(self->buf.start, 0, size);
 	buf_advance(&self->buf, size);
@@ -69,10 +69,10 @@ hashtable_created(Hashtable* self)
 }
 
 hot static inline void
-hashtable_set(Hashtable* self, HashtableNode* node)
+hashtable_set(Hashtable* self, Hashnode* node)
 {
 	uint32_t pos = node->hash % self->size;
-	auto index = (HashtableNode**)(self->buf.start);
+	auto index = (Hashnode**)(self->buf.start);
 	for (;;)
 	{
 		if (index[pos] == NULL)
@@ -88,22 +88,25 @@ hashtable_set(Hashtable* self, HashtableNode* node)
 }
 
 hot static inline void
-hashtable_delete(Hashtable* self, HashtableNode* node)
+hashtable_delete(Hashtable* self, Hashnode* node)
 {
-	auto index = (HashtableNode**)(self->buf.start);
+	auto index = (Hashnode**)(self->buf.start);
 	assert(index[node->pos] == node);
 	index[node->pos] = NULL;
 	self->count--;
 }
 
-hot static inline HashtableNode*
+hot static inline Hashnode*
 hashtable_get(Hashtable*       self,
               uint32_t         hash,
               HashtableCompare compare,
               void*            compare_arg)
 {
+	if (unlikely(! self->count))
+		return NULL;
+
 	uint32_t pos = hash % self->size;
-	auto index = (HashtableNode**)(self->buf.start);
+	auto index = (Hashnode**)(self->buf.start);
 	for (;;)
 	{
 		auto current = index[pos];
@@ -138,7 +141,7 @@ hashtable_reserve(Hashtable* self)
 	hashtable_init(&new_ht);
 	hashtable_create(&new_ht, self->size * 2);
 
-	auto index = (HashtableNode**)(self->buf.start);
+	auto index = (Hashnode**)(self->buf.start);
 	int pos = 0;
 	while (pos < self->size)
 	{
@@ -151,18 +154,18 @@ hashtable_reserve(Hashtable* self)
 	*self = new_ht;
 }
 
-static inline HashtableNode*
+static inline Hashnode*
 hashtable_at(Hashtable* self, int pos)
 {
 	assert(pos < self->size);
-	auto index = (HashtableNode**)(self->buf.start);
+	auto index = (Hashnode**)(self->buf.start);
 	return index[pos];
 }
 
 hot static inline int
 hashtable_next(Hashtable* self, int pos)
 {
-	auto index = (HashtableNode**)(self->buf.start);
+	auto index = (Hashnode**)(self->buf.start);
 	for (pos++; pos < self->size; pos++)
 		if (index[pos])
 			return pos;

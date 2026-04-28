@@ -26,12 +26,12 @@ enum
 
 struct Function
 {
-	Str           name;
-	int           type;
-	int           flags;
-	FunctionMain  function;
-	List          link;
-	HashtableNode link_ht;
+	Str          name;
+	int          type;
+	int          flags;
+	FunctionMain function;
+	List         link;
+	Hashnode     link_ht;
 };
 
 static inline Function*
@@ -45,7 +45,7 @@ function_allocate(int          type,
 	self->flags    = FN_CONST;
 	str_set_cstr(&self->name, name);
 	list_init(&self->link);
-	hashtable_node_init(&self->link_ht);
+	hashnode_init(&self->link_ht);
 	return self;
 }
 

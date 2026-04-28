@@ -238,9 +238,8 @@ rename_if_abort(Log* self, LogOp* op)
 	unpack_str(&pos, &user);
 	unpack_str(&pos, &name);
 
-	auto udf = udf_of(op->rel);
-	udf_config_set_user(udf->config, &user);
-	udf_config_set_name(udf->config, &name);
+	Catalog* catalog = op->iface_arg;
+	rel_mgr_rename(&catalog->rels, op->rel, &user, &name);
 }
 
 static LogIf rename_if =
@@ -283,12 +282,7 @@ udf_rename(Catalog* self,
 	encode_str(&tr->log.data, &udf->config->name);
 
 	// set new name
-	if (! str_compare_case(&udf->config->user, user_new))
-		udf_config_set_user(udf->config, user_new);
-
-	if (! str_compare_case(&udf->config->name, name_new))
-		udf_config_set_name(udf->config, name_new);
-
+	rel_mgr_rename(&self->rels, &udf->rel, user_new, name_new);
 	return true;
 }
 

@@ -94,8 +94,8 @@ rename_if_abort(Log* self, LogOp* op)
 	Str name;
 	unpack_str(&pos, &name);
 
-	auto storage = storage_of(op->rel);
-	storage_config_set_name(storage->config, &name);
+	StorageMgr* mgr = op->iface_arg;
+	rel_mgr_rename(&mgr->mgr, op->rel, NULL, &name);
 }
 
 static LogIf rename_if =
@@ -134,13 +134,13 @@ storage_mgr_rename(StorageMgr* self,
 		      str_of(name_new));
 
 	// update storage
-	log_ddl(&tr->log, &rename_if, NULL, &storage->rel);
+	log_ddl(&tr->log, &rename_if, self, &storage->rel);
 
 	// save name for rollback
 	encode_str(&tr->log.data, name);
 
 	// set new name
-	storage_config_set_name(storage->config, name_new);
+	rel_mgr_rename(&self->mgr, &storage->rel, NULL, name_new);
 	return true;
 }
 

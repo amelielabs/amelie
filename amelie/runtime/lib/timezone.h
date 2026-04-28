@@ -42,7 +42,7 @@ struct Timezone
 	uint32_t*      transition_times;
 	uint8_t*       transition_types;
 	TimezoneTime*  times;
-	HashtableNode  node;
+	Hashnode       node;
 };
 
 Timezone*     timezone_create(Str*, char*);

@@ -144,7 +144,7 @@ timezone_mgr_open(TimezoneMgr* self)
 }
 
 hot static inline bool
-timezone_cmp(HashtableNode* node, void* ptr)
+timezone_cmp(Hashnode* node, void* ptr)
 {
 	auto tz = container_of(node, Timezone, node);
 	Str* with = ptr;
