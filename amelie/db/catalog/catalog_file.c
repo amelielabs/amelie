@@ -48,7 +48,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(user_config_free, config);
 
 		// create user
-		user_mgr_create(self, tr, config, false);
+		user_create(self, tr, config, false);
 		break;
 	}
 	case RESTORE_STORAGE:
@@ -68,7 +68,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(table_config_free, config);
 
 		// create table
-		table_mgr_create(self, tr, config, false);
+		table_create(self, tr, config, false);
 		break;
 	}
 	case RESTORE_BRANCH:
@@ -78,7 +78,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(branch_config_free, config);
 
 		// create branch
-		branch_mgr_create(self, tr, config, false);
+		branch_create(self, tr, config, false);
 		break;
 	}
 	case RESTORE_UDF:
@@ -88,7 +88,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(udf_config_free, config);
 
 		// create udf
-		udf_mgr_create(self, tr, config, false);
+		udf_create(self, tr, config, false);
 
 		auto udf = catalog_find_udf(self, &config->user, &config->name, true);
 		self->iface->udf_compile(self, udf);
@@ -101,7 +101,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(topic_config_free, config);
 
 		// create topic
-		topic_mgr_create(self, tr, config, false);
+		topic_create(self, tr, config, false);
 		break;
 	}
 	case RESTORE_SUB:
@@ -111,7 +111,7 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		defer(sub_config_free, config);
 
 		// create subscription
-		sub_mgr_create(self, tr, config, false);
+		sub_create(self, tr, config, false);
 		break;
 	}
 	}

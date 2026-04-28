@@ -20,11 +20,45 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
+static inline void
+topic_free(Topic* self, bool drop)
+{
+	unused(drop);
+	topic_config_free(self->config);
+	am_free(self);
+}
+
+static inline void
+topic_show(Topic* self, Buf* buf, int flags)
+{
+	topic_config_write(self->config, buf, flags);
+}
+
+static inline Topic*
+topic_allocate(TopicConfig* config)
+{
+	auto self = (Topic*)am_malloc(sizeof(Topic));
+	self->cdc    = 0;
+	self->config = topic_config_copy(config);
+
+	// set relation
+	auto rel = &self->rel;
+	rel_init(rel, REL_TOPIC);
+	rel_set_user(rel, &self->config->user);
+	rel_set_name(rel, &self->config->name);
+	rel_set_id(rel, &self->config->id);
+	rel_set_grants(rel, &self->config->grants);
+	rel_set_show(rel, (RelShow)topic_show);
+	rel_set_free(rel, (RelFree)topic_free);
+	rel_set_rsn(rel, state_rsn_next());
+	return self;
+}
+
 bool
-topic_mgr_create(Catalog*     self,
-                 Tr*          tr,
-                 TopicConfig* config,
-                 bool         if_not_exists)
+topic_create(Catalog*     self,
+             Tr*          tr,
+             TopicConfig* config,
+             bool         if_not_exists)
 {
 	// make sure topic does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
@@ -43,15 +77,15 @@ topic_mgr_create(Catalog*     self,
 }
 
 void
-topic_mgr_drop_of(Catalog* self, Tr* tr, Topic* topic)
+topic_drop_of(Catalog* self, Tr* tr, Topic* topic)
 {
 	// drop topic by object
 	rel_mgr_drop(&self->rels, tr, &topic->rel);
 }
 
 bool
-topic_mgr_drop(Catalog* self, Tr* tr, Str* user, Str* name,
-               bool     if_exists)
+topic_drop(Catalog* self, Tr* tr, Str* user, Str* name,
+           bool     if_exists)
 {
 	auto topic = catalog_find_topic(self, user, name, false);
 	if (! topic)
@@ -65,7 +99,7 @@ topic_mgr_drop(Catalog* self, Tr* tr, Str* user, Str* name,
 	// only owner or superuser
 	check_ownership(tr, &topic->rel);
 
-	topic_mgr_drop_of(self, tr, topic);
+	topic_drop_of(self, tr, topic);
 	return true;
 }
 
@@ -97,13 +131,13 @@ static LogIf rename_if =
 };
 
 bool
-topic_mgr_rename(Catalog* self,
-                 Tr*      tr,
-                 Str*     user,
-                 Str*     name,
-                 Str*     user_new,
-                 Str*     name_new,
-                 bool     if_exists)
+topic_rename(Catalog* self,
+             Tr*      tr,
+             Str*     user,
+             Str*     name,
+             Str*     user_new,
+             Str*     name_new,
+             bool     if_exists)
 {
 	auto topic = catalog_find_topic(self, user, name, false);
 	if (! topic)
@@ -164,14 +198,14 @@ static LogIf grant_if =
 };
 
 bool
-topic_mgr_grant(Catalog* self,
-                Tr*      tr,
-                Str*     user,
-                Str*     name,
-                Str*     to,
-                bool     grant,
-                uint32_t perms,
-                bool     if_exists)
+topic_grant(Catalog* self,
+            Tr*      tr,
+            Str*     user,
+            Str*     name,
+            Str*     to,
+            bool     grant,
+            uint32_t perms,
+            bool     if_exists)
 {
 	auto topic = catalog_find_topic(self, user, name, false);
 	if (! topic)

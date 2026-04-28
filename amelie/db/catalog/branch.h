@@ -20,38 +20,11 @@ struct Branch
 	Table*        table;
 };
 
-static inline void
-branch_free(Branch* self, bool drop)
-{
-	unused(drop);
-	branch_config_free(self->config);
-	am_free(self);
-}
-
-static inline void
-branch_show(Branch* self, Buf* buf, int flags)
-{
-	branch_config_write(self->config, buf, flags);
-}
-
-static inline Branch*
-branch_allocate(BranchConfig* config)
-{
-	auto self = (Branch*)am_malloc(sizeof(Branch));
-	self->config = branch_config_copy(config);
-	self->table  = NULL;
-
-	// set relation
-	auto rel = &self->rel;
-	rel_init(rel, REL_BRANCH);
-	rel_set_user(rel, &self->config->user);
-	rel_set_name(rel, &self->config->name);
-	rel_set_grants(rel, &self->config->grants);
-	rel_set_show(rel, (RelShow)branch_show);
-	rel_set_free(rel, (RelFree)branch_free);
-	rel_set_rsn(rel, state_rsn_next());
-	return self;
-}
+bool branch_create(Catalog*, Tr*, BranchConfig*, bool);
+bool branch_drop(Catalog*, Tr*, Str*, Str*, bool);
+void branch_drop_of(Catalog*, Tr*, Branch*);
+bool branch_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool);
+bool branch_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 
 always_inline static inline Branch*
 branch_of(Rel* self)

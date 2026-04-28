@@ -24,51 +24,13 @@ struct Udf
 	UdfConfig* config;
 };
 
-static inline void
-udf_free(Udf* self, bool drop)
-{
-	unused(drop);
-	if (self->free)
-		self->free(self);
-	if (self->config)
-		udf_config_free(self->config);
-	am_free(self);
-}
+bool udf_create(Catalog*, Tr*, UdfConfig*, bool);
+bool udf_drop(Catalog*, Tr*, Str*, Str*, bool);
+void udf_drop_of(Catalog*, Tr*, Udf*);
+bool udf_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool);
+bool udf_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 
-static inline void
-udf_show(Udf* self, Buf* buf, int flags)
-{
-	udf_config_write(self->config, buf, flags);
-}
-
-static inline Udf*
-udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
-{
-	auto self = (Udf*)am_malloc(sizeof(Udf));
-	self->free     = free;
-	self->free_arg = free_arg;
-	self->data     = data;
-	self->config   = config;
-
-	// set relation
-	auto rel = &self->rel;
-	rel_init(rel, REL_UDF);
-	rel_set_user(rel, &self->config->user);
-	rel_set_name(rel, &self->config->name);
-	rel_set_grants(rel, &self->config->grants);
-	rel_set_show(rel, (RelShow)udf_show);
-	rel_set_free(rel, (RelFree)udf_free);
-	rel_set_rsn(rel, state_rsn_next());
-	return self;
-}
-
-static inline Udf*
-udf_allocate(UdfConfig* config, UdfFree free, void* free_arg)
-{
-	return udf_allocate_as(udf_config_copy(config), NULL, free, free_arg);
-}
-
-static inline Udf*
+always_inline static inline Udf*
 udf_of(Rel* self)
 {
 	return (Udf*)self;

@@ -110,7 +110,7 @@ catalog_create(Catalog* self)
 		Str created_at;
 		str_set(&created_at, ts, size);
 		user_config_set_created_at(user_config, &created_at);
-		user_mgr_create(self, &tr, user_config, false);
+		user_create(self, &tr, user_config, false);
 
 		// create main storage
 		auto storage_config = storage_config_allocate();
@@ -219,7 +219,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 			if (((perms & PERM_SYSTEM) > 0) ||
 			    ((perms & PERM_CREATE_USER) > 0))
 				check_user(tr, PERM_SYSTEM);
-			write = user_mgr_grant(self, tr, &to, grant, perms, 0);
+			write = user_grant(self, tr, &to, grant, perms, 0);
 			break;
 		}
 
@@ -227,19 +227,19 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto rel = catalog_find(self, REL_UNDEF, &user, &name, true);
 		switch (rel->type) {
 		case REL_TABLE:
-			write = table_mgr_grant(self, tr, &user, &name, &to, grant, perms, 0);
+			write = table_grant(self, tr, &user, &name, &to, grant, perms, 0);
 			break;
 		case REL_BRANCH:
-			write = branch_mgr_grant(self, tr, &user, &name, &to, grant, perms, 0);
+			write = branch_grant(self, tr, &user, &name, &to, grant, perms, 0);
 			break;
 		case REL_UDF:
-			write = udf_mgr_grant(self, tr, &user, &name, &to, grant, perms, 0);
+			write = udf_grant(self, tr, &user, &name, &to, grant, perms, 0);
 			break;
 		case REL_TOPIC:
-			write = topic_mgr_grant(self, tr, &user, &name, &to, grant, perms, 0);
+			write = topic_grant(self, tr, &user, &name, &to, grant, perms, 0);
 			break;
 		case REL_SUBSCRIPTION:
-			write = sub_mgr_grant(self, tr, &user, &name, &to, grant, perms, 0);
+			write = sub_grant(self, tr, &user, &name, &to, grant, perms, 0);
 			break;
 		default:
 			abort();
@@ -255,7 +255,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto config = user_op_create_read(op);
 		defer(user_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = user_mgr_create(self, tr, config, if_not_exists);
+		write = user_create(self, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_USER_DROP:
@@ -295,7 +295,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 			self->iface->user_invalidate(self, user);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = user_mgr_revoke(self, tr, &name, &revoked_at, if_exists);
+		write = user_revoke(self, tr, &name, &revoked_at, if_exists);
 		break;
 	}
 	case DDL_STORAGE_CREATE:
@@ -340,7 +340,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto config = table_op_create_read(op);
 		defer(table_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = table_mgr_create(self, tr, config, if_not_exists);
+		write = table_create(self, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_TABLE_DROP:
@@ -353,7 +353,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_drop(self, tr, &user, &name, if_exists);
+		write = table_drop(self, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_TABLE_RENAME:
@@ -371,7 +371,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
+		write = table_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
 		break;
 	}
 	case DDL_TABLE_TRUNCATE:
@@ -381,7 +381,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		table_op_truncate_read(op, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_truncate(self, tr, &user, &name, if_exists);
+		write = table_truncate(self, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_TABLE_SET_IDENTITY:
@@ -392,7 +392,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		table_op_set_identity_read(op, &user, &name, &value);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_mgr_set_identity(self, tr, &user, &name, value, if_exists);
+		write = table_set_identity(self, tr, &user, &name, value, if_exists);
 		break;
 	}
 	case DDL_TABLE_COLUMN_ADD:
@@ -404,10 +404,10 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_not_exists = ddl_if_column_not_exists(flags);
-		write = table_mgr_column_add(self, tr, &user, &name,
-		                             column,
-		                             if_exists,
-		                             if_column_not_exists);
+		write = table_column_add(self, tr, &user, &name,
+		                         column,
+		                         if_exists,
+		                         if_column_not_exists);
 		break;
 	}
 	case DDL_TABLE_COLUMN_DROP:
@@ -422,10 +422,10 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
-		write = table_mgr_column_drop(self, tr, &user, &name,
-		                              &name_column,
-		                              if_exists,
-		                              if_column_exists);
+		write = table_column_drop(self, tr, &user, &name,
+		                          &name_column,
+		                          if_exists,
+		                          if_column_exists);
 		break;
 	}
 	case DDL_TABLE_COLUMN_RENAME:
@@ -441,10 +441,10 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
-		write = table_mgr_column_rename(self, tr, &user, &name, &name_column,
-		                                &name_column_new,
-		                                if_exists,
-		                                if_column_exists);
+		write = table_column_rename(self, tr, &user, &name, &name_column,
+		                            &name_column_new,
+		                            if_exists,
+		                            if_column_exists);
 		break;
 	}
 	case DDL_TABLE_COLUMN_SET_DEFAULT:
@@ -459,10 +459,10 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
-		write = table_mgr_column_set(self, tr, &user, &name, &name_column,
-		                             &value, cmd,
-		                             if_exists,
-		                             if_column_exists);
+		write = table_column_set(self, tr, &user, &name, &name_column,
+		                         &value, cmd,
+		                         if_exists,
+		                         if_column_exists);
 		break;
 	}
 	case DDL_TABLE_STORAGE_ADD:
@@ -561,7 +561,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto config = branch_op_create_read(op);
 		defer(branch_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = branch_mgr_create(self, tr, config, if_not_exists);
+		write = branch_create(self, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_BRANCH_DROP:
@@ -574,7 +574,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = branch_mgr_drop(self, tr, &user, &name, if_exists);
+		write = branch_drop(self, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_BRANCH_RENAME:
@@ -589,7 +589,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = branch_mgr_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
+		write = branch_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
 		break;
 	}
 	case DDL_UDF_CREATE:
@@ -597,54 +597,12 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		// PERM_CREATE_FUNCTION
 		check_user(tr, PERM_CREATE_FUNCTION);
 
-		auto config = udf_op_create_read(op);
+		bool replace;
+		auto config = udf_op_create_read(op, &replace);
 		defer(udf_config_free, config);
 
 		// create or replace
-		write = udf_mgr_create(self, tr, config, false);
-
-		// compile on creation
-		if (write)
-		{
-			auto udf = catalog_find_udf(self, &config->user, &config->name, true);
-			self->iface->udf_compile(self, udf);
-		}
-		break;
-	}
-	case DDL_UDF_REPLACE:
-	{
-		auto config = udf_op_replace_read(op);
-		defer(udf_config_free, config);
-
-		// allow to replace udf only if it has identical arguments
-		// and return type
-
-		// create or replace
-		auto udf = catalog_find_udf(self, &config->user, &config->name, false);
-		if (udf)
-		{
-			// validate types
-			udf_mgr_replace_validate(self, tr, config, udf);
-
-			// create and compile new udf
-			auto replace = udf_allocate(config, self->iface->udf_free, self->iface_arg);
-			defer(rel_free, replace);
-			self->iface->udf_compile(self, replace);
-
-			udf_mgr_replace(self, tr, udf, replace);
-			write = true;
-			break;
-		}
-
-		// create
-		write = udf_mgr_create(self, tr, config, false);
-
-		// compile on creation
-		if (write)
-		{
-			udf = catalog_find_udf(self, &config->user, &config->name, true);
-			self->iface->udf_compile(self, udf);
-		}
+		write = udf_create(self, tr, config, replace);
 		break;
 	}
 	case DDL_UDF_DROP:
@@ -657,7 +615,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = udf_mgr_drop(self, tr, &user, &name, if_exists);
+		write = udf_drop(self, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_UDF_RENAME:
@@ -675,7 +633,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = udf_mgr_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
+		write = udf_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
 		break;
 	}
 	case DDL_TOPIC_CREATE:
@@ -686,7 +644,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto config = topic_op_create_read(op);
 		defer(topic_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = topic_mgr_create(self, tr, config, if_not_exists);
+		write = topic_create(self, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_TOPIC_DROP:
@@ -699,7 +657,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = topic_mgr_drop(self, tr, &user, &name, if_exists);
+		write = topic_drop(self, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_TOPIC_RENAME:
@@ -713,7 +671,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		// ensure no other udfs depend on the topic catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = topic_mgr_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
+		write = topic_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
 		break;
 	}
 	case DDL_SUB_CREATE:
@@ -724,7 +682,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto config = sub_op_create_read(op);
 		defer(sub_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = sub_mgr_create(self, tr, config, if_not_exists);
+		write = sub_create(self, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_SUB_DROP:
@@ -737,7 +695,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = sub_mgr_drop(self, tr, &user, &name, if_exists);
+		write = sub_drop(self, tr, &user, &name, if_exists);
 		break;
 	}
 	case DDL_SUB_RENAME:
@@ -752,7 +710,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = sub_mgr_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
+		write = sub_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
 		break;
 	}
 	default:

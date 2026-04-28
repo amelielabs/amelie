@@ -23,9 +23,13 @@ struct Sub
 	SubConfig* config;
 };
 
-Sub* sub_allocate(SubConfig*, Catalog*, Uuid*);
+bool sub_create(Catalog*, Tr*, SubConfig*, bool);
+bool sub_drop(Catalog*, Tr*, Str*, Str*, bool);
+void sub_drop_of(Catalog*, Tr*, Sub*);
+bool sub_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool);
+bool sub_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 
-static inline Sub*
+always_inline static inline Sub*
 sub_of(Rel* self)
 {
 	return (Sub*)self;

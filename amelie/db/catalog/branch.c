@@ -20,11 +20,44 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
+static inline void
+branch_free(Branch* self, bool drop)
+{
+	unused(drop);
+	branch_config_free(self->config);
+	am_free(self);
+}
+
+static inline void
+branch_show(Branch* self, Buf* buf, int flags)
+{
+	branch_config_write(self->config, buf, flags);
+}
+
+static inline Branch*
+branch_allocate(BranchConfig* config)
+{
+	auto self = (Branch*)am_malloc(sizeof(Branch));
+	self->config = branch_config_copy(config);
+	self->table  = NULL;
+
+	// set relation
+	auto rel = &self->rel;
+	rel_init(rel, REL_BRANCH);
+	rel_set_user(rel, &self->config->user);
+	rel_set_name(rel, &self->config->name);
+	rel_set_grants(rel, &self->config->grants);
+	rel_set_show(rel, (RelShow)branch_show);
+	rel_set_free(rel, (RelFree)branch_free);
+	rel_set_rsn(rel, state_rsn_next());
+	return self;
+}
+
 bool
-branch_mgr_create(Catalog*      self,
-                  Tr*           tr,
-                  BranchConfig* config,
-                  bool          if_not_exists)
+branch_create(Catalog*      self,
+              Tr*           tr,
+              BranchConfig* config,
+              bool          if_not_exists)
 {
 	// make sure branch does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
@@ -62,15 +95,15 @@ branch_mgr_create(Catalog*      self,
 }
 
 void
-branch_mgr_drop_of(Catalog* self, Tr* tr, Branch* branch)
+branch_drop_of(Catalog* self, Tr* tr, Branch* branch)
 {
 	// drop branch by object
 	rel_mgr_drop(&self->rels, tr, &branch->rel);
 }
 
 bool
-branch_mgr_drop(Catalog* self, Tr* tr, Str* user, Str* name,
-                bool     if_exists)
+branch_drop(Catalog* self, Tr* tr, Str* user, Str* name,
+            bool     if_exists)
 {
 	auto branch = catalog_find_branch(self, user, name, false);
 	if (! branch)
@@ -98,7 +131,7 @@ branch_mgr_drop(Catalog* self, Tr* tr, Str* user, Str* name,
 			      str_size(name), str_of(name));
 	}
 
-	branch_mgr_drop_of(self, tr, branch);
+	branch_drop_of(self, tr, branch);
 	return true;
 }
 
@@ -130,13 +163,13 @@ static LogIf rename_if =
 };
 
 bool
-branch_mgr_rename(Catalog* self,
-                  Tr*      tr,
-                  Str*     user,
-                  Str*     name,
-                  Str*     user_new,
-                  Str*     name_new,
-                  bool     if_exists)
+branch_rename(Catalog* self,
+              Tr*      tr,
+              Str*     user,
+              Str*     name,
+              Str*     user_new,
+              Str*     name_new,
+              bool     if_exists)
 {
 	auto branch = catalog_find_branch(self, user, name, false);
 	if (! branch)
@@ -197,14 +230,14 @@ static LogIf grant_if =
 };
 
 bool
-branch_mgr_grant(Catalog* self,
-                 Tr*      tr,
-                 Str*     user,
-                 Str*     name,
-                 Str*     to,
-                 bool     grant,
-                 uint32_t perms,
-                 bool     if_exists)
+branch_grant(Catalog* self,
+             Tr*      tr,
+             Str*     user,
+             Str*     name,
+             Str*     to,
+             bool     grant,
+             uint32_t perms,
+             bool     if_exists)
 {
 	auto branch = catalog_find_branch(self, user, name, false);
 	if (! branch)

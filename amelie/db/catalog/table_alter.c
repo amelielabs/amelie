@@ -48,13 +48,13 @@ static LogIf rename_if =
 };
 
 bool
-table_mgr_rename(Catalog* self,
-                 Tr*      tr,
-                 Str*     user,
-                 Str*     name,
-                 Str*     user_new,
-                 Str*     name_new,
-                 bool     if_exists)
+table_rename(Catalog* self,
+             Tr*      tr,
+             Str*     user,
+             Str*     name,
+             Str*     user_new,
+             Str*     name_new,
+             bool     if_exists)
 {
 	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
@@ -115,14 +115,14 @@ static LogIf grant_if =
 };
 
 bool
-table_mgr_grant(Catalog* self,
-                Tr*      tr,
-                Str*     user,
-                Str*     name,
-                Str*     to,
-                bool     grant,
-                uint32_t perms,
-                bool     if_exists)
+table_grant(Catalog* self,
+            Tr*      tr,
+            Str*     user,
+            Str*     name,
+            Str*     to,
+            bool     grant,
+            uint32_t perms,
+            bool     if_exists)
 {
 	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
@@ -182,12 +182,12 @@ static LogIf set_identity_if =
 };
 
 bool
-table_mgr_set_identity(Catalog* self,
-                       Tr*       tr,
-                       Str*      user,
-                       Str*      name,
-                       int64_t   value,
-                       bool      if_exists)
+table_set_identity(Catalog* self,
+                   Tr*       tr,
+                   Str*      user,
+                   Str*      name,
+                   int64_t   value,
+                   bool      if_exists)
 {
 	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
@@ -237,14 +237,14 @@ static LogIf column_rename_if =
 };
 
 bool
-table_mgr_column_rename(Catalog* self,
-                        Tr*      tr,
-                        Str*     user,
-                        Str*     name,
-                        Str*     name_column,
-                        Str*     name_column_new,
-                        bool     if_exists,
-                        bool     if_column_exists)
+table_column_rename(Catalog* self,
+                    Tr*      tr,
+                    Str*     user,
+                    Str*     name,
+                    Str*     name_column,
+                    Str*     name_column_new,
+                    bool     if_exists,
+                    bool     if_column_exists)
 {
 	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
@@ -316,13 +316,13 @@ static LogIf column_add_if =
 };
 
 bool
-table_mgr_column_add(Catalog* self,
-                     Tr*      tr,
-                     Str*     user,
-                     Str*     name,
-                     Column*  column,
-                     bool     if_exists,
-                     bool     if_not_exists)
+table_column_add(Catalog* self,
+                 Tr*      tr,
+                 Str*     user,
+                 Str*     name,
+                 Column*  column,
+                 bool     if_exists,
+                 bool     if_not_exists)
 {
 	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
@@ -392,13 +392,13 @@ static LogIf column_drop_if =
 };
 
 bool
-table_mgr_column_drop(Catalog* self,
-                      Tr*      tr,
-                      Str*     user,
-                      Str*     name,
-                      Str*     name_column,
-                      bool     if_exists,
-                      bool     if_column_exists)
+table_column_drop(Catalog* self,
+                  Tr*      tr,
+                  Str*     user,
+                  Str*     name,
+                  Str*     name_column,
+                  bool     if_exists,
+                  bool     if_column_exists)
 {
 	auto table = catalog_find_table(self, user, name, false);
 	if (! table)
@@ -473,15 +473,15 @@ static LogIf column_set_if =
 };
 
 bool
-table_mgr_column_set(Catalog* self,
-                     Tr*      tr,
-                     Str*     user,
-                     Str*     name,
-                     Str*     name_column,
-                     Str*     value,
-                     int      cmd,
-                     bool     if_exists,
-                     bool     if_column_exists)
+table_column_set(Catalog* self,
+                 Tr*      tr,
+                 Str*     user,
+                 Str*     name,
+                 Str*     name_column,
+                 Str*     value,
+                 int      cmd,
+                 bool     if_exists,
+                 bool     if_column_exists)
 {
 	auto table = catalog_find_table(self, user, name, false);
 	if (! table)

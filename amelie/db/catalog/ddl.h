@@ -57,7 +57,6 @@ enum
 
 	// udf
 	DDL_UDF_CREATE,
-	DDL_UDF_REPLACE,
 	DDL_UDF_DROP,
 	DDL_UDF_RENAME,
 

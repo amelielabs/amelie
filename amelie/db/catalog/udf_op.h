@@ -12,48 +12,26 @@
 //
 
 static inline int
-udf_op_create(Buf* self, UdfConfig* config)
+udf_op_create(Buf* self, UdfConfig* config, bool or_create)
 {
 	// [op, config]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_UDF_CREATE);
+	encode_bool(self, or_create);
 	udf_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }
 
 static inline UdfConfig*
-udf_op_create_read(uint8_t* op)
+udf_op_create_read(uint8_t* op, bool* or_replace)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_UDF_CREATE);
-	auto config = udf_config_read(&op);
-	unpack_array_end(&op);
-	return config;
-}
-
-static inline int
-udf_op_replace(Buf* self, UdfConfig* config)
-{
-	// [op, config]
-	auto offset = buf_size(self);
-	encode_array(self);
-	encode_int(self, DDL_UDF_REPLACE);
-	udf_config_write(config, self, 0);
-	encode_array_end(self);
-	return offset;
-}
-
-static inline UdfConfig*
-udf_op_replace_read(uint8_t* op)
-{
-	int64_t cmd;
-	unpack_array(&op);
-	unpack_int(&op, &cmd);
-	assert(cmd == DDL_UDF_REPLACE);
+	unpack_bool(&op, or_replace);
 	auto config = udf_config_read(&op);
 	unpack_array_end(&op);
 	return config;

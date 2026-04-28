@@ -20,11 +20,45 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
+static inline void
+user_free(User* self, bool drop)
+{
+	unused(drop);
+	if (self->config)
+		user_config_free(self->config);
+	am_free(self);
+}
+
+static inline void
+user_show(User* self, Buf* buf, int flags)
+{
+	user_config_write(self->config, buf, flags);
+}
+
+static inline User*
+user_allocate(UserConfig* config)
+{
+	User* self = am_malloc(sizeof(User));
+	self->revoked_at = 0;
+	self->config     = user_config_copy(config);
+
+	// set relation
+	auto rel = &self->rel;
+	rel_init(rel, REL_USER);
+	rel_set_user(rel, &self->config->parent);
+	rel_set_name(rel, &self->config->name);
+	rel_set_grants(rel, &self->config->grants);
+	rel_set_show(rel, (RelShow)user_show);
+	rel_set_free(rel, (RelFree)user_free);
+	rel_set_rsn(rel, state_rsn_next());
+	return self;
+}
+
 bool
-user_mgr_create(Catalog*    self,
-                Tr*         tr,
-                UserConfig* config,
-                bool        if_not_exists)
+user_create(Catalog*    self,
+            Tr*         tr,
+            UserConfig* config,
+            bool        if_not_exists)
 {
 	// make sure user does not exists
 	auto user = catalog_find_user(self, &config->name, false);
@@ -46,10 +80,10 @@ user_mgr_create(Catalog*    self,
 }
 
 bool
-user_mgr_drop(Catalog* self,
-              Tr*      tr,
-              Str*     name,
-              bool     if_exists)
+user_drop(Catalog* self,
+          Tr*      tr,
+          Str*     name,
+          bool     if_exists)
 {
 	auto user = catalog_find_user(self, name, false);
 	if (! user)
@@ -99,11 +133,11 @@ static LogIf rename_if =
 };
 
 bool
-user_mgr_rename(Catalog* self,
-                Tr*      tr,
-                Str*     name,
-                Str*     name_new,
-                bool     if_exists)
+user_rename(Catalog* self,
+            Tr*      tr,
+            Str*     name,
+            Str*     name_new,
+            bool     if_exists)
 {
 	auto user = catalog_find_user(self, name, false);
 	if (! user)
@@ -163,12 +197,12 @@ static LogIf grant_if =
 };
 
 bool
-user_mgr_grant(Catalog* self,
-               Tr*      tr,
-               Str*     name,
-               bool     grant,
-               uint32_t perms,
-               bool     if_exists)
+user_grant(Catalog* self,
+           Tr*      tr,
+           Str*     name,
+           bool     grant,
+           uint32_t perms,
+           bool     if_exists)
 {
 	auto user = catalog_find_user(self, name, false);
 	if (! user)
@@ -245,11 +279,11 @@ static LogIf revoke_if =
 };
 
 bool
-user_mgr_revoke(Catalog* self,
-                Tr*      tr,
-                Str*     name,
-                Str*     revoked_at,
-                bool     if_exists)
+user_revoke(Catalog* self,
+            Tr*      tr,
+            Str*     name,
+            Str*     revoked_at,
+            bool     if_exists)
 {
 	auto user = catalog_find_user(self, name, false);
 	if (! user)

@@ -40,19 +40,19 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 			cascade_user_error(user);
 		switch (rel->type) {
 		case REL_TOPIC:
-			topic_mgr_drop_of(self, tr, topic_of(rel));
+			topic_drop_of(self, tr, topic_of(rel));
 			break;
 		case REL_SUBSCRIPTION:
-			sub_mgr_drop_of(self, tr, sub_of(rel));
+			sub_drop_of(self, tr, sub_of(rel));
 			break;
 		case REL_UDF:
-			udf_mgr_drop_of(self, tr, udf_of(rel));
+			udf_drop_of(self, tr, udf_of(rel));
 			break;
 		case REL_BRANCH:
-			branch_mgr_drop_of(self, tr, branch_of(rel));
+			branch_drop_of(self, tr, branch_of(rel));
 			break;
 		case REL_TABLE:
-			table_mgr_drop_of(self, tr, table_of(rel));
+			table_drop_of(self, tr, table_of(rel));
 			break;
 		default:
 			abort();
@@ -85,7 +85,7 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
 	// validate or drop all objects matching the user
 	cascade_user_drop_execute(self, tr, name, cascade);
 
-	user_mgr_drop(self, tr, name, false);
+	user_drop(self, tr, name, false);
 	return true;
 }
 
@@ -109,37 +109,37 @@ cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 		case REL_TOPIC:
 		{
 			auto topic = topic_of(rel);
-			topic_mgr_rename(self, tr, &topic->config->user,
-			                 &topic->config->name,
-			                 user_new,
-			                 &topic->config->name, false);
+			topic_rename(self, tr, &topic->config->user,
+			             &topic->config->name,
+			             user_new,
+			             &topic->config->name, false);
 			break;
 		}
 		case REL_SUBSCRIPTION:
 		{
 			auto sub = sub_of(rel);
-			sub_mgr_rename(self, tr, &sub->config->user,
-			               &sub->config->name,
-			               user_new,
-			               &sub->config->name, false);
+			sub_rename(self, tr, &sub->config->user,
+			           &sub->config->name,
+			           user_new,
+			           &sub->config->name, false);
 			break;
 		}
 		case REL_BRANCH:
 		{
 			auto branch = branch_of(rel);
-			branch_mgr_rename(self, tr, &branch->config->user,
-			                  &branch->config->name,
-			                  user_new,
-			                  &branch->config->name, false);
+			branch_rename(self, tr, &branch->config->user,
+			              &branch->config->name,
+			              user_new,
+			              &branch->config->name, false);
 			break;
 		}
 		case REL_TABLE:
 		{
 			auto table = table_of(rel);
-			table_mgr_rename(self, tr, &table->config->user,
-			                 &table->config->name,
-			                 user_new,
-			                 &table->config->name, false);
+			table_rename(self, tr, &table->config->user,
+			             &table->config->name,
+			             user_new,
+			             &table->config->name, false);
 			break;
 		}
 		default:
@@ -175,6 +175,6 @@ cascade_user_rename(Catalog* self, Tr* tr,
 	cascade_user_rename_execute(self, tr, name, name_new);
 
 	// rename user
-	user_mgr_rename(self, tr, name, name_new, false);
+	user_rename(self, tr, name, name_new, false);
 	return true;
 }

@@ -20,41 +20,13 @@ struct Topic
 	TopicConfig* config;
 };
 
-static inline void
-topic_free(Topic* self, bool drop)
-{
-	unused(drop);
-	topic_config_free(self->config);
-	am_free(self);
-}
+bool topic_create(Catalog*, Tr*, TopicConfig*, bool);
+bool topic_drop(Catalog*, Tr*, Str*, Str*, bool);
+void topic_drop_of(Catalog*, Tr*, Topic*);
+bool topic_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool);
+bool topic_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 
-static inline void
-topic_show(Topic* self, Buf* buf, int flags)
-{
-	topic_config_write(self->config, buf, flags);
-}
-
-static inline Topic*
-topic_allocate(TopicConfig* config)
-{
-	auto self = (Topic*)am_malloc(sizeof(Topic));
-	self->cdc    = 0;
-	self->config = topic_config_copy(config);
-
-	// set relation
-	auto rel = &self->rel;
-	rel_init(rel, REL_TOPIC);
-	rel_set_user(rel, &self->config->user);
-	rel_set_name(rel, &self->config->name);
-	rel_set_id(rel, &self->config->id);
-	rel_set_grants(rel, &self->config->grants);
-	rel_set_show(rel, (RelShow)topic_show);
-	rel_set_free(rel, (RelFree)topic_free);
-	rel_set_rsn(rel, state_rsn_next());
-	return self;
-}
-
-static inline Topic*
+always_inline static inline Topic*
 topic_of(Rel* self)
 {
 	return (Topic*)self;
