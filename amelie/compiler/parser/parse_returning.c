@@ -279,8 +279,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, From* from)
 	{
 		auto var = namespace_find_var(stmt->block->ns, &ref->string);
 		if (! var)
-			stmt_error(stmt, NULL, "variable '%.*s' not found", str_size(&ref->string),
-			           str_of(&ref->string));
+			stmt_error(stmt, NULL, "variable '{str}' not found", &ref->string);
 		ref->var = var;
 
 		// add dep for previous var updating stmt and update writer to self

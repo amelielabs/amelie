@@ -260,9 +260,8 @@ emit_name(Compiler* self, From* from, Ast* ast)
 	{
 		auto group = ast_group_resolve_column(target->from_group_by, name);
 		if (! group)
-			stmt_error(self->current, ast, "column %.*s must appear in the GROUP BY clause "
-			           "or be used by an aggregate function",
-			           str_size(name), str_of(name));
+			stmt_error(self->current, ast, "column '{str}' must appear in the GROUP BY clause "
+			           "or be used by an aggregate function", name);
 		column = group->column;
 	} else
 	{
@@ -321,9 +320,8 @@ emit_name_compound(Compiler* self, From* from, Ast* ast)
 		// group by name can be a prefix of the path, in case of json columns
 		auto group = ast_group_resolve_column_prefix(target->from_group_by, &path);
 		if (! group)
-			stmt_error(self->current, ast, "column %.*s must appear in the GROUP BY clause "
-			           "or be used by an aggregate function",
-			           str_size(&path), str_of(&path));
+			stmt_error(self->current, ast, "column '{str}' must appear in the GROUP BY clause "
+			           "or be used by an aggregate function", &path);
 
 		// use group by name as a prefix for the path
 		str_advance(&path, str_size(&group->expr->string));
@@ -396,15 +394,13 @@ emit_name_compound(Compiler* self, From* from, Ast* ast)
 
 	if (column_conflict)
 		stmt_error(self->current, ast,
-		           "column name %.*s.%.*s is ambiguous",
-		           str_size(&target->name), str_of(&target->name),
-		           str_size(&name), str_of(&name));
+		           "column name {str}.{str} is ambiguous",
+		           &target->name, &name);
 
 	// target.path
 	if (rtype(self, target->r) != TYPE_JSON)
-		stmt_error(self->current, ast, "column %.*s.%.*s not found",
-		           str_size(&target->name), str_of(&target->name),
-		           str_size(&name), str_of(&name));
+		stmt_error(self->current, ast, "column {str}.{str} not found",
+		           &target->name, &name);
 
 	return emit_column_json(self, target, ast, &path_with_column);
 }
@@ -531,9 +527,8 @@ emit_udf(Compiler* self, From* from, Ast* ast)
 		auto column = list_at(Column, link);
 		auto type = emit_push(self, from, current);
 		if (type != TYPE_NULL && type != column->type)
-			stmt_error(self->current, current, "argument '%.*s' expects %s",
-			           str_size(&column->name),
-			           str_of(&column->name),
+			stmt_error(self->current, current, "argument '{str}' expects {s}",
+			           &column->name,
 			           type_of(column->type));
 		current = current->next;
 	}
@@ -582,9 +577,8 @@ emit_udf_method(Compiler* self, From* from, Ast* ast)
 		// push and validate the expression type
 		auto type = emit_push(self, from, ast);
 		if (type != TYPE_NULL && type != column->type)
-			stmt_error(self->current, current, "argument '%.*s' expects %s",
-			           str_size(&column->name),
-			           str_of(&column->name),
+			stmt_error(self->current, current, "argument '{str}' expects {s}",
+			           &column->name,
 			           type_of(column->type));
 
 		if (is_first)
@@ -1152,7 +1146,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		if (rt == TYPE_INTERVAL)
 			rneg = op2pin(self, CNEGL, TYPE_INTERVAL, r);
 		else
-			stmt_error(self->current, ast->l, "unsupported operation -%s",
+			stmt_error(self->current, ast->l, "unsupported operation -{s}",
 			           type_of(rt));
 		runpin(self, r);
 		return rneg;
@@ -1162,7 +1156,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		int r = emit_expr(self, from, ast->l);
 		int rt = rtype(self, r);
 		if (rt != TYPE_INT)
-			stmt_error(self->current, ast->l, "unsupported operation ~%s",
+			stmt_error(self->current, ast->l, "unsupported operation ~{s}",
 			           type_of(rt));
 		auto rinv = op2pin(self, CBINVI, TYPE_INT, r);
 		runpin(self, r);

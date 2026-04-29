@@ -265,7 +265,7 @@ emit_into(Compiler* self, Stmt* stmt)
 
 		auto type = column->type;
 		if (type != TYPE_NULL && var->type != type)
-			stmt_error(self->current, stmt->ast, "variable expected %s",
+			stmt_error(self->current, stmt->ast, "variable expected {s}",
 					   type_of(var->type));
 
 		// CVAR_SET
@@ -773,7 +773,7 @@ emit_return(Compiler* self, Stmt* stmt)
 			}
 		}
 		if (udf->type != type)
-			stmt_error(stmt, stmt->ast, "RETURN type '%s' mismatch function type '%s'",
+			stmt_error(stmt, stmt->ast, "RETURN type '{s}' mismatch function type '{s}'",
 			           type_of(type),
 			           type_of(udf->type));
 	}

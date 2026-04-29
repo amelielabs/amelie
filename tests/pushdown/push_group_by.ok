@@ -3,9 +3,9 @@ connect E0 S0 127.0.0.1:3485;
 # test: select * from table group by (column not defined)
 create table test (id int primary key, data int);
 explain select * from test group by id;
-error: explain select ❰*❱ ⟵ column test.data must appear in the GROUP BY clause or be used by an aggregate function
+error: explain select ❰*❱ ⟵ column 'test.data' must appear in the GROUP BY clause or be used by an aggregate function
 explain select data from test group by id;
-error: explain select ❰data❱ ⟵ column data must appear in the GROUP BY clause or be used by an aggregate function
+error: explain select ❰data❱ ⟵ column 'data' must appear in the GROUP BY clause or be used by an aggregate function
 drop table test;
 # test: select * from table group by (empty)
 create table test (id int primary key);
@@ -40,7 +40,7 @@ drop table test;
 # test: select from table group by column
 create table test (id int primary key, data int);
 select * from test group by id;
-error: select ❰*❱ ⟵ column test.data must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰*❱ ⟵ column 'test.data' must appear in the GROUP BY clause or be used by an aggregate function
 select id from test group by id;
 insert into test values (0, 0);
 insert into test values (1, 0);
@@ -92,7 +92,7 @@ select data from test group by data;
 2
 # test: select from table group by keys only
 select data from test group by id;
-error: select ❰data❱ ⟵ column data must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰data❱ ⟵ column 'data' must appear in the GROUP BY clause or be used by an aggregate function
 # test: select from table group by column, column
 select id, data from test group by id, data;
 0 │ 0
@@ -851,7 +851,7 @@ select id from test group by id order by id;
 4
 # test: select from table group by order by keys only
 select id from test group by id order by data;
-error: select id from test group by id order by ❰data❱ ⟵ column data must appear in the GROUP BY clause or be used by an aggregate function
+error: select id from test group by id order by ❰data❱ ⟵ column 'data' must appear in the GROUP BY clause or be used by an aggregate function
 # test: select from table group by order by desc
 explain select id from test group by id order by id desc;
 {
@@ -12119,7 +12119,7 @@ select id from test group by id;
 4
 2
 select data from test group by id;
-error: select ❰data❱ ⟵ column data must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰data❱ ⟵ column 'data' must appear in the GROUP BY clause or be used by an aggregate function
 select data from test group by data;
 0
 1

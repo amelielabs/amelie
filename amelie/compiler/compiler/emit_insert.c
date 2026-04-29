@@ -45,9 +45,8 @@ emit_insert_store_generated_on_match(Scan* self)
 		// with the column
 		if (unlikely(type != TYPE_NULL && column->type != type))
 			stmt_error(cp->current, &insert->ast,
-			           "column '%.*s.%.*s' generated expression type '%s' does not match column type '%s'",
-			           str_size(&target->name), str_of(&target->name),
-			           str_size(&column->name), str_of(&column->name),
+			           "column '{str}.{str}' generated expression type '{s}' does not match column type '{s}'",
+			           &target->name, &column->name,
 			           type_of(type),
 			           type_of(column->type));
 		count++;
@@ -75,9 +74,9 @@ emit_insert_store_rows(Compiler* self)
 			auto column = list_at(Column, link);
 			auto type = emit_push(self, &insert->from, col);
 			if (unlikely(type != TYPE_NULL && column->type != type))
-				stmt_error(stmt, row->ast, "'%s' expected for column '%.*s'",
+				stmt_error(stmt, row->ast, "'{s}' expected for column '{str}",
 				           type_of(column->type),
-				           str_size(&column->name), str_of(&column->name));
+				           &column->name);
 			col = col->next;
 		}
 		op1(self, CSET_ADD, rset);

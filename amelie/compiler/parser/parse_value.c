@@ -115,8 +115,8 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 			stmt_error(self, ast, "variable not found");
 
 		if (var->type != column->type)
-			stmt_error(self, ast, "variable does not match column '%.*s' type",
-			           str_size(&column->name), str_of(&column->name));
+			stmt_error(self, ast, "variable does not match column '{str}' type",
+			           &column->name);
 		ast->id  = KVAR;
 		ast->var = var;
 		if (var->writer)
@@ -286,9 +286,8 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 	}
 	}
 
-	stmt_error(self, ast, "'%s' expected for column '%.*s'",
-	           type_of(column->type),
-	           str_size(&column->name), str_of(&column->name));
+	stmt_error(self, ast, "'{s}' expected for column '{str}'",
+	           type_of(column->type), &column->name);
 	return NULL;
 }
 
@@ -495,9 +494,8 @@ parse_value_validate(Stmt* self, Column* column, Value* value, Ast* expr)
 	if (cons->not_null && !cons->as_identity)
 	{
 		if (self)
-			stmt_error(self, expr, "column '%.*s' value cannot be NULL",
-			           str_size(&column->name),
-			           str_of(&column->name));
+			stmt_error(self, expr, "column '{str}' value cannot be NULL",
+			           &column->name);
 		else
 			error("column '%.*s' value cannot be NULL",
 			      str_size(&column->name),

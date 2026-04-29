@@ -847,9 +847,9 @@ select * from (select data, count(*) from test_null group by data) t;
 null │ 1
 # test: select * from table order by count(*)
 select * from test order by count(*);
-error: select ❰*❱ ⟵ column test.id must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰*❱ ⟵ column 'test.id' must appear in the GROUP BY clause or be used by an aggregate function
 select id from test order by count(*);
-error: select ❰id❱ ⟵ column id must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰id❱ ⟵ column 'id' must appear in the GROUP BY clause or be used by an aggregate function
 select 1 from test order by count(id);
 1
 # test: select count(*) from table order by 1
@@ -902,7 +902,7 @@ select id, count(*) from test group by id order by id;
 5 │ 1
 6 │ 1
 select id, count(*) from test group by id order by data;
-error: select id, count(*) from test group by id order by ❰data❱ ⟵ column data must appear in the GROUP BY clause or be used by an aggregate function
+error: select id, count(*) from test group by id order by ❰data❱ ⟵ column 'data' must appear in the GROUP BY clause or be used by an aggregate function
 # test: select count(*) from table group by 1 order by 1
 explain select id, count(*) from test group by 1 order by 1;
 {
@@ -1375,7 +1375,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1;
 }
 # test: select as from table group by having alias (unsupported)
 select data, count(*) as c from test group by data having c > 1;
-error: select data, count(*) as c from test group by data having ❰c❱ ⟵ column c must appear in the GROUP BY clause or be used by an aggregate function
+error: select data, count(*) as c from test group by data having ❰c❱ ⟵ column 'c' must appear in the GROUP BY clause or be used by an aggregate function
 # test: select distinct from table group by
 explain select data, count(*) from test group by data order by data;
 {

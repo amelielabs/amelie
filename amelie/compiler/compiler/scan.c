@@ -278,7 +278,7 @@ scan_expr(Scan* self, Target* target)
 		cursor_type = TYPE_CURSOR_JSON;
 	} else
 	if (type != TYPE_STORE && type != TYPE_NULL) {
-		stmt_error(cp->current, target->ast, "unsupported expression type '%s'",
+		stmt_error(cp->current, target->ast, "unsupported expression type '{s}'",
 		           type_of(type));
 	}
 

@@ -25,7 +25,7 @@ error: update test set path ❰/❱ ⟵ = expected
 update test set path =;
 error: update test set path =❰;❱ ⟵ bad expression
 update test set path = expr;
-error: update test set ❰path❱ ⟵ column test.path not found
+error: update test set ❰path❱ ⟵ column 'test.path' not found
 update test set id = id expr;
 error: update test set id = id ❰expr❱ ⟵ ; expected
 drop table test;
@@ -127,7 +127,7 @@ insert into test values (0, 3);
 insert into test values (1, 2);
 insert into test values (2, 1);
 update test set data = data + 1, data = data + 1;
-error: update test set ❰data❱ ⟵ column test.data is redefined in UPDATE
+error: update test set ❰data❱ ⟵ column 'test.data' is redefined in UPDATE
 select * from test;
 0 │ 3
 1 │ 2
@@ -200,7 +200,7 @@ insert into test values (0, {"id": 48});
 insert into test values (1, {"id": 49});
 insert into test values (2, {"id": 50});
 update test set id.path = 0;
-error: update test set ❰id.path❱ ⟵ column test.id used as a part of a key
+error: update test set ❰id.path❱ ⟵ column 'test.id' used as a part of a key
 explain update test set data.id = data.id::int + 1;
 {
   "main": {
@@ -283,7 +283,7 @@ insert into test values (0);
 insert into test values (1);
 insert into test values (2);
 update test set id = id + 1;
-error: update test set ❰id❱ ⟵ column test.id used as a part of a key
+error: update test set ❰id❱ ⟵ column 'test.id' used as a part of a key
 select * from test;
 0
 1
@@ -584,7 +584,7 @@ select * from test use index (i);
 0 │ 2 │ 2
 # test: update secondary index (key)
 update test set data = id;
-error: update test set ❰data❱ ⟵ column test.data used as a part of a key
+error: update test set ❰data❱ ⟵ column 'test.data' used as a part of a key
 drop table test;
 disconnect S0;
 close E0;

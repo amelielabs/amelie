@@ -92,13 +92,13 @@ select * from test order by 2;
 select * from test order by 3;
 error: select * from test order by ❰3❱ ⟵ column 3 is not in the SELECT expr list
 select * from test group by 1;
-error: select ❰*❱ ⟵ column test.b must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰*❱ ⟵ column 'test.b' must appear in the GROUP BY clause or be used by an aggregate function
 select * from test group by 2;
-error: select ❰*❱ ⟵ column test.id must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰*❱ ⟵ column 'test.id' must appear in the GROUP BY clause or be used by an aggregate function
 select * from test group by 3;
 error: select * from test group by ❰3❱ ⟵ column 3 is not in the SELECT expr list
 select * from test group by b;
-error: select ❰*❱ ⟵ column test.id must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰*❱ ⟵ column 'test.id' must appear in the GROUP BY clause or be used by an aggregate function
 # test: insert
 insert into test values (3, 3);
 select * from test;

@@ -151,7 +151,7 @@ stmt_error(Stmt* self, Ast* ast, const char* fmt, ...)
 	va_list args;
 	char msg[256];
 	va_start(args, fmt);
-	vsfmt(msg, sizeof(msg), fmt, args);
+	formatv(msg, sizeof(msg), fmt, args);
 	va_end(args);
 	if (! ast)
 		ast = lex_next(self->lex);

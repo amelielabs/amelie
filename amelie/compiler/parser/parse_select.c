@@ -371,7 +371,8 @@ parse_select_resolve_group_by_alias(Stmt* self, AstSelect* select)
 		// get the select returning column
 		auto as = returning_find(&select->ret, order);
 		if (! as)
-			stmt_error(self, group->expr, "column %d is not in the SELECT expr list", order);
+			stmt_error(self, group->expr, "column {d} is not in the SELECT expr list",
+			           order);
 
 		// ensure expression does not involve aggregates
 		for (auto node = select->expr_aggs.list; node; node = node->next)
@@ -402,7 +403,8 @@ parse_select_resolve_order_by(Stmt* self, AstSelect* select)
 			auto pos = order->expr->integer;
 			auto expr = returning_find(&select->ret, pos);
 			if (! expr)
-				stmt_error(self, order->expr, "column %d is not in the SELECT expr list", pos);
+				stmt_error(self, order->expr, "column {d} is not in the SELECT expr list",
+				           pos);
 			// replace order by <int> to the select expression
 			order->expr = expr->l;
 		} else

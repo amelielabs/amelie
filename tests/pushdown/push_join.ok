@@ -774,9 +774,9 @@ select test.id from test join ref on (test.id = ref.id) group by test.id;
 3
 2
 select test.id from test join ref on (test.id = ref.id) group by ref.id;
-error: select ❰test.id❱ ⟵ column test.id must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰test.id❱ ⟵ column 'test.id' must appear in the GROUP BY clause or be used by an aggregate function
 select id from test join ref on (test.id = ref.id) group by ref.id;
-error: select ❰id❱ ⟵ column id must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰id❱ ⟵ column 'id' must appear in the GROUP BY clause or be used by an aggregate function
 select ref.id from test join ref on (test.id = ref.id) group by id;
 error: select ref.id from test join ref on (test.id = ref.id) group by ❰id❱ ⟵ column name is ambiguous
 explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
@@ -830,7 +830,7 @@ select ref.id, count(test.id) + count(ref.id) from test join ref on (test.id = r
 create table ref2 (id int primary key, data json);
 insert into ref2 values (1, {"id": 1}), (2, {"id": 2}), (3, {"id": 3});
 select ref2.data from test join ref2 on (test.id = ref2.id) group by ref2.id;
-error: select ❰ref2.data❱ ⟵ column ref2.data must appear in the GROUP BY clause or be used by an aggregate function
+error: select ❰ref2.data❱ ⟵ column 'ref2.data' must appear in the GROUP BY clause or be used by an aggregate function
 select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by ref2.data.id;
 1 │ "json"
 3 │ "json"
