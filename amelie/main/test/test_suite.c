@@ -101,7 +101,7 @@ test_suite_execute(TestSuite* self, Test* test)
 	defer(file_close, &self->current_test_result);
 
 	int failed = 0;
-	self->current_test_ok_exists = fs_exists("%s", test_ok_file);
+	self->current_test_ok_exists = fs_exists("{s}", test_ok_file);
 	self->current_test_ok_file = test_ok_file;
 	self->current_test_result_file = test_result_file;
 	self->current_test_file = test_file;
@@ -228,8 +228,7 @@ test_suite_cleanup(TestSuite* self)
 	self->current_test_ok_file = NULL;
 	self->current_test_result_file = NULL;
 
-	if (fs_exists("%.*s", str_size(&self->option_result_dir),
-	              str_of(&self->option_result_dir)))
+	if (fs_exists("{str}", &self->option_result_dir))
 		test_sh(self, "rm -rf {str}", &self->option_result_dir);
 }
 

@@ -90,10 +90,8 @@ catalog_snapshot_cleanup(Buf* data)
 		int64_t size;
 		int64_t mode;
 		decode_basefile(&pos_files, &path_relative, &size, &mode);
-		if (! fs_exists("%s/%.*s", state_directory(), str_size(&path_relative),
-		                str_of(&path_relative)))
+		if (! fs_exists("{s}/{str}", state_directory(), &path_relative))
 			continue;
-		fs_unlink("%s/%.*s", state_directory(), str_size(&path_relative),
-		          str_of(&path_relative));
+		fs_unlink("{s}/{str}", state_directory(), &path_relative);
 	}
 }

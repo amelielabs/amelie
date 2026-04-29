@@ -17,7 +17,7 @@
 void
 test_plan_read(TestPlan* self, Str* path)
 {
-	if (! fs_exists("%.*s", str_size(path), str_of(path)))
+	if (! fs_exists("{str}", path))
 		error("test plan file '%.*s' not found\n",
 		      str_size(path), str_of(path));
 

@@ -76,8 +76,8 @@ main_load(Main* self)
 	// create AMELIE_HOME ($HOME/.amelie by default)
 	char path[PATH_MAX];
 	main_path(path, sizeof(path), "");
-	if (! fs_exists("%s", path))
-		fs_mkdir(0755, "%s", path);
+	if (! fs_exists("{s}", path))
+		fs_mkdir(0755, "{s}", path);
 
 	// read bookmarks
 	main_path(path, sizeof(path), "bookmarks");
@@ -110,7 +110,7 @@ main_access(Main* self)
 		return MAIN_REMOTE;
 
 	// path not exists (create on start)
-	if (! fs_exists("%s", str_of(path)))
+	if (! fs_exists("{s}", str_of(path)))
 		return MAIN_LOCAL;
 
 	// path exists
@@ -184,7 +184,7 @@ main_open(Main* self, MainOpen type, Opts* opts)
 		if (type == MAIN_OPEN_LOCAL_NEW)
 		{
 			auto path = opt_string_of(&self->endpoint.path);
-			if (fs_exists("%s", str_of(path)))
+			if (fs_exists("{s}", str_of(path)))
 				error("database directory already exists");
 		}
 		break;

@@ -67,7 +67,7 @@ wal_file_close(WalFile* self)
 static inline void
 wal_file_delete(WalFile* self)
 {
-	fs_unlink("%s/wal/%" PRIu64, state_directory(), self->id);
+	fs_unlink("{s}/wal/{u64}", state_directory(), self->id);
 }
 
 static inline void

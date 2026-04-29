@@ -46,9 +46,7 @@ service_recover_validate(ServiceFile* self)
 			// valid if created file exists
 
 			// <base>/path
-			valid = fs_exists("%s/%.*s", state_directory(),
-			                  str_size(&path),
-			                  str_of(&path));
+			valid = fs_exists("{s}/{str}", state_directory(), &path);
 		} else
 		if (str_is(&action, "rename", 6))
 		{
@@ -60,9 +58,7 @@ service_recover_validate(ServiceFile* self)
 			// valid if renamed file exists
 
 			// <base>/path
-			valid = fs_exists("%s/%.*s", state_directory(),
-			                  str_size(&path),
-			                  str_of(&path));
+			valid = fs_exists("{s}/{str}", state_directory(), &path);
 		} else {
 			error("service: unknown action type");
 		}
@@ -95,9 +91,7 @@ service_recover_abort(ServiceFile* self)
 			unpack_str(&pos, &path);
 
 			// remove file
-			fs_unlink_if_exists("%s/%.*s", state_directory(),
-			                    str_size(&path),
-			                    str_of(&path));
+			fs_unlink_if_exists("{s}/{str}", state_directory(), &path);
 		} else
 		if (str_is(&action, "rename", 6))
 		{
@@ -116,8 +110,8 @@ service_recover_abort(ServiceFile* self)
 			       state_directory(), &to);
 
 			// rename file back, if it exists
-			if (fs_exists("%s", path_to))
-				fs_rename(path_to, "%s", path_from);
+			if (fs_exists("{s}", path_to))
+				fs_rename(path_to, "{s}", path_from);
 
 		} else {
 			error("service: unknown action type");
@@ -145,8 +139,8 @@ service_recover_resume(ServiceFile* self)
 		format(path, sizeof(path), "{s}/{str}", state_directory(),
 		       &path_relative);
 
-		if (fs_exists("%s", path))
-			fs_unlink("%s", path);
+		if (fs_exists("{s}", path))
+			fs_unlink("{s}", path);
 	}
 }
 
@@ -230,7 +224,7 @@ service_recover(Service* self)
 		{
 			// remove incomplete service file
 			state_psn_follow(id);
-			fs_unlink("%s/%s", path, entry->d_name);
+			fs_unlink("{s}/{s}", path, entry->d_name);
 			continue;
 		}
 

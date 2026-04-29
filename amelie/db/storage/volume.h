@@ -142,14 +142,14 @@ volume_mkdir(Volume* self)
 
 	char path[PATH_MAX];
 	format(path, PATH_MAX, "{s}/storage/{s}", state_directory(), id);
-	if (fs_exists("%s", path))
+	if (fs_exists("{s}", path))
 		return;
 
 	// local directory
 	auto path_storage = &self->storage->config->path;
 	if (str_empty(path_storage))
 	{
-		fs_mkdir(0755, "%s", path);
+		fs_mkdir(0755, "{s}", path);
 		return;
 	}
 
@@ -158,12 +158,12 @@ volume_mkdir(Volume* self)
 	format(path_ext, PATH_MAX, "{s}/{s}", str_of(path_storage), id);
 
 	// <storage_path>
-	if (! fs_exists("%s", str_of(path_storage)))
-		fs_mkdir(0755, "%s", str_of(path_storage));
+	if (! fs_exists("{s}", str_of(path_storage)))
+		fs_mkdir(0755, "{s}", str_of(path_storage));
 
 	// <storage_path>/<volume_id>
-	if (! fs_exists("%s", path_ext))
-		fs_mkdir(0755, "%s", path_ext);
+	if (! fs_exists("{s}", path_ext))
+		fs_mkdir(0755, "{s}", path_ext);
 
 	// create symlink to the directory
 
@@ -184,14 +184,14 @@ volume_rmdir(Volume* self)
 
 	char path[PATH_MAX];
 	format(path, PATH_MAX, "{s}/storage/{s}", state_directory(), id);
-	if (! fs_exists("%s", path))
+	if (! fs_exists("{s}", path))
 		return;
 
 	// local directory
 	auto path_storage = &self->storage->config->path;
 	if (str_empty(path_storage))
 	{
-		fs_rmdir(true, "%s", path);
+		fs_rmdir(true, "{s}", path);
 		return;
 	}
 
@@ -205,6 +205,6 @@ volume_rmdir(Volume* self)
 	format(path_ext, PATH_MAX, "{s}/{s}", str_of(path_storage), id);
 
 	// <storage_path>/<volume_id>
-	if (fs_exists("%s", path_ext))
-		fs_rmdir(true, "%s", path_ext);
+	if (fs_exists("{s}", path_ext))
+		fs_rmdir(true, "{s}", path_ext);
 }

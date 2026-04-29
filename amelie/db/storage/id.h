@@ -114,8 +114,8 @@ id_delete(Id* self, int state)
 {
 	char path[PATH_MAX];
 	id_path(self, path, state, false);
-	if (fs_exists("%s", path))
-		fs_unlink("%s", path);
+	if (fs_exists("{s}", path))
+		fs_unlink("{s}", path);
 }
 
 static inline void
@@ -126,8 +126,8 @@ id_rename(Id* self, int from, int to)
 	char path_to[PATH_MAX];
 	id_path(self, path_from, from, false);
 	id_path(self, path_to, to, false);
-	if (fs_exists("%s", path_from))
-		fs_rename(path_from, "%s", path_to);
+	if (fs_exists("{s}", path_from))
+		fs_rename(path_from, "{s}", path_to);
 }
 
 static inline void

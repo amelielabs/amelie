@@ -87,24 +87,24 @@ state_save_to(State* self, const char* path)
 void
 state_save(State* self, const char* path)
 {
-	if (! fs_exists("%s", path))
+	if (! fs_exists("{s}", path))
 	{
 		state_save_to(self, path);
 		return;
 	}
 
 	// remove old saved state, if exists
-	if (fs_exists("%s.old", path))
-		fs_unlink("%s.old", path);
+	if (fs_exists("{s}.old", path))
+		fs_unlink("{s}.old", path);
 
 	// save existing state as a old
-	fs_rename(path, "%s.old", path);
+	fs_rename(path, "{s}.old", path);
 
 	// create state file
 	state_save_to(self, path);
 
 	// remove old state file
-	fs_unlink("%s.old", path);
+	fs_unlink("{s}.old", path);
 }
 
 void

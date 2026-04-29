@@ -33,7 +33,7 @@ bookmark_mgr_free(BookmarkMgr* self)
 void
 bookmark_mgr_open(BookmarkMgr* self, const char* path)
 {
-	if (! fs_exists("%s", path))
+	if (! fs_exists("{s}", path))
 		return;
 
 	auto buf = file_import("{s}", path);
@@ -65,8 +65,8 @@ bookmark_mgr_open(BookmarkMgr* self, const char* path)
 void
 bookmark_mgr_sync(BookmarkMgr* self, const char* path)
 {
-	if (fs_exists("%s", path))
-		fs_unlink("%s", path);
+	if (fs_exists("{s}", path))
+		fs_unlink("{s}", path);
 
 	// write a list of remote bookmark_mgr
 	Buf buf;

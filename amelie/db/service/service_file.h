@@ -149,14 +149,14 @@ service_file_create(ServiceFile* self)
 	file_close(&file);
 
 	// rename as completed
-	fs_rename(path, "%s/storage/%" PRIu64 ".service",
+	fs_rename(path, "{s}/storage/{u64}.service",
 	          state_directory(), self->id);
 }
 
 static inline void
 service_file_delete(ServiceFile* self)
 {
-	fs_unlink("%s/storage/%" PRIu64 ".service",
+	fs_unlink("{s}/storage/{u64}.service",
 	          state_directory(), self->id);
 }
 

@@ -211,22 +211,22 @@ catalog_read(Catalog* self)
 {
 	// restore catalog.json from incomplete, if possible
 	char path[PATH_MAX];
-	if (! fs_exists("%s/catalog.json", state_directory()))
+	if (! fs_exists("{s}/catalog.json", state_directory()))
 	{
 		// check if catalog.json.incomplete exists
-		if (! fs_exists("%s/catalog.json.incomplete", state_directory()))
+		if (! fs_exists("{s}/catalog.json.incomplete", state_directory()))
 			error("catalog: catalog file is missing");
 
 		// restore catalog file
 		format(path, sizeof(path), "{s}/catalog.json.incomplete",
 		       state_directory());
-		fs_rename(path, "%s/catalog.json", state_directory());
+		fs_rename(path, "{s}/catalog.json", state_directory());
 		// todo: sync dir
 	} else
 	{
 		// remove catalog.json.incomplete
-		if (fs_exists("%s/catalog.json.incomplete", state_directory()))
-			fs_unlink("%s/catalog.json.incomplete", state_directory());
+		if (fs_exists("{s}/catalog.json.incomplete", state_directory()))
+			fs_unlink("{s}/catalog.json.incomplete", state_directory());
 	}
 
 	// read catalog file
@@ -303,8 +303,8 @@ catalog_write(Catalog* self)
 	format(path, sizeof(path), "{s}/catalog.json.incomplete",
 	       state_directory());
 
-	if (fs_exists("%s", path))
-		fs_unlink("%s", path);
+	if (fs_exists("{s}", path))
+		fs_unlink("{s}", path);
 
 	// prepare catalog dump
 	auto lsn  = state_catalog_pending();
@@ -334,13 +334,13 @@ catalog_write(Catalog* self)
 	format(path, sizeof(path), "{s}/catalog.json",
 	       state_directory());
 
-	if (fs_exists("%s", path))
-		fs_unlink("%s", path);
+	if (fs_exists("{s}", path))
+		fs_unlink("{s}", path);
 
 	// rename
 	format(path, sizeof(path), "{s}/catalog.json.incomplete",
 	       state_directory());
-	fs_rename(path, "%s/catalog.json", state_directory());
+	fs_rename(path, "{s}/catalog.json", state_directory());
 	// todo: sync dir
 
 	// update catalog lsn

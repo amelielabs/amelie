@@ -28,7 +28,7 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 
 	char path[PATH_MAX];
 	format(path, PATH_MAX, "{s}/storage/{s}", state_directory(), id);
-	if (! fs_exists("%s", path))
+	if (! fs_exists("{s}", path))
 	{
 		volume_mkdir(volume);
 		return;

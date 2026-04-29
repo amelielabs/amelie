@@ -65,8 +65,8 @@ wal_open_directory(Wal* self)
 	// create directory
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{s}/wal", state_directory());
-	if (! fs_exists("%s", path))
-		fs_mkdir(0755, "%s", path);
+	if (! fs_exists("{s}", path))
+		fs_mkdir(0755, "{s}", path);
 
 	// open and keep directory fd to support sync
 	self->dirfd = vfs_open(path, O_DIRECTORY|O_RDONLY, 0);

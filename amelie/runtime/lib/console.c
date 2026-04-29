@@ -91,7 +91,7 @@ void
 console_load(Console* self, const char* path)
 {
 	// load history file
-	if (! fs_exists("%s", path))
+	if (! fs_exists("{s}", path))
 		return;
 
 	auto data = file_import("{s}", path);

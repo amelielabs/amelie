@@ -51,8 +51,8 @@ restore_dir_str(Str* path_relative)
 	format(path, sizeof(path), "{s}/{str}", state_directory(),
 	       path_relative);
 
-	if (! fs_exists("%s", path))
-		fs_mkdir(0755, "%s", path);
+	if (! fs_exists("{s}", path))
+		fs_mkdir(0755, "{s}", path);
 
 	info("backup: %.*s", str_size(path_relative),
 	     str_of(path_relative));
@@ -70,7 +70,7 @@ static void
 restore_basedir(char* directory)
 {
 	// ensure directory does not exists
-	if (fs_exists("%s", directory))
+	if (fs_exists("{s}", directory))
 		error("directory already exists");
 
 	// set directory
