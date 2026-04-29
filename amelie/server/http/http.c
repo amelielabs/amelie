@@ -327,7 +327,7 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	if (size > 0)
 	{
 		buf_write(buf, "Content-Length: ", 16);
-		buf_printf(buf, "%" PRIu64, size);
+		buf_format(buf, "{u64}", size);
 		buf_write(buf, "\r\n", 2);
 	}
 
@@ -371,7 +371,7 @@ http_begin_reply(Http*    self, Endpoint* endpoint,
 	if (size > 0)
 	{
 		buf_write(buf, "Content-Length: ", 16);
-		buf_printf(buf, "%" PRIu64, size);
+		buf_format(buf, "{u64}", size);
 		buf_write(buf, "\r\n", 2);
 	}
 

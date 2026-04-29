@@ -238,6 +238,12 @@ format_run(Format* self, const char* spec, va_list args)
 				if (unlikely(! format_add_u64(self, value)))
 					break;
 			} else
+			if (format_if(&pos, "u32}", 4))
+			{
+				auto value = va_arg(args, uint32_t);
+				if (unlikely(! format_add_u64(self, value)))
+					break;
+			} else
 			if (format_if(&pos, "qs}", 3))
 			{
 				auto value = va_arg(args, char*);

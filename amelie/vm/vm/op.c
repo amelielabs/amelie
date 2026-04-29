@@ -328,29 +328,29 @@ OpDesc ops[] =
 static inline void
 op_write(Buf* output, Op* op, bool a, bool b, bool c, char *fmt, ...)
 {
-	buf_printf(output, "%-20s", ops[op->op].name);
+	buf_format(output, "{-20s}", ops[op->op].name);
 
 	if (a)
-		buf_printf(output, "%-6" PRIi64 " ", op->a);
+		buf_format(output, "{-6" PRIi64 "} ", op->a);
 	else
-		buf_printf(output, "%-6s ", "-");
+		buf_format(output, "{-6s} ", "-");
 
 	if (b)
-		buf_printf(output, "%-6" PRIi64 " ", op->b);
+		buf_format(output, "{-6" PRIi64 "} ", op->b);
 	else
-		buf_printf(output, "%-6s ", "-");
+		buf_format(output, "{-6s} ", "-");
 
 	if (c)
-		buf_printf(output, "%-6" PRIi64, op->c);
+		buf_format(output, "{-6" PRIi64 "}", op->c);
 	else
-		buf_printf(output, "%-6s", "-");
+		buf_format(output, "{-6s}", "-");
 
 	if (fmt)
 	{
-		buf_printf(output, "# ");
+		buf_format(output, "# ");
 		va_list args;
 		va_start(args, fmt);
-		buf_vprintf(output, fmt, args);
+		buf_formatv(output, fmt, args);
 		va_end(args);
 	}
 }
@@ -361,10 +361,8 @@ op_dump_send(Program* self, Code* code, Op* op, Buf* buf, Send* send,
 {
 	auto is_last = self->send_last == code_posof(code, op);
 	auto config = send->table->config;
-	op_write(buf, op, a, b, c,
-	         "%.*s.%.*s (%s%s)",
-	         str_size(&config->user), str_of(&config->user),
-	         str_size(&config->name), str_of(&config->name),
+	op_write(buf, op, a, b, c, "{str}.{str} ({s}{s})",
+	         &config->user, &config->name,
 	         send_of(send),
 	         is_last ? ", closing" : "");
 }
@@ -391,48 +389,46 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CPUSH_INT:
 		case CPUSH_TIMESTAMP:
 		{
-			op_write(output, op, false, true, true, "%" PRIi64, op->a);
+			op_write(output, op, false, true, true, "{i64}", op->a);
 			break;
 		}
 		case CINT:
 		case CTIMESTAMP:
 		{
-			op_write(output, op, true, false, true, "%" PRIi64, op->b);
+			op_write(output, op, true, false, true, "{i64}", op->b);
 			break;
 		}
 		case CPUSH_STRING:
 		{
 			Str str;
 			code_data_at_string(data, op->a, &str);
-			op_write(output, op, true, true, true, "%.*s",
-			         str_size(&str), str_of(&str));
+			op_write(output, op, true, true, true, "{str}", &str);
 			break;
 		}
 		case CSTRING:
 		{
 			Str str;
 			code_data_at_string(data, op->b, &str);
-			op_write(output, op, true, true, true, "%.*s",
-			         str_size(&str), str_of(&str));
+			op_write(output, op, true, true, true, "{str}", &str);
 			break;
 		}
 		case CPUSH_DOUBLE:
 		{
 			double dbl = code_data_at_double(data, op->a);
-			op_write(output, op, true, true, true, "%g", dbl);
+			op_write(output, op, true, true, true, "{g}", dbl);
 			break;
 		}
 		case CDOUBLE:
 		{
 			double dbl = code_data_at_double(data, op->b);
-			op_write(output, op, true, true, true, "%g", dbl);
+			op_write(output, op, true, true, true, "{g}", dbl);
 			break;
 		}
 
 		case CPUSH_VALUE:
 		{
 			auto value = (Value*)op->a;
-			op_write(output, op, false, true, true, "%s",
+			op_write(output, op, false, true, true, "{s}",
 			         type_of(value->type));
 			break;
 		}
@@ -457,13 +453,9 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto table    = (Table*)op->a;
 			auto snapshot = (Snapshot*)op->b;
 			op_write(output, op, false, false, false,
-			         "%.*s.%.*s [%.*s]",
-			         str_size(&table->config->user),
-			         str_of(&table->config->user),
-			         str_size(&table->config->name),
-			         str_of(&table->config->name),
-			         str_size(&snapshot->alias),
-			         str_of(&snapshot->alias));
+			         "{str}.{str} [{str}]",
+			         &table->config->user, &table->config->name,
+			         &snapshot->alias);
 			break;
 		}
 		case CTABLE_OPEN:
@@ -480,17 +472,12 @@ op_dump(Program* self, Code* code, Buf* buf)
 				buf_write(desc, "part", 4);
 			}
 			op_write(output, op, true, true, true,
-			         "%.*s.%.*s (%.*s) [%.*s] %.*s",
-			         str_size(&open->table->config->user),
-			         str_of(&open->table->config->user),
-			         str_size(&open->table->config->name),
-			         str_of(&open->table->config->name),
-			         str_size(&open->index->name),
-			         str_of(&open->index->name),
-			         str_size(&open->snapshot->alias),
-			         str_of(&open->snapshot->alias),
-			         buf_size(desc),
-			         buf_cstr(desc));
+			         "{str}.{str} ({str}) [{str}] {buf}",
+			         &open->table->config->user,
+			         &open->table->config->name,
+			         &open->index->name,
+			         &open->snapshot->alias,
+			         desc);
 			break;
 		}
 		case CTABLE_PREPARE:
@@ -498,13 +485,10 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto table    = (Table*)op->b;
 			auto snapshot = (Snapshot*)op->c;
 			op_write(output, op, true, false, false,
-			         "%.*s.%.*s [%.*s]",
-			         str_size(&table->config->user),
-			         str_of(&table->config->user),
-			         str_size(&table->config->name),
-			         str_of(&table->config->name),
-			         str_size(&snapshot->alias),
-			         str_of(&snapshot->alias));
+			         "{str}.{str} [{str}]",
+			         &table->config->user,
+			         &table->config->name,
+			         &snapshot->alias);
 			break;
 		}
 		case CTABLE_READB:
@@ -523,68 +507,49 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CTABLE_READU:
 		{
 			auto column = (Column*)op->c;
-			op_write(output, op, true, true, false,
-			         "%.*s", str_size(&column->name),
-			         str_of(&column->name));
+			op_write(output, op, true, true, false, "{str}",
+			         &column->name);
 			break;
 		}
 		case CCALL:
 		{
 			auto function = (Function*)op->b;
-			op_write(output, op, true, false, true,
-			         "%.*s()",
-			         str_size(&function->name),
-			         str_of(&function->name));
+			op_write(output, op, true, false, true, "{str}()",
+			         &function->name);
 			break;
 		}
 		case CCALL_UDF:
 		{
 			auto udf = (Udf*)op->b;
-			op_write(output, op, true, false, false,
-			         "%.*s.%.*s()",
-			         str_size(&udf->config->user),
-			         str_of(&udf->config->user),
-			         str_size(&udf->config->name),
-			         str_of(&udf->config->name));
+			op_write(output, op, true, false, false, "{str}.{str}()",
+			         &udf->config->user, &udf->config->name);
 			break;
 		}
 		case CPUBLISH:
 		{
 			auto topic = (Topic*)op->a;
-			op_write(output, op, false, true, false,
-			         "%.*s.%.*s",
-			         str_size(&topic->config->user),
-			         str_of(&topic->config->user),
-			         str_size(&topic->config->name),
-			         str_of(&topic->config->name));
+			op_write(output, op, false, true, false, "{str}.{str}",
+			         &topic->config->user, &topic->config->name);
 			break;
 		}
 		case CSUBSCRIPTION:
 		{
 			auto sub = (Sub*)op->b;
-			op_write(output, op, true, false, false,
-			         "%.*s.%.*s",
-			         str_size(&sub->config->user),
-			         str_of(&sub->config->user),
-			         str_size(&sub->config->name),
-			         str_of(&sub->config->name));
+			op_write(output, op, true, false, false, "{str}.{str}",
+			         &sub->config->user, &sub->config->name);
 			break;
 		};
 		case CACK:
 		{
 			auto sub = (Sub*)op->a;
-			op_write(output, op, false, true, false,
-			         "%.*s.%.*s",
-			         str_size(&sub->config->user),
-			         str_of(&sub->config->user),
-			         str_size(&sub->config->name),
-			         str_of(&sub->config->name));
+			op_write(output, op, false, true, false, "{str}.{str}",
+			         &sub->config->user, &sub->config->name);
 			break;
 		};
 		case CVALUE:
 		{
 			auto value = (Value*)op->b;
-			op_write(output, op, true, false, true, "%s",
+			op_write(output, op, true, false, true, "{s}",
 			         type_of(value->type));
 			break;
 		}

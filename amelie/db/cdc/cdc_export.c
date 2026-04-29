@@ -35,19 +35,16 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 	}
 	char fmt[] =
 		"\n"
-		"{\"jsonrpc\": \"2.0\", "
+		"{{\"jsonrpc\": \"2.0\", "
 		  "\"method\": \"event\", "
-		  "\"params\": {"
-			"\"lsn\": %" PRIu64 ", "
-			"\"lsn_op\": %" PRIu32 ", "
-			"\"cmd\": \"%.*s\", "
-			"\"rel\": \"%.*s\", "
+		  "\"params\": {{"
+			"\"lsn\": {u64}, "
+			"\"lsn_op\": {u32}, "
+			"\"cmd\": \"{str}\", "
+			"\"rel\": \"{str}\", "
 			"\"row\": ";
-	buf_printf(buf, fmt, event->lsn, event->lsn_op,
-	           str_size(&cmd),
-	           str_of(&cmd),
-	           str_size(rel),
-	           str_of(rel));
+	buf_format(buf, fmt, event->lsn, event->lsn_op,
+	           &cmd, rel);
 	uint8_t* pos = event->data;
 	json_export(buf, runtime()->timezone, &pos);
 	buf_write(buf, "}}", 2);

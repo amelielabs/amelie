@@ -26,15 +26,14 @@ fn_error(Fn* self, char* fmt, ...)
 	auto buf = buf_create();
 	errdefer_buf(buf);
 
-	buf_printf(buf, "%.*s(", str_size(&self->function->name),
-	           str_of(&self->function->name));
+	buf_format(buf, "{str}(", &self->function->name);
 	for (auto i = 0; i < self->argc; i++)
 	{
 		if (i > 0)
-			buf_printf(buf, ", ");
-		buf_printf(buf, "%s", type_of(self->argv[i].type));
+			buf_write(buf, ", ", 2);
+		buf_format(buf, "{s}", type_of(self->argv[i].type));
 	}
-	buf_printf(buf, ")");
+	buf_format(buf, ")");
 
 	va_list args;
 	char msg[256];
@@ -51,8 +50,7 @@ fn_error_noargs(Fn* self, char* fmt, ...)
 	auto buf = buf_create();
 	errdefer_buf(buf);
 
-	buf_printf(buf, "%.*s()", str_size(&self->function->name),
-	           str_of(&self->function->name));
+	buf_format(buf, "{str}()", &self->function->name);
 
 	va_list args;
 	char msg[256];
@@ -69,17 +67,16 @@ fn_error_arg(Fn* self, int arg, char* fmt, ...)
 	auto buf = buf_create();
 	errdefer_buf(buf);
 
-	buf_printf(buf, "%.*s(", str_size(&self->function->name),
-	           str_of(&self->function->name));
+	buf_format(buf, "{str}(", &self->function->name);
 	for (auto i = 0; i < self->argc; i++)
 	{
 		if (i > 0)
-			buf_printf(buf, ", ");
+			buf_write(buf, ", ", 2);
 		if (i == arg) {
-			buf_printf(buf, "❰%s❱", type_of(self->argv[i].type));
+			buf_format(buf, "❰{s}❱", type_of(self->argv[i].type));
 			break;
 		}
-		buf_printf(buf, "%s", type_of(self->argv[i].type));
+		buf_format(buf, "{s}", type_of(self->argv[i].type));
 	}
 
 	va_list args;

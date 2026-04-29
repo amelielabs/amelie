@@ -32,19 +32,19 @@ slt_result_convert(SltResult* self, uint8_t** pos)
 		auto offset = buf_size(&self->output);
 		if (data_is_bool(*pos))
 		{
-			buf_printf(buf, "%d", **pos == DATA_TRUE);
+			buf_format(buf, "{d}", **pos == DATA_TRUE);
 		} else
 		if (data_is_int(*pos))
 		{
 			int64_t value;
 			unpack_int(pos, &value);
-			buf_printf(buf, "%" PRIi64, value);
+			buf_format(buf, "{i64}", value);
 		} else
 		if (data_is_real(*pos))
 		{
 			double value;
 			unpack_real(pos, &value);
-			buf_printf(buf, "%.3f", value);
+			buf_format(buf, "{.3f}", value);
 		} else
 		if (data_is_str(*pos))
 		{
@@ -52,15 +52,14 @@ slt_result_convert(SltResult* self, uint8_t** pos)
 			Str value;
 			unpack_str(pos, &value);
 			if (str_empty(&value))
-				buf_printf(buf, "(empty)");
+				buf_format(buf, "(empty)");
 			else
-				buf_printf(buf, "%.*s", (int)str_size(&value),
-				           str_of(&value));
+				buf_format(buf, "{str}", &value);
 		} else
 		if (data_is_null(*pos))
 		{
 			unpack_null(pos);
-			buf_printf(buf, "NULL");
+			buf_format(buf, "NULL");
 		} else {
 			error("unsupported type in result");
 		}
@@ -159,8 +158,8 @@ slt_result_write(SltResult* self)
 	if (self->count <= self->threshold)
 		return;
 	buf_reset(result);
-	buf_printf(&self->result, "%d values hashing to %s\n", self->count,
-	           buf_cstr(&self->result_hash));
+	buf_format(&self->result, "{d} values hashing to {buf}\n", self->count,
+	           &self->result_hash);
 }
 
 void

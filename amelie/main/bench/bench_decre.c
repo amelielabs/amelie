@@ -41,7 +41,7 @@ bench_decre_create(Bench* self, MainClient* client)
 	for (auto i = 0ul; i < n; i++)
 	{
 		buf_reset(&buf);
-		buf_printf(&buf, "insert into test generate 500");
+		buf_format(&buf, "insert into test generate 500");
 		buf_str(&buf, &str);
 		main_client_execute(client, &str, NULL);
 	}
@@ -86,7 +86,7 @@ bench_decre_main(BenchWorker* self, MainClient* client)
 	Buf buf;
 	buf_init(&buf);
 	defer_buf(&buf);
-	buf_printf(&buf, "execute debit_credit_batch(%d, %d);", batch, total);
+	buf_format(&buf, "execute debit_credit_batch({d}, {d});", batch, total);
 	Str cmd;
 	buf_str(&buf, &cmd);
 

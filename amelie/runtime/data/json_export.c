@@ -39,14 +39,14 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 	{
 		double value;
 		unpack_real(pos, &value);
-		buf_printf(data, "%g", value);
+		buf_format(data, "{g}", value);
 		break;
 	}
 	case DATA_INTV0 ... DATA_INT64:
 	{
 		int64_t value;
 		unpack_int(pos, &value);
-		buf_printf(data, "%" PRIi64, value);
+		buf_format(data, "{i64}", value);
 		break;
 	}
 	case DATA_STRV0 ... DATA_STR32:

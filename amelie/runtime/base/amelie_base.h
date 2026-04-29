@@ -43,7 +43,6 @@
 #include "base/buf_mgr.h"
 
 // format
-#include "base/fmt.h"
 #include "base/format.h"
 
 // exception

@@ -210,7 +210,7 @@ console_refresh(Console* self)
 	buf_write_str(buf, self->prompt);
 	buf_write_str(buf, &data);
 	buf_write(buf, "\x1b[0K", 4);
-	buf_printf(buf, "\r\x1b[%dC", cursor);
+	buf_format(buf, "\r\x1b[{d}C", cursor);
 
 	vfs_write(self->fd_out, buf_cstr(buf), buf_size(buf));
 }

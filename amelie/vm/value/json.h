@@ -129,10 +129,10 @@ value_export_as(Value* self, Timezone* tz, bool pretty, int deep, Buf* buf)
 			buf_write(buf, "false", 5);
 		break;
 	case TYPE_INT:
-		buf_printf(buf, "%" PRIi64, self->integer);
+		buf_format(buf, "{i64}", self->integer);
 		break;
 	case TYPE_DOUBLE:
-		buf_printf(buf, "%g", self->dbl);
+		buf_format(buf, "{g}", self->dbl);
 		break;
 	case TYPE_STRING:
 		buf_write(buf, "\"", 1);
@@ -176,7 +176,7 @@ value_export_as(Value* self, Timezone* tz, bool pretty, int deep, Buf* buf)
 	{
 		buf_write(buf, "[", 1);
 		for (uint32_t i = 0; i < self->vector->size; i++)
-			buf_printf(buf, "%g%s", self->vector->value[i],
+			buf_format(buf, "{g}{s}", self->vector->value[i],
 			           i != self->vector->size - 1 ? ", ": "");
 		buf_write(buf, "]", 1);
 		break;

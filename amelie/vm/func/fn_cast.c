@@ -153,7 +153,7 @@ fn_string(Fn* self)
 	auto data = buf_create();
 	switch (arg->type) {
 	case TYPE_STRING:
-		buf_printf(data, "%.*s", str_size(&arg->string), str_of(&arg->string));
+		buf_format(data, "{str}", &arg->string);
 		break;
 	case TYPE_DATE:
 	{

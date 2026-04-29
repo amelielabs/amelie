@@ -69,13 +69,13 @@ loader_client_main(Loader* self, MainClient* client)
 			batch = self->to - seq;
 
 		buf_reset(&buf);
-		buf_printf(&buf, "INSERT INTO bench_accounts VALUES ");
+		buf_format(&buf, "INSERT INTO bench_accounts VALUES ");
 		for (auto i = 0ul; i < batch; i++)
 		{
-			buf_printf(&buf, "%s(%d, %d, 0, \"%.*s\")",
+			buf_format(&buf, "{s}({d}, {d}, 0, \"{buf}\")",
 			           i > 0 ? "," : "",
 			           seq, seq / tpcb_accounts,
-			           buf_size(filler), filler->start);
+			           filler);
 			seq++;
 		}
 		Str str;
@@ -157,7 +157,7 @@ tpcb_execute(MainClient* client,
 {
 	auto buf = buf_create();
 	defer_buf(buf);
-	buf_printf(buf, "execute bench_tpcb(%d, %d, %d, %d);", bid, tid, aid, delta);
+	buf_format(buf, "execute bench_tpcb({d}, {d}, {d}, {d});", bid, tid, aid, delta);
 	Str cmd;
 	buf_str(buf, &cmd);
 	main_client_execute(client, &cmd, NULL);
@@ -254,7 +254,7 @@ bench_tpcb_create(Bench* self, MainClient* client)
 	for (auto i = 0; i < tpcb_branches * scale; i++)
 	{
 		buf_reset(buf);
-		buf_printf(buf, "INSERT INTO bench_branches VALUES (%d, 0, \"%.*s\")",
+		buf_format(buf, "INSERT INTO bench_branches VALUES ({d}, 0, \"{buf}\")",
 		           i,
 		           buf_size(filler), filler->start);
 		buf_str(buf, &str);
@@ -264,9 +264,9 @@ bench_tpcb_create(Bench* self, MainClient* client)
 	for (auto i = 0; i < tpcb_tellers * scale; i++)
 	{
 		buf_reset(buf);
-		buf_printf(buf, "INSERT INTO bench_tellers VALUES (%d, %d, 0, \"%.*s\")",
+		buf_format(buf, "INSERT INTO bench_tellers VALUES ({d}, {d}, 0, \"{buf}\")",
 		           i, i / tpcb_tellers,
-		           buf_size(filler), filler->start);
+		           filler);
 		buf_str(buf, &str);
 		main_client_execute(client, &str, NULL);
 	}
@@ -276,9 +276,9 @@ bench_tpcb_create(Bench* self, MainClient* client)
 		for (auto i = 0; i < tpcb_accounts * scale; i++)
 		{
 			buf_reset(buf);
-			buf_printf(buf, "INSERT INTO bench_accounts VALUES (%d, %d, 0, \"%.*s\")",
+			buf_format(buf, "INSERT INTO bench_accounts VALUES ({d}, {d}, 0, \"{buf}\")",
 			           i, i / tpcb_accounts,
-			           buf_size(filler), filler->start);
+			           filler);
 			buf_str(buf, &str);
 			main_client_execute(client, &str, NULL);
 		}
@@ -303,7 +303,7 @@ bench_tpcb_main(BenchWorker* self, MainClient* client)
 	Buf buf;
 	buf_init(&buf);
 	defer_buf(&buf);
-	buf_printf(&buf, "execute bench_tpcb_batch(%d, %d);", batch, scale);
+	buf_format(&buf, "execute bench_tpcb_batch({d}, {d});", batch, scale);
 	Str cmd;
 	buf_str(&buf, &cmd);
 	while (! self->shutdown)
@@ -338,7 +338,7 @@ bench_tpcb_main(BenchWorker* self, MainClient* client)
 		int delta  = -5000 + (c % 10000); // -5000 to 5000
 
 		buf_reset(&buf);
-		buf_printf(&buf, "execute __bench.tpcb(%d, %d, %d, %d);", bid, tid, aid, delta);
+		buf_format(&buf, "execute __bench.tpcb({d}, {d}, {d}, {d});", bid, tid, aid, delta);
 		bench_client_execute(client, &cmd);
 
 		atomic_u64_add(&bench->transactions, 1);

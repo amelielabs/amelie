@@ -137,7 +137,7 @@ test_session_post(TestSession* self,
 	if (! str_empty(content))
 	{
 		buf_write(buf, "Content-Length: ", 16);
-		buf_printf(buf, "%d", str_size(content));
+		buf_format(buf, "{d}", str_size(content));
 		buf_write(buf, "\r\n", 2);
 	}
 

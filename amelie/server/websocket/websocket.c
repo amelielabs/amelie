@@ -91,12 +91,11 @@ websocket_connect(Websocket* self)
 	auto request = &client->request;
 	http_reset(request);
 	auto buf = http_begin_request(request, HTTP_GET, client->endpoint, 0);
-	buf_printf(buf, "Upgrade: websocket\r\n");
-	buf_printf(buf, "Connection: Upgrade\r\n");
-	buf_printf(buf, "Sec-WebSocket-Key: %.*s\r\n", buf_size(&key), buf_cstr(&key));
-	buf_printf(buf, "Sec-WebSocket-Version: 13\r\n");
-	buf_printf(buf, "Sec-WebSocket-Protocol: %.*s\r\n", str_size(&self->protocol),
-	           str_of(&self->protocol));
+	buf_format(buf, "Upgrade: websocket\r\n");
+	buf_format(buf, "Connection: Upgrade\r\n");
+	buf_format(buf, "Sec-WebSocket-Key: {buf}\r\n", &key);
+	buf_format(buf, "Sec-WebSocket-Version: 13\r\n");
+	buf_format(buf, "Sec-WebSocket-Protocol: {str}\r\n", &self->protocol);
 	http_end(buf);
 	tcp_write_buf(&client->tcp, buf);
 
@@ -182,12 +181,11 @@ websocket_accept(Websocket* self)
 	auto reply = &client->reply;
 	http_reset(reply);
 	auto buf = http_begin_reply(reply, client->endpoint, "101 Switching Protocols", 23, 0);
-	buf_printf(buf, "Upgrade: websocket\r\n");
-	buf_printf(buf, "Connection: Upgrade\r\n");
-	buf_printf(buf, "Sec-WebSocket-Accept: %.*s\r\n", str_size(&token_str), token_str.pos);
+	buf_format(buf, "Upgrade: websocket\r\n");
+	buf_format(buf, "Connection: Upgrade\r\n");
+	buf_format(buf, "Sec-WebSocket-Accept: {str}\r\n", &token_str);
 	if (hdr_protocol)
-		buf_printf(buf, "Sec-WebSocket-Protocol: %.*s\r\n", str_size(&self->protocol),
-		           str_of(&self->protocol));
+		buf_format(buf, "Sec-WebSocket-Protocol: {str}\r\n", &self->protocol);
 	http_end(buf);
 	tcp_write_buf(&client->tcp, buf);
 }

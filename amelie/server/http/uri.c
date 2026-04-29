@@ -412,9 +412,8 @@ uri_export_arg(Opt* opt, Buf* buf, bool* first)
 	if (opt_string_empty(opt))
 		return;
 	// [?|&]name=value
-	buf_printf(buf, "%c%s=%.*s", *first? '?': '&',
-	           str_of(&opt->name),
-	           str_size(&opt->string), str_of(&opt->string));
+	buf_format(buf, "{c}{str}={str}", *first? '?': '&',
+	           &opt->name, &opt->string);
 	*first = false;
 }
 
@@ -452,7 +451,7 @@ uri_export(Endpoint* self, Buf* buf)
 		{
 			buf_write_str(buf, &self->host.string);
 			buf_write(buf, ":", 1);
-			buf_printf(buf, "%d", (int)self->port.integer);
+			buf_format(buf, "{d}", (int)self->port.integer);
 		}
 		buf_write(buf, "/", 1);
 	}
