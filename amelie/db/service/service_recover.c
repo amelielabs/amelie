@@ -108,14 +108,12 @@ service_recover_abort(ServiceFile* self)
 			unpack_str(&pos, &to);
 
 			char path_from[PATH_MAX];
-			sfmt(path_from, sizeof(path_from),
-			     "%s/%.*s", state_directory(), str_size(&from),
-			     str_of(&from));
+			format(path_from, sizeof(path_from), "{s}/{str}",
+			       state_directory(), &from);
 
 			char path_to[PATH_MAX];
-			sfmt(path_to, sizeof(path_to),
-			     "%s/%.*s", state_directory(), str_size(&to),
-			     str_of(&to));
+			format(path_to, sizeof(path_to), "{s}/{str}",
+			       state_directory(), &to);
 
 			// rename file back, if it exists
 			if (fs_exists("%s", path_to))
@@ -144,9 +142,8 @@ service_recover_resume(ServiceFile* self)
 
 		// <base>/path
 		char path[PATH_MAX];
-		sfmt(path, sizeof(path), "%s/%.*s", state_directory(),
-		     str_size(&path_relative),
-		     str_of(&path_relative));
+		format(path, sizeof(path), "{s}/{str}", state_directory(),
+		       &path_relative);
 
 		if (fs_exists("%s", path))
 			fs_unlink("%s", path);
@@ -207,7 +204,7 @@ service_recover(Service* self)
 
 	// <base>/storage
 	char path[PATH_MAX];
-	sfmt(path, PATH_MAX, "%s/storage", state_directory());
+	format(path, PATH_MAX, "{s}/storage", state_directory());
 
 	// read storage directory
 	auto dir = opendir(path);

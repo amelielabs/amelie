@@ -42,9 +42,9 @@ static inline void
 wal_file_open(WalFile* self)
 {
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/wal/%" PRIu64,
-	     state_directory(),
-	     self->id);
+	format(path, sizeof(path), "{s}/wal/{u64}",
+	       state_directory(),
+	       self->id);
 	file_open(&self->file, path);
 }
 
@@ -52,9 +52,9 @@ static inline void
 wal_file_create(WalFile* self)
 {
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/wal/%" PRIu64,
-	     state_directory(),
-	     self->id);
+	format(path, sizeof(path), "{s}/wal/{u64}",
+	       state_directory(),
+	       self->id);
 	file_create(&self->file, path);
 }
 

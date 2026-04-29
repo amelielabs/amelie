@@ -20,7 +20,7 @@ slt_sh(const char* fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	char cmd[PATH_MAX];
-	vsfmt(cmd, sizeof(cmd), fmt, args);
+	formatv(cmd, sizeof(cmd), fmt, args);
 	int rc = system(cmd);
 	va_end(args);
 	return rc;
@@ -43,12 +43,11 @@ slt_open(Slt* self, Str* dir)
 {
 	self->dir = dir;
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%.*s", str_size(dir),
-	     str_of(dir));
+	format(path, sizeof(path), "{str}", dir);
 
 	// recreate result directory
 	if (fs_exists("%s", path))
-		slt_sh("rm -rf %s", path);
+		slt_sh("rm -rf {s}", path);
 
 	// create repository
 	int   argc   = 13;
@@ -234,5 +233,5 @@ slt_stop(Slt* self)
 	if (!dir)
 		return;
 	if (fs_exists("%.*s", str_size(dir), str_of(dir)))
-		slt_sh("rm -rf %.*s", str_size(dir), str_of(dir));
+		slt_sh("rm -rf {dir}", dir);
 }

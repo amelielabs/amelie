@@ -64,7 +64,7 @@ wal_open_directory(Wal* self)
 {
 	// create directory
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/wal", state_directory());
+	format(path, sizeof(path), "{s}/wal", state_directory());
 	if (! fs_exists("%s", path))
 		fs_mkdir(0755, "%s", path);
 

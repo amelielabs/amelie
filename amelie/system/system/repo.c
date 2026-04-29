@@ -56,14 +56,14 @@ static void
 repo_pidfile_create(void)
 {
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/pid", state_directory());
+	format(path, sizeof(path), "{s}/pid", state_directory());
 
 	auto fd = vfs_open(path, O_TRUNC|O_CREAT|O_WRONLY, 0644);
 	if (fd == -1)
 		error_system();
 
 	char pid[32];
-	auto pid_len = sfmt(pid, sizeof(pid), "%d", getpid());
+	auto pid_len = format(pid, sizeof(pid), "{d}", getpid());
 
 	auto rc = vfs_write(fd, pid, pid_len);
 	vfs_close(fd);
@@ -263,11 +263,11 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	logger_set_enable(logger, true);
 	logger_set_stdout(logger, false);
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/log", state_directory());
+	format(path, sizeof(path), "{s}/log", state_directory());
 	logger_open(logger, path);
 
 	// read version file
-	sfmt(path, sizeof(path), "%s/version.json", state_directory());
+	format(path, sizeof(path), "{s}/version.json", state_directory());
 	if (self->bootstrap)
 	{
 		// create version file
@@ -279,7 +279,7 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	}
 
 	// read config file
-	sfmt(path, sizeof(path), "%s/config.json", state_directory());
+	format(path, sizeof(path), "{s}/config.json", state_directory());
 	if (self->bootstrap)
 	{
 		// set options first, to properly generate config
@@ -300,7 +300,7 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	}
 
 	// read state file
-	sfmt(path, sizeof(path), "%s/state.json", state_directory());
+	format(path, sizeof(path), "{s}/state.json", state_directory());
 	if (self->bootstrap)
 	{
 		// create state file

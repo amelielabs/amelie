@@ -66,11 +66,9 @@ test_command_open(TestSuite* self, Str* arg)
 	test_plan_add_env(&self->plan, env);
 
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%.*s/%.*s",
-	     str_size(&self->option_result_dir),
-	     str_of(&self->option_result_dir),
-	     str_size(&name),
-	     str_of(&name));
+	format(path, sizeof(path), "{str}/{str}",
+	       &self->option_result_dir,
+	       &name);
 
 	// start <name> [server options]
 	int   argc = 15;
@@ -97,8 +95,7 @@ test_command_open(TestSuite* self, Str* arg)
 	str_chomp(arg);
 	if (! str_empty(arg))
 	{
-		sfmt(options, sizeof(options), "--json={%.*s}",
-		     str_size(arg), str_of(arg));
+		format(options, sizeof(options), "--json={{ {str} }}", arg);
 		argv[argc] = options;
 		argc++;
 	}
@@ -148,22 +145,19 @@ test_command_backup(TestSuite* self, Str* arg)
 
 	// set client home
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%.*s/home", str_size(&self->option_result_dir),
-	     str_of(&self->option_result_dir));
+	format(path, sizeof(path), "{str}/home", &self->option_result_dir);
 	setenv("AMELIE_HOME", path, 1);
 
 	// set base dir
-	sfmt(path, sizeof(path), "%.*s/%.*s",
-	     str_size(&self->option_result_dir),
-	     str_of(&self->option_result_dir),
-	     str_size(&name),
-	     str_of(&name));
+	format(path, sizeof(path), "{str}/{str}",
+	       &self->option_result_dir,
+	       &name);
 
 	// backup <uri> <path>
 	char uri[1024];
 	str_chomp(arg);
 	str_shrink(arg);
-	sfmt(uri, sizeof(uri), "%.*s", str_size(arg), str_of(arg));
+	format(uri, sizeof(uri), "{str}", arg);
 
 	int   argc = 5;
 	char* argv[5] =
@@ -276,8 +270,7 @@ test_command_option(TestSuite* self, Str* arg)
 	auto opts = &session->endpoint.opts;
 	auto opt = opts_find(opts, &name);
 	if (! opt)
-		test_error(self, "option '%.*s': not found", str_size(&name),
-		           str_of(&name));
+		test_error(self, "option '{str}': not found", &name);
 	opt_set(opt, &value);
 }
 

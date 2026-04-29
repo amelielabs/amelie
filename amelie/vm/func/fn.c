@@ -39,7 +39,7 @@ fn_error(Fn* self, char* fmt, ...)
 	va_list args;
 	char msg[256];
 	va_start(args, fmt);
-	vsfmt(msg, sizeof(msg), fmt, args);
+	formatv(msg, sizeof(msg), fmt, args);
 	va_end(args);
 
 	error("%.*s ⟵ %s", buf_size(buf), buf->start, msg);
@@ -57,7 +57,7 @@ fn_error_noargs(Fn* self, char* fmt, ...)
 	va_list args;
 	char msg[256];
 	va_start(args, fmt);
-	vsfmt(msg, sizeof(msg), fmt, args);
+	formatv(msg, sizeof(msg), fmt, args);
 	va_end(args);
 
 	error("%.*s ⟵ %s", buf_size(buf), buf->start, msg);
@@ -85,7 +85,7 @@ fn_error_arg(Fn* self, int arg, char* fmt, ...)
 	va_list args;
 	char msg[256];
 	va_start(args, fmt);
-	vsfmt(msg, sizeof(msg), fmt, args);
+	formatv(msg, sizeof(msg), fmt, args);
 	va_end(args);
 
 	error("%.*s ⟵ %s", buf_size(buf), buf->start, msg);

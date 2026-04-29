@@ -306,8 +306,7 @@ fn_timestamp(Fn* self)
 			auto name = &self->argv[1].string;
 			timezone = timezone_mgr_find(&runtime()->timezone_mgr, name);
 			if (! timezone)
-				fn_error_arg(self, 1, "failed to find timezone '%.*s'",
-				             str_size(name), str_of(name));
+				fn_error_arg(self, 1, "failed to find timezone '{str}'", name);
 		}
 		Timestamp ts;
 		timestamp_init(&ts);

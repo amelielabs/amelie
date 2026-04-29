@@ -61,7 +61,7 @@ static inline void
 service_rel_set(ServiceRel* self, uint64_t id)
 {
 	self->id = id;
-	auto size = sfmt(self->rel_id, sizeof(self->rel_id), "service_%" PRIu64, id);
+	auto size = format(self->rel_id, sizeof(self->rel_id), "service_{u64}", id);
 	str_set(&self->rel_name, self->rel_id, size);
 }
 

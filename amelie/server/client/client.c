@@ -117,8 +117,8 @@ client_connect_to_path(Client* self, Str* path)
 	struct sockaddr*   addr = (struct sockaddr*)&addr_un;
 	memset(&addr_un, 0, sizeof(addr_un));
 	addr_un.sun_family = AF_UNIX;
-	sfmt(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%.*s/socket",
-	     str_size(path), str_of(path));
+	format(addr_un.sun_path, sizeof(addr_un.sun_path) - 1,
+	       "{str}/socket", path);
 
 	// connect
 	tcp_connect(&self->tcp, addr);

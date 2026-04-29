@@ -42,7 +42,7 @@ fn_expect(Fn* self, int argc)
 	{
 		if (argc == 0)
 			fn_error_arg(self, 0, "function has no arguments");
-		fn_error(self, "expected %d argument%s", argc,
+		fn_error(self, "expected {d} argument{s}", argc,
 		         argc > 1 ? "s": "");
 	}
 }
@@ -51,7 +51,7 @@ static inline void
 fn_expect_arg(Fn* self, int arg, Type type)
 {
 	if (unlikely(self->argv[arg].type != type))
-		fn_error_arg(self, arg, "expected %s", type_of(type));
+		fn_error_arg(self, arg, "expected {s}", type_of(type));
 }
 
 static inline void no_return

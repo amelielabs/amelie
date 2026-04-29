@@ -61,7 +61,7 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* data)
 	char path[PATH_MAX];
 	for (auto file = self->files; file; file = file->next)
 	{
-		sfmt(path, sizeof(path), "wal/%" PRIu64, file->id);
+		format(path, sizeof(path), "wal/{u64}", file->id);
 		encode_basefile(data, path);
 	}
 	encode_array_end(data);

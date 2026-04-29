@@ -175,9 +175,7 @@ test_session_post(TestSession* self,
 		auto code = &reply->options[HTTP_CODE];
 		auto msg  = &reply->options[HTTP_MSG];
 		char text[64];
-		auto text_size =
-			sfmt(text, sizeof(text), "%.*s %.*s\n", str_size(code), str_of(code),
-			     str_size(msg), str_of(msg));
+		auto text_size = format(text, sizeof(text), "{str} {str}\n", code, msg);
 		file_write(output, text, text_size);
 	}
 }

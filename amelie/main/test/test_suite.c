@@ -29,7 +29,7 @@ test_suite_test_validate(TestSuite* self)
 	struct stat result_stat;
 	stat(self->current_test_result_file, &result_stat);
 	int rc;
-	rc = test_sh(self, "cmp -s -n %d %s %s", result_stat.st_size,
+	rc = test_sh(self, "cmp -s -n {d} {s} {s}", result_stat.st_size,
 	             self->current_test_result_file,
 	             self->current_test_ok_file);
 	if (rc == 0)
@@ -64,34 +64,27 @@ static bool
 test_suite_execute(TestSuite* self, Test* test)
 {
 	// create test directory
-	test_sh(self, "mkdir %.*s", str_size(&self->option_result_dir),
-	        str_of(&self->option_result_dir));
+	test_sh(self, "mkdir {str}", &self->option_result_dir);
 
 	// prepare test file path
 	char test_file[PATH_MAX];
 	char test_result_file[PATH_MAX];
 	char test_ok_file[PATH_MAX];
 
-	sfmt(test_file, sizeof(test_file),
-	     "%.*s/%.*s.test",
-	     str_size(&test->group->directory),
-	     str_of(&test->group->directory),
-	     str_size(&test->name),
-	     str_of(&test->name));
+	format(test_file, sizeof(test_file),
+	       "{str}/{str}.test",
+	       &test->group->directory,
+	       &test->name);
 
-	sfmt(test_result_file, sizeof(test_result_file),
-	     "%.*s/%.*s.result",
-	     str_size(&test->group->directory),
-	     str_of(&test->group->directory),
-	     str_size(&test->name),
-	     str_of(&test->name));
+	format(test_result_file, sizeof(test_result_file),
+	       "{str}/{str}.result",
+	       &test->group->directory,
+	       &test->name);
 
-	sfmt(test_ok_file, sizeof(test_ok_file),
-	     "%.*s/%.*s.ok",
-	     str_size(&test->group->directory),
-	     str_of(&test->group->directory),
-	     str_size(&test->name),
-	     str_of(&test->name));
+	format(test_ok_file, sizeof(test_ok_file),
+	       "{str}/{str}.ok",
+	       &test->group->directory,
+	       &test->name);
 
 	info("  \033[0;33m%.*s\033[0m\n", str_size(&test->name),
 	     str_of(&test->name));
@@ -150,12 +143,12 @@ test_suite_execute(TestSuite* self, Test* test)
 
 	// create new test ok file
 	if (! self->current_test_ok_exists)
-		test_sh(self, "cp %s %s", test_result_file, test_ok_file);
+		test_sh(self, "cp {s} {s}", test_result_file, test_ok_file);
 
 	// fix the test (one-time effect)
 	if (failed && self->option_fix)
 	{
-		test_sh(self, "cp %s %s", test_result_file, test_ok_file);
+		test_sh(self, "cp {s} {s}", test_result_file, test_ok_file);
 		failed = 0;
 		self->option_fix = 0;
 	}
@@ -163,7 +156,7 @@ test_suite_execute(TestSuite* self, Test* test)
 	// show diff and stop
 	if (failed)
 	{
-		test_sh(self, "git diff --no-index %s %s", test_ok_file, test_result_file);
+		test_sh(self, "git diff --no-index {s} {s}", test_ok_file, test_result_file);
 		return false;
 	}
 
@@ -237,8 +230,7 @@ test_suite_cleanup(TestSuite* self)
 
 	if (fs_exists("%.*s", str_size(&self->option_result_dir),
 	              str_of(&self->option_result_dir)))
-		test_sh(self, "rm -rf %.*s", str_size(&self->option_result_dir),
-		        str_of(&self->option_result_dir));
+		test_sh(self, "rm -rf {str}", &self->option_result_dir);
 }
 
 void

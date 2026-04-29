@@ -41,7 +41,7 @@ bench_resolved_main(BenchWorker* self, MainClient* client)
 	auto batch = opt_int_of(&bench->batch);
 
 	char text[256];
-	sfmt(text, sizeof(text), "insert into test generate %" PRIu64, batch);
+	format(text, sizeof(text), "insert into test generate {u64}", batch);
 	Str cmd;
 	str_set_cstr(&cmd, text);
 

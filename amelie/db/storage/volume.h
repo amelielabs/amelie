@@ -141,7 +141,7 @@ volume_mkdir(Volume* self)
 	uuid_get(&self->id, id, sizeof(id));
 
 	char path[PATH_MAX];
-	sfmt(path, PATH_MAX, "%s/storage/%s", state_directory(), id);
+	format(path, PATH_MAX, "{s}/storage/{s}", state_directory(), id);
 	if (fs_exists("%s", path))
 		return;
 
@@ -155,7 +155,7 @@ volume_mkdir(Volume* self)
 
 	// external storage directory
 	char path_ext[PATH_MAX];
-	sfmt(path_ext, PATH_MAX, "%s/%s", str_of(path_storage), id);
+	format(path_ext, PATH_MAX, "{s}/{s}", str_of(path_storage), id);
 
 	// <storage_path>
 	if (! fs_exists("%s", str_of(path_storage)))
@@ -183,7 +183,7 @@ volume_rmdir(Volume* self)
 	uuid_get(&self->id, id, sizeof(id));
 
 	char path[PATH_MAX];
-	sfmt(path, PATH_MAX, "%s/storage/%s", state_directory(), id);
+	format(path, PATH_MAX, "{s}/storage/{s}", state_directory(), id);
 	if (! fs_exists("%s", path))
 		return;
 
@@ -202,7 +202,7 @@ volume_rmdir(Volume* self)
 
 	// delete external directory
 	char path_ext[PATH_MAX];
-	sfmt(path_ext, PATH_MAX, "%s/%s", str_of(path_storage), id);
+	format(path_ext, PATH_MAX, "{s}/{s}", str_of(path_storage), id);
 
 	// <storage_path>/<volume_id>
 	if (fs_exists("%s", path_ext))

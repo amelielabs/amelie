@@ -82,15 +82,15 @@ id_path(Id* self, char* path, int state, bool relative)
 	// storage/<volume_id>/<id>.<state>
 	if (relative)
 	{
-		sfmt(path, PATH_MAX, "storage/%s/%05" PRIu64 "%s",
-		     uuid, self->id, id_state(state));
+		format(path, PATH_MAX, "storage/{s}/{05" PRIu64 "}{s}",
+		       uuid, self->id, id_state(state));
 		return;
 	}
 
 	// <base>/storage/<volume_id>/<id>.<state>
-	sfmt(path, PATH_MAX, "%s/storage/%s/%05" PRIu64 "%s",
-	     state_directory(),
-	     uuid, self->id, id_state(state));
+	format(path, PATH_MAX, "{s}/storage/{s}/{05" PRIu64 "}{s}",
+	       state_directory(),
+	       uuid, self->id, id_state(state));
 }
 
 static inline void

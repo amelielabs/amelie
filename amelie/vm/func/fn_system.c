@@ -191,8 +191,7 @@ fn_show(Fn* self)
 		if (opt && opt_is(opt, OPT_S))
 			opt = NULL;
 		if (unlikely(opt == NULL))
-			fn_error_noargs(self, "option '%.*s' is not found", str_size(section),
-			                  str_of(section));
+			fn_error_noargs(self, "option '{str}' is not found", section);
 		local_encode_opt(self->local, buf, opt);
 		value_set_json_buf(self->result, buf);
 		return;
@@ -203,9 +202,8 @@ fn_show(Fn* self)
 	// name
 	if (cmd->has_name) {
 		if (!name || str_empty(name))
-			fn_error_noargs(self, "name argument is missing for '%.*s'",
-			                str_size(section),
-			                str_of(section));
+			fn_error_noargs(self, "name argument is missing for '{str}'",
+			                section);
 	} else {
 		if (name && !str_empty(name))
 			fn_error_noargs(self, "unexpected name argument");
@@ -214,9 +212,8 @@ fn_show(Fn* self)
 	// on
 	if (cmd->has_on) {
 		if (!on || str_empty(on))
-			fn_error_noargs(self, "on argument is missing for '%.*s'",
-			                str_size(section),
-			                str_of(section));
+			fn_error_noargs(self, "on argument is missing for '{str}'",
+			                section);
 	} else {
 		if (on && !str_empty(on))
 			fn_error_noargs(self, "unexpected on argument");

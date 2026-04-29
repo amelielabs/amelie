@@ -27,7 +27,7 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 	uuid_get(&volume->id, id, sizeof(id));
 
 	char path[PATH_MAX];
-	sfmt(path, PATH_MAX, "%s/storage/%s", state_directory(), id);
+	format(path, PATH_MAX, "{s}/storage/{s}", state_directory(), id);
 	if (! fs_exists("%s", path))
 	{
 		volume_mkdir(volume);

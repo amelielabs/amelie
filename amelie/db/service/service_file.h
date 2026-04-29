@@ -133,8 +133,8 @@ service_file_create(ServiceFile* self)
 
 	// create <id>.service.incomplete
 	char path[PATH_MAX];
-	sfmt(path, PATH_MAX, "%s/storage/%" PRIu64 ".service.incomplete",
-	     state_directory(), self->id);
+	format(path, PATH_MAX, "{s}/storage/{u64}.service.incomplete",
+	       state_directory(), self->id);
 
 	File file;
 	file_init(&file);
@@ -167,8 +167,8 @@ service_file_open(ServiceFile* self, uint64_t id)
 
 	// open <id>.service file
 	char path[PATH_MAX];
-	sfmt(path, PATH_MAX, "%s/storage/%" PRIu64 ".service",
-	     state_directory(), self->id);
+	format(path, PATH_MAX, "{s}/storage/{u64}.service",
+	       state_directory(), self->id);
 
 	File file;
 	file_init(&file);

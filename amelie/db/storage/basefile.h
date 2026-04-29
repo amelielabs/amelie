@@ -16,8 +16,8 @@ encode_basepath(Buf* self, char* path_relative)
 {
 	// <base>/<path_relative>
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/%s", state_directory(),
-	     path_relative);
+	format(path, sizeof(path), "{s}/{s}", state_directory(),
+	       path_relative);
 	encode_cstr(self, path_relative);
 }
 
@@ -33,8 +33,8 @@ encode_basefile(Buf* self, char* path_relative)
 {
 	// <base>/<path_relative>
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/%s", state_directory(),
-	     path_relative);
+	format(path, sizeof(path), "{s}/{s}", state_directory(),
+	       path_relative);
 
 	struct stat st;
 	if (lstat(path, &st) == -1)

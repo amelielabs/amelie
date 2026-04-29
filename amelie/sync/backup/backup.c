@@ -47,8 +47,7 @@ backup_push(Backup* self, Str* name, size_t size)
 
 	// open file
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/%.*s", state_directory(),
-	     str_size(name), str_of(name));
+	format(path, sizeof(path), "{s}/{str}", state_directory(), name);
 
 	File file;
 	file_init(&file);

@@ -43,8 +43,7 @@ fn_at_timezone(Fn* self)
 	auto name = &self->argv[1].string;
 	auto timezone = timezone_mgr_find(&runtime()->timezone_mgr, name);
 	if (! timezone)
-		fn_error_arg(self, 1, "failed to find timezone '%.*s'",
-		             str_size(name), str_of(name));
+		fn_error_arg(self, 1, "failed to find timezone '{str}'", name);
 
 	auto data = buf_create();
 	buf_reserve(data, 128);
@@ -132,8 +131,7 @@ fn_date_trunc(Fn* self)
 		auto name = &self->argv[2].string;
 		timezone = timezone_mgr_find(&runtime()->timezone_mgr, name);
 		if (! timezone)
-			fn_error_arg(self, 2, "failed to find timezone '%.*s'",
-			             str_size(name), str_of(name));
+			fn_error_arg(self, 2, "failed to find timezone '{str}'", name);
 	}
 
 	if (argv[0].type == TYPE_STRING)
@@ -222,8 +220,7 @@ fn_extract(Fn* self)
 		auto name = &self->argv[2].string;
 		timezone = timezone_mgr_find(&runtime()->timezone_mgr, name);
 		if (! timezone)
-			fn_error_arg(self, 2, "failed to find timezone '%.*s'",
-			             str_size(name), str_of(name));
+			fn_error_arg(self, 2, "failed to find timezone '{str}'", name);
 	}
 
 	uint64_t value;

@@ -58,15 +58,15 @@ main_path(char* path, int path_size, char* fmt, ...)
 	auto home = getenv("AMELIE_HOME");
 	if (home)
 	{
-		size = sfmt(path, path_size, "%s/", home);
+		size = format(path, path_size, "{s}/", home);
 	} else
 	{
 		home = getenv("HOME");
-		size = sfmt(path, path_size, "%s/.amelie/", home);
+		size = format(path, path_size, "{s}/.amelie/", home);
 	}
 	va_list args;
 	va_start(args, fmt);
-	size += vsfmt(path + size, path_size - size, fmt, args);
+	size += formatv(path + size, path_size - size, fmt, args);
 	va_end(args);
 }
 

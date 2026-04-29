@@ -38,7 +38,7 @@ fn_regexp_init(Fn* self, Str* pattern)
 	{
 		PCRE2_UCHAR msg[256];
 		pcre2_get_error_message(error_number, msg, sizeof(msg));
-		fn_error(self, "regexp: %s", msg);
+		fn_error(self, "regexp: {s}", msg);
 	}
 	*self->context = re;
 	return re;

@@ -199,7 +199,7 @@ volume_mgr_list(VolumeMgr* self, Buf* buf)
 		char id[UUID_SZ];
 		uuid_get(&volume->id, id, sizeof(id));
 		char path[256];
-		auto path_size = sfmt(path, sizeof(path), "storage/%s", id);
+		auto path_size = format(path, sizeof(path), "storage/{s}", id);
 		encode_raw(buf, path, path_size);
 	}
 }

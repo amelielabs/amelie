@@ -48,9 +48,8 @@ restore_dir_str(Str* path_relative)
 {
 	// <base>/<path_relative>
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/%.*s", state_directory(),
-	     str_size(path_relative),
-	     str_of(path_relative));
+	format(path, sizeof(path), "{s}/{str}", state_directory(),
+	       path_relative);
 
 	if (! fs_exists("%s", path))
 		fs_mkdir(0755, "%s", path);
@@ -128,7 +127,8 @@ restore_file(char* path_relative, uint8_t* data)
 {
 	// <base>/<path_relative>
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/%s", state_directory(), path_relative);
+	format(path, sizeof(path), "{s}/{s}", state_directory(),
+	       path_relative);
 
 	// convert to json
 	auto buf = buf_create();
@@ -176,9 +176,8 @@ restore_pull(Restore* self, Str* path_relative, int64_t size, int mode)
 
 	// create and transfer the file
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/%.*s", state_directory(),
-	     str_size(path_relative),
-	     str_of(path_relative));
+	format(path, sizeof(path), "{s}/{str}", state_directory(),
+	       path_relative);
 
 	File file;
 	file_init(&file);
