@@ -35,13 +35,16 @@
 #include "base/arena.h"
 
 // string
-#include "base/fmt.h"
 #include "base/str.h"
 
 // buffer manager
 #include "base/buf.h"
 #include "base/buf_cache.h"
 #include "base/buf_mgr.h"
+
+// format
+#include "base/fmt.h"
+#include "base/format.h"
 
 // exception
 #include "base/exception.h"

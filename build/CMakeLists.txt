@@ -127,6 +127,7 @@ include_directories("${AMELIE_ROOT}/main/test_slt")
 
 # sources
 set(AMELIE_SOURCES_RUNTIME
+    ${AMELIE_ROOT}/runtime/base/format.c
     ${AMELIE_ROOT}/runtime/base/report.c
     ${AMELIE_ROOT}/runtime/base/timer_mgr.c
     ${AMELIE_ROOT}/runtime/base/poller.c
@@ -392,6 +393,7 @@ set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_exception.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_palloc.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_buf.c
+    ${CMAKE_SOURCE_DIR}/tests/unit/test_format.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_coroutine.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_event.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_condition.c

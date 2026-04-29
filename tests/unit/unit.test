@@ -53,6 +53,9 @@ unit test_buf_write;
 # test: test buf overwrite
 unit test_buf_overwrite;
 
+# test: test format
+unit test_format;
+
 # test: test coroutine create
 unit test_coroutine_create;
 
