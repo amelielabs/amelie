@@ -224,11 +224,11 @@ socket_getaddrname(struct sockaddr* sa, char* buf, int size,
 		struct sockaddr_in* sin = (struct sockaddr_in *)sa;
 		inet_ntop(sa->sa_family, &sin->sin_addr, addr, sizeof(addr));
 		if (with_addr && with_port)
-			sfmt(buf, size, "%s:%d", addr, ntohs(sin->sin_port));
+			format(buf, size, "{s}:{d}", addr, ntohs(sin->sin_port));
 		else if (with_addr)
-			sfmt(buf, size, "%s", addr);
+			format(buf, size, "{s}", addr);
 		else if (with_port)
-			sfmt(buf, size, "%d", ntohs(sin->sin_port));
+			format(buf, size, "{d}", ntohs(sin->sin_port));
 		return;
 	}
 	if (sa->sa_family == AF_INET6)
@@ -236,19 +236,19 @@ socket_getaddrname(struct sockaddr* sa, char* buf, int size,
 		struct sockaddr_in6* sin = (struct sockaddr_in6 *)sa;
 		inet_ntop(sa->sa_family, &sin->sin6_addr, addr, sizeof(addr));
 		if (with_addr && with_port)
-			sfmt(buf, size, "[%s]:%d", addr, ntohs(sin->sin6_port));
+			format(buf, size, "[{s}]:{d}", addr, ntohs(sin->sin6_port));
 		else if (with_addr)
-			sfmt(buf, size, "%s", addr);
+			format(buf, size, "{s}", addr);
 		else if (with_port)
-			sfmt(buf, size, "%d", ntohs(sin->sin6_port));
+			format(buf, size, "{d}", ntohs(sin->sin6_port));
 		return;
 	}
 	if (sa->sa_family == AF_UNIX)
 	{
-		sfmt(buf, size, "<unix socket>");
+		format(buf, size, "<unix socket>");
 		return;
 	}
-	sfmt(buf, size, "%s", "");
+	format(buf, size, "{s}", "");
 }
 
 int
@@ -270,13 +270,15 @@ socket_getaddrinfo_job(intptr_t* argv)
 	auto result = (struct addrinfo**)argv[2];
 
 	char service[16];
-	sfmt(service, sizeof(service), "%d", port);
+	format(service, sizeof(service), "{d}", port);
+
 	struct addrinfo  hints;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family   = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags    = AI_PASSIVE;
 	hints.ai_protocol = IPPROTO_TCP;
+
 	auto rc = socket_getaddrinfo(addr, service, &hints, result);
 	if (rc == -1 || *result == NULL)
 		error("failed to resolve %s:%d", addr, port);

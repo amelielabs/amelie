@@ -94,7 +94,7 @@ console_load(Console* self, const char* path)
 	if (! fs_exists("%s", path))
 		return;
 
-	auto data = file_import("%s", path);
+	auto data = file_import("{s}", path);
 	defer_buf(data);
 	Str history;
 	buf_str(data, &history);

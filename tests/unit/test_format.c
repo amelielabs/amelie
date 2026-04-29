@@ -31,7 +31,7 @@ test_format(void* arg)
 	test(! strcmp(buf, result1));
 
 	// 2
-	char result2[] = "hello       world";
+	char result2[] = "hello        world";
 	format(buf, sizeof(buf), "{-12s} {s}", "hello", "world");
 	test(! strcmp(buf, result2));
 

@@ -21,6 +21,21 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 
+static void
+tls_error(Tls* self, int ssl_rc, const char* fmt, ...)
+{
+	int ssl_error;
+	ssl_error = SSL_get_error(self->ssl, ssl_rc);
+
+	va_list args;
+	va_start(args, fmt);
+	char msg[256];
+	formatv(msg, sizeof(msg), fmt, args);
+	va_end(args);
+
+	tls_lib_error(ssl_error, msg);
+}
+
 void
 tls_init(Tls* self)
 {
@@ -39,19 +54,6 @@ tls_free(Tls* self)
 	self->ssl     = NULL;
 	self->context = NULL;
 	buf_free(&self->write_buf);
-}
-
-void format_validate(3, 4)
-tls_error(Tls* self, int ssl_rc, const char* fmt, ...)
-{
-	int ssl_error;
-	ssl_error = SSL_get_error(self->ssl, ssl_rc);
-	va_list args;
-	va_start(args, fmt);
-	char msg[256];
-	vsfmt(msg, sizeof(msg), fmt, args);
-	va_end(args);
-	tls_lib_error(ssl_error, msg);
 }
 
 bool
@@ -221,7 +223,7 @@ tls_verify_common_name(Tls* self, const char* name)
 		char common_name[256];
 		X509_NAME_get_text_by_NID(subject_name, NID_commonName, common_name, sizeof(common_name));
 		if (! tls_verify_name(common_name, name))
-			tls_error(self, 0, "bad common name: %s (expected %s)",
+			tls_error(self, 0, "bad common name: {s} (expected {s})",
 			          common_name, name);
 	);
 	X509_free(cert);
@@ -256,7 +258,7 @@ tls_handshake(Tls* self)
 		    rc == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN)
 			return;
 		auto error = X509_verify_cert_error_string(rc);
-		tls_error(self, 0, "SSL_get_verify_result(): %s", error);
+		tls_error(self, 0, "SSL_get_verify_result(): {s}", error);
 	}
 }
 
@@ -329,5 +331,5 @@ tls_explain(Tls* self, char* buf, int size)
 		return 0;
 	auto version = SSL_get_version(self->ssl);
 	auto cipher  = SSL_get_cipher_name(self->ssl);
-	return sfmt(buf, size, "%s, %s", version, cipher);
+	return format(buf, size, "{s}, {s}", version, cipher);
 }

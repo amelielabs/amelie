@@ -178,7 +178,7 @@ task_main(Task* self, bool native)
 	main = coroutine_mgr_create(&self->coroutine_mgr, task_coroutine_main,
 	                            self->main,
 	                            self->main_arg);
-	coroutine_set_name(main, "%s", self->name);
+	coroutine_set_name(main, "{s}", self->name);
 	self->main_coroutine = main;
 
 	// schedule coroutines and handle io
@@ -246,7 +246,7 @@ task_create_nothrow(Task*        self,
 	self->main_arg_runtime = main_arg_runtime;
 	self->main_arg_share   = main_arg_share;
 	self->buf_mgr          = buf_mgr;
-	sfmt(self->name, sizeof(self->name), "%s", name);
+	format(self->name, sizeof(self->name), "{s}", name);
 
 	// set logger iface
 	task_log_set(&self->log, log_write, log_write_arg);

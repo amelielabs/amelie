@@ -110,7 +110,7 @@ state_save(State* self, const char* path)
 void
 state_open(State* self, const char* path)
 {
-	auto buf = file_import("%s", path);
+	auto buf = file_import("{s}", path);
 	defer_buf(buf);
 	Str options;
 	str_init(&options);

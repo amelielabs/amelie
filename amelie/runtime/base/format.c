@@ -138,10 +138,11 @@ format_add_printf(Format* self, Str* fmt, va_list args)
 	va_copy(args_copy, args);
 	auto len = vsnprintf(NULL, 0, format, args_copy);
 	va_end(args_copy);
-	if (likely((self->pos + len) < self->end))
+
+	if (likely((self->pos + len + 1) <= self->end))
 	{
-		vsnprintf(self->pos, len, format, args);
-		self->pos += len - 1;
+		vsnprintf(self->pos, len + 1, format, args);
+		self->pos += len;
 		return true;
 	}
 	return false;

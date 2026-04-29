@@ -100,7 +100,7 @@ test_suite_execute(TestSuite* self, Test* test)
 	Separator sep;
 	separator_init(&sep);
 	defer(separator_free, &sep);
-	file_import_stream(&sep.buf, "%s", test_file);
+	file_import_stream(&sep.buf, "{s}", test_file);
 
 	// create result file
 	unlink(test_result_file);

@@ -230,7 +230,7 @@ catalog_read(Catalog* self)
 	}
 
 	// read catalog file
-	auto buf = file_import("%s/catalog.json", state_directory());
+	auto buf = file_import("{s}/catalog.json", state_directory());
 	defer_buf(buf);
 	Str text;
 	buf_str(buf, &text);

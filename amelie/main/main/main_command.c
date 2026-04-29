@@ -46,7 +46,7 @@ cmd_stop(Main* self)
 
 	// <path>/pid
 	auto path = opt_string_of(&self->endpoint.path);
-	auto buf = file_import("%s/pid", str_of(path));
+	auto buf = file_import("{str}/pid", path);
 	defer_buf(buf);
 
 	// read pid value

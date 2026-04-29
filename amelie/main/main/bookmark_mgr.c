@@ -36,7 +36,7 @@ bookmark_mgr_open(BookmarkMgr* self, const char* path)
 	if (! fs_exists("%s", path))
 		return;
 
-	auto buf = file_import("%s", path);
+	auto buf = file_import("{s}", path);
 	defer_buf(buf);
 
 	Str text;

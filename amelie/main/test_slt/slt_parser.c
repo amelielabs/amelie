@@ -33,7 +33,7 @@ slt_parser_free(SltParser* self)
 void
 slt_parser_open(SltParser* self, Str* path)
 {
-	self->data = file_import("%.*s", (int)str_size(path), str_of(path));
+	self->data = file_import("{str}", path);
 	buf_str(self->data, &self->stream);
 }
 

@@ -72,7 +72,7 @@ os_cpuusage(int count, int* ids, uint64_t* usage)
 	for (int i = 0; i < count; i++)
 	{
 		buf_reset(buf);
-		file_import_stream(buf, "/proc/%d/task/%d/stat", pid, ids[i]);
+		file_import_stream(buf, "/proc/{d}/task/{d}/stat", pid, ids[i]);
 		buf_write(buf, "\0", 1);
 
 		unsigned long stat_usertime;

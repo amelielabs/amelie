@@ -112,7 +112,7 @@ static void
 repo_version_open(const char* path)
 {
 	// read version file
-	auto version_buf = file_import("%s", path);
+	auto version_buf = file_import("{s}", path);
 	defer_buf(version_buf);
 
 	Str text;

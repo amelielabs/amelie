@@ -52,7 +52,7 @@ client_set_coroutine_name(Client* self)
 {
 	char addr[128];
 	tcp_getpeername(&self->tcp, addr, sizeof(addr));
-	coroutine_set_name(am_self(), "client %s", addr);
+	coroutine_set_name(am_self(), "client {s}", addr);
 }
 
 void

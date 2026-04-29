@@ -21,7 +21,7 @@ test_plan_read(TestPlan* self, Str* path)
 		error("test plan file '%.*s' not found\n",
 		      str_size(path), str_of(path));
 
-	auto data = file_import("%.*s", str_size(path), str_of(path));
+	auto data = file_import("{str}", path);
 	defer_buf(data);
 
 	Str text;

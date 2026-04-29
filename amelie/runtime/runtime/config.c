@@ -107,7 +107,7 @@ config_save(Config* self, const char* path)
 void
 config_open(Config* self, const char* path)
 {
-	auto buf = file_import("%s", path);
+	auto buf = file_import("{s}", path);
 	defer_buf(buf);
 	Str options;
 	str_init(&options);

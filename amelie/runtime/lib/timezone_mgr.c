@@ -43,9 +43,10 @@ timezone_mgr_read(TimezoneMgr* self, char* location, char* location_nested)
 {
 	char path[PATH_MAX];
 	if (location_nested)
-		sfmt(path, sizeof(path), "%s/%s", location, location_nested);
+		format(path, sizeof(path), "{s}/{s}", location, location_nested);
 	else
-		sfmt(path, sizeof(path), "%s", location);
+		format(path, sizeof(path), "{s}", location);
+
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))
 		return;
@@ -72,15 +73,16 @@ timezone_mgr_read(TimezoneMgr* self, char* location, char* location_nested)
 
 		// read and register timezone file
 		if (location_nested)
-			sfmt(path, sizeof(path), "%s/%s/%s", location, location_nested, entry->d_name);
+			format(path, sizeof(path), "{s}/{s}/{s}", location, location_nested, entry->d_name);
 		else
-			sfmt(path, sizeof(path), "%s/%s", location, entry->d_name);
+			format(path, sizeof(path), "{s}/{s}", location, entry->d_name);
 
 		char name_sz[PATH_MAX];
 		if (location_nested)
-			sfmt(name_sz, sizeof(name_sz), "%s/%s", location_nested, entry->d_name);
+			format(name_sz, sizeof(name_sz), "{s}/{s}", location_nested, entry->d_name);
 		else
-			sfmt(name_sz, sizeof(name_sz), "%s", entry->d_name);
+			format(name_sz, sizeof(name_sz), "{s}", entry->d_name);
+
 		Str name;
 		str_set_cstr(&name, name_sz);
 
