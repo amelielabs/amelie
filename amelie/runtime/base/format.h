@@ -12,3 +12,6 @@
 //
 
 int format(char*, int, const char*, ...);
+int formatv(char*, int, const char*, va_list);
+int buf_format(Buf*, const char*, ...);
+int buf_formatv(Buf*, const char*, va_list);

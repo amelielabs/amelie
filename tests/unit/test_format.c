@@ -114,4 +114,10 @@ test_format(void* arg)
 	char result9[] = "{\"id\": 25}";
 	format(buf, sizeof(buf), "{{{qs}: 25}}", "id");
 	test(! strcmp(buf, result9));
+
+	// 10
+	char result10[] = "{\"id\": 25}";
+	buf_reset(&b);
+	buf_format(&b, "{{{qs}: 25}}", "id");
+	test(! strcmp((char*)b.start, result10));
 }

@@ -19,6 +19,7 @@ struct Format
 	char* pos;
 	char* end;
 	char* start;
+	Buf*  buf;
 };
 
 static inline void
@@ -26,23 +27,30 @@ format_init(Format* self, char* dest, int size)
 {
 	self->pos   = dest;
 	self->end   = dest + size;
-	self->start = dest;
+	self->start = self->pos;
+	self->buf   = NULL;
 }
 
-hot static inline bool
-format_reserve(Format* self, int size)
+static inline void
+format_init_buf(Format* self, Buf* buf)
 {
-	auto eof = (self->pos + size) >= self->end;
-	if (likely(! eof))
-		return true;
-
-	// todo: resize if buf, update pos
-	return false;
+	self->pos   = NULL;
+	self->end   = NULL;
+	self->start = NULL;
+	self->buf   = buf;
 }
 
 hot static inline bool
 format_add(Format* self, char* data, int size)
 {
+	// write directly to the buf
+	if (self->buf)
+	{
+		buf_write(self->buf, data, size);
+		return true;
+	}
+
+	// data
 	auto eof = (self->pos + size) >= self->end;
 	if (likely(! eof))
 	{
@@ -51,7 +59,6 @@ format_add(Format* self, char* data, int size)
 		return true;
 	}
 
-	// todo: resize if buf, update pos
 	size = self->end - self->pos;
 	memcpy(self->pos, data, size);
 	self->pos = self->end;
@@ -106,6 +113,63 @@ format_add_u64(Format* self, uint64_t value)
 }
 
 hot static inline bool
+format_add_printf(Format* self, Str* fmt, va_list args)
+{
+	// handle with printf
+	auto fmt_size = str_size(fmt);
+	if (unlikely(fmt_size >= 31))
+		return false;
+
+	// set format
+	char format[32];
+	format[0] = '%';
+	memcpy(format + 1, fmt->pos, str_size(fmt));
+	format[1 + fmt_size] = 0;
+
+	// write directly to buf
+	if (self->buf)
+	{
+		buf_vprintf(self->buf, format, args);
+		return true;
+	}
+
+	// write
+	va_list args_copy;
+	va_copy(args_copy, args);
+	auto len = vsnprintf(NULL, 0, format, args_copy);
+	va_end(args_copy);
+	if (likely((self->pos + len) < self->end))
+	{
+		vsnprintf(self->pos, len, format, args);
+		self->pos += len - 1;
+		return true;
+	}
+	return false;
+}
+
+hot static inline int
+format_finilize(Format* self)
+{
+	auto buf = self->buf;
+	if (buf)
+	{
+		buf_write(buf, "\0", 1);
+		buf_truncate(buf, 1);
+		return buf_size(buf);
+	}
+
+	// set \0
+	if (unlikely(self->pos == self->end))
+	{
+		self->pos[-1] = 0;
+		self->pos--;
+	} else {
+		self->pos[0] = 0;
+	}
+	return self->pos - self->start;
+}
+
+hot static inline bool
 format_if(const char** pos, const char* data, int size)
 {
 	for (auto i = 0; i < size; i++)
@@ -115,89 +179,82 @@ format_if(const char** pos, const char* data, int size)
 	return true;
 }
 
-hot int
-format(char* dest, int size, const char* spec, ...)
+hot static inline int
+format_run(Format* self, const char* spec, va_list args)
 {
-	assert(size > 0);
-
-	va_list args;
-	va_start(args, spec);
-
-	Format fmt;
-	format_init(&fmt, dest, size);
-
 	auto pos = spec;
 	while (*pos)
 	{
+		// {
 		if (*pos == '{')
 		{
 			pos++;
 			if (*pos == '{')
 			{
-				if (unlikely(! format_add(&fmt, "{", 1)))
+				if (unlikely(! format_add(self, "{", 1)))
 					break;
 				pos++;
 			} else
 			if (format_if(&pos, "d}", 2))
 			{
 				auto value = va_arg(args, int);
-				if (unlikely(! format_add_i64(&fmt, value)))
+				if (unlikely(! format_add_i64(self, value)))
 					break;
 			} else
 			if (format_if(&pos, "s}", 2))
 			{
 				auto value = va_arg(args, char*);
-				if (unlikely(! format_add(&fmt, value, strlen(value))))
+				if (unlikely(! format_add(self, value, strlen(value))))
 					break;
 			} else
 			if (format_if(&pos, "c}", 2))
 			{
 				char value = va_arg(args, int);
-				if (unlikely(! format_add(&fmt, &value, 1)))
+				if (unlikely(! format_add(self, &value, 1)))
 					break;
 			} else
 			if (format_if(&pos, "str}", 4))
 			{
 				auto value = va_arg(args, Str*);
-				if (unlikely(! format_add(&fmt, value->pos, str_size(value))))
+				if (unlikely(! format_add(self, value->pos, str_size(value))))
 					break;
 			} else
 			if (format_if(&pos, "buf}", 4))
 			{
 				auto value = va_arg(args, Buf*);
-				if (unlikely(! format_add(&fmt, buf_cstr(value), buf_size(value))))
+				if (unlikely(! format_add(self, buf_cstr(value), buf_size(value))))
 					break;
 			} else
 			if (format_if(&pos, "i64}", 4))
 			{
 				auto value = va_arg(args, int64_t);
-				if (unlikely(! format_add_i64(&fmt, value)))
+				if (unlikely(! format_add_i64(self, value)))
 					break;
 			} else
 			if (format_if(&pos, "u64}", 4))
 			{
 				auto value = va_arg(args, uint64_t);
-				if (unlikely(! format_add_u64(&fmt, value)))
+				if (unlikely(! format_add_u64(self, value)))
 					break;
 			} else
 			if (format_if(&pos, "qs}", 3))
 			{
 				auto value = va_arg(args, char*);
-				if (unlikely(! format_add(&fmt, "\"", 1)))
+				if (unlikely(! format_add(self, "\"", 1)))
 					break;
-				if (unlikely(! format_add(&fmt, value, strlen(value))))
+				if (unlikely(! format_add(self, value, strlen(value))))
 					break;
-				if (unlikely(! format_add(&fmt, "\"", 1)))
+				if (unlikely(! format_add(self, "\"", 1)))
 					break;
 			} else
 			if (format_if(&pos, "qstr}", 5))
 			{
 				auto value = va_arg(args, Str*);
-				if (unlikely(! format_add(&fmt, "\"", 1)))
+				if (unlikely(! format_add(self, "\"", 1)))
 					break;
-				if (unlikely(! format_add(&fmt, value->pos, str_size(value))))
+				if (unlikely(! format_add(self, value->pos, str_size(value))))
 					break;
-				if (unlikely(! format_add(&fmt, "\"", 1)))
+				if (unlikely(! format_add(self, "\"", 1)))
 					break;
 			} else
 			{
@@ -207,47 +264,34 @@ format(char* dest, int size, const char* spec, ...)
 					end++;
 				if (unlikely(! *end))
 				{
-					if (unlikely(! format_add(&fmt, (char*)pos, end - pos)))
+					if (unlikely(! format_add(self, (char*)pos, end - pos)))
 						break;
 					pos = end;
 					continue;
 				}
 
-				// handle with printf
-				auto format_len = end - pos;
-				if (unlikely(format_len >= 31))
-					break;
-				char format[32];
-				format[0] = '%';
-				memcpy(format + 1, pos, format_len);
-				format[1 + format_len] = 0;
+				// handle as printf
+				Str fmt;
+				str_set(&fmt, (char*)pos, end - pos);
 				pos = end + 1;
-
-				// calculate output size
-				va_list args_copy;
-				va_copy(args_copy, args);
-				auto len = vsnprintf(NULL, 0, format, args_copy);
-				va_end(args_copy);
-
-				// write
-				if (unlikely(! format_reserve(&fmt, len)))
+				if (unlikely(! format_add_printf(self, &fmt, args)))
 					break;
-				vsnprintf(fmt.pos, len, format, args);
-				fmt.pos += len - 1;
 			}
 			continue;
 		}
 
+		// }
 		if (*pos == '}')
 		{
 			pos++;
 			if (*pos == '}')
 				pos++;
-			if (unlikely(! format_add(&fmt, "}", 1)))
+			if (unlikely(! format_add(self, "}", 1)))
 				break;
 			continue;
 		}
 
+		// escape
 		if (*pos == '\\')
 		{
 			pos++;
@@ -281,29 +325,60 @@ format(char* dest, int size, const char* spec, ...)
 				result = '\v';
 				break;
 			default:
-				if (unlikely(! format_add(&fmt, "\\", 1)))
+				if (unlikely(! format_add(self, "\\", 1)))
 					break;
 				continue;
 			}
 			pos++;
-			if (unlikely(! format_add(&fmt, &result, 1)))
+			if (unlikely(! format_add(self, &result, 1)))
 				break;
 			continue;
 		}
 
-		if (unlikely(! format_add(&fmt, (char*)pos, 1)))
+		if (unlikely(! format_add(self, (char*)pos, 1)))
 			break;
 		pos++;
 	}
 	va_end(args);
 
 	// set \0
-	if (unlikely(fmt.pos == fmt.end))
-	{
-		fmt.pos[-1] = 0;
-		fmt.pos--;
-	} else {
-		fmt.pos[0] = 0;
-	}
-	return fmt.pos - fmt.start;
+	return format_finilize(self);
+}
+
+hot int
+formatv(char* dest, int size, const char* spec, va_list args)
+{
+	assert(size > 0);
+	Format fmt;
+	format_init(&fmt, dest, size);
+	return format_run(&fmt, spec, args);
+}
+
+hot int
+format(char* dest, int size, const char* spec, ...)
+{
+	assert(size > 0);
+	va_list args;
+	va_start(args, spec);
+	auto rc = formatv(dest, size, spec, args);
+	va_end(args);
+	return rc;
+}
+
+hot int
+buf_formatv(Buf* dest, const char* spec, va_list args)
+{
+	Format fmt;
+	format_init_buf(&fmt, dest);
+	return format_run(&fmt, spec, args);
+}
+
+hot int
+buf_format(Buf* dest, const char* spec, ...)
+{
+	va_list args;
+	va_start(args, spec);
+	auto rc = buf_formatv(dest, spec, args);
+	va_end(args);
+	return rc;
 }
