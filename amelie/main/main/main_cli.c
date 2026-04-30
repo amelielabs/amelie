@@ -69,31 +69,21 @@ main_console(Main* self, MainClient* client)
 	separator_init(&sep);
 	defer(separator_free, &sep);
 
-#if 0
-	auto name = opt_string_of(&self->endpoint.name);
-	auto uri  = opt_string_of(&self->endpoint.uri);
-	auto path = opt_string_of(&self->endpoint.path);
-
-	// set prompt
-	Str* prompt_text;
-	if (! str_empty(name))
-		prompt_text = name;
-	else
-	if (! str_empty(path))
-		prompt_text = path;
-	else
-		prompt_text = uri;
-
-	info("connected to {str}", prompt_text);
-#endif
+	auto user = opt_string_of(&self->endpoint.user);
+	Str prompt_user = *user;
+	if (str_empty(&prompt_user))
+		str_set(&prompt_user, "main", 4);
 
 	// ›
 	// ❯
-	char prompt_str[32];
-	format(prompt_str, sizeof(prompt_str), "\033[32m❯\033[0m ");
+	auto prompt_len = utf8_strlen(&prompt_user) + 2;
+	char prompt_str[128];
+	format(prompt_str, sizeof(prompt_str), "{str}\033[32m❯\033[0m ",
+	       &prompt_user);
 
-	char prompt_str_pending[32];
-	format(prompt_str_pending, sizeof(prompt_str_pending), "  ");
+	char prompt_str_pending[128];
+	format(prompt_str_pending, sizeof(prompt_str_pending), "{str}  ",
+	       &prompt_user);
 
 	Str prompt;
 	str_set_cstr(&prompt, prompt_str);
@@ -111,7 +101,7 @@ main_console(Main* self, MainClient* client)
 
 		Str input;
 		str_init(&input);
-		if (! console(&self->console, prompt_ptr, 2, &input))
+		if (! console(&self->console, prompt_ptr, prompt_len, &input))
 		{
 			if (separator_read_leftover(&sep, &input))
 				main_execute(client, &input);
