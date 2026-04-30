@@ -19,23 +19,37 @@
 #include <amelie_output.h>
 
 static void
-output_jsonrpc_write(Output* self, Columns* columns, Value* value)
+output_jsonrpc_begin(Output* self)
 {
-	char header[] = "{\"jsonrpc\": \"2.0\", \"id\": 0, \"result\": ";
+	char header[] = "{\"jsonrpc\": \"2.0\", \"id\": ";
 	auto buf = self->buf;
 	buf_write(buf, header, sizeof(header) - 1);
+
+	auto id  = &self->endpoint->id.string;
+	auto pos = str_u8(id);
+	if (str_empty(id))
+		buf_write(buf, "null", 4);
+	else
+		json_export_as(buf, self->timezone, false, 0, &pos);
+
+	char result[] = ", \"result\": ";
+	buf_write(buf, result, sizeof(result) - 1);
+}
+
+static void
+output_jsonrpc_write(Output* self, Columns* columns, Value* value)
+{
+	output_jsonrpc_begin(self);
 	output_json_result(self, columns, value);
-	buf_write(buf, "}", 1);
+	buf_write(self->buf, "}", 1);
 }
 
 static void
 output_jsonrpc_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
-	char header[] = "{\"jsonrpc\": \"2.0\", \"id\": 0, \"result\": ";
-	auto buf = self->buf;
-	buf_write(buf, header, sizeof(header) - 1);
+	output_jsonrpc_begin(self);
 	output_json_result_json(self, column, pos, unwrap);
-	buf_write(buf, "}", 1);
+	buf_write(self->buf, "}", 1);
 }
 
 static void
@@ -53,7 +67,11 @@ output_jsonrpc_write_error(Output* self, Error* error)
 
 	// id
 	encode_raw(buf, "id", 2);
-	encode_int(buf, 0);
+	auto id = &self->endpoint->id.string;
+	if (str_empty(id))
+		encode_null(buf);
+	else
+		buf_write_str(buf, id);
 
 	// error
 	encode_raw(buf, "error", 5);
@@ -91,9 +109,9 @@ output_jsonrpc_write_error(Output* self, Error* error)
 static void
 output_jsonrpc_write_none(Output* self)
 {
-	auto buf = self->buf;
-	char header[] = "{\"jsonrpc\": \"2.0\", \"id\": 0, \"result\": {}}";
-	buf_write(buf, header, sizeof(header) - 1);
+	// result: {}
+	output_jsonrpc_begin(self);
+	buf_write(self->buf, "{}}", 3);
 }
 
 OutputIf output_jsonrpc =

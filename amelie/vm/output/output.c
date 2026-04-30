@@ -41,6 +41,7 @@ output_init(Output* self)
 	self->buf      = NULL;
 	self->iface    = NULL;
 	self->timezone = NULL;
+	self->endpoint = NULL;
 }
 
 void
@@ -48,6 +49,7 @@ output_reset(Output* self)
 {
 	self->iface    = NULL;
 	self->timezone = NULL;
+	self->endpoint = NULL;
 	if (self->buf)
 		buf_reset(self->buf);
 }
@@ -92,6 +94,8 @@ output_set(Output* self, Endpoint* endpoint)
 
 	// set timezone
 	output_set_tz(self, endpoint);
+
+	self->endpoint = endpoint;
 }
 
 void

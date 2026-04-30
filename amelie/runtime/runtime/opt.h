@@ -173,6 +173,14 @@ opt_json_set(Opt* self, uint8_t* value, int size)
 }
 
 static inline void
+opt_json_set_data(Opt* self, uint8_t* value)
+{
+	assert(self->type == OPT_JSON);
+	str_free(&self->string);
+	str_set(&self->string, (char*)value, data_sizeof(value));
+}
+
+static inline void
 opt_json_set_buf(Opt* self, Buf* buf)
 {
 	assert(self->type == OPT_JSON);

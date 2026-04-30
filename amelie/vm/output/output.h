@@ -27,6 +27,7 @@ struct Output
 	Buf*      buf;
 	OutputIf* iface;
 	Timezone* timezone;
+	Endpoint* endpoint;
 };
 
 hot static inline void

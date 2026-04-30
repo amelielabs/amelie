@@ -2,38 +2,45 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: POST /rpc
 post /rpc - - -;
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "unexpected end of line"}}
+{"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "unexpected end of line"}}
 # test: POST /rpc (invalid content type)
 post /rpc xyx - -;
 400 Bad Request
 # test: POST /rpc (mandatory fields)
 post /rpc application/json - {"jsonrpc": "2.0"} ;
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "jsonrpc: invalid request"}}
+{"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "jsonrpc: invalid request"}}
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "jsonrpc: invalid request"}}
+{"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "jsonrpc: invalid request"}}
 post /rpc application/json - {"jsonrpc": "2.0", "method": sql};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "unexpected json token"}}
+{"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "unexpected json token"}}
 # test: POST /rpc (sql, no params)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql"};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "'params' field is missing"}}
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'params' field is missing"}}
 # test: POST /rpc (sql, params validatation)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": 1};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "'params' field is not an object"}}
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'params' field is not an object"}}
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": []};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "'params' field is not an object"}}
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'params' field is not an object"}}
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {}};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "'text' field is not defined"}}
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'text' field is not defined"}}
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"a": "b"}};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "unexpected params field"}}
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "unexpected params field"}}
 # test: POST /rpc (sql)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
-{"jsonrpc": "2.0", "id": 0, "result": {"columns": ["col1"], "rows": [[1]]}}
+{"jsonrpc": "2.0", "id": 11, "result": {"columns": ["col1"], "rows": [[1]]}}
+# test: POST /rpc (sql, validate id)
+post /rpc application/json - {"jsonrpc": "2.0", "id": null, "method": "sql", "params": {"text": "select 1"}};
+{"jsonrpc": "2.0", "id": null, "result": {"columns": ["col1"], "rows": [[1]]}}
+post /rpc application/json - {"jsonrpc": "2.0", "id": "abc", "method": "sql", "params": {"text": "select 1"}};
+{"jsonrpc": "2.0", "id": "abc", "result": {"columns": ["col1"], "rows": [[1]]}}
+post /rpc application/json - {"jsonrpc": "2.0", "id": [], "method": "sql", "params": {"text": "select 1"}};
+{"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "jsonrpc: invalid request"}}
 # test: POST /rpc (insert)
 create table test (id int primary key, data int default 11);
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [] }};
 select * from test;
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {} }};
-{"jsonrpc": "2.0", "id": 0, "error": {"code": -32000, "message": "column 'id' value cannot be NULL"}}
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "column 'id' value cannot be NULL"}}
 select * from test;
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {"id": 18} }};
 select * from test;
@@ -55,10 +62,10 @@ begin
 	return a + b;
 end;
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [] }};
-{"jsonrpc": "2.0", "id": 0, "result": {"columns": ["x"], "rows": [[null]]}}
+{"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[null]]}}
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {} }};
-{"jsonrpc": "2.0", "id": 0, "result": {"columns": ["x"], "rows": [[null]]}}
+{"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[null]]}}
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {"a": 1, "b": 2} }};
-{"jsonrpc": "2.0", "id": 0, "result": {"columns": ["x"], "rows": [[3]]}}
+{"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[3]]}}
 disconnect S0;
 close E0;

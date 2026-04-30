@@ -231,38 +231,7 @@ uri_parse_args_set(Uri* self, Buf* buf, int name_size, int value_size)
 	auto opt = opts_find(&self->endpoint->opts, &name);
 	if (! opt)
 		error("unknown uri argument '{str}'", &name);
-
-	switch (opt->type) {
-	case OPT_BOOL:
-	{
-		bool to = true;
-		if (! str_empty(&value))
-		{
-			if (str_is_case(&value, "true", 4))
-				to = true;
-			else
-			if (str_is_case(&value, "false", 5))
-				to = false;
-			else
-				error("bool value expected for uri argument '{str}'", &name);
-		}
-		opt_int_set(opt, to);
-		break;
-	}
-	case OPT_INT:
-	{
-		int64_t to = 0;
-		if (str_empty(&value) || str_toint(&value, &to) == -1)
-			error("integer value expected for uri argument '{str}'", &name);
-		opt_int_set(opt, to);
-		break;
-	}
-	case OPT_STRING:
-		opt_string_set(opt, &value);
-		break;
-	default:
-		abort();
-	}
+	opt_set(opt, &value);
 }
 
 static inline void

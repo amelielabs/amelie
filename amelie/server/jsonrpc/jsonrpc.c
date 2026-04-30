@@ -76,7 +76,8 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 		} else
 		if (str_is(&name, "id", 2))
 		{
-			if (unlikely(!data_is_str(*pos) && !data_is_int(*pos)))
+			if (unlikely(!data_is_str(*pos) &&
+			             !data_is_int(*pos) && !data_is_null(*pos)))
 				return false;
 			req->id = *pos;
 			data_skip(pos);

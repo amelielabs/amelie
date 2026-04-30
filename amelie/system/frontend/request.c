@@ -194,10 +194,11 @@ request_rpc(Request* self, Str* content)
 	if (unlikely(self->jsonrpc.reqs_count > 1))
 		error("jsonrpc batching is not supported");
 
-	// todo: set endpoint id
-
 	// read command
 	auto cmd = jsonrpc_first(&self->jsonrpc);
+
+	// set endpoint id
+	opt_json_set_data(&self->endpoint.id, cmd->id);
 
 	// sql
 	if (str_is(&cmd->method, "sql", 3))
