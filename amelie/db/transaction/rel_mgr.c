@@ -274,7 +274,7 @@ rel_mgr_find(RelMgr* self, RelType type, Str* user, Str* name,
 	}
 
 	if (error_if_not_exists)
-		error("relation '{str}': not exists", name);
+		error("{s} '{str}': not exists", rel_type_of(type), name);
 	return NULL;
 }
 
@@ -298,7 +298,7 @@ rel_mgr_find_by(RelMgr* self, RelType type, Uuid* id, bool error_if_not_exists)
 	{
 		char uuid[UUID_SZ];
 		uuid_get(id, uuid, sizeof(uuid));
-		error("relation with uuid '{s}' not found", uuid);
+		error("{s} with uuid '{s}' not found", rel_type_of(type), uuid);
 	}
 	return NULL;
 }

@@ -51,6 +51,27 @@ struct Rel
 	int      lock_wait_count;
 };
 
+static inline const char*
+rel_type_of(RelType type)
+{
+	switch (type) {
+	case REL_UNDEF:        return "relation";
+	case REL_USER:         return "user";
+	case REL_STORAGE:      return "storage";
+	case REL_TABLE:        return "table";
+	case REL_BRANCH:       return "branch";
+	case REL_UDF:          return "function";
+	case REL_TOPIC:        return "topic";
+	case REL_SUBSCRIPTION: return "subscription";
+	case REL_LOCK:         return "lock";
+	case REL_SYSTEM:       return "system";
+	default:
+		break;
+	}
+	abort();
+	return NULL;;
+}
+
 static inline void
 rel_init(Rel* self, RelType type)
 {
