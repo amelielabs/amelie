@@ -139,7 +139,6 @@ rel_drop(Rel* self)
 static inline void
 rel_permission_error(Rel* self)
 {
-	error("relation '%.*s.%.*s': permission denied",
-	      str_size(self->user), str_of(self->user),
-	      str_size(self->name), str_of(self->name));
+	error("relation '{str}.{str}': permission denied",
+	      self->user, self->name);
 }

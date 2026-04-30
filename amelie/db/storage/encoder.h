@@ -80,7 +80,7 @@ encoder_set_compression(Encoder* self, int id)
 		return;
 	self->compression = compression_create(&runtime()->cache_compression, id, 0);
 	if (! self->compression)
-		error("object: invalid compression id '%d'", id);
+		error("object: invalid compression id '{d}'", id);
 }
 
 static inline void
@@ -95,7 +95,7 @@ encoder_open(Encoder* self, Storage* storage)
 		auto name = &storage->config->compression;
 		id = compression_idof(name);
 		if (id == -1)
-			error("invalid compression '%.*s'", str_size(name), str_of(name));
+			error("invalid compression '{str}'", name);
 	} else {
 		id = COMPRESSION_NONE;
 	}

@@ -263,7 +263,7 @@ system_start(System* self, bool bootstrap)
 {
 	// hello
 	auto version = &state()->version.string;
-	info("amelie %.*s", str_size(version), str_of(version));
+	info("amelie {str}", version);
 
 	// show system options
 	if (bootstrap || opt_int_of(&config()->log_options))

@@ -17,7 +17,7 @@
 static inline void
 date_error_str(Str* str)
 {
-	error("invalid date '%.*s'", str_size(str), str_of(str));
+	error("invalid date '{str}'", str);
 }
 
 hot static inline void
@@ -162,7 +162,6 @@ date_extract(int64_t julian_day, Str* field)
 	if (str_is(field, "day", 3))
 		return day;
 
-	error("invalid date field '%.*s'", str_size(field),
-	      str_of(field));
+	error("invalid date field '{str}'", field);
 	return -1;
 }

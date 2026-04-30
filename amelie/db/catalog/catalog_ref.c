@@ -43,8 +43,7 @@ catalog_cdc_ref(Catalog* self, User* user, Str* rel_user, Str* rel,
 	{
 		auto table = table_of(ref_match);
 		if (table->config->unlogged)
-			error("table '%.*s': unlogged table are not supported for cdc",
-			      str_size(rel), str_of(rel));
+			error("table '{str}': unlogged table are not supported for cdc", rel);
 		table->part_arg.cdc++;
 		*id = &table->config->id;
 		break;
@@ -57,8 +56,7 @@ catalog_cdc_ref(Catalog* self, User* user, Str* rel_user, Str* rel,
 		break;
 	}
 	default:
-		error("relation '%.*s': cannot be used for cdc",
-		      str_size(rel), str_of(rel));
+		error("relation '{str}': cannot be used for cdc", rel);
 		break;
 	}
 	return ref;

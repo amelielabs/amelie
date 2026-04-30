@@ -166,7 +166,7 @@ streamer_process(Streamer* self)
 
 		// reconnect
 		auto reconnect_interval = (int)opt_int_of(&config()->repl_reconnect_ms);
-		info("reconnect in %d ms", reconnect_interval);
+		info("reconnect in {d} ms", reconnect_interval);
 		coroutine_sleep(reconnect_interval);
 	}
 }

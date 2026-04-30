@@ -24,7 +24,7 @@ main_execute(MainClient* client, Str* request)
 	switch (code) {
 	case 200:
 		// 200 OK
-		info("%.*s", str_size(&reply), str_of(&reply));
+		info("{str}", &reply);
 		break;
 	case 204:
 		// 204 No Content
@@ -36,10 +36,10 @@ main_execute(MainClient* client, Str* request)
 		// 413 Payload Too Large
 		if (str_empty(&reply))
 		{
-			info("error: %d", code);
+			info("error: {d}", code);
 			break;
 		}
-		info("%.*s", str_size(&reply), str_of(&reply));
+		info("{str}", &reply);
 
 #if 0
 		// read error message
@@ -55,7 +55,7 @@ main_execute(MainClient* client, Str* request)
 		json_skip(&pos);
 		Str text;
 		json_read_string(&pos, &text);
-		info("error: %.*s", str_size(&text), str_of(&text));
+		info("error: {str}, text);
 #endif
 		break;
 	}
@@ -84,8 +84,7 @@ main_console(Main* self, MainClient* client)
 	else
 		prompt_text = uri;
 
-	info("connected to %.*s", str_size(prompt_text),
-	     str_of(prompt_text));
+	info("connected to {str}", prompt_text);
 #endif
 
 	// ›

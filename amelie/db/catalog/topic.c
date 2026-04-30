@@ -68,8 +68,7 @@ topic_create(Catalog*     self,
 	if (rel)
 	{
 		if (! if_not_exists)
-			error("relation '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+			error("relation '{str}': already exists", &config->name);
 		return false;
 	}
 
@@ -94,8 +93,7 @@ topic_drop(Catalog* self, Tr* tr, Str* user, Str* name,
 	if (! topic)
 	{
 		if (! if_exists)
-			error("topic '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("topic '{str}': not exists", name);
 		return false;
 	}
 
@@ -145,8 +143,7 @@ topic_rename(Catalog* self,
 	if (! topic)
 	{
 		if (! if_exists)
-			error("topic '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("topic '{str}': not exists", name);
 		return false;
 	}
 
@@ -155,8 +152,7 @@ topic_rename(Catalog* self,
 
 	// ensure other relation with the same name does not exists
 	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
-		error("relation '%.*s': already exists", str_size(name_new),
-		      str_of(name_new));
+		error("relation '{str}': already exists", name_new);
 
 	// update topic
 	log_ddl(&tr->log, &rename_if, NULL, &topic->rel);
@@ -208,8 +204,7 @@ topic_grant(Catalog* self,
 	if (! topic)
 	{
 		if (! if_exists)
-			error("topic '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("topic '{str}': not exists", name);
 		return false;
 	}
 

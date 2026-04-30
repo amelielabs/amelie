@@ -111,13 +111,11 @@ jwt_decode_header(JwtDecode* self)
 
 	// alg
 	if (unlikely(! str_is_case(&alg, "HS256", 5)))
-		error("jwt: unsupported header alg field: %.*s", str_size(&alg),
-		      str_of(&alg));
+		error("jwt: unsupported header alg field: {str}", &alg);
 
 	// type
 	if (unlikely(! str_is_case(&typ, "JWT", 3)))
-		error("jwt: unsupported header type field: %.*s", str_size(&typ),
-		      str_of(&typ));
+		error("jwt: unsupported header type field: {str}", &typ);
 }
 
 hot static void

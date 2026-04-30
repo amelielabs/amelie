@@ -127,14 +127,11 @@ permission_validate(Str* user, Str* name, uint32_t permissions, uint32_t mask)
 		{
 			auto id_name = permission_name_of(id);
 			if (user)
-				error("relation %.*s.%.*s: does not support '%s' grant",
-				      str_size(user), str_of(user),
-				      str_size(name), str_of(name),
-				      id_name);
+				error("relation '{str}.{str}' does not support '{s}' grant",
+				      user, name, id_name);
 			else
-				error("relation %.*s: does not support '%s' grant",
-				      str_size(name), str_of(name),
-				      id_name);
+				error("relation '{str}' does not support '{s}' grant",
+				      name, id_name);
 		}
 	}
 	return permissions;

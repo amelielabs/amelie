@@ -56,7 +56,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			case DECODE_UUID:
 			{
 				if (unlikely(! data_is_str(*pos)))
-					error("%s: string expected for '%s'", context,
+					error("{s}: string expected for '{s}'", context,
 					      ref->key);
 				auto value = (Uuid*)ref->value;
 				Str uuid;
@@ -67,7 +67,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			case DECODE_STR:
 			{
 				if (unlikely(! data_is_str(*pos)))
-					error("%s: string expected for '%s'", context,
+					error("{s}: string expected for '{s}'", context,
 					      ref->key);
 				auto value = (Str*)ref->value;
 				str_free(value);
@@ -77,7 +77,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			case DECODE_STR_READ:
 			{
 				if (unlikely(! data_is_str(*pos)))
-					error("%s: string expected for '%s'", context,
+					error("{s}: string expected for '{s}'", context,
 					      ref->key);
 				auto value = (Str*)ref->value;
 				unpack_str(pos, value);
@@ -86,7 +86,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			case DECODE_INT:
 			{
 				if (unlikely(! data_is_int(*pos)))
-					error("%s: int expected for '%s'", context,
+					error("{s}: int expected for '{s}'", context,
 					      ref->key);
 				auto value = (int64_t*)ref->value;
 				unpack_int(pos, value);
@@ -95,7 +95,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			case DECODE_BOOL:
 			{
 				if (unlikely(! data_is_bool(*pos)))
-					error("%s: bool expected for '%s'", context,
+					error("{s}: bool expected for '{s}'", context,
 					      ref->key);
 				auto value = (bool*)ref->value;
 				unpack_bool(pos, value);
@@ -104,7 +104,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			case DECODE_REAL:
 			{
 				if (unlikely(! data_is_bool(*pos)))
-					error("%s: real expected for '%s'", context,
+					error("{s}: real expected for '{s}'", context,
 					      ref->key);
 				auto value = (double*)ref->value;
 				unpack_real(pos, value);
@@ -113,7 +113,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			case DECODE_NULL:
 			{
 				if (unlikely(! data_is_bool(*pos)))
-					error("%s: null expected for '%s'", context,
+					error("{s}: null expected for '{s}'", context,
 					      ref->key);
 				unpack_null(pos);
 				break;
@@ -121,7 +121,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			case DECODE_ARRAY:
 			{
 				if (unlikely(! data_is_array(*pos)))
-					error("%s: array expected for '%s'", context,
+					error("{s}: array expected for '{s}'", context,
 					      ref->key);
 				auto value = (uint8_t**)ref->value;
 				*value = *pos;
@@ -131,7 +131,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			case DECODE_OBJ:
 			{
 				if (unlikely(! data_is_obj(*pos)))
-					error("%s: object expected for '%s'", context,
+					error("{s}: object expected for '{s}'", context,
 					      ref->key);
 				auto value = (uint8_t**)ref->value;
 				*value = *pos;
@@ -149,7 +149,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			case DECODE_BASE64:
 			{
 				if (unlikely(! data_is_str(*pos)))
-					error("%s: string expected for '%s'", context,
+					error("{s}: string expected for '{s}'", context,
 					      ref->key);
 				auto value = (Buf*)ref->value;
 				Str str;
@@ -175,6 +175,6 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 	for (auto ref = self; ref->key; ref++)
 	{
 		if (! (ref->flags & DECODE_FOUND))
-			error("%s: key '%s' is not found", context, ref->key);
+			error("{s}: key '{s}' is not found", context, ref->key);
 	}
 }

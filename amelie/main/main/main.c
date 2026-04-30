@@ -24,7 +24,7 @@ main_usage(void)
 		auto cmd = &main_commands[i];
 		if (! cmd->name)
 			break;
-		info("  %-10s %s", cmd->name, cmd->description);
+		info("  {-10s} {s}", cmd->name, cmd->description);
 	}
 	info("");
 }
@@ -242,7 +242,7 @@ main_entry(Main* self)
 	    !strcmp(argv[1], "--version"))
 	{
 		auto version = &state()->version.string;
-		info("%.*s", str_size(version), str_of(version));
+		info("{str}", version);
 		return;
 	}
 	for (auto i = 0;; i++)

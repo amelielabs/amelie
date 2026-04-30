@@ -18,8 +18,7 @@ void
 test_plan_read(TestPlan* self, Str* path)
 {
 	if (! fs_exists("{str}", path))
-		error("test plan file '%.*s' not found\n",
-		      str_size(path), str_of(path));
+		error("test plan file '{str}' not found\n", path);
 
 	auto data = file_import("{str}", path);
 	defer_buf(data);
@@ -60,15 +59,15 @@ test_plan_read(TestPlan* self, Str* path)
 			// group <name>
 			str_advance(&cmd, 5);
 			if (str_empty(&directory))
-				error("plan: %d: directory is not set\n", line);
+				error("plan: {d}: directory is not set\n", line);
 			Str name;
 			str_arg(&cmd, &name);
 			if (str_empty(&name))
-				error("plan: %d: bad group name\n", line);
+				error("plan: {d}: bad group name\n", line);
 			group = test_plan_find_group(self, &name);
 			if (group)
-				error("plan: %d: group '%.*s' redefined\n", line,
-				      str_size(&name), str_of(&name));
+				error("plan: {d}: group '{str}' redefined\n", line,
+				      &name);
 			group = test_group_create(&name, &directory);
 			test_plan_add_group(self, group);
 		} else
@@ -77,19 +76,18 @@ test_plan_read(TestPlan* self, Str* path)
 			// test <name>
 			str_advance(&cmd, 4);
 			if (! group)
-				error("plan: %d: test group is not defined for test\n", line);
+				error("plan: {d}: test group is not defined for test\n", line);
 			Str name;
 			str_arg(&cmd, &name);
 			if (str_empty(&name))
-				error("plan: %d: bad test name\n", line);
+				error("plan: {d}: bad test name\n", line);
 			auto test = test_plan_find(self, &name);
 			if (test)
-				error("plan: %d: test '%.*s' redefined\n", line,
-				      str_size(&name), str_of(&name));
+				error("plan: {d}: test '{str}' redefined\n", line, &name);
 			test = test_create(&name, group);
 			test_plan_add(self, test);
 		} else {
-			error("plan: %d: unknown plan file command\n", line);
+			error("plan: {d}: unknown plan file command\n", line);
 		}
 	}
 }

@@ -171,7 +171,7 @@ tcp_connect_begin_try(Tcp* self, struct sockaddr* addr)
 	{
 		assert(rc == -1);
 		if (errno != EINPROGRESS)
-			error("connect(): %s", strerror(errno));
+			error("connect(): {s}", strerror(errno));
 		tcp_attach(self);
 	}
 }
@@ -184,7 +184,7 @@ tcp_connect_begin(Tcp* self, struct sockaddr* addr)
 
 	self->fd.fd = socket_for(addr);
 	if (unlikely(self->fd.fd == -1))
-		error("socket(): %s", strerror(errno));
+		error("socket(): {s}", strerror(errno));
 	self->connected = false;
 
 	if (error_catch ( tcp_connect_begin_try(self, addr) ))
@@ -201,7 +201,7 @@ tcp_connect_complete(Tcp* self)
 	if (unlikely(status != 0))
 	{
 		tcp_close(self);
-		error("connect(): %s", strerror(status));
+		error("connect(): {s}", strerror(status));
 	}
 	if (tls_is_set(&self->tls))
 	{

@@ -52,20 +52,16 @@ http_log(Http* self)
 	auto code    = &self->options[HTTP_CODE];
 	auto msg     = &self->options[HTTP_MSG];
 
-	info("method:  %.*s", str_size(method), str_of(method));
-	info("url:     %.*s", str_size(url), str_of(url));
-	info("version: %.*s", str_size(version), str_of(version));
-	info("code  :  %.*s", str_size(code), str_of(code));
-	info("msg:     %.*s", str_size(msg), str_of(msg));
+	info("method:  {str}", method);
+	info("url:     {str}", url);
+	info("version: {str}", version);
+	info("code  :  {str}", code);
+	info("msg:     {str}", msg);
 
 	auto header = (HttpHeader*)self->headers.start;
 	auto end    = (HttpHeader*)self->headers.position;
 	for (; header < end; header++)
-	{
-		info("%.*s: %.*s",
-		     str_size(&header->name), str_of(&header->name),
-		     str_size(&header->value), str_of(&header->value));
-	}
+		info("{str}: {str}", &header->name, header->value);
 }
 
 hot static inline bool

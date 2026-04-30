@@ -203,8 +203,7 @@ opt_set_json(Opt* self, uint8_t** pos)
 	case OPT_BOOL:
 	{
 		if (unlikely(! data_is_bool(*pos)))
-			error("option '%.*s': bool value expected",
-			      str_size(name), str_of(name));
+			error("option '{str}': bool value expected", name);
 		bool value;
 		unpack_bool(pos, &value);
 		opt_int_set(self, value);
@@ -213,22 +212,19 @@ opt_set_json(Opt* self, uint8_t** pos)
 	case OPT_INT:
 	{
 		if (unlikely(! data_is_int(*pos)))
-			error("option '%.*s': integer value expected",
-			      str_size(name), str_of(name));
+			error("option '{str}': integer value expected", name);
 		int64_t value;
 		unpack_int(pos, &value);
 
 		if (unlikely(value == 0 && opt_is(self, OPT_Z)))
-			error("option '%.*s': cannot be set to zero",
-			      str_size(name), str_of(name));
+			error("option '{str}': cannot be set to zero", name);
 		opt_int_set(self, value);
 		break;
 	}
 	case OPT_STRING:
 	{
 		if (unlikely(! data_is_str(*pos)))
-			error("config: string expected for option '%.*s'",
-			      str_size(name), str_of(name));
+			error("config: string expected for option '{str}'", name);
 		Str value;
 		unpack_str(pos, &value);
 		opt_string_set(self, &value);
@@ -261,8 +257,7 @@ opt_set(Opt* self, Str* value)
 			if (str_is_cstr(value, "false"))
 				result = false;
 			else
-				error("option '%.*s': bool value expected",
-				      str_size(name), str_of(name));
+				error("option '{str}': bool value expected", name);
 		}
 		opt_int_set(self, result);
 		break;
@@ -270,15 +265,12 @@ opt_set(Opt* self, Str* value)
 	case OPT_INT:
 	{
 		if (str_empty(value))
-			error("option '%.*s': value is not defined",
-			      str_size(name), str_of(name));
+			error("option '{str}': value is not defined", name);
 		int64_t result = 0;
 		if (str_toint(value, &result) == -1)
-			error("option '%.*s': integer value expected",
-			      str_size(name), str_of(name));
+			error("option '{str}': integer value expected", name);
 		if (unlikely(result == 0 && opt_is(self, OPT_Z)))
-			error("option '%.*s': cannot be set to zero",
-			      str_size(name), str_of(name));
+			error("option '{str}': cannot be set to zero", name);
 		opt_int_set(self, result);
 		break;
 	}
@@ -290,8 +282,7 @@ opt_set(Opt* self, Str* value)
 	case OPT_JSON:
 	{
 		if (str_empty(value))
-			error("option '%.*s': value is not defined",
-			      str_size(name), str_of(name));
+			error("option '{str}': value is not defined", name);
 		Json json;
 		json_init(&json);
 		defer(json_free, &json);
@@ -329,16 +320,16 @@ opt_print(Opt* self)
 {
 	switch (self->type) {
 	case OPT_BOOL:
-		info("%-24s%s", str_of(&self->name),
+		info("{-24s}{s}", str_of(&self->name),
 		     opt_int_of(self) ? "true" : "false");
 		break;
 	case OPT_INT:
-		info("%-24s%" PRIu64, str_of(&self->name),
+		info("{-24s}{u64}", str_of(&self->name),
 		     opt_int_of(self));
 		break;
 	case OPT_STRING:
-		info("%-24s%.*s", str_of(&self->name),
-		     str_size(&self->string), str_of(&self->string));
+		info("{-24s}{str}", str_of(&self->name),
+		     &self->string);
 		break;
 	case OPT_JSON:
 		break;

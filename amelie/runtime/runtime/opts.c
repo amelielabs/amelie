@@ -116,12 +116,11 @@ opts_set_json(Opts* self, uint8_t** pos)
 		// find optiable and set value
 		auto opt = opts_find(self, &name);
 		if (unlikely(opt == NULL))
-			error("option '%.*s': not found", str_size(&name), str_of(&name));
+			error("option '{str}': not found", &name);
 
 		// ensure optiable can be changed
 		if (unlikely(! opt_is(opt, OPT_C)))
-			error("option '%.*s': cannot be changed", str_size(&name),
-			      str_of(&name));
+			error("option '{str}': cannot be changed", &name);
 
 		// if config update will be required
 		if (! opt_is(opt, OPT_E))
@@ -153,7 +152,7 @@ opts_set_argv(Opts* self, int argc, char** argv)
 		Str name;
 		Str value;
 		if (arg_parse(argv[i], &name, &value) == -1)
-			error("option '%s': failed to parse", argv[i]);
+			error("option '{s}': failed to parse", argv[i]);
 
 		// --json={}
 		if (str_is_cstr(&name, "json"))
@@ -172,12 +171,11 @@ opts_set_argv(Opts* self, int argc, char** argv)
 
 		auto opt = opts_find(self, &name);
 		if (unlikely(opt == NULL))
-			error("option '%.*s': not found", str_size(&name), str_of(&name));
+			error("option '{str}': not found", &name);
 
 		// ensure optiable can be changed
 		if (unlikely(! opt_is(opt, OPT_C)))
-			error("option '%.*s': cannot be changed", str_size(&name),
-			      str_of(&name));
+			error("option '{str}': cannot be changed", &name);
 
 		// if config update will be required
 		if (! opt_is(opt, OPT_E))

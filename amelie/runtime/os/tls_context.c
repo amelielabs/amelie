@@ -74,7 +74,7 @@ tls_context_create(TlsContext* self)
 		method = (SSL_METHOD *)SSLv23_server_method();
 	ctx = SSL_CTX_new(method);
 	if (ctx == NULL)
-		error("%s", "SSL_CTX_NEW() failed");
+		error("SSL_CTX_NEW() failed");
 	self->ctx = ctx;
 
 	SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);

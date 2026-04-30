@@ -186,10 +186,8 @@ catalog_validate_udfs(Catalog* self, Str* user, Str* name)
 			continue;
 		auto udf = udf_of(rel);
 		if (self->iface->udf_depends(udf, user, name))
-			error("function '%.*s' depends on relation '%.*s.%.*s",
-			      str_size(udf->rel.name), str_of(udf->rel.name),
-			      str_size(user), str_of(user),
-			      str_size(name), str_of(name));
+			error("function '{str}' depends on relation '{str}.{str}'",
+			      udf->rel.name, user, name);
 	}
 }
 
@@ -651,7 +649,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		break;
 	}
 	default:
-		error("unrecognized ddl operation id: %d", (int)cmd);
+		error("unrecognized ddl operation id: {d}", (int)cmd);
 		break;
 	}
 

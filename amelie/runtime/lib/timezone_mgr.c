@@ -111,8 +111,7 @@ timezone_mgr_read_system_timezone(TimezoneMgr* self)
 	// set as system timezone in timezone mgr
 	self->system = timezone_mgr_find(self, &name);
 	if (! self->system)
-		error("timezone: failed to set system timezone '%.*s'",
-		      str_size(&name), str_of(&name));
+		error("timezone: failed to set system timezone '{str}'", &name);
 }
 #endif
 
@@ -133,8 +132,7 @@ timezone_mgr_read_system_localtime(TimezoneMgr* self)
 	str_set(&name, path + 20, size - 20);
 	self->system = timezone_mgr_find(self, &name);
 	if (! self->system)
-		error("timezone: failed to set system timezone '%.*s'",
-		      str_size(&name), str_of(&name));
+		error("timezone: failed to set system timezone '{str}'", &name);
 }
 
 void

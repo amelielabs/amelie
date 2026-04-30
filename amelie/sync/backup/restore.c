@@ -54,8 +54,7 @@ restore_dir_str(Str* path_relative)
 	if (! fs_exists("{s}", path))
 		fs_mkdir(0755, "{s}", path);
 
-	info("backup: %.*s", str_size(path_relative),
-	     str_of(path_relative));
+	info("backup: {str}", path_relative);
 }
 
 static void
@@ -141,7 +140,7 @@ restore_file(char* path_relative, uint8_t* data)
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
 	file_write_buf(&file, buf);
 
-	info("backup: %s", path_relative);
+	info("backup: {s}", path_relative);
 }
 
 static void
@@ -170,8 +169,7 @@ restore_pull(Restore* self, Str* path_relative, int64_t size, int mode)
 	if (str_size(path_relative) > 9 && !strncmp(path_relative->end - 9, ".snapshot", 9))
 		str_truncate(path_relative, 9);
 
-	info("backup: %.*s (%.2f MiB)", str_size(path_relative),
-	     str_of(path_relative),
+	info("backup: {str} ({.2f} MiB)", path_relative,
 	     (double)size / 1024 / 1024);
 
 	// create and transfer the file

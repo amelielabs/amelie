@@ -281,5 +281,5 @@ socket_getaddrinfo_job(intptr_t* argv)
 
 	auto rc = socket_getaddrinfo(addr, service, &hints, result);
 	if (rc == -1 || *result == NULL)
-		error("failed to resolve %s:%d", addr, port);
+		error("failed to resolve {s}:{d}", addr, port);
 }

@@ -96,8 +96,7 @@ table_create(Catalog*     self,
 	if (rel)
 	{
 		if (! if_not_exists)
-			error("relation '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+			error("relation '{str}': already exists", &config->name);
 		return false;
 	}
 
@@ -129,8 +128,7 @@ table_drop(Catalog* self, Tr* tr, Str* user, Str* name,
 	if (! table)
 	{
 		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("table '{str}': not exists", name);
 		return false;
 	}
 
@@ -174,8 +172,7 @@ table_truncate(Catalog* self,
 	if (! table)
 	{
 		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("table '{str}': not exists", name);
 		return false;
 	}
 

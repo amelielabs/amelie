@@ -117,8 +117,7 @@ server_config_read(uint8_t** pos)
 			unpack_bool(pos, &self->tls);
 		} else
 		{
-			error("server: listen[] unknown listen option '%.*s'",
-			      str_size(&name), str_of(&name));
+			error("server: listen[] unknown listen option '{str}'", &name);
 		}
 	}
 	return self;

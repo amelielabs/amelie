@@ -28,7 +28,7 @@ fn_throw(Fn* self)
 	auto argv = self->argv;
 	fn_expect(self, 1);
 	fn_expect_arg(self, 0, TYPE_STRING);
-	error("%.*s", str_size(&argv[0].string), str_of(&argv[0].string));
+	error("{str}", &argv[0].string);
 }
 
 static void

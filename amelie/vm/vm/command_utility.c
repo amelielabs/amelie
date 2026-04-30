@@ -211,8 +211,7 @@ clock_rel(Vm* self, Op* op)
 	// validate lock type
 	auto lock_id = lock_id_of(&name_lock);
 	if (lock_id == LOCK_NONE)
-		error("lock: unrecognized lock type '%.*s'", str_size(&name_lock),
-		      str_of(&name_lock));
+		error("lock: unrecognized lock type '{str}'", &name_lock);
 
 	// ensure lock does not exists
 	auto lock_mgr = &runtime()->lock_mgr;
@@ -220,8 +219,7 @@ clock_rel(Vm* self, Op* op)
 	if (lock)
 	{
 		if (! op->d)
-			error("lock: '%.*s' already exists", str_size(&name),
-			      str_of(&name));
+			error("lock: '{str}' already exists", &name);
 		return;
 	}
 
@@ -233,8 +231,7 @@ clock_rel(Vm* self, Op* op)
 	{
 		// ensure relation is a breakpoint
 		if (! ref->bp)
-			error("lock: relation '%.*s' cannot be locked this way",
-			      str_size(&name), str_of(&name));
+			error("lock: relation '{str}' cannot be locked this way", &name);
 		rel = &ref->rel;
 
 		// enable breakpoint
@@ -269,8 +266,7 @@ cunlock_rel(Vm* self, Op* op)
 	if (! lock)
 	{
 		if (! op->b)
-			error("lock: '%.*s' not exists", str_size(&name),
-			      str_of(&name));
+			error("lock: '{str}' not exists", &name);
 		return;
 	}
 

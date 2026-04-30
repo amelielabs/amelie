@@ -86,8 +86,7 @@ follower_follow(Follower* self)
 		user = &req->rel_user;
 	auto feed = feed_mgr_find(&self->feed_mgr, user, &req->rel);
 	if (feed)
-		error("feed '%.*s': already exists", str_size(&req->rel),
-		      str_of(&req->rel));
+		error("feed '{str}': already exists", &req->rel);
 
 	// reference relation for cdc (check permission)
 	Uuid* id;
@@ -128,8 +127,7 @@ follower_unfollow(Follower* self)
 		user = &req->rel_user;
 	auto feed = feed_mgr_find(&self->feed_mgr, user, &req->rel);
 	if (! feed)
-		error("feed '%.*s': does not exists", str_size(&req->rel),
-		      str_of(&req->rel));
+		error("feed '{str}': does not exists", &req->rel);
 
 	// unref and remove
 	catalog_cdc_unref(&share()->db->catalog, &feed->id);

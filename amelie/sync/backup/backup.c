@@ -40,7 +40,7 @@ backup_free(Backup* self)
 static void
 backup_push(Backup* self, Str* name, size_t size)
 {
-	info("backup: %.*s (%.2f MiB)", str_size(name), str_of(name),
+	info("backup: {str} ({.2f} MiB)", name,
 	     (double)size / 1024 / 1024);
 
 	// todo: validate name
@@ -54,8 +54,7 @@ backup_push(Backup* self, Str* name, size_t size)
 	defer(file_close, &file);
 	file_open(&file, path);
 	if (size > file.size)
-		error("backup: requested file '%.*s'' size mismatch",
-		      str_size(name), str_of(name));
+		error("backup: requested file '{str}' size mismatch", name);
 
 	// [file, size]
 	auto client = self->websocket.client;
@@ -132,7 +131,7 @@ backup_main(void* arg)
 	tcp_getpeername(&client->tcp, addr, sizeof(addr));
 
 	info("");
-	info("backup: sending to %s", addr);
+	info("backup: sending to {s}", addr);
 	error_catch
 	(
 		client_attach(client);

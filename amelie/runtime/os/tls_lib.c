@@ -81,13 +81,13 @@ tls_lib_error(int ssl_error, char* msg)
 		error_str = ERR_error_string(error, NULL);
 
 	if (error > 0 && ssl_error > 0)
-		error("%s: %s (%s)", msg, tls_lib_strerror(ssl_error), error_str);
+		error("{s}: {s} ({s})", msg, tls_lib_strerror(ssl_error), error_str);
 	else
 	if (error > 0)
-		error("%s: %s", msg, error_str);
+		error("{s}: {s}", msg, error_str);
 	else
 	if (ssl_error > 0)
-		error("%s: %s", msg, tls_lib_strerror(ssl_error));
+		error("{s}: {s}", msg, tls_lib_strerror(ssl_error));
 	else
-		error("%s: %s", msg, strerror(errno));
+		error("{s}: {s}", msg, strerror(errno));
 }

@@ -67,8 +67,7 @@ branch_create(Catalog*      self,
 	if (rel)
 	{
 		if (! if_not_exists)
-			error("relation '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+			error("relation '{str}': already exists", &config->name);
 		return false;
 	}
 	check_type(rel, REL_BRANCH);
@@ -82,8 +81,7 @@ branch_create(Catalog*      self,
 	// find parent branch
 	auto parent = snapshot_mgr_find(&table->snapshot_mgr, config->snapshot.id_parent);
 	if (! parent)
-		error("branch '%.*s': parent branch cannot be found", str_size(&config->name),
-		      str_of(&config->name));
+		error("branch '{str}': parent branch cannot be found", &config->name);
 
 	// create branch
 	auto branch = branch_allocate(config);
@@ -112,8 +110,7 @@ branch_drop(Catalog* self, Tr* tr, Str* user, Str* name,
 	if (! branch)
 	{
 		if (! if_exists)
-			error("branch '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("branch '{str}': not exists", name);
 		return false;
 	}
 
@@ -130,8 +127,7 @@ branch_drop(Catalog* self, Tr* tr, Str* user, Str* name,
 		if (ref->table != branch->table)
 			continue;
 		if (ref->config->snapshot.id_parent == branch->config->snapshot.id)
-			error("branch '%.*s': is a parent branch",
-			      str_size(name), str_of(name));
+			error("branch '{str}': is a parent branch", name);
 	}
 
 	branch_drop_of(self, tr, branch);
@@ -177,8 +173,7 @@ branch_rename(Catalog* self,
 	if (! branch)
 	{
 		if (! if_exists)
-			error("branch '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("branch '{str}': not exists", name);
 		return false;
 	}
 
@@ -187,8 +182,7 @@ branch_rename(Catalog* self,
 
 	// ensure other relation with the same name does not exists
 	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
-		error("relation '%.*s': already exists", str_size(name_new),
-		      str_of(name_new));
+		error("relation '{str}': already exists", name_new);
 
 	// update branch
 	log_ddl(&tr->log, &rename_if, NULL, &branch->rel);
@@ -240,8 +234,7 @@ branch_grant(Catalog* self,
 	if (! branch)
 	{
 		if (! if_exists)
-			error("branch '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("branch '{name}': not exists", name);
 		return false;
 	}
 

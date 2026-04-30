@@ -56,7 +56,7 @@ test_error(TestSuite* self, const char* fmt, ...)
 	va_start(args, fmt);
 	formatv(msg, sizeof(msg), fmt, args);
 	va_end(args);
-	error("%s: %s\n", self->current_test_file, msg);
+	error("{s}: {s}\n", self->current_test_file, msg);
 }
 
 static inline int

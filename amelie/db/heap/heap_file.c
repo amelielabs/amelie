@@ -81,19 +81,16 @@ heap_open(Heap* self, Id* id, int state)
 
 	// validate header magic
 	if (header->magic != HEAP_MAGIC)
-		error("heap: file '%s' has invalid header",
-		      str_of(&file.path));
+		error("heap: file '{str}' has invalid header", &file.path);
 
 	// validate header crc
 	uint32_t crc = runtime()->crc(0, &header->magic, size - sizeof(uint32_t));
 	if (crc != header->crc)
-		error("heap: file '%s' header crc mismatch",
-		      str_of(&file.path));
+		error("heap: file '{str}' header crc mismatch", &file.path);
 
 	// validate version
 	if (header->version != HEAP_VERSION)
-		error("heap: file '%s' has incompatible version",
-		      str_of(&file.path));
+		error("heap: file '{str}' has incompatible version", &file.path);
 
 	// prepare encoder
 	Encoder ec;
@@ -123,8 +120,7 @@ heap_open(Heap* self, Id* id, int state)
 			{
 				crc = runtime()->crc(0, buf->start, buf_size(buf));
 				if (crc != page_header->crc)
-					error("heap: file '%s' page crc mismatch",
-					      str_of(&file.path));
+					error("heap: file '{str}' page crc mismatch", &file.path);
 			}
 
 			encoder_decode(&ec, page->pointer + sizeof(PageHeader),
@@ -143,8 +139,7 @@ heap_open(Heap* self, Id* id, int state)
 			{
 				crc = runtime()->crc(0, page_data, page_size);
 				if (crc != page_header->crc)
-					error("heap: file '%s' page crc mismatch",
-					      str_of(&file.path));
+					error("heap: file '{str}' page crc mismatch", &file.path);
 			}
 		}
 	}

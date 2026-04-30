@@ -11,18 +11,18 @@
 // AGPL-3.0 Licensed.
 //
 
-void format_validate(4, 5)
+void
 report(const char* file,
        const char* function, int line,
        const char* fmt, ...);
 
-void no_return format_validate(5, 6)
+void no_return
 report_error(const char* file,
              const char* function, int line,
              int         code,
              const char* fmt, ...);
 
-void no_return format_validate(4, 5)
+void no_return
 report_panic(const char* file,
              const char* function, int line,
              const char* fmt, ...);
@@ -52,5 +52,5 @@ report_panic(const char* file,
 	error_as(ERROR, fmt, ## __VA_ARGS__)
 
 #define error_system() \
-	error_as(ERROR, "%s(): %s (errno: %d)", source_function, \
+	error_as(ERROR, "{s}(): {s} (errno: {d})", source_function, \
 	         strerror(errno), errno)

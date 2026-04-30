@@ -46,7 +46,7 @@ slt_open(Slt* self, Str* dir)
 	format(path, sizeof(path), "{str}", dir);
 
 	// recreate result directory
-	if (fs_exists("%s", path))
+	if (fs_exists("{s}", path))
 		slt_sh("rm -rf {s}", path);
 
 	// create repository
@@ -119,8 +119,8 @@ slt_compare(Slt* self, SltCmd* cmd, amelie_arg_t* msg)
 	if (! slt_result_compare(result, &cmd->result))
 	{
 		slt_cmd_log(cmd);
-		info(">>>> (%d values)", result->count);
-		info("%.*s", (int)buf_size(&result->result), buf_cstr(&result->result));
+		info(">>>> ({d} values)", result->count);
+		info("{buf}", result->result);
 		info("result mismatch");
 		return;
 	}
@@ -132,8 +132,8 @@ slt_compare(Slt* self, SltCmd* cmd, amelie_arg_t* msg)
 	if (! slt_hash_add(&self->hash, &cmd->query_label, &result->result_hash))
 	{
 		slt_cmd_log(cmd);
-		info(">>>> (%d values)", result->count);
-		info("%.*s", (int)buf_size(&result->result), buf_cstr(&result->result));
+		info(">>>> ({d} values)", result->count);
+		info("{buf}", &result->result);
 		info("hash mismatch with the previous label");
 	}
 }
@@ -184,7 +184,7 @@ slt_execute(Slt* self, SltCmd* cmd)
 	}
 
 	slt_cmd_log(cmd);
-	error("%.*s", (int)result.data_size, result.data);
+	error("{.*s}", (int)result.data_size, result.data);
 }
 
 void
@@ -222,7 +222,7 @@ slt_start(Slt* self, Str* dir, Str* file)
 		}
 	}
 
-	info("tests processed: %d", processed);
+	info("tests processed: {d}", processed);
 }
 
 void
@@ -232,6 +232,6 @@ slt_stop(Slt* self)
 	auto dir = self->dir;
 	if (!dir)
 		return;
-	if (fs_exists("%.*s", str_size(dir), str_of(dir)))
+	if (fs_exists("{str}", dir))
 		slt_sh("rm -rf {dir}", dir);
 }

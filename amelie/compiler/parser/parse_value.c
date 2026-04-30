@@ -458,8 +458,8 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	}
 	}
 
-	error("'%s' expected for column '%.*s'", type_of(column->type),
-	      str_size(&column->name), str_of(&column->name));
+	error("'{s}' expected for column '{str}'", type_of(column->type),
+	      &column->name);
 }
 
 hot void
@@ -497,8 +497,7 @@ parse_value_validate(Stmt* self, Column* column, Value* value, Ast* expr)
 			stmt_error(self, expr, "column '{str}' value cannot be NULL",
 			           &column->name);
 		else
-			error("column '%.*s' value cannot be NULL",
-			      str_size(&column->name),
-			      str_of(&column->name));
+			error("column '{str}' value cannot be NULL",
+			      &column->name);
 	}
 }

@@ -159,8 +159,7 @@ grants_read(Grants* self, uint8_t** pos)
 			unpack_str(pos, &name);
 			uint32_t permission;
 			if (permission_of(&name, &permission) == -1)
-				error("grants: unrecognized permission '%.*s'",
-				      str_size(&name), str_of(&name));
+				error("grants: unrecognized permission '{str}'", &name);
 			permissions |= permission;
 		}
 		grants_add(self, &user, permissions);

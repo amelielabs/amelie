@@ -103,9 +103,9 @@ client_accept(Client* self)
 		{
 			char tls_string[128];
 			tls_explain(&self->tcp.tls, tls_string, sizeof(tls_string));
-			info("connected from %s (%s)", addr, tls_string);
+			info("connected from {s} ({s})", addr, tls_string);
 		} else {
-			info("connected from %s", addr);
+			info("connected from {s}", addr);
 		}
 	}
 }
@@ -127,7 +127,7 @@ client_connect_to_path(Client* self, Str* path)
 	// connected
 	bool log_connections = opt_int_of(&config()->log_connections);
 	if (log_connections)
-		info("connected to %.*s/socket", str_size(path), str_of(path));
+		info("connected to {str}/socket", path);
 }
 
 static void
@@ -161,7 +161,7 @@ client_connect_to(Client* self, Str* host, int port)
 	// connected
 	bool log_connections = opt_int_of(&config()->log_connections);
 	if (log_connections)
-		info("connected to %s:%d", str_of(host), port);
+		info("connected to {str}:{d}", host, port);
 }
 
 void
@@ -199,11 +199,11 @@ client_close(Client* self)
 		{
 			char addr[128];
 			tcp_getpeername(&self->tcp, addr, sizeof(addr));
-			info("disconnected from %s", addr);
+			info("disconnected from {s}", addr);
 		}
 		else {
 			auto endpoint = self->endpoint;
-			info("disconnected from %s:%d",
+			info("disconnected from {s}:{d}",
 			     str_of(opt_string_of(&endpoint->host)),
 			     (int)endpoint->port.integer);
 		}

@@ -141,8 +141,7 @@ constraints_read(Constraints* self, uint8_t** pos)
 			buf_reset(&self->value);
 			base64url_decode(&self->value, &str);
 		} else {
-			error("unrecognized constraint %.*s", str_size(&name),
-			      str_of(&name));
+			error("unrecognized constraint {str}", &name);
 		}
 
 		unpack_array_end(pos);

@@ -51,7 +51,8 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 				{
 					snapshot = snapshot_mgr_find(snapshots, row->snapshot);
 					if (unlikely(! snapshot))
-						error("replay: failed to find snapshot %" PRIu32, row->snapshot);
+						error("replay: failed to find snapshot {u32}",
+						      row->snapshot);
 				}
 				part_insert(self->part, tr, true, snapshot, row);
 				data += row_size(row);
@@ -67,7 +68,8 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 				{
 					snapshot = snapshot_mgr_find(snapshots, row->snapshot);
 					if (unlikely(! snapshot))
-						error("replay: failed to find snapshot %" PRIu32, row->snapshot);
+						error("replay: failed to find snapshot {u32}",
+						      row->snapshot);
 				}
 				part_delete_by(self->part, tr, snapshot, row);
 				data += row_size(row);

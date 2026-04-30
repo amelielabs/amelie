@@ -59,8 +59,7 @@ table_rename(Catalog* self,
 	if (! table)
 	{
 		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("table '{str}': not exists", name);
 		return false;
 	}
 
@@ -69,8 +68,7 @@ table_rename(Catalog* self,
 
 	// ensure other relation with the same name does not exists
 	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
-		error("relation '%.*s': already exists", str_size(name_new),
-		      str_of(name_new));
+		error("relation '{str}': already exists", name_new);
 
 	// update table
 	log_ddl(&tr->log, &rename_if, self, &table->rel);
@@ -122,8 +120,7 @@ table_grant(Catalog* self,
 	if (! table)
 	{
 		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("table '{str}': not exists", name);
 		return false;
 	}
 
@@ -187,8 +184,7 @@ table_set_identity(Catalog* self,
 	if (! table)
 	{
 		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("table '{str}': not exists", name);
 		return false;
 	}
 
@@ -244,8 +240,7 @@ table_column_rename(Catalog* self,
 	if (! table)
 	{
 		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("table '{str}': not exists", name);
 		return false;
 	}
 
@@ -257,10 +252,8 @@ table_column_rename(Catalog* self,
 	if (! column)
 	{
 		if (! if_column_exists)
-			error("table '%.*s': column '%.*s' not exists", str_size(name),
-			      str_of(name),
-			      str_size(name_column),
-			      str_of(name_column));
+			error("table '{str}': column '{str}' not exists",
+			      name, name_column);
 		return false;
 	}
 
@@ -268,10 +261,8 @@ table_column_rename(Catalog* self,
 	auto ref = columns_find(&table->config->columns, name_column_new);
 	if (ref)
 	{
-		error("table '%.*s': column '%.*s' already exists", str_size(name),
-		      str_of(name),
-		      str_size(name_column_new),
-		      str_of(name_column_new));
+		error("table '{str}': column '{str}' already exists",
+		      name, name_column_new);
 	}
 
 	// update table
@@ -322,8 +313,7 @@ table_column_add(Catalog* self,
 	if (! table)
 	{
 		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("table '{str}': not exists", name);
 		return false;
 	}
 
@@ -334,17 +324,14 @@ table_column_add(Catalog* self,
 	if (columns_find(&table->config->columns, &column->name))
 	{
 		if (! if_not_exists)
-			error("table '%.*s': column '%.*s' already exists", str_size(name),
-			      str_of(name),
-			      str_size(&column->name),
-			      str_of(&column->name));
+			error("table '{str}': column '{str}' already exists",
+			      name, &column->name);
 		return false;
 	}
 
 	// ensure only one identity column defined
 	if (column->constraints.as_identity && table->config->columns.identity)
-		error("table '%.*s': already has identity column", str_size(name),
-		      str_of(name));
+		error("table '{str}': already has identity column", name);
 
 	// add new column
 	auto column_new = column_copy(column);
@@ -398,8 +385,7 @@ table_column_drop(Catalog* self,
 	if (! table)
 	{
 		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("table '{str}': not exists", name);
 		return false;
 	}
 
@@ -410,19 +396,14 @@ table_column_drop(Catalog* self,
 	if (! column)
 	{
 		if (! if_column_exists)
-			error("table '%.*s': column '%.*s' not exists", str_size(name),
-			      str_of(name),
-			      str_size(name_column),
-			      str_of(name_column));
+			error("table '{str}': column '{str}' not exists",
+			      name, name_column);
 		return false;
 	}
 
 	// ensure column currently not used as a key
 	if (column->refs > 0)
-		error("table '%.*s': column '%.*s' is a key", str_size(name),
-		      str_of(name),
-		      str_size(name_column),
-		      str_of(name_column));
+		error("table '{str}': column '{str}' is a key", name, name_column);
 
 	// update log
 	log_ddl(&tr->log, &column_drop_if, column, &table->rel);
@@ -481,8 +462,7 @@ table_column_set(Catalog* self,
 	if (! table)
 	{
 		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("table '{str}': not exists", name);
 		return false;
 	}
 
@@ -493,10 +473,8 @@ table_column_set(Catalog* self,
 	if (! column)
 	{
 		if (! if_column_exists)
-			error("table '%.*s': column '%.*s' not exists", str_size(name),
-			      str_of(name),
-			      str_size(name_column),
-			      str_of(name_column));
+			error("table '{str}': column '{str}' not exists",
+			      name, name_column);
 		return false;
 	}
 

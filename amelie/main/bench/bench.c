@@ -200,22 +200,21 @@ bench_run(Bench* self)
 	if (str_is_cstr(type, "decre"))
 		self->iface = &bench_decre;
 	else
-		error("unknown benchmark type '%.*s'", str_size(type),
-		      str_of(type));
+		error("unknown benchmark type '{str}'", type);
 
 	// hello
 	info("");
 	info("amelie benchmark.");
 	info("");
-	info("type:      %.*s", str_size(type), str_of(type));
-	info("time:      %" PRIu64 " sec", time);
-	info("threads:   %" PRIu64, workers);
-	info("clients:   %" PRIu64 " (%" PRIu64 " per thread)", clients, clients_per_worker);
-	info("batch:     %" PRIu64, batch);
-	info("scale:     %" PRIu64, scale);
-	info("init:      %" PRIu64, init);
-	info("unlogged:  %" PRIu64, unlogged);
-	info("histogram: %" PRIu64, histogram);
+	info("type:      {str}", type);
+	info("time:      {u64} sec", time);
+	info("threads:   {u64}", workers);
+	info("clients:   {u64} ({u64} per thread)", clients, clients_per_worker);
+	info("batch:     {u64}", batch);
+	info("scale:     {u64}", scale);
+	info("init:      {u64}", init);
+	info("unlogged:  {u64}", unlogged);
+	info("histogram: {u64}", histogram);
 	info("");
 
 	// prepare workers
@@ -256,12 +255,12 @@ bench_run(Bench* self)
 		auto tx = atomic_u64_of(&self->transactions);
 		auto wr = atomic_u64_of(&self->writes);
 		if (wr > 0)
-			info("%" PRIu64 " transactions/sec, %.2f millions writes/sec (%" PRIu64 ")",
+			info("{u64} transactions/sec, {.2f} millions writes/sec ({u64})",
 			     tx - prev_tx,
 			     (float)(wr - prev_wr) / 1000000.0,
 			     wr - prev_wr);
 		else
-			info("%" PRIu64 " transactions/sec", tx - prev_tx);
+			info("{u64} transactions/sec", tx - prev_tx);
 		prev_tx = tx;
 		prev_wr = wr;
 	}
@@ -283,8 +282,8 @@ bench_run(Bench* self)
 
 	// report
 	info("");
-	info("transactions: %" PRIu64, self->transactions);
-	info("writes:       %.2f millions writes (%" PRIu64 ")",
+	info("transactions: {u64}", self->transactions);
+	info("writes:       {.2f} millions writes ({u64})",
 	     self->writes / 1000000.0,
 	     self->writes);
 	info("");

@@ -51,7 +51,7 @@ show functions all;
   "grants": []
 }]
 drop table test;
-error: function 'dep' depends on relation 'main.test
+error: function 'dep' depends on relation 'main.test'
 # test: drop table after udf drop
 drop function dep;
 drop table test;

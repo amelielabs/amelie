@@ -66,10 +66,10 @@ error_setv(Error*      self,
 	self->function = (char*)function;
 	self->line     = line;
 	buf_reset(&self->text);
-	buf_vprintf(&self->text, fmt, fmt_args);
+	buf_formatv(&self->text, fmt, fmt_args);
 }
 
-static inline void format_validate(6, 7)
+static inline void
 error_set(Error*      self,
           const char* file,
           const char* function,

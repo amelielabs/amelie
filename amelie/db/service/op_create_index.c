@@ -39,8 +39,7 @@ service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
 	// find table
 	auto table = catalog_find_table(self->catalog, &name_user, &name, false);
 	if (! table)
-		error("table '%.*s': not exists", str_size(&name),
-		      str_of(&name));
+		error("table '{str}': not exists", &name);
 
 	// only owner or superuser
 	check_ownership(tr, &table->rel);
@@ -54,11 +53,9 @@ service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
 	if (index)
 	{
 		if (! if_not_exists)
-			error("table '%.*s' index '%.*s': already exists",
-			      str_size(&table->config->name),
-			      str_of(&table->config->name),
-			      str_size(&config->name),
-			      str_of(&config->name));
+			error("table '{str}' index '{str}': already exists",
+			      &table->config->name,
+			      &config->name);
 
 		index_config_free(config);
 		return;

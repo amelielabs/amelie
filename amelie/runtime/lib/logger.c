@@ -96,7 +96,7 @@ logger_write(TaskLog* arg, const char* fmt, va_list args)
 
 	// msg
 	auto timestamp_offset = buf_size(buf);
-	buf_vprintf(buf, fmt, args);
+	buf_formatv(buf, fmt, args);
 	buf_write(buf, "\n", 1);
 
 	// write to the log file

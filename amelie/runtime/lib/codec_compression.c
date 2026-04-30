@@ -103,7 +103,7 @@ codec_zstd_encode(Codec*   codec, Buf* buf,
 		};
 		auto rc = ZSTD_compressStream2(self->cctx, &output, &input, ZSTD_e_continue);
 		if (ZSTD_isError(rc))
-			error("zstd: encode failed: %s", ZSTD_getErrorName(rc));
+			error("zstd: encode failed: {s}", ZSTD_getErrorName(rc));
 
 		buf_advance(buf, output.pos);
 	}
@@ -128,7 +128,7 @@ codec_zstd_encode_end(Codec* codec, Buf* buf)
 		};
 		auto rc = ZSTD_compressStream2(self->cctx, &output, &input, ZSTD_e_end);
 		if (ZSTD_isError(rc))
-			error("zstd: encode failed: %s", ZSTD_getErrorName(rc));
+			error("zstd: encode failed: {s}", ZSTD_getErrorName(rc));
 		buf_advance(buf, output.pos);
 
 		if (! rc)
@@ -163,7 +163,7 @@ codec_zstd_decode(Codec*   codec,
 
 	auto rc = ZSTD_decompressStream(self->dctx, &output, &input);
 	if (ZSTD_isError(rc))
-		error("zstd: decode failed: %s", ZSTD_getErrorName(rc));
+		error("zstd: decode failed: {s}", ZSTD_getErrorName(rc));
 }
 
 static CodecIf codec_zstd =

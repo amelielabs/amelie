@@ -55,8 +55,7 @@ report_error(const char* file,
 	// write log
 	auto log = &am_task->log;
 	if (task_log_active(log) && write_log)
-		task_logf(log, "%s%.*s", prefix, buf_size(&error->text),
-		          buf_cstr(&error->text));
+		task_logf(log, "{s}{buf}", prefix, &error->text);
 
 	// throw exception
 	exception_mgr_throw(&am_self()->exception_mgr);
@@ -78,16 +77,16 @@ report_panic(const char* file,
 
 		// write log
 		auto log = &am_task->log;
-		task_logf(log, "panic: %.*s", buf_size(&error->text),
-		          buf_cstr(&error->text));
+		task_logf(log, "panic: {buf}", &error->text);
 	} else
 	{
 		va_list args;
 		va_start(args, fmt);
-		fprintf(stderr, "panic: ");
-		vfprintf(stderr, fmt, args);
-		fprintf(stderr, "\n");
+		char msg[512];
+		formatv(msg, sizeof(msg), fmt, args);
 		va_end(args);
+
+		fprintf(stderr, "panic: %s\n", msg);
 	}
 
 	fflush(NULL);

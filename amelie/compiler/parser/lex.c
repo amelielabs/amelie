@@ -55,11 +55,10 @@ lex_error(Lex* self, Ast* ast, const char* error)
 	if (ast->id == KEOF)
 	{
 		str_shrink(&before);
-		error("%.*s ⟵ %s", str_size(&before), str_of(&before), error);
+		error("{str} ⟵ {s}", &before, error);
 	}
 
-	error("%.*s❰%.*s❱ ⟵ %s", str_size(&before), str_of(&before),
-	      str_size(&tk), str_of(&tk), error);
+	error("{str}❰{str}❱ ⟵ {s}", &before, &tk, error);
 }
 
 void

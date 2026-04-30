@@ -71,8 +71,7 @@ user_create(Catalog*    self,
 	if (user)
 	{
 		if (! if_not_exists)
-			error("user '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+			error("user '{str}': already exists", &config->name);
 		return false;
 	}
 
@@ -95,8 +94,7 @@ user_drop(Catalog* self,
 	if (! user)
 	{
 		if (! if_exists)
-			error("user '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("user '{str}': not exists", name);
 		return false;
 	}
 
@@ -105,8 +103,7 @@ user_drop(Catalog* self,
 
 	// main user is immutable
 	if (user->config->superuser)
-		error("user '%.*s': system user cannot be dropped", str_size(name),
-		      str_of(name));
+		error("user '{str}': system user cannot be dropped", name);
 
 	// drop user by object
 	rel_mgr_drop(&self->users, tr, &user->rel);
@@ -149,8 +146,7 @@ user_rename(Catalog* self,
 	if (! user)
 	{
 		if (! if_exists)
-			error("user '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("user '{str}': not exists", name);
 		return false;
 	}
 
@@ -159,13 +155,11 @@ user_rename(Catalog* self,
 
 	// main user is immutable
 	if (user->config->superuser)
-		error("user '%.*s': system user cannot be renamed", str_size(name),
-		       str_of(name));
+		error("user '{str}': system user cannot be renamed", name);
 
 	// ensure new user does not exists
 	if (catalog_find_user(self, name_new, false))
-		error("user '%.*s': already exists", str_size(name_new),
-		      str_of(name_new));
+		error("user '{str}': already exists", name_new);
 
 	// update user
 	log_ddl(&tr->log, &rename_if, self, &user->rel);
@@ -214,8 +208,7 @@ user_grant(Catalog* self,
 	if (! user)
 	{
 		if (! if_exists)
-			error("user '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("user '{str}': not exists", name);
 		return false;
 	}
 
@@ -224,8 +217,7 @@ user_grant(Catalog* self,
 
 	// main user is immutable
 	if (user->config->superuser)
-		error("user '%.*s': system user cannot change grants", str_size(name),
-		       str_of(name));
+		error("user '{str}': system user cannot change grants", name);
 
 	// validate permissions
 	auto perms_all =
@@ -295,8 +287,7 @@ user_revoke(Catalog* self,
 	if (! user)
 	{
 		if (! if_exists)
-			error("user '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("user '{str}': not exists", name);
 		return false;
 	}
 

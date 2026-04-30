@@ -39,8 +39,7 @@ storage_mgr_create(StorageMgr*    self,
 	if (current)
 	{
 		if (! if_not_exists)
-			error("storage '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+			error("storage '{str}': already exists", &config->name);
 		return false;
 	}
 
@@ -62,17 +61,14 @@ storage_mgr_drop(StorageMgr* self,
 	if (! storage)
 	{
 		if (! if_exists)
-			error("storage '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("storage '{str}': not exists", name);
 		return false;
 	}
 	if (storage->refs > 0)
-		error("storage '%.*s': is being used", str_size(name),
-		      str_of(name));
+		error("storage '{str}': is being used", name);
 
 	if (storage->config->system)
-		error("storage '%.*s': system storage cannot be dropped", str_size(name),
-		      str_of(name));
+		error("storage '{str}': system storage cannot be dropped", name);
 
 	// drop storage by object
 	rel_mgr_drop(&self->mgr, tr, &storage->rel);
@@ -115,23 +111,19 @@ storage_mgr_rename(StorageMgr* self,
 	if (! storage)
 	{
 		if (! if_exists)
-			error("storage '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("storage '{str}': not exists", name);
 		return false;
 	}
 
 	if (storage->refs > 0)
-		error("storage '%.*s': is being used", str_size(name),
-		      str_of(name));
+		error("storage '{str}': is being used", name);
 
 	if (storage->config->system)
-		error("storage '%.*s': system storage cannot be renamed", str_size(name),
-		       str_of(name));
+		error("storage '{str}': system storage cannot be renamed", name);
 
 	// ensure new storage does not exists
 	if (storage_mgr_find(self, name_new, false))
-		error("storage '%.*s': already exists", str_size(name_new),
-		      str_of(name_new));
+		error("storage '{str}': already exists", name_new);
 
 	// update storage
 	log_ddl(&tr->log, &rename_if, self, &storage->rel);

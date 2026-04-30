@@ -68,7 +68,7 @@ repo_pidfile_create(void)
 	auto rc = vfs_write(fd, pid, pid_len);
 	vfs_close(fd);
 	if (rc != pid_len)
-		error("pid file '%s' write error (%s)", path,
+		error("pid file '{s}' write error ({s})", path,
 		      strerror(errno));
 }
 
@@ -138,11 +138,8 @@ repo_version_open(const char* path)
 	// compare versions
 	auto version_current = &state()->version.string;
 	if (! str_compare(&version, version_current))
-		error("current version '%.*s' does not match repo version '%.*s'",
-		      str_size(version_current),
-		      str_of(version_current),
-		      str_size(&version),
-		      str_of(&version));
+		error("current version '{str}' does not match repo version '{str}'",
+		      version_current, &version);
 }
 
 static void
@@ -222,7 +219,7 @@ repo_open_client_mode(int argc, char** argv)
 	auto name = &config()->timezone.string;
 	runtime->timezone = timezone_mgr_find(&runtime->timezone_mgr, name);
 	if (! runtime->timezone)
-		error("failed to find timezone %.*s", str_size(name), str_of(name));
+		error("failed to find timezone {str}", name);
 
 	// reconfigure logger
 	logger_set_enable(logger, opt_int_of(&config->log_enable));
@@ -315,7 +312,7 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	auto name = &config()->timezone.string;
 	runtime->timezone = timezone_mgr_find(&runtime->timezone_mgr, name);
 	if (! runtime->timezone)
-		error("failed to find timezone %.*s", str_size(name), str_of(name));
+		error("failed to find timezone {str}", name);
 
 	// reconfigure logger
 	logger_set_enable(logger, opt_int_of(&config->log_enable));

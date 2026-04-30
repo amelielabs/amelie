@@ -70,11 +70,9 @@ table_storage_add(Table*  self,
 	if (volume)
 	{
 		if (! if_not_exists)
-			error("table '%.*s' storage '%.*s': already exists",
-			      str_size(&self->config->name),
-			      str_of(&self->config->name),
-			      str_size(&config->name),
-			      str_of(&config->name));
+			error("table '{str}' storage '{str}': already exists",
+			      &self->config->name,
+			      &config->name);
 		return false;
 	}
 
@@ -142,21 +140,15 @@ table_storage_drop(Table* self,
 	if (! volume)
 	{
 		if (! if_exists)
-			error("table '%.*s' storage '%.*s': not found",
-			      str_size(&self->config->name),
-			      str_of(&self->config->name),
-			      str_size(name),
-			      str_of(name));
+			error("table '{str}' storage '{str}': not found",
+			      &self->config->name, name);
 		return false;
 	}
 
 	// ensure volume has no deps
 	if (volume->list_count > 0)
-		error("table '%.*s' storage '%.*s': is not empty",
-		      str_size(&self->config->name),
-		      str_of(&self->config->name),
-		      str_size(name),
-		      str_of(name));
+		error("table '{str}' storage '{str}': is not empty",
+		      &self->config->name, name);
 
 	// update table
 	log_ddl(&tr->log, &storage_drop_if, self, &self->rel);
@@ -209,11 +201,8 @@ table_storage_pause(Table* self,
 	if (! volume)
 	{
 		if (! if_exists)
-			error("table '%.*s' storage '%.*s': not found",
-			      str_size(&self->config->name),
-			      str_of(&self->config->name),
-			      str_size(name),
-			      str_of(name));
+			error("table '{str}' storage '{str}': not found",
+			      &self->config->name, name);
 		return false;
 	}
 
@@ -222,9 +211,8 @@ table_storage_pause(Table* self,
 
 	// ensure at least one volume is still active
 	if (pause && volume_mgr_count(volumes) <= 1)
-		error("table '%.*s': at least one storage must remain active",
-		      str_size(&self->config->name),
-		      str_of(&self->config->name));
+		error("table '{str}': at least one storage must remain active",
+		      &self->config->name);
 
 	// update table
 	log_ddl(&tr->log, &storage_pause_if, self, &self->rel);

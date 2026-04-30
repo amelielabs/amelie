@@ -61,9 +61,8 @@ auth_run(Auth* self, Str* user_id, Str* token)
 		// remove from the cache
 		auth_cache_del(&self->cache, user_ref);
 
-		error("auth: user '%.*s' token has expired",
-		      str_size(&user->config->name),
-		      str_of(&user->config->name));
+		error("auth: user '{str}' token has expired",
+		      &user->config->name);
 	}
 
 	// process with authentication
@@ -77,35 +76,29 @@ auth_run(Auth* self, Str* user_id, Str* token)
 
 	// validate issue/expire fields
 	if (!iat || !exp || iat > exp)
-		error("auth: user '%.*s' has invalid iat/exp fields",
-		      str_size(&sub), str_of(&sub));
+		error("auth: user '{str}' has invalid iat/exp fields", &sub);
 
 	// ensure token has not expired
 	if (now >= exp)
-		error("auth: user '%.*s' token has expired",
-		      str_size(&sub), str_of(&sub));
+		error("auth: user '{str}' token has expired", &sub);
 
 	// ensure user_id matches sub
 	if (! str_compare(&sub, user_id))
-		error("auth: user '%.*s' does not match sub field",
-		      str_size(&sub), str_of(&sub));
+		error("auth: user '{str}' does not match sub field", &sub);
 
 	// find user
 	auto user = catalog_find_user(&share()->db->catalog, &sub, false);
 	if (! user)
-		error("auth: user '%.*s' not found", str_size(&sub),
-		      str_of(&sub));
+		error("auth: user '{str}' not found", &sub);
 
 	// check issued time against user revoked_at
 	if (iat <= user->revoked_at)
-		error("auth: user '%.*s' token has been revoked", str_size(&sub),
-		      str_of(&sub));
+		error("auth: user '{str}' token has been revoked", &sub);
 
 	// validate digest using user secret
 	auto secret = opt_string_of(&state()->secret);
 	if (! jwt_decode_validate(jwt, secret))
-		error("auth: user '%.*s' token is invalid", str_size(&sub),
-		      str_of(&sub));
+		error("auth: user '{str}' token is invalid", &sub);
 
 	// add user and token digest to the cache
 	auth_cache_add(&self->cache, user, &jwt->digest, exp);

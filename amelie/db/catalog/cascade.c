@@ -23,8 +23,7 @@
 static void
 cascade_user_error(Str* user)
 {
-	error("user '%.*s' still has relations", str_size(user),
-	      str_of(user));
+	error("user '{str}' still has relations", user);
 }
 
 static void
@@ -70,8 +69,7 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
 	if (! user)
 	{
 		if (! if_exists)
-			error("user '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("user '{str}': not exists", name);
 		return false;
 	}
 
@@ -79,8 +77,7 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
 	check_ownership_user(tr, &user->rel);
 
 	if (user->config->superuser)
-		error("user '%.*s': system user cannot be dropped", str_size(name),
-		      str_of(name));
+		error("user '{str}': system user cannot be dropped", name);
 
 	// invalidate auth caches
 	self->iface->user_invalidate(self, user);
@@ -104,9 +101,8 @@ cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 		case REL_UDF:
 		{
 			auto udf = udf_of(rel);
-			error("function '%.*s' depends on user '%.*s",
-			      str_size(udf->rel.name), str_of(udf->rel.name),
-			      str_size(user), str_of(user));
+			error("function '{str}' depends on user '{str}",
+			      udf->rel.name, user);
 			break;
 		}
 		case REL_TOPIC:
@@ -162,8 +158,7 @@ cascade_user_rename(Catalog* self, Tr* tr,
 	if (! user)
 	{
 		if (! if_exists)
-			error("user '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("user '{str}': not exists", name);
 		return false;
 	}
 
@@ -171,8 +166,7 @@ cascade_user_rename(Catalog* self, Tr* tr,
 	check_ownership_user(tr, &user->rel);
 
 	if (user->config->superuser)
-		error("user '%.*s': system user cannot be renamed", str_size(name),
-		      str_of(name));
+		error("user '{str}': system user cannot be renamed", name);
 
 	// rename all user objects
 	cascade_user_rename_execute(self, tr, name, name_new);

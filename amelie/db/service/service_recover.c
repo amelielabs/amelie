@@ -203,7 +203,7 @@ service_recover(Service* self)
 	// read storage directory
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
-		error("service: directory '%s' open error", path);
+		error("service: directory '{s}' open error", path);
 	defer(fs_closedir_defer, dir);
 	for (;;)
 	{

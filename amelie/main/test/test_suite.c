@@ -38,9 +38,9 @@ test_suite_test_validate(TestSuite* self)
 		return true;
 	}
 	if (self->option_fix)
-		info("%s", "\033[1;35mfixed\033[0m\n");
+		info("\033[1;35mfixed\033[0m\n");
 	else
-		info("%s", "\033[1;31mfailed\033[0m\n");
+		info("\033[1;31mfailed\033[0m\n");
 	return false;
 }
 
@@ -55,8 +55,7 @@ test_suite_test(TestSuite* self, Str* description)
 		self->current_test_started = true;
 
 	// start new test
-	info("    - %.*s ", str_size(description),
-	     str_of(description));
+	info("    - {str}", description);
 	return ok;
 }
 
@@ -86,8 +85,7 @@ test_suite_execute(TestSuite* self, Test* test)
 	       &test->group->directory,
 	       &test->name);
 
-	info("  \033[0;33m%.*s\033[0m\n", str_size(&test->name),
-	     str_of(&test->name));
+	info("  \033[0;33m{str}\033[0m\n", &test->name);
 
 	// read test file
 	Separator sep;
@@ -162,10 +160,10 @@ test_suite_execute(TestSuite* self, Test* test)
 
 	// cleanup
 	if (! list_empty(&self->plan.list_session))
-		error("%s", "sessions left open\n");
+		error("sessions left open\n");
 
 	if (! list_empty(&self->plan.list_env))
-		error("%s", "env left open\n");
+		error("env left open\n");
 
 	unlink(test_result_file);
 	test_suite_cleanup(self);
@@ -175,7 +173,7 @@ test_suite_execute(TestSuite* self, Test* test)
 static bool
 test_suite_execute_group(TestSuite* self, TestGroup* group)
 {
-	info("%.*s\n", str_size(&group->name), str_of(&group->name));
+	info("{str}\n", &group->name);
 	self->current_group = group;
 	list_foreach(&group->list_test)
 	{
@@ -249,8 +247,7 @@ test_suite_run(TestSuite* self)
 	{
 		auto group = test_plan_find_group(&self->plan, &self->option_group);
 		if (! group)
-			error("group '%.*s' does not exists\n", str_size(&self->option_group),
-			      str_of(&self->option_group));
+			error("group '{str}' does not exists\n", &self->option_group);
 		test_suite_execute_group(self, group);
 		return;
 	}
@@ -260,8 +257,7 @@ test_suite_run(TestSuite* self)
 	{
 		auto test = test_plan_find(&self->plan, &self->option_test);
 		if (! test)
-			error("test '%.*s' does not exists\n", str_size(&self->option_test),
-			      str_of(&self->option_test));
+			error("test '{str}' does not exists\n", &self->option_test);
 		test_suite_execute(self, test);
 		return;
 	}

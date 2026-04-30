@@ -56,7 +56,7 @@ task_log(TaskLog* self, const char* fmt, va_list args)
 	self->write(self, fmt, args);
 }
 
-static inline void format_validate(2, 3)
+static inline void
 task_logf(TaskLog* self, const char* fmt, ...)
 {
 	va_list args;

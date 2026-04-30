@@ -124,7 +124,7 @@ wal_gc(Wal* self, uint64_t min)
 		}
 		file = next;
 	}
-	info("wal: %d files removed (%.2f MiB)", total_count,
+	info("wal: {d} files removed ({.2f} MiB)", total_count,
 	     (double)total / 1024 / 1024);
 }
 

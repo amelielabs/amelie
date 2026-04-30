@@ -69,8 +69,8 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 
 	// ensure value is valid
 	if (unlikely(to_lsn < current_lsn || to_lsn > (int64_t)state_lsn()))
-		error("subscription '%.*s': ack position is out of range",
-		      str_size(&self->config->name), str_of(&self->config->name));
+		error("subscription '{str}': ack position is out of range",
+		      &self->config->name);
 
 	// update subscription slot
 	log_cmd(&tr->log, CMD_ACK, &ack_if, NULL, &self->rel);

@@ -17,19 +17,19 @@
 static inline void
 interval_error(Str* str)
 {
-	error("invalid interval '%.*s'", str_size(str), str_of(str));
+	error("invalid interval '{str}'", str);
 }
 
 static inline void
 interval_error_type(Str* str)
 {
-	error("invalid interval type '%.*s'", str_size(str), str_of(str));
+	error("invalid interval type '{str}'", str);
 }
 
 static inline void
 interval_error_field(Str* str)
 {
-	error("invalid interval field '%.*s'", str_size(str), str_of(str));
+	error("invalid interval field '{str}'", str);
 }
 
 static inline void

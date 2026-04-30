@@ -96,7 +96,7 @@ uuid_set(Uuid* self, Str* src)
 {
 	int rc = uuid_set_nothrow(self, src);
 	if (unlikely(rc == -1))
-		error("%s", "failed to parse uuid");
+		error("failed to parse uuid");
 }
 
 void

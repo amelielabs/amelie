@@ -65,10 +65,8 @@ table_find_snapshot(Table* self, int id, bool error_if_not_exists)
 	if (! snapshot)
 	{
 		if (error_if_not_exists)
-			error("table '%.*s': snapshot %d not found",
-			      str_size(&self->config->name),
-			      str_of(&self->config->name),
-			      id);
+			error("table '{str}': snapshot {d} not found",
+			      &self->config->name, id);
 	}
 	return snapshot;
 }

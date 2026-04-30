@@ -40,13 +40,11 @@ import_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
 		// match column
 		auto column = columns_find(columns, &name);
 		if (! column)
-			error("column '%.*s': does not exists", str_size(&name),
-			      str_of(&name));
+			error("column '{str}': does not exists", &name);
 
 		// ensure column is not redefined
 		if (unlikely(match[column->order]))
-			error("column '%.*s': value is redefined", str_size(&name),
-			      str_of(&name));
+			error("column '{str}': value is redefined", &name);
 		match[column->order] = true;
 		match_count++;
 
@@ -296,8 +294,7 @@ parse_import(Parser*  self, Program* program,
 	}
 	default:
 	{
-		error("relation '%.*s': unsupported relation", str_size(rel),
-		      str_of(rel));
+		error("relation '{str}': unsupported relation", rel);
 		break;
 	}
 	}

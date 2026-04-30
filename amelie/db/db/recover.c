@@ -200,7 +200,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		break;
 	}
 	default:
-		error("recover: unrecognized command id: %d", cmd->cmd);
+		error("recover: unrecognized command id: {d}", cmd->cmd);
 		break;
 	}
 }
@@ -297,7 +297,7 @@ recover_wal_main(Recover* self)
 		if (! wal_cursor_active(&cursor))
 			break;
 
-		info("recover: wal/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)", cursor.file->id,
+		info("recover: wal/{u64} ({.2f} MiB, {u64} rows)", cursor.file->id,
 		     (double)self->size / 1024 / 1024,
 		     self->ops);
 
@@ -314,7 +314,7 @@ recover_wal(Recover* self)
 {
 	if (error_catch( recover_wal_main(self)) )
 	{
-		info("recover: wal replay error, last valid lsn is: %" PRIu64,
+		info("recover: wal replay error, last valid lsn is: {u64}",
 		     state_lsn());
 		rethrow();
 	}

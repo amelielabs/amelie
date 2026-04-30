@@ -305,7 +305,7 @@ show functions all;
   "grants": []
 }]
 drop index i on test;
-error: function 'dep' depends on relation 'main.test
+error: function 'dep' depends on relation 'main.test'
 # test: drop index after udf drop
 drop function dep;
 drop index i on test;

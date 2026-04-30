@@ -42,7 +42,7 @@ session_execute_msg(Session* self, Node* primary, NodeMsg* msg, Buf* data)
 		auto record = (Record*)pos;
 		if (opt_int_of(&config()->wal_crc))
 			if (unlikely(! record_validate(record)))
-				error("repl: record crc mismatch, system LSN is: %" PRIu64,
+				error("repl: record crc mismatch, system LSN is: {u64}",
 				      state_lsn());
 
 		switch (record_cmd(record)->cmd) {

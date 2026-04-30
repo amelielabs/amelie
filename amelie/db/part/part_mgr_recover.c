@@ -37,7 +37,7 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 	// read directory
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
-		error("part_mgr: directory '%s' open error", path);
+		error("part_mgr: directory '{s}' open error", path);
 	defer(fs_closedir_defer, dir);
 	for (;;)
 	{
@@ -52,7 +52,7 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 		auto    state = id_of(entry->d_name, &psn);
 		if (state == -1)
 		{
-			info("part_mgr: skipping unknown file: '%s%s'", path,
+			info("part_mgr: skipping unknown file: '{s}{s}'", path,
 			     entry->d_name);
 			continue;
 		}

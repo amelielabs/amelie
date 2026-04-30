@@ -140,9 +140,8 @@ import_report(Import* self, char* path)
 		if (total_mib == 0)
 			percent = 100;
 
-		info("%.*s %d%% (%d MiB / %d MiB) %d MiB/sec, %d rows/sec, %" PRIu64 " errors\r",
-		     str_size(&load->file.path),
-		     str_of(&load->file.path),
+		info("{str} {d}% ({d} MiB / {d} MiB) {d} MiB/sec, {d} rows/sec, {u64} errors\r",
+		     &load->file.path,
 		     (int)percent, (int)done_mib, (int)total_mib,
 		     processed_sec,
 		     rows_sec,
@@ -150,7 +149,7 @@ import_report(Import* self, char* path)
 	} else
 	{
 		auto done_mib = load->offset_file / 1024 / 1024;
-		info("pipe (%d MiB) %d MiB/sec, %d rows/sec, %" PRIu64 " errors\r",
+		info("pipe ({d} MiB) {d} MiB/sec, {d} rows/sec, {u64} errors\r",
 		     (int)done_mib,
 		     processed_sec,
 		     rows_sec,
@@ -234,7 +233,7 @@ import_set_type(Import* self)
 		if (strstr(file, ".csv"))
 			str_set_cstr(&file_type, "csv");
 		else
-			error("import: unrecognized file '%s' type\n", file);
+			error("import: unrecognized file '{s}' type\n", file);
 
 		if (str_empty(&type))
 			type = file_type;

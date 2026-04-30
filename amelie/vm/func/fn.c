@@ -41,7 +41,7 @@ fn_error(Fn* self, char* fmt, ...)
 	formatv(msg, sizeof(msg), fmt, args);
 	va_end(args);
 
-	error("%.*s ⟵ %s", buf_size(buf), buf->start, msg);
+	error("{buf} ⟵ {s}", buf, msg);
 }
 
 void no_return
@@ -58,7 +58,7 @@ fn_error_noargs(Fn* self, char* fmt, ...)
 	formatv(msg, sizeof(msg), fmt, args);
 	va_end(args);
 
-	error("%.*s ⟵ %s", buf_size(buf), buf->start, msg);
+	error("{buf} ⟵ {s}", buf, msg);
 }
 
 void no_return
@@ -85,5 +85,5 @@ fn_error_arg(Fn* self, int arg, char* fmt, ...)
 	formatv(msg, sizeof(msg), fmt, args);
 	va_end(args);
 
-	error("%.*s ⟵ %s", buf_size(buf), buf->start, msg);
+	error("{buf} ⟵ {s}", buf, msg);
 }

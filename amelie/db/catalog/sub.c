@@ -67,8 +67,7 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 	if (rel)
 	{
 		if (! if_not_exists)
-			error("relation '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+			error("relation '{str}': already exists", &config->name);
 		return false;
 	}
 
@@ -107,8 +106,7 @@ sub_drop(Catalog* self, Tr* tr, Str* user, Str* name, bool if_exists)
 	if (! sub)
 	{
 		if (! if_exists)
-			error("subscription '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("subscription '{str}': not exists", name);
 		return false;
 	}
 
@@ -158,8 +156,7 @@ sub_rename(Catalog* self,
 	if (! sub)
 	{
 		if (! if_exists)
-			error("subscription '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("subscription '{str}': not exists", name);
 		return false;
 	}
 
@@ -168,8 +165,7 @@ sub_rename(Catalog* self,
 
 	// ensure other relation with the same name does not exists
 	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
-		error("relation '%.*s': already exists", str_size(name_new),
-		      str_of(name_new));
+		error("relation '{str}': already exists", name_new);
 
 	// update sub
 	log_ddl(&tr->log, &rename_if, NULL, &sub->rel);
@@ -221,8 +217,7 @@ sub_grant(Catalog* self,
 	if (! sub)
 	{
 		if (! if_exists)
-			error("subscription '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("subscription '{str}': not exists", name);
 		return false;
 	}
 

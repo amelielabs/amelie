@@ -96,7 +96,7 @@ part_open(Part* self)
 
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
 	auto id = &self->id;
-	info("recover: %s/%05" PRIu64 ".partition (%.2f MiB, %" PRIu64 " rows)",
+	info("recover: {s}/{05" PRIu64 "}.partition ({.2f} MiB, {u64} rows)",
 	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total, count);
@@ -150,8 +150,7 @@ part_index_drop(Part* self, Str* name)
 		tail = index;
 	}
 	if (! index)
-		error("index '%.*s': not exists", str_size(name),
-		       str_of(name));
+		error("index '{str}': not exists", name);
 
 	// unlink index
 	if (tail)
@@ -171,8 +170,7 @@ part_index_find(Part* self, Str* name, bool error_if_not_exists)
 			return index;
 	}
 	if (error_if_not_exists)
-		error("index '%.*s': not exists", str_size(name),
-		       str_of(name));
+		error("index '{str}': not exists", name);
 	return NULL;
 }
 

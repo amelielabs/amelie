@@ -81,7 +81,7 @@ histogram_print(Histogram* self)
 		return;
 
 	info("");
-	info("[%7s, %7s]\t%11s\t%7s", "ms min", "ms max", "count", "%");
+	info("[{7s}, {7s}]\t{11s}\t{7s}", "ms min", "ms max", "count", "%");
 	info("--------------------------------------------------");
 	auto i = 0;
 	for (; i < HISTOGRAM_MAX; i++)
@@ -89,16 +89,16 @@ histogram_print(Histogram* self)
 		if (self->buckets[i] == 0.0)
 			continue;
 		auto percents = (double) self->buckets[i] / self->count;
-		info("[%7.0lf, %7.0lf]\t%11zu\t%7.2lf ",
+		info("[{7.0lf}, {7.0lf}]\t{11zu}\t{7.2lf} ",
 		     (i > 0) ? histogram_buckets[i - 1] : 0.0,
 		     histogram_buckets[i],
 		     self->buckets[i], percents * 1e2);
 	}
 	auto avg_latency = self->sum / self->count;
 	info("--------------------------------------------------");
-	info("total:%5s%" PRIu64 "\t%11" PRIu64 " \t   100%%", "", self->sum, self->count);
+	info("total:{5s}{u64} \t{11" PRIu64 "} \t   100%", "", self->sum, self->count);
 	info("");
-	info("min latency: %" PRIu64 " ms/op", self->min);
-	info("avg latency: %" PRIu64 " ms/op", avg_latency);
-	info("max latency: %" PRIu64 " ms/op", self->max);
+	info("min latency: {u64} ms/op", self->min);
+	info("avg latency: {u64} ms/op", avg_latency);
+	info("max latency: {u64} ms/op", self->max);
 }

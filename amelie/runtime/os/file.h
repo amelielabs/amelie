@@ -32,7 +32,7 @@ file_init(File* self)
 static inline void
 file_error(File* self, const char* operation)
 {
-	error("file: '%s' %s error: %s", str_of(&self->path), operation,
+	error("file: '{str}' {s} error: {s}", &self->path, operation,
 	      strerror(errno));
 }
 

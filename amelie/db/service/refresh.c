@@ -91,7 +91,7 @@ refresh_snapshot_job(intptr_t* argv)
 	heap_create(heap, &self->part_file, id, ID_PARTITION_INCOMPLETE);
 
 	auto total = (double)self->part_file.size / 1024 / 1024;
-	info("refresh: %s/%05" PRIu64 ".partition (%.2f MiB)",
+	info("refresh: {s}/{05" PRIu64 "}.partition ({.2f} MiB)",
 	     id->volume->storage->config->name.pos,
 	     id->id,
 	     total);

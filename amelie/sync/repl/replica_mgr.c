@@ -108,7 +108,7 @@ replica_mgr_create(ReplicaMgr* self, ReplicaConfig* config, bool if_not_exists)
 		{
 			char uuid[UUID_SZ];
 			uuid_get(&config->id, uuid, sizeof(uuid));
-			error("replica '%s': already exists", uuid);
+			error("replica '{s}': already exists", uuid);
 		}
 		return;
 	}
@@ -135,7 +135,7 @@ replica_mgr_drop(ReplicaMgr* self, Uuid* id, bool if_exists)
 		{
 			char uuid[UUID_SZ];
 			uuid_get(id, uuid, sizeof(uuid));
-			error("replica '%s': not exists", uuid);
+			error("replica '{s}': not exists", uuid);
 		}
 		return;
 	}

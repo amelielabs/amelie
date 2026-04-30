@@ -80,7 +80,8 @@ update_unset_next(Update* self)
 	auto buf = self->buf;
 	auto pos = &self->pos;
 	if (unlikely(! data_is_obj(*pos)))
-		error("unset: object expected, but got %s", data_typeof(**pos));
+		error("unset: object expected, but got {s}",
+		      data_typeof(**pos));
 	unpack_obj(pos);
 
 	encode_obj(buf);
@@ -122,7 +123,8 @@ update_set_next(Update* self)
 	auto buf = self->buf;
 	auto pos = &self->pos;
 	if (unlikely(! data_is_obj(*pos)))
-		error("set: object expected, but got %s", data_typeof(**pos));
+		error("set: object expected, but got {s}",
+		      data_typeof(**pos));
 	unpack_obj(pos);
 
 	encode_obj(buf);

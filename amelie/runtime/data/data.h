@@ -66,7 +66,7 @@ data_typeof(int type)
 always_inline hot static inline void
 data_error(uint8_t* data, int type)
 {
-	error("expected data type '%s', but got '%s'",
+	error("expected data type '{s}', but got '{s}'",
 	      data_typeof(type),
 	      data_typeof(*data));
 }

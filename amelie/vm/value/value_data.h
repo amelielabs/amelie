@@ -67,8 +67,7 @@ value_data_encode(Value*    self, Column* column,
 	{
 		// NOT NULL constraint
 		if (unlikely(column->constraints.not_null))
-			error("column '%.*s' cannot be NULL", str_size(&column->name),
-			      str_of(&column->name));
+			error("column '{str}' cannot be NULL", &column->name);
 		return false;
 	}
 

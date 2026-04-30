@@ -140,7 +140,7 @@ bench_tpcb_load(Bench* self, int scale, int batch, int clients)
 		coroutine_sleep(1000);
 		auto tx = transactions;
 		auto wr = writes;
-		info("%" PRIu64 " transactions/sec, %.2f millions writes/sec %" PRIu64 "%%",
+		info("{u64} transactions/sec, {.2f} millions writes/sec {u64}%",
 		     tx - prev_tx,
 		     (float)(wr - prev_wr) / 1000000.0,
 		     (wr * 100ul) / accounts);

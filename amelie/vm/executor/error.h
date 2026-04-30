@@ -42,7 +42,7 @@ error_buf(Buf* buf)
 	data_skip(&pos);
 	Str text;
 	unpack_str(&pos, &text);
-	error("%.*s", str_size(&text), str_of(&text));
+	error("{str}", &text);
 }
 
 static inline void
@@ -59,7 +59,6 @@ rethrow_buf(Buf* buf)
 	          source_file,
 	          source_function,
 	          source_line,
-	          0, "%.*s", str_size(&text),
-	          str_of(&text));
+	          0, "{str}", &text);
 	rethrow();
 }

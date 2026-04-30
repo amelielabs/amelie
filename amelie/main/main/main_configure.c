@@ -78,7 +78,7 @@ main_configure(Main* self, Opts* opts)
 		Str name;
 		Str value;
 		if (arg_parse(argv[arg], &name, &value) == -1)
-			error("invalid argument '%s'", argv[arg]);
+			error("invalid argument '{s}'", argv[arg]);
 
 		// --json={options}
 		if (str_is_cstr(&name, "json"))

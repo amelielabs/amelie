@@ -106,11 +106,8 @@ websocket_connect(Websocket* self)
 	if (eof)
 		error("websocket: unexpected eof");
 	if (! str_is(&reply->options[HTTP_CODE], "101", 3))
-		error("websocket: %.*s %.*s",
-		      str_size(&reply->options[HTTP_CODE]),
-		      str_of(&reply->options[HTTP_CODE]),
-		      str_size(&reply->options[HTTP_MSG]),
-		      str_of(&reply->options[HTTP_MSG]));
+		error("websocket: {str} {str}", &reply->options[HTTP_CODE],
+		      &reply->options[HTTP_MSG]);
 
 	// validate reply headers
 

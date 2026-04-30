@@ -52,8 +52,8 @@ task_coroutine_main(void* arg)
 		auto error = &coro->error;
 		if (error->code != CANCEL) {
 			report(error->file, error->function, error->line,
-			       "unhandled exception: %s",
-			       buf_cstr(&error->text));
+			       "unhandled exception: {buf}",
+			        &error->text);
 		}
 	}
 

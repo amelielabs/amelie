@@ -914,7 +914,7 @@ show functions all;
   "grants": []
 }]
 alter table test rename to test2;
-error: function 'dep' depends on relation 'main.test
+error: function 'dep' depends on relation 'main.test'
 # test: rename after udf drop
 drop function dep;
 alter table test rename to test2;
@@ -933,7 +933,7 @@ show functions all;
   "grants": []
 }]
 alter table test rename column data to data2;
-error: function 'dep' depends on relation 'main.test
+error: function 'dep' depends on relation 'main.test'
 # test: rename column after udf drop
 drop function dep;
 alter table test rename column data to data2;

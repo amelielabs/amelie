@@ -64,8 +64,8 @@ slt_cmd_reset(SltCmd* self)
 static inline void
 slt_cmd_log(SltCmd* self)
 {
-	info("---- (line %d)", self->line);
-	info("%.*s", (int)str_size(&self->body), str_of(&self->body));
+	info("---- (line {d})", self->line);
+	info("{str}", &self->body);
 }
 
 static inline void
@@ -78,7 +78,7 @@ slt_cmd_error(SltCmd* self, char* fmt, ...)
 	va_end(args);
 
 	slt_cmd_log(self);
-	error("%s", msg);
+	error("{s}", msg);
 }
 
 static inline void

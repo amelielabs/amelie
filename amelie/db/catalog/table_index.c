@@ -106,11 +106,8 @@ table_index_drop(Table* self,
 	if (! index)
 	{
 		if (! if_exists)
-			error("table '%.*s' index '%.*s': not exists",
-			      str_size(&self->config->name),
-			      str_of(&self->config->name),
-			      str_size(name),
-			      str_of(name));
+			error("table '{str}' index '{str}': not exists",
+			      &self->config->name, name);
 		return false;
 	}
 
@@ -157,21 +154,15 @@ table_index_rename(Table* self,
 	if (! index)
 	{
 		if (! if_exists)
-			error("table '%.*s' index '%.*s': not exists",
-			      str_size(&self->config->name),
-			      str_of(&self->config->name),
-			      str_size(name),
-			      str_of(name));
+			error("table '{str}' index '{str}': not exists",
+			      &self->config->name, name);
 		return false;
 	}
 
 	// ensure new index not exists
 	if (table_index_find(self, name_new, false))
-		error("table '%.*s' index '%.*s': already exists",
-		      str_size(&self->config->name),
-		      str_of(&self->config->name),
-		      str_size(name_new),
-		      str_of(name_new));
+		error("table '{str}' index '{str}': already exists",
+		      &self->config->name, name_new);
 
 	// update table
 	log_ddl(&tr->log, &rename_if, index, &self->rel);
@@ -218,7 +209,6 @@ table_index_find(Table* self, Str* name, bool error_if_not_exists)
 			return config;
 	}
 	if (error_if_not_exists)
-		error("index '%.*s': not exists", str_size(name),
-		       str_of(name));
+		error("index '{str}': not exists", name);
 	return NULL;
 }

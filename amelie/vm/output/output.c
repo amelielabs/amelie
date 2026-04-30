@@ -88,8 +88,7 @@ output_set(Output* self, Endpoint* endpoint)
 		}
 	}
 	if (! self->iface)
-		error("unrecognized Accept '%.*s'", str_size(accept),
-		      str_of(accept));
+		error("unrecognized Accept '{str}'", accept);
 
 	// set timezone
 	output_set_tz(self, endpoint);

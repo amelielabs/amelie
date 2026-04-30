@@ -109,7 +109,7 @@ value_array_put(Value*   result, Timezone* tz,
 
 	// extend by one
 	if (idx < 0 || idx >= i)
-		error("put: array index %d is out of bounds", idx);
+		error("put: array index {d} is out of bounds", idx);
 	encode_array_end(buf);
 
 	value_set_json_buf(result, buf);
@@ -134,7 +134,7 @@ value_array_remove(Value* result, uint8_t* json, int idx)
 		i++;
 	}
 	if (idx < 0 || idx >= i)
-		error("remove: array index %d is out of bounds", idx);
+		error("remove: array index {d} is out of bounds", idx);
 	encode_array_end(buf);
 
 	value_set_json_buf(result, buf);

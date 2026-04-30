@@ -14,8 +14,7 @@
 static inline void
 user_permission_error(User* self)
 {
-	error("user '%.*s': permission denied", str_size(&self->config->name),
-	      str_of(&self->config->name));
+	error("user '{str}': permission denied", &self->config->name);
 }
 
 static inline bool
@@ -103,6 +102,5 @@ static inline void
 check_type(Rel* rel, RelType type)
 {
 	if (rel->type != type)
-		error("relation '%.*s': type mismatch", str_size(rel->name),
-		      str_of(rel->name));
+		error("relation '{str}': type mismatch", rel->name);
 }

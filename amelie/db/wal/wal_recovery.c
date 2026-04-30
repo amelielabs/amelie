@@ -76,7 +76,7 @@ wal_open_directory(Wal* self)
 	// open and read log directory
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
-		error("wal: directory '%s' open error", path);
+		error("wal: directory '{s}' open error", path);
 	defer(fs_closedir_defer, dir);
 	for (;;)
 	{
@@ -101,7 +101,7 @@ wal_rewind(Wal* self, uint64_t lsn)
 	assert(file);
 	defer(wal_file_unpin_defer, file);
 
-	info("wal: rewind wal (%" PRIu64 " lsn)", lsn);
+	info("wal: rewind wal ({u64} lsn)", lsn);
 	wal_file_open(file);
 
 	Buf buf;
@@ -122,7 +122,7 @@ wal_rewind(Wal* self, uint64_t lsn)
 		if (crc)
 		{
 			if (unlikely(! record_validate(record)))
-				error("wal/%" PRIu64 " (record crc mismatch)", file->id);
+				error("wal/{u64} (record crc mismatch)", file->id);
 		}
 		if (record->lsn > lsn)
 			break;
@@ -136,7 +136,7 @@ wal_rewind(Wal* self, uint64_t lsn)
 	{
 		wal_file_truncate(file, offset);
 		wal_file_sync(file);
-		info(" %" PRIu64 " (truncated to %" PRIu64 " bytes)",
+		info(" {u64} (truncated to {u64} bytes)",
 		     file->id, offset);
 	}
 	wal_file_close(file);
@@ -151,7 +151,7 @@ wal_rewind(Wal* self, uint64_t lsn)
 		auto id = ref->id;
 		wal_file_delete(ref);
 		wal_file_free(ref);
-		info(" %" PRIu64 " (file removed)", id);
+		info(" {u64} (file removed)", id);
 		ref = next;
 	}
 	self->files_count -= count;

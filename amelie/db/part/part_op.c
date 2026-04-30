@@ -133,9 +133,8 @@ part_insert(Part*     self, Tr* tr, bool replace,
 	{
 		// check unique constraint
 		if (!replace && row_visible(op->row_prev, self->heap, snapshot))
-			error("index '%.*s': unique key constraint violation",
-			      str_size(&primary->config->name),
-			      str_of(&primary->config->name));
+			error("index '{str}': unique key constraint violation",
+			      &primary->config->name);
 
 		// chain head row
 		row_prev_set(row, op->row_prev);
@@ -149,9 +148,8 @@ part_insert(Part*     self, Tr* tr, bool replace,
 		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev && !replace))
 			if (row_visible(op->row_prev, self->heap, snapshot))
-				error("index '%.*s': unique key constraint violation",
-				      str_size(&index->config->name),
-				      str_of(&index->config->name));
+				error("index '{str}': unique key constraint violation",
+				      &index->config->name);
 	}
 
 	// sync last identity column value during recover
@@ -193,9 +191,8 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 
 		if (unlikely(op->row_prev))
 			if (row_visible(op->row_prev, self->heap, snapshot))
-				error("index '%.*s': unique key constraint violation",
-				      str_size(&index->config->name),
-				      str_of(&index->config->name));
+				error("index '{str}': unique key constraint violation",
+				      &index->config->name);
 	}
 
 	// ensure transaction log limit

@@ -71,7 +71,7 @@ repl_start(Repl* self)
 	if (opt_int_of(&state()->repl))
 		return;
 
-	info("replication: start as '%s'", repl_role_of(self->role));
+	info("replication: start as '{s}'", repl_role_of(self->role));
 	opt_int_set(&state()->repl, true);
 
 	// start replicas
@@ -110,8 +110,8 @@ repl_subscribe(Repl* self, Str* primary_id)
 		// set new primary id
 		opt_string_set(&state()->repl_primary, primary_id);
 
-		info("replication: switch to replica, new primary is '%.*s'", str_size(primary_id),
-		     str_of(primary_id));
+		info("replication: switch to replica, new primary is '{str}'",
+		     primary_id);
 		return;
 	}
 

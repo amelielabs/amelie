@@ -17,7 +17,7 @@
 static inline void
 timestamp_error_str(Str* str)
 {
-	error("invalid timestamp '%.*s'", str_size(str), str_of(str));
+	error("invalid timestamp '{str}'", str);
 }
 
 static inline void

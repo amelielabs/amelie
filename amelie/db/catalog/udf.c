@@ -117,18 +117,18 @@ udf_replace(Catalog*   self,
 
 	// validate arguments
 	if (! columns_compare(&udf->config->args, &config->args))
-		error("function replacement '%.*s' arguments mismatch",
-		      str_size(&config->name), str_of(&config->name));
+		error("function replacement '{str}' arguments mismatch",
+		      &config->name);
 
 	// validate return type
 	if (udf->config->type != config->type)
-		error("function replacement '%.*s' return type mismatch",
-		      str_size(&config->name), str_of(&config->name));
+		error("function replacement '{str}' return type mismatch",
+		      &config->name);
 
 	// validate returning columns
 	if (! columns_compare(&udf->config->returning, &config->returning))
-		error("function replacement '%.*s' returning columns mismatch",
-		      str_size(&config->name), str_of(&config->name));
+		error("function replacement '{str}' returning columns mismatch",
+		      &config->name);
 
 	// create and compile new temporary udf
 	auto udf_new = udf_allocate(config, self->iface->udf_free, self->iface_arg);
@@ -173,8 +173,7 @@ udf_create(Catalog*   self,
 	{
 		// replace
 		if (! or_replace)
-			error("function '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+			error("function '{str}': already exists", &config->name);
 
 		udf_replace(self, tr, udf, config);
 		return true;
@@ -183,8 +182,7 @@ udf_create(Catalog*   self,
 	// make sure relation does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
 	if (rel)
-		error("relation '%.*s': already exists", str_size(&config->name),
-		      str_of(&config->name));
+		error("relation '{str}': already exists", &config->name);
 
 	// create udf
 	udf = udf_allocate(config, self->iface->udf_free, self->iface_arg);
@@ -210,8 +208,7 @@ udf_drop(Catalog* self, Tr* tr, Str* user, Str* name,
 	if (! udf)
 	{
 		if (! if_exists)
-			error("function '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("function '{str}': not exists", name);
 		return false;
 	}
 
@@ -261,8 +258,7 @@ udf_rename(Catalog* self,
 	if (! udf)
 	{
 		if (! if_exists)
-			error("function '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("function '{str}': not exists", name);
 		return false;
 	}
 
@@ -271,8 +267,7 @@ udf_rename(Catalog* self,
 
 	// ensure other relation with the same name does not exists
 	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
-		error("relation '%.*s': already exists", str_size(name_new),
-		      str_of(name_new));
+		error("relation '{str}': already exists", name_new);
 
 	// update udf
 	log_ddl(&tr->log, &rename_if, NULL, &udf->rel);
@@ -324,8 +319,7 @@ udf_grant(Catalog* self,
 	if (! udf)
 	{
 		if (! if_exists)
-			error("udf '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("udf '{str}': not exists", name);
 		return false;
 	}
 
