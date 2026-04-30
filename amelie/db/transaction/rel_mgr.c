@@ -170,13 +170,13 @@ rel_mgr_rename(RelMgr* self, Rel* rel, Str* user, Str* name)
 	//
 	// note: this updates relation config directly
 	//
-	if (user && !str_compare_case(rel->user, user))
+	if (user && !str_compare(rel->user, user))
 	{
 		str_free(rel->user);
 		str_copy(rel->user, user);
 	}
 
-	if (! str_compare_case(rel->name, name))
+	if (! str_compare(rel->name, name))
 	{
 		str_free(rel->name);
 		str_copy(rel->name, name);
@@ -225,7 +225,7 @@ rel_mgr_list(RelMgr* self, RelType type, Buf* buf, Str* user, Str* name, int fla
 		auto rel = list_at(Rel, link);
 		if (type != REL_UNDEF && rel->type != type)
 			continue;
-		if (user && !str_compare_case(rel->user, user))
+		if (user && !str_compare(rel->user, user))
 			continue;
 		rel_show(rel, buf, flags);
 	}

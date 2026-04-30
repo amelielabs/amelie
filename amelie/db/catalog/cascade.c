@@ -33,7 +33,7 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 	list_foreach_safe(&self->rels.list)
 	{
 		auto rel = list_at(Rel, link);
-		if (! str_compare_case(rel->user, user))
+		if (! str_compare(rel->user, user))
 			continue;
 		if (! drop)
 			cascade_user_error(user);
@@ -95,7 +95,7 @@ cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 	list_foreach_safe(&self->rels.list)
 	{
 		auto rel = list_at(Rel, link);
-		if (! str_compare_case(rel->user, user))
+		if (! str_compare(rel->user, user))
 			continue;
 		switch (rel->type) {
 		case REL_UDF:

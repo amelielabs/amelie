@@ -106,7 +106,7 @@ columns_find(Columns* self, Str* name)
 		auto column = list_at(Column, link);
 		if (column->dropped)
 			continue;
-		if (str_compare_case(&column->name, name))
+		if (str_compare(&column->name, name))
 			return column;
 	}
 	return NULL;
@@ -121,7 +121,7 @@ columns_find_noconflict(Columns* self, Str* name, bool* conflict)
 		auto column = list_at(Column, link);
 		if (column->dropped)
 			continue;
-		if (str_compare_case(&column->name, name))
+		if (str_compare(&column->name, name))
 		{
 			if (match)
 			{

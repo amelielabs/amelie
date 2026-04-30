@@ -145,7 +145,7 @@ part_index_drop(Part* self, Str* name)
 	auto tail  = (Index*)NULL;
 	for (; index; index = index->next)
 	{
-		if (str_compare_case(&index->config->name, name))
+		if (str_compare(&index->config->name, name))
 			break;
 		tail = index;
 	}
@@ -166,7 +166,7 @@ part_index_find(Part* self, Str* name, bool error_if_not_exists)
 {
 	for (auto index = self->indexes; index; index = index->next)
 	{
-		if (str_compare_case(&index->config->name, name))
+		if (str_compare(&index->config->name, name))
 			return index;
 	}
 	if (error_if_not_exists)
