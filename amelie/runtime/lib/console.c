@@ -463,10 +463,10 @@ console_stream(Console* self, Str* input)
 }
 
 static inline bool
-console_tty(Console* self, Str* prompt, Str* input)
+console_tty(Console* self, Str* prompt, int prompt_len, Str* input)
 {
-	self->prompt = prompt;
-	self->prompt_len = utf8_strlen(prompt);
+	self->prompt     = prompt;
+	self->prompt_len = prompt_len;
 	int rc = console_open(self);
 	if (rc == -1)
 		return false;
@@ -477,9 +477,9 @@ console_tty(Console* self, Str* prompt, Str* input)
 }
 
 bool
-console(Console* self, Str* prompt, Str* input)
+console(Console* self, Str* prompt, int prompt_len, Str* input)
 {
 	if (self->is_tty)
-		return console_tty(self, prompt, input);
+		return console_tty(self, prompt, prompt_len, input);
 	return console_stream(self, input);
 }

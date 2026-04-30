@@ -89,13 +89,15 @@ main_console(Main* self, MainClient* client)
 
 	// ›
 	// ❯
-	char prompt_str[6];
-	char prompt_str_pending[6];
-	format(prompt_str, sizeof(prompt_str), "❯ ");
+	char prompt_str[32];
+	format(prompt_str, sizeof(prompt_str), "\033[32m❯\033[0m ");
+
+	char prompt_str_pending[32];
 	format(prompt_str_pending, sizeof(prompt_str_pending), "  ");
 
 	Str prompt;
 	str_set_cstr(&prompt, prompt_str);
+
 	Str prompt_pending;
 	str_set_cstr(&prompt_pending, prompt_str_pending);
 
@@ -109,7 +111,7 @@ main_console(Main* self, MainClient* client)
 
 		Str input;
 		str_init(&input);
-		if (! console(&self->console, prompt_ptr, &input))
+		if (! console(&self->console, prompt_ptr, 2, &input))
 		{
 			if (separator_read_leftover(&sep, &input))
 				main_execute(client, &input);
