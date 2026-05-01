@@ -42,8 +42,6 @@ catalog_cdc_ref(Catalog* self, User* user, Str* rel_user, Str* rel,
 	case REL_TABLE:
 	{
 		auto table = table_of(ref_match);
-		if (table->config->unlogged)
-			error("table '{str}': unlogged table are not supported for cdc", rel);
 		table->part_arg.cdc++;
 		*id = &table->config->id;
 		break;
