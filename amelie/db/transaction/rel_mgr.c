@@ -209,7 +209,7 @@ rel_mgr_list(RelMgr* self, RelType type, Buf* buf, Str* user, Str* name, int fla
 {
 	if (name)
 	{
-		// show rel
+		// show <type>
 		auto rel = rel_mgr_find(self, type, user, name, false);
 		if (rel)
 			rel_show(rel, buf, flags);
@@ -218,7 +218,7 @@ rel_mgr_list(RelMgr* self, RelType type, Buf* buf, Str* user, Str* name, int fla
 		return;
 	}
 
-	// show rels
+	// show <types>
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
@@ -231,6 +231,33 @@ rel_mgr_list(RelMgr* self, RelType type, Buf* buf, Str* user, Str* name, int fla
 	}
 	encode_array_end(buf);
 }
+
+void
+rel_mgr_list_all(RelMgr* self, Buf* buf, Str* user, Str* name, int flags)
+{
+	if (name)
+	{
+		// show rel
+		auto rel = rel_mgr_find(self, REL_UNDEF, user, name, false);
+		if (rel)
+			rel_write(rel, buf, flags);
+		else
+			encode_null(buf);
+		return;
+	}
+
+	// show rels
+	encode_array(buf);
+	list_foreach(&self->list)
+	{
+		auto rel = list_at(Rel, link);
+		if (user && !str_compare(rel->user, user))
+			continue;
+		rel_write(rel, buf, flags);
+	}
+	encode_array_end(buf);
+}
+
 
 hot static inline bool
 rel_mgr_cmp(Hashnode* node, void* ptr)

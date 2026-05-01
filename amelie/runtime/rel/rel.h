@@ -163,3 +163,24 @@ rel_permission_error(Rel* self)
 	error("relation '{str}.{str}': permission denied",
 	      self->user, self->name);
 }
+
+static inline void
+rel_write(Rel* self, Buf* buf, int flags)
+{
+	unused(flags);
+	encode_obj(buf);
+
+	// user
+	encode_raw(buf, "user", 4);
+	encode_str(buf, self->user);
+
+	// name
+	encode_raw(buf, "name", 4);
+	encode_str(buf, self->name);
+
+	// type
+	encode_raw(buf, "type", 4);
+	encode_cstr(buf, rel_type_of(self->type));
+
+	encode_obj_end(buf);
+}

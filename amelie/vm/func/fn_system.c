@@ -365,12 +365,12 @@ fn_show(Fn* self)
 	}
 	case SHOW_RELS:
 	{
-		rel_mgr_list(&catalog->rels, REL_UNDEF, buf, user, NULL, flags);
+		rel_mgr_list_all(&catalog->rels, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_REL:
 	{
-		rel_mgr_list(&catalog->rels, REL_UNDEF, buf, user, name, flags);
+		rel_mgr_list_all(&catalog->rels, buf, user, name, flags);
 		break;
 	}
 	case SHOW_STATE:

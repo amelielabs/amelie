@@ -29,5 +29,6 @@ void rel_mgr_drop(RelMgr*, Tr*, Rel*);
 void rel_mgr_rename(RelMgr*, Rel*, Str*, Str*);
 void rel_mgr_dump(RelMgr*, RelType, Buf*, int);
 void rel_mgr_list(RelMgr*, RelType, Buf*, Str*, Str*, int);
+void rel_mgr_list_all(RelMgr*, Buf*, Str*, Str*, int);
 Rel* rel_mgr_find(RelMgr*, RelType, Str*, Str*, bool);
 Rel* rel_mgr_find_by(RelMgr*, RelType, Uuid*, bool);
