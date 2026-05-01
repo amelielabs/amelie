@@ -17,7 +17,7 @@ struct AstPublish
 {
 	Ast    ast;
 	Topic* topic;
-	Ast*   expr;
+	Set*   values;
 	From   from;
 };
 

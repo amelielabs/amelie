@@ -67,5 +67,10 @@ post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": 
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[null]]}}
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {"a": 1, "b": 2} }};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[3]]}}
+# test: POST /rpc (execute, batch)
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [{"a": 1, "b": 2}] }};
+{"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[3]]}}
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [{"a": 1, "b": 2}, {}] }};
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "batch function execution is not support"}}
 disconnect S0;
 close E0;

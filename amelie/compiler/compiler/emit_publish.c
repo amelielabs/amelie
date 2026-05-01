@@ -24,13 +24,10 @@ emit_publish(Compiler* self, Ast* ast)
 {
 	auto publish = ast_publish_of(ast);
 
-	// expr
-	auto rexpr = -1;
-	if (publish->expr)
-		rexpr = emit_expr(self, NULL, publish->expr);
+	intptr_t values = -1;
+	if (publish->values)
+		values = (intptr_t)publish->values;
 
 	// CPUBLISH
-	op2(self, CPUBLISH, (intptr_t)publish->topic, rexpr);
-	if (rexpr != -1)
-		runpin(self, rexpr);
+	op2(self, CPUBLISH, (intptr_t)publish->topic, values);
 }

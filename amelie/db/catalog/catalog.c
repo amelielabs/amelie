@@ -38,13 +38,24 @@ catalog_init(Catalog*   self,
 	rel_mgr_init(&self->rels);
 	storage_mgr_init(&self->storage_mgr);
 
+	// prepare topic columns
+	auto columns = &self->topic_columns;
+	columns_init(columns);
+
+	// data
+	auto column = column_allocate();
+	Str name;
+	str_set(&name, "data", 4);
+	column_set_name(column, &name);
+	column_set_type(column, TYPE_JSON, 0);
+	columns_add(columns, column);
+
 	// prepare subscription columns
-	auto columns = &self->cdc_columns;
+	columns = &self->cdc_columns;
 	columns_init(columns);
 
 	// lsn
-	auto column = column_allocate();
-	Str name;
+	column = column_allocate();
 	str_set(&name, "lsn", 3);
 	column_set_name(column, &name);
 	column_set_type(column, TYPE_INT, sizeof(int64_t));
@@ -79,6 +90,7 @@ catalog_free(Catalog* self)
 	storage_mgr_free(&self->storage_mgr);
 	rel_mgr_free(&self->users);
 	columns_free(&self->cdc_columns);
+	columns_free(&self->topic_columns);
 }
 
 static void

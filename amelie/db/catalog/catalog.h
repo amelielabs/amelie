@@ -27,6 +27,7 @@ struct Catalog
 	RelMgr     users;
 	RelMgr     rels;
 	StorageMgr storage_mgr;
+	Columns    topic_columns;
 	Columns    cdc_columns;
 	Cdc*       cdc;
 	PartMgrIf* iface_part;

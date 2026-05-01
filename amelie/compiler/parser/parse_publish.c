@@ -20,7 +20,7 @@
 void
 parse_publish(Stmt* self)
 {
-	// PUBLISH TO [user.]topic [expr]
+	// PUBLISH TO [user.]topic [value, ...]
 	auto stmt = ast_publish_allocate(self->block);
 	self->ast = &stmt->ast;
 
@@ -41,7 +41,28 @@ parse_publish(Stmt* self)
 	access_add(&self->parser->program->access, &topic->rel,
 	           LOCK_SHARED, PERM_PUBLISH);
 
-	// [expr]
-	if (!stmt_if(self, KEOF) && !stmt_if(self, ';'))
-		stmt->expr = parse_expr(self, NULL);
+	// [value, ...]
+	if (stmt_if(self, KEOF) || stmt_if(self, ';'))
+		return;
+
+	// prepare values
+	auto parser = self->parser;
+	stmt->values = set_cache_create(parser->set_cache, &parser->program->sets);
+	set_prepare(stmt->values, 1, 0, NULL);
+
+	// topics has single json column
+	auto column = columns_first(&share()->db->catalog.topic_columns);
+	for (;;)
+	{
+		// prepare row
+		auto row = set_reserve(stmt->values);
+
+		// parse and set argument value
+		auto value = &row[0];
+		parse_value(self, NULL, column, value);
+
+		// ,
+		if (! stmt_if(self, ','))
+			break;
+	}
 }

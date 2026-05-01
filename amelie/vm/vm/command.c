@@ -592,7 +592,7 @@ ccall_udf(Vm* self, Op* op)
 void
 cpublish(Vm* self, Op* op)
 {
-	// [topic*, r]
+	// [topic*, set*]
 
 	// create dispatch
 	auto dtr = self->dtr;
@@ -602,18 +602,31 @@ cpublish(Vm* self, Op* op)
 	// prepare publish
 	auto buf = &dispatch->publish;
 
-	// encode value
+	// encode values
 	if (op->b != -1)
 	{
-		auto value = reg_at(&self->r, op->b);
-		value_encode(value, self->local->timezone, buf);
-		value_free(value);
-	} else {
-		encode_null(buf);
-	}
+		encode_array(buf);
+		auto set = (Set*)op->b;
+		for (auto order = 0; order < set->count_rows; order++)
+		{
+			auto value = set_row(set, order);
+			value_encode(value, self->local->timezone, buf);
+		}
+		encode_array_end(buf);
 
-	// prepare command for wal/cdc
-	publish((Topic*)op->a, self->tr, buf->start, buf_size(buf));
+		auto pos = buf->start;
+		unpack_array(&pos);
+		while (! unpack_array_end(&pos))
+		{
+			auto size = data_sizeof(pos);
+			publish((Topic*)op->a, self->tr, pos, size);
+			pos += size;
+		}
+	} else
+	{
+		encode_null(buf);
+		publish((Topic*)op->a, self->tr, buf->start, buf_size(buf));
+	}
 
 	// (dispatch has no partitions)
 

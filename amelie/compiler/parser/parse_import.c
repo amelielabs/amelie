@@ -84,14 +84,14 @@ import_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
 		while (! unpack_array_end(&pos))
 		{
 			if (unlikely(! data_is_obj(pos)))
-				error("write: {} expected");
+				error("write: {{}} expected");
 			import_object(self, columns, values, &pos);
 		}
 		return;
 	}
 
 	// error
-	error("write: expected {} or []");
+	error("write: expected {{}} or []");
 }
 
 static void
@@ -189,6 +189,10 @@ import_execute(Parser* self, Udf* udf, uint8_t* args)
 
 	// parse arguments
 	import_args(self, &udf->config->args, execute->args, args);
+
+	// ensure not a batch execution
+	if (execute->args->count_rows > 1)
+		error("batch function execution is not support");
 
 	// set returning column
 	if (udf->config->type != TYPE_NULL)

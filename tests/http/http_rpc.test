@@ -58,5 +58,9 @@ post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": 
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {} }};
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {"a": 1, "b": 2} }};
 
+# test: POST /rpc (execute, batch)
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [{"a": 1, "b": 2}] }};
+post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [{"a": 1, "b": 2}, {}] }};
+
 disconnect S0;
 close E0;
