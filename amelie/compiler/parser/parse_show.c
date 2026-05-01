@@ -20,10 +20,31 @@
 void
 parse_show(Stmt* self)
 {
-	// SHOW <section> [name] [ON name] [VERBOSE]
+	// SHOW [ALL] [section] [name] [ON name] [VERBOSE]
 	auto stmt = ast_show_allocate();
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;
+
+	// set returning column
+	auto column = column_allocate();
+	column_set_name(column, &stmt->section);
+	column_set_type(column, TYPE_JSON, -1);
+	columns_add(&stmt->ret.columns, column);
+
+	// [ALL]
+	stmt->all = stmt_if(self, KALL) != NULL;
+
+	// SHOW ALL
+	if (stmt_if(self, KEOF) || stmt_if(self, ';'))
+	{
+		if (! stmt->all)
+			stmt_error(self, NULL, "ALL or name expected");
+
+		// handle as SHOW CONFIG
+		str_set(&stmt->section, "config", 6);
+		stmt->all = false;
+		return;
+	}
 
 	// section | option name
 	auto name = stmt_next_shadow(self);
@@ -49,21 +70,21 @@ parse_show(Stmt* self)
 
 	// [VERBOSE]
 	stmt->verbose = stmt_if(self, KVERBOSE) != NULL;
-
-	// set returning column
-	auto column = column_allocate();
-	column_set_name(column, &stmt->section);
-	column_set_type(column, TYPE_JSON, -1);
-	columns_add(&stmt->ret.columns, column);
 }
 
 Ast*
 parse_show_func(Stmt* self)
 {
+	// [ALL]
+	auto all = stmt_if(self, KALL) != NULL;
+
 	// section | option name
 	auto section = stmt_next_shadow(self);
-	if (section->id != KNAME && section->id != KSTRING)
-		stmt_error(self, section, "name expected");
+	if (! (section->id == KNAME || section->id == KSTRING))
+	{
+		stmt_push(self, section);
+		section = ast(KSTRING);
+	}
 	section->id = KSTRING;
 
 	// [name]
@@ -92,6 +113,17 @@ parse_show_func(Stmt* self)
 	if (stmt_if(self, KVERBOSE))
 		verbose->id = KTRUE;
 
+	// SHOW ALL
+	if (all &&
+	    str_empty(&section->string) &&
+	    str_empty(&name->string) &&
+	    str_empty(&on->string))
+	{
+		// handle as SHOW CONFIG
+		str_set(&section->string, "config", 6);
+		all = false;
+	}
+
 	// show(section, name, on, verbose)
 	auto args_list = section;
 	section->next = name;
@@ -108,7 +140,10 @@ parse_show_func(Stmt* self)
 
 	// func(NULL, args)
 	Str fn;
-	str_set(&fn, "show_from", 9);
+	if (all)
+		str_set(&fn, "show_from_all", 13);
+	else
+		str_set(&fn, "show_from", 9);
 
 	auto func = ast_func_allocate();
 	func->fn    = function_mgr_find(share()->function_mgr, &fn);

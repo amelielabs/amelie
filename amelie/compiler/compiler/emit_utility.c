@@ -365,12 +365,16 @@ emit_show(Compiler* self)
 	auto stmt = compiler_stmt(self);
 	auto arg  = ast_show_of(stmt->ast);
 
-	// find show() function
+	// find show() or show_all() functions
 	Str name;
-	str_set(&name, "show", 4);
+	if (arg->all)
+		str_set(&name, "show_all", 8);
+	else
+		str_set(&name, "show", 4);
 	auto fn = function_mgr_find(share()->function_mgr, &name);
 	assert(fn);
 
+	// show_all(section, name, on, verbose)
 	// show(section, name, on, verbose)
 
 	// section

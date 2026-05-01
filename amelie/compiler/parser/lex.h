@@ -36,6 +36,8 @@ lex_next_shadow(Lex* self)
 {
 	lex_set_keywords(self, false);
 	auto ast = lex_next(self);
+	if (ast->id > KKEYWORD)
+		ast->id = KNAME;
 	lex_set_keywords(self, true);
 	return ast;
 }

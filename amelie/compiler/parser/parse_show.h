@@ -21,6 +21,7 @@ struct AstShow
 	Str       section;
 	Str       name;
 	Str       on;
+	bool      all;
 	bool      verbose;
 };
 

@@ -127,10 +127,7 @@ stmt_allocate(Parser* parser, Lex* lex, Block* block)
 always_inline static inline Ast*
 stmt_next_shadow(Stmt* self)
 {
-	lex_set_keywords(self->lex, false);
-	auto ast = lex_next(self->lex);
-	lex_set_keywords(self->lex, true);
-	return ast;
+	return lex_next_shadow(self->lex);
 }
 
 always_inline static inline Ast*
