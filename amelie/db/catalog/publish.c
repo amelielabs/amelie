@@ -50,8 +50,11 @@ publish(Topic* self, Tr* tr, uint8_t* data, int data_size)
 	if (! self->cdc)
 		return;
 
-	log_cmd(&tr->log, CMD_PUBLISH, &publish_if, NULL, &self->rel);
-	log_persist_cmd(&tr->log, &self->config->id, data);
+	if (! self->config->unlogged)
+	{
+		log_cmd(&tr->log, CMD_PUBLISH, &publish_if, NULL, &self->rel);
+		log_persist_cmd(&tr->log, &self->config->id, data);
+	}
 
 	write_cdc_add(&tr->log.write_cdc, CMD_PUBLISH, &self->config->id,
 	              data, data_size);

@@ -278,7 +278,9 @@ parse_stmt(Stmt* self)
 
 		if (unlogged)
 		{
-			auto next = stmt_expect(self, KTABLE);
+			auto next = stmt_next(self);
+			if (next->id != KTABLE && next->id != KTOPIC)
+				stmt_error(self, next, "table or topic expected");
 			stmt_push(self, next);
 		}
 
@@ -337,7 +339,7 @@ parse_stmt(Stmt* self)
 		if (stmt_if(self, KTOPIC))
 		{
 			self->id = STMT_CREATE_TOPIC;
-			parse_topic_create(self);
+			parse_topic_create(self, unlogged);
 		} else
 		if (stmt_if(self, KSUBSCRIPTION))
 		{

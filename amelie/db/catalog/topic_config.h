@@ -18,6 +18,7 @@ struct TopicConfig
 	Str    user;
 	Str    name;
 	Uuid   id;
+	bool   unlogged;
 	Grants grants;
 };
 
@@ -26,6 +27,7 @@ topic_config_allocate(void)
 {
 	TopicConfig* self;
 	self = am_malloc(sizeof(TopicConfig));
+	self->unlogged = false;
 	str_init(&self->user);
 	str_init(&self->name);
 	uuid_init(&self->id);
@@ -62,6 +64,12 @@ topic_config_set_id(TopicConfig* self, Uuid* value)
 	self->id = *value;
 }
 
+static inline void
+topic_config_set_unlogged(TopicConfig* self, bool value)
+{
+	self->unlogged = value;
+}
+
 static inline TopicConfig*
 topic_config_copy(TopicConfig* self)
 {
@@ -69,6 +77,7 @@ topic_config_copy(TopicConfig* self)
 	topic_config_set_user(copy, &self->user);
 	topic_config_set_name(copy, &self->name);
 	topic_config_set_id(copy, &self->id);
+	topic_config_set_unlogged(copy, self->unlogged);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -81,11 +90,12 @@ topic_config_read(uint8_t** pos)
 	uint8_t* pos_grants   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",   &self->user },
-		{ DECODE_STR,   "name",   &self->name },
-		{ DECODE_UUID,  "id",     &self->id   },
-		{ DECODE_ARRAY, "grants", &pos_grants },
-		{ 0,             NULL,     NULL       },
+		{ DECODE_STR,   "user",     &self->user     },
+		{ DECODE_STR,   "name",     &self->name     },
+		{ DECODE_UUID,  "id",       &self->id       },
+		{ DECODE_BOOL,  "unlogged", &self->unlogged },
+		{ DECODE_ARRAY, "grants",   &pos_grants     },
+		{ 0,             NULL,       NULL           },
 	};
 	decode_obj(obj, "topic", pos);
 
@@ -117,6 +127,10 @@ topic_config_write(TopicConfig* self, Buf* buf, int flags)
 	// id
 	encode_raw(buf, "id", 2);
 	encode_uuid(buf, &self->id);
+
+	// unlogged
+	encode_raw(buf, "unlogged", 8);
+	encode_bool(buf, self->unlogged);
 
 	// grants
 	encode_raw(buf, "grants", 6);

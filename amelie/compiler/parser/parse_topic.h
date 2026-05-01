@@ -79,6 +79,6 @@ ast_topic_alter_allocate(void)
 	return self;
 }
 
-void parse_topic_create(Stmt*);
+void parse_topic_create(Stmt*, bool);
 void parse_topic_drop(Stmt*);
 void parse_topic_alter(Stmt*);

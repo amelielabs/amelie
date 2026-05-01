@@ -224,7 +224,8 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		break;
 	}
 	default:
-		stmt_error(self, path, "relation cannot be used here");
+		stmt_error(self, path, "{s} cannot be used here",
+		           rel_type_of(rel->type));
 		break;
 	}
 

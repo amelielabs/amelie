@@ -188,7 +188,13 @@ batch_complete(Batch* self, Cdc* cdc)
 
 		// publish cdc events
 		if (! list_empty(&dtr->write_cdc))
-			cdc_write_batch(cdc, dtr->write.header.lsn, &dtr->write_cdc);
+		{
+			// unlogged operation (lsn is not set)
+			auto lsn = dtr->write.header.lsn;
+			if (! lsn)
+				lsn = state_lsn_next();
+			cdc_write_batch(cdc, lsn, &dtr->write_cdc);
+		}
 
 		// commit utility transaction
 		tr_commit(&dtr->tr);
