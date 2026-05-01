@@ -166,6 +166,49 @@ import_insert(Parser* self, Table* table, Branch* branch, uint8_t* args)
 }
 
 static void
+import_publish(Parser* self, Topic* topic, uint8_t* args)
+{
+	// create main namespace and the main block
+	auto ns    = namespaces_add(&self->nss, NULL, NULL);
+	auto block = blocks_add(&ns->blocks, NULL, NULL);
+
+	// prepare execute stmt
+	auto stmt = stmt_allocate(self, &self->lex, block);
+	stmts_add(&block->stmts, stmt);
+	stmt->id  = STMT_PUBLISH;
+	stmt->ast = &ast_publish_allocate(block)->ast;
+	stmt->is_return = true;
+
+	// prepare arguments
+	auto publish = ast_publish_of(stmt->ast);
+	publish->topic  = topic;
+	publish->values = set_cache_create(self->set_cache, &self->program->sets);
+	set_prepare(publish->values, 1, 0, NULL);
+
+	access_add(&self->program->access, &topic->rel,
+	           LOCK_SHARED, PERM_PUBLISH);
+
+	// parse arguments
+	auto pos = args;
+	if (data_is_array(pos))
+	{
+		unpack_array(&pos);
+		while (! unpack_array_end(&pos))
+		{
+			auto row = set_reserve(publish->values);
+			auto size = data_sizeof(pos);
+			value_set_json(row, pos, size, NULL);
+			pos += size;
+		}
+	} else
+	{
+		auto row = set_reserve(publish->values);
+		auto size = data_sizeof(pos);
+		value_set_json(row, pos, size, NULL);
+	}
+}
+
+static void
 import_execute(Parser* self, Udf* udf, uint8_t* args)
 {
 	// create main namespace and the main block
@@ -282,6 +325,8 @@ parse_import(Parser*  self, Program* program,
 	}
 	case REL_TOPIC:
 	{
+		auto topic = topic_of(ref);
+		import_publish(self, topic, args);
 		break;
 	}
 	case REL_UDF:
