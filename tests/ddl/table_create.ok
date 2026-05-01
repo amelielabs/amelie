@@ -697,7 +697,7 @@ create table test (id int primary key)
   on storage x (id "00000000-0000-0000-0000-000000000000"),
              y (id "00000000-0000-0000-0000-000000000001"),
              z (id "00000000-0000-0000-0000-000000000002");
-show tables all;
+show tables verbose;
 [{
   "user": "main",
   "name": "test",

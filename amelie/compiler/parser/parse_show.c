@@ -20,7 +20,7 @@
 void
 parse_show(Stmt* self)
 {
-	// SHOW <section> [name] [ON name] [ALL]
+	// SHOW <section> [name] [ON name] [VERBOSE]
 	auto stmt = ast_show_allocate();
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;
@@ -47,8 +47,8 @@ parse_show(Stmt* self)
 		stmt->on = name->string;
 	}
 
-	// [ALL]
-	stmt->all = stmt_if(self, KALL) != NULL;
+	// [VERBOSE]
+	stmt->verbose = stmt_if(self, KVERBOSE) != NULL;
 
 	// set returning column
 	auto column = column_allocate();
@@ -87,17 +87,17 @@ parse_show_func(Stmt* self)
 	}
 	on->id = KSTRING;
 
-	// [ALL]
-	auto all = ast(KFALSE);
-	if (stmt_if(self, KALL))
-		all->id = KTRUE;
+	// [VERBOSE]
+	auto verbose = ast(KFALSE);
+	if (stmt_if(self, KVERBOSE))
+		verbose->id = KTRUE;
 
-	// show(section, name, on, all)
+	// show(section, name, on, verbose)
 	auto args_list = section;
 	section->next = name;
 	name->next    = on;
-	on->next      = all;
-	all->next     = NULL;
+	on->next      = verbose;
+	verbose->next = NULL;
 
 	// args(list_head, NULL)
 	auto args = ast_args_allocate();

@@ -238,7 +238,7 @@ enum
 	// v
 	KVALUES,
 	KVECTOR,
-	KVIEW,
+	KVERBOSE,
 
 	// w
 	KWHEN,

@@ -120,12 +120,12 @@ fn_show(Fn* self)
 {
 	auto user = &self->local->user;
 
-	// [section, name, on, all]
+	// [section, name, on, verbose]
 	Str  section_none;
 	Str* section  = NULL;
 	Str* name     = NULL;
 	Str* on       = NULL;
-	bool all      = false;
+	bool verbose  = false;
 
 	switch (self->argc) {
 	case 0:
@@ -144,7 +144,7 @@ fn_show(Fn* self)
 			name = &self->argv[1].string;
 		else
 		if (self->argv[1].type == TYPE_BOOL)
-			all = self->argv[1].integer;
+			verbose = self->argv[1].integer;
 		else
 			fn_error_arg(self, 1, "string or bool expected");
 		break;
@@ -153,9 +153,9 @@ fn_show(Fn* self)
 		fn_expect_arg(self, 0, TYPE_STRING);
 		fn_expect_arg(self, 1, TYPE_STRING);
 		fn_expect_arg(self, 2, TYPE_BOOL);
-		section  = &self->argv[0].string;
-		name     = &self->argv[1].string;
-		all      =  self->argv[2].integer;
+		section = &self->argv[0].string;
+		name    = &self->argv[1].string;
+		verbose =  self->argv[2].integer;
 		break;
 	case 4:
 		// [section, name, on, bool]
@@ -163,10 +163,10 @@ fn_show(Fn* self)
 		fn_expect_arg(self, 1, TYPE_STRING);
 		fn_expect_arg(self, 2, TYPE_STRING);
 		fn_expect_arg(self, 3, TYPE_BOOL);
-		section  = &self->argv[0].string;
-		name     = &self->argv[1].string;
-		on       = &self->argv[2].string;
-		all      =  self->argv[3].integer;
+		section = &self->argv[0].string;
+		name    = &self->argv[1].string;
+		on      = &self->argv[2].string;
+		verbose =  self->argv[3].integer;
 		break;
 	default:
 		fn_error_noargs(self, "invalid number of arguments");
@@ -221,7 +221,7 @@ fn_show(Fn* self)
 
 	// prepare flags
 	int flags = FMETRICS;
-	if (! all)
+	if (! verbose)
 		flags |= FMINIMAL;
 
 	// cover in [] if run as show_from()

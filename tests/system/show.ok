@@ -35,7 +35,7 @@ show storage main;
   "compression": "zstd",
   "compression_level": 0
 }
-show storage main all;
+show storage main verbose;
 {
   "name": "main",
   "path": "",
@@ -211,7 +211,7 @@ show functions;
   "user": "main",
   "name": "test_fn"
 }]
-show functions all;
+show functions verbose;
 [{
   "user": "main",
   "name": "test_fn",
@@ -227,7 +227,7 @@ show functions all;
   "returning": [],
   "grants": []
 }]
-select * from show functions all;
+select * from show functions verbose;
 {
   "user": "main",
   "name": "test_fn",
@@ -251,7 +251,7 @@ show function test_fn;
   "user": "main",
   "name": "test_fn"
 }
-show function test_fn all;
+show function test_fn verbose;
 {
   "user": "main",
   "name": "test_fn",

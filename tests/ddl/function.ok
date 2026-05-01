@@ -29,7 +29,7 @@ create function test (x int) 1;
 error: create function test (x int) ❰1❱ ⟵ BEGIN expected
 # test: create function (empty, no return)
 create function test () begin end;
-show functions all;
+show functions verbose;
 [{
   "user": "main",
   "name": "test",
@@ -295,7 +295,7 @@ drop function test;
 create function test () return table(a int, b int, c int)
 begin
 end;
-show functions all;
+show functions verbose;
 [{
   "user": "main",
   "name": "test",
@@ -587,7 +587,7 @@ begin
 	end;
 	return rev;
 end;
-show functions all;
+show functions verbose;
 [{
   "user": "main",
   "name": "test",
@@ -682,7 +682,7 @@ create or replace function test() return int
 begin
 	return 123;
 end;
-show functions all;
+show functions verbose;
 [{
   "user": "main",
   "name": "test",
@@ -699,7 +699,7 @@ create or replace function test() return int
 begin
 	return 321;
 end;
-show functions all;
+show functions verbose;
 [{
   "user": "main",
   "name": "test",

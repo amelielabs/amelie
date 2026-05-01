@@ -322,7 +322,7 @@ begin
 end;
 select show('state').lsn;
 
-show functions all;
+show functions verbose;
 select [1,2,3]::reverse;
 
 # test: restart
@@ -333,7 +333,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show functions all;
+show functions verbose;
 select [1,2,3]::reverse;
 
 # test: create or replace function
@@ -359,7 +359,7 @@ begin
 end;
 select show('state').lsn;
 
-show functions all;
+show functions verbose;
 select [1,2,3]::reverse;
 
 # test: restart
@@ -370,7 +370,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show functions all;
+show functions verbose;
 select [1,2,3]::reverse;
 
 # test: alter function rename
@@ -387,13 +387,13 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show functions all;
+show functions verbose;
 select [1,2,3]::reverse2;
 
 # test: drop function
 drop function reverse2;
 select show('state').lsn;
-show functions all;
+show functions verbose;
 
 # test: restart
 disconnect S0;
@@ -402,7 +402,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-show functions all;
+show functions verbose;
 select show('state').lsn;
 
 disconnect S0;

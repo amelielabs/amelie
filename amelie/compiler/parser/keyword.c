@@ -201,7 +201,7 @@ Keyword keywords[] =
 	// v
 	{ KVALUES,                "values",                6  },
 	{ KVECTOR,                "vector",                6  },
-	{ KVIEW,                  "view",                  4  },
+	{ KVERBOSE,               "verbose",               7  },
 
 	// w
 	{ KWHEN,                  "when",                  4  },

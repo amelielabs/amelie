@@ -371,7 +371,7 @@ emit_show(Compiler* self)
 	auto fn = function_mgr_find(share()->function_mgr, &name);
 	assert(fn);
 
-	// show(section, name, on, all)
+	// show(section, name, on, verbose)
 
 	// section
 	auto r = emit_string(self, &arg->section, false);
@@ -388,8 +388,8 @@ emit_show(Compiler* self)
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
-	// all
-	r = op2pin(self, CBOOL, TYPE_BOOL, arg->all);
+	// verbose
+	r = op2pin(self, CBOOL, TYPE_BOOL, arg->verbose);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 

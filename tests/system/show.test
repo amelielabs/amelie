@@ -26,7 +26,7 @@ select * from show storages;
 # test: show storage
 show storage;
 show storage main;
-show storage main all;
+show storage main verbose;
 
 # test: show tables
 create table test (id int primary key);
@@ -70,13 +70,13 @@ select test_fn(123);
 select test_fn(123).a;
 select 123::test_fn().a;
 show functions;
-show functions all;
-select * from show functions all;
+show functions verbose;
+select * from show functions verbose;
 
 # test: show function
 show function;
 show function test_fn;
-show function test_fn all;
+show function test_fn verbose;
 select * from show function test_fn;
 
 # test: show wal
