@@ -119,8 +119,6 @@ show_cmd_find(Str* section)
 static void
 fn_show(Fn* self)
 {
-	auto user = &self->local->user;
-
 	// [section, name, on, verbose]
 	Str  section_none;
 	Str* section  = NULL;
@@ -220,10 +218,6 @@ fn_show(Fn* self)
 			fn_error_noargs(self, "unexpected on argument");
 	}
 
-	// prepare flags
-	int flags = FMETRICS;
-	if (! verbose)
-		flags |= FMINIMAL;
 
 	// cover in [] if run as show_from()
 	auto wrap = false;
@@ -234,6 +228,17 @@ fn_show(Fn* self)
 		wrap = true;
 	if (wrap)
 		encode_array(buf);
+
+	// prepare flags
+	int flags = FMETRICS;
+	if (! verbose)
+		flags |= FMINIMAL;
+
+	// [all]
+	auto user = &self->local->user;
+	auto all  =
+		str_is(&self->function->name, "show_all", 8) ||
+		str_is(&self->function->name, "show_from_all", 13);
 
 	auto catalog = &share()->db->catalog;
 	switch (cmd->id) {
@@ -275,12 +280,13 @@ fn_show(Fn* self)
 	}
 	case SHOW_USERS:
 	{
-		rel_mgr_list(&catalog->users, REL_USER, buf, NULL, NULL, flags);
+		// created users
+		rel_mgr_list(&catalog->users, REL_USER, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_USER:
 	{
-		rel_mgr_list(&catalog->users, REL_USER, buf, NULL, name, flags);
+		rel_mgr_list(&catalog->users, REL_USER, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_STORAGES:
@@ -295,16 +301,17 @@ fn_show(Fn* self)
 	}
 	case SHOW_TABLES:
 	{
-		rel_mgr_list(&catalog->rels, REL_TABLE, buf, user, NULL, flags);
+		rel_mgr_list(&catalog->rels, REL_TABLE, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		rel_mgr_list(&catalog->rels, REL_TABLE, buf, user, name, flags);
+		rel_mgr_list(&catalog->rels, REL_TABLE, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_INDEXES:
 	{
+		// todo: only owned
 		auto table = catalog_find_table(catalog, user, on, true);
 		table_index_list(table, buf, NULL, flags);
 		break;
@@ -317,16 +324,17 @@ fn_show(Fn* self)
 	}
 	case SHOW_BRANCHES:
 	{
-		rel_mgr_list(&catalog->rels, REL_BRANCH, buf, user, NULL, flags);
+		rel_mgr_list(&catalog->rels, REL_BRANCH, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_BRANCH:
 	{
-		rel_mgr_list(&catalog->rels, REL_BRANCH, buf, user, name, flags);
+		rel_mgr_list(&catalog->rels, REL_BRANCH, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_PARTITIONS:
 	{
+		// todo: only owned
 		auto table = catalog_find_table(catalog, user, on, true);
 		part_mgr_list(&table->part_mgr, buf, NULL, flags);
 		break;
@@ -339,42 +347,42 @@ fn_show(Fn* self)
 	}
 	case SHOW_FUNCTIONS:
 	{
-		rel_mgr_list(&catalog->rels, REL_UDF, buf, user, NULL, flags);
+		rel_mgr_list(&catalog->rels, REL_UDF, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		rel_mgr_list(&catalog->rels, REL_UDF, buf, user, name, flags);
+		rel_mgr_list(&catalog->rels, REL_UDF, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_TOPICS:
 	{
-		rel_mgr_list(&catalog->rels, REL_TOPIC, buf, user, NULL, flags);
+		rel_mgr_list(&catalog->rels, REL_TOPIC, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_TOPIC:
 	{
-		rel_mgr_list(&catalog->rels, REL_TOPIC, buf, user, name, flags);
+		rel_mgr_list(&catalog->rels, REL_TOPIC, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTIONS:
 	{
-		rel_mgr_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, NULL, flags);
+		rel_mgr_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTION:
 	{
-		rel_mgr_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, name, flags);
+		rel_mgr_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_RELS:
 	{
-		rel_mgr_list_all(&catalog->rels, buf, user, NULL, flags);
+		rel_mgr_list_rel(&catalog->rels, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_REL:
 	{
-		rel_mgr_list_all(&catalog->rels, buf, user, name, flags);
+		rel_mgr_list_rel(&catalog->rels, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_STATE:

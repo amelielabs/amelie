@@ -204,28 +204,59 @@ rel_mgr_dump(RelMgr* self, RelType type, Buf* buf, int flags)
 	encode_array_end(buf);
 }
 
-void
-rel_mgr_list(RelMgr* self, RelType type, Buf* buf, Str* user, Str* name, int flags)
+hot static inline bool
+rel_accessible(Rel* self, bool all, bool superuser, Str* user)
 {
+	// by owner
+	if (self->user && str_compare(self->user, user))
+		return true;
+
+	// granted
+	if (! all)
+		return false;
+
+	// by superuser
+	if (superuser || !self->grants)
+		return true;
+
+	if (grants_find(self->grants, user))
+		return true;
+
+	return false;
+}
+
+void
+rel_mgr_list(RelMgr* self, RelType type,
+             Buf*    buf,
+             Str*    user,
+             Str*    name,
+             bool    all,
+             int     flags)
+{
+	auto superuser = user && str_is(user, "amelie", 6);
 	if (name)
 	{
 		// show <type>
 		auto rel = rel_mgr_find(self, type, user, name, false);
 		if (rel)
+		{
+			if (user && !rel_accessible(rel, all, superuser, user))
+				return;
 			rel_show(rel, buf, flags);
-		else
-			encode_null(buf);
+			return;
+		}
+		encode_null(buf);
 		return;
 	}
 
-	// show <types>
+	// show [all] <types>
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
 		auto rel = list_at(Rel, link);
 		if (type != REL_UNDEF && rel->type != type)
 			continue;
-		if (user && !str_compare(rel->user, user))
+		if (user && !rel_accessible(rel, all, superuser, user))
 			continue;
 		rel_show(rel, buf, flags);
 	}
@@ -233,16 +264,21 @@ rel_mgr_list(RelMgr* self, RelType type, Buf* buf, Str* user, Str* name, int fla
 }
 
 void
-rel_mgr_list_all(RelMgr* self, Buf* buf, Str* user, Str* name, int flags)
+rel_mgr_list_rel(RelMgr* self, Buf* buf, Str* user, Str* name, bool all, int flags)
 {
+	auto superuser = user && str_is(user, "amelie", 6);
 	if (name)
 	{
 		// show rel
 		auto rel = rel_mgr_find(self, REL_UNDEF, user, name, false);
 		if (rel)
+		{
+			if (user && !rel_accessible(rel, all, superuser, user))
+				return;
 			rel_write(rel, buf, flags);
-		else
-			encode_null(buf);
+			return;
+		}
+		encode_null(buf);
 		return;
 	}
 
@@ -251,13 +287,12 @@ rel_mgr_list_all(RelMgr* self, Buf* buf, Str* user, Str* name, int flags)
 	list_foreach(&self->list)
 	{
 		auto rel = list_at(Rel, link);
-		if (user && !str_compare(rel->user, user))
+		if (user && !rel_accessible(rel, all, superuser, user))
 			continue;
 		rel_write(rel, buf, flags);
 	}
 	encode_array_end(buf);
 }
-
 
 hot static inline bool
 rel_mgr_cmp(Hashnode* node, void* ptr)

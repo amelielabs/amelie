@@ -152,5 +152,5 @@ storage_mgr_find(StorageMgr* self, Str* name, bool error_if_not_exists)
 void
 storage_mgr_list(StorageMgr* self, Buf* buf, Str* name, int flags)
 {
-	rel_mgr_list(&self->mgr, REL_STORAGE, buf, NULL, name, flags);
+	rel_mgr_list(&self->mgr, REL_STORAGE, buf, NULL, name, false, flags);
 }

@@ -112,6 +112,7 @@ catalog_create(Catalog* self)
 		str_init(&name);
 		str_set_cstr(&name, "amelie");
 		user_config_set_name(user_config, &name);
+		user_config_set_parent(user_config, &name);
 		user_config_set_superuser(user_config, true);
 
 		// set timestamp

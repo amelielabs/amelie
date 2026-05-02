@@ -72,7 +72,7 @@ switch S1;
 drop user test;
 error: user 'test': permission denied
 select show('user', 'test').name;
-"test"
+null
 select 1;
 1
 disconnect S1;
@@ -166,9 +166,9 @@ show tables;
 show functions;
 []
 select show('user', 'amelie').name;
-"amelie"
+null
 select show('user', 'test2').name;
-"test2"
+null
 disconnect S1;
 switch S0;
 show tables;
