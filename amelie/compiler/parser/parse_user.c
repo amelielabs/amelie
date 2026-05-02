@@ -52,7 +52,8 @@ parse_user_create(Stmt* self, bool agent)
 	     PERM_CREATE_FUNCTION |
 	     PERM_CREATE_TOPIC    |
 	     PERM_CREATE_SUB      |
-	     PERM_CONNECT;
+	     PERM_SQL             |
+	     PERM_RPC;
 	Str user;
 	str_set_cstr(&user, "self");
 	grants_add(&stmt->config->grants, &user, perms_all);

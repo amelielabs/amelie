@@ -96,6 +96,19 @@ request_auth(Request* self, Auth* auth_ref)
 	auto token_required = opt_int_of(&endpoint->auth);
 	auto user_id = &endpoint->user.string;
 	self->user = auth(auth_ref, user_id, token, token_required);
+
+	// check permissions
+	switch (opt_int_of(&endpoint->endpoint)) {
+	case ENDPOINT_RPC:
+		user_check(self->user, PERM_RPC);
+		break;
+	case ENDPOINT_BACKUP:
+	case ENDPOINT_REPL:
+		user_check(self->user, PERM_SERVICE);
+		break;
+	}
+	if (self->type == REQUEST_SQL)
+		user_check(self->user, PERM_SQL);
 }
 
 static void

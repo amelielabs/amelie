@@ -229,7 +229,8 @@ user_grant(Catalog* self,
 	     PERM_CREATE_FUNCTION |
 	     PERM_CREATE_TOPIC    |
 	     PERM_CREATE_SUB      |
-	     PERM_CONNECT         |
+	     PERM_RPC             |
+	     PERM_SQL             |
 	     PERM_SERVICE;
 	perms = permission_validate(NULL, name, perms, perms_all);
 

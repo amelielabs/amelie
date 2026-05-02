@@ -44,12 +44,13 @@ enum
 	// Topic
 	PERM_PUBLISH         = 1ul << 14,
 
-	// Connections
-	PERM_CONNECT         = 1ul << 15,
-	PERM_SERVICE         = 1ul << 16,
+	// Endpoints
+	PERM_SERVICE         = 1ul << 15,
+	PERM_RPC             = 1ul << 16,
+	PERM_SQL             = 1ul << 17,
 
 	// all
-	PERM_ALL             = UINT32_MAX,
+	PERM_ALL             = UINT32_MAX
 };
 
 int      permission_of(Str*, uint32_t*);

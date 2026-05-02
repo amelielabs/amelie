@@ -106,8 +106,12 @@ relay_execute_session(Relay* self, Str* command)
 {
 	auto code = 0;
 
-	// authenticate
+	// set command
 	auto req = &self->req;
+	req->type = REQUEST_SQL;
+	req->text = *command;
+
+	// authenticate
 	auto on_error = error_catch
 	(
 		request_auth(req, &self->fe->auth);
@@ -118,10 +122,6 @@ relay_execute_session(Relay* self, Str* command)
 		code = 403;
 		goto done;
 	}
-
-	// set command
-	req->type = REQUEST_SQL;
-	req->text = *command;
 
 	// execute
 	auto ctl  = self->fe->iface;

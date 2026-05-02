@@ -59,8 +59,9 @@ static Permission perms[] =
 	{ PERM_PUBLISH,         "publish",             7  },
 
 	// Connections
-	{ PERM_CONNECT,         "connect",             7  },
 	{ PERM_SERVICE,         "service",             7  },
+	{ PERM_RPC,             "rpc",                 3  },
+	{ PERM_SQL,             "sql",                 3  },
 
 	// all
 	{ PERM_ALL,             "all",                 3  },
