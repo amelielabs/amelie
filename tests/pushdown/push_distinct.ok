@@ -5,14 +5,14 @@ create table test (id serial primary key, data int default 0);
 explain select distinct * from test;
 {
   "main": {
-    "00": "send_all            0      0      34    # main.test (select, closing)",
+    "00": "send_all            0      0      34    # amelie.test (select, closing)",
     "01": "union               1      2      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      2     ",
-    "01": "table_open          1      2      12    # main.test (primary) [main] part",
+    "01": "table_open          1      2      12    # amelie.test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -27,7 +27,7 @@ explain select distinct * from test;
     "13": "set_sort            0      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select distinct * from test;
 # test: select distinct * from table
@@ -78,14 +78,14 @@ select * from test order by id;
 explain select distinct * from test;
 {
   "main": {
-    "00": "send_all            0      0      34    # main.test (select, closing)",
+    "00": "send_all            0      0      34    # amelie.test (select, closing)",
     "01": "union               1      2      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      2     ",
-    "01": "table_open          1      2      12    # main.test (primary) [main] part",
+    "01": "table_open          1      2      12    # amelie.test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -100,7 +100,7 @@ explain select distinct * from test;
     "13": "set_sort            0      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select distinct * from test;
 0 │ 0
@@ -127,14 +127,14 @@ select distinct * from test;
 explain select distinct id from test;
 {
   "main": {
-    "00": "send_all            0      0      33    # main.test (select, closing)",
+    "00": "send_all            0      0      33    # amelie.test (select, closing)",
     "01": "union               1      2      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # main.test (primary) [main] part",
+    "01": "table_open          1      1      8     # amelie.test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      -     # id",
@@ -144,7 +144,7 @@ explain select distinct id from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select distinct id from test;
 0
@@ -182,14 +182,14 @@ select distinct data from test;
 explain select distinct id, data from test;
 {
   "main": {
-    "00": "send_all            0      0      34    # main.test (select, closing)",
+    "00": "send_all            0      0      34    # amelie.test (select, closing)",
     "01": "union               1      2      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      2     ",
-    "01": "table_open          1      2      12    # main.test (primary) [main] part",
+    "01": "table_open          1      2      12    # amelie.test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -204,7 +204,7 @@ explain select distinct id, data from test;
     "13": "set_sort            0      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select distinct id, data from test;
 0 │ 0
@@ -231,7 +231,7 @@ select distinct id, data from test;
 explain select distinct data from test limit 4;
 {
   "main": {
-    "00": "send_all            0      0      33    # main.test (select, closing)",
+    "00": "send_all            0      0      33    # amelie.test (select, closing)",
     "01": "union               1      2      0     ",
     "02": "int                 2      -      0     # 4",
     "03": "union_limit         1      2      0     ",
@@ -240,7 +240,7 @@ explain select distinct data from test limit 4;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # main.test (primary) [main] part",
+    "01": "table_open          1      1      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -251,7 +251,7 @@ explain select distinct data from test limit 4;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select distinct data from test limit 4;
 0
@@ -262,7 +262,7 @@ select distinct data from test limit 4;
 explain select distinct data from test limit 0;
 {
   "main": {
-    "00": "send_all            0      0      33    # main.test (select, closing)",
+    "00": "send_all            0      0      33    # amelie.test (select, closing)",
     "01": "union               1      2      0     ",
     "02": "int                 2      -      0     # 0",
     "03": "union_limit         1      2      0     ",
@@ -271,7 +271,7 @@ explain select distinct data from test limit 0;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # main.test (primary) [main] part",
+    "01": "table_open          1      1      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -282,14 +282,14 @@ explain select distinct data from test limit 0;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select distinct data from test limit 0;
 # test: select distinct from table limit/offset
 explain select distinct data from test limit 1 offset 1;
 {
   "main": {
-    "00": "send_all            0      0      33    # main.test (select, closing)",
+    "00": "send_all            0      0      33    # amelie.test (select, closing)",
     "01": "union               1      2      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_limit         1      2      0     ",
@@ -300,7 +300,7 @@ explain select distinct data from test limit 1 offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # main.test (primary) [main] part",
+    "01": "table_open          1      1      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -311,7 +311,7 @@ explain select distinct data from test limit 1 offset 1;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select distinct data from test limit 1 offset 0;
 0
@@ -325,7 +325,7 @@ select distinct data from test limit 1 offset 3;
 explain select distinct data from test offset 1;
 {
   "main": {
-    "00": "send_all            0      0      33    # main.test (select, closing)",
+    "00": "send_all            0      0      33    # amelie.test (select, closing)",
     "01": "union               1      2      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_offset        1      2      0     ",
@@ -334,7 +334,7 @@ explain select distinct data from test offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open          1      1      8     # main.test (primary) [main] part",
+    "01": "table_open          1      1      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -345,7 +345,7 @@ explain select distinct data from test offset 1;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select distinct data from test offset 0;
 0
@@ -410,14 +410,14 @@ error: select distinct on (123,❰)❱ ⟵ bad expression
 explain select * from test order by data;
 {
   "main": {
-    "00": "send_all            0      0      33    # main.test (select, closing)",
+    "00": "send_all            0      0      33    # amelie.test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
-    "01": "table_open          1      1      10    # main.test (primary) [main] part",
+    "01": "table_open          1      1      10    # amelie.test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -430,19 +430,19 @@ explain select * from test order by data;
     "11": "set_sort            0      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 explain select distinct on (data) * from test;
 {
   "main": {
-    "00": "send_all            0      0      33    # main.test (select, closing)",
+    "00": "send_all            0      0      33    # amelie.test (select, closing)",
     "01": "union               1      2      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
-    "01": "table_open          1      1      10    # main.test (primary) [main] part",
+    "01": "table_open          1      1      10    # amelie.test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -455,7 +455,7 @@ explain select distinct on (data) * from test;
     "11": "set_sort            0      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select distinct on (data) * from test;
 0 │ 0

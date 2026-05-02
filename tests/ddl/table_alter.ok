@@ -905,7 +905,7 @@ create table test (id int primary key, data int);
 create function dep() begin insert into test values (1, 2); end;
 show functions verbose;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "dep",
   "text": "begin insert into test values (1, 2); end",
   "type": 0,
@@ -914,7 +914,7 @@ show functions verbose;
   "grants": []
 }]
 alter table test rename to test2;
-error: function 'dep' depends on relation 'main.test'
+error: function 'dep' depends on relation 'amelie.test'
 # test: rename after udf drop
 drop function dep;
 alter table test rename to test2;
@@ -924,7 +924,7 @@ create table test (id int primary key, data int);
 create function dep() begin insert into test values (1, 2); end;
 show functions verbose;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "dep",
   "text": "begin insert into test values (1, 2); end",
   "type": 0,
@@ -933,7 +933,7 @@ show functions verbose;
   "grants": []
 }]
 alter table test rename column data to data2;
-error: function 'dep' depends on relation 'main.test'
+error: function 'dep' depends on relation 'amelie.test'
 # test: rename column after udf drop
 drop function dep;
 alter table test rename column data to data2;

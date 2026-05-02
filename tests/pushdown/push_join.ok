@@ -8,15 +8,15 @@ insert into test (id) values (1), (2), (3);
 explain select test.*, ref.* from test, ref;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      4      0     ",
-    "01": "table_open          1      0      15    # main.test (primary) [main] part",
-    "02": "table_open          2      32     13    # main.ref (primary) [main] ",
+    "01": "table_open          1      0      15    # amelie.test (primary) [main] part",
+    "02": "table_open          2      32     13    # amelie.ref (primary) [main] ",
     "03": "table_readi32       3      1      -     # id",
     "04": "push                3      0      0     ",
     "05": "table_readi32       3      1      -     # data",
@@ -32,7 +32,7 @@ explain select test.*, ref.* from test, ref;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.*, ref.* from test, ref;
 1 │ 0 │ 1 │ 0
@@ -48,15 +48,15 @@ select test.*, ref.* from test, ref;
 explain select test.*, ref.* from ref, test;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.ref (select, closing)",
+    "00": "send_all            0      0      64    # amelie.ref (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      4      0     ",
-    "01": "table_open          1      0      15    # main.ref (primary) [main] part",
-    "02": "table_open          2      32     13    # main.test (primary) [main] ",
+    "01": "table_open          1      0      15    # amelie.ref (primary) [main] part",
+    "02": "table_open          2      32     13    # amelie.test (primary) [main] ",
     "03": "table_readi32       3      2      -     # id",
     "04": "push                3      0      0     ",
     "05": "table_readi32       3      2      -     # data",
@@ -72,7 +72,7 @@ explain select test.*, ref.* from ref, test;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["main.ref", "shared", "select"], ["main.test", "exclusive_ro", "select"]]
+  "access": [["amelie.ref", "shared", "select"], ["amelie.test", "exclusive_ro", "select"]]
 }
 select test.*, ref.* from ref, test;
 1 │ 0 │ 1 │ 0
@@ -88,15 +88,15 @@ select test.*, ref.* from ref, test;
 explain select t.* from test, test t;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      11    # main.test (primary) [main] part",
-    "02": "table_open          2      32     9     # main.test (primary) [main] ",
+    "01": "table_open          1      0      11    # amelie.test (primary) [main] part",
+    "02": "table_open          2      32     9     # amelie.test (primary) [main] ",
     "03": "table_readi32       3      2      -     # id",
     "04": "push                3      0      0     ",
     "05": "table_readi32       3      2      -     # data",
@@ -108,7 +108,7 @@ explain select t.* from test, test t;
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "exclusive_ro", "select"]]
 }
 select t.* from test, test t;
 1 │ 0
@@ -124,15 +124,15 @@ select t.* from test, test t;
 explain select test.id, ref.id from test join ref on true;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      13    # main.test (primary) [main] part",
-    "02": "table_open          2      32     11    # main.ref (primary) [main] ",
+    "01": "table_open          1      0      13    # amelie.test (primary) [main] part",
+    "02": "table_open          2      32     11    # amelie.ref (primary) [main] ",
     "03": "bool                3      1      0     ",
     "04": "jntr                10     3      0     ",
     "05": "table_readi32       3      1      -     # id",
@@ -146,7 +146,7 @@ explain select test.id, ref.id from test join ref on true;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test join ref on true;
 1 │ 1
@@ -162,17 +162,17 @@ select test.id, ref.id from test join ref on true;
 explain select test.id, ref.id from test join ref on test.id = ref.id;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # main.test (primary) [main] part",
+    "01": "table_open          1      0      16    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_open          2      32     14    # main.ref (primary) [main] point_lookup",
+    "04": "table_open          2      32     14    # amelie.ref (primary) [main] point_lookup",
     "05": "table_readi32       3      1      -     # id",
     "06": "table_readi32       4      2      -     # id",
     "07": "equii               5      3      4     ",
@@ -187,7 +187,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test join ref on test.id = ref.id;
 1 │ 1
@@ -197,20 +197,20 @@ select test.id, ref.id from test join ref on test.id = ref.id;
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
 {
   "main": {
-    "00": "send_all            0      0      96    # main.test (select, closing)",
+    "00": "send_all            0      0      96    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      24    # main.test (primary) [main] part",
+    "01": "table_open          1      0      24    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_open          2      32     22    # main.ref (primary) [main] point_lookup",
+    "04": "table_open          2      32     22    # amelie.ref (primary) [main] point_lookup",
     "05": "table_readi32       3      1      -     # id",
     "06": "push                3      0      0     ",
-    "07": "table_open          3      64     21    # main.ref (primary) [main] point_lookup",
+    "07": "table_open          3      64     21    # amelie.ref (primary) [main] point_lookup",
     "08": "table_readi32       4      1      -     # id",
     "09": "table_readi32       5      2      -     # id",
     "10": "equii               6      4      5     ",
@@ -230,7 +230,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     "24": "free                1      0      0     ",
     "25": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
 1 │ 1
@@ -240,7 +240,7 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
 {
   "main": {
-    "00": "send_all            0      0      96    # main.test (select, closing)",
+    "00": "send_all            0      0      96    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -248,13 +248,13 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 0",
-    "02": "table_open          1      0      29    # main.test (primary) [main] part",
+    "02": "table_open          1      0      29    # amelie.test (primary) [main] part",
     "03": "table_readi32       2      1      -     # id",
     "04": "push                2      0      0     ",
-    "05": "table_open          2      32     27    # main.ref (primary) [main] point_lookup",
+    "05": "table_open          2      32     27    # amelie.ref (primary) [main] point_lookup",
     "06": "table_readi32       3      1      -     # id",
     "07": "push                3      0      0     ",
-    "08": "table_open          3      64     26    # main.ref (primary) [main] point_lookup",
+    "08": "table_open          3      64     26    # amelie.ref (primary) [main] point_lookup",
     "09": "table_readi32       4      1      -     # id",
     "10": "table_readi32       5      2      -     # id",
     "11": "equii               6      4      5     ",
@@ -278,7 +278,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     "29": "free                1      0      0     ",
     "30": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
 1 │ 1
@@ -288,17 +288,17 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test, ref where test.id = ref.id;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # main.test (primary) [main] part",
+    "01": "table_open          1      0      16    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_open          2      32     14    # main.ref (primary) [main] point_lookup",
+    "04": "table_open          2      32     14    # amelie.ref (primary) [main] point_lookup",
     "05": "table_readi32       3      1      -     # id",
     "06": "table_readi32       4      2      -     # id",
     "07": "equii               5      3      4     ",
@@ -313,7 +313,7 @@ explain select test.id, ref.id from test, ref where test.id = ref.id;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test, ref where test.id = ref.id;
 1 │ 1
@@ -322,17 +322,17 @@ select test.id, ref.id from test, ref where test.id = ref.id;
 explain select test.id, ref.id from test, ref where ref.id = test.id;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # main.test (primary) [main] part",
+    "01": "table_open          1      0      16    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_open          2      32     14    # main.ref (primary) [main] point_lookup",
+    "04": "table_open          2      32     14    # amelie.ref (primary) [main] point_lookup",
     "05": "table_readi32       3      2      -     # id",
     "06": "table_readi32       4      1      -     # id",
     "07": "equii               5      3      4     ",
@@ -347,7 +347,7 @@ explain select test.id, ref.id from test, ref where ref.id = test.id;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test, ref where ref.id = test.id;
 1 │ 1
@@ -356,16 +356,16 @@ select test.id, ref.id from test, ref where ref.id = test.id;
 explain select test.id, ref.id from test, ref where ref.id = 1;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      15    # main.test (primary) [main] part",
+    "01": "table_open          1      0      15    # amelie.test (primary) [main] part",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_open          2      32     13    # main.ref (primary) [main] point_lookup",
+    "03": "table_open          2      32     13    # amelie.ref (primary) [main] point_lookup",
     "04": "table_readi32       3      2      -     # id",
     "05": "int                 4      -      0     # 1",
     "06": "equii               5      3      4     ",
@@ -380,7 +380,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test, ref where ref.id = 1;
 1 │ 1
@@ -390,7 +390,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 {
   "main": {
     "00": "push_int            -      0      0     # 1",
-    "01": "send_lookup         0      -      64    # main.test (select, closing)",
+    "01": "send_lookup         0      -      64    # amelie.test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
@@ -398,9 +398,9 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open          1      0      19    # main.test (primary) [main] point_lookup, part",
+    "02": "table_open          1      0      19    # amelie.test (primary) [main] point_lookup, part",
     "03": "push_int            -      0      0     # 1",
-    "04": "table_open          2      32     18    # main.ref (primary) [main] point_lookup",
+    "04": "table_open          2      32     18    # amelie.ref (primary) [main] point_lookup",
     "05": "table_readi32       3      2      -     # id",
     "06": "int                 4      -      0     # 1",
     "07": "equii               5      3      4     ",
@@ -418,24 +418,24 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
     "19": "free                1      0      0     ",
     "20": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 1 │ 1
 explain select test.id, ref.id from test, ref where ref.id >= test.id;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      17    # main.test (primary) [main] part",
+    "01": "table_open          1      0      17    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_open          2      32     15    # main.ref (primary) [main] ",
+    "04": "table_open          2      32     15    # amelie.ref (primary) [main] ",
     "05": "table_readi32       3      2      -     # id",
     "06": "table_readi32       4      1      -     # id",
     "07": "gteii               5      3      4     ",
@@ -451,7 +451,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test, ref where ref.id >= test.id;
 1 │ 1
@@ -472,17 +472,17 @@ error: explain select test.id, ref.id from test join ref using(id❰;❱ ⟵ ) e
 explain select test.id, ref.id from test join ref using(id);
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # main.test (primary) [main] part",
+    "01": "table_open          1      0      16    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_open          2      32     14    # main.ref (primary) [main] point_lookup",
+    "04": "table_open          2      32     14    # amelie.ref (primary) [main] point_lookup",
     "05": "table_readi32       3      1      -     # id",
     "06": "table_readi32       4      2      -     # id",
     "07": "equii               5      3      4     ",
@@ -497,7 +497,7 @@ explain select test.id, ref.id from test join ref using(id);
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test join ref using(id);
 1 │ 1
@@ -510,7 +510,7 @@ error: select test.id, ref.id from test join ref using(❰unknown❱ ⟵ column 
 explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
 {
   "main": {
-    "00": "send_all            0      0      96    # main.test (select, closing)",
+    "00": "send_all            0      0      96    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -518,13 +518,13 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 0",
-    "02": "table_open          1      0      29    # main.test (primary) [main] part",
+    "02": "table_open          1      0      29    # amelie.test (primary) [main] part",
     "03": "table_readi32       2      1      -     # id",
     "04": "push                2      0      0     ",
-    "05": "table_open          2      32     27    # main.ref (primary) [main] point_lookup",
+    "05": "table_open          2      32     27    # amelie.ref (primary) [main] point_lookup",
     "06": "table_readi32       3      2      -     # id",
     "07": "push                3      0      0     ",
-    "08": "table_open          3      64     26    # main.ref (primary) [main] point_lookup",
+    "08": "table_open          3      64     26    # amelie.ref (primary) [main] point_lookup",
     "09": "table_readi32       4      1      -     # id",
     "10": "table_readi32       5      2      -     # id",
     "11": "equii               6      4      5     ",
@@ -548,7 +548,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
     "29": "free                1      0      0     ",
     "30": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
 1 │ 1
@@ -560,18 +560,18 @@ error: select test.id, ref.id from test join ref using (id) join ref ref2 using 
 explain with a as (select * from test) select * from test, a where test.id = a.id;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "push_ref            1      1      0     ",
-    "04": "send_all            0      1      88    # main.test (select, closing)",
+    "04": "send_all            0      1      88    # amelie.test (select, closing)",
     "05": "union               2      0      0     ",
     "06": "recv                2      0      0     ",
     "07": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # main.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -581,7 +581,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
     "10": "set                 0      4      0     ",
-    "11": "table_open          2      56     31    # main.test (primary) [main] part",
+    "11": "table_open          2      56     31    # amelie.test (primary) [main] part",
     "12": "ref                 3      0      0     ",
     "13": "store_open          4      3      28    ",
     "14": "table_readi32       5      2      -     # id",
@@ -604,7 +604,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     "31": "free                2      0      0     ",
     "32": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 with a as (select * from test) select * from test, a where test.id = a.id;
 1 │ 0 │ 1 │ 0
@@ -614,19 +614,19 @@ with a as (select * from test) select * from test, a where test.id = a.id;
 explain with a as (select * from test) select * from test, a where test.id = 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "push_ref            1      1      0     ",
     "04": "push_int            -      0      0     # 1",
-    "05": "send_lookup         0      -      88    # main.test (select, closing)",
+    "05": "send_lookup         0      -      88    # amelie.test (select, closing)",
     "06": "union               2      0      0     ",
     "07": "recv                2      0      0     ",
     "08": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # main.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -637,7 +637,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "09": "ret                 0      0      -     ",
     "10": "set                 0      4      0     ",
     "11": "push_int            -      0      0     # 1",
-    "12": "table_open          2      56     31    # main.test (primary) [main] point_lookup, part",
+    "12": "table_open          2      56     31    # amelie.test (primary) [main] point_lookup, part",
     "13": "ref                 3      0      0     ",
     "14": "store_open          4      3      29    ",
     "15": "table_readi32       5      2      -     # id",
@@ -659,7 +659,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "31": "free                2      0      0     ",
     "32": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 with a as (select * from test) select * from test, a where test.id = 1;
 1 │ 0 │ 1 │ 0
@@ -669,7 +669,7 @@ with a as (select * from test) select * from test, a where test.id = 1;
 explain with a as (select * from test) select * from a, test where test.id = a.id;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      4      0     ",
@@ -677,7 +677,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
     "05": "store_open          3      2      24    ",
     "06": "store_read          4      3      0     ",
     "07": "push                4      0      0     ",
-    "08": "table_open          4      56     22    # main.test (primary) [main] point_lookup",
+    "08": "table_open          4      56     22    # amelie.test (primary) [main] point_lookup",
     "09": "table_readi32       5      4      -     # id",
     "10": "store_read          6      3      0     ",
     "11": "equii               7      5      6     ",
@@ -699,7 +699,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # main.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -709,7 +709,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "exclusive_ro", "select"]]
 }
 with a as (select * from test) select * from a, test where test.id = a.id;
 1 │ 0 │ 1 │ 0
@@ -719,14 +719,14 @@ with a as (select * from test) select * from a, test where test.id = a.id;
 explain with a as (select * from test) select * from a, test where test.id = 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      4      0     ",
     "04": "dup                 2      1      0     ",
     "05": "store_open          3      2      23    ",
     "06": "push_int            -      0      0     # 1",
-    "07": "table_open          4      56     21    # main.test (primary) [main] point_lookup",
+    "07": "table_open          4      56     21    # amelie.test (primary) [main] point_lookup",
     "08": "table_readi32       5      4      -     # id",
     "09": "int                 6      -      0     # 1",
     "10": "equii               7      5      6     ",
@@ -748,7 +748,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # main.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -758,7 +758,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "exclusive_ro", "select"]]
 }
 with a as (select * from test) select * from a, test where test.id = 1;
 1 │ 0 │ 1 │ 0
@@ -782,7 +782,7 @@ error: select ref.id from test join ref on (test.id = ref.id) group by ❰id❱ 
 explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      64    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -796,10 +796,10 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      14    # main.test (primary) [main] part",
+    "01": "table_open          1      0      14    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
-    "04": "table_open          2      32     12    # main.ref (primary) [main] point_lookup",
+    "04": "table_open          2      32     12    # amelie.ref (primary) [main] point_lookup",
     "05": "table_readi32       3      1      -     # id",
     "06": "table_readi32       4      2      -     # id",
     "07": "equii               5      3      4     ",
@@ -812,7 +812,7 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
     "14": "free                1      0      0     ",
     "15": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select ref.id from test join ref on (test.id = ref.id) group by ref.id;
 1

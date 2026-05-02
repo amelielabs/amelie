@@ -35,10 +35,10 @@ recover_init(Recover* self, Db* db, bool write_wal)
 	// set min subscription
 	cdc_min(db->cdc, &self->min_sub);
 
-	// set main user
-	Str main;
-	str_set(&main, "main", 4);
-	self->main      = catalog_find_user(&db->catalog, &main, true);
+	// set user
+	Str name;
+	str_set(&name, "amelie", 6);
+	self->user = catalog_find_user(&db->catalog, &name, true);
 
 	tr_init(&self->tr);
 	write_init(&self->write);
@@ -247,7 +247,7 @@ recover_next(Recover* self, Record* record)
 {
 	auto tr = &self->tr;
 	tr_reset(tr);
-	tr_set_user(tr, &self->main->rel);
+	tr_set_user(tr, &self->user->rel);
 	auto on_error = error_catch
 	(
 		// replay

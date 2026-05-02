@@ -28,7 +28,7 @@ select show('replication');
 select show('users')[0].name;
 
 # test: user
-select show('user', 'main').name;
+select show('user', 'amelie').name;
 
 # test: storages
 select show('storages');

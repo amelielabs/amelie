@@ -34,9 +34,9 @@ enum
 static void
 catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 {
-	Str main;
-	str_set(&main, "main", 4);
-	auto user = catalog_find_user(self, &main, false);
+	Str name;
+	str_set(&name, "amelie", 6);
+	auto user = catalog_find_user(self, &name, false);
 	if (user)
 		tr_set_user(tr, &user->rel);
 

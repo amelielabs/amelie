@@ -46,12 +46,12 @@ show storage main verbose;
 create table test (id int primary key);
 show tables;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test"
 }]
 select * from show tables;
 {
-  "user": "main",
+  "user": "amelie",
   "name": "test"
 }
 # test: show table
@@ -59,12 +59,12 @@ show table;
 error: show() ⟵ name argument is missing for 'table'
 show table test;
 {
-  "user": "main",
+  "user": "amelie",
   "name": "test"
 }
 select * from show table test;
 {
-  "user": "main",
+  "user": "amelie",
   "name": "test"
 }
 # test: show indexes
@@ -208,12 +208,12 @@ select 123::test_fn().a;
 4
 show functions;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test_fn"
 }]
 show functions verbose;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test_fn",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
   "type": 5,
@@ -229,7 +229,7 @@ show functions verbose;
 }]
 select * from show functions verbose;
 {
-  "user": "main",
+  "user": "amelie",
   "name": "test_fn",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
   "type": 5,
@@ -248,12 +248,12 @@ show function;
 error: show() ⟵ name argument is missing for 'function'
 show function test_fn;
 {
-  "user": "main",
+  "user": "amelie",
   "name": "test_fn"
 }
 show function test_fn verbose;
 {
-  "user": "main",
+  "user": "amelie",
   "name": "test_fn",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
   "type": 5,
@@ -269,7 +269,7 @@ show function test_fn verbose;
 }
 select * from show function test_fn;
 {
-  "user": "main",
+  "user": "amelie",
   "name": "test_fn"
 }
 # test: show wal
@@ -281,7 +281,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 829,
+  "writes_bytes": 835,
   "ops": 3
 }
 # test: show replicas

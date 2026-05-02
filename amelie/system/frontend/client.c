@@ -150,7 +150,7 @@ frontend_endpoint(Request* req, Client* client)
 	if (user)
 		endpoint->user.string = user->value;
 	else
-		str_set(&endpoint->user.string, "main", 4);
+		str_set(&endpoint->user.string, "amelie", 6);
 
 	// token
 	auto auth = http_find(http, "Authorization", 13);

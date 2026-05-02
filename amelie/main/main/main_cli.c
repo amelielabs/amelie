@@ -72,7 +72,7 @@ main_console(Main* self, MainClient* client)
 	auto user = opt_string_of(&self->endpoint.user);
 	Str prompt_user = *user;
 	if (str_empty(&prompt_user))
-		str_set(&prompt_user, "main", 4);
+		str_set(&prompt_user, "amelie", 6);
 
 	// ›
 	// ❯

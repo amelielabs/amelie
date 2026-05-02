@@ -12,7 +12,7 @@ create table test (id int primary key);
 explain select * from test group by id;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -26,7 +26,7 @@ explain select * from test group by id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -34,7 +34,7 @@ explain select * from test group by id;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 drop table test;
 # test: select from table group by column
@@ -56,7 +56,7 @@ select * from test;
 explain select id from test group by id;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -70,7 +70,7 @@ explain select id from test group by id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -78,7 +78,7 @@ explain select id from test group by id;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id;
 0
@@ -117,7 +117,7 @@ select id, 100 + id from test group by id;
 explain select * from (select id from test group by id) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -140,7 +140,7 @@ explain select * from (select id from test group by id) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -148,7 +148,7 @@ explain select * from (select id from test group by id) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id) t;
 0
@@ -166,7 +166,7 @@ select x from (select id, 100 + id as x from test group by id) t;
 explain select id from test group by id limit 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -182,7 +182,7 @@ explain select id from test group by id limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -190,7 +190,7 @@ explain select id from test group by id limit 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id limit 2;
 0
@@ -208,7 +208,7 @@ select id from test group by id limit 4;
 explain select id from test group by id limit 1 offset 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -226,7 +226,7 @@ explain select id from test group by id limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -234,7 +234,7 @@ explain select id from test group by id limit 1 offset 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id limit 1 offset 1;
 1
@@ -248,7 +248,7 @@ select id from test group by id limit 1 offset 4;
 explain select id from test group by id offset 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -264,7 +264,7 @@ explain select id from test group by id offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -272,7 +272,7 @@ explain select id from test group by id offset 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id offset 1;
 1
@@ -292,7 +292,7 @@ select id from test group by id offset 4;
 explain select * from (select id from test group by id limit 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -317,7 +317,7 @@ explain select * from (select id from test group by id limit 1) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -325,7 +325,7 @@ explain select * from (select id from test group by id limit 1) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id limit 1) t;
 0
@@ -345,7 +345,7 @@ select * from (select id from test group by id limit 4) t;
 explain select * from (select id from test group by id limit 1 offset 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -372,7 +372,7 @@ explain select * from (select id from test group by id limit 1 offset 1) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -380,7 +380,7 @@ explain select * from (select id from test group by id limit 1 offset 1) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id limit 1 offset 1) t;
 1
@@ -394,7 +394,7 @@ select * from (select id from test group by id limit 1 offset 4) t;
 explain select * from (select id from test group by id offset 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -419,7 +419,7 @@ explain select * from (select id from test group by id offset 1) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -427,7 +427,7 @@ explain select * from (select id from test group by id offset 1) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id offset 1) t;
 1
@@ -447,7 +447,7 @@ select * from (select id from test group by id offset 4) t;
 explain select id from test group by id having id >= 3;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      12    ",
@@ -465,7 +465,7 @@ explain select id from test group by id having id >= 3;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -473,7 +473,7 @@ explain select id from test group by id having id >= 3;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id having id >= 3;
 3
@@ -497,7 +497,7 @@ select id from test group by id having id >= 1 and id <= 3;
 explain select id from test group by id having id >= 1 limit 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -517,7 +517,7 @@ explain select id from test group by id having id >= 1 limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -525,7 +525,7 @@ explain select id from test group by id having id >= 1 limit 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id having id >= 1 limit 1;
 1
@@ -536,7 +536,7 @@ select id from test group by id having id >= 1 limit 2;
 explain select id from test group by id having id >= 1 limit 1 offset 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -558,7 +558,7 @@ explain select id from test group by id having id >= 1 limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -566,7 +566,7 @@ explain select id from test group by id having id >= 1 limit 1 offset 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id having id >= 1 limit 1 offset 1;
 3
@@ -578,7 +578,7 @@ select id from test group by id having id >= 1 limit 1 offset 3;
 explain select id from test group by id having id >= 1 offset 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -598,7 +598,7 @@ explain select id from test group by id having id >= 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -606,7 +606,7 @@ explain select id from test group by id having id >= 1 offset 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id having id >= 1 offset 1;
 3
@@ -621,7 +621,7 @@ select id from test group by id having id >= 1 offset 3;
 explain select * from (select id from test group by id having id >= 3) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      12    ",
@@ -648,7 +648,7 @@ explain select * from (select id from test group by id having id >= 3) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -656,7 +656,7 @@ explain select * from (select id from test group by id having id >= 3) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id having id >= 3) t;
 3
@@ -665,7 +665,7 @@ select * from (select id from test group by id having id >= 3) t;
 explain select * from (select id from test group by id having id >= 1 limit 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -694,7 +694,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -702,7 +702,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id having id >= 1 limit 1) t;
 1
@@ -713,7 +713,7 @@ select * from (select id from test group by id having id >= 1 limit 2) t;
 explain select * from (select id from test group by id having id >= 1 limit 1 offset 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -744,7 +744,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -752,7 +752,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id having id >= 1 limit 1 offset 1) t;
 3
@@ -764,7 +764,7 @@ select * from (select id from test group by id having id >= 1 limit 1 offset 3) 
 explain select * from (select id from test group by id having id >= 1 offset 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "int                 3      -      0     # 1",
@@ -793,7 +793,7 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -801,7 +801,7 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id having id >= 1 offset 1) t;
 3
@@ -816,7 +816,7 @@ select * from (select id from test group by id having id >= 1 offset 3) t;
 explain select id from test group by id order by id;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -833,7 +833,7 @@ explain select id from test group by id order by id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -841,7 +841,7 @@ explain select id from test group by id order by id;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id order by id;
 0
@@ -856,7 +856,7 @@ error: select id from test group by id order by ❰data❱ ⟵ column 'data' mus
 explain select id from test group by id order by id desc;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -873,7 +873,7 @@ explain select id from test group by id order by id desc;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -881,7 +881,7 @@ explain select id from test group by id order by id desc;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id order by id desc;
 4
@@ -893,7 +893,7 @@ select id from test group by id order by id desc;
 explain select * from (select id from test group by id order by id desc) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -919,7 +919,7 @@ explain select * from (select id from test group by id order by id desc) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -927,7 +927,7 @@ explain select * from (select id from test group by id order by id desc) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id order by id desc) t;
 4
@@ -939,7 +939,7 @@ select * from (select id from test group by id order by id desc) t;
 explain select id from test group by id order by id asc limit 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -960,7 +960,7 @@ explain select id from test group by id order by id asc limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -968,7 +968,7 @@ explain select id from test group by id order by id asc limit 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id order by id asc limit 1;
 0
@@ -983,7 +983,7 @@ select id from test group by id order by id asc limit 3;
 explain select id from test group by id order by id asc limit 1 offset 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1006,7 +1006,7 @@ explain select id from test group by id order by id asc limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1014,7 +1014,7 @@ explain select id from test group by id order by id asc limit 1 offset 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id order by id asc limit 1 offset 1;
 1
@@ -1026,7 +1026,7 @@ select id from test group by id order by id asc limit 1 offset 3;
 explain select id from test group by id order by id asc offset 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1047,7 +1047,7 @@ explain select id from test group by id order by id asc offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1055,7 +1055,7 @@ explain select id from test group by id order by id asc offset 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id order by id asc offset 1;
 1
@@ -1073,7 +1073,7 @@ select id from test group by id order by id asc offset 3;
 explain select id from test group by id order by id desc limit 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1094,7 +1094,7 @@ explain select id from test group by id order by id desc limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1102,7 +1102,7 @@ explain select id from test group by id order by id desc limit 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id order by id desc limit 1;
 4
@@ -1117,7 +1117,7 @@ select id from test group by id order by id desc limit 3;
 explain select id from test group by id order by id desc limit 1 offset 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1140,7 +1140,7 @@ explain select id from test group by id order by id desc limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1148,7 +1148,7 @@ explain select id from test group by id order by id desc limit 1 offset 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id order by id desc limit 1 offset 1;
 3
@@ -1160,7 +1160,7 @@ select id from test group by id order by id desc limit 1 offset 3;
 explain select id from test group by id order by id desc offset 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1181,7 +1181,7 @@ explain select id from test group by id order by id desc offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1189,7 +1189,7 @@ explain select id from test group by id order by id desc offset 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select id from test group by id order by id desc offset 0;
 4
@@ -1213,7 +1213,7 @@ select id from test group by id order by id desc offset 3;
 explain select * from (select id from test group by id order by id asc limit 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1243,7 +1243,7 @@ explain select * from (select id from test group by id order by id asc limit 1) 
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1251,7 +1251,7 @@ explain select * from (select id from test group by id order by id asc limit 1) 
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id order by id asc limit 0) t;
 select * from (select id from test group by id order by id asc limit 1) t;
@@ -1267,7 +1267,7 @@ select * from (select id from test group by id order by id asc limit 3) t;
 explain select * from (select id from test group by id order by id asc limit 1 offset 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1299,7 +1299,7 @@ explain select * from (select id from test group by id order by id asc limit 1 o
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1307,7 +1307,7 @@ explain select * from (select id from test group by id order by id asc limit 1 o
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id order by id asc limit 1 offset 1) t;
 1
@@ -1319,7 +1319,7 @@ select * from (select id from test group by id order by id asc limit 1 offset 3)
 explain select * from (select id from test group by id order by id asc offset 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1349,7 +1349,7 @@ explain select * from (select id from test group by id order by id asc offset 1)
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1357,7 +1357,7 @@ explain select * from (select id from test group by id order by id asc offset 1)
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id order by id asc offset 0) t;
 0
@@ -1381,7 +1381,7 @@ select * from (select id from test group by id order by id asc offset 3) t;
 explain select * from (select id from test group by id order by id desc limit 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1411,7 +1411,7 @@ explain select * from (select id from test group by id order by id desc limit 1)
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1419,7 +1419,7 @@ explain select * from (select id from test group by id order by id desc limit 1)
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id order by id desc limit 0) t;
 select * from (select id from test group by id order by id desc limit 1) t;
@@ -1435,7 +1435,7 @@ select * from (select id from test group by id order by id desc limit 3) t;
 explain select * from (select id from test group by id order by id desc limit 1 offset 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1467,7 +1467,7 @@ explain select * from (select id from test group by id order by id desc limit 1 
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1475,7 +1475,7 @@ explain select * from (select id from test group by id order by id desc limit 1 
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id order by id desc limit 1 offset 1) t;
 3
@@ -1487,7 +1487,7 @@ select * from (select id from test group by id order by id desc limit 1 offset 3
 explain select * from (select id from test group by id order by id desc offset 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",
@@ -1517,7 +1517,7 @@ explain select * from (select id from test group by id order by id desc offset 1
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1525,7 +1525,7 @@ explain select * from (select id from test group by id order by id desc offset 1
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select id from test group by id order by id desc offset 0) t;
 4
@@ -1549,7 +1549,7 @@ select * from (select id from test group by id order by id desc offset 3) t;
 explain select data from test where data > 0 group by data having data >= 1 order by data;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
@@ -1570,7 +1570,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # main.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1582,7 +1582,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select data from test where data > 0 group by data having data >= 1 order by data;
 1
@@ -1591,7 +1591,7 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select data from test where data > 0 group by data having data >= 1 order by data limit 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
@@ -1616,7 +1616,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # main.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1628,7 +1628,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select data from test where data > 0 group by data having data >= 1 order by data limit 1;
 1
@@ -1636,7 +1636,7 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
@@ -1663,7 +1663,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # main.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1675,7 +1675,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1;
 2
@@ -1683,7 +1683,7 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select data from test where data > 0 group by data having data >= 1 order by data offset 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
@@ -1708,7 +1708,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # main.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1720,7 +1720,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select data from test where data > 0 group by data having data >= 1 order by data offset 1;
 2
@@ -1728,7 +1728,7 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
@@ -1758,7 +1758,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # main.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1770,7 +1770,7 @@ explain select * from (select data from test where data > 0 group by data having
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select data from test where data > 0 group by data having data >= 1 order by data) t;
 1
@@ -1779,7 +1779,7 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
@@ -1813,7 +1813,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # main.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1825,7 +1825,7 @@ explain select * from (select data from test where data > 0 group by data having
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1) t;
 1
@@ -1833,7 +1833,7 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
@@ -1867,7 +1867,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # main.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1879,7 +1879,7 @@ explain select * from (select data from test where data > 0 group by data having
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1) t;
 2
@@ -1887,7 +1887,7 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
@@ -1923,7 +1923,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # main.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1935,7 +1935,7 @@ explain select * from (select data from test where data > 0 group by data having
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1) t;
 2
@@ -1943,7 +1943,7 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      14    ",
@@ -1977,7 +1977,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # main.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1989,7 +1989,7 @@ explain select * from (select data from test where data > 0 group by data having
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1) t;
 2
@@ -2000,7 +2000,7 @@ insert into test generate 10000;
 explain select * from (select count(*), sum(2 * id) from test group by id) t;
 {
   "main": {
-    "00": "send_all            0      0      48    # main.test (select)",
+    "00": "send_all            0      0      48    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
@@ -2027,7 +2027,7 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t;
   },
   "pushdown": {
     "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      12    # main.test (primary) [main] part",
+    "01": "table_open          1      0      12    # amelie.test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -2041,7 +2041,7 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select count(*), sum(2 * id) from test group by id) t;
 1 │ 0
@@ -12047,7 +12047,7 @@ select * from (select count(*), sum(2 * id) from test group by id) t;
 explain select count(*) from (select count(*) from test group by id) t;
 {
   "main": {
-    "00": "send_all            0      0      40    # main.test (select)",
+    "00": "send_all            0      0      40    # amelie.test (select)",
     "01": "recv_aggs           1      0      32    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -12084,7 +12084,7 @@ explain select count(*) from (select count(*) from test group by id) t;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # main.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -12094,7 +12094,7 @@ explain select count(*) from (select count(*) from test group by id) t;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select count(*) from (select count(*) from test group by id) t;
 10000

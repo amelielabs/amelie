@@ -36,17 +36,17 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # main.test [main]",
+    "00": "table_prepare       0      -      -     # amelie.test [main]",
     "01": "jmp                 2      0      0     ",
     "02": "upsert              0      2      -1    ",
     "03": "free                0      0      0     ",
     "04": "ret                 -1     0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert"]]
+  "access": [["amelie.test", "shared_rw", "insert"]]
 }
 insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
 select * from test;
@@ -65,27 +65,27 @@ explain insert into test values(1, 0) on conflict do nothing;
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # main.test [main]",
+    "00": "table_prepare       0      -      -     # amelie.test [main]",
     "01": "jmp                 2      0      0     ",
     "02": "upsert              0      2      -1    ",
     "03": "free                0      0      0     ",
     "04": "ret                 -1     0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert"]]
+  "access": [["amelie.test", "shared_rw", "insert"]]
 }
 explain insert into test values(1, 0) on conflict do resolve;
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # main.test [main]",
+    "00": "table_prepare       0      -      -     # amelie.test [main]",
     "01": "jmp                 5      0      0     ",
     "02": "string              1      0      0     # unique key constraint violation",
     "03": "push                1      0      0     ",
@@ -94,7 +94,7 @@ explain insert into test values(1, 0) on conflict do resolve;
     "06": "free                0      0      0     ",
     "07": "ret                 -1     0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert"]]
+  "access": [["amelie.test", "shared_rw", "insert"]]
 }
 insert into test values(1, 0) on conflict do resolve;
 insert into test values(1, 0) on conflict do resolve;
@@ -108,11 +108,11 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1;
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # main.test [main]",
+    "00": "table_prepare       0      -      -     # amelie.test [main]",
     "01": "jmp                 9      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -125,7 +125,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1;
     "10": "free                0      0      0     ",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert", "update"]]
+  "access": [["amelie.test", "shared_rw", "insert", "update"]]
 }
 insert into test values(1, 0) on conflict do update set data = data + 1;
 select * from test;
@@ -149,11 +149,11 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # main.test [main]",
+    "00": "table_prepare       0      -      -     # amelie.test [main]",
     "01": "jmp                 9      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -166,7 +166,7 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
     "10": "free                0      0      0     ",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert", "update"]]
+  "access": [["amelie.test", "shared_rw", "insert", "update"]]
 }
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
@@ -185,11 +185,11 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # main.test [main]",
+    "00": "table_prepare       0      -      -     # amelie.test [main]",
     "01": "jmp                 11     0      0     ",
     "02": "bool                1      1      0     ",
     "03": "jntr                11     1      0     ",
@@ -204,7 +204,7 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
     "12": "free                0      0      0     ",
     "13": "ret                 -1     0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert", "update"]]
+  "access": [["amelie.test", "shared_rw", "insert", "update"]]
 }
 insert into test values (1, 0) on conflict do update set data = data + 1 where true;
 select * from test;
@@ -224,11 +224,11 @@ explain insert into test values (1, 123) on conflict do update set data = data +
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # main.test [main]",
+    "00": "table_prepare       0      -      -     # amelie.test [main]",
     "01": "jmp                 9      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -241,7 +241,7 @@ explain insert into test values (1, 123) on conflict do update set data = data +
     "10": "free                0      0      0     ",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert", "update"]]
+  "access": [["amelie.test", "shared_rw", "insert", "update"]]
 }
 select * from test;
 1 │ 123
@@ -254,11 +254,11 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # main.test [main]",
+    "00": "table_prepare       0      -      -     # amelie.test [main]",
     "01": "jmp                 13     0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -275,7 +275,7 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
     "14": "free                0      0      0     ",
     "15": "ret                 -1     0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert", "update"]]
+  "access": [["amelie.test", "shared_rw", "insert", "update"]]
 }
 select * from test;
 1 │ 48 │ null
@@ -363,14 +363,14 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_prepare       1      -      -     # main.test [main]",
+    "01": "table_prepare       1      -      -     # amelie.test [main]",
     "02": "jmp                 15     0      0     ",
     "03": "int                 2      -      0     # 1",
     "04": "push                2      0      0     ",
@@ -388,7 +388,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert", "update"]]
+  "access": [["amelie.test", "shared_rw", "insert", "update"]]
 }
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 1 │ 1
@@ -406,14 +406,14 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_prepare       1      -      -     # main.test [main]",
+    "01": "table_prepare       1      -      -     # amelie.test [main]",
     "02": "jmp                 8      0      0     ",
     "03": "table_readi32       2      1      -     # id",
     "04": "push                2      0      0     ",
@@ -424,7 +424,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert"]]
+  "access": [["amelie.test", "shared_rw", "insert"]]
 }
 insert into test values(1, 0) on conflict do nothing returning *;
 1 │ 0
@@ -441,14 +441,14 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_prepare       1      -      -     # main.test [main]",
+    "01": "table_prepare       1      -      -     # amelie.test [main]",
     "02": "jmp                 15     0      0     ",
     "03": "int                 2      -      0     # 1",
     "04": "push                2      0      0     ",
@@ -466,7 +466,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert", "update"]]
+  "access": [["amelie.test", "shared_rw", "insert", "update"]]
 }
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 1 │ 0
@@ -483,14 +483,14 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
 {
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # main.test (insert, closing)",
+    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_prepare       1      -      -     # main.test [main]",
+    "01": "table_prepare       1      -      -     # amelie.test [main]",
     "02": "jmp                 8      0      0     ",
     "03": "table_readi32       2      1      -     # id",
     "04": "push                2      0      0     ",
@@ -501,7 +501,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert"]]
+  "access": [["amelie.test", "shared_rw", "insert"]]
 }
 insert into test values(1, 0) on conflict do nothing returning *;
 1 │ 0
@@ -592,18 +592,18 @@ insert into src values (0, 0), (1, 0);
 explain insert into test select * from src on conflict do update set data = data + 1 returning *;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.src (select)",
+    "00": "send_all            0      0      32    # amelie.src (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "dup                 2      1      0     ",
-    "04": "send_shard          0      2      0     # main.test (insert, closing)",
+    "04": "send_shard          0      2      0     # amelie.test (insert, closing)",
     "05": "union               2      0      0     ",
     "06": "recv                2      0      0     ",
     "07": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # main.src (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.src (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -613,7 +613,7 @@ explain insert into test select * from src on conflict do update set data = data
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
     "10": "set                 0      2      0     ",
-    "11": "table_prepare       2      -      -     # main.test [main]",
+    "11": "table_prepare       2      -      -     # amelie.test [main]",
     "12": "jmp                 25     0      0     ",
     "13": "int                 3      -      0     # 1",
     "14": "push                3      0      0     ",
@@ -631,7 +631,7 @@ explain insert into test select * from src on conflict do update set data = data
     "26": "free                2      0      0     ",
     "27": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared_rw", "insert", "update"], ["main.src", "shared", "select"]]
+  "access": [["amelie.test", "shared_rw", "insert", "update"], ["amelie.src", "shared", "select"]]
 }
 insert into test select * from src on conflict do update set data = data + 1 returning *;
 0 │ 6

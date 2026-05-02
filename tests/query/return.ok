@@ -87,7 +87,7 @@ explain begin declare x int; select id into x from test; select x; end;
 {
   "main": {
     "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # main.test (select, closing)",
+    "01": "send_all            0      0      32    # amelie.test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "var_set             0      0      1     ",
@@ -97,7 +97,7 @@ explain begin declare x int; select id into x from test; select x; end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -105,7 +105,7 @@ explain begin declare x int; select id into x from test; select x; end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 begin declare x int; select id into x from test; select x; end;
 1
@@ -129,12 +129,12 @@ create function test() begin end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -150,12 +150,12 @@ begin end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -173,12 +173,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "string              0      0      0     # 123",
       "01": "ret                 -1     0      -     "
@@ -204,12 +204,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -227,12 +227,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -250,12 +250,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "null                0      0      0     ",
       "01": "ret                 0      0      -     "
@@ -280,12 +280,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "null                0      0      0     ",
       "01": "ret                 0      0      -     "
@@ -304,12 +304,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "int                 0      -      0     # 123",
       "01": "ret                 0      0      -     "
@@ -354,12 +354,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -377,12 +377,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -399,12 +399,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "null                0      0      0     ",
       "01": "ret                 0      0      -     "
@@ -423,12 +423,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "set                 0      2      0     ",
       "01": "push_int            -      0      0     # 1",
@@ -443,7 +443,7 @@ select test();
 1
 explain execute test();
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
@@ -465,12 +465,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "var                 0      0      0     ",
@@ -483,7 +483,7 @@ select test();
 null
 explain execute test();
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "var                 0      0      0     ",
@@ -504,12 +504,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "set                 0      2      0     ",
@@ -527,7 +527,7 @@ select test();
 1
 explain execute test();
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "set                 0      2      0     ",
@@ -581,12 +581,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "var                 0      0      0     ",
@@ -599,7 +599,7 @@ select test();
 null
 explain execute test();
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "var                 0      0      0     ",
@@ -618,12 +618,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 123",
@@ -638,7 +638,7 @@ select test();
 123
 explain execute test();
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 123",
@@ -661,12 +661,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 0",
@@ -694,12 +694,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      1      0     ",
@@ -729,12 +729,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      1      0     ",
@@ -764,12 +764,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      0      0     ",
@@ -803,16 +803,16 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared", "select"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      32    # main.src (select, closing)",
+      "01": "send_all            0      0      32    # amelie.src (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_set             0      0      1     ",
@@ -830,7 +830,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # main.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -838,7 +838,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared", "select"]]
+    "access": [["amelie.src", "shared", "select"]]
   }]
 }
 select test();
@@ -857,16 +857,16 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared", "select"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      32    # main.src (select, closing)",
+      "01": "send_all            0      0      32    # amelie.src (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_set             0      0      1     ",
@@ -884,7 +884,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # main.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -892,7 +892,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared", "select"]]
+    "access": [["amelie.src", "shared", "select"]]
   }]
 }
 select test();
@@ -910,18 +910,18 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared", "select"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      1      0     ",
       "02": "jntr                10     0      0     ",
-      "03": "send_all            0      0      32    # main.src (select)",
+      "03": "send_all            0      0      32    # amelie.src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "var_set             0      0      1     ",
@@ -934,7 +934,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # main.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -942,7 +942,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared", "select"]]
+    "access": [["amelie.src", "shared", "select"]]
   }]
 }
 select test();
@@ -960,18 +960,18 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared", "select"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      0      0     ",
       "02": "jntr                10     0      0     ",
-      "03": "send_all            0      0      32    # main.src (select)",
+      "03": "send_all            0      0      32    # amelie.src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "var_set             0      0      1     ",
@@ -984,7 +984,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # main.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -992,7 +992,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared", "select"]]
+    "access": [["amelie.src", "shared", "select"]]
   }]
 }
 select test();
@@ -1013,18 +1013,18 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared", "select"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 0",
       "02": "var_set             0      0      0     ",
-      "03": "send_all            0      0      32    # main.src (select)",
+      "03": "send_all            0      0      32    # amelie.src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "dup                 0      1      0     ",
@@ -1047,7 +1047,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # main.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1055,7 +1055,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared", "select"]]
+    "access": [["amelie.src", "shared", "select"]]
   }]
 }
 select test();
@@ -1076,18 +1076,18 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared", "select"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 0",
       "02": "var_set             0      0      0     ",
-      "03": "send_all            0      0      32    # main.src (select)",
+      "03": "send_all            0      0      32    # amelie.src (select)",
       "04": "union               1      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "dup                 0      1      0     ",
@@ -1110,7 +1110,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # main.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1118,7 +1118,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared", "select"]]
+    "access": [["amelie.src", "shared", "select"]]
   }]
 }
 select test();
@@ -1138,12 +1138,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 0",
@@ -1187,12 +1187,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 0",
@@ -1231,25 +1231,25 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared_rw", "insert"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared_rw", "insert"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "set_ptr             1      -      0     ",
-      "01": "send_shard          0      1      0     # main.src (insert, closing)",
+      "01": "send_shard          0      1      0     # amelie.src (insert, closing)",
       "02": "ret                 -1     0      -     ",
       "03": "int                 0      -      0     # 1",
       "04": "ret                 -1     0      -     "
     },
     "pushdown": {
-      "00": "insert              -      -      -     # main.src [main]",
+      "00": "insert              -      -      -     # amelie.src [main]",
       "01": "ret                 -1     0      -     "
     },
-    "access": [["main.src", "shared_rw", "insert"]]
+    "access": [["amelie.src", "shared_rw", "insert"]]
   }]
 }
 select test();
@@ -1264,16 +1264,16 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared_rw", "insert"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared_rw", "insert"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "set_ptr             1      -      0     ",
-      "01": "send_shard          0      1      0     # main.src (insert, closing)",
+      "01": "send_shard          0      1      0     # amelie.src (insert, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "first               0      1      0     ",
@@ -1283,7 +1283,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # main.src [main]",
+      "01": "table_prepare       1      -      -     # amelie.src [main]",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1295,7 +1295,7 @@ explain select test();
       "10": "free                1      0      0     ",
       "11": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared_rw", "insert"]]
+    "access": [["amelie.src", "shared_rw", "insert"]]
   }]
 }
 select test();
@@ -1321,17 +1321,17 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared_rw", "insert"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared_rw", "insert"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "set_ptr             1      -      0     ",
-      "02": "send_shard          0      1      0     # main.src (insert, closing)",
+      "02": "send_shard          0      1      0     # amelie.src (insert, closing)",
       "03": "union               1      0      0     ",
       "04": "recv                1      0      0     ",
       "05": "var_set             0      0      1     ",
@@ -1341,7 +1341,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # main.src [main]",
+      "01": "table_prepare       1      -      -     # amelie.src [main]",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1353,7 +1353,7 @@ explain select test();
       "10": "free                1      0      0     ",
       "11": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared_rw", "insert"]]
+    "access": [["amelie.src", "shared_rw", "insert"]]
   }]
 }
 select test();
@@ -1372,19 +1372,19 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared_rw", "insert"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared_rw", "insert"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      1      0     ",
       "02": "jntr                11     0      0     ",
       "03": "set_ptr             1      -      0     ",
-      "04": "send_shard          0      1      0     # main.src (insert)",
+      "04": "send_shard          0      1      0     # amelie.src (insert)",
       "05": "union               1      0      0     ",
       "06": "recv                1      0      0     ",
       "07": "var_set             0      0      1     ",
@@ -1397,7 +1397,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # main.src [main]",
+      "01": "table_prepare       1      -      -     # amelie.src [main]",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1409,7 +1409,7 @@ explain select test();
       "10": "free                1      0      0     ",
       "11": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared_rw", "insert"]]
+    "access": [["amelie.src", "shared_rw", "insert"]]
   }]
 }
 select test();
@@ -1428,19 +1428,19 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared_rw", "insert"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared_rw", "insert"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "bool                0      0      0     ",
       "02": "jntr                11     0      0     ",
       "03": "set_ptr             1      -      0     ",
-      "04": "send_shard          0      1      0     # main.src (insert)",
+      "04": "send_shard          0      1      0     # amelie.src (insert)",
       "05": "union               1      0      0     ",
       "06": "recv                1      0      0     ",
       "07": "var_set             0      0      1     ",
@@ -1453,7 +1453,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # main.src [main]",
+      "01": "table_prepare       1      -      -     # amelie.src [main]",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1465,7 +1465,7 @@ explain select test();
       "10": "free                1      0      0     ",
       "11": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared_rw", "insert"]]
+    "access": [["amelie.src", "shared_rw", "insert"]]
   }]
 }
 select test();
@@ -1483,12 +1483,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "json                0      0      0     ",
@@ -1520,10 +1520,10 @@ explain select test();
   }]
 }
 select test();
-[["main", "src"]]
+[["amelie", "src"]]
 drop function test;
-select `user`, name from main.show('tables');
-"main" │ "src"
+select `user`, name from amelie.show('tables');
+"amelie" │ "src"
 create function test() return json
 begin
 	declare list json := [];
@@ -1535,12 +1535,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "json                0      0      0     ",
@@ -1575,7 +1575,7 @@ explain select test();
 }
 select test();
 [{
-  "schema": "main",
+  "schema": "amelie",
   "name": "src"
 }]
 drop function test;
@@ -1585,9 +1585,9 @@ select
 	"name": it.name
 })
 from
-	main.show('tables') as it;
+	amelie.show('tables') as it;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "src"
 }]
 create function test() return json
@@ -1596,18 +1596,18 @@ begin
 	select
 		[] -> self::append({"schema": it.user, "name": it.name})
 	into
-		list from main.show('tables') as it;
+		list from amelie.show('tables') as it;
 	return list;
 end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "set                 0      1      1     ",
@@ -1660,7 +1660,7 @@ explain select test();
 }
 select test();
 [{
-  "schema": "main",
+  "schema": "amelie",
   "name": "src"
 }]
 drop function test;
@@ -1669,18 +1669,18 @@ begin
 	declare list json;
 	select [] -> append(self, {"schema": it.user, "name": it.name})
 	  into list
-	  from main.show('tables') as it;
+	  from amelie.show('tables') as it;
 	return list;
 end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "set                 0      1      1     ",
@@ -1733,7 +1733,7 @@ explain select test();
 }
 select test();
 [{
-  "schema": "main",
+  "schema": "amelie",
   "name": "src"
 }]
 drop function test;
@@ -1746,16 +1746,16 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "close               0      0      0     ",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.src", "shared", "select"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.src", "shared", "select"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      32    # main.src (select, closing)",
+      "01": "send_all            0      0      32    # amelie.src (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_mov             0      0      1     ",
@@ -1764,7 +1764,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # main.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1772,7 +1772,7 @@ explain select test();
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.src", "shared", "select"]]
+    "access": [["amelie.src", "shared", "select"]]
   }]
 }
 select test();
@@ -1804,12 +1804,12 @@ explain select test(123);
 {
   "main": {
     "00": "push_int            -      0      0     # 123",
-    "01": "call_udf            0      -      -     # main.test()",
+    "01": "call_udf            0      -      -     # amelie.test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "var                 0      0      1     ",
       "01": "var                 1      0      1     ",
@@ -1834,12 +1834,12 @@ explain select test(-1);
 {
   "main": {
     "00": "push_int            -      0      0     # -1",
-    "01": "call_udf            0      -      -     # main.test()",
+    "01": "call_udf            0      -      -     # amelie.test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "int                 0      -      0     # 0",

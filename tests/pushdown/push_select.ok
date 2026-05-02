@@ -6,14 +6,14 @@ insert into test (id) values (1), (2), (3);
 explain select * from test;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # main.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -23,7 +23,7 @@ explain select * from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from test;
 1 │ 0
@@ -33,7 +33,7 @@ select * from test;
 explain select * from test where id > 1;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -41,7 +41,7 @@ explain select * from test where id > 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open          1      0      13    # main.test (primary) [main] part",
+    "02": "table_open          1      0      13    # amelie.test (primary) [main] part",
     "03": "table_readi32       2      1      -     # id",
     "04": "int                 3      -      0     # 1",
     "05": "gtii                4      2      3     ",
@@ -55,7 +55,7 @@ explain select * from test where id > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from test where id > 1;
 3 │ 0
@@ -68,7 +68,7 @@ explain select * from test where id = 1;
 {
   "main": {
     "00": "push_int            -      0      0     # 1",
-    "01": "send_lookup         0      -      32    # main.test (select, closing)",
+    "01": "send_lookup         0      -      32    # amelie.test (select, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
@@ -76,7 +76,7 @@ explain select * from test where id = 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open          1      0      12    # main.test (primary) [main] point_lookup, part",
+    "02": "table_open          1      0      12    # amelie.test (primary) [main] point_lookup, part",
     "03": "table_readi32       2      1      -     # id",
     "04": "int                 3      -      0     # 1",
     "05": "equii               4      2      3     ",
@@ -89,7 +89,7 @@ explain select * from test where id = 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from test where id = 1;
 1 │ 0
@@ -108,14 +108,14 @@ select (select test.id) from test;
 explain select (select (select (test.id))) from test;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -123,7 +123,7 @@ explain select (select (select (test.id))) from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select (select (select (test.id))) from test;
 1
@@ -132,14 +132,14 @@ select (select (select (test.id))) from test;
 explain select (select (select test.id)) from test;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select, closing)",
+    "00": "send_all            0      0      32    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -147,7 +147,7 @@ explain select (select (select test.id)) from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select (select (select test.id)) from test;
 1
@@ -157,16 +157,16 @@ select (select (select test.id)) from test;
 explain select (select (select id from test t)) from test;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      13    # main.test (primary) [main] part",
+    "01": "table_open          1      0      13    # amelie.test (primary) [main] part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      32     8     # main.test (primary) [main] ",
+    "03": "table_open          3      32     8     # amelie.test (primary) [main] ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -179,7 +179,7 @@ explain select (select (select id from test t)) from test;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "exclusive_ro", "select"]]
 }
 # test: select (select (select from table)) from table
 create table ref (id int primary key, data int default 0);
@@ -187,16 +187,16 @@ insert into ref (id) values (1), (2), (3);
 explain select (select (select id from ref)) from test;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      13    # main.test (primary) [main] part",
+    "01": "table_open          1      0      13    # amelie.test (primary) [main] part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      32     8     # main.ref (primary) [main] ",
+    "03": "table_open          3      32     8     # amelie.ref (primary) [main] ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -209,7 +209,7 @@ explain select (select (select id from ref)) from test;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.ref", "exclusive_ro", "select"], ["main.test", "shared", "select"]]
+  "access": [["amelie.ref", "exclusive_ro", "select"], ["amelie.test", "shared", "select"]]
 }
 select (select (select id from ref)) from test;
 1
@@ -221,16 +221,16 @@ error: explain select * from test where (❰select❱ ⟵ subquery must return o
 explain select * from test where (select id from test t);
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      17    # main.test (primary) [main] part",
+    "01": "table_open          1      0      17    # amelie.test (primary) [main] part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      32     8     # main.test (primary) [main] ",
+    "03": "table_open          3      32     8     # amelie.test (primary) [main] ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -247,22 +247,22 @@ explain select * from test where (select id from test t);
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "exclusive_ro", "select"]]
 }
 # test: select from table where (select from table)
 explain select * from test where (select id from ref);
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      17    # main.test (primary) [main] part",
+    "01": "table_open          1      0      17    # amelie.test (primary) [main] part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      32     8     # main.ref (primary) [main] ",
+    "03": "table_open          3      32     8     # amelie.ref (primary) [main] ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -279,7 +279,7 @@ explain select * from test where (select id from ref);
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select * from test where (select id from ref);
 1 │ 0
@@ -289,18 +289,18 @@ select * from test where (select id from ref);
 explain select * from test where exists (select 1 from ref where test.id = ref.id);
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      21    # main.test (primary) [main] part",
+    "01": "table_open          1      0      21    # amelie.test (primary) [main] part",
     "02": "set                 2      1      0     ",
     "03": "table_readi32       3      1      -     # id",
     "04": "push                3      0      0     ",
-    "05": "table_open          3      32     12    # main.ref (primary) [main] point_lookup",
+    "05": "table_open          3      32     12    # amelie.ref (primary) [main] point_lookup",
     "06": "table_readi32       4      1      -     # id",
     "07": "table_readi32       5      3      -     # id",
     "08": "equii               6      4      5     ",
@@ -319,7 +319,7 @@ explain select * from test where exists (select 1 from ref where test.id = ref.i
     "21": "free                1      0      0     ",
     "22": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"], ["main.ref", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
 }
 select * from test where exists (select 1 from ref where test.id = ref.id);
 1 │ 0

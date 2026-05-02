@@ -699,7 +699,7 @@ create table test (id int primary key)
              z (id "00000000-0000-0000-0000-000000000002");
 show tables verbose;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test",
   "id": "00000000-0000-0000-0000-000000000000",
   "unlogged": false,

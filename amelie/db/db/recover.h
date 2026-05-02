@@ -22,7 +22,7 @@ struct Recover
 	uint64_t  ops;
 	uint64_t  size;
 	uint64_t  min_sub;
-	User*     main;
+	User*     user;
 	Db*       db;
 };
 

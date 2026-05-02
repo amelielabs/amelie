@@ -26,7 +26,7 @@ error: execute reverse(1, ❰)❱ ⟵ EXECUTE arguments mismatch
 # test: execute
 explain execute reverse([1,2,3]);
 {
-  "function": "main.reverse",
+  "function": "amelie.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",
@@ -87,12 +87,12 @@ explain select reverse([1,2,3]);
 {
   "main": {
     "00": "push_json           0      0      0     ",
-    "01": "call_udf            0      -      -     # main.reverse()",
+    "01": "call_udf            0      -      -     # amelie.reverse()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.reverse", "call", "execute"]],
+  "access": [["amelie.reverse", "call", "execute"]],
   "calls": [{
-    "function": "main.reverse",
+    "function": "amelie.reverse",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "json                0      0      0     ",
@@ -159,17 +159,17 @@ end;
 {
   "main": {
     "00": "int                 0      -      0     # 1",
-    "01": "call_udf            1      -      -     # main.fn()",
+    "01": "call_udf            1      -      -     # amelie.fn()",
     "02": "close               0      0      0     ",
     "03": "int                 2      -      0     # 1",
     "04": "ret                 2      0      -     "
   },
-  "access": [["main.fn", "call", "execute"], ["main.test", "shared", "select"]],
+  "access": [["amelie.fn", "call", "execute"], ["amelie.test", "shared", "select"]],
   "calls": [{
-    "function": "main.fn",
+    "function": "amelie.fn",
     "main": {
       "00": "push_nulls          1      0      0     ",
-      "01": "send_all            0      0      32    # main.test (select, closing)",
+      "01": "send_all            0      0      32    # amelie.test (select, closing)",
       "02": "union               1      0      0     ",
       "03": "recv                1      0      0     ",
       "04": "var_set             0      0      1     ",
@@ -179,7 +179,7 @@ end;
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # main.test (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -187,7 +187,7 @@ end;
       "06": "free                1      0      0     ",
       "07": "ret                 0      0      -     "
     },
-    "access": [["main.test", "shared", "select"]]
+    "access": [["amelie.test", "shared", "select"]]
   }]
 }
 begin
@@ -217,28 +217,28 @@ explain select c(123);
 {
   "main": {
     "00": "push_int            -      0      0     # 123",
-    "01": "call_udf            0      -      -     # main.c()",
+    "01": "call_udf            0      -      -     # amelie.c()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.c", "call", "execute"], ["main.b", "call", "execute"], ["main.a", "call", "execute"]],
+  "access": [["amelie.c", "call", "execute"], ["amelie.b", "call", "execute"], ["amelie.a", "call", "execute"]],
   "calls": [{
-    "function": "main.c",
+    "function": "amelie.c",
     "main": {
       "00": "push_var            0      1      0     ",
-      "01": "call_udf            0      -      -     # main.b()",
+      "01": "call_udf            0      -      -     # amelie.b()",
       "02": "ret                 0      0      -     "
     },
-    "access": [["main.b", "call", "execute"], ["main.a", "call", "execute"]]
+    "access": [["amelie.b", "call", "execute"], ["amelie.a", "call", "execute"]]
   }, {
-    "function": "main.b",
+    "function": "amelie.b",
     "main": {
       "00": "push_var            0      1      0     ",
-      "01": "call_udf            0      -      -     # main.a()",
+      "01": "call_udf            0      -      -     # amelie.a()",
       "02": "ret                 0      0      -     "
     },
-    "access": [["main.a", "call", "execute"]]
+    "access": [["amelie.a", "call", "execute"]]
   }, {
-    "function": "main.a",
+    "function": "amelie.a",
     "main": {
       "00": "var                 0      0      1     ",
       "01": "ret                 0      0      -     "

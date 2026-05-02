@@ -61,7 +61,7 @@ test_session_connect(TestSession* self, Str* uri, Str* cafile)
 
 	// set defaults
 	if (opt_string_empty(&endpoint->user))
-		opt_string_set_raw(&endpoint->user, "main", 4);
+		opt_string_set_raw(&endpoint->user, "amelie", 6);
 	if (opt_string_empty(&endpoint->content_type))
 		opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
 	if (opt_string_empty(&endpoint->accept))

@@ -7,7 +7,7 @@ explain select (select id from test);
 {
   "main": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # main.test (primary) [main] ",
+    "01": "table_open          1      0      6     # amelie.test (primary) [main] ",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -16,7 +16,7 @@ explain select (select id from test);
     "07": "first               1      0      0     ",
     "08": "ret                 1      0      -     "
   },
-  "access": [["main.test", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "exclusive_ro", "select"]]
 }
 select (select id from test);
 1
@@ -26,16 +26,16 @@ insert into test2 (id) values (1), (2), (3);
 explain select (select id from test) from test2;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test2 (select, closing)",
+    "00": "send_all            0      0      64    # amelie.test2 (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      13    # main.test2 (primary) [main] part",
+    "01": "table_open          1      0      13    # amelie.test2 (primary) [main] part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      32     8     # main.test (primary) [main] ",
+    "03": "table_open          3      32     8     # amelie.test (primary) [main] ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -48,7 +48,7 @@ explain select (select id from test) from test2;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro", "select"], ["main.test2", "shared", "select"]]
+  "access": [["amelie.test", "exclusive_ro", "select"], ["amelie.test2", "shared", "select"]]
 }
 select (select id from test) from test2;
 1
@@ -58,14 +58,14 @@ select (select id from test) from test2;
 explain select (select id from test) from (select * from test2) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test2 (select)",
+    "00": "send_all            0      0      32    # amelie.test2 (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
     "04": "dup                 2      1      0     ",
     "05": "store_open          3      2      17    ",
     "06": "set                 4      1      0     ",
-    "07": "table_open          5      56     12    # main.test (primary) [main] ",
+    "07": "table_open          5      56     12    # amelie.test (primary) [main] ",
     "08": "table_readi32       6      5      -     # id",
     "09": "push                6      0      0     ",
     "10": "set_add             4      0      0     ",
@@ -81,7 +81,7 @@ explain select (select id from test) from (select * from test2) t;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # main.test2 (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test2 (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -89,7 +89,7 @@ explain select (select id from test) from (select * from test2) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro", "select"], ["main.test2", "shared", "select"]]
+  "access": [["amelie.test", "exclusive_ro", "select"], ["amelie.test2", "shared", "select"]]
 }
 select (select id from test) from (select * from test2) t;
 1
@@ -100,7 +100,7 @@ drop table test2;
 explain select * from (select * from test) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      2      0     ",
@@ -118,7 +118,7 @@ explain select * from (select * from test) t;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # main.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -128,7 +128,7 @@ explain select * from (select * from test) t;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 select * from (select * from test) t;
 1 │ 0
@@ -140,7 +140,7 @@ insert into test2 (id) values (1), (2), (3);
 explain select * from (select (select id from test2) from test) t;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select)",
+    "00": "send_all            0      0      64    # amelie.test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -156,9 +156,9 @@ explain select * from (select (select id from test2) from test) t;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      13    # main.test (primary) [main] part",
+    "01": "table_open          1      0      13    # amelie.test (primary) [main] part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      32     8     # main.test2 (primary) [main] ",
+    "03": "table_open          3      32     8     # amelie.test2 (primary) [main] ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -171,7 +171,7 @@ explain select * from (select (select id from test2) from test) t;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test2", "exclusive_ro", "select"], ["main.test", "shared", "select"]]
+  "access": [["amelie.test2", "exclusive_ro", "select"], ["amelie.test", "shared", "select"]]
 }
 select * from (select (select id from test2) from test) t;
 1
@@ -182,7 +182,7 @@ drop table test2;
 explain select * from (select (select id from test t) from test) g;
 {
   "main": {
-    "00": "send_all            0      0      64    # main.test (select)",
+    "00": "send_all            0      0      64    # amelie.test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -198,9 +198,9 @@ explain select * from (select (select id from test t) from test) g;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      13    # main.test (primary) [main] part",
+    "01": "table_open          1      0      13    # amelie.test (primary) [main] part",
     "02": "set                 2      1      0     ",
-    "03": "table_open          3      32     8     # main.test (primary) [main] ",
+    "03": "table_open          3      32     8     # amelie.test (primary) [main] ",
     "04": "table_readi32       4      3      -     # id",
     "05": "push                4      0      0     ",
     "06": "set_add             2      0      0     ",
@@ -213,7 +213,7 @@ explain select * from (select (select id from test t) from test) g;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "exclusive_ro", "select"]]
 }
 select * from (select (select id from test t) from test) g;
 1
@@ -232,14 +232,14 @@ insert into test2 (id) values (1), (2), (3);
 explain select (select t.id from test2) from (select * from test) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
     "04": "dup                 2      1      0     ",
     "05": "store_open          3      2      17    ",
     "06": "set                 4      1      0     ",
-    "07": "table_open          5      56     12    # main.test2 (primary) [main] ",
+    "07": "table_open          5      56     12    # amelie.test2 (primary) [main] ",
     "08": "store_read          6      3      0     ",
     "09": "push                6      0      0     ",
     "10": "set_add             4      0      0     ",
@@ -255,7 +255,7 @@ explain select (select t.id from test2) from (select * from test) t;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # main.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -265,7 +265,7 @@ explain select (select t.id from test2) from (select * from test) t;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test2", "exclusive_ro", "select"], ["main.test", "shared", "select"]]
+  "access": [["amelie.test2", "exclusive_ro", "select"], ["amelie.test", "shared", "select"]]
 }
 select (select t.id from test2) from (select * from test) t;
 1
@@ -276,14 +276,14 @@ drop table test2;
 explain select (select t.id from test z) from (select * from test) t;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
     "04": "dup                 2      1      0     ",
     "05": "store_open          3      2      17    ",
     "06": "set                 4      1      0     ",
-    "07": "table_open          5      56     12    # main.test (primary) [main] ",
+    "07": "table_open          5      56     12    # amelie.test (primary) [main] ",
     "08": "store_read          6      3      0     ",
     "09": "push                6      0      0     ",
     "10": "set_add             4      0      0     ",
@@ -299,7 +299,7 @@ explain select (select t.id from test z) from (select * from test) t;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # main.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -309,7 +309,7 @@ explain select (select t.id from test z) from (select * from test) t;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["main.test", "exclusive_ro", "select"]]
+  "access": [["amelie.test", "exclusive_ro", "select"]]
 }
 select (select t.id from test z) from (select * from test) t;
 1
@@ -329,8 +329,8 @@ select * from (select id from test) a, (select * from test) b;
 explain select * from (select * from test) a, (select * from test) b;
 {
   "main": {
-    "00": "send_all            0      0      32    # main.test (select)",
-    "01": "send_all            1      0      88    # main.test (select)",
+    "00": "send_all            0      0      32    # amelie.test (select)",
+    "01": "send_all            1      0      88    # amelie.test (select)",
     "02": "union               2      0      0     ",
     "03": "recv                2      0      0     ",
     "04": "union               0      0      0     ",
@@ -359,7 +359,7 @@ explain select * from (select * from test) a, (select * from test) b;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # main.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -369,7 +369,7 @@ explain select * from (select * from test) a, (select * from test) b;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
     "10": "set                 1      2      0     ",
-    "11": "table_open          2      56     18    # main.test (primary) [main] part",
+    "11": "table_open          2      56     18    # amelie.test (primary) [main] part",
     "12": "table_readi32       3      2      -     # id",
     "13": "push                3      0      0     ",
     "14": "table_readi32       3      2      -     # data",
@@ -379,7 +379,7 @@ explain select * from (select * from test) a, (select * from test) b;
     "18": "free                2      0      0     ",
     "19": "ret                 1      0      -     "
   },
-  "access": [["main.test", "shared", "select"]]
+  "access": [["amelie.test", "shared", "select"]]
 }
 # test: insert returning (select from table) (unsupported)
 explain insert into test (id) values (4) returning (select * from test t);

@@ -105,13 +105,12 @@ catalog_create(Catalog* self)
 	defer(tr_free, &tr);
 	auto on_error = error_catch
 	(
-		Str name;
-		str_init(&name);
-		str_set_cstr(&name, "main");
-
-		// create main user
+		// create amelie user
 		auto user_config = user_config_allocate();
 		defer(user_config_free, user_config);
+		Str name;
+		str_init(&name);
+		str_set_cstr(&name, "amelie");
 		user_config_set_name(user_config, &name);
 		user_config_set_superuser(user_config, true);
 
@@ -127,6 +126,7 @@ catalog_create(Catalog* self)
 		// create main storage
 		auto storage_config = storage_config_allocate();
 		defer(storage_config_free, storage_config);
+		str_set(&name, "main", 4);
 		storage_config_set_name(storage_config, &name);
 		Str compression;
 		str_set(&compression, "zstd", 4);

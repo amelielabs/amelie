@@ -41,10 +41,10 @@ drop user test;
 drop user if exists test;
 select show('user', 'test').name;
 
-# test: drop main user
-drop user main;
+# test: drop amelie user
+drop user amelie;
 select show('user', 'test').name;
-select show('user', 'main').name;
+select show('user', 'amelie').name;
 
 # test: drop user cascade
 create user test;
@@ -84,7 +84,7 @@ select 1;
 show tables;
 show functions;
 select show('user', 'test').name;
-select show('user', 'main').name;
+select show('user', 'amelie').name;
 
 # test: alter user statment parsing
 alter user;
@@ -104,9 +104,9 @@ select show('user', 'test').name;
 select show('user', 'test2').name;
 drop user test2;
 
-# test: alter user main
-alter user main rename to _public;
-select show('user', 'main').name;
+# test: alter user amelie
+alter user amelie rename to _public;
+select show('user', 'amelie').name;
 
 # test: alter user rename cascade (udf dep)
 create user test;
@@ -140,7 +140,7 @@ switch S1;
 
 show tables;
 show functions;
-select show('user', 'main').name;
+select show('user', 'amelie').name;
 select show('user', 'test2').name;
 
 disconnect S1;
@@ -148,7 +148,7 @@ switch S0;
 
 show tables;
 show functions;
-select show('user', 'main').name;
+select show('user', 'amelie').name;
 select show('user', 'test2').name;
 
 drop user test2;
@@ -156,7 +156,7 @@ drop user test2 cascade;
 
 # test: create agent
 create agent test;
-select show('user', 'main').name;
+select show('user', 'amelie').name;
 select show('user', 'test').name;
 drop agent test;
 

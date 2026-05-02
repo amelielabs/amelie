@@ -31,7 +31,7 @@ error: create function test (x int) ❰1❱ ⟵ BEGIN expected
 create function test () begin end;
 show functions verbose;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test",
   "text": "begin end",
   "type": 0,
@@ -42,12 +42,12 @@ show functions verbose;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -58,7 +58,7 @@ select test();
 null
 explain execute test();
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "ret                 -1     0      -     "
   },
@@ -73,12 +73,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -89,11 +89,11 @@ select test();
 null
 select test()::type;
 "null"
-select main.test();
+select amelie.test();
 null
 explain execute test();
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "ret                 -1     0      -     "
   },
@@ -111,12 +111,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "int                 0      -      0     # 123",
       "01": "ret                 0      0      -     "
@@ -128,7 +128,7 @@ select test();
 123
 explain execute test();
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 0      0      -     "
@@ -148,12 +148,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "int                 0      -      0     # 123",
       "01": "ret                 -1     0      -     "
@@ -165,7 +165,7 @@ select test();
 null
 explain execute test();
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 -1     0      -     "
@@ -184,12 +184,12 @@ end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "int                 0      -      0     # 123",
       "01": "ret                 0      0      -     "
@@ -201,7 +201,7 @@ select test();
 123
 explain execute test();
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 0      0      -     "
@@ -297,7 +297,7 @@ begin
 end;
 show functions verbose;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test",
   "text": "begin\nend",
   "type": 13,
@@ -366,12 +366,12 @@ explain select test(123);
 {
   "main": {
     "00": "push_int            -      0      0     # 123",
-    "01": "call_udf            0      -      -     # main.test()",
+    "01": "call_udf            0      -      -     # amelie.test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "var                 0      0      1     ",
       "01": "ret                 0      0      -     "
@@ -413,12 +413,12 @@ explain select test(10);
 {
   "main": {
     "00": "push_int            -      0      0     # 10",
-    "01": "call_udf            0      -      -     # main.test()",
+    "01": "call_udf            0      -      -     # amelie.test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
       "00": "push_nulls          2      0      0     ",
       "01": "int                 0      -      0     # 0",
@@ -448,7 +448,7 @@ select test(10);
 45
 explain execute test(10);
 {
-  "function": "main.test",
+  "function": "amelie.test",
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -486,12 +486,12 @@ explain select [1,2,3]::reverse;
 {
   "main": {
     "00": "push_json           0      0      0     ",
-    "01": "call_udf            0      -      -     # main.reverse()",
+    "01": "call_udf            0      -      -     # amelie.reverse()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.reverse", "call", "execute"]],
+  "access": [["amelie.reverse", "call", "execute"]],
   "calls": [{
-    "function": "main.reverse",
+    "function": "amelie.reverse",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "set                 0      1      1     ",
@@ -537,7 +537,7 @@ select [1,2,3]::reverse::reverse;
 [1, 2, 3]
 explain execute reverse([1,2,3]);
 {
-  "function": "main.reverse",
+  "function": "amelie.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "set                 0      1      1     ",
@@ -589,7 +589,7 @@ begin
 end;
 show functions verbose;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test",
   "text": "begin\n\tdeclare total int := 0;\n\tdeclare i int := 0;\n\twhile i < x do\n\t\ttotal := total + i;\n\t\ti := i + 1;\n\tend;\n\treturn total;\nend",
   "type": 2,
@@ -603,7 +603,7 @@ show functions verbose;
   "returning": [],
   "grants": []
 }, {
-  "user": "main",
+  "user": "amelie",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -621,12 +621,12 @@ explain select [1,2,3]::reverse;
 {
   "main": {
     "00": "push_json           0      0      0     ",
-    "01": "call_udf            0      -      -     # main.reverse()",
+    "01": "call_udf            0      -      -     # amelie.reverse()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["main.reverse", "call", "execute"]],
+  "access": [["amelie.reverse", "call", "execute"]],
   "calls": [{
-    "function": "main.reverse",
+    "function": "amelie.reverse",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "json                0      0      0     ",
@@ -652,7 +652,7 @@ select [1,2,3]::reverse;
 [3, 2, 1]
 explain execute reverse([1,2,3]);
 {
-  "function": "main.reverse",
+  "function": "amelie.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",
@@ -684,7 +684,7 @@ begin
 end;
 show functions verbose;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test",
   "text": "begin\n\treturn 123;\nend",
   "type": 2,
@@ -701,7 +701,7 @@ begin
 end;
 show functions verbose;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test",
   "text": "begin\n\treturn 321;\nend",
   "type": 2,
@@ -757,19 +757,19 @@ create function test() begin select test_dep(); end;
 explain select test();
 {
   "main": {
-    "00": "call_udf            0      -      -     # main.test()",
+    "00": "call_udf            0      -      -     # amelie.test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["main.test", "call", "execute"], ["main.test_dep", "call", "execute"]],
+  "access": [["amelie.test", "call", "execute"], ["amelie.test_dep", "call", "execute"]],
   "calls": [{
-    "function": "main.test",
+    "function": "amelie.test",
     "main": {
-      "00": "call_udf            0      -      -     # main.test_dep()",
+      "00": "call_udf            0      -      -     # amelie.test_dep()",
       "01": "ret                 -1     0      -     "
     },
-    "access": [["main.test_dep", "call", "execute"]]
+    "access": [["amelie.test_dep", "call", "execute"]]
   }, {
-    "function": "main.test_dep",
+    "function": "amelie.test_dep",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -777,7 +777,7 @@ explain select test();
   }]
 }
 drop function test_dep;
-error: function 'test' depends on relation 'main.test_dep'
+error: function 'test' depends on relation 'amelie.test_dep'
 # test: drop function after dep drop
 drop function test;
 drop function test_dep;
@@ -800,7 +800,7 @@ alter function test rename to test2;
 alter function if exists test rename to test2;
 show functions;
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test2"
 }]
 # test: alter function rename
@@ -822,7 +822,7 @@ drop function test;
 create function test_dep() begin end;
 create function test() begin select test_dep(); end;
 alter function test_dep rename to test_dep2;
-error: function 'test' depends on relation 'main.test_dep'
+error: function 'test' depends on relation 'amelie.test_dep'
 # test: alter function rename after after dep drop
 drop function test;
 alter function test_dep rename to test_dep2;

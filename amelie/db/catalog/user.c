@@ -101,7 +101,7 @@ user_drop(Catalog* self,
 	// only owner or superuser
 	check_ownership_user(tr, &user->rel);
 
-	// main user is immutable
+	// superuser is immutable
 	if (user->config->superuser)
 		error("user '{str}': system user cannot be dropped", name);
 
@@ -153,7 +153,7 @@ user_rename(Catalog* self,
 	// only owner or superuser
 	check_ownership_user(tr, &user->rel);
 
-	// main user is immutable
+	// superuser is immutable
 	if (user->config->superuser)
 		error("user '{str}': system user cannot be renamed", name);
 
@@ -215,7 +215,7 @@ user_grant(Catalog* self,
 	// only owner or superuser
 	check_ownership_user(tr, &user->rel);
 
-	// main user is immutable
+	// superuser is immutable
 	if (user->config->superuser)
 		error("user '{str}': system user cannot change grants", name);
 

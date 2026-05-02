@@ -165,10 +165,10 @@ select show('replication');
 }
 # test: users
 select show('users')[0].name;
-"main"
+"amelie"
 # test: user
-select show('user', 'main').name;
-"main"
+select show('user', 'amelie').name;
+"amelie"
 # test: storages
 select show('storages');
 [{
@@ -189,13 +189,13 @@ create table test (id int primary key);
 # test: tables
 select show('tables');
 [{
-  "user": "main",
+  "user": "amelie",
   "name": "test"
 }]
 # test: table
 select show('table', 'test');
 {
-  "user": "main",
+  "user": "amelie",
   "name": "test"
 }
 # test: indexes
@@ -251,7 +251,7 @@ select show('wal');
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 369,
+  "writes_bytes": 371,
   "ops": 1
 }
 # test: metrics

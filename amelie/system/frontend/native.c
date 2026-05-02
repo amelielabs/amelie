@@ -81,7 +81,7 @@ relay_set(Relay* self, Buf* buf, Str* uri)
 
 	// set defaults
 	if (opt_string_empty(&endpoint->user))
-		str_set(&endpoint->user.string, "main", 4);
+		str_set(&endpoint->user.string, "amelie", 6);
 
 	if (opt_string_empty(&endpoint->content_type))
 		opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
