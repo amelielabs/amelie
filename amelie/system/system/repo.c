@@ -142,31 +142,77 @@ repo_version_open(const char* path)
 		      version_current, &version);
 }
 
-static void
-repo_bootstrap_server(void)
+static Buf*
+repo_server_buf_create(void)
 {
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
-
-	// tls and auto are disabled by default
-
 	// []
-	encode_array(&buf);
+	auto buf = buf_create();
+	encode_array(buf);
 
-	// {}
-	encode_obj(&buf);
-	// host
-	encode_raw(&buf, "host", 4);
-	encode_cstr(&buf, "*");
-	// port
-	encode_raw(&buf, "port", 4);
-	encode_int(&buf, 8080);
-	encode_obj_end(&buf);
+	auto config = server_config_allocate();
+	defer(server_config_free, config);
 
-	encode_array_end(&buf);
+	// *:8080
+	Str value;
+	str_set(&value, "*", 1);
+	server_config_set_host(config, &value);
+	server_config_set_port(config, 8080);
+	server_config_set_trusted(config, true);
+	server_config_write(config, buf, 0);
 
-	opt_json_set_buf(&config()->listen, &buf);
+	encode_array_end(buf);
+	return buf;
+}
+
+static void
+repo_server_create(const char* path)
+{
+	Buf text;
+	buf_init(&text);
+	defer_buf(&text);
+
+	// create default or use --listen option as content
+	if (opt_json_empty(&config()->listen))
+	{
+		auto buf = repo_server_buf_create();
+		defer_buf(buf);
+		auto pos = buf->start;
+		json_export_pretty(&text, NULL, &pos);
+
+		opt_json_set_buf(&config()->listen, buf);
+	} else {
+		auto pos = opt_json_of(&config()->listen);
+		json_export_pretty(&text, NULL, &pos);
+	}
+
+	// create config file
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
+	file_write_buf(&file, &text);
+}
+
+static void
+repo_server_open(const char* path)
+{
+	// read existing file or use --listen to override
+	if (! opt_json_empty(&config()->listen))
+		return;
+
+	// open and parse config
+	auto buf = file_import("{s}", path);
+	defer_buf(buf);
+
+	Str text;
+	str_init(&text);
+	buf_str(buf, &text);
+
+	Json json;
+	json_init(&json);
+	defer(json_free, &json);
+	json_parse(&json, &text, NULL);
+	opt_json_set_buf(&config()->listen, json.buf);
 }
 
 static void
@@ -192,10 +238,6 @@ repo_bootstrap(void)
 	// set default timezone using system timezone
 	if (opt_string_empty(&config->timezone))
 		opt_string_set(&config->timezone, &runtime()->timezone_mgr.system->name);
-
-	// set default server listen
-	if (opt_json_empty(&config->listen))
-		repo_bootstrap_server();
 }
 
 static void
@@ -294,6 +336,18 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 
 		// redefine options and update config if necessary
 		opts_set_argv(&config->opts, argc, argv);
+	}
+
+	// read server config file
+	format(path, sizeof(path), "{s}/server.json", state_directory());
+	if (self->bootstrap)
+	{
+		// create server config file
+		repo_server_create(path);
+	} else
+	{
+		// open server config file
+		repo_server_open(path);
 	}
 
 	// read state file

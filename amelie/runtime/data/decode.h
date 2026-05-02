@@ -26,7 +26,8 @@ enum
 	DECODE_OBJ      = 1 << 8,
 	DECODE_DATA     = 1 << 9,
 	DECODE_BASE64   = 1 << 10,
-	DECODE_FOUND    = 1 << 11
+	DECODE_OPT      = 1 << 11,
+	DECODE_FOUND    = 1 << 12
 };
 
 struct Decode
@@ -52,7 +53,9 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			if (! str_is_cstr(&key, ref->key))
 				continue;
 
-			switch (ref->flags & ~DECODE_FOUND) {
+			auto type = ref->flags & ~DECODE_FOUND
+			                       & ~DECODE_OPT;
+			switch (type) {
 			case DECODE_UUID:
 			{
 				if (unlikely(! data_is_str(*pos)))
@@ -174,7 +177,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 	// ensure all keys were found
 	for (auto ref = self; ref->key; ref++)
 	{
-		if (! (ref->flags & DECODE_FOUND))
+		if (!(ref->flags & DECODE_FOUND) && !(ref->flags & DECODE_OPT) )
 			error("{s}: key '{s}' is not found", context, ref->key);
 	}
 }

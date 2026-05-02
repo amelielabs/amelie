@@ -26,10 +26,6 @@ struct Config
 	Opt  log_connections;
 	Opt  log_options;
 	// server
-	Opt  tls_capath;
-	Opt  tls_ca;
-	Opt  tls_cert;
-	Opt  tls_key;
 	Opt  listen;
 	// limits
 	Opt  limit_send;

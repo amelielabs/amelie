@@ -45,11 +45,7 @@ config_prepare(Config* self)
 		{ "log_connections",         OPT_BOOL,   OPT_C,                   &self->log_connections,         NULL,             true                },
 		{ "log_options",             OPT_BOOL,   OPT_C,                   &self->log_options,             NULL,             false               },
 		// server
-		{ "tls_capath",              OPT_STRING, OPT_C,                   &self->tls_capath,              NULL,             0                   },
-		{ "tls_ca",                  OPT_STRING, OPT_C,                   &self->tls_ca,                  NULL,             0                   },
-		{ "tls_cert",                OPT_STRING, OPT_C,                   &self->tls_cert,                NULL,             0                   },
-		{ "tls_key",                 OPT_STRING, OPT_C,                   &self->tls_key,                 NULL,             0                   },
-		{ "listen",                  OPT_JSON,   OPT_C,                   &self->listen,                  NULL,             0                   },
+		{ "listen",                  OPT_JSON,   OPT_C|OPT_E|OPT_H,       &self->listen,                  NULL,             0                   },
 		// limits
 		{ "limit_send",              OPT_INT,    OPT_C,                   &self->limit_send,              NULL,             3 * 1024 * 1024     },
 		{ "limit_recv",              OPT_INT,    OPT_C,                   &self->limit_recv,              NULL,             1 * 1024 * 1024     },

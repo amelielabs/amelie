@@ -30,7 +30,7 @@ struct System
 	// db
 	Db          db;
 	// server
-	Server      server;
+	ServerMgr   server_mgr;
 	// runtime control
 	RuntimeIf   runtime_if;
 };

@@ -17,22 +17,19 @@ typedef void (*ServerEvent)(Server*, Client*);
 
 struct Server
 {
-	TlsContext  tls;
-	Str         tls_capath;
-	Str         tls_ca;
-	Str         tls_cert;
-	Str         tls_key;
-	Str         tls_server;
-	List        listen;
-	int         listen_count;
-	List        config;
-	int         config_count;
-	ServerEvent on_connect;
-	void*       on_connect_arg;
+	Listen           listen;
+	int64_t          worker;
+	struct addrinfo* addr;
+	Str              addr_name;
+	ServerConfig*    config;
+	ServerEvent      on_connect;
+	void*            on_connect_arg;
+	List             link;
 };
 
-void server_init(Server*);
+Server*
+server_allocate(ServerConfig*, ServerEvent, void*);
 void server_free(Server*);
-void server_open(Server*);
-void server_start(Server*, ServerEvent, void*);
+void server_listen(Server*);
+void server_start(Server*);
 void server_stop(Server*);

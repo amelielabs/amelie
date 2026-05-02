@@ -339,14 +339,6 @@ show config;
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "tls_capath": "",
-  "tls_ca": "",
-  "tls_cert": "",
-  "tls_key": "",
-  "listen": [{
-    "host": "127.0.0.1",
-    "port": 3485
-  }],
   "limit_send": 3145728,
   "limit_recv": 1048576,
   "limit_write": 0,
@@ -380,14 +372,6 @@ select * from show config;
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "tls_capath": "",
-  "tls_ca": "",
-  "tls_cert": "",
-  "tls_key": "",
-  "listen": [{
-    "host": "127.0.0.1",
-    "port": 3485
-  }],
   "limit_send": 3145728,
   "limit_recv": 1048576,
   "limit_write": 0,
@@ -422,14 +406,6 @@ show all;
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "tls_capath": "",
-  "tls_ca": "",
-  "tls_cert": "",
-  "tls_key": "",
-  "listen": [{
-    "host": "127.0.0.1",
-    "port": 3485
-  }],
   "limit_send": 3145728,
   "limit_recv": 1048576,
   "limit_write": 0,
@@ -495,14 +471,6 @@ show all;
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "tls_capath": "",
-  "tls_ca": "",
-  "tls_cert": "",
-  "tls_key": "",
-  "listen": [{
-    "host": "127.0.0.1",
-    "port": 3485
-  }],
   "limit_send": 3145728,
   "limit_recv": 1048576,
   "limit_write": 0,

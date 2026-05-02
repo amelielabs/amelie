@@ -22,7 +22,7 @@ client_create(void)
 	self->endpoint     = NULL;
 	self->coroutine_id = UINT64_MAX;
 	self->accepted     = false;
-	self->auth         = false;
+	self->trusted      = false;
 	self->arg          = NULL;
 	msg_init(&self->msg, MSG_CLIENT);
 	http_init(&self->request);
@@ -62,9 +62,9 @@ client_set_endpoint(Client* self, Endpoint* endpoint)
 }
 
 void
-client_set_auth(Client* self, bool auth)
+client_set_trusted(Client* self, bool value)
 {
-	self->auth = auth;
+	self->trusted = value;
 }
 
 void

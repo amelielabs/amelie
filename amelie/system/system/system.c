@@ -205,7 +205,7 @@ system_create(void)
 	am_share = share;
 
 	// server
-	server_init(&self->server);
+	server_mgr_init(&self->server_mgr, system_on_server_connect, self);
 
 	// cdc
 	cdc_init(&self->cdc);
@@ -238,7 +238,7 @@ system_free(System* self)
 	db_free(&self->db);
 	cdc_free(&self->cdc);
 	function_mgr_free(&self->function_mgr);
-	server_free(&self->server);
+	server_mgr_free(&self->server_mgr);
 	am_free(self);
 }
 
@@ -285,6 +285,9 @@ system_start(System* self, bool bootstrap)
 		return;
 	}
 
+	// configure server early
+	server_mgr_open(&self->server_mgr);
+
 	// register builtin functions
 	fn_register(&self->function_mgr);
 
@@ -313,8 +316,8 @@ system_start(System* self, bool bootstrap)
 	// prepare replication manager
 	repl_open(&self->repl);
 
-	// start server
-	server_start(&self->server, system_on_server_connect, self);
+	// start servers
+	server_mgr_start(&self->server_mgr);
 
 	// start replication
 	if (opt_int_of(&state()->repl))
@@ -330,8 +333,8 @@ system_stop(System* self)
 	info("");
 	info("received shutdown request");
 
-	// stop server
-	server_stop(&self->server);
+	// stop servers
+	server_mgr_stop(&self->server_mgr);
 
 	// stop replication
 	repl_stop(&self->repl);

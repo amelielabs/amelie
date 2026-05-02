@@ -55,7 +55,7 @@ test_suite_test(TestSuite* self, Str* description)
 		self->current_test_started = true;
 
 	// start new test
-	info("    - {str}", description);
+	info("    - {str} ", description);
 	return ok;
 }
 

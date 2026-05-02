@@ -210,6 +210,7 @@ restore_run(Restore* self, char* directory)
 	// parse data
 	auto pos = self->data.start;
 	uint8_t* pos_version = NULL;
+	uint8_t* pos_server  = NULL;
 	uint8_t* pos_config  = NULL;
 	uint8_t* pos_state   = NULL;
 	uint8_t* pos_catalog = NULL;
@@ -219,6 +220,7 @@ restore_run(Restore* self, char* directory)
 	Decode obj[] =
 	{
 		{ DECODE_OBJ,   "version", &pos_version },
+		{ DECODE_ARRAY, "server",  &pos_server  },
 		{ DECODE_OBJ,   "config",  &pos_config  },
 		{ DECODE_OBJ,   "state",   &pos_state   },
 		{ DECODE_OBJ,   "catalog", &pos_catalog },
@@ -231,6 +233,9 @@ restore_run(Restore* self, char* directory)
 
 	// write version
 	restore_file("version.json", pos_version);
+
+	// write server
+	restore_file("server.json", pos_server);
 
 	// write config
 	restore_file("config.json", pos_config);

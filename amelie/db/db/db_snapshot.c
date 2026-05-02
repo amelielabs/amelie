@@ -99,6 +99,10 @@ db_snapshot(Db* self)
 		encode_str(data, &state()->version.string);
 		encode_obj_end(data);
 
+		// server
+		encode_raw(data, "server", 6);
+		buf_write_str(data, &config()->listen.string);
+
 		// config
 		encode_raw(data, "config", 6);
 		auto buf = opts_list_persistent(&runtime()->config.opts);

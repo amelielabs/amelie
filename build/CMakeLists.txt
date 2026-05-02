@@ -181,7 +181,8 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/client/client.c
     ${AMELIE_ROOT}/server/websocket/ws.c
     ${AMELIE_ROOT}/server/websocket/websocket.c
-    ${AMELIE_ROOT}/server/server/server.c)
+    ${AMELIE_ROOT}/server/server/server.c
+    ${AMELIE_ROOT}/server/server/server_mgr.c)
 
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/row/row_encode.c
@@ -432,7 +433,7 @@ set_target_properties(amelie PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
 
 # examples/
 add_executable(example_cli EXCLUDE_FROM_ALL
-               ${CMAKE_SOURCE_DIR}/examples/example_cli.c)
+               ${CMAKE_SOURCE_DIR}/misc/examples/example_cli.c)
 target_link_libraries(example_cli ${AMELIE_STATIC_LINK})
 target_link_libraries(example_cli ${AMELIE_LIBRARIES})
 set_target_properties(example_cli PROPERTIES OUTPUT_NAME example_cli)
