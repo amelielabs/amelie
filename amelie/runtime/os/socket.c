@@ -283,3 +283,28 @@ socket_getaddrinfo_job(intptr_t* argv)
 	if (rc == -1 || *result == NULL)
 		error("failed to resolve {s}:{d}", addr, port);
 }
+
+bool
+socket_is_localhost(struct sockaddr* sa)
+{
+	if (sa->sa_family == AF_INET)
+	{
+		// IPv4
+
+		// 127.0.0.1
+		auto in = (struct sockaddr_in *)sa;
+		return in->sin_addr.s_addr == htonl(INADDR_LOOPBACK);
+	}
+
+	if (sa->sa_family == AF_INET6)
+	{
+		// IPv6
+
+		// ::1
+		auto in = (struct sockaddr_in6*)sa;
+		return IN6_IS_ADDR_LOOPBACK(&in->sin6_addr);
+	}
+
+	// unixsocket
+	return sa->sa_family == AF_UNIX;
+}

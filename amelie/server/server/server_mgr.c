@@ -19,7 +19,6 @@ static void
 server_mgr_create_unixsocket(ServerMgr* self)
 {
 	auto config = server_config_allocate();
-	config->trusted = true;
 	auto server = server_allocate(config, self->on_connect, self->on_connect_arg);
 	list_append(&self->list, &server->link);
 	self->list_count++;

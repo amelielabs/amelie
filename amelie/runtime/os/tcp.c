@@ -80,7 +80,7 @@ tcp_socket_init(int fd, int family)
 	}
 }
 
-void
+bool
 tcp_set_fd(Tcp* self, int fd)
 {
 	assert(self->poller == NULL);
@@ -95,6 +95,8 @@ tcp_set_fd(Tcp* self, int fd)
 	int family = ((struct sockaddr*)&sa)->sa_family;
 	tcp_socket_init(fd, family);
 	self->fd.fd = fd;
+
+	return socket_is_localhost((struct sockaddr*)&sa);
 }
 
 void

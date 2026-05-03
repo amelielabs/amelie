@@ -32,3 +32,4 @@ int  socket_getpeername(int, struct sockaddr*, socklen_t*);
 void socket_getaddrname(struct sockaddr*, char*, int, bool, bool);
 int  socket_getaddrinfo(const char*, const char*, struct addrinfo*, struct addrinfo**);
 void socket_getaddrinfo_job(intptr_t*);
+bool socket_is_localhost(struct sockaddr*);

@@ -18,7 +18,6 @@ struct ServerConfig
 	Str              host;
 	int64_t          port;
 	bool             tls;
-	bool             trusted;
 	Str              tls_capath;
 	Str              tls_ca;
 	Str              tls_cert;
@@ -33,11 +32,10 @@ static inline ServerConfig*
 server_config_allocate(void)
 {
 	auto self = (ServerConfig*)am_malloc(sizeof(ServerConfig));
-	self->port    = 8080;
-	self->trusted = true;
-	self->tls     = false;
-	self->refs    = 0;
-	self->ai      = NULL;
+	self->port = 8080;
+	self->tls  = false;
+	self->refs = 0;
+	self->ai   = NULL;
 	str_init(&self->host);
 	str_init(&self->tls_capath);
 	str_init(&self->tls_ca);
@@ -97,12 +95,6 @@ static inline void
 server_config_set_tls(ServerConfig* self, bool value)
 {
 	self->tls = value;
-}
-
-static inline void
-server_config_set_trusted(ServerConfig* self, bool value)
-{
-	self->trusted = value;
 }
 
 static inline void
@@ -215,7 +207,6 @@ server_config_read(uint8_t** pos)
 	{
 		{ DECODE_STR,                 "host",       &self->host       },
 		{ DECODE_INT|DECODE_OPT,      "port",       &self->port       },
-		{ DECODE_BOOL|DECODE_OPT,     "trusted",    &self->trusted    },
 		{ DECODE_BOOL|DECODE_OPT,     "tls",        &self->tls        },
 		{ DECODE_STR_READ|DECODE_OPT, "tls_capath", &tls_capath       },
 		{ DECODE_STR_READ|DECODE_OPT, "tls_ca",     &tls_ca           },
@@ -246,10 +237,6 @@ server_config_write(ServerConfig* self, Buf* buf, int flags)
 	// port
 	encode_raw(buf, "port", 4);
 	encode_int(buf, self->port);
-
-	// trusted
-	encode_raw(buf, "trusted", 7);
-	encode_bool(buf, self->trusted);
 
 	// tls
 	encode_raw(buf, "tls", 3);

@@ -98,10 +98,12 @@ server_accept(Server* self)
 	(
 		// create new client
 		client = client_create();
-		client_set_trusted(client, config->trusted);
 		if (config->tls)
 			tcp_set_tls(&client->tcp, &config->tls_context);
-		tcp_set_fd(&client->tcp, fd);
+		auto is_localhost = tcp_set_fd(&client->tcp, fd);
+
+		// trust localhost clients (including unixsocket)
+		client_set_trusted(client, is_localhost);
 		fd = -1;
 
 		// process client

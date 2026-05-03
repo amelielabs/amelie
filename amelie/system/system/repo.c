@@ -157,7 +157,6 @@ repo_server_buf_create(void)
 	str_set(&value, "*", 1);
 	server_config_set_host(config, &value);
 	server_config_set_port(config, 8080);
-	server_config_set_trusted(config, true);
 	server_config_write(config, buf, 0);
 
 	encode_array_end(buf);
