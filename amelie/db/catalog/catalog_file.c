@@ -89,9 +89,6 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 
 		// create udf
 		udf_create(self, tr, config, false);
-
-		auto udf = catalog_find_udf(self, &config->user, &config->name, true);
-		self->iface->udf_compile(self, udf);
 		break;
 	}
 	case RESTORE_TOPIC:
