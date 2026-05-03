@@ -150,6 +150,7 @@ vm_run(Vm*       self,
 		&&cvector,
 		&&cuuid,
 		&&cvalue,
+		&&cuser_current,
 
 		// upsert
 		&&cexcluded,
@@ -703,6 +704,10 @@ cvalue:
 	// [result, value*]
 	b = (Value*)op->b;
 	value_copy(&r[op->a], b);
+	op_next;
+
+cuser_current:
+	value_set_string(&r[op->a], &self->local->user, NULL);
 	op_next;
 
 cexcluded:

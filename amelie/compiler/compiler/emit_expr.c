@@ -994,6 +994,11 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	case KCURRENT_DATE:
 		return op1pin(self, CDATE_CURRENT, TYPE_DATE);
 
+	// system
+	case KCURRENT_USER:
+	case KCURRENT_AGENT:
+		return op1pin(self, CUSER_CURRENT, TYPE_STRING);
+
 	// vector
 	case KVECTOR:
 		return op2pin(self, CVECTOR, TYPE_VECTOR, ast->integer);

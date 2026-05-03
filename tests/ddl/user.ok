@@ -3,6 +3,10 @@ connect E0 S0 127.0.0.1:3485;
 # test: ensure system users exists
 select show('users')[0].name;
 "amelie"
+select current_user;
+"amelie"
+select current_agent;
+"amelie"
 # test: create user statement parsing
 create;
 error: create❰;❱ ⟵ relation type expected
@@ -69,6 +73,10 @@ select show('user', 'test').name;
 "test"
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
+select current_user;
+"test"
+select current_agent;
+"test"
 drop user test;
 error: user 'test': permission denied
 select show('user', 'test').name;
@@ -77,6 +85,10 @@ select 1;
 1
 disconnect S1;
 switch S0;
+select current_user;
+"amelie"
+select current_agent;
+"amelie"
 drop user test;
 # test: drop user cascade (with relations)
 create user test;

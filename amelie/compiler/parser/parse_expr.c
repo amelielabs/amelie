@@ -95,6 +95,8 @@ priority_map[KEYWORD_MAX] =
 	[KDATE]                    = priority_value,
 	[KCURRENT_TIMESTAMP]       = priority_value,
 	[KCURRENT_DATE]            = priority_value,
+	[KCURRENT_USER]            = priority_value,
+	[KCURRENT_AGENT]           = priority_value,
 	[KVECTOR]                  = priority_value,
 	[KUUID]                    = priority_value,
 	[KTRUE]                    = priority_value,
@@ -759,6 +761,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	}
 	case KCURRENT_TIMESTAMP:
 	case KCURRENT_DATE:
+	case KCURRENT_USER:
+	case KCURRENT_AGENT:
 		break;
 
 	case KVECTOR:

@@ -43,6 +43,8 @@ Keyword keywords[] =
 	// c
 	{ KCURRENT_TIMESTAMP,     "current_timestamp",     17 },
 	{ KCURRENT_DATE,          "current_date",          12 },
+	{ KCURRENT_USER,          "current_user",          12 },
+	{ KCURRENT_AGENT,         "current_agent",         13 },
 	{ KCAST,                  "cast",                  4  },
 	{ KCASE,                  "case",                  4  },
 	{ KCALL,                  "call",                  4  },

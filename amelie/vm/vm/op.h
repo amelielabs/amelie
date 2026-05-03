@@ -66,6 +66,7 @@ enum
 	CVECTOR,
 	CUUID,
 	CVALUE,
+	CUSER_CURRENT,
 
 	// argument
 	CEXCLUDED,
