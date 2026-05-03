@@ -158,7 +158,7 @@ frontend_endpoint(Request* req, Client* client)
 		endpoint->token.string = auth->value;
 
 	// if auth is required
-	opt_int_set(&endpoint->auth, !client->trusted);
+	opt_int_set(&endpoint->trusted, client->trusted);
 
 	// parse uri endpoint request
 	auto output = &req->output;

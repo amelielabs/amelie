@@ -92,10 +92,14 @@ request_auth(Request* self, Auth* auth_ref)
 
 	// authenticate user
 	auto endpoint = &self->endpoint;
-	auto token = &endpoint->token.string;
-	auto token_required = opt_int_of(&endpoint->auth);
-	auto user_id = &endpoint->user.string;
-	self->user = auth(auth_ref, user_id, token, token_required);
+	auto trusted  = opt_int_of(&endpoint->trusted);
+	auto token    = opt_string_of(&endpoint->token);
+	auto user_id  = opt_string_of(&endpoint->user);
+	self->user = auth(auth_ref, user_id, token, !trusted);
+
+	// superuser can connect only from localhost/unixsocket (trusted source)
+	if (self->user->config->superuser && !trusted)
+		error("auth: superuser can connect only from localhost");
 
 	// check permissions
 	switch (opt_int_of(&endpoint->endpoint)) {

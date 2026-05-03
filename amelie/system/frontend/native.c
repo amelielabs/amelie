@@ -92,7 +92,7 @@ relay_set(Relay* self, Buf* buf, Str* uri)
 	opt_int_set(&endpoint->endpoint, ENDPOINT_SQL);
 
 	// authentication is not required
-	opt_int_set(&endpoint->auth, false);
+	opt_int_set(&endpoint->trusted, true);
 
 	// configure output
 	auto output = &self->req.output;

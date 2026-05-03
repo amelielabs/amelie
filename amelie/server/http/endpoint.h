@@ -55,7 +55,7 @@ struct Endpoint
 	Opt  timezone;
 	// misc
 	Opt  id;
-	Opt  auth;
+	Opt  trusted;
 	Opt  name;
 	Opt  debug;
 	Opts opts;

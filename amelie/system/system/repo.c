@@ -152,11 +152,16 @@ repo_server_buf_create(void)
 	auto config = server_config_allocate();
 	defer(server_config_free, config);
 
-	// *:8080
+	// 127.0.0.1:8080
 	Str value;
-	str_set(&value, "*", 1);
+	str_set_cstr(&value, "127.0.0.1");
 	server_config_set_host(config, &value);
 	server_config_set_port(config, 8080);
+	server_config_write(config, buf, 0);
+
+	// [::1]:8080
+	str_set_cstr(&value, "::1");
+	server_config_set_host(config, &value);
 	server_config_write(config, buf, 0);
 
 	encode_array_end(buf);

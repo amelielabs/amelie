@@ -20,34 +20,34 @@ endpoint_init(Endpoint* self)
 	OptsDef defs[] =
 	{
 		// protocol
-		{ "proto",        OPT_INT,     OPT_C, &self->proto,        NULL, 0    },
+		{ "proto",        OPT_INT,     OPT_C, &self->proto,        NULL, 0     },
 		// auth
-		{ "user",         OPT_STRING,  OPT_C, &self->user,         NULL, 0    },
-		{ "token",        OPT_STRING,  OPT_C, &self->token,        NULL, 0    },
+		{ "user",         OPT_STRING,  OPT_C, &self->user,         NULL, 0     },
+		{ "token",        OPT_STRING,  OPT_C, &self->token,        NULL, 0     },
 		// host
-		{ "host",         OPT_STRING,  OPT_C, &self->host,         NULL, 0    },
-		{ "port",         OPT_INT,     OPT_C, &self->port,         NULL, 8080 },
+		{ "host",         OPT_STRING,  OPT_C, &self->host,         NULL, 0     },
+		{ "port",         OPT_INT,     OPT_C, &self->port,         NULL, 8080  },
 		// repository
-		{ "path",         OPT_STRING,  OPT_C, &self->path,         NULL, 0    },
+		{ "path",         OPT_STRING,  OPT_C, &self->path,         NULL, 0     },
 		// tls
-		{ "tls_capath",   OPT_STRING,  OPT_C, &self->tls_capath,   NULL, 0    },
-		{ "tls_ca",       OPT_STRING,  OPT_C, &self->tls_ca,       NULL, 0    },
-		{ "tls_cert",     OPT_STRING,  OPT_C, &self->tls_cert,     NULL, 0    },
-		{ "tls_key",      OPT_STRING,  OPT_C, &self->tls_key,      NULL, 0    },
-		{ "tls_server",   OPT_STRING,  OPT_C, &self->tls_server,   NULL, 0    },
+		{ "tls_capath",   OPT_STRING,  OPT_C, &self->tls_capath,   NULL, 0     },
+		{ "tls_ca",       OPT_STRING,  OPT_C, &self->tls_ca,       NULL, 0     },
+		{ "tls_cert",     OPT_STRING,  OPT_C, &self->tls_cert,     NULL, 0     },
+		{ "tls_key",      OPT_STRING,  OPT_C, &self->tls_key,      NULL, 0     },
+		{ "tls_server",   OPT_STRING,  OPT_C, &self->tls_server,   NULL, 0     },
 		// endpoint
-		{ "uri",          OPT_STRING,  OPT_C, &self->uri,          NULL, 0    },
-		{ "content_type", OPT_STRING,  OPT_C, &self->content_type, NULL, 0    },
-		{ "accept",       OPT_STRING,  OPT_C, &self->accept,       NULL, 0    },
-		{ "endpoint",     OPT_INT,     OPT_C, &self->endpoint,     NULL, 0    },
+		{ "uri",          OPT_STRING,  OPT_C, &self->uri,          NULL, 0     },
+		{ "content_type", OPT_STRING,  OPT_C, &self->content_type, NULL, 0     },
+		{ "accept",       OPT_STRING,  OPT_C, &self->accept,       NULL, 0     },
+		{ "endpoint",     OPT_INT,     OPT_C, &self->endpoint,     NULL, 0     },
 		// args
-		{ "timezone",     OPT_STRING,  OPT_C, &self->timezone,     NULL, 0    },
+		{ "timezone",     OPT_STRING,  OPT_C, &self->timezone,     NULL, 0     },
 		// misc
-		{ "id",           OPT_JSON,    OPT_C, &self->id,           NULL, 0    },
-		{ "auth",         OPT_BOOL,    OPT_C, &self->auth,         NULL, true },
-		{ "name",         OPT_STRING,  OPT_C, &self->name,         NULL, 0    },
-		{ "debug",        OPT_BOOL,    OPT_C, &self->debug,        NULL, 0    },
-		{  NULL,          0,           0,      NULL,               NULL, 0    },
+		{ "id",           OPT_JSON,    OPT_C, &self->id,           NULL, 0     },
+		{ "trusted",      OPT_BOOL,    OPT_C, &self->trusted,      NULL, false },
+		{ "name",         OPT_STRING,  OPT_C, &self->name,         NULL, 0     },
+		{ "debug",        OPT_BOOL,    OPT_C, &self->debug,        NULL, 0     },
+		{  NULL,          0,           0,      NULL,               NULL, 0     },
 	};
 	opts_define(&self->opts, defs);
 }
