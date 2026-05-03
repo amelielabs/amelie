@@ -70,12 +70,10 @@ server_config_ref(ServerConfig* self)
 static inline void
 server_config_unref(ServerConfig* self)
 {
-	if (self->refs > 1)
-	{
+	if (self->refs <= 1)
+		server_config_free(self);
+	else
 		self->refs--;
-		return;
-	}
-	server_config_free(self);
 }
 
 static inline void

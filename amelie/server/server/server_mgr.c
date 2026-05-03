@@ -49,6 +49,10 @@ server_mgr_create(ServerMgr* self, ServerConfig* config)
 		server->addr = ai;
 		list_append(&self->list, &server->link);
 		self->list_count++;
+
+		auto addr = ai->ai_addr;
+		if (!socket_is_localhost(addr) && !server->config->tls)
+			error("server: 'tls' is required for non localhost setups");
 	}
 }
 
@@ -66,7 +70,8 @@ server_mgr_open(ServerMgr* self)
 		while (! unpack_array_end(&pos))
 		{
 			auto config = server_config_read(&pos);
-			errdefer(server_config_free, config);
+			server_config_ref(config);
+			defer(server_config_unref, config);
 			server_mgr_create(self, config);
 		}
 	}
