@@ -990,11 +990,9 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		return op2pin(self, CDATE, TYPE_DATE, julian);
 	}
 	case KCURRENT_TIMESTAMP:
-		return op2pin(self, CTIMESTAMP, TYPE_TIMESTAMP,
-		              self->parser.local->time_us);
+		return op1pin(self, CTIMESTAMP_CURRENT, TYPE_TIMESTAMP);
 	case KCURRENT_DATE:
-		return op2pin(self, CDATE, TYPE_DATE,
-		              timestamp_date(self->parser.local->time_us));
+		return op1pin(self, CDATE_CURRENT, TYPE_DATE);
 
 	// vector
 	case KVECTOR:
@@ -1282,7 +1280,7 @@ emit_push(Compiler* self, From* from, Ast* ast)
 		return TYPE_TIMESTAMP;
 	}
 	case KCURRENT_TIMESTAMP:
-		op1(self, CPUSH_TIMESTAMP, self->parser.local->time_us);
+		op0(self, CPUSH_TIMESTAMP_CURRENT);
 		return TYPE_TIMESTAMP;
 	case KINTERVAL:
 	{
@@ -1303,7 +1301,7 @@ emit_push(Compiler* self, From* from, Ast* ast)
 		return TYPE_DATE;
 	}
 	case KCURRENT_DATE:
-		op1(self, CPUSH_DATE, timestamp_date(self->parser.local->time_us));
+		op0(self, CPUSH_DATE_CURRENT);
 		return TYPE_DATE;
 	case KVECTOR:
 		op1(self, CPUSH_VECTOR, ast->integer);

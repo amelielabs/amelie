@@ -177,8 +177,6 @@ parse_expr_is_const(Ast* self)
 	case KINTERVAL:
 	case KTIMESTAMP:
 	case KDATE:
-	case KCURRENT_TIMESTAMP:
-	case KCURRENT_DATE:
 		return true;
 	// nested
 	case '{':

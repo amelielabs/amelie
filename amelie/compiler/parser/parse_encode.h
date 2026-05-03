@@ -52,29 +52,6 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 	case KDATE:
 		encode_str(buf, &self->string);
 		break;
-	case KCURRENT_TIMESTAMP:
-	{
-		auto offset = buf_size(buf);
-		encode_str32(buf, 0);
-		buf_reserve(buf, 128);
-		int size = timestamp_get(local->time_us, local->timezone, (char*)buf->position, 128);
-		buf_advance(buf, size);
-		uint8_t* pos = buf->start + offset;
-		pack_str32(&pos, size);
-		break;
-	}
-	case KCURRENT_DATE:
-	{
-		auto offset = buf_size(buf);
-		encode_str32(buf, 0);
-		buf_reserve(buf, 128);
-		auto julian = timestamp_date(local->time_us);
-		int size = date_get(julian, (char*)buf->position, 128);
-		buf_advance(buf, size);
-		uint8_t* pos = buf->start + offset;
-		pack_str32(&pos, size);
-		break;
-	}
 	// []
 	case KARRAY:
 	{
@@ -222,16 +199,6 @@ parse_encode_value(Stmt* self, Ast* ast, Value* value)
 		if (unlikely(error_catch( julian = date_set(&ast->string) )))
 			stmt_error(self, ast, "invalid date value");
 		value_set_date(value, julian);
-		break;
-	}
-	case KCURRENT_TIMESTAMP:
-	{
-		value_set_timestamp(value, self->parser->local->time_us);
-		break;
-	}
-	case KCURRENT_DATE:
-	{
-		value_set_date(value, timestamp_date(self->parser->local->time_us));
 		break;
 	}
 

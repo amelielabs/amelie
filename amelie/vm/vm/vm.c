@@ -125,7 +125,9 @@ vm_run(Vm*       self,
 		&&cpush_json,
 		&&cpush_interval,
 		&&cpush_timestamp,
+		&&cpush_timestamp_current,
 		&&cpush_date,
+		&&cpush_date_current,
 		&&cpush_vector,
 		&&cpush_uuid,
 		&&cpush_value,
@@ -142,7 +144,9 @@ vm_run(Vm*       self,
 		&&cjson_array,
 		&&cinterval,
 		&&ctimestamp,
+		&&ctimestamp_current,
 		&&cdate,
+		&&cdate_current,
 		&&cvector,
 		&&cuuid,
 		&&cvalue,
@@ -586,11 +590,25 @@ cpush_timestamp:
 	value_set_timestamp(a, op->a);
 	op_next;
 
+cpush_timestamp_current:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_timestamp(a, self->local->time_us);
+	op_next;
+
 cpush_date:
 	// [value]
 	a = stack_push(stack);
 	value_init(a);
 	value_set_date(a, op->a);
+	op_next;
+
+cpush_date_current:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_date(a, timestamp_date(self->local->time_us));
 	op_next;
 
 cpush_vector:
@@ -661,8 +679,16 @@ ctimestamp:
 	value_set_timestamp(&r[op->a], op->b);
 	op_next;
 
+ctimestamp_current:
+	value_set_timestamp(&r[op->a], self->local->time_us);
+	op_next;
+
 cdate:
 	value_set_date(&r[op->a], op->b);
+	op_next;
+
+cdate_current:
+	value_set_date(&r[op->a], timestamp_date(self->local->time_us));
 	op_next;
 
 cvector:

@@ -530,8 +530,8 @@ select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 3 │ "1970-01-01 01:13:01+00"
 # test: insert column (timestamp current_timestamp)
 insert into test values (4, current_timestamp);
+error: insert into test values (4, ❰current_timestamp❱ ⟵ 'timestamp' expected for column 'ts'
 select ts::int > 0 from test where id = 4;
-true
 drop table test;
 # test: insert column (timestamp auto cast)
 create table test (id int primary key, ts timestamp);
@@ -817,8 +817,9 @@ drop table test;
 # test: insert column (date current_date)
 create table test (id int primary key, d date);
 insert into test values (0, current_date);
+error: insert into test values (0, ❰current_date❱ ⟵ 'date' expected for column 'd'
 select count(d) from test;
-1
+0
 drop table test;
 # test: insert column (vector)
 create table test (id int primary key, vec vector);

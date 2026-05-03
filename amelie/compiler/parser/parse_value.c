@@ -199,12 +199,6 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 	}
 	case TYPE_TIMESTAMP:
 	{
-		// current_timestamp
-		if (ast->id == KCURRENT_TIMESTAMP) {
-			value_set_timestamp(value, self->parser->local->time_us);
-			return ast;
-		}
-
 		// unixtime
 		if (ast->id == KINT) {
 			value_set_timestamp(value, ast->integer);
@@ -240,12 +234,6 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 	}
 	case TYPE_DATE:
 	{
-		// current_date
-		if (ast->id == KCURRENT_DATE) {
-			value_set_date(value, timestamp_date(self->parser->local->time_us));
-			return ast;
-		}
-
 		// [DATE] string
 		if (ast->id == KDATE)
 			ast = stmt_next(self);
