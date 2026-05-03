@@ -304,12 +304,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_DROP:
 	{
-		Str user;
-		Str name;
-		table_op_drop_read(op, &user, &name);
+		Str  user;
+		Str  name;
+		bool cascade;
+		table_op_drop_read(op, &user, &name, &cascade);
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &user, &name);
+
+		(void)cascade;
 
 		auto if_exists = ddl_if_exists(flags);
 		write = table_drop(self, tr, &user, &name, if_exists);
@@ -522,12 +525,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_BRANCH_DROP:
 	{
-		Str user;
-		Str name;
-		branch_op_drop_read(op, &user, &name);
+		Str  user;
+		Str  name;
+		bool cascade;
+		branch_op_drop_read(op, &user, &name, &cascade);
 
 		// ensure no other udfs depend on the branch
 		catalog_validate_udfs(self, &user, &name);
+
+		(void)cascade;
 
 		auto if_exists = ddl_if_exists(flags);
 		write = branch_drop(self, tr, &user, &name, if_exists);
@@ -560,12 +566,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_UDF_DROP:
 	{
-		Str user;
-		Str name;
-		udf_op_drop_read(op, &user, &name);
+		Str  user;
+		Str  name;
+		bool cascade;
+		udf_op_drop_read(op, &user, &name, &cascade);
 
 		// ensure no other udfs depend on it
 		catalog_validate_udfs(self, &user, &name);
+
+		(void)cascade;
 
 		auto if_exists = ddl_if_exists(flags);
 		write = udf_drop(self, tr, &user, &name, if_exists);
@@ -599,12 +608,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TOPIC_DROP:
 	{
-		Str user;
-		Str name;
-		topic_op_drop_read(op, &user, &name);
+		Str  user;
+		Str  name;
+		bool cascade;
+		topic_op_drop_read(op, &user, &name, &cascade);
 
 		// ensure no other udfs depend on the topic
 		catalog_validate_udfs(self, &user, &name);
+
+		(void)cascade;
 
 		auto if_exists = ddl_if_exists(flags);
 		write = topic_drop(self, tr, &user, &name, if_exists);
@@ -635,12 +647,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_SUB_DROP:
 	{
-		Str user;
-		Str name;
-		sub_op_drop_read(op, &user, &name);
+		Str  user;
+		Str  name;
+		bool cascade;
+		sub_op_drop_read(op, &user, &name, &cascade);
 
 		// ensure no other udfs depend on the sub
 		catalog_validate_udfs(self, &user, &name);
+
+		(void)cascade;
 
 		auto if_exists = ddl_if_exists(flags);
 		write = sub_drop(self, tr, &user, &name, if_exists);

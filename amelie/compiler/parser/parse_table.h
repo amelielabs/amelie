@@ -29,6 +29,7 @@ struct AstTableDrop
 	Ast  ast;
 	bool if_exists;
 	Str  name;
+	bool cascade;
 };
 
 struct AstTableTruncate

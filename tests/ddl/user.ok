@@ -100,7 +100,7 @@ create function fn() begin select * from a; end;
 disconnect S1;
 switch S0;
 drop user test;
-error: user 'test' still has relations
+error: user 'test' still has table 'a'
 drop user test cascade;
 select 1;
 1
@@ -192,7 +192,7 @@ select show('user', 'amelie').name;
 select show('user', 'test2').name;
 "test2"
 drop user test2;
-error: user 'test2' still has relations
+error: user 'test2' still has table 'a'
 drop user test2 cascade;
 # test: create agent
 create agent test;

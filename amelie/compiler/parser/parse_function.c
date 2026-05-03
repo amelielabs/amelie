@@ -142,7 +142,7 @@ parse_function_create(Stmt* self, bool or_replace)
 void
 parse_function_drop(Stmt* self)
 {
-	// DROP FUNCTION [IF EXISTS] name
+	// DROP FUNCTION [IF EXISTS] name [CASCADE]
 	auto stmt = ast_function_drop_allocate();
 	self->ast = &stmt->ast;
 
@@ -152,6 +152,9 @@ parse_function_drop(Stmt* self)
 	// name
 	auto name  = stmt_expect(self, KNAME);
 	stmt->name = name->string;
+
+	// [CASCADE]
+	stmt->cascade = stmt_if(self, KCASCADE) != NULL;
 }
 
 void

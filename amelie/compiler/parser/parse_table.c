@@ -458,7 +458,7 @@ parse_table_create(Stmt* self, bool unlogged)
 void
 parse_table_drop(Stmt* self)
 {
-	// DROP TABLE [IF EXISTS] name
+	// DROP TABLE [IF EXISTS] name [CASCADE]
 	auto stmt = ast_table_drop_allocate();
 	self->ast = &stmt->ast;
 
@@ -468,6 +468,9 @@ parse_table_drop(Stmt* self)
 	// name
 	auto name  = stmt_expect(self, KNAME);
 	stmt->name = name->string;
+
+	// [CASCADE]
+	stmt->cascade = stmt_if(self, KCASCADE) != NULL;
 }
 
 void

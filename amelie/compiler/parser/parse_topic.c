@@ -45,7 +45,7 @@ parse_topic_create(Stmt* self, bool unlogged)
 void
 parse_topic_drop(Stmt* self)
 {
-	// DROP TOPIC [IF EXISTS] name
+	// DROP TOPIC [IF EXISTS] name [CASCADE]
 	auto stmt = ast_topic_drop_allocate();
 	self->ast = &stmt->ast;
 
@@ -55,6 +55,9 @@ parse_topic_drop(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
+
+	// [CASCADE]
+	stmt->cascade = stmt_if(self, KCASCADE) != NULL;
 }
 
 void

@@ -36,20 +36,21 @@ table_op_create_read(uint8_t* op)
 }
 
 static inline int
-table_op_drop(Buf* self, Str* user, Str* name)
+table_op_drop(Buf* self, Str* user, Str* name, bool cascade)
 {
-	// [op, user, name]
+	// [op, user, name, cascade]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_TABLE_DROP);
 	encode_str(self, user);
 	encode_str(self, name);
+	encode_bool(self, cascade);
 	encode_array_end(self);
 	return offset;
 }
 
 static inline void
-table_op_drop_read(uint8_t* op, Str* user, Str* name)
+table_op_drop_read(uint8_t* op, Str* user, Str* name, bool* cascade)
 {
 	int64_t cmd;
 	unpack_array(&op);
@@ -57,6 +58,7 @@ table_op_drop_read(uint8_t* op, Str* user, Str* name)
 	assert(cmd == DDL_TABLE_DROP);
 	unpack_str(&op, user);
 	unpack_str(&op, name);
+	unpack_bool(&op, cascade);
 	unpack_array_end(&op);
 }
 

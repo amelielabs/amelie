@@ -27,6 +27,7 @@ struct AstBranchDrop
 	Ast  ast;
 	bool if_exists;
 	Str  name;
+	bool cascade;
 };
 
 struct AstBranchAlter

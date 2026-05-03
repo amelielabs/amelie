@@ -221,7 +221,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_TABLE:
 	{
 		auto arg = ast_table_drop_of(stmt->ast);
-		offset = table_op_drop(data, user, &arg->name);
+		offset = table_op_drop(data, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -271,7 +271,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_BRANCH:
 	{
 		auto arg = ast_branch_drop_of(stmt->ast);
-		offset = branch_op_drop(data, user, &arg->name);
+		offset = branch_op_drop(data, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -294,7 +294,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_FUNCTION:
 	{
 		auto arg = ast_function_drop_of(stmt->ast);
-		offset = udf_op_drop(data, user, &arg->name);
+		offset = udf_op_drop(data, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -317,7 +317,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_TOPIC:
 	{
 		auto arg = ast_topic_drop_of(stmt->ast);
-		offset = topic_op_drop(data, user, &arg->name);
+		offset = topic_op_drop(data, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -340,7 +340,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_SUBSCRIPTION:
 	{
 		auto arg = ast_sub_drop_of(stmt->ast);
-		offset = sub_op_drop(data, user, &arg->name);
+		offset = sub_op_drop(data, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

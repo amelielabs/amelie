@@ -21,13 +21,14 @@
 #include <amelie_catalog.h>
 
 static void
-cascade_user_error(Str* user)
+cascade_user_error(Str* user, Rel* dep)
 {
-	error("user '{str}' still has relations", user);
+	error("user '{str}' still has {s} '{str}'", user,
+	      rel_type_of(dep->type), dep->name);
 }
 
 static void
-cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
+cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool cascade)
 {
 	// validate or drop all objects matching the user
 	list_foreach_safe(&self->rels.list)
@@ -35,8 +36,8 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool drop)
 		auto rel = list_at(Rel, link);
 		if (! str_compare(rel->user, user))
 			continue;
-		if (! drop)
-			cascade_user_error(user);
+		if (! cascade)
+			cascade_user_error(user, rel);
 		switch (rel->type) {
 		case REL_TOPIC:
 			topic_drop_of(self, tr, topic_of(rel));

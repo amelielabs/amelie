@@ -94,7 +94,7 @@ parse_branch_create(Stmt* self)
 void
 parse_branch_drop(Stmt* self)
 {
-	// DROP BRANCH [IF EXISTS] name
+	// DROP BRANCH [IF EXISTS] name [CASCADE]
 	auto stmt = ast_branch_drop_allocate();
 	self->ast = &stmt->ast;
 
@@ -104,6 +104,9 @@ parse_branch_drop(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
+
+	// [CASCADE]
+	stmt->cascade = stmt_if(self, KCASCADE) != NULL;
 }
 
 void

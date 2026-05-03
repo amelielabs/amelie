@@ -27,6 +27,7 @@ struct AstTopicDrop
 	Ast  ast;
 	bool if_exists;
 	Str  name;
+	bool cascade;
 };
 
 struct AstTopicAlter

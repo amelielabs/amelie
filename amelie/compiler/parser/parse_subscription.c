@@ -55,7 +55,7 @@ parse_sub_create(Stmt* self)
 void
 parse_sub_drop(Stmt* self)
 {
-	// DROP SUBSCRIPTION [IF EXISTS] name
+	// DROP SUBSCRIPTION [IF EXISTS] name [CASCADE]
 	auto stmt = ast_sub_drop_allocate();
 	self->ast = &stmt->ast;
 
@@ -65,6 +65,9 @@ parse_sub_drop(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
+
+	// [CASCADE]
+	stmt->cascade = stmt_if(self, KCASCADE) != NULL;
 }
 
 void

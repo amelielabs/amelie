@@ -38,20 +38,21 @@ udf_op_create_read(uint8_t* op, bool* or_replace)
 }
 
 static inline int
-udf_op_drop(Buf* self, Str* user, Str* name)
+udf_op_drop(Buf* self, Str* user, Str* name, bool cascade)
 {
-	// [op, user, name]
+	// [op, user, name, cascade]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_UDF_DROP);
 	encode_str(self, user);
 	encode_str(self, name);
+	encode_bool(self, cascade);
 	encode_array_end(self);
 	return offset;
 }
 
 static inline void
-udf_op_drop_read(uint8_t* op, Str* user, Str* name)
+udf_op_drop_read(uint8_t* op, Str* user, Str* name, bool* cascade)
 {
 	int64_t cmd;
 	unpack_array(&op);
@@ -59,6 +60,7 @@ udf_op_drop_read(uint8_t* op, Str* user, Str* name)
 	assert(cmd == DDL_UDF_DROP);
 	unpack_str(&op, user);
 	unpack_str(&op, name);
+	unpack_bool(&op, cascade);
 	unpack_array_end(&op);
 }
 

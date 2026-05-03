@@ -28,6 +28,7 @@ struct AstSubDrop
 	Ast  ast;
 	bool if_exists;
 	Str  name;
+	bool cascade;
 };
 
 struct AstSubAlter
