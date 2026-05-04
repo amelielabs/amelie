@@ -67,7 +67,7 @@ table_allocate(TableConfig* config,
 	              &primary->keys);
 
 	// snapshot manager
-	snapshot_mgr_init(&self->snapshot_mgr);
+	snapshot_mgr_init(&self->snapshot_mgr, &self->rel);
 
 	// set relation
 	auto rel = &self->rel;
@@ -110,32 +110,6 @@ table_create(Catalog*     self,
 
 	// recover, map and deploy partitions
 	part_mgr_open(&table->part_mgr, &table->config->indexes);
-	return true;
-}
-
-void
-table_drop_of(Catalog* self, Tr* tr, Table* table)
-{
-	// drop table by object
-	rel_mgr_drop(&self->rels, tr, &table->rel);
-}
-
-bool
-table_drop(Catalog* self, Tr* tr, Str* user, Str* name,
-           bool if_exists)
-{
-	auto table = catalog_find_table(self, user, name, false);
-	if (! table)
-	{
-		if (! if_exists)
-			error("table '{str}': not exists", name);
-		return false;
-	}
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
-
-	table_drop_of(self, tr, table);
 	return true;
 }
 

@@ -211,7 +211,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/publish.c
     ${AMELIE_ROOT}/db/catalog/sub.c
     ${AMELIE_ROOT}/db/catalog/acknowledge.c
-    ${AMELIE_ROOT}/db/catalog/grant.c
+    ${AMELIE_ROOT}/db/catalog/rel.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/catalog_file.c
     ${AMELIE_ROOT}/db/catalog/catalog_snapshot.c

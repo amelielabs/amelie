@@ -54,8 +54,8 @@
 #include "catalog/acknowledge.h"
 
 // grant
-#include "catalog/grant_op.h"
-#include "catalog/grant.h"
+#include "catalog/rel_op.h"
+#include "catalog/rel.h"
 
 // catalog
 #include "catalog/catalog.h"

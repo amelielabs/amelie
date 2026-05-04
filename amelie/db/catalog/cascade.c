@@ -20,6 +20,22 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
+void
+catalog_validate_udfs(Catalog* self, Str* user, Str* name)
+{
+	// validate udfs dependencies on the relation
+	list_foreach(&self->rels.list)
+	{
+		auto rel = list_at(Rel, link);
+		if (rel->type != REL_UDF)
+			continue;
+		auto udf = udf_of(rel);
+		if (self->iface->udf_depends(udf, user, name))
+			error("function '{str}' depends on relation '{str}.{str}'",
+			      udf->rel.name, user, name);
+	}
+}
+
 static void
 cascade_user_error(Str* user, Rel* dep)
 {
@@ -38,26 +54,7 @@ cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool cascade)
 			continue;
 		if (! cascade)
 			cascade_user_error(user, rel);
-		switch (rel->type) {
-		case REL_TOPIC:
-			topic_drop_of(self, tr, topic_of(rel));
-			break;
-		case REL_SUBSCRIPTION:
-			sub_drop_of(self, tr, sub_of(rel));
-			break;
-		case REL_UDF:
-			udf_drop_of(self, tr, udf_of(rel));
-			break;
-		case REL_BRANCH:
-			branch_drop_of(self, tr, branch_of(rel));
-			break;
-		case REL_TABLE:
-			table_drop_of(self, tr, table_of(rel));
-			break;
-		default:
-			abort();
-			break;
-		}
+		catalog_drop_of(self, tr, rel);
 	}
 }
 
@@ -93,59 +90,26 @@ cascade_user_drop(Catalog* self, Tr* tr, Str* name,
 static void
 cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 {
+	/*
+	// ensure no udfs depend on the relation
+	catalog_validate_udfs(self, user, name);
+	*/
+
 	list_foreach_safe(&self->rels.list)
 	{
 		auto rel = list_at(Rel, link);
 		if (! str_compare(rel->user, user))
 			continue;
-		switch (rel->type) {
-		case REL_UDF:
+
+		if (rel->type == REL_UDF)
 		{
 			auto udf = udf_of(rel);
 			error("function '{str}' depends on user '{str}",
 			      udf->rel.name, user);
 			break;
 		}
-		case REL_TOPIC:
-		{
-			auto topic = topic_of(rel);
-			topic_rename(self, tr, &topic->config->user,
-			             &topic->config->name,
-			             user_new,
-			             &topic->config->name, false);
-			break;
-		}
-		case REL_SUBSCRIPTION:
-		{
-			auto sub = sub_of(rel);
-			sub_rename(self, tr, &sub->config->user,
-			           &sub->config->name,
-			           user_new,
-			           &sub->config->name, false);
-			break;
-		}
-		case REL_BRANCH:
-		{
-			auto branch = branch_of(rel);
-			branch_rename(self, tr, &branch->config->user,
-			              &branch->config->name,
-			              user_new,
-			              &branch->config->name, false);
-			break;
-		}
-		case REL_TABLE:
-		{
-			auto table = table_of(rel);
-			table_rename(self, tr, &table->config->user,
-			             &table->config->name,
-			             user_new,
-			             &table->config->name, false);
-			break;
-		}
-		default:
-			abort();
-			break;
-		}
+
+		catalog_rename_of(self, tr, rel, user_new, rel->name);
 	}
 }
 

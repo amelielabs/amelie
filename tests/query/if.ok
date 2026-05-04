@@ -383,9 +383,9 @@ end;
     "07": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # amelie.test [main]",
+    "00": "insert              -      -      -     # amelie.test",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # amelie.test [main]",
+    "02": "insert              -      -      -     # amelie.test",
     "03": "ret                 -1     0      -     "
   },
   "access": [["amelie.test", "shared_rw", "insert"]]
@@ -424,12 +424,12 @@ end;
     "11": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # amelie.test [main]",
+    "00": "insert              -      -      -     # amelie.test",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # amelie.test [main]",
+    "02": "insert              -      -      -     # amelie.test",
     "03": "ret                 -1     0      -     ",
     "04": "set                 0      1      0     ",
-    "05": "table_open          1      48     10    # amelie.test (primary) [main] part",
+    "05": "table_open          1      48     10    # amelie.test (primary) part",
     "06": "table_readi32       2      1      -     # id",
     "07": "push                2      0      0     ",
     "08": "set_add             0      0      0     ",
@@ -486,12 +486,12 @@ end;
     "10": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # amelie.test [main]",
+    "00": "insert              -      -      -     # amelie.test",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # amelie.test [main]",
+    "02": "insert              -      -      -     # amelie.test",
     "03": "ret                 -1     0      -     ",
     "04": "set                 0      1      0     ",
-    "05": "table_open          1      48     10    # amelie.test (primary) [main] part",
+    "05": "table_open          1      48     10    # amelie.test (primary) part",
     "06": "table_readi32       2      1      -     # id",
     "07": "push                2      0      0     ",
     "08": "set_add             0      0      0     ",
@@ -561,14 +561,14 @@ end;
     "22": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # amelie.test [main]",
+    "00": "insert              -      -      -     # amelie.test",
     "01": "ret                 -1     0      -     ",
-    "02": "insert              -      -      -     # amelie.test [main]",
+    "02": "insert              -      -      -     # amelie.test",
     "03": "ret                 -1     0      -     ",
-    "04": "insert              -      -      -     # amelie.test [main]",
+    "04": "insert              -      -      -     # amelie.test",
     "05": "ret                 -1     0      -     ",
     "06": "set                 0      1      0     ",
-    "07": "table_open          1      72     12    # amelie.test (primary) [main] part",
+    "07": "table_open          1      72     12    # amelie.test (primary) part",
     "08": "table_readi32       2      1      -     # id",
     "09": "push                2      0      0     ",
     "10": "set_add             0      0      0     ",
@@ -646,7 +646,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_prepare       1      -      -     # amelie.test [main]",
+    "01": "table_prepare       1      -      -     # amelie.test",
     "02": "jmp                 9      0      0     ",
     "03": "string              2      0      0     # unique key constraint violation",
     "04": "push                2      0      0     ",
@@ -694,10 +694,10 @@ end;
     "11": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # amelie.test [main]",
+    "00": "insert              -      -      -     # amelie.test",
     "01": "ret                 -1     0      -     ",
     "02": "set                 0      1      0     ",
-    "03": "table_open          1      24     8     # amelie.test (primary) [main] part",
+    "03": "table_open          1      24     8     # amelie.test (primary) part",
     "04": "table_readi32       2      1      -     # id",
     "05": "push                2      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -744,7 +744,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -794,7 +794,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      7     # amelie.test (primary) part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -851,7 +851,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      7     # amelie.test (primary) part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -911,7 +911,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      7     # amelie.test (primary) part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -971,7 +971,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      7     # amelie.test (primary) part",
     "02": "push_bool           1      0      0     ",
     "03": "set_get             2      0      0     ",
     "04": "push_int            -      0      0     # 1",
@@ -984,7 +984,7 @@ end;
     "11": "set_agg             0      1      32    ",
     "12": "ret                 0      0      -     ",
     "13": "set                 0      1      0     ",
-    "14": "table_open          1      64     19    # amelie.test (primary) [main] part",
+    "14": "table_open          1      64     19    # amelie.test (primary) part",
     "15": "table_readi32       2      1      -     # id",
     "16": "push                2      0      0     ",
     "17": "set_add             0      0      0     ",
@@ -1033,7 +1033,7 @@ end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",

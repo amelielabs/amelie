@@ -13,7 +13,9 @@
 
 enum
 {
-	// grant
+	// generic
+	DDL_DROP,
+	DDL_RENAME,
 	DDL_GRANT,
 
 	// user
@@ -29,8 +31,6 @@ enum
 
 	// table
 	DDL_TABLE_CREATE,
-	DDL_TABLE_DROP,
-	DDL_TABLE_RENAME,
 	DDL_TABLE_TRUNCATE,
 	DDL_TABLE_SET_IDENTITY,
 	DDL_TABLE_COLUMN_ADD,
@@ -52,23 +52,15 @@ enum
 
 	// branch
 	DDL_BRANCH_CREATE,
-	DDL_BRANCH_DROP,
-	DDL_BRANCH_RENAME,
 
 	// udf
 	DDL_UDF_CREATE,
-	DDL_UDF_DROP,
-	DDL_UDF_RENAME,
 
 	// topic
 	DDL_TOPIC_CREATE,
-	DDL_TOPIC_DROP,
-	DDL_TOPIC_RENAME,
 
 	// subscription
 	DDL_SUB_CREATE,
-	DDL_SUB_DROP,
-	DDL_SUB_RENAME
 };
 
 enum

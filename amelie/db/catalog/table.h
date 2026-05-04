@@ -24,8 +24,6 @@ struct Table
 };
 
 bool table_create(Catalog*, Tr*, TableConfig*, bool);
-bool table_drop(Catalog*, Tr*, Str*, Str*, bool);
-void table_drop_of(Catalog*, Tr*, Table*);
 bool table_truncate(Catalog*, Tr*, Str*, Str*, bool);
 
 always_inline static inline Table*

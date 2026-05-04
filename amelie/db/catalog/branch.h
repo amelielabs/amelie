@@ -21,10 +21,7 @@ struct Branch
 };
 
 bool branch_create(Catalog*, Tr*, BranchConfig*, bool);
-bool branch_drop(Catalog*, Tr*, Str*, Str*, bool);
-void branch_drop_of(Catalog*, Tr*, Branch*);
-bool branch_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool);
-bool branch_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
+bool branch_is_parent(Catalog*, Branch*);
 
 always_inline static inline Branch*
 branch_of(Rel* self)

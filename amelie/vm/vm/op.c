@@ -457,10 +457,17 @@ op_dump(Program* self, Code* code, Buf* buf)
 		{
 			auto table    = (Table*)op->a;
 			auto snapshot = (Snapshot*)op->b;
-			op_write(output, op, false, false, false,
-			         "{str}.{str} [{str}]",
-			         &table->config->user, &table->config->name,
-			         &snapshot->alias);
+			if (snapshot->rel->type == REL_TABLE)
+				op_write(output, op, false, false, false,
+				         "{str}.{str}",
+				         &table->config->user, &table->config->name);
+			else
+			if (snapshot->rel->type == REL_BRANCH)
+				op_write(output, op, false, false, false,
+				         "{str}.{str} [{str}.{str}]",
+				         &table->config->user, &table->config->name,
+				         snapshot->rel->user,
+				         snapshot->rel->name);
 			break;
 		}
 		case CTABLE_OPEN:
@@ -476,24 +483,44 @@ op_dump(Program* self, Code* code, Buf* buf)
 					buf_write(desc, ", ", 2);
 				buf_write(desc, "part", 4);
 			}
-			op_write(output, op, true, true, true,
-			         "{str}.{str} ({str}) [{str}] {buf}",
-			         &open->table->config->user,
-			         &open->table->config->name,
-			         &open->index->name,
-			         &open->snapshot->alias,
-			         desc);
+
+			auto snapshot = open->snapshot;
+			if (snapshot->rel->type == REL_TABLE)
+				op_write(output, op, true, true, true,
+				         "{str}.{str} ({str}) {buf}",
+				         &open->table->config->user,
+				         &open->table->config->name,
+				         &open->index->name,
+				         desc);
+			else
+			if (snapshot->rel->type == REL_BRANCH)
+				op_write(output, op, true, true, true,
+				         "{str}.{str} ({str}) [{str}.{str}] {buf}",
+				         &open->table->config->user,
+				         &open->table->config->name,
+				         &open->index->name,
+				         snapshot->rel->user,
+				         snapshot->rel->name,
+				         desc);
 			break;
 		}
 		case CTABLE_PREPARE:
 		{
 			auto table    = (Table*)op->b;
 			auto snapshot = (Snapshot*)op->c;
-			op_write(output, op, true, false, false,
-			         "{str}.{str} [{str}]",
-			         &table->config->user,
-			         &table->config->name,
-			         &snapshot->alias);
+			if (snapshot->rel->type == REL_TABLE)
+				op_write(output, op, true, false, false,
+				         "{str}.{str}",
+				         &table->config->user,
+				         &table->config->name);
+			else
+			if (snapshot->rel->type == REL_BRANCH)
+				op_write(output, op, true, false, false,
+				         "{str}.{str} [{str}.{str}]",
+				         &table->config->user,
+				         &table->config->name,
+				         snapshot->rel->user,
+				         snapshot->rel->name);
 			break;
 		}
 		case CTABLE_READB:

@@ -21,10 +21,6 @@ struct Topic
 };
 
 bool topic_create(Catalog*, Tr*, TopicConfig*, bool);
-bool topic_drop(Catalog*, Tr*, Str*, Str*, bool);
-void topic_drop_of(Catalog*, Tr*, Topic*);
-bool topic_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool);
-bool topic_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 
 always_inline static inline Topic*
 topic_of(Rel* self)

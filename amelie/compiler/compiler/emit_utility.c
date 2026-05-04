@@ -31,7 +31,7 @@ emit_alter_table(Compiler* self)
 	switch (arg->type) {
 	case TABLE_ALTER_RENAME:
 	{
-		offset = table_op_rename(data, user, &arg->name, user, &arg->name_new);
+		offset = rel_op_rename(data, REL_TABLE, user, &arg->name, user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -155,8 +155,8 @@ emit_ddl(Compiler* self)
 	case STMT_REVOKE:
 	{
 		auto arg = ast_grant_of(stmt->ast);
-		offset = grant_op_grant(data, &arg->rel_user, &arg->rel, &arg->to,
-		                        arg->grant, arg->perms);
+		offset = rel_op_grant(data, &arg->rel_user, &arg->rel, &arg->to,
+		                      arg->grant, arg->perms);
 		break;
 	}
 
@@ -221,7 +221,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_TABLE:
 	{
 		auto arg = ast_table_drop_of(stmt->ast);
-		offset = table_op_drop(data, user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_TABLE, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -271,14 +271,14 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_BRANCH:
 	{
 		auto arg = ast_branch_drop_of(stmt->ast);
-		offset = branch_op_drop(data, user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_BRANCH, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case STMT_ALTER_BRANCH:
 	{
 		auto arg = ast_branch_alter_of(stmt->ast);
-		offset = branch_op_rename(data, user, &arg->name, user, &arg->name_new);
+		offset = rel_op_rename(data, REL_BRANCH, user, &arg->name, user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -294,14 +294,14 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_FUNCTION:
 	{
 		auto arg = ast_function_drop_of(stmt->ast);
-		offset = udf_op_drop(data, user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_UDF, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case STMT_ALTER_FUNCTION:
 	{
 		auto arg = ast_function_alter_of(stmt->ast);
-		offset = udf_op_rename(data, user, &arg->name, user, &arg->name_new);
+		offset = rel_op_rename(data, REL_UDF, user, &arg->name, user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -317,14 +317,14 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_TOPIC:
 	{
 		auto arg = ast_topic_drop_of(stmt->ast);
-		offset = topic_op_drop(data, user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_TOPIC, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case STMT_ALTER_TOPIC:
 	{
 		auto arg = ast_topic_alter_of(stmt->ast);
-		offset = topic_op_rename(data, user, &arg->name, user, &arg->name_new);
+		offset = rel_op_rename(data, REL_TOPIC, user, &arg->name, user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -340,14 +340,14 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_SUBSCRIPTION:
 	{
 		auto arg = ast_sub_drop_of(stmt->ast);
-		offset = sub_op_drop(data, user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_SUBSCRIPTION, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case STMT_ALTER_SUBSCRIPTION:
 	{
 		auto arg = ast_sub_alter_of(stmt->ast);
-		offset = sub_op_rename(data, user, &arg->name, user, &arg->name_new);
+		offset = rel_op_rename(data, REL_SUBSCRIPTION, user, &arg->name, user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

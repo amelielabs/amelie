@@ -12,7 +12,6 @@
 //
 
 // alter table
-bool table_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool);
 bool table_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t, bool);
 bool table_set_identity(Catalog*, Tr*, Str*, Str*, int64_t, bool);
 

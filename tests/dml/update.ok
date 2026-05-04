@@ -41,7 +41,7 @@ explain update test set data = data + 1;
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      9     # amelie.test (primary) [main] part",
+    "00": "table_open          0      0      9     # amelie.test (primary) part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
     "03": "table_readi32       1      0      -     # data",
@@ -95,7 +95,7 @@ explain update test set a = a + 1, b = b - 1;
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      15    # amelie.test (primary) [main] part",
+    "00": "table_open          0      0      15    # amelie.test (primary) part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
     "03": "table_readi32       1      0      -     # a",
@@ -146,7 +146,7 @@ explain update test set data = {"id": data.id::int + 1};
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      16    # amelie.test (primary) [main] part",
+    "00": "table_open          0      0      16    # amelie.test (primary) part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
     "03": "push_string         32     0      0     # id",
@@ -208,7 +208,7 @@ explain update test set data.id = data.id::int + 1;
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      18    # amelie.test (primary) [main] part",
+    "00": "table_open          0      0      18    # amelie.test (primary) part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
     "03": "table_readj         1      0      -     # data",
@@ -303,7 +303,7 @@ explain update test set data = data + 1 where id = 0;
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 0",
-    "01": "table_open          0      0      13    # amelie.test (primary) [main] point_lookup, part",
+    "01": "table_open          0      0      13    # amelie.test (primary) point_lookup, part",
     "02": "table_readi32       1      0      -     # id",
     "03": "int                 2      -      0     # 0",
     "04": "equii               3      1      2     ",
@@ -341,7 +341,7 @@ explain update test set data = data + 1 where id >= 1;
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 1",
-    "01": "table_open          0      0      14    # amelie.test (primary) [main] part",
+    "01": "table_open          0      0      14    # amelie.test (primary) part",
     "02": "table_readi32       1      0      -     # id",
     "03": "int                 2      -      0     # 1",
     "04": "gteii               3      1      2     ",
@@ -427,7 +427,7 @@ explain update test set data = data + 1 returning *;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      15    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      15    # amelie.test (primary) part",
     "02": "int                 2      -      0     # 1",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",

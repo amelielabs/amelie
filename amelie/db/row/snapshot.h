@@ -20,7 +20,7 @@ struct Snapshot
 	int64_t   snapshot;
 	int64_t   snapshot_max;
 	Snapshot* parent;
-	Str       alias;
+	Rel*      rel;
 	List      link;
 };
 
@@ -32,7 +32,7 @@ snapshot_init(Snapshot* self)
 	self->snapshot     = 0;
 	self->snapshot_max = 0;
 	self->parent       = NULL;
-	str_init(&self->alias);
+	self->rel          = NULL;
 	list_init(&self->link);
 }
 

@@ -97,7 +97,7 @@ explain begin declare x int; select id into x from test; select x; end;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -830,7 +830,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -884,7 +884,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -934,7 +934,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -984,7 +984,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1047,7 +1047,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1110,7 +1110,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -1246,7 +1246,7 @@ explain select test();
       "04": "ret                 -1     0      -     "
     },
     "pushdown": {
-      "00": "insert              -      -      -     # amelie.src [main]",
+      "00": "insert              -      -      -     # amelie.src",
       "01": "ret                 -1     0      -     "
     },
     "access": [["amelie.src", "shared_rw", "insert"]]
@@ -1283,7 +1283,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # amelie.src [main]",
+      "01": "table_prepare       1      -      -     # amelie.src",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1341,7 +1341,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # amelie.src [main]",
+      "01": "table_prepare       1      -      -     # amelie.src",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1397,7 +1397,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # amelie.src [main]",
+      "01": "table_prepare       1      -      -     # amelie.src",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1453,7 +1453,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_prepare       1      -      -     # amelie.src [main]",
+      "01": "table_prepare       1      -      -     # amelie.src",
       "02": "jmp                 9      0      0     ",
       "03": "string              2      0      0     # unique key constraint violation",
       "04": "push                2      0      0     ",
@@ -1764,7 +1764,7 @@ explain select test();
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # amelie.src (primary) [main] part",
+      "01": "table_open          1      0      6     # amelie.src (primary) part",
       "02": "table_readi32       2      1      -     # id",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",

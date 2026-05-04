@@ -21,68 +21,6 @@
 #include <amelie_catalog.h>
 
 static void
-rename_if_commit(Log* self, LogOp* op)
-{
-	unused(self);
-	unused(op);
-}
-
-static void
-rename_if_abort(Log* self, LogOp* op)
-{
-	uint8_t* pos = log_data_of(self, op);
-	Str user;
-	Str name;
-	unpack_str(&pos, &user);
-	unpack_str(&pos, &name);
-
-	Catalog* catalog = op->iface_arg;
-	rel_mgr_rename(&catalog->rels, op->rel, &user, &name);
-}
-
-static LogIf rename_if =
-{
-	.commit = rename_if_commit,
-	.abort  = rename_if_abort
-};
-
-bool
-table_rename(Catalog* self,
-             Tr*      tr,
-             Str*     user,
-             Str*     name,
-             Str*     user_new,
-             Str*     name_new,
-             bool     if_exists)
-{
-	auto table = catalog_find_table(self, user, name, false);
-	if (! table)
-	{
-		if (! if_exists)
-			error("table '{str}': not exists", name);
-		return false;
-	}
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
-
-	// ensure other relation with the same name does not exists
-	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
-		error("relation '{str}': already exists", name_new);
-
-	// update table
-	log_ddl(&tr->log, &rename_if, self, &table->rel);
-
-	// save previous name
-	encode_str(&tr->log.data, &table->config->user);
-	encode_str(&tr->log.data, &table->config->name);
-
-	// set new name
-	rel_mgr_rename(&self->rels, &table->rel, user_new, name_new);
-	return true;
-}
-
-static void
 grant_if_commit(Log* self, LogOp* op)
 {
 	unused(self);

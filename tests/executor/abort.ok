@@ -47,7 +47,7 @@ end;
     "03": "ret                 0      0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      3     # amelie.test (primary) [main] part",
+    "00": "table_open          0      0      3     # amelie.test (primary) part",
     "01": "delete              0      0      0     ",
     "02": "table_next          0      1      0     ",
     "03": "free                0      0      0     ",
@@ -78,7 +78,7 @@ end;
     "03": "ret                 0      0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      7     # amelie.test (primary) [main] part",
+    "00": "table_open          0      0      7     # amelie.test (primary) part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
     "03": "table_readi32       1      0      -     # id",
@@ -114,7 +114,7 @@ end;
     "04": "ret                 0      0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # amelie.test [main]",
+    "00": "table_prepare       0      -      -     # amelie.test",
     "01": "jmp                 7      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -160,7 +160,7 @@ explain insert into b (id) values (10), (20), (30);
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # amelie.b [main]",
+    "00": "insert              -      -      -     # amelie.b",
     "01": "ret                 -1     0      -     "
   },
   "access": [["amelie.b", "shared_rw", "insert"]]
@@ -195,7 +195,7 @@ end;
     "06": "ret                 2      0      -     "
   },
   "pushdown": {
-    "00": "table_open          0      0      7     # amelie.a (primary) [main] part",
+    "00": "table_open          0      0      7     # amelie.a (primary) part",
     "01": "int                 1      -      0     # 1",
     "02": "push                1      0      0     ",
     "03": "table_readi32       1      0      -     # id",
@@ -204,7 +204,7 @@ end;
     "06": "table_next          0      1      0     ",
     "07": "free                0      0      0     ",
     "08": "ret                 -1     0      -     ",
-    "09": "table_open          0      56     16    # amelie.b (primary) [main] part",
+    "09": "table_open          0      56     16    # amelie.b (primary) part",
     "10": "int                 1      -      0     # 1",
     "11": "push                1      0      0     ",
     "12": "table_readi32       1      0      -     # id",
@@ -214,7 +214,7 @@ end;
     "16": "free                0      0      0     ",
     "17": "ret                 -1     0      -     ",
     "18": "set                 0      2      0     ",
-    "19": "table_open          1      112    26    # amelie.a (primary) [main] part",
+    "19": "table_open          1      112    26    # amelie.a (primary) part",
     "20": "table_readi32       2      1      -     # id",
     "21": "push                2      0      0     ",
     "22": "table_readi32       2      1      -     # data",
@@ -224,7 +224,7 @@ end;
     "26": "free                1      0      0     ",
     "27": "ret                 0      0      -     ",
     "28": "set                 1      2      0     ",
-    "29": "table_open          2      168    36    # amelie.b (primary) [main] part",
+    "29": "table_open          2      168    36    # amelie.b (primary) part",
     "30": "table_readi32       3      2      -     # id",
     "31": "push                3      0      0     ",
     "32": "table_readi32       3      2      -     # data",
@@ -271,7 +271,7 @@ end;
     "06": "ret                 1      0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # amelie.a [main]",
+    "00": "table_prepare       0      -      -     # amelie.a",
     "01": "jmp                 7      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -281,7 +281,7 @@ end;
     "07": "upsert              0      2      -1    ",
     "08": "free                0      0      0     ",
     "09": "ret                 -1     0      -     ",
-    "10": "table_open          0      24     19    # amelie.b (primary) [main] part",
+    "10": "table_open          0      24     19    # amelie.b (primary) part",
     "11": "int                 1      -      0     # 1",
     "12": "push                1      0      0     ",
     "13": "table_readi32       1      0      -     # data",
@@ -293,7 +293,7 @@ end;
     "19": "free                0      0      0     ",
     "20": "ret                 -1     0      -     ",
     "21": "set                 0      2      0     ",
-    "22": "table_open          1      80     29    # amelie.a (primary) [main] part",
+    "22": "table_open          1      80     29    # amelie.a (primary) part",
     "23": "table_readi32       2      1      -     # id",
     "24": "push                2      0      0     ",
     "25": "table_readi32       2      1      -     # data",

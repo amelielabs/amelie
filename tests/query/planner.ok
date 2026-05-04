@@ -16,7 +16,7 @@ explain select * from test;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -54,7 +54,7 @@ explain select * from test use index (i);
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # amelie.test (i) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (i) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -89,7 +89,7 @@ explain select * from test;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -118,7 +118,7 @@ explain select * from test where data = 2;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 2",
-    "02": "table_open          1      0      12    # amelie.test (j) [main] point_lookup, part",
+    "02": "table_open          1      0      12    # amelie.test (j) point_lookup, part",
     "03": "table_readi32       2      1      -     # data",
     "04": "int                 3      -      0     # 2",
     "05": "equii               4      2      3     ",
@@ -146,7 +146,7 @@ explain select * from test where id = 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open          1      0      13    # amelie.test (primary) [main] part",
+    "02": "table_open          1      0      13    # amelie.test (primary) part",
     "03": "table_readi32       2      1      -     # id",
     "04": "int                 3      -      0     # 1",
     "05": "equii               4      2      3     ",
@@ -178,7 +178,7 @@ explain select * from test where id = 1 and data = 1;
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_open          1      0      17    # amelie.test (primary) [main] point_lookup, part",
+    "03": "table_open          1      0      17    # amelie.test (primary) point_lookup, part",
     "04": "table_readi32       2      1      -     # id",
     "05": "int                 3      -      0     # 1",
     "06": "equii               4      2      3     ",
@@ -213,7 +213,7 @@ explain select * from test where data = 1 and id = 1;
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_open          1      0      17    # amelie.test (primary) [main] point_lookup, part",
+    "03": "table_open          1      0      17    # amelie.test (primary) point_lookup, part",
     "04": "table_readi32       2      1      -     # data",
     "05": "int                 3      -      0     # 1",
     "06": "equii               4      2      3     ",
@@ -253,7 +253,7 @@ explain select * from test where id = 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open          1      0      12    # amelie.test (primary) [main] point_lookup, part",
+    "02": "table_open          1      0      12    # amelie.test (primary) point_lookup, part",
     "03": "table_readi32       2      1      -     # id",
     "04": "int                 3      -      0     # 1",
     "05": "equii               4      2      3     ",
@@ -281,7 +281,7 @@ explain select * from test where id > 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open          1      0      13    # amelie.test (primary) [main] part",
+    "02": "table_open          1      0      13    # amelie.test (primary) part",
     "03": "table_readi32       2      1      -     # id",
     "04": "int                 3      -      0     # 1",
     "05": "gtii                4      2      3     ",
@@ -309,7 +309,7 @@ explain select * from test where data > 1;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      12    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      12    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 1",
     "04": "gtii                4      2      3     ",
@@ -338,7 +338,7 @@ explain select * from test where data = 1;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      12    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      12    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 1",
     "04": "equii               4      2      3     ",
@@ -392,7 +392,7 @@ explain select * from test where data = 1 and id = 1;
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_open          1      0      18    # amelie.test (i) [main] point_lookup, part",
+    "03": "table_open          1      0      18    # amelie.test (i) point_lookup, part",
     "04": "table_readi32       2      1      -     # data",
     "05": "int                 3      -      0     # 1",
     "06": "equii               4      2      3     ",
@@ -428,7 +428,7 @@ explain select * from test where id = 1 and data = 1;
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_open          1      0      18    # amelie.test (i) [main] point_lookup, part",
+    "03": "table_open          1      0      18    # amelie.test (i) point_lookup, part",
     "04": "table_readi32       2      1      -     # id",
     "05": "int                 3      -      0     # 1",
     "06": "equii               4      2      3     ",
@@ -469,7 +469,7 @@ explain select * from test where id > 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open          1      0      13    # amelie.test (primary) [main] part",
+    "02": "table_open          1      0      13    # amelie.test (primary) part",
     "03": "table_readi32       2      1      -     # id",
     "04": "int                 3      -      0     # 1",
     "05": "gtii                4      2      3     ",
@@ -498,7 +498,7 @@ explain select * from test where data > 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open          1      0      13    # amelie.test (i) [main] part",
+    "02": "table_open          1      0      13    # amelie.test (i) part",
     "03": "table_readi32       2      1      -     # data",
     "04": "int                 3      -      0     # 1",
     "05": "gtii                4      2      3     ",
@@ -527,7 +527,7 @@ explain select * from test where data < 1;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # amelie.test (i) [main] part",
+    "01": "table_open          1      0      16    # amelie.test (i) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 1",
     "04": "ltii                4      2      3     ",
@@ -559,7 +559,7 @@ explain select * from test where id < 1;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      16    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "int                 3      -      0     # 1",
     "04": "ltii                4      2      3     ",
@@ -591,7 +591,7 @@ explain select * from test where id < 1 and data < 2;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      20    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      20    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "int                 3      -      0     # 1",
     "04": "ltii                4      2      3     ",

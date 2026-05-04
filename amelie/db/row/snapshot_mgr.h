@@ -21,10 +21,10 @@ struct SnapshotMgr
 };
 
 static inline void
-snapshot_mgr_init(SnapshotMgr* self)
+snapshot_mgr_init(SnapshotMgr* self, Rel* rel)
 {
 	snapshot_init(&self->main);
-	str_set(&self->main.alias, "main", 4);
+	self->main.rel = rel;
 
 	list_init(&self->list);
 	list_append(&self->list, &self->main.link);

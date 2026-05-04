@@ -26,7 +26,7 @@ explain select * from test group by id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -70,7 +70,7 @@ explain select id from test group by id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -140,7 +140,7 @@ explain select * from (select id from test group by id) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -182,7 +182,7 @@ explain select id from test group by id limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -226,7 +226,7 @@ explain select id from test group by id limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -264,7 +264,7 @@ explain select id from test group by id offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -317,7 +317,7 @@ explain select * from (select id from test group by id limit 1) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -372,7 +372,7 @@ explain select * from (select id from test group by id limit 1 offset 1) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -419,7 +419,7 @@ explain select * from (select id from test group by id offset 1) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -465,7 +465,7 @@ explain select id from test group by id having id >= 3;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -517,7 +517,7 @@ explain select id from test group by id having id >= 1 limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -558,7 +558,7 @@ explain select id from test group by id having id >= 1 limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -598,7 +598,7 @@ explain select id from test group by id having id >= 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -648,7 +648,7 @@ explain select * from (select id from test group by id having id >= 3) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -694,7 +694,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -744,7 +744,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -793,7 +793,7 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -833,7 +833,7 @@ explain select id from test group by id order by id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -873,7 +873,7 @@ explain select id from test group by id order by id desc;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -919,7 +919,7 @@ explain select * from (select id from test group by id order by id desc) t;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -960,7 +960,7 @@ explain select id from test group by id order by id asc limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1006,7 +1006,7 @@ explain select id from test group by id order by id asc limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1047,7 +1047,7 @@ explain select id from test group by id order by id asc offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1094,7 +1094,7 @@ explain select id from test group by id order by id desc limit 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1140,7 +1140,7 @@ explain select id from test group by id order by id desc limit 1 offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1181,7 +1181,7 @@ explain select id from test group by id order by id desc offset 1;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1243,7 +1243,7 @@ explain select * from (select id from test group by id order by id asc limit 1) 
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1299,7 +1299,7 @@ explain select * from (select id from test group by id order by id asc limit 1 o
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1349,7 +1349,7 @@ explain select * from (select id from test group by id order by id asc offset 1)
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1411,7 +1411,7 @@ explain select * from (select id from test group by id order by id desc limit 1)
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1467,7 +1467,7 @@ explain select * from (select id from test group by id order by id desc limit 1 
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1517,7 +1517,7 @@ explain select * from (select id from test group by id order by id desc offset 1
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      6     # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -1570,7 +1570,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1616,7 +1616,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1663,7 +1663,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1708,7 +1708,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1758,7 +1758,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1813,7 +1813,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1867,7 +1867,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1923,7 +1923,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -1977,7 +1977,7 @@ explain select * from (select data from test where data > 0 group by data having
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      10    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      10    # amelie.test (primary) part",
     "02": "table_readi32       2      1      -     # data",
     "03": "int                 3      -      0     # 0",
     "04": "gtii                4      2      3     ",
@@ -2027,7 +2027,7 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t;
   },
   "pushdown": {
     "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      12    # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      12    # amelie.test (primary) part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",
@@ -12084,7 +12084,7 @@ explain select count(*) from (select count(*) from test group by id) t;
   },
   "pushdown": {
     "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.test (primary) part",
     "02": "table_readi64       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "set_get             2      0      0     ",

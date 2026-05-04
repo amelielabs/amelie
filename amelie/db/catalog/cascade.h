@@ -11,5 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
+void catalog_validate_udfs(Catalog*, Str*, Str*);
 bool cascade_user_drop(Catalog*, Tr*, Str*, bool, bool);
 bool cascade_user_rename(Catalog*, Tr*, Str*, Str*, bool);

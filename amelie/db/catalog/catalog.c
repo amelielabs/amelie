@@ -188,22 +188,6 @@ catalog_status(Catalog* self, Buf* buf)
 	encode_obj_end(buf);
 }
 
-static void
-catalog_validate_udfs(Catalog* self, Str* user, Str* name)
-{
-	// validate udfs dependencies on the relation
-	list_foreach(&self->rels.list)
-	{
-		auto rel = list_at(Rel, link);
-		if (rel->type != REL_UDF)
-			continue;
-		auto udf = udf_of(rel);
-		if (self->iface->udf_depends(udf, user, name))
-			error("function '{str}' depends on relation '{str}.{str}'",
-			      udf->rel.name, user, name);
-	}
-}
-
 bool
 catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 {
@@ -211,6 +195,31 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	auto cmd = ddl_of(op);
 	bool write = false;
 	switch (cmd) {
+	case DDL_DROP:
+	{
+		Str  user;
+		Str  name;
+		bool cascade;
+		auto type = rel_op_drop_read(op, &user, &name, &cascade);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = catalog_drop(self, tr, type, &user, &name, if_exists);
+		break;
+	}
+	case DDL_RENAME:
+	{
+		Str user;
+		Str name;
+		Str user_new;
+		Str name_new;
+		auto type = rel_op_rename_read(op, &user, &name, &user_new, &name_new);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = catalog_rename(self, tr, type, &user, &name,
+		                       &user_new, &name_new,
+		                       if_exists);
+		break;
+	}
 	case DDL_GRANT:
 	{
 		Str     user;
@@ -218,10 +227,11 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str     to;
 		bool    grant;
 		int64_t perms;
-		grant_op_grant_read(op, &user, &name, &to, &grant, &perms);
+		rel_op_grant_read(op, &user, &name, &to, &grant, &perms);
 		write = catalog_grant(self, tr, &user, &name, &to, grant, perms);
 		break;
 	}
+
 	case DDL_USER_CREATE:
 	{
 		auto config = user_op_create_read(op);
@@ -300,40 +310,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		defer(table_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
 		write = table_create(self, tr, config, if_not_exists);
-		break;
-	}
-	case DDL_TABLE_DROP:
-	{
-		Str  user;
-		Str  name;
-		bool cascade;
-		table_op_drop_read(op, &user, &name, &cascade);
-
-		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &user, &name);
-
-		(void)cascade;
-
-		auto if_exists = ddl_if_exists(flags);
-		write = table_drop(self, tr, &user, &name, if_exists);
-		break;
-	}
-	case DDL_TABLE_RENAME:
-	{
-		Str user;
-		Str name;
-		Str user_new;
-		Str name_new;
-		table_op_rename_read(op, &user, &name, &user_new, &name_new);
-
-		// ensure user exists
-		catalog_find_user(self, &user_new, true);
-
-		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &user, &name);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = table_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
 		break;
 	}
 	case DDL_TABLE_TRUNCATE:
@@ -523,37 +499,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = branch_create(self, tr, config, if_not_exists);
 		break;
 	}
-	case DDL_BRANCH_DROP:
-	{
-		Str  user;
-		Str  name;
-		bool cascade;
-		branch_op_drop_read(op, &user, &name, &cascade);
-
-		// ensure no other udfs depend on the branch
-		catalog_validate_udfs(self, &user, &name);
-
-		(void)cascade;
-
-		auto if_exists = ddl_if_exists(flags);
-		write = branch_drop(self, tr, &user, &name, if_exists);
-		break;
-	}
-	case DDL_BRANCH_RENAME:
-	{
-		Str user;
-		Str name;
-		Str user_new;
-		Str name_new;
-		branch_op_rename_read(op, &user, &name, &user_new, &name_new);
-
-		// ensure no other udfs depend on the branch
-		catalog_validate_udfs(self, &user, &name);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = branch_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
-		break;
-	}
 	case DDL_UDF_CREATE:
 	{
 		bool replace;
@@ -564,40 +509,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = udf_create(self, tr, config, replace);
 		break;
 	}
-	case DDL_UDF_DROP:
-	{
-		Str  user;
-		Str  name;
-		bool cascade;
-		udf_op_drop_read(op, &user, &name, &cascade);
-
-		// ensure no other udfs depend on it
-		catalog_validate_udfs(self, &user, &name);
-
-		(void)cascade;
-
-		auto if_exists = ddl_if_exists(flags);
-		write = udf_drop(self, tr, &user, &name, if_exists);
-		break;
-	}
-	case DDL_UDF_RENAME:
-	{
-		Str user;
-		Str name;
-		Str user_new;
-		Str name_new;
-		udf_op_rename_read(op, &user, &name, &user_new, &name_new);
-
-		// ensure user exists and not system
-		catalog_find_user(self, &user_new, true);
-
-		// ensure no other udfs depend on it
-		catalog_validate_udfs(self, &user, &name);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = udf_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
-		break;
-	}
 	case DDL_TOPIC_CREATE:
 	{
 		auto config = topic_op_create_read(op);
@@ -606,74 +517,12 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = topic_create(self, tr, config, if_not_exists);
 		break;
 	}
-	case DDL_TOPIC_DROP:
-	{
-		Str  user;
-		Str  name;
-		bool cascade;
-		topic_op_drop_read(op, &user, &name, &cascade);
-
-		// ensure no other udfs depend on the topic
-		catalog_validate_udfs(self, &user, &name);
-
-		(void)cascade;
-
-		auto if_exists = ddl_if_exists(flags);
-		write = topic_drop(self, tr, &user, &name, if_exists);
-		break;
-	}
-	case DDL_TOPIC_RENAME:
-	{
-		Str user;
-		Str name;
-		Str user_new;
-		Str name_new;
-		topic_op_rename_read(op, &user, &name, &user_new, &name_new);
-
-		// ensure no other udfs depend on the topic
-		catalog_validate_udfs(self, &user, &name);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = topic_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
-		break;
-	}
 	case DDL_SUB_CREATE:
 	{
 		auto config = sub_op_create_read(op);
 		defer(sub_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
 		write = sub_create(self, tr, config, if_not_exists);
-		break;
-	}
-	case DDL_SUB_DROP:
-	{
-		Str  user;
-		Str  name;
-		bool cascade;
-		sub_op_drop_read(op, &user, &name, &cascade);
-
-		// ensure no other udfs depend on the sub
-		catalog_validate_udfs(self, &user, &name);
-
-		(void)cascade;
-
-		auto if_exists = ddl_if_exists(flags);
-		write = sub_drop(self, tr, &user, &name, if_exists);
-		break;
-	}
-	case DDL_SUB_RENAME:
-	{
-		Str user;
-		Str name;
-		Str user_new;
-		Str name_new;
-		sub_op_rename_read(op, &user, &name, &user_new, &name_new);
-
-		// ensure no other udfs depend on the sub
-		catalog_validate_udfs(self, &user, &name);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = sub_rename(self, tr, &user, &name, &user_new, &name_new, if_exists);
 		break;
 	}
 	default:

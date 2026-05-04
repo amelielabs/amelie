@@ -55,7 +55,7 @@ explain insert into test values (0, null);
     "14": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      -      -     # amelie.test [main]",
+    "00": "insert              -      -      -     # amelie.test",
     "01": "ret                 -1     0      -     "
   },
   "access": [["amelie.test", "shared_rw", "insert"]]
@@ -157,7 +157,7 @@ explain insert into test (id) values (0) on conflict do update set data = data +
     "14": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "table_prepare       0      -      -     # amelie.test [main]",
+    "00": "table_prepare       0      -      -     # amelie.test",
     "01": "jmp                 9      0      0     ",
     "02": "int                 1      -      0     # 1",
     "03": "push                1      0      0     ",
@@ -229,7 +229,7 @@ explain insert into test select * from src;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # amelie.src (primary) [main] part",
+    "01": "table_open          1      0      8     # amelie.src (primary) part",
     "02": "table_readi32       2      1      -     # id",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      -     # data",
@@ -238,7 +238,7 @@ explain insert into test select * from src;
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
-    "10": "insert              -      -      -     # amelie.test [main]",
+    "10": "insert              -      -      -     # amelie.test",
     "11": "ret                 -1     0      -     "
   },
   "access": [["amelie.test", "shared_rw", "insert"], ["amelie.src", "shared", "select"]]
