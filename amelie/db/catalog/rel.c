@@ -29,7 +29,8 @@ catalog_drop_of(Catalog* self, Tr* tr, Rel* rel)
 
 bool
 catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
-             bool     if_exists)
+             bool     if_exists,
+             bool     cascade)
 {
 	auto rel = catalog_find(self, type, user, name, false);
 	if (! rel)
@@ -42,17 +43,21 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 	// only owner or superuser
 	check_ownership(tr, rel);
 
-	// ensure no udfs depend on the relation
-	catalog_validate_udfs(self, user, name);
-
-	// ensure branch is not a parent branch
-	if (rel->type == REL_BRANCH)
+	// collect dependencies
+	Buf deps;
+	buf_init(&deps);
+	defer_buf(&deps);
+	auto deps_count = cascade_deps(self, rel, &deps);
+	if (deps_count > 0)
 	{
-		auto branch = branch_of(rel);
-		if (branch_is_parent(self, branch))
-			error("branch '{str}': is a parent branch", name);
+		// cascade drop
+		if (! cascade)
+			error("{s} '{str}': has {d} dependencies", rel_type_of(type),
+			      name, deps_count);
+		cascade_drop(self, tr, &deps);
 	}
 
+	// self
 	catalog_drop_of(self, tr, rel);
 	return true;
 }

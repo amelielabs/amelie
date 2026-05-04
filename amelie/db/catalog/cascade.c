@@ -140,3 +140,74 @@ cascade_user_rename(Catalog* self, Tr* tr,
 	user_rename(self, tr, name, name_new, false);
 	return true;
 }
+
+static inline bool
+cascade_deps_add(Buf* list, Rel* rel)
+{
+	auto it  = (Rel**)list->start;
+	auto end = (Rel**)list->position;
+	for (; it < end; it++)
+		if (*it == rel)
+			return false;
+	buf_write(list, &rel, sizeof(Rel**));
+	return true;
+}
+
+int
+cascade_deps(Catalog* self, Rel* rel, Buf* list)
+{
+	auto count = 0;
+	list_foreach(&self->rels.list)
+	{
+		auto at = list_at(Rel, link);
+		if (at == rel)
+			continue;
+
+		auto add = false;
+		switch (at->type) {
+		case REL_UDF:
+		{
+			auto udf = udf_of(at);
+			add = self->iface->udf_depends(udf, rel->user, rel->name);
+			break;
+		}
+		case REL_BRANCH:
+		{
+			auto branch = branch_of(at);
+			if (rel->type == REL_TABLE)
+			{
+				// drop branch if tables matches is
+				add = branch->table == table_of(rel);
+				break;
+			}
+			if (rel->type == REL_BRANCH)
+			{
+				// drop branch if branch is a child
+				auto ref = branch_of(rel);
+				if (branch->table != ref->table)
+					break;
+				add = branch->config->snapshot.id_parent == ref->config->snapshot.id;
+				break;
+			}
+		}
+		default:
+			break;
+		}
+
+		if (! add)
+			continue;
+
+		if (cascade_deps_add(list, at))
+			count += cascade_deps(self, at, list) + 1;
+	}
+	return count;
+}
+
+void
+cascade_drop(Catalog* self, Tr* tr, Buf* list)
+{
+	auto it  = (Rel**)list->position - 1;
+	auto end = (Rel**)list->start;
+	for (; it >= end; it--)
+		catalog_drop_of(self, tr, *it);
+}

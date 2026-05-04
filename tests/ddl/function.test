@@ -334,6 +334,14 @@ drop function test_dep;
 drop function test;
 drop function test_dep;
 
+# test: drop function with udf dep (cascade)
+create function test_dep() begin end;
+create function test() begin select test_dep(); end;
+explain select test();
+drop function test_dep;
+drop function test_dep cascade;
+show functions;
+
 # test: alter function statement parsing
 alter;
 alter function;

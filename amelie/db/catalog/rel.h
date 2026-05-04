@@ -12,7 +12,7 @@
 //
 
 void catalog_drop_of(Catalog*, Tr*, Rel*);
-bool catalog_drop(Catalog*, Tr*, RelType, Str*, Str*, bool);
+bool catalog_drop(Catalog*, Tr*, RelType, Str*, Str*, bool, bool);
 void catalog_rename_of(Catalog*, Tr*, Rel*, Str*, Str*);
 bool catalog_rename(Catalog*, Tr*, RelType, Str*, Str*, Str*, Str*, bool);
 bool catalog_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t);

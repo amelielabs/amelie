@@ -51,9 +51,29 @@ show functions verbose;
   "grants": []
 }]
 drop table test;
-error: function 'dep' depends on relation 'amelie.test'
+error: table 'test': has 1 dependencies
 # test: drop table after udf drop
 drop function dep;
 drop table test;
+# test: drop table with udf dep (cascade)
+create table test (id int primary key);
+create function dep() begin insert into test values (123); end;
+show functions verbose;
+[{
+  "user": "amelie",
+  "name": "dep",
+  "text": "begin insert into test values (123); end",
+  "type": 0,
+  "args": [],
+  "returning": [],
+  "grants": []
+}]
+drop table test;
+error: table 'test': has 1 dependencies
+drop table test cascade;
+show tables;
+[]
+show functions;
+[]
 disconnect S0;
 close E0;

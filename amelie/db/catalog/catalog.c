@@ -203,7 +203,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto type = rel_op_drop_read(op, &user, &name, &cascade);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = catalog_drop(self, tr, type, &user, &name, if_exists);
+		write = catalog_drop(self, tr, type, &user, &name, if_exists, cascade);
 		break;
 	}
 	case DDL_RENAME:

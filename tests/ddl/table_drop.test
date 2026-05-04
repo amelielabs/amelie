@@ -44,5 +44,15 @@ drop table test;
 drop function dep;
 drop table test;
 
+# test: drop table with udf dep (cascade)
+create table test (id int primary key);
+create function dep() begin insert into test values (123); end;
+show functions verbose;
+drop table test;
+drop table test cascade;
+
+show tables;
+show functions;
+
 disconnect S0;
 close E0;

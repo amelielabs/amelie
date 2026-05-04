@@ -777,10 +777,40 @@ explain select test();
   }]
 }
 drop function test_dep;
-error: function 'test' depends on relation 'amelie.test_dep'
+error: function 'test_dep': has 1 dependencies
 # test: drop function after dep drop
 drop function test;
 drop function test_dep;
+# test: drop function with udf dep (cascade)
+create function test_dep() begin end;
+create function test() begin select test_dep(); end;
+explain select test();
+{
+  "main": {
+    "00": "call_udf            0      -      -     # amelie.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["amelie.test", "call", "execute"], ["amelie.test_dep", "call", "execute"]],
+  "calls": [{
+    "function": "amelie.test",
+    "main": {
+      "00": "call_udf            0      -      -     # amelie.test_dep()",
+      "01": "ret                 -1     0      -     "
+    },
+    "access": [["amelie.test_dep", "call", "execute"]]
+  }, {
+    "function": "amelie.test_dep",
+    "main": {
+      "00": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}
+drop function test_dep;
+error: function 'test_dep': has 1 dependencies
+drop function test_dep cascade;
+show functions;
+[]
 # test: alter function statement parsing
 alter;
 error: alter❰;❱ ⟵ relation type expected
