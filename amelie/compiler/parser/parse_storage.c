@@ -91,7 +91,7 @@ parse_storage_drop(Stmt* self)
 void
 parse_storage_alter(Stmt* self)
 {
-	// ALTER STORAGE [IF EXISTS] name RENAME name
+	// ALTER STORAGE [IF EXISTS] name RENAME TO name
 	auto stmt = ast_storage_alter_allocate();
 	self->ast = &stmt->ast;
 

@@ -24,6 +24,7 @@ static inline void
 branch_free(Branch* self, bool drop)
 {
 	unused(drop);
+	snapshot_mgr_remove(&self->table->snapshot_mgr, &self->config->snapshot);
 	branch_config_free(self->config);
 	am_free(self);
 }
@@ -70,7 +71,6 @@ branch_create(Catalog*      self,
 			error("relation '{str}': already exists", &config->name);
 		return false;
 	}
-	check_type(rel, REL_BRANCH);
 
 	// ensure table exists
 	auto table = catalog_find_table(self, &config->table_user, &config->table, true);
@@ -152,6 +152,9 @@ rename_if_abort(Log* self, LogOp* op)
 
 	Catalog* catalog = op->iface_arg;
 	rel_mgr_rename(&catalog->rels, op->rel, &user, &name);
+
+	auto branch = branch_of(op->rel);
+	str_set_str(&branch->config->snapshot.alias, branch->rel.name);
 }
 
 static LogIf rename_if =
@@ -193,6 +196,7 @@ branch_rename(Catalog* self,
 
 	// set new name
 	rel_mgr_rename(&self->rels, &branch->rel, user_new, name_new);
+	str_set_str(&branch->config->snapshot.alias, branch->rel.name);
 	return true;
 }
 
