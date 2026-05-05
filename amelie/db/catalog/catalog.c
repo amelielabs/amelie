@@ -260,14 +260,14 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = user_rename(self, tr, &name, &name_new, if_exists);
 		break;
 	}
-	case DDL_USER_REVOKE:
+	case DDL_USER_REVOKE_TOKEN:
 	{
 		Str name;
 		Str revoked_at;
-		user_op_revoke_read(op, &name, &revoked_at);
+		user_op_revoke_token_read(op, &name, &revoked_at);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = user_revoke(self, tr, &name, &revoked_at, if_exists);
+		write = user_revoke_token(self, tr, &name, &revoked_at, if_exists);
 		break;
 	}
 	case DDL_STORAGE_CREATE:

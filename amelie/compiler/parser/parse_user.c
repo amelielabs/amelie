@@ -109,7 +109,7 @@ parse_user_alter(Stmt* self)
 		stmt_expect(self, KTOKEN);
 
 		// REVOKE
-		stmt->type = USER_ALTER_REVOKE;
+		stmt->type = USER_ALTER_REVOKE_TOKEN;
 
 		// set timestamp
 		auto ts = palloc(64);

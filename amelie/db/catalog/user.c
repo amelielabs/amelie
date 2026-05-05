@@ -328,14 +328,14 @@ user_grant(Catalog* self,
 }
 
 static void
-revoke_if_commit(Log* self, LogOp* op)
+revoke_token_if_commit(Log* self, LogOp* op)
 {
 	unused(self);
 	unused(op);
 }
 
 static void
-revoke_if_abort(Log* self, LogOp* op)
+revoke_token_if_abort(Log* self, LogOp* op)
 {
 	// set previous revoked_at
 	uint8_t* pos = log_data_of(self, op);
@@ -347,18 +347,18 @@ revoke_if_abort(Log* self, LogOp* op)
 	user_sync(user);
 }
 
-static LogIf revoke_if =
+static LogIf revoke_token_if =
 {
-	.commit = revoke_if_commit,
-	.abort  = revoke_if_abort
+	.commit = revoke_token_if_commit,
+	.abort  = revoke_token_if_abort
 };
 
 bool
-user_revoke(Catalog* self,
-            Tr*      tr,
-            Str*     name,
-            Str*     revoked_at,
-            bool     if_exists)
+user_revoke_token(Catalog* self,
+                  Tr*      tr,
+                  Str*     name,
+                  Str*     revoked_at,
+                  bool     if_exists)
 {
 	auto user = catalog_find_user(self, name, false);
 	if (! user)
@@ -375,7 +375,7 @@ user_revoke(Catalog* self,
 	self->iface->user_invalidate(self, user);
 
 	// update user
-	log_ddl(&tr->log, &revoke_if, NULL, &user->rel);
+	log_ddl(&tr->log, &revoke_token_if, NULL, &user->rel);
 
 	// save previous revoked_at for rollback
 	encode_str(&tr->log.data, &user->config->revoked_at);

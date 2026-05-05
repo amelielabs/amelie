@@ -86,12 +86,12 @@ user_op_rename_read(uint8_t* op, Str* name, Str* name_new)
 }
 
 static inline int
-user_op_revoke(Buf* self, Str* name, Str* revoked_at)
+user_op_revoke_token(Buf* self, Str* name, Str* revoked_at)
 {
 	// [op, name, name_new]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_USER_REVOKE);
+	encode_int(self, DDL_USER_REVOKE_TOKEN);
 	encode_str(self, name);
 	encode_str(self, revoked_at);
 	encode_array_end(self);
@@ -99,12 +99,12 @@ user_op_revoke(Buf* self, Str* name, Str* revoked_at)
 }
 
 static inline void
-user_op_revoke_read(uint8_t* op, Str* name, Str* revoked_at)
+user_op_revoke_token_read(uint8_t* op, Str* name, Str* revoked_at)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_USER_REVOKE);
+	assert(cmd == DDL_USER_REVOKE_TOKEN);
 	unpack_str(&op, name);
 	unpack_str(&op, revoked_at);
 	unpack_array_end(&op);

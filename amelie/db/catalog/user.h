@@ -24,7 +24,7 @@ struct User
 bool user_create(Catalog*, Tr*, UserConfig*, bool);
 bool user_drop(Catalog*, Tr*, Str*, bool, bool);
 bool user_rename(Catalog*, Tr*, Str*, Str*, bool);
-bool user_revoke(Catalog*, Tr*, Str*, Str*, bool);
+bool user_revoke_token(Catalog*, Tr*, Str*, Str*, bool);
 bool user_grant(Catalog*, Tr*, Str*, bool, uint32_t, bool);
 
 always_inline static inline User*

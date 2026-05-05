@@ -204,8 +204,8 @@ emit_ddl(Compiler* self)
 		if (arg->type == USER_ALTER_RENAME)
 			offset = user_op_rename(data, &arg->name->string, &arg->name_new->string);
 		else
-		if (arg->type == USER_ALTER_REVOKE)
-			offset = user_op_revoke(data, &arg->name->string, &arg->revoked_at);
+		if (arg->type == USER_ALTER_REVOKE_TOKEN)
+			offset = user_op_revoke_token(data, &arg->name->string, &arg->revoked_at);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

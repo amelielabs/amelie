@@ -33,7 +33,7 @@ struct AstUserDrop
 enum
 {
 	USER_ALTER_RENAME,
-	USER_ALTER_REVOKE
+	USER_ALTER_REVOKE_TOKEN
 };
 
 struct AstUserAlter
