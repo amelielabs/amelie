@@ -235,6 +235,8 @@ websocket_recv(Websocket* self, uint8_t* data, int data_size)
 	// [websocket header][data]
 	if (! ws_recv(&self->frame, self->client))
 		return false;
+	if (!self->client_mode && !self->frame.mask)
+		error("websocket: client frame without mask");
 	if (self->frame.opcode == WS_CLOSE)
 		return false;
 	if (data_size > 0)
