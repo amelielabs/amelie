@@ -47,21 +47,21 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 	Buf deps;
 	buf_init(&deps);
 	defer_buf(&deps);
-	auto deps_count = cascade_deps(self, rel, &deps);
-	if (deps_count > 0)
+	auto count = catalog_deps(self, rel, &deps);
+	if (count > 0)
 	{
 		// cascade drop
 		if (! cascade)
 		{
 			auto first = *(Rel**)deps.start;
-			if (deps_count >= 2)
+			if (count >= 2)
 				error("{s} '{str}': depends on '{str}.{str}' and {d} more", rel_type_of(type),
-				      name, first->user, first->name, deps_count - 1);
+				      name, first->user, first->name, count - 1);
 			else
 				error("{s} '{str}': depends on '{str}.{str}'", rel_type_of(type),
 				      name, first->user, first->name);
 		}
-		cascade_drop(self, tr, &deps);
+		catalog_deps_drop(self, tr, &deps);
 	}
 
 	// self
@@ -142,8 +142,8 @@ catalog_rename(Catalog* self,
 	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
 		error("relation '{str}': already exists", name_new);
 
-	// ensure no udfs depend on the relation
-	catalog_validate_udfs(self, user, name);
+	// ensure no strict dependecies
+	catalog_deps_validate(self, rel, true);
 
 	catalog_rename_of(self, tr, rel, user_new, name_new);
 	return true;

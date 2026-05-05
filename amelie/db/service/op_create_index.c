@@ -72,6 +72,6 @@ service_create_index(Service* self, Tr* tr, uint8_t* op, int flags)
 	lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
 
 	// attach index to the table
-	table_index_add(table, tr, config);
+	table_index_add(self->catalog, table, tr, config);
 	log_persist_cmd(&tr->log, NULL, op);
 }

@@ -20,22 +20,6 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-void
-catalog_validate_udfs(Catalog* self, Str* user, Str* name)
-{
-	// validate udfs dependencies on the relation
-	list_foreach(&self->rels.list)
-	{
-		auto rel = list_at(Rel, link);
-		if (rel->type != REL_UDF)
-			continue;
-		auto udf = udf_of(rel);
-		if (self->iface->udf_depends(udf, user, name))
-			error("function '{str}' depends on relation '{str}.{str}'",
-			      udf->rel.name, user, name);
-	}
-}
-
 static void
 cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 {
@@ -91,7 +75,7 @@ cascade_user_rename(Catalog* self, Tr* tr,
 }
 
 hot bool
-cascade_deps_add(Buf* list, Rel* rel)
+catalog_deps_add(Buf* list, Rel* rel)
 {
 	auto it  = (Rel**)list->start;
 	auto end = (Rel**)list->position;
@@ -103,7 +87,7 @@ cascade_deps_add(Buf* list, Rel* rel)
 }
 
 hot int
-cascade_deps(Catalog* self, Rel* rel, Buf* list)
+catalog_deps(Catalog* self, Rel* rel, Buf* list)
 {
 	auto count = 0;
 	list_foreach(&self->rels.list)
@@ -138,6 +122,7 @@ cascade_deps(Catalog* self, Rel* rel, Buf* list)
 				add = branch->config->snapshot.id_parent == ref->config->snapshot.id;
 				break;
 			}
+			break;
 		}
 		default:
 			break;
@@ -146,17 +131,73 @@ cascade_deps(Catalog* self, Rel* rel, Buf* list)
 		if (! add)
 			continue;
 
-		if (cascade_deps_add(list, at))
-			count += cascade_deps(self, at, list) + 1;
+		if (catalog_deps_add(list, at))
+			count += catalog_deps(self, at, list) + 1;
 	}
 	return count;
 }
 
 void
-cascade_drop(Catalog* self, Tr* tr, Buf* list)
+catalog_deps_drop(Catalog* self, Tr* tr, Buf* list)
 {
 	auto it  = (Rel**)list->position - 1;
 	auto end = (Rel**)list->start;
 	for (; it >= end; it--)
 		catalog_drop_of(self, tr, *it);
+}
+
+bool
+catalog_deps_validate(Catalog* self, Rel* rel, bool error_on_match)
+{
+	// no recursion
+	list_foreach(&self->rels.list)
+	{
+		auto at = list_at(Rel, link);
+		if (at == rel)
+			continue;
+
+		auto dep = false;
+		switch (at->type) {
+		case REL_UDF:
+		{
+			// udf depends on the relation
+			auto udf = udf_of(at);
+			dep = self->iface->udf_depends(udf, rel->user, rel->name);
+			break;
+		}
+		case REL_BRANCH:
+		{
+			// branch depends on the relation (which is table or branch)
+			auto branch = branch_of(at);
+			if (rel->type == REL_TABLE)
+			{
+				dep = branch->table == table_of(rel);
+				break;
+			}
+			if (rel->type == REL_BRANCH)
+			{
+				auto ref = branch_of(rel);
+				if (branch->table != ref->table)
+					break;
+				dep = branch->config->snapshot.id_parent == ref->config->snapshot.id;
+				break;
+			}
+			break;
+		}
+		default:
+			break;
+		}
+
+		if (dep)
+		{
+			if (error_on_match)
+			{
+				error("{s} '{str}.{str}' depends on {s} '{str}'",
+				      rel_type_of(at->type), at->user, at->name,
+				      rel_type_of(rel->type), rel->name);
+			}
+			return false;
+		}
+	}
+	return true;
 }

@@ -56,15 +56,16 @@ static LogIf add_if =
 };
 
 void
-table_index_add(Table* self, Tr* tr, IndexConfig* config)
+table_index_add(Catalog* self, Table* table, Tr* tr, IndexConfig* config)
 {
 	// only owner or superuser
-	check_ownership(tr, &self->rel);
+	unused(self);
+	check_ownership(tr, &table->rel);
 
-	table_config_index_add(self->config, config);
+	table_config_index_add(table->config, config);
 
 	// update table
-	log_ddl(&tr->log, &add_if, index, &self->rel);
+	log_ddl(&tr->log, &add_if, index, &table->rel);
 
 	// use separate log command for create
 	// index processing
@@ -94,25 +95,29 @@ static LogIf drop_if =
 };
 
 bool
-table_index_drop(Table* self,
-                 Tr*    tr,
-                 Str*   name,
-                 bool   if_exists)
+table_index_drop(Catalog* self,
+                 Table*   table,
+                 Tr*      tr,
+                 Str*     name,
+                 bool     if_exists)
 {
 	// only owner or superuser
-	check_ownership(tr, &self->rel);
+	check_ownership(tr, &table->rel);
 
-	auto index = table_index_find(self, name, false);
+	auto index = table_index_find(table, name, false);
 	if (! index)
 	{
 		if (! if_exists)
 			error("table '{str}' index '{str}': not exists",
-			      &self->config->name, name);
+			      &table->config->name, name);
 		return false;
 	}
 
+	// ensure no strict dependecies
+	catalog_deps_validate(self, &table->rel, true);
+
 	// update table
-	log_ddl(&tr->log, &drop_if, index, &self->rel);
+	log_ddl(&tr->log, &drop_if, index, &table->rel);
 	return true;
 }
 
@@ -141,31 +146,35 @@ static LogIf rename_if =
 };
 
 bool
-table_index_rename(Table* self,
-                   Tr*    tr,
-                   Str*   name,
-                   Str*   name_new,
-                   bool   if_exists)
+table_index_rename(Catalog* self,
+                   Table*   table,
+                   Tr*      tr,
+                   Str*     name,
+                   Str*     name_new,
+                   bool     if_exists)
 {
 	// only owner or superuser
-	check_ownership(tr, &self->rel);
+	check_ownership(tr, &table->rel);
 
-	auto index = table_index_find(self, name, false);
+	auto index = table_index_find(table, name, false);
 	if (! index)
 	{
 		if (! if_exists)
 			error("table '{str}' index '{str}': not exists",
-			      &self->config->name, name);
+			      &table->config->name, name);
 		return false;
 	}
 
 	// ensure new index not exists
-	if (table_index_find(self, name_new, false))
+	if (table_index_find(table, name_new, false))
 		error("table '{str}' index '{str}': already exists",
-		      &self->config->name, name_new);
+		      &table->config->name, name_new);
+
+	// ensure no strict dependecies
+	catalog_deps_validate(self, &table->rel, true);
 
 	// update table
-	log_ddl(&tr->log, &rename_if, index, &self->rel);
+	log_ddl(&tr->log, &rename_if, index, &table->rel);
 
 	// save previous name
 	encode_str(&tr->log.data, &index->name);

@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-void catalog_validate_udfs(Catalog*, Str*, Str*);
 bool cascade_user_rename(Catalog*, Tr*, Str*, Str*, bool);
 
-bool cascade_deps_add(Buf*, Rel*);
-int  cascade_deps(Catalog*, Rel*, Buf*);
-void cascade_drop(Catalog*, Tr*, Buf*);
+bool catalog_deps_add(Buf*, Rel*);
+int  catalog_deps(Catalog*, Rel*, Buf*);
+void catalog_deps_drop(Catalog*, Tr*, Buf*);
+bool catalog_deps_validate(Catalog*, Rel*, bool);

@@ -108,13 +108,13 @@ user_drop_of(Catalog* self,
 					catalog_grant_of(self, tr, rel, user->name, false, PERM_ALL);
 				continue;
 			}
-			count += cascade_deps(self, rel, &deps) + 1;
-			cascade_deps_add(&deps, rel);
+			count += catalog_deps(self, rel, &deps) + 1;
+			catalog_deps_add(&deps, rel);
 		}
 
 		// drop relations
 		if (count > 0)
-			cascade_drop(self, tr, &deps);
+			catalog_deps_drop(self, tr, &deps);
 
 		// drop cascade all child users
 		list_foreach(&self->users.list)

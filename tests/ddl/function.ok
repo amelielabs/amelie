@@ -852,7 +852,7 @@ drop function test;
 create function test_dep() begin end;
 create function test() begin select test_dep(); end;
 alter function test_dep rename to test_dep2;
-error: function 'test' depends on relation 'amelie.test_dep'
+error: function 'amelie.test' depends on function 'test_dep'
 # test: alter function rename after after dep drop
 drop function test;
 alter function test_dep rename to test_dep2;

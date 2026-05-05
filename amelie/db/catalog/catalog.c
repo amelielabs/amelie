@@ -355,9 +355,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name_column;
 		table_op_column_drop_read(op, &user, &name, &name_column);
 
-		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &user, &name);
-
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
 		write = table_column_drop(self, tr, &user, &name,
@@ -373,9 +370,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name_column;
 		Str name_column_new;
 		table_op_column_set_read(op, &user, &name, &name_column, &name_column_new);
-
-		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &user, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
@@ -467,12 +461,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name_index;
 		table_op_index_drop_read(op, &user, &name, &name_index);
 
-		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &user, &name);
-
 		auto table = catalog_find_table(self, &user, &name, true);
 		auto if_exists = ddl_if_exists(flags);
-		write = table_index_drop(table, tr, &name_index, if_exists);
+		write = table_index_drop(self, table, tr, &name_index, if_exists);
 		break;
 	}
 	case DDL_INDEX_RENAME:
@@ -483,12 +474,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name_index_new;
 		table_op_index_rename_read(op, &user, &name, &name_index, &name_index_new);
 
-		// ensure no other udfs depend on the table
-		catalog_validate_udfs(self, &user, &name);
-
 		auto table = catalog_find_table(self, &user, &name, true);
 		auto if_exists = ddl_if_exists(flags);
-		write = table_index_rename(table, tr, &name_index, &name_index_new, if_exists);
+		write = table_index_rename(self, table, tr, &name_index, &name_index_new, if_exists);
 		break;
 	}
 	case DDL_BRANCH_CREATE:

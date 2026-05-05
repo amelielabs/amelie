@@ -137,6 +137,9 @@ table_column_rename(Catalog* self,
 		      name, name_column_new);
 	}
 
+	// ensure no strict dependecies
+	catalog_deps_validate(self, &table->rel, true);
+
 	// update table
 	log_ddl(&tr->log, &column_rename_if, column, &table->rel);
 
@@ -276,6 +279,9 @@ table_column_drop(Catalog* self,
 	// ensure column currently not used as a key
 	if (column->refs > 0)
 		error("table '{str}': column '{str}' is a key", name, name_column);
+
+	// ensure no strict dependecies
+	catalog_deps_validate(self, &table->rel, true);
 
 	// update log
 	log_ddl(&tr->log, &column_drop_if, column, &table->rel);
