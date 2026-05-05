@@ -51,7 +51,7 @@ show functions verbose;
   "grants": []
 }]
 drop table test;
-error: table 'test': has 1 dependencies
+error: table 'test': depends on 'amelie.dep'
 # test: drop table after udf drop
 drop function dep;
 drop table test;
@@ -69,7 +69,7 @@ show functions verbose;
   "grants": []
 }]
 drop table test;
-error: table 'test': has 1 dependencies
+error: table 'test': depends on 'amelie.dep'
 drop table test cascade;
 show tables;
 []

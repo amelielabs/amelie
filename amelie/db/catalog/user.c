@@ -84,11 +84,72 @@ user_create(Catalog*    self,
 	return true;
 }
 
+static void
+user_drop_of(Catalog* self,
+             Tr*      tr,
+             Rel*     user,
+             bool     cascade)
+{
+	if (cascade)
+	{
+		// drop cascade all owned relations
+		Buf deps;
+		buf_init(&deps);
+		defer_buf(&deps);
+
+		auto count = 0;
+		list_foreach(&self->rels.list)
+		{
+			auto rel = list_at(Rel, link);
+			if (! str_compare(rel->user, user->name))
+			{
+				// revoke all permissions
+				if (grants_find(rel->grants, user->name))
+					catalog_grant_of(self, tr, rel, user->name, false, PERM_ALL);
+				continue;
+			}
+			count += cascade_deps(self, rel, &deps) + 1;
+			cascade_deps_add(&deps, rel);
+		}
+
+		// drop relations
+		if (count > 0)
+			cascade_drop(self, tr, &deps);
+
+		// drop cascade all child users
+		list_foreach(&self->users.list)
+		{
+			auto rel = list_at(Rel, link);
+			if (! str_compare(rel->user, user->name))
+				continue;
+			user_drop_of(self, tr, rel, true);
+		}
+
+	} else
+	{
+		// ensure user has no relations
+		list_foreach(&self->rels.list)
+		{
+			auto rel = list_at(Rel, link);
+			if (str_compare(rel->user, user->name))
+				error("user '{str}' still has {s} '{str}'", user->name,
+				      rel_type_of(rel->type), rel->name);
+		}
+	}
+
+	// invalidate auth caches
+	self->iface->user_invalidate(self, user_of(user));
+
+	// drop user by object
+	rel_mgr_drop(&self->users, tr, user);
+}
+
 bool
 user_drop(Catalog* self,
           Tr*      tr,
           Str*     name,
-          bool     if_exists)
+          bool     if_exists,
+          bool     cascade)
 {
 	auto user = catalog_find_user(self, name, false);
 	if (! user)
@@ -105,8 +166,8 @@ user_drop(Catalog* self,
 	if (user->config->superuser)
 		error("user '{str}': system user cannot be dropped", name);
 
-	// drop user by object
-	rel_mgr_drop(&self->users, tr, &user->rel);
+	// drop user relations, user and child users
+	user_drop_of(self, tr, &user->rel, cascade);
 	return true;
 }
 

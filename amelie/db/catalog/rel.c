@@ -52,8 +52,15 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 	{
 		// cascade drop
 		if (! cascade)
-			error("{s} '{str}': has {d} dependencies", rel_type_of(type),
-			      name, deps_count);
+		{
+			auto first = *(Rel**)deps.start;
+			if (deps_count >= 2)
+				error("{s} '{str}': depends on '{str}.{str}' and {d} more", rel_type_of(type),
+				      name, first->user, first->name, deps_count - 1);
+			else
+				error("{s} '{str}': depends on '{str}.{str}'", rel_type_of(type),
+				      name, first->user, first->name);
+		}
 		cascade_drop(self, tr, &deps);
 	}
 
@@ -165,6 +172,31 @@ static LogIf grant_if =
 	.abort  = grant_if_abort
 };
 
+void
+catalog_grant_of(Catalog* self,
+                 Tr*      tr,
+                 Rel*     rel,
+                 Str*     to,
+                 bool     grant,
+                 uint32_t perms)
+{
+	// (no check)
+	unused(self);
+
+	// update table
+	log_ddl(&tr->log, &grant_if, NULL, rel);
+
+	// save previous grants
+	auto grants = rel->grants;
+	grants_write(grants, &tr->log.data, 0);
+
+	// set new grants
+	if (grant)
+		grants_add(grants, to, perms);
+	else
+		grants_remove(grants, to, perms);
+}
+
 bool
 catalog_grant(Catalog* self,
               Tr*      tr,
@@ -221,17 +253,7 @@ catalog_grant(Catalog* self,
 	}
 	perms = permission_validate(user, name, perms, perms_all);
 
-	// update table
-	log_ddl(&tr->log, &grant_if, NULL, rel);
-
-	// save previous grants
-	auto grants = rel->grants;
-	grants_write(grants, &tr->log.data, 0);
-
-	// set new grants
-	if (grant)
-		grants_add(grants, to, perms);
-	else
-		grants_remove(grants, to, perms);
+	// grant/revoke
+	catalog_grant_of(self, tr, rel, to, grant, perms);
 	return true;
 }

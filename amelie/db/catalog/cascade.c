@@ -37,57 +37,6 @@ catalog_validate_udfs(Catalog* self, Str* user, Str* name)
 }
 
 static void
-cascade_user_error(Str* user, Rel* dep)
-{
-	error("user '{str}' still has {s} '{str}'", user,
-	      rel_type_of(dep->type), dep->name);
-}
-
-static void
-cascade_user_drop_execute(Catalog* self, Tr* tr, Str* user, bool cascade)
-{
-	// validate or drop all objects matching the user
-	list_foreach_safe(&self->rels.list)
-	{
-		auto rel = list_at(Rel, link);
-		if (! str_compare(rel->user, user))
-			continue;
-		if (! cascade)
-			cascade_user_error(user, rel);
-		catalog_drop_of(self, tr, rel);
-	}
-}
-
-bool
-cascade_user_drop(Catalog* self, Tr* tr, Str* name,
-                  bool     cascade,
-                  bool     if_exists)
-{
-	auto user = catalog_find_user(self, name, false);
-	if (! user)
-	{
-		if (! if_exists)
-			error("user '{str}': not exists", name);
-		return false;
-	}
-
-	// only user owner can do that or superuser
-	check_ownership_user(tr, &user->rel);
-
-	if (user->config->superuser)
-		error("user '{str}': system user cannot be dropped", name);
-
-	// invalidate auth caches
-	self->iface->user_invalidate(self, user);
-
-	// validate or drop all objects matching the user
-	cascade_user_drop_execute(self, tr, name, cascade);
-
-	user_drop(self, tr, name, false);
-	return true;
-}
-
-static void
 cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
 {
 	/*
@@ -141,7 +90,7 @@ cascade_user_rename(Catalog* self, Tr* tr,
 	return true;
 }
 
-static inline bool
+hot bool
 cascade_deps_add(Buf* list, Rel* rel)
 {
 	auto it  = (Rel**)list->start;
@@ -153,7 +102,7 @@ cascade_deps_add(Buf* list, Rel* rel)
 	return true;
 }
 
-int
+hot int
 cascade_deps(Catalog* self, Rel* rel, Buf* list)
 {
 	auto count = 0;

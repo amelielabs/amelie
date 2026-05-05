@@ -777,7 +777,7 @@ explain select test();
   }]
 }
 drop function test_dep;
-error: function 'test_dep': has 1 dependencies
+error: function 'test_dep': depends on 'amelie.test'
 # test: drop function after dep drop
 drop function test;
 drop function test_dep;
@@ -807,7 +807,7 @@ explain select test();
   }]
 }
 drop function test_dep;
-error: function 'test_dep': has 1 dependencies
+error: function 'test_dep': depends on 'amelie.test'
 drop function test_dep cascade;
 show functions;
 []
