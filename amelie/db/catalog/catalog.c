@@ -257,7 +257,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		user_op_rename_read(op, &name, &name_new);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = cascade_user_rename(self, tr, &name, &name_new, if_exists);
+		write = user_rename(self, tr, &name, &name_new, if_exists);
 		break;
 	}
 	case DDL_USER_REVOKE:

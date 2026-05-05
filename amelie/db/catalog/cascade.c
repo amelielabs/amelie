@@ -20,60 +20,6 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-static void
-cascade_user_rename_execute(Catalog* self, Tr* tr, Str* user, Str* user_new)
-{
-	/*
-	// ensure no udfs depend on the relation
-	catalog_validate_udfs(self, user, name);
-	*/
-
-	list_foreach_safe(&self->rels.list)
-	{
-		auto rel = list_at(Rel, link);
-		if (! str_compare(rel->user, user))
-			continue;
-
-		if (rel->type == REL_UDF)
-		{
-			auto udf = udf_of(rel);
-			error("function '{str}' depends on user '{str}",
-			      udf->rel.name, user);
-			break;
-		}
-
-		catalog_rename_of(self, tr, rel, user_new, rel->name);
-	}
-}
-
-bool
-cascade_user_rename(Catalog* self, Tr* tr,
-                    Str*     name,
-                    Str*     name_new,
-                    bool     if_exists)
-{
-	auto user = catalog_find_user(self, name, false);
-	if (! user)
-	{
-		if (! if_exists)
-			error("user '{str}': not exists", name);
-		return false;
-	}
-
-	// only user owner can do that or superuser
-	check_ownership_user(tr, &user->rel);
-
-	if (user->config->superuser)
-		error("user '{str}': system user cannot be renamed", name);
-
-	// rename all user objects
-	cascade_user_rename_execute(self, tr, name, name_new);
-
-	// rename user
-	user_rename(self, tr, name, name_new, false);
-	return true;
-}
-
 hot bool
 catalog_deps_add(Buf* list, Rel* rel)
 {
@@ -198,6 +144,56 @@ catalog_deps_validate(Catalog* self, Rel* rel, bool error_on_match)
 			}
 			return false;
 		}
+	}
+	return true;
+}
+
+bool
+catalog_deps_validate_user(Catalog* self, Str* user, bool error_on_match)
+{
+	// no recursion
+	list_foreach(&self->rels.list)
+	{
+		auto at  = list_at(Rel, link);
+		auto dep = false;
+		switch (at->type) {
+		case REL_UDF:
+		{
+			// udf depends on the user
+			auto udf = udf_of(at);
+			dep = self->iface->udf_depends(udf, user, NULL);
+			break;
+		}
+		case REL_BRANCH:
+		{
+			// branch depends on the user
+			auto branch = branch_of(at);
+			dep = str_compare(&branch->config->table_user, user);
+			break;
+		}
+		default:
+			break;
+		}
+
+		if (dep)
+		{
+			if (error_on_match)
+			{
+				error("{s} '{str}.{str}' depends on user '{str}'",
+				      rel_type_of(at->type), at->user, at->name,
+				      user);
+			}
+			return false;
+		}
+	}
+
+	// ensure not child users
+	list_foreach(&self->users.list)
+	{
+		auto at = list_at(Rel, link);
+		if (str_compare(at->user, user))
+			error("user '{str}' depends on user '{str}'",
+			      at->user, user);
 	}
 	return true;
 }

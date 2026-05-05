@@ -222,6 +222,21 @@ user_rename(Catalog* self,
 	if (catalog_find_user(self, name_new, false))
 		error("user '{str}': already exists", name_new);
 
+	// ensure no strict dependecies on the user name (udfs, branches or users)
+	catalog_deps_validate_user(self, name, true);
+
+	// rename own relations and grants
+	list_foreach_safe(&self->rels.list)
+	{
+		auto rel = list_at(Rel, link);
+		if (str_compare(rel->user, name))
+			catalog_rename_of(self, tr, rel, name_new, rel->name);
+
+		// rename grants
+		if (grants_find(rel->grants, name))
+			catalog_grant_rename_of(self, tr, rel, name, name_new);
+	}
+
 	// update user
 	log_ddl(&tr->log, &rename_if, self, &user->rel);
 

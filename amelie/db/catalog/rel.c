@@ -257,3 +257,29 @@ catalog_grant(Catalog* self,
 	catalog_grant_of(self, tr, rel, to, grant, perms);
 	return true;
 }
+
+void
+catalog_grant_rename_of(Catalog* self,
+                        Tr*      tr,
+                        Rel*     rel,
+                        Str*     user,
+                        Str*     user_new)
+{
+	// (no check)
+	unused(self);
+
+	// update table
+	log_ddl(&tr->log, &grant_if, NULL, rel);
+
+	// save previous grants
+	auto grants = rel->grants;
+	grants_write(grants, &tr->log.data, 0);
+
+	// rename and replace grants
+	Grants grants_new;
+	grants_init(&grants_new);
+	defer(grants_free, &grants_new);
+	grants_copy_rename(&grants_new, grants, user, user_new);
+	grants_reset(grants);
+	grants_copy(grants, &grants_new);
+}
