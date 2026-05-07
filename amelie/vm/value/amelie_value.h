@@ -30,6 +30,9 @@
 #include "value/json_obj.h"
 #include "value/update.h"
 
+// text
+#include "value/text.h"
+
 // row
 #include "value/row.h"
 

@@ -243,6 +243,7 @@ set(AMELIE_SOURCES_SYNC
     ${AMELIE_ROOT}/sync/repl/repl.c)
 
 set(AMELIE_SOURCES_VM
+    ${AMELIE_ROOT}/vm/value/text.c
     ${AMELIE_ROOT}/vm/value/update.c
     ${AMELIE_ROOT}/vm/value/row.c
     ${AMELIE_ROOT}/vm/value/like.c
@@ -253,6 +254,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/set/all.c
     ${AMELIE_ROOT}/vm/set/in.c
     ${AMELIE_ROOT}/vm/set/sub.c
+    ${AMELIE_ROOT}/vm/output/print.c
     ${AMELIE_ROOT}/vm/output/output.c
     ${AMELIE_ROOT}/vm/output/output_json.c
     ${AMELIE_ROOT}/vm/output/output_jsonrpc.c

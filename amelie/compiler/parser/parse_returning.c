@@ -58,12 +58,14 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 				stmt_error(stmt, NULL, "label expected");
 
 			// derive name from the expression, if possible
-			if (expr->id == KNAME)
+			switch (expr->id) {
+			case KNAME:
 			{
 				name = ast(KNAME);
 				name->string = expr->string;
-			} else
-			if (expr->id == KAGGR)
+				break;
+			}
+			case KAGGR:
 			{
 				auto agg = ast_agg_of(expr);
 				if (agg->function)
@@ -71,8 +73,9 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 					name = ast(KNAME);
 					name->string = agg->function->string;
 				}
-			} else
-			if (expr->id == KFUNC)
+				break;
+			}
+			case KFUNC:
 			{
 				auto func = ast_func_of(expr);
 				if (func->fn)
@@ -80,8 +83,9 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 					name = ast(KNAME);
 					name->string = func->fn->name;
 				}
-			} else
-			if (expr->id == KMETHOD)
+				break;
+			}
+			case KMETHOD:
 			{
 				auto func = ast_func_of(expr->r);
 				if (func->fn)
@@ -89,13 +93,26 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 					name = ast(KNAME);
 					name->string = func->fn->name;
 				}
-			} else
-			if (expr->id == KVALUE)
+				break;
+			}
+			case KVALUE:
 			{
 				// constified function
 				name = ast(KNAME);
 				name->string = expr->fn->name;
+				break;
 			}
+			case KCURRENT_TIMESTAMP:
+			case KCURRENT_DATE:
+			case KCURRENT_USER:
+			case KCURRENT_AGENT:
+			{
+				name = ast(KNAME);
+				name->string = expr->string;
+				break;
+			}
+			}
+
 		} else
 		{
 			// ensure * has no alias

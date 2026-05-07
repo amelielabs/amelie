@@ -40,4 +40,4 @@ ast_show_allocate(void)
 }
 
 void parse_show(Stmt*);
-Ast* parse_show_func(Stmt*);
+Ast* parse_show_func(Stmt*, Str*);

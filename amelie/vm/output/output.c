@@ -42,6 +42,13 @@ output_init(Output* self)
 	self->iface    = NULL;
 	self->timezone = NULL;
 	self->endpoint = NULL;
+	print_init(&self->print);
+}
+
+void
+output_free(Output* self)
+{
+	print_free(&self->print);
 }
 
 void
@@ -52,6 +59,7 @@ output_reset(Output* self)
 	self->endpoint = NULL;
 	if (self->buf)
 		buf_reset(self->buf);
+	print_reset(&self->print);
 }
 
 void

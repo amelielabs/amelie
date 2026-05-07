@@ -38,6 +38,7 @@ request_free(Request* self)
 	request_reset(self, true);
 	endpoint_free(&self->endpoint);
 	jsonrpc_free(&self->jsonrpc);
+	output_free(&self->output);
 }
 
 void

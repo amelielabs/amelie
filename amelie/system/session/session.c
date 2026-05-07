@@ -214,9 +214,16 @@ session_run_utility(Session* self)
 		// write result
 		if (ret.value && compiler->program_returning)
 		{
-			Str column;
-			str_set(&column, "result", 6);
-			output_data(output, &column, ret.value->json, true);
+			Str name;
+			str_set(&name, "result", 6);
+
+			auto stmt = compiler_stmt(compiler);
+			if (stmt->ret)
+			{
+				auto column = columns_first(&stmt->ret->columns);
+				name = column->name;
+			}
+			output_data(output, &name, ret.value->json, true);
 		}
 	}
 

@@ -80,10 +80,7 @@ test_session_recv(TestSession* self, File* output)
 	client_recv(client, &reply->content);
 
 	if (buf_size(&reply->content))
-	{
 		file_write(output, reply->content.start, buf_size(&reply->content));
-		file_write(output, "\n", 1);
-	}
 
 	int64_t code;
 	str_toint(&reply->options[HTTP_CODE], &code);
@@ -94,7 +91,6 @@ test_session_recv(TestSession* self, File* output)
 	{
 		auto msg = &reply->options[HTTP_MSG];
 		file_write(output, str_of(msg), str_size(msg));
-		file_write(output, "\n", 1);
 	}
 }
 

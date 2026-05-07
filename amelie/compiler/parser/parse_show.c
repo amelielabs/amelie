@@ -27,7 +27,6 @@ parse_show(Stmt* self)
 
 	// set returning column
 	auto column = column_allocate();
-	column_set_name(column, &stmt->section);
 	column_set_type(column, TYPE_JSON, -1);
 	columns_add(&stmt->ret.columns, column);
 
@@ -42,6 +41,7 @@ parse_show(Stmt* self)
 
 		// handle as SHOW CONFIG
 		str_set(&stmt->section, "config", 6);
+		column_set_name(column, &stmt->section);
 		stmt->all = false;
 		return;
 	}
@@ -51,6 +51,7 @@ parse_show(Stmt* self)
 	if (name->id != KNAME && name->id != KSTRING)
 		stmt_error(self, name, "name expected");
 	stmt->section = name->string;
+	column_set_name(column, &stmt->section);
 
 	// [name]
 	name = stmt_next(self);
@@ -73,7 +74,7 @@ parse_show(Stmt* self)
 }
 
 Ast*
-parse_show_func(Stmt* self)
+parse_show_func(Stmt* self, Str* target)
 {
 	// [ALL]
 	auto all = stmt_if(self, KALL) != NULL;
@@ -86,6 +87,7 @@ parse_show_func(Stmt* self)
 		section = ast(KSTRING);
 	}
 	section->id = KSTRING;
+	*target = section->string;
 
 	// [name]
 	auto name = stmt_next(self);

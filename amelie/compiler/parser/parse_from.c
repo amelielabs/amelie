@@ -86,14 +86,15 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 	if (stmt_if(self, KSHOW))
 	{
 		target->type = TARGET_FUNCTION;
-		target->ast  = parse_show_func(self);
+		target->ast  = parse_show_func(self, &target->name);
 
 		// allocate select to keep returning columns
 		auto select = ast_select_allocate(self, from->outer, from->block);
 		select->ast.pos_start = target->ast->pos_start;
 		select->ast.pos_end   = target->ast->pos_end;
 		target->columns = &select->ret.columns;
-		str_set(&target->name, "show", 4);
+		if (str_empty(&target->name))
+			str_set(&target->name, "show", 4);
 		return target;
 	}
 

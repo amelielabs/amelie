@@ -28,6 +28,7 @@ struct Output
 	OutputIf* iface;
 	Timezone* timezone;
 	Endpoint* endpoint;
+	Print     print;
 };
 
 hot static inline void
@@ -39,6 +40,7 @@ output_ensure_limit(Output* self)
 }
 
 void output_init(Output*);
+void output_free(Output*);
 void output_reset(Output*);
 void output_set_default(Output*);
 void output_set(Output*, Endpoint*);

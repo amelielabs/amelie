@@ -11,6 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
+// print (text output)
+#include "output/print.h"
+
+// output
 #include "output/output.h"
 #include "output/output_json.h"
 #include "output/output_jsonrpc.h"
