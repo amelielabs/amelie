@@ -35,6 +35,7 @@ post /sql?a text/plain application/json select 1;
 
 post /sql text/plain application/json select "2024-07-29 18:40:19"::timestamp;
 post /sql?timezone=Asia/Tokyo text/plain application/json select "2024-07-29 18:40:19"::timestamp;
+post /sql text/plain application/json explain select "2024-07-29 18:40:19"::timestamp;
 
 disconnect S0;
 close E0;

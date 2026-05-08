@@ -25,6 +25,7 @@ post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "para
 
 # test: POST /rpc (sql)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
+post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "explain select 1"}};
 
 # test: POST /rpc (sql, validate id)
 post /rpc application/json - {"jsonrpc": "2.0", "id": null, "method": "sql", "params": {"text": "select 1"}};

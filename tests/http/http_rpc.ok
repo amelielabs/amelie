@@ -28,6 +28,8 @@ post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "para
 # test: POST /rpc (sql)
 post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["col1"], "rows": [[1]]}}
+post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "explain select 1"}};
+{"jsonrpc": "2.0", "id": 11, "result": {"columns": ["explain"], "rows": ["\nmain\n  0   int                 0      -      0     # 1\n  1   ret                 0      0      -\n"]}}
 # test: POST /rpc (sql, validate id)
 post /rpc application/json - {"jsonrpc": "2.0", "id": null, "method": "sql", "params": {"text": "select 1"}};
 {"jsonrpc": "2.0", "id": null, "result": {"columns": ["col1"], "rows": [[1]]}}

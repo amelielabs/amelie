@@ -12,6 +12,7 @@
 //
 
 void output_json_result(Output*, Columns*, Value*);
+void output_json_result_str(Output*, Str*, Str*);
 void output_json_result_json(Output*, Str*, uint8_t*, bool);
 
 extern OutputIf output_json;

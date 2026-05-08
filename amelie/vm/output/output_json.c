@@ -79,10 +79,26 @@ output_json_write(Output* self, Columns* columns, Value* value)
 }
 
 static void
+output_json_write_str(Output* self, Str* column, Str* str)
+{
+	auto buf = self->buf;
+	buf_write(buf, "{", 1);
+
+	// columns
+	buf_write(buf, "\"columns\": [\"", 13);
+	buf_write_str(buf, column);
+	buf_write(buf, "\"], ", 4);
+
+	// rows
+	buf_write(buf, "\"rows\": [\"", 10);
+	escape_str(buf, str);
+	buf_write(buf, "\"]}", 3);
+}
+
+static void
 output_json_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
 	auto buf = self->buf;
-
 	buf_write(buf, "{", 1);
 
 	// columns
@@ -137,6 +153,7 @@ output_json_write_error(Output* self, Error* error)
 OutputIf output_json =
 {
 	.write       = output_json_write,
+	.write_str   = output_json_write_str,
 	.write_data  = output_json_write_data,
 	.write_error = output_json_write_error,
 	.write_none  = NULL
@@ -146,6 +163,12 @@ void
 output_json_result(Output* self, Columns* columns, Value* value)
 {
 	output_json_write(self, columns, value);
+}
+
+void
+output_json_result_str(Output* self, Str* column, Str* str)
+{
+	output_json_write_str(self, column, str);
 }
 
 void

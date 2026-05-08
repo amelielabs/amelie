@@ -45,6 +45,14 @@ output_jsonrpc_write(Output* self, Columns* columns, Value* value)
 }
 
 static void
+output_jsonrpc_write_str(Output* self, Str* column, Str* str)
+{
+	output_jsonrpc_begin(self);
+	output_json_result_str(self, column, str);
+	buf_write(self->buf, "}", 1);
+}
+
+static void
 output_jsonrpc_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
 	output_jsonrpc_begin(self);
@@ -117,6 +125,7 @@ output_jsonrpc_write_none(Output* self)
 OutputIf output_jsonrpc =
 {
 	.write       = output_jsonrpc_write,
+	.write_str   = output_jsonrpc_write_str,
 	.write_data  = output_jsonrpc_write_data,
 	.write_error = output_jsonrpc_write_error,
 	.write_none  = output_jsonrpc_write_none
