@@ -15,138 +15,321 @@ select 1 = any ();
 error: select 1 = any (❰)❱ ⟵ bad expression
 # test: = any ([])
 select 1 = any([]);
+
+col1
+────
 false
 select 1 = any([null]);
+
+col1
+────
 null
 select 1 = any([1]);
+
+col1
+────
 true
 select 1 = any([1, 2]);
+
+col1
+────
 true
 select 1 = any([1, 2, null]);
+
+col1
+────
 true
 select 0 = any([1, 2, null]);
+
+col1
+────
 null
 # test: >= any ([])
 select 1 >= any([1,2]);
+
+col1
+────
 true
 select 0 >= any([1,2]);
+
+col1
+────
 false
 select 1 >= any([1,2, null]);
+
+col1
+────
 true
 select 0 >= any([1,2, null]);
+
+col1
+────
 null
 # test: > any ([])
 select 1 > any([1,2]);
+
+col1
+────
 false
 select 0 > any([1,2]);
+
+col1
+────
 false
 select 1 > any([1,2, null]);
+
+col1
+────
 null
 select 0 > any([1,2, null]);
+
+col1
+────
 null
 select 3 > any([1,2]);
+
+col1
+────
 true
 select 3 > any([1,2, null]);
+
+col1
+────
 true
 # test: <= any ([])
 select 1 <= any([1,2]);
+
+col1
+────
 true
 select 0 <= any([1,2]);
+
+col1
+────
 true
 select 3 <= any([1,2]);
+
+col1
+────
 false
 select 1 <= any([1,2, null]);
+
+col1
+────
 true
 select 1 <= any([1,2, null]);
+
+col1
+────
 true
 # test: < any ([])
 select 1 < any([1,2]);
+
+col1
+────
 true
 select 0 < any([1,2]);
+
+col1
+────
 true
 select 3 < any([1,2]);
+
+col1
+────
 false
 select 1 < any([1,2, null]);
+
+col1
+────
 true
 select 3 < any([1,2, null]);
+
+col1
+────
 null
 # test: = any
 create table test (id int primary key, data int);
 select 1 = any(select id from test);
+
+col1
+────
 false
 insert into test values (1, 1);
 select 1 = any(select id from test);
+
+col1
+────
 true
 insert into test values (2, null);
 select 1 = any(select id from test);
+
+col1
+────
 true
 select not (1 = any(select id from test));
+
+col1
+────
 false
 select null = any(select id from test);
+
+col1
+────
 null
 select 1 = any(select id from test);
+
+col1
+────
 true
 select 3 = any(select id from test);
+
+col1
+────
 false
 select 3 = any(select data from test);
+
+col1
+────
 null
 # test: >= any
 select 1 >= any(select id from test);
+
+col1
+────
 true
 select 0 >= any(select id from test);
+
+col1
+────
 false
 select null >= any(select id from test);
+
+col1
+────
 null
 select 1 >= any(select id from test);
+
+col1
+────
 true
 select 3 >= any(select id from test);
+
+col1
+────
 true
 select 0 >= any(select data from test);
+
+col1
+────
 null
 # test: > any
 select 1 > any(select id from test);
+
+col1
+────
 false
 select 0 > any(select id from test);
+
+col1
+────
 false
 select 3 > any(select id from test);
+
+col1
+────
 true
 select null > any(select id from test);
+
+col1
+────
 null
 select 1 > any(select id from test);
+
+col1
+────
 false
 select 3 > any(select id from test);
+
+col1
+────
 true
 select 0 > any(select data from test);
+
+col1
+────
 null
 # test: <= any
 select 1 <= any(select id from test);
+
+col1
+────
 true
 select 0 <= any(select id from test);
+
+col1
+────
 true
 select 3 <= any(select id from test);
+
+col1
+────
 false
 select null <= any(select id from test);
+
+col1
+────
 null
 select 1 <= any(select id from test);
+
+col1
+────
 true
 select 3 <= any(select id from test);
+
+col1
+────
 false
 select 3 <= any(select data from test);
+
+col1
+────
 null
 # test: < any
 select 1 < any(select id from test);
+
+col1
+────
 true
 select 0 < any(select id from test);
+
+col1
+────
 true
 select 3 < any(select id from test);
+
+col1
+────
 false
 select null < any(select id from test);
+
+col1
+────
 null
 select 1 < any(select id from test);
+
+col1
+────
 true
 select 3 < any(select id from test);
+
+col1
+────
 false
 select 3 < any(select data from test);
+
+col1
+────
 null
 disconnect S0;
 close E0;

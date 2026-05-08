@@ -13,6 +13,9 @@ close E0;
 open E1;
 connect E1 S1 https://127.0.0.1:3480 ./tls/ca.crt;
 show all;
+
+config
+──────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -46,6 +49,9 @@ show all;
   "repl_reconnect_ms": 3000
 }
 show state;
+
+state
+─────
 {
   "version": "1.0.0-rc1",
   "directory": "_output/E1",
@@ -60,6 +66,9 @@ show state;
   "read_only": false
 }
 select count(*) from test;
+
+count
+─────
 500
 disconnect S1;
 close E1;

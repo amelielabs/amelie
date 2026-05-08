@@ -13,49 +13,115 @@ error: select 1 like❰;❱ ⟵ bad expression
 select 1 like 1;
 error: select 1 like ❰1❱ ⟵ operation int LIKE int is not supported
 select '' like '';
+
+col1
+────
 true
 select '' like '%';
+
+col1
+────
 true
 select '' like '%_';
+
+col1
+────
 true
 select '' like '%_';
+
+col1
+────
 true
 select 'abc' like 'abc';
+
+col1
+────
 true
 select 'abc' like '_b_';
+
+col1
+────
 true
 select 'abc' like 'ab_';
+
+col1
+────
 true
 select 'abc' like 'abc';
+
+col1
+────
 true
 select 'abc' like '__c';
+
+col1
+────
 true
 select 'abc' like '___';
+
+col1
+────
 true
 select 'abcd' like '___';
+
+col1
+────
 false
 select 'abcd' like 'a';
+
+col1
+────
 false
 select 'abcd' like 'abc';
+
+col1
+────
 false
 select 'abcd' like 'abc';
+
+col1
+────
 false
 select 'abcd' like 'abc%';
+
+col1
+────
 true
 select 'abcd' like 'abc%d';
+
+col1
+────
 true
 select 'abcd' like 'abc%de';
+
+col1
+────
 false
 select 'hello, world' like 'hello%world';
+
+col1
+────
 true
 select 'http://google.com' like '%google%';
+
+col1
+────
 true
 # test: like escape
 select '%' like '\\%';
+
+col1
+────
 true
 select '123 %-%-% day' like '%%-%%-%%';
+
+col1
+────
 true
 select '123 %_%_% day' like '%%_%%_%%';
+
+col1
+────
 true
 # test: not like
 select not like;
@@ -65,8 +131,14 @@ error: select ❰not❱ ⟵ bad expression
 select not like 20;
 error: select ❰not❱ ⟵ bad expression
 select 'abcd' like 'abc%d';
+
+col1
+────
 true
 select 'abcd' not like 'abc%d';
+
+col1
+────
 false
 disconnect S0;
 close E0;

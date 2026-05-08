@@ -2,6 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: config
 select show();
+
+show
+────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -35,6 +38,9 @@ select show();
   "repl_reconnect_ms": 3000
 }
 select show('config');
+
+show
+────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -68,6 +74,9 @@ select show('config');
   "repl_reconnect_ms": 3000
 }
 select show('all');
+
+show
+────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -102,6 +111,9 @@ select show('all');
 }
 # test: state
 select show('state');
+
+show
+────
 {
   "version": "1.0.0-rc1",
   "directory": "_output/E0",
@@ -117,14 +129,23 @@ select show('state');
 }
 # test: replicas
 select show('replicas');
+
+show
+────
 []
 # test: replica
 select show('replica', '00000000-0000-0000-0000-000000000000');
+
+show
+────
 null
 select show('replica', uuid '00000000-0000-0000-0000-000000000000');
 error: show(string, ❰uuid❱ ⟵ string or bool expected
 # test: repl
 select show('repl');
+
+show
+────
 {
   "active": false,
   "role": "primary",
@@ -133,6 +154,9 @@ select show('repl');
 }
 # test: replication
 select show('replication');
+
+show
+────
 {
   "active": false,
   "role": "primary",
@@ -141,12 +165,21 @@ select show('replication');
 }
 # test: users
 select show('users')[0].name;
+
+col1
+────
 "amelie"
 # test: user
 select show('user', 'amelie').name;
+
+col1
+────
 "amelie"
 # test: storages
 select show('storages');
+
+show
+────
 [{
   "name": "main",
   "path": "",
@@ -155,6 +188,9 @@ select show('storages');
 }]
 # test: storage
 select show('storage', 'main');
+
+show
+────
 {
   "name": "main",
   "path": "",
@@ -164,18 +200,27 @@ select show('storage', 'main');
 create table test (id int primary key);
 # test: tables
 select show('tables');
+
+show
+────
 [{
   "user": "amelie",
   "name": "test"
 }]
 # test: table
 select show('table', 'test');
+
+show
+────
 {
   "user": "amelie",
   "name": "test"
 }
 # test: indexes
 select show('indexes', '', 'test', false);
+
+show
+────
 [{
   "name": "primary",
   "type": 2,
@@ -188,6 +233,9 @@ select show('indexes', '', 'test', false);
 }]
 # test: index
 select show('index', 'primary', 'test', false);
+
+show
+────
 {
   "name": "primary",
   "type": 2,
@@ -200,6 +248,9 @@ select show('index', 'primary', 'test', false);
 }
 # test: partitions
 select show('partitions', '', 'test', false);
+
+show
+────
 [{
   "id": 1,
   "storage": "main",
@@ -211,15 +262,27 @@ select show('partitions', '', 'test', false);
 }]
 # test: partition
 select show('partition', '0', 'test', false);
+
+show
+────
 null
 # test: functions
 select show('functions');
+
+show
+────
 []
 # test: function
 select show('function', 'test');
+
+show
+────
 null
 # test: wal
 select show('wal');
+
+show
+────
 {
   "lsn": 1,
   "lsn_min": 1,
@@ -232,9 +295,15 @@ select show('wal');
 }
 # test: metrics
 select show('metrics')::size;
+
+size
+────
 9
 # test: locks
 select show('locks');
+
+show
+────
 [{
   "relation": "catalog",
   "lock": "shared",

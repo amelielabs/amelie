@@ -10017,6 +10017,9 @@ insert into test values ( 9999 );
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
+
+repl
+────
 {
   "active": true,
   "role": "primary",
@@ -10031,11 +10034,20 @@ show repl;
 }
 # test: validate
 select show('state').lsn;
+
+col1
+────
 10000
 select count(*) from test;
+
+count
+─────
 9999
 switch S1;
 show repl;
+
+repl
+────
 {
   "active": true,
   "role": "replica",
@@ -10043,8 +10055,14 @@ show repl;
   "replicas": []
 }
 select show('state').lsn;
+
+col1
+────
 10000
 select count(*) from test;
+
+count
+─────
 9999
 disconnect S1;
 close E1;

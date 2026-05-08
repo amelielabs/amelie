@@ -17,26 +17,32 @@ begin; end;
 explain begin; end;
 error: ❰explain❱ ⟵ EXPLAIN without command
 explain begin; select 1; end;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   ret                 0      0      -
 begin; select 1; end;
+
+col1
+────
 1
 # test: begin end last stmt
 explain begin; select 1; select 2; end;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "int                 1      -      0     # 2",
-    "02": "ret                 1      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   int                 1      -      0     # 2
+  2   ret                 1      0      -
 begin; select 1; select 2; end;
+
+col1
+────
 2
 disconnect S0;
 close E0;

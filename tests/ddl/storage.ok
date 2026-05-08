@@ -2,6 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: ensure main storage exists
 select show('storage', 'main');
+
+show
+────
 {
   "name": "main",
   "path": "",
@@ -9,6 +12,9 @@ select show('storage', 'main');
   "compression_level": 0
 }
 show storage main;
+
+storage
+───────
 {
   "name": "main",
   "path": "",
@@ -16,12 +22,15 @@ show storage main;
   "compression_level": 0
 }
 show storages;
-[{
+
+storages
+────────
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 # test: create storage statement parsing
 create;
 error: create❰;❱ ⟵ relation type expected
@@ -44,18 +53,25 @@ error: create storage test (❰;❱ ⟵ name expected
 # test: create storage
 create storage test;
 show storages;
-[{
+
+storages
+────────
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}, {
+}
+{
   "name": "test",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 select show('storages');
+
+show
+────
 [{
   "name": "main",
   "path": "",
@@ -72,17 +88,21 @@ create storage test;
 error: storage 'test': already exists
 create storage if not exists test;
 show storages;
-[{
+
+storages
+────────
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}, {
+}
+{
   "name": "test",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 # test: create storage ()
 create storage test2 ();
 drop storage test2;
@@ -97,6 +117,9 @@ create storage test2 (path '';
 error: create storage test2 (path ''❰;❱ ⟵ , expected
 create storage test2 (path '_output/test_');
 show storage test2;
+
+storage
+───────
 {
   "name": "test2",
   "path": "_output/test_",
@@ -106,6 +129,9 @@ show storage test2;
 drop storage test2;
 create storage test2 (path '_output/test_', path '_output/_test');
 show storage test2;
+
+storage
+───────
 {
   "name": "test2",
   "path": "_output/_test",
@@ -127,33 +153,42 @@ error: drop storage test ❰abc❱ ⟵ ; expected
 # test: drop storage
 drop storage test;
 show storages;
-[{
+
+storages
+────────
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 # test: drop storage if exists
 drop storage test;
 error: storage 'test': not exists
 drop storage if exists test;
 show storages;
-[{
+
+storages
+────────
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 # test: drop main storage
 drop storage main;
 error: storage 'main': system storage cannot be dropped
 show storages;
-[{
+
+storages
+────────
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 # test: alter storage statment parsing
 alter storage;
 error: alter storage❰;❱ ⟵ name expected
@@ -170,30 +205,38 @@ error: alter storage test rename ❰"hello"❱ ⟵ TO expected
 # test: alter storage rename
 create storage test;
 show storages;
-[{
+
+storages
+────────
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}, {
+}
+{
   "name": "test",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 alter storage test rename to test2;
 show storages;
-[{
+
+storages
+────────
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}, {
+}
+{
   "name": "test2",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 drop storage test2;
 # test: alter storage main
 alter storage main rename to _public;

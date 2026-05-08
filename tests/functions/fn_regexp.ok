@@ -2,59 +2,137 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: regexp_like()
 select regexp_like(null, '<(?<tag>[a-z][a-z0-9]*)[^>]*>[^<]*</(?P=tag)>');
+
+regexp_like
+───────────
 null
 select regexp_like('<a href="../">Up</a>', '<(?<tag>[a-z][a-z0-9]*)[^>]*>[^<]*</(?P=tag)>');
+
+regexp_like
+───────────
 true
 select regexp_like('<a href="../">Up</a', '<(?<tag>[a-z][a-z0-9]*)[^>]*>[^<]*</(?P=tag)>');
+
+regexp_like
+───────────
 false
 select '<a href="../">Up</a>'::regexp_like('<(?<tag>[a-z][a-z0-9]*)[^>]*>[^<]*</(?P=tag)>');
+
+regexp_like
+───────────
 true
 select ''::regexp_like('<(?<tag>[a-z][a-z0-9]*)[^>]*>[^<]*</(?P=tag)>');
+
+regexp_like
+───────────
 false
 select '<a href="../">Up</a>'::regexp_like('');
+
+regexp_like
+───────────
 true
 select regexp_like('a(123)b', '([(])?[0-9]+(?(1)[)])');
+
+regexp_like
+───────────
 true
 select regexp_like('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)');
+
+regexp_like
+───────────
 true
 # test: regexp_substr()
 select regexp_substr(null, '([(])?[0-9]+(?(1)[)])');
+
+regexp_substr
+─────────────
 null
 select regexp_substr('a(123)b', '([(])?[0-9]+(?(1)[)])');
-"(123)"
+
+regexp_substr
+─────────────
+(123)
 select regexp_substr('aaa123', '[a-z]*\\K[0-9]*');
-"123"
+
+regexp_substr
+─────────────
+123
 select regexp_substr('ab1','[a-z](?![a-z])');
-"b"
+
+regexp_substr
+─────────────
+b
 select regexp_substr('---abcd---xyz---', '\\b\\w{3}\\b');
-"xyz"
+
+regexp_substr
+─────────────
+xyz
 select regexp_substr('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)');
-"barbeque"
+
+regexp_substr
+─────────────
+barbeque
 # test: regexp_match()
 select regexp_match(null, '(b[^b]+)(b[^b]+)');
+
+regexp_match
+────────────
 null
 select regexp_match('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)');
+
+regexp_match
+────────────
 ["barbeque", "bar", "beque"]
 select regexp_match('foobarbequebaz', '(bar)(beque)');
+
+regexp_match
+────────────
 ["barbeque", "bar", "beque"]
 select regexp_match('ABCAB', '(A)(B)');
+
+regexp_match
+────────────
 ["AB", "A", "B"]
 select regexp_match('ABCAB', 'A');
+
+regexp_match
+────────────
 ["A"]
 select regexp_match('ABCAB', '(A)');
+
+regexp_match
+────────────
 ["A", "A"]
 select regexp_match('приветкакделапривет', '(привет)(как)');
+
+regexp_match
+────────────
 ["приветкак", "привет", "как"]
 # test: regexp_replace()
 select regexp_replace(null, '(A)', '_');
+
+regexp_replace
+──────────────
 null
 select regexp_replace('ABCAB', '(A)', '_');
-"_BC_B"
+
+regexp_replace
+──────────────
+_BC_B
 select regexp_replace('ABCAB', '(A)', '|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|');
-"|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|BC|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|B"
+
+regexp_replace
+──────────────
+|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|BC|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|B
 select regexp_replace('/* Comment1 */ i+= 1; /* Comment2 */', '/[*].*?[*]/', '');
-" i+= 1; "
+
+regexp_replace
+──────────────
+ i+= 1; 
 select regexp_replace('приветкакделапривет', 'привет', '');
-"какдела"
+
+regexp_replace
+──────────────
+какдела
 disconnect S0;
 close E0;

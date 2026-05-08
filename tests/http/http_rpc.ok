@@ -39,22 +39,37 @@ post /rpc application/json - {"jsonrpc": "2.0", "id": [], "method": "sql", "para
 create table test (id int primary key, data int default 11);
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [] }};
 select * from test;
+
+id  data
+──────────
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {} }};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "column 'id' value cannot be NULL"}}
 select * from test;
+
+id  data
+──────────
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {"id": 18} }};
 select * from test;
-18 │ 11
+
+id  data
+──────────
+18  11
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {"id": 19, "data": null} }};
 select * from test;
-18 │ 11
-19 │ null
+
+id  data
+──────────
+18  11
+19  null
 post /rpc - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [{"id": 20}, {"id": 21}] }};
 select * from test;
-18 │ 11
-19 │ null
-20 │ 11
-21 │ 11
+
+id  data
+──────────
+18  11
+19  null
+20  11
+21  11
 drop table test;
 # test: POST /rpc (execute)
 create function x (a int, b int) return int

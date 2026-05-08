@@ -4,95 +4,200 @@ connect E0 S0 127.0.0.1:3485;
 select append(null);
 error: append(null) ⟵ expected two or more arguments
 select append(null, 1);
+
+append
+──────
 null
 select []::append(1);
+
+append
+──────
 [1]
 select []::append(1)::append(2);
+
+append
+──────
 [1, 2]
 select []::append(1)::append(2)::append(3);
+
+append
+──────
 [1, 2, 3]
 select []::append(1, 2);
+
+append
+──────
 [1, 2]
 select []::append(1, 2, 3);
+
+append
+──────
 [1, 2, 3]
 select []::append(1, 2, 3)::size;
+
+size
+────
 3
 # test: push_back()
 select []::push_back(1);
+
+push_back
+─────────
 [1]
 select []::push_back(1)::push_back(2);
+
+push_back
+─────────
 [1, 2]
 select []::append(1)::append(2)::push_back(3);
+
+push_back
+─────────
 [1, 2, 3]
 # test: push()
 select push(null);
 error: push(null) ⟵ expected two or more arguments
 select push(null, 0);
+
+push
+────
 null
 select push([], 0);
+
+push
+────
 [0]
 select []::push();
 error: push(json) ⟵ expected two or more arguments
 select []::push(1);
+
+push
+────
 [1]
 select []::push(2)::push(1);
+
+push
+────
 [1, 2]
 select []::push(2)::push(1)::push(0);
+
+push
+────
 [0, 1, 2]
 select []::push(1, 2);
+
+push
+────
 [1, 2]
 select [3]::push(1, 2);
+
+push
+────
 [1, 2, 3]
 # test: pop()
 select pop();
 error: pop() ⟵ expected 1 argument
 select pop(null);
+
+pop
+───
 null
 select pop([]);
+
+pop
+───
 []
 select []::pop;
+
+pop
+───
 []
 select [1]::pop;
+
+pop
+───
 []
 select [1,2]::pop;
+
+pop
+───
 [2]
 select [1,2,3]::pop;
+
+pop
+───
 [2, 3]
 select [1,2,3]::pop::pop;
+
+pop
+───
 [3]
 select [1,2,3]::pop::pop::pop;
+
+pop
+───
 []
 select [1,2,3]::pop::pop::pop::pop;
+
+pop
+───
 []
 # test: pop_back()
 select pop_back();
 error: pop_back() ⟵ expected 1 argument
 select pop_back(null);
+
+pop_back
+────────
 null
 select pop_back([]);
+
+pop_back
+────────
 []
 select []::pop_back;
+
+pop_back
+────────
 []
 select [1]::pop_back;
+
+pop_back
+────────
 []
 select [1,2]::pop_back;
+
+pop_back
+────────
 [1]
 select [1,2,3]::pop_back;
+
+pop_back
+────────
 [1, 2]
 select [1,2,3]::pop_back::pop_back;
+
+pop_back
+────────
 [1]
 select [1,2,3]::pop_back::pop_back::pop_back;
+
+pop_back
+────────
 []
 select [1,2,3]::pop_back::pop_back::pop_back::pop_back;
+
+pop_back
+────────
 []
 explain select [1,2,3]::pop_back::pop_back::pop_back::pop_back;
-{
-  "main": {
-    "00": "value               0      -      0     # json",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # json
+  1   ret                 0      0      -
 # test: put()
 select put(null);
 error: put(null) ⟵ expected 3 arguments
@@ -101,14 +206,29 @@ error: put(null, int) ⟵ expected 3 arguments
 select put([], 0, 0);
 error: put: array index 0 is out of bounds
 select put([1], 0, 0);
+
+put
+───
 [0]
 select [1,2,3]::put(0, '0');
+
+put
+───
 ["0", 2, 3]
 select [1,2,3]::put(0, '0')::put(1, '1');
+
+put
+───
 ["0", "1", 3]
 select [1,2,3]::put(0, '0')::put(1, '1');
+
+put
+───
 ["0", "1", 3]
 select [1,2,3]::put(0, '0')::put(2, '1');
+
+put
+───
 ["0", 2, "1"]
 select [1,2,3]::put(0, '0')::put(3, '1');
 error: put: array index 3 is out of bounds
@@ -118,12 +238,18 @@ error: put: array index -1 is out of bounds
 select remove(null);
 error: remove(null) ⟵ expected 2 arguments
 select remove(null, 0);
+
+remove
+──────
 null
 select remove([], 0);
 error: remove: array index 0 is out of bounds
 select remove([], 1);
 error: remove: array index 1 is out of bounds
 select remove([1], 0);
+
+remove
+──────
 []
 select remove([1], -1);
 error: remove: array index -1 is out of bounds
@@ -132,74 +258,134 @@ error: remove: array index -10 is out of bounds
 select remove([1, 2], 3);
 error: remove: array index 3 is out of bounds
 select remove([1, 2], 1);
+
+remove
+──────
 [1]
 select remove([1, 2], 1);
+
+remove
+──────
 [1]
 select remove([1, 2, 3], 1);
+
+remove
+──────
 [1, 3]
 select remove([1, 2, 3], 0);
+
+remove
+──────
 [2, 3]
 select remove([1, 2, 3], 2);
+
+remove
+──────
 [1, 2]
 select []::append(1)::append(2)::append(3);
+
+append
+──────
 [1, 2, 3]
 select []::append(1)::append(2)::append(3)::remove(0);
+
+remove
+──────
 [2, 3]
 select []::append(1)::append(2)::append(3)::remove(0)::remove(0);
+
+remove
+──────
 [3]
 select []::append(1)::append(2)::append(3)::remove(0)::remove(0)::remove(0);
+
+remove
+──────
 []
 select []::append(1,2,3)::remove(0)::remove(0)::remove(0);
+
+remove
+──────
 []
 explain select []::append(1,2,3)::remove(0)::remove(0)::remove(0);
-{
-  "main": {
-    "00": "value               0      -      0     # json",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # json
+  1   ret                 0      0      -
 # test: set()
 select set(null, "id", 42);
+
+set
+───
 null
 select {}::set("id", 42);
+
+set
+───
 {
   "id": 42
 }
 select {}::set("id", 42)::set("data", [1,2,3]);
+
+set
+───
 {
   "id": 42,
   "data": [1, 2, 3]
 }
 select {}::set("id", 42)::set("data", {"misc": null}).data.misc;
+
+col1
+────
 null
 explain select {}::set("id", 42)::set("data", {"misc": null}).data.misc;
-{
-  "main": {
-    "00": "value               0      -      0     # json",
-    "01": "string              1      0      0     # data.misc",
-    "02": "dotjs               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # json
+  1   string              1      0      0     # data.misc
+  2   dotjs               2      0      1
+  3   ret                 2      0      -
 select set({"a": 0}, "a", 1);
+
+set
+───
 {
   "a": 1
 }
 select set({"a": 0}, "a", {"b": 2});
+
+set
+───
 {
   "a": {
     "b": 2
   }
 }
 select set({"a": 0}, "a", {"b": 2}).a.b;
+
+col1
+────
 2
 select set({"a": 0}, "a", {"b": 2})."a"."b";
+
+col1
+────
 2
 select set({"a": 0}, "a", {"b": 2})["a"]["b"];
+
+col1
+────
 2
 select set({"a": 0}, "b", {"c": 3});
+
+set
+───
 {
   "a": 0,
   "b": {
@@ -207,10 +393,19 @@ select set({"a": 0}, "b", {"c": 3});
   }
 }
 select set({"a": 0}, "b", [1, 2]).b;
+
+col1
+────
 [1, 2]
 select set({"a": 0}, "b", [1, 2]).b[1];
+
+col1
+────
 2
 select set({"a": 88}, "a", 34);
+
+set
+───
 {
   "a": 34
 }
@@ -221,18 +416,27 @@ error: set: incorrect path
 select set({"a": 88}, ".", 34);
 error: set: incorrect path
 select set({"a": {"b": 22}}, "a.b", 34);
+
+set
+───
 {
   "a": {
     "b": 34
   }
 }
 select set({"a": {"b": {"c": 55}}}, "a.b", 34);
+
+set
+───
 {
   "a": {
     "b": 34
   }
 }
 select set({"a": {"b": {"c": 55}}}, "a.b.c", 34);
+
+set
+───
 {
   "a": {
     "b": {
@@ -241,6 +445,9 @@ select set({"a": {"b": {"c": 55}}}, "a.b.c", 34);
   }
 }
 select set({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d", 0);
+
+set
+───
 {
   "a": {
     "b": {
@@ -251,6 +458,9 @@ select set({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d", 0);
   }
 }
 select set({"a": {"b": 22}, "c": 88}, "a.b", 34);
+
+set
+───
 {
   "a": {
     "b": 34
@@ -258,81 +468,129 @@ select set({"a": {"b": 22}, "c": 88}, "a.b", 34);
   "c": 88
 }
 select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size;
+
+size
+────
 2
 explain select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size;
-{
-  "main": {
-    "00": "value               0      -      0     # int",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # int
+  1   ret                 0      0      -
 select set([], 0, 1);
 error: set(❰json❱ ⟵ json object expected
 # test: unset()
 select {"a": 1, "b": 2, "c": 3}::unset("a");
+
+unset
+─────
 {
   "b": 2,
   "c": 3
 }
 select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("a");
+
+unset
+─────
 {
   "b": 2,
   "c": 3
 }
 select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c");
+
+unset
+─────
 {
   "b": 2
 }
 select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b");
+
+unset
+─────
 {}
 select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")::set("a", 42);
+
+set
+───
 {
   "a": 42
 }
 explain select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")::set("a", 42);
-{
-  "main": {
-    "00": "value               0      -      0     # json",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # json
+  1   ret                 0      0      -
 select unset({}, "a");
+
+unset
+─────
 {}
 select unset({}, "");
 error: set: incorrect path
 select unset({"a": 0}, "a");
+
+unset
+─────
 {}
 select unset({"a": 0}, "b");
+
+unset
+─────
 {
   "a": 0
 }
 select unset({"a": {"b": 2}}, "a");
+
+unset
+─────
 {}
 select unset({"a": {"b": 2}}, "a.b");
+
+unset
+─────
 {
   "a": {}
 }
 select unset({"a": {"b": 2}, "g": 3}, "a");
+
+unset
+─────
 {
   "g": 3
 }
 select unset({"a": {"b": 22}}, "a.b");
+
+unset
+─────
 {
   "a": {}
 }
 select unset({"a": {"b": {"c": 55}}}, "a.b");
+
+unset
+─────
 {
   "a": {}
 }
 select unset({"a": {"b": {"c": 55}}}, "a.b.c");
+
+unset
+─────
 {
   "a": {
     "b": {}
   }
 }
 select unset({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d");
+
+unset
+─────
 {
   "a": {
     "b": {
@@ -341,6 +599,9 @@ select unset({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d");
   }
 }
 select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d");
+
+unset
+─────
 {
   "a": {
     "b": {
@@ -351,45 +612,66 @@ select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d");
   }
 }
 explain select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d");
-{
-  "main": {
-    "00": "value               0      -      0     # json",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # json
+  1   ret                 0      0      -
 select unset([1], 0);
 error: unset(❰json❱ ⟵ json object expected
 # test: has()
 select {}::has("id");
+
+has
+───
 false
 select {"id": null}::has("id");
+
+has
+───
 true
 select {"id": null, "data": {"misc": true}}::has("data.misc");
+
+has
+───
 true
 explain select {"id": null, "data": {"misc": true}}::has("data.misc");
-{
-  "main": {
-    "00": "value               0      -      0     # bool",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # bool
+  1   ret                 0      0      -
 select has({"a": 0}, "a");
+
+has
+───
 true
 select has({"a": 0}, "b");
+
+has
+───
 false
 select has({"a": {"b": 777}}, "a.b");
+
+has
+───
 true
 select has({"a": {"b": 777}}, "a.c");
+
+has
+───
 false
 explain select has({"a": {"b": 777}}, "a.c");
-{
-  "main": {
-    "00": "value               0      -      0     # bool",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # bool
+  1   ret                 0      0      -
 disconnect S0;
 close E0;

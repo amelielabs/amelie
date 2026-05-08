@@ -12,13 +12,19 @@ create user test;
 # test: show user
 # test: show storages
 show storages;
-[{
+
+storages
+────────
+{
   "name": "main",
   "path": "",
   "compression": "zstd",
   "compression_level": 0
-}]
+}
 select * from show storages;
+
+storages
+────────
 {
   "name": "main",
   "path": "",
@@ -29,6 +35,9 @@ select * from show storages;
 show storage;
 error: show() ⟵ name argument is missing for 'storage'
 show storage main;
+
+storage
+───────
 {
   "name": "main",
   "path": "",
@@ -36,6 +45,9 @@ show storage main;
   "compression_level": 0
 }
 show storage main verbose;
+
+storage
+───────
 {
   "name": "main",
   "path": "",
@@ -45,11 +57,17 @@ show storage main verbose;
 # test: show tables
 create table test (id int primary key);
 show tables;
-[{
+
+tables
+──────
+{
   "user": "amelie",
   "name": "test"
-}]
+}
 select * from show tables;
+
+tables
+──────
 {
   "user": "amelie",
   "name": "test"
@@ -58,18 +76,27 @@ select * from show tables;
 show table;
 error: show() ⟵ name argument is missing for 'table'
 show table test;
+
+table
+─────
 {
   "user": "amelie",
   "name": "test"
 }
 select * from show table test;
+
+table
+─────
 {
   "user": "amelie",
   "name": "test"
 }
 # test: show indexes
 show indexes on test;
-[{
+
+indexes
+───────
+{
   "name": "primary",
   "type": 2,
   "unique": true,
@@ -78,8 +105,11 @@ show indexes on test;
     "column": 0,
     "asc": true
   }]
-}]
+}
 select show('indexes', '', 'test', false);
+
+show
+────
 [{
   "name": "primary",
   "type": 2,
@@ -91,6 +121,9 @@ select show('indexes', '', 'test', false);
   }]
 }]
 select * from show indexes on test;
+
+indexes
+───────
 {
   "name": "primary",
   "type": 2,
@@ -103,6 +136,9 @@ select * from show indexes on test;
 }
 # test: show index
 show index primary on test;
+
+index
+─────
 {
   "name": "primary",
   "type": 2,
@@ -114,6 +150,9 @@ show index primary on test;
   }]
 }
 select show('index', 'primary', 'test', false);
+
+show
+────
 {
   "name": "primary",
   "type": 2,
@@ -125,8 +164,14 @@ select show('index', 'primary', 'test', false);
   }]
 }
 show index xyz on test;
+
+index
+─────
 null
 select * from show index primary on test;
+
+index
+─────
 {
   "name": "primary",
   "type": 2,
@@ -139,7 +184,10 @@ select * from show index primary on test;
 }
 # test: show partitions
 show partitions on test;
-[{
+
+partitions
+──────────
+{
   "id": 1,
   "storage": "main",
   "min": 0,
@@ -147,8 +195,11 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]
+}
 select show('partitions', '', 'test', false);
+
+show
+────
 [{
   "id": 1,
   "storage": "main",
@@ -159,6 +210,9 @@ select show('partitions', '', 'test', false);
   "compression": 1
 }]
 select * from show partitions on test;
+
+partitions
+──────────
 {
   "id": 1,
   "storage": "main",
@@ -170,6 +224,9 @@ select * from show partitions on test;
 }
 # test: show partition
 show partition '1' on test;
+
+partition
+─────────
 {
   "id": 1,
   "storage": "main",
@@ -180,6 +237,9 @@ show partition '1' on test;
   "compression": 1
 }
 select show('partition', '1', 'test', false);
+
+show
+────
 {
   "id": 1,
   "storage": "main",
@@ -198,21 +258,36 @@ begin
 	};
 end;
 select test_fn(123);
+
+col1
+────
 {
   "a": 4,
   "b": 123
 }
 select test_fn(123).a;
+
+col1
+────
 4
 select 123::test_fn().a;
+
+col1
+────
 4
 show functions;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "test_fn"
-}]
+}
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "test_fn",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
@@ -226,8 +301,11 @@ show functions verbose;
   }],
   "returning": [],
   "grants": []
-}]
+}
 select * from show functions verbose;
+
+functions
+─────────
 {
   "user": "amelie",
   "name": "test_fn",
@@ -247,11 +325,17 @@ select * from show functions verbose;
 show function;
 error: show() ⟵ name argument is missing for 'function'
 show function test_fn;
+
+function
+────────
 {
   "user": "amelie",
   "name": "test_fn"
 }
 show function test_fn verbose;
+
+function
+────────
 {
   "user": "amelie",
   "name": "test_fn",
@@ -268,12 +352,18 @@ show function test_fn verbose;
   "grants": []
 }
 select * from show function test_fn;
+
+function
+────────
 {
   "user": "amelie",
   "name": "test_fn"
 }
 # test: show wal
 show wal;
+
+wal
+───
 {
   "lsn": 3,
   "lsn_min": 1,
@@ -286,19 +376,33 @@ show wal;
 }
 # test: show replicas
 show replicas;
-[]
+
+replicas
+────────
 select * from show replicas;
+
+replicas
+────────
 # test: show replica
 show replica abc;
 error: failed to parse uuid
 show replica 'abc';
 error: failed to parse uuid
 show replica '00000000-0000-0000-0000-000000000000';
+
+replica
+───────
 null
 select * from show replica '00000000-0000-0000-0000-000000000000';
+
+replica
+───────
 null
 # test: show state
 show state;
+
+state
+─────
 {
   "version": "1.0.0-rc1",
   "directory": "_output/E0",
@@ -313,6 +417,9 @@ show state;
   "read_only": false
 }
 select show('state');
+
+show
+────
 {
   "version": "1.0.0-rc1",
   "directory": "_output/E0",
@@ -327,9 +434,15 @@ select show('state');
   "read_only": false
 }
 select show('state').directory;
+
+col1
+────
 "_output/E0"
 # test: show config
 show config;
+
+config
+──────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -363,6 +476,9 @@ show config;
   "repl_reconnect_ms": 3000
 }
 select * from show config;
+
+config
+──────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -397,6 +513,9 @@ select * from show config;
 }
 # test: show all
 show all;
+
+config
+──────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -430,38 +549,50 @@ show all;
   "repl_reconnect_ms": 3000
 }
 select show('config').uuid;
+
+col1
+────
 "00000000-0000-0000-0000-000000000000"
 select show('config', '123');
 error: show() ⟵ unexpected name argument
 # test: show name
 show log_enable;
+
+log_enable
+──────────
 true
 show "log_enable";
+
+log_enable
+──────────
 true
 # test: show unknown
 show asdf;
 error: show() ⟵ option 'asdf' is not found
 # test: explain show
 explain show log_enable;
-{
-  "main": {
-    "00": "string              0      0      0     # log_enable",
-    "01": "push                0      0      0     ",
-    "02": "string              0      11     0     # ",
-    "03": "push                0      0      0     ",
-    "04": "string              0      12     0     # ",
-    "05": "push                0      0      0     ",
-    "06": "bool                0      0      0     ",
-    "07": "push                0      0      0     ",
-    "08": "call                0      -      4     # show()",
-    "09": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # log_enable
+  1   push                0      0      0
+  2   string              0      11     0     # 
+  3   push                0      0      0
+  4   string              0      12     0     # 
+  5   push                0      0      0
+  6   bool                0      0      0
+  7   push                0      0      0
+  8   call                0      -      4     # show()
+  9   ret                 0      0      -
 # test: show (local shadow)
 disconnect S0;
 connect E0 S0 127.0.0.1:3485/?timezone=Asia/Tokyo;
 show all;
+
+config
+──────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "Asia/Tokyo",
@@ -495,14 +626,20 @@ show all;
   "repl_reconnect_ms": 3000
 }
 show timezone;
+
+timezone
+────────
 "Asia/Tokyo"
 # test: show locks
 show locks;
-[{
+
+locks
+─────
+{
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
   "function": "request_auth"
-}]
+}
 disconnect S0;
 close E0;

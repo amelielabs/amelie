@@ -111,8 +111,18 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 				name->string = expr->string;
 				break;
 			}
+			default:
+			{
+#if 0
+				name = ast(KNAME);
+				if (parse_expr_is_const(expr))
+					str_set(&name->string, "value", 5);
+				else
+					str_set(&name->string, "expr", 4);
+#endif
+				break;
 			}
-
+			}
 		} else
 		{
 			// ensure * has no alias

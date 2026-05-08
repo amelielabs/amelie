@@ -6,33 +6,60 @@ error: select ❰and❱ ⟵ bad expression
 select 1 and;
 error: select 1 ❰and❱ ⟵ bad expression
 select true and true;
+
+col1
+────
 true
 explain select true and true;
-{
-  "main": {
-    "00": "bool                0      1      0     ",
-    "01": "bool                1      1      0     ",
-    "02": "and                 2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   bool                0      1      0
+  1   bool                1      1      0
+  2   and                 2      0      1
+  3   ret                 2      0      -
 select true and false;
+
+col1
+────
 false
 select true and 0;
+
+col1
+────
 false
 select true and [];
+
+col1
+────
 true
 select true and 1.15;
+
+col1
+────
 true
 select true and 0.15;
+
+col1
+────
 true
 # test: and null
 select null and null;
+
+col1
+────
 null
 select true and null;
+
+col1
+────
 null
 select false and null;
+
+col1
+────
 null
 # test: or
 select or;
@@ -40,43 +67,79 @@ error: select ❰or❱ ⟵ bad expression
 select 1 or;
 error: select 1 ❰or❱ ⟵ bad expression
 select true or true;
+
+col1
+────
 true
 select false or false;
+
+col1
+────
 false
 select false or true;
+
+col1
+────
 true
 explain select false or true;
-{
-  "main": {
-    "00": "bool                0      0      0     ",
-    "01": "bool                1      1      0     ",
-    "02": "or                  2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   bool                0      0      0
+  1   bool                1      1      0
+  2   or                  2      0      1
+  3   ret                 2      0      -
 # test: or null
 select null or null;
+
+col1
+────
 null
 select true or null;
+
+col1
+────
 true
 select false or null;
+
+col1
+────
 false
 # test: not
 select not true;
+
+col1
+────
 false
 select not false;
+
+col1
+────
 true
 select not (not false);
+
+col1
+────
 false
 select not [];
 error: select not [❰]❱ ⟵ bad expression
 select not 1;
+
+col1
+────
 false
 select not 0;
+
+col1
+────
 true
 # test: not null
 select not null;
+
+col1
+────
 null
 disconnect S0;
 close E0;

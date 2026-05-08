@@ -91,6 +91,7 @@ test_session_recv(TestSession* self, File* output)
 	{
 		auto msg = &reply->options[HTTP_MSG];
 		file_write(output, str_of(msg), str_size(msg));
+		file_write(output, "\n", 1);
 	}
 }
 

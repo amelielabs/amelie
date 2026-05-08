@@ -10004,10 +10004,19 @@ insert into test values ( 9999 );
 create index i on test (id);
 # test: validate
 select count(*) from test;
+
+count
+─────
 9999
 select count(*) from test use index (primary);
+
+count
+─────
 9999
 select count(*) from test use index (i);
+
+count
+─────
 9999
 drop table test;
 # test: indexate (unique conflict)

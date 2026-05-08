@@ -2,98 +2,110 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: select * from (select expr)
 explain select * from (select 1) t;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "set                 1      1      0     ",
-    "02": "dup                 2      0      0     ",
-    "03": "push                2      0      0     ",
-    "04": "set                 2      1      0     ",
-    "05": "set_add             2      0      0     ",
-    "06": "store_open          3      2      11    ",
-    "07": "store_read          4      3      0     ",
-    "08": "push                4      0      0     ",
-    "09": "set_add             1      0      0     ",
-    "10": "store_next          3      7      0     ",
-    "11": "free                3      0      0     ",
-    "12": "free                2      0      0     ",
-    "13": "ret                 1      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   set                 1      1      0
+  2   dup                 2      0      0
+  3   push                2      0      0
+  4   set                 2      1      0
+  5   set_add             2      0      0
+  6   store_open          3      2      11
+  7   store_read          4      3      0
+  8   push                4      0      0
+  9   set_add             1      0      0
+ 10   store_next          3      7      0
+ 11   free                3      0      0
+ 12   free                2      0      0
+ 13   ret                 1      0      -
 select * from (select 1) t;
+
+col1
+────
 1
 explain select * from (select 1, 2) t;
-{
-  "main": {
-    "00": "set                 0      2      0     ",
-    "01": "push_int            -      0      0     # 1",
-    "02": "push_int            -      0      0     # 2",
-    "03": "set_add             0      0      0     ",
-    "04": "set                 1      2      0     ",
-    "05": "dup                 2      0      0     ",
-    "06": "store_open          3      2      13    ",
-    "07": "store_read          4      3      0     ",
-    "08": "push                4      0      0     ",
-    "09": "store_read          4      3      1     ",
-    "10": "push                4      0      0     ",
-    "11": "set_add             1      0      0     ",
-    "12": "store_next          3      7      0     ",
-    "13": "free                3      0      0     ",
-    "14": "free                2      0      0     ",
-    "15": "ret                 1      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   set                 0      2      0
+  1   push_int            -      0      0     # 1
+  2   push_int            -      0      0     # 2
+  3   set_add             0      0      0
+  4   set                 1      2      0
+  5   dup                 2      0      0
+  6   store_open          3      2      13
+  7   store_read          4      3      0
+  8   push                4      0      0
+  9   store_read          4      3      1
+ 10   push                4      0      0
+ 11   set_add             1      0      0
+ 12   store_next          3      7      0
+ 13   free                3      0      0
+ 14   free                2      0      0
+ 15   ret                 1      0      -
 select * from (select 1, 2) t;
-1 │ 2
+
+col1  col2
+────────────
+1     2
 # test: select column from (select expr as)
 explain select x from (select 1 as x) t;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "set                 1      1      0     ",
-    "02": "dup                 2      0      0     ",
-    "03": "push                2      0      0     ",
-    "04": "set                 2      1      0     ",
-    "05": "set_add             2      0      0     ",
-    "06": "store_open          3      2      11    ",
-    "07": "store_read          4      3      0     ",
-    "08": "push                4      0      0     ",
-    "09": "set_add             1      0      0     ",
-    "10": "store_next          3      7      0     ",
-    "11": "free                3      0      0     ",
-    "12": "free                2      0      0     ",
-    "13": "ret                 1      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   set                 1      1      0
+  2   dup                 2      0      0
+  3   push                2      0      0
+  4   set                 2      1      0
+  5   set_add             2      0      0
+  6   store_open          3      2      11
+  7   store_read          4      3      0
+  8   push                4      0      0
+  9   set_add             1      0      0
+ 10   store_next          3      7      0
+ 11   free                3      0      0
+ 12   free                2      0      0
+ 13   ret                 1      0      -
 select x from (select 1 as x) t;
+
+x
+─
 1
 explain select a, b from (select 1 as a, 2 as b) t;
-{
-  "main": {
-    "00": "set                 0      2      0     ",
-    "01": "push_int            -      0      0     # 1",
-    "02": "push_int            -      0      0     # 2",
-    "03": "set_add             0      0      0     ",
-    "04": "set                 1      2      0     ",
-    "05": "dup                 2      0      0     ",
-    "06": "store_open          3      2      13    ",
-    "07": "store_read          4      3      0     ",
-    "08": "push                4      0      0     ",
-    "09": "store_read          4      3      1     ",
-    "10": "push                4      0      0     ",
-    "11": "set_add             1      0      0     ",
-    "12": "store_next          3      7      0     ",
-    "13": "free                3      0      0     ",
-    "14": "free                2      0      0     ",
-    "15": "ret                 1      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   set                 0      2      0
+  1   push_int            -      0      0     # 1
+  2   push_int            -      0      0     # 2
+  3   set_add             0      0      0
+  4   set                 1      2      0
+  5   dup                 2      0      0
+  6   store_open          3      2      13
+  7   store_read          4      3      0
+  8   push                4      0      0
+  9   store_read          4      3      1
+ 10   push                4      0      0
+ 11   set_add             1      0      0
+ 12   store_next          3      7      0
+ 13   free                3      0      0
+ 14   free                2      0      0
+ 15   ret                 1      0      -
 select a, b from (select 1 as a, 2 as b) t;
-1 │ 2
+
+a  b
+──────
+1  2
 # test: select * from (select expr as) (conflict)
 explain select * from (select 1 as a, 2 as a) t;
 error: explain select ❰*❱ ⟵ column name t.a is ambiguous

@@ -2,23 +2,50 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: coalesce()
 select coalesce();
+
+coalesce
+────────
 null
 select coalesce(1);
+
+coalesce
+────────
 1
 select coalesce(null);
+
+coalesce
+────────
 null
 select coalesce(null, 1);
+
+coalesce
+────────
 1
 select coalesce(1, null);
+
+coalesce
+────────
 1
 select coalesce(1, null, 2);
+
+coalesce
+────────
 1
 select null::coalesce;
+
+coalesce
+────────
 null
 select 1::coalesce;
+
+coalesce
+────────
 1
 select coalesce('1', null, '2');
-"1"
+
+coalesce
+────────
+1
 select coalesce(1, null, 2.5);
 error: select coalesce(1, null, ❰2.5❱ ⟵ argument type must match other arguments
 select coalesce('1', null, 2.5);
@@ -29,14 +56,29 @@ error: nullif() ⟵ expected 2 arguments
 select nullif(1);
 error: nullif(int) ⟵ expected 2 arguments
 select nullif(1, 2);
+
+nullif
+──────
 1
 select nullif(1, null);
+
+nullif
+──────
 1
 select nullif(null, 1);
+
+nullif
+──────
 null
 select nullif(1, 1);
+
+nullif
+──────
 null
 select 1::nullif(1);
+
+nullif
+──────
 null
 select nullif(1, '1');
 error: select nullif(1, ❰'1'❱ ⟵ argument type must match other arguments

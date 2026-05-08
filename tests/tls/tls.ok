@@ -2,6 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 # test: connect (tls using cafile)
 connect E0 S0 https://127.0.0.1:3485 ./tls/ca.crt;
 show all;
+
+config
+──────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -10036,6 +10039,9 @@ insert into test values ( 9997 );
 insert into test values ( 9998 );
 insert into test values ( 9999 );
 select * from test order by id;
+
+id
+──
 1
 2
 3

@@ -140,24 +140,22 @@ print_create(Print* self, Columns* columns, Value* value, Timezone* tz, Buf* buf
 			break;
 
 		auto left = self->size_max - self->size;
-		col->size = col->size_header + 2;
+		col->size = col->size_header;
 		if (col->size_value > col->size)
 			col->size = col->size_value;
 
 		// padding
-		if (! list_is_last(&columns->list, &column->link))
-			col->size += 2;
+		col->size += 2;
 
+		auto is_last = list_is_last(&columns->list, &column->link);
 		if (col->size >= left)
 		{
 			col->size = left;
 		} else
 		{
 			if (col->size > 50)
-			{
-				if (! list_is_last(&columns->list, &column->link))
+				if (! is_last)
 					col->size = 50;
-			}
 		}
 
 		self->size += col->size;

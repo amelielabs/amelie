@@ -16,6 +16,7 @@ value_print(Value* self, Timezone* tz, bool pretty, Buf* buf)
 {
 	switch (self->type) {
 	case TYPE_NULL:
+		buf_write(buf, "null", 4);
 		break;
 	case TYPE_BOOL:
 		if (self->integer > 0)

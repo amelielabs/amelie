@@ -19,110 +19,149 @@ insert into test values (4, 3);
 select 0 -> id;
 error: select 0 -> id❰;❱ ⟵ no targets to use with GROUP BY or aggregation
 select 0 -> id from test;
+
+col1
+────
 4
 # test: select int ->, int -> from table
 select 0 -> id, 0 -> data from test;
-4 │ 3
+
+col1  col2
+────────────
+4     3
 explain select 0 -> id, 0 -> data from test;
-{
-  "main": {
-    "00": "send_all            0      0      48    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      10    ",
-    "04": "store_read          4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "store_read          4      3      1     ",
-    "07": "push                4      0      0     ",
-    "08": "set_add             2      0      0     ",
-    "09": "store_next          3      4      0     ",
-    "10": "free                3      0      0     ",
-    "11": "free                1      0      0     ",
-    "12": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      1     ",
-    "01": "int                 1      -      0     # 0",
-    "02": "int                 2      -      0     # 0",
-    "03": "table_open          3      0      12    # amelie.test (primary) part",
-    "04": "push_bool           1      0      0     ",
-    "05": "set_get             4      0      0     ",
-    "06": "table_readi32       5      3      -     # id",
-    "07": "push                5      0      0     ",
-    "08": "table_readi32       5      3      -     # data",
-    "09": "push                5      0      0     ",
-    "10": "set_agg             0      4      32    ",
-    "11": "table_next          3      4      0     ",
-    "12": "free                3      0      0     ",
-    "13": "push_bool           1      0      0     ",
-    "14": "set_get             3      0      0     ",
-    "15": "push_nulls          1      0      0     ",
-    "16": "push_nulls          1      0      0     ",
-    "17": "set_agg             0      3      32    ",
-    "18": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      48    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      10
+  4   store_read          4      3      0
+  5   push                4      0      0
+  6   store_read          4      3      1
+  7   push                4      0      0
+  8   set_add             2      0      0
+  9   store_next          3      4      0
+ 10   free                3      0      0
+ 11   free                1      0      0
+ 12   ret                 2      0      -
+
+pushdown
+  0   set                 0      2      1
+  1   int                 1      -      0     # 0
+  2   int                 2      -      0     # 0
+  3   table_open          3      0      12    # amelie.test (primary) part
+  4   push_bool           1      0      0
+  5   set_get             4      0      0
+  6   table_readi32       5      3      -     # id
+  7   push                5      0      0
+  8   table_readi32       5      3      -     # data
+  9   push                5      0      0
+ 10   set_agg             0      4      32
+ 11   table_next          3      4      0
+ 12   free                3      0      0
+ 13   push_bool           1      0      0
+ 14   set_get             3      0      0
+ 15   push_nulls          1      0      0
+ 16   push_nulls          1      0      0
+ 17   set_agg             0      3      32
+ 18   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 # test: select self
 select self;
 error: select ❰self❱ ⟵ unexpected SELF usage without lambda context
 # test: select int -> self from table
 select 0 -> self from test;
+
+col1
+────
 0
 select 0 -> self + 1 from test;
+
+col1
+────
 5
 explain select 0 -> self + 1 from test;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "store_read          4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "int                 1      -      0     # 0",
-    "02": "table_open          2      0      11    # amelie.test (primary) part",
-    "03": "push_bool           1      0      0     ",
-    "04": "set_get             3      0      0     ",
-    "05": "self                4      0      3     ",
-    "06": "int                 5      -      0     # 1",
-    "07": "addii               6      4      5     ",
-    "08": "push                6      0      0     ",
-    "09": "set_agg             0      3      32    ",
-    "10": "table_next          2      3      0     ",
-    "11": "free                2      0      0     ",
-    "12": "push_bool           1      0      0     ",
-    "13": "set_get             2      0      0     ",
-    "14": "push_nulls          1      0      0     ",
-    "15": "set_agg             0      2      32    ",
-    "16": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   store_read          4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   int                 1      -      0     # 0
+  2   table_open          2      0      11    # amelie.test (primary) part
+  3   push_bool           1      0      0
+  4   set_get             3      0      0
+  5   self                4      0      3
+  6   int                 5      -      0     # 1
+  7   addii               6      4      5
+  8   push                6      0      0
+  9   set_agg             0      3      32
+ 10   table_next          2      3      0
+ 11   free                2      0      0
+ 12   push_bool           1      0      0
+ 13   set_get             2      0      0
+ 14   push_nulls          1      0      0
+ 15   set_agg             0      2      32
+ 16   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select 0 -> (self + 1) + self from test;
+
+col1
+────
 31
 # test: select string -> self from table
 select '' -> self || id::string from test;
-"01234"
+
+col1
+────
+01234
 select '' -> self::concat(id::string) from test;
-"01234"
+
+col1
+────
+01234
 # test: select [] -> self from table
 select [] -> self::append(id) from test;
+
+col1
+────
 [0, 1, 2, 3, 4]
 select [] -> append(self, id) from test;
+
+col1
+────
 [0, 1, 2, 3, 4]
 select [] -> self::append(id::string) from test;
+
+col1
+────
 ["0", "1", "2", "3", "4"]
 # test: select {} -> self from table
 select {} -> self::set('key_' || id::string, data) from test;
+
+col1
+────
 {
   "key_0": 0,
   "key_1": 1,
@@ -132,23 +171,35 @@ select {} -> self::set('key_' || id::string, data) from test;
 }
 # test: select int -> from table group by
 select * from test;
-0 │ 0
-1 │ 1
-2 │ 2
-3 │ 1
-4 │ 3
+
+id  data
+──────────
+0   0
+1   1
+2   2
+3   1
+4   3
 select data, 0 -> self + 1 from test group by data;
-0 │ 1
-1 │ 2
-2 │ 1
-3 │ 1
+
+data  col2
+────────────
+0     1
+1     2
+2     1
+3     1
 # test: select column -> from table (unsupported)
 select id -> self + 1 from test;
 error: select ❰id❱ ⟵ column not found
 # test: select expr -> from table
 select (select 1 + 2) -> self + 1 from test;
+
+col1
+────
 8
 select 1 + 2 -> self + 1 from test;
+
+col1
+────
 8
 select null -> 1 from test;
 error: select null -> ❰1❱ ⟵ lambda expression type mismatch
@@ -156,15 +207,24 @@ select null::int -> 1 from test;
 error: select null::int -> ❰1❱ ⟵ lambda expression type mismatch
 # test: select subquery -> from table
 select (select data from test t where id = 3) -> self + 1 from test;
+
+col1
+────
 6
 # test: select (select column -> from table) from table
 select id, (select o.id -> self + 1 from test) from test as o;
-0 │ 5
-1 │ 6
-2 │ 7
-3 │ 8
-4 │ 9
+
+id  col2
+──────────
+0   5
+1   6
+2   7
+3   8
+4   9
 select (select o.id -> self + 1 from test) from test as o;
+
+col1
+────
 5
 6
 7
@@ -172,6 +232,9 @@ select (select o.id -> self + 1 from test) from test as o;
 9
 # test: select -> / ->
 select (0.0 -> self + id) / (0 -> self + 1) from test;
+
+col1
+────
 2
 drop table test;
 # test: select int -> self from table (partitions N, unsupported)
@@ -183,46 +246,52 @@ insert into test values (3, 1);
 insert into test values (4, 3);
 insert into test values (5, 3);
 explain select 0 -> self + 1 from test;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "store_read          4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "int                 1      -      0     # 0",
-    "02": "table_open          2      0      11    # amelie.test (primary) part",
-    "03": "push_bool           1      0      0     ",
-    "04": "set_get             3      0      0     ",
-    "05": "self                4      0      3     ",
-    "06": "int                 5      -      0     # 1",
-    "07": "addii               6      4      5     ",
-    "08": "push                6      0      0     ",
-    "09": "set_agg             0      3      32    ",
-    "10": "table_next          2      3      0     ",
-    "11": "free                2      0      0     ",
-    "12": "push_bool           1      0      0     ",
-    "13": "set_get             2      0      0     ",
-    "14": "push_nulls          1      0      0     ",
-    "15": "set_agg             0      2      32    ",
-    "16": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   store_read          4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   int                 1      -      0     # 0
+  2   table_open          2      0      11    # amelie.test (primary) part
+  3   push_bool           1      0      0
+  4   set_get             3      0      0
+  5   self                4      0      3
+  6   int                 5      -      0     # 1
+  7   addii               6      4      5
+  8   push                6      0      0
+  9   set_agg             0      3      32
+ 10   table_next          2      3      0
+ 11   free                2      0      0
+ 12   push_bool           1      0      0
+ 13   set_get             2      0      0
+ 14   push_nulls          1      0      0
+ 15   set_agg             0      2      32
+ 16   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select 0 -> self + 1 from test;
 error: distributed operation on lambda is not supported
 drop table test;
 # test: select expr -> from []
 select 0 -> self + value::int from ([1,2,3]) value;
+
+col1
+────
 6
 # test: select (expr -> from column) from table
 create table test (id int primary key, data json);
@@ -230,9 +299,12 @@ insert into test values (0, [1,2,3]);
 insert into test values (1, [4,5,6]);
 insert into test values (2, [7,8,9]);
 select id, (select 0 -> self + value::int from (test.data) value) from test;
-0 │ 6
-1 │ 15
-2 │ 24
+
+id  col2
+──────────
+0   6
+1   15
+2   24
 drop table test;
 disconnect S0;
 close E0;

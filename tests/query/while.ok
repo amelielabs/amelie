@@ -15,25 +15,25 @@ explain begin
 	end;
 	select i;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "var                 0      0      0     ",
-    "04": "int                 1      -      0     # 3",
-    "05": "ltii                2      0      1     ",
-    "06": "jntr                12     2      0     ",
-    "07": "var                 0      0      0     ",
-    "08": "int                 1      -      0     # 1",
-    "09": "addii               2      0      1     ",
-    "10": "var_set             0      0      2     ",
-    "11": "jmp                 3      0      0     ",
-    "12": "var                 0      0      0     ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   var                 0      0      0
+  4   int                 1      -      0     # 3
+  5   ltii                2      0      1
+  6   jntr                12     2      0
+  7   var                 0      0      0
+  8   int                 1      -      0     # 1
+  9   addii               2      0      1
+ 10   var_set             0      0      2
+ 11   jmp                 3      0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
 begin
 	declare i int := 0;
 	while i < 3 do
@@ -41,6 +41,9 @@ begin
 	end;
 	select i;
 end;
+
+col1
+────
 3
 # test: while while
 explain begin
@@ -57,48 +60,48 @@ explain begin
 	end;
 	select i, j, n;
 end;
-{
-  "main": {
-    "00": "push_nulls          3      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "int                 0      -      0     # 0",
-    "04": "var_set             1      0      0     ",
-    "05": "int                 0      -      0     # 0",
-    "06": "var_set             2      0      0     ",
-    "07": "var                 0      0      0     ",
-    "08": "int                 1      -      0     # 3",
-    "09": "ltii                2      0      1     ",
-    "10": "jntr                31     2      0     ",
-    "11": "int                 0      -      0     # 0",
-    "12": "var_set             1      0      0     ",
-    "13": "var                 0      1      0     ",
-    "14": "int                 1      -      0     # 3",
-    "15": "ltii                2      0      1     ",
-    "16": "jntr                26     2      0     ",
-    "17": "var                 0      1      0     ",
-    "18": "int                 1      -      0     # 1",
-    "19": "addii               2      0      1     ",
-    "20": "var_set             1      0      2     ",
-    "21": "var                 0      2      0     ",
-    "22": "int                 1      -      0     # 1",
-    "23": "addii               2      0      1     ",
-    "24": "var_set             2      0      2     ",
-    "25": "jmp                 13     0      0     ",
-    "26": "var                 0      0      0     ",
-    "27": "int                 1      -      0     # 1",
-    "28": "addii               2      0      1     ",
-    "29": "var_set             0      0      2     ",
-    "30": "jmp                 7      0      0     ",
-    "31": "set                 0      3      0     ",
-    "32": "push_var            0      0      0     ",
-    "33": "push_var            1      0      0     ",
-    "34": "push_var            2      0      0     ",
-    "35": "set_add             0      0      0     ",
-    "36": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          3      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   int                 0      -      0     # 0
+  4   var_set             1      0      0
+  5   int                 0      -      0     # 0
+  6   var_set             2      0      0
+  7   var                 0      0      0
+  8   int                 1      -      0     # 3
+  9   ltii                2      0      1
+ 10   jntr                31     2      0
+ 11   int                 0      -      0     # 0
+ 12   var_set             1      0      0
+ 13   var                 0      1      0
+ 14   int                 1      -      0     # 3
+ 15   ltii                2      0      1
+ 16   jntr                26     2      0
+ 17   var                 0      1      0
+ 18   int                 1      -      0     # 1
+ 19   addii               2      0      1
+ 20   var_set             1      0      2
+ 21   var                 0      2      0
+ 22   int                 1      -      0     # 1
+ 23   addii               2      0      1
+ 24   var_set             2      0      2
+ 25   jmp                 13     0      0
+ 26   var                 0      0      0
+ 27   int                 1      -      0     # 1
+ 28   addii               2      0      1
+ 29   var_set             0      0      2
+ 30   jmp                 7      0      0
+ 31   set                 0      3      0
+ 32   push_var            0      0      0
+ 33   push_var            1      0      0
+ 34   push_var            2      0      0
+ 35   set_add             0      0      0
+ 36   ret                 0      0      -
 begin
 	declare i int := 0;
 	declare j int := 0;
@@ -113,7 +116,10 @@ begin
 	end;
 	select i, j, n;
 end;
-3 │ 3 │ 9
+
+col1  col2  col3
+──────────────────
+3     3     9
 # test: while if
 begin
 	declare i int := 0;
@@ -126,6 +132,9 @@ begin
 	end;
 	select n;
 end;
+
+col1
+────
 2
 # test: while var
 create table test (id int primary key);
@@ -143,57 +152,60 @@ explain begin
 	end;
 	select n, x;
 end;
-{
-  "main": {
-    "00": "push_nulls          3      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "int                 0      -      0     # 0",
-    "04": "var_set             1      0      0     ",
-    "05": "int                 0      -      0     # 0",
-    "06": "var_set             2      0      0     ",
-    "07": "send_all            0      0      32    # amelie.test (select, closing)",
-    "08": "union               1      0      0     ",
-    "09": "recv                1      0      0     ",
-    "10": "var_set             1      0      1     ",
-    "11": "free                1      0      0     ",
-    "12": "var                 0      0      0     ",
-    "13": "var                 1      1      0     ",
-    "14": "ltii                2      0      1     ",
-    "15": "jntr                31     2      0     ",
-    "16": "var                 0      0      0     ",
-    "17": "int                 1      -      0     # 2",
-    "18": "modii               2      0      1     ",
-    "19": "int                 0      -      0     # 0",
-    "20": "equii               1      2      0     ",
-    "21": "jntr                26     1      0     ",
-    "22": "var                 0      2      0     ",
-    "23": "int                 1      -      0     # 1",
-    "24": "addii               2      0      1     ",
-    "25": "var_set             2      0      2     ",
-    "26": "var                 0      0      0     ",
-    "27": "int                 1      -      0     # 1",
-    "28": "addii               2      0      1     ",
-    "29": "var_set             0      0      2     ",
-    "30": "jmp                 12     0      0     ",
-    "31": "set                 0      2      0     ",
-    "32": "push_var            2      0      0     ",
-    "33": "push_var            1      0      0     ",
-    "34": "set_add             0      0      0     ",
-    "35": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          3      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   int                 0      -      0     # 0
+  4   var_set             1      0      0
+  5   int                 0      -      0     # 0
+  6   var_set             2      0      0
+  7   send_all            0      0      32    # amelie.test (select, closing)
+  8   union               1      0      0
+  9   recv                1      0      0
+ 10   var_set             1      0      1
+ 11   free                1      0      0
+ 12   var                 0      0      0
+ 13   var                 1      1      0
+ 14   ltii                2      0      1
+ 15   jntr                31     2      0
+ 16   var                 0      0      0
+ 17   int                 1      -      0     # 2
+ 18   modii               2      0      1
+ 19   int                 0      -      0     # 0
+ 20   equii               1      2      0
+ 21   jntr                26     1      0
+ 22   var                 0      2      0
+ 23   int                 1      -      0     # 1
+ 24   addii               2      0      1
+ 25   var_set             2      0      2
+ 26   var                 0      0      0
+ 27   int                 1      -      0     # 1
+ 28   addii               2      0      1
+ 29   var_set             0      0      2
+ 30   jmp                 12     0      0
+ 31   set                 0      2      0
+ 32   push_var            2      0      0
+ 33   push_var            1      0      0
+ 34   set_add             0      0      0
+ 35   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare i int := 0;
 	declare x int := 0;
@@ -207,7 +219,10 @@ begin
 	end;
 	select n, x;
 end;
-2 │ 4
+
+col1  col2
+────────────
+2     4
 # test: while select
 while select 123 do end;
 error: while ❰select❱ ⟵ unexpected subquery
@@ -222,8 +237,14 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 4
 select * from test;
+
+id
+──
 0
 1
 2
@@ -242,80 +263,83 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "send_all            0      0      40    # amelie.test (select)",
-    "04": "recv_aggs           1      0      32    ",
-    "05": "set                 2      1      0     ",
-    "06": "store_open          3      1      11    ",
-    "07": "agg                 4      3      0     ",
-    "08": "push                4      0      0     ",
-    "09": "set_add             2      0      0     ",
-    "10": "store_next          3      7      0     ",
-    "11": "free                3      0      0     ",
-    "12": "free                1      0      0     ",
-    "13": "var_set             0      0      2     ",
-    "14": "free                2      0      0     ",
-    "15": "var                 0      0      0     ",
-    "16": "int                 1      -      0     # 1",
-    "17": "addii               2      0      1     ",
-    "18": "var_set             0      0      2     ",
-    "19": "var                 0      0      0     ",
-    "20": "int                 1      -      0     # 10",
-    "21": "addii               2      0      1     ",
-    "22": "var_set             1      0      2     ",
-    "23": "var                 0      0      0     ",
-    "24": "var                 1      1      0     ",
-    "25": "ltii                2      0      1     ",
-    "26": "jntr                38     2      0     ",
-    "27": "push_var            0      0      1     ",
-    "28": "set_ptr             1      -      0     ",
-    "29": "send_shard          0      1      1     # amelie.test (insert)",
-    "30": "var                 1      0      0     ",
-    "31": "int                 2      -      0     # 1",
-    "32": "addii               3      1      2     ",
-    "33": "var_set             0      0      3     ",
-    "34": "union               1      0      0     ",
-    "35": "recv                1      0      0     ",
-    "36": "free                1      0      0     ",
-    "37": "jmp                 23     0      0     ",
-    "38": "close               0      0      0     ",
-    "39": "var                 0      1      0     ",
-    "40": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readi32       3      1      -     # id",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     ",
-    "14": "set                 0      1      0     ",
-    "15": "table_prepare       1      -      -     # amelie.test",
-    "16": "jmp                 23     0      0     ",
-    "17": "string              2      64     0     # unique key constraint violation",
-    "18": "push                2      0      0     ",
-    "19": "call                2      -      1     # error()",
-    "20": "table_readi32       2      1      -     # id",
-    "21": "push                2      0      0     ",
-    "22": "set_add             0      0      0     ",
-    "23": "upsert              1      17     20    ",
-    "24": "free                1      0      0     ",
-    "25": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared_rw", "insert", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   send_all            0      0      40    # amelie.test (select)
+  4   recv_aggs           1      0      32
+  5   set                 2      1      0
+  6   store_open          3      1      11
+  7   agg                 4      3      0
+  8   push                4      0      0
+  9   set_add             2      0      0
+ 10   store_next          3      7      0
+ 11   free                3      0      0
+ 12   free                1      0      0
+ 13   var_set             0      0      2
+ 14   free                2      0      0
+ 15   var                 0      0      0
+ 16   int                 1      -      0     # 1
+ 17   addii               2      0      1
+ 18   var_set             0      0      2
+ 19   var                 0      0      0
+ 20   int                 1      -      0     # 10
+ 21   addii               2      0      1
+ 22   var_set             1      0      2
+ 23   var                 0      0      0
+ 24   var                 1      1      0
+ 25   ltii                2      0      1
+ 26   jntr                38     2      0
+ 27   push_var            0      0      1
+ 28   set_ptr             1      -      0
+ 29   send_shard          0      1      1     # amelie.test (insert)
+ 30   var                 1      0      0
+ 31   int                 2      -      0     # 1
+ 32   addii               3      1      2
+ 33   var_set             0      0      3
+ 34   union               1      0      0
+ 35   recv                1      0      0
+ 36   free                1      0      0
+ 37   jmp                 23     0      0
+ 38   close               0      0      0
+ 39   var                 0      1      0
+ 40   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readi32       3      1      -     # id
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+ 14   set                 0      1      0
+ 15   table_prepare       1      -      -     # amelie.test
+ 16   jmp                 23     0      0
+ 17   string              2      64     0     # unique key constraint violation
+ 18   push                2      0      0
+ 19   call                2      -      1     # error()
+ 20   table_readi32       2      1      -     # id
+ 21   push                2      0      0
+ 22   set_add             0      0      0
+ 23   upsert              1      17     20
+ 24   free                1      0      0
+ 25   ret                 0      0      -
+
+access
+  •   amelie.test shared_rw [insert, select]
 begin
 	declare i int := 0;
 	select max(id) into i from test;
@@ -328,8 +352,14 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 15
 select * from test;
+
+id
+──
 0
 1
 2
@@ -360,86 +390,89 @@ explain begin
 	end;
 	select x, l;
 end;
-{
-  "main": {
-    "00": "push_nulls          3      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "send_all            0      0      40    # amelie.test (select)",
-    "04": "recv_aggs           1      0      32    ",
-    "05": "set                 2      1      0     ",
-    "06": "store_open          3      1      11    ",
-    "07": "agg                 4      3      0     ",
-    "08": "push                4      0      0     ",
-    "09": "set_add             2      0      0     ",
-    "10": "store_next          3      7      0     ",
-    "11": "free                3      0      0     ",
-    "12": "free                1      0      0     ",
-    "13": "var_set             0      0      2     ",
-    "14": "free                2      0      0     ",
-    "15": "var                 0      0      0     ",
-    "16": "int                 1      -      0     # 1",
-    "17": "addii               2      0      1     ",
-    "18": "var_set             0      0      2     ",
-    "19": "var                 0      0      0     ",
-    "20": "int                 1      -      0     # 10",
-    "21": "addii               2      0      1     ",
-    "22": "var_set             1      0      2     ",
-    "23": "int                 0      -      0     # 0",
-    "24": "var_set             2      0      0     ",
-    "25": "var                 0      0      0     ",
-    "26": "var                 1      1      0     ",
-    "27": "ltii                2      0      1     ",
-    "28": "jntr                41     2      0     ",
-    "29": "push_var            0      0      1     ",
-    "30": "set_ptr             1      -      0     ",
-    "31": "send_shard          0      1      1     # amelie.test (insert)",
-    "32": "var                 1      0      0     ",
-    "33": "int                 2      -      0     # 1",
-    "34": "addii               3      1      2     ",
-    "35": "var_set             0      0      3     ",
-    "36": "union               1      0      0     ",
-    "37": "recv                1      0      0     ",
-    "38": "var_set             2      0      1     ",
-    "39": "free                1      0      0     ",
-    "40": "jmp                 25     0      0     ",
-    "41": "close               0      0      0     ",
-    "42": "set                 0      2      0     ",
-    "43": "push_var            1      0      0     ",
-    "44": "push_var            2      0      0     ",
-    "45": "set_add             0      0      0     ",
-    "46": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readi32       3      1      -     # id",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     ",
-    "14": "set                 0      1      0     ",
-    "15": "table_prepare       1      -      -     # amelie.test",
-    "16": "jmp                 23     0      0     ",
-    "17": "string              2      64     0     # unique key constraint violation",
-    "18": "push                2      0      0     ",
-    "19": "call                2      -      1     # error()",
-    "20": "table_readi32       2      1      -     # id",
-    "21": "push                2      0      0     ",
-    "22": "set_add             0      0      0     ",
-    "23": "upsert              1      17     20    ",
-    "24": "free                1      0      0     ",
-    "25": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared_rw", "insert", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          3      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   send_all            0      0      40    # amelie.test (select)
+  4   recv_aggs           1      0      32
+  5   set                 2      1      0
+  6   store_open          3      1      11
+  7   agg                 4      3      0
+  8   push                4      0      0
+  9   set_add             2      0      0
+ 10   store_next          3      7      0
+ 11   free                3      0      0
+ 12   free                1      0      0
+ 13   var_set             0      0      2
+ 14   free                2      0      0
+ 15   var                 0      0      0
+ 16   int                 1      -      0     # 1
+ 17   addii               2      0      1
+ 18   var_set             0      0      2
+ 19   var                 0      0      0
+ 20   int                 1      -      0     # 10
+ 21   addii               2      0      1
+ 22   var_set             1      0      2
+ 23   int                 0      -      0     # 0
+ 24   var_set             2      0      0
+ 25   var                 0      0      0
+ 26   var                 1      1      0
+ 27   ltii                2      0      1
+ 28   jntr                41     2      0
+ 29   push_var            0      0      1
+ 30   set_ptr             1      -      0
+ 31   send_shard          0      1      1     # amelie.test (insert)
+ 32   var                 1      0      0
+ 33   int                 2      -      0     # 1
+ 34   addii               3      1      2
+ 35   var_set             0      0      3
+ 36   union               1      0      0
+ 37   recv                1      0      0
+ 38   var_set             2      0      1
+ 39   free                1      0      0
+ 40   jmp                 25     0      0
+ 41   close               0      0      0
+ 42   set                 0      2      0
+ 43   push_var            1      0      0
+ 44   push_var            2      0      0
+ 45   set_add             0      0      0
+ 46   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readi32       3      1      -     # id
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+ 14   set                 0      1      0
+ 15   table_prepare       1      -      -     # amelie.test
+ 16   jmp                 23     0      0
+ 17   string              2      64     0     # unique key constraint violation
+ 18   push                2      0      0
+ 19   call                2      -      1     # error()
+ 20   table_readi32       2      1      -     # id
+ 21   push                2      0      0
+ 22   set_add             0      0      0
+ 23   upsert              1      17     20
+ 24   free                1      0      0
+ 25   ret                 0      0      -
+
+access
+  •   amelie.test shared_rw [insert, select]
 begin
 	declare i int := 0;
 	select max(id) into i from test;
@@ -454,8 +487,14 @@ begin
 	end;
 	select x, l;
 end;
-25 │ 24
+
+col1  col2
+────────────
+25    24
 select * from test;
+
+id
+──
 0
 1
 2
@@ -501,6 +540,9 @@ begin
 	end;
 	select 123;
 end;
+
+col1
+────
 123
 # test: while if break
 explain begin
@@ -513,28 +555,28 @@ explain begin
 	end;
 	select i;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "bool                0      1      0     ",
-    "04": "jntr                15     0      0     ",
-    "05": "var                 0      0      0     ",
-    "06": "int                 1      -      0     # 10",
-    "07": "equii               2      0      1     ",
-    "08": "jntr                10     2      0     ",
-    "09": "jmp                 15     0      0     ",
-    "10": "var                 0      0      0     ",
-    "11": "int                 1      -      0     # 1",
-    "12": "addii               2      0      1     ",
-    "13": "var_set             0      0      2     ",
-    "14": "jmp                 3      0      0     ",
-    "15": "var                 0      0      0     ",
-    "16": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   bool                0      1      0
+  4   jntr                15     0      0
+  5   var                 0      0      0
+  6   int                 1      -      0     # 10
+  7   equii               2      0      1
+  8   jntr                10     2      0
+  9   jmp                 15     0      0
+ 10   var                 0      0      0
+ 11   int                 1      -      0     # 1
+ 12   addii               2      0      1
+ 13   var_set             0      0      2
+ 14   jmp                 3      0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
 begin
 	declare i int := 0;
 	while true do
@@ -545,6 +587,9 @@ begin
 	end;
 	select i;
 end;
+
+col1
+────
 10
 # test: while while break
 explain begin
@@ -559,32 +604,32 @@ explain begin
 	end;
 	select i;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "bool                0      1      0     ",
-    "04": "jntr                19     0      0     ",
-    "05": "bool                0      1      0     ",
-    "06": "jntr                13     0      0     ",
-    "07": "jmp                 13     0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "int                 1      -      0     # 1",
-    "10": "addii               2      0      1     ",
-    "11": "var_set             0      0      2     ",
-    "12": "jmp                 5      0      0     ",
-    "13": "jmp                 19     0      0     ",
-    "14": "var                 0      0      0     ",
-    "15": "int                 1      -      0     # 1",
-    "16": "addii               2      0      1     ",
-    "17": "var_set             0      0      2     ",
-    "18": "jmp                 3      0      0     ",
-    "19": "var                 0      0      0     ",
-    "20": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   bool                0      1      0
+  4   jntr                19     0      0
+  5   bool                0      1      0
+  6   jntr                13     0      0
+  7   jmp                 13     0      0
+  8   var                 0      0      0
+  9   int                 1      -      0     # 1
+ 10   addii               2      0      1
+ 11   var_set             0      0      2
+ 12   jmp                 5      0      0
+ 13   jmp                 19     0      0
+ 14   var                 0      0      0
+ 15   int                 1      -      0     # 1
+ 16   addii               2      0      1
+ 17   var_set             0      0      2
+ 18   jmp                 3      0      0
+ 19   var                 0      0      0
+ 20   ret                 0      0      -
 begin
 	declare i int := 0;
 	while true do
@@ -597,6 +642,9 @@ begin
 	end;
 	select i;
 end;
+
+col1
+────
 0
 # test: continue without loop
 continue;
@@ -615,29 +663,29 @@ explain begin
 	end;
 	select i;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "bool                0      1      0     ",
-    "04": "jntr                16     0      0     ",
-    "05": "var                 0      0      0     ",
-    "06": "int                 1      -      0     # 10",
-    "07": "ltii                2      0      1     ",
-    "08": "jntr                14     2      0     ",
-    "09": "var                 0      0      0     ",
-    "10": "int                 1      -      0     # 1",
-    "11": "addii               2      0      1     ",
-    "12": "var_set             0      0      2     ",
-    "13": "jmp                 3      0      0     ",
-    "14": "jmp                 16     0      0     ",
-    "15": "jmp                 3      0      0     ",
-    "16": "var                 0      0      0     ",
-    "17": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   bool                0      1      0
+  4   jntr                16     0      0
+  5   var                 0      0      0
+  6   int                 1      -      0     # 10
+  7   ltii                2      0      1
+  8   jntr                14     2      0
+  9   var                 0      0      0
+ 10   int                 1      -      0     # 1
+ 11   addii               2      0      1
+ 12   var_set             0      0      2
+ 13   jmp                 3      0      0
+ 14   jmp                 16     0      0
+ 15   jmp                 3      0      0
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
 begin
 	declare i int := 0;
 	while true do
@@ -649,6 +697,9 @@ begin
 	end;
 	select i;
 end;
+
+col1
+────
 10
 # test: while while continue
 explain begin
@@ -665,42 +716,42 @@ explain begin
 	end;
 	select i, j;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "int                 0      -      0     # 0",
-    "04": "var_set             1      0      0     ",
-    "05": "var                 0      0      0     ",
-    "06": "int                 1      -      0     # 10",
-    "07": "ltii                2      0      1     ",
-    "08": "jntr                26     2      0     ",
-    "09": "bool                0      1      0     ",
-    "10": "jntr                21     0      0     ",
-    "11": "var                 0      1      0     ",
-    "12": "int                 1      -      0     # 10",
-    "13": "ltii                2      0      1     ",
-    "14": "jntr                20     2      0     ",
-    "15": "var                 0      1      0     ",
-    "16": "int                 1      -      0     # 1",
-    "17": "addii               2      0      1     ",
-    "18": "var_set             1      0      2     ",
-    "19": "jmp                 9      0      0     ",
-    "20": "jmp                 9      0      0     ",
-    "21": "var                 0      0      0     ",
-    "22": "int                 1      -      0     # 1",
-    "23": "addii               2      0      1     ",
-    "24": "var_set             0      0      2     ",
-    "25": "jmp                 5      0      0     ",
-    "26": "set                 0      2      0     ",
-    "27": "push_var            0      0      0     ",
-    "28": "push_var            1      0      0     ",
-    "29": "set_add             0      0      0     ",
-    "30": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   int                 0      -      0     # 0
+  4   var_set             1      0      0
+  5   var                 0      0      0
+  6   int                 1      -      0     # 10
+  7   ltii                2      0      1
+  8   jntr                26     2      0
+  9   bool                0      1      0
+ 10   jntr                21     0      0
+ 11   var                 0      1      0
+ 12   int                 1      -      0     # 10
+ 13   ltii                2      0      1
+ 14   jntr                20     2      0
+ 15   var                 0      1      0
+ 16   int                 1      -      0     # 1
+ 17   addii               2      0      1
+ 18   var_set             1      0      2
+ 19   jmp                 9      0      0
+ 20   jmp                 9      0      0
+ 21   var                 0      0      0
+ 22   int                 1      -      0     # 1
+ 23   addii               2      0      1
+ 24   var_set             0      0      2
+ 25   jmp                 5      0      0
+ 26   set                 0      2      0
+ 27   push_var            0      0      0
+ 28   push_var            1      0      0
+ 29   set_add             0      0      0
+ 30   ret                 0      0      -
 begin
 	declare i int := 0;
 	declare j int := 0;
@@ -717,6 +768,9 @@ begin
 	end;
 	select i, j;
 end;
-10 │ 0
+
+col1  col2
+────────────
+10    0
 disconnect S0;
 close E0;

@@ -21,11 +21,17 @@ insert into test values (0);
 insert into test values (1);
 insert into amelie.test values (2);
 select * from test;
+
+id
+──
 0
 1
 2
 delete from test;
 select * from test;
+
+id
+──
 drop table test;
 # test: delete point-lookup
 create table test(id int primary key);
@@ -33,42 +39,60 @@ insert into test values (0);
 insert into test values (1);
 insert into test values (2);
 explain delete from test where id = 3;
-{
-  "main": {
-    "00": "push_int            -      0      0     # 3",
-    "01": "send_lookup         0      -      32    # amelie.test (delete, closing)",
-    "02": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "push_int            -      0      0     # 3",
-    "01": "table_open          0      0      7     # amelie.test (primary) point_lookup, part",
-    "02": "table_readi32       1      0      -     # id",
-    "03": "int                 2      -      0     # 3",
-    "04": "equii               3      1      2     ",
-    "05": "jntr                7      3      0     ",
-    "06": "delete              0      0      0     ",
-    "07": "free                0      0      0     ",
-    "08": "ret                 -1     0      -     "
-  },
-  "access": [["amelie.test", "shared_rw", "delete"]]
-}
+
+explain
+───────
+
+main
+  0   push_int            -      0      0     # 3
+  1   send_lookup         0      -      32    # amelie.test (delete, closing)
+  2   ret                 -1     0      -
+
+pushdown
+  0   push_int            -      0      0     # 3
+  1   table_open          0      0      7     # amelie.test (primary) point_lookup, part
+  2   table_readi32       1      0      -     # id
+  3   int                 2      -      0     # 3
+  4   equii               3      1      2
+  5   jntr                7      3      0
+  6   delete              0      0      0
+  7   free                0      0      0
+  8   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [delete]
 delete from test where id = 3;
 select * from test;
+
+id
+──
 0
 1
 2
 delete from test where id = 2;
 select * from test;
+
+id
+──
 0
 1
 delete from test where id = 0;
 select * from test;
+
+id
+──
 1
 delete from test where id = -1;
 select * from test;
+
+id
+──
 1
 delete from test where id = 1;
 select * from test;
+
+id
+──
 drop table test;
 # test: delete range scan
 create table test(id int primary key);
@@ -76,60 +100,84 @@ insert into test values (0);
 insert into test values (1);
 insert into test values (2);
 select * from test;
+
+id
+──
 0
 1
 2
 delete from test where id > 3;
 select * from test;
+
+id
+──
 0
 1
 2
 delete from test where id > 2;
 select * from test;
+
+id
+──
 0
 1
 2
 delete from test where id >= 2;
 select * from test;
+
+id
+──
 0
 1
 explain delete from test where id > 0 and id < 1;
-{
-  "main": {
-    "00": "send_all            0      0      32    # amelie.test (delete, closing)",
-    "01": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "push_int            -      0      0     # 0",
-    "01": "table_open          0      0      16    # amelie.test (primary) part",
-    "02": "table_readi32       1      0      -     # id",
-    "03": "int                 2      -      0     # 1",
-    "04": "ltii                3      1      2     ",
-    "05": "jntr                16     3      0     ",
-    "06": "table_readi32       1      0      -     # id",
-    "07": "int                 2      -      0     # 0",
-    "08": "gtii                3      1      2     ",
-    "09": "table_readi32       1      0      -     # id",
-    "10": "int                 2      -      0     # 1",
-    "11": "ltii                4      1      2     ",
-    "12": "and                 1      3      4     ",
-    "13": "jntr                15     1      0     ",
-    "14": "delete              0      0      0     ",
-    "15": "table_next          0      2      0     ",
-    "16": "free                0      0      0     ",
-    "17": "ret                 -1     0      -     "
-  },
-  "access": [["amelie.test", "shared_rw", "delete"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.test (delete, closing)
+  1   ret                 -1     0      -
+
+pushdown
+  0   push_int            -      0      0     # 0
+  1   table_open          0      0      16    # amelie.test (primary) part
+  2   table_readi32       1      0      -     # id
+  3   int                 2      -      0     # 1
+  4   ltii                3      1      2
+  5   jntr                16     3      0
+  6   table_readi32       1      0      -     # id
+  7   int                 2      -      0     # 0
+  8   gtii                3      1      2
+  9   table_readi32       1      0      -     # id
+ 10   int                 2      -      0     # 1
+ 11   ltii                4      1      2
+ 12   and                 1      3      4
+ 13   jntr                15     1      0
+ 14   delete              0      0      0
+ 15   table_next          0      2      0
+ 16   free                0      0      0
+ 17   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [delete]
 delete from test where id > 0 and id < 1;
 select * from test;
+
+id
+──
 0
 1
 delete from test where id > 0 and id <= 1;
 select * from test;
+
+id
+──
 0
 delete from test where id >= 0 and id <= 1;
 select * from test;
+
+id
+──
 drop table test;
 # test: delete null
 create table test(id int primary key, data int);
@@ -138,7 +186,10 @@ insert into test values (1, 2);
 insert into test values (2, null);
 delete from test where data > 0;
 select * from test;
-2 │ null
+
+id  data
+──────────
+2   null
 drop table test;
 # test: delete insert delete
 create table test(id int primary key, data int);
@@ -147,22 +198,34 @@ insert into test values (1, 2);
 insert into test values (2, 0);
 delete from test;
 select * from test;
+
+id  data
+──────────
 insert into test values (0, 3);
 insert into test values (1, 2);
 insert into test values (2, 0);
 select * from test;
-0 │ 3
-1 │ 2
-2 │ 0
+
+id  data
+──────────
+0   3
+1   2
+2   0
 delete from test;
 select * from test;
+
+id  data
+──────────
 insert into test values (0, 3);
 insert into test values (1, 2);
 insert into test values (2, 0);
 select * from test;
-0 │ 3
-1 │ 2
-2 │ 0
+
+id  data
+──────────
+0   3
+1   2
+2   0
 drop table test;
 # test: delete returning
 create table test(id int primary key);
@@ -170,20 +233,35 @@ insert into test values (0);
 insert into test values (1);
 insert into test values (2);
 delete from test returning *;
+
+id
+──
 0
 1
 2
 select * from test;
+
+id
+──
 insert into test values (0);
 insert into test values (1);
 insert into test values (2);
 delete from test where id >= 1 returning *;
+
+id
+──
 1
 2
 select * from test;
+
+id
+──
 0
 delete from test;
 delete from test returning *;
+
+id
+──
 drop table test;
 # test: delete secondary index
 create table test (id int primary key, data int);
@@ -193,14 +271,26 @@ insert into test values (1, 1);
 insert into test values (2, 0);
 delete from test where id = 1;
 select * from test;
-0 │ 2
-2 │ 0
+
+id  data
+──────────
+0   2
+2   0
 select * from test use index (i);
-2 │ 0
-0 │ 2
+
+id  data
+──────────
+2   0
+0   2
 delete from test;
 select * from test;
+
+id  data
+──────────
 select * from test use index (i);
+
+id  data
+──────────
 drop table test;
 disconnect S0;
 close E0;

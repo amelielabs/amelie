@@ -8,21 +8,30 @@ create table test (id int primary key, data int default 0);
 insert into test (id) values (0), (1), (2), (3), (1);
 error: index 'primary': unique key constraint violation
 select * from test;
+
+id  data
+──────────
 # test: insert abort by error #2
 insert into test (id) values (0), (1), (2), (3);
 select * from test;
-0 │ 0
-1 │ 0
-3 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+3   0
+2   0
 # test: insert abort by error #3
 insert into test (id) values (4), (5), (1), (6);
 error: index 'primary': unique key constraint violation
 select * from test;
-0 │ 0
-1 │ 0
-3 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+3   0
+2   0
 # test: insert abort by error #4
 begin
 	insert into test (id) values (4), (5), (1), (6);
@@ -30,113 +39,134 @@ begin
 end;
 error: abort
 select * from test;
-0 │ 0
-1 │ 0
-3 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+3   0
+2   0
 # test: delete abort
 explain begin
 	delete from test;
 	select error("abort");
 end;
-{
-  "main": {
-    "00": "send_all            0      0      32    # amelie.test (delete, closing)",
-    "01": "push_string         56     0      0     # abort",
-    "02": "call                0      -      1     # error()",
-    "03": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "table_open          0      0      3     # amelie.test (primary) part",
-    "01": "delete              0      0      0     ",
-    "02": "table_next          0      1      0     ",
-    "03": "free                0      0      0     ",
-    "04": "ret                 -1     0      -     "
-  },
-  "access": [["amelie.test", "shared_rw", "delete"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.test (delete, closing)
+  1   push_string         56     0      0     # abort
+  2   call                0      -      1     # error()
+  3   ret                 0      0      -
+
+pushdown
+  0   table_open          0      0      3     # amelie.test (primary) part
+  1   delete              0      0      0
+  2   table_next          0      1      0
+  3   free                0      0      0
+  4   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [delete]
 begin
 	delete from test;
 	select error("abort");
 end;
 error: abort
 select * from test;
-0 │ 0
-1 │ 0
-3 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+3   0
+2   0
 # test: update abort
 explain begin
 	update test set data = id;
 	select error("abort");
 end;
-{
-  "main": {
-    "00": "send_all            0      0      32    # amelie.test (update, closing)",
-    "01": "push_string         56     0      0     # abort",
-    "02": "call                0      -      1     # error()",
-    "03": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "table_open          0      0      7     # amelie.test (primary) part",
-    "01": "int                 1      -      0     # 1",
-    "02": "push                1      0      0     ",
-    "03": "table_readi32       1      0      -     # id",
-    "04": "push                1      0      0     ",
-    "05": "update              0      1      0     ",
-    "06": "table_next          0      1      0     ",
-    "07": "free                0      0      0     ",
-    "08": "ret                 -1     0      -     "
-  },
-  "access": [["amelie.test", "shared_rw", "update"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.test (update, closing)
+  1   push_string         56     0      0     # abort
+  2   call                0      -      1     # error()
+  3   ret                 0      0      -
+
+pushdown
+  0   table_open          0      0      7     # amelie.test (primary) part
+  1   int                 1      -      0     # 1
+  2   push                1      0      0
+  3   table_readi32       1      0      -     # id
+  4   push                1      0      0
+  5   update              0      1      0
+  6   table_next          0      1      0
+  7   free                0      0      0
+  8   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [update]
 begin
 	update test set data = id;
 	select error("abort");
 end;
 error: abort
 select * from test;
-0 │ 0
-1 │ 0
-3 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+3   0
+2   0
 # test: upsert abort
 explain begin
 	insert into test values(1, 0) on conflict do update set data = id;
 	select error("abort");
 end;
-{
-  "main": {
-    "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # amelie.test (insert, closing)",
-    "02": "push_string         24     0      0     # abort",
-    "03": "call                0      -      1     # error()",
-    "04": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "table_prepare       0      -      -     # amelie.test",
-    "01": "jmp                 7      0      0     ",
-    "02": "int                 1      -      0     # 1",
-    "03": "push                1      0      0     ",
-    "04": "table_readi32       1      0      -     # id",
-    "05": "push                1      0      0     ",
-    "06": "update              0      1      0     ",
-    "07": "upsert              0      2      -1    ",
-    "08": "free                0      0      0     ",
-    "09": "ret                 -1     0      -     "
-  },
-  "access": [["amelie.test", "shared_rw", "insert", "update"]]
-}
+
+explain
+───────
+
+main
+  0   set_ptr             1      -      0
+  1   send_shard          0      1      0     # amelie.test (insert, closing)
+  2   push_string         24     0      0     # abort
+  3   call                0      -      1     # error()
+  4   ret                 0      0      -
+
+pushdown
+  0   table_prepare       0      -      -     # amelie.test
+  1   jmp                 7      0      0
+  2   int                 1      -      0     # 1
+  3   push                1      0      0
+  4   table_readi32       1      0      -     # id
+  5   push                1      0      0
+  6   update              0      1      0
+  7   upsert              0      2      -1
+  8   free                0      0      0
+  9   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [insert, update]
 begin
 	insert into test values(1, 0) on conflict do update set data = id;
 	select error("abort");
 end;
 error: abort
 select * from test;
-0 │ 0
-1 │ 0
-3 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+3   0
+2   0
 drop table test;
 create table a (id int primary key, data int default 0);
 create table b (id int primary key, data int default 0);
@@ -147,34 +177,46 @@ begin
 	insert into a (id) values (0), (1), (2), (3);
 	select * from a;
 end;
-0 │ 0
-1 │ 0
-3 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+3   0
+2   0
 # test: insert b
 explain insert into b (id) values (10), (20), (30);
-{
-  "main": {
-    "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # amelie.b (insert, closing)",
-    "02": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "insert              -      -      -     # amelie.b",
-    "01": "ret                 -1     0      -     "
-  },
-  "access": [["amelie.b", "shared_rw", "insert"]]
-}
+
+explain
+───────
+
+main
+  0   set_ptr             1      -      0
+  1   send_shard          0      1      0     # amelie.b (insert, closing)
+  2   ret                 -1     0      -
+
+pushdown
+  0   insert              -      -      -     # amelie.b
+  1   ret                 -1     0      -
+
+access
+  •   amelie.b shared_rw [insert]
 insert into b (id) values (10), (20), (30);
 select * from a;
-0 │ 0
-1 │ 0
-3 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+3   0
+2   0
 select * from b;
-10 │ 0
-30 │ 0
-20 │ 0
+
+id  data
+──────────
+10  0
+30  0
+20  0
 # test: update a update b abort
 update a set data = 0;
 explain begin
@@ -184,58 +226,62 @@ explain begin
 	select * from b;
 	select error("abort");
 end;
-{
-  "main": {
-    "00": "send_all            0      0      32    # amelie.a (update)",
-    "01": "send_all            0      0      88    # amelie.b (update)",
-    "02": "send_all            0      0      144   # amelie.a (select)",
-    "03": "send_all            1      0      200   # amelie.b (select, closing)",
-    "04": "push_string         224    0      0     # abort",
-    "05": "call                2      -      1     # error()",
-    "06": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "table_open          0      0      7     # amelie.a (primary) part",
-    "01": "int                 1      -      0     # 1",
-    "02": "push                1      0      0     ",
-    "03": "table_readi32       1      0      -     # id",
-    "04": "push                1      0      0     ",
-    "05": "update              0      1      0     ",
-    "06": "table_next          0      1      0     ",
-    "07": "free                0      0      0     ",
-    "08": "ret                 -1     0      -     ",
-    "09": "table_open          0      56     16    # amelie.b (primary) part",
-    "10": "int                 1      -      0     # 1",
-    "11": "push                1      0      0     ",
-    "12": "table_readi32       1      0      -     # id",
-    "13": "push                1      0      0     ",
-    "14": "update              0      1      0     ",
-    "15": "table_next          0      10     0     ",
-    "16": "free                0      0      0     ",
-    "17": "ret                 -1     0      -     ",
-    "18": "set                 0      2      0     ",
-    "19": "table_open          1      112    26    # amelie.a (primary) part",
-    "20": "table_readi32       2      1      -     # id",
-    "21": "push                2      0      0     ",
-    "22": "table_readi32       2      1      -     # data",
-    "23": "push                2      0      0     ",
-    "24": "set_add             0      0      0     ",
-    "25": "table_next          1      20     0     ",
-    "26": "free                1      0      0     ",
-    "27": "ret                 0      0      -     ",
-    "28": "set                 1      2      0     ",
-    "29": "table_open          2      168    36    # amelie.b (primary) part",
-    "30": "table_readi32       3      2      -     # id",
-    "31": "push                3      0      0     ",
-    "32": "table_readi32       3      2      -     # data",
-    "33": "push                3      0      0     ",
-    "34": "set_add             1      0      0     ",
-    "35": "table_next          2      30     0     ",
-    "36": "free                2      0      0     ",
-    "37": "ret                 1      0      -     "
-  },
-  "access": [["amelie.a", "shared_rw", "update", "select"], ["amelie.b", "shared_rw", "update", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.a (update)
+  1   send_all            0      0      88    # amelie.b (update)
+  2   send_all            0      0      144   # amelie.a (select)
+  3   send_all            1      0      200   # amelie.b (select, closing)
+  4   push_string         224    0      0     # abort
+  5   call                2      -      1     # error()
+  6   ret                 2      0      -
+
+pushdown
+  0   table_open          0      0      7     # amelie.a (primary) part
+  1   int                 1      -      0     # 1
+  2   push                1      0      0
+  3   table_readi32       1      0      -     # id
+  4   push                1      0      0
+  5   update              0      1      0
+  6   table_next          0      1      0
+  7   free                0      0      0
+  8   ret                 -1     0      -
+  9   table_open          0      56     16    # amelie.b (primary) part
+ 10   int                 1      -      0     # 1
+ 11   push                1      0      0
+ 12   table_readi32       1      0      -     # id
+ 13   push                1      0      0
+ 14   update              0      1      0
+ 15   table_next          0      10     0
+ 16   free                0      0      0
+ 17   ret                 -1     0      -
+ 18   set                 0      2      0
+ 19   table_open          1      112    26    # amelie.a (primary) part
+ 20   table_readi32       2      1      -     # id
+ 21   push                2      0      0
+ 22   table_readi32       2      1      -     # data
+ 23   push                2      0      0
+ 24   set_add             0      0      0
+ 25   table_next          1      20     0
+ 26   free                1      0      0
+ 27   ret                 0      0      -
+ 28   set                 1      2      0
+ 29   table_open          2      168    36    # amelie.b (primary) part
+ 30   table_readi32       3      2      -     # id
+ 31   push                3      0      0
+ 32   table_readi32       3      2      -     # data
+ 33   push                3      0      0
+ 34   set_add             1      0      0
+ 35   table_next          2      30     0
+ 36   free                2      0      0
+ 37   ret                 1      0      -
+
+access
+  •   amelie.a shared_rw [update, select]
+  •   amelie.b shared_rw [update, select]
 begin
 	update a set data = id;
 	update b set data = id;
@@ -245,14 +291,20 @@ begin
 end;
 error: abort
 select * from a;
-0 │ 0
-1 │ 0
-3 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+3   0
+2   0
 select * from b;
-10 │ 0
-30 │ 0
-20 │ 0
+
+id  data
+──────────
+10  0
+30  0
+20  0
 # test: upsert a update b abort
 explain begin
 	insert into a values (1, 0), (3, 0) on conflict do update set data = id;
@@ -260,51 +312,55 @@ explain begin
 	select * from a;
 	select error("abort");
 end;
-{
-  "main": {
-    "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # amelie.a (insert)",
-    "02": "send_all            0      0      56    # amelie.b (update)",
-    "03": "send_all            0      0      112   # amelie.a (select, closing)",
-    "04": "push_string         136    0      0     # abort",
-    "05": "call                1      -      1     # error()",
-    "06": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "table_prepare       0      -      -     # amelie.a",
-    "01": "jmp                 7      0      0     ",
-    "02": "int                 1      -      0     # 1",
-    "03": "push                1      0      0     ",
-    "04": "table_readi32       1      0      -     # id",
-    "05": "push                1      0      0     ",
-    "06": "update              0      1      0     ",
-    "07": "upsert              0      2      -1    ",
-    "08": "free                0      0      0     ",
-    "09": "ret                 -1     0      -     ",
-    "10": "table_open          0      24     19    # amelie.b (primary) part",
-    "11": "int                 1      -      0     # 1",
-    "12": "push                1      0      0     ",
-    "13": "table_readi32       1      0      -     # data",
-    "14": "int                 2      -      0     # 2",
-    "15": "mulii               3      1      2     ",
-    "16": "push                3      0      0     ",
-    "17": "update              0      1      0     ",
-    "18": "table_next          0      11     0     ",
-    "19": "free                0      0      0     ",
-    "20": "ret                 -1     0      -     ",
-    "21": "set                 0      2      0     ",
-    "22": "table_open          1      80     29    # amelie.a (primary) part",
-    "23": "table_readi32       2      1      -     # id",
-    "24": "push                2      0      0     ",
-    "25": "table_readi32       2      1      -     # data",
-    "26": "push                2      0      0     ",
-    "27": "set_add             0      0      0     ",
-    "28": "table_next          1      23     0     ",
-    "29": "free                1      0      0     ",
-    "30": "ret                 0      0      -     "
-  },
-  "access": [["amelie.a", "shared_rw", "insert", "update", "select"], ["amelie.b", "shared_rw", "update"]]
-}
+
+explain
+───────
+
+main
+  0   set_ptr             1      -      0
+  1   send_shard          0      1      0     # amelie.a (insert)
+  2   send_all            0      0      56    # amelie.b (update)
+  3   send_all            0      0      112   # amelie.a (select, closing)
+  4   push_string         136    0      0     # abort
+  5   call                1      -      1     # error()
+  6   ret                 1      0      -
+
+pushdown
+  0   table_prepare       0      -      -     # amelie.a
+  1   jmp                 7      0      0
+  2   int                 1      -      0     # 1
+  3   push                1      0      0
+  4   table_readi32       1      0      -     # id
+  5   push                1      0      0
+  6   update              0      1      0
+  7   upsert              0      2      -1
+  8   free                0      0      0
+  9   ret                 -1     0      -
+ 10   table_open          0      24     19    # amelie.b (primary) part
+ 11   int                 1      -      0     # 1
+ 12   push                1      0      0
+ 13   table_readi32       1      0      -     # data
+ 14   int                 2      -      0     # 2
+ 15   mulii               3      1      2
+ 16   push                3      0      0
+ 17   update              0      1      0
+ 18   table_next          0      11     0
+ 19   free                0      0      0
+ 20   ret                 -1     0      -
+ 21   set                 0      2      0
+ 22   table_open          1      80     29    # amelie.a (primary) part
+ 23   table_readi32       2      1      -     # id
+ 24   push                2      0      0
+ 25   table_readi32       2      1      -     # data
+ 26   push                2      0      0
+ 27   set_add             0      0      0
+ 28   table_next          1      23     0
+ 29   free                1      0      0
+ 30   ret                 0      0      -
+
+access
+  •   amelie.a shared_rw [insert, update, select]
+  •   amelie.b shared_rw [update]
 begin
 	insert into a values (1, 0), (3, 0) on conflict do update set data = id;
 	update b set data = data * 2;
@@ -313,14 +369,20 @@ begin
 end;
 error: abort
 select * from a;
-0 │ 0
-1 │ 0
-3 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+3   0
+2   0
 select * from b;
-10 │ 0
-30 │ 0
-20 │ 0
+
+id  data
+──────────
+10  0
+30  0
+20  0
 drop table a;
 drop table b;
 drop table ref;

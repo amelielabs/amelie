@@ -6,460 +6,543 @@ create table test (id int primary key, data int default 0);
 insert into test (id) values (1), (2), (3);
 # test: select from table, ref
 explain select test.*, ref.* from test, ref;
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      4      0     ",
-    "01": "table_open          1      0      15    # amelie.test (primary) part",
-    "02": "table_open          2      32     13    # amelie.ref (primary) ",
-    "03": "table_readi32       3      1      -     # id",
-    "04": "push                3      0      0     ",
-    "05": "table_readi32       3      1      -     # data",
-    "06": "push                3      0      0     ",
-    "07": "table_readi32       3      2      -     # id",
-    "08": "push                3      0      0     ",
-    "09": "table_readi32       3      2      -     # data",
-    "10": "push                3      0      0     ",
-    "11": "set_add             0      0      0     ",
-    "12": "table_next          2      3      0     ",
-    "13": "free                2      0      0     ",
-    "14": "table_next          1      2      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      4      0
+  1   table_open          1      0      15    # amelie.test (primary) part
+  2   table_open          2      32     13    # amelie.ref (primary) 
+  3   table_readi32       3      1      -     # id
+  4   push                3      0      0
+  5   table_readi32       3      1      -     # data
+  6   push                3      0      0
+  7   table_readi32       3      2      -     # id
+  8   push                3      0      0
+  9   table_readi32       3      2      -     # data
+ 10   push                3      0      0
+ 11   set_add             0      0      0
+ 12   table_next          2      3      0
+ 13   free                2      0      0
+ 14   table_next          1      2      0
+ 15   free                1      0      0
+ 16   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.*, ref.* from test, ref;
-1 │ 0 │ 1 │ 0
-1 │ 0 │ 2 │ 0
-1 │ 0 │ 3 │ 0
-3 │ 0 │ 1 │ 0
-3 │ 0 │ 2 │ 0
-3 │ 0 │ 3 │ 0
-2 │ 0 │ 1 │ 0
-2 │ 0 │ 2 │ 0
-2 │ 0 │ 3 │ 0
+
+id  data  id  data
+────────────────────
+1   0     1   0
+1   0     2   0
+1   0     3   0
+3   0     1   0
+3   0     2   0
+3   0     3   0
+2   0     1   0
+2   0     2   0
+2   0     3   0
 # test: select from ref, table
 explain select test.*, ref.* from ref, test;
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.ref (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      4      0     ",
-    "01": "table_open          1      0      15    # amelie.ref (primary) part",
-    "02": "table_open          2      32     13    # amelie.test (primary) ",
-    "03": "table_readi32       3      2      -     # id",
-    "04": "push                3      0      0     ",
-    "05": "table_readi32       3      2      -     # data",
-    "06": "push                3      0      0     ",
-    "07": "table_readi32       3      1      -     # id",
-    "08": "push                3      0      0     ",
-    "09": "table_readi32       3      1      -     # data",
-    "10": "push                3      0      0     ",
-    "11": "set_add             0      0      0     ",
-    "12": "table_next          2      3      0     ",
-    "13": "free                2      0      0     ",
-    "14": "table_next          1      2      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 0      0      -     "
-  },
-  "access": [["amelie.ref", "shared", "select"], ["amelie.test", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.ref (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      4      0
+  1   table_open          1      0      15    # amelie.ref (primary) part
+  2   table_open          2      32     13    # amelie.test (primary) 
+  3   table_readi32       3      2      -     # id
+  4   push                3      0      0
+  5   table_readi32       3      2      -     # data
+  6   push                3      0      0
+  7   table_readi32       3      1      -     # id
+  8   push                3      0      0
+  9   table_readi32       3      1      -     # data
+ 10   push                3      0      0
+ 11   set_add             0      0      0
+ 12   table_next          2      3      0
+ 13   free                2      0      0
+ 14   table_next          1      2      0
+ 15   free                1      0      0
+ 16   ret                 0      0      -
+
+access
+  •   amelie.ref shared [select]
+  •   amelie.test exclusive_ro [select]
 select test.*, ref.* from ref, test;
-1 │ 0 │ 1 │ 0
-2 │ 0 │ 1 │ 0
-3 │ 0 │ 1 │ 0
-1 │ 0 │ 3 │ 0
-2 │ 0 │ 3 │ 0
-3 │ 0 │ 3 │ 0
-1 │ 0 │ 2 │ 0
-2 │ 0 │ 2 │ 0
-3 │ 0 │ 2 │ 0
+
+id  data  id  data
+────────────────────
+1   0     1   0
+2   0     1   0
+3   0     1   0
+1   0     3   0
+2   0     3   0
+3   0     3   0
+1   0     2   0
+2   0     2   0
+3   0     2   0
 # test: select from table, table
 explain select t.* from test, test t;
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      11    # amelie.test (primary) part",
-    "02": "table_open          2      32     9     # amelie.test (primary) ",
-    "03": "table_readi32       3      2      -     # id",
-    "04": "push                3      0      0     ",
-    "05": "table_readi32       3      2      -     # data",
-    "06": "push                3      0      0     ",
-    "07": "set_add             0      0      0     ",
-    "08": "table_next          2      3      0     ",
-    "09": "free                2      0      0     ",
-    "10": "table_next          1      2      0     ",
-    "11": "free                1      0      0     ",
-    "12": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      11    # amelie.test (primary) part
+  2   table_open          2      32     9     # amelie.test (primary) 
+  3   table_readi32       3      2      -     # id
+  4   push                3      0      0
+  5   table_readi32       3      2      -     # data
+  6   push                3      0      0
+  7   set_add             0      0      0
+  8   table_next          2      3      0
+  9   free                2      0      0
+ 10   table_next          1      2      0
+ 11   free                1      0      0
+ 12   ret                 0      0      -
+
+access
+  •   amelie.test exclusive_ro [select]
 select t.* from test, test t;
-1 │ 0
-2 │ 0
-3 │ 0
-1 │ 0
-2 │ 0
-3 │ 0
-1 │ 0
-2 │ 0
-3 │ 0
+
+id  data
+──────────
+1   0
+2   0
+3   0
+1   0
+2   0
+3   0
+1   0
+2   0
+3   0
 # test: select from table join table
 explain select test.id, ref.id from test join ref on true;
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      13    # amelie.test (primary) part",
-    "02": "table_open          2      32     11    # amelie.ref (primary) ",
-    "03": "bool                3      1      0     ",
-    "04": "jntr                10     3      0     ",
-    "05": "table_readi32       3      1      -     # id",
-    "06": "push                3      0      0     ",
-    "07": "table_readi32       3      2      -     # id",
-    "08": "push                3      0      0     ",
-    "09": "set_add             0      0      0     ",
-    "10": "table_next          2      3      0     ",
-    "11": "free                2      0      0     ",
-    "12": "table_next          1      2      0     ",
-    "13": "free                1      0      0     ",
-    "14": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          2      32     11    # amelie.ref (primary) 
+  3   bool                3      1      0
+  4   jntr                10     3      0
+  5   table_readi32       3      1      -     # id
+  6   push                3      0      0
+  7   table_readi32       3      2      -     # id
+  8   push                3      0      0
+  9   set_add             0      0      0
+ 10   table_next          2      3      0
+ 11   free                2      0      0
+ 12   table_next          1      2      0
+ 13   free                1      0      0
+ 14   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test join ref on true;
-1 │ 1
-1 │ 2
-1 │ 3
-3 │ 1
-3 │ 2
-3 │ 3
-2 │ 1
-2 │ 2
-2 │ 3
+
+col1  col2
+────────────
+1     1
+1     2
+1     3
+3     1
+3     2
+3     3
+2     1
+2     2
+2     3
 # test: select from table join table on
 explain select test.id, ref.id from test join ref on test.id = ref.id;
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_open          2      32     14    # amelie.ref (primary) point_lookup",
-    "05": "table_readi32       3      1      -     # id",
-    "06": "table_readi32       4      2      -     # id",
-    "07": "equii               5      3      4     ",
-    "08": "jntr                14     5      0     ",
-    "09": "table_readi32       3      1      -     # id",
-    "10": "push                3      0      0     ",
-    "11": "table_readi32       3      2      -     # id",
-    "12": "push                3      0      0     ",
-    "13": "set_add             0      0      0     ",
-    "14": "free                2      0      0     ",
-    "15": "table_next          1      2      0     ",
-    "16": "free                1      0      0     ",
-    "17": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      16    # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_open          2      32     14    # amelie.ref (primary) point_lookup
+  5   table_readi32       3      1      -     # id
+  6   table_readi32       4      2      -     # id
+  7   equii               5      3      4
+  8   jntr                14     5      0
+  9   table_readi32       3      1      -     # id
+ 10   push                3      0      0
+ 11   table_readi32       3      2      -     # id
+ 12   push                3      0      0
+ 13   set_add             0      0      0
+ 14   free                2      0      0
+ 15   table_next          1      2      0
+ 16   free                1      0      0
+ 17   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test join ref on test.id = ref.id;
-1 │ 1
-3 │ 3
-2 │ 2
+
+col1  col2
+────────────
+1     1
+3     3
+2     2
 # test: select from table join table on #2
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
-{
-  "main": {
-    "00": "send_all            0      0      96    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      24    # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_open          2      32     22    # amelie.ref (primary) point_lookup",
-    "05": "table_readi32       3      1      -     # id",
-    "06": "push                3      0      0     ",
-    "07": "table_open          3      64     21    # amelie.ref (primary) point_lookup",
-    "08": "table_readi32       4      1      -     # id",
-    "09": "table_readi32       5      2      -     # id",
-    "10": "equii               6      4      5     ",
-    "11": "table_readi32       4      1      -     # id",
-    "12": "table_readi32       5      3      -     # id",
-    "13": "equii               7      4      5     ",
-    "14": "and                 4      6      7     ",
-    "15": "jntr                21     4      0     ",
-    "16": "table_readi32       4      1      -     # id",
-    "17": "push                4      0      0     ",
-    "18": "table_readi32       4      2      -     # id",
-    "19": "push                4      0      0     ",
-    "20": "set_add             0      0      0     ",
-    "21": "free                3      0      0     ",
-    "22": "free                2      0      0     ",
-    "23": "table_next          1      2      0     ",
-    "24": "free                1      0      0     ",
-    "25": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      96    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      24    # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_open          2      32     22    # amelie.ref (primary) point_lookup
+  5   table_readi32       3      1      -     # id
+  6   push                3      0      0
+  7   table_open          3      64     21    # amelie.ref (primary) point_lookup
+  8   table_readi32       4      1      -     # id
+  9   table_readi32       5      2      -     # id
+ 10   equii               6      4      5
+ 11   table_readi32       4      1      -     # id
+ 12   table_readi32       5      3      -     # id
+ 13   equii               7      4      5
+ 14   and                 4      6      7
+ 15   jntr                21     4      0
+ 16   table_readi32       4      1      -     # id
+ 17   push                4      0      0
+ 18   table_readi32       4      2      -     # id
+ 19   push                4      0      0
+ 20   set_add             0      0      0
+ 21   free                3      0      0
+ 22   free                2      0      0
+ 23   table_next          1      2      0
+ 24   free                1      0      0
+ 25   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
-1 │ 1
-3 │ 3
-2 │ 2
+
+col1  col2
+────────────
+1     1
+3     3
+2     2
 # test: select from table join table on #3
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
-{
-  "main": {
-    "00": "send_all            0      0      96    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "push_int            -      0      0     # 0",
-    "02": "table_open          1      0      29    # amelie.test (primary) part",
-    "03": "table_readi32       2      1      -     # id",
-    "04": "push                2      0      0     ",
-    "05": "table_open          2      32     27    # amelie.ref (primary) point_lookup",
-    "06": "table_readi32       3      1      -     # id",
-    "07": "push                3      0      0     ",
-    "08": "table_open          3      64     26    # amelie.ref (primary) point_lookup",
-    "09": "table_readi32       4      1      -     # id",
-    "10": "table_readi32       5      2      -     # id",
-    "11": "equii               6      4      5     ",
-    "12": "table_readi32       4      1      -     # id",
-    "13": "table_readi32       5      3      -     # id",
-    "14": "equii               7      4      5     ",
-    "15": "and                 4      6      7     ",
-    "16": "table_readi32       5      1      -     # id",
-    "17": "int                 6      -      0     # 0",
-    "18": "gtii                7      5      6     ",
-    "19": "and                 5      4      7     ",
-    "20": "jntr                26     5      0     ",
-    "21": "table_readi32       4      1      -     # id",
-    "22": "push                4      0      0     ",
-    "23": "table_readi32       4      2      -     # id",
-    "24": "push                4      0      0     ",
-    "25": "set_add             0      0      0     ",
-    "26": "free                3      0      0     ",
-    "27": "free                2      0      0     ",
-    "28": "table_next          1      3      0     ",
-    "29": "free                1      0      0     ",
-    "30": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      96    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   push_int            -      0      0     # 0
+  2   table_open          1      0      29    # amelie.test (primary) part
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   table_open          2      32     27    # amelie.ref (primary) point_lookup
+  6   table_readi32       3      1      -     # id
+  7   push                3      0      0
+  8   table_open          3      64     26    # amelie.ref (primary) point_lookup
+  9   table_readi32       4      1      -     # id
+ 10   table_readi32       5      2      -     # id
+ 11   equii               6      4      5
+ 12   table_readi32       4      1      -     # id
+ 13   table_readi32       5      3      -     # id
+ 14   equii               7      4      5
+ 15   and                 4      6      7
+ 16   table_readi32       5      1      -     # id
+ 17   int                 6      -      0     # 0
+ 18   gtii                7      5      6
+ 19   and                 5      4      7
+ 20   jntr                26     5      0
+ 21   table_readi32       4      1      -     # id
+ 22   push                4      0      0
+ 23   table_readi32       4      2      -     # id
+ 24   push                4      0      0
+ 25   set_add             0      0      0
+ 26   free                3      0      0
+ 27   free                2      0      0
+ 28   table_next          1      3      0
+ 29   free                1      0      0
+ 30   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
-1 │ 1
-3 │ 3
-2 │ 2
+
+col1  col2
+────────────
+1     1
+3     3
+2     2
 # test: select from table join table on #4
 explain select test.id, ref.id from test, ref where test.id = ref.id;
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_open          2      32     14    # amelie.ref (primary) point_lookup",
-    "05": "table_readi32       3      1      -     # id",
-    "06": "table_readi32       4      2      -     # id",
-    "07": "equii               5      3      4     ",
-    "08": "jntr                14     5      0     ",
-    "09": "table_readi32       3      1      -     # id",
-    "10": "push                3      0      0     ",
-    "11": "table_readi32       3      2      -     # id",
-    "12": "push                3      0      0     ",
-    "13": "set_add             0      0      0     ",
-    "14": "free                2      0      0     ",
-    "15": "table_next          1      2      0     ",
-    "16": "free                1      0      0     ",
-    "17": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      16    # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_open          2      32     14    # amelie.ref (primary) point_lookup
+  5   table_readi32       3      1      -     # id
+  6   table_readi32       4      2      -     # id
+  7   equii               5      3      4
+  8   jntr                14     5      0
+  9   table_readi32       3      1      -     # id
+ 10   push                3      0      0
+ 11   table_readi32       3      2      -     # id
+ 12   push                3      0      0
+ 13   set_add             0      0      0
+ 14   free                2      0      0
+ 15   table_next          1      2      0
+ 16   free                1      0      0
+ 17   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test, ref where test.id = ref.id;
-1 │ 1
-3 │ 3
-2 │ 2
+
+col1  col2
+────────────
+1     1
+3     3
+2     2
 explain select test.id, ref.id from test, ref where ref.id = test.id;
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_open          2      32     14    # amelie.ref (primary) point_lookup",
-    "05": "table_readi32       3      2      -     # id",
-    "06": "table_readi32       4      1      -     # id",
-    "07": "equii               5      3      4     ",
-    "08": "jntr                14     5      0     ",
-    "09": "table_readi32       3      1      -     # id",
-    "10": "push                3      0      0     ",
-    "11": "table_readi32       3      2      -     # id",
-    "12": "push                3      0      0     ",
-    "13": "set_add             0      0      0     ",
-    "14": "free                2      0      0     ",
-    "15": "table_next          1      2      0     ",
-    "16": "free                1      0      0     ",
-    "17": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      16    # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_open          2      32     14    # amelie.ref (primary) point_lookup
+  5   table_readi32       3      2      -     # id
+  6   table_readi32       4      1      -     # id
+  7   equii               5      3      4
+  8   jntr                14     5      0
+  9   table_readi32       3      1      -     # id
+ 10   push                3      0      0
+ 11   table_readi32       3      2      -     # id
+ 12   push                3      0      0
+ 13   set_add             0      0      0
+ 14   free                2      0      0
+ 15   table_next          1      2      0
+ 16   free                1      0      0
+ 17   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test, ref where ref.id = test.id;
-1 │ 1
-3 │ 3
-2 │ 2
+
+col1  col2
+────────────
+1     1
+3     3
+2     2
 explain select test.id, ref.id from test, ref where ref.id = 1;
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      15    # amelie.test (primary) part",
-    "02": "push_int            -      0      0     # 1",
-    "03": "table_open          2      32     13    # amelie.ref (primary) point_lookup",
-    "04": "table_readi32       3      2      -     # id",
-    "05": "int                 4      -      0     # 1",
-    "06": "equii               5      3      4     ",
-    "07": "jntr                13     5      0     ",
-    "08": "table_readi32       3      1      -     # id",
-    "09": "push                3      0      0     ",
-    "10": "table_readi32       3      2      -     # id",
-    "11": "push                3      0      0     ",
-    "12": "set_add             0      0      0     ",
-    "13": "free                2      0      0     ",
-    "14": "table_next          1      2      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      15    # amelie.test (primary) part
+  2   push_int            -      0      0     # 1
+  3   table_open          2      32     13    # amelie.ref (primary) point_lookup
+  4   table_readi32       3      2      -     # id
+  5   int                 4      -      0     # 1
+  6   equii               5      3      4
+  7   jntr                13     5      0
+  8   table_readi32       3      1      -     # id
+  9   push                3      0      0
+ 10   table_readi32       3      2      -     # id
+ 11   push                3      0      0
+ 12   set_add             0      0      0
+ 13   free                2      0      0
+ 14   table_next          1      2      0
+ 15   free                1      0      0
+ 16   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test, ref where ref.id = 1;
-1 │ 1
-3 │ 1
-2 │ 1
+
+col1  col2
+────────────
+1     1
+3     1
+2     1
 explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
-{
-  "main": {
-    "00": "push_int            -      0      0     # 1",
-    "01": "send_lookup         0      -      64    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "push_int            -      0      0     # 1",
-    "02": "table_open          1      0      19    # amelie.test (primary) point_lookup, part",
-    "03": "push_int            -      0      0     # 1",
-    "04": "table_open          2      32     18    # amelie.ref (primary) point_lookup",
-    "05": "table_readi32       3      2      -     # id",
-    "06": "int                 4      -      0     # 1",
-    "07": "equii               5      3      4     ",
-    "08": "table_readi32       3      1      -     # id",
-    "09": "int                 4      -      0     # 1",
-    "10": "equii               6      3      4     ",
-    "11": "and                 3      5      6     ",
-    "12": "jntr                18     3      0     ",
-    "13": "table_readi32       3      1      -     # id",
-    "14": "push                3      0      0     ",
-    "15": "table_readi32       3      2      -     # id",
-    "16": "push                3      0      0     ",
-    "17": "set_add             0      0      0     ",
-    "18": "free                2      0      0     ",
-    "19": "free                1      0      0     ",
-    "20": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_int            -      0      0     # 1
+  1   send_lookup         0      -      64    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   push_int            -      0      0     # 1
+  2   table_open          1      0      19    # amelie.test (primary) point_lookup, part
+  3   push_int            -      0      0     # 1
+  4   table_open          2      32     18    # amelie.ref (primary) point_lookup
+  5   table_readi32       3      2      -     # id
+  6   int                 4      -      0     # 1
+  7   equii               5      3      4
+  8   table_readi32       3      1      -     # id
+  9   int                 4      -      0     # 1
+ 10   equii               6      3      4
+ 11   and                 3      5      6
+ 12   jntr                18     3      0
+ 13   table_readi32       3      1      -     # id
+ 14   push                3      0      0
+ 15   table_readi32       3      2      -     # id
+ 16   push                3      0      0
+ 17   set_add             0      0      0
+ 18   free                2      0      0
+ 19   free                1      0      0
+ 20   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
-1 │ 1
+
+col1  col2
+────────────
+1     1
 explain select test.id, ref.id from test, ref where ref.id >= test.id;
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      17    # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_open          2      32     15    # amelie.ref (primary) ",
-    "05": "table_readi32       3      2      -     # id",
-    "06": "table_readi32       4      1      -     # id",
-    "07": "gteii               5      3      4     ",
-    "08": "jntr                14     5      0     ",
-    "09": "table_readi32       3      1      -     # id",
-    "10": "push                3      0      0     ",
-    "11": "table_readi32       3      2      -     # id",
-    "12": "push                3      0      0     ",
-    "13": "set_add             0      0      0     ",
-    "14": "table_next          2      5      0     ",
-    "15": "free                2      0      0     ",
-    "16": "table_next          1      2      0     ",
-    "17": "free                1      0      0     ",
-    "18": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      17    # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_open          2      32     15    # amelie.ref (primary) 
+  5   table_readi32       3      2      -     # id
+  6   table_readi32       4      1      -     # id
+  7   gteii               5      3      4
+  8   jntr                14     5      0
+  9   table_readi32       3      1      -     # id
+ 10   push                3      0      0
+ 11   table_readi32       3      2      -     # id
+ 12   push                3      0      0
+ 13   set_add             0      0      0
+ 14   table_next          2      5      0
+ 15   free                2      0      0
+ 16   table_next          1      2      0
+ 17   free                1      0      0
+ 18   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test, ref where ref.id >= test.id;
-1 │ 1
-1 │ 2
-1 │ 3
-3 │ 3
-2 │ 2
-2 │ 3
+
+col1  col2
+────────────
+1     1
+1     2
+1     3
+3     3
+2     2
+2     3
 # test: select from table join using
 explain select test.id, ref.id from test join ref using;
 error: explain select test.id, ref.id from test join ref using❰;❱ ⟵ ( expected
@@ -470,306 +553,350 @@ error: explain select test.id, ref.id from test join ref using(❰1❱ ⟵ name 
 explain select test.id, ref.id from test join ref using(id;
 error: explain select test.id, ref.id from test join ref using(id❰;❱ ⟵ ) expected
 explain select test.id, ref.id from test join ref using(id);
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      16    # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_open          2      32     14    # amelie.ref (primary) point_lookup",
-    "05": "table_readi32       3      1      -     # id",
-    "06": "table_readi32       4      2      -     # id",
-    "07": "equii               5      3      4     ",
-    "08": "jntr                14     5      0     ",
-    "09": "table_readi32       3      1      -     # id",
-    "10": "push                3      0      0     ",
-    "11": "table_readi32       3      2      -     # id",
-    "12": "push                3      0      0     ",
-    "13": "set_add             0      0      0     ",
-    "14": "free                2      0      0     ",
-    "15": "table_next          1      2      0     ",
-    "16": "free                1      0      0     ",
-    "17": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      16    # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_open          2      32     14    # amelie.ref (primary) point_lookup
+  5   table_readi32       3      1      -     # id
+  6   table_readi32       4      2      -     # id
+  7   equii               5      3      4
+  8   jntr                14     5      0
+  9   table_readi32       3      1      -     # id
+ 10   push                3      0      0
+ 11   table_readi32       3      2      -     # id
+ 12   push                3      0      0
+ 13   set_add             0      0      0
+ 14   free                2      0      0
+ 15   table_next          1      2      0
+ 16   free                1      0      0
+ 17   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test join ref using(id);
-1 │ 1
-3 │ 3
-2 │ 2
+
+col1  col2
+────────────
+1     1
+3     3
+2     2
 # test: select from table join using (not found)
 select test.id, ref.id from test join ref using(unknown);
 error: select test.id, ref.id from test join ref using(❰unknown❱ ⟵ column test.unknown not found
 # test: select from table join using #2
 explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
-{
-  "main": {
-    "00": "send_all            0      0      96    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "push_int            -      0      0     # 0",
-    "02": "table_open          1      0      29    # amelie.test (primary) part",
-    "03": "table_readi32       2      1      -     # id",
-    "04": "push                2      0      0     ",
-    "05": "table_open          2      32     27    # amelie.ref (primary) point_lookup",
-    "06": "table_readi32       3      2      -     # id",
-    "07": "push                3      0      0     ",
-    "08": "table_open          3      64     26    # amelie.ref (primary) point_lookup",
-    "09": "table_readi32       4      1      -     # id",
-    "10": "table_readi32       5      2      -     # id",
-    "11": "equii               6      4      5     ",
-    "12": "table_readi32       4      2      -     # id",
-    "13": "table_readi32       5      3      -     # id",
-    "14": "equii               7      4      5     ",
-    "15": "and                 4      6      7     ",
-    "16": "table_readi32       5      1      -     # id",
-    "17": "int                 6      -      0     # 0",
-    "18": "gtii                7      5      6     ",
-    "19": "and                 5      4      7     ",
-    "20": "jntr                26     5      0     ",
-    "21": "table_readi32       4      1      -     # id",
-    "22": "push                4      0      0     ",
-    "23": "table_readi32       4      2      -     # id",
-    "24": "push                4      0      0     ",
-    "25": "set_add             0      0      0     ",
-    "26": "free                3      0      0     ",
-    "27": "free                2      0      0     ",
-    "28": "table_next          1      3      0     ",
-    "29": "free                1      0      0     ",
-    "30": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      96    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   push_int            -      0      0     # 0
+  2   table_open          1      0      29    # amelie.test (primary) part
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   table_open          2      32     27    # amelie.ref (primary) point_lookup
+  6   table_readi32       3      2      -     # id
+  7   push                3      0      0
+  8   table_open          3      64     26    # amelie.ref (primary) point_lookup
+  9   table_readi32       4      1      -     # id
+ 10   table_readi32       5      2      -     # id
+ 11   equii               6      4      5
+ 12   table_readi32       4      2      -     # id
+ 13   table_readi32       5      3      -     # id
+ 14   equii               7      4      5
+ 15   and                 4      6      7
+ 16   table_readi32       5      1      -     # id
+ 17   int                 6      -      0     # 0
+ 18   gtii                7      5      6
+ 19   and                 5      4      7
+ 20   jntr                26     5      0
+ 21   table_readi32       4      1      -     # id
+ 22   push                4      0      0
+ 23   table_readi32       4      2      -     # id
+ 24   push                4      0      0
+ 25   set_add             0      0      0
+ 26   free                3      0      0
+ 27   free                2      0      0
+ 28   table_next          1      3      0
+ 29   free                1      0      0
+ 30   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
-1 │ 1
-3 │ 3
-2 │ 2
+
+col1  col2
+────────────
+1     1
+3     3
+2     2
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) where test.id > 0;
 error: select test.id, ref.id from test join ref using (id) join ref ref2 using (❰id2❱ ⟵ column ref.id2 not found
 # test: with (select from table) select from table, cte
 explain with a as (select * from test) select * from test, a where test.id = a.id;
-{
-  "main": {
-    "00": "send_all            0      0      32    # amelie.test (select)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "push_ref            1      1      0     ",
-    "04": "send_all            0      1      88    # amelie.test (select, closing)",
-    "05": "union               2      0      0     ",
-    "06": "recv                2      0      0     ",
-    "07": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_readi32       2      1      -     # data",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     ",
-    "10": "set                 0      4      0     ",
-    "11": "table_open          2      56     31    # amelie.test (primary) part",
-    "12": "ref                 3      0      0     ",
-    "13": "store_open          4      3      28    ",
-    "14": "table_readi32       5      2      -     # id",
-    "15": "store_read          6      4      0     ",
-    "16": "equii               7      5      6     ",
-    "17": "jntr                27     7      0     ",
-    "18": "table_readi32       5      2      -     # id",
-    "19": "push                5      0      0     ",
-    "20": "table_readi32       5      2      -     # data",
-    "21": "push                5      0      0     ",
-    "22": "store_read          5      4      0     ",
-    "23": "push                5      0      0     ",
-    "24": "store_read          5      4      1     ",
-    "25": "push                5      0      0     ",
-    "26": "set_add             0      0      0     ",
-    "27": "store_next          4      14     0     ",
-    "28": "free                4      0      0     ",
-    "29": "free                3      0      0     ",
-    "30": "table_next          2      12     0     ",
-    "31": "free                2      0      0     ",
-    "32": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.test (select)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   push_ref            1      1      0
+  4   send_all            0      1      88    # amelie.test (select, closing)
+  5   union               2      0      0
+  6   recv                2      0      0
+  7   ret                 2      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_readi32       2      1      -     # data
+  5   push                2      0      0
+  6   set_add             0      0      0
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+ 10   set                 0      4      0
+ 11   table_open          2      56     31    # amelie.test (primary) part
+ 12   ref                 3      0      0
+ 13   store_open          4      3      28
+ 14   table_readi32       5      2      -     # id
+ 15   store_read          6      4      0
+ 16   equii               7      5      6
+ 17   jntr                27     7      0
+ 18   table_readi32       5      2      -     # id
+ 19   push                5      0      0
+ 20   table_readi32       5      2      -     # data
+ 21   push                5      0      0
+ 22   store_read          5      4      0
+ 23   push                5      0      0
+ 24   store_read          5      4      1
+ 25   push                5      0      0
+ 26   set_add             0      0      0
+ 27   store_next          4      14     0
+ 28   free                4      0      0
+ 29   free                3      0      0
+ 30   table_next          2      12     0
+ 31   free                2      0      0
+ 32   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 with a as (select * from test) select * from test, a where test.id = a.id;
-1 │ 0 │ 1 │ 0
-3 │ 0 │ 3 │ 0
-2 │ 0 │ 2 │ 0
+
+id  data  id  data
+────────────────────
+1   0     1   0
+3   0     3   0
+2   0     2   0
 # test: with (select from table) select from table, cte (point lookup)
 explain with a as (select * from test) select * from test, a where test.id = 1;
-{
-  "main": {
-    "00": "send_all            0      0      32    # amelie.test (select)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "push_ref            1      1      0     ",
-    "04": "push_int            -      0      0     # 1",
-    "05": "send_lookup         0      -      88    # amelie.test (select, closing)",
-    "06": "union               2      0      0     ",
-    "07": "recv                2      0      0     ",
-    "08": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_readi32       2      1      -     # data",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     ",
-    "10": "set                 0      4      0     ",
-    "11": "push_int            -      0      0     # 1",
-    "12": "table_open          2      56     31    # amelie.test (primary) point_lookup, part",
-    "13": "ref                 3      0      0     ",
-    "14": "store_open          4      3      29    ",
-    "15": "table_readi32       5      2      -     # id",
-    "16": "int                 6      -      0     # 1",
-    "17": "equii               7      5      6     ",
-    "18": "jntr                28     7      0     ",
-    "19": "table_readi32       5      2      -     # id",
-    "20": "push                5      0      0     ",
-    "21": "table_readi32       5      2      -     # data",
-    "22": "push                5      0      0     ",
-    "23": "store_read          5      4      0     ",
-    "24": "push                5      0      0     ",
-    "25": "store_read          5      4      1     ",
-    "26": "push                5      0      0     ",
-    "27": "set_add             0      0      0     ",
-    "28": "store_next          4      15     0     ",
-    "29": "free                4      0      0     ",
-    "30": "free                3      0      0     ",
-    "31": "free                2      0      0     ",
-    "32": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.test (select)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   push_ref            1      1      0
+  4   push_int            -      0      0     # 1
+  5   send_lookup         0      -      88    # amelie.test (select, closing)
+  6   union               2      0      0
+  7   recv                2      0      0
+  8   ret                 2      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_readi32       2      1      -     # data
+  5   push                2      0      0
+  6   set_add             0      0      0
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+ 10   set                 0      4      0
+ 11   push_int            -      0      0     # 1
+ 12   table_open          2      56     31    # amelie.test (primary) point_lookup, part
+ 13   ref                 3      0      0
+ 14   store_open          4      3      29
+ 15   table_readi32       5      2      -     # id
+ 16   int                 6      -      0     # 1
+ 17   equii               7      5      6
+ 18   jntr                28     7      0
+ 19   table_readi32       5      2      -     # id
+ 20   push                5      0      0
+ 21   table_readi32       5      2      -     # data
+ 22   push                5      0      0
+ 23   store_read          5      4      0
+ 24   push                5      0      0
+ 25   store_read          5      4      1
+ 26   push                5      0      0
+ 27   set_add             0      0      0
+ 28   store_next          4      15     0
+ 29   free                4      0      0
+ 30   free                3      0      0
+ 31   free                2      0      0
+ 32   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 with a as (select * from test) select * from test, a where test.id = 1;
-1 │ 0 │ 1 │ 0
-1 │ 0 │ 3 │ 0
-1 │ 0 │ 2 │ 0
+
+id  data  id  data
+────────────────────
+1   0     1   0
+1   0     3   0
+1   0     2   0
 # test: with (select from table) select from cte, table
 explain with a as (select * from test) select * from a, test where test.id = a.id;
-{
-  "main": {
-    "00": "send_all            0      0      32    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "set                 0      4      0     ",
-    "04": "dup                 2      1      0     ",
-    "05": "store_open          3      2      24    ",
-    "06": "store_read          4      3      0     ",
-    "07": "push                4      0      0     ",
-    "08": "table_open          4      56     22    # amelie.test (primary) point_lookup",
-    "09": "table_readi32       5      4      -     # id",
-    "10": "store_read          6      3      0     ",
-    "11": "equii               7      5      6     ",
-    "12": "jntr                22     7      0     ",
-    "13": "store_read          5      3      0     ",
-    "14": "push                5      0      0     ",
-    "15": "store_read          5      3      1     ",
-    "16": "push                5      0      0     ",
-    "17": "table_readi32       5      4      -     # id",
-    "18": "push                5      0      0     ",
-    "19": "table_readi32       5      4      -     # data",
-    "20": "push                5      0      0     ",
-    "21": "set_add             0      0      0     ",
-    "22": "free                4      0      0     ",
-    "23": "store_next          3      6      0     ",
-    "24": "free                3      0      0     ",
-    "25": "free                2      0      0     ",
-    "26": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_readi32       2      1      -     # data",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   set                 0      4      0
+  4   dup                 2      1      0
+  5   store_open          3      2      24
+  6   store_read          4      3      0
+  7   push                4      0      0
+  8   table_open          4      56     22    # amelie.test (primary) point_lookup
+  9   table_readi32       5      4      -     # id
+ 10   store_read          6      3      0
+ 11   equii               7      5      6
+ 12   jntr                22     7      0
+ 13   store_read          5      3      0
+ 14   push                5      0      0
+ 15   store_read          5      3      1
+ 16   push                5      0      0
+ 17   table_readi32       5      4      -     # id
+ 18   push                5      0      0
+ 19   table_readi32       5      4      -     # data
+ 20   push                5      0      0
+ 21   set_add             0      0      0
+ 22   free                4      0      0
+ 23   store_next          3      6      0
+ 24   free                3      0      0
+ 25   free                2      0      0
+ 26   ret                 0      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_readi32       2      1      -     # data
+  5   push                2      0      0
+  6   set_add             0      0      0
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test exclusive_ro [select]
 with a as (select * from test) select * from a, test where test.id = a.id;
-1 │ 0 │ 1 │ 0
-3 │ 0 │ 3 │ 0
-2 │ 0 │ 2 │ 0
+
+id  data  id  data
+────────────────────
+1   0     1   0
+3   0     3   0
+2   0     2   0
 # test: with (select from table) select from cte, table (point lookup)
 explain with a as (select * from test) select * from a, test where test.id = 1;
-{
-  "main": {
-    "00": "send_all            0      0      32    # amelie.test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "set                 0      4      0     ",
-    "04": "dup                 2      1      0     ",
-    "05": "store_open          3      2      23    ",
-    "06": "push_int            -      0      0     # 1",
-    "07": "table_open          4      56     21    # amelie.test (primary) point_lookup",
-    "08": "table_readi32       5      4      -     # id",
-    "09": "int                 6      -      0     # 1",
-    "10": "equii               7      5      6     ",
-    "11": "jntr                21     7      0     ",
-    "12": "store_read          5      3      0     ",
-    "13": "push                5      0      0     ",
-    "14": "store_read          5      3      1     ",
-    "15": "push                5      0      0     ",
-    "16": "table_readi32       5      4      -     # id",
-    "17": "push                5      0      0     ",
-    "18": "table_readi32       5      4      -     # data",
-    "19": "push                5      0      0     ",
-    "20": "set_add             0      0      0     ",
-    "21": "free                4      0      0     ",
-    "22": "store_next          3      6      0     ",
-    "23": "free                3      0      0     ",
-    "24": "free                2      0      0     ",
-    "25": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_readi32       2      1      -     # data",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   set                 0      4      0
+  4   dup                 2      1      0
+  5   store_open          3      2      23
+  6   push_int            -      0      0     # 1
+  7   table_open          4      56     21    # amelie.test (primary) point_lookup
+  8   table_readi32       5      4      -     # id
+  9   int                 6      -      0     # 1
+ 10   equii               7      5      6
+ 11   jntr                21     7      0
+ 12   store_read          5      3      0
+ 13   push                5      0      0
+ 14   store_read          5      3      1
+ 15   push                5      0      0
+ 16   table_readi32       5      4      -     # id
+ 17   push                5      0      0
+ 18   table_readi32       5      4      -     # data
+ 19   push                5      0      0
+ 20   set_add             0      0      0
+ 21   free                4      0      0
+ 22   store_next          3      6      0
+ 23   free                3      0      0
+ 24   free                2      0      0
+ 25   ret                 0      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_readi32       2      1      -     # data
+  5   push                2      0      0
+  6   set_add             0      0      0
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test exclusive_ro [select]
 with a as (select * from test) select * from a, test where test.id = 1;
-1 │ 0 │ 1 │ 0
-3 │ 0 │ 1 │ 0
-2 │ 0 │ 1 │ 0
+
+id  data  id  data
+────────────────────
+1   0     1   0
+3   0     1   0
+2   0     1   0
 # test: select from table join group by
 select test.id from test, ref group by test.id;
+
+col1
+────
 1
 3
 2
 select test.id from test join ref on (test.id = ref.id) group by test.id;
+
+col1
+────
 1
 3
 2
@@ -780,69 +907,91 @@ error: select ❰id❱ ⟵ column 'id' must appear in the GROUP BY clause or be 
 select ref.id from test join ref on (test.id = ref.id) group by id;
 error: select ref.id from test join ref on (test.id = ref.id) group by ❰id❱ ⟵ column name is ambiguous
 explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
-{
-  "main": {
-    "00": "send_all            0      0      64    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      64    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "store_read          4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      0      1     ",
-    "01": "table_open          1      0      14    # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "table_open          2      32     12    # amelie.ref (primary) point_lookup",
-    "05": "table_readi32       3      1      -     # id",
-    "06": "table_readi32       4      2      -     # id",
-    "07": "equii               5      3      4     ",
-    "08": "jntr                12     5      0     ",
-    "09": "table_readi32       3      2      -     # id",
-    "10": "push                3      0      0     ",
-    "11": "set_get             3      0      0     ",
-    "12": "free                2      0      0     ",
-    "13": "table_next          1      2      0     ",
-    "14": "free                1      0      0     ",
-    "15": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"], ["amelie.ref", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      64    # amelie.test (select, closing)
+  1   recv_aggs           1      0      64
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   store_read          4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      0      1
+  1   table_open          1      0      14    # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   table_open          2      32     12    # amelie.ref (primary) point_lookup
+  5   table_readi32       3      1      -     # id
+  6   table_readi32       4      2      -     # id
+  7   equii               5      3      4
+  8   jntr                12     5      0
+  9   table_readi32       3      2      -     # id
+ 10   push                3      0      0
+ 11   set_get             3      0      0
+ 12   free                2      0      0
+ 13   table_next          1      2      0
+ 14   free                1      0      0
+ 15   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+  •   amelie.ref exclusive_ro [select]
 select ref.id from test join ref on (test.id = ref.id) group by ref.id;
+
+col1
+────
 1
 3
 2
 select ref.id, count(*) from test join ref on (test.id = ref.id) group by ref.id;
-1 │ 1
-3 │ 1
-2 │ 1
+
+col1  count
+─────────────
+1     1
+3     1
+2     1
 select ref.id, count(test.id) + count(ref.id) from test join ref on (test.id = ref.id) group by ref.id;
-1 │ 2
-3 │ 2
-2 │ 2
+
+col1  col2
+────────────
+1     2
+3     2
+2     2
 # test: select from table join group by path
 create table ref2 (id int primary key, data json);
 insert into ref2 values (1, {"id": 1}), (2, {"id": 2}), (3, {"id": 3});
 select ref2.data from test join ref2 on (test.id = ref2.id) group by ref2.id;
 error: select ❰ref2.data❱ ⟵ column 'ref2.data' must appear in the GROUP BY clause or be used by an aggregate function
 select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by ref2.data.id;
-1 │ "json"
-3 │ "json"
-2 │ "json"
+
+col1  type
+────────────
+1     json
+3     json
+2     json
 select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by 1;
-1 │ "json"
-3 │ "json"
-2 │ "json"
+
+col1  type
+────────────
+1     json
+3     json
+2     json
 select ref2.data, ref2.data.id from test join ref2 on (test.id = ref2.id) group by ref2.data;
-{"id": 1} │ 1
-{"id": 3} │ 3
-{"id": 2} │ 2
+
+col1       col2
+─────────────────
+{"id": 1}  1
+{"id": 3}  3
+{"id": 2}  2
 drop table ref;
 drop table ref2;
 drop table test;

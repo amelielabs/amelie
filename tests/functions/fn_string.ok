@@ -2,336 +2,780 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: length()
 select ""::length;
+
+length
+──────
 0
 select ""::size;
+
+size
+────
 0
 select "hello"::length;
+
+length
+──────
 5
 select "hello"::size;
+
+size
+────
 5
 select null::size;
+
+size
+────
 null
 select []::size;
+
+size
+────
 0
 select [1,2,3]::size;
+
+size
+────
 3
 select {}::size;
+
+size
+────
 0
 select {"a": null}::size;
+
+size
+────
 1
 select {"a": null, "b": null}::size;
+
+size
+────
 2
 # test: length(utf8)
 select "hello"::length;
+
+length
+──────
 5
 select "привет"::length;
+
+length
+──────
 6
 select "こんにちは世界"::length;
+
+length
+──────
 7
 # test: octet_length()
 select "hello"::octet_length;
+
+octet_length
+────────────
 5
 select "привет"::octet_length;
+
+octet_length
+────────────
 12
 select "こんにちは世界"::octet_length;
+
+octet_length
+────────────
 21
 select {"a": null, "b": null}::length;
+
+length
+──────
 2
 select {"a": null, "b": null}::octet_length;
+
+octet_length
+────────────
 8
 # test: concat()
 select concat();
-""
+
+concat
+──────
+
 select concat(null);
-""
+
+concat
+──────
+
 select concat(null, null);
-""
+
+concat
+──────
+
 select concat("a", null);
-"a"
+
+concat
+──────
+a
 select concat("a", null, "b");
-"ab"
+
+concat
+──────
+ab
 select concat("a", null, "b");
-"ab"
+
+concat
+──────
+ab
 select concat("a", null, "b", 3);
 error: concat(string, null, string, ❰int❱ ⟵ string expected
 select concat("a", null, "b", 3::string);
-"ab3"
+
+concat
+──────
+ab3
 select "привет"::concat("мир");
-"приветмир"
+
+concat
+──────
+приветмир
 select "привет"::concat("мир")::size;
+
+size
+────
 9
 # test: lower()
 select null::lower;
+
+lower
+─────
 null
 select ""::lower;
-""
+
+lower
+─────
+
 select "Hello World"::lower;
-"hello world"
+
+lower
+─────
+hello world
 select null::lower;
+
+lower
+─────
 null
 select "приHeветllo миWрorld"::lower;
-"приheветllo миwрorld"
+
+lower
+─────
+приheветllo миwрorld
 # test: upper()
 select null::upper;
+
+upper
+─────
 null
 select ""::upper;
-""
+
+upper
+─────
+
 select "Hello World"::upper;
-"HELLO WORLD"
+
+upper
+─────
+HELLO WORLD
 select "приHeветllo миWрorld"::upper;
-"приHEветLLO миWрORLD"
+
+upper
+─────
+приHEветLLO миWрORLD
 # test: substr()
 select substr(null, 0);
+
+substr
+──────
 null
 select substr("");
 error: substr(string) ⟵ unexpected number of arguments
 select substr("hi", 0);
 error: substr(string, ❰int❱ ⟵ position is out of bounds
 select substr("hi", 1);
-"hi"
+
+substr
+──────
+hi
 select substr("hi", 2);
-"i"
+
+substr
+──────
+i
 select substr("hi", 3);
 error: substr(string, ❰int❱ ⟵ position is out of bounds
 select substr("hi", 1, 0);
-""
+
+substr
+──────
+
 select substr("hi", 1, 1);
-"h"
+
+substr
+──────
+h
 select substr("hi", 1, 2);
-"hi"
+
+substr
+──────
+hi
 select substr("hi", 1, 3);
 error: substr(string, int, ❰int❱ ⟵ position is out of bounds
 select "hello"::substr(2);
-"ello"
+
+substr
+──────
+ello
 select "hello"::substr(2, 1);
-"e"
+
+substr
+──────
+e
 select "hello"::substr(2, 2);
-"el"
+
+substr
+──────
+el
 select "hello"::substr(2, 3);
-"ell"
+
+substr
+──────
+ell
 select "hello"::substr(2, 4);
-"ello"
+
+substr
+──────
+ello
 select "hello"::substr(2, 5);
 error: substr(string, int, ❰int❱ ⟵ position is out of bounds
 select "привет"::substr(2);
-"ривет"
+
+substr
+──────
+ривет
 select "привет"::substr(2, 0);
-""
+
+substr
+──────
+
 select "привет"::substr(2, 1);
-"р"
+
+substr
+──────
+р
 select "привет"::substr(2, 2);
-"ри"
+
+substr
+──────
+ри
 select "привет"::substr(2, 3);
-"рив"
+
+substr
+──────
+рив
 select "привет"::substr(2, 4);
-"риве"
+
+substr
+──────
+риве
 select "привет"::substr(2, 5);
-"ривет"
+
+substr
+──────
+ривет
 select "привет"::substr(2, 10);
 error: substr(string, int, ❰int❱ ⟵ position is out of bounds
 select "привет"::substr(5, 1);
-"е"
+
+substr
+──────
+е
 select "привет"::substr(6, 1);
-"т"
+
+substr
+──────
+т
 select "привет"::substr(7, 1);
 error: substr(string, ❰int❱ ⟵ position is out of bounds
 # test: strpos()
 select null::strpos("");
+
+strpos
+──────
 null
 select "hello"::strpos("");
+
+strpos
+──────
 0
 select "hello"::strpos("h");
+
+strpos
+──────
 1
 select "hello"::strpos("e");
+
+strpos
+──────
 2
 select "hello"::strpos("l");
+
+strpos
+──────
 3
 select "hello"::strpos("ll");
+
+strpos
+──────
 3
 select "hello"::strpos("llo");
+
+strpos
+──────
 3
 select "hello"::strpos("lloo");
+
+strpos
+──────
 0
 select "hello"::strpos("lo");
+
+strpos
+──────
 4
 select "hello"::strpos("o");
+
+strpos
+──────
 5
 select "привет"::strpos("п");
+
+strpos
+──────
 1
 select "привет"::strpos("р");
+
+strpos
+──────
 2
 select "привет"::strpos("и");
+
+strpos
+──────
 3
 select "привет"::strpos("ив");
+
+strpos
+──────
 3
 select "привет"::strpos("иве");
+
+strpos
+──────
 3
 select "привет"::strpos("ивее");
+
+strpos
+──────
 0
 select "привет"::strpos("ет");
+
+strpos
+──────
 5
 select "привет"::strpos("т");
+
+strpos
+──────
 6
 select substr("hello", "hello"::strpos("lo"), 2);
-"lo"
+
+substr
+──────
+lo
 # test: replace()
 select replace('The cat sat on the mat, mat, mat in the corner of the room.','mat','rug');
-"The cat sat on the rug, rug, rug in the corner of the room."
+
+replace
+───────
+The cat sat on the rug, rug, rug in the corner of the room.
 select null::replace("hi", "hello ");
+
+replace
+───────
 null
 select "hihi"::replace("hi", "hello ");
-"hello hello "
+
+replace
+───────
+hello hello 
 select "hihellohi"::replace("hi", "");
-"hello"
+
+replace
+───────
+hello
 select "hihellohi"::replace("hello", "");
-"hihi"
+
+replace
+───────
+hihi
 select "hihi"::replace("hi", "");
-""
+
+replace
+───────
+
 select "hihello"::replace("hello", "X");
-"hiX"
+
+replace
+───────
+hiX
 select "hihell"::replace("hello", "X");
-"hihell"
+
+replace
+───────
+hihell
 select "hihel"::replace("hello", "X");
-"hihel"
+
+replace
+───────
+hihel
 select "hihe"::replace("hello", "X");
-"hihe"
+
+replace
+───────
+hihe
 select "hih"::replace("hello", "X");
-"hih"
+
+replace
+───────
+hih
 select "hi"::replace("hello", "X");
-"hi"
+
+replace
+───────
+hi
 select "hellohi"::replace("hello", "X");
-"Xhi"
+
+replace
+───────
+Xhi
 select "hellhi"::replace("hello", "X");
-"hellhi"
+
+replace
+───────
+hellhi
 select "helhi"::replace("hello", "X");
-"helhi"
+
+replace
+───────
+helhi
 select "hehi"::replace("hello", "X");
-"hehi"
+
+replace
+───────
+hehi
 select "hhi"::replace("hello", "X");
-"hhi"
+
+replace
+───────
+hhi
 select "hhi"::replace("", "X");
 error: replace(string, ❰string❱ ⟵ invalid argument
 select "приветпривет"::replace("привет", "й");
-"йй"
+
+replace
+───────
+йй
 select "приветпривет"::replace("привет", "");
-""
+
+replace
+───────
+
 select "приветпривет"::replace("привет", "")::size;
+
+size
+────
 0
 select "приветпри"::replace("привет", "й");
-"йпри"
+
+replace
+───────
+йпри
 select "приприветпри"::replace("привет", "й");
-"прийпри"
+
+replace
+───────
+прийпри
 select "при"::replace("привет", "й");
-"при"
+
+replace
+───────
+при
 select "вет"::replace("привет", "й");
-"вет"
+
+replace
+───────
+вет
 select "__привет-"::replace("привет", "й");
-"__й-"
+
+replace
+───────
+__й-
 select "привет"::replace("привет", "й");
-"й"
+
+replace
+───────
+й
 # test: ltrim()
 select null::ltrim();
+
+ltrim
+─────
 null
 select ""::ltrim();
-""
+
+ltrim
+─────
+
 select ""::ltrim("");
-""
+
+ltrim
+─────
+
 select ""::ltrim(null);
 error: ltrim(string, ❰null❱ ⟵ expected string
 select "  	 123"::ltrim();
-"123"
+
+ltrim
+─────
+123
 select "  123"::ltrim(" ");
-"123"
+
+ltrim
+─────
+123
 select "  123  "::ltrim(" 1");
-"23  "
+
+ltrim
+─────
+23  
 select "$$123"::ltrim("$");
-"123"
+
+ltrim
+─────
+123
 select "$$"::ltrim("$");
-""
+
+ltrim
+─────
+
 select "  привет  "::ltrim(" пр");
-"ивет  "
+
+ltrim
+─────
+ивет  
 # test: rtrim()
 select null::rtrim();
+
+rtrim
+─────
 null
 select ""::rtrim();
-""
+
+rtrim
+─────
+
 select ""::rtrim("");
-""
+
+rtrim
+─────
+
 select ""::rtrim(null);
 error: rtrim(string, ❰null❱ ⟵ expected string
 select "  	 123"::rtrim();
-"  \t 123"
+
+rtrim
+─────
+  	 123
 select "  123  "::rtrim(" ");
-"  123"
+
+rtrim
+─────
+  123
 select "  123  "::rtrim(" 13");
-"  12"
+
+rtrim
+─────
+  12
 select "$$123 $$"::rtrim("$");
-"$$123 "
+
+rtrim
+─────
+$$123 
 select "$$"::rtrim("$");
-""
+
+rtrim
+─────
+
 select "123$"::rtrim("$");
-"123"
+
+rtrim
+─────
+123
 select "$"::rtrim("$");
-""
+
+rtrim
+─────
+
 select ""::rtrim("$");
-""
+
+rtrim
+─────
+
 select "  привет  "::rtrim(" пр");
-"  привет"
+
+rtrim
+─────
+  привет
 # test: trim()
 select null::trim();
+
+trim
+────
 null
 select ""::trim();
-""
+
+trim
+────
+
 select ""::trim("");
-""
+
+trim
+────
+
 select ""::trim(null);
 error: trim(string, ❰null❱ ⟵ expected string
 select "  	 123"::trim();
-"123"
+
+trim
+────
+123
 select "  123  "::trim(" ");
-"123"
+
+trim
+────
+123
 select "  123  "::trim(" 13");
-"2"
+
+trim
+────
+2
 select "$$123 $$"::trim("$");
-"123 "
+
+trim
+────
+123 
 select "$$"::trim("$");
-""
+
+trim
+────
+
 select "123$"::trim("$");
-"123"
+
+trim
+────
+123
 select "$"::trim("$");
-""
+
+trim
+────
+
 select ""::trim("$");
-""
+
+trim
+────
+
 select "  привет  "::trim(" пр");
-"ивет"
+
+trim
+────
+ивет
 select "  привет  "::trim(" прет");
-"ив"
+
+trim
+────
+ив
 select "  привет  "::trim(" привет");
-""
+
+trim
+────
+
 # test: like()
 select null::like('hello%world');
+
+like
+────
 null
 select 'hello, world'::like('hello%world');
+
+like
+────
 true
 select 'hello, world' like 'hello%world';
+
+col1
+────
 true
 select `like`('hello, world', 'hello%world');
+
+like
+────
 true
 select `like`('hello, world', 'hello%world');
+
+like
+────
 true
 select `like`('привет, мир', 'привет%мир');
+
+like
+────
 true
 select `like`('привет', 'п%т');
+
+like
+────
 true
 select `like`('привет, мий', 'прив____ми_');
+
+like
+────
 true
 select `like`('привет, мHй', 'прив____ми_');
+
+like
+────
 false
 select `like`("こんにちは世界", "%にちは%");
+
+like
+────
 true
 select "こんにちは世界"::like("%にちは%");
+
+like
+────
 true
 select "こんにちは世界" like "%にちは%";
+
+col1
+────
 true
 disconnect S0;
 close E0;

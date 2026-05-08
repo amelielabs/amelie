@@ -16,32 +16,53 @@ drop table if exists test;
 # test: drop table
 create table test(id int primary key);
 select show('table', 'test', true).name;
+
+col1
+────
 "test"
 drop table test;
 select show('table', 'test', true).name;
+
+col1
+────
 null
 # test: drop table if exists
 create table test(id int primary key);
 select show('table', 'test', true).name;
+
+col1
+────
 "test"
 drop table test;
 select show('table', 'test', true).name;
+
+col1
+────
 null
 drop table if exists test;
 # test: recreate same table after drop
 create table test (id int primary key);
 select show('table', 'test', true).name;
+
+col1
+────
 "test"
 drop table test;
 create table test (id int primary key);
 select show('table', 'test', true).name;
+
+col1
+────
 "test"
 drop table test;
 # test: drop table with udf dep
 create table test (id int primary key);
 create function dep() begin insert into test values (123); end;
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "dep",
   "text": "begin insert into test values (123); end",
@@ -49,7 +70,7 @@ show functions verbose;
   "args": [],
   "returning": [],
   "grants": []
-}]
+}
 drop table test;
 error: table 'test': depends on 'amelie.dep'
 # test: drop table after udf drop
@@ -59,7 +80,10 @@ drop table test;
 create table test (id int primary key);
 create function dep() begin insert into test values (123); end;
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "dep",
   "text": "begin insert into test values (123); end",
@@ -67,13 +91,17 @@ show functions verbose;
   "args": [],
   "returning": [],
   "grants": []
-}]
+}
 drop table test;
 error: table 'test': depends on 'amelie.dep'
 drop table test cascade;
 show tables;
-[]
+
+tables
+──────
 show functions;
-[]
+
+functions
+─────────
 disconnect S0;
 close E0;

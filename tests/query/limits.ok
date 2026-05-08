@@ -2,6 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: default limits
 select show();
+
+show
+────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -59,6 +62,9 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show();
+
+show
+────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",

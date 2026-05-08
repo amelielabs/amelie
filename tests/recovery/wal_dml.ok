@@ -2,6 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: create wal on start
 show wal;
+
+wal
+───
 {
   "lsn": 0,
   "lsn_min": 1,
@@ -13,6 +16,9 @@ show wal;
   "ops": 0
 }
 select show('wal');
+
+show
+────
 {
   "lsn": 0,
   "lsn_min": 1,
@@ -24,8 +30,14 @@ select show('wal');
   "ops": 0
 }
 select show('state').lsn;
+
+col1
+────
 0
 show all;
+
+config
+──────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -64,6 +76,9 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 show wal;
+
+wal
+───
 {
   "lsn": 0,
   "lsn_min": 1,
@@ -75,6 +90,9 @@ show wal;
   "ops": 0
 }
 select show('wal');
+
+show
+────
 {
   "lsn": 0,
   "lsn_min": 1,
@@ -86,8 +104,14 @@ select show('wal');
   "ops": 0
 }
 select show('state').lsn;
+
+col1
+────
 0
 show all;
+
+config
+──────
 {
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -123,8 +147,14 @@ show all;
 # test: create table
 create table test (id serial primary key, data int default 0);
 select show('state').lsn;
+
+col1
+────
 1
 select identity_of("test");
+
+identity_of
+───────────
 0
 # test: restart
 disconnect S0;
@@ -133,19 +163,34 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
+
+col1
+────
 1
 select identity_of("test");
+
+identity_of
+───────────
 0
 # test: insert
 insert into test () values (), (), ();
 select show('state').lsn;
+
+col1
+────
 2
 select identity_of("test");
+
+identity_of
+───────────
 3
 select * from test;
-0 │ 0
-1 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+2   0
 # test: restart
 disconnect S0;
 close E0;
@@ -153,23 +198,41 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
+
+col1
+────
 2
 select identity_of("test");
+
+identity_of
+───────────
 3
 select * from test;
-0 │ 0
-1 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+2   0
 # test: update
 update test set data = id;
 select show('state').lsn;
+
+col1
+────
 3
 select identity_of("test");
+
+identity_of
+───────────
 3
 select * from test;
-0 │ 0
-1 │ 1
-2 │ 2
+
+id  data
+──────────
+0   0
+1   1
+2   2
 # test: restart
 disconnect S0;
 close E0;
@@ -177,23 +240,41 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
+
+col1
+────
 3
 select identity_of("test");
+
+identity_of
+───────────
 3
 select * from test;
-0 │ 0
-1 │ 1
-2 │ 2
+
+id  data
+──────────
+0   0
+1   1
+2   2
 # test: upsert
 insert into test values (2, 0) on conflict do update set data = data + 1;
 select show('state').lsn;
+
+col1
+────
 4
 select identity_of("test");
+
+identity_of
+───────────
 3
 select * from test;
-0 │ 0
-1 │ 1
-2 │ 3
+
+id  data
+──────────
+0   0
+1   1
+2   3
 # test: restart
 disconnect S0;
 close E0;
@@ -201,21 +282,39 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
+
+col1
+────
 4
 select identity_of("test");
+
+identity_of
+───────────
 3
 select * from test;
-0 │ 0
-1 │ 1
-2 │ 3
+
+id  data
+──────────
+0   0
+1   1
+2   3
 # test: delete
 delete from test where id in (0, 1);
 select show('state').lsn;
+
+col1
+────
 5
 select identity_of("test");
+
+identity_of
+───────────
 3
 select * from test;
-2 │ 3
+
+id  data
+──────────
+2   3
 # test: restart
 disconnect S0;
 close E0;
@@ -223,10 +322,19 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
+
+col1
+────
 5
 select identity_of("test");
+
+identity_of
+───────────
 3
 select * from test;
-2 │ 3
+
+id  data
+──────────
+2   3
 disconnect S0;
 close E0;

@@ -13,389 +13,476 @@ insert into test values (4, 2  2.0);
 insert into test values (5, null, null);
 insert into test values (6, 3, 3.1);
 explain select count(*) from test_empty;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test_empty (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "count               4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # amelie.test_empty (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "push_int            -      0      0     # 1",
-    "05": "set_agg             0      2      32    ",
-    "06": "table_next          1      2      0     ",
-    "07": "free                1      0      0     ",
-    "08": "push_bool           1      0      0     ",
-    "09": "set_get             1      0      0     ",
-    "10": "push_nulls          1      0      0     ",
-    "11": "set_agg             0      1      32    ",
-    "12": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test_empty", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test_empty (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   count               4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      7     # amelie.test_empty (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   push_int            -      0      0     # 1
+  5   set_agg             0      2      32
+  6   table_next          1      2      0
+  7   free                1      0      0
+  8   push_bool           1      0      0
+  9   set_get             1      0      0
+ 10   push_nulls          1      0      0
+ 11   set_agg             0      1      32
+ 12   ret                 0      0      -
+
+access
+  •   amelie.test_empty shared [select]
 select count(*) from test_empty;
+
+count
+─────
 0
 # test: select count(*) from table
 select * from test;
-0 │ 0 │ 0
-1 │ 0 │ 0
-3 │ 1 │ 1
-4 │ 2 │ 2
-5 │ null │ null
-6 │ 3 │ 3.1
-2 │ 1 │ 1
+
+id  data  data2
+─────────────────
+0   0     0
+1   0     0
+3   1     1
+4   2     2
+5   null  null
+6   3     3.1
+2   1     1
 explain select count(*) from test;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "count               4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # amelie.test (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "push_int            -      0      0     # 1",
-    "05": "set_agg             0      2      32    ",
-    "06": "table_next          1      2      0     ",
-    "07": "free                1      0      0     ",
-    "08": "push_bool           1      0      0     ",
-    "09": "set_get             1      0      0     ",
-    "10": "push_nulls          1      0      0     ",
-    "11": "set_agg             0      1      32    ",
-    "12": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   count               4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      7     # amelie.test (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   push_int            -      0      0     # 1
+  5   set_agg             0      2      32
+  6   table_next          1      2      0
+  7   free                1      0      0
+  8   push_bool           1      0      0
+  9   set_get             1      0      0
+ 10   push_nulls          1      0      0
+ 11   set_agg             0      1      32
+ 12   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select count(*) from test;
+
+count
+─────
 7
 # test: select count(column) from table
 explain select count(id) from test;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "count               4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readi32       3      1      -     # id",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   count               4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readi32       3      1      -     # id
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select count(id) from test;
+
+count
+─────
 7
 # test: select count(null) from table
 explain select count(data) from test;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "count               4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readi32       3      1      -     # data",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   count               4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readi32       3      1      -     # data
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select count(data) from test;
+
+count
+─────
 6
 explain select count(data) from test_null;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test_null (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "count               4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test_null (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readi32       3      1      -     # data",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test_null", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test_null (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   count               4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test_null (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readi32       3      1      -     # data
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test_null shared [select]
 select count(data) from test_null;
+
+count
+─────
 0
 # test: select count(any) from table
 select count('string') from test_null;
+
+count
+─────
 1
 select count([]) from test_null;
+
+count
+─────
 1
 # test: select count(distinct *) from table
 explain select count(distinct *) from test;
 error: explain select count(distinct ❰*❱ ⟵ * cannot be used with DISTINCT
 # test: select count(distinct) from table
 explain select count(distinct id) from test;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "count               4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "set_distinct        0      1      3     ",
-    "02": "table_open          1      0      9     # amelie.test (primary) part",
-    "03": "push_bool           1      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "table_readi32       3      1      -     # id",
-    "06": "push                3      0      0     ",
-    "07": "set_agg             0      2      32    ",
-    "08": "table_next          1      3      0     ",
-    "09": "free                1      0      0     ",
-    "10": "push_bool           1      0      0     ",
-    "11": "set_get             1      0      0     ",
-    "12": "push_nulls          1      0      0     ",
-    "13": "set_agg             0      1      32    ",
-    "14": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   count               4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   set_distinct        0      1      3
+  2   table_open          1      0      9     # amelie.test (primary) part
+  3   push_bool           1      0      0
+  4   set_get             2      0      0
+  5   table_readi32       3      1      -     # id
+  6   push                3      0      0
+  7   set_agg             0      2      32
+  8   table_next          1      3      0
+  9   free                1      0      0
+ 10   push_bool           1      0      0
+ 11   set_get             1      0      0
+ 12   push_nulls          1      0      0
+ 13   set_agg             0      1      32
+ 14   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select count(distinct id) from test;
+
+count
+─────
 7
 select count(distinct data) from test;
+
+count
+─────
 4
 select count(distinct data2) from test;
+
+count
+─────
 4
 select count(distinct data), count(distinct data2) from test;
-4 │ 4
+
+count  count
+──────────────
+4      4
 select count(distinct data), count(distinct data2), count(distinct data) from test;
-4 │ 4 │ 4
+
+count  count  count
+─────────────────────
+4      4      4
 select count(distinct 1), count(1), count(distinct null) from test;
-1 │ 7 │ 0
+
+count  count  count
+─────────────────────
+1      7      0
 # test: select sum(column int) from table empty
 explain select sum(id) from test_empty;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test_empty (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "agg                 4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test_empty (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readi32       3      1      -     # id",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test_empty", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test_empty (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   agg                 4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test_empty (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readi32       3      1      -     # id
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test_empty shared [select]
 select sum(id) from test_empty;
+
+sum
+───
 null
 # test: select sum(column int) from table
 explain select sum(id) from test;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "agg                 4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readi32       3      1      -     # id",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   agg                 4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readi32       3      1      -     # id
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select sum(id) from test;
+
+sum
+───
 21
 select sum(data) from test;
+
+sum
+───
 7
 # test: select sum(column double) from table empty
 explain select sum(data2) from test_empty;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test_empty (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "agg                 4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test_empty (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readf64       3      1      -     # data2",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test_empty", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test_empty (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   agg                 4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test_empty (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readf64       3      1      -     # data2
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test_empty shared [select]
 select sum(data2) from test_empty;
+
+sum
+───
 null
 # test: select sum(column double) from table
 explain select sum(data2) from test;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "agg                 4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readf64       3      1      -     # data2",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   agg                 4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readf64       3      1      -     # data2
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select sum(data2) from test_empty;
+
+sum
+───
 null
 # test: select sum(any) from table
 explain select sum('string') from test;
@@ -404,86 +491,110 @@ select sum('string') from test;
 error: select sum(❰'string'❱ ⟵ int or double expected
 # test: select sum(null) from table
 explain select sum(data) from test_null;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test_null (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "agg                 4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test_null (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readi32       3      1      -     # data",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test_null", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test_null (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   agg                 4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test_null (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readi32       3      1      -     # data
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test_null shared [select]
 select sum(data) from test_null;
+
+sum
+───
 null
 # test: select avg(column int) from table empty
 select avg(id) from test_empty;
+
+avg
+───
 null
 # test: select avg(column int) from table
 explain select avg(id) from test;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "avgi                4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readi32       3      1      -     # id",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   avgi                4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readi32       3      1      -     # id
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select avg(id) from test;
+
+avg
+───
 3
 select avg(data) from test;
+
+avg
+───
 1
 # test: select avg(column double) from table empty
 select avg(data2) from test_empty;
+
+avg
+───
 null
 # test: select avg(column int) from table
 select avg(data2) from test;
+
+avg
+───
 1.18333
 # test: select avg(any) from table
 explain select avg('string') from test;
@@ -492,475 +603,619 @@ select avg('string') from test;
 error: select avg(❰'string'❱ ⟵ int or double expected
 # test: select avg(null) from table
 explain select avg(data2) from test_null;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test_null (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "avgf                4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test_null (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readf64       3      1      -     # data2",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test_null", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test_null (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   avgf                4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test_null (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readf64       3      1      -     # data2
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test_null shared [select]
 select avg(data2) from test_null;
+
+avg
+───
 null
 # test: select min(column int) from table empty
 select min(id) from test_empty;
+
+min
+───
 null
 # test: select min(column int) from table
 select min(id) from test;
+
+min
+───
 0
 select min(data) from test;
+
+min
+───
 0
 # test: select min(column double) from table empty
 select min(data2) from test_empty;
+
+min
+───
 null
 # test: select min(column double) from table
 select min(data2) from test;
+
+min
+───
 0
 # test: select min(null) from table
 explain select min(data2) from test_null;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test_null (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "agg                 4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test_null (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readf64       3      1      -     # data2",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test_null", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test_null (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   agg                 4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test_null (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readf64       3      1      -     # data2
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test_null shared [select]
 select min(data2) from test_null;
+
+min
+───
 null
 # test: select max(column int) from table empty
 select max(id) from test_empty;
+
+max
+───
 null
 # test: select max(column int) from table
 select max(id) from test;
+
+max
+───
 6
 select max(data) from test;
+
+max
+───
 3
 # test: select max(column double) from table empty
 select max(data2) from test_empty;
+
+max
+───
 null
 # test: select max(column double) from table
 select max(data2) from test;
+
+max
+───
 3.1
 # test: select max(null) from table
 explain select max(data2) from test_null;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test_null (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "agg                 4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test_null (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readf64       3      1      -     # data2",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test_null", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test_null (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   agg                 4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test_null (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readf64       3      1      -     # data2
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+
+access
+  •   amelie.test_null shared [select]
 select max(data2) from test_null;
+
+max
+───
 null
 # test: select count(*), min(column), max(column) from table
 select count(*), min(id), max(id) from test;
-7 │ 0 │ 6
+
+count  min  max
+─────────────────
+7      0    6
 select count(*), min(id), max(id), avg(id) from test;
-7 │ 0 │ 6 │ 3
+
+count  min  max  avg
+──────────────────────
+7      0    6    3
 # test: select count(*) from table group by column
 explain select id, count(*) from test group by id;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      10    ",
-    "04": "store_read          4      3      1     ",
-    "05": "push                4      0      0     ",
-    "06": "count               4      3      0     ",
-    "07": "push                4      0      0     ",
-    "08": "set_add             2      0      0     ",
-    "09": "store_next          3      4      0     ",
-    "10": "free                3      0      0     ",
-    "11": "free                1      0      0     ",
-    "12": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      10
+  4   store_read          4      3      1
+  5   push                4      0      0
+  6   count               4      3      0
+  7   push                4      0      0
+  8   set_add             2      0      0
+  9   store_next          3      4      0
+ 10   free                3      0      0
+ 11   free                1      0      0
+ 12   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select id, count(*) from test group by id;
-0 │ 1
-1 │ 1
-3 │ 1
-6 │ 1
-4 │ 1
-5 │ 1
-2 │ 1
+
+id  count
+───────────
+0   1
+1   1
+3   1
+6   1
+4   1
+5   1
+2   1
 select data, count(*) from test group by data;
-0 │ 2
-1 │ 2
-null │ 1
-2 │ 1
-3 │ 1
+
+data  count
+─────────────
+0     2
+1     2
+null  1
+2     1
+3     1
 select data2, count(*) from test group by data2;
-0 │ 2
-1 │ 2
-null │ 1
-2 │ 1
-3.1 │ 1
+
+data2  count
+──────────────
+0      2
+1      2
+null   1
+2      1
+3.1    1
 select data, count(*) from test_empty group by data;
+
+data  count
+─────────────
 select data, count(*) from test_null group by data;
-null │ 1
+
+data  count
+─────────────
+null  1
 # test: select count(*) from table group by 1
 explain select id, count(*) from test group by 1;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      10    ",
-    "04": "store_read          4      3      1     ",
-    "05": "push                4      0      0     ",
-    "06": "count               4      3      0     ",
-    "07": "push                4      0      0     ",
-    "08": "set_add             2      0      0     ",
-    "09": "store_next          3      4      0     ",
-    "10": "free                3      0      0     ",
-    "11": "free                1      0      0     ",
-    "12": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      10
+  4   store_read          4      3      1
+  5   push                4      0      0
+  6   count               4      3      0
+  7   push                4      0      0
+  8   set_add             2      0      0
+  9   store_next          3      4      0
+ 10   free                3      0      0
+ 11   free                1      0      0
+ 12   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select id, count(*) from test group by 1;
-0 │ 1
-1 │ 1
-3 │ 1
-6 │ 1
-4 │ 1
-5 │ 1
-2 │ 1
+
+id  count
+───────────
+0   1
+1   1
+3   1
+6   1
+4   1
+5   1
+2   1
 select data, count(*) from test group by 1;
-0 │ 2
-1 │ 2
-null │ 1
-2 │ 1
-3 │ 1
+
+data  count
+─────────────
+0     2
+1     2
+null  1
+2     1
+3     1
 select data2, count(*) from test group by 1;
-0 │ 2
-1 │ 2
-null │ 1
-2 │ 1
-3.1 │ 1
+
+data2  count
+──────────────
+0      2
+1      2
+null   1
+2      1
+3.1    1
 select data, count(*) from test_empty group by 1;
+
+data  count
+─────────────
 select data, count(*) from test_null group by 1;
-null │ 1
+
+data  count
+─────────────
+null  1
 # test: select from (select count(*) from table)
 explain select * from (select count(*) from test) t;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      8     ",
-    "04": "count               4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "set_add             2      0      0     ",
-    "07": "store_next          3      4      0     ",
-    "08": "free                3      0      0     ",
-    "09": "free                1      0      0     ",
-    "10": "set                 0      1      0     ",
-    "11": "dup                 1      2      0     ",
-    "12": "store_open          3      1      17    ",
-    "13": "store_read          4      3      0     ",
-    "14": "push                4      0      0     ",
-    "15": "set_add             0      0      0     ",
-    "16": "store_next          3      13     0     ",
-    "17": "free                3      0      0     ",
-    "18": "free                1      0      0     ",
-    "19": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      7     # amelie.test (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "push_int            -      0      0     # 1",
-    "05": "set_agg             0      2      32    ",
-    "06": "table_next          1      2      0     ",
-    "07": "free                1      0      0     ",
-    "08": "push_bool           1      0      0     ",
-    "09": "set_get             1      0      0     ",
-    "10": "push_nulls          1      0      0     ",
-    "11": "set_agg             0      1      32    ",
-    "12": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      8
+  4   count               4      3      0
+  5   push                4      0      0
+  6   set_add             2      0      0
+  7   store_next          3      4      0
+  8   free                3      0      0
+  9   free                1      0      0
+ 10   set                 0      1      0
+ 11   dup                 1      2      0
+ 12   store_open          3      1      17
+ 13   store_read          4      3      0
+ 14   push                4      0      0
+ 15   set_add             0      0      0
+ 16   store_next          3      13     0
+ 17   free                3      0      0
+ 18   free                1      0      0
+ 19   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      7     # amelie.test (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   push_int            -      0      0     # 1
+  5   set_agg             0      2      32
+  6   table_next          1      2      0
+  7   free                1      0      0
+  8   push_bool           1      0      0
+  9   set_get             1      0      0
+ 10   push_nulls          1      0      0
+ 11   set_agg             0      1      32
+ 12   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select * from (select count(*) from test) t;
+
+count
+─────
 7
 # test: select from (select count(*) from table group by)
 explain select * from (select id, count(*) from test group by id) t;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      10    ",
-    "04": "store_read          4      3      1     ",
-    "05": "push                4      0      0     ",
-    "06": "count               4      3      0     ",
-    "07": "push                4      0      0     ",
-    "08": "set_add             2      0      0     ",
-    "09": "store_next          3      4      0     ",
-    "10": "free                3      0      0     ",
-    "11": "free                1      0      0     ",
-    "12": "set                 0      2      0     ",
-    "13": "dup                 1      2      0     ",
-    "14": "store_open          3      1      21    ",
-    "15": "store_read          4      3      0     ",
-    "16": "push                4      0      0     ",
-    "17": "store_read          4      3      1     ",
-    "18": "push                4      0      0     ",
-    "19": "set_add             0      0      0     ",
-    "20": "store_next          3      15     0     ",
-    "21": "free                3      0      0     ",
-    "22": "free                1      0      0     ",
-    "23": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      10
+  4   store_read          4      3      1
+  5   push                4      0      0
+  6   count               4      3      0
+  7   push                4      0      0
+  8   set_add             2      0      0
+  9   store_next          3      4      0
+ 10   free                3      0      0
+ 11   free                1      0      0
+ 12   set                 0      2      0
+ 13   dup                 1      2      0
+ 14   store_open          3      1      21
+ 15   store_read          4      3      0
+ 16   push                4      0      0
+ 17   store_read          4      3      1
+ 18   push                4      0      0
+ 19   set_add             0      0      0
+ 20   store_next          3      15     0
+ 21   free                3      0      0
+ 22   free                1      0      0
+ 23   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select * from (select id, count(*) from test group by id) t;
-0 │ 1
-1 │ 1
-3 │ 1
-6 │ 1
-4 │ 1
-5 │ 1
-2 │ 1
+
+id  count
+───────────
+0   1
+1   1
+3   1
+6   1
+4   1
+5   1
+2   1
 select * from (select data, count(*) from test group by data) t;
-0 │ 2
-1 │ 2
-null │ 1
-2 │ 1
-3 │ 1
+
+data  count
+─────────────
+0     2
+1     2
+null  1
+2     1
+3     1
 select * from (select data, count(*) from test_empty group by data) t;
+
+data  count
+─────────────
 select * from (select data, count(*) from test_null group by data) t;
-null │ 1
+
+data  count
+─────────────
+null  1
 # test: select * from table order by count(*)
 select * from test order by count(*);
 error: select ❰*❱ ⟵ column 'test.id' must appear in the GROUP BY clause or be used by an aggregate function
 select id from test order by count(*);
 error: select ❰id❱ ⟵ column 'id' must appear in the GROUP BY clause or be used by an aggregate function
 select 1 from test order by count(id);
+
+col1
+────
 1
 # test: select count(*) from table order by 1
 select count(*) from test order by 1;
+
+count
+─────
 7
 # test: select count(*) as from table order by alias
 select count(*) as c from test order by c;
+
+c
+─
 7
 # test: select count(*) from table group by column order by column
 explain select id, count(*) from test group by id order by id;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set_ordered         2      2      1     ",
-    "03": "store_open          3      1      12    ",
-    "04": "store_read          4      3      1     ",
-    "05": "push                4      0      0     ",
-    "06": "count               4      3      0     ",
-    "07": "push                4      0      0     ",
-    "08": "store_read          4      3      1     ",
-    "09": "push                4      0      0     ",
-    "10": "set_add             2      0      0     ",
-    "11": "store_next          3      4      0     ",
-    "12": "free                3      0      0     ",
-    "13": "free                1      0      0     ",
-    "14": "set_sort            2      0      0     ",
-    "15": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set_ordered         2      2      1
+  3   store_open          3      1      12
+  4   store_read          4      3      1
+  5   push                4      0      0
+  6   count               4      3      0
+  7   push                4      0      0
+  8   store_read          4      3      1
+  9   push                4      0      0
+ 10   set_add             2      0      0
+ 11   store_next          3      4      0
+ 12   free                3      0      0
+ 13   free                1      0      0
+ 14   set_sort            2      0      0
+ 15   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select id, count(*) from test group by id order by id;
-0 │ 1
-1 │ 1
-2 │ 1
-3 │ 1
-4 │ 1
-5 │ 1
-6 │ 1
+
+id  count
+───────────
+0   1
+1   1
+2   1
+3   1
+4   1
+5   1
+6   1
 select id, count(*) from test group by id order by data;
 error: select id, count(*) from test group by id order by ❰data❱ ⟵ column 'data' must appear in the GROUP BY clause or be used by an aggregate function
 # test: select count(*) from table group by 1 order by 1
 explain select id, count(*) from test group by 1 order by 1;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set_ordered         2      2      1     ",
-    "03": "store_open          3      1      12    ",
-    "04": "store_read          4      3      1     ",
-    "05": "push                4      0      0     ",
-    "06": "count               4      3      0     ",
-    "07": "push                4      0      0     ",
-    "08": "store_read          4      3      1     ",
-    "09": "push                4      0      0     ",
-    "10": "set_add             2      0      0     ",
-    "11": "store_next          3      4      0     ",
-    "12": "free                3      0      0     ",
-    "13": "free                1      0      0     ",
-    "14": "set_sort            2      0      0     ",
-    "15": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set_ordered         2      2      1
+  3   store_open          3      1      12
+  4   store_read          4      3      1
+  5   push                4      0      0
+  6   count               4      3      0
+  7   push                4      0      0
+  8   store_read          4      3      1
+  9   push                4      0      0
+ 10   set_add             2      0      0
+ 11   store_next          3      4      0
+ 12   free                3      0      0
+ 13   free                1      0      0
+ 14   set_sort            2      0      0
+ 15   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select id, count(*) from test group by 1 order by 1;
-0 │ 1
-1 │ 1
-2 │ 1
-3 │ 1
-4 │ 1
-5 │ 1
-6 │ 1
+
+id  count
+───────────
+0   1
+1   1
+2   1
+3   1
+4   1
+5   1
+6   1
 select data, count(*) from test group by 1 order by 1;
-null │ 1
-0 │ 2
-1 │ 2
-2 │ 1
-3 │ 1
+
+data  count
+─────────────
+null  1
+0     2
+1     2
+2     1
+3     1
 select data2, count(*) from test group by 1 order by 1;
-null │ 1
-0 │ 2
-1 │ 2
-2 │ 1
-3.1 │ 1
+
+data2  count
+──────────────
+null   1
+0      2
+1      2
+2      1
+3.1    1
 select data, count(*) from test_empty group by 1 order by 1;
+
+data  count
+─────────────
 select data, count(*) from test_null group by 1 order by 1;
-null │ 1
+
+data  count
+─────────────
+null  1
 # test: select from table having (without group by)
 select * from test having count(id) > 0;
 error: select * from test ❰having❱ ⟵ ; expected
@@ -970,110 +1225,143 @@ select 1 from test having count(id) > 0;
 error: select 1 from test ❰having❱ ⟵ ; expected
 # test: select from table group by having
 select id, count(*) from test group by 1;
-0 │ 1
-1 │ 1
-3 │ 1
-6 │ 1
-4 │ 1
-5 │ 1
-2 │ 1
+
+id  count
+───────────
+0   1
+1   1
+3   1
+6   1
+4   1
+5   1
+2   1
 select id, count(*) from test group by 1 having id > 5;
-6 │ 1
+
+id  count
+───────────
+6   1
 select id, count(*) from test group by id having id > 5;
-6 │ 1
+
+id  count
+───────────
+6   1
 explain select id, count(*) from test group by 1 having id > 5;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      14    ",
-    "04": "store_read          4      3      1     ",
-    "05": "int                 5      -      0     # 5",
-    "06": "gtii                6      4      5     ",
-    "07": "jntr                13     6      0     ",
-    "08": "store_read          4      3      1     ",
-    "09": "push                4      0      0     ",
-    "10": "count               4      3      0     ",
-    "11": "push                4      0      0     ",
-    "12": "set_add             2      0      0     ",
-    "13": "store_next          3      4      0     ",
-    "14": "free                3      0      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      14
+  4   store_read          4      3      1
+  5   int                 5      -      0     # 5
+  6   gtii                6      4      5
+  7   jntr                13     6      0
+  8   store_read          4      3      1
+  9   push                4      0      0
+ 10   count               4      3      0
+ 11   push                4      0      0
+ 12   set_add             2      0      0
+ 13   store_next          3      4      0
+ 14   free                3      0      0
+ 15   free                1      0      0
+ 16   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 # test: select from table group by order by having
 select id, count(*) from test group by 1 order by 1;
-0 │ 1
-1 │ 1
-2 │ 1
-3 │ 1
-4 │ 1
-5 │ 1
-6 │ 1
+
+id  count
+───────────
+0   1
+1   1
+2   1
+3   1
+4   1
+5   1
+6   1
 select id, count(*) from test group by 1 having id > 5 order by 1;
-6 │ 1
+
+id  count
+───────────
+6   1
 select id, count(*) from test group by id having id > 5 order by id;
-6 │ 1
+
+id  count
+───────────
+6   1
 # test: select count(*) from table group by having order by
 select id, count(*) from test group by id having id >= 3 and id < 6 order by id;
-3 │ 1
-4 │ 1
-5 │ 1
+
+id  count
+───────────
+3   1
+4   1
+5   1
 select id, count(*) from test group by 1 having id >= 3 and id < 6 order by 1;
-3 │ 1
-4 │ 1
-5 │ 1
+
+id  count
+───────────
+3   1
+4   1
+5   1
 # test: select from table group by having count(column)
 explain select id from test group by id having count(id) > 0;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      12    ",
-    "04": "count               4      3      0     ",
-    "05": "int                 5      -      0     # 0",
-    "06": "gtii                6      4      5     ",
-    "07": "jntr                11     6      0     ",
-    "08": "store_read          4      3      1     ",
-    "09": "push                4      0      0     ",
-    "10": "set_add             2      0      0     ",
-    "11": "store_next          3      4      0     ",
-    "12": "free                3      0      0     ",
-    "13": "free                1      0      0     ",
-    "14": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      9     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "table_readi32       3      1      -     # id",
-    "06": "push                3      0      0     ",
-    "07": "set_agg             0      2      32    ",
-    "08": "table_next          1      2      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      12
+  4   count               4      3      0
+  5   int                 5      -      0     # 0
+  6   gtii                6      4      5
+  7   jntr                11     6      0
+  8   store_read          4      3      1
+  9   push                4      0      0
+ 10   set_add             2      0      0
+ 11   store_next          3      4      0
+ 12   free                3      0      0
+ 13   free                1      0      0
+ 14   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      9     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   table_readi32       3      1      -     # id
+  6   push                3      0      0
+  7   set_agg             0      2      32
+  8   table_next          1      2      0
+  9   free                1      0      0
+ 10   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select id from test group by id having count(id) > 0;
+
+id
+──
 0
 1
 3
@@ -1082,12 +1370,18 @@ select id from test group by id having count(id) > 0;
 5
 2
 select data from test group by data;
+
+data
+────
 0
 1
 null
 2
 3
 select data from test;
+
+data
+────
 0
 0
 1
@@ -1096,43 +1390,52 @@ null
 3
 1
 select data from test group by data having count(data) > 1;
+
+data
+────
 0
 1
 # test: select from table group by having count(*)
 explain select id from test group by id having count(*) > 0;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      1      0     ",
-    "03": "store_open          3      1      12    ",
-    "04": "count               4      3      0     ",
-    "05": "int                 5      -      0     # 0",
-    "06": "gtii                6      4      5     ",
-    "07": "jntr                11     6      0     ",
-    "08": "store_read          4      3      1     ",
-    "09": "push                4      0      0     ",
-    "10": "set_add             2      0      0     ",
-    "11": "store_next          3      4      0     ",
-    "12": "free                3      0      0     ",
-    "13": "free                1      0      0     ",
-    "14": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      1      0
+  3   store_open          3      1      12
+  4   count               4      3      0
+  5   int                 5      -      0     # 0
+  6   gtii                6      4      5
+  7   jntr                11     6      0
+  8   store_read          4      3      1
+  9   push                4      0      0
+ 10   set_add             2      0      0
+ 11   store_next          3      4      0
+ 12   free                3      0      0
+ 13   free                1      0      0
+ 14   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select id from test group by id having count(*) > 0;
+
+id
+──
 0
 1
 3
@@ -1141,413 +1444,488 @@ select id from test group by id having count(*) > 0;
 5
 2
 explain select id, count(*) from test group by id having count(*) > 0;
-{
-  "main": {
-    "00": "send_all            0      0      48    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      14    ",
-    "04": "count               4      3      1     ",
-    "05": "int                 5      -      0     # 0",
-    "06": "gtii                6      4      5     ",
-    "07": "jntr                13     6      0     ",
-    "08": "store_read          4      3      2     ",
-    "09": "push                4      0      0     ",
-    "10": "count               4      3      0     ",
-    "11": "push                4      0      0     ",
-    "12": "set_add             2      0      0     ",
-    "13": "store_next          3      4      0     ",
-    "14": "free                3      0      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "push_int            -      0      0     # 1",
-    "07": "set_agg             0      2      32    ",
-    "08": "table_next          1      2      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      48    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      14
+  4   count               4      3      1
+  5   int                 5      -      0     # 0
+  6   gtii                6      4      5
+  7   jntr                13     6      0
+  8   store_read          4      3      2
+  9   push                4      0      0
+ 10   count               4      3      0
+ 11   push                4      0      0
+ 12   set_add             2      0      0
+ 13   store_next          3      4      0
+ 14   free                3      0      0
+ 15   free                1      0      0
+ 16   ret                 2      0      -
+
+pushdown
+  0   set                 0      2      1
+  1   table_open          1      0      9     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   push_int            -      0      0     # 1
+  7   set_agg             0      2      32
+  8   table_next          1      2      0
+  9   free                1      0      0
+ 10   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select id, count(*) from test group by id having count(*) > 0;
-0 │ 1
-1 │ 1
-3 │ 1
-6 │ 1
-4 │ 1
-5 │ 1
-2 │ 1
+
+id  count
+───────────
+0   1
+1   1
+3   1
+6   1
+4   1
+5   1
+2   1
 explain select id, count(*) from test group by 1 having count(*) > 0;
-{
-  "main": {
-    "00": "send_all            0      0      48    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      14    ",
-    "04": "count               4      3      1     ",
-    "05": "int                 5      -      0     # 0",
-    "06": "gtii                6      4      5     ",
-    "07": "jntr                13     6      0     ",
-    "08": "store_read          4      3      2     ",
-    "09": "push                4      0      0     ",
-    "10": "count               4      3      0     ",
-    "11": "push                4      0      0     ",
-    "12": "set_add             2      0      0     ",
-    "13": "store_next          3      4      0     ",
-    "14": "free                3      0      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "push_int            -      0      0     # 1",
-    "07": "set_agg             0      2      32    ",
-    "08": "table_next          1      2      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      48    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      14
+  4   count               4      3      1
+  5   int                 5      -      0     # 0
+  6   gtii                6      4      5
+  7   jntr                13     6      0
+  8   store_read          4      3      2
+  9   push                4      0      0
+ 10   count               4      3      0
+ 11   push                4      0      0
+ 12   set_add             2      0      0
+ 13   store_next          3      4      0
+ 14   free                3      0      0
+ 15   free                1      0      0
+ 16   ret                 2      0      -
+
+pushdown
+  0   set                 0      2      1
+  1   table_open          1      0      9     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   push_int            -      0      0     # 1
+  7   set_agg             0      2      32
+  8   table_next          1      2      0
+  9   free                1      0      0
+ 10   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 explain select data, count(*) from test group by data having count(*) > 0;
-{
-  "main": {
-    "00": "send_all            0      0      48    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      14    ",
-    "04": "count               4      3      1     ",
-    "05": "int                 5      -      0     # 0",
-    "06": "gtii                6      4      5     ",
-    "07": "jntr                13     6      0     ",
-    "08": "store_read          4      3      2     ",
-    "09": "push                4      0      0     ",
-    "10": "count               4      3      0     ",
-    "11": "push                4      0      0     ",
-    "12": "set_add             2      0      0     ",
-    "13": "store_next          3      4      0     ",
-    "14": "free                3      0      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # data",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "push_int            -      0      0     # 1",
-    "07": "set_agg             0      2      32    ",
-    "08": "table_next          1      2      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      48    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      14
+  4   count               4      3      1
+  5   int                 5      -      0     # 0
+  6   gtii                6      4      5
+  7   jntr                13     6      0
+  8   store_read          4      3      2
+  9   push                4      0      0
+ 10   count               4      3      0
+ 11   push                4      0      0
+ 12   set_add             2      0      0
+ 13   store_next          3      4      0
+ 14   free                3      0      0
+ 15   free                1      0      0
+ 16   ret                 2      0      -
+
+pushdown
+  0   set                 0      2      1
+  1   table_open          1      0      9     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # data
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   push_int            -      0      0     # 1
+  7   set_agg             0      2      32
+  8   table_next          1      2      0
+  9   free                1      0      0
+ 10   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select data, count(*) from test group by data having count(*) > 0;
-0 │ 2
-1 │ 2
-null │ 1
-2 │ 1
-3 │ 1
+
+data  count
+─────────────
+0     2
+1     2
+null  1
+2     1
+3     1
 explain select data, count(*) from test group by 1 having count(*) > 0;
-{
-  "main": {
-    "00": "send_all            0      0      48    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      14    ",
-    "04": "count               4      3      1     ",
-    "05": "int                 5      -      0     # 0",
-    "06": "gtii                6      4      5     ",
-    "07": "jntr                13     6      0     ",
-    "08": "store_read          4      3      2     ",
-    "09": "push                4      0      0     ",
-    "10": "count               4      3      0     ",
-    "11": "push                4      0      0     ",
-    "12": "set_add             2      0      0     ",
-    "13": "store_next          3      4      0     ",
-    "14": "free                3      0      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # data",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "push_int            -      0      0     # 1",
-    "07": "set_agg             0      2      32    ",
-    "08": "table_next          1      2      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      48    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      14
+  4   count               4      3      1
+  5   int                 5      -      0     # 0
+  6   gtii                6      4      5
+  7   jntr                13     6      0
+  8   store_read          4      3      2
+  9   push                4      0      0
+ 10   count               4      3      0
+ 11   push                4      0      0
+ 12   set_add             2      0      0
+ 13   store_next          3      4      0
+ 14   free                3      0      0
+ 15   free                1      0      0
+ 16   ret                 2      0      -
+
+pushdown
+  0   set                 0      2      1
+  1   table_open          1      0      9     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # data
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   push_int            -      0      0     # 1
+  7   set_agg             0      2      32
+  8   table_next          1      2      0
+  9   free                1      0      0
+ 10   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 explain select data, count(*) from test group by data having count(*) > 1;
-{
-  "main": {
-    "00": "send_all            0      0      48    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      14    ",
-    "04": "count               4      3      1     ",
-    "05": "int                 5      -      0     # 1",
-    "06": "gtii                6      4      5     ",
-    "07": "jntr                13     6      0     ",
-    "08": "store_read          4      3      2     ",
-    "09": "push                4      0      0     ",
-    "10": "count               4      3      0     ",
-    "11": "push                4      0      0     ",
-    "12": "set_add             2      0      0     ",
-    "13": "store_next          3      4      0     ",
-    "14": "free                3      0      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # data",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "push_int            -      0      0     # 1",
-    "07": "set_agg             0      2      32    ",
-    "08": "table_next          1      2      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      48    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      14
+  4   count               4      3      1
+  5   int                 5      -      0     # 1
+  6   gtii                6      4      5
+  7   jntr                13     6      0
+  8   store_read          4      3      2
+  9   push                4      0      0
+ 10   count               4      3      0
+ 11   push                4      0      0
+ 12   set_add             2      0      0
+ 13   store_next          3      4      0
+ 14   free                3      0      0
+ 15   free                1      0      0
+ 16   ret                 2      0      -
+
+pushdown
+  0   set                 0      2      1
+  1   table_open          1      0      9     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # data
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   push_int            -      0      0     # 1
+  7   set_agg             0      2      32
+  8   table_next          1      2      0
+  9   free                1      0      0
+ 10   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select data, count(*) from test group by data having count(*) > 1;
-0 │ 2
-1 │ 2
+
+data  count
+─────────────
+0     2
+1     2
 explain select data, count(*) from test group by 1  having count(*) > 1;
-{
-  "main": {
-    "00": "send_all            0      0      48    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set                 2      2      0     ",
-    "03": "store_open          3      1      14    ",
-    "04": "count               4      3      1     ",
-    "05": "int                 5      -      0     # 1",
-    "06": "gtii                6      4      5     ",
-    "07": "jntr                13     6      0     ",
-    "08": "store_read          4      3      2     ",
-    "09": "push                4      0      0     ",
-    "10": "count               4      3      0     ",
-    "11": "push                4      0      0     ",
-    "12": "set_add             2      0      0     ",
-    "13": "store_next          3      4      0     ",
-    "14": "free                3      0      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      1     ",
-    "01": "table_open          1      0      9     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # data",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "push_int            -      0      0     # 1",
-    "07": "set_agg             0      2      32    ",
-    "08": "table_next          1      2      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      48    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set                 2      2      0
+  3   store_open          3      1      14
+  4   count               4      3      1
+  5   int                 5      -      0     # 1
+  6   gtii                6      4      5
+  7   jntr                13     6      0
+  8   store_read          4      3      2
+  9   push                4      0      0
+ 10   count               4      3      0
+ 11   push                4      0      0
+ 12   set_add             2      0      0
+ 13   store_next          3      4      0
+ 14   free                3      0      0
+ 15   free                1      0      0
+ 16   ret                 2      0      -
+
+pushdown
+  0   set                 0      2      1
+  1   table_open          1      0      9     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # data
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   push_int            -      0      0     # 1
+  7   set_agg             0      2      32
+  8   table_next          1      2      0
+  9   free                1      0      0
+ 10   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 # test: select as from table group by having alias (unsupported)
 select data, count(*) as c from test group by data having c > 1;
 error: select data, count(*) as c from test group by data having ❰c❱ ⟵ column 'c' must appear in the GROUP BY clause or be used by an aggregate function
 # test: select distinct from table group by
 explain select data, count(*) from test group by data order by data;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set_ordered         2      2      1     ",
-    "03": "store_open          3      1      12    ",
-    "04": "store_read          4      3      1     ",
-    "05": "push                4      0      0     ",
-    "06": "count               4      3      0     ",
-    "07": "push                4      0      0     ",
-    "08": "store_read          4      3      1     ",
-    "09": "push                4      0      0     ",
-    "10": "set_add             2      0      0     ",
-    "11": "store_next          3      4      0     ",
-    "12": "free                3      0      0     ",
-    "13": "free                1      0      0     ",
-    "14": "set_sort            2      0      0     ",
-    "15": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # data",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set_ordered         2      2      1
+  3   store_open          3      1      12
+  4   store_read          4      3      1
+  5   push                4      0      0
+  6   count               4      3      0
+  7   push                4      0      0
+  8   store_read          4      3      1
+  9   push                4      0      0
+ 10   set_add             2      0      0
+ 11   store_next          3      4      0
+ 12   free                3      0      0
+ 13   free                1      0      0
+ 14   set_sort            2      0      0
+ 15   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # data
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select data, count(*) from test group by data order by data;
-null │ 1
-0 │ 2
-1 │ 2
-2 │ 1
-3 │ 1
+
+data  count
+─────────────
+null  1
+0     2
+1     2
+2     1
+3     1
 explain select count(*) from test group by data order by data;
-{
-  "main": {
-    "00": "send_all            0      0      40    # amelie.test (select, closing)",
-    "01": "recv_aggs           1      0      32    ",
-    "02": "set_ordered         2      1      1     ",
-    "03": "store_open          3      1      10    ",
-    "04": "count               4      3      0     ",
-    "05": "push                4      0      0     ",
-    "06": "store_read          4      3      1     ",
-    "07": "push                4      0      0     ",
-    "08": "set_add             2      0      0     ",
-    "09": "store_next          3      4      0     ",
-    "10": "free                3      0      0     ",
-    "11": "free                1      0      0     ",
-    "12": "set_sort            2      0      0     ",
-    "13": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # data",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      40    # amelie.test (select, closing)
+  1   recv_aggs           1      0      32
+  2   set_ordered         2      1      1
+  3   store_open          3      1      10
+  4   count               4      3      0
+  5   push                4      0      0
+  6   store_read          4      3      1
+  7   push                4      0      0
+  8   set_add             2      0      0
+  9   store_next          3      4      0
+ 10   free                3      0      0
+ 11   free                1      0      0
+ 12   set_sort            2      0      0
+ 13   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # data
+  3   push                2      0      0
+  4   set_get             2      0      0
+  5   push_int            -      0      0     # 1
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 select count(*) from test group by data order by data;
+
+count
+─────
 1
 2
 2
 1
 1
 select distinct data from test;
+
+data
+────
 null
 0
 1
 2
 3
 select distinct on (data) data from test;
+
+data
+────
 null
 0
 1
 2
 3
 select distinct on (data) id from test;
+
+id
+──
 5
 0
 3
 4
 6
 select distinct data, count(*) from test group by data;
-null │ 1
-0 │ 2
-1 │ 2
-2 │ 1
-3 │ 1
+
+data  count
+─────────────
+null  1
+0     2
+1     2
+2     1
+3     1
 select distinct count(*), data from test group by data;
-1 │ null
-1 │ 2
-1 │ 3
-2 │ 0
-2 │ 1
+
+count  data
+─────────────
+1      null
+1      2
+1      3
+2      0
+2      1
 select distinct count(data), id from test group by id;
-0 │ 5
-1 │ 0
-1 │ 1
-1 │ 2
-1 │ 3
-1 │ 4
-1 │ 6
+
+count  id
+───────────
+0      5
+1      0
+1      1
+1      2
+1      3
+1      4
+1      6
 select distinct on (count(data)) data from test group by data;
 error: select distinct on (❰count❱ ⟵ unexpected aggregate function usage
 # test: select count(distinct) from table group by
 select id, count(distinct data), count(distinct data2) from test group by id;
-0 │ 1 │ 1
-1 │ 1 │ 1
-3 │ 1 │ 1
-6 │ 1 │ 1
-4 │ 1 │ 1
-5 │ 0 │ 0
-2 │ 1 │ 1
+
+id  count  count
+──────────────────
+0   1      1
+1   1      1
+3   1      1
+6   1      1
+4   1      1
+5   0      0
+2   1      1
 select count(data) from test group by data;
+
+count
+─────
 2
 2
 0
 1
 1
 select count(distinct data) from test group by data;
+
+count
+─────
 1
 1
 0
 1
 1
 select count(distinct data), count(distinct data2) from test group by true;
-4 │ 4
+
+count  count
+──────────────
+4      4
 # test: select (select count(distinct) from table group by)
 explain select (select count(distinct data) from test group by id);
-{
-  "main": {
-    "00": "set                 0      1      1     ",
-    "01": "set_distinct        0      1      3     ",
-    "02": "table_open          1      0      10    # amelie.test (primary) ",
-    "03": "table_readi32       2      1      -     # id",
-    "04": "push                2      0      0     ",
-    "05": "set_get             2      0      0     ",
-    "06": "table_readi32       3      1      -     # data",
-    "07": "push                3      0      0     ",
-    "08": "set_agg             0      2      32    ",
-    "09": "table_next          1      3      0     ",
-    "10": "free                1      0      0     ",
-    "11": "set_agg_merge       0      32     0     ",
-    "12": "set                 1      1      0     ",
-    "13": "store_open          2      0      18    ",
-    "14": "count               3      2      0     ",
-    "15": "push                3      0      0     ",
-    "16": "set_add             1      0      0     ",
-    "17": "store_next          2      14     0     ",
-    "18": "free                2      0      0     ",
-    "19": "free                0      0      0     ",
-    "20": "first               0      1      0     ",
-    "21": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "exclusive_ro", "select"]]
-}
+
+explain
+───────
+
+main
+  0   set                 0      1      1
+  1   set_distinct        0      1      3
+  2   table_open          1      0      10    # amelie.test (primary) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_get             2      0      0
+  6   table_readi32       3      1      -     # data
+  7   push                3      0      0
+  8   set_agg             0      2      32
+  9   table_next          1      3      0
+ 10   free                1      0      0
+ 11   set_agg_merge       0      32     0
+ 12   set                 1      1      0
+ 13   store_open          2      0      18
+ 14   count               3      2      0
+ 15   push                3      0      0
+ 16   set_add             1      0      0
+ 17   store_next          2      14     0
+ 18   free                2      0      0
+ 19   free                0      0      0
+ 20   first               0      1      0
+ 21   ret                 0      0      -
+
+access
+  •   amelie.test exclusive_ro [select]
 select (select count(distinct data) from test group by id);
+
+col1
+────
 1
 drop table test;
 drop table test_empty;

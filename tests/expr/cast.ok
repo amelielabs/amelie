@@ -15,46 +15,91 @@ select cast (1 as 1;
 error: select cast (1 as ❰1❱ ⟵ type name expected
 # test: cast (bool as bool)
 select cast (true as bool)::type;
-"bool"
+
+type
+────
+bool
 select cast (true as bool);
+
+bool
+────
 true
 select cast (false as bool);
+
+bool
+────
 false
 explain select cast (false as bool);
-{
-  "main": {
-    "00": "value               0      -      0     # bool",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # bool
+  1   ret                 0      0      -
 # test: cast (bool as int)
 select cast (true as int)::type;
-"int"
+
+type
+────
+int
 select cast (true as int);
+
+int
+───
 1
 select cast (false as int);
+
+int
+───
 0
 # test: cast (bool as double)
 select cast (true as double)::type;
-"double"
+
+type
+────
+double
 select cast (true as double);
+
+double
+──────
 1
 select cast (false as double);
+
+double
+──────
 0
 # test: cast (bool as string)
 select cast (true as string)::type;
-"string"
+
+type
+────
+string
 select cast (true as string);
-"true"
+
+string
+──────
+true
 select cast (false as string);
-"false"
+
+string
+──────
+false
 # test: cast (bool as json)
 select cast (true as json)::type;
-"json"
+
+type
+────
+json
 select cast (true as json);
+
+json
+────
 true
 select cast (false as json);
+
+json
+────
 false
 # test: cast (bool as date)
 select cast (true as date);
@@ -73,43 +118,76 @@ select cast (true as uuid);
 error: uuid(❰bool❱ ⟵ unsupported argument type
 # test: cast (int as bool)
 select cast (123 as bool)::type;
-"bool"
+
+type
+────
+bool
 select cast (123 as bool);
+
+bool
+────
 true
 # test: cast (int as int)
 select cast (123 as int)::type;
-"int"
+
+type
+────
+int
 select cast (123 as int);
+
+int
+───
 123
 # test: cast (int as double)
 select cast (123 as double)::type;
-"double"
+
+type
+────
+double
 select cast (123 as double);
+
+double
+──────
 123
 # test: cast (int as string)
 select cast (123 as string)::type;
-"string"
+
+type
+────
+string
 select cast (123 as string);
-"123"
+
+string
+──────
+123
 # test: cast (int as json)
 select cast (123 as json)::type;
-"json"
+
+type
+────
+json
 select cast (123 as json);
+
+json
+────
 123
 # test: cast (int as date)
 select cast (123 as date);
 error: date overflow
 # test: cast (int as timestamp)
 select cast (123 as timestamp);
-"1970-01-01 00:00:00.000123+00"
+
+timestamp
+─────────
+1970-01-01 00:00:00.000123+00
 explain select cast (123 as timestamp);
-{
-  "main": {
-    "00": "value               0      -      0     # timestamp",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # timestamp
+  1   ret                 0      0      -
 # test: cast (int as interval)
 select cast (123 as interval);
 error: interval(❰int❱ ⟵ unsupported argument type
@@ -121,28 +199,58 @@ select cast (123 as uuid);
 error: uuid(❰int❱ ⟵ unsupported argument type
 # test: cast (double as bool)
 select cast (123.321 as bool)::type;
-"bool"
+
+type
+────
+bool
 select cast (123.321 as bool);
+
+bool
+────
 true
 # test: cast (double as int)
 select cast (123.321 as int)::type;
-"int"
+
+type
+────
+int
 select cast (123.321 as int);
+
+int
+───
 123
 # test: cast (double as double)
 select cast (123.321 as double)::type;
-"double"
+
+type
+────
+double
 select cast (123.321 as double);
+
+double
+──────
 123.321
 # test: cast (double as string)
 select cast (123.321 as string)::type;
-"string"
+
+type
+────
+string
 select cast (123.321 as string);
-"123.321"
+
+string
+──────
+123.321
 # test: cast (double as json)
 select cast (123.321 as json)::type;
-"json"
+
+type
+────
+json
 select cast (123.321 as json);
+
+json
+────
 123.321
 # test: cast (double as date)
 select cast (123.321 as date);
@@ -165,8 +273,14 @@ error: bool(❰string❱ ⟵ failed to cast string to bool
 select cast ('string' as bool);
 error: bool(❰string❱ ⟵ failed to cast string to bool
 select cast ('true' as bool);
+
+bool
+────
 true
 select cast ('false' as bool);
+
+bool
+────
 false
 # test: cast (string as int)
 select cast ('string' as int)::type;
@@ -174,6 +288,9 @@ error: int(❰string❱ ⟵ failed to cast string
 select cast ('string' as int);
 error: int(❰string❱ ⟵ failed to cast string
 select cast ('123' as int);
+
+int
+───
 123
 # test: cast (string as double)
 select cast ('string' as double)::type;
@@ -184,19 +301,34 @@ select cast ('123.321' as double);
 error: double(❰string❱ ⟵ unsupported argument type
 # test: cast (string as string)
 select cast ('string' as string)::type;
-"string"
+
+type
+────
+string
 select cast ('string' as string);
-"string"
+
+string
+──────
+string
 # test: cast (string as json)
 select cast ('string' as json)::type;
-"json"
+
+type
+────
+json
 select cast ('string' as json);
+
+json
+────
 "string"
 # test: cast (string as date)
 select cast ('string' as date);
 error: invalid date 'string'
 select cast ('1970-00-00' as date);
-"1969-11-30"
+
+date
+────
+1969-11-30
 # test: cast (string as timestamp)
 select cast ('string' as timestamp);
 error: invalid timestamp 'string'
@@ -206,7 +338,10 @@ error: invalid timestamp '1970-00-00 00:00:00'
 select cast ('string' as interval);
 error: invalid interval 'string'
 select cast ('1 days 5 hours' as interval);
-"1 day 5 hours"
+
+interval
+────────
+1 day 5 hours
 # test: cast (string as vector)
 select cast ('string' as vector);
 error: vector(❰string❱ ⟵ unsupported argument type
@@ -216,55 +351,103 @@ error: vector(❰string❱ ⟵ unsupported argument type
 select cast ('string' as uuid);
 error: failed to parse uuid
 select cast ('00000000-0000-0000-0000-000000000000' as uuid);
-"00000000-0000-0000-0000-000000000000"
+
+uuid
+────
+00000000-0000-0000-0000-000000000000
 explain select cast ('00000000-0000-0000-0000-000000000000' as uuid);
-{
-  "main": {
-    "00": "value               0      -      0     # uuid",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # uuid
+  1   ret                 0      0      -
 # test: cast (json as bool)
 select cast (true::json as bool)::type;
-"bool"
+
+type
+────
+bool
 select cast (true::json as bool);
+
+bool
+────
 true
 # test: cast (json as int)
 select cast (123::json as int)::type;
-"int"
+
+type
+────
+int
 select cast (123::json as int);
+
+int
+───
 123
 # test: cast (json as double)
 select cast (123.321::json as double)::type;
-"double"
+
+type
+────
+double
 select cast (123.321::json as double);
+
+double
+──────
 123.321
 # test: cast (json as string)
 select cast ('str'::json as string)::type;
-"string"
+
+type
+────
+string
 select cast ('str'::json as string);
-"str"
+
+string
+──────
+str
 # test: cast (json as json)
 select cast ([1,2,3] as json)::type;
-"json"
+
+type
+────
+json
 select cast ([1,2,3] as json);
+
+json
+────
 [1, 2, 3]
 # test: cast (json as date)
 select cast ('0001-01-01'::json as date);
-"0001-01-01"
+
+date
+────
+0001-01-01
 # test: cast (json as timestamp)
 select cast ('1970-01-01 00:00:00'::json as timestamp);
-"1970-01-01 00:00:00+00"
+
+timestamp
+─────────
+1970-01-01 00:00:00+00
 # test: cast (json as interval)
 select cast ('1 days 5 hours'::json as interval);
-"1 day 5 hours"
+
+interval
+────────
+1 day 5 hours
 # test: cast (json as vector)
 select cast ([1,2,3] as vector);
+
+vector
+──────
 [1, 2, 3]
 # test: cast (json as uuid)
 select cast ('00000000-0000-0000-0000-000000000000'::json as uuid);
-"00000000-0000-0000-0000-000000000000"
+
+uuid
+────
+00000000-0000-0000-0000-000000000000
 # test: cast (date as bool)
 select cast (date '1970-01-01' as bool)::type;
 error: bool(❰date❱ ⟵ unsupported argument type
@@ -272,30 +455,60 @@ select cast (date '1970-01-01' as bool);
 error: bool(❰date❱ ⟵ unsupported argument type
 # test: cast (date as int)
 select cast (date '1970-01-01' as int)::type;
-"int"
+
+type
+────
+int
 select cast (date '1970-01-01' as int);
+
+int
+───
 2440588
 # test: cast (date as double)
 select cast (date '1970-01-01' as double)::type;
-"double"
+
+type
+────
+double
 select cast (date '1970-01-01' as double);
+
+double
+──────
 2.44059e+06
 # test: cast (date as string)
 select cast (date '1970-01-01' as string)::type;
-"string"
+
+type
+────
+string
 select cast (date '1970-01-01' as string);
-"1970-01-01"
+
+string
+──────
+1970-01-01
 # test: cast (date as json)
 select cast (date '1970-01-01' as json)::type;
-"json"
+
+type
+────
+json
 select cast (date '1970-01-01' as json);
+
+json
+────
 "1970-01-01"
 # test: cast (date as date)
 select cast (date '1970-01-01' as date);
-"1970-01-01"
+
+date
+────
+1970-01-01
 # test: cast (date as timestamp)
 select cast (date '1970-01-01' as timestamp);
-"1970-01-01 00:00:00+00"
+
+timestamp
+─────────
+1970-01-01 00:00:00+00
 # test: cast (date as interval)
 select cast (date '1970-01-01' as interval);
 error: interval(❰date❱ ⟵ unsupported argument type
@@ -312,30 +525,60 @@ select cast (timestamp '1970-01-01 00:00:00.99' as bool);
 error: bool(❰timestamp❱ ⟵ unsupported argument type
 # test: cast (timestamp as int)
 select cast (timestamp '1970-01-01 00:00:00.99' as int)::type;
-"int"
+
+type
+────
+int
 select cast (timestamp '1970-01-01 00:00:00.99' as int);
+
+int
+───
 990000
 # test: cast (timestamp as double)
 select cast (timestamp '1970-01-01 00:00:00.99' as double)::type;
-"double"
+
+type
+────
+double
 select cast (timestamp '1970-01-01 00:00:00.99' as double);
+
+double
+──────
 990000
 # test: cast (timestamp as string)
 select cast (timestamp '1970-01-01 00:00:00.99' as string)::type;
-"string"
+
+type
+────
+string
 select cast (timestamp '1970-01-01 00:00:00.99' as string);
-"1970-01-01 00:00:00.990+00"
+
+string
+──────
+1970-01-01 00:00:00.990+00
 # test: cast (timestamp as json)
 select cast (timestamp '1970-01-01 00:00:00.99' as json)::type;
-"json"
+
+type
+────
+json
 select cast (timestamp '1970-01-01 00:00:00.99' as json);
+
+json
+────
 "1970-01-01 00:00:00.990+00"
 # test: cast (timestamp as date)
 select cast (timestamp '1970-01-01 00:00:00.99' as date);
-"1970-01-01"
+
+date
+────
+1970-01-01
 # test: cast (timestamp as timestamp)
 select cast (timestamp '1970-01-01 00:00:00.99' as timestamp);
-"1970-01-01 00:00:00.990+00"
+
+timestamp
+─────────
+1970-01-01 00:00:00.990+00
 # test: cast (timestamp as interval)
 select cast (timestamp '1970-01-01 00:00:00.99' as interval);
 error: interval(❰timestamp❱ ⟵ unsupported argument type
@@ -347,8 +590,14 @@ select cast (timestamp '1970-01-01 00:00:00.99' as uuid);
 error: uuid(❰timestamp❱ ⟵ unsupported argument type
 # test: cast (interval as bool)
 select cast (interval '5 days 5 hours' as bool)::type;
-"bool"
+
+type
+────
+bool
 select cast (interval '5 days 5 hours' as bool);
+
+bool
+────
 true
 # test: cast (interval as int)
 select cast (interval '5 days 5 hours' as int)::type;
@@ -362,13 +611,25 @@ select cast (interval '5 days 5 hours' as double);
 error: double(❰interval❱ ⟵ unsupported argument type
 # test: cast (interval as string)
 select cast (interval '5 days 5 hours' as string)::type;
-"string"
+
+type
+────
+string
 select cast (interval '5 days 5 hours' as string);
-"5 days 5 hours"
+
+string
+──────
+5 days 5 hours
 # test: cast (interval as json)
 select cast (interval '5 days 5 hours' as json)::type;
-"json"
+
+type
+────
+json
 select cast (interval '5 days 5 hours' as json);
+
+json
+────
 "5 days 5 hours"
 # test: cast (interval as date)
 select cast (interval '5 days 5 hours' as date);
@@ -378,7 +639,10 @@ select cast (interval '5 days 5 hours' as timestamp);
 error: timestamp(❰interval❱ ⟵ unsupported argument type
 # test: cast (interval as interval)
 select cast (interval '5 days 5 hours' as interval);
-"5 days 5 hours"
+
+interval
+────────
+5 days 5 hours
 # test: cast (interval as vector)
 select cast (interval '5 days 5 hours' as vector);
 error: vector(❰interval❱ ⟵ unsupported argument type
@@ -402,13 +666,25 @@ select cast (vector [1,2,3] as double);
 error: double(❰vector❱ ⟵ unsupported argument type
 # test: cast (vector as string)
 select cast (vector [1,2,3] as string)::type;
-"string"
+
+type
+────
+string
 select cast (vector [1,2,3] as string);
-"[1, 2, 3]"
+
+string
+──────
+[1, 2, 3]
 # test: cast (vector as json)
 select cast (vector [1,2,3] as json)::type;
-"json"
+
+type
+────
+json
 select cast (vector [1,2,3] as json);
+
+json
+────
 [1, 2, 3]
 # test: cast (vector as date)
 select cast (vector [1,2,3] as date);
@@ -421,6 +697,9 @@ select cast (vector [1,2,3] as interval);
 error: interval(❰vector❱ ⟵ unsupported argument type
 # test: cast (vector as vector)
 select cast (vector [1,2,3] as vector);
+
+vector
+──────
 [1, 2, 3]
 # test: cast (vector as uuid)
 select cast (vector [1,2,3] as uuid);
@@ -442,13 +721,25 @@ select cast (uuid '00000000-0000-0000-0000-000000000000' as double);
 error: double(❰uuid❱ ⟵ unsupported argument type
 # test: cast (uuid as string)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as string)::type;
-"string"
+
+type
+────
+string
 select cast (uuid '00000000-0000-0000-0000-000000000000' as string);
-"00000000-0000-0000-0000-000000000000"
+
+string
+──────
+00000000-0000-0000-0000-000000000000
 # test: cast (uuid as json)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as json)::type;
-"json"
+
+type
+────
+json
 select cast (uuid '00000000-0000-0000-0000-000000000000' as json);
+
+json
+────
 "00000000-0000-0000-0000-000000000000"
 # test: cast (uuid as date)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as date);
@@ -464,46 +755,94 @@ select cast (uuid '00000000-0000-0000-0000-000000000000' as vector);
 error: vector(❰uuid❱ ⟵ unsupported argument type
 # test: cast (uuid as uuid)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as uuid);
-"00000000-0000-0000-0000-000000000000"
+
+uuid
+────
+00000000-0000-0000-0000-000000000000
 # test: cast (null as bool)
 select cast (null as bool)::type;
-"null"
+
+type
+────
+null
 select cast (null as bool);
+
+bool
+────
 null
 # test: cast (null as int)
 select cast (null as int)::type;
-"null"
+
+type
+────
+null
 select cast (null as int);
+
+int
+───
 null
 # test: cast (null as double)
 select cast (null as double)::type;
-"null"
+
+type
+────
+null
 select cast (null as double);
+
+double
+──────
 null
 # test: cast (null as string)
 select cast (null as string)::type;
-"null"
+
+type
+────
+null
 select cast (null as string);
+
+string
+──────
 null
 # test: cast (null as json)
 select cast (null as json)::type;
-"json"
+
+type
+────
+json
 select cast (null as json);
+
+json
+────
 null
 # test: cast (null as date)
 select cast (null as date);
+
+date
+────
 null
 # test: cast (null as timestamp)
 select cast (null as timestamp);
+
+timestamp
+─────────
 null
 # test: cast (null as interval)
 select cast (null as interval);
+
+interval
+────────
 null
 # test: cast (null as vector)
 select cast (null as vector);
+
+vector
+──────
 null
 # test: cast (null as uuid)
 select cast (null as uuid);
+
+uuid
+────
 null
 disconnect S0;
 close E0;

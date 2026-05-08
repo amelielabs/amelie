@@ -331,32 +331,38 @@ OpDesc ops[] =
 };
 
 static inline void
-op_write(Buf* output, Op* op, bool a, bool b, bool c, char *fmt, ...)
+op_write(Buf* buf, Op* op, bool a, bool b, bool c, char *fmt, ...)
 {
-	buf_format(output, "{-20s}", ops[op->op].name);
+	buf_format(buf, "{-20s}", ops[op->op].name);
 
 	if (a)
-		buf_format(output, "{-6" PRIi64 "} ", op->a);
+		buf_format(buf, "{-6" PRIi64 "} ", op->a);
 	else
-		buf_format(output, "{-6s} ", "-");
+		buf_format(buf, "{-6s} ", "-");
 
 	if (b)
-		buf_format(output, "{-6" PRIi64 "} ", op->b);
+		buf_format(buf, "{-6" PRIi64 "} ", op->b);
 	else
-		buf_format(output, "{-6s} ", "-");
-
-	if (c)
-		buf_format(output, "{-6" PRIi64 "}", op->c);
-	else
-		buf_format(output, "{-6s}", "-");
+		buf_format(buf, "{-6s} ", "-");
 
 	if (fmt)
 	{
-		buf_format(output, "# ");
+		if (c)
+			buf_format(buf, "{-6" PRIi64 "}", op->c);
+		else
+			buf_format(buf, "{-6s}", "-");
+
+		buf_format(buf, "# ");
 		va_list args;
 		va_start(args, fmt);
-		buf_formatv(output, fmt, args);
+		buf_formatv(buf, fmt, args);
 		va_end(args);
+	} else
+	{
+		if (c)
+			buf_format(buf, "{" PRIi64 "}", op->c);
+		else
+			buf_format(buf, "-");
 	}
 }
 
@@ -375,82 +381,76 @@ op_dump_send(Program* self, Code* code, Op* op, Buf* buf, Send* send,
 void
 op_dump(Program* self, Code* code, Buf* buf)
 {
-	auto data   = &self->code_data;
-	auto output = buf_create();
-	defer_buf(output);
-
-	encode_obj(buf);
-	auto op  = (Op*)code->code.start;
-	auto end = (Op*)code->code.position;
+	auto data = &self->code_data;
+	auto op   = (Op*)code->code.start;
+	auto end  = (Op*)code->code.position;
 	for (int pos = 0; op < end; pos++)
 	{
-		// "pos": "op description"
-		char pos_sz[32];
-		int  pos_sz_len = format(pos_sz, sizeof(pos_sz), "{02d}", pos);
-		encode_raw(buf, pos_sz, pos_sz_len);
+		// pos
+		buf_format(buf, "{3d}   ", pos);
 
-		buf_reset(output);
+		// operation
 		switch (op->op) {
 		case CPUSH_INT:
 		case CPUSH_TIMESTAMP:
 		{
-			op_write(output, op, false, true, true, "{i64}", op->a);
+			op_write(buf, op, false, true, true, "{i64}", op->a);
 			break;
 		}
 		case CINT:
 		case CTIMESTAMP:
 		{
-			op_write(output, op, true, false, true, "{i64}", op->b);
+			op_write(buf, op, true, false, true, "{i64}", op->b);
 			break;
 		}
 		case CPUSH_STRING:
 		{
 			Str str;
 			code_data_at_string(data, op->a, &str);
-			op_write(output, op, true, true, true, "{str}", &str);
+			op_write(buf, op, true, true, true, "{str}", &str);
 			break;
 		}
 		case CSTRING:
 		{
 			Str str;
 			code_data_at_string(data, op->b, &str);
-			op_write(output, op, true, true, true, "{str}", &str);
+			op_write(buf, op, true, true, true, "{str}", &str);
 			break;
 		}
 		case CPUSH_DOUBLE:
 		{
 			double dbl = code_data_at_double(data, op->a);
-			op_write(output, op, true, true, true, "{g}", dbl);
+			op_write(buf, op, true, true, true, "{g}", dbl);
 			break;
 		}
 		case CDOUBLE:
 		{
 			double dbl = code_data_at_double(data, op->b);
-			op_write(output, op, true, true, true, "{g}", dbl);
+			op_write(buf, op, true, true, true, "{g}", dbl);
 			break;
 		}
 
 		case CPUSH_VALUE:
 		{
 			auto value = (Value*)op->a;
-			op_write(output, op, false, true, true, "{s}",
+			op_write(buf, op, false, true, true, "{s}",
 			         type_of(value->type));
 			break;
 		}
 
 		case CSET_PTR:
-			op_write(output, op, true, false, true, NULL);
+			op_write(buf, op, true, false, true, NULL);
 			break;
 		case CSEND_SHARD:
-			op_dump_send(self, code, op, output, send_at(data, op->d),
+			op_dump_send(self, code, op, buf, send_at(data, op->d),
 			             true, true, true);
 			break;
 		case CSEND_LOOKUP:
-			op_dump_send(self, code, op, output, send_at(data, op->c),
+			op_dump_send(self, code, op, buf, send_at(data, op->c),
 			             true, false, true);
 			break;
 		case CSEND_ALL:
-			op_dump_send(self, code, op, output, send_at(data, op->c),
+			op_dump_send(self, code, op, buf, send_at(data, op->c),
 			             true, true, true);
 			break;
 		case CINSERT:
@@ -458,12 +458,12 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto table    = (Table*)op->a;
 			auto snapshot = (Snapshot*)op->b;
 			if (snapshot->rel->type == REL_TABLE)
-				op_write(output, op, false, false, false,
+				op_write(buf, op, false, false, false,
 				         "{str}.{str}",
 				         &table->config->user, &table->config->name);
 			else
 			if (snapshot->rel->type == REL_BRANCH)
-				op_write(output, op, false, false, false,
+				op_write(buf, op, false, false, false,
 				         "{str}.{str} [{str}.{str}]",
 				         &table->config->user, &table->config->name,
 				         snapshot->rel->user,
@@ -486,7 +486,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 
 			auto snapshot = open->snapshot;
 			if (snapshot->rel->type == REL_TABLE)
-				op_write(output, op, true, true, true,
+				op_write(buf, op, true, true, true,
 				         "{str}.{str} ({str}) {buf}",
 				         &open->table->config->user,
 				         &open->table->config->name,
@@ -494,7 +494,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 				         desc);
 			else
 			if (snapshot->rel->type == REL_BRANCH)
-				op_write(output, op, true, true, true,
+				op_write(buf, op, true, true, true,
 				         "{str}.{str} ({str}) [{str}.{str}] {buf}",
 				         &open->table->config->user,
 				         &open->table->config->name,
@@ -509,13 +509,13 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto table    = (Table*)op->b;
 			auto snapshot = (Snapshot*)op->c;
 			if (snapshot->rel->type == REL_TABLE)
-				op_write(output, op, true, false, false,
+				op_write(buf, op, true, false, false,
 				         "{str}.{str}",
 				         &table->config->user,
 				         &table->config->name);
 			else
 			if (snapshot->rel->type == REL_BRANCH)
-				op_write(output, op, true, false, false,
+				op_write(buf, op, true, false, false,
 				         "{str}.{str} [{str}.{str}]",
 				         &table->config->user,
 				         &table->config->name,
@@ -539,68 +539,67 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CTABLE_READU:
 		{
 			auto column = (Column*)op->c;
-			op_write(output, op, true, true, false, "{str}",
+			op_write(buf, op, true, true, false, "{str}",
 			         &column->name);
 			break;
 		}
 		case CCALL:
 		{
 			auto function = (Function*)op->b;
-			op_write(output, op, true, false, true, "{str}()",
+			op_write(buf, op, true, false, true, "{str}()",
 			         &function->name);
 			break;
 		}
 		case CCALL_UDF:
 		{
 			auto udf = (Udf*)op->b;
-			op_write(output, op, true, false, false, "{str}.{str}()",
+			op_write(buf, op, true, false, false, "{str}.{str}()",
 			         &udf->config->user, &udf->config->name);
 			break;
 		}
 		case CPUBLISH:
 		{
 			auto topic = (Topic*)op->a;
-			op_write(output, op, false, true, false, "{str}.{str}",
+			op_write(buf, op, false, true, false, "{str}.{str}",
 			         &topic->config->user, &topic->config->name);
 			break;
 		}
 		case CSUBSCRIPTION:
 		{
 			auto sub = (Sub*)op->b;
-			op_write(output, op, true, false, false, "{str}.{str}",
+			op_write(buf, op, true, false, false, "{str}.{str}",
 			         &sub->config->user, &sub->config->name);
 			break;
 		};
 		case CACK:
 		{
 			auto sub = (Sub*)op->a;
-			op_write(output, op, false, true, false, "{str}.{str}",
+			op_write(buf, op, false, true, false, "{str}.{str}",
 			         &sub->config->user, &sub->config->name);
 			break;
 		};
 		case CVALUE:
 		{
 			auto value = (Value*)op->b;
-			op_write(output, op, true, false, true, "{s}",
+			op_write(buf, op, true, false, true, "{s}",
 			         type_of(value->type));
 			break;
 		}
 		case CLOCK:
 		case CUNLOCK:
 		{
-			op_write(output, op, false, false, false, NULL);
+			op_write(buf, op, false, false, false, NULL);
 			break;
 		}
 		case CRET:
-			op_write(output, op, true, true, false, NULL);
+			op_write(buf, op, true, true, false, NULL);
 			break;
 		default:
-			op_write(output, op, true, true, true, NULL);
+			op_write(buf, op, true, true, true, NULL);
 			break;
 		}
-		encode_raw(buf, (char*)output->start, buf_size(output));
+
+		buf_write(buf, "\n", 1);
 		op++;
 	}
-
-	encode_obj_end(buf);
 }

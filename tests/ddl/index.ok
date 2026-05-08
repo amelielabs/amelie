@@ -29,6 +29,9 @@ error: create index i on test (❰)❱ ⟵ name expected
 # test: create index
 create index i on test (a);
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,
@@ -56,6 +59,9 @@ create index i on test (a);
 error: table 'test' index 'i': already exists
 create index if not exists i on test (a);
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,
@@ -82,6 +88,9 @@ drop index i on test;
 # test: create index (compound key)
 create index i on test (b, a);
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,
@@ -111,6 +120,9 @@ drop index i on test;
 # test: create index (key reuse)
 create index i on test (a, a);
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,
@@ -142,6 +154,9 @@ create unique index i on test (a);
 # test: create index (asc/desc)
 create unique index j on test (a asc, b desc, id);
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,
@@ -183,6 +198,9 @@ create index i on test (a) using;
 error: create index i on test (a) using❰;❱ ⟵ index type expected
 create index i on test (a) using hash;
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,
@@ -208,6 +226,9 @@ select show('table', 'test', true).indexes;
 drop index i on test;
 create index i on test (a) using tree;
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,
@@ -253,6 +274,9 @@ error: table 'test' index 'i': not exists
 # test: drop index
 create index i on test (a);
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,
@@ -277,6 +301,9 @@ select show('table', 'test', true).indexes;
 }]
 drop index i on test;
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,
@@ -295,7 +322,10 @@ drop index if exists i on test;
 create index i on test (a);
 create function dep() begin insert into test values (1,2,3); end;
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "dep",
   "text": "begin insert into test values (1,2,3); end",
@@ -303,7 +333,7 @@ show functions verbose;
   "args": [],
   "returning": [],
   "grants": []
-}]
+}
 drop index i on test;
 error: function 'amelie.dep' depends on table 'test'
 # test: drop index after udf drop
@@ -345,6 +375,9 @@ error: alter index i on test rename to❰;❱ ⟵ name expected
 # test: alter index rename
 create index i on test (a);
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,
@@ -369,6 +402,9 @@ select show('table', 'test', true).indexes;
 }]
 alter index i on test rename to j;
 select show('table', 'test', true).indexes;
+
+col1
+────
 [{
   "name": "primary",
   "type": 2,

@@ -17,6 +17,7 @@ typedef struct Output   Output;
 struct OutputIf
 {
 	void (*write)(Output*, Columns*, Value*);
+	void (*write_str)(Output*, Str*, Str*);
 	void (*write_data)(Output*, Str*, uint8_t*, bool);
 	void (*write_error)(Output*, Error*);
 	void (*write_none)(Output*);
@@ -50,6 +51,12 @@ static inline void
 output_value(Output* self, Columns* columns, Value* value)
 {
 	self->iface->write(self, columns, value);
+}
+
+static inline void
+output_str(Output* self, Str* column, Str* str)
+{
+	self->iface->write_str(self, column, str);
 }
 
 static inline void

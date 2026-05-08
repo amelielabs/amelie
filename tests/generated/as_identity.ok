@@ -14,6 +14,9 @@ error: create table test (id int primary key, data int as identity❰;❱ ⟵ ) 
 # test: as identity primary key
 create table test (id int primary key as identity);
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -25,6 +28,9 @@ insert into test () values ();
 insert into test () values ();
 insert into test () values ();
 select * from test;
+
+id
+──
 0
 1
 2

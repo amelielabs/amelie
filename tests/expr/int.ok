@@ -2,35 +2,56 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: int
 explain select 0;
-{
-  "main": {
-    "00": "int                 0      -      0     # 0",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 0
+  1   ret                 0      0      -
 select 0;
+
+col1
+────
 0
 select 1234;
+
+col1
+────
 1234
 explain select -1234;
-{
-  "main": {
-    "00": "int                 0      -      0     # -1234",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # -1234
+  1   ret                 0      0      -
 select -1234;
+
+col1
+────
 -1234
 # test: int limits
 select 4294967295;
+
+col1
+────
 4294967295
 select -4294967295;
+
+col1
+────
 -4294967295
 select 9223372036854775807;
+
+col1
+────
 9223372036854775807
 select -9223372036854775807;
+
+col1
+────
 -9223372036854775807
 # test: int overflow
 select -92233720368547758077;
@@ -41,81 +62,114 @@ select 184467440737095516155;
 error: select ⟵ int overflow
 # test: int = bool
 select 1 = true;
+
+col1
+────
 true
 select 1 = false;
+
+col1
+────
 false
 explain select 1 = true;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "bool                1      1      0     ",
-    "02": "equii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   bool                1      1      0
+  2   equii               2      0      1
+  3   ret                 2      0      -
 # test: int = int
 select 1 = 1;
+
+col1
+────
 true
 select 1 = 123;
+
+col1
+────
 false
 select 1 = 0;
+
+col1
+────
 false
 explain select 1 = 18;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "int                 1      -      0     # 18",
-    "02": "equii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   int                 1      -      0     # 18
+  2   equii               2      0      1
+  3   ret                 2      0      -
 # test: int = double
 select 1 = 1.0;
+
+col1
+────
 true
 select 1 = 12.3;
+
+col1
+────
 false
 select 1 = 0.14;
+
+col1
+────
 false
 explain select 1 = 1.0000;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "double              1      0      0     # 1",
-    "02": "equif               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1
+  2   equif               2      0      1
+  3   ret                 2      0      -
 # test: int = timestamp
 select 0 = '1970-01-01 00:00:00'::timestamp;
+
+col1
+────
 true
 explain select 0 = '1970-01-01 00:00:00'::timestamp;
-{
-  "main": {
-    "00": "int                 0      -      0     # 0",
-    "01": "value               1      -      0     # timestamp",
-    "02": "equii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 0
+  1   value               1      -      0     # timestamp
+  2   equii               2      0      1
+  3   ret                 2      0      -
 select 0 = current_timestamp;
+
+col1
+────
 false
 # test: int = null
 select 1 = null;
+
+col1
+────
 null
 explain select 1 = null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: int = unsupported
 select 1 = [1,2,3];
 error: select 1 = ❰[❱ ⟵ operation int = json is not supported
@@ -123,86 +177,119 @@ select 1 = [1,2,3]::vector;
 error: select 1 = [1,2,3]::❰vector❱ ⟵ operation int = vector is not supported
 # test: int <> bool
 select 1 <> true;
+
+col1
+────
 false
 select 1 <> false;
+
+col1
+────
 true
 explain select 1 <> true;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "bool                1      1      0     ",
-    "02": "equii               2      0      1     ",
-    "03": "not                 0      2      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   bool                1      1      0
+  2   equii               2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 # test: int <> int
 select 1 <> 1;
+
+col1
+────
 false
 select 1 <> 123;
+
+col1
+────
 true
 select 1 <> 0;
+
+col1
+────
 true
 explain select 1 <> 18;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "int                 1      -      0     # 18",
-    "02": "equii               2      0      1     ",
-    "03": "not                 0      2      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   int                 1      -      0     # 18
+  2   equii               2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 # test: int <> double
 select 1 <> 1.0;
+
+col1
+────
 false
 select 1 <> 12.3;
+
+col1
+────
 true
 select 1 <> 0.14;
+
+col1
+────
 true
 explain select 1 <> 1.0000;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "double              1      0      0     # 1",
-    "02": "equif               2      0      1     ",
-    "03": "not                 0      2      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1
+  2   equif               2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 # test: int <> timestamp
 select 0 <> '1970-01-01 00:00:00'::timestamp;
+
+col1
+────
 false
 explain select 0 <> '1970-01-01 00:00:00'::timestamp;
-{
-  "main": {
-    "00": "int                 0      -      0     # 0",
-    "01": "value               1      -      0     # timestamp",
-    "02": "equii               2      0      1     ",
-    "03": "not                 0      2      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 0
+  1   value               1      -      0     # timestamp
+  2   equii               2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 select 0 <> current_timestamp;
+
+col1
+────
 true
 # test: int <> null
 select 1 <> null;
+
+col1
+────
 null
 explain select 1 <> null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "not                 0      2      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 # test: int <> unsupported
 select 1 <> [1,2,3];
 error: select 1 <> ❰[❱ ⟵ operation int = json is not supported
@@ -210,387 +297,576 @@ select 1 <> [1,2,3]::vector;
 error: select 1 <> [1,2,3]::❰vector❱ ⟵ operation int = vector is not supported
 # test: int >= int
 select 1 >= 0;
+
+col1
+────
 true
 select 1 >= 1;
+
+col1
+────
 true
 select 1 >= 2;
+
+col1
+────
 false
 select -1 >= -0;
+
+col1
+────
 false
 select -1 >= 0;
+
+col1
+────
 false
 select -1 >= -10;
+
+col1
+────
 true
 select -11 >= -10;
+
+col1
+────
 false
 explain select -1 >= -10;
-{
-  "main": {
-    "00": "int                 0      -      0     # -1",
-    "01": "int                 1      -      0     # -10",
-    "02": "gteii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # -1
+  1   int                 1      -      0     # -10
+  2   gteii               2      0      1
+  3   ret                 2      0      -
 # test: int >= double
 select 1 >= 0.11;
+
+col1
+────
 true
 select 1 >= 1.11;
+
+col1
+────
 false
 explain select 1 >= 1.11;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "double              1      0      0     # 1.11",
-    "02": "gteif               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1.11
+  2   gteif               2      0      1
+  3   ret                 2      0      -
 # test: int >= timestamp
 select 1 >= current_timestamp;
+
+col1
+────
 false
 select 0 >= '1970-01-01 00:00:00'::timestamp;
+
+col1
+────
 true
 explain select 0 >= '1970-01-01 00:00:00'::timestamp;
-{
-  "main": {
-    "00": "int                 0      -      0     # 0",
-    "01": "value               1      -      0     # timestamp",
-    "02": "gteii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 0
+  1   value               1      -      0     # timestamp
+  2   gteii               2      0      1
+  3   ret                 2      0      -
 # test: int >= null
 select 1 >= null;
+
+col1
+────
 null
 explain select 1 >= null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: int >= unsupported
 explain select 1 >= [];
 error: explain select 1 >= ❰[❱ ⟵ operation int >= json is not supported
 # test: int > int
 select 1 > 0;
+
+col1
+────
 true
 select 1 > 1;
+
+col1
+────
 false
 select 1 > 2;
+
+col1
+────
 false
 select -1 > -0;
+
+col1
+────
 false
 select -1 > 0;
+
+col1
+────
 false
 select -1 > -10;
+
+col1
+────
 true
 select -11 > -10;
+
+col1
+────
 false
 explain select -1 > -10;
-{
-  "main": {
-    "00": "int                 0      -      0     # -1",
-    "01": "int                 1      -      0     # -10",
-    "02": "gtii                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # -1
+  1   int                 1      -      0     # -10
+  2   gtii                2      0      1
+  3   ret                 2      0      -
 # test: int > double
 select 1 > 0.11;
+
+col1
+────
 true
 select 1 > 1.11;
+
+col1
+────
 false
 explain select 1 > 1.11;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "double              1      0      0     # 1.11",
-    "02": "gtif                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1.11
+  2   gtif                2      0      1
+  3   ret                 2      0      -
 # test: int > timestamp
 select 1 > current_timestamp;
+
+col1
+────
 false
 select 0 > '1970-01-01 00:00:00'::timestamp;
+
+col1
+────
 false
 explain select 0 > '1970-01-01 00:00:00'::timestamp;
-{
-  "main": {
-    "00": "int                 0      -      0     # 0",
-    "01": "value               1      -      0     # timestamp",
-    "02": "gtii                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 0
+  1   value               1      -      0     # timestamp
+  2   gtii                2      0      1
+  3   ret                 2      0      -
 # test: int > null
 select 1 > null;
+
+col1
+────
 null
 explain select 1 > null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: int > unsupported
 explain select 1 > [];
 error: explain select 1 > ❰[❱ ⟵ operation int > json is not supported
 # test: int <= int
 select 1 <= 0;
+
+col1
+────
 false
 select 1 <= 1;
+
+col1
+────
 true
 select 1 <= 2;
+
+col1
+────
 true
 select -1 <= -0;
+
+col1
+────
 true
 select -1 <= 0;
+
+col1
+────
 true
 select -1 <= -10;
+
+col1
+────
 false
 select -11 <= -10;
+
+col1
+────
 true
 explain select -1 <= -10;
-{
-  "main": {
-    "00": "int                 0      -      0     # -1",
-    "01": "int                 1      -      0     # -10",
-    "02": "lteii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # -1
+  1   int                 1      -      0     # -10
+  2   lteii               2      0      1
+  3   ret                 2      0      -
 # test: int <= double
 select 1 <= 0.11;
+
+col1
+────
 false
 select 1 <= 1.11;
+
+col1
+────
 true
 explain select 1 <= 1.11;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "double              1      0      0     # 1.11",
-    "02": "lteif               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1.11
+  2   lteif               2      0      1
+  3   ret                 2      0      -
 # test: int <= timestamp
 select 1 <= current_timestamp;
+
+col1
+────
 true
 select 0 <= '1970-01-01 00:00:00'::timestamp;
+
+col1
+────
 true
 explain select 0 <= '1970-01-01 00:00:00'::timestamp;
-{
-  "main": {
-    "00": "int                 0      -      0     # 0",
-    "01": "value               1      -      0     # timestamp",
-    "02": "lteii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 0
+  1   value               1      -      0     # timestamp
+  2   lteii               2      0      1
+  3   ret                 2      0      -
 # test: int <= null
 select 1 <= null;
+
+col1
+────
 null
 explain select 1 <= null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: int <= unsupported
 explain select 1 <= [];
 error: explain select 1 <= ❰[❱ ⟵ operation int <= json is not supported
 # test: int < int
 select 1 < 0;
+
+col1
+────
 false
 select 1 < 1;
+
+col1
+────
 false
 select 1 < 2;
+
+col1
+────
 true
 select -1 < -0;
+
+col1
+────
 true
 select -1 < 0;
+
+col1
+────
 true
 select -1 < -10;
+
+col1
+────
 false
 select -11 < -10;
+
+col1
+────
 true
 explain select -1 < -10;
-{
-  "main": {
-    "00": "int                 0      -      0     # -1",
-    "01": "int                 1      -      0     # -10",
-    "02": "ltii                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # -1
+  1   int                 1      -      0     # -10
+  2   ltii                2      0      1
+  3   ret                 2      0      -
 # test: int < double
 select 1 < 0.11;
+
+col1
+────
 false
 select 1 < 1.11;
+
+col1
+────
 true
 explain select 1 < 1.11;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "double              1      0      0     # 1.11",
-    "02": "ltif                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1.11
+  2   ltif                2      0      1
+  3   ret                 2      0      -
 # test: int < timestamp
 select 1 < current_timestamp;
+
+col1
+────
 true
 select 0 < '1970-01-01 00:00:00'::timestamp;
+
+col1
+────
 false
 explain select 0 < '1970-01-01 00:00:00'::timestamp;
-{
-  "main": {
-    "00": "int                 0      -      0     # 0",
-    "01": "value               1      -      0     # timestamp",
-    "02": "ltii                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 0
+  1   value               1      -      0     # timestamp
+  2   ltii                2      0      1
+  3   ret                 2      0      -
 # test: int < null
 select 1 < null;
+
+col1
+────
 null
 explain select 1 < null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: int < unsupported
 explain select 1 < [];
 error: explain select 1 < ❰[❱ ⟵ operation int < json is not supported
 # test: int + int
 select 1 + 1;
+
+col1
+────
 2
 explain select 1 + 1;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "int                 1      -      0     # 1",
-    "02": "addii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   int                 1      -      0     # 1
+  2   addii               2      0      1
+  3   ret                 2      0      -
 # test: int + int (overflow)
 select 1 + 4294967295;
+
+col1
+────
 4294967296
 select 1 + -4294967295;
+
+col1
+────
 -4294967294
 select 1 + 9223372036854775807;
 error: int + int overflow
 select 1 + -9223372036854775807;
+
+col1
+────
 -9223372036854775806
 # test: int + double
 select 1 + 1.5;
+
+col1
+────
 2.5
 explain select 1 + 1.5;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "double              1      0      0     # 1.5",
-    "02": "addif               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1.5
+  2   addif               2      0      1
+  3   ret                 2      0      -
 # test: int + null
 select 1 + null;
+
+col1
+────
 null
 # test: int + unsupported
 select 1 + [];
 error: select 1 + ❰[❱ ⟵ operation int + json is not supported
 # test: int - int
 select 1 - 1;
+
+col1
+────
 0
 explain select 1 - 1;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "int                 1      -      0     # 1",
-    "02": "subii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   int                 1      -      0     # 1
+  2   subii               2      0      1
+  3   ret                 2      0      -
 # test: int - int (overflow)
 select 1 - 4294967295;
+
+col1
+────
 -4294967294
 select 1 - -4294967295;
+
+col1
+────
 4294967296
 select 1 - 9223372036854775807;
+
+col1
+────
 -9223372036854775806
 select 1 - -9223372036854775807;
 error: int - int overflow
 # test: int - double
 select 1 - 1.5;
+
+col1
+────
 -0.5
 explain select 1 - 1.5;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "double              1      0      0     # 1.5",
-    "02": "subif               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1.5
+  2   subif               2      0      1
+  3   ret                 2      0      -
 # test: int - null
 select 1 - null;
+
+col1
+────
 null
 # test: int - unsupported
 select 1 - [];
 error: select 1 - ❰[❱ ⟵ operation int - json is not supported
 # test: int * int
 select 2 * 2;
+
+col1
+────
 4
 explain select 2 * 2;
-{
-  "main": {
-    "00": "int                 0      -      0     # 2",
-    "01": "int                 1      -      0     # 2",
-    "02": "mulii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 2
+  1   int                 1      -      0     # 2
+  2   mulii               2      0      1
+  3   ret                 2      0      -
 # test: int * int (overflow)
 select 4 * 4294967295;
+
+col1
+────
 17179869180
 select 4 * -4294967295;
+
+col1
+────
 -17179869180
 select 10 * 9223372036854775807;
 error: int * int overflow
@@ -598,218 +874,278 @@ select 10 * -9223372036854775807;
 error: int * int overflow
 # test: int * double
 select 2 * 1.5;
+
+col1
+────
 3
 explain select 2 * 1.5;
-{
-  "main": {
-    "00": "int                 0      -      0     # 2",
-    "01": "double              1      0      0     # 1.5",
-    "02": "mulif               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 2
+  1   double              1      0      0     # 1.5
+  2   mulif               2      0      1
+  3   ret                 2      0      -
 # test: int * null
 select 1 * null;
+
+col1
+────
 null
 # test: int * unsupported
 select 1 * [];
 error: select 1 * ❰[❱ ⟵ operation int * json is not supported
 # test: int / int
 select 2 / 2;
+
+col1
+────
 1
 explain select 2 / 2;
-{
-  "main": {
-    "00": "int                 0      -      0     # 2",
-    "01": "int                 1      -      0     # 2",
-    "02": "divii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 2
+  1   int                 1      -      0     # 2
+  2   divii               2      0      1
+  3   ret                 2      0      -
 select 2 / 0;
 error: zero division
 select 4 / 4294967295;
+
+col1
+────
 0
 # test: int / double
 select 35 / 1.5;
+
+col1
+────
 23.3333
 explain select 35 / 1.5;
-{
-  "main": {
-    "00": "int                 0      -      0     # 35",
-    "01": "double              1      0      0     # 1.5",
-    "02": "divif               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 35
+  1   double              1      0      0     # 1.5
+  2   divif               2      0      1
+  3   ret                 2      0      -
 # test: int / null
 select 1 * null;
+
+col1
+────
 null
 # test: int / unsupported
 select 1 * [];
 error: select 1 * ❰[❱ ⟵ operation int * json is not supported
 # test: int % int
 select 8 % 3;
+
+col1
+────
 2
 explain select 8 % 3;
-{
-  "main": {
-    "00": "int                 0      -      0     # 8",
-    "01": "int                 1      -      0     # 3",
-    "02": "modii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 8
+  1   int                 1      -      0     # 3
+  2   modii               2      0      1
+  3   ret                 2      0      -
 select 8 % 0;
 error: zero division
 # test: int % null
 select 1 % null;
+
+col1
+────
 null
 # test: int % unsupported
 select 1 % [];
 error: select 1 % ❰[❱ ⟵ operation int % json is not supported
 # test: int | int
 select 60 | 13;
+
+col1
+────
 61
 explain select 60 | 13;
-{
-  "main": {
-    "00": "int                 0      -      0     # 60",
-    "01": "int                 1      -      0     # 13",
-    "02": "borii               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 60
+  1   int                 1      -      0     # 13
+  2   borii               2      0      1
+  3   ret                 2      0      -
 # test: int | null
 select 60 | null;
+
+col1
+────
 null
 explain select 60 | null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 60",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 60
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: int | unsupported
 select 60 | [];
 error: select 60 | ❰[❱ ⟵ operation int | json is not supported
 # test: int & int
 select 60 & 13;
+
+col1
+────
 12
 explain select 60 & 13;
-{
-  "main": {
-    "00": "int                 0      -      0     # 60",
-    "01": "int                 1      -      0     # 13",
-    "02": "bandii              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 60
+  1   int                 1      -      0     # 13
+  2   bandii              2      0      1
+  3   ret                 2      0      -
 # test: int & null
 select 60 & null;
+
+col1
+────
 null
 explain select 60 & null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 60",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 60
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: int & unsupported
 select 60 & [];
 error: select 60 & ❰[❱ ⟵ operation int & json is not supported
 # test: int ^ int
 select 60 ^ 13;
+
+col1
+────
 49
 explain select 60 ^ 13;
-{
-  "main": {
-    "00": "int                 0      -      0     # 60",
-    "01": "int                 1      -      0     # 13",
-    "02": "bxorii              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 60
+  1   int                 1      -      0     # 13
+  2   bxorii              2      0      1
+  3   ret                 2      0      -
 # test: int ^ null
 select 60 ^ null;
+
+col1
+────
 null
 explain select 60 ^ null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 60",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 60
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: int ^ unsupported
 select 60 ^ [];
 error: select 60 ^ ❰[❱ ⟵ operation int ^ json is not supported
 # test: int << int
 select 60 << 2;
+
+col1
+────
 240
 explain select 60 << 2;
-{
-  "main": {
-    "00": "int                 0      -      0     # 60",
-    "01": "int                 1      -      0     # 2",
-    "02": "bshlii              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 60
+  1   int                 1      -      0     # 2
+  2   bshlii              2      0      1
+  3   ret                 2      0      -
 # test: int << null
 select 60 << null;
+
+col1
+────
 null
 # test: int << unsupported
 select 60 << [];
 error: select 60 << ❰[❱ ⟵ operation int << json is not supported
 # test: int >> int
 select 60 >> 2;
+
+col1
+────
 15
 explain select 60 >> 2;
-{
-  "main": {
-    "00": "int                 0      -      0     # 60",
-    "01": "int                 1      -      0     # 2",
-    "02": "bshrii              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 60
+  1   int                 1      -      0     # 2
+  2   bshrii              2      0      1
+  3   ret                 2      0      -
 # test: int >> null
 select 60 >> null;
+
+col1
+────
 null
 # test: int >> unsupported
 select 60 >> [];
 error: select 60 >> ❰[❱ ⟵ operation int >> json is not supported
 # test: ~int
 select ~10;
+
+col1
+────
 -11
 # test: -int
 select -18;
+
+col1
+────
 -18
 explain select -18;
-{
-  "main": {
-    "00": "int                 0      -      0     # -18",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # -18
+  1   ret                 0      0      -
 disconnect S0;
 close E0;

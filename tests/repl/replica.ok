@@ -14,23 +14,29 @@ error: create replica "00000000-0000-0000-0000-000000000000"❰;❱ ⟵ string e
 # test: create replica
 create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
 show replicas;
-[{
+
+replicas
+────────
+{
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "http://127.0.0.1:8080/",
   "connected": false,
   "lsn": 0,
   "lag": 0
-}]
+}
 # test: create replica if not exists
 create replica if not exists "00000000-0000-0000-0000-000000000000" "127.0.0.1";
 show replicas;
-[{
+
+replicas
+────────
+{
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "http://127.0.0.1:8080/",
   "connected": false,
   "lsn": 0,
   "lag": 0
-}]
+}
 # test: drop replica statement parsing
 drop replica;
 error: drop replica❰;❱ ⟵ string expected
@@ -41,7 +47,9 @@ error: failed to parse uuid
 # test: drop replica
 drop replica "00000000-0000-0000-0000-000000000000";
 show replicas;
-[]
+
+replicas
+────────
 # test: drop replica if exists
 drop replica if exists "00000000-0000-0000-0000-000000000000";
 drop replica "00000000-0000-0000-0000-000000000000";
@@ -50,36 +58,44 @@ error: replica '00000000-0000-0000-0000-000000000000': not exists
 create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
 create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1";
 show replicas;
-[{
+
+replicas
+────────
+{
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "http://127.0.0.1:8080/",
   "connected": false,
   "lsn": 0,
   "lag": 0
-}, {
+}
+{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:8080/",
   "connected": false,
   "lsn": 0,
   "lag": 0
-}]
+}
 disconnect S0;
 close E0;
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3;
 connect E0 S0 127.0.0.1:3480;
 show replicas;
-[{
+
+replicas
+────────
+{
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "http://127.0.0.1:8080/",
   "connected": false,
   "lsn": 0,
   "lag": 0
-}, {
+}
+{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:8080/",
   "connected": false,
   "lsn": 0,
   "lag": 0
-}]
+}
 disconnect S0;
 close E0;

@@ -19,55 +19,68 @@ error: create lock test ❰abc❱ ⟵ ON expected
 create table xyz (id int primary key);
 create lock test on xyz (shared);
 show locks;
-[{
+
+locks
+─────
+{
   "name": "test",
   "relation": "xyz",
   "lock": "shared",
   "waiting": false,
   "function": "clock_rel"
-}, {
+}
+{
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
   "function": "request_auth"
-}]
+}
 # test: create lock (unknown)
 create lock test on xyz (invalid);
 error: lock: unrecognized lock type 'invalid'
 show locks;
-[{
+
+locks
+─────
+{
   "name": "test",
   "relation": "xyz",
   "lock": "shared",
   "waiting": false,
   "function": "clock_rel"
-}, {
+}
+{
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
   "function": "request_auth"
-}]
+}
 # test: create lock (shared)
 create lock test1 on xyz (shared);
 show locks;
-[{
+
+locks
+─────
+{
   "name": "test",
   "relation": "xyz",
   "lock": "shared",
   "waiting": false,
   "function": "clock_rel"
-}, {
+}
+{
   "name": "test1",
   "relation": "xyz",
   "lock": "shared",
   "waiting": false,
   "function": "clock_rel"
-}, {
+}
+{
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
   "function": "request_auth"
-}]
+}
 # test: create lock (catalog)
 create lock test2 on catalog (shared);
 error: lock: relation 'test2' cannot be locked this way
@@ -89,26 +102,33 @@ error: drop lock if exists ❰123❱ ⟵ name expected
 # test: drop lock
 drop lock test;
 show locks;
-[{
+
+locks
+─────
+{
   "name": "test1",
   "relation": "xyz",
   "lock": "shared",
   "waiting": false,
   "function": "clock_rel"
-}, {
+}
+{
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
   "function": "request_auth"
-}]
+}
 drop lock test1;
 show locks;
-[{
+
+locks
+─────
+{
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
   "function": "request_auth"
-}]
+}
 # test: drop lock if exists
 drop lock test;
 error: lock: 'test' not exists

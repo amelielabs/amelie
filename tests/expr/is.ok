@@ -14,32 +14,44 @@ error: select 1 ❰is❱ ⟵ bad expression
 select 1 is 1;
 error: select 1 is ❰1❱ ⟵ NOT or NULL expected
 explain select 1 is null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "is                  1      0      0     ",
-    "02": "ret                 1      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   is                  1      0      0
+  2   ret                 1      0      -
 select 1 is null;
+
+col1
+────
 false
 select null is null;
+
+col1
+────
 true
 # test: is not null
 explain select 1 is not null;
-{
-  "main": {
-    "00": "int                 0      -      0     # 1",
-    "01": "is                  1      0      0     ",
-    "02": "not                 0      1      0     ",
-    "03": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   is                  1      0      0
+  2   not                 0      1      0
+  3   ret                 0      0      -
 select 1 is not null;
+
+col1
+────
 true
 select null is not null;
+
+col1
+────
 false
 disconnect S0;
 close E0;

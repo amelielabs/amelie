@@ -2,307 +2,475 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: vector create
 select [1,2,3]::vector;
+
+vector
+──────
 [1, 2, 3]
 select [1,2,3]::vector::type;
-"vector"
+
+type
+────
+vector
 select [1,2,3]::vector::length;
+
+length
+──────
 3
 select ""::vector;
 error: vector(❰string❱ ⟵ unsupported argument type
 select [1.0]::vector;
+
+vector
+──────
 [1]
 select [1.0, 1.1, 1.2]::vector;
+
+vector
+──────
 [1, 1.1, 1.2]
 select []::vector;
+
+vector
+──────
 []
 select []::vector::length;
+
+length
+──────
 0
 select vector [1,2,3];
+
+col1
+────
 [1, 2, 3]
 select vector [1,2,3]::type;
-"vector"
+
+type
+────
+vector
 select vector [1,2,3]::length;
+
+length
+──────
 3
 select vector "";
 error: select vector ❰""❱ ⟵ [ expected
 select vector [1.0];
+
+col1
+────
 [1]
 select vector [1.0, 1.1, 1.2];
+
+col1
+────
 [1, 1.1, 1.2]
 select vector [];
+
+col1
+────
 []
 select vector []::length;
+
+length
+──────
 0
 # test: vector = vector
 select [1.0, 1.1]::vector = [1.0, 1.1]::vector;
+
+col1
+────
 true
 select [1.0, 1.1]::vector = [1.0, 1.0]::vector;
+
+col1
+────
 false
 select [1.0, 1.1]::vector = [1.0]::vector;
+
+col1
+────
 false
 select [1.0, 1.1]::vector = []::vector;
+
+col1
+────
 false
 explain select []::vector = []::vector;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "value               1      -      0     # vector",
-    "02": "equvv               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   value               1      -      0     # vector
+  2   equvv               2      0      1
+  3   ret                 2      0      -
 select vector [1.0, 1.1] = vector [1.0, 1.1];
+
+col1
+────
 true
 select vector [1.0, 1.1] = vector [1.0, 1.0];
+
+col1
+────
 false
 select vector [1.0, 1.1] = vector [1.0];
+
+col1
+────
 false
 select vector [1.0, 1.1] = vector [];
+
+col1
+────
 false
 explain select vector [] = vector [];
-{
-  "main": {
-    "00": "vector              0      0      0     ",
-    "01": "vector              1      4      0     ",
-    "02": "equvv               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   vector              0      0      0
+  1   vector              1      4      0
+  2   equvv               2      0      1
+  3   ret                 2      0      -
 # test: vector = null
 select [1.0, 1.1]::vector = null;
+
+col1
+────
 null
 explain select [1.0, 1.1]::vector = null;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: vector = unsupported
 select [1.0, 1.1]::vector = 1;
 error: select [1.0, 1.1]::vector = ❰1❱ ⟵ operation vector = int is not supported
 # test: vector <> vector
 select [1.0, 1.1]::vector <> [1.0, 1.1]::vector;
+
+col1
+────
 false
 select [1.0, 1.1]::vector <> [1.0, 1.0]::vector;
+
+col1
+────
 true
 select [1.0, 1.1]::vector <> [1.0]::vector;
+
+col1
+────
 true
 select [1.0, 1.1]::vector <> []::vector;
+
+col1
+────
 true
 explain select []::vector <> []::vector;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "value               1      -      0     # vector",
-    "02": "equvv               2      0      1     ",
-    "03": "not                 0      2      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   value               1      -      0     # vector
+  2   equvv               2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 # test: vector <> null
 select [1.0, 1.1]::vector <> null;
+
+col1
+────
 null
 explain select [1.0, 1.1]::vector <> null;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "not                 0      2      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 # test: vector <> unsupported
 select [1.0, 1.1]::vector <> 1;
 error: select [1.0, 1.1]::vector <> ❰1❱ ⟵ operation vector = int is not supported
 # test: vector >= vector
 select [1.0, 1.1]::vector >= [1.0, 1.1]::vector;
+
+col1
+────
 true
 select [1.0, 1.2]::vector >= [1.0, 1.1]::vector;
+
+col1
+────
 true
 select [1.0, 1.1]::vector >= [1.0]::vector;
+
+col1
+────
 true
 explain select [1.0, 1.1]::vector >= [1.0]::vector;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "value               1      -      0     # vector",
-    "02": "gtevv               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   value               1      -      0     # vector
+  2   gtevv               2      0      1
+  3   ret                 2      0      -
 # test: vector >= null
 select [1.0, 1.1]::vector >= null;
+
+col1
+────
 null
 # test: vector >= unsupported
 select [1.0, 1.1]::vector >= [];
 error: select [1.0, 1.1]::vector >= ❰[❱ ⟵ operation vector >= json is not supported
 # test: vector > vector
 select [1.0, 1.1]::vector > [1.0, 1.1]::vector;
+
+col1
+────
 false
 select [1.0, 1.2]::vector > [1.0, 1.1]::vector;
+
+col1
+────
 true
 select [1.0, 1.1]::vector > [1.0]::vector;
+
+col1
+────
 true
 explain select [1.0, 1.1]::vector > [1.0]::vector;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "value               1      -      0     # vector",
-    "02": "gtvv                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   value               1      -      0     # vector
+  2   gtvv                2      0      1
+  3   ret                 2      0      -
 # test: vector > null
 select [1.0, 1.1]::vector > null;
+
+col1
+────
 null
 # test: vector > unsupported
 select [1.0, 1.1]::vector > [];
 error: select [1.0, 1.1]::vector > ❰[❱ ⟵ operation vector > json is not supported
 # test: vector <= vector
 select [1.0, 1.1]::vector <= [1.0, 1.1]::vector;
+
+col1
+────
 true
 select [1.0, 1.1]::vector <= [1.0, 1.2]::vector;
+
+col1
+────
 true
 select [1.0, 1.3]::vector <= [1.0, 1.2]::vector;
+
+col1
+────
 false
 explain select [1.0, 1.3]::vector <= [1.0, 1.2]::vector;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "value               1      -      0     # vector",
-    "02": "ltevv               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   value               1      -      0     # vector
+  2   ltevv               2      0      1
+  3   ret                 2      0      -
 # test: vector <= null
 select [1.0, 1.1]::vector <= null;
+
+col1
+────
 null
 # test: vector <= unsupported
 select [1.0, 1.1]::vector <= [];
 error: select [1.0, 1.1]::vector <= ❰[❱ ⟵ operation vector <= json is not supported
 # test: vector < vector
 select [1.0, 1.1]::vector < [1.0, 1.1]::vector;
+
+col1
+────
 false
 select [1.0, 1.1]::vector < [1.0, 1.2]::vector;
+
+col1
+────
 true
 select [1.0, 1.3]::vector < [1.0, 1.2]::vector;
+
+col1
+────
 false
 select [1.0, 1.1]::vector < [1.0]::vector;
+
+col1
+────
 false
 # test: vector < null
 select [1.0, 1.1]::vector < null;
+
+col1
+────
 null
 # test: vector < unsupported
 select [1.0, 1.1]::vector < [];
 error: select [1.0, 1.1]::vector < ❰[❱ ⟵ operation vector < json is not supported
 # test: vector + vector
 select [1.0, 2.1, 3]::vector + [1, 1, 1]::vector;
+
+col1
+────
 [2, 3.1, 4]
 select [1.0, 2.1, 3]::vector + [1, 1]::vector;
 error: vector sizes mismatch
 explain select [1.0, 2.1, 3]::vector + [1, 1]::vector;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "value               1      -      0     # vector",
-    "02": "addvv               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   value               1      -      0     # vector
+  2   addvv               2      0      1
+  3   ret                 2      0      -
 # test: vector + null
 select [1.0, 2.1, 3]::vector + null;
+
+col1
+────
 null
 # test: vector + unsupported
 select [1.0, 2.1, 3]::vector + [];
 error: select [1.0, 2.1, 3]::vector + ❰[❱ ⟵ operation vector + json is not supported
 # test: vector - vector
 select [1.0, 2.1, 3]::vector - [1, 1, 1]::vector;
+
+col1
+────
 [0, 1.1, 2]
 select [1.0, 2.1, 3]::vector - [1, 1]::vector;
 error: vector sizes mismatch
 explain select [1.0, 2.1, 3]::vector - [1, 1]::vector;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "value               1      -      0     # vector",
-    "02": "subvv               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   value               1      -      0     # vector
+  2   subvv               2      0      1
+  3   ret                 2      0      -
 # test: vector - null
 select [1.0, 2.1, 3]::vector - null;
+
+col1
+────
 null
 explain select [1.0, 2.1, 3]::vector - null;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: vector - unsupported
 select [1.0, 2.1, 3]::vector - [];
 error: select [1.0, 2.1, 3]::vector - ❰[❱ ⟵ operation vector - json is not supported
 # test: vector * vector
 select [1.0, 2.1, 3]::vector * [1.5, 1.5, 1.5]::vector;
+
+col1
+────
 [1.5, 3.15, 4.5]
 select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector;
 error: vector sizes mismatch
 explain select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector;
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "value               1      -      0     # vector",
-    "02": "mulvv               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   value               1      -      0     # vector
+  2   mulvv               2      0      1
+  3   ret                 2      0      -
 # test: vector * null
 select [1.0, 2.1, 3]::vector * null;
+
+col1
+────
 null
 # test: vector * unsupported
 select [1.0, 2.1, 3]::vector * null;
+
+col1
+────
 null
 # test: vector [] int
 select [1.0, 1.1, 1.2]::vector[0];
+
+col1
+────
 1
 select [1.0, 1.1, 1.2]::vector[1];
+
+col1
+────
 1.1
 select [1.0, 1.1, 1.2]::vector[2];
+
+col1
+────
 1.2
 select [1.0, 1.1, 1.2]::vector[3];
 error: []: vector index is out of bounds
 select [1.0, 1.1, 1.2]::vector[-10];
 error: []: vector index is out of bounds
 explain select [1.0, 1.1, 1.2]::vector[-10];
-{
-  "main": {
-    "00": "value               0      -      0     # vector",
-    "01": "int                 1      -      0     # -10",
-    "02": "idxvi               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # vector
+  1   int                 1      -      0     # -10
+  2   idxvi               2      0      1
+  3   ret                 2      0      -
 # test: vector [] null
 select [1.0, 1.1, 1.2]::vector[null];
+
+col1
+────
 null
 # test: vector [] unsupported
 select [1.0, 1.1, 1.2]::vector[[]];

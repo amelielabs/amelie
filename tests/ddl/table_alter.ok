@@ -30,6 +30,9 @@ alter table test rename to asf junk;
 error: alter table test rename to asf ❰junk❱ ⟵ ; expected
 alter table test rename to abc;
 select show('table', 'abc', true).name;
+
+col1
+────
 "abc"
 # test: rename table exists
 create table test (id int primary key);
@@ -42,9 +45,12 @@ insert into test () values ();
 insert into test () values ();
 insert into test () values ();
 select * from test;
-0 │ 0
-1 │ 0
-2 │ 0
+
+id  data
+──────────
+0   0
+1   0
+2   0
 alter table test set;
 error: alter table test set❰;❱ ⟵ 'COLUMN DEFAULT | COLUMN AS' expected
 alter table test set identity ;
@@ -66,18 +72,24 @@ insert into test () values ();
 error: index 'primary': unique key constraint violation
 insert into test () values ();
 select * from test;
-0 │ 0
-1 │ 0
-2 │ 0
-3 │ 0
+
+id  data
+──────────
+0   0
+1   0
+2   0
+3   0
 alter table test set identity to 0;
 insert into test () values ();
 error: index 'primary': unique key constraint violation
 select * from test;
-0 │ 0
-1 │ 0
-2 │ 0
-3 │ 0
+
+id  data
+──────────
+0   0
+1   0
+2   0
+3   0
 drop table test;
 # test: set identity if exists
 alter table if exists test set identity to 0;
@@ -103,6 +115,9 @@ error: alter table test rename column data to ❰1❱ ⟵ name expected
 # test: rename column
 create table test (id serial primary key, data int default 0);
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -118,6 +133,9 @@ select show('table', 'test', true).columns;
 }]
 alter table test rename column data to data2;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -132,11 +150,17 @@ select show('table', 'test', true).columns;
   "constraints": [["default", true]]
 }]
 select data2 from test;
+
+data2
+─────
 drop table test;
 # test: rename column #2
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -146,6 +170,9 @@ select show('table', 'test', true).columns;
 }]
 alter table test rename column id to id2;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id2",
   "type": 2,
@@ -154,10 +181,16 @@ select show('table', 'test', true).columns;
   "constraints": [["not_null", true]]
 }]
 select * from test;
+
+id2
+───
 1
 2
 3
 select id2 from test;
+
+id2
+───
 1
 2
 3
@@ -165,6 +198,9 @@ drop table test;
 # test: rename column (already exists)
 create table test (id serial primary key, data int default 0);
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -181,6 +217,9 @@ select show('table', 'test', true).columns;
 alter table test rename column data to data;
 error: table 'test': column 'data' already exists
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -235,6 +274,9 @@ drop table test;
 # test: add column (empty table)
 create table test (id int primary key);
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -244,6 +286,9 @@ select show('table', 'test', true).columns;
 }]
 alter table test add column data int;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -259,6 +304,9 @@ select show('table', 'test', true).columns;
 }]
 insert into test values (1,1), (2,2), (3,3);
 select data from test;
+
+data
+────
 1
 2
 3
@@ -268,6 +316,9 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -282,11 +333,17 @@ select show('table', 'test', true).columns;
   "constraints": []
 }]
 select data from test;
+
+data
+────
 null
 null
 null
 insert into test values (4,4), (5,5), (6,6);
 select data from test;
+
+data
+────
 null
 null
 null
@@ -300,6 +357,9 @@ insert into test values (1),(2),(3);
 alter table test add column data int not null;
 error: alter table test add column data int not null❰;❱ ⟵ NOT NULL currently not supported with ALTER
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -313,6 +373,9 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int default 123;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -327,11 +390,17 @@ select show('table', 'test', true).columns;
   "constraints": [["default", true]]
 }]
 select data from test;
+
+data
+────
 null
 null
 null
 insert into test values (4,4), (5,5), (6,6);
 select data from test;
+
+data
+────
 null
 null
 null
@@ -340,6 +409,9 @@ null
 6
 insert into test (id) values (7), (8), (9);
 select data from test;
+
+data
+────
 null
 null
 null
@@ -356,6 +428,9 @@ insert into test values (1),(2),(3);
 alter table test add column data int not null default 123;
 error: alter table test add column data int not null default 123❰;❱ ⟵ NOT NULL currently not supported with ALTER
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -369,6 +444,9 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data serial;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -383,11 +461,17 @@ select show('table', 'test', true).columns;
   "constraints": [["as_identity", 1]]
 }]
 select data from test;
+
+data
+────
 null
 null
 null
 insert into test (id) values (4), (5), (6);
 select data from test;
+
+data
+────
 null
 null
 null
@@ -437,6 +521,9 @@ drop table test;
 # test: drop column (empty)
 create table test (id int primary key, a int);
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -452,6 +539,9 @@ select show('table', 'test', true).columns;
 }]
 alter table test drop column a;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -469,6 +559,9 @@ drop table test;
 # test: drop column (empty, reorder)
 create table test (id int primary key, a int, b int);
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -490,6 +583,9 @@ select show('table', 'test', true).columns;
 }]
 alter table test drop column a;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -513,6 +609,9 @@ drop table test;
 # test: drop column
 create table test (id int primary key, a text, b int);
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -534,19 +633,31 @@ select show('table', 'test', true).columns;
 }]
 insert into test values (1,"id",1), (2,"a",2), (3,"b",3);
 select * from test;
-1 │ "id" │ 1
-2 │ "a" │ 2
-3 │ "b" │ 3
+
+id  a   b
+───────────
+1   id  1
+2   a   2
+3   b   3
 select a from test;
-"id"
-"a"
-"b"
+
+a
+─
+id
+a
+b
 select b from test;
+
+b
+─
 1
 2
 3
 alter table test drop column a;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -567,16 +678,25 @@ select show('table', 'test', true).columns;
   "constraints": []
 }]
 select * from test;
-1 │ 1
-2 │ 2
-3 │ 3
+
+id  b
+───────
+1   1
+2   2
+3   3
 select a from test;
 error: select ❰a❱ ⟵ column not found
 select b from test;
+
+b
+─
 1
 2
 3
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -598,6 +718,9 @@ select show('table', 'test', true).columns;
 }]
 alter table test drop column b;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -618,10 +741,16 @@ select show('table', 'test', true).columns;
   "constraints": []
 }]
 select * from test;
+
+id
+──
 1
 2
 3
 select id from test;
+
+id
+──
 1
 2
 3
@@ -633,6 +762,9 @@ drop table test;
 # test: drop column (key order)
 create table test (a text, b int, id int primary key);
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "a",
   "type": 4,
@@ -654,23 +786,38 @@ select show('table', 'test', true).columns;
 }]
 insert into test values ("id",1, 1), ("a",2, 2), ("b",3, 3);
 select * from test;
-"id" │ 1 │ 1
-"a" │ 2 │ 2
-"b" │ 3 │ 3
+
+a   b  id
+───────────
+id  1  1
+a   2  2
+b   3  3
 select id from test;
+
+id
+──
 1
 2
 3
 select a from test;
-"id"
-"a"
-"b"
+
+a
+─
+id
+a
+b
 select b from test;
+
+b
+─
 1
 2
 3
 alter table test drop column a;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "a",
   "type": 4,
@@ -691,20 +838,32 @@ select show('table', 'test', true).columns;
   "constraints": [["not_null", true]]
 }]
 select * from test;
-1 │ 1
-2 │ 2
-3 │ 3
+
+b  id
+───────
+1  1
+2  2
+3  3
 select id from test;
+
+id
+──
 1
 2
 3
 select a from test;
 error: select ❰a❱ ⟵ column not found
 select b from test;
+
+b
+─
 1
 2
 3
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "a",
   "type": 4,
@@ -726,6 +885,9 @@ select show('table', 'test', true).columns;
 }]
 alter table test drop column b;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "a",
   "type": 4,
@@ -746,10 +908,16 @@ select show('table', 'test', true).columns;
   "constraints": [["not_null", true]]
 }]
 select * from test;
+
+id
+──
 1
 2
 3
 select id from test;
+
+id
+──
 1
 2
 3
@@ -771,8 +939,14 @@ create table test (id int primary key, data int);
 alter table test set column data default 0;
 insert into test (id) values (0);
 select * from test;
-0 │ 0
+
+id  data
+──────────
+0   0
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -790,9 +964,15 @@ select show('table', 'test', true).columns;
 alter table test unset column data default;
 insert into test (id) values (1);
 select * from test;
-0 │ 0
-1 │ null
+
+id  data
+──────────
+0   0
+1   null
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -810,10 +990,16 @@ select show('table', 'test', true).columns;
 alter table test set column data as (1 + 1) stored;
 insert into test (id) values (3);
 select * from test;
-0 │ 0
-1 │ null
-3 │ 2
+
+id  data
+──────────
+0   0
+1   null
+3   2
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -831,11 +1017,17 @@ select show('table', 'test', true).columns;
 alter table test unset column data as stored;
 insert into test (id) values (4);
 select * from test;
-0 │ 0
-1 │ null
-3 │ 2
-4 │ null
+
+id  data
+──────────
+0   0
+1   null
+3   2
+4   null
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -856,12 +1048,18 @@ insert into test (id) values (5);
 insert into test (id) values (5);
 insert into test (id) values (5);
 select * from test;
-0 │ 0
-1 │ null
-3 │ 2
-4 │ null
-5 │ 2
+
+id  data
+──────────
+0   0
+1   null
+3   2
+4   null
+5   2
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -880,12 +1078,18 @@ alter table test unset column data as resolved;
 insert into test (id) values (5);
 error: index 'primary': unique key constraint violation
 select * from test;
-0 │ 0
-1 │ null
-3 │ 2
-4 │ null
-5 │ 2
+
+id  data
+──────────
+0   0
+1   null
+3   2
+4   null
+5   2
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -904,7 +1108,10 @@ drop table test;
 create table test (id int primary key, data int);
 create function dep() begin insert into test values (1, 2); end;
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "dep",
   "text": "begin insert into test values (1, 2); end",
@@ -912,7 +1119,7 @@ show functions verbose;
   "args": [],
   "returning": [],
   "grants": []
-}]
+}
 alter table test rename to test2;
 error: function 'amelie.dep' depends on table 'test'
 # test: rename after udf drop
@@ -923,7 +1130,10 @@ drop table test2;
 create table test (id int primary key, data int);
 create function dep() begin insert into test values (1, 2); end;
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "dep",
   "text": "begin insert into test values (1, 2); end",
@@ -931,7 +1141,7 @@ show functions verbose;
   "args": [],
   "returning": [],
   "grants": []
-}]
+}
 alter table test rename column data to data2;
 error: function 'amelie.dep' depends on table 'test'
 # test: rename column after udf drop

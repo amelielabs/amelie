@@ -17,61 +17,97 @@ select 1 between 0 and '1';
 error: select 1 between 0 and ❰'1'❱ ⟵ operation int <= string is not supported
 # test: between (int)
 select 1 between 0 and 0;
+
+col1
+────
 false
 select 1 between 0 and 1;
+
+col1
+────
 true
 select 1 between 1 and 1;
+
+col1
+────
 true
 select 1 between 1 and 0;
+
+col1
+────
 false
 # test: between (double)
 select 0.052 between 0.010 and 0.053;
+
+col1
+────
 true
 # test: between (timestamp)
 select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01';
+
+col1
+────
 true
 select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01';
+
+col1
+────
 false
 # test: between (interval)
 select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes';
+
+col1
+────
 true
 select interval '1 hour' between interval '55 minutes' and interval '55 minutes';
+
+col1
+────
 false
 select interval '1 hour' not between interval '55 minutes' and interval '55 minutes';
+
+col1
+────
 true
 # test: not between
 select 0.058 between 0.010 and 0.053;
+
+col1
+────
 false
 explain select 0.058 between 0.010 and 0.053;
-{
-  "main": {
-    "00": "double              0      0      0     # 0.058",
-    "01": "double              1      8      0     # 0.01",
-    "02": "gteff               2      0      1     ",
-    "03": "double              0      16     0     # 0.058",
-    "04": "double              1      24     0     # 0.053",
-    "05": "lteff               3      0      1     ",
-    "06": "and                 0      2      3     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   double              0      0      0     # 0.058
+  1   double              1      8      0     # 0.01
+  2   gteff               2      0      1
+  3   double              0      16     0     # 0.058
+  4   double              1      24     0     # 0.053
+  5   lteff               3      0      1
+  6   and                 0      2      3
+  7   ret                 0      0      -
 select 0.058 not between 0.010 and 0.053;
+
+col1
+────
 true
 explain select 0.058 not between 0.010 and 0.053;
-{
-  "main": {
-    "00": "double              0      0      0     # 0.058",
-    "01": "double              1      8      0     # 0.01",
-    "02": "gteff               2      0      1     ",
-    "03": "double              0      16     0     # 0.058",
-    "04": "double              1      24     0     # 0.053",
-    "05": "lteff               3      0      1     ",
-    "06": "and                 0      2      3     ",
-    "07": "not                 1      0      0     ",
-    "08": "ret                 1      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   double              0      0      0     # 0.058
+  1   double              1      8      0     # 0.01
+  2   gteff               2      0      1
+  3   double              0      16     0     # 0.058
+  4   double              1      24     0     # 0.053
+  5   lteff               3      0      1
+  6   and                 0      2      3
+  7   not                 1      0      0
+  8   ret                 1      0      -
 disconnect S0;
 close E0;

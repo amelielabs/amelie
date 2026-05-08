@@ -4,9 +4,15 @@ connect E0 S0 127.0.0.1:3485;
 create table test (id int primary key);
 insert into test values (0);
 select * from test;
+
+id
+──
 0
 alter table test add column a int;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -21,10 +27,16 @@ select show('table', 'test', true).columns;
   "constraints": []
 }]
 select * from test;
-0 │ null
+
+id  a
+──────────
+0   null
 insert into test values (1, 1);
 alter table test add column b int;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -45,16 +57,25 @@ select show('table', 'test', true).columns;
   "constraints": []
 }]
 select * from test;
-0 │ null │ null
-1 │ 1 │ null
+
+id  a     b
+────────────────
+0   null  null
+1   1     null
 insert into test values (2, 2, 2);
 select * from test;
-0 │ null │ null
-1 │ 1 │ null
-2 │ 2 │ 2
+
+id  a     b
+────────────────
+0   null  null
+1   1     null
+2   2     2
 # test: drop column
 alter table test drop column a;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -76,19 +97,28 @@ select show('table', 'test', true).columns;
 }]
 # test: select (dropped column)
 select *  from test;
-0 │ null
-1 │ null
-2 │ 2
+
+id  b
+──────────
+0   null
+1   null
+2   2
 select a from test;
 error: select ❰a❱ ⟵ column not found
 select * from test order by 1;
-0 │ null
-1 │ null
-2 │ 2
+
+id  b
+──────────
+0   null
+1   null
+2   2
 select * from test order by 2;
-0 │ null
-1 │ null
-2 │ 2
+
+id  b
+──────────
+0   null
+1   null
+2   2
 select * from test order by 3;
 error: select * from test order by ❰3❱ ⟵ column 3 is not in the SELECT expr list
 select * from test group by 1;
@@ -102,28 +132,40 @@ error: select ❰*❱ ⟵ column 'test.id' must appear in the GROUP BY clause or
 # test: insert
 insert into test values (3, 3);
 select * from test;
-0 │ null
-1 │ null
-2 │ 2
-3 │ 3
+
+id  b
+──────────
+0   null
+1   null
+2   2
+3   3
 # test: insert (column list)
 insert into test (id, a) values (4, 4);
 error: insert into test (id, ❰a❱ ⟵ column does not exists
 select * from test;
-0 │ null
-1 │ null
-2 │ 2
-3 │ 3
+
+id  b
+──────────
+0   null
+1   null
+2   2
+3   3
 insert into test (id, b) values (4, 4);
 select * from test;
-0 │ null
-1 │ null
-2 │ 2
-3 │ 3
-4 │ 4
+
+id  b
+──────────
+0   null
+1   null
+2   2
+3   3
+4   4
 # test: add column (reuse dropped column name)
 alter table test add column a int;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -150,32 +192,44 @@ select show('table', 'test', true).columns;
   "constraints": []
 }]
 select * from test;
-0 │ null │ null
-1 │ null │ null
-2 │ 2 │ null
-3 │ 3 │ null
-4 │ 4 │ null
+
+id  b     a
+────────────────
+0   null  null
+1   null  null
+2   2     null
+3   3     null
+4   4     null
 # test: insert
 insert into test values (5, 5, 5);
 select * from test;
-0 │ null │ null
-1 │ null │ null
-2 │ 2 │ null
-3 │ 3 │ null
-4 │ 4 │ null
-5 │ 5 │ 5
+
+id  b     a
+────────────────
+0   null  null
+1   null  null
+2   2     null
+3   3     null
+4   4     null
+5   5     5
 # test: update
 update test set a = id, b = id;
 select * from test;
-0 │ 0 │ 0
-1 │ 1 │ 1
-2 │ 2 │ 2
-3 │ 3 │ 3
-4 │ 4 │ 4
-5 │ 5 │ 5
+
+id  b  a
+──────────
+0   0  0
+1   1  1
+2   2  2
+3   3  3
+4   4  4
+5   5  5
 # test: drop column
 alter table test drop column b;
 select show('table', 'test', true).columns;
+
+col1
+────
 [{
   "name": "id",
   "type": 2,
@@ -202,12 +256,15 @@ select show('table', 'test', true).columns;
   "constraints": []
 }]
 select * from test;
-0 │ 0
-1 │ 1
-2 │ 2
-3 │ 3
-4 │ 4
-5 │ 5
+
+id  a
+───────
+0   0
+1   1
+2   2
+3   3
+4   4
+5   5
 drop table test;
 disconnect S0;
 close E0;

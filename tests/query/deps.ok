@@ -2,54 +2,63 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: select var
 explain begin declare x int; select x; end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "var                 0      0      0     ",
-    "02": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   var                 0      0      0
+  2   ret                 0      0      -
 begin declare x int; select x; end;
+
+col1
+────
 null
 # test: select var expr
 explain begin declare x int := 0; select x; end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "var                 0      0      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   var                 0      0      0
+  4   ret                 0      0      -
 begin declare x int := 0; select x; end;
+
+col1
+────
 0
 explain begin
 	declare x int := 0;
 	select x; x:= 15;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "var                 0      0      0     ",
-    "04": "int                 1      -      0     # 15",
-    "05": "var_set             0      0      1     ",
-    "06": "var                 1      0      0     ",
-    "07": "ret                 1      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   var                 0      0      0
+  4   int                 1      -      0     # 15
+  5   var_set             0      0      1
+  6   var                 1      0      0
+  7   ret                 1      0      -
 begin
 	declare x int := 0;
 	select x;
 	x := 15;
 	select x;
 end;
+
+col1
+────
 15
 # test: select into expr
 explain begin
@@ -57,21 +66,24 @@ explain begin
 	select 123 into x;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 123",
-    "02": "var_set             0      0      0     ",
-    "03": "var                 0      0      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 123
+  2   var_set             0      0      0
+  3   var                 0      0      0
+  4   ret                 0      0      -
 begin
 	declare x int;
 	select 123 into x;
 	select x;
 end;
+
+col1
+────
 123
 explain begin
 	declare x int;
@@ -80,19 +92,19 @@ explain begin
 	select 15 into x;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 123",
-    "02": "var_set             0      0      0     ",
-    "03": "var                 0      0      0     ",
-    "04": "int                 1      -      0     # 15",
-    "05": "var_set             0      0      1     ",
-    "06": "var                 1      0      0     ",
-    "07": "ret                 1      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 123
+  2   var_set             0      0      0
+  3   var                 0      0      0
+  4   int                 1      -      0     # 15
+  5   var_set             0      0      1
+  6   var                 1      0      0
+  7   ret                 1      0      -
 begin
 	declare x int;
 	select 123 into x;
@@ -100,6 +112,9 @@ begin
 	select 15 into x;
 	select x;
 end;
+
+col1
+────
 15
 # test: select from into (no recv)
 create table test (id int primary key);
@@ -108,28 +123,31 @@ explain begin
 	declare x int;
 	select id into x from test;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   ret                 -1     0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -140,34 +158,40 @@ explain begin
 	select id into x from test;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "var                 0      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   var                 0      0      0
+  7   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / select expr / select var
 explain begin
@@ -176,36 +200,42 @@ explain begin
 	select 123;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "int                 1      -      0     # 123",
-    "03": "union               2      0      0     ",
-    "04": "recv                2      0      0     ",
-    "05": "var_set             0      0      2     ",
-    "06": "free                2      0      0     ",
-    "07": "var                 0      0      0     ",
-    "08": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   int                 1      -      0     # 123
+  3   union               2      0      0
+  4   recv                2      0      0
+  5   var_set             0      0      2
+  6   free                2      0      0
+  7   var                 0      0      0
+  8   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	select 123;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / select from / select var
 explain begin
@@ -214,44 +244,50 @@ explain begin
 	select * from test;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select)",
-    "02": "send_all            1      0      88    # amelie.test (select, closing)",
-    "03": "union               2      0      0     ",
-    "04": "recv                2      0      0     ",
-    "05": "var_set             0      0      2     ",
-    "06": "free                2      0      0     ",
-    "07": "var                 0      0      0     ",
-    "08": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     ",
-    "08": "set                 1      1      0     ",
-    "09": "table_open          2      56     14    # amelie.test (primary) part",
-    "10": "table_readi32       3      2      -     # id",
-    "11": "push                3      0      0     ",
-    "12": "set_add             1      0      0     ",
-    "13": "table_next          2      10     0     ",
-    "14": "free                2      0      0     ",
-    "15": "ret                 1      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select)
+  2   send_all            1      0      88    # amelie.test (select, closing)
+  3   union               2      0      0
+  4   recv                2      0      0
+  5   var_set             0      0      2
+  6   free                2      0      0
+  7   var                 0      0      0
+  8   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+  8   set                 1      1      0
+  9   table_open          2      56     14    # amelie.test (primary) part
+ 10   table_readi32       3      2      -     # id
+ 11   push                3      0      0
+ 12   set_add             1      0      0
+ 13   table_next          2      10     0
+ 14   free                2      0      0
+ 15   ret                 1      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	select * from test;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / select expr / select from var
 explain begin
@@ -260,47 +296,53 @@ explain begin
 	select 123;
 	select * from x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "int                 1      -      0     # 123",
-    "03": "union               2      0      0     ",
-    "04": "recv                2      0      0     ",
-    "05": "var_set             0      0      2     ",
-    "06": "free                2      0      0     ",
-    "07": "set                 0      1      0     ",
-    "08": "var                 2      0      0     ",
-    "09": "push                2      0      0     ",
-    "10": "set                 2      1      0     ",
-    "11": "set_add             2      0      0     ",
-    "12": "store_open          3      2      17    ",
-    "13": "store_read          4      3      0     ",
-    "14": "push                4      0      0     ",
-    "15": "set_add             0      0      0     ",
-    "16": "store_next          3      13     0     ",
-    "17": "free                3      0      0     ",
-    "18": "free                2      0      0     ",
-    "19": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   int                 1      -      0     # 123
+  3   union               2      0      0
+  4   recv                2      0      0
+  5   var_set             0      0      2
+  6   free                2      0      0
+  7   set                 0      1      0
+  8   var                 2      0      0
+  9   push                2      0      0
+ 10   set                 2      1      0
+ 11   set_add             2      0      0
+ 12   store_open          3      2      17
+ 13   store_read          4      3      0
+ 14   push                4      0      0
+ 15   set_add             0      0      0
+ 16   store_next          3      13     0
+ 17   free                3      0      0
+ 18   free                2      0      0
+ 19   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	select 123;
 	select * from x;
 end;
+
+x
+─
 1
 # test: select from into / select from into
 explain begin
@@ -308,40 +350,43 @@ explain begin
 	select id into x from test;
 	select 123 into x from test;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "send_all            0      0      88    # amelie.test (select, closing)",
-    "07": "union               1      0      0     ",
-    "08": "recv                1      0      0     ",
-    "09": "var_set             0      0      1     ",
-    "10": "free                1      0      0     ",
-    "11": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     ",
-    "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     13    # amelie.test (primary) part",
-    "10": "push_int            -      0      0     # 123",
-    "11": "set_add             0      0      0     ",
-    "12": "table_next          1      10     0     ",
-    "13": "free                1      0      0     ",
-    "14": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   send_all            0      0      88    # amelie.test (select, closing)
+  7   union               1      0      0
+  8   recv                1      0      0
+  9   var_set             0      0      1
+ 10   free                1      0      0
+ 11   ret                 -1     0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+  8   set                 0      1      0
+  9   table_open          1      56     13    # amelie.test (primary) part
+ 10   push_int            -      0      0     # 123
+ 11   set_add             0      0      0
+ 12   table_next          1      10     0
+ 13   free                1      0      0
+ 14   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -354,47 +399,53 @@ explain begin
 	select 123 into x from test;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "send_all            0      0      88    # amelie.test (select, closing)",
-    "07": "union               1      0      0     ",
-    "08": "recv                1      0      0     ",
-    "09": "var_set             0      0      1     ",
-    "10": "free                1      0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     ",
-    "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     13    # amelie.test (primary) part",
-    "10": "push_int            -      0      0     # 123",
-    "11": "set_add             0      0      0     ",
-    "12": "table_next          1      10     0     ",
-    "13": "free                1      0      0     ",
-    "14": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   send_all            0      0      88    # amelie.test (select, closing)
+  7   union               1      0      0
+  8   recv                1      0      0
+  9   var_set             0      0      1
+ 10   free                1      0      0
+ 11   var                 0      0      0
+ 12   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+  8   set                 0      1      0
+  9   table_open          1      56     13    # amelie.test (primary) part
+ 10   push_int            -      0      0     # 123
+ 11   set_add             0      0      0
+ 12   table_next          1      10     0
+ 13   free                1      0      0
+ 14   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	select 123 into x from test;
 	select x;
 end;
+
+col1
+────
 123
 # test: select expr into / select from into
 explain begin
@@ -402,30 +453,33 @@ explain begin
 	select 123 into x;
 	select id into x from test;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 123",
-    "02": "var_set             0      0      0     ",
-    "03": "send_all            0      0      32    # amelie.test (select, closing)",
-    "04": "union               1      0      0     ",
-    "05": "recv                1      0      0     ",
-    "06": "var_set             0      0      1     ",
-    "07": "free                1      0      0     ",
-    "08": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 123
+  2   var_set             0      0      0
+  3   send_all            0      0      32    # amelie.test (select, closing)
+  4   union               1      0      0
+  5   recv                1      0      0
+  6   var_set             0      0      1
+  7   free                1      0      0
+  8   ret                 -1     0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select 123 into x;
@@ -438,37 +492,43 @@ explain begin
 	select id into x from test;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 123",
-    "02": "var_set             0      0      0     ",
-    "03": "send_all            0      0      32    # amelie.test (select, closing)",
-    "04": "union               1      0      0     ",
-    "05": "recv                1      0      0     ",
-    "06": "var_set             0      0      1     ",
-    "07": "free                1      0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 123
+  2   var_set             0      0      0
+  3   send_all            0      0      32    # amelie.test (select, closing)
+  4   union               1      0      0
+  5   recv                1      0      0
+  6   var_set             0      0      1
+  7   free                1      0      0
+  8   var                 0      0      0
+  9   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select 123 into x;
 	select id into x from test;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / if / select var
 explain begin
@@ -477,37 +537,43 @@ explain begin
 	if true then end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "bool                1      1      0     ",
-    "03": "jntr                4      1      0     ",
-    "04": "union               1      0      0     ",
-    "05": "recv                1      0      0     ",
-    "06": "var_set             0      0      1     ",
-    "07": "free                1      0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   bool                1      1      0
+  3   jntr                4      1      0
+  4   union               1      0      0
+  5   recv                1      0      0
+  6   var_set             0      0      1
+  7   free                1      0      0
+  8   var                 0      0      0
+  9   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	if true then end;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / if var / select var
 explain begin
@@ -516,37 +582,43 @@ explain begin
 	if x then end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "var                 0      0      0     ",
-    "07": "jntr                8      0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   var                 0      0      0
+  7   jntr                8      0      0
+  8   var                 0      0      0
+  9   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	if x then end;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / if then select var / select var
 explain begin
@@ -557,32 +629,35 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      1      0     ",
-    "07": "jntr                9      0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "var                 0      0      0     ",
-    "10": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      1      0
+  7   jntr                9      0      0
+  8   var                 0      0      0
+  9   var                 0      0      0
+ 10   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -591,6 +666,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / if then var := / select var
 explain begin
@@ -601,33 +679,36 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      1      0     ",
-    "07": "jntr                10     0      0     ",
-    "08": "int                 0      -      0     # 7",
-    "09": "var_set             0      0      0     ",
-    "10": "var                 0      0      0     ",
-    "11": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      1      0
+  7   jntr                10     0      0
+  8   int                 0      -      0     # 7
+  9   var_set             0      0      0
+ 10   var                 0      0      0
+ 11   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -636,6 +717,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 7
 # test: select from into / if then := var / select var
 explain begin
@@ -647,36 +731,39 @@ explain begin
 	end;
 	select x, y;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      1      0     ",
-    "07": "jntr                10     0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "var_set             1      0      0     ",
-    "10": "set                 0      2      0     ",
-    "11": "push_var            0      0      0     ",
-    "12": "push_var            1      0      0     ",
-    "13": "set_add             0      0      0     ",
-    "14": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      1      0
+  7   jntr                10     0      0
+  8   var                 0      0      0
+  9   var_set             1      0      0
+ 10   set                 0      2      0
+ 11   push_var            0      0      0
+ 12   push_var            1      0      0
+ 13   set_add             0      0      0
+ 14   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	declare y int;
@@ -686,7 +773,10 @@ begin
 	end;
 	select x, y;
 end;
-1 │ 1
+
+col1  col2
+────────────
+1     1
 # test: select from into / if .. else select var / select var
 explain begin
 	declare x int;
@@ -694,39 +784,45 @@ explain begin
 	if false then else select x; end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      0      0     ",
-    "07": "jntr                9      0      0     ",
-    "08": "jmp                 10     0      0     ",
-    "09": "var                 0      0      0     ",
-    "10": "var                 0      0      0     ",
-    "11": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      0      0
+  7   jntr                9      0      0
+  8   jmp                 10     0      0
+  9   var                 0      0      0
+ 10   var                 0      0      0
+ 11   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	if false then else select x; end;
 	select x;
 end;
+
+col1
+────
 1
 explain begin
 	declare x int;
@@ -734,40 +830,46 @@ explain begin
 	if false then select 1; else select x; end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      0      0     ",
-    "07": "jntr                10     0      0     ",
-    "08": "int                 0      -      0     # 1",
-    "09": "jmp                 11     0      0     ",
-    "10": "var                 0      0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      0      0
+  7   jntr                10     0      0
+  8   int                 0      -      0     # 1
+  9   jmp                 11     0      0
+ 10   var                 0      0      0
+ 11   var                 0      0      0
+ 12   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	if false then select 1; else select x; end;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / if .. else var := / select var
 explain begin
@@ -776,40 +878,46 @@ explain begin
 	if false then else x := 7; end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      0      0     ",
-    "07": "jntr                9      0      0     ",
-    "08": "jmp                 11     0      0     ",
-    "09": "int                 0      -      0     # 7",
-    "10": "var_set             0      0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      0      0
+  7   jntr                9      0      0
+  8   jmp                 11     0      0
+  9   int                 0      -      0     # 7
+ 10   var_set             0      0      0
+ 11   var                 0      0      0
+ 12   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	if false then else x := 7; end;
 	select x;
 end;
+
+col1
+────
 7
 explain begin
 	declare x int;
@@ -817,41 +925,47 @@ explain begin
 	if false then select 1; else x := 7; end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      0      0     ",
-    "07": "jntr                10     0      0     ",
-    "08": "int                 0      -      0     # 1",
-    "09": "jmp                 12     0      0     ",
-    "10": "int                 0      -      0     # 7",
-    "11": "var_set             0      0      0     ",
-    "12": "var                 0      0      0     ",
-    "13": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      0      0
+  7   jntr                10     0      0
+  8   int                 0      -      0     # 1
+  9   jmp                 12     0      0
+ 10   int                 0      -      0     # 7
+ 11   var_set             0      0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	if false then select 1; else x := 7; end;
 	select x;
 end;
+
+col1
+────
 7
 # test: select from into / if .. else := var / select var
 explain begin
@@ -861,37 +975,40 @@ explain begin
 	if false then else y := x; end;
 	select x, y;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      0      0     ",
-    "07": "jntr                9      0      0     ",
-    "08": "jmp                 11     0      0     ",
-    "09": "var                 0      0      0     ",
-    "10": "var_set             1      0      0     ",
-    "11": "set                 0      2      0     ",
-    "12": "push_var            0      0      0     ",
-    "13": "push_var            1      0      0     ",
-    "14": "set_add             0      0      0     ",
-    "15": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      0      0
+  7   jntr                9      0      0
+  8   jmp                 11     0      0
+  9   var                 0      0      0
+ 10   var_set             1      0      0
+ 11   set                 0      2      0
+ 12   push_var            0      0      0
+ 13   push_var            1      0      0
+ 14   set_add             0      0      0
+ 15   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	declare y int;
@@ -899,7 +1016,10 @@ begin
 	if false then else y := x; end;
 	select x, y;
 end;
-1 │ 1
+
+col1  col2
+────────────
+1     1
 explain begin
 	declare x int;
 	declare y int;
@@ -907,38 +1027,41 @@ explain begin
 	if false then select 1; else y := x; end;
 	select x, y;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      0      0     ",
-    "07": "jntr                10     0      0     ",
-    "08": "int                 0      -      0     # 1",
-    "09": "jmp                 12     0      0     ",
-    "10": "var                 0      0      0     ",
-    "11": "var_set             1      0      0     ",
-    "12": "set                 0      2      0     ",
-    "13": "push_var            0      0      0     ",
-    "14": "push_var            1      0      0     ",
-    "15": "set_add             0      0      0     ",
-    "16": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      0      0
+  7   jntr                10     0      0
+  8   int                 0      -      0     # 1
+  9   jmp                 12     0      0
+ 10   var                 0      0      0
+ 11   var_set             1      0      0
+ 12   set                 0      2      0
+ 13   push_var            0      0      0
+ 14   push_var            1      0      0
+ 15   set_add             0      0      0
+ 16   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	declare y int;
@@ -946,7 +1069,10 @@ begin
 	if false then select 1; else y := x; end;
 	select x, y;
 end;
-1 │ 1
+
+col1  col2
+────────────
+1     1
 # test: select from into / if if var / select var
 explain begin
 	declare x int;
@@ -954,39 +1080,45 @@ explain begin
 	if true then if x then end; end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      1      0     ",
-    "07": "jntr                10     0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "jntr                10     0      0     ",
-    "10": "var                 0      0      0     ",
-    "11": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      1      0
+  7   jntr                10     0      0
+  8   var                 0      0      0
+  9   jntr                10     0      0
+ 10   var                 0      0      0
+ 11   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
 	if true then if x then end; end;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / if then if select var / select var
 explain begin
@@ -999,34 +1131,37 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      1      0     ",
-    "07": "jntr                11     0      0     ",
-    "08": "bool                0      1      0     ",
-    "09": "jntr                11     0      0     ",
-    "10": "var                 0      0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      1      0
+  7   jntr                11     0      0
+  8   bool                0      1      0
+  9   jntr                11     0      0
+ 10   var                 0      0      0
+ 11   var                 0      0      0
+ 12   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1037,6 +1172,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / if then if select into var / select var
 explain begin
@@ -1049,35 +1187,38 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      1      0     ",
-    "07": "jntr                12     0      0     ",
-    "08": "bool                0      1      0     ",
-    "09": "jntr                12     0      0     ",
-    "10": "int                 0      -      0     # 123",
-    "11": "var_set             0      0      0     ",
-    "12": "var                 0      0      0     ",
-    "13": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      1      0
+  7   jntr                12     0      0
+  8   bool                0      1      0
+  9   jntr                12     0      0
+ 10   int                 0      -      0     # 123
+ 11   var_set             0      0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1088,6 +1229,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 123
 explain begin declare x int;
 	declare y int;
@@ -1100,39 +1244,42 @@ explain begin declare x int;
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      1      0     ",
-    "07": "jntr                16     0      0     ",
-    "08": "bool                0      1      0     ",
-    "09": "jntr                16     0      0     ",
-    "10": "int                 0      -      0     # 123",
-    "11": "var_set             1      0      0     ",
-    "12": "var                 0      0      0     ",
-    "13": "var                 1      1      0     ",
-    "14": "addii               2      0      1     ",
-    "15": "var_set             0      0      2     ",
-    "16": "var                 0      0      0     ",
-    "17": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      1      0
+  7   jntr                16     0      0
+  8   bool                0      1      0
+  9   jntr                16     0      0
+ 10   int                 0      -      0     # 123
+ 11   var_set             1      0      0
+ 12   var                 0      0      0
+ 13   var                 1      1      0
+ 14   addii               2      0      1
+ 15   var_set             0      0      2
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin declare x int;
 	declare y int;
 	select id into x from test;
@@ -1144,6 +1291,9 @@ begin declare x int;
 	end;
 	select x;
 end;
+
+col1
+────
 124
 # test: if select into var / select var
 explain begin
@@ -1153,32 +1303,35 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "bool                0      1      0     ",
-    "02": "jntr                8      0      0     ",
-    "03": "send_all            0      0      32    # amelie.test (select)",
-    "04": "union               1      0      0     ",
-    "05": "recv                1      0      0     ",
-    "06": "var_set             0      0      1     ",
-    "07": "free                1      0      0     ",
-    "08": "close               0      0      0     ",
-    "09": "var                 0      0      0     ",
-    "10": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   bool                0      1      0
+  2   jntr                8      0      0
+  3   send_all            0      0      32    # amelie.test (select)
+  4   union               1      0      0
+  5   recv                1      0      0
+  6   var_set             0      0      1
+  7   free                1      0      0
+  8   close               0      0      0
+  9   var                 0      0      0
+ 10   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	if true then
@@ -1186,6 +1339,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: if select into var else select into var / select var
 explain begin
@@ -1197,48 +1353,51 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "bool                0      1      0     ",
-    "02": "jntr                9      0      0     ",
-    "03": "send_all            0      0      32    # amelie.test (select)",
-    "04": "union               1      0      0     ",
-    "05": "recv                1      0      0     ",
-    "06": "var_set             0      0      1     ",
-    "07": "free                1      0      0     ",
-    "08": "jmp                 14     0      0     ",
-    "09": "send_all            0      0      88    # amelie.test (select)",
-    "10": "union               1      0      0     ",
-    "11": "recv                1      0      0     ",
-    "12": "var_set             0      0      1     ",
-    "13": "free                1      0      0     ",
-    "14": "close               0      0      0     ",
-    "15": "var                 0      0      0     ",
-    "16": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     ",
-    "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     16    # amelie.test (primary) part",
-    "10": "int                 2      -      0     # 7",
-    "11": "table_readi32       3      1      -     # id",
-    "12": "addii               4      2      3     ",
-    "13": "push                4      0      0     ",
-    "14": "set_add             0      0      0     ",
-    "15": "table_next          1      10     0     ",
-    "16": "free                1      0      0     ",
-    "17": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   bool                0      1      0
+  2   jntr                9      0      0
+  3   send_all            0      0      32    # amelie.test (select)
+  4   union               1      0      0
+  5   recv                1      0      0
+  6   var_set             0      0      1
+  7   free                1      0      0
+  8   jmp                 14     0      0
+  9   send_all            0      0      88    # amelie.test (select)
+ 10   union               1      0      0
+ 11   recv                1      0      0
+ 12   var_set             0      0      1
+ 13   free                1      0      0
+ 14   close               0      0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+  8   set                 0      1      0
+  9   table_open          1      56     16    # amelie.test (primary) part
+ 10   int                 2      -      0     # 7
+ 11   table_readi32       3      1      -     # id
+ 12   addii               4      2      3
+ 13   push                4      0      0
+ 14   set_add             0      0      0
+ 15   table_next          1      10     0
+ 16   free                1      0      0
+ 17   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	if true then
@@ -1248,6 +1407,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 explain begin
 	declare x int;
@@ -1258,48 +1420,51 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "bool                0      0      0     ",
-    "02": "jntr                9      0      0     ",
-    "03": "send_all            0      0      32    # amelie.test (select)",
-    "04": "union               1      0      0     ",
-    "05": "recv                1      0      0     ",
-    "06": "var_set             0      0      1     ",
-    "07": "free                1      0      0     ",
-    "08": "jmp                 14     0      0     ",
-    "09": "send_all            0      0      88    # amelie.test (select)",
-    "10": "union               1      0      0     ",
-    "11": "recv                1      0      0     ",
-    "12": "var_set             0      0      1     ",
-    "13": "free                1      0      0     ",
-    "14": "close               0      0      0     ",
-    "15": "var                 0      0      0     ",
-    "16": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     ",
-    "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     16    # amelie.test (primary) part",
-    "10": "int                 2      -      0     # 7",
-    "11": "table_readi32       3      1      -     # id",
-    "12": "addii               4      2      3     ",
-    "13": "push                4      0      0     ",
-    "14": "set_add             0      0      0     ",
-    "15": "table_next          1      10     0     ",
-    "16": "free                1      0      0     ",
-    "17": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   bool                0      0      0
+  2   jntr                9      0      0
+  3   send_all            0      0      32    # amelie.test (select)
+  4   union               1      0      0
+  5   recv                1      0      0
+  6   var_set             0      0      1
+  7   free                1      0      0
+  8   jmp                 14     0      0
+  9   send_all            0      0      88    # amelie.test (select)
+ 10   union               1      0      0
+ 11   recv                1      0      0
+ 12   var_set             0      0      1
+ 13   free                1      0      0
+ 14   close               0      0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+  8   set                 0      1      0
+  9   table_open          1      56     16    # amelie.test (primary) part
+ 10   int                 2      -      0     # 7
+ 11   table_readi32       3      1      -     # id
+ 12   addii               4      2      3
+ 13   push                4      0      0
+ 14   set_add             0      0      0
+ 15   table_next          1      10     0
+ 16   free                1      0      0
+ 17   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	if false then
@@ -1309,6 +1474,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 8
 # test: select from into / if select into var else select into var / select var
 explain begin
@@ -1321,63 +1489,66 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      1      0     ",
-    "07": "jntr                14     0      0     ",
-    "08": "send_all            0      0      88    # amelie.test (select)",
-    "09": "union               1      0      0     ",
-    "10": "recv                1      0      0     ",
-    "11": "var_set             0      0      1     ",
-    "12": "free                1      0      0     ",
-    "13": "jmp                 19     0      0     ",
-    "14": "send_all            0      0      144   # amelie.test (select)",
-    "15": "union               1      0      0     ",
-    "16": "recv                1      0      0     ",
-    "17": "var_set             0      0      1     ",
-    "18": "free                1      0      0     ",
-    "19": "close               0      0      0     ",
-    "20": "var                 0      0      0     ",
-    "21": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     ",
-    "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     16    # amelie.test (primary) part",
-    "10": "int                 2      -      0     # 5",
-    "11": "table_readi32       3      1      -     # id",
-    "12": "addii               4      2      3     ",
-    "13": "push                4      0      0     ",
-    "14": "set_add             0      0      0     ",
-    "15": "table_next          1      10     0     ",
-    "16": "free                1      0      0     ",
-    "17": "ret                 0      0      -     ",
-    "18": "set                 0      1      0     ",
-    "19": "table_open          1      112    26    # amelie.test (primary) part",
-    "20": "int                 2      -      0     # 10",
-    "21": "table_readi32       3      1      -     # id",
-    "22": "addii               4      2      3     ",
-    "23": "push                4      0      0     ",
-    "24": "set_add             0      0      0     ",
-    "25": "table_next          1      20     0     ",
-    "26": "free                1      0      0     ",
-    "27": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      1      0
+  7   jntr                14     0      0
+  8   send_all            0      0      88    # amelie.test (select)
+  9   union               1      0      0
+ 10   recv                1      0      0
+ 11   var_set             0      0      1
+ 12   free                1      0      0
+ 13   jmp                 19     0      0
+ 14   send_all            0      0      144   # amelie.test (select)
+ 15   union               1      0      0
+ 16   recv                1      0      0
+ 17   var_set             0      0      1
+ 18   free                1      0      0
+ 19   close               0      0      0
+ 20   var                 0      0      0
+ 21   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+  8   set                 0      1      0
+  9   table_open          1      56     16    # amelie.test (primary) part
+ 10   int                 2      -      0     # 5
+ 11   table_readi32       3      1      -     # id
+ 12   addii               4      2      3
+ 13   push                4      0      0
+ 14   set_add             0      0      0
+ 15   table_next          1      10     0
+ 16   free                1      0      0
+ 17   ret                 0      0      -
+ 18   set                 0      1      0
+ 19   table_open          1      112    26    # amelie.test (primary) part
+ 20   int                 2      -      0     # 10
+ 21   table_readi32       3      1      -     # id
+ 22   addii               4      2      3
+ 23   push                4      0      0
+ 24   set_add             0      0      0
+ 25   table_next          1      20     0
+ 26   free                1      0      0
+ 27   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1388,6 +1559,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 6
 explain begin
 	declare x int;
@@ -1399,63 +1573,66 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "bool                0      0      0     ",
-    "07": "jntr                14     0      0     ",
-    "08": "send_all            0      0      88    # amelie.test (select)",
-    "09": "union               1      0      0     ",
-    "10": "recv                1      0      0     ",
-    "11": "var_set             0      0      1     ",
-    "12": "free                1      0      0     ",
-    "13": "jmp                 19     0      0     ",
-    "14": "send_all            0      0      144   # amelie.test (select)",
-    "15": "union               1      0      0     ",
-    "16": "recv                1      0      0     ",
-    "17": "var_set             0      0      1     ",
-    "18": "free                1      0      0     ",
-    "19": "close               0      0      0     ",
-    "20": "var                 0      0      0     ",
-    "21": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     ",
-    "08": "set                 0      1      0     ",
-    "09": "table_open          1      56     16    # amelie.test (primary) part",
-    "10": "int                 2      -      0     # 5",
-    "11": "table_readi32       3      1      -     # id",
-    "12": "addii               4      2      3     ",
-    "13": "push                4      0      0     ",
-    "14": "set_add             0      0      0     ",
-    "15": "table_next          1      10     0     ",
-    "16": "free                1      0      0     ",
-    "17": "ret                 0      0      -     ",
-    "18": "set                 0      1      0     ",
-    "19": "table_open          1      112    26    # amelie.test (primary) part",
-    "20": "int                 2      -      0     # 10",
-    "21": "table_readi32       3      1      -     # id",
-    "22": "addii               4      2      3     ",
-    "23": "push                4      0      0     ",
-    "24": "set_add             0      0      0     ",
-    "25": "table_next          1      20     0     ",
-    "26": "free                1      0      0     ",
-    "27": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   bool                0      0      0
+  7   jntr                14     0      0
+  8   send_all            0      0      88    # amelie.test (select)
+  9   union               1      0      0
+ 10   recv                1      0      0
+ 11   var_set             0      0      1
+ 12   free                1      0      0
+ 13   jmp                 19     0      0
+ 14   send_all            0      0      144   # amelie.test (select)
+ 15   union               1      0      0
+ 16   recv                1      0      0
+ 17   var_set             0      0      1
+ 18   free                1      0      0
+ 19   close               0      0      0
+ 20   var                 0      0      0
+ 21   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+  8   set                 0      1      0
+  9   table_open          1      56     16    # amelie.test (primary) part
+ 10   int                 2      -      0     # 5
+ 11   table_readi32       3      1      -     # id
+ 12   addii               4      2      3
+ 13   push                4      0      0
+ 14   set_add             0      0      0
+ 15   table_next          1      10     0
+ 16   free                1      0      0
+ 17   ret                 0      0      -
+ 18   set                 0      1      0
+ 19   table_open          1      112    26    # amelie.test (primary) part
+ 20   int                 2      -      0     # 10
+ 21   table_readi32       3      1      -     # id
+ 22   addii               4      2      3
+ 23   push                4      0      0
+ 24   set_add             0      0      0
+ 25   table_next          1      20     0
+ 26   free                1      0      0
+ 27   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1466,6 +1643,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 11
 # test: select from into / for in var
 explain begin
@@ -1473,36 +1653,39 @@ explain begin
 	select id into x from test;
 	for it in x do end;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "var                 0      0      0     ",
-    "07": "push                0      0      0     ",
-    "08": "set                 0      1      0     ",
-    "09": "set_add             0      0      0     ",
-    "10": "store_open          1      0      12    ",
-    "11": "store_next          1      11     0     ",
-    "12": "free                1      0      0     ",
-    "13": "free                0      0      0     ",
-    "14": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   var                 0      0      0
+  7   push                0      0      0
+  8   set                 0      1      0
+  9   set_add             0      0      0
+ 10   store_open          1      0      12
+ 11   store_next          1      11     0
+ 12   free                1      0      0
+ 13   free                0      0      0
+ 14   ret                 -1     0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1516,33 +1699,36 @@ explain begin
 		select x;
 	end;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "json                0      56     0     ",
-    "07": "json_open           1      0      10    ",
-    "08": "var                 2      0      0     ",
-    "09": "json_next           1      8      0     ",
-    "10": "free                0      0      0     ",
-    "11": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   json                0      56     0
+  7   json_open           1      0      10
+  8   var                 2      0      0
+  9   json_next           1      8      0
+ 10   free                0      0      0
+ 11   ret                 -1     0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1559,37 +1745,40 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "json                0      56     0     ",
-    "07": "json_open           1      0      13    ",
-    "08": "json_read           2      1      0     ",
-    "09": "push                2      0      0     ",
-    "10": "call                2      -      1     # int()",
-    "11": "var_set             0      0      2     ",
-    "12": "json_next           1      8      0     ",
-    "13": "free                0      0      0     ",
-    "14": "var                 0      0      0     ",
-    "15": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   json                0      56     0
+  7   json_open           1      0      13
+  8   json_read           2      1      0
+  9   push                2      0      0
+ 10   call                2      -      1     # int()
+ 11   var_set             0      0      2
+ 12   json_next           1      8      0
+ 13   free                0      0      0
+ 14   var                 0      0      0
+ 15   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1598,6 +1787,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 3
 explain begin
 	declare x int;
@@ -1608,42 +1800,45 @@ explain begin
 	end;
 	select x, y;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "json                0      56     0     ",
-    "07": "json_open           1      0      15    ",
-    "08": "var                 2      0      0     ",
-    "09": "json_read           3      1      0     ",
-    "10": "push                3      0      0     ",
-    "11": "call                3      -      1     # int()",
-    "12": "addii               4      2      3     ",
-    "13": "var_set             1      0      4     ",
-    "14": "json_next           1      8      0     ",
-    "15": "free                0      0      0     ",
-    "16": "set                 0      2      0     ",
-    "17": "push_var            0      0      0     ",
-    "18": "push_var            1      0      0     ",
-    "19": "set_add             0      0      0     ",
-    "20": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   json                0      56     0
+  7   json_open           1      0      15
+  8   var                 2      0      0
+  9   json_read           3      1      0
+ 10   push                3      0      0
+ 11   call                3      -      1     # int()
+ 12   addii               4      2      3
+ 13   var_set             1      0      4
+ 14   json_next           1      8      0
+ 15   free                0      0      0
+ 16   set                 0      2      0
+ 17   push_var            0      0      0
+ 18   push_var            1      0      0
+ 19   set_add             0      0      0
+ 20   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	declare y int;
@@ -1653,7 +1848,10 @@ begin
 	end;
 	select x, y;
 end;
-1 │ 4
+
+col1  col2
+────────────
+1     4
 # test: select from into / for / select var
 explain begin
 	declare x int;
@@ -1663,35 +1861,38 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "json                1      56     0     ",
-    "03": "json_open           2      1      7     ",
-    "04": "bool                3      1      0     ",
-    "05": "jntr                6      3      0     ",
-    "06": "json_next           2      4      0     ",
-    "07": "free                1      0      0     ",
-    "08": "union               1      0      0     ",
-    "09": "recv                1      0      0     ",
-    "10": "var_set             0      0      1     ",
-    "11": "free                1      0      0     ",
-    "12": "var                 0      0      0     ",
-    "13": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   json                1      56     0
+  3   json_open           2      1      7
+  4   bool                3      1      0
+  5   jntr                6      3      0
+  6   json_next           2      4      0
+  7   free                1      0      0
+  8   union               1      0      0
+  9   recv                1      0      0
+ 10   var_set             0      0      1
+ 11   free                1      0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1700,6 +1901,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / for if var
 explain begin
@@ -1709,34 +1913,37 @@ explain begin
 		if x then end;
 	end;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "json                0      56     0     ",
-    "07": "json_open           1      0      11    ",
-    "08": "var                 2      0      0     ",
-    "09": "jntr                10     2      0     ",
-    "10": "json_next           1      8      0     ",
-    "11": "free                0      0      0     ",
-    "12": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   json                0      56     0
+  7   json_open           1      0      11
+  8   var                 2      0      0
+  9   jntr                10     2      0
+ 10   json_next           1      8      0
+ 11   free                0      0      0
+ 12   ret                 -1     0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1752,35 +1959,38 @@ explain begin
 		if true then select x; end;
 	end;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "json                0      56     0     ",
-    "07": "json_open           1      0      12    ",
-    "08": "bool                2      1      0     ",
-    "09": "jntr                11     2      0     ",
-    "10": "var                 2      0      0     ",
-    "11": "json_next           1      8      0     ",
-    "12": "free                0      0      0     ",
-    "13": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   json                0      56     0
+  7   json_open           1      0      12
+  8   bool                2      1      0
+  9   jntr                11     2      0
+ 10   var                 2      0      0
+ 11   json_next           1      8      0
+ 12   free                0      0      0
+ 13   ret                 -1     0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1799,44 +2009,47 @@ explain begin
 	end;
 	select x, y;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "json                0      56     0     ",
-    "07": "json_open           1      0      17    ",
-    "08": "bool                2      1      0     ",
-    "09": "jntr                16     2      0     ",
-    "10": "var                 2      0      0     ",
-    "11": "json_read           3      1      0     ",
-    "12": "push                3      0      0     ",
-    "13": "call                3      -      1     # int()",
-    "14": "addii               4      2      3     ",
-    "15": "var_set             1      0      4     ",
-    "16": "json_next           1      8      0     ",
-    "17": "free                0      0      0     ",
-    "18": "set                 0      2      0     ",
-    "19": "push_var            0      0      0     ",
-    "20": "push_var            1      0      0     ",
-    "21": "set_add             0      0      0     ",
-    "22": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   json                0      56     0
+  7   json_open           1      0      17
+  8   bool                2      1      0
+  9   jntr                16     2      0
+ 10   var                 2      0      0
+ 11   json_read           3      1      0
+ 12   push                3      0      0
+ 13   call                3      -      1     # int()
+ 14   addii               4      2      3
+ 15   var_set             1      0      4
+ 16   json_next           1      8      0
+ 17   free                0      0      0
+ 18   set                 0      2      0
+ 19   push_var            0      0      0
+ 20   push_var            1      0      0
+ 21   set_add             0      0      0
+ 22   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	declare y int;
@@ -1848,7 +2061,10 @@ begin
 	end;
 	select x, y;
 end;
-1 │ 4
+
+col1  col2
+────────────
+1     4
 explain begin
 	declare x int := 0;
 	for it in ([1,2,3]) do
@@ -1858,28 +2074,28 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "json                0      0      0     ",
-    "04": "json_open           1      0      14    ",
-    "05": "bool                2      1      0     ",
-    "06": "jntr                13     2      0     ",
-    "07": "var                 2      0      0     ",
-    "08": "json_read           3      1      0     ",
-    "09": "push                3      0      0     ",
-    "10": "call                3      -      1     # int()",
-    "11": "addii               4      2      3     ",
-    "12": "var_set             0      0      4     ",
-    "13": "json_next           1      5      0     ",
-    "14": "free                0      0      0     ",
-    "15": "var                 0      0      0     ",
-    "16": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   json                0      0      0
+  4   json_open           1      0      14
+  5   bool                2      1      0
+  6   jntr                13     2      0
+  7   var                 2      0      0
+  8   json_read           3      1      0
+  9   push                3      0      0
+ 10   call                3      -      1     # int()
+ 11   addii               4      2      3
+ 12   var_set             0      0      4
+ 13   json_next           1      5      0
+ 14   free                0      0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
 begin
 	declare x int := 0;
 	for it in ([1,2,3]) do
@@ -1889,6 +2105,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 6
 explain begin
 	declare x int := 0;
@@ -1897,26 +2116,26 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "json                0      0      0     ",
-    "04": "json_open           1      0      12    ",
-    "05": "var                 2      0      0     ",
-    "06": "json_read           3      1      0     ",
-    "07": "push                3      0      0     ",
-    "08": "call                3      -      1     # int()",
-    "09": "addii               4      2      3     ",
-    "10": "var_set             0      0      4     ",
-    "11": "json_next           1      5      0     ",
-    "12": "free                0      0      0     ",
-    "13": "var                 0      0      0     ",
-    "14": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   json                0      0      0
+  4   json_open           1      0      12
+  5   var                 2      0      0
+  6   json_read           3      1      0
+  7   push                3      0      0
+  8   call                3      -      1     # int()
+  9   addii               4      2      3
+ 10   var_set             0      0      4
+ 11   json_next           1      5      0
+ 12   free                0      0      0
+ 13   var                 0      0      0
+ 14   ret                 0      0      -
 begin
 	declare x int := 0;
 	for it in ([1,2,3]) do
@@ -1924,6 +2143,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 6
 # test: select from into / for if if then var
 explain begin
@@ -1939,46 +2161,49 @@ explain begin
 	end;
 	select x, y;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "json                0      56     0     ",
-    "07": "json_open           1      0      19    ",
-    "08": "bool                2      1      0     ",
-    "09": "jntr                18     2      0     ",
-    "10": "bool                2      1      0     ",
-    "11": "jntr                18     2      0     ",
-    "12": "var                 2      0      0     ",
-    "13": "json_read           3      1      0     ",
-    "14": "push                3      0      0     ",
-    "15": "call                3      -      1     # int()",
-    "16": "addii               4      2      3     ",
-    "17": "var_set             1      0      4     ",
-    "18": "json_next           1      8      0     ",
-    "19": "free                0      0      0     ",
-    "20": "set                 0      2      0     ",
-    "21": "push_var            0      0      0     ",
-    "22": "push_var            1      0      0     ",
-    "23": "set_add             0      0      0     ",
-    "24": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   json                0      56     0
+  7   json_open           1      0      19
+  8   bool                2      1      0
+  9   jntr                18     2      0
+ 10   bool                2      1      0
+ 11   jntr                18     2      0
+ 12   var                 2      0      0
+ 13   json_read           3      1      0
+ 14   push                3      0      0
+ 15   call                3      -      1     # int()
+ 16   addii               4      2      3
+ 17   var_set             1      0      4
+ 18   json_next           1      8      0
+ 19   free                0      0      0
+ 20   set                 0      2      0
+ 21   push_var            0      0      0
+ 22   push_var            1      0      0
+ 23   set_add             0      0      0
+ 24   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	declare y int;
@@ -1992,7 +2217,10 @@ begin
 	end;
 	select x, y;
 end;
-1 │ 4
+
+col1  col2
+────────────
+1     4
 # test: select from into / while var do var
 explain begin
 	declare x int;
@@ -2001,35 +2229,38 @@ explain begin
 		x := x - 1;
 	end;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "var                 0      0      0     ",
-    "07": "jntr                13     0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "int                 1      -      0     # 1",
-    "10": "subii               2      0      1     ",
-    "11": "var_set             0      0      2     ",
-    "12": "jmp                 6      0      0     ",
-    "13": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   var                 0      0      0
+  7   jntr                13     0      0
+  8   var                 0      0      0
+  9   int                 1      -      0     # 1
+ 10   subii               2      0      1
+ 11   var_set             0      0      2
+ 12   jmp                 6      0      0
+ 13   ret                 -1     0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2048,43 +2279,46 @@ explain begin
 	end;
 	select x, y;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "union               1      0      0     ",
-    "03": "recv                1      0      0     ",
-    "04": "var_set             0      0      1     ",
-    "05": "free                1      0      0     ",
-    "06": "var                 0      0      0     ",
-    "07": "jntr                17     0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "int                 1      -      0     # 1",
-    "10": "addii               2      0      1     ",
-    "11": "var_set             1      0      2     ",
-    "12": "var                 0      0      0     ",
-    "13": "int                 1      -      0     # 1",
-    "14": "subii               2      0      1     ",
-    "15": "var_set             0      0      2     ",
-    "16": "jmp                 6      0      0     ",
-    "17": "set                 0      2      0     ",
-    "18": "push_var            0      0      0     ",
-    "19": "push_var            1      0      0     ",
-    "20": "set_add             0      0      0     ",
-    "21": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   var_set             0      0      1
+  5   free                1      0      0
+  6   var                 0      0      0
+  7   jntr                17     0      0
+  8   var                 0      0      0
+  9   int                 1      -      0     # 1
+ 10   addii               2      0      1
+ 11   var_set             1      0      2
+ 12   var                 0      0      0
+ 13   int                 1      -      0     # 1
+ 14   subii               2      0      1
+ 15   var_set             0      0      2
+ 16   jmp                 6      0      0
+ 17   set                 0      2      0
+ 18   push_var            0      0      0
+ 19   push_var            1      0      0
+ 20   set_add             0      0      0
+ 21   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	declare y int;
@@ -2095,7 +2329,10 @@ begin
 	end;
 	select x, y;
 end;
-0 │ 2
+
+col1  col2
+────────────
+0     2
 # test: while / insert
 explain begin
 	declare x int := 4;
@@ -2104,32 +2341,35 @@ explain begin
 		x := x + 1;
 	end;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 4",
-    "02": "var_set             0      0      0     ",
-    "03": "var                 0      0      0     ",
-    "04": "int                 1      -      0     # 8",
-    "05": "ltii                2      0      1     ",
-    "06": "jntr                15     2      0     ",
-    "07": "push_var            0      0      1     ",
-    "08": "set_ptr             1      -      0     ",
-    "09": "send_shard          0      1      1     # amelie.test (insert)",
-    "10": "var                 0      0      0     ",
-    "11": "int                 1      -      0     # 1",
-    "12": "addii               2      0      1     ",
-    "13": "var_set             0      0      2     ",
-    "14": "jmp                 3      0      0     ",
-    "15": "close               0      0      0     ",
-    "16": "ret                 -1     0      -     "
-  },
-  "pushdown": {
-    "00": "insert              -      -      -     # amelie.test",
-    "01": "ret                 -1     0      -     "
-  },
-  "access": [["amelie.test", "shared_rw", "insert"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 4
+  2   var_set             0      0      0
+  3   var                 0      0      0
+  4   int                 1      -      0     # 8
+  5   ltii                2      0      1
+  6   jntr                15     2      0
+  7   push_var            0      0      1
+  8   set_ptr             1      -      0
+  9   send_shard          0      1      1     # amelie.test (insert)
+ 10   var                 0      0      0
+ 11   int                 1      -      0     # 1
+ 12   addii               2      0      1
+ 13   var_set             0      0      2
+ 14   jmp                 3      0      0
+ 15   close               0      0      0
+ 16   ret                 -1     0      -
+
+pushdown
+  0   insert              -      -      -     # amelie.test
+  1   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [insert]
 begin
 	declare x int := 4;
 	while x < 8 do
@@ -2145,42 +2385,45 @@ explain begin
 	end;
 	select * from test;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 8",
-    "02": "var_set             0      0      0     ",
-    "03": "var                 0      0      0     ",
-    "04": "int                 1      -      0     # 10",
-    "05": "ltii                2      0      1     ",
-    "06": "jntr                15     2      0     ",
-    "07": "push_var            0      0      1     ",
-    "08": "set_ptr             1      -      0     ",
-    "09": "send_shard          0      1      1     # amelie.test (insert)",
-    "10": "var                 0      0      0     ",
-    "11": "int                 1      -      0     # 1",
-    "12": "addii               2      0      1     ",
-    "13": "var_set             0      0      2     ",
-    "14": "jmp                 3      0      0     ",
-    "15": "send_all            0      0      56    # amelie.test (select, closing)",
-    "16": "union               1      0      0     ",
-    "17": "recv                1      0      0     ",
-    "18": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "insert              -      -      -     # amelie.test",
-    "01": "ret                 -1     0      -     ",
-    "02": "set                 0      1      0     ",
-    "03": "table_open          1      24     8     # amelie.test (primary) part",
-    "04": "table_readi32       2      1      -     # id",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      4      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared_rw", "insert", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   int                 0      -      0     # 8
+  2   var_set             0      0      0
+  3   var                 0      0      0
+  4   int                 1      -      0     # 10
+  5   ltii                2      0      1
+  6   jntr                15     2      0
+  7   push_var            0      0      1
+  8   set_ptr             1      -      0
+  9   send_shard          0      1      1     # amelie.test (insert)
+ 10   var                 0      0      0
+ 11   int                 1      -      0     # 1
+ 12   addii               2      0      1
+ 13   var_set             0      0      2
+ 14   jmp                 3      0      0
+ 15   send_all            0      0      56    # amelie.test (select, closing)
+ 16   union               1      0      0
+ 17   recv                1      0      0
+ 18   ret                 1      0      -
+
+pushdown
+  0   insert              -      -      -     # amelie.test
+  1   ret                 -1     0      -
+  2   set                 0      1      0
+  3   table_open          1      24     8     # amelie.test (primary) part
+  4   table_readi32       2      1      -     # id
+  5   push                2      0      0
+  6   set_add             0      0      0
+  7   table_next          1      4      0
+  8   free                1      0      0
+  9   ret                 0      0      -
+
+access
+  •   amelie.test shared_rw [insert, select]
 begin
 	declare x int := 8;
 	while x < 10 do
@@ -2189,6 +2432,9 @@ begin
 	end;
 	select * from test;
 end;
+
+id
+──
 1
 2
 3
@@ -2207,33 +2453,36 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "bool                1      1      0     ",
-    "03": "jntr                6      1      0     ",
-    "04": "jmp                 6      0      0     ",
-    "05": "jmp                 2      0      0     ",
-    "06": "union               1      0      0     ",
-    "07": "recv                1      0      0     ",
-    "08": "var_set             0      0      1     ",
-    "09": "free                1      0      0     ",
-    "10": "var                 0      0      0     ",
-    "11": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   bool                1      1      0
+  3   jntr                6      1      0
+  4   jmp                 6      0      0
+  5   jmp                 2      0      0
+  6   union               1      0      0
+  7   recv                1      0      0
+  8   var_set             0      0      1
+  9   free                1      0      0
+ 10   var                 0      0      0
+ 11   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2242,6 +2491,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / while if break
 explain begin
@@ -2254,35 +2506,38 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "bool                1      1      0     ",
-    "03": "jntr                8      1      0     ",
-    "04": "bool                1      1      0     ",
-    "05": "jntr                7      1      0     ",
-    "06": "jmp                 8      0      0     ",
-    "07": "jmp                 2      0      0     ",
-    "08": "union               1      0      0     ",
-    "09": "recv                1      0      0     ",
-    "10": "var_set             0      0      1     ",
-    "11": "free                1      0      0     ",
-    "12": "var                 0      0      0     ",
-    "13": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   bool                1      1      0
+  3   jntr                8      1      0
+  4   bool                1      1      0
+  5   jntr                7      1      0
+  6   jmp                 8      0      0
+  7   jmp                 2      0      0
+  8   union               1      0      0
+  9   recv                1      0      0
+ 10   var_set             0      0      1
+ 11   free                1      0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2293,6 +2548,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: while select from into / break
 explain begin
@@ -2304,36 +2562,39 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "bool                0      1      0     ",
-    "02": "jntr                12     0      0     ",
-    "03": "send_all            0      0      32    # amelie.test (select)",
-    "04": "union               1      0      0     ",
-    "05": "recv                1      0      0     ",
-    "06": "var_set             0      0      1     ",
-    "07": "free                1      0      0     ",
-    "08": "jmp                 12     0      0     ",
-    "09": "null                0      0      0     ",
-    "10": "var_set             0      0      0     ",
-    "11": "jmp                 1      0      0     ",
-    "12": "close               0      0      0     ",
-    "13": "var                 0      0      0     ",
-    "14": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   bool                0      1      0
+  2   jntr                12     0      0
+  3   send_all            0      0      32    # amelie.test (select)
+  4   union               1      0      0
+  5   recv                1      0      0
+  6   var_set             0      0      1
+  7   free                1      0      0
+  8   jmp                 12     0      0
+  9   null                0      0      0
+ 10   var_set             0      0      0
+ 11   jmp                 1      0      0
+ 12   close               0      0      0
+ 13   var                 0      0      0
+ 14   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	while true do
@@ -2343,6 +2604,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: while select from into / if break
 explain begin
@@ -2356,38 +2620,41 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "bool                0      1      0     ",
-    "02": "jntr                14     0      0     ",
-    "03": "send_all            0      0      32    # amelie.test (select)",
-    "04": "union               1      0      0     ",
-    "05": "recv                1      0      0     ",
-    "06": "var_set             0      0      1     ",
-    "07": "free                1      0      0     ",
-    "08": "bool                0      1      0     ",
-    "09": "jntr                11     0      0     ",
-    "10": "jmp                 14     0      0     ",
-    "11": "null                0      0      0     ",
-    "12": "var_set             0      0      0     ",
-    "13": "jmp                 1      0      0     ",
-    "14": "close               0      0      0     ",
-    "15": "var                 0      0      0     ",
-    "16": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   bool                0      1      0
+  2   jntr                14     0      0
+  3   send_all            0      0      32    # amelie.test (select)
+  4   union               1      0      0
+  5   recv                1      0      0
+  6   var_set             0      0      1
+  7   free                1      0      0
+  8   bool                0      1      0
+  9   jntr                11     0      0
+ 10   jmp                 14     0      0
+ 11   null                0      0      0
+ 12   var_set             0      0      0
+ 13   jmp                 1      0      0
+ 14   close               0      0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	while true do
@@ -2399,6 +2666,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: while select from into / if if break
 explain begin
@@ -2414,40 +2684,43 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "bool                0      1      0     ",
-    "02": "jntr                16     0      0     ",
-    "03": "send_all            0      0      32    # amelie.test (select)",
-    "04": "union               1      0      0     ",
-    "05": "recv                1      0      0     ",
-    "06": "var_set             0      0      1     ",
-    "07": "free                1      0      0     ",
-    "08": "bool                0      1      0     ",
-    "09": "jntr                13     0      0     ",
-    "10": "bool                0      1      0     ",
-    "11": "jntr                13     0      0     ",
-    "12": "jmp                 16     0      0     ",
-    "13": "null                0      0      0     ",
-    "14": "var_set             0      0      0     ",
-    "15": "jmp                 1      0      0     ",
-    "16": "close               0      0      0     ",
-    "17": "var                 0      0      0     ",
-    "18": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   bool                0      1      0
+  2   jntr                16     0      0
+  3   send_all            0      0      32    # amelie.test (select)
+  4   union               1      0      0
+  5   recv                1      0      0
+  6   var_set             0      0      1
+  7   free                1      0      0
+  8   bool                0      1      0
+  9   jntr                13     0      0
+ 10   bool                0      1      0
+ 11   jntr                13     0      0
+ 12   jmp                 16     0      0
+ 13   null                0      0      0
+ 14   var_set             0      0      0
+ 15   jmp                 1      0      0
+ 16   close               0      0      0
+ 17   var                 0      0      0
+ 18   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	while true do
@@ -2461,6 +2734,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: while select from into / if if continue
 explain begin
@@ -2482,54 +2758,57 @@ explain begin
 	end;
 	select i, x;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "bool                0      1      0     ",
-    "04": "jntr                27     0      0     ",
-    "05": "var                 0      0      0     ",
-    "06": "int                 1      -      0     # 3",
-    "07": "equii               2      0      1     ",
-    "08": "jntr                10     2      0     ",
-    "09": "jmp                 27     0      0     ",
-    "10": "var                 0      0      0     ",
-    "11": "int                 1      -      0     # 1",
-    "12": "addii               2      0      1     ",
-    "13": "var_set             0      0      2     ",
-    "14": "send_all            0      0      32    # amelie.test (select)",
-    "15": "union               1      0      0     ",
-    "16": "recv                1      0      0     ",
-    "17": "var_set             1      0      1     ",
-    "18": "free                1      0      0     ",
-    "19": "bool                0      1      0     ",
-    "20": "jntr                24     0      0     ",
-    "21": "bool                0      1      0     ",
-    "22": "jntr                24     0      0     ",
-    "23": "jmp                 3      0      0     ",
-    "24": "null                0      0      0     ",
-    "25": "var_set             1      0      0     ",
-    "26": "jmp                 3      0      0     ",
-    "27": "close               0      0      0     ",
-    "28": "set                 0      2      0     ",
-    "29": "push_var            0      0      0     ",
-    "30": "push_var            1      0      0     ",
-    "31": "set_add             0      0      0     ",
-    "32": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   int                 0      -      0     # 0
+  2   var_set             0      0      0
+  3   bool                0      1      0
+  4   jntr                27     0      0
+  5   var                 0      0      0
+  6   int                 1      -      0     # 3
+  7   equii               2      0      1
+  8   jntr                10     2      0
+  9   jmp                 27     0      0
+ 10   var                 0      0      0
+ 11   int                 1      -      0     # 1
+ 12   addii               2      0      1
+ 13   var_set             0      0      2
+ 14   send_all            0      0      32    # amelie.test (select)
+ 15   union               1      0      0
+ 16   recv                1      0      0
+ 17   var_set             1      0      1
+ 18   free                1      0      0
+ 19   bool                0      1      0
+ 20   jntr                24     0      0
+ 21   bool                0      1      0
+ 22   jntr                24     0      0
+ 23   jmp                 3      0      0
+ 24   null                0      0      0
+ 25   var_set             1      0      0
+ 26   jmp                 3      0      0
+ 27   close               0      0      0
+ 28   set                 0      2      0
+ 29   push_var            0      0      0
+ 30   push_var            1      0      0
+ 31   set_add             0      0      0
+ 32   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare i int := 0;
 	declare x int;
@@ -2549,7 +2828,10 @@ begin
 	end;
 	select i, x;
 end;
-3 │ 1
+
+col1  col2
+────────────
+3     1
 # test: select from into / for break
 explain begin
 	declare x int;
@@ -2559,34 +2841,37 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "json                1      56     0     ",
-    "03": "json_open           2      1      6     ",
-    "04": "jmp                 6      0      0     ",
-    "05": "json_next           2      4      0     ",
-    "06": "free                1      0      0     ",
-    "07": "union               1      0      0     ",
-    "08": "recv                1      0      0     ",
-    "09": "var_set             0      0      1     ",
-    "10": "free                1      0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   json                1      56     0
+  3   json_open           2      1      6
+  4   jmp                 6      0      0
+  5   json_next           2      4      0
+  6   free                1      0      0
+  7   union               1      0      0
+  8   recv                1      0      0
+  9   var_set             0      0      1
+ 10   free                1      0      0
+ 11   var                 0      0      0
+ 12   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2595,6 +2880,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: select from into / for if break
 explain begin
@@ -2607,36 +2895,39 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      32    # amelie.test (select, closing)",
-    "02": "json                1      56     0     ",
-    "03": "json_open           2      1      8     ",
-    "04": "bool                3      1      0     ",
-    "05": "jntr                7      3      0     ",
-    "06": "jmp                 8      0      0     ",
-    "07": "json_next           2      4      0     ",
-    "08": "free                1      0      0     ",
-    "09": "union               1      0      0     ",
-    "10": "recv                1      0      0     ",
-    "11": "var_set             0      0      1     ",
-    "12": "free                1      0      0     ",
-    "13": "var                 0      0      0     ",
-    "14": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      32    # amelie.test (select, closing)
+  2   json                1      56     0
+  3   json_open           2      1      8
+  4   bool                3      1      0
+  5   jntr                7      3      0
+  6   jmp                 8      0      0
+  7   json_next           2      4      0
+  8   free                1      0      0
+  9   union               1      0      0
+ 10   recv                1      0      0
+ 11   var_set             0      0      1
+ 12   free                1      0      0
+ 13   var                 0      0      0
+ 14   ret                 0      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2647,6 +2938,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: for select from into / break
 explain begin
@@ -2657,35 +2951,38 @@ explain begin
 	end;
 	select x;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "json                0      0      0     ",
-    "02": "json_open           1      0      10    ",
-    "03": "send_all            2      0      35    # amelie.test (select)",
-    "04": "union               3      0      0     ",
-    "05": "recv                3      2      0     ",
-    "06": "var_set             0      0      3     ",
-    "07": "free                3      0      0     ",
-    "08": "jmp                 10     0      0     ",
-    "09": "json_next           1      3      0     ",
-    "10": "free                0      0      0     ",
-    "11": "close               0      0      0     ",
-    "12": "var                 0      0      0     ",
-    "13": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 2      1      0     ",
-    "01": "table_open          3      3      6     # amelie.test (primary) part",
-    "02": "table_readi32       4      3      -     # id",
-    "03": "push                4      0      0     ",
-    "04": "set_add             2      0      0     ",
-    "05": "table_next          3      2      0     ",
-    "06": "free                3      0      0     ",
-    "07": "ret                 2      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   json                0      0      0
+  2   json_open           1      0      10
+  3   send_all            2      0      35    # amelie.test (select)
+  4   union               3      0      0
+  5   recv                3      2      0
+  6   var_set             0      0      3
+  7   free                3      0      0
+  8   jmp                 10     0      0
+  9   json_next           1      3      0
+ 10   free                0      0      0
+ 11   close               0      0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
+
+pushdown
+  0   set                 2      1      0
+  1   table_open          3      3      6     # amelie.test (primary) part
+  2   table_readi32       4      3      -     # id
+  3   push                4      0      0
+  4   set_add             2      0      0
+  5   table_next          3      2      0
+  6   free                3      0      0
+  7   ret                 2      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare x int;
 	for i in ([1]) do
@@ -2694,6 +2991,9 @@ begin
 	end;
 	select x;
 end;
+
+col1
+────
 1
 # test: for select from into / if break
 explain begin
@@ -2708,42 +3008,45 @@ explain begin
 	end;
 	select x, p;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "json                0      0      0     ",
-    "02": "json_open           1      0      14    ",
-    "03": "send_all            2      0      35    # amelie.test (select)",
-    "04": "union               3      0      0     ",
-    "05": "recv                3      2      0     ",
-    "06": "var_set             1      0      3     ",
-    "07": "free                3      0      0     ",
-    "08": "bool                2      1      0     ",
-    "09": "jntr                11     2      0     ",
-    "10": "jmp                 14     0      0     ",
-    "11": "int                 2      -      0     # 123",
-    "12": "var_set             0      0      2     ",
-    "13": "json_next           1      3      0     ",
-    "14": "free                0      0      0     ",
-    "15": "close               0      0      0     ",
-    "16": "set                 0      2      0     ",
-    "17": "push_var            1      0      0     ",
-    "18": "push_var            0      0      0     ",
-    "19": "set_add             0      0      0     ",
-    "20": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 2      1      0     ",
-    "01": "table_open          3      3      6     # amelie.test (primary) part",
-    "02": "table_readi32       4      3      -     # id",
-    "03": "push                4      0      0     ",
-    "04": "set_add             2      0      0     ",
-    "05": "table_next          3      2      0     ",
-    "06": "free                3      0      0     ",
-    "07": "ret                 2      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   json                0      0      0
+  2   json_open           1      0      14
+  3   send_all            2      0      35    # amelie.test (select)
+  4   union               3      0      0
+  5   recv                3      2      0
+  6   var_set             1      0      3
+  7   free                3      0      0
+  8   bool                2      1      0
+  9   jntr                11     2      0
+ 10   jmp                 14     0      0
+ 11   int                 2      -      0     # 123
+ 12   var_set             0      0      2
+ 13   json_next           1      3      0
+ 14   free                0      0      0
+ 15   close               0      0      0
+ 16   set                 0      2      0
+ 17   push_var            1      0      0
+ 18   push_var            0      0      0
+ 19   set_add             0      0      0
+ 20   ret                 0      0      -
+
+pushdown
+  0   set                 2      1      0
+  1   table_open          3      3      6     # amelie.test (primary) part
+  2   table_readi32       4      3      -     # id
+  3   push                4      0      0
+  4   set_add             2      0      0
+  5   table_next          3      2      0
+  6   free                3      0      0
+  7   ret                 2      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare p int;
 	declare x int;
@@ -2756,7 +3059,10 @@ begin
 	end;
 	select x, p;
 end;
-1 │ null
+
+col1  col2
+────────────
+1     null
 # test: for select from into / if continue
 explain begin
 	declare p int;
@@ -2770,42 +3076,45 @@ explain begin
 	end;
 	select x, p;
 end;
-{
-  "main": {
-    "00": "push_nulls          2      0      0     ",
-    "01": "json                0      0      0     ",
-    "02": "json_open           1      0      14    ",
-    "03": "send_all            2      0      36    # amelie.test (select)",
-    "04": "union               3      0      0     ",
-    "05": "recv                3      2      0     ",
-    "06": "var_set             1      0      3     ",
-    "07": "free                3      0      0     ",
-    "08": "bool                2      1      0     ",
-    "09": "jntr                11     2      0     ",
-    "10": "jmp                 13     0      0     ",
-    "11": "int                 2      -      0     # 123",
-    "12": "var_set             0      0      2     ",
-    "13": "json_next           1      3      0     ",
-    "14": "free                0      0      0     ",
-    "15": "close               0      0      0     ",
-    "16": "set                 0      2      0     ",
-    "17": "push_var            1      0      0     ",
-    "18": "push_var            0      0      0     ",
-    "19": "set_add             0      0      0     ",
-    "20": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 2      1      0     ",
-    "01": "table_open          3      4      6     # amelie.test (primary) part",
-    "02": "table_readi32       4      3      -     # id",
-    "03": "push                4      0      0     ",
-    "04": "set_add             2      0      0     ",
-    "05": "table_next          3      2      0     ",
-    "06": "free                3      0      0     ",
-    "07": "ret                 2      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          2      0      0
+  1   json                0      0      0
+  2   json_open           1      0      14
+  3   send_all            2      0      36    # amelie.test (select)
+  4   union               3      0      0
+  5   recv                3      2      0
+  6   var_set             1      0      3
+  7   free                3      0      0
+  8   bool                2      1      0
+  9   jntr                11     2      0
+ 10   jmp                 13     0      0
+ 11   int                 2      -      0     # 123
+ 12   var_set             0      0      2
+ 13   json_next           1      3      0
+ 14   free                0      0      0
+ 15   close               0      0      0
+ 16   set                 0      2      0
+ 17   push_var            1      0      0
+ 18   push_var            0      0      0
+ 19   set_add             0      0      0
+ 20   ret                 0      0      -
+
+pushdown
+  0   set                 2      1      0
+  1   table_open          3      4      6     # amelie.test (primary) part
+  2   table_readi32       4      3      -     # id
+  3   push                4      0      0
+  4   set_add             2      0      0
+  5   table_next          3      2      0
+  6   free                3      0      0
+  7   ret                 2      0      -
+
+access
+  •   amelie.test shared [select]
 begin
 	declare p int;
 	declare x int;
@@ -2818,7 +3127,10 @@ begin
 	end;
 	select x, p;
 end;
-1 │ null
+
+col1  col2
+────────────
+1     null
 drop table test;
 # test: insert var / select
 create table test (id int primary key);
@@ -2829,65 +3141,71 @@ explain begin
 	insert into test values (id);
 	select * from test;
 end;
-{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      40    # amelie.test (select)",
-    "02": "recv_aggs           1      0      32    ",
-    "03": "set                 2      1      0     ",
-    "04": "store_open          3      1      11    ",
-    "05": "agg                 4      3      0     ",
-    "06": "int                 5      -      0     # 1",
-    "07": "addii               6      4      5     ",
-    "08": "push                6      0      0     ",
-    "09": "set_add             2      0      0     ",
-    "10": "store_next          3      5      0     ",
-    "11": "free                3      0      0     ",
-    "12": "free                1      0      0     ",
-    "13": "var_set             0      0      2     ",
-    "14": "free                2      0      0     ",
-    "15": "push_var            0      0      1     ",
-    "16": "set_ptr             1      -      0     ",
-    "17": "send_shard          0      1      1     # amelie.test (insert)",
-    "18": "send_all            0      0      120   # amelie.test (select, closing)",
-    "19": "union               1      0      0     ",
-    "20": "recv                1      0      0     ",
-    "21": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      1     ",
-    "01": "table_open          1      0      8     # amelie.test (primary) part",
-    "02": "push_bool           1      0      0     ",
-    "03": "set_get             2      0      0     ",
-    "04": "table_readi32       3      1      -     # id",
-    "05": "push                3      0      0     ",
-    "06": "set_agg             0      2      32    ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "push_bool           1      0      0     ",
-    "10": "set_get             1      0      0     ",
-    "11": "push_nulls          1      0      0     ",
-    "12": "set_agg             0      1      32    ",
-    "13": "ret                 0      0      -     ",
-    "14": "insert              -      -      -     # amelie.test",
-    "15": "ret                 -1     0      -     ",
-    "16": "set                 0      1      0     ",
-    "17": "table_open          1      88     22    # amelie.test (primary) part",
-    "18": "table_readi32       2      1      -     # id",
-    "19": "push                2      0      0     ",
-    "20": "set_add             0      0      0     ",
-    "21": "table_next          1      18     0     ",
-    "22": "free                1      0      0     ",
-    "23": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared_rw", "insert", "select"]]
-}
+
+explain
+───────
+
+main
+  0   push_nulls          1      0      0
+  1   send_all            0      0      40    # amelie.test (select)
+  2   recv_aggs           1      0      32
+  3   set                 2      1      0
+  4   store_open          3      1      11
+  5   agg                 4      3      0
+  6   int                 5      -      0     # 1
+  7   addii               6      4      5
+  8   push                6      0      0
+  9   set_add             2      0      0
+ 10   store_next          3      5      0
+ 11   free                3      0      0
+ 12   free                1      0      0
+ 13   var_set             0      0      2
+ 14   free                2      0      0
+ 15   push_var            0      0      1
+ 16   set_ptr             1      -      0
+ 17   send_shard          0      1      1     # amelie.test (insert)
+ 18   send_all            0      0      120   # amelie.test (select, closing)
+ 19   union               1      0      0
+ 20   recv                1      0      0
+ 21   ret                 1      0      -
+
+pushdown
+  0   set                 0      1      1
+  1   table_open          1      0      8     # amelie.test (primary) part
+  2   push_bool           1      0      0
+  3   set_get             2      0      0
+  4   table_readi32       3      1      -     # id
+  5   push                3      0      0
+  6   set_agg             0      2      32
+  7   table_next          1      2      0
+  8   free                1      0      0
+  9   push_bool           1      0      0
+ 10   set_get             1      0      0
+ 11   push_nulls          1      0      0
+ 12   set_agg             0      1      32
+ 13   ret                 0      0      -
+ 14   insert              -      -      -     # amelie.test
+ 15   ret                 -1     0      -
+ 16   set                 0      1      0
+ 17   table_open          1      88     22    # amelie.test (primary) part
+ 18   table_readi32       2      1      -     # id
+ 19   push                2      0      0
+ 20   set_add             0      0      0
+ 21   table_next          1      18     0
+ 22   free                1      0      0
+ 23   ret                 0      0      -
+
+access
+  •   amelie.test shared_rw [insert, select]
 begin
 	declare id int;
 	select max(test.id) + 1 into id from test;
 	insert into test values (id);
 	select * from test;
 end;
+
+id
+──
 1
 2
 3

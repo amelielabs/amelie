@@ -42,7 +42,7 @@ value_print_estimate(Value* self, Timezone* tz, bool pretty, Buf* buf)
 {
 	switch (self->type) {
 	case TYPE_NULL:
-		return 0;
+		return 4;
 	case TYPE_BOOL:
 		return 5;
 	case TYPE_INT:
@@ -83,7 +83,7 @@ value_print_estimate(Value* self, Timezone* tz, bool pretty, Buf* buf)
 			buf_format(buf, "{g}{s}", self->vector->value[i],
 			           i != self->vector->size - 1 ? ", ": "");
 		buf_write(buf, "]", 1);
-		break;
+		return buf_size(buf);
 	}
 	case TYPE_UUID:
 		return UUID_SZ - 1;

@@ -2,220 +2,316 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: string
 select "hello world";
-"hello world"
+
+col1
+────
+hello world
 explain select "hello world";
-{
-  "main": {
-    "00": "string              0      0      0     # hello world",
-    "01": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # hello world
+  1   ret                 0      0      -
 select 'hello world';
-"hello world"
+
+col1
+────
+hello world
 select 'hello world'::type;
-"string"
+
+type
+────
+string
 select "";
-""
+
+col1
+────
+
 select '';
-""
+
+col1
+────
+
 select length("hello world");
+
+length
+──────
 11
 select length("");
+
+length
+──────
 0
 select "hello world"::length;
+
+length
+──────
 11
 select "hello world"::length();
+
+length
+──────
 11
 # test: string utf8
 select "привет, мир!";
-"привет, мир!"
+
+col1
+────
+привет, мир!
 select "こんにちは世界";
-"こんにちは世界"
+
+col1
+────
+こんにちは世界
 select "հểɬľ𝜊 ѡ૦ŗɬď";
-"հểɬľ𝜊 ѡ૦ŗɬď"
+
+col1
+────
+հểɬľ𝜊 ѡ૦ŗɬď
 select "��OX�&amp;amp;�.~`�Y�{߆�~�&amp;amp;�5�聾����.";
-"��OX�&amp;amp;�.~`�Y�{߆�~�&amp;amp;�5�聾����."
+
+col1
+────
+��OX�&amp;amp;�.~`�Y�{߆�~�&amp;amp;�5�聾����.
 # test: string = string
 select '1 hour' = '1 hour';
+
+col1
+────
 true
 select '1 hour' = '1 hours';
+
+col1
+────
 false
 explain select '1 hour' = '1 hours';
-{
-  "main": {
-    "00": "string              0      0      0     # 1 hour",
-    "01": "string              1      7      0     # 1 hours",
-    "02": "equss               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # 1 hour
+  1   string              1      7      0     # 1 hours
+  2   equss               2      0      1
+  3   ret                 2      0      -
 # test: string = null
 select '1 hour' = null;
+
+col1
+────
 null
 # test: string = unsupported
 select '1 hour' = [1,2,3];
 error: select '1 hour' = ❰[❱ ⟵ operation string = json is not supported
 # test: string <> string
 select '1 hour' <> '1 hour';
+
+col1
+────
 false
 select '1 hour' <> '1 hours';
+
+col1
+────
 true
 explain select '1 hour' <> '1 hours';
-{
-  "main": {
-    "00": "string              0      0      0     # 1 hour",
-    "01": "string              1      7      0     # 1 hours",
-    "02": "equss               2      0      1     ",
-    "03": "not                 0      2      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # 1 hour
+  1   string              1      7      0     # 1 hours
+  2   equss               2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 # test: string <> null
 select '1 hour' <> null;
+
+col1
+────
 null
 # test: string <> unsupported
 select '1 hour' <> [1,2,3];
 error: select '1 hour' <> ❰[❱ ⟵ operation string = json is not supported
 # test: string >= string
 select '1 hour' >= '1 hours';
+
+col1
+────
 false
 select '1 hour' >= '1 hour';
+
+col1
+────
 true
 explain select '1 hour' >= '1 hour';
-{
-  "main": {
-    "00": "string              0      0      0     # 1 hour",
-    "01": "string              1      7      0     # 1 hour",
-    "02": "gtess               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # 1 hour
+  1   string              1      7      0     # 1 hour
+  2   gtess               2      0      1
+  3   ret                 2      0      -
 # test: string >= null
 explain select '1 hour' >= null;
-{
-  "main": {
-    "00": "string              0      0      0     # 1 hour",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # 1 hour
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: string >= unsupported
 explain select '1 hour' >= [];
 error: explain select '1 hour' >= ❰[❱ ⟵ operation string >= json is not supported
 # test: string > string
 select '1 hour' > '1 hours';
+
+col1
+────
 false
 select '1 hour' > '1 hour';
+
+col1
+────
 false
 explain select '1 hour' > '1 hour';
-{
-  "main": {
-    "00": "string              0      0      0     # 1 hour",
-    "01": "string              1      7      0     # 1 hour",
-    "02": "gtss                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # 1 hour
+  1   string              1      7      0     # 1 hour
+  2   gtss                2      0      1
+  3   ret                 2      0      -
 # test: string > null
 explain select '1 hour' > null;
-{
-  "main": {
-    "00": "string              0      0      0     # 1 hour",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # 1 hour
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: string > unsupported
 explain select '1 hour' > [];
 error: explain select '1 hour' > ❰[❱ ⟵ operation string > json is not supported
 # test: string <= string
 select '1 hour' <= '1 hours';
+
+col1
+────
 true
 select '1 hour' <= '1 hour';
+
+col1
+────
 true
 explain select '1 hour' <= '1 hour';
-{
-  "main": {
-    "00": "string              0      0      0     # 1 hour",
-    "01": "string              1      7      0     # 1 hour",
-    "02": "ltess               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # 1 hour
+  1   string              1      7      0     # 1 hour
+  2   ltess               2      0      1
+  3   ret                 2      0      -
 # test: string <= null
 explain select '1 hour' <= null;
-{
-  "main": {
-    "00": "string              0      0      0     # 1 hour",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # 1 hour
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: string <= unsupported
 explain select '1 hour' <= [];
 error: explain select '1 hour' <= ❰[❱ ⟵ operation string <= json is not supported
 # test: string < string
 select '1 hour' < '1 hours';
+
+col1
+────
 true
 select '1 hour' < '1 hour';
+
+col1
+────
 false
 explain select '1 hour' < '1 hour';
-{
-  "main": {
-    "00": "string              0      0      0     # 1 hour",
-    "01": "string              1      7      0     # 1 hour",
-    "02": "ltss                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # 1 hour
+  1   string              1      7      0     # 1 hour
+  2   ltss                2      0      1
+  3   ret                 2      0      -
 # test: string < null
 explain select '1 hour' < null;
-{
-  "main": {
-    "00": "string              0      0      0     # 1 hour",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # 1 hour
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: string < unsupported
 explain select '1 hour' < [];
 error: explain select '1 hour' < ❰[❱ ⟵ operation string < json is not supported
 # test: string || string
 select "hello " || "world";
-"hello world"
+
+col1
+────
+hello world
 explain select "hello " || "world";
-{
-  "main": {
-    "00": "string              0      0      0     # hello ",
-    "01": "string              1      7      0     # world",
-    "02": "catss               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # hello 
+  1   string              1      7      0     # world
+  2   catss               2      0      1
+  3   ret                 2      0      -
 select "为云" || "は世界";
-"为云は世界"
+
+col1
+────
+为云は世界
 select ("为云" || "は世界")::length;
+
+length
+──────
 5
 select "привет " || "мир";
-"привет мир"
+
+col1
+────
+привет мир
 # test: string || null
 select "hello " || null;
+
+col1
+────
 null
 # test: string || unsupported
 select "hello " || 1;
@@ -224,30 +320,45 @@ select "hello " || [];
 error: select "hello " || ❰[❱ ⟵ operation string || json is not supported
 # test: string LIKE string
 select 'abc' like 'abc';
+
+col1
+────
 true
 select 'abc' like 'abcc';
+
+col1
+────
 false
 explain select 'abc' like 'abc';
-{
-  "main": {
-    "00": "string              0      0      0     # abc",
-    "01": "string              1      4      0     # abc",
-    "02": "likess              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   string              0      0      0     # abc
+  1   string              1      4      0     # abc
+  2   likess              2      0      1
+  3   ret                 2      0      -
 # test: string LIKE null
 select 'abc' like null;
+
+col1
+────
 null
 # test: string LIKE unsupported
 select 'abc' like 1;
 error: select 'abc' like ❰1❱ ⟵ operation string LIKE int is not supported
 select 'abc' like "a" || "b" || "c";
+
+col1
+────
 true
 select 'abc' like "a" || "b" || "c"  and true;
 error: select 'abc' like "a" || "b" || "c"  ❰and❱ ⟵ operation string LIKE bool is not supported
 select ('abc' like "a" || "b" || "c")  and true;
+
+col1
+────
 true
 disconnect S0;
 close E0;

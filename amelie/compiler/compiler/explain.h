@@ -11,4 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
+void explain_program(Compiler*, Program*, Str*, Str*);
 void explain(Compiler*, Str*, Str*);

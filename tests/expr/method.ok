@@ -13,63 +13,99 @@ error: select 1::❰[❱ ⟵ function name expected
 select 1::length();
 error: length(❰int❱ ⟵ unsupported argument type
 select "hello"::length();
+
+length
+──────
 5
 explain select show('state').directory::length();
-{
-  "main": {
-    "00": "push_string         0      0      0     # state",
-    "01": "call                0      -      1     # show()",
-    "02": "string              1      6      0     # directory",
-    "03": "dotjs               2      0      1     ",
-    "04": "push                2      0      0     ",
-    "05": "call                0      -      1     # length()",
-    "06": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_string         0      0      0     # state
+  1   call                0      -      1     # show()
+  2   string              1      6      0     # directory
+  3   dotjs               2      0      1
+  4   push                2      0      0
+  5   call                0      -      1     # length()
+  6   ret                 0      0      -
 select show('state').directory::length();
+
+length
+──────
 10
 select show('state').directory;
+
+col1
+────
 "_output/E0"
 select [null]::put(0, 123);
+
+put
+───
 [123]
 select put([null], 0, 123);
+
+put
+───
 [123]
 # test: expr :: method() :: method()
 select [1]::append(1)::append(2);
+
+append
+──────
 [1, 1, 2]
 select [1]::append(1)::append(2)::append(3);
+
+append
+──────
 [1, 1, 2, 3]
 select {}::set("a", 1)::set("b", 2);
+
+set
+───
 {
   "a": 1,
   "b": 2
 }
 select {}::set("a", 1)::set("b", 2);
+
+set
+───
 {
   "a": 1,
   "b": 2
 }
 # test: expr :: method
 explain select show('state').directory::length;
-{
-  "main": {
-    "00": "push_string         0      0      0     # state",
-    "01": "call                0      -      1     # show()",
-    "02": "string              1      6      0     # directory",
-    "03": "dotjs               2      0      1     ",
-    "04": "push                2      0      0     ",
-    "05": "call                0      -      1     # length()",
-    "06": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   push_string         0      0      0     # state
+  1   call                0      -      1     # show()
+  2   string              1      6      0     # directory
+  3   dotjs               2      0      1
+  4   push                2      0      0
+  5   call                0      -      1     # length()
+  6   ret                 0      0      -
 select show('state').directory::length;
+
+length
+──────
 10
 select length(show('state').directory);
+
+length
+──────
 10
 # test: expr :: method alias
 select x::int id from ([1]) x;
+
+id
+──
 1
 disconnect S0;
 close E0;

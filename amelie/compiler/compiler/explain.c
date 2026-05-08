@@ -19,42 +19,67 @@
 #include <amelie_plan.h>
 #include <amelie_compiler.h>
 
-void
-explain(Compiler* self, Str* user, Str* name)
+static void
+explain_access(Access* self, Buf* buf)
 {
-	auto program = self->program;
-	auto buf = &self->program->explain;
-
-	encode_obj(buf);
-
-	// [user.function]
-	if (name)
+	for (auto i = 0; i < self->list_count; i++)
 	{
-		encode_raw(buf, "function", 8);
-		encode_target(buf, user, name);
+		auto record = access_at(self, i);
+
+		// target and lock
+		buf_format(buf, "  •   {str}.{str} {s} [",
+		           record->rel->user,
+		           record->rel->name,
+		           lock_id_cstr(record->lock));
+
+		// permissions
+		auto     first = true;
+		uint32_t perm  = record->perm;
+		while (perm > 0)
+		{
+			auto id = permission_next(&perm);
+			if (first)
+				first = false;
+			else
+				buf_write(buf, ", ", 2);
+			buf_format(buf, "{s}", permission_name_of(id));
+		}
+		buf_write(buf, "]\n", 2);
 	}
+}
+
+void
+explain_program(Compiler* self, Program* program, Str* user, Str* name)
+{
+	auto buf = &self->program->explain;
+	buf_write(buf, "\n", 1);
+
+	// [function user.function]
+	if (name)
+		buf_format(buf, "FUNCTION {str}.{str}()\n\n", user, name);
 
 	// main
-	encode_raw(buf, "main", 4);
+	buf_format(buf, "main\n");
 	op_dump(program, &program->code, buf);
 
 	// pushdown
 	if (code_count(&program->code_backend) > 0)
 	{
-		encode_raw(buf, "pushdown", 8);
+		buf_format(buf, "\npushdown\n");
 		op_dump(program, &program->code_backend, buf);
 	}
 
 	// access
 	auto access = &program->access;
-	encode_raw(buf, "access", 6);
-	auto has_call = access_list(access, buf);
+	if (! access_empty(access))
+	{
+		buf_format(buf, "\naccess\n");
+		explain_access(access, buf);
+	}
 
 	// calls
-	if (!name && has_call)
+	if (! name)
 	{
-		encode_raw(buf, "calls", 5);
-		encode_array(buf);
 		for (auto i = 0; i < access->list_count; i++)
 		{
 			auto record = access_at(access, i);
@@ -62,11 +87,15 @@ explain(Compiler* self, Str* user, Str* name)
 			{
 				auto udf = udf_of(record->rel);
 				auto udf_program = (Program*)udf->data;
-				buf_write_buf(buf, &udf_program->explain);
+				explain_program(self, udf_program, udf->rel.user, udf->rel.name);
 			}
 		}
-		encode_array_end(buf);
 	}
+}
 
-	encode_obj_end(buf);
+void
+explain(Compiler* self, Str* user, Str* name)
+{
+	auto program = self->program;
+	explain_program(self, program, user, name);
 }

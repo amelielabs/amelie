@@ -2,432 +2,789 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: year
 select '1 year'::interval;
-"1 year"
+
+interval
+────────
+1 year
 select '2 years'::interval;
-"2 years"
+
+interval
+────────
+2 years
 select '2 year'::interval;
-"2 years"
+
+interval
+────────
+2 years
 select '200 years'::interval;
-"200 years"
+
+interval
+────────
+200 years
 select interval '200 years';
-"200 years"
+
+col1
+────
+200 years
 # test: month
 select '1 month'::interval;
-"1 month"
+
+interval
+────────
+1 month
 select '1 months'::interval;
-"1 month"
+
+interval
+────────
+1 month
 select '3 months'::interval;
-"3 months"
+
+interval
+────────
+3 months
 select '5 years 3 months'::interval;
-"5 years 3 months"
+
+interval
+────────
+5 years 3 months
 select '3 months 5 years'::interval;
-"5 years 3 months"
+
+interval
+────────
+5 years 3 months
 select interval '3 months 5 years';
-"5 years 3 months"
+
+col1
+────
+5 years 3 months
 # test: week
 select '5 weeks'::interval;
-"35 days"
+
+interval
+────────
+35 days
 select '5 week'::interval;
-"35 days"
+
+interval
+────────
+35 days
 select '1 week'::interval;
-"7 days"
+
+interval
+────────
+7 days
 select '1 year 3 weeks'::interval;
-"1 year 21 days"
+
+interval
+────────
+1 year 21 days
 select '1 week 2 weeks 3 weeks'::interval;
-"42 days"
+
+interval
+────────
+42 days
 select interval '1 week 2 weeks 3 weeks';
-"42 days"
+
+col1
+────
+42 days
 # test: day
 select '1 week 15 days'::interval;
-"22 days"
+
+interval
+────────
+22 days
 select '15 days'::interval;
-"15 days"
+
+interval
+────────
+15 days
 select '1 day'::interval;
-"1 day"
+
+interval
+────────
+1 day
 select '15 years 10 days'::interval;
-"15 years 10 days"
+
+interval
+────────
+15 years 10 days
 select '15 years 500 days'::interval;
-"15 years 500 days"
+
+interval
+────────
+15 years 500 days
 select '15 years 6 days'::interval;
-"15 years 6 days"
+
+interval
+────────
+15 years 6 days
 select '15 years 7 days'::interval;
-"15 years 7 days"
+
+interval
+────────
+15 years 7 days
 select '15 years 8 days'::interval;
-"15 years 8 days"
+
+interval
+────────
+15 years 8 days
 select '15 years 9 days'::interval;
-"15 years 9 days"
+
+interval
+────────
+15 years 9 days
 select interval '15 years 9 days';
-"15 years 9 days"
+
+col1
+────
+15 years 9 days
 # test: hour
 select '15 years 28 hours'::interval;
-"15 years 28 hours"
+
+interval
+────────
+15 years 28 hours
 select '15 years 27 hours'::interval;
-"15 years 27 hours"
+
+interval
+────────
+15 years 27 hours
 select '15 years 26 hours'::interval;
-"15 years 26 hours"
+
+interval
+────────
+15 years 26 hours
 select '15 years 25 hours'::interval;
-"15 years 25 hours"
+
+interval
+────────
+15 years 25 hours
 select '15 years 24 hours'::interval;
-"15 years 24 hours"
+
+interval
+────────
+15 years 24 hours
 select '15 years 23 hours'::interval;
-"15 years 23 hours"
+
+interval
+────────
+15 years 23 hours
 select interval('15 years 23 hours');
-"15 years 23 hours"
+
+interval
+────────
+15 years 23 hours
 select interval '15 years 23 hours';
-"15 years 23 hours"
+
+col1
+────
+15 years 23 hours
 # test: minute
 select '15 years 70 minutes'::interval;
-"15 years 1 hour 10 minutes"
+
+interval
+────────
+15 years 1 hour 10 minutes
 select '15 years 1 minute'::interval;
-"15 years 1 minute"
+
+interval
+────────
+15 years 1 minute
 select '15 years 125 minutes'::interval;
-"15 years 2 hours 5 minutes"
+
+interval
+────────
+15 years 2 hours 5 minutes
 select '8 minutes'::interval;
-"8 minutes"
+
+interval
+────────
+8 minutes
 select interval('8 minutes');
-"8 minutes"
+
+interval
+────────
+8 minutes
 select interval '8 minutes';
-"8 minutes"
+
+col1
+────
+8 minutes
 # test: second
 select '8 minutes 70 seconds'::interval;
-"9 minutes 10 seconds"
+
+interval
+────────
+9 minutes 10 seconds
 select '8 minutes 60 seconds'::interval;
-"9 minutes"
+
+interval
+────────
+9 minutes
 select '3 seconds'::interval;
-"3 seconds"
+
+interval
+────────
+3 seconds
 # test: milliseconds
 select '3 milliseconds'::interval;
-"3 ms"
+
+interval
+────────
+3 ms
 select '3 millisecond'::interval;
-"3 ms"
+
+interval
+────────
+3 ms
 select '3 ms'::interval;
-"3 ms"
+
+interval
+────────
+3 ms
 select '1 minute 3 ms'::interval;
-"1 minute 3 ms"
+
+interval
+────────
+1 minute 3 ms
 # test: microseconds
 select '3 microseconds'::interval;
-"3 us"
+
+interval
+────────
+3 us
 select '3 microsecond'::interval;
-"3 us"
+
+interval
+────────
+3 us
 select '3 us'::interval;
-"3 us"
+
+interval
+────────
+3 us
 select '1 minute 3 ms 10 us'::interval;
-"1 minute 3 ms 10 us"
+
+interval
+────────
+1 minute 3 ms 10 us
 select '50000 us'::interval;
-"50 ms"
+
+interval
+────────
+50 ms
 # test: convertion (string)
 select '1 hour 5 minutes 6 seconds'::interval;
-"1 hour 5 minutes 6 seconds"
+
+interval
+────────
+1 hour 5 minutes 6 seconds
 select '1 hour 5 minutes 6 seconds'::interval::string;
-"1 hour 5 minutes 6 seconds"
+
+string
+──────
+1 hour 5 minutes 6 seconds
 select '1 hour 5 minutes 6 seconds'::interval::string::interval;
-"1 hour 5 minutes 6 seconds"
+
+interval
+────────
+1 hour 5 minutes 6 seconds
 select '1 hour 5 minutes 6 seconds'::interval::string::interval::string;
-"1 hour 5 minutes 6 seconds"
+
+string
+──────
+1 hour 5 minutes 6 seconds
 select interval('1 hour 5 minutes 6 seconds')::string::interval::string;
-"1 hour 5 minutes 6 seconds"
+
+string
+──────
+1 hour 5 minutes 6 seconds
 select interval '1 hour 5 minutes 6 seconds' ::string::interval::string;
-"1 hour 5 minutes 6 seconds"
+
+string
+──────
+1 hour 5 minutes 6 seconds
 select (interval '1 hour 5 minutes 6 seconds')::string::interval::string;
-"1 hour 5 minutes 6 seconds"
+
+string
+──────
+1 hour 5 minutes 6 seconds
 # test: convertion (json)
 select ['5 hours 6 seconds'::interval, '1 years'::interval];
+
+col1
+────
 ["5 hours 6 seconds", "1 year"]
 select {"key": "5 hours 6 second"::interval};
+
+col1
+────
 {
   "key": "5 hours 6 seconds"
 }
 # test: zero
 select '0 hour'::interval;
-""
+
+interval
+────────
+
 select '0 hour'::interval::string;
-""
+
+string
+──────
+
 select '0 hour'::interval::string::interval;
-""
+
+interval
+────────
+
 select ''::interval::string::interval;
-""
+
+interval
+────────
+
 # test: negative
 select '-1 hour'::interval;
-"-1 hour"
+
+interval
+────────
+-1 hour
 select '-1 hours'::interval;
-"-1 hour"
+
+interval
+────────
+-1 hour
 select '-1 hour 10 minutes'::interval;
-"-50 minutes"
+
+interval
+────────
+-50 minutes
 select '-1 hour 10 minutes 5 seconds'::interval;
-"-49 minutes -55 seconds"
+
+interval
+────────
+-49 minutes -55 seconds
 select '-1 hour 10 minutes -5 seconds'::interval;
-"-50 minutes -5 seconds"
+
+interval
+────────
+-50 minutes -5 seconds
 # test: between
 select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes';
+
+col1
+────
 true
 select interval '1 hour' between interval '55 minutes' and interval '55 minutes';
+
+col1
+────
 false
 select interval '1 hour' not between interval '55 minutes' and interval '55 minutes';
+
+col1
+────
 true
 # test: interval = interval
 select '1 hour'::interval = '1 hours'::interval;
+
+col1
+────
 true
 select '1 hour'::interval = '1 hours 10 seconds'::interval;
+
+col1
+────
 false
 explain select  '1 hour'::interval = '1 hours 10 seconds'::interval;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "value               1      -      0     # interval",
-    "02": "equll               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   value               1      -      0     # interval
+  2   equll               2      0      1
+  3   ret                 2      0      -
 # test: interval = null
 select '1 hour'::interval = null;
+
+col1
+────
 null
 explain select  '1 hour'::interval = null;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: interval = unsupported
 select '1 hour'::interval = [1,2,3];
 error: select '1 hour'::interval = ❰[❱ ⟵ operation interval = json is not supported
 # test: interval <> interval
 select '1 hour'::interval <> '1 hours'::interval;
+
+col1
+────
 false
 select '1 hour'::interval <> '1 hours 10 seconds'::interval;
+
+col1
+────
 true
 explain select  '1 hour'::interval <> '1 hours 10 seconds'::interval;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "value               1      -      0     # interval",
-    "02": "equll               2      0      1     ",
-    "03": "not                 0      2      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   value               1      -      0     # interval
+  2   equll               2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 # test: interval <> null
 select '1 hour'::interval <> null;
+
+col1
+────
 null
 explain select  '1 hour'::interval <> null;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "not                 0      2      0     ",
-    "04": "ret                 0      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 # test: interval <> unsupported
 select '1 hour'::interval <> [1,2,3];
 error: select '1 hour'::interval <> ❰[❱ ⟵ operation interval = json is not supported
 # test: interval >= interval
 select '1 hour'::interval >= '1 hour'::interval;
+
+col1
+────
 true
 select '60 minutes'::interval >= '1 hour'::interval;
+
+col1
+────
 true
 select '59 minutes'::interval >= '1 hour'::interval;
+
+col1
+────
 false
 select '61 minutes'::interval >= '1 hour'::interval;
+
+col1
+────
 true
 explain select '61 minutes'::interval >= '1 hour'::interval;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "value               1      -      0     # interval",
-    "02": "gtell               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   value               1      -      0     # interval
+  2   gtell               2      0      1
+  3   ret                 2      0      -
 # test: interval >= null
 select '1 hour'::interval >= null;
+
+col1
+────
 null
 explain select '1 hour'::interval >= null;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: interval >= unsupported
 select '1 hour'::interval >= null;
+
+col1
+────
 null
 # test: interval > interval
 select '1 hour'::interval > '1 hour'::interval;
+
+col1
+────
 false
 select '60 minutes'::interval > '1 hour'::interval;
+
+col1
+────
 false
 select '59 minutes'::interval > '1 hour'::interval;
+
+col1
+────
 false
 select '61 minutes'::interval > '1 hour'::interval;
+
+col1
+────
 true
 explain select '61 minutes'::interval > '1 hour'::interval;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "value               1      -      0     # interval",
-    "02": "gtll                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   value               1      -      0     # interval
+  2   gtll                2      0      1
+  3   ret                 2      0      -
 # test: interval > null
 select '1 hour'::interval > null;
+
+col1
+────
 null
 explain select '1 hour'::interval > null;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: interval > unsupported
 select '1 hour'::interval > null;
+
+col1
+────
 null
 # test: interval <= interval
 select '1 hour'::interval <= '1 hour'::interval;
+
+col1
+────
 true
 select '60 minutes'::interval <= '1 hour'::interval;
+
+col1
+────
 true
 select '59 minutes'::interval <= '1 hour'::interval;
+
+col1
+────
 true
 select '61 minutes'::interval <= '1 hour'::interval;
+
+col1
+────
 false
 explain select '61 minutes'::interval <= '1 hour'::interval;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "value               1      -      0     # interval",
-    "02": "ltell               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   value               1      -      0     # interval
+  2   ltell               2      0      1
+  3   ret                 2      0      -
 # test: interval <= null
 select '1 hour'::interval <= null;
+
+col1
+────
 null
 explain select '1 hour'::interval <= null;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: interval <= unsupported
 select '1 hour'::interval <= null;
+
+col1
+────
 null
 # test: interval < interval
 select '1 hour'::interval < '1 hour'::interval;
+
+col1
+────
 false
 select '60 minutes'::interval < '1 hour'::interval;
+
+col1
+────
 false
 select '59 minutes'::interval < '1 hour'::interval;
+
+col1
+────
 true
 select '61 minutes'::interval < '1 hour'::interval;
+
+col1
+────
 false
 explain select '61 minutes'::interval < '1 hour'::interval;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "value               1      -      0     # interval",
-    "02": "ltll                2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   value               1      -      0     # interval
+  2   ltll                2      0      1
+  3   ret                 2      0      -
 # test: interval < null
 select '1 hour'::interval < null;
+
+col1
+────
 null
 explain select '1 hour'::interval < null;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "null                1      0      0     ",
-    "02": "nullop              2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
 # test: interval < unsupported
 select '1 hour'::interval < null;
+
+col1
+────
 null
 # test: interval + interval
 select  '1 hour'::interval + '2 hours'::interval;
-"3 hours"
+
+col1
+────
+3 hours
 select ('1 hour'::interval + '2 hours'::interval)::string;
-"3 hours"
+
+string
+──────
+3 hours
 select ('1 hour'::interval + '2 hours'::interval)::string::interval;
-"3 hours"
+
+interval
+────────
+3 hours
 select  '1 hour'::interval + '-2 hours'::interval;
-"-1 hour"
+
+col1
+────
+-1 hour
 select  '5 days 1 hour'::interval + '-2 hours'::interval;
-"5 days -1 hour"
+
+col1
+────
+5 days -1 hour
 explain select  '5 days 1 hour'::interval + '-2 hours'::interval;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "value               1      -      0     # interval",
-    "02": "addll               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   value               1      -      0     # interval
+  2   addll               2      0      1
+  3   ret                 2      0      -
 # test: interval + timestamp
 select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp;
-"1970-01-01 01:00:00+00"
+
+col1
+────
+1970-01-01 01:00:00+00
 explain select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp;
-{
-  "main": {
-    "00": "value               0      -      0     # interval",
-    "01": "value               1      -      0     # timestamp",
-    "02": "addlt               2      0      1     ",
-    "03": "ret                 2      0      -     "
-  },
-  "access": []
-}
+
+explain
+───────
+
+main
+  0   value               0      -      0     # interval
+  1   value               1      -      0     # timestamp
+  2   addlt               2      0      1
+  3   ret                 2      0      -
 # test: interval + null
 select '1 hour'::interval + null;
+
+col1
+────
 null
 # test: interval + unsupported
 select '1 hour'::interval + [];
 error: select '1 hour'::interval + ❰[❱ ⟵ operation interval + json is not supported
 # test: interval - interval
 select  '1 hour'::interval - '2 hours'::interval;
-"-1 hour"
+
+col1
+────
+-1 hour
 select  '10 hour'::interval - '2 hours'::interval;
-"8 hours"
+
+col1
+────
+8 hours
 select  '1 year 1 day 10 hour'::interval - '2 hours'::interval;
-"1 year 1 day 8 hours"
+
+col1
+────
+1 year 1 day 8 hours
 select  '1 year 1 day 10 hour'::interval - '1 year 2 hours'::interval;
-"1 day 8 hours"
+
+col1
+────
+1 day 8 hours
 # test: interval - timestamp
 select '1 hour'::interval - '1970-01-01 00:00:00.000000'::timestamp;
 error: select '1 hour'::interval - '1970-01-01 00:00:00.000000'::❰timestamp❱ ⟵ operation interval - timestamp is not supported
 # test: -interval
 select '1 hour 5 minutes 6 seconds'::interval;
-"1 hour 5 minutes 6 seconds"
+
+interval
+────────
+1 hour 5 minutes 6 seconds
 select - '1 hour 5 minutes 6 seconds'::interval;
-"-1 hour -5 minutes -6 seconds"
+
+col1
+────
+-1 hour -5 minutes -6 seconds
 select interval '1 hour 5 minutes 6 seconds';
-"1 hour 5 minutes 6 seconds"
+
+col1
+────
+1 hour 5 minutes 6 seconds
 select - interval '1 hour 5 minutes 6 seconds';
-"-1 hour -5 minutes -6 seconds"
+
+col1
+────
+-1 hour -5 minutes -6 seconds
 disconnect S0;
 close E0;

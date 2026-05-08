@@ -27,6 +27,25 @@ output_text_write(Output* self, Columns* columns, Value* value)
 }
 
 static void
+output_text_write_str(Output* self, Str* column, Str* str)
+{
+	auto buf = self->buf;
+	buf_write(buf, "\n", 1);
+
+	// column
+	auto column_size = str_size(column);
+
+	buf_write_str(buf, column);
+	buf_write(buf, "\n", 1);
+	for (auto i = 0; i < column_size; i++)
+		buf_write(buf, "─", sizeof("─") - 1);
+	buf_write(buf, "\n", 1);
+
+	// value
+	unescape_str(buf, str);
+}
+
+static void
 output_text_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 {
 	unused(unwrap);
@@ -84,6 +103,7 @@ output_text_write_error(Output* self, Error* error)
 OutputIf output_text =
 {
 	.write       = output_text_write,
+	.write_str   = output_text_write_str,
 	.write_data  = output_text_write_data,
 	.write_error = output_text_write_error,
 	.write_none  = NULL

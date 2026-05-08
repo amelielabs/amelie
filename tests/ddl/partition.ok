@@ -22,7 +22,10 @@ create table test (id int primary key, a int, b int) partitions 5
        b (id "00000000-0000-0000-0000-000000000001"),
        c (id "00000000-0000-0000-0000-000000000002");
 show partitions on test;
-[{
+
+partitions
+──────────
+{
   "id": 1,
   "storage": "a",
   "min": 0,
@@ -30,7 +33,8 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}, {
+}
+{
   "id": 2,
   "storage": "b",
   "min": 1619,
@@ -38,7 +42,8 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}, {
+}
+{
   "id": 3,
   "storage": "c",
   "min": 3238,
@@ -46,7 +51,8 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}, {
+}
+{
   "id": 4,
   "storage": "a",
   "min": 4857,
@@ -54,7 +60,8 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}, {
+}
+{
   "id": 5,
   "storage": "b",
   "min": 6476,
@@ -62,10 +69,13 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]
+}
 alter partition 1 on test refresh;
 show partitions on test;
-[{
+
+partitions
+──────────
+{
   "id": 6,
   "storage": "c",
   "min": 0,
@@ -73,7 +83,8 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}, {
+}
+{
   "id": 2,
   "storage": "b",
   "min": 1619,
@@ -81,7 +92,8 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}, {
+}
+{
   "id": 3,
   "storage": "c",
   "min": 3238,
@@ -89,7 +101,8 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}, {
+}
+{
   "id": 4,
   "storage": "a",
   "min": 4857,
@@ -97,7 +110,8 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}, {
+}
+{
   "id": 5,
   "storage": "b",
   "min": 6476,
@@ -105,8 +119,11 @@ show partitions on test;
   "lsn": 0,
   "size": 0,
   "compression": 1
-}]
+}
 show partition '6' on test;
+
+partition
+─────────
 {
   "id": 6,
   "storage": "c",
@@ -119,6 +136,9 @@ show partition '6' on test;
 # test: alter partition move
 alter partition 6 on test move to b;
 show partition '8' on test;
+
+partition
+─────────
 {
   "id": 8,
   "storage": "b",
@@ -131,6 +151,9 @@ show partition '8' on test;
 # test: alter partition move (same partition)
 alter partition 8 on test move to b;
 show partition '10' on test;
+
+partition
+─────────
 {
   "id": 10,
   "storage": "b",
@@ -144,6 +167,9 @@ show partition '10' on test;
 alter partition 10 on test move to xyz;
 error: partition or storage not found
 show partition '10' on test;
+
+partition
+─────────
 {
   "id": 10,
   "storage": "b",
@@ -154,6 +180,9 @@ show partition '10' on test;
   "compression": 1
 }
 show partition '12' on test;
+
+partition
+─────────
 null
 drop table test;
 drop storage a;

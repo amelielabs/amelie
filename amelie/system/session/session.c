@@ -291,14 +291,17 @@ session_request(Session* self)
 
 	// [EXPLAIN]
 	if (compiler->program_explain || compiler->program_profile)
-		explain(compiler, NULL, NULL);
+		if (! compiler->program_udf)
+			explain(compiler, NULL, NULL);
 
 	// explain output
 	if (compiler->program_explain)
 	{
 		Str column;
 		str_set(&column, "explain", 7);
-		output_data(&req->output, &column, program->explain.start, false);
+		Str str;
+		buf_str(&program->explain, &str);
+		output_str(&req->output, &column, &str);
 		return;
 	}
 

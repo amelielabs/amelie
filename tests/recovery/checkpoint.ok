@@ -2,30 +2,60 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: default checkpoint
 select show('state').lsn;
+
+col1
+────
 0
 select show('state').catalog;
+
+col1
+────
 0
 select show('state').catalog_pending;
+
+col1
+────
 0
 # test: checkpoint (no data)
 checkpoint;
 select show('state').lsn;
+
+col1
+────
 0
 select show('state').catalog;
+
+col1
+────
 0
 select show('state').catalog_pending;
+
+col1
+────
 0
 # test: create table
 create table test (id serial primary key);
 select show('state').lsn;
+
+col1
+────
 1
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
+
+col1
+────
 1
 select show('state').catalog;
+
+col1
+────
 1
 select show('state').catalog_pending;
+
+col1
+────
 1
 # test: restart/recover
 disconnect S0;
@@ -33,15 +63,30 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
+
+col1
+────
 1
 select show('state').catalog;
+
+col1
+────
 1
 select show('state').catalog_pending;
+
+col1
+────
 1
 select * from test;
+
+id
+──
 # test: insert
 insert into test () values (), (), ();
 select identity_of("test");
+
+identity_of
+───────────
 3
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -49,24 +94,48 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
+
+col1
+────
 2
 select show('state').catalog;
+
+col1
+────
 1
 select show('state').catalog_pending;
+
+col1
+────
 1
 select identity_of("test");
+
+identity_of
+───────────
 3
 select * from test;
+
+id
+──
 2
 0
 1
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
+
+col1
+────
 2
 select show('state').catalog;
+
+col1
+────
 1
 select show('state').catalog_pending;
+
+col1
+────
 1
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -74,14 +143,29 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
+
+col1
+────
 2
 select show('state').catalog;
+
+col1
+────
 1
 select show('state').catalog_pending;
+
+col1
+────
 1
 select identity_of("test");
+
+identity_of
+───────────
 3
 select * from test;
+
+id
+──
 2
 0
 1
@@ -95,7 +179,10 @@ begin
 	return rev;
 end;
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
@@ -109,8 +196,11 @@ show functions verbose;
   }],
   "returning": [],
   "grants": []
-}]
+}
 select [1,2,3]::reverse;
+
+col1
+────
 [3, 2, 1]
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -118,13 +208,25 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
+
+col1
+────
 3
 select show('state').catalog;
+
+col1
+────
 1
 select show('state').catalog_pending;
+
+col1
+────
 3
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
@@ -138,16 +240,28 @@ show functions verbose;
   }],
   "returning": [],
   "grants": []
-}]
+}
 select [1,2,3]::reverse;
+
+col1
+────
 [3, 2, 1]
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
+
+col1
+────
 3
 select show('state').catalog;
+
+col1
+────
 3
 select show('state').catalog_pending;
+
+col1
+────
 3
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -155,13 +269,25 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
+
+col1
+────
 3
 select show('state').catalog;
+
+col1
+────
 3
 select show('state').catalog_pending;
+
+col1
+────
 3
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
@@ -175,8 +301,11 @@ show functions verbose;
   }],
   "returning": [],
   "grants": []
-}]
+}
 select [1,2,3]::reverse;
+
+col1
+────
 [3, 2, 1]
 # test: create or replace function
 create or replace function reverse(array json) return json
@@ -188,7 +317,10 @@ begin
 	return rev;
 end;
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
@@ -202,8 +334,11 @@ show functions verbose;
   }],
   "returning": [],
   "grants": []
-}]
+}
 select [1,2,3]::reverse;
+
+col1
+────
 [-3, -2, -1]
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -211,13 +346,25 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
+
+col1
+────
 4
 select show('state').catalog;
+
+col1
+────
 3
 select show('state').catalog_pending;
+
+col1
+────
 4
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
@@ -231,16 +378,28 @@ show functions verbose;
   }],
   "returning": [],
   "grants": []
-}]
+}
 select [1,2,3]::reverse;
+
+col1
+────
 [-3, -2, -1]
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
+
+col1
+────
 4
 select show('state').catalog;
+
+col1
+────
 4
 select show('state').catalog_pending;
+
+col1
+────
 4
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -248,13 +407,25 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
+
+col1
+────
 4
 select show('state').catalog;
+
+col1
+────
 4
 select show('state').catalog_pending;
+
+col1
+────
 4
 show functions verbose;
-[{
+
+functions
+─────────
+{
   "user": "amelie",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
@@ -268,12 +439,18 @@ show functions verbose;
   }],
   "returning": [],
   "grants": []
-}]
+}
 select [1,2,3]::reverse;
+
+col1
+────
 [-3, -2, -1]
 # test: create user
 create user test;
 select show('state').lsn;
+
+col1
+────
 5
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -281,22 +458,46 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
+
+col1
+────
 5
 select show('state').catalog;
+
+col1
+────
 4
 select show('state').catalog_pending;
+
+col1
+────
 5
 select show('user', 'test').name;
+
+col1
+────
 "test"
 select identity_of("test");
+
+identity_of
+───────────
 3
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
+
+col1
+────
 5
 select show('state').catalog;
+
+col1
+────
 5
 select show('state').catalog_pending;
+
+col1
+────
 5
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -304,14 +505,29 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
+
+col1
+────
 5
 select show('state').catalog;
+
+col1
+────
 5
 select show('state').catalog_pending;
+
+col1
+────
 5
 select show('user', 'test').name;
+
+col1
+────
 "test"
 select identity_of("test");
+
+identity_of
+───────────
 3
 disconnect S0;
 close E0;

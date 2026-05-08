@@ -2,11 +2,20 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: ensure system users exists
 select show('users')[0].name;
+
+col1
+────
 "amelie"
 select current_user;
-"amelie"
+
+current_user
+────────────
+amelie
 select current_agent;
-"amelie"
+
+current_agent
+─────────────
+amelie
 # test: create user statement parsing
 create;
 error: create❰;❱ ⟵ relation type expected
@@ -27,12 +36,18 @@ error: create user test ❰abc❱ ⟵ ; expected
 # test: create user
 create user test;
 select show('user', 'test').name;
+
+col1
+────
 "test"
 # test: create user if not exists
 create user test;
 error: user 'test': already exists
 create user if not exists test;
 select show('user', 'test').name;
+
+col1
+────
 "test"
 # test: drop user statement parsing
 drop user;
@@ -48,47 +63,83 @@ error: drop user test ❰abc❱ ⟵ ; expected
 # test: drop user
 drop user test;
 select show('user', 'test').name;
+
+col1
+────
 null
 # test: drop user if exists
 drop user test;
 error: user 'test': not exists
 drop user if exists test;
 select show('user', 'test').name;
+
+col1
+────
 null
 # test: drop amelie user
 drop user amelie;
 error: user 'amelie': system user cannot be dropped
 select show('user', 'test').name;
+
+col1
+────
 null
 select show('user', 'amelie').name;
+
+col1
+────
 "amelie"
 # test: drop user cascade
 create user test;
 drop user test cascade;
 select show('user', 'test').name;
+
+col1
+────
 null
 # test: drop connected user
 create user test;
 select show('user', 'test').name;
+
+col1
+────
 "test"
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
 select current_user;
-"test"
+
+current_user
+────────────
+test
 select current_agent;
-"test"
+
+current_agent
+─────────────
+test
 drop user test;
 error: user 'test': permission denied
 select show('user', 'test').name;
+
+col1
+────
 null
 select 1;
+
+col1
+────
 1
 disconnect S1;
 switch S0;
 select current_user;
-"amelie"
+
+current_user
+────────────
+amelie
 select current_agent;
-"amelie"
+
+current_agent
+─────────────
+amelie
 drop user test;
 # test: drop user cascade (with relations)
 create user test;
@@ -103,14 +154,27 @@ drop user test;
 error: user 'test' still has table 'a'
 drop user test cascade;
 select 1;
+
+col1
+────
 1
 show tables;
-[]
+
+tables
+──────
 show functions;
-[]
+
+functions
+─────────
 select show('user', 'test').name;
+
+col1
+────
 null
 select show('user', 'amelie').name;
+
+col1
+────
 "amelie"
 # test: alter user statment parsing
 alter user;
@@ -128,19 +192,34 @@ error: alter user test rename ❰"hello"❱ ⟵ TO expected
 # test: alter user rename
 create user test;
 select show('user', 'test').name;
+
+col1
+────
 "test"
 select show('user', 'hello').name;
+
+col1
+────
 null
 alter user test rename to test2;
 select show('user', 'test').name;
+
+col1
+────
 null
 select show('user', 'test2').name;
+
+col1
+────
 "test2"
 drop user test2;
 # test: alter user amelie
 alter user amelie rename to _public;
 error: user 'amelie': system user cannot be renamed
 select show('user', 'amelie').name;
+
+col1
+────
 "amelie"
 # test: alter user rename cascade (udf dep)
 create user test;
@@ -156,40 +235,68 @@ begin
 	return total;
 end;
 select fn();
+
+col1
+────
 3
 drop function fn;
 # test: alter user rename cascade
 switch S0;
 alter user test rename to test2;
 select 1;
+
+col1
+────
 1
 switch S1;
 disconnect S1;
 connect E0 S1 test2@127.0.0.1:3485;
 switch S1;
 show tables;
-[{
+
+tables
+──────
+{
   "user": "test2",
   "name": "a"
-}, {
+}
+{
   "user": "test2",
   "name": "b"
-}]
+}
 show functions;
-[]
+
+functions
+─────────
 select show('user', 'amelie').name;
+
+col1
+────
 null
 select show('user', 'test2').name;
+
+col1
+────
 null
 disconnect S1;
 switch S0;
 show tables;
-[]
+
+tables
+──────
 show functions;
-[]
+
+functions
+─────────
 select show('user', 'amelie').name;
+
+col1
+────
 "amelie"
 select show('user', 'test2').name;
+
+col1
+────
 "test2"
 drop user test2;
 error: user 'test2' still has table 'a'
@@ -197,8 +304,14 @@ drop user test2 cascade;
 # test: create agent
 create agent test;
 select show('user', 'amelie').name;
+
+col1
+────
 "amelie"
 select show('user', 'test').name;
+
+col1
+────
 "test"
 drop agent test;
 disconnect S0;

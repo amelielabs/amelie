@@ -2,6 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3480;
 # test: primary by default
 show repl;
+
+repl
+────
 {
   "active": false,
   "role": "primary",
@@ -15,8 +18,14 @@ open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E1 S1 127.0.0.1:3481;
 switch S1;
 show uuid;
+
+uuid
+────
 "00000000-0000-0000-0000-000000000001"
 show repl;
+
+repl
+────
 {
   "active": false,
   "role": "primary",
@@ -31,6 +40,9 @@ error: repl: primary id cannot match this server id
 # test: subscribe
 subscribe "00000000-0000-0000-0000-000000000000";
 show repl;
+
+repl
+────
 {
   "active": true,
   "role": "replica",
@@ -38,20 +50,28 @@ show repl;
   "replicas": []
 }
 select show('state').read_only;
+
+col1
+────
 true
 # test: create replica
 switch S0;
 show replicas;
-[]
+
+replicas
+────────
 create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481";
 show replicas;
-[{
+
+replicas
+────────
+{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:3481/",
   "connected": false,
   "lsn": 0,
   "lag": 0
-}]
+}
 # test: start primary
 start repl;
 # test: wait for primary connect
@@ -60,6 +80,9 @@ watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = 
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 select show('state').lsn;
+
+col1
+────
 2
 # test: wait replica sync
 watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
@@ -71,16 +94,22 @@ insert into test values (4);
 insert into test values (5);
 insert into test values (6);
 select show('state').lsn;
+
+col1
+────
 5
 # test: replica lag
 show replicas;
-[{
+
+replicas
+────────
+{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:3481/",
   "connected": false,
   "lsn": 2,
   "lag": 3
-}]
+}
 # test: replica disconnected
 switch S0;
 watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = false;
@@ -93,13 +122,16 @@ watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = 
 # test: wait replica sync
 watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
 show replicas;
-[{
+
+replicas
+────────
+{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:3481/",
   "connected": true,
   "lsn": 5,
   "lag": 0
-}]
+}
 # test: restart primary
 disconnect S0;
 close E0;
@@ -115,33 +147,57 @@ insert into test values (9);
 # test: wait replica sync
 watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
 show replicas;
-[{
+
+replicas
+────────
+{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:3481/",
   "connected": true,
   "lsn": 8,
   "lag": 0
-}]
+}
 # test: ensure replica is read-only
 switch S1;
 select show('state').read_only;
+
+col1
+────
 true
 select show('state').lsn;
+
+col1
+────
 8
 insert into test values (10);
 error: system is in read-only mode
 select show('state').lsn;
+
+col1
+────
 8
 select show('state').psn;
+
+col1
+────
 3
 create table test2 (id int primary key);
 error: system is in read-only mode
 select show('state').lsn;
+
+col1
+────
 8
 select show('state').psn;
+
+col1
+────
 4
 # test: replica read
 select * from test;
+
+id
+──
 2
 7
 9
@@ -152,6 +208,9 @@ select * from test;
 3
 8
 show repl;
+
+repl
+────
 {
   "active": true,
   "role": "replica",
@@ -159,9 +218,15 @@ show repl;
   "replicas": []
 }
 select show('state').lsn;
+
+col1
+────
 8
 # test: failover (unsubscribe, switch to primary)
 show repl;
+
+repl
+────
 {
   "active": true,
   "role": "replica",
@@ -170,6 +235,9 @@ show repl;
 }
 unsubscribe;
 show repl;
+
+repl
+────
 {
   "active": true,
   "role": "primary",
@@ -180,11 +248,16 @@ show repl;
 switch S0;
 drop replica "00000000-0000-0000-0000-000000000001";
 show replicas;
-[]
+
+replicas
+────────
 # test: subscribe to new primary
 switch S0;
 subscribe "00000000-0000-0000-0000-000000000001";
 show repl;
+
+repl
+────
 {
   "active": true,
   "role": "replica",
@@ -204,14 +277,20 @@ insert into test values (12);
 # test: wait replica sync
 watch show('replica', '00000000-0000-0000-0000-000000000000').lsn = show('state').lsn;
 show replicas;
-[{
+
+replicas
+────────
+{
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "http://127.0.0.1:3480/",
   "connected": true,
   "lsn": 11,
   "lag": 0
-}]
+}
 select * from test;
+
+id
+──
 2
 7
 9

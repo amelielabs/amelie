@@ -4,72 +4,96 @@ create table test (id int primary key, data int default 1);
 insert into test (id) values (1), (2), (3);
 # test: select label
 select 1 name;
+
+name
+────
 1
 # test: select as label
 select 1 AS name;
+
+name
+────
 1
 # test: select column as from
 create table test (id int primary key);
 error: relation 'test': already exists
 select id as x from test;
+
+x
+─
 1
 2
 3
 select id x from test;
+
+x
+─
 1
 2
 3
 # test: select from (select column as from)
 select t.id from (select id from test) t;
+
+col1
+────
 1
 2
 3
 select t.x from (select id as x from test) t;
+
+col1
+────
 1
 2
 3
 select t.x from (select z.id as x from (select id from test) z) t;
+
+col1
+────
 1
 2
 3
 explain select t.x from (select z.id as x from (select id from test) z) t;
-{
-  "main": {
-    "00": "send_all            0      0      32    # amelie.test (select)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "set                 0      1      0     ",
-    "04": "dup                 2      1      0     ",
-    "05": "store_open          3      2      10    ",
-    "06": "store_read          4      3      0     ",
-    "07": "push                4      0      0     ",
-    "08": "set_add             0      0      0     ",
-    "09": "store_next          3      6      0     ",
-    "10": "free                3      0      0     ",
-    "11": "free                2      0      0     ",
-    "12": "set                 2      1      0     ",
-    "13": "dup                 3      0      0     ",
-    "14": "store_open          4      3      19    ",
-    "15": "store_read          5      4      0     ",
-    "16": "push                5      0      0     ",
-    "17": "set_add             2      0      0     ",
-    "18": "store_next          4      15     0     ",
-    "19": "free                4      0      0     ",
-    "20": "free                3      0      0     ",
-    "21": "ret                 2      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      6     # amelie.test (primary) part",
-    "02": "table_readi32       2      1      -     # id",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      0      -     "
-  },
-  "access": [["amelie.test", "shared", "select"]]
-}
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.test (select)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   set                 0      1      0
+  4   dup                 2      1      0
+  5   store_open          3      2      10
+  6   store_read          4      3      0
+  7   push                4      0      0
+  8   set_add             0      0      0
+  9   store_next          3      6      0
+ 10   free                3      0      0
+ 11   free                2      0      0
+ 12   set                 2      1      0
+ 13   dup                 3      0      0
+ 14   store_open          4      3      19
+ 15   store_read          5      4      0
+ 16   push                5      0      0
+ 17   set_add             2      0      0
+ 18   store_next          4      15     0
+ 19   free                4      0      0
+ 20   free                3      0      0
+ 21   ret                 2      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
 drop table test;
 disconnect S0;
 close E0;
