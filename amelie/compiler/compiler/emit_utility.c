@@ -454,12 +454,12 @@ emit_utility(Compiler* self)
 		auto arg = ast_token_create_of(stmt->ast);
 		auto offset = buf_size(data);
 		encode_str(data, &arg->user->string);
+		Str str;
+		str_set_cstr(&str, "1 month");
 		if (! arg->expire)
-		{
-			Str str;
-			str_set_cstr(&str, "1 year");
-			encode_str(data, &str);
-		}
+			str = arg->expire->string;
+		encode_str(data, &str);
+
 		r = op2pin(self, CCREATE_TOKEN, TYPE_JSON, offset);
 
 		// lock
