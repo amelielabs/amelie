@@ -455,8 +455,8 @@ emit_utility(Compiler* self)
 		auto offset = buf_size(data);
 		encode_str(data, &arg->user->string);
 		Str str;
-		str_set_cstr(&str, "1 month");
-		if (! arg->expire)
+		str_set_cstr(&str, "1 day");
+		if (arg->expire)
 			str = arg->expire->string;
 		encode_str(data, &str);
 

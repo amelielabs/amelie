@@ -161,7 +161,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			break;
 		}
 
-		// [GENERATD ALWAYS] AS ...
+		// [GENERATED ALWAYS] AS ...
 		case KGENERATED:
 		{
 			// ALWAYS

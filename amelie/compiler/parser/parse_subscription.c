@@ -20,7 +20,7 @@
 void
 parse_sub_create(Stmt* self)
 {
-	// CREATE SUBSCRIPTION [IF NOT EXISTS] name ON [user.]relation, ...
+	// CREATE SUBSCRIPTION [IF NOT EXISTS] name ON [user.]relation
 	auto stmt = ast_sub_create_allocate();
 	self->ast = &stmt->ast;
 

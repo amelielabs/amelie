@@ -78,7 +78,7 @@ main_console(Main* self, MainClient* client)
 	// ❯
 	auto prompt_len = utf8_strlen(&prompt_user) + 2;
 	char prompt_str[128];
-	format(prompt_str, sizeof(prompt_str), "{str}\033[32m❯\033[0m ",
+	format(prompt_str, sizeof(prompt_str), "{str}\033[38;5;147m❯\033[0m ",
 	       &prompt_user);
 
 	char prompt_str_pending[128];
