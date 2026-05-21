@@ -82,6 +82,11 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 				{
 					name = ast(KNAME);
 					name->string = func->fn->name;
+				} else
+				if (func->udf)
+				{
+					name = ast(KNAME);
+					name->string = func->udf->config->name;
 				}
 				break;
 			}

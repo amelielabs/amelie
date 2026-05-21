@@ -130,8 +130,8 @@ main
  15   ret                 0      0      -
 select reverse([1,2,3]);
 
-col1
-────
+reverse
+───────
 [3, 2, 1]
 select [1,2,3]::reverse;
 
@@ -212,8 +212,8 @@ col1
 1
 select fn();
 
-col1
-────
+fn
+──
 1
 drop function fn;
 drop table test;
@@ -273,8 +273,8 @@ main
   1   ret                 0      0      -
 select c(123);
 
-col1
-────
+c
+─
 123
 drop function c;
 drop function b;
@@ -282,15 +282,15 @@ drop function a;
 # test: select udf() (inside cte)
 begin declare x int; with a as (select reverse([1,2,3])) select * from a; end;
 
-col1
-────
+reverse
+───────
 3
 2
 1
 begin declare x int; with a as (select 1) select reverse([1,2,3]); end;
 
-col1
-────
+reverse
+───────
 [3, 2, 1]
 # test: select udf() from expr (unsupported)
 select x::reverse() from ([1,2,3]) x;

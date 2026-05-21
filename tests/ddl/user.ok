@@ -236,8 +236,8 @@ begin
 end;
 select fn();
 
-col1
-────
+fn
+──
 3
 drop function fn;
 # test: alter user rename cascade

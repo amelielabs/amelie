@@ -259,8 +259,8 @@ begin
 end;
 select test_fn(123);
 
-col1
-────
+test_fn
+───────
 {
   "a": 4,
   "b": 123

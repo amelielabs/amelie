@@ -60,7 +60,7 @@ main
   0   ret                 -1     0      -
 select test();
 
-col1
+test
 ────
 null
 explain execute test();
@@ -96,7 +96,7 @@ main
   0   ret                 -1     0      -
 select test();
 
-col1
+test
 ────
 null
 select test()::type;
@@ -106,7 +106,7 @@ type
 null
 select amelie.test();
 
-col1
+test
 ────
 null
 explain execute test();
@@ -149,7 +149,7 @@ main
   1   ret                 0      0      -
 select test();
 
-col1
+test
 ────
 123
 explain execute test();
@@ -197,7 +197,7 @@ main
   1   ret                 -1     0      -
 select test();
 
-col1
+test
 ────
 null
 explain execute test();
@@ -241,7 +241,7 @@ main
   1   ret                 0      0      -
 select test();
 
-col1
+test
 ────
 123
 explain execute test();
@@ -296,7 +296,7 @@ begin
 end;
 select test();
 
-col1
+test
 ────
 null
 execute test();
@@ -307,12 +307,12 @@ begin
 end;
 select test();
 
-col1
+test
 ────
 null
 select test();
 
-col1
+test
 ────
 null
 execute test();
@@ -323,7 +323,7 @@ begin
 end;
 select test();
 
-col1
+test
 ────
 null
 execute test();
@@ -403,7 +403,7 @@ begin
 end;
 select test();
 
-col1
+test
 ────
 null
 drop function test;
@@ -415,7 +415,7 @@ begin
 end;
 select test();
 
-col1
+test
 ────
 123
 drop function test;
@@ -455,7 +455,7 @@ main
   1   ret                 0      0      -
 select test(123);
 
-col1
+test
 ────
 123
 execute test(123);
@@ -527,7 +527,7 @@ main
  19   ret                 0      0      -
 select test(10);
 
-col1
+test
 ────
 45
 explain execute test(10);
@@ -808,7 +808,7 @@ functions
 }
 select test();
 
-col1
+test
 ────
 123
 # test: create or replace function
@@ -831,7 +831,7 @@ functions
 }
 select test();
 
-col1
+test
 ────
 321
 # test: create or replace function (return type mismatch)
@@ -842,7 +842,7 @@ end;
 error: function replacement 'test' return type mismatch
 select test();
 
-col1
+test
 ────
 321
 # test: create or replace function (arg mismatch)
@@ -853,7 +853,7 @@ end;
 error: function replacement 'test' arguments mismatch
 select test();
 
-col1
+test
 ────
 321
 # test: create or replace function (with dep)
@@ -863,8 +863,8 @@ begin
 end;
 select dep();
 
-col1
-────
+dep
+───
 321
 create or replace function test() return int
 begin
@@ -872,8 +872,8 @@ begin
 end;
 select dep();
 
-col1
-────
+dep
+───
 777
 drop function dep;
 drop function test;
