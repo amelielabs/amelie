@@ -166,13 +166,13 @@ show
 # test: users
 select show('users')[0].name;
 
-col1
+name
 ────
 "amelie"
 # test: user
 select show('user', 'amelie').name;
 
-col1
+name
 ────
 "amelie"
 # test: storages

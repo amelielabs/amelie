@@ -10035,8 +10035,8 @@ repl
 # test: validate
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 10000
 select count(*) from test;
 
@@ -10046,8 +10046,8 @@ count
 switch S1;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 10000
 select count(*) from test;
 

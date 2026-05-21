@@ -3,7 +3,7 @@ connect E0 S0 127.0.0.1:3485;
 # test: ensure system users exists
 select show('users')[0].name;
 
-col1
+name
 ────
 "amelie"
 select current_user;
@@ -37,7 +37,7 @@ error: create user test ❰abc❱ ⟵ ; expected
 create user test;
 select show('user', 'test').name;
 
-col1
+name
 ────
 "test"
 # test: create user if not exists
@@ -46,7 +46,7 @@ error: user 'test': already exists
 create user if not exists test;
 select show('user', 'test').name;
 
-col1
+name
 ────
 "test"
 # test: drop user statement parsing
@@ -64,7 +64,7 @@ error: drop user test ❰abc❱ ⟵ ; expected
 drop user test;
 select show('user', 'test').name;
 
-col1
+name
 ────
 null
 # test: drop user if exists
@@ -73,7 +73,7 @@ error: user 'test': not exists
 drop user if exists test;
 select show('user', 'test').name;
 
-col1
+name
 ────
 null
 # test: drop amelie user
@@ -81,12 +81,12 @@ drop user amelie;
 error: user 'amelie': system user cannot be dropped
 select show('user', 'test').name;
 
-col1
+name
 ────
 null
 select show('user', 'amelie').name;
 
-col1
+name
 ────
 "amelie"
 # test: drop user cascade
@@ -94,14 +94,14 @@ create user test;
 drop user test cascade;
 select show('user', 'test').name;
 
-col1
+name
 ────
 null
 # test: drop connected user
 create user test;
 select show('user', 'test').name;
 
-col1
+name
 ────
 "test"
 connect E0 S1 test@127.0.0.1:3485;
@@ -120,7 +120,7 @@ drop user test;
 error: user 'test': permission denied
 select show('user', 'test').name;
 
-col1
+name
 ────
 null
 select 1;
@@ -168,12 +168,12 @@ functions
 ─────────
 select show('user', 'test').name;
 
-col1
+name
 ────
 null
 select show('user', 'amelie').name;
 
-col1
+name
 ────
 "amelie"
 # test: alter user statment parsing
@@ -193,23 +193,23 @@ error: alter user test rename ❰"hello"❱ ⟵ TO expected
 create user test;
 select show('user', 'test').name;
 
-col1
+name
 ────
 "test"
 select show('user', 'hello').name;
 
-col1
+name
 ────
 null
 alter user test rename to test2;
 select show('user', 'test').name;
 
-col1
+name
 ────
 null
 select show('user', 'test2').name;
 
-col1
+name
 ────
 "test2"
 drop user test2;
@@ -218,7 +218,7 @@ alter user amelie rename to _public;
 error: user 'amelie': system user cannot be renamed
 select show('user', 'amelie').name;
 
-col1
+name
 ────
 "amelie"
 # test: alter user rename cascade (udf dep)
@@ -270,12 +270,12 @@ functions
 ─────────
 select show('user', 'amelie').name;
 
-col1
+name
 ────
 null
 select show('user', 'test2').name;
 
-col1
+name
 ────
 null
 disconnect S1;
@@ -290,12 +290,12 @@ functions
 ─────────
 select show('user', 'amelie').name;
 
-col1
+name
 ────
 "amelie"
 select show('user', 'test2').name;
 
-col1
+name
 ────
 "test2"
 drop user test2;
@@ -305,12 +305,12 @@ drop user test2 cascade;
 create agent test;
 select show('user', 'amelie').name;
 
-col1
+name
 ────
 "amelie"
 select show('user', 'test').name;
 
-col1
+name
 ────
 "test"
 drop agent test;

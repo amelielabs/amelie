@@ -991,7 +991,7 @@ error: alter function test rename to asf ❰junk❱ ⟵ ; expected
 alter function test2 rename to abc;
 select show('function', 'abc', true).name;
 
-col1
+name
 ────
 "abc"
 # test: alter function rename function exists

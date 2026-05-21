@@ -244,8 +244,8 @@ begin
 	select x.id;
 end;
 
-col1
-────
+id
+──
 48
 explain begin
 	declare x json;

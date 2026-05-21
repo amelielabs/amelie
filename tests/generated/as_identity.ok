@@ -15,8 +15,8 @@ error: create table test (id int primary key, data int as identity❰;❱ ⟵ ) 
 create table test (id int primary key as identity);
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,

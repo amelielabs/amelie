@@ -17,26 +17,26 @@ drop table if exists test;
 create table test(id int primary key);
 select show('table', 'test', true).name;
 
-col1
+name
 ────
 "test"
 drop table test;
 select show('table', 'test', true).name;
 
-col1
+name
 ────
 null
 # test: drop table if exists
 create table test(id int primary key);
 select show('table', 'test', true).name;
 
-col1
+name
 ────
 "test"
 drop table test;
 select show('table', 'test', true).name;
 
-col1
+name
 ────
 null
 drop table if exists test;
@@ -44,14 +44,14 @@ drop table if exists test;
 create table test (id int primary key);
 select show('table', 'test', true).name;
 
-col1
+name
 ────
 "test"
 drop table test;
 create table test (id int primary key);
 select show('table', 'test', true).name;
 
-col1
+name
 ────
 "test"
 drop table test;

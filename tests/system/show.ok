@@ -267,13 +267,13 @@ col1
 }
 select test_fn(123).a;
 
-col1
-────
+a
+─
 4
 select 123::test_fn().a;
 
-col1
-────
+a
+─
 4
 show functions;
 
@@ -435,8 +435,8 @@ show
 }
 select show('state').directory;
 
-col1
-────
+directory
+─────────
 "_output/E0"
 # test: show config
 show config;
@@ -550,7 +550,7 @@ config
 }
 select show('config').uuid;
 
-col1
+uuid
 ────
 "00000000-0000-0000-0000-000000000000"
 select show('config', '123');

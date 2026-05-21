@@ -31,7 +31,7 @@ error: alter table test rename to asf ❰junk❱ ⟵ ; expected
 alter table test rename to abc;
 select show('table', 'abc', true).name;
 
-col1
+name
 ────
 "abc"
 # test: rename table exists
@@ -116,8 +116,8 @@ error: alter table test rename column data to ❰1❱ ⟵ name expected
 create table test (id serial primary key, data int default 0);
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -134,8 +134,8 @@ col1
 alter table test rename column data to data2;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -159,8 +159,8 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -171,8 +171,8 @@ col1
 alter table test rename column id to id2;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id2",
   "type": 2,
@@ -199,8 +199,8 @@ drop table test;
 create table test (id serial primary key, data int default 0);
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -218,8 +218,8 @@ alter table test rename column data to data;
 error: table 'test': column 'data' already exists
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -275,8 +275,8 @@ drop table test;
 create table test (id int primary key);
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -287,8 +287,8 @@ col1
 alter table test add column data int;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -317,8 +317,8 @@ insert into test values (1),(2),(3);
 alter table test add column data int;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -358,8 +358,8 @@ alter table test add column data int not null;
 error: alter table test add column data int not null❰;❱ ⟵ NOT NULL currently not supported with ALTER
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -374,8 +374,8 @@ insert into test values (1),(2),(3);
 alter table test add column data int default 123;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -429,8 +429,8 @@ alter table test add column data int not null default 123;
 error: alter table test add column data int not null default 123❰;❱ ⟵ NOT NULL currently not supported with ALTER
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -445,8 +445,8 @@ insert into test values (1),(2),(3);
 alter table test add column data serial;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -522,8 +522,8 @@ drop table test;
 create table test (id int primary key, a int);
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -540,8 +540,8 @@ col1
 alter table test drop column a;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -560,8 +560,8 @@ drop table test;
 create table test (id int primary key, a int, b int);
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -584,8 +584,8 @@ col1
 alter table test drop column a;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -610,8 +610,8 @@ drop table test;
 create table test (id int primary key, a text, b int);
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -656,8 +656,8 @@ b
 alter table test drop column a;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -695,8 +695,8 @@ b
 3
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -719,8 +719,8 @@ col1
 alter table test drop column b;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -763,8 +763,8 @@ drop table test;
 create table test (a text, b int, id int primary key);
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "a",
   "type": 4,
@@ -816,8 +816,8 @@ b
 alter table test drop column a;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "a",
   "type": 4,
@@ -862,8 +862,8 @@ b
 3
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "a",
   "type": 4,
@@ -886,8 +886,8 @@ col1
 alter table test drop column b;
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "a",
   "type": 4,
@@ -945,8 +945,8 @@ id  data
 0   0
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -971,8 +971,8 @@ id  data
 1   null
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -998,8 +998,8 @@ id  data
 3   2
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -1026,8 +1026,8 @@ id  data
 4   null
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -1058,8 +1058,8 @@ id  data
 5   2
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,
@@ -1088,8 +1088,8 @@ id  data
 5   2
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,

@@ -51,8 +51,8 @@ repl
 }
 select show('state').read_only;
 
-col1
-────
+read_only
+─────────
 true
 # test: create replica
 switch S0;
@@ -81,8 +81,8 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 2
 # test: wait replica sync
 watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
@@ -95,8 +95,8 @@ insert into test values (5);
 insert into test values (6);
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 5
 # test: replica lag
 show replicas;
@@ -161,37 +161,37 @@ replicas
 switch S1;
 select show('state').read_only;
 
-col1
-────
+read_only
+─────────
 true
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 8
 insert into test values (10);
 error: system is in read-only mode
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 8
 select show('state').psn;
 
-col1
-────
+psn
+───
 3
 create table test2 (id int primary key);
 error: system is in read-only mode
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 8
 select show('state').psn;
 
-col1
-────
+psn
+───
 4
 # test: replica read
 select * from test;
@@ -219,8 +219,8 @@ repl
 }
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 8
 # test: failover (unsubscribe, switch to primary)
 show repl;

@@ -45,8 +45,8 @@ drop table test;
 create table test (id int, id2 int, primary key (id, id2));
 select show('table', 'test', true).columns;
 
-col1
-────
+columns
+───────
 [{
   "name": "id",
   "type": 2,

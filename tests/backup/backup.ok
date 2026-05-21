@@ -30,8 +30,8 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 2
 create function reverse(array json) return json
 begin
@@ -43,8 +43,8 @@ begin
 end;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 3
 backup E2 http://127.0.0.1:3480;
 close E2;
@@ -72,8 +72,8 @@ col1
 [3, 2, 1]
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 3
 disconnect S0;
 close E2;
@@ -82,8 +82,8 @@ open E0 "wal_size": 0;
 connect E0 S0 127.0.0.1:3480;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 3
 show wal;
 
@@ -141,8 +141,8 @@ col1
 [3, 2, 1]
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 4
 show wal;
 
@@ -165,34 +165,34 @@ open E0;
 connect E0 S0 127.0.0.1:3480;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 4
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 0
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 3
 checkpoint;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 4
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 3
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 3
 backup E4 http://127.0.0.1:3480;
 close E4;
@@ -203,18 +203,18 @@ open E4;
 connect E4 S0 127.0.0.1:3480;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 4
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 3
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 3
 select * from test;
 
@@ -237,18 +237,18 @@ connect E0 S0 127.0.0.1:3480;
 insert into test values (5),(6),(7);
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 5
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 3
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 3
 backup E5 http://127.0.0.1:3480;
 close E5;
@@ -259,18 +259,18 @@ open E5;
 connect E5 S0 127.0.0.1:3480;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 5
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 3
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 3
 select * from test;
 

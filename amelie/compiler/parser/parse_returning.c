@@ -111,6 +111,25 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 				name->string = expr->string;
 				break;
 			}
+			case '.':
+			{
+				Str path = expr->r->string;
+				for (;;)
+				{
+					Str part;
+					if (str_split(&path, &part, '.'))
+					{
+						str_advance(&path, str_size(&part) + 1);
+						continue;
+					}
+					path = part;
+					break;
+				}
+
+				name = ast(KNAME);
+				name->string = path;
+				break;
+			}
 			default:
 			{
 #if 0

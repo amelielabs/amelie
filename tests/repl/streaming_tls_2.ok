@@ -10053,8 +10053,8 @@ repl
 }
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 10000
 select count(*) from test;
 
@@ -10075,8 +10075,8 @@ repl
 }
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 10000
 select count(*) from test;
 
@@ -10097,8 +10097,8 @@ repl
 }
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 10000
 select count(*) from test;
 

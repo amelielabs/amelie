@@ -30,8 +30,8 @@ error: create index i on test (❰)❱ ⟵ name expected
 create index i on test (a);
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,
@@ -60,8 +60,8 @@ error: table 'test' index 'i': already exists
 create index if not exists i on test (a);
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,
@@ -89,8 +89,8 @@ drop index i on test;
 create index i on test (b, a);
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,
@@ -121,8 +121,8 @@ drop index i on test;
 create index i on test (a, a);
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,
@@ -155,8 +155,8 @@ create unique index i on test (a);
 create unique index j on test (a asc, b desc, id);
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,
@@ -199,8 +199,8 @@ error: create index i on test (a) using❰;❱ ⟵ index type expected
 create index i on test (a) using hash;
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,
@@ -227,8 +227,8 @@ drop index i on test;
 create index i on test (a) using tree;
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,
@@ -275,8 +275,8 @@ error: table 'test' index 'i': not exists
 create index i on test (a);
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,
@@ -302,8 +302,8 @@ col1
 drop index i on test;
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,
@@ -376,8 +376,8 @@ error: alter index i on test rename to❰;❱ ⟵ name expected
 create index i on test (a);
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,
@@ -403,8 +403,8 @@ col1
 alter index i on test rename to j;
 select show('table', 'test', true).indexes;
 
-col1
-────
+indexes
+───────
 [{
   "name": "primary",
   "type": 2,

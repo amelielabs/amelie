@@ -3,59 +3,59 @@ connect E0 S0 127.0.0.1:3485;
 # test: default checkpoint
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 0
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 0
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 0
 # test: checkpoint (no data)
 checkpoint;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 0
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 0
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 0
 # test: create table
 create table test (id serial primary key);
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 1
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 1
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 1
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 1
 # test: restart/recover
 disconnect S0;
@@ -64,18 +64,18 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 1
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 1
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 1
 select * from test;
 
@@ -95,18 +95,18 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 2
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 1
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 1
 select identity_of("test");
 
@@ -124,18 +124,18 @@ id
 checkpoint;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 2
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 1
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 1
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -144,18 +144,18 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 2
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 1
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 1
 select identity_of("test");
 
@@ -209,18 +209,18 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 3
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 1
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 3
 show functions verbose;
 
@@ -250,18 +250,18 @@ col1
 checkpoint;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 3
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 3
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 3
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -270,18 +270,18 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 3
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 3
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 3
 show functions verbose;
 
@@ -347,18 +347,18 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 4
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 3
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 4
 show functions verbose;
 
@@ -388,18 +388,18 @@ col1
 checkpoint;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 4
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 4
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 4
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -408,18 +408,18 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 4
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 4
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 4
 show functions verbose;
 
@@ -449,8 +449,8 @@ col1
 create user test;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 5
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -459,22 +459,22 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 5
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 4
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 5
 select show('user', 'test').name;
 
-col1
+name
 ────
 "test"
 select identity_of("test");
@@ -486,18 +486,18 @@ identity_of
 checkpoint;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 5
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 5
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 5
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -506,22 +506,22 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 5
 select show('state').catalog;
 
-col1
-────
+catalog
+───────
 5
 select show('state').catalog_pending;
 
-col1
-────
+catalog_pending
+───────────────
 5
 select show('user', 'test').name;
 
-col1
+name
 ────
 "test"
 select identity_of("test");

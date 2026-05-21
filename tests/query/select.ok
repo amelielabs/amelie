@@ -589,12 +589,12 @@ drop user test;
 create table test (id serial primary key);
 select indexes[0].type from main.show('tables', true);
 
-col1
+type
 ────
 2
 select t.indexes[0].type from main.show('tables', true) t;
 
-col1
+type
 ────
 2
 drop table test;

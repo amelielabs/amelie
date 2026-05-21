@@ -1091,8 +1091,8 @@ error: select [1,2,3] <> [1,2,3]::❰vector❱ ⟵ operation json = vector is no
 # test: json [] string
 select {"id":48}.id;
 
-col1
-────
+id
+──
 48
 select {"id":48}["id"];
 
@@ -1121,26 +1121,26 @@ main
   3   ret                 2      0      -
 select {"id": null}.id.a.b;
 
-col1
-────
+b
+─
 null
 # test: json . string
 select {"a": 0, "b": 1}.b;
 
-col1
-────
+b
+─
 1
 select {"a": 0, "b": {"c": 18}}.b;
 
-col1
-────
+b
+─
 {
   "c": 18
 }
 select {"a": 0, "b": {"c": 18}}.b.c;
 
-col1
-────
+c
+─
 18
 explain select {"a": 0, "b": {"c": 18}}.b.c;
 

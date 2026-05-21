@@ -338,7 +338,7 @@ set
 }
 select {}::set("id", 42)::set("data", {"misc": null}).data.misc;
 
-col1
+misc
 ────
 null
 explain select {}::set("id", 42)::set("data", {"misc": null}).data.misc;
@@ -369,8 +369,8 @@ set
 }
 select set({"a": 0}, "a", {"b": 2}).a.b;
 
-col1
-────
+b
+─
 2
 select set({"a": 0}, "a", {"b": 2})."a"."b";
 
@@ -394,8 +394,8 @@ set
 }
 select set({"a": 0}, "b", [1, 2]).b;
 
-col1
-────
+b
+─
 [1, 2]
 select set({"a": 0}, "b", [1, 2]).b[1];
 

@@ -31,8 +31,8 @@ show
 }
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 0
 show all;
 
@@ -105,8 +105,8 @@ show
 }
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 0
 show all;
 
@@ -148,8 +148,8 @@ config
 create table test (id serial primary key, data int default 0);
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 1
 select identity_of("test");
 
@@ -164,8 +164,8 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 1
 select identity_of("test");
 
@@ -176,8 +176,8 @@ identity_of
 insert into test () values (), (), ();
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 2
 select identity_of("test");
 
@@ -199,8 +199,8 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 2
 select identity_of("test");
 
@@ -218,8 +218,8 @@ id  data
 update test set data = id;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 3
 select identity_of("test");
 
@@ -241,8 +241,8 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 3
 select identity_of("test");
 
@@ -260,8 +260,8 @@ id  data
 insert into test values (2, 0) on conflict do update set data = data + 1;
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 4
 select identity_of("test");
 
@@ -283,8 +283,8 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 4
 select identity_of("test");
 
@@ -302,8 +302,8 @@ id  data
 delete from test where id in (0, 1);
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 5
 select identity_of("test");
 
@@ -323,8 +323,8 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 
-col1
-────
+lsn
+───
 5
 select identity_of("test");
 
