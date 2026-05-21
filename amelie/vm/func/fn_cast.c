@@ -219,7 +219,7 @@ fn_json(Fn* self)
 }
 
 hot static void
-fn_json_import(Fn* self)
+fn_json_decode(Fn* self)
 {
 	fn_expect(self, 1);
 	auto arg = &self->argv[0];
@@ -505,8 +505,8 @@ fn_cast_register(FunctionMgr* self)
 	func = function_allocate(TYPE_JSON, "json", fn_json);
 	function_mgr_add(self, func);
 
-	// json_import()
-	func = function_allocate(TYPE_JSON, "json_import", fn_json_import);
+	// json_decode()
+	func = function_allocate(TYPE_JSON, "json_decode", fn_json_decode);
 	function_mgr_add(self, func);
 
 	// interval()

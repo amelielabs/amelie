@@ -268,29 +268,29 @@ select "00000000-0000-0000-0000-000000000001"::uuid::string;
 string
 ──────
 00000000-0000-0000-0000-000000000001
-# test: json_import(string)
-select '{"id": 42, "data": [1,2,3]}'::json_import;
+# test: json_decode(string)
+select '{"id": 42, "data": [1,2,3]}'::json_decode;
 
-json_import
+json_decode
 ───────────
 {
   "id": 42,
   "data": [1, 2, 3]
 }
-select '{"id": 42, "data": [1,2,3]}'::json_import::string;
+select '{"id": 42, "data": [1,2,3]}'::json_decode::string;
 
 string
 ──────
 {"id": 42, "data": [1, 2, 3]}
-select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
+select '{"id": 42, "data": [1,2,3]}'::json_decode::string::json_decode;
 
-json_import
+json_decode
 ───────────
 {
   "id": 42,
   "data": [1, 2, 3]
 }
-explain select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
+explain select '{"id": 42, "data": [1,2,3]}'::json_decode::string::json_decode;
 
 explain
 ───────
@@ -298,8 +298,8 @@ explain
 main
   0   value               0      -      0     # json
   1   ret                 0      0      -
-select 123::json_import;
-error: json_import(❰int❱ ⟵ unsupported argument type
+select 123::json_decode;
+error: json_decode(❰int❱ ⟵ unsupported argument type
 # test: json(null)
 select null::json;
 

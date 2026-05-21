@@ -113,12 +113,12 @@ select {"id": 42, "data": [1,2,3]}::string;
 # test: string(uuid)
 select "00000000-0000-0000-0000-000000000001"::uuid::string;
 
-# test: json_import(string)
-select '{"id": 42, "data": [1,2,3]}'::json_import;
-select '{"id": 42, "data": [1,2,3]}'::json_import::string;
-select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
-explain select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
-select 123::json_import;
+# test: json_decode(string)
+select '{"id": 42, "data": [1,2,3]}'::json_decode;
+select '{"id": 42, "data": [1,2,3]}'::json_decode::string;
+select '{"id": 42, "data": [1,2,3]}'::json_decode::string::json_decode;
+explain select '{"id": 42, "data": [1,2,3]}'::json_decode::string::json_decode;
+select 123::json_decode;
 
 # test: json(null)
 select null::json;
