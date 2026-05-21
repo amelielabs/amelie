@@ -35,7 +35,7 @@ catalog_cdc_ref(Catalog* self, User* user, Str* rel_user, Str* rel,
 	}
 
 	// check permission to create subscription on the relation
-	user_check_permission(user, ref_match, PERM_CREATE_SUB);
+	user_check_permission(user, ref_match, PERM_CREATE_SUBSCRIPTION);
 
 	// reference relation being used for cdc
 	switch (ref_match->type) {

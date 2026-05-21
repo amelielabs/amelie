@@ -74,9 +74,9 @@ follower_accept(Follower* self)
 static void
 follower_follow(Follower* self)
 {
-	// PERM_CREATE_SUB
+	// PERM_CREATE_SUBSCRIPTION
 	auto req = self->req;
-	user_check(req->user, PERM_CREATE_SUB);
+	user_check(req->user, PERM_CREATE_SUBSCRIPTION);
 
 	// find existing feed
 	Str* user;

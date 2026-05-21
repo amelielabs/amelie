@@ -297,16 +297,16 @@ user_grant(Catalog* self,
 
 	// validate permissions
 	auto perms_all =
-	     PERM_GRANT           |
-	     PERM_SYSTEM          |
-	     PERM_CREATE_USER     |
-	     PERM_CREATE_TOKEN    |
-	     PERM_CREATE_TABLE    |
-	     PERM_CREATE_FUNCTION |
-	     PERM_CREATE_TOPIC    |
-	     PERM_CREATE_SUB      |
-	     PERM_RPC             |
-	     PERM_SQL             |
+	     PERM_GRANT               |
+	     PERM_SYSTEM              |
+	     PERM_CREATE_USER         |
+	     PERM_CREATE_TOKEN        |
+	     PERM_CREATE_TABLE        |
+	     PERM_CREATE_FUNCTION     |
+	     PERM_CREATE_TOPIC        |
+	     PERM_CREATE_SUBSCRIPTION |
+	     PERM_RPC                 |
+	     PERM_SQL                 |
 	     PERM_SERVICE;
 	perms = permission_validate(NULL, name, perms, perms_all);
 
