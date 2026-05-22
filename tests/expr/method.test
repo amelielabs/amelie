@@ -25,6 +25,9 @@ select put([null], 0, 123);
 select [1]::append(1)::append(2);
 select [1]::append(1)::append(2)::append(3);
 
+# test: expr :: method() :: method() (constify)
+explain select [1]::append(1)::append(2)::append(3);
+
 select {}::set("a", 1)::set("b", 2);
 select {}::set("a", 1)::set("b", 2);
 

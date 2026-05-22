@@ -61,6 +61,15 @@ select [1]::append(1)::append(2)::append(3);
 append
 ──────
 [1, 1, 2, 3]
+# test: expr :: method() :: method() (constify)
+explain select [1]::append(1)::append(2)::append(3);
+
+explain
+───────
+
+main
+  0   value               0      -      0     # json
+  1   ret                 0      0      -
 select {}::set("a", 1)::set("b", 2);
 
 set

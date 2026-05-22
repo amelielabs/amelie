@@ -65,10 +65,8 @@ ccreate_token(Vm* self, Op* op)
 	// find user
 	auto user = catalog_find_user(&share()->db->catalog, &name, true);
 
-	// allow to create token for self or child users
-	auto user_local = &self->local->user;
-	if (! str_compare(&user->config->name, user_local))
-		check_ownership_user(self->tr, &user->rel);
+	// allow to create tokens only for child users (or anyone if superuser)
+	check_ownership_user(self->tr, &user->rel);
 
 	// ensure user has a secret
 	auto secret = opt_string_of(&state()->secret);
