@@ -20,7 +20,7 @@
 void
 parse_branch_create(Stmt* self)
 {
-	// CREATE BRANCH [IF NOT EXISTS] name FROM relation
+	// CREATE BRANCH [IF NOT EXISTS] name ON relation
 	auto stmt = ast_branch_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -30,8 +30,8 @@ parse_branch_create(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 
-	// FROM
-	stmt_expect(self, KFROM);
+	// ON
+	stmt_expect(self, KON);
 
 	// target
 	Str target_user;
