@@ -20,11 +20,15 @@ post /sql/ application/json - -;
 post /sql text/plain - -;
 # test: POST /sql (text/plain, no accept)
 post /sql text/plain - select 1;
-{"columns": ["col1"], "rows": [[1]]}
+
+col1
+────
+1
+
 # test: POST /sql (text/plain, invalid accept)
 post /sql text/plain xyz select 1;
 400 Bad Request
-# test: POST /sql (text/plain)
+# test: POST /sql (text/plain, application/json)
 post /sql text/plain application/json select 1;
 {"columns": ["col1"], "rows": [[1]]}
 # test: POST /sql (args parsing)

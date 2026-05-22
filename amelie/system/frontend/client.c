@@ -38,7 +38,7 @@ frontend_endpoint_sql(Request* req, Client* client)
 	// accept (set default)
 	auto accept = &endpoint->accept.string;
 	if (str_empty(accept) || str_is(accept, "*/*", 3))
-		str_set(accept, "application/json", 16);
+		str_set(accept, "text/plain", 10);
 
 	// set output
 	output_set(&req->output, endpoint);

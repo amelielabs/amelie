@@ -26,7 +26,7 @@ post /sql text/plain - select 1;
 # test: POST /sql (text/plain, invalid accept)
 post /sql text/plain xyz select 1;
 
-# test: POST /sql (text/plain)
+# test: POST /sql (text/plain, application/json)
 post /sql text/plain application/json select 1;
 
 # test: POST /sql (args parsing)
