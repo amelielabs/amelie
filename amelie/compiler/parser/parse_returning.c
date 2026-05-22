@@ -150,7 +150,7 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		} else
 		{
 			// ensure * has no alias
-			if (expr->id == '*')
+			if (expr->id == KSTAR || expr->id == KNAME_COMPOUND_STAR)
 				stmt_error(stmt, name, "* cannot have an alias");
 		}
 

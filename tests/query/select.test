@@ -130,7 +130,12 @@ insert into test () values ();
 select * from test;
 explain select alias.id, alias.data from test alias;
 select alias.id, alias.* from test alias;
+
+# test: select alias.* as from table
+select * as alias from test;
+select test.* as alias from test;
 drop table test;
+
 
 # test: select * from function() (missing)
 select * from unknown();

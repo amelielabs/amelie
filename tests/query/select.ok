@@ -512,6 +512,11 @@ col1  id  data
 0     0   0
 1     1   0
 2     2   0
+# test: select alias.* as from table
+select * as alias from test;
+error: select * as ❰alias❱ ⟵ * cannot have an alias
+select test.* as alias from test;
+error: select test.* as ❰alias❱ ⟵ * cannot have an alias
 drop table test;
 # test: select * from function() (missing)
 select * from unknown();
