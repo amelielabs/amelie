@@ -883,18 +883,16 @@ show tables;
 
 tables
 ──────
-# test: create user
-create user test;
-select show('user', 'test').name;
+# test: create topic
+create topic top;
+show topics;
 
-name
-────
-"test"
-select show('state').lsn;
-
-lsn
-───
-25
+topics
+──────
+{
+  "user": "amelie",
+  "name": "top"
+}
 # test: restart
 disconnect S0;
 close E0;
@@ -906,6 +904,58 @@ select show('state').lsn;
 lsn
 ───
 25
+show topics;
+
+topics
+──────
+{
+  "user": "amelie",
+  "name": "top"
+}
+# test: drop topic
+drop topic top;
+show topics;
+
+topics
+──────
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select show('state').lsn;
+
+lsn
+───
+26
+show topics;
+
+topics
+──────
+# test: create user
+create user test;
+select show('user', 'test').name;
+
+name
+────
+"test"
+select show('state').lsn;
+
+lsn
+───
+27
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select show('state').lsn;
+
+lsn
+───
+27
 select show('user', 'test').name;
 
 name
@@ -927,7 +977,7 @@ select show('state').lsn;
 
 lsn
 ───
-26
+28
 # test: restart
 disconnect S0;
 close E0;
@@ -938,7 +988,7 @@ select show('state').lsn;
 
 lsn
 ───
-26
+28
 select show('user', 'test2').name;
 
 name
@@ -950,7 +1000,7 @@ select show('state').lsn;
 
 lsn
 ───
-27
+29
 select show('user', 'test2').name;
 
 name
@@ -966,7 +1016,7 @@ select show('state').lsn;
 
 lsn
 ───
-27
+29
 select show('user', 'test').name;
 
 name
@@ -990,7 +1040,7 @@ select show('state').lsn;
 
 lsn
 ───
-28
+30
 show functions verbose;
 
 functions
@@ -1025,7 +1075,7 @@ select show('state').lsn;
 
 lsn
 ───
-28
+30
 show functions verbose;
 
 functions
@@ -1080,7 +1130,7 @@ select show('state').lsn;
 
 lsn
 ───
-29
+31
 show functions verbose;
 
 functions
@@ -1115,7 +1165,7 @@ select show('state').lsn;
 
 lsn
 ───
-29
+31
 show functions verbose;
 
 functions
@@ -1154,7 +1204,7 @@ select show('state').lsn;
 
 lsn
 ───
-30
+32
 select [1,2,3]::reverse2;
 
 col1
@@ -1170,7 +1220,7 @@ select show('state').lsn;
 
 lsn
 ───
-30
+32
 show functions verbose;
 
 functions
@@ -1201,7 +1251,7 @@ select show('state').lsn;
 
 lsn
 ───
-31
+33
 show functions verbose;
 
 functions
@@ -1220,6 +1270,6 @@ select show('state').lsn;
 
 lsn
 ───
-31
+33
 disconnect S0;
 close E0;

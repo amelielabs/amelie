@@ -199,6 +199,39 @@ select show('state').catalog_pending;
 show functions verbose;
 select [1,2,3]::reverse;
 
+# test: create topic
+create topic top;
+show topics;
+
+# test: restart/recover (checkpoint + wal)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select show('state').lsn;
+select show('state').catalog;
+select show('state').catalog_pending;
+show topics;
+
+# test: checkpoint
+checkpoint;
+select show('state').lsn;
+select show('state').catalog;
+select show('state').catalog_pending;
+show topics;
+
+# test: restart/recover (checkpoint)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select show('state').lsn;
+select show('state').catalog;
+select show('state').catalog_pending;
+show topics;
+
 # test: create user
 create user test;
 select show('state').lsn;

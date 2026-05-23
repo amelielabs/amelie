@@ -306,6 +306,34 @@ select show('state').lsn;
 select * from test2;
 show tables;
 
+# test: create topic
+create topic top;
+show topics;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+select show('state').lsn;
+show topics;
+
+# test: drop topic
+drop topic top;
+show topics;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+select show('state').lsn;
+show topics;
+
 # test: create user
 create user test;
 select show('user', 'test').name;

@@ -1,0 +1,77 @@
+#
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: create topic statement parsing
+create topic;
+create topic 1;
+create topic;
+create unlogged topic;
+create topic if exists;
+
+# test: create topic
+create topic test;
+show topics;
+
+# test: crud/query
+insert into test values (123);
+delete from test; 
+select * from test;
+
+# test: publish (no subscibers)
+publish;
+publish into;
+publish to;
+publish to 1;
+publish to xyz;
+
+publish to test;
+publish to test 123;
+
+# test: drop topic statement parsing
+drop topic;
+drop topic 123;
+
+# test: drop topic
+drop topic test;
+
+# test: drop topic (if exists)
+drop topic test;
+drop topic if exists;
+drop topic if exists test;
+
+# test: alter topic statement parsing
+create topic test;
+show topics;
+
+alter topic;
+alter topic test;
+alter topic test xyz;
+alter topic test 1;
+
+# test: alter topic rename to
+alter topic test rename;
+alter topic test rename to;
+alter topic test rename to xyz;
+show topics;
+
+# test: alter topic rename to (if exists)
+alter topic test rename to xyz;
+alter topic if exists test rename to xyz;
+show topics;
+
+publish to xyz 123;
+drop topic xyz;
+
+drop topic test;
+
+# test: create topic (unlogged)
+create unlogged topic test;
+select name, `unlogged` from show topics verbose;
+
+publish to test;
+publish to test 123;
+drop topic test;
+
+disconnect S0;
+close E0;

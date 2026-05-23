@@ -59,10 +59,11 @@ test table_create
 test table_drop
 test table_alter
 test table_migration
+test partition
 test index
 test branch
 test branch_visibility
-test partition
+test topic
 test function
 
 # dml

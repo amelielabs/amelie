@@ -1,0 +1,116 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: create topic statement parsing
+create topic;
+error: create topic❰;❱ ⟵ name expected
+create topic 1;
+error: create topic ❰1❱ ⟵ name expected
+create topic;
+error: create topic❰;❱ ⟵ name expected
+create unlogged topic;
+error: create unlogged topic❰;❱ ⟵ name expected
+create topic if exists;
+error: create topic if ❰exists❱ ⟵ NOT expected
+# test: create topic
+create topic test;
+show topics;
+
+topics
+──────
+{
+  "user": "amelie",
+  "name": "test"
+}
+# test: crud/query
+insert into test values (123);
+error: insert into ❰test❱ ⟵ topic cannot be used here
+delete from test;
+error: delete from ❰test❱ ⟵ topic cannot be used here
+select * from test;
+error: select * from ❰test❱ ⟵ topic cannot be used here
+# test: publish (no subscibers)
+publish;
+error: publish❰;❱ ⟵ TO expected
+publish into;
+error: publish ❰into❱ ⟵ TO expected
+publish to;
+error: publish to❰;❱ ⟵ target name expected
+publish to 1;
+error: publish to ❰1❱ ⟵ target name expected
+publish to xyz;
+error: publish to ❰xyz❱ ⟵ topic not found
+publish to test;
+publish to test 123;
+# test: drop topic statement parsing
+drop topic;
+error: drop topic❰;❱ ⟵ name expected
+drop topic 123;
+error: drop topic ❰123❱ ⟵ name expected
+# test: drop topic
+drop topic test;
+# test: drop topic (if exists)
+drop topic test;
+error: topic 'test': not exists
+drop topic if exists;
+error: drop topic if exists❰;❱ ⟵ name expected
+drop topic if exists test;
+# test: alter topic statement parsing
+create topic test;
+show topics;
+
+topics
+──────
+{
+  "user": "amelie",
+  "name": "test"
+}
+alter topic;
+error: alter topic❰;❱ ⟵ name expected
+alter topic test;
+error: alter topic test❰;❱ ⟵ RENAME expected
+alter topic test xyz;
+error: alter topic test ❰xyz❱ ⟵ RENAME expected
+alter topic test 1;
+error: alter topic test ❰1❱ ⟵ RENAME expected
+# test: alter topic rename to
+alter topic test rename;
+error: alter topic test rename❰;❱ ⟵ TO expected
+alter topic test rename to;
+error: alter topic test rename to❰;❱ ⟵ name expected
+alter topic test rename to xyz;
+show topics;
+
+topics
+──────
+{
+  "user": "amelie",
+  "name": "xyz"
+}
+# test: alter topic rename to (if exists)
+alter topic test rename to xyz;
+error: topic 'test': not exists
+alter topic if exists test rename to xyz;
+show topics;
+
+topics
+──────
+{
+  "user": "amelie",
+  "name": "xyz"
+}
+publish to xyz 123;
+drop topic xyz;
+drop topic test;
+error: topic 'test': not exists
+# test: create topic (unlogged)
+create unlogged topic test;
+select name, `unlogged` from show topics verbose;
+
+name    unlogged
+──────────────────
+"test"  true
+publish to test;
+publish to test 123;
+drop topic test;
+disconnect S0;
+close E0;
