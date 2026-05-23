@@ -35,10 +35,16 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 	{
 		auto rel = catalog_find_by(&db->catalog, REL_TOPIC, &cmd->id, true);
 		auto topic = topic_of(rel);
-		publish(topic, &dtr->tr, pos, data_sizeof(pos));
+		for (auto i = record->count; i > 0; i--)
+		{
+			auto size = data_sizeof(pos);
+			publish(topic, &dtr->tr, pos, size);
+			pos += size;
+		}
 		return;
 	}
 
+	// ACKNOWLEDGE
 	if (cmd->cmd == CMD_ACK)
 	{
 		auto rel = catalog_find_by(&db->catalog, REL_SUBSCRIPTION, &cmd->id, true);

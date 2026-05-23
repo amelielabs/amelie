@@ -10137,6 +10137,33 @@ publish to top 123;
 publish to top 1,2,3;
 show subs;
 show state;
+select * from top_sub;
+
+# test: wait replica sync
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+show repl;
+
+switch S1;
+show topics;
+show subs;
+select * from top_sub;
+
+# test: acknowledge
+switch S0;
+acknowledge top_sub to 10021;
+
+# test: wait replica sync
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+show repl;
+
+switch S1;
+show topics;
+show subs;
+select * from top_sub;
+
+# test: acknowledge
+switch S0;
+acknowledge top_sub to 10022, 1;
 
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
