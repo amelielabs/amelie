@@ -916,7 +916,7 @@ FUNCTION amelie.test_dep()
 main
   0   ret                 -1     0      -
 drop function test_dep;
-error: function 'test_dep': depends on 'amelie.test'
+error: function 'test_dep': depends on function 'amelie.test'
 # test: drop function after dep drop
 drop function test;
 drop function test_dep;
@@ -950,7 +950,7 @@ FUNCTION amelie.test_dep()
 main
   0   ret                 -1     0      -
 drop function test_dep;
-error: function 'test_dep': depends on 'amelie.test'
+error: function 'test_dep': depends on function 'amelie.test'
 drop function test_dep cascade;
 show functions;
 

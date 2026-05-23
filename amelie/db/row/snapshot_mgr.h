@@ -37,10 +37,13 @@ snapshot_mgr_add(SnapshotMgr* self, Snapshot* snapshot)
 	list_append(&self->list, &snapshot->link);
 	self->list_count++;
 
+	snapshot->snapshot_max = snapshot->snapshot;
+
 	// update parent snapshot_max (max of children snapshot)
-	assert(snapshot->parent);
-	if (snapshot->snapshot > snapshot->parent->snapshot_max)
-		snapshot->parent->snapshot_max = snapshot->snapshot;
+	auto parent = snapshot->parent;
+	assert(parent);
+	if (snapshot->snapshot > parent->snapshot_max)
+		parent->snapshot_max = snapshot->snapshot;
 }
 
 static inline void
@@ -53,7 +56,7 @@ snapshot_mgr_remove(SnapshotMgr* self, Snapshot* snapshot)
 	assert(parent);
 
 	// update parent snapshot snapshot_max
-	int64_t snapshot_max = 0;
+	int64_t snapshot_max = parent->snapshot;
 	list_foreach(&self->list)
 	{
 		auto snapshot = list_at(Snapshot, link);

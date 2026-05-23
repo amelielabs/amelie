@@ -169,6 +169,239 @@ id
 2
 0
 1
+# test: create branch
+create branch a on test;
+insert into a () values (), ();
+select * from a;
+
+id
+──
+3
+4
+2
+0
+1
+create branch b on a;
+insert into b () values (), ();
+insert into b () values (), ();
+select * from b;
+
+id
+──
+3
+4
+5
+2
+0
+1
+6
+7
+8
+show branches verbose;
+
+branches
+────────
+{
+  "user": "amelie",
+  "name": "a",
+  "table_user": "amelie",
+  "table": "test",
+  "snapshot": {
+    "id": 1,
+    "id_parent": 0,
+    "snapshot": 3,
+    "snapshot_max": 5
+  },
+  "grants": []
+}
+{
+  "user": "amelie",
+  "name": "b",
+  "table_user": "amelie",
+  "table": "test",
+  "snapshot": {
+    "id": 2,
+    "id_parent": 1,
+    "snapshot": 5,
+    "snapshot_max": 5
+  },
+  "grants": []
+}
+# test: restart/recover (checkpoint + wal)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select show('state').lsn;
+
+lsn
+───
+7
+select show('state').catalog;
+
+catalog
+───────
+1
+select show('state').catalog_pending;
+
+catalog_pending
+───────────────
+5
+show branches verbose;
+
+branches
+────────
+{
+  "user": "amelie",
+  "name": "a",
+  "table_user": "amelie",
+  "table": "test",
+  "snapshot": {
+    "id": 1,
+    "id_parent": 0,
+    "snapshot": 3,
+    "snapshot_max": 5
+  },
+  "grants": []
+}
+{
+  "user": "amelie",
+  "name": "b",
+  "table_user": "amelie",
+  "table": "test",
+  "snapshot": {
+    "id": 2,
+    "id_parent": 1,
+    "snapshot": 5,
+    "snapshot_max": 5
+  },
+  "grants": []
+}
+select * from a;
+
+id
+──
+3
+4
+2
+0
+1
+select * from b;
+
+id
+──
+3
+4
+5
+2
+0
+1
+6
+7
+8
+select * from test;
+
+id
+──
+2
+0
+1
+# test: checkpoint
+checkpoint;
+select show('state').lsn;
+
+lsn
+───
+7
+select show('state').catalog;
+
+catalog
+───────
+5
+select show('state').catalog_pending;
+
+catalog_pending
+───────────────
+5
+# test: restart/recover (checkpoint)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select show('state').lsn;
+
+lsn
+───
+7
+select show('state').catalog;
+
+catalog
+───────
+5
+select show('state').catalog_pending;
+
+catalog_pending
+───────────────
+5
+show branches verbose;
+
+branches
+────────
+{
+  "user": "amelie",
+  "name": "a",
+  "table_user": "amelie",
+  "table": "test",
+  "snapshot": {
+    "id": 1,
+    "id_parent": 0,
+    "snapshot": 3,
+    "snapshot_max": 5
+  },
+  "grants": []
+}
+{
+  "user": "amelie",
+  "name": "b",
+  "table_user": "amelie",
+  "table": "test",
+  "snapshot": {
+    "id": 2,
+    "id_parent": 1,
+    "snapshot": 5,
+    "snapshot_max": 5
+  },
+  "grants": []
+}
+select * from a;
+
+id
+──
+3
+4
+0
+1
+2
+select * from b;
+
+id
+──
+3
+4
+5
+0
+1
+6
+7
+8
+2
+select * from test;
+
+id
+──
+0
+1
+2
 # test: create function
 create function reverse(array json) return json
 begin
@@ -211,17 +444,17 @@ select show('state').lsn;
 
 lsn
 ───
-3
+8
 select show('state').catalog;
 
 catalog
 ───────
-1
+5
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-3
+8
 show functions verbose;
 
 functions
@@ -252,17 +485,17 @@ select show('state').lsn;
 
 lsn
 ───
-3
+8
 select show('state').catalog;
 
 catalog
 ───────
-3
+8
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-3
+8
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -272,17 +505,17 @@ select show('state').lsn;
 
 lsn
 ───
-3
+8
 select show('state').catalog;
 
 catalog
 ───────
-3
+8
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-3
+8
 show functions verbose;
 
 functions
@@ -349,17 +582,17 @@ select show('state').lsn;
 
 lsn
 ───
-4
+9
 select show('state').catalog;
 
 catalog
 ───────
-3
+8
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-4
+9
 show functions verbose;
 
 functions
@@ -390,17 +623,17 @@ select show('state').lsn;
 
 lsn
 ───
-4
+9
 select show('state').catalog;
 
 catalog
 ───────
-4
+9
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-4
+9
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -410,17 +643,17 @@ select show('state').lsn;
 
 lsn
 ───
-4
+9
 select show('state').catalog;
 
 catalog
 ───────
-4
+9
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-4
+9
 show functions verbose;
 
 functions
@@ -451,7 +684,7 @@ select show('state').lsn;
 
 lsn
 ───
-5
+10
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
@@ -461,17 +694,17 @@ select show('state').lsn;
 
 lsn
 ───
-5
+10
 select show('state').catalog;
 
 catalog
 ───────
-4
+9
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-5
+10
 select show('user', 'test').name;
 
 name
@@ -481,24 +714,24 @@ select identity_of("test");
 
 identity_of
 ───────────
-3
+9
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
 
 lsn
 ───
-5
+10
 select show('state').catalog;
 
 catalog
 ───────
-5
+10
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-5
+10
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -508,17 +741,17 @@ select show('state').lsn;
 
 lsn
 ───
-5
+10
 select show('state').catalog;
 
 catalog
 ───────
-5
+10
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-5
+10
 select show('user', 'test').name;
 
 name
@@ -528,6 +761,6 @@ select identity_of("test");
 
 identity_of
 ───────────
-3
+9
 disconnect S0;
 close E0;

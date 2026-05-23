@@ -691,6 +691,146 @@ id  obj
 2   null
 0   null
 1   null
+# test: create branch
+create branch a on test2;
+insert into a values (3, {});
+select * from a;
+
+id  obj
+──────────
+3   {}
+2   null
+0   null
+1   null
+create branch b on a;
+insert into b values (4, {});
+insert into b values (5, []);
+select * from b;
+
+id  obj
+──────────
+3   {}
+4   {}
+5   []
+2   null
+0   null
+1   null
+show branches verbose;
+
+branches
+────────
+{
+  "user": "amelie",
+  "name": "a",
+  "table_user": "amelie",
+  "table": "test2",
+  "snapshot": {
+    "id": 1,
+    "id_parent": 0,
+    "snapshot": 2,
+    "snapshot_max": 4
+  },
+  "grants": []
+}
+{
+  "user": "amelie",
+  "name": "b",
+  "table_user": "amelie",
+  "table": "test2",
+  "snapshot": {
+    "id": 2,
+    "id_parent": 1,
+    "snapshot": 4,
+    "snapshot_max": 4
+  },
+  "grants": []
+}
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select show('state').lsn;
+
+lsn
+───
+20
+show branches verbose;
+
+branches
+────────
+{
+  "user": "amelie",
+  "name": "a",
+  "table_user": "amelie",
+  "table": "test2",
+  "snapshot": {
+    "id": 1,
+    "id_parent": 0,
+    "snapshot": 2,
+    "snapshot_max": 4
+  },
+  "grants": []
+}
+{
+  "user": "amelie",
+  "name": "b",
+  "table_user": "amelie",
+  "table": "test2",
+  "snapshot": {
+    "id": 2,
+    "id_parent": 1,
+    "snapshot": 4,
+    "snapshot_max": 4
+  },
+  "grants": []
+}
+select * from a;
+
+id  obj
+──────────
+3   {}
+2   null
+0   null
+1   null
+select * from b;
+
+id  obj
+──────────
+3   {}
+4   {}
+5   []
+2   null
+0   null
+1   null
+select * from test2;
+
+id  obj
+──────────
+2   null
+0   null
+1   null
+# test: drop branch
+drop branch a;
+error: branch 'a': depends on branch 'amelie.b'
+drop branch b;
+drop branch a;
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select show('state').lsn;
+
+lsn
+───
+22
+show branches;
+
+branches
+────────
 # test: truncate
 truncate test2;
 select * from test2;
@@ -707,12 +847,12 @@ select show('state').lsn;
 
 lsn
 ───
-16
+23
 select identity_of("test2");
 
 identity_of
 ───────────
-3
+6
 select * from test2;
 
 id  obj
@@ -723,7 +863,7 @@ select show('state').lsn;
 
 lsn
 ───
-17
+24
 select identity_of("test2");
 error: table 'test2': not exists
 # test: restart
@@ -736,7 +876,7 @@ select show('state').lsn;
 
 lsn
 ───
-17
+24
 select * from test2;
 error: select * from ❰test2❱ ⟵ relation not found
 show tables;
@@ -754,7 +894,7 @@ select show('state').lsn;
 
 lsn
 ───
-18
+25
 # test: restart
 disconnect S0;
 close E0;
@@ -765,7 +905,7 @@ select show('state').lsn;
 
 lsn
 ───
-18
+25
 select show('user', 'test').name;
 
 name
@@ -787,7 +927,7 @@ select show('state').lsn;
 
 lsn
 ───
-19
+26
 # test: restart
 disconnect S0;
 close E0;
@@ -798,7 +938,7 @@ select show('state').lsn;
 
 lsn
 ───
-19
+26
 select show('user', 'test2').name;
 
 name
@@ -810,7 +950,7 @@ select show('state').lsn;
 
 lsn
 ───
-20
+27
 select show('user', 'test2').name;
 
 name
@@ -826,7 +966,7 @@ select show('state').lsn;
 
 lsn
 ───
-20
+27
 select show('user', 'test').name;
 
 name
@@ -850,7 +990,7 @@ select show('state').lsn;
 
 lsn
 ───
-21
+28
 show functions verbose;
 
 functions
@@ -885,7 +1025,7 @@ select show('state').lsn;
 
 lsn
 ───
-21
+28
 show functions verbose;
 
 functions
@@ -940,7 +1080,7 @@ select show('state').lsn;
 
 lsn
 ───
-22
+29
 show functions verbose;
 
 functions
@@ -975,7 +1115,7 @@ select show('state').lsn;
 
 lsn
 ───
-22
+29
 show functions verbose;
 
 functions
@@ -1014,7 +1154,7 @@ select show('state').lsn;
 
 lsn
 ───
-23
+30
 select [1,2,3]::reverse2;
 
 col1
@@ -1030,7 +1170,7 @@ select show('state').lsn;
 
 lsn
 ───
-23
+30
 show functions verbose;
 
 functions
@@ -1061,7 +1201,7 @@ select show('state').lsn;
 
 lsn
 ───
-24
+31
 show functions verbose;
 
 functions
@@ -1080,6 +1220,6 @@ select show('state').lsn;
 
 lsn
 ───
-24
+31
 disconnect S0;
 close E0;

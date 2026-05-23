@@ -26,16 +26,16 @@ rel_mgr_init(RelMgr* self)
 void
 rel_mgr_free(RelMgr* self)
 {
-	hashtable_free(&self->ht);
-	hashtable_free(&self->htid);
-
-	list_foreach_safe(&self->list)
+	list_foreach_reverse_safe(&self->list)
 	{
 		auto rel = list_at(Rel, link);
 		rel_free(rel);
 	}
 	self->list_count = 0;
 	list_init(&self->list);
+
+	hashtable_free(&self->ht);
+	hashtable_free(&self->htid);
 }
 
 static inline void

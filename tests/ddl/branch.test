@@ -1,0 +1,134 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: create branch statement parsing
+create branch;
+create branch 123;
+create branch 123 from;
+create branch 123 on;
+create branch 123 on 123;
+
+# test: create branch
+create table main (id int primary key);
+insert into main values (1);
+
+create branch a on main;
+show branches verbose;
+
+drop branch a;
+drop table main;
+
+# test: create branch (insert)
+create table main (id int primary key);
+insert into main values (1);
+
+create branch a on main;
+
+# error
+insert into a values (1);
+insert into a values (2);
+
+select * from a;
+select * from main;
+
+drop table main;
+drop table main cascade;
+
+# test: create branch (update)
+create table main (id int primary key, data int);
+insert into main values (1, 0);
+insert into main values (2, 0);
+insert into main values (3, 0);
+insert into main values (4, 0);
+
+create branch a on main;
+
+update a set data = 42 where id in (1, 3);
+select * from a;
+select * from main;
+
+# test: create branch (delete/insert)
+delete from a where id < 4;
+
+select * from a;
+select * from main;
+
+insert into a values (1, 2);
+insert into a values (2, 2);
+insert into a values (3, 2);
+
+select * from a;
+select * from main;
+
+# test: create branch (from branch, update)
+create branch b on a;
+show branches verbose;
+
+select * from b;
+update b set data = 3 where id < 4;
+
+select * from b;
+select * from a;
+select * from main;
+
+# test: create branch (update main)
+update main set data = -1;
+insert into main values (5, 0), (6, 0);
+
+select * from b;
+select * from a;
+select * from main;
+
+# test: create branch (from updated main)
+create branch c on main;
+show branches verbose;
+
+select * from c;
+select * from b;
+select * from a;
+select * from main;
+
+delete from c where id <= 2;
+
+select * from c;
+select * from b;
+select * from a;
+select * from main;
+
+delete from main;
+
+select * from c;
+select * from b;
+select * from a;
+select * from main;
+
+# test: alter branch statement parsing
+alter branch;
+alter branch 1;
+alter branch b;
+alter branch b xyz;
+alter branch b rename;
+alter branch b rename to;
+
+# test: alter branch rename to
+alter branch b rename to bb;
+
+select * from c;
+select * from bb;
+select * from a;
+select * from main;
+
+# test: drop parent branch
+drop branch a;
+
+# test: drop parent branch (cascade)
+drop branch a cascade;
+show branches;
+
+drop table main cascade;
+
+
+disconnect S0;
+close E0;

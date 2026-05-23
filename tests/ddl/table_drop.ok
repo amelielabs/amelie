@@ -72,7 +72,7 @@ functions
   "grants": []
 }
 drop table test;
-error: table 'test': depends on 'amelie.dep'
+error: table 'test': depends on function 'amelie.dep'
 # test: drop table after udf drop
 drop function dep;
 drop table test;
@@ -93,7 +93,7 @@ functions
   "grants": []
 }
 drop table test;
-error: table 'test': depends on 'amelie.dep'
+error: table 'test': depends on function 'amelie.dep'
 drop table test cascade;
 show tables;
 

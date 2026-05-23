@@ -94,9 +94,9 @@ row_gc(Row* row, Heap* heap, Snapshot* snapshot, uint64_t tsn)
 	while (row)
 	{
 		auto prev = row_prev(row, heap, heap->shadow);
-		if (row->tsn == tsn ||
-		    row->tsn <= (uint64_t)snapshot->snapshot ||
-		    row->tsn >= (uint64_t)snapshot->snapshot_max)
+		if (row->snapshot == snapshot->id &&
+		    (row->tsn == tsn ||
+		     row->tsn >  (uint64_t)snapshot->snapshot_max))
 		{
 			// set head->prev = row->prev
 			row_prev_set(head, prev);
@@ -104,6 +104,7 @@ row_gc(Row* row, Heap* heap, Snapshot* snapshot, uint64_t tsn)
 		} else {
 			head = row;
 		}
+
 		row = prev;
 	}
 }

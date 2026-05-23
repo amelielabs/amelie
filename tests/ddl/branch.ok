@@ -1,0 +1,415 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: create branch statement parsing
+create branch;
+error: create branch❰;❱ ⟵ name expected
+create branch 123;
+error: create branch ❰123❱ ⟵ name expected
+create branch 123 from;
+error: create branch ❰123❱ ⟵ name expected
+create branch 123 on;
+error: create branch ❰123❱ ⟵ name expected
+create branch 123 on 123;
+error: create branch ❰123❱ ⟵ name expected
+# test: create branch
+create table main (id int primary key);
+insert into main values (1);
+create branch a on main;
+show branches verbose;
+
+branches
+────────
+{
+  "user": "amelie",
+  "name": "a",
+  "table_user": "amelie",
+  "table": "main",
+  "snapshot": {
+    "id": 1,
+    "id_parent": 0,
+    "snapshot": 1,
+    "snapshot_max": 1
+  },
+  "grants": []
+}
+drop branch a;
+drop table main;
+# test: create branch (insert)
+create table main (id int primary key);
+insert into main values (1);
+create branch a on main;
+insert into a values (1);
+error: index 'primary': unique key constraint violation
+insert into a values (2);
+select * from a;
+
+id
+──
+1
+2
+select * from main;
+
+id
+──
+1
+drop table main;
+error: table 'main': depends on branch 'amelie.a'
+drop table main cascade;
+# test: create branch (update)
+create table main (id int primary key, data int);
+insert into main values (1, 0);
+insert into main values (2, 0);
+insert into main values (3, 0);
+insert into main values (4, 0);
+create branch a on main;
+update a set data = 42 where id in (1, 3);
+select * from a;
+
+id  data
+──────────
+1   42
+2   0
+3   42
+4   0
+select * from main;
+
+id  data
+──────────
+1   0
+2   0
+3   0
+4   0
+# test: create branch (delete/insert)
+delete from a where id < 4;
+select * from a;
+
+id  data
+──────────
+4   0
+select * from main;
+
+id  data
+──────────
+1   0
+2   0
+3   0
+4   0
+insert into a values (1, 2);
+insert into a values (2, 2);
+insert into a values (3, 2);
+select * from a;
+
+id  data
+──────────
+1   2
+2   2
+3   2
+4   0
+select * from main;
+
+id  data
+──────────
+1   0
+2   0
+3   0
+4   0
+# test: create branch (from branch, update)
+create branch b on a;
+show branches verbose;
+
+branches
+────────
+{
+  "user": "amelie",
+  "name": "a",
+  "table_user": "amelie",
+  "table": "main",
+  "snapshot": {
+    "id": 1,
+    "id_parent": 0,
+    "snapshot": 10,
+    "snapshot_max": 21
+  },
+  "grants": []
+}
+{
+  "user": "amelie",
+  "name": "b",
+  "table_user": "amelie",
+  "table": "main",
+  "snapshot": {
+    "id": 2,
+    "id_parent": 1,
+    "snapshot": 21,
+    "snapshot_max": 21
+  },
+  "grants": []
+}
+select * from b;
+
+id  data
+──────────
+1   2
+2   2
+3   2
+4   0
+update b set data = 3 where id < 4;
+select * from b;
+
+id  data
+──────────
+1   3
+2   3
+3   3
+4   0
+select * from a;
+
+id  data
+──────────
+1   2
+2   2
+3   2
+4   0
+select * from main;
+
+id  data
+──────────
+1   0
+2   0
+3   0
+4   0
+# test: create branch (update main)
+update main set data = -1;
+insert into main values (5, 0), (6, 0);
+select * from b;
+
+id  data
+──────────
+1   3
+2   3
+3   3
+4   0
+select * from a;
+
+id  data
+──────────
+1   2
+2   2
+3   2
+4   0
+select * from main;
+
+id  data
+──────────
+1   -1
+2   -1
+3   -1
+4   -1
+5   0
+6   0
+# test: create branch (from updated main)
+create branch c on main;
+show branches verbose;
+
+branches
+────────
+{
+  "user": "amelie",
+  "name": "a",
+  "table_user": "amelie",
+  "table": "main",
+  "snapshot": {
+    "id": 1,
+    "id_parent": 0,
+    "snapshot": 10,
+    "snapshot_max": 21
+  },
+  "grants": []
+}
+{
+  "user": "amelie",
+  "name": "b",
+  "table_user": "amelie",
+  "table": "main",
+  "snapshot": {
+    "id": 2,
+    "id_parent": 1,
+    "snapshot": 21,
+    "snapshot_max": 21
+  },
+  "grants": []
+}
+{
+  "user": "amelie",
+  "name": "c",
+  "table_user": "amelie",
+  "table": "main",
+  "snapshot": {
+    "id": 3,
+    "id_parent": 0,
+    "snapshot": 31,
+    "snapshot_max": 31
+  },
+  "grants": []
+}
+select * from c;
+
+id  data
+──────────
+1   -1
+2   -1
+3   -1
+4   -1
+5   0
+6   0
+select * from b;
+
+id  data
+──────────
+1   3
+2   3
+3   3
+4   0
+select * from a;
+
+id  data
+──────────
+1   2
+2   2
+3   2
+4   0
+select * from main;
+
+id  data
+──────────
+1   -1
+2   -1
+3   -1
+4   -1
+5   0
+6   0
+delete from c where id <= 2;
+select * from c;
+
+id  data
+──────────
+3   -1
+4   -1
+5   0
+6   0
+select * from b;
+
+id  data
+──────────
+1   3
+2   3
+3   3
+4   0
+select * from a;
+
+id  data
+──────────
+1   2
+2   2
+3   2
+4   0
+select * from main;
+
+id  data
+──────────
+1   -1
+2   -1
+3   -1
+4   -1
+5   0
+6   0
+delete from main;
+select * from c;
+
+id  data
+──────────
+3   -1
+4   -1
+5   0
+6   0
+select * from b;
+
+id  data
+──────────
+1   3
+2   3
+3   3
+4   0
+select * from a;
+
+id  data
+──────────
+1   2
+2   2
+3   2
+4   0
+select * from main;
+
+id  data
+──────────
+# test: alter branch statement parsing
+alter branch;
+error: alter branch❰;❱ ⟵ name expected
+alter branch 1;
+error: alter branch ❰1❱ ⟵ name expected
+alter branch b;
+error: alter branch b❰;❱ ⟵ RENAME expected
+alter branch b xyz;
+error: alter branch b ❰xyz❱ ⟵ RENAME expected
+alter branch b rename;
+error: alter branch b rename❰;❱ ⟵ TO expected
+alter branch b rename to;
+error: alter branch b rename to❰;❱ ⟵ name expected
+# test: alter branch rename to
+alter branch b rename to bb;
+select * from c;
+
+id  data
+──────────
+3   -1
+4   -1
+5   0
+6   0
+select * from bb;
+
+id  data
+──────────
+1   3
+2   3
+3   3
+4   0
+select * from a;
+
+id  data
+──────────
+1   2
+2   2
+3   2
+4   0
+select * from main;
+
+id  data
+──────────
+# test: drop parent branch
+drop branch a;
+error: branch 'a': depends on branch 'amelie.bb'
+# test: drop parent branch (cascade)
+drop branch a cascade;
+show branches;
+
+branches
+────────
+{
+  "user": "amelie",
+  "name": "c",
+  "table_user": "amelie",
+  "table": "main"
+}
+drop table main cascade;
+disconnect S0;
+close E0;

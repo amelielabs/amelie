@@ -1,0 +1,159 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: branch (same branch)
+create table main (id int primary key, data int);
+insert into main values (1, 0);
+
+create branch a on main;
+
+# test: branch (same branch, parent unique violation)
+insert into a values (1, 1);
+
+# test: branch (same branch, unique violation)
+insert into a values (2, 1);
+insert into a values (2, 1);
+insert into a values (3, 1);
+
+select * from a;
+select * from main;
+
+# test: branch (same branch, delete parent)
+delete from a where id = 1;
+select * from a;
+select * from main;
+
+# test: branch (same branch, delete)
+delete from a where id = 3;
+
+select * from a;
+select * from main;
+
+# test: branch (same branch, insert after update parent)
+insert into a values (1, 1);
+select * from a;
+select * from main;
+
+# test: branch (same branch, update parent)
+update a set data = 11 where id = 1;
+select * from a;
+select * from main;
+
+drop table main cascade;
+
+# test: branch (main -> a, b)
+create table main (id int primary key, data int);
+insert into main values (1, 0);
+
+create branch a on main;
+update a set data = 1;
+insert into a values (2, 1);
+
+create branch b on main;
+update b set data = 2;
+insert into b values (2, 2);
+
+select * from a;
+select * from b;
+select * from main;
+
+# test: branch (b -> c)
+create branch c on b ;
+
+select * from c;
+update c set data = 3;
+
+select * from a;
+select * from b;
+select * from c;
+select * from main;
+
+# test: branch (delete from b)
+delete from b where id = 1;
+
+select * from b;
+select * from c;
+
+# test: branch (key)
+select * from main where id >= 0;
+select * from main where id = 0;
+select * from main where id >= 1;
+select * from main where id = 1;
+select * from main where id >= 2;
+select * from main where id = 2;
+select * from main where id >= 3;
+select * from main where id = 3;
+
+select * from a where id >= 0;
+select * from a where id = 0;
+select * from a where id >= 1;
+select * from a where id = 1;
+select * from a where id >= 2;
+select * from a where id = 2;
+select * from a where id >= 3;
+select * from a where id = 3;
+
+select * from b where id >= 0;
+select * from b where id = 0;
+select * from b where id >= 1;
+select * from b where id = 1;
+select * from b where id >= 2;
+select * from b where id = 2;
+select * from b where id >= 3;
+select * from b where id = 3;
+
+select * from c where id >= 0;
+select * from c where id = 0;
+select * from c where id >= 1;
+select * from c where id = 1;
+select * from c where id >= 2;
+select * from c where id = 2;
+select * from c where id >= 3;
+select * from c where id = 3;
+
+# test: branch (select after drop)
+drop branch c;
+show branches;
+
+select * from a;
+select * from b;
+select * from main;
+
+drop table main cascade;
+
+# test: branch (empty main -> a, b)
+create table main (id int primary key, data int);
+
+create branch a on main;
+insert into a values (1, 1);
+insert into a values (2, 1);
+
+create branch b on main;
+insert into b values (1, 2);
+insert into b values (2, 2);
+
+select * from a;
+select * from b;
+
+# test: branch (aba)
+show branches verbose;
+drop branch b;
+
+create branch b on main;
+show branches verbose;
+
+select * from a;
+select * from b;
+
+insert into b values (1, 3);
+insert into b values (2, 3);
+
+select * from a;
+select * from b;
+
+drop table main cascade;
+
+disconnect S0;
+close E0;

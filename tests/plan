@@ -60,6 +60,8 @@ test table_drop
 test table_alter
 test table_migration
 test index
+test branch
+test branch_visibility
 test partition
 test function
 

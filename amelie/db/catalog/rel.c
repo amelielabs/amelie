@@ -55,11 +55,14 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 		{
 			auto first = *(Rel**)deps.start;
 			if (count >= 2)
-				error("{s} '{str}': depends on '{str}.{str}' and {d} more", rel_type_of(type),
-				      name, first->user, first->name, count - 1);
+				error("{s} '{str}': depends on {s} '{str}.{str}' and {d} more",
+				      rel_type_of(type), name,
+				      rel_type_of(first->type), first->user, first->name,
+				      count - 1);
 			else
-				error("{s} '{str}': depends on '{str}.{str}'", rel_type_of(type),
-				      name, first->user, first->name);
+				error("{s} '{str}': depends on {s} '{str}.{str}'",
+				      rel_type_of(type), name,
+				      rel_type_of(first->type), first->user, first->name);
 		}
 		catalog_deps_drop(self, tr, &deps);
 	}
