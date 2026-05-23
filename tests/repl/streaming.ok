@@ -10307,6 +10307,80 @@ select identity_of("test2");
 identity_of
 ───────────
 4
+# test: topic (subscription)
+switch S0;
+create topic top;
+create subscription top_sub on top;
+publish to top;
+publish to top 123;
+publish to top 1,2,3;
+show subs;
+
+subs
+────
+{
+  "user": "amelie",
+  "name": "top_sub"
+}
+show state;
+
+state
+─────
+{
+  "version": "1.0.0-rc1",
+  "directory": "_output/E0",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "frontends": 1,
+  "backends": 3,
+  "lsn": 10022,
+  "tsn": 10019,
+  "psn": 6,
+  "catalog": 0,
+  "catalog_pending": 10019,
+  "read_only": false
+}
+# test: wait replica sync
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+show repl;
+
+repl
+────
+{
+  "active": true,
+  "role": "primary",
+  "primary": null,
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "http://127.0.0.1:3481/",
+    "connected": true,
+    "lsn": 10022,
+    "lag": 0
+  }]
+}
+switch S1;
+show topics;
+
+topics
+──────
+{
+  "user": "amelie",
+  "name": "top"
+}
+show subs;
+
+subs
+────
+{
+  "user": "amelie",
+  "name": "top_sub"
+}
+select * from top_sub;
+
+lsn    lsn_op  cmd      row
+──────────────────────────────
+10020  0       publish  null
+10021  0       publish  123
+10022  0       publish  1
 disconnect S1;
 close E1;
 disconnect S0;

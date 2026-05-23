@@ -54,6 +54,7 @@ session_execute_msg(Session* self, Node* primary, NodeMsg* msg, Buf* data)
 			// execute DML
 			dtr_reset(dtr);
 			dtr_prepare(dtr, program);
+			tr_set_user(&dtr->tr, &primary->recover->user->rel);
 			replay(dtr, record);
 			break;
 		}
