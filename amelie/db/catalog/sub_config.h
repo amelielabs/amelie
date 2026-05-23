@@ -18,10 +18,10 @@ struct SubConfig
 	Str     user;
 	Str     name;
 	Uuid    id;
-	Str     on_user;
-	Str     on;
+	Str     rel_user;
+	Str     rel;
 	int64_t lsn;
-	int64_t op;
+	int64_t lsn_op;
 	Grants  grants;
 };
 
@@ -30,12 +30,12 @@ sub_config_allocate(void)
 {
 	SubConfig* self;
 	self = am_malloc(sizeof(SubConfig));
-	self->lsn = 0;
-	self->op  = 0;
+	self->lsn    = 0;
+	self->lsn_op = 0;
 	str_init(&self->user);
 	str_init(&self->name);
-	str_init(&self->on_user);
-	str_init(&self->on);
+	str_init(&self->rel_user);
+	str_init(&self->rel);
 	uuid_init(&self->id);
 	grants_init(&self->grants);
 	return self;
@@ -46,8 +46,8 @@ sub_config_free(SubConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
-	str_free(&self->on_user);
-	str_free(&self->on);
+	str_free(&self->rel_user);
+	str_free(&self->rel);
 	grants_free(&self->grants);
 	am_free(self);
 }
@@ -73,24 +73,24 @@ sub_config_set_id(SubConfig* self, Uuid* id)
 }
 
 static inline void
-sub_config_set_on_user(SubConfig* self, Str* name)
+sub_config_set_rel_user(SubConfig* self, Str* name)
 {
-	str_free(&self->on_user);
-	str_copy(&self->on_user, name);
+	str_free(&self->rel_user);
+	str_copy(&self->rel_user, name);
 }
 
 static inline void
-sub_config_set_on(SubConfig* self, Str* name)
+sub_config_set_rel(SubConfig* self, Str* name)
 {
-	str_free(&self->on);
-	str_copy(&self->on, name);
+	str_free(&self->rel);
+	str_copy(&self->rel, name);
 }
 
 static inline void
-sub_config_set_pos(SubConfig* self, int64_t lsn, int64_t op)
+sub_config_set_pos(SubConfig* self, int64_t lsn, int64_t lsn_op)
 {
-	self->lsn = lsn;
-	self->op  = op;
+	self->lsn    = lsn;
+	self->lsn_op = lsn_op;
 }
 
 static inline SubConfig*
@@ -100,9 +100,9 @@ sub_config_copy(SubConfig* self)
 	sub_config_set_user(copy, &self->user);
 	sub_config_set_name(copy, &self->name);
 	sub_config_set_id(copy, &self->id);
-	sub_config_set_on_user(copy, &self->on_user);
-	sub_config_set_on(copy, &self->on);
-	sub_config_set_pos(copy, self->lsn, self->op);
+	sub_config_set_rel_user(copy, &self->rel_user);
+	sub_config_set_rel(copy, &self->rel);
+	sub_config_set_pos(copy, self->lsn, self->lsn_op);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -115,15 +115,15 @@ sub_config_read(uint8_t** pos)
 	uint8_t* pos_grants = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",    &self->user    },
-		{ DECODE_STR,   "name",    &self->name    },
-		{ DECODE_UUID,  "id",      &self->id      },
-		{ DECODE_STR,   "on_user", &self->on_user },
-		{ DECODE_STR,   "on",      &self->on      },
-		{ DECODE_INT,   "lsn",     &self->lsn     },
-		{ DECODE_INT,   "op",      &self->op      },
-		{ DECODE_ARRAY, "grants",  &pos_grants    },
-		{ 0,             NULL,      NULL          },
+		{ DECODE_STR,   "user",     &self->user     },
+		{ DECODE_STR,   "name",     &self->name     },
+		{ DECODE_UUID,  "id",       &self->id       },
+		{ DECODE_STR,   "rel_user", &self->rel_user },
+		{ DECODE_STR,   "rel",      &self->rel      },
+		{ DECODE_INT,   "lsn",      &self->lsn      },
+		{ DECODE_INT,   "lsn_op",   &self->lsn_op   },
+		{ DECODE_ARRAY, "grants",   &pos_grants     },
+		{ 0,             NULL,       NULL           },
 	};
 	decode_obj(obj, "sub", pos);
 
@@ -156,21 +156,21 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "id", 2);
 	encode_uuid(buf, &self->id);
 
-	// on_user
-	encode_raw(buf, "on_user", 7);
-	encode_str(buf, &self->on_user);
+	// rel_user
+	encode_raw(buf, "rel_user", 8);
+	encode_str(buf, &self->rel_user);
 
-	// on
-	encode_raw(buf, "on", 2);
-	encode_str(buf, &self->on);
+	// rel
+	encode_raw(buf, "rel", 3);
+	encode_str(buf, &self->rel);
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_int(buf, self->lsn);
 
-	// op
-	encode_raw(buf, "op", 2);
-	encode_int(buf, self->op);
+	// lsn_op
+	encode_raw(buf, "lsn_op", 6);
+	encode_int(buf, self->lsn_op);
 
 	// grants
 	encode_raw(buf, "grants", 6);

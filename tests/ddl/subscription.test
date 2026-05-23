@@ -1,0 +1,238 @@
+#
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: create subscription statement parsing
+create subscription;
+create subscription x;
+create subscription x 123;
+create subscription x on;
+create subscription x on 123;
+
+# test: create subscription (table)
+create table test (id int primary key, data int);
+create subscription test_sub on test;
+show subs;
+show subscriptions;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+# test: create subscription (table, if exists)
+create subscription test_sub on test;
+create subscription if not exists test_sub on test;
+
+# test: select from subscription (empty)
+select * from test_sub;
+
+# test: cdc (insert)
+insert into test values (1, 0);
+insert into test values (2, 0);
+insert into test values (3, 0);
+
+# test: select from subscription
+select * from test_sub;
+
+# test: cdc (batch insert)
+insert into test values (4, 0), (5, 0), (6, 0);
+
+# test: select from subscription
+select * from test_sub;
+select count(*) from test_sub;
+select lsn, count(*) from test_sub group by lsn;
+
+# test: cdc (delete)
+delete from test where id = 1;
+
+# test: select from subscription
+select * from test_sub;
+
+# test: cdc (batch delete)
+delete from test where id <= 3;
+
+# test: select from subscription
+select * from test_sub;
+
+# test: cdc (update)
+update test set data = 1 where id = 4;
+
+# test: select from subscription
+select * from test_sub;
+
+# test: cdc (batch update)
+update test set data = 2;
+
+# test: select from subscription
+select * from test_sub;
+
+# test: acknowledge
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+acknowledge;
+acknowledge 123;
+acknowledge test_sub;
+acknowledge test_sub to;
+
+acknowledge test_sub to 1;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 2, 10;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 3;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 6, 0;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 6, 1;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 6, 2;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 6, 3;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 6, 4;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 10, 1;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+# test: acknowledge (same value)
+acknowledge test_sub to 10, 1;
+
+# test: acknowledge (downgrade)
+acknowledge test_sub to 6, 4;
+
+# test: acknowledge (abort)
+begin
+  acknowledge test_sub to 10, 2;
+  select error("abort");
+end;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+# test: drop table
+drop table test;
+select * from test_sub;
+
+# test: drop subscription statement parsing
+drop subscription;
+drop subscription 123;
+
+# test: drop subscription
+drop subscription test_sub;
+show subs;
+
+# test: drop subscription (if exists)
+drop subscription test_sub;
+drop subscription if exists test_sub;
+
+# test: create subscription (unlogged table)
+create unlogged table test (id int primary key, data int);
+create subscription test_sub on test;
+show subs;
+show subscriptions;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+# test: cdc (dml)
+insert into test values (1, 0), (2, 0), (3, 0);
+delete from test where id = 3;
+update test set data = 1;
+
+# test: select from subscription
+select * from test_sub;
+
+drop subscription test_sub;
+drop table test;
+
+# test: create subscription (topic)
+create topic test;
+create subscription test_sub on test;
+show subs;
+show subscriptions;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+# test: cdc (publish)
+publish to test;
+publish to test 123;
+publish to test 1,2,3;
+
+# test: select from subscription
+select * from test_sub;
+
+# test: acknowledge
+acknowledge test_sub to 32;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 33, 1;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+# test: drop topic
+drop topic test;
+select * from test_sub;
+
+drop subscription test_sub;
+
+# test: create subscription (unlogged topic)
+create unlogged topic test;
+create subscription test_sub on test;
+show subs;
+show subscriptions;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+# test: cdc (publish)
+publish to test;
+publish to test 123;
+publish to test 1,2,3;
+
+# test: select from subscription
+select * from test_sub;
+
+# test: acknowledge
+acknowledge test_sub to 41;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 42, 1;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+# test: drop topic
+drop topic test;
+select * from test_sub;
+drop subscription test_sub;
+
+# test: alter subscription statement parsing
+create topic test;
+create subscription test_sub on test;
+
+alter subscription;
+alter subscription 123;
+alter subscription test;
+alter subscription test rename;
+alter subscription test rename to;
+
+# test: alter subscription rename to
+alter subscription test_sub rename to test_cdc;
+show subs;
+
+# test: alter subscription rename to (if exists)
+alter subscription test_sub rename to test_cdc;
+alter subscription if exists test_sub rename to test_cdc;
+
+drop topic test;
+drop subscription test_cdc;
+
+disconnect S0;
+close E0;

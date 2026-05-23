@@ -320,6 +320,25 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 show topics;
 
+# test: create subscription
+create subscription top_sub on top;
+publish to top 123;
+publish to top 1,2,3;
+publish to top;
+select * from top_sub;
+show subs;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+select show('state').lsn;
+show subs;
+select * from top_sub;
+
 # test: drop topic
 drop topic top;
 show topics;
@@ -333,6 +352,20 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 show topics;
+
+# test: drop subscription
+drop subscription top_sub;
+show subs;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+select show('state').lsn;
+show subs;
 
 # test: create user
 create user test;

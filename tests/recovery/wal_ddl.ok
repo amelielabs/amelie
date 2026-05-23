@@ -912,6 +912,56 @@ topics
   "user": "amelie",
   "name": "top"
 }
+# test: create subscription
+create subscription top_sub on top;
+publish to top 123;
+publish to top 1,2,3;
+publish to top;
+select * from top_sub;
+
+lsn  lsn_op  cmd      row
+────────────────────────────
+27   0       publish  123
+28   0       publish  1
+28   1       publish  2
+28   2       publish  3
+29   0       publish  null
+show subs;
+
+subs
+────
+{
+  "user": "amelie",
+  "name": "top_sub"
+}
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select show('state').lsn;
+
+lsn
+───
+29
+show subs;
+
+subs
+────
+{
+  "user": "amelie",
+  "name": "top_sub"
+}
+select * from top_sub;
+
+lsn  lsn_op  cmd      row
+────────────────────────────
+27   0       publish  123
+28   0       publish  1
+28   1       publish  2
+28   2       publish  3
+29   0       publish  null
 # test: drop topic
 drop topic top;
 show topics;
@@ -928,11 +978,32 @@ select show('state').lsn;
 
 lsn
 ───
-26
+30
 show topics;
 
 topics
 ──────
+# test: drop subscription
+drop subscription top_sub;
+show subs;
+
+subs
+────
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select show('state').lsn;
+
+lsn
+───
+31
+show subs;
+
+subs
+────
 # test: create user
 create user test;
 select show('user', 'test').name;
@@ -944,7 +1015,7 @@ select show('state').lsn;
 
 lsn
 ───
-27
+32
 # test: restart
 disconnect S0;
 close E0;
@@ -955,7 +1026,7 @@ select show('state').lsn;
 
 lsn
 ───
-27
+32
 select show('user', 'test').name;
 
 name
@@ -977,7 +1048,7 @@ select show('state').lsn;
 
 lsn
 ───
-28
+33
 # test: restart
 disconnect S0;
 close E0;
@@ -988,7 +1059,7 @@ select show('state').lsn;
 
 lsn
 ───
-28
+33
 select show('user', 'test2').name;
 
 name
@@ -1000,7 +1071,7 @@ select show('state').lsn;
 
 lsn
 ───
-29
+34
 select show('user', 'test2').name;
 
 name
@@ -1016,7 +1087,7 @@ select show('state').lsn;
 
 lsn
 ───
-29
+34
 select show('user', 'test').name;
 
 name
@@ -1040,7 +1111,7 @@ select show('state').lsn;
 
 lsn
 ───
-30
+35
 show functions verbose;
 
 functions
@@ -1075,7 +1146,7 @@ select show('state').lsn;
 
 lsn
 ───
-30
+35
 show functions verbose;
 
 functions
@@ -1130,7 +1201,7 @@ select show('state').lsn;
 
 lsn
 ───
-31
+36
 show functions verbose;
 
 functions
@@ -1165,7 +1236,7 @@ select show('state').lsn;
 
 lsn
 ───
-31
+36
 show functions verbose;
 
 functions
@@ -1204,7 +1275,7 @@ select show('state').lsn;
 
 lsn
 ───
-32
+37
 select [1,2,3]::reverse2;
 
 col1
@@ -1220,7 +1291,7 @@ select show('state').lsn;
 
 lsn
 ───
-32
+37
 show functions verbose;
 
 functions
@@ -1251,7 +1322,7 @@ select show('state').lsn;
 
 lsn
 ───
-33
+38
 show functions verbose;
 
 functions
@@ -1270,6 +1341,6 @@ select show('state').lsn;
 
 lsn
 ───
-33
+38
 disconnect S0;
 close E0;

@@ -769,13 +769,28 @@ topics
   "user": "amelie",
   "name": "top"
 }
-# test: create user
-create user test;
-select show('state').lsn;
+# test: create subscription
+create subscription top_sub on top;
+show subs;
 
-lsn
-───
-11
+subs
+────
+{
+  "user": "amelie",
+  "name": "top_sub"
+}
+publish to top 123;
+publish to top 1,2,3;
+publish to top;
+select * from top_sub;
+
+lsn  lsn_op  cmd      row
+────────────────────────────
+12   0       publish  123
+13   0       publish  1
+13   1       publish  2
+13   2       publish  3
+14   0       publish  null
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
@@ -785,7 +800,7 @@ select show('state').lsn;
 
 lsn
 ───
-11
+14
 select show('state').catalog;
 
 catalog
@@ -796,6 +811,97 @@ select show('state').catalog_pending;
 catalog_pending
 ───────────────
 11
+select * from top_sub;
+
+lsn  lsn_op  cmd      row
+────────────────────────────
+12   0       publish  123
+13   0       publish  1
+13   1       publish  2
+13   2       publish  3
+14   0       publish  null
+# test: checkpoint
+checkpoint;
+select show('state').lsn;
+
+lsn
+───
+14
+select show('state').catalog;
+
+catalog
+───────
+11
+select show('state').catalog_pending;
+
+catalog_pending
+───────────────
+11
+select * from top_sub;
+
+lsn  lsn_op  cmd      row
+────────────────────────────
+12   0       publish  123
+13   0       publish  1
+13   1       publish  2
+13   2       publish  3
+14   0       publish  null
+# test: restart/recover (checkpoint)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select show('state').lsn;
+
+lsn
+───
+14
+select show('state').catalog;
+
+catalog
+───────
+11
+select show('state').catalog_pending;
+
+catalog_pending
+───────────────
+11
+select * from top_sub;
+
+lsn  lsn_op  cmd      row
+────────────────────────────
+12   0       publish  123
+13   0       publish  1
+13   1       publish  2
+13   2       publish  3
+14   0       publish  null
+# test: create user
+create user test;
+select show('state').lsn;
+
+lsn
+───
+15
+# test: restart/recover (checkpoint + wal)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select show('state').lsn;
+
+lsn
+───
+15
+select show('state').catalog;
+
+catalog
+───────
+11
+select show('state').catalog_pending;
+
+catalog_pending
+───────────────
+15
 select show('user', 'test').name;
 
 name
@@ -812,17 +918,17 @@ select show('state').lsn;
 
 lsn
 ───
-11
+15
 select show('state').catalog;
 
 catalog
 ───────
-11
+15
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-11
+15
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -832,17 +938,17 @@ select show('state').lsn;
 
 lsn
 ───
-11
+15
 select show('state').catalog;
 
 catalog
 ───────
-11
+15
 select show('state').catalog_pending;
 
 catalog_pending
 ───────────────
-11
+15
 select show('user', 'test').name;
 
 name

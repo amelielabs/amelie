@@ -232,6 +232,43 @@ select show('state').catalog;
 select show('state').catalog_pending;
 show topics;
 
+# test: create subscription
+create subscription top_sub on top;
+show subs;
+publish to top 123;
+publish to top 1,2,3;
+publish to top;
+select * from top_sub;
+
+# test: restart/recover (checkpoint + wal)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select show('state').lsn;
+select show('state').catalog;
+select show('state').catalog_pending;
+select * from top_sub;
+
+# test: checkpoint
+checkpoint;
+select show('state').lsn;
+select show('state').catalog;
+select show('state').catalog_pending;
+select * from top_sub;
+
+# test: restart/recover (checkpoint)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select show('state').lsn;
+select show('state').catalog;
+select show('state').catalog_pending;
+select * from top_sub;
+
 # test: create user
 create user test;
 select show('state').lsn;

@@ -1,0 +1,583 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: create subscription statement parsing
+create subscription;
+error: create subscription❰;❱ ⟵ name expected
+create subscription x;
+error: create subscription x❰;❱ ⟵ ON expected
+create subscription x 123;
+error: create subscription x ❰123❱ ⟵ ON expected
+create subscription x on;
+error: create subscription x on❰;❱ ⟵ target name expected
+create subscription x on 123;
+error: create subscription x on ❰123❱ ⟵ target name expected
+# test: create subscription (table)
+create table test (id int primary key, data int);
+create subscription test_sub on test;
+show subs;
+
+subs
+────
+{
+  "user": "amelie",
+  "name": "test_sub"
+}
+show subscriptions;
+
+subscriptions
+─────────────
+{
+  "user": "amelie",
+  "name": "test_sub"
+}
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  1    0
+# test: create subscription (table, if exists)
+create subscription test_sub on test;
+error: relation 'test_sub': already exists
+create subscription if not exists test_sub on test;
+# test: select from subscription (empty)
+select * from test_sub;
+
+lsn  lsn_op  cmd  row
+───────────────────────
+# test: cdc (insert)
+insert into test values (1, 0);
+insert into test values (2, 0);
+insert into test values (3, 0);
+# test: select from subscription
+select * from test_sub;
+
+lsn  lsn_op  cmd    row
+──────────────────────────────────────────
+3    0       write  {"id": 1, "data": 0}
+4    0       write  {"id": 2, "data": 0}
+5    0       write  {"id": 3, "data": 0}
+# test: cdc (batch insert)
+insert into test values (4, 0), (5, 0), (6, 0);
+# test: select from subscription
+select * from test_sub;
+
+lsn  lsn_op  cmd    row
+──────────────────────────────────────────
+3    0       write  {"id": 1, "data": 0}
+4    0       write  {"id": 2, "data": 0}
+5    0       write  {"id": 3, "data": 0}
+6    0       write  {"id": 4, "data": 0}
+6    1       write  {"id": 5, "data": 0}
+6    2       write  {"id": 6, "data": 0}
+select count(*) from test_sub;
+
+count
+─────
+6
+select lsn, count(*) from test_sub group by lsn;
+
+lsn  count
+────────────
+3    1
+4    1
+5    1
+6    3
+# test: cdc (delete)
+delete from test where id = 1;
+# test: select from subscription
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+3    0       write   {"id": 1, "data": 0}
+4    0       write   {"id": 2, "data": 0}
+5    0       write   {"id": 3, "data": 0}
+6    0       write   {"id": 4, "data": 0}
+6    1       write   {"id": 5, "data": 0}
+6    2       write   {"id": 6, "data": 0}
+7    0       delete  {"id": 1, "data": 0}
+# test: cdc (batch delete)
+delete from test where id <= 3;
+# test: select from subscription
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+3    0       write   {"id": 1, "data": 0}
+4    0       write   {"id": 2, "data": 0}
+5    0       write   {"id": 3, "data": 0}
+6    0       write   {"id": 4, "data": 0}
+6    1       write   {"id": 5, "data": 0}
+6    2       write   {"id": 6, "data": 0}
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+# test: cdc (update)
+update test set data = 1 where id = 4;
+# test: select from subscription
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+3    0       write   {"id": 1, "data": 0}
+4    0       write   {"id": 2, "data": 0}
+5    0       write   {"id": 3, "data": 0}
+6    0       write   {"id": 4, "data": 0}
+6    1       write   {"id": 5, "data": 0}
+6    2       write   {"id": 6, "data": 0}
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+9    0       write   {"id": 4, "data": 1}
+# test: cdc (batch update)
+update test set data = 2;
+# test: select from subscription
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+3    0       write   {"id": 1, "data": 0}
+4    0       write   {"id": 2, "data": 0}
+5    0       write   {"id": 3, "data": 0}
+6    0       write   {"id": 4, "data": 0}
+6    1       write   {"id": 5, "data": 0}
+6    2       write   {"id": 6, "data": 0}
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+9    0       write   {"id": 4, "data": 1}
+10   0       write   {"id": 4, "data": 2}
+10   1       write   {"id": 5, "data": 2}
+10   2       write   {"id": 6, "data": 2}
+# test: acknowledge
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  1    0
+acknowledge;
+error: acknowledge❰;❱ ⟵ name expected
+acknowledge 123;
+error: acknowledge ❰123❱ ⟵ name expected
+acknowledge test_sub;
+error: acknowledge test_sub❰;❱ ⟵ TO expected
+acknowledge test_sub to;
+error: acknowledge test_sub to❰;❱ ⟵ int expected
+acknowledge test_sub to 1;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  1    0
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+3    0       write   {"id": 1, "data": 0}
+4    0       write   {"id": 2, "data": 0}
+5    0       write   {"id": 3, "data": 0}
+6    0       write   {"id": 4, "data": 0}
+6    1       write   {"id": 5, "data": 0}
+6    2       write   {"id": 6, "data": 0}
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+9    0       write   {"id": 4, "data": 1}
+10   0       write   {"id": 4, "data": 2}
+10   1       write   {"id": 5, "data": 2}
+10   2       write   {"id": 6, "data": 2}
+acknowledge test_sub to 2, 10;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  2    10
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+3    0       write   {"id": 1, "data": 0}
+4    0       write   {"id": 2, "data": 0}
+5    0       write   {"id": 3, "data": 0}
+6    0       write   {"id": 4, "data": 0}
+6    1       write   {"id": 5, "data": 0}
+6    2       write   {"id": 6, "data": 0}
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+9    0       write   {"id": 4, "data": 1}
+10   0       write   {"id": 4, "data": 2}
+10   1       write   {"id": 5, "data": 2}
+10   2       write   {"id": 6, "data": 2}
+acknowledge test_sub to 3;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  3    0
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+4    0       write   {"id": 2, "data": 0}
+5    0       write   {"id": 3, "data": 0}
+6    0       write   {"id": 4, "data": 0}
+6    1       write   {"id": 5, "data": 0}
+6    2       write   {"id": 6, "data": 0}
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+9    0       write   {"id": 4, "data": 1}
+10   0       write   {"id": 4, "data": 2}
+10   1       write   {"id": 5, "data": 2}
+10   2       write   {"id": 6, "data": 2}
+acknowledge test_sub to 6, 0;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  6    0
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+6    1       write   {"id": 5, "data": 0}
+6    2       write   {"id": 6, "data": 0}
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+9    0       write   {"id": 4, "data": 1}
+10   0       write   {"id": 4, "data": 2}
+10   1       write   {"id": 5, "data": 2}
+10   2       write   {"id": 6, "data": 2}
+acknowledge test_sub to 6, 1;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  6    1
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+6    2       write   {"id": 6, "data": 0}
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+9    0       write   {"id": 4, "data": 1}
+10   0       write   {"id": 4, "data": 2}
+10   1       write   {"id": 5, "data": 2}
+10   2       write   {"id": 6, "data": 2}
+acknowledge test_sub to 6, 2;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  6    2
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+9    0       write   {"id": 4, "data": 1}
+10   0       write   {"id": 4, "data": 2}
+10   1       write   {"id": 5, "data": 2}
+10   2       write   {"id": 6, "data": 2}
+acknowledge test_sub to 6, 3;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  6    3
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+9    0       write   {"id": 4, "data": 1}
+10   0       write   {"id": 4, "data": 2}
+10   1       write   {"id": 5, "data": 2}
+10   2       write   {"id": 6, "data": 2}
+acknowledge test_sub to 6, 4;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  6    4
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+7    0       delete  {"id": 1, "data": 0}
+8    0       delete  {"id": 2, "data": 0}
+8    1       delete  {"id": 3, "data": 0}
+9    0       write   {"id": 4, "data": 1}
+10   0       write   {"id": 4, "data": 2}
+10   1       write   {"id": 5, "data": 2}
+10   2       write   {"id": 6, "data": 2}
+acknowledge test_sub to 10, 1;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  10   1
+select * from test_sub;
+
+lsn  lsn_op  cmd    row
+──────────────────────────────────────────
+10   2       write  {"id": 6, "data": 2}
+# test: acknowledge (same value)
+acknowledge test_sub to 10, 1;
+# test: acknowledge (downgrade)
+acknowledge test_sub to 6, 4;
+error: subscription 'test_sub': ack position is out of range
+# test: acknowledge (abort)
+begin
+  acknowledge test_sub to 10, 2;
+  select error("abort");
+end;
+error: abort
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  10   2
+# test: drop table
+drop table test;
+select * from test_sub;
+
+lsn  lsn_op  cmd  row
+───────────────────────
+# test: drop subscription statement parsing
+drop subscription;
+error: drop subscription❰;❱ ⟵ name expected
+drop subscription 123;
+error: drop subscription ❰123❱ ⟵ name expected
+# test: drop subscription
+drop subscription test_sub;
+show subs;
+
+subs
+────
+# test: drop subscription (if exists)
+drop subscription test_sub;
+error: subscription 'test_sub': not exists
+drop subscription if exists test_sub;
+# test: create subscription (unlogged table)
+create unlogged table test (id int primary key, data int);
+create subscription test_sub on test;
+show subs;
+
+subs
+────
+{
+  "user": "amelie",
+  "name": "test_sub"
+}
+show subscriptions;
+
+subscriptions
+─────────────
+{
+  "user": "amelie",
+  "name": "test_sub"
+}
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  22   0
+# test: cdc (dml)
+insert into test values (1, 0), (2, 0), (3, 0);
+delete from test where id = 3;
+update test set data = 1;
+# test: select from subscription
+select * from test_sub;
+
+lsn  lsn_op  cmd     row
+───────────────────────────────────────────
+24   0       write   {"id": 1, "data": 0}
+24   1       write   {"id": 2, "data": 0}
+24   2       write   {"id": 3, "data": 0}
+25   0       delete  {"id": 3, "data": 0}
+26   0       write   {"id": 1, "data": 1}
+26   1       write   {"id": 2, "data": 1}
+drop subscription test_sub;
+drop table test;
+# test: create subscription (topic)
+create topic test;
+create subscription test_sub on test;
+show subs;
+
+subs
+────
+{
+  "user": "amelie",
+  "name": "test_sub"
+}
+show subscriptions;
+
+subscriptions
+─────────────
+{
+  "user": "amelie",
+  "name": "test_sub"
+}
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  29   0
+# test: cdc (publish)
+publish to test;
+publish to test 123;
+publish to test 1,2,3;
+# test: select from subscription
+select * from test_sub;
+
+lsn  lsn_op  cmd      row
+────────────────────────────
+31   0       publish  null
+32   0       publish  123
+33   0       publish  1
+33   1       publish  2
+33   2       publish  3
+# test: acknowledge
+acknowledge test_sub to 32;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  32   0
+select * from test_sub;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+33   0       publish  1
+33   1       publish  2
+33   2       publish  3
+acknowledge test_sub to 33, 1;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  33   1
+select * from test_sub;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+33   2       publish  3
+# test: drop topic
+drop topic test;
+select * from test_sub;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+33   2       publish  3
+drop subscription test_sub;
+# test: create subscription (unlogged topic)
+create unlogged topic test;
+create subscription test_sub on test;
+show subs;
+
+subs
+────
+{
+  "user": "amelie",
+  "name": "test_sub"
+}
+show subscriptions;
+
+subscriptions
+─────────────
+{
+  "user": "amelie",
+  "name": "test_sub"
+}
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  38   0
+# test: cdc (publish)
+publish to test;
+publish to test 123;
+publish to test 1,2,3;
+# test: select from subscription
+select * from test_sub;
+
+lsn  lsn_op  cmd      row
+────────────────────────────
+40   0       publish  null
+41   0       publish  123
+42   0       publish  1
+42   1       publish  2
+42   2       publish  3
+# test: acknowledge
+acknowledge test_sub to 41;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  41   0
+select * from test_sub;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+42   0       publish  1
+42   1       publish  2
+42   2       publish  3
+acknowledge test_sub to 42, 1;
+select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+
+rel_user  rel     lsn  lsn_op
+───────────────────────────────
+"amelie"  "test"  42   1
+select * from test_sub;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+42   2       publish  3
+# test: drop topic
+drop topic test;
+select * from test_sub;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+42   2       publish  3
+drop subscription test_sub;
+# test: alter subscription statement parsing
+create topic test;
+create subscription test_sub on test;
+alter subscription;
+error: alter subscription❰;❱ ⟵ name expected
+alter subscription 123;
+error: alter subscription ❰123❱ ⟵ name expected
+alter subscription test;
+error: alter subscription test❰;❱ ⟵ RENAME expected
+alter subscription test rename;
+error: alter subscription test rename❰;❱ ⟵ TO expected
+alter subscription test rename to;
+error: alter subscription test rename to❰;❱ ⟵ name expected
+# test: alter subscription rename to
+alter subscription test_sub rename to test_cdc;
+show subs;
+
+subs
+────
+{
+  "user": "amelie",
+  "name": "test_cdc"
+}
+# test: alter subscription rename to (if exists)
+alter subscription test_sub rename to test_cdc;
+error: subscription 'test_sub': not exists
+alter subscription if exists test_sub rename to test_cdc;
+drop topic test;
+drop subscription test_cdc;
+disconnect S0;
+close E0;

@@ -21,6 +21,10 @@ topics
   "user": "amelie",
   "name": "test"
 }
+# test: create topic (if exists)
+create topic test;
+error: relation 'test': already exists
+create topic if not exists test;
 # test: crud/query
 insert into test values (123);
 error: insert into ❰test❱ ⟵ topic cannot be used here

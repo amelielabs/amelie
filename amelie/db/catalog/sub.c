@@ -74,8 +74,8 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 	// find and use relation for cdc
 	Uuid* id;
 	catalog_cdc_ref(self, user_of(tr->user),
-	                &config->on_user,
-	                &config->on,
+	                &config->rel_user,
+	                &config->rel,
 	                &id);
 
 	// allocate storage
@@ -85,7 +85,7 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 	rel_mgr_create(&self->rels, tr, &sub->rel);
 
 	// set pos and prepare slot
-	cdc_slot_set(&sub->slot, config->lsn, config->op);
+	cdc_slot_set(&sub->slot, config->lsn, config->lsn_op);
 
 	// attach slot
 	cdc_attach(self->cdc, &sub->slot);

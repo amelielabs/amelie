@@ -48,8 +48,8 @@ parse_sub_create(Stmt* self)
 	Str user;
 	Str target;
 	parse_target(self, &user, &target);
-	sub_config_set_on_user(config, &user);
-	sub_config_set_on(config, &target);
+	sub_config_set_rel_user(config, &user);
+	sub_config_set_rel(config, &target);
 }
 
 void

@@ -64,6 +64,7 @@ test index
 test branch
 test branch_visibility
 test topic
+test subscription
 test function
 
 # dml

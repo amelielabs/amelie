@@ -99,7 +99,7 @@ follower_follow(Follower* self)
 	{
 		auto sub = sub_of(rel);
 		lsn    = sub->config->lsn;
-		lsn_op = sub->config->op + 1;
+		lsn_op = sub->config->lsn_op + 1;
 	}
 
 	// create and register feed
