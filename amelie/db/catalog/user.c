@@ -302,6 +302,7 @@ user_grant(Catalog* self,
 	     PERM_CREATE_USER         |
 	     PERM_CREATE_TOKEN        |
 	     PERM_CREATE_TABLE        |
+	     PERM_CREATE_CLONE        |
 	     PERM_CREATE_FUNCTION     |
 	     PERM_CREATE_TOPIC        |
 	     PERM_CREATE_SUBSCRIPTION |

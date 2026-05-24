@@ -66,6 +66,7 @@ test clone_visibility
 test topic
 test subscription
 test function
+test grant
 
 # dml
 directory dml

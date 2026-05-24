@@ -286,7 +286,7 @@ fn_show(Fn* self)
 	}
 	case SHOW_USER:
 	{
-		rel_mgr_list(&catalog->users, REL_USER, buf, user, name, all, flags);
+		rel_mgr_list(&catalog->users, REL_USER, buf, NULL, name, all, flags);
 		break;
 	}
 	case SHOW_STORAGES:

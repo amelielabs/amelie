@@ -1,0 +1,430 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: default user grants
+create user test;
+select grants from show users verbose;
+
+grants
+──────
+[]
+[["self", "grant", "create_table", "create_clone", "create_function", "create_topic", "create_subscription", "rpc", "sql"]]
+# test: create_table
+connect E0 S1 test@127.0.0.1:3485;
+switch S1;
+create table test (id int primary key);
+switch S0;
+revoke create_table from test;
+switch S1;
+create table test2 (id int primary key);
+error: user 'test': permission denied
+drop table test;
+switch S0;
+grant create_table to test;
+# test: create_clone
+switch S1;
+create table test (id int primary key);
+create clone test_clone of test;
+switch S0;
+revoke create_clone from test;
+switch S1;
+create clone test_clone2 of test;
+error: user 'test': permission denied
+drop clone test_clone;
+drop table test;
+switch S0;
+# test: create_topic
+switch S1;
+create topic test;
+switch S0;
+revoke create_topic from test;
+switch S1;
+create topic test2;
+error: user 'test': permission denied
+drop topic test;
+switch S0;
+# test: create_function
+switch S1;
+create function test () begin end;
+switch S0;
+revoke create_function from test;
+switch S1;
+create function test2 () begin end;
+error: user 'test': permission denied
+drop function test;
+switch S0;
+grant create_topic to test;
+# test: create_subscription
+switch S1;
+create topic test;
+create subscription test_sub on test;
+switch S0;
+revoke create_subscription from test;
+switch S1;
+create subscription test_sub2 on test;
+error: user 'test': permission denied
+drop subscription test_sub;
+drop topic test;
+switch S0;
+# test: create_user
+switch S1;
+create agent test2;
+error: user 'test': permission denied
+switch S0;
+grant create_user to test;
+switch S1;
+create agent test2;
+select parent, `name`, grants from show users verbose;
+
+parent  name     grants
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_topic", "create_subscrip…
+select parent, `name`, grants from show users verbose;
+
+parent  name     grants
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_topic", "create_subscrip…
+drop agent test2;
+select parent, `name`, grants from show users verbose;
+
+parent  name  grants
+──────────────────────
+create agent test2;
+# test: create_token
+create token test;
+error: user 'test': permission denied
+create token test2;
+error: user 'test': permission denied
+switch S0;
+grant create_token to test;
+switch S1;
+create token test;
+error: user 'test': permission denied
+switch S0;
+grant create_table to test;
+# test: insert
+switch S0;
+grant insert to test;
+error: relation 'test' does not support 'insert' grant
+create table test (id int primary key, data int);
+switch S1;
+show all rels;
+
+rels
+────
+insert into amelie.test values (123, 0);
+error: relation 'amelie.test': permission denied
+insert into amelie.test values (124, 0) returning *;
+error: relation 'amelie.test': permission denied
+switch S0;
+grant insert on test to test;
+switch S1;
+show all rels;
+
+rels
+────
+{
+  "user": "amelie",
+  "name": "test",
+  "type": "table"
+}
+insert into amelie.test values (123, 0);
+select * from amelie.test;
+error: relation 'amelie.test': permission denied
+switch S0;
+# test: select
+grant select to test;
+error: relation 'test' does not support 'select' grant
+grant select on test to test;
+switch S1;
+select * from amelie.test;
+
+id   data
+───────────
+123  0
+insert into amelie.test values (124, 0) returning *;
+
+id   data
+───────────
+124  0
+select * from amelie.test;
+
+id   data
+───────────
+123  0
+124  0
+switch S0;
+# test: update
+switch S1;
+update amelie.test set data = 1;
+error: relation 'amelie.test': permission denied
+switch S0;
+grant update to test;
+error: relation 'test' does not support 'update' grant
+grant update on test to test;
+switch S1;
+update amelie.test set data = 1;
+select * from amelie.test;
+
+id   data
+───────────
+123  1
+124  1
+update amelie.test set data = 1 returning *;
+
+id   data
+───────────
+123  1
+124  1
+select * from amelie.test;
+
+id   data
+───────────
+123  1
+124  1
+switch S0;
+# test: delete
+switch S1;
+delete from amelie.test where id = 123;
+error: relation 'amelie.test': permission denied
+switch S0;
+grant delete to test;
+error: relation 'test' does not support 'delete' grant
+grant delete on test to test;
+switch S1;
+delete from amelie.test where id = 123 returning *;
+
+id   data
+───────────
+123  1
+select * from amelie.test;
+
+id   data
+───────────
+124  1
+switch S0;
+# test: publish
+create topic top;
+grant publish to test;
+error: relation 'test' does not support 'publish' grant
+switch S1;
+show all rels;
+
+rels
+────
+{
+  "user": "amelie",
+  "name": "test",
+  "type": "table"
+}
+publish to amelie.top 123;
+error: relation 'amelie.top': permission denied
+switch S0;
+grant publish on top to test;
+switch S1;
+show all rels;
+
+rels
+────
+{
+  "user": "amelie",
+  "name": "test",
+  "type": "table"
+}
+{
+  "user": "amelie",
+  "name": "top",
+  "type": "topic"
+}
+publish to amelie.top 123;
+switch S0;
+# test: execute
+create function fun () return int
+begin
+  return 123;
+end;
+switch S1;
+show all rels;
+
+rels
+────
+{
+  "user": "amelie",
+  "name": "test",
+  "type": "table"
+}
+{
+  "user": "amelie",
+  "name": "top",
+  "type": "topic"
+}
+select amelie.fun();
+error: relation 'amelie.fun': permission denied
+execute amelie.fun();
+error: execute ❰amelie.fun❱ ⟵ name expected
+switch S0;
+grant execute on fun to test;
+switch S1;
+show all rels;
+
+rels
+────
+{
+  "user": "amelie",
+  "name": "test",
+  "type": "table"
+}
+{
+  "user": "amelie",
+  "name": "top",
+  "type": "topic"
+}
+{
+  "user": "amelie",
+  "name": "fun",
+  "type": "function"
+}
+select amelie.fun();
+
+fun
+───
+123
+execute amelie.fun();
+error: execute ❰amelie.fun❱ ⟵ name expected
+switch S0;
+# test: grant
+revoke grant from test;
+switch S1;
+create table test (id int primary key);
+grant select on test to amelie;
+error: user 'test': permission denied
+switch S0;
+# test: system
+switch S1;
+checkpoint;
+error: user 'test': permission denied
+switch S0;
+grant system to test;
+switch S1;
+checkpoint;
+switch S0;
+# test: sql
+revoke sql from test;
+switch S1;
+select 1;
+Forbidden
+post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
+403 Forbidden
+switch S0;
+# test: rpc
+grant sql to test;
+revoke rpc from test;
+switch S1;
+select 1;
+
+col1
+────
+1
+post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
+403 Forbidden
+switch S0;
+# test: user drop revoke
+drop user test2 cascade;
+create user test2;
+connect E0 S2 test2@127.0.0.1:3485;
+switch S2;
+create table test (id int primary key);
+grant select on test to test;
+show rels;
+
+rels
+────
+{
+  "user": "test2",
+  "name": "test",
+  "type": "table"
+}
+show grants on test;
+
+grants
+──────
+["test", "select"]
+switch S1;
+select * from test2.test;
+
+id
+──
+switch S0;
+drop user test cascade;
+switch S2;
+select current_user;
+
+current_user
+────────────
+test2
+show grants on test;
+
+grants
+──────
+select * from test;
+
+id
+──
+show rels;
+
+rels
+────
+{
+  "user": "test2",
+  "name": "test",
+  "type": "table"
+}
+switch S0;
+disconnect S1;
+disconnect S2;
+# test: user rename grant
+drop user test2 cascade;
+create user test;
+create user test2;
+connect E0 S1 test@127.0.0.1:3485;
+connect E0 S2 test2@127.0.0.1:3485;
+switch S2;
+create table test (id int primary key);
+grant select on test to test;
+show rels;
+
+rels
+────
+{
+  "user": "test2",
+  "name": "test",
+  "type": "table"
+}
+show grants on test;
+
+grants
+──────
+["test", "select"]
+switch S1;
+select * from test2.test;
+
+id
+──
+switch S0;
+alter user test rename to test_renamed;
+disconnect S1;
+connect E0 S1 test_renamed@127.0.0.1:3485;
+select * from test2.test;
+
+id
+──
+switch S2;
+show grants on test;
+
+grants
+──────
+["test_renamed", "select"]
+switch S0;
+disconnect S1;
+disconnect S2;
+disconnect S0;
+close E0;

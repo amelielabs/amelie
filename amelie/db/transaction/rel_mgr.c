@@ -47,7 +47,10 @@ rel_mgr_set_ht(RelMgr* self, Rel* rel)
 	hashtable_reserve(&self->ht);
 
 	// hash by name
-	uint32_t hash = hash_murmur3_32(str_u8(rel->name), str_size(rel->name), 0);
+	uint32_t hash = 0;
+	if (rel->user && rel->type != REL_USER)
+		hash = hash_murmur3_32(str_u8(rel->user), str_size(rel->user), 0);
+	hash = hash_murmur3_32(str_u8(rel->name), str_size(rel->name), hash);
 	rel->link_ht.hash = hash;
 	hashtable_set(&self->ht, &rel->link_ht);
 }
@@ -322,7 +325,10 @@ rel_mgr_find(RelMgr* self, RelType type, Str* user, Str* name,
              bool    error_if_not_exists)
 {
 	// hash name
-	uint32_t hash = hash_murmur3_32(str_u8(name), str_size(name), 0);
+	uint32_t hash = 0;
+	if (user)
+		hash = hash_murmur3_32(str_u8(user), str_size(user), 0);
+	hash = hash_murmur3_32(str_u8(name), str_size(name), hash);
 
 	// match relation
 	Str* arg[] = { user, name };

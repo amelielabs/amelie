@@ -145,6 +145,15 @@ test_session_post(TestSession* self,
 		buf_write_str(buf, accept);
 		buf_write(buf, "\r\n", 2);
 	}
+
+	// user
+	auto user = opt_string_of(&self->endpoint.user);
+	if (! str_empty(user))
+	{
+		buf_write(buf, "X-User-ID: ", 11);
+		buf_write_str(buf, user);
+		buf_write(buf, "\r\n", 2);
+	}
 	buf_write(buf, "\r\n", 2);
 
 	// send
