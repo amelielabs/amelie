@@ -176,6 +176,46 @@ select show('user', 'amelie').name;
 name
 ────
 "amelie"
+# test: drop user cascade (with child users)
+create user test;
+grant create_user to test;
+connect E0 S1 test@127.0.0.1:3485;
+switch S1;
+create table a(id int primary key);
+create table b(id int primary key);
+create function fn() begin select * from a; end;
+create user test2;
+connect E0 S2 test2@127.0.0.1:3485;
+switch S2;
+create table a(id int primary key);
+create table b(id int primary key);
+create function fn() begin select * from a; end;
+switch S0;
+show users;
+
+users
+─────
+{
+  "name": "amelie",
+  "parent": "amelie"
+}
+{
+  "name": "test",
+  "parent": "amelie"
+}
+drop user test;
+error: user 'test' still has table 'a'
+drop user test cascade;
+show users;
+
+users
+─────
+{
+  "name": "amelie",
+  "parent": "amelie"
+}
+disconnect S2;
+disconnect S1;
 # test: alter user statment parsing
 alter user;
 error: alter user❰;❱ ⟵ name expected

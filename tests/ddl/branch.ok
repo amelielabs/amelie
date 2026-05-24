@@ -398,7 +398,7 @@ id  data
 # test: drop parent branch
 drop branch a;
 error: branch 'a': depends on branch 'amelie.bb'
-# test: drop parent branch (cascade)
+# test: cascade (parent branch)
 drop branch a cascade;
 show branches;
 
@@ -411,5 +411,70 @@ branches
   "table": "main"
 }
 drop table main cascade;
+# test: cascade (table)
+create table main (id int primary key, data int);
+insert into main values (1, 0);
+insert into main values (2, 0);
+insert into main values (3, 0);
+insert into main values (4, 0);
+create branch a on main;
+create branch b on main;
+create branch c on b;
+create branch d on c;
+show branches;
+
+branches
+────────
+{
+  "user": "amelie",
+  "name": "a",
+  "table_user": "amelie",
+  "table": "main"
+}
+{
+  "user": "amelie",
+  "name": "b",
+  "table_user": "amelie",
+  "table": "main"
+}
+{
+  "user": "amelie",
+  "name": "c",
+  "table_user": "amelie",
+  "table": "main"
+}
+{
+  "user": "amelie",
+  "name": "d",
+  "table_user": "amelie",
+  "table": "main"
+}
+drop table main;
+error: table 'main': depends on branch 'amelie.a' and 3 more
+drop table main cascade;
+show branches;
+
+branches
+────────
+# test: cascade (table, udf)
+create table main (id int primary key, data int);
+create branch a on main;
+create branch b on main;
+create branch c on b;
+create function f() return int
+begin
+   return select count(*) from main;
+end;
+drop table main;
+error: table 'main': depends on branch 'amelie.a' and 3 more
+drop table main cascade;
+show branches;
+
+branches
+────────
+show functions;
+
+functions
+─────────
 disconnect S0;
 close E0;

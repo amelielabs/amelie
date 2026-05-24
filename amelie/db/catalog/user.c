@@ -98,7 +98,7 @@ user_drop_of(Catalog* self,
 		defer_buf(&deps);
 
 		auto count = 0;
-		list_foreach(&self->rels.list)
+		list_foreach_safe(&self->rels.list)
 		{
 			auto rel = list_at(Rel, link);
 			if (! str_compare(rel->user, user->name))
@@ -117,10 +117,10 @@ user_drop_of(Catalog* self,
 			catalog_deps_drop(self, tr, &deps);
 
 		// drop cascade all child users
-		list_foreach(&self->users.list)
+		list_foreach_safe(&self->users.list)
 		{
 			auto rel = list_at(Rel, link);
-			if (! str_compare(rel->user, user->name))
+			if (rel == user || !str_compare(rel->user, user->name))
 				continue;
 			user_drop_of(self, tr, rel, true);
 		}
