@@ -10,11 +10,11 @@ begin
 	return rev;
 end;
 execute;
-error: execute❰;❱ ⟵ name expected
+error: execute❰;❱ ⟵ target name expected
 execute 1;
-error: execute ❰1❱ ⟵ name expected
+error: execute ❰1❱ ⟵ target name expected
 execute test;
-error: execute ❰test❱ ⟵ function not found
+error: execute ❰test❱ ⟵ function 'amelie.test': not found
 execute reverse(;
 error: unexpected json token
 execute reverse(1;

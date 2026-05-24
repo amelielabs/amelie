@@ -260,7 +260,10 @@ rels
 select amelie.fun();
 error: relation 'amelie.fun': permission denied
 execute amelie.fun();
-error: execute ❰amelie.fun❱ ⟵ name expected
+
+fun
+───
+123
 switch S0;
 grant execute on fun to test;
 switch S1;
@@ -289,7 +292,10 @@ fun
 ───
 123
 execute amelie.fun();
-error: execute ❰amelie.fun❱ ⟵ name expected
+
+fun
+───
+123
 switch S0;
 # test: grant
 revoke grant from test;
