@@ -73,7 +73,7 @@ create branch a on test;
 insert into a () values (), ();
 select * from a;
 
-create branch b on a;
+create branch b on test;
 insert into b () values (), ();
 insert into b () values (), ();
 select * from b;

@@ -78,36 +78,14 @@ branch_create(Catalog*      self,
 	// ensure permission to create branch on the table
 	check_permission(tr, &table->rel, PERM_CREATE_BRANCH);
 
-	// find parent branch
-	auto parent = snapshot_mgr_find(&table->snapshot_mgr, config->snapshot.id_parent);
-	if (! parent)
-		error("branch '{str}': parent branch cannot be found", &config->name);
-
 	// create branch
 	auto branch = branch_allocate(config);
 	branch->table = table;
-	branch->config->snapshot.parent = parent;
-	branch->config->snapshot.rel    = &branch->rel;
+	branch->config->snapshot.main = &table->snapshot_mgr.main;
+	branch->config->snapshot.rel  = &branch->rel;
 	rel_mgr_create(&self->rels, tr, &branch->rel);
 
 	// register branch snapshot
 	snapshot_mgr_add(&table->snapshot_mgr, &branch->config->snapshot);
 	return true;
-}
-
-bool
-branch_is_parent(Catalog* self, Branch* branch)
-{
-	list_foreach_safe(&self->rels.list)
-	{
-		auto rel = list_at(Rel, link);
-		if (rel->type != REL_BRANCH)
-			continue;
-		auto ref = branch_of(rel);
-		if (ref->table != branch->table)
-			continue;
-		if (ref->config->snapshot.id_parent == branch->config->snapshot.id)
-			return true;
-	}
-	return false;
 }

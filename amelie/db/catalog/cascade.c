@@ -59,15 +59,6 @@ catalog_deps(Catalog* self, Rel* rel, Buf* list)
 				add = branch->table == table_of(rel);
 				break;
 			}
-			if (rel->type == REL_BRANCH)
-			{
-				// drop branch if branch is a child
-				auto ref = branch_of(rel);
-				if (branch->table != ref->table)
-					break;
-				add = branch->config->snapshot.id_parent == ref->config->snapshot.id;
-				break;
-			}
 			break;
 		}
 		default:
@@ -113,19 +104,11 @@ catalog_deps_validate(Catalog* self, Rel* rel, bool error_on_match)
 		}
 		case REL_BRANCH:
 		{
-			// branch depends on the relation (which is table or branch)
+			// branch depends on the table
 			auto branch = branch_of(at);
 			if (rel->type == REL_TABLE)
 			{
 				dep = branch->table == table_of(rel);
-				break;
-			}
-			if (rel->type == REL_BRANCH)
-			{
-				auto ref = branch_of(rel);
-				if (branch->table != ref->table)
-					break;
-				dep = branch->config->snapshot.id_parent == ref->config->snapshot.id;
 				break;
 			}
 			break;

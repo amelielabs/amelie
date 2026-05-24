@@ -50,19 +50,14 @@ row_visible(Row* row, Heap* heap, Snapshot* snapshot)
 	// note: row is a head of the version chain
 	for (; row; row = row_prev(row, heap, heap->shadow))
 	{
-		// row created inside this snapshot (branch)
+		// row created inside this snapshot (first visible version)
 		if (row->snapshot == snapshot->id)
 			break;
 
-		// row created by one of the snapshot parents
-		auto parent = snapshot->parent;
-		for (; parent; parent = parent->parent)
-		{
-			if (row->snapshot == parent->id && row->tsn <= (uint64_t)snapshot->snapshot)
-				goto match;
-		}
+		// visible main row
+		if (row->snapshot == 0 && row->tsn <= (uint64_t)snapshot->snapshot)
+			break;
 	}
-match:
 	if (row && row->is_delete)
 		row = NULL;
 	return row;

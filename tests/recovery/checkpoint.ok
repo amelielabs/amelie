@@ -181,15 +181,13 @@ id
 2
 0
 1
-create branch b on a;
+create branch b on test;
 insert into b () values (), ();
 insert into b () values (), ();
 select * from b;
 
 id
 ──
-3
-4
 5
 2
 0
@@ -208,9 +206,8 @@ branches
   "table": "test",
   "snapshot": {
     "id": 1,
-    "id_parent": 0,
     "snapshot": 3,
-    "snapshot_max": 5
+    "snapshot_max": 3
   },
   "grants": []
 }
@@ -221,7 +218,6 @@ branches
   "table": "test",
   "snapshot": {
     "id": 2,
-    "id_parent": 1,
     "snapshot": 5,
     "snapshot_max": 5
   },
@@ -258,9 +254,8 @@ branches
   "table": "test",
   "snapshot": {
     "id": 1,
-    "id_parent": 0,
     "snapshot": 3,
-    "snapshot_max": 5
+    "snapshot_max": 3
   },
   "grants": []
 }
@@ -271,7 +266,6 @@ branches
   "table": "test",
   "snapshot": {
     "id": 2,
-    "id_parent": 1,
     "snapshot": 5,
     "snapshot_max": 5
   },
@@ -290,8 +284,6 @@ select * from b;
 
 id
 ──
-3
-4
 5
 2
 0
@@ -354,9 +346,8 @@ branches
   "table": "test",
   "snapshot": {
     "id": 1,
-    "id_parent": 0,
     "snapshot": 3,
-    "snapshot_max": 5
+    "snapshot_max": 3
   },
   "grants": []
 }
@@ -367,7 +358,6 @@ branches
   "table": "test",
   "snapshot": {
     "id": 2,
-    "id_parent": 1,
     "snapshot": 5,
     "snapshot_max": 5
   },
@@ -386,8 +376,6 @@ select * from b;
 
 id
 ──
-3
-4
 5
 0
 1

@@ -21,7 +21,6 @@ struct Branch
 };
 
 bool branch_create(Catalog*, Tr*, BranchConfig*, bool);
-bool branch_is_parent(Catalog*, Branch*);
 
 always_inline static inline Branch*
 branch_of(Rel* self)

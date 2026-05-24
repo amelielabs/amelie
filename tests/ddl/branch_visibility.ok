@@ -102,38 +102,6 @@ select * from main;
 id  data
 ──────────
 1   0
-# test: branch (b -> c)
-create branch c on b ;
-select * from c;
-
-id  data
-──────────
-1   2
-2   2
-update c set data = 3;
-select * from a;
-
-id  data
-──────────
-1   1
-2   1
-select * from b;
-
-id  data
-──────────
-1   2
-2   2
-select * from c;
-
-id  data
-──────────
-1   3
-2   3
-select * from main;
-
-id  data
-──────────
-1   0
 # test: branch (delete from b)
 delete from b where id = 1;
 select * from b;
@@ -141,12 +109,6 @@ select * from b;
 id  data
 ──────────
 2   2
-select * from c;
-
-id  data
-──────────
-1   3
-2   3
 # test: branch (key)
 select * from main where id >= 0;
 
@@ -258,47 +220,8 @@ select * from b where id = 3;
 
 id  data
 ──────────
-select * from c where id >= 0;
-
-id  data
-──────────
-1   3
-2   3
-select * from c where id = 0;
-
-id  data
-──────────
-select * from c where id >= 1;
-
-id  data
-──────────
-1   3
-2   3
-select * from c where id = 1;
-
-id  data
-──────────
-1   3
-select * from c where id >= 2;
-
-id  data
-──────────
-2   3
-select * from c where id = 2;
-
-id  data
-──────────
-2   3
-select * from c where id >= 3;
-
-id  data
-──────────
-select * from c where id = 3;
-
-id  data
-──────────
 # test: branch (select after drop)
-drop branch c;
+drop branch b;
 show branches;
 
 branches
@@ -309,23 +232,22 @@ branches
   "table_user": "amelie",
   "table": "main"
 }
-{
-  "user": "amelie",
-  "name": "b",
-  "table_user": "amelie",
-  "table": "main"
-}
 select * from a;
 
 id  data
 ──────────
 1   1
 2   1
-select * from b;
+select * from main;
 
 id  data
 ──────────
-2   2
+1   0
+drop branch a;
+show branches;
+
+branches
+────────
 select * from main;
 
 id  data
@@ -364,9 +286,8 @@ branches
   "table": "main",
   "snapshot": {
     "id": 1,
-    "id_parent": 0,
-    "snapshot": 71,
-    "snapshot_max": 71
+    "snapshot": 56,
+    "snapshot_max": 56
   },
   "grants": []
 }
@@ -377,9 +298,8 @@ branches
   "table": "main",
   "snapshot": {
     "id": 2,
-    "id_parent": 0,
-    "snapshot": 73,
-    "snapshot_max": 73
+    "snapshot": 58,
+    "snapshot_max": 58
   },
   "grants": []
 }
@@ -396,9 +316,8 @@ branches
   "table": "main",
   "snapshot": {
     "id": 1,
-    "id_parent": 0,
-    "snapshot": 71,
-    "snapshot_max": 71
+    "snapshot": 56,
+    "snapshot_max": 56
   },
   "grants": []
 }
@@ -409,9 +328,8 @@ branches
   "table": "main",
   "snapshot": {
     "id": 3,
-    "id_parent": 0,
-    "snapshot": 77,
-    "snapshot_max": 77
+    "snapshot": 62,
+    "snapshot_max": 62
   },
   "grants": []
 }

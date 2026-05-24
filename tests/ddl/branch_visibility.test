@@ -59,22 +59,10 @@ select * from a;
 select * from b;
 select * from main;
 
-# test: branch (b -> c)
-create branch c on b ;
-
-select * from c;
-update c set data = 3;
-
-select * from a;
-select * from b;
-select * from c;
-select * from main;
-
 # test: branch (delete from b)
 delete from b where id = 1;
 
 select * from b;
-select * from c;
 
 # test: branch (key)
 select * from main where id >= 0;
@@ -104,21 +92,14 @@ select * from b where id = 2;
 select * from b where id >= 3;
 select * from b where id = 3;
 
-select * from c where id >= 0;
-select * from c where id = 0;
-select * from c where id >= 1;
-select * from c where id = 1;
-select * from c where id >= 2;
-select * from c where id = 2;
-select * from c where id >= 3;
-select * from c where id = 3;
-
 # test: branch (select after drop)
-drop branch c;
+drop branch b;
 show branches;
-
 select * from a;
-select * from b;
+select * from main;
+
+drop branch a;
+show branches;
 select * from main;
 
 drop table main cascade;

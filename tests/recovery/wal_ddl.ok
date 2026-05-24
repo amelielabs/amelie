@@ -702,14 +702,13 @@ id  obj
 2   null
 0   null
 1   null
-create branch b on a;
+create branch b on test2;
 insert into b values (4, {});
 insert into b values (5, []);
 select * from b;
 
 id  obj
 ──────────
-3   {}
 4   {}
 5   []
 2   null
@@ -726,9 +725,8 @@ branches
   "table": "test2",
   "snapshot": {
     "id": 1,
-    "id_parent": 0,
     "snapshot": 2,
-    "snapshot_max": 4
+    "snapshot_max": 2
   },
   "grants": []
 }
@@ -739,7 +737,6 @@ branches
   "table": "test2",
   "snapshot": {
     "id": 2,
-    "id_parent": 1,
     "snapshot": 4,
     "snapshot_max": 4
   },
@@ -767,9 +764,8 @@ branches
   "table": "test2",
   "snapshot": {
     "id": 1,
-    "id_parent": 0,
     "snapshot": 2,
-    "snapshot_max": 4
+    "snapshot_max": 2
   },
   "grants": []
 }
@@ -780,7 +776,6 @@ branches
   "table": "test2",
   "snapshot": {
     "id": 2,
-    "id_parent": 1,
     "snapshot": 4,
     "snapshot_max": 4
   },
@@ -798,7 +793,6 @@ select * from b;
 
 id  obj
 ──────────
-3   {}
 4   {}
 5   []
 2   null
@@ -812,8 +806,6 @@ id  obj
 0   null
 1   null
 # test: drop branch
-drop branch a;
-error: branch 'a': depends on branch 'amelie.b'
 drop branch b;
 drop branch a;
 # test: restart

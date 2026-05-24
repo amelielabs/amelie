@@ -26,7 +26,6 @@ branches
   "table": "main",
   "snapshot": {
     "id": 1,
-    "id_parent": 0,
     "snapshot": 1,
     "snapshot_max": 1
   },
@@ -113,56 +112,22 @@ id  data
 2   0
 3   0
 4   0
-# test: create branch (from branch, update)
-create branch b on a;
-show branches verbose;
-
-branches
-────────
-{
-  "user": "amelie",
-  "name": "a",
-  "table_user": "amelie",
-  "table": "main",
-  "snapshot": {
-    "id": 1,
-    "id_parent": 0,
-    "snapshot": 10,
-    "snapshot_max": 21
-  },
-  "grants": []
-}
-{
-  "user": "amelie",
-  "name": "b",
-  "table_user": "amelie",
-  "table": "main",
-  "snapshot": {
-    "id": 2,
-    "id_parent": 1,
-    "snapshot": 21,
-    "snapshot_max": 21
-  },
-  "grants": []
-}
+# test: alter branch statement parsing
+alter branch;
+error: alter branch❰;❱ ⟵ name expected
+alter branch 1;
+error: alter branch ❰1❱ ⟵ name expected
+alter branch b;
+error: alter branch b❰;❱ ⟵ RENAME expected
+alter branch b xyz;
+error: alter branch b ❰xyz❱ ⟵ RENAME expected
+alter branch b rename;
+error: alter branch b rename❰;❱ ⟵ TO expected
+alter branch b rename to;
+error: alter branch b rename to❰;❱ ⟵ name expected
+# test: alter branch rename to
+alter branch a rename to b;
 select * from b;
-
-id  data
-──────────
-1   2
-2   2
-3   2
-4   0
-update b set data = 3 where id < 4;
-select * from b;
-
-id  data
-──────────
-1   3
-2   3
-3   3
-4   0
-select * from a;
 
 id  data
 ──────────
@@ -178,238 +143,14 @@ id  data
 2   0
 3   0
 4   0
-# test: create branch (update main)
-update main set data = -1;
-insert into main values (5, 0), (6, 0);
-select * from b;
-
-id  data
-──────────
-1   3
-2   3
-3   3
-4   0
-select * from a;
-
-id  data
-──────────
-1   2
-2   2
-3   2
-4   0
-select * from main;
-
-id  data
-──────────
-1   -1
-2   -1
-3   -1
-4   -1
-5   0
-6   0
-# test: create branch (from updated main)
-create branch c on main;
-show branches verbose;
-
-branches
-────────
-{
-  "user": "amelie",
-  "name": "a",
-  "table_user": "amelie",
-  "table": "main",
-  "snapshot": {
-    "id": 1,
-    "id_parent": 0,
-    "snapshot": 10,
-    "snapshot_max": 21
-  },
-  "grants": []
-}
-{
-  "user": "amelie",
-  "name": "b",
-  "table_user": "amelie",
-  "table": "main",
-  "snapshot": {
-    "id": 2,
-    "id_parent": 1,
-    "snapshot": 21,
-    "snapshot_max": 21
-  },
-  "grants": []
-}
-{
-  "user": "amelie",
-  "name": "c",
-  "table_user": "amelie",
-  "table": "main",
-  "snapshot": {
-    "id": 3,
-    "id_parent": 0,
-    "snapshot": 31,
-    "snapshot_max": 31
-  },
-  "grants": []
-}
-select * from c;
-
-id  data
-──────────
-1   -1
-2   -1
-3   -1
-4   -1
-5   0
-6   0
-select * from b;
-
-id  data
-──────────
-1   3
-2   3
-3   3
-4   0
-select * from a;
-
-id  data
-──────────
-1   2
-2   2
-3   2
-4   0
-select * from main;
-
-id  data
-──────────
-1   -1
-2   -1
-3   -1
-4   -1
-5   0
-6   0
-delete from c where id <= 2;
-select * from c;
-
-id  data
-──────────
-3   -1
-4   -1
-5   0
-6   0
-select * from b;
-
-id  data
-──────────
-1   3
-2   3
-3   3
-4   0
-select * from a;
-
-id  data
-──────────
-1   2
-2   2
-3   2
-4   0
-select * from main;
-
-id  data
-──────────
-1   -1
-2   -1
-3   -1
-4   -1
-5   0
-6   0
-delete from main;
-select * from c;
-
-id  data
-──────────
-3   -1
-4   -1
-5   0
-6   0
-select * from b;
-
-id  data
-──────────
-1   3
-2   3
-3   3
-4   0
-select * from a;
-
-id  data
-──────────
-1   2
-2   2
-3   2
-4   0
-select * from main;
-
-id  data
-──────────
-# test: alter branch statement parsing
-alter branch;
-error: alter branch❰;❱ ⟵ name expected
-alter branch 1;
-error: alter branch ❰1❱ ⟵ name expected
-alter branch b;
-error: alter branch b❰;❱ ⟵ RENAME expected
-alter branch b xyz;
-error: alter branch b ❰xyz❱ ⟵ RENAME expected
-alter branch b rename;
-error: alter branch b rename❰;❱ ⟵ TO expected
-alter branch b rename to;
-error: alter branch b rename to❰;❱ ⟵ name expected
-# test: alter branch rename to
-alter branch b rename to bb;
-select * from c;
-
-id  data
-──────────
-3   -1
-4   -1
-5   0
-6   0
-select * from bb;
-
-id  data
-──────────
-1   3
-2   3
-3   3
-4   0
-select * from a;
-
-id  data
-──────────
-1   2
-2   2
-3   2
-4   0
-select * from main;
-
-id  data
-──────────
 # test: drop parent branch
-drop branch a;
-error: branch 'a': depends on branch 'amelie.bb'
-# test: cascade (parent branch)
-drop branch a cascade;
+drop branch b;
 show branches;
 
 branches
 ────────
-{
-  "user": "amelie",
-  "name": "c",
-  "table_user": "amelie",
-  "table": "main"
-}
+# test: cascade (parent branch)
+create branch b on main;
 drop table main cascade;
 # test: cascade (table)
 create table main (id int primary key, data int);
@@ -419,8 +160,6 @@ insert into main values (3, 0);
 insert into main values (4, 0);
 create branch a on main;
 create branch b on main;
-create branch c on b;
-create branch d on c;
 show branches;
 
 branches
@@ -437,20 +176,8 @@ branches
   "table_user": "amelie",
   "table": "main"
 }
-{
-  "user": "amelie",
-  "name": "c",
-  "table_user": "amelie",
-  "table": "main"
-}
-{
-  "user": "amelie",
-  "name": "d",
-  "table_user": "amelie",
-  "table": "main"
-}
 drop table main;
-error: table 'main': depends on branch 'amelie.a' and 3 more
+error: table 'main': depends on branch 'amelie.a' and 1 more
 drop table main cascade;
 show branches;
 
@@ -460,13 +187,12 @@ branches
 create table main (id int primary key, data int);
 create branch a on main;
 create branch b on main;
-create branch c on b;
 create function f() return int
 begin
    return select count(*) from main;
 end;
 drop table main;
-error: table 'main': depends on branch 'amelie.a' and 3 more
+error: table 'main': depends on branch 'amelie.a' and 2 more
 drop table main cascade;
 show branches;
 

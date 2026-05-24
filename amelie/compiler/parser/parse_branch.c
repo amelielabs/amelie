@@ -39,32 +39,9 @@ parse_branch_create(Stmt* self)
 	auto path = parse_target(self, &target_user, &target);
 
 	// find target
-	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, &target_user, &target, false);
-	if (! rel)
-		stmt_error(self, path, "relation not found");
-
-	Table*    table  = NULL;
-	Snapshot* parent = NULL;
-	switch (rel->type) {
-	case REL_TABLE:
-	{
-		table  = table_of(rel);
-		parent = table_main(table);
-		break;
-	}
-	case REL_BRANCH:
-	{
-		auto branch = branch_of(rel);
-		table  = branch->table;
-		parent = &branch->config->snapshot;
-		break;
-	}
-	default:
-	{
-		stmt_error(self, path, "unsupported relation");
-		break;
-	}
-	}
+	auto table = catalog_find_table(&share()->db->catalog, &target_user, &target, true);
+	if (! table)
+		stmt_error(self, path, "table not found");
 
 	// calculate branch id
 	uint32_t id = snapshot_mgr_max(&table->snapshot_mgr);
@@ -87,7 +64,6 @@ parse_branch_create(Stmt* self)
 	// set branch snapshot
 	auto snapshot = &config->snapshot;
 	snapshot_set_id(snapshot, id);
-	snapshot_set_id_parent(snapshot, parent->id);
 	snapshot_set_snapshot(snapshot, state_tsn());
 }
 

@@ -238,7 +238,7 @@ create branch a on test2;
 insert into a values (3, {});
 select * from a;
 
-create branch b on a;
+create branch b on test2;
 insert into b values (4, {});
 insert into b values (5, []);
 select * from b;
@@ -260,8 +260,6 @@ select * from b;
 select * from test2;
 
 # test: drop branch
-drop branch a;
-
 drop branch b;
 drop branch a;
 
