@@ -210,6 +210,10 @@ cdc_add(Cdc*     self,
 	if (unlikely(left < size))
 		cdc_page_add(self);
 
+	// bounds check: ensure event fits within page capacity
+	if (unlikely(size > self->current->end))
+		error("cdc: event data size exceeds page capacity");
+
 	// reserve
 	auto page = self->current;
 	auto at   = page->data + page->pos;
