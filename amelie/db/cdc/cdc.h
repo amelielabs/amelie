@@ -45,6 +45,8 @@ struct Cdc
 	int      pages_count;
 	List     slots;
 	int      slots_count;
+	uint32_t page_size;
+	uint32_t page_size_max;
 	List     link;
 };
 

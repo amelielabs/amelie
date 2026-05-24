@@ -19,12 +19,11 @@ static inline void
 cdc_page_add(Cdc* self)
 {
 	// allocate new page
-	const auto page_size = 256ul * 1024;
-	auto page = (CdcPage*)vfs_mmap(-1, page_size);
+	auto page = (CdcPage*)vfs_mmap(-1, self->page_size);
 	if (unlikely(page == NULL))
 		error_system();
 	page->pos = 0;
-	page->end = page_size - sizeof(CdcPage);
+	page->end = self->page_size_max;
 	list_init(&page->link);
 
 	// attach
@@ -38,12 +37,14 @@ cdc_page_add(Cdc* self)
 void
 cdc_init(Cdc* self)
 {
-	self->lsn         = 0;
-	self->current     = NULL;
-	self->shutdown    = false;
-	self->subs_count  = 0;
-	self->pages_count = 0;
-	self->slots_count = 0;
+	self->lsn           = 0;
+	self->current       = NULL;
+	self->shutdown      = false;
+	self->subs_count    = 0;
+	self->pages_count   = 0;
+	self->slots_count   = 0;
+	self->page_size     = 256ul * 1024;
+	self->page_size_max = self->page_size - sizeof(CdcPage);
 	spinlock_init(&self->lock);
 	list_init(&self->subs);
 	list_init(&self->pages);
@@ -206,6 +207,12 @@ cdc_add(Cdc*     self,
 {
 	// maybe create new page
 	auto size = sizeof(CdcEvent) + data_size;
+
+	// ensure event fits within page capacity
+	if (unlikely(size > self->page_size_max))
+		error("cdc: event data size {u32} exceeds page capacity {u32}",
+		      data_size, self->page_size_max);
+
 	auto left = self->current->end - self->current->pos;
 	if (unlikely(left < size))
 		cdc_page_add(self);
