@@ -222,7 +222,7 @@ user_rename(Catalog* self,
 	if (catalog_find_user(self, name_new, false))
 		error("user '{str}': already exists", name_new);
 
-	// ensure no strict dependecies on the user name (udfs, branches or users)
+	// ensure no strict dependecies on the user name (udfs, clones or users)
 	catalog_deps_validate_user(self, name, true);
 
 	// rename own relations and grants

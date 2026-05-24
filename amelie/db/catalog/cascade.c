@@ -50,13 +50,13 @@ catalog_deps(Catalog* self, Rel* rel, Buf* list)
 			add = self->iface->udf_depends(udf, rel->user, rel->name);
 			break;
 		}
-		case REL_BRANCH:
+		case REL_CLONE:
 		{
-			auto branch = branch_of(at);
+			auto clone = clone_of(at);
 			if (rel->type == REL_TABLE)
 			{
-				// drop branch if tables matches is
-				add = branch->table == table_of(rel);
+				// drop clone if tables matches is
+				add = clone->table == table_of(rel);
 				break;
 			}
 			break;
@@ -102,13 +102,13 @@ catalog_deps_validate(Catalog* self, Rel* rel, bool error_on_match)
 			dep = self->iface->udf_depends(udf, rel->user, rel->name);
 			break;
 		}
-		case REL_BRANCH:
+		case REL_CLONE:
 		{
-			// branch depends on the table
-			auto branch = branch_of(at);
+			// clone depends on the table
+			auto clone =clone_of(at);
 			if (rel->type == REL_TABLE)
 			{
-				dep = branch->table == table_of(rel);
+				dep = clone->table == table_of(rel);
 				break;
 			}
 			break;
@@ -147,11 +147,11 @@ catalog_deps_validate_user(Catalog* self, Str* user, bool error_on_match)
 			dep = self->iface->udf_depends(udf, user, NULL);
 			break;
 		}
-		case REL_BRANCH:
+		case REL_CLONE:
 		{
-			// branch depends on the user
-			auto branch = branch_of(at);
-			dep = str_compare(&branch->config->table_user, user);
+			// clone depends on the user
+			auto clone = clone_of(at);
+			dep = str_compare(&clone->config->table_user, user);
 			break;
 		}
 		default:

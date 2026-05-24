@@ -691,8 +691,8 @@ id  obj
 2   null
 0   null
 1   null
-# test: create branch
-create branch a on test2;
+# test: create clone
+create clone a of test2;
 insert into a values (3, {});
 select * from a;
 
@@ -702,7 +702,7 @@ id  obj
 2   null
 0   null
 1   null
-create branch b on test2;
+create clone b of test2;
 insert into b values (4, {});
 insert into b values (5, []);
 select * from b;
@@ -714,10 +714,10 @@ id  obj
 2   null
 0   null
 1   null
-show branches verbose;
+show clones verbose;
 
-branches
-────────
+clones
+──────
 {
   "user": "amelie",
   "name": "a",
@@ -753,10 +753,10 @@ select show('state').lsn;
 lsn
 ───
 20
-show branches verbose;
+show clones verbose;
 
-branches
-────────
+clones
+──────
 {
   "user": "amelie",
   "name": "a",
@@ -805,9 +805,9 @@ id  obj
 2   null
 0   null
 1   null
-# test: drop branch
-drop branch b;
-drop branch a;
+# test: drop clone
+drop clone b;
+drop clone a;
 # test: restart
 disconnect S0;
 close E0;
@@ -819,10 +819,10 @@ select show('state').lsn;
 lsn
 ───
 22
-show branches;
+show clones;
 
-branches
-────────
+clones
+──────
 # test: truncate
 truncate test2;
 select * from test2;

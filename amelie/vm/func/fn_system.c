@@ -36,8 +36,8 @@ enum
 	SHOW_TABLE,
 	SHOW_INDEXES,
 	SHOW_INDEX,
-	SHOW_BRANCHES,
-	SHOW_BRANCH,
+	SHOW_CLONES,
+	SHOW_CLONE,
 	SHOW_PARTITIONS,
 	SHOW_PARTITION,
 	SHOW_FUNCTIONS,
@@ -83,8 +83,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_TABLE,         "table",         5,  true,  false, true  },
 	{ SHOW_INDEXES,       "indexes",       7,  false, true,  false },
 	{ SHOW_INDEX,         "index",         5,  true,  true,  true  },
-	{ SHOW_BRANCHES,      "branches",      8,  false, false, false },
-	{ SHOW_BRANCH,        "branch",        6,  true,  false, true  },
+	{ SHOW_CLONES,        "clones",        6,  false, false, false },
+	{ SHOW_CLONE,         "clone",         6,  true,  false, true  },
 	{ SHOW_PARTITIONS,    "partitions",    10, false, true,  false },
 	{ SHOW_PARTITION,     "partition",     9,  true,  true,  true  },
 	{ SHOW_FUNCTIONS,     "functions",     9,  false, false, false },
@@ -322,14 +322,14 @@ fn_show(Fn* self)
 		table_index_list(table, buf, name, flags);
 		break;
 	}
-	case SHOW_BRANCHES:
+	case SHOW_CLONES:
 	{
-		rel_mgr_list(&catalog->rels, REL_BRANCH, buf, user, NULL, all, flags);
+		rel_mgr_list(&catalog->rels, REL_CLONE, buf, user, NULL, all, flags);
 		break;
 	}
-	case SHOW_BRANCH:
+	case SHOW_CLONE:
 	{
-		rel_mgr_list(&catalog->rels, REL_BRANCH, buf, user, name, all, flags);
+		rel_mgr_list(&catalog->rels, REL_CLONE, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_PARTITIONS:

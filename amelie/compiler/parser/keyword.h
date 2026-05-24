@@ -73,7 +73,6 @@ enum
 	KBETWEEN,
 	KBY,
 	KBREAK,
-	KBRANCH,
 
 	// c
 	KCURRENT_TIMESTAMP,
@@ -91,6 +90,7 @@ enum
 	KCASCADE,
 	KCOLUMN,
 	KCONTINUE,
+	KCLONE,
 
 	// d
 	KDELETE,

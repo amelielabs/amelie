@@ -234,12 +234,12 @@ catalog_grant(Catalog* self,
 	case REL_TABLE:
 		perms_all =
 			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-			PERM_DELETE | PERM_CREATE_BRANCH;
+			PERM_DELETE | PERM_CREATE_CLONE;
 		break;
-	case REL_BRANCH:
+	case REL_CLONE:
 		perms_all =
 			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-			PERM_DELETE | PERM_CREATE_BRANCH;
+			PERM_DELETE | PERM_CREATE_CLONE;
 		break;
 	case REL_UDF:
 		perms_all = PERM_EXECUTE;

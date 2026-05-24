@@ -241,7 +241,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 hot void
 part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 {
-	// handle delete as update to support branching
+	// handle delete as update to support clonning
 	auto arg = self->arg;
 	if (arg->snapshots->list_count > 1)
 	{

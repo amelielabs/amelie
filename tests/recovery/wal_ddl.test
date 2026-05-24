@@ -233,17 +233,17 @@ select * from test2 use index (i);
 select * from test2 use index (i2);
 select * from test2;
 
-# test: create branch
-create branch a on test2;
+# test: create clone
+create clone a of test2;
 insert into a values (3, {});
 select * from a;
 
-create branch b on test2;
+create clone b of test2;
 insert into b values (4, {});
 insert into b values (5, []);
 select * from b;
 
-show branches verbose;
+show clones verbose;
 
 # test: restart
 disconnect S0;
@@ -253,15 +253,15 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show branches verbose;
+show clones verbose;
 
 select * from a;
 select * from b;
 select * from test2;
 
-# test: drop branch
-drop branch b;
-drop branch a;
+# test: drop clone
+drop clone b;
+drop clone a;
 
 # test: restart
 disconnect S0;
@@ -271,7 +271,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show branches;
+show clones;
 
 # test: truncate
 truncate test2;

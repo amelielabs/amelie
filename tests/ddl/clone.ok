@@ -1,24 +1,24 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: create branch statement parsing
-create branch;
-error: create branch❰;❱ ⟵ name expected
-create branch 123;
-error: create branch ❰123❱ ⟵ name expected
-create branch 123 from;
-error: create branch ❰123❱ ⟵ name expected
-create branch 123 on;
-error: create branch ❰123❱ ⟵ name expected
-create branch 123 on 123;
-error: create branch ❰123❱ ⟵ name expected
-# test: create branch
+# test: create clone statement parsing
+create clone;
+error: create clone❰;❱ ⟵ name expected
+create clone 123;
+error: create clone ❰123❱ ⟵ name expected
+create clone 123 from;
+error: create clone ❰123❱ ⟵ name expected
+create clone 123 of;
+error: create clone ❰123❱ ⟵ name expected
+create clone 123 of 1;
+error: create clone ❰123❱ ⟵ name expected
+# test: create clone
 create table main (id int primary key);
 insert into main values (1);
-create branch a on main;
-show branches verbose;
+create clone a of main;
+show clones verbose;
 
-branches
-────────
+clones
+──────
 {
   "user": "amelie",
   "name": "a",
@@ -31,12 +31,12 @@ branches
   },
   "grants": []
 }
-drop branch a;
+drop clone a;
 drop table main;
-# test: create branch (insert)
+# test: create clone (insert)
 create table main (id int primary key);
 insert into main values (1);
-create branch a on main;
+create clone a of main;
 insert into a values (1);
 error: index 'primary': unique key constraint violation
 insert into a values (2);
@@ -52,15 +52,15 @@ id
 ──
 1
 drop table main;
-error: table 'main': depends on branch 'amelie.a'
+error: table 'main': depends on clone 'amelie.a'
 drop table main cascade;
-# test: create branch (update)
+# test: create clone (update)
 create table main (id int primary key, data int);
 insert into main values (1, 0);
 insert into main values (2, 0);
 insert into main values (3, 0);
 insert into main values (4, 0);
-create branch a on main;
+create clone a of main;
 update a set data = 42 where id in (1, 3);
 select * from a;
 
@@ -78,7 +78,7 @@ id  data
 2   0
 3   0
 4   0
-# test: create branch (delete/insert)
+# test: create clone (delete/insert)
 delete from a where id < 4;
 select * from a;
 
@@ -112,21 +112,21 @@ id  data
 2   0
 3   0
 4   0
-# test: alter branch statement parsing
-alter branch;
-error: alter branch❰;❱ ⟵ name expected
-alter branch 1;
-error: alter branch ❰1❱ ⟵ name expected
-alter branch b;
-error: alter branch b❰;❱ ⟵ RENAME expected
-alter branch b xyz;
-error: alter branch b ❰xyz❱ ⟵ RENAME expected
-alter branch b rename;
-error: alter branch b rename❰;❱ ⟵ TO expected
-alter branch b rename to;
-error: alter branch b rename to❰;❱ ⟵ name expected
-# test: alter branch rename to
-alter branch a rename to b;
+# test: alter clone statement parsing
+alter clone;
+error: alter clone❰;❱ ⟵ name expected
+alter clone 1;
+error: alter clone ❰1❱ ⟵ name expected
+alter clone b;
+error: alter clone b❰;❱ ⟵ RENAME expected
+alter clone b xyz;
+error: alter clone b ❰xyz❱ ⟵ RENAME expected
+alter clone b rename;
+error: alter clone b rename❰;❱ ⟵ TO expected
+alter clone b rename to;
+error: alter clone b rename to❰;❱ ⟵ name expected
+# test: alter clone rename to
+alter clone a rename to b;
 select * from b;
 
 id  data
@@ -143,14 +143,14 @@ id  data
 2   0
 3   0
 4   0
-# test: drop parent branch
-drop branch b;
-show branches;
+# test: drop parent clone
+drop clone b;
+show clones;
 
-branches
-────────
-# test: cascade (parent branch)
-create branch b on main;
+clones
+──────
+# test: cascade (parent clone)
+create clone b of main;
 drop table main cascade;
 # test: cascade (table)
 create table main (id int primary key, data int);
@@ -158,12 +158,12 @@ insert into main values (1, 0);
 insert into main values (2, 0);
 insert into main values (3, 0);
 insert into main values (4, 0);
-create branch a on main;
-create branch b on main;
-show branches;
+create clone a of main;
+create clone b of main;
+show clones;
 
-branches
-────────
+clones
+──────
 {
   "user": "amelie",
   "name": "a",
@@ -177,27 +177,27 @@ branches
   "table": "main"
 }
 drop table main;
-error: table 'main': depends on branch 'amelie.a' and 1 more
+error: table 'main': depends on clone 'amelie.a' and 1 more
 drop table main cascade;
-show branches;
+show clones;
 
-branches
-────────
+clones
+──────
 # test: cascade (table, udf)
 create table main (id int primary key, data int);
-create branch a on main;
-create branch b on main;
+create clone a of main;
+create clone b of main;
 create function f() return int
 begin
    return select count(*) from main;
 end;
 drop table main;
-error: table 'main': depends on branch 'amelie.a' and 2 more
+error: table 'main': depends on clone 'amelie.a' and 2 more
 drop table main cascade;
-show branches;
+show clones;
 
-branches
-────────
+clones
+──────
 show functions;
 
 functions

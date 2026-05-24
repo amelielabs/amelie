@@ -260,25 +260,25 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
-	// branch
-	case STMT_CREATE_BRANCH:
+	// clone
+	case STMT_CREATE_CLONE:
 	{
-		auto arg = ast_branch_create_of(stmt->ast);
-		offset = branch_op_create(data, arg->config);
+		auto arg = ast_clone_create_of(stmt->ast);
+		offset = clone_op_create(data, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		break;
 	}
-	case STMT_DROP_BRANCH:
+	case STMT_DROP_CLONE:
 	{
-		auto arg = ast_branch_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_BRANCH, user, &arg->name, arg->cascade);
+		auto arg = ast_clone_drop_of(stmt->ast);
+		offset = rel_op_drop(data, REL_CLONE, user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
-	case STMT_ALTER_BRANCH:
+	case STMT_ALTER_CLONE:
 	{
-		auto arg = ast_branch_alter_of(stmt->ast);
-		offset = rel_op_rename(data, REL_BRANCH, user, &arg->name, user, &arg->name_new);
+		auto arg = ast_clone_alter_of(stmt->ast);
+		offset = rel_op_rename(data, REL_CLONE, user, &arg->name, user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

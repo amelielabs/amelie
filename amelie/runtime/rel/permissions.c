@@ -39,7 +39,7 @@ static Permission perms[] =
 	{ PERM_CREATE_USER,         "create_user",         11 },
 	{ PERM_CREATE_TOKEN,        "create_token",        12 },
 	{ PERM_CREATE_TABLE,        "create_table",        12 },
-	{ PERM_CREATE_BRANCH,       "create_branch",       13 },
+	{ PERM_CREATE_CLONE,        "create_clone",        12 },
 	{ PERM_CREATE_FUNCTION,     "create_function",     15 },
 	{ PERM_CREATE_TOPIC,        "create_topic",        12 },
 	{ PERM_CREATE_SUBSCRIPTION, "create_subscription", 19 },

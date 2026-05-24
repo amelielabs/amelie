@@ -38,11 +38,11 @@ catalog_find_table(Catalog* self, Str* user, Str* name, bool error_if_not_exists
 	                             error_if_not_exists));
 }
 
-static inline Branch*
-catalog_find_branch(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
+static inline Clone*
+catalog_find_clone(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 {
-	return branch_of(rel_mgr_find(&self->rels, REL_BRANCH, user, name,
-	                              error_if_not_exists));
+	return clone_of(rel_mgr_find(&self->rels, REL_CLONE, user, name,
+	                             error_if_not_exists));
 }
 
 static inline Udf*

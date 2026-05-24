@@ -197,20 +197,20 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		}
 		break;
 	}
-	case REL_BRANCH:
+	case REL_CLONE:
 	{
-		auto branch = branch_of(rel);
-		auto table = branch->table;
+		auto clone = clone_of(rel);
+		auto table = clone->table;
 		target->type          = TARGET_TABLE;
 		target->from_lock     = lock;
 		target->from_table    = table;
-		target->from_snapshot = &branch->config->snapshot;
+		target->from_snapshot = &clone->config->snapshot;
 		target->columns       = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
-		// adding branch relation to the access list for dependency
+		// adding clone relation to the access list for dependency
 		// tracking and permissions check
 		access_add(&self->parser->program->access, &table->rel, lock, PERM_SELECT);
-		access_add(&self->parser->program->access, &branch->rel, LOCK_NONE, perms);
+		access_add(&self->parser->program->access, &clone->rel, LOCK_NONE, perms);
 		break;
 	}
 	case REL_SUBSCRIPTION:

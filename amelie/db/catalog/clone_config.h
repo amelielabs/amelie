@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct BranchConfig BranchConfig;
+typedef struct CloneConfig CloneConfig;
 
-struct BranchConfig
+struct CloneConfig
 {
 	Str      user;
 	Str      name;
@@ -23,11 +23,11 @@ struct BranchConfig
 	Grants   grants;
 };
 
-static inline BranchConfig*
-branch_config_allocate(void)
+static inline CloneConfig*
+clone_config_allocate(void)
 {
-	BranchConfig* self;
-	self = am_malloc(sizeof(BranchConfig));
+	CloneConfig* self;
+	self = am_malloc(sizeof(CloneConfig));
 	str_init(&self->user);
 	str_init(&self->name);
 	str_init(&self->table_user);
@@ -38,7 +38,7 @@ branch_config_allocate(void)
 }
 
 static inline void
-branch_config_free(BranchConfig* self)
+clone_config_free(CloneConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
@@ -49,51 +49,51 @@ branch_config_free(BranchConfig* self)
 }
 
 static inline void
-branch_config_set_user(BranchConfig* self, Str* name)
+clone_config_set_user(CloneConfig* self, Str* name)
 {
 	str_free(&self->user);
 	str_copy(&self->user, name);
 }
 
 static inline void
-branch_config_set_name(BranchConfig* self, Str* name)
+clone_config_set_name(CloneConfig* self, Str* name)
 {
 	str_free(&self->name);
 	str_copy(&self->name, name);
 }
 
 static inline void
-branch_config_set_table_user(BranchConfig* self, Str* name)
+clone_config_set_table_user(CloneConfig* self, Str* name)
 {
 	str_free(&self->table_user);
 	str_copy(&self->table_user, name);
 }
 
 static inline void
-branch_config_set_table(BranchConfig* self, Str* name)
+clone_config_set_table(CloneConfig* self, Str* name)
 {
 	str_free(&self->table);
 	str_copy(&self->table, name);
 }
 
-static inline BranchConfig*
-branch_config_copy(BranchConfig* self)
+static inline CloneConfig*
+clone_config_copy(CloneConfig* self)
 {
-	auto copy = branch_config_allocate();
-	branch_config_set_user(copy, &self->user);
-	branch_config_set_name(copy, &self->name);
-	branch_config_set_table_user(copy, &self->table_user);
-	branch_config_set_table(copy, &self->table);
+	auto copy = clone_config_allocate();
+	clone_config_set_user(copy, &self->user);
+	clone_config_set_name(copy, &self->name);
+	clone_config_set_table_user(copy, &self->table_user);
+	clone_config_set_table(copy, &self->table);
 	snapshot_copy(&copy->snapshot, &self->snapshot);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
-static inline BranchConfig*
-branch_config_read(uint8_t** pos)
+static inline CloneConfig*
+clone_config_read(uint8_t** pos)
 {
-	auto self = branch_config_allocate();
-	errdefer(branch_config_free, self);
+	auto self = clone_config_allocate();
+	errdefer(clone_config_free, self);
 	uint8_t* pos_snapshot = NULL;
 	uint8_t* pos_grants   = NULL;
 	Decode obj[] =
@@ -106,7 +106,7 @@ branch_config_read(uint8_t** pos)
 		{ DECODE_ARRAY, "grants",     &pos_grants       },
 		{ 0,             NULL,         NULL             },
 	};
-	decode_obj(obj, "branch", pos);
+	decode_obj(obj, "clone", pos);
 	snapshot_read(&self->snapshot, &pos_snapshot);
 
 	// grants
@@ -115,7 +115,7 @@ branch_config_read(uint8_t** pos)
 }
 
 static inline void
-branch_config_write(BranchConfig* self, Buf* buf, int flags)
+clone_config_write(CloneConfig* self, Buf* buf, int flags)
 {
 	// {}
 	encode_obj(buf);

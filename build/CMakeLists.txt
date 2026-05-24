@@ -205,7 +205,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/table_alter.c
     ${AMELIE_ROOT}/db/catalog/table_storage.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
-    ${AMELIE_ROOT}/db/catalog/branch.c
+    ${AMELIE_ROOT}/db/catalog/clone.c
     ${AMELIE_ROOT}/db/catalog/udf.c
     ${AMELIE_ROOT}/db/catalog/topic.c
     ${AMELIE_ROOT}/db/catalog/publish.c
@@ -301,7 +301,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_user.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
-    ${AMELIE_ROOT}/compiler/parser/parse_branch.c
+    ${AMELIE_ROOT}/compiler/parser/parse_clone.c
     ${AMELIE_ROOT}/compiler/parser/parse_part.c
     ${AMELIE_ROOT}/compiler/parser/parse_function.c
     ${AMELIE_ROOT}/compiler/parser/parse_topic.c

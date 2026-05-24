@@ -61,8 +61,8 @@ test table_alter
 test table_migration
 test partition
 test index
-test branch
-test branch_visibility
+test clone
+test clone_visibility
 test topic
 test subscription
 test function

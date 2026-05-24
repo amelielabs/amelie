@@ -1,13 +1,13 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: branch (same branch)
+# test: clone
 create table main (id int primary key, data int);
 insert into main values (1, 0);
-create branch a on main;
-# test: branch (same branch, parent unique violation)
+create clone a of main;
+# test: clone (parent unique violation)
 insert into a values (1, 1);
 error: index 'primary': unique key constraint violation
-# test: branch (same branch, unique violation)
+# test: clone (unique violation)
 insert into a values (2, 1);
 insert into a values (2, 1);
 error: index 'primary': unique key constraint violation
@@ -24,7 +24,7 @@ select * from main;
 id  data
 ──────────
 1   0
-# test: branch (same branch, delete parent)
+# test: clone (delete parent)
 delete from a where id = 1;
 select * from a;
 
@@ -37,7 +37,7 @@ select * from main;
 id  data
 ──────────
 1   0
-# test: branch (same branch, delete)
+# test: clone (delete)
 delete from a where id = 3;
 select * from a;
 
@@ -49,7 +49,7 @@ select * from main;
 id  data
 ──────────
 1   0
-# test: branch (same branch, insert after update parent)
+# test: clone (insert after update parent)
 insert into a values (1, 1);
 select * from a;
 
@@ -62,7 +62,7 @@ select * from main;
 id  data
 ──────────
 1   0
-# test: branch (same branch, update parent)
+# test: clone (update parent)
 update a set data = 11 where id = 1;
 select * from a;
 
@@ -76,13 +76,13 @@ id  data
 ──────────
 1   0
 drop table main cascade;
-# test: branch (main -> a, b)
+# test: clone (main -> a, b)
 create table main (id int primary key, data int);
 insert into main values (1, 0);
-create branch a on main;
+create clone a of main;
 update a set data = 1;
 insert into a values (2, 1);
-create branch b on main;
+create clone b of main;
 update b set data = 2;
 insert into b values (2, 2);
 select * from a;
@@ -102,14 +102,14 @@ select * from main;
 id  data
 ──────────
 1   0
-# test: branch (delete from b)
+# test: clone (delete from b)
 delete from b where id = 1;
 select * from b;
 
 id  data
 ──────────
 2   2
-# test: branch (key)
+# test: clone (key)
 select * from main where id >= 0;
 
 id  data
@@ -220,12 +220,12 @@ select * from b where id = 3;
 
 id  data
 ──────────
-# test: branch (select after drop)
-drop branch b;
-show branches;
+# test: clone (select after drop)
+drop clone b;
+show clones;
 
-branches
-────────
+clones
+──────
 {
   "user": "amelie",
   "name": "a",
@@ -243,23 +243,23 @@ select * from main;
 id  data
 ──────────
 1   0
-drop branch a;
-show branches;
+drop clone a;
+show clones;
 
-branches
-────────
+clones
+──────
 select * from main;
 
 id  data
 ──────────
 1   0
 drop table main cascade;
-# test: branch (empty main -> a, b)
+# test: clone (empty main -> a, b)
 create table main (id int primary key, data int);
-create branch a on main;
+create clone a of main;
 insert into a values (1, 1);
 insert into a values (2, 1);
-create branch b on main;
+create clone b of main;
 insert into b values (1, 2);
 insert into b values (2, 2);
 select * from a;
@@ -274,11 +274,11 @@ id  data
 ──────────
 1   2
 2   2
-# test: branch (aba)
-show branches verbose;
+# test: clone (aba)
+show clones verbose;
 
-branches
-────────
+clones
+──────
 {
   "user": "amelie",
   "name": "a",
@@ -303,12 +303,12 @@ branches
   },
   "grants": []
 }
-drop branch b;
-create branch b on main;
-show branches verbose;
+drop clone b;
+create clone b of main;
+show clones verbose;
 
-branches
-────────
+clones
+──────
 {
   "user": "amelie",
   "name": "a",

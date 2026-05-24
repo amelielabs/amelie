@@ -38,7 +38,6 @@ Keyword keywords[] =
 	{ KBETWEEN,               "between",               7  },
 	{ KBY,                    "by",                    2  },
 	{ KBREAK,                 "break",                 5  },
-	{ KBRANCH,                "branch",                6  },
 
 	// c
 	{ KCURRENT_TIMESTAMP,     "current_timestamp",     17 },
@@ -56,6 +55,7 @@ Keyword keywords[] =
 	{ KCASCADE,               "cascade",               7  },
 	{ KCOLUMN ,               "column",                6  },
 	{ KCONTINUE,              "continue",              8  },
+	{ KCLONE,                 "clone",                 5  },
 
 	// d
 	{ KDELETE,                "delete",                6  },

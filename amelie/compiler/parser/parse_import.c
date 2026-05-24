@@ -95,7 +95,7 @@ import_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
 }
 
 static void
-import_insert(Parser* self, Table* table, Branch* branch, uint8_t* args)
+import_insert(Parser* self, Table* table, Clone* clone, uint8_t* args)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -114,8 +114,8 @@ import_insert(Parser* self, Table* table, Branch* branch, uint8_t* args)
 
 	// set snapshot
 	Snapshot* snapshot;
-	if (branch)
-		snapshot = &branch->config->snapshot;
+	if (clone)
+		snapshot = &clone->config->snapshot;
 	else
 		snapshot = table_main(table);
 
@@ -130,11 +130,11 @@ import_insert(Parser* self, Table* table, Branch* branch, uint8_t* args)
 	str_set_str(&target->name, &table->config->name);
 	from_add(&insert->from, target);
 
-	// add table/branch to the access list
-	if (branch)
+	// add table/clone to the access list
+	if (clone)
 	{
 		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_SELECT);
-		access_add(&self->program->access, &branch->rel, LOCK_NONE, PERM_INSERT);
+		access_add(&self->program->access, &clone->rel, LOCK_NONE, PERM_INSERT);
 	} else {
 		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_INSERT);
 	}
@@ -317,10 +317,10 @@ parse_import(Parser*  self, Program* program,
 		import_insert(self, table, NULL, args);
 		break;
 	}
-	case REL_BRANCH:
+	case REL_CLONE:
 	{
-		auto branch = branch_of(ref);
-		import_insert(self, branch->table, branch, args);
+		auto clone = clone_of(ref);
+		import_insert(self, clone->table, clone, args);
 		break;
 	}
 	case REL_TOPIC:

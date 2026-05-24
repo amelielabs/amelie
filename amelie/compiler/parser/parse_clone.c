@@ -18,10 +18,10 @@
 #include <amelie_parser.h>
 
 void
-parse_branch_create(Stmt* self)
+parse_clone_create(Stmt* self)
 {
-	// CREATE BRANCH [IF NOT EXISTS] name ON relation
-	auto stmt = ast_branch_create_allocate();
+	// CREATE CLONE [IF NOT EXISTS] name OF relation
+	auto stmt = ast_clone_create_allocate();
 	self->ast = &stmt->ast;
 
 	// if not exists
@@ -30,8 +30,12 @@ parse_branch_create(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 
-	// ON
-	stmt_expect(self, KON);
+	// OF
+	auto ast = stmt_next_shadow(self);
+	if (ast->id != KNAME ||
+	    (!str_is_case(&ast->string, "OF", 2) &&
+	     !str_is_case(&ast->string, "FROM", 4)))
+		stmt_error(self, ast, "OF expected");
 
 	// target
 	Str target_user;
@@ -43,7 +47,7 @@ parse_branch_create(Stmt* self)
 	if (! table)
 		stmt_error(self, path, "table not found");
 
-	// calculate branch id
+	// calculate clone id
 	uint32_t id = snapshot_mgr_max(&table->snapshot_mgr);
 	list_foreach(&table->part_mgr.list)
 	{
@@ -53,25 +57,25 @@ parse_branch_create(Stmt* self)
 	}
 	id++;
 
-	// create branch config
-	auto config = branch_config_allocate();
+	// create clone config
+	auto config = clone_config_allocate();
 	stmt->config = config;
-	branch_config_set_user(config, self->parser->user);
-	branch_config_set_name(config, &name->string);
-	branch_config_set_table_user(config, &table->config->user);
-	branch_config_set_table(config, &table->config->name);
+	clone_config_set_user(config, self->parser->user);
+	clone_config_set_name(config, &name->string);
+	clone_config_set_table_user(config, &table->config->user);
+	clone_config_set_table(config, &table->config->name);
 
-	// set branch snapshot
+	// set clone snapshot
 	auto snapshot = &config->snapshot;
 	snapshot_set_id(snapshot, id);
 	snapshot_set_snapshot(snapshot, state_tsn());
 }
 
 void
-parse_branch_drop(Stmt* self)
+parse_clone_drop(Stmt* self)
 {
-	// DROP BRANCH [IF EXISTS] name [CASCADE]
-	auto stmt = ast_branch_drop_allocate();
+	// DROP CLONE [IF EXISTS] name [CASCADE]
+	auto stmt = ast_clone_drop_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
@@ -86,10 +90,10 @@ parse_branch_drop(Stmt* self)
 }
 
 void
-parse_branch_alter(Stmt* self)
+parse_clone_alter(Stmt* self)
 {
-	// ALTER BRANCH [IF EXISTS] name RENAME TO name
-	auto stmt = ast_branch_alter_allocate();
+	// ALTER CLONE [IF EXISTS] name RENAME TO name
+	auto stmt = ast_clone_alter_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists

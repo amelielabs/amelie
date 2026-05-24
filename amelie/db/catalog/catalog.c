@@ -479,12 +479,12 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = table_index_rename(self, table, tr, &name_index, &name_index_new, if_exists);
 		break;
 	}
-	case DDL_BRANCH_CREATE:
+	case DDL_CLONE_CREATE:
 	{
-		auto config = branch_op_create_read(op);
-		defer(branch_config_free, config);
+		auto config = clone_op_create_read(op);
+		defer(clone_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = branch_create(self, tr, config, if_not_exists);
+		write = clone_create(self, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_UDF_CREATE:

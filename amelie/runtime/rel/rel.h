@@ -22,7 +22,7 @@ typedef enum
 	REL_USER,
 	REL_STORAGE,
 	REL_TABLE,
-	REL_BRANCH,
+	REL_CLONE,
 	REL_UDF,
 	REL_TOPIC,
 	REL_SUBSCRIPTION,
@@ -59,7 +59,7 @@ rel_type_of(RelType type)
 	case REL_USER:         return "user";
 	case REL_STORAGE:      return "storage";
 	case REL_TABLE:        return "table";
-	case REL_BRANCH:       return "branch";
+	case REL_CLONE:        return "clone";
 	case REL_UDF:          return "function";
 	case REL_TOPIC:        return "topic";
 	case REL_SUBSCRIPTION: return "subscription";

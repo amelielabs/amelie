@@ -169,8 +169,8 @@ id
 2
 0
 1
-# test: create branch
-create branch a on test;
+# test: create clone
+create clone a of test;
 insert into a () values (), ();
 select * from a;
 
@@ -181,7 +181,7 @@ id
 2
 0
 1
-create branch b on test;
+create clone b of test;
 insert into b () values (), ();
 insert into b () values (), ();
 select * from b;
@@ -195,10 +195,10 @@ id
 6
 7
 8
-show branches verbose;
+show clones verbose;
 
-branches
-────────
+clones
+──────
 {
   "user": "amelie",
   "name": "a",
@@ -243,10 +243,10 @@ select show('state').catalog_pending;
 catalog_pending
 ───────────────
 5
-show branches verbose;
+show clones verbose;
 
-branches
-────────
+clones
+──────
 {
   "user": "amelie",
   "name": "a",
@@ -335,10 +335,10 @@ select show('state').catalog_pending;
 catalog_pending
 ───────────────
 5
-show branches verbose;
+show clones verbose;
 
-branches
-────────
+clones
+──────
 {
   "user": "amelie",
   "name": "a",

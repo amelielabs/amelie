@@ -67,11 +67,11 @@ parse_stmt_free(Stmt* stmt)
 			index_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_BRANCH:
+	case STMT_CREATE_CLONE:
 	{
-		auto ast = ast_branch_create_of(stmt->ast);
+		auto ast = ast_clone_create_of(stmt->ast);
 		if (ast->config)
-			branch_config_free(ast->config);
+			clone_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_FUNCTION:
@@ -326,10 +326,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_INDEX;
 			parse_index_create(self, unique);
 		} else
-		if (stmt_if(self, KBRANCH))
+		if (stmt_if(self, KCLONE))
 		{
-			self->id = STMT_CREATE_BRANCH;
-			parse_branch_create(self);
+			self->id = STMT_CREATE_CLONE;
+			parse_clone_create(self);
 		} else
 		if (stmt_if(self, KFUNCTION))
 		{
@@ -385,10 +385,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_INDEX;
 			parse_index_drop(self);
 		} else
-		if (stmt_if(self, KBRANCH))
+		if (stmt_if(self, KCLONE))
 		{
-			self->id = STMT_DROP_BRANCH;
-			parse_branch_drop(self);
+			self->id = STMT_DROP_CLONE;
+			parse_clone_drop(self);
 		} else
 		if (stmt_if(self, KFUNCTION))
 		{
@@ -444,10 +444,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_INDEX;
 			parse_index_alter(self);
 		} else
-		if (stmt_if(self, KBRANCH))
+		if (stmt_if(self, KCLONE))
 		{
-			self->id = STMT_ALTER_BRANCH;
-			parse_branch_alter(self);
+			self->id = STMT_ALTER_CLONE;
+			parse_clone_alter(self);
 		} else
 		if (stmt_if(self, KPARTITION))
 		{

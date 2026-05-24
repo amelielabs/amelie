@@ -50,8 +50,8 @@ enum
 	DDL_INDEX_DROP,
 	DDL_INDEX_RENAME,
 
-	// branch
-	DDL_BRANCH_CREATE,
+	// clone
+	DDL_CLONE_CREATE,
 
 	// udf
 	DDL_UDF_CREATE,
