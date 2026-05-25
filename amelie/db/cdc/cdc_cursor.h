@@ -74,17 +74,20 @@ cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id,
 		// set last seen lsn (not related to the start position)
 		self->pos    = at->lsn;
 		self->pos_op = at->lsn_op;
-		if (at->lsn > lsn)
+		if (uuid_is(&at->id, &self->id))
 		{
-			self->current = at;
-			break;
-		}
-		if (at->lsn == lsn)
-		{
-			if (at->lsn_op >= lsn_op)
+			if (at->lsn > lsn)
 			{
 				self->current = at;
 				break;
+			}
+			if (at->lsn == lsn)
+			{
+				if (at->lsn_op >= lsn_op)
+				{
+					self->current = at;
+					break;
+				}
 			}
 		}
 		self->offset += sizeof(CdcEvent) + at->data_size;

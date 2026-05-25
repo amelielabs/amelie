@@ -15,7 +15,7 @@ create table main (id int primary key);
 insert into main values (1);
 
 create clone a of main;
-show clones verbose;
+show clones;
 
 drop clone a;
 drop table main;

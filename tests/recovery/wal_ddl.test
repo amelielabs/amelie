@@ -243,7 +243,7 @@ insert into b values (4, {});
 insert into b values (5, []);
 select * from b;
 
-show clones verbose;
+select snapshot from show clones verbose;
 
 # test: restart
 disconnect S0;
@@ -253,7 +253,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show clones verbose;
+select snapshot from show clones verbose;
 
 select * from a;
 select * from b;
@@ -326,6 +326,18 @@ publish to top;
 select * from top_sub;
 show subs;
 
+create table test_ (id int primary key);
+create clone test_clone of test_;
+create clone test_clone2 of test_;
+
+create subscription test_sub on test_;
+create subscription test_clone_sub on test_clone;
+create subscription test_clone2_sub on test_clone2;
+
+insert into test_ values (1);
+insert into test_clone values (2);
+insert into test_clone2 values (3);
+
 # test: restart
 disconnect S0;
 close E0;
@@ -351,7 +363,20 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 show topics;
 
+select * from test_;
+select * from test_clone;
+select * from test_clone2;
+
+select * from test_sub;
+select * from test_clone_sub;
+select * from test_clone2_sub;
+
 # test: drop subscription
+drop subscription test_sub;
+drop subscription test_clone_sub;
+drop subscription test_clone2_sub;
+drop table test_ cascade;
+
 drop subscription top_sub;
 show subs;
 

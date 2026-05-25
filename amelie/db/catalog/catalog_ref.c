@@ -46,6 +46,13 @@ catalog_cdc_ref(Catalog* self, User* user, Str* rel_user, Str* rel,
 		*id = &table->config->id;
 		break;
 	}
+	case REL_CLONE:
+	{
+		auto clone = clone_of(ref_match);
+		clone->cdc++;
+		*id = &clone->config->id;
+		break;
+	}
 	case REL_TOPIC:
 	{
 		auto topic = topic_of(ref_match);
@@ -74,6 +81,13 @@ catalog_cdc_unref(Catalog* self, Uuid* id)
 		auto table = table_of(ref);
 		table->part_arg.cdc--;
 		assert(table->part_arg.cdc >= 0);
+		break;
+	}
+	case REL_CLONE:
+	{
+		auto clone = clone_of(ref);
+		clone->cdc--;
+		assert(clone->cdc >= 0);
 		break;
 	}
 	case REL_TOPIC:

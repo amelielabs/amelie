@@ -100,7 +100,7 @@ static LogIf log_if_secondary =
 };
 
 static inline void
-part_persist(Part* self, Tr* tr, Index* primary)
+part_persist(Part* self, Tr* tr, Snapshot* snapshot, Index* primary)
 {
 	// handle unlogged tables and cdc
 	auto arg = self->arg;
@@ -109,7 +109,7 @@ part_persist(Part* self, Tr* tr, Index* primary)
 	if (arg->cdc)
 	{
 		auto last = log_last(&tr->log);
-		log_cdc(&tr->log, last->cmd, arg->id_table, last->row,
+		log_cdc(&tr->log, last->cmd, snapshot->rel->id, last->row,
 		        index_keys(primary)->columns,
 		        runtime()->timezone);
 	}
@@ -125,7 +125,7 @@ part_insert(Part*     self, Tr* tr, bool replace,
 	auto op = log_dml(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
-	part_persist(self, tr, primary);
+	part_persist(self, tr, snapshot, primary);
 
 	// update primary index
 	op->row_prev = index_replace_by(primary, row);
@@ -180,7 +180,7 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	auto op = log_dml(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
-	part_persist(self, tr, primary);
+	part_persist(self, tr, snapshot, primary);
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
@@ -212,7 +212,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	auto op = log_dml(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
-	part_persist(self, tr, primary);
+	part_persist(self, tr, snapshot, primary);
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
@@ -266,7 +266,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 	auto op = log_dml(&tr->log, CMD_DELETE, &log_if, primary, row, NULL, snapshot);
 
 	// handle unlogged tables and cdc
-	part_persist(self, tr, primary);
+	part_persist(self, tr, snapshot, primary);
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);

@@ -714,33 +714,19 @@ id  obj
 2   null
 0   null
 1   null
-show clones verbose;
+select snapshot from show clones verbose;
 
-clones
-──────
+snapshot
+────────
 {
-  "user": "amelie",
-  "name": "a",
-  "table_user": "amelie",
-  "table": "test2",
-  "snapshot": {
-    "id": 1,
-    "snapshot": 2,
-    "snapshot_max": 2
-  },
-  "grants": []
+  "id": 1,
+  "snapshot": 2,
+  "snapshot_max": 2
 }
 {
-  "user": "amelie",
-  "name": "b",
-  "table_user": "amelie",
-  "table": "test2",
-  "snapshot": {
-    "id": 2,
-    "snapshot": 4,
-    "snapshot_max": 4
-  },
-  "grants": []
+  "id": 2,
+  "snapshot": 4,
+  "snapshot_max": 4
 }
 # test: restart
 disconnect S0;
@@ -753,33 +739,19 @@ select show('state').lsn;
 lsn
 ───
 20
-show clones verbose;
+select snapshot from show clones verbose;
 
-clones
-──────
+snapshot
+────────
 {
-  "user": "amelie",
-  "name": "a",
-  "table_user": "amelie",
-  "table": "test2",
-  "snapshot": {
-    "id": 1,
-    "snapshot": 2,
-    "snapshot_max": 2
-  },
-  "grants": []
+  "id": 1,
+  "snapshot": 2,
+  "snapshot_max": 2
 }
 {
-  "user": "amelie",
-  "name": "b",
-  "table_user": "amelie",
-  "table": "test2",
-  "snapshot": {
-    "id": 2,
-    "snapshot": 4,
-    "snapshot_max": 4
-  },
-  "grants": []
+  "id": 2,
+  "snapshot": 4,
+  "snapshot_max": 4
 }
 select * from a;
 
@@ -926,6 +898,15 @@ subs
   "user": "amelie",
   "name": "top_sub"
 }
+create table test_ (id int primary key);
+create clone test_clone of test_;
+create clone test_clone2 of test_;
+create subscription test_sub on test_;
+create subscription test_clone_sub on test_clone;
+create subscription test_clone2_sub on test_clone2;
+insert into test_ values (1);
+insert into test_clone values (2);
+insert into test_clone2 values (3);
 # test: restart
 disconnect S0;
 close E0;
@@ -936,7 +917,7 @@ select show('state').lsn;
 
 lsn
 ───
-29
+38
 show subs;
 
 subs
@@ -944,6 +925,18 @@ subs
 {
   "user": "amelie",
   "name": "top_sub"
+}
+{
+  "user": "amelie",
+  "name": "test_sub"
+}
+{
+  "user": "amelie",
+  "name": "test_clone_sub"
+}
+{
+  "user": "amelie",
+  "name": "test_clone2_sub"
 }
 select * from top_sub;
 
@@ -970,12 +963,46 @@ select show('state').lsn;
 
 lsn
 ───
-30
+39
 show topics;
 
 topics
 ──────
+select * from test_;
+
+id
+──
+1
+select * from test_clone;
+
+id
+──
+2
+select * from test_clone2;
+
+id
+──
+3
+select * from test_sub;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────
+36   0       write  {"id": 1}
+select * from test_clone_sub;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────
+37   0       write  {"id": 2}
+select * from test_clone2_sub;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────
+38   0       write  {"id": 3}
 # test: drop subscription
+drop subscription test_sub;
+drop subscription test_clone_sub;
+drop subscription test_clone2_sub;
+drop table test_ cascade;
 drop subscription top_sub;
 show subs;
 
@@ -991,7 +1018,7 @@ select show('state').lsn;
 
 lsn
 ───
-31
+44
 show subs;
 
 subs
@@ -1007,7 +1034,7 @@ select show('state').lsn;
 
 lsn
 ───
-32
+45
 # test: restart
 disconnect S0;
 close E0;
@@ -1018,7 +1045,7 @@ select show('state').lsn;
 
 lsn
 ───
-32
+45
 select show('user', 'test').name;
 
 name
@@ -1040,7 +1067,7 @@ select show('state').lsn;
 
 lsn
 ───
-33
+46
 # test: restart
 disconnect S0;
 close E0;
@@ -1051,7 +1078,7 @@ select show('state').lsn;
 
 lsn
 ───
-33
+46
 select show('user', 'test2').name;
 
 name
@@ -1063,7 +1090,7 @@ select show('state').lsn;
 
 lsn
 ───
-34
+47
 select show('user', 'test2').name;
 
 name
@@ -1079,7 +1106,7 @@ select show('state').lsn;
 
 lsn
 ───
-34
+47
 select show('user', 'test').name;
 
 name
@@ -1103,7 +1130,7 @@ select show('state').lsn;
 
 lsn
 ───
-35
+48
 show functions verbose;
 
 functions
@@ -1138,7 +1165,7 @@ select show('state').lsn;
 
 lsn
 ───
-35
+48
 show functions verbose;
 
 functions
@@ -1193,7 +1220,7 @@ select show('state').lsn;
 
 lsn
 ───
-36
+49
 show functions verbose;
 
 functions
@@ -1228,7 +1255,7 @@ select show('state').lsn;
 
 lsn
 ───
-36
+49
 show functions verbose;
 
 functions
@@ -1267,7 +1294,7 @@ select show('state').lsn;
 
 lsn
 ───
-37
+50
 select [1,2,3]::reverse2;
 
 col1
@@ -1283,7 +1310,7 @@ select show('state').lsn;
 
 lsn
 ───
-37
+50
 show functions verbose;
 
 functions
@@ -1314,7 +1341,7 @@ select show('state').lsn;
 
 lsn
 ───
-38
+51
 show functions verbose;
 
 functions
@@ -1333,6 +1360,6 @@ select show('state').lsn;
 
 lsn
 ───
-38
+51
 disconnect S0;
 close E0;

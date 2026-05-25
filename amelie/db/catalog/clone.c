@@ -39,6 +39,7 @@ static inline Clone*
 clone_allocate(CloneConfig* config)
 {
 	auto self = (Clone*)am_malloc(sizeof(Clone));
+	self->cdc    = 0;
 	self->config = clone_config_copy(config);
 	self->table  = NULL;
 
@@ -47,6 +48,7 @@ clone_allocate(CloneConfig* config)
 	rel_init(rel, REL_CLONE);
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
+	rel_set_id(rel, &self->config->id);
 	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)clone_show);
 	rel_set_free(rel, (RelFree)clone_free);

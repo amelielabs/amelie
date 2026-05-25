@@ -195,33 +195,19 @@ id
 6
 7
 8
-show clones verbose;
+select snapshot from show clones verbose;
 
-clones
-──────
+snapshot
+────────
 {
-  "user": "amelie",
-  "name": "a",
-  "table_user": "amelie",
-  "table": "test",
-  "snapshot": {
-    "id": 1,
-    "snapshot": 3,
-    "snapshot_max": 3
-  },
-  "grants": []
+  "id": 1,
+  "snapshot": 3,
+  "snapshot_max": 3
 }
 {
-  "user": "amelie",
-  "name": "b",
-  "table_user": "amelie",
-  "table": "test",
-  "snapshot": {
-    "id": 2,
-    "snapshot": 5,
-    "snapshot_max": 5
-  },
-  "grants": []
+  "id": 2,
+  "snapshot": 5,
+  "snapshot_max": 5
 }
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -243,33 +229,19 @@ select show('state').catalog_pending;
 catalog_pending
 ───────────────
 5
-show clones verbose;
+select snapshot from show clones verbose;
 
-clones
-──────
+snapshot
+────────
 {
-  "user": "amelie",
-  "name": "a",
-  "table_user": "amelie",
-  "table": "test",
-  "snapshot": {
-    "id": 1,
-    "snapshot": 3,
-    "snapshot_max": 3
-  },
-  "grants": []
+  "id": 1,
+  "snapshot": 3,
+  "snapshot_max": 3
 }
 {
-  "user": "amelie",
-  "name": "b",
-  "table_user": "amelie",
-  "table": "test",
-  "snapshot": {
-    "id": 2,
-    "snapshot": 5,
-    "snapshot_max": 5
-  },
-  "grants": []
+  "id": 2,
+  "snapshot": 5,
+  "snapshot_max": 5
 }
 select * from a;
 
@@ -335,33 +307,19 @@ select show('state').catalog_pending;
 catalog_pending
 ───────────────
 5
-show clones verbose;
+select snapshot from show clones verbose;
 
-clones
-──────
+snapshot
+────────
 {
-  "user": "amelie",
-  "name": "a",
-  "table_user": "amelie",
-  "table": "test",
-  "snapshot": {
-    "id": 1,
-    "snapshot": 3,
-    "snapshot_max": 3
-  },
-  "grants": []
+  "id": 1,
+  "snapshot": 3,
+  "snapshot_max": 3
 }
 {
-  "user": "amelie",
-  "name": "b",
-  "table_user": "amelie",
-  "table": "test",
-  "snapshot": {
-    "id": 2,
-    "snapshot": 5,
-    "snapshot_max": 5
-  },
-  "grants": []
+  "id": 2,
+  "snapshot": 5,
+  "snapshot_max": 5
 }
 select * from a;
 

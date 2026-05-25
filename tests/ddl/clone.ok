@@ -15,7 +15,7 @@ error: create clone ❰123❱ ⟵ name expected
 create table main (id int primary key);
 insert into main values (1);
 create clone a of main;
-show clones verbose;
+show clones;
 
 clones
 ──────
@@ -23,13 +23,7 @@ clones
   "user": "amelie",
   "name": "a",
   "table_user": "amelie",
-  "table": "main",
-  "snapshot": {
-    "id": 1,
-    "snapshot": 1,
-    "snapshot_max": 1
-  },
-  "grants": []
+  "table": "main"
 }
 drop clone a;
 drop table main;

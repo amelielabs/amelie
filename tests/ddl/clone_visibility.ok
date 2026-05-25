@@ -275,63 +275,35 @@ id  data
 1   2
 2   2
 # test: clone (aba)
-show clones verbose;
+select snapshot from show clones verbose;
 
-clones
-──────
+snapshot
+────────
 {
-  "user": "amelie",
-  "name": "a",
-  "table_user": "amelie",
-  "table": "main",
-  "snapshot": {
-    "id": 1,
-    "snapshot": 56,
-    "snapshot_max": 56
-  },
-  "grants": []
+  "id": 1,
+  "snapshot": 56,
+  "snapshot_max": 56
 }
 {
-  "user": "amelie",
-  "name": "b",
-  "table_user": "amelie",
-  "table": "main",
-  "snapshot": {
-    "id": 2,
-    "snapshot": 58,
-    "snapshot_max": 58
-  },
-  "grants": []
+  "id": 2,
+  "snapshot": 58,
+  "snapshot_max": 58
 }
 drop clone b;
 create clone b of main;
-show clones verbose;
+select snapshot from show clones verbose;
 
-clones
-──────
+snapshot
+────────
 {
-  "user": "amelie",
-  "name": "a",
-  "table_user": "amelie",
-  "table": "main",
-  "snapshot": {
-    "id": 1,
-    "snapshot": 56,
-    "snapshot_max": 56
-  },
-  "grants": []
+  "id": 1,
+  "snapshot": 56,
+  "snapshot_max": 56
 }
 {
-  "user": "amelie",
-  "name": "b",
-  "table_user": "amelie",
-  "table": "main",
-  "snapshot": {
-    "id": 3,
-    "snapshot": 62,
-    "snapshot_max": 62
-  },
-  "grants": []
+  "id": 3,
+  "snapshot": 62,
+  "snapshot_max": 62
 }
 select * from a;
 

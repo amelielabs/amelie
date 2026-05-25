@@ -17,6 +17,7 @@ struct CloneConfig
 {
 	Str      user;
 	Str      name;
+	Uuid     id;
 	Str      table_user;
 	Str      table;
 	Snapshot snapshot;
@@ -32,6 +33,7 @@ clone_config_allocate(void)
 	str_init(&self->name);
 	str_init(&self->table_user);
 	str_init(&self->table);
+	uuid_init(&self->id);
 	snapshot_init(&self->snapshot);
 	grants_init(&self->grants);
 	return self;
@@ -63,6 +65,12 @@ clone_config_set_name(CloneConfig* self, Str* name)
 }
 
 static inline void
+clone_config_set_id(CloneConfig* self, Uuid* id)
+{
+	self->id = *id;
+}
+
+static inline void
 clone_config_set_table_user(CloneConfig* self, Str* name)
 {
 	str_free(&self->table_user);
@@ -82,6 +90,7 @@ clone_config_copy(CloneConfig* self)
 	auto copy = clone_config_allocate();
 	clone_config_set_user(copy, &self->user);
 	clone_config_set_name(copy, &self->name);
+	clone_config_set_id(copy, &self->id);
 	clone_config_set_table_user(copy, &self->table_user);
 	clone_config_set_table(copy, &self->table);
 	snapshot_copy(&copy->snapshot, &self->snapshot);
@@ -100,6 +109,7 @@ clone_config_read(uint8_t** pos)
 	{
 		{ DECODE_STR,   "user",       &self->user       },
 		{ DECODE_STR,   "name",       &self->name       },
+		{ DECODE_UUID,  "id",         &self->id         },
 		{ DECODE_STR,   "table_user", &self->table_user },
 		{ DECODE_STR,   "table",      &self->table      },
 		{ DECODE_OBJ,   "snapshot",   &pos_snapshot     },
@@ -141,6 +151,10 @@ clone_config_write(CloneConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_uuid(buf, &self->id);
 
 	// snapshot
 	encode_raw(buf, "snapshot", 8);

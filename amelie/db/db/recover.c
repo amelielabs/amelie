@@ -80,23 +80,38 @@ recover_map(Recover*   self,
 
 	// update track lsn/tsn
 	track_lsn_follow(&part->track, record->lsn);
-
 	state_tsn_follow(row->tsn);
 	track_follow(&part->track, row->tsn);
+
+	// apply table or clone cdc
+	if (record->lsn > self->min_sub)
+	{
+		Uuid* uuid = NULL;
+		if (row->snapshot == 0)
+		{
+			auto arg = part->arg;
+			if (arg->cdc)
+				uuid = arg->id_table;
+		} else
+		{
+			// find clone snapshot
+			auto snapshot = snapshot_mgr_find(&(*table)->snapshot_mgr, row->snapshot);
+			if (snapshot && clone_of(snapshot->rel)->cdc)
+				uuid = snapshot->rel->id;
+		}
+
+		if (uuid) {
+			auto primary = part_primary(part);
+			log_cdc(&self->tr.log, cmd->cmd, uuid, row,
+			        index_keys(primary)->columns,
+			        runtime()->timezone);
+		}
+	}
 
 	// skip partition if it is already includes lsn
 	if (record->lsn > part->heap->header->lsn)
 		return part;
 
-	// apply cdc
-	auto arg = part->arg;
-	if (arg->cdc && record->lsn > self->min_sub)
-	{
-		auto primary = part_primary(part);
-		log_cdc(&self->tr.log, cmd->cmd, arg->id_table, row,
-		        index_keys(primary)->columns,
-		        runtime()->timezone);
-	}
 	return NULL;
 }
 
