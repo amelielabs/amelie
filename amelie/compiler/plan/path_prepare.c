@@ -58,6 +58,17 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 	auto table = target->from_table;
 	assert(table);
 
+	// always use primary index for dml
+	if (target->dml)
+	{
+		assert(!target->from_index);
+		auto primary = table_primary(target->from_table);
+		target->path_primary = path_create(target, block, &primary->keys, ops);
+		target->path = target->path_primary;
+		target->from_index = primary;
+		return;
+	}
+
 	// FROM USE INDEX (use predefined index)
 	if (target->from_index)
 	{

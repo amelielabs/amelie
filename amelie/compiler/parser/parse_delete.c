@@ -37,6 +37,7 @@ parse_delete(Stmt* self)
 	auto target = from_first(&stmt->from);
 	if (! target_is_table(target))
 		stmt_error(self, from, "table name expected");
+	target_set_dml(target, true);
 	stmt->table = target->from_table;
 
 	// ensure primary index is used

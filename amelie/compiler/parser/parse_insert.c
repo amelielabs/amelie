@@ -217,8 +217,14 @@ parse_insert(Stmt* self)
 	auto target = from_first(&stmt->from);
 	if (! target_is_table(target))
 		stmt_error(self, into, "table name expected");
+	target_set_dml(target, true);
+
+	// ensure index is not defined
 	auto table   = target->from_table;
 	auto columns = target->columns;
+	if (target->from_index)
+		if (table_primary(table) != target->from_index)
+			stmt_error(self, NULL, "INSERT supports only primary index");
 
 	// prepare values
 	auto parser = self->parser;

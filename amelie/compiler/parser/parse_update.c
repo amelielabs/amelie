@@ -162,6 +162,7 @@ parse_update(Stmt* self)
 	if (! target_is_table(target))
 		stmt_error(self, NULL, "table name expected");
 	stmt->table = target->from_table;
+	target_set_dml(target, true);
 
 	// ensure primary index is used
 	if (target->from_index)

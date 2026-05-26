@@ -63,6 +63,7 @@ struct Target
 		Sub*     from_sub;
 	};
 	// target
+	bool         dml;
 	Columns*     columns;
 	int          r;
 	int          rcursor;
@@ -86,6 +87,7 @@ target_allocate(void)
 	self->type      = TARGET_NONE;
 	self->origin    = ORIGIN_FRONTEND;
 	self->from_lock = LOCK_SHARED;
+	self->dml       = false;
 	self->columns   = NULL;
 	self->r         = -1;
 	self->rcursor   = -1;
@@ -98,6 +100,12 @@ static inline void
 target_set_origin(Target* self, TargetOrigin origin)
 {
 	self->origin = origin;
+}
+
+static inline void
+target_set_dml(Target* self, bool value)
+{
+	self->dml = value;
 }
 
 static inline bool

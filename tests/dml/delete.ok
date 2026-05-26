@@ -292,5 +292,75 @@ select * from test use index (i);
 id  data
 ──────────
 drop table test;
+# test: delete secondary index (2)
+create table test (id int primary key, a int, b int);
+create index ia on test (a);
+insert into test values (1, 10, 100);
+explain delete from test where a = 10;
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.test (delete, closing)
+  1   ret                 -1     0      -
+
+pushdown
+  0   table_open          0      0      7     # amelie.test (primary) part
+  1   table_readi32       1      0      -     # a
+  2   int                 2      -      0     # 10
+  3   equii               3      1      2
+  4   jntr                6      3      0
+  5   delete              0      0      0
+  6   table_next          0      1      0
+  7   free                0      0      0
+  8   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [delete]
+delete from test where a = 10;
+explain select * from test where id = 10;
+
+explain
+───────
+
+main
+  0   push_int            -      0      0     # 10
+  1   send_lookup         0      -      32    # amelie.test (select, closing)
+  2   union               1      0      0
+  3   recv                1      0      0
+  4   ret                 1      0      -
+
+pushdown
+  0   set                 0      3      0
+  1   push_int            -      0      0     # 10
+  2   table_open          1      0      14    # amelie.test (primary) point_lookup, part
+  3   table_readi32       2      1      -     # id
+  4   int                 3      -      0     # 10
+  5   equii               4      2      3
+  6   jntr                14     4      0
+  7   table_readi32       2      1      -     # id
+  8   push                2      0      0
+  9   table_readi32       2      1      -     # a
+ 10   push                2      0      0
+ 11   table_readi32       2      1      -     # b
+ 12   push                2      0      0
+ 13   set_add             0      0      0
+ 14   free                1      0      0
+ 15   ret                 0      0      -
+
+access
+  •   amelie.test shared [select]
+select * from test where id = 10;
+
+id  a  b
+──────────
+insert into test values (2, 20, 200);
+select * from test;
+
+id  a   b
+─────────────
+2   20  200
+drop table test;
 disconnect S0;
 close E0;

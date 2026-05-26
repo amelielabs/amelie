@@ -121,5 +121,22 @@ select * from test;
 select * from test use index (i);
 drop table test;
 
+# test: delete secondary index (2)
+create table test (id int primary key, a int, b int);
+create index ia on test (a);
+
+insert into test values (1, 10, 100);
+
+explain delete from test where a = 10;
+delete from test where a = 10;
+
+explain select * from test where id = 10;
+select * from test where id = 10;
+
+insert into test values (2, 20, 200);
+select * from test;
+
+drop table test;
+
 disconnect S0;
 close E0;
