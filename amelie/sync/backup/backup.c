@@ -43,7 +43,9 @@ backup_push(Backup* self, Str* name, size_t size)
 	info("backup: {str} ({.2f} MiB)", name,
 	     (double)size / 1024 / 1024);
 
-	// todo: validate name
+	// validate name
+	if (str_empty(name) || *str_of(name) == '.')
+		error("backup: requested file '{str}' name is invalid", name);
 
 	// open file
 	char path[PATH_MAX];
