@@ -92,6 +92,10 @@ emit_upsert(Compiler* self, Ast* ast)
 		runpin(self, r);
 		break;
 	}
+	case ON_CONFLICT_NOTHING:
+		// skip returning
+		op1(self, CJMP, jmp_start);
+		break;
 	default:
 		break;
 	}
