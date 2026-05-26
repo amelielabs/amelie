@@ -339,6 +339,23 @@ error: function 'amelie.dep' depends on table 'test'
 # test: drop index after udf drop
 drop function dep;
 drop index i on test;
+# test: drop index primary
+drop index `primary` on test;
+error: table 'test' index 'primary': primary index cannot be dropped
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}]
 # test: alter index parsing
 alter;
 error: alter❰;❱ ⟵ relation type expected
@@ -434,5 +451,35 @@ alter index if exists k on test rename to z;
 # test: alter index rename (conflict)
 alter index j on test rename to j;
 error: table 'test' index 'j': already exists
+# test: drop index primary rename
+alter index `primary` on test rename to _;
+error: table 'test' index 'primary': primary index cannot be renamed
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "j",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+drop table test;
 disconnect S0;
 close E0;

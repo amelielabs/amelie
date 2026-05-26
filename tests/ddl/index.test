@@ -91,6 +91,10 @@ drop index i on test;
 drop function dep;
 drop index i on test;
 
+# test: drop index primary
+drop index `primary` on test;
+select show('table', 'test', true).indexes;
+
 # test: alter index parsing
 alter;
 alter index;
@@ -122,6 +126,11 @@ alter index if exists k on test rename to z;
 
 # test: alter index rename (conflict)
 alter index j on test rename to j;
+
+# test: drop index primary rename
+alter index `primary` on test rename to _;
+select show('table', 'test', true).indexes;
+drop table test;
 
 disconnect S0;
 close E0;

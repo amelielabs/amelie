@@ -113,6 +113,11 @@ table_index_drop(Catalog* self,
 		return false;
 	}
 
+	// do not allow primary index drop
+	if (index == table_primary(table))
+		error("table '{str}' index '{str}': primary index cannot be dropped",
+		      &table->config->name, name);
+
 	// ensure no strict dependecies
 	catalog_deps_validate(self, &table->rel, true);
 
@@ -169,6 +174,11 @@ table_index_rename(Catalog* self,
 	if (table_index_find(table, name_new, false))
 		error("table '{str}' index '{str}': already exists",
 		      &table->config->name, name_new);
+
+	// primary index cannot be renamed
+	if (index == table_primary(table))
+		error("table '{str}' index '{str}': primary index cannot be renamed",
+		      &table->config->name, name);
 
 	// ensure no strict dependecies
 	catalog_deps_validate(self, &table->rel, true);
