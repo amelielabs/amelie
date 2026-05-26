@@ -29,6 +29,7 @@ value_is_true(Value* a)
 	case TYPE_JSON:
 		break;
 	case TYPE_INTERVAL:
+		return !interval_empty(&a->interval);
 	case TYPE_VECTOR:
 		return a->vector->size > 0;
 	// TYPE_AVG

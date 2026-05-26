@@ -192,5 +192,20 @@ select x, y from a, b;
 drop table a;
 drop table b;
 
+# test: select where bool
+create table test (id int primary key);
+insert into test values (1);
+
+
+select * from test where interval '1 second';
+select * from test where '1 second'::interval;
+select * from test where 1;
+select * from test where true;
+select * from test where timestamp '1970-01-01 00:00:00';
+select * from test where timestamp '1970-01-01 00:00:01';
+select * from test where 'xyz';
+
+drop table test;
+
 disconnect S0;
 close E0;
