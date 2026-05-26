@@ -432,5 +432,55 @@ grants
 switch S0;
 disconnect S1;
 disconnect S2;
+# test: execute (after replace)
+drop function fun cascade;
+create user u;
+create function fun () return int
+begin
+  return 1;
+end;
+grant execute on fun to u;
+show grants on fun;
+
+grants
+──────
+["u", "execute"]
+create or replace function fun () return int
+begin
+  return 2;
+end;
+show grants on fun;
+
+grants
+──────
+["u", "execute"]
+connect E0 S1 u@127.0.0.1:3485;
+switch S1;
+execute amelie.fun();
+
+fun
+───
+2
+switch S0;
+revoke execute on fun from u;
+grant execute on fun to u;
+switch S1;
+execute amelie.fun();
+
+fun
+───
+2
+disconnect S1;
+switch S0;
+show grants on fun;
+
+grants
+──────
+["u", "execute"]
+drop user u;
+show grants on fun;
+
+grants
+──────
 disconnect S0;
 close E0;

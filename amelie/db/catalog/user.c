@@ -134,6 +134,10 @@ user_drop_of(Catalog* self,
 			if (str_compare(rel->user, user->name))
 				error("user '{str}' still has {s} '{str}'", user->name,
 				      rel_type_of(rel->type), rel->name);
+
+			// revoke all permissions
+			if (grants_find(rel->grants, user->name))
+				catalog_grant_of(self, tr, rel, user->name, false, PERM_ALL);
 		}
 	}
 

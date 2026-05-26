@@ -156,6 +156,7 @@ udf_replace(Catalog*   self,
 	// update rel data
 	rel_set_user(&udf->rel, &udf->config->user);
 	rel_set_name(&udf->rel, &udf->config->name);
+	rel_set_grants(&udf->rel, &udf->config->grants);
 }
 
 bool

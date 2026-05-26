@@ -76,6 +76,15 @@ parse_function_create(Stmt* self, bool or_replace)
 	udf_config_set_user(stmt->config, self->parser->user);
 	udf_config_set_name(stmt->config, &name->string);
 
+	// copy existing grants
+	if (stmt->or_replace)
+	{
+		auto udf = catalog_find_udf(&share()->db->catalog, self->parser->user,
+		                            &name->string, false);
+		if (udf)
+			grants_copy(&stmt->config->grants, &udf->config->grants);
+	}
+
 	// (args)
 	parse_function_args(self, &stmt->config->args);
 
