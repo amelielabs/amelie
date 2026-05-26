@@ -10174,6 +10174,34 @@ show topics;
 show subs;
 select * from top_sub;
 
+# test: topic (multi-stmt)
+switch S0;
+
+create table abc (id int primary key);
+create topic a;
+create topic b;
+create subscription sa on a;
+create subscription sb on b;
+begin
+  publish to a 1;
+  publish to b 2;
+  publish to b 3,4,5;
+  insert into abc values (1), (2), (3);
+  delete from abc where id = 3;
+  insert into abc values (4);
+end;
+select * from sa;
+select * from sb;
+select * from abc;
+
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+show repl;
+
+switch S1;
+select * from sa;
+select * from sb;
+select * from abc;
+
 disconnect S1;
 close E1;
 

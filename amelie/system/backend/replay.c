@@ -22,69 +22,67 @@ static void
 replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 {
 	auto db = share()->db;
-
-	// redistribute rows between partitions
 	Req* last = NULL;
 
 	// replay transaction log record
 	auto cmd = record_cmd(record);
-
-	// PUBLISH
 	auto pos = record_data(record);
-	if (cmd->cmd == CMD_PUBLISH)
-	{
-		auto rel = catalog_find_by(&db->catalog, REL_TOPIC, &cmd->id, true);
-		auto topic = topic_of(rel);
-		for (auto i = record->count; i > 0; i--)
-		{
-			auto size = data_sizeof(pos);
-			publish(topic, &dtr->tr, pos, size);
-			pos += size;
-		}
-		return;
-	}
-
-	// ACKNOWLEDGE
-	if (cmd->cmd == CMD_ACK)
-	{
-		auto rel = catalog_find_by(&db->catalog, REL_SUBSCRIPTION, &cmd->id, true);
-		auto sub = sub_of(rel);
-		acknowledge(sub, &dtr->tr, pos);
-		return;
-	}
-
-	// REPLACE, DELETE
 	for (auto i = record->count; i > 0; i--)
 	{
-		auto row = (Row*)pos;
-
-		// sync tsn
-		state_tsn_follow(row->tsn);
-
-		// match partition
-		auto rel = catalog_find_by(&db->catalog, REL_TABLE, &cmd->id, true);
-		auto table = table_of(rel);
-		auto part  = part_mapping_map(&table->part_mgr.mapping, row);
-		if (! part)
-			error("replay: failed to find partition");
-
-		// prepare request
-		Req* req = NULL;
-		if (last && last->part == part)
-			req = last;
-		else
+		switch (cmd->cmd) {
+		case CMD_PUBLISH:
 		{
-			req = dispatch_find(dispatch, part);
-			if (! req)
-				req = dispatch_add(dispatch, &dtr->dispatch_mgr.cache_req,
-				                   REQ_REPLAY, -1, NULL, NULL,
-				                   part);
+			// find topic
+			auto rel   = catalog_find_by(&db->catalog, REL_TOPIC, &cmd->id, true);
+			auto topic = topic_of(rel);
+			auto size  = data_sizeof(pos);
+			publish(topic, &dtr->tr, pos, size);
+			break;
 		}
-		last = req;
+		case CMD_ACK:
+		{
+			// find and update subscription
+			auto rel = catalog_find_by(&db->catalog, REL_SUBSCRIPTION, &cmd->id, true);
+			auto sub = sub_of(rel);
+			acknowledge(sub, &dtr->tr, pos);
+			break;
+		}
+		case CMD_REPLACE:
+		case CMD_DELETE:
+		{
+			// redistribute rows between partitions
+			auto row = (Row*)pos;
 
-		// [cmd, pos]
-		buf_write(&req->arg, (uint8_t*)&cmd, sizeof(uint8_t**));
-		buf_write(&req->arg, (uint8_t*)&pos, sizeof(uint8_t**));
+			// sync tsn
+			state_tsn_follow(row->tsn);
+
+			// match partition
+			auto rel = catalog_find_by(&db->catalog, REL_TABLE, &cmd->id, true);
+			auto table = table_of(rel);
+			auto part  = part_mapping_map(&table->part_mgr.mapping, row);
+			if (! part)
+				error("replay: failed to find partition");
+
+			// prepare request
+			Req* req = NULL;
+			if (last && last->part == part)
+				req = last;
+			else
+			{
+				req = dispatch_find(dispatch, part);
+				if (! req)
+					req = dispatch_add(dispatch, &dtr->dispatch_mgr.cache_req,
+					                   REQ_REPLAY, -1, NULL, NULL,
+					                   part);
+			}
+			last = req;
+
+			// [cmd, pos]
+			buf_write(&req->arg, (uint8_t*)&cmd, sizeof(uint8_t**));
+			buf_write(&req->arg, (uint8_t*)&pos, sizeof(uint8_t**));
+			break;
+		}
+		}
 
 		pos += cmd->size;
 		cmd++;

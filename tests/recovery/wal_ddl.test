@@ -390,6 +390,36 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 show subs;
 
+# test: create topic (multi-stmt)
+create topic a;
+create topic b;
+create subscription sa on a;
+create subscription sb on b;
+begin
+  publish to a 1;
+  publish to b 2;
+  publish to b 3,4,5;
+end;
+select * from sa;
+select * from sb;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select * from sa;
+select * from sb;
+drop subscription sa;
+drop subscription sb;
+drop topic a;
+drop topic b;
+
+# test: validate state
+select show('state').lsn;
+show subs;
+
 # test: create user
 create user test;
 select show('user', 'test').name;

@@ -1023,6 +1023,61 @@ show subs;
 
 subs
 ────
+# test: create topic (multi-stmt)
+create topic a;
+create topic b;
+create subscription sa on a;
+create subscription sb on b;
+begin
+  publish to a 1;
+  publish to b 2;
+  publish to b 3,4,5;
+end;
+select * from sa;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+49   0       publish  1
+select * from sb;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+49   1       publish  2
+49   2       publish  3
+49   3       publish  4
+49   4       publish  5
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select * from sa;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+49   0       publish  1
+select * from sb;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+49   1       publish  2
+49   2       publish  3
+49   3       publish  4
+49   4       publish  5
+drop subscription sa;
+drop subscription sb;
+drop topic a;
+drop topic b;
+# test: validate state
+select show('state').lsn;
+
+lsn
+───
+53
+show subs;
+
+subs
+────
 # test: create user
 create user test;
 select show('user', 'test').name;
@@ -1034,7 +1089,7 @@ select show('state').lsn;
 
 lsn
 ───
-45
+54
 # test: restart
 disconnect S0;
 close E0;
@@ -1045,7 +1100,7 @@ select show('state').lsn;
 
 lsn
 ───
-45
+54
 select show('user', 'test').name;
 
 name
@@ -1067,7 +1122,7 @@ select show('state').lsn;
 
 lsn
 ───
-46
+55
 # test: restart
 disconnect S0;
 close E0;
@@ -1078,7 +1133,7 @@ select show('state').lsn;
 
 lsn
 ───
-46
+55
 select show('user', 'test2').name;
 
 name
@@ -1090,7 +1145,7 @@ select show('state').lsn;
 
 lsn
 ───
-47
+56
 select show('user', 'test2').name;
 
 name
@@ -1106,7 +1161,7 @@ select show('state').lsn;
 
 lsn
 ───
-47
+56
 select show('user', 'test').name;
 
 name
@@ -1130,7 +1185,7 @@ select show('state').lsn;
 
 lsn
 ───
-48
+57
 show functions verbose;
 
 functions
@@ -1165,7 +1220,7 @@ select show('state').lsn;
 
 lsn
 ───
-48
+57
 show functions verbose;
 
 functions
@@ -1220,7 +1275,7 @@ select show('state').lsn;
 
 lsn
 ───
-49
+58
 show functions verbose;
 
 functions
@@ -1255,7 +1310,7 @@ select show('state').lsn;
 
 lsn
 ───
-49
+58
 show functions verbose;
 
 functions
@@ -1294,7 +1349,7 @@ select show('state').lsn;
 
 lsn
 ───
-50
+59
 select [1,2,3]::reverse2;
 
 col1
@@ -1310,7 +1365,7 @@ select show('state').lsn;
 
 lsn
 ───
-50
+59
 show functions verbose;
 
 functions
@@ -1341,7 +1396,7 @@ select show('state').lsn;
 
 lsn
 ───
-51
+60
 show functions verbose;
 
 functions
@@ -1360,6 +1415,6 @@ select show('state').lsn;
 
 lsn
 ───
-51
+60
 disconnect S0;
 close E0;

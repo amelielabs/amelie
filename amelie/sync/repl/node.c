@@ -38,6 +38,12 @@ node_init(Node*       self,
 }
 
 void
+node_free(Node* self)
+{
+	websocket_free(&self->websocket);
+}
+
+void
 node_main(Node* self)
 {
 	info("node connected.");

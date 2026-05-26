@@ -113,12 +113,12 @@ opts_set_json(Opts* self, uint8_t** pos)
 		Str name;
 		unpack_str(pos, &name);
 
-		// find optiable and set value
+		// find options and set value
 		auto opt = opts_find(self, &name);
 		if (unlikely(opt == NULL))
 			error("option '{str}': not found", &name);
 
-		// ensure optiable can be changed
+		// ensure options can be changed
 		if (unlikely(! opt_is(opt, OPT_C)))
 			error("option '{str}': cannot be changed", &name);
 
@@ -173,7 +173,7 @@ opts_set_argv(Opts* self, int argc, char** argv)
 		if (unlikely(opt == NULL))
 			error("option '{str}': not found", &name);
 
-		// ensure optiable can be changed
+		// ensure options can be changed
 		if (unlikely(! opt_is(opt, OPT_C)))
 			error("option '{str}': cannot be changed", &name);
 

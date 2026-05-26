@@ -34,5 +34,6 @@ frontend_client_primary(Frontend* self, Client* client, void* session)
 	void* args[] = {self, session};
 	Node node;
 	node_init(&node, frontend_client_primary_on_write, args, &recover, client);
+	defer(node_free, &node);
 	node_main(&node);
 }

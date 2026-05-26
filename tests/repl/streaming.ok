@@ -10480,6 +10480,79 @@ select * from top_sub;
 lsn    lsn_op  cmd      row
 ─────────────────────────────
 10022  2       publish  3
+# test: topic (multi-stmt)
+switch S0;
+create table abc (id int primary key);
+create topic a;
+create topic b;
+create subscription sa on a;
+create subscription sb on b;
+begin
+  publish to a 1;
+  publish to b 2;
+  publish to b 3,4,5;
+  insert into abc values (1), (2), (3);
+  delete from abc where id = 3;
+  insert into abc values (4);
+end;
+select * from sa;
+
+lsn    lsn_op  cmd      row
+─────────────────────────────
+10030  0       publish  1
+select * from sb;
+
+lsn    lsn_op  cmd      row
+─────────────────────────────
+10030  1       publish  2
+10030  2       publish  3
+10030  3       publish  4
+10030  4       publish  5
+select * from abc;
+
+id
+──
+1
+4
+2
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+show repl;
+
+repl
+────
+{
+  "active": true,
+  "role": "primary",
+  "primary": null,
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "http://127.0.0.1:3481/",
+    "connected": true,
+    "lsn": 10030,
+    "lag": 0
+  }]
+}
+switch S1;
+select * from sa;
+
+lsn    lsn_op  cmd      row
+─────────────────────────────
+10030  0       publish  1
+select * from sb;
+
+lsn    lsn_op  cmd      row
+─────────────────────────────
+10030  1       publish  2
+10030  2       publish  3
+10030  3       publish  4
+10030  4       publish  5
+select * from abc;
+
+id
+──
+1
+4
+2
 disconnect S1;
 close E1;
 disconnect S0;
