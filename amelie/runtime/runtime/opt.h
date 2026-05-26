@@ -17,14 +17,16 @@ enum
 {
 	// can be set in config or command line
 	OPT_C = 1 << 0,
+	// can be set as uri arg
+	OPT_U = 1 << 1,
 	// hidden
-	OPT_H = 1 << 1,
+	OPT_H = 1 << 2,
 	// secret
-	OPT_S = 1 << 2,
+	OPT_S = 1 << 3,
 	// excluded from config
-	OPT_E = 1 << 3,
+	OPT_E = 1 << 4,
 	// cannot be zero
-	OPT_Z = 1 << 4
+	OPT_Z = 1 << 5
 };
 
 typedef enum

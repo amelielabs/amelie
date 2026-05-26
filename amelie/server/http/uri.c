@@ -220,7 +220,7 @@ decode(Buf* buf, char* data, int data_size)
 }
 
 static inline void
-uri_parse_args_set(Uri* self, Buf* buf, int name_size, int value_size)
+uri_parse_args_set(Uri* self, bool strict, Buf* buf, int name_size, int value_size)
 {
 	Str name;
 	str_set(&name, buf_cstr(buf), name_size);
@@ -228,14 +228,19 @@ uri_parse_args_set(Uri* self, Buf* buf, int name_size, int value_size)
 	str_set(&value, buf_cstr(buf) + name_size, value_size);
 
 	// find and set endpoint option
-	auto opt = opts_find(&self->endpoint->opts, &name);
-	if (! opt)
+	auto endpoint = self->endpoint;
+	auto opt = opts_find(&endpoint->opts, &name);
+	if (!opt || !opt_is(opt, OPT_C))
+		error("unknown uri argument '{str}'", &name);
+
+	// do not allow command line arguments
+	if (strict && !opt_is(opt, OPT_U))
 		error("unknown uri argument '{str}'", &name);
 	opt_set(opt, &value);
 }
 
 static inline void
-uri_parse_args(Uri* self)
+uri_parse_args(Uri* self, bool strict)
 {
 	// eof
 	if (! *self->pos)
@@ -279,7 +284,7 @@ uri_parse_args(Uri* self)
 		}
 
 		// match end set endpoint argument
-		uri_parse_args_set(self, buf, name_size, value_size);
+		uri_parse_args_set(self, strict, buf, name_size, value_size);
 
 		// eof
 		if (! *self->pos)
@@ -323,7 +328,7 @@ uri_parse(Endpoint* endpoint, Str* spec)
 		self.pos++;
 
 	// ?name=value[& ...]
-	uri_parse_args(&self);
+	uri_parse_args(&self, false);
 }
 
 void
@@ -369,7 +374,7 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 		self.pos++;
 
 	// ?name=value[& ...]
-	uri_parse_args(&self);
+	uri_parse_args(&self, true);
 }
 
 void

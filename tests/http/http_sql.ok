@@ -42,5 +42,7 @@ post /sql?timezone=Asia/Tokyo text/plain application/json select "2024-07-29 18:
 {"columns": ["timestamp"], "rows": [["2024-07-29 18:40:19+09"]]}
 post /sql text/plain application/json explain select "2024-07-29 18:40:19"::timestamp;
 {"columns": ["explain"], "rows": ["\nmain\n  0   value               0      -      0     # timestamp\n  1   ret                 0      0      -\n"]}
+post /sql?trusted=true text/plain application/json select current_user;
+400 Bad Request
 disconnect S0;
 close E0;

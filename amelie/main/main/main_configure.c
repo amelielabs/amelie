@@ -96,6 +96,8 @@ main_configure(Main* self, Opts* opts)
 		}
 		if (opt)
 		{
+			if (! opt_is(opt, OPT_C))
+				error("argument '{s}' cannot be changed", argv[arg]);
 			opt_set(opt, &value);
 			continue;
 		}
