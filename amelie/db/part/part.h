@@ -21,7 +21,6 @@ struct Part
 	Track    track;
 	Heap*    heap;
 	Heap*    heap_shadow;
-	bool     truncated;
 	PartArg* arg;
 	List     link_volume;
 	List     link;

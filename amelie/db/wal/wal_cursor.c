@@ -28,6 +28,7 @@ wal_cursor_init(WalCursor* self)
 	self->file        = NULL;
 	self->file_next   = true;
 	self->crc         = false;
+	self->follow      = false;
 	self->wal         = NULL;
 	buf_init(&self->buf);
 }
@@ -35,12 +36,14 @@ wal_cursor_init(WalCursor* self)
 void
 wal_cursor_open(WalCursor* self, Wal* wal, uint64_t lsn,
                 bool       file_next,
-                bool       crc)
+                bool       crc,
+                bool       follow)
 {
 	self->file        = NULL;
 	self->file_offset = 0;
 	self->file_next   = file_next;
 	self->crc         = crc;
+	self->follow      = follow;
 	self->wal         = wal;
 
 	// find nearest file with id <= lsn
@@ -116,6 +119,9 @@ wal_cursor_read(WalCursor* self)
 			self->file_offset += record->size;
 			return record;
 		}
+
+		if (!self->follow && self->file_offset != file->file.size)
+			error("wal: record is incomplete");
 
 		// retry read if file size has changed
 		if (file_update_size(&file->file))

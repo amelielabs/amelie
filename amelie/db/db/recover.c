@@ -301,7 +301,7 @@ recover_wal_main(Recover* self)
 		defer(wal_cursor_close, &cursor);
 
 		auto wal_crc = opt_int_of(&config()->wal_crc);
-		wal_cursor_open(&cursor, wal, id, false, wal_crc);
+		wal_cursor_open(&cursor, wal, id, false, wal_crc, false);
 		for (;;)
 		{
 			if (! wal_cursor_next(&cursor))

@@ -20,11 +20,12 @@ struct WalCursor
 	uint64_t file_offset;
 	bool     file_next;
 	bool     crc;
+	bool     follow;
 	Wal*     wal;
 };
 
 void wal_cursor_init(WalCursor*);
-void wal_cursor_open(WalCursor*, Wal*, uint64_t, bool, bool);
+void wal_cursor_open(WalCursor*, Wal*, uint64_t, bool, bool, bool);
 void wal_cursor_close(WalCursor*);
 bool wal_cursor_active(WalCursor*);
 bool wal_cursor_next(WalCursor*);
