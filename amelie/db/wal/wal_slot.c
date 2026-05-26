@@ -76,7 +76,7 @@ wal_slots(Wal* self, uint64_t* min)
 	{
 		auto slot = list_at(WalSlot, link);
 		auto lsn = atomic_u64_of(&slot->lsn);
-		if (*min < lsn)
+		if (lsn < *min)
 			*min = lsn;
 	}
 	spinlock_unlock(&self->lock);
