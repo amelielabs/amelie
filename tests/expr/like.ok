@@ -140,5 +140,23 @@ select 'abcd' not like 'abc%d';
 col1
 ────
 false
+# test: like type
+explain select ('x' like 'x')::type;
+
+explain
+───────
+
+main
+  0   string              0      0      0     # x
+  1   string              1      2      0     # x
+  2   likess              2      0      1
+  3   push                2      0      0
+  4   call                0      -      1     # type()
+  5   ret                 0      0      -
+select ('x' like 'x')::type;
+
+type
+────
+bool
 disconnect S0;
 close E0;

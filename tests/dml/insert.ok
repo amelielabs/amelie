@@ -1486,5 +1486,10 @@ id  data
 4   0
 5   0
 drop table test;
+# test: insert select like
+create table test (id int primary key, s string);
+insert into test select 1, 'x' like 'x';
+error: insert into test ❰select❱ ⟵ SELECT columns must match the INSERT table
+drop table test;
 disconnect S0;
 close E0;

@@ -309,7 +309,7 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 	[OP_LIKE] =
 	{
 		// string
-		[TYPE_STRING][TYPE_STRING]       = { TYPE_STRING,    CLIKESS },
+		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL,    CLIKESS },
 	},
 
 	[OP_BOR] =

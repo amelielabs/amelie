@@ -45,5 +45,9 @@ select not like 20;
 select 'abcd' like 'abc%d';
 select 'abcd' not like 'abc%d';
 
+# test: like type
+explain select ('x' like 'x')::type;
+select ('x' like 'x')::type;
+
 disconnect S0;
 close E0;

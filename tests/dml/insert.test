@@ -559,5 +559,10 @@ end;
 
 drop table test;
 
+# test: insert select like
+create table test (id int primary key, s string);
+insert into test select 1, 'x' like 'x';
+drop table test;
+
 disconnect S0;
 close E0;
