@@ -303,5 +303,47 @@ select show('state').catalog_pending;
 select show('user', 'test').name;
 select identity_of("test");
 
+# test: truncate
+drop table test cascade;
+
+create table test (id int primary key);
+insert into test values (1), (2);
+select * from test;
+
+truncate test;
+select * from test;
+
+# test: checkpoint and restart
+checkpoint;
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select * from test;
+
+# test: truncate (after restart)
+insert into test values (1), (2);
+select * from test;
+
+# test: checkpoint and restart
+checkpoint;
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select * from test;
+truncate test;
+select * from test;
+
+# test: checkpoint and restart
+checkpoint;
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select * from test;
+
+
 disconnect S0;
 close E0;

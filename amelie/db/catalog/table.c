@@ -156,6 +156,16 @@ table_truncate(Catalog* self,
 	// update table
 	log_ddl(&tr->log, &truncate_if, NULL, &table->rel);
 
+	// force commit pending prepared transactions
+	list_foreach(&table->part_mgr.list)
+	{
+		auto part = list_at(Part, link);
+		auto consensus = &part->track.consensus;
+		track_sync(&part->track, consensus);
+		auto heap = part->heap;
+		heap->header->lsn = part->track.lsn;
+	}
+
 	// do nothing (actual truncate will happen on commit)
 	return true;
 }

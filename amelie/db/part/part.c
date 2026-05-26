@@ -107,6 +107,13 @@ part_truncate(Part* self)
 {
 	for (auto index = self->indexes; index; index = index->next)
 		index_truncate(index);
+	assert(! self->heap_shadow);
+
+	// create a new empty heap with matching metadata
+	auto new = heap_allocate_as(self->heap);
+	new->header->pending++;
+	heap_free(self->heap);
+	self->heap = new;
 }
 
 void

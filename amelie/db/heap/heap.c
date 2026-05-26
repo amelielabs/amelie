@@ -57,6 +57,7 @@ heap_prepare(Heap* self)
 	header->count           = 0;
 	header->count_used      = 0;
 	header->size_used       = 0;
+	header->pending         = 0;
 
 	self->header  = header;
 	self->buckets = header->buckets;
@@ -107,6 +108,20 @@ heap_allocate(void)
 	self->shadow_free = false;
 	page_mgr_init(&self->page_mgr);
 	heap_prepare(self);
+	return self;
+}
+
+Heap*
+heap_allocate_as(Heap* like)
+{
+	auto self = heap_allocate();
+	auto hdr      = self->header;
+	auto hdr_like = like->header;
+	hdr->lsn      = hdr_like->lsn;
+	hdr->tsn      = hdr_like->tsn;
+	hdr->ssn      = hdr_like->ssn;
+	hdr->hash_min = hdr_like->hash_min;
+	hdr->hash_max = hdr_like->hash_max;
 	return self;
 }
 

@@ -71,6 +71,7 @@ struct HeapHeader
 	uint32_t   count;
 	uint32_t   count_used;
 	uint64_t   size_used;
+	uint8_t    pending;
 	HeapBucket buckets[];
 } packed;
 
@@ -104,6 +105,7 @@ heap_page_of(HeapChunk* self)
 }
 
 Heap* heap_allocate(void);
+Heap* heap_allocate_as(Heap*);
 void  heap_free(Heap*);
 void* heap_add(Heap*, int);
 void  heap_remove(Heap*, void*);

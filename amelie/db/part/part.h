@@ -21,6 +21,7 @@ struct Part
 	Track    track;
 	Heap*    heap;
 	Heap*    heap_shadow;
+	bool     truncated;
 	PartArg* arg;
 	List     link_volume;
 	List     link;
@@ -45,5 +46,7 @@ part_primary(Part* self)
 static inline bool
 part_has_updates(Part* self)
 {
-	return track_lsn(&self->track) > self->heap->header->lsn;
+	// pending updates
+	auto header = self->heap->header;
+	return track_lsn(&self->track) > header->lsn || header->pending;
 }

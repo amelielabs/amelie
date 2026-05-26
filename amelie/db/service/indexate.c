@@ -95,6 +95,8 @@ indexate_begin(Indexate* self, Table* table, IndexConfig* config)
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
 	track_sync(&origin->track, consensus);
+	auto heap = origin->heap;
+	heap->header->lsn = origin->track.lsn;
 
 	// switch partition shadow heap and begin heap snapshot
 	origin->heap_shadow = shadow;
