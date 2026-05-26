@@ -253,5 +253,19 @@ alter subscription if exists test_sub rename to test_cdc;
 drop topic test;
 drop subscription test_cdc;
 
+# test: select from subscription (multiple rels)
+create table a (id int primary key, data int);
+create table b (id int primary key, data int);
+create subscription a_sub on a;
+create subscription b_sub on b;
+insert into b values (42, 900);
+select * from a_sub;
+select * from b_sub;
+
+drop subscription a_sub;
+drop subscription b_sub;
+drop table a;
+drop table b;
+
 disconnect S0;
 close E0;
