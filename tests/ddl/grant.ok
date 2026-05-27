@@ -482,5 +482,46 @@ show grants on fun;
 
 grants
 ──────
+# test: select (from subscription)
+create user u;
+create table t (id int primary key, data int);
+create subscription t_sub on t;
+insert into t values (1, 10), (2, 20);
+connect E0 S1 u@127.0.0.1:3485;
+switch S1;
+select * from amelie.t;
+error: relation 'amelie.t': permission denied
+explain select * from amelie.t_sub;
+
+explain
+───────
+
+main
+  0   set                 0      4      0
+  1   subscription        1      -      -     # amelie.t_sub
+  2   store_open          2      1      13
+  3   store_read          3      2      0
+  4   push                3      0      0
+  5   store_read          3      2      1
+  6   push                3      0      0
+  7   store_read          3      2      2
+  8   push                3      0      0
+  9   store_read          3      2      3
+ 10   push                3      0      0
+ 11   set_add             0      0      0
+ 12   store_next          2      3      0
+ 13   free                2      0      0
+ 14   free                1      0      0
+ 15   ret                 0      0      -
+
+access
+  •   amelie.t_sub shared [select]
+select * from amelie.t_sub;
+error: relation 'amelie.t_sub': permission denied
+switch S0;
+disconnect S1;
+drop subscription t_sub;
+drop table t;
+drop user u cascade;
 disconnect S0;
 close E0;

@@ -51,6 +51,7 @@ sub_allocate(SubConfig* config, Catalog* catalog, Uuid* id)
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_id(rel, &self->config->id);
+	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)sub_show);
 	rel_set_free(rel, (RelFree)sub_free);
 	rel_set_rsn(rel, state_rsn_next());

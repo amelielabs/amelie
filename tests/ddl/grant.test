@@ -363,5 +363,25 @@ show grants on fun;
 drop user u;
 show grants on fun;
 
+# test: select (from subscription)
+create user u;
+create table t (id int primary key, data int);
+create subscription t_sub on t;
+insert into t values (1, 10), (2, 20);
+
+connect E0 S1 u@127.0.0.1:3485;
+switch S1;
+
+select * from amelie.t;
+explain select * from amelie.t_sub;
+select * from amelie.t_sub;
+
+switch S0;
+disconnect S1;
+
+drop subscription t_sub;
+drop table t;
+drop user u cascade;
+
 disconnect S0;
 close E0;
