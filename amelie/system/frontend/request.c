@@ -104,6 +104,8 @@ request_auth(Request* self, Auth* auth_ref)
 
 	// check permissions
 	switch (opt_int_of(&endpoint->endpoint)) {
+	case ENDPOINT_SQL:
+		break;
 	case ENDPOINT_RPC:
 		user_check(self->user, PERM_RPC);
 		break;
@@ -112,6 +114,8 @@ request_auth(Request* self, Auth* auth_ref)
 		user_check(self->user, PERM_SERVICE);
 		break;
 	}
+
+	// check for /sql and /rpc (sql)
 	if (self->type == REQUEST_SQL)
 		user_check(self->user, PERM_SQL);
 }

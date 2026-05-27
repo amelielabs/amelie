@@ -144,11 +144,12 @@ follower_execute(Follower* self, Str* content)
 	// parse
 	auto on_error = error_catch
 	(
+		// parse
+		request_rpc(req, content);
+
 		// auth (take catalog lock)
 		request_auth(req, &self->fe->auth);
 
-		// parse
-		request_rpc(req, content);
 		if (req->type == REQUEST_FOLLOW)
 			follower_follow(self);
 		else
