@@ -89,14 +89,13 @@ recover_map(Recover*   self,
 		Uuid* uuid = NULL;
 		if (row->snapshot == 0)
 		{
-			auto arg = part->arg;
-			if (arg->cdc)
-				uuid = arg->id_table;
+			if (rel->subs > 0)
+				uuid = rel->id;
 		} else
 		{
 			// find clone snapshot
 			auto snapshot = snapshot_mgr_find(&(*table)->snapshot_mgr, row->snapshot);
-			if (snapshot && clone_of(snapshot->rel)->cdc)
+			if (snapshot && snapshot->rel->subs > 0)
 				uuid = snapshot->rel->id;
 		}
 

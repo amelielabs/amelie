@@ -39,7 +39,6 @@ static inline Clone*
 clone_allocate(CloneConfig* config)
 {
 	auto self = (Clone*)am_malloc(sizeof(Clone));
-	self->cdc    = 0;
 	self->config = clone_config_copy(config);
 	self->table  = NULL;
 

@@ -47,7 +47,7 @@ publish(Topic* self, Tr* tr, uint8_t* data, int data_size)
 	check_permission(tr, &self->rel, PERM_PUBLISH);
 
 	// publish command
-	if (! self->cdc)
+	if (! self->rel.subs)
 		return;
 
 	if (! self->config->unlogged)

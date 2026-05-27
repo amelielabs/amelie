@@ -16,7 +16,6 @@ typedef struct Clone Clone;
 struct Clone
 {
 	Rel          rel;
-	int          cdc;
 	CloneConfig* config;
 	Table*       table;
 };

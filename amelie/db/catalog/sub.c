@@ -24,8 +24,14 @@ static void
 sub_free(Sub* self, bool drop)
 {
 	unused(drop);
-	catalog_cdc_unref(self->catalog, &self->on_id);
-	cdc_detach(self->catalog->cdc, &self->slot);
+	auto catalog = self->catalog;
+	auto rel_match = catalog_find_by(catalog, REL_UNDEF, &self->config->id_rel, false);
+	if (rel_match)
+	{
+		rel_match->subs--;
+		assert(rel_match->subs >= 0);
+	}
+	cdc_detach(catalog->cdc, &self->slot);
 	sub_config_free(self->config);
 	am_free(self);
 }
@@ -37,12 +43,11 @@ sub_show(Sub* self, Buf* buf, int flags)
 }
 
 static Sub*
-sub_allocate(SubConfig* config, Catalog* catalog, Uuid* id)
+sub_allocate(SubConfig* config, Catalog* catalog)
 {
 	auto self = (Sub*)am_malloc(sizeof(Sub));
 	self->config  = sub_config_copy(config);
 	self->catalog = catalog;
-	self->on_id   = *id;
 	cdc_slot_init(&self->slot);
 
 	// set relation
@@ -72,18 +77,14 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 		return false;
 	}
 
-	// find and use relation for cdc
-	Uuid* id;
-	catalog_cdc_ref(self, user_of(tr->user),
-	                &config->rel_user,
-	                &config->rel,
-	                &id);
+	// find relation and check permission
+	auto rel_match = catalog_find_by(self, REL_UNDEF, &config->id_rel, true);
+	check_permission(tr, rel_match, PERM_CREATE_SUBSCRIPTION);
 
-	// allocate storage
-	auto sub = sub_allocate(config, self, id);
-
-	// register storage
+	// create subscription
+	auto sub = sub_allocate(config, self);
 	rel_mgr_create(&self->rels, tr, &sub->rel);
+	rel_match->subs++;
 
 	// set pos and prepare slot
 	cdc_slot_set(&sub->slot, config->lsn, config->lsn_op);

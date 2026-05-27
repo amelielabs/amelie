@@ -47,9 +47,20 @@ parse_sub_create(Stmt* self)
 	// [user.]relation
 	Str user;
 	Str target;
-	parse_target(self, &user, &target);
-	sub_config_set_rel_user(config, &user);
-	sub_config_set_rel(config, &target);
+	auto path = parse_target(self, &user, &target);
+
+	// find relation
+	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, &user, &target, false);
+	if (! rel)
+		stmt_error(self, path, "relation not found");
+
+	if (rel->type != REL_TABLE &&
+	    rel->type != REL_CLONE &&
+	    rel->type != REL_TOPIC)
+		stmt_error(self, path, "{s} cannot be used here",
+		           rel_type_of(rel->type));
+
+	sub_config_set_id_rel(config, rel->id);
 }
 
 void

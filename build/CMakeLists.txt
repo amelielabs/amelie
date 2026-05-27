@@ -215,7 +215,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/catalog_file.c
     ${AMELIE_ROOT}/db/catalog/catalog_snapshot.c
-    ${AMELIE_ROOT}/db/catalog/catalog_ref.c
     ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/wal/wal.c
     ${AMELIE_ROOT}/db/wal/wal_recovery.c

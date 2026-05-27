@@ -18,8 +18,7 @@ struct SubConfig
 	Str     user;
 	Str     name;
 	Uuid    id;
-	Str     rel_user;
-	Str     rel;
+	Uuid    id_rel;
 	int64_t lsn;
 	int64_t lsn_op;
 	Grants  grants;
@@ -34,9 +33,8 @@ sub_config_allocate(void)
 	self->lsn_op = 0;
 	str_init(&self->user);
 	str_init(&self->name);
-	str_init(&self->rel_user);
-	str_init(&self->rel);
 	uuid_init(&self->id);
+	uuid_init(&self->id_rel);
 	grants_init(&self->grants);
 	return self;
 }
@@ -46,8 +44,6 @@ sub_config_free(SubConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
-	str_free(&self->rel_user);
-	str_free(&self->rel);
 	grants_free(&self->grants);
 	am_free(self);
 }
@@ -73,17 +69,9 @@ sub_config_set_id(SubConfig* self, Uuid* id)
 }
 
 static inline void
-sub_config_set_rel_user(SubConfig* self, Str* name)
+sub_config_set_id_rel(SubConfig* self, Uuid* id)
 {
-	str_free(&self->rel_user);
-	str_copy(&self->rel_user, name);
-}
-
-static inline void
-sub_config_set_rel(SubConfig* self, Str* name)
-{
-	str_free(&self->rel);
-	str_copy(&self->rel, name);
+	self->id_rel = *id;
 }
 
 static inline void
@@ -100,8 +88,7 @@ sub_config_copy(SubConfig* self)
 	sub_config_set_user(copy, &self->user);
 	sub_config_set_name(copy, &self->name);
 	sub_config_set_id(copy, &self->id);
-	sub_config_set_rel_user(copy, &self->rel_user);
-	sub_config_set_rel(copy, &self->rel);
+	sub_config_set_id_rel(copy, &self->id_rel);
 	sub_config_set_pos(copy, self->lsn, self->lsn_op);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
@@ -118,8 +105,7 @@ sub_config_read(uint8_t** pos)
 		{ DECODE_STR,   "user",     &self->user     },
 		{ DECODE_STR,   "name",     &self->name     },
 		{ DECODE_UUID,  "id",       &self->id       },
-		{ DECODE_STR,   "rel_user", &self->rel_user },
-		{ DECODE_STR,   "rel",      &self->rel      },
+		{ DECODE_UUID,  "id_rel",   &self->id_rel   },
 		{ DECODE_INT,   "lsn",      &self->lsn      },
 		{ DECODE_INT,   "lsn_op",   &self->lsn_op   },
 		{ DECODE_ARRAY, "grants",   &pos_grants     },
@@ -156,13 +142,9 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "id", 2);
 	encode_uuid(buf, &self->id);
 
-	// rel_user
-	encode_raw(buf, "rel_user", 8);
-	encode_str(buf, &self->rel_user);
-
-	// rel
-	encode_raw(buf, "rel", 3);
-	encode_str(buf, &self->rel);
+	// id_rel
+	encode_raw(buf, "id_rel", 6);
+	encode_uuid(buf, &self->id_rel);
 
 	// lsn
 	encode_raw(buf, "lsn", 3);

@@ -18,7 +18,6 @@ struct Sub
 {
 	Rel        rel;
 	CdcSlot    slot;
-	Uuid       on_id;
 	Catalog*   catalog;
 	SubConfig* config;
 };

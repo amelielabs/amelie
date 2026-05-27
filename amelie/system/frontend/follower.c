@@ -49,7 +49,12 @@ follower_free(Follower* self)
 	list_foreach(&self->feed_mgr.list)
 	{
 		auto feed = list_at(Feed, link);
-		catalog_cdc_unref(&share()->db->catalog, &feed->id);
+		auto rel_match = catalog_find_by(&share()->db->catalog, REL_UNDEF, &feed->id, false);
+		if (rel_match)
+		{
+			rel_match->subs--;
+			assert(rel_match->subs >= 0);
+		}
 	}
 	feed_mgr_free(&self->feed_mgr);
 	websocket_free(&self->ws);
@@ -88,18 +93,30 @@ follower_follow(Follower* self)
 	if (feed)
 		error("feed '{str}': already exists", &req->rel);
 
-	// reference relation for cdc (check permission)
-	Uuid* id;
-	auto rel = catalog_cdc_ref(&share()->db->catalog, req->user,
-	                           user, &req->rel, &id);
+	// find relation
+	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, user, &req->rel, false);
+	if (! rel)
+		error("feed '{str}': relation not found", &req->rel);
+
+	if (rel->type != REL_TABLE &&
+	    rel->type != REL_CLONE &&
+	    rel->type != REL_TOPIC &&
+	    rel->type != REL_SUBSCRIPTION)
+		error("feed '{str}': {s} cannot be used here", &req->rel,
+		      rel_type_of(rel->type));
 
 	uint64_t lsn    = state_lsn() + 1;
 	uint32_t lsn_op = 0;
+	Uuid*    id;
 	if (rel->type == REL_SUBSCRIPTION)
 	{
 		auto sub = sub_of(rel);
 		lsn    = sub->config->lsn;
 		lsn_op = sub->config->lsn_op + 1;
+		id     = &sub->config->id_rel;
+	} else {
+		id     = rel->id;
+		rel->subs++;
 	}
 
 	// create and register feed
@@ -130,7 +147,12 @@ follower_unfollow(Follower* self)
 		error("feed '{str}': does not exists", &req->rel);
 
 	// unref and remove
-	catalog_cdc_unref(&share()->db->catalog, &feed->id);
+	auto rel_match = catalog_find_by(&share()->db->catalog, REL_UNDEF, &feed->id, false);
+	if (rel_match)
+	{
+		rel_match->subs--;
+		assert(rel_match->subs >= 0);
+	}
 
 	feed_mgr_remove(&self->feed_mgr, feed);
 	feed_free(feed);

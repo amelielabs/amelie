@@ -14,7 +14,7 @@ create table test (id int primary key, data int);
 create subscription test_sub on test;
 show subs;
 show subscriptions;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
 # test: create subscription (table, if exists)
 create subscription test_sub on test;
@@ -64,7 +64,7 @@ update test set data = 2;
 select * from test_sub;
 
 # test: acknowledge
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
 acknowledge;
 acknowledge 123;
@@ -72,39 +72,39 @@ acknowledge test_sub;
 acknowledge test_sub to;
 
 acknowledge test_sub to 1;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 2, 10;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 3;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 6, 0;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 6, 1;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 6, 2;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 6, 3;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 6, 4;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 10, 1;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 # test: acknowledge (same value)
@@ -118,7 +118,7 @@ begin
   acknowledge test_sub to 10, 2;
   select error("abort");
 end;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
 # test: drop table
 drop table test;
@@ -141,7 +141,7 @@ create unlogged table test (id int primary key, data int);
 create subscription test_sub on test;
 show subs;
 show subscriptions;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
 # test: cdc (dml)
 insert into test values (1, 0), (2, 0), (3, 0);
@@ -159,7 +159,7 @@ create topic test;
 create subscription test_sub on test;
 show subs;
 show subscriptions;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
 # test: cdc (publish)
 publish to test;
@@ -171,11 +171,11 @@ select * from test_sub;
 
 # test: acknowledge
 acknowledge test_sub to 32;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 33, 1;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 # test: drop topic
@@ -189,7 +189,7 @@ create unlogged topic test;
 create subscription test_sub on test;
 show subs;
 show subscriptions;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
 # test: cdc (publish)
 publish to test;
@@ -201,11 +201,11 @@ select * from test_sub;
 
 # test: acknowledge
 acknowledge test_sub to 41;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 42, 1;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 # test: drop topic
@@ -220,7 +220,7 @@ create subscription test_sub on test;
 create clone test_clone of test;
 create subscription test_clone_sub on test_clone;
 
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
 insert into test values (123);
 insert into test_clone values (1), (2), (3);

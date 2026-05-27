@@ -16,7 +16,6 @@ typedef struct Topic Topic;
 struct Topic
 {
 	Rel          rel;
-	int          cdc;
 	TopicConfig* config;
 };
 

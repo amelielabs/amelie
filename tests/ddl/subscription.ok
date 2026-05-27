@@ -30,11 +30,11 @@ subscriptions
   "user": "amelie",
   "name": "test_sub"
 }
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  1    0
+lsn  lsn_op
+─────────────
+1    0
 # test: create subscription (table, if exists)
 create subscription test_sub on test;
 error: relation 'test_sub': already exists
@@ -150,11 +150,11 @@ lsn  lsn_op  cmd     row
 10   1       write   {"id": 5, "data": 2}
 10   2       write   {"id": 6, "data": 2}
 # test: acknowledge
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  1    0
+lsn  lsn_op
+─────────────
+1    0
 acknowledge;
 error: acknowledge❰;❱ ⟵ name expected
 acknowledge 123;
@@ -164,11 +164,11 @@ error: acknowledge test_sub❰;❱ ⟵ TO expected
 acknowledge test_sub to;
 error: acknowledge test_sub to❰;❱ ⟵ int expected
 acknowledge test_sub to 1;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  1    0
+lsn  lsn_op
+─────────────
+1    0
 select * from test_sub;
 
 lsn  lsn_op  cmd     row
@@ -187,11 +187,11 @@ lsn  lsn_op  cmd     row
 10   1       write   {"id": 5, "data": 2}
 10   2       write   {"id": 6, "data": 2}
 acknowledge test_sub to 2, 10;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  2    10
+lsn  lsn_op
+─────────────
+2    10
 select * from test_sub;
 
 lsn  lsn_op  cmd     row
@@ -210,11 +210,11 @@ lsn  lsn_op  cmd     row
 10   1       write   {"id": 5, "data": 2}
 10   2       write   {"id": 6, "data": 2}
 acknowledge test_sub to 3;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  3    0
+lsn  lsn_op
+─────────────
+3    0
 select * from test_sub;
 
 lsn  lsn_op  cmd     row
@@ -232,11 +232,11 @@ lsn  lsn_op  cmd     row
 10   1       write   {"id": 5, "data": 2}
 10   2       write   {"id": 6, "data": 2}
 acknowledge test_sub to 6, 0;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  6    0
+lsn  lsn_op
+─────────────
+6    0
 select * from test_sub;
 
 lsn  lsn_op  cmd     row
@@ -251,11 +251,11 @@ lsn  lsn_op  cmd     row
 10   1       write   {"id": 5, "data": 2}
 10   2       write   {"id": 6, "data": 2}
 acknowledge test_sub to 6, 1;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  6    1
+lsn  lsn_op
+─────────────
+6    1
 select * from test_sub;
 
 lsn  lsn_op  cmd     row
@@ -269,11 +269,11 @@ lsn  lsn_op  cmd     row
 10   1       write   {"id": 5, "data": 2}
 10   2       write   {"id": 6, "data": 2}
 acknowledge test_sub to 6, 2;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  6    2
+lsn  lsn_op
+─────────────
+6    2
 select * from test_sub;
 
 lsn  lsn_op  cmd     row
@@ -286,11 +286,11 @@ lsn  lsn_op  cmd     row
 10   1       write   {"id": 5, "data": 2}
 10   2       write   {"id": 6, "data": 2}
 acknowledge test_sub to 6, 3;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  6    3
+lsn  lsn_op
+─────────────
+6    3
 select * from test_sub;
 
 lsn  lsn_op  cmd     row
@@ -303,11 +303,11 @@ lsn  lsn_op  cmd     row
 10   1       write   {"id": 5, "data": 2}
 10   2       write   {"id": 6, "data": 2}
 acknowledge test_sub to 6, 4;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  6    4
+lsn  lsn_op
+─────────────
+6    4
 select * from test_sub;
 
 lsn  lsn_op  cmd     row
@@ -320,11 +320,11 @@ lsn  lsn_op  cmd     row
 10   1       write   {"id": 5, "data": 2}
 10   2       write   {"id": 6, "data": 2}
 acknowledge test_sub to 10, 1;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  10   1
+lsn  lsn_op
+─────────────
+10   1
 select * from test_sub;
 
 lsn  lsn_op  cmd    row
@@ -341,11 +341,11 @@ begin
   select error("abort");
 end;
 error: abort
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  10   2
+lsn  lsn_op
+─────────────
+10   2
 # test: drop table
 drop table test;
 select * from test_sub;
@@ -386,11 +386,11 @@ subscriptions
   "user": "amelie",
   "name": "test_sub"
 }
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  22   0
+lsn  lsn_op
+─────────────
+22   0
 # test: cdc (dml)
 insert into test values (1, 0), (2, 0), (3, 0);
 delete from test where id = 3;
@@ -427,11 +427,11 @@ subscriptions
   "user": "amelie",
   "name": "test_sub"
 }
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  29   0
+lsn  lsn_op
+─────────────
+29   0
 # test: cdc (publish)
 publish to test;
 publish to test 123;
@@ -448,11 +448,11 @@ lsn  lsn_op  cmd      row
 33   2       publish  3
 # test: acknowledge
 acknowledge test_sub to 32;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  32   0
+lsn  lsn_op
+─────────────
+32   0
 select * from test_sub;
 
 lsn  lsn_op  cmd      row
@@ -461,11 +461,11 @@ lsn  lsn_op  cmd      row
 33   1       publish  2
 33   2       publish  3
 acknowledge test_sub to 33, 1;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  33   1
+lsn  lsn_op
+─────────────
+33   1
 select * from test_sub;
 
 lsn  lsn_op  cmd      row
@@ -498,11 +498,11 @@ subscriptions
   "user": "amelie",
   "name": "test_sub"
 }
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  38   0
+lsn  lsn_op
+─────────────
+38   0
 # test: cdc (publish)
 publish to test;
 publish to test 123;
@@ -519,11 +519,11 @@ lsn  lsn_op  cmd      row
 42   2       publish  3
 # test: acknowledge
 acknowledge test_sub to 41;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  41   0
+lsn  lsn_op
+─────────────
+41   0
 select * from test_sub;
 
 lsn  lsn_op  cmd      row
@@ -532,11 +532,11 @@ lsn  lsn_op  cmd      row
 42   1       publish  2
 42   2       publish  3
 acknowledge test_sub to 42, 1;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel     lsn  lsn_op
-───────────────────────────────
-"amelie"  "test"  42   1
+lsn  lsn_op
+─────────────
+42   1
 select * from test_sub;
 
 lsn  lsn_op  cmd      row
@@ -555,12 +555,12 @@ create table test (id int primary key);
 create subscription test_sub on test;
 create clone test_clone of test;
 create subscription test_clone_sub on test_clone;
-select rel_user, rel, lsn, lsn_op from show subscriptions verbose;
+select lsn, lsn_op from show subscriptions verbose;
 
-rel_user  rel           lsn  lsn_op
-─────────────────────────────────────
-"amelie"  "test"        47   0
-"amelie"  "test_clone"  49   0
+lsn  lsn_op
+─────────────
+47   0
+49   0
 insert into test values (123);
 insert into test_clone values (1), (2), (3);
 select * from test_sub;

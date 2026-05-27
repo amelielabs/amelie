@@ -336,14 +336,6 @@ select * from test;
 truncate test;
 select * from test;
 
-# test: checkpoint and restart
-checkpoint;
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-select * from test;
-
 # test: drop column
 drop table test cascade;
 
@@ -372,6 +364,28 @@ select show('state').catalog_pending;
 select show('table', 'test', true).columns;
 select old_col from test order by id;
 select * from test order by id;
+drop table test;
+
+# test: subscription (rel rename)
+create table test (id int primary key);
+create subscription test_sub on test;
+alter table test rename to test_old;
+create table test (id int primary key, data int);
+
+# test: checkpoint and restart
+checkpoint;
+
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+insert into test_old values (1);
+insert into test values (2, 20);
+select * from test_sub;
+select * from test_old order by id;
+select * from test order by id;
+drop subscription test_sub;
 drop table test;
 
 disconnect S0;
