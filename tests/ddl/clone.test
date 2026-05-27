@@ -114,5 +114,21 @@ drop table main cascade;
 show clones;
 show functions;
 
+# test: truncate
+create table main (id int primary key);
+insert into main values (1), (2);
+create clone a of main;
+
+# not supported
+truncate a;
+
+select * from a;
+
+# truncated clones
+truncate main;
+select * from a;
+
+drop table main cascade;
+
 disconnect S0;
 close E0;

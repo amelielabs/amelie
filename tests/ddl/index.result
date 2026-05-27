@@ -1,0 +1,535 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+create table test (id int primary key, a int, b int);
+# test: create index parsing
+create index;
+error: create index❰;❱ ⟵ name expected
+create unique;
+error: create unique❰;❱ ⟵ INDEX expected
+create unique table;
+error: create unique ❰table❱ ⟵ INDEX expected
+create unique index;
+error: create unique index❰;❱ ⟵ name expected
+create index 1;
+error: create index ❰1❱ ⟵ name expected
+create index i;
+error: create index i❰;❱ ⟵ ON expected
+create index i 1;
+error: create index i ❰1❱ ⟵ ON expected
+create index i on;
+error: create index i on❰;❱ ⟵ name expected
+create index i on test;
+error: create index i on test❰;❱ ⟵ ( expected
+create index i on test 1;
+error: create index i on test ❰1❱ ⟵ ( expected
+create index i on test (;
+error: create index i on test (❰;❱ ⟵ name expected
+create index i on test ();
+error: create index i on test (❰)❱ ⟵ name expected
+# test: create index
+create index i on test (a);
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+# test: create index if not exists
+create index i on test (a);
+error: table 'test' index 'i': already exists
+create index if not exists i on test (a);
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+drop index i on test;
+# test: create index (compound key)
+create index i on test (b, a);
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 2,
+    "asc": true
+  }, {
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+drop index i on test;
+# test: create index (key reuse)
+create index i on test (a, a);
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+drop index i on test;
+# test: create index (unique)
+create unique index i on test (a);
+# test: create index (asc/desc)
+create unique index j on test (a asc, b desc, id);
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": true,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }]
+}, {
+  "name": "j",
+  "type": 2,
+  "unique": true,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 2,
+    "asc": false
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+drop table test;
+# test: create index using
+create table test (id int primary key, a int, b int);
+create index i on test (a) using;
+error: create index i on test (a) using❰;❱ ⟵ index type expected
+create index i on test (a) using hash;
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "i",
+  "type": 1,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+drop index i on test;
+create index i on test (a) using tree;
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+drop index i on test;
+create index i on test (a) using unknown;
+error: create index i on test (a) using ❰unknown❱ ⟵ unrecognized index type
+# test: drop index parsing
+drop index;
+error: drop index❰;❱ ⟵ name expected
+drop index 1;
+error: drop index ❰1❱ ⟵ name expected
+drop index '1';
+error: drop index ❰'1'❱ ⟵ name expected
+drop index i;
+error: drop index i❰;❱ ⟵ ON expected
+drop index i 1;
+error: drop index i ❰1❱ ⟵ ON expected
+drop index i on;
+error: drop index i on❰;❱ ⟵ name expected
+drop index i on 1;
+error: drop index i on ❰1❱ ⟵ name expected
+drop index i on test;
+error: table 'test' index 'i': not exists
+# test: drop index
+create index i on test (a);
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+drop index i on test;
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}]
+# test: drop index if exists
+drop index i on test;
+error: table 'test' index 'i': not exists
+drop index if exists i on test;
+# test: drop index with udf dep
+create index i on test (a);
+create function dep() begin insert into test values (1,2,3); end;
+show functions verbose;
+
+functions
+─────────
+{
+  "user": "amelie",
+  "name": "dep",
+  "text": "begin insert into test values (1,2,3); end",
+  "type": 0,
+  "args": [],
+  "returning": [],
+  "grants": []
+}
+drop index i on test;
+error: function 'amelie.dep' depends on table 'test'
+# test: drop index after udf drop
+drop function dep;
+drop index i on test;
+# test: drop index primary
+drop index `primary` on test;
+error: table 'test' index 'primary': primary index cannot be dropped
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}]
+# test: alter index parsing
+alter;
+error: alter❰;❱ ⟵ relation type expected
+alter index;
+error: alter index❰;❱ ⟵ name expected
+alter index 1;
+error: alter index ❰1❱ ⟵ name expected
+alter index if;
+error: alter index if❰;❱ ⟵ EXISTS expected
+alter index if not;
+error: alter index if ❰not❱ ⟵ EXISTS expected
+alter index if exists;
+error: alter index if exists❰;❱ ⟵ name expected
+alter index i;
+error: alter index i❰;❱ ⟵ ON expected
+alter index i 1;
+error: alter index i ❰1❱ ⟵ ON expected
+alter index i on;
+error: alter index i on❰;❱ ⟵ name expected
+alter index i on test;
+error: alter index i on test❰;❱ ⟵ RENAME expected
+alter index i on test 1;
+error: alter index i on test ❰1❱ ⟵ RENAME expected
+alter index i on test rename;
+error: alter index i on test rename❰;❱ ⟵ TO expected
+alter index i on test rename 1;
+error: alter index i on test rename ❰1❱ ⟵ TO expected
+alter index i on test rename to;
+error: alter index i on test rename to❰;❱ ⟵ name expected
+alter index i on test rename to 1;
+error: alter index i on test rename to ❰1❱ ⟵ name expected
+alter index i on test rename to;
+error: alter index i on test rename to❰;❱ ⟵ name expected
+# test: alter index rename
+create index i on test (a);
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+alter index i on test rename to j;
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "j",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+# test: alter index rename if exists
+alter index k on test rename to z;
+error: table 'test' index 'k': not exists
+alter index if exists k on test rename to z;
+# test: alter index rename (conflict)
+alter index j on test rename to j;
+error: table 'test' index 'j': already exists
+# test: drop index primary rename
+alter index `primary` on test rename to _;
+error: table 'test' index 'primary': primary index cannot be renamed
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "j",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+drop table test;
+# test: create index (with null keys)
+create table test (id int primary key, data int);
+insert into test values (1, null), (2, null), (3, 30);
+select * from test order by id;
+
+id  data
+──────────
+1   null
+2   null
+3   30
+create index i on test (data);
+error: indexate: null key column
+drop table test;
+# test: create index (after add column)
+create table test (id int primary key);
+insert into test values (1), (2);
+alter table test add column data int;
+select * from test;
+
+id  data
+──────────
+1   null
+2   null
+create index i on test (data);
+error: indexate: null key column
+drop table test;
+# test: create index (after add column with default)
+create table test (id int primary key);
+insert into test values (1), (2);
+alter table test add column data int default 1;
+select * from test;
+
+id  data
+──────────
+1   null
+2   null
+create index i on test (data);
+error: indexate: null key column
+drop table test;
+# test: create index (after add column with default not null)
+create table test (id int primary key);
+insert into test values (1), (2);
+alter table test add column data int not null default 1;
+error: alter table test add column data int not null default 1❰;❱ ⟵ NOT NULL currently not supported with ALTER
+drop table test;
+# test: create index (error recovery)
+create table test (id int primary key, data int) partitions 1;
+insert into test values (1, 10);
+insert into test values (2, 10);
+create unique index j on test (data);
+error: indexate: index unique constraint violation
+create index i on test (id);

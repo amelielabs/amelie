@@ -196,5 +196,23 @@ show functions;
 
 functions
 ─────────
+# test: truncate
+create table main (id int primary key);
+insert into main values (1), (2);
+create clone a of main;
+truncate a;
+error: truncate ❰a❱ ⟵ table not found
+select * from a;
+
+id
+──
+1
+2
+truncate main;
+select * from a;
+
+id
+──
+drop table main cascade;
 disconnect S0;
 close E0;
