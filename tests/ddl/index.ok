@@ -481,5 +481,50 @@ indexes
   }]
 }]
 drop table test;
+# test: create index (with null keys)
+create table test (id int primary key, data int);
+insert into test values (1, null), (2, null), (3, 30);
+select * from test order by id;
+
+id  data
+──────────
+1   null
+2   null
+3   30
+create index i on test (data);
+error: indexate: null key column
+drop table test;
+# test: create index (after add column)
+create table test (id int primary key);
+insert into test values (1), (2);
+alter table test add column data int;
+select * from test;
+
+id  data
+──────────
+1   null
+2   null
+create index i on test (data);
+error: indexate: null key column
+drop table test;
+# test: create index (after add column with default)
+create table test (id int primary key);
+insert into test values (1), (2);
+alter table test add column data int default 1;
+select * from test;
+
+id  data
+──────────
+1   null
+2   null
+create index i on test (data);
+error: indexate: null key column
+drop table test;
+# test: create index (after add column with default not null)
+create table test (id int primary key);
+insert into test values (1), (2);
+alter table test add column data int not null default 1;
+error: alter table test add column data int not null default 1❰;❱ ⟵ NOT NULL currently not supported with ALTER
+drop table test;
 disconnect S0;
 close E0;

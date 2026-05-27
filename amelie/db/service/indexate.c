@@ -106,6 +106,18 @@ indexate_begin(Indexate* self, Table* table, IndexConfig* config)
 	return true;
 }
 
+static inline bool
+indexate_with_null(Row* self, Index* index)
+{
+	list_foreach(&index->config->keys.list)
+	{
+		const auto column = list_at(Key, link)->column;
+		if (! row_column(self, column))
+			return true;
+	}
+	return false;
+}
+
 static void
 indexate_job(intptr_t* argv)
 {
@@ -123,6 +135,8 @@ indexate_job(intptr_t* argv)
 	for (; heap_iterator_has(&it); heap_iterator_next(&it))
 	{
 		auto row = heap_iterator_at(&it);
+		if (unlikely(indexate_with_null(row, self->index)))
+			error("indexate: null key column");
 		// get index head
 		if (! index_upsert(self->index, row, it_upsert))
 			continue;
