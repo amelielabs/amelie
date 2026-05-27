@@ -344,6 +344,35 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from test;
 
+# test: drop column
+drop table test cascade;
+
+create table test (id int primary key, old_col text, keep_col int);
+insert into test values (1, 'gone', 10), (2, 'gone2', 20);
+
+select show('state').catalog;
+select show('state').catalog_pending;
+
+alter table test drop column old_col;
+
+select show('table', 'test', true).columns;
+select old_col from test order by id;
+
+# test: checkpoint and restart
+checkpoint;
+
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select show('state').catalog;
+select show('state').catalog_pending;
+
+select show('table', 'test', true).columns;
+select old_col from test order by id;
+select * from test order by id;
+drop table test;
 
 disconnect S0;
 close E0;

@@ -336,5 +336,73 @@ select * from test;
 id  data
 ──────────
 2   3
+# test: drop column
+drop table test cascade;
+create table test (id int primary key, old_col text, keep_col int);
+insert into test values (1, 'gone', 10), (2, 'gone2', 20);
+alter table test drop column old_col;
+select show('table', 'test', true).columns;
+
+columns
+───────
+[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": [["not_null", true]]
+}, {
+  "name": "old_col",
+  "type": 4,
+  "type_size": 0,
+  "dropped": true,
+  "constraints": []
+}, {
+  "name": "keep_col",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": []
+}]
+select old_col from test order by id;
+error: select ❰old_col❱ ⟵ column not found
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select show('table', 'test', true).columns;
+
+columns
+───────
+[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": [["not_null", true]]
+}, {
+  "name": "old_col",
+  "type": 4,
+  "type_size": 0,
+  "dropped": true,
+  "constraints": []
+}, {
+  "name": "keep_col",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": []
+}]
+select old_col from test order by id;
+error: select ❰old_col❱ ⟵ column not found
+select * from test order by id;
+
+id  keep_col
+──────────────
+1   10
+2   20
+drop table test;
 disconnect S0;
 close E0;

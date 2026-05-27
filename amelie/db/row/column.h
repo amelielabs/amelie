@@ -77,6 +77,7 @@ column_copy(Column* self)
 	auto copy = column_allocate();
 	column_set_name(copy, &self->name);
 	column_set_type(copy, self->type, self->type_size);
+	column_set_dropped(copy, self->dropped);
 	constraints_copy(&self->constraints, &copy->constraints);
 	return copy;
 }
