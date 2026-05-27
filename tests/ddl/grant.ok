@@ -260,10 +260,11 @@ rels
 select amelie.fun();
 error: relation 'amelie.fun': permission denied
 execute amelie.fun();
-
-fun
-───
-123
+error: relation 'amelie.fun': permission denied
+post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "fun", "args": []}};
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'fun': not exists"}}
+post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "rel": "fun", "args": []}};
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'amelie.fun': permission denied"}}
 switch S0;
 grant execute on fun to test;
 switch S1;
@@ -296,6 +297,8 @@ execute amelie.fun();
 fun
 ───
 123
+post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "rel": "fun", "args": []}};
+{"jsonrpc": "2.0", "id": 11, "result": {"columns": ["fun"], "rows": [[123]]}}
 switch S0;
 # test: grant
 revoke grant from test;

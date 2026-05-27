@@ -305,6 +305,10 @@ session_request(Session* self)
 		return;
 	}
 
+	// permission to EXECUTE
+	if (stmt->id == STMT_EXECUTE)
+		user_check_permission(req->user, &compiler->program_udf->rel, PERM_EXECUTE);
+
 	// validate user permissions
 	user_check_access(req->user, &program->access);
 
