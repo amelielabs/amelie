@@ -232,6 +232,18 @@ drop subscription test_sub;
 drop subscription test_clone_sub;
 drop table test cascade;
 
+# test: create subscription (clone only)
+create table test (id int primary key);
+create clone test_clone of test;
+create subscription test_clone_sub on test_clone;
+
+insert into test_clone values (1), (2), (3);
+select * from test_clone_sub;
+select * from test_clone;
+
+drop subscription test_clone_sub;
+drop table test cascade;
+
 # test: alter subscription statement parsing
 create topic test;
 create subscription test_sub on test;

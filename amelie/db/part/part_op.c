@@ -106,7 +106,7 @@ part_persist(Part* self, Tr* tr, Snapshot* snapshot, Index* primary)
 	auto arg = self->arg;
 	if (! arg->unlogged)
 		log_persist_dml(&tr->log, arg->rel->id);
-	if (arg->rel->subs > 0)
+	if (snapshot->rel->subs > 0)
 	{
 		auto last = log_last(&tr->log);
 		log_cdc(&tr->log, last->cmd, snapshot->rel->id, last->row,
