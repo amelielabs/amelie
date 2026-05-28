@@ -599,6 +599,33 @@ id
 3
 drop subscription test_clone_sub;
 drop table test cascade;
+# test: create subscription (clone, parent drop)
+create table test (id int primary key);
+create clone test_clone of test;
+create subscription base_sub on test;
+create subscription clone_sub on test_clone;
+insert into test_clone values (1);
+select * from clone_sub;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────
+66   0       write  {"id": 1}
+drop subscription base_sub;
+insert into test_clone values (2);
+select * from clone_sub;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────
+66   0       write  {"id": 1}
+68   0       write  {"id": 2}
+select * from test_clone order by id;
+
+id
+──
+1
+2
+drop subscription clone_sub;
+drop table test cascade;
 # test: alter subscription statement parsing
 create topic test;
 create subscription test_sub on test;
@@ -642,7 +669,7 @@ select * from b_sub;
 
 lsn  lsn_op  cmd    row
 ─────────────────────────────────────────────
-71   0       write  {"id": 42, "data": 900}
+80   0       write  {"id": 42, "data": 900}
 drop subscription a_sub;
 drop subscription b_sub;
 drop table a;

@@ -138,6 +138,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			auto row = row_copy(part->heap, (Row*)*pos);
 			if (!snapshot || snapshot->id != row->snapshot)
 				snapshot = table_find_snapshot(table, row->snapshot, true);
+			heap_follow(part->heap, row->tsn, row->snapshot);
 			part_insert(part, tr, true, snapshot, row);
 			*pos += row_size(row);
 		}
