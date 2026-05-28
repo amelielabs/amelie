@@ -84,7 +84,7 @@ recover_map(Recover*   self,
 	track_follow(&part->track, row->tsn);
 
 	// apply table or clone cdc
-	if (record->lsn > self->min_sub)
+	if (record->lsn >= self->min_sub)
 	{
 		Uuid* uuid = NULL;
 		if (row->snapshot == 0)
@@ -99,11 +99,19 @@ recover_map(Recover*   self,
 				uuid = snapshot->rel->id;
 		}
 
-		if (uuid) {
+		if (uuid)
+		{
 			auto primary = part_primary(part);
-			log_cdc(&self->tr.log, cmd->cmd, uuid, row,
-			        index_keys(primary)->columns,
-			        runtime()->timezone);
+			auto pos = (uint8_t*)row;
+			auto end = (uint8_t*)row + cmd->size;
+			while (pos < end)
+			{
+				auto row = (Row*)pos;
+				log_cdc(&self->tr.log, cmd->cmd, uuid, row,
+				        index_keys(primary)->columns,
+				        runtime()->timezone);
+				pos += row_size(row);
+			}
 		}
 	}
 
