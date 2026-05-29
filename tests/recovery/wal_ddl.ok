@@ -947,27 +947,6 @@ lsn  lsn_op  cmd      row
 28   1       publish  2
 28   2       publish  3
 29   0       publish  null
-# test: drop topic
-drop topic top;
-show topics;
-
-topics
-──────
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-# test: validate state
-select show('state').lsn;
-
-lsn
-───
-39
-show topics;
-
-topics
-──────
 select * from test_;
 
 id
@@ -1008,6 +987,12 @@ show subs;
 
 subs
 ────
+# test: drop topic
+drop topic top;
+show topics;
+
+topics
+──────
 # test: restart
 disconnect S0;
 close E0;
@@ -1019,10 +1004,10 @@ select show('state').lsn;
 lsn
 ───
 44
-show subs;
+show topics;
 
-subs
-────
+topics
+──────
 # test: create topic (multi-stmt)
 create topic a;
 create topic b;

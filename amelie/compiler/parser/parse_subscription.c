@@ -30,6 +30,14 @@ parse_sub_create(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 
+	// ON
+	stmt_expect(self, KON);
+
+	// [user.]relation
+	Str user;
+	Str target;
+	parse_target(self, &user, &target);
+
 	// create subscription config
 	auto config = sub_config_allocate();
 	stmt->config = config;
@@ -39,52 +47,9 @@ parse_sub_create(Stmt* self)
 	uuid_init(&id);
 	uuid_generate(&id, &runtime()->random);
 	sub_config_set_id(config, &id);
+	sub_config_set_rel_user(config, &user);
+	sub_config_set_rel(config, &target);
 	sub_config_set_pos(config, state_lsn(), 0);
-
-	// ON
-	stmt_expect(self, KON);
-
-	// [user.]relation
-	Str user;
-	Str target;
-	auto path = parse_target(self, &user, &target);
-
-	// find relation
-	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, &user, &target, false);
-	if (! rel)
-		stmt_error(self, path, "relation not found");
-
-	auto unlogged = false;
-	switch (rel->type) {
-	case REL_TABLE:
-	{
-		auto table = table_of(rel);
-		unlogged = table->config->unlogged;
-		break;
-	}
-	case REL_CLONE:
-	{
-		auto clone = clone_of(rel);
-		unlogged = clone->table->config->unlogged;
-		break;
-	}
-	case REL_TOPIC:
-	{
-		auto topic = topic_of(rel);
-		unlogged = topic->config->unlogged;
-		break;
-	}
-	default:
-		stmt_error(self, path, "{s} cannot be used here",
-		           rel_type_of(rel->type));
-		break;
-	}
-
-	if (unlogged)
-		stmt_error(self, path, "unlogged {s} cannot be used with subscription",
-		           rel_type_of(rel->type));
-
-	sub_config_set_id_rel(config, rel->id);
 }
 
 void

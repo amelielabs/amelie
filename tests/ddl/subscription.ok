@@ -346,23 +346,19 @@ select lsn, lsn_op from show subscriptions verbose;
 lsn  lsn_op
 ─────────────
 10   2
-# test: drop table
+# test: drop table (cascade)
 drop table test;
-select * from test_sub;
+error: table 'test': depends on subscription 'amelie.test_sub'
+drop table test cascade;
+show tables;
 
-lsn  lsn_op  cmd  row
-───────────────────────
+tables
+──────
 # test: drop subscription statement parsing
 drop subscription;
 error: drop subscription❰;❱ ⟵ name expected
 drop subscription 123;
 error: drop subscription ❰123❱ ⟵ name expected
-# test: drop subscription
-drop subscription test_sub;
-show subs;
-
-subs
-────
 # test: drop subscription (if exists)
 drop subscription test_sub;
 error: subscription 'test_sub': not exists
@@ -370,7 +366,7 @@ drop subscription if exists test_sub;
 # test: create subscription (unlogged table)
 create unlogged table test (id int primary key, data int);
 create subscription test_sub on test;
-error: create subscription test_sub on ❰test❱ ⟵ unlogged table cannot be used with subscription
+error: subscription 'test_sub': unlogged table cannot be used with subscription
 drop table test;
 # test: create subscription (topic)
 create topic test;
@@ -395,7 +391,7 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-24   0
+23   0
 # test: cdc (publish)
 publish to test;
 publish to test 123;
@@ -405,11 +401,11 @@ select * from test_sub;
 
 lsn  lsn_op  cmd      row
 ────────────────────────────
-26   0       publish  null
-27   0       publish  123
-28   0       publish  1
-28   1       publish  2
-28   2       publish  3
+25   0       publish  null
+26   0       publish  123
+27   0       publish  1
+27   1       publish  2
+27   2       publish  3
 # test: acknowledge
 acknowledge test_sub to 27;
 select lsn, lsn_op from show subscriptions verbose;
@@ -421,9 +417,8 @@ select * from test_sub;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-28   0       publish  1
-28   1       publish  2
-28   2       publish  3
+27   1       publish  2
+27   2       publish  3
 acknowledge test_sub to 28, 1;
 select lsn, lsn_op from show subscriptions verbose;
 
@@ -432,29 +427,37 @@ lsn  lsn_op
 28   1
 select * from test_sub;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-28   2       publish  3
+lsn  lsn_op  cmd  row
+───────────────────────
 # test: drop topic
 drop topic test;
-select * from test_sub;
+error: topic 'test': depends on subscription 'amelie.test_sub'
+show subs;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-28   2       publish  3
-drop subscription test_sub;
+subs
+────
+{
+  "user": "amelie",
+  "name": "test_sub"
+}
+# test: drop topic (cascade)
+drop topic test cascade;
+show subs;
+
+subs
+────
 # test: create subscription (unlogged topic)
 create unlogged topic test;
 create subscription test_sub on test;
-error: create subscription test_sub on ❰test❱ ⟵ unlogged topic cannot be used with subscription
-drop topic test;
+error: subscription 'test_sub': unlogged topic cannot be used with subscription
+drop topic test cascade;
 # test: create subscription (unlogged clone)
 create unlogged table test (id int primary key);
 create clone test_clone of test;
 create subscription test_sub on test;
-error: create subscription test_sub on ❰test❱ ⟵ unlogged table cannot be used with subscription
+error: subscription 'test_sub': unlogged table cannot be used with subscription
 create subscription test_sub on test_clone;
-error: create subscription test_sub on ❰test_clone❱ ⟵ unlogged clone cannot be used with subscription
+error: subscription 'test_sub': unlogged clone cannot be used with subscription
 drop table test cascade;
 # test: create subscription (clone)
 create table test (id int primary key);
@@ -465,22 +468,22 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
+36   0
 38   0
-40   0
 insert into test values (123);
 insert into test_clone values (1), (2), (3);
 select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ─────────────────────────────────
-42   0       write  {"id": 123}
+40   0       write  {"id": 123}
 select * from test_clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-43   0       write  {"id": 1}
-43   1       write  {"id": 2}
-43   2       write  {"id": 3}
+41   0       write  {"id": 1}
+41   1       write  {"id": 2}
+41   2       write  {"id": 3}
 drop subscription test_sub;
 drop subscription test_clone_sub;
 drop table test cascade;
@@ -493,9 +496,9 @@ select * from test_clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-50   0       write  {"id": 1}
-50   1       write  {"id": 2}
-50   2       write  {"id": 3}
+48   0       write  {"id": 1}
+48   1       write  {"id": 2}
+48   2       write  {"id": 3}
 select * from test_clone;
 
 id
@@ -515,15 +518,15 @@ select * from clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-57   0       write  {"id": 1}
+55   0       write  {"id": 1}
 drop subscription base_sub;
 insert into test_clone values (2);
 select * from clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-57   0       write  {"id": 1}
-59   0       write  {"id": 2}
+55   0       write  {"id": 1}
+57   0       write  {"id": 2}
 select * from test_clone order by id;
 
 id
@@ -559,8 +562,8 @@ subs
 alter subscription test_sub rename to test_cdc;
 error: subscription 'test_sub': not exists
 alter subscription if exists test_sub rename to test_cdc;
-drop topic test;
 drop subscription test_cdc;
+drop topic test;
 # test: select from subscription (multiple rels)
 create table a (id int primary key, data int);
 create table b (id int primary key, data int);
@@ -575,7 +578,7 @@ select * from b_sub;
 
 lsn  lsn_op  cmd    row
 ─────────────────────────────────────────────
-71   0       write  {"id": 42, "data": 900}
+69   0       write  {"id": 42, "data": 900}
 drop subscription a_sub;
 drop subscription b_sub;
 drop table a;
@@ -603,26 +606,26 @@ select lsn, lsn_op from test_sub order by lsn_op;
 
 lsn  lsn_op
 ─────────────
-78   0
-78   1
-78   2
-78   3
-78   4
-78   5
-78   6
-78   7
-acknowledge test_sub to 78, 0;
+76   0
+76   1
+76   2
+76   3
+76   4
+76   5
+76   6
+76   7
+acknowledge test_sub to 76, 0;
 select lsn, lsn_op from test_sub order by lsn_op;
 
 lsn  lsn_op
 ─────────────
-78   1
-78   2
-78   3
-78   4
-78   5
-78   6
-78   7
+76   1
+76   2
+76   3
+76   4
+76   5
+76   6
+76   7
 select count(*) from test_sub;
 
 count
@@ -635,5 +638,23 @@ count
 8
 drop subscription test_sub;
 drop table test;
+# test: create subscription (table dep)
+create table test (id int primary key, data string);
+create subscription test_sub on test;
+alter table test rename column data to data2;
+error: subscription 'amelie.test_sub' depends on table 'test'
+alter table test rename to test2;
+error: subscription 'amelie.test_sub' depends on table 'test'
+drop table test cascade;
+# test: create subscription (topic dep)
+create topic test;
+create subscription test_sub on test;
+alter topic test rename to test2;
+error: subscription 'amelie.test_sub' depends on topic 'test'
+drop topic test cascade;
+show subs;
+
+subs
+────
 disconnect S0;
 close E0;

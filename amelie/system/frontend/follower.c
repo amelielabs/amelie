@@ -113,7 +113,7 @@ follower_follow(Follower* self)
 		auto sub = sub_of(rel);
 		lsn    = sub->config->lsn;
 		lsn_op = sub->config->lsn_op + 1;
-		id     = &sub->config->id_rel;
+		id     = sub->rel_on->id;
 	} else {
 		id     = rel->id;
 		rel->subs++;

@@ -349,20 +349,6 @@ select show('state').lsn;
 show subs;
 select * from top_sub;
 
-# test: drop topic
-drop topic top;
-show topics;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-show topics;
-
 select * from test_;
 select * from test_clone;
 select * from test_clone2;
@@ -380,6 +366,10 @@ drop table test_ cascade;
 drop subscription top_sub;
 show subs;
 
+# test: drop topic
+drop topic top;
+show topics;
+
 # test: restart
 disconnect S0;
 close E0;
@@ -388,7 +378,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show subs;
+show topics;
 
 # test: create topic (multi-stmt)
 create topic a;

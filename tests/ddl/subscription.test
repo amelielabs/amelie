@@ -120,17 +120,14 @@ begin
 end;
 select lsn, lsn_op from show subscriptions verbose;
 
-# test: drop table
+# test: drop table (cascade)
 drop table test;
-select * from test_sub;
+drop table test cascade;
+show tables;
 
 # test: drop subscription statement parsing
 drop subscription;
 drop subscription 123;
-
-# test: drop subscription
-drop subscription test_sub;
-show subs;
 
 # test: drop subscription (if exists)
 drop subscription test_sub;
@@ -167,14 +164,16 @@ select * from test_sub;
 
 # test: drop topic
 drop topic test;
-select * from test_sub;
+show subs;
 
-drop subscription test_sub;
+# test: drop topic (cascade)
+drop topic test cascade;
+show subs;
 
 # test: create subscription (unlogged topic)
 create unlogged topic test;
 create subscription test_sub on test;
-drop topic test;
+drop topic test cascade;
 
 # test: create subscription (unlogged clone)
 create unlogged table test (id int primary key);
@@ -250,8 +249,8 @@ show subs;
 alter subscription test_sub rename to test_cdc;
 alter subscription if exists test_sub rename to test_cdc;
 
-drop topic test;
 drop subscription test_cdc;
+drop topic test;
 
 # test: select from subscription (multiple rels)
 create table a (id int primary key, data int);
@@ -288,13 +287,29 @@ begin
 end;
 
 select lsn, lsn_op from test_sub order by lsn_op;
-acknowledge test_sub to 78, 0;
+acknowledge test_sub to 76, 0;
 select lsn, lsn_op from test_sub order by lsn_op;
 select count(*) from test_sub;
 select count(*) from test;
 
 drop subscription test_sub;
 drop table test;
+
+# test: create subscription (table dep)
+create table test (id int primary key, data string);
+create subscription test_sub on test;
+# errors
+alter table test rename column data to data2;
+alter table test rename to test2;
+drop table test cascade;
+
+# test: create subscription (topic dep)
+create topic test;
+create subscription test_sub on test;
+# error
+alter topic test rename to test2;
+drop topic test cascade;
+show subs;
 
 disconnect S0;
 close E0;

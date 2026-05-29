@@ -366,28 +366,6 @@ select old_col from test order by id;
 select * from test order by id;
 drop table test;
 
-# test: subscription (rel rename)
-create table test (id int primary key);
-create subscription test_sub on test;
-alter table test rename to test_old;
-create table test (id int primary key, data int);
-
-# test: checkpoint and restart
-checkpoint;
-
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-insert into test_old values (1);
-insert into test values (2, 20);
-select * from test_sub;
-select * from test_old order by id;
-select * from test order by id;
-drop subscription test_sub;
-drop table test;
-
 # test: subscription (multi-row)
 create table test (id int primary key, data int);
 create subscription test_sub on test;
@@ -410,7 +388,7 @@ drop table test;
 create table test (id int primary key, data int);
 create subscription test_sub on test;
 insert into test values (1, 10), (2, 20), (3, 30);
-acknowledge test_sub to 42, 0;
+acknowledge test_sub to 34, 0;
 select * from test_sub;
 
 # test: checkpoint and restart
@@ -426,6 +404,43 @@ select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 select * from test order by id;
 drop table test;
+drop table test cascade;
+
+# test: subscription (drop source)
+create table test (id int primary key);
+create subscription test_sub on test;
+# error
+drop table test;
+drop table test cascade;
+checkpoint;
+
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+show subs;
+show tables;
+
+# test: subscription (source alter)
+create table test (id int primary key, data int);
+create subscription test_sub on test;
+insert into test values (1, 10);
+select * from test_sub;
+
+# error
+alter table test rename column data to data_new;
+select * from test_sub;
+checkpoint;
+
+disconnect S0;
+close E0;
+
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select * from test_sub;
+select * from test order by id;
+drop table test cascade;
 
 disconnect S0;
 close E0;

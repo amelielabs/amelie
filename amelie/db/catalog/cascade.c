@@ -32,6 +32,74 @@ catalog_deps_add(Buf* list, Rel* rel)
 	return true;
 }
 
+hot static inline bool
+catalog_depends(Catalog* self, Rel* rel, Rel* at)
+{
+	auto dep = false;
+	switch (rel->type) {
+	case REL_TABLE:
+	{
+		if (at->type == REL_CLONE)
+		{
+			// clone depends on the table
+			auto clone = clone_of(at);
+			dep = clone->table == table_of(rel);
+		} else
+		if (at->type == REL_UDF)
+		{
+			// udf depends on the table
+			auto udf = udf_of(at);
+			dep = self->iface->udf_depends(udf, rel->user, rel->name);
+		} else
+		if (at->type == REL_SUBSCRIPTION)
+		{
+			// subscription depends on the table
+			dep = rel == sub_of(at)->rel_on;
+		}
+		break;
+	}
+	case REL_TOPIC:
+	case REL_CLONE:
+	{
+		if (at->type == REL_UDF)
+		{
+			// udf depends on the rel
+			auto udf = udf_of(at);
+			dep = self->iface->udf_depends(udf, rel->user, rel->name);
+		} else
+		if (at->type == REL_SUBSCRIPTION)
+		{
+			// subscription depends on the rel
+			dep = rel == sub_of(at)->rel_on;
+		}
+		break;
+	}
+	case REL_SUBSCRIPTION:
+	{
+		if (at->type == REL_UDF)
+		{
+			// udf depends on the subscription
+			auto udf = udf_of(at);
+			dep = self->iface->udf_depends(udf, rel->user, rel->name);
+		}
+		break;
+	}
+	case REL_UDF:
+	{
+		if (at->type == REL_UDF)
+		{
+			// udf depends on the udf
+			auto udf = udf_of(at);
+			dep = self->iface->udf_depends(udf, rel->user, rel->name);
+		}
+		break;
+	}
+	default:
+		break;
+	}
+	return dep;
+}
+
 hot int
 catalog_deps(Catalog* self, Rel* rel, Buf* list)
 {
@@ -42,30 +110,7 @@ catalog_deps(Catalog* self, Rel* rel, Buf* list)
 		if (at == rel)
 			continue;
 
-		auto add = false;
-		switch (at->type) {
-		case REL_UDF:
-		{
-			auto udf = udf_of(at);
-			add = self->iface->udf_depends(udf, rel->user, rel->name);
-			break;
-		}
-		case REL_CLONE:
-		{
-			auto clone = clone_of(at);
-			if (rel->type == REL_TABLE)
-			{
-				// drop clone if tables matches is
-				add = clone->table == table_of(rel);
-				break;
-			}
-			break;
-		}
-		default:
-			break;
-		}
-
-		if (! add)
+		if (! catalog_depends(self, rel, at))
 			continue;
 
 		if (catalog_deps_add(list, at))
@@ -92,39 +137,12 @@ catalog_deps_validate(Catalog* self, Rel* rel, bool error_on_match)
 		auto at = list_at(Rel, link);
 		if (at == rel)
 			continue;
-
-		auto dep = false;
-		switch (at->type) {
-		case REL_UDF:
-		{
-			// udf depends on the relation
-			auto udf = udf_of(at);
-			dep = self->iface->udf_depends(udf, rel->user, rel->name);
-			break;
-		}
-		case REL_CLONE:
-		{
-			// clone depends on the table
-			auto clone =clone_of(at);
-			if (rel->type == REL_TABLE)
-			{
-				dep = clone->table == table_of(rel);
-				break;
-			}
-			break;
-		}
-		default:
-			break;
-		}
-
-		if (dep)
+		if (catalog_depends(self, rel, at))
 		{
 			if (error_on_match)
-			{
 				error("{s} '{str}.{str}' depends on {s} '{str}'",
 				      rel_type_of(at->type), at->user, at->name,
 				      rel_type_of(rel->type), rel->name);
-			}
 			return false;
 		}
 	}
@@ -152,6 +170,13 @@ catalog_deps_validate_user(Catalog* self, Str* user, bool error_on_match)
 			// clone depends on the user
 			auto clone = clone_of(at);
 			dep = str_compare(&clone->config->table_user, user);
+			break;
+		}
+		case REL_SUBSCRIPTION:
+		{
+			// subscription rel depends on the user
+			auto sub = sub_of(at);
+			dep = str_compare(&sub->config->rel_user, user);
 			break;
 		}
 		default:

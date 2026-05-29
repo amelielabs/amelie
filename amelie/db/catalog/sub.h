@@ -17,6 +17,7 @@ typedef struct Sub     Sub;
 struct Sub
 {
 	Rel        rel;
+	Rel*       rel_on;
 	CdcSlot    slot;
 	Catalog*   catalog;
 	SubConfig* config;

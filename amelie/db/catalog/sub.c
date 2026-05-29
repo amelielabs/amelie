@@ -25,11 +25,10 @@ sub_free(Sub* self, bool drop)
 {
 	unused(drop);
 	auto catalog = self->catalog;
-	auto rel_match = catalog_find_by(catalog, REL_UNDEF, &self->config->id_rel, false);
-	if (rel_match)
+	if (self->rel_on)
 	{
-		rel_match->subs--;
-		assert(rel_match->subs >= 0);
+		self->rel_on->subs--;
+		assert(self->rel_on->subs >= 0);
 	}
 	cdc_detach(catalog->cdc, &self->slot);
 	sub_config_free(self->config);
@@ -43,9 +42,10 @@ sub_show(Sub* self, Buf* buf, int flags)
 }
 
 static Sub*
-sub_allocate(SubConfig* config, Catalog* catalog)
+sub_allocate(SubConfig* config, Catalog* catalog, Rel* rel_on)
 {
 	auto self = (Sub*)am_malloc(sizeof(Sub));
+	self->rel_on  = rel_on;
 	self->config  = sub_config_copy(config);
 	self->catalog = catalog;
 	cdc_slot_init(&self->slot);
@@ -77,14 +77,44 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 		return false;
 	}
 
-	// find relation and check permission
-	auto rel_match = catalog_find_by(self, REL_UNDEF, &config->id_rel, true);
-	check_permission(tr, rel_match, PERM_CREATE_SUBSCRIPTION);
+	// find and validate relation
+	auto on = catalog_find(self, REL_UNDEF, &config->rel_user, &config->rel, true);
+	auto unlogged = false;
+	switch (on->type) {
+	case REL_TABLE:
+	{
+		auto table = table_of(on);
+		unlogged = table->config->unlogged;
+		break;
+	}
+	case REL_CLONE:
+	{
+		auto clone = clone_of(on);
+		unlogged = clone->table->config->unlogged;
+		break;
+	}
+	case REL_TOPIC:
+	{
+		auto topic = topic_of(on);
+		unlogged = topic->config->unlogged;
+		break;
+	}
+	default:
+		error("subscription '{str}': cannot be used with {s}", &config->name,
+		      rel_type_of(on->type));
+		break;
+	}
+	if (unlogged)
+		error("subscription '{str}': unlogged {s} cannot be used with subscription",
+		      &config->name, rel_type_of(on->type));
+
+	// check permission
+	check_permission(tr, on, PERM_CREATE_SUBSCRIPTION);
 
 	// create subscription
-	auto sub = sub_allocate(config, self);
+	auto sub = sub_allocate(config, self, on);
 	rel_mgr_create(&self->rels, tr, &sub->rel);
-	rel_match->subs++;
+	on->subs++;
 
 	// set pos and prepare slot
 	cdc_slot_set(&sub->slot, config->lsn, config->lsn_op);
