@@ -54,10 +54,34 @@ parse_sub_create(Stmt* self)
 	if (! rel)
 		stmt_error(self, path, "relation not found");
 
-	if (rel->type != REL_TABLE &&
-	    rel->type != REL_CLONE &&
-	    rel->type != REL_TOPIC)
+	auto unlogged = false;
+	switch (rel->type) {
+	case REL_TABLE:
+	{
+		auto table = table_of(rel);
+		unlogged = table->config->unlogged;
+		break;
+	}
+	case REL_CLONE:
+	{
+		auto clone = clone_of(rel);
+		unlogged = clone->table->config->unlogged;
+		break;
+	}
+	case REL_TOPIC:
+	{
+		auto topic = topic_of(rel);
+		unlogged = topic->config->unlogged;
+		break;
+	}
+	default:
 		stmt_error(self, path, "{s} cannot be used here",
+		           rel_type_of(rel->type));
+		break;
+	}
+
+	if (unlogged)
+		stmt_error(self, path, "unlogged {s} cannot be used with subscription",
 		           rel_type_of(rel->type));
 
 	sub_config_set_id_rel(config, rel->id);
