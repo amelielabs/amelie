@@ -29,6 +29,9 @@ rel_mgr_free(RelMgr* self)
 	list_foreach_reverse_safe(&self->list)
 	{
 		auto rel = list_at(Rel, link);
+		hashtable_delete(&self->ht, &rel->link_ht);
+		if (rel->id != NULL)
+			hashtable_delete(&self->htid, &rel->link_htid);
 		rel_free(rel);
 	}
 	self->list_count = 0;

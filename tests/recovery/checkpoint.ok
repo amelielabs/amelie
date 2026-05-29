@@ -1106,5 +1106,48 @@ id  data
 3   30
 drop subscription test_sub;
 drop table test;
+# test: subscription (ack)
+create table test (id int primary key, data int);
+create subscription test_sub on test;
+insert into test values (1, 10), (2, 20), (3, 30);
+acknowledge test_sub to 42, 0;
+select * from test_sub;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────────────────
+42   1       write  {"id": 2, "data": 20}
+42   2       write  {"id": 3, "data": 30}
+# test: checkpoint and restart
+checkpoint;
+select * from test_sub;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────────────────
+42   1       write  {"id": 2, "data": 20}
+42   2       write  {"id": 3, "data": 30}
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select lsn, lsn_op from show subscriptions verbose;
+
+lsn  lsn_op
+─────────────
+10   0
+42   0
+select * from test_sub;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────────────────
+42   1       write  {"id": 2, "data": 20}
+42   2       write  {"id": 3, "data": 30}
+select * from test order by id;
+
+id  data
+──────────
+1   10
+2   20
+3   30
+drop table test;
 disconnect S0;
 close E0;
