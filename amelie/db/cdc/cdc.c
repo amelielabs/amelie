@@ -177,7 +177,7 @@ cdc_gc(Cdc* self)
 
 		// first event on the second page
 		auto ev = (CdcEvent*)second->data;
-		if (ev->lsn <= min)
+		if (ev->lsn < min)
 		{
 			list_unlink(first);
 			self->pages_count--;

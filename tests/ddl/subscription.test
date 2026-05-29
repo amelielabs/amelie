@@ -267,5 +267,34 @@ drop subscription b_sub;
 drop table a;
 drop table b;
 
+# test: create subscription (overflow)
+create table test (id int primary key, data string);
+create subscription test_sub on test;
+begin
+  declare i int := 0;
+  declare s string := "";
+  while i < 6000 do
+    s := concat(s, "xxxxxxxxxx");
+    i := i + 1;
+  end;
+  insert into test values (1, s);
+  insert into test values (2, s);
+  insert into test values (3, s);
+  insert into test values (4, s);
+  insert into test values (5, s);
+  insert into test values (6, s);
+  insert into test values (7, s);
+  insert into test values (8, s);
+end;
+
+select lsn, lsn_op from test_sub order by lsn_op;
+acknowledge test_sub to 78, 0;
+select lsn, lsn_op from test_sub order by lsn_op;
+select count(*) from test_sub;
+select count(*) from test;
+
+drop subscription test_sub;
+drop table test;
+
 disconnect S0;
 close E0;
