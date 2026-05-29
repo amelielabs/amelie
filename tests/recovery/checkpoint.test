@@ -435,11 +435,29 @@ checkpoint;
 
 disconnect S0;
 close E0;
-
 open E0;
 connect E0 S0 127.0.0.1:3485;
+
 select * from test_sub;
 select * from test order by id;
+drop table test cascade;
+
+# test: subscription (post checkpoint cdc)
+create table test (id int primary key, data int);
+create subscription test_sub on test;
+checkpoint;
+insert into test values (1, 0);
+insert into test values (2, 0);
+select * from test_sub;
+
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select * from test;
+# replied once
+select * from test_sub;
 drop table test cascade;
 
 disconnect S0;

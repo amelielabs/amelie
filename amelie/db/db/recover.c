@@ -83,7 +83,12 @@ recover_map(Recover*   self,
 	state_tsn_follow(row->tsn);
 	track_follow(&part->track, row->tsn);
 
-	// apply table or clone cdc
+	if (record->lsn > part->heap->header->lsn)
+		return part;
+
+	// skip partition if it is already includes lsn
+
+	// apply cdc
 	if (record->lsn >= self->min_sub)
 	{
 		Uuid* uuid = NULL;
@@ -114,10 +119,6 @@ recover_map(Recover*   self,
 			}
 		}
 	}
-
-	// skip partition if it is already includes lsn
-	if (record->lsn > part->heap->header->lsn)
-		return part;
 
 	return NULL;
 }
