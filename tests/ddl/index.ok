@@ -526,5 +526,18 @@ insert into test values (1), (2);
 alter table test add column data int not null default 1;
 error: alter table test add column data int not null default 1❰;❱ ⟵ NOT NULL currently not supported with ALTER
 drop table test;
+# test: create index (indexation error)
+create table test (id int primary key, data int) partitions 1;
+insert into test values (1, 10);
+insert into test values (2, 10);
+create unique index j on test (data);
+error: indexate: index unique constraint violation
+create index i on test (id);
+select count(*) from test use index (i);
+
+count
+─────
+2
+drop table test;
 disconnect S0;
 close E0;

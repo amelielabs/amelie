@@ -195,6 +195,10 @@ indexate_abort(Indexate* self, IndexConfig* config)
 	auto table_lock = lock(&table->rel, LOCK_EXCLUSIVE);
 	defer(unlock, table_lock);
 
+	// force commit prepared transactions
+	auto origin = self->origin;
+	track_sync(&origin->track, &origin->track.consensus);
+
 	list_foreach(&table->part_mgr.list)
 	{
 		auto part  = list_at(Part, link);
@@ -203,6 +207,15 @@ indexate_abort(Indexate* self, IndexConfig* config)
 			continue;
 		// todo: free indexes out of the lock
 		part_index_drop(part, &config->name);
+	}
+
+	// complete heap snapshot and apply heap updates
+	auto shadow = origin->heap_shadow;
+	if (shadow)
+	{
+		part_apply(origin, NULL);
+		origin->heap_shadow = NULL;
+		heap_free(shadow);
 	}
 }
 
@@ -258,6 +271,7 @@ indexate_next(Indexate* self, Table* table, IndexConfig* config)
 	{
 		// drop all created indexes from the table partitions
 		indexate_abort(self, config);
+
 		if (self->index)
 		{
 			index_free(self->index);
