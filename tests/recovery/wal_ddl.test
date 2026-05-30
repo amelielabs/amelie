@@ -111,62 +111,6 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('table', 'test2', true).columns;
 
-# test: alter table set stored
-alter table test2 set column abc as (1 + 1) stored;
-select show('table', 'test2', true).columns;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-select show('table', 'test2', true).columns;
-
-# test: alter table unset stored
-alter table test2 unset column abc as stored;
-select show('table', 'test2', true).columns;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-select show('table', 'test2', true).columns;
-
-# test: alter table set resolved
-alter table test2 set column abc as (1 + 1) resolved;
-select show('table', 'test2', true).columns;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-select show('table', 'test2', true).columns;
-
-# test: alter table unset resolved
-alter table test2 unset column abc as resolved;
-select show('table', 'test2', true).columns;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-select show('table', 'test2', true).columns;
-
 # test: alter table column drop
 alter table test2 drop column abc;
 select abc from test2;

@@ -736,6 +736,41 @@ error: create table test (id serial primary key, ❰data❱ ⟵ only one IDENTIT
 # test: constraint serial as identity
 create table test (id serial primary key as identity);
 error: create table test (id serial primary key as ❰identity❱ ⟵ IDENTITY defined twice
+# test: as identity parsing
+create table test (id int primary key, data int always;
+error: create table test (id int primary key, data int ❰always❱ ⟵ ) expected
+create table test (id int primary key, data int always generated;
+error: create table test (id int primary key, data int ❰always❱ ⟵ ) expected
+create table test (id int primary key, data int always generated as;
+error: create table test (id int primary key, data int ❰always❱ ⟵ ) expected
+create table test (id int primary key, data int as;
+error: create table test (id int primary key, data int as❰;❱ ⟵ IDENTITY expected
+create table test (id int primary key, data int as identity;
+error: create table test (id int primary key, data int as identity❰;❱ ⟵ ) expected
+# test: as identity primary key
+create table test (id int primary key as identity);
+select show('table', 'test', true).columns;
+
+columns
+───────
+[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": [["not_null", true], ["as_identity", 1]]
+}]
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select * from test;
+
+id
+──
+0
+1
+2
+drop table test;
 # test: primary key using
 create table test (id int primary key using);
 error: create table test (id int primary key using❰)❱ ⟵ index type expected

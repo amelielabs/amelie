@@ -308,33 +308,6 @@ alter table test unset column data default;
 insert into test (id) values (1);
 select * from test;
 select show('table', 'test', true).columns;
-
-# test: set stored
-alter table test set column data as (1 + 1) stored;
-insert into test (id) values (3);
-select * from test;
-select show('table', 'test', true).columns;
-
-# test: unset stored
-alter table test unset column data as stored;
-insert into test (id) values (4);
-select * from test;
-select show('table', 'test', true).columns;
-
-# test: set resolved
-alter table test set column data default 0;
-alter table test set column data as (data + 1) resolved;
-insert into test (id) values (5);
-insert into test (id) values (5);
-insert into test (id) values (5);
-select * from test;
-select show('table', 'test', true).columns;
-
-# test: unset resolved
-alter table test unset column data as resolved;
-insert into test (id) values (5);
-select * from test;
-select show('table', 'test', true).columns;
 drop table test;
 
 # test: rename with udf dep

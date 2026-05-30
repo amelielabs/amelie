@@ -194,9 +194,6 @@ bench_run(Bench* self)
 	if (str_is_cstr(type, "upsert"))
 		self->iface = &bench_upsert;
 	else
-	if (str_is_cstr(type, "resolved"))
-		self->iface = &bench_resolved;
-	else
 	if (str_is_cstr(type, "decre"))
 		self->iface = &bench_decre;
 	else

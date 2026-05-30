@@ -476,9 +476,6 @@ parse_value_validate(Stmt* self, Column* column, Value* value, Ast* expr)
 		return;
 
 	auto cons = &column->constraints;
-	if (! str_empty(&cons->as_stored))
-		return;
-
 	if (cons->not_null && !cons->as_identity)
 	{
 		if (self)

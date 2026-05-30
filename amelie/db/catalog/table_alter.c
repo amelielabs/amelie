@@ -368,16 +368,6 @@ table_column_set(Catalog* self,
 		constraints_set_default_str(&column->constraints, value);
 		break;
 	}
-	case DDL_TABLE_COLUMN_SET_STORED:
-	{
-		constraints_set_as_stored(&column->constraints, value);
-		break;
-	}
-	case DDL_TABLE_COLUMN_SET_RESOLVED:
-	{
-		constraints_set_as_resolved(&column->constraints, value);
-		break;
-	}
 	default: {
 		abort();
 		break;

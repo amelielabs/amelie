@@ -29,10 +29,8 @@ struct AstInsert
 	int       on_conflict;
 	Ast*      update_expr;
 	Ast*      update_where;
-	Ast*      generated_columns;
 	Stmt*     select;
 	From      from;
-	From      from_generated;
 	Returning ret;
 };
 
@@ -48,12 +46,9 @@ ast_insert_allocate(Block* block)
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
 	from_init(&self->from, block);
-	from_init(&self->from_generated, block);
 	ast_list_init(&self->rows);
 	returning_init(&self->ret);
 	return self;
 }
 
 void parse_insert(Stmt*);
-void parse_generated(Stmt*);
-void parse_resolved(Stmt*);

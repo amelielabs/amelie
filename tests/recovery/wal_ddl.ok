@@ -312,242 +312,6 @@ columns
   "dropped": false,
   "constraints": []
 }]
-# test: alter table set stored
-alter table test2 set column abc as (1 + 1) stored;
-select show('table', 'test2', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 8,
-  "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
-}, {
-  "name": "abc",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["as_stored", "1 + 1"]]
-}, {
-  "name": "obj",
-  "type": 5,
-  "type_size": 0,
-  "dropped": false,
-  "constraints": []
-}]
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-# test: validate state
-select show('state').lsn;
-
-lsn
-───
-8
-select show('table', 'test2', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 8,
-  "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
-}, {
-  "name": "abc",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["as_stored", "1 + 1"]]
-}, {
-  "name": "obj",
-  "type": 5,
-  "type_size": 0,
-  "dropped": false,
-  "constraints": []
-}]
-# test: alter table unset stored
-alter table test2 unset column abc as stored;
-select show('table', 'test2', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 8,
-  "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
-}, {
-  "name": "abc",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": []
-}, {
-  "name": "obj",
-  "type": 5,
-  "type_size": 0,
-  "dropped": false,
-  "constraints": []
-}]
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-# test: validate state
-select show('state').lsn;
-
-lsn
-───
-9
-select show('table', 'test2', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 8,
-  "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
-}, {
-  "name": "abc",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": []
-}, {
-  "name": "obj",
-  "type": 5,
-  "type_size": 0,
-  "dropped": false,
-  "constraints": []
-}]
-# test: alter table set resolved
-alter table test2 set column abc as (1 + 1) resolved;
-select show('table', 'test2', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 8,
-  "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
-}, {
-  "name": "abc",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["as_resolved", "1 + 1"]]
-}, {
-  "name": "obj",
-  "type": 5,
-  "type_size": 0,
-  "dropped": false,
-  "constraints": []
-}]
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-# test: validate state
-select show('state').lsn;
-
-lsn
-───
-10
-select show('table', 'test2', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 8,
-  "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
-}, {
-  "name": "abc",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["as_resolved", "1 + 1"]]
-}, {
-  "name": "obj",
-  "type": 5,
-  "type_size": 0,
-  "dropped": false,
-  "constraints": []
-}]
-# test: alter table unset resolved
-alter table test2 unset column abc as resolved;
-select show('table', 'test2', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 8,
-  "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
-}, {
-  "name": "abc",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": []
-}, {
-  "name": "obj",
-  "type": 5,
-  "type_size": 0,
-  "dropped": false,
-  "constraints": []
-}]
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-# test: validate state
-select show('state').lsn;
-
-lsn
-───
-11
-select show('table', 'test2', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 8,
-  "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
-}, {
-  "name": "abc",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": []
-}, {
-  "name": "obj",
-  "type": 5,
-  "type_size": 0,
-  "dropped": false,
-  "constraints": []
-}]
 # test: alter table column drop
 alter table test2 drop column abc;
 select abc from test2;
@@ -569,7 +333,7 @@ select show('state').lsn;
 
 lsn
 ───
-12
+8
 select identity_of("test2");
 
 identity_of
@@ -601,7 +365,7 @@ select show('state').lsn;
 
 lsn
 ───
-13
+9
 select identity_of("test2");
 
 identity_of
@@ -620,7 +384,7 @@ select show('state').lsn;
 
 lsn
 ───
-14
+10
 select * from test2 use index (i2);
 
 id  obj
@@ -638,7 +402,7 @@ select show('state').lsn;
 
 lsn
 ───
-14
+10
 select identity_of("test2");
 
 identity_of
@@ -674,7 +438,7 @@ select show('state').lsn;
 
 lsn
 ───
-15
+11
 select identity_of("test2");
 
 identity_of
@@ -738,7 +502,7 @@ select show('state').lsn;
 
 lsn
 ───
-20
+16
 select snapshot from show clones verbose;
 
 snapshot
@@ -790,7 +554,7 @@ select show('state').lsn;
 
 lsn
 ───
-22
+18
 show clones;
 
 clones
@@ -811,7 +575,7 @@ select show('state').lsn;
 
 lsn
 ───
-23
+19
 select identity_of("test2");
 
 identity_of
@@ -827,7 +591,7 @@ select show('state').lsn;
 
 lsn
 ───
-24
+20
 select identity_of("test2");
 error: table 'test2': not exists
 # test: restart
@@ -840,7 +604,7 @@ select show('state').lsn;
 
 lsn
 ───
-24
+20
 select * from test2;
 error: select * from ❰test2❱ ⟵ relation not found
 show tables;
@@ -867,7 +631,7 @@ select show('state').lsn;
 
 lsn
 ───
-25
+21
 show topics;
 
 topics
@@ -885,11 +649,11 @@ select * from top_sub;
 
 lsn  lsn_op  cmd      row
 ────────────────────────────
-27   0       publish  123
-28   0       publish  1
-28   1       publish  2
-28   2       publish  3
-29   0       publish  null
+23   0       publish  123
+24   0       publish  1
+24   1       publish  2
+24   2       publish  3
+25   0       publish  null
 show subs;
 
 subs
@@ -917,7 +681,7 @@ select show('state').lsn;
 
 lsn
 ───
-38
+34
 show subs;
 
 subs
@@ -942,11 +706,11 @@ select * from top_sub;
 
 lsn  lsn_op  cmd      row
 ────────────────────────────
-27   0       publish  123
-28   0       publish  1
-28   1       publish  2
-28   2       publish  3
-29   0       publish  null
+23   0       publish  123
+24   0       publish  1
+24   1       publish  2
+24   2       publish  3
+25   0       publish  null
 select * from test_;
 
 id
@@ -966,17 +730,17 @@ select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-36   0       write  {"id": 1}
+32   0       write  {"id": 1}
 select * from test_clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-37   0       write  {"id": 2}
+33   0       write  {"id": 2}
 select * from test_clone2_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-38   0       write  {"id": 3}
+34   0       write  {"id": 3}
 # test: drop subscription
 drop subscription test_sub;
 drop subscription test_clone_sub;
@@ -1003,7 +767,7 @@ select show('state').lsn;
 
 lsn
 ───
-44
+40
 show topics;
 
 topics
@@ -1022,15 +786,15 @@ select * from sa;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-49   0       publish  1
+45   0       publish  1
 select * from sb;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-49   1       publish  2
-49   2       publish  3
-49   3       publish  4
-49   4       publish  5
+45   1       publish  2
+45   2       publish  3
+45   3       publish  4
+45   4       publish  5
 # test: restart
 disconnect S0;
 close E0;
@@ -1040,15 +804,15 @@ select * from sa;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-49   0       publish  1
+45   0       publish  1
 select * from sb;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-49   1       publish  2
-49   2       publish  3
-49   3       publish  4
-49   4       publish  5
+45   1       publish  2
+45   2       publish  3
+45   3       publish  4
+45   4       publish  5
 drop subscription sa;
 drop subscription sb;
 drop topic a;
@@ -1058,7 +822,7 @@ select show('state').lsn;
 
 lsn
 ───
-53
+49
 show subs;
 
 subs
@@ -1074,7 +838,7 @@ select show('state').lsn;
 
 lsn
 ───
-54
+50
 # test: restart
 disconnect S0;
 close E0;
@@ -1085,7 +849,7 @@ select show('state').lsn;
 
 lsn
 ───
-54
+50
 select show('user', 'test').name;
 
 name
@@ -1107,7 +871,7 @@ select show('state').lsn;
 
 lsn
 ───
-55
+51
 # test: restart
 disconnect S0;
 close E0;
@@ -1118,7 +882,7 @@ select show('state').lsn;
 
 lsn
 ───
-55
+51
 select show('user', 'test2').name;
 
 name
@@ -1130,7 +894,7 @@ select show('state').lsn;
 
 lsn
 ───
-56
+52
 select show('user', 'test2').name;
 
 name
@@ -1146,7 +910,7 @@ select show('state').lsn;
 
 lsn
 ───
-56
+52
 select show('user', 'test').name;
 
 name
@@ -1170,7 +934,7 @@ select show('state').lsn;
 
 lsn
 ───
-57
+53
 show functions verbose;
 
 functions
@@ -1205,7 +969,7 @@ select show('state').lsn;
 
 lsn
 ───
-57
+53
 show functions verbose;
 
 functions
@@ -1260,7 +1024,7 @@ select show('state').lsn;
 
 lsn
 ───
-58
+54
 show functions verbose;
 
 functions
@@ -1295,7 +1059,7 @@ select show('state').lsn;
 
 lsn
 ───
-58
+54
 show functions verbose;
 
 functions
@@ -1334,7 +1098,7 @@ select show('state').lsn;
 
 lsn
 ───
-59
+55
 select [1,2,3]::reverse2;
 
 col1
@@ -1350,7 +1114,7 @@ select show('state').lsn;
 
 lsn
 ───
-59
+55
 show functions verbose;
 
 functions
@@ -1381,7 +1145,7 @@ select show('state').lsn;
 
 lsn
 ───
-60
+56
 show functions verbose;
 
 functions
@@ -1400,6 +1164,6 @@ select show('state').lsn;
 
 lsn
 ───
-60
+56
 disconnect S0;
 close E0;

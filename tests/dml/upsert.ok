@@ -13,9 +13,9 @@ error: insert into test values(1, 0) on conflict❰;❱ ⟵ DO expected
 insert into test values(1, 0) on conflict 123;
 error: insert into test values(1, 0) on conflict ❰123❱ ⟵ DO expected
 insert into test values(1, 0) on conflict do;
-error: insert into test values(1, 0) on conflict do❰;❱ ⟵ 'NOTHING | ERROR | UPDATE | RESOLVE' expected
+error: insert into test values(1, 0) on conflict do❰;❱ ⟵ 'NOTHING | ERROR | UPDATE' expected
 insert into test values(1, 0) on conflict do 123;
-error: insert into test values(1, 0) on conflict do ❰123❱ ⟵ 'NOTHING | ERROR | UPDATE | RESOLVE' expected
+error: insert into test values(1, 0) on conflict do ❰123❱ ⟵ 'NOTHING | ERROR | UPDATE' expected
 insert into test values(1, 0) on conflict do update;
 error: insert into test values(1, 0) on conflict do update❰;❱ ⟵ SET expected
 insert into test values(1, 0) on conflict do update set;
@@ -65,59 +65,6 @@ create table test (id int primary key, data int);
 insert into test values(1, 0) on conflict do error;
 insert into test values(1, 0) on conflict do error;
 error: unique key constraint violation
-drop table test;
-# test: on conflict do resolve (without resolved columns)
-create table test (id int primary key, data int);
-explain insert into test values(1, 0) on conflict do nothing;
-
-explain
-───────
-
-main
-  0   set_ptr             1      -      0
-  1   send_shard          0      1      0     # amelie.test (insert, closing)
-  2   ret                 -1     0      -
-
-pushdown
-  0   table_prepare       0      -      -     # amelie.test
-  1   jmp                 3      0      0
-  2   jmp                 1      0      0
-  3   upsert              0      2      -1
-  4   free                0      0      0
-  5   ret                 -1     0      -
-
-access
-  •   amelie.test shared_rw [insert]
-explain insert into test values(1, 0) on conflict do resolve;
-
-explain
-───────
-
-main
-  0   set_ptr             1      -      0
-  1   send_shard          0      1      0     # amelie.test (insert, closing)
-  2   ret                 -1     0      -
-
-pushdown
-  0   table_prepare       0      -      -     # amelie.test
-  1   jmp                 5      0      0
-  2   string              1      0      0     # unique key constraint violation
-  3   push                1      0      0
-  4   call                1      -      1     # error()
-  5   upsert              0      2      -1
-  6   free                0      0      0
-  7   ret                 -1     0      -
-
-access
-  •   amelie.test shared_rw [insert]
-insert into test values(1, 0) on conflict do resolve;
-insert into test values(1, 0) on conflict do resolve;
-error: unique key constraint violation
-select * from test;
-
-id  data
-──────────
-1   0
 drop table test;
 # test: upsert insert
 create table test (id int primary key, data int);

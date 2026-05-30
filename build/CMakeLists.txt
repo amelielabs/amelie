@@ -376,7 +376,6 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/bench/bench.c
     ${AMELIE_ROOT}/main/bench/bench_insert.c
     ${AMELIE_ROOT}/main/bench/bench_upsert.c
-    ${AMELIE_ROOT}/main/bench/bench_resolved.c
     ${AMELIE_ROOT}/main/bench/bench_tpcb.c
     ${AMELIE_ROOT}/main/bench/bench_import.c
     ${AMELIE_ROOT}/main/bench/bench_decre.c

@@ -145,24 +145,6 @@ import_insert(Parser* self, Table* table, Clone* clone, uint8_t* args)
 
 	// parse and set values
 	import_args(self, columns, insert->values, args);
-
-	// create a list of generated columns expressions
-	if (columns->count_stored > 0)
-		parse_generated(stmt);
-	
-	// if table has resolved columns, handle insert as upsert
-	// and apply the resolve expressions on conflicts
-	if (columns->count_resolved > 0)
-		parse_resolved(stmt);
-
-	// update requested permissions to UPDATE
-	if (insert->on_conflict == ON_CONFLICT_UPDATE)
-	{
-		auto access = access_find(&self->program->access,
-		                          &table->config->user,
-		                          &table->config->name);
-		access->perm |= PERM_UPDATE;
-	}
 }
 
 static void

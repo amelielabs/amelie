@@ -78,30 +78,6 @@ emit_alter_table(Compiler* self)
 			flags |= DDL_IF_COLUMN_EXISTS;
 		break;
 	}
-	case TABLE_ALTER_COLUMN_SET_STORED:
-	case TABLE_ALTER_COLUMN_UNSET_STORED:
-	{
-		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_STORED,
-		                             user, &arg->name,
-		                             &arg->column_name,
-		                             &arg->value);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		if (arg->if_column_exists)
-			flags |= DDL_IF_COLUMN_EXISTS;
-		break;
-	}
-	case TABLE_ALTER_COLUMN_SET_RESOLVED:
-	case TABLE_ALTER_COLUMN_UNSET_RESOLVED:
-	{
-		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_RESOLVED,
-		                             user, &arg->name,
-		                             &arg->column_name,
-		                             &arg->value);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		if (arg->if_column_exists)
-			flags |= DDL_IF_COLUMN_EXISTS;
-		break;
-	}
 	case TABLE_ALTER_STORAGE_ADD:
 	{
 		offset = table_op_storage_add(data, user, &arg->name, arg->volume);

@@ -157,8 +157,6 @@ Keyword keywords[] =
 	{ KREPL,                  "repl",                  4  },
 	{ KREPLICATION,           "replication",           11 },
 	{ KRANDOM,                "random",                6  },
-	{ KRESOLVE,               "resolve",               7  },
-	{ KRESOLVED,              "resolved",              8  },
 	{ KRESUME,                "resume",                6  },
 	{ KREVOKE,                "revoke",                6  },
 
@@ -173,7 +171,6 @@ Keyword keywords[] =
 	{ KSUBSCRIBE,             "subscribe",             9  },
 	{ KSUBSCRIPTION,          "subscription",          12 },
 	{ KSWITCH,                "switch",                6  },
-	{ KSTORED,                "stored",                6  },
 	{ KSTORAGE,               "storage",               7  },
 	{ KSYSTEM,                "system",                6  },
 

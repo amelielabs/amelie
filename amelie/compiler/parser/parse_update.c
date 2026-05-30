@@ -104,46 +104,6 @@ parse_update_expr(Stmt* self)
 	return expr;
 }
 
-hot Ast*
-parse_update_resolved(Stmt* self, Columns* columns)
-{
-	auto lex_origin = self->lex;
-	Lex lex;
-	lex_init(&lex, keywords_alpha);
-	self->lex = &lex;
-
-	Ast* expr_prev = NULL;
-	Ast* expr = NULL;
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-		if (str_empty(&column->constraints.as_resolved))
-			continue;
-
-		// column = <resolved expr>
-		auto op = ast(KSET);
-
-		// column name
-		op->l = ast(KNAME);
-		op->l->string = column->name;
-
-		// parse resolved expression
-		lex_init(&lex, keywords_alpha);
-		lex_start(&lex, &column->constraints.as_resolved);
-		op->r = parse_expr(self, NULL);
-
-		// op(column, expr)
-		if (expr == NULL)
-			expr = op;
-		else
-			expr_prev->next = op;
-		expr_prev = op;
-	}
-
-	self->lex = lex_origin;
-	return expr;
-}
-
 hot void
 parse_update(Stmt* self)
 {

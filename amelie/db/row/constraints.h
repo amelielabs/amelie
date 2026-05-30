@@ -25,8 +25,6 @@ struct Constraints
 	bool    not_null;
 	int64_t as_identity;
 	int64_t as_identity_modulo;
-	Str     as_stored;
-	Str     as_resolved;
 	Buf     value;
 };
 
@@ -36,16 +34,12 @@ constraints_init(Constraints* self)
 	self->not_null           = false;
 	self->as_identity        = IDENTITY_NONE;
 	self->as_identity_modulo = INT64_MAX;
-	str_init(&self->as_stored);
-	str_init(&self->as_resolved);
 	buf_init(&self->value);
 }
 
 static inline void
 constraints_free(Constraints* self)
 {
-	str_free(&self->as_stored);
-	str_free(&self->as_resolved);
 	buf_free(&self->value);
 }
 
@@ -68,20 +62,6 @@ constraints_set_as_identity_modulo(Constraints* self, int64_t value)
 }
 
 static inline void
-constraints_set_as_stored(Constraints* self, Str* value)
-{
-	str_free(&self->as_stored);
-	str_copy(&self->as_stored, value);
-}
-
-static inline void
-constraints_set_as_resolved(Constraints* self, Str* value)
-{
-	str_free(&self->as_resolved);
-	str_copy(&self->as_resolved, value);
-}
-
-static inline void
 constraints_set_default(Constraints* self, Buf* value)
 {
 	buf_reset(&self->value);
@@ -101,8 +81,6 @@ constraints_copy(Constraints* self, Constraints* copy)
 	constraints_set_not_null(copy, self->not_null);
 	constraints_set_as_identity(copy, self->as_identity);
 	constraints_set_as_identity_modulo(copy, self->as_identity_modulo);
-	constraints_set_as_stored(copy, &self->as_stored);
-	constraints_set_as_resolved(copy, &self->as_resolved);
 	constraints_set_default(copy, &self->value);
 }
 
@@ -127,12 +105,6 @@ constraints_read(Constraints* self, uint8_t** pos)
 		else
 		if (str_is_case(&name, "as_identity_modulo", 18))
 			unpack_int(pos, &self->as_identity_modulo);
-		else
-		if (str_is_case(&name, "as_stored", 9))
-			unpack_str_copy(pos, &self->as_stored);
-		else
-		if (str_is_case(&name, "as_resolved", 11))
-			unpack_str_copy(pos, &self->as_resolved);
 		else
 		if (str_is_case(&name, "default", 7))
 		{
@@ -177,24 +149,6 @@ constraints_write(Constraints* self, Buf* buf, int flags)
 		encode_array(buf);
 		encode_raw(buf, "as_identity_modulo", 18);
 		encode_int(buf, self->as_identity_modulo);
-		encode_array_end(buf);
-	}
-
-	// as_stored
-	if (! str_empty(&self->as_stored))
-	{
-		encode_array(buf);
-		encode_raw(buf, "as_stored", 9);
-		encode_str(buf, &self->as_stored);
-		encode_array_end(buf);
-	}
-
-	// as_resolved
-	if (! str_empty(&self->as_resolved))
-	{
-		encode_array(buf);
-		encode_raw(buf, "as_resolved", 11);
-		encode_str(buf, &self->as_resolved);
 		encode_array_end(buf);
 	}
 

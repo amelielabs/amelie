@@ -153,9 +153,6 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 
 			has_primary_key = true;
 
-			if (! str_empty(&cons->as_resolved))
-				stmt_error(self, name, "cannot be used together with RESOLVED");
-
 			// [USING type]
 			parse_index_using(self, ast_table_create_of(self->ast)->config_index);
 			break;
@@ -174,70 +171,37 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 
 		// AS IDENTITY
 		// AS IDENTITY RANDOM [(modulo])
-		// AS (expr) STORED | RESOLVED
 		case KAS:
 		{
-			auto identity = stmt_if(self, KIDENTITY);
-			if (identity)
+			auto identity = stmt_expect(self, KIDENTITY);
+
+			if (cons->as_identity)
+				stmt_error(self, identity, "IDENTITY defined twice");
+
+			// ensure the column has type INT64
+			if (column->type != TYPE_INT || column->type_size < 4)
+				stmt_error(self, identity, "identity column must be int or int64");
+
+			constraints_set_as_identity(cons, IDENTITY_SERIAL);
+
+			// RANDOM
+			if (stmt_if(self, KRANDOM))
 			{
-				if (cons->as_identity)
-					stmt_error(self, identity, "IDENTITY defined twice");
+				constraints_set_as_identity(cons, IDENTITY_RANDOM);
 
-				// ensure the column has type INT64
-				if (column->type != TYPE_INT || column->type_size < 4)
-					stmt_error(self, identity, "identity column must be int or int64");
-
-				constraints_set_as_identity(cons, IDENTITY_SERIAL);
-
-				// RANDOM
-				if (stmt_if(self, KRANDOM))
+				// [(modulo)]
+				if (stmt_if(self, '('))
 				{
-					constraints_set_as_identity(cons, IDENTITY_RANDOM);
+					// int
+					auto value = stmt_expect(self, KINT);
+					// )
+					stmt_expect(self, ')');
+					if (value->integer == 0)
+						stmt_error(self, value, "RANDOM modulo value cannot be zero");
 
-					// [(modulo)]
-					if (stmt_if(self, '('))
-					{
-						// int
-						auto value = stmt_expect(self, KINT);
-						// )
-						stmt_expect(self, ')');
-						if (value->integer == 0)
-							stmt_error(self, value, "RANDOM modulo value cannot be zero");
-
-						constraints_set_as_identity_modulo(cons, value->integer);
-					}
+					constraints_set_as_identity_modulo(cons, value->integer);
 				}
-				break;
 			}
-
-			// (
-			auto lbr = stmt_expect(self, '(');
-			// expr
-			parse_expr(self, NULL);
-			// )
-			auto rbr = stmt_expect(self, ')');
-
-			Str as;
-			str_set(&as, self->lex->start + lbr->pos_start, rbr->pos_end - lbr->pos_start - 1);
-			str_shrink(&as);
-			as.pos++;
-			str_shrink(&as);
-			if (str_empty(&as))
-				stmt_error(self, lbr, "AS expression is missing");
-
-			// STORED | RESOLVED
-			auto type = stmt_next(self);
-			if (type->id == KSTORED) {
-				constraints_set_as_stored(cons, &as);
-			} else
-			if (type->id == KRESOLVED)
-			{
-				constraints_set_as_resolved(cons, &as);
-			} else {
-				stmt_error(self, type, "STORED or RESOLVED expected");
-			}
-			if (type->id == KRESOLVED && column->refs > 0)
-				stmt_error(self, type, "cannot be used together with PRIMARY KEY");
 			break;
 		}
 
@@ -482,9 +446,7 @@ parse_table_alter(Stmt* self)
 	// ALTER TABLE [IF EXISTS] name DROP COLUMN [IF EXISTS] name
 	// ALTER TABLE [IF EXISTS] name RENAME COLUMN [IF EXISTS] name TO name
 	// ALTER TABLE [IF EXISTS] name SET COLUMN [IF EXISTS] name DEFAULT const
-	// ALTER TABLE [IF EXISTS] name SET COLUMN [IF EXISTS] name AS (expr) <STORED|RESOLVED>
 	// ALTER TABLE [IF EXISTS] name UNSET COLUMN [IF EXISTS] name DEFAULT
-	// ALTER TABLE [IF EXISTS] name UNSET COLUMN [IF EXISTS] name AS <IDENTITY|STORED|RESOLVED>
 	// ALTER TABLE [IF EXISTS] name ADD STORAGE [IF NOT EXISTS] name [(options])
 	// ALTER TABLE [IF EXISTS] name DROP STORAGE [IF EXISTS] name
 	// ALTER TABLE [IF EXISTS] name PAUSE STORAGE [IF EXISTS] name
@@ -671,7 +633,6 @@ parse_table_alter(Stmt* self)
 		}
 
 		// SET COLUMN DEFAULT
-		// SET COLUMN AS
 		if (stmt_if(self, KCOLUMN))
 		{
 			// [if exists]
@@ -681,62 +642,30 @@ parse_table_alter(Stmt* self)
 			auto name = stmt_expect(self, KNAME);
 			str_set_str(&stmt->column_name, &name->string);
 
-			// DEFAULT const
-			if (stmt_if(self, KDEFAULT))
-			{
-				// find table and column
-				auto table  = catalog_find_table(&share()->db->catalog,
-				                                 self->parser->user,
-				                                 &stmt->name, false);
-				if (! table)
-					stmt_error(self, target, "table not found");
-				auto column = columns_find(table_columns(table), &stmt->column_name);
-				if (! column)
-					stmt_error(self, name, "column does not exists");
+			// DEFAULT value
+			stmt_expect(self, KDEFAULT);
 
-				auto value = buf_create();
-				errdefer_buf(value);
-				parse_default(self, column, value);
+			// find table and column
+			auto table  = catalog_find_table(&share()->db->catalog, self->parser->user,
+			                                 &stmt->name, false);
+			if (! table)
+				stmt_error(self, target, "table not found");
+			auto column = columns_find(table_columns(table), &stmt->column_name);
+			if (! column)
+				stmt_error(self, name, "column does not exists");
 
-				stmt->value_buf = value;
-				buf_str(value, &stmt->value);
-				stmt->type = TABLE_ALTER_COLUMN_SET_DEFAULT;
-				return;
-			}
+			// value
+			auto value = buf_create();
+			errdefer_buf(value);
+			parse_default(self, column, value);
 
-			// AS (expr) <STORED | RESOLVED>
-			if (stmt_if(self, KAS))
-			{
-				// (
-				auto lbr = stmt_expect(self, '(');
-				// expr
-				parse_expr(self, NULL);
-				// )
-				auto rbr = stmt_expect(self, ')');
-
-				Str as;
-				str_set(&as, self->lex->start + lbr->pos_start, rbr->pos_end - lbr->pos_start - 1);
-				str_shrink(&as);
-				as.pos++;
-				str_shrink(&as);
-				if (str_empty(&as))
-					stmt_error(self, lbr, "AS expression is missing");
-				stmt->value = as;
-
-				// STORED | RESOLVED
-				auto type = stmt_next(self);
-				if (type->id == KSTORED)
-					stmt->type = TABLE_ALTER_COLUMN_SET_STORED;
-				else
-				if (type->id == KRESOLVED)
-					stmt->type = TABLE_ALTER_COLUMN_SET_RESOLVED;
-				else
-					stmt_error(self, type, "STORED or RESOLVED expected");
-				return;
-			}
+			stmt->value_buf = value;
+			buf_str(value, &stmt->value);
+			stmt->type = TABLE_ALTER_COLUMN_SET_DEFAULT;
+			return;
 		}
 
-		stmt_error(self, NULL, "'COLUMN DEFAULT | COLUMN AS' expected");
+		stmt_error(self, NULL, "'COLUMN DEFAULT' expected");
 		return;
 	}
 
@@ -744,8 +673,6 @@ parse_table_alter(Stmt* self)
 	if (stmt_if(self, KUNSET))
 	{
 		// UNSET COLUMN DEFAULT
-		// UNSET COLUMN AS STORED
-		// UNSET COLUMN AS RESOLVED
 		if (stmt_if(self, KCOLUMN))
 		{
 			// [if exists]
@@ -756,27 +683,13 @@ parse_table_alter(Stmt* self)
 			str_set_str(&stmt->column_name, &name->string);
 
 			// DEFAULT
-			if (stmt_if(self, KDEFAULT))
-			{
-				auto value = buf_create();
-				errdefer_buf(value);
-				stmt->value_buf = value;
-				buf_str(value, &stmt->value);
-				stmt->type = TABLE_ALTER_COLUMN_UNSET_DEFAULT;
-				return;
-			}
+			stmt_expect(self, KDEFAULT);
 
-			// AS
-			stmt_expect(self, KAS);
-
-			// IDENTITY | STORED | RESOLVED
-			if (stmt_if(self, KSTORED))
-				stmt->type = TABLE_ALTER_COLUMN_UNSET_STORED;
-			else
-			if (stmt_if(self, KRESOLVED))
-				stmt->type = TABLE_ALTER_COLUMN_UNSET_RESOLVED;
-			else
-				stmt_error(self, NULL, "'STORED or RESOLVED' expected");
+			auto value = buf_create();
+			errdefer_buf(value);
+			stmt->value_buf = value;
+			buf_str(value, &stmt->value);
+			stmt->type = TABLE_ALTER_COLUMN_UNSET_DEFAULT;
 			return;
 		}
 

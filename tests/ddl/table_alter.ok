@@ -52,7 +52,7 @@ id  data
 1   0
 2   0
 alter table test set;
-error: alter table test set❰;❱ ⟵ 'COLUMN DEFAULT | COLUMN AS' expected
+error: alter table test set❰;❱ ⟵ 'COLUMN DEFAULT' expected
 alter table test set identity ;
 error: alter table test set identity ❰;❱ ⟵ TO expected
 alter table test set identity 123;
@@ -985,123 +985,6 @@ columns
   "type_size": 4,
   "dropped": false,
   "constraints": []
-}]
-# test: set stored
-alter table test set column data as (1 + 1) stored;
-insert into test (id) values (3);
-select * from test;
-
-id  data
-──────────
-0   0
-1   null
-3   2
-select show('table', 'test', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["not_null", true]]
-}, {
-  "name": "data",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["as_stored", "1 + 1"]]
-}]
-# test: unset stored
-alter table test unset column data as stored;
-insert into test (id) values (4);
-select * from test;
-
-id  data
-──────────
-0   0
-1   null
-3   2
-4   null
-select show('table', 'test', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["not_null", true]]
-}, {
-  "name": "data",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": []
-}]
-# test: set resolved
-alter table test set column data default 0;
-alter table test set column data as (data + 1) resolved;
-insert into test (id) values (5);
-insert into test (id) values (5);
-insert into test (id) values (5);
-select * from test;
-
-id  data
-──────────
-0   0
-1   null
-3   2
-4   null
-5   2
-select show('table', 'test', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["not_null", true]]
-}, {
-  "name": "data",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["as_resolved", "data + 1"], ["default", true]]
-}]
-# test: unset resolved
-alter table test unset column data as resolved;
-insert into test (id) values (5);
-error: index 'primary': unique key constraint violation
-select * from test;
-
-id  data
-──────────
-0   0
-1   null
-3   2
-4   null
-5   2
-select show('table', 'test', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["not_null", true]]
-}, {
-  "name": "data",
-  "type": 2,
-  "type_size": 4,
-  "dropped": false,
-  "constraints": [["default", true]]
 }]
 drop table test;
 # test: rename with udf dep

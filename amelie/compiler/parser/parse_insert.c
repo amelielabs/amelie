@@ -66,34 +66,12 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 	return list;
 }
 
-hot void
-parse_resolved(Stmt* self)
-{
-	auto stmt = ast_insert_of(self->ast);
-	stmt->on_conflict = ON_CONFLICT_UPDATE;
-	// handle insert as upsert and generate
-	//
-	// SET <column> = <resolved column expression> [, ...]
-	auto table = from_first(&stmt->from)->from_table;
-	auto columns = table_columns(table);
-	stmt->update_expr = parse_update_resolved(self, columns);
-	if (! stmt->update_expr)
-		stmt->on_conflict = ON_CONFLICT_ERROR;
-}
-
 hot static inline void
 parse_on_conflict(Stmt* self, AstInsert* stmt)
 {
 	// ON CONFLICT
 	if (! stmt_if(self, KON))
-	{
-		// if table has resvoled conlumns and no explicit ON CONFLICT clause
-		// then handle as ON CONFLICT DO RESOLVE
-		auto table = from_first(&stmt->from)->from_table;
-		if (table->config->columns.count_resolved > 0)
-			parse_resolved(self);
 		return;
-	}
 
 	// CONFLICT
 	stmt_expect(self, KCONFLICT);
@@ -101,7 +79,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	// DO
 	stmt_expect(self, KDO);
 
-	// NOTHING | ERROR | UPDATE | RESOLVE
+	// NOTHING | ERROR | UPDATE
 	auto op = stmt_next(self);
 	switch (op->id) {
 	case KNOTHING:
@@ -126,74 +104,13 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		}
 		break;
 	}
-	case KRESOLVE:
-	{
-		// handle insert as upsert and generate
-		//
-		// SET <column> = <resolved column expression> [, ...]
-		parse_resolved(self);
-		break;
-	}
 	case KERROR:
 		stmt->on_conflict = ON_CONFLICT_ERROR;
 		break;
 	default:
-		stmt_error(self, op, "'NOTHING | ERROR | UPDATE | RESOLVE' expected");
+		stmt_error(self, op, "'NOTHING | ERROR | UPDATE' expected");
 		break;
 	}
-}
-
-hot void
-parse_generated(Stmt* self)
-{
-	auto stmt = ast_insert_of(self->ast);
-	auto table = from_first(&stmt->from)->from_table;
-	auto columns = table_columns(table);
-
-	// create a target to iterate inserted values to create new rows
-	// using the generated columns
-	auto target = target_allocate();
-	target->type    = TARGET_VALUES;
-	target->ast     = from_first(&stmt->from)->ast;
-	target->columns = from_first(&stmt->from)->columns;
-	target->name    = table->config->name;
-	from_add(&stmt->from_generated, target);
-
-	// parse generated columns expressions
-	auto lex_origin = self->lex;
-	Lex lex;
-	lex_init(&lex, keywords_alpha);
-	self->lex = &lex;
-
-	Ast* tail = NULL;
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-		if (str_empty(&column->constraints.as_stored))
-			continue;
-		lex_init(&lex, keywords_alpha);
-		lex_start(&lex, &column->constraints.as_stored);
-		Expr ctx =
-		{
-			.aggs   = NULL,
-			.select = false,
-			.from   = &stmt->from_generated
-		};
-
-		// op(column, expr)
-		auto op = ast(KSET);
-		op->l = ast(0);
-		op->l->column = column;
-		op->r = parse_expr(self, &ctx);
-
-		if (! stmt->generated_columns)
-			stmt->generated_columns = op;
-		else
-			tail->next = op;
-		tail = op;
-	}
-
-	self->lex = lex_origin;
 }
 
 hot void
@@ -201,7 +118,7 @@ parse_insert(Stmt* self)
 {
 	// INSERT INTO [user.]name [(column_list)]
 	// [GENERATE | VALUES (value, ..), ... | SELECT ...]
-	// [ON CONFLICT DO NOTHING | ERROR | UPDATE | RESOLVE]
+	// [ON CONFLICT DO NOTHING | ERROR | UPDATE]
 	// [RETURNING expr]
 	auto stmt = ast_insert_allocate(self->block);
 	self->ast = &stmt->ast;
@@ -274,10 +191,6 @@ parse_insert(Stmt* self)
 			stmt_error(self, values, "'VALUES | SELECT' expected");
 		}
 	}
-
-	// create a list of generated columns expressions
-	if (columns->count_stored > 0)
-		parse_generated(self);
 
 	// ON CONFLICT
 	parse_on_conflict(self, stmt);

@@ -19,43 +19,6 @@
 #include <amelie_plan.h>
 #include <amelie_compiler.h>
 
-static inline void
-emit_insert_store_generated_on_match(Scan* self)
-{
-	auto       cp     = self->compiler;
-	AstInsert* insert = self->on_match_arg;
-	auto       target = from_first(&insert->from_generated);
-
-	// generate and push to the stack each generated column expression
-	auto count = 0;
-	auto op = insert->generated_columns;
-	for (; op; op = op->next)
-	{
-		auto column = op->l->column;
-
-		// push column order
-		int rexpr = op2pin(cp, CINT, TYPE_INT, column->order);
-		op1(cp, CPUSH, rexpr);
-		runpin(cp, rexpr);
-
-		// push expr
-		auto type = emit_push(cp, self->from, op->r);
-
-		// ensure that the expression type is compatible
-		// with the column
-		if (unlikely(type != TYPE_NULL && column->type != type))
-			stmt_error(cp->current, &insert->ast,
-			           "column '{str}.{str}' generated expression type '{s}' does not match column type '{s}'",
-			           &target->name, &column->name,
-			           type_of(type),
-			           type_of(column->type));
-		count++;
-	}
-
-	// CUPDATE_STORE
-	op2(cp, CUPDATE_STORE, target->rcursor, count);
-}
-
 static int
 emit_insert_store_rows(Compiler* self)
 {
@@ -114,21 +77,6 @@ emit_insert_store(Compiler* self)
 		else
 			// use rows set created during parsing
 			r = op2pin(self, CSET_PTR, TYPE_STORE, (intptr_t)insert->values);
-	}
-
-	// scan over insert values to generate and apply stored columns
-	if (columns->count_stored > 0)
-	{
-		// store_open( rvalues )
-		auto values_dup = op2pin(self, CDUP, TYPE_STORE, r);
-		from_first(&insert->from_generated)->r = values_dup;
-		scan(self, &insert->from_generated,
-		     NULL,
-		     NULL,
-		     NULL,
-		     emit_insert_store_generated_on_match,
-		     insert);
-		runpin(self, values_dup);
 	}
 
 	return r;

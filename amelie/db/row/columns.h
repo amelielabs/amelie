@@ -17,18 +17,14 @@ struct Columns
 {
 	List    list;
 	int     count;
-	int     count_stored;
-	int     count_resolved;
 	Column* identity;
 };
 
 static inline void
 columns_init(Columns* self)
 {
-	self->count          = 0;
-	self->count_stored   = 0;
-	self->count_resolved = 0;
-	self->identity       = NULL;
+	self->count    = 0;
+	self->identity = NULL;
 	list_init(&self->list);
 }
 
@@ -50,14 +46,9 @@ columns_add(Columns* self, Column* column)
 	column->order = self->count;
 	self->count++;
 
-	auto cons = &column->constraints;
-	if (! str_empty(&cons->as_stored))
-		self->count_stored++;
-	if (! str_empty(&cons->as_resolved))
-		self->count_resolved++;
-
 	// save order of the first identity column
-	if (column->constraints.as_identity && !self->identity)
+	auto cons = &column->constraints;
+	if (cons->as_identity && !self->identity)
 		self->identity = column;
 }
 
@@ -67,13 +58,6 @@ columns_del(Columns* self, Column* column)
 	list_unlink(&column->link);
 	self->count--;
 	assert(self->count >= 0);
-
-	auto cons = &column->constraints;
-	if (! str_empty(&cons->as_stored))
-		self->count_stored--;
-	if (! str_empty(&cons->as_resolved))
-		self->count_resolved--;
-
 	if (self->identity == column)
 		self->identity = NULL;
 }
@@ -82,17 +66,11 @@ static inline void
 columns_sync(Columns* self)
 {
 	// sync generated columns count
-	self->count_stored   = 0;
-	self->count_resolved = 0;
-	self->identity       = NULL;
+	self->identity = NULL;
 	list_foreach_safe(&self->list)
 	{
 		auto column = list_at(Column, link);
 		auto cons = &column->constraints;
-		if (! str_empty(&cons->as_stored))
-			self->count_stored++;
-		if (! str_empty(&cons->as_resolved))
-			self->count_resolved++;
 		if (cons->as_identity && !self->identity)
 			self->identity = column;
 	}
