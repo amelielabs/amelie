@@ -31,8 +31,8 @@ catalog_snapshot(Catalog* self, Buf* data)
 	defer_buf(buf);
 	buf_write_buf(data, buf);
 
-	// volumes
-	encode_raw(data, "volumes", 7);
+	// storages
+	encode_raw(data, "storages", 8);
 	encode_array(data);
 	list_foreach(&self->rels.list)
 	{
@@ -40,7 +40,11 @@ catalog_snapshot(Catalog* self, Buf* data)
 		if (rel->type != REL_TABLE)
 			continue;
 		auto table = table_of(rel);
-		volume_mgr_list(&table->config->partitioning.volumes, data);
+		char id[UUID_SZ];
+		uuid_get(&table->config->id, id, sizeof(id));
+		char path[256];
+		auto path_size = format(path, sizeof(path), "storage/{s}", id);
+		encode_raw(data, path, path_size);
 	}
 	encode_array_end(data);
 

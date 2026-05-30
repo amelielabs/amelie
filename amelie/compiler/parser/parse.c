@@ -28,13 +28,6 @@ parse_stmt_free(Stmt* stmt)
 			replica_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_STORAGE:
-	{
-		auto ast = ast_storage_create_of(stmt->ast);
-		if (ast->config)
-			storage_config_free(ast->config);
-		break;
-	}
 	case STMT_CREATE_USER:
 	{
 		auto ast = ast_user_create_of(stmt->ast);
@@ -54,8 +47,6 @@ parse_stmt_free(Stmt* stmt)
 		auto ast = ast_table_alter_of(stmt->ast);
 		if (ast->column)
 			column_free(ast->column);
-		if (ast->volume)
-			volume_free(ast->volume);
 		if (ast->value_buf)
 			buf_free(ast->value_buf);
 		break;
@@ -311,11 +302,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_USER;
 			parse_user_create(self, true);
 		} else
-		if (stmt_if(self, KSTORAGE))
-		{
-			self->id = STMT_CREATE_STORAGE;
-			parse_storage_create(self);
-		} else
 		if (stmt_if(self, KTABLE))
 		{
 			self->id = STMT_CREATE_TABLE;
@@ -370,11 +356,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_USER;
 			parse_user_drop(self);
 		} else
-		if (stmt_if(self, KSTORAGE))
-		{
-			self->id = STMT_DROP_STORAGE;
-			parse_storage_drop(self);
-		} else
 		if (stmt_if(self, KTABLE))
 		{
 			self->id = STMT_DROP_TABLE;
@@ -428,11 +409,6 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_USER;
 			parse_user_alter(self);
-		} else
-		if (stmt_if(self, KSTORAGE))
-		{
-			self->id = STMT_ALTER_STORAGE;
-			parse_storage_alter(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{

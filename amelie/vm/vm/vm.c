@@ -1950,14 +1950,10 @@ cddl_create_index:
 	op_next;
 
 cddl_refresh:
-	// [table*, id, storage_name]
-	str_init(&string);
-	if (op->c != -1)
-		code_data_at_string(code_data, op->c, &string);
+	// [table*, id]
 	service_refresh(&share()->db->service,
 	                &((Table*)op->a)->config->id,
-	                op->b,
-	                str_empty(&string) ? NULL : &string);
+	                op->b);
 	op_next;
 
 csend_shard:

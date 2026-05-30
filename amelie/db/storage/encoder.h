@@ -90,9 +90,9 @@ encoder_open(Encoder* self, Storage* storage)
 
 	// set compression context
 	int id;
-	if (! str_empty(&storage->config->compression))
+	if (! str_empty(&storage->compression))
 	{
-		auto name = &storage->config->compression;
+		auto name = &storage->compression;
 		id = compression_idof(name);
 		if (id == -1)
 			error("invalid compression '{str}'", name);

@@ -175,28 +175,6 @@ select show('user', 'amelie').name;
 name
 ────
 "amelie"
-# test: storages
-select show('storages');
-
-show
-────
-[{
-  "name": "main",
-  "path": "",
-  "compression": "zstd",
-  "compression_level": 0
-}]
-# test: storage
-select show('storage', 'main');
-
-show
-────
-{
-  "name": "main",
-  "path": "",
-  "compression": "zstd",
-  "compression_level": 0
-}
 create table test (id int primary key);
 # test: tables
 select show('tables');
@@ -253,7 +231,6 @@ show
 ────
 [{
   "id": 1,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 0,
@@ -290,7 +267,7 @@ show
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 371,
+  "writes_bytes": 347,
   "ops": 1
 }
 # test: metrics

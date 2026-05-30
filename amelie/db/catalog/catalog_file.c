@@ -23,7 +23,6 @@
 enum
 {
 	RESTORE_USER,
-	RESTORE_STORAGE,
 	RESTORE_TABLE,
 	RESTORE_CLONE,
 	RESTORE_UDF,
@@ -49,16 +48,6 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 
 		// create user
 		user_create(self, tr, config, false);
-		break;
-	}
-	case RESTORE_STORAGE:
-	{
-		// read storage config
-		auto config = storage_config_read(pos);
-		defer(storage_config_free, config);
-
-		// create storage
-		storage_mgr_create(&self->storage_mgr, tr, config, false);
 		break;
 	}
 	case RESTORE_TABLE:
@@ -135,28 +124,26 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 static void
 catalog_restore(Catalog* self, uint8_t** pos)
 {
-	// { lsn, tsn, users, storages, tables, clones, udfs, topics, subs }
-	int64_t  lsn          = 0;
-	int64_t  tsn          = 0;
-	uint8_t* pos_users    = NULL;
-	uint8_t* pos_storages = NULL;
-	uint8_t* pos_tables   = NULL;
-	uint8_t* pos_clones   = NULL;
-	uint8_t* pos_udfs     = NULL;
-	uint8_t* pos_topics   = NULL;
-	uint8_t* pos_subs     = NULL;
+	// { lsn, tsn, users, tables, clones, udfs, topics, subs }
+	int64_t  lsn        = 0;
+	int64_t  tsn        = 0;
+	uint8_t* pos_users  = NULL;
+	uint8_t* pos_tables = NULL;
+	uint8_t* pos_clones = NULL;
+	uint8_t* pos_udfs   = NULL;
+	uint8_t* pos_topics = NULL;
+	uint8_t* pos_subs   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_INT,   "lsn",      &lsn          },
-		{ DECODE_INT,   "tsn",      &tsn          },
-		{ DECODE_ARRAY, "users",    &pos_users    },
-		{ DECODE_ARRAY, "storages", &pos_storages },
-		{ DECODE_ARRAY, "tables",   &pos_tables   },
-		{ DECODE_ARRAY, "clones",   &pos_clones   },
-		{ DECODE_ARRAY, "udfs",     &pos_udfs     },
-		{ DECODE_ARRAY, "topics",   &pos_topics   },
-		{ DECODE_ARRAY, "subs",     &pos_subs     },
-		{ 0,             NULL,       NULL         },
+		{ DECODE_INT,   "lsn",    &lsn          },
+		{ DECODE_INT,   "tsn",    &tsn          },
+		{ DECODE_ARRAY, "users",  &pos_users    },
+		{ DECODE_ARRAY, "tables", &pos_tables   },
+		{ DECODE_ARRAY, "clones", &pos_clones   },
+		{ DECODE_ARRAY, "udfs",   &pos_udfs     },
+		{ DECODE_ARRAY, "topics", &pos_topics   },
+		{ DECODE_ARRAY, "subs",   &pos_subs     },
+		{ 0,             NULL,     NULL         },
 	};
 	decode_obj(obj, "catalog", pos);
 
@@ -164,11 +151,6 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	unpack_array(&pos_users);
 	while (! unpack_array_end(&pos_users))
 		catalog_restore_object(self, RESTORE_USER, &pos_users);
-
-	// storages
-	unpack_array(&pos_storages);
-	while (! unpack_array_end(&pos_storages))
-		catalog_restore_object(self, RESTORE_STORAGE, &pos_storages);
 
 	// tables
 	unpack_array(&pos_tables);
@@ -246,7 +228,7 @@ catalog_read(Catalog* self)
 Buf*
 catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 {
-	// { lsn, tsn, users, storages, tables, clones, udfs, topics, subs }
+	// { lsn, tsn, users, tables, clones, udfs, topics, subs }
 	auto buf = buf_create();
 	encode_obj(buf);
 
@@ -261,10 +243,6 @@ catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 	// users
 	encode_raw(buf, "users", 5);
 	rel_mgr_dump(&self->users, REL_USER, buf, 0);
-
-	// storages
-	encode_raw(buf, "storages", 8);
-	storage_mgr_dump(&self->storage_mgr, buf);
 
 	// tables
 	encode_raw(buf, "tables", 6);

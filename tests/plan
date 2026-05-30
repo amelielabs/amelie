@@ -54,7 +54,6 @@ test lock
 directory ddl
 group ddl
 test user
-test storage
 test table_create
 test table_drop
 test table_alter

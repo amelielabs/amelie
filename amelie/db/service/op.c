@@ -23,7 +23,7 @@
 #include <amelie_service.h>
 
 void
-service_refresh(Service* self, Uuid* id_table, uint64_t id, Str* storage)
+service_refresh(Service* self, Uuid* id_table, uint64_t id)
 {
 	// note: executed under shared catalog lock
 	auto rel = catalog_find_by(self->catalog, REL_TABLE, id_table, true);
@@ -31,7 +31,7 @@ service_refresh(Service* self, Uuid* id_table, uint64_t id, Str* storage)
 	Refresh refresh;
 	refresh_init(&refresh, self);
 	defer(refresh_free, &refresh);
-	if (! refresh_run(&refresh, table, id, storage))
+	if (! refresh_run(&refresh, table, id))
 		error("partition or storage not found");
 }
 
@@ -74,7 +74,7 @@ service_checkpoint(Service* self)
 			if (id == UINT64_MAX)
 				break;
 
-			refresh_run(&refresh, table, id, NULL);
+			refresh_run(&refresh, table, id);
 		}
 	}
 

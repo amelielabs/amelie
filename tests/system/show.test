@@ -19,15 +19,6 @@ create user test;
 #show user test;
 #show user test;
 
-# test: show storages
-show storages;
-select * from show storages;
-
-# test: show storage
-show storage;
-show storage main;
-show storage main verbose;
-
 # test: show tables
 create table test (id int primary key);
 show tables;

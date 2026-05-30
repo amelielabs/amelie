@@ -148,8 +148,7 @@ indexate_job(intptr_t* argv)
 
 	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
 	auto id = &origin->id;
-	info("indexate: {s}/{05" PRIu64 "}.partition ({.2f} MiB)",
-	     id->volume->storage->config->name.pos,
+	info("indexate: {05" PRIu64 "}.partition ({.2f} MiB)",
 	     id->id,
 	     total);
 }

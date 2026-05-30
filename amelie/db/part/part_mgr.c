@@ -25,15 +25,15 @@ part_mgr_init(PartMgr*      self,
               void*         iface_arg,
               Partitioning* config,
               PartArg*      arg,
-              StorageMgr*   storage_mgr,
+              Storage*      storage,
               Keys*         keys)
 {
-	self->list_count  = 0;
-	self->config      = config;
-	self->arg         = arg;
-	self->iface       = iface;
-	self->iface_arg   = iface_arg;
-	self->storage_mgr = storage_mgr;
+	self->list_count = 0;
+	self->config     = config;
+	self->arg        = arg;
+	self->iface      = iface;
+	self->iface_arg  = iface_arg;
+	self->storage    = storage;
 	list_init(&self->list);
 	part_mapping_init(&self->mapping, keys);
 }
@@ -115,9 +115,8 @@ part_mgr_drop(PartMgr* self)
 	assert(! self->list_count);
 	list_init(&self->list);
 
-	// delete volumes
-	volume_mgr_rmdir(&self->config->volumes);
-	volume_mgr_unref(&self->config->volumes);
+	// delete storage directory
+	storage_rmdir(self->storage);
 }
 
 void
@@ -135,7 +134,6 @@ part_mgr_add(PartMgr* self, Part* part)
 {
 	list_append(&self->list, &part->link);
 	self->list_count++;
-	volume_add(part->id.volume, &part->link_volume);
 }
 
 void
@@ -143,13 +141,12 @@ part_mgr_remove(PartMgr* self, Part* part)
 {
 	list_unlink(&part->link);
 	self->list_count--;
-	volume_remove(part->id.volume, &part->link_volume);
 }
 
 Part*
 part_mgr_find(PartMgr* self, uint64_t psn)
 {
-	list_foreach_safe(&self->list)
+	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
 		if (part->id.id == psn)

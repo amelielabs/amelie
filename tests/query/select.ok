@@ -524,24 +524,22 @@ error: select * from ❰unknown❱ ⟵ function not found
 # test: select * from function() (unsupported json type)
 select * from main.show('wal');
 error: FROM: json array expected
-select * from main.show('storages');
+select * from main.show('users');
 
 show
 ────
 {
-  "name": "main",
-  "path": "",
-  "compression": "zstd",
-  "compression_level": 0
+  "name": "amelie",
+  "parent": "amelie"
 }
-explain select * from main.show('storages');
+explain select * from main.show('users');
 
 explain
 ───────
 
 main
   0   set                 0      1      0
-  1   push_string         0      0      0     # storages
+  1   push_string         0      0      0     # users
   2   call                1      -      1     # show()
   3   json_open           2      1      8
   4   json_read           3      2      0

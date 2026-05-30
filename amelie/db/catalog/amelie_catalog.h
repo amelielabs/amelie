@@ -14,9 +14,6 @@
 // ddl
 #include "catalog/ddl.h"
 
-// storage
-#include "catalog/storage_op.h"
-
 // user
 #include "catalog/user_config.h"
 #include "catalog/user_op.h"
@@ -28,7 +25,6 @@
 #include "catalog/table_op.h"
 #include "catalog/table.h"
 #include "catalog/table_alter.h"
-#include "catalog/table_storage.h"
 #include "catalog/table_index.h"
 
 // clone

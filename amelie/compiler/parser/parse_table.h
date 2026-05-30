@@ -47,11 +47,7 @@ enum
 	TABLE_ALTER_COLUMN_DROP,
 	TABLE_ALTER_COLUMN_RENAME,
 	TABLE_ALTER_COLUMN_SET_DEFAULT,
-	TABLE_ALTER_COLUMN_UNSET_DEFAULT,
-	TABLE_ALTER_STORAGE_ADD,
-	TABLE_ALTER_STORAGE_DROP,
-	TABLE_ALTER_STORAGE_PAUSE,
-	TABLE_ALTER_STORAGE_RESUME
+	TABLE_ALTER_COLUMN_UNSET_DEFAULT
 };
 
 struct AstTableAlter
@@ -60,8 +56,6 @@ struct AstTableAlter
 	bool    if_exists;
 	bool    if_column_exists;
 	bool    if_column_not_exists;
-	bool    if_storage_exists;
-	bool    if_storage_not_exists;
 	int     type;
 	Str     name;
 	Str     name_new;
@@ -70,8 +64,6 @@ struct AstTableAlter
 	Buf*    value_buf;
 	Str     value;
 	Ast*    identity;
-	Volume* volume;
-	Str     storage_name;
 };
 
 static inline AstTableCreate*

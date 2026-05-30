@@ -341,6 +341,16 @@ parse_table_create_with(Stmt* self)
 		{
 			auto value = stmt_expect(self, KINT);
 			partitioning_set_partitions(config_part, value->integer);
+		} else
+		if (str_is(&name->string, "compression", 11))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			storage_set_compression(&stmt->config->storage, &value->string);
+		} else
+		if (str_is(&name->string, "compression_level", 17))
+		{
+			auto value = stmt_expect(self, KINT);
+			storage_set_compression_level(&stmt->config->storage, value->integer);
 		} else {
 			stmt_error(self, name, "unknown option");
 		}
@@ -360,7 +370,6 @@ parse_table_create(Stmt* self, bool unlogged)
 	// CREATE [UNLOGGED] TABLE [IF NOT EXISTS] name (key)
 	// [PARTITIONS n]
 	// [WITH (options)]
-	// [ON STORAGE storage, ...)]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -380,6 +389,14 @@ parse_table_create(Stmt* self, bool unlogged)
 	uuid_init(&id);
 	uuid_generate(&id, &runtime()->random);
 	table_config_set_id(config, &id);
+
+	// set default storage settings
+	auto storage = &config->storage;
+	Str compression;
+	str_set(&compression, "zstd", 4);
+	storage_set_id(storage, &id);
+	storage_set_compression(storage, &compression);
+	storage_set_compression_level(storage, 0);
 
 	// create primary index config
 	auto config_index = index_config_allocate(&config->columns);
@@ -414,9 +431,6 @@ parse_table_create(Stmt* self, bool unlogged)
 	// [WITH]
 	if (stmt_if(self, KWITH))
 		parse_table_create_with(self);
-
-	// [ON STORAGE]
-	parse_volumes(self, &config_part->volumes);
 }
 
 void
@@ -447,10 +461,6 @@ parse_table_alter(Stmt* self)
 	// ALTER TABLE [IF EXISTS] name RENAME COLUMN [IF EXISTS] name TO name
 	// ALTER TABLE [IF EXISTS] name SET COLUMN [IF EXISTS] name DEFAULT const
 	// ALTER TABLE [IF EXISTS] name UNSET COLUMN [IF EXISTS] name DEFAULT
-	// ALTER TABLE [IF EXISTS] name ADD STORAGE [IF NOT EXISTS] name [(options])
-	// ALTER TABLE [IF EXISTS] name DROP STORAGE [IF EXISTS] name
-	// ALTER TABLE [IF EXISTS] name PAUSE STORAGE [IF EXISTS] name
-	// ALTER TABLE [IF EXISTS] name RESUME STORAGE [IF EXISTS] name
 	auto stmt = ast_table_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -461,7 +471,7 @@ parse_table_alter(Stmt* self)
 	auto target = stmt_expect(self, KNAME);
 	stmt->name = target->string;
 
-	// [ADD COLUMN | STORAGE]
+	// [ADD COLUMN]
 	if (stmt_if(self, KADD))
 	{
 		if (stmt_if(self, KCOLUMN))
@@ -509,22 +519,13 @@ parse_table_alter(Stmt* self)
 				stmt_error(self, NULL, "NOT NULL currently not supported with ALTER");
 
 			stmt->type = TABLE_ALTER_COLUMN_ADD;
-		} else
-		if (stmt_if(self, KSTORAGE))
-		{
-			// [IF NOT EXISTS]
-			stmt->if_storage_not_exists = parse_if_not_exists(self);
-
-			// name ([options])
-			stmt->volume = parse_volume(self);
-			stmt->type = TABLE_ALTER_STORAGE_ADD;
 		} else {
 			stmt_error(self, NULL, "COLUMN or STORAGE expected");
 		}
 		return;
 	}
 
-	// [DROP COLUMN | STORAGE]
+	// [DROP COLUMN]
 	if (stmt_if(self, KDROP))
 	{
 		if (stmt_if(self, KCOLUMN))
@@ -537,49 +538,9 @@ parse_table_alter(Stmt* self)
 			str_set_str(&stmt->column_name, &name->string);
 
 			stmt->type = TABLE_ALTER_COLUMN_DROP;
-		} else
-		if (stmt_if(self, KSTORAGE))
-		{
-			// [IF EXISTS]
-			stmt->if_storage_exists = parse_if_exists(self);
-
-			// name
-			auto name = stmt_expect(self, KNAME);
-			stmt->storage_name = name->string;
-			stmt->type = TABLE_ALTER_STORAGE_DROP;
 		} else {
 			stmt_error(self, NULL, "COLUMN or STORAGE expected");
 		}
-		return;
-	}
-
-	// [PAUSE STORAGE]
-	if (stmt_if(self, KPAUSE))
-	{
-		stmt_expect(self, KSTORAGE);
-
-		// [IF EXISTS]
-		stmt->if_storage_exists = parse_if_exists(self);
-
-		// name
-		auto name = stmt_expect(self, KNAME);
-		stmt->storage_name = name->string;
-		stmt->type = TABLE_ALTER_STORAGE_PAUSE;
-		return;
-	}
-
-	// [RESUME STORAGE]
-	if (stmt_if(self, KPAUSE))
-	{
-		stmt_expect(self, KSTORAGE);
-
-		// [IF EXISTS]
-		stmt->if_storage_exists = parse_if_exists(self);
-
-		// name
-		auto name = stmt_expect(self, KNAME);
-		stmt->storage_name = name->string;
-		stmt->type = TABLE_ALTER_STORAGE_RESUME;
 		return;
 	}
 

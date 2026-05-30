@@ -15,21 +15,19 @@ typedef struct Partitioning Partitioning;
 
 struct Partitioning
 {
-	int64_t   partitions;
-	VolumeMgr volumes;
+	int64_t partitions;
 };
 
 static inline void
 partitioning_init(Partitioning* self)
 {
 	self->partitions = 0;
-	volume_mgr_init(&self->volumes);
 }
 
 static inline void
 partitioning_free(Partitioning* self)
 {
-	volume_mgr_free(&self->volumes);
+	unused(self);
 }
 
 static inline void
@@ -42,37 +40,28 @@ static inline void
 partitioning_copy(Partitioning* self, Partitioning* copy)
 {
 	partitioning_set_partitions(copy, self->partitions);
-	volume_mgr_copy(&self->volumes, &copy->volumes);
 }
 
 static inline void
 partitioning_read(Partitioning* self, uint8_t** pos)
 {
-	uint8_t* pos_volumes  = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_INT,   "partitions", &self->partitions },
-		{ DECODE_ARRAY, "volumes",    &pos_volumes      },
-		{ 0,             NULL,         NULL             },
+		{ DECODE_INT, "partitions", &self->partitions },
+		{ 0,           NULL,         NULL             },
 	};
 	decode_obj(obj, "partitioning", pos);
-
-	// volumes
-	volume_mgr_read(&self->volumes, &pos_volumes);
 }
 
 static inline void
 partitioning_write(Partitioning* self, Buf* buf, int flags)
 {
+	unused(flags);
 	encode_obj(buf);
 
 	// partitions
 	encode_raw(buf, "partitions", 10);
 	encode_int(buf, self->partitions);
-
-	// volumes
-	encode_raw(buf, "volumes", 7);
-	volume_mgr_write(&self->volumes, buf, flags);
 
 	encode_obj_end(buf);
 }

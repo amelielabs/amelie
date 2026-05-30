@@ -30,8 +30,6 @@ enum
 	SHOW_GRANTS,
 	SHOW_USERS,
 	SHOW_USER,
-	SHOW_STORAGES,
-	SHOW_STORAGE,
 	SHOW_TABLES,
 	SHOW_TABLE,
 	SHOW_INDEXES,
@@ -77,8 +75,6 @@ static ShowCmd show_cmds[] =
 	{ SHOW_GRANTS,        "grants",        6,  false, true,  false },
 	{ SHOW_USERS,         "users",         5,  false, false, false },
 	{ SHOW_USER,          "user",          4,  true,  false, true  },
-	{ SHOW_STORAGES,      "storages",      8,  false, false, false },
-	{ SHOW_STORAGE,       "storage",       7,  true,  false, true  },
 	{ SHOW_TABLES,        "tables",        6,  false, false, false },
 	{ SHOW_TABLE,         "table",         5,  true,  false, true  },
 	{ SHOW_INDEXES,       "indexes",       7,  false, true,  false },
@@ -287,16 +283,6 @@ fn_show(Fn* self)
 	case SHOW_USER:
 	{
 		rel_mgr_list(&catalog->users, REL_USER, buf, NULL, name, all, flags);
-		break;
-	}
-	case SHOW_STORAGES:
-	{
-		storage_mgr_list(&catalog->storage_mgr, buf, NULL, flags);
-		break;
-	}
-	case SHOW_STORAGE:
-	{
-		storage_mgr_list(&catalog->storage_mgr, buf, name, flags);
 		break;
 	}
 	case SHOW_TABLES:

@@ -30,7 +30,6 @@ part_allocate(Id* id, PartArg* arg)
 	self->heap_shadow   = NULL;
 	self->arg           = arg;
 	track_init(&self->track);
-	list_init(&self->link_volume);
 	list_init(&self->link);
 	return self;
 }
@@ -96,8 +95,7 @@ part_open(Part* self)
 
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
 	auto id = &self->id;
-	info("recover: {s}/{05" PRIu64 "}.partition ({.2f} MiB, {u64} rows)",
-	     id->volume->storage->config->name.pos,
+	info("recover: {05" PRIu64 "}.partition ({.2f} MiB, {u64} rows)",
 	     id->id,
 	     total, count);
 }
@@ -192,10 +190,6 @@ part_status(Part* self, Buf* buf, int flags)
 	// id
 	encode_raw(buf, "id", 2);
 	encode_int(buf, self->id.id);
-
-	// storage
-	encode_raw(buf, "storage", 7);
-	encode_str(buf, &self->id.volume->storage->config->name);
 
 	// min
 	encode_raw(buf, "min", 3);

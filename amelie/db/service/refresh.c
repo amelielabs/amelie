@@ -23,7 +23,7 @@
 #include <amelie_service.h>
 
 static bool
-refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
+refresh_begin(Refresh* self, Table* table, uint64_t id)
 {
 	auto part_mgr = &table->part_mgr;
 	self->table = table;
@@ -35,25 +35,10 @@ refresh_begin(Refresh* self, Table* table, uint64_t id, Str* storage)
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE);
 	defer(unlock, lock_table);
 
-	// find storage
-	auto volumes = &part_mgr->config->volumes;
-	Volume* volume = NULL;
-	if (storage)
-	{
-		volume = volume_mgr_find(volumes, storage);
-		if (! volume)
-		{
-			heap_free(shadow);
-			return false;
-		}
-	} else {
-		volume = volume_mgr_next(volumes);
-	}
-
 	// set new partition id
 	auto part_id = &self->part_id;
-	part_id->id     = state_psn_next();
-	part_id->volume = volume;
+	part_id->id      = state_psn_next();
+	part_id->storage = &table->config->storage;
 
 	// find partition by id
 	auto origin = part_mgr_find(part_mgr, id);
@@ -91,10 +76,8 @@ refresh_snapshot_job(intptr_t* argv)
 	heap_create(heap, &self->part_file, id, ID_PARTITION_INCOMPLETE);
 
 	auto total = (double)self->part_file.size / 1024 / 1024;
-	info("refresh: {s}/{05" PRIu64 "}.partition ({.2f} MiB)",
-	     id->volume->storage->config->name.pos,
-	     id->id,
-	     total);
+	info("refresh: {05" PRIu64 "}.partition ({.2f} MiB)",
+	     id->id, total);
 }
 
 static void
@@ -155,12 +138,8 @@ refresh_apply(Refresh* self)
 	// complete heap snapshot and apply heap updates
 	part_apply(origin, NULL);
 
-	// update volume refs
-	volume_remove(origin->id.volume, &origin->link_volume);
-
-	// update partition id and volume link
+	// update partition id
 	origin->id = self->part_id;
-	volume_add(origin->id.volume, &origin->link_volume);
 }
 
 void
@@ -195,7 +174,7 @@ refresh_reset(Refresh* self)
 }
 
 bool
-refresh_run(Refresh* self, Table* table, uint64_t id, Str* storage)
+refresh_run(Refresh* self, Table* table, uint64_t id)
 {
 	refresh_reset(self);
 
@@ -207,7 +186,7 @@ refresh_run(Refresh* self, Table* table, uint64_t id, Str* storage)
 	breakpoint(REL_BP_REFRESH_1);
 
 	// find and rotate partition
-	if (! refresh_begin(self, table, id, storage))
+	if (! refresh_begin(self, table, id))
 		return false;
 
 	// case 2: update during refresh

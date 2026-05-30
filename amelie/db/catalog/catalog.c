@@ -36,7 +36,6 @@ catalog_init(Catalog*   self,
 
 	rel_mgr_init(&self->users);
 	rel_mgr_init(&self->rels);
-	storage_mgr_init(&self->storage_mgr);
 
 	// prepare topic columns
 	auto columns = &self->topic_columns;
@@ -87,7 +86,6 @@ void
 catalog_free(Catalog* self)
 {
 	rel_mgr_free(&self->rels);
-	storage_mgr_free(&self->storage_mgr);
 	rel_mgr_free(&self->users);
 	columns_free(&self->cdc_columns);
 	columns_free(&self->topic_columns);
@@ -123,18 +121,6 @@ catalog_create(Catalog* self)
 		str_set(&created_at, ts, size);
 		user_config_set_created_at(user_config, &created_at);
 		user_create(self, &tr, user_config, false);
-
-		// create main storage
-		auto storage_config = storage_config_allocate();
-		defer(storage_config_free, storage_config);
-		str_set(&name, "main", 4);
-		storage_config_set_name(storage_config, &name);
-		Str compression;
-		str_set(&compression, "zstd", 4);
-		storage_config_set_compression(storage_config, &compression);
-		storage_config_set_compression_level(storage_config, 0);
-		storage_config_set_system(storage_config, true);
-		storage_mgr_create(&self->storage_mgr, &tr, storage_config, false);
 
 		// commit
 		tr_commit(&tr);
@@ -176,10 +162,6 @@ catalog_status(Catalog* self, Buf* buf)
 	// users
 	encode_raw(buf, "users", 5);
 	encode_int(buf, self->users.list_count);
-
-	// storages
-	encode_raw(buf, "storages", 8);
-	encode_int(buf, self->storage_mgr.mgr.list_count);
 
 	// rels
 	encode_raw(buf, "rels", 4);
@@ -268,40 +250,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_exists = ddl_if_exists(flags);
 		write = user_revoke_token(self, tr, &name, &revoked_at, if_exists);
-		break;
-	}
-	case DDL_STORAGE_CREATE:
-	{
-		// PERM_SYSTEM
-		check_user(tr, PERM_SYSTEM);
-
-		auto config = storage_op_create_read(op);
-		defer(storage_config_free, config);
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = storage_mgr_create(&self->storage_mgr, tr, config, if_not_exists);
-		break;
-	}
-	case DDL_STORAGE_DROP:
-	{
-		// PERM_SYSTEM
-		check_user(tr, PERM_SYSTEM);
-
-		Str  name;
-		storage_op_drop_read(op, &name);
-		auto if_exists = ddl_if_exists(flags);
-		write = storage_mgr_drop(&self->storage_mgr, tr, &name, if_exists);
-		break;
-	}
-	case DDL_STORAGE_RENAME:
-	{
-		// PERM_SYSTEM
-		check_user(tr, PERM_SYSTEM);
-
-		Str name;
-		Str name_new;
-		storage_op_rename_read(op, &name, &name_new);
-		auto if_exists = ddl_if_exists(flags);
-		write = storage_mgr_rename(&self->storage_mgr, tr, &name, &name_new, if_exists);
 		break;
 	}
 	case DDL_TABLE_CREATE:
@@ -393,56 +341,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                         &value, cmd,
 		                         if_exists,
 		                         if_column_exists);
-		break;
-	}
-	case DDL_TABLE_STORAGE_ADD:
-	{
-		Str  user;
-		Str  name;
-		auto config_pos = table_op_storage_add_read(op, &user, &name);
-		auto config = volume_read(&config_pos);
-		defer(volume_free, config);
-
-		auto if_exists = ddl_if_exists(flags);
-		auto if_not_exists_storage = ddl_if_storage_not_exists(flags);
-		auto table = catalog_find_table(self, &user, &name, !if_exists);
-		if (! table)
-			break;
-		write = table_storage_add(table, tr, config, if_not_exists_storage);
-		break;
-	}
-	case DDL_TABLE_STORAGE_DROP:
-	{
-		Str user;
-		Str name;
-		Str name_storage;
-		table_op_storage_drop_read(op, &user, &name, &name_storage);
-
-		auto if_exists = ddl_if_exists(flags);
-		auto if_exists_storage = ddl_if_storage_exists(flags);
-		auto table = catalog_find_table(self, &user, &name, !if_exists);
-		if (! table)
-			break;
-		write = table_storage_drop(table, tr, &name_storage,
-		                           if_exists_storage);
-		break;
-	}
-	case DDL_TABLE_STORAGE_PAUSE:
-	{
-		Str  user;
-		Str  name;
-		Str  name_storage;
-		bool pause;
-		table_op_storage_pause_read(op, &user, &name, &name_storage, &pause);
-
-		auto if_exists = ddl_if_exists(flags);
-		auto if_exists_storage = ddl_if_storage_exists(flags);
-		auto table = catalog_find_table(self, &user, &name, !if_exists);
-		if (! table)
-			break;
-		write = table_storage_pause(table, tr, &name_storage,
-		                            pause,
-		                            if_exists_storage);
 		break;
 	}
 	case DDL_INDEX_CREATE:

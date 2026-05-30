@@ -90,14 +90,14 @@ service_file_add_rename(ServiceFile* self, Id* a, int a_state, Id* b, int b_stat
 static inline void
 service_file_add_rename_version(ServiceFile* self,
                                 uint64_t     psn,
-                                Volume*      volume,
+                                Storage*     storage,
                                 int          state_from,
                                 int          state_to)
 {
 	Id id =
 	{
-		.id     = psn,
-		.volume = volume
+		.id      = psn,
+		.storage = storage,
 	};
 	service_file_add_rename(self, &id, state_from, &id, state_to);
 }

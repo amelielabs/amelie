@@ -23,7 +23,7 @@ enum
 struct Id
 {
 	uint64_t id;
-	Volume*  volume;
+	Storage* storage;
 };
 
 static inline void
@@ -75,11 +75,11 @@ id_of(const char* name, int64_t* id)
 static inline void
 id_path(Id* self, char* path, int state, bool relative)
 {
-	// volume id
+	// storage id
 	char uuid[UUID_SZ];
-	uuid_get(&self->volume->id, uuid, sizeof(uuid));
+	uuid_get(&self->storage->id, uuid, sizeof(uuid));
 
-	// storage/<volume_id>/<id>.<state>
+	// storage/<storage_id>/<id>.<state>
 	if (relative)
 	{
 		format(path, PATH_MAX, "storage/{s}/{05" PRIu64 "}{s}",
@@ -87,7 +87,7 @@ id_path(Id* self, char* path, int state, bool relative)
 		return;
 	}
 
-	// <base>/storage/<volume_id>/<id>.<state>
+	// <base>/storage/<storage_id>/<id>.<state>
 	format(path, PATH_MAX, "{s}/storage/{s}/{05" PRIu64 "}{s}",
 	       state_directory(),
 	       uuid, self->id, id_state(state));
@@ -135,11 +135,11 @@ id_snapshot(Id* self, int state, int state_snapshot)
 {
 	// create file snapshot
 
-	// <base>/storage/<volume_id>/<id>.<state>
+	// <base>/storage/<storage_id>/<id>.<state>
 	char path[PATH_MAX];
 	id_path(self, path, state, false);
 
-	// <base>/storage/<volume_id>/<id>.<state>.snapshot
+	// <base>/storage/<storage_id>/<id>.<state>.snapshot
 	char path_snapshot[PATH_MAX];
 	id_path(self, path_snapshot, state_snapshot, false);
 

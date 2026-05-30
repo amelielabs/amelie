@@ -284,24 +284,5 @@ create table test (id int primary key) partitions 3 with (id "00000000-0000-0000
 select show('table', 'test', true).id;
 drop table test;
 
-# test: on storage
-create storage x;
-create storage y;
-create storage z;
-show storages;
-
-create table test (id int primary key) storages;
-create table test (id int primary key)
-  with (id "00000000-0000-0000-0000-000000000000")
-  on storage x (id "00000000-0000-0000-0000-000000000000"),
-             y (id "00000000-0000-0000-0000-000000000001"),
-             z (id "00000000-0000-0000-0000-000000000002");
-show tables verbose;
-drop table test;
-
-drop storage x;
-drop storage y;
-drop storage z;
-
 disconnect S0;
 close E0;

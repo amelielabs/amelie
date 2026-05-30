@@ -12,15 +12,9 @@
 //
 
 // storage
-#include "storage/storage_config.h"
 #include "storage/storage.h"
-#include "storage/storage_mgr.h"
 
-// volume (storage directory)
-#include "storage/volume.h"
-#include "storage/volume_mgr.h"
-
-// volume file id
+// storage file id
 #include "storage/basefile.h"
 #include "storage/id.h"
 

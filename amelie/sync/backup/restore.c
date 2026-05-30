@@ -209,25 +209,25 @@ restore_run(Restore* self, char* directory)
 
 	// parse data
 	auto pos = self->data.start;
-	uint8_t* pos_version = NULL;
-	uint8_t* pos_server  = NULL;
-	uint8_t* pos_config  = NULL;
-	uint8_t* pos_state   = NULL;
-	uint8_t* pos_catalog = NULL;
-	uint8_t* pos_volumes = NULL;
-	uint8_t* pos_files   = NULL;
-	uint8_t* pos_wal     = NULL;
+	uint8_t* pos_version  = NULL;
+	uint8_t* pos_server   = NULL;
+	uint8_t* pos_config   = NULL;
+	uint8_t* pos_state    = NULL;
+	uint8_t* pos_catalog  = NULL;
+	uint8_t* pos_storages = NULL;
+	uint8_t* pos_files    = NULL;
+	uint8_t* pos_wal      = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_OBJ,   "version", &pos_version },
-		{ DECODE_ARRAY, "server",  &pos_server  },
-		{ DECODE_OBJ,   "config",  &pos_config  },
-		{ DECODE_OBJ,   "state",   &pos_state   },
-		{ DECODE_OBJ,   "catalog", &pos_catalog },
-		{ DECODE_ARRAY, "volumes", &pos_volumes },
-		{ DECODE_ARRAY, "files",   &pos_files   },
-		{ DECODE_ARRAY, "wal",     &pos_wal     },
-		{ 0,             NULL,      NULL        },
+		{ DECODE_OBJ,   "version",  &pos_version  },
+		{ DECODE_ARRAY, "server",   &pos_server   },
+		{ DECODE_OBJ,   "config",   &pos_config   },
+		{ DECODE_OBJ,   "state",    &pos_state    },
+		{ DECODE_OBJ,   "catalog",  &pos_catalog  },
+		{ DECODE_ARRAY, "storages", &pos_storages },
+		{ DECODE_ARRAY, "files",    &pos_files    },
+		{ DECODE_ARRAY, "wal",      &pos_wal      },
+		{ 0,             NULL,       NULL         },
 	};
 	decode_obj(obj, "snapshot", &pos);
 
@@ -246,12 +246,12 @@ restore_run(Restore* self, char* directory)
 	// write catalog
 	restore_file("catalog.json", pos_catalog);
 
-	// create volumes
-	unpack_array(&pos_volumes);
-	while (! unpack_array_end(&pos_volumes))
+	// create storages
+	unpack_array(&pos_storages);
+	while (! unpack_array_end(&pos_storages))
 	{
 		Str path_relative;
-		unpack_str(&pos_volumes, &path_relative);
+		unpack_str(&pos_storages, &path_relative);
 		restore_dir_str(&path_relative);
 	}
 

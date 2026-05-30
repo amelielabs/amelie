@@ -9,7 +9,6 @@ partitions
 ──────────
 {
   "id": 1,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 0,
@@ -91,7 +90,6 @@ partitions
 ──────────
 {
   "id": 2,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 2,
@@ -201,7 +199,6 @@ partitions
 ──────────
 {
   "id": 4,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 7,
@@ -303,7 +300,6 @@ partitions
 ──────────
 {
   "id": 6,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 12,
@@ -434,7 +430,6 @@ partitions
 ──────────
 {
   "id": 8,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 17,
@@ -563,7 +558,6 @@ partitions
 ──────────
 {
   "id": 10,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 41,
@@ -680,7 +674,6 @@ partitions
 ──────────
 {
   "id": 12,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 45,

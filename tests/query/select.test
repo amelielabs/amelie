@@ -143,8 +143,8 @@ select * from unknown();
 # test: select * from function() (unsupported json type)
 select * from main.show('wal');
 
-select * from main.show('storages');
-explain select * from main.show('storages');
+select * from main.show('users');
+explain select * from main.show('users');
 
 # test: select column from function()
 create user test;

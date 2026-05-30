@@ -189,7 +189,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/transaction/rel_mgr.c
     ${AMELIE_ROOT}/db/cdc/cdc.c
     ${AMELIE_ROOT}/db/cdc/cdc_export.c
-    ${AMELIE_ROOT}/db/storage/storage_mgr.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/heap_file.c
     ${AMELIE_ROOT}/db/index/tree.c
@@ -203,7 +202,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/user.c
     ${AMELIE_ROOT}/db/catalog/table.c
     ${AMELIE_ROOT}/db/catalog/table_alter.c
-    ${AMELIE_ROOT}/db/catalog/table_storage.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
     ${AMELIE_ROOT}/db/catalog/clone.c
     ${AMELIE_ROOT}/db/catalog/udf.c
@@ -296,7 +294,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_lock.c
     ${AMELIE_ROOT}/compiler/parser/parse_subscription.c
     ${AMELIE_ROOT}/compiler/parser/parse_grant.c
-    ${AMELIE_ROOT}/compiler/parser/parse_storage.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c

@@ -15,56 +15,110 @@ typedef struct Storage Storage;
 
 struct Storage
 {
-	Rel            rel;
-	StorageConfig* config;
-	int            refs;
+	Uuid id;
+	Str  compression;
+	int  compression_level;
 };
 
 static inline void
-storage_free(Storage* self, bool drop)
+storage_init(Storage* self)
 {
-	unused(drop);
-	storage_config_free(self->config);
-	am_free(self);
+	self->compression_level = 0;
+	str_init(&self->compression);
+	uuid_init(&self->id);
 }
 
 static inline void
-storage_show(Storage* self, Buf* buf, int flags)
+storage_free(Storage* self)
 {
-	storage_config_write(self->config, buf, flags);
-}
-
-static inline Storage*
-storage_allocate(StorageConfig* config)
-{
-	auto self = (Storage*)am_malloc(sizeof(Storage));
-	self->config = storage_config_copy(config);
-	self->refs   = 0;
-
-	auto rel = &self->rel;
-	rel_init(rel, REL_STORAGE);
-	rel_set_name(rel, &self->config->name);
-	rel_set_show(rel, (RelShow)storage_show);
-	rel_set_free(rel, (RelFree)storage_free);
-	rel_set_rsn(rel, state_rsn_next());
-	return self;
+	str_free(&self->compression);
 }
 
 static inline void
-storage_ref(Storage* self)
+storage_set_id(Storage* self, Uuid* id)
 {
-	self->refs++;
+	self->id = *id;
 }
 
 static inline void
-storage_unref(Storage* self)
+storage_set_compression(Storage* self, Str* value)
 {
-	self->refs--;
-	assert(self->refs >= 0);
+	str_free(&self->compression);
+	str_copy(&self->compression, value);
 }
 
-always_inline static inline Storage*
-storage_of(Rel* self)
+static inline void
+storage_set_compression_level(Storage* self, int value)
 {
-	return (Storage*)self;
+	self->compression_level = value;
+}
+
+static inline void
+storage_copy(Storage* self, Storage* from)
+{
+	storage_set_id(self, &from->id);
+	storage_set_compression(self, &from->compression);
+	storage_set_compression_level(self, from->compression_level);
+}
+
+static inline void
+storage_read(Storage* self, uint8_t** pos)
+{
+	Decode obj[] =
+	{
+		{ DECODE_STR,  "compression",       &self->compression       },
+		{ DECODE_INT,  "compression_level", &self->compression_level },
+		{ 0,            NULL,               NULL                     },
+	};
+	decode_obj(obj, "storage", pos);
+}
+
+static inline void
+storage_write(Storage* self, Buf* buf, int flags)
+{
+	unused(flags);
+
+	// map
+	encode_obj(buf);
+
+	// compression
+	encode_raw(buf, "compression", 11);
+	encode_str(buf, &self->compression);
+
+	// compression_level
+	encode_raw(buf, "compression_level", 17);
+	encode_int(buf, self->compression_level);
+
+	encode_obj_end(buf);
+}
+
+static inline void
+storage_mkdir(Storage* self)
+{
+	// <base>/storage/<storage_id>
+	char id[UUID_SZ];
+	uuid_get(&self->id, id, sizeof(id));
+
+	char path[PATH_MAX];
+	format(path, PATH_MAX, "{s}/storage/{s}", state_directory(), id);
+	if (fs_exists("{s}", path))
+		return;
+
+	fs_mkdir(0755, "{s}", path);
+}
+
+static inline void
+storage_rmdir(Storage* self)
+{
+	// <base>/storage/<storage_id>
+	char id[UUID_SZ];
+	uuid_get(&self->id, id, sizeof(id));
+
+	char path[PATH_MAX];
+	format(path, PATH_MAX, "{s}/storage/{s}", state_directory(), id);
+	if (! fs_exists("{s}", path))
+		return;
+
+	// must be empty at this point
+	fs_rmdir(true, "{s}", path);
 }

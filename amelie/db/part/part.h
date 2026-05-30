@@ -22,7 +22,6 @@ struct Part
 	Heap*    heap;
 	Heap*    heap_shadow;
 	PartArg* arg;
-	List     link_volume;
 	List     link;
 };
 

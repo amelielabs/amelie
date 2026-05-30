@@ -63,25 +63,21 @@ col1
 ────
 [1, 2, 3]
 # test: select (select function())
-select show('storages');
+select show('users');
 
 show
 ────
 [{
-  "name": "main",
-  "path": "",
-  "compression": "zstd",
-  "compression_level": 0
+  "name": "amelie",
+  "parent": "amelie"
 }]
-select select (show('storages'));
+select select (show('users'));
 
 col1
 ────
 [{
-  "name": "main",
-  "path": "",
-  "compression": "zstd",
-  "compression_level": 0
+  "name": "amelie",
+  "parent": "amelie"
 }]
 # test: select (select {})
 select (select {});

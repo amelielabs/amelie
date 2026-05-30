@@ -30,12 +30,6 @@ select show('users')[0].name;
 # test: user
 select show('user', 'amelie').name;
 
-# test: storages
-select show('storages');
-
-# test: storage
-select show('storage', 'main');
-
 create table test (id int primary key);
 
 # test: tables

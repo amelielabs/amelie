@@ -20,17 +20,19 @@
 #include <amelie_part.h>
 
 static void
-part_mgr_recover_volume(PartMgr* self, Volume* volume)
+part_mgr_recover_storage(PartMgr* self)
 {
-	// <base>/storage/<volume_id>
+	auto storage = self->storage;
+
+	// <base>/storage/<storage_id>
 	char id[UUID_SZ];
-	uuid_get(&volume->id, id, sizeof(id));
+	uuid_get(&storage->id, id, sizeof(id));
 
 	char path[PATH_MAX];
 	format(path, PATH_MAX, "{s}/storage/{s}", state_directory(), id);
 	if (! fs_exists("{s}", path))
 	{
-		volume_mkdir(volume);
+		storage_mkdir(storage);
 		return;
 	}
 
@@ -60,8 +62,8 @@ part_mgr_recover_volume(PartMgr* self, Volume* volume)
 
 		Id id =
 		{
-			.id     = psn,
-			.volume = volume
+			.id      = psn,
+			.storage = storage
 		};
 		switch (state) {
 		case ID_PARTITION:
@@ -96,14 +98,11 @@ part_mgr_create(PartMgr* self)
 	int range_start    = 0;
 	for (auto order = 0; order < count; order++)
 	{
-		// choose next volume
-		auto volume = volume_mgr_next(&self->config->volumes);
-
 		// create partition
 		Id id =
 		{
-			.id     = state_psn_next(),
-			.volume = volume
+			.id      = state_psn_next(),
+			.storage = self->storage
 		};
 		auto part = part_allocate(&id, self->arg);
 		part_mgr_add(self, part);
@@ -140,15 +139,8 @@ part_mgr_create(PartMgr* self)
 void
 part_mgr_recover(PartMgr* self)
 {
-	// resolve storages
-	volume_mgr_ref(&self->config->volumes, self->storage_mgr);
-
-	// read files
-	list_foreach(&self->config->volumes.list)
-	{
-		auto volume = list_at(Volume, link);
-		part_mgr_recover_volume(self, volume);
-	}
+	// read storage files
+	part_mgr_recover_storage(self);
 
 	// create initial partitions
 	if (! self->list_count)

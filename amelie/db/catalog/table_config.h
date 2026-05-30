@@ -23,6 +23,7 @@ struct TableConfig
 	int          indexes_count;
 	bool         unlogged;
 	Partitioning partitioning;
+	Storage      storage;
 	Grants       grants;
 };
 
@@ -37,8 +38,9 @@ table_config_allocate(void)
 	str_init(&self->user);
 	uuid_init(&self->id);
 	columns_init(&self->columns);
-	partitioning_init(&self->partitioning);
 	list_init(&self->indexes);
+	partitioning_init(&self->partitioning);
+	storage_init(&self->storage);
 	grants_init(&self->grants);
 	return self;
 }
@@ -57,6 +59,7 @@ table_config_free(TableConfig* self)
 
 	columns_free(&self->columns);
 	partitioning_free(&self->partitioning);
+	storage_free(&self->storage);
 	grants_free(&self->grants);
 	am_free(self);
 }
@@ -110,6 +113,7 @@ table_config_copy(TableConfig* self)
 	table_config_set_id(copy, &self->id);
 	table_config_set_unlogged(copy, self->unlogged);
 	partitioning_copy(&self->partitioning, &copy->partitioning);
+	storage_copy(&copy->storage, &self->storage);
 	columns_copy(&copy->columns, &self->columns);
 
 	Keys* primary_keys = NULL;
@@ -135,6 +139,7 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_columns      = NULL;
 	uint8_t* pos_indexes      = NULL;
 	uint8_t* pos_partitioning = NULL;
+	uint8_t* pos_storage      = NULL;
 	uint8_t* pos_grants       = NULL;
 	Decode obj[] =
 	{
@@ -145,6 +150,7 @@ table_config_read(uint8_t** pos)
 		{ DECODE_ARRAY, "columns",      &pos_columns      },
 		{ DECODE_ARRAY, "indexes",      &pos_indexes      },
 		{ DECODE_OBJ,   "partitioning", &pos_partitioning },
+		{ DECODE_OBJ,   "storage",      &pos_storage      },
 		{ DECODE_ARRAY, "grants",       &pos_grants       },
 		{ 0,             NULL,           NULL             },
 	};
@@ -163,6 +169,10 @@ table_config_read(uint8_t** pos)
 
 	// partitioning
 	partitioning_read(&self->partitioning, &pos_partitioning);
+
+	// storage
+	storage_read(&self->storage, &pos_storage);
+	storage_set_id(&self->storage, &self->id);
 
 	// grants
 	grants_read(&self->grants, &pos_grants);
@@ -214,6 +224,10 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	// partitioning
 	encode_raw(buf, "partitioning", 12);
 	partitioning_write(&self->partitioning, buf, flags);
+
+	// storage
+	encode_raw(buf, "storage", 7);
+	storage_write(&self->storage, buf, flags);
 
 	// grants
 	encode_raw(buf, "grants", 6);

@@ -43,7 +43,6 @@ table_show(Table* self, Buf* buf, int flags)
 
 static inline Table*
 table_allocate(TableConfig* config,
-               StorageMgr*  storage_mgr,
                PartMgrIf*   iface,
                void*        iface_arg)
 {
@@ -62,7 +61,7 @@ table_allocate(TableConfig* config,
 	// partition manager
 	auto primary = table_primary(self);
 	part_mgr_init(&self->part_mgr, iface, iface_arg,
-	              &self->config->partitioning, arg, storage_mgr,
+	              &self->config->partitioning, arg, &self->config->storage,
 	              &primary->keys);
 
 	// snapshot manager
@@ -100,9 +99,7 @@ table_create(Catalog*     self,
 	}
 
 	// allocate table
-	auto table = table_allocate(config, &self->storage_mgr,
-	                            self->iface_part,
-	                            self->iface_part_arg);
+	auto table = table_allocate(config, self->iface_part, self->iface_part_arg);
 
 	// update tables
 	rel_mgr_create(&self->rels, tr, &table->rel);

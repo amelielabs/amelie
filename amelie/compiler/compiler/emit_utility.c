@@ -78,38 +78,6 @@ emit_alter_table(Compiler* self)
 			flags |= DDL_IF_COLUMN_EXISTS;
 		break;
 	}
-	case TABLE_ALTER_STORAGE_ADD:
-	{
-		offset = table_op_storage_add(data, user, &arg->name, arg->volume);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		if (arg->if_storage_not_exists)
-			flags |= DDL_IF_STORAGE_NOT_EXISTS;
-		break;
-	}
-	case TABLE_ALTER_STORAGE_DROP:
-	{
-		offset = table_op_storage_drop(data, user, &arg->name, &arg->storage_name);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		if (arg->if_storage_exists)
-			flags |= DDL_IF_STORAGE_EXISTS;
-		break;
-	}
-	case TABLE_ALTER_STORAGE_PAUSE:
-	{
-		offset = table_op_storage_pause(data, user, &arg->name, &arg->storage_name, true);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		if (arg->if_storage_exists)
-			flags |= DDL_IF_STORAGE_EXISTS;
-		break;
-	}
-	case TABLE_ALTER_STORAGE_RESUME:
-	{
-		offset = table_op_storage_pause(data, user, &arg->name, &arg->storage_name, false);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		if (arg->if_storage_exists)
-			flags |= DDL_IF_STORAGE_EXISTS;
-		break;
-	}
 	default:
 		abort();
 		break;
@@ -133,29 +101,6 @@ emit_ddl(Compiler* self)
 		auto arg = ast_grant_of(stmt->ast);
 		offset = rel_op_grant(data, &arg->rel_user, &arg->rel, &arg->to,
 		                      arg->grant, arg->perms);
-		break;
-	}
-
-	// storage
-	case STMT_CREATE_STORAGE:
-	{
-		auto arg = ast_storage_create_of(stmt->ast);
-		offset = storage_op_create(data, arg->config);
-		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
-		break;
-	}
-	case STMT_DROP_STORAGE:
-	{
-		auto arg = ast_storage_drop_of(stmt->ast);
-		offset = storage_op_drop(data, &arg->name->string);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-	case STMT_ALTER_STORAGE:
-	{
-		auto arg = ast_storage_alter_of(stmt->ast);
-		offset = storage_op_rename(data, &arg->name->string, &arg->name_new->string);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 
@@ -494,14 +439,7 @@ emit_utility(Compiler* self)
 		                                self->parser.user,
 		                                &arg->table->string, true);
 		if (arg->type == PARTITION_ALTER_REFRESH)
-		{
-			op3(self, CDDL_REFRESH, (intptr_t)table, arg->id, -1);
-		} else
-		if (arg->type == PARTITION_ALTER_MOVE)
-		{
-			auto offset = code_data_add_string(self->code_data, &arg->storage);
-			op3(self, CDDL_REFRESH, (intptr_t)table, arg->id, offset);
-		}
+			op2(self, CDDL_REFRESH, (intptr_t)table, arg->id);
 
 		// lock
 		lock_catalog = LOCK_SHARED;

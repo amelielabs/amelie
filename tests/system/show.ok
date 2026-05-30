@@ -10,50 +10,6 @@ error: show ❰1234❱ ⟵ name expected
 # test: show users
 create user test;
 # test: show user
-# test: show storages
-show storages;
-
-storages
-────────
-{
-  "name": "main",
-  "path": "",
-  "compression": "zstd",
-  "compression_level": 0
-}
-select * from show storages;
-
-storages
-────────
-{
-  "name": "main",
-  "path": "",
-  "compression": "zstd",
-  "compression_level": 0
-}
-# test: show storage
-show storage;
-error: show() ⟵ name argument is missing for 'storage'
-show storage main;
-
-storage
-───────
-{
-  "name": "main",
-  "path": "",
-  "compression": "zstd",
-  "compression_level": 0
-}
-show storage main verbose;
-
-storage
-───────
-{
-  "name": "main",
-  "path": "",
-  "compression": "zstd",
-  "compression_level": 0
-}
 # test: show tables
 create table test (id int primary key);
 show tables;
@@ -189,7 +145,6 @@ partitions
 ──────────
 {
   "id": 1,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 0,
@@ -202,7 +157,6 @@ show
 ────
 [{
   "id": 1,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 0,
@@ -215,7 +169,6 @@ partitions
 ──────────
 {
   "id": 1,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 0,
@@ -229,7 +182,6 @@ partition
 ─────────
 {
   "id": 1,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 0,
@@ -242,7 +194,6 @@ show
 ────
 {
   "id": 1,
-  "storage": "main",
   "min": 0,
   "max": 8096,
   "lsn": 0,
@@ -371,7 +322,7 @@ wal
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 835,
+  "writes_bytes": 811,
   "ops": 3
 }
 # test: show replicas

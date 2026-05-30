@@ -255,8 +255,7 @@ bench_tpcb_create(Bench* self, MainClient* client)
 	{
 		buf_reset(buf);
 		buf_format(buf, "INSERT INTO bench_branches VALUES ({d}, 0, \"{buf}\")",
-		           i,
-		           buf_size(filler), filler->start);
+		           i, filler);
 		buf_str(buf, &str);
 		main_client_execute(client, &str, NULL);
 	}
