@@ -197,6 +197,9 @@ bench_run(Bench* self)
 	if (str_is_cstr(type, "decre"))
 		self->iface = &bench_decre;
 	else
+	if (str_is_cstr(type, "vector"))
+		self->iface = &bench_vector;
+	else
 		error("unknown benchmark type '{str}'", type);
 
 	// hello

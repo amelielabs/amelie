@@ -34,6 +34,7 @@ index_hash_merge_open(Iterator* arg, Row* key)
 	// hash merge iterator does not support point-lookup,
 	// this should be done using partition manager
 	assert(! key);
+	unused(key);
 
 	auto self = index_hash_merge_of(arg);
 	auto list = (IndexHashIterator*)self->list.start;
