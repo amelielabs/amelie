@@ -66,7 +66,7 @@ test_command_open(TestSuite* self, Str* arg)
 	test_plan_add_env(&self->plan, env);
 
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{str}/{str}",
+	format(path, sizeof(path), "./{str}/{str}",
 	       &self->option_result_dir,
 	       &name);
 
@@ -149,7 +149,7 @@ test_command_backup(TestSuite* self, Str* arg)
 	setenv("AMELIE_HOME", path, 1);
 
 	// set base dir
-	format(path, sizeof(path), "{str}/{str}",
+	format(path, sizeof(path), "./{str}/{str}",
 	       &self->option_result_dir,
 	       &name);
 

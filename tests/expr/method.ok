@@ -34,12 +34,12 @@ select show('state').directory::length();
 
 length
 ──────
-10
+12
 select show('state').directory;
 
 directory
 ─────────
-"_output/E0"
+"./_output/E0"
 select [null]::put(0, 123);
 
 put
@@ -104,12 +104,12 @@ select show('state').directory::length;
 
 length
 ──────
-10
+12
 select length(show('state').directory);
 
 length
 ──────
-10
+12
 # test: expr :: method alias
 select x::int id from ([1]) x;
 

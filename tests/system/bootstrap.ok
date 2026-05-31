@@ -43,7 +43,7 @@ state
 ─────
 {
   "version": "1.0.0-rc1",
-  "directory": "_output/E0",
+  "directory": "./_output/E0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
@@ -101,7 +101,7 @@ state
 ─────
 {
   "version": "1.0.0-rc1",
-  "directory": "_output/E0",
+  "directory": "./_output/E0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,

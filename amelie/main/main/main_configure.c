@@ -55,12 +55,10 @@ main_configure(Main* self, Opts* opts)
 			endpoint_copy(endpoint, &match->endpoint);
 		} else
 		{
-			/*
 			// use as directory path
 			if (str_is_prefix(&name, "/", 1)  ||
 			    str_is_prefix(&name, "./", 2) ||
 			    str_is_prefix(&name, "../", 3))
-				*/
 				opt_string_set(&endpoint->path, &name);
 		}
 		arg = 1;
