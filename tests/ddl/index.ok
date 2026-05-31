@@ -539,5 +539,51 @@ count
 ─────
 2
 drop table test;
+# test: create index explain
+create table test (id int primary key, data int);
+insert into test values (1, null);
+select show('table', 'test', true).columns;
+
+columns
+───────
+[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": [["not_null", true]]
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": []
+}]
+explain create index i on test (data);
+
+explain
+───────
+
+main
+  0   ddl_create_index    0      0      0
+  1   ret                 -1     0      -
+select show('table', 'test', true).columns;
+
+columns
+───────
+[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": [["not_null", true]]
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": []
+}]
+drop table test;
 disconnect S0;
 close E0;

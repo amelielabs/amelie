@@ -48,9 +48,6 @@ parse_key(Stmt* self, Keys* keys)
 		if (stmt_if(self, KDESC))
 			asc = false;
 
-		// force column not_null constraint
-		constraints_set_not_null(&column->constraints, true);
-
 		// create key
 		auto key = key_allocate();
 		key_set_ref(key, column->order);
@@ -232,6 +229,14 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		if (parse_primary_key(self))
 		{
 			parse_key(self, keys);
+
+			// force column not_null constraint
+			list_foreach(&keys->list)
+			{
+				auto key = list_at(Key, link);
+				constraints_set_not_null(&key->column->constraints, true);
+			}
+
 			parse_index_using(self, ast_table_create_of(self->ast)->config_index);
 			break;
 		}

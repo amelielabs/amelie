@@ -46,6 +46,20 @@ add_if_abort(Log* self, LogOp* op)
 	unused(self);
 	auto table = table_of(op->rel);
 	IndexConfig* index = op->iface_arg;
+
+	// restore key column constraints (reset not null constraint)
+	uint8_t* pos = log_data_of(self, op);
+	list_foreach(&index->keys.list)
+	{
+		auto key = list_at(Key, link);
+		auto column = key->column;
+		auto cons = &column->constraints;
+		constraints_free(cons);
+		constraints_init(cons);
+		constraints_read(cons, &pos);
+		columns_sync(&table_of(op->rel)->config->columns);
+	}
+
 	table_index_delete(table, index);
 }
 
@@ -66,6 +80,15 @@ table_index_add(Catalog* self, Table* table, Tr* tr, IndexConfig* config)
 
 	// update table
 	log_ddl(&tr->log, &add_if, index, &table->rel);
+
+	// create not null constraints on the columns
+	list_foreach(&config->keys.list)
+	{
+		auto key = list_at(Key, link);
+		auto column = key->column;
+		constraints_write(&column->constraints, &tr->log.data, 0);
+		constraints_set_not_null(&column->constraints, true);
+	}
 
 	// use separate log command for create
 	// index processing
