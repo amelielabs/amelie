@@ -47,6 +47,7 @@ user_allocate(UserConfig* config)
 	rel_init(rel, REL_USER);
 	rel_set_user(rel, &self->config->parent);
 	rel_set_name(rel, &self->config->name);
+	rel_set_description(rel, &self->config->description);
 	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)user_show);
 	rel_set_free(rel, (RelFree)user_free);
@@ -390,5 +391,59 @@ user_revoke_token(Catalog* self,
 
 	// update timestamps
 	user_sync(user);
+	return true;
+}
+
+static void
+describe_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+describe_if_abort(Log* self, LogOp* op)
+{
+	// set previous description
+	uint8_t* pos = log_data_of(self, op);
+	Str value;
+	unpack_str(&pos, &value);
+
+	auto user = user_of(op->rel);
+	user_config_set_description(user->config, &value);
+}
+
+static LogIf describe_if =
+{
+	.commit = describe_if_commit,
+	.abort  = describe_if_abort
+};
+
+bool
+user_describe(Catalog* self,
+              Tr*      tr,
+              Str*     name,
+              Str*     description,
+              bool     if_exists)
+{
+	auto user = catalog_find_user(self, name, false);
+	if (! user)
+	{
+		if (! if_exists)
+			error("user '{str}': not exists", name);
+		return false;
+	}
+
+	// only owner or superuser
+	check_ownership_user(tr, &user->rel);
+
+	// update user
+	log_ddl(&tr->log, &describe_if, NULL, &user->rel);
+
+	// save previous description
+	encode_str(&tr->log.data, &user->config->description);
+
+	// set new description
+	user_config_set_description(user->config, description);
 	return true;
 }

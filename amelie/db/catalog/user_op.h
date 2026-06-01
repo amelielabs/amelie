@@ -109,3 +109,28 @@ user_op_revoke_token_read(uint8_t* op, Str* name, Str* revoked_at)
 	unpack_str(&op, revoked_at);
 	unpack_array_end(&op);
 }
+
+static inline int
+user_op_describe(Buf* self, Str* name, Str* description)
+{
+	// [op, name, description]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_int(self, DDL_USER_DESCRIBE);
+	encode_str(self, name);
+	encode_str(self, description);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+user_op_describe_read(uint8_t* op, Str* name, Str* description)
+{
+	int64_t cmd;
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
+	assert(cmd == DDL_USER_DESCRIBE);
+	unpack_str(&op, name);
+	unpack_str(&op, description);
+	unpack_array_end(&op);
+}

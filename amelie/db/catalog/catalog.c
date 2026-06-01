@@ -252,6 +252,16 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = user_revoke_token(self, tr, &name, &revoked_at, if_exists);
 		break;
 	}
+	case DDL_USER_DESCRIBE:
+	{
+		Str name;
+		Str description;
+		user_op_describe_read(op, &name, &description);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_describe(self, tr, &name, &description, if_exists);
+		break;
+	}
 	case DDL_TABLE_CREATE:
 	{
 		auto config = table_op_create_read(op);

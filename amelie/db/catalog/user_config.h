@@ -17,6 +17,7 @@ struct UserConfig
 {
 	Str    name;
 	Str    parent;
+	Str    description;
 	Str    created_at;
 	Str    revoked_at;
 	bool   agent;
@@ -33,6 +34,7 @@ user_config_allocate()
 	self->superuser = false;
 	str_init(&self->name);
 	str_init(&self->parent);
+	str_init(&self->description);
 	str_init(&self->created_at);
 	str_init(&self->revoked_at);
 	grants_init(&self->grants);
@@ -44,6 +46,7 @@ user_config_free(UserConfig* self)
 {
 	str_free(&self->name);
 	str_free(&self->parent);
+	str_free(&self->description);
 	str_free(&self->created_at);
 	str_free(&self->revoked_at);
 	grants_free(&self->grants);
@@ -62,6 +65,13 @@ user_config_set_parent(UserConfig* self, Str* value)
 {
 	str_free(&self->parent);
 	str_copy(&self->parent, value);
+}
+
+static inline void
+user_config_set_description(UserConfig* self, Str* value)
+{
+	str_free(&self->description);
+	str_copy(&self->description, value);
 }
 
 static inline void
@@ -96,6 +106,7 @@ user_config_copy(UserConfig* self)
 	auto copy = user_config_allocate();
 	user_config_set_name(copy, &self->name);
 	user_config_set_parent(copy, &self->parent);
+	user_config_set_description(copy, &self->description);
 	user_config_set_created_at(copy, &self->created_at);
 	user_config_set_revoked_at(copy, &self->revoked_at);
 	user_config_set_agent(copy, self->agent);
@@ -112,14 +123,15 @@ user_config_read(uint8_t** pos)
 	uint8_t* pos_grants = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "name",       &self->name       },
-		{ DECODE_STR,   "parent",     &self->parent     },
-		{ DECODE_STR,   "created_at", &self->created_at },
-		{ DECODE_STR,   "revoked_at", &self->revoked_at },
-		{ DECODE_BOOL,  "agent",      &self->agent      },
-		{ DECODE_BOOL,  "superuser",  &self->superuser  },
-		{ DECODE_ARRAY, "grants",     &pos_grants       },
-		{ 0,             NULL,         NULL             },
+		{ DECODE_STR,   "name",        &self->name        },
+		{ DECODE_STR,   "parent",      &self->parent      },
+		{ DECODE_STR,   "description", &self->description },
+		{ DECODE_STR,   "created_at",  &self->created_at  },
+		{ DECODE_STR,   "revoked_at",  &self->revoked_at  },
+		{ DECODE_BOOL,  "agent",       &self->agent       },
+		{ DECODE_BOOL,  "superuser",   &self->superuser   },
+		{ DECODE_ARRAY, "grants",      &pos_grants        },
+		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "user", pos);
 
@@ -143,6 +155,10 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 	// parent
 	encode_raw(buf, "parent", 6);
 	encode_str(buf, &self->parent);
+
+	// description
+	encode_raw(buf, "description", 11);
+	encode_str(buf, &self->description);
 
 	if (flags_has(flags, FMINIMAL))
 	{

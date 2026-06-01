@@ -530,7 +530,8 @@ show
 ────
 {
   "name": "amelie",
-  "parent": "amelie"
+  "parent": "amelie",
+  "description": ""
 }
 explain select * from main.show('users');
 

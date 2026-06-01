@@ -35,6 +35,7 @@ struct Rel
 	Str*     name;
 	RelType  type;
 	Uuid*    id;
+	Str*     description;
 	Grants*  grants;
 	RelShow  show;
 	RelFree  free;
@@ -80,6 +81,7 @@ rel_init(Rel* self, RelType type)
 	self->name            = NULL;
 	self->id              = NULL;
 	self->type            = type;
+	self->description     = NULL;
 	self->grants          = NULL;
 	self->show            = NULL;
 	self->free            = NULL;
@@ -110,6 +112,12 @@ static inline void
 rel_set_id(Rel* self, Uuid* id)
 {
 	self->id = id;
+}
+
+static inline void
+rel_set_description(Rel* self, Str* description)
+{
+	self->description = description;
 }
 
 static inline void

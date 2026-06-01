@@ -27,6 +27,10 @@ create user test;
 create user if not exists test;
 select show('user', 'test').name;
 
+# test: create user description
+create user test_with_desc description 'test test!';
+show users;
+
 # test: drop user statement parsing
 drop user;
 drop user 123;
@@ -192,10 +196,21 @@ select show('user', 'test2').name;
 drop user test2;
 drop user test2 cascade;
 
+# test: alter user description
+create user test;
+alter user test description;
+alter user test description 123;
+alter user test description 'test test';
+show users;
+alter user test description '';
+show users;
+drop user test;
+
 # test: create agent
-create agent test;
+create agent test description 'agent test';
 select show('user', 'amelie').name;
 select show('user', 'test').name;
+select show('user', 'test').description;
 drop agent test;
 
 disconnect S0;

@@ -64,6 +64,7 @@ Keyword keywords[] =
 	{ KDO,                    "do",                    2  },
 	{ KDROP,                  "drop",                  4  },
 	{ KDESC,                  "desc",                  4  },
+	{ KDESCRIPTION,           "description",           11 },
 	{ KDEBUG,                 "debug",                 5  },
 	{ KDEFAULT,               "default",               7  },
 	{ KDATE,                  "date",                  4  },

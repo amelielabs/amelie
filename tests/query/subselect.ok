@@ -69,7 +69,8 @@ show
 ────
 [{
   "name": "amelie",
-  "parent": "amelie"
+  "parent": "amelie",
+  "description": ""
 }]
 select select (show('users'));
 
@@ -77,7 +78,8 @@ col1
 ────
 [{
   "name": "amelie",
-  "parent": "amelie"
+  "parent": "amelie",
+  "description": ""
 }]
 # test: select (select {})
 select (select {});

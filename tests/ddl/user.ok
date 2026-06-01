@@ -49,6 +49,27 @@ select show('user', 'test').name;
 name
 ────
 "test"
+# test: create user description
+create user test_with_desc description 'test test!';
+show users;
+
+users
+─────
+{
+  "name": "amelie",
+  "parent": "amelie",
+  "description": ""
+}
+{
+  "name": "test",
+  "parent": "amelie",
+  "description": ""
+}
+{
+  "name": "test_with_desc",
+  "parent": "amelie",
+  "description": "test test!"
+}
 # test: drop user statement parsing
 drop user;
 error: drop user❰;❱ ⟵ name expected
@@ -197,11 +218,18 @@ users
 ─────
 {
   "name": "amelie",
-  "parent": "amelie"
+  "parent": "amelie",
+  "description": ""
+}
+{
+  "name": "test_with_desc",
+  "parent": "amelie",
+  "description": "test test!"
 }
 {
   "name": "test",
-  "parent": "amelie"
+  "parent": "amelie",
+  "description": ""
 }
 drop user test;
 error: user 'test' still has table 'a'
@@ -212,7 +240,13 @@ users
 ─────
 {
   "name": "amelie",
-  "parent": "amelie"
+  "parent": "amelie",
+  "description": ""
+}
+{
+  "name": "test_with_desc",
+  "parent": "amelie",
+  "description": "test test!"
 }
 disconnect S2;
 disconnect S1;
@@ -341,8 +375,55 @@ name
 drop user test2;
 error: user 'test2' still has table 'a'
 drop user test2 cascade;
+# test: alter user description
+create user test;
+alter user test description;
+error: alter user test description❰;❱ ⟵ string expected
+alter user test description 123;
+error: alter user test description ❰123❱ ⟵ string expected
+alter user test description 'test test';
+show users;
+
+users
+─────
+{
+  "name": "amelie",
+  "parent": "amelie",
+  "description": ""
+}
+{
+  "name": "test_with_desc",
+  "parent": "amelie",
+  "description": "test test!"
+}
+{
+  "name": "test",
+  "parent": "amelie",
+  "description": "test test"
+}
+alter user test description '';
+show users;
+
+users
+─────
+{
+  "name": "amelie",
+  "parent": "amelie",
+  "description": ""
+}
+{
+  "name": "test_with_desc",
+  "parent": "amelie",
+  "description": "test test!"
+}
+{
+  "name": "test",
+  "parent": "amelie",
+  "description": ""
+}
+drop user test;
 # test: create agent
-create agent test;
+create agent test description 'agent test';
 select show('user', 'amelie').name;
 
 name
@@ -353,6 +434,11 @@ select show('user', 'test').name;
 name
 ────
 "test"
+select show('user', 'test').description;
+
+description
+───────────
+"agent test"
 drop agent test;
 disconnect S0;
 close E0;

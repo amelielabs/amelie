@@ -20,7 +20,7 @@
 void
 parse_user_create(Stmt* self, bool agent)
 {
-	// CREATE USER|AGENT [IF NOT EXISTS] name
+	// CREATE USER|AGENT [IF NOT EXISTS] name [DESCRIPTION desc]
 	auto stmt = ast_user_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -35,6 +35,14 @@ parse_user_create(Stmt* self, bool agent)
 	user_config_set_name(stmt->config, &name->string);
 	user_config_set_parent(stmt->config, self->parser->user);
 	user_config_set_agent(stmt->config, agent);
+
+	// [DESCRIPTION]
+	auto description = stmt_if(self, KDESCRIPTION);
+	if (description)
+	{
+		auto desc = stmt_expect(self, KSTRING);
+		user_config_set_description(stmt->config, &desc->string);
+	}
 
 	// set timestamp
 	char ts[64];
@@ -82,6 +90,7 @@ parse_user_alter(Stmt* self)
 {
 	// ALTER USER|AGENT [IF EXISTS] name RENAME name
 	// ALTER USER|AGENT [IF EXISTS] name REVOKE TOKEN
+	// ALTER USER|AGENT [IF EXISTS] name DESCRIPTION string
 	auto stmt = ast_user_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -116,6 +125,12 @@ parse_user_alter(Stmt* self)
 		auto time = time_us();
 		auto size = timestamp_get(time, runtime()->timezone, ts, 64);
 		str_set(&stmt->revoked_at, ts, size);
+	} else
+	if (stmt_if(self, KDESCRIPTION))
+	{
+		auto text = stmt_expect(self, KSTRING);
+		stmt->type = USER_ALTER_DESCRIPTION;
+		stmt->description = text->string;
 	} else
 	{
 		stmt_error(self, NULL, "RENAME or REVOKE expected");

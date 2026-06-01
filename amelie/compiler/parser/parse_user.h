@@ -33,7 +33,8 @@ struct AstUserDrop
 enum
 {
 	USER_ALTER_RENAME,
-	USER_ALTER_REVOKE_TOKEN
+	USER_ALTER_REVOKE_TOKEN,
+	USER_ALTER_DESCRIPTION
 };
 
 struct AstUserAlter
@@ -44,6 +45,7 @@ struct AstUserAlter
 	Ast* name;
 	Ast* name_new;
 	Str  revoked_at;
+	Str  description;
 };
 
 static inline AstUserCreate*

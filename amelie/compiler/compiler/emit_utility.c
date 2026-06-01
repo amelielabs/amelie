@@ -127,6 +127,9 @@ emit_ddl(Compiler* self)
 		else
 		if (arg->type == USER_ALTER_REVOKE_TOKEN)
 			offset = user_op_revoke_token(data, &arg->name->string, &arg->revoked_at);
+		else
+		if (arg->type == USER_ALTER_DESCRIPTION)
+			offset = user_op_describe(data, &arg->name->string, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
