@@ -60,7 +60,7 @@ static Permission perms[] =
 
 	// Connections
 	{ PERM_SERVICE,             "service",             7  },
-	{ PERM_RPC,                 "rpc",                 3  },
+	{ PERM_API,                 "api",                 3  },
 	{ PERM_SQL,                 "sql",                 3  },
 
 	// all

@@ -269,8 +269,8 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	case ENDPOINT_SQL:
 		buf_write(buf, "sql", 3);
 		break;
-	case ENDPOINT_RPC:
-		buf_write(buf, "rpc", 3);
+	case ENDPOINT_API:
+		buf_write(buf, "api", 3);
 		break;
 	case ENDPOINT_BACKUP:
 		buf_write(buf, "backup", 6);

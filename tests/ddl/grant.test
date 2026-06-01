@@ -213,8 +213,8 @@ switch S1;
 show all rels;
 select amelie.fun();
 execute amelie.fun();
-post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "fun", "args": []}};
-post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"user": "amelie", "rel": "fun", "args": []}};
 
 switch S0;
 grant execute on fun to test;
@@ -223,7 +223,7 @@ switch S1;
 show all rels;
 select amelie.fun();
 execute amelie.fun();
-post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"user": "amelie", "rel": "fun", "args": []}};
 switch S0;
 
 # test: grant
@@ -253,17 +253,17 @@ revoke sql from test;
 switch S1;
 
 select 1;
-post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": {"text": "select 1"}};
 switch S0;
 
-# test: rpc
+# test: api
 grant sql to test;
-revoke rpc from test;
+revoke api from test;
 
 switch S1;
 
 select 1;
-post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": {"text": "select 1"}};
 switch S0;
 
 # test: user drop revoke

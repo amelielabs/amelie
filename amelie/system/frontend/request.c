@@ -106,8 +106,8 @@ request_auth(Request* self, Auth* auth_ref)
 	switch (opt_int_of(&endpoint->endpoint)) {
 	case ENDPOINT_SQL:
 		break;
-	case ENDPOINT_RPC:
-		user_check(self->user, PERM_RPC);
+	case ENDPOINT_API:
+		user_check(self->user, PERM_API);
 		break;
 	case ENDPOINT_BACKUP:
 	case ENDPOINT_REPL:
@@ -223,20 +223,20 @@ request_rpc(Request* self, Str* content)
 	opt_json_set_data(&self->endpoint.id, cmd->id);
 
 	// sql
-	if (str_is(&cmd->method, "sql", 3))
+	if (str_is(&cmd->method, "amelie/sql", 10))
 		return request_rpc_sql(self);
 
 	// write, ack
-	if (str_is(&cmd->method, "write", 5)   ||
-	    str_is(&cmd->method, "ack", 3))
+	if (str_is(&cmd->method, "amelie/write", 12)   ||
+	    str_is(&cmd->method, "amelie/ack", 10))
 		return request_rpc_cmd(self, REQUEST_WRITE, true);
 
 	// follow
-	if (str_is(&cmd->method, "follow", 6))
+	if (str_is(&cmd->method, "amelie/follow", 13))
 		return request_rpc_cmd(self, REQUEST_FOLLOW, false);
 
 	// unfollow
-	if (str_is(&cmd->method, "unfollow", 8))
+	if (str_is(&cmd->method, "amelie/unfollow", 15))
 		return request_rpc_cmd(self, REQUEST_UNFOLLOW, false);
 
 	error("unknown jsonrpc method: {str}", &cmd->method);

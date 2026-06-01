@@ -52,15 +52,15 @@ frontend_endpoint_sql(Request* req, Client* client)
 }
 
 hot static inline void
-frontend_endpoint_rpc(Request* req, Client* client)
+frontend_endpoint_api(Request* req, Client* client)
 {
 	auto endpoint = &req->endpoint;
 	auto http     = &client->request;
 
-	// POST /rpc (application/json)
-	// POST /rpc (application/json-rpc)
-	// GET  /rpc (application/json)      (websocket)
-	// GET  /rpc (application/json-rpc)  (websocket)
+	// POST /api (application/json)
+	// POST /api (application/json-rpc)
+	// GET  /api (application/json)      (websocket)
+	// GET  /api (application/json-rpc)  (websocket)
 
 	// content type
 	auto content_type = &endpoint->content_type.string;
@@ -130,7 +130,7 @@ frontend_endpoint(Request* req, Client* client)
 	auto http     = &client->request;
 
 	// POST /sql
-	// POST /rpc
+	// POST /api
 	// GET  /rpc (websocket)
 	// GET  /backup
 	// GET  /repl
@@ -174,8 +174,8 @@ frontend_endpoint(Request* req, Client* client)
 		if (endpoint_type == ENDPOINT_SQL)
 			frontend_endpoint_sql(req, client);
 		else
-		if (endpoint_type == ENDPOINT_RPC)
-			frontend_endpoint_rpc(req, client);
+		if (endpoint_type == ENDPOINT_API)
+			frontend_endpoint_api(req, client);
 		else
 			frontend_endpoint_service(req, client);
 	);
@@ -254,7 +254,7 @@ frontend_client(Frontend* self, Client* client)
 
 		// execute
 		switch (opt_int_of(&req.endpoint.endpoint)) {
-		case ENDPOINT_RPC:
+		case ENDPOINT_API:
 		{
 			// websocket session
 			if (str_is(&http->options[HTTP_METHOD], "GET", 3))

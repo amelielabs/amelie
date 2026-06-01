@@ -46,7 +46,7 @@ enum
 
 	// Endpoints
 	PERM_SERVICE             = 1ul << 15,
-	PERM_RPC                 = 1ul << 16,
+	PERM_API                 = 1ul << 16,
 	PERM_SQL                 = 1ul << 17,
 
 	// all

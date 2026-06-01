@@ -7,7 +7,7 @@ select grants from show users verbose;
 grants
 ──────
 []
-[["self", "grant", "create_table", "create_clone", "create_function", "create_topic", "create_subscription", "rpc", "sql"]]
+[["self", "grant", "create_table", "create_clone", "create_function", "create_topic", "create_subscription", "api", "sql"]]
 # test: create_table
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
@@ -261,9 +261,9 @@ select amelie.fun();
 error: relation 'amelie.fun': permission denied
 execute amelie.fun();
 error: relation 'amelie.fun': permission denied
-post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "fun", "args": []}};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'fun': not exists"}}
-post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"user": "amelie", "rel": "fun", "args": []}};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'amelie.fun': permission denied"}}
 switch S0;
 grant execute on fun to test;
@@ -297,7 +297,7 @@ execute amelie.fun();
 fun
 ───
 123
-post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"user": "amelie", "rel": "fun", "args": []}};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["fun"], "rows": [[123]]}}
 switch S0;
 # test: grant
@@ -321,19 +321,19 @@ revoke sql from test;
 switch S1;
 select 1;
 Forbidden
-post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": {"text": "select 1"}};
 403 Forbidden
 switch S0;
-# test: rpc
+# test: api
 grant sql to test;
-revoke rpc from test;
+revoke api from test;
 switch S1;
 select 1;
 
 col1
 ────
 1
-post /rpc application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": {"text": "select 1"}};
 403 Forbidden
 switch S0;
 # test: user drop revoke
