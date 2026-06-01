@@ -253,7 +253,8 @@ frontend_client(Frontend* self, Client* client)
 		}
 
 		// execute
-		switch (opt_int_of(&req.endpoint.endpoint)) {
+		auto endpoint = opt_int_of(&req.endpoint.endpoint);
+		switch (endpoint) {
 		case ENDPOINT_API:
 		{
 			// websocket session
@@ -263,7 +264,18 @@ frontend_client(Frontend* self, Client* client)
 				return frontend_follower(self, client, &req, session);
 			}
 
-			// fallthrough
+			if (ctl->session_execute(session, &req))
+			{
+				// 200 OK
+				if (buf_empty(req.output.buf))
+					output_none(&req.output);
+				client_200(client, req.output.buf);
+				break;
+			}
+
+			// 400 Bad Request
+			client_400(client, req.output.buf);
+			break;
 		}
 		case ENDPOINT_SQL:
 		{
