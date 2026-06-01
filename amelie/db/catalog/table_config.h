@@ -17,6 +17,7 @@ struct TableConfig
 {
 	Str          user;
 	Str          name;
+	Str          description;
 	Uuid         id;
 	Columns      columns;
 	List         indexes;
@@ -36,6 +37,7 @@ table_config_allocate(void)
 	self->unlogged      = false;
 	str_init(&self->name);
 	str_init(&self->user);
+	str_init(&self->description);
 	uuid_init(&self->id);
 	columns_init(&self->columns);
 	list_init(&self->indexes);
@@ -50,6 +52,7 @@ table_config_free(TableConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
+	str_free(&self->description);
 
 	list_foreach_safe(&self->indexes)
 	{
@@ -76,6 +79,13 @@ table_config_set_name(TableConfig* self, Str* value)
 {
 	str_free(&self->name);
 	str_copy(&self->name, value);
+}
+
+static inline void
+table_config_set_description(TableConfig* self, Str* value)
+{
+	str_free(&self->description);
+	str_copy(&self->description, value);
 }
 
 static inline void
@@ -110,6 +120,7 @@ table_config_copy(TableConfig* self)
 	auto copy = table_config_allocate();
 	table_config_set_name(copy, &self->name);
 	table_config_set_user(copy, &self->user);
+	table_config_set_description(copy, &self->description);
 	table_config_set_id(copy, &self->id);
 	table_config_set_unlogged(copy, self->unlogged);
 	partitioning_copy(&self->partitioning, &copy->partitioning);
@@ -143,16 +154,17 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_grants       = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",         &self->user       },
-		{ DECODE_STR,   "name",         &self->name       },
-		{ DECODE_UUID,  "id",           &self->id         },
-		{ DECODE_BOOL,  "unlogged",     &self->unlogged   },
-		{ DECODE_ARRAY, "columns",      &pos_columns      },
-		{ DECODE_ARRAY, "indexes",      &pos_indexes      },
-		{ DECODE_OBJ,   "partitioning", &pos_partitioning },
-		{ DECODE_OBJ,   "storage",      &pos_storage      },
-		{ DECODE_ARRAY, "grants",       &pos_grants       },
-		{ 0,             NULL,           NULL             },
+		{ DECODE_STR,   "user",         &self->user        },
+		{ DECODE_STR,   "name",         &self->name        },
+		{ DECODE_STR,   "description",  &self->description },
+		{ DECODE_UUID,  "id",           &self->id          },
+		{ DECODE_BOOL,  "unlogged",     &self->unlogged    },
+		{ DECODE_ARRAY, "columns",      &pos_columns       },
+		{ DECODE_ARRAY, "indexes",      &pos_indexes       },
+		{ DECODE_OBJ,   "partitioning", &pos_partitioning  },
+		{ DECODE_OBJ,   "storage",      &pos_storage       },
+		{ DECODE_ARRAY, "grants",       &pos_grants        },
+		{ 0,             NULL,           NULL              },
 	};
 	decode_obj(obj, "table", pos);
 
@@ -192,6 +204,10 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_str(buf, &self->name);
+
+	// description
+	encode_raw(buf, "description", 11);
+	encode_str(buf, &self->description);
 
 	if (flags_has(flags, FMINIMAL))
 	{

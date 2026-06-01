@@ -286,3 +286,75 @@ catalog_grant_rename_of(Catalog* self,
 	grants_reset(grants);
 	grants_copy(grants, &grants_new);
 }
+
+static void
+describe_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+describe_if_abort(Log* self, LogOp* op)
+{
+	uint8_t* pos = log_data_of(self, op);
+	Str description;
+	unpack_str(&pos, &description);
+	str_free(op->rel->description);
+	str_copy(op->rel->description, &description);
+}
+
+static LogIf describe_if =
+{
+	.commit = describe_if_commit,
+	.abort  = describe_if_abort
+};
+
+void
+catalog_describe_of(Catalog* self,
+                    Tr*      tr,
+                    Rel*     rel,
+                    Str*     description)
+{
+	// (no check)
+	unused(self);
+	assert(rel->description);
+
+	// update table
+	log_ddl(&tr->log, &describe_if, NULL, rel);
+
+	// save previous description
+	encode_str(&tr->log.data, rel->description);
+
+	// set new description
+	str_free(rel->description);
+	str_copy(rel->description, description);
+}
+
+bool
+catalog_describe(Catalog* self,
+                 Tr*      tr,
+                 RelType  type,
+                 Str*     user,
+                 Str*     name,
+                 Str*     description,
+                 bool     if_exists)
+{
+	auto rel = catalog_find(self, type, user, name, false);
+	if (! rel)
+	{
+		if (! if_exists)
+			error("{s} '{str}': not exists", rel_type_of(type), name);
+		return false;
+	}
+
+	// only owner or superuser
+	check_ownership(tr, rel);
+
+	if (! rel->description)
+		error("{s} '{str}': does not support description",
+		      rel_type_of(type), name);
+
+	catalog_describe_of(self, tr, rel, description);
+	return true;
+}

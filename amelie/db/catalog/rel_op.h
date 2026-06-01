@@ -104,3 +104,34 @@ rel_op_grant_read(uint8_t* op, Str* user, Str* name, Str* to, bool* grant, int64
 	unpack_int(&op, perms);
 	unpack_array_end(&op);
 }
+
+static inline int
+rel_op_describe(Buf* self, RelType type, Str* user, Str* name, Str* description)
+{
+	// [op, type, user, name, description]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_int(self, DDL_DESCRIBE);
+	encode_int(self, type);
+	encode_str(self, user);
+	encode_str(self, name);
+	encode_str(self, description);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline int
+rel_op_describe_read(uint8_t* op, Str* user, Str* name, Str* description)
+{
+	int64_t cmd;
+	int64_t type;
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
+	unpack_int(&op, &type);
+	assert(cmd == DDL_DESCRIBE);
+	unpack_str(&op, user);
+	unpack_str(&op, name);
+	unpack_str(&op, description);
+	unpack_array_end(&op);
+	return type;
+}

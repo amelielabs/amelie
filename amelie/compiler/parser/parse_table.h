@@ -42,6 +42,7 @@ struct AstTableTruncate
 enum
 {
 	TABLE_ALTER_RENAME,
+	TABLE_ALTER_DESCRIPTION,
 	TABLE_ALTER_SET_IDENTITY,
 	TABLE_ALTER_COLUMN_ADD,
 	TABLE_ALTER_COLUMN_DROP,
@@ -61,6 +62,7 @@ struct AstTableAlter
 	Str     name_new;
 	Str     column_name;
 	Column* column;
+	Str     description;
 	Buf*    value_buf;
 	Str     value;
 	Ast*    identity;

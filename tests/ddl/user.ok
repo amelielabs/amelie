@@ -332,11 +332,13 @@ tables
 ──────
 {
   "user": "test2",
-  "name": "a"
+  "name": "a",
+  "description": ""
 }
 {
   "user": "test2",
-  "name": "b"
+  "name": "b",
+  "description": ""
 }
 show functions;
 

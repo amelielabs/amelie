@@ -20,7 +20,7 @@
 void
 parse_user_create(Stmt* self, bool agent)
 {
-	// CREATE USER|AGENT [IF NOT EXISTS] name [DESCRIPTION desc]
+	// CREATE USER|AGENT [IF NOT EXISTS] name [DESCRIPTION text]
 	auto stmt = ast_user_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -40,8 +40,8 @@ parse_user_create(Stmt* self, bool agent)
 	auto description = stmt_if(self, KDESCRIPTION);
 	if (description)
 	{
-		auto desc = stmt_expect(self, KSTRING);
-		user_config_set_description(stmt->config, &desc->string);
+		auto text = stmt_expect(self, KSTRING);
+		user_config_set_description(stmt->config, &text->string);
 	}
 
 	// set timestamp
@@ -90,7 +90,7 @@ parse_user_alter(Stmt* self)
 {
 	// ALTER USER|AGENT [IF EXISTS] name RENAME name
 	// ALTER USER|AGENT [IF EXISTS] name REVOKE TOKEN
-	// ALTER USER|AGENT [IF EXISTS] name DESCRIPTION string
+	// ALTER USER|AGENT [IF EXISTS] name DESCRIPTION value
 	auto stmt = ast_user_alter_allocate();
 	self->ast = &stmt->ast;
 

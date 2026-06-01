@@ -332,5 +332,16 @@ drop function dep;
 alter table test rename column data to data2;
 drop table test;
 
+# test: description
+create table test (id int primary key);
+select show('table', 'test', true).description;
+alter table test description;
+alter table test description 123;
+alter table test description 'test test';
+select show('table', 'test', true).description;
+alter table test description '';
+select show('table', 'test', true).description;
+drop table test;
+
 disconnect S0;
 close E0;

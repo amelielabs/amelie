@@ -183,7 +183,8 @@ show
 ────
 [{
   "user": "amelie",
-  "name": "test"
+  "name": "test",
+  "description": ""
 }]
 # test: table
 select show('table', 'test');
@@ -192,7 +193,8 @@ show
 ────
 {
   "user": "amelie",
-  "name": "test"
+  "name": "test",
+  "description": ""
 }
 # test: indexes
 select show('indexes', '', 'test', false);
@@ -267,7 +269,7 @@ show
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 347,
+  "writes_bytes": 360,
   "ops": 1
 }
 # test: metrics

@@ -18,3 +18,5 @@ bool catalog_rename(Catalog*, Tr*, RelType, Str*, Str*, Str*, Str*, bool);
 void catalog_grant_of(Catalog*, Tr*, Rel*, Str*, bool, uint32_t);
 bool catalog_grant(Catalog*, Tr*, Str*, Str*, Str*, bool, uint32_t);
 void catalog_grant_rename_of(Catalog*, Tr*, Rel*, Str*, Str*);
+void catalog_describe_of(Catalog*, Tr*, Rel*, Str*);
+bool catalog_describe(Catalog*, Tr*, RelType, Str*, Str*, Str*, bool);

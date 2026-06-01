@@ -213,6 +213,17 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = catalog_grant(self, tr, &user, &name, &to, grant, perms);
 		break;
 	}
+	case DDL_DESCRIBE:
+	{
+		Str     user;
+		Str     name;
+		Str     description;
+		auto type = rel_op_describe_read(op, &user, &name, &description);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = catalog_describe(self, tr, type, &user, &name, &description, if_exists);
+		break;
+	}
 
 	case DDL_USER_CREATE:
 	{

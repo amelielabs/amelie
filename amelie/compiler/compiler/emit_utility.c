@@ -35,6 +35,12 @@ emit_alter_table(Compiler* self)
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
+	case TABLE_ALTER_DESCRIPTION:
+	{
+		offset = rel_op_describe(data, REL_TABLE, user, &arg->name, &arg->description);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
 	case TABLE_ALTER_SET_IDENTITY:
 	{
 		offset = table_op_set_identity(data, user, &arg->name, arg->identity->integer);

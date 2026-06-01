@@ -17,6 +17,7 @@ enum
 	DDL_DROP,
 	DDL_RENAME,
 	DDL_GRANT,
+	DDL_DESCRIBE,
 
 	// user
 	DDL_USER_CREATE,

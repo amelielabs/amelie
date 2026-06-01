@@ -18,7 +18,8 @@ tables
 ──────
 {
   "user": "amelie",
-  "name": "test"
+  "name": "test",
+  "description": ""
 }
 select * from show tables;
 
@@ -26,7 +27,8 @@ tables
 ──────
 {
   "user": "amelie",
-  "name": "test"
+  "name": "test",
+  "description": ""
 }
 # test: show table
 show table;
@@ -37,7 +39,8 @@ table
 ─────
 {
   "user": "amelie",
-  "name": "test"
+  "name": "test",
+  "description": ""
 }
 select * from show table test;
 
@@ -45,7 +48,8 @@ table
 ─────
 {
   "user": "amelie",
-  "name": "test"
+  "name": "test",
+  "description": ""
 }
 # test: show indexes
 show indexes on test;
@@ -322,7 +326,7 @@ wal
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 824,
+  "writes_bytes": 837,
   "ops": 3
 }
 # test: show replicas

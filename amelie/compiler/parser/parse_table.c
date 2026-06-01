@@ -375,6 +375,7 @@ parse_table_create(Stmt* self, bool unlogged)
 	// CREATE [UNLOGGED] TABLE [IF NOT EXISTS] name (key)
 	// [PARTITIONS n]
 	// [WITH (options)]
+	// [DESCRIPTION value]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -436,6 +437,13 @@ parse_table_create(Stmt* self, bool unlogged)
 	// [WITH]
 	if (stmt_if(self, KWITH))
 		parse_table_create_with(self);
+
+	// [DESCRIPTION]
+	if (stmt_if(self, KDESCRIPTION))
+	{
+		auto text = stmt_expect(self, KSTRING);
+		table_config_set_description(stmt->config, &text->string);
+	}
 }
 
 void
@@ -460,6 +468,7 @@ void
 parse_table_alter(Stmt* self)
 {
 	// ALTER TABLE [IF EXISTS] name RENAME TO name
+	// ALTER TABLE [IF EXISTS] name DESCRIPTION value 
 	// ALTER TABLE [IF EXISTS] name SET IDENTITY TO value
 	// ALTER TABLE [IF EXISTS] name ADD COLUMN [IF NOT EXISTS] name type [constraint]
 	// ALTER TABLE [IF EXISTS] name DROP COLUMN [IF EXISTS] name
@@ -580,6 +589,15 @@ parse_table_alter(Stmt* self)
 		auto name_new  = stmt_expect(self, KNAME);
 		stmt->name_new = name_new->string;
 		stmt->type = TABLE_ALTER_RENAME;
+		return;
+	}
+
+	// [DESCRIPTION]
+	if (stmt_if(self, KDESCRIPTION))
+	{
+		auto value = stmt_expect(self, KSTRING);
+		stmt->type = TABLE_ALTER_DESCRIPTION;
+		stmt->description = value->string;
 		return;
 	}
 

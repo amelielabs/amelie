@@ -804,5 +804,17 @@ id
 ──
 "00000000-0000-0000-0000-000000000000"
 drop table test;
+# test: description
+create table test (id int primary key) description;
+error: create table test (id int primary key) description❰;❱ ⟵ string expected
+create table test (id int primary key) description 123;
+error: create table test (id int primary key) description ❰123❱ ⟵ string expected
+create table test (id int primary key) description 'test test';
+select show('table', 'test', true).description;
+
+description
+───────────
+"test test"
+drop table test;
 disconnect S0;
 close E0;
