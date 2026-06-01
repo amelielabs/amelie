@@ -189,18 +189,18 @@ switch S0;
 
 # test: publish
 create topic top;
-grant publish to test;
+grant publish into test;
 
 switch S1;
 show all rels;
-publish to amelie.top 123;
+publish into amelie.top 123;
 
 switch S0;
 grant publish on top to test;
 
 switch S1;
 show all rels;
-publish to amelie.top 123;
+publish into amelie.top 123;
 switch S0;
 
 # test: execute

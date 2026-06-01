@@ -204,8 +204,8 @@ id   data
 switch S0;
 # test: publish
 create topic top;
-grant publish to test;
-error: relation 'test' does not support 'publish' grant
+grant publish into test;
+error: grant publish ❰into❱ ⟵ TO expected
 switch S1;
 show all rels;
 
@@ -216,7 +216,7 @@ rels
   "name": "test",
   "type": "table"
 }
-publish to amelie.top 123;
+publish into amelie.top 123;
 error: relation 'amelie.top': permission denied
 switch S0;
 grant publish on top to test;
@@ -235,7 +235,7 @@ rels
   "name": "top",
   "type": "topic"
 }
-publish to amelie.top 123;
+publish into amelie.top 123;
 switch S0;
 # test: execute
 create function fun () return int

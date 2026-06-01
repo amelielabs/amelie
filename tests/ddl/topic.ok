@@ -34,17 +34,17 @@ select * from test;
 error: select * from ❰test❱ ⟵ topic cannot be used here
 # test: publish (no subscibers)
 publish;
-error: publish❰;❱ ⟵ TO expected
+error: publish❰;❱ ⟵ INTO expected
 publish into;
-error: publish ❰into❱ ⟵ TO expected
-publish to;
-error: publish to❰;❱ ⟵ target name expected
-publish to 1;
-error: publish to ❰1❱ ⟵ target name expected
-publish to xyz;
-error: publish to ❰xyz❱ ⟵ topic not found
-publish to test;
-publish to test 123;
+error: publish into❰;❱ ⟵ target name expected
+publish into;
+error: publish into❰;❱ ⟵ target name expected
+publish into 1;
+error: publish into ❰1❱ ⟵ target name expected
+publish into xyz;
+error: publish into ❰xyz❱ ⟵ topic not found
+publish into test;
+publish into test 123;
 # test: drop topic statement parsing
 drop topic;
 error: drop topic❰;❱ ⟵ name expected
@@ -102,7 +102,7 @@ topics
   "user": "amelie",
   "name": "xyz"
 }
-publish to xyz 123;
+publish into xyz 123;
 drop topic xyz;
 drop topic test;
 error: topic 'test': not exists
@@ -113,8 +113,8 @@ select name, `unlogged` from show topics verbose;
 name    unlogged
 ──────────────────
 "test"  true
-publish to test;
-publish to test 123;
+publish into test;
+publish into test 123;
 drop topic test;
 disconnect S0;
 close E0;

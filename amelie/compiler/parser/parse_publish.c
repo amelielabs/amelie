@@ -20,12 +20,12 @@
 void
 parse_publish(Stmt* self)
 {
-	// PUBLISH TO [user.]topic [value, ...]
+	// PUBLISH INTO [user.]topic [value, ...]
 	auto stmt = ast_publish_allocate(self->block);
 	self->ast = &stmt->ast;
 
-	// TO
-	stmt_expect(self, KTO);
+	// INTO
+	stmt_expect(self, KINTO);
 
 	// [user.]name
 	Str user;

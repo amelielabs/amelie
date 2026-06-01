@@ -393,9 +393,9 @@ lsn  lsn_op
 ─────────────
 23   0
 # test: cdc (publish)
-publish to test;
-publish to test 123;
-publish to test 1,2,3;
+publish into test;
+publish into test 123;
+publish into test 1,2,3;
 # test: select from subscription
 select * from test_sub;
 

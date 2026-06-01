@@ -235,9 +235,9 @@ show topics;
 # test: create subscription
 create subscription top_sub on top;
 show subs;
-publish to top 123;
-publish to top 1,2,3;
-publish to top;
+publish into top 123;
+publish into top 1,2,3;
+publish into top;
 select * from top_sub;
 
 # test: restart/recover (checkpoint + wal)

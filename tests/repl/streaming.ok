@@ -10311,9 +10311,9 @@ identity_of
 switch S0;
 create topic top;
 create subscription top_sub on top;
-publish to top;
-publish to top 123;
-publish to top 1,2,3;
+publish into top;
+publish into top 123;
+publish into top 1,2,3;
 show subs;
 
 subs
@@ -10488,9 +10488,9 @@ create topic b;
 create subscription sa on a;
 create subscription sb on b;
 begin
-  publish to a 1;
-  publish to b 2;
-  publish to b 3,4,5;
+  publish into a 1;
+  publish into b 2;
+  publish into b 3,4,5;
   insert into abc values (1), (2), (3);
   delete from abc where id = 3;
   insert into abc values (4);

@@ -725,9 +725,9 @@ subs
   "user": "amelie",
   "name": "top_sub"
 }
-publish to top 123;
-publish to top 1,2,3;
-publish to top;
+publish into top 123;
+publish into top 1,2,3;
+publish into top;
 select * from top_sub;
 
 lsn  lsn_op  cmd      row

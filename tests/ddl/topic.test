@@ -25,12 +25,12 @@ select * from test;
 # test: publish (no subscibers)
 publish;
 publish into;
-publish to;
-publish to 1;
-publish to xyz;
+publish into;
+publish into 1;
+publish into xyz;
 
-publish to test;
-publish to test 123;
+publish into test;
+publish into test 123;
 
 # test: drop topic statement parsing
 drop topic;
@@ -64,7 +64,7 @@ alter topic test rename to xyz;
 alter topic if exists test rename to xyz;
 show topics;
 
-publish to xyz 123;
+publish into xyz 123;
 drop topic xyz;
 
 drop topic test;
@@ -73,8 +73,8 @@ drop topic test;
 create unlogged topic test;
 select name, `unlogged` from show topics verbose;
 
-publish to test;
-publish to test 123;
+publish into test;
+publish into test 123;
 drop topic test;
 
 disconnect S0;

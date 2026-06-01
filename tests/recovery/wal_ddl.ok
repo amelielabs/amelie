@@ -642,9 +642,9 @@ topics
 }
 # test: create subscription
 create subscription top_sub on top;
-publish to top 123;
-publish to top 1,2,3;
-publish to top;
+publish into top 123;
+publish into top 1,2,3;
+publish into top;
 select * from top_sub;
 
 lsn  lsn_op  cmd      row
@@ -778,9 +778,9 @@ create topic b;
 create subscription sa on a;
 create subscription sb on b;
 begin
-  publish to a 1;
-  publish to b 2;
-  publish to b 3,4,5;
+  publish into a 1;
+  publish into b 2;
+  publish into b 3,4,5;
 end;
 select * from sa;
 
