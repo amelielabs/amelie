@@ -83,6 +83,7 @@ void
 parse_sub_alter(Stmt* self)
 {
 	// ALTER SUBSCRIPTION [IF EXISTS] name RENAME TO name
+	// ALTER SUBSCRIPTION [IF EXISTS] name DESCRIPTION text
 	auto stmt = ast_sub_alter_allocate();
 	self->ast = &stmt->ast;
 

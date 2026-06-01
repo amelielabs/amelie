@@ -65,6 +65,7 @@ functions
 {
   "user": "amelie",
   "name": "dep",
+  "description": "",
   "text": "begin insert into test values (123); end",
   "type": 0,
   "args": [],
@@ -86,6 +87,7 @@ functions
 {
   "user": "amelie",
   "name": "dep",
+  "description": "",
   "text": "begin insert into test values (123); end",
   "type": 0,
   "args": [],

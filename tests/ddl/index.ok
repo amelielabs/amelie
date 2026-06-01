@@ -328,6 +328,7 @@ functions
 {
   "user": "amelie",
   "name": "dep",
+  "description": "",
   "text": "begin insert into test values (1,2,3); end",
   "type": 0,
   "args": [],

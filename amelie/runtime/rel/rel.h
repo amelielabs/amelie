@@ -192,5 +192,12 @@ rel_write(Rel* self, Buf* buf, int flags)
 	encode_raw(buf, "type", 4);
 	encode_cstr(buf, rel_type_of(self->type));
 
+	// description
+	encode_raw(buf, "description", 11);
+	if (self->description)
+		encode_str(buf, self->description);
+	else
+		encode_raw(buf, "", 0);
+
 	encode_obj_end(buf);
 }

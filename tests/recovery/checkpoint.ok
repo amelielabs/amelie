@@ -364,6 +364,7 @@ functions
 {
   "user": "amelie",
   "name": "reverse",
+  "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
   "args": [{
@@ -408,6 +409,7 @@ functions
 {
   "user": "amelie",
   "name": "reverse",
+  "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
   "args": [{
@@ -469,6 +471,7 @@ functions
 {
   "user": "amelie",
   "name": "reverse",
+  "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
   "args": [{
@@ -502,6 +505,7 @@ functions
 {
   "user": "amelie",
   "name": "reverse",
+  "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
   "args": [{
@@ -546,6 +550,7 @@ functions
 {
   "user": "amelie",
   "name": "reverse",
+  "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
   "args": [{
@@ -607,6 +612,7 @@ functions
 {
   "user": "amelie",
   "name": "reverse",
+  "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
   "args": [{

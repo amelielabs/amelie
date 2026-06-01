@@ -36,6 +36,7 @@ functions
 {
   "user": "amelie",
   "name": "test",
+  "description": "",
   "text": "begin end",
   "type": 0,
   "args": [],
@@ -217,6 +218,36 @@ col1
 ────
 null
 drop function test;
+# test: create function description
+create function test () return int description;
+error: create function test () return int description❰;❱ ⟵ string expected
+create function test () return int description 1;
+error: create function test () return int description ❰1❱ ⟵ string expected
+create function test () return int description 'test test'
+begin end;
+show functions;
+
+functions
+─────────
+{
+  "user": "amelie",
+  "name": "test",
+  "description": "test test"
+}
+drop function test;
+create function test ()
+description 'test test'
+begin end;
+show functions;
+
+functions
+─────────
+{
+  "user": "amelie",
+  "name": "test",
+  "description": "test test"
+}
+drop function test;
 # test: create function return (return stmt)
 create function test () return int
 begin
@@ -366,6 +397,7 @@ functions
 {
   "user": "amelie",
   "name": "test",
+  "description": "",
   "text": "begin\nend",
   "type": 13,
   "args": [],
@@ -693,6 +725,7 @@ functions
 {
   "user": "amelie",
   "name": "test",
+  "description": "",
   "text": "begin\n\tdeclare total int := 0;\n\tdeclare i int := 0;\n\twhile i < x do\n\t\ttotal := total + i;\n\t\ti := i + 1;\n\tend;\n\treturn total;\nend",
   "type": 2,
   "args": [{
@@ -708,6 +741,7 @@ functions
 {
   "user": "amelie",
   "name": "reverse",
+  "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
   "args": [{
@@ -800,6 +834,7 @@ functions
 {
   "user": "amelie",
   "name": "test",
+  "description": "",
   "text": "begin\n\treturn 123;\nend",
   "type": 2,
   "args": [],
@@ -823,6 +858,7 @@ functions
 {
   "user": "amelie",
   "name": "test",
+  "description": "",
   "text": "begin\n\treturn 321;\nend",
   "type": 2,
   "args": [],
@@ -979,11 +1015,12 @@ functions
 ─────────
 {
   "user": "amelie",
-  "name": "test2"
+  "name": "test2",
+  "description": ""
 }
 # test: alter function rename
 alter function test rename;
-error: alter function test rename❰;❱ ⟵ name expected
+error: alter function test rename❰;❱ ⟵ TO expected
 alter function test rename to;
 error: alter function test rename to❰;❱ ⟵ name expected
 alter function test rename to asf junk;
@@ -1008,6 +1045,28 @@ error: function 'amelie.test' depends on function 'test_dep'
 drop function test;
 alter function test_dep rename to test_dep2;
 drop function test_dep2;
+# test: alter function description
+create function test() begin end;
+show function test;
+
+function
+────────
+{
+  "user": "amelie",
+  "name": "test",
+  "description": ""
+}
+alter function test description 'test test';
+show function test;
+
+function
+────────
+{
+  "user": "amelie",
+  "name": "test",
+  "description": "test test"
+}
+drop function test;
 # test: recursion direct
 create function test(x int) return int
 begin

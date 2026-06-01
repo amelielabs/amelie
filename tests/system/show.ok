@@ -236,7 +236,8 @@ functions
 ─────────
 {
   "user": "amelie",
-  "name": "test_fn"
+  "name": "test_fn",
+  "description": ""
 }
 show functions verbose;
 
@@ -245,6 +246,7 @@ functions
 {
   "user": "amelie",
   "name": "test_fn",
+  "description": "",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
   "type": 5,
   "args": [{
@@ -264,6 +266,7 @@ functions
 {
   "user": "amelie",
   "name": "test_fn",
+  "description": "",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
   "type": 5,
   "args": [{
@@ -285,7 +288,8 @@ function
 ────────
 {
   "user": "amelie",
-  "name": "test_fn"
+  "name": "test_fn",
+  "description": ""
 }
 show function test_fn verbose;
 
@@ -294,6 +298,7 @@ function
 {
   "user": "amelie",
   "name": "test_fn",
+  "description": "",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
   "type": 5,
   "args": [{
@@ -312,7 +317,8 @@ function
 ────────
 {
   "user": "amelie",
-  "name": "test_fn"
+  "name": "test_fn",
+  "description": ""
 }
 # test: show wal
 show wal;
@@ -326,7 +332,7 @@ wal
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 837,
+  "writes_bytes": 850,
   "ops": 3
 }
 # test: show replicas

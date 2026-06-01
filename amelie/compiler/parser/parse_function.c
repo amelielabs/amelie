@@ -59,6 +59,7 @@ parse_function_create(Stmt* self, bool or_replace)
 {
 	// CREATE [OR REPLACE] FUNCTION name (args)
 	// [RETURN type [(args)]]
+	// [DESCRIPTION text]
 	// BEGIN
 	//   block
 	// END
@@ -119,6 +120,14 @@ parse_function_create(Stmt* self, bool or_replace)
 		}
 	}
 
+	// [DESCRIPTION]
+	auto description = stmt_if(self, KDESCRIPTION);
+	if (description)
+	{
+		auto text = stmt_expect(self, KSTRING);
+		udf_config_set_description(stmt->config, &text->string);
+	}
+
 	// create new namespace
 	auto parser = self->parser;
 	auto ns     = namespaces_add(&parser->nss, self->block->ns, stmt->config);
@@ -170,6 +179,7 @@ void
 parse_function_alter(Stmt* self)
 {
 	// ALTER FUNCTION [IF EXISTS] name RENAME name
+	// ALTER FUNCTION [IF EXISTS] name DESCRIPTION text
 	auto stmt = ast_function_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -181,12 +191,26 @@ parse_function_alter(Stmt* self)
 	stmt->name = name->string;
 
 	// RENAME
-	stmt_expect(self, KRENAME);
+	if (stmt_if(self, KRENAME))
+	{
+		// TO
+		stmt_expect(self, KTO);
+		stmt->type = FUNCTION_ALTER_RENAME;
 
-	// [TO]
-	stmt_if(self, KTO);
+		// name
+		name = stmt_expect(self, KNAME);
+		stmt->name_new = name->string;
+		return;
+	}
 
-	// name
-	auto name_new  = stmt_expect(self, KNAME);
-	stmt->name_new = name_new->string;
+	// DESCRIPTION
+	if (stmt_if(self, KDESCRIPTION))
+	{
+		auto text = stmt_expect(self, KSTRING);
+		stmt->type = FUNCTION_ALTER_DESCRIPTION;
+		stmt->description = text->string;
+		return;
+	}
+
+	stmt_error(self, NULL, "RENAME or DESCRIPTION expected");
 }

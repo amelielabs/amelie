@@ -125,7 +125,8 @@ rels
 {
   "user": "amelie",
   "name": "test",
-  "type": "table"
+  "type": "table",
+  "description": ""
 }
 insert into amelie.test values (123, 0);
 select * from amelie.test;
@@ -214,7 +215,8 @@ rels
 {
   "user": "amelie",
   "name": "test",
-  "type": "table"
+  "type": "table",
+  "description": ""
 }
 publish into amelie.top 123;
 error: relation 'amelie.top': permission denied
@@ -228,12 +230,14 @@ rels
 {
   "user": "amelie",
   "name": "test",
-  "type": "table"
+  "type": "table",
+  "description": ""
 }
 {
   "user": "amelie",
   "name": "top",
-  "type": "topic"
+  "type": "topic",
+  "description": ""
 }
 publish into amelie.top 123;
 switch S0;
@@ -250,12 +254,14 @@ rels
 {
   "user": "amelie",
   "name": "test",
-  "type": "table"
+  "type": "table",
+  "description": ""
 }
 {
   "user": "amelie",
   "name": "top",
-  "type": "topic"
+  "type": "topic",
+  "description": ""
 }
 select amelie.fun();
 error: relation 'amelie.fun': permission denied
@@ -275,17 +281,20 @@ rels
 {
   "user": "amelie",
   "name": "test",
-  "type": "table"
+  "type": "table",
+  "description": ""
 }
 {
   "user": "amelie",
   "name": "top",
-  "type": "topic"
+  "type": "topic",
+  "description": ""
 }
 {
   "user": "amelie",
   "name": "fun",
-  "type": "function"
+  "type": "function",
+  "description": ""
 }
 select amelie.fun();
 
@@ -350,7 +359,8 @@ rels
 {
   "user": "test2",
   "name": "test",
-  "type": "table"
+  "type": "table",
+  "description": ""
 }
 show grants on test;
 
@@ -385,7 +395,8 @@ rels
 {
   "user": "test2",
   "name": "test",
-  "type": "table"
+  "type": "table",
+  "description": ""
 }
 switch S0;
 disconnect S1;
@@ -406,7 +417,8 @@ rels
 {
   "user": "test2",
   "name": "test",
-  "type": "table"
+  "type": "table",
+  "description": ""
 }
 show grants on test;
 

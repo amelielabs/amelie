@@ -76,6 +76,20 @@ execute test();
 select test() + 123;
 drop function test;
 
+# test: create function description
+create function test () return int description;
+create function test () return int description 1;
+create function test () return int description 'test test'
+begin end;
+show functions;
+drop function test;
+
+create function test ()
+description 'test test'
+begin end;
+show functions;
+drop function test;
+
 # test: create function return (return stmt)
 create function test () return int
 begin
@@ -379,6 +393,13 @@ alter function test_dep rename to test_dep2;
 drop function test;
 alter function test_dep rename to test_dep2;
 drop function test_dep2;
+
+# test: alter function description
+create function test() begin end;
+show function test;
+alter function test description 'test test';
+show function test;
+drop function test;
 
 # test: recursion direct
 create function test(x int) return int
