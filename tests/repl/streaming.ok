@@ -10373,7 +10373,8 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "top"
+  "name": "top",
+  "description": ""
 }
 show subs;
 
@@ -10420,7 +10421,8 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "top"
+  "name": "top",
+  "description": ""
 }
 show subs;
 
@@ -10465,7 +10467,8 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "top"
+  "name": "top",
+  "description": ""
 }
 show subs;
 

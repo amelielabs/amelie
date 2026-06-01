@@ -105,6 +105,7 @@ void
 parse_clone_alter(Stmt* self)
 {
 	// ALTER CLONE [IF EXISTS] name RENAME TO name
+	// ALTER CLONE [IF EXISTS] name DESCRIPTION text
 	auto stmt = ast_clone_alter_allocate();
 	self->ast = &stmt->ast;
 

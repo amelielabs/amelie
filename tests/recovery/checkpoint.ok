@@ -632,7 +632,8 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "top"
+  "name": "top",
+  "description": ""
 }
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -660,7 +661,8 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "top"
+  "name": "top",
+  "description": ""
 }
 # test: checkpoint
 checkpoint;
@@ -685,7 +687,8 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "top"
+  "name": "top",
+  "description": ""
 }
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -713,7 +716,8 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "top"
+  "name": "top",
+  "description": ""
 }
 # test: create subscription
 create subscription top_sub on top;

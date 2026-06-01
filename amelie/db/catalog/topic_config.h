@@ -17,6 +17,7 @@ struct TopicConfig
 {
 	Str    user;
 	Str    name;
+	Str    description;
 	Uuid   id;
 	bool   unlogged;
 	Grants grants;
@@ -30,6 +31,7 @@ topic_config_allocate(void)
 	self->unlogged = false;
 	str_init(&self->user);
 	str_init(&self->name);
+	str_init(&self->description);
 	uuid_init(&self->id);
 	grants_init(&self->grants);
 	return self;
@@ -40,6 +42,7 @@ topic_config_free(TopicConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
+	str_free(&self->description);
 	grants_free(&self->grants);
 	am_free(self);
 }
@@ -56,6 +59,13 @@ topic_config_set_name(TopicConfig* self, Str* name)
 {
 	str_free(&self->name);
 	str_copy(&self->name, name);
+}
+
+static inline void
+topic_config_set_description(TopicConfig* self, Str* value)
+{
+	str_free(&self->description);
+	str_copy(&self->description, value);
 }
 
 static inline void
@@ -76,6 +86,7 @@ topic_config_copy(TopicConfig* self)
 	auto copy = topic_config_allocate();
 	topic_config_set_user(copy, &self->user);
 	topic_config_set_name(copy, &self->name);
+	topic_config_set_description(copy, &self->description);
 	topic_config_set_id(copy, &self->id);
 	topic_config_set_unlogged(copy, self->unlogged);
 	grants_copy(&copy->grants, &self->grants);
@@ -90,12 +101,13 @@ topic_config_read(uint8_t** pos)
 	uint8_t* pos_grants   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",     &self->user     },
-		{ DECODE_STR,   "name",     &self->name     },
-		{ DECODE_UUID,  "id",       &self->id       },
-		{ DECODE_BOOL,  "unlogged", &self->unlogged },
-		{ DECODE_ARRAY, "grants",   &pos_grants     },
-		{ 0,             NULL,       NULL           },
+		{ DECODE_STR,   "user",        &self->user        },
+		{ DECODE_STR,   "name",        &self->name        },
+		{ DECODE_STR,   "description", &self->description },
+		{ DECODE_UUID,  "id",          &self->id          },
+		{ DECODE_BOOL,  "unlogged",    &self->unlogged    },
+		{ DECODE_ARRAY, "grants",      &pos_grants        },
+		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "topic", pos);
 
@@ -117,6 +129,10 @@ topic_config_write(TopicConfig* self, Buf* buf, int flags)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_str(buf, &self->name);
+
+	// description
+	encode_raw(buf, "description", 11);
+	encode_str(buf, &self->description);
 
 	if (flags_has(flags, FMINIMAL))
 	{

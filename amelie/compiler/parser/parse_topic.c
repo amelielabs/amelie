@@ -20,7 +20,7 @@
 void
 parse_topic_create(Stmt* self, bool unlogged)
 {
-	// CREATE [UNLOGGED] TOPIC [IF NOT EXISTS] name
+	// CREATE [UNLOGGED] TOPIC [IF NOT EXISTS] name [DESCRIPTION text]
 	auto stmt = ast_topic_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -40,6 +40,14 @@ parse_topic_create(Stmt* self, bool unlogged)
 	uuid_generate(&id, &runtime()->random);
 	topic_config_set_id(config, &id);
 	topic_config_set_unlogged(config, unlogged);
+
+	// [DESCRIPTION]
+	auto description = stmt_if(self, KDESCRIPTION);
+	if (description)
+	{
+		auto text = stmt_expect(self, KSTRING);
+		topic_config_set_description(stmt->config, &text->string);
+	}
 }
 
 void
@@ -64,6 +72,7 @@ void
 parse_topic_alter(Stmt* self)
 {
 	// ALTER TOPIC [IF EXISTS] name RENAME TO name
+	// ALTER TOPIC [IF EXISTS] name DESCRIPTION text
 	auto stmt = ast_topic_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -75,12 +84,26 @@ parse_topic_alter(Stmt* self)
 	stmt->name = name->string;
 
 	// RENAME
-	stmt_expect(self, KRENAME);
+	if (stmt_if(self, KRENAME))
+	{
+		// TO
+		stmt_expect(self, KTO);
+		stmt->type = TOPIC_ALTER_RENAME;
 
-	// TO
-	stmt_expect(self, KTO);
+		// name
+		name = stmt_expect(self, KNAME);
+		stmt->name_new = name->string;
+		return;
+	}
 
-	// name
-	name = stmt_expect(self, KNAME);
-	stmt->name_new = name->string;
+	// DESCRIPTION
+	if (stmt_if(self, KDESCRIPTION))
+	{
+		auto text = stmt_expect(self, KSTRING);
+		stmt->type = TOPIC_ALTER_DESCRIPTION;
+		stmt->description = text->string;
+		return;
+	}
+
+	stmt_error(self, NULL, "RENAME or DESCRIPTION expected");
 }

@@ -30,12 +30,20 @@ struct AstTopicDrop
 	bool cascade;
 };
 
+enum
+{
+	TOPIC_ALTER_RENAME,
+	TOPIC_ALTER_DESCRIPTION
+};
+
 struct AstTopicAlter
 {
 	Ast  ast;
 	bool if_exists;
+	int  type;
 	Str  name;
 	Str  name_new;
+	Str  description;
 };
 
 static inline AstTopicCreate*

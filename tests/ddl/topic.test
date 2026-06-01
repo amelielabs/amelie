@@ -17,6 +17,12 @@ show topics;
 create topic test;
 create topic if not exists test;
 
+# test: create topic description
+create topic test2 description;
+create topic test2 description 123;
+create topic test2 description 'test test';
+show topic test2;
+
 # test: crud/query
 insert into test values (123);
 delete from test; 
@@ -38,6 +44,7 @@ drop topic 123;
 
 # test: drop topic
 drop topic test;
+drop topic test2;
 
 # test: drop topic (if exists)
 drop topic test;
@@ -68,6 +75,12 @@ publish into xyz 123;
 drop topic xyz;
 
 drop topic test;
+
+# test: alter topic description
+create topic x;
+alter topic x description '__renamed';
+show topic x;
+drop topic x;
 
 # test: create topic (unlogged)
 create unlogged topic test;

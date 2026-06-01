@@ -19,12 +19,28 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "test"
+  "name": "test",
+  "description": ""
 }
 # test: create topic (if exists)
 create topic test;
 error: relation 'test': already exists
 create topic if not exists test;
+# test: create topic description
+create topic test2 description;
+error: create topic test2 description❰;❱ ⟵ string expected
+create topic test2 description 123;
+error: create topic test2 description ❰123❱ ⟵ string expected
+create topic test2 description 'test test';
+show topic test2;
+
+topic
+─────
+{
+  "user": "amelie",
+  "name": "test2",
+  "description": "test test"
+}
 # test: crud/query
 insert into test values (123);
 error: insert into ❰test❱ ⟵ topic cannot be used here
@@ -52,6 +68,7 @@ drop topic 123;
 error: drop topic ❰123❱ ⟵ name expected
 # test: drop topic
 drop topic test;
+drop topic test2;
 # test: drop topic (if exists)
 drop topic test;
 error: topic 'test': not exists
@@ -66,16 +83,17 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "test"
+  "name": "test",
+  "description": ""
 }
 alter topic;
 error: alter topic❰;❱ ⟵ name expected
 alter topic test;
-error: alter topic test❰;❱ ⟵ RENAME expected
+error: alter topic test❰;❱ ⟵ RENAME or DESCRIPTION expected
 alter topic test xyz;
-error: alter topic test ❰xyz❱ ⟵ RENAME expected
+error: alter topic test ❰xyz❱ ⟵ RENAME or DESCRIPTION expected
 alter topic test 1;
-error: alter topic test ❰1❱ ⟵ RENAME expected
+error: alter topic test ❰1❱ ⟵ RENAME or DESCRIPTION expected
 # test: alter topic rename to
 alter topic test rename;
 error: alter topic test rename❰;❱ ⟵ TO expected
@@ -88,7 +106,8 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "xyz"
+  "name": "xyz",
+  "description": ""
 }
 # test: alter topic rename to (if exists)
 alter topic test rename to xyz;
@@ -100,12 +119,26 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "xyz"
+  "name": "xyz",
+  "description": ""
 }
 publish into xyz 123;
 drop topic xyz;
 drop topic test;
 error: topic 'test': not exists
+# test: alter topic description
+create topic x;
+alter topic x description '__renamed';
+show topic x;
+
+topic
+─────
+{
+  "user": "amelie",
+  "name": "x",
+  "description": "__renamed"
+}
+drop topic x;
 # test: create topic (unlogged)
 create unlogged topic test;
 select name, `unlogged` from show topics verbose;
