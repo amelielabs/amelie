@@ -133,6 +133,6 @@ parse_user_alter(Stmt* self)
 		stmt->description = text->string;
 	} else
 	{
-		stmt_error(self, NULL, "RENAME or REVOKE expected");
+		stmt_error(self, NULL, "RENAME, REVOKE or DESCRIPTION expected");
 	}
 }

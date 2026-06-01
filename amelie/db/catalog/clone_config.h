@@ -17,6 +17,7 @@ struct CloneConfig
 {
 	Str      user;
 	Str      name;
+	Str      description;
 	Uuid     id;
 	Str      table_user;
 	Str      table;
@@ -31,6 +32,7 @@ clone_config_allocate(void)
 	self = am_malloc(sizeof(CloneConfig));
 	str_init(&self->user);
 	str_init(&self->name);
+	str_init(&self->description);
 	str_init(&self->table_user);
 	str_init(&self->table);
 	uuid_init(&self->id);
@@ -44,6 +46,7 @@ clone_config_free(CloneConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
+	str_free(&self->description);
 	str_free(&self->table_user);
 	str_free(&self->table);
 	grants_free(&self->grants);
@@ -62,6 +65,13 @@ clone_config_set_name(CloneConfig* self, Str* name)
 {
 	str_free(&self->name);
 	str_copy(&self->name, name);
+}
+
+static inline void
+clone_config_set_description(CloneConfig* self, Str* value)
+{
+	str_free(&self->description);
+	str_copy(&self->description, value);
 }
 
 static inline void
@@ -90,6 +100,7 @@ clone_config_copy(CloneConfig* self)
 	auto copy = clone_config_allocate();
 	clone_config_set_user(copy, &self->user);
 	clone_config_set_name(copy, &self->name);
+	clone_config_set_description(copy, &self->description);
 	clone_config_set_id(copy, &self->id);
 	clone_config_set_table_user(copy, &self->table_user);
 	clone_config_set_table(copy, &self->table);
@@ -107,14 +118,15 @@ clone_config_read(uint8_t** pos)
 	uint8_t* pos_grants   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",       &self->user       },
-		{ DECODE_STR,   "name",       &self->name       },
-		{ DECODE_UUID,  "id",         &self->id         },
-		{ DECODE_STR,   "table_user", &self->table_user },
-		{ DECODE_STR,   "table",      &self->table      },
-		{ DECODE_OBJ,   "snapshot",   &pos_snapshot     },
-		{ DECODE_ARRAY, "grants",     &pos_grants       },
-		{ 0,             NULL,         NULL             },
+		{ DECODE_STR,   "user",        &self->user        },
+		{ DECODE_STR,   "name",        &self->name        },
+		{ DECODE_STR,   "description", &self->description },
+		{ DECODE_UUID,  "id",          &self->id          },
+		{ DECODE_STR,   "table_user",  &self->table_user  },
+		{ DECODE_STR,   "table",       &self->table       },
+		{ DECODE_OBJ,   "snapshot",    &pos_snapshot      },
+		{ DECODE_ARRAY, "grants",      &pos_grants        },
+		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "clone", pos);
 	snapshot_read(&self->snapshot, &pos_snapshot);
@@ -137,6 +149,10 @@ clone_config_write(CloneConfig* self, Buf* buf, int flags)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_str(buf, &self->name);
+
+	// descriptioon
+	encode_raw(buf, "description", 11);
+	encode_str(buf, &self->description);
 
 	// table_user
 	encode_raw(buf, "table_user", 10);

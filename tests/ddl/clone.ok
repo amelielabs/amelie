@@ -22,6 +22,7 @@ clones
 {
   "user": "amelie",
   "name": "a",
+  "description": "",
   "table_user": "amelie",
   "table": "main"
 }
@@ -106,15 +107,32 @@ id  data
 2   0
 3   0
 4   0
+# test: create clone description
+create clone x of main description;
+error: create clone x of main description❰;❱ ⟵ string expected
+create clone x of main description 1;
+error: create clone x of main description ❰1❱ ⟵ string expected
+create clone x of main description 'test test';
+show clone x;
+
+clone
+─────
+{
+  "user": "amelie",
+  "name": "x",
+  "description": "test test",
+  "table_user": "amelie",
+  "table": "main"
+}
 # test: alter clone statement parsing
 alter clone;
 error: alter clone❰;❱ ⟵ name expected
 alter clone 1;
 error: alter clone ❰1❱ ⟵ name expected
 alter clone b;
-error: alter clone b❰;❱ ⟵ RENAME expected
+error: alter clone b❰;❱ ⟵ RENAME or DESCRIPTION expected
 alter clone b xyz;
-error: alter clone b ❰xyz❱ ⟵ RENAME expected
+error: alter clone b ❰xyz❱ ⟵ RENAME or DESCRIPTION expected
 alter clone b rename;
 error: alter clone b rename❰;❱ ⟵ TO expected
 alter clone b rename to;
@@ -137,12 +155,32 @@ id  data
 2   0
 3   0
 4   0
+# test: alter clone description
+alter clone x description '__renamed';
+show clone x;
+
+clone
+─────
+{
+  "user": "amelie",
+  "name": "x",
+  "description": "__renamed",
+  "table_user": "amelie",
+  "table": "main"
+}
 # test: drop parent clone
 drop clone b;
 show clones;
 
 clones
 ──────
+{
+  "user": "amelie",
+  "name": "x",
+  "description": "__renamed",
+  "table_user": "amelie",
+  "table": "main"
+}
 # test: cascade (parent clone)
 create clone b of main;
 drop table main cascade;
@@ -161,12 +199,14 @@ clones
 {
   "user": "amelie",
   "name": "a",
+  "description": "",
   "table_user": "amelie",
   "table": "main"
 }
 {
   "user": "amelie",
   "name": "b",
+  "description": "",
   "table_user": "amelie",
   "table": "main"
 }

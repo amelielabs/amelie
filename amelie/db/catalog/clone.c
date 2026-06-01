@@ -47,6 +47,7 @@ clone_allocate(CloneConfig* config)
 	rel_init(rel, REL_CLONE);
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
+	rel_set_description(rel, &self->config->description);
 	rel_set_id(rel, &self->config->id);
 	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)clone_show);

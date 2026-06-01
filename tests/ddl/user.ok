@@ -256,7 +256,7 @@ error: alter user❰;❱ ⟵ name expected
 alter user 123;
 error: alter user ❰123❱ ⟵ name expected
 alter user test;
-error: alter user test❰;❱ ⟵ RENAME or REVOKE expected
+error: alter user test❰;❱ ⟵ RENAME, REVOKE or DESCRIPTION expected
 alter user test rename;
 error: alter user test rename❰;❱ ⟵ TO expected
 alter user test rename to;

@@ -208,7 +208,11 @@ emit_ddl(Compiler* self)
 	case STMT_ALTER_CLONE:
 	{
 		auto arg = ast_clone_alter_of(stmt->ast);
-		offset = rel_op_rename(data, REL_CLONE, user, &arg->name, user, &arg->name_new);
+		if (arg->type == CLONE_ALTER_RENAME)
+			offset = rel_op_rename(data, REL_CLONE, user, &arg->name, user, &arg->name_new);
+		else
+		if (arg->type == CLONE_ALTER_DESCRIPTION)
+			offset = rel_op_describe(data, REL_CLONE, user, &arg->name, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

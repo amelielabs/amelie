@@ -20,7 +20,7 @@
 void
 parse_clone_create(Stmt* self)
 {
-	// CREATE CLONE [IF NOT EXISTS] name OF relation
+	// CREATE CLONE [IF NOT EXISTS] name OF relation [DESCRIPTION text]
 	auto stmt = ast_clone_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -73,6 +73,14 @@ parse_clone_create(Stmt* self)
 	auto snapshot = &config->snapshot;
 	snapshot_set_id(snapshot, id);
 	snapshot_set_snapshot(snapshot, state_tsn());
+
+	// [DESCRIPTION]
+	auto description = stmt_if(self, KDESCRIPTION);
+	if (description)
+	{
+		auto text = stmt_expect(self, KSTRING);
+		clone_config_set_description(stmt->config, &text->string);
+	}
 }
 
 void
@@ -108,12 +116,26 @@ parse_clone_alter(Stmt* self)
 	stmt->name = name->string;
 
 	// RENAME
-	stmt_expect(self, KRENAME);
+	if (stmt_if(self, KRENAME))
+	{
+		// TO
+		stmt_expect(self, KTO);
+		stmt->type = CLONE_ALTER_RENAME;
 
-	// TO
-	stmt_expect(self, KTO);
+		// name
+		name = stmt_expect(self, KNAME);
+		stmt->name_new = name->string;
+		return;
+	}
 
-	// name
-	name = stmt_expect(self, KNAME);
-	stmt->name_new = name->string;
+	// DESCRIPTION
+	if (stmt_if(self, KDESCRIPTION))
+	{
+		auto text = stmt_expect(self, KSTRING);
+		stmt->type = CLONE_ALTER_DESCRIPTION;
+		stmt->description = text->string;
+		return;
+	}
+
+	stmt_error(self, NULL, "RENAME or DESCRIPTION expected");
 }

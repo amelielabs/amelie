@@ -80,7 +80,7 @@ static ShowCmd show_cmds[] =
 	{ SHOW_INDEXES,       "indexes",       7,  false, true,  false },
 	{ SHOW_INDEX,         "index",         5,  true,  true,  true  },
 	{ SHOW_CLONES,        "clones",        6,  false, false, false },
-	{ SHOW_CLONE,         "clone",         6,  true,  false, true  },
+	{ SHOW_CLONE,         "clone",         5,  true,  false, true  },
 	{ SHOW_PARTITIONS,    "partitions",    10, false, true,  false },
 	{ SHOW_PARTITION,     "partition",     9,  true,  true,  true  },
 	{ SHOW_FUNCTIONS,     "functions",     9,  false, false, false },

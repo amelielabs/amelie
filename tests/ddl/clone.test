@@ -62,6 +62,12 @@ insert into a values (3, 2);
 select * from a;
 select * from main;
 
+# test: create clone description
+create clone x of main description;
+create clone x of main description 1;
+create clone x of main description 'test test';
+show clone x;
+
 # test: alter clone statement parsing
 alter clone;
 alter clone 1;
@@ -75,6 +81,10 @@ alter clone a rename to b;
 
 select * from b;
 select * from main;
+
+# test: alter clone description
+alter clone x description '__renamed';
+show clone x;
 
 # test: drop parent clone
 drop clone b;

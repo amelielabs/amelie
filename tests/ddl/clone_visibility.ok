@@ -229,6 +229,7 @@ clones
 {
   "user": "amelie",
   "name": "a",
+  "description": "",
   "table_user": "amelie",
   "table": "main"
 }

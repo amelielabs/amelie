@@ -30,12 +30,20 @@ struct AstCloneDrop
 	bool cascade;
 };
 
+enum
+{
+	CLONE_ALTER_RENAME,
+	CLONE_ALTER_DESCRIPTION
+};
+
 struct AstCloneAlter
 {
 	Ast  ast;
 	bool if_exists;
+	int  type;
 	Str  name;
 	Str  name_new;
+	Str  description;
 };
 
 static inline AstCloneCreate*
