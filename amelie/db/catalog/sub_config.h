@@ -17,6 +17,7 @@ struct SubConfig
 {
 	Str     user;
 	Str     name;
+	Str     description;
 	Uuid    id;
 	Str     rel_user;
 	Str     rel;
@@ -34,6 +35,7 @@ sub_config_allocate(void)
 	self->lsn_op = 0;
 	str_init(&self->user);
 	str_init(&self->name);
+	str_init(&self->description);
 	str_init(&self->rel_user);
 	str_init(&self->rel);
 	uuid_init(&self->id);
@@ -46,6 +48,7 @@ sub_config_free(SubConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
+	str_free(&self->description);
 	str_free(&self->rel_user);
 	str_free(&self->rel);
 	grants_free(&self->grants);
@@ -64,6 +67,13 @@ sub_config_set_name(SubConfig* self, Str* name)
 {
 	str_free(&self->name);
 	str_copy(&self->name, name);
+}
+
+static inline void
+sub_config_set_description(SubConfig* self, Str* value)
+{
+	str_free(&self->description);
+	str_copy(&self->description, value);
 }
 
 static inline void
@@ -99,6 +109,7 @@ sub_config_copy(SubConfig* self)
 	auto copy = sub_config_allocate();
 	sub_config_set_user(copy, &self->user);
 	sub_config_set_name(copy, &self->name);
+	sub_config_set_description(copy, &self->description);
 	sub_config_set_id(copy, &self->id);
 	sub_config_set_rel_user(copy, &self->rel_user);
 	sub_config_set_rel(copy, &self->rel);
@@ -115,15 +126,16 @@ sub_config_read(uint8_t** pos)
 	uint8_t* pos_grants = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",     &self->user     },
-		{ DECODE_STR,   "name",     &self->name     },
-		{ DECODE_UUID,  "id",       &self->id       },
-		{ DECODE_STR,   "rel_user", &self->rel_user },
-		{ DECODE_STR,   "rel",      &self->rel      },
-		{ DECODE_INT,   "lsn",      &self->lsn      },
-		{ DECODE_INT,   "lsn_op",   &self->lsn_op   },
-		{ DECODE_ARRAY, "grants",   &pos_grants     },
-		{ 0,             NULL,       NULL           },
+		{ DECODE_STR,   "user",        &self->user        },
+		{ DECODE_STR,   "name",        &self->name        },
+		{ DECODE_STR,   "description", &self->description },
+		{ DECODE_UUID,  "id",          &self->id          },
+		{ DECODE_STR,   "rel_user",    &self->rel_user    },
+		{ DECODE_STR,   "rel",         &self->rel         },
+		{ DECODE_INT,   "lsn",         &self->lsn         },
+		{ DECODE_INT,   "lsn_op",      &self->lsn_op      },
+		{ DECODE_ARRAY, "grants",      &pos_grants        },
+		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "sub", pos);
 
@@ -145,6 +157,10 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_str(buf, &self->name);
+
+	// description
+	encode_raw(buf, "description", 11);
+	encode_str(buf, &self->description);
 
 	if (flags_has(flags, FMINIMAL))
 	{

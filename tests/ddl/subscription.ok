@@ -13,14 +13,15 @@ create subscription x on 123;
 error: create subscription x on ❰123❱ ⟵ target name expected
 # test: create subscription (table)
 create table test (id int primary key, data int);
-create subscription test_sub on test;
+create subscription test_sub on test description 'test test';
 show subs;
 
 subs
 ────
 {
   "user": "amelie",
-  "name": "test_sub"
+  "name": "test_sub",
+  "description": "test test"
 }
 show subscriptions;
 
@@ -28,7 +29,8 @@ subscriptions
 ─────────────
 {
   "user": "amelie",
-  "name": "test_sub"
+  "name": "test_sub",
+  "description": "test test"
 }
 select lsn, lsn_op from show subscriptions verbose;
 
@@ -377,7 +379,8 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "test_sub"
+  "name": "test_sub",
+  "description": ""
 }
 show subscriptions;
 
@@ -385,7 +388,8 @@ subscriptions
 ─────────────
 {
   "user": "amelie",
-  "name": "test_sub"
+  "name": "test_sub",
+  "description": ""
 }
 select lsn, lsn_op from show subscriptions verbose;
 
@@ -438,7 +442,8 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "test_sub"
+  "name": "test_sub",
+  "description": ""
 }
 # test: drop topic (cascade)
 drop topic test cascade;
@@ -543,7 +548,7 @@ error: alter subscription❰;❱ ⟵ name expected
 alter subscription 123;
 error: alter subscription ❰123❱ ⟵ name expected
 alter subscription test;
-error: alter subscription test❰;❱ ⟵ RENAME expected
+error: alter subscription test❰;❱ ⟵ RENAME or DESCRIPTION expected
 alter subscription test rename;
 error: alter subscription test rename❰;❱ ⟵ TO expected
 alter subscription test rename to;
@@ -556,7 +561,8 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "test_cdc"
+  "name": "test_cdc",
+  "description": ""
 }
 # test: alter subscription rename to (if exists)
 alter subscription test_sub rename to test_cdc;
@@ -564,6 +570,24 @@ error: subscription 'test_sub': not exists
 alter subscription if exists test_sub rename to test_cdc;
 drop subscription test_cdc;
 drop topic test;
+# test: alter subscription description
+create table test (id int primary key);
+create subscription x on test;
+alter subscription x description 'test test';
+show subscription x;
+
+subscription
+────────────
+{
+  "user": "amelie",
+  "name": "x",
+  "description": "test test"
+}
+drop table test cascade;
+show subs;
+
+subs
+────
 # test: select from subscription (multiple rels)
 create table a (id int primary key, data int);
 create table b (id int primary key, data int);
@@ -578,7 +602,7 @@ select * from b_sub;
 
 lsn  lsn_op  cmd    row
 ─────────────────────────────────────────────
-69   0       write  {"id": 42, "data": 900}
+73   0       write  {"id": 42, "data": 900}
 drop subscription a_sub;
 drop subscription b_sub;
 drop table a;
@@ -606,26 +630,26 @@ select lsn, lsn_op from test_sub order by lsn_op;
 
 lsn  lsn_op
 ─────────────
-76   0
-76   1
-76   2
-76   3
-76   4
-76   5
-76   6
-76   7
-acknowledge test_sub to 76, 0;
+80   0
+80   1
+80   2
+80   3
+80   4
+80   5
+80   6
+80   7
+acknowledge test_sub to 80, 0;
 select lsn, lsn_op from test_sub order by lsn_op;
 
 lsn  lsn_op
 ─────────────
-76   1
-76   2
-76   3
-76   4
-76   5
-76   6
-76   7
+80   1
+80   2
+80   3
+80   4
+80   5
+80   6
+80   7
 select count(*) from test_sub;
 
 count

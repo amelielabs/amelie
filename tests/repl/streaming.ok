@@ -10320,7 +10320,8 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "top_sub"
+  "name": "top_sub",
+  "description": ""
 }
 show state;
 
@@ -10382,7 +10383,8 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "top_sub"
+  "name": "top_sub",
+  "description": ""
 }
 select * from top_sub;
 
@@ -10430,7 +10432,8 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "top_sub"
+  "name": "top_sub",
+  "description": ""
 }
 select * from top_sub;
 
@@ -10476,7 +10479,8 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "top_sub"
+  "name": "top_sub",
+  "description": ""
 }
 select * from top_sub;
 

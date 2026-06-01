@@ -727,7 +727,8 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "top_sub"
+  "name": "top_sub",
+  "description": ""
 }
 publish into top 123;
 publish into top 1,2,3;
@@ -1142,7 +1143,8 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "top_sub"
+  "name": "top_sub",
+  "description": ""
 }
 show tables;
 

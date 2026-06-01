@@ -21,6 +21,7 @@ void
 parse_sub_create(Stmt* self)
 {
 	// CREATE SUBSCRIPTION [IF NOT EXISTS] name ON [user.]relation
+	// [DESCRIPTION text]
 	auto stmt = ast_sub_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -50,6 +51,14 @@ parse_sub_create(Stmt* self)
 	sub_config_set_rel_user(config, &user);
 	sub_config_set_rel(config, &target);
 	sub_config_set_pos(config, state_lsn(), 0);
+
+	// [DESCRIPTION]
+	auto description = stmt_if(self, KDESCRIPTION);
+	if (description)
+	{
+		auto text = stmt_expect(self, KSTRING);
+		sub_config_set_description(stmt->config, &text->string);
+	}
 }
 
 void
@@ -85,14 +94,28 @@ parse_sub_alter(Stmt* self)
 	stmt->name = name->string;
 
 	// RENAME
-	stmt_expect(self, KRENAME);
+	if (stmt_if(self, KRENAME))
+	{
+		// TO
+		stmt_expect(self, KTO);
+		stmt->type = SUBSCRIPTION_ALTER_RENAME;
 
-	// TO
-	stmt_expect(self, KTO);
+		// name
+		name = stmt_expect(self, KNAME);
+		stmt->name_new = name->string;
+		return;
+	}
 
-	// name
-	name = stmt_expect(self, KNAME);
-	stmt->name_new = name->string;
+	// DESCRIPTION
+	if (stmt_if(self, KDESCRIPTION))
+	{
+		auto text = stmt_expect(self, KSTRING);
+		stmt->type = SUBSCRIPTION_ALTER_DESCRIPTION;
+		stmt->description = text->string;
+		return;
+	}
+
+	stmt_error(self, NULL, "RENAME or DESCRIPTION expected");
 }
 
 void

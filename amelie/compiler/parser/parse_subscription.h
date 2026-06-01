@@ -31,12 +31,20 @@ struct AstSubDrop
 	bool cascade;
 };
 
+enum
+{
+	SUBSCRIPTION_ALTER_RENAME,
+	SUBSCRIPTION_ALTER_DESCRIPTION
+};
+
 struct AstSubAlter
 {
 	Ast  ast;
 	bool if_exists;
+	int  type;
 	Str  name;
 	Str  name_new;
+	Str  description;
 };
 
 struct AstAck

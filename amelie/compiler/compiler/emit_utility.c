@@ -285,7 +285,11 @@ emit_ddl(Compiler* self)
 	case STMT_ALTER_SUBSCRIPTION:
 	{
 		auto arg = ast_sub_alter_of(stmt->ast);
-		offset = rel_op_rename(data, REL_SUBSCRIPTION, user, &arg->name, user, &arg->name_new);
+		if (arg->type == SUBSCRIPTION_ALTER_RENAME)
+			offset = rel_op_rename(data, REL_SUBSCRIPTION, user, &arg->name, user, &arg->name_new);
+		else
+		if (arg->type == SUBSCRIPTION_ALTER_DESCRIPTION)
+			offset = rel_op_describe(data, REL_SUBSCRIPTION, user, &arg->name, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

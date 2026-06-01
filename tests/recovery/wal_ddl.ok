@@ -662,7 +662,8 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "top_sub"
+  "name": "top_sub",
+  "description": ""
 }
 create table test_ (id int primary key);
 create clone test_clone of test_;
@@ -690,19 +691,23 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "top_sub"
+  "name": "top_sub",
+  "description": ""
 }
 {
   "user": "amelie",
-  "name": "test_sub"
+  "name": "test_sub",
+  "description": ""
 }
 {
   "user": "amelie",
-  "name": "test_clone_sub"
+  "name": "test_clone_sub",
+  "description": ""
 }
 {
   "user": "amelie",
-  "name": "test_clone2_sub"
+  "name": "test_clone2_sub",
+  "description": ""
 }
 select * from top_sub;
 

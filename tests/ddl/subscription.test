@@ -11,7 +11,7 @@ create subscription x on 123;
 
 # test: create subscription (table)
 create table test (id int primary key, data int);
-create subscription test_sub on test;
+create subscription test_sub on test description 'test test';
 show subs;
 show subscriptions;
 select lsn, lsn_op from show subscriptions verbose;
@@ -252,6 +252,14 @@ alter subscription if exists test_sub rename to test_cdc;
 drop subscription test_cdc;
 drop topic test;
 
+# test: alter subscription description
+create table test (id int primary key);
+create subscription x on test;
+alter subscription x description 'test test';
+show subscription x;
+drop table test cascade;
+show subs;
+
 # test: select from subscription (multiple rels)
 create table a (id int primary key, data int);
 create table b (id int primary key, data int);
@@ -287,7 +295,7 @@ begin
 end;
 
 select lsn, lsn_op from test_sub order by lsn_op;
-acknowledge test_sub to 76, 0;
+acknowledge test_sub to 80, 0;
 select lsn, lsn_op from test_sub order by lsn_op;
 select count(*) from test_sub;
 select count(*) from test;

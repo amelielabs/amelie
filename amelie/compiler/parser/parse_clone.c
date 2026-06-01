@@ -20,7 +20,8 @@
 void
 parse_clone_create(Stmt* self)
 {
-	// CREATE CLONE [IF NOT EXISTS] name OF relation [DESCRIPTION text]
+	// CREATE CLONE [IF NOT EXISTS] name OF relation
+	// [DESCRIPTION text]
 	auto stmt = ast_clone_create_allocate();
 	self->ast = &stmt->ast;
 
