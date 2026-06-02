@@ -200,6 +200,9 @@ bench_run(Bench* self)
 	if (str_is_cstr(type, "vector"))
 		self->iface = &bench_vector;
 	else
+	if (str_is_cstr(type, "pubsub"))
+		self->iface = &bench_pubsub;
+	else
 		error("unknown benchmark type '{str}'", type);
 
 	// hello
