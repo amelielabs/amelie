@@ -30,6 +30,15 @@ tables
   "name": "test",
   "description": ""
 }
+SHOW TABLES;
+
+TABLES
+──────
+{
+  "user": "amelie",
+  "name": "test",
+  "description": ""
+}
 # test: show table
 show table;
 error: show() ⟵ name argument is missing for 'table'
@@ -360,9 +369,9 @@ replica
 ───────
 null
 # test: show state
-show state;
+show STATE;
 
-state
+STATE
 ─────
 {
   "version": "1.0.0-rc1",

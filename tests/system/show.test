@@ -24,6 +24,8 @@ create table test (id int primary key);
 show tables;
 select * from show tables;
 
+SHOW TABLES;
+
 # test: show table
 show table;
 show table test;
@@ -84,7 +86,7 @@ show replica '00000000-0000-0000-0000-000000000000';
 select * from show replica '00000000-0000-0000-0000-000000000000';
 
 # test: show state
-show state;
+show STATE;
 select show('state');
 select show('state').directory;
 

@@ -106,7 +106,7 @@ show_cmd_find(Str* section)
 	for (auto i = 0; show_cmds[i].section; i++)
 	{
 		auto cmd = &show_cmds[i];
-		if (str_is(section, cmd->section, cmd->section_size))
+		if (str_is_case(section, cmd->section, cmd->section_size))
 			return cmd;
 	}
 	return NULL;
