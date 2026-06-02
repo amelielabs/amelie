@@ -46,6 +46,7 @@ enum
 	SHOW_SUBSCRIPTION,
 	SHOW_RELS,
 	SHOW_REL,
+	SHOW_TOOLS,
 	SHOW_STATE,
 	SHOW_ALL,
 	SHOW_CONFIG,
@@ -93,6 +94,7 @@ static ShowCmd show_cmds[] =
 	{ SHOW_SUBSCRIPTION,  "sub",           3,  true,  false, true  },
 	{ SHOW_RELS,          "rels",          4,  false, false, false },
 	{ SHOW_REL,           "rel",           3,  true,  false, true  },
+	{ SHOW_TOOLS,         "tools",         5,  false, false, false },
 	{ SHOW_STATE,         "state",         5,  false, false, true  },
 	{ SHOW_ALL,           "all",           3,  false, false, true  },
 	{ SHOW_CONFIG,        "config",        6,  false, false, true  },
@@ -369,6 +371,11 @@ fn_show(Fn* self)
 	case SHOW_REL:
 	{
 		rel_mgr_list_rel(&catalog->rels, buf, user, name, all, flags);
+		break;
+	}
+	case SHOW_TOOLS:
+	{
+		catalog_mcp_tools(catalog, user, buf);
 		break;
 	}
 	case SHOW_STATE:
