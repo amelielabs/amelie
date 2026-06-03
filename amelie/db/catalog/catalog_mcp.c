@@ -171,6 +171,10 @@ catalog_mcp_resources(Catalog* self, Str* user, Buf* buf)
 
 		// name
 		encode_raw(buf, "name", 4);
+		encode_str(buf, rel->name);
+
+		// description
+		encode_raw(buf, "description", 11);
 		encode_str(buf, rel->description);
 
 		// mimeType
