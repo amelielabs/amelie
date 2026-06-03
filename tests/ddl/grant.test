@@ -386,5 +386,39 @@ drop subscription t_sub;
 drop table t;
 drop user u cascade;
 
+# test: revoke
+create user u1;
+create user u2;
+create user u3;
+
+create table t (id int primary key);
+insert into t values (1);
+grant select on t to u1;
+grant select on t to u2;
+grant select on t to u3;
+show grants on t;
+
+revoke select on t from u1;
+show grants on t;
+
+grant select on t to u1;
+show grants on t;
+
+revoke select on t from u3;
+show grants on t;
+
+revoke select on t from u2;
+show grants on t;
+
+revoke select on t from u1;
+show grants on t;
+
+grant select on t to u1;
+grant select on t to u2;
+grant select on t to u3;
+show grants on t;
+
+drop table t;
+
 disconnect S0;
 close E0;

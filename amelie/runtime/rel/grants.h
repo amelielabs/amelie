@@ -135,7 +135,10 @@ grants_remove(Grants* self, Str* user, uint32_t permissions)
 	auto size = sizeof(Grant) + grant->name_size;
 	auto next = grants_next(self, grant);
 	if (next)
-		memmove(grant, next, size);
+	{
+		auto size_move = self->list.position - (uint8_t*)next;
+		memmove(grant, next, size_move);
+	}
 	buf_truncate(&self->list, size);
 }
 
