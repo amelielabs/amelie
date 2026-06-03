@@ -108,17 +108,22 @@ follower_follow(Follower* self)
 	uint64_t lsn    = state_lsn() + 1;
 	uint32_t lsn_op = 0;
 	Uuid*    id;
+
+	auto rel_on = rel;
 	if (rel->type == REL_SUBSCRIPTION)
 	{
 		auto sub = sub_of(rel);
 		lsn    = sub->config->lsn;
 		lsn_op = sub->config->lsn_op + 1;
 		id     = sub->rel_on->id;
-		sub->rel_on->subs++;
+		rel_on = sub->rel_on;
 	} else {
 		id     = rel->id;
-		rel->subs++;
 	}
+
+	// ensure user can create subscription for that relation
+	user_check_permission(req->user, rel_on, PERM_CREATE_SUBSCRIPTION);
+	rel_on->subs++;
 
 	// create and register feed
 	feed = feed_allocate();
