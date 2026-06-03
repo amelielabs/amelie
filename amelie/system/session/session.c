@@ -230,20 +230,30 @@ session_run_utility(Session* self)
 	// wal write
 	if (tr_active(&tr))
 	{
-		// respect system read-only state
-		if (opt_int_of(&state()->read_only))
-			error("system is in read-only mode");
-
 		Write write;
 		write_init(&write);
 		defer(write_free, &write);
-		write_begin(&write);
-		write_add(&write, &tr.log.write_log);
 
 		WriteList write_list;
 		write_list_init(&write_list);
-		write_list_add(&write_list, &write);
-		db_write(share()->db, &write_list);
+
+		auto on_error = error_catch
+		(
+			// respect system read-only state
+			if (opt_int_of(&state()->read_only))
+				error("system is in read-only mode");
+
+			write_begin(&write);
+			write_add(&write, &tr.log.write_log);
+			write_list_add(&write_list, &write);
+
+			db_write(share()->db, &write_list);
+		);
+		if (unlikely(on_error))
+		{
+			tr_abort(&tr);
+			rethrow();
+		}
 
 		// update catalog pending lsn
 		opt_int_set(&state()->catalog_pending, write.header.lsn);

@@ -192,7 +192,7 @@ select show('state').psn;
 
 psn
 ───
-4
+3
 # test: replica read
 select * from test;
 

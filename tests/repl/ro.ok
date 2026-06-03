@@ -1,0 +1,30 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
+connect E0 S0 127.0.0.1:3480;
+# test: read-only ddl
+start repl;
+subscribe "00000000-0000-0000-0000-000000000001";
+select show("state").read_only;
+
+read_only
+─────────
+true
+select show("state").psn;
+
+psn
+───
+0
+create table leaked (id int primary key);
+error: system is in read-only mode
+select show("state").psn;
+
+psn
+───
+0
+show tables;
+
+tables
+──────
+select * from leaked;
+error: select * from ❰leaked❱ ⟵ relation not found
+disconnect S0;
+close E0;
