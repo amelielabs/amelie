@@ -128,7 +128,10 @@ user_drop_of(Catalog* self,
 
 	} else
 	{
-		// ensure user has no relations
+		// ensure no indirect dependecies on the user name (udfs, clones or users)
+		catalog_deps_validate_user(self, user->name, true);
+
+		// revoke all permissions
 		list_foreach(&self->rels.list)
 		{
 			auto rel = list_at(Rel, link);

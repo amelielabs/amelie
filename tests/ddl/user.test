@@ -41,6 +41,7 @@ drop user test abc;
 # test: drop user
 drop user test;
 select show('user', 'test').name;
+drop user test_with_desc;
 
 # test: drop user if exists
 drop user test;
@@ -86,12 +87,18 @@ create table a(id int primary key);
 create table b(id int primary key);
 create function fn() begin select * from a; end;
 
-disconnect S1;
 switch S0;
-
 drop user test;
+
+switch S1;
+drop function fn;
+
+switch S0;
+drop user test;
+
 drop user test cascade;
 select 1;
+disconnect S1;
 
 show tables;
 show functions;
@@ -212,6 +219,22 @@ select show('user', 'amelie').name;
 select show('user', 'test').name;
 select show('user', 'test').description;
 drop agent test;
+
+# test: drop user (with child)
+create user parent;
+grant create_user to parent;
+connect E0 S1 parent@127.0.0.1:3485;
+switch S1;
+create user child;
+switch S0;
+show all users;
+# error
+drop user parent;
+show all users;
+
+drop user parent cascade;
+show all users;
+disconnect S1;
 
 disconnect S0;
 close E0;

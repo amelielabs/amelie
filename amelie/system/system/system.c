@@ -84,9 +84,9 @@ catalog_if_udf_depends(Udf* udf, Str* user, Str* name)
 {
 	Program* program = udf->data;
 	assert(program);
-	if (access_find(&program->access, user, name))
-		return true;
-	return false;
+	if (name)
+		return access_find(&program->access, user, name);
+	return access_find_user(&program->access, user);
 }
 
 static CatalogIf catalog_if =
