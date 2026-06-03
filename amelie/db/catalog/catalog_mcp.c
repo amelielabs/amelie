@@ -134,3 +134,51 @@ catalog_mcp_tools(Catalog* self, Str* user, Buf* buf)
 
 	encode_array_end(buf);
 }
+
+void
+catalog_mcp_resources(Catalog* self, Str* user, Buf* buf)
+{
+	// []
+	encode_array(buf);
+
+	list_foreach(&self->rels.list)
+	{
+		auto rel = list_at(Rel, link);
+		if (rel->type == REL_SUBSCRIPTION ||
+		    rel->type == REL_TOPIC)
+			continue;
+
+		// only udfs without arguments
+		if (rel->type == REL_UDF)
+		{
+			auto udf = udf_of(rel);
+			if (udf->config->args.count != 0)
+				continue;
+		}
+
+		if (! str_compare(user, rel->user))
+			continue;
+
+		// {}
+		encode_obj(buf);
+
+		// uri
+		encode_raw(buf, "uri", 3);
+		char uri[256];
+		auto uri_size = format(uri, sizeof(uri), "amelie://{str}/{str}",
+		                       rel->user, rel->name);
+		encode_raw(buf, uri, uri_size);
+
+		// name
+		encode_raw(buf, "name", 4);
+		encode_str(buf, rel->description);
+
+		// mimeType
+		encode_raw(buf, "mimeType", 8);
+		encode_raw(buf, "text/plain", 10);
+
+		encode_obj_end(buf);
+	}
+
+	encode_array_end(buf);
+}

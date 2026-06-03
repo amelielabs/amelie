@@ -12,3 +12,4 @@
 //
 
 void catalog_mcp_tools(Catalog*, Str*, Buf*);
+void catalog_mcp_resources(Catalog*, Str*, Buf*);
