@@ -61,5 +61,9 @@ parse_delete(Stmt* self)
 	{
 		parse_returning(&stmt->ret, self, NULL);
 		parse_returning_resolve(&stmt->ret, self, &stmt->from);
+
+		// require SELECT permission
+		access_add(&self->parser->program->access, &stmt->table->rel,
+		           LOCK_SHARED, PERM_SELECT);
 	}
 }

@@ -710,7 +710,7 @@ pushdown
  11   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert]
+  •   amelie.test shared_rw [insert, select]
 begin
 	declare x int := 0;
 	if true then;

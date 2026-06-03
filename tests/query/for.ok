@@ -868,7 +868,7 @@ pushdown
  17   ret                 2      0      -
 
 access
-  •   amelie.test shared_rw [update]
+  •   amelie.test shared_rw [update, select]
 begin
 	declare n int := 0;
 	declare r int := 0;

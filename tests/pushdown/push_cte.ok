@@ -1317,7 +1317,7 @@ pushdown
  13   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert]
+  •   amelie.test shared_rw [insert, select]
 drop table test;
 # test: with(update returning), select * from cte
 create table test (id int primary key, data int);
@@ -1373,7 +1373,7 @@ pushdown
  16   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [update]
+  •   amelie.test shared_rw [update, select]
 drop table test;
 # test: with(delete returning), select * from cte
 create table test (id int primary key, data int);
@@ -1423,7 +1423,7 @@ pushdown
  10   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [delete]
+  •   amelie.test shared_rw [delete, select]
 drop table test;
 disconnect S0;
 close E0;

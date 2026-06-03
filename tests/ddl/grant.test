@@ -417,8 +417,26 @@ grant select on t to u1;
 grant select on t to u2;
 grant select on t to u3;
 show grants on t;
-
 drop table t;
+
+# test: returning (select)
+create user u;
+create table secrets (id int primary key, secret text);
+insert into secrets values (1, "top-secret");
+grant insert on secrets to u;
+grant update on secrets to u;
+
+connect E0 S1 u@127.0.0.1:3485;
+switch S1;
+select * from amelie.secrets;
+insert into amelie.secrets values (1, "ignored") on conflict do update set secret = secret returning *;
+insert into amelie.secrets values (1, "ignored") on conflict do nothing returning *;
+insert into amelie.secrets values (1, "ignored") returning *;
+
+switch S0;
+drop user u;
+drop table secrets;
+disconnect S1;
 
 disconnect S0;
 close E0;

@@ -1455,7 +1455,7 @@ main
 
 access
   •   amelie.test call [execute]
-  •   amelie.src shared_rw [insert]
+  •   amelie.src shared_rw [insert, select]
 
 FUNCTION amelie.test()
 
@@ -1484,7 +1484,7 @@ pushdown
  11   ret                 0      0      -
 
 access
-  •   amelie.src shared_rw [insert]
+  •   amelie.src shared_rw [insert, select]
 select test();
 
 test
@@ -1520,7 +1520,7 @@ main
 
 access
   •   amelie.test call [execute]
-  •   amelie.src shared_rw [insert]
+  •   amelie.src shared_rw [insert, select]
 
 FUNCTION amelie.test()
 
@@ -1550,7 +1550,7 @@ pushdown
  11   ret                 0      0      -
 
 access
-  •   amelie.src shared_rw [insert]
+  •   amelie.src shared_rw [insert, select]
 select test();
 
 test
@@ -1579,7 +1579,7 @@ main
 
 access
   •   amelie.test call [execute]
-  •   amelie.src shared_rw [insert]
+  •   amelie.src shared_rw [insert, select]
 
 FUNCTION amelie.test()
 
@@ -1614,7 +1614,7 @@ pushdown
  11   ret                 0      0      -
 
 access
-  •   amelie.src shared_rw [insert]
+  •   amelie.src shared_rw [insert, select]
 select test();
 
 test
@@ -1643,7 +1643,7 @@ main
 
 access
   •   amelie.test call [execute]
-  •   amelie.src shared_rw [insert]
+  •   amelie.src shared_rw [insert, select]
 
 FUNCTION amelie.test()
 
@@ -1678,7 +1678,7 @@ pushdown
  11   ret                 0      0      -
 
 access
-  •   amelie.src shared_rw [insert]
+  •   amelie.src shared_rw [insert, select]
 select test();
 
 test

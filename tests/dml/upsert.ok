@@ -431,7 +431,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert, update]
+  •   amelie.test shared_rw [insert, update, select]
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 
 id  data
@@ -483,7 +483,7 @@ pushdown
  11   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert]
+  •   amelie.test shared_rw [insert, select]
 insert into test values(1, 0) on conflict do nothing returning *;
 
 id  data
@@ -537,7 +537,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert, update]
+  •   amelie.test shared_rw [insert, update, select]
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 
 id  data
@@ -741,7 +741,7 @@ pushdown
  27   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert, update]
+  •   amelie.test shared_rw [insert, update, select]
   •   amelie.src shared [select]
 insert into test select * from src on conflict do update set data = data + 1 returning *;
 

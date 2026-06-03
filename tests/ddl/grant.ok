@@ -598,5 +598,25 @@ grants
 ["u2", "select"]
 ["u3", "select"]
 drop table t;
+# test: returning (select)
+create user u;
+create table secrets (id int primary key, secret text);
+insert into secrets values (1, "top-secret");
+grant insert on secrets to u;
+grant update on secrets to u;
+connect E0 S1 u@127.0.0.1:3485;
+switch S1;
+select * from amelie.secrets;
+error: relation 'amelie.secrets': permission denied
+insert into amelie.secrets values (1, "ignored") on conflict do update set secret = secret returning *;
+error: relation 'amelie.secrets': permission denied
+insert into amelie.secrets values (1, "ignored") on conflict do nothing returning *;
+error: relation 'amelie.secrets': permission denied
+insert into amelie.secrets values (1, "ignored") returning *;
+error: relation 'amelie.secrets': permission denied
+switch S0;
+drop user u;
+drop table secrets;
+disconnect S1;
 disconnect S0;
 close E0;

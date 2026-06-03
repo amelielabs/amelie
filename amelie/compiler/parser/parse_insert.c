@@ -204,6 +204,10 @@ parse_insert(Stmt* self)
 		// convert insert to upsert ON CONFLICT ERROR to support returning
 		if (stmt->on_conflict == ON_CONFLICT_NONE)
 			stmt->on_conflict = ON_CONFLICT_ERROR;
+
+		// require SELECT permission
+		access_add(&self->parser->program->access, &table->rel,
+		           LOCK_SHARED, PERM_SELECT);
 	}
 
 	// update requested permissions to UPDATE
