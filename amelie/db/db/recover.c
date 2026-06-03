@@ -91,32 +91,32 @@ recover_map(Recover*   self,
 	// apply cdc
 	if (record->lsn >= self->min_sub)
 	{
-		Uuid* uuid = NULL;
-		if (row->snapshot == 0)
-		{
-			if (rel->subs > 0)
-				uuid = rel->id;
-		} else
-		{
-			// find clone snapshot
-			auto snapshot = snapshot_mgr_find(&(*table)->snapshot_mgr, row->snapshot);
-			if (snapshot && snapshot->rel->subs > 0)
-				uuid = snapshot->rel->id;
-		}
+		auto primary = part_primary(part);
+		auto pos = (uint8_t*)row;
+		auto end = (uint8_t*)row + cmd->size;
 
-		if (uuid)
+		while (pos < end)
 		{
-			auto primary = part_primary(part);
-			auto pos = (uint8_t*)row;
-			auto end = (uint8_t*)row + cmd->size;
-			while (pos < end)
+			auto row = (Row*)pos;
+
+			Uuid* uuid = NULL;
+			if (row->snapshot == 0)
 			{
-				auto row = (Row*)pos;
+				if (rel->subs > 0)
+					uuid = rel->id;
+			} else
+			{
+				// find clone snapshot
+				auto snapshot = snapshot_mgr_find(&(*table)->snapshot_mgr, row->snapshot);
+				if (snapshot && snapshot->rel->subs > 0)
+					uuid = snapshot->rel->id;
+			}
+
+			if (uuid)
 				log_cdc(&self->tr.log, cmd->cmd, uuid, row,
 				        index_keys(primary)->columns,
 				        runtime()->timezone);
-				pos += row_size(row);
-			}
+			pos += row_size(row);
 		}
 	}
 

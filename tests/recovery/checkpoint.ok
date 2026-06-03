@@ -1217,5 +1217,77 @@ lsn  lsn_op  cmd    row
 46   0       write  {"id": 1, "data": 0}
 47   0       write  {"id": 2, "data": 0}
 drop table test cascade;
+# test: subscription (clone)
+create table main (id int primary key, data int) partitions 1;
+create clone a of main;
+create clone b of main;
+create subscription sub_a on a;
+create subscription sub_b on b;
+begin;
+insert into a values (1, 10);
+insert into b values (2, 20);
+end;
+select * from sub_a;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────────────────
+54   0       write  {"id": 1, "data": 10}
+select * from sub_b;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────────────────
+54   1       write  {"id": 2, "data": 20}
+# test: restart/recover (wal)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select * from sub_a;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────────────────
+54   0       write  {"id": 1, "data": 10}
+select * from sub_b;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────────────────
+54   1       write  {"id": 2, "data": 20}
+select * from a order by id;
+
+id  data
+──────────
+1   10
+select * from b order by id;
+
+id  data
+──────────
+2   20
+# test: restart/recover (checkpoint)
+checkpoint;
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select * from sub_a;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────────────────
+54   0       write  {"id": 1, "data": 10}
+select * from sub_b;
+
+lsn  lsn_op  cmd    row
+───────────────────────────────────────────
+54   1       write  {"id": 2, "data": 20}
+select * from a order by id;
+
+id  data
+──────────
+1   10
+select * from b order by id;
+
+id  data
+──────────
+2   20
+drop table main cascade;
 disconnect S0;
 close E0;

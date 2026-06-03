@@ -460,5 +460,43 @@ select * from test;
 select * from test_sub;
 drop table test cascade;
 
+# test: subscription (clone)
+create table main (id int primary key, data int) partitions 1;
+create clone a of main;
+create clone b of main;
+create subscription sub_a on a;
+create subscription sub_b on b;
+begin;
+insert into a values (1, 10);
+insert into b values (2, 20);
+end;
+select * from sub_a;
+select * from sub_b;
+
+# test: restart/recover (wal)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select * from sub_a;
+select * from sub_b;
+select * from a order by id;
+select * from b order by id;
+
+# test: restart/recover (checkpoint)
+checkpoint;
+
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select * from sub_a;
+select * from sub_b;
+select * from a order by id;
+select * from b order by id;
+drop table main cascade;
+
 disconnect S0;
 close E0;
