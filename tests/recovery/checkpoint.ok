@@ -1114,7 +1114,7 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-10   0
+11   0
 34   0
 select * from test_sub;
 

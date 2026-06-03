@@ -50,7 +50,7 @@ parse_sub_create(Stmt* self)
 	sub_config_set_id(config, &id);
 	sub_config_set_rel_user(config, &user);
 	sub_config_set_rel(config, &target);
-	sub_config_set_pos(config, state_lsn(), 0);
+	sub_config_set_pos(config, state_lsn() + 1, 0);
 
 	// [DESCRIPTION]
 	auto description = stmt_if(self, KDESCRIPTION);

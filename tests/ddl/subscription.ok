@@ -36,7 +36,7 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-1    0
+2    0
 # test: create subscription (table, if exists)
 create subscription test_sub on test;
 error: relation 'test_sub': already exists
@@ -156,7 +156,7 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-1    0
+2    0
 acknowledge;
 error: acknowledge❰;❱ ⟵ name expected
 acknowledge 123;
@@ -165,12 +165,12 @@ acknowledge test_sub;
 error: acknowledge test_sub❰;❱ ⟵ TO expected
 acknowledge test_sub to;
 error: acknowledge test_sub to❰;❱ ⟵ int expected
-acknowledge test_sub to 1;
+acknowledge test_sub to 2;
 select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-1    0
+2    0
 select * from test_sub;
 
 lsn  lsn_op  cmd     row
@@ -395,7 +395,7 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-23   0
+24   0
 # test: cdc (publish)
 publish into test;
 publish into test 123;
@@ -473,8 +473,8 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-36   0
-38   0
+37   0
+39   0
 insert into test values (123);
 insert into test_clone values (1), (2), (3);
 select * from test_sub;
@@ -680,5 +680,59 @@ show subs;
 
 subs
 ────
+# test: create subscription (start after single stmt)
+create table test (id int primary key, data int);
+create subscription sub1 on test;
+insert into test values (1, 0);
+create subscription sub2 on test;
+select lsn from show state;
+
+lsn
+───
+93
+select name, lsn, lsn_op  from show subs verbose;
+
+name    lsn  lsn_op
+─────────────────────
+"sub1"  91   0
+"sub2"  93   0
+select * from sub1;
+
+lsn  lsn_op  cmd    row
+──────────────────────────────────────────
+92   0       write  {"id": 1, "data": 0}
+select * from sub2;
+
+lsn  lsn_op  cmd  row
+───────────────────────
+drop table test cascade;
+# test: create subscription (start after multi-stmt)
+create table test (id int primary key, data int);
+create subscription sub1 on test;
+insert into test values (1, 0), (2, 0), (3, 0);
+create subscription sub2 on test;
+select lsn from show state;
+
+lsn
+───
+98
+select name, lsn, lsn_op  from show subs verbose;
+
+name    lsn  lsn_op
+─────────────────────
+"sub1"  96   0
+"sub2"  98   0
+select * from sub1;
+
+lsn  lsn_op  cmd    row
+──────────────────────────────────────────
+97   0       write  {"id": 1, "data": 0}
+97   1       write  {"id": 2, "data": 0}
+97   2       write  {"id": 3, "data": 0}
+select * from sub2;
+
+lsn  lsn_op  cmd  row
+───────────────────────
+drop table test cascade;
 disconnect S0;
 close E0;

@@ -71,7 +71,7 @@ acknowledge 123;
 acknowledge test_sub;
 acknowledge test_sub to;
 
-acknowledge test_sub to 1;
+acknowledge test_sub to 2;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
@@ -318,6 +318,29 @@ create subscription test_sub on test;
 alter topic test rename to test2;
 drop topic test cascade;
 show subs;
+
+# test: create subscription (start after single stmt)
+create table test (id int primary key, data int);
+create subscription sub1 on test;
+insert into test values (1, 0);
+create subscription sub2 on test;
+select lsn from show state;
+select name, lsn, lsn_op  from show subs verbose;
+select * from sub1;
+select * from sub2;
+drop table test cascade;
+
+# test: create subscription (start after multi-stmt)
+create table test (id int primary key, data int);
+create subscription sub1 on test;
+insert into test values (1, 0), (2, 0), (3, 0);
+create subscription sub2 on test;
+select lsn from show state;
+select name, lsn, lsn_op  from show subs verbose;
+
+select * from sub1;
+select * from sub2;
+drop table test cascade;
 
 disconnect S0;
 close E0;
