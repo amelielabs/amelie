@@ -328,6 +328,20 @@ select dep();
 drop function dep;
 drop function test;
 
+# test: create or replace function
+create function fun() return int description "old"
+begin
+  return 1;
+end;
+select show("rel", "fun").description;
+create or replace function fun() return int description "new"
+begin
+  return 2;
+end;
+select show("function", "fun").description;
+select show("rel", "fun").description;
+drop function fun;
+
 # test: drop function
 create function test () begin end;
 drop function;

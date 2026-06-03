@@ -96,6 +96,7 @@ replace_if_abort(Log* self, LogOp* op)
 	// update rel data
 	rel_set_user(&udf->rel, &udf->config->user);
 	rel_set_name(&udf->rel, &udf->config->name);
+	rel_set_description(&udf->rel, &udf->config->description);
 }
 
 static LogIf replace_if =
@@ -157,6 +158,7 @@ udf_replace(Catalog*   self,
 	// update rel data
 	rel_set_user(&udf->rel, &udf->config->user);
 	rel_set_name(&udf->rel, &udf->config->name);
+	rel_set_description(&udf->rel, &udf->config->description);
 	rel_set_grants(&udf->rel, &udf->config->grants);
 }
 
