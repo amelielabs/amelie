@@ -16,6 +16,8 @@ typedef struct Hashtable Hashtable;
 
 typedef bool (*HashtableCompare)(Hashnode*, void*);
 
+#define HASHTABLE_DELETED (void*)0xffffffff
+
 struct Hashnode
 {
 	uint32_t hash;
@@ -71,11 +73,13 @@ hashtable_created(Hashtable* self)
 hot static inline void
 hashtable_set(Hashtable* self, Hashnode* node)
 {
-	uint32_t pos = node->hash % self->size;
+	uint32_t start = node->hash % self->size;
+	uint32_t pos   = start;
+
 	auto index = (Hashnode**)(self->buf.start);
-	for (;;)
+	do
 	{
-		if (index[pos] == NULL)
+		if (!index[pos] || index[pos] == HASHTABLE_DELETED)
 		{
 			index[pos] = node;
 			node->pos = pos;
@@ -84,7 +88,10 @@ hashtable_set(Hashtable* self, Hashnode* node)
 		}
 		pos = (pos + 1) % self->size;
 		continue;
-	}
+
+	} while (start != pos);
+
+	error("hashtable overflow");
 }
 
 hot static inline void
@@ -92,7 +99,7 @@ hashtable_delete(Hashtable* self, Hashnode* node)
 {
 	auto index = (Hashnode**)(self->buf.start);
 	assert(index[node->pos] == node);
-	index[node->pos] = NULL;
+	index[node->pos] = HASHTABLE_DELETED;
 	self->count--;
 }
 
@@ -105,23 +112,24 @@ hashtable_get(Hashtable*       self,
 	if (unlikely(! self->count))
 		return NULL;
 
-	uint32_t pos = hash % self->size;
+	uint32_t start = hash % self->size;
+	uint32_t pos   = start;
+
 	auto index = (Hashnode**)(self->buf.start);
-	for (;;)
+	do
 	{
 		auto current = index[pos];
-		/*
-		if (current == NULL || current->hash != hash)
-			break;
-			*/
-		/* todo: if first is deleted, second will not be found? */
-		if (current == NULL)
-			break;
-		if (current->hash == hash && compare(current, compare_arg))
-			return current;
+		if (! current)
+			return NULL;
+
+		if (current != HASHTABLE_DELETED)
+			if (current->hash == hash && compare(current, compare_arg))
+				return current;
+
 		pos = (pos + 1) % self->size;
-		continue;
-	}
+	} while (start != pos);
+
+	error("hashtable overflow");
 	return NULL;
 }
 
@@ -145,7 +153,7 @@ hashtable_reserve(Hashtable* self)
 	int pos = 0;
 	while (pos < self->size)
 	{
-		if (index[pos])
+		if (index[pos] && index[pos] != HASHTABLE_DELETED)
 			hashtable_set(&new_ht, index[pos]);
 		pos++;
 	}
@@ -167,7 +175,7 @@ hashtable_next(Hashtable* self, int pos)
 {
 	auto index = (Hashnode**)(self->buf.start);
 	for (pos++; pos < self->size; pos++)
-		if (index[pos])
+		if (index[pos] && index[pos] != HASHTABLE_DELETED)
 			return pos;
 	return -1;
 }

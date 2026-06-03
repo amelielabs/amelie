@@ -54,5 +54,19 @@ drop table test cascade;
 show tables;
 show functions;
 
+# test: drop table (catalog hashtable collision)
+create table d (id int primary key);
+create table j (id int primary key);
+insert into j values (1);
+select * from j;
+drop table d;
+show tables;
+select * from j;
+create table j (id int primary key, data int);
+show tables;
+select * from j;
+drop table j;
+show tables;
+
 disconnect S0;
 close E0;

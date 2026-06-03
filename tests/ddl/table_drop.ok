@@ -105,5 +105,50 @@ show functions;
 
 functions
 ─────────
+# test: drop table (catalog hashtable collision)
+create table d (id int primary key);
+create table j (id int primary key);
+insert into j values (1);
+select * from j;
+
+id
+──
+1
+drop table d;
+show tables;
+
+tables
+──────
+{
+  "user": "amelie",
+  "name": "j",
+  "description": ""
+}
+select * from j;
+
+id
+──
+1
+create table j (id int primary key, data int);
+error: relation 'j': already exists
+show tables;
+
+tables
+──────
+{
+  "user": "amelie",
+  "name": "j",
+  "description": ""
+}
+select * from j;
+
+id
+──
+1
+drop table j;
+show tables;
+
+tables
+──────
 disconnect S0;
 close E0;
