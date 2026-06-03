@@ -230,6 +230,9 @@ user_rename(Catalog* self,
 	// ensure no strict dependecies on the user name (udfs, clones or users)
 	catalog_deps_validate_user(self, name, true);
 
+	// invalidate auth caches
+	self->iface->user_invalidate(self, user);
+
 	// rename own relations and grants
 	list_foreach_safe(&self->rels.list)
 	{

@@ -53,15 +53,16 @@ auth_run(Auth* self, Str* user_id, Str* token)
 	auto user_ref = auth_cache_find(&self->cache, &jwt->digest);
 	if (user_ref)
 	{
-		// ensure cached token has not expired
+		// ensure cached token has not expired and not renamed
 		auto user = user_ref->user;
-		if (likely(now < user_ref->expire))
+		auto token_match = str_compare(&user->config->name, user_id);
+		if (likely(token_match && now < user_ref->expire))
 			return user;
 
 		// remove from the cache
 		auth_cache_del(&self->cache, user_ref);
 
-		error("auth: user '{str}' token has expired",
+		error("auth: user '{str}' token is invalid",
 		      &user->config->name);
 	}
 
