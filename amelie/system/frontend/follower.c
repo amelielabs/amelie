@@ -114,6 +114,7 @@ follower_follow(Follower* self)
 		lsn    = sub->config->lsn;
 		lsn_op = sub->config->lsn_op + 1;
 		id     = sub->rel_on->id;
+		sub->rel_on->subs++;
 	} else {
 		id     = rel->id;
 		rel->subs++;
