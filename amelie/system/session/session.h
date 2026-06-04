@@ -20,6 +20,7 @@ struct Session
 	Program* program;
 	Dtr      dtr;
 	Request* req;
+	Query*   query;
 	SetCache set_cache;
 	Profile  profile;
 	Local    local;
@@ -28,4 +29,4 @@ struct Session
 Session*
 session_create(void);
 void session_free(Session*);
-bool session_execute(Session*, Request*);
+bool session_execute(Session*, Request*, Query*);

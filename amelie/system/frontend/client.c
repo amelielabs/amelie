@@ -42,13 +42,6 @@ frontend_endpoint_sql(Request* req, Client* client)
 
 	// set output
 	output_set(&req->output, endpoint);
-
-	Str content;
-	buf_str(&http->content, &content);
-
-	// sql command
-	req->type = REQUEST_SQL;
-	req->text = content;
 }
 
 hot static inline void
@@ -58,22 +51,18 @@ frontend_endpoint_api(Request* req, Client* client)
 	auto http     = &client->request;
 
 	// POST /api (application/json)
-	// POST /api (application/json-rpc)
-	// GET  /api (application/json)      (websocket)
-	// GET  /api (application/json-rpc)  (websocket)
+	// GET  /api (application/json) (websocket)
 
 	// content type
 	auto content_type = &endpoint->content_type.string;
 	if (!str_empty(content_type) &&
-	    !str_is(content_type, "application/json", 16) &&
-	    !str_is(content_type, "application/json-rpc", 20))
+	    !str_is(content_type, "application/json", 16))
 		error("unsupported operation content-type");
 
 	// accept (jsonrpc)
 	auto accept = &endpoint->accept.string;
 	if (!str_empty(accept) &&
-	    !str_is(accept, "application/json", 16)     &&
-	    !str_is(accept, "application/json-rpc", 20) &&
+	    !str_is(accept, "application/json", 16) &&
 	    !str_is(accept, "*/*", 3))
 		error("unsupported operation accept");
 
@@ -82,23 +71,12 @@ frontend_endpoint_api(Request* req, Client* client)
 	// set output
 	output_set(&req->output, endpoint);
 
-	// parse jsonrpc request
+	// check method
 	auto method = &http->options[HTTP_METHOD];
 	if (str_is(method, "POST", 4))
-	{
-		Str content;
-		buf_str(&http->content, &content);
-		request_rpc(req, &content);
-
-		// follow
-		// unfollow
-		if (req->type == REQUEST_FOLLOW ||
-		    req->type == REQUEST_UNFOLLOW)
-			error("websocket connection required to follow");
-	} else
-	if (! str_is(method, "GET", 3)) {
+		return;
+	if (! str_is(method, "GET", 3))
 		error("unsupported operation method");
-	}
 }
 
 hot static inline void
@@ -131,7 +109,7 @@ frontend_endpoint(Request* req, Client* client)
 
 	// POST /sql
 	// POST /api
-	// GET  /rpc (websocket)
+	// GET  /api (websocket)
 	// GET  /backup
 	// GET  /repl
 
@@ -179,7 +157,6 @@ frontend_endpoint(Request* req, Client* client)
 		else
 			frontend_endpoint_service(req, client);
 	);
-
 	if (on_error)
 	{
 		if (output->iface)
@@ -193,8 +170,7 @@ hot static inline bool
 frontend_auth(Frontend* self, Request* req)
 {
 	// take catalog lock and authenticate user
-	return !error_catch
-	(
+	return !error_catch (
 		request_auth(req, &self->auth);
 	);
 }
@@ -211,10 +187,18 @@ frontend_client(Frontend* self, Client* client)
 	defer(request_free, &req);
 	client_set_endpoint(client, &req.endpoint);
 
+	Query query;
+	query_init(&query);
+
+	Api api;
+	api_init(&api, &req);
+	defer(api_free, &api);
+
 	// create sesssion
 	auto ctl = self->iface;
 	auto session = ctl->session_create(self, self->iface_arg);
 	defer(ctl->session_free, session);
+
 	for (;;)
 	{
 		request_reset(&req, true);
@@ -235,8 +219,10 @@ frontend_client(Frontend* self, Client* client)
 			client_413(client);
 			break;
 		}
+		Str content;
+		buf_str(&http->content, &content);
 
-		// parse endpoint and configure request
+		// parse endpoint request
 		if (! frontend_endpoint(&req, client))
 		{
 			// 400 Bad Request
@@ -257,14 +243,26 @@ frontend_client(Frontend* self, Client* client)
 		switch (endpoint) {
 		case ENDPOINT_API:
 		{
-			// websocket session
+			// switch to the websocket session
 			if (str_is(&http->options[HTTP_METHOD], "GET", 3))
 			{
 				request_reset(&req, false);
-				return frontend_follower(self, client, &req, session);
+				return frontend_follower(self, client, &req, &api, session);
 			}
 
-			ctl->session_execute(session, &req);
+			// parse jsonrpc request
+			query_reset(&query);
+			api_reset(&api);
+			if (! api_parse(&api, &content, &query, false))
+			{
+				// 400 Bad Request
+				client_400(client, req.output.buf);
+				break;
+			}
+
+			// execute request
+			if (query.type != QUERY_UNDEF)
+				ctl->session_execute(session, &req, &query);
 
 			// 200 OK (includes errors)
 			if (buf_empty(req.output.buf))
@@ -274,7 +272,10 @@ frontend_client(Frontend* self, Client* client)
 		}
 		case ENDPOINT_SQL:
 		{
-			if (ctl->session_execute(session, &req))
+			// execute query
+			query.type = QUERY_SQL;
+			query.text = &content;
+			if (ctl->session_execute(session, &req, &query))
 			{
 				// 204 No Content
 				// 200 OK

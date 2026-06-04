@@ -23,6 +23,8 @@ struct Follower
 {
 	Websocket ws;
 	Request*  req;
+	Api*      api;
+	Query     query;
 	void*     session;
 	CdcSub    cdc_sub;
 	FeedMgr   feed_mgr;
@@ -31,15 +33,19 @@ struct Follower
 };
 
 static inline void
-follower_init(Follower* self, Frontend* fe, Client* client, Request* req, void* session)
+follower_init(Follower* self, Frontend* fe, Client* client,
+              Request*  req,
+              Api*      api, void* session)
 {
 	self->req     = req;
+	self->api     = api;
 	self->session = session;
 	self->fe      = fe;
 	str_set(&self->protocol, "amelie-v1", 9);
 	websocket_init(&self->ws);
 	websocket_set(&self->ws, &self->protocol, client, false);
 	feed_mgr_init(&self->feed_mgr, share()->cdc);
+	query_init(&self->query);
 }
 
 static inline void
@@ -67,6 +73,8 @@ follower_reset(Follower* self)
 	auto req = self->req;
 	request_reset(req, false);
 	output_set(&req->output, &req->endpoint);
+	api_reset(self->api);
+	query_init(&self->query);
 }
 
 static inline void
@@ -80,29 +88,30 @@ static void
 follower_follow(Follower* self)
 {
 	// PERM_CREATE_SUBSCRIPTION
+	auto api = self->api;
 	auto req = self->req;
 	user_check(req->user, PERM_CREATE_SUBSCRIPTION);
 
 	// find existing feed
 	Str* user;
-	if (str_empty(&req->rel_user))
+	if (str_empty(&api->rel_user))
 		user = &req->user->config->name;
 	else
-		user = &req->rel_user;
-	auto feed = feed_mgr_find(&self->feed_mgr, user, &req->rel);
+		user = &api->rel_user;
+	auto feed = feed_mgr_find(&self->feed_mgr, user, &api->rel);
 	if (feed)
-		error("feed '{str}': already exists", &req->rel);
+		error("feed '{str}': already exists", &api->rel);
 
 	// find relation
-	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, user, &req->rel, false);
+	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, user, &api->rel, false);
 	if (! rel)
-		error("feed '{str}': relation not found", &req->rel);
+		error("feed '{str}': relation not found", &api->rel);
 
 	if (rel->type != REL_TABLE &&
 	    rel->type != REL_CLONE &&
 	    rel->type != REL_TOPIC &&
 	    rel->type != REL_SUBSCRIPTION)
-		error("feed '{str}': {s} cannot be used here", &req->rel,
+		error("feed '{str}': {s} cannot be used here", &api->rel,
 		      rel_type_of(rel->type));
 
 	uint64_t lsn    = state_lsn() + 1;
@@ -128,7 +137,7 @@ follower_follow(Follower* self)
 	// create and register feed
 	feed = feed_allocate();
 	feed_set_user(feed, user);
-	feed_set_name(feed, &req->rel);
+	feed_set_name(feed, &api->rel);
 	feed_set_id(feed, id);
 	feed_mgr_add(&self->feed_mgr, feed);
 
@@ -140,17 +149,17 @@ follower_follow(Follower* self)
 static void
 follower_unfollow(Follower* self)
 {
-	auto req = self->req;
+	auto api = self->api;
 
 	// find existing feed
 	Str* user;
-	if (str_empty(&req->rel_user))
-		user = &req->user->config->name;
+	if (str_empty(&api->rel_user))
+		user = &self->req->user->config->name;
 	else
-		user = &req->rel_user;
-	auto feed = feed_mgr_find(&self->feed_mgr, user, &req->rel);
+		user = &api->rel_user;
+	auto feed = feed_mgr_find(&self->feed_mgr, user, &api->rel);
 	if (! feed)
-		error("feed '{str}': does not exists", &req->rel);
+		error("feed '{str}': does not exists", &api->rel);
 
 	// unref and remove
 	auto rel_match = catalog_find_by(&share()->db->catalog, REL_UNDEF, &feed->id, false);
@@ -170,18 +179,21 @@ follower_execute(Follower* self, Str* content)
 	auto req = self->req;
 
 	// parse
+	auto query = &self->query;
+	auto api = self->api;
 	auto on_error = error_catch
 	(
-		// parse
-		request_rpc(req, content);
-
 		// auth (take catalog lock)
 		request_auth(req, &self->fe->auth);
 
-		if (req->type == REQUEST_FOLLOW)
+		// parse
+		if (! api_parse(api, content, query, true))
+			rethrow();
+
+		if (api->type == API_FOLLOW)
 			follower_follow(self);
 		else
-		if (req->type == REQUEST_UNFOLLOW)
+		if (api->type == API_UNFOLLOW)
 			follower_unfollow(self);
 	);
 	if (on_error)
@@ -190,10 +202,9 @@ follower_execute(Follower* self, Str* content)
 		return;
 	}
 
-	// execute by session, unless follower command
-	if (req->type != REQUEST_FOLLOW &&
-	    req->type != REQUEST_UNFOLLOW)
-		self->fe->iface->session_execute(self->session, req);
+	// execute by session, unle
+	if (query->type != QUERY_UNDEF)
+		self->fe->iface->session_execute(self->session, req, query);
 
 	// handle empty result
 	if (buf_empty(req->output.buf))
@@ -285,10 +296,12 @@ follower_send(Follower* self)
 }
 
 hot void
-frontend_follower(Frontend* self, Client* client, Request* req, void* session)
+frontend_follower(Frontend* self, Client* client,
+                  Request*  req,
+                  Api*      api, void* session)
 {
 	Follower follower;
-	follower_init(&follower, self, client, req, session);
+	follower_init(&follower, self, client, req, api, session);
 	defer(follower_free, &follower);
 	follower_accept(&follower);
 

@@ -112,9 +112,9 @@ frontend_if_session_free(void* ptr)
 }
 
 static bool
-frontend_if_session_execute(void* ptr, Request* req)
+frontend_if_session_execute(void* ptr, Request* req, Query* query)
 {
-	return session_execute(ptr, req);
+	return session_execute(ptr, req, query);
 }
 
 static void

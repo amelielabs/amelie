@@ -18,7 +18,11 @@
 // request
 #include "frontend/request.h"
 
+// api
+#include "frontend/api.h"
+
 // frontend
+#include "frontend/query.h"
 #include "frontend/frontend.h"
 #include "frontend/frontend_mgr.h"
 

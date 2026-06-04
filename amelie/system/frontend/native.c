@@ -106,12 +106,14 @@ relay_execute_session(Relay* self, Str* command)
 {
 	auto code = 0;
 
-	// set command
-	auto req = &self->req;
-	req->type = REQUEST_SQL;
-	req->text = *command;
+	// prepare query
+	Query query;
+	query_init(&query);
+	query.type = QUERY_SQL;
+	query.text = command;
 
 	// authenticate
+	auto req = &self->req;
 	auto on_error = error_catch
 	(
 		request_auth(req, &self->fe->auth);
@@ -125,7 +127,7 @@ relay_execute_session(Relay* self, Str* command)
 
 	// execute
 	auto ctl  = self->fe->iface;
-	if (ctl->session_execute(self->session, req))
+	if (ctl->session_execute(self->session, req, &query))
 	{
 		// 204 No Content
 		// 200 OK

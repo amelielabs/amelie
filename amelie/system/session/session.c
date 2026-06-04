@@ -26,6 +26,7 @@ session_create(void)
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->program = program_allocate();
 	self->req     = NULL;
+	self->query   = NULL;
 	local_init(&self->local);
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
@@ -46,6 +47,7 @@ static inline void
 session_reset(Session* self)
 {
 	self->req = NULL;
+	self->query = NULL;
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	dtr_reset(&self->dtr);
@@ -68,10 +70,11 @@ session_free(Session *self)
 }
 
 hot static inline void
-session_set(Session* self, Request* req)
+session_set(Session* self, Request* req, Query* query)
 {
 	// set request
-	self->req = req;
+	self->req   = req;
+	self->query = query;
 
 	// set timezone
 	auto local = &self->local;
@@ -274,16 +277,19 @@ hot static void
 session_request(Session* self)
 {
 	// parser sql
-	auto req = self->req;
+	auto req      = self->req;
+	auto query    = self->query;
 	auto compiler = &self->compiler;
 	compiler_set(compiler, self->program);
 
-	switch (req->type) {
-	case REQUEST_SQL:
-		compiler_parse(compiler, &req->text);
+	switch (query->type) {
+	case QUERY_SQL:
+		user_check(req->user, PERM_SQL);
+
+		compiler_parse(compiler, query->text);
 		break;
-	case REQUEST_WRITE:
-		compiler_parse_import(compiler, &req->rel_user, &req->rel, req->args);
+	case QUERY_WRITE:
+		compiler_parse_import(compiler, query->rel_user, query->rel, query->args);
 		break;
 	default:
 		abort();
@@ -330,7 +336,7 @@ session_request(Session* self)
 }
 
 hot bool
-session_execute(Session* self, Request* req)
+session_execute(Session* self, Request* req, Query* query)
 {
 	cancel_pause();
 
@@ -341,7 +347,7 @@ session_execute(Session* self, Request* req)
 		session_reset(self);
 
 		// set session local settings
-		session_set(self, req);
+		session_set(self, req, query);
 
 		// parse and execute request
 		session_request(self);

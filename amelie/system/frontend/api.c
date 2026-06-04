@@ -18,110 +18,36 @@
 #include <amelie_frontend.h>
 
 void
-request_init(Request* self)
+api_init(Api* self, Request* req)
 {
-	self->type = REQUEST_UNDEF;
-	self->args = NULL;
-	self->user = NULL;
-	self->lock = NULL;
+	self->type    = API_UNDEF;
+	self->args    = NULL;
+	self->request = req;
 	str_init(&self->text);
 	str_init(&self->rel_user);
 	str_init(&self->rel);
-	endpoint_init(&self->endpoint);
-	output_init(&self->output);
 	jsonrpc_init(&self->jsonrpc);
 }
 
 void
-request_free(Request* self)
+api_free(Api* self)
 {
-	request_reset(self, true);
-	endpoint_free(&self->endpoint);
 	jsonrpc_free(&self->jsonrpc);
-	output_free(&self->output);
 }
 
 void
-request_reset(Request* self, bool with_endpoint)
+api_reset(Api* self)
 {
-	request_unlock(self);
-
-	self->user = NULL;
-	self->type = REQUEST_UNDEF;
+	self->type = API_UNDEF;
 	self->args = NULL;
 	str_init(&self->text);
 	str_init(&self->rel_user);
 	str_init(&self->rel);
-	if (with_endpoint)
-		endpoint_reset(&self->endpoint);
-	output_reset(&self->output);
 	jsonrpc_reset(&self->jsonrpc);
 }
 
-void
-request_lock(Request* self, LockId id)
-{
-	// take catalog lock
-	if (self->lock)
-	{
-		if (self->lock->rel_lock == id)
-			return;
-		unlock(self->lock);
-		self->lock = NULL;
-	}
-	self->lock = lock_system(REL_CATALOG, id);
-	if (self->lock)
-		lock_detach(self->lock);
-}
-
-void
-request_unlock(Request* self)
-{
-	if (self->lock)
-	{
-		unlock(self->lock);
-		self->lock = NULL;
-	}
-}
-
-hot void
-request_auth(Request* self, Auth* auth_ref)
-{
-	// take catalog lock
-	self->lock = lock_system(REL_CATALOG, LOCK_SHARED);
-	lock_detach(self->lock);
-
-	// authenticate user
-	auto endpoint = &self->endpoint;
-	auto trusted  = opt_int_of(&endpoint->trusted);
-	auto token    = opt_string_of(&endpoint->token);
-	auto user_id  = opt_string_of(&endpoint->user);
-	self->user = auth(auth_ref, user_id, token, !trusted);
-
-	// superuser can connect only from localhost/unixsocket (trusted source)
-	if (self->user->config->superuser && !trusted)
-		error("auth: superuser can connect only from localhost");
-
-	// check permissions
-	switch (opt_int_of(&endpoint->endpoint)) {
-	case ENDPOINT_SQL:
-		break;
-	case ENDPOINT_API:
-		user_check(self->user, PERM_API);
-		break;
-	case ENDPOINT_BACKUP:
-	case ENDPOINT_REPL:
-		user_check(self->user, PERM_SERVICE);
-		break;
-	}
-
-	// check for /sql and /rpc (sql)
-	if (self->type == REQUEST_SQL)
-		user_check(self->user, PERM_SQL);
-}
-
 static void
-request_rpc_sql(Request* self)
+api_parse_sql(Api* self)
 {
 	// { text }
 	auto cmd = jsonrpc_first(&self->jsonrpc);
@@ -150,11 +76,11 @@ request_rpc_sql(Request* self)
 	if (str_empty(&self->text))
 		error("'text' field is not defined");
 
-	self->type = REQUEST_SQL;
+	self->type = API_SQL;
 }
 
 static void
-request_rpc_cmd(Request* self, RequestType type, bool with_args)
+api_parse_cmd(Api* self, ApiType type, bool with_args)
 {
 	// { [user], rel, args }
 	auto cmd = jsonrpc_first(&self->jsonrpc);
@@ -208,36 +134,90 @@ request_rpc_cmd(Request* self, RequestType type, bool with_args)
 	self->type = type;
 }
 
-void
-request_rpc(Request* self, Str* content)
+static void
+api_parse_content(Api* self, Str* content)
 {
+	auto jsonrpc = &self->jsonrpc;
+
 	// parse jsonrpc request
-	jsonrpc_parse(&self->jsonrpc, content);
-	if (unlikely(self->jsonrpc.reqs_count > 1))
+	jsonrpc_parse(jsonrpc, content);
+	if (unlikely(jsonrpc->reqs_count > 1))
 		error("jsonrpc batching is not supported");
 
 	// read command
-	auto cmd = jsonrpc_first(&self->jsonrpc);
+	auto cmd = jsonrpc_first(jsonrpc);
 
 	// set endpoint id
-	opt_json_set_data(&self->endpoint.id, cmd->id);
+	opt_json_set_data(&self->request->endpoint.id, cmd->id);
 
 	// sql
 	if (str_is(&cmd->method, "amelie/sql", 10))
-		return request_rpc_sql(self);
+	{
+		api_parse_sql(self);
+		return;
+	}
 
 	// write, ack
-	if (str_is(&cmd->method, "amelie/write", 12)   ||
+	if (str_is(&cmd->method, "amelie/write", 12) ||
 	    str_is(&cmd->method, "amelie/ack", 10))
-		return request_rpc_cmd(self, REQUEST_WRITE, true);
+	{
+		api_parse_cmd(self, API_WRITE, true);
+		return;
+	}
 
 	// follow
 	if (str_is(&cmd->method, "amelie/follow", 13))
-		return request_rpc_cmd(self, REQUEST_FOLLOW, false);
+	{
+		api_parse_cmd(self, API_FOLLOW, false);
+		return;
+	}
 
 	// unfollow
 	if (str_is(&cmd->method, "amelie/unfollow", 15))
-		return request_rpc_cmd(self, REQUEST_UNFOLLOW, false);
+	{
+		api_parse_cmd(self, API_UNFOLLOW, false);
+		return;
+	}
 
 	error("unknown jsonrpc method: {str}", &cmd->method);
+}
+
+bool
+api_parse(Api* self, Str* content, Query* query, bool subscribe)
+{
+	// parser jsonrpc request
+	auto on_error = error_catch
+	(
+		api_parse_content(self, content);
+		if (! subscribe)
+			if (self->type == API_FOLLOW || self->type == API_UNFOLLOW)
+				error("websocket connection required to follow");
+	);
+	if (on_error)
+	{
+		output_error(&self->request->output, &am_self()->error);
+		return false;
+	}
+
+	// prepare query
+	switch (self->type) {
+	case API_SQL:
+	{
+		query->type     = QUERY_SQL;
+		query->text     = &self->text;
+		break;
+	}
+	case API_WRITE:
+	{
+		query->type     = QUERY_WRITE;
+		query->rel_user = &self->rel_user;
+		query->rel      = &self->rel;
+		query->args     = self->args;
+		break;
+	}
+	default:
+		query->type     = QUERY_UNDEF;
+		break;
+	}
+	return true;
 }

@@ -331,7 +331,7 @@ switch S1;
 select 1;
 Forbidden
 post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": {"text": "select 1"}};
-403 Forbidden
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "user 'test': permission denied"}}
 switch S0;
 # test: api
 grant sql to test;
