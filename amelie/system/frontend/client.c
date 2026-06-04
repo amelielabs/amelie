@@ -35,13 +35,24 @@ frontend_endpoint_sql(Request* req, Client* client)
 	    !str_is(content_type, "application/x-www-form-urlencoded", 33))
 		error("unsupported operation content-type");
 
-	// accept (set default)
+	// accept
+	OutputIf* output_if;
 	auto accept = &endpoint->accept.string;
-	if (str_empty(accept) || str_is(accept, "*/*", 3))
+	if (str_empty(accept) ||
+	    str_is(accept, "*/*", 3) ||
+	    str_is(accept, "text/plain", 10))
+	{
 		str_set(accept, "text/plain", 10);
+		output_if = &output_text;
+	} else
+	if (str_is(accept, "application/json", 16)) {
+		output_if = &output_json;
+	} else {
+		error("unsupported operation accept type");
+	}
 
-	// set output
-	output_set(&req->output, endpoint);
+	// set output type
+	output_set(&req->output, output_if, endpoint);
 }
 
 hot static inline void
@@ -66,10 +77,10 @@ frontend_endpoint_api(Request* req, Client* client)
 	    !str_is(accept, "*/*", 3))
 		error("unsupported operation accept");
 
-	str_set(accept, "application/json-rpc", 20);
+	str_set(accept, "application/json", 16);
 
-	// set output
-	output_set(&req->output, endpoint);
+	// set output type
+	output_set(&req->output, &output_jsonrpc, endpoint);
 
 	// check method
 	auto method = &http->options[HTTP_METHOD];
@@ -93,12 +104,12 @@ frontend_endpoint_service(Request* req, Client* client)
 
 	// ignoring content-type
 
-	// accept (jsonrpc)
+	// accept
 	auto accept = &endpoint->accept.string;
 	str_set(accept, "application/json", 16);
 
-	// set output
-	output_set(&req->output, endpoint);
+	// set output type
+	output_set(&req->output, &output_json, endpoint);
 }
 
 hot static inline bool

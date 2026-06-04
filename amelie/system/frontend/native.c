@@ -86,8 +86,20 @@ relay_set(Relay* self, Buf* buf, Str* uri)
 	if (opt_string_empty(&endpoint->content_type))
 		opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
 
-	if (opt_string_empty(&endpoint->accept))
+	OutputIf* output_if;
+	auto accept = &endpoint->accept.string;
+	if (str_empty(accept) ||
+	    str_is(accept, "*/*", 3) ||
+	    str_is(accept, "application/json", 16))
+	{
+		output_if = &output_json;
 		opt_string_set_raw(&endpoint->accept, "application/json", 16);
+	} else
+	if (str_is(accept, "text/plain", 10)) {
+		output_if = &output_text;
+	} else {
+		error("unsupported operation accept type");
+	}
 
 	opt_int_set(&endpoint->endpoint, ENDPOINT_SQL);
 
@@ -97,8 +109,8 @@ relay_set(Relay* self, Buf* buf, Str* uri)
 	// configure output
 	auto output = &self->req.output;
 	output_reset(output);
-	output_set(output, endpoint);
 	output_set_buf(output, buf);
+	output_set(output, output_if, endpoint);
 }
 
 hot static inline int

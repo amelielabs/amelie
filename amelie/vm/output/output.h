@@ -43,8 +43,7 @@ output_ensure_limit(Output* self)
 void output_init(Output*);
 void output_free(Output*);
 void output_reset(Output*);
-void output_set_default(Output*);
-void output_set(Output*, Endpoint*);
+void output_set(Output*, OutputIf*, Endpoint*);
 void output_set_buf(Output*, Buf*);
 
 static inline void
