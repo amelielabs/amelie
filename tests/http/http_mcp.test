@@ -1,0 +1,69 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: POST /mcp
+post /mcp - - -;
+
+# test: POST /mcp (invalid content type)
+post /mcp xyx - -;
+
+# test: POST /mcp (initialize)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "initialize"};
+
+# test: POST /mcp (tools/list, empty)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/list"};
+
+create function plus (a int, b int) return int
+begin
+  return a + b;
+end;
+
+# test: POST /mcp (tools/list)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/list"};
+
+# test: POST /mcp (tools/call)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "plus", "arguments": {"a": 1, "b": 2} } };
+
+# test: POST /mcp (tools/call, error)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "plus", "arguments": {"a": 1, "b": 'string'} } };
+
+create function error_as (msg string)
+begin
+  select error(msg);
+end;
+
+# test: POST /mcp (tools/call, non udf)
+create table xyz (id int primary key);
+
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "xyz", "arguments": {} } };
+
+# test: POST /mcp (tools/call, error during execution)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "error_as", "arguments": {} } };
+
+# test: POST /mcp (resources/list)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/list"};
+
+create function some_resource () return string
+begin
+  return 'hello world'::sha1;
+end;
+
+# test: POST /mcp (resources/read)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/list"};
+
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/zyx" } };
+
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/some_resource" } };
+
+# test: POST /mcp (resources/read, table)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/xyz" } };
+
+drop table xyz;
+
+disconnect S0;
+close E0;

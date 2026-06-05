@@ -175,3 +175,4 @@ directory http
 group http
 test http_sql
 test http_api
+test http_mcp

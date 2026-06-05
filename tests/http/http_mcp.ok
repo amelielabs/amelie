@@ -1,0 +1,122 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: POST /mcp
+post /mcp - - -;
+{"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "unexpected end of line"}}
+# test: POST /mcp (invalid content type)
+post /mcp xyx - -;
+400 Bad Request
+# test: POST /mcp (initialize)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "initialize"};
+{
+  "jsonrpc": "2.0",
+  "id": 11,
+  "result": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {
+      "tools": {},
+      "resources": {}
+    },
+    "serverInfo": {
+      "name": "amelie",
+      "version": "1.0.0-rc1"
+    }
+  }
+}
+# test: POST /mcp (tools/list, empty)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/list"};
+{
+  "jsonrpc": "2.0",
+  "id": 11,
+  "result": {
+    "tools": []
+  }
+}
+create function plus (a int, b int) return int
+begin
+  return a + b;
+end;
+# test: POST /mcp (tools/list)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/list"};
+{
+  "jsonrpc": "2.0",
+  "id": 11,
+  "result": {
+    "tools": [{
+      "name": "plus",
+      "description": "",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "integer"
+          },
+          "b": {
+            "type": "integer"
+          }
+        },
+        "required": ["a", "b"]
+      }
+    }]
+  }
+}
+# test: POST /mcp (tools/call)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "plus", "arguments": {"a": 1, "b": 2} } };
+{"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "\nplus\n────\n3\n"}], "isError": false}}
+# test: POST /mcp (tools/call, error)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "plus", "arguments": {"a": 1, "b": 'string'} } };
+{"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "error: 'int' expected for column 'b'"}], "isError": true}}
+create function error_as (msg string)
+begin
+  select error(msg);
+end;
+# test: POST /mcp (tools/call, non udf)
+create table xyz (id int primary key);
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "xyz", "arguments": {} } };
+{"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "error: relation amelie.xyz is not a function"}], "isError": true}}
+# test: POST /mcp (tools/call, error during execution)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "error_as", "arguments": {} } };
+{"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "error: error(❰null❱ ⟵ expected string"}], "isError": true}}
+# test: POST /mcp (resources/list)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/list"};
+{
+  "jsonrpc": "2.0",
+  "id": 11,
+  "result": {
+    "resources": []
+  }
+}
+create function some_resource () return string
+begin
+  return 'hello world'::sha1;
+end;
+# test: POST /mcp (resources/read)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/list"};
+{
+  "jsonrpc": "2.0",
+  "id": 11,
+  "result": {
+    "resources": [{
+      "uri": "amelie://amelie/some_resource",
+      "name": "some_resource",
+      "description": "",
+      "mimeType": "text/plain"
+    }]
+  }
+}
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://" } };
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'uri' is not valid"}}
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie" } };
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'uri' is not valid"}}
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/" } };
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'uri' is not valid"}}
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/zyx" } };
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'zyx': not exists"}}
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/some_resource" } };
+{"jsonrpc": "2.0", "id": 11, "result": {"contents": [{"uri": "amelie://amelie/some_resource", "text": "\nsome_resource\n─────────────\n2aae6c35c94fcfb415dbe95f408b9ce91ee846ed\n"}]}}
+# test: POST /mcp (resources/read, table)
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/xyz" } };
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation amelie.xyz is not a function"}}
+drop table xyz;
+disconnect S0;
+close E0;

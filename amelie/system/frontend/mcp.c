@@ -47,22 +47,14 @@ mcp_reset(Mcp* self)
 static void
 mcp_parse_initialize(Mcp* self)
 {
-	// { }
-	auto cmd = jsonrpc_first(&self->jsonrpc);
-	auto pos = cmd->params;
-	if (unlikely(! pos))
-		error("'params' field is missing");
-	if (! data_is_obj(pos))
-		error("'params' field is not an object");
-
-	// todo: validate params
+	// (params are not validated)
 	self->type = MCP_INITIALIZE;
 }
 
 static void
 mcp_parse_tools_list(Mcp* self)
 {
-	// todo: validate params
+	// (params are not validated)
 	self->type = MCP_TOOLS_LIST;
 }
 
@@ -112,6 +104,89 @@ mcp_parse_tools_call(Mcp* self)
 }
 
 static void
+mcp_parse_resources_list(Mcp* self)
+{
+	// (params are not validated)
+	self->type = MCP_RESOURCES_LIST;
+}
+
+static bool
+mcp_parse_uri(Mcp* self, Str* uri)
+{
+	// amelie://user/rel
+	if (! str_is_prefix(uri, "amelie://", 9))
+		return false;
+
+	// user
+	auto start = uri->pos + 9;
+	auto pos   = start;
+	auto end   = uri->end;
+	while (pos < end && *pos != '/')
+		pos++;
+	str_set(&self->rel_user, start, pos - start);
+	if (str_empty(&self->rel_user))
+		return false;
+	if (pos == uri->end)
+		return false;
+	pos++;
+
+	// rel
+	start = pos;
+	while (pos < end && *pos != '/')
+		pos++;
+	str_set(&self->rel, start, pos - start);
+	if (str_empty(&self->rel))
+		return false;
+
+	// [/]
+	if (pos == end)
+		return true;
+	pos++;
+	return pos == end;
+}
+
+static void
+mcp_parse_resources_read(Mcp* self)
+{
+	// { uri }
+	auto cmd = jsonrpc_first(&self->jsonrpc);
+	auto pos = cmd->params;
+	if (unlikely(! pos))
+		error("'params' are missing");
+	if (! data_is_obj(pos))
+		error("'params' is not an object");
+
+	Str uri;
+	str_init(&uri);
+
+	// parse params
+	unpack_obj(&pos);
+	while (! unpack_obj_end(&pos))
+	{
+		Str name;
+		unpack_str(&pos, &name);
+		if (str_is(&name, "uri", 3))
+		{
+			if (unlikely(! data_is_str(pos)))
+				error("'uri' is not a string");
+			unpack_str(&pos, &uri);
+		} else {
+			// skipping unknown field
+			data_skip(&pos);
+		}
+	}
+
+	// validate options
+	if (str_empty(&uri))
+		error("'uri' is not defined");
+
+	if (! mcp_parse_uri(self, &uri))
+		error("'uri' is not valid");
+
+	self->type = MCP_RESOURCES_READ;
+}
+
+static void
 mcp_parse_content(Mcp* self, Str* content)
 {
 	auto jsonrpc = &self->jsonrpc;
@@ -138,6 +213,14 @@ mcp_parse_content(Mcp* self, Str* content)
 	// tools/call
 	if (str_is(&cmd->method, "tools/call", 10))
 		return mcp_parse_tools_call(self);
+
+	// resources/list
+	if (str_is(&cmd->method, "resources/list", 14))
+		return mcp_parse_resources_list(self);
+
+	// resources/read
+	if (str_is(&cmd->method, "resources/read", 14))
+		return mcp_parse_resources_read(self);
 
 	error("unknown jsonrpc method: {str}", &cmd->method);
 }

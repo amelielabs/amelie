@@ -144,18 +144,14 @@ catalog_mcp_resources(Catalog* self, Str* user, Buf* buf)
 	list_foreach(&self->rels.list)
 	{
 		auto rel = list_at(Rel, link);
-		if (rel->type == REL_SUBSCRIPTION ||
-		    rel->type == REL_TOPIC)
-			continue;
 
 		// only udfs without arguments
-		if (rel->type == REL_UDF)
-		{
-			auto udf = udf_of(rel);
-			if (udf->config->args.count != 0)
-				continue;
-		}
+		if (rel->type != REL_UDF)
+			continue;
 
+		auto udf = udf_of(rel);
+		if (udf->config->args.count != 0)
+			continue;
 		if (! str_compare(user, rel->user))
 			continue;
 

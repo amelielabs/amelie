@@ -212,6 +212,11 @@ import_execute(Parser* self, Udf* udf, uint8_t* args)
 	execute->args = set_cache_create(self->set_cache, &self->program->sets);
 	set_prepare(execute->args, udf->config->args.count, 0, NULL);
 
+	// {} by default
+	uint8_t args_empty[2] = {DATA_OBJ, DATA_OBJ_END};
+	if (! args)
+		args = args_empty;
+
 	// parse arguments
 	import_args(self, &udf->config->args, execute->args, args);
 
@@ -284,14 +289,21 @@ void
 parse_import(Parser*  self, Program* program,
              Str*     rel_user,
              Str*     rel,
-             uint8_t* args)
+             uint8_t* args,
+             bool     execute)
 {
 	Str* user = rel_user;
 	if (!user || str_empty(rel_user))
 		user = &self->local->user;
-
 	self->program = program;
+
 	auto ref = catalog_find(&share()->db->catalog, REL_UNDEF, user, rel, true);
+	if (execute) {
+		if (ref->type != REL_UDF)
+			error("relation {str}.{str} is not a function",
+			      ref->user, ref->name);
+	}
+
 	switch (ref->type) {
 	case REL_TABLE:
 	{

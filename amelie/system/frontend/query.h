@@ -17,7 +17,8 @@ typedef enum
 {
 	QUERY_UNDEF,
 	QUERY_SQL,
-	QUERY_WRITE
+	QUERY_WRITE,
+	QUERY_EXECUTE
 } QueryType;
 
 struct Query

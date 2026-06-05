@@ -55,6 +55,11 @@ mcp_initialize(Mcp* self)
 	encode_raw(buf, "tools", 5);
 	encode_obj(buf);
 	encode_obj_end(buf);
+
+	// resources {}
+	encode_raw(buf, "resources", 9);
+	encode_obj(buf);
+	encode_obj_end(buf);
 	encode_obj_end(buf);
 
 	// serverInfo {}
@@ -115,8 +120,47 @@ mcp_tools_list(Mcp* self)
 }
 
 static void
+mcp_resources_list(Mcp* self)
+{
+	auto req = self->request;
+
+	// {}
+	auto buf = buf_create();
+	defer_buf(buf);
+	encode_obj(buf);
+
+	// jsonrpc
+	encode_raw(buf, "jsonrpc", 7);
+	encode_raw(buf, "2.0", 3);
+
+	// id
+	encode_raw(buf, "id", 2);
+	auto id = &req->endpoint.id.string;
+	if (str_empty(id))
+		encode_null(buf);
+	else
+		buf_write_str(buf, id);
+
+	// result {}
+	encode_raw(buf, "result", 6);
+	encode_obj(buf);
+
+	// resources []
+	encode_raw(buf, "resources", 9);
+	catalog_mcp_resources(&share()->db->catalog, &req->user->config->name, buf);
+
+	encode_obj_end(buf);
+	encode_obj_end(buf);
+
+	auto pos = buf->start;
+	json_export_as(req->output.buf, req->output.timezone, true, 0, &pos);
+}
+
+static void
 output_mcp_write(Output* self, Columns* columns, Value* value)
 {
+	Mcp* mcp = self->iface_arg;
+
 	char header[] = "{\"jsonrpc\": \"2.0\", \"id\": ";
 	auto buf = self->buf;
 	buf_write(buf, header, sizeof(header) - 1);
@@ -129,13 +173,26 @@ output_mcp_write(Output* self, Columns* columns, Value* value)
 		json_export_as(buf, self->timezone, false, 0, &pos);
 
 	// result {}
-	char result[] = ", \"result\": {\"content\": ";
-	buf_write(buf, result, sizeof(result) - 1);
+	auto is_resource = mcp->type == MCP_RESOURCES_READ;
+	if (is_resource)
+	{
+		// resource result
+		char result[] = ", \"result\": {\"contents\": [{\"uri\": \"amelie://";
+		buf_write(buf, result, sizeof(result) - 1);
+		buf_write_str(buf, &mcp->rel_user);
+		buf_write(buf, "/", 1);
+		buf_write_str(buf, &mcp->rel);
+		buf_write(buf, "\", \"text\": \"", 12);
+	} else {
+		// tool result
+		char result[] = ", \"result\": {\"content\": ";
+		buf_write(buf, result, sizeof(result) - 1);
 
-	char content[] = "[{\"type\": \"text\", \"text\": \"";
-	buf_write(buf, content, sizeof(content) - 1);
+		char content[] = "[{\"type\": \"text\", \"text\": \"";
+		buf_write(buf, content, sizeof(content) - 1);
+	}
 
-	// emit text result
+	// emit text
 	auto text = buf_create();
 	defer_buf(text);
 
@@ -147,8 +204,13 @@ output_mcp_write(Output* self, Columns* columns, Value* value)
 	buf_str(text, &text_str);
 	escape_str(buf, &text_str);
 
-	char content_end[] = "\"}], \"isError\": false}";
-	buf_write(buf, content_end, sizeof(content_end) - 1);
+	if (is_resource) {
+		char content_end[] = "\"}]}";
+		buf_write(buf, content_end, sizeof(content_end) - 1);
+	} else {
+		char content_end[] = "\"}], \"isError\": false}";
+		buf_write(buf, content_end, sizeof(content_end) - 1);
+	}
 
 	buf_write(self->buf, "}", 1);
 }
@@ -244,9 +306,27 @@ mcp_execute(Mcp* self, Query* query)
 	case MCP_TOOLS_CALL:
 	{
 		// execute UDF call as query
-		query->type = QUERY_WRITE;
+		query->type = QUERY_EXECUTE;
 		query->rel  = &self->rel;
 		query->args = self->args;
+
+		auto output = &self->request->output;
+		output->iface_arg = self;
+		output->iface     = &output_mcp;
+		break;
+	}
+	case MCP_RESOURCES_LIST:
+	{
+		mcp_resources_list(self);
+		break;
+	}
+	case MCP_RESOURCES_READ:
+	{
+		// execute UDF call as query
+		query->type     = QUERY_EXECUTE;
+		query->rel_user = &self->rel_user;
+		query->rel      = &self->rel;
+		query->args     = NULL;
 
 		auto output = &self->request->output;
 		output->iface_arg = self;

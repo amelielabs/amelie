@@ -284,13 +284,19 @@ session_request(Session* self)
 
 	switch (query->type) {
 	case QUERY_SQL:
+	{
 		user_check(req->user, PERM_SQL);
-
 		compiler_parse(compiler, query->text);
 		break;
+	}
 	case QUERY_WRITE:
-		compiler_parse_import(compiler, query->rel_user, query->rel, query->args);
+	case QUERY_EXECUTE:
+	{
+		auto execute = query->type == QUERY_EXECUTE;
+		compiler_parse_import(compiler, query->rel_user, query->rel,
+		                      query->args, execute);
 		break;
+	}
 	default:
 		abort();
 		break;
