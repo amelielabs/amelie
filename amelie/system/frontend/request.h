@@ -73,6 +73,8 @@ request_auth(Request* self, Auth* auth_ref)
 	case ENDPOINT_API:
 		user_check(self->user, PERM_API);
 		break;
+	case ENDPOINT_MCP:
+		break;
 	case ENDPOINT_BACKUP:
 	case ENDPOINT_REPL:
 		user_check(self->user, PERM_SERVICE);

@@ -52,7 +52,7 @@ frontend_endpoint_sql(Request* req, Client* client)
 	}
 
 	// set output type
-	output_set(&req->output, output_if, endpoint);
+	output_set(&req->output, endpoint, output_if, NULL);
 }
 
 hot static inline void
@@ -80,7 +80,7 @@ frontend_endpoint_api(Request* req, Client* client)
 	str_set(accept, "application/json", 16);
 
 	// set output type
-	output_set(&req->output, &output_jsonrpc, endpoint);
+	output_set(&req->output, endpoint, &output_jsonrpc, NULL);
 
 	// check method
 	auto method = &http->options[HTTP_METHOD];
@@ -88,6 +88,36 @@ frontend_endpoint_api(Request* req, Client* client)
 		return;
 	if (! str_is(method, "GET", 3))
 		error("unsupported operation method");
+}
+
+hot static inline void
+frontend_endpoint_mcp(Request* req, Client* client)
+{
+	auto endpoint = &req->endpoint;
+	auto http     = &client->request;
+
+	// POST /mcp (application/json)
+	auto method = &http->options[HTTP_METHOD];
+	if (unlikely(! str_is(method, "POST", 4)))
+		error("unsupported operation method");
+
+	// content type
+	auto content_type = &endpoint->content_type.string;
+	if (!str_empty(content_type) &&
+	    !str_is(content_type, "application/json", 16))
+		error("unsupported operation content-type");
+
+	// accept (jsonrpc)
+	auto accept = &endpoint->accept.string;
+	if (!str_empty(accept) &&
+	    !str_is(accept, "application/json", 16) &&
+	    !str_is(accept, "*/*", 3))
+		error("unsupported operation accept");
+
+	str_set(accept, "application/json", 16);
+
+	// set output type
+	output_set(&req->output, endpoint, &output_jsonrpc, NULL);
 }
 
 hot static inline void
@@ -109,7 +139,7 @@ frontend_endpoint_service(Request* req, Client* client)
 	str_set(accept, "application/json", 16);
 
 	// set output type
-	output_set(&req->output, &output_json, endpoint);
+	output_set(&req->output, endpoint, &output_json, NULL);
 }
 
 hot static inline bool
@@ -166,6 +196,9 @@ frontend_endpoint(Request* req, Client* client)
 		if (endpoint_type == ENDPOINT_API)
 			frontend_endpoint_api(req, client);
 		else
+		if (endpoint_type == ENDPOINT_MCP)
+			frontend_endpoint_mcp(req, client);
+		else
 			frontend_endpoint_service(req, client);
 	);
 	if (on_error)
@@ -204,6 +237,10 @@ frontend_client(Frontend* self, Client* client)
 	Api api;
 	api_init(&api, &req);
 	defer(api_free, &api);
+
+	Mcp mcp;
+	mcp_init(&mcp, &req);
+	defer(mcp_free, &mcp);
 
 	// create sesssion
 	auto ctl = self->iface;
@@ -261,10 +298,32 @@ frontend_client(Frontend* self, Client* client)
 				return frontend_follower(self, client, &req, &api, session);
 			}
 
-			// parse jsonrpc request
+			// parse api request
 			query_reset(&query);
 			api_reset(&api);
 			if (! api_parse(&api, &content, &query, false))
+			{
+				// 400 Bad Request
+				client_400(client, req.output.buf);
+				break;
+			}
+
+			// execute request
+			if (query.type != QUERY_UNDEF)
+				ctl->session_execute(session, &req, &query);
+
+			// 200 OK (includes errors)
+			if (buf_empty(req.output.buf))
+				output_none(&req.output);
+			client_200(client, req.output.buf);
+			break;
+		}
+		case ENDPOINT_MCP:
+		{
+			// parse mcp request
+			query_reset(&query);
+			mcp_reset(&mcp);
+			if (! mcp_parse(&mcp, &content, &query))
 			{
 				// 400 Bad Request
 				client_400(client, req.output.buf);

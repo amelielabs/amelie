@@ -21,10 +21,11 @@
 void
 output_init(Output* self)
 {
-	self->buf      = NULL;
-	self->iface    = NULL;
-	self->timezone = runtime()->timezone;
-	self->endpoint = NULL;
+	self->buf       = NULL;
+	self->iface     = NULL;
+	self->iface_arg = NULL;
+	self->timezone  = runtime()->timezone;
+	self->endpoint  = NULL;
 	print_init(&self->print);
 }
 
@@ -37,9 +38,10 @@ output_free(Output* self)
 void
 output_reset(Output* self)
 {
-	self->iface    = NULL;
-	self->timezone = runtime()->timezone;
-	self->endpoint = NULL;
+	self->iface     = NULL;
+	self->iface_arg = NULL;
+	self->timezone  = runtime()->timezone;
+	self->endpoint  = NULL;
 	if (self->buf)
 		buf_reset(self->buf);
 	print_reset(&self->print);
@@ -52,11 +54,12 @@ output_set_buf(Output* self, Buf* buf)
 }
 
 void
-output_set(Output* self, OutputIf* iface, Endpoint* endpoint)
+output_set(Output* self, Endpoint* endpoint, OutputIf* iface, void* iface_arg)
 {
-	self->iface    = iface;
-	self->endpoint = endpoint;
-	self->timezone = runtime()->timezone;
+	self->iface     = iface;
+	self->iface_arg = iface_arg;
+	self->endpoint  = endpoint;
+	self->timezone  = runtime()->timezone;
 
 	// set endpoint timezone
 	auto timezone = &endpoint->timezone.string;

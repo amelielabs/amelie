@@ -287,7 +287,7 @@ parse_import(Parser*  self, Program* program,
              uint8_t* args)
 {
 	Str* user = rel_user;
-	if (str_empty(rel_user))
+	if (!user || str_empty(rel_user))
 		user = &self->local->user;
 
 	self->program = program;

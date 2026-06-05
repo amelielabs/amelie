@@ -110,7 +110,7 @@ relay_set(Relay* self, Buf* buf, Str* uri)
 	auto output = &self->req.output;
 	output_reset(output);
 	output_set_buf(output, buf);
-	output_set(output, output_if, endpoint);
+	output_set(output, endpoint, output_if, NULL);
 }
 
 hot static inline int

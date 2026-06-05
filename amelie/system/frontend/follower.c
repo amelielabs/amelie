@@ -72,7 +72,7 @@ follower_reset(Follower* self)
 	// unlock catalog
 	auto req = self->req;
 	request_reset(req, false);
-	output_set(&req->output, &output_jsonrpc, &req->endpoint);
+	output_set(&req->output, &req->endpoint, &output_jsonrpc, NULL);
 	api_reset(self->api);
 	query_init(&self->query);
 }

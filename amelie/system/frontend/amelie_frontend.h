@@ -20,6 +20,8 @@
 
 // api
 #include "frontend/api.h"
+#include "frontend/mcp.h"
+#include "frontend/mcp_execute.h"
 
 // frontend
 #include "frontend/query.h"

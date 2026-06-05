@@ -27,6 +27,7 @@ struct Output
 {
 	Buf*      buf;
 	OutputIf* iface;
+	void*     iface_arg;
 	Timezone* timezone;
 	Endpoint* endpoint;
 	Print     print;
@@ -43,7 +44,7 @@ output_ensure_limit(Output* self)
 void output_init(Output*);
 void output_free(Output*);
 void output_reset(Output*);
-void output_set(Output*, OutputIf*, Endpoint*);
+void output_set(Output*, Endpoint*, OutputIf*, void*);
 void output_set_buf(Output*, Buf*);
 
 static inline void
