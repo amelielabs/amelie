@@ -18,8 +18,6 @@
 void
 cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 {
-	(void)rel_user;
-
 	// cmd
 	Str cmd;
 	switch (event->cmd) {
@@ -41,10 +39,11 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 			"\"lsn\": {u64}, "
 			"\"lsn_op\": {u32}, "
 			"\"cmd\": \"{str}\", "
-			"\"rel\": \"{str}\", "
+			"\"user\": \"{str}\", "
+			"\"name\": \"{str}\", "
 			"\"row\": ";
 	buf_format(buf, fmt, event->lsn, event->lsn_op,
-	           &cmd, rel);
+	           &cmd, rel_user, rel);
 	uint8_t* pos = event->data;
 	json_export(buf, runtime()->timezone, &pos);
 	buf_write(buf, "}}", 2);
