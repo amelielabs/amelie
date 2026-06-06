@@ -17,4 +17,3 @@ void part_update(Part*, Tr*, Iterator*, Snapshot*, Row*);
 void part_delete(Part*, Tr*, Iterator*, Snapshot*);
 void part_delete_by(Part*, Tr*, Snapshot*, Row*);
 void part_follow(Part*, Row*, Columns*);
-bool part_apply(Part*, Index*);

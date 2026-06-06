@@ -22,22 +22,18 @@ struct PartMgrIf
 
 struct PartMgr
 {
-	PartMapping   mapping;
-	List          list;
-	int           list_count;
-	Partitioning* config;
-	PartArg*      arg;
-	PartMgrIf*    iface;
-	void*         iface_arg;
-	Storage*      storage;
+	PartMapping mapping;
+	List        list;
+	int         list_count;
+	PartArg*    arg;
+	PartMgrIf*  iface;
+	void*       iface_arg;
 };
 
-void  part_mgr_init(PartMgr*, PartMgrIf*, void*, Partitioning*,
-                    PartArg*, Storage*, Keys*);
+void  part_mgr_init(PartMgr*, PartMgrIf*, void*, PartArg*, Keys*);
 void  part_mgr_free(PartMgr*);
-void  part_mgr_open(PartMgr*, List*);
+void  part_mgr_open(PartMgr*, List*, List*);
 void  part_mgr_close(PartMgr*);
-void  part_mgr_drop(PartMgr*);
 void  part_mgr_truncate(PartMgr*);
 void  part_mgr_add(PartMgr*, Part*);
 void  part_mgr_remove(PartMgr*, Part*);

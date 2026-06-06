@@ -29,7 +29,6 @@ heap_create(Heap* self, char* path)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	auto header = self->header;
 	header->compression = encoder_compression(&ec);
-	header->pending     = 0;
 	header->crc = runtime()->crc(0, &header->magic, size - sizeof(uint32_t));
 
 	// create heap file

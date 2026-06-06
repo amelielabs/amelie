@@ -49,8 +49,8 @@ part_mapping_add(PartMapping* self, Part* part)
 {
 	if (unlikely(! self->map))
 		part_mapping_create(self);
-	auto min = part->heap->header->hash_min;
-	auto max = part->heap->header->hash_max;
+	auto min = part->config->hash_min;
+	auto max = part->config->hash_max;
 	for (; min < max; min++)
 		self->map[min] = part;
 }
@@ -58,8 +58,8 @@ part_mapping_add(PartMapping* self, Part* part)
 hot static inline void
 part_mapping_remove(PartMapping* self, Part* part)
 {
-	auto min = part->heap->header->hash_min;
-	auto max = part->heap->header->hash_max;
+	auto min = part->config->hash_min;
+	auto max = part->config->hash_max;
 	for (; min < max; min++)
 		self->map[min] = NULL;
 }

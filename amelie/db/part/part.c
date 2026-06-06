@@ -14,20 +14,18 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_cdc.h>
-#include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
 
 Part*
-part_allocate(Id* id, PartArg* arg)
+part_allocate(PartConfig* config, PartArg* arg)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
-	self->id            = *id;
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->heap          = heap_allocate();
-	self->heap_shadow   = NULL;
+	self->config        = part_config_copy(config);
 	self->arg           = arg;
 	track_init(&self->track);
 	list_init(&self->link);
@@ -45,18 +43,19 @@ part_free(Part* self)
 		index_free(index);
 		index = next;
 	}
-	if (self->heap)
-		heap_free(self->heap);
-	if (self->heap_shadow)
-		heap_free(self->heap_shadow);
+	heap_free(self->heap);
+	part_config_free(self->config);
 	am_free(self);
 }
 
 void
-part_open(Part* self)
+part_open(Part* self, char* path)
 {
+	(void)self;
+	(void)path;
+#if 0
 	// read heap file
-	heap_open(self->heap, &self->id, ID_PARTITION);
+	heap_open(self->heap, path);
 
 	// create primary index iterator for upsert
 	auto primary = part_primary(self);
@@ -98,6 +97,7 @@ part_open(Part* self)
 	info("recover: {05" PRIu64 "}.partition ({.2f} MiB, {u64} rows)",
 	     id->id,
 	     total, count);
+#endif
 }
 
 void
@@ -105,11 +105,9 @@ part_truncate(Part* self)
 {
 	for (auto index = self->indexes; index; index = index->next)
 		index_truncate(index);
-	assert(! self->heap_shadow);
 
 	// create a new empty heap with matching metadata
-	auto new = heap_allocate_as(self->heap);
-	new->header->pending++;
+	auto new = heap_allocate();
 	heap_free(self->heap);
 	self->heap = new;
 }
@@ -189,19 +187,15 @@ part_status(Part* self, Buf* buf, int flags)
 
 	// id
 	encode_raw(buf, "id", 2);
-	encode_int(buf, self->id.id);
+	encode_int(buf, self->config->id);
 
 	// min
 	encode_raw(buf, "min", 3);
-	encode_int(buf, heap->hash_min);
+	encode_int(buf, self->config->hash_min);
 
 	// max
 	encode_raw(buf, "max", 3);
-	encode_int(buf, heap->hash_max);
-
-	// lsn
-	encode_raw(buf, "lsn", 3);
-	encode_int(buf, heap->lsn);
+	encode_int(buf, self->config->hash_max);
 
 	// size
 	encode_raw(buf, "size", 4);

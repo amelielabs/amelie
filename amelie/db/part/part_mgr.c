@@ -14,26 +14,21 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_cdc.h>
-#include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
 
 void
-part_mgr_init(PartMgr*      self,
-              PartMgrIf*    iface,
-              void*         iface_arg,
-              Partitioning* config,
-              PartArg*      arg,
-              Storage*      storage,
-              Keys*         keys)
+part_mgr_init(PartMgr*   self,
+              PartMgrIf* iface,
+              void*      iface_arg,
+              PartArg*   arg,
+              Keys*      keys)
 {
 	self->list_count = 0;
-	self->config     = config;
 	self->arg        = arg;
 	self->iface      = iface;
 	self->iface_arg  = iface_arg;
-	self->storage    = storage;
 	list_init(&self->list);
 	part_mapping_init(&self->mapping, keys);
 }
@@ -50,10 +45,17 @@ part_mgr_free(PartMgr* self)
 }
 
 void
-part_mgr_open(PartMgr* self, List* indexes)
+part_mgr_open(PartMgr* self, List* parts, List* indexes)
 {
-	// recover files
-	part_mgr_recover(self);
+	list_foreach(parts)
+	{
+		auto config = list_at(PartConfig, link);
+		state_psn_follow(config->id);
+
+		// prepare part
+		auto part = part_allocate(config, self->arg);
+		part_mgr_add(self, part);
+	}
 
 	// create indexes
 	list_foreach(&self->list)
@@ -64,29 +66,13 @@ part_mgr_open(PartMgr* self, List* indexes)
 			auto config = list_at(IndexConfig, link);
 			part_index_create(part, config);
 		}
+
+		// map hash partition
+		part_mapping_add(&self->mapping, part);
 	}
 
 	// create pods and load heaps
 	self->iface->attach(self);
-
-	// map hash partitions
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		part_mapping_add(&self->mapping, part);
-
-		// update metrics
-
-		// lsn
-		auto lsn = part->heap->header->lsn;
-		state_lsn_follow(lsn);
-		track_lsn_follow(&part->track, lsn);
-
-		// tsn
-		auto tsn = part->heap->header->tsn;
-		state_tsn_follow(tsn);
-		track_follow(&part->track, tsn);
-	}
 }
 
 void
@@ -97,26 +83,6 @@ part_mgr_close(PartMgr* self)
 
 	// drop pods
 	self->iface->detach(self);
-}
-
-void
-part_mgr_drop(PartMgr* self)
-{
-	if (! self->list_count)
-		return;
-
-	list_foreach_safe(&self->list)
-	{
-		auto part = list_at(Part, link);
-		part_mgr_remove(self, part);
-		id_delete(&part->id, ID_PARTITION);
-		part_free(part);
-	}
-	assert(! self->list_count);
-	list_init(&self->list);
-
-	// delete storage directory
-	storage_rmdir(self->storage);
 }
 
 void
@@ -149,7 +115,7 @@ part_mgr_find(PartMgr* self, uint64_t psn)
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
-		if (part->id.id == psn)
+		if (part->config->id == (int64_t)psn)
 			return part;
 	}
 	return NULL;

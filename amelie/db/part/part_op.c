@@ -14,7 +14,6 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_cdc.h>
-#include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -49,7 +48,7 @@ log_if_commit(Log* self, LogOp* op)
 	row_gc(op->row, heap, op->snapshot, tr->id);
 
 	// last delete in the chain
-	if (op->row->is_delete && !row_prev(op->row, heap, heap->shadow))
+	if (op->row->is_delete && !row_prev(op->row, heap))
 	{
 		index_delete_by(index, op->row);
 		for (index = index->next; index; index = index->next)
@@ -311,96 +310,4 @@ part_follow(Part* self, Row* row, Columns* columns)
 	else
 		value = *(int64_t*)row_column(row, columns->identity);
 	sequence_sync(self->arg->seq, value);
-}
-
-hot bool
-part_apply(Part* self, Index* secondary)
-{
-	// complete heap snapshot, copy new rows to the main heap,
-	// update indexes and row chains
-
-	// snapshot complete
-	heap_snapshot(self->heap, NULL, false);
-
-	// create primary index iterator for upsert
-	auto primary   = part_primary(self);
-	auto it_upsert = index_iterator(primary);
-
-	// create secondaryindex iterator for upsert
-	bool pass = true;
-	Iterator* it_upsert_secondary = NULL;
-	if (secondary)
-		it_upsert_secondary = index_iterator(secondary);
-
-	// apply shadow updates
-	HeapIterator it;
-	heap_iterator_init(&it);
-	heap_iterator_open(&it, self->heap_shadow, NULL);
-	for (; heap_iterator_has(&it); heap_iterator_next(&it))
-	{
-		auto chunk = heap_iterator_at_chunk(&it);
-		if (chunk->is_shadow_free)
-		{
-			// delayed heap removal
-			row_free(self->heap, *(Row**)chunk->data);
-			continue;
-		}
-
-		// copy row (also updates tsn/bsn on the heap)
-		auto row  = heap_iterator_at(&it);
-		auto copy = row_copy(self->heap, row);
-
-		// get index head
-		index_upsert(primary, copy, it_upsert);
-
-		// row is head
-		auto head = iterator_at(it_upsert);
-		assert(head);
-		if (row == head)
-		{
-			// update indexes to set the copy
-			index_replace(primary, copy, it_upsert);
-			for (auto index = primary->next; index; index = index->next)
-				index_replace_by(index, copy);
-		} else
-		{
-			// find prev of the row
-			while (head)
-			{
-				auto prev = row_prev(head, self->heap, self->heap_shadow);
-				if (prev == row)
-					break;
-				head = prev;
-			}
-
-			// set prev->next = copy
-			assert(head);
-			row_prev_set(head, copy);
-		}
-
-		// set copy->prev = row->prev
-		auto prev = row_prev(row, self->heap, self->heap_shadow);
-		if (prev)
-			row_prev_set(copy, prev);
-
-		// update new secondary index
-		if (secondary)
-		{
-			// get index head
-			if (! index_upsert(secondary, copy, it_upsert_secondary))
-				continue;
-			// check unique constraint violation
-			auto head = iterator_at(it_upsert_secondary);
-			if (row_unique(head, self->heap, self->heap_shadow))
-			{
-				pass = false;
-				break;
-			}
-		}
-	}
-
-	iterator_close(it_upsert);
-	if (it_upsert_secondary)
-		iterator_close(it_upsert_secondary);
-	return pass;
 }

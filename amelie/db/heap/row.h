@@ -18,7 +18,6 @@ row_allocate(Heap* heap, uint64_t tsn, uint32_t snapshot, int columns, int data_
 	auto size = row_measure(columns, data_size, &size_factor);
 	auto self = (Row*)heap_add(heap, size);
 	row_init(self, tsn, snapshot, columns, size_factor, size);
-	heap_follow(heap, tsn, snapshot);
 	return self;
 }
 
@@ -44,6 +43,5 @@ row_copy(Heap* heap, Row* self)
 	auto size = row_size(self);
 	auto row  = (Row*)heap_add(heap, size);
 	memcpy(row, self, size);
-	heap_follow(heap, self->tsn, self->snapshot);
 	return row;
 }

@@ -15,9 +15,8 @@ typedef struct PartArg PartArg;
 
 struct PartArg
 {
-	Sequence*     seq;
-	bool          unlogged;
-	Rel*          rel;
-	SnapshotMgr*  snapshots;
-	Partitioning* config;
+	Sequence*    seq;
+	bool         unlogged;
+	Rel*         rel;
+	SnapshotMgr* snapshots;
 };

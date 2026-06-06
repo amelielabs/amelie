@@ -59,16 +59,10 @@ struct HeapHeader
 	uint32_t   crc;
 	uint32_t   magic;
 	uint32_t   version;
-	uint64_t   lsn;
-	uint64_t   tsn;
-	uint32_t   ssn;
-	uint16_t   hash_min;
-	uint16_t   hash_max;
 	uint8_t    compression;
 	uint32_t   count;
 	uint32_t   count_used;
 	uint64_t   size_used;
-	uint8_t    pending;
 	HeapBucket buckets[];
 } packed;
 
@@ -100,16 +94,6 @@ heap_page_of(HeapChunk* self)
 }
 
 Heap* heap_allocate(void);
-Heap* heap_allocate_as(Heap*);
 void  heap_free(Heap*);
 void* heap_add(Heap*, int);
 void  heap_remove(Heap*, void*);
-
-static inline void
-heap_follow(Heap* self, uint64_t tsn, uint32_t snapshot)
-{
-	if (tsn > self->header->tsn)
-		self->header->tsn = tsn;
-	if (snapshot > self->header->ssn)
-		self->header->ssn = snapshot;
-}

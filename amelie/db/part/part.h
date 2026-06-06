@@ -15,19 +15,18 @@ typedef struct Part Part;
 
 struct Part
 {
-	Id       id;
-	Index*   indexes;
-	int      indexes_count;
-	Track    track;
-	Heap*    heap;
-	Heap*    heap_shadow;
-	PartArg* arg;
-	List     link;
+	Index*      indexes;
+	int         indexes_count;
+	Track       track;
+	Heap*       heap;
+	PartConfig* config;
+	PartArg*    arg;
+	List        link;
 };
 
-Part*  part_allocate(Id*, PartArg*);
+Part*  part_allocate(PartConfig*, PartArg*);
 void   part_free(Part*);
-void   part_open(Part*);
+void   part_open(Part*, char*);
 void   part_truncate(Part*);
 void   part_index_add(Part*, Index*);
 void   part_index_create(Part*, IndexConfig*);
@@ -39,12 +38,4 @@ static inline Index*
 part_primary(Part* self)
 {
 	return self->indexes;
-}
-
-static inline bool
-part_has_updates(Part* self)
-{
-	// pending updates
-	auto header = self->heap->header;
-	return track_lsn(&self->track) > header->lsn || header->pending;
 }

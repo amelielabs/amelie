@@ -43,19 +43,13 @@ heap_prepare(Heap* self)
 	// header + buckets[]
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	auto header = (HeapHeader*)am_malloc(size);
-	header->crc             = 0;
-	header->magic           = HEAP_MAGIC;
-	header->version         = 0;
-	header->lsn             = 0;
-	header->tsn             = 0;
-	header->ssn             = 0;
-	header->hash_min        = 0;
-	header->hash_max        = 0;
-	header->compression     = COMPRESSION_NONE;
-	header->count           = 0;
-	header->count_used      = 0;
-	header->size_used       = 0;
-	header->pending         = 0;
+	header->crc         = 0;
+	header->magic       = HEAP_MAGIC;
+	header->version     = 0;
+	header->compression = COMPRESSION_NONE;
+	header->count       = 0;
+	header->count_used  = 0;
+	header->size_used   = 0;
 
 	self->header  = header;
 	self->buckets = header->buckets;
@@ -104,20 +98,6 @@ heap_allocate(void)
 	self->header      = NULL;
 	page_mgr_init(&self->page_mgr);
 	heap_prepare(self);
-	return self;
-}
-
-Heap*
-heap_allocate_as(Heap* like)
-{
-	auto self = heap_allocate();
-	auto hdr      = self->header;
-	auto hdr_like = like->header;
-	hdr->lsn      = hdr_like->lsn;
-	hdr->tsn      = hdr_like->tsn;
-	hdr->ssn      = hdr_like->ssn;
-	hdr->hash_min = hdr_like->hash_min;
-	hdr->hash_max = hdr_like->hash_max;
 	return self;
 }
 
