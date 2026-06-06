@@ -14,9 +14,7 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_cdc.h>
-#include <amelie_storage.h>
 #include <amelie_heap.h>
-#include <valgrind/valgrind.h>
 
 static inline void
 heap_set(Heap* self, int id, int id_end, int size, int step)
@@ -104,8 +102,6 @@ heap_allocate(void)
 	self->page_header = NULL;
 	self->last        = NULL;
 	self->header      = NULL;
-	self->shadow      = NULL;
-	self->shadow_free = false;
 	page_mgr_init(&self->page_mgr);
 	heap_prepare(self);
 	return self;
@@ -200,15 +196,8 @@ heap_bucket_of(Heap* self, int size)
 hot void*
 heap_add(Heap* self, int size)
 {
-	// use shadow heap during snapshot
-	Heap* heap;
-	if (self->shadow)
-		heap = self->shadow;
-	else
-		heap = self;
-
 	// match bucket by size
-	auto bucket = heap_bucket_of(heap, sizeof(HeapChunk) + size);
+	auto bucket = heap_bucket_of(self, sizeof(HeapChunk) + size);
 
 	// get chunk from the free list
 	HeapChunk* chunk;
@@ -216,7 +205,7 @@ heap_add(Heap* self, int size)
 	{
 		auto page = (int)bucket->list;
 		auto page_offset = (int)bucket->list_offset;
-		chunk = page_mgr_pointer_of(&heap->page_mgr, page, page_offset);
+		chunk = page_mgr_pointer_of(&self->page_mgr, page, page_offset);
 		assert(chunk->bucket == bucket->id);
 		assert(chunk->is_free);
 		bucket->list        = chunk->prev;
@@ -225,31 +214,31 @@ heap_add(Heap* self, int size)
 	} else
 	{
 		// use current or create new page
-		auto page_header = heap->page_header;
-		if (unlikely(!heap->last ||
-		             (uint32_t)(heap->page_mgr.page_size - page_header->size) <
+		auto page_header = self->page_header;
+		if (unlikely(!self->last ||
+		             (uint32_t)(self->page_mgr.page_size - page_header->size) <
 		                        bucket->size))
 		{
-			auto page = page_mgr_allocate(&heap->page_mgr);
+			auto page = page_mgr_allocate(&self->page_mgr);
 			page_header = (PageHeader*)page->pointer;
 			page_header->crc             = 0;
 			page_header->size            = sizeof(PageHeader);
 			page_header->size_compressed = 0;
-			page_header->order           = heap->page_mgr.list_count - 1;
+			page_header->order           = self->page_mgr.list_count - 1;
 			page_header->last            = 0;
 			page_header->padding         = 0;
-			heap->page_header = page_header;
-			heap->last = NULL;
-			heap->header->count++;
+			self->page_header = page_header;
+			self->last = NULL;
+			self->header->count++;
 		}
 		chunk = (HeapChunk*)((uintptr_t)page_header + page_header->size);
 		chunk->offset  = page_header->size;
 		chunk->bucket  = bucket->id;
 		chunk->is_last = true;
 		chunk->padding = 0;
-		if (likely(heap->last))
-			heap->last->is_last = false;
-		heap->last = chunk;
+		if (likely(self->last))
+			self->last->is_last = false;
+		self->last = chunk;
 		page_header->last = page_header->size;
 		page_header->size += bucket->size;
 	}
@@ -257,13 +246,10 @@ heap_add(Heap* self, int size)
 	chunk->prev_offset    = 0;
 	chunk->reserved       = 0;
 	chunk->is_free        = false;
-	chunk->is_shadow      = self->shadow != NULL;
-	chunk->is_shadow_free = false;
-	chunk->is_shadow_prev = false;
 
 	// update total used metrics
-	heap->header->count_used++;
-	heap->header->size_used += bucket->size;
+	self->header->count_used++;
+	self->header->size_used += bucket->size;
 
 	assert(misalign_of(chunk->data) == 0);
 	return chunk->data;
@@ -275,29 +261,11 @@ heap_remove(Heap* self, void* pointer)
 	auto chunk = heap_chunk_of(pointer);
 	assert(! chunk->is_free);
 
-	// switch to the shadow heap
-	if (chunk->is_shadow)
-	{
-		self = self->shadow;
-	} else
-	{
-		// collect all frees of main heap into shadow heap
-		if (self->shadow_free)
-		{
-			auto ptr = heap_add(self->shadow, sizeof(void*));
-			memcpy(ptr, &pointer, sizeof(void*));
-			heap_chunk_of(ptr)->is_shadow = true;
-			heap_chunk_of(ptr)->is_shadow_free = true;
-			return;
-		}
-	}
-
 	// add chunk to the free list
 	auto bucket = &self->buckets[chunk->bucket];
 	chunk->prev           = bucket->list;
 	chunk->prev_offset    = bucket->list_offset;
 	chunk->is_free        = true;
-	chunk->is_shadow_prev = false;
 	bucket->list          = heap_page_of(chunk)->order;
 	bucket->list_offset   = chunk->offset;
 	bucket->list_count++;
@@ -310,12 +278,4 @@ heap_remove(Heap* self, void* pointer)
 	// if not last,  merge right if right->free
 
 	// todo: bitmap
-}
-
-void
-heap_snapshot(Heap* self, Heap* shadow, bool shadow_free)
-{
-	assert((!self->shadow && shadow) || !shadow);
-	self->shadow      = shadow;
-	self->shadow_free = shadow_free;
 }

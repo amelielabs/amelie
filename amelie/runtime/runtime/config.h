@@ -48,9 +48,9 @@ struct Config
 	Opt  wal_rewind;
 	Opt  wal_rewind_pos;
 	// storage
-	Opt  storage_crc;
-	Opt  storage_sync;
-	Opt  catalog_sync;
+	Opt  checkpoint_crc;
+	Opt  checkpoint_compression;
+	Opt  checkpoint_sync;
 	// replication
 	Opt  repl_readahead;
 	Opt  repl_reconnect_ms;

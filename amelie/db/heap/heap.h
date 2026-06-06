@@ -32,12 +32,9 @@ struct HeapChunk
 	uint64_t bucket: 9;
 	uint64_t is_free: 1;
 	uint64_t is_last: 1;
-	uint64_t is_shadow: 1;
-	uint64_t is_shadow_free: 1;
-	uint64_t is_shadow_prev: 1;
 
 	// unused
-	uint64_t padding: 19;
+	uint64_t padding: 22;
 
 	// row data
 	uint8_t  data[];
@@ -81,8 +78,6 @@ struct Heap
 	PageHeader* page_header;
 	HeapHeader* header;
 	HeapChunk*  last;
-	Heap*       shadow;
-	bool        shadow_free;
 	PageMgr     page_mgr;
 };
 
@@ -109,13 +104,10 @@ Heap* heap_allocate_as(Heap*);
 void  heap_free(Heap*);
 void* heap_add(Heap*, int);
 void  heap_remove(Heap*, void*);
-void  heap_snapshot(Heap*, Heap*, bool);
 
 static inline void
 heap_follow(Heap* self, uint64_t tsn, uint32_t snapshot)
 {
-	if (self->shadow)
-		self = self->shadow;
 	if (tsn > self->header->tsn)
 		self->header->tsn = tsn;
 	if (snapshot > self->header->ssn)

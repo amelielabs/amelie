@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void heap_create(Heap*, File*, Id*, int);
-void heap_open(Heap*, Id*, int);
+void heap_create(Heap*, char*);
+void heap_open(Heap*, char*);

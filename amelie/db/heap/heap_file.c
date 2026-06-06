@@ -14,17 +14,16 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_cdc.h>
-#include <amelie_storage.h>
 #include <amelie_heap.h>
 
 void
-heap_create(Heap* self, File* file, Id* id, int state)
+heap_create(Heap* self, char* path)
 {
 	// prepare encoder
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
-	encoder_open(&ec, id->storage);
+	encoder_open(&ec, opt_string_of(&config()->checkpoint_compression));
 
 	// prepare header (including buckets)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
@@ -34,10 +33,13 @@ heap_create(Heap* self, File* file, Id* id, int state)
 	header->crc = runtime()->crc(0, &header->magic, size - sizeof(uint32_t));
 
 	// create heap file
-	id_create(id, file, state);
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_create(&file, path);
 
 	// write header
-	file_write(file, header, size);
+	file_write(&file, header, size);
 
 	// write pages
 	auto page_mgr = &self->page_mgr;
@@ -56,24 +58,28 @@ heap_create(Heap* self, File* file, Id* id, int state)
 		page_header->size_compressed = iov->iov_len;
 
 		// calculate page crc
-		if (opt_int_of(&config()->storage_crc))
+		if (opt_int_of(&config()->checkpoint_crc))
 			page_header->crc = encoder_iov_crc(&ec);
 
 		page_data = iov->iov_base;
 		page_size = iov->iov_len;
-		file_write(file, page_header, sizeof(PageHeader));
-		file_write(file, page_data, page_size);
+		file_write(&file, page_header, sizeof(PageHeader));
+		file_write(&file, page_data, page_size);
 	}
+
+	// sync
+	if (opt_int_of(&config()->checkpoint_sync))
+		file_sync(&file);
 }
 
 void
-heap_open(Heap* self, Id* id, int state)
+heap_open(Heap* self, char* path)
 {
 	// open heap file
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
-	id_open(id, &file, state);
+	file_open(&file, path);
 
 	// read header
 	auto header = self->header;
@@ -97,7 +103,7 @@ heap_open(Heap* self, Id* id, int state)
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
-	encoder_open(&ec, id->storage);
+	encoder_open(&ec, opt_string_of(&config()->checkpoint_compression));
 	encoder_set_compression(&ec, header->compression);
 
 	// read pages
@@ -117,7 +123,7 @@ heap_open(Heap* self, Id* id, int state)
 			file_read_buf(&file, buf, page_header->size_compressed);
 
 			// validate crc
-			if (opt_int_of(&config()->storage_crc))
+			if (opt_int_of(&config()->checkpoint_crc))
 			{
 				crc = runtime()->crc(0, buf->start, buf_size(buf));
 				if (crc != page_header->crc)
@@ -136,7 +142,7 @@ heap_open(Heap* self, Id* id, int state)
 			file_read(&file, page_data, page_size);
 
 			// validate crc
-			if (opt_int_of(&config()->storage_crc))
+			if (opt_int_of(&config()->checkpoint_crc))
 			{
 				crc = runtime()->crc(0, page_data, page_size);
 				if (crc != page_header->crc)

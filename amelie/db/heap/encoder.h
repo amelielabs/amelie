@@ -15,10 +15,9 @@ typedef struct Encoder Encoder;
 
 struct Encoder
 {
-	Iov      iov;
-	Codec*   compression;
-	Buf      compression_buf;
-	Storage* storage;
+	Iov    iov;
+	Codec* compression;
+	Buf    compression_buf;
 };
 
 static inline bool
@@ -31,7 +30,6 @@ static inline void
 encoder_init(Encoder* self)
 {
 	self->compression = NULL;
-	self->storage     = NULL;
 	iov_init(&self->iov);
 	buf_init(&self->compression_buf);
 }
@@ -46,7 +44,6 @@ encoder_reset(Encoder* self)
 static inline void
 encoder_free(Encoder* self)
 {
-	self->storage = NULL;
 	if (self->compression)
 	{
 		codec_cache_push(&runtime()->cache_compression, self->compression);
@@ -84,18 +81,15 @@ encoder_set_compression(Encoder* self, int id)
 }
 
 static inline void
-encoder_open(Encoder* self, Storage* storage)
+encoder_open(Encoder* self, Str* compression)
 {
-	self->storage = storage;
-
 	// set compression context
 	int id;
-	if (! str_empty(&storage->compression))
+	if (compression && !str_empty(compression))
 	{
-		auto name = &storage->compression;
-		id = compression_idof(name);
+		id = compression_idof(compression);
 		if (id == -1)
-			error("invalid compression '{str}'", name);
+			error("invalid compression '{str}'", compression);
 	} else {
 		id = COMPRESSION_NONE;
 	}

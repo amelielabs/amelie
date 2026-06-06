@@ -19,28 +19,21 @@ row_prev_set(Row* row, Row* prev)
 	if (prev)
 	{
 		auto chunk_prev = heap_chunk_of(prev);
-		chunk->prev           = heap_page_of(chunk_prev)->order;
-		chunk->prev_offset    = chunk_prev->offset;
-		chunk->is_shadow_prev = chunk_prev->is_shadow;
+		chunk->prev        = heap_page_of(chunk_prev)->order;
+		chunk->prev_offset = chunk_prev->offset;
 	} else
 	{
-		chunk->prev           = 0;
-		chunk->prev_offset    = 0;
-		chunk->is_shadow_prev = false;
+		chunk->prev        = 0;
+		chunk->prev_offset = 0;
 	}
 }
 
 hot static inline Row*
-row_prev(Row* row, Heap* heap, Heap* shadow)
+row_prev(Row* row, Heap* heap)
 {
 	auto chunk = heap_chunk_of(row);
 	if (likely(! chunk->prev_offset))
 		return NULL;
-
-	// previous version
-	if (unlikely(chunk->is_shadow_prev))
-		return (Row*)heap_chunk_at(shadow, chunk->prev, chunk->prev_offset)->data;
-
 	return(Row*)heap_chunk_at(heap, chunk->prev, chunk->prev_offset)->data;
 }
 
@@ -48,7 +41,7 @@ hot static inline Row*
 row_visible(Row* row, Heap* heap, Snapshot* snapshot)
 {
 	// note: row is a head of the version chain
-	for (; row; row = row_prev(row, heap, heap->shadow))
+	for (; row; row = row_prev(row, heap))
 	{
 		// row created inside this snapshot (first visible version)
 		if (row->snapshot == snapshot->id)
@@ -64,14 +57,14 @@ row_visible(Row* row, Heap* heap, Snapshot* snapshot)
 }
 
 hot static inline bool
-row_unique(Row* row, Heap* heap, Heap* shadow)
+row_unique(Row* row, Heap* heap)
 {
 	// note: row is a head of the version chain
 
 	// ensure row has no duplicates with the same snapshot id
-	for (auto a = row; a; a = row_prev(a, heap, shadow))
+	for (auto a = row; a; a = row_prev(a, heap))
 	{
-		for (auto b = row; b; b = row_prev(b, heap, shadow))
+		for (auto b = row; b; b = row_prev(b, heap))
 			if (a != b && a->snapshot == b->snapshot)
 				return false;
 	}
@@ -85,10 +78,10 @@ row_gc(Row* row, Heap* heap, Snapshot* snapshot, uint64_t tsn)
 	auto head = row;
 
 	// iterate row->prev
-	row = row_prev(row, heap, heap->shadow);
+	row = row_prev(row, heap);
 	while (row)
 	{
-		auto prev = row_prev(row, heap, heap->shadow);
+		auto prev = row_prev(row, heap);
 		if (row->snapshot == snapshot->id &&
 		    (row->tsn == tsn ||
 		     row->tsn >  (uint64_t)snapshot->snapshot_max))
@@ -99,7 +92,6 @@ row_gc(Row* row, Heap* heap, Snapshot* snapshot, uint64_t tsn)
 		} else {
 			head = row;
 		}
-
 		row = prev;
 	}
 }
