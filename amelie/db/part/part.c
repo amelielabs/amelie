@@ -28,6 +28,7 @@ part_allocate(PartConfig* config, PartArg* arg)
 	self->config        = part_config_copy(config);
 	self->arg           = arg;
 	track_init(&self->track);
+	list_init(&self->link_cp);
 	list_init(&self->link);
 	return self;
 }

@@ -21,6 +21,7 @@ struct Part
 	Heap*       heap;
 	PartConfig* config;
 	PartArg*    arg;
+	List        link_cp;
 	List        link;
 };
 

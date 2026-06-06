@@ -11,4 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-void service_recover(Service*);
+// checkpoint
+#include "checkpoint/checkpoint.h"
+#include "checkpoint/checkpoint_mgr.h"
+
+// save
+#include "checkpoint/save.h"

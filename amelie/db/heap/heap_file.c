@@ -16,7 +16,7 @@
 #include <amelie_cdc.h>
 #include <amelie_heap.h>
 
-void
+size_t
 heap_create(Heap* self, char* path)
 {
 	// prepare encoder
@@ -69,6 +69,8 @@ heap_create(Heap* self, char* path)
 	// sync
 	if (opt_int_of(&config()->checkpoint_sync))
 		file_sync(&file);
+
+	return file.size;
 }
 
 void
