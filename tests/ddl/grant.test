@@ -213,8 +213,8 @@ switch S1;
 show all rels;
 select amelie.fun();
 execute amelie.fun();
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "fun", "args": []}};
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "fun", "arguments": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "name": "fun", "arguments": []}};
 
 switch S0;
 grant execute on fun to test;
@@ -223,7 +223,7 @@ switch S1;
 show all rels;
 select amelie.fun();
 execute amelie.fun();
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "name": "fun", "arguments": []}};
 switch S0;
 
 # test: grant

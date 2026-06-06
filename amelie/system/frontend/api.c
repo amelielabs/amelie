@@ -82,7 +82,7 @@ api_parse_sql(Api* self)
 static void
 api_parse_cmd(Api* self, ApiType type, bool with_args)
 {
-	// { [user], rel, args }
+	// { [user], name, arguments }
 	auto cmd = jsonrpc_first(&self->jsonrpc);
 	auto pos = cmd->params;
 	if (unlikely(! pos))
@@ -102,16 +102,16 @@ api_parse_cmd(Api* self, ApiType type, bool with_args)
 				error("'user' is not a string");
 			unpack_str(&pos, &self->rel_user);
 		} else
-		if (str_is(&name, "rel", 3))
+		if (str_is(&name, "name", 4))
 		{
 			if (unlikely(! data_is_str(pos)))
-				error("'rel' is not a string");
+				error("'name' is not a string");
 			unpack_str(&pos, &self->rel);
 		} else
-		if (str_is(&name, "args", 4))
+		if (str_is(&name, "arguments", 9))
 		{
 			if (unlikely(!data_is_array(pos) && !data_is_obj(pos)))
-				error("'args' is not an array or object");
+				error("'arguments' is not an array or object");
 			self->args = pos;
 			data_skip(&pos);
 		} else {
@@ -121,15 +121,15 @@ api_parse_cmd(Api* self, ApiType type, bool with_args)
 
 	// validate options
 	if (str_empty(&self->rel))
-		error("'rel' is not defined");
+		error("'name' is not defined");
 
 	if (with_args)
 	{
 		if (! self->args)
-			error("'args' is not defined");
+			error("'arguments' is not defined");
 	} else
 	if (self->args)
-		error("'args' is not expected for this command");
+		error("'arguments' is not expected for this command");
 
 	self->type = type;
 }

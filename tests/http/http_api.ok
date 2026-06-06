@@ -41,26 +41,26 @@ post /api application/json - {"jsonrpc": "2.0", "id": [], "method": "sql", "para
 {"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "jsonrpc: invalid request"}}
 # test: POST /api (insert)
 create table test (id int primary key, data int default 11);
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [] }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "test", "arguments": [] }};
 {"jsonrpc": "2.0", "id": 11, "result": {}}
 select * from test;
 
 id  data
 ──────────
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {} }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "test", "arguments": {} }};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "column 'id' value cannot be NULL"}}
 select * from test;
 
 id  data
 ──────────
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {"id": 18} }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "test", "arguments": {"id": 18} }};
 {"jsonrpc": "2.0", "id": 11, "result": {}}
 select * from test;
 
 id  data
 ──────────
 18  11
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {"id": 19, "data": null} }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "test", "arguments": {"id": 19, "data": null} }};
 {"jsonrpc": "2.0", "id": 11, "result": {}}
 select * from test;
 
@@ -68,7 +68,7 @@ id  data
 ──────────
 18  11
 19  null
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [{"id": 20}, {"id": 21}] }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "test", "arguments": [{"id": 20}, {"id": 21}] }};
 {"jsonrpc": "2.0", "id": 11, "result": {}}
 select * from test;
 
@@ -84,16 +84,16 @@ create function x (a int, b int) return int
 begin
 	return a + b;
 end;
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [] }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "x", "arguments": [] }};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[null]]}}
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {} }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "x", "arguments": {} }};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[null]]}}
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {"a": 1, "b": 2} }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "x", "arguments": {"a": 1, "b": 2} }};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[3]]}}
 # test: POST /api (execute, batch)
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [{"a": 1, "b": 2}] }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "x", "arguments": [{"a": 1, "b": 2}] }};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[3]]}}
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [{"a": 1, "b": 2}, {}] }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "x", "arguments": [{"a": 1, "b": 2}, {}] }};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "batch function execution is not support"}}
 disconnect S0;
 close E0;

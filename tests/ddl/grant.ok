@@ -267,9 +267,9 @@ select amelie.fun();
 error: relation 'amelie.fun': permission denied
 execute amelie.fun();
 error: relation 'amelie.fun': permission denied
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "fun", "arguments": []}};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'fun': not exists"}}
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "name": "fun", "arguments": []}};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'amelie.fun': permission denied"}}
 switch S0;
 grant execute on fun to test;
@@ -306,7 +306,7 @@ execute amelie.fun();
 fun
 ───
 123
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "rel": "fun", "args": []}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "name": "fun", "arguments": []}};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["fun"], "rows": [[123]]}}
 switch S0;
 # test: grant
