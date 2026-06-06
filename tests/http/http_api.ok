@@ -14,53 +14,53 @@ post /api application/json - {"jsonrpc": "2.0", "id": 11};
 post /api application/json - {"jsonrpc": "2.0", "method": sql};
 {"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "unexpected json token"}}
 post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql"};
-{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "unknown jsonrpc method: sql"}}
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'params' field is missing"}}
 # test: POST /api (sql, no params)
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql"};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql"};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'params' field is missing"}}
 # test: POST /api (sql, params validatation)
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": 1};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": 1};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'params' field is not an object"}}
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": []};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": []};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'params' field is not an object"}}
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": {}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {}};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'text' field is not defined"}}
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": {"a": "b"}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"a": "b"}};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "unexpected params field"}}
 # test: POST /api (sql)
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": {"text": "select 1"}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["col1"], "rows": [[1]]}}
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "amelie/sql", "params": {"text": "explain select 1"}};
+post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "explain select 1"}};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["explain"], "rows": ["\nmain\n  0   int                 0      -      0     # 1\n  1   ret                 0      0      -\n"]}}
 # test: POST /api (sql, validate id)
-post /api application/json - {"jsonrpc": "2.0", "id": null, "method": "amelie/sql", "params": {"text": "select 1"}};
+post /api application/json - {"jsonrpc": "2.0", "id": null, "method": "sql", "params": {"text": "select 1"}};
 {"jsonrpc": "2.0", "id": null, "result": {"columns": ["col1"], "rows": [[1]]}}
-post /api application/json - {"jsonrpc": "2.0", "id": "abc", "method": "amelie/sql", "params": {"text": "select 1"}};
+post /api application/json - {"jsonrpc": "2.0", "id": "abc", "method": "sql", "params": {"text": "select 1"}};
 {"jsonrpc": "2.0", "id": "abc", "result": {"columns": ["col1"], "rows": [[1]]}}
-post /api application/json - {"jsonrpc": "2.0", "id": [], "method": "amelie/sql", "params": {"text": "select 1"}};
+post /api application/json - {"jsonrpc": "2.0", "id": [], "method": "sql", "params": {"text": "select 1"}};
 {"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "jsonrpc: invalid request"}}
 # test: POST /api (insert)
 create table test (id int primary key, data int default 11);
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "test", "args": [] }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [] }};
 {"jsonrpc": "2.0", "id": 11, "result": {}}
 select * from test;
 
 id  data
 ──────────
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "test", "args": {} }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {} }};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "column 'id' value cannot be NULL"}}
 select * from test;
 
 id  data
 ──────────
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "test", "args": {"id": 18} }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {"id": 18} }};
 {"jsonrpc": "2.0", "id": 11, "result": {}}
 select * from test;
 
 id  data
 ──────────
 18  11
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "test", "args": {"id": 19, "data": null} }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": {"id": 19, "data": null} }};
 {"jsonrpc": "2.0", "id": 11, "result": {}}
 select * from test;
 
@@ -68,7 +68,7 @@ id  data
 ──────────
 18  11
 19  null
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "test", "args": [{"id": 20}, {"id": 21}] }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "test", "args": [{"id": 20}, {"id": 21}] }};
 {"jsonrpc": "2.0", "id": 11, "result": {}}
 select * from test;
 
@@ -84,16 +84,16 @@ create function x (a int, b int) return int
 begin
 	return a + b;
 end;
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "x", "args": [] }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [] }};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[null]]}}
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "x", "args": {} }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {} }};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[null]]}}
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "x", "args": {"a": 1, "b": 2} }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": {"a": 1, "b": 2} }};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[3]]}}
 # test: POST /api (execute, batch)
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "x", "args": [{"a": 1, "b": 2}] }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [{"a": 1, "b": 2}] }};
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[3]]}}
-post /api - - {"jsonrpc": "2.0", "id": 11, "method": "amelie/write", "params": {"rel": "x", "args": [{"a": 1, "b": 2}, {}] }};
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"rel": "x", "args": [{"a": 1, "b": 2}, {}] }};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "batch function execution is not support"}}
 disconnect S0;
 close E0;

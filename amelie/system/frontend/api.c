@@ -151,29 +151,29 @@ api_parse_content(Api* self, Str* content)
 	opt_json_set_data(&self->request->endpoint.id, cmd->id);
 
 	// sql
-	if (str_is(&cmd->method, "amelie/sql", 10))
+	if (str_is(&cmd->method, "sql", 3))
 	{
 		api_parse_sql(self);
 		return;
 	}
 
 	// write, ack
-	if (str_is(&cmd->method, "amelie/write", 12) ||
-	    str_is(&cmd->method, "amelie/ack", 10))
+	if (str_is(&cmd->method, "write", 5) ||
+	    str_is(&cmd->method, "ack", 3))
 	{
 		api_parse_cmd(self, API_WRITE, true);
 		return;
 	}
 
 	// follow
-	if (str_is(&cmd->method, "amelie/follow", 13))
+	if (str_is(&cmd->method, "follow", 6))
 	{
 		api_parse_cmd(self, API_FOLLOW, false);
 		return;
 	}
 
 	// unfollow
-	if (str_is(&cmd->method, "amelie/unfollow", 15))
+	if (str_is(&cmd->method, "unfollow", 8))
 	{
 		api_parse_cmd(self, API_UNFOLLOW, false);
 		return;
