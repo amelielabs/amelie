@@ -22,8 +22,7 @@ struct State
 	Opt  tsn;
 	Opt  psn;
 	Opt  rsn;
-	Opt  catalog;
-	Opt  catalog_pending;
+	Opt  checkpoint;
 	Opt  read_only;
 	// persistent
 	Opt  secret;

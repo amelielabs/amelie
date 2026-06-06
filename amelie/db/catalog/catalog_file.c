@@ -14,7 +14,6 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_cdc.h>
-#include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -178,38 +177,17 @@ catalog_restore(Catalog* self, uint8_t** pos)
 		catalog_restore_object(self, RESTORE_SUB, &pos_subs);
 
 	// set catalog lsn and tsn
-	opt_int_set(&state()->catalog, lsn);
-	opt_int_set(&state()->catalog_pending, lsn);
+	opt_int_set(&state()->checkpoint, lsn);
 
 	state_lsn_follow(lsn);
 	state_tsn_follow(tsn);
 }
 
 void
-catalog_read(Catalog* self)
+catalog_read(Catalog* self, char* path)
 {
-	// restore catalog.json from incomplete, if possible
-	char path[PATH_MAX];
-	if (! fs_exists("{s}/catalog.json", state_directory()))
-	{
-		// check if catalog.json.incomplete exists
-		if (! fs_exists("{s}/catalog.json.incomplete", state_directory()))
-			error("catalog: catalog file is missing");
-
-		// restore catalog file
-		format(path, sizeof(path), "{s}/catalog.json.incomplete",
-		       state_directory());
-		fs_rename(path, "{s}/catalog.json", state_directory());
-		// todo: sync dir
-	} else
-	{
-		// remove catalog.json.incomplete
-		if (fs_exists("{s}/catalog.json.incomplete", state_directory()))
-			fs_unlink("{s}/catalog.json.incomplete", state_directory());
-	}
-
 	// read catalog file
-	auto buf = file_import("{s}/catalog.json", state_directory());
+	auto buf = file_import("{s}", path);
 	defer_buf(buf);
 	Str text;
 	buf_str(buf, &text);
@@ -226,7 +204,7 @@ catalog_read(Catalog* self)
 }
 
 Buf*
-catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
+catalog_state(Catalog* self, uint64_t lsn, uint64_t tsn)
 {
 	// { lsn, tsn, users, tables, clones, udfs, topics, subs }
 	auto buf = buf_create();
@@ -269,22 +247,14 @@ catalog_write_prepare(Catalog* self, uint64_t lsn, uint64_t tsn)
 }
 
 void
-catalog_write(Catalog* self)
+catalog_write(Catalog* self, char* path)
 {
 	unused(self);
 
-	// remove catalog.json.incomplete file, if exists
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/catalog.json.incomplete",
-	       state_directory());
-
-	if (fs_exists("{s}", path))
-		fs_unlink("{s}", path);
-
 	// prepare catalog dump
-	auto lsn  = state_catalog_pending();
+	auto lsn  = state_lsn();
 	auto tsn  = state_tsn();
-	auto data = catalog_write_prepare(self, lsn, tsn);
+	auto data = catalog_state(self, lsn, tsn);
 	defer_buf(data);
 
 	// convert to json
@@ -294,30 +264,13 @@ catalog_write(Catalog* self)
 	auto pos = data->start;
 	json_export_pretty(&text, NULL, &pos);
 
-	// create catalog.json.incomplete
+	// create catalog.json
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
 	file_write_buf(&file, &text);
 
-	// todo: sync dir
-	if (opt_int_of(&config()->catalog_sync))
+	if (opt_int_of(&config()->checkpoint_sync))
 		file_sync(&file);
-
-	// remove catalog.json file, if exsists
-	format(path, sizeof(path), "{s}/catalog.json",
-	       state_directory());
-
-	if (fs_exists("{s}", path))
-		fs_unlink("{s}", path);
-
-	// rename
-	format(path, sizeof(path), "{s}/catalog.json.incomplete",
-	       state_directory());
-	fs_rename(path, "{s}/catalog.json", state_directory());
-	// todo: sync dir
-
-	// update catalog lsn
-	opt_int_set(&state()->catalog, lsn);
 }

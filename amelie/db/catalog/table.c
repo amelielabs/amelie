@@ -14,7 +14,6 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_cdc.h>
-#include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -23,10 +22,9 @@
 static inline void
 table_free(Table* self, bool drop)
 {
+	unused(drop);
 	auto part_mgr = &self->part_mgr;
 	part_mgr_close(part_mgr);
-	if (drop)
-		part_mgr_drop(part_mgr);
 	part_mgr_free(part_mgr);
 
 	sequence_free(&self->seq);
@@ -56,13 +54,10 @@ table_allocate(TableConfig* config,
 	arg->unlogged  =  self->config->unlogged;
 	arg->rel       = &self->rel;
 	arg->snapshots = &self->snapshot_mgr;
-	arg->config    =  &self->config->partitioning;
 
 	// partition manager
 	auto primary = table_primary(self);
-	part_mgr_init(&self->part_mgr, iface, iface_arg,
-	              &self->config->partitioning, arg, &self->config->storage,
-	              &primary->keys);
+	part_mgr_init(&self->part_mgr, iface, iface_arg, arg, &primary->keys);
 
 	// snapshot manager
 	snapshot_mgr_init(&self->snapshot_mgr, &self->rel);
@@ -106,7 +101,8 @@ table_create(Catalog*     self,
 	rel_mgr_create(&self->rels, tr, &table->rel);
 
 	// recover, map and deploy partitions
-	part_mgr_open(&table->part_mgr, &table->config->indexes);
+	part_mgr_open(&table->part_mgr, &table->config->parts,
+	              &table->config->indexes);
 	return true;
 }
 
@@ -159,8 +155,6 @@ table_truncate(Catalog* self,
 		auto part = list_at(Part, link);
 		auto consensus = &part->track.consensus;
 		track_sync(&part->track, consensus);
-		auto heap = part->heap;
-		heap->header->lsn = part->track.lsn;
 	}
 
 	// do nothing (actual truncate will happen on commit)

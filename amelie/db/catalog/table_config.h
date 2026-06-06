@@ -15,17 +15,17 @@ typedef struct TableConfig TableConfig;
 
 struct TableConfig
 {
-	Str          user;
-	Str          name;
-	Str          description;
-	Uuid         id;
-	Columns      columns;
-	List         indexes;
-	int          indexes_count;
-	bool         unlogged;
-	Partitioning partitioning;
-	Storage      storage;
-	Grants       grants;
+	Str     user;
+	Str     name;
+	Str     description;
+	Uuid    id;
+	bool    unlogged;
+	Columns columns;
+	List    indexes;
+	int     indexes_count;
+	List    parts;
+	int     parts_count;
+	Grants  grants;
 };
 
 static inline TableConfig*
@@ -33,16 +33,16 @@ table_config_allocate(void)
 {
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
-	self->indexes_count = 0;
 	self->unlogged      = false;
+	self->indexes_count = 0;
+	self->parts_count   = 0;
 	str_init(&self->name);
 	str_init(&self->user);
 	str_init(&self->description);
 	uuid_init(&self->id);
 	columns_init(&self->columns);
 	list_init(&self->indexes);
-	partitioning_init(&self->partitioning);
-	storage_init(&self->storage);
+	list_init(&self->parts);
 	grants_init(&self->grants);
 	return self;
 }
@@ -60,9 +60,13 @@ table_config_free(TableConfig* self)
 		index_config_free(config);
 	}
 
+	list_foreach_safe(&self->parts)
+	{
+		auto config = list_at(PartConfig, link);
+		part_config_free(config);
+	}
+
 	columns_free(&self->columns);
-	partitioning_free(&self->partitioning);
-	storage_free(&self->storage);
 	grants_free(&self->grants);
 	am_free(self);
 }
@@ -114,6 +118,20 @@ table_config_index_remove(TableConfig* self, IndexConfig* config)
 	self->indexes_count--;
 }
 
+static inline void
+table_config_part_add(TableConfig* self, PartConfig* config)
+{
+	list_append(&self->parts, &config->link);
+	self->parts_count++;
+}
+
+static inline void
+table_config_part_remove(TableConfig* self, PartConfig* config)
+{
+	list_unlink(&config->link);
+	self->parts_count--;
+}
+
 static inline TableConfig*
 table_config_copy(TableConfig* self)
 {
@@ -123,9 +141,8 @@ table_config_copy(TableConfig* self)
 	table_config_set_description(copy, &self->description);
 	table_config_set_id(copy, &self->id);
 	table_config_set_unlogged(copy, self->unlogged);
-	partitioning_copy(&self->partitioning, &copy->partitioning);
-	storage_copy(&copy->storage, &self->storage);
 	columns_copy(&copy->columns, &self->columns);
+	grants_copy(&copy->grants, &self->grants);
 
 	Keys* primary_keys = NULL;
 	list_foreach(&self->indexes)
@@ -137,7 +154,12 @@ table_config_copy(TableConfig* self)
 		if (primary_keys == NULL)
 			primary_keys = &config_copy->keys;
 	}
-	grants_copy(&copy->grants, &self->grants);
+	list_foreach(&self->parts)
+	{
+		auto config = list_at(PartConfig, link);
+		auto config_copy = part_config_copy(config);
+		table_config_part_add(copy, config_copy);
+	}
 	return copy;
 }
 
@@ -147,24 +169,22 @@ table_config_read(uint8_t** pos)
 	auto self = table_config_allocate();
 	errdefer(table_config_free, self);
 
-	uint8_t* pos_columns      = NULL;
-	uint8_t* pos_indexes      = NULL;
-	uint8_t* pos_partitioning = NULL;
-	uint8_t* pos_storage      = NULL;
-	uint8_t* pos_grants       = NULL;
+	uint8_t* pos_columns = NULL;
+	uint8_t* pos_indexes = NULL;
+	uint8_t* pos_parts   = NULL;
+	uint8_t* pos_grants  = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",         &self->user        },
-		{ DECODE_STR,   "name",         &self->name        },
-		{ DECODE_STR,   "description",  &self->description },
-		{ DECODE_UUID,  "id",           &self->id          },
-		{ DECODE_BOOL,  "unlogged",     &self->unlogged    },
-		{ DECODE_ARRAY, "columns",      &pos_columns       },
-		{ DECODE_ARRAY, "indexes",      &pos_indexes       },
-		{ DECODE_OBJ,   "partitioning", &pos_partitioning  },
-		{ DECODE_OBJ,   "storage",      &pos_storage       },
-		{ DECODE_ARRAY, "grants",       &pos_grants        },
-		{ 0,             NULL,           NULL              },
+		{ DECODE_STR,   "user",        &self->user        },
+		{ DECODE_STR,   "name",        &self->name        },
+		{ DECODE_STR,   "description", &self->description },
+		{ DECODE_UUID,  "id",          &self->id          },
+		{ DECODE_BOOL,  "unlogged",    &self->unlogged    },
+		{ DECODE_ARRAY, "columns",     &pos_columns       },
+		{ DECODE_ARRAY, "indexes",     &pos_indexes       },
+		{ DECODE_ARRAY, "partitions",  &pos_parts         },
+		{ DECODE_ARRAY, "grants",      &pos_grants        },
+		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "table", pos);
 
@@ -179,12 +199,13 @@ table_config_read(uint8_t** pos)
 		table_config_index_add(self, config);
 	}
 
-	// partitioning
-	partitioning_read(&self->partitioning, &pos_partitioning);
-
-	// storage
-	storage_read(&self->storage, &pos_storage);
-	storage_set_id(&self->storage, &self->id);
+	// partitions
+	unpack_array(&pos_parts);
+	while (! unpack_array_end(&pos_parts))
+	{
+		auto config = part_config_read(&pos_parts);
+		table_config_part_add(self, config);
+	}
 
 	// grants
 	grants_read(&self->grants, &pos_grants);
@@ -237,13 +258,15 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	}
 	encode_array_end(buf);
 
-	// partitioning
-	encode_raw(buf, "partitioning", 12);
-	partitioning_write(&self->partitioning, buf, flags);
-
-	// storage
-	encode_raw(buf, "storage", 7);
-	storage_write(&self->storage, buf, flags);
+	// partitions
+	encode_raw(buf, "partitions", 10);
+	encode_array(buf);
+	list_foreach(&self->parts)
+	{
+		auto config = list_at(PartConfig, link);
+		part_config_write(config, buf, flags);
+	}
+	encode_array_end(buf);
 
 	// grants
 	encode_raw(buf, "grants", 6);

@@ -14,7 +14,6 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_cdc.h>
-#include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -135,16 +134,8 @@ catalog_create(Catalog* self)
 void
 catalog_open(Catalog* self, bool bootstrap)
 {
-	// read catalog file and restore objects
 	if (bootstrap)
-	{
-		// create catalog
 		catalog_create(self);
-		catalog_write(self);
-	} else
-	{
-		catalog_read(self);
-	}
 }
 
 void

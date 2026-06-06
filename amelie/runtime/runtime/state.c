@@ -42,8 +42,7 @@ state_prepare(State* self)
 		{ "tsn",             OPT_INT,    OPT_E,             &self->tsn,             NULL,       0       },
 		{ "psn",             OPT_INT,    OPT_E,             &self->psn,             NULL,       0       },
 		{ "rsn",             OPT_INT,    OPT_E,             &self->rsn,             NULL,       REL_MAX },
-		{ "catalog",         OPT_INT,    OPT_E,             &self->catalog,         NULL,       0       },
-		{ "catalog_pending", OPT_INT,    OPT_E,             &self->catalog_pending, NULL,       0       },
+		{ "checkpoint",      OPT_INT,    OPT_E,             &self->checkpoint,      NULL,       0       },
 		{ "read_only",       OPT_BOOL,   OPT_E,             &self->read_only,       NULL,       false   },
 		// persistent
 		{ "secret",          OPT_STRING, OPT_C|OPT_S|OPT_H, &self->secret,          0,          0       },

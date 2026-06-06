@@ -57,7 +57,6 @@
 #include "catalog/catalog.h"
 #include "catalog/catalog_find.h"
 #include "catalog/catalog_file.h"
-#include "catalog/catalog_snapshot.h"
 
 // cascade operations
 #include "catalog/cascade.h"

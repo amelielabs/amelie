@@ -78,8 +78,10 @@ part_config_read(uint8_t** pos)
 }
 
 static inline void
-part_config_write(PartConfig* self, Buf* buf)
+part_config_write(PartConfig* self, Buf* buf, int flags)
 {
+	unused(flags);
+
 	// obj
 	encode_obj(buf);
 

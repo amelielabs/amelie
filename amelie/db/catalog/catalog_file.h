@@ -11,6 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-void catalog_read(Catalog*);
-void catalog_write(Catalog*);
-Buf* catalog_write_prepare(Catalog*, uint64_t, uint64_t);
+void catalog_read(Catalog*, char*);
+void catalog_write(Catalog*, char*);
+Buf* catalog_state(Catalog*, uint64_t, uint64_t);
