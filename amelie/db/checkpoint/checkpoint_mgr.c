@@ -68,9 +68,8 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 	// read directory, get a list of checkpoints
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
-		error("checkpoint: directory '%s' open error", path);
+		error("checkpoint: directory '{s}' open error", path);
 	defer(fs_closedir_defer, dir);
-
 	for (;;)
 	{
 		auto entry = readdir(dir);
@@ -94,10 +93,6 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 		auto cp = checkpoint_allocate(lsn);
 		checkpoint_mgr_add(self, cp);
 	}
-
-	// set last checkpoint
-	if (self->last)
-		opt_int_set(&state()->checkpoint, self->last->id);
 }
 
 void
@@ -105,6 +100,10 @@ checkpoint_mgr_open(CheckpointMgr* self)
 {
 	// get a list of available checkpoints
 	checkpoint_mgr_open_dir(self);
+
+	// set last checkpoint
+	if (self->last)
+		opt_int_set(&state()->checkpoint, self->last->id);
 }
 
 void

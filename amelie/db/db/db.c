@@ -39,16 +39,15 @@ db_init(Db*        self,
 	wal_init(&self->wal);
 	list_init(&self->snapshots);
 	list_init(&self->snapshots_gc);
-	service_init(&self->service, &self->catalog, &self->wal);
-	syncer_init(&self->syncer, &self->service);
-
+	checkpoint_mgr_init(&self->checkpoint_mgr);
+	syncer_init(&self->syncer, self);
 }
 
 void
 db_free(Db* self)
 {
 	assert(! self->snapshots_count);
-	service_free(&self->service);
+	checkpoint_mgr_free(&self->checkpoint_mgr);
 	catalog_free(&self->catalog);
 	wal_free(&self->wal);
 }
@@ -59,11 +58,13 @@ db_open(Db* self, bool bootstrap)
 	// first valid transaction id starts from 1
 	state_tsn_set(0);
 
-	// do compaction crash recovery
-	service_recover(&self->service);
-
 	// prepare system catalog
 	catalog_open(&self->catalog, bootstrap);
+
+	// read available checkpoints
+	checkpoint_mgr_open(&self->checkpoint_mgr);
+
+	// todo: restore last catalog
 }
 
 void
@@ -72,42 +73,11 @@ db_close(Db* self)
 	// stop syncer
 	syncer_stop(&self->syncer);
 
-	// stop service
-	service_stop(&self->service);
-
 	// close catalog
 	catalog_close(&self->catalog);
 
 	// stop wal
 	wal_close(&self->wal);
-}
-
-hot void
-db_write(Db* self, WriteList* write_list)
-{
-	if (! write_list->list_count)
-		return;
-
-	WalContext context =
-	{
-		.list       = write_list,
-		.lsn        = 0,
-		.sync_close = 0,
-		.sync       = 0,
-		.checkpoint = false
-	};
-	wal_write(&self->wal, &context);
-
-	// schedule sync and checkpoint service
-	auto service = &self->service;
-	if (unlikely(context.sync_close))
-		service_schedule(service, ACTION_SYNC_CLOSE, context.sync_close);
-
-	if (unlikely(context.sync))
-		service_schedule(service, ACTION_SYNC, context.sync);
-
-	if (unlikely(context.checkpoint))
-		service_schedule(service, ACTION_CHECKPOINT, 0);
 }
 
 void
@@ -150,13 +120,9 @@ db_state(Db* self, Buf* buf)
 	encode_raw(buf, "psn", 3);
 	encode_int(buf, state_psn());
 
-	// catalog
-	encode_raw(buf, "catalog", 7);
-	encode_int(buf, state_catalog());
-
-	// catalog_pending
-	encode_raw(buf, "catalog_pending", 15);
-	encode_int(buf, opt_int_of(&state()->catalog_pending));
+	// checkpoint
+	encode_raw(buf, "checkpoint", 10);
+	encode_int(buf, state_checkpoint());
 
 	// read_only
 	encode_raw(buf, "read_only", 9);

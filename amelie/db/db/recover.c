@@ -59,18 +59,17 @@ recover_reset_stats(Recover* self)
 }
 
 static inline Part*
-recover_map(Recover*   self,
+recover_row(Recover*   self,
             Record*    record,
             RecordCmd* cmd,
             Row*       row,
             Table**    table)
 {
-	*table = NULL;
+	auto db = self->db;
 
 	// find table by id and map partition
-	auto db  = self->db;
 	auto rel = catalog_find_by(&db->catalog, REL_TABLE, &cmd->id, false);
-	if  (! rel)
+	if (! rel)
 		return NULL;
 	*table = table_of(rel);
 	auto part = part_mapping_map(&(*table)->part_mgr.mapping, row);
@@ -82,10 +81,8 @@ recover_map(Recover*   self,
 	state_tsn_follow(row->tsn);
 	track_follow(&part->track, row->tsn);
 
-	if (record->lsn > part->heap->header->lsn)
+	if (record->lsn > state_checkpoint())
 		return part;
-
-	// skip partition if it is already includes lsn
 
 	// apply cdc
 	if (record->lsn >= self->min_sub)
@@ -93,7 +90,6 @@ recover_map(Recover*   self,
 		auto primary = part_primary(part);
 		auto pos = (uint8_t*)row;
 		auto end = (uint8_t*)row + cmd->size;
-
 		while (pos < end)
 		{
 			auto row = (Row*)pos;
@@ -105,7 +101,7 @@ recover_map(Recover*   self,
 					uuid = rel->id;
 			} else
 			{
-				// find clone snapshot
+				// find snapshot of the clone
 				auto snapshot = snapshot_mgr_find(&(*table)->snapshot_mgr, row->snapshot);
 				if (snapshot && snapshot->rel->subs > 0)
 					uuid = snapshot->rel->id;
@@ -129,10 +125,11 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 	auto tr = &self->tr;
 	switch (cmd->cmd) {
 	case CMD_REPLACE:
+	case CMD_DELETE:
 	{
 		// map partition
 		Table* table;
-		auto part = recover_map(self, record, cmd, (Row*)*pos, &table);
+		auto part = recover_row(self, record, cmd, (Row*)*pos, &table);
 		if (! part)
 		{
 			record_cmd_skip(cmd, pos);
@@ -146,45 +143,22 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			auto row = row_copy(part->heap, (Row*)*pos);
 			if (!snapshot || snapshot->id != row->snapshot)
 				snapshot = table_find_snapshot(table, row->snapshot, true);
-			heap_follow(part->heap, row->tsn, row->snapshot);
-			part_insert(part, tr, true, snapshot, row);
-			*pos += row_size(row);
-		}
-		break;
-	}
-	case CMD_DELETE:
-	{
-		// map partition
-		Table* table;
-		auto part = recover_map(self, record, cmd, (Row*)*pos, &table);
-		if (! part)
-		{
-			record_cmd_skip(cmd, pos);
-			break;
-		}
-
-		Snapshot* snapshot = NULL;
-		auto end = *pos + cmd->size;
-		while (*pos < end)
-		{
-			auto row = (Row*)(*pos);
-			if (!snapshot || snapshot->id != row->snapshot)
-				snapshot = table_find_snapshot(table, row->snapshot, true);
-			heap_follow(part->heap, row->tsn, row->snapshot);
-			part_delete_by(part, tr, snapshot, row);
+			if (cmd->cmd == CMD_REPLACE)
+				part_insert(part, tr, true, snapshot, row);
+			else
+				part_delete_by(part, tr, snapshot, row);
 			*pos += row_size(row);
 		}
 		break;
 	}
 	case CMD_PUBLISH:
 	{
-		// find topic
-		auto rel = catalog_find_by(&db->catalog, REL_TOPIC, &cmd->id, false);
 		auto size = data_sizeof(*pos);
-		if  (rel)
+		if (record->lsn >= self->min_sub)
 		{
-			auto topic = topic_of(rel);
-			publish(topic, tr, *pos, size);
+			auto rel = catalog_find_by(&db->catalog, REL_TOPIC, &cmd->id, false);
+			if  (rel)
+				publish(topic_of(rel), tr, *pos, size);
 		}
 		*pos += size;
 		break;
@@ -204,8 +178,8 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 	case CMD_DDL:
 	case CMD_DDL_CREATE_INDEX:
 	{
-		// skip ddl commands before the last catalog lsn
-		if (record->lsn <= state_catalog())
+		// skip ddl commands before the last checkpoint
+		if (record->lsn <= state_checkpoint())
 		{
 			data_skip(pos);
 			break;
@@ -213,13 +187,10 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 
 		// execute ddl command
 		if (cmd->cmd == CMD_DDL_CREATE_INDEX)
-			service_create_index(&db->service, tr, *pos, 0);
+			db_create_index(db, tr, *pos, 0);
 		else
 			catalog_execute(&db->catalog, tr, *pos, 0);
 		data_skip(pos);
-
-		// update catalog pending lsn
-		opt_int_set(&state()->catalog_pending, record->lsn);
 		break;
 	}
 	default:

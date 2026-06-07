@@ -52,9 +52,6 @@ part_free(Part* self)
 void
 part_open(Part* self, char* path)
 {
-	(void)self;
-	(void)path;
-#if 0
 	// read heap file
 	heap_open(self->heap, path);
 
@@ -94,11 +91,9 @@ part_open(Part* self, char* path)
 	}
 
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
-	auto id = &self->id;
 	info("recover: {05" PRIu64 "}.partition ({.2f} MiB, {u64} rows)",
-	     id->id,
+	     self->config->id,
 	     total, count);
-#endif
 }
 
 void
