@@ -79,16 +79,17 @@ db_indexate(Part* part, IndexConfig* config)
 void
 db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 {
-	// note: no catalog lock
-	auto if_not_exists = ddl_if_not_exists(flags);
-
-	Str  name_user;
-	Str  name;
-	auto pos = table_op_index_create_read(op, &name_user, &name);
+	// one checkpoint (or create index) at a time
+	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
+	defer(unlock, checkpoint_lock);
 
 	// take shared catalog lock
 	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
 	defer(unlock, lock_catalog);
+
+	Str  name_user;
+	Str  name;
+	auto pos = table_op_index_create_read(op, &name_user, &name);
 
 	// find table
 	auto table = catalog_find_table(&self->catalog, &name_user, &name, false);
@@ -103,6 +104,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	keys_set_primary(&config->keys, false);
 
 	// find index
+	auto if_not_exists = ddl_if_not_exists(flags);
 	auto index = table_index_find(table, &config->name, false);
 	if (index)
 	{
