@@ -24,6 +24,7 @@ part_allocate(PartConfig* config, PartArg* arg)
 	auto self = (Part*)am_malloc(sizeof(Part));
 	self->indexes       = NULL;
 	self->indexes_count = 0;
+	self->in_progress   = NULL;
 	self->heap          = heap_allocate();
 	self->config        = part_config_copy(config);
 	self->arg           = arg;

@@ -1,6 +1,7 @@
 *.o
 *.a
 *.so
+*.result
 test/test
 cli/t
 cli/core

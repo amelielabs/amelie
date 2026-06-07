@@ -31,9 +31,9 @@ show
   "wal_checkpoint": 100,
   "wal_rewind": false,
   "wal_rewind_pos": 0,
-  "storage_crc": true,
-  "storage_sync": false,
-  "catalog_sync": false,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }
@@ -67,9 +67,9 @@ show
   "wal_checkpoint": 100,
   "wal_rewind": false,
   "wal_rewind_pos": 0,
-  "storage_crc": true,
-  "storage_sync": false,
-  "catalog_sync": false,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }
@@ -103,9 +103,9 @@ show
   "wal_checkpoint": 100,
   "wal_rewind": false,
   "wal_rewind_pos": 0,
-  "storage_crc": true,
-  "storage_sync": false,
-  "catalog_sync": false,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }
@@ -120,11 +120,10 @@ show
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 0,
+  "lsn": 1,
   "tsn": 0,
   "psn": 0,
-  "catalog": 0,
-  "catalog_pending": 0,
+  "checkpoint": 1,
   "read_only": false
 }
 # test: replicas
@@ -235,9 +234,8 @@ show
   "id": 1,
   "min": 0,
   "max": 8096,
-  "lsn": 0,
   "size": 0,
-  "compression": 1
+  "compression": 0
 }]
 # test: partition
 select show('partition', '0', 'test', false);
@@ -263,13 +261,13 @@ select show('wal');
 show
 ────
 {
-  "lsn": 1,
+  "lsn": 2,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 360,
+  "writes_bytes": 328,
   "ops": 1
 }
 # test: metrics

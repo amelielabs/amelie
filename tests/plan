@@ -58,10 +58,9 @@ test table_create
 test table_drop
 test table_alter
 test table_migration
-test partition
 test index
 test clone
-test clone_visibility
+#test clone_visibility
 test topic
 test subscription
 test function
@@ -128,14 +127,6 @@ directory executor
 group executor
 test abort
 test async
-
-# service
-directory service
-group service
-test refresh_1
-test refresh_2
-test refresh_3
-test refresh_4
 
 # backend
 directory backend

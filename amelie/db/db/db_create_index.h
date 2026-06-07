@@ -11,12 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-// syncer
-#include "db/syncer.h"
-
-// db
-#include "db/db.h"
-#include "db/db_op.h"
-#include "db/db_create_index.h"
-#include "db/db_snapshot.h"
-#include "db/recover.h"
+void db_create_index(Db*, Tr*, uint8_t*, int);

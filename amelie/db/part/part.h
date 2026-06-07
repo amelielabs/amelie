@@ -17,6 +17,7 @@ struct Part
 {
 	Index*      indexes;
 	int         indexes_count;
+	Index*      in_progress;
 	Track       track;
 	Heap*       heap;
 	PartConfig* config;

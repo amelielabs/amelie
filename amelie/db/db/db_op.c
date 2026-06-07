@@ -123,15 +123,6 @@ db_checkpoint(Db* self)
 	db_gc(self);
 }
 
-void
-db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
-{
-	(void)self;
-	(void)tr;
-	(void)op;
-	(void)flags;
-}
-
 hot void
 db_write(Db* self, WriteList* write_list)
 {

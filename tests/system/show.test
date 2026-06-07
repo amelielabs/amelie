@@ -24,6 +24,9 @@ create table test (id int primary key);
 show tables;
 select * from show tables;
 
+show checkpoint_compression;
+show partitions on test;
+
 SHOW TABLES;
 
 # test: show table

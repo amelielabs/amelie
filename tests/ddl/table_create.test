@@ -272,7 +272,8 @@ drop table test;
 # test: partitions
 create table test (id int primary key) partitions;
 create table test (id int primary key) partitions 4;
-select show('table', 'test', true).partitioning.partitions;
+select show('table', 'test', true).partitions;
+show partitions on test;
 drop table test;
 
 # test: with

@@ -71,51 +71,51 @@ acknowledge 123;
 acknowledge test_sub;
 acknowledge test_sub to;
 
-acknowledge test_sub to 2;
-select lsn, lsn_op from show subscriptions verbose;
-select * from test_sub;
-
-acknowledge test_sub to 2, 10;
-select lsn, lsn_op from show subscriptions verbose;
-select * from test_sub;
-
 acknowledge test_sub to 3;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
-acknowledge test_sub to 6, 0;
+acknowledge test_sub to 3, 10;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
-acknowledge test_sub to 6, 1;
+acknowledge test_sub to 4;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
-acknowledge test_sub to 6, 2;
+acknowledge test_sub to 7, 0;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
-acknowledge test_sub to 6, 3;
+acknowledge test_sub to 7, 1;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
-acknowledge test_sub to 6, 4;
+acknowledge test_sub to 7, 2;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
-acknowledge test_sub to 10, 1;
+acknowledge test_sub to 7, 3;
+select lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 7, 4;
+select lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+
+acknowledge test_sub to 11, 1;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
 # test: acknowledge (same value)
-acknowledge test_sub to 10, 1;
+acknowledge test_sub to 11, 1;
 
 # test: acknowledge (downgrade)
-acknowledge test_sub to 6, 4;
+acknowledge test_sub to 7, 4;
 
 # test: acknowledge (abort)
 begin
-  acknowledge test_sub to 10, 2;
+  acknowledge test_sub to 11, 2;
   select error("abort");
 end;
 select lsn, lsn_op from show subscriptions verbose;
@@ -154,11 +154,11 @@ publish into test 1,2,3;
 select * from test_sub;
 
 # test: acknowledge
-acknowledge test_sub to 27;
+acknowledge test_sub to 28;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
-acknowledge test_sub to 28, 1;
+acknowledge test_sub to 29, 1;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
@@ -295,7 +295,7 @@ begin
 end;
 
 select lsn, lsn_op from test_sub order by lsn_op;
-acknowledge test_sub to 80, 0;
+acknowledge test_sub to 81, 0;
 select lsn, lsn_op from test_sub order by lsn_op;
 select count(*) from test_sub;
 select count(*) from test;

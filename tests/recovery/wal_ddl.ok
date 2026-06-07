@@ -6,7 +6,7 @@ select show('state').lsn;
 
 lsn
 ───
-1
+2
 select identity_of("test");
 
 identity_of
@@ -22,7 +22,7 @@ select show('state').lsn;
 
 lsn
 ───
-1
+2
 select identity_of("test");
 
 identity_of
@@ -34,7 +34,7 @@ select show('state').lsn;
 
 lsn
 ───
-2
+3
 select identity_of("test");
 error: table 'test': not exists
 select identity_of("test2");
@@ -52,7 +52,7 @@ select show('state').lsn;
 
 lsn
 ───
-2
+3
 select identity_of("test");
 error: table 'test': not exists
 select identity_of("test2");
@@ -66,14 +66,14 @@ select * from test2;
 
 id  data
 ──────────
-2   0
 0   0
 1   0
+2   0
 select show('state').lsn;
 
 lsn
 ───
-3
+4
 select identity_of("test2");
 
 identity_of
@@ -84,9 +84,9 @@ select * from test2;
 
 id  data  obj
 ────────────────
-2   0     null
 0   0     null
 1   0     null
+2   0     null
 select obj from test2;
 
 obj
@@ -104,7 +104,7 @@ select show('state').lsn;
 
 lsn
 ───
-4
+5
 select identity_of("test2");
 
 identity_of
@@ -114,18 +114,18 @@ select * from test2;
 
 id  data  obj
 ────────────────
-2   0     null
 0   0     null
 1   0     null
+2   0     null
 # test: alter table column rename
 alter table test2 rename column data to abc;
 select * from test2;
 
 id  abc  obj
 ───────────────
-2   0    null
 0   0    null
 1   0    null
+2   0    null
 select data from test2;
 error: select ❰data❱ ⟵ column not found
 select abc from test2;
@@ -145,7 +145,7 @@ select show('state').lsn;
 
 lsn
 ───
-5
+6
 select identity_of("test2");
 
 identity_of
@@ -195,7 +195,7 @@ select show('state').lsn;
 
 lsn
 ───
-6
+7
 select show('table', 'test2', true).columns;
 
 columns
@@ -254,7 +254,7 @@ select show('state').lsn;
 
 lsn
 ───
-7
+8
 select show('table', 'test2', true).columns;
 
 columns
@@ -288,7 +288,7 @@ select show('state').lsn;
 
 lsn
 ───
-7
+8
 select show('table', 'test2', true).columns;
 
 columns
@@ -320,41 +320,9 @@ select * from test2;
 
 id  obj
 ──────────
-2   null
 0   null
 1   null
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-# test: validate state
-select show('state').lsn;
-
-lsn
-───
-8
-select identity_of("test2");
-
-identity_of
-───────────
-3
-select * from test2;
-
-id  obj
-──────────
 2   null
-0   null
-1   null
-# test: create index
-create index i on test2 (id);
-select * from test2 use index (i);
-
-id  obj
-──────────
-2   null
-0   null
-1   null
 # test: restart
 disconnect S0;
 close E0;
@@ -371,27 +339,22 @@ select identity_of("test2");
 identity_of
 ───────────
 3
+select * from test2;
+
+id  obj
+──────────
+0   null
+1   null
+2   null
+# test: create index
+create index i on test2 (id);
 select * from test2 use index (i);
 
 id  obj
 ──────────
-2   null
 0   null
 1   null
-# test: alter index rename
-alter index i on test2 rename to i2;
-select show('state').lsn;
-
-lsn
-───
-10
-select * from test2 use index (i2);
-
-id  obj
-──────────
 2   null
-0   null
-1   null
 # test: restart
 disconnect S0;
 close E0;
@@ -408,26 +371,27 @@ select identity_of("test2");
 identity_of
 ───────────
 3
-select * from test2 use index (i2);
-
-id  obj
-──────────
-2   null
-0   null
-1   null
-# test: drop index
-drop index i2 on test2;
 select * from test2 use index (i);
-error: select * from test2 use index (❰i❱ ⟵ index not found
-select * from test2 use index (i2);
-error: select * from test2 use index (❰i2❱ ⟵ index not found
-select * from test2;
 
 id  obj
 ──────────
-2   null
 0   null
 1   null
+2   null
+# test: alter index rename
+alter index i on test2 rename to i2;
+select show('state').lsn;
+
+lsn
+───
+11
+select * from test2 use index (i2);
+
+id  obj
+──────────
+0   null
+1   null
+2   null
 # test: restart
 disconnect S0;
 close E0;
@@ -444,6 +408,15 @@ select identity_of("test2");
 identity_of
 ───────────
 3
+select * from test2 use index (i2);
+
+id  obj
+──────────
+0   null
+1   null
+2   null
+# test: drop index
+drop index i2 on test2;
 select * from test2 use index (i);
 error: select * from test2 use index (❰i❱ ⟵ index not found
 select * from test2 use index (i2);
@@ -452,9 +425,36 @@ select * from test2;
 
 id  obj
 ──────────
-2   null
 0   null
 1   null
+2   null
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select show('state').lsn;
+
+lsn
+───
+12
+select identity_of("test2");
+
+identity_of
+───────────
+3
+select * from test2 use index (i);
+error: select * from test2 use index (❰i❱ ⟵ index not found
+select * from test2 use index (i2);
+error: select * from test2 use index (❰i2❱ ⟵ index not found
+select * from test2;
+
+id  obj
+──────────
+0   null
+1   null
+2   null
 # test: create clone
 create clone a of test2;
 insert into a values (3, {});
@@ -462,10 +462,10 @@ select * from a;
 
 id  obj
 ──────────
-3   {}
-2   null
 0   null
 1   null
+2   null
+3   {}
 create clone b of test2;
 insert into b values (4, {});
 insert into b values (5, []);
@@ -473,11 +473,11 @@ select * from b;
 
 id  obj
 ──────────
-4   {}
-5   []
-2   null
 0   null
 1   null
+2   null
+4   {}
+5   []
 select snapshot from show clones verbose;
 
 snapshot
@@ -502,7 +502,7 @@ select show('state').lsn;
 
 lsn
 ───
-16
+17
 select snapshot from show clones verbose;
 
 snapshot
@@ -521,26 +521,26 @@ select * from a;
 
 id  obj
 ──────────
-3   {}
-2   null
 0   null
 1   null
+2   null
+3   {}
 select * from b;
 
 id  obj
 ──────────
-4   {}
-5   []
-2   null
 0   null
 1   null
+2   null
+4   {}
+5   []
 select * from test2;
 
 id  obj
 ──────────
-2   null
 0   null
 1   null
+2   null
 # test: drop clone
 drop clone b;
 drop clone a;
@@ -554,7 +554,7 @@ select show('state').lsn;
 
 lsn
 ───
-18
+19
 show clones;
 
 clones
@@ -575,7 +575,7 @@ select show('state').lsn;
 
 lsn
 ───
-19
+20
 select identity_of("test2");
 
 identity_of
@@ -591,7 +591,7 @@ select show('state').lsn;
 
 lsn
 ───
-20
+21
 select identity_of("test2");
 error: table 'test2': not exists
 # test: restart
@@ -604,7 +604,7 @@ select show('state').lsn;
 
 lsn
 ───
-20
+21
 select * from test2;
 error: select * from ❰test2❱ ⟵ relation not found
 show tables;
@@ -632,7 +632,7 @@ select show('state').lsn;
 
 lsn
 ───
-21
+22
 show topics;
 
 topics
@@ -651,11 +651,11 @@ select * from top_sub;
 
 lsn  lsn_op  cmd      row
 ────────────────────────────
-23   0       publish  123
-24   0       publish  1
-24   1       publish  2
-24   2       publish  3
-25   0       publish  null
+24   0       publish  123
+25   0       publish  1
+25   1       publish  2
+25   2       publish  3
+26   0       publish  null
 show subs;
 
 subs
@@ -684,7 +684,7 @@ select show('state').lsn;
 
 lsn
 ───
-34
+35
 show subs;
 
 subs
@@ -711,13 +711,8 @@ subs
 }
 select * from top_sub;
 
-lsn  lsn_op  cmd      row
-────────────────────────────
-23   0       publish  123
-24   0       publish  1
-24   1       publish  2
-24   2       publish  3
-25   0       publish  null
+lsn  lsn_op  cmd  row
+───────────────────────
 select * from test_;
 
 id
@@ -737,17 +732,17 @@ select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-32   0       write  {"id": 1}
+33   0       write  {"id": 1}
 select * from test_clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-33   0       write  {"id": 2}
+34   0       write  {"id": 2}
 select * from test_clone2_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-34   0       write  {"id": 3}
+35   0       write  {"id": 3}
 # test: drop subscription
 drop subscription test_sub;
 drop subscription test_clone_sub;
@@ -774,7 +769,7 @@ select show('state').lsn;
 
 lsn
 ───
-40
+41
 show topics;
 
 topics
@@ -793,15 +788,15 @@ select * from sa;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-45   0       publish  1
+46   0       publish  1
 select * from sb;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-45   1       publish  2
-45   2       publish  3
-45   3       publish  4
-45   4       publish  5
+46   1       publish  2
+46   2       publish  3
+46   3       publish  4
+46   4       publish  5
 # test: restart
 disconnect S0;
 close E0;
@@ -809,17 +804,12 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from sa;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-45   0       publish  1
+lsn  lsn_op  cmd  row
+───────────────────────
 select * from sb;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-45   1       publish  2
-45   2       publish  3
-45   3       publish  4
-45   4       publish  5
+lsn  lsn_op  cmd  row
+───────────────────────
 drop subscription sa;
 drop subscription sb;
 drop topic a;
@@ -829,7 +819,7 @@ select show('state').lsn;
 
 lsn
 ───
-49
+50
 show subs;
 
 subs
@@ -845,7 +835,7 @@ select show('state').lsn;
 
 lsn
 ───
-50
+51
 # test: restart
 disconnect S0;
 close E0;
@@ -856,7 +846,7 @@ select show('state').lsn;
 
 lsn
 ───
-50
+51
 select show('user', 'test').name;
 
 name
@@ -878,7 +868,7 @@ select show('state').lsn;
 
 lsn
 ───
-51
+52
 # test: restart
 disconnect S0;
 close E0;
@@ -889,7 +879,7 @@ select show('state').lsn;
 
 lsn
 ───
-51
+52
 select show('user', 'test2').name;
 
 name
@@ -901,7 +891,7 @@ select show('state').lsn;
 
 lsn
 ───
-52
+53
 select show('user', 'test2').name;
 
 name
@@ -917,7 +907,7 @@ select show('state').lsn;
 
 lsn
 ───
-52
+53
 select show('user', 'test').name;
 
 name
@@ -941,7 +931,7 @@ select show('state').lsn;
 
 lsn
 ───
-53
+54
 show functions verbose;
 
 functions
@@ -977,7 +967,7 @@ select show('state').lsn;
 
 lsn
 ───
-53
+54
 show functions verbose;
 
 functions
@@ -1033,7 +1023,7 @@ select show('state').lsn;
 
 lsn
 ───
-54
+55
 show functions verbose;
 
 functions
@@ -1069,7 +1059,7 @@ select show('state').lsn;
 
 lsn
 ───
-54
+55
 show functions verbose;
 
 functions
@@ -1110,7 +1100,7 @@ select show('state').lsn;
 
 lsn
 ───
-55
+56
 select [1,2,3]::reverse2;
 
 col1
@@ -1126,7 +1116,7 @@ select show('state').lsn;
 
 lsn
 ───
-55
+56
 show functions verbose;
 
 functions
@@ -1158,7 +1148,7 @@ select show('state').lsn;
 
 lsn
 ───
-56
+57
 show functions verbose;
 
 functions
@@ -1177,6 +1167,6 @@ select show('state').lsn;
 
 lsn
 ───
-56
+57
 disconnect S0;
 close E0;

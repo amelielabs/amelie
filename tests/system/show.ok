@@ -30,6 +30,22 @@ tables
   "name": "test",
   "description": ""
 }
+show checkpoint_compression;
+
+checkpoint_compression
+──────────────────────
+"zstd"
+show partitions on test;
+
+partitions
+──────────
+{
+  "id": 1,
+  "min": 0,
+  "max": 8096,
+  "size": 0,
+  "compression": 0
+}
 SHOW TABLES;
 
 TABLES
@@ -160,9 +176,8 @@ partitions
   "id": 1,
   "min": 0,
   "max": 8096,
-  "lsn": 0,
   "size": 0,
-  "compression": 1
+  "compression": 0
 }
 select show('partitions', '', 'test', false);
 
@@ -172,9 +187,8 @@ show
   "id": 1,
   "min": 0,
   "max": 8096,
-  "lsn": 0,
   "size": 0,
-  "compression": 1
+  "compression": 0
 }]
 select * from show partitions on test;
 
@@ -184,9 +198,8 @@ partitions
   "id": 1,
   "min": 0,
   "max": 8096,
-  "lsn": 0,
   "size": 0,
-  "compression": 1
+  "compression": 0
 }
 # test: show partition
 show partition '1' on test;
@@ -197,9 +210,8 @@ partition
   "id": 1,
   "min": 0,
   "max": 8096,
-  "lsn": 0,
   "size": 0,
-  "compression": 1
+  "compression": 0
 }
 select show('partition', '1', 'test', false);
 
@@ -209,9 +221,8 @@ show
   "id": 1,
   "min": 0,
   "max": 8096,
-  "lsn": 0,
   "size": 0,
-  "compression": 1
+  "compression": 0
 }
 # test: show functions
 create function test_fn (id int) return json
@@ -335,13 +346,13 @@ show wal;
 wal
 ───
 {
-  "lsn": 3,
+  "lsn": 4,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 850,
+  "writes_bytes": 818,
   "ops": 3
 }
 # test: show replicas
@@ -379,11 +390,10 @@ STATE
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 3,
+  "lsn": 4,
   "tsn": 0,
   "psn": 1,
-  "catalog": 0,
-  "catalog_pending": 3,
+  "checkpoint": 1,
   "read_only": false
 }
 select show('state');
@@ -396,11 +406,10 @@ show
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 3,
+  "lsn": 4,
   "tsn": 0,
   "psn": 1,
-  "catalog": 0,
-  "catalog_pending": 3,
+  "checkpoint": 1,
   "read_only": false
 }
 select show('state').directory;
@@ -439,9 +448,9 @@ config
   "wal_checkpoint": 100,
   "wal_rewind": false,
   "wal_rewind_pos": 0,
-  "storage_crc": true,
-  "storage_sync": false,
-  "catalog_sync": false,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }
@@ -475,9 +484,9 @@ config
   "wal_checkpoint": 100,
   "wal_rewind": false,
   "wal_rewind_pos": 0,
-  "storage_crc": true,
-  "storage_sync": false,
-  "catalog_sync": false,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }
@@ -512,9 +521,9 @@ config
   "wal_checkpoint": 100,
   "wal_rewind": false,
   "wal_rewind_pos": 0,
-  "storage_crc": true,
-  "storage_sync": false,
-  "catalog_sync": false,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }
@@ -589,9 +598,9 @@ config
   "wal_checkpoint": 100,
   "wal_rewind": false,
   "wal_rewind_pos": 0,
-  "storage_crc": true,
-  "storage_sync": false,
-  "catalog_sync": false,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }

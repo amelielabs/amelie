@@ -784,11 +784,59 @@ drop table test;
 create table test (id int primary key) partitions;
 error: create table test (id int primary key) partitions❰;❱ ⟵ int expected
 create table test (id int primary key) partitions 4;
-select show('table', 'test', true).partitioning.partitions;
+select show('table', 'test', true).partitions;
 
 partitions
 ──────────
-4
+[{
+  "id": 39,
+  "hash_min": 0,
+  "hash_max": 2024
+}, {
+  "id": 40,
+  "hash_min": 2024,
+  "hash_max": 4048
+}, {
+  "id": 41,
+  "hash_min": 4048,
+  "hash_max": 6072
+}, {
+  "id": 42,
+  "hash_min": 6072,
+  "hash_max": 8096
+}]
+show partitions on test;
+
+partitions
+──────────
+{
+  "id": 39,
+  "min": 0,
+  "max": 2024,
+  "size": 0,
+  "compression": 0
+}
+{
+  "id": 40,
+  "min": 2024,
+  "max": 4048,
+  "size": 0,
+  "compression": 0
+}
+{
+  "id": 41,
+  "min": 4048,
+  "max": 6072,
+  "size": 0,
+  "compression": 0
+}
+{
+  "id": 42,
+  "min": 6072,
+  "max": 8096,
+  "size": 0,
+  "compression": 0
+}
 drop table test;
 # test: with
 create table test (id int primary key) partitions 3 with;

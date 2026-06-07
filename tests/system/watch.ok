@@ -14,14 +14,13 @@ state
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 0,
+  "lsn": 1,
   "tsn": 0,
   "psn": 0,
-  "catalog": 0,
-  "catalog_pending": 0,
+  "checkpoint": 1,
   "read_only": false
 }
-explain watch show('state').lsn::int = 0;
+explain watch show('state').lsn::int = 1;
 
 explain
 ───────
@@ -33,7 +32,7 @@ main
   3   dotjs               2      0      1
   4   push                2      0      0
   5   call                0      -      1     # int()
-  6   int                 1      -      0     # 0
+  6   int                 1      -      0     # 1
   7   equii               2      0      1
   8   jtr                 13     2      0
   9   int                 0      -      0     # 333
@@ -42,6 +41,6 @@ main
  12   jmp                 0      0      0
  13   nop                 0      0      0
  14   ret                 -1     0      -
-watch show('state').lsn::int = 0;
+watch show('state').lsn::int = 1;
 disconnect S0;
 close E0;
