@@ -49,6 +49,7 @@ heap_prepare(Heap* self)
 	header->compression = COMPRESSION_NONE;
 	header->count       = 0;
 	header->count_used  = 0;
+	header->ssn         = 0;
 	header->size_used   = 0;
 
 	self->header  = header;

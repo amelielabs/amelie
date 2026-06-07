@@ -62,6 +62,7 @@ struct HeapHeader
 	uint8_t    compression;
 	uint32_t   count;
 	uint32_t   count_used;
+	uint32_t   ssn;
 	uint64_t   size_used;
 	HeapBucket buckets[];
 } packed;
@@ -97,3 +98,10 @@ Heap* heap_allocate(void);
 void  heap_free(Heap*);
 void* heap_add(Heap*, int);
 void  heap_remove(Heap*, void*);
+
+static inline void
+heap_follow(Heap* self, uint32_t ssn)
+{
+	if (ssn > self->header->ssn)
+		self->header->ssn = ssn;
+}
