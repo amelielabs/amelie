@@ -25,9 +25,10 @@ backend_rpc(Rpc* rpc, void* arg)
 	switch (rpc->msg.id) {
 	case MSG_DEPLOY:
 	{
-		// load partition heap
+		// load partition heap file
 		Part* part = rpc->arg;
-		part_open(part);
+		if (opt_int_of(&state()->recover) > 0)
+			part_open(part, state_checkpoint());
 
 		// create and start new pod
 		pod_mgr_create(&self->pod_mgr, part);

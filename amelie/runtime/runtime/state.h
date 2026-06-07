@@ -23,6 +23,7 @@ struct State
 	Opt  psn;
 	Opt  rsn;
 	Opt  checkpoint;
+	Opt  recover;
 	Opt  read_only;
 	// persistent
 	Opt  secret;

@@ -81,13 +81,12 @@ include_directories("${AMELIE_ROOT}/db")
 include_directories("${AMELIE_ROOT}/db/row")
 include_directories("${AMELIE_ROOT}/db/transaction")
 include_directories("${AMELIE_ROOT}/db/cdc")
-include_directories("${AMELIE_ROOT}/db/storage")
 include_directories("${AMELIE_ROOT}/db/heap")
 include_directories("${AMELIE_ROOT}/db/index")
 include_directories("${AMELIE_ROOT}/db/part")
 include_directories("${AMELIE_ROOT}/db/catalog")
 include_directories("${AMELIE_ROOT}/db/wal")
-include_directories("${AMELIE_ROOT}/db/service")
+include_directories("${AMELIE_ROOT}/db/checkpoint")
 include_directories("${AMELIE_ROOT}/db/db")
 
 # sync
@@ -197,7 +196,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/part/part.c
     ${AMELIE_ROOT}/db/part/part_op.c
     ${AMELIE_ROOT}/db/part/part_mgr.c
-    ${AMELIE_ROOT}/db/part/part_mgr_recover.c
     ${AMELIE_ROOT}/db/part/cursor.c
     ${AMELIE_ROOT}/db/catalog/user.c
     ${AMELIE_ROOT}/db/catalog/table.c
@@ -212,7 +210,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/rel.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/catalog_file.c
-    ${AMELIE_ROOT}/db/catalog/catalog_snapshot.c
     ${AMELIE_ROOT}/db/catalog/catalog_mcp.c
     ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/wal/wal.c
@@ -221,14 +218,11 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/wal/wal_cursor.c
     ${AMELIE_ROOT}/db/wal/wal_slot.c
     ${AMELIE_ROOT}/db/wal/wal_subscribe.c
-    ${AMELIE_ROOT}/db/service/service.c
-    ${AMELIE_ROOT}/db/service/service_recover.c
-    ${AMELIE_ROOT}/db/service/syncer.c
-    ${AMELIE_ROOT}/db/service/refresh.c
-    ${AMELIE_ROOT}/db/service/op.c
-    ${AMELIE_ROOT}/db/service/indexate.c
-    ${AMELIE_ROOT}/db/service/op_create_index.c
+    ${AMELIE_ROOT}/db/checkpoint/checkpoint.c
+    ${AMELIE_ROOT}/db/checkpoint/checkpoint_mgr.c
+    ${AMELIE_ROOT}/db/db/syncer.c
     ${AMELIE_ROOT}/db/db/db.c
+    ${AMELIE_ROOT}/db/db/db_op.c
     ${AMELIE_ROOT}/db/db/db_snapshot.c
     ${AMELIE_ROOT}/db/db/recover.c)
 
@@ -299,7 +293,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
     ${AMELIE_ROOT}/compiler/parser/parse_clone.c
-    ${AMELIE_ROOT}/compiler/parser/parse_part.c
     ${AMELIE_ROOT}/compiler/parser/parse_function.c
     ${AMELIE_ROOT}/compiler/parser/parse_topic.c
     ${AMELIE_ROOT}/compiler/parser/parse_from.c

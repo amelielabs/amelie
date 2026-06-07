@@ -21,12 +21,30 @@
 #include <amelie_wal.h>
 #include <amelie_checkpoint.h>
 
-void
-checkpoint_mgr_init(CheckpointMgr* self)
+static inline CheckpointRef*
+checkpoint_ref_allocate(uint64_t id)
 {
-	self->last       = NULL;
+	auto self = (CheckpointRef*)am_malloc(sizeof(CheckpointRef));
+	self->id   = id;
+	self->refs = 0;
+	list_init(&self->link);
+	return self;
+}
+
+static inline void
+checkpoint_ref_free(CheckpointRef* self)
+{
+	am_free(self);
+}
+
+void
+checkpoint_mgr_init(CheckpointMgr* self, Catalog* catalog)
+{
+	self->current    = NULL;
 	self->list_count = 0;
+	self->catalog    = catalog;
 	list_init(&self->list);
+	spinlock_init(&self->lock);
 }
 
 void
@@ -34,9 +52,10 @@ checkpoint_mgr_free(CheckpointMgr* self)
 {
 	list_foreach_safe(&self->list)
 	{
-		auto cp = list_at(Checkpoint, link);
-		checkpoint_free(cp);
+		auto cp = list_at(CheckpointRef, link);
+		checkpoint_ref_free(cp);
 	}
+	spinlock_free(&self->lock);
 }
 
 static inline int64_t
@@ -57,13 +76,11 @@ checkpoint_id_of(const char* name, bool* incomplete)
 }
 
 static void
-checkpoint_mgr_open_dir(CheckpointMgr* self)
+checkpoint_mgr_read(CheckpointMgr* self)
 {
 	// create directory
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{s}/checkpoints", state_directory());
-	if (! fs_exists("{s}", path))
-		fs_mkdir(0755, "{s}", path);
 
 	// read directory, get a list of checkpoints
 	auto dir = opendir(path);
@@ -81,6 +98,7 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 		auto lsn = checkpoint_id_of(entry->d_name, &incomplete);
 		if (lsn == -1)
 			continue;
+
 		state_lsn_follow(lsn);
 
 		if (incomplete)
@@ -90,8 +108,7 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 			fs_rmdir("{s}/{s}", path, entry->d_name);
 			continue;
 		}
-		auto cp = checkpoint_allocate(lsn);
-		checkpoint_mgr_add(self, cp);
+		checkpoint_mgr_add(self, lsn);
 	}
 }
 
@@ -99,37 +116,97 @@ void
 checkpoint_mgr_open(CheckpointMgr* self)
 {
 	// get a list of available checkpoints
-	checkpoint_mgr_open_dir(self);
+	checkpoint_mgr_read(self);
 
 	// set last checkpoint
-	if (self->last)
-		opt_int_set(&state()->checkpoint, self->last->id);
+	if (! self->current)
+		error("checkpoint: no checkpoints found");
+
+	opt_int_set(&state()->checkpoint, self->current->id);
+
+	// restore last checkpoint
+	char path[PATH_MAX];
+	format(path, sizeof(path),
+	       "{s}/checkpoints/{u64}/catalog.json",
+	       state_directory(),
+	       state_checkpoint());
+
+	catalog_read(self->catalog, path);
 }
 
 void
 checkpoint_mgr_gc(CheckpointMgr* self)
 {
-	list_foreach_safe(&self->list)
+	for (;;)
 	{
-		auto cp = list_at(Checkpoint, link);
-		if (cp == self->last)
-			continue;
-		if (cp->refs > 1)
-			continue;
+		CheckpointRef* gc = NULL;
 
-		// todo: rename as incomplete
-		fs_rmdir("{s}/checkpoints/{u64}", state_directory(), cp->id);
-		list_unlink(&cp->link);
-		checkpoint_free(cp);
+		spinlock_lock(&self->lock);
+		list_foreach_safe(&self->list)
+		{
+			auto ref = list_at(CheckpointRef, link);
+			if (ref == self->current)
+				continue;
+			if (ref->refs > 0)
+				continue;
+
+			gc = ref;
+			list_unlink(&ref->link);
+			break;
+
+		}
+		spinlock_unlock(&self->lock);
+		if (! gc)
+			break;
+
+		defer(checkpoint_ref_free, gc);
+
+		// rename as incomplete
+		char path[PATH_MAX];
+		format(path, sizeof(path), "{s}/checkpoints/{u64}", state_directory(), gc->id);
+		fs_rename(path, "{s}/checkpoints/{u64}.incomplete",
+		          state_directory(), gc->id);
+
+		// remove
+		fs_rmdir("{s}/checkpoints/{u64}.incomplete", state_directory(), gc->id);
 	}
 }
 
 void
-checkpoint_mgr_add(CheckpointMgr* self, Checkpoint* cp)
+checkpoint_mgr_add(CheckpointMgr* self, uint64_t lsn)
 {
-	list_append(&self->list, &cp->link);
+	auto ref = checkpoint_ref_allocate(lsn);
+	spinlock_lock(&self->lock);
+
+	list_append(&self->list, &ref->link);
 	self->list_count++;
 
-	if (!self->last || self->last->id < cp->id)
-		self->last = cp;
+	if (!self->current || self->current->id < ref->id)
+	{
+		self->current = ref;
+		opt_int_set(&state()->checkpoint, lsn);
+	}
+
+	spinlock_unlock(&self->lock);
+}
+
+CheckpointRef*
+checkpoint_mgr_ref(CheckpointMgr* self)
+{
+	spinlock_lock(&self->lock);
+	auto current = self->current;
+	assert(current);
+	current->refs++;
+	spinlock_unlock(&self->lock);
+
+	return current;
+}
+
+void
+checkpoint_mgr_unref(CheckpointMgr* self, CheckpointRef *ref)
+{
+	spinlock_lock(&self->lock);
+	ref->refs--;
+	assert(ref->refs >= 0);
+	spinlock_unlock(&self->lock);
 }

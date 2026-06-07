@@ -389,8 +389,8 @@ emit_utility(Compiler* self)
 		op0(self, CCHECKPOINT);
 
 		// lock
-		lock_catalog = LOCK_SHARED;
-		lock_ddl     = LOCK_EXCLUSIVE;
+		lock_catalog = LOCK_NONE;
+		lock_ddl     = LOCK_NONE;
 		break;
 	}
 
@@ -453,22 +453,6 @@ emit_utility(Compiler* self)
 	case STMT_UNSUBSCRIBE:
 	{
 		op0(self, CREPL_UNSUBSCRIBE);
-		break;
-	}
-
-	// service
-	case STMT_ALTER_PARTITION:
-	{
-		auto arg = ast_part_alter_of(stmt->ast);
-		auto table = catalog_find_table(&share()->db->catalog,
-		                                self->parser.user,
-		                                &arg->table->string, true);
-		if (arg->type == PARTITION_ALTER_REFRESH)
-			op2(self, CDDL_REFRESH, (intptr_t)table, arg->id);
-
-		// lock
-		lock_catalog = LOCK_SHARED;
-		lock_ddl     = LOCK_NONE;
 		break;
 	}
 

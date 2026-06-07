@@ -92,7 +92,7 @@ fs_closedir_defer(DIR* self)
 }
 
 static inline void
-fs_rmdir(bool with_directory, const char* fmt, ...)
+fs_rmdir(const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -116,9 +116,6 @@ fs_rmdir(bool with_directory, const char* fmt, ...)
 			continue;
 		fs_unlink("{s}/{s}", path, entry->d_name);
 	}
-	if (with_directory)
-	{
-		if (vfs_rmdir(path) == -1)
-			error_system();
-	}
+	if (vfs_rmdir(path) == -1)
+		error_system();
 }

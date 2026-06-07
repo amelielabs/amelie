@@ -425,11 +425,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_CLONE;
 			parse_clone_alter(self);
 		} else
-		if (stmt_if(self, KPARTITION))
-		{
-			self->id = STMT_ALTER_PARTITION;
-			parse_part_alter(self);
-		} else
 		if (stmt_if(self, KFUNCTION))
 		{
 			self->id = STMT_ALTER_FUNCTION;

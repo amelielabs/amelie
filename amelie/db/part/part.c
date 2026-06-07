@@ -50,8 +50,13 @@ part_free(Part* self)
 }
 
 void
-part_open(Part* self, char* path)
+part_open(Part* self, uint64_t checkpoint)
 {
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/checkpoints/{u64}/{u64}",
+	       state_directory(), checkpoint,
+	       self->config->id);
+
 	// read heap file
 	heap_open(self->heap, path);
 
@@ -91,8 +96,8 @@ part_open(Part* self, char* path)
 	}
 
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
-	info("recover: {05" PRIu64 "}.partition ({.2f} MiB, {u64} rows)",
-	     self->config->id,
+	info("recover: {u64}/{u64} ({.2f} MiB, {u64} rows)",
+	     checkpoint, self->config->id,
 	     total, count);
 }
 

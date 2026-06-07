@@ -42,6 +42,9 @@ db_gc(Db* self)
 
 	// cdc gc
 	cdc_gc(cdc);
+
+	// checkpoint gc
+	checkpoint_mgr_gc(&self->checkpoint_mgr);
 }
 
 static void
@@ -91,13 +94,13 @@ db_checkpoint(Db* self)
 	}
 
 	// prepare and start workers
-	Save save;
-	save_init(&save, &self->catalog);
-	defer(save_free, &save);
+	Checkpoint checkpoint;
+	checkpoint_init(&checkpoint, &self->catalog);
+	defer(checkpoint_free, &checkpoint);
 	auto on_error = error_catch
 	(
-		save_begin(&save, lsn, 1);
-		save_run(&save);
+		checkpoint_begin(&checkpoint, lsn, 1);
+		checkpoint_run(&checkpoint);
 	);
 
 	// unlock catalog
@@ -108,12 +111,13 @@ db_checkpoint(Db* self)
 
 	// wait for completion
 	on_error = error_catch (
-		save_wait(&save);
+		checkpoint_wait(&checkpoint);
 	);
 	if (on_error)
 		rethrow();
 
-	// todo: set checkpoint
+	// set checkpoint
+	checkpoint_mgr_add(&self->checkpoint_mgr, lsn);
 
 	// run db cleanup
 	db_gc(self);

@@ -247,8 +247,14 @@ system_recover(System* self, bool bootstrap)
 {
 	info("");
 
+	// set system recover state, this will lead to the partition heap
+	// files loaded during pod deployment
+	opt_int_set(&state()->recover, true);
+
 	// restore catalog
 	db_open(&self->db, bootstrap);
+
+	opt_int_set(&state()->recover, false);
 
 	// replay wals
 	Recover recover;
@@ -300,9 +306,6 @@ system_start(System* self, bool bootstrap)
 
 	// do parallel recover of catalog and wal
 	system_recover(self, bootstrap);
-
-	// start service
-	service_start(&self->db.service);
 
 	// start periodic wal syncer
 	syncer_start(&self->db.syncer);

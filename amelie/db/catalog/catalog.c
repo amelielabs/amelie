@@ -90,7 +90,7 @@ catalog_free(Catalog* self)
 	columns_free(&self->topic_columns);
 }
 
-static void
+void
 catalog_create(Catalog* self)
 {
 	Buf buf;
@@ -129,19 +129,6 @@ catalog_create(Catalog* self)
 		tr_abort(&tr);
 		rethrow();
 	}
-}
-
-void
-catalog_open(Catalog* self, bool bootstrap)
-{
-	if (bootstrap)
-		catalog_create(self);
-}
-
-void
-catalog_close(Catalog* self)
-{
-	catalog_free(self);
 }
 
 void

@@ -13,7 +13,6 @@
 
 // checkpoint
 #include "checkpoint/checkpoint.h"
-#include "checkpoint/checkpoint_mgr.h"
 
-// save
-#include "checkpoint/save.h"
+// checkpoint_mgr
+#include "checkpoint/checkpoint_mgr.h"

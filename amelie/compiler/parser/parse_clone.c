@@ -50,12 +50,7 @@ parse_clone_create(Stmt* self)
 
 	// calculate clone id
 	uint32_t id = snapshot_mgr_max(&table->snapshot_mgr);
-	list_foreach(&table->part_mgr.list)
-	{
-		auto part = list_at(Part, link);
-		if (part->heap->header->ssn > id)
-			id = part->heap->header->ssn;
-	}
+	// todo: set max ssn
 	id++;
 
 	// create clone config

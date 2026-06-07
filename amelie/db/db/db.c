@@ -39,7 +39,7 @@ db_init(Db*        self,
 	wal_init(&self->wal);
 	list_init(&self->snapshots);
 	list_init(&self->snapshots_gc);
-	checkpoint_mgr_init(&self->checkpoint_mgr);
+	checkpoint_mgr_init(&self->checkpoint_mgr, &self->catalog);
 	syncer_init(&self->syncer, self);
 }
 
@@ -52,19 +52,38 @@ db_free(Db* self)
 	wal_free(&self->wal);
 }
 
-void
-db_open(Db* self, bool bootstrap)
+static void
+db_bootstrap(Db* self)
 {
 	// first valid transaction id starts from 1
 	state_tsn_set(0);
+	state_lsn_set(1);
 
-	// prepare system catalog
-	catalog_open(&self->catalog, bootstrap);
+	// create system objects
+	catalog_create(&self->catalog);
 
-	// read available checkpoints
-	checkpoint_mgr_open(&self->checkpoint_mgr);
+	// create initial checkpoint
+	Checkpoint checkpoint;
+	checkpoint_init(&checkpoint, &self->catalog);
+	defer(checkpoint_free, &checkpoint);
+	checkpoint_begin(&checkpoint, 1, 1);
+	checkpoint_run(&checkpoint);
+	checkpoint_wait(&checkpoint);
+}
 
-	// todo: restore last catalog
+void
+db_open(Db* self, bool bootstrap)
+{
+	// create initial checkpoint
+	if (bootstrap)
+	{
+		db_bootstrap(self);
+		return;
+	}
+
+	// restore last checkpoint
+	auto cp_mgr = &self->checkpoint_mgr;
+	checkpoint_mgr_open(cp_mgr);
 }
 
 void
@@ -72,9 +91,6 @@ db_close(Db* self)
 {
 	// stop syncer
 	syncer_stop(&self->syncer);
-
-	// close catalog
-	catalog_close(&self->catalog);
 
 	// stop wal
 	wal_close(&self->wal);

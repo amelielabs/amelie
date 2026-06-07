@@ -22,7 +22,7 @@
 #include <amelie_checkpoint.h>
 
 void
-save_init(Save* self, Catalog* catalog)
+checkpoint_init(Checkpoint* self, Catalog* catalog)
 {
 	self->lsn           = 0;
 	self->workers       = NULL;
@@ -31,7 +31,7 @@ save_init(Save* self, Catalog* catalog)
 }
 
 void
-save_free(Save* self)
+checkpoint_free(Checkpoint* self)
 {
 	if (self->workers)
 	{
@@ -47,19 +47,19 @@ save_free(Save* self)
 }
 
 static inline void
-save_worker_on_complete(void* arg)
+checkpoint_worker_on_complete(void* arg)
 {
 	Event* event = arg;
 	event_signal(event);
 }
 
 void
-save_begin(Save* self, uint64_t lsn, int workers)
+checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 {
 	// prepare workers
 	self->lsn = lsn;
 	self->workers_count = workers;
-	self->workers = am_malloc(sizeof(SaveWorker) * workers);
+	self->workers = am_malloc(sizeof(CheckpointWorker) * workers);
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto worker = &self->workers[i];
@@ -68,7 +68,7 @@ save_begin(Save* self, uint64_t lsn, int workers)
 		event_init(&worker->on_complete);
 		notify_init(&worker->notify);
 		notify_open(&worker->notify, &am_task->poller,
-		            save_worker_on_complete,
+		            checkpoint_worker_on_complete,
 		            &worker->on_complete);
 		list_init(&worker->list);
 	}
@@ -80,6 +80,7 @@ save_begin(Save* self, uint64_t lsn, int workers)
 		auto rel = list_at(Rel, link);
 		if (rel->type != REL_TABLE)
 			continue;
+
 		auto table = table_of(rel);
 		list_foreach(&table->part_mgr.list)
 		{
@@ -96,7 +97,7 @@ save_begin(Save* self, uint64_t lsn, int workers)
 }
 
 hot static void
-save_part(Save* self, Part* part)
+checkpoint_part(Checkpoint* self, Part* part)
 {
 	// <base>/checkpoints/<lsn>.incomplete/<partition_id>
 	char path[PATH_MAX];
@@ -113,7 +114,7 @@ save_part(Save* self, Part* part)
 }
 
 static void
-save_worker_run(Save* self, SaveWorker* worker)
+checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 {
 	// create new process
 	worker->pid = fork();
@@ -129,7 +130,7 @@ save_worker_run(Save* self, SaveWorker* worker)
 	// create snapshots
 	auto error = error_catch(
 		list_foreach(&worker->list)
-			save_part(self, list_at(Part, link_cp));
+			checkpoint_part(self, list_at(Part, link_cp));
 	);
 
 	// signal waiter process
@@ -151,7 +152,7 @@ save_worker_run(Save* self, SaveWorker* worker)
 }
 
 static bool
-save_worker_wait(SaveWorker* self)
+checkpoint_worker_wait(CheckpointWorker* self)
 {
 	event_wait(&self->on_complete, -1);
 
@@ -173,7 +174,7 @@ save_worker_wait(SaveWorker* self)
 }
 
 void
-save_run(Save* self)
+checkpoint_run(Checkpoint* self)
 {
 	// create <base>/checkpoints/<lsn>.incomplete
 	char path[PATH_MAX];
@@ -181,7 +182,7 @@ save_run(Save* self)
 	       state_directory(), self->lsn);
 
 	info("");
-	info("checkpoint: checkpoints/{u64} / (using {d} workers)",
+	info("checkpoint: checkpoints/{u64} (using {d} workers)",
 	     self->lsn, self->workers_count);
 	fs_mkdir(0755, "{s}", path);
 
@@ -196,12 +197,12 @@ save_run(Save* self)
 		auto worker = &self->workers[i];
 		if (worker->list_count == 0)
 			continue;
-		save_worker_run(self, worker);
+		checkpoint_worker_run(self, worker);
 	}
 }
 
 void
-save_wait(Save* self)
+checkpoint_wait(Checkpoint* self)
 {
 	int errors = 0;
 	for (int i = 0; i < self->workers_count; i++)
@@ -210,7 +211,7 @@ save_wait(Save* self)
 		if (worker->list_count == 0)
 			continue;
 		bool error;
-		error = save_worker_wait(worker);
+		error = checkpoint_worker_wait(worker);
 		if (error)
 		{
 			errors++;

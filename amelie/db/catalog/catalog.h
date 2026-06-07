@@ -37,7 +37,6 @@ struct Catalog
 
 void catalog_init(Catalog*, CatalogIf*, void*, PartMgrIf*, void*, Cdc*);
 void catalog_free(Catalog*);
-void catalog_open(Catalog*, bool);
-void catalog_close(Catalog*);
+void catalog_create(Catalog*);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);
 void catalog_status(Catalog*, Buf*);

@@ -323,7 +323,6 @@ parse_table_create_with(Stmt* self)
 {
 	auto stmt = ast_table_create_of(self->ast);
 	auto config = stmt->config;
-	auto config_part = &stmt->config->partitioning;
 
 	// (
 	stmt_expect(self, '(');
@@ -341,21 +340,6 @@ parse_table_create_with(Stmt* self)
 			if (uuid_set_nothrow(&id, &value->string) == -1)
 				stmt_error(self, value, "failed to parse uuid");
 			table_config_set_id(config, &id);
-		} else
-		if (str_is(&name->string, "partitions", 10))
-		{
-			auto value = stmt_expect(self, KINT);
-			partitioning_set_partitions(config_part, value->integer);
-		} else
-		if (str_is(&name->string, "compression", 11))
-		{
-			auto value = stmt_expect(self, KSTRING);
-			storage_set_compression(&stmt->config->storage, &value->string);
-		} else
-		if (str_is(&name->string, "compression_level", 17))
-		{
-			auto value = stmt_expect(self, KINT);
-			storage_set_compression_level(&stmt->config->storage, value->integer);
 		} else {
 			stmt_error(self, name, "unknown option");
 		}
@@ -366,6 +350,49 @@ parse_table_create_with(Stmt* self)
 
 		// ,
 		stmt_expect(self, ',');
+	}
+}
+
+static void
+parse_table_partitions(Stmt* self, TableConfig* table_config)
+{
+	// [PARTITIONS]
+	int partitions = opt_int_of(&config()->backends);
+	if (stmt_if(self, KPARTITIONS))
+	{
+		auto n = stmt_expect(self, KINT);
+		partitions = n->integer;
+	}
+	if (partitions < 1 || partitions >= PART_MAPPING_MAX)
+		stmt_error(self, NULL, "table has invalid hash partitions number");
+
+	// partition_max / partitions
+	int range_max      = PART_MAPPING_MAX;
+	int range_interval = range_max / partitions;
+	int range_start    = 0;
+	for (auto order = 0; order < partitions; order++)
+	{
+		// set partition range
+		int range_step;
+		auto is_last = (order == partitions - 1);
+		if (is_last)
+			range_step = range_max - range_start;
+		else
+			range_step = range_interval;
+		if ((range_start + range_step) > range_max)
+			range_step = range_max - range_start;
+
+		// create partition config
+		auto config = part_config_allocate();
+		auto psn = state_psn_next();
+		part_config_set_id(config, psn);
+		part_config_set_range(config, range_start, range_start + range_step);
+
+		table_config_part_add(table_config, config);
+		if (is_last)
+			break;
+
+		range_start += range_step;
 	}
 }
 
@@ -396,14 +423,6 @@ parse_table_create(Stmt* self, bool unlogged)
 	uuid_generate(&id, &runtime()->random);
 	table_config_set_id(config, &id);
 
-	// set default storage settings
-	auto storage = &config->storage;
-	Str compression;
-	str_set(&compression, "zstd", 4);
-	storage_set_id(storage, &id);
-	storage_set_compression(storage, &compression);
-	storage_set_compression_level(storage, 0);
-
 	// create primary index config
 	auto config_index = index_config_allocate(&config->columns);
 	stmt->config_index = config_index;
@@ -422,17 +441,7 @@ parse_table_create(Stmt* self, bool unlogged)
 	// configure partitions mapping
 
 	// [PARTITIONS]
-	auto hash_partitions = opt_int_of(&config()->backends);
-	if (stmt_if(self, KPARTITIONS))
-	{
-		auto n = stmt_expect(self, KINT);
-		hash_partitions = n->integer;
-	}
-	if (hash_partitions < 1 || hash_partitions >= PART_MAPPING_MAX)
-		stmt_error(self, NULL, "table has invalid hash partitions number");
-
-	auto config_part = &config->partitioning;
-	partitioning_set_partitions(config_part, hash_partitions);
+	parse_table_partitions(self, config);
 
 	// [WITH]
 	if (stmt_if(self, KWITH))

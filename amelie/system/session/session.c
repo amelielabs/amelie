@@ -257,9 +257,6 @@ session_run_utility(Session* self)
 			tr_abort(&tr);
 			rethrow();
 		}
-
-		// update catalog pending lsn
-		opt_int_set(&state()->catalog_pending, write.header.lsn);
 	}
 
 	// commit
