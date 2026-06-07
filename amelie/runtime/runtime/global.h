@@ -42,6 +42,12 @@ state_checkpoint(void)
 	return opt_int_of(&state()->checkpoint);
 }
 
+static inline void
+state_checkpoint_set(uint64_t value)
+{
+	return opt_int_set(&state()->checkpoint, value);
+}
+
 // lsn
 static inline uint64_t
 state_lsn(void)

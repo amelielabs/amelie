@@ -99,8 +99,6 @@ checkpoint_mgr_read(CheckpointMgr* self)
 		if (lsn == -1)
 			continue;
 
-		state_lsn_follow(lsn);
-
 		if (incomplete)
 		{
 			info("checkpoint: removing incomplete checkpoint: '{s}/{s}'",
@@ -122,7 +120,9 @@ checkpoint_mgr_open(CheckpointMgr* self)
 	if (! self->current)
 		error("checkpoint: no checkpoints found");
 
-	opt_int_set(&state()->checkpoint, self->current->id);
+	auto id = self->current->id;
+	state_checkpoint_set(id);
+	state_lsn_follow(id);
 
 	// restore last checkpoint
 	char path[PATH_MAX];
@@ -184,7 +184,7 @@ checkpoint_mgr_add(CheckpointMgr* self, uint64_t lsn)
 	if (!self->current || self->current->id < ref->id)
 	{
 		self->current = ref;
-		opt_int_set(&state()->checkpoint, lsn);
+		state_checkpoint_set(lsn);
 	}
 
 	spinlock_unlock(&self->lock);

@@ -173,8 +173,6 @@ wal_recovery(Wal* self)
 		self->files_count++;
 		self->current = self->files;
 		wal_file_pin(self->current);
-
-		state_lsn_set(0);
 		return;
 	}
 

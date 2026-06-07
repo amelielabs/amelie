@@ -50,7 +50,7 @@ slt_open(Slt* self, Str* dir)
 		slt_sh("rm -rf {s}", path);
 
 	// create repository
-	int   argc   = 13;
+	int   argc   = 12;
 	char* argv[] =
 	{
 		"--log_enable=true",
@@ -61,8 +61,7 @@ slt_open(Slt* self, Str* dir)
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
 		"--wal_service=false",
-		"--storage_sync=false",
-		"--catalog_sync=false",
+		"--checkpoint_sync=false",
 		"--frontends=1",
 		"--backends=1",
 		"--listen=[]"

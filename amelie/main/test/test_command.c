@@ -71,7 +71,7 @@ test_command_open(TestSuite* self, Str* arg)
 	       &name);
 
 	// start <name> [server options]
-	int   argc = 15;
+	int   argc = 14;
 	char* argv[18] =
 	{
 		"amelie",
@@ -85,8 +85,7 @@ test_command_open(TestSuite* self, Str* arg)
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
 		"--wal_service=false",
-		"--storage_sync=false",
-		"--catalog_sync=false",
+		"--checkpoint_sync=false",
 		"--frontends=1",
 		"--backends=1"
 	};
