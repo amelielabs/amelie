@@ -18,6 +18,7 @@ enum
 {
 	REL_CATALOG,
 	REL_DDL,
+	REL_CHECKPOINT,
 	REL_BP_QUERY,
 	REL_BP_REFRESH_1,
 	REL_BP_REFRESH_2,
@@ -69,6 +70,7 @@ lockable_mgr_init(LockableMgr* self)
 	self->list = am_malloc(sizeof(Lockable) * REL_MAX);
 	lockable_init(&self->list[REL_CATALOG], REL_CATALOG, "catalog", false);
 	lockable_init(&self->list[REL_DDL], REL_DDL, "ddl", false);
+	lockable_init(&self->list[REL_CHECKPOINT], REL_CHECKPOINT, "checkpoint", false);
 
 	// breakpoints
 	lockable_init(&self->list[REL_BP_QUERY], REL_BP_QUERY, "bp_query", true);

@@ -75,6 +75,10 @@ db_checkpoint(Db* self)
 	if (lsn == state_checkpoint())
 		return;
 
+	// one checkpoint at a time
+	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
+	defer(unlock, checkpoint_lock);
+
 	// take exclusive catalog lock
 	auto catalog_lock = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
 
