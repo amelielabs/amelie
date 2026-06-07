@@ -367,6 +367,7 @@ parse_table_partitions(Stmt* self, TableConfig* table_config)
 		stmt_error(self, NULL, "table has invalid hash partitions number");
 
 	// partition_max / partitions
+	auto psn = state_psn();
 	int range_max      = PART_MAPPING_MAX;
 	int range_interval = range_max / partitions;
 	int range_start    = 0;
@@ -384,7 +385,7 @@ parse_table_partitions(Stmt* self, TableConfig* table_config)
 
 		// create partition config
 		auto config = part_config_allocate();
-		auto psn = state_psn_next();
+		psn = psn + 1;
 		part_config_set_id(config, psn);
 		part_config_set_range(config, range_start, range_start + range_step);
 
