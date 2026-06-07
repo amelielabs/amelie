@@ -5,58 +5,43 @@ select show('state').lsn;
 
 lsn
 ───
-0
-select show('state').catalog;
+1
+select show('state').checkpoint;
 
-catalog
-───────
-0
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-0
+checkpoint
+──────────
+1
 # test: checkpoint (no data)
 checkpoint;
 select show('state').lsn;
 
 lsn
 ───
-0
-select show('state').catalog;
+1
+select show('state').checkpoint;
 
-catalog
-───────
-0
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-0
+checkpoint
+──────────
+1
 # test: create table
 create table test (id serial primary key);
 select show('state').lsn;
 
 lsn
 ───
-1
+2
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
 
 lsn
 ───
-1
-select show('state').catalog;
+2
+select show('state').checkpoint;
 
-catalog
-───────
-1
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-1
+checkpoint
+──────────
+2
 # test: restart/recover
 disconnect S0;
 close E0;
@@ -66,17 +51,12 @@ select show('state').lsn;
 
 lsn
 ───
-1
-select show('state').catalog;
+2
+select show('state').checkpoint;
 
-catalog
-───────
-1
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-1
+checkpoint
+──────────
+2
 select * from test;
 
 id
@@ -97,17 +77,12 @@ select show('state').lsn;
 
 lsn
 ───
+3
+select show('state').checkpoint;
+
+checkpoint
+──────────
 2
-select show('state').catalog;
-
-catalog
-───────
-1
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-1
 select identity_of("test");
 
 identity_of
@@ -117,26 +92,21 @@ select * from test;
 
 id
 ──
-2
 0
 1
+2
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
 
 lsn
 ───
-2
-select show('state').catalog;
+3
+select show('state').checkpoint;
 
-catalog
-───────
-1
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-1
+checkpoint
+──────────
+3
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -146,17 +116,12 @@ select show('state').lsn;
 
 lsn
 ───
-2
-select show('state').catalog;
+3
+select show('state').checkpoint;
 
-catalog
-───────
-1
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-1
+checkpoint
+──────────
+3
 select identity_of("test");
 
 identity_of
@@ -166,9 +131,9 @@ select * from test;
 
 id
 ──
-2
 0
 1
+2
 # test: create clone
 create clone a of test;
 insert into a () values (), ();
@@ -176,11 +141,11 @@ select * from a;
 
 id
 ──
-3
-4
-2
 0
 1
+2
+3
+4
 create clone b of test;
 insert into b () values (), ();
 insert into b () values (), ();
@@ -188,26 +153,26 @@ select * from b;
 
 id
 ──
-5
-2
 0
 1
 6
 7
 8
+2
+5
 select snapshot from show clones verbose;
 
 snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 3,
-  "snapshot_max": 3
+  "snapshot": 4,
+  "snapshot_max": 4
 }
 {
   "id": 2,
-  "snapshot": 5,
-  "snapshot_max": 5
+  "snapshot": 6,
+  "snapshot_max": 6
 }
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -218,75 +183,65 @@ select show('state').lsn;
 
 lsn
 ───
-7
-select show('state').catalog;
+8
+select show('state').checkpoint;
 
-catalog
-───────
-1
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-5
+checkpoint
+──────────
+3
 select snapshot from show clones verbose;
 
 snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 3,
-  "snapshot_max": 3
+  "snapshot": 4,
+  "snapshot_max": 4
 }
 {
   "id": 2,
-  "snapshot": 5,
-  "snapshot_max": 5
+  "snapshot": 6,
+  "snapshot_max": 6
 }
 select * from a;
 
 id
 ──
-3
-4
-2
 0
 1
+2
+3
+4
 select * from b;
 
 id
 ──
-5
-2
 0
 1
 6
 7
 8
+2
+5
 select * from test;
 
 id
 ──
-2
 0
 1
+2
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
 
 lsn
 ───
-7
-select show('state').catalog;
+8
+select show('state').checkpoint;
 
-catalog
-───────
-5
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-5
+checkpoint
+──────────
+8
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -296,51 +251,46 @@ select show('state').lsn;
 
 lsn
 ───
-7
-select show('state').catalog;
+8
+select show('state').checkpoint;
 
-catalog
-───────
-5
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-5
+checkpoint
+──────────
+8
 select snapshot from show clones verbose;
 
 snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 3,
-  "snapshot_max": 3
+  "snapshot": 4,
+  "snapshot_max": 4
 }
 {
   "id": 2,
-  "snapshot": 5,
-  "snapshot_max": 5
+  "snapshot": 6,
+  "snapshot_max": 6
 }
 select * from a;
 
 id
 ──
-3
-4
 0
 1
 2
+3
+4
 select * from b;
 
 id
 ──
-5
 0
 1
 6
 7
 8
 2
+5
 select * from test;
 
 id
@@ -391,16 +341,11 @@ select show('state').lsn;
 
 lsn
 ───
-8
-select show('state').catalog;
+9
+select show('state').checkpoint;
 
-catalog
-───────
-5
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
+checkpoint
+──────────
 8
 show functions verbose;
 
@@ -433,17 +378,12 @@ select show('state').lsn;
 
 lsn
 ───
-8
-select show('state').catalog;
+9
+select show('state').checkpoint;
 
-catalog
-───────
-8
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-8
+checkpoint
+──────────
+9
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -453,17 +393,12 @@ select show('state').lsn;
 
 lsn
 ───
-8
-select show('state').catalog;
+9
+select show('state').checkpoint;
 
-catalog
-───────
-8
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-8
+checkpoint
+──────────
+9
 show functions verbose;
 
 functions
@@ -532,16 +467,11 @@ select show('state').lsn;
 
 lsn
 ───
-9
-select show('state').catalog;
+10
+select show('state').checkpoint;
 
-catalog
-───────
-8
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
+checkpoint
+──────────
 9
 show functions verbose;
 
@@ -574,17 +504,12 @@ select show('state').lsn;
 
 lsn
 ───
-9
-select show('state').catalog;
+10
+select show('state').checkpoint;
 
-catalog
-───────
-9
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-9
+checkpoint
+──────────
+10
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -594,17 +519,12 @@ select show('state').lsn;
 
 lsn
 ───
-9
-select show('state').catalog;
+10
+select show('state').checkpoint;
 
-catalog
-───────
-9
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-9
+checkpoint
+──────────
+10
 show functions verbose;
 
 functions
@@ -650,16 +570,11 @@ select show('state').lsn;
 
 lsn
 ───
-10
-select show('state').catalog;
+11
+select show('state').checkpoint;
 
-catalog
-───────
-9
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
+checkpoint
+──────────
 10
 show topics;
 
@@ -676,17 +591,12 @@ select show('state').lsn;
 
 lsn
 ───
-10
-select show('state').catalog;
+11
+select show('state').checkpoint;
 
-catalog
-───────
-10
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-10
+checkpoint
+──────────
+11
 show topics;
 
 topics
@@ -705,17 +615,12 @@ select show('state').lsn;
 
 lsn
 ───
-10
-select show('state').catalog;
+11
+select show('state').checkpoint;
 
-catalog
-───────
-10
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-10
+checkpoint
+──────────
+11
 show topics;
 
 topics
@@ -743,11 +648,11 @@ select * from top_sub;
 
 lsn  lsn_op  cmd      row
 ────────────────────────────
-12   0       publish  123
-13   0       publish  1
-13   1       publish  2
-13   2       publish  3
-14   0       publish  null
+13   0       publish  123
+14   0       publish  1
+14   1       publish  2
+14   2       publish  3
+15   0       publish  null
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
@@ -757,52 +662,32 @@ select show('state').lsn;
 
 lsn
 ───
-14
-select show('state').catalog;
+15
+select show('state').checkpoint;
 
-catalog
-───────
-10
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
+checkpoint
+──────────
 11
 select * from top_sub;
 
-lsn  lsn_op  cmd      row
-────────────────────────────
-12   0       publish  123
-13   0       publish  1
-13   1       publish  2
-13   2       publish  3
-14   0       publish  null
+lsn  lsn_op  cmd  row
+───────────────────────
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
 
 lsn
 ───
-14
-select show('state').catalog;
+15
+select show('state').checkpoint;
 
-catalog
-───────
-11
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-11
+checkpoint
+──────────
+15
 select * from top_sub;
 
-lsn  lsn_op  cmd      row
-────────────────────────────
-12   0       publish  123
-13   0       publish  1
-13   1       publish  2
-13   2       publish  3
-14   0       publish  null
+lsn  lsn_op  cmd  row
+───────────────────────
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -812,33 +697,28 @@ select show('state').lsn;
 
 lsn
 ───
-14
-select show('state').catalog;
+15
+select show('state').checkpoint;
 
-catalog
-───────
-11
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-11
+checkpoint
+──────────
+15
 select * from top_sub;
 
 lsn  lsn_op  cmd      row
 ────────────────────────────
-12   0       publish  123
-13   0       publish  1
-13   1       publish  2
-13   2       publish  3
-14   0       publish  null
+13   0       publish  123
+14   0       publish  1
+14   1       publish  2
+14   2       publish  3
+15   0       publish  null
 # test: create user
 create user test;
 select show('state').lsn;
 
 lsn
 ───
-15
+16
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
@@ -848,16 +728,11 @@ select show('state').lsn;
 
 lsn
 ───
-15
-select show('state').catalog;
+16
+select show('state').checkpoint;
 
-catalog
-───────
-11
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
+checkpoint
+──────────
 15
 select show('user', 'test').name;
 
@@ -875,17 +750,12 @@ select show('state').lsn;
 
 lsn
 ───
-15
-select show('state').catalog;
+16
+select show('state').checkpoint;
 
-catalog
-───────
-15
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-15
+checkpoint
+──────────
+16
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -895,17 +765,12 @@ select show('state').lsn;
 
 lsn
 ───
-15
-select show('state').catalog;
+16
+select show('state').checkpoint;
 
-catalog
-───────
-15
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-15
+checkpoint
+──────────
+16
 select show('user', 'test').name;
 
 name
@@ -970,16 +835,11 @@ id
 drop table test cascade;
 create table test (id int primary key, old_col text, keep_col int);
 insert into test values (1, 'gone', 10), (2, 'gone2', 20);
-select show('state').catalog;
+select show('state').checkpoint;
 
-catalog
-───────
-19
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-23
+checkpoint
+──────────
+21
 alter table test drop column old_col;
 select show('table', 'test', true).columns;
 
@@ -1012,16 +872,11 @@ disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select show('state').catalog;
+select show('state').checkpoint;
 
-catalog
-───────
-25
-select show('state').catalog_pending;
-
-catalog_pending
-───────────────
-25
+checkpoint
+──────────
+26
 select show('table', 'test', true).columns;
 
 columns
@@ -1062,9 +917,9 @@ select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────────────────
-29   0       write  {"id": 1, "data": 10}
-29   1       write  {"id": 2, "data": 20}
-29   2       write  {"id": 3, "data": 30}
+30   0       write  {"id": 1, "data": 10}
+30   1       write  {"id": 2, "data": 20}
+30   2       write  {"id": 3, "data": 30}
 # test: checkpoint and restart
 checkpoint;
 disconnect S0;
@@ -1075,9 +930,9 @@ select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────────────────
-29   0       write  {"id": 1, "data": 10}
-29   1       write  {"id": 2, "data": 20}
-29   2       write  {"id": 3, "data": 30}
+30   0       write  {"id": 1, "data": 10}
+30   1       write  {"id": 2, "data": 20}
+30   2       write  {"id": 3, "data": 30}
 select * from test order by id;
 
 id  data
@@ -1096,16 +951,18 @@ select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────────────────
-34   1       write  {"id": 2, "data": 20}
-34   2       write  {"id": 3, "data": 30}
+35   0       write  {"id": 1, "data": 10}
+35   1       write  {"id": 2, "data": 20}
+35   2       write  {"id": 3, "data": 30}
 # test: checkpoint and restart
 checkpoint;
 select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────────────────
-34   1       write  {"id": 2, "data": 20}
-34   2       write  {"id": 3, "data": 30}
+35   0       write  {"id": 1, "data": 10}
+35   1       write  {"id": 2, "data": 20}
+35   2       write  {"id": 3, "data": 30}
 disconnect S0;
 close E0;
 open E0;
@@ -1114,14 +971,15 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-11   0
+12   0
 34   0
 select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────────────────
-34   1       write  {"id": 2, "data": 20}
-34   2       write  {"id": 3, "data": 30}
+35   0       write  {"id": 1, "data": 10}
+35   1       write  {"id": 2, "data": 20}
+35   2       write  {"id": 3, "data": 30}
 select * from test order by id;
 
 id  data

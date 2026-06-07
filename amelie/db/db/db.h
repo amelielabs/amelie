@@ -18,7 +18,6 @@ struct Db
 	Catalog       catalog;
 	Wal           wal;
 	List          snapshots;
-	List          snapshots_gc;
 	int           snapshots_count;
 	CheckpointMgr checkpoint_mgr;
 	Syncer        syncer;

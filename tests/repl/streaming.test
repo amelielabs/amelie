@@ -10150,7 +10150,7 @@ select * from top_sub;
 
 # test: acknowledge
 switch S0;
-acknowledge top_sub to 10021;
+acknowledge top_sub to 10022;
 
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
@@ -10163,7 +10163,7 @@ select * from top_sub;
 
 # test: acknowledge
 switch S0;
-acknowledge top_sub to 10022, 1;
+acknowledge top_sub to 10023, 1;
 
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;

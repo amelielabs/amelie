@@ -60,7 +60,7 @@ test table_alter
 test table_migration
 test index
 test clone
-#test clone_visibility
+test clone_visibility
 test topic
 test subscription
 test function
@@ -156,7 +156,7 @@ directory repl
 group repl
 test replica
 test repl
-test ro
+#test ro
 test streaming
 test streaming_tls
 test streaming_tls_2

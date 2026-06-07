@@ -22,7 +22,6 @@
 #include <amelie_checkpoint.h>
 #include <amelie_db.h>
 
-#if 0
 static inline DbSnapshot*
 db_snapshot_allocate(void)
 {
@@ -51,8 +50,6 @@ db_snapshot(Db* self)
 	auto snapshot = db_snapshot_allocate();
 	list_append(&self->snapshots, &snapshot->link);
 	self->snapshots_count++;
-
-	// todo: use last snapshot
 
 	auto on_error = error_catch
 	(
@@ -83,24 +80,19 @@ db_snapshot(Db* self)
 		defer_buf(buf);
 		buf_write_buf(data, buf);
 
-#if 0
-		// catalog
-		encode_raw(data, "catalog", 7);
-		auto lsn = state_lsn();
-		auto tsn = state_tsn();
-		auto catalog = catalog_state(self, lsn, tsn);
-		defer_buf(catalog);
-		buf_write_buf(data, catalog);
+		// use last checkpoint
+		snapshot->checkpoint = checkpoint_mgr_ref(&self->checkpoint_mgr);
 
+		// checkpoint
+		encode_raw(data, "checkpoint", 10);
+		encode_int(data, snapshot->checkpoint->id);
 
-		// create catalog dump and take partitions snapshots
-		//
-		// catalog, storage, partitions
-		catalog_snapshot(&self->catalog, data);
-#endif
+		// files
+		encode_raw(data, "files", 5);
+		checkpoint_mgr_list(snapshot->checkpoint, data);
 
 		// create wal list and take the wal snapshot
-		//
+
 		// wal
 		encode_raw(data, "wal", 3);
 		wal_snapshot(&self->wal, &snapshot->wal_snapshot, data);
@@ -118,41 +110,19 @@ db_snapshot(Db* self)
 }
 
 static void
-db_snapshot_gc(Db* self)
-{
-	list_foreach_safe(&self->snapshots_gc)
-	{
-		auto snapshot = list_at(DbSnapshot, link);
-		auto data = &snapshot->data;
-		if (! buf_empty(data)) {
-			error_catch ( catalog_snapshot_cleanup(data) );
-		}
-		db_snapshot_free(snapshot);
-	}
-	list_init(&self->snapshots_gc);
-}
-
-#if 0
-static void
 db_snapshot_detach(Db* self, DbSnapshot* snapshot)
 {
-	// detach wal slot
-	wal_detach(&self->wal, &snapshot->wal_snapshot);
-
 	list_unlink(&snapshot->link);
 	self->snapshots_count--;
 
-	// add to the delayed gc list
-	list_append(&self->snapshots_gc, &snapshot->link);
+	// detach wal slot
+	wal_detach(&self->wal, &snapshot->wal_snapshot);
 
-	// cleanup snapshot files
-	if (self->snapshots_count > 0)
-		return;
+	// detach checkpoint
+	checkpoint_mgr_unref(&self->checkpoint_mgr, snapshot->checkpoint);
 
-	// do gc once there are no active snapshots left
-	db_snapshot_gc(self);
+	db_snapshot_free(snapshot);
 }
-
 
 void
 db_snapshot_drop(Db* self, DbSnapshot* snapshot)
@@ -164,21 +134,5 @@ db_snapshot_drop(Db* self, DbSnapshot* snapshot)
 	unlock(lock_catalog);
 
 	// wal gc
-	service_gc(&self->service);
-}
-#endif
-#endif
-
-DbSnapshot*
-db_snapshot(Db* self)
-{
-	(void)self;
-	return NULL;
-}
-
-void
-db_snapshot_drop(Db* self, DbSnapshot* snapshot)
-{
-	(void)self;
-	(void)snapshot;
+	db_gc(self);
 }

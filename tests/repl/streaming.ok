@@ -10028,7 +10028,7 @@ repl
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10000,
+    "lsn": 10001,
     "lag": 0
   }]
 }
@@ -10037,7 +10037,7 @@ select show('state').lsn;
 
 lsn
 ───
-10000
+10001
 select count(*) from test;
 
 count
@@ -10048,7 +10048,7 @@ select show('state').lsn;
 
 lsn
 ───
-10000
+10001
 select count(*) from test;
 
 count
@@ -10081,7 +10081,7 @@ repl
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10001,
+    "lsn": 10002,
     "lag": 0
   }]
 }
@@ -10118,7 +10118,7 @@ repl
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10002,
+    "lsn": 10003,
     "lag": 0
   }]
 }
@@ -10152,7 +10152,7 @@ repl
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10003,
+    "lsn": 10004,
     "lag": 0
   }]
 }
@@ -10186,7 +10186,7 @@ repl
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10004,
+    "lsn": 10005,
     "lag": 0
   }]
 }
@@ -10213,7 +10213,7 @@ repl
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10005,
+    "lsn": 10006,
     "lag": 0
   }]
 }
@@ -10244,11 +10244,10 @@ state
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 3,
-  "lsn": 10015,
+  "lsn": 10016,
   "tsn": 10015,
   "psn": 3,
-  "catalog": 0,
-  "catalog_pending": 10005,
+  "checkpoint": 1,
   "read_only": false
 }
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
@@ -10264,7 +10263,7 @@ repl
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10015,
+    "lsn": 10016,
     "lag": 0
   }]
 }
@@ -10297,7 +10296,7 @@ repl
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10017,
+    "lsn": 10018,
     "lag": 0
   }]
 }
@@ -10333,71 +10332,21 @@ state
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 3,
-  "lsn": 10022,
+  "lsn": 10023,
   "tsn": 10019,
   "psn": 6,
-  "catalog": 0,
-  "catalog_pending": 10019,
+  "checkpoint": 1,
   "read_only": false
 }
 select * from top_sub;
 
 lsn    lsn_op  cmd      row
 ──────────────────────────────
-10020  0       publish  null
-10021  0       publish  123
-10022  0       publish  1
-10022  1       publish  2
-10022  2       publish  3
-# test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
-show repl;
-
-repl
-────
-{
-  "active": true,
-  "role": "primary",
-  "primary": null,
-  "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "http://127.0.0.1:3481/",
-    "connected": true,
-    "lsn": 10022,
-    "lag": 0
-  }]
-}
-switch S1;
-show topics;
-
-topics
-──────
-{
-  "user": "amelie",
-  "name": "top",
-  "description": ""
-}
-show subs;
-
-subs
-────
-{
-  "user": "amelie",
-  "name": "top_sub",
-  "description": ""
-}
-select * from top_sub;
-
-lsn    lsn_op  cmd      row
-──────────────────────────────
-10020  0       publish  null
-10021  0       publish  123
-10022  0       publish  1
-10022  1       publish  2
-10022  2       publish  3
-# test: acknowledge
-switch S0;
-acknowledge top_sub to 10021;
+10021  0       publish  null
+10022  0       publish  123
+10023  0       publish  1
+10023  1       publish  2
+10023  2       publish  3
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
@@ -10438,13 +10387,15 @@ subs
 select * from top_sub;
 
 lsn    lsn_op  cmd      row
-─────────────────────────────
-10022  0       publish  1
-10022  1       publish  2
-10022  2       publish  3
+──────────────────────────────
+10021  0       publish  null
+10022  0       publish  123
+10023  0       publish  1
+10023  1       publish  2
+10023  2       publish  3
 # test: acknowledge
 switch S0;
-acknowledge top_sub to 10022, 1;
+acknowledge top_sub to 10022;
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
@@ -10486,7 +10437,54 @@ select * from top_sub;
 
 lsn    lsn_op  cmd      row
 ─────────────────────────────
-10022  2       publish  3
+10023  0       publish  1
+10023  1       publish  2
+10023  2       publish  3
+# test: acknowledge
+switch S0;
+acknowledge top_sub to 10023, 1;
+# test: wait replica sync
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+show repl;
+
+repl
+────
+{
+  "active": true,
+  "role": "primary",
+  "primary": null,
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "http://127.0.0.1:3481/",
+    "connected": true,
+    "lsn": 10025,
+    "lag": 0
+  }]
+}
+switch S1;
+show topics;
+
+topics
+──────
+{
+  "user": "amelie",
+  "name": "top",
+  "description": ""
+}
+show subs;
+
+subs
+────
+{
+  "user": "amelie",
+  "name": "top_sub",
+  "description": ""
+}
+select * from top_sub;
+
+lsn    lsn_op  cmd      row
+─────────────────────────────
+10023  2       publish  3
 # test: topic (multi-stmt)
 switch S0;
 create table abc (id int primary key);
@@ -10506,15 +10504,15 @@ select * from sa;
 
 lsn    lsn_op  cmd      row
 ─────────────────────────────
-10030  0       publish  1
+10031  0       publish  1
 select * from sb;
 
 lsn    lsn_op  cmd      row
 ─────────────────────────────
-10030  1       publish  2
-10030  2       publish  3
-10030  3       publish  4
-10030  4       publish  5
+10031  1       publish  2
+10031  2       publish  3
+10031  3       publish  4
+10031  4       publish  5
 select * from abc;
 
 id
@@ -10535,7 +10533,7 @@ repl
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10030,
+    "lsn": 10031,
     "lag": 0
   }]
 }
@@ -10544,15 +10542,15 @@ select * from sa;
 
 lsn    lsn_op  cmd      row
 ─────────────────────────────
-10030  0       publish  1
+10031  0       publish  1
 select * from sb;
 
 lsn    lsn_op  cmd      row
 ─────────────────────────────
-10030  1       publish  2
-10030  2       publish  3
-10030  3       publish  4
-10030  4       publish  5
+10031  1       publish  2
+10031  2       publish  3
+10031  3       publish  4
+10031  4       publish  5
 select * from abc;
 
 id

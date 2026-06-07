@@ -15,10 +15,10 @@ typedef struct DbSnapshot DbSnapshot;
 
 struct DbSnapshot
 {
-	Buf         data;
-	Checkpoint* checkpoint;
-	WalSlot     wal_snapshot;
-	List        link;
+	Buf            data;
+	CheckpointRef* checkpoint;
+	WalSlot        wal_snapshot;
+	List           link;
 };
 
 DbSnapshot* db_snapshot(Db*);

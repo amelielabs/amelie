@@ -38,7 +38,6 @@ db_init(Db*        self,
 	             cdc);
 	wal_init(&self->wal);
 	list_init(&self->snapshots);
-	list_init(&self->snapshots_gc);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &self->catalog);
 	syncer_init(&self->syncer, self);
 }
@@ -70,6 +69,8 @@ db_bootstrap(Db* self)
 	checkpoint_begin(&checkpoint, 1, 1);
 	checkpoint_run(&checkpoint);
 	checkpoint_wait(&checkpoint);
+
+	checkpoint_mgr_add(&self->checkpoint_mgr, 1);
 }
 
 void

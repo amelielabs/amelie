@@ -38,3 +38,4 @@ void checkpoint_mgr_add(CheckpointMgr*, uint64_t);
 CheckpointRef*
 checkpoint_mgr_ref(CheckpointMgr*);
 void checkpoint_mgr_unref(CheckpointMgr*, CheckpointRef*);
+void checkpoint_mgr_list(CheckpointRef*, Buf*);

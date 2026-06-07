@@ -42,9 +42,9 @@ config
   "wal_checkpoint": 100,
   "wal_rewind": false,
   "wal_rewind_pos": 0,
-  "storage_crc": true,
-  "storage_sync": false,
-  "catalog_sync": false,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }
@@ -58,11 +58,10 @@ state
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "lsn": 2,
+  "lsn": 3,
   "tsn": 1,
   "psn": 3,
-  "catalog": 1,
-  "catalog_pending": 1,
+  "checkpoint": 1,
   "read_only": false
 }
 select count(*) from test;

@@ -70,7 +70,7 @@ replicas
   "uri": "http://127.0.0.1:3481/",
   "connected": false,
   "lsn": 0,
-  "lag": 0
+  "lag": 1
 }
 # test: start primary
 start repl;
@@ -83,7 +83,7 @@ select show('state').lsn;
 
 lsn
 ───
-2
+3
 # test: wait replica sync
 watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
 # test: stop replica
@@ -97,7 +97,7 @@ select show('state').lsn;
 
 lsn
 ───
-5
+6
 # test: replica lag
 show replicas;
 
@@ -107,7 +107,7 @@ replicas
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:3481/",
   "connected": false,
-  "lsn": 2,
+  "lsn": 3,
   "lag": 3
 }
 # test: replica disconnected
@@ -129,7 +129,7 @@ replicas
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:3481/",
   "connected": true,
-  "lsn": 5,
+  "lsn": 6,
   "lag": 0
 }
 # test: restart primary
@@ -154,7 +154,7 @@ replicas
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:3481/",
   "connected": true,
-  "lsn": 8,
+  "lsn": 9,
   "lag": 0
 }
 # test: ensure replica is read-only
@@ -168,14 +168,14 @@ select show('state').lsn;
 
 lsn
 ───
-8
+9
 insert into test values (10);
 error: system is in read-only mode
 select show('state').lsn;
 
 lsn
 ───
-8
+9
 select show('state').psn;
 
 psn
@@ -187,26 +187,26 @@ select show('state').lsn;
 
 lsn
 ───
-8
+9
 select show('state').psn;
 
 psn
 ───
-3
+4
 # test: replica read
 select * from test;
 
 id
 ──
-2
-7
-9
-4
-5
-6
 1
 3
 8
+4
+5
+6
+2
+7
+9
 show repl;
 
 repl
@@ -221,7 +221,7 @@ select show('state').lsn;
 
 lsn
 ───
-8
+9
 # test: failover (unsubscribe, switch to primary)
 show repl;
 
@@ -284,25 +284,25 @@ replicas
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "http://127.0.0.1:3480/",
   "connected": true,
-  "lsn": 11,
+  "lsn": 12,
   "lag": 0
 }
 select * from test;
 
 id
 ──
-2
-7
-9
-12
+1
+3
+8
 4
 5
 6
 10
 11
-1
-3
-8
+2
+7
+9
+12
 disconnect S1;
 close E1;
 disconnect S0;

@@ -81,8 +81,8 @@ restore_basedir(char* directory)
 	// <base>/certs
 	restore_dir("certs");
 
-	// <base>/storage
-	restore_dir("storage");
+	// <base>/checkpoints
+	restore_dir("checkpoints");
 
 	// <base>/wal
 	restore_dir("wal");
@@ -165,10 +165,6 @@ restore_pull(Restore* self, Str* path_relative, int64_t size, int mode)
 	if (op != BACKUP_PUSH)
 		error("restore: unexpected server response");
 
-	// cut of the .snapshot extensions
-	if (str_size(path_relative) > 9 && !strncmp(path_relative->end - 9, ".snapshot", 9))
-		str_truncate(path_relative, 9);
-
 	info("backup: {str} ({.2f} MiB)", path_relative,
 	     (double)size / 1024 / 1024);
 
@@ -213,21 +209,19 @@ restore_run(Restore* self, char* directory)
 	uint8_t* pos_server   = NULL;
 	uint8_t* pos_config   = NULL;
 	uint8_t* pos_state    = NULL;
-	uint8_t* pos_catalog  = NULL;
-	uint8_t* pos_storages = NULL;
 	uint8_t* pos_files    = NULL;
 	uint8_t* pos_wal      = NULL;
+	int64_t  checkpoint;
 	Decode obj[] =
 	{
-		{ DECODE_OBJ,   "version",  &pos_version  },
-		{ DECODE_ARRAY, "server",   &pos_server   },
-		{ DECODE_OBJ,   "config",   &pos_config   },
-		{ DECODE_OBJ,   "state",    &pos_state    },
-		{ DECODE_OBJ,   "catalog",  &pos_catalog  },
-		{ DECODE_ARRAY, "storages", &pos_storages },
-		{ DECODE_ARRAY, "files",    &pos_files    },
-		{ DECODE_ARRAY, "wal",      &pos_wal      },
-		{ 0,             NULL,       NULL         },
+		{ DECODE_OBJ,   "version",    &pos_version },
+		{ DECODE_ARRAY, "server",     &pos_server  },
+		{ DECODE_OBJ,   "config",     &pos_config  },
+		{ DECODE_OBJ,   "state",      &pos_state   },
+		{ DECODE_INT,   "checkpoint", &checkpoint  },
+		{ DECODE_ARRAY, "files",      &pos_files   },
+		{ DECODE_ARRAY, "wal",        &pos_wal     },
+		{ 0,             NULL,         NULL        },
 	};
 	decode_obj(obj, "snapshot", &pos);
 
@@ -243,17 +237,10 @@ restore_run(Restore* self, char* directory)
 	// write state
 	restore_file("state.json", pos_state);
 
-	// write catalog
-	restore_file("catalog.json", pos_catalog);
-
-	// create storages
-	unpack_array(&pos_storages);
-	while (! unpack_array_end(&pos_storages))
-	{
-		Str path_relative;
-		unpack_str(&pos_storages, &path_relative);
-		restore_dir_str(&path_relative);
-	}
+	// create <base>/checkpoints/<id> directory
+	char path[PATH_MAX];
+	format(path, sizeof(path), "checkpoints/{u64}", checkpoint);
+	restore_dir(path);
 
 	// pull files
 	unpack_array(&pos_files);

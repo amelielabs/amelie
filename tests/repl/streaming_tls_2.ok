@@ -10041,13 +10041,13 @@ repl
     "id": "00000000-0000-0000-0000-000000000001",
     "uri": "https://127.0.0.1:3481/",
     "connected": true,
-    "lsn": 10000,
+    "lsn": 10001,
     "lag": 0
   }, {
     "id": "00000000-0000-0000-0000-000000000002",
     "uri": "https://127.0.0.1:3482/",
     "connected": true,
-    "lsn": 10000,
+    "lsn": 10001,
     "lag": 0
   }]
 }
@@ -10055,7 +10055,7 @@ select show('state').lsn;
 
 lsn
 ───
-10000
+10001
 select count(*) from test;
 
 count
@@ -10077,7 +10077,7 @@ select show('state').lsn;
 
 lsn
 ───
-10000
+10001
 select count(*) from test;
 
 count
@@ -10099,7 +10099,7 @@ select show('state').lsn;
 
 lsn
 ───
-10000
+10001
 select count(*) from test;
 
 count
