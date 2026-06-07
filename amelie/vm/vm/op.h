@@ -288,7 +288,6 @@ enum
 	// ddl
 	CDDL,
 	CDDL_CREATE_INDEX,
-	CDDL_REFRESH,
 
 	// executor
 	CSEND_SHARD,

@@ -372,7 +372,6 @@ vm_run(Vm*       self,
 		// ddl
 		&&cddl,
 		&&cddl_create_index,
-		&&cddl_refresh,
 
 		// executor
 		&&csend_shard,
@@ -1947,13 +1946,6 @@ cddl:
 
 cddl_create_index:
 	cddl_create_index(self, op);
-	op_next;
-
-cddl_refresh:
-	// [table*, id]
-	service_refresh(&share()->db->service,
-	                &((Table*)op->a)->config->id,
-	                op->b);
 	op_next;
 
 csend_shard:

@@ -29,7 +29,7 @@ ccheckpoint(Vm* self, Op* op)
 	// PERM_SYSTEM
 	check_user(self->tr, PERM_SYSTEM);
 
-	service_checkpoint(&share()->db->service);
+	db_checkpoint(share()->db);
 }
 
 void
@@ -197,7 +197,7 @@ cddl_create_index(Vm* self, Op* op)
 	unused(self);
 	auto pos = code_data_at(self->code_data, op->a);
 	auto flags = op->b;
-	service_create_index(&share()->db->service, self->tr, pos, flags);
+	db_create_index(share()->db, self->tr, pos, flags);
 }
 
 void
