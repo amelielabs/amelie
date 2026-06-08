@@ -282,13 +282,13 @@ snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 56,
-  "snapshot_max": 56
+  "snapshot": 57,
+  "snapshot_max": 57
 }
 {
   "id": 2,
-  "snapshot": 58,
-  "snapshot_max": 58
+  "snapshot": 59,
+  "snapshot_max": 59
 }
 drop clone b;
 create clone b of main;
@@ -298,13 +298,13 @@ snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 56,
-  "snapshot_max": 56
+  "snapshot": 57,
+  "snapshot_max": 57
 }
 {
   "id": 3,
-  "snapshot": 62,
-  "snapshot_max": 62
+  "snapshot": 63,
+  "snapshot_max": 63
 }
 select * from a;
 

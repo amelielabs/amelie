@@ -15,7 +15,7 @@ state
   "frontends": 1,
   "backends": 1,
   "lsn": 1,
-  "tsn": 0,
+  "tsn": 1,
   "psn": 0,
   "checkpoint": 1,
   "read_only": false

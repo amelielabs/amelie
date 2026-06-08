@@ -55,7 +55,7 @@ static void
 db_bootstrap(Db* self)
 {
 	// first valid transaction id starts from 1
-	state_tsn_set(0);
+	state_tsn_set(1);
 	state_lsn_set(1);
 	state_checkpoint_set(1);
 

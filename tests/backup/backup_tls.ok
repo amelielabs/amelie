@@ -59,7 +59,7 @@ state
   "frontends": 1,
   "backends": 1,
   "lsn": 3,
-  "tsn": 1,
+  "tsn": 2,
   "psn": 3,
   "checkpoint": 1,
   "read_only": false

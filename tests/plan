@@ -160,6 +160,7 @@ test ro
 test streaming
 test streaming_tls
 test streaming_tls_2
+test streaming_unlogged
 
 # http
 directory http

@@ -484,13 +484,13 @@ snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 2,
-  "snapshot_max": 2
+  "snapshot": 3,
+  "snapshot_max": 3
 }
 {
   "id": 2,
-  "snapshot": 4,
-  "snapshot_max": 4
+  "snapshot": 5,
+  "snapshot_max": 5
 }
 # test: restart
 disconnect S0;
@@ -509,13 +509,13 @@ snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 2,
-  "snapshot_max": 2
+  "snapshot": 3,
+  "snapshot_max": 3
 }
 {
   "id": 2,
-  "snapshot": 4,
-  "snapshot_max": 4
+  "snapshot": 5,
+  "snapshot_max": 5
 }
 select * from a;
 

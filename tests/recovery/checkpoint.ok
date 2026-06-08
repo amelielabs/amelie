@@ -166,13 +166,13 @@ snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 4,
-  "snapshot_max": 4
+  "snapshot": 5,
+  "snapshot_max": 5
 }
 {
   "id": 2,
-  "snapshot": 6,
-  "snapshot_max": 6
+  "snapshot": 7,
+  "snapshot_max": 7
 }
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -195,13 +195,13 @@ snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 4,
-  "snapshot_max": 4
+  "snapshot": 5,
+  "snapshot_max": 5
 }
 {
   "id": 2,
-  "snapshot": 6,
-  "snapshot_max": 6
+  "snapshot": 7,
+  "snapshot_max": 7
 }
 select * from a;
 
@@ -263,13 +263,13 @@ snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 4,
-  "snapshot_max": 4
+  "snapshot": 5,
+  "snapshot_max": 5
 }
 {
   "id": 2,
-  "snapshot": 6,
-  "snapshot_max": 6
+  "snapshot": 7,
+  "snapshot_max": 7
 }
 select * from a;
 
