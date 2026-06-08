@@ -463,5 +463,30 @@ insert into secret values (1, "top-secret");
 grant select on secret to future_user;
 drop table test;
 
+# test: mcp bypasses sql api revocation
+create user u;
+connect E0 S1 u@127.0.0.1:3485;
+switch S1;
+create table owned (id int primary key);
+create function addrow ()
+begin
+  insert into owned values (1);
+end;
+
+switch S0;
+revoke sql from u;
+revoke api from u;
+
+switch S1;
+select 1;
+post /api application/json - {"jsonrpc": "2.0", "id": 1, "method": "sql", "params": {"text": "select 1"}};
+post /mcp application/json - {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "addrow", "arguments": {}}};
+
+switch S0;
+select * from u.owned;
+
+disconnect S1;
+drop user u cascade;
+
 disconnect S0;
 close E0;
