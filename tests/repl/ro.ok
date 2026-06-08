@@ -26,5 +26,33 @@ tables
 ──────
 select * from leaked;
 error: select * from ❰leaked❱ ⟵ relation not found
+# test: read-only publish
+unsubscribe;
+stop repl;
+create topic t;
+create subscription t_sub on t;
+start repl;
+subscribe "00000000-0000-0000-0000-000000000001";
+select show("state").read_only;
+
+read_only
+─────────
+true
+select show("state").lsn;
+
+lsn
+───
+3
+publish into t 123;
+error: system is in read-only mode
+select show("state").lsn;
+
+lsn
+───
+3
+select * from t_sub;
+
+lsn  lsn_op  cmd  row
+───────────────────────
 disconnect S0;
 close E0;

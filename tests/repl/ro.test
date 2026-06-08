@@ -13,5 +13,20 @@ select show("state").psn;
 show tables;
 select * from leaked;
 
+# test: read-only publish
+unsubscribe;
+stop repl;
+
+create topic t;
+create subscription t_sub on t;
+
+start repl;
+subscribe "00000000-0000-0000-0000-000000000001";
+select show("state").read_only;
+select show("state").lsn;
+publish into t 123;
+select show("state").lsn;
+select * from t_sub;
+
 disconnect S0;
 close E0;

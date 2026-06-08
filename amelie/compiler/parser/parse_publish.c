@@ -39,7 +39,7 @@ parse_publish(Stmt* self)
 	stmt->topic = topic;
 
 	access_add(&self->parser->program->access, &topic->rel,
-	           LOCK_SHARED, PERM_PUBLISH);
+	           LOCK_SHARED_RW, PERM_PUBLISH);
 
 	// [value, ...]
 	if (stmt_if(self, KEOF) || stmt_if(self, ';'))
