@@ -73,7 +73,7 @@ index_hash_merge_next(Iterator* arg)
 	for (;;)
 	{
 		self->current_it_order++;
-		if (self->current_it_order < self->list_count)
+		if (self->current_it_order >= self->list_count)
 			break;
 		auto at = &list[self->current_it_order];
 		if (iterator_has(&at->it))

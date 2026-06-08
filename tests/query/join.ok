@@ -1,0 +1,171 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: cross join (tree)
+create table a (id int primary key) partitions 1;
+create table b (id int primary key) partitions 3;
+insert into a values (0);
+insert into b values (0), (4), (2);
+select count(*) from a, b;
+
+count
+─────
+3
+explain select b.id from a, b order by b.id;
+
+explain
+───────
+
+main
+  0   send_all            0      0      65    # amelie.a (select, closing)
+  1   union               1      1      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set_ordered         0      1      1
+  1   table_open          1      1      11    # amelie.a (primary) part
+  2   table_open          2      33     9     # amelie.b (primary) 
+  3   table_readi32       3      2      -     # id
+  4   push                3      0      0
+  5   table_readi32       3      2      -     # id
+  6   push                3      0      0
+  7   set_add             0      0      0
+  8   table_next          2      3      0
+  9   free                2      0      0
+ 10   table_next          1      2      0
+ 11   free                1      0      0
+ 12   set_sort            0      0      0
+ 13   ret                 0      0      -
+
+access
+  •   amelie.a shared [select]
+  •   amelie.b exclusive_ro [select]
+select b.id from a, b order by b.id;
+
+col1
+────
+0
+2
+4
+select * from b order by id;
+
+id
+──
+0
+2
+4
+drop table a;
+drop table b;
+# test: cross join (hash)
+create table a (id int primary key) partitions 1;
+create table b (id int primary key using hash) partitions 3;
+insert into a values (0);
+insert into b values (0), (4), (2);
+select count(*) from a, b;
+
+count
+─────
+3
+explain select b.id from a, b order by b.id;
+
+explain
+───────
+
+main
+  0   send_all            0      0      65    # amelie.a (select, closing)
+  1   union               1      1      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set_ordered         0      1      1
+  1   table_open          1      1      11    # amelie.a (primary) part
+  2   table_open          2      33     9     # amelie.b (primary) 
+  3   table_readi32       3      2      -     # id
+  4   push                3      0      0
+  5   table_readi32       3      2      -     # id
+  6   push                3      0      0
+  7   set_add             0      0      0
+  8   table_next          2      3      0
+  9   free                2      0      0
+ 10   table_next          1      2      0
+ 11   free                1      0      0
+ 12   set_sort            0      0      0
+ 13   ret                 0      0      -
+
+access
+  •   amelie.a shared [select]
+  •   amelie.b exclusive_ro [select]
+select b.id from a, b order by b.id;
+
+col1
+────
+0
+2
+4
+select * from b order by id;
+
+id
+──
+0
+2
+4
+drop table a;
+drop table b;
+create table a (id int primary key) partitions 1;
+create table b (id int primary key using hash) partitions 1;
+insert into a values (0);
+insert into b values (0), (4), (2);
+select count(*) from a, b;
+
+count
+─────
+3
+explain select b.id from a, b order by b.id;
+
+explain
+───────
+
+main
+  0   send_all            0      0      65    # amelie.a (select, closing)
+  1   union               1      1      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set_ordered         0      1      1
+  1   table_open          1      1      11    # amelie.a (primary) part
+  2   table_open          2      33     9     # amelie.b (primary) 
+  3   table_readi32       3      2      -     # id
+  4   push                3      0      0
+  5   table_readi32       3      2      -     # id
+  6   push                3      0      0
+  7   set_add             0      0      0
+  8   table_next          2      3      0
+  9   free                2      0      0
+ 10   table_next          1      2      0
+ 11   free                1      0      0
+ 12   set_sort            0      0      0
+ 13   ret                 0      0      -
+
+access
+  •   amelie.a shared [select]
+  •   amelie.b exclusive_ro [select]
+select b.id from a, b order by b.id;
+
+col1
+────
+0
+2
+4
+select * from b order by id;
+
+id
+──
+0
+2
+4
+drop table a;
+drop table b;
+disconnect S0;
+close E0;

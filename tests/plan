@@ -83,6 +83,7 @@ test where
 test scan
 test planner
 test subselect
+test join
 test as
 test order_by
 test distinct
