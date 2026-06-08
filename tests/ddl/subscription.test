@@ -342,5 +342,16 @@ select * from sub1;
 select * from sub2;
 drop table test cascade;
 
+# test: acknowledge (lsn_op out-of-bounds check)
+create table test (id int primary key, data int);
+create subscription test_sub on test;
+insert into test values (1, 0), (2, 0), (3, 0);
+select * from test_sub;
+select lsn, lsn_op from test_sub;
+acknowledge test_sub to 103, 99;
+select lsn, lsn_op from show subscriptions verbose;
+select * from test_sub;
+drop table test cascade;
+
 disconnect S0;
 close E0;

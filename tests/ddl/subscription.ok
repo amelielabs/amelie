@@ -734,5 +734,34 @@ select * from sub2;
 lsn  lsn_op  cmd  row
 ───────────────────────
 drop table test cascade;
+# test: acknowledge (lsn_op out-of-bounds check)
+create table test (id int primary key, data int);
+create subscription test_sub on test;
+insert into test values (1, 0), (2, 0), (3, 0);
+select * from test_sub;
+
+lsn  lsn_op  cmd    row
+──────────────────────────────────────────
+103  0       write  {"id": 1, "data": 0}
+103  1       write  {"id": 2, "data": 0}
+103  2       write  {"id": 3, "data": 0}
+select lsn, lsn_op from test_sub;
+
+lsn  lsn_op
+─────────────
+103  0
+103  1
+103  2
+acknowledge test_sub to 103, 99;
+select lsn, lsn_op from show subscriptions verbose;
+
+lsn  lsn_op
+─────────────
+103  99
+select * from test_sub;
+
+lsn  lsn_op  cmd  row
+───────────────────────
+drop table test cascade;
 disconnect S0;
 close E0;
