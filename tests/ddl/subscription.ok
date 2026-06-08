@@ -763,5 +763,33 @@ select * from test_sub;
 lsn  lsn_op  cmd  row
 ───────────────────────
 drop table test cascade;
+# test: acknowledge (lsn_op rewind)
+create topic t;
+create subscription s on t;
+publish into t 1,2,3;
+select * from s;
+
+lsn  lsn_op  cmd      row
+───────────────────────────
+108  0       publish  1
+108  1       publish  2
+108  2       publish  3
+acknowledge s to 108, 2;
+select * from s;
+
+lsn  lsn_op  cmd  row
+───────────────────────
+acknowledge s to 108, 0;
+error: subscription 's': ack position is out of range
+select lsn, lsn_op from show subscriptions verbose;
+
+lsn  lsn_op
+─────────────
+108  2
+select * from s;
+
+lsn  lsn_op  cmd  row
+───────────────────────
+drop topic t cascade;
 disconnect S0;
 close E0;

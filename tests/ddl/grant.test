@@ -463,7 +463,7 @@ insert into secret values (1, "top-secret");
 grant select on secret to future_user;
 drop table test;
 
-# test: mcp bypasses sql api revocation
+# test: grant (mcp)
 create user u;
 connect E0 S1 u@127.0.0.1:3485;
 switch S1;

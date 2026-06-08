@@ -353,5 +353,17 @@ select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 drop table test cascade;
 
+# test: acknowledge (lsn_op rewind)
+create topic t;
+create subscription s on t;
+publish into t 1,2,3;
+select * from s;
+acknowledge s to 108, 2;
+select * from s;
+acknowledge s to 108, 0;
+select lsn, lsn_op from show subscriptions verbose;
+select * from s;
+drop topic t cascade;
+
 disconnect S0;
 close E0;
