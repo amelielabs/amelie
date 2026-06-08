@@ -77,6 +77,7 @@ select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 m
 
 # test: interval_trunc(interval us)
 select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'us');
+select interval_trunc("day", 1);
 
 # test: date_trunc(timestamp year)
 select date_trunc(null, TIMESTAMP '2001-01-16 20:38:40');

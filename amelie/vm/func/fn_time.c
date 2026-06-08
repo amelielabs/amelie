@@ -177,7 +177,7 @@ fn_interval_trunc(Fn* self)
 	}
 	if (argv[0].type == TYPE_STRING)
 	{
-		fn_expect_arg(self, 2, TYPE_INTERVAL);
+		fn_expect_arg(self, 1, TYPE_INTERVAL);
 		Interval iv = argv[1].interval;
 		interval_trunc(&iv, &argv[0].string);
 		value_set_interval(self->result, &iv);
