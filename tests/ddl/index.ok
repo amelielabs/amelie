@@ -357,6 +357,36 @@ indexes
     "asc": true
   }]
 }]
+# test: drop index (not null constraint)
+create table t (id int primary key, v int);
+insert into t values (1, 10);
+create index i on t (v);
+drop index i on t;
+select show("table", "t", true).columns;
+
+columns
+───────
+[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": [["not_null", true]]
+}, {
+  "name": "v",
+  "type": 2,
+  "type_size": 4,
+  "dropped": false,
+  "constraints": [["not_null", true]]
+}]
+insert into t values (2, null);
+error: insert into t values (2, ❰null❱ ⟵ column 'v' value cannot be NULL
+select * from t order by id;
+
+id  v
+────────
+1   10
+drop table t cascade;
 # test: alter index parsing
 alter;
 error: alter❰;❱ ⟵ relation type expected

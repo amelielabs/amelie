@@ -95,6 +95,16 @@ drop index i on test;
 drop index `primary` on test;
 select show('table', 'test', true).indexes;
 
+# test: drop index (not null constraint)
+create table t (id int primary key, v int);
+insert into t values (1, 10);
+create index i on t (v);
+drop index i on t;
+select show("table", "t", true).columns;
+insert into t values (2, null);
+select * from t order by id;
+drop table t cascade;
+
 # test: alter index parsing
 alter;
 alter index;
