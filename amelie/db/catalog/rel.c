@@ -227,6 +227,9 @@ catalog_grant(Catalog* self,
 	// only owner or superuser
 	check_ownership(tr, rel);
 
+	// ensure user exists
+	catalog_find_user(self, to, true);
+
 	// validate permissions
 	uint32_t perms_all = 0;
 	switch (rel->type) {
