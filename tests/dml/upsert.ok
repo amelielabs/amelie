@@ -183,7 +183,7 @@ pushdown
   0   table_prepare       0      -      -     # amelie.test
   1   jmp                 11     0      0
   2   bool                1      1      0
-  3   jntr                11     1      0
+  3   jntr                1      1      0
   4   int                 1      -      0     # 1
   5   push                1      0      0
   6   table_readi32       1      0      -     # data
@@ -618,6 +618,19 @@ end;
 id  data
 ──────────
 10  30
+drop table test;
+# test: upsert returning
+create table test (id int primary key, v int);
+insert into test values (1, 10);
+insert into test values (1, 20) on conflict do update set v = excluded.v where false returning *;
+
+id  v
+───────
+select * from test;
+
+id  v
+────────
+1   10
 drop table test;
 # test: upsert secondary index
 create table test (id int primary key, data int, value int);

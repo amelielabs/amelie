@@ -212,6 +212,13 @@ end;
 
 drop table test;
 
+# test: upsert returning
+create table test (id int primary key, v int);
+insert into test values (1, 10);
+insert into test values (1, 20) on conflict do update set v = excluded.v where false returning *;
+select * from test;
+drop table test;
+
 # test: upsert secondary index
 create table test (id int primary key, data int, value int);
 create index i on test (data);
@@ -254,7 +261,6 @@ explain insert into test select * from src on conflict do update set data = data
 insert into test select * from src on conflict do update set data = data + 1 returning *;
 select * from test;
 drop table src;
-
 drop table test;
 
 disconnect S0;

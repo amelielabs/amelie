@@ -69,7 +69,7 @@ emit_upsert(Compiler* self, Ast* ast)
 
 		// set jntr _start to _start
 		if (insert->update_where)
-			op_at(self, jmp_where_jntr)->a = op_pos(self);
+			op_at(self, jmp_where_jntr)->a = jmp_start;
 		break;
 	}
 	case ON_CONFLICT_ERROR:
