@@ -938,6 +938,49 @@ description
 ───────────
 "new"
 drop function fun;
+# test: create or replace function (with dep #2)
+create table secrets (id int primary key, secret text);
+insert into secrets values (1, "top-secret");
+create function leaf () return text
+begin
+  return "safe";
+end;
+create function wrapper () return text
+begin
+  return select leaf();
+end;
+execute wrapper();
+
+wrapper
+───────
+safe
+create or replace function leaf () return text
+begin
+  return select secret from secrets where id = 1;
+end;
+execute wrapper();
+
+wrapper
+───────
+top-secret
+create or replace function wrapper () return text
+begin
+  return select leaf();
+end;
+execute wrapper();
+
+wrapper
+───────
+top-secret
+drop table secrets cascade;
+show functions;
+
+functions
+─────────
+show tables;
+
+tables
+──────
 # test: drop function
 create function test () begin end;
 drop function;

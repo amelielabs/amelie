@@ -639,5 +639,11 @@ switch S0;
 drop user u;
 drop table secrets;
 disconnect S1;
+# test: grant (ensure user exists)
+create table secret (id int primary key, value text);
+insert into secret values (1, "top-secret");
+grant select on secret to future_user;
+error: user 'future_user': not exists
+drop table test;
 disconnect S0;
 close E0;

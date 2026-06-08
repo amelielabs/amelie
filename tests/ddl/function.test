@@ -342,6 +342,41 @@ select show("function", "fun").description;
 select show("rel", "fun").description;
 drop function fun;
 
+# test: create or replace function (with dep #2)
+create table secrets (id int primary key, secret text);
+insert into secrets values (1, "top-secret");
+
+create function leaf () return text
+begin
+  return "safe";
+end;
+
+create function wrapper () return text
+begin
+  return select leaf();
+end;
+
+execute wrapper();
+
+create or replace function leaf () return text
+begin
+  return select secret from secrets where id = 1;
+end;
+
+execute wrapper();
+
+create or replace function wrapper () return text
+begin
+  return select leaf();
+end;
+
+execute wrapper();
+
+drop table secrets cascade;
+
+show functions;
+show tables;
+
 # test: drop function
 create function test () begin end;
 drop function;
