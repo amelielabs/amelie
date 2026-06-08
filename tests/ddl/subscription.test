@@ -365,5 +365,15 @@ select lsn, lsn_op from show subscriptions verbose;
 select * from s;
 drop topic t cascade;
 
+# test: create subscription (with dropped column)
+create table t (id int primary key, secret text, visible text);
+insert into t values (1, "top-secret", "old");
+alter table t drop column secret;
+create subscription t_sub on t;
+update t set visible = "new" where id = 1;
+select * from t;
+select row from t_sub;
+drop table t cascade;
+
 disconnect S0;
 close E0;

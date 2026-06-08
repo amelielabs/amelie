@@ -791,5 +791,25 @@ select * from s;
 lsn  lsn_op  cmd  row
 ───────────────────────
 drop topic t cascade;
+# test: create subscription (with dropped column)
+create table t (id int primary key, secret text, visible text);
+insert into t values (1, "top-secret", "old");
+alter table t drop column secret;
+create subscription t_sub on t;
+update t set visible = "new" where id = 1;
+select * from t;
+
+id  visible
+─────────────
+1   new
+select row from t_sub;
+
+row
+───
+{
+  "id": 1,
+  "visible": "new"
+}
+drop table t cascade;
 disconnect S0;
 close E0;

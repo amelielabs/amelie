@@ -20,6 +20,8 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
+		if (column->dropped)
+			continue;
 
 		// name
 		encode_str(buf, &column->name);
