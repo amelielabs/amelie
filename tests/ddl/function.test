@@ -405,6 +405,25 @@ drop function test_dep;
 drop function test_dep cascade;
 show functions;
 
+# test: drop function (child dep)
+create function leaf () return int
+begin
+  return 1;
+end;
+create function wrapper () return int
+begin
+  return select leaf();
+end;
+drop function leaf;
+execute wrapper();
+
+show functions;
+
+drop function wrapper;
+drop function leaf;
+
+show functions;
+
 # test: alter function statement parsing
 alter;
 alter function;
