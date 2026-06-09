@@ -299,7 +299,7 @@ agg_merge_set_distinct(Agg* aggs, Set* set, Set* with)
 		}
 
 		// free with row
-		for (auto i = 0; i < with->store.columns_row; i++)
+		for (auto i = 0; i < distinct_with->store.columns_row; i++)
 			value_free(at_row + i);
 	}
 }

@@ -150,5 +150,12 @@ select max(it::int) from ([1,2,3,3,1]) it;
 select max(all it::int) from ([1,2,3,3,1]) it;
 select max(distinct it::int) from ([1,2,3,3,1]) it;
 
+# test: select count(distinct) from table
+create table test (id int primary key using tree, a int, b int, c int, d int) partitions 2;
+insert into test values (1, 10, 20, 30, 40), (2, 11, 21, 31, 41), (3, 10, 22, 32, 42), (4, 12, 20, 33, 43);
+explain select count(distinct a), count(distinct b), count(distinct c), count(distinct d) from test;
+select count(distinct a), count(distinct b), count(distinct c), count(distinct d) from test;
+drop table test;
+
 disconnect S0;
 close E0;
