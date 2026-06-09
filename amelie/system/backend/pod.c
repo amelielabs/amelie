@@ -165,6 +165,8 @@ pod_run(Pod* self, Ltr* ltr)
 		active = !req->dispatch->close;
 		dispatch_complete(req->dispatch);
 	}
+
+	fn_mgr_reset(&self->vm.fn_mgr);
 	ltr_complete(ltr);
 }
 

@@ -134,5 +134,21 @@ select regexp_replace('приветкакделапривет', 'привет', 
 regexp_replace
 ──────────────
 какдела
+# test: regexpr (pattern change)
+create table test (id int primary key using tree, s text, p text) partitions 1;
+insert into test values (1, "abc", "^a"), (2, "abc", "^z");
+select id, regexp_like(s, p) from test order by id;
+
+id  regexp_like
+─────────────────
+1   true
+2   false
+select id, regexp_substr(s, p) from test order by id;
+
+id  regexp_substr
+───────────────────
+1   a
+2   null
+drop table test;
 disconnect S0;
 close E0;

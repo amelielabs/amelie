@@ -23,25 +23,58 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 
+typedef struct Regexp Regexp;
+
+struct Regexp
+{
+	pcre2_code* code;
+	Str         pattern;
+};
+
+static inline Regexp*
+regexp_allocate(Str* pattern, pcre2_code* code)
+{
+	auto self = (Regexp*)am_malloc(sizeof(Regexp));
+	self->code = code;
+	str_init(&self->pattern);
+	str_copy(&self->pattern, pattern);
+	return self;
+}
+
+static inline void
+regexp_free(Regexp* self)
+{
+	pcre2_code_free(self->code);
+	str_free(&self->pattern);
+	am_free(self);
+}
+
 static inline pcre2_code*
 fn_regexp_init(Fn* self, Str* pattern)
 {
-	pcre2_code* re = *self->context;
-	if (re)
-		return re;
+	Regexp* re = *self->context;
+	if (likely(re))
+	{
+		if (str_compare(&re->pattern, pattern))
+			return re->code;
+		regexp_free(re);
+		*self->context = NULL;
+	}
+
 	int        error_number = 0;
 	PCRE2_SIZE error_offset = 0;
-	re = pcre2_compile((PCRE2_SPTR)str_of(pattern), str_size(pattern), PCRE2_UTF,
-	                   &error_number,
-	                   &error_offset, NULL);
-	if (! re)
+	auto code = pcre2_compile((PCRE2_SPTR)str_of(pattern), str_size(pattern), PCRE2_UTF,
+	                          &error_number, &error_offset, NULL);
+	if (! code)
 	{
 		PCRE2_UCHAR msg[256];
 		pcre2_get_error_message(error_number, msg, sizeof(msg));
 		fn_error(self, "regexp: {s}", msg);
 	}
+
+	re = regexp_allocate(pattern, code);
 	*self->context = re;
-	return re;
+	return re->code;
 }
 
 static inline bool
@@ -49,8 +82,9 @@ fn_regexp_cleanup(Fn* self)
 {
 	if (self->action != FN_CLEANUP)
 		return false;
-	pcre2_code* re = *self->context;
-	pcre2_code_free(re);
+	Regexp* re = *self->context;
+	if (re)
+		regexp_free(re);
 	*self->context = NULL;
 	return true;
 }
