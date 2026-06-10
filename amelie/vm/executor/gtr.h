@@ -53,7 +53,7 @@ gtr_init(Gtr* self, Local* local)
 	list_init(&self->write_cdc);
 	list_init(&self->link_batch);
 	list_init(&self->link);
-	msg_init(&self->msg, MSG_DTR);
+	msg_init(&self->msg, MSG_GTR);
 }
 
 static inline void

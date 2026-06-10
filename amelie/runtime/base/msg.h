@@ -22,7 +22,7 @@ typedef enum
 	MSG_RESOLVE,
 
 	// executor
-	MSG_DTR,
+	MSG_GTR,
 	MSG_LTR,
 	MSG_LTR_STOP,
 	MSG_REQ,
