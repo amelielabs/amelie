@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Dtr Dtr;
+typedef struct Gtr Gtr;
 
-struct Dtr
+struct Gtr
 {
 	Msg         msg;
 	uint64_t    id;
@@ -29,13 +29,13 @@ struct Dtr
 	Event       on_commit;
 	Limit       limit;
 	Local*      local;
-	Dtr*        link_group;
+	Gtr*        link_group;
 	List        link_batch;
 	List        link;
 };
 
 static inline void
-dtr_init(Dtr* self, Local* local)
+gtr_init(Gtr* self, Local* local)
 {
 	self->id          = 0;
 	self->group       = 0;
@@ -57,7 +57,7 @@ dtr_init(Dtr* self, Local* local)
 }
 
 static inline void
-dtr_reset(Dtr* self)
+gtr_reset(Gtr* self)
 {
 	self->id          = 0;
 	self->group       = 0;
@@ -80,16 +80,16 @@ dtr_reset(Dtr* self)
 }
 
 static inline void
-dtr_free(Dtr* self)
+gtr_free(Gtr* self)
 {
-	dtr_reset(self);
+	gtr_reset(self);
 	dispatch_mgr_free(&self->dispatch_mgr);
 	tr_free(&self->tr);
 	write_free(&self->write);
 }
 
 static inline void
-dtr_prepare(Dtr* self, Program* program)
+gtr_prepare(Gtr* self, Program* program)
 {
 	self->program = program;
 	if (! event_attached(&self->on_commit))
@@ -97,19 +97,19 @@ dtr_prepare(Dtr* self, Program* program)
 }
 
 static inline bool
-dtr_active(Dtr* self)
+gtr_active(Gtr* self)
 {
 	return self->group != 0;
 }
 
 static inline void
-dtr_set_abort(Dtr* self)
+gtr_set_abort(Gtr* self)
 {
 	self->abort = true;
 }
 
 static inline void
-dtr_set_error(Dtr* self, Buf* buf)
+gtr_set_error(Gtr* self, Buf* buf)
 {
 	assert(! self->error);
 	self->error = buf;

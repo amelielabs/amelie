@@ -29,9 +29,9 @@ session_execute_msg(Session* self, Node* primary, NodeMsg* msg, Buf* data)
 	// validate msg
 	node_validate(primary, msg);
 
-	// switch distributed transaction to replication state to write wal
+	// switch global transaction to replication state to write wal
 	// while in read-only mode
-	auto dtr = &self->dtr;
+	auto gtr = &self->gtr;
 	auto program = self->program;
 
 	// replay writes
@@ -52,10 +52,10 @@ session_execute_msg(Session* self, Node* primary, NodeMsg* msg, Buf* data)
 		case CMD_ACK:
 		{
 			// execute DML
-			dtr_reset(dtr);
-			dtr_prepare(dtr, program);
-			tr_set_user(&dtr->tr, &primary->recover->user->rel);
-			replay(dtr, record);
+			gtr_reset(gtr);
+			gtr_prepare(gtr, program);
+			tr_set_user(&gtr->tr, &primary->recover->user->rel);
+			replay(gtr, record);
 			break;
 		}
 		case CMD_DDL:

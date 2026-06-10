@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void replay(Dtr*, Record*);
+void replay(Gtr*, Record*);

@@ -24,4 +24,4 @@ void commit_init(Commit*, Db*, Executor*);
 void commit_free(Commit*);
 void commit_start(Commit*);
 void commit_stop(Commit*);
-void commit(Commit*, Dtr*, Buf*);
+void commit(Commit*, Gtr*, Buf*);

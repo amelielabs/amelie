@@ -12,7 +12,7 @@
 //
 
 typedef struct DispatchMgr DispatchMgr;
-typedef struct Dtr         Dtr;
+typedef struct Gtr         Gtr;
 
 struct DispatchMgr
 {
@@ -21,7 +21,7 @@ struct DispatchMgr
 	List          ltrs;
 	int           ltrs_count;
 	Complete      complete;
-	Dtr*          dtr;
+	Gtr*          gtr;
 	ReqCache      cache_req;
 	LtrCache      cache_ltr;
 	DispatchCache cache;
@@ -41,11 +41,11 @@ dispatch_mgr_is_first(DispatchMgr* self)
 }
 
 static inline void
-dispatch_mgr_init(DispatchMgr* self, Dtr* dtr)
+dispatch_mgr_init(DispatchMgr* self, Gtr* gtr)
 {
 	self->list_count = 0;
 	self->ltrs_count = 0;
-	self->dtr        = dtr;
+	self->gtr        = gtr;
 	buf_init(&self->list);
 	list_init(&self->ltrs);
 	req_cache_init(&self->cache_req);
@@ -148,7 +148,7 @@ dispatch_mgr_snapshot(DispatchMgr* self, Access* access)
 		list_foreach(&table->part_mgr.list)
 		{
 			auto part = list_at(Part, link);
-			auto ltr = ltr_create(&self->cache_ltr, part, self->dtr, &self->complete);
+			auto ltr = ltr_create(&self->cache_ltr, part, self->gtr, &self->complete);
 			list_append(&self->ltrs, &ltr->link);
 			self->ltrs_count++;
 		}
@@ -187,7 +187,7 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 		if (! ltr)
 		{
 			assert(self->list_count == 1);
-			ltr = ltr_create(&self->cache_ltr, req->part, self->dtr, &self->complete);
+			ltr = ltr_create(&self->cache_ltr, req->part, self->gtr, &self->complete);
 			ltr->consensus = track->consensus;
 			list_append(&self->ltrs, &ltr->link);
 			self->ltrs_count++;

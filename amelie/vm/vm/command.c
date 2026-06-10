@@ -29,8 +29,8 @@ csend_shard(Vm* self, Op* op)
 	auto table = send->table;
 
 	// create dispatch
-	auto dtr = self->dtr;
-	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto gtr = self->gtr;
+	auto dispatch_mgr = &gtr->dispatch_mgr;
 	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
@@ -99,7 +99,7 @@ csend_shard(Vm* self, Op* op)
 	value_free(reg_at(&self->r, op->b));
 
 	// execute
-	executor_send(share()->executor, dtr, dispatch);
+	executor_send(share()->executor, gtr, dispatch);
 
 	// return dispatch order
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
@@ -114,8 +114,8 @@ csend_lookup(Vm* self, Op* op)
 	auto index = table_primary(table);
 
 	// create dispatch
-	auto dtr = self->dtr;
-	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto gtr = self->gtr;
+	auto dispatch_mgr = &gtr->dispatch_mgr;
 	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
@@ -144,7 +144,7 @@ csend_lookup(Vm* self, Op* op)
 	}
 
 	// execute
-	executor_send(share()->executor, dtr, dispatch);
+	executor_send(share()->executor, gtr, dispatch);
 
 	// return dispatch order
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
@@ -158,8 +158,8 @@ csend_all(Vm* self, Op* op)
 	auto table = send->table;
 
 	// create dispatch
-	auto dtr = self->dtr;
-	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto gtr = self->gtr;
+	auto dispatch_mgr = &gtr->dispatch_mgr;
 	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
@@ -185,7 +185,7 @@ csend_all(Vm* self, Op* op)
 		stack_popn(&self->stack, op->b);
 
 	// execute
-	executor_send(share()->executor, dtr, dispatch);
+	executor_send(share()->executor, gtr, dispatch);
 
 	// return dispatch order
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
@@ -196,7 +196,7 @@ cclose(Vm* self, Op* op)
 {
 	unused(op);
 	if (self->allow_close)
-		dispatch_mgr_close(&self->dtr->dispatch_mgr);
+		dispatch_mgr_close(&self->gtr->dispatch_mgr);
 }
 
 void
@@ -247,7 +247,7 @@ crecv_aggs(Vm* self, Op* op)
 
 	// get dispatch
 	auto dispatch_order = reg_at(&self->r, op->b)->integer;
-	auto dispatch = dispatch_mgr_at(&self->dtr->dispatch_mgr, dispatch_order);
+	auto dispatch = dispatch_mgr_at(&self->gtr->dispatch_mgr, dispatch_order);
 	assert(dispatch);
 
 	// wait for group completion
@@ -291,7 +291,7 @@ crecv(Vm* self, Op* op)
 
 	// get dispatch
 	auto dispatch_order = reg_at(&self->r, op->b)->integer;
-	auto dispatch = dispatch_mgr_at(&self->dtr->dispatch_mgr, dispatch_order);
+	auto dispatch = dispatch_mgr_at(&self->gtr->dispatch_mgr, dispatch_order);
 	assert(dispatch);
 
 	// wait for group completion
@@ -457,7 +457,7 @@ cinsert(Vm* self, Op* op)
 		pos += sizeof(Value*) + sizeof(int64_t);
 		value_set_int(&identity, value_id);
 
-		auto row = row_create(part->heap, self->dtr->id, snapshot->id, columns, value,
+		auto row = row_create(part->heap, self->gtr->id, snapshot->id, columns, value,
 		                      self->refs, &identity);
 		part_insert(part, self->tr, false, snapshot, row);
 	}
@@ -473,7 +473,7 @@ cupsert(Vm* self, Op* op)
 	Value identity;
 	value_init(&identity);
 
-	auto dtr = self->dtr;
+	auto gtr = self->gtr;
 	auto columns = table_columns(cursor->table);
 	auto end = self->code_arg->position;
 	while (self->upsert < end)
@@ -484,7 +484,7 @@ cupsert(Vm* self, Op* op)
 		self->upsert += sizeof(Value*) + sizeof(int64_t);
 		value_set_int(&identity, value_id);
 
-		auto row = row_create(cursor->part->heap, dtr->id, cursor->snapshot->id,
+		auto row = row_create(cursor->part->heap, gtr->id, cursor->snapshot->id,
 		                      columns, value, self->refs,
 		                      &identity);
 
@@ -527,10 +527,10 @@ cupdate(Vm* self, Op* op)
 	// [cursor, order/value count]
 	auto cursor = reg_at(&self->r, op->a);
 	assert(cursor->type == TYPE_CURSOR);
-	auto dtr = self->dtr;
+	auto gtr = self->gtr;
 	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
-	auto row = row_update(cursor->part->heap, dtr->id, cursor->snapshot->id,
+	auto row = row_update(cursor->part->heap, gtr->id, cursor->snapshot->id,
 	                      table_columns(cursor->table), row_src,
 	                      row_values, op->b);
 	part_update(cursor->part, self->tr, cursor->cursor, cursor->snapshot, row);
@@ -574,7 +574,7 @@ ccall_udf(Vm* self, Op* op)
 	reg_prepare(&vm.r, program->code.regs);
 
 	vm_run(&vm, self->local,
-	       self->dtr,
+	       self->gtr,
 	       self->tr,
 	       program, &program->code, &program->code_data, NULL,
 	       NULL, // refs
@@ -595,8 +595,8 @@ cpublish(Vm* self, Op* op)
 	// [topic*, set*]
 
 	// create dispatch
-	auto dtr = self->dtr;
-	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto gtr = self->gtr;
+	auto dispatch_mgr = &gtr->dispatch_mgr;
 	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 
 	// prepare publish
@@ -631,7 +631,7 @@ cpublish(Vm* self, Op* op)
 	// (dispatch has no partitions)
 
 	// register transaction
-	executor_send(share()->executor, dtr, dispatch);
+	executor_send(share()->executor, gtr, dispatch);
 }
 
 void
@@ -653,12 +653,12 @@ cack(Vm* self, Op* op)
 		return;
 
 	// create dispatch (for wal writer)
-	auto dtr = self->dtr;
-	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto gtr = self->gtr;
+	auto dispatch_mgr = &gtr->dispatch_mgr;
 	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 
 	// (dispatch has no partitions)
 
 	// register transaction
-	executor_send(share()->executor, dtr, dispatch);
+	executor_send(share()->executor, gtr, dispatch);
 }

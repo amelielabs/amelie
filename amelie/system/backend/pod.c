@@ -83,7 +83,7 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 hot static void
 pod_request(Pod* self, Ltr* ltr, Req* req)
 {
-	auto dtr = ltr->dtr;
+	auto gtr = ltr->gtr;
 	switch (req->type) {
 	case REQ_EXECUTE:
 	{
@@ -92,8 +92,8 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 		{
 			auto track = self->track;
 			auto tr = tr_create(&track->cache);
-			tr_set_id(tr, dtr->id);
-			tr_set_limit(tr, &dtr->limit);
+			tr_set_id(tr, gtr->id);
+			tr_set_limit(tr, &gtr->limit);
 			tr_list_add(&track->prepared, tr);
 			ltr->tr = tr;
 		}
@@ -105,8 +105,8 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 		Return ret;
 		return_init(&ret);
 
-		vm_run(&self->vm, dtr->local,
-		        dtr,
+		vm_run(&self->vm, gtr->local,
+		        gtr,
 		        ltr->tr,
 		        NULL,
 		        req->code,
@@ -129,8 +129,8 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 		{
 			auto track = self->track;
 			auto tr = tr_create(&track->cache);
-			tr_set_id(tr, dtr->id);
-			tr_set_limit(tr, &dtr->limit);
+			tr_set_id(tr, gtr->id);
+			tr_set_limit(tr, &gtr->limit);
 			tr_list_add(&track->prepared, tr);
 			ltr->tr = tr;
 		}

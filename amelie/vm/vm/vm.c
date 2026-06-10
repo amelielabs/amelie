@@ -32,7 +32,7 @@ vm_init(Vm* self, Part* part)
 	self->refs        = NULL;
 	self->args        = NULL;
 	self->part        = part;
-	self->dtr         = NULL;
+	self->gtr         = NULL;
 	self->program     = NULL;
 	self->tr          = NULL;
 	self->local       = NULL;
@@ -73,7 +73,7 @@ vm_reset(Vm* self)
 hot void
 vm_run(Vm*       self,
        Local*    local,
-       Dtr*      dtr,
+       Gtr*      gtr,
        Tr*       tr,
        Program*  program,
        Code*     code,
@@ -86,7 +86,7 @@ vm_run(Vm*       self,
        int       start)
 {
 	self->local       = local;
-	self->dtr         = dtr;
+	self->gtr         = gtr;
 	self->tr          = tr;
 	self->program     = program;
 	self->code        = code;

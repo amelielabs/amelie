@@ -471,7 +471,7 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		if (stmt->ret && stmt->ret->count_into > 0)
 			emit_into(self, stmt);
 
-		// emit close for last distributed SELECT udf()
+		// emit close for last sending SELECT udf()
 		if (stmt->udfs_sending)
 			emit_close(self, stmt);
 	}

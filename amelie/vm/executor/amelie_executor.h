@@ -29,10 +29,10 @@
 #include "executor/dispatch_cache.h"
 #include "executor/dispatch_mgr.h"
 
-// distributed transaction
-#include "executor/dtr.h"
-#include "executor/dtr_group.h"
-#include "executor/dtr_queue.h"
+// global transaction
+#include "executor/gtr.h"
+#include "executor/gtr_group.h"
+#include "executor/gtr_queue.h"
 
 // executor
 #include "executor/batch.h"

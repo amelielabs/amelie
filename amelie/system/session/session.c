@@ -32,7 +32,7 @@ session_create(void)
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
 	vm_init(&self->vm, NULL);
 	profile_init(&self->profile);
-	dtr_init(&self->dtr, &self->local);
+	gtr_init(&self->gtr, &self->local);
 	return self;
 }
 
@@ -50,7 +50,7 @@ session_reset(Session* self)
 	self->query = NULL;
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
-	dtr_reset(&self->dtr);
+	gtr_reset(&self->gtr);
 	profile_reset(&self->profile);
 	local_reset(&self->local);
 }
@@ -64,7 +64,7 @@ session_free(Session *self)
 	vm_free(&self->vm);
 	program_free(self->program);
 	set_cache_free(&self->set_cache);
-	dtr_free(&self->dtr);
+	gtr_free(&self->gtr);
 	local_free(&self->local);
 	am_free(self);
 }
@@ -91,7 +91,7 @@ session_run(Session* self)
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	auto profile  = &self->profile;
-	auto dtr      = &self->dtr;
+	auto gtr      = &self->gtr;
 
 	// prevent writes on replica
 	if (!program->ro && opt_int_of(&state()->read_only))
@@ -102,9 +102,9 @@ session_run(Session* self)
 
 	reg_prepare(&self->vm.r, program->code.regs);
 
-	// prepare distributed transaction
-	dtr_prepare(dtr, program);
-	tr_set_user(&dtr->tr, &self->req->user->rel);
+	// prepare global transaction
+	gtr_prepare(gtr, program);
+	tr_set_user(&gtr->tr, &self->req->user->rel);
 
 	// [PROFILE]
 	if (compiler->program_profile)
@@ -116,8 +116,8 @@ session_run(Session* self)
 	auto on_error = error_catch
 	(
 		vm_run(&self->vm, &self->local,
-		       dtr,
-		       &dtr->tr,
+		       gtr,
+		       &gtr->tr,
 		       program,
 		       &program->code,
 		       &program->code_data,
@@ -140,7 +140,7 @@ session_run(Session* self)
 	}
 
 	// do group commit and wal write, handle group abort
-	commit(share()->commit, dtr, error);
+	commit(share()->commit, gtr, error);
 
 	// write result
 	auto returning = compiler->program_returning;
@@ -188,7 +188,7 @@ session_run_utility(Session* self)
 	auto on_error = error_catch
 	(
 		vm_run(&self->vm, &self->local,
-		       &self->dtr,
+		       &self->gtr,
 		       &tr,
 		       program,
 		       &program->code,

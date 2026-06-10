@@ -35,7 +35,7 @@ executor_free(Executor* self)
 }
 
 hot static inline void
-executor_attach(Executor* self, Dtr* dtr, Dispatch* dispatch)
+executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
 {
 	spinlock_lock(&self->lock);
 
@@ -44,52 +44,52 @@ executor_attach(Executor* self, Dtr* dtr, Dispatch* dispatch)
 	// the id must not be modified globally for replica
 	//
 	if (! opt_int_of(&state()->read_only))
-		dtr->id = state_tsn_next();
+		gtr->id = state_tsn_next();
 	else
-		dtr->id = state_tsn();
+		gtr->id = state_tsn();
 
 	// match overlapping transaction group
-	auto is_snapshot = dtr->program->snapshot;
+	auto is_snapshot = gtr->program->snapshot;
 	list_foreach_reverse(&self->list)
 	{
-		auto ref = list_at(Dtr, link);
+		auto ref = list_at(Gtr, link);
 
 		// find overlapping partitions
 		bool overlaps;
 		if (is_snapshot)
-			overlaps = dispatch_mgr_overlaps(&ref->dispatch_mgr, &dtr->dispatch_mgr);
+			overlaps = dispatch_mgr_overlaps(&ref->dispatch_mgr, &gtr->dispatch_mgr);
 		else
 			overlaps = dispatch_mgr_overlaps_dispatch(&ref->dispatch_mgr, dispatch);
 
 		// derive transaction group on overlap
 		if (overlaps)
 		{
-			dtr->group = ref->group;
-			dtr->group_order = ref->group_order + 1;
+			gtr->group = ref->group;
+			gtr->group_order = ref->group_order + 1;
 			break;
 		}
 	}
 
 	// start new transaction group
-	if (! dtr->group)
+	if (! gtr->group)
 	{
-		dtr->group = self->id++;
-		dtr->group_order = 0;
+		gtr->group = self->id++;
+		gtr->group_order = 0;
 	}
 
 	// register transaction
-	list_append(&self->list, &dtr->link);
+	list_append(&self->list, &gtr->link);
 
 	// begin execution
-	dispatch_mgr_send(&dtr->dispatch_mgr, dispatch);
+	dispatch_mgr_send(&gtr->dispatch_mgr, dispatch);
 
 	spinlock_unlock(&self->lock);
 }
 
 hot static inline void
-executor_send(Executor* self, Dtr* dtr, Dispatch* dispatch)
+executor_send(Executor* self, Gtr* gtr, Dispatch* dispatch)
 {
-	auto mgr = &dtr->dispatch_mgr;
+	auto mgr = &gtr->dispatch_mgr;
 	auto first = dispatch_mgr_is_first(mgr);
 
 	dispatch_prepare(dispatch);
@@ -100,9 +100,9 @@ executor_send(Executor* self, Dtr* dtr, Dispatch* dispatch)
 		// to handle multi-statement access, otherwise use
 		// partitions from dispatch
 		int ltrs_count;
-		if (dtr->program->snapshot)
+		if (gtr->program->snapshot)
 		{
-			dispatch_mgr_snapshot(mgr, &dtr->program->access);
+			dispatch_mgr_snapshot(mgr, &gtr->program->access);
 			ltrs_count = mgr->ltrs_count;
 		} else {
 			ltrs_count = dispatch->list_count;
@@ -110,7 +110,7 @@ executor_send(Executor* self, Dtr* dtr, Dispatch* dispatch)
 		complete_prepare(&mgr->complete, ltrs_count);
 
 		// register transaction and begin execution
-		executor_attach(self, dtr, dispatch);
+		executor_attach(self, gtr, dispatch);
 		return;
 	}
 
@@ -142,14 +142,14 @@ executor_detach(Executor* self, Batch* batch)
 	// remove transactions from the executor list
 	for (auto it = 0; it < batch->list_count; it++)
 	{
-		auto dtr = batch_at(batch, it);
-		list_unlink(&dtr->link);
+		auto gtr = batch_at(batch, it);
+		list_unlink(&gtr->link);
 	}
 
 	// get min group as oldest transaction group id
 	uint64_t group_min = UINT64_MAX;
 	if (! list_empty(&self->list))
-		group_min = container_of(list_first(&self->list), Dtr, link)->group;
+		group_min = container_of(list_first(&self->list), Gtr, link)->group;
 
 	spinlock_unlock(&self->lock);
 	return group_min;

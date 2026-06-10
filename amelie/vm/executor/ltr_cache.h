@@ -52,11 +52,11 @@ ltr_cache_push(LtrCache* self, Ltr* ltr)
 }
 
 hot static inline Ltr*
-ltr_create(LtrCache* self, Part* part, Dtr* dtr, Complete* complete)
+ltr_create(LtrCache* self, Part* part, Gtr* gtr, Complete* complete)
 {
 	auto ltr = ltr_cache_pop(self);
 	if (! ltr)
-		ltr = ltr_allocate(dtr, complete);
+		ltr = ltr_allocate(gtr, complete);
 	else
 		list_init(&ltr->link);
 	ltr->part = part;

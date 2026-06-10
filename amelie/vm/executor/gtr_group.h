@@ -11,20 +11,20 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct DtrGroup DtrGroup;
+typedef struct GtrGroup GtrGroup;
 
-struct DtrGroup
+struct GtrGroup
 {
 	uint64_t id;
 	uint64_t id_next;
-	Dtr*     list;
+	Gtr*     list;
 	List     link;
 };
 
-static inline DtrGroup*
-dtr_group_allocate(void)
+static inline GtrGroup*
+gtr_group_allocate(void)
 {
-	auto self = (DtrGroup*)am_malloc(sizeof(DtrGroup));
+	auto self = (GtrGroup*)am_malloc(sizeof(GtrGroup));
 	self->id      = 0;
 	self->id_next = 0;
 	self->list    = NULL;
@@ -33,13 +33,13 @@ dtr_group_allocate(void)
 }
 
 static inline void
-dtr_group_free(DtrGroup* self)
+gtr_group_free(GtrGroup* self)
 {
 	am_free(self);
 }
 
 static inline void
-dtr_group_reset(DtrGroup* self)
+gtr_group_reset(GtrGroup* self)
 {
 	self->id      = 0;
 	self->id_next = 0;
@@ -48,38 +48,38 @@ dtr_group_reset(DtrGroup* self)
 }
 
 static inline bool
-dtr_group_pending(DtrGroup* self)
+gtr_group_pending(GtrGroup* self)
 {
 	return self->list && self->list->group_order == self->id_next;
 }
 
 static inline void
-dtr_group_add(DtrGroup* self, Dtr* dtr)
+gtr_group_add(GtrGroup* self, Gtr* gtr)
 {
-	Dtr* prev = NULL;
+	Gtr* prev = NULL;
 	auto pos = self->list;
 	while (pos)
 	{
-		if (dtr->group_order < pos->group_order)
+		if (gtr->group_order < pos->group_order)
 			break;
 		prev = pos;
 		pos = pos->link_group;
 	}
 	if (prev)
 	{
-		dtr->link_group = prev->link_group;
-		prev->link_group = dtr;
+		gtr->link_group = prev->link_group;
+		prev->link_group = gtr;
 	} else
 	{
-		dtr->link_group = self->list;
-		self->list = dtr;
+		gtr->link_group = self->list;
+		self->list = gtr;
 	}
 }
 
-static inline Dtr*
-dtr_group_pop(DtrGroup* self)
+static inline Gtr*
+gtr_group_pop(GtrGroup* self)
 {
-	assert(dtr_group_pending(self));
+	assert(gtr_group_pending(self));
 	auto next = self->list;
 	self->list = next->link_group;
 	self->id_next++;

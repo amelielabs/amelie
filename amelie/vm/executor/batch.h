@@ -21,10 +21,10 @@ struct Batch
 	WriteList write;
 };
 
-static inline Dtr*
+static inline Gtr*
 batch_at(Batch* self, int order)
 {
-	return ((Dtr**)self->list.start)[order];
+	return ((Gtr**)self->list.start)[order];
 }
 
 static inline void
@@ -58,9 +58,9 @@ batch_empty(Batch* self)
 }
 
 static inline void
-batch_add(Batch* self, Dtr* dtr)
+batch_add(Batch* self, Gtr* gtr)
 {
-	buf_write(&self->list, &dtr, sizeof(Dtr**));
+	buf_write(&self->list, &gtr, sizeof(Gtr**));
 	self->list_count++;
 }
 
@@ -83,8 +83,8 @@ batch_process(Batch* self)
 	for (auto it = 0; it < self->list_count; it++)
 	{
 		// handle aborts per partition
-		auto dtr = batch_at(self, it);
-		list_foreach(&dtr->dispatch_mgr.ltrs)
+		auto gtr = batch_at(self, it);
+		list_foreach(&gtr->dispatch_mgr.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
 			auto tr  = ltr->tr;
@@ -100,14 +100,14 @@ batch_process(Batch* self)
 			auto pending = &track->pending_consensus;
 			auto last    = &track->consensus;
 			if (pending->abort >= tr->id || last->abort >= tr->id)
-				dtr_set_abort(dtr);
+				gtr_set_abort(gtr);
 		}
 
-		// sync metrics and prepare dtr for wal write
-		auto write = &dtr->write;
+		// sync metrics and prepare gtr for wal write
+		auto write = &gtr->write;
 		write_reset(write);
 		write_begin(write);
-		list_foreach(&dtr->dispatch_mgr.ltrs)
+		list_foreach(&gtr->dispatch_mgr.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
 			auto tr  = ltr->tr;
@@ -116,7 +116,7 @@ batch_process(Batch* self)
 
 			// sync metrics
 			auto pending = &ltr->part->track.pending_consensus;
-			if (dtr->abort)
+			if (gtr->abort)
 			{
 				// sync abort id
 				if (tr->id > pending->abort)
@@ -131,18 +131,18 @@ batch_process(Batch* self)
 				if (tr_persists(tr))
 					write_add(write, &tr->log.write_log);
 
-				// collect cdc per dtr
+				// collect cdc per gtr
 				if (! write_cdc_empty(&tr->log.write_cdc))
-					list_append(&dtr->write_cdc, &tr->log.write_cdc.link);
+					list_append(&gtr->write_cdc, &tr->log.write_cdc.link);
 			}
 		}
 
 		// add operations, such as acknowledge and publish
-		if (tr_persists(&dtr->tr))
-			write_add(write, &dtr->tr.log.write_log);
+		if (tr_persists(&gtr->tr))
+			write_add(write, &gtr->tr.log.write_log);
 
-		if (! write_cdc_empty(&dtr->tr.log.write_cdc))
-			list_append(&dtr->write_cdc, &dtr->tr.log.write_cdc.link);
+		if (! write_cdc_empty(&gtr->tr.log.write_cdc))
+			list_append(&gtr->write_cdc, &gtr->tr.log.write_cdc.link);
 
 		if (write->header.count > 0)
 			write_list_add(&self->write, write);
@@ -155,17 +155,17 @@ batch_abort(Batch* self)
 	// abort all prepared transactions
 	for (auto it = 0; it < self->list_count; it++)
 	{
-		auto dtr = batch_at(self, it);
+		auto gtr = batch_at(self, it);
 
 		// abort utility transaction
-		tr_abort(&dtr->tr);
+		tr_abort(&gtr->tr);
 
-		if (dtr->abort)
+		if (gtr->abort)
 			continue;
-		dtr_set_abort(dtr);
+		gtr_set_abort(gtr);
 
 		// sync abort id
-		list_foreach(&dtr->dispatch_mgr.ltrs)
+		list_foreach(&gtr->dispatch_mgr.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
 			auto tr  = ltr->tr;
@@ -184,22 +184,22 @@ batch_complete(Batch* self, Cdc* cdc)
 {
 	for (auto it = 0; it < self->list_count; it++)
 	{
-		auto dtr = batch_at(self, it);
+		auto gtr = batch_at(self, it);
 
 		// publish cdc events
-		if (! list_empty(&dtr->write_cdc))
+		if (! list_empty(&gtr->write_cdc))
 		{
 			// unlogged operation (lsn is not set)
-			auto lsn = dtr->write.header.lsn;
+			auto lsn = gtr->write.header.lsn;
 			if (! lsn)
 				lsn = state_lsn_next();
-			cdc_write_batch(cdc, lsn, &dtr->write_cdc);
+			cdc_write_batch(cdc, lsn, &gtr->write_cdc);
 		}
 
 		// commit utility transaction
-		tr_commit(&dtr->tr);
+		tr_commit(&gtr->tr);
 
 		// wakeup
-		event_signal(&dtr->on_commit);
+		event_signal(&gtr->on_commit);
 	}
 }

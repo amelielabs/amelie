@@ -12,12 +12,12 @@
 //
 
 typedef struct Ltr Ltr;
-typedef struct Dtr Dtr;
+typedef struct Gtr Gtr;
 
 struct Ltr
 {
 	Msg       msg;
-	Dtr*      dtr;
+	Gtr*      gtr;
 	Tr*       tr;
 	Mailbox   queue;
 	Msg       queue_close;
@@ -30,10 +30,10 @@ struct Ltr
 };
 
 static inline Ltr*
-ltr_allocate(Dtr* dtr, Complete* complete)
+ltr_allocate(Gtr* gtr, Complete* complete)
 {
 	auto self = (Ltr*)am_malloc(sizeof(Ltr));
-	self->dtr      = dtr;
+	self->gtr      = gtr;
 	self->tr       = NULL;
 	self->error    = NULL;
 	self->part     = NULL;

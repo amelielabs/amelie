@@ -18,7 +18,7 @@ struct Session
 	Compiler compiler;
 	Vm       vm;
 	Program* program;
-	Dtr      dtr;
+	Gtr      gtr;
 	Request* req;
 	Query*   query;
 	SetCache set_cache;

@@ -20,13 +20,13 @@
 #include <amelie_executor.h>
 
 hot static inline void
-commit_add(DtrQueue* queue, Batch* batch, Dtr* dtr)
+commit_add(GtrQueue* queue, Batch* batch, Gtr* gtr)
 {
-	auto group = dtr_queue_add(queue, dtr);
-	while (dtr_group_pending(group))
+	auto group = gtr_queue_add(queue, gtr);
+	while (gtr_group_pending(group))
 	{
-		auto dtr = dtr_group_pop(group);
-		batch_add(batch, dtr);
+		auto gtr = gtr_group_pop(group);
+		batch_add(batch, gtr);
 	}
 }
 
@@ -35,9 +35,9 @@ commit_main(void* arg)
 {
 	Commit* self = arg;
 
-	DtrQueue queue;
-	dtr_queue_init(&queue);
-	defer(dtr_queue_free, &queue);
+	GtrQueue queue;
+	gtr_queue_init(&queue);
+	defer(gtr_queue_free, &queue);
 
 	Batch batch;
 	batch_init(&batch);
@@ -50,9 +50,9 @@ commit_main(void* arg)
 
 		// collect prepared transactions
 		batch_reset(&batch);
-		commit_add(&queue, &batch, (Dtr*)msg);
+		commit_add(&queue, &batch, (Gtr*)msg);
 		while ((msg = task_recv_try()))
-			commit_add(&queue, &batch, (Dtr*)msg);
+			commit_add(&queue, &batch, (Gtr*)msg);
 		if (batch_empty(&batch))
 			continue;
 
@@ -80,17 +80,17 @@ commit_main(void* arg)
 		batch_complete(&batch, self->db->cdc);
 
 		// remove all groups < group_min
-		dtr_queue_gc(&queue, group_min);
+		gtr_queue_gc(&queue, group_min);
 	}
 }
 
 void
-commit(Commit* self, Dtr* dtr, Buf* error)
+commit(Commit* self, Gtr* gtr, Buf* error)
 {
 	cancel_pause();
 
 	// finilize transaction and handle errors
-	auto error_pending = dispatch_mgr_complete(&dtr->dispatch_mgr);
+	auto error_pending = dispatch_mgr_complete(&gtr->dispatch_mgr);
 	if (! error)
 	{
 		// unless transaction is used for replication writer, respect
@@ -103,24 +103,24 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 	}
 	if (unlikely(error))
 	{
-		dtr_set_abort(dtr);
-		dtr_set_error(dtr, error);
+		gtr_set_abort(gtr);
+		gtr_set_error(gtr, error);
 	}
 
 	// process transaction commit/abort, only if the transaction
 	// was registered in executor
-	if (dtr_active(dtr))
+	if (gtr_active(gtr))
 	{
-		task_send(&self->task, &dtr->msg);
-		event_wait(&dtr->on_commit, -1);
+		task_send(&self->task, &gtr->msg);
+		event_wait(&gtr->on_commit, -1);
 	}
 
 	cancel_resume();
 
-	if (unlikely(dtr->abort))
+	if (unlikely(gtr->abort))
 	{
-		if (dtr->error)
-			rethrow_buf(dtr->error);
+		if (gtr->error)
+			rethrow_buf(gtr->error);
 
 		error("transaction aborted during commit");
 	}

@@ -25,7 +25,7 @@ struct Vm
 	Value*    refs;
 	Value*    args;
 	Part*     part;
-	Dtr*      dtr;
+	Gtr*      gtr;
 	Program*  program;
 	Tr*       tr;
 	Local*    local;
@@ -35,5 +35,5 @@ struct Vm
 void vm_init(Vm*, Part*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Dtr*, Tr*, Program*, Code*, CodeData*, Buf*,
+void vm_run(Vm*, Local*, Gtr*, Tr*, Program*, Code*, CodeData*, Buf*,
             Value*, Value*, Return*, bool, int);

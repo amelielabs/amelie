@@ -19,7 +19,7 @@
 #include <amelie_backend.h>
 
 static void
-replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
+replay_read(Gtr* gtr, Dispatch* dispatch, Record* record)
 {
 	auto db = share()->db;
 	Req* last = NULL;
@@ -36,7 +36,7 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 			auto rel   = catalog_find_by(&db->catalog, REL_TOPIC, &cmd->id, true);
 			auto topic = topic_of(rel);
 			auto size  = data_sizeof(pos);
-			publish(topic, &dtr->tr, pos, size);
+			publish(topic, &gtr->tr, pos, size);
 			break;
 		}
 		case CMD_ACK:
@@ -44,7 +44,7 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 			// find and update subscription
 			auto rel = catalog_find_by(&db->catalog, REL_SUBSCRIPTION, &cmd->id, true);
 			auto sub = sub_of(rel);
-			acknowledge(sub, &dtr->tr, pos);
+			acknowledge(sub, &gtr->tr, pos);
 			break;
 		}
 		case CMD_REPLACE:
@@ -71,7 +71,7 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 			{
 				req = dispatch_find(dispatch, part);
 				if (! req)
-					req = dispatch_add(dispatch, &dtr->dispatch_mgr.cache_req,
+					req = dispatch_add(dispatch, &gtr->dispatch_mgr.cache_req,
 					                   REQ_REPLAY, -1, NULL, NULL,
 					                   part);
 			}
@@ -90,14 +90,14 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 }
 
 void
-replay(Dtr* dtr, Record* record)
+replay(Gtr* gtr, Record* record)
 {
-	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch_mgr = &gtr->dispatch_mgr;
 	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 	dispatch_set_close(dispatch);
 
 	auto on_error = error_catch (
-		replay_read(dtr, dispatch, record);
+		replay_read(gtr, dispatch, record);
 	);
 	if (on_error)
 	{
@@ -106,6 +106,6 @@ replay(Dtr* dtr, Record* record)
 		rethrow();
 	}
 
-	executor_send(share()->executor, dtr, dispatch);
-	commit(share()->commit, dtr, NULL);
+	executor_send(share()->executor, gtr, dispatch);
+	commit(share()->commit, gtr, NULL);
 }
