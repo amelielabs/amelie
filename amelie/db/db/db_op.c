@@ -25,7 +25,7 @@
 void
 db_gc(Db* self)
 {
-	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
+	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
 	auto lsn = state_checkpoint();
 
 	// get min cdc slot lsn

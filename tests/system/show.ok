@@ -350,10 +350,7 @@ wal
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1,
-  "writes": 3,
-  "writes_bytes": 818,
-  "ops": 3
+  "slots_min": -1
 }
 # test: show replicas
 show replicas;

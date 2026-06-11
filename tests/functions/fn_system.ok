@@ -265,17 +265,14 @@ show
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1,
-  "writes": 1,
-  "writes_bytes": 328,
-  "ops": 1
+  "slots_min": -1
 }
 # test: metrics
 select show('metrics')::size;
 
 size
 ────
-9
+8
 # test: locks
 select show('locks');
 

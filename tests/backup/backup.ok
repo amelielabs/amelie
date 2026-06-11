@@ -94,10 +94,7 @@ wal
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1,
-  "writes": 0,
-  "writes_bytes": 0,
-  "ops": 0
+  "slots_min": -1
 }
 insert into test values (4);
 show wal;
@@ -109,10 +106,7 @@ wal
   "lsn_min": 1,
   "files": 2,
   "slots": 0,
-  "slots_min": -1,
-  "writes": 1,
-  "writes_bytes": 65,
-  "ops": 1
+  "slots_min": -1
 }
 backup E3 http://127.0.0.1:3480;
 close E3;
@@ -153,10 +147,7 @@ wal
   "lsn_min": 1,
   "files": 2,
   "slots": 0,
-  "slots_min": -1,
-  "writes": 0,
-  "writes_bytes": 0,
-  "ops": 0
+  "slots_min": -1
 }
 disconnect S0;
 close E3;

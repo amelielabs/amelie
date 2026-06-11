@@ -38,7 +38,6 @@ client_mgr_add(ClientMgr* self, Client* conn)
 {
 	list_append(&self->list, &conn->link);
 	self->list_count++;
-	opt_int_add(&state()->connections, 1);
 }
 
 static inline void
@@ -46,7 +45,6 @@ client_mgr_del(ClientMgr* self, Client* conn)
 {
 	list_unlink(&conn->link);
 	self->list_count--;
-	opt_int_sub(&state()->connections, 1);
 }
 
 static inline void

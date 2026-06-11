@@ -91,11 +91,6 @@ wal_flush(WalFile* current, WalContext* context)
 	{
 		auto write = list_at(Write, link);
 
-		// update stats
-		opt_int_add(&state()->writes, 1);
-		opt_int_add(&state()->writes_bytes, write->header.size);
-		opt_int_add(&state()->ops, write->ops);
-
 		// finilize wal record
 		write_end(write, context->lsn);
 

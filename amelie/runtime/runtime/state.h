@@ -30,13 +30,6 @@ struct State
 	Opt  repl;
 	Opt  repl_primary;
 	Opt  replicas;
-	// stats
-	Opt  connections;
-	Opt  sent_bytes;
-	Opt  recv_bytes;
-	Opt  writes;
-	Opt  writes_bytes;
-	Opt  ops;
 	Opts opts;
 };
 

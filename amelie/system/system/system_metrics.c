@@ -22,28 +22,6 @@
 #include <amelie_system.h>
 
 static inline void
-system_metrics_net(System* self, Buf* buf)
-{
-	// {}
-	unused(self);
-	encode_obj(buf);
-
-	// connections
-	encode_raw(buf, "connections", 11);
-	encode_int(buf, opt_int_of(&state()->connections));
-
-	// sent
-	encode_raw(buf, "sent_bytes", 10);
-	encode_int(buf, opt_int_of(&state()->sent_bytes));
-
-	// recv
-	encode_raw(buf, "recv_bytes", 10);
-	encode_int(buf, opt_int_of(&state()->recv_bytes));
-
-	encode_obj_end(buf);
-}
-
-static inline void
 system_metrics_process(System* self, Buf* buf)
 {
 	// get memory usage
@@ -157,10 +135,6 @@ system_metrics(System* self, Buf* buf)
 	// process
 	encode_raw(buf, "process", 7);
 	system_metrics_process(self, buf);
-
-	// net
-	encode_raw(buf, "net", 3);
-	system_metrics_net(self, buf);
 
 	// wal
 	encode_raw(buf, "wal", 3);

@@ -10,10 +10,7 @@ wal
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1,
-  "writes": 0,
-  "writes_bytes": 0,
-  "ops": 0
+  "slots_min": -1
 }
 select show('wal');
 
@@ -24,10 +21,7 @@ show
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1,
-  "writes": 0,
-  "writes_bytes": 0,
-  "ops": 0
+  "slots_min": -1
 }
 select show('state').lsn;
 
@@ -84,10 +78,7 @@ wal
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1,
-  "writes": 0,
-  "writes_bytes": 0,
-  "ops": 0
+  "slots_min": -1
 }
 select show('wal');
 
@@ -98,10 +89,7 @@ show
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1,
-  "writes": 0,
-  "writes_bytes": 0,
-  "ops": 0
+  "slots_min": -1
 }
 select show('state').lsn;
 

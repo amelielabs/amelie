@@ -212,17 +212,5 @@ wal_status(Wal* self, Buf* buf)
 	encode_raw(buf, "slots_min", 9);
 	encode_int(buf, slots_min);
 
-	// writes
-	encode_raw(buf, "writes", 6);
-	encode_int(buf, opt_int_of(&state()->writes));
-
-	// writes_bytes
-	encode_raw(buf, "writes_bytes", 12);
-	encode_int(buf, opt_int_of(&state()->writes_bytes));
-
-	// ops
-	encode_raw(buf, "ops", 3);
-	encode_int(buf, opt_int_of(&state()->ops));
-
 	encode_obj_end(buf);
 }

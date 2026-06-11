@@ -14,12 +14,10 @@
 #include <amelie_os.h>
 
 void
-tcp_init(Tcp* self, atomic_u64* stat_sent, atomic_u64* stat_recv)
+tcp_init(Tcp* self)
 {
 	self->connected = false;
 	self->eof       = false;
-	self->stat_sent = stat_sent;
-	self->stat_recv = stat_recv;
 	self->poller    = NULL;
 	fd_init(&self->fd);
 	tls_init(&self->tls);
@@ -296,8 +294,6 @@ tcp_read(Tcp* self, Buf* buf, int size)
 	if (rc == 0)
 		self->eof = true;
 
-	// update stats
-	atomic_u64_add(self->stat_recv, rc);
 	return rc;
 }
 
@@ -329,9 +325,6 @@ tcp_write(Tcp* self, struct iovec* iov, int iov_count)
 			poll_write(&self->fd, -1);
 			continue;
 		}
-
-		// update stats
-		atomic_u64_add(self->stat_sent, rc);
 
 		while (iov_count > 0)
 		{
