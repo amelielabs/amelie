@@ -81,6 +81,9 @@ session_set(Session* self, Request* req, Query* query)
 	local->timezone = req->output.timezone;
 	str_set_str(&local->user, &req->user->config->name);
 
+	// set random generator
+	random_open_using(&local->random, &am_task->random);
+
 	// update transaction time
 	local_update_time(local);
 }

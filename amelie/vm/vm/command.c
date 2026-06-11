@@ -51,7 +51,7 @@ csend_shard(Vm* self, Op* op)
 		for (auto order = 0; order < set->count_rows; order++)
 		{
 			auto row = set_row(set, order);
-			row_get_identity(table, refs, row, &identity);
+			row_get_identity(self->local, table, refs, row, &identity);
 
 			auto part = row_map(table, refs, row, &identity);
 			auto req  = dispatch_find(dispatch, part);
@@ -76,7 +76,7 @@ csend_shard(Vm* self, Op* op)
 		Value* row;
 		for (; (row = store_iterator_at(it)); store_iterator_next(it))
 		{
-			row_get_identity(table, refs, row, &identity);
+			row_get_identity(self->local, table, refs, row, &identity);
 			auto part = row_map(table, refs, row, &identity);
 			auto req = dispatch_find(dispatch, part);
 			if (! req)

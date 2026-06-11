@@ -228,7 +228,7 @@ repo_bootstrap(void)
 	if (opt_string_empty(&config->uuid))
 	{
 		Uuid uuid;
-		uuid_generate(&uuid, &runtime()->random);
+		uuid_generate(&uuid, &am_task->random);
 		char uuid_sz[UUID_SZ];
 		uuid_get(&uuid, uuid_sz, sizeof(uuid_sz));
 		opt_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
@@ -236,7 +236,7 @@ repo_bootstrap(void)
 
 	// generate secret
 	uint8_t secret[32];
-	random_generate_alnum(&runtime()->random, secret, sizeof(secret));
+	random_generate_alnum(&am_task->random, secret, sizeof(secret));
 	opt_string_set_raw(&state()->secret, (char*)secret, sizeof(secret));
 
 	// set default timezone using system timezone

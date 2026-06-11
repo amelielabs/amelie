@@ -18,6 +18,7 @@ struct Local
 	Timezone* timezone;
 	uint64_t  time_us;
 	Str       user;
+	Random    random;
 };
 
 static inline void
@@ -26,6 +27,7 @@ local_init(Local* self)
 	// derive default configuration
 	self->timezone = runtime()->timezone;
 	self->time_us  = 0;
+	random_init(&self->random);
 	str_init(&self->user);
 }
 

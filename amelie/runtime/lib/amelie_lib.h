@@ -20,7 +20,6 @@
 
 // hashing
 #include "lib/hash.h"
-#include "lib/random.h"
 #include "lib/uuid.h"
 #include "lib/crc.h"
 #include "lib/base64.h"

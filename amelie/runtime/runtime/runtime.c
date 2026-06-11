@@ -27,7 +27,6 @@ runtime_init(Runtime* self)
 	config_init(&self->config);
 	state_init(&self->state);
 	timezone_mgr_init(&self->timezone_mgr);
-	random_init(&self->random);
 	codec_cache_init(&self->cache_compression);
 	job_mgr_init(&self->job_mgr);
 	logger_init(&self->logger);
@@ -82,9 +81,6 @@ runtime_prepare(Runtime* self)
 	// set default timezone as system timezone
 	self->timezone = self->timezone_mgr.system;
 	logger_set_timezone(logger, self->timezone);
-
-	// init uuid manager
-	random_open(&self->random);
 
 	// start background job manager
 	job_mgr_start(&self->job_mgr, 1);

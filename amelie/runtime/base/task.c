@@ -173,6 +173,9 @@ task_main(Task* self, bool native)
 		thread_set_name(&self->thread, self->name);
 	}
 
+	// set random
+	random_open(&self->random);
+
 	// create task main coroutine
 	Coroutine* main;
 	main = coroutine_mgr_create(&self->coroutine_mgr, task_coroutine_main,
@@ -203,6 +206,7 @@ task_init(Task* self)
 	self->main_coroutine   = NULL;
 	self->name[0]          = 0;
 	task_log_init(&self->log);
+	random_init(&self->random);
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 32); // 128kb
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);

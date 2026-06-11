@@ -11,8 +11,6 @@
 //
 
 #include <amelie_base.h>
-#include <amelie_os.h>
-#include <amelie_lib.h>
 
 void
 random_init(Random* self)
@@ -26,12 +24,11 @@ random_open(Random* self)
 {
 	uint64_t seed_random_dev[2] = { 0, 0 };
 
-	int fd;
-	fd = vfs_open("/dev/urandom", O_RDONLY, 0644);
+	auto fd = open("/dev/urandom", O_RDONLY, 0644);
 	if (unlikely(fd != -1))
 	{
-		vfs_read(fd, seed_random_dev, sizeof(uint64_t) * 2);
-		vfs_close(fd);
+		read(fd, seed_random_dev, sizeof(uint64_t) * 2);
+		close(fd);
 	}
 
 	struct timespec ts;
@@ -46,17 +43,24 @@ random_open(Random* self)
 	self->seed[1] = seed_random_dev[1];
 }
 
+void
+random_open_using(Random* self, Random* using)
+{
+	self->seed[0] = random_generate(using);
+	self->seed[1] = random_generate(using);
+}
+
 hot uint64_t
 random_generate(Random* self)
 {
 	// xorshift128plus
-	auto seed = self->seed;
-	uint64_t a = atomic_u64_of(&seed[0]);
-	uint64_t b = atomic_u64_of(&seed[1]);
-	atomic_u64_set(&seed[0], b);
+	auto     seed = self->seed;
+	uint64_t a = seed[0];
+	uint64_t b = seed[1];
 	a ^= a << 23;
 	uint64_t c = a ^ b ^ (a >> 17) ^ (b >> 26);
-	atomic_u64_set(&seed[1], c);
+	seed[0] = b;
+	seed[1] = c;
 	return c + b;
 }
 

@@ -37,7 +37,7 @@ parse_topic_create(Stmt* self, bool unlogged)
 	topic_config_set_name(config, &name->string);
 	Uuid id;
 	uuid_init(&id);
-	uuid_generate(&id, &runtime()->random);
+	uuid_generate(&id, &self->parser->local->random);
 	topic_config_set_id(config, &id);
 	topic_config_set_unlogged(config, unlogged);
 

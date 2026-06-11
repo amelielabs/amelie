@@ -45,7 +45,7 @@ static void
 fn_random(Fn* self)
 {
 	fn_expect(self, 0);
-	int64_t value = random_generate(&runtime()->random);
+	int64_t value = random_generate(&self->local->random);
 	value_set_int(self->result, llabs(value));
 }
 
@@ -55,7 +55,7 @@ fn_random_uuid(Fn* self)
 	fn_expect(self, 0);
 	Uuid id;
 	uuid_init(&id);
-	uuid_generate(&id, &runtime()->random);
+	uuid_generate(&id, &self->local->random);
 	value_set_uuid(self->result, &id);
 }
 
@@ -278,11 +278,13 @@ fn_misc_register(FunctionMgr* self)
 	// random()
 	func = function_allocate(TYPE_INT, "random", fn_random);
 	function_unset(func, FN_CONST);
+	function_set(func, FN_FRONTEND);
 	function_mgr_add(self, func);
 
 	// random_uuid()
 	func = function_allocate(TYPE_UUID, "random_uuid", fn_random_uuid);
 	function_unset(func, FN_CONST);
+	function_set(func, FN_FRONTEND);
 	function_mgr_add(self, func);
 
 	// md5()

@@ -16,7 +16,7 @@ Row* row_create(Heap*, uint64_t, uint32_t, Columns*, Value*, Value*, Value*);
 Row* row_update(Heap*, uint64_t, uint32_t, Columns*, Row*, Value*, int);
 
 static inline void
-row_get_identity(Table* table, Value* refs, Value* row, Value* identity)
+row_get_identity(Local* local, Table* table, Value* refs, Value* row, Value* identity)
 {
 	auto columns = table_columns(table);
 	if (! columns->identity)
@@ -41,7 +41,7 @@ row_get_identity(Table* table, Value* refs, Value* row, Value* identity)
 	if (cons->as_identity == IDENTITY_SERIAL)
 		id = sequence_next(&table->seq);
 	else
-		id = random_generate(&runtime()->random) % cons->as_identity_modulo;
+		id = random_generate(&local->random) % cons->as_identity_modulo;
 	value_set_int(identity, id);
 }
 

@@ -45,8 +45,8 @@ websocket_generate_key(Buf* self)
 {
 	// key = base64(rand)
 	uint64_t rand[2];
-	rand[0] = random_generate(&runtime()->random);
-	rand[1] = random_generate(&runtime()->random);
+	rand[0] = random_generate(&am_task->random);
+	rand[1] = random_generate(&am_task->random);
 	Str rand_str;
 	str_set(&rand_str, (char*)&rand[0], sizeof(rand));
 	base64_encode(self, &rand_str);
@@ -199,7 +199,7 @@ websocket_send(Websocket*    self, int op,
 	frame->opcode = op;
 	frame->mask   = self->client_mode;
 	if (self->client_mode)
-		*(uint32_t*)frame->mask_key = random_generate(&runtime()->random);
+		*(uint32_t*)frame->mask_key = random_generate(&am_task->random);
 	else
 		*(uint32_t*)frame->mask_key = 0;
 

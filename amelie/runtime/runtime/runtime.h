@@ -41,7 +41,6 @@ struct Runtime
 	Timezone*   timezone;
 	TimezoneMgr timezone_mgr;
 	CrcFunction crc;
-	Random      random;
 	CodecCache  cache_compression;
 	JobMgr      job_mgr;
 	Logger      logger;

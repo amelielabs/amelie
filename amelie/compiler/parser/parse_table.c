@@ -421,7 +421,7 @@ parse_table_create(Stmt* self, bool unlogged)
 	table_config_set_name(config, &name->string);
 	Uuid id;
 	uuid_init(&id);
-	uuid_generate(&id, &runtime()->random);
+	uuid_generate(&id, &self->parser->local->random);
 	table_config_set_id(config, &id);
 
 	// create primary index config

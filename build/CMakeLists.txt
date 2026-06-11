@@ -133,6 +133,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/base/notify.c
     ${AMELIE_ROOT}/runtime/base/context_stack.c
     ${AMELIE_ROOT}/runtime/base/context.c
+    ${AMELIE_ROOT}/runtime/base/random.c
     ${AMELIE_ROOT}/runtime/base/task.c
     ${AMELIE_ROOT}/runtime/os/os.c
     ${AMELIE_ROOT}/runtime/os/vfs.c
@@ -143,7 +144,6 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/os/tcp.c
     ${AMELIE_ROOT}/runtime/os/listen.c
     ${AMELIE_ROOT}/runtime/lib/rbtree.c
-    ${AMELIE_ROOT}/runtime/lib/random.c
     ${AMELIE_ROOT}/runtime/lib/uuid.c
     ${AMELIE_ROOT}/runtime/lib/crc.c
     ${AMELIE_ROOT}/runtime/lib/base64.c

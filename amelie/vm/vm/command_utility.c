@@ -42,7 +42,7 @@ ccreate_secret(Vm* self, Op* op)
 
 	// create new system secret
 	uint8_t secret[32];
-	random_generate_alnum(&runtime()->random, secret, sizeof(secret));
+	random_generate_alnum(&self->local->random, secret, sizeof(secret));
 	opt_string_set_raw(&state()->secret, (char*)secret, sizeof(secret));
 
 	control_save_state();

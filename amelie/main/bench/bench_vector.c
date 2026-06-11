@@ -53,7 +53,7 @@ vector_loader_client_main(VectorLoader* self, MainClient* client)
 			buf_format(&buf, "{s}({d}, vector [", i > 0 ? "," : "", seq);
 			for (int j = 0; j < vector_dim; j++)
 			{
-				float val = (float)random_generate(&runtime()->random) / (float)UINT64_MAX;
+				float val = (float)random_generate(&am_task->random) / (float)UINT64_MAX;
 				buf_format(&buf, "{s}{.4f}", j > 0 ? "," : "", val);
 			}
 			buf_format(&buf, "])");
@@ -169,7 +169,7 @@ bench_vector_main(BenchWorker* self, MainClient* client)
 		buf_format(&buf, "SELECT id FROM bench_vector ORDER BY v::cos_distance(vector [");
 		for (int j = 0; j < vector_dim; j++)
 		{
-			float val = (float)random_generate(&runtime()->random) / (float)UINT64_MAX;
+			float val = (float)random_generate(&am_task->random) / (float)UINT64_MAX;
 			buf_format(&buf, "{s}{.4f}", j > 0 ? "," : "", val);
 		}
 		buf_format(&buf, "]) ASC LIMIT 10");

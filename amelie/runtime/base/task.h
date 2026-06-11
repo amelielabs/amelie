@@ -25,6 +25,7 @@ struct Task
 	void*        main_arg_runtime;
 	void*        main_arg_share;
 	Coroutine*   main_coroutine;
+	Random       random;
 	TaskLog      log;
 	char         name[9];
 	Cond         status;

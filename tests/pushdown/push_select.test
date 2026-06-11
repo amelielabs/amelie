@@ -55,6 +55,10 @@ select * from test where (select id from ref);
 explain select * from test where exists (select 1 from ref where test.id = ref.id);
 select * from test where exists (select 1 from ref where test.id = ref.id);
 
+# test: select random from table
+select random() from test;
+select 1 from test where random();
+
 drop table ref;
 drop table test;
 

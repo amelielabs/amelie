@@ -67,7 +67,7 @@ parse_clone_create(Stmt* self)
 	clone_config_set_table(config, &table->config->name);
 	Uuid uuid;
 	uuid_init(&uuid);
-	uuid_generate(&uuid, &runtime()->random);
+	uuid_generate(&uuid, &self->parser->local->random);
 	clone_config_set_id(config, &uuid);
 
 	// set clone snapshot

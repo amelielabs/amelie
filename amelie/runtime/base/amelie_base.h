@@ -72,6 +72,9 @@
 #include "base/mailbox.h"
 #include "base/bus.h"
 
+// random
+#include "base/random.h"
+
 // task
 #include "base/task_log.h"
 #include "base/task.h"

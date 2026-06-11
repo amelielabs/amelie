@@ -403,6 +403,11 @@ id  data
 1   0
 3   0
 2   0
+# test: select random from table
+select random() from test;
+error: select ❰random❱ ⟵ function cannot be used here
+select 1 from test where random();
+error: select 1 from test where ❰random❱ ⟵ function cannot be used here
 drop table ref;
 drop table test;
 disconnect S0;
