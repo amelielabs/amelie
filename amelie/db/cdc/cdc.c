@@ -200,7 +200,7 @@ hot static inline void
 cdc_add(Cdc*     self,
         uint64_t lsn,
         uint32_t lsn_op,
-        Cmd      cmd,
+        int      cmd,
         Uuid*    id,
         uint8_t* data,
         uint32_t data_size)
@@ -236,19 +236,19 @@ cdc_add(Cdc*     self,
 }
 
 hot void
-cdc_write(Cdc* self, uint64_t lsn, WriteCdc* write)
+cdc_write(Cdc* self, uint64_t lsn, LogCdc* write)
 {
 	spinlock_lock(&self->lock);
 
 	// add event to the queue
 	uint32_t op = 0;
-	auto pos = (WriteCdcRecord*)write->data.start;
-	auto end = (WriteCdcRecord*)write->data.position;
+	auto pos = (LogCdcRecord*)write->data.start;
+	auto end = (LogCdcRecord*)write->data.position;
 	while (pos < end)
 	{
 		cdc_add(self, lsn, op, pos->cmd, pos->id, pos->data, pos->data_size);
 		op++;
-		pos = (WriteCdcRecord*)(pos->data + pos->data_size);
+		pos = (LogCdcRecord*)(pos->data + pos->data_size);
 	}
 
 	// wakeup subscribers
@@ -266,14 +266,14 @@ cdc_write_batch(Cdc* self, uint64_t lsn, List* batch)
 	uint32_t op = 0;
 	list_foreach(batch)
 	{
-		auto ref = list_at(WriteCdc, link);
-		auto pos = (WriteCdcRecord*)ref->data.start;
-		auto end = (WriteCdcRecord*)ref->data.position;
+		auto ref = list_at(LogCdc, link);
+		auto pos = (LogCdcRecord*)ref->data.start;
+		auto end = (LogCdcRecord*)ref->data.position;
 		while (pos < end)
 		{
 			cdc_add(self, lsn, op, pos->cmd, pos->id, pos->data, pos->data_size);
 			op++;
-			pos = (WriteCdcRecord*)(pos->data + pos->data_size);
+			pos = (LogCdcRecord*)(pos->data + pos->data_size);
 		}
 	}
 

@@ -21,13 +21,13 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 	// cmd
 	Str cmd;
 	switch (event->cmd) {
-	case CMD_REPLACE:
+	case LOG_REPLACE:
 		str_set(&cmd, "write", 5);
 		break;
-	case CMD_DELETE:
+	case LOG_DELETE:
 		str_set(&cmd, "delete", 6);
 		break;
-	case CMD_PUBLISH:
+	case LOG_PUBLISH:
 		str_set(&cmd, "publish", 7);
 		break;
 	}

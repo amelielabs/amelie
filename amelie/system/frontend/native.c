@@ -73,10 +73,11 @@ relay_connect(Relay* self)
 static inline void
 relay_set(Relay* self, Buf* buf, Str* uri)
 {
-	request_reset(&self->req, true);
+	auto req = &self->req;
+	request_reset(req, true);
 
 	// parse uri and configure endpoint
-	auto endpoint = &self->req.endpoint;
+	auto endpoint = &req->endpoint;
 	uri_parse(endpoint, uri);
 
 	// set defaults
@@ -101,13 +102,16 @@ relay_set(Relay* self, Buf* buf, Str* uri)
 		error("unsupported operation accept type");
 	}
 
+	// update time and random seed
+	request_prepare(req);
+
 	opt_int_set(&endpoint->endpoint, ENDPOINT_SQL);
 
 	// authentication is not required
 	opt_int_set(&endpoint->trusted, true);
 
 	// configure output
-	auto output = &self->req.output;
+	auto output = &req->output;
 	output_reset(output);
 	output_set_buf(output, buf);
 	output_set(output, endpoint, output_if, NULL);
@@ -122,7 +126,7 @@ relay_execute_session(Relay* self, Str* command)
 	Query query;
 	query_init(&query);
 	query.type = QUERY_SQL;
-	query.text = command;
+	query.text = *command;
 
 	// authenticate
 	auto req = &self->req;

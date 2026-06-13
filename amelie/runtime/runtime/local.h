@@ -46,12 +46,6 @@ local_reset(Local* self)
 }
 
 static inline void
-local_update_time(Local* self)
-{
-	self->time_us = time_us();
-}
-
-static inline void
 local_encode_opt(Local* self, Buf* buf, Opt* opt)
 {
 	// replace timezone with local settings

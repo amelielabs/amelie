@@ -23,242 +23,20 @@
 #include <amelie_db.h>
 
 void
-recover_init(Recover* self, Db* db, bool write_wal)
+recover_init(Recover* self, Db* db, RecoverIf* iface, void* iface_arg)
 {
-	self->ops       = 0;
-	self->size      = 0;
-	self->min_sub   = UINT64_MAX;
-	self->write_wal = write_wal;
+	self->iface     = iface;
+	self->iface_arg = iface_arg;
+	self->state     = NULL;
 	self->db        = db;
-
-	// set min subscription
-	cdc_min(db->cdc, &self->min_sub);
-
-	// set user
-	Str name;
-	str_set(&name, "amelie", 6);
-	self->user = catalog_find_user(&db->catalog, &name, true);
-
-	tr_init(&self->tr);
-	write_init(&self->write);
-	write_list_init(&self->write_list);
 }
 
 void
 recover_free(Recover* self)
 {
-	tr_free(&self->tr);
-	write_free(&self->write);
-}
-
-static inline void
-recover_reset_stats(Recover* self)
-{
-	self->ops  = 0;
-	self->size = 0;
-}
-
-static inline Part*
-recover_row(Recover*   self,
-            Record*    record,
-            RecordCmd* cmd,
-            Row*       row,
-            Table**    table)
-{
-	auto db = self->db;
-
-	// find table by id and map partition
-	auto rel = catalog_find_by(&db->catalog, REL_TABLE, &cmd->id, false);
-	if (! rel)
-		return NULL;
-	*table = table_of(rel);
-	auto part = part_mapping_map(&(*table)->part_mgr.mapping, row);
-	if (! part)
-		error("recover: partition mapping failed");
-
-	// update track lsn/tsn
-	track_lsn_follow(&part->track, record->lsn);
-	state_tsn_follow(row->tsn);
-	track_follow(&part->track, row->tsn);
-
-	if (record->lsn > state_checkpoint())
-		return part;
-
-	// apply cdc
-	if (record->lsn >= self->min_sub)
-	{
-		auto primary = part_primary(part);
-		auto pos = (uint8_t*)row;
-		auto end = (uint8_t*)row + cmd->size;
-		while (pos < end)
-		{
-			auto row = (Row*)pos;
-
-			Uuid* uuid = NULL;
-			if (row->snapshot == 0)
-			{
-				if (rel->subs > 0)
-					uuid = rel->id;
-			} else
-			{
-				// find snapshot of the clone
-				auto snapshot = snapshot_mgr_find(&(*table)->snapshot_mgr, row->snapshot);
-				if (snapshot && snapshot->rel->subs > 0)
-					uuid = snapshot->rel->id;
-			}
-
-			if (uuid)
-				log_cdc(&self->tr.log, cmd->cmd, uuid, row,
-				        index_keys(primary)->columns,
-				        runtime()->timezone);
-			pos += row_size(row);
-		}
-	}
-
-	return NULL;
-}
-
-hot static void
-recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
-{
-	auto db = self->db;
-	auto tr = &self->tr;
-	switch (cmd->cmd) {
-	case CMD_REPLACE:
-	case CMD_DELETE:
-	{
-		// map partition
-		Table* table;
-		auto part = recover_row(self, record, cmd, (Row*)*pos, &table);
-		if (! part)
-		{
-			record_cmd_skip(cmd, pos);
-			break;
-		}
-
-		Snapshot* snapshot = NULL;
-		auto end = *pos + cmd->size;
-		while (*pos < end)
-		{
-			auto row = row_copy(part->heap, (Row*)*pos);
-			if (!snapshot || snapshot->id != row->snapshot)
-				snapshot = table_find_snapshot(table, row->snapshot, true);
-			if (cmd->cmd == CMD_REPLACE)
-				part_insert(part, tr, true, snapshot, row);
-			else
-				part_delete_by(part, tr, snapshot, row);
-			*pos += row_size(row);
-		}
-		break;
-	}
-	case CMD_PUBLISH:
-	{
-		auto size = data_sizeof(*pos);
-		if (record->lsn >= self->min_sub)
-		{
-			auto rel = catalog_find_by(&db->catalog, REL_TOPIC, &cmd->id, false);
-			if  (rel)
-				publish(topic_of(rel), tr, *pos, size);
-		}
-		*pos += size;
-		break;
-	}
-	case CMD_ACK:
-	{
-		// find and update subscription
-		auto rel = catalog_find_by(&db->catalog, REL_SUBSCRIPTION, &cmd->id, false);
-		if  (rel)
-		{
-			auto sub = sub_of(rel);
-			acknowledge(sub, tr, *pos);
-		}
-		data_skip(pos);
-		break;
-	}
-	case CMD_DDL:
-	case CMD_DDL_CREATE_INDEX:
-	{
-		// skip ddl commands before the last checkpoint
-		if (record->lsn <= state_checkpoint())
-		{
-			data_skip(pos);
-			break;
-		}
-
-		// execute ddl command
-		if (cmd->cmd == CMD_DDL_CREATE_INDEX)
-			db_create_index(db, tr, *pos, 0);
-		else
-			catalog_execute(&db->catalog, tr, *pos, 0);
-		data_skip(pos);
-		break;
-	}
-	default:
-		error("recover: unrecognized command id: {d}", cmd->cmd);
-		break;
-	}
-}
-
-static void
-recover_next_record(Recover* self, Record* record)
-{
-	// replay transaction log record
-	auto cmd = record_cmd(record);
-	auto pos = record_data(record);
-	for (auto i = record->count; i > 0; i--)
-	{
-		if (opt_int_of(&config()->wal_crc))
-			if (unlikely(! record_validate_cmd(cmd, pos)))
-				error("recover: record command mismatch");
-		recover_cmd(self, record, cmd, &pos);
-		self->ops++;
-		cmd++;
-	}
-	self->size += record->size;
-
-	// wal write, if necessary
-	if (self->write_wal)
-	{
-		auto write = &self->write;
-		auto write_list = &self->write_list;
-		write_reset(write);
-		write_begin(write);
-		write_add(write, &self->tr.log.write_log);
-		write_list_reset(write_list);
-		write_list_add(write_list, write);
-		db_write(self->db, write_list);
-	} else
-	{
-		state_lsn_follow(record->lsn);
-	}
-
-	// unlock catalog after create index
-	unlock_all();
-}
-
-void
-recover_next(Recover* self, Record* record)
-{
-	auto tr = &self->tr;
-	tr_reset(tr);
-	tr_set_user(tr, &self->user->rel);
-	auto on_error = error_catch
-	(
-		// replay
-		recover_next_record(self, record);
-
-		// publish cdc
-		if (! write_cdc_empty(&tr->log.write_cdc))
-			cdc_write(self->db->cdc, record->lsn, &tr->log.write_cdc);
-
-		// commit
-		tr_commit(tr);
-	);
-	if (unlikely(on_error))
-	{
-		tr_abort(tr);
-		rethrow();
-	}
+	if (self->state)
+		self->iface->free(self);
+	unused(self);
 }
 
 static void
@@ -269,11 +47,15 @@ recover_wal_main(Recover* self)
 	auto wal = &self->db->wal;
 	wal_open(wal);
 
-	// replay all wals
-	uint64_t id = 0;
+	// prepare recovery state
+	self->iface->create(self);
+
+	// replay wals starting after last checkpoint
+	uint64_t id = state_checkpoint() + 1;
 	for (;;)
 	{
-		recover_reset_stats(self);
+		uint64_t count = 0;
+		uint64_t size  = 0;
 
 		WalCursor cursor;
 		wal_cursor_init(&cursor);
@@ -285,19 +67,30 @@ recover_wal_main(Recover* self)
 		{
 			if (! wal_cursor_next(&cursor))
 				break;
+
+			// validate crc
 			auto record = wal_cursor_at(&cursor);
-			recover_next(self, record);
+			if (opt_int_of(&config()->wal_crc))
+				if (unlikely(! record_validate(record)))
+					error("recover: record crc mismatch");
+
+			// execute
+			self->iface->execute(self, record);
+
+			size += record->size;
+			count++;
+
 		}
 		if (! wal_cursor_active(&cursor))
 			break;
 
 		info("recover: wal/{u64} ({.2f} MiB, {u64} rows)", cursor.file->id,
-		     (double)self->size / 1024 / 1024,
-		     self->ops);
+		     (double)size / 1024 / 1024, count);
 
 		auto next = wal_find(wal, cursor.file->id, true);
 		if (! next)
 			break;
+
 		id = next->id;
 		wal_file_unpin(next);
 	}

@@ -176,6 +176,9 @@ frontend_endpoint(Request* req, Client* client)
 	if (auth)
 		endpoint->token.string = auth->value;
 
+	// update time and random seed
+	request_prepare(req);
+
 	// if auth is required
 	opt_int_set(&endpoint->trusted, client->trusted);
 
@@ -344,7 +347,7 @@ frontend_client(Frontend* self, Client* client)
 		{
 			// execute query
 			query.type = QUERY_SQL;
-			query.text = &content;
+			query.text = content;
 			if (ctl->session_execute(session, &req, &query))
 			{
 				// 204 No Content

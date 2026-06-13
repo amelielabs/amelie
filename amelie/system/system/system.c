@@ -36,7 +36,7 @@ catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 	Local local;
 	local_init(&local);
 	local.user = udf->config->user;
-	local_update_time(&local);
+	local.time_us = time_us();
 
 	auto program = program_allocate();
 	errdefer(program_free, program);
@@ -120,7 +120,11 @@ frontend_if_session_execute(void* ptr, Request* req, Query* query)
 static void
 frontend_if_session_execute_msg(void* ptr, Node* node, NodeMsg* msg, Buf* data)
 {
-	session_execute_msg(ptr, node, msg, data);
+	//session_execute_msg(ptr, node, msg, data);
+	(void)ptr;
+	(void)node;
+	(void)msg;
+	(void)data;
 }
 
 static FrontendIf frontend_if =
@@ -249,19 +253,21 @@ system_recover(System* self, bool bootstrap)
 
 	// set system recover state, this will lead to the partition heap
 	// files loaded during pod deployment
-	opt_int_set(&state()->recover, true);
+	opt_int_set(&state()->recover, RECOVER_CHECKPOINT);
 
 	// restore catalog
 	db_open(&self->db, bootstrap);
 
-	opt_int_set(&state()->recover, false);
+	opt_int_set(&state()->recover, RECOVER_WAL);
 
 	// replay wals
 	Recover recover;
-	recover_init(&recover, &self->db, false);
+	recover_init(&recover, &self->db, &recover_if, self);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 	info("");
+
+	opt_int_set(&state()->recover, RECOVER_OFF);
 }
 
 void

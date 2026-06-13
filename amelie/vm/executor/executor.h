@@ -41,12 +41,21 @@ executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
 
 	// set transaction id
 	//
-	// the id must not be modified globally for replica
-	//
-	if (! opt_int_of(&state()->read_only))
-		gtr->id = state_tsn_next();
-	else
-		gtr->id = state_tsn();
+	uint64_t id;
+	if (gtr->write.recover)
+	{
+		// recover id
+		id = gtr->write.recover->tsn;
+		state_tsn_follow(id);
+	} else
+	{
+		// the id must not be modified globally on replica
+		if (! opt_int_of(&state()->read_only))
+			id = state_tsn_next();
+		else
+			id = state_tsn();
+	}
+	gtr->id = id;
 
 	// match overlapping transaction group
 	auto is_snapshot = gtr->program->snapshot;

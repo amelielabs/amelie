@@ -24,6 +24,7 @@ struct Wal
 	List     subscribes;
 	int      subscribes_count;
 	int      dirfd;
+	Iov      iov;
 };
 
 void     wal_init(Wal*);

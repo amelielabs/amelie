@@ -32,6 +32,7 @@ wal_init(Wal* self)
 	list_init(&self->slots);
 	list_init(&self->subscribes);
 	spinlock_init(&self->lock);
+	iov_init(&self->iov);
 }
 
 void
@@ -39,6 +40,7 @@ wal_free(Wal* self)
 {
 	assert(! self->current);
 	spinlock_free(&self->lock);
+	iov_free(&self->iov);
 }
 
 void

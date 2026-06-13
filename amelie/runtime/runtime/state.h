@@ -13,6 +13,14 @@
 
 typedef struct State State;
 
+enum
+{
+	RECOVER_OFF,
+	RECOVER_CHECKPOINT,
+	RECOVER_WAL,
+	RECOVER_REPL
+};
+
 struct State
 {
 	// system

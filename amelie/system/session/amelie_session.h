@@ -11,6 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
+// session
 #include "session/profile.h"
 #include "session/session.h"
-#include "session/session_msg.h"
+
+// session recover
+#include "session/session_recover.h"

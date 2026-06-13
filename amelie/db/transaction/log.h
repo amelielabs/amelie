@@ -15,6 +15,15 @@ typedef struct LogIf LogIf;
 typedef struct LogOp LogOp;
 typedef struct Log   Log;
 
+enum
+{
+	LOG_REPLACE,
+	LOG_DELETE,
+	LOG_PUBLISH,
+	LOG_ACK,
+	LOG_DDL
+};
+
 struct LogIf
 {
 	void (*commit)(Log*, LogOp*);
@@ -25,7 +34,7 @@ struct LogOp
 {
 	LogIf* iface;
 	void*  iface_arg;
-	Cmd    cmd;
+	int    cmd;
 	union {
 		struct {
 			Row*      row;
@@ -41,11 +50,10 @@ struct LogOp
 
 struct Log
 {
-	Buf      op;
-	Buf      data;
-	int      count;
-	WriteLog write_log;
-	WriteCdc write_cdc;
+	Buf    op;
+	Buf    data;
+	int    count;
+	LogCdc cdc;
 };
 
 always_inline static inline LogOp*
@@ -66,8 +74,7 @@ log_init(Log* self)
 	self->count = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
-	write_log_init(&self->write_log);
-	write_cdc_init(&self->write_cdc);
+	log_cdc_init(&self->cdc);
 }
 
 static inline void
@@ -75,8 +82,7 @@ log_free(Log* self)
 {
 	buf_free(&self->op);
 	buf_free(&self->data);
-	write_log_free(&self->write_log);
-	write_cdc_free(&self->write_cdc);
+	log_cdc_free(&self->cdc);
 }
 
 static inline void
@@ -85,8 +91,7 @@ log_reset(Log* self)
 	self->count = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
-	write_log_reset(&self->write_log);
-	write_cdc_reset(&self->write_cdc);
+	log_cdc_reset(&self->cdc);
 }
 
 static inline LogOp*
@@ -97,7 +102,7 @@ log_last(Log* self)
 
 hot static inline LogOp*
 log_dml(Log*      self,
-        Cmd       cmd,
+        int       cmd,
         LogIf*    iface,
         void*     iface_arg,
         Row*      row,
@@ -117,7 +122,7 @@ log_dml(Log*      self,
 
 static inline void
 log_cmd(Log*   self,
-        Cmd    cmd,
+        int    cmd,
         LogIf* iface,
         void*  iface_arg,
         Rel*   rel)
@@ -137,29 +142,12 @@ log_ddl(Log*   self,
         void*  iface_arg,
         Rel*   rel)
 {
-	log_cmd(self, CMD_DDL, iface, iface_arg, rel);
+	log_cmd(self, LOG_DDL, iface, iface_arg, rel);
 }
 
 hot static inline void
-log_cdc(Log* self, Cmd cmd, Uuid* id, Row* row, Columns* columns, Timezone* tz)
+log_cdc(Log* self, int cmd, Uuid* id, Row* row, Columns* columns, Timezone* tz)
 {
 	// [cmd, id, data, data_size]
-	write_cdc_add_row(&self->write_cdc, cmd, id, row, columns, tz);
-}
-
-hot static inline void
-log_persist_dml(Log* self, Uuid* id)
-{
-	// [cmd, id, row]
-	auto last = log_last(self);
-	auto row  = last->row;
-	write_log_add(&self->write_log, last->cmd, id, (uint8_t*)row, row_size(row));
-}
-
-hot static inline void
-log_persist_cmd(Log* self, Uuid* id, uint8_t* data)
-{
-	// [cmd, id, data]
-	auto last = log_last(self);
-	write_log_add_cmd(&self->write_log, last->cmd, id, data, data_sizeof(data));
+	log_cdc_add_row(&self->cdc, cmd, id, row, columns, tz);
 }

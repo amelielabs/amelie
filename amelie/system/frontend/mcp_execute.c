@@ -306,9 +306,10 @@ mcp_execute(Mcp* self, Query* query)
 	case MCP_TOOLS_CALL:
 	{
 		// execute UDF call as query
-		query->type = QUERY_EXECUTE;
-		query->rel  = &self->rel;
-		query->args = self->args;
+		query->type      = QUERY_EXECUTE;
+		query->rel       = self->rel;
+		query->args      = self->args;
+		query->args_size = self->args_size;
 
 		auto output = &self->request->output;
 		output->iface_arg = self;
@@ -323,10 +324,11 @@ mcp_execute(Mcp* self, Query* query)
 	case MCP_RESOURCES_READ:
 	{
 		// execute UDF call as query
-		query->type     = QUERY_EXECUTE;
-		query->rel_user = &self->rel_user;
-		query->rel      = &self->rel;
-		query->args     = NULL;
+		query->type      = QUERY_EXECUTE;
+		query->rel_user  = self->rel_user;
+		query->rel       = self->rel;
+		query->args      = NULL;
+		query->args_size = 0;
 
 		auto output = &self->request->output;
 		output->iface_arg = self;

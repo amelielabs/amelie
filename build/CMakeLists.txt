@@ -342,9 +342,8 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/follower.c
     ${AMELIE_ROOT}/system/backend/pod.c
     ${AMELIE_ROOT}/system/backend/backend.c
-    ${AMELIE_ROOT}/system/backend/replay.c
     ${AMELIE_ROOT}/system/session/session.c
-    ${AMELIE_ROOT}/system/session/session_msg.c
+    ${AMELIE_ROOT}/system/session/session_recover.c
     ${AMELIE_ROOT}/system/system/repo.c
     ${AMELIE_ROOT}/system/system/system.c
     ${AMELIE_ROOT}/system/system/system_metrics.c

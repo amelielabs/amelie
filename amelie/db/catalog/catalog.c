@@ -413,10 +413,5 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		break;
 	}
 
-	if (write)
-	{
-		log_persist_cmd(&tr->log, NULL, op);
-		return true;
-	}
-	return false;
+	return write;
 }

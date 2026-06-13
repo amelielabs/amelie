@@ -19,68 +19,6 @@
 #include <amelie_backend.h>
 
 hot static void
-pod_replay(Pod* self, Tr* tr, Buf* arg)
-{
-	auto snapshots = self->part->arg->snapshots;
-	auto pos = arg->start;
-	while (pos < arg->position)
-	{
-		// command
-		auto cmd = *(RecordCmd**)pos;
-		pos += sizeof(uint8_t**);
-
-		// data
-		auto data = *(uint8_t**)pos;
-		pos += sizeof(uint8_t**);
-
-		// validate command crc
-		if (opt_int_of(&config()->wal_crc))
-			if (unlikely(! record_validate_cmd(cmd, data)))
-				error("replay: record command crc mismatch");
-
-		// replay writes
-		Snapshot* snapshot = NULL;
-		auto end = data + cmd->size;
-		switch (cmd->cmd) {
-		case CMD_REPLACE:
-		{
-			while (data < end)
-			{
-				auto row = row_copy(self->part->heap, (Row*)data);
-				if (!snapshot || snapshot->id != row->snapshot)
-				{
-					snapshot = snapshot_mgr_find(snapshots, row->snapshot);
-					if (unlikely(! snapshot))
-						error("replay: failed to find snapshot {u32}",
-						      row->snapshot);
-				}
-				part_insert(self->part, tr, true, snapshot, row);
-				data += row_size(row);
-			}
-			break;
-		}
-		case CMD_DELETE:
-		{
-			while (data < end)
-			{
-				auto row = (Row*)(data);
-				if (!snapshot || snapshot->id != row->snapshot)
-				{
-					snapshot = snapshot_mgr_find(snapshots, row->snapshot);
-					if (unlikely(! snapshot))
-						error("replay: failed to find snapshot {u32}",
-						      row->snapshot);
-				}
-				part_delete_by(self->part, tr, snapshot, row);
-				data += row_size(row);
-			}
-			break;
-		}
-		}
-	}
-}
-
-hot static void
 pod_request(Pod* self, Ltr* ltr, Req* req)
 {
 	auto gtr = ltr->gtr;
@@ -120,23 +58,6 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 
 		if (ret.value)
 			value_move(&req->result, ret.value);
-		break;
-	}
-	case REQ_REPLAY:
-	{
-		// create and add transaction to the prepared list (even on error)
-		if (ltr->tr == NULL)
-		{
-			auto track = self->track;
-			auto tr = tr_create(&track->cache);
-			tr_set_id(tr, gtr->id);
-			tr_set_limit(tr, &gtr->limit);
-			tr_list_add(&track->prepared, tr);
-			ltr->tr = tr;
-		}
-
-		// replay commands
-		pod_replay(self, ltr->tr, &req->arg);
 		break;
 	}
 	}

@@ -89,9 +89,14 @@ gtr_free(Gtr* self)
 }
 
 static inline void
-gtr_prepare(Gtr* self, Program* program)
+gtr_prepare(Gtr* self, Program* program, User* user)
 {
+	// set program
 	self->program = program;
+
+	// set user
+	tr_set_user(&self->tr, &user->rel);
+
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
 }

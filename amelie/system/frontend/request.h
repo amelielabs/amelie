@@ -82,6 +82,17 @@ request_auth(Request* self, Auth* auth_ref)
 	}
 }
 
+hot static inline void
+request_auth_as(Request* self, Str* user)
+{
+	// take catalog lock
+	self->lock = lock_system(REL_CATALOG, LOCK_SHARED);
+	lock_detach(self->lock);
+
+	// find user
+	self->user = catalog_find_user(&share()->db->catalog, user, true);
+}
+
 static inline void
 request_reset(Request* self, bool with_endpoint)
 {
@@ -107,4 +118,21 @@ request_init(Request* self)
 	self->lock = NULL;
 	endpoint_init(&self->endpoint);
 	output_init(&self->output);
+}
+
+static inline void
+request_prepare(Request* self)
+{
+	// timestamp
+	auto endpoint = &self->endpoint;
+	opt_int_set(&endpoint->time, time_us());
+
+	// random seed
+	int64_t seed  = am_task->random.seed[0] ^ am_task->random.seed[1];
+	opt_int_set(&endpoint->seed, seed);
+
+	// set timezone
+	auto timezone = &endpoint->timezone.string;
+	if (str_empty(timezone))
+		str_set_str(timezone, &runtime()->timezone->name);
 }

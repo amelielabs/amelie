@@ -59,5 +59,5 @@ void cdc_subscribe(Cdc*, CdcSub*);
 void cdc_unsubscribe(Cdc*, CdcSub*);
 void cdc_min(Cdc*, uint64_t*);
 void cdc_gc(Cdc*);
-void cdc_write(Cdc*, uint64_t, WriteCdc*);
+void cdc_write(Cdc*, uint64_t, LogCdc*);
 void cdc_write_batch(Cdc*, uint64_t, List*);

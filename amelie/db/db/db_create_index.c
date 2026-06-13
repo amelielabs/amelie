@@ -161,5 +161,4 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 
 	// attach index to the table
 	table_index_add(&self->catalog, table, tr, config);
-	log_persist_cmd(&tr->log, NULL, op);
 }

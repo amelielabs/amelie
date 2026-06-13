@@ -30,6 +30,7 @@ struct Api
 	Str      rel_user;
 	Str      rel;
 	uint8_t* args;
+	int      args_size;
 	Request* request;
 	Jsonrpc  jsonrpc;
 };

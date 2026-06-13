@@ -84,9 +84,3 @@ tr_active(Tr* self)
 {
 	return self->log.count > 0;
 }
-
-always_inline static inline bool
-tr_persists(Tr* self)
-{
-	return !write_log_empty(&self->log.write_log);
-}

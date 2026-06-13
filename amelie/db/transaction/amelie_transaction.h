@@ -14,14 +14,8 @@
 // limit
 #include "transaction/limit.h"
 
-// transaction wal log
-#include "transaction/record.h"
-#include "transaction/write_log.h"
-#include "transaction/write.h"
-#include "transaction/write_list.h"
-#include "transaction/write_cdc.h"
-
 // transaction log
+#include "transaction/log_cdc.h"
 #include "transaction/log.h"
 
 // transaction

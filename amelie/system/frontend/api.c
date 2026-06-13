@@ -20,9 +20,10 @@
 void
 api_init(Api* self, Request* req)
 {
-	self->type    = API_UNDEF;
-	self->args    = NULL;
-	self->request = req;
+	self->type      = API_UNDEF;
+	self->args      = NULL;
+	self->args_size = 0;
+	self->request   = req;
 	str_init(&self->text);
 	str_init(&self->rel_user);
 	str_init(&self->rel);
@@ -38,8 +39,9 @@ api_free(Api* self)
 void
 api_reset(Api* self)
 {
-	self->type = API_UNDEF;
-	self->args = NULL;
+	self->type      = API_UNDEF;
+	self->args      = NULL;
+	self->args_size = 0;
 	str_init(&self->text);
 	str_init(&self->rel_user);
 	str_init(&self->rel);
@@ -112,8 +114,9 @@ api_parse_cmd(Api* self, ApiType type, bool with_args)
 		{
 			if (unlikely(!data_is_array(pos) && !data_is_obj(pos)))
 				error("'arguments' is not an array or object");
-			self->args = pos;
+			self->args      = pos;
 			data_skip(&pos);
+			self->args_size = pos - self->args;
 		} else {
 			error("unexpected params field");
 		}
@@ -203,20 +206,21 @@ api_parse(Api* self, Str* content, Query* query, bool subscribe)
 	switch (self->type) {
 	case API_SQL:
 	{
-		query->type     = QUERY_SQL;
-		query->text     = &self->text;
+		query->type      = QUERY_SQL;
+		query->text      = self->text;
 		break;
 	}
 	case API_WRITE:
 	{
-		query->type     = QUERY_WRITE;
-		query->rel_user = &self->rel_user;
-		query->rel      = &self->rel;
-		query->args     = self->args;
+		query->type      = QUERY_WRITE;
+		query->rel_user  = self->rel_user;
+		query->rel       = self->rel;
+		query->args      = self->args;
+		query->args_size = self->args_size;
 		break;
 	}
 	default:
-		query->type     = QUERY_UNDEF;
+		query->type      = QUERY_UNDEF;
 		break;
 	}
 	return true;

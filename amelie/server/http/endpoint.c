@@ -40,8 +40,10 @@ endpoint_init(Endpoint* self)
 		{ "content_type", OPT_STRING,  OPT_C,       &self->content_type, NULL, 0     },
 		{ "accept",       OPT_STRING,  OPT_C,       &self->accept,       NULL, 0     },
 		{ "endpoint",     OPT_INT,     OPT_C,       &self->endpoint,     NULL, 0     },
-		// args
+		// context
 		{ "timezone",     OPT_STRING,  OPT_C|OPT_U, &self->timezone,     NULL, 0     },
+		{ "time",         OPT_INT,     OPT_E,       &self->time,         NULL, 0     },
+		{ "seed",         OPT_INT,     OPT_E,       &self->seed,         NULL, 0     },
 		// misc
 		{ "id",           OPT_JSON,    OPT_E,       &self->id,           NULL, 0     },
 		{ "trusted",      OPT_BOOL,    OPT_E,       &self->trusted,      NULL, false },

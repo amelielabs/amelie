@@ -18,9 +18,7 @@ typedef struct Ltr      Ltr;
 
 enum
 {
-	REQ_EXECUTE,
-	REQ_REPLAY,
-	REQ_BUILD
+	REQ_EXECUTE
 };
 
 struct Req

@@ -176,7 +176,9 @@ follower_unfollow(Follower* self)
 hot static void
 follower_execute(Follower* self, Str* content)
 {
+	// set time and random seed
 	auto req = self->req;
+	request_prepare(req);
 
 	// parse
 	auto query = &self->query;

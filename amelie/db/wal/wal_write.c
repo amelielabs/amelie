@@ -84,34 +84,91 @@ wal_create(Wal* self, WalContext* context, uint64_t id)
 }
 
 hot static inline void
-wal_flush(WalFile* current, WalContext* context)
+wal_flush(Wal* self, WalFile* current, WalContext* context)
 {
+	auto iov = &self->iov;
+	iov_reset(iov);
+
 	context->lsn = state_lsn() + 1;
 	list_foreach(&context->list->list)
 	{
 		auto write = list_at(Write, link);
 
 		// finilize wal record
-		write_end(write, context->lsn);
+		write_set_lsn(write, context->lsn);
+		write_seal(write);
 
-		// write wal file
-
-		// [header][commands][rows or ops]
-		wal_file_write(current, &write->iov);
-		list_foreach(&write->list)
-		{
-			auto write_log = list_at(WriteLog, link);
-			wal_file_write(current, &write_log->iov);
-		}
+		// [record][context, sql]
+		iov_add(iov, &write->record, sizeof(write->record));
+		iov_add_buf(iov, &write->record_data);
 
 		if (! list_is_last(&context->list->list, &write->link))
 			context->lsn++;
 	}
-	context->list->lsn = context->lsn;
+
+	// write
+	wal_file_write(current, iov);
 
 	// sync after write
 	if (opt_int_of(&config()->wal_sync_write))
 		wal_file_sync(current);
+}
+
+hot static inline void
+wal_recover(WalContext* context)
+{
+	context->lsn = state_lsn();
+	list_foreach(&context->list->list)
+	{
+		auto write = list_at(Write, link);
+		assert(write->recover);
+		context->lsn = write->recover->lsn;
+	}
+}
+
+hot static inline void
+wal_recover_write(Wal* self, WalFile* current, WalContext* context)
+{
+	auto iov = &self->iov;
+	iov_reset(iov);
+
+	context->lsn = state_lsn();
+	list_foreach(&context->list->list)
+	{
+		auto write = list_at(Write, link);
+		assert(write->recover);
+		context->lsn = write->recover->lsn;
+		iov_add(iov, write->recover, write->recover->size);
+	}
+
+	// write
+	wal_file_write(current, iov);
+
+	// sync after write
+	if (opt_int_of(&config()->wal_sync_write))
+		wal_file_sync(current);
+}
+
+hot static inline void
+wal_write_state(Wal* self, WalFile* current, WalContext* context)
+{
+	// handle current system recovery state
+	switch (opt_int_of(&state()->recover)) {
+	case RECOVER_OFF:
+		// wal write
+		wal_flush(self, current, context);
+		break;
+	case RECOVER_WAL:
+		// wal recover
+		wal_recover(context);
+		break;
+	case RECOVER_REPL:
+		// wal recover (with write)
+		wal_recover_write(self, current, context);
+		break;
+	}
+
+	context->list->lsn = context->lsn;
 }
 
 hot void
@@ -139,8 +196,9 @@ wal_write(Wal* self, WalContext* context)
 
 	// do atomical write of a list of wal records
 	auto current_offset = current->file.size;
-	auto on_error = error_catch (
-		wal_flush(current, context)
+	auto on_error = error_catch
+	(
+		wal_write_state(self, current, context)
 	);
 	if (unlikely(on_error)) {
 		if (error_catch(wal_file_truncate(current, current_offset)))

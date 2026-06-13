@@ -20,9 +20,10 @@
 void
 mcp_init(Mcp* self, Request* req)
 {
-	self->type    = MCP_UNDEF;
-	self->args    = NULL;
-	self->request = req;
+	self->type      = MCP_UNDEF;
+	self->args      = NULL;
+	self->args_size = 0;
+	self->request   = req;
 	str_init(&self->rel_user);
 	str_init(&self->rel);
 	jsonrpc_init(&self->jsonrpc);
@@ -37,8 +38,9 @@ mcp_free(Mcp* self)
 void
 mcp_reset(Mcp* self)
 {
-	self->type = MCP_UNDEF;
-	self->args = NULL;
+	self->type      = MCP_UNDEF;
+	self->args      = NULL;
+	self->args_size = 0;
 	str_init(&self->rel_user);
 	str_init(&self->rel);
 	jsonrpc_reset(&self->jsonrpc);
@@ -85,8 +87,9 @@ mcp_parse_tools_call(Mcp* self)
 		{
 			if (unlikely(!data_is_array(pos) && !data_is_obj(pos)))
 				error("'arguments' is not an array or object");
-			self->args = pos;
+			self->args      = pos;
 			data_skip(&pos);
+			self->args_size = pos - self->args;
 		} else {
 			// skipping unknown field
 			data_skip(&pos);

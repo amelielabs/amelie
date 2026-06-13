@@ -81,11 +81,13 @@ session_set(Session* self, Request* req, Query* query)
 	local->timezone = req->output.timezone;
 	str_set_str(&local->user, &req->user->config->name);
 
-	// set random generator
-	random_open_using(&local->random, &am_task->random);
+	// set time
+	local->time_us = opt_int_of(&req->endpoint.time);
 
-	// update transaction time
-	local_update_time(local);
+	// set random seed
+	auto random = &local->random;
+	random->seed[0] = opt_int_of(&req->endpoint.seed);
+	random->seed[1] = random->seed[0] ^ local->time_us;
 }
 
 hot static inline void
@@ -100,14 +102,24 @@ session_run(Session* self)
 	if (!program->ro && opt_int_of(&state()->read_only))
 		error("system is in read-only mode");
 
+	reg_prepare(&self->vm.r, program->code.regs);
+
 	// take transaction locks
 	lock_access(&program->access);
 
-	reg_prepare(&self->vm.r, program->code.regs);
-
 	// prepare global transaction
-	gtr_prepare(gtr, program);
-	tr_set_user(&gtr->tr, &self->req->user->rel);
+	gtr_prepare(gtr, program, self->req->user);
+
+	// prepare request for the wal writer
+	auto write = &gtr->write;
+	if (! program->ro)
+	{
+		auto query = self->query;
+		if (query->recover)
+			write_set_recover(write, query->recover);
+		else
+			query_write(query, &self->req->endpoint, &write->record_data);
+	}
 
 	// [PROFILE]
 	if (compiler->program_profile)
@@ -141,6 +153,9 @@ session_run(Session* self)
 		profile_end(&profile->time_run_us);
 		profile_start(&profile->time_commit_us);
 	}
+
+	// assign id
+	write_set_tsn(write, gtr->id);
 
 	// do group commit and wal write, handle group abort
 	commit(share()->commit, gtr, error);
@@ -240,6 +255,16 @@ session_run_utility(Session* self)
 		write_init(&write);
 		defer(write_free, &write);
 
+		// prepare request for the wal writer
+		auto query = self->query;
+		if (query->recover) {
+			write_set_recover(&write, query->recover);
+		} else
+		{
+			write_set_tsn(&write, 0);
+			query_write(query, &self->req->endpoint, &write.record_data);
+		}
+
 		WriteList write_list;
 		write_list_init(&write_list);
 
@@ -249,8 +274,6 @@ session_run_utility(Session* self)
 			if (opt_int_of(&state()->read_only))
 				error("system is in read-only mode");
 
-			write_begin(&write);
-			write_add(&write, &tr.log.write_log);
 			write_list_add(&write_list, &write);
 
 			db_write(share()->db, &write_list);
@@ -286,14 +309,14 @@ session_request(Session* self)
 	case QUERY_SQL:
 	{
 		user_check(req->user, PERM_SQL);
-		compiler_parse(compiler, query->text);
+		compiler_parse(compiler, &query->text);
 		break;
 	}
 	case QUERY_WRITE:
 	case QUERY_EXECUTE:
 	{
 		auto execute = query->type == QUERY_EXECUTE;
-		compiler_parse_import(compiler, query->rel_user, query->rel,
+		compiler_parse_import(compiler, &query->rel_user, &query->rel,
 		                      query->args, execute);
 		break;
 	}

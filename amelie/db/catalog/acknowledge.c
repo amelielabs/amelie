@@ -75,8 +75,7 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 		      &self->config->name);
 
 	// update subscription slot
-	log_cmd(&tr->log, CMD_ACK, &ack_if, NULL, &self->rel);
-	log_persist_cmd(&tr->log, &self->config->id, op);
+	log_cmd(&tr->log, LOG_ACK, &ack_if, NULL, &self->rel);
 
 	// save previous value
 	encode_int(&tr->log.data, current_lsn);

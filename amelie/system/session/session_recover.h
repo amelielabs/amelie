@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void replay(Gtr*, Record*);
+extern RecoverIf recover_if;

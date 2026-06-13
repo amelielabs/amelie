@@ -52,8 +52,10 @@ struct Endpoint
 	Opt  content_type;
 	Opt  accept;
 	Opt  endpoint;
-	// args
+	// context
 	Opt  timezone;
+	Opt  time;
+	Opt  seed;
 	// misc
 	Opt  id;
 	Opt  trusted;

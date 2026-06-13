@@ -105,8 +105,7 @@ batch_process(Batch* self)
 
 		// sync metrics and prepare gtr for wal write
 		auto write = &gtr->write;
-		write_reset(write);
-		write_begin(write);
+
 		list_foreach(&gtr->dispatch_mgr.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
@@ -127,24 +126,17 @@ batch_process(Batch* self)
 				if (tr->id > pending->commit)
 					pending->commit = tr->id;
 
-				// add to the wal write list
-				if (tr_persists(tr))
-					write_add(write, &tr->log.write_log);
-
-				// collect cdc per gtr
-				if (! write_cdc_empty(&tr->log.write_cdc))
-					list_append(&gtr->write_cdc, &tr->log.write_cdc.link);
+				// collect cdc per ltr
+				if (! log_cdc_empty(&tr->log.cdc))
+					list_append(&gtr->write_cdc, &tr->log.cdc.link);
 			}
 		}
 
-		// add operations, such as acknowledge and publish
-		if (tr_persists(&gtr->tr))
-			write_add(write, &gtr->tr.log.write_log);
+		// collect cdc
+		if (! log_cdc_empty(&gtr->tr.log.cdc))
+			list_append(&gtr->write_cdc, &gtr->tr.log.cdc.link);
 
-		if (! write_cdc_empty(&gtr->tr.log.write_cdc))
-			list_append(&gtr->write_cdc, &gtr->tr.log.write_cdc.link);
-
-		if (write->header.count > 0)
+		if (! gtr->program->ro)
 			write_list_add(&self->write, write);
 	}
 }
@@ -189,10 +181,7 @@ batch_complete(Batch* self, Cdc* cdc)
 		// publish cdc events
 		if (! list_empty(&gtr->write_cdc))
 		{
-			// unlogged operation (lsn is not set)
-			auto lsn = gtr->write.header.lsn;
-			if (! lsn)
-				lsn = state_lsn_next();
+			auto lsn = gtr->write.record.lsn;
 			cdc_write_batch(cdc, lsn, &gtr->write_cdc);
 		}
 

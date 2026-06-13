@@ -27,7 +27,7 @@ backend_rpc(Rpc* rpc, void* arg)
 	{
 		// load partition heap file
 		Part* part = rpc->arg;
-		if (opt_int_of(&state()->recover) > 0)
+		if (opt_int_of(&state()->recover) == RECOVER_CHECKPOINT)
 			part_open(part, state_checkpoint());
 
 		// create and start new pod
