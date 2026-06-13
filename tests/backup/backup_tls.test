@@ -6,6 +6,7 @@ connect E0 S0 https://127.0.0.1:3480 ./tls/ca.crt;
 
 create table test (id serial primary key);
 insert into test generate 500;
+show state;
 
 # test: backup (using https)
 #

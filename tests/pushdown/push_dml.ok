@@ -118,16 +118,5 @@ id  data
 3   4
 2   3
 drop table test;
-# test: table insert (unlogged)
-create unlogged table test (id int primary key, data int default 0);
-insert into test (id) values (1), (2), (3);
-select * from test;
-
-id  data
-──────────
-1   0
-3   0
-2   0
-drop table test;
 disconnect S0;
 close E0;

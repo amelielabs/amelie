@@ -79,34 +79,6 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 
 	// find and validate relation
 	auto on = catalog_find(self, REL_UNDEF, &config->rel_user, &config->rel, true);
-	auto unlogged = false;
-	switch (on->type) {
-	case REL_TABLE:
-	{
-		auto table = table_of(on);
-		unlogged = table->config->unlogged;
-		break;
-	}
-	case REL_CLONE:
-	{
-		auto clone = clone_of(on);
-		unlogged = clone->table->config->unlogged;
-		break;
-	}
-	case REL_TOPIC:
-	{
-		auto topic = topic_of(on);
-		unlogged = topic->config->unlogged;
-		break;
-	}
-	default:
-		error("subscription '{str}': cannot be used with {s}", &config->name,
-		      rel_type_of(on->type));
-		break;
-	}
-	if (unlogged)
-		error("subscription '{str}': unlogged {s} cannot be used with subscription",
-		      &config->name, rel_type_of(on->type));
 
 	// check permission
 	check_permission(tr, on, PERM_CREATE_SUBSCRIPTION);

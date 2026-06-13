@@ -19,7 +19,6 @@ struct TableConfig
 	Str     name;
 	Str     description;
 	Uuid    id;
-	bool    unlogged;
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
@@ -33,7 +32,6 @@ table_config_allocate(void)
 {
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
-	self->unlogged      = false;
 	self->indexes_count = 0;
 	self->parts_count   = 0;
 	str_init(&self->name);
@@ -99,12 +97,6 @@ table_config_set_id(TableConfig* self, Uuid* id)
 }
 
 static inline void
-table_config_set_unlogged(TableConfig* self, bool value)
-{
-	self->unlogged = value;
-}
-
-static inline void
 table_config_index_add(TableConfig* self, IndexConfig* config)
 {
 	list_append(&self->indexes, &config->link);
@@ -140,7 +132,6 @@ table_config_copy(TableConfig* self)
 	table_config_set_user(copy, &self->user);
 	table_config_set_description(copy, &self->description);
 	table_config_set_id(copy, &self->id);
-	table_config_set_unlogged(copy, self->unlogged);
 	columns_copy(&copy->columns, &self->columns);
 	grants_copy(&copy->grants, &self->grants);
 
@@ -179,7 +170,6 @@ table_config_read(uint8_t** pos)
 		{ DECODE_STR,   "name",        &self->name        },
 		{ DECODE_STR,   "description", &self->description },
 		{ DECODE_UUID,  "id",          &self->id          },
-		{ DECODE_BOOL,  "unlogged",    &self->unlogged    },
 		{ DECODE_ARRAY, "columns",     &pos_columns       },
 		{ DECODE_ARRAY, "indexes",     &pos_indexes       },
 		{ DECODE_ARRAY, "partitions",  &pos_parts         },
@@ -239,10 +229,6 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	// id
 	encode_raw(buf, "id", 2);
 	encode_uuid(buf, &self->id);
-
-	// unlogged
-	encode_raw(buf, "unlogged", 8);
-	encode_bool(buf, self->unlogged);
 
 	// columns
 	encode_raw(buf, "columns", 7);

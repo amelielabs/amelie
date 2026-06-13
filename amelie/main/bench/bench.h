@@ -44,7 +44,6 @@ struct Bench
 	Opt        scale;
 	Opt        batch;
 	Opt        init;
-	Opt        unlogged;
 	Opt        histogram;
 	Opts       opts;
 	Main*      main;

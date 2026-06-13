@@ -1328,19 +1328,6 @@ insert into test values (0, 0);
 insert into test values (1, 0);
 error: index 'i': unique key constraint violation
 drop table test;
-# test: insert unlogged
-create unlogged table test (id int primary key, data int);
-insert into test values (0, 2);
-insert into test values (1, 1);
-insert into test values (2, 0);
-select * from test;
-
-id  data
-──────────
-0   2
-1   1
-2   0
-drop table test;
 # test: insert select (columns count mismatch)
 create table test (id int primary key, data int);
 insert into test select 1;

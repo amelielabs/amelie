@@ -51,7 +51,6 @@ table_allocate(TableConfig* config,
 	// part context
 	auto arg = &self->part_arg;
 	arg->seq       = &self->seq;
-	arg->unlogged  =  self->config->unlogged;
 	arg->rel       = &self->rel;
 	arg->snapshots = &self->snapshot_mgr;
 

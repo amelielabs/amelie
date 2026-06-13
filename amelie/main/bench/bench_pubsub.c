@@ -17,8 +17,7 @@
 static void
 bench_pubsub_create(Bench* self, MainClient* client)
 {
-	if (opt_int_of(&self->unlogged))
-		error("pubsub benchmark does not support unlogged topics");
+	unused(self);
 
 	info("preparing topic.");
 	Str str;

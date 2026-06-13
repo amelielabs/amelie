@@ -110,7 +110,6 @@ bench_init(Bench* self, Main* main)
 		{ "scale",     OPT_INT,    OPT_C|OPT_Z, &self->scale,     NULL,  1     },
 		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->batch,     NULL,  64    },
 		{ "init",      OPT_INT,    OPT_C,       &self->init,      NULL,  1     },
-		{ "unlogged",  OPT_BOOL,   OPT_C,       &self->unlogged,  NULL,  false },
 		{ "histogram", OPT_BOOL,   OPT_C,       &self->histogram, NULL,  false },
 		{  NULL,       0,          0,            NULL,            NULL,  0     }
 	};
@@ -178,7 +177,6 @@ bench_run(Bench* self)
 	auto clients            = opt_int_of(&self->clients);
 	auto clients_per_worker = clients / workers;
 	auto init               = opt_int_of(&self->init);
-	auto unlogged           = opt_int_of(&self->unlogged);
 	auto histogram          = opt_int_of(&self->histogram);
 
 	// set benchmark
@@ -216,7 +214,6 @@ bench_run(Bench* self)
 	info("batch:     {u64}", batch);
 	info("scale:     {u64}", scale);
 	info("init:      {u64}", init);
-	info("unlogged:  {u64}", unlogged);
 	info("histogram: {u64}", histogram);
 	info("");
 

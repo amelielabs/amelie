@@ -233,7 +233,6 @@ enum
 	KUSING,
 	KURI,
 	KUNSUBSCRIBE,
-	KUNLOGGED,
 
 	// v
 	KVALUES,

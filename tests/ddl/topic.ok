@@ -7,8 +7,6 @@ create topic 1;
 error: create topic ❰1❱ ⟵ name expected
 create topic;
 error: create topic❰;❱ ⟵ name expected
-create unlogged topic;
-error: create unlogged topic❰;❱ ⟵ name expected
 create topic if exists;
 error: create topic if ❰exists❱ ⟵ NOT expected
 # test: create topic
@@ -139,15 +137,5 @@ topic
   "description": "__renamed"
 }
 drop topic x;
-# test: create topic (unlogged)
-create unlogged topic test;
-select name, `unlogged` from show topics verbose;
-
-name    unlogged
-──────────────────
-"test"  true
-publish into test;
-publish into test 123;
-drop topic test;
 disconnect S0;
 close E0;

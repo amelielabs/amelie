@@ -6,7 +6,6 @@ connect E0 S0 127.0.0.1:3485;
 create topic;
 create topic 1;
 create topic;
-create unlogged topic;
 create topic if exists;
 
 # test: create topic
@@ -81,14 +80,6 @@ create topic x;
 alter topic x description '__renamed';
 show topic x;
 drop topic x;
-
-# test: create topic (unlogged)
-create unlogged topic test;
-select name, `unlogged` from show topics verbose;
-
-publish into test;
-publish into test 123;
-drop topic test;
 
 disconnect S0;
 close E0;

@@ -196,7 +196,6 @@ Keyword keywords[] =
 	{ KUSING,                 "using",                 5  },
 	{ KURI,                   "uri",                   3  },
 	{ KUNSUBSCRIBE,           "unsubscribe",           11 },
-	{ KUNLOGGED,              "unlogged",              8  },
 
 	// v
 	{ KVALUES,                "values",                6  },

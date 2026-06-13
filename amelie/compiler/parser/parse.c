@@ -236,9 +236,8 @@ parse_stmt(Stmt* self)
 
 	case KCREATE:
 	{
-		// [UNIQUE | UNLOGGED]
+		// [UNIQUE]
 		bool unique     = false;
-		bool unlogged   = false;
 		bool or_replace = false;
 		for (auto stop = false; !stop ;)
 		{
@@ -246,9 +245,6 @@ parse_stmt(Stmt* self)
 			switch (mod->id) {
 			case KUNIQUE:
 				unique = true;
-				break;
-			case KUNLOGGED:
-				unlogged = true;
 				break;
 			case KOR:
 				stmt_expect(self, KREPLACE);
@@ -264,14 +260,6 @@ parse_stmt(Stmt* self)
 		if (unique)
 		{
 			auto next = stmt_expect(self, KINDEX);
-			stmt_push(self, next);
-		}
-
-		if (unlogged)
-		{
-			auto next = stmt_next(self);
-			if (next->id != KTABLE && next->id != KTOPIC)
-				stmt_error(self, next, "table or topic expected");
 			stmt_push(self, next);
 		}
 
@@ -305,7 +293,7 @@ parse_stmt(Stmt* self)
 		if (stmt_if(self, KTABLE))
 		{
 			self->id = STMT_CREATE_TABLE;
-			parse_table_create(self, unlogged);
+			parse_table_create(self);
 		} else
 		if (stmt_if(self, KINDEX))
 		{
@@ -325,7 +313,7 @@ parse_stmt(Stmt* self)
 		if (stmt_if(self, KTOPIC))
 		{
 			self->id = STMT_CREATE_TOPIC;
-			parse_topic_create(self, unlogged);
+			parse_topic_create(self);
 		} else
 		if (stmt_if(self, KSUBSCRIPTION))
 		{

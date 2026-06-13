@@ -18,9 +18,9 @@
 #include <amelie_parser.h>
 
 void
-parse_topic_create(Stmt* self, bool unlogged)
+parse_topic_create(Stmt* self)
 {
-	// CREATE [UNLOGGED] TOPIC [IF NOT EXISTS] name [DESCRIPTION text]
+	// CREATE TOPIC [IF NOT EXISTS] name [DESCRIPTION text]
 	auto stmt = ast_topic_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -39,7 +39,6 @@ parse_topic_create(Stmt* self, bool unlogged)
 	uuid_init(&id);
 	uuid_generate(&id, &self->parser->local->random);
 	topic_config_set_id(config, &id);
-	topic_config_set_unlogged(config, unlogged);
 
 	// [DESCRIPTION]
 	auto description = stmt_if(self, KDESCRIPTION);

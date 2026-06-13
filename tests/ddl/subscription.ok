@@ -365,11 +365,6 @@ error: drop subscription ❰123❱ ⟵ name expected
 drop subscription test_sub;
 error: subscription 'test_sub': not exists
 drop subscription if exists test_sub;
-# test: create subscription (unlogged table)
-create unlogged table test (id int primary key, data int);
-create subscription test_sub on test;
-error: subscription 'test_sub': unlogged table cannot be used with subscription
-drop table test;
 # test: create subscription (topic)
 create topic test;
 create subscription test_sub on test;
@@ -395,7 +390,7 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-25   0
+23   0
 # test: cdc (publish)
 publish into test;
 publish into test 123;
@@ -405,30 +400,30 @@ select * from test_sub;
 
 lsn  lsn_op  cmd      row
 ────────────────────────────
-26   0       publish  null
-27   0       publish  123
-28   0       publish  1
-28   1       publish  2
-28   2       publish  3
+24   0       publish  null
+25   0       publish  123
+26   0       publish  1
+26   1       publish  2
+26   2       publish  3
 # test: acknowledge
-acknowledge test_sub to 28;
+acknowledge test_sub to 26;
 select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-28   0
+26   0
 select * from test_sub;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-28   1       publish  2
-28   2       publish  3
-acknowledge test_sub to 29, 1;
+26   1       publish  2
+26   2       publish  3
+acknowledge test_sub to 27, 1;
 select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-29   1
+27   1
 select * from test_sub;
 
 lsn  lsn_op  cmd  row
@@ -451,19 +446,6 @@ show subs;
 
 subs
 ────
-# test: create subscription (unlogged topic)
-create unlogged topic test;
-create subscription test_sub on test;
-error: subscription 'test_sub': unlogged topic cannot be used with subscription
-drop topic test cascade;
-# test: create subscription (unlogged clone)
-create unlogged table test (id int primary key);
-create clone test_clone of test;
-create subscription test_sub on test;
-error: subscription 'test_sub': unlogged table cannot be used with subscription
-create subscription test_sub on test_clone;
-error: subscription 'test_sub': unlogged clone cannot be used with subscription
-drop table test cascade;
 # test: create subscription (clone)
 create table test (id int primary key);
 create subscription test_sub on test;
@@ -473,22 +455,22 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-38   0
-40   0
+31   0
+33   0
 insert into test values (123);
 insert into test_clone values (1), (2), (3);
 select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ─────────────────────────────────
-41   0       write  {"id": 123}
+34   0       write  {"id": 123}
 select * from test_clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-42   0       write  {"id": 1}
-42   1       write  {"id": 2}
-42   2       write  {"id": 3}
+35   0       write  {"id": 1}
+35   1       write  {"id": 2}
+35   2       write  {"id": 3}
 drop subscription test_sub;
 drop subscription test_clone_sub;
 drop table test cascade;
@@ -501,9 +483,9 @@ select * from test_clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-49   0       write  {"id": 1}
-49   1       write  {"id": 2}
-49   2       write  {"id": 3}
+42   0       write  {"id": 1}
+42   1       write  {"id": 2}
+42   2       write  {"id": 3}
 select * from test_clone;
 
 id
@@ -523,15 +505,15 @@ select * from clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-56   0       write  {"id": 1}
+49   0       write  {"id": 1}
 drop subscription base_sub;
 insert into test_clone values (2);
 select * from clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-56   0       write  {"id": 1}
-58   0       write  {"id": 2}
+49   0       write  {"id": 1}
+51   0       write  {"id": 2}
 select * from test_clone order by id;
 
 id
@@ -602,7 +584,7 @@ select * from b_sub;
 
 lsn  lsn_op  cmd    row
 ─────────────────────────────────────────────
-74   0       write  {"id": 42, "data": 900}
+67   0       write  {"id": 42, "data": 900}
 drop subscription a_sub;
 drop subscription b_sub;
 drop table a;
@@ -630,26 +612,26 @@ select lsn, lsn_op from test_sub order by lsn_op;
 
 lsn  lsn_op
 ─────────────
-81   0
-81   1
-81   2
-81   3
-81   4
-81   5
-81   6
-81   7
-acknowledge test_sub to 81, 0;
+74   0
+74   1
+74   2
+74   3
+74   4
+74   5
+74   6
+74   7
+acknowledge test_sub to 74, 0;
 select lsn, lsn_op from test_sub order by lsn_op;
 
 lsn  lsn_op
 ─────────────
-81   1
-81   2
-81   3
-81   4
-81   5
-81   6
-81   7
+74   1
+74   2
+74   3
+74   4
+74   5
+74   6
+74   7
 select count(*) from test_sub;
 
 count
@@ -689,18 +671,18 @@ select lsn from show state;
 
 lsn
 ───
-94
+87
 select name, lsn, lsn_op  from show subs verbose;
 
 name    lsn  lsn_op
 ─────────────────────
-"sub1"  92   0
-"sub2"  94   0
+"sub1"  85   0
+"sub2"  87   0
 select * from sub1;
 
 lsn  lsn_op  cmd    row
 ──────────────────────────────────────────
-93   0       write  {"id": 1, "data": 0}
+86   0       write  {"id": 1, "data": 0}
 select * from sub2;
 
 lsn  lsn_op  cmd  row
@@ -715,20 +697,20 @@ select lsn from show state;
 
 lsn
 ───
-99
+92
 select name, lsn, lsn_op  from show subs verbose;
 
 name    lsn  lsn_op
 ─────────────────────
-"sub1"  97   0
-"sub2"  99   0
+"sub1"  90   0
+"sub2"  92   0
 select * from sub1;
 
 lsn  lsn_op  cmd    row
 ──────────────────────────────────────────
-98   0       write  {"id": 1, "data": 0}
-98   1       write  {"id": 2, "data": 0}
-98   2       write  {"id": 3, "data": 0}
+91   0       write  {"id": 1, "data": 0}
+91   1       write  {"id": 2, "data": 0}
+91   2       write  {"id": 3, "data": 0}
 select * from sub2;
 
 lsn  lsn_op  cmd  row
@@ -742,22 +724,22 @@ select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ──────────────────────────────────────────
-103  0       write  {"id": 1, "data": 0}
-103  1       write  {"id": 2, "data": 0}
-103  2       write  {"id": 3, "data": 0}
+96   0       write  {"id": 1, "data": 0}
+96   1       write  {"id": 2, "data": 0}
+96   2       write  {"id": 3, "data": 0}
 select lsn, lsn_op from test_sub;
 
 lsn  lsn_op
 ─────────────
-103  0
-103  1
-103  2
-acknowledge test_sub to 103, 99;
+96   0
+96   1
+96   2
+acknowledge test_sub to 96, 99;
 select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-103  99
+96   99
 select * from test_sub;
 
 lsn  lsn_op  cmd  row
@@ -771,21 +753,21 @@ select * from s;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-108  0       publish  1
-108  1       publish  2
-108  2       publish  3
-acknowledge s to 108, 2;
+101  0       publish  1
+101  1       publish  2
+101  2       publish  3
+acknowledge s to 101, 2;
 select * from s;
 
 lsn  lsn_op  cmd  row
 ───────────────────────
-acknowledge s to 108, 0;
+acknowledge s to 101, 0;
 error: subscription 's': ack position is out of range
 select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-108  2
+101  2
 select * from s;
 
 lsn  lsn_op  cmd  row

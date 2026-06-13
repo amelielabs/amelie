@@ -398,9 +398,9 @@ parse_table_partitions(Stmt* self, TableConfig* table_config)
 }
 
 void
-parse_table_create(Stmt* self, bool unlogged)
+parse_table_create(Stmt* self)
 {
-	// CREATE [UNLOGGED] TABLE [IF NOT EXISTS] name (key)
+	// CREATE TABLE [IF NOT EXISTS] name (key)
 	// [PARTITIONS n]
 	// [WITH (options)]
 	// [DESCRIPTION value]
@@ -416,7 +416,6 @@ parse_table_create(Stmt* self, bool unlogged)
 	// create table config
 	auto config = table_config_allocate();
 	stmt->config = config;
-	table_config_set_unlogged(config, unlogged);
 	table_config_set_user(config, self->parser->user);
 	table_config_set_name(config, &name->string);
 	Uuid id;

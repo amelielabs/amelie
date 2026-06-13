@@ -21,11 +21,6 @@ bench_import_create(Bench* self, MainClient* client)
 	Str str;
 	str_set_cstr(&str, "create table test (id serial primary key)");
 	main_client_execute(client, &str, NULL);
-	if (opt_int_of(&self->unlogged))
-	{
-		str_set_cstr(&str, "alter table test set unlogged");
-		main_client_execute(client, &str, NULL);
-	}
 }
 
 hot static void

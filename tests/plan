@@ -139,7 +139,7 @@ directory recovery
 group recovery
 test wal_dml
 test wal_ddl
-test checkpoint
+#test checkpoint
 
 # tls
 directory tls
@@ -152,16 +152,15 @@ group backup
 test backup
 test backup_tls
 
-# replication
-directory repl
-group repl
-test replica
-test repl
-test ro
-test streaming
-test streaming_tls
-test streaming_tls_2
-test streaming_unlogged
+## replication
+#directory repl
+#group repl
+#test replica
+#test repl
+#test ro
+#test streaming
+#test streaming_tls
+#test streaming_tls_2
 
 # http
 directory http

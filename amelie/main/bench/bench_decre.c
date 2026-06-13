@@ -26,13 +26,6 @@ bench_decre_create(Bench* self, MainClient* client)
 	str_set_cstr(&str, "create table history(id serial primary key using hash, src int, dst int, amount double)");
 	main_client_execute(client, &str, NULL);
 
-	if (opt_int_of(&self->unlogged))
-	{
-		str_set_cstr(&str, "alter table test set unlogged");
-		main_client_execute(client, &str, NULL);
-		str_set_cstr(&str, "alter table history set unlogged");
-		main_client_execute(client, &str, NULL);
-	}
 	Buf buf;
 	buf_init(&buf);
 	defer_buf(&buf);

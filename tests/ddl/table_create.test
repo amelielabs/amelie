@@ -152,11 +152,6 @@ select show('table', 'test', true).columns;
 drop table test;
 select show('table', 'test', true).columns;
 
-# test: unlogged
-create unlogged table test (id int primary key);
-select show('table', 'test', true).unlogged;
-drop table test;
-
 # test: constraint default
 create table test (id int primary key, data int default 1);
 select show('table', 'test', true).columns;

@@ -133,11 +133,6 @@ drop subscription 123;
 drop subscription test_sub;
 drop subscription if exists test_sub;
 
-# test: create subscription (unlogged table)
-create unlogged table test (id int primary key, data int);
-create subscription test_sub on test;
-drop table test;
-
 # test: create subscription (topic)
 create topic test;
 create subscription test_sub on test;
@@ -154,11 +149,11 @@ publish into test 1,2,3;
 select * from test_sub;
 
 # test: acknowledge
-acknowledge test_sub to 28;
+acknowledge test_sub to 26;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
-acknowledge test_sub to 29, 1;
+acknowledge test_sub to 27, 1;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 
@@ -169,18 +164,6 @@ show subs;
 # test: drop topic (cascade)
 drop topic test cascade;
 show subs;
-
-# test: create subscription (unlogged topic)
-create unlogged topic test;
-create subscription test_sub on test;
-drop topic test cascade;
-
-# test: create subscription (unlogged clone)
-create unlogged table test (id int primary key);
-create clone test_clone of test;
-create subscription test_sub on test;
-create subscription test_sub on test_clone;
-drop table test cascade;
 
 # test: create subscription (clone)
 create table test (id int primary key);
@@ -295,7 +278,7 @@ begin
 end;
 
 select lsn, lsn_op from test_sub order by lsn_op;
-acknowledge test_sub to 81, 0;
+acknowledge test_sub to 74, 0;
 select lsn, lsn_op from test_sub order by lsn_op;
 select count(*) from test_sub;
 select count(*) from test;
@@ -348,7 +331,7 @@ create subscription test_sub on test;
 insert into test values (1, 0), (2, 0), (3, 0);
 select * from test_sub;
 select lsn, lsn_op from test_sub;
-acknowledge test_sub to 103, 99;
+acknowledge test_sub to 96, 99;
 select lsn, lsn_op from show subscriptions verbose;
 select * from test_sub;
 drop table test cascade;
@@ -358,9 +341,9 @@ create topic t;
 create subscription s on t;
 publish into t 1,2,3;
 select * from s;
-acknowledge s to 108, 2;
+acknowledge s to 101, 2;
 select * from s;
-acknowledge s to 108, 0;
+acknowledge s to 101, 0;
 select lsn, lsn_op from show subscriptions verbose;
 select * from s;
 drop topic t cascade;

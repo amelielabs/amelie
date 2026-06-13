@@ -185,23 +185,6 @@ bench_tpcb_create(Bench* self, MainClient* client)
 		main_client_execute(client, &str, NULL);
 	}
 
-	if (opt_int_of(&self->unlogged))
-	{
-		char* ddl_unlogged[] =
-		{
-			"alter table bench_branches set unlogged",
-			"alter table bench_tellers set unlogged",
-			"alter table bench_accounts set unlogged",
-			"alter table bench_history set unlogged",
-		     NULL
-		};
-		for (auto i = 0; ddl_unlogged[i]; i++)
-		{
-			str_set_cstr(&str, ddl_unlogged[i]);
-			main_client_execute(client, &str, NULL);
-		}
-	}
-
 	// create benchmark function
 	char func[] =
 	"create function bench_tpcb(bid int, tid int, aid int, delta int)"

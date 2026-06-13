@@ -3,6 +3,22 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 https://127.0.0.1:3480 ./tls/ca.crt;
 create table test (id serial primary key);
 insert into test generate 500;
+show state;
+
+state
+─────
+{
+  "version": "1.0.0-rc1",
+  "directory": "./_output/E0",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "frontends": 1,
+  "backends": 3,
+  "lsn": 3,
+  "tsn": 2,
+  "psn": 3,
+  "checkpoint": 1,
+  "read_only": false
+}
 # test: backup (using https)
 backup E1 https://127.0.0.1:3480;
 close E1;
@@ -60,7 +76,7 @@ state
   "backends": 1,
   "lsn": 3,
   "tsn": 2,
-  "psn": 3,
+  "psn": 1,
   "checkpoint": 1,
   "read_only": false
 }

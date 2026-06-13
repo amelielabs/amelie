@@ -507,14 +507,6 @@ select show('table', 'test', true).columns;
 columns
 ───────
 null
-# test: unlogged
-create unlogged table test (id int primary key);
-select show('table', 'test', true).unlogged;
-
-unlogged
-────────
-true
-drop table test;
 # test: constraint default
 create table test (id int primary key, data int default 1);
 select show('table', 'test', true).columns;
@@ -789,19 +781,19 @@ select show('table', 'test', true).partitions;
 partitions
 ──────────
 [{
-  "id": 34,
+  "id": 33,
   "hash_min": 0,
   "hash_max": 2024
 }, {
-  "id": 35,
+  "id": 34,
   "hash_min": 2024,
   "hash_max": 4048
 }, {
-  "id": 36,
+  "id": 35,
   "hash_min": 4048,
   "hash_max": 6072
 }, {
-  "id": 37,
+  "id": 36,
   "hash_min": 6072,
   "hash_max": 8096
 }]
@@ -810,28 +802,28 @@ show partitions on test;
 partitions
 ──────────
 {
-  "id": 34,
+  "id": 33,
   "min": 0,
   "max": 2024,
   "size": 0,
   "compression": 0
 }
 {
-  "id": 35,
+  "id": 34,
   "min": 2024,
   "max": 4048,
   "size": 0,
   "compression": 0
 }
 {
-  "id": 36,
+  "id": 35,
   "min": 4048,
   "max": 6072,
   "size": 0,
   "compression": 0
 }
 {
-  "id": 37,
+  "id": 36,
   "min": 6072,
   "max": 8096,
   "size": 0,

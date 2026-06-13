@@ -139,12 +139,6 @@ bench_vector_create(Bench* self, MainClient* client)
 	str_set_cstr(&str, "create table bench_vector (id int primary key, v vector)");
 	main_client_execute(client, &str, NULL);
 
-	if (opt_int_of(&self->unlogged))
-	{
-		str_set_cstr(&str, "alter table bench_vector set unlogged");
-		main_client_execute(client, &str, NULL);
-	}
-
 	info("preparing data.");
 	auto batch   = (int)opt_int_of(&self->batch);
 	auto scale   = (int)opt_int_of(&self->scale);
