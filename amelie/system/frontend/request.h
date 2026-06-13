@@ -128,7 +128,7 @@ request_prepare(Request* self)
 	opt_int_set(&endpoint->time, time_us());
 
 	// random seed
-	int64_t seed  = am_task->random.seed[0] ^ am_task->random.seed[1];
+	int64_t seed = random_generate(&am_task->random);
 	opt_int_set(&endpoint->seed, seed);
 
 	// set timezone

@@ -174,12 +174,15 @@ wal_write_state(Wal* self, WalFile* current, WalContext* context)
 hot void
 wal_write(Wal* self, WalContext* context)
 {
-	// note: assuming only one wal writer in the system
+	auto recover_state = opt_int_of(&state()->recover);
+	auto do_write =
+		recover_state == RECOVER_OFF ||
+		recover_state == RECOVER_REPL;
 
 	// get or create a new wal file
 	spinlock_lock(&self->lock);
 	auto current = self->current;
-	if (current->file.size >= opt_int_of(&config()->wal_size))
+	if (do_write && (current->file.size >= opt_int_of(&config()->wal_size)))
 	{
 		spinlock_unlock(&self->lock);
 

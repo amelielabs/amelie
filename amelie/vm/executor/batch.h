@@ -181,7 +181,7 @@ batch_complete(Batch* self, Cdc* cdc)
 		// publish cdc events
 		if (! list_empty(&gtr->write_cdc))
 		{
-			auto lsn = gtr->write.record.lsn;
+			auto lsn = write_lsn(&gtr->write);
 			cdc_write_batch(cdc, lsn, &gtr->write_cdc);
 		}
 

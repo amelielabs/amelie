@@ -80,3 +80,11 @@ write_seal(Write* self)
 		record->crc = crc;
 	}
 }
+
+static inline uint64_t
+write_lsn(Write* self)
+{
+	if (self->recover)
+		return self->recover->lsn;
+	return self->record.lsn;
+}
