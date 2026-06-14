@@ -11,21 +11,49 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PageHeader PageHeader;
-typedef struct Page       Page;
+typedef struct Page Page;
 
-struct PageHeader
+struct Page
 {
 	// 24 bytes (aligned by pointer)
 	uint32_t crc;
 	uint32_t size;
 	uint32_t size_compressed;
-	uint32_t order;
-	uint32_t last;
+	uint32_t position;
+	uint32_t id;
 	uint32_t padding;
+	uint8_t  data[];
 } packed;
 
-struct Page
+static inline Page*
+page_allocate(size_t size)
 {
-	uint8_t* pointer;
-};
+	Page* self = vfs_mmap(-1, size);
+	if (unlikely(self == NULL))
+		error_system();
+	self->crc             = 0;
+	self->size            = size;
+	self->size_compressed = 0;
+	self->position        = sizeof(Page);
+	self->id              = 0;
+	self->padding         = 0;
+	return self;
+}
+
+static inline void
+page_free(Page* self)
+{
+	vfs_munmap(self, self->size);
+}
+
+always_inline static inline uint8_t*
+page_at(Page* self, uint32_t offset)
+{
+	return (uint8_t*)self + offset;
+}
+
+always_inline static inline uintptr_t
+page_end(Page* self)
+{
+	return (uintptr_t)self + self->position;
+}

@@ -90,7 +90,6 @@ heap_allocate(void)
 {
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets = NULL;
-	self->last    = NULL;
 	self->header  = NULL;
 	storage_init(&self->storage, STORAGE_HEAP, 512 * 1024);
 	heap_prepare(self);
@@ -130,15 +129,6 @@ heap_open(Heap* self, char* path)
 
 	// rewrite header
 	memcpy(self->header, meta.start, size);
-
-	// restore last position
-	auto header = self->header;
-	if (header->count > 0)
-	{
-		auto storage = &self->storage;
-		self->last = storage_pointer_of(storage, storage->header.count - 1,
-		                                storage->last->last);
-	}
 	return size_file;
 }
 
@@ -215,9 +205,9 @@ heap_add(Heap* self, int size)
 	HeapChunk* chunk;
 	if (likely(bucket->list_count > 0))
 	{
-		auto page = (int)bucket->list;
+		auto page_id     = (int)bucket->list;
 		auto page_offset = (int)bucket->list_offset;
-		chunk = storage_pointer_of(&self->storage, page, page_offset);
+		chunk = storage_pointer_of(&self->storage, page_id, page_offset);
 		assert(chunk->bucket == bucket->id);
 		assert(chunk->is_free);
 		bucket->list        = chunk->prev;
@@ -226,26 +216,19 @@ heap_add(Heap* self, int size)
 	} else
 	{
 		// use current or create new page
-		auto page_header = self->storage.last;
-		if (unlikely(!self->last ||
-		             (uint32_t)(self->storage.header.size_page - page_header->size) <
-		                        bucket->size))
+		auto page = self->storage.current;
+		if (unlikely(!page || (page->size - page->position) < bucket->size))
 		{
 			storage_add(&self->storage);
-			page_header = self->storage.last;
-			self->last = NULL;
+			page = self->storage.current;
 			self->header->count++;
 		}
-		chunk = (HeapChunk*)((uintptr_t)page_header + page_header->size);
-		chunk->offset  = page_header->size;
+		chunk = (HeapChunk*)page_at(page, page->position);
+		chunk->offset  = page->position;
 		chunk->bucket  = bucket->id;
-		chunk->is_last = true;
 		chunk->padding = 0;
-		if (likely(self->last))
-			self->last->is_last = false;
-		self->last = chunk;
-		page_header->last = page_header->size;
-		page_header->size += bucket->size;
+		page->position += bucket->size;
+
 	}
 	chunk->prev           = 0;
 	chunk->prev_offset    = 0;
@@ -271,7 +254,7 @@ heap_remove(Heap* self, void* pointer)
 	chunk->prev           = bucket->list;
 	chunk->prev_offset    = bucket->list_offset;
 	chunk->is_free        = true;
-	bucket->list          = heap_page_of(chunk)->order;
+	bucket->list          = heap_page_of(chunk)->id;
 	bucket->list_offset   = chunk->offset;
 	bucket->list_count++;
 

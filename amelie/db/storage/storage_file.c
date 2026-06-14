@@ -49,25 +49,24 @@ storage_create(Storage* self, char* path, uint8_t* meta, int meta_size)
 	// write pages
 	for (int i = 0; i < self->list_count; i++)
 	{
-		auto page = storage_at(self, i);
-		auto page_header = (PageHeader*)page->pointer;
-		auto page_data   = page->pointer + sizeof(PageHeader);
-		auto page_size   = page_header->size - sizeof(PageHeader);
+		auto page      = storage_at(self, i);
+		auto page_data = page->data;
+		auto page_size = page->position - sizeof(Page);
 
 		// compress
 		encoder_reset(&ec);
 		encoder_add(&ec, page_data, page_size);
 		encoder_encode(&ec);
 		auto iov = encoder_iov(&ec);
-		page_header->size_compressed = iov->iov_len;
+		page->size_compressed = iov->iov_len;
 
 		// calculate page crc
 		if (opt_int_of(&config()->storage_crc))
-			page_header->crc = encoder_iov_crc(&ec);
+			page->crc = encoder_iov_crc(&ec);
 
 		page_data = iov->iov_base;
 		page_size = iov->iov_len;
-		file_write(&file, page_header, sizeof(PageHeader));
+		file_write(&file, page, sizeof(Page));
 		file_write(&file, page_data, page_size);
 	}
 
@@ -129,8 +128,7 @@ storage_open(Storage* self, char* path, int type, Buf* meta)
 	for (auto i = 0ul; i < header->count; i++)
 	{
 		auto page = storage_add(self);
-		file_read(&file, page->pointer, sizeof(PageHeader));
-		auto page_header = (PageHeader*)page->pointer;
+		file_read(&file, page, sizeof(Page));
 
 		// decode page or read page as is
 		if (encoder_active(&ec))
@@ -138,32 +136,32 @@ storage_open(Storage* self, char* path, int type, Buf* meta)
 			// read into buffer
 			auto buf = buf_create();
 			defer_buf(buf);
-			file_read_buf(&file, buf, page_header->size_compressed);
+			file_read_buf(&file, buf, page->size_compressed);
 
 			// validate crc
 			if (opt_int_of(&config()->storage_crc))
 			{
 				crc = runtime()->crc(0, buf->start, buf_size(buf));
-				if (crc != page_header->crc)
+				if (crc != page->crc)
 					error("storage: file '{str}' page crc mismatch", &file.path);
 			}
 
-			encoder_decode(&ec, page->pointer + sizeof(PageHeader),
-			               page_header->size - sizeof(PageHeader),
+			encoder_decode(&ec, page->data,
+			               page->position - sizeof(Page),
 			               buf->start,
 			               buf_size(buf));
 		} else
 		{
 			// read into page
-			auto page_data = page->pointer + sizeof(PageHeader);
-			auto page_size = page_header->size - sizeof(PageHeader);
+			auto page_data = page->data;
+			auto page_size = page->position - sizeof(Page);
 			file_read(&file, page_data, page_size);
 
 			// validate crc
 			if (opt_int_of(&config()->storage_crc))
 			{
 				crc = runtime()->crc(0, page_data, page_size);
-				if (crc != page_header->crc)
+				if (crc != page->crc)
 					error("storage: file '{str}' page crc mismatch", &file.path);
 			}
 		}

@@ -31,10 +31,9 @@ struct HeapChunk
 	uint64_t offset: 19;
 	uint64_t bucket: 9;
 	uint64_t is_free: 1;
-	uint64_t is_last: 1;
 
 	// unused
-	uint64_t padding: 22;
+	uint64_t padding: 23;
 
 	// row data
 	uint8_t  data[];
@@ -63,7 +62,6 @@ struct HeapHeader
 struct Heap
 {
 	HeapBucket* buckets;
-	HeapChunk*  last;
 	HeapHeader* header;
 	Storage     storage;
 };
@@ -80,10 +78,10 @@ heap_chunk_at(Heap* self, int page, int offset)
 	return (HeapChunk*)storage_pointer_of(&self->storage, page, offset);
 }
 
-always_inline static inline PageHeader*
+always_inline static inline Page*
 heap_page_of(HeapChunk* self)
 {
-	return (PageHeader*)((uintptr_t)self - self->offset);
+	return (Page*)((uintptr_t)self - self->offset);
 }
 
 static inline void

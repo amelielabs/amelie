@@ -19,7 +19,7 @@ row_prev_set(Row* row, Row* prev)
 	if (prev)
 	{
 		auto chunk_prev = heap_chunk_of(prev);
-		chunk->prev        = heap_page_of(chunk_prev)->order;
+		chunk->prev        = heap_page_of(chunk_prev)->id;
 		chunk->prev_offset = chunk_prev->offset;
 	} else
 	{

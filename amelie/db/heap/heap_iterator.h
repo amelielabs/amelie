@@ -25,20 +25,26 @@ struct HeapIterator
 hot static inline void
 heap_iterator_next_chunk(HeapIterator* self)
 {
-	if (unlikely(! self->current))
+	auto current = self->current;
+	if (unlikely(! current))
 		return;
-	if (likely(! self->current->is_last))
+
+	// next chunk
+	auto next = (uintptr_t)current + self->heap->buckets[current->bucket].size;
+	auto end  = page_end(self->page);
+	if (likely(next < end))
 	{
-		auto next = (uintptr_t)self->current + self->heap->buckets[self->current->bucket].size;
 		self->current = (HeapChunk*)next;
 		return;
 	}
+
+	// next page
 	self->current = NULL;
 	self->page_order++;
 	if (unlikely(self->page_order >= self->storage->list_count))
 		return;
 	self->page = storage_at(self->storage, self->page_order);
-	self->current = (HeapChunk*)(self->page->pointer + sizeof(PageHeader));
+	self->current = (HeapChunk*)page_at(self->page, sizeof(Page));
 }
 
 hot static inline void
@@ -52,13 +58,13 @@ static inline bool
 heap_iterator_open(HeapIterator* self, Heap* heap, Row* key)
 {
 	unused(key);
-	if (unlikely(! heap->last))
+	if (unlikely(! heap->header->used_count))
 		return false;
 	self->heap       = heap;
 	self->storage    = &heap->storage;
 	self->page       = storage_at(self->storage, 0);
 	self->page_order = 0;
-	self->current    = heap_chunk_at(heap, 0, sizeof(PageHeader));
+	self->current    = heap_chunk_at(heap, 0, sizeof(Page));
 	heap_iterator_next_allocated(self);
 	return self->current != NULL;
 }

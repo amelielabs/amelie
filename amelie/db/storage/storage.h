@@ -37,22 +37,28 @@ struct StorageHeader
 
 struct Storage
 {
-	StorageHeader header;
-	PageHeader*   last;
-	int           list_count;
+	Page*         current;
 	Buf           list;
+	int           list_count;
+	StorageHeader header;
 };
 
 always_inline static inline Page*
 storage_at(Storage* self, int pos)
 {
-	return &((Page*)self->list.start)[pos];
+	return ((Page**)self->list.start)[pos];
 }
 
 always_inline static inline void*
 storage_pointer_of(Storage* self, int page, int offset)
 {
-	return storage_at(self, page)->pointer + offset;
+	return page_at(storage_at(self, page), offset);
+}
+
+static inline size_t
+storage_size(Storage* self)
+{
+	return self->list_count * self->header.size_page;
 }
 
 static inline void
@@ -63,7 +69,8 @@ storage_init(Storage* self, int type, int size_page)
 	self->header.magic     = STORAGE_MAGIC;
 	self->header.type      = type;
 	self->header.size_page = size_page;
-	self->last       = NULL;
+	self->current = NULL;
+
 	self->list_count = 0;
 	buf_init(&self->list);
 }
@@ -74,39 +81,35 @@ storage_free(Storage* self)
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto page = storage_at(self, i);
-		vfs_munmap(page->pointer, self->header.size_page);
+		page_free(page);
 	}
 	self->list_count = 0;
 	buf_free(&self->list);
 }
 
-static inline size_t
-storage_size(Storage* self)
-{
-	return self->list_count * self->header.size_page;
-}
-
 static inline Page*
 storage_add(Storage* self)
 {
-	// mmap
-	uint8_t* pointer = vfs_mmap(-1, self->header.size_page);
-	if (unlikely(pointer == NULL))
-		error_system();
+	// mmap page
+	auto page = page_allocate(self->header.size_page);
+	page->id = self->list_count;
 
-	// add page
-	Page* page = buf_emplace(&self->list, sizeof(Page));
-	page->pointer = pointer;
+	buf_write(&self->list, &page, sizeof(Page*));
 	self->list_count++;
-	self->last = (PageHeader*)page->pointer;
 
-	// prepare header
-	auto header = self->last;
-	header->crc             = 0;
-	header->size            = sizeof(PageHeader);
-	header->size_compressed = 0;
-	header->order           = self->list_count - 1;
-	header->last            = 0;
-	header->padding         = 0;
+	self->current = page;
+	return page;
+}
+
+static inline Page*
+storage_pop(Storage* self)
+{
+	auto page = storage_at(self, 0);
+	assert(self->list_count > 0);
+	self->list_count--;
+
+	auto to_move = self->list_count * sizeof(Page*);
+	memmove(self->list.start, self->list.start + sizeof(Page*), to_move);
+	buf_truncate(&self->list, sizeof(Page*));
 	return page;
 }
