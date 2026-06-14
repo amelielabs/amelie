@@ -13,8 +13,9 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_cdc.h>
+#include <amelie_storage.h>
 #include <amelie_heap.h>
+#include <amelie_cdc.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
 

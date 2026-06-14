@@ -51,29 +51,21 @@ struct HeapBucket
 	uint64_t unused: 15;
 } packed;
 
-#define HEAP_MAGIC   0x20849610
-#define HEAP_VERSION 0
-
 struct HeapHeader
 {
-	uint32_t   crc;
-	uint32_t   magic;
-	uint32_t   version;
-	uint8_t    compression;
 	uint32_t   count;
-	uint32_t   count_used;
+	uint32_t   used_count;
+	uint64_t   used;
 	uint32_t   ssn;
-	uint64_t   size_used;
 	HeapBucket buckets[];
 } packed;
 
 struct Heap
 {
 	HeapBucket* buckets;
-	PageHeader* page_header;
-	HeapHeader* header;
 	HeapChunk*  last;
-	PageMgr     page_mgr;
+	HeapHeader* header;
+	Storage     storage;
 };
 
 always_inline static inline HeapChunk*
@@ -85,19 +77,14 @@ heap_chunk_of(void* pointer)
 always_inline static inline HeapChunk*
 heap_chunk_at(Heap* self, int page, int offset)
 {
-	return (HeapChunk*)page_mgr_pointer_of(&self->page_mgr, page, offset);
+	return (HeapChunk*)storage_pointer_of(&self->storage, page, offset);
 }
 
-static inline PageHeader*
+always_inline static inline PageHeader*
 heap_page_of(HeapChunk* self)
 {
 	return (PageHeader*)((uintptr_t)self - self->offset);
 }
-
-Heap* heap_allocate(void);
-void  heap_free(Heap*);
-void* heap_add(Heap*, int);
-void  heap_remove(Heap*, void*);
 
 static inline void
 heap_follow(Heap* self, uint32_t ssn)
@@ -105,3 +92,10 @@ heap_follow(Heap* self, uint32_t ssn)
 	if (ssn > self->header->ssn)
 		self->header->ssn = ssn;
 }
+
+Heap*  heap_allocate(void);
+void   heap_free(Heap*);
+size_t heap_create(Heap*, char*);
+size_t heap_open(Heap*, char*);
+void*  heap_add(Heap*, int);
+void   heap_remove(Heap*, void*);

@@ -58,9 +58,9 @@ config
   "wal_checkpoint": 100,
   "wal_rewind": false,
   "wal_rewind_pos": 0,
-  "checkpoint_crc": true,
-  "checkpoint_compression": "zstd",
-  "checkpoint_sync": false,
+  "storage_crc": true,
+  "storage_compression": "zstd",
+  "storage_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }
@@ -126,9 +126,9 @@ config
   "wal_checkpoint": 100,
   "wal_rewind": false,
   "wal_rewind_pos": 0,
-  "checkpoint_crc": true,
-  "checkpoint_compression": "zstd",
-  "checkpoint_sync": false,
+  "storage_crc": true,
+  "storage_compression": "zstd",
+  "storage_sync": false,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000
 }

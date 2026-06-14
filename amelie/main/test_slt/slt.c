@@ -61,7 +61,7 @@ slt_open(Slt* self, Str* dir)
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
 		"--wal_service=false",
-		"--checkpoint_sync=false",
+		"--storage_sync=false",
 		"--frontends=1",
 		"--backends=1",
 		"--listen=[]"

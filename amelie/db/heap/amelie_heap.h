@@ -12,15 +12,9 @@
 //
 
 // heap
-#include "heap/page_mgr.h"
 #include "heap/heap.h"
 #include "heap/heap_iterator.h"
-#include "heap/heap_file.h"
 
 // row
 #include "heap/row.h"
 #include "heap/row_snapshot.h"
-
-// encoder
-#include "heap/encoder.h"
-#include "heap/basefile.h"

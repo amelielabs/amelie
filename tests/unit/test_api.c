@@ -36,7 +36,7 @@ test_api_open(void* arg)
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
 		"--wal_service=false",
-		"--checkpoint_sync=false",
+		"--storage_sync=false",
 		"--frontends=1",
 		"--backends=1",
 		"--listen=[]"
@@ -63,7 +63,7 @@ test_api_connect(void* arg)
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
 		"--wal_service=false",
-		"--checkpoint_sync=false",
+		"--storage_sync=false",
 		"--frontends=1",
 		"--backends=1",
 		"--listen=[]"
@@ -99,7 +99,7 @@ test_api_execute(void* arg)
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
 		"--wal_service=false",
-		"--checkpoint_sync=false",
+		"--storage_sync=false",
 		"--frontends=1",
 		"--backends=1",
 		"--listen=[]"
@@ -170,7 +170,7 @@ test_api_execute_error(void* arg)
 		"--wal_sync_close=false",
 		"--wal_sync_write=false",
 		"--wal_service=false",
-		"--checkpoint_sync=false",
+		"--storage_sync=false",
 		"--frontends=1",
 		"--backends=1",
 		"--listen=[]"

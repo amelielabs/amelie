@@ -13,8 +13,9 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_cdc.h>
+#include <amelie_storage.h>
 #include <amelie_heap.h>
+#include <amelie_cdc.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
 
@@ -96,7 +97,7 @@ part_open(Part* self, uint64_t checkpoint)
 			index_replace_by(index, row);
 	}
 
-	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
+	auto total = (double)storage_size(&self->heap->storage) / 1024 / 1024;
 	info("recover: {u64}/{u64} ({.2f} MiB, {u64} rows)",
 	     checkpoint, self->config->id,
 	     total, count);
@@ -183,8 +184,6 @@ void
 part_status(Part* self, Buf* buf, int flags)
 {
 	unused(flags);
-	auto heap = self->heap->header;
-
 	encode_obj(buf);
 
 	// id
@@ -201,11 +200,11 @@ part_status(Part* self, Buf* buf, int flags)
 
 	// size
 	encode_raw(buf, "size", 4);
-	encode_int(buf, page_mgr_used(&self->heap->page_mgr));
+	encode_int(buf, storage_size(&self->heap->storage));
 
 	// compression
 	encode_raw(buf, "compression", 11);
-	encode_int(buf, heap->compression);
+	encode_int(buf, self->heap->storage.header.compression);
 
 	encode_obj_end(buf);
 }

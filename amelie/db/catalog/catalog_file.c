@@ -13,8 +13,9 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_cdc.h>
+#include <amelie_storage.h>
 #include <amelie_heap.h>
+#include <amelie_cdc.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
@@ -271,6 +272,6 @@ catalog_write(Catalog* self, char* path)
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
 	file_write_buf(&file, &text);
 
-	if (opt_int_of(&config()->checkpoint_sync))
+	if (opt_int_of(&config()->storage_sync))
 		file_sync(&file);
 }

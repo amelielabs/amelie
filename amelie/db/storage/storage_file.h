@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-size_t heap_create(Heap*, char*);
-void   heap_open(Heap*, char*);
+size_t storage_create(Storage*, char*, uint8_t*, int);
+size_t storage_open(Storage*, char*, int, Buf*);

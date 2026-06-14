@@ -13,8 +13,9 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_cdc.h>
+#include <amelie_storage.h>
 #include <amelie_heap.h>
+#include <amelie_cdc.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
@@ -106,6 +107,7 @@ checkpoint_part(Checkpoint* self, Part* part)
 	       state_directory(),
 	       self->lsn,
 	       part->config->id);
+
 	auto size = heap_create(part->heap, path);
 	info(" {u64}/{u64} ({.2f} MiB)",
 	     self->lsn,

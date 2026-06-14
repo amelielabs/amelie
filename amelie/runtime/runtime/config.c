@@ -67,9 +67,9 @@ config_prepare(Config* self)
 		{ "wal_rewind",              OPT_BOOL,   OPT_C|OPT_E,             &self->wal_rewind,              NULL,             false               },
 		{ "wal_rewind_pos",          OPT_INT,    OPT_C|OPT_E,             &self->wal_rewind_pos,          NULL,             0                   },
 		// storage
-		{ "checkpoint_crc",          OPT_BOOL,   OPT_C,                   &self->checkpoint_crc,          NULL,             true                },
-		{ "checkpoint_compression",  OPT_STRING, OPT_C,                   &self->checkpoint_compression,  "zstd",           0                   },
-		{ "checkpoint_sync",         OPT_BOOL,   OPT_C,                   &self->checkpoint_sync,         NULL,             true                },
+		{ "storage_crc",             OPT_BOOL,   OPT_C,                   &self->storage_crc,             NULL,             true                },
+		{ "storage_compression",     OPT_STRING, OPT_C,                   &self->storage_compression,     "zstd",           0                   },
+		{ "storage_sync",            OPT_BOOL,   OPT_C,                   &self->storage_sync,            NULL,             true                },
 		// replication
 		{ "repl_readahead",          OPT_INT,    OPT_C|OPT_Z,             &self->repl_readahead,          NULL,             256 * 1024          },
 		{ "repl_reconnect_ms",       OPT_INT,    OPT_C,                   &self->repl_reconnect_ms,       NULL,             3000                },

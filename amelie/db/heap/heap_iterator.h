@@ -18,7 +18,7 @@ struct HeapIterator
 	HeapChunk* current;
 	Page*      page;
 	int        page_order;
-	PageMgr*   page_mgr;
+	Storage*   storage;
 	Heap*      heap;
 };
 
@@ -35,9 +35,9 @@ heap_iterator_next_chunk(HeapIterator* self)
 	}
 	self->current = NULL;
 	self->page_order++;
-	if (unlikely(self->page_order >= self->page_mgr->list_count))
+	if (unlikely(self->page_order >= self->storage->list_count))
 		return;
-	self->page = page_mgr_at(self->page_mgr, self->page_order);
+	self->page = storage_at(self->storage, self->page_order);
 	self->current = (HeapChunk*)(self->page->pointer + sizeof(PageHeader));
 }
 
@@ -55,8 +55,8 @@ heap_iterator_open(HeapIterator* self, Heap* heap, Row* key)
 	if (unlikely(! heap->last))
 		return false;
 	self->heap       = heap;
-	self->page_mgr   = &heap->page_mgr;
-	self->page       = page_mgr_at(self->page_mgr, 0);
+	self->storage    = &heap->storage;
+	self->page       = storage_at(self->storage, 0);
 	self->page_order = 0;
 	self->current    = heap_chunk_at(heap, 0, sizeof(PageHeader));
 	heap_iterator_next_allocated(self);
@@ -96,7 +96,7 @@ heap_iterator_init(HeapIterator* self)
 	self->current    = NULL;
 	self->page       = NULL;
 	self->page_order = 0;
-	self->page_mgr   = NULL;
+	self->storage    = NULL;
 	self->heap       = NULL;
 }
 
@@ -106,6 +106,6 @@ heap_iterator_reset(HeapIterator* self)
 	self->current    = NULL;
 	self->page       = NULL;
 	self->page_order = 0;
-	self->page_mgr   = NULL;
+	self->storage    = NULL;
 	self->heap       = NULL;
 }

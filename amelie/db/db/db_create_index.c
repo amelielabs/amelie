@@ -13,8 +13,9 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_cdc.h>
+#include <amelie_storage.h>
 #include <amelie_heap.h>
+#include <amelie_cdc.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
@@ -71,7 +72,7 @@ db_indexate(Part* part, IndexConfig* config)
 			error("create index: index unique constraint violation");
 	}
 
-	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
+	auto total = (double)storage_size(&heap->storage) / 1024 / 1024;
 	info("create index: partition {u64} ({.2f} MiB)",
 	     part->config->id, total);
 }

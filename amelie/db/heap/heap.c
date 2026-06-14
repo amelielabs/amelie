@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_cdc.h>
+#include <amelie_storage.h>
 #include <amelie_heap.h>
 
 static inline void
@@ -43,14 +43,10 @@ heap_prepare(Heap* self)
 	// header + buckets[]
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	auto header = (HeapHeader*)am_malloc(size);
-	header->crc         = 0;
-	header->magic       = HEAP_MAGIC;
-	header->version     = 0;
-	header->compression = COMPRESSION_NONE;
-	header->count       = 0;
-	header->count_used  = 0;
-	header->ssn         = 0;
-	header->size_used   = 0;
+	header->count      = 0;
+	header->used_count = 0;
+	header->used       = 0;
+	header->ssn        = 0;
 
 	self->header  = header;
 	self->buckets = header->buckets;
@@ -93,11 +89,10 @@ Heap*
 heap_allocate(void)
 {
 	auto self = (Heap*)am_malloc(sizeof(Heap));
-	self->buckets     = NULL;
-	self->page_header = NULL;
-	self->last        = NULL;
-	self->header      = NULL;
-	page_mgr_init(&self->page_mgr);
+	self->buckets = NULL;
+	self->last    = NULL;
+	self->header  = NULL;
+	storage_init(&self->storage, STORAGE_HEAP, 512 * 1024);
 	heap_prepare(self);
 	return self;
 }
@@ -107,8 +102,44 @@ heap_free(Heap* self)
 {
 	if (self->header)
 		am_free(self->header);
-	page_mgr_free(&self->page_mgr);
+	storage_free(&self->storage);
 	am_free(self);
+}
+
+size_t
+heap_create(Heap* self, char* path)
+{
+	// create heap storage file
+	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
+	return storage_create(&self->storage, path, (uint8_t*)self->header, size);
+}
+
+size_t
+heap_open(Heap* self, char* path)
+{
+	// read heap storage file
+	Buf meta;
+	buf_init(&meta);
+	defer_buf(&meta);
+	auto size_file = storage_open(&self->storage, path, STORAGE_HEAP, &meta);
+
+	// validate heap header size
+	int size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
+	if (unlikely(buf_size(&meta) != size))
+		error("storage: file '{str}' has invalid heap header", path);
+
+	// rewrite header
+	memcpy(self->header, meta.start, size);
+
+	// restore last position
+	auto header = self->header;
+	if (header->count > 0)
+	{
+		auto storage = &self->storage;
+		self->last = storage_pointer_of(storage, storage->header.count - 1,
+		                                storage->last->last);
+	}
+	return size_file;
 }
 
 typedef struct
@@ -186,7 +217,7 @@ heap_add(Heap* self, int size)
 	{
 		auto page = (int)bucket->list;
 		auto page_offset = (int)bucket->list_offset;
-		chunk = page_mgr_pointer_of(&self->page_mgr, page, page_offset);
+		chunk = storage_pointer_of(&self->storage, page, page_offset);
 		assert(chunk->bucket == bucket->id);
 		assert(chunk->is_free);
 		bucket->list        = chunk->prev;
@@ -195,20 +226,13 @@ heap_add(Heap* self, int size)
 	} else
 	{
 		// use current or create new page
-		auto page_header = self->page_header;
+		auto page_header = self->storage.last;
 		if (unlikely(!self->last ||
-		             (uint32_t)(self->page_mgr.page_size - page_header->size) <
+		             (uint32_t)(self->storage.header.size_page - page_header->size) <
 		                        bucket->size))
 		{
-			auto page = page_mgr_allocate(&self->page_mgr);
-			page_header = (PageHeader*)page->pointer;
-			page_header->crc             = 0;
-			page_header->size            = sizeof(PageHeader);
-			page_header->size_compressed = 0;
-			page_header->order           = self->page_mgr.list_count - 1;
-			page_header->last            = 0;
-			page_header->padding         = 0;
-			self->page_header = page_header;
+			storage_add(&self->storage);
+			page_header = self->storage.last;
 			self->last = NULL;
 			self->header->count++;
 		}
@@ -229,8 +253,8 @@ heap_add(Heap* self, int size)
 	chunk->is_free        = false;
 
 	// update total used metrics
-	self->header->count_used++;
-	self->header->size_used += bucket->size;
+	self->header->used_count++;
+	self->header->used += bucket->size;
 
 	assert(misalign_of(chunk->data) == 0);
 	return chunk->data;
@@ -252,8 +276,8 @@ heap_remove(Heap* self, void* pointer)
 	bucket->list_count++;
 
 	// update total used metrics
-	self->header->count_used--;
-	self->header->size_used -= bucket->size;
+	self->header->used_count--;
+	self->header->used -= bucket->size;
 
 	// if not first, merge left  if left->free (use chunk->bucket_left to match)
 	// if not last,  merge right if right->free
