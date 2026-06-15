@@ -202,9 +202,5 @@ part_status(Part* self, Buf* buf, int flags)
 	encode_raw(buf, "size", 4);
 	encode_int(buf, storage_size(&self->heap->storage));
 
-	// compression
-	encode_raw(buf, "compression", 11);
-	encode_int(buf, self->heap->storage.header.compression);
-
 	encode_obj_end(buf);
 }

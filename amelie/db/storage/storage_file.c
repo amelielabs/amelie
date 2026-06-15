@@ -25,13 +25,20 @@ storage_create(Storage* self, char* path, uint8_t* meta, int meta_size)
 	encoder_open(&ec, opt_string_of(&config()->storage_compression));
 
 	// prepare header
-	auto header = &self->header;
-	header->compression = encoder_compression(&ec);
-	header->size_meta   = meta_size;
-	header->count       = self->list_count;
-	header->crc = runtime()->crc(0, &header->magic, sizeof(StorageHeader) - sizeof(uint32_t));
+	StorageHeader header =
+	{
+		.crc         = 0,
+		.magic       = STORAGE_MAGIC,
+		.version     = STORAGE_VERSION,
+		.type        = self->type,
+		.compression = encoder_compression(&ec),
+		.size_page   = self->size_page,
+		.size_meta   = meta_size,
+		.count       = self->list_count
+	};
+	header.crc = runtime()->crc(0, &header.magic, sizeof(header) - sizeof(uint32_t));
 	if (meta_size > 0)
-		header->crc = runtime()->crc(header->crc, meta, meta_size);
+		header.crc = runtime()->crc(header.crc, meta, meta_size);
 
 	// create storage file
 	File file;
@@ -40,7 +47,7 @@ storage_create(Storage* self, char* path, uint8_t* meta, int meta_size)
 	file_create(&file, path);
 
 	// write header
-	file_write(&file, header, sizeof(StorageHeader));
+	file_write(&file, &header, sizeof(header));
 
 	// write meta
 	if (meta_size > 0)
@@ -87,47 +94,54 @@ storage_open(Storage* self, char* path, int type, Buf* meta)
 	file_open(&file, path);
 
 	// read header
-	auto header = &self->header;
-	file_read(&file, header, sizeof(StorageHeader));
+	StorageHeader header;
+	file_read(&file, &header, sizeof(header));
 
 	// validate header magic
-	if (header->magic != STORAGE_MAGIC)
+	if (header.magic != STORAGE_MAGIC)
 		error("storage: file '{str}' has invalid header", &file.path);
 
 	// validate version
-	if (header->version != STORAGE_VERSION)
+	if (header.version != STORAGE_VERSION)
 		error("storage: file '{str}' has incompatible version", &file.path);
 
 	// validate storage type
-	if (header->type != type)
+	if (header.type != type)
 		error("storage: file '{str}' type mismatch", &file.path);
 
 	// validate size
-	uint32_t size = (sizeof(StorageHeader) + header->size_meta) - sizeof(uint32_t);
+	uint32_t size = (sizeof(header) + header.size_meta) - sizeof(uint32_t);
 	if (file.size < size)
 		error("storage: file '{str}' has invalid size", &file.path);
 
 	// read meta and validate crc
-	uint32_t crc = runtime()->crc(0, &header->magic, sizeof(StorageHeader) - sizeof(uint32_t));
-	if (header->size_meta > 0)
+	uint32_t crc = runtime()->crc(0, &header.magic, sizeof(header) - sizeof(uint32_t));
+	if (header.size_meta > 0)
 	{
-		file_read_buf(&file, meta, header->size_meta);
+		file_read_buf(&file, meta, header.size_meta);
 		crc = runtime()->crc(crc, meta->start, buf_size(meta));
 	}
-	if (crc != header->crc)
+	if (crc != header.crc)
 		error("storage: file '{str}' header crc mismatch", &file.path);
+
+	// prepare storage
+	self->id_first  = 0;
+	self->id_seq    = 0;
+	self->size_page = header.size_page;
+	self->type      = type;
 
 	// prepare encoder
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
 	encoder_open(&ec, opt_string_of(&config()->storage_compression));
-	encoder_set_compression(&ec, header->compression);
+	encoder_set_compression(&ec, header.compression);
 
 	// read pages
-	for (auto i = 0ul; i < header->count; i++)
+	for (auto i = 0ul; i < header.count; i++)
 	{
-		auto page = storage_add(self);
+		auto page = page_allocate(header.size_page);
+		errdefer(page_free, page);
 		file_read(&file, page, sizeof(Page));
 
 		// decode page or read page as is
@@ -165,7 +179,13 @@ storage_open(Storage* self, char* path, int type, Buf* meta)
 					error("storage: file '{str}' page crc mismatch", &file.path);
 			}
 		}
+
+		// register page
+		storage_import(self, page);
 	}
+
+	// advance sequence id for a next page
+	self->id_seq++;
 
 	return file.size;
 }

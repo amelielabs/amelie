@@ -805,29 +805,25 @@ partitions
   "id": 33,
   "min": 0,
   "max": 2024,
-  "size": 0,
-  "compression": 0
+  "size": 0
 }
 {
   "id": 34,
   "min": 2024,
   "max": 4048,
-  "size": 0,
-  "compression": 0
+  "size": 0
 }
 {
   "id": 35,
   "min": 4048,
   "max": 6072,
-  "size": 0,
-  "compression": 0
+  "size": 0
 }
 {
   "id": 36,
   "min": 6072,
   "max": 8096,
-  "size": 0,
-  "compression": 0
+  "size": 0
 }
 drop table test;
 # test: with

@@ -40,8 +40,7 @@ partitions
   "id": 1,
   "min": 0,
   "max": 8096,
-  "size": 0,
-  "compression": 0
+  "size": 0
 }
 SHOW TABLES;
 
@@ -173,8 +172,7 @@ partitions
   "id": 1,
   "min": 0,
   "max": 8096,
-  "size": 0,
-  "compression": 0
+  "size": 0
 }
 select show('partitions', '', 'test', false);
 
@@ -184,8 +182,7 @@ show
   "id": 1,
   "min": 0,
   "max": 8096,
-  "size": 0,
-  "compression": 0
+  "size": 0
 }]
 select * from show partitions on test;
 
@@ -195,8 +192,7 @@ partitions
   "id": 1,
   "min": 0,
   "max": 8096,
-  "size": 0,
-  "compression": 0
+  "size": 0
 }
 # test: show partition
 show partition '1' on test;
@@ -207,8 +203,7 @@ partition
   "id": 1,
   "min": 0,
   "max": 8096,
-  "size": 0,
-  "compression": 0
+  "size": 0
 }
 select show('partition', '1', 'test', false);
 
@@ -218,8 +213,7 @@ show
   "id": 1,
   "min": 0,
   "max": 8096,
-  "size": 0,
-  "compression": 0
+  "size": 0
 }
 # test: show functions
 create function test_fn (id int) return json
