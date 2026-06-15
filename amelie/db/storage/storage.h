@@ -31,27 +31,28 @@ struct Storage
 };
 
 always_inline static inline Page*
-storage_at(Storage* self, int id)
+storage_at(Storage* self, int pos)
 {
-	return ((Page**)self->list.start)[id - self->id_first];
+	return ((Page**)self->list.start)[pos];
+}
+
+always_inline static inline Page*
+storage_get(Storage* self, uint32_t id)
+{
+	return storage_at(self, id - self->id_first);
 }
 
 always_inline static inline void*
 storage_pointer_of(Storage* self, uint32_t page, int offset)
 {
-	return page_at(storage_at(self, page), offset);
+	return page_at(storage_get(self, page), offset);
 }
 
-static inline size_t
-storage_size(Storage* self)
+always_inline static inline bool
+storage_is_last(Storage* self, uint32_t id)
 {
-	return self->list_count * self->size_page;
-}
-
-static inline bool
-storage_empty(Storage* self)
-{
-	return !self->list_count;
+	auto pos = id - self->id_first;
+	return pos == (uint32_t)(self->list_count - 1);
 }
 
 static inline void
@@ -75,6 +76,18 @@ storage_free(Storage* self)
 		page_free(page);
 	}
 	buf_free(&self->list);
+}
+
+static inline size_t
+storage_size(Storage* self)
+{
+	return self->list_count * self->size_page;
+}
+
+static inline bool
+storage_empty(Storage* self)
+{
+	return !self->list_count;
 }
 
 static inline void
@@ -101,6 +114,24 @@ storage_add(Storage* self)
 	buf_write(&self->list, &page, sizeof(Page*));
 	self->list_count++;
 	return page;
+}
+
+static inline bool
+storage_ensure(Storage* self, uint32_t size)
+{
+	// ensure size can fit the page
+	uint32_t max = self->size_page - sizeof(Page);
+	if (unlikely(size > max))
+		error("storage: max page capacity {u32} exceeded", max);
+
+	// add new page
+	auto page = self->current;
+	if (unlikely(!page || (page->size - page->position) < size))
+	{
+		storage_add(self);
+		return true;
+	}
+	return false;
 }
 
 static inline Page*

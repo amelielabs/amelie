@@ -11,17 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct CdcPage  CdcPage;
 typedef struct CdcEvent CdcEvent;
 typedef struct Cdc      Cdc;
-
-struct CdcPage
-{
-	List     link;
-	uint32_t pos;
-	uint32_t end;
-	uint8_t  data[];
-};
 
 struct CdcEvent
 {
@@ -37,22 +28,15 @@ struct Cdc
 {
 	Spinlock lock;
 	uint64_t lsn;
-	bool     shutdown;
-	CdcPage* current;
 	List     subs;
 	int      subs_count;
-	List     pages;
-	int      pages_count;
 	List     slots;
 	int      slots_count;
-	uint32_t page_size;
-	uint32_t page_size_max;
-	List     link;
+	Storage  storage;
 };
 
 void cdc_init(Cdc*);
 void cdc_free(Cdc*);
-void cdc_shutdown(Cdc*);
 void cdc_attach(Cdc*, CdcSlot*);
 void cdc_detach(Cdc*, CdcSlot*);
 void cdc_subscribe(Cdc*, CdcSub*);

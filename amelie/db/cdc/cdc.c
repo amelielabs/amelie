@@ -16,53 +16,22 @@
 #include <amelie_storage.h>
 #include <amelie_cdc.h>
 
-static inline void
-cdc_page_add(Cdc* self)
-{
-	// allocate new page
-	auto page = (CdcPage*)vfs_mmap(-1, self->page_size);
-	if (unlikely(page == NULL))
-		error_system();
-	page->pos = 0;
-	page->end = self->page_size_max;
-	list_init(&page->link);
-
-	// attach
-	list_append(&self->pages, &page->link);
-	self->pages_count++;
-
-	// set as current
-	self->current = page;
-}
-
 void
 cdc_init(Cdc* self)
 {
-	self->lsn           = 0;
-	self->current       = NULL;
-	self->shutdown      = false;
-	self->subs_count    = 0;
-	self->pages_count   = 0;
-	self->slots_count   = 0;
-	self->page_size     = 256ul * 1024;
-	self->page_size_max = self->page_size - sizeof(CdcPage);
+	self->lsn         = 0;
+	self->subs_count  = 0;
+	self->slots_count = 0;
 	spinlock_init(&self->lock);
 	list_init(&self->subs);
-	list_init(&self->pages);
 	list_init(&self->slots);
-	list_init(&self->link);
-
-	cdc_page_add(self);
+	storage_init(&self->storage, STORAGE_CDC, 256 * 1024);
 }
 
 void
 cdc_free(Cdc* self)
 {
-	list_foreach_safe(&self->pages)
-	{
-		auto page = list_at(CdcPage, link);
-		vfs_munmap(page, page->end + sizeof(CdcPage));
-	}
+	storage_free(&self->storage);
 	spinlock_free(&self->lock);
 }
 
@@ -77,15 +46,6 @@ cdc_notify(Cdc* self)
 		sub->active = false;
 		cdc_sub_signal(sub);
 	}
-}
-
-void
-cdc_shutdown(Cdc* self)
-{
-	spinlock_lock(&self->lock);
-	self->shutdown = true;
-	cdc_notify(self);
-	spinlock_unlock(&self->lock);
 }
 
 void
@@ -171,22 +131,18 @@ cdc_gc(Cdc* self)
 	uint64_t min = cdc_minof(self);
 
 	// remove all pages < min (keep at least one)
-	while (self->pages_count > 1)
+	while (self->storage.list_count > 1)
 	{
-		auto first  = list_first(&self->pages);
-		auto second = container_of(first->next, CdcPage, link);
-
 		// first event on the second page
+		auto second = storage_at(&self->storage, 1);
 		auto ev = (CdcEvent*)second->data;
 		if (ev->lsn < min)
 		{
-			list_unlink(first);
-			self->pages_count--;
-
-			auto ref = container_of(first, CdcPage, link);
+			// free the first page
+			auto first = storage_pop(&self->storage);
 			spinlock_unlock(&self->lock);
 
-			vfs_munmap(ref, ref->end + sizeof(CdcPage));
+			page_free(first);
 
 			spinlock_lock(&self->lock);
 			continue;
@@ -206,31 +162,22 @@ cdc_add(Cdc*     self,
         uint8_t* data,
         uint32_t data_size)
 {
-	// maybe create new page
+	// maybe allocate a new page
 	auto size = sizeof(CdcEvent) + data_size;
+	storage_ensure(&self->storage, size);
 
-	// ensure event fits within page capacity
-	if (unlikely(size > self->page_size_max))
-		error("cdc: event data size {u32} exceeds page capacity {u32}",
-		      data_size, self->page_size_max);
-
-	auto left = self->current->end - self->current->pos;
-	if (unlikely(left < size))
-		cdc_page_add(self);
-
-	// reserve
-	auto page = self->current;
-	auto at   = page->data + page->pos;
-	page->pos += size;
-
-	// write event data
-	auto event = (CdcEvent*)at;
+	// write event
+	auto page  = self->storage.current;
+	auto event = (CdcEvent*)page_at(page, page->position);
 	event->lsn       = lsn;
 	event->lsn_op    = lsn_op;
 	event->cmd       = cmd;
 	event->id        = *id;
 	event->data_size = data_size;
 	memcpy(event->data, data, data_size);
+
+	// advance
+	page->position += size;
 
 	// set last lsn
 	self->lsn = lsn;

@@ -104,7 +104,7 @@ feed_mgr_collect(FeedMgr* self, Buf* buf)
 			if (! cdc_cursor_next(&feed->cursor))
 				break;
 		}
-		cdc_slot_set(&feed->slot, feed->cursor.pos, feed->cursor.pos_op);
+		cdc_slot_set(&feed->slot, feed->cursor.lsn, feed->cursor.lsn_op);
 	}
 
 	// todo: move to tail

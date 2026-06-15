@@ -215,14 +215,11 @@ heap_add(Heap* self, int size)
 		bucket->list_count--;
 	} else
 	{
-		// use current or create new page
-		auto page = self->storage.current;
-		if (unlikely(!page || (page->size - page->position) < bucket->size))
-		{
-			storage_add(&self->storage);
-			page = self->storage.current;
+		// ensure current page fit the bucket
+		if (storage_ensure(&self->storage, bucket->size))
 			self->header->count++;
-		}
+
+		auto page = self->storage.current;
 		chunk = (HeapChunk*)page_at(page, page->position);
 		chunk->offset  = page->position;
 		chunk->bucket  = bucket->id;
