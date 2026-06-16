@@ -101,6 +101,8 @@ storage_import(Storage* self, Page* page)
 
 	if (page->id > self->id_seq)
 		self->id_seq = page->id;
+
+	self->current = page;
 }
 
 static inline Page*

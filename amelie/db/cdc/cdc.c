@@ -35,6 +35,37 @@ cdc_free(Cdc* self)
 	spinlock_free(&self->lock);
 }
 
+size_t
+cdc_create(Cdc* self, char* path)
+{
+	// create cdc storage file
+	CdcHeader header =
+	{
+		.lsn = self->lsn
+	};
+	return storage_create(&self->storage, path, (uint8_t*)&header, sizeof(header));
+}
+
+size_t
+cdc_open(Cdc* self, char* path)
+{
+	// read cdc storage file
+	Buf meta;
+	buf_init(&meta);
+	defer_buf(&meta);
+	auto size_file = storage_open(&self->storage, path, STORAGE_CDC, &meta);
+
+	// validate cdc header size
+	if (unlikely(buf_size(&meta) != sizeof(CdcHeader)))
+		error("storage: file '{str}' has invalid cdc header", path);
+
+	// set lsn
+	auto header = (CdcHeader*)meta.start;
+	self->lsn = header->lsn;
+
+	return size_file;
+}
+
 static void
 cdc_notify(Cdc* self)
 {

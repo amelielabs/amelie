@@ -18,6 +18,7 @@ struct CheckpointWorker
 {
 	int    list_count;
 	List   list;
+	bool   cdc;
 	Notify notify;
 	Event  on_complete;
 	pid_t  pid;

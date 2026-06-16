@@ -125,12 +125,20 @@ checkpoint_mgr_open(CheckpointMgr* self)
 	state_checkpoint_set(id);
 	state_lsn_follow(id);
 
-	// restore last checkpoint
+	// restore cdc
 	char path[PATH_MAX];
 	format(path, sizeof(path),
+	       "{s}/checkpoints/{u64}/cdc",
+	       state_directory(), id);
+
+	auto size = cdc_open(self->catalog->cdc, path);
+	info("recover: {u64}/cdc ({.2f} MiB)",
+	     id, (double)size / 1024 / 1024);
+
+	// restore last checkpoint
+	format(path, sizeof(path),
 	       "{s}/checkpoints/{u64}/catalog.json",
-	       state_directory(),
-	       state_checkpoint());
+	       state_directory(), id);
 
 	catalog_read(self->catalog, path);
 }
@@ -257,6 +265,11 @@ checkpoint_mgr_list(CheckpointRef* ref, Buf* buf)
 		       "checkpoints/{u64}/{s}", ref->id, entry->d_name);
 		encode_basefile(buf, path_relative);
 	}
+
+	// cdc
+	format(path_relative, sizeof(path_relative),
+	       "checkpoints/{u64}/cdc", ref->id);
+	encode_basefile(buf, path_relative);
 
 	// catalog.json
 	format(path_relative, sizeof(path_relative),

@@ -41,13 +41,7 @@ bench_pubsub_main(BenchWorker* self, MainClient* client)
 	buf_init(&buf);
 	defer_buf(&buf);
 
-	// payload (~100 bytes)
-	const char* payload = "{"
-	                        "\"msg\": \"frontline coordination event\", "
-	                        "\"status\": \"active\", "
-	                        "\"priority\": \"high\", "
-	                        "\"metadata\": { \"source\": \"agent_v1\" }"
-	                      "}";
+	const char* payload = "1";
 	while (! self->shutdown)
 	{
 		buf_reset(&buf);

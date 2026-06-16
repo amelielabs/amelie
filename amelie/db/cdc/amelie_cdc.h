@@ -15,7 +15,11 @@
 #include "cdc/cdc_sub.h"
 #include "cdc/cdc_slot.h"
 #include "cdc/cdc.h"
+
+// cursor
 #include "cdc/cdc_cursor.h"
+
+// row encoding
 #include "cdc/cdc_export.h"
 
 // feed

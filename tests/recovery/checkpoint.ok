@@ -195,13 +195,13 @@ snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 5,
-  "snapshot_max": 5
+  "snapshot": 4,
+  "snapshot_max": 4
 }
 {
   "id": 2,
-  "snapshot": 7,
-  "snapshot_max": 7
+  "snapshot": 6,
+  "snapshot_max": 6
 }
 select * from a;
 
@@ -263,13 +263,13 @@ snapshot
 ────────
 {
   "id": 1,
-  "snapshot": 5,
-  "snapshot_max": 5
+  "snapshot": 4,
+  "snapshot_max": 4
 }
 {
   "id": 2,
-  "snapshot": 7,
-  "snapshot_max": 7
+  "snapshot": 6,
+  "snapshot_max": 6
 }
 select * from a;
 
@@ -670,8 +670,13 @@ checkpoint
 11
 select * from top_sub;
 
-lsn  lsn_op  cmd  row
-───────────────────────
+lsn  lsn_op  cmd      row
+────────────────────────────
+13   0       publish  123
+14   0       publish  1
+14   1       publish  2
+14   2       publish  3
+15   0       publish  null
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
@@ -686,8 +691,13 @@ checkpoint
 15
 select * from top_sub;
 
-lsn  lsn_op  cmd  row
-───────────────────────
+lsn  lsn_op  cmd      row
+────────────────────────────
+13   0       publish  123
+14   0       publish  1
+14   1       publish  2
+14   2       publish  3
+15   0       publish  null
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;

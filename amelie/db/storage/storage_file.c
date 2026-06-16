@@ -185,7 +185,8 @@ storage_open(Storage* self, char* path, int type, Buf* meta)
 	}
 
 	// advance sequence id for a next page
-	self->id_seq++;
+	if (self->id_seq > 0)
+		self->id_seq++;
 
 	return file.size;
 }

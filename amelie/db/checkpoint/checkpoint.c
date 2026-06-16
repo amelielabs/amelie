@@ -57,6 +57,10 @@ checkpoint_worker_on_complete(void* arg)
 void
 checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 {
+	// ensure workers are defined
+	if (workers < 1)
+		error("checkpoint: 1 or more workers required");
+
 	// prepare workers
 	self->lsn = lsn;
 	self->workers_count = workers;
@@ -64,6 +68,7 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto worker = &self->workers[i];
+		worker->cdc        = false;
 		worker->pid        = -1;
 		worker->list_count = 0;
 		event_init(&worker->on_complete);
@@ -95,6 +100,16 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 			worker->list_count++;
 		}
 	}
+
+	// set cdc dump to a first worker
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		auto worker = &self->workers[i];
+		if (! worker->list_count)
+			continue;
+		worker->cdc = true;
+		break;
+	}
 }
 
 hot static void
@@ -115,6 +130,22 @@ checkpoint_part(Checkpoint* self, Part* part)
 	     (double)size / 1024 / 1024);
 }
 
+hot static void
+checkpoint_cdc(Checkpoint* self)
+{
+	// <base>/checkpoints/<lsn>.incomplete/cdc
+	char path[PATH_MAX];
+	format(path, sizeof(path),
+	       "{s}/checkpoints/{u64}.incomplete/cdc",
+	       state_directory(),
+	       self->lsn);
+
+	auto size = cdc_create(self->catalog->cdc, path);
+	info(" {u64}/cdc ({.2f} MiB)",
+	     self->lsn,
+	     (double)size / 1024 / 1024);
+}
+
 static void
 checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 {
@@ -129,10 +160,15 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 		return;
 	}
 
-	// create snapshots
-	auto error = error_catch(
+	auto error = error_catch
+	(
+		// create partition files
 		list_foreach(&worker->list)
 			checkpoint_part(self, list_at(Part, link_cp));
+
+		// create cdc file
+		if (worker->cdc)
+			checkpoint_cdc(self);
 	);
 
 	// signal waiter process
@@ -194,13 +230,19 @@ checkpoint_run(Checkpoint* self)
 	catalog_write(self->catalog, path);
 
 	// run workers
+	auto active = 0;
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto worker = &self->workers[i];
 		if (worker->list_count == 0)
 			continue;
 		checkpoint_worker_run(self, worker);
+		active++;
 	}
+
+	// create cdc file (no relations)
+	if (! active)
+		checkpoint_cdc(self);
 }
 
 void

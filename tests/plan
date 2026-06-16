@@ -139,7 +139,8 @@ directory recovery
 group recovery
 test wal_dml
 test wal_ddl
-#test checkpoint
+test checkpoint
+test checkpoint_cdc
 
 # tls
 directory tls
@@ -152,7 +153,7 @@ group backup
 test backup
 test backup_tls
 
-## replication
+# replication
 #directory repl
 #group repl
 #test replica
