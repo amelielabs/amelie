@@ -20,19 +20,17 @@ struct Buf
 	uint8_t*   position;
 	uint8_t*   end;
 	atomic_u32 refs;
-	BufCache*  cache;
-	Buf*       cache_next;
+	bool       allocated;
 };
 
 static inline void
 buf_init(Buf* self)
 {
-	self->start      = NULL;
-	self->position   = NULL;
-	self->end        = NULL;
-	self->refs       = 0;
-	self->cache      = NULL;
-	self->cache_next = NULL;
+	self->start     = NULL;
+	self->position  = NULL;
+	self->end       = NULL;
+	self->refs      = 0;
+	self->allocated = false;
 }
 
 static inline void
@@ -40,7 +38,7 @@ buf_free_memory(Buf* self)
 {
 	if (self->start)
 		am_free(self->start);
-	if (self->cache)
+	if (self->allocated)
 		am_free(self);
 }
 

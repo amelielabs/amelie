@@ -205,6 +205,7 @@ task_init(Task* self)
 	self->main_arg_runtime = NULL;
 	self->main_coroutine   = NULL;
 	self->name[0]          = 0;
+	buf_cache_init(&self->buf_cache);
 	task_log_init(&self->log);
 	random_init(&self->random);
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 32); // 128kb
@@ -225,6 +226,7 @@ task_free(Task* self)
 	poller_free(&self->poller);
 	cond_free(&self->status);
 	task_log_free(&self->log);
+	buf_cache_free(&self->buf_cache);
 }
 
 bool
@@ -249,14 +251,18 @@ task_create_nothrow(Task*        self,
 	self->main_arg         = main_arg;
 	self->main_arg_runtime = main_arg_runtime;
 	self->main_arg_share   = main_arg_share;
-	self->buf_mgr          = buf_mgr;
 	format(self->name, sizeof(self->name), "{s}", name);
+
+	// prepare buf cache
+	int rc = buf_cache_allocate_nothrow(&self->buf_cache, buf_mgr, 1024, 32 * 1024);
+	if (unlikely(rc == -1))
+		return -1;
 
 	// set logger iface
 	task_log_set(&self->log, log_write, log_write_arg);
 
 	// prepare poller
-	int rc = poller_create(&self->poller);
+	rc = poller_create(&self->poller);
 	if (unlikely(rc == -1))
 		return -1;
 

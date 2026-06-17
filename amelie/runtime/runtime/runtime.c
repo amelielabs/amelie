@@ -129,6 +129,10 @@ runtime_start(Runtime* self, RuntimeMain main, void* main_arg, int argc, char** 
 		.argv     = argv,
 	};
 	int rc;
+	rc = buf_mgr_allocate_nothrow(&self->buf_mgr, 64000);
+	if (unlikely(rc == -1))
+		return RUNTIME_ERROR;
+
 	rc = task_create_nothrow(&self->task, "main", runtime_main, &args, self, NULL,
 	                         logger_write, &self->logger,
 	                         &self->buf_mgr);

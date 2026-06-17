@@ -30,22 +30,23 @@ palloc_reset(void)
 static inline Buf*
 buf_create(void)
 {
-	return buf_mgr_create(am_task->buf_mgr, 0);
+	return buf_cache_pop(&am_task->buf_cache);
 }
 
 static inline void
 buf_free(Buf* self)
 {
-	if (self->cache)
+	if (! self->allocated)
 	{
-		if (atomic_u32_dec(&self->refs) == 0)
-		{
-			self->refs = 0;
-			buf_cache_push(self->cache, self);
-		}
+		buf_free_memory(self);
 		return;
 	}
-	buf_free_memory(self);
+
+	if (atomic_u32_dec(&self->refs) == 0)
+	{
+		self->refs = 0;
+		buf_cache_push(&am_task->buf_cache, self);
+	}
 }
 
 // event
@@ -165,7 +166,7 @@ task_create(Task*        self,
 	                         am_share,
 	                         am_task->log.write,
 	                         am_task->log.write_arg,
-	                         am_task->buf_mgr);
+	                         am_task->buf_cache.buf_mgr);
 	if (unlikely(rc == -1))
 		error_system();
 }

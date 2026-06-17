@@ -15,29 +15,91 @@ typedef struct BufMgr BufMgr;
 
 struct BufMgr
 {
-	atomic_u64 seq;
-	BufCache   cache[8];
+	Spinlock lock;
+	Buf**    stack;
+	int      stack_count;
+	int      stack_size;
 };
 
 static inline void
 buf_mgr_init(BufMgr* self)
 {
-	self->seq = 0;
-	for (int i = 0; i < 8; i++)
-		buf_cache_init(&self->cache[i], 32 * 1024);
+	self->stack       = NULL;
+	self->stack_count = 0;
+	self->stack_size  = 0;
+	spinlock_init(&self->lock);
+}
+
+static inline int
+buf_mgr_allocate_nothrow(BufMgr* self, int capacity)
+{
+	assert(! self->stack);
+	self->stack_size = capacity;
+	self->stack      =
+		am_malloc_aligned_nothrow(capacity * sizeof(Buf*), cache_line);
+	if (! self->stack)
+		return -1;
+	return 0;
 }
 
 static inline void
 buf_mgr_free(BufMgr* self)
 {
-	self->seq = 0;
-	for (int i = 0; i < 8; i++)
-		buf_cache_free(&self->cache[i]);
+	if (self->stack)
+	{
+		while (self->stack_count > 0)
+		{
+			auto buf = self->stack[self->stack_count - 1];
+			self->stack_count--;
+			buf_free_memory(buf);
+		}
+		am_free(self->stack);
+	}
+	spinlock_free(&self->lock);
+	buf_mgr_init(self);
 }
 
-static inline Buf*
-buf_mgr_create(BufMgr* self, int size)
+static inline int
+buf_mgr_pop(BufMgr* self, Buf** batch, int count)
 {
-	int next = atomic_u64_inc(&self->seq) % 8;
-	return buf_cache_create(&self->cache[next], size);
+	spinlock_lock(&self->lock);
+
+	if (self->stack_count < count)
+		count = self->stack_count;
+
+	if (count > 0)
+	{
+		auto at = &self->stack[self->stack_count - count];
+		memcpy(batch, at, count * sizeof(Buf*));
+		self->stack_count -= count;
+	}
+
+	spinlock_unlock(&self->lock);
+	return count;
+}
+
+static inline void
+buf_mgr_push(BufMgr* self, Buf** batch, int count)
+{
+	auto total = count;
+	spinlock_lock(&self->lock);
+
+	if ((self->stack_count + count) > self->stack_size)
+		count = self->stack_size - self->stack_count;
+
+	if (count > 0)
+	{
+		auto at = &self->stack[self->stack_count];
+		memcpy(at, batch, count * sizeof(Buf*));
+		self->stack_count += count;
+	}
+
+	spinlock_unlock(&self->lock);
+
+	// free the rest
+	if ((total - count) > 0)
+	{
+		for (auto i = count; i < total; i++)
+			buf_free_memory(batch[i]);
+	}
 }

@@ -19,6 +19,7 @@
 #define no_return            __attribute__((noreturn))
 #define fallthrough          __attribute__((fallthrough));
 #define format_validate(a,b) __attribute__((format(printf, a, b)))
+#define cache_line           64
 
 #define source_file          __FILE__
 #define source_function      __func__

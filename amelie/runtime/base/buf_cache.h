@@ -15,71 +15,83 @@ typedef struct BufCache BufCache;
 
 struct BufCache
 {
-	Spinlock lock;
-	Buf*     cache;
-	int      limit_buf;
+	Buf**   stack;
+	int     stack_count;
+	int     stack_size;
+	BufMgr* buf_mgr;
+	int     limit;
 };
 
 static inline void
-buf_cache_init(BufCache* self, int limit_buf)
+buf_cache_init(BufCache* self)
 {
-	self->cache     = NULL;
-	self->limit_buf = limit_buf;
-	spinlock_init(&self->lock);
+	self->stack       = NULL;
+	self->stack_count = 0;
+	self->stack_size  = 0;
+	self->buf_mgr     = NULL;
+	self->limit       = 0;
+}
+
+static inline int
+buf_cache_allocate_nothrow(BufCache* self, BufMgr* buf_mgr, int capacity, int limit)
+{
+	assert(! self->stack);
+	self->buf_mgr    = buf_mgr;
+	self->limit      = limit;
+	self->stack_size = capacity;
+	self->stack      =
+		am_malloc_aligned_nothrow(capacity * sizeof(Buf*), cache_line);
+	if (! self->stack)
+		return -1;
+	return 0;
 }
 
 static inline void
 buf_cache_free(BufCache* self)
 {
-	auto buf = self->cache;
-	while (buf)
+	if (self->stack)
 	{
-		auto next = buf->cache_next;
-		buf_free_memory(buf);
-		buf = next;
+		if (self->stack_count > 0)
+			buf_mgr_push(self->buf_mgr, self->stack, self->stack_count);
+		am_free(self->stack);
 	}
-	self->cache = NULL;
-	spinlock_free(&self->lock);
+	buf_cache_init(self);
 }
 
-static inline Buf*
+hot static inline Buf*
 buf_cache_pop(BufCache* self)
 {
-	spinlock_lock(&self->lock);
-	Buf* buf = self->cache;
-	if (buf)
-		self->cache = buf->cache_next;
-	spinlock_unlock(&self->lock);
+	// batch move buffers from the global cache to the local cache
+	if (unlikely(! self->stack_count))
+		self->stack_count += buf_mgr_pop(self->buf_mgr, self->stack, 64);
+
+	// use local cache as priority
+	if (likely(self->stack_count > 0))
+		return self->stack[--self->stack_count];
+
+	auto buf = (Buf*)am_malloc(sizeof(Buf));
+	buf_init(buf);
+	buf->allocated = true;
 	return buf;
 }
 
-static inline void
+hot static inline void
 buf_cache_push(BufCache* self, Buf* buf)
 {
-	if (unlikely(buf_capacity(buf)) >= self->limit_buf)
+	if (unlikely(buf_capacity(buf)) >= self->limit)
 	{
 		buf_free_memory(buf);
 		return;
 	}
-	spinlock_lock(&self->lock);
-	buf->cache_next = self->cache;
-	self->cache = buf;
-	spinlock_unlock(&self->lock);
-}
+	buf_reset(buf);
 
-static inline Buf*
-buf_cache_create(BufCache* self, int size)
-{
-	auto buf = buf_cache_pop(self);
-	if (buf) {
-		buf->cache_next = NULL;
-		buf_reset(buf);
-	} else
+	// batch move buffers from the local cache to the global cache
+	if (unlikely(self->stack_count == self->stack_size))
 	{
-		buf = am_malloc(sizeof(Buf));
-		buf_init(buf);
-		buf->cache = self;
+		buf_mgr_push(self->buf_mgr, self->stack + (self->stack_count - 64), 64);
+		self->stack_count -= 64;
 	}
-	buf_reserve(buf, size);
-	return buf;
+
+	self->stack[self->stack_count] = buf;
+	self->stack_count++;
 }
