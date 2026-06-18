@@ -18,7 +18,8 @@ struct RecoverIf
 {
 	void (*create)(Recover*);
 	void (*free)(Recover*);
-	void (*execute)(Recover*, Record*);
+	void (*execute)(Recover*, RecordMsg*);
+	void (*end)(Recover*);
 };
 
 struct Recover

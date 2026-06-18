@@ -30,7 +30,6 @@ wal_cursor_init(WalCursor* self)
 	self->crc         = false;
 	self->follow      = false;
 	self->wal         = NULL;
-	buf_init(&self->buf);
 }
 
 void
@@ -59,9 +58,11 @@ wal_cursor_open(WalCursor* self, Wal* wal, uint64_t lsn,
 	// rewind to the start lsn
 	for (;;)
 	{
-		if (! wal_cursor_next(self))
+		auto buf = wal_cursor_next(self);
+		if (! buf)
 			break;
-		auto record = wal_cursor_at(self);
+		defer_buf(buf);
+		auto record = (Record*)buf->start;
 		if (record->lsn >= lsn)
 		{
 			// rewind
@@ -80,7 +81,6 @@ wal_cursor_close(WalCursor* self)
 		wal_file_free(self->file);
 		self->file = NULL;
 	}
-	buf_free(&self->buf);
 	wal_cursor_init(self);
 }
 
@@ -90,34 +90,28 @@ wal_cursor_active(WalCursor* self)
 	return self->file != NULL;
 }
 
-Record*
-wal_cursor_at(WalCursor* self)
-{
-	return (Record*)self->buf.start;
-}
-
-hot static Record*
-wal_cursor_read(WalCursor* self)
+hot static bool
+wal_cursor_read(WalCursor* self, Buf* buf)
 {
 	if (unlikely(self->file == NULL))
-		return NULL;
+		return false;
 
 	auto wal = self->wal;
 	for (;;)
 	{
-		auto buf_offset = buf_size(&self->buf);
+		auto buf_offset = buf_size(buf);
 		auto file = self->file;
-		if (wal_file_pread(file, self->file_offset, &self->buf))
+		if (wal_file_pread(file, self->file_offset, buf))
 		{
 			// validate crc (header + commands)
-			auto record = (Record*)(self->buf.start + buf_offset);
+			auto record = (Record*)(buf->start + buf_offset);
 			if (self->crc)
 			{
 				if (unlikely(! record_validate(record)))
 					error("wal: record crc mismatch");
 			}
 			self->file_offset += record->size;
-			return record;
+			return true;
 		}
 
 		if (!self->follow && self->file_offset != file->file.size)
@@ -144,35 +138,67 @@ wal_cursor_read(WalCursor* self)
 		// open next file
 		self->file_offset = 0;
 		self->file        = wal_file_allocate(id);
-		wal_file_open(self->file);
+		wal_file_open(file);
 	}
 
+	return false;
+}
+
+RecordMsg*
+wal_cursor_next_msg(WalCursor* self)
+{
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
+	auto msg = (RecordMsg*)buf_emplace(buf, sizeof(RecordMsg));
+	msg_init(&msg->msg, MSG_RECORD);
+	msg->msg_buf = buf;
+	msg->arg     = NULL;
+
+	if (wal_cursor_read(self, buf))
+		return (RecordMsg*)buf->start;
+
+	buf_free(buf);
 	return NULL;
 }
 
-bool
+Buf*
 wal_cursor_next(WalCursor* self)
 {
-	buf_reset(&self->buf);
-	return wal_cursor_read(self) != NULL;
+	auto buf = buf_create();
+	errdefer_buf(buf);
+	if (wal_cursor_read(self, buf))
+		return buf;
+	buf_free(buf);
+	return NULL;
 }
 
-int
+Buf*
 wal_cursor_readahead(WalCursor* self, int size,
                      uint64_t*  lsn,
                      uint64_t   lsn_max)
 {
-	buf_reset(&self->buf);
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
 	int collected = 0;
 	while (collected < size)
 	{
-		auto record = wal_cursor_read(self);
-		if (! record)
+		auto offset = buf_size(buf);
+		if (! wal_cursor_read(self, buf))
 			break;
+		auto record = (Record*)(buf->start + offset);
 		*lsn = record->lsn;
 		collected += record->size;
 		if (record->lsn == lsn_max)
 			break;
 	}
-	return collected;
+
+	if (buf_empty(buf))
+	{
+		buf_free(buf);
+		buf = NULL;
+	}
+
+	return buf;
 }

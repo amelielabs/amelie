@@ -15,15 +15,16 @@
 #include <amelie_db>
 #include <amelie_repl.h>
 
-static inline bool
+static inline Buf*
 streamer_collect(Streamer* self)
 {
 	auto size = opt_int_of(&config()->repl_readahead);
 	for (;;)
 	{
 		auto lsn_max = state_lsn();
-		if (wal_cursor_readahead(&self->wal_cursor, size, &self->lsn, lsn_max) > 0)
-			break;
+		auto buf = wal_cursor_readahead(&self->wal_cursor, size, &self->lsn, lsn_max);
+		if (buf)
+			return buf;
 
 		Event event;
 		event_init(&event);
@@ -50,9 +51,9 @@ streamer_collect(Streamer* self)
 			rethrow();
 
 		if (on_disconnect.signal)
-			return false;
+			break;
 	}
-	return true;
+	return NULL;
 }
 
 static inline void
@@ -146,9 +147,12 @@ streamer_client(Streamer* self)
 	for (;;)
 	{
 		// collect and send wal records, read replica reply
-		if (! streamer_collect(self))
-			break;
-		streamer_write(self, self->wal_slot->lsn, &self->wal_cursor.buf);
+		auto buf = streamer_collect(self);
+		if (buf)
+		{
+			defer_buf(buf);
+			streamer_write(self, self->wal_slot->lsn, buf);
+		}
 		streamer_next(self);
 	}
 }

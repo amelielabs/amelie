@@ -66,21 +66,14 @@ recover_wal_main(Recover* self)
 		wal_cursor_open(&cursor, wal, id, false, wal_crc, false);
 		for (;;)
 		{
-			if (! wal_cursor_next(&cursor))
+			auto msg = wal_cursor_next_msg(&cursor);
+			if (! msg)
 				break;
-
-			// validate crc
-			auto record = wal_cursor_at(&cursor);
-			if (opt_int_of(&config()->wal_crc))
-				if (unlikely(! record_validate(record)))
-					error("recover: record crc mismatch");
-
-			// execute
-			self->iface->execute(self, record);
-
-			size += record->size;
+			size += msg->record->size;
 			count++;
 
+			// execute
+			self->iface->execute(self, msg);
 		}
 		if (! wal_cursor_active(&cursor))
 			break;
@@ -95,6 +88,9 @@ recover_wal_main(Recover* self)
 		id = next->id;
 		wal_file_unpin(next);
 	}
+
+	// finilize
+	self->iface->end(self);
 }
 
 void

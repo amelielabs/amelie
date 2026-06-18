@@ -15,7 +15,6 @@ typedef struct WalCursor WalCursor;
 
 struct WalCursor
 {
-	Buf      buf;
 	WalFile* file;
 	uint64_t file_offset;
 	bool     file_next;
@@ -28,7 +27,8 @@ void wal_cursor_init(WalCursor*);
 void wal_cursor_open(WalCursor*, Wal*, uint64_t, bool, bool, bool);
 void wal_cursor_close(WalCursor*);
 bool wal_cursor_active(WalCursor*);
-bool wal_cursor_next(WalCursor*);
-int  wal_cursor_readahead(WalCursor*, int, uint64_t*, uint64_t);
-Record*
-wal_cursor_at(WalCursor*);
+
+RecordMsg*
+wal_cursor_next_msg(WalCursor*);
+Buf* wal_cursor_next(WalCursor*);
+Buf* wal_cursor_readahead(WalCursor*, int, uint64_t*, uint64_t);
