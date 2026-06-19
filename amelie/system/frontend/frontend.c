@@ -18,7 +18,7 @@
 #include <amelie_frontend.h>
 
 hot static void
-client_main(void* arg)
+frontend_main_client(void* arg)
 {
 	auto client = (Client*)arg;
 	auto self   = (Frontend*)client->arg;
@@ -40,7 +40,7 @@ client_main(void* arg)
 }
 
 hot static void
-native_main(void* arg)
+frontend_main_native(void* arg)
 {
 	auto native = (Native*)arg;
 	auto self   = (Frontend*)native->arg;
@@ -48,6 +48,15 @@ native_main(void* arg)
 	// process native connection
 	native_attach(native);
 	frontend_native(self, native);
+}
+
+hot static void
+frontend_main_replay(void* arg)
+{
+	auto replay = (Replay*)arg;
+
+	// process recovery connection
+	replay_main(replay);
 }
 
 static void
@@ -80,7 +89,7 @@ frontend_main(void* arg)
 			// remote client
 			auto client = (Client*)msg;
 			client->arg = self;
-			coroutine_create(client_main, client);
+			coroutine_create(frontend_main_client, client);
 			break;
 		}
 		case MSG_NATIVE:
@@ -88,7 +97,28 @@ frontend_main(void* arg)
 			// native client
 			auto native = (Native*)msg;
 			native->arg = self;
-			coroutine_create(native_main, native);
+			coroutine_create(frontend_main_native, native);
+			break;
+		}
+		case MSG_REPLAY:
+		{
+			// replay client
+			auto replay = (Replay*)msg;
+			replay->arg = self;
+			coroutine_create(frontend_main_replay, replay);
+			break;
+		}
+		case MSG_REPLAY_STOP:
+		{
+			auto replay = container_of(msg, Replay, msg_stop);
+			replay_forward(replay, msg);
+			break;
+		}
+		case MSG_RECORD:
+		{
+			// forward for execution
+			auto record = (RecordMsg*)msg;
+			replay_forward(record->arg, msg);
 			break;
 		}
 		default:

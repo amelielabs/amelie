@@ -14,6 +14,3 @@
 // session
 #include "session/profile.h"
 #include "session/session.h"
-
-// session recover
-#include "session/session_recover.h"

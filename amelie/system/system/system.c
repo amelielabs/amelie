@@ -168,6 +168,45 @@ static PartMgrIf part_mgr_if =
 };
 
 static void
+recover_if_create(Recover* recover)
+{
+	System* self = recover->iface_arg;
+	auto mgr = replay_mgr_allocate();
+	replay_mgr_start(mgr, &self->frontend_mgr);
+	recover->state = mgr;
+}
+
+static void
+recover_if_free(Recover* recover)
+{
+	if (! recover->state)
+		return;
+	replay_mgr_stop(recover->state);
+	replay_mgr_free(recover->state);
+	recover->state = NULL;
+}
+
+static void
+recover_if_execute(Recover* recover, RecordMsg* record)
+{
+	replay_mgr_execute(recover->state, record);
+}
+
+static void
+recover_if_sync(Recover* recover)
+{
+	replay_mgr_sync(recover->state);
+}
+
+static RecoverIf recover_if =
+{
+	.create  = recover_if_create,
+	.free    = recover_if_free,
+	.execute = recover_if_execute,
+	.sync    = recover_if_sync
+};
+
+static void
 system_save_state(void* arg)
 {
 	unused(arg);
@@ -303,8 +342,14 @@ system_start(System* self, bool bootstrap)
 	// register builtin functions
 	fn_register(&self->function_mgr);
 
+	// start frontends
+	auto workers = opt_int_of(&config()->frontends);
+	frontend_mgr_start(&self->frontend_mgr, &frontend_if,
+	                   self,
+	                   workers);
+
 	// start backend workers
-	auto workers = opt_int_of(&config()->backends);
+	workers = opt_int_of(&config()->backends);
 	backend_mgr_start(&self->backend_mgr, workers);
 
 	// start commit worker
@@ -315,12 +360,6 @@ system_start(System* self, bool bootstrap)
 
 	// start periodic wal syncer
 	syncer_start(&self->db.syncer);
-
-	// start frontends
-	workers = opt_int_of(&config()->frontends);
-	frontend_mgr_start(&self->frontend_mgr, &frontend_if,
-	                   self,
-	                   workers);
 
 	// prepare replication manager
 	repl_open(&self->repl);

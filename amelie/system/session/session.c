@@ -262,6 +262,7 @@ session_run_utility(Session* self)
 		} else
 		{
 			write_set_tsn(&write, 0);
+			write_set_flags(&write, RECORD_UTILITY);
 			query_write(query, &self->req->endpoint, &write.record_data);
 		}
 

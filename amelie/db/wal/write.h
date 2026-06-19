@@ -52,6 +52,12 @@ write_set_recover(Write* self, Record* record)
 }
 
 static inline void
+write_set_flags(Write* self, uint8_t flags)
+{
+	self->record.flags = flags;
+}
+
+static inline void
 write_set_tsn(Write* self, uint64_t tsn)
 {
 	self->record.tsn = tsn;

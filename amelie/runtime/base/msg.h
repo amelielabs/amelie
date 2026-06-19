@@ -31,6 +31,13 @@ typedef enum
 	MSG_CLIENT,
 	MSG_NATIVE,
 
+	// wal
+	MSG_RECORD,
+
+	// replay
+	MSG_REPLAY,
+	MSG_REPLAY_STOP,
+
 	// backend
 	MSG_DEPLOY,
 	MSG_UNDEPLOY,

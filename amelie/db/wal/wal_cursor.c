@@ -150,13 +150,15 @@ wal_cursor_next_msg(WalCursor* self)
 	auto buf = buf_create();
 	errdefer_buf(buf);
 
-	auto msg = (RecordMsg*)buf_emplace(buf, sizeof(RecordMsg));
-	msg_init(&msg->msg, MSG_RECORD);
-	msg->msg_buf = buf;
-	msg->arg     = NULL;
-
+	buf_emplace(buf, sizeof(RecordMsg));
 	if (wal_cursor_read(self, buf))
+	{
+		auto msg = (RecordMsg*)buf->start;
+		msg_init(&msg->msg, MSG_RECORD);
+		msg->msg_buf = buf;
+		msg->arg     = NULL;
 		return (RecordMsg*)buf->start;
+	}
 
 	buf_free(buf);
 	return NULL;

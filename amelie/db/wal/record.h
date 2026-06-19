@@ -13,10 +13,16 @@
 
 typedef struct Record Record;
 
+enum
+{
+	RECORD_UTILITY = 1
+};
+
 struct Record
 {
 	uint32_t crc;
 	uint32_t size;
+	uint8_t  flags;
 	uint64_t lsn;
 	uint64_t tsn;
 } packed;

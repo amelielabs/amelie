@@ -19,7 +19,7 @@ struct RecoverIf
 	void (*create)(Recover*);
 	void (*free)(Recover*);
 	void (*execute)(Recover*, RecordMsg*);
-	void (*end)(Recover*);
+	void (*sync)(Recover*);
 };
 
 struct Recover

@@ -90,7 +90,7 @@ recover_wal_main(Recover* self)
 	}
 
 	// finilize
-	self->iface->end(self);
+	self->iface->sync(self);
 }
 
 void
