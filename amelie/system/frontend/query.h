@@ -35,6 +35,7 @@ struct Query
 {
 	QueryType type;
 	Record*   recover;
+	uint64_t  recover_id;
 	union
 	{
 		Str text;
@@ -117,7 +118,7 @@ query_write(Query* self, Endpoint* endpoint, Buf* buf)
 }
 
 static inline void
-query_read(Query* self, Endpoint* endpoint, Record* record)
+query_read(Query* self, Endpoint* endpoint, Record* record, uint64_t record_id)
 {
 	auto pos = record_data(record);
 	unpack_array(&pos);
@@ -166,5 +167,6 @@ query_read(Query* self, Endpoint* endpoint, Record* record)
 		}
 	}
 
-	self->recover = record;
+	self->recover    = record;
+	self->recover_id = record_id;
 }

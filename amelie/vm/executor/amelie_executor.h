@@ -33,6 +33,7 @@
 #include "executor/gtr.h"
 #include "executor/gtr_group.h"
 #include "executor/gtr_queue.h"
+#include "executor/gtr_recover.h"
 
 // executor
 #include "executor/batch.h"

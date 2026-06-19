@@ -15,9 +15,10 @@ typedef struct Executor Executor;
 
 struct Executor
 {
-	Spinlock lock;
-	uint64_t id;
-	List     list;
+	Spinlock   lock;
+	uint64_t   id;
+	List       list;
+	GtrRecover recover;
 };
 
 static inline void
@@ -26,6 +27,7 @@ executor_init(Executor* self)
 	self->id = 1;
 	list_init(&self->list);
 	spinlock_init(&self->lock);
+	gtr_recover_init(&self->recover);
 }
 
 static inline void
@@ -35,9 +37,43 @@ executor_free(Executor* self)
 }
 
 hot static inline void
+executor_recover(Executor* self, Gtr* gtr)
+{
+	auto recover = &self->recover;
+	gtr_recover_add(recover, gtr);
+	for (;;)
+	{
+		if (gtr_recover_pending(recover) && recover->list == gtr)
+		{
+			// get head and advance recover id
+			gtr_recover_pop(recover);
+			break;
+		}
+
+		Event event;
+		event_init(&event);
+		event_attach(&event);
+		gtr->on_recover = &event;
+
+		spinlock_unlock(&self->lock);
+
+		// wait
+		event_wait(&event, -1);
+
+		spinlock_lock(&self->lock);
+	}
+}
+
+hot static inline void
 executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
 {
 	spinlock_lock(&self->lock);
+
+	// recovery serialization
+	//
+	// ensure transaction is serialized around recover_id order
+	if (gtr->write.recover)
+		executor_recover(self, gtr);
 
 	// set transaction id
 	//
@@ -91,6 +127,15 @@ executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
 
 	// begin execution
 	dispatch_mgr_send(&gtr->dispatch_mgr, dispatch);
+
+	// wakeup next recovery waiter
+	if (gtr->write.recover && gtr_recover_pending(&self->recover))
+	{
+		auto head = self->recover.list;
+		auto on_recover = head->on_recover;
+		head->on_recover = NULL;
+		event_signal(on_recover);
+	}
 
 	spinlock_unlock(&self->lock);
 }

@@ -155,8 +155,9 @@ wal_cursor_next_msg(WalCursor* self)
 	{
 		auto msg = (RecordMsg*)buf->start;
 		msg_init(&msg->msg, MSG_RECORD);
-		msg->msg_buf = buf;
-		msg->arg     = NULL;
+		msg->msg_buf   = buf;
+		msg->arg       = NULL;
+		msg->record_id = 0;
 		return (RecordMsg*)buf->start;
 	}
 

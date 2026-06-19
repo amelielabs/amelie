@@ -27,8 +27,10 @@ struct Gtr
 	Write       write;
 	List        write_cdc;
 	Event       on_commit;
+	Event*      on_recover;
 	Limit       limit;
 	Local*      local;
+	Gtr*        link_recover;
 	Gtr*        link_group;
 	List        link_batch;
 	List        link;
@@ -37,14 +39,16 @@ struct Gtr
 static inline void
 gtr_init(Gtr* self, Local* local)
 {
-	self->id          = 0;
-	self->group       = 0;
-	self->group_order = 0;
-	self->program     = NULL;
-	self->error       = NULL;
-	self->abort       = false;
-	self->local       = local;
-	self->link_group  = NULL;
+	self->id           = 0;
+	self->group        = 0;
+	self->group_order  = 0;
+	self->program      = NULL;
+	self->error        = NULL;
+	self->abort        = false;
+	self->local        = local;
+	self->on_recover   = NULL;
+	self->link_recover = NULL;
+	self->link_group   = NULL;
 	dispatch_mgr_init(&self->dispatch_mgr, self);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, opt_int_of(&config()->limit_write));

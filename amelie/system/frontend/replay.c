@@ -46,7 +46,7 @@ replay_record(Replay* self, RecordMsg* record, void* session)
 	query_reset(&self->query);
 
 	// restore query and request data
-	query_read(&self->query, endpoint, record->record);
+	query_read(&self->query, endpoint, record->record, record->record_id);
 
 	// todo: output to none
 	buf_reset(&self->buf);

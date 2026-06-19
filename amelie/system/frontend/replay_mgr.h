@@ -17,6 +17,7 @@ struct ReplayMgr
 {
 	Replay*    replay;
 	int        replay_count;
+	uint64_t   replay_id;
 	int        rr;
 	ReplaySync sync;
 };

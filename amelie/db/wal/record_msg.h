@@ -15,8 +15,9 @@ typedef struct RecordMsg RecordMsg;
 
 struct RecordMsg
 {
-	Msg    msg;
-	Buf*   msg_buf;
-	void*  arg;
-	Record record[];
+	Msg      msg;
+	Buf*     msg_buf;
+	void*    arg;
+	uint64_t record_id;
+	Record   record[];
 };

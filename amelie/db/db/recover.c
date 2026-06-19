@@ -78,7 +78,11 @@ recover_wal_main(Recover* self)
 		if (! wal_cursor_active(&cursor))
 			break;
 
-		info("recover: wal/{u64} ({.2f} MiB, {u64} rows)", cursor.file->id,
+		// sync
+		self->iface->sync(self);
+
+		timer_mgr_update(&am_task->timer_mgr);
+		info("recover: wal/{u64} ({.2f} MiB, {u64} transactions)", cursor.file->id,
 		     (double)size / 1024 / 1024, count);
 
 		auto next = wal_find(wal, cursor.file->id, true);
@@ -88,9 +92,6 @@ recover_wal_main(Recover* self)
 		id = next->id;
 		wal_file_unpin(next);
 	}
-
-	// finilize
-	self->iface->sync(self);
 }
 
 void

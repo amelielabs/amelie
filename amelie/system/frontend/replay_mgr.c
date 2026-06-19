@@ -23,6 +23,7 @@ replay_mgr_allocate()
 	auto self = (ReplayMgr*)am_malloc(sizeof(ReplayMgr));
 	self->replay       = NULL;
 	self->replay_count = 0;
+	self->replay_id    = 0;
 	self->rr           = 0;
 	replay_sync_init(&self->sync);
 	return self;
@@ -39,14 +40,18 @@ void
 replay_mgr_start(ReplayMgr* self, FrontendMgr* mgr)
 {
 	// prepare replay clients
-	self->replay_count = 1; //mgr->workers_count;
+	self->replay_count = 32;
 	self->replay = am_malloc(sizeof(Replay) * self->replay_count);
 
-	auto sync = &self->sync;
+	auto sync  = &self->sync;
+	auto fe_id = 0;
 	for (auto i = 0; i < self->replay_count; i++)
 	{
-		auto fe = &mgr->workers[i];
 		auto replay = &self->replay[i];
+		auto fe = &mgr->workers[fe_id];
+		fe_id++;
+		if (fe_id >= mgr->workers_count)
+			fe_id = 0;
 		replay_init(replay, sync, fe);
 
 		// deploy
@@ -110,6 +115,10 @@ replay_mgr_execute(ReplayMgr* self, RecordMsg* msg)
 	{
 		replay_sync(sync);
 		sync_after = true;
+	} else
+	{
+		// set replay id
+		msg->record_id = self->replay_id++;
 	}
 
 	// send to the next frontend replay client
@@ -120,6 +129,6 @@ replay_mgr_execute(ReplayMgr* self, RecordMsg* msg)
 
 	// sync
 	uint64_t total = atomic_u64_of(&sync->total);
-	if (sync_after || !(total % 1000))
+	if (sync_after || !(total % 10000))
 		replay_sync(sync);
 }
