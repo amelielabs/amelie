@@ -175,10 +175,6 @@ crepl_unsubscribe(Vm* self, Op* op)
 void
 cddl(Vm* self, Op* op)
 {
-	// do early system read-only state check
-	if (opt_int_of(&state()->read_only))
-		error("system is in read-only mode");
-
 	// [op, flags]
 	unused(self);
 	auto pos = code_data_at(self->code_data, op->a);
@@ -189,10 +185,6 @@ cddl(Vm* self, Op* op)
 void
 cddl_create_index(Vm* self, Op* op)
 {
-	// do early system read-only state check
-	if (opt_int_of(&state()->read_only))
-		error("system is in read-only mode");
-
 	// [op, flags]
 	unused(self);
 	auto pos = code_data_at(self->code_data, op->a);

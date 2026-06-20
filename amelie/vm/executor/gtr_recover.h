@@ -15,7 +15,6 @@ typedef struct GtrRecover GtrRecover;
 
 struct GtrRecover
 {
-	uint64_t id;
 	uint64_t id_next;
 	Gtr*     list;
 };
@@ -23,7 +22,6 @@ struct GtrRecover
 static inline void
 gtr_recover_init(GtrRecover* self)
 {
-	self->id      = 0;
 	self->id_next = 0;
 	self->list    = NULL;
 }
@@ -31,7 +29,6 @@ gtr_recover_init(GtrRecover* self)
 static inline void
 gtr_recover_reset(GtrRecover* self)
 {
-	self->id      = 0;
 	self->id_next = 0;
 	self->list    = NULL;
 }

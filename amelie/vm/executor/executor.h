@@ -86,7 +86,7 @@ executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
 	} else
 	{
 		// the id must not be modified globally on replica
-		if (! opt_int_of(&state()->read_only))
+		if (state_is_primary())
 			id = state_tsn_next();
 		else
 			id = state_tsn();

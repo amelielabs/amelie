@@ -59,9 +59,6 @@ repl_open(Repl* self)
 		repl_validate_primary(primary_id);
 
 		self->role = REPL_REPLICA;
-
-		// set to read-only, even if replication is not enabled
-		opt_int_set(&state()->read_only, true);
 	}
 }
 
@@ -104,9 +101,6 @@ repl_subscribe(Repl* self, Str* primary_id)
 		repl_validate_primary(primary_id);
 		self->role = REPL_REPLICA;
 
-		// set to read-only, even if replication is not enabled
-		opt_int_set(&state()->read_only, true);
-
 		// set new primary id
 		opt_string_set(&state()->repl_primary, primary_id);
 
@@ -116,9 +110,6 @@ repl_subscribe(Repl* self, Str* primary_id)
 	}
 
 	// switch to primary
-
-	// set to read-write
-	opt_int_set(&state()->read_only, false);
 
 	// remove primary id
 	Str empty;

@@ -98,9 +98,10 @@ session_run(Session* self)
 	auto profile  = &self->profile;
 	auto gtr      = &self->gtr;
 
-	// prevent writes on replica
-	if (!program->ro && opt_int_of(&state()->read_only))
-		error("system is in read-only mode");
+	// prevent client writes on replica
+	if (!program->ro && !state_is_primary())
+		if (! self->query->recover)
+			error("system is in read-only mode");
 
 	reg_prepare(&self->vm.r, program->code.regs);
 
@@ -180,6 +181,13 @@ session_run_utility(Session* self)
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	reg_prepare(&self->vm.r, program->code.regs);
+
+	// prevent client writes on replica
+	if (! state_is_primary())
+	{
+		if (!self->query->recover && !stmt_is_utility_ro(compiler_stmt(compiler)))
+			error("system is in read-only mode");
+	}
 
 	// switch session lock to match the program catalog lock
 	//
@@ -271,10 +279,6 @@ session_run_utility(Session* self)
 
 		auto on_error = error_catch
 		(
-			// respect system read-only state
-			if (opt_int_of(&state()->read_only))
-				error("system is in read-only mode");
-
 			write_list_add(&write_list, &write);
 
 			db_write(share()->db, &write_list);

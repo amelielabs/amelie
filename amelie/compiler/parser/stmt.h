@@ -213,3 +213,23 @@ stmt_is_utility(Stmt* self)
 	}
 	return false;
 }
+
+static inline bool
+stmt_is_utility_ro(Stmt* self)
+{
+	switch (self->id) {
+	case STMT_SHOW:
+	case STMT_START_REPL:
+	case STMT_STOP_REPL:
+	case STMT_SUBSCRIBE:
+	case STMT_UNSUBSCRIBE:
+	case STMT_CHECKPOINT:
+	case STMT_CREATE_LOCK:
+	case STMT_DROP_LOCK:
+	case STMT_ALTER_SYSTEM:
+		return true;
+	default:
+		break;
+	}
+	return false;
+}

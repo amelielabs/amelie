@@ -16,8 +16,7 @@ state
   "lsn": 3,
   "tsn": 2,
   "psn": 3,
-  "checkpoint": 1,
-  "read_only": false
+  "checkpoint": 1
 }
 # test: backup (using https)
 backup E1 https://127.0.0.1:3480;
@@ -77,8 +76,7 @@ state
   "lsn": 3,
   "tsn": 2,
   "psn": 1,
-  "checkpoint": 1,
-  "read_only": false
+  "checkpoint": 1
 }
 select count(*) from test;
 

@@ -381,8 +381,7 @@ STATE
   "lsn": 4,
   "tsn": 1,
   "psn": 1,
-  "checkpoint": 1,
-  "read_only": false
+  "checkpoint": 1
 }
 select show('state');
 
@@ -397,8 +396,7 @@ show
   "lsn": 4,
   "tsn": 1,
   "psn": 1,
-  "checkpoint": 1,
-  "read_only": false
+  "checkpoint": 1
 }
 select show('state').directory;
 

@@ -130,6 +130,13 @@ state_rsn_next(void)
 	return opt_int_set_next(&state()->rsn);
 }
 
+// replication
+static inline bool
+state_is_primary(void)
+{
+	return opt_string_empty(&state()->repl_primary);
+}
+
 // background jobs manager
 static inline void
 run(JobFunction main, int argc, ...)

@@ -44,7 +44,6 @@ state_prepare(State* self)
 		{ "rsn",             OPT_INT,    OPT_E,             &self->rsn,             NULL,       REL_MAX     },
 		{ "checkpoint",      OPT_INT,    OPT_E,             &self->checkpoint,      NULL,       0           },
 		{ "recover",         OPT_INT,    OPT_E|OPT_H,       &self->recover,         NULL,       0           },
-		{ "read_only",       OPT_BOOL,   OPT_E,             &self->read_only,       NULL,       false       },
 		// persistent
 		{ "secret",          OPT_STRING, OPT_C|OPT_S|OPT_H, &self->secret,          0,          0           },
 		{ "repl",            OPT_BOOL,   OPT_C,             &self->repl,            0,          false       },

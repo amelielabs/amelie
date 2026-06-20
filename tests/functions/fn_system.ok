@@ -123,8 +123,7 @@ show
   "lsn": 1,
   "tsn": 1,
   "psn": 0,
-  "checkpoint": 1,
-  "read_only": false
+  "checkpoint": 1
 }
 # test: replicas
 select show('replicas');

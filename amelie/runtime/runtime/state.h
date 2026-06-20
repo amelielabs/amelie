@@ -32,7 +32,6 @@ struct State
 	Opt  rsn;
 	Opt  checkpoint;
 	Opt  recover;
-	Opt  read_only;
 	// persistent
 	Opt  secret;
 	Opt  repl;

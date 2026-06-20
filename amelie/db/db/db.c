@@ -143,9 +143,5 @@ db_state(Db* self, Buf* buf)
 	encode_raw(buf, "checkpoint", 10);
 	encode_int(buf, state_checkpoint());
 
-	// read_only
-	encode_raw(buf, "read_only", 9);
-	encode_bool(buf, opt_int_of(&state()->read_only));
-
 	encode_obj_end(buf);
 }
