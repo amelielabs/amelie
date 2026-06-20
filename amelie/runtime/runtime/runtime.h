@@ -35,6 +35,7 @@ struct Runtime
 	BufMgr      buf_mgr;
 	LockMgr     lock_mgr;
 	LockableMgr lockable_mgr;
+	Uuid        uuid;
 	Config      config;
 	State       state;
 	RuntimeIf*  iface;

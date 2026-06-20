@@ -36,7 +36,10 @@ gtr_recover_reset(GtrRecover* self)
 static inline bool
 gtr_recover_pending(GtrRecover* self)
 {
-	return self->list && self->list->write.recover_id == self->id_next;
+	auto head = self->list;
+	if (! head)
+		return false;
+	return head->write.recover->record_id == self->id_next;
 }
 
 static inline void
@@ -46,7 +49,7 @@ gtr_recover_add(GtrRecover* self, Gtr* gtr)
 	auto pos = self->list;
 	while (pos)
 	{
-		if (gtr->write.recover_id < pos->write.recover_id)
+		if (gtr->write.recover->record_id < pos->write.recover->record_id)
 			break;
 		prev = pos;
 		pos = pos->link_recover;

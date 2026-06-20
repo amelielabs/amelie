@@ -46,7 +46,7 @@ replay_record(Replay* self, RecordMsg* record, void* session)
 	query_reset(&self->query);
 
 	// restore query and request data
-	query_read(&self->query, endpoint, record->record, record->record_id);
+	query_read(&self->query, endpoint, record);
 
 	// todo: output to none
 	buf_reset(&self->buf);
@@ -56,7 +56,7 @@ replay_record(Replay* self, RecordMsg* record, void* session)
 	// process request
 	auto on_error = error_catch
 	(	
-		// set user
+		// set user (takes shared catalog lock)
 		request_auth_as(req, opt_string_of(&endpoint->user));
 
 		// execute

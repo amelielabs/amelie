@@ -117,7 +117,7 @@ session_run(Session* self)
 	{
 		auto query = self->query;
 		if (query->recover)
-			write_set_recover(write, query->recover, query->recover_id);
+			write_set_recover(write, query->recover);
 		else
 			query_write(query, &self->req->endpoint, &write->record_data);
 	}
@@ -266,7 +266,7 @@ session_run_utility(Session* self)
 		// prepare request for the wal writer
 		auto query = self->query;
 		if (query->recover) {
-			write_set_recover(&write, query->recover, query->recover_id);
+			write_set_recover(&write, query->recover);
 		} else
 		{
 			write_set_tsn(&write, 0);

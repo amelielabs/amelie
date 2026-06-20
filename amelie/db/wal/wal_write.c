@@ -123,7 +123,7 @@ wal_recover(WalContext* context)
 	{
 		auto write = list_at(Write, link);
 		assert(write->recover);
-		context->lsn = write->recover->lsn;
+		context->lsn = write->recover->record->lsn;
 	}
 }
 
@@ -138,8 +138,9 @@ wal_recover_write(Wal* self, WalFile* current, WalContext* context)
 	{
 		auto write = list_at(Write, link);
 		assert(write->recover);
-		context->lsn = write->recover->lsn;
-		iov_add(iov, write->recover, write->recover->size);
+		auto record = write->recover->record;
+		context->lsn = record->lsn;
+		iov_add(iov, record, record->size);
 	}
 
 	// write

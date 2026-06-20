@@ -261,6 +261,9 @@ repo_open_client_mode(int argc, char** argv)
 	// set options
 	opts_set_argv(&config->opts, argc, argv);
 
+	// set system uuid
+	uuid_set(&runtime->uuid, opt_string_of(&config->uuid));
+
 	// set system timezone
 	auto name = &config()->timezone.string;
 	runtime->timezone = timezone_mgr_find(&runtime->timezone_mgr, name);
@@ -365,6 +368,9 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 		// open state file
 		state_open(state, path);
 	}
+
+	// set system uuid
+	uuid_set(&runtime->uuid, opt_string_of(&config->uuid));
 
 	// set system timezone
 	auto name = &config()->timezone.string;

@@ -81,7 +81,7 @@ executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
 	if (gtr->write.recover)
 	{
 		// recover id
-		id = gtr->write.recover->tsn;
+		id = gtr->write.recover->record->tsn;
 		state_tsn_follow(id);
 	} else
 	{

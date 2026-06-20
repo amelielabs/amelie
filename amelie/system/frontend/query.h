@@ -33,9 +33,8 @@ typedef enum
 
 struct Query
 {
-	QueryType type;
-	Record*   recover;
-	uint64_t  recover_id;
+	QueryType  type;
+	RecordMsg* recover;
 	union
 	{
 		Str text;
@@ -118,8 +117,9 @@ query_write(Query* self, Endpoint* endpoint, Buf* buf)
 }
 
 static inline void
-query_read(Query* self, Endpoint* endpoint, Record* record, uint64_t record_id)
+query_read(Query* self, Endpoint* endpoint, RecordMsg* msg)
 {
+	auto record = msg->record;
 	auto pos = record_data(record);
 	unpack_array(&pos);
 	while (! unpack_array_end(&pos))
@@ -167,6 +167,5 @@ query_read(Query* self, Endpoint* endpoint, Record* record, uint64_t record_id)
 		}
 	}
 
-	self->recover    = record;
-	self->recover_id = record_id;
+	self->recover = msg;
 }
