@@ -134,7 +134,7 @@ state_rsn_next(void)
 static inline bool
 state_is_primary(void)
 {
-	return opt_uuid_empty(&state()->repl_primary_);
+	return opt_uuid_empty(&state()->repl_primary);
 }
 
 // background jobs manager

@@ -37,19 +37,19 @@ state_prepare(State* self)
 	{
 		// system
 		{ "version",         OPT_STRING, OPT_E,             &self->version,        "1.0.0-rc1", 0           },
-		{ "directory",       OPT_STRING, OPT_E,             &self->directory,       NULL,       0           },
-		{ "lsn",             OPT_INT,    OPT_E,             &self->lsn,             NULL,       0           },
-		{ "tsn",             OPT_INT,    OPT_E,             &self->tsn,             NULL,       0           },
-		{ "psn",             OPT_INT,    OPT_E,             &self->psn,             NULL,       0           },
-		{ "rsn",             OPT_INT,    OPT_E,             &self->rsn,             NULL,       REL_MAX     },
-		{ "checkpoint",      OPT_INT,    OPT_E,             &self->checkpoint,      NULL,       0           },
-		{ "recover",         OPT_INT,    OPT_E|OPT_H,       &self->recover,         NULL,       0           },
+		{ "directory",       OPT_STRING, OPT_E,             &self->directory,      NULL,       0           },
+		{ "lsn",             OPT_INT,    OPT_E,             &self->lsn,            NULL,       0           },
+		{ "tsn",             OPT_INT,    OPT_E,             &self->tsn,            NULL,       0           },
+		{ "psn",             OPT_INT,    OPT_E,             &self->psn,            NULL,       0           },
+		{ "rsn",             OPT_INT,    OPT_E,             &self->rsn,            NULL,       REL_MAX     },
+		{ "checkpoint",      OPT_INT,    OPT_E,             &self->checkpoint,     NULL,       0           },
+		{ "recover",         OPT_INT,    OPT_E|OPT_H,       &self->recover,        NULL,       0           },
 		// persistent
-		{ "secret",          OPT_STRING, OPT_C|OPT_S|OPT_H, &self->secret,          0,          0           },
-		{ "repl",            OPT_BOOL,   OPT_C,             &self->repl,            0,          false       },
-		{ "repl_primary",    OPT_UUID,   OPT_C,             &self->repl_primary_,   NULL,       0           },
-		{ "replicas",        OPT_JSON,   OPT_C,             &self->replicas,        NULL,       0           },
-		{  NULL,             0,          0,                  NULL,                  NULL,       0           },
+		{ "secret",          OPT_STRING, OPT_C|OPT_S|OPT_H, &self->secret,         0,          0           },
+		{ "repl",            OPT_BOOL,   OPT_C,             &self->repl,           0,          false       },
+		{ "repl_primary",    OPT_UUID,   OPT_C,             &self->repl_primary,   NULL,       0           },
+		{ "replicas",        OPT_JSON,   OPT_C,             &self->replicas,       NULL,       0           },
+		{  NULL,             0,          0,                  NULL,                 NULL,       0           },
 	};
 	opts_define(&self->opts, defs);
 }

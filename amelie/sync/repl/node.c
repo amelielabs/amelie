@@ -76,29 +76,3 @@ node_main(Node* self)
 		          state_lsn(), NULL);
 	}
 }
-
-#if 0
-void
-node_validate(Node* self, NodeMsg* msg)
-{
-	// note: executed under shared catalog lock
-
-	// check replication state
-	if (unlikely(! opt_int_of(&state()->repl)))
-		error("replication is disabled");
-
-	if (uuid_empty(&self->id_primary))
-	{
-		auto primary = &state()->repl_primary.string;
-		if (! str_empty(primary))
-			uuid_set(&self->id_primary, primary);
-	}
-
-	if (uuid_compare(&msg->id, &self->id_primary))
-		error("node: primary id mismatch");
-
-	// lsn must much the current state
-	if (msg->lsn != state_lsn())
-		error("node: lsn does not match this server lsn");
-}
-#endif

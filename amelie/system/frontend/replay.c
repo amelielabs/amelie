@@ -38,6 +38,18 @@ replay_free(Replay* self)
 	buf_free(&self->buf);
 }
 
+static inline void
+replay_record_primary(RecordMsg* record)
+{
+	// check replication state
+	if (unlikely(! opt_int_of(&state()->repl)))
+		error("replay: replication is disabled");
+
+	// ensure record comes from the current primary
+	if (! uuid_is(&record->instance_id, opt_uuid_of(&state()->repl_primary)))
+		error("replay: primary id mismatch");
+}
+
 static void
 replay_record(Replay* self, RecordMsg* record, void* session)
 {
@@ -58,6 +70,10 @@ replay_record(Replay* self, RecordMsg* record, void* session)
 	(	
 		// set user (takes shared catalog lock)
 		request_auth_as(req, opt_string_of(&endpoint->user));
+
+		// validate replicated record
+		if (! uuid_is(&record->instance_id, opt_uuid_of(&config()->uuid)))
+			replay_record_primary(record);
 
 		// execute
 		self->fe->iface->session_execute(session, req, &self->query);
