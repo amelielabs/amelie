@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: create table statement parsing
 create;
@@ -833,12 +833,12 @@ create table test (id int primary key) partitions 3 with (;
 error: create table test (id int primary key) partitions 3 with (❰;❱ ⟵ name expected
 create table test (id int primary key) partitions 3 with ();
 error: create table test (id int primary key) partitions 3 with (❰)❱ ⟵ name expected
-create table test (id int primary key) partitions 3 with (id "00000000-0000-0000-0000-000000000000");
+create table test (id int primary key) partitions 3 with (id "00000000-0000-0000-0000-000000000001");
 select show('table', 'test', true).id;
 
 id
 ──
-"00000000-0000-0000-0000-000000000000"
+"00000000-0000-0000-0000-000000000001"
 drop table test;
 # test: description
 create table test (id int primary key) description;

@@ -114,7 +114,7 @@ system_metrics(System* self, Buf* buf)
 
 	// uuid
 	encode_raw(buf, "uuid", 4);
-	encode_str(buf, &config()->uuid.string);
+	encode_uuid(buf, opt_uuid_of(&config()->uuid));
 
 	// version
 	encode_raw(buf, "version", 7);

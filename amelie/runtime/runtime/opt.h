@@ -34,7 +34,8 @@ typedef enum
 	OPT_BOOL,
 	OPT_INT,
 	OPT_STRING,
-	OPT_JSON
+	OPT_JSON,
+	OPT_UUID
 } OptType;
 
 struct Opt
@@ -47,6 +48,7 @@ struct Opt
 	{
 		atomic_u64 integer;
 		Str        string;
+		Uuid       uuid;
 	};
 };
 
@@ -205,6 +207,28 @@ opt_json_of(Opt* self)
 	return str_u8(&self->string);
 }
 
+// uuid
+static inline bool
+opt_uuid_empty(Opt* self)
+{
+	assert(self->type == OPT_UUID);
+	return uuid_empty(&self->uuid);
+}
+
+static inline void
+opt_uuid_set(Opt* self, Uuid* id)
+{
+	assert(self->type == OPT_UUID);
+	self->uuid = *id;
+}
+
+static inline Uuid*
+opt_uuid_of(Opt* self)
+{
+	assert(self->type == OPT_UUID);
+	return &self->uuid;
+}
+
 static inline void
 opt_set_json(Opt* self, uint8_t** pos)
 {
@@ -245,6 +269,16 @@ opt_set_json(Opt* self, uint8_t** pos)
 		auto start = *pos;
 		data_skip(pos);
 		opt_json_set(self, start, *pos - start);
+		break;
+	}
+	case OPT_UUID:
+	{
+		if (unlikely(! data_is_str(*pos)))
+			error("config: string expected for option '{str}'", name);
+		Str value;
+		unpack_str(pos, &value);
+		if (uuid_set_nothrow(&self->uuid, &value) == -1)
+			error("option '{str}': failed to parse uuid", name);
 		break;
 	}
 	}
@@ -300,6 +334,14 @@ opt_set(Opt* self, Str* value)
 		opt_json_set(self, json.buf->start, buf_size(json.buf));
 		break;
 	}
+	case OPT_UUID:
+	{
+		if (str_empty(value))
+			error("option '{str}': value is not defined", name);
+		if (uuid_set_nothrow(&self->uuid, value) == -1)
+			error("option '{str}': failed to parse uuid", name);
+		break;
+	}
 	}
 }
 
@@ -322,6 +364,9 @@ opt_encode(Opt* self, Buf* buf)
 	case OPT_INT:
 		encode_int(buf, opt_int_of(self));
 		break;
+	case OPT_UUID:
+		encode_uuid(buf, opt_uuid_of(self));
+		break;
 	}
 }
 
@@ -343,5 +388,13 @@ opt_print(Opt* self)
 		break;
 	case OPT_JSON:
 		break;
+	case OPT_UUID:
+	{
+		char uuid_sz[UUID_SZ];
+		uuid_get(&self->uuid, uuid_sz, sizeof(uuid_sz));
+		info("{-24s}{s}", str_of(&self->name),
+		     uuid_sz);
+		break;
+	}
 	}
 }

@@ -47,7 +47,7 @@ state_prepare(State* self)
 		// persistent
 		{ "secret",          OPT_STRING, OPT_C|OPT_S|OPT_H, &self->secret,          0,          0           },
 		{ "repl",            OPT_BOOL,   OPT_C,             &self->repl,            0,          false       },
-		{ "repl_primary",    OPT_STRING, OPT_C,             &self->repl_primary,    NULL,       0           },
+		{ "repl_primary",    OPT_UUID,   OPT_C,             &self->repl_primary_,   NULL,       0           },
 		{ "replicas",        OPT_JSON,   OPT_C,             &self->replicas,        NULL,       0           },
 		{  NULL,             0,          0,                  NULL,                  NULL,       0           },
 	};

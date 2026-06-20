@@ -24,7 +24,6 @@ runtime_init(Runtime* self)
 	self->crc      = crc32_sse_supported() ? crc32_sse : crc32;
 	self->iface    = NULL;
 	buf_mgr_init(&self->buf_mgr);
-	uuid_init(&self->uuid);
 	config_init(&self->config);
 	state_init(&self->state);
 	timezone_mgr_init(&self->timezone_mgr);

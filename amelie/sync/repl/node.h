@@ -29,4 +29,3 @@ struct Node
 void node_init(Node*, NodeExecute, void*, Recover*, Client*);
 void node_free(Node*);
 void node_main(Node*);
-void node_validate(Node*, NodeMsg*);

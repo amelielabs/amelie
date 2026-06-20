@@ -225,13 +225,11 @@ repo_bootstrap(void)
 	auto config = config();
 
 	// generate uuid, unless it is set
-	if (opt_string_empty(&config->uuid))
+	if (opt_uuid_empty(&config->uuid))
 	{
 		Uuid uuid;
 		uuid_generate(&uuid, &am_task->random);
-		char uuid_sz[UUID_SZ];
-		uuid_get(&uuid, uuid_sz, sizeof(uuid_sz));
-		opt_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
+		opt_uuid_set(&config->uuid, &uuid);
 	}
 
 	// generate secret
@@ -260,9 +258,6 @@ repo_open_client_mode(int argc, char** argv)
 
 	// set options
 	opts_set_argv(&config->opts, argc, argv);
-
-	// set system uuid
-	uuid_set(&runtime->uuid, opt_string_of(&config->uuid));
 
 	// set system timezone
 	auto name = &config()->timezone.string;
@@ -368,9 +363,6 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 		// open state file
 		state_open(state, path);
 	}
-
-	// set system uuid
-	uuid_set(&runtime->uuid, opt_string_of(&config->uuid));
 
 	// set system timezone
 	auto name = &config()->timezone.string;

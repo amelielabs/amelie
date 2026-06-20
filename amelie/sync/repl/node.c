@@ -26,9 +26,8 @@ node_init(Node*       self,
 	self->execute     = execute;
 	self->execute_arg = execute_arg;
 	self->recover     = recover;
+	self->id_self     = *opt_uuid_of(&config()->uuid);
 	uuid_init(&self->id_primary);
-	uuid_init(&self->id_self);
-	uuid_set(&self->id_self, &config()->uuid.string);
 
 	// set websocket
 	websocket_init(&self->websocket);
@@ -78,6 +77,7 @@ node_main(Node* self)
 	}
 }
 
+#if 0
 void
 node_validate(Node* self, NodeMsg* msg)
 {
@@ -101,3 +101,4 @@ node_validate(Node* self, NodeMsg* msg)
 	if (msg->lsn != state_lsn())
 		error("node: lsn does not match this server lsn");
 }
+#endif

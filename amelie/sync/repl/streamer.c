@@ -254,7 +254,7 @@ streamer_free(Streamer* self)
 void
 streamer_start(Streamer* self, Uuid* id_replica, Endpoint* endpoint)
 {
-	uuid_set(&self->id_primary, &config()->uuid.string);
+	self->id_primary = *opt_uuid_of(&config()->uuid);
 	self->id_replica = *id_replica;
 	self->endpoint   = endpoint;
 	task_create(&self->task, "streamer", streamer_task_main, self);

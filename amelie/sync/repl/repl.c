@@ -39,9 +39,9 @@ repl_free(Repl* self)
 }
 
 static void
-repl_validate_primary(Str* primary_id)
+repl_validate_primary(Uuid* primary_id)
 {
-	if (str_compare(primary_id, &config()->uuid.string))
+	if (uuid_is(primary_id, opt_uuid_of(&config()->uuid)))
 		error("repl: primary id cannot match this server id");
 }
 
@@ -52,8 +52,8 @@ repl_open(Repl* self)
 	replica_mgr_open(&self->replica_mgr);
 
 	// current server is replica
-	auto primary_id = &state()->repl_primary.string;
-	if (! str_empty(primary_id))
+	auto primary_id = opt_uuid_of(&state()->repl_primary_);
+	if (! uuid_empty(primary_id))
 	{
 		// validate id
 		repl_validate_primary(primary_id);
@@ -94,15 +94,21 @@ repl_subscribe(Repl* self, Str* primary_id)
 	if (! opt_int_of(&state()->repl))
 		error("replication: is disabled");
 
+
 	// switch to replica
 	if (primary_id)
 	{
+		Uuid id;
+		uuid_init(&id);
+		if (uuid_set_nothrow(&id, primary_id) == -1)
+			error("replication: invalid primary uuid");
+
 		// validate id
-		repl_validate_primary(primary_id);
+		repl_validate_primary(&id);
 		self->role = REPL_REPLICA;
 
 		// set new primary id
-		opt_string_set(&state()->repl_primary, primary_id);
+		opt_uuid_set(&state()->repl_primary_, &id);
 
 		info("replication: switch to replica, new primary is '{str}'",
 		     primary_id);
@@ -112,9 +118,9 @@ repl_subscribe(Repl* self, Str* primary_id)
 	// switch to primary
 
 	// remove primary id
-	Str empty;
-	str_init(&empty);
-	opt_string_set(&state()->repl_primary, &empty);
+	Uuid empty;
+	uuid_init(&empty);
+	opt_uuid_set(&state()->repl_primary_, &empty);
 
 	self->role = REPL_PRIMARY;
 	info("replication: switch to primary");
@@ -136,10 +142,10 @@ repl_status(Repl* self, Buf* buf)
 
 	// primary
 	encode_raw(buf, "primary", 7);
-	if (str_empty(&state()->repl_primary.string))
+	if (opt_uuid_empty(&state()->repl_primary_))
 		encode_null(buf);
 	else
-		encode_str(buf, &state()->repl_primary.string);
+		encode_uuid(buf, opt_uuid_of((&state()->repl_primary_)));
 
 	encode_raw(buf, "replicas", 8);
 	replica_mgr_list(&self->replica_mgr, buf, NULL, 0);

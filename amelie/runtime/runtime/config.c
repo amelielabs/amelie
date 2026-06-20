@@ -35,7 +35,7 @@ config_prepare(Config* self)
 {
 	OptsDef defs[] =
 	{
-		{ "uuid",                    OPT_STRING, OPT_C,                   &self->uuid,                    NULL,             0                   },
+		{ "uuid",                    OPT_UUID,   OPT_C,                   &self->uuid,                    NULL,             0                   },
 		{ "timezone",                OPT_STRING, OPT_C,                   &self->timezone,                NULL,             0                   },
 		// log
 		{ "log_enable",              OPT_BOOL,   OPT_C,                   &self->log_enable,              NULL,             true                },

@@ -35,7 +35,7 @@ struct State
 	// persistent
 	Opt  secret;
 	Opt  repl;
-	Opt  repl_primary;
+	Opt  repl_primary_;
 	Opt  replicas;
 	Opts opts;
 };

@@ -61,6 +61,8 @@ opts_define(Opts* self, OptsDef* defs)
 			break;
 		case OPT_JSON:
 			break;
+		case OPT_UUID:
+			break;
 		}
 	}
 }
@@ -84,6 +86,9 @@ opts_copy(Opts* self, Opts* from)
 			break;
 		case OPT_JSON:
 			opt_json_set_str(opt, &opt_from->string);
+			break;
+		case OPT_UUID:
+			opt_uuid_set(opt, &opt_from->uuid);
 			break;
 		}
 		from_it = from_it->next;

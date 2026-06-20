@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: now()
 select now() = current_timestamp;
@@ -105,7 +105,7 @@ error: date_bin(interval, timestamp, timestamp) ⟵ month and year intervals are
 # test: date_bin(timezone)
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta";
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta";
 connect E0 S0 127.0.0.1:3485;
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 
@@ -119,7 +119,7 @@ date_bin
 2020-02-11 15:32:30+02
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "utc";
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "utc";
 connect E0 S0 127.0.0.1:3485;
 # test: interval_trunc(interval year)
 select interval_trunc(null, 'year');
@@ -383,7 +383,7 @@ date_trunc
 2001-02-15 15:00:00+00
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta";
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta";
 connect E0 S0 127.0.0.1:3485;
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
 
@@ -456,7 +456,7 @@ extract
 # test: extract(timestamp hour)
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "utc";
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "utc";
 connect E0 S0 127.0.0.1:3485;
 select `extract`('hour', TIMESTAMP '2001-01-16 20:38:40');
 
@@ -490,7 +490,7 @@ extract
 20
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta";
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta";
 connect E0 S0 127.0.0.1:3485;
 select `extract`('hour', TIMESTAMP '2001-01-16 20:38:40+02');
 
@@ -499,7 +499,7 @@ extract
 20
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "utc";
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "utc";
 connect E0 S0 127.0.0.1:3485;
 # test: extract(timestamp minute)
 select `extract`('min', TIMESTAMP '2001-01-16 20:38:40');

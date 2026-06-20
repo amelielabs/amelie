@@ -117,7 +117,7 @@ db_state(Db* self, Buf* buf)
 
 	// uuid
 	encode_raw(buf, "uuid", 4);
-	encode_str(buf, &config()->uuid.string);
+	encode_uuid(buf, opt_uuid_of(&config()->uuid));
 
 	// frontends
 	encode_raw(buf, "frontends", 9);

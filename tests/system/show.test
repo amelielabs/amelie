@@ -1,6 +1,6 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
 # test: show statement parsing
@@ -85,8 +85,8 @@ select * from show replicas;
 # test: show replica
 show replica abc;
 show replica 'abc';
-show replica '00000000-0000-0000-0000-000000000000';
-select * from show replica '00000000-0000-0000-0000-000000000000';
+show replica '00000000-0000-0000-0000-000000000001';
+select * from show replica '00000000-0000-0000-0000-000000000001';
 
 # test: show state
 show STATE;
