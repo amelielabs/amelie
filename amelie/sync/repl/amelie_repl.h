@@ -15,8 +15,9 @@
 #include "repl/protocol.h"
 #include "repl/streamer.h"
 
-// node
+// receiver
 #include "repl/node.h"
+#include "repl/receiver.h"
 
 // replica
 #include "repl/replica_config.h"

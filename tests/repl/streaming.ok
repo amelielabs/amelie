@@ -1,18 +1,18 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
 connect E0 S0 127.0.0.1:3480;
 # test: create replica
 backup E1 http://127.0.0.1:3480;
 close E1;
-open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
+open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
 connect E1 S1 127.0.0.1:3481;
 switch S1;
 start repl;
-subscribe "00000000-0000-0000-0000-000000000000";
+subscribe "00000000-0000-0000-0000-000000000001";
 switch S0;
-create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481";
+create replica "00000000-0000-0000-0000-000000000002" "127.0.0.1:3481";
 start repl;
 # test: wait for primary connect
-watch show('replica', "00000000-0000-0000-0000-000000000001").connected::bool = true;
+watch show('replica', "00000000-0000-0000-0000-000000000002").connected::bool = true;
 # test: write
 create table test (id int primary key);
 insert into test values ( 1 );
@@ -10015,7 +10015,7 @@ insert into test values ( 9997 );
 insert into test values ( 9998 );
 insert into test values ( 9999 );
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10025,7 +10025,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10001,
@@ -10068,7 +10068,7 @@ count
 ─────
 9999
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10078,7 +10078,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10002,
@@ -10105,7 +10105,7 @@ count
 ─────
 0
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10115,7 +10115,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10003,
@@ -10139,7 +10139,7 @@ count
 ─────
 9999
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10149,7 +10149,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10004,
@@ -10173,7 +10173,7 @@ count
 ─────
 9999
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10183,7 +10183,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10005,
@@ -10200,7 +10200,7 @@ count
 switch S0;
 truncate test;
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10210,7 +10210,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10006,
@@ -10241,16 +10241,15 @@ state
 {
   "version": "1.0.0-rc1",
   "directory": "./_output/E0",
-  "uuid": "00000000-0000-0000-0000-000000000000",
+  "uuid": "00000000-0000-0000-0000-000000000001",
   "frontends": 1,
   "backends": 3,
   "lsn": 10016,
   "tsn": 10016,
   "psn": 3,
-  "checkpoint": 1,
-  "read_only": false
+  "checkpoint": 1
 }
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10260,7 +10259,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10016,
@@ -10283,7 +10282,7 @@ identity_of
 ───────────
 4
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10293,7 +10292,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10018,
@@ -10329,14 +10328,13 @@ state
 {
   "version": "1.0.0-rc1",
   "directory": "./_output/E0",
-  "uuid": "00000000-0000-0000-0000-000000000000",
+  "uuid": "00000000-0000-0000-0000-000000000001",
   "frontends": 1,
   "backends": 3,
   "lsn": 10023,
   "tsn": 10020,
   "psn": 6,
-  "checkpoint": 1,
-  "read_only": false
+  "checkpoint": 1
 }
 select * from top_sub;
 
@@ -10348,7 +10346,7 @@ lsn    lsn_op  cmd      row
 10023  1       publish  2
 10023  2       publish  3
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10358,7 +10356,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10023,
@@ -10397,7 +10395,7 @@ lsn    lsn_op  cmd      row
 switch S0;
 acknowledge top_sub to 10022;
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10407,7 +10405,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10024,
@@ -10444,7 +10442,7 @@ lsn    lsn_op  cmd      row
 switch S0;
 acknowledge top_sub to 10023, 1;
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10454,7 +10452,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10025,
@@ -10520,7 +10518,7 @@ id
 1
 4
 2
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10530,7 +10528,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10031,
@@ -10556,8 +10554,8 @@ select * from abc;
 id
 ──
 1
-4
 2
+4
 disconnect S1;
 close E1;
 disconnect S0;

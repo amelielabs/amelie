@@ -23,9 +23,10 @@ struct Repl
 {
 	ReplRole   role;
 	ReplicaMgr replica_mgr;
+	Receiver   receiver;
 };
 
-void repl_init(Repl*, Db*);
+void repl_init(Repl*, Db*, RecoverIf*, void*);
 void repl_free(Repl*);
 void repl_open(Repl*);
 void repl_start(Repl*);

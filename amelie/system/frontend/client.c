@@ -371,9 +371,22 @@ frontend_client(Frontend* self, Client* client)
 		}
 		case ENDPOINT_REPL:
 		{
-			// primary connection
+			// ensure server is replica
+			if (state_is_primary())
+			{
+				// todo: change code
+				client_400(client, NULL);
+				error("server is not a replica");
+				return;
+			}
+
+			// unlock
 			request_reset(&req, true);
-			return frontend_client_primary(self, client, session);
+
+			// process by receiver (wait for completion)
+			client_detach(client);
+			receiver_send(&share()->repl->receiver, client);
+			return;
 		}
 		default:
 			abort();

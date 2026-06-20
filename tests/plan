@@ -154,12 +154,12 @@ test backup
 test backup_tls
 
 # replication
-#directory repl
-#group repl
-#test replica
-#test repl
-#test ro
-#test streaming
+directory repl
+group repl
+test replica
+test repl
+test ro
+test streaming
 #test streaming_tls
 #test streaming_tls_2
 

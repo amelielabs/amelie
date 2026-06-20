@@ -16,18 +16,12 @@
 #include <amelie_repl.h>
 
 void
-node_init(Node*       self,
-          NodeExecute execute,
-          void*       execute_arg,
-          Recover*    recover,
-          Client*     client)
+node_init(Node* self, Db* db, RecoverIf* iface, void* iface_arg, Client* client)
 {
-	self->client      = client;
-	self->execute     = execute;
-	self->execute_arg = execute_arg;
-	self->recover     = recover;
-	self->id_self     = *opt_uuid_of(&config()->uuid);
-	uuid_init(&self->id_primary);
+	self->coroutine_id = am_self()->id;
+	self->client = client;
+	list_init(&self->link);
+	recover_init(&self->recover, db, iface, iface_arg);
 
 	// set websocket
 	websocket_init(&self->websocket);
@@ -39,18 +33,50 @@ node_init(Node*       self,
 void
 node_free(Node* self)
 {
+	recover_free(&self->recover);
 	websocket_free(&self->websocket);
 }
 
-void
-node_main(Node* self)
+static void
+node_replay(Node* self, NodeMsg* node_msg, Buf* data)
 {
-	info("node connected.");
+	auto recover = &self->recover;
 
-	// do websocket handshake
+	// replay writes
+	auto pos = data->start;
+	auto end = data->position;
+	while (pos < end)
+	{
+		auto record = (Record*)pos;
+		if (opt_int_of(&config()->wal_crc))
+			if (unlikely(! record_validate(record)))
+				error("node: record crc mismatch");
+
+		auto buf = buf_create();
+		buf_emplace(buf, sizeof(RecordMsg) + record->size);
+
+		auto msg = (RecordMsg*)buf->start;
+		msg_init(&msg->msg, MSG_RECORD);
+		msg->msg_buf     = buf;
+		msg->arg         = NULL;
+		msg->instance_id = node_msg->id;
+		msg->record_id   = 0;
+		memcpy(msg->record, record, record->size);
+
+		// execute
+		recover->iface->execute(recover, msg);
+
+		pos += record->size;
+	}
+
+	// wait for commit
+	recover->iface->sync(recover);
+}
+
+static void
+node_process(Node* self)
+{
 	auto websocket = &self->websocket;
-	websocket_accept(websocket);
-
 	auto buf = &self->client->request.content;
 	for (;;)
 	{
@@ -67,12 +93,31 @@ node_main(Node* self)
 		if (! buf_empty(buf))
 		{
 			cancel_pause();
-			self->execute(self, &msg, buf);
+			node_replay(self, &msg, buf);
 			cancel_resume();
 		}
 
 		// NODE_ACK
-		node_send(websocket, NODE_ACK, &self->id_self,
+		node_send(websocket, NODE_ACK, opt_uuid_of(&config()->uuid),
 		          state_lsn(), NULL);
 	}
+}
+
+void
+node_main(Node* self)
+{
+	info("node connected.");
+
+	// do websocket handshake
+	auto websocket = &self->websocket;
+	websocket_accept(websocket);
+
+	// prepare recovery state
+	self->recover.iface->create(&self->recover);
+
+	error_catch (
+		node_process(self);
+	);
+
+	self->recover.iface->sync(&self->recover);
 }

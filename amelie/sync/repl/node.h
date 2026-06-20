@@ -13,19 +13,15 @@
 
 typedef struct Node Node;
 
-typedef void (*NodeExecute)(Node*, NodeMsg*, Buf*);
-
 struct Node
 {
-	Websocket   websocket;
-	Client*     client;
-	NodeExecute execute;
-	void*       execute_arg;
-	Uuid        id_primary;
-	Uuid        id_self;
-	Recover*    recover;
+	uint64_t  coroutine_id;
+	Websocket websocket;
+	Client*   client;
+	Recover   recover;
+	List      link;
 };
 
-void node_init(Node*, NodeExecute, void*, Recover*, Client*);
+void node_init(Node*, Db*, RecoverIf*, void*, Client*);
 void node_free(Node*);
 void node_main(Node*);

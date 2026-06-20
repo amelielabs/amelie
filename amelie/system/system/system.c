@@ -237,12 +237,14 @@ system_create(void)
 
 	// prepare shared context
 	auto share = &self->share;
-	share->executor     = &self->executor;
-	share->commit       = &self->commit;
-	share->cdc          = &self->cdc;
-	share->repl         = &self->repl;
-	share->function_mgr = &self->function_mgr;
-	share->db           = &self->db;
+	share->executor       = &self->executor;
+	share->commit         = &self->commit;
+	share->cdc            = &self->cdc;
+	share->repl           = &self->repl;
+	share->function_mgr   = &self->function_mgr;
+	share->db             = &self->db;
+	share->recover_if     = &recover_if;
+	share->recover_if_arg = self;
 
 	// share shared context globally
 	am_share = share;
@@ -268,7 +270,7 @@ system_create(void)
 	db_init(&self->db, &catalog_if, self, &part_mgr_if, self, &self->cdc);
 
 	// replication
-	repl_init(&self->repl, &self->db);
+	repl_init(&self->repl, &self->db, &recover_if, self);
 	return self;
 }
 

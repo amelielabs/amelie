@@ -57,6 +57,9 @@ replay_mgr_start(ReplayMgr* self, FrontendMgr* mgr)
 		// deploy
 		frontend_add(fe, &replay->msg);
 	}
+
+	// set starting reply id
+	self->replay_id = executor_recover_id(share()->executor);
 }
 
 void

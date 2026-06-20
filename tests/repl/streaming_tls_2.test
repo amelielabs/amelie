@@ -1,39 +1,39 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3, "repl_reconnect_ms": 10;
 connect E0 S0 https://127.0.0.1:3480 ./tls/ca.crt;
 
 # test: create replica 1 (backup using https)
 backup E1 https://127.0.0.1:3480;
 close E1;
 
-open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3;
+open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3;
 connect E1 S1 https://127.0.0.1:3481 ./tls/ca.crt;
 switch S1;
 start repl;
-subscribe "00000000-0000-0000-0000-000000000000";
+subscribe "00000000-0000-0000-0000-000000000001";
 
 # test: create replica 2 (backup using https)
 backup E2 https://127.0.0.1:3480;
 close E2;
 
-open E2 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3482, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3;
+open E2 "uuid": "00000000-0000-0000-0000-000000000003", "listen": [{ "host": "127.0.0.1", "port": 3482, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3;
 connect E2 S2 https://127.0.0.1:3482 ./tls/ca.crt;
 switch S2;
 start repl;
-subscribe "00000000-0000-0000-0000-000000000000";
+subscribe "00000000-0000-0000-0000-000000000001";
 
 switch S0;
 
-create replica "00000000-0000-0000-0000-000000000001" "https://127.0.0.1:3481";
-create replica "00000000-0000-0000-0000-000000000002" "https://127.0.0.1:3482";
+create replica "00000000-0000-0000-0000-000000000002" "https://127.0.0.1:3481";
+create replica "00000000-0000-0000-0000-000000000003" "https://127.0.0.1:3482";
 start repl;
 
 # test: wait for primary connect to replica 1
-watch show('replica', "00000000-0000-0000-0000-000000000001").connected::bool = true;
+watch show('replica', "00000000-0000-0000-0000-000000000002").connected::bool = true;
 
 # test: wait for primary connect to replica 2
-watch show('replica', "00000000-0000-0000-0000-000000000002").connected::bool = true;
+watch show('replica', "00000000-0000-0000-0000-000000000003").connected::bool = true;
 
 # test: write
 create table test (id int primary key);
@@ -10038,10 +10038,10 @@ insert into test values ( 9998 );
 insert into test values ( 9999 );
 
 # test: wait replica 1 sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 
 # test: wait replica 2 sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 
 show repl;
 

@@ -26,16 +26,18 @@ repl_role_of(ReplRole role)
 }
 
 void
-repl_init(Repl* self, Db* db)
+repl_init(Repl* self, Db* db, RecoverIf* iface, void* iface_arg)
 {
 	self->role = REPL_PRIMARY;
 	replica_mgr_init(&self->replica_mgr, db);
+	receiver_init(&self->receiver, db, iface, iface_arg);
 }
 
 void
 repl_free(Repl* self)
 {
 	replica_mgr_free(&self->replica_mgr);
+	receiver_free(&self->receiver);
 }
 
 static void
@@ -58,6 +60,7 @@ repl_open(Repl* self)
 		// validate id
 		repl_validate_primary(primary_id);
 
+		opt_int_set(&state()->recover, RECOVER_REPL);
 		self->role = REPL_REPLICA;
 	}
 }
@@ -73,6 +76,9 @@ repl_start(Repl* self)
 
 	// start replicas
 	replica_mgr_start(&self->replica_mgr);
+
+	// start receiver
+	receiver_start(&self->receiver);
 }
 
 void
@@ -86,6 +92,9 @@ repl_stop(Repl* self)
 
 	// stop replicas
 	replica_mgr_stop(&self->replica_mgr);
+
+	// stop receiver
+	receiver_stop(&self->receiver);
 }
 
 void
@@ -106,6 +115,8 @@ repl_subscribe(Repl* self, Str* primary_id)
 
 		// validate id
 		repl_validate_primary(&id);
+
+		opt_int_set(&state()->recover, RECOVER_REPL);
 		self->role = REPL_REPLICA;
 
 		// set new primary id
@@ -123,7 +134,9 @@ repl_subscribe(Repl* self, Str* primary_id)
 	uuid_init(&empty);
 	opt_uuid_set(&state()->repl_primary, &empty);
 
+	opt_int_set(&state()->recover, RECOVER_OFF);
 	self->role = REPL_PRIMARY;
+
 	info("replication: switch to primary");
 }
 

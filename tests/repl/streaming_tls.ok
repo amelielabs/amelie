@@ -1,18 +1,18 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3, "repl_reconnect_ms": 10;
 connect E0 S0 https://127.0.0.1:3480 ./tls/ca.crt;
 # test: create replica (backup using https)
 backup E1 https://127.0.0.1:3480;
 close E1;
-open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3;
+open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3;
 connect E1 S1 https://127.0.0.1:3481 ./tls/ca.crt;
 switch S1;
 start repl;
-subscribe "00000000-0000-0000-0000-000000000000";
+subscribe "00000000-0000-0000-0000-000000000001";
 switch S0;
-create replica "00000000-0000-0000-0000-000000000001" "https://127.0.0.1:3481?tls_ca=./tls/ca.crt";
+create replica "00000000-0000-0000-0000-000000000002" "https://127.0.0.1:3481?tls_ca=./tls/ca.crt";
 start repl;
 # test: wait for primary connect
-watch show('replica', "00000000-0000-0000-0000-000000000001").connected::bool = true;
+watch show('replica', "00000000-0000-0000-0000-000000000002").connected::bool = true;
 # test: write
 create table test (id int primary key);
 insert into test values ( 1 );
@@ -10015,7 +10015,7 @@ insert into test values ( 9997 );
 insert into test values ( 9998 );
 insert into test values ( 9999 );
 # test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 repl
@@ -10025,7 +10025,7 @@ repl
   "role": "primary",
   "primary": null,
   "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
+    "id": "00000000-0000-0000-0000-000000000002",
     "uri": "https://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10001,
@@ -10051,7 +10051,7 @@ repl
 {
   "active": true,
   "role": "replica",
-  "primary": "00000000-0000-0000-0000-000000000000",
+  "primary": "00000000-0000-0000-0000-000000000001",
   "replicas": []
 }
 select show('state').lsn;

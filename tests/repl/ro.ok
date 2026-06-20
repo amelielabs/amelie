@@ -1,13 +1,8 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
 connect E0 S0 127.0.0.1:3480;
 # test: read-only ddl
 start repl;
-subscribe "00000000-0000-0000-0000-000000000001";
-select show("state").read_only;
-
-read_only
-─────────
-true
+subscribe "00000000-0000-0000-0000-000000000002";
 select show("state").psn;
 
 psn
@@ -32,12 +27,7 @@ stop repl;
 create topic t;
 create subscription t_sub on t;
 start repl;
-subscribe "00000000-0000-0000-0000-000000000001";
-select show("state").read_only;
-
-read_only
-─────────
-true
+subscribe "00000000-0000-0000-0000-000000000002";
 select show("state").lsn;
 
 lsn

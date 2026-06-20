@@ -208,3 +208,12 @@ executor_detach(Executor* self, Batch* batch)
 	spinlock_unlock(&self->lock);
 	return group_min;
 }
+
+hot static inline uint64_t
+executor_recover_id(Executor* self)
+{
+	spinlock_lock(&self->lock);
+	auto id = self->recover.id_next;
+	spinlock_unlock(&self->lock);
+	return id;
+}

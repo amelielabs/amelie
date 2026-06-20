@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
 connect E0 S0 127.0.0.1:3480;
 # test: primary by default
 show repl;
@@ -14,14 +14,14 @@ repl
 # test: backup replica
 backup E1 http://127.0.0.1:3480;
 close E1;
-open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
+open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
 connect E1 S1 127.0.0.1:3481;
 switch S1;
 show uuid;
 
 uuid
 ────
-"00000000-0000-0000-0000-000000000001"
+"00000000-0000-0000-0000-000000000002"
 show repl;
 
 repl
@@ -35,10 +35,10 @@ repl
 # test: start replica
 start repl;
 # test: subscribe (using self id)
-subscribe "00000000-0000-0000-0000-000000000001";
+subscribe "00000000-0000-0000-0000-000000000002";
 error: repl: primary id cannot match this server id
 # test: subscribe
-subscribe "00000000-0000-0000-0000-000000000000";
+subscribe "00000000-0000-0000-0000-000000000001";
 show repl;
 
 repl
@@ -46,27 +46,22 @@ repl
 {
   "active": true,
   "role": "replica",
-  "primary": "00000000-0000-0000-0000-000000000000",
+  "primary": "00000000-0000-0000-0000-000000000001",
   "replicas": []
 }
-select show('state').read_only;
-
-read_only
-─────────
-true
 # test: create replica
 switch S0;
 show replicas;
 
 replicas
 ────────
-create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481";
+create replica "00000000-0000-0000-0000-000000000002" "127.0.0.1:3481";
 show replicas;
 
 replicas
 ────────
 {
-  "id": "00000000-0000-0000-0000-000000000001",
+  "id": "00000000-0000-0000-0000-000000000002",
   "uri": "http://127.0.0.1:3481/",
   "connected": false,
   "lsn": 0,
@@ -75,7 +70,7 @@ replicas
 # test: start primary
 start repl;
 # test: wait for primary connect
-watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = true;
+watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = true;
 # test: write
 create table test (id int primary key);
 insert into test values (1),(2),(3);
@@ -85,7 +80,7 @@ lsn
 ───
 3
 # test: wait replica sync
-watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
+watch show('replica', '00000000-0000-0000-0000-000000000002').lsn = show('state').lsn;
 # test: stop replica
 disconnect S1;
 close E1;
@@ -104,7 +99,7 @@ show replicas;
 replicas
 ────────
 {
-  "id": "00000000-0000-0000-0000-000000000001",
+  "id": "00000000-0000-0000-0000-000000000002",
   "uri": "http://127.0.0.1:3481/",
   "connected": false,
   "lsn": 3,
@@ -112,21 +107,21 @@ replicas
 }
 # test: replica disconnected
 switch S0;
-watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = false;
+watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = false;
 # test: restart replica
-open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
+open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
 connect E1 S1 127.0.0.1:3481;
 # test: wait for primary reconnect
 switch S0;
-watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = true;
+watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = true;
 # test: wait replica sync
-watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
+watch show('replica', '00000000-0000-0000-0000-000000000002').lsn = show('state').lsn;
 show replicas;
 
 replicas
 ────────
 {
-  "id": "00000000-0000-0000-0000-000000000001",
+  "id": "00000000-0000-0000-0000-000000000002",
   "uri": "http://127.0.0.1:3481/",
   "connected": true,
   "lsn": 6,
@@ -135,23 +130,23 @@ replicas
 # test: restart primary
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
 connect E0 S0 127.0.0.1:3480;
 # test: wait for primary reconnect
 switch S0;
-watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = true;
+watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = true;
 # test: write
 insert into test values (7);
 insert into test values (8);
 insert into test values (9);
 # test: wait replica sync
-watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
+watch show('replica', '00000000-0000-0000-0000-000000000002').lsn = show('state').lsn;
 show replicas;
 
 replicas
 ────────
 {
-  "id": "00000000-0000-0000-0000-000000000001",
+  "id": "00000000-0000-0000-0000-000000000002",
   "uri": "http://127.0.0.1:3481/",
   "connected": true,
   "lsn": 9,
@@ -159,11 +154,6 @@ replicas
 }
 # test: ensure replica is read-only
 switch S1;
-select show('state').read_only;
-
-read_only
-─────────
-true
 select show('state').lsn;
 
 lsn
@@ -180,7 +170,7 @@ select show('state').psn;
 
 psn
 ───
-3
+1
 create table test2 (id int primary key);
 error: system is in read-only mode
 select show('state').lsn;
@@ -192,20 +182,20 @@ select show('state').psn;
 
 psn
 ───
-3
+1
 # test: replica read
 select * from test;
 
 id
 ──
 1
+2
 3
-8
 4
 5
 6
-2
 7
+8
 9
 show repl;
 
@@ -214,7 +204,7 @@ repl
 {
   "active": true,
   "role": "replica",
-  "primary": "00000000-0000-0000-0000-000000000000",
+  "primary": "00000000-0000-0000-0000-000000000001",
   "replicas": []
 }
 select show('state').lsn;
@@ -230,7 +220,7 @@ repl
 {
   "active": true,
   "role": "replica",
-  "primary": "00000000-0000-0000-0000-000000000000",
+  "primary": "00000000-0000-0000-0000-000000000001",
   "replicas": []
 }
 unsubscribe;
@@ -246,14 +236,14 @@ repl
 }
 # test: drop replica
 switch S0;
-drop replica "00000000-0000-0000-0000-000000000001";
+drop replica "00000000-0000-0000-0000-000000000002";
 show replicas;
 
 replicas
 ────────
 # test: subscribe to new primary
 switch S0;
-subscribe "00000000-0000-0000-0000-000000000001";
+subscribe "00000000-0000-0000-0000-000000000002";
 show repl;
 
 repl
@@ -261,27 +251,27 @@ repl
 {
   "active": true,
   "role": "replica",
-  "primary": "00000000-0000-0000-0000-000000000001",
+  "primary": "00000000-0000-0000-0000-000000000002",
   "replicas": []
 }
 # test: create replica
 switch S1;
-create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1:3480";
+create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3480";
 # test: wait for primary connect
-watch show('replica', '00000000-0000-0000-0000-000000000000').connected::bool = true;
-watch show('replica', '00000000-0000-0000-0000-000000000000').lsn = show('state').lsn;
+watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = true;
+watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
 # test: write
 insert into test values (10);
 insert into test values (11);
 insert into test values (12);
 # test: wait replica sync
-watch show('replica', '00000000-0000-0000-0000-000000000000').lsn = show('state').lsn;
+watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
 show replicas;
 
 replicas
 ────────
 {
-  "id": "00000000-0000-0000-0000-000000000000",
+  "id": "00000000-0000-0000-0000-000000000001",
   "uri": "http://127.0.0.1:3480/",
   "connected": true,
   "lsn": 12,
@@ -292,16 +282,16 @@ select * from test;
 id
 ──
 1
+2
 3
-8
 4
 5
 6
+7
+8
+9
 10
 11
-2
-7
-9
 12
 disconnect S1;
 close E1;
