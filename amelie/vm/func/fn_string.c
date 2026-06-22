@@ -52,7 +52,7 @@ fn_length(Fn* self)
 			fn_error_arg(self, 0, "unsupported json value");
 		break;
 	case TYPE_VECTOR:
-		rc = arg->vector->size;
+		rc = arg->vector_dim;
 		break;
 	default:
 		fn_unsupported(self, 0);
@@ -80,7 +80,7 @@ fn_octet_length(Fn* self)
 		rc = arg->json_size;
 		break;
 	case TYPE_VECTOR:
-		rc = vector_size(arg->vector);
+		rc = vector_size(arg->vector_dim);
 		break;
 	default:
 		fn_unsupported(self, 0);

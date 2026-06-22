@@ -119,7 +119,7 @@ set_hash_value(Value* value, uint32_t hash)
 		break;
 	case TYPE_VECTOR:
 		data = value->vector;
-		data_size = vector_size(value->vector);
+		data_size = vector_size(value->vector_dim);
 		break;
 	case TYPE_UUID:
 		data = &value->uuid;

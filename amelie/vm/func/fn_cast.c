@@ -419,7 +419,6 @@ fn_vector(Fn* self)
 
 	auto buf = buf_create();
 	errdefer_buf(buf);
-	buf_write_i32(buf, 0);
 
 	unpack_array(&pos);
 	int count = 0;
@@ -443,9 +442,7 @@ fn_vector(Fn* self)
 		buf_write_float(buf, value_flt);
 		count++;
 	}
-	*buf_u32(buf) = count;
-
-	value_set_vector_buf(self->result, buf);
+	value_set_vector_buf(self->result, count, buf);
 }
 
 hot static void

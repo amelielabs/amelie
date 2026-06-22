@@ -11,7 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_vector(Stmt*, Buf*);
+int  parse_vector(Stmt*, Buf*);
 Ast* parse_value(Stmt*, From*, Column*, Value*);
 void parse_value_decode(Local*, Column*, Value*, uint8_t**);
 

@@ -22,11 +22,14 @@ struct Value
 		double         dbl;
 		Str            string;
 		Interval       interval;
-		Vector*        vector;
 		Uuid           uuid;
 		Avg            avg;
 		Store*         store;
 		StoreIterator* cursor_store;
+		struct {
+			int        vector_dim;
+			float*     vector;
+		};
 		struct {
 			Iterator*  cursor;
 			Table*     table;
@@ -166,11 +169,18 @@ value_set_interval(Value* self, Interval* value)
 }
 
 always_inline hot static inline void
-value_set_vector(Value* self, Vector* value, Buf* buf)
+value_set_vector(Value* self, int dim, float* value, Buf* buf)
 {
-	self->type   = TYPE_VECTOR;
-	self->vector = value;
-	self->buf    = buf;
+	self->type       = TYPE_VECTOR;
+	self->vector_dim = dim;
+	self->vector     = value;
+	self->buf        = buf;
+}
+
+always_inline hot static inline void
+value_set_vector_buf(Value* self, int dim, Buf* buf)
+{
+	value_set_vector(self, dim, (float*)buf->start, buf);
 }
 
 always_inline hot static inline void
@@ -192,12 +202,6 @@ value_set_ref(Value* self, int value)
 {
 	self->type    = TYPE_REF;
 	self->integer = value;
-}
-
-always_inline hot static inline void
-value_set_vector_buf(Value* self, Buf* buf)
-{
-	value_set_vector(self, (Vector*)buf->start, buf);
 }
 
 always_inline hot static inline void
@@ -271,7 +275,7 @@ value_copy(Value* self, Value* src)
 		value_set_uuid(self, &src->uuid);
 		break;
 	case TYPE_VECTOR:
-		value_set_vector(self, src->vector, src->buf);
+		value_set_vector(self, src->vector_dim, src->vector, src->buf);
 		if (src->buf)
 			buf_ref(src->buf);
 		break;

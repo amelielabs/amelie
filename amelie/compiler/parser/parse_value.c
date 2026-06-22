@@ -17,17 +17,15 @@
 #include <amelie_vm>
 #include <amelie_parser.h>
 
-hot void
+hot int
 parse_vector(Stmt* self, Buf* buf)
 {
 	// [
 	stmt_expect(self, '[');
-	auto offset = buf_size(buf);
-	buf_write_i32(buf, 0);
 
 	// []
 	if (stmt_if(self, ']'))
-		return;
+		return 0;
 
 	// [float [, ...]]
 	int count = 0;
@@ -64,15 +62,12 @@ parse_vector(Stmt* self, Buf* buf)
 		stmt_error(self, ast, "vector array syntax error");
 	}
 
-	*(uint32_t*)(buf->start + offset) = count;
+	return count;
 }
 
-hot static void
+hot static int
 parse_vector_decode(Buf* buf, uint8_t** pos)
 {
-	auto offset = buf_size(buf);
-	buf_write_i32(buf, 0);
-
 	auto count = 0;
 	unpack_array(pos);
 	while (! unpack_array_end(pos))
@@ -93,8 +88,7 @@ parse_vector_decode(Buf* buf, uint8_t** pos)
 		buf_write_float(buf, (float)value);
 		count++;
 	}
-
-	*(uint32_t*)(buf->start + offset) = count;
+	return count;
 }
 
 hot Ast*
@@ -254,10 +248,10 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		stmt_push(self, ast);
 		auto buf = buf_create();
 		errdefer_buf(buf);
-		parse_vector(self, buf);
-		if ( ((Vector*)buf->start)->size != column->type_size_flat)
+		auto dim = parse_vector(self, buf);
+		if (dim != column->type_size_flat)
 			error("invalid vector dimension");
-		value_set_vector_buf(value, buf);
+		value_set_vector_buf(value, dim, buf);
 		return ast;
 	}
 	case TYPE_UUID:
@@ -428,10 +422,10 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 			break;
 		auto buf = buf_create();
 		errdefer_buf(buf);
-		parse_vector_decode(buf, pos);
-		if ( ((Vector*)buf->start)->size != column->type_size_flat)
+		auto dim = parse_vector_decode(buf, pos);
+		if (dim != column->type_size_flat)
 			error("invalid vector dimension");
-		value_set_vector_buf(value, buf);
+		value_set_vector_buf(value, dim, buf);
 		return;
 	}
 	case TYPE_UUID:

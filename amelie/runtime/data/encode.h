@@ -182,11 +182,11 @@ encode_interval(Buf* self, Interval* value)
 }
 
 hot static inline void
-encode_vector(Buf* self, Vector* value)
+encode_vector(Buf* self, int dim, float* vector)
 {
 	encode_array(self);
-	for (uint32_t i = 0; i < value->size; i++)
-		encode_real(self, value->value[i]);
+	for (auto i = 0; i < dim; i++)
+		encode_real(self, vector[i]);
 	encode_array_end(self);
 }
 

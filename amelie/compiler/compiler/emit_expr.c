@@ -1012,7 +1012,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 
 	// vector
 	case KVECTOR:
-		return op2pin(self, CVECTOR, TYPE_VECTOR, ast->integer);
+		return op3pin(self, CVECTOR, TYPE_VECTOR, ast->vector_dim, ast->vector);
 
 	// uuid
 	case KUUID:
@@ -1320,7 +1320,7 @@ emit_push(Compiler* self, From* from, Ast* ast)
 		op0(self, CPUSH_DATE_CURRENT);
 		return TYPE_DATE;
 	case KVECTOR:
-		op1(self, CPUSH_VECTOR, ast->integer);
+		op2(self, CPUSH_VECTOR, ast->vector_dim, ast->vector);
 		return TYPE_VECTOR;
 	case KUUID:
 	{

@@ -152,7 +152,7 @@ row_create(Heap*    heap,
 		size += value_data_size(value, column, refs);
 
 		if (value->type == TYPE_VECTOR)
-			if (value->vector->size != column->type_size_flat)
+			if (value->vector_dim != column->type_size_flat)
 				error("column '{str}' invalid vector dimension", &column->name);
 	}
 
@@ -190,7 +190,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		if (value)
 		{
 			if (value->type == TYPE_VECTOR)
-				if (value->vector->size != column->type_size_flat)
+				if (value->vector_dim != column->type_size_flat)
 					error("column '{str}' invalid vector dimension", &column->name);
 			size += value_data_size(value, column, NULL);
 			continue;
@@ -220,7 +220,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		}
 		case TYPE_VECTOR:
 		{
-			size += vector_size((Vector*)pos_src);
+			size += vector_size(column->type_size_flat);
 			break;
 		}
 		default:
@@ -290,8 +290,8 @@ row_update(Heap*    heap,
 			break;
 		}
 		case TYPE_VECTOR:
-			memcpy(pos, pos_src, vector_size((Vector*)pos_src));
-			pos += vector_size((Vector*)pos_src);
+			memcpy(pos, pos_src, vector_size(column->type_size_flat));
+			pos += vector_size(column->type_size_flat);
 			break;
 		default:
 			// fixed column types

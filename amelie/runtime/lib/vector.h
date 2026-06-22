@@ -11,23 +11,14 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Vector Vector;
-
-struct Vector
-{
-	uint32_t size;
-	float    value[];
-} packed;
-
-void   vector_init(Vector*, int);
-int    vector_compare(Vector*, Vector*);
-void   vector_add(Vector*, Vector*, Vector*);
-void   vector_sub(Vector*, Vector*, Vector*);
-void   vector_mul(Vector*, Vector*, Vector*);
-double vector_distance(Vector*, Vector*);
+int    vector_compare(int, int, float*, float*);
+void   vector_add(int, float*, float*, float*);
+void   vector_sub(int, float*, float*, float*);
+void   vector_mul(int, float*, float*, float*);
+double vector_distance(int, float*, float*);
 
 static inline int
-vector_size(Vector* self)
+vector_size(int dim)
 {
-	return sizeof(Vector) + self->size * sizeof(float);
+	return dim * sizeof(float);
 }

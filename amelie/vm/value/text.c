@@ -79,9 +79,9 @@ value_print_estimate(Value* self, Timezone* tz, bool pretty, Buf* buf)
 	{
 		buf_reset(buf);
 		buf_write(buf, "[", 1);
-		for (uint32_t i = 0; i < self->vector->size; i++)
-			buf_format(buf, "{g}{s}", self->vector->value[i],
-			           i != self->vector->size - 1 ? ", ": "");
+		for (auto i = 0; i < self->vector_dim; i++)
+			buf_format(buf, "{g}{s}", self->vector[i],
+			           i != self->vector_dim - 1 ? ", ": "");
 		buf_write(buf, "]", 1);
 		return buf_size(buf);
 	}

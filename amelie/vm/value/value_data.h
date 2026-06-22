@@ -40,7 +40,7 @@ value_data_size(Value* self, Column* column, Value* refs)
 		size = self->json_size;
 		break;
 	case TYPE_VECTOR:
-		size = vector_size(self->vector);
+		size = vector_size(self->vector_dim);
 		break;
 	default:
 		abort();
@@ -129,8 +129,8 @@ value_data_encode(Value*    self, Column* column,
 		*pos += self->json_size;
 		break;
 	case TYPE_VECTOR:
-		memcpy(*pos, self->vector, vector_size(self->vector));
-		*pos += vector_size(self->vector);
+		memcpy(*pos, self->vector, vector_size(self->vector_dim));
+		*pos += vector_size(self->vector_dim);
 		break;
 	case TYPE_UUID:
 		*(Uuid*)*pos = self->uuid;
@@ -234,7 +234,7 @@ value_data_decode(Value* self, Column* column, uint8_t* data, int data_size)
 	}
 	case TYPE_VECTOR:
 	{
-		value_set_vector(self, (Vector*)data, NULL);
+		value_set_vector(self, column->type_size_flat, (float*)data, NULL);
 		break;
 	}
 	case TYPE_UUID:

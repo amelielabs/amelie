@@ -413,7 +413,6 @@ vm_run(Vm*       self,
 	Set*      set;
 	Timestamp ts;
 	Interval  iv;
-	Vector*   vector;
 	Buf*      buf;
 	uint8_t*  json;
 	void*     ptr;
@@ -612,10 +611,10 @@ cpush_date_current:
 	op_next;
 
 cpush_vector:
-	// [value]
+	// [dim, vector]
 	a = stack_push(stack);
 	value_init(a);
-	value_set_vector(a, (Vector*)code_data_at(code_data, op->a), NULL);
+	value_set_vector(a, op->a, (float*)code_data_at(code_data, op->b), NULL);
 	op_next;
 
 cpush_uuid:
@@ -692,7 +691,8 @@ cdate_current:
 	op_next;
 
 cvector:
-	value_set_vector(&r[op->a], (Vector*)code_data_at(code_data, op->b), NULL);
+	// [value, dim, offset]
+	value_set_vector(&r[op->a], op->b, (float*)code_data_at(code_data, op->c), NULL);
 	op_next;
 
 cuuid:
@@ -839,7 +839,11 @@ cequjj:
 cequvv:
 	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		value_set_bool(&r[op->a], !vector_compare(r[op->b].vector, r[op->c].vector));
+		value_set_bool(&r[op->a],
+		               !vector_compare(r[op->b].vector_dim,
+		                               r[op->c].vector_dim,
+		                               r[op->b].vector,
+		                               r[op->c].vector));
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -888,7 +892,11 @@ cgtess:
 cgtevv:
 	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		value_set_bool(&r[op->a], vector_compare(r[op->b].vector, r[op->c].vector) >= 0);
+		value_set_bool(&r[op->a],
+		               vector_compare(r[op->b].vector_dim,
+		                              r[op->c].vector_dim,
+		                              r[op->b].vector,
+		                              r[op->c].vector) >= 0);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -937,7 +945,10 @@ cgtss:
 cgtvv:
 	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		value_set_bool(&r[op->a], vector_compare(r[op->b].vector, r[op->c].vector) > 0);
+		value_set_bool(&r[op->a],
+		               vector_compare(r[op->b].vector_dim, r[op->c].vector_dim,
+		                              r[op->b].vector,
+		                              r[op->c].vector) > 0);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -986,7 +997,11 @@ cltess:
 cltevv:
 	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		value_set_bool(&r[op->a], vector_compare(r[op->b].vector, r[op->c].vector) <= 0);
+		value_set_bool(&r[op->a],
+		               vector_compare(r[op->b].vector_dim,
+		                              r[op->c].vector_dim,
+		                              r[op->b].vector,
+		                              r[op->c].vector) <= 0);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -1035,7 +1050,11 @@ cltss:
 cltvv:
 	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		value_set_bool(&r[op->a], vector_compare(r[op->b].vector, r[op->c].vector) < 0);
+		value_set_bool(&r[op->a],
+		               vector_compare(r[op->b].vector_dim,
+		                              r[op->c].vector_dim,
+		                              r[op->b].vector,
+		                              r[op->c].vector) < 0);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -1145,13 +1164,12 @@ caddld:
 caddvv:
 	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
+		if (unlikely(r[op->b].vector_dim != r[op->c].vector_dim))
 			error("vector sizes mismatch");
 		buf = buf_create();
-		vector = (Vector*)buf_emplace(buf, vector_size(r[op->b].vector));
-		vector_init(vector, r[op->b].vector->size);
-		vector_add(vector, r[op->b].vector, r[op->c].vector);
-		value_set_vector_buf(&r[op->a], buf);
+		buf_emplace(buf, vector_size(r[op->b].vector_dim));
+		vector_add(r[op->b].vector_dim, (float*)buf->start, r[op->b].vector, r[op->c].vector);
+		value_set_vector_buf(&r[op->a], r[op->b].vector_dim, buf);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -1240,13 +1258,13 @@ csubdl:
 csubvv:
 	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
+		if (unlikely(r[op->b].vector_dim != r[op->c].vector_dim))
 			error("vector sizes mismatch");
+
 		buf = buf_create();
-		vector = (Vector*)buf_emplace(buf, vector_size(r[op->b].vector));
-		vector_init(vector, r[op->b].vector->size);
-		vector_sub(vector, r[op->b].vector, r[op->c].vector);
-		value_set_vector_buf(&r[op->a], buf);
+		buf_emplace(buf, vector_size(r[op->b].vector_dim));
+		vector_sub(r[op->b].vector_dim, (float*)buf->start, r[op->b].vector, r[op->c].vector);
+		value_set_vector_buf(&r[op->a], r[op->b].vector_dim, buf);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -1292,13 +1310,12 @@ cmulff:
 cmulvv:
 	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
+		if (unlikely(r[op->b].vector_dim != r[op->c].vector_dim))
 			error("vector sizes mismatch");
 		buf = buf_create();
-		vector = (Vector*)buf_emplace(buf, vector_size(r[op->b].vector));
-		vector_init(vector, r[op->b].vector->size);
-		vector_mul(vector, r[op->b].vector, r[op->c].vector);
-		value_set_vector_buf(&r[op->a], buf);
+		buf_emplace(buf, vector_size(r[op->b].vector_dim));
+		vector_mul(r[op->b].vector_dim, (float*)buf->start, r[op->b].vector, r[op->c].vector);
+		value_set_vector_buf(&r[op->a], r[op->b].vector_dim, buf);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -1456,9 +1473,9 @@ cidxvi:
 		a = &r[op->a];
 		b = &r[op->b];
 		c = &r[op->c];
-		if (unlikely(c->integer < 0 || c->integer >= b->vector->size))
+		if (unlikely(c->integer < 0 || c->integer >= b->vector_dim))
 			error("[]: vector index is out of bounds");
-		value_set_double(a, b->vector->value[c->integer]);
+		value_set_double(a, b->vector[c->integer]);
 		value_free(b);
 		value_free(c);
 	}
@@ -1761,7 +1778,7 @@ ctable_readj:
 ctable_readv:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
-		value_set_vector(&r[op->a], (Vector*)ptr, NULL);
+		value_set_vector(&r[op->a], ((Column*)op->c)->type_size_flat, (float*)ptr, NULL);
 	else
 		value_set_null(&r[op->a]);
 	op_next;

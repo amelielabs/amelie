@@ -24,12 +24,16 @@ struct Ast
 		Column* column;
 		Var*    var;
 		struct {
+			int       vector;
+			int       vector_dim;
+		};
+		struct {
 			Set*      set;
 			Function* fn;
 		};
 		struct {
-			Str  string;
-			bool string_escape;
+			Str       string;
+			bool      string_escape;
 		};
 	};
 	int  pos_start;

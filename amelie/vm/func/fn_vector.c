@@ -32,9 +32,9 @@ fn_cos_distance(Fn* self)
 	}
 	fn_expect_arg(self, 0, TYPE_VECTOR);
 	fn_expect_arg(self, 1, TYPE_VECTOR);
-	if (argv[0].vector->size != argv[1].vector->size)
+	if (argv[0].vector_dim != argv[1].vector_dim)
 		fn_error(self, "vector sizes do not match");
-	auto distance = vector_distance(argv[0].vector, argv[1].vector);
+	auto distance = vector_distance(argv[0].vector_dim, argv[0].vector, argv[1].vector);
 	value_set_double(self->result, distance);
 }
 

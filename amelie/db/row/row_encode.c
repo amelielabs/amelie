@@ -80,7 +80,7 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 			encode_interval(buf, (Interval*)pos);
 			break;
 		case TYPE_VECTOR:
-			encode_vector(buf, (Vector*)pos);
+			encode_vector(buf, column->type_size_flat, (float*)pos);
 			break;
 		case TYPE_UUID:
 			encode_uuid(buf, (Uuid*)pos);
