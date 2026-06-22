@@ -14,6 +14,7 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_cdc.h>
 #include <amelie_index.h>
@@ -58,7 +59,7 @@ part_mgr_open(PartMgr* self, List* parts, List* indexes)
 		part_mgr_add(self, part);
 	}
 
-	// create indexes
+	// create indexes and stores
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
@@ -66,6 +67,17 @@ part_mgr_open(PartMgr* self, List* parts, List* indexes)
 		{
 			auto config = list_at(IndexConfig, link);
 			part_index_create(part, config);
+		}
+
+		// create flat stores
+		auto primary = part_primary(part);
+		list_foreach(&index_keys(primary)->columns->list)
+		{
+			auto column = list_at(Column, link);
+			if (! column->type_size_flat)
+				continue;
+			auto flat = flat_allocate(column);
+			flat_mgr_add(&part->flat_mgr, flat);
 		}
 
 		// map hash partition

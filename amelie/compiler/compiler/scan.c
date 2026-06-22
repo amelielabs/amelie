@@ -202,7 +202,7 @@ scan_expr(Scan* self, Target* target)
 			type = rtype(cp, r);
 			// set expression type
 			assert(target->columns->count == 1);
-			column_set_type(columns_first(target->columns), type, type_sizeof(type));
+			column_set_type(columns_first(target->columns), type, type_sizeof(type), 0);
 			target_set_origin(target, cp->origin);
 			break;
 		}

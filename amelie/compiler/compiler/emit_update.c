@@ -137,7 +137,7 @@ emit_update_on_match_returning(Scan* self)
 	{
 		auto column = as->r->column;
 		auto type = emit_push(cp, self->from, as->l);
-		column_set_type(column, type, type_sizeof(type));
+		column_set_type(column, type, type_sizeof(type), 0);
 	}
 
 	// add to the returning set

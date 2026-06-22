@@ -14,6 +14,7 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_cdc.h>
 #include <amelie_index.h>
@@ -30,6 +31,7 @@ part_allocate(PartConfig* config, PartArg* arg)
 	self->config        = part_config_copy(config);
 	self->arg           = arg;
 	track_init(&self->track);
+	flat_mgr_init(&self->flat_mgr);
 	list_init(&self->link_cp);
 	list_init(&self->link);
 	return self;
@@ -47,6 +49,7 @@ part_free(Part* self)
 		index = next;
 	}
 	heap_free(self->heap);
+	flat_mgr_free(&self->flat_mgr);
 	part_config_free(self->config);
 	am_free(self);
 }

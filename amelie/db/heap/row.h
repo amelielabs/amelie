@@ -32,10 +32,21 @@ row_allocate_buf(Buf* buf, int columns, int data_size)
 	return self;
 }
 
-always_inline static inline void
-row_free(Heap* heap, Row* row)
+hot static inline void
+row_free(Heap* heap, FlatMgr* flat_mgr, Row* row)
 {
 	heap_remove(heap, row);
+
+	if (! flat_mgr->list_count)
+		return;
+	list_foreach(&flat_mgr->list)
+	{
+		auto flat = list_at(Flat, link);
+		auto ref = row_at(row, flat->column->order);
+		if (! ref)
+			continue;
+		flat_remove(flat, *(uint32_t*)ref);
+	}
 }
 
 hot static inline Row*

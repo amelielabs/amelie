@@ -43,7 +43,7 @@ parse_function_args(Stmt* self, Columns* columns)
 		// type
 		int  type_size;
 		auto type = parse_type(self->lex, &type_size);
-		column_set_type(arg, type, type_size);
+		column_set_type(arg, type, type_size, 0);
 
 		// ,
 		if (! stmt_if(self, ','))

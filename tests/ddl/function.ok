@@ -405,18 +405,21 @@ functions
     "name": "a",
     "type": 2,
     "type_size": 4,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }, {
     "name": "b",
     "type": 2,
     "type_size": 4,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }, {
     "name": "c",
     "type": 2,
     "type_size": 4,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],
@@ -732,6 +735,7 @@ functions
     "name": "x",
     "type": 2,
     "type_size": 4,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],
@@ -748,6 +752,7 @@ functions
     "name": "array",
     "type": 5,
     "type_size": 0,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],

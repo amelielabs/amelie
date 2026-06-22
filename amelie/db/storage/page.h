@@ -17,11 +17,11 @@ struct Page
 {
 	// 24 bytes (aligned by pointer)
 	uint32_t crc;
+	uint32_t id;
 	uint32_t size;
 	uint32_t size_compressed;
 	uint32_t position;
-	uint32_t id;
-	uint32_t padding;
+	uint32_t used;
 	uint8_t  data[];
 } packed;
 
@@ -32,11 +32,11 @@ page_allocate(size_t size)
 	if (unlikely(self == NULL))
 		error_system();
 	self->crc             = 0;
+	self->id              = 0;
 	self->size            = size;
 	self->size_compressed = 0;
 	self->position        = sizeof(Page);
-	self->id              = 0;
-	self->padding         = 0;
+	self->used            = 0;
 	return self;
 }
 

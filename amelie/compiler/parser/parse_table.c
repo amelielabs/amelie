@@ -272,7 +272,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 			stmt_push(self, ast);
 			type = parse_type(self->lex, &type_size);
 		}
-		column_set_type(column, type, type_size);
+		column_set_type(column, type, type_size, 0);
 
 		// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
 		parse_constraints(self, keys, column);
@@ -529,7 +529,7 @@ parse_table_alter(Stmt* self)
 				stmt_push(self, ast);
 				type = parse_type(self->lex, &type_size);
 			}
-			column_set_type(column, type, type_size);
+			column_set_type(column, type, type_size, 0);
 
 			// [NOT NULL | DEFAULT | AS]
 			parse_constraints(self, NULL, column);

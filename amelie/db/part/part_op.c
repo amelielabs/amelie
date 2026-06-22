@@ -14,6 +14,7 @@
 #include <amelie_row.h>
 #include <amelie_transaction.h>
 #include <amelie_storage.h>
+#include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_cdc.h>
 #include <amelie_index.h>
@@ -40,13 +41,13 @@ log_if_commit(Log* self, LogOp* op)
 	if (op->cmd == LOG_DELETE)
 	{
 		// no snapshots or versions
-		row_free(heap, op->row);
+		row_free(heap, &part->flat_mgr, op->row);
 		return;
 	}
 
 	// cleanup row chain
 	auto tr = container_of(self, Tr, log);
-	row_gc(op->row, heap, op->snapshot, tr->id);
+	row_gc(op->row, heap, &part->flat_mgr, op->snapshot, tr->id);
 
 	// last delete in the chain
 	if (op->row->is_delete && !row_prev(op->row, heap))
@@ -55,7 +56,7 @@ log_if_commit(Log* self, LogOp* op)
 		for (index = index->next; index; index = index->next)
 			index_delete_by(index, op->row);
 
-		row_free(heap, op->row);
+		row_free(heap, &part->flat_mgr, op->row);
 	}
 }
 
@@ -68,7 +69,7 @@ log_if_abort(Log* self, LogOp* op)
 	{
 		auto index = (Index*)op->iface_arg;
 		auto part  = (Part*)index->iface_arg;
-		row_free(part->heap, row);
+		row_free(part->heap, &part->flat_mgr, row);
 	}
 }
 
@@ -166,7 +167,7 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	auto primary = part_primary(self);
 	if (index_upsert(primary, row, it))
 	{
-		row_free(self->heap, row);
+		row_free(self->heap, &self->flat_mgr, row);
 		return true;
 	}
 

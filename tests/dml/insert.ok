@@ -51,12 +51,14 @@ columns
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true]]
 }]

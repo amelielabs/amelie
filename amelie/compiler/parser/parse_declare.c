@@ -64,7 +64,7 @@ parse_declare_columns(Parser* self, Columns* columns)
 		// add argument to the list
 		column = column_allocate();
 		column_set_name(column, &name->string);
-		column_set_type(column, type, type_size);
+		column_set_type(column, type, type_size, 0);
 		columns_add(columns, column);
 
 		// ,

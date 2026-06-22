@@ -264,6 +264,7 @@ functions
     "name": "id",
     "type": 2,
     "type_size": 4,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],
@@ -284,6 +285,7 @@ functions
     "name": "id",
     "type": 2,
     "type_size": 4,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],
@@ -316,6 +318,7 @@ function
     "name": "id",
     "type": 2,
     "type_size": 4,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],

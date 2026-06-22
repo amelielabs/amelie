@@ -170,18 +170,21 @@ columns
   "name": "id",
   "type": 2,
   "type_size": 8,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["default", true]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": []
 }]
@@ -204,18 +207,21 @@ columns
   "name": "id",
   "type": 2,
   "type_size": 8,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["default", true]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": []
 }]
@@ -229,18 +235,21 @@ columns
   "name": "id",
   "type": 2,
   "type_size": 8,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": []
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": []
 }]
@@ -263,18 +272,21 @@ columns
   "name": "id",
   "type": 2,
   "type_size": 8,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": []
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": []
 }]
@@ -297,18 +309,21 @@ columns
   "name": "id",
   "type": 2,
   "type_size": 8,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true], ["as_identity", 1]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": []
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": []
 }]
@@ -956,6 +971,7 @@ functions
     "name": "array",
     "type": 5,
     "type_size": 0,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],
@@ -992,6 +1008,7 @@ functions
     "name": "array",
     "type": 5,
     "type_size": 0,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],
@@ -1048,6 +1065,7 @@ functions
     "name": "array",
     "type": 5,
     "type_size": 0,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],
@@ -1084,6 +1102,7 @@ functions
     "name": "array",
     "type": 5,
     "type_size": 0,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],
@@ -1141,6 +1160,7 @@ functions
     "name": "array",
     "type": 5,
     "type_size": 0,
+    "type_size_flat": 0,
     "dropped": false,
     "constraints": []
   }],

@@ -370,12 +370,14 @@ columns
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true]]
 }, {
   "name": "v",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true]]
 }]
@@ -581,12 +583,14 @@ columns
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": []
 }]
@@ -606,12 +610,14 @@ columns
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
+  "type_size_flat": 0,
   "dropped": false,
   "constraints": []
 }]
