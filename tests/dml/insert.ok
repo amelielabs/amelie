@@ -1067,38 +1067,33 @@ count
 0
 drop table test;
 # test: insert column (vector)
-create table test (id int primary key, vec vector);
+create table test (id int primary key, vec vector(2));
 insert into test values (0, []);
+error: invalid vector dimension
 insert into test values (1, [1.0]);
+error: invalid vector dimension
 insert into test values (2, [1]);
+error: invalid vector dimension
 insert into test values (3, [1.0, 1.1,]);
 error: insert into test values (3, [1.0, 1.1,❰]❱ ⟵ invalid vector value
 insert into test values (4, [1.0,);
 error: insert into test values (4, [1.0,❰)❱ ⟵ invalid vector value
 insert into test values (5, [1.0,]);
 error: insert into test values (5, [1.0,❰]❱ ⟵ invalid vector value
-insert into test values (6, [1.0, 1.1]);
 insert into test values (7, [1.0, 1.1, -2.2, -8]);
+error: invalid vector dimension
 insert into test values (8, vector [1.0, 1.1, -2.2, -8]);
+error: invalid vector dimension
+insert into test values (6, [1.0, 1.1]);
 select * from test;
 
 id  vec
-────────────────────────
-0   []
-1   [1]
-2   [1]
+──────────────
 6   [1, 1.1]
-7   [1, 1.1, -2.2, -8]
-8   [1, 1.1, -2.2, -8]
 select vec::type from test;
 
 type
 ────
-vector
-vector
-vector
-vector
-vector
 vector
 drop table test;
 # test: insert column (uuid)

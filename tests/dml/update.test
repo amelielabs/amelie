@@ -278,9 +278,11 @@ select * from test;
 drop table test;
 
 # test: update column (vector)
-create table test (id int primary key, vec vector);
+create table test (id int primary key, vec vector(2));
 insert into test values (3, [1.0, 1.1]);
 update test set vec = vec + [1.0, 1.1]::vector;
+update test set vec = vec + vector [1.0, 1.1, 2.0];
+update test set vec = vector [1.0, 1.1, 2.0];
 select * from test;
 drop table test;
 

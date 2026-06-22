@@ -432,6 +432,12 @@ columns
 drop table test;
 # test: column vector
 create table test(id int primary key, a vector);
+error: create table test(id int primary key, a vector❰)❱ ⟵ ( expected
+create table test(id int primary key, a vector();
+error: create table test(id int primary key, a vector(❰)❱ ⟵ int expected
+create table test(id int primary key, a vector(1);
+error: create table test(id int primary key, a vector(1)❰;❱ ⟵ ) expected
+create table test(id int primary key, a vector(1));
 select show('table', 'test', true).columns;
 
 columns
@@ -447,7 +453,7 @@ columns
   "name": "a",
   "type": 9,
   "type_size": 0,
-  "type_size_flat": 0,
+  "type_size_flat": 1,
   "dropped": false,
   "constraints": []
 }]

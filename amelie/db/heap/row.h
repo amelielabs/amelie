@@ -37,6 +37,8 @@ row_free(Heap* heap, FlatMgr* flat_mgr, Row* row)
 {
 	heap_remove(heap, row);
 
+	unused(flat_mgr);
+#if 0
 	if (! flat_mgr->list_count)
 		return;
 	list_foreach(&flat_mgr->list)
@@ -47,6 +49,7 @@ row_free(Heap* heap, FlatMgr* flat_mgr, Row* row)
 			continue;
 		flat_remove(flat, *(uint32_t*)ref);
 	}
+#endif
 }
 
 hot static inline Row*

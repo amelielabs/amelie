@@ -41,9 +41,10 @@ parse_function_args(Stmt* self, Columns* columns)
 		columns_add(columns, arg);
 
 		// type
+		int  type_size_flat;
 		int  type_size;
-		auto type = parse_type(self->lex, &type_size);
-		column_set_type(arg, type, type_size, 0);
+		auto type = parse_type(self->lex, &type_size, &type_size_flat);
+		column_set_type(arg, type, type_size, type_size_flat);
 
 		// ,
 		if (! stmt_if(self, ','))
@@ -105,8 +106,9 @@ parse_function_create(Stmt* self, bool or_replace)
 		} else
 		{
 			stmt_push(self, ast);
+			int type_size_flat;
 			int type_size;
-			type = parse_type(self->lex, &type_size);
+			type = parse_type(self->lex, &type_size, &type_size_flat);
 		}
 
 		udf_config_set_type(stmt->config, type);

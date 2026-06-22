@@ -260,19 +260,21 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		if (ast->id != KNAME)
 			stmt_error(self, ast, "unrecognized data type");
 
+		int type_size_flat;
 		int type_size;
 		int type;
 		if (str_is_case(&ast->string, "serial", 6))
 		{
 			type = TYPE_INT;
+			type_size_flat = 0;
 			type_size = sizeof(int64_t);
 			constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
 		} else
 		{
 			stmt_push(self, ast);
-			type = parse_type(self->lex, &type_size);
+			type = parse_type(self->lex, &type_size, &type_size_flat);
 		}
-		column_set_type(column, type, type_size, 0);
+		column_set_type(column, type, type_size, type_size_flat);
 
 		// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
 		parse_constraints(self, keys, column);
@@ -517,19 +519,21 @@ parse_table_alter(Stmt* self)
 			if (ast->id != KNAME)
 				stmt_error(self, ast, "unrecognized data type");
 
+			int type_size_flat;
 			int type_size;
 			int type;
 			if (str_is_case(&ast->string, "serial", 6))
 			{
 				type = TYPE_INT;
+				type_size_flat = 0;
 				type_size = sizeof(int64_t);
 				constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
 			} else
 			{
 				stmt_push(self, ast);
-				type = parse_type(self->lex, &type_size);
+				type = parse_type(self->lex, &type_size, &type_size_flat);
 			}
-			column_set_type(column, type, type_size, 0);
+			column_set_type(column, type, type_size, type_size_flat);
 
 			// [NOT NULL | DEFAULT | AS]
 			parse_constraints(self, NULL, column);

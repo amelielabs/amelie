@@ -97,8 +97,9 @@ parse_declare(Parser* self, Block* block, Ast* name, Ast* name_type)
 	} else
 	{
 		lex_push(lex, name_type);
+		int type_size_flat;
 		int type_size;
-		type = parse_type(lex, &type_size);
+		type = parse_type(lex, &type_size, &type_size_flat);
 	}
 
 	// create variable

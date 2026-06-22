@@ -150,6 +150,10 @@ row_create(Heap*    heap,
 		auto column = list_at(Column, link);
 		auto value  = values + column->order;
 		size += value_data_size(value, column, refs);
+
+		if (value->type == TYPE_VECTOR)
+			if (value->vector->size != column->type_size_flat)
+				error("column '{str}' invalid vector dimension", &column->name);
 	}
 
 	// create and write row
@@ -185,6 +189,9 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		// use value
 		if (value)
 		{
+			if (value->type == TYPE_VECTOR)
+				if (value->vector->size != column->type_size_flat)
+					error("column '{str}' invalid vector dimension", &column->name);
 			size += value_data_size(value, column, NULL);
 			continue;
 		}
@@ -212,8 +219,10 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 			break;
 		}
 		case TYPE_VECTOR:
+		{
 			size += vector_size((Vector*)pos_src);
 			break;
+		}
 		default:
 			abort();
 			break;

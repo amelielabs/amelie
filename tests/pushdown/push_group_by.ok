@@ -12671,7 +12671,7 @@ select count(*) as x, abs(-id + data) from test group by x;
 error: select count(*) as x, abs(-id + data) from test group by ❰x❱ ⟵ aggregate functions cannot be used in GROUP BY expressions
 drop table test;
 # test: select * from table group by vector/interval
-create table test (id int primary key, vec vector, iv interval);
+create table test (id int primary key, vec vector(3), iv interval);
 insert into test values (0, [1,2,3], "1 min 5 sec");
 insert into test values (1, [1,2,3], "1 min 5 sec");
 # test: select * from table group by vector
