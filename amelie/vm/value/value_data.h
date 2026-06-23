@@ -39,9 +39,6 @@ value_data_size(Value* self, Column* column, Value* refs)
 	case TYPE_JSON:
 		size = self->json_size;
 		break;
-	case TYPE_VECTOR:
-		size = vector_size(self->vector_dim);
-		break;
 	default:
 		abort();
 		break;
@@ -65,9 +62,7 @@ value_data_encode(Value*    self, Column* column,
 	// NULL
 	if (self->type == TYPE_NULL)
 	{
-		// NOT NULL constraint
-		if (unlikely(column->constraints.not_null))
-			error("column '{str}' cannot be NULL", &column->name);
+		assert(! column->constraints.not_null);
 		return false;
 	}
 
@@ -129,8 +124,9 @@ value_data_encode(Value*    self, Column* column,
 		*pos += self->json_size;
 		break;
 	case TYPE_VECTOR:
-		memcpy(*pos, self->vector, vector_size(self->vector_dim));
-		*pos += vector_size(self->vector_dim);
+		// reserve id for vector store
+		*(uint32_t*)*pos = 0;
+		*pos += sizeof(uint32_t);
 		break;
 	case TYPE_UUID:
 		*(Uuid*)*pos = self->uuid;

@@ -204,6 +204,7 @@ type_read(Str* name, int* type_size)
 	if (str_is_case(name, "vector", 6))
 	{
 		type = TYPE_VECTOR;
+		*type_size = sizeof(uint32_t);
 	} else
 	if (str_is_case(name, "uuid", 4))
 	{

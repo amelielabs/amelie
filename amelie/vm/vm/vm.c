@@ -418,6 +418,7 @@ vm_run(Vm*       self,
 	void*     ptr;
 	Fn        fn;
 	Column*   column;
+	Flat*     flat;
 	str_init(&string);
 
 	auto stack = &self->stack;
@@ -1778,10 +1779,15 @@ ctable_readj:
 ctable_readv:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
-		value_set_vector(&r[op->a], ((Column*)op->c)->size_flat / sizeof(float),
-		                 (float*)ptr, NULL);
-	else
+	{
+		flat = flat_mgr_find(&r[op->b].part->flat_mgr, (Column*)op->c);
+		value_set_vector(&r[op->a],
+		                 ((Column*)op->c)->size_flat / sizeof(float),
+		                 flat_at(flat, *(uint32_t*)ptr),
+		                 NULL);
+	} else {
 		value_set_null(&r[op->a]);
+	}
 	op_next;
 
 ctable_readu:

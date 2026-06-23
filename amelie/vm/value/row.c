@@ -134,8 +134,26 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 	return row;
 }
 
+hot static inline void
+row_create_vector(Part*   part,
+                  Row*    row,
+                  Column* column,
+                  Value*  value)
+{
+	auto flat = flat_mgr_find(&part->flat_mgr, column);
+	assert(flat);
+
+	auto row_chunk = heap_chunk_of(row);
+	auto row_page  = heap_page_of(row_chunk)->id;
+
+	auto id = flat_add(flat, row_page, row_chunk->offset);
+	memcpy(flat_at(flat, id), value->vector, column->size_flat);
+
+	*(uint32_t*)row_column(row, column) = id;
+}
+
 hot Row*
-row_create(Heap*    heap,
+row_create(Part*    part,
            uint64_t tsn,
            uint32_t snapshot,
            Columns* columns,
@@ -151,22 +169,34 @@ row_create(Heap*    heap,
 		auto value  = values + column->order;
 		size += value_data_size(value, column, refs);
 
+		// NOT NULL constraint
+		if (value->type == TYPE_NULL)
+			if (unlikely(column->constraints.not_null && !column->constraints.as_identity))
+				error("column '{str}' cannot be NULL", &column->name);
+
 		if (value->type == TYPE_VECTOR)
 			if (value->vector_dim != (column->size_flat / sizeof(float)))
 				error("column '{str}' invalid vector dimension", &column->name);
 	}
 
 	// create and write row
-	auto     row = row_allocate(heap, tsn, snapshot, columns->count, size);
+	auto     row = row_allocate(part->heap, tsn, snapshot, columns->count, size);
 	uint8_t* pos = row_data(row, columns->count);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
 		auto offset = pos - (uint8_t*)row;
-		if (value_data_encode(&values[column->order], column, refs, identity, &pos))
-			row_set(row, column->order, offset);
-		else
+
+		if (! value_data_encode(&values[column->order], column, refs, identity, &pos))
+		{
 			row_set_null(row, column->order);
+			continue;
+		}
+
+		row_set(row, column->order, offset);
+
+		if (column->type == TYPE_VECTOR)
+			row_create_vector(part, row, column, &values[column->order]);
 	}
 	return row;
 }
@@ -189,6 +219,11 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		// use value
 		if (value)
 		{
+			// NOT NULL constraint
+			if (value->type == TYPE_NULL)
+				if (unlikely(column->constraints.not_null && !column->constraints.as_identity))
+					error("column '{str}' cannot be NULL", &column->name);
+
 			if (value->type == TYPE_VECTOR)
 				if (value->vector_dim != (column->size_flat / sizeof(float)))
 					error("column '{str}' invalid vector dimension", &column->name);
@@ -218,11 +253,6 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 			size += pos_end - pos_src;
 			break;
 		}
-		case TYPE_VECTOR:
-		{
-			size += column->size_flat;
-			break;
-		}
 		default:
 			abort();
 			break;
@@ -232,7 +262,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 }
 
 hot Row*
-row_update(Heap*    heap,
+row_update(Part*    part,
            uint64_t tsn,
            uint32_t snapshot,
            Columns* columns,
@@ -245,7 +275,7 @@ row_update(Heap*    heap,
 	// [order, value, order, value, ...]
 	//
 	auto     row_size = row_update_prepare(origin, columns, values, count);
-	auto     row      = row_allocate(heap, tsn, snapshot, columns->count, row_size);
+	auto     row      = row_allocate(part->heap, tsn, snapshot, columns->count, row_size);
 	uint8_t* pos      = row_data(row, columns->count);
 
 	auto order = 0;
@@ -263,10 +293,15 @@ row_update(Heap*    heap,
 		auto offset = pos - (uint8_t*)row;
 		if (value)
 		{
-			if (value_data_encode(value, column, NULL, NULL, &pos))
-				row_set(row, column->order, offset);
-			else
+			if (! value_data_encode(value, column, NULL, NULL, &pos))
+			{
 				row_set_null(row, column->order);
+				continue;
+			}
+			row_set(row, column->order, offset);
+
+			if (column->type == TYPE_VECTOR)
+				row_create_vector(part, row, column, value);
 			continue;
 		}
 
@@ -290,11 +325,24 @@ row_update(Heap*    heap,
 			break;
 		}
 		case TYPE_VECTOR:
-			memcpy(pos, pos_src, column->size_flat);
-			pos += column->size_flat;
+		{
+			// create a new vector copy
+			auto flat = flat_mgr_find(&part->flat_mgr, column);
+			assert(flat);
+
+			auto row_chunk = heap_chunk_of(row);
+			auto row_page  = heap_page_of(row_chunk)->id;
+
+			auto id = flat_add(flat, row_page, row_chunk->offset);
+			*(uint32_t*)row_column(row, column) = id;
+
+			auto id_src = *(uint32_t*)pos_src;
+			memcpy(flat_at(flat, id), flat_at(flat, id_src), column->size_flat);
+
+			pos += sizeof(uint32_t);
 			break;
+		}
 		default:
-			// fixed column types
 			memcpy(pos, pos_src, column->size);
 			pos += column->size;
 			break;

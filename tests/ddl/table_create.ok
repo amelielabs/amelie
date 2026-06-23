@@ -452,7 +452,7 @@ columns
 }, {
   "name": "a",
   "type": 9,
-  "size": 0,
+  "size": 4,
   "size_flat": 4,
   "dropped": false,
   "constraints": []

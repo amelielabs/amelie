@@ -37,19 +37,15 @@ row_free(Heap* heap, FlatMgr* flat_mgr, Row* row)
 {
 	heap_remove(heap, row);
 
-	unused(flat_mgr);
-#if 0
 	if (! flat_mgr->list_count)
 		return;
 	list_foreach(&flat_mgr->list)
 	{
 		auto flat = list_at(Flat, link);
 		auto ref = row_at(row, flat->column->order);
-		if (! ref)
-			continue;
-		flat_remove(flat, *(uint32_t*)ref);
+		if (ref)
+			flat_remove(flat, *(uint32_t*)ref);
 	}
-#endif
 }
 
 hot static inline Row*

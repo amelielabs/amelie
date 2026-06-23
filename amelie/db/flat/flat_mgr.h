@@ -44,3 +44,15 @@ flat_mgr_add(FlatMgr* self, Flat* flat)
 	list_append(&self->list, &flat->link);
 	self->list_count++;
 }
+
+static inline Flat*
+flat_mgr_find(FlatMgr* self, Column* column)
+{
+	list_foreach_safe(&self->list)
+	{
+		auto flat = list_at(Flat, link);
+		if (flat->column == column)
+			return flat;
+	}
+	return NULL;
+}

@@ -77,6 +77,9 @@ parse_primary_key(Stmt* self)
 static void
 parse_default(Stmt* self, Column* column, Buf* buf)
 {
+	if (column->type == TYPE_VECTOR)
+		stmt_error(self, NULL, "DEFAULT value for vector columns is not supported");
+
 	buf_reset(buf);
 
 	// DEFAULT value
