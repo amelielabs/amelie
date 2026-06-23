@@ -249,7 +249,7 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		auto buf = buf_create();
 		errdefer_buf(buf);
 		auto dim = parse_vector(self, buf);
-		if (dim != column->type_size_flat)
+		if (dim != (column->size_flat / sizeof(float)))
 			error("invalid vector dimension");
 		value_set_vector_buf(value, dim, buf);
 		return ast;
@@ -423,7 +423,7 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 		auto buf = buf_create();
 		errdefer_buf(buf);
 		auto dim = parse_vector_decode(buf, pos);
-		if (dim != column->type_size_flat)
+		if (dim != (column->size_flat / sizeof(float)))
 			error("invalid vector dimension");
 		value_set_vector_buf(value, dim, buf);
 		return;

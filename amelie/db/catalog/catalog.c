@@ -47,7 +47,7 @@ catalog_init(Catalog*   self,
 	Str name;
 	str_set(&name, "data", 4);
 	column_set_name(column, &name);
-	column_set_type(column, TYPE_JSON, 0, 0);
+	column_set_type(column, TYPE_JSON, 0);
 	columns_add(columns, column);
 
 	// prepare subscription columns
@@ -58,28 +58,28 @@ catalog_init(Catalog*   self,
 	column = column_allocate();
 	str_set(&name, "lsn", 3);
 	column_set_name(column, &name);
-	column_set_type(column, TYPE_INT, sizeof(int64_t), 0);
+	column_set_type(column, TYPE_INT, sizeof(int64_t));
 	columns_add(columns, column);
 
 	// lsn_op
 	column = column_allocate();
 	str_set(&name, "lsn_op", 6);
 	column_set_name(column, &name);
-	column_set_type(column, TYPE_INT, sizeof(int32_t), 0);
+	column_set_type(column, TYPE_INT, sizeof(int32_t));
 	columns_add(columns, column);
 
 	// cmd
 	column = column_allocate();
 	str_set(&name, "cmd", 3);
 	column_set_name(column, &name);
-	column_set_type(column, TYPE_STRING, 0, 0);
+	column_set_type(column, TYPE_STRING, 0);
 	columns_add(columns, column);
 
 	// row
 	column = column_allocate();
 	str_set(&name, "row", 3);
 	column_set_name(column, &name);
-	column_set_type(column, TYPE_JSON, 0, 0);
+	column_set_type(column, TYPE_JSON, 0);
 	columns_add(columns, column);
 }
 

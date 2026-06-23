@@ -47,7 +47,7 @@ flat_at(Flat* self, uint32_t id)
 	auto page_row = id % self->per_page;
 	auto page = storage_at(&self->storage, page_id);
 	return page->data + (sizeof(FlatRow) * self->per_page) +
-	       page_row * self->column->type_size_flat;
+	       page_row * self->column->size_flat;
 }
 
 Flat*    flat_allocate(Column*);

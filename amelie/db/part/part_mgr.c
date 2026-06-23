@@ -74,7 +74,7 @@ part_mgr_open(PartMgr* self, List* parts, List* indexes)
 		list_foreach(&index_keys(primary)->columns->list)
 		{
 			auto column = list_at(Column, link);
-			if (! column->type_size_flat)
+			if (! column->size_flat)
 				continue;
 			auto flat = flat_allocate(column);
 			flat_mgr_add(&part->flat_mgr, flat);

@@ -114,7 +114,7 @@ emit_upsert(Compiler* self, Ast* ast)
 			auto column = as->r->column;
 			// expr
 			auto type = emit_push(self, &insert->from, as->l);
-			column_set_type(column, type, type_sizeof(type), 0);
+			column_set_type(column, type, type_sizeof(type));
 		}
 
 		// add to the returning set

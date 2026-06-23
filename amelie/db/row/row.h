@@ -128,8 +128,8 @@ row_hash(Row* self, Keys* keys)
 		auto column = list_at(Key, link)->column;
 		// fixed or variable type
 		uint8_t* pos = row_at(self, column->order);
-		if (column->type_size > 0) {
-			hash = hash_murmur3_32(pos, column->type_size, hash);
+		if (column->size > 0) {
+			hash = hash_murmur3_32(pos, column->size, hash);
 		} else {
 			Str str;
 			unpack_str(&pos, &str);

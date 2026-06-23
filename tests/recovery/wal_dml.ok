@@ -336,22 +336,22 @@ columns
 [{
   "name": "id",
   "type": 2,
-  "type_size": 4,
-  "type_size_flat": 0,
+  "size": 4,
+  "size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true]]
 }, {
   "name": "old_col",
   "type": 4,
-  "type_size": 0,
-  "type_size_flat": 0,
+  "size": 0,
+  "size_flat": 0,
   "dropped": true,
   "constraints": []
 }, {
   "name": "keep_col",
   "type": 2,
-  "type_size": 4,
-  "type_size_flat": 0,
+  "size": 4,
+  "size_flat": 0,
   "dropped": false,
   "constraints": []
 }]
@@ -370,22 +370,22 @@ columns
 [{
   "name": "id",
   "type": 2,
-  "type_size": 4,
-  "type_size_flat": 0,
+  "size": 4,
+  "size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true]]
 }, {
   "name": "old_col",
   "type": 4,
-  "type_size": 0,
-  "type_size_flat": 0,
+  "size": 0,
+  "size_flat": 0,
   "dropped": true,
   "constraints": []
 }, {
   "name": "keep_col",
   "type": 2,
-  "type_size": 4,
-  "type_size_flat": 0,
+  "size": 4,
+  "size_flat": 0,
   "dropped": false,
   "constraints": []
 }]

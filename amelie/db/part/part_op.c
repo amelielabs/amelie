@@ -303,7 +303,7 @@ part_follow(Part* self, Row* row, Columns* columns)
 	if (! columns->identity)
 		return;
 	int64_t value;
-	if (columns->identity->type_size == 4)
+	if (columns->identity->size == 4)
 		value = *(int32_t*)row_column(row, columns->identity);
 	else
 		value = *(int64_t*)row_column(row, columns->identity);

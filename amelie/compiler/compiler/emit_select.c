@@ -31,7 +31,7 @@ on_match(Scan* self)
 	{
 		auto column = as->r->column;
 		auto type = emit_push(cp, self->from, as->l);
-		column_set_type(column, type, type_sizeof(type), 0);
+		column_set_type(column, type, type_sizeof(type));
 	}
 
 	// push order by key (if any)
@@ -63,7 +63,7 @@ on_match_aggs(Scan* self)
 	{
 		auto group = ast_group_of(node->ast);
 		auto type = emit_push(cp, self->from, group->expr);
-		column_set_type(group->column, type, type_sizeof(type), 0);
+		column_set_type(group->column, type, type_sizeof(type));
 	}
 
 	// CSET_GET
@@ -78,7 +78,7 @@ on_match_aggs(Scan* self)
 
 		// push expr and set type
 		auto rt = emit_push(cp, self->from, agg->expr);
-		column_set_type(agg->column, rt, type_sizeof(rt), 0);
+		column_set_type(agg->column, rt, type_sizeof(rt));
 
 		// lambda
 		auto aggs = (Agg*)code_data_at(cp->code_data, select->aggs);
@@ -158,7 +158,7 @@ on_match_aggs_empty(Compiler* self, AstSelect* select)
 	{
 		auto group = ast_group_of(node->ast);
 		auto type = emit_push(self, from, group->expr);
-		column_set_type(group->column, type, type_sizeof(type), 0);
+		column_set_type(group->column, type, type_sizeof(type));
 		node = node->next;
 	}
 
@@ -171,7 +171,7 @@ on_match_aggs_empty(Compiler* self, AstSelect* select)
 	{
 		auto agg = ast_agg_of(node->ast);
 		op1(self, CPUSH_NULLS, 1);
-		column_set_type(agg->column, TYPE_NULL, -1, 0);
+		column_set_type(agg->column, TYPE_NULL, -1);
 		node = node->next;
 	}
 
@@ -220,7 +220,7 @@ cmd_expr(Compiler* self, Plan* plan, Command* ref)
 	// expr
 	plan->r = emit_expr(self, &select->from, as->l);
 	auto type = rtype(self, plan->r);
-	column_set_type(column, type, type_sizeof(type), 0);
+	column_set_type(column, type, type_sizeof(type));
 }
 
 static void
@@ -237,7 +237,7 @@ cmd_expr_set(Compiler* self, Plan* plan, Command* ref)
 	{
 		auto column = as->r->column;
 		auto type = emit_push(self, &select->from, as->l);
-		column_set_type(column, type, type_sizeof(type), 0);
+		column_set_type(column, type, type_sizeof(type));
 	}
 
 	// add to the returning set

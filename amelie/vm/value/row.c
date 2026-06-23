@@ -27,9 +27,9 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 
 		// int, timestamp, uuid
 		auto column = key->column;
-		if (column->type_size > 0)
+		if (column->size > 0)
 		{
-			size += key->column->type_size;
+			size += key->column->size;
 			continue;
 		}
 
@@ -84,7 +84,7 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 		}
 
 		// int, timestamp, uuid
-		switch (column->type_size) {
+		switch (column->size) {
 		case 4:
 		{
 			if (key->order < count)
@@ -152,7 +152,7 @@ row_create(Heap*    heap,
 		size += value_data_size(value, column, refs);
 
 		if (value->type == TYPE_VECTOR)
-			if (value->vector_dim != column->type_size_flat)
+			if (value->vector_dim != (column->size_flat / sizeof(float)))
 				error("column '{str}' invalid vector dimension", &column->name);
 	}
 
@@ -190,7 +190,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		if (value)
 		{
 			if (value->type == TYPE_VECTOR)
-				if (value->vector_dim != column->type_size_flat)
+				if (value->vector_dim != (column->size_flat / sizeof(float)))
 					error("column '{str}' invalid vector dimension", &column->name);
 			size += value_data_size(value, column, NULL);
 			continue;
@@ -202,9 +202,9 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 			continue;
 
 		// fixed types
-		if (column->type_size > 0)
+		if (column->size > 0)
 		{
-			size += column->type_size;
+			size += column->size;
 			continue;
 		}
 
@@ -220,7 +220,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		}
 		case TYPE_VECTOR:
 		{
-			size += vector_size(column->type_size_flat);
+			size += column->size_flat;
 			break;
 		}
 		default:
@@ -290,13 +290,13 @@ row_update(Heap*    heap,
 			break;
 		}
 		case TYPE_VECTOR:
-			memcpy(pos, pos_src, vector_size(column->type_size_flat));
-			pos += vector_size(column->type_size_flat);
+			memcpy(pos, pos_src, column->size_flat);
+			pos += column->size_flat;
 			break;
 		default:
 			// fixed column types
-			memcpy(pos, pos_src, column->type_size);
-			pos += column->type_size;
+			memcpy(pos, pos_src, column->size);
+			pos += column->size;
 			break;
 		}
 	}

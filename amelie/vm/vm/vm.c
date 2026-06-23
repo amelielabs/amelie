@@ -1778,7 +1778,8 @@ ctable_readj:
 ctable_readv:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
-		value_set_vector(&r[op->a], ((Column*)op->c)->type_size_flat, (float*)ptr, NULL);
+		value_set_vector(&r[op->a], ((Column*)op->c)->size_flat / sizeof(float),
+		                 (float*)ptr, NULL);
 	else
 		value_set_null(&r[op->a]);
 	op_next;

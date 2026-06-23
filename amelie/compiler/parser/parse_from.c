@@ -281,7 +281,7 @@ parse_from_add(Stmt* self, From* from, LockId lock, int perms,
 	{
 		auto column = column_allocate();
 		column_set_name(column, &target->name);
-		column_set_type(column, target->from_var->type, type_sizeof(target->from_var->type), 0);
+		column_set_type(column, target->from_var->type, type_sizeof(target->from_var->type));
 		columns_add(target->columns, column);
 	}
 

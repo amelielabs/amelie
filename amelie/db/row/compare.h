@@ -18,19 +18,19 @@ compare(Keys* self, Row* a, Row* b)
 	{
 		const auto column = list_at(Key, link)->column;
 		int64_t rc;
-		if (column->type_size == 8)
+		if (column->size == 8)
 		{
 			// int64, timestamp
 			rc = compare_int64(*(int64_t*)row_column(a, column),
 			                   *(int64_t*)row_column(b, column));
 		} else
-		if (column->type_size == 4)
+		if (column->size == 4)
 		{
 			// int
 			rc = compare_int32(*(int32_t*)row_column(a, column),
 			                   *(int32_t*)row_column(b, column));
 		} else
-		if (column->type_size == sizeof(Uuid))
+		if (column->size == sizeof(Uuid))
 		{
 			// uuid
 			rc = uuid_compare(row_column(a, column),

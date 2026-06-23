@@ -404,22 +404,22 @@ functions
   "returning": [{
     "name": "a",
     "type": 2,
-    "type_size": 4,
-    "type_size_flat": 0,
+    "size": 4,
+    "size_flat": 0,
     "dropped": false,
     "constraints": []
   }, {
     "name": "b",
     "type": 2,
-    "type_size": 4,
-    "type_size_flat": 0,
+    "size": 4,
+    "size_flat": 0,
     "dropped": false,
     "constraints": []
   }, {
     "name": "c",
     "type": 2,
-    "type_size": 4,
-    "type_size_flat": 0,
+    "size": 4,
+    "size_flat": 0,
     "dropped": false,
     "constraints": []
   }],
@@ -734,8 +734,8 @@ functions
   "args": [{
     "name": "x",
     "type": 2,
-    "type_size": 4,
-    "type_size_flat": 0,
+    "size": 4,
+    "size_flat": 0,
     "dropped": false,
     "constraints": []
   }],
@@ -751,8 +751,8 @@ functions
   "args": [{
     "name": "array",
     "type": 5,
-    "type_size": 0,
-    "type_size_flat": 0,
+    "size": 0,
+    "size_flat": 0,
     "dropped": false,
     "constraints": []
   }],

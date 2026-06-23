@@ -16,7 +16,7 @@ value_data_size(Value* self, Column* column, Value* refs)
 {
 	// identity column
 	if (column->constraints.as_identity)
-		return column->type_size;
+		return column->size;
 
 	// use reference
 	if (self->type == TYPE_REF)
@@ -27,8 +27,8 @@ value_data_size(Value* self, Column* column, Value* refs)
 		return 0;
 
 	// fixed types
-	if (column->type_size > 0)
-		return column->type_size;
+	if (column->size > 0)
+		return column->size;
 
 	// variable types
 	auto size = 0;
@@ -77,7 +77,7 @@ value_data_encode(Value*    self, Column* column,
 	case TYPE_TIMESTAMP:
 	case TYPE_DATE:
 	{
-		switch (column->type_size) {
+		switch (column->size) {
 		case 1:
 			*(int8_t*)*pos = self->integer;
 			*pos += sizeof(int8_t);
@@ -102,7 +102,7 @@ value_data_encode(Value*    self, Column* column,
 	}
 	case TYPE_DOUBLE:
 	{
-		switch (column->type_size) {
+		switch (column->size) {
 		case 4:
 			*(float*)*pos = self->dbl;
 			*pos += sizeof(float);
@@ -173,7 +173,7 @@ value_data_decode(Value* self, Column* column, uint8_t* data, int data_size)
 	}
 	case TYPE_INT:
 	{
-		switch (column->type_size) {
+		switch (column->size) {
 		case 1:
 			value_set_int(self, *(int8_t*)data);
 			break;
@@ -204,7 +204,7 @@ value_data_decode(Value* self, Column* column, uint8_t* data, int data_size)
 	}
 	case TYPE_DOUBLE:
 	{
-		switch (column->type_size) {
+		switch (column->size) {
 		case 4:
 			value_set_double(self, *(float*)data);
 			break;
@@ -234,7 +234,8 @@ value_data_decode(Value* self, Column* column, uint8_t* data, int data_size)
 	}
 	case TYPE_VECTOR:
 	{
-		value_set_vector(self, column->type_size_flat, (float*)data, NULL);
+		value_set_vector(self, column->size_flat / sizeof(float),
+		                 (float*)data, NULL);
 		break;
 	}
 	case TYPE_UUID:

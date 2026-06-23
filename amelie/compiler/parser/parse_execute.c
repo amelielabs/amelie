@@ -82,6 +82,6 @@ parse_execute(Stmt* self)
 
 	auto column = column_allocate();
 	column_set_name(column, &name);
-	column_set_type(column, udf->config->type, -1, 0);
+	column_set_type(column, udf->config->type, -1);
 	columns_add(&stmt->ret.columns, column);
 }

@@ -12,14 +12,14 @@
 //
 
 static inline int
-parse_type(Lex* self, int* type_size, int* type_size_flat)
+parse_type(Lex* self, int* size, int* size_flat)
 {
 	auto ast = lex_next_shadow(self);
 	if (ast->id != KNAME)
 		lex_error(self, ast, "unrecognized data type");
 
-	*type_size_flat = 0;
-	auto type = type_read(&ast->string, type_size);
+	*size_flat = 0;
+	auto type = type_read(&ast->string, size);
 	if (type == -1)
 		lex_error(self, ast, "unrecognized data type");
 
@@ -45,7 +45,9 @@ parse_type(Lex* self, int* type_size, int* type_size_flat)
 	{
 		lex_expect(self, '(');
 		auto ast = lex_expect(self, KINT);
-		*type_size_flat = ast->integer;
+		if (ast->integer < 1)
+			lex_error(self, ast, "invalid vector dimension");
+		*size_flat = ast->integer * sizeof(float);
 		lex_expect(self, ')');
 	}
 	return type;

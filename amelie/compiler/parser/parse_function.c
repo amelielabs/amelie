@@ -41,10 +41,10 @@ parse_function_args(Stmt* self, Columns* columns)
 		columns_add(columns, arg);
 
 		// type
-		int  type_size_flat;
-		int  type_size;
-		auto type = parse_type(self->lex, &type_size, &type_size_flat);
-		column_set_type(arg, type, type_size, type_size_flat);
+		int  size_flat;
+		int  size;
+		auto type = parse_type(self->lex, &size, &size_flat);
+		column_set_type(arg, type, size);
 
 		// ,
 		if (! stmt_if(self, ','))

@@ -22,7 +22,7 @@ flat_allocate(Column* column)
 	auto self = (Flat*)am_malloc(sizeof(Flat));
 	auto page_size = (512ul * 1024);
 	self->per_page =
-		(page_size - sizeof(Page)) / (sizeof(FlatRow) + column->type_size_flat);
+		(page_size - sizeof(Page)) / (sizeof(FlatRow) + column->size_flat);
 	self->column   = column;
 	storage_init(&self->storage, STORAGE_FLAT, page_size);
 	list_init(&self->link);

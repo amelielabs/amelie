@@ -42,7 +42,7 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 			encode_bool(buf, *(int8_t*)pos);
 			break;
 		case TYPE_INT:
-			switch (column->type_size) {
+			switch (column->size) {
 			case sizeof(int8_t):
 				encode_int(buf, *(int8_t*)pos);
 				break;
@@ -61,7 +61,7 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 			}
 			break;
 		case TYPE_DOUBLE:
-			if (column->type_size == sizeof(float))
+			if (column->size == sizeof(float))
 				encode_real(buf, *(float*)pos);
 			else
 				encode_real(buf, *(double*)pos);
@@ -80,7 +80,7 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 			encode_interval(buf, (Interval*)pos);
 			break;
 		case TYPE_VECTOR:
-			encode_vector(buf, column->type_size_flat, (float*)pos);
+			encode_vector(buf, column->size_flat, (float*)pos);
 			break;
 		case TYPE_UUID:
 			encode_uuid(buf, (Uuid*)pos);

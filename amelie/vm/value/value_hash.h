@@ -19,7 +19,7 @@ value_hash(Value* self, Column* column, uint32_t hash)
 	int32_t integer_32;
 	if (self->type == TYPE_INT || self->type == TYPE_TIMESTAMP)
 	{
-		if (column->type_size == 4)
+		if (column->size == 4)
 		{
 			integer_32 = self->integer;
 			data = &integer_32;

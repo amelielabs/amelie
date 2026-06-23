@@ -130,7 +130,7 @@ emit_column(Compiler* self,
 			break;
 		case TYPE_INT:
 		{
-			switch (column->type_size) {
+			switch (column->size) {
 			case 1: op = CTABLE_READI8;
 				break;
 			case 2: op = CTABLE_READI16;
@@ -147,7 +147,7 @@ emit_column(Compiler* self,
 		}
 		case TYPE_DOUBLE:
 		{
-			switch (column->type_size) {
+			switch (column->size) {
 			case 4: op = CTABLE_READF32;
 				break;
 			case 8: op = CTABLE_READF64;

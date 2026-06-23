@@ -19,8 +19,8 @@ struct Column
 	int         order;
 	Str         name;
 	int64_t     type;
-	int64_t     type_size;
-	int64_t     type_size_flat;
+	int64_t     size;
+	int64_t     size_flat;
 	bool        dropped;
 	Constraints constraints;
 	int         refs;
@@ -32,12 +32,12 @@ static inline Column*
 column_allocate(void)
 {
 	Column* self = am_malloc(sizeof(Column));
-	self->order          = 0;
-	self->dropped        = false;
-	self->type           = -1;
-	self->type_size      = 0;
-	self->type_size_flat = 0;
-	self->refs           = 0;
+	self->order     = 0;
+	self->dropped   = false;
+	self->type      = -1;
+	self->size      = 0;
+	self->size_flat = 0;
+	self->refs      = 0;
 	list_init(&self->link);
 	list_init(&self->link_variable);
 	str_init(&self->name);
@@ -61,11 +61,16 @@ column_set_name(Column* self, Str* name)
 }
 
 static inline void
-column_set_type(Column* self, int type, int type_size, int type_size_flat)
+column_set_type(Column* self, int type, int size)
 {
 	self->type = type;
-	self->type_size = type_size;
-	self->type_size_flat = type_size_flat;
+	self->size = size;
+}
+
+static inline void
+column_set_size_flat(Column* self, int size)
+{
+	self->size_flat = size;
 }
 
 static inline void
@@ -79,7 +84,8 @@ column_copy(Column* self)
 {
 	auto copy = column_allocate();
 	column_set_name(copy, &self->name);
-	column_set_type(copy, self->type, self->type_size, self->type_size_flat);
+	column_set_type(copy, self->type, self->size);
+	column_set_size_flat(copy, self->size_flat);
 	column_set_dropped(copy, self->dropped);
 	constraints_copy(&self->constraints, &copy->constraints);
 	return copy;
@@ -95,13 +101,13 @@ column_read(uint8_t** pos)
 	uint8_t* constraints = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "name",           &self->name           },
-		{ DECODE_INT,   "type",           &self->type           },
-		{ DECODE_INT,   "type_size",      &self->type_size      },
-		{ DECODE_INT,   "type_size_flat", &self->type_size_flat },
-		{ DECODE_BOOL,  "dropped",        &self->dropped        },
-		{ DECODE_ARRAY, "constraints",    &constraints          },
-		{ 0,             NULL,             NULL                 },
+		{ DECODE_STR,   "name",        &self->name      },
+		{ DECODE_INT,   "type",        &self->type      },
+		{ DECODE_INT,   "size",        &self->size      },
+		{ DECODE_INT,   "size_flat",   &self->size_flat },
+		{ DECODE_BOOL,  "dropped",     &self->dropped   },
+		{ DECODE_ARRAY, "constraints", &constraints     },
+		{ 0,             NULL,          NULL            },
 	};
 	decode_obj(obj, "columns", pos);
 	constraints_read(&self->constraints, &constraints);
@@ -121,13 +127,13 @@ column_write(Column* self, Buf* buf, int flags)
 	encode_raw(buf, "type", 4);
 	encode_int(buf, self->type);
 
-	// type_size
-	encode_raw(buf, "type_size", 9);
-	encode_int(buf, self->type_size);
+	// size
+	encode_raw(buf, "size", 4);
+	encode_int(buf, self->size);
 
-	// type_size_flat
-	encode_raw(buf, "type_size_flat", 14);
-	encode_int(buf, self->type_size_flat);
+	// size_flat
+	encode_raw(buf, "size_flat", 9);
+	encode_int(buf, self->size_flat);
 
 	// dropped
 	encode_raw(buf, "dropped", 7);

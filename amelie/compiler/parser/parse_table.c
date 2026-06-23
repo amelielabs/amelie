@@ -37,7 +37,7 @@ parse_key(Stmt* self, Keys* keys)
 		     column->type != TYPE_STRING &&
 		     column->type != TYPE_UUID   &&
 		     column->type != TYPE_TIMESTAMP) ||
-		    (column->type == TYPE_INT && column->type_size < 4))
+		    (column->type == TYPE_INT && column->size < 4))
 			stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
 		// [ASC|DESC]
@@ -140,7 +140,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			     column->type != TYPE_STRING &&
 			     column->type != TYPE_UUID   &&
 			     column->type != TYPE_TIMESTAMP) ||
-			    (column->type == TYPE_INT && column->type_size < 4))
+			    (column->type == TYPE_INT && column->size < 4))
 				stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
 			// create key
@@ -176,7 +176,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 				stmt_error(self, identity, "IDENTITY defined twice");
 
 			// ensure the column has type INT64
-			if (column->type != TYPE_INT || column->type_size < 4)
+			if (column->type != TYPE_INT || column->size < 4)
 				stmt_error(self, identity, "identity column must be int or int64");
 
 			constraints_set_as_identity(cons, IDENTITY_SERIAL);
@@ -260,21 +260,22 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		if (ast->id != KNAME)
 			stmt_error(self, ast, "unrecognized data type");
 
-		int type_size_flat;
-		int type_size;
+		int size_flat;
+		int size;
 		int type;
 		if (str_is_case(&ast->string, "serial", 6))
 		{
 			type = TYPE_INT;
-			type_size_flat = 0;
-			type_size = sizeof(int64_t);
+			size_flat = 0;
+			size = sizeof(int64_t);
 			constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
 		} else
 		{
 			stmt_push(self, ast);
-			type = parse_type(self->lex, &type_size, &type_size_flat);
+			type = parse_type(self->lex, &size, &size_flat);
 		}
-		column_set_type(column, type, type_size, type_size_flat);
+		column_set_type(column, type, size);
+		column_set_size_flat(column, size_flat);
 
 		// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
 		parse_constraints(self, keys, column);
@@ -519,21 +520,22 @@ parse_table_alter(Stmt* self)
 			if (ast->id != KNAME)
 				stmt_error(self, ast, "unrecognized data type");
 
-			int type_size_flat;
-			int type_size;
+			int size_flat;
+			int size;
 			int type;
 			if (str_is_case(&ast->string, "serial", 6))
 			{
 				type = TYPE_INT;
-				type_size_flat = 0;
-				type_size = sizeof(int64_t);
+				size_flat = 0;
+				size = sizeof(int64_t);
 				constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
 			} else
 			{
 				stmt_push(self, ast);
-				type = parse_type(self->lex, &type_size, &type_size_flat);
+				type = parse_type(self->lex, &size, &size_flat);
 			}
-			column_set_type(column, type, type_size, type_size_flat);
+			column_set_type(column, type, size);
+			column_set_size_flat(column, size_flat);
 
 			// [NOT NULL | DEFAULT | AS]
 			parse_constraints(self, NULL, column);

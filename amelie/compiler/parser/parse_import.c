@@ -229,7 +229,7 @@ import_execute(Parser* self, Udf* udf, uint8_t* args)
 	{
 		auto column = column_allocate();
 		column_set_name(column, &udf->config->name);
-		column_set_type(column, udf->config->type, -1, 0);
+		column_set_type(column, udf->config->type, -1);
 		columns_add(&execute->ret.columns, column);
 	}
 }

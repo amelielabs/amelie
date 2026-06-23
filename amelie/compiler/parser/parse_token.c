@@ -38,6 +38,6 @@ parse_token_create(Stmt* self)
 	// set returning column
 	auto column = column_allocate();
 	column_set_name(column, &stmt->user->string);
-	column_set_type(column, TYPE_JSON, -1, 0);
+	column_set_type(column, TYPE_JSON, -1);
 	columns_add(&stmt->ret.columns, column);
 }
