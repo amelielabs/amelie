@@ -238,6 +238,8 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 hot void
 part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 {
+	auto primary = part_primary(self);
+
 	// handle delete as update to support clonning
 	auto arg = self->arg;
 	if (arg->snapshots->list_count > 1)
@@ -247,8 +249,8 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 		if (! row)
 			return;
 
-		// todo: copy key
-		auto row_delete = row_copy(self->heap, row);
+		auto columns = index_keys(primary)->columns;
+		auto row_delete = row_copykey(self->heap, row, columns);
 		row_delete->is_delete = true;
 		row_delete->tsn       = tr->id;
 		row_delete->snapshot  = snapshot->id;
@@ -258,7 +260,6 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 	}
 
 	// add log record
-	auto primary = part_primary(self);
 	auto row = iterator_at(it);
 	auto op = log_dml(&tr->log, LOG_DELETE, &log_if, primary, row, NULL, snapshot);
 

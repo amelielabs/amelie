@@ -51,12 +51,4 @@ row_free(Heap* heap, FlatMgr* flat_mgr, Row* row)
 	}
 }
 
-hot static inline Row*
-row_copy(Heap* heap, Row* self)
-{
-	auto size = row_size(self);
-	auto row  = (Row*)heap_add(heap, size);
-	memcpy(row, self, size);
-	heap_follow(heap, row->snapshot);
-	return row;
-}
+Row* row_copykey(Heap*, Row*, Columns*);

@@ -191,6 +191,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/storage/storage_file.c
     ${AMELIE_ROOT}/db/flat/flat.c
     ${AMELIE_ROOT}/db/heap/heap.c
+    ${AMELIE_ROOT}/db/heap/row.c
     ${AMELIE_ROOT}/db/cdc/cdc.c
     ${AMELIE_ROOT}/db/cdc/cdc_export.c
     ${AMELIE_ROOT}/db/index/tree.c
