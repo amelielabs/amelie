@@ -1,6 +1,6 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
 connect E0 S0 127.0.0.1:3485;
-# test: vector store
+# test: create table (with vector columns)
 create table test_flat(id int primary key, v1 vector(2), data int, v2 vector(1));
 insert into test_flat values (0, [0,0], null, [0]);
 insert into test_flat values (1, [1,1], null, [1]);
@@ -36,6 +36,77 @@ id  v1      data  v2
 0   [0, 0]  null  [0]
 1   [1, 1]  null  [1]
 2   [2, 2]  null  [2]
+# test: add column (vector)
+alter table test_flat add column v3 vector(3);
+insert into test_flat values (3, [3,3], null, [3], [1,2,3]);
+select * from test_flat;
+
+id  v1      data  v2   v3
+──────────────────────────────────
+0   [0, 0]  null  [0]  null
+1   [1, 1]  null  [1]  null
+3   [3, 3]  null  [3]  [1, 2, 3]
+2   [2, 2]  null  [2]  null
+# test: checkpoint
+checkpoint;
+select show('state').checkpoint;
+
+checkpoint
+──────────
+7
+# test: restart/recover
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select show('state').checkpoint;
+
+checkpoint
+──────────
+7
+select * from test_flat;
+
+id  v1      data  v2   v3
+──────────────────────────────────
+0   [0, 0]  null  [0]  null
+1   [1, 1]  null  [1]  null
+3   [3, 3]  null  [3]  [1, 2, 3]
+2   [2, 2]  null  [2]  null
+# test: drop column (vector)
+alter table test_flat drop column v1;
+select * from test_flat;
+
+id  data  v2   v3
+──────────────────────────
+0   null  [0]  null
+1   null  [1]  null
+3   null  [3]  [1, 2, 3]
+2   null  [2]  null
+# test: checkpoint
+checkpoint;
+select show('state').checkpoint;
+
+checkpoint
+──────────
+8
+# test: restart/recover
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select show('state').checkpoint;
+
+checkpoint
+──────────
+8
+select * from test_flat;
+
+id  data  v2   v3
+──────────────────────────
+0   null  [0]  null
+1   null  [1]  null
+3   null  [3]  [1, 2, 3]
+2   null  [2]  null
 drop table test_flat;
 disconnect S0;
 close E0;

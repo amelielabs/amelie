@@ -156,7 +156,9 @@ static void
 column_add_if_commit(Log* self, LogOp* op)
 {
 	unused(self);
-	unused(op);
+	auto table = table_of(op->rel);
+	Column* column = op->iface_arg;
+	part_mgr_column_create(&table->part_mgr, column);
 }
 
 static void
@@ -214,7 +216,7 @@ table_column_add(Catalog* self,
 	columns_add(&table->config->columns, column_new);
 	columns_sync(&table->config->columns);
 
-	// update log (old table is still present)
+	// update log
 	log_ddl(&tr->log, &column_add_if, column_new, &table->rel);
 	return true;
 }

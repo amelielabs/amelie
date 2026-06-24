@@ -189,6 +189,16 @@ create table test (id serial primary key);
 alter table test add column data serial;
 drop table test;
 
+# test: add column (vector)
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+alter table test add column v vector(2);
+select show('table', 'test', true).columns;
+select * from test;
+insert into test values (4, [4,4]);
+select * from test;
+drop table test;
+
 # test: drop column parsing
 create table test (id int primary key);
 alter table;

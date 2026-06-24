@@ -155,6 +155,21 @@ part_mgr_index_remove(PartMgr* self, Str* name)
 }
 
 void
+part_mgr_column_create(PartMgr* self, Column* column)
+{
+	if (column->type != TYPE_VECTOR)
+		return;
+
+	// create flat stores
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		auto flat = flat_allocate(column);
+		flat_mgr_add(&part->flat_mgr, flat);
+	}
+}
+
+void
 part_mgr_list(PartMgr* self, Buf* buf, Str* ref, int flags)
 {
 	// show partition id on table

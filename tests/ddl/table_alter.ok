@@ -505,6 +505,46 @@ create table test (id serial primary key);
 alter table test add column data serial;
 error: table 'test': already has identity column
 drop table test;
+# test: add column (vector)
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+alter table test add column v vector(2);
+select show('table', 'test', true).columns;
+
+columns
+───────
+[{
+  "name": "id",
+  "type": 2,
+  "size": 4,
+  "size_flat": 0,
+  "dropped": false,
+  "constraints": [["not_null", true]]
+}, {
+  "name": "v",
+  "type": 9,
+  "size": 4,
+  "size_flat": 8,
+  "dropped": false,
+  "constraints": []
+}]
+select * from test;
+
+id  v
+──────────
+1   null
+2   null
+3   null
+insert into test values (4, [4,4]);
+select * from test;
+
+id  v
+────────────
+1   null
+2   null
+3   null
+4   [4, 4]
+drop table test;
 # test: drop column parsing
 create table test (id int primary key);
 alter table;
