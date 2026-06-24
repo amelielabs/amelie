@@ -52,5 +52,7 @@ flat_at(Flat* self, uint32_t id)
 
 Flat*    flat_allocate(Column*);
 void     flat_free(Flat*);
+size_t   flat_create(Flat*, char*);
+size_t   flat_open(Flat*, char*);
 uint32_t flat_add(Flat*, int, int);
 void     flat_remove(Flat*, uint32_t);

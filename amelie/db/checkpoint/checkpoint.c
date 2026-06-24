@@ -114,7 +114,7 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 }
 
 hot static void
-checkpoint_part(Checkpoint* self, Part* part)
+checkpoint_heap(Checkpoint* self, Part* part)
 {
 	// <base>/checkpoints/<lsn>.incomplete/<partition_id>
 	char path[PATH_MAX];
@@ -129,6 +129,43 @@ checkpoint_part(Checkpoint* self, Part* part)
 	     self->lsn,
 	     part->config->id,
 	     (double)size / 1024 / 1024);
+}
+
+hot static void
+checkpoint_flat(Checkpoint* self, Part* part, Flat* flat)
+{
+	// <base>/checkpoints/<lsn>.incomplete/<partition_id>.<flat_id>
+	char path[PATH_MAX];
+	format(path, sizeof(path),
+	       "{s}/checkpoints/{u64}.incomplete/{u64}.{d}",
+	       state_directory(),
+	       self->lsn,
+	       part->config->id,
+	       flat->column->order);
+
+	auto size = flat_create(flat, path);
+	info(" {u64}/{u64}.{d} ({.2f} MiB)",
+	     self->lsn,
+	     part->config->id,
+	     flat->column->order,
+	     (double)size / 1024 / 1024);
+}
+
+hot static void
+checkpoint_part(Checkpoint* self, Part* part)
+{
+	checkpoint_heap(self, part);
+
+	auto primary = part_primary(part);
+	auto columns = index_keys(primary)->columns;
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		if (! column->size_flat)
+			continue;
+		auto flat = flat_mgr_find(&part->flat_mgr, column);
+		checkpoint_flat(self, part, flat);
+	}
 }
 
 hot static void

@@ -46,6 +46,10 @@ select show('state').lsn;
 lsn
 ───
 4
+create table test_flat(id int primary key, v1 vector(2), data int, v2 vector(1));
+insert into test_flat values (0, [0,0], null, [0]);
+insert into test_flat values (1, [1,1], null, [1]);
+insert into test_flat values (2, [2,2], null, [2]);
 backup E2 http://127.0.0.1:3480;
 close E2;
 disconnect S0;
@@ -65,6 +69,13 @@ id
 1
 2
 3
+select * from test_flat;
+
+id  v1      data  v2
+───────────────────────
+0   [0, 0]  null  [0]
+1   [1, 1]  null  [1]
+2   [2, 2]  null  [2]
 select [1,2,3]::reverse;
 
 col1
@@ -74,7 +85,7 @@ select show('state').lsn;
 
 lsn
 ───
-4
+8
 disconnect S0;
 close E2;
 # test: backup wal #2
@@ -84,13 +95,13 @@ select show('state').lsn;
 
 lsn
 ───
-4
+8
 show wal;
 
 wal
 ───
 {
-  "lsn": 4,
+  "lsn": 8,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
@@ -102,7 +113,7 @@ show wal;
 wal
 ───
 {
-  "lsn": 5,
+  "lsn": 9,
   "lsn_min": 1,
   "files": 2,
   "slots": 0,
@@ -128,6 +139,13 @@ id
 2
 3
 4
+select * from test_flat;
+
+id  v1      data  v2
+───────────────────────
+0   [0, 0]  null  [0]
+1   [1, 1]  null  [1]
+2   [2, 2]  null  [2]
 select [1,2,3]::reverse;
 
 col1
@@ -137,13 +155,13 @@ select show('state').lsn;
 
 lsn
 ───
-5
+9
 show wal;
 
 wal
 ───
 {
-  "lsn": 5,
+  "lsn": 9,
   "lsn_min": 1,
   "files": 2,
   "slots": 0,
@@ -158,7 +176,7 @@ select show('state').lsn;
 
 lsn
 ───
-5
+9
 select show('state').catalog;
 
 catalog
@@ -174,7 +192,7 @@ select show('state').lsn;
 
 lsn
 ───
-5
+9
 select show('state').catalog;
 
 catalog
@@ -196,7 +214,7 @@ select show('state').lsn;
 
 lsn
 ───
-5
+9
 select show('state').catalog;
 
 catalog
@@ -215,6 +233,13 @@ id
 2
 3
 4
+select * from test_flat;
+
+id  v1      data  v2
+───────────────────────
+0   [0, 0]  null  [0]
+1   [1, 1]  null  [1]
+2   [2, 2]  null  [2]
 select [1,2,3]::reverse;
 
 col1
@@ -230,7 +255,7 @@ select show('state').lsn;
 
 lsn
 ───
-6
+10
 select show('state').catalog;
 
 catalog
@@ -252,7 +277,7 @@ select show('state').lsn;
 
 lsn
 ───
-6
+10
 select show('state').catalog;
 
 catalog
@@ -274,6 +299,13 @@ id
 5
 6
 7
+select * from test_flat;
+
+id  v1      data  v2
+───────────────────────
+0   [0, 0]  null  [0]
+1   [1, 1]  null  [1]
+2   [2, 2]  null  [2]
 select [1,2,3]::reverse;
 
 col1

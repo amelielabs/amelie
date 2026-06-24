@@ -36,6 +36,22 @@ flat_free(Flat* self)
 	am_free(self);
 }
 
+size_t
+flat_create(Flat* self, char* path)
+{
+	return storage_create(&self->storage, path, NULL, 0);
+}
+
+size_t
+flat_open(Flat* self, char* path)
+{
+	Buf meta;
+	buf_init(&meta);
+	defer_buf(&meta);
+	auto size_file = storage_open(&self->storage, path, STORAGE_FLAT, &meta);
+	return size_file;
+}
+
 uint32_t
 flat_add(Flat* self, int row_page, int row_offset)
 {

@@ -38,6 +38,11 @@ begin
 end;
 select show('state').lsn;
 
+create table test_flat(id int primary key, v1 vector(2), data int, v2 vector(1));
+insert into test_flat values (0, [0,0], null, [0]);
+insert into test_flat values (1, [1,1], null, [1]);
+insert into test_flat values (2, [2,2], null, [2]);
+
 backup E2 http://127.0.0.1:3480;
 close E2;
 
@@ -49,6 +54,7 @@ open E2;
 connect E2 S0 127.0.0.1:3480;
 show uuid;
 select * from test;
+select * from test_flat;
 select [1,2,3]::reverse;
 select show('state').lsn;
 disconnect S0;
@@ -75,6 +81,7 @@ open E3 "wal_size": 104857600;
 connect E3 S0 127.0.0.1:3480;
 show uuid;
 select * from test;
+select * from test_flat;
 select [1,2,3]::reverse;
 select show('state').lsn;
 show wal;
@@ -107,6 +114,7 @@ select show('state').lsn;
 select show('state').catalog;
 select show('state').catalog_pending;
 select * from test;
+select * from test_flat;
 select [1,2,3]::reverse;
 
 disconnect S0;
@@ -135,6 +143,7 @@ select show('state').lsn;
 select show('state').catalog;
 select show('state').catalog_pending;
 select * from test;
+select * from test_flat;
 select [1,2,3]::reverse;
 
 disconnect S0;

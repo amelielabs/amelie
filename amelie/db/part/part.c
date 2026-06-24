@@ -54,8 +54,8 @@ part_free(Part* self)
 	am_free(self);
 }
 
-void
-part_open(Part* self, uint64_t checkpoint)
+static void
+part_open_heap(Part* self, uint64_t checkpoint)
 {
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{s}/checkpoints/{u64}/{u64}",
@@ -104,6 +104,43 @@ part_open(Part* self, uint64_t checkpoint)
 	info("recover: {u64}/{u64} ({.2f} MiB, {u64} rows)",
 	     checkpoint, self->config->id,
 	     total, count);
+}
+
+static void
+part_open_flat(Part* self, Flat* flat, uint64_t checkpoint)
+{
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/checkpoints/{u64}/{u64}.{d}",
+	       state_directory(), checkpoint,
+	       self->config->id,
+	       flat->column->order);
+
+	// read flat file
+	flat_open(flat, path);
+
+	auto total = (double)storage_size(&flat->storage) / 1024 / 1024;
+	info("recover: {u64}/{u64}.{d} ({.2f} MiB)",
+	     checkpoint, self->config->id, flat->column->order,
+	     total);
+}
+
+void
+part_open(Part* self, uint64_t checkpoint)
+{
+	// heap
+	part_open_heap(self, checkpoint);
+
+	// vector stores (per column)
+	auto primary = part_primary(self);
+	auto columns = index_keys(primary)->columns;
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		if (! column->size_flat)
+			continue;
+		auto flat = flat_mgr_find(&self->flat_mgr, column);
+		part_open_flat(self, flat, checkpoint);
+	}
 }
 
 void

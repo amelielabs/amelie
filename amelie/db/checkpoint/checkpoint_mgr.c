@@ -221,21 +221,6 @@ checkpoint_mgr_unref(CheckpointMgr* self, CheckpointRef *ref)
 	spinlock_unlock(&self->lock);
 }
 
-static inline int64_t
-part_id_of(const char* name)
-{
-	int64_t id = 0;
-	while (*name)
-	{
-		if (unlikely(! isdigit(*name)))
-			return -1;
-		if (unlikely(int64_mul_add_overflow(&id, id, 10, *name - '0')))
-			return -1;
-		name++;
-	}
-	return id;
-}
-
 void
 checkpoint_mgr_list(CheckpointRef* ref, Buf* buf)
 {
@@ -259,23 +244,10 @@ checkpoint_mgr_list(CheckpointRef* ref, Buf* buf)
 			continue;
 		if (! strcmp(entry->d_name, ".."))
 			continue;
-		auto id = part_id_of(entry->d_name);
-		if (id == -1)
-			continue;
 		format(path_relative, sizeof(path_relative),
 		       "checkpoints/{u64}/{s}", ref->id, entry->d_name);
 		encode_basefile(buf, path_relative);
 	}
-
-	// cdc
-	format(path_relative, sizeof(path_relative),
-	       "checkpoints/{u64}/cdc", ref->id);
-	encode_basefile(buf, path_relative);
-
-	// catalog.json
-	format(path_relative, sizeof(path_relative),
-	       "checkpoints/{u64}/catalog.json", ref->id);
-	encode_basefile(buf, path_relative);
 
 	encode_array_end(buf);
 }
