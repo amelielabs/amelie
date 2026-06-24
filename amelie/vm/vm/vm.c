@@ -1780,7 +1780,7 @@ ctable_readv:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 	{
-		flat = flat_mgr_find(&r[op->b].part->flat_mgr, (Column*)op->c);
+		flat = flat_mgr_at(&r[op->b].part->flat_mgr, (Column*)op->c);
 		value_set_vector(&r[op->a],
 		                 ((Column*)op->c)->size_flat / sizeof(float),
 		                 flat_at(flat, *(uint32_t*)ptr),

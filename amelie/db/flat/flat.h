@@ -28,7 +28,6 @@ struct Flat
 	uint32_t per_page;
 	Column*  column;
 	Storage  storage;
-	List     link;
 };
 
 always_inline static inline FlatRow*

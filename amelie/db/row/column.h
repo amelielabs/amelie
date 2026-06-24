@@ -17,6 +17,7 @@ typedef struct Column Column;
 struct Column
 {
 	int         order;
+	int         order_flat;
 	Str         name;
 	int64_t     type;
 	int64_t     size;
@@ -32,12 +33,13 @@ static inline Column*
 column_allocate(void)
 {
 	Column* self = am_malloc(sizeof(Column));
-	self->order     = 0;
-	self->dropped   = false;
-	self->type      = -1;
-	self->size      = 0;
-	self->size_flat = 0;
-	self->refs      = 0;
+	self->order      = 0;
+	self->order_flat = 0;
+	self->dropped    = false;
+	self->type       = -1;
+	self->size       = 0;
+	self->size_flat  = 0;
+	self->refs       = 0;
 	list_init(&self->link);
 	list_init(&self->link_variable);
 	str_init(&self->name);

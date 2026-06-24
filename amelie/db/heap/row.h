@@ -39,10 +39,13 @@ row_free(Heap* heap, FlatMgr* flat_mgr, Row* row)
 
 	if (! flat_mgr->list_count)
 		return;
-	list_foreach(&flat_mgr->list)
+
+	auto pos = (Flat**)flat_mgr->list.start;
+	auto end = (Flat**)flat_mgr->list.position;
+	for (; pos < end; pos++)
 	{
-		auto flat = list_at(Flat, link);
-		auto ref = row_at(row, flat->column->order);
+		auto flat = *pos;
+		auto ref  = row_at(row, flat->column->order);
 		if (ref)
 			flat_remove(flat, *(uint32_t*)ref);
 	}

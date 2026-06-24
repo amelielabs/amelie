@@ -25,7 +25,6 @@ flat_allocate(Column* column)
 		(page_size - sizeof(Page)) / (sizeof(FlatRow) + column->size_flat);
 	self->column   = column;
 	storage_init(&self->storage, STORAGE_FLAT, page_size);
-	list_init(&self->link);
 	return self;
 }
 

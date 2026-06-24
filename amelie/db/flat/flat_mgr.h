@@ -15,44 +15,37 @@ typedef struct FlatMgr FlatMgr;
 
 struct FlatMgr
 {
-	List list;
-	int  list_count;
+	Buf list;
+	int list_count;
 };
+
+always_inline static inline Flat*
+flat_mgr_at(FlatMgr* self, Column* column)
+{
+	return ((Flat**)self->list.start)[column->order_flat];
+}
 
 static inline void
 flat_mgr_init(FlatMgr* self)
 {
 	self->list_count = 0;
-	list_init(&self->list);
+	buf_init(&self->list);
 }
 
 static inline void
 flat_mgr_free(FlatMgr* self)
 {
-	list_foreach_safe(&self->list)
-	{
-		auto flat = list_at(Flat, link);
-		flat_free(flat);
-	}
-	list_init(&self->list);
+	auto pos = (Flat**)self->list.start;
+	auto end = (Flat**)self->list.position;
+	for (; pos < end; pos++)
+		flat_free(*pos);
+	buf_free(&self->list);
 	self->list_count = 0;
 }
 
 static inline void
 flat_mgr_add(FlatMgr* self, Flat* flat)
 {
-	list_append(&self->list, &flat->link);
+	buf_write(&self->list, &flat, sizeof(flat));
 	self->list_count++;
-}
-
-static inline Flat*
-flat_mgr_find(FlatMgr* self, Column* column)
-{
-	list_foreach_safe(&self->list)
-	{
-		auto flat = list_at(Flat, link);
-		if (flat->column == column)
-			return flat;
-	}
-	return NULL;
 }

@@ -163,7 +163,7 @@ checkpoint_part(Checkpoint* self, Part* part)
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
-		auto flat = flat_mgr_find(&part->flat_mgr, column);
+		auto flat = flat_mgr_at(&part->flat_mgr, column);
 		checkpoint_flat(self, part, flat);
 	}
 }

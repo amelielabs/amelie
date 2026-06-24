@@ -17,14 +17,16 @@ struct Columns
 {
 	List    list;
 	int     count;
+	int     count_flat;
 	Column* identity;
 };
 
 static inline void
 columns_init(Columns* self)
 {
-	self->count    = 0;
-	self->identity = NULL;
+	self->count      = 0;
+	self->count_flat = 0;
+	self->identity   = NULL;
 	list_init(&self->list);
 }
 
@@ -46,6 +48,12 @@ columns_add(Columns* self, Column* column)
 	column->order = self->count;
 	self->count++;
 
+	if (column->type == TYPE_VECTOR)
+	{
+		column->order_flat = self->count_flat;
+		self->count_flat++;
+	}
+
 	// save order of the first identity column
 	auto cons = &column->constraints;
 	if (cons->as_identity && !self->identity)
@@ -58,6 +66,11 @@ columns_del(Columns* self, Column* column)
 	list_unlink(&column->link);
 	self->count--;
 	assert(self->count >= 0);
+
+	// note: assuming del only used for abort (last column)
+	if (column->type == TYPE_VECTOR)
+		self->count_flat--;
+
 	if (self->identity == column)
 		self->identity = NULL;
 }
