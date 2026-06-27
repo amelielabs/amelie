@@ -107,6 +107,37 @@ id  data  v2   v3
 1   null  [1]  null
 3   null  [3]  [1, 2, 3]
 2   null  [2]  null
+# test: delete/insert
+delete from test_flat where id = 1;
+select * from test_flat;
+
+id  data  v2   v3
+──────────────────────────
+0   null  [0]  null
+3   null  [3]  [1, 2, 3]
+2   null  [2]  null
+insert into test_flat values (4, null, null, [4,4,4]);
+select * from test_flat;
+
+id  data  v2    v3
+───────────────────────────
+0   null  [0]   null
+3   null  [3]   [1, 2, 3]
+4   null  null  [4, 4, 4]
+2   null  [2]   null
 drop table test_flat;
+# test: delete/insert
+create table test(id int primary key, v1 vector(2));
+insert into test values (0, [0,0]);
+insert into test values (1, [1,1]);
+delete from test where id = 1;
+insert into test values (1, [2,2]);
+select * from test;
+
+id  v1
+────────────
+0   [0, 0]
+1   [2, 2]
+drop table test;
 disconnect S0;
 close E0;

@@ -1783,7 +1783,7 @@ ctable_readv:
 		flat = flat_mgr_at(&r[op->b].part->flat_mgr, (Column*)op->c);
 		value_set_vector(&r[op->a],
 		                 ((Column*)op->c)->size_flat / sizeof(float),
-		                 flat_at(flat, *(uint32_t*)ptr),
+		                 flat_vector_at(flat, *(uint32_t*)ptr),
 		                 NULL);
 	} else {
 		value_set_null(&r[op->a]);

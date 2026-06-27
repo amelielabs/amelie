@@ -145,7 +145,7 @@ row_create_vector(Part*   part,
 	auto row_page  = heap_page_of(row_chunk)->id;
 
 	auto id = flat_add(flat, row_page, row_chunk->offset);
-	memcpy(flat_at(flat, id), value->vector, column->size_flat);
+	memcpy(flat_vector_at(flat, id), value->vector, column->size_flat);
 
 	*(uint32_t*)row_column(row, column) = id;
 }
@@ -333,7 +333,8 @@ row_update(Part*    part,
 			*(uint32_t*)row_column(row, column) = id;
 
 			auto id_src = *(uint32_t*)pos_src;
-			memcpy(flat_at(flat, id), flat_at(flat, id_src), column->size_flat);
+			memcpy(flat_vector_at(flat, id),
+			       flat_vector_at(flat, id_src), column->size_flat);
 
 			pos += sizeof(uint32_t);
 			break;

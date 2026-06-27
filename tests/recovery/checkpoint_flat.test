@@ -55,7 +55,23 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').checkpoint;
 select * from test_flat;
 
+# test: delete/insert
+delete from test_flat where id = 1;
+select * from test_flat;
+
+# will replace 1 in the flat store
+insert into test_flat values (4, null, null, [4,4,4]);
+select * from test_flat;
 drop table test_flat;
+
+# test: delete/insert
+create table test(id int primary key, v1 vector(2));
+insert into test values (0, [0,0]);
+insert into test values (1, [1,1]);
+delete from test where id = 1;
+insert into test values (1, [2,2]);
+select * from test;
+drop table test;
 
 disconnect S0;
 close E0;
