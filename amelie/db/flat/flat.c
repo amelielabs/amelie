@@ -86,9 +86,8 @@ flat_add(Flat* self, int row_page, int row_offset)
 
 		row->row_page   = row_page;
 		row->row_offset = row_offset;
-		row->filter     = 0;
 		row->padding    = 0;
-		flat_set(self, page_id, page_row);
+		flat_set(self, page_id, page_row, true);
 		return id;
 	}
 
@@ -107,14 +106,13 @@ flat_add(Flat* self, int row_page, int row_offset)
 	auto page_row = page->used;
 
 	// mark as used
-	flat_set(self, page->id, page_row);
+	flat_set(self, page->id, page_row, true);
 	page->used++;
 
 	// set row meta
 	auto row = flat_row(self, page->id, page_row);
 	row->row_page   = row_page;
 	row->row_offset = row_offset;
-	row->filter     = 0;
 	row->padding    = 0;
 
 	// set id
@@ -130,7 +128,7 @@ flat_remove(Flat* self, uint32_t id)
 	auto row = flat_row(self, page_id, page_row);
 
 	// mark row as free
-	flat_unset(self, page_id, page_row);
+	flat_set(self, page_id, page_row, false);
 
 	// update free list
 	row->row_next = self->header.list_free;

@@ -27,8 +27,7 @@ union FlatRow
 	{
 		uint64_t row_page:   19;
 		uint64_t row_offset: 19;
-		uint64_t filter:     1;
-		uint64_t padding:    25;
+		uint64_t padding:    26;
 	} packed;
 
 	// free list
@@ -77,7 +76,7 @@ flat_vector_at(Flat* self, uint32_t id)
 }
 
 always_inline static inline void
-flat_setbit(Flat* self, int page_id, int page_row, bool active)
+flat_set(Flat* self, int page_id, int page_row, bool active)
 {
 	auto page = storage_at(&self->storage, page_id);
 	auto bitmap    = (uint64_t*)(page->data);
@@ -91,15 +90,11 @@ flat_setbit(Flat* self, int page_id, int page_row, bool active)
 }
 
 always_inline static inline void
-flat_set(Flat* self, int page_id, int page_row)
+flat_set_at(Flat* self, uint32_t id, bool active)
 {
-	flat_setbit(self, page_id, page_row, true);
-}
-
-always_inline static inline void
-flat_unset(Flat* self, int page_id, int page_row)
-{
-	flat_setbit(self, page_id, page_row, false);
+	auto page_id  = id / self->page_rows;
+	auto page_row = id % self->page_rows;
+	flat_set(self, page_id, page_row, active);
 }
 
 Flat*    flat_allocate(Column*);
