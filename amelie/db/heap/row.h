@@ -51,4 +51,21 @@ row_free(Heap* heap, FlatMgr* flat_mgr, Row* row)
 	}
 }
 
+hot static inline void
+row_filter(FlatMgr* flat_mgr, Row* row, bool filter)
+{
+	if (! flat_mgr->list_count)
+		return;
+
+	auto pos = (Flat**)flat_mgr->list.start;
+	auto end = (Flat**)flat_mgr->list.position;
+	for (; pos < end; pos++)
+	{
+		auto flat = *pos;
+		auto ref  = row_at(row, flat->column->order);
+		if (ref)
+			flat_row_at(flat, *(uint32_t*)ref)->filter = filter;
+	}
+}
+
 Row* row_copykey(Heap*, Row*, Columns*);

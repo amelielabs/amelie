@@ -459,7 +459,7 @@ cinsert(Vm* self, Op* op)
 
 		auto row = row_create(part, self->gtr->id, snapshot->id, columns, value,
 		                      self->refs, &identity);
-		part_insert(part, self->tr, false, snapshot, row);
+		part_insert(part, self->tr, snapshot, row);
 	}
 }
 

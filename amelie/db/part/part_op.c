@@ -71,6 +71,14 @@ log_if_abort(Log* self, LogOp* op)
 		auto part  = (Part*)index->iface_arg;
 		row_free(part->heap, &part->flat_mgr, row);
 	}
+
+	if (op->row_prev)
+	{
+		// unfilter vector columns
+		auto index = (Index*)op->iface_arg;
+		auto part  = (Part*)index->iface_arg;
+		row_filter(&part->flat_mgr, op->row_prev, false);
+	}
 }
 
 hot static void
@@ -113,7 +121,7 @@ part_cdc(Part* self, Tr* tr, Snapshot* snapshot, Index* primary)
 }
 
 hot void
-part_insert(Part*     self, Tr* tr, bool replace,
+part_insert(Part*     self, Tr* tr,
             Snapshot* snapshot,
             Row*      row)
 {
@@ -129,7 +137,7 @@ part_insert(Part*     self, Tr* tr, bool replace,
 	if (op->row_prev)
 	{
 		// check unique constraint
-		if (!replace && row_visible(op->row_prev, self->heap, snapshot))
+		if (row_visible(op->row_prev, self->heap, snapshot))
 			error("index '{str}': unique key constraint violation",
 			      &primary->config->name);
 
@@ -143,15 +151,11 @@ part_insert(Part*     self, Tr* tr, bool replace,
 		// add log record (not persisted)
 		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
 		op->row_prev = index_replace_by(index, row);
-		if (unlikely(op->row_prev && !replace))
+		if (unlikely(op->row_prev))
 			if (row_visible(op->row_prev, self->heap, snapshot))
 				error("index '{str}': unique key constraint violation",
 				      &index->config->name);
 	}
-
-	// sync last identity column value during recover
-	if (replace)
-		part_follow(self, row, index_keys(primary)->columns);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -217,6 +221,9 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	// chain head row
 	row_prev_set(row, op->row_prev);
 
+	// filter vector columns
+	row_filter(&self->flat_mgr, op->row_prev, true);
+
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
 	{
@@ -268,6 +275,9 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);
+
+	// filter vector columns
+	row_filter(&self->flat_mgr, op->row_prev, true);
 
 	// secondary indexes
 	for (auto index = primary->next; index; index = index->next)

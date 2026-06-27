@@ -22,12 +22,13 @@ struct FlatHeader
 
 union FlatRow
 {
-	// row reference (40 bits)
+	// row reference (64 bit)
 	struct
 	{
-		uint64_t row_page: 19;
+		uint64_t row_page:   19;
 		uint64_t row_offset: 19;
-		uint64_t padding: 2;
+		uint64_t filter:     1;
+		uint64_t padding:    25;
 	} packed;
 
 	// free list
