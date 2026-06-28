@@ -43,22 +43,22 @@ fn_int(Fn* self)
 
 	int64_t value = 0;
 	switch (arg->type) {
-	case TYPE_DOUBLE:
-		value = arg->dbl;
-		break;
+	case TYPE_NULL:
+		value_set_null(self->result);
+		return;
 	case TYPE_BOOL:
 	case TYPE_INT:
 	case TYPE_TIMESTAMP:
 	case TYPE_DATE:
 		value = arg->integer;
 		break;
+	case TYPE_DOUBLE:
+		value = arg->dbl;
+		break;
 	case TYPE_STRING:
 		if (str_toint(&arg->string, &value) == -1)
 			fn_error_arg(self, 0, "failed to cast string");
 		break;
-	case TYPE_NULL:
-		value_set_null(self->result);
-		return;
 	default:
 		fn_unsupported(self, 0);
 		break;
@@ -79,12 +79,15 @@ fn_bool(Fn* self)
 
 	bool value = false;
 	switch (arg->type) {
-	case TYPE_DOUBLE:
-		value = arg->dbl > 0.0;
-		break;
+	case TYPE_NULL:
+		value_set_null(self->result);
+		return;
 	case TYPE_BOOL:
 	case TYPE_INT:
 		value = arg->integer > 0;
+		break;
+	case TYPE_DOUBLE:
+		value = arg->dbl > 0.0;
 		break;
 	case TYPE_INTERVAL:
 		value = (arg->interval.us + arg->interval.d + arg->interval.m) > 0;
@@ -98,9 +101,6 @@ fn_bool(Fn* self)
 		else
 			fn_error_arg(self, 0, "failed to cast string to bool");
 		break;
-	case TYPE_NULL:
-		value_set_null(self->result);
-		return;
 	default:
 		fn_unsupported(self, 0);
 		break;
@@ -121,18 +121,18 @@ fn_double(Fn* self)
 
 	double value = 0;
 	switch (arg->type) {
-	case TYPE_DOUBLE:
-		value = arg->dbl;
-		break;
+	case TYPE_NULL:
+		value_set_null(self->result);
+		return;
 	case TYPE_BOOL:
 	case TYPE_INT:
 	case TYPE_TIMESTAMP:
 	case TYPE_DATE:
 		value = arg->integer;
 		break;
-	case TYPE_NULL:
-		value_set_null(self->result);
-		return;
+	case TYPE_DOUBLE:
+		value = arg->dbl;
+		break;
 	default:
 		fn_unsupported(self, 0);
 		break;
@@ -152,9 +152,6 @@ fn_string(Fn* self)
 	}
 	auto data = buf_create();
 	switch (arg->type) {
-	case TYPE_STRING:
-		buf_format(data, "{str}", &arg->string);
-		break;
 	case TYPE_DATE:
 	{
 		buf_reserve(data, 512);
@@ -162,17 +159,17 @@ fn_string(Fn* self)
 		buf_advance(data, size);
 		break;
 	}
-	case TYPE_INTERVAL:
-	{
-		buf_reserve(data, 512);
-		int size = interval_get(&arg->interval, (char*)data->position, 512);
-		buf_advance(data, size);
-		break;
-	}
 	case TYPE_TIMESTAMP:
 	{
 		buf_reserve(data, 128);
 		int size = timestamp_get(arg->integer, self->local->timezone, (char*)data->position, 128);
+		buf_advance(data, size);
+		break;
+	}
+	case TYPE_INTERVAL:
+	{
+		buf_reserve(data, 512);
+		int size = interval_get(&arg->interval, (char*)data->position, 512);
 		buf_advance(data, size);
 		break;
 	}
@@ -184,6 +181,9 @@ fn_string(Fn* self)
 		buf_advance(data, size);
 		break;
 	}
+	case TYPE_STRING:
+		buf_format(data, "{str}", &arg->string);
+		break;
 	default:
 		// json string without quotes
 		if (arg->type == TYPE_JSON && data_is_str(arg->json))
@@ -292,6 +292,34 @@ fn_timestamp(Fn* self)
 	// timestamp(int)
 	// timestamp(date)
 	switch (arg->type) {
+	case TYPE_NULL:
+	{
+		value_set_null(self->result);
+		break;
+	}
+	case TYPE_INT:
+	{
+		if (self->argc == 2)
+			fn_error_arg(self, 1, "unexpected argument");
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_set_unixtime(&ts, arg->integer);
+		value_set_timestamp(self->result, timestamp_get_unixtime(&ts, NULL));
+		break;
+	}
+	case TYPE_DATE:
+	{
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_set_date(&ts, arg->integer);
+		value_set_timestamp(self->result, timestamp_get_unixtime(&ts, NULL));
+		break;
+	}
+	case TYPE_TIMESTAMP:
+	{
+		value_set_timestamp(self->result, arg->integer);
+		break;
+	}
 	case TYPE_STRING:
 	{
 		Timezone* timezone = self->local->timezone;
@@ -315,34 +343,6 @@ fn_timestamp(Fn* self)
 		value_set_timestamp(self->result, time);
 		break;
 	}
-	case TYPE_INT:
-	{
-		if (self->argc == 2)
-			fn_error_arg(self, 1, "unexpected argument");
-		Timestamp ts;
-		timestamp_init(&ts);
-		timestamp_set_unixtime(&ts, arg->integer);
-		value_set_timestamp(self->result, timestamp_get_unixtime(&ts, NULL));
-		break;
-	}
-	case TYPE_TIMESTAMP:
-	{
-		value_set_timestamp(self->result, arg->integer);
-		break;
-	}
-	case TYPE_DATE:
-	{
-		Timestamp ts;
-		timestamp_init(&ts);
-		timestamp_set_date(&ts, arg->integer);
-		value_set_timestamp(self->result, timestamp_get_unixtime(&ts, NULL));
-		break;
-	}
-	case TYPE_NULL:
-	{
-		value_set_null(self->result);
-		break;
-	}
 	default:
 		fn_unsupported(self, 0);
 	}
@@ -359,13 +359,18 @@ fn_date(Fn* self)
 		arg = self->result;
 	}
 
-	// date(string)
-	// date(timestamp)
 	// date(int)
+	// date(timestamp)
+	// date(string)
 	switch (arg->type) {
-	case TYPE_STRING:
+	case TYPE_NULL:
 	{
-		auto julian = date_set(&arg->string);
+		value_set_null(self->result);
+		break;
+	}
+	case TYPE_INT:
+	{
+		auto julian = date_set_julian(arg->integer);
 		value_set_date(self->result, julian);
 		break;
 	}
@@ -379,15 +384,10 @@ fn_date(Fn* self)
 		value_set_date(self->result, timestamp_date(arg->integer));
 		break;
 	}
-	case TYPE_INT:
+	case TYPE_STRING:
 	{
-		auto julian = date_set_julian(arg->integer);
+		auto julian = date_set(&arg->string);
 		value_set_date(self->result, julian);
-		break;
-	}
-	case TYPE_NULL:
-	{
-		value_set_null(self->result);
 		break;
 	}
 	default:

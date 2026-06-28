@@ -162,33 +162,18 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 			break;
 		return ast;
 	}
-	case TYPE_STRING:
+	case TYPE_DATE:
 	{
+		// [DATE] string
+		if (ast->id == KDATE)
+			ast = stmt_next(self);
 		if (likely(ast->id != KSTRING))
 			break;
-		value_set_string(value, &ast->string, NULL);
-		return ast;
-	}
-	case TYPE_JSON:
-	{
-		// parse and encode json value
-		auto lex = self->lex;
-		lex_push(lex, ast);
-		auto pos = lex->pos;
-		while (lex->backlog)
-		{
-			pos = lex->start + lex->backlog->pos_start;
-			lex->backlog = lex->backlog->prev;
-		}
-		auto json = &self->parser->json;
-		json_reset(json);
-		Str in;
-		str_set(&in, pos, lex->end - pos);
-		auto buf = buf_create();
-		errdefer_buf(buf);
-		json_parse(json, &in, buf);
-		lex->pos = json->pos;
-		value_set_json_buf(value, buf);
+
+		int julian;
+		if (unlikely(error_catch( julian = date_set(&ast->string) )))
+			stmt_error(self, ast, "invalid date value");
+		value_set_date(value, julian);
 		return ast;
 	}
 	case TYPE_TIMESTAMP:
@@ -226,34 +211,6 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		value_set_interval(value, &iv);
 		return ast;
 	}
-	case TYPE_DATE:
-	{
-		// [DATE] string
-		if (ast->id == KDATE)
-			ast = stmt_next(self);
-		if (likely(ast->id != KSTRING))
-			break;
-
-		int julian;
-		if (unlikely(error_catch( julian = date_set(&ast->string) )))
-			stmt_error(self, ast, "invalid date value");
-		value_set_date(value, julian);
-		return ast;
-	}
-	case TYPE_VECTOR:
-	{
-		// [VECTOR] [array]
-		if (ast->id == KVECTOR)
-			ast = stmt_next(self);
-		stmt_push(self, ast);
-		auto buf = buf_create();
-		errdefer_buf(buf);
-		auto dim = parse_vector(self, buf);
-		if (dim != (column->size_flat / sizeof(float)))
-			error("invalid vector dimension");
-		value_set_vector_buf(value, dim, buf);
-		return ast;
-	}
 	case TYPE_UUID:
 	{
 		// [UUID] string
@@ -266,6 +223,49 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		if (uuid_set_nothrow(&uuid, &ast->string) == -1)
 			stmt_error(self, ast, "invalid uuid value");
 		value_set_uuid(value, &uuid);
+		return ast;
+	}
+	case TYPE_STRING:
+	{
+		if (likely(ast->id != KSTRING))
+			break;
+		value_set_string(value, &ast->string, NULL);
+		return ast;
+	}
+	case TYPE_JSON:
+	{
+		// parse and encode json value
+		auto lex = self->lex;
+		lex_push(lex, ast);
+		auto pos = lex->pos;
+		while (lex->backlog)
+		{
+			pos = lex->start + lex->backlog->pos_start;
+			lex->backlog = lex->backlog->prev;
+		}
+		auto json = &self->parser->json;
+		json_reset(json);
+		Str in;
+		str_set(&in, pos, lex->end - pos);
+		auto buf = buf_create();
+		errdefer_buf(buf);
+		json_parse(json, &in, buf);
+		lex->pos = json->pos;
+		value_set_json_buf(value, buf);
+		return ast;
+	}
+	case TYPE_VECTOR:
+	{
+		// [VECTOR] [array]
+		if (ast->id == KVECTOR)
+			ast = stmt_next(self);
+		stmt_push(self, ast);
+		auto buf = buf_create();
+		errdefer_buf(buf);
+		auto dim = parse_vector(self, buf);
+		if (dim != (column->size_flat / sizeof(float)))
+			stmt_error(self, ast, "invalid vector dimension");
+		value_set_vector_buf(value, dim, buf);
 		return ast;
 	}
 	}
@@ -335,20 +335,23 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 		}
 		break;
 	}
-	case TYPE_STRING:
+	case TYPE_DATE:
 	{
 		if (! data_is_str(*pos))
 			break;
 		Str ref;
 		unpack_str(pos, &ref);
-		value_set_string(value, &ref, NULL);
-		return;
-	}
-	case TYPE_JSON:
-	{
-		auto at = *pos;
-		data_skip(pos);
-		value_set_json(value, at, *pos - at, NULL);
+
+		// current_date
+		if (str_is_case(&ref, "current_date", 12))
+		{
+			value_set_date(value, timestamp_date(local->time_us));
+			return;
+		}
+		int julian;
+		if (unlikely(error_catch( julian = date_set(&ref) )))
+			error("invalid date value");
+		value_set_date(value, julian);
 		return;
 	}
 	case TYPE_TIMESTAMP:
@@ -395,39 +398,6 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 		value_set_interval(value, &iv);
 		return;
 	}
-
-	case TYPE_DATE:
-	{
-		if (! data_is_str(*pos))
-			break;
-		Str ref;
-		unpack_str(pos, &ref);
-
-		// current_date
-		if (str_is_case(&ref, "current_date", 12))
-		{
-			value_set_date(value, timestamp_date(local->time_us));
-			return;
-		}
-		int julian;
-		if (unlikely(error_catch( julian = date_set(&ref) )))
-			error("invalid date value");
-		value_set_date(value, julian);
-		return;
-	}
-
-	case TYPE_VECTOR:
-	{
-		if (! data_is_array(*pos))
-			break;
-		auto buf = buf_create();
-		errdefer_buf(buf);
-		auto dim = parse_vector_decode(buf, pos);
-		if (dim != (column->size_flat / sizeof(float)))
-			error("invalid vector dimension");
-		value_set_vector_buf(value, dim, buf);
-		return;
-	}
 	case TYPE_UUID:
 	{
 		if (! data_is_str(*pos))
@@ -440,6 +410,34 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 		if (uuid_set_nothrow(&uuid, &ref) == -1)
 			error("invalid uuid value");
 		value_set_uuid(value, &uuid);
+		return;
+	}
+	case TYPE_STRING:
+	{
+		if (! data_is_str(*pos))
+			break;
+		Str ref;
+		unpack_str(pos, &ref);
+		value_set_string(value, &ref, NULL);
+		return;
+	}
+	case TYPE_JSON:
+	{
+		auto at = *pos;
+		data_skip(pos);
+		value_set_json(value, at, *pos - at, NULL);
+		return;
+	}
+	case TYPE_VECTOR:
+	{
+		if (! data_is_array(*pos))
+			break;
+		auto buf = buf_create();
+		errdefer_buf(buf);
+		auto dim = parse_vector_decode(buf, pos);
+		if (dim != (column->size_flat / sizeof(float)))
+			error("invalid vector dimension");
+		value_set_vector_buf(value, dim, buf);
 		return;
 	}
 	}

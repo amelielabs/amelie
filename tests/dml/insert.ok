@@ -1069,11 +1069,11 @@ drop table test;
 # test: insert column (vector)
 create table test (id int primary key, vec vector(2));
 insert into test values (0, []);
-error: invalid vector dimension
+error: insert into test values (0, ❰[❱ ⟵ invalid vector dimension
 insert into test values (1, [1.0]);
-error: invalid vector dimension
+error: insert into test values (1, ❰[❱ ⟵ invalid vector dimension
 insert into test values (2, [1]);
-error: invalid vector dimension
+error: insert into test values (2, ❰[❱ ⟵ invalid vector dimension
 insert into test values (3, [1.0, 1.1,]);
 error: insert into test values (3, [1.0, 1.1,❰]❱ ⟵ invalid vector value
 insert into test values (4, [1.0,);
@@ -1081,9 +1081,9 @@ error: insert into test values (4, [1.0,❰)❱ ⟵ invalid vector value
 insert into test values (5, [1.0,]);
 error: insert into test values (5, [1.0,❰]❱ ⟵ invalid vector value
 insert into test values (7, [1.0, 1.1, -2.2, -8]);
-error: invalid vector dimension
+error: insert into test values (7, ❰[❱ ⟵ invalid vector dimension
 insert into test values (8, vector [1.0, 1.1, -2.2, -8]);
-error: invalid vector dimension
+error: insert into test values (8, vector ❰[❱ ⟵ invalid vector dimension
 insert into test values (6, [1.0, 1.1]);
 select * from test;
 

@@ -30,20 +30,6 @@ value_print(Value* self, Timezone* tz, bool pretty, Buf* buf)
 	case TYPE_DOUBLE:
 		buf_format(buf, "{g}", self->dbl);
 		break;
-	case TYPE_STRING:
-	{
-		if (pretty)
-			unescape_str(buf, &self->string);
-		else
-			escape_str(buf, &self->string);
-		break;
-	}
-	case TYPE_JSON:
-	{
-		uint8_t* pos = self->json;
-		json_export_as(buf, tz, pretty, 0, &pos);
-		break;
-	}
 	case TYPE_DATE:
 	{
 		buf_reserve(buf, 16);
@@ -65,6 +51,27 @@ value_print(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_advance(buf, size);
 		break;
 	}
+	case TYPE_UUID:
+	{
+		buf_reserve(buf, UUID_SZ);
+		uuid_get(&self->uuid, (char*)buf->position, UUID_SZ);
+		buf_advance(buf, UUID_SZ - 1);
+		break;
+	}
+	case TYPE_STRING:
+	{
+		if (pretty)
+			unescape_str(buf, &self->string);
+		else
+			escape_str(buf, &self->string);
+		break;
+	}
+	case TYPE_JSON:
+	{
+		uint8_t* pos = self->json;
+		json_export_as(buf, tz, pretty, 0, &pos);
+		break;
+	}
 	case TYPE_VECTOR:
 	{
 		buf_write(buf, "[", 1);
@@ -72,13 +79,6 @@ value_print(Value* self, Timezone* tz, bool pretty, Buf* buf)
 			buf_format(buf, "{g}{s}", self->vector[i],
 			           i != self->vector_dim - 1 ? ", ": "");
 		buf_write(buf, "]", 1);
-		break;
-	}
-	case TYPE_UUID:
-	{
-		buf_reserve(buf, UUID_SZ);
-		uuid_get(&self->uuid, (char*)buf->position, UUID_SZ);
-		buf_advance(buf, UUID_SZ - 1);
 		break;
 	}
 	// TYPE_STORE

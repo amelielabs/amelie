@@ -27,12 +27,6 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 	case TYPE_DOUBLE:
 		encode_real(buf, self->dbl);
 		break;
-	case TYPE_STRING:
-		encode_str(buf, &self->string);
-		break;
-	case TYPE_JSON:
-		buf_write(buf, self->json, data_sizeof(self->json));
-		break;
 	case TYPE_DATE:
 		encode_date(buf, self->integer);
 		break;
@@ -42,11 +36,17 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 	case TYPE_INTERVAL:
 		encode_interval(buf, &self->interval);
 		break;
-	case TYPE_VECTOR:
-		encode_vector(buf, self->vector_dim, self->vector);
-		break;
 	case TYPE_UUID:
 		encode_uuid(buf, &self->uuid);
+		break;
+	case TYPE_STRING:
+		encode_str(buf, &self->string);
+		break;
+	case TYPE_JSON:
+		buf_write(buf, self->json, data_sizeof(self->json));
+		break;
+	case TYPE_VECTOR:
+		encode_vector(buf, self->vector_dim, self->vector);
 		break;
 	// TYPE_STORE
 	// TYPE_CURSOR
@@ -134,17 +134,6 @@ value_export_as(Value* self, Timezone* tz, bool pretty, int deep, Buf* buf)
 	case TYPE_DOUBLE:
 		buf_format(buf, "{g}", self->dbl);
 		break;
-	case TYPE_STRING:
-		buf_write(buf, "\"", 1);
-		escape_str(buf, &self->string);
-		buf_write(buf, "\"", 1);
-		break;
-	case TYPE_JSON:
-	{
-		uint8_t* pos = self->json;
-		json_export_as(buf, tz, pretty, deep, &pos);
-		break;
-	}
 	case TYPE_DATE:
 	{
 		buf_write(buf, "\"", 1);
@@ -172,15 +161,6 @@ value_export_as(Value* self, Timezone* tz, bool pretty, int deep, Buf* buf)
 		buf_write(buf, "\"", 1);
 		break;
 	}
-	case TYPE_VECTOR:
-	{
-		buf_write(buf, "[", 1);
-		for (auto i = 0; i < self->vector_dim; i++)
-			buf_format(buf, "{g}{s}", self->vector[i],
-			           i != self->vector_dim - 1 ? ", ": "");
-		buf_write(buf, "]", 1);
-		break;
-	}
 	case TYPE_UUID:
 	{
 		buf_write(buf, "\"", 1);
@@ -188,6 +168,26 @@ value_export_as(Value* self, Timezone* tz, bool pretty, int deep, Buf* buf)
 		uuid_get(&self->uuid, (char*)buf->position, UUID_SZ);
 		buf_advance(buf, UUID_SZ - 1);
 		buf_write(buf, "\"", 1);
+		break;
+	}
+	case TYPE_STRING:
+		buf_write(buf, "\"", 1);
+		escape_str(buf, &self->string);
+		buf_write(buf, "\"", 1);
+		break;
+	case TYPE_JSON:
+	{
+		uint8_t* pos = self->json;
+		json_export_as(buf, tz, pretty, deep, &pos);
+		break;
+	}
+	case TYPE_VECTOR:
+	{
+		buf_write(buf, "[", 1);
+		for (auto i = 0; i < self->vector_dim; i++)
+			buf_format(buf, "{g}{s}", self->vector[i],
+			           i != self->vector_dim - 1 ? ", ": "");
+		buf_write(buf, "]", 1);
 		break;
 	}
 	// TYPE_STORE

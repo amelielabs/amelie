@@ -39,7 +39,7 @@ compare(Keys* self, Row* a, Row* b)
 		{
 			// string
 			rc = data_compare_str(row_column(a, column),
-			                         row_column(b, column));
+			                      row_column(b, column));
 		}
 		if (rc != 0)
 			return rc;

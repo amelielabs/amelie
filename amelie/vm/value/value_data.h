@@ -116,6 +116,10 @@ value_data_encode(Value*    self, Column* column,
 		*(Interval*)*pos = self->interval;
 		*pos += sizeof(Interval);
 		break;
+	case TYPE_UUID:
+		*(Uuid*)*pos = self->uuid;
+		*pos += sizeof(Uuid);
+		break;
 	case TYPE_STRING:
 		pack_str(pos, &self->string);
 		break;
@@ -124,13 +128,9 @@ value_data_encode(Value*    self, Column* column,
 		*pos += self->json_size;
 		break;
 	case TYPE_VECTOR:
-		// reserve id for vector store
+		// reserve id for the vector store
 		*(uint32_t*)*pos = 0;
 		*pos += sizeof(uint32_t);
-		break;
-	case TYPE_UUID:
-		*(Uuid*)*pos = self->uuid;
-		*pos += sizeof(Uuid);
 		break;
 	}
 	return true;
@@ -216,6 +216,11 @@ value_data_decode(Value* self, Column* column, uint8_t* data, int data_size)
 	case TYPE_INTERVAL:
 		value_set_interval(self, (Interval*)data);
 		break;
+	case TYPE_UUID:
+	{
+		value_set_uuid(self, (Uuid*)data);
+		break;
+	}
 	case TYPE_STRING:
 	{
 		value_init(self);
@@ -226,11 +231,6 @@ value_data_decode(Value* self, Column* column, uint8_t* data, int data_size)
 	case TYPE_JSON:
 	{
 		value_set_json(self, data, data_sizeof(data), NULL);
-		break;
-	}
-	case TYPE_UUID:
-	{
-		value_set_uuid(self, (Uuid*)data);
 		break;
 	}
 	case TYPE_VECTOR:

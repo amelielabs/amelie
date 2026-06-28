@@ -574,12 +574,6 @@ expr_cast(Stmt* self, Expr* expr)
 	case TYPE_DOUBLE:
 		str_set(&name->string, "double", 6);
 		break;
-	case TYPE_STRING:
-		str_set(&name->string, "string", 6);
-		break;
-	case TYPE_JSON:
-		str_set(&name->string, "json", 4);
-		break;
 	case TYPE_DATE:
 		str_set(&name->string, "date", 4);
 		break;
@@ -589,11 +583,17 @@ expr_cast(Stmt* self, Expr* expr)
 	case TYPE_INTERVAL:
 		str_set(&name->string, "interval", 8);
 		break;
-	case TYPE_VECTOR:
-		str_set(&name->string, "vector", 6);
-		break;
 	case TYPE_UUID:
 		str_set(&name->string, "uuid", 4);
+		break;
+	case TYPE_STRING:
+		str_set(&name->string, "string", 6);
+		break;
+	case TYPE_JSON:
+		str_set(&name->string, "json", 4);
+		break;
+	case TYPE_VECTOR:
+		str_set(&name->string, "vector", 6);
 		break;
 	// TYPE_NULL:
 	default:

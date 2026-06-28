@@ -280,7 +280,7 @@ crecv_aggs(Vm* self, Op* op)
 	// return first set
 	auto first = values[0];
 	value_set_store(reg_at(&self->r, op->a), first->store);
-	value_reset(first);
+	value_init(first);
 }
 
 hot void
@@ -308,7 +308,7 @@ crecv(Vm* self, Op* op)
 		if (value->type == TYPE_STORE)
 		{
 			union_add(result, value->store);
-			value_reset(value);
+			value_init(value);
 		}
 	}
 	if (error)

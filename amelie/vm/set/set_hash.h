@@ -94,6 +94,8 @@ set_hash_value(Value* value, uint32_t hash)
 	int   data_size = 0;
 	void* data = NULL;
 	switch (value->type) {
+	case TYPE_NULL:
+		break;
 	case TYPE_INT:
 	case TYPE_BOOL:
 	case TYPE_TIMESTAMP:
@@ -101,13 +103,17 @@ set_hash_value(Value* value, uint32_t hash)
 		data = &value->integer;
 		data_size = sizeof(value->integer);
 		break;
+	case TYPE_DOUBLE:
+		data = &value->dbl;
+		data_size = sizeof(value->dbl);
+		break;
 	case TYPE_INTERVAL:
 		data = &value->interval;
 		data_size = sizeof(value->interval);
 		break;
-	case TYPE_DOUBLE:
-		data = &value->dbl;
-		data_size = sizeof(value->dbl);
+	case TYPE_UUID:
+		data = &value->uuid;
+		data_size = sizeof(&value->uuid);
 		break;
 	case TYPE_STRING:
 		data = str_of(&value->string);
@@ -120,12 +126,6 @@ set_hash_value(Value* value, uint32_t hash)
 	case TYPE_VECTOR:
 		data = value->vector;
 		data_size = vector_size(value->vector_dim);
-		break;
-	case TYPE_UUID:
-		data = &value->uuid;
-		data_size = sizeof(&value->uuid);
-		break;
-	case TYPE_NULL:
 		break;
 	default:
 		error("GROUP BY: unsupported key type");

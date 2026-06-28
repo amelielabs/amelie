@@ -13,18 +13,21 @@
 
 typedef enum
 {
-	// materialized
+	// materialized (fast path)
 	TYPE_NULL,
 	TYPE_BOOL,
 	TYPE_INT,
 	TYPE_DOUBLE,
-	TYPE_STRING,
-	TYPE_JSON,
 	TYPE_DATE,
 	TYPE_TIMESTAMP,
 	TYPE_INTERVAL,
-	TYPE_VECTOR,
 	TYPE_UUID,
+
+	// materialized
+	TYPE_STRING,
+	TYPE_JSON,
+	TYPE_VECTOR,
+
 	// non-materialized
 	TYPE_AVG,
 	TYPE_REF,
@@ -52,12 +55,6 @@ type_of(Type type)
 	case TYPE_DOUBLE:
 		name = "double";
 		break;
-	case TYPE_STRING:
-		name = "string";
-		break;
-	case TYPE_JSON:
-		name = "json";
-		break;
 	case TYPE_DATE:
 		name = "date";
 		break;
@@ -67,11 +64,17 @@ type_of(Type type)
 	case TYPE_INTERVAL:
 		name = "interval";
 		break;
-	case TYPE_VECTOR:
-		name = "vector";
-		break;
 	case TYPE_UUID:
 		name = "uuid";
+		break;
+	case TYPE_STRING:
+		name = "string";
+		break;
+	case TYPE_JSON:
+		name = "json";
+		break;
+	case TYPE_VECTOR:
+		name = "vector";
 		break;
 	case TYPE_AVG:
 		name = "avg";
@@ -116,6 +119,8 @@ type_sizeof(Type type)
 		return sizeof(Interval);
 	case TYPE_UUID:
 		return sizeof(Uuid);
+	case TYPE_VECTOR:
+		return sizeof(uint32_t);
 	default:
 		// variable
 		break;

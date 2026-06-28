@@ -66,10 +66,7 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 			else
 				encode_real(buf, *(double*)pos);
 			break;
-		case TYPE_STRING:
-		case TYPE_JSON:
-			buf_write(buf, pos, data_sizeof(pos));
-			break;
+
 		case TYPE_DATE:
 			encode_date(buf, *(int32_t*)pos);
 			break;
@@ -79,11 +76,16 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 		case TYPE_INTERVAL:
 			encode_interval(buf, (Interval*)pos);
 			break;
-		case TYPE_VECTOR:
-			encode_vector(buf, column->size_flat, (float*)pos);
-			break;
 		case TYPE_UUID:
 			encode_uuid(buf, (Uuid*)pos);
+			break;
+		case TYPE_STRING:
+		case TYPE_JSON:
+			buf_write(buf, pos, data_sizeof(pos));
+			break;
+		case TYPE_VECTOR:
+			// todo: use flat storage
+			encode_vector(buf, column->size_flat, (float*)pos);
 			break;
 		default:
 			abort();

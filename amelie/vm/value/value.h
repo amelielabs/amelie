@@ -15,7 +15,8 @@ typedef struct Value Value;
 
 struct Value
 {
-	Type type;
+	// 48 bytes
+	Buf* buf;
 	union
 	{
 		int64_t        integer;
@@ -41,20 +42,25 @@ struct Value
 			int        json_size;
 		};
 	};
-	Buf* buf;
+	Type     type;
+	uint32_t padding;
 };
 
 always_inline hot static inline void
 value_init(Value* self)
 {
-	memset(self, 0, sizeof(*self));
+	self->type = TYPE_NULL;
+	self->buf  = NULL;
 }
 
 always_inline hot static inline void
 value_free(Value* self)
 {
-	if (self->type == TYPE_NULL)
+	if (self->type < TYPE_STRING)
+	{
+		self->type = TYPE_NULL;
 		return;
+	}
 
 	if (self->type == TYPE_STORE)
 		store_free(self->store);
@@ -75,18 +81,11 @@ value_free(Value* self)
 }
 
 always_inline hot static inline void
-value_reset(Value* self)
-{
-	self->type = TYPE_NULL;
-	self->buf  = NULL;
-}
-
-always_inline hot static inline void
 value_move(Value* self, Value* from)
 {
 	value_free(self);
 	*self = *from;
-	value_reset(from);
+	value_init(from);
 }
 
 always_inline hot static inline void
@@ -252,16 +251,6 @@ value_copy(Value* self, Value* src)
 	case TYPE_DOUBLE:
 		value_set_double(self, src->dbl);
 		break;
-	case TYPE_STRING:
-		value_set_string(self, &src->string, src->buf);
-		if (src->buf)
-			buf_ref(src->buf);
-		break;
-	case TYPE_JSON:
-		value_set_json(self, src->json, src->json_size, src->buf);
-		if (src->buf)
-			buf_ref(src->buf);
-		break;
 	case TYPE_DATE:
 		value_set_date(self, src->integer);
 		break;
@@ -273,6 +262,16 @@ value_copy(Value* self, Value* src)
 		break;
 	case TYPE_UUID:
 		value_set_uuid(self, &src->uuid);
+		break;
+	case TYPE_STRING:
+		value_set_string(self, &src->string, src->buf);
+		if (src->buf)
+			buf_ref(src->buf);
+		break;
+	case TYPE_JSON:
+		value_set_json(self, src->json, src->json_size, src->buf);
+		if (src->buf)
+			buf_ref(src->buf);
 		break;
 	case TYPE_VECTOR:
 		value_set_vector(self, src->vector_dim, src->vector, src->buf);

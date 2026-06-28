@@ -53,17 +53,6 @@ value_print_estimate(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_format(buf, "{g}", self->dbl);
 		return buf_size(buf);
 	}
-	case TYPE_STRING:
-		return utf8_strlen(&self->string);
-	case TYPE_JSON:
-	{
-		buf_reset(buf);
-		auto pos = self->json;
-		json_export_as(buf, tz, pretty, 0, &pos);
-		Str str;
-		buf_str(buf, &str);
-		return utf8_strlen(&str);
-	}
 	case TYPE_DATE:
 		return 10;
 	case TYPE_TIMESTAMP:
@@ -75,6 +64,19 @@ value_print_estimate(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		auto size = interval_get(&self->interval, (char*)buf->position, 128);
 		return size;
 	}
+	case TYPE_UUID:
+		return UUID_SZ - 1;
+	case TYPE_STRING:
+		return utf8_strlen(&self->string);
+	case TYPE_JSON:
+	{
+		buf_reset(buf);
+		auto pos = self->json;
+		json_export_as(buf, tz, pretty, 0, &pos);
+		Str str;
+		buf_str(buf, &str);
+		return utf8_strlen(&str);
+	}
 	case TYPE_VECTOR:
 	{
 		buf_reset(buf);
@@ -85,9 +87,6 @@ value_print_estimate(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_write(buf, "]", 1);
 		return buf_size(buf);
 	}
-	case TYPE_UUID:
-		return UUID_SZ - 1;
-
 	// TYPE_STORE
 	// TYPE_CURSOR
 	// TYPE_CURSOR_STORE

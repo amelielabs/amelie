@@ -342,7 +342,7 @@ columns
   "constraints": [["not_null", true]]
 }, {
   "name": "old_col",
-  "type": 4,
+  "type": 8,
   "size": 0,
   "size_flat": 0,
   "dropped": true,
@@ -376,7 +376,7 @@ columns
   "constraints": [["not_null", true]]
 }, {
   "name": "old_col",
-  "type": 4,
+  "type": 8,
   "size": 0,
   "size_flat": 0,
   "dropped": true,

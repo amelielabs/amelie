@@ -158,11 +158,8 @@ emit_column(Compiler* self,
 			}
 			break;
 		}
-		case TYPE_STRING:
-			op = CTABLE_READS;
-			break;
-		case TYPE_JSON:
-			op = CTABLE_READJ;
+		case TYPE_DATE:
+			op = CTABLE_READD;
 			break;
 		case TYPE_TIMESTAMP:
 			op = CTABLE_READT;
@@ -170,14 +167,17 @@ emit_column(Compiler* self,
 		case TYPE_INTERVAL:
 			op = CTABLE_READL;
 			break;
-		case TYPE_DATE:
-			op = CTABLE_READD;
+		case TYPE_UUID:
+			op = CTABLE_READU;
+			break;
+		case TYPE_STRING:
+			op = CTABLE_READS;
+			break;
+		case TYPE_JSON:
+			op = CTABLE_READJ;
 			break;
 		case TYPE_VECTOR:
 			op = CTABLE_READV;
-			break;
-		case TYPE_UUID:
-			op = CTABLE_READU;
 			break;
 		default:
 			abort();

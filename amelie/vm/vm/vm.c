@@ -497,7 +497,7 @@ cmov:
 cpush:
 	// [value]
 	*stack_push(stack) = r[op->a];
-	value_reset(&r[op->a]);
+	value_init(&r[op->a]);
 	op_next;
 
 cpush_ref:
@@ -512,7 +512,7 @@ cpush_ref:
 	} else
 	{
 		*stack_push(stack) = r[op->a];
-		value_reset(&r[op->a]);
+		value_init(&r[op->a]);
 	}
 	op_next;
 
@@ -1650,7 +1650,7 @@ cunion_offset:
 cunion_add:
 	// [union, store]
 	union_add((Union*)r[op->a].store, r[op->b].store);
-	value_reset(&r[op->b]);
+	value_init(&r[op->b]);
 	op_next;
 
 crecv_aggs:

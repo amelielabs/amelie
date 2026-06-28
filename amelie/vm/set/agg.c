@@ -324,7 +324,7 @@ agg_merge_sets(Agg* aggs, Value** values, int count)
 					agg_merge_set_distinct(aggs, set, with);
 			}
 			set_free(with, false);
-			value_reset(values[order]);
+			value_init(values[order]);
 		}
 	}
 
