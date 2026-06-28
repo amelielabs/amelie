@@ -62,14 +62,19 @@ value_free(Value* self)
 		return;
 	}
 
-	if (self->type == TYPE_STORE)
+	switch (self->type) {
+	case TYPE_STORE:
 		store_free(self->store);
-	else
-	if (self->type == TYPE_CURSOR_STORE)
+		break;
+	case TYPE_CURSOR_STORE:
 		store_iterator_close(self->cursor_store);
-	else
-	if (self->type == TYPE_CURSOR)
+		break;
+	case TYPE_CURSOR:
 		iterator_close(self->cursor);
+		break;
+	default:
+		break;
+	}
 
 	if (unlikely(self->buf))
 	{
@@ -78,14 +83,6 @@ value_free(Value* self)
 	}
 
 	self->type = TYPE_NULL;
-}
-
-always_inline hot static inline void
-value_move(Value* self, Value* from)
-{
-	value_free(self);
-	*self = *from;
-	value_init(from);
 }
 
 always_inline hot static inline void
@@ -238,58 +235,19 @@ value_set_cursor_json(Value* self, uint8_t* json, int json_size)
 always_inline hot static inline void
 value_copy(Value* self, Value* src)
 {
-	switch (src->type) {
-	case TYPE_NULL:
-		value_set_null(self);
-		break;
-	case TYPE_BOOL:
-		value_set_bool(self, src->integer);
-		break;
-	case TYPE_INT:
-		value_set_int(self, src->integer);
-		break;
-	case TYPE_DOUBLE:
-		value_set_double(self, src->dbl);
-		break;
-	case TYPE_DATE:
-		value_set_date(self, src->integer);
-		break;
-	case TYPE_TIMESTAMP:
-		value_set_timestamp(self, src->integer);
-		break;
-	case TYPE_INTERVAL:
-		value_set_interval(self, &src->interval);
-		break;
-	case TYPE_UUID:
-		value_set_uuid(self, &src->uuid);
-		break;
-	case TYPE_STRING:
-		value_set_string(self, &src->string, src->buf);
-		if (src->buf)
-			buf_ref(src->buf);
-		break;
-	case TYPE_JSON:
-		value_set_json(self, src->json, src->json_size, src->buf);
-		if (src->buf)
-			buf_ref(src->buf);
-		break;
-	case TYPE_VECTOR:
-		value_set_vector(self, src->vector_dim, src->vector, src->buf);
-		if (src->buf)
-			buf_ref(src->buf);
-		break;
-	case TYPE_AVG:
-		value_set_avg(self, &src->avg);
-		break;
-	case TYPE_REF:
-		value_set_ref(self, src->integer);
-		break;
-	case TYPE_STORE:
-		value_set_store(self, src->store);
-		store_ref(src->store);
-		break;
-	default:
-		error("operation is not supported");
-		break;
-	}
+	*self = *src;
+	if (likely(self->type < TYPE_STRING))
+		return;
+	if (self->type == TYPE_STORE)
+		store_ref(self->store);
+	if (self->buf)
+		buf_ref(self->buf);
+}
+
+always_inline hot static inline void
+value_move(Value* self, Value* from)
+{
+	value_free(self);
+	*self = *from;
+	value_init(from);
 }
