@@ -173,7 +173,34 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 	switch (rel->type) {
 	case REL_TABLE:
 	{
+		// [FROM table MATCHING]
 		auto table = table_of(rel);
+		auto ast = stmt_if(self, KMATCHING);
+		if (ast)
+		{
+			// rewrite as
+			//   x = STMT_MATCHING
+			//   SELECT FROM x
+			auto stmt = stmt_allocate(self->parser, &self->parser->lex, self->block);
+			stmt->id = STMT_MATCHING;
+			stmts_insert(&self->block->stmts, self, stmt);
+			deps_add_stmt(&self->deps, stmt);
+
+			auto matching = parse_matching(stmt, NULL, table);
+			matching->ast.pos_start = ast->pos_start;
+			matching->ast.pos_end   = ast->pos_end;
+			stmt->ast = &matching->ast;
+			stmt->ret = &matching->ret;
+
+			target->type      = TARGET_STMT;
+			target->ast       = ast;
+			target->from_stmt = stmt;
+			target->columns   = table_columns(table);
+			str_set_str(&target->name, &table->config->name);
+			break;
+		}
+
+		// FROM table
 		target->type          = TARGET_TABLE;
 		target->from_lock     = lock;
 		target->from_table    = table;

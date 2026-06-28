@@ -16,6 +16,7 @@ typedef struct Send Send;
 enum
 {
 	SEND_SELECT,
+	SEND_MATCHING,
 	SEND_INSERT,
 	SEND_UPDATE,
 	SEND_DELETE
@@ -47,10 +48,11 @@ static inline char*
 send_of(Send* self)
 {
 	switch (self->type) {
-	case SEND_SELECT: return "select";
-	case SEND_INSERT: return "insert";
-	case SEND_UPDATE: return "update";
-	case SEND_DELETE: return "delete";
+	case SEND_SELECT:   return "select";
+	case SEND_MATCHING: return "matching";
+	case SEND_INSERT:   return "insert";
+	case SEND_UPDATE:   return "update";
+	case SEND_DELETE:   return "delete";
 	}
 	abort();
 	return NULL;

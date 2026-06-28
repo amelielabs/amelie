@@ -232,6 +232,7 @@ OpDesc ops[] =
 	{ CUNION_ADD, "union_add" },
 	{ CRECV_AGGS, "recv_aggs" },
 	{ CRECV, "recv" },
+	{ CRECV_MATCHING, "recv_matching" },
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },
@@ -267,6 +268,9 @@ OpDesc ops[] =
 	{ CCOUNT, "count" },
 	{ CAVGI, "avgi" },
 	{ CAVGF, "avgf" },
+
+	// matching
+	{ CMATCHING, "matching" },
 
 	// dml
 	{ CINSERT, "insert" },
@@ -501,6 +505,11 @@ op_dump(Program* self, Code* code, Buf* buf)
 				         snapshot->rel->user,
 				         snapshot->rel->name,
 				         desc);
+			break;
+		}
+		case CMATCHING:
+		{
+			op_write(buf, op, true, true, false, NULL);
 			break;
 		}
 		case CTABLE_PREPARE:

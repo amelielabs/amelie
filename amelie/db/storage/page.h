@@ -15,13 +15,14 @@ typedef struct Page Page;
 
 struct Page
 {
-	// 24 bytes (aligned by pointer)
+	// 24 bytes + 40 (aligned by cache line)
 	uint32_t crc;
 	uint32_t id;
 	uint32_t size;
 	uint32_t size_compressed;
 	uint32_t position;
 	uint32_t used;
+	uint8_t  padding[40];
 	uint8_t  data[];
 } packed;
 

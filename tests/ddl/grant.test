@@ -188,19 +188,19 @@ select * from amelie.test;
 switch S0;
 
 # test: publish
-create topic top;
+create topic test_top;
 grant publish into test;
 
 switch S1;
 show all rels;
-publish into amelie.top 123;
+publish into amelie.test_top 123;
 
 switch S0;
-grant publish on top to test;
+grant publish on test_top to test;
 
 switch S1;
 show all rels;
-publish into amelie.top 123;
+publish into amelie.test_top 123;
 switch S0;
 
 # test: execute

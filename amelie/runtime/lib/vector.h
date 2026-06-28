@@ -15,7 +15,7 @@ int    vector_compare(int, int, float*, float*);
 void   vector_add(int, float*, float*, float*);
 void   vector_sub(int, float*, float*, float*);
 void   vector_mul(int, float*, float*, float*);
-double vector_distance(int, float*, float*);
+double vector_distance(int, const float*__restrict, const float*__restrict);
 
 static inline int
 vector_size(int dim)

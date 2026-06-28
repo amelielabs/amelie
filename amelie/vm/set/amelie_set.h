@@ -31,6 +31,9 @@
 #include "set/in.h"
 #include "set/exists.h"
 
+// matching
+#include "set/matching.h"
+
 // subscription
 #include "set/sub.h"
 #include "set/sub_iterator.h"

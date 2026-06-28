@@ -21,10 +21,11 @@ void cunion_limit(Vm*, Op*);
 void cunion_offset(Vm*, Op*);
 void crecv_aggs(Vm*, Op*);
 void crecv(Vm*, Op*);
+void crecv_matching(Vm*, Op*);
+void cmatching(Vm*, Op*);
 
 void cvar_set(Vm*, Op*);
 void cfirst(Vm*, Op*);
-
 Op*  ctable_open(Vm*, Op*);
 void ctable_prepare(Vm*, Op*);
 

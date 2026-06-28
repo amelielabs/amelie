@@ -160,6 +160,7 @@ enum
 	// m
 	KMIN,
 	KMAX,
+	KMATCHING,
 
 	// n
 	KNULL,
@@ -222,6 +223,7 @@ enum
 	KTRUNCATE,
 	KTOKEN,
 	KTOPIC,
+	KTOP,
 
 	// u
 	KUPDATE,

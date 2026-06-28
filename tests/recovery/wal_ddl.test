@@ -249,7 +249,7 @@ select * from test2;
 show tables;
 
 # test: create topic
-create topic top;
+create topic test_top;
 show topics;
 
 # test: restart
@@ -263,10 +263,10 @@ select show('state').lsn;
 show topics;
 
 # test: create subscription
-create subscription top_sub on top;
-publish into top 123;
-publish into top 1,2,3;
-publish into top;
+create subscription top_sub on test_top;
+publish into test_top 123;
+publish into test_top 1,2,3;
+publish into test_top;
 select * from top_sub;
 show subs;
 
@@ -311,7 +311,7 @@ drop subscription top_sub;
 show subs;
 
 # test: drop topic
-drop topic top;
+drop topic test_top;
 show topics;
 
 # test: restart

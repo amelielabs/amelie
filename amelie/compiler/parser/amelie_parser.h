@@ -94,6 +94,7 @@
 #include "parser/parse_order.h"
 #include "parser/parse_group.h"
 #include "parser/parse_select.h"
+#include "parser/parse_matching.h"
 
 // parse
 #include "parser/parse_declare.h"

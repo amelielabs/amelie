@@ -125,6 +125,7 @@ Keyword keywords[] =
 	// m
 	{ KMIN,                   "min",                   3  },
 	{ KMAX,                   "max",                   3  },
+	{ KMATCHING,              "matching",              8  },
 
 	// n
 	{ KNULL,                  "null",                  4  },
@@ -185,6 +186,7 @@ Keyword keywords[] =
 	{ KTRUNCATE,              "truncate",              8  },
 	{ KTOKEN,                 "token",                 5  },
 	{ KTOPIC,                 "topic",                 5  },
+	{ KTOP,                   "top",                   3  },
 
 	// u
 	{ KUPDATE,                "update",                6  },

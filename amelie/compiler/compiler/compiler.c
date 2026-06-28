@@ -189,7 +189,7 @@ emit_send(Compiler* self, Target* target, int type, int start)
 		// point-lookup or range scan
 		//
 		auto path = target->path_primary;
-		if (path->type == PATH_LOOKUP)
+		if (path && path->type == PATH_LOOKUP)
 		{
 			// push keys for point lookup to match the exact partition
 			for (auto i = 0; i < path->match_start; i++)
@@ -301,6 +301,10 @@ emit_recv(Compiler* self, Stmt* stmt)
 	{
 		stmt->r = emit_select_recv(self, stmt->ast);
 	} else
+	if (stmt->id == STMT_MATCHING)
+	{
+		stmt->r = emit_matching_recv(self, stmt->ast);
+	} else
 	{
 		// DML returning
 
@@ -368,6 +372,11 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 		//
 		// do nothing (frontend only)
 		return -1;
+	}
+	case STMT_MATCHING:
+	{
+		r = emit_matching(self, stmt->ast);
+		break;
 	}
 	case STMT_PUBLISH:
 	case STMT_WATCH:
@@ -443,6 +452,13 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		// emit expression for return
 		//
 		stmt->r = emit_select(self, stmt->ast, false);
+		break;
+	}
+	case STMT_MATCHING:
+	{
+		auto matching = ast_matching_of(stmt->ast);
+		target = from_first(&matching->from);
+		send   = SEND_MATCHING;
 		break;
 	}
 	case STMT_PUBLISH:

@@ -62,7 +62,7 @@ vector_mul(int dim, float* result, float* a, float* b)
 }
 
 hot double
-vector_distance(int dim, float* a, float* b)
+vector_distance(int dim, const float* __restrict a, const float* __restrict b)
 {
 	const float* restrict va = a;
 	const float* restrict vb = b;

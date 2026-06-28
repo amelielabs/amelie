@@ -627,14 +627,14 @@ show tables;
 tables
 ──────
 # test: create topic
-create topic top;
+create topic test_top;
 show topics;
 
 topics
 ──────
 {
   "user": "amelie",
-  "name": "top",
+  "name": "test_top",
   "description": ""
 }
 # test: restart
@@ -654,14 +654,14 @@ topics
 ──────
 {
   "user": "amelie",
-  "name": "top",
+  "name": "test_top",
   "description": ""
 }
 # test: create subscription
-create subscription top_sub on top;
-publish into top 123;
-publish into top 1,2,3;
-publish into top;
+create subscription top_sub on test_top;
+publish into test_top 123;
+publish into test_top 1,2,3;
+publish into test_top;
 select * from top_sub;
 
 lsn  lsn_op  cmd      row
@@ -774,7 +774,7 @@ show subs;
 subs
 ────
 # test: drop topic
-drop topic top;
+drop topic test_top;
 show topics;
 
 topics

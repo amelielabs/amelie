@@ -11,6 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_returning(Returning*, Stmt*, Expr*);
-void parse_returning_star(Returning*);
-void parse_returning_resolve(Returning*, Stmt*, From*);
+int emit_matching(Compiler*, Ast*);
+int emit_matching_recv(Compiler*, Ast*);

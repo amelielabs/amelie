@@ -25,7 +25,7 @@ message(STATUS "")
 # compiler options
 set(CMAKE_C_COMPILER "clang")
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -Wno-free-nonheap-object -fPIC -g -march=native -O2 -DNDEBUG")
+	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -Wno-free-nonheap-object -fPIC -g -O3 -march=native -DNDEBUG")
 elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -fPIC -g -O0")
 endif()
@@ -251,6 +251,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/set/any.c
     ${AMELIE_ROOT}/vm/set/all.c
     ${AMELIE_ROOT}/vm/set/in.c
+    ${AMELIE_ROOT}/vm/set/matching.c
     ${AMELIE_ROOT}/vm/set/sub.c
     ${AMELIE_ROOT}/vm/output/print.c
     ${AMELIE_ROOT}/vm/output/output.c
@@ -309,6 +310,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_update.c
     ${AMELIE_ROOT}/compiler/parser/parse_delete.c
     ${AMELIE_ROOT}/compiler/parser/parse_select.c
+    ${AMELIE_ROOT}/compiler/parser/parse_matching.c
     ${AMELIE_ROOT}/compiler/parser/parse_declare.c
     ${AMELIE_ROOT}/compiler/parser/parse_with.c
     ${AMELIE_ROOT}/compiler/parser/parse_execute.c
@@ -330,6 +332,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_update.c
     ${AMELIE_ROOT}/compiler/compiler/emit_delete.c
     ${AMELIE_ROOT}/compiler/compiler/emit_select.c
+    ${AMELIE_ROOT}/compiler/compiler/emit_matching.c
     ${AMELIE_ROOT}/compiler/compiler/emit_publish.c
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
     ${AMELIE_ROOT}/compiler/compiler/emit_utility.c)
@@ -406,6 +409,13 @@ set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_heap.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_lock.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_api.c)
+
+# use fast math only for the vectorized processing
+set_source_files_properties(
+	${AMELIE_ROOT}/runtime/lib/vector.c
+	${AMELIE_ROOT}/vm/set/matching.c
+	PROPERTIES COMPILE_OPTIONS "-ffast-math"
+)
 
 # libamelie.a
 add_library(amelie_static STATIC ${AMELIE_SOURCES})

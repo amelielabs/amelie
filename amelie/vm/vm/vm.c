@@ -20,6 +20,7 @@
 #include <amelie_executor.h>
 #include <amelie_func.h>
 #include <amelie_vm.h>
+#include "base/overflow_fp.h"
 
 void
 vm_init(Vm* self, Part* part)
@@ -309,6 +310,7 @@ vm_run(Vm*       self,
 		&&cunion_add,
 		&&crecv_aggs,
 		&&crecv,
+		&&crecv_matching,
 
 		// table cursor
 		&&ctable_open,
@@ -344,6 +346,9 @@ vm_run(Vm*       self,
 		&&ccount,
 		&&cavgi,
 		&&cavgf,
+
+		// matching
+		&&cmatching,
 
 		// dml
 		&&cinsert,
@@ -1658,6 +1663,10 @@ crecv:
 	crecv(self, op);
 	op_next;
 
+crecv_matching:
+	crecv_matching(self, op);
+	op_next;
+
 // table cursor
 ctable_open:
 	op = ctable_open(self, op);
@@ -1906,6 +1915,10 @@ cavgf:
 		value_set_double(&r[op->a], avg_double(&c->avg));
 	else
 		value_set_null(&r[op->a]);
+	op_next;
+
+cmatching:
+	cmatching(self, op);
 	op_next;
 
 cinsert:

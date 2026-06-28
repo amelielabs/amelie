@@ -228,17 +228,12 @@ value_data_decode(Value* self, Column* column, uint8_t* data, int data_size)
 		value_set_json(self, data, data_sizeof(data), NULL);
 		break;
 	}
-	case TYPE_VECTOR:
-	{
-		value_set_vector(self, column->size_flat / sizeof(float),
-		                 (float*)data, NULL);
-		break;
-	}
 	case TYPE_UUID:
 	{
 		value_set_uuid(self, (Uuid*)data);
 		break;
 	}
+	case TYPE_VECTOR:
 	default:
 	{
 		abort();

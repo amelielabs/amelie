@@ -203,6 +203,20 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 	}
 }
 
+void
+parse_returning_star(Returning* self)
+{
+	// select *
+	auto as = ast(KAS);
+	as->l = ast(KSTAR);
+	as->r = NULL;
+	if (self->list == NULL)
+		self->list = as;
+	else
+		self->list_tail->next = as;
+	self->list_tail = as;
+}
+
 static inline void
 returning_add(Returning* self, Ast* as)
 {

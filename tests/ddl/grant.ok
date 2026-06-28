@@ -204,7 +204,7 @@ id   data
 124  1
 switch S0;
 # test: publish
-create topic top;
+create topic test_top;
 grant publish into test;
 error: grant publish ❰into❱ ⟵ TO expected
 switch S1;
@@ -218,10 +218,10 @@ rels
   "type": "table",
   "description": ""
 }
-publish into amelie.top 123;
-error: relation 'amelie.top': permission denied
+publish into amelie.test_top 123;
+error: relation 'amelie.test_top': permission denied
 switch S0;
-grant publish on top to test;
+grant publish on test_top to test;
 switch S1;
 show all rels;
 
@@ -235,11 +235,11 @@ rels
 }
 {
   "user": "amelie",
-  "name": "top",
+  "name": "test_top",
   "type": "topic",
   "description": ""
 }
-publish into amelie.top 123;
+publish into amelie.test_top 123;
 switch S0;
 # test: execute
 create function fun () return int
@@ -259,7 +259,7 @@ rels
 }
 {
   "user": "amelie",
-  "name": "top",
+  "name": "test_top",
   "type": "topic",
   "description": ""
 }
@@ -286,7 +286,7 @@ rels
 }
 {
   "user": "amelie",
-  "name": "top",
+  "name": "test_top",
   "type": "topic",
   "description": ""
 }

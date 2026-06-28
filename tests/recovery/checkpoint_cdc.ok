@@ -1,17 +1,17 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
 connect E0 S0 127.0.0.1:3485;
 # test: create topic (with subscription)
-create topic top;
+create topic test_top;
 show topics;
 
 topics
 ──────
 {
   "user": "amelie",
-  "name": "top",
+  "name": "test_top",
   "description": ""
 }
-create subscription top_sub on top;
+create subscription top_sub on test_top;
 show subs;
 
 subs
@@ -21,9 +21,9 @@ subs
   "name": "top_sub",
   "description": ""
 }
-publish into top 123;
-publish into top 1,2,3;
-publish into top;
+publish into test_top 123;
+publish into test_top 1,2,3;
+publish into test_top;
 select * from top_sub;
 
 lsn  lsn_op  cmd      row
@@ -83,7 +83,7 @@ lsn  lsn_op  cmd      row
 5    1       publish  2
 5    2       publish  3
 6    0       publish  null
-drop topic top cascade;
+drop topic test_top cascade;
 drop table test cascade;
 disconnect S0;
 close E0;

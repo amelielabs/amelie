@@ -225,6 +225,7 @@ enum
 	CUNION_ADD,
 	CRECV_AGGS,
 	CRECV,
+	CRECV_MATCHING,
 
 	// table cursor
 	CTABLE_OPEN,
@@ -260,6 +261,9 @@ enum
 	CCOUNT,
 	CAVGI,
 	CAVGF,
+
+	// matching
+	CMATCHING,
 
 	// dml
 	CINSERT,

@@ -15,7 +15,7 @@
 #include <amelie_main_bench.h>
 #include <math.h>
 
-static const int vector_dim = 128;
+static const int vector_dim  = 128;
 static const int vector_rows = 100000;
 
 typedef struct VectorLoader VectorLoader;
@@ -160,6 +160,7 @@ bench_vector_main(BenchWorker* self, MainClient* client)
 	while (! self->shutdown)
 	{
 		buf_reset(&buf);
+#if 0
 		buf_format(&buf, "SELECT id FROM bench_vector ORDER BY v::cos_distance(vector [");
 		for (int j = 0; j < vector_dim; j++)
 		{
@@ -167,6 +168,14 @@ bench_vector_main(BenchWorker* self, MainClient* client)
 			buf_format(&buf, "{s}{.4f}", j > 0 ? "," : "", val);
 		}
 		buf_format(&buf, "]) ASC LIMIT 10");
+#endif
+		buf_format(&buf, "SELECT id FROM bench_vector MATCHING v TO vector [");
+		for (int j = 0; j < vector_dim; j++)
+		{
+			float val = (float)random_generate(&am_task->random) / (float)UINT64_MAX;
+			buf_format(&buf, "{s}{.4f}", j > 0 ? "," : "", val);
+		}
+		buf_format(&buf, "] TOP 10");
 
 		Str cmd;
 		buf_str(&buf, &cmd);

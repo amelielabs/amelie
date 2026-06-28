@@ -10130,11 +10130,11 @@ select identity_of("test2");
 
 # test: topic (subscription)
 switch S0;
-create topic top;
-create subscription top_sub on top;
-publish into top;
-publish into top 123;
-publish into top 1,2,3;
+create topic test_top;
+create subscription top_sub on test_top;
+publish into test_top;
+publish into test_top 123;
+publish into test_top 1,2,3;
 show subs;
 show state;
 select * from top_sub;

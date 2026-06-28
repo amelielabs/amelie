@@ -12,20 +12,29 @@
 //
 
 static inline void*
-am_malloc(size_t size)
+am_malloc_aligned_nothrow(size_t size, int alignment)
 {
-	auto ptr = malloc(size);
+	void* ptr = NULL;
+	if (unlikely(posix_memalign(&ptr, alignment, size) != 0))
+		return NULL;
+	return ptr;
+}
+
+static inline void*
+am_malloc_aligned(size_t size, int alignment)
+{
+	auto ptr = am_malloc_aligned_nothrow(size, alignment);
 	if (unlikely(ptr == NULL))
 		oom();
 	return ptr;
 }
 
 static inline void*
-am_malloc_aligned_nothrow(size_t size, int alignment)
+am_malloc(size_t size)
 {
-	void* ptr = NULL;
-	if (unlikely(posix_memalign(&ptr, alignment, size) != 0))
-		return NULL;
+	auto ptr = malloc(size);
+	if (unlikely(ptr == NULL))
+		oom();
 	return ptr;
 }
 

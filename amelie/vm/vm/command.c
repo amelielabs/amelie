@@ -315,6 +315,70 @@ crecv(Vm* self, Op* op)
 		rethrow_buf(error->error);
 }
 
+hot void
+crecv_matching(Vm* self, Op* op)
+{
+	// [set, rdispatch]
+
+	// get dispatch
+	auto dispatch_order = reg_at(&self->r, op->b)->integer;
+	auto dispatch = dispatch_mgr_at(&self->gtr->dispatch_mgr, dispatch_order);
+	assert(dispatch);
+
+	// wait for group completion
+	dispatch_wait(dispatch);
+
+	Value* values[dispatch->list_count];
+	int    values_count = 0;
+
+	// collect results
+	auto error = (Req*)NULL;
+	list_foreach(&dispatch->list)
+	{
+		auto req = list_at(Req, link);
+		if (req->error && !error)
+			error = req;
+		auto value = &req->result;
+		if (value->type == TYPE_STORE)
+		{
+			values[values_count] = value;
+			values_count++;
+		}
+	}
+	if (error)
+		rethrow_buf(error->error);
+
+	// merge matching results into the one set
+	matching_merge(reg_at(&self->r, op->a), values, values_count);
+}
+
+hot void
+cmatching(Vm* self, Op* op)
+{
+	// [set, cursor, column, top]
+	auto r = & self->r;
+	assert(self->refs);
+
+	auto cursor  = reg_at(r, op->b);
+	auto column  = (Column*)op->c;
+	auto columns = table_columns(cursor->table);
+
+	auto vector = &self->refs[0];
+	if (vector->type != TYPE_VECTOR)
+		error("MATCHING: vector expression expected");
+	if (vector->vector_dim != (column->size_flat / sizeof(float)))
+		error("MATCHING: vector dimension mismatch");
+
+	// create matching context as store
+	auto flat = flat_mgr_at(&cursor->part->flat_mgr, column);
+	auto matching = matching_create(columns, cursor->part->heap, flat, op->d);
+
+	value_set_store(reg_at(r, op->a), &matching->store);
+
+	// execute vector search
+	matching_execute(matching, vector->vector);
+}
+
 void
 cvar_set(Vm* self, Op* op)
 {
