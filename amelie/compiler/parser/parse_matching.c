@@ -23,6 +23,9 @@ parse_matching(Stmt* self, From* from, Table* table)
 	// MATCHING column TO expr TOP expr
 	auto stmt = ast_matching_allocate(from, self->block);
 	self->ast = &stmt->ast;
+	self->ret = &stmt->ret;
+
+	// mark as closing
 	self->block->stmts.last_send = self;
 
 	// column

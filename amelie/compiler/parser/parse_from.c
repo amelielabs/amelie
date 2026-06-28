@@ -189,8 +189,6 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 			auto matching = parse_matching(stmt, NULL, table);
 			matching->ast.pos_start = ast->pos_start;
 			matching->ast.pos_end   = ast->pos_end;
-			stmt->ast = &matching->ast;
-			stmt->ret = &matching->ret;
 
 			target->type      = TARGET_STMT;
 			target->ast       = ast;

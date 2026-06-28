@@ -254,5 +254,18 @@ select * from a;
 id
 ──
 drop table main cascade;
+# test: create clone (with vector column)
+create table test (id int primary key, v vector(1));
+create clone x of test;
+error: table 'x': vector columns cannot be used together with clones
+drop table test;
+# test: add column (vector column)
+create table test (id int primary key);
+create clone x of test;
+alter table test add column v vector(1);
+error: table 'test': vector columns cannot be used together with clones
+drop table test;
+error: table 'test': depends on clone 'amelie.x'
+drop table test cascade;
 disconnect S0;
 close E0;

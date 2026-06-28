@@ -140,5 +140,17 @@ select * from a;
 
 drop table main cascade;
 
+# test: create clone (with vector column)
+create table test (id int primary key, v vector(1));
+create clone x of test;
+drop table test;
+
+# test: add column (vector column)
+create table test (id int primary key);
+create clone x of test;
+alter table test add column v vector(1);
+drop table test;
+drop table test cascade;
+
 disconnect S0;
 close E0;

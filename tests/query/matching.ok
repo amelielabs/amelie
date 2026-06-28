@@ -1,0 +1,99 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: matching parsing
+create table test (id int primary key, v vector(1)) partitions 1;
+insert into test values (1, [1.1]);
+insert into test values (2, [1.2]);
+insert into test values (3, [1.3]);
+insert into test values (4, [1.4]);
+insert into test values (5, [1.5]);
+select * from test;
+
+id  v
+───────────
+1   [1.1]
+2   [1.2]
+3   [1.3]
+4   [1.4]
+5   [1.5]
+select * from test matching;
+error: select * from test matching❰;❱ ⟵ name expected
+select * from test matching id;
+error: select * from test matching ❰id❱ ⟵ column type is not vector
+select * from test matching v;
+error: select * from test matching v❰;❱ ⟵ TO expected
+select * from test matching v to;
+error: select * from test matching v to❰;❱ ⟵ bad expression
+select * from test matching v to 123;
+error: select * from test matching v to 123❰;❱ ⟵ TOP expected
+select * from test matching v to vector [1.35];
+error: select * from test matching v to vector [1.35]❰;❱ ⟵ TOP expected
+select * from test matching v to vector [1.35] top;
+error: select * from test matching v to vector [1.35] top❰;❱ ⟵ int expected
+# test: matching
+select * from test matching v to vector [1.35] top 3;
+
+id  v
+───────────
+2   [1.2]
+3   [1.3]
+5   [1.5]
+drop table test;
+# test: matching (1 partitions)
+create table products (id int primary key, v vector(2)) partitions 1;
+insert into products values (1, [1.0, 0.1]);
+insert into products values (2, [0.9, 0.2]);
+insert into products values (3, [0.2, 0.9]);
+insert into products values (4, [0.5, 0.5]);
+select id from products matching v to vector [1.1, 0.05] top 2;
+
+id
+──
+1
+2
+drop table products;
+# test: matching (6 partitions)
+create table products (id int primary key, v vector(2)) partitions 6;
+insert into products values (1, [1.0, 0.1]);
+insert into products values (2, [0.9, 0.2]);
+insert into products values (3, [0.2, 0.9]);
+insert into products values (4, [0.5, 0.5]);
+select id from products matching v to vector [1.1, 0.05] top 2;
+
+id
+──
+1
+2
+# test: matching (delete)
+delete from products where id = 1;
+select id from products matching v to vector [1.1, 0.05] top 2;
+
+id
+──
+2
+4
+# test: matching (delete multi-stmt)
+begin
+  delete from products where id = 2;
+  select id from products matching v to vector [1.1, 0.05] top 2;
+end;
+
+id
+──
+4
+3
+# test: matching (delete multi-stmt abort)
+begin
+  delete from products where id = 4;
+  select error("abort");
+end;
+error: abort
+select id from products matching v to vector [1.1, 0.05] top 2;
+
+id
+──
+4
+3
+drop table products;
+disconnect S0;
+close E0;

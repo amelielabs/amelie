@@ -64,7 +64,7 @@ row_filter(FlatMgr* flat_mgr, Row* row, bool filter)
 		auto flat = *pos;
 		auto ref  = row_at(row, flat->column->order);
 		if (ref)
-			flat_set_at(flat, *(uint32_t*)ref, filter);
+			flat_set_at(flat, *(uint32_t*)ref, !filter);
 	}
 }
 

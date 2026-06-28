@@ -211,6 +211,12 @@ table_column_add(Catalog* self,
 	if (column->constraints.as_identity && table->config->columns.identity)
 		error("table '{str}': already has identity column", name);
 
+	// ensure table has no clones to support vector column
+	if (column->type == TYPE_VECTOR)
+		if (table->snapshot_mgr.list_count > 1)
+			error("table '{str}': vector columns cannot be used together with clones",
+			      name);
+
 	// add new column
 	auto column_new = column_copy(column);
 	columns_add(&table->config->columns, column_new);

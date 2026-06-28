@@ -81,6 +81,15 @@ clone_create(Catalog*     self,
 	// ensure permission to create clone
 	check_permission(tr, &table->rel, PERM_CREATE_CLONE);
 
+	// ensure table has no vector columns
+	list_foreach(&table_columns(table)->list)
+	{
+		auto column = list_at(Column, link);
+		if (column->type == TYPE_VECTOR)
+			error("table '{str}': vector columns cannot be used together with clones",
+			      &config->name);
+	}
+
 	// create clone
 	auto clone = clone_allocate(config);
 	clone->table = table;

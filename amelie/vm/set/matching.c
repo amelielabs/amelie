@@ -67,8 +67,13 @@ matching_execute(Matching* self, const float* __restrict query)
 		auto page = storage_at(&flat->storage, i);
 		auto page_vectors = flat_vector(flat, i, 0);
 
+		// calculcate the number of active chunks (64 vectors) on the page
+		uint32_t chunks = (page->used + 63) >> 6;
+		if (chunks > page_chunks)
+			chunks = page_chunks;
+
 		auto bitmap = (uint64_t*)(page->data);
-		for (uint32_t chunk_id = 0; chunk_id < page_chunks; chunk_id++)
+		for (uint32_t chunk_id = 0; chunk_id < chunks; chunk_id++)
 		{
 			// iterate over the block of 64 vectors
 			uint64_t mask = bitmap[chunk_id];

@@ -101,6 +101,7 @@ test for
 test while
 test return
 test execute
+test matching
 
 # pushdown
 directory pushdown
