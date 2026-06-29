@@ -40,7 +40,7 @@ coroutine_mgr_init(CoroutineMgr* self, int stack_size)
 	list_init(&self->list_ready);
 	list_init(&self->list_free);
 	event_init(&self->on_exit);
-	memset(&self->main, 0, sizeof(self->main));
+	coroutine_init(&self->main, self);
 	self->current = &self->main;
 }
 

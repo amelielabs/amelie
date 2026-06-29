@@ -25,7 +25,7 @@ void
 context_stack_allocate(ContextStack* self, int size)
 {
 	self->size = size;
-	self->pointer = am_malloc(size);
+	self->pointer = am_malloc_aligned(size, cache_line);
 	self->valgrind_id =
 		VALGRIND_STACK_REGISTER(self->pointer, self->pointer + size);
 }

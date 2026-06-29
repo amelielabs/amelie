@@ -29,22 +29,6 @@ str_init(Str* self)
 }
 
 static inline void
-str_free(Str* self)
-{
-	if (self->allocated)
-		am_free(self->pos);
-	str_init(self);
-}
-
-static inline void
-str_set_allocated(Str* self, char* pos, int size)
-{
-	self->pos = pos;
-	self->end = pos + size;
-	self->allocated = true;
-}
-
-static inline void
 str_set(Str* self, char* pos, int size)
 {
 	self->pos = pos;
@@ -287,13 +271,24 @@ str_toint(Str* self, int64_t* value)
 	return 0;
 }
 
+static inline Str*
+str_nullif(Str* self)
+{
+	if (!self || str_empty(self))
+		return NULL;
+	return self;
+}
+
 static inline void
 str_dup(Str* self, const void* string, int size)
 {
 	char* pos = am_malloc(size + 1);
 	memcpy(pos, string, size);
 	pos[size] = 0;
-	str_set_allocated(self, pos, size);
+
+	self->pos       = pos;
+	self->end       = pos + size;
+	self->allocated = true;
 }
 
 static inline void
@@ -308,10 +303,10 @@ str_copy(Str* self, Str* src)
 	str_dup(self, str_of(src), str_size(src));
 }
 
-static inline Str*
-str_nullif(Str* self)
+static inline void
+str_free(Str* self)
 {
-	if (!self || str_empty(self))
-		return NULL;
-	return self;
+	if (self->allocated)
+		am_free(self->pos);
+	str_init(self);
 }

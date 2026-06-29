@@ -33,7 +33,11 @@ struct Error
 static inline void
 error_init(Error* self)
 {
-	memset(self, 0, sizeof(*self));
+	self->code     = ERROR_NONE;
+	self->file     = NULL;
+	self->function = NULL;
+	self->line     = 0;
+	buf_init(&self->text);
 }
 
 static inline void
@@ -45,7 +49,7 @@ error_free(Error* self)
 static inline void
 error_reset(Error* self)
 {
-	self->code     = 0;
+	self->code     = ERROR_NONE;
 	self->file     = NULL;
 	self->function = NULL;
 	self->line     = 0;

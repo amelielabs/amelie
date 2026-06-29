@@ -47,7 +47,7 @@ static inline void
 ring_prepare(Ring* self, int size)
 {
 	self->ring_size = size;
-	self->ring = am_malloc(sizeof(void*) * size);
+	self->ring = am_malloc_aligned(sizeof(void*) * size, cache_line);
 	memset(self->ring, 0, sizeof(void*) * size);
 }
 

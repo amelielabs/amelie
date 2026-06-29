@@ -69,7 +69,7 @@ buf_cache_pop(BufCache* self)
 	if (likely(self->stack_count > 0))
 		return self->stack[--self->stack_count];
 
-	auto buf = (Buf*)am_malloc(sizeof(Buf));
+	auto buf = (Buf*)am_malloc_aligned(sizeof(Buf), cache_line);
 	buf_init(buf);
 	buf->allocated = true;
 	return buf;

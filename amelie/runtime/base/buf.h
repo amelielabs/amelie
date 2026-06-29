@@ -11,8 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct BufCache BufCache;
-typedef struct Buf      Buf;
+typedef struct Buf Buf;
 
 struct Buf
 {
@@ -21,14 +20,16 @@ struct Buf
 	uint8_t*   end;
 	atomic_u32 refs;
 	bool       allocated;
+	uint8_t    padding[3];
+	uint8_t    reserve[32];
 };
 
 static inline void
 buf_init(Buf* self)
 {
-	self->start     = NULL;
-	self->position  = NULL;
-	self->end       = NULL;
+	self->start     = self->reserve;
+	self->position  = self->reserve;
+	self->end       = self->reserve + 32;
 	self->refs      = 0;
 	self->allocated = false;
 }
@@ -36,7 +37,7 @@ buf_init(Buf* self)
 static inline void
 buf_free_memory(Buf* self)
 {
-	if (self->start)
+	if (self->start != self->reserve)
 		am_free(self->start);
 	if (self->allocated)
 		am_free(self);
@@ -84,15 +85,28 @@ buf_reserve(Buf* self, int size)
 	if (likely(buf_size_unused(self) >= size))
 		return &self->position;
 
-	int size_actual = buf_size(self) + size;
-	int size_grow = buf_capacity(self) * 2;
+	auto size_actual = buf_size(self) + size;
+	auto size_grow   = buf_capacity(self) * 2;
 	if (unlikely(size_actual > size_grow))
 		size_grow = size_actual;
 
 	uint8_t* pointer;
-	pointer = am_realloc(self->start, size_grow);
-	self->position = pointer + (self->position - self->start);
-	self->end = pointer + size_grow;
+	if (self->start == self->reserve)
+	{
+		// from inline buffer to malloc
+		pointer = am_malloc(size_grow);
+		auto size_used = buf_size(self);
+		if (size_used > 0)
+			memcpy(pointer, self->start, size_used);
+		self->position = pointer + size_used;
+	} else
+	{
+		// from malloc to realloc
+		pointer = am_realloc(self->start, size_grow);
+		self->position = pointer + (self->position - self->start);
+	}
+
+	self->end   = pointer + size_grow;
 	self->start = pointer;
 	assert((self->end - self->position) >= size);
 	return &self->position;
