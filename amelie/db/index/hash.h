@@ -15,12 +15,12 @@ typedef struct Hash Hash;
 
 struct Hash
 {
-	HashStore* current;
-	HashStore* prev;
-	HashStore  a, b;
-	bool       rehashing;
-	uint64_t   rehashing_pos;
-	Keys*      keys;
+	HashStore*  current;
+	HashStore*  prev;
+	HashStore   a, b;
+	bool        rehashing;
+	uint64_t    rehashing_pos;
+	Comparable* comparable;
 };
 
 static inline void
@@ -30,7 +30,7 @@ hash_init(Hash* self)
 	self->prev          = NULL;
 	self->rehashing     = false;
 	self->rehashing_pos = 0;
-	self->keys          = NULL;
+	self->comparable    = NULL;
 	hash_store_init(&self->a);
 	hash_store_init(&self->b);
 }
@@ -44,11 +44,11 @@ hash_free(Hash* self)
 }
 
 static inline void
-hash_create(Hash* self, Keys* keys)
+hash_create(Hash* self, Comparable* comparable)
 {
-	self->keys = keys;
+	self->comparable = comparable;
 	self->current = &self->a;
-	hash_store_create(self->current, keys, 256);
+	hash_store_create(self->current, comparable, 256);
 }
 
 static inline void
@@ -58,7 +58,7 @@ hash_rehash_start(Hash* self)
 	auto current = prev == &self->a ? &self->b : &self->a;
 
 	// create new hash table and set as current
-	hash_store_create(current, self->keys, prev->size * 2);
+	hash_store_create(current, self->comparable, prev->size * 2);
 	self->current       = current;
 	self->prev          = prev;
 	self->rehashing     = true;

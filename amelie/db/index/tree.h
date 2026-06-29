@@ -30,15 +30,15 @@ struct TreePos
 
 struct Tree
 {
-	Keys*    keys;
-	Rbtree   tree;
-	int      size_page;
-	int      size_split;
-	int      count_pages;
-	uint64_t count;
+	Rbtree      tree;
+	Comparable* comparable;
+	int         size_page;
+	int         size_split;
+	int         count_pages;
+	uint64_t    count;
 };
 
-void tree_init(Tree*, int, int, Keys*);
+void tree_init(Tree*, int, int, Comparable*);
 void tree_free(Tree*);
 bool tree_upsert(Tree*, TreePos*, Row*);
 Row* tree_replace(Tree*, Row*);

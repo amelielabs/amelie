@@ -86,7 +86,7 @@ index_hash_truncate(Index* arg)
 {
 	auto self = index_hash_of(arg);
 	hash_free(&self->hash);
-	hash_create(&self->hash, &arg->config->keys);
+	hash_create(&self->hash, &arg->config->keys.comparable);
 }
 
 static void
@@ -115,6 +115,6 @@ index_hash_allocate(IndexConfig* config, void* arg)
 	iface->truncate       = index_hash_truncate;
 	iface->free           = index_hash_free;
 
-	hash_create(&self->hash, &config->keys);
+	hash_create(&self->hash, &config->keys.comparable);
 	return &self->index;
 }

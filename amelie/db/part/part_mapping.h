@@ -17,15 +17,17 @@ typedef struct PartMapping PartMapping;
 
 struct PartMapping
 {
-	Part** map;
-	Keys*  keys;
+	Part**      map;
+	Comparable* comparable;
+	Keys*       keys;
 };
 
 static inline void
 part_mapping_init(PartMapping* self, Keys* keys)
 {
-	self->map  = NULL;
-	self->keys = keys;
+	self->map        = NULL;
+	self->comparable = &keys->comparable;
+	self->keys       =  keys;
 }
 
 static inline void
@@ -67,6 +69,6 @@ part_mapping_remove(PartMapping* self, Part* part)
 hot static inline Part*
 part_mapping_map(PartMapping* self, Row* key)
 {
-	auto hash_partition = row_hash(key, self->keys) % PART_MAPPING_MAX;
+	auto hash_partition = row_hash(key, self->comparable) % PART_MAPPING_MAX;
 	return self->map[hash_partition];
 }

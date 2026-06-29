@@ -35,7 +35,7 @@ uuid_empty(Uuid* self)
 }
 
 hot static inline int
-uuid_compare(Uuid* a, Uuid* b)
+uuid_compare(const Uuid* a, const Uuid* b)
 {
 	auto rc = compare_uint64(a->a, b->a);
 	if (rc != 0)

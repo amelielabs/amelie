@@ -37,7 +37,7 @@ index_tree_merge_step(IndexTreeMerge* self)
 	}
 
 	auto list = (IndexTreeIterator*)self->list.start;
-	auto keys = list->index->tree.keys;
+	auto comparable = list->index->tree.comparable;
 
 	Iterator* min_iterator = NULL;
 	Row*      min = NULL;
@@ -55,7 +55,7 @@ index_tree_merge_step(IndexTreeMerge* self)
 			continue;
 		}
 
-		auto rc = compare(keys, min, row);
+		auto rc = compare(comparable, min, row);
 		switch (rc) {
 		case 0:
 			break;

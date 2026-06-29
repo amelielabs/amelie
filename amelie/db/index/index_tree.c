@@ -107,7 +107,7 @@ index_tree_allocate(IndexConfig* config, void* arg)
 {
 	auto self = (IndexTree*)am_malloc(sizeof(IndexTree));
 	index_init(&self->index, config, arg);
-	tree_init(&self->tree, 512, 256, &config->keys);
+	tree_init(&self->tree, 512, 256, &config->keys.comparable);
 
 	auto iface = &self->index.iface;
 	iface->upsert         = index_tree_upsert;

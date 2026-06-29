@@ -23,6 +23,7 @@
 #include "row/columns.h"
 
 // key
+#include "row/comparable.h"
 #include "row/key.h"
 #include "row/keys.h"
 

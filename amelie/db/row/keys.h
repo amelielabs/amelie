@@ -15,10 +15,11 @@ typedef struct Keys Keys;
 
 struct Keys
 {
-	List     list;	
-	int      list_count;
-	bool     primary;
-	Columns* columns;
+	Comparable comparable;
+	List       list;
+	int        list_count;
+	bool       primary;
+	Columns*   columns;
 };
 
 static inline void
@@ -27,6 +28,7 @@ keys_init(Keys* self, Columns* columns)
 	self->list_count = 0;
 	self->primary    = false;
 	self->columns    = columns;
+	comparable_init(&self->comparable);
 	list_init(&self->list);
 }
 
@@ -39,6 +41,7 @@ keys_free(Keys* self)
 		key->column->refs--;
 		key_free(key);
 	}
+	comparable_free(&self->comparable);
 }
 
 static inline void
@@ -60,19 +63,9 @@ keys_add(Keys* self, Key* key)
 	// set column pointer
 	key->column = columns_find_by(self->columns, key->ref);
 	key->column->refs++;
-}
 
-static inline void
-keys_update(Keys* self)
-{
-	int order = 0;
-	list_foreach(&self->list)
-	{
-		auto key = list_at(Key, link);
-		key->order = order;
-		key->ref = key->column->order;
-		order++;
-	}
+	// add to the comparable
+	comparable_add(&self->comparable, key->column);
 }
 
 hot static inline Key*

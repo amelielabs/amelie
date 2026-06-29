@@ -17,19 +17,19 @@ typedef struct HashStore HashStore;
 
 struct HashStore
 {
-	Row**    rows;
-	uint64_t count;
-	uint64_t size;
-	Keys*    keys;
+	Row**       rows;
+	uint64_t    count;
+	uint64_t    size;
+	Comparable* comparable;
 };
 
 static inline void
 hash_store_init(HashStore* self)
 {
-	self->rows  = NULL;
-	self->count = 0;
-	self->size  = 0;
-	self->keys  = NULL;
+	self->rows       = NULL;
+	self->count      = 0;
+	self->size       = 0;
+	self->comparable = NULL;
 }
 
 static inline void
@@ -37,10 +37,10 @@ hash_store_free(HashStore* self)
 {
 	if (self->rows)
 		am_free(self->rows);
-	self->rows  = NULL;
-	self->count = 0;
-	self->size  = 0;
-	self->keys  = NULL;
+	self->rows       = NULL;
+	self->count      = 0;
+	self->size       = 0;
+	self->comparable = NULL;
 }
 
 static inline bool
@@ -50,19 +50,20 @@ hash_store_is_full(HashStore* self)
 }
 
 static inline void
-hash_store_create(HashStore* self, Keys* keys, size_t size)
+hash_store_create(HashStore* self, Comparable* comparable, size_t size)
 {
 	size_t allocated = sizeof(Row*) * size;
-	self->keys = keys;
-	self->size = size;
-	self->rows = am_malloc(allocated);
+	self->comparable = comparable;
+	self->size       = size;
+	self->rows       = am_malloc(allocated);
 	memset(self->rows, 0, allocated);
 }
 
 hot static inline Row*
 hash_store_set(HashStore* self, Row* key)
 {
-	uint64_t start = row_hash(key, self->keys) % self->size;
+	auto     comparable = self->comparable;
+	uint64_t start = row_hash(key, comparable) % self->size;
 	uint64_t pos   = start;
 	do
 	{
@@ -74,7 +75,7 @@ hash_store_set(HashStore* self, Row* key)
 			return NULL;
 		}
 
-		if (! compare(self->keys, ref, key))
+		if (! compare(comparable, ref, key))
 		{
 			self->rows[pos] = key;
 			return ref;
@@ -90,7 +91,8 @@ hash_store_set(HashStore* self, Row* key)
 hot static inline Row*
 hash_store_delete(HashStore* self, Row* key)
 {
-	uint64_t start = row_hash(key, self->keys) % self->size;
+	auto     comparable = self->comparable;
+	uint64_t start = row_hash(key, comparable) % self->size;
 	uint64_t pos   = start;
 	do
 	{
@@ -100,7 +102,7 @@ hash_store_delete(HashStore* self, Row* key)
 
 		if (ref != HT_DELETED)
 		{
-			if (! compare(self->keys, ref, key))
+			if (! compare(comparable, ref, key))
 			{
 				self->rows[pos] = HT_DELETED;
 				self->count--;
@@ -117,7 +119,8 @@ hash_store_delete(HashStore* self, Row* key)
 hot static inline Row*
 hash_store_get(HashStore* self, Row* key, uint64_t* at)
 {
-	uint64_t start = row_hash(key, self->keys) % self->size;
+	auto     comparable = self->comparable;
+	uint64_t start = row_hash(key, comparable) % self->size;
 	uint64_t pos   = start;
 	do
 	{
@@ -132,7 +135,7 @@ hash_store_get(HashStore* self, Row* key, uint64_t* at)
 			*at = pos;
 		} else
 		{
-			if (! compare(self->keys, ref, key))
+			if (! compare(comparable, ref, key))
 			{
 				*at = pos;
 				return ref;

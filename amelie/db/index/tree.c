@@ -19,16 +19,16 @@
 #include <amelie_index.h>
 
 void
-tree_init(Tree* self,
-          int   size_page,
-          int   size_split,
-          Keys* keys)
+tree_init(Tree*       self,
+          int         size_page,
+          int         size_split,
+          Comparable* comparable)
 {
 	self->count       = 0;
 	self->count_pages = 0;
 	self->size_page   = size_page;
 	self->size_split  = size_split;
-	self->keys        = keys;
+	self->comparable  = comparable;
 	rbtree_init(&self->tree);
 }
 
@@ -79,7 +79,7 @@ tree_free(Tree* self)
 always_inline static inline int
 tree_compare(Tree* self, TreePage* page, Row* key)
 {
-	return compare(self->keys, page->rows[0], key);
+	return compare(self->comparable, page->rows[0], key);
 }
 
 hot static inline
@@ -115,13 +115,14 @@ tree_search_page(Tree* self, Row* key)
 hot static inline int
 tree_search(Tree* self, TreePage* page, Row* key, bool* match)
 {
+	auto comparable = self->comparable;
 	int min = 0;
 	int mid = 0;
 	int max = page->keys_count - 1;
 	while (max >= min)
 	{
 		mid = min + ((max - min) >> 1);
-		int rc = compare(self->keys, page->rows[mid], key);
+		int rc = compare(comparable, page->rows[mid], key);
 		if (rc < 0) {
 			min = mid + 1;
 		} else
