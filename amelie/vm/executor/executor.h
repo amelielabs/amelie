@@ -69,17 +69,16 @@ executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
 {
 	spinlock_lock(&self->lock);
 
-	// recovery serialization
-	//
-	// ensure transaction is serialized around recover_id order
-	if (gtr->write.recover)
-		executor_recover(self, gtr);
-
 	// set transaction id
 	//
 	uint64_t id;
 	if (gtr->write.recover)
 	{
+		// recovery serialization
+		//
+		// ensure transaction is serialized around recover_id order
+		executor_recover(self, gtr);
+
 		// recover id
 		id = gtr->write.recover->record->tsn;
 		state_tsn_follow(id);
@@ -110,16 +109,27 @@ executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
 		if (overlaps)
 		{
 			gtr->group = ref->group;
-			gtr->group_order = ref->group_order + 1;
 			break;
 		}
 	}
 
-	// start new transaction group
+	// start new transaction group or set group order
 	if (! gtr->group)
 	{
 		gtr->group = self->id++;
 		gtr->group_order = 0;
+	} else
+	{
+		gtr->group_order = 0;
+		list_foreach(&self->list)
+		{
+			auto ref = list_at(Gtr, link);
+			if (ref->group != gtr->group)
+				continue;
+			if (ref->group_order > gtr->group_order)
+				gtr->group_order = ref->group_order;
+		}
+		gtr->group_order++;
 	}
 
 	// register transaction

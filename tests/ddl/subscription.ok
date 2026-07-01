@@ -390,7 +390,7 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-23   0
+22   0
 # test: cdc (publish)
 publish into test;
 publish into test 123;
@@ -400,34 +400,35 @@ select * from test_sub;
 
 lsn  lsn_op  cmd      row
 ────────────────────────────
-24   0       publish  null
-25   0       publish  123
-26   0       publish  1
-26   1       publish  2
-26   2       publish  3
+23   0       publish  null
+24   0       publish  123
+25   0       publish  1
+25   1       publish  2
+25   2       publish  3
 # test: acknowledge
-acknowledge test_sub to 26;
+acknowledge test_sub to 25;
 select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-26   0
+25   0
 select * from test_sub;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-26   1       publish  2
-26   2       publish  3
-acknowledge test_sub to 27, 1;
+25   1       publish  2
+25   2       publish  3
+acknowledge test_sub to 25, 1;
 select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-27   1
+25   1
 select * from test_sub;
 
-lsn  lsn_op  cmd  row
-───────────────────────
+lsn  lsn_op  cmd      row
+───────────────────────────
+25   2       publish  3
 # test: drop topic
 drop topic test;
 error: topic 'test': depends on subscription 'amelie.test_sub'
@@ -455,22 +456,22 @@ select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-31   0
-33   0
+30   0
+32   0
 insert into test values (123);
 insert into test_clone values (1), (2), (3);
 select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ─────────────────────────────────
-34   0       write  {"id": 123}
+33   0       write  {"id": 123}
 select * from test_clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-35   0       write  {"id": 1}
-35   1       write  {"id": 2}
-35   2       write  {"id": 3}
+34   0       write  {"id": 1}
+34   1       write  {"id": 2}
+34   2       write  {"id": 3}
 drop subscription test_sub;
 drop subscription test_clone_sub;
 drop table test cascade;
@@ -483,9 +484,9 @@ select * from test_clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-42   0       write  {"id": 1}
-42   1       write  {"id": 2}
-42   2       write  {"id": 3}
+41   0       write  {"id": 1}
+41   1       write  {"id": 2}
+41   2       write  {"id": 3}
 select * from test_clone;
 
 id
@@ -505,15 +506,15 @@ select * from clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-49   0       write  {"id": 1}
+48   0       write  {"id": 1}
 drop subscription base_sub;
 insert into test_clone values (2);
 select * from clone_sub;
 
 lsn  lsn_op  cmd    row
 ───────────────────────────────
-49   0       write  {"id": 1}
-51   0       write  {"id": 2}
+48   0       write  {"id": 1}
+50   0       write  {"id": 2}
 select * from test_clone order by id;
 
 id
@@ -584,7 +585,7 @@ select * from b_sub;
 
 lsn  lsn_op  cmd    row
 ─────────────────────────────────────────────
-67   0       write  {"id": 42, "data": 900}
+66   0       write  {"id": 42, "data": 900}
 drop subscription a_sub;
 drop subscription b_sub;
 drop table a;
@@ -612,26 +613,26 @@ select lsn, lsn_op from test_sub order by lsn_op;
 
 lsn  lsn_op
 ─────────────
-74   0
-74   1
-74   2
-74   3
-74   4
-74   5
-74   6
-74   7
-acknowledge test_sub to 74, 0;
+73   0
+73   1
+73   2
+73   3
+73   4
+73   5
+73   6
+73   7
+acknowledge test_sub to 73, 0;
 select lsn, lsn_op from test_sub order by lsn_op;
 
 lsn  lsn_op
 ─────────────
-74   1
-74   2
-74   3
-74   4
-74   5
-74   6
-74   7
+73   1
+73   2
+73   3
+73   4
+73   5
+73   6
+73   7
 select count(*) from test_sub;
 
 count
@@ -671,18 +672,18 @@ select lsn from show state;
 
 lsn
 ───
-87
+86
 select name, lsn, lsn_op  from show subs verbose;
 
 name    lsn  lsn_op
 ─────────────────────
-"sub1"  85   0
-"sub2"  87   0
+"sub1"  84   0
+"sub2"  86   0
 select * from sub1;
 
 lsn  lsn_op  cmd    row
 ──────────────────────────────────────────
-86   0       write  {"id": 1, "data": 0}
+85   0       write  {"id": 1, "data": 0}
 select * from sub2;
 
 lsn  lsn_op  cmd  row
@@ -697,20 +698,20 @@ select lsn from show state;
 
 lsn
 ───
-92
+91
 select name, lsn, lsn_op  from show subs verbose;
 
 name    lsn  lsn_op
 ─────────────────────
-"sub1"  90   0
-"sub2"  92   0
+"sub1"  89   0
+"sub2"  91   0
 select * from sub1;
 
 lsn  lsn_op  cmd    row
 ──────────────────────────────────────────
-91   0       write  {"id": 1, "data": 0}
-91   1       write  {"id": 2, "data": 0}
-91   2       write  {"id": 3, "data": 0}
+90   0       write  {"id": 1, "data": 0}
+90   1       write  {"id": 2, "data": 0}
+90   2       write  {"id": 3, "data": 0}
 select * from sub2;
 
 lsn  lsn_op  cmd  row
@@ -724,22 +725,22 @@ select * from test_sub;
 
 lsn  lsn_op  cmd    row
 ──────────────────────────────────────────
-96   0       write  {"id": 1, "data": 0}
-96   1       write  {"id": 2, "data": 0}
-96   2       write  {"id": 3, "data": 0}
+95   0       write  {"id": 1, "data": 0}
+95   1       write  {"id": 2, "data": 0}
+95   2       write  {"id": 3, "data": 0}
 select lsn, lsn_op from test_sub;
 
 lsn  lsn_op
 ─────────────
-96   0
-96   1
-96   2
-acknowledge test_sub to 96, 99;
+95   0
+95   1
+95   2
+acknowledge test_sub to 95, 99;
 select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-96   99
+95   99
 select * from test_sub;
 
 lsn  lsn_op  cmd  row
@@ -753,21 +754,21 @@ select * from s;
 
 lsn  lsn_op  cmd      row
 ───────────────────────────
-101  0       publish  1
-101  1       publish  2
-101  2       publish  3
-acknowledge s to 101, 2;
+100  0       publish  1
+100  1       publish  2
+100  2       publish  3
+acknowledge s to 100, 2;
 select * from s;
 
 lsn  lsn_op  cmd  row
 ───────────────────────
-acknowledge s to 101, 0;
+acknowledge s to 100, 0;
 error: subscription 's': ack position is out of range
 select lsn, lsn_op from show subscriptions verbose;
 
 lsn  lsn_op
 ─────────────
-101  2
+100  2
 select * from s;
 
 lsn  lsn_op  cmd  row

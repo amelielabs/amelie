@@ -50,6 +50,7 @@ commit_main(void* arg)
 
 		// collect prepared transactions
 		batch_reset(&batch);
+
 		commit_add(&queue, &batch, (Gtr*)msg);
 		while ((msg = task_recv_try()))
 			commit_add(&queue, &batch, (Gtr*)msg);

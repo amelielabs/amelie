@@ -132,6 +132,9 @@ batch_process(Batch* self)
 			}
 		}
 
+		if (gtr->abort)
+			continue;
+
 		// collect cdc
 		if (! log_cdc_empty(&gtr->tr.log.cdc))
 			list_append(&gtr->write_cdc, &gtr->tr.log.cdc.link);
