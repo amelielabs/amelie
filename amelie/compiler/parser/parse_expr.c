@@ -305,15 +305,15 @@ expr_func_constify(Stmt* self, Ast* ast, Ast* first_arg)
 	value_init(result_value);
 
 	// execute function
-	Fn fn;
-	fn.argc     = argc;
-	fn.argv     = set_value(argv, 0);
-	fn.result   = result_value;
-	fn.action   = FN_EXECUTE;
-	fn.function = func->fn;
-	fn.local    = self->parser->local;
-	fn.context  = NULL;
-	func->fn->function(&fn);
+	Call call;
+	call.argc     = argc;
+	call.argv     = set_value(argv, 0);
+	call.result   = result_value;
+	call.type     = CALL_EXECUTE;
+	call.function = func->fn;
+	call.local    = self->parser->local;
+	call.context  = NULL;
+	func->fn->function(&call);
 
 	// free args
 	set_list_unlink(&parser->program->sets, argv);
@@ -322,7 +322,7 @@ expr_func_constify(Stmt* self, Ast* ast, Ast* first_arg)
 	// return result as KVALUE
 	ast->id  = KVALUE;
 	ast->set = result;
-	ast->fn  = fn.function;
+	ast->fn  = call.function;
 	return ast;
 }
 

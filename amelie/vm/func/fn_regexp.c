@@ -50,7 +50,7 @@ regexp_free(Regexp* self)
 }
 
 static inline pcre2_code*
-fn_regexp_init(Fn* self, Str* pattern)
+fn_regexp_init(Call* self, Str* pattern)
 {
 	Regexp* re = *self->context;
 	if (likely(re))
@@ -69,7 +69,7 @@ fn_regexp_init(Fn* self, Str* pattern)
 	{
 		PCRE2_UCHAR msg[256];
 		pcre2_get_error_message(error_number, msg, sizeof(msg));
-		fn_error(self, "regexp: {s}", msg);
+		call_error(self, "regexp: {s}", msg);
 	}
 
 	re = regexp_allocate(pattern, code);
@@ -78,9 +78,9 @@ fn_regexp_init(Fn* self, Str* pattern)
 }
 
 static inline bool
-fn_regexp_cleanup(Fn* self)
+fn_regexp_cleanup(Call* self)
 {
-	if (self->action != FN_CLEANUP)
+	if (self->type != CALL_CLEANUP)
 		return false;
 	Regexp* re = *self->context;
 	if (re)
@@ -90,21 +90,21 @@ fn_regexp_cleanup(Fn* self)
 }
 
 hot static void
-fn_regexp_like(Fn* self)
+fn_regexp_like(Call* self)
 {
 	if (fn_regexp_cleanup(self))
 		return;
 
 	// (string, pattern)
 	auto argv = self->argv;
-	fn_expect(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_STRING);
-	fn_expect_arg(self, 1, TYPE_STRING);
+	call_arg(self, 0, TYPE_STRING);
+	call_arg(self, 1, TYPE_STRING);
 
 	// first call, compile pattern
 	auto pattern = &argv[1].string;
@@ -112,7 +112,7 @@ fn_regexp_like(Fn* self)
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
 	if (! match_data)
-		fn_error(self, "failed to allocate match data");
+		call_error(self, "failed to allocate match data");
 	auto string = &argv[0].string;
 	auto rc = pcre2_match(re, (PCRE2_SPTR)str_of(string), str_size(string),
 	                      0, 0, match_data, NULL);
@@ -121,21 +121,21 @@ fn_regexp_like(Fn* self)
 }
 
 hot static void
-fn_regexp_substr(Fn* self)
+fn_regexp_substr(Call* self)
 {
 	if (fn_regexp_cleanup(self))
 		return;
 
 	// (string, pattern)
 	auto argv = self->argv;
-	fn_expect(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_STRING);
-	fn_expect_arg(self, 1, TYPE_STRING);
+	call_arg(self, 0, TYPE_STRING);
+	call_arg(self, 1, TYPE_STRING);
 
 	// first call, compile pattern
 	auto pattern = &argv[1].string;
@@ -143,7 +143,7 @@ fn_regexp_substr(Fn* self)
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
 	if (! match_data)
-		fn_error(self, "failed to allocate match data");
+		call_error(self, "failed to allocate match data");
 	defer(pcre2_match_data_free, match_data);
 
 	auto string = &argv[0].string;
@@ -166,21 +166,21 @@ fn_regexp_substr(Fn* self)
 }
 
 hot static void
-fn_regexp_match(Fn* self)
+fn_regexp_match(Call* self)
 {
 	if (fn_regexp_cleanup(self))
 		return;
 
 	// (string, pattern)
 	auto argv = self->argv;
-	fn_expect(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_STRING);
-	fn_expect_arg(self, 1, TYPE_STRING);
+	call_arg(self, 0, TYPE_STRING);
+	call_arg(self, 1, TYPE_STRING);
 
 	// first call, compile pattern
 	auto pattern = &argv[1].string;
@@ -188,7 +188,7 @@ fn_regexp_match(Fn* self)
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
 	if (! match_data)
-		fn_error(self, "failed to allocate match data");
+		call_error(self, "failed to allocate match data");
 	defer(pcre2_match_data_free, match_data);
 
 	auto string = &argv[0].string;
@@ -215,22 +215,22 @@ fn_regexp_match(Fn* self)
 }
 
 hot static void
-fn_regexp_replace(Fn* self)
+fn_regexp_replace(Call* self)
 {
 	if (fn_regexp_cleanup(self))
 		return;
 
 	// (string, pattern, string)
 	auto argv = self->argv;
-	fn_expect(self, 3);
+	call_expect(self, 3);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_STRING);
-	fn_expect_arg(self, 1, TYPE_STRING);
-	fn_expect_arg(self, 2, TYPE_STRING);
+	call_arg(self, 0, TYPE_STRING);
+	call_arg(self, 1, TYPE_STRING);
+	call_arg(self, 2, TYPE_STRING);
 
 	// first call, compile pattern
 	auto pattern = &argv[1].string;
@@ -238,7 +238,7 @@ fn_regexp_replace(Fn* self)
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
 	if (! match_data)
-		fn_error(self, "failed to allocate match data");
+		call_error(self, "failed to allocate match data");
 	defer(pcre2_match_data_free, match_data);
 
 	auto string  = &argv[0].string;

@@ -21,7 +21,7 @@
 #include <amelie_func.h>
 
 void no_return
-fn_error(Fn* self, char* fmt, ...)
+call_error(Call* self, char* fmt, ...)
 {
 	auto buf = buf_create();
 	errdefer_buf(buf);
@@ -45,7 +45,7 @@ fn_error(Fn* self, char* fmt, ...)
 }
 
 void no_return
-fn_error_noargs(Fn* self, char* fmt, ...)
+call_error_noargs(Call* self, char* fmt, ...)
 {
 	auto buf = buf_create();
 	errdefer_buf(buf);
@@ -62,7 +62,7 @@ fn_error_noargs(Fn* self, char* fmt, ...)
 }
 
 void no_return
-fn_error_arg(Fn* self, int arg, char* fmt, ...)
+call_error_at(Call* self, int arg, char* fmt, ...)
 {
 	auto buf = buf_create();
 	errdefer_buf(buf);

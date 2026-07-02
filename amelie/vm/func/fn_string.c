@@ -21,10 +21,10 @@
 #include <amelie_func.h>
 
 hot static void
-fn_length(Fn* self)
+fn_length(Call* self)
 {
 	auto arg = &self->argv[0];
-	fn_expect(self, 1);
+	call_expect(self, 1);
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
@@ -49,23 +49,23 @@ fn_length(Fn* self)
 			unpack_str(&pos, &str);
 			rc = utf8_strlen(&str);
 		} else
-			fn_error_arg(self, 0, "unsupported json value");
+			call_error_at(self, 0, "unsupported json value");
 		break;
 	case TYPE_VECTOR:
 		rc = arg->vector_dim;
 		break;
 	default:
-		fn_unsupported(self, 0);
+		call_unsupported(self, 0);
 		break;
 	}
 	value_set_int(self->result, rc);
 }
 
 hot static void
-fn_octet_length(Fn* self)
+fn_octet_length(Call* self)
 {
 	auto arg = &self->argv[0];
-	fn_expect(self, 1);
+	call_expect(self, 1);
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
@@ -83,14 +83,14 @@ fn_octet_length(Fn* self)
 		rc = vector_size(arg->vector_dim);
 		break;
 	default:
-		fn_unsupported(self, 0);
+		call_unsupported(self, 0);
 		break;
 	}
 	value_set_int(self->result, rc);
 }
 
 static void
-fn_concat(Fn* self)
+fn_concat(Call* self)
 {
 	auto buf = buf_create();
 	errdefer_buf(buf);
@@ -101,7 +101,7 @@ fn_concat(Fn* self)
 		if (argv[i].type == TYPE_NULL)
 			continue;
 		if (argv[i].type != TYPE_STRING)
-			fn_error_arg(self, i, "string expected");
+			call_error_at(self, i, "string expected");
 		buf_write_str(buf, &argv[i].string);
 	}
 
@@ -111,16 +111,16 @@ fn_concat(Fn* self)
 }
 
 static void
-fn_lower(Fn* self)
+fn_lower(Call* self)
 {
 	auto arg = &self->argv[0];
-	fn_expect(self, 1);
+	call_expect(self, 1);
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_STRING);
+	call_arg(self, 0, TYPE_STRING);
 
 	auto buf = buf_create();
 	buf_reserve(buf, str_size(&arg->string));
@@ -146,16 +146,16 @@ fn_lower(Fn* self)
 }
 
 static void
-fn_upper(Fn* self)
+fn_upper(Call* self)
 {
 	auto arg = &self->argv[0];
-	fn_expect(self, 1);
+	call_expect(self, 1);
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_STRING);
+	call_arg(self, 0, TYPE_STRING);
 
 	auto buf = buf_create();
 	buf_reserve(buf, str_size(&arg->string));
@@ -181,11 +181,11 @@ fn_upper(Fn* self)
 }
 
 static void
-fn_substr(Fn* self)
+fn_substr(Call* self)
 {
 	auto argv = self->argv;
 	if (self->argc < 2 || self->argc > 3)
-		fn_error(self, "unexpected number of arguments");
+		call_error(self, "unexpected number of arguments");
 
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
@@ -194,28 +194,28 @@ fn_substr(Fn* self)
 	}
 
 	// (string, pos)
-	fn_expect_arg(self, 0, TYPE_STRING);
-	fn_expect_arg(self, 1, TYPE_INT);
+	call_arg(self, 0, TYPE_STRING);
+	call_arg(self, 1, TYPE_INT);
 	auto src = &argv[0].string;
 	auto pos = argv[1].integer;
 
 	// position starts from 1
 	if (pos == 0)
-		fn_error_arg(self, 1, "position is out of bounds");
+		call_error_at(self, 1, "position is out of bounds");
 	pos--;
 
 	int size = utf8_strlen(src);
 	if (pos >= size)
-		fn_error_arg(self, 1, "position is out of bounds");
+		call_error_at(self, 1, "position is out of bounds");
 
 	// (string, pos, count)
 	int count = size - pos;
 	if (self->argc == 3)
 	{
-		fn_expect_arg(self, 2, TYPE_INT);
+		call_arg(self, 2, TYPE_INT);
 		count = argv[2].integer;
 		if ((pos + count) > size)
-			fn_error_arg(self, 2, "position is out of bounds");
+			call_error_at(self, 2, "position is out of bounds");
 	}
 
 	Str result;
@@ -232,18 +232,18 @@ fn_substr(Fn* self)
 }
 
 static void
-fn_strpos(Fn* self)
+fn_strpos(Call* self)
 {
 	// (string, substring)
 	auto argv = self->argv;
-	fn_expect(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_STRING);
-	fn_expect_arg(self, 1, TYPE_STRING);
+	call_arg(self, 0, TYPE_STRING);
+	call_arg(self, 1, TYPE_STRING);
 
 	auto src = &argv[0].string;
 	auto substr = &argv[1].string;
@@ -276,26 +276,26 @@ fn_strpos(Fn* self)
 }
 
 static void
-fn_replace(Fn* self)
+fn_replace(Call* self)
 {
 	// (string, from, to)
 	auto argv = self->argv;
-	fn_expect(self, 3);
+	call_expect(self, 3);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_STRING);
-	fn_expect_arg(self, 1, TYPE_STRING);
-	fn_expect_arg(self, 2, TYPE_STRING);
+	call_arg(self, 0, TYPE_STRING);
+	call_arg(self, 1, TYPE_STRING);
+	call_arg(self, 2, TYPE_STRING);
 
 	auto src  = &argv[0].string;
 	auto from = &argv[1].string;
 	auto to   = &argv[2].string;
 	if (str_size(from) == 0)
 	{
-		fn_error_arg(self, 1, "invalid argument");
+		call_error_at(self, 1, "invalid argument");
 		return;
 	}
 
@@ -387,24 +387,24 @@ str_rtrim(Str* self, char* filter, char* filter_end)
 }
 
 static void
-trim(Fn* self, bool left, bool right)
+trim(Call* self, bool left, bool right)
 {
 	auto argv = self->argv;
 	if (self->argc < 1 || self->argc > 2)
-		fn_error(self, "unexpected number of arguments");
+		call_error(self, "unexpected number of arguments");
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_STRING);
+	call_arg(self, 0, TYPE_STRING);
 
 	// (string [, filter])
 	char* filter = " \t\v\n\f";
 	char* filter_end;
 	if (self->argc == 2)
 	{
-		fn_expect_arg(self, 1, TYPE_STRING);
+		call_arg(self, 1, TYPE_STRING);
 		filter = str_of(&argv[1].string);
 		filter_end = filter + str_size(&argv[1].string);
 	} else {
@@ -426,35 +426,35 @@ trim(Fn* self, bool left, bool right)
 }
 
 static void
-fn_ltrim(Fn* self)
+fn_ltrim(Call* self)
 {
 	trim(self, true, false);
 }
 
 static void
-fn_rtrim(Fn* self)
+fn_rtrim(Call* self)
 {
 	trim(self, false, true);
 }
 
 static void
-fn_trim(Fn* self)
+fn_trim(Call* self)
 {
 	trim(self, true, true);
 }
 
 static void
-fn_like(Fn* self)
+fn_like(Call* self)
 {
 	auto argv = self->argv;
-	fn_expect(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_STRING);
-	fn_expect_arg(self, 1, TYPE_STRING);
+	call_arg(self, 0, TYPE_STRING);
+	call_arg(self, 1, TYPE_STRING);
 	value_like(self->result, &argv[0], &argv[1]);
 }
 

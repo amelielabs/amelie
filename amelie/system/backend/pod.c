@@ -87,7 +87,7 @@ pod_run(Pod* self, Ltr* ltr)
 		dispatch_complete(req->dispatch);
 	}
 
-	fns_reset(&self->vm.fns);
+	calls_reset(&self->vm.calls);
 	ltr_complete(ltr);
 }
 

@@ -117,7 +117,7 @@ show_cmd_find(Str* section)
 }
 
 static void
-fn_show(Fn* self)
+fn_show(Call* self)
 {
 	// [section, name, on, verbose]
 	Str  section_none;
@@ -132,12 +132,12 @@ fn_show(Fn* self)
 		break;
 	case 1:
 		// [section]
-		fn_expect_arg(self, 0, TYPE_STRING);
+		call_arg(self, 0, TYPE_STRING);
 		section = &self->argv[0].string;
 		break;
 	case 2:
 		// [section, name | bool]
-		fn_expect_arg(self, 0, TYPE_STRING);
+		call_arg(self, 0, TYPE_STRING);
 		section = &self->argv[0].string;
 		if (self->argv[1].type == TYPE_STRING)
 			name = &self->argv[1].string;
@@ -145,30 +145,30 @@ fn_show(Fn* self)
 		if (self->argv[1].type == TYPE_BOOL)
 			verbose = self->argv[1].integer;
 		else
-			fn_error_arg(self, 1, "string or bool expected");
+			call_error_at(self, 1, "string or bool expected");
 		break;
 	case 3:
 		// [section, name, bool]
-		fn_expect_arg(self, 0, TYPE_STRING);
-		fn_expect_arg(self, 1, TYPE_STRING);
-		fn_expect_arg(self, 2, TYPE_BOOL);
+		call_arg(self, 0, TYPE_STRING);
+		call_arg(self, 1, TYPE_STRING);
+		call_arg(self, 2, TYPE_BOOL);
 		section = &self->argv[0].string;
 		name    = &self->argv[1].string;
 		verbose =  self->argv[2].integer;
 		break;
 	case 4:
 		// [section, name, on, bool]
-		fn_expect_arg(self, 0, TYPE_STRING);
-		fn_expect_arg(self, 1, TYPE_STRING);
-		fn_expect_arg(self, 2, TYPE_STRING);
-		fn_expect_arg(self, 3, TYPE_BOOL);
+		call_arg(self, 0, TYPE_STRING);
+		call_arg(self, 1, TYPE_STRING);
+		call_arg(self, 2, TYPE_STRING);
+		call_arg(self, 3, TYPE_BOOL);
 		section = &self->argv[0].string;
 		name    = &self->argv[1].string;
 		on      = &self->argv[2].string;
 		verbose =  self->argv[3].integer;
 		break;
 	default:
-		fn_error_noargs(self, "invalid number of arguments");
+		call_error_noargs(self, "invalid number of arguments");
 		break;
 	}
 	str_set(&section_none, "all", 3);
@@ -182,15 +182,15 @@ fn_show(Fn* self)
 	{
 		// config option
 		if (str_empty(section))
-			fn_error_noargs(self, "section name is not defined");
+			call_error_noargs(self, "section name is not defined");
 		if (name && !str_empty(name))
-			fn_error_noargs(self, "unexpected name argument");
+			call_error_noargs(self, "unexpected name argument");
 
 		auto opt = opts_find(&config()->opts, section);
 		if (opt && opt_is(opt, OPT_S))
 			opt = NULL;
 		if (unlikely(opt == NULL))
-			fn_error_noargs(self, "option '{str}' is not found", section);
+			call_error_noargs(self, "option '{str}' is not found", section);
 		local_encode_opt(self->local, buf, opt);
 		value_set_json_buf(self->result, buf);
 		return;
@@ -201,23 +201,22 @@ fn_show(Fn* self)
 	// name
 	if (cmd->has_name) {
 		if (!name || str_empty(name))
-			fn_error_noargs(self, "name argument is missing for '{str}'",
-			                section);
+			call_error_noargs(self, "name argument is missing for '{str}'",
+			                  section);
 	} else {
 		if (name && !str_empty(name))
-			fn_error_noargs(self, "unexpected name argument");
+			call_error_noargs(self, "unexpected name argument");
 	}
 
 	// on
 	if (cmd->has_on) {
 		if (!on || str_empty(on))
-			fn_error_noargs(self, "on argument is missing for '{str}'",
-			                section);
+			call_error_noargs(self, "on argument is missing for '{str}'",
+			                  section);
 	} else {
 		if (on && !str_empty(on))
-			fn_error_noargs(self, "unexpected on argument");
+			call_error_noargs(self, "unexpected on argument");
 	}
-
 
 	// cover in [] if run as show_from()
 	auto wrap = false;

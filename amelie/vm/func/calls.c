@@ -21,7 +21,7 @@
 #include <amelie_func.h>
 
 void
-fns_init(Fns* self)
+calls_init(Calls* self)
 {
 	self->local = NULL;
 	self->data  = NULL;
@@ -29,13 +29,13 @@ fns_init(Fns* self)
 }
 
 void
-fns_free(Fns* self)
+calls_free(Calls* self)
 {
 	buf_free(&self->context);
 }
 
 void
-fns_prepare(Fns* self, Local* local, CodeData* data)
+calls_prepare(Calls* self, Local* local, CodeData* data)
 {
 	self->local = local;
 	self->data  = data;
@@ -47,7 +47,7 @@ fns_prepare(Fns* self, Local* local, CodeData* data)
 }
 
 void
-fns_reset(Fns* self)
+calls_reset(Calls* self)
 {
 	if (buf_empty(&self->context))
 		return;
@@ -55,19 +55,19 @@ fns_reset(Fns* self)
 	auto count = code_data_count_fn(self->data);
 	for (int i = 0; i < count; i++)
 	{
-		auto context = fns_at(self, i);
+		auto context = calls_at(self, i);
 		if (! *context)
 			continue;
-		Fn cleanup_fn =
+		Call cleanup =
 		{
 			.argc     = 0,
 			.argv     = NULL,
 			.result   = NULL,
-			.action   = FN_CLEANUP,
+			.type     = CALL_CLEANUP,
 			.function = code_data_at_fn(self->data, i),
 			.context  = context
 		};
-		cleanup_fn.function->function(&cleanup_fn);
+		cleanup.function->function(&cleanup);
 		*context = NULL;
 	}
 

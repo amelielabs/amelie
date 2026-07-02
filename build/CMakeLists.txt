@@ -260,8 +260,8 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/output/output_text.c
     ${AMELIE_ROOT}/vm/commit/commit.c
     ${AMELIE_ROOT}/vm/func/functions.c
-    ${AMELIE_ROOT}/vm/func/fn.c
-    ${AMELIE_ROOT}/vm/func/fns.c
+    ${AMELIE_ROOT}/vm/func/call.c
+    ${AMELIE_ROOT}/vm/func/calls.c
     ${AMELIE_ROOT}/vm/func/fn_system.c
     ${AMELIE_ROOT}/vm/func/fn_cast.c
     ${AMELIE_ROOT}/vm/func/fn_null.c

@@ -39,14 +39,14 @@ vm_init(Vm* self, Part* part)
 	self->local       = NULL;
 	reg_init(&self->r);
 	stack_init(&self->stack);
-	fns_init(&self->fns);
+	calls_init(&self->calls);
 }
 
 void
 vm_free(Vm* self)
 {
 	vm_reset(self);
-	fns_free(&self->fns);
+	calls_free(&self->calls);
 	stack_free(&self->stack);
 	reg_free(&self->r);
 }
@@ -55,7 +55,7 @@ void
 vm_reset(Vm* self)
 {
 	if (self->code_data)
-		fns_reset(&self->fns);
+		calls_reset(&self->calls);
 	reg_reset(&self->r);
 	stack_reset(&self->stack);
 	self->code        = NULL;
@@ -96,7 +96,7 @@ vm_run(Vm*       self,
 	self->refs        = refs;
 	self->args        = args;
 	self->allow_close = allow_close;
-	fns_prepare(&self->fns, local, code_data);
+	calls_prepare(&self->calls, local, code_data);
 
 	const void* ops[] =
 	{
@@ -421,7 +421,7 @@ vm_run(Vm*       self,
 	Buf*      buf;
 	uint8_t*  json;
 	void*     ptr;
-	Fn        fn;
+	Call      call;
 	Column*   column;
 	Flat*     flat;
 	str_init(&string);
@@ -2036,16 +2036,16 @@ cref:
 
 ccall:
 	// [result, function, argc, call_id]
-	fn.argc     = op->c;
-	fn.argv     = stack_at(stack, op->c);
-	fn.result   = &r[op->a];
-	fn.action   = FN_EXECUTE;
-	fn.function = (Function*)op->b;
-	fn.local    = self->local;
-	fn.context  = NULL;
+	call.argc     = op->c;
+	call.argv     = stack_at(stack, op->c);
+	call.result   = &r[op->a];
+	call.type     = CALL_EXECUTE;
+	call.function = (Function*)op->b;
+	call.local    = self->local;
+	call.context  = NULL;
 	if (op->d != -1)
-		fn.context = fns_at(&self->fns, op->d);
-	fn.function->function(&fn);
+		call.context = calls_at(&self->calls, op->d);
+	call.function->function(&call);
 	stack_popn(&self->stack, op->c);
 	op_next;
 

@@ -21,29 +21,29 @@
 #include <amelie_func.h>
 
 hot static void
-fn_now(Fn* self)
+fn_now(Call* self)
 {
-	fn_expect(self, 0);
+	call_expect(self, 0);
 	value_set_timestamp(self->result, self->local->time_us);
 }
 
 hot static void
-fn_at_timezone(Fn* self)
+fn_at_timezone(Call* self)
 {
 	auto argv = self->argv;
-	fn_expect(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_TIMESTAMP);
-	fn_expect_arg(self, 1, TYPE_STRING);
+	call_arg(self, 0, TYPE_TIMESTAMP);
+	call_arg(self, 1, TYPE_STRING);
 
 	auto name = &self->argv[1].string;
 	auto timezone = timezones_find(&runtime()->timezones, name);
 	if (! timezone)
-		fn_error_arg(self, 1, "failed to find timezone '{str}'", name);
+		call_error_at(self, 1, "failed to find timezone '{str}'", name);
 
 	auto data = buf_create();
 	buf_reserve(data, 128);
@@ -57,11 +57,11 @@ fn_at_timezone(Fn* self)
 }
 
 hot static void
-fn_date_bin(Fn* self)
+fn_date_bin(Call* self)
 {
 	auto argv = self->argv;
 	if (self->argc < 2 || self->argc > 3)
-		fn_error(self, "unexpected number of arguments");
+		call_error(self, "unexpected number of arguments");
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
@@ -74,23 +74,23 @@ fn_date_bin(Fn* self)
 	uint64_t  timestamp;
 	if (argv[0].type == TYPE_INTERVAL)
 	{
-		fn_expect_arg(self, 1, TYPE_TIMESTAMP);
+		call_arg(self, 1, TYPE_TIMESTAMP);
 		iv = &argv[0].interval;
 		timestamp = argv[1].integer;
 	} else
 	if (argv[0].type == TYPE_TIMESTAMP)
 	{
-		fn_expect_arg(self, 1, TYPE_INTERVAL);
+		call_arg(self, 1, TYPE_INTERVAL);
 		timestamp = argv[0].integer;
 		iv = &argv[1].interval;
 	} else {
-		fn_unsupported(self, 0);
+		call_unsupported(self, 0);
 	}
 
 	uint64_t origin;
 	if (self->argc == 3)
 	{
-		fn_expect_arg(self, 2, TYPE_TIMESTAMP);
+		call_arg(self, 2, TYPE_TIMESTAMP);
 		origin = argv[2].integer;
 	} else
 	{
@@ -99,23 +99,23 @@ fn_date_bin(Fn* self)
 	}
 
 	if (iv->m != 0)
-		fn_error(self, "month and year intervals are not supported");
+		call_error(self, "month and year intervals are not supported");
 	int64_t span = iv->d * 86400000000ULL + iv->us;
 	if (span <= 0)
-		fn_error(self, "invalid interval");
+		call_error(self, "invalid interval");
 	if (origin > timestamp)
-		fn_error(self, "origin is in the future");
+		call_error(self, "origin is in the future");
 	uint64_t at = timestamp - origin;
 	uint64_t delta = at - at % span;
 	value_set_timestamp(self->result, origin + delta);
 }
 
 hot static void
-fn_date_trunc(Fn* self)
+fn_date_trunc(Call* self)
 {
 	auto argv = self->argv;
 	if (self->argc < 2 || self->argc > 3)
-		fn_error(self, "unexpected number of arguments");
+		call_error(self, "unexpected number of arguments");
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
@@ -127,11 +127,11 @@ fn_date_trunc(Fn* self)
 	Timezone* timezone = self->local->timezone;
 	if (self->argc == 3)
 	{
-		fn_expect_arg(self, 2, TYPE_STRING);
+		call_arg(self, 2, TYPE_STRING);
 		auto name = &self->argv[2].string;
 		timezone = timezones_find(&runtime()->timezones, name);
 		if (! timezone)
-			fn_error_arg(self, 2, "failed to find timezone '{str}'", name);
+			call_error_at(self, 2, "failed to find timezone '{str}'", name);
 	}
 
 	if (argv[0].type == TYPE_STRING)
@@ -145,12 +145,12 @@ fn_date_trunc(Fn* self)
 			auto time = timestamp_get_unixtime(&ts, timezone);
 			value_set_timestamp(self->result, time);
 		} else {
-			fn_unsupported(self, 1);
+			call_unsupported(self, 1);
 		}
 	} else
 	if (argv[0].type == TYPE_TIMESTAMP)
 	{
-		fn_expect_arg(self, 1, TYPE_STRING);
+		call_arg(self, 1, TYPE_STRING);
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_set_unixtime(&ts, self->argv[0].integer);
@@ -159,17 +159,17 @@ fn_date_trunc(Fn* self)
 		value_set_timestamp(self->result, time);
 	} else
 	{
-		fn_unsupported(self, 0);
+		call_unsupported(self, 0);
 	}
 }
 
 hot static void
-fn_interval_trunc(Fn* self)
+fn_interval_trunc(Call* self)
 {
 	// (string, interval)
 	// (interval, string)
 	auto argv = self->argv;
-	fn_expect(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
@@ -177,29 +177,29 @@ fn_interval_trunc(Fn* self)
 	}
 	if (argv[0].type == TYPE_STRING)
 	{
-		fn_expect_arg(self, 1, TYPE_INTERVAL);
+		call_arg(self, 1, TYPE_INTERVAL);
 		Interval iv = argv[1].interval;
 		interval_trunc(&iv, &argv[0].string);
 		value_set_interval(self->result, &iv);
 	} else
 	if (argv[0].type == TYPE_INTERVAL)
 	{
-		fn_expect_arg(self, 1, TYPE_STRING);
+		call_arg(self, 1, TYPE_STRING);
 		Interval iv = argv[0].interval;
 		interval_trunc(&iv, &argv[1].string);
 		value_set_interval(self->result, &iv);
 	} else
 	{
-		fn_unsupported(self, 0);
+		call_unsupported(self, 0);
 	}
 }
 
 hot static void
-fn_extract(Fn* self)
+fn_extract(Call* self)
 {
 	auto argv = self->argv;
 	if (self->argc < 2 || self->argc > 3)
-		fn_error(self, "unexpected number of arguments");
+		call_error(self, "unexpected number of arguments");
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
@@ -216,11 +216,11 @@ fn_extract(Fn* self)
 	Timezone* timezone = self->local->timezone;
 	if (self->argc == 3)
 	{
-		fn_expect_arg(self, 2, TYPE_STRING);
+		call_arg(self, 2, TYPE_STRING);
 		auto name = &self->argv[2].string;
 		timezone = timezones_find(&runtime()->timezones, name);
 		if (! timezone)
-			fn_error_arg(self, 2, "failed to find timezone '{str}'", name);
+			call_error_at(self, 2, "failed to find timezone '{str}'", name);
 	}
 
 	uint64_t value;
@@ -235,38 +235,38 @@ fn_extract(Fn* self)
 		if (argv[1].type == TYPE_DATE)
 			value = date_extract(argv[1].integer, &argv[0].string);
 		else
-			fn_unsupported(self, 1);
+			call_unsupported(self, 1);
 	} else
 	if (argv[0].type == TYPE_INTERVAL)
 	{
-		fn_expect_arg(self, 1, TYPE_STRING);
+		call_arg(self, 1, TYPE_STRING);
 		value = interval_extract(&argv[0].interval, &argv[1].string);
 	} else
 	if (argv[0].type == TYPE_TIMESTAMP)
 	{
-		fn_expect_arg(self, 1, TYPE_STRING);
+		call_arg(self, 1, TYPE_STRING);
 		value = timestamp_extract(argv[0].integer, timezone, &argv[1].string);
 	} else
 	if (argv[0].type == TYPE_DATE)
 	{
-		fn_expect_arg(self, 1, TYPE_STRING);
+		call_arg(self, 1, TYPE_STRING);
 		value = date_extract(argv[0].integer, &argv[1].string);
 	} else
 	{
-		fn_unsupported(self, 0);
+		call_unsupported(self, 0);
 	}
 	value_set_int(self->result, value);
 }
 
 #if 0
 hot static void
-fn_generate_series(Fn* self)
+fn_generate_series(Call* self)
 {
 	auto argv = self->argv;
-	fn_expect(self, 3);
-	fn_expect_arg(self, 0, TYPE_TIMESTAMP);
-	fn_expect_arg(self, 1, TYPE_TIMESTAMP);
-	fn_expect_arg(self, 2, TYPE_INTERVAL);
+	call_expect(self, 3);
+	call_arg(self, 0, TYPE_TIMESTAMP);
+	call_arg(self, 1, TYPE_TIMESTAMP);
+	call_arg(self, 2, TYPE_INTERVAL);
 
 	Timestamp ts;
 	timestamp_init(&ts);

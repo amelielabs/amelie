@@ -21,166 +21,166 @@
 #include <amelie_func.h>
 
 hot static void
-fn_append(Fn* self)
+fn_append(Call* self)
 {
 	auto argv = self->argv;
 	if (self->argc < 2)
-		fn_error(self, "expected two or more arguments");
+		call_error(self, "expected two or more arguments");
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
-		fn_error_arg(self, 0, "json array expected");
+		call_error_at(self, 0, "json array expected");
 	if (unlikely(! data_is_array(argv[0].json)))
-		fn_error_arg(self, 0, "json array expected");
+		call_error_at(self, 0, "json array expected");
 	auto tz = self->local->timezone;
 	value_array_append(self->result, tz, argv[0].json, argv[0].json_size,
 	                   self->argc - 1, &argv[1]);
 }
 
 hot static void
-fn_push(Fn* self)
+fn_push(Call* self)
 {
 	auto argv = self->argv;
 	if (self->argc < 2)
-		fn_error(self, "expected two or more arguments");
+		call_error(self, "expected two or more arguments");
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
-		fn_error_arg(self, 0, "json array expected");
+		call_error_at(self, 0, "json array expected");
 	if (unlikely(! data_is_array(argv[0].json)))
-		fn_error_arg(self, 0, "json array expected");
+		call_error_at(self, 0, "json array expected");
 	auto tz = self->local->timezone;
 	value_array_push(self->result, tz, argv[0].json, argv[0].json_size,
 	                 self->argc - 1, &argv[1]);
 }
 
 hot static void
-fn_pop(Fn* self)
+fn_pop(Call* self)
 {
 	auto argv = self->argv;
-	fn_expect(self, 1);
+	call_expect(self, 1);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
-		fn_error_arg(self, 0, "json array expected");
+		call_error_at(self, 0, "json array expected");
 	if (unlikely(! data_is_array(argv[0].json)))
-		fn_error_arg(self, 0, "json array expected");
+		call_error_at(self, 0, "json array expected");
 	value_array_pop(self->result, argv[0].json, argv[0].json_size);
 }
 
 hot static void
-fn_pop_back(Fn* self)
+fn_pop_back(Call* self)
 {
 	auto argv = self->argv;
-	fn_expect(self, 1);
+	call_expect(self, 1);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
-		fn_error_arg(self, 0, "json array expected");
+		call_error_at(self, 0, "json array expected");
 	if (unlikely(! data_is_array(argv[0].json)))
-		fn_error_arg(self, 0, "json array expected");
+		call_error_at(self, 0, "json array expected");
 	value_array_pop_back(self->result, argv[0].json);
 }
 
 hot static void
-fn_put(Fn* self)
+fn_put(Call* self)
 {
 	auto argv = self->argv;
-	fn_expect(self, 3);
+	call_expect(self, 3);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_JSON);
+	call_arg(self, 0, TYPE_JSON);
 	if (unlikely(! data_is_array(argv[0].json)))
-		fn_error_arg(self, 0, "json array expected");
-	fn_expect_arg(self, 1, TYPE_INT);
+		call_error_at(self, 0, "json array expected");
+	call_arg(self, 1, TYPE_INT);
 	auto tz = self->local->timezone;
 	value_array_put(self->result, tz, argv[0].json, argv[1].integer, &argv[2]);
 }
 
 hot static void
-fn_remove(Fn* self)
+fn_remove(Call* self)
 {
 	auto argv = self->argv;
-	fn_expect(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	fn_expect_arg(self, 0, TYPE_JSON);
+	call_arg(self, 0, TYPE_JSON);
 	if (unlikely(! data_is_array(argv[0].json)))
-		fn_error_arg(self, 0, "json array expected");
-	fn_expect_arg(self, 1, TYPE_INT);
+		call_error_at(self, 0, "json array expected");
+	call_arg(self, 1, TYPE_INT);
 	value_array_remove(self->result, argv[0].json, argv[1].integer);
 }
 
 hot static void
-fn_set(Fn* self)
+fn_set(Call* self)
 {
 	auto argv = self->argv;
-	fn_expect(self, 3);
+	call_expect(self, 3);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
-		fn_error_arg(self, 0, "json object expected");
+		call_error_at(self, 0, "json object expected");
 	if (unlikely(! data_is_obj(argv[0].json)))
-		fn_error_arg(self, 0, "json object expected");
-	fn_expect_arg(self, 1, TYPE_STRING);
+		call_error_at(self, 0, "json object expected");
+	call_arg(self, 1, TYPE_STRING);
 	auto tz = self->local->timezone;
 	update_set(self->result, tz, argv[0].json, &argv[1].string, &argv[2]);
 }
 
 hot static void
-fn_unset(Fn* self)
+fn_unset(Call* self)
 {
 	auto argv = self->argv;
-	fn_expect(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
-		fn_error_arg(self, 0, "json object expected");
+		call_error_at(self, 0, "json object expected");
 	if (unlikely(! data_is_obj(argv[0].json)))
-		fn_error_arg(self, 0, "json object expected");
-	fn_expect_arg(self, 1, TYPE_STRING);
+		call_error_at(self, 0, "json object expected");
+	call_arg(self, 1, TYPE_STRING);
 	update_unset(self->result, argv[0].json, &argv[1].string);
 }
 
 hot static void
-fn_has(Fn* self)
+fn_has(Call* self)
 {
 	auto argv = self->argv;
-	fn_expect(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	if (unlikely(argv[0].type != TYPE_JSON))
-		fn_error_arg(self, 0, "json object expected");
+		call_error_at(self, 0, "json object expected");
 	if (unlikely(! data_is_obj(argv[0].json)))
-		fn_error_arg(self, 0, "json object expected");
-	fn_expect_arg(self, 1, TYPE_STRING);
+		call_error_at(self, 0, "json object expected");
+	call_arg(self, 1, TYPE_STRING);
 	value_obj_has(self->result, argv[0].json, &argv[1].string);
 }
 

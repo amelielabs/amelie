@@ -11,22 +11,22 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Fns Fns;
+typedef struct Calls Calls;
 
-struct Fns
+struct Calls
 {
 	Local*    local;
 	CodeData* data;
 	Buf       context;
 };
 
-void fns_init(Fns*);
-void fns_free(Fns*);
-void fns_prepare(Fns*, Local*, CodeData*);
-void fns_reset(Fns*);
+void calls_init(Calls*);
+void calls_free(Calls*);
+void calls_prepare(Calls*, Local*, CodeData*);
+void calls_reset(Calls*);
 
 static inline void**
-fns_at(Fns* self, int id)
+calls_at(Calls* self, int id)
 {
 	assert(buf_size(&self->context) > 0);
 	auto list = (void**)self->context.start;

@@ -29,7 +29,7 @@ struct Vm
 	Program*  program;
 	Tr*       tr;
 	Local*    local;
-	Fns       fns;
+	Calls     calls;
 };
 
 void vm_init(Vm*, Part*);
