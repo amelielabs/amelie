@@ -17,7 +17,7 @@
 #include <amelie_value.h>
 #include <amelie_set.h>
 #include <amelie_output.h>
-#include <amelie_executor.h>
+#include <amelie_commit.h>
 #include <amelie_func.h>
 #include <amelie_vm.h>
 #include "base/overflow_fp.h"
@@ -378,7 +378,7 @@ vm_run(Vm*       self,
 		&&cddl,
 		&&cddl_create_index,
 
-		// executor
+		// scheduler
 		&&csend_shard,
 		&&csend_lookup,
 		&&csend_all,

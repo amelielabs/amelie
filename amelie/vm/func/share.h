@@ -15,7 +15,7 @@ typedef struct Share Share;
 
 struct Share
 {
-	Executor*    executor;
+	GtrMgr*      gtr_mgr;
 	Commit*      commit;
 	Repl*        repl;
 	Cdc*         cdc;

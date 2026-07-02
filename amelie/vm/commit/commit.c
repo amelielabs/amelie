@@ -17,7 +17,7 @@
 #include <amelie_value.h>
 #include <amelie_set.h>
 #include <amelie_output.h>
-#include <amelie_executor.h>
+#include <amelie_commit.h>
 
 hot static inline void
 commit_add(GtrQueue* queue, Batch* batch, Gtr* gtr)
@@ -75,7 +75,7 @@ commit_main(void* arg)
 		// update global commit/abort metrics and detach
 		// transactions
 		//
-		auto group_min = executor_detach(self->executor, &batch);
+		auto group_min = gtr_mgr_detach(self->gtr_mgr, &batch);
 
 		// publish cdc events and wakeup transactions
 		batch_complete(&batch, self->db->cdc);
@@ -109,7 +109,7 @@ commit(Commit* self, Gtr* gtr, Buf* error)
 	}
 
 	// process transaction commit/abort, only if the transaction
-	// was registered in executor
+	// was registered in manager
 	if (gtr_active(gtr))
 	{
 		task_send(&self->task, &gtr->msg);
@@ -128,10 +128,10 @@ commit(Commit* self, Gtr* gtr, Buf* error)
 }
 
 void
-commit_init(Commit* self, Db* db, Executor* executor)
+commit_init(Commit* self, Db* db, GtrMgr* gtr_mgr)
 {
-	self->db       = db;
-	self->executor = executor;
+	self->db      = db;
+	self->gtr_mgr = gtr_mgr;
 	task_init(&self->task);
 }
 

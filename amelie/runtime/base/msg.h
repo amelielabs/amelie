@@ -21,7 +21,7 @@ typedef enum
 	// resolver
 	MSG_RESOLVE,
 
-	// executor
+	// transaction
 	MSG_GTR,
 	MSG_LTR,
 	MSG_LTR_STOP,

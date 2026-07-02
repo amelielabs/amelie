@@ -59,7 +59,7 @@ replay_mgr_start(ReplayMgr* self, FrontendMgr* mgr)
 	}
 
 	// set starting reply id
-	self->replay_id = executor_recover_id(share()->executor);
+	self->replay_id = gtr_mgr_recover_id(share()->gtr_mgr);
 }
 
 void

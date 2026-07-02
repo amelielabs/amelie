@@ -17,7 +17,7 @@
 #include <amelie_value.h>
 #include <amelie_set.h>
 #include <amelie_output.h>
-#include <amelie_executor.h>
+#include <amelie_commit.h>
 #include <amelie_func.h>
 #include <amelie_vm.h>
 
@@ -300,7 +300,7 @@ OpDesc ops[] =
 	{ CDDL, "ddl" },
 	{ CDDL_CREATE_INDEX, "ddl_create_index" },
 
-	// executor
+	// scheduler
 	{ CSEND_SHARD, "send_shard" },
 	{ CSEND_LOOKUP, "send_lookup" },
 	{ CSEND_ALL, "send_all" },

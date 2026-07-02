@@ -22,8 +22,8 @@ struct System
 	Cdc         cdc;
 	// repl
 	Repl        repl;
-	// executor
-	Executor    executor;
+	// transactions
+	GtrMgr      gtr_mgr;
 	Commit      commit;
 	FrontendMgr frontend_mgr;
 	BackendMgr  backend_mgr;

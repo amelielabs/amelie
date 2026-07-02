@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Executor Executor;
+typedef struct GtrMgr GtrMgr;
 
-struct Executor
+struct GtrMgr
 {
 	Spinlock   lock;
 	uint64_t   id;
@@ -22,7 +22,7 @@ struct Executor
 };
 
 static inline void
-executor_init(Executor* self)
+gtr_mgr_init(GtrMgr* self)
 {
 	self->id = 1;
 	list_init(&self->list);
@@ -31,13 +31,13 @@ executor_init(Executor* self)
 }
 
 static inline void
-executor_free(Executor* self)
+gtr_mgr_free(GtrMgr* self)
 {
 	spinlock_free(&self->lock);
 }
 
 hot static inline void
-executor_recover(Executor* self, Gtr* gtr)
+gtr_mgr_recover(GtrMgr* self, Gtr* gtr)
 {
 	auto recover = &self->recover;
 	gtr_recover_add(recover, gtr);
@@ -65,7 +65,7 @@ executor_recover(Executor* self, Gtr* gtr)
 }
 
 hot static inline void
-executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
+gtr_mgr_attach(GtrMgr* self, Gtr* gtr, Dispatch* dispatch)
 {
 	spinlock_lock(&self->lock);
 
@@ -77,7 +77,7 @@ executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
 		// recovery serialization
 		//
 		// ensure transaction is serialized around recover_id order
-		executor_recover(self, gtr);
+		gtr_mgr_recover(self, gtr);
 
 		// recover id
 		id = gtr->write.recover->record->tsn;
@@ -151,7 +151,7 @@ executor_attach(Executor* self, Gtr* gtr, Dispatch* dispatch)
 }
 
 hot static inline void
-executor_send(Executor* self, Gtr* gtr, Dispatch* dispatch)
+gtr_mgr_send(GtrMgr* self, Gtr* gtr, Dispatch* dispatch)
 {
 	auto mgr = &gtr->dispatch_mgr;
 	auto first = dispatch_mgr_is_first(mgr);
@@ -174,7 +174,7 @@ executor_send(Executor* self, Gtr* gtr, Dispatch* dispatch)
 		complete_prepare(&mgr->complete, ltrs_count);
 
 		// register transaction and begin execution
-		executor_attach(self, gtr, dispatch);
+		gtr_mgr_attach(self, gtr, dispatch);
 		return;
 	}
 
@@ -183,7 +183,7 @@ executor_send(Executor* self, Gtr* gtr, Dispatch* dispatch)
 }
 
 hot static inline uint64_t
-executor_detach(Executor* self, Batch* batch)
+gtr_mgr_detach(GtrMgr* self, Batch* batch)
 {
 	// group completion (called from Commit)
 	auto lsn = batch->write.lsn;
@@ -203,7 +203,7 @@ executor_detach(Executor* self, Batch* batch)
 		ref = next;
 	}
 
-	// remove transactions from the executor list
+	// remove transactions from the gtr_mgr list
 	for (auto it = 0; it < batch->list_count; it++)
 	{
 		auto gtr = batch_at(batch, it);
@@ -220,7 +220,7 @@ executor_detach(Executor* self, Batch* batch)
 }
 
 hot static inline uint64_t
-executor_recover_id(Executor* self)
+gtr_mgr_recover_id(GtrMgr* self)
 {
 	spinlock_lock(&self->lock);
 	auto id = self->recover.id_next;

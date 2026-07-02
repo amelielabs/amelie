@@ -101,7 +101,7 @@ include_directories("${AMELIE_ROOT}/vm")
 include_directories("${AMELIE_ROOT}/vm/value")
 include_directories("${AMELIE_ROOT}/vm/set")
 include_directories("${AMELIE_ROOT}/vm/output")
-include_directories("${AMELIE_ROOT}/vm/executor")
+include_directories("${AMELIE_ROOT}/vm/commit")
 include_directories("${AMELIE_ROOT}/vm/func")
 include_directories("${AMELIE_ROOT}/vm/vm")
 
@@ -258,7 +258,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/output/output_json.c
     ${AMELIE_ROOT}/vm/output/output_jsonrpc.c
     ${AMELIE_ROOT}/vm/output/output_text.c
-    ${AMELIE_ROOT}/vm/executor/commit.c
+    ${AMELIE_ROOT}/vm/commit/commit.c
     ${AMELIE_ROOT}/vm/func/function_mgr.c
     ${AMELIE_ROOT}/vm/func/fn.c
     ${AMELIE_ROOT}/vm/func/fn_mgr.c

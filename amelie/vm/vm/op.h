@@ -293,7 +293,7 @@ enum
 	CDDL,
 	CDDL_CREATE_INDEX,
 
-	// executor
+	// scheduler
 	CSEND_SHARD,
 	CSEND_LOOKUP,
 	CSEND_ALL,

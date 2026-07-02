@@ -237,7 +237,7 @@ system_create(void)
 
 	// prepare shared context
 	auto share = &self->share;
-	share->executor       = &self->executor;
+	share->gtr_mgr        = &self->gtr_mgr;
 	share->commit         = &self->commit;
 	share->cdc            = &self->cdc;
 	share->repl           = &self->repl;
@@ -259,9 +259,9 @@ system_create(void)
 	frontend_mgr_init(&self->frontend_mgr);
 	backend_mgr_init(&self->backend_mgr);
 
-	// executor
-	executor_init(&self->executor);
-	commit_init(&self->commit, &self->db, &self->executor);
+	// transactions
+	gtr_mgr_init(&self->gtr_mgr);
+	commit_init(&self->commit, &self->db, &self->gtr_mgr);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
@@ -279,7 +279,7 @@ system_free(System* self)
 {
 	repl_free(&self->repl);
 	commit_free(&self->commit);
-	executor_free(&self->executor);
+	gtr_mgr_free(&self->gtr_mgr);
 	db_free(&self->db);
 	cdc_free(&self->cdc);
 	function_mgr_free(&self->function_mgr);

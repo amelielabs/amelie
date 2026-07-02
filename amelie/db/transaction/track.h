@@ -20,7 +20,7 @@ struct Track
 	TrCache    cache;
 	// commited by pod (stale)
 	Consensus  consensus_pod;
-	// commited by executor
+	// commited (globally)
 	Consensus  consensus;
 	atomic_u64 lsn;
 	// pending commit state

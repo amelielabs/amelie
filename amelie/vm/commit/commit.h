@@ -15,12 +15,12 @@ typedef struct Commit Commit;
 
 struct Commit
 {
-	Executor* executor;
-	Db*       db;
-	Task      task;
+	GtrMgr* gtr_mgr;
+	Db*     db;
+	Task    task;
 };
 
-void commit_init(Commit*, Db*, Executor*);
+void commit_init(Commit*, Db*, GtrMgr*);
 void commit_free(Commit*);
 void commit_start(Commit*);
 void commit_stop(Commit*);

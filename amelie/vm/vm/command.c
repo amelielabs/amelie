@@ -17,7 +17,7 @@
 #include <amelie_value.h>
 #include <amelie_set.h>
 #include <amelie_output.h>
-#include <amelie_executor.h>
+#include <amelie_commit.h>
 #include <amelie_func.h>
 #include <amelie_vm.h>
 
@@ -98,8 +98,8 @@ csend_shard(Vm* self, Op* op)
 		stack_popn(&self->stack, op->c);
 	value_free(reg_at(&self->r, op->b));
 
-	// execute
-	executor_send(share()->executor, gtr, dispatch);
+	// execute dispatch
+	gtr_mgr_send(share()->gtr_mgr, gtr, dispatch);
 
 	// return dispatch order
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
@@ -143,8 +143,8 @@ csend_lookup(Vm* self, Op* op)
 		stack_popn(&self->stack, op->b);
 	}
 
-	// execute
-	executor_send(share()->executor, gtr, dispatch);
+	// execute dispatch
+	gtr_mgr_send(share()->gtr_mgr, gtr, dispatch);
 
 	// return dispatch order
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
@@ -184,8 +184,8 @@ csend_all(Vm* self, Op* op)
 	if (op->b > 0)
 		stack_popn(&self->stack, op->b);
 
-	// execute
-	executor_send(share()->executor, gtr, dispatch);
+	// execute dispatch
+	gtr_mgr_send(share()->gtr_mgr, gtr, dispatch);
 
 	// return dispatch order
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
@@ -695,7 +695,7 @@ cpublish(Vm* self, Op* op)
 	// (dispatch has no partitions)
 
 	// register transaction
-	executor_send(share()->executor, gtr, dispatch);
+	gtr_mgr_send(share()->gtr_mgr, gtr, dispatch);
 }
 
 void
@@ -724,5 +724,5 @@ cack(Vm* self, Op* op)
 	// (dispatch has no partitions)
 
 	// register transaction
-	executor_send(share()->executor, gtr, dispatch);
+	gtr_mgr_send(share()->gtr_mgr, gtr, dispatch);
 }
