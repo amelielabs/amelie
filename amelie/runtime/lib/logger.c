@@ -87,7 +87,7 @@ logger_write(TaskLog* arg, const char* fmt, va_list args)
 	buf_reserve(buf, 64);
 	if (self->timezone)
 	{
-		timers_reset(&am_task->timers);
+		clock_reset(&am_task->clock);
 		auto time = time_us();
 		auto rc = timestamp_get(time, self->timezone, buf_cstr(buf), 64);
 		buf_advance(buf, rc);

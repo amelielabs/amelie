@@ -130,7 +130,7 @@ include_directories("${AMELIE_ROOT}/main/test_slt")
 set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/base/format.c
     ${AMELIE_ROOT}/runtime/base/report.c
-    ${AMELIE_ROOT}/runtime/base/timers.c
+    ${AMELIE_ROOT}/runtime/base/clock.c
     ${AMELIE_ROOT}/runtime/base/poller.c
     ${AMELIE_ROOT}/runtime/base/notify.c
     ${AMELIE_ROOT}/runtime/base/context_stack.c

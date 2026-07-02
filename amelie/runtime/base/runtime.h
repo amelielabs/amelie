@@ -72,7 +72,7 @@ event_wait(Event* self, int time_ms)
 	cancellation_point();
 	bool timedout = false;
 	if (time_ms >= 0)
-		timedout = wait_event_time(self, &am_task->timers, am_self(), time_ms);
+		timedout = wait_event_time(self, &am_task->clock, am_self(), time_ms);
 	else
 		wait_event(self, am_self());
 	cancellation_point();
@@ -194,11 +194,11 @@ task_send(Task* dest, Msg* msg)
 static inline uint64_t
 time_ms(void)
 {
-	return timers_time_ms(&am_task->timers);
+	return clock_time_ms(&am_task->clock);
 }
 
 static inline uint64_t
 time_us(void)
 {
-	return timers_time_us(&am_task->timers);
+	return clock_time_us(&am_task->clock);
 }

@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Timer  Timer;
-typedef struct Timers Timers;
+typedef struct Timer Timer;
+typedef struct Clock Clock;
 
 typedef void (*TimerFunction)(Timer*);
 
@@ -24,67 +24,67 @@ struct Timer
 	int           interval;
 	TimerFunction function;
 	void*         function_arg;
-	void*         timers;
+	Clock*        clock;
 };
 
-struct Timers
+struct Clock
 {
 	uint64_t time_ms;
 	uint64_t time_us;
 	uint64_t time_ns;
 	bool     time_cached;
-	Timer**  timers;
-	int      timers_count;
-	int      timers_max;
-	uint64_t timers_seq;
+	Timer**  clock;
+	int      clock_count;
+	int      clock_max;
+	uint64_t clock_seq;
 };
 
-void     timers_init(Timers*);
-void     timers_free(Timers*);
-void     timers_update(Timers*);
-int      timers_step(Timers*);
-void     timers_add(Timers*, Timer*);
-void     timers_remove(Timers*, Timer*);
-uint64_t timers_gettime(void);
+void     clock_init(Clock*);
+void     clock_free(Clock*);
+void     clock_update(Clock*);
+int      clock_step(Clock*);
+void     clock_add(Clock*, Timer*);
+void     clock_remove(Clock*, Timer*);
+uint64_t clock_time(void);
 
 always_inline static inline bool
-timers_empty(Timers* self)
+clock_empty(Clock* self)
 {
-	return !self->timers_count;
+	return !self->clock_count;
 }
 
 always_inline static inline void
-timers_reset(Timers* self)
+clock_reset(Clock* self)
 {
 	self->time_cached = false;
 }
 
 static inline Timer*
-timers_min(Timers* self)
+clock_min(Clock* self)
 {
-	if (self->timers_count == 0)
+	if (self->clock_count == 0)
 		return NULL;
-	return self->timers[0];
+	return self->clock[0];
 }
 
 static inline uint64_t
-timers_time_ns(Timers* self)
+clock_time_ns(Clock* self)
 {
-	timers_update(self);
+	clock_update(self);
 	return self->time_ns;
 }
 
 static inline uint64_t
-timers_time_ms(Timers* self)
+clock_time_ms(Clock* self)
 {
-	timers_update(self);
+	clock_update(self);
 	return self->time_ms;
 }
 
 static inline uint64_t
-timers_time_us(Timers* self)
+clock_time_us(Clock* self)
 {
-	timers_update(self);
+	clock_update(self);
 	return self->time_us;
 }
 
@@ -98,14 +98,14 @@ timer_init(Timer* self, TimerFunction function, void* arg,
 	self->interval     = interval;
 	self->function     = function;
 	self->function_arg = arg;
-	self->timers       = NULL;
+	self->clock        = NULL;
 }
 
 static inline void
-timer_start(Timers* self, Timer* timer)
+timer_start(Clock* self, Timer* timer)
 {
-	timers_update(self);
-	timers_add(self, timer);
+	clock_update(self);
+	clock_add(self, timer);
 }
 
 static inline void
@@ -113,17 +113,17 @@ timer_stop(Timer* self)
 {
 	if (! self->active)
 		return;
-	timers_remove(self->timers, self);
+	clock_remove(self->clock, self);
 }
 
 static inline void
 time_start(uint64_t* time_us)
 {
-	*time_us = timers_gettime();
+	*time_us = clock_time();
 }
 
 static inline void
 time_end(uint64_t* time_us)
 {
-	*time_us = (timers_gettime() - *time_us) / 1000;
+	*time_us = (clock_time() - *time_us) / 1000;
 }

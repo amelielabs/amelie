@@ -89,13 +89,13 @@ task_coroutine_main(void* arg)
 hot static inline void
 mainloop(Task* self)
 {
-	auto timers     = &self->timers;
+	auto clock      = &self->clock;
 	auto poller     = &self->poller;
 	auto coroutines = &self->coroutines;
 	auto bus        = &self->bus;
 
 	// set initial time
-	timers_update(timers);
+	clock_update(clock);
 
 	// main loop
 	for (;;)
@@ -114,18 +114,18 @@ mainloop(Task* self)
 			continue;
 
 		// update time
-		timers_reset(timers);
+		clock_reset(clock);
 
 		uint32_t timeout = UINT32_MAX;
-		if (! timers_empty(timers))
+		if (! clock_empty(clock))
 		{
-			timers_update(timers);
+			clock_update(clock);
 
 			// get minimal timer timeout
-			auto next = timers_min(timers);
+			auto next = clock_min(clock);
 			if (next)
 			{
-				int diff = next->timeout - timers->time_ms;
+				int diff = next->timeout - clock->time_ms;
 				if (diff <= 0)
 					timeout = 0;
 				else
@@ -133,7 +133,7 @@ mainloop(Task* self)
 			}
 
 			// run timers
-			timers_step(timers);
+			clock_step(clock);
 		}
 
 		// retry the loop before blocking wait, if some events are ready
@@ -210,7 +210,7 @@ task_init(Task* self)
 	task_log_init(&self->log);
 	random_init(&self->random);
 	coroutines_init(&self->coroutines, 4096 * 32); // 128kb
-	timers_init(&self->timers);
+	clock_init(&self->clock);
 	poller_init(&self->poller);
 	bus_init(&self->bus);
 	cond_init(&self->status);
@@ -221,7 +221,7 @@ void
 task_free(Task* self)
 {
 	coroutines_free(&self->coroutines);
-	timers_free(&self->timers);
+	clock_free(&self->clock);
 	bus_close(&self->bus);
 	bus_free(&self->bus);
 	poller_free(&self->poller);

@@ -18,7 +18,7 @@ struct Task
 	BufCache     buf_cache;
 	Poller       poller;
 	Coroutines   coroutines;
-	Timers       timers;
+	Clock        clock;
 	Bus          bus;
 	MainFunction main;
 	void*        main_arg;
