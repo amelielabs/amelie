@@ -21,16 +21,16 @@
 #include <amelie_func.h>
 
 void
-fn_register(FunctionMgr* mgr)
+fn_register(Functions* self)
 {
-	fn_system_register(mgr);
-	fn_cast_register(mgr);
-	fn_null_register(mgr);
-	fn_json_register(mgr);
-	fn_string_register(mgr);
-	fn_regexp_register(mgr);
-	fn_math_register(mgr);
-	fn_misc_register(mgr);
-	fn_time_register(mgr);
-	fn_vector_register(mgr);
+	fn_system_register(self);
+	fn_cast_register(self);
+	fn_null_register(self);
+	fn_json_register(self);
+	fn_string_register(self);
+	fn_regexp_register(self);
+	fn_math_register(self);
+	fn_misc_register(self);
+	fn_time_register(self);
+	fn_vector_register(self);
 }

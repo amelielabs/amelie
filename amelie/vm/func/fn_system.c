@@ -244,14 +244,14 @@ fn_show(Fn* self)
 	switch (cmd->id) {
 	case SHOW_REPLICAS:
 	{
-		replica_mgr_list(&share()->repl->replica_mgr, buf, NULL, flags);
+		replicas_list(&share()->repl->replicas, buf, NULL, flags);
 		break;
 	}
 	case SHOW_REPLICA:
 	{
 		Uuid id;
 		uuid_set(&id, name);
-		replica_mgr_list(&share()->repl->replica_mgr, buf, &id, flags);
+		replicas_list(&share()->repl->replicas, buf, &id, flags);
 		break;
 	}
 	case SHOW_REPL:
@@ -281,22 +281,22 @@ fn_show(Fn* self)
 	case SHOW_USERS:
 	{
 		// created users
-		rel_mgr_list(&catalog->users, REL_USER, buf, user, NULL, all, flags);
+		rels_list(&catalog->users, REL_USER, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_USER:
 	{
-		rel_mgr_list(&catalog->users, REL_USER, buf, NULL, name, all, flags);
+		rels_list(&catalog->users, REL_USER, buf, NULL, name, all, flags);
 		break;
 	}
 	case SHOW_TABLES:
 	{
-		rel_mgr_list(&catalog->rels, REL_TABLE, buf, user, NULL, all, flags);
+		rels_list(&catalog->rels, REL_TABLE, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		rel_mgr_list(&catalog->rels, REL_TABLE, buf, user, name, all, flags);
+		rels_list(&catalog->rels, REL_TABLE, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_INDEXES:
@@ -314,65 +314,65 @@ fn_show(Fn* self)
 	}
 	case SHOW_CLONES:
 	{
-		rel_mgr_list(&catalog->rels, REL_CLONE, buf, user, NULL, all, flags);
+		rels_list(&catalog->rels, REL_CLONE, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_CLONE:
 	{
-		rel_mgr_list(&catalog->rels, REL_CLONE, buf, user, name, all, flags);
+		rels_list(&catalog->rels, REL_CLONE, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_PARTITIONS:
 	{
 		// todo: only owned
 		auto table = catalog_find_table(catalog, user, on, true);
-		part_mgr_list(&table->part_mgr, buf, NULL, flags);
+		parts_list(&table->parts, buf, NULL, flags);
 		break;
 	}
 	case SHOW_PARTITION:
 	{
 		auto table = catalog_find_table(catalog, user, on, true);
-		part_mgr_list(&table->part_mgr, buf, name, flags);
+		parts_list(&table->parts, buf, name, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:
 	{
-		rel_mgr_list(&catalog->rels, REL_UDF, buf, user, NULL, all, flags);
+		rels_list(&catalog->rels, REL_UDF, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		rel_mgr_list(&catalog->rels, REL_UDF, buf, user, name, all, flags);
+		rels_list(&catalog->rels, REL_UDF, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_TOPICS:
 	{
-		rel_mgr_list(&catalog->rels, REL_TOPIC, buf, user, NULL, all, flags);
+		rels_list(&catalog->rels, REL_TOPIC, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_TOPIC:
 	{
-		rel_mgr_list(&catalog->rels, REL_TOPIC, buf, user, name, all, flags);
+		rels_list(&catalog->rels, REL_TOPIC, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTIONS:
 	{
-		rel_mgr_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, NULL, all, flags);
+		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTION:
 	{
-		rel_mgr_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, name, all, flags);
+		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_RELS:
 	{
-		rel_mgr_list_rel(&catalog->rels, buf, user, NULL, all, flags);
+		rels_list_rel(&catalog->rels, buf, user, NULL, all, flags);
 		break;
 	}
 	case SHOW_REL:
 	{
-		rel_mgr_list_rel(&catalog->rels, buf, user, name, all, flags);
+		rels_list_rel(&catalog->rels, buf, user, name, all, flags);
 		break;
 	}
 	case SHOW_TOOLS:
@@ -407,7 +407,7 @@ fn_show(Fn* self)
 	}
 	case SHOW_LOCKS:
 	{
-		lock_mgr_list(&runtime()->lock_mgr, buf);
+		locks_list(&runtime()->locks, buf);
 		break;
 	}
 	default:
@@ -421,25 +421,25 @@ fn_show(Fn* self)
 }
 
 void
-fn_system_register(FunctionMgr* self)
+fn_system_register(Functions* self)
 {
 	// show()
 	auto func = function_allocate(TYPE_JSON, "show", fn_show);
 	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// show_all()
 	func = function_allocate(TYPE_JSON, "show_all", fn_show);
 	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// show_from()
 	func = function_allocate(TYPE_JSON, "show_from", fn_show);
 	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// show_from_all()
 	func = function_allocate(TYPE_JSON, "show_from_all", fn_show);
 	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 }

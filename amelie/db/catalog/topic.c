@@ -75,6 +75,6 @@ topic_create(Catalog*     self,
 
 	// create topic
 	auto topic = topic_allocate(config);
-	rel_mgr_create(&self->rels, tr, &topic->rel);
+	rels_create(&self->rels, tr, &topic->rel);
 	return true;
 }

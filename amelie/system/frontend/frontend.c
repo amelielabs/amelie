@@ -23,7 +23,7 @@ frontend_main_client(void* arg)
 	auto client = (Client*)arg;
 	auto self   = (Frontend*)client->arg;
 
-	client_mgr_add(&self->client_mgr, client);
+	clients_add(&self->clients, client);
 
 	// process client connection
 	error_catch
@@ -33,7 +33,7 @@ frontend_main_client(void* arg)
 		frontend_client(self, client);
 	);
 
-	client_mgr_del(&self->client_mgr, client);
+	clients_del(&self->clients, client);
 
 	client_close(client);
 	client_free(client);
@@ -67,7 +67,7 @@ frontend_rpc(Rpc* rpc, void* arg)
 	case MSG_STOP:
 	{
 		// disconnect clients
-		client_mgr_shutdown(&self->client_mgr);
+		clients_shutdown(&self->clients);
 		break;
 	}
 	default:
@@ -140,7 +140,7 @@ frontend_init(Frontend*   self,
 {
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
-	client_mgr_init(&self->client_mgr);
+	clients_init(&self->clients);
 	auth_init(&self->auth);
 	task_init(&self->task);
 }
@@ -148,7 +148,7 @@ frontend_init(Frontend*   self,
 void
 frontend_free(Frontend* self)
 {
-	client_mgr_free(&self->client_mgr);
+	clients_free(&self->clients);
 	auth_free(&self->auth);
 	task_free(&self->task);
 }

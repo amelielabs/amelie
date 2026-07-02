@@ -72,7 +72,7 @@ event_wait(Event* self, int time_ms)
 	cancellation_point();
 	bool timedout = false;
 	if (time_ms >= 0)
-		timedout = wait_event_time(self, &am_task->timer_mgr, am_self(), time_ms);
+		timedout = wait_event_time(self, &am_task->timers, am_self(), time_ms);
 	else
 		wait_event(self, am_self());
 	cancellation_point();
@@ -85,15 +85,15 @@ static inline uint64_t
 coroutine_create(MainFunction function, void* arg)
 {
 	auto coro =
-		coroutine_mgr_create(&am_task->coroutine_mgr, task_coroutine_main,
-		                     function, arg);
+		coroutines_create(&am_task->coroutines, task_coroutine_main,
+		                  function, arg);
 	return coro->id;
 }
 
 static inline void
 coroutine_wait(uint64_t id)
 {
-	auto coro = coroutine_mgr_find(&am_task->coroutine_mgr, id);
+	auto coro = coroutines_find(&am_task->coroutines, id);
 	if (coro == NULL)
 		return;
 	auto self = am_self();
@@ -105,7 +105,7 @@ coroutine_wait(uint64_t id)
 static inline void
 coroutine_kill_nowait(uint64_t id)
 {
-	auto coro = coroutine_mgr_find(&am_task->coroutine_mgr, id);
+	auto coro = coroutines_find(&am_task->coroutines, id);
 	if (coro == NULL)
 		return;
 	coroutine_cancel(coro);
@@ -114,7 +114,7 @@ coroutine_kill_nowait(uint64_t id)
 static inline void
 coroutine_kill(uint64_t id)
 {
-	auto coro = coroutine_mgr_find(&am_task->coroutine_mgr, id);
+	auto coro = coroutines_find(&am_task->coroutines, id);
 	if (coro == NULL)
 		return;
 	coroutine_cancel(coro);
@@ -166,7 +166,7 @@ task_create(Task*        self,
 	                         am_share,
 	                         am_task->log.write,
 	                         am_task->log.write_arg,
-	                         am_task->buf_cache.buf_mgr);
+	                         am_task->buf_cache.bufs);
 	if (unlikely(rc == -1))
 		error_system();
 }
@@ -194,11 +194,11 @@ task_send(Task* dest, Msg* msg)
 static inline uint64_t
 time_ms(void)
 {
-	return timer_mgr_time_ms(&am_task->timer_mgr);
+	return timers_time_ms(&am_task->timers);
 }
 
 static inline uint64_t
 time_us(void)
 {
-	return timer_mgr_time_us(&am_task->timer_mgr);
+	return timers_time_us(&am_task->timers);
 }

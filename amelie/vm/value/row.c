@@ -140,7 +140,7 @@ row_create_vector(Part*   part,
                   Column* column,
                   Value*  value)
 {
-	auto flat      = flat_mgr_at(&part->flat_mgr, column);
+	auto flat      = flats_at(&part->flats, column);
 	auto row_chunk = heap_chunk_of(row);
 	auto row_page  = heap_page_of(row_chunk)->id;
 
@@ -325,7 +325,7 @@ row_update(Part*    part,
 		case TYPE_VECTOR:
 		{
 			// create a new vector copy
-			auto flat      = flat_mgr_at(&part->flat_mgr, column);
+			auto flat      = flats_at(&part->flats, column);
 			auto row_chunk = heap_chunk_of(row);
 			auto row_page  = heap_page_of(row_chunk)->id;
 

@@ -39,10 +39,10 @@ fn_cos_distance(Fn* self)
 }
 
 void
-fn_vector_register(FunctionMgr* self)
+fn_vector_register(Functions* self)
 {
 	// cos_distance()
 	Function* func;
 	func = function_allocate(TYPE_DOUBLE, "cos_distance", fn_cos_distance);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 }

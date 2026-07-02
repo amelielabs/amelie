@@ -25,7 +25,7 @@ void
 catalog_init(Catalog*   self,
              CatalogIf* iface,
              void*      iface_arg,
-             PartMgrIf* iface_part,
+             PartsIf*   iface_part,
              void*      iface_part_arg,
              Cdc*       cdc)
 {
@@ -35,8 +35,8 @@ catalog_init(Catalog*   self,
 	self->iface_part_arg = iface_part_arg;
 	self->cdc            = cdc;
 
-	rel_mgr_init(&self->users);
-	rel_mgr_init(&self->rels);
+	rels_init(&self->users);
+	rels_init(&self->rels);
 
 	// prepare topic columns
 	auto columns = &self->topic_columns;
@@ -86,8 +86,8 @@ catalog_init(Catalog*   self,
 void
 catalog_free(Catalog* self)
 {
-	rel_mgr_free(&self->rels);
-	rel_mgr_free(&self->users);
+	rels_free(&self->rels);
+	rels_free(&self->users);
 	columns_free(&self->cdc_columns);
 	columns_free(&self->topic_columns);
 }

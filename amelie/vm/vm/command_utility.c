@@ -102,7 +102,7 @@ creplica_create(Vm* self, Op* op)
 	defer(replica_config_free, config);
 
 	bool if_not_exists = op->b;
-	replica_mgr_create(&share()->repl->replica_mgr, config, if_not_exists);
+	replicas_create(&share()->repl->replicas, config, if_not_exists);
 	control_save_state();
 }
 
@@ -120,7 +120,7 @@ creplica_drop(Vm* self, Op* op)
 	uuid_set(&id, &id_str);
 
 	bool if_exists = op->b;
-	replica_mgr_drop(&share()->repl->replica_mgr, &id, if_exists);
+	replicas_drop(&share()->repl->replicas, &id, if_exists);
 	control_save_state();
 }
 
@@ -212,8 +212,8 @@ clock_rel(Vm* self, Op* op)
 		error("lock: unrecognized lock type '{str}'", &name_lock);
 
 	// ensure lock does not exists
-	auto lock_mgr = &runtime()->lock_mgr;
-	auto lock = lock_mgr_find(lock_mgr, &name);
+	auto locks = &runtime()->locks;
+	auto lock = locks_find(locks, &name);
 	if (lock)
 	{
 		if (! op->d)
@@ -224,7 +224,7 @@ clock_rel(Vm* self, Op* op)
 	Rel* rel;
 
 	// find breakpoint
-	auto ref = lockable_mgr_find(&runtime()->lockable_mgr, &name_rel);
+	auto ref = lockables_find(&runtime()->lockables, &name_rel);
 	if (ref)
 	{
 		// ensure relation is a breakpoint
@@ -243,8 +243,8 @@ clock_rel(Vm* self, Op* op)
 	}
 
 	// create detached lock
-	lock = lock_mgr_lock(&runtime()->lock_mgr, rel, lock_id,
-	                     &name, source_function);
+	lock = locks_lock(&runtime()->locks, rel, lock_id,
+	                  &name, source_function);
 	lock_detach(lock);
 }
 
@@ -259,8 +259,8 @@ cunlock_rel(Vm* self, Op* op)
 	code_data_at_string(self->code_data, op->a, &name);
 
 	// ensure lock exists
-	auto lock_mgr = &runtime()->lock_mgr;
-	auto lock = lock_mgr_find(lock_mgr, &name);
+	auto locks = &runtime()->locks;
+	auto lock  = locks_find(locks, &name);
 	if (! lock)
 	{
 		if (! op->b)
@@ -271,7 +271,7 @@ cunlock_rel(Vm* self, Op* op)
 	// derefence breakpoint (disable on zero)
 	if (lock->rel->lock_order < REL_MAX)
 	{
-		auto ref = &runtime()->lockable_mgr.list[lock->rel->lock_order];
+		auto ref = &runtime()->lockables.list[lock->rel->lock_order];
 		lockable_breakpoint_unref(ref);
 	}
 

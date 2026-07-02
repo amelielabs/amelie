@@ -117,7 +117,7 @@ cmd_bookmark(Main* self)
 	defer(main_close, self);
 
 	// delete existing record first
-	bookmark_mgr_delete(&self->bookmark_mgr, &name);
+	bookmarks_delete(&self->bookmarks, &name);
 	if (! self->argc)
 		return;
 
@@ -126,7 +126,7 @@ cmd_bookmark(Main* self)
 
 	// create new bookmark
 	auto ref = bookmark_allocate();
-	bookmark_mgr_add(&self->bookmark_mgr, ref);
+	bookmarks_add(&self->bookmarks, ref);
 	endpoint_copy(&ref->endpoint, &self->endpoint);
 	opt_string_set(&ref->endpoint.name, &name);
 }

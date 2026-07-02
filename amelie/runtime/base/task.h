@@ -17,8 +17,8 @@ struct Task
 {
 	BufCache     buf_cache;
 	Poller       poller;
-	CoroutineMgr coroutine_mgr;
-	TimerMgr     timer_mgr;
+	Coroutines   coroutines;
+	Timers       timers;
 	Bus          bus;
 	MainFunction main;
 	void*        main_arg;
@@ -39,7 +39,7 @@ extern __thread Task* am_task;
 static inline Coroutine*
 am_self(void)
 {
-	return am_task->coroutine_mgr.current;
+	return am_task->coroutines.current;
 }
 
 void task_init(Task*);
@@ -48,7 +48,7 @@ bool task_active(Task*);
 int  task_create_nothrow(Task*, char*,
                          MainFunction, void*, void*, void*,
                          TaskLogWrite, void*,
-                         BufMgr*);
+                         Bufs*);
 void task_execute(Task*, MainFunction, void*);
 void task_wait(Task*);
 void task_coroutine_main(void*);

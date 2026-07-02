@@ -28,19 +28,19 @@ void
 db_init(Db*        self,
         CatalogIf* iface,
         void*      iface_arg,
-        PartMgrIf* iface_part_mgr,
-        void*      iface_part_mgr_arg,
+        PartsIf*   iface_parts,
+        void*      iface_parts_arg,
         Cdc*       cdc)
 {
 	self->snapshots_count = 0;
 	self->cdc             = cdc;
 	catalog_init(&self->catalog, iface, iface_arg,
-	             iface_part_mgr,
-	             iface_part_mgr_arg,
+	             iface_parts,
+	             iface_parts_arg,
 	             cdc);
 	wal_init(&self->wal);
 	list_init(&self->snapshots);
-	checkpoint_mgr_init(&self->checkpoint_mgr, &self->catalog);
+	checkpoints_init(&self->checkpoints, &self->catalog);
 	syncer_init(&self->syncer, self);
 }
 
@@ -48,7 +48,7 @@ void
 db_free(Db* self)
 {
 	assert(! self->snapshots_count);
-	checkpoint_mgr_free(&self->checkpoint_mgr);
+	checkpoints_free(&self->checkpoints);
 	catalog_free(&self->catalog);
 	wal_free(&self->wal);
 }
@@ -72,7 +72,7 @@ db_bootstrap(Db* self)
 	checkpoint_run(&checkpoint);
 	checkpoint_wait(&checkpoint);
 
-	checkpoint_mgr_add(&self->checkpoint_mgr, 1);
+	checkpoints_add(&self->checkpoints, 1);
 }
 
 void
@@ -86,8 +86,7 @@ db_open(Db* self, bool bootstrap)
 	}
 
 	// restore last checkpoint
-	auto cp_mgr = &self->checkpoint_mgr;
-	checkpoint_mgr_open(cp_mgr);
+	checkpoints_open(&self->checkpoints);
 }
 
 void

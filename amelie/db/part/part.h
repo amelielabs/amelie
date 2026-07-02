@@ -20,7 +20,7 @@ struct Part
 	Index*      in_progress;
 	Track       track;
 	Heap*       heap;
-	FlatMgr     flat_mgr;
+	Flats       flats;
 	PartConfig* config;
 	PartArg*    arg;
 	List        link_cp;

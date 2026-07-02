@@ -25,9 +25,9 @@ static inline void
 table_free(Table* self, bool drop)
 {
 	unused(drop);
-	auto part_mgr = &self->part_mgr;
-	part_mgr_close(part_mgr);
-	part_mgr_free(part_mgr);
+	auto parts = &self->parts;
+	parts_close(parts);
+	parts_free(parts);
 
 	sequence_free(&self->seq);
 	if (self->config)
@@ -43,7 +43,7 @@ table_show(Table* self, Buf* buf, int flags)
 
 static inline Table*
 table_allocate(TableConfig* config,
-               PartMgrIf*   iface,
+               PartsIf*     iface,
                void*        iface_arg)
 {
 	auto self = (Table*)am_malloc(sizeof(Table));
@@ -54,14 +54,14 @@ table_allocate(TableConfig* config,
 	auto arg = &self->part_arg;
 	arg->seq       = &self->seq;
 	arg->rel       = &self->rel;
-	arg->snapshots = &self->snapshot_mgr;
+	arg->snapshots = &self->snapshots;
 
 	// partition manager
 	auto primary = table_primary(self);
-	part_mgr_init(&self->part_mgr, iface, iface_arg, arg, &primary->keys);
+	parts_init(&self->parts, iface, iface_arg, arg, &primary->keys);
 
 	// snapshot manager
-	snapshot_mgr_init(&self->snapshot_mgr, &self->rel);
+	snapshots_init(&self->snapshots, &self->rel);
 
 	// set relation
 	auto rel = &self->rel;
@@ -99,11 +99,11 @@ table_create(Catalog*     self,
 	auto table = table_allocate(config, self->iface_part, self->iface_part_arg);
 
 	// update tables
-	rel_mgr_create(&self->rels, tr, &table->rel);
+	rels_create(&self->rels, tr, &table->rel);
 
 	// recover, map and deploy partitions
-	part_mgr_open(&table->part_mgr, &table->config->parts,
-	              &table->config->indexes);
+	parts_open(&table->parts, &table->config->parts,
+	           &table->config->indexes);
 	return true;
 }
 
@@ -113,7 +113,7 @@ truncate_if_commit(Log* self, LogOp* op)
 	unused(self);
 	// truncate partitions
 	auto table = table_of(op->rel);
-	part_mgr_truncate(&table->part_mgr);
+	parts_truncate(&table->parts);
 }
 
 static void
@@ -151,7 +151,7 @@ table_truncate(Catalog* self,
 	log_ddl(&tr->log, &truncate_if, NULL, &table->rel);
 
 	// force commit pending prepared transactions
-	list_foreach(&table->part_mgr.list)
+	list_foreach(&table->parts.list)
 	{
 		auto part = list_at(Part, link);
 		auto consensus = &part->track.consensus;

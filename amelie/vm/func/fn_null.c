@@ -47,18 +47,18 @@ fn_nullif(Fn* self)
 }
 
 void
-fn_null_register(FunctionMgr* self)
+fn_null_register(Functions* self)
 {
 	// coalesce()
 	Function* func;
 	func = function_allocate(TYPE_NULL, "coalesce", fn_coalesce);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_DERIVE);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// nullif()
 	func = function_allocate(TYPE_NULL, "nullif", fn_nullif);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_DERIVE);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 }

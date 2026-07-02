@@ -25,7 +25,7 @@ static inline void
 clone_free(Clone* self, bool drop)
 {
 	unused(drop);
-	snapshot_mgr_remove(&self->table->snapshot_mgr, &self->config->snapshot);
+	snapshots_remove(&self->table->snapshots, &self->config->snapshot);
 	clone_config_free(self->config);
 	am_free(self);
 }
@@ -93,11 +93,11 @@ clone_create(Catalog*     self,
 	// create clone
 	auto clone = clone_allocate(config);
 	clone->table = table;
-	clone->config->snapshot.main = &table->snapshot_mgr.main;
+	clone->config->snapshot.main = &table->snapshots.main;
 	clone->config->snapshot.rel  = &clone->rel;
-	rel_mgr_create(&self->rels, tr, &clone->rel);
+	rels_create(&self->rels, tr, &clone->rel);
 
 	// register clone snapshot
-	snapshot_mgr_add(&table->snapshot_mgr, &clone->config->snapshot);
+	snapshots_add(&table->snapshots, &clone->config->snapshot);
 	return true;
 }

@@ -21,9 +21,9 @@ typedef enum
 
 struct Repl
 {
-	ReplRole   role;
-	ReplicaMgr replica_mgr;
-	Receiver   receiver;
+	ReplRole role;
+	Replicas replicas;
+	Receiver receiver;
 };
 
 void repl_init(Repl*, Db*, RecoverIf*, void*);

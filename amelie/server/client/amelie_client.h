@@ -14,7 +14,7 @@
 // remote client
 #include "client/client.h"
 #include "client/client_io.h"
-#include "client/client_mgr.h"
+#include "client/clients.h"
 
 // native
 #include "client/native_req.h"

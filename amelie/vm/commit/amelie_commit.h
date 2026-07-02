@@ -27,17 +27,15 @@
 // dispatch
 #include "commit/dispatch.h"
 #include "commit/dispatch_cache.h"
-#include "commit/dispatch_mgr.h"
+#include "commit/dispatches.h"
 
 // global transaction
 #include "commit/gtr.h"
+#include "commit/batch.h"
 #include "commit/gtr_group.h"
 #include "commit/gtr_queue.h"
 #include "commit/gtr_recover.h"
-
-// global transaction manager
-#include "commit/batch.h"
-#include "commit/gtr_mgr.h"
+#include "commit/gtrs.h"
 
 // group commit
 #include "commit/commit.h"

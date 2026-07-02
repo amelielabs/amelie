@@ -29,14 +29,14 @@ void
 repl_init(Repl* self, Db* db, RecoverIf* iface, void* iface_arg)
 {
 	self->role = REPL_PRIMARY;
-	replica_mgr_init(&self->replica_mgr, db);
+	replicas_init(&self->replicas, db);
 	receiver_init(&self->receiver, db, iface, iface_arg);
 }
 
 void
 repl_free(Repl* self)
 {
-	replica_mgr_free(&self->replica_mgr);
+	replicas_free(&self->replicas);
 	receiver_free(&self->receiver);
 }
 
@@ -51,7 +51,7 @@ void
 repl_open(Repl* self)
 {
 	// restore replicas
-	replica_mgr_open(&self->replica_mgr);
+	replicas_open(&self->replicas);
 
 	// current server is replica
 	auto primary_id = opt_uuid_of(&state()->repl_primary);
@@ -75,7 +75,7 @@ repl_start(Repl* self)
 	opt_int_set(&state()->repl, true);
 
 	// start replicas
-	replica_mgr_start(&self->replica_mgr);
+	replicas_start(&self->replicas);
 
 	// start receiver
 	receiver_start(&self->receiver);
@@ -91,7 +91,7 @@ repl_stop(Repl* self)
 	opt_int_set(&state()->repl, false);
 
 	// stop replicas
-	replica_mgr_stop(&self->replica_mgr);
+	replicas_stop(&self->replicas);
 
 	// stop receiver
 	receiver_stop(&self->receiver);
@@ -162,7 +162,7 @@ repl_status(Repl* self, Buf* buf)
 		encode_uuid(buf, opt_uuid_of((&state()->repl_primary)));
 
 	encode_raw(buf, "replicas", 8);
-	replica_mgr_list(&self->replica_mgr, buf, NULL, 0);
+	replicas_list(&self->replicas, buf, NULL, 0);
 
 	encode_obj_end(buf);
 }

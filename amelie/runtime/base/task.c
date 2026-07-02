@@ -17,39 +17,40 @@ __thread void* am_runtime;
 __thread void* am_share;
 
 static inline void
-task_shutdown(CoroutineMgr* mgr)
+task_shutdown(void)
 {
-	if (mgr->count == 1)
+	auto coros = &am_task->coroutines;
+	if (coros->count == 1)
 		return;
 
 	// cancel all coroutines, except the current one
-	list_foreach(&mgr->list) {
+	list_foreach(&coros->list)
+	{
 		auto coro = list_at(Coroutine, link);
-		if (mgr->current == coro)
+		if (coros->current == coro)
 			continue;
 		coroutine_cancel(coro);
 	}
 
 	// wait for completion
-	wait_event(&mgr->on_exit, am_self());
+	wait_event(&coros->on_exit, am_self());
 }
 
 hot void
 task_coroutine_main(void* arg)
 {
-	Coroutine* coro = arg;
-	CoroutineMgr* mgr = coro->mgr;
+	auto self = (Coroutine*)arg;
 
 	// main
 	auto on_error = error_catch
 	(
 		cancellation_point();
-		coro->main(coro->main_arg);
+		self->main(self->main_arg);
 	);
 
 	if (unlikely(on_error))
 	{
-		auto error = &coro->error;
+		auto error = &self->error;
 		if (error->code != CANCEL) {
 			report(error->file, error->function, error->line,
 			       "unhandled exception: {buf}",
@@ -58,27 +59,28 @@ task_coroutine_main(void* arg)
 	}
 
 	// main exit
-	if (coro == am_task->main_coroutine)
+	if (self == am_task->main_coroutine)
 	{
 		if (on_error)
 			cond_signal(&am_task->status, -1);
 
 		// cancel all coroutines, except current one
-		task_shutdown(mgr);
+		task_shutdown();
 	}
 
 	// coroutine_join
-	event_signal(&coro->on_exit);
-	coro->name[0] = 0;
+	event_signal(&self->on_exit);
+	self->name[0] = 0;
 
-	coroutine_mgr_del(mgr, coro);
-	coroutine_mgr_add_free(mgr, coro);
+	auto coros = self->coroutines;
+	coroutines_del(coros, self);
+	coroutines_add_free(coros, self);
 
 	// wakeup shutdown on last coroutine exit
-	if (mgr->count == 1)
-		event_signal(&mgr->on_exit);
+	if (coros->count == 1)
+		event_signal(&coros->on_exit);
 
-	coroutine_mgr_switch(mgr);
+	coroutines_switch(coros);
 
 	// unreach
 	abort();
@@ -87,13 +89,13 @@ task_coroutine_main(void* arg)
 hot static inline void
 mainloop(Task* self)
 {
-	auto timer_mgr = &self->timer_mgr;
-	auto poller = &self->poller;
-	auto coroutine_mgr = &self->coroutine_mgr;
-	auto bus = &self->bus;
+	auto timers     = &self->timers;
+	auto poller     = &self->poller;
+	auto coroutines = &self->coroutines;
+	auto bus        = &self->bus;
 
 	// set initial time
-	timer_mgr_update(timer_mgr);
+	timers_update(timers);
 
 	// main loop
 	for (;;)
@@ -102,29 +104,28 @@ mainloop(Task* self)
 		bus_step(bus);
 
 		// execute pending coroutines
-		coroutine_mgr_scheduler(coroutine_mgr);
+		coroutines_scheduler(coroutines);
 
-		if (unlikely(! coroutine_mgr->count))
+		if (unlikely(! coroutines->count))
 			break;
 
 		// retry the loop before blocking wait, if some events are ready
 		if (bus_pending(bus) > 0)
 			continue;
 
-		// update timer_mgr time
-		timer_mgr_reset(timer_mgr);
+		// update time
+		timers_reset(timers);
 
 		uint32_t timeout = UINT32_MAX;
-		if (timer_mgr_has_timers(timer_mgr))
+		if (! timers_empty(timers))
 		{
-			timer_mgr_update(timer_mgr);
+			timers_update(timers);
 
 			// get minimal timer timeout
-			Timer* next;
-			next = timer_mgr_timer_min(timer_mgr);
+			auto next = timers_min(timers);
 			if (next)
 			{
-				int diff = next->timeout - timer_mgr->time_ms;
+				int diff = next->timeout - timers->time_ms;
 				if (diff <= 0)
 					timeout = 0;
 				else
@@ -132,7 +133,7 @@ mainloop(Task* self)
 			}
 
 			// run timers
-			timer_mgr_step(timer_mgr);
+			timers_step(timers);
 		}
 
 		// retry the loop before blocking wait, if some events are ready
@@ -178,9 +179,9 @@ task_main(Task* self, bool native)
 
 	// create task main coroutine
 	Coroutine* main;
-	main = coroutine_mgr_create(&self->coroutine_mgr, task_coroutine_main,
-	                            self->main,
-	                            self->main_arg);
+	main = coroutines_create(&self->coroutines, task_coroutine_main,
+	                         self->main,
+	                         self->main_arg);
 	coroutine_set_name(main, "{s}", self->name);
 	self->main_coroutine = main;
 
@@ -208,8 +209,8 @@ task_init(Task* self)
 	buf_cache_init(&self->buf_cache);
 	task_log_init(&self->log);
 	random_init(&self->random);
-	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 32); // 128kb
-	timer_mgr_init(&self->timer_mgr);
+	coroutines_init(&self->coroutines, 4096 * 32); // 128kb
+	timers_init(&self->timers);
 	poller_init(&self->poller);
 	bus_init(&self->bus);
 	cond_init(&self->status);
@@ -219,8 +220,8 @@ task_init(Task* self)
 void
 task_free(Task* self)
 {
-	coroutine_mgr_free(&self->coroutine_mgr);
-	timer_mgr_free(&self->timer_mgr);
+	coroutines_free(&self->coroutines);
+	timers_free(&self->timers);
 	bus_close(&self->bus);
 	bus_free(&self->bus);
 	poller_free(&self->poller);
@@ -244,7 +245,7 @@ task_create_nothrow(Task*        self,
                     void*        main_arg_share,
                     TaskLogWrite log_write,
                     void*        log_write_arg,
-                    BufMgr*      buf_mgr)
+                    Bufs*        bufs)
 {
 	// set arguments
 	self->main             = main;
@@ -254,7 +255,7 @@ task_create_nothrow(Task*        self,
 	format(self->name, sizeof(self->name), "{s}", name);
 
 	// prepare buf cache
-	int rc = buf_cache_allocate_nothrow(&self->buf_cache, buf_mgr, 1024, 32 * 1024);
+	int rc = buf_cache_allocate_nothrow(&self->buf_cache, bufs, 1024, 32 * 1024);
 	if (unlikely(rc == -1))
 		return -1;
 

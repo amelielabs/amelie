@@ -26,7 +26,7 @@
 // frontend
 #include "frontend/query.h"
 #include "frontend/frontend.h"
-#include "frontend/frontend_mgr.h"
+#include "frontend/frontends.h"
 
 // client
 #include "frontend/client.h"
@@ -38,4 +38,4 @@
 // replay
 #include "frontend/replay_sync.h"
 #include "frontend/replay.h"
-#include "frontend/replay_mgr.h"
+#include "frontend/replays.h"

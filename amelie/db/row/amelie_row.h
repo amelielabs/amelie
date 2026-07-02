@@ -29,7 +29,7 @@
 
 // snapshot
 #include "row/snapshot.h"
-#include "row/snapshot_mgr.h"
+#include "row/snapshots.h"
 
 // row
 #include "row/row.h"

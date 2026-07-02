@@ -58,7 +58,7 @@ report_error(const char* file,
 		task_logf(log, "{s}{buf}", prefix, &error->text);
 
 	// throw exception
-	exception_mgr_throw(&am_self()->exception_mgr);
+	exceptions_throw(&am_self()->exceptions);
 }
 
 void no_return

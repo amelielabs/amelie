@@ -25,5 +25,5 @@
 // lock manager
 #include "rel/lock.h"
 #include "rel/lock_cache.h"
-#include "rel/lock_mgr.h"
-#include "rel/lockable_mgr.h"
+#include "rel/locks.h"
+#include "rel/lockables.h"

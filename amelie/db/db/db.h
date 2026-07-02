@@ -15,16 +15,16 @@ typedef struct Db Db;
 
 struct Db
 {
-	Catalog       catalog;
-	Wal           wal;
-	List          snapshots;
-	int           snapshots_count;
-	CheckpointMgr checkpoint_mgr;
-	Syncer        syncer;
-	Cdc*          cdc;
+	Catalog     catalog;
+	Wal         wal;
+	List        snapshots;
+	int         snapshots_count;
+	Checkpoints checkpoints;
+	Syncer      syncer;
+	Cdc*        cdc;
 };
 
-void db_init(Db*, CatalogIf*, void*, PartMgrIf*, void*, Cdc*);
+void db_init(Db*, CatalogIf*, void*, PartsIf*, void*, Cdc*);
 void db_free(Db*);
 void db_open(Db*, bool);
 void db_close(Db*);

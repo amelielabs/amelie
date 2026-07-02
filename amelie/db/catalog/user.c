@@ -79,7 +79,7 @@ user_create(Catalog*    self,
 
 	// create user
 	user = user_allocate(config);
-	rel_mgr_create(&self->users, tr, &user->rel);
+	rels_create(&self->users, tr, &user->rel);
 
 	// update timestamps
 	user_sync(user);
@@ -150,7 +150,7 @@ user_drop_of(Catalog* self,
 	self->iface->user_invalidate(self, user_of(user));
 
 	// drop user by object
-	rel_mgr_drop(&self->users, tr, user);
+	rels_drop(&self->users, tr, user);
 }
 
 bool
@@ -196,7 +196,7 @@ rename_if_abort(Log* self, LogOp* op)
 	unpack_str(&pos, &name);
 
 	Catalog* catalog = op->iface_arg;
-	rel_mgr_rename(&catalog->users, op->rel, NULL, &name);
+	rels_rename(&catalog->users, op->rel, NULL, &name);
 }
 
 static LogIf rename_if =
@@ -256,7 +256,7 @@ user_rename(Catalog* self,
 	encode_str(&tr->log.data, name);
 
 	// set new name
-	rel_mgr_rename(&self->users, &user->rel, NULL, name_new);
+	rels_rename(&self->users, &user->rel, NULL, name_new);
 	return true;
 }
 

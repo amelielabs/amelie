@@ -239,7 +239,7 @@ repo_bootstrap(void)
 
 	// set default timezone using system timezone
 	if (opt_string_empty(&config->timezone))
-		opt_string_set(&config->timezone, &runtime()->timezone_mgr.system->name);
+		opt_string_set(&config->timezone, &runtime()->timezones.system->name);
 }
 
 static void
@@ -261,7 +261,7 @@ repo_open_client_mode(int argc, char** argv)
 
 	// set system timezone
 	auto name = &config()->timezone.string;
-	runtime->timezone = timezone_mgr_find(&runtime->timezone_mgr, name);
+	runtime->timezone = timezones_find(&runtime->timezones, name);
 	if (! runtime->timezone)
 		error("failed to find timezone {str}", name);
 
@@ -366,7 +366,7 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 
 	// set system timezone
 	auto name = &config()->timezone.string;
-	runtime->timezone = timezone_mgr_find(&runtime->timezone_mgr, name);
+	runtime->timezone = timezones_find(&runtime->timezones, name);
 	if (! runtime->timezone)
 		error("failed to find timezone {str}", name);
 
@@ -379,12 +379,12 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 		logger_close(logger);
 
 	// reconfigure jobs manager
-	auto job_mgr = &runtime()->job_mgr;
-	auto jobs = (int)opt_int_of(&config->jobs);
-	if (jobs != job_mgr->workers_count)
+	auto jobs = &runtime()->jobs;
+	auto jobs_count = (int)opt_int_of(&config->jobs);
+	if (jobs_count != jobs->workers_count)
 	{
-		job_mgr_stop(job_mgr);
-		job_mgr_start(job_mgr, jobs);
+		jobs_stop(jobs);
+		jobs_start(jobs, jobs_count);
 	}
 }
 

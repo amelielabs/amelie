@@ -20,7 +20,7 @@ job_worker_main(void* arg)
 	auto self = (JobWorker*)arg;
 	for (;;)
 	{
-		auto job = job_mgr_next(self->job_mgr);
+		auto job = jobs_next(self->jobs);
 		if (! job)
 			break;
 		job_run(job);
@@ -28,10 +28,10 @@ job_worker_main(void* arg)
 }
 
 JobWorker*
-job_worker_allocate(JobMgr* job_mgr)
+job_worker_allocate(Jobs* jobs)
 {
 	auto self = (JobWorker*)am_malloc(sizeof(JobWorker));
-	self->job_mgr = job_mgr;
+	self->jobs = jobs;
 	task_init(&self->task);
 	list_init(&self->link);
 	return self;

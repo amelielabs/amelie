@@ -46,7 +46,7 @@ db_gc(Db* self)
 	cdc_gc(cdc);
 
 	// checkpoint gc
-	checkpoint_mgr_gc(&self->checkpoint_mgr);
+	checkpoints_gc(&self->checkpoints);
 }
 
 static void
@@ -91,7 +91,7 @@ db_checkpoint(Db* self)
 		if (rel->type != REL_TABLE)
 			continue;
 		auto table = table_of(rel);
-		list_foreach(&table->part_mgr.list)
+		list_foreach(&table->parts.list)
 		{
 			auto part = list_at(Part, link);
 			auto consensus = &part->track.consensus;
@@ -123,7 +123,7 @@ db_checkpoint(Db* self)
 		rethrow();
 
 	// set checkpoint
-	checkpoint_mgr_add(&self->checkpoint_mgr, lsn);
+	checkpoints_add(&self->checkpoints, lsn);
 
 	// run db cleanup
 	db_gc(self);

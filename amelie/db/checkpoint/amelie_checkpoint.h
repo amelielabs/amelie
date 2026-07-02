@@ -13,6 +13,4 @@
 
 // checkpoint
 #include "checkpoint/checkpoint.h"
-
-// checkpoint_mgr
-#include "checkpoint/checkpoint_mgr.h"
+#include "checkpoint/checkpoints.h"

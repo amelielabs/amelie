@@ -581,142 +581,142 @@ fn_least(Fn* self)
 }
 
 void
-fn_math_register(FunctionMgr* self)
+fn_math_register(Functions* self)
 {
 	// abs()
 	Function* func;
 	func = function_allocate(TYPE_INT, "abs", fn_abs);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// fabs()
 	func = function_allocate(TYPE_DOUBLE, "fabs", fn_fabs);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// round()
 	func = function_allocate(TYPE_INT, "round", fn_round);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// sign()
 	func = function_allocate(TYPE_INT, "sign", fn_sign);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// ceil()
 	func = function_allocate(TYPE_DOUBLE, "ceil", fn_ceil);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// exp()
 	func = function_allocate(TYPE_DOUBLE, "exp", fn_exp);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// floor()
 	func = function_allocate(TYPE_DOUBLE, "floor", fn_floor);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// mod()
 	func = function_allocate(TYPE_INT, "mod", fn_mod);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// fmod()
 	func = function_allocate(TYPE_DOUBLE, "fmod", fn_fmod);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// pow()
 	func = function_allocate(TYPE_INT, "pow", fn_pow);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// fpow()
 	func = function_allocate(TYPE_DOUBLE, "fpow", fn_fpow);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// trunc()
 	func = function_allocate(TYPE_DOUBLE, "trunc", fn_trunc);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// pi()
 	func = function_allocate(TYPE_DOUBLE, "pi", fn_pi);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// sqrt()
 	func = function_allocate(TYPE_DOUBLE, "sqrt", fn_sqrt);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// acos()
 	func = function_allocate(TYPE_DOUBLE, "acos", fn_acos);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// acosh()
 	func = function_allocate(TYPE_DOUBLE, "acosh", fn_acosh);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// asin()
 	func = function_allocate(TYPE_DOUBLE, "asin", fn_asin);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// asinh()
 	func = function_allocate(TYPE_DOUBLE, "asinh", fn_asinh);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// atan()
 	func = function_allocate(TYPE_DOUBLE, "atan", fn_atan);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// atanh()
 	func = function_allocate(TYPE_DOUBLE, "atanh", fn_atanh);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// atan2()
 	func = function_allocate(TYPE_DOUBLE, "atan2", fn_atan2);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// cos()
 	func = function_allocate(TYPE_DOUBLE, "cos", fn_cos);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// cosh()
 	func = function_allocate(TYPE_DOUBLE, "cosh", fn_cosh);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// sin()
 	func = function_allocate(TYPE_DOUBLE, "sin", fn_sin);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// sinh()
 	func = function_allocate(TYPE_DOUBLE, "sinh", fn_sinh);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// tan()
 	func = function_allocate(TYPE_DOUBLE, "tan", fn_tan);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// tanh()
 	func = function_allocate(TYPE_DOUBLE, "tanh", fn_tanh);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// ln()
 	func = function_allocate(TYPE_DOUBLE, "ln", fn_ln);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// log()
 	func = function_allocate(TYPE_DOUBLE, "log", fn_log);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// log10()
 	func = function_allocate(TYPE_DOUBLE, "log10", fn_log);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// log2()
 	func = function_allocate(TYPE_DOUBLE, "log2", fn_log2);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// greatest()
 	func = function_allocate(TYPE_NULL, "greatest", fn_greatest);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_DERIVE);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// least()
 	func = function_allocate(TYPE_NULL, "least", fn_least);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_DERIVE);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 }

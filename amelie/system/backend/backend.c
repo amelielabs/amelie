@@ -31,20 +31,20 @@ backend_rpc(Rpc* rpc, void* arg)
 			part_open(part, state_checkpoint());
 
 		// create and start new pod
-		pod_mgr_create(&self->pod_mgr, part);
+		pods_create(&self->pods, part);
 		break;
 	}
 	case MSG_UNDEPLOY:
 	{
 		// stop and drop pod
 		Part* part = rpc->arg;
-		pod_mgr_drop_by(&self->pod_mgr, part);
+		pods_drop_by(&self->pods, part);
 		break;
 	}
 	case MSG_STOP:
 	{
 		// shutdown pods
-		pod_mgr_shutdown(&self->pod_mgr);
+		pods_shutdown(&self->pods);
 		break;
 	}
 	default:
@@ -95,7 +95,7 @@ Backend*
 backend_allocate(void)
 {
 	auto self = (Backend*)am_malloc(sizeof(Backend));
-	pod_mgr_init(&self->pod_mgr, &self->task);
+	pods_init(&self->pods, &self->task);
 	task_init(&self->task);
 	list_init(&self->link);
 	return self;

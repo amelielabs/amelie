@@ -15,22 +15,22 @@
 #define error_catch(executable) \
 ({ \
 	Exception __exception = { \
-		.prev = am_self()->exception_mgr.last, \
+		.prev = am_self()->exceptions.last, \
 		.triggered = false, \
 		.defer_stack = NULL \
 	}; \
-	am_self()->exception_mgr.last = &__exception; \
+	am_self()->exceptions.last = &__exception; \
 	if ( setjmp(__exception.buf) == 0 ) { \
 		executable; \
 	} \
-	am_self()->exception_mgr.last = __exception.prev; \
+	am_self()->exceptions.last = __exception.prev; \
 	__exception.triggered; \
 })
 
 no_return static inline void
 rethrow(void)
 {
-	exception_mgr_throw(&am_self()->exception_mgr);
+	exceptions_throw(&am_self()->exceptions);
 }
 
 static inline void

@@ -332,7 +332,7 @@ fn_timestamp(Fn* self)
 			}
 			fn_expect_arg(self, 1, TYPE_STRING);
 			auto name = &self->argv[1].string;
-			timezone = timezone_mgr_find(&runtime()->timezone_mgr, name);
+			timezone = timezones_find(&runtime()->timezones, name);
 			if (! timezone)
 				fn_error_arg(self, 1, "failed to find timezone '{str}'", name);
 		}
@@ -475,54 +475,54 @@ fn_uuid(Fn* self)
 }
 
 void
-fn_cast_register(FunctionMgr* self)
+fn_cast_register(Functions* self)
 {
 	// type()
 	Function* func;
 	func = function_allocate(TYPE_STRING, "type", fn_type);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// int()
 	func = function_allocate(TYPE_INT, "int", fn_int);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// bool()
 	func = function_allocate(TYPE_BOOL, "bool", fn_bool);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// double()
 	func = function_allocate(TYPE_DOUBLE, "double", fn_double);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// string()
 	func = function_allocate(TYPE_STRING, "string", fn_string);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// json()
 	func = function_allocate(TYPE_JSON, "json", fn_json);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// json_decode()
 	func = function_allocate(TYPE_JSON, "json_decode", fn_json_decode);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// interval()
 	func = function_allocate(TYPE_INTERVAL, "interval", fn_interval);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// timestamp()
 	func = function_allocate(TYPE_TIMESTAMP, "timestamp", fn_timestamp);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// date()
 	func = function_allocate(TYPE_DATE, "date", fn_date);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// vector()
 	func = function_allocate(TYPE_VECTOR, "vector", fn_vector);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// uuid()
 	func = function_allocate(TYPE_UUID, "uuid", fn_uuid);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 }

@@ -27,7 +27,7 @@ struct Follower
 	Query     query;
 	void*     session;
 	CdcSub    cdc_sub;
-	FeedMgr   feed_mgr;
+	Feeds     feeds;
 	Str       protocol;
 	Frontend* fe;
 };
@@ -44,7 +44,7 @@ follower_init(Follower* self, Frontend* fe, Client* client,
 	str_set(&self->protocol, "amelie-v1", 9);
 	websocket_init(&self->ws);
 	websocket_set(&self->ws, &self->protocol, client, false);
-	feed_mgr_init(&self->feed_mgr, share()->cdc);
+	feeds_init(&self->feeds, share()->cdc);
 	query_init(&self->query);
 }
 
@@ -52,7 +52,7 @@ static inline void
 follower_free(Follower* self)
 {
 	// unreference relations
-	list_foreach(&self->feed_mgr.list)
+	list_foreach(&self->feeds.list)
 	{
 		auto feed = list_at(Feed, link);
 		auto rel_match = catalog_find_by(&share()->db->catalog, REL_UNDEF, &feed->id, false);
@@ -62,7 +62,7 @@ follower_free(Follower* self)
 			assert(rel_match->subs >= 0);
 		}
 	}
-	feed_mgr_free(&self->feed_mgr);
+	feeds_free(&self->feeds);
 	websocket_free(&self->ws);
 }
 
@@ -98,7 +98,7 @@ follower_follow(Follower* self)
 		user = &req->user->config->name;
 	else
 		user = &api->rel_user;
-	auto feed = feed_mgr_find(&self->feed_mgr, user, &api->rel);
+	auto feed = feeds_find(&self->feeds, user, &api->rel);
 	if (feed)
 		error("feed '{str}': already exists", &api->rel);
 
@@ -139,7 +139,7 @@ follower_follow(Follower* self)
 	feed_set_user(feed, user);
 	feed_set_name(feed, &api->rel);
 	feed_set_id(feed, id);
-	feed_mgr_add(&self->feed_mgr, feed);
+	feeds_add(&self->feeds, feed);
 
 	// open cursor
 	cdc_slot_set(&feed->slot, lsn, lsn_op);
@@ -157,7 +157,7 @@ follower_unfollow(Follower* self)
 		user = &self->req->user->config->name;
 	else
 		user = &api->rel_user;
-	auto feed = feed_mgr_find(&self->feed_mgr, user, &api->rel);
+	auto feed = feeds_find(&self->feeds, user, &api->rel);
 	if (! feed)
 		error("feed '{str}': does not exists", &api->rel);
 
@@ -169,7 +169,7 @@ follower_unfollow(Follower* self)
 		assert(rel_match->subs >= 0);
 	}
 
-	feed_mgr_remove(&self->feed_mgr, feed);
+	feeds_remove(&self->feeds, feed);
 	feed_free(feed);
 }
 
@@ -217,14 +217,14 @@ hot static void
 follower_collect(Follower* self)
 {
 	auto buf = self->req->output.buf;
-	feed_mgr_collect(&self->feed_mgr, buf);
+	feeds_collect(&self->feeds, buf);
 }
 
 hot static inline bool
 follower_wait(Follower* self)
 {
 	// if no feeds, go straight to io wait
-	if (feed_mgr_empty(&self->feed_mgr))
+	if (feeds_empty(&self->feeds))
 		return true;
 
 	// client has pending data
@@ -253,7 +253,7 @@ follower_wait(Follower* self)
 	//
 	// get min lsn across all feeds
 	//
-	uint64_t min = feed_mgr_min(&self->feed_mgr);
+	uint64_t min = feeds_min(&self->feeds);
 	CdcSub sub;
 	cdc_sub_init(&sub, &event_sub, min);
 	cdc_subscribe(share()->cdc, &sub);

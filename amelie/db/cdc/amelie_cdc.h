@@ -24,4 +24,4 @@
 
 // feed
 #include "cdc/feed.h"
-#include "cdc/feed_mgr.h"
+#include "cdc/feeds.h"

@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct FnMgr FnMgr;
-typedef struct Fn    Fn;
+typedef struct Fns Fns;
+typedef struct Fn  Fn;
 
 typedef enum
 {

@@ -185,46 +185,46 @@ fn_has(Fn* self)
 }
 
 void
-fn_json_register(FunctionMgr* self)
+fn_json_register(Functions* self)
 {
 	// append()
 	Function* func;
 	func = function_allocate(TYPE_JSON, "append", fn_append);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// push_back()
 	func = function_allocate(TYPE_JSON, "push_back", fn_append);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// push()
 	func = function_allocate(TYPE_JSON, "push", fn_push);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// pop()
 	func = function_allocate(TYPE_JSON, "pop", fn_pop);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// pop_back()
 	func = function_allocate(TYPE_JSON, "pop_back", fn_pop_back);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// put()
 	func = function_allocate(TYPE_JSON, "put", fn_put);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// remove()
 	func = function_allocate(TYPE_JSON, "remove", fn_remove);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// set()
 	func = function_allocate(TYPE_JSON, "set", fn_set);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// unset()
 	func = function_allocate(TYPE_JSON, "unset", fn_unset);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// has()
 	func = function_allocate(TYPE_BOOL, "has", fn_has);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 }

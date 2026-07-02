@@ -39,7 +39,7 @@
 
 // buffer manager
 #include "base/buf.h"
-#include "base/buf_mgr.h"
+#include "base/bufs.h"
 #include "base/buf_cache.h"
 
 // format
@@ -50,7 +50,7 @@
 #include "base/error.h"
 
 // event loop
-#include "base/timer_mgr.h"
+#include "base/timers.h"
 #include "base/fd.h"
 #include "base/poller.h"
 #include "base/notify.h"
@@ -63,7 +63,7 @@
 #include "base/context_stack.h"
 #include "base/context.h"
 #include "base/coroutine.h"
-#include "base/coroutine_mgr.h"
+#include "base/coroutines.h"
 #include "base/wait.h"
 
 // bus

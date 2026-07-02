@@ -41,7 +41,7 @@ fn_at_timezone(Fn* self)
 	fn_expect_arg(self, 1, TYPE_STRING);
 
 	auto name = &self->argv[1].string;
-	auto timezone = timezone_mgr_find(&runtime()->timezone_mgr, name);
+	auto timezone = timezones_find(&runtime()->timezones, name);
 	if (! timezone)
 		fn_error_arg(self, 1, "failed to find timezone '{str}'", name);
 
@@ -129,7 +129,7 @@ fn_date_trunc(Fn* self)
 	{
 		fn_expect_arg(self, 2, TYPE_STRING);
 		auto name = &self->argv[2].string;
-		timezone = timezone_mgr_find(&runtime()->timezone_mgr, name);
+		timezone = timezones_find(&runtime()->timezones, name);
 		if (! timezone)
 			fn_error_arg(self, 2, "failed to find timezone '{str}'", name);
 	}
@@ -218,7 +218,7 @@ fn_extract(Fn* self)
 	{
 		fn_expect_arg(self, 2, TYPE_STRING);
 		auto name = &self->argv[2].string;
-		timezone = timezone_mgr_find(&runtime()->timezone_mgr, name);
+		timezone = timezones_find(&runtime()->timezones, name);
 		if (! timezone)
 			fn_error_arg(self, 2, "failed to find timezone '{str}'", name);
 	}
@@ -295,31 +295,31 @@ fn_generate_series(Fn* self)
 #endif
 
 void
-fn_time_register(FunctionMgr* self)
+fn_time_register(Functions* self)
 {
 	// now()
 	Function* func;
 	func = function_allocate(TYPE_TIMESTAMP, "now", fn_now);
 	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// at_timezone()
 	func = function_allocate(TYPE_STRING, "at_timezone", fn_at_timezone);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// date_bin()
 	func = function_allocate(TYPE_TIMESTAMP, "date_bin", fn_date_bin);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// date_trunc()
 	func = function_allocate(TYPE_TIMESTAMP, "date_trunc", fn_date_trunc);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// interval_trunc()
 	func = function_allocate(TYPE_INTERVAL, "interval_trunc", fn_interval_trunc);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// extract()
 	func = function_allocate(TYPE_INT, "extract", fn_extract);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 }

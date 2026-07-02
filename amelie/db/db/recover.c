@@ -82,7 +82,7 @@ recover_wal_main(Recover* self)
 		// sync
 		self->iface->sync(self);
 
-		timer_mgr_update(&am_task->timer_mgr);
+		timers_update(&am_task->timers);
 		info("recover: wal/{u64} ({.2f} MiB, {u64} transactions)", cursor.file->id,
 		     (double)size / 1024 / 1024, count);
 

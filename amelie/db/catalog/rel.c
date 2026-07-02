@@ -25,7 +25,7 @@ void
 catalog_drop_of(Catalog* self, Tr* tr, Rel* rel)
 {
 	// (no checks)
-	rel_mgr_drop(&self->rels, tr, rel);
+	rels_drop(&self->rels, tr, rel);
 }
 
 bool
@@ -89,7 +89,7 @@ rename_if_abort(Log* self, LogOp* op)
 	unpack_str(&pos, &user);
 	unpack_str(&pos, &name);
 	Catalog* catalog = op->iface_arg;
-	rel_mgr_rename(&catalog->rels, op->rel, &user, &name);
+	rels_rename(&catalog->rels, op->rel, &user, &name);
 }
 
 static LogIf rename_if =
@@ -115,7 +115,7 @@ catalog_rename_of(Catalog* self,
 	encode_str(&tr->log.data, rel->name);
 
 	// set new name
-	rel_mgr_rename(&self->rels, rel, user_new, name_new);
+	rels_rename(&self->rels, rel, user_new, name_new);
 }
 
 bool

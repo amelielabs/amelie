@@ -48,7 +48,7 @@ main_configure(Main* self, Opts* opts)
 		// find bookmark by name
 		Str name;
 		str_set_cstr(&name, argv[0]);
-		auto match = bookmark_mgr_find(&self->bookmark_mgr, &name);
+		auto match = bookmarks_find(&self->bookmarks, &name);
 		if (match)
 		{
 			// use bookmark settings

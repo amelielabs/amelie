@@ -250,7 +250,7 @@ fn_locks_count(Fn* self)
 	auto argv = self->argv;
 	fn_expect(self, 1);
 	fn_expect_arg(self, 0, TYPE_STRING);
-	auto count = lock_mgr_count(&runtime()->lock_mgr, &argv[0].string);
+	auto count = locks_count(&runtime()->locks, &argv[0].string);
 	value_set_int(self->result, count);
 }
 
@@ -262,63 +262,63 @@ fn_breakpoint(Fn* self)
 }
 
 void
-fn_misc_register(FunctionMgr* self)
+fn_misc_register(Functions* self)
 {
 	// error()
 	Function* func;
 	func = function_allocate(TYPE_NULL, "error", fn_throw);
 	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// sleep()
 	func = function_allocate(TYPE_NULL, "sleep", fn_sleep);
 	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// random()
 	func = function_allocate(TYPE_INT, "random", fn_random);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_FRONTEND);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// random_uuid()
 	func = function_allocate(TYPE_UUID, "random_uuid", fn_random_uuid);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_FRONTEND);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// md5()
 	func = function_allocate(TYPE_STRING, "md5", fn_md5);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// sha1()
 	func = function_allocate(TYPE_STRING, "sha1", fn_sha1);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// encode()
 	func = function_allocate(TYPE_STRING, "encode", fn_encode);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// decode()
 	func = function_allocate(TYPE_STRING, "decode", fn_decode);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// identity_of()
 	func = function_allocate(TYPE_INT, "identity_of", fn_identity_of);
 	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// jwt()
 	func = function_allocate(TYPE_STRING, "jwt", fn_jwt);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// locks_count()
 	func = function_allocate(TYPE_INT, "locks_count", fn_locks_count);
 	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// breakpoint()
 	func = function_allocate(TYPE_NULL, "breakpoint", fn_breakpoint);
 	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 }

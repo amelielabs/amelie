@@ -77,7 +77,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		// find error()
 		Str name;
 		str_set(&name, "error", 5);
-		auto func = function_mgr_find(share()->function_mgr, &name);
+		auto func = functions_find(share()->functions, &name);
 		assert(func);
 
 		// call error()

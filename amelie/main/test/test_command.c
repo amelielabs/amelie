@@ -33,9 +33,9 @@ test_command_unit(TestSuite* self, Str* arg)
 		test_error(self, "unit function not found");
 	void (*test_function)(void*) = ptr;
 
-	BufMgr buf_mgr;
-	buf_mgr_init(&buf_mgr);
-	defer(buf_mgr_free, &buf_mgr);
+	Bufs bufs;
+	bufs_init(&bufs);
+	defer(bufs_free, &bufs);
 
 	Task task;
 	task_init(&task);
@@ -43,7 +43,7 @@ test_command_unit(TestSuite* self, Str* arg)
 
 	int rc;
 	rc = task_create_nothrow(&task, "test", test_function, self, am_runtime, NULL, NULL, NULL,
-	                         &buf_mgr);
+	                         &bufs);
 	if (rc == -1)
 		test_error(self, "unit task create error");
 

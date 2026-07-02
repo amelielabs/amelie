@@ -1,0 +1,85 @@
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+#include <amelie_runtime>
+#include <amelie_server>
+#include <amelie_db>
+#include <amelie_sync>
+#include <amelie_value.h>
+#include <amelie_set.h>
+#include <amelie_output.h>
+#include <amelie_commit.h>
+#include <amelie_func.h>
+
+void
+functions_init(Functions* self)
+{
+	self->list_count = 0;
+	list_init(&self->list);
+	hashtable_init(&self->ht);
+}
+
+void
+functions_free(Functions* self)
+{
+	list_foreach_safe(&self->list)
+	{
+		auto func = list_at(Function, link);
+		function_free(func);
+	}
+	hashtable_free(&self->ht);
+}
+
+void
+functions_add(Functions* self, Function* func)
+{
+	// add function to the list
+	list_append(&self->list, &func->link);
+	self->list_count++;
+
+	// add function to the hash table
+	if (unlikely(! hashtable_created(&self->ht)))
+		hashtable_create(&self->ht, 256);
+	hashtable_reserve(&self->ht);
+
+	// hash by name
+	auto hash = hash_murmur3_32(str_u8(&func->name), str_size(&func->name), 0);
+	func->link_ht.hash = hash;
+	hashtable_set(&self->ht, &func->link_ht);
+}
+
+void
+functions_del(Functions* self, Function* func)
+{
+	hashtable_delete(&self->ht, &func->link_ht);
+
+	list_unlink(&func->link);
+	self->list_count--;
+}
+
+hot static inline bool
+functions_cmp(Hashnode* node, void* ptr)
+{
+	Str* name = ptr;
+	auto func = container_of(node, Function, link_ht);
+	return str_compare(&func->name, name);
+}
+
+hot Function*
+functions_find(Functions* self, Str* name)
+{
+	auto hash = hash_murmur3_32(str_u8(name), str_size(name), 0);
+	auto node = hashtable_get(&self->ht, hash, functions_cmp, name);
+	if (likely(node))
+		return container_of(node, Function, link_ht);
+	return NULL;
+}

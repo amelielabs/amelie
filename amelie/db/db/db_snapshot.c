@@ -83,7 +83,7 @@ db_snapshot(Db* self)
 		buf_write_buf(data, buf);
 
 		// use last checkpoint
-		snapshot->checkpoint = checkpoint_mgr_ref(&self->checkpoint_mgr);
+		snapshot->checkpoint = checkpoints_ref(&self->checkpoints);
 
 		// checkpoint
 		encode_raw(data, "checkpoint", 10);
@@ -91,7 +91,7 @@ db_snapshot(Db* self)
 
 		// files
 		encode_raw(data, "files", 5);
-		checkpoint_mgr_list(snapshot->checkpoint, data);
+		checkpoints_list(snapshot->checkpoint, data);
 
 		// create wal list and take the wal snapshot
 
@@ -121,7 +121,7 @@ db_snapshot_detach(Db* self, DbSnapshot* snapshot)
 	wal_detach(&self->wal, &snapshot->wal_snapshot);
 
 	// detach checkpoint
-	checkpoint_mgr_unref(&self->checkpoint_mgr, snapshot->checkpoint);
+	checkpoints_unref(&self->checkpoints, snapshot->checkpoint);
 
 	db_snapshot_free(snapshot);
 }

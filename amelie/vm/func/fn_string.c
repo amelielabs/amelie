@@ -459,58 +459,58 @@ fn_like(Fn* self)
 }
 
 void
-fn_string_register(FunctionMgr* self)
+fn_string_register(Functions* self)
 {
 	// size()
 	Function* func;
 	func = function_allocate(TYPE_INT, "size", fn_length);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// length()
 	func = function_allocate(TYPE_INT, "length", fn_length);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// octet_length()
 	func = function_allocate(TYPE_INT, "octet_length", fn_octet_length);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// concat()
 	func = function_allocate(TYPE_STRING, "concat", fn_concat);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// lower()
 	func = function_allocate(TYPE_STRING, "lower", fn_lower);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// upper()
 	func = function_allocate(TYPE_STRING, "upper", fn_upper);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// substr()
 	func = function_allocate(TYPE_STRING, "substr", fn_substr);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// strpos()
 	func = function_allocate(TYPE_INT, "strpos", fn_strpos);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// replace()
 	func = function_allocate(TYPE_STRING, "replace", fn_replace);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// ltrim()
 	func = function_allocate(TYPE_STRING, "ltrim", fn_ltrim);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// rtrim()
 	func = function_allocate(TYPE_STRING, "rtrim", fn_rtrim);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// trim()
 	func = function_allocate(TYPE_STRING, "trim", fn_trim);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// like()
 	func = function_allocate(TYPE_BOOL, "like", fn_like);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 }

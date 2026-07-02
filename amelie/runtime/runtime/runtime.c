@@ -23,30 +23,30 @@ runtime_init(Runtime* self)
 	self->timezone = NULL;
 	self->crc      = crc32_sse_supported() ? crc32_sse : crc32;
 	self->iface    = NULL;
-	buf_mgr_init(&self->buf_mgr);
+	bufs_init(&self->bufs);
 	config_init(&self->config);
 	state_init(&self->state);
-	timezone_mgr_init(&self->timezone_mgr);
+	timezones_init(&self->timezones);
 	codec_cache_init(&self->cache_compression);
-	job_mgr_init(&self->job_mgr);
+	jobs_init(&self->jobs);
 	logger_init(&self->logger);
 	task_init(&self->task);
-	lock_mgr_init(&self->lock_mgr);
-	lockable_mgr_init(&self->lockable_mgr);
+	locks_init(&self->locks);
+	lockables_init(&self->lockables);
 }
 
 void
 runtime_free(Runtime* self)
 {
-	lock_mgr_free(&self->lock_mgr);
-	lockable_mgr_free(&self->lockable_mgr);
+	locks_free(&self->locks);
+	lockables_free(&self->lockables);
 	task_free(&self->task);
-	job_mgr_free(&self->job_mgr);
+	jobs_free(&self->jobs);
 	config_free(&self->config);
 	state_free(&self->state);
-	timezone_mgr_free(&self->timezone_mgr);
+	timezones_free(&self->timezones);
 	codec_cache_free(&self->cache_compression);
-	buf_mgr_free(&self->buf_mgr);
+	bufs_free(&self->bufs);
 	logger_close(&self->logger);
 	tls_lib_free();
 }
@@ -76,14 +76,14 @@ runtime_prepare(Runtime* self)
 	setenv("TZ", "UTC", true);
 
 	// read time zones
-	timezone_mgr_open(&self->timezone_mgr);
+	timezones_open(&self->timezones);
 
 	// set default timezone as system timezone
-	self->timezone = self->timezone_mgr.system;
+	self->timezone = self->timezones.system;
 	logger_set_timezone(logger, self->timezone);
 
 	// start background job manager
-	job_mgr_start(&self->job_mgr, 1);
+	jobs_start(&self->jobs, 1);
 
 	// prepare default configuration
 	config_prepare(&self->config);
@@ -96,7 +96,7 @@ static void
 runtime_shutdown(Runtime* self)
 {
 	// stop background job manager
-	job_mgr_stop(&self->job_mgr);
+	jobs_stop(&self->jobs);
 }
 
 static void
@@ -129,13 +129,13 @@ runtime_start(Runtime* self, RuntimeMain main, void* main_arg, int argc, char** 
 		.argv     = argv,
 	};
 	int rc;
-	rc = buf_mgr_allocate_nothrow(&self->buf_mgr, 64000);
+	rc = bufs_allocate_nothrow(&self->bufs, 64000);
 	if (unlikely(rc == -1))
 		return RUNTIME_ERROR;
 
 	rc = task_create_nothrow(&self->task, "main", runtime_main, &args, self, NULL,
 	                         logger_write, &self->logger,
-	                         &self->buf_mgr);
+	                         &self->bufs);
 	if (unlikely(rc == -1))
 		return RUNTIME_ERROR;
 	rc = cond_wait(&self->task.status);

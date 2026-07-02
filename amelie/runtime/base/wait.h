@@ -45,7 +45,7 @@ wait_event(Event* event, Coroutine* coro)
 }
 
 hot static inline bool
-wait_event_time(Event* event, TimerMgr* timer_mgr, Coroutine* coro, int time_ms)
+wait_event_time(Event* event, Timers* timers, Coroutine* coro, int time_ms)
 {
 	if (event->signal)
 	{
@@ -56,7 +56,7 @@ wait_event_time(Event* event, TimerMgr* timer_mgr, Coroutine* coro, int time_ms)
 	Timer timer;
 	timer_init(&timer, wait_event_timer, event, time_ms);
 	if (time_ms >= 0)
-		timer_start(timer_mgr, &timer);
+		timer_start(timers, &timer);
 
 	assert(event->wait == NULL);
 	event->wait = coro;

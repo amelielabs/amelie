@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void fn_misc_register(FunctionMgr*);
+void fn_misc_register(Functions*);

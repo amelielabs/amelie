@@ -41,13 +41,13 @@ log_if_commit(Log* self, LogOp* op)
 	if (op->cmd == LOG_DELETE)
 	{
 		// no snapshots or versions
-		row_free(heap, &part->flat_mgr, op->row);
+		row_free(heap, &part->flats, op->row);
 		return;
 	}
 
 	// cleanup row chain
 	auto tr = container_of(self, Tr, log);
-	row_gc(op->row, heap, &part->flat_mgr, op->snapshot, tr->id);
+	row_gc(op->row, heap, &part->flats, op->snapshot, tr->id);
 
 	// last delete in the chain
 	if (op->row->is_delete && !row_prev(op->row, heap))
@@ -56,7 +56,7 @@ log_if_commit(Log* self, LogOp* op)
 		for (index = index->next; index; index = index->next)
 			index_delete_by(index, op->row);
 
-		row_free(heap, &part->flat_mgr, op->row);
+		row_free(heap, &part->flats, op->row);
 	}
 }
 
@@ -69,7 +69,7 @@ log_if_abort(Log* self, LogOp* op)
 	{
 		auto index = (Index*)op->iface_arg;
 		auto part  = (Part*)index->iface_arg;
-		row_free(part->heap, &part->flat_mgr, row);
+		row_free(part->heap, &part->flats, row);
 	}
 
 	if (op->row_prev)
@@ -77,7 +77,7 @@ log_if_abort(Log* self, LogOp* op)
 		// unfilter vector columns
 		auto index = (Index*)op->iface_arg;
 		auto part  = (Part*)index->iface_arg;
-		row_filter(&part->flat_mgr, op->row_prev, false);
+		row_filter(&part->flats, op->row_prev, false);
 	}
 }
 
@@ -171,7 +171,7 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	auto primary = part_primary(self);
 	if (index_upsert(primary, row, it))
 	{
-		row_free(self->heap, &self->flat_mgr, row);
+		row_free(self->heap, &self->flats, row);
 		return true;
 	}
 
@@ -222,7 +222,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	row_prev_set(row, op->row_prev);
 
 	// filter vector columns
-	row_filter(&self->flat_mgr, op->row_prev, true);
+	row_filter(&self->flats, op->row_prev, true);
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
@@ -277,7 +277,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 	op->row_prev = index_delete(primary, it);
 
 	// filter vector columns
-	row_filter(&self->flat_mgr, op->row_prev, true);
+	row_filter(&self->flats, op->row_prev, true);
 
 	// secondary indexes
 	for (auto index = primary->next; index; index = index->next)

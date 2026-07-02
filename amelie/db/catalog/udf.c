@@ -191,7 +191,7 @@ udf_create(Catalog*   self,
 
 	// create udf
 	udf = udf_allocate(config, self->iface->udf_free, self->iface_arg);
-	rel_mgr_create(&self->rels, tr, &udf->rel);
+	rels_create(&self->rels, tr, &udf->rel);
 
 	// compile on creation
 	self->iface->udf_compile(self, udf);

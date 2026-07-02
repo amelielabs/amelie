@@ -87,7 +87,7 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 
 	// create subscription
 	auto sub = sub_allocate(config, self, on);
-	rel_mgr_create(&self->rels, tr, &sub->rel);
+	rels_create(&self->rels, tr, &sub->rel);
 	on->subs++;
 
 	// set pos and prepare slot

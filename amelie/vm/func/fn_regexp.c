@@ -274,30 +274,30 @@ fn_regexp_replace(Fn* self)
 }
 
 void
-fn_regexp_register(FunctionMgr* self)
+fn_regexp_register(Functions* self)
 {
 	// regexp_like()
 	Function* func;
 	func = function_allocate(TYPE_BOOL, "regexp_like", fn_regexp_like);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_CONTEXT);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// regexp_substr()
 	func = function_allocate(TYPE_STRING, "regexp_substr", fn_regexp_substr);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_CONTEXT);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// regexp_match()
 	func = function_allocate(TYPE_JSON, "regexp_match", fn_regexp_match);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_CONTEXT);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 
 	// regexp_replace()
 	func = function_allocate(TYPE_STRING, "regexp_replace", fn_regexp_replace);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_CONTEXT);
-	function_mgr_add(self, func);
+	functions_add(self, func);
 }

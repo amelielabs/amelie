@@ -24,7 +24,7 @@ struct FrontendIf
 
 struct Frontend
 {
-	ClientMgr   client_mgr;
+	Clients     clients;
 	Auth        auth;
 	FrontendIf* iface;
 	void*       iface_arg;

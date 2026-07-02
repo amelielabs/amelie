@@ -125,7 +125,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE_RO);
 	auto on_error = error_catch
 	(
-		list_foreach(&table->part_mgr.list)
+		list_foreach(&table->parts.list)
 			db_indexate(list_at(Part, link), config);
 	);
 	unlock(lock_table);
@@ -133,7 +133,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	if (on_error)
 	{
 		// abort index creation
-		list_foreach(&table->part_mgr.list)
+		list_foreach(&table->parts.list)
 		{
 			auto part = list_at(Part, link);
 			if (! part->in_progress)
@@ -153,7 +153,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	// todo: validate table again
 
 	// attach indexes to partitions
-	list_foreach(&table->part_mgr.list)
+	list_foreach(&table->parts.list)
 	{
 		auto part = list_at(Part, link);
 		assert(part->in_progress);

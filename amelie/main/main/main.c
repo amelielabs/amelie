@@ -37,7 +37,7 @@ main_init(Main* self, int argc, char** argv)
 	self->argc   = argc;
 	self->argv   = argv;
 	console_init(&self->console);
-	bookmark_mgr_init(&self->bookmark_mgr);
+	bookmarks_init(&self->bookmarks);
 	endpoint_init(&self->endpoint);
 	opt_int_set(&self->endpoint.debug, true);
 }
@@ -46,7 +46,7 @@ void
 main_free(Main* self)
 {
 	console_free(&self->console);
-	bookmark_mgr_free(&self->bookmark_mgr);
+	bookmarks_free(&self->bookmarks);
 	endpoint_free(&self->endpoint);
 }
 
@@ -81,7 +81,7 @@ main_load(Main* self)
 
 	// read bookmarks
 	main_path(path, sizeof(path), "bookmarks");
-	bookmark_mgr_open(&self->bookmark_mgr, path);
+	bookmarks_open(&self->bookmarks, path);
 
 	// read console history
 	main_path(path, sizeof(path), "history");
@@ -94,7 +94,7 @@ main_save(Main* self)
 	// write bookmarks
 	char path[PATH_MAX];
 	main_path(path, sizeof(path), "bookmarks");
-	bookmark_mgr_sync(&self->bookmark_mgr, path);
+	bookmarks_sync(&self->bookmarks, path);
 
 	// write console history
 	main_path(path, sizeof(path), "history");

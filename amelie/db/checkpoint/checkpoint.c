@@ -89,7 +89,7 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 			continue;
 
 		auto table = table_of(rel);
-		list_foreach(&table->part_mgr.list)
+		list_foreach(&table->parts.list)
 		{
 			auto part = list_at(Part, link);
 			if (rr == self->workers_count)
@@ -163,7 +163,7 @@ checkpoint_part(Checkpoint* self, Part* part)
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
-		auto flat = flat_mgr_at(&part->flat_mgr, column);
+		auto flat = flats_at(&part->flats, column);
 		checkpoint_flat(self, part, flat);
 	}
 }

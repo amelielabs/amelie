@@ -1,0 +1,102 @@
+#pragma once
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+typedef struct Lockable  Lockable;
+typedef struct Lockables Lockables;
+
+enum
+{
+	REL_CATALOG,
+	REL_DDL,
+	REL_CHECKPOINT,
+	REL_BP_QUERY,
+	REL_BP_REFRESH_1,
+	REL_BP_REFRESH_2,
+	REL_BP_REFRESH_3,
+	REL_BP_REFRESH_4,
+	REL_MAX
+};
+
+struct Lockable
+{
+	Rel        rel;
+	Str        rel_name;
+	bool       bp;
+	atomic_u32 bp_refs;
+};
+
+struct Lockables
+{
+	Lockable* list;
+};
+
+static inline void
+lockable_init(Lockable* self, uint64_t rsn, const char* name, bool bp)
+{
+	self->bp      = bp;
+	self->bp_refs = 0;
+	str_set_cstr(&self->rel_name, name);
+	auto rel = &self->rel;
+	rel_init(rel, REL_SYSTEM);
+	rel_set_rsn(rel, rsn);
+	rel_set_name(rel, &self->rel_name);
+}
+
+static inline void
+lockable_breakpoint_ref(Lockable* self)
+{
+	atomic_u32_inc(&self->bp_refs);
+}
+
+static inline void
+lockable_breakpoint_unref(Lockable* self)
+{
+	atomic_u32_dec(&self->bp_refs);
+}
+
+static inline void
+lockables_init(Lockables* self)
+{
+	self->list = am_malloc(sizeof(Lockable) * REL_MAX);
+	lockable_init(&self->list[REL_CATALOG], REL_CATALOG, "catalog", false);
+	lockable_init(&self->list[REL_DDL], REL_DDL, "ddl", false);
+	lockable_init(&self->list[REL_CHECKPOINT], REL_CHECKPOINT, "checkpoint", false);
+
+	// breakpoints
+	lockable_init(&self->list[REL_BP_QUERY], REL_BP_QUERY, "bp_query", true);
+	lockable_init(&self->list[REL_BP_REFRESH_1], REL_BP_REFRESH_1, "bp_refresh_1", true);
+	lockable_init(&self->list[REL_BP_REFRESH_2], REL_BP_REFRESH_2, "bp_refresh_2", true);
+	lockable_init(&self->list[REL_BP_REFRESH_3], REL_BP_REFRESH_3, "bp_refresh_3", true);
+	lockable_init(&self->list[REL_BP_REFRESH_4], REL_BP_REFRESH_4, "bp_refresh_4", true);
+}
+
+static inline void
+lockables_free(Lockables* self)
+{
+	for (auto i = 0; i < REL_MAX; i++)
+		rel_free(&self->list[i].rel);
+	am_free(self->list);
+	self->list = NULL;
+}
+
+static inline Lockable*
+lockables_find(Lockables* self, Str* name)
+{
+	for (auto i = 0; i < REL_MAX; i++)
+	{
+		auto ref = &self->list[i];
+		if (str_compare(ref->rel.name, name))
+			return ref;
+	}
+	return NULL;
+}

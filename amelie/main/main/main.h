@@ -44,13 +44,13 @@ typedef enum
 
 struct Main
 {
-	Console     console;
-	BookmarkMgr bookmark_mgr;
-	Endpoint    endpoint;
-	MainAccess  access;
-	amelie_t*   env;
-	int         argc;
-	char**      argv;
+	Console    console;
+	Bookmarks  bookmarks;
+	Endpoint   endpoint;
+	MainAccess access;
+	amelie_t*  env;
+	int        argc;
+	char**     argv;
 };
 
 void main_init(Main*, int, char**);

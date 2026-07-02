@@ -17,9 +17,7 @@
 #include "part/part.h"
 #include "part/part_op.h"
 #include "part/part_mapping.h"
-
-// partition manager
-#include "part/part_mgr.h"
+#include "part/parts.h"
 
 // cursor
 #include "part/cursor.h"

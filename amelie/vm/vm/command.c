@@ -30,8 +30,8 @@ csend_shard(Vm* self, Op* op)
 
 	// create dispatch
 	auto gtr = self->gtr;
-	auto dispatch_mgr = &gtr->dispatch_mgr;
-	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+	auto dispatches = &gtr->dispatches;
+	auto dispatch = dispatch_create(&dispatches->cache);
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
 
@@ -57,7 +57,7 @@ csend_shard(Vm* self, Op* op)
 			auto req  = dispatch_find(dispatch, part);
 			if (! req)
 			{
-				req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
+				req = dispatch_add(dispatch, &dispatches->cache_req,
 				                   REQ_EXECUTE,
 				                   send->start,
 				                   &self->program->code_backend,
@@ -81,7 +81,7 @@ csend_shard(Vm* self, Op* op)
 			auto req = dispatch_find(dispatch, part);
 			if (! req)
 			{
-				req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
+				req = dispatch_add(dispatch, &dispatches->cache_req,
 				                   REQ_EXECUTE,
 				                   send->start,
 				                   &self->program->code_backend,
@@ -99,7 +99,7 @@ csend_shard(Vm* self, Op* op)
 	value_free(reg_at(&self->r, op->b));
 
 	// execute dispatch
-	gtr_mgr_send(share()->gtr_mgr, gtr, dispatch);
+	gtrs_send(share()->gtrs, gtr, dispatch);
 
 	// return dispatch order
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
@@ -115,8 +115,8 @@ csend_lookup(Vm* self, Op* op)
 
 	// create dispatch
 	auto gtr = self->gtr;
-	auto dispatch_mgr = &gtr->dispatch_mgr;
-	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+	auto dispatches = &gtr->dispatches;
+	auto dispatch = dispatch_create(&dispatches->cache);
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
 
@@ -129,7 +129,7 @@ csend_lookup(Vm* self, Op* op)
 	auto part = row_map_keys(table, values);
 	stack_popn(&self->stack, index->keys.list_count);
 
-	auto req  = dispatch_add(dispatch, &dispatch_mgr->cache_req,
+	auto req  = dispatch_add(dispatch, &dispatches->cache_req,
 	                         REQ_EXECUTE,
 	                         send->start,
 	                         &self->program->code_backend,
@@ -144,7 +144,7 @@ csend_lookup(Vm* self, Op* op)
 	}
 
 	// execute dispatch
-	gtr_mgr_send(share()->gtr_mgr, gtr, dispatch);
+	gtrs_send(share()->gtrs, gtr, dispatch);
 
 	// return dispatch order
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
@@ -159,8 +159,8 @@ csend_all(Vm* self, Op* op)
 
 	// create dispatch
 	auto gtr = self->gtr;
-	auto dispatch_mgr = &gtr->dispatch_mgr;
-	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+	auto dispatches = &gtr->dispatches;
+	auto dispatch = dispatch_create(&dispatches->cache);
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
 
@@ -169,10 +169,10 @@ csend_all(Vm* self, Op* op)
 		dispatch_set_close(dispatch);
 
 	// send to all table backends
-	list_foreach(&table->part_mgr.list)
+	list_foreach(&table->parts.list)
 	{
 		auto part = list_at(Part, link);
-		auto req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
+		auto req = dispatch_add(dispatch, &dispatches->cache_req,
 		                        REQ_EXECUTE,
 		                        send->start,
 		                        &self->program->code_backend,
@@ -185,7 +185,7 @@ csend_all(Vm* self, Op* op)
 		stack_popn(&self->stack, op->b);
 
 	// execute dispatch
-	gtr_mgr_send(share()->gtr_mgr, gtr, dispatch);
+	gtrs_send(share()->gtrs, gtr, dispatch);
 
 	// return dispatch order
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
@@ -196,7 +196,7 @@ cclose(Vm* self, Op* op)
 {
 	unused(op);
 	if (self->allow_close)
-		dispatch_mgr_close(&self->gtr->dispatch_mgr);
+		dispatches_close(&self->gtr->dispatches);
 }
 
 void
@@ -247,7 +247,7 @@ crecv_aggs(Vm* self, Op* op)
 
 	// get dispatch
 	auto dispatch_order = reg_at(&self->r, op->b)->integer;
-	auto dispatch = dispatch_mgr_at(&self->gtr->dispatch_mgr, dispatch_order);
+	auto dispatch = dispatches_at(&self->gtr->dispatches, dispatch_order);
 	assert(dispatch);
 
 	// wait for group completion
@@ -291,7 +291,7 @@ crecv(Vm* self, Op* op)
 
 	// get dispatch
 	auto dispatch_order = reg_at(&self->r, op->b)->integer;
-	auto dispatch = dispatch_mgr_at(&self->gtr->dispatch_mgr, dispatch_order);
+	auto dispatch = dispatches_at(&self->gtr->dispatches, dispatch_order);
 	assert(dispatch);
 
 	// wait for group completion
@@ -322,7 +322,7 @@ crecv_matching(Vm* self, Op* op)
 
 	// get dispatch
 	auto dispatch_order = reg_at(&self->r, op->b)->integer;
-	auto dispatch = dispatch_mgr_at(&self->gtr->dispatch_mgr, dispatch_order);
+	auto dispatch = dispatches_at(&self->gtr->dispatches, dispatch_order);
 	assert(dispatch);
 
 	// wait for group completion
@@ -370,7 +370,7 @@ cmatching(Vm* self, Op* op)
 		error("MATCHING: vector dimension mismatch");
 
 	// create matching context as store
-	auto flat = flat_mgr_at(&cursor->part->flat_mgr, column);
+	auto flat = flats_at(&cursor->part->flats, column);
 	auto matching = matching_create(columns, cursor->part->heap, flat, op->d);
 
 	value_set_store(reg_at(r, op->a), &matching->store);
@@ -463,7 +463,7 @@ ctable_open(Vm* self, Op* op)
 	auto part = self->part;
 	if (! open->open_part)
 		part = NULL;
-	auto it = cursor_open(&open->table->part_mgr, part,
+	auto it = cursor_open(&open->table->parts, part,
 	                       open->index,
 	                       open->point_lookup,
 	                       open->snapshot,
@@ -660,8 +660,8 @@ cpublish(Vm* self, Op* op)
 
 	// create dispatch
 	auto gtr = self->gtr;
-	auto dispatch_mgr = &gtr->dispatch_mgr;
-	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+	auto dispatches = &gtr->dispatches;
+	auto dispatch = dispatch_create(&dispatches->cache);
 
 	// prepare publish
 	auto buf = &dispatch->publish;
@@ -695,7 +695,7 @@ cpublish(Vm* self, Op* op)
 	// (dispatch has no partitions)
 
 	// register transaction
-	gtr_mgr_send(share()->gtr_mgr, gtr, dispatch);
+	gtrs_send(share()->gtrs, gtr, dispatch);
 }
 
 void
@@ -718,11 +718,11 @@ cack(Vm* self, Op* op)
 
 	// create dispatch (for wal writer)
 	auto gtr = self->gtr;
-	auto dispatch_mgr = &gtr->dispatch_mgr;
-	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+	auto dispatches = &gtr->dispatches;
+	auto dispatch = dispatch_create(&dispatches->cache);
 
 	// (dispatch has no partitions)
 
 	// register transaction
-	gtr_mgr_send(share()->gtr_mgr, gtr, dispatch);
+	gtrs_send(share()->gtrs, gtr, dispatch);
 }

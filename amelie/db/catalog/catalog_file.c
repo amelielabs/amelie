@@ -222,27 +222,27 @@ catalog_state(Catalog* self, uint64_t lsn, uint64_t tsn)
 
 	// users
 	encode_raw(buf, "users", 5);
-	rel_mgr_dump(&self->users, REL_USER, buf, 0);
+	rels_dump(&self->users, REL_USER, buf, 0);
 
 	// tables
 	encode_raw(buf, "tables", 6);
-	rel_mgr_dump(&self->rels, REL_TABLE, buf, 0);
+	rels_dump(&self->rels, REL_TABLE, buf, 0);
 
 	// clones
 	encode_raw(buf, "clones", 6);
-	rel_mgr_dump(&self->rels, REL_CLONE, buf, 0);
+	rels_dump(&self->rels, REL_CLONE, buf, 0);
 
 	// udfs
 	encode_raw(buf, "udfs", 4);
-	rel_mgr_dump(&self->rels, REL_UDF, buf, 0);
+	rels_dump(&self->rels, REL_UDF, buf, 0);
 
 	// topics
 	encode_raw(buf, "topics", 6);
-	rel_mgr_dump(&self->rels, REL_TOPIC, buf, 0);
+	rels_dump(&self->rels, REL_TOPIC, buf, 0);
 
 	// subs
 	encode_raw(buf, "subs", 4);
-	rel_mgr_dump(&self->rels, REL_SUBSCRIPTION, buf, 0);
+	rels_dump(&self->rels, REL_SUBSCRIPTION, buf, 0);
 
 	encode_obj_end(buf);
 	return buf;

@@ -36,8 +36,8 @@ system_metrics_process(System* self, Buf* buf)
 	os_cpuusage_system(&cpu_count, &cpu_usage);
 
 	// get cpu usage per worker
-	auto  fe = &self->frontend_mgr;
-	auto  be = &self->backend_mgr;
+	auto  fe = &self->frontends;
+	auto  be = &self->backends;
 
 	int      workers = fe->workers_count + be->workers_count;
 	int      workers_id[workers];

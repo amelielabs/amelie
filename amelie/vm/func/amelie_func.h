@@ -13,10 +13,10 @@
 
 // function manager
 #include "func/function.h"
-#include "func/function_mgr.h"
+#include "func/functions.h"
 #include "func/share.h"
 #include "func/fn.h"
-#include "func/fn_mgr.h"
+#include "func/fns.h"
 
 // functions
 #include "func/fn_system.h"

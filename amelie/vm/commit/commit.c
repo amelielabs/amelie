@@ -75,7 +75,7 @@ commit_main(void* arg)
 		// update global commit/abort metrics and detach
 		// transactions
 		//
-		auto group_min = gtr_mgr_detach(self->gtr_mgr, &batch);
+		auto group_min = gtrs_detach(self->gtrs, &batch);
 
 		// publish cdc events and wakeup transactions
 		batch_complete(&batch, self->db->cdc);
@@ -91,7 +91,7 @@ commit(Commit* self, Gtr* gtr, Buf* error)
 	cancel_pause();
 
 	// finilize transaction and handle errors
-	auto error_pending = dispatch_mgr_complete(&gtr->dispatch_mgr);
+	auto error_pending = dispatches_complete(&gtr->dispatches);
 	if (! error)
 	{
 		// unless transaction is used for replication writer, respect
@@ -128,10 +128,10 @@ commit(Commit* self, Gtr* gtr, Buf* error)
 }
 
 void
-commit_init(Commit* self, Db* db, GtrMgr* gtr_mgr)
+commit_init(Commit* self, Db* db, Gtrs* gtrs)
 {
-	self->db      = db;
-	self->gtr_mgr = gtr_mgr;
+	self->db   = db;
+	self->gtrs = gtrs;
 	task_init(&self->task);
 }
 

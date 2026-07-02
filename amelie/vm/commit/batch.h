@@ -84,7 +84,7 @@ batch_process(Batch* self)
 	{
 		// handle aborts per partition
 		auto gtr = batch_at(self, it);
-		list_foreach(&gtr->dispatch_mgr.ltrs)
+		list_foreach(&gtr->dispatches.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
 			auto tr  = ltr->tr;
@@ -106,7 +106,7 @@ batch_process(Batch* self)
 		// sync metrics and prepare gtr for wal write
 		auto write = &gtr->write;
 
-		list_foreach(&gtr->dispatch_mgr.ltrs)
+		list_foreach(&gtr->dispatches.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
 			auto tr  = ltr->tr;
@@ -160,7 +160,7 @@ batch_abort(Batch* self)
 		gtr_set_abort(gtr);
 
 		// sync abort id
-		list_foreach(&gtr->dispatch_mgr.ltrs)
+		list_foreach(&gtr->dispatches.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
 			auto tr  = ltr->tr;

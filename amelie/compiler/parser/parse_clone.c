@@ -49,8 +49,8 @@ parse_clone_create(Stmt* self)
 		stmt_error(self, path, "table not found");
 
 	// calculate clone id
-	uint32_t id = snapshot_mgr_max(&table->snapshot_mgr);
-	list_foreach(&table->part_mgr.list)
+	uint32_t id = snapshots_max(&table->snapshots);
+	list_foreach(&table->parts.list)
 	{
 		auto part = list_at(Part, link);
 		if (part->heap->header->ssn > id)

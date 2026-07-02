@@ -110,7 +110,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 	{
 		// find function
 		auto func = ast_func_allocate();
-		func->fn = function_mgr_find(share()->function_mgr, &name);
+		func->fn = functions_find(share()->functions, &name);
 		if (! func->fn)
 			stmt_error(self, path, "function not found");
 

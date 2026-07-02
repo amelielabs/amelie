@@ -158,7 +158,7 @@ column_add_if_commit(Log* self, LogOp* op)
 	unused(self);
 	auto table = table_of(op->rel);
 	Column* column = op->iface_arg;
-	part_mgr_column_create(&table->part_mgr, column);
+	parts_column_create(&table->parts, column);
 }
 
 static void
@@ -213,7 +213,7 @@ table_column_add(Catalog* self,
 
 	// ensure table has no clones to support vector column
 	if (column->type == TYPE_VECTOR)
-		if (table->snapshot_mgr.list_count > 1)
+		if (table->snapshots.list_count > 1)
 			error("table '{str}': vector columns cannot be used together with clones",
 			      name);
 

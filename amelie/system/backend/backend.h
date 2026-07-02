@@ -15,9 +15,9 @@ typedef struct Backend Backend;
 
 struct Backend
 {
-	PodMgr pod_mgr;
-	Task   task;
-	List   link;
+	Pods pods;
+	Task task;
+	List link;
 };
 
 Backend*

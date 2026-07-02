@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void fn_time_register(FunctionMgr*);
+void fn_time_register(Functions*);

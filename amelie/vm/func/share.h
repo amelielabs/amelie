@@ -15,14 +15,14 @@ typedef struct Share Share;
 
 struct Share
 {
-	GtrMgr*      gtr_mgr;
-	Commit*      commit;
-	Repl*        repl;
-	Cdc*         cdc;
-	FunctionMgr* function_mgr;
-	Db*          db;
-	RecoverIf*   recover_if;
-	void*        recover_if_arg;
+	Gtrs*      gtrs;
+	Commit*    commit;
+	Repl*      repl;
+	Cdc*       cdc;
+	Functions* functions;
+	Db*        db;
+	RecoverIf* recover_if;
+	void*      recover_if_arg;
 };
 
 #define share() ((Share*)am_share)

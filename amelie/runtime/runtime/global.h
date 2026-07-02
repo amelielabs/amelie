@@ -158,7 +158,7 @@ run(JobFunction main, int argc, ...)
 	Job job;
 	job_init(&job, error, main, argv);
 	event_attach(&job.on_complete);
-	job_mgr_add(&runtime()->job_mgr, &job);
+	jobs_add(&runtime()->jobs, &job);
 
 	cancel_pause();
 	event_wait(&job.on_complete, -1);
@@ -177,25 +177,25 @@ resolve(char* addr, int port, struct addrinfo** result)
 
 // lock manager
 #define lock(rel, rel_lock) \
-	lock_mgr_lock(&runtime()->lock_mgr, (rel), (rel_lock), \
-	              NULL, \
-	              source_function) \
+	locks_lock(&runtime()->locks, (rel), (rel_lock), \
+	           NULL, \
+	           source_function) \
 
 #define lock_system(rel_id, rel_lock) \
-	lock_mgr_lock(&runtime()->lock_mgr, \
-	              &runtime()->lockable_mgr.list[(rel_id)].rel, (rel_lock), \
-	              NULL, \
-	              source_function) \
+	locks_lock(&runtime()->locks, \
+	           &runtime()->lockables.list[(rel_id)].rel, (rel_lock), \
+	           NULL, \
+	           source_function) \
 
 #define lock_access(access) \
-	lock_mgr_lock_access(&runtime()->lock_mgr, (access), \
-	                     source_function) \
+	locks_lock_access(&runtime()->locks, (access), \
+	                  source_function) \
 
 #define breakpoint(rel_id) \
 ({ \
-	auto ref = &runtime()->lockable_mgr.list[(rel_id)]; \
+	auto ref = &runtime()->lockables.list[(rel_id)]; \
 	if (unlikely(atomic_u32_of(&ref->bp_refs) > 0)) \
-		unlock(lock_mgr_lock(&runtime()->lock_mgr, &ref->rel, LOCK_SHARED, \
+		unlock(locks_lock(&runtime()->locks, &ref->rel, LOCK_SHARED, \
 		       NULL, \
 		       source_function)); \
 })
@@ -203,7 +203,7 @@ resolve(char* addr, int port, struct addrinfo** result)
 hot static inline void
 unlock(Lock* self)
 {
-	lock_mgr_unlock(&runtime()->lock_mgr, self);
+	locks_unlock(&runtime()->locks, self);
 }
 
 hot static inline void

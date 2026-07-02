@@ -130,7 +130,7 @@ include_directories("${AMELIE_ROOT}/main/test_slt")
 set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/base/format.c
     ${AMELIE_ROOT}/runtime/base/report.c
-    ${AMELIE_ROOT}/runtime/base/timer_mgr.c
+    ${AMELIE_ROOT}/runtime/base/timers.c
     ${AMELIE_ROOT}/runtime/base/poller.c
     ${AMELIE_ROOT}/runtime/base/notify.c
     ${AMELIE_ROOT}/runtime/base/context_stack.c
@@ -151,14 +151,14 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/base64.c
     ${AMELIE_ROOT}/runtime/lib/base64url.c
     ${AMELIE_ROOT}/runtime/lib/timezone.c
-    ${AMELIE_ROOT}/runtime/lib/timezone_mgr.c
+    ${AMELIE_ROOT}/runtime/lib/timezones.c
     ${AMELIE_ROOT}/runtime/lib/date.c
     ${AMELIE_ROOT}/runtime/lib/interval.c
     ${AMELIE_ROOT}/runtime/lib/timestamp.c
     ${AMELIE_ROOT}/runtime/lib/vector.c
     ${AMELIE_ROOT}/runtime/lib/codec_compression.c
     ${AMELIE_ROOT}/runtime/lib/job_worker.c
-    ${AMELIE_ROOT}/runtime/lib/job_mgr.c
+    ${AMELIE_ROOT}/runtime/lib/jobs.c
     ${AMELIE_ROOT}/runtime/lib/logger.c
     ${AMELIE_ROOT}/runtime/lib/load.c
     ${AMELIE_ROOT}/runtime/lib/console.c
@@ -183,11 +183,11 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/websocket/ws.c
     ${AMELIE_ROOT}/server/websocket/websocket.c
     ${AMELIE_ROOT}/server/server/server.c
-    ${AMELIE_ROOT}/server/server/server_mgr.c)
+    ${AMELIE_ROOT}/server/server/servers.c)
 
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/row/row_encode.c
-    ${AMELIE_ROOT}/db/transaction/rel_mgr.c
+    ${AMELIE_ROOT}/db/transaction/rels.c
     ${AMELIE_ROOT}/db/storage/storage_file.c
     ${AMELIE_ROOT}/db/flat/flat.c
     ${AMELIE_ROOT}/db/heap/heap.c
@@ -199,7 +199,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/index/index_hash.c
     ${AMELIE_ROOT}/db/part/part.c
     ${AMELIE_ROOT}/db/part/part_op.c
-    ${AMELIE_ROOT}/db/part/part_mgr.c
+    ${AMELIE_ROOT}/db/part/parts.c
     ${AMELIE_ROOT}/db/part/cursor.c
     ${AMELIE_ROOT}/db/catalog/user.c
     ${AMELIE_ROOT}/db/catalog/table.c
@@ -223,7 +223,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/wal/wal_slot.c
     ${AMELIE_ROOT}/db/wal/wal_subscribe.c
     ${AMELIE_ROOT}/db/checkpoint/checkpoint.c
-    ${AMELIE_ROOT}/db/checkpoint/checkpoint_mgr.c
+    ${AMELIE_ROOT}/db/checkpoint/checkpoints.c
     ${AMELIE_ROOT}/db/db/syncer.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_op.c
@@ -237,7 +237,7 @@ set(AMELIE_SOURCES_SYNC
     ${AMELIE_ROOT}/sync/repl/streamer.c
     ${AMELIE_ROOT}/sync/repl/receiver.c
     ${AMELIE_ROOT}/sync/repl/node.c
-    ${AMELIE_ROOT}/sync/repl/replica_mgr.c
+    ${AMELIE_ROOT}/sync/repl/replicas.c
     ${AMELIE_ROOT}/sync/repl/repl.c)
 
 set(AMELIE_SOURCES_VM
@@ -259,9 +259,9 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/output/output_jsonrpc.c
     ${AMELIE_ROOT}/vm/output/output_text.c
     ${AMELIE_ROOT}/vm/commit/commit.c
-    ${AMELIE_ROOT}/vm/func/function_mgr.c
+    ${AMELIE_ROOT}/vm/func/functions.c
     ${AMELIE_ROOT}/vm/func/fn.c
-    ${AMELIE_ROOT}/vm/func/fn_mgr.c
+    ${AMELIE_ROOT}/vm/func/fns.c
     ${AMELIE_ROOT}/vm/func/fn_system.c
     ${AMELIE_ROOT}/vm/func/fn_cast.c
     ${AMELIE_ROOT}/vm/func/fn_null.c
@@ -348,7 +348,7 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/native.c
     ${AMELIE_ROOT}/system/frontend/follower.c
     ${AMELIE_ROOT}/system/frontend/replay.c
-    ${AMELIE_ROOT}/system/frontend/replay_mgr.c
+    ${AMELIE_ROOT}/system/frontend/replays.c
     ${AMELIE_ROOT}/system/backend/pod.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/session/session.c
@@ -367,7 +367,7 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_SYSTEM})
 
 set(AMELIE_SOURCES_MAIN
-    ${AMELIE_ROOT}/main/main/bookmark_mgr.c
+    ${AMELIE_ROOT}/main/main/bookmarks.c
     ${AMELIE_ROOT}/main/main/main.c
     ${AMELIE_ROOT}/main/main/main_configure.c
     ${AMELIE_ROOT}/main/main/main_client.c

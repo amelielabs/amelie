@@ -26,7 +26,7 @@ catalog_if_user_invalidate(Catalog* catalog, User* user)
 {
 	// note: exclusive catalog lock must be held
 	System* self = catalog->iface_arg;
-	frontend_mgr_invalidate(&self->frontend_mgr, user);
+	frontends_invalidate(&self->frontends, user);
 }
 
 static void
@@ -139,41 +139,41 @@ static void
 system_on_server_connect(Server* server, Client* client)
 {
 	System* self = server->on_connect_arg;
-	frontend_mgr_forward(&self->frontend_mgr, &client->msg);
+	frontends_forward(&self->frontends, &client->msg);
 }
 
 static void
-part_mgr_if_attach(PartMgr* self)
+parts_if_attach(Parts* self)
 {
 	System* system = self->iface_arg;
 	if (self->list_count > PART_MAPPING_MAX)
 		error("exceeded the maximum number of hash partitions per table");
 
 	// create pods on backends
-	backend_mgr_deploy_all(&system->backend_mgr, self);
+	backends_deploy_all(&system->backends, self);
 }
 
 static void
-part_mgr_if_detach(PartMgr* self)
+parts_if_detach(Parts* self)
 {
 	// drop pods on backends
 	System* system = self->iface_arg;
-	backend_mgr_undeploy_all(&system->backend_mgr, self);
+	backends_undeploy_all(&system->backends, self);
 }
 
-static PartMgrIf part_mgr_if =
+static PartsIf parts_if =
 {
-	.attach = part_mgr_if_attach,
-	.detach = part_mgr_if_detach
+	.attach = parts_if_attach,
+	.detach = parts_if_detach
 };
 
 static void
 recover_if_create(Recover* recover)
 {
 	System* self = recover->iface_arg;
-	auto mgr = replay_mgr_allocate();
-	replay_mgr_start(mgr, &self->frontend_mgr);
-	recover->state = mgr;
+	auto replays = replays_allocate();
+	replays_start(replays, &self->frontends);
+	recover->state = replays;
 }
 
 static void
@@ -181,21 +181,21 @@ recover_if_free(Recover* recover)
 {
 	if (! recover->state)
 		return;
-	replay_mgr_stop(recover->state);
-	replay_mgr_free(recover->state);
+	replays_stop(recover->state);
+	replays_free(recover->state);
 	recover->state = NULL;
 }
 
 static void
 recover_if_execute(Recover* recover, RecordMsg* record)
 {
-	replay_mgr_execute(recover->state, record);
+	replays_execute(recover->state, record);
 }
 
 static void
 recover_if_sync(Recover* recover)
 {
-	replay_mgr_sync(recover->state);
+	replays_sync(recover->state);
 }
 
 static RecoverIf recover_if =
@@ -220,7 +220,7 @@ system_invalidate_auth(void* arg)
 {
 	// note: exclusive catalog lock must be held
 	System* self = arg;
-	frontend_mgr_invalidate_all(&self->frontend_mgr);
+	frontends_invalidate_all(&self->frontends);
 }
 
 System*
@@ -237,11 +237,11 @@ system_create(void)
 
 	// prepare shared context
 	auto share = &self->share;
-	share->gtr_mgr        = &self->gtr_mgr;
+	share->gtrs           = &self->gtrs;
 	share->commit         = &self->commit;
 	share->cdc            = &self->cdc;
 	share->repl           = &self->repl;
-	share->function_mgr   = &self->function_mgr;
+	share->functions      = &self->functions;
 	share->db             = &self->db;
 	share->recover_if     = &recover_if;
 	share->recover_if_arg = self;
@@ -250,24 +250,24 @@ system_create(void)
 	am_share = share;
 
 	// server
-	server_mgr_init(&self->server_mgr, system_on_server_connect, self);
+	servers_init(&self->servers, system_on_server_connect, self);
 
 	// cdc
 	cdc_init(&self->cdc);
 
-	// frontend/backend mgr
-	frontend_mgr_init(&self->frontend_mgr);
-	backend_mgr_init(&self->backend_mgr);
+	// frontends/backends
+	frontends_init(&self->frontends);
+	backends_init(&self->backends);
 
 	// transactions
-	gtr_mgr_init(&self->gtr_mgr);
-	commit_init(&self->commit, &self->db, &self->gtr_mgr);
+	gtrs_init(&self->gtrs);
+	commit_init(&self->commit, &self->db, &self->gtrs);
 
 	// vm
-	function_mgr_init(&self->function_mgr);
+	functions_init(&self->functions);
 
 	// db
-	db_init(&self->db, &catalog_if, self, &part_mgr_if, self, &self->cdc);
+	db_init(&self->db, &catalog_if, self, &parts_if, self, &self->cdc);
 
 	// replication
 	repl_init(&self->repl, &self->db, &recover_if, self);
@@ -279,11 +279,11 @@ system_free(System* self)
 {
 	repl_free(&self->repl);
 	commit_free(&self->commit);
-	gtr_mgr_free(&self->gtr_mgr);
+	gtrs_free(&self->gtrs);
 	db_free(&self->db);
 	cdc_free(&self->cdc);
-	function_mgr_free(&self->function_mgr);
-	server_mgr_free(&self->server_mgr);
+	functions_free(&self->functions);
+	servers_free(&self->servers);
 	am_free(self);
 }
 
@@ -332,27 +332,27 @@ system_start(System* self, bool bootstrap)
 
 		// start frontends to handle relay clients
 		auto workers = opt_int_of(&config()->frontends);
-		frontend_mgr_start(&self->frontend_mgr, &frontend_if,
-		                   self,
-		                   workers);
+		frontends_start(&self->frontends, &frontend_if,
+		                self,
+		                workers);
 		return;
 	}
 
 	// configure server early
-	server_mgr_open(&self->server_mgr);
+	servers_open(&self->servers);
 
 	// register builtin functions
-	fn_register(&self->function_mgr);
+	fn_register(&self->functions);
 
 	// start frontends
 	auto workers = opt_int_of(&config()->frontends);
-	frontend_mgr_start(&self->frontend_mgr, &frontend_if,
-	                   self,
-	                   workers);
+	frontends_start(&self->frontends, &frontend_if,
+	                self,
+	                workers);
 
 	// start backend workers
 	workers = opt_int_of(&config()->backends);
-	backend_mgr_start(&self->backend_mgr, workers);
+	backends_start(&self->backends, workers);
 
 	// start commit worker
 	commit_start(&self->commit);
@@ -367,7 +367,7 @@ system_start(System* self, bool bootstrap)
 	repl_open(&self->repl);
 
 	// start servers
-	server_mgr_start(&self->server_mgr);
+	servers_start(&self->servers);
 
 	// start replication
 	if (opt_int_of(&state()->repl))
@@ -384,13 +384,13 @@ system_stop(System* self)
 	info("received shutdown request");
 
 	// stop servers
-	server_mgr_stop(&self->server_mgr);
+	servers_stop(&self->servers);
 
 	// stop replication
 	repl_stop(&self->repl);
 
 	// stop frontends
-	frontend_mgr_stop(&self->frontend_mgr);
+	frontends_stop(&self->frontends);
 
 	// stop commit worker
 	commit_stop(&self->commit);
@@ -399,7 +399,7 @@ system_stop(System* self)
 	db_close(&self->db);
 
 	// stop backends
-	backend_mgr_stop(&self->backend_mgr);
+	backends_stop(&self->backends);
 }
 
 static void
@@ -429,7 +429,7 @@ system_main(System* self)
 		if (msg->id == MSG_NATIVE)
 		{
 			// amelie_connect()
-			frontend_mgr_forward(&self->frontend_mgr, msg);
+			frontends_forward(&self->frontends, msg);
 			continue;
 		}
 		// rpc

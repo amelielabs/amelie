@@ -22,7 +22,7 @@
 // replica
 #include "repl/replica_config.h"
 #include "repl/replica.h"
-#include "repl/replica_mgr.h"
+#include "repl/replicas.h"
 
 // replication
 #include "repl/repl.h"

@@ -24,18 +24,18 @@ struct CatalogIf
 
 struct Catalog
 {
-	RelMgr     users;
-	RelMgr     rels;
+	Rels       users;
+	Rels       rels;
 	Columns    topic_columns;
 	Columns    cdc_columns;
 	Cdc*       cdc;
-	PartMgrIf* iface_part;
+	PartsIf*   iface_part;
 	void*      iface_part_arg;
 	CatalogIf* iface;
 	void*      iface_arg;
 };
 
-void catalog_init(Catalog*, CatalogIf*, void*, PartMgrIf*, void*, Cdc*);
+void catalog_init(Catalog*, CatalogIf*, void*, PartsIf*, void*, Cdc*);
 void catalog_free(Catalog*);
 void catalog_create(Catalog*);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);

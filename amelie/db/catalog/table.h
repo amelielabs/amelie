@@ -16,10 +16,10 @@ typedef struct Table Table;
 struct Table
 {
 	Rel          rel;
-	PartMgr      part_mgr;
+	Parts        parts;
 	PartArg      part_arg;
 	Sequence     seq;
-	SnapshotMgr  snapshot_mgr;
+	Snapshots    snapshots;
 	TableConfig* config;
 };
 
@@ -41,7 +41,7 @@ table_primary(Table* self)
 static inline Snapshot*
 table_main(Table* self)
 {
-	return &self->snapshot_mgr.main;
+	return &self->snapshots.main;
 }
 
 static inline Columns*
@@ -59,7 +59,7 @@ table_keys(Table* self)
 static inline Snapshot*
 table_find_snapshot(Table* self, int id, bool error_if_not_exists)
 {
-	auto snapshot = snapshot_mgr_find(&self->snapshot_mgr, id);
+	auto snapshot = snapshots_find(&self->snapshots, id);
 	if (! snapshot)
 	{
 		if (error_if_not_exists)

@@ -13,7 +13,7 @@
 
 // bookmark
 #include "main/bookmark.h"
-#include "main/bookmark_mgr.h"
+#include "main/bookmarks.h"
 
 // main
 #include "main/main.h"

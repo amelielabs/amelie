@@ -31,7 +31,7 @@ part_allocate(PartConfig* config, PartArg* arg)
 	self->config        = part_config_copy(config);
 	self->arg           = arg;
 	track_init(&self->track);
-	flat_mgr_init(&self->flat_mgr);
+	flats_init(&self->flats);
 	list_init(&self->link_cp);
 	list_init(&self->link);
 	return self;
@@ -49,7 +49,7 @@ part_free(Part* self)
 		index = next;
 	}
 	heap_free(self->heap);
-	flat_mgr_free(&self->flat_mgr);
+	flats_free(&self->flats);
 	part_config_free(self->config);
 	am_free(self);
 }
@@ -138,7 +138,7 @@ part_open(Part* self, uint64_t checkpoint)
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
-		auto flat = flat_mgr_at(&self->flat_mgr, column);
+		auto flat = flats_at(&self->flats, column);
 		part_open_flat(self, flat, checkpoint);
 	}
 }

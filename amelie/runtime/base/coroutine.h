@@ -11,14 +11,15 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Coroutine Coroutine;
+typedef struct Coroutines Coroutines;
+typedef struct Coroutine  Coroutine;
 
 struct Coroutine
 {
 	uint64_t     id;
 	Context      context;
 	ContextStack stack;
-	ExceptionMgr exception_mgr;
+	Exceptions   exceptions;
 	Arena        arena;
 	List         locks;
 	bool         cancel;
@@ -28,7 +29,7 @@ struct Coroutine
 	char         name[32];
 	MainFunction main;
 	void*        main_arg;
-	void*        mgr;
+	Coroutines*  coroutines;
 	Event        on_exit;
 	List         link_ready;
 	List         link;
@@ -36,7 +37,7 @@ struct Coroutine
 };
 
 static inline void
-coroutine_init(Coroutine* self, void* mgr)
+coroutine_init(Coroutine* self, Coroutines* coros)
 {
 	self->id                = 0;
 	self->cancel            = false;
@@ -46,10 +47,10 @@ coroutine_init(Coroutine* self, void* mgr)
 	self->name[0]           = 0;
 	self->main              = NULL;
 	self->main_arg          = NULL;
-	self->mgr               = mgr;
+	self->coroutines        = coros;
 	memset(&self->context, 0, sizeof(self->context));
 	context_stack_init(&self->stack);
-	exception_mgr_init(&self->exception_mgr);
+	exceptions_init(&self->exceptions);
 	error_init(&self->error);
 	arena_init(&self->arena, 4096 - sizeof(ArenaPage));
 	list_init(&self->locks);

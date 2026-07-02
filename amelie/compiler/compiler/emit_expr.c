@@ -944,7 +944,7 @@ emit_at_timezone(Compiler* self, From* from, Ast* ast)
 	str_set(&name, "at_timezone", 11);
 
 	// find and call function
-	auto fn = function_mgr_find(share()->function_mgr, &name);
+	auto fn = functions_find(share()->functions, &name);
 	assert(fn);
 
 	// push arguments

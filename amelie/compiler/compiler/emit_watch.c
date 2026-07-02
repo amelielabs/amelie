@@ -40,7 +40,7 @@ emit_watch(Compiler* self, Ast* ast)
 	// find sleep()
 	Str name;
 	str_set(&name, "sleep", 5);
-	auto func = function_mgr_find(share()->function_mgr, &name);
+	auto func = functions_find(share()->functions, &name);
 	assert(func);
 
 	// call sleep()

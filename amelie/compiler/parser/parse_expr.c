@@ -337,7 +337,7 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 
 	// find and call function
 	if (path->id == KNAME)
-		func->fn = function_mgr_find(share()->function_mgr, &name);
+		func->fn = functions_find(share()->functions, &name);
 	if (! func->fn)
 	{
 		// find udf

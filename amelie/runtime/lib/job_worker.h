@@ -12,17 +12,17 @@
 //
 
 typedef struct JobWorker JobWorker;
-typedef struct JobMgr    JobMgr;
+typedef struct Jobs      Jobs;
 
 struct JobWorker
 {
-	JobMgr* job_mgr;
-	Task    task;
-	List    link;
+	Jobs* jobs;
+	Task  task;
+	List  link;
 };
 
 JobWorker*
-job_worker_allocate(JobMgr*);
+job_worker_allocate(Jobs*);
 void job_worker_free(JobWorker*);
 void job_worker_start(JobWorker*);
 void job_worker_stop(JobWorker*);

@@ -33,15 +33,15 @@ row_allocate_buf(Buf* buf, int columns, int data_size)
 }
 
 hot static inline void
-row_free(Heap* heap, FlatMgr* flat_mgr, Row* row)
+row_free(Heap* heap, Flats* flats, Row* row)
 {
 	heap_remove(heap, row);
 
-	if (! flat_mgr->list_count)
+	if (! flats->list_count)
 		return;
 
-	auto pos = (Flat**)flat_mgr->list.start;
-	auto end = (Flat**)flat_mgr->list.position;
+	auto pos = (Flat**)flats->list.start;
+	auto end = (Flat**)flats->list.position;
 	for (; pos < end; pos++)
 	{
 		auto flat = *pos;
@@ -52,13 +52,13 @@ row_free(Heap* heap, FlatMgr* flat_mgr, Row* row)
 }
 
 hot static inline void
-row_filter(FlatMgr* flat_mgr, Row* row, bool filter)
+row_filter(Flats* flats, Row* row, bool filter)
 {
-	if (! flat_mgr->list_count)
+	if (! flats->list_count)
 		return;
 
-	auto pos = (Flat**)flat_mgr->list.start;
-	auto end = (Flat**)flat_mgr->list.position;
+	auto pos = (Flat**)flats->list.start;
+	auto end = (Flat**)flats->list.position;
 	for (; pos < end; pos++)
 	{
 		auto flat = *pos;

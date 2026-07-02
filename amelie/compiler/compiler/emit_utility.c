@@ -317,7 +317,7 @@ emit_show(Compiler* self)
 		str_set(&name, "show_all", 8);
 	else
 		str_set(&name, "show", 4);
-	auto fn = function_mgr_find(share()->function_mgr, &name);
+	auto fn = functions_find(share()->functions, &name);
 	assert(fn);
 
 	// show_all(section, name, on, verbose)

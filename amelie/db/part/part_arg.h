@@ -15,7 +15,7 @@ typedef struct PartArg PartArg;
 
 struct PartArg
 {
-	Sequence*    seq;
-	Rel*         rel;
-	SnapshotMgr* snapshots;
+	Sequence*  seq;
+	Rel*       rel;
+	Snapshots* snapshots;
 };

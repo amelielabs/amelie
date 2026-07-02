@@ -32,17 +32,17 @@ struct RuntimeIf
 
 struct Runtime
 {
-	BufMgr      buf_mgr;
-	LockMgr     lock_mgr;
-	LockableMgr lockable_mgr;
+	Bufs        bufs;
+	Locks       locks;
+	Lockables   lockables;
 	Config      config;
 	State       state;
 	RuntimeIf*  iface;
 	Timezone*   timezone;
-	TimezoneMgr timezone_mgr;
+	Timezones   timezones;
 	CrcFunction crc;
 	CodecCache  cache_compression;
-	JobMgr      job_mgr;
+	Jobs        jobs;
 	Logger      logger;
 	Task        task;
 };

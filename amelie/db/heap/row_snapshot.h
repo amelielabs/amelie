@@ -72,7 +72,7 @@ row_unique(Row* row, Heap* heap)
 }
 
 hot static inline void
-row_gc(Row* row, Heap* heap, FlatMgr* flat_mgr, Snapshot* snapshot, uint64_t tsn)
+row_gc(Row* row, Heap* heap, Flats* flats, Snapshot* snapshot, uint64_t tsn)
 {
 	// note: row is a head of the version chain
 	auto head = row;
@@ -88,7 +88,7 @@ row_gc(Row* row, Heap* heap, FlatMgr* flat_mgr, Snapshot* snapshot, uint64_t tsn
 		{
 			// set head->prev = row->prev
 			row_prev_set(head, prev);
-			row_free(heap, flat_mgr, row);
+			row_free(heap, flats, row);
 		} else {
 			head = row;
 		}

@@ -39,14 +39,14 @@ vm_init(Vm* self, Part* part)
 	self->local       = NULL;
 	reg_init(&self->r);
 	stack_init(&self->stack);
-	fn_mgr_init(&self->fn_mgr);
+	fns_init(&self->fns);
 }
 
 void
 vm_free(Vm* self)
 {
 	vm_reset(self);
-	fn_mgr_free(&self->fn_mgr);
+	fns_free(&self->fns);
 	stack_free(&self->stack);
 	reg_free(&self->r);
 }
@@ -55,7 +55,7 @@ void
 vm_reset(Vm* self)
 {
 	if (self->code_data)
-		fn_mgr_reset(&self->fn_mgr);
+		fns_reset(&self->fns);
 	reg_reset(&self->r);
 	stack_reset(&self->stack);
 	self->code        = NULL;
@@ -96,7 +96,7 @@ vm_run(Vm*       self,
 	self->refs        = refs;
 	self->args        = args;
 	self->allow_close = allow_close;
-	fn_mgr_prepare(&self->fn_mgr, local, code_data);
+	fns_prepare(&self->fns, local, code_data);
 
 	const void* ops[] =
 	{
@@ -1789,7 +1789,7 @@ ctable_readv:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 	{
-		flat = flat_mgr_at(&r[op->b].part->flat_mgr, (Column*)op->c);
+		flat = flats_at(&r[op->b].part->flats, (Column*)op->c);
 		value_set_vector(&r[op->a],
 		                 ((Column*)op->c)->size_flat / sizeof(float),
 		                 flat_vector_at(flat, *(uint32_t*)ptr),
@@ -2044,7 +2044,7 @@ ccall:
 	fn.local    = self->local;
 	fn.context  = NULL;
 	if (op->d != -1)
-		fn.context = fn_mgr_at(&self->fn_mgr, op->d);
+		fn.context = fns_at(&self->fns, op->d);
 	fn.function->function(&fn);
 	stack_popn(&self->stack, op->c);
 	op_next;

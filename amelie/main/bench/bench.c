@@ -50,7 +50,7 @@ bench_worker_main(void* arg)
 
 	// wait for completion
 	self->shutdown = true;
-	while (am_task->coroutine_mgr.count > 1)
+	while (am_task->coroutines.count > 1)
 		coroutine_yield();
 }
 

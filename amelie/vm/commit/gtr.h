@@ -15,25 +15,25 @@ typedef struct Gtr Gtr;
 
 struct Gtr
 {
-	Msg         msg;
-	uint64_t    id;
-	uint64_t    group;
-	uint64_t    group_order;
-	DispatchMgr dispatch_mgr;
-	Program*    program;
-	Buf*        error;
-	bool        abort;
-	Tr          tr;
-	Write       write;
-	List        write_cdc;
-	Event       on_commit;
-	Event*      on_recover;
-	Limit       limit;
-	Local*      local;
-	Gtr*        link_recover;
-	Gtr*        link_group;
-	List        link_batch;
-	List        link;
+	Msg        msg;
+	uint64_t   id;
+	uint64_t   group;
+	uint64_t   group_order;
+	Dispatches dispatches;
+	Program*   program;
+	Buf*       error;
+	bool       abort;
+	Tr         tr;
+	Write      write;
+	List       write_cdc;
+	Event      on_commit;
+	Event*     on_recover;
+	Limit      limit;
+	Local*     local;
+	Gtr*       link_recover;
+	Gtr*       link_group;
+	List       link_batch;
+	List       link;
 };
 
 static inline void
@@ -49,7 +49,7 @@ gtr_init(Gtr* self, Local* local)
 	self->on_recover   = NULL;
 	self->link_recover = NULL;
 	self->link_group   = NULL;
-	dispatch_mgr_init(&self->dispatch_mgr, self);
+	dispatches_init(&self->dispatches, self);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, opt_int_of(&config()->limit_write));
 	tr_init(&self->tr);
@@ -74,7 +74,7 @@ gtr_reset(Gtr* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	dispatch_mgr_reset(&self->dispatch_mgr);
+	dispatches_reset(&self->dispatches);
 	limit_reset(&self->limit, opt_int_of(&config()->limit_write));
 	tr_reset(&self->tr);
 	write_reset(&self->write);
@@ -87,7 +87,7 @@ static inline void
 gtr_free(Gtr* self)
 {
 	gtr_reset(self);
-	dispatch_mgr_free(&self->dispatch_mgr);
+	dispatches_free(&self->dispatches);
 	tr_free(&self->tr);
 	write_free(&self->write);
 }

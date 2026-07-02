@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Defer        Defer;
-typedef struct Exception    Exception;
-typedef struct ExceptionMgr ExceptionMgr;
+typedef struct Defer      Defer;
+typedef struct Exception  Exception;
+typedef struct Exceptions Exceptions;
 
 typedef void (*DeferFunction)(void*);
 
@@ -33,19 +33,19 @@ struct Exception
 	jmp_buf    buf;
 };
 
-struct ExceptionMgr
+struct Exceptions
 {
 	Exception* last;
 };
 
 static inline void
-exception_mgr_init(ExceptionMgr* self)
+exceptions_init(Exceptions* self)
 {
 	self->last = NULL;
 }
 
 static inline void no_return
-exception_mgr_throw(ExceptionMgr* self)
+exceptions_throw(Exceptions* self)
 {
 	auto current = self->last;
 	assert(current);

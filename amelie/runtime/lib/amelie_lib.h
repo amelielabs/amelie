@@ -30,7 +30,7 @@
 
 // time
 #include "lib/timezone.h"
-#include "lib/timezone_mgr.h"
+#include "lib/timezones.h"
 #include "lib/date.h"
 #include "lib/interval.h"
 #include "lib/timestamp.h"
@@ -50,7 +50,7 @@
 // background jobs
 #include "lib/job.h"
 #include "lib/job_worker.h"
-#include "lib/job_mgr.h"
+#include "lib/jobs.h"
 
 // logger
 #include "lib/logger.h"

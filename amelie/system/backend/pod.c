@@ -87,7 +87,7 @@ pod_run(Pod* self, Ltr* ltr)
 		dispatch_complete(req->dispatch);
 	}
 
-	fn_mgr_reset(&self->vm.fn_mgr);
+	fns_reset(&self->vm.fns);
 	ltr_complete(ltr);
 }
 
@@ -144,7 +144,7 @@ pod_stop(Pod* self)
 {
 	if (self->worker_id == -1)
 		return;
-	auto worker = coroutine_mgr_find(&am_task->coroutine_mgr, self->worker_id);
+	auto worker = coroutines_find(&am_task->coroutines, self->worker_id);
 	assert(worker);
 	Msg stop;
 	msg_init(&stop, MSG_STOP);

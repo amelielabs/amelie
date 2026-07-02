@@ -21,7 +21,7 @@
 #include <amelie_part.h>
 
 hot static Iterator*
-cursor_lookup(PartMgr*     self,
+cursor_lookup(Parts*       self,
               Part*        part,
               IndexConfig* config,
               Snapshot*    snapshot,
@@ -38,7 +38,7 @@ cursor_lookup(PartMgr*     self,
 }
 
 hot static Iterator*
-cursor_scan(PartMgr*     self,
+cursor_scan(Parts*       self,
             Part*        part,
             IndexConfig* config,
             Snapshot*    snapshot,
@@ -52,7 +52,7 @@ cursor_scan(PartMgr*     self,
 }
 
 hot static Iterator*
-cursor_scan_cross(PartMgr*     self,
+cursor_scan_cross(Parts*       self,
                   IndexConfig* config,
                   Snapshot*    snapshot,
                   Row*         key)
@@ -72,7 +72,7 @@ cursor_scan_cross(PartMgr*     self,
 }
 
 hot Iterator*
-cursor_open(PartMgr*     self,
+cursor_open(Parts*       self,
             Part*        part,
             IndexConfig* config,
             bool         point_lookup,
