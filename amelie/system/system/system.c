@@ -171,9 +171,9 @@ static void
 recover_if_create(Recover* recover)
 {
 	System* self = recover->iface_arg;
-	auto replays = replays_allocate();
-	replays_start(replays, &self->frontends);
-	recover->state = replays;
+	auto players = players_allocate();
+	players_start(players, &self->frontends);
+	recover->state = players;
 }
 
 static void
@@ -181,21 +181,21 @@ recover_if_free(Recover* recover)
 {
 	if (! recover->state)
 		return;
-	replays_stop(recover->state);
-	replays_free(recover->state);
+	players_stop(recover->state);
+	players_free(recover->state);
 	recover->state = NULL;
 }
 
 static void
 recover_if_execute(Recover* recover, RecordMsg* record)
 {
-	replays_execute(recover->state, record);
+	players_execute(recover->state, record);
 }
 
 static void
 recover_if_sync(Recover* recover)
 {
-	replays_sync(recover->state);
+	players_sync(recover->state);
 }
 
 static RecoverIf recover_if =

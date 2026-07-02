@@ -51,12 +51,12 @@ frontend_main_native(void* arg)
 }
 
 hot static void
-frontend_main_replay(void* arg)
+frontend_main_player(void* arg)
 {
-	auto replay = (Replay*)arg;
+	auto player = (Player*)arg;
 
 	// process recovery connection
-	replay_main(replay);
+	player_main(player);
 }
 
 static void
@@ -100,25 +100,25 @@ frontend_main(void* arg)
 			coroutine_create(frontend_main_native, native);
 			break;
 		}
-		case MSG_REPLAY:
+		case MSG_PLAYER:
 		{
-			// replay client
-			auto replay = (Replay*)msg;
-			replay->arg = self;
-			coroutine_create(frontend_main_replay, replay);
+			// player
+			auto player = (Player*)msg;
+			player->arg = self;
+			coroutine_create(frontend_main_player, player);
 			break;
 		}
-		case MSG_REPLAY_STOP:
+		case MSG_PLAYER_STOP:
 		{
-			auto replay = container_of(msg, Replay, msg_stop);
-			replay_forward(replay, msg);
+			auto player = container_of(msg, Player, msg_stop);
+			player_forward(player, msg);
 			break;
 		}
 		case MSG_RECORD:
 		{
 			// forward for execution
 			auto record = (RecordMsg*)msg;
-			replay_forward(record->arg, msg);
+			player_forward(record->arg, msg);
 			break;
 		}
 		default:

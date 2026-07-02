@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct ReplaySync ReplaySync;
+typedef struct PlayerSync PlayerSync;
 
-struct ReplaySync
+struct PlayerSync
 {
 	atomic_u64 total;
 	atomic_u64 complete;
@@ -22,37 +22,37 @@ struct ReplaySync
 };
 
 static inline void
-replay_sync_init(ReplaySync* self)
+player_sync_init(PlayerSync* self)
 {
 	memset(self, 0, sizeof(*self));
 }
 
 always_inline static inline void
-replay_sync_add(ReplaySync* self)
+player_sync_add(PlayerSync* self)
 {
 	atomic_u64_inc(&self->total);
 }
 
 always_inline static inline void
-replay_sync_add_complete(ReplaySync* self)
+player_sync_add_complete(PlayerSync* self)
 {
 	atomic_u64_inc(&self->complete);
 }
 
 always_inline static inline void
-replay_sync_add_error(ReplaySync* self)
+player_sync_add_error(PlayerSync* self)
 {
 	atomic_u64_inc(&self->errors);
 }
 
 always_inline static inline void
-replay_sync_add_shutdown(ReplaySync* self)
+player_sync_add_shutdown(PlayerSync* self)
 {
 	atomic_u32_inc(&self->shutdown);
 }
 
 static inline void
-replay_sync_shutdown(ReplaySync* self, int count)
+player_sync_shutdown(PlayerSync* self, int count)
 {
 	// wait for completion
 	for (;;)
@@ -65,7 +65,7 @@ replay_sync_shutdown(ReplaySync* self, int count)
 }
 
 static inline void
-replay_sync(ReplaySync* self)
+player_sync(PlayerSync* self)
 {
 	// wait for completion
 	uint64_t total = atomic_u64_of(&self->total);
@@ -80,5 +80,5 @@ replay_sync(ReplaySync* self)
 	// check for errors
 	uint64_t errors = atomic_u64_of(&self->errors);
 	if (unlikely(errors))
-		error("replay: replay error");
+		error("player: error during playback");
 }

@@ -35,7 +35,7 @@
 // follower (websocket session)
 #include "frontend/follower.h"
 
-// replay
-#include "frontend/replay_sync.h"
-#include "frontend/replay.h"
-#include "frontend/replays.h"
+// player
+#include "frontend/player_sync.h"
+#include "frontend/player.h"
+#include "frontend/players.h"

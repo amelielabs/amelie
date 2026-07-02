@@ -34,9 +34,9 @@ typedef enum
 	// wal
 	MSG_RECORD,
 
-	// replay
-	MSG_REPLAY,
-	MSG_REPLAY_STOP,
+	// player
+	MSG_PLAYER,
+	MSG_PLAYER_STOP,
 
 	// backend
 	MSG_DEPLOY,

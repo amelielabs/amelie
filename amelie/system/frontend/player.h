@@ -11,27 +11,27 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Replay Replay;
+typedef struct Player Player;
 
-struct Replay
+struct Player
 {
 	Msg         msg;
 	Msg         msg_stop;
 	Request     req;
 	Query       query;
 	Mailbox     queue;
-	ReplaySync* sync;
+	PlayerSync* sync;
 	Buf         buf;
 	Frontend*   fe;
 	void*       arg;
 };
 
-void replay_init(Replay*, ReplaySync*, Frontend*);
-void replay_free(Replay*);
-void replay_main(Replay*);
+void player_init(Player*, PlayerSync*, Frontend*);
+void player_free(Player*);
+void player_main(Player*);
 
 static inline void
-replay_forward(Replay* self, Msg* msg)
+player_forward(Player* self, Msg* msg)
 {
 	mailbox_append(&self->queue, msg);
 	event_signal(&self->queue.event);

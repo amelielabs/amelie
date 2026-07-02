@@ -347,8 +347,8 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/client.c
     ${AMELIE_ROOT}/system/frontend/native.c
     ${AMELIE_ROOT}/system/frontend/follower.c
-    ${AMELIE_ROOT}/system/frontend/replay.c
-    ${AMELIE_ROOT}/system/frontend/replays.c
+    ${AMELIE_ROOT}/system/frontend/player.c
+    ${AMELIE_ROOT}/system/frontend/players.c
     ${AMELIE_ROOT}/system/backend/pod.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/session/session.c

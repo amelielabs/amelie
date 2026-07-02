@@ -18,13 +18,13 @@
 #include <amelie_frontend.h>
 
 void
-replay_init(Replay* self, ReplaySync* sync, Frontend* fe)
+player_init(Player* self, PlayerSync* sync, Frontend* fe)
 {
 	self->sync = sync;
 	self->fe   = fe;
 	self->arg  = NULL;
-	msg_init(&self->msg, MSG_REPLAY);
-	msg_init(&self->msg_stop, MSG_REPLAY_STOP);
+	msg_init(&self->msg, MSG_PLAYER);
+	msg_init(&self->msg_stop, MSG_PLAYER_STOP);
 	request_init(&self->req);
 	query_init(&self->query);
 	mailbox_init(&self->queue);
@@ -32,26 +32,26 @@ replay_init(Replay* self, ReplaySync* sync, Frontend* fe)
 }
 
 void
-replay_free(Replay* self)
+player_free(Player* self)
 {
 	request_free(&self->req);
 	buf_free(&self->buf);
 }
 
 static inline void
-replay_record_primary(RecordMsg* record)
+player_record_primary(RecordMsg* record)
 {
 	// check replication state
 	if (unlikely(! opt_int_of(&state()->repl)))
-		error("replay: replication is disabled");
+		error("player: replication is disabled");
 
 	// ensure record comes from the current primary
 	if (! uuid_is(&record->instance_id, opt_uuid_of(&state()->repl_primary)))
-		error("replay: primary id mismatch");
+		error("player: primary id mismatch");
 }
 
 static void
-replay_record(Replay* self, RecordMsg* record, void* session)
+player_record(Player* self, RecordMsg* record, void* session)
 {
 	auto req      = &self->req;
 	auto endpoint = &req->endpoint;
@@ -73,7 +73,7 @@ replay_record(Replay* self, RecordMsg* record, void* session)
 
 		// validate replicated record
 		if (! uuid_is(&record->instance_id, opt_uuid_of(&config()->uuid)))
-			replay_record_primary(record);
+			player_record_primary(record);
 
 		// execute
 		self->fe->iface->session_execute(session, req, &self->query);
@@ -84,7 +84,7 @@ replay_record(Replay* self, RecordMsg* record, void* session)
 }
 
 void
-replay_main(Replay* self)
+player_main(Player* self)
 {
 	auto fe      = self->fe;
 	auto sync    = self->sync;
@@ -96,7 +96,7 @@ replay_main(Replay* self)
 		auto msg = mailbox_pop(&self->queue, am_self());
 		if (msg == &self->msg_stop)
 		{
-			replay_sync_add_shutdown(sync);
+			player_sync_add_shutdown(sync);
 			break;
 		}
 		auto record = (RecordMsg*)msg;
@@ -105,16 +105,16 @@ replay_main(Replay* self)
 		// process record
 		auto on_error = error_catch
 		(
-			replay_record(self, record, session);
+			player_record(self, record, session);
 		);
 
 		if (on_error)
 		{
-			// todo: set replay error
-			replay_sync_add_error(sync);
+			// todo: set player error
+			player_sync_add_error(sync);
 		}
 
-		replay_sync_add_complete(sync);
+		player_sync_add_complete(sync);
 	}
 
 	ctl->session_free(session);
