@@ -108,7 +108,17 @@ gtr_mgr_attach(GtrMgr* self, Gtr* gtr, Dispatch* dispatch)
 		// derive transaction group on overlap
 		if (overlaps)
 		{
-			gtr->group = ref->group;
+			gtr->group       = ref->group;
+			gtr->group_order = 0;
+			list_foreach(&self->list)
+			{
+				auto ref = list_at(Gtr, link);
+				if (ref->group != gtr->group)
+					continue;
+				if (ref->group_order > gtr->group_order)
+					gtr->group_order = ref->group_order;
+			}
+			gtr->group_order++;
 			break;
 		}
 	}
@@ -118,18 +128,6 @@ gtr_mgr_attach(GtrMgr* self, Gtr* gtr, Dispatch* dispatch)
 	{
 		gtr->group = self->id++;
 		gtr->group_order = 0;
-	} else
-	{
-		gtr->group_order = 0;
-		list_foreach(&self->list)
-		{
-			auto ref = list_at(Gtr, link);
-			if (ref->group != gtr->group)
-				continue;
-			if (ref->group_order > gtr->group_order)
-				gtr->group_order = ref->group_order;
-		}
-		gtr->group_order++;
 	}
 
 	// register transaction

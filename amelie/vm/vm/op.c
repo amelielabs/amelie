@@ -300,7 +300,7 @@ OpDesc ops[] =
 	{ CDDL, "ddl" },
 	{ CDDL_CREATE_INDEX, "ddl_create_index" },
 
-	// scheduler
+	// compute
 	{ CSEND_SHARD, "send_shard" },
 	{ CSEND_LOOKUP, "send_lookup" },
 	{ CSEND_ALL, "send_all" },

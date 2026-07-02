@@ -378,7 +378,7 @@ vm_run(Vm*       self,
 		&&cddl,
 		&&cddl_create_index,
 
-		// scheduler
+		// compute
 		&&csend_shard,
 		&&csend_lookup,
 		&&csend_all,
