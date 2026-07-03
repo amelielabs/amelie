@@ -35,10 +35,7 @@ commit_main(void* arg)
 {
 	Commit* self = arg;
 
-	GtrQueue queue;
-	gtr_queue_init(&queue);
-	defer(gtr_queue_free, &queue);
-
+	auto queue = &self->queue;
 	Batch batch;
 	batch_init(&batch);
 	defer(batch_free, &batch);
@@ -51,9 +48,9 @@ commit_main(void* arg)
 		// collect prepared transactions
 		batch_reset(&batch);
 
-		commit_add(&queue, &batch, (Gtr*)msg);
+		commit_add(queue, &batch, (Gtr*)msg);
 		while ((msg = task_recv_try()))
-			commit_add(&queue, &batch, (Gtr*)msg);
+			commit_add(queue, &batch, (Gtr*)msg);
 		if (batch_empty(&batch))
 			continue;
 
@@ -81,7 +78,7 @@ commit_main(void* arg)
 		batch_complete(&batch, self->db->cdc);
 
 		// remove all groups < group_min
-		gtr_queue_gc(&queue, group_min);
+		gtr_queue_gc(queue, group_min);
 	}
 }
 
@@ -132,12 +129,14 @@ commit_init(Commit* self, Db* db, Gtrs* gtrs)
 {
 	self->db   = db;
 	self->gtrs = gtrs;
+	gtr_queue_init(&self->queue);
 	task_init(&self->task);
 }
 
 void
 commit_free(Commit* self)
 {
+	gtr_queue_free(&self->queue);
 	task_free(&self->task);
 }
 
@@ -158,4 +157,12 @@ commit_stop(Commit* self)
 		task_send(&self->task, &stop);
 		task_wait(&self->task);
 	}
+}
+
+void
+commit_sync(Commit* self)
+{
+	auto recover = self->queue.recover;
+	assert(! recover->list);
+	recover->id_next = state_lsn() + 1;
 }

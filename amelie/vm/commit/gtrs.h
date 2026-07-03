@@ -45,7 +45,7 @@ gtrs_recover(Gtrs* self, Gtr* gtr)
 	{
 		if (gtr_recover_pending(recover) && recover->list == gtr)
 		{
-			// get head and advance recover id
+			// get head and advance next expected lsn id
 			gtr_recover_pop(recover);
 			break;
 		}
@@ -69,19 +69,21 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 {
 	spinlock_lock(&self->lock);
 
-	// set transaction id
-	//
 	uint64_t id;
 	if (gtr->write.recover)
 	{
-		// recovery serialization
-		//
-		// ensure transaction is serialized around recover_id order
+		// recovery path
+
+		// ensure transaction is serialized around lsn
 		gtrs_recover(self, gtr);
 
 		// recover id
 		id = gtr->write.recover->record->tsn;
 		state_tsn_follow(id);
+
+		// force commit writer to order transactions by lsn
+		gtr->group       = 0;
+		gtr->group_order = gtr->write.recover->record->lsn;
 	} else
 	{
 		// the id must not be modified globally on replica
@@ -89,46 +91,48 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 			id = state_tsn_next();
 		else
 			id = state_tsn();
-	}
-	gtr->id = id;
 
-	// match overlapping transaction group
-	auto is_snapshot = gtr->program->snapshot;
-	list_foreach_reverse(&self->list)
-	{
-		auto ref = list_at(Gtr, link);
-
-		// find overlapping partitions
-		bool overlaps;
-		if (is_snapshot)
-			overlaps = dispatches_overlaps(&ref->dispatches, &gtr->dispatches);
-		else
-			overlaps = dispatches_overlaps_dispatch(&ref->dispatches, dispatch);
-
-		// derive transaction group on overlap
-		if (overlaps)
+		// match overlapping transactions
+		auto is_snapshot = gtr->program->snapshot;
+		list_foreach_reverse(&self->list)
 		{
-			gtr->group       = ref->group;
-			gtr->group_order = 0;
-			list_foreach(&self->list)
+			auto ref = list_at(Gtr, link);
+
+			// find overlapping partitions
+			bool overlaps;
+			if (is_snapshot)
+				overlaps = dispatches_overlaps(&ref->dispatches, &gtr->dispatches);
+			else
+				overlaps = dispatches_overlaps_dispatch(&ref->dispatches, dispatch);
+
+			// derive transaction group on overlap
+			if (overlaps)
 			{
-				auto ref = list_at(Gtr, link);
-				if (ref->group != gtr->group)
-					continue;
-				if (ref->group_order > gtr->group_order)
-					gtr->group_order = ref->group_order;
+				gtr->group       = ref->group;
+				gtr->group_order = 0;
+				list_foreach(&self->list)
+				{
+					auto ref = list_at(Gtr, link);
+					if (ref->group != gtr->group)
+						continue;
+					if (ref->group_order > gtr->group_order)
+						gtr->group_order = ref->group_order;
+				}
+				gtr->group_order++;
+				break;
 			}
-			gtr->group_order++;
-			break;
+		}
+
+		// start new transaction group or set group order
+		if (! gtr->group)
+		{
+			gtr->group = self->id++;
+			gtr->group_order = 0;
 		}
 	}
 
-	// start new transaction group or set group order
-	if (! gtr->group)
-	{
-		gtr->group = self->id++;
-		gtr->group_order = 0;
-	}
+	// set transaction id (tsn)
+	gtr->id = id;
 
 	// register transaction
 	list_append(&self->list, &gtr->link);
@@ -217,11 +221,11 @@ gtrs_detach(Gtrs* self, Batch* batch)
 	return group_min;
 }
 
-hot static inline uint64_t
-gtrs_recover_id(Gtrs* self)
+hot static inline void
+gtrs_sync(Gtrs* self)
 {
+	// sync recover state to current lsn
 	spinlock_lock(&self->lock);
-	auto id = self->recover.id_next;
+	gtr_recover_reset(&self->recover);
 	spinlock_unlock(&self->lock);
-	return id;
 }

@@ -15,14 +15,16 @@ typedef struct GtrQueue GtrQueue;
 
 struct GtrQueue
 {
-	List list;
-	List cache;
-	int  cache_count;
+	List      list;
+	List      cache;
+	int       cache_count;
+	GtrGroup* recover;
 };
 
 static inline void
 gtr_queue_init(GtrQueue* self)
 {
+	self->recover     = gtr_group_allocate();
 	self->cache_count = 0;
 	list_init(&self->list);
 	list_init(&self->cache);
@@ -36,6 +38,7 @@ gtr_queue_free(GtrQueue* self)
 		auto group = list_at(GtrGroup, link);
 		gtr_group_free(group);
 	}
+	gtr_group_free(self->recover);
 }
 
 hot static inline void
@@ -58,6 +61,8 @@ gtr_queue_gc(GtrQueue* self, uint64_t min)
 hot static inline GtrGroup*
 gtr_queue_find(GtrQueue* self, uint64_t id)
 {
+	if (unlikely(id == 0))
+		return self->recover;
 	list_foreach_safe(&self->list)
 	{
 		auto ref = list_at(GtrGroup, link);

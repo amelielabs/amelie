@@ -23,7 +23,6 @@ players_allocate()
 	auto self = (Players*)am_malloc(sizeof(Players));
 	self->player       = NULL;
 	self->player_count = 0;
-	self->player_id    = 0;
 	self->rr           = 0;
 	player_sync_init(&self->sync);
 	return self;
@@ -58,8 +57,9 @@ players_start(Players* self, Frontends* frontends)
 		frontend_add(fe, &player->msg);
 	}
 
-	// set starting reply id
-	self->player_id = gtrs_recover_id(share()->gtrs);
+	// sync gtrs and commit recover state to the current lsn
+	gtrs_sync(share()->gtrs);
+	commit_sync(share()->commit);
 }
 
 void
@@ -97,6 +97,10 @@ void
 players_sync(Players* self)
 {
 	player_sync(&self->sync);
+
+	// sync gtrs and commit recover state to the current lsn
+	gtrs_sync(share()->gtrs);
+	commit_sync(share()->commit);
 }
 
 static inline Player*
@@ -116,12 +120,8 @@ players_execute(Players* self, RecordMsg* msg)
 	auto sync_after = false;
 	if (unlikely(msg->record->flags & RECORD_UTILITY))
 	{
-		player_sync(sync);
+		players_sync(self);
 		sync_after = true;
-	} else
-	{
-		// set player id
-		msg->record_id = self->player_id++;
 	}
 
 	// send to the next frontend player client
@@ -133,5 +133,5 @@ players_execute(Players* self, RecordMsg* msg)
 	// sync
 	uint64_t total = atomic_u64_of(&sync->total);
 	if (sync_after || !(total % 10000))
-		player_sync(sync);
+		players_sync(self);
 }

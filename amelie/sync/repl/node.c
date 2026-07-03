@@ -60,7 +60,6 @@ node_replay(Node* self, NodeMsg* node_msg, Buf* data)
 		msg->msg_buf     = buf;
 		msg->arg         = NULL;
 		msg->instance_id = node_msg->id;
-		msg->record_id   = 0;
 		memcpy(msg->record, record, record->size);
 
 		// execute

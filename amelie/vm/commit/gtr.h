@@ -108,7 +108,7 @@ gtr_prepare(Gtr* self, Program* program, User* user)
 static inline bool
 gtr_active(Gtr* self)
 {
-	return self->group != 0;
+	return self->group != 0 || self->write.recover;
 }
 
 static inline void

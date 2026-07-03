@@ -17,7 +17,6 @@ struct Players
 {
 	Player*    player;
 	int        player_count;
-	uint64_t   player_id;
 	int        rr;
 	PlayerSync sync;
 };
