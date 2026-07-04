@@ -122,6 +122,7 @@ include_directories("${AMELIE_ROOT}/system/api")
 # main
 include_directories("${AMELIE_ROOT}/main")
 include_directories("${AMELIE_ROOT}/main/main")
+include_directories("${AMELIE_ROOT}/main/import")
 include_directories("${AMELIE_ROOT}/main/bench")
 include_directories("${AMELIE_ROOT}/main/test")
 
@@ -353,6 +354,7 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/system/repo.c
     ${AMELIE_ROOT}/system/system/system.c
     ${AMELIE_ROOT}/system/system/system_metrics.c
+    ${AMELIE_ROOT}/system/system/main.c
     ${AMELIE_ROOT}/system/api/amelie.c)
 
 set(AMELIE_SOURCES
@@ -370,7 +372,8 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/main/main_configure.c
     ${AMELIE_ROOT}/main/main/main_cmd.c
     ${AMELIE_ROOT}/main/main/main_cli.c
-    ${AMELIE_ROOT}/main/main/import.c
+    ${AMELIE_ROOT}/main/import/import.c
+    ${AMELIE_ROOT}/main/import/import_main.c
     ${AMELIE_ROOT}/main/bench/bench.c
     ${AMELIE_ROOT}/main/bench/bench_insert.c
     ${AMELIE_ROOT}/main/bench/bench_upsert.c

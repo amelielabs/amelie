@@ -42,19 +42,19 @@ client_recv(Client* self, Buf* content)
 static inline int
 client_execute(Client* self, Str* content, Buf* result)
 {
-	client_send(self, content);
-	return client_recv(self, result);
-}
-
-static inline int
-client_execute_histogram(Client*    self, Str* content, Buf* result,
-                         Histogram* histogram)
-{
+	auto histogram = self->histogram;
 	uint64_t time_us;
-	time_start(&time_us);
-	auto code = client_execute(self, content, result);
-	time_end(&time_us);
-	histogram_add(histogram, time_us / 1000);
+	if (histogram)
+		time_start(&time_us);
+
+	client_send(self, content);
+	auto code = client_recv(self, result);
+
+	if (histogram)
+	{
+		time_end(&time_us);
+		histogram_add(histogram, time_us / 1000);
+	}
 	return code;
 }
 

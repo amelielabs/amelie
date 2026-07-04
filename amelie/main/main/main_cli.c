@@ -124,7 +124,7 @@ main_cli(Main* self)
 		opt_string_set_raw(&endpoint->accept, "text/plain", 10);
 
 	// create client and connect
-	auto client = client_create();
+	auto client = client_allocate();
 	defer(client_free, client);
 	client_set_endpoint(client, endpoint);
 	client_connect(client);

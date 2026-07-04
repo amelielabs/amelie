@@ -67,7 +67,7 @@ test_session_connect(TestSession* self, Str* uri, Str* cafile)
 	if (opt_string_empty(&endpoint->accept))
 		opt_string_set_raw(&endpoint->accept, "text/plain", 10);
 
-	self->client = client_create();
+	self->client = client_allocate();
 	client_set_endpoint(self->client, &self->endpoint);
 	client_connect(self->client);
 }

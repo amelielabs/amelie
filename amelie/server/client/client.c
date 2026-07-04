@@ -15,7 +15,7 @@
 #include <amelie_client.h>
 
 Client*
-client_create(void)
+client_allocate(void)
 {
 	Client* self;
 	self = am_malloc(sizeof(Client));
@@ -24,6 +24,7 @@ client_create(void)
 	self->accepted     = false;
 	self->trusted      = false;
 	self->arg          = NULL;
+	self->histogram    = NULL;
 	msg_init(&self->msg, MSG_CLIENT);
 	http_init(&self->request);
 	http_init(&self->reply);
@@ -64,6 +65,12 @@ void
 client_set_trusted(Client* self, bool value)
 {
 	self->trusted = value;
+}
+
+void
+client_set_histogram(Client* self, Histogram* histogram)
+{
+	self->histogram = histogram;
 }
 
 void

@@ -91,7 +91,7 @@ restore_basedir(char* directory)
 static void
 restore_connect(Restore* self)
 {
-	self->client = client_create();
+	self->client = client_allocate();
 	auto client = self->client;
 	client->readahead.readahead = 256 * 1024;
 	client_set_endpoint(client, self->endpoint);

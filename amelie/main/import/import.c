@@ -12,6 +12,7 @@
 
 #include <amelie>
 #include <amelie_main.h>
+#include <amelie_main_import.h>
 
 #if 0
 void

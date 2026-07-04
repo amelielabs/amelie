@@ -11,40 +11,7 @@
 //
 
 #include <amelie>
-
-static void
-amelie_main(void* arg, int argc, char** argv)
-{
-	Repo repo;
-	repo_init(&repo);
-	defer(repo_close, &repo);
-
-	System* system = NULL;
-	auto on_error = error_catch
-	(
-		// create or open repository
-		auto directory = arg;
-		repo_open(&repo, directory, argc, argv);
-
-		// create system object
-		system = system_create();
-		system_start(system, repo.bootstrap);
-
-		// notify start completion
-		cond_signal(&am_task->status, RUNTIME_OK);
-
-		// handle system requests
-		system_main(system);
-	);
-	if (system)
-	{
-		system_stop(system);
-		system_free(system);
-	}
-
-	if (on_error)
-		rethrow();
-}
+#include <amelie.h>
 
 enum
 {
@@ -104,9 +71,12 @@ AMELIE_API int
 amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 {
 	// ensure amelie_open() was not called previously
-	if (unlikely(runtime_started(&self->runtime)))
+	auto runtime = &self->runtime;
+	if (unlikely(runtime_started(runtime)))
 		return -1;
-	auto status = runtime_start(&self->runtime, amelie_main, (void*)path,
-	                            argc, argv);
-	return status == RUNTIME_OK? 0: -1;
+	auto rc = runtime_start(runtime, system_runtime_main, (void*)path,
+	                        argc, argv);
+	if (rc == RUNTIME_OK)
+		return 0;
+	return -1;
 }

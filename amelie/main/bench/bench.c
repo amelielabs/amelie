@@ -18,15 +18,11 @@ static void
 bench_connection(void* arg)
 {
 	BenchWorker* self = arg;
-	auto client = client_create();
+	auto client = client_allocate();
 	defer(client_free, client);
 	client_set_endpoint(client, &self->bench->main->endpoint);
-
-#if 0
-	// measure histogram
 	if (opt_int_of(&self->bench->histogram))
-		main_client_set(client, &self->histogram);
-#endif
+		client_set_histogram(client, &self->histogram);
 
 	error_catch
 	(
@@ -148,7 +144,7 @@ static void
 bench_service(Bench* self, bool create)
 {
 	auto endpoint = &self->main->endpoint;
-	auto client_init = client_create();
+	auto client_init = client_allocate();
 	defer(client_free, client_init);
 	client_set_endpoint(client_init, endpoint);
 
@@ -163,7 +159,7 @@ bench_service(Bench* self, bool create)
 		// connect as bench user for deploy
 		str_set_cstr(&endpoint->user.string, "bench");
 
-		auto client = client_create();
+		auto client = client_allocate();
 		defer(client_free, client);
 		client_set_endpoint(client, endpoint);
 

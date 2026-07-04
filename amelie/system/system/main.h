@@ -11,12 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-// repository
-#include "system/repo.h"
-
-// system
-#include "system/system.h"
-#include "system/system_metrics.h"
-
-// system runtime
-#include "system/main.h"
+void system_runtime_main(void*, int, char**);

@@ -22,39 +22,13 @@ cmd_start(Main* self)
 	main_open(self, NULL);
 	defer(main_close, self);
 
-	// ensure is path
+	// ensure path is set
 	auto path = opt_string_of(&self->endpoint.path);
 	if (str_empty(path))
 		error("path is not defined");
 
-	Repo repo;
-	repo_init(&repo);
-	defer(repo_close, &repo);
-
-	System* system = NULL;
-	auto on_error = error_catch
-	(
-		// create or open repository
-		repo_open(&repo, path->pos, self->argc, self->argv);
-
-		// create system object
-		system = system_create();
-		system_start(system, repo.bootstrap);
-
-		// notify start completion
-		cond_signal(&am_task->status, RUNTIME_OK);
-
-		// handle system requests
-		system_main(system);
-	);
-	if (system)
-	{
-		system_stop(system);
-		system_free(system);
-	}
-
-	if (on_error)
-		rethrow();
+	// start the database
+	system_runtime_main(path->pos, self->argc, self->argv);
 }
 
 static void
@@ -101,28 +75,6 @@ cmd_backup(Main* self)
 }
 
 static void
-cmd_import(Main* self)
-{
-	unused(self);
-#if 0
-	// amelie import <path, uri, bookmark> files ...
-	Import import;
-	import_init(&import, self);
-	defer(import_free, &import);
-
-	main_open(self, &import.opts);
-	defer(main_close, self);
-
-	logger_set_stdout(&runtime()->logger, true);
-	logger_set_stdout_time(&runtime()->logger, false);
-	logger_set_stdout_lf(&runtime()->logger, false);
-
-	opt_int_set(&config()->log_connections, false);
-	import_run(&import);
-#endif
-}
-
-static void
 cmd_bookmark(Main* self)
 {
 	// amelie bookmark <name> options
@@ -153,6 +105,7 @@ cmd_bookmark(Main* self)
 	opt_string_set(&ref->endpoint.name, &name);
 }
 
+extern void cmd_import(Main*);
 extern void cmd_bench(Main*);
 extern void cmd_test(Main*);
 

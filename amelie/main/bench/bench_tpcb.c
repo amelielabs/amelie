@@ -91,7 +91,7 @@ static void
 loader_main(void* arg)
 {
 	auto self   = (Loader*)arg;
-	auto client = client_create();
+	auto client = client_allocate();
 	defer(client_free, client);
 	client_set_endpoint(client, &self->bench->main->endpoint);
 

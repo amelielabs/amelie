@@ -97,7 +97,7 @@ server_accept(Server* self)
 	auto on_error = error_catch
 	(
 		// create new client
-		client = client_create();
+		client = client_allocate();
 		if (config->tls)
 			tcp_set_tls(&client->tcp, &config->tls_context);
 		auto is_localhost = tcp_set_fd(&client->tcp, fd);

@@ -18,4 +18,3 @@
 #include <amelie_vm>
 #include <amelie_compiler>
 #include <amelie_system>
-#include <amelie.h>

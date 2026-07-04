@@ -184,7 +184,7 @@ streamer_main(void* arg)
 	// create client, set node uri
 	error_catch
 	(
-		self->client = client_create();
+		self->client = client_allocate();
 		client_set_endpoint(self->client, self->endpoint);
 
 		// set websocket

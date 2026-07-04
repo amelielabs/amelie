@@ -16,7 +16,7 @@
 static void
 main_usage(void)
 {
-	info("Usage: amelie [command] [options]");
+	info("Usage: amelie [command] [path | uri | bookmark] [options]");
 	info("");
 	info("Commands:");
 	for (auto i = 0;; i++)
