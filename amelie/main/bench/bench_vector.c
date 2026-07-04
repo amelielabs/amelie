@@ -32,7 +32,7 @@ struct VectorLoader
 };
 
 static void
-vector_loader_client_main(VectorLoader* self, MainClient* client)
+vector_loader_client_main(VectorLoader* self, Client* client)
 {
 	Buf buf;
 	buf_init(&buf);
@@ -61,7 +61,7 @@ vector_loader_client_main(VectorLoader* self, MainClient* client)
 		}
 		Str str;
 		buf_str(&buf, &str);
-		main_client_execute(client, &str, NULL);
+		client_execute(client, &str, NULL);
 
 		(*self->writes) += batch;
 		(*self->transactions)++;
@@ -72,11 +72,13 @@ static void
 vector_loader_main(void* arg)
 {
 	auto self   = (VectorLoader*)arg;
-	auto client = main_client_create(self->bench->main);
-	defer(main_client_free, client);
+	auto client = client_create();
+	defer(client_free, client);
+	client_set_endpoint(client, &self->bench->main->endpoint);
+
 	error_catch
 	(
-		main_client_connect(client);
+		client_connect(client);
 		vector_loader_client_main(self, client);
 	);
 
@@ -132,12 +134,12 @@ bench_vector_load(Bench* self, int scale, int batch, int clients)
 }
 
 static void
-bench_vector_create(Bench* self, MainClient* client)
+bench_vector_create(Bench* self, Client* client)
 {
 	info("preparing tables.");
 	Str str;
 	str_set_cstr(&str, "create table bench_vector (id int primary key, v vector(128))");
-	main_client_execute(client, &str, NULL);
+	client_execute(client, &str, NULL);
 
 	info("preparing data.");
 	auto batch   = (int)opt_int_of(&self->batch);
@@ -150,7 +152,7 @@ bench_vector_create(Bench* self, MainClient* client)
 }
 
 hot static void
-bench_vector_main(BenchWorker* self, MainClient* client)
+bench_vector_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
 	Buf buf;
@@ -179,7 +181,7 @@ bench_vector_main(BenchWorker* self, MainClient* client)
 
 		Str cmd;
 		buf_str(&buf, &cmd);
-		main_client_execute(client, &cmd, NULL);
+		client_execute(client, &cmd, NULL);
 
 		atomic_u64_add(&bench->transactions, 1);
 	}

@@ -14,17 +14,17 @@
 #include <amelie_main.h>
 
 static void
-main_execute(MainClient* client, Str* request)
+main_execute(Client* client, Str* request)
 {
 	if (str_empty(request))
 		return;
 
-	Str  reply;
-	auto code = main_client_execute(client, request, &reply);
+	auto reply = &client->reply.content;
+	auto code = client_execute(client, request, NULL);
 	switch (code) {
 	case 200:
 		// 200 OK
-		info("{str}", &reply);
+		info("{buf}", reply);
 		break;
 	case 204:
 		// 204 No Content
@@ -34,36 +34,19 @@ main_execute(MainClient* client, Str* request)
 		// 400 Bad Request
 		// 403 Forbidden
 		// 413 Payload Too Large
-		if (str_empty(&reply))
+		if (buf_empty(reply))
 		{
 			info("error: {d}", code);
 			break;
 		}
-		info("{str}", &reply);
-
-#if 0
-		// read error message
-		Json json;
-		json_init(&json);
-		defer(json_free, &json);
-		json_parse(&json, &reply, NULL);
-
-		// {msg: string}
-		auto pos = json.buf->start;
-		json_read_obj(&pos);
-		// msg
-		json_skip(&pos);
-		Str text;
-		json_read_string(&pos, &text);
-		info("error: {str}, text);
-#endif
+		info("{buf}", reply);
 		break;
 	}
 	}
 }
 
 static void
-main_console(Main* self, MainClient* client)
+main_console(Main* self, Client* client)
 {
 	Separator sep;
 	separator_init(&sep);
@@ -125,8 +108,8 @@ main_cli(Main* self)
 {
 	opt_int_set(&config()->log_connections, false);
 
-	// parse command line and open database
-	main_open(self, MAIN_OPEN_ANY, NULL);
+	// parse command line
+	main_open(self, NULL);
 	defer(main_close, self);
 
 	// set default content_type
@@ -141,9 +124,10 @@ main_cli(Main* self)
 		opt_string_set_raw(&endpoint->accept, "text/plain", 10);
 
 	// create client and connect
-	auto client = main_client_create(self);
-	defer(main_client_free, client);
-	main_client_connect(client);
+	auto client = client_create();
+	defer(client_free, client);
+	client_set_endpoint(client, endpoint);
+	client_connect(client);
 
 	// read commands
 	main_console(self, client);

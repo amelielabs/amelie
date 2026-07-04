@@ -11,53 +11,16 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct MainCmd MainCmd;
-typedef struct Main    Main;
-
-typedef void (*MainCmdFunction)(Main*);
-
-struct MainCmd
-{
-	MainCmdFunction function;
-	const char*     name;
-	const char*     description;
-};
-
-typedef enum
-{
-	MAIN_REMOTE,
-	MAIN_REMOTE_PATH,
-	MAIN_LOCAL
-} MainAccess;
-
-typedef enum
-{
-	MAIN_OPEN_HOME,
-	MAIN_OPEN_CONFIGURE,
-	MAIN_OPEN_REMOTE,
-	MAIN_OPEN_LOCAL_RUNNING,
-	MAIN_OPEN_LOCAL_NEW,
-	MAIN_OPEN_LOCAL,
-	MAIN_OPEN_ANY_NOOPTS,
-	MAIN_OPEN_ANY
-} MainOpen;
+typedef struct Main Main;
 
 struct Main
 {
-	Console    console;
-	Bookmarks  bookmarks;
-	Endpoint   endpoint;
-	MainAccess access;
-	amelie_t*  env;
-	int        argc;
-	char**     argv;
+	Console   console;
+	Bookmarks bookmarks;
+	Endpoint  endpoint;
+	int       argc;
+	char**    argv;
 };
-
-void main_init(Main*, int, char**);
-void main_free(Main*);
-void main_open(Main*, MainOpen, Opts*);
-void main_close(Main*);
-void main_runtime(void*, int, char**);
 
 static inline void
 main_advance(Main* self, int advance)
@@ -66,3 +29,8 @@ main_advance(Main* self, int advance)
 	self->argv += advance;
 	assert(self->argc >= 0);
 }
+void main_init(Main*, int, char**);
+void main_free(Main*);
+void main_open(Main*, Opts*);
+void main_close(Main*);
+void main_runtime(void*, int, char**);

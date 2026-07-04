@@ -14,34 +14,54 @@
 #include <amelie_main.h>
 
 static void
-cmd_init(Main* self)
-{
-	// amelie init <path, bookmark> [options]
-	main_open(self, MAIN_OPEN_LOCAL_NEW, NULL);
-	defer(main_close, self);
-}
-
-static void
 cmd_start(Main* self)
 {
 	// amelie start <path, bookmark> [options]
 
 	// parse command line and start db
-	main_open(self, MAIN_OPEN_LOCAL, NULL);
+	main_open(self, NULL);
 	defer(main_close, self);
 
-	// notify start completion
-	cond_signal(&am_task->status, RUNTIME_OK);
+	// ensure is path
+	auto path = opt_string_of(&self->endpoint.path);
+	if (str_empty(path))
+		error("path is not defined");
 
-	// wait for stop
-	task_recv();
+	Repo repo;
+	repo_init(&repo);
+	defer(repo_close, &repo);
+
+	System* system = NULL;
+	auto on_error = error_catch
+	(
+		// create or open repository
+		repo_open(&repo, path->pos, self->argc, self->argv);
+
+		// create system object
+		system = system_create();
+		system_start(system, repo.bootstrap);
+
+		// notify start completion
+		cond_signal(&am_task->status, RUNTIME_OK);
+
+		// handle system requests
+		system_main(system);
+	);
+	if (system)
+	{
+		system_stop(system);
+		system_free(system);
+	}
+
+	if (on_error)
+		rethrow();
 }
 
 static void
 cmd_stop(Main* self)
 {
 	// amelie stop <path, bookmark>
-	main_open(self, MAIN_OPEN_LOCAL_RUNNING, NULL);
+	main_open(self, NULL);
 	defer(main_close, self);
 
 	// <path>/pid
@@ -66,7 +86,7 @@ cmd_backup(Main* self)
 	// amelie backup <path, uri, bookmark> [path]
 
 	// parse command line
-	main_open(self, MAIN_OPEN_REMOTE, NULL);
+	main_open(self, NULL);
 	defer(main_close, self);
 	if (self->argc != 1)
 		error("usage: amelie backup <path, uri, bookmark> <directory>");
@@ -83,13 +103,14 @@ cmd_backup(Main* self)
 static void
 cmd_import(Main* self)
 {
+	unused(self);
+#if 0
 	// amelie import <path, uri, bookmark> files ...
 	Import import;
 	import_init(&import, self);
 	defer(import_free, &import);
 
-	// do not pass options to the local instance
-	main_open(self, MAIN_OPEN_ANY_NOOPTS, &import.opts);
+	main_open(self, &import.opts);
 	defer(main_close, self);
 
 	logger_set_stdout(&runtime()->logger, true);
@@ -98,6 +119,7 @@ cmd_import(Main* self)
 
 	opt_int_set(&config()->log_connections, false);
 	import_run(&import);
+#endif
 }
 
 static void
@@ -113,7 +135,7 @@ cmd_bookmark(Main* self)
 	main_advance(self, 1);
 
 	// load bookmarks only
-	main_open(self, MAIN_OPEN_HOME, NULL);
+	main_open(self, NULL);
 	defer(main_close, self);
 
 	// delete existing record first
@@ -133,19 +155,20 @@ cmd_bookmark(Main* self)
 
 extern void cmd_bench(Main*);
 extern void cmd_test(Main*);
-extern void cmd_test_slt(Main*);
 
 MainCmd
-main_commands[] =
+main_cmds[] =
 {
-	{ cmd_init,     "init",     "Create database repository"          },
+	// server
 	{ cmd_start,    "start",    "Start database"                      },
 	{ cmd_stop,     "stop",     "Stop database"                       },
 	{ cmd_backup,   "backup",   "Create database backup"              },
+
+	// client
+	{ main_cli,     "cli",      "Open interactive console"            },
 	{ cmd_import,   "import",   "Import data files into the database" },
 	{ cmd_bookmark, "bookmark", "Create, update or delete bookmark"   },
 	{ cmd_bench,    "bench",    "Run benchmarks"                      },
 	{ cmd_test,     "test",     "Run tests"                           },
-	{ cmd_test_slt, "test_slt", "Run slt tests"                       },
 	{ NULL,          NULL,       NULL                                 },
 };

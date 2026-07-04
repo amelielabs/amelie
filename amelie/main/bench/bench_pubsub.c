@@ -15,25 +15,25 @@
 #include <amelie_main_bench.h>
 
 static void
-bench_pubsub_create(Bench* self, MainClient* client)
+bench_pubsub_create(Bench* self, Client* client)
 {
 	unused(self);
 
 	info("preparing topic.");
 	Str str;
 	str_set_cstr(&str, "create topic bench_topic");
-	main_client_execute(client, &str, NULL);
+	client_execute(client, &str, NULL);
 
 	info("preparing subscription.");
 	str_set_cstr(&str, "create subscription bench_sub on bench_topic");
-	main_client_execute(client, &str, NULL);
+	client_execute(client, &str, NULL);
 
 	info("done.");
 	info("");
 }
 
 hot static void
-bench_pubsub_main(BenchWorker* self, MainClient* client)
+bench_pubsub_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
 	int batch = (int)opt_int_of(&bench->batch);
@@ -51,7 +51,7 @@ bench_pubsub_main(BenchWorker* self, MainClient* client)
 
 		Str cmd;
 		buf_str(&buf, &cmd);
-		main_client_execute(client, &cmd, NULL);
+		client_execute(client, &cmd, NULL);
 
 		atomic_u64_add(&bench->transactions, 1);
 		atomic_u64_add(&bench->writes, batch);

@@ -13,6 +13,7 @@
 #include <amelie>
 #include <amelie_main.h>
 
+#if 0
 void
 import_init(Import* self, Main* main)
 {
@@ -43,7 +44,6 @@ import_free(Import* self)
 	opts_free(&self->opts);
 }
 
-#if 0
 static void
 import_connect(Import* self)
 {

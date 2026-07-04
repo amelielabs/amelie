@@ -18,9 +18,8 @@
 // main
 #include "main/main.h"
 #include "main/main_configure.h"
-#include "main/main_client.h"
+#include "main/main_cmd.h"
 #include "main/main_cli.h"
-#include "main/main_command.h"
 
 // import
 #include "main/import.h"

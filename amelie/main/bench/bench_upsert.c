@@ -15,16 +15,16 @@
 #include <amelie_main_bench.h>
 
 static void
-bench_upsert_create(Bench* self, MainClient* client)
+bench_upsert_create(Bench* self, Client* client)
 {
 	unused(self);
 	Str str;
 	str_set_cstr(&str, "create table test(id int primary key using hash as identity random (100000), data int default 0)");
-	main_client_execute(client, &str, NULL);
+	client_execute(client, &str, NULL);
 }
 
 hot static void
-bench_upsert_main(BenchWorker* self, MainClient* client)
+bench_upsert_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
 	auto batch = opt_int_of(&bench->batch);
@@ -40,7 +40,7 @@ bench_upsert_main(BenchWorker* self, MainClient* client)
 
 	while (! self->shutdown)
 	{
-		main_client_execute(client, &cmd, NULL);
+		client_execute(client, &cmd, NULL);
 		atomic_u64_add(&bench->transactions, 1);
 		atomic_u64_add(&bench->writes, batch);
 	}

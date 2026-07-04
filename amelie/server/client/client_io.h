@@ -46,6 +46,18 @@ client_execute(Client* self, Str* content, Buf* result)
 	return client_recv(self, result);
 }
 
+static inline int
+client_execute_histogram(Client*    self, Str* content, Buf* result,
+                         Histogram* histogram)
+{
+	uint64_t time_us;
+	time_start(&time_us);
+	auto code = client_execute(self, content, result);
+	time_end(&time_us);
+	histogram_add(histogram, time_us / 1000);
+	return code;
+}
+
 static inline void
 client_200(Client* self, Buf* content)
 {

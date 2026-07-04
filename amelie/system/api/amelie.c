@@ -12,111 +12,6 @@
 
 #include <amelie>
 
-enum
-{
-	AMELIE_OBJ         = 0x0323410L,
-	AMELIE_OBJ_SESSION = 0x04A3455L,
-	AMELIE_OBJ_REQUEST = 0x02BF130L,
-	AMELIE_OBJ_FREE    = 0x0f0f0f0L
-};
-
-struct amelie
-{
-	int     type;
-	Runtime runtime;
-};
-
-struct amelie_session
-{
-	int       type;
-	Native    native;
-	List      req_cache;
-	int       req_cache_count;
-	amelie_t* amelie;
-};
-
-struct amelie_request
-{
-	int               type;
-	NativeReq         req;
-	amelie_session_t* session;
-	List              link;
-};
-
-AMELIE_API amelie_t*
-amelie_init(void)
-{
-	auto self = (amelie_t*)am_malloc(sizeof(amelie_t));
-	self->type = AMELIE_OBJ;
-	runtime_init(&self->runtime);
-	return self;
-}
-
-AMELIE_API void
-amelie_free(void* ptr)
-{
-	switch (*(int*)ptr) {
-	case AMELIE_OBJ:
-	{
-		// all sessions must be closed at this point
-		amelie_t* self = ptr;
-		runtime_stop(&self->runtime);
-		runtime_free(&self->runtime);
-		break;
-	}
-	case AMELIE_OBJ_SESSION:
-	{
-		// all requests must be completed at this point
-		amelie_session_t* self = ptr;
-		NativeReq req;
-		native_req_init(&req);
-		req.type = NATIVE_DISCONNECT;
-		native_queue_push(&self->native.queue, &req, true);
-		native_req_wait(&req, -1);
-		native_req_free(&req);
-		native_free(&self->native);
-
-		// cleanup request cache
-		list_foreach_safe(&self->req_cache)
-		{
-			auto req = list_at(amelie_request_t, link);
-			native_req_free(&req->req);
-			am_free(req);
-		}
-		break;
-	}
-	case AMELIE_OBJ_REQUEST:
-	{
-		// place request object to the session request cache
-		amelie_request_t* self = ptr;
-		assert(self->req.complete);
-		auto session = self->session;
-		list_append(&session->req_cache, &self->link);
-		session->req_cache_count++;
-		self->type = AMELIE_OBJ_FREE;
-		return;
-	}
-	case AMELIE_OBJ_FREE:
-	{
-		fprintf(stderr, "\n%s(%p): attempt to use freed object\n",
-		        source_function, ptr);
-		fflush(stderr);
-		abort();
-		break;
-	}
-	default:
-	{
-		fprintf(stderr, "\n%s(%p): unrecognized object type\n",
-		        source_function, ptr);
-		fflush(stderr);
-		abort();
-		break;
-	}
-	}
-	*(int*)ptr = AMELIE_OBJ_FREE;
-	am_free(ptr);
-}
-
 static void
 amelie_main(void* arg, int argc, char** argv)
 {
@@ -151,6 +46,60 @@ amelie_main(void* arg, int argc, char** argv)
 		rethrow();
 }
 
+enum
+{
+	AMELIE_OBJ      = 0x0323410L,
+	AMELIE_OBJ_FREE = 0x0f0f0f0L
+};
+
+struct amelie
+{
+	int     type;
+	Runtime runtime;
+};
+
+AMELIE_API amelie_t*
+amelie_init(void)
+{
+	auto self = (amelie_t*)am_malloc(sizeof(amelie_t));
+	self->type = AMELIE_OBJ;
+	runtime_init(&self->runtime);
+	return self;
+}
+
+AMELIE_API void
+amelie_free(void* ptr)
+{
+	switch (*(int*)ptr) {
+	case AMELIE_OBJ:
+	{
+		// all sessions must be closed at this point
+		amelie_t* self = ptr;
+		runtime_stop(&self->runtime);
+		runtime_free(&self->runtime);
+		break;
+	}
+	case AMELIE_OBJ_FREE:
+	{
+		fprintf(stderr, "\n%s(%p): attempt to use freed object\n",
+		        source_function, ptr);
+		fflush(stderr);
+		abort();
+		break;
+	}
+	default:
+	{
+		fprintf(stderr, "\n%s(%p): unrecognized object type\n",
+		        source_function, ptr);
+		fflush(stderr);
+		abort();
+		break;
+	}
+	}
+	*(int*)ptr = AMELIE_OBJ_FREE;
+	am_free(ptr);
+}
+
 AMELIE_API int
 amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 {
@@ -160,91 +109,4 @@ amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 	auto status = runtime_start(&self->runtime, amelie_main, (void*)path,
 	                            argc, argv);
 	return status == RUNTIME_OK? 0: -1;
-}
-
-AMELIE_API amelie_session_t*
-amelie_connect(amelie_t* self, const char* uri)
-{
-	// ensure amelie_open() executed
-	if (unlikely(! runtime_started(&self->runtime)))
-		return NULL;
-	if (! uri)
-		uri = "amelie://";
-
-	auto session = (amelie_session_t*)am_malloc(sizeof(amelie_session_t));
-	session->type            = AMELIE_OBJ_SESSION;
-	session->amelie          = self;
-	session->req_cache_count = 0;
-	list_init(&session->req_cache);
-	native_init(&session->native);
-	native_set_uri(&session->native, (char*)uri);
-
-	// prepare connect event before the native registration
-	NativeReq req;
-	native_req_init(&req);
-	req.type = NATIVE_CONNECT;
-	native_queue_push(&session->native.queue, &req, false);
-
-	// register native client in the frontend pool
-	task_send(&self->runtime.task, &session->native.msg);
-
-	// wait for completion
-	native_req_wait(&req, -1);
-	native_req_free(&req);
-	return session;
-}
-
-hot AMELIE_API amelie_request_t*
-amelie_execute(amelie_session_t*    self,
-               const char*          command,
-               int                  argc,
-               amelie_arg_t*        argv,
-               amelie_on_complete_t on_complete,
-               void*                on_complete_arg)
-{
-	unused(argc);
-	unused(argv);
-
-	// ensure amelie_open() executed
-	if (unlikely(! runtime_started(&self->amelie->runtime)))
-		return NULL;
-
-	// allocate request
-	amelie_request_t* req;
-	if (likely(self->req_cache_count > 0))
-	{
-		req = container_of(list_pop(&self->req_cache), amelie_request_t, link);
-		self->req_cache_count--;
-		native_req_reset(&req->req);
-	} else
-	{
-		req = am_malloc(sizeof(amelie_request_t));
-		req->session = self;
-		native_req_init(&req->req);
-		list_init(&req->link);
-	}
-
-	// prepare request
-	req->type = AMELIE_OBJ_REQUEST;
-	str_set_cstr(&req->req.cmd, command);
-	req->req.on_complete     = (NativeNotify)on_complete;
-	req->req.on_complete_arg = on_complete_arg;
-
-	// schedule for execution
-	native_queue_push(&self->native.queue, &req->req, true);
-	return req;
-}
-
-AMELIE_API int
-amelie_wait(amelie_request_t* self, uint32_t time_ms, amelie_arg_t* result)
-{
-	// 408 Request Timeout
-	if (! native_req_wait(&self->req, time_ms))
-		return 408;
-	if (result)
-	{
-		result->data = buf_cstr(&self->req.output);
-		result->data_size = buf_size(&self->req.output);
-	}
-	return self->req.code;
 }

@@ -18,17 +18,20 @@ static void
 bench_connection(void* arg)
 {
 	BenchWorker* self = arg;
-	auto client = main_client_create(self->bench->main);
-	defer(main_client_free, client);
+	auto client = client_create();
+	defer(client_free, client);
+	client_set_endpoint(client, &self->bench->main->endpoint);
 
+#if 0
 	// measure histogram
 	if (opt_int_of(&self->bench->histogram))
 		main_client_set(client, &self->histogram);
+#endif
 
 	error_catch
 	(
 		// create client and connect
-		main_client_connect(client);
+		client_connect(client);
 
 		// process
 		self->bench->iface->main(self, client);
@@ -128,38 +131,44 @@ bench_free(Bench* self)
 }
 
 static void
-bench_service_prepare(MainClient* client, bool create)
+bench_service_prepare(Client* client, bool create)
 {
 	// recreate bench user
 	Str str;
 	str_set_cstr(&str, "drop user if exists bench cascade");
-	main_client_execute(client, &str, NULL);
+	client_execute(client, &str, NULL);
 	if (create)
 	{
 		str_set_cstr(&str, "create user bench");
-		main_client_execute(client, &str, NULL);
+		client_execute(client, &str, NULL);
 	}
 }
 
 static void
 bench_service(Bench* self, bool create)
 {
-	auto client_init = main_client_create(self->main);
-	defer(main_client_free, client_init);
+	auto endpoint = &self->main->endpoint;
+	auto client_init = client_create();
+	defer(client_free, client_init);
+	client_set_endpoint(client_init, endpoint);
+
 	error_catch
 	(
-		main_client_connect(client_init);
+		client_connect(client_init);
 		bench_service_prepare(client_init, create);
 	);
+
 	if (create)
 	{
 		// connect as bench user for deploy
-		str_set_cstr(&self->main->endpoint.user.string, "bench");
+		str_set_cstr(&endpoint->user.string, "bench");
 
-		auto client = main_client_create(self->main);
-		defer(main_client_free, client);
+		auto client = client_create();
+		defer(client_free, client);
+		client_set_endpoint(client, endpoint);
+
 		error_catch(
-			main_client_connect(client);
+			client_connect(client);
 			self->iface->create(self, client);
 		);
 	}

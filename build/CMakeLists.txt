@@ -124,7 +124,6 @@ include_directories("${AMELIE_ROOT}/main")
 include_directories("${AMELIE_ROOT}/main/main")
 include_directories("${AMELIE_ROOT}/main/bench")
 include_directories("${AMELIE_ROOT}/main/test")
-include_directories("${AMELIE_ROOT}/main/test_slt")
 
 # sources
 set(AMELIE_SOURCES_RUNTIME
@@ -345,7 +344,6 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/mcp_execute.c
     ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/frontend/client.c
-    ${AMELIE_ROOT}/system/frontend/native.c
     ${AMELIE_ROOT}/system/frontend/follower.c
     ${AMELIE_ROOT}/system/frontend/player.c
     ${AMELIE_ROOT}/system/frontend/players.c
@@ -370,9 +368,8 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/main/bookmarks.c
     ${AMELIE_ROOT}/main/main/main.c
     ${AMELIE_ROOT}/main/main/main_configure.c
-    ${AMELIE_ROOT}/main/main/main_client.c
+    ${AMELIE_ROOT}/main/main/main_cmd.c
     ${AMELIE_ROOT}/main/main/main_cli.c
-    ${AMELIE_ROOT}/main/main/main_command.c
     ${AMELIE_ROOT}/main/main/import.c
     ${AMELIE_ROOT}/main/bench/bench.c
     ${AMELIE_ROOT}/main/bench/bench_insert.c
@@ -386,11 +383,7 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/test/test_plan.c
     ${AMELIE_ROOT}/main/test/test_suite.c
     ${AMELIE_ROOT}/main/test/test_command.c
-    ${AMELIE_ROOT}/main/test/test_main.c
-    ${AMELIE_ROOT}/main/test_slt/slt_parser.c
-    ${AMELIE_ROOT}/main/test_slt/slt_result.c
-    ${AMELIE_ROOT}/main/test_slt/slt.c
-    ${AMELIE_ROOT}/main/test_slt/slt_main.c)
+    ${AMELIE_ROOT}/main/test/test_main.c)
 
 set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_task.c
@@ -440,11 +433,3 @@ target_link_libraries(amelie ${AMELIE_STATIC_LINK})
 target_link_libraries(amelie ${AMELIE_UNIT_STATIC_LINK})
 target_link_libraries(amelie ${AMELIE_LIBRARIES})
 set_target_properties(amelie PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
-
-# examples/
-add_executable(example_cli EXCLUDE_FROM_ALL
-               ${CMAKE_SOURCE_DIR}/misc/examples/example_cli.c)
-target_link_libraries(example_cli ${AMELIE_STATIC_LINK})
-target_link_libraries(example_cli ${AMELIE_LIBRARIES})
-set_target_properties(example_cli PROPERTIES OUTPUT_NAME example_cli)
-add_custom_target(examples DEPENDS example_cli)

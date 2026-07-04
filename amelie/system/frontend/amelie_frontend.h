@@ -30,7 +30,6 @@
 
 // client
 #include "frontend/client.h"
-#include "frontend/native.h"
 
 // follower (websocket session)
 #include "frontend/follower.h"

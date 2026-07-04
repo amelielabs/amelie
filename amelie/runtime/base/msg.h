@@ -29,7 +29,6 @@ typedef enum
 
 	// frontend
 	MSG_CLIENT,
-	MSG_NATIVE,
 
 	// wal
 	MSG_RECORD,

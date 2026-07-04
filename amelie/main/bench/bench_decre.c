@@ -15,16 +15,16 @@
 #include <amelie_main_bench.h>
 
 static void
-bench_decre_create(Bench* self, MainClient* client)
+bench_decre_create(Bench* self, Client* client)
 {
 	unused(self);
 
 	Str str;
 	str_set_cstr(&str, "create table test(id serial primary key using hash, money double default 100.0)");
-	main_client_execute(client, &str, NULL);
+	client_execute(client, &str, NULL);
 
 	str_set_cstr(&str, "create table history(id serial primary key using hash, src int, dst int, amount double)");
-	main_client_execute(client, &str, NULL);
+	client_execute(client, &str, NULL);
 
 	Buf buf;
 	buf_init(&buf);
@@ -36,7 +36,7 @@ bench_decre_create(Bench* self, MainClient* client)
 		buf_reset(&buf);
 		buf_format(&buf, "insert into test generate 500");
 		buf_str(&buf, &str);
-		main_client_execute(client, &str, NULL);
+		client_execute(client, &str, NULL);
 	}
 
 	// create benchmark functions
@@ -63,14 +63,14 @@ bench_decre_create(Bench* self, MainClient* client)
 	"end;";
 
 	str_set_cstr(&str, func);
-	main_client_execute(client, &str, NULL);
+	client_execute(client, &str, NULL);
 
 	str_set_cstr(&str, func_batch);
-	main_client_execute(client, &str, NULL);
+	client_execute(client, &str, NULL);
 }
 
 hot static void
-bench_decre_main(BenchWorker* self, MainClient* client)
+bench_decre_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
 	auto total = 100000;
@@ -85,7 +85,7 @@ bench_decre_main(BenchWorker* self, MainClient* client)
 
 	while (! self->shutdown)
 	{
-		main_client_execute(client, &cmd, NULL);
+		client_execute(client, &cmd, NULL);
 		atomic_u64_add(&bench->transactions, batch);
 		atomic_u64_add(&bench->writes, 3 * batch);
 	}

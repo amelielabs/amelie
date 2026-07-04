@@ -40,17 +40,6 @@ frontend_main_client(void* arg)
 }
 
 hot static void
-frontend_main_native(void* arg)
-{
-	auto native = (Native*)arg;
-	auto self   = (Frontend*)native->arg;
-
-	// process native connection
-	native_attach(native);
-	frontend_native(self, native);
-}
-
-hot static void
 frontend_main_player(void* arg)
 {
 	auto player = (Player*)arg;
@@ -90,14 +79,6 @@ frontend_main(void* arg)
 			auto client = (Client*)msg;
 			client->arg = self;
 			coroutine_create(frontend_main_client, client);
-			break;
-		}
-		case MSG_NATIVE:
-		{
-			// native client
-			auto native = (Native*)msg;
-			native->arg = self;
-			coroutine_create(frontend_main_native, native);
 			break;
 		}
 		case MSG_PLAYER:

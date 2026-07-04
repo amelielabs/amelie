@@ -17,8 +17,8 @@ typedef struct Bench       Bench;
 
 struct BenchIf
 {
-	void (*create)(Bench*, MainClient*);
-	void (*main)(BenchWorker*, MainClient*);
+	void (*create)(Bench*, Client*);
+	void (*main)(BenchWorker*, Client*);
 };
 
 struct BenchWorker

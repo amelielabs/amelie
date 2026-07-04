@@ -426,12 +426,6 @@ system_main(System* self)
 		auto msg = task_recv();
 		if (msg->id == MSG_STOP)
 			break;
-		if (msg->id == MSG_NATIVE)
-		{
-			// amelie_connect()
-			frontends_forward(&self->frontends, msg);
-			continue;
-		}
 		// rpc
 		auto rpc = rpc_of(msg);
 		rpc_execute(rpc, system_rpc, self);

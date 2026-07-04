@@ -16,12 +16,12 @@
 static void
 main_usage(void)
 {
-	info("Usage: amelie [PATH | URI | BOOKMARK] [command] [OPTIONS]");
+	info("Usage: amelie [command] [options]");
 	info("");
 	info("Commands:");
 	for (auto i = 0;; i++)
 	{
-		auto cmd = &main_commands[i];
+		auto cmd = &main_cmds[i];
 		if (! cmd->name)
 			break;
 		info("  {-10s} {s}", cmd->name, cmd->description);
@@ -32,10 +32,8 @@ main_usage(void)
 void
 main_init(Main* self, int argc, char** argv)
 {
-	self->access = MAIN_REMOTE;
-	self->env    = NULL;
-	self->argc   = argc;
-	self->argv   = argv;
+	self->argc = argc;
+	self->argv = argv;
 	console_init(&self->console);
 	bookmarks_init(&self->bookmarks);
 	endpoint_init(&self->endpoint);
@@ -101,130 +99,20 @@ main_save(Main* self)
 	console_save(&self->console, path);
 }
 
-static int
-main_access(Main* self)
-{
-	// choose how to connect
-	auto path = opt_string_of(&self->endpoint.path);
-	if (str_empty(path))
-		return MAIN_REMOTE;
-
-	// path not exists (create on start)
-	if (! fs_exists("{s}", str_of(path)))
-		return MAIN_LOCAL;
-
-	// path exists
-
-	// try to take exclusive directory lock
-	auto fd = vfs_open(str_of(path), O_DIRECTORY|O_RDONLY, 0755);
-	if (fd == -1)
-		error_system();
-
-	// instance already started, choose to connect
-	auto result = MAIN_LOCAL;
-	auto rc = vfs_flock_exclusive(fd);
-	if (rc == -1 && errno == EWOULDBLOCK)
-		result = MAIN_REMOTE_PATH;
-	vfs_close(fd);
-	return result;
-}
-
 void
-main_open(Main* self, MainOpen type, Opts* opts)
+main_open(Main* self, Opts* opts)
 {
 	// read bookmarks and history
 	main_load(self);
-	if (type == MAIN_OPEN_HOME)
-		return;
 
 	// process command line, set endpoint and options
 	main_configure(self, opts);
-
-	// set the database access type
-	self->access = main_access(self);
-
-	// validate access
-	switch (type) {
-	case MAIN_OPEN_CONFIGURE:
-		return;
-	case MAIN_OPEN_REMOTE:
-	{
-		// allow only remote connection by uri or using unix socket path to
-		// the active database
-		if (self->access == MAIN_LOCAL)
-			error("database is not running");
-
-		// MAIN_REMOTE_PATH
-		// MAIN_REMOTE
-		return;
-	}
-	case MAIN_OPEN_LOCAL_RUNNING:
-	{
-		// ensure local database is running
-		if (self->access == MAIN_REMOTE)
-			error("database path is not set");
-
-		if (self->access == MAIN_LOCAL)
-			error("database is not started");
-
-		// MAIN_REMOTE_PATH
-		return;
-	}
-	case MAIN_OPEN_LOCAL:
-	case MAIN_OPEN_LOCAL_NEW:
-	{
-		// allow only database open
-		if (self->access == MAIN_REMOTE_PATH)
-			error("database is already started");
-
-		if (self->access == MAIN_REMOTE)
-			error("database path is not set");
-
-		// ensure directory does not exists
-		if (type == MAIN_OPEN_LOCAL_NEW)
-		{
-			auto path = opt_string_of(&self->endpoint.path);
-			if (fs_exists("{s}", str_of(path)))
-				error("database directory already exists");
-		}
-		break;
-	}
-	default:
-		break;
-	}
-
-	// open database to work locally
-	if (self->access == MAIN_LOCAL)
-	{
-		self->env = amelie_init();
-		if (! self->env)
-			error("amelie_init() failed");
-		auto path = opt_string_of(&self->endpoint.path);
-
-		auto argc = self->argc;
-		auto argv = self->argv;
-		if (type == MAIN_OPEN_ANY_NOOPTS)
-		{
-			argc = 0;
-			argv = NULL;
-		}
-		auto rc = amelie_open(self->env, str_of(path), argc, argv);
-		if (rc == -1)
-			error("amelie_open() failed");
-	}
 }
 
 void
 main_close(Main* self)
 {
 	main_save(self);
-
-	// shutdown database (all sessions must be closed)
-	if (self->env)
-	{
-		amelie_free(self->env);
-		self->env = NULL;
-	}
 }
 
 static void
@@ -247,7 +135,7 @@ main_entry(Main* self)
 	}
 	for (auto i = 0;; i++)
 	{
-		auto cmd = &main_commands[i];
+		auto cmd = &main_cmds[i];
 		if (! cmd->name)
 			break;
 		if (strcmp(cmd->name, argv[1]) != 0)
@@ -294,8 +182,11 @@ main_daemonize(int argc, char** argv)
 		return 0;
 	auto daemonize = false;
 	for (auto i = 2; i < argc; i++)
-		if (! strcmp(argv[i], "--daemon=true"))
+	{
+		if (!strcmp(argv[i], "--daemon=true") ||
+		    !strcmp(argv[i], "--daemon"))
 			daemonize = true;
+	}
 	if (! daemonize)
 		return 0;
 	return daemon(1, 0);
