@@ -105,7 +105,7 @@ bench_init(Bench* self, Main* main)
 		{ "type",      OPT_STRING, OPT_C,       &self->type,     "tpcb", 0     },
 		{ "threads",   OPT_INT,    OPT_C|OPT_Z, &self->threads,   NULL,  1     },
 		{ "clients",   OPT_INT,    OPT_C|OPT_Z, &self->clients,   NULL,  32    },
-		{ "time",      OPT_INT,    OPT_C|OPT_Z, &self->time,      NULL,  10    },
+		{ "duration",  OPT_INT,    OPT_C|OPT_Z, &self->duration,  NULL,  10    },
 		{ "scale",     OPT_INT,    OPT_C|OPT_Z, &self->scale,     NULL,  1     },
 		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->batch,     NULL,  64    },
 		{ "init",      OPT_INT,    OPT_C,       &self->init,      NULL,  1     },
@@ -177,7 +177,7 @@ bench_run(Bench* self)
 	auto type               = opt_string_of(&self->type);
 	auto scale              = opt_int_of(&self->scale);
 	auto batch              = opt_int_of(&self->batch);
-	auto time               = opt_int_of(&self->time);
+	auto duration           = opt_int_of(&self->duration);
 	auto workers            = opt_int_of(&self->threads);
 	auto clients            = opt_int_of(&self->clients);
 	auto clients_per_worker = clients / workers;
@@ -213,7 +213,7 @@ bench_run(Bench* self)
 	info("amelie benchmark.");
 	info("");
 	info("type:      {str}", type);
-	info("time:      {u64} sec", time);
+	info("duration:  {u64} sec", duration);
 	info("threads:   {u64}", workers);
 	info("clients:   {u64} ({u64} per thread)", clients, clients_per_worker);
 	info("batch:     {u64}", batch);
@@ -254,7 +254,7 @@ bench_run(Bench* self)
 
 	uint64_t prev_tx = 0;
 	uint64_t prev_wr = 0;
-	for (auto duration = time; duration > 0; duration--)
+	for (; duration > 0; duration--)
 	{
 		coroutine_sleep(1000);
 		auto tx = atomic_u64_of(&self->transactions);

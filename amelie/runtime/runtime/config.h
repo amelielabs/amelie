@@ -18,6 +18,7 @@ struct Config
 	// main
 	Opt  uuid;
 	Opt  timezone;
+	Opt  daemon;
 	// log
 	Opt  log_enable;
 	Opt  log_file;

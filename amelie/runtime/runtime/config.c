@@ -37,6 +37,7 @@ config_prepare(Config* self)
 	{
 		{ "uuid",                    OPT_UUID,   OPT_C,                   &self->uuid,                    NULL,             0                   },
 		{ "timezone",                OPT_STRING, OPT_C,                   &self->timezone,                NULL,             0                   },
+		{ "daemon",                  OPT_BOOL,   OPT_C|OPT_H|OPT_E,       &self->daemon,                  NULL,             false               },
 		// log
 		{ "log_enable",              OPT_BOOL,   OPT_C,                   &self->log_enable,              NULL,             true                },
 		{ "log_file",                OPT_BOOL,   OPT_C,                   &self->log_file,                NULL,             true                },

@@ -169,11 +169,6 @@ opts_set_argv(Opts* self, int argc, char** argv)
 			continue;
 		}
 
-		// --daemon (handled by runner)
-		if (str_is_cstr(&name, "daemon=true") ||
-		    str_is_cstr(&name, "daemon=false"))
-			continue;
-
 		auto opt = opts_find(self, &name);
 		if (unlikely(opt == NULL))
 			error("option '{str}': not found", &name);

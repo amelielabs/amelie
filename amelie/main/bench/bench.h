@@ -40,7 +40,7 @@ struct Bench
 	Opt        type;
 	Opt        threads;
 	Opt        clients;
-	Opt        time;
+	Opt        duration;
 	Opt        scale;
 	Opt        batch;
 	Opt        init;
