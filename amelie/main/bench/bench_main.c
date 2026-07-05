@@ -25,8 +25,7 @@ cmd_bench(Main* self)
 	defer(bench_free, &bench);
 
 	// parse command line and open database
-	main_open(self, &bench.opts);
-	defer(main_close, self);
+	opts_set_argv(&bench.opts, self->argc, self->argv);
 
 	bench_run(&bench);
 }

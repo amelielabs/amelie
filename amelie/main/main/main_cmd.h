@@ -18,6 +18,8 @@ typedef void (*MainCmdFunction)(Main*);
 struct MainCmd
 {
 	MainCmdFunction function;
+	bool            home;
+	bool            configure;
 	const char*     name;
 	const char*     description;
 };

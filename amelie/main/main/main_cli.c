@@ -108,10 +108,6 @@ main_cli(Main* self)
 {
 	opt_int_set(&config()->log_connections, false);
 
-	// parse command line
-	main_open(self, NULL);
-	defer(main_close, self);
-
 	// set default content_type
 	auto endpoint = &self->endpoint;
 	auto content_type = opt_string_of(&endpoint->content_type);

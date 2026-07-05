@@ -32,6 +32,7 @@ main_usage(void)
 void
 main_init(Main* self, int argc, char** argv)
 {
+	self->home = false;
 	self->argc = argc;
 	self->argv = argv;
 	console_init(&self->console);
@@ -71,6 +72,9 @@ main_path(char* path, int path_size, char* fmt, ...)
 static void
 main_load(Main* self)
 {
+	if (! self->home)
+		return;
+
 	// create AMELIE_HOME ($HOME/.amelie by default)
 	char path[PATH_MAX];
 	main_path(path, sizeof(path), "");
@@ -89,6 +93,9 @@ main_load(Main* self)
 static void
 main_save(Main* self)
 {
+	if (! self->home)
+		return;
+
 	// write bookmarks
 	char path[PATH_MAX];
 	main_path(path, sizeof(path), "bookmarks");
@@ -100,19 +107,99 @@ main_save(Main* self)
 }
 
 void
-main_open(Main* self, Opts* opts)
+main_configure(Main* self)
 {
-	// read bookmarks and history
-	main_load(self);
+	auto endpoint = &self->endpoint;
+	auto argc     = self->argc;
+	auto argv     = self->argv;
 
-	// process command line, set endpoint and options
-	main_configure(self, opts);
-}
+	if (argc == 0)
+		error("path, uri or bookmark expected");
 
-void
-main_close(Main* self)
-{
-	main_save(self);
+	// [path, uri or bookmark]
+	int arg = 0;
+	if (!strncmp(argv[0], ".", 1) ||
+	    !strncmp(argv[0], "/", 1))
+	{
+		// directory path
+		Str str;
+		str_set_cstr(&str, argv[0]);
+		opt_string_set(&endpoint->path, &str);
+		arg = 1;
+	} else
+	if (!strncmp(argv[0], "http://", 7) ||
+	    !strncmp(argv[0], "https://", 8))
+	{
+		// parse uri
+		Str uri;
+		str_set_cstr(&uri, argv[0]);
+		uri_parse(endpoint, &uri);
+		arg = 1;
+	} else
+	if (strncmp(argv[0], "--", 2) != 0)
+	{
+		// find bookmark by name
+		Str name;
+		str_set_cstr(&name, argv[0]);
+		auto match = bookmarks_find(&self->bookmarks, &name);
+		if (match)
+		{
+			// use bookmark settings
+			endpoint_copy(endpoint, &match->endpoint);
+		} else
+		{
+			// use as directory path
+			if (str_is_prefix(&name, "/", 1)  ||
+			    str_is_prefix(&name, "./", 2) ||
+			    str_is_prefix(&name, "../", 3))
+				opt_string_set(&endpoint->path, &name);
+		}
+		arg = 1;
+	}
+
+	// [endpoint options | options] ...
+
+	// --<option>=<value> | name
+	for (; arg < argc; arg++)
+	{
+		// stop of first non -- argument
+		if (strncmp(argv[arg], "--", 2) != 0)
+			break;
+
+		Str name;
+		Str value;
+		if (arg_parse(argv[arg], &name, &value) == -1)
+			error("invalid argument '{s}'", argv[arg]);
+
+		// --json={options}
+		if (str_is_cstr(&name, "json"))
+		{
+			opts_set(&endpoint->opts, &value);
+			continue;
+		}
+
+		// find endpoint or supplied options
+		auto opt = opts_find(&endpoint->opts, &name);
+		if (opt)
+		{
+			if (! opt_is(opt, OPT_C))
+				error("argument '{s}' cannot be changed", argv[arg]);
+			opt_set(opt, &value);
+			continue;
+		}
+
+		// stop on first unknown option
+		break;
+	}
+
+	// validate connection string
+	auto uri  = opt_string_of(&endpoint->uri);
+	auto path = opt_string_of(&endpoint->path);
+	if (str_empty(uri) && str_empty(path))
+		error("uri or path is not defined");
+
+	// point to the options
+	main_advance(self, arg);
 }
 
 static void
@@ -133,6 +220,11 @@ main_entry(Main* self)
 		info("{str}", version);
 		return;
 	}
+
+	main_advance(self, 1);
+
+	// find command
+	MainCmd* command = NULL;
 	for (auto i = 0;; i++)
 	{
 		auto cmd = &main_cmds[i];
@@ -140,12 +232,34 @@ main_entry(Main* self)
 			break;
 		if (strcmp(cmd->name, argv[1]) != 0)
 			continue;
-		main_advance(self, 2);
-		cmd->function(self);
+		command = cmd;
+		main_advance(self, 1);
+		break;
+	}
+
+	// cli (default)
+	if (! command)
+	{
+		self->home = true;
+
+		main_load(self);
+		defer(main_save, self);
+		main_configure(self);
+		main_cli(self);
 		return;
 	}
-	main_advance(self, 1);
-	main_cli(self);
+
+	// read bookmarks and history
+	self->home = command->home;
+
+	main_load(self);
+	defer(main_save, self);
+
+	// execute command
+	if (command->configure)
+		main_configure(self);
+
+	command->function(self);
 }
 
 void
