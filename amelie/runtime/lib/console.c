@@ -151,7 +151,7 @@ console_open(Console* self)
 	self->data = buf_create();
 	buf_write(&self->history, &self->data, sizeof(void**));
 	self->history_count++;
-	self->history_pos = 0;
+	self->history_pos = self->history_count - 1;
 	self->is_openned  = true;
 
 	// show current prompt
@@ -275,9 +275,8 @@ console_read_escape(Console* self)
 		if (self->history_count == 1)
 			break;
 		if (self->history_pos == 0)
-			self->history_pos = self->history_count - 1;
-		else
-			self->history_pos--;
+			break;
+		self->history_pos--;
 		auto at = ((Buf**)self->history.start)[self->history_pos];
 		console_set(self, at);
 		break;
@@ -286,10 +285,9 @@ console_read_escape(Console* self)
 	{
 		if (self->history_count == 1)
 			break;
-		if (self->history_pos == self->history_count - 1)
-			self->history_pos = 0;
-		else
-			self->history_pos++;
+		if (self->history_pos >= self->history_count - 1)
+			break;
+		self->history_pos++;
 		auto at = ((Buf**)self->history.start)[self->history_pos];
 		console_set(self, at);
 		break;

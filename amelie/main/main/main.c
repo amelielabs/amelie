@@ -118,15 +118,6 @@ main_configure(Main* self)
 
 	// [path, uri or bookmark]
 	int arg = 0;
-	if (!strncmp(argv[0], ".", 1) ||
-	    !strncmp(argv[0], "/", 1))
-	{
-		// directory path
-		Str str;
-		str_set_cstr(&str, argv[0]);
-		opt_string_set(&endpoint->path, &str);
-		arg = 1;
-	} else
 	if (!strncmp(argv[0], "http://", 7) ||
 	    !strncmp(argv[0], "https://", 8))
 	{
@@ -149,10 +140,7 @@ main_configure(Main* self)
 		} else
 		{
 			// use as directory path
-			if (str_is_prefix(&name, "/", 1)  ||
-			    str_is_prefix(&name, "./", 2) ||
-			    str_is_prefix(&name, "../", 3))
-				opt_string_set(&endpoint->path, &name);
+			opt_string_set(&endpoint->path, &name);
 		}
 		arg = 1;
 	}
