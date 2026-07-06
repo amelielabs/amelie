@@ -64,5 +64,8 @@ post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name":
 post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "x", "arguments": [{"a": 1, "b": 2}] }};
 post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "x", "arguments": [{"a": 1, "b": 2}, {}] }};
 
+# test: POST /api (subscribe)
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "subscribe", "params": {"name": "test"}};
+
 disconnect S0;
 close E0;

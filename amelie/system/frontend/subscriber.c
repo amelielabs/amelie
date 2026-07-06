@@ -17,9 +17,9 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
-typedef struct Follower Follower;
+typedef struct Subscriber Subscriber;
 
-struct Follower
+struct Subscriber
 {
 	Websocket ws;
 	Request*  req;
@@ -33,9 +33,9 @@ struct Follower
 };
 
 static inline void
-follower_init(Follower* self, Frontend* fe, Client* client,
-              Request*  req,
-              Api*      api, void* session)
+subscriber_init(Subscriber* self, Frontend* fe, Client* client,
+                Request*    req,
+                Api*        api, void* session)
 {
 	self->req     = req;
 	self->api     = api;
@@ -49,7 +49,7 @@ follower_init(Follower* self, Frontend* fe, Client* client,
 }
 
 static inline void
-follower_free(Follower* self)
+subscriber_free(Subscriber* self)
 {
 	// unreference relations
 	list_foreach(&self->feeds.list)
@@ -67,7 +67,7 @@ follower_free(Follower* self)
 }
 
 static inline void
-follower_reset(Follower* self)
+subscriber_reset(Subscriber* self)
 {
 	// unlock catalog
 	auto req = self->req;
@@ -78,14 +78,14 @@ follower_reset(Follower* self)
 }
 
 static inline void
-follower_accept(Follower* self)
+subscriber_accept(Subscriber* self)
 {
 	// websocket handshake
 	websocket_accept(&self->ws);
 }
 
 static void
-follower_follow(Follower* self)
+subscriber_subscribe(Subscriber* self)
 {
 	// PERM_CREATE_SUBSCRIPTION
 	auto api = self->api;
@@ -147,7 +147,7 @@ follower_follow(Follower* self)
 }
 
 static void
-follower_unfollow(Follower* self)
+subscriber_unsubscribe(Subscriber* self)
 {
 	auto api = self->api;
 
@@ -174,7 +174,7 @@ follower_unfollow(Follower* self)
 }
 
 hot static void
-follower_execute(Follower* self, Str* content)
+subscriber_execute(Subscriber* self, Str* content)
 {
 	// set time and random seed
 	auto req = self->req;
@@ -192,11 +192,11 @@ follower_execute(Follower* self, Str* content)
 		if (! api_parse(api, content, query, true))
 			rethrow();
 
-		if (api->type == API_FOLLOW)
-			follower_follow(self);
+		if (api->type == API_SUBSCRIBE)
+			subscriber_subscribe(self);
 		else
-		if (api->type == API_UNFOLLOW)
-			follower_unfollow(self);
+		if (api->type == API_UNSUBSCRIBE)
+			subscriber_unsubscribe(self);
 	);
 	if (on_error)
 	{
@@ -214,14 +214,14 @@ follower_execute(Follower* self, Str* content)
 }
 
 hot static void
-follower_collect(Follower* self)
+subscriber_collect(Subscriber* self)
 {
 	auto buf = self->req->output.buf;
 	feeds_collect(&self->feeds, buf);
 }
 
 hot static inline bool
-follower_wait(Follower* self)
+subscriber_wait(Subscriber* self)
 {
 	// if no feeds, go straight to io wait
 	if (feeds_empty(&self->feeds))
@@ -274,7 +274,7 @@ follower_wait(Follower* self)
 }
 
 hot static inline bool
-follower_recv(Follower* self, Str* content)
+subscriber_recv(Subscriber* self, Str* content)
 {
 	auto ws = &self->ws;
 	if (! websocket_recv(ws, NULL, 0))
@@ -287,7 +287,7 @@ follower_recv(Follower* self, Str* content)
 }
 
 static inline void
-follower_send(Follower* self)
+subscriber_send(Subscriber* self)
 {
 	auto buf = self->req->output.buf;
 	if (buf_empty(buf))
@@ -298,35 +298,35 @@ follower_send(Follower* self)
 }
 
 hot void
-frontend_follower(Frontend* self, Client* client,
-                  Request*  req,
-                  Api*      api, void* session)
+frontend_subscriber(Frontend* self, Client* client,
+                    Request*  req,
+                    Api*      api, void* session)
 {
-	Follower follower;
-	follower_init(&follower, self, client, req, api, session);
-	defer(follower_free, &follower);
-	follower_accept(&follower);
+	Subscriber sub;
+	subscriber_init(&sub, self, client, req, api, session);
+	defer(subscriber_free, &sub);
+	subscriber_accept(&sub);
 
 	for (;;)
 	{
 		// reset and unlock catalog
-		follower_reset(&follower);
+		subscriber_reset(&sub);
 
 		// wait for client io or cdc event
-		if (follower_wait(&follower))
+		if (subscriber_wait(&sub))
 		{
 			// recv jsonrpc request
 			Str content;
-			if (! follower_recv(&follower, &content))
+			if (! subscriber_recv(&sub, &content))
 				break;
 			// parse and execute
-			follower_execute(&follower, &content);
+			subscriber_execute(&sub, &content);
 		}
 
 		// collect pending cdc events
-		follower_collect(&follower);
+		subscriber_collect(&sub);
 
 		// batch send
-		follower_send(&follower);
+		subscriber_send(&sub);
 	}
 }

@@ -298,7 +298,7 @@ frontend_client(Frontend* self, Client* client)
 			if (str_is(&http->options[HTTP_METHOD], "GET", 3))
 			{
 				request_reset(&req, false);
-				return frontend_follower(self, client, &req, &api, session);
+				return frontend_subscriber(self, client, &req, &api, session);
 			}
 
 			// parse api request

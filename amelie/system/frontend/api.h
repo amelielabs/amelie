@@ -19,8 +19,8 @@ typedef enum
 	API_UNDEF,
 	API_SQL,
 	API_WRITE,
-	API_FOLLOW,
-	API_UNFOLLOW
+	API_SUBSCRIBE,
+	API_UNSUBSCRIBE
 } ApiType;
 
 struct Api

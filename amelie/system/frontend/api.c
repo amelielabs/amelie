@@ -168,17 +168,17 @@ api_parse_content(Api* self, Str* content)
 		return;
 	}
 
-	// follow
-	if (str_is(&cmd->method, "follow", 6))
+	// subscribe
+	if (str_is(&cmd->method, "subscribe", 9))
 	{
-		api_parse_cmd(self, API_FOLLOW, false);
+		api_parse_cmd(self, API_SUBSCRIBE, false);
 		return;
 	}
 
-	// unfollow
-	if (str_is(&cmd->method, "unfollow", 8))
+	// unsubscribe
+	if (str_is(&cmd->method, "unsubscribe", 11))
 	{
-		api_parse_cmd(self, API_UNFOLLOW, false);
+		api_parse_cmd(self, API_UNSUBSCRIBE, false);
 		return;
 	}
 
@@ -193,8 +193,8 @@ api_parse(Api* self, Str* content, Query* query, bool subscribe)
 	(
 		api_parse_content(self, content);
 		if (! subscribe)
-			if (self->type == API_FOLLOW || self->type == API_UNFOLLOW)
-				error("websocket connection required to follow");
+			if (self->type == API_SUBSCRIBE || self->type == API_UNSUBSCRIBE)
+				error("websocket connection required to subscribe");
 	);
 	if (on_error)
 	{

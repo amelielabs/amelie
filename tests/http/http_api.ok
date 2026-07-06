@@ -95,5 +95,8 @@ post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name":
 {"jsonrpc": "2.0", "id": 11, "result": {"columns": ["x"], "rows": [[3]]}}
 post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "x", "arguments": [{"a": 1, "b": 2}, {}] }};
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "batch function execution is not support"}}
+# test: POST /api (subscribe)
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "subscribe", "params": {"name": "test"}};
+{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "websocket connection required to subscribe"}}
 disconnect S0;
 close E0;
