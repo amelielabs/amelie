@@ -32,7 +32,7 @@ repo_create(Repo* self, char* directory)
 	if (self->bootstrap)
 	{
 		fs_mkdir(0755, "{s}", state_directory());
-		fs_mkdir(0755, "{s}/certs", state_directory());
+		fs_mkdir(0755, "{s}/security", state_directory());
 		fs_mkdir(0755, "{s}/checkpoint", state_directory());
 	}
 
@@ -56,7 +56,7 @@ static void
 repo_pidfile_create(void)
 {
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/pid", state_directory());
+	format(path, sizeof(path), "{s}/amelie.pid", state_directory());
 
 	auto fd = vfs_open(path, O_TRUNC|O_CREAT|O_WRONLY, 0644);
 	if (fd == -1)

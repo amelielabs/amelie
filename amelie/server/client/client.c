@@ -124,7 +124,7 @@ client_connect_to_path(Client* self, Str* path)
 	memset(&addr_un, 0, sizeof(addr_un));
 	addr_un.sun_family = AF_UNIX;
 	format(addr_un.sun_path, sizeof(addr_un.sun_path) - 1,
-	       "{str}/socket", path);
+	       "{str}/amelie.socket", path);
 
 	// connect
 	tcp_connect(&self->tcp, addr);
@@ -133,7 +133,7 @@ client_connect_to_path(Client* self, Str* path)
 	// connected
 	bool log_connections = opt_int_of(&config()->log_connections);
 	if (log_connections)
-		info("connected to {str}/socket", path);
+		info("connected to {str}/amelie.socket", path);
 }
 
 static void

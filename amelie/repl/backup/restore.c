@@ -78,8 +78,8 @@ restore_basedir(char* directory)
 	// <base>/
 	restore_dir("");
 
-	// <base>/certs
-	restore_dir("certs");
+	// <base>/security
+	restore_dir("security");
 
 	// <base>/checkpoint
 	restore_dir("checkpoint");

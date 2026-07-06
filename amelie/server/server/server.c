@@ -56,7 +56,7 @@ server_listen(Server* self)
 	{
 		memset(&addr_un, 0, sizeof(addr_un));
 		addr_un.sun_family = AF_UNIX;
-		format(addr_name, sizeof(addr_name), "{s}/socket",
+		format(addr_name, sizeof(addr_name), "{s}/amelie.socket",
 		       state_directory());
 		format(addr_un.sun_path, sizeof(addr_un.sun_path), "{s}",
 		       addr_name);
