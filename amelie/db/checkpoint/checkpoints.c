@@ -82,7 +82,7 @@ checkpoints_read(Checkpoints* self)
 {
 	// create directory
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoints", state_directory());
+	format(path, sizeof(path), "{s}/checkpoint", state_directory());
 
 	// read directory, get a list of checkpoints
 	auto dir = opendir(path);
@@ -129,7 +129,7 @@ checkpoints_open(Checkpoints* self)
 	// restore cdc
 	char path[PATH_MAX];
 	format(path, sizeof(path),
-	       "{s}/checkpoints/{u64}/cdc",
+	       "{s}/checkpoint/{u64}/cdc",
 	       state_directory(), id);
 
 	auto size = cdc_open(self->catalog->cdc, path);
@@ -138,7 +138,7 @@ checkpoints_open(Checkpoints* self)
 
 	// restore last checkpoint
 	format(path, sizeof(path),
-	       "{s}/checkpoints/{u64}/catalog.json",
+	       "{s}/checkpoint/{u64}/catalog.json",
 	       state_directory(), id);
 
 	catalog_read(self->catalog, path);
@@ -173,12 +173,12 @@ checkpoints_gc(Checkpoints* self)
 
 		// rename as incomplete
 		char path[PATH_MAX];
-		format(path, sizeof(path), "{s}/checkpoints/{u64}", state_directory(), gc->id);
-		fs_rename(path, "{s}/checkpoints/{u64}.incomplete",
+		format(path, sizeof(path), "{s}/checkpoint/{u64}", state_directory(), gc->id);
+		fs_rename(path, "{s}/checkpoint/{u64}.incomplete",
 		          state_directory(), gc->id);
 
 		// remove
-		fs_rmdir("{s}/checkpoints/{u64}.incomplete", state_directory(), gc->id);
+		fs_rmdir("{s}/checkpoint/{u64}.incomplete", state_directory(), gc->id);
 	}
 }
 
@@ -226,7 +226,7 @@ checkpoints_list(CheckpointRef* ref, Buf* buf)
 {
 	char path_relative[PATH_MAX];
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoints/{u64}",
+	format(path, sizeof(path), "{s}/checkpoint/{u64}",
 	       state_directory(), ref->id);
 
 	auto dir = opendir(path);
@@ -245,7 +245,7 @@ checkpoints_list(CheckpointRef* ref, Buf* buf)
 		if (! strcmp(entry->d_name, ".."))
 			continue;
 		format(path_relative, sizeof(path_relative),
-		       "checkpoints/{u64}/{s}", ref->id, entry->d_name);
+		       "checkpoint/{u64}/{s}", ref->id, entry->d_name);
 		encode_basefile(buf, path_relative);
 	}
 

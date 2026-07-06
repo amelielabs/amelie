@@ -81,8 +81,8 @@ restore_basedir(char* directory)
 	// <base>/certs
 	restore_dir("certs");
 
-	// <base>/checkpoints
-	restore_dir("checkpoints");
+	// <base>/checkpoint
+	restore_dir("checkpoint");
 
 	// <base>/wal
 	restore_dir("wal");
@@ -237,9 +237,9 @@ restore_run(Restore* self, char* directory)
 	// write state
 	restore_file("state.json", pos_state);
 
-	// create <base>/checkpoints/<id> directory
+	// create <base>/checkpoint/<id> directory
 	char path[PATH_MAX];
-	format(path, sizeof(path), "checkpoints/{u64}", checkpoint);
+	format(path, sizeof(path), "checkpoint/{u64}", checkpoint);
 	restore_dir(path);
 
 	// pull files

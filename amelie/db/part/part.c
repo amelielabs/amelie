@@ -58,7 +58,7 @@ static void
 part_open_heap(Part* self, uint64_t checkpoint)
 {
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoints/{u64}/{u64}",
+	format(path, sizeof(path), "{s}/checkpoint/{u64}/{u64}",
 	       state_directory(), checkpoint,
 	       self->config->id);
 
@@ -110,7 +110,7 @@ static void
 part_open_flat(Part* self, Flat* flat, uint64_t checkpoint)
 {
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoints/{u64}/{u64}.{d}",
+	format(path, sizeof(path), "{s}/checkpoint/{u64}/{u64}.{d}",
 	       state_directory(), checkpoint,
 	       self->config->id,
 	       flat->column->order);

@@ -116,10 +116,10 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 hot static void
 checkpoint_heap(Checkpoint* self, Part* part)
 {
-	// <base>/checkpoints/<lsn>.incomplete/<partition_id>
+	// <base>/checkpoint/<lsn>.incomplete/<partition_id>
 	char path[PATH_MAX];
 	format(path, sizeof(path),
-	       "{s}/checkpoints/{u64}.incomplete/{u64}",
+	       "{s}/checkpoint/{u64}.incomplete/{u64}",
 	       state_directory(),
 	       self->lsn,
 	       part->config->id);
@@ -134,10 +134,10 @@ checkpoint_heap(Checkpoint* self, Part* part)
 hot static void
 checkpoint_flat(Checkpoint* self, Part* part, Flat* flat)
 {
-	// <base>/checkpoints/<lsn>.incomplete/<partition_id>.<flat_id>
+	// <base>/checkpoint/<lsn>.incomplete/<partition_id>.<flat_id>
 	char path[PATH_MAX];
 	format(path, sizeof(path),
-	       "{s}/checkpoints/{u64}.incomplete/{u64}.{d}",
+	       "{s}/checkpoint/{u64}.incomplete/{u64}.{d}",
 	       state_directory(),
 	       self->lsn,
 	       part->config->id,
@@ -171,10 +171,10 @@ checkpoint_part(Checkpoint* self, Part* part)
 hot static void
 checkpoint_cdc(Checkpoint* self)
 {
-	// <base>/checkpoints/<lsn>.incomplete/cdc
+	// <base>/checkpoint/<lsn>.incomplete/cdc
 	char path[PATH_MAX];
 	format(path, sizeof(path),
-	       "{s}/checkpoints/{u64}.incomplete/cdc",
+	       "{s}/checkpoint/{u64}.incomplete/cdc",
 	       state_directory(),
 	       self->lsn);
 
@@ -252,18 +252,18 @@ checkpoint_worker_wait(CheckpointWorker* self)
 void
 checkpoint_run(Checkpoint* self)
 {
-	// create <base>/checkpoints/<lsn>.incomplete
+	// create <base>/checkpoint/<lsn>.incomplete
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoints/{u64}.incomplete",
+	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete",
 	       state_directory(), self->lsn);
 
 	info("");
-	info("checkpoint: checkpoints/{u64} (using {d} workers)",
+	info("checkpoint: checkpoint/{u64} (using {d} workers)",
 	     self->lsn, self->workers_count);
 	fs_mkdir(0755, "{s}", path);
 
-	// create <base>/checkpoints/<lsn>.incomplete/catalog.json
-	format(path, sizeof(path), "{s}/checkpoints/{u64}.incomplete/catalog.json",
+	// create <base>/checkpoint/<lsn>.incomplete/catalog.json
+	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/catalog.json",
 	       state_directory(), self->lsn);
 	catalog_write(self->catalog, path);
 
@@ -302,16 +302,16 @@ checkpoint_wait(Checkpoint* self)
 	}
 	if (errors > 0)
 	{
-		fs_rmdir("{s}/checkpoints/{u64}.incomplete",
+		fs_rmdir("{s}/checkpoint/{u64}.incomplete",
 		         state_directory(), self->lsn);
 		error("checkpoint: {u64} failed", self->lsn);
 	}
 
 	// rename as completed
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoints/{u64}.incomplete",
+	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete",
 	       state_directory(), self->lsn);
-	fs_rename(path, "{s}/checkpoints/{u64}", state_directory(), self->lsn);
+	fs_rename(path, "{s}/checkpoint/{u64}", state_directory(), self->lsn);
 
 	// done
 	info("");
