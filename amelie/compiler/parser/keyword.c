@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_sync>
+#include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
 
@@ -85,6 +85,7 @@ Keyword keywords[] =
 	{ KFROM,                  "from",                  4  },
 	{ KFOR,                   "for",                   3  },
 	{ KFUNCTION,              "function",              8  },
+	{ KFOLLOW,                "follow",                6  },
 
 	// g
 	{ KGROUP,                 "group",                 5  },
@@ -170,7 +171,6 @@ Keyword keywords[] =
 	{ KSUM,                   "sum",                   3  },
 	{ KSTART,                 "start",                 5  },
 	{ KSTOP,                  "stop",                  4  },
-	{ KSUBSCRIBE,             "subscribe",             9  },
 	{ KSUBSCRIPTION,          "subscription",          12 },
 	{ KSWITCH,                "switch",                6  },
 	{ KSTORAGE,               "storage",               7  },
@@ -197,7 +197,7 @@ Keyword keywords[] =
 	{ KUNIQUE,                "unique",                6  },
 	{ KUSING,                 "using",                 5  },
 	{ KURI,                   "uri",                   3  },
-	{ KUNSUBSCRIBE,           "unsubscribe",           11 },
+	{ KUNFOLLOW,              "unfollow",              8  },
 
 	// v
 	{ KVALUES,                "values",                6  },

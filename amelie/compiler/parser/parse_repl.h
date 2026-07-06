@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct AstReplCtl       AstReplCtl;
-typedef struct AstReplSubscribe AstReplSubscribe;
+typedef struct AstReplCtl    AstReplCtl;
+typedef struct AstReplFollow AstReplFollow;
 
 struct AstReplCtl
 {
@@ -20,7 +20,7 @@ struct AstReplCtl
 	bool start;
 };
 
-struct AstReplSubscribe
+struct AstReplFollow
 {
 	Ast  ast;
 	Ast* id;
@@ -41,22 +41,22 @@ ast_repl_ctl_allocate(bool start)
 	return self;
 }
 
-static inline AstReplSubscribe*
-ast_repl_subscribe_of(Ast* ast)
+static inline AstReplFollow*
+ast_repl_follow_of(Ast* ast)
 {
-	return (AstReplSubscribe*)ast;
+	return (AstReplFollow*)ast;
 }
 
-static inline AstReplSubscribe*
-ast_repl_subscribe_allocate(void)
+static inline AstReplFollow*
+ast_repl_follow_allocate(void)
 {
-	AstReplSubscribe* self;
-	self = ast_allocate(0, sizeof(AstReplSubscribe));
+	AstReplFollow* self;
+	self = ast_allocate(0, sizeof(AstReplFollow));
 	self->id = NULL;
 	return self;
 }
 
 void parse_repl_start(Stmt*);
 void parse_repl_stop(Stmt*);
-void parse_repl_subscribe(Stmt*);
-void parse_repl_unsubscribe(Stmt*);
+void parse_repl_follow(Stmt*);
+void parse_repl_unfollow(Stmt*);

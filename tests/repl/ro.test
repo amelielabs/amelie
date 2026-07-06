@@ -5,7 +5,7 @@ connect E0 S0 127.0.0.1:3480;
 
 # test: read-only ddl
 start repl;
-subscribe "00000000-0000-0000-0000-000000000002";
+follow "00000000-0000-0000-0000-000000000002";
 select show("state").psn;
 create table leaked (id int primary key);
 select show("state").psn;
@@ -13,14 +13,14 @@ show tables;
 select * from leaked;
 
 # test: read-only publish
-unsubscribe;
+unfollow;
 stop repl;
 
 create topic t;
 create subscription t_sub on t;
 
 start repl;
-subscribe "00000000-0000-0000-0000-000000000002";
+follow "00000000-0000-0000-0000-000000000002";
 select show("state").lsn;
 publish into t 123;
 select show("state").lsn;

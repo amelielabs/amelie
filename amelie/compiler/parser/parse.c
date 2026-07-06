@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_sync>
+#include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
 
@@ -177,16 +177,16 @@ parse_stmt(Stmt* self)
 		parse_show(self);
 		break;
 
-	case KSUBSCRIBE:
-		// SUBSCRIBE id
-		self->id = STMT_SUBSCRIBE;
-		parse_repl_subscribe(self);
+	case KFOLLOW:
+		// FOLLOW id
+		self->id = STMT_FOLLOW;
+		parse_repl_follow(self);
 		break;
 
-	case KUNSUBSCRIBE:
-		// UNSUBSCRIBE
-		self->id = STMT_UNSUBSCRIBE;
-		parse_repl_unsubscribe(self);
+	case KUNFOLLOW:
+		// UNFOLLOW
+		self->id = STMT_UNFOLLOW;
+		parse_repl_unfollow(self);
 		break;
 
 	case KSTART:

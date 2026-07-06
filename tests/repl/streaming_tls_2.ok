@@ -7,7 +7,7 @@ open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "12
 connect E1 S1 https://127.0.0.1:3481 ./tls/ca.crt;
 switch S1;
 start repl;
-subscribe "00000000-0000-0000-0000-000000000001";
+follow "00000000-0000-0000-0000-000000000001";
 # test: create replica 2 (backup using https)
 backup E2 https://127.0.0.1:3480;
 close E2;
@@ -15,7 +15,7 @@ open E2 "uuid": "00000000-0000-0000-0000-000000000003", "listen": [{ "host": "12
 connect E2 S2 https://127.0.0.1:3482 ./tls/ca.crt;
 switch S2;
 start repl;
-subscribe "00000000-0000-0000-0000-000000000001";
+follow "00000000-0000-0000-0000-000000000001";
 switch S0;
 create replica "00000000-0000-0000-0000-000000000002" "https://127.0.0.1:3481";
 create replica "00000000-0000-0000-0000-000000000003" "https://127.0.0.1:3482";

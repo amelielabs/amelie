@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_sync>
+#include <amelie_repl>
 #include <amelie_value.h>
 #include <amelie_set.h>
 #include <amelie_output.h>
@@ -371,8 +371,8 @@ vm_run(Vm*       self,
 		// replication
 		&&crepl_start,
 		&&crepl_stop,
-		&&crepl_subscribe,
-		&&crepl_unsubscribe,
+		&&crepl_follow,
+		&&crepl_unfollow,
 
 		// ddl
 		&&cddl,
@@ -1969,12 +1969,12 @@ crepl_stop:
 	crepl_stop(self, op);
 	op_next;
 
-crepl_subscribe:
-	crepl_subscribe(self, op);
+crepl_follow:
+	crepl_follow(self, op);
 	op_next;
 
-crepl_unsubscribe:
-	crepl_unsubscribe(self, op);
+crepl_unfollow:
+	crepl_unfollow(self, op);
 	op_next;
 
 cddl:

@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_sync>
+#include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
 #include <amelie_plan.h>
@@ -443,16 +443,16 @@ emit_utility(Compiler* self)
 		op0(self, CREPL_STOP);
 		break;
 	}
-	case STMT_SUBSCRIBE:
+	case STMT_FOLLOW:
 	{
-		auto arg = ast_repl_subscribe_of(stmt->ast);
+		auto arg = ast_repl_follow_of(stmt->ast);
 		auto offset = code_data_add_string(self->code_data, &arg->id->string);
-		op1(self, CREPL_SUBSCRIBE, offset);
+		op1(self, CREPL_FOLLOW, offset);
 		break;
 	}
-	case STMT_UNSUBSCRIBE:
+	case STMT_UNFOLLOW:
 	{
-		op0(self, CREPL_UNSUBSCRIBE);
+		op0(self, CREPL_UNFOLLOW);
 		break;
 	}
 

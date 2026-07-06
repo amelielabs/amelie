@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_sync>
+#include <amelie_repl>
 #include <amelie_value.h>
 #include <amelie_set.h>
 #include <amelie_output.h>
@@ -147,7 +147,7 @@ crepl_stop(Vm* self, Op* op)
 }
 
 void
-crepl_subscribe(Vm* self, Op* op)
+crepl_follow(Vm* self, Op* op)
 {
 	// PERM_SYSTEM
 	check_user(self->tr, PERM_SYSTEM);
@@ -156,19 +156,19 @@ crepl_subscribe(Vm* self, Op* op)
 	auto pos = code_data_at(self->code_data, op->a);
 	Str  id;
 	unpack_str(&pos, &id);
-	repl_subscribe(share()->repl, &id);
+	repl_follow(share()->repl, &id);
 	control_save_state();
 }
 
 void
-crepl_unsubscribe(Vm* self, Op* op)
+crepl_unfollow(Vm* self, Op* op)
 {
 	// PERM_SYSTEM
 	check_user(self->tr, PERM_SYSTEM);
 
 	unused(self);
 	unused(op);
-	repl_subscribe(share()->repl, NULL);
+	repl_follow(share()->repl, NULL);
 	control_save_state();
 }
 

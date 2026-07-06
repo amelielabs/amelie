@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_sync>
+#include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
 
@@ -34,19 +34,19 @@ parse_repl_stop(Stmt* self)
 }
 
 void
-parse_repl_subscribe(Stmt* self)
+parse_repl_follow(Stmt* self)
 {
-	// SUBSCRIBE id
-	auto stmt = ast_repl_subscribe_allocate();
+	// FOLLOW id
+	auto stmt = ast_repl_follow_allocate();
 	self->ast = &stmt->ast;
 	stmt->id  = stmt_expect(self, KSTRING);
 }
 
 void
-parse_repl_unsubscribe(Stmt* self)
+parse_repl_unfollow(Stmt* self)
 {
-	// UNSUBSCRIBE
-	auto stmt = ast_repl_subscribe_allocate();
+	// UNFOLLOW
+	auto stmt = ast_repl_follow_allocate();
 	self->ast = &stmt->ast;
 	stmt->id  = NULL;
 }

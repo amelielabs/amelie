@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_sync>
+#include <amelie_repl>
 #include <amelie_value.h>
 #include <amelie_set.h>
 #include <amelie_output.h>
@@ -293,8 +293,8 @@ OpDesc ops[] =
 	// replication
 	{ CREPL_START, "repl_start" },
 	{ CREPL_STOP, "repl_stop" },
-	{ CREPL_SUBSCRIBE, "repl_subscribe" },
-	{ CREPL_UNSUBSCRIBE, "repl_unsubscribe" },
+	{ CREPL_FOLLOW, "repl_follow" },
+	{ CREPL_UNFOLLOW, "repl_unfollow" },
 
 	// ddl
 	{ CDDL, "ddl" },

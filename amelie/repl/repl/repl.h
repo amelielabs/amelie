@@ -31,5 +31,5 @@ void repl_free(Repl*);
 void repl_open(Repl*);
 void repl_start(Repl*);
 void repl_stop(Repl*);
-void repl_subscribe(Repl*, Str*);
+void repl_follow(Repl*, Str*);
 void repl_status(Repl*, Buf*);

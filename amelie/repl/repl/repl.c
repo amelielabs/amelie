@@ -98,7 +98,7 @@ repl_stop(Repl* self)
 }
 
 void
-repl_subscribe(Repl* self, Str* primary_id)
+repl_follow(Repl* self, Str* primary_id)
 {
 	if (! opt_int_of(&state()->repl))
 		error("replication: is disabled");

@@ -20,11 +20,11 @@ show repl;
 # test: start replica
 start repl;
 
-# test: subscribe (using self id)
-subscribe "00000000-0000-0000-0000-000000000002";
+# test: follow (using self id)
+follow "00000000-0000-0000-0000-000000000002";
 
-# test: subscribe
-subscribe "00000000-0000-0000-0000-000000000001";
+# test: follow
+follow "00000000-0000-0000-0000-000000000001";
 show repl;
 
 # test: create replica
@@ -116,9 +116,9 @@ select * from test;
 show repl;
 select show('state').lsn;
 
-# test: failover (unsubscribe, switch to primary)
+# test: failover (unfollow, switch to primary)
 show repl;
-unsubscribe;
+unfollow;
 show repl;
 
 # test: drop replica
@@ -126,9 +126,9 @@ switch S0;
 drop replica "00000000-0000-0000-0000-000000000002";
 show replicas;
 
-# test: subscribe to new primary
+# test: follow to new primary
 switch S0;
-subscribe "00000000-0000-0000-0000-000000000002";
+follow "00000000-0000-0000-0000-000000000002";
 show repl;
 
 # test: create replica

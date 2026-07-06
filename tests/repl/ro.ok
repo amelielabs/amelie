@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3480;
 # test: read-only ddl
 start repl;
-subscribe "00000000-0000-0000-0000-000000000002";
+follow "00000000-0000-0000-0000-000000000002";
 select show("state").psn;
 
 psn
@@ -22,12 +22,12 @@ tables
 select * from leaked;
 error: select * from ❰leaked❱ ⟵ relation not found
 # test: read-only publish
-unsubscribe;
+unfollow;
 stop repl;
 create topic t;
 create subscription t_sub on t;
 start repl;
-subscribe "00000000-0000-0000-0000-000000000002";
+follow "00000000-0000-0000-0000-000000000002";
 select show("state").lsn;
 
 lsn

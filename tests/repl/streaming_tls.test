@@ -11,7 +11,7 @@ open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "12
 connect E1 S1 https://127.0.0.1:3481 ./tls/ca.crt;
 switch S1;
 start repl;
-subscribe "00000000-0000-0000-0000-000000000001";
+follow "00000000-0000-0000-0000-000000000001";
 
 switch S0;
 
