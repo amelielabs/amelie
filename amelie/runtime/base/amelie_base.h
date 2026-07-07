@@ -12,6 +12,7 @@
 //
 
 // compiler
+#include "base/version.h"
 #include "base/c.h"
 #include "base/macro.h"
 #include "base/overflow.h"

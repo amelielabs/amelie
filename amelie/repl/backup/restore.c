@@ -205,17 +205,13 @@ restore_run(Restore* self, char* directory)
 
 	// parse data
 	auto pos = self->data.start;
-	uint8_t* pos_version  = NULL;
-	uint8_t* pos_server   = NULL;
-	uint8_t* pos_config   = NULL;
-	uint8_t* pos_state    = NULL;
-	uint8_t* pos_files    = NULL;
-	uint8_t* pos_wal      = NULL;
+	uint8_t* pos_config = NULL;
+	uint8_t* pos_state  = NULL;
+	uint8_t* pos_files  = NULL;
+	uint8_t* pos_wal    = NULL;
 	int64_t  checkpoint;
 	Decode obj[] =
 	{
-		{ DECODE_OBJ,   "version",    &pos_version },
-		{ DECODE_ARRAY, "server",     &pos_server  },
 		{ DECODE_OBJ,   "config",     &pos_config  },
 		{ DECODE_OBJ,   "state",      &pos_state   },
 		{ DECODE_INT,   "checkpoint", &checkpoint  },
@@ -224,9 +220,6 @@ restore_run(Restore* self, char* directory)
 		{ 0,             NULL,         NULL        },
 	};
 	decode_obj(obj, "snapshot", &pos);
-
-	// write version
-	restore_file("version.json", pos_version);
 
 	// write config
 	restore_file("amelie.config", pos_config);

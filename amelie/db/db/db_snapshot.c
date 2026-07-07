@@ -59,17 +59,6 @@ db_snapshot(Db* self)
 		auto data = &snapshot->data;
 		encode_obj(data);
 
-		// version
-		encode_raw(data, "version", 7);
-		encode_obj(data);
-		encode_raw(data, "version", 7);
-		encode_str(data, &state()->version.string);
-		encode_obj_end(data);
-
-		// server
-		encode_raw(data, "server", 6);
-		buf_write_str(data, &config()->listen.string);
-
 		// config
 		encode_raw(data, "config", 6);
 		auto buf = opts_list_persistent(&runtime()->config.opts);

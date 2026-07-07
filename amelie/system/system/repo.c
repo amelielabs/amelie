@@ -73,77 +73,7 @@ repo_pidfile_create(void)
 }
 
 static Buf*
-repo_version_buf_create(void)
-{
-	// {}
-	auto buf = buf_create();
-	encode_obj(buf);
-
-	// version
-	encode_raw(buf, "version", 7);
-	encode_str(buf, &state()->version.string);
-
-	encode_obj_end(buf);
-	return buf;
-}
-
-static void
-repo_version_create(const char* path)
-{
-	auto buf = repo_version_buf_create();
-	defer_buf(buf);
-
-	// convert to json
-	Buf text;
-	buf_init(&text);
-	defer_buf(&text);
-	uint8_t* pos = buf->start;
-	json_export_pretty(&text, NULL, &pos);
-
-	// create config file
-	File file;
-	file_init(&file);
-	defer(file_close, &file);
-	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
-	file_write_buf(&file, &text);
-}
-
-static void
-repo_version_open(const char* path)
-{
-	// read version file
-	auto version_buf = file_import("{s}", path);
-	defer_buf(version_buf);
-
-	Str text;
-	str_init(&text);
-	buf_str(version_buf, &text);
-
-	// parse json
-	Json json;
-	json_init(&json);
-	defer(json_free, &json);
-	json_parse(&json, &text, NULL);
-	uint8_t* pos = json.buf->start;
-
-	Str version;
-	str_init(&version);
-	Decode obj[] =
-	{
-		{ DECODE_STR_READ, "version", &version },
-		{ 0,                NULL,      NULL    },
-	};
-	decode_obj(obj, "version", &pos);
-
-	// compare versions
-	auto version_current = &state()->version.string;
-	if (! str_compare(&version, version_current))
-		error("current version '{str}' does not match repo version '{str}'",
-		      version_current, &version);
-}
-
-static Buf*
-repo_server_buf_create(void)
+repo_listen_create(void)
 {
 	// []
 	auto buf = buf_create();
@@ -193,7 +123,7 @@ repo_bootstrap(void)
 	// set default listen
 	if (opt_json_empty(&config()->listen))
 	{
-		auto buf = repo_server_buf_create();
+		auto buf = repo_listen_create();
 		defer_buf(buf);
 		opt_json_set_buf(&config()->listen, buf);
 	}
@@ -264,18 +194,6 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	format(path, sizeof(path), "{s}/log", state_directory());
 	logger_open(logger, path);
 
-	// read version file
-	format(path, sizeof(path), "{s}/version.json", state_directory());
-	if (self->bootstrap)
-	{
-		// create version file
-		repo_version_create(path);
-	} else
-	{
-		// read and validate version file
-		repo_version_open(path);
-	}
-
 	// read config file
 	format(path, sizeof(path), "{s}/amelie.config", state_directory());
 	if (self->bootstrap)
@@ -307,6 +225,11 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	{
 		// open state file
 		state_open(state, path);
+
+		// validate version
+		if (! str_is_cstr(&state()->version.string, AMELIE_VERSION))
+			error("repository version {str} does not match the server version {s}",
+			      &state()->version.string, AMELIE_VERSION);
 	}
 
 	// set system timezone
