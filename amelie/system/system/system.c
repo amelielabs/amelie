@@ -211,7 +211,7 @@ system_save_state(void* arg)
 {
 	unused(arg);
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/state.json", state_directory());
+	format(path, sizeof(path), "{s}/amelie.state", state_directory());
 	state_save(state(), path);
 }
 

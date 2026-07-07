@@ -26,8 +26,6 @@ struct Config
 	Opt  log_stdout_time;
 	Opt  log_connections;
 	Opt  log_options;
-	// server
-	Opt  listen;
 	// limits
 	Opt  limit_send;
 	Opt  limit_recv;
@@ -56,6 +54,8 @@ struct Config
 	Opt  repl_readahead;
 	Opt  repl_reconnect_ms;
 	Opts opts;
+	// server
+	Opt  listen;
 };
 
 void config_init(Config*);

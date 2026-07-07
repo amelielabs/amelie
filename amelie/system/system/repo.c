@@ -169,57 +169,6 @@ repo_server_buf_create(void)
 }
 
 static void
-repo_server_create(const char* path)
-{
-	Buf text;
-	buf_init(&text);
-	defer_buf(&text);
-
-	// create default or use --listen option as content
-	if (opt_json_empty(&config()->listen))
-	{
-		auto buf = repo_server_buf_create();
-		defer_buf(buf);
-		auto pos = buf->start;
-		json_export_pretty(&text, NULL, &pos);
-
-		opt_json_set_buf(&config()->listen, buf);
-	} else {
-		auto pos = opt_json_of(&config()->listen);
-		json_export_pretty(&text, NULL, &pos);
-	}
-
-	// create config file
-	File file;
-	file_init(&file);
-	defer(file_close, &file);
-	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
-	file_write_buf(&file, &text);
-}
-
-static void
-repo_server_open(const char* path)
-{
-	// read existing file or use --listen to override
-	if (! opt_json_empty(&config()->listen))
-		return;
-
-	// open and parse config
-	auto buf = file_import("{s}", path);
-	defer_buf(buf);
-
-	Str text;
-	str_init(&text);
-	buf_str(buf, &text);
-
-	Json json;
-	json_init(&json);
-	defer(json_free, &json);
-	json_parse(&json, &text, NULL);
-	opt_json_set_buf(&config()->listen, json.buf);
-}
-
-static void
 repo_bootstrap(void)
 {
 	auto config = config();
@@ -240,6 +189,14 @@ repo_bootstrap(void)
 	// set default timezone using system timezone
 	if (opt_string_empty(&config->timezone))
 		opt_string_set(&config->timezone, &runtime()->timezones.system->name);
+
+	// set default listen
+	if (opt_json_empty(&config()->listen))
+	{
+		auto buf = repo_server_buf_create();
+		defer_buf(buf);
+		opt_json_set_buf(&config()->listen, buf);
+	}
 }
 
 static void
@@ -320,7 +277,7 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	}
 
 	// read config file
-	format(path, sizeof(path), "{s}/config.json", state_directory());
+	format(path, sizeof(path), "{s}/amelie.config", state_directory());
 	if (self->bootstrap)
 	{
 		// set options first, to properly generate config
@@ -340,20 +297,8 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 		opts_set_argv(&config->opts, argc, argv);
 	}
 
-	// read server config file
-	format(path, sizeof(path), "{s}/server.json", state_directory());
-	if (self->bootstrap)
-	{
-		// create server config file
-		repo_server_create(path);
-	} else
-	{
-		// open server config file
-		repo_server_open(path);
-	}
-
 	// read state file
-	format(path, sizeof(path), "{s}/state.json", state_directory());
+	format(path, sizeof(path), "{s}/amelie.state", state_directory());
 	if (self->bootstrap)
 	{
 		// create state file

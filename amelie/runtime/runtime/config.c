@@ -45,8 +45,6 @@ config_prepare(Config* self)
 		{ "log_stdout_time",         OPT_BOOL,   OPT_C,                   &self->log_stdout_time,         NULL,             true                },
 		{ "log_connections",         OPT_BOOL,   OPT_C,                   &self->log_connections,         NULL,             true                },
 		{ "log_options",             OPT_BOOL,   OPT_C,                   &self->log_options,             NULL,             false               },
-		// server
-		{ "listen",                  OPT_JSON,   OPT_C|OPT_E|OPT_H,       &self->listen,                  NULL,             0                   },
 		// limits
 		{ "limit_send",              OPT_INT,    OPT_C,                   &self->limit_send,              NULL,             3 * 1024 * 1024     },
 		{ "limit_recv",              OPT_INT,    OPT_C,                   &self->limit_recv,              NULL,             1 * 1024 * 1024     },
@@ -74,6 +72,8 @@ config_prepare(Config* self)
 		// replication
 		{ "repl_readahead",          OPT_INT,    OPT_C|OPT_Z,             &self->repl_readahead,          NULL,             256 * 1024          },
 		{ "repl_reconnect_ms",       OPT_INT,    OPT_C,                   &self->repl_reconnect_ms,       NULL,             3000                },
+		// server
+		{ "listen",                  OPT_JSON,   OPT_C|OPT_H,             &self->listen,                  NULL,             0                   },
 		{  NULL,                     0,          0,                       NULL,                           NULL,             0                   },
 	};
 	opts_define(&self->opts, defs);

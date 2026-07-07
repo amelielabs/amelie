@@ -228,14 +228,11 @@ restore_run(Restore* self, char* directory)
 	// write version
 	restore_file("version.json", pos_version);
 
-	// write server
-	restore_file("server.json", pos_server);
-
 	// write config
-	restore_file("config.json", pos_config);
+	restore_file("amelie.config", pos_config);
 
 	// write state
-	restore_file("state.json", pos_state);
+	restore_file("amelie.state", pos_state);
 
 	// create <base>/checkpoint/<id> directory
 	char path[PATH_MAX];
