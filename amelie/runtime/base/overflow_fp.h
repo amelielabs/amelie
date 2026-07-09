@@ -49,3 +49,10 @@ double_div_overflow(double* result, double a, double b)
 		return true;
 	return unlikely(*result == 0.0 && a != 0.0 && !__builtin_isinf(b));
 }
+
+always_inline static inline bool
+float_compare(float a, float b, float diff)
+{
+	// diff = 1e-6f
+	return fabsf(a - b) < diff;
+}

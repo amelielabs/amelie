@@ -125,6 +125,7 @@ include_directories("${AMELIE_ROOT}/main/main")
 include_directories("${AMELIE_ROOT}/main/import")
 include_directories("${AMELIE_ROOT}/main/bench")
 include_directories("${AMELIE_ROOT}/main/test")
+include_directories("${AMELIE_ROOT}/main/dst")
 
 # sources
 set(AMELIE_SOURCES_RUNTIME
@@ -385,7 +386,12 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/test/test_plan.c
     ${AMELIE_ROOT}/main/test/test_suite.c
     ${AMELIE_ROOT}/main/test/test_command.c
-    ${AMELIE_ROOT}/main/test/test_main.c)
+    ${AMELIE_ROOT}/main/test/test_main.c
+    ${AMELIE_ROOT}/main/dst/dst_user.c
+    ${AMELIE_ROOT}/main/dst/dst.c
+    ${AMELIE_ROOT}/main/dst/dst_step.c
+    ${AMELIE_ROOT}/main/dst/dst_validate.c
+    ${AMELIE_ROOT}/main/dst/dst_main.c)
 
 set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_task.c

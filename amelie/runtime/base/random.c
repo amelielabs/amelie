@@ -83,3 +83,11 @@ random_generate_alnum(Random* self, uint8_t* data, int data_size)
 		}
 	}
 }
+
+float
+random_generate_fp(Random* self, float min, float max)
+{
+	uint64_t rnd = random_generate(self);
+	auto normalized = (double)rnd / (double)UINT64_MAX;
+	return min + (float)(normalized * (max - min));
+}

@@ -23,3 +23,4 @@ void     random_open(Random*);
 void     random_open_using(Random*, Random*);
 uint64_t random_generate(Random*);
 void     random_generate_alnum(Random*, uint8_t*, int);
+float    random_generate_fp(Random*, float, float);

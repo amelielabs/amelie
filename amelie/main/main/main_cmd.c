@@ -100,6 +100,7 @@ cmd_bookmark(Main* self)
 extern void cmd_import(Main*);
 extern void cmd_bench(Main*);
 extern void cmd_test(Main*);
+extern void cmd_dst(Main*);
 
 MainCmd
 main_cmds[] =
@@ -115,5 +116,6 @@ main_cmds[] =
 	{ cmd_bookmark, true,  false, "bookmark", "Create, update or delete bookmark"   },
 	{ cmd_bench,    true,  true,  "bench",    "Run benchmarks"                      },
 	{ cmd_test,     false, false, "test",     "Run tests"                           },
+	{ cmd_dst,      false, false, "dst",      "Run deterministic simulation"        },
 	{ NULL,         false, false,  NULL,       NULL                                 },
 };
