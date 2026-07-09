@@ -19,6 +19,7 @@ struct DstUser
 	int      id;
 	Client*  client;
 	Endpoint endpoint;
+	DstLog   log;
 	DstRel   rels[DST_REL_MAX];
 	Dst*     dst;
 };

@@ -21,6 +21,7 @@ dst_user_init(DstUser* self, Dst* dst, int id)
 	self->client = NULL;
 	self->dst    = dst;
 	endpoint_init(&self->endpoint);
+	dst_log_init(&self->log);
 	for (auto i = 0; i < DST_REL_MAX; i++)
 	{
 		auto rel = &self->rels[i];
@@ -33,6 +34,7 @@ dst_user_free(DstUser* self)
 {
 	if (self->client)
 		client_free(self->client);
+	dst_log_free(&self->log);
 	endpoint_free(&self->endpoint);
 	for (auto i = 0; i < DST_REL_MAX; i++)
 		dst_rel_free(&self->rels[i]);

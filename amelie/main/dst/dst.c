@@ -128,20 +128,11 @@ dst_close(Dst* self)
 	runtime_init(&self->runtime);
 }
 
-void
-dst_execute(Dst* self, Client* client, bool must_fail, char* fmt, ...)
+static void
+dst_execute_cmd(Dst* self, Client* client, bool must_fail, Str* cmd)
 {
-	va_list args;
-	va_start(args, fmt);
-	char msg[1024];
-	auto msg_size = formatv(msg, sizeof(msg), fmt, args);
-	va_end(args);
-
-	Str cmd;
-	str_set(&cmd, msg, msg_size);
 	//info("[{u64}] {str}", self->step, &cmd);
-	auto code = client_execute(client, &cmd, NULL);
-
+	auto code = client_execute(client, cmd, NULL);
 	if (must_fail)
 	{
 		if (code >= 400)
@@ -156,6 +147,28 @@ dst_execute(Dst* self, Client* client, bool must_fail, char* fmt, ...)
 	if (buf_empty(&reply->content))
 		error("[{u64}] {str}", self->step, &reply->options[HTTP_MSG]);
 	error("[{u64}] {buf}", self->step, &reply->content);
+}
+
+void
+dst_execute(Dst* self, Client* client, bool must_fail, char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	char msg[1024];
+	auto msg_size = formatv(msg, sizeof(msg), fmt, args);
+	va_end(args);
+
+	Str cmd;
+	str_set(&cmd, msg, msg_size);
+	dst_execute_cmd(self, client, must_fail, &cmd);
+}
+
+void
+dst_execute_log(DstUser* self)
+{
+	Str cmd;
+	buf_str(&self->log.sql, &cmd);
+	dst_execute_cmd(self->dst, self->client, false, &cmd);
 }
 
 static void
@@ -204,8 +217,8 @@ dst_run(Dst* self)
 
 	// set seed
 	auto random = &am_task->random;	
-	random->seed[0] = 123;
-	random->seed[1] = 123;
+	random->seed[0] = 1;
+	random->seed[1] = 1;
 
 	// main loop
 	auto sync  = (int)opt_int_of(&self->opt_sync);

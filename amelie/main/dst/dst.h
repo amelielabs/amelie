@@ -39,4 +39,5 @@ struct Dst
 void dst_init(Dst*);
 void dst_free(Dst*);
 void dst_execute(Dst*, Client*, bool, char*, ...);
+void dst_execute_log(DstUser*);
 void dst_run(Dst*);

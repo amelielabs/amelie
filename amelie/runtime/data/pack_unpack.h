@@ -278,6 +278,12 @@ unpack_real(uint8_t** pos, double* value)
 	{
 		*value = *(double*)(data + data_size_type());
 		*pos += data_size_type() + sizeof(double);
+	} else
+	if (data_is_int(data))
+	{
+		int64_t i64;
+		unpack_int(pos, &i64);
+		*value = i64;
 	} else {
 		data_error(*pos, DATA_REAL32);
 	}
