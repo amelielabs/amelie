@@ -11,7 +11,7 @@
 //
 
 #include <amelie_base.h>
-#include <amelie_os.h>
+#include <amelie_io.h>
 
 int
 vfs_unlink(const char* path)

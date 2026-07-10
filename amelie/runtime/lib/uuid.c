@@ -11,7 +11,7 @@
 //
 
 #include <amelie_base.h>
-#include <amelie_os.h>
+#include <amelie_io.h>
 #include <amelie_lib.h>
 
 typedef struct uuid_bits uuid_bits_t;

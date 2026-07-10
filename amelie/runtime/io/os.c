@@ -11,7 +11,7 @@
 //
 
 #include <amelie_base.h>
-#include <amelie_os.h>
+#include <amelie_io.h>
 
 void
 os_memusage(uint64_t* virt, uint64_t* resident, uint64_t* shared)
