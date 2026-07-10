@@ -130,6 +130,13 @@ heap_open(Heap* self, char* path)
 
 	// rewrite header
 	memcpy(self->header, meta.start, size);
+
+	// validate bucket metadata integrity
+	for (int i = 0; i < 385; i++)
+	{
+		if (unlikely(self->buckets[i].id != i))
+			error("storage: file '{str}' has corrupted heap metadata", path);
+	}
 	return size_file;
 }
 
