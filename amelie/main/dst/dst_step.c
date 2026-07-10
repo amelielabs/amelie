@@ -167,10 +167,19 @@ void
 dst_step(DstUser* self)
 {
 	dst_log_reset(&self->log);
-	buf_format(&self->log.sql, "BEGIN;");
-	dst_stmt(self);
-	buf_format(&self->log.sql, "END;");
+
+	// generate single or multi-stmts
+	int stmts = random_generate(&am_task->random) % 9 + 1;
+	if (stmts == 1)
+	{
+		dst_stmt(self);
+	} else
+	{
+		buf_format(&self->log.sql, "BEGIN;");
+		for (auto i = 0; i < stmts; i++)
+			dst_stmt(self);
+		buf_format(&self->log.sql, "END;");
+	}
 
 	dst_execute_log(self);
-		// todo: rollback
 }

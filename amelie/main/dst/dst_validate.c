@@ -157,7 +157,7 @@ dst_validate_sub_table(DstUser* self)
 	            "SELECT count(*), sum(row.id::int), max(lsn) FROM dst_sub_table");
 	Str content;
 	buf_str(&client->reply.content, &content);
-	info("{str}", &content);
+	//info("{str}", &content);
 
 	// parse json result
 	Json json;
@@ -273,7 +273,7 @@ dst_validate_user(DstUser* self)
 	if (ack_table)
 	{
 		dst_execute(self->dst, self->client, false,
-		            "ACKNOWLEDGE dst_sub_table TO {u64}, 2",
+		            "ACKNOWLEDGE dst_sub_table TO {u64}, 10",
 		            ack_table);
 		auto rel = &self->rels[DST_REL_TABLE];
 		rel->cdc_sum   = 0;
@@ -292,7 +292,7 @@ dst_validate_user(DstUser* self)
 	if (ack_topic)
 	{
 		dst_execute(self->dst, self->client, false,
-		            "ACKNOWLEDGE dst_sub_topic TO {u64}, 2",
+		            "ACKNOWLEDGE dst_sub_topic TO {u64}, 10",
 		            ack_topic);
 		auto rel = &self->rels[DST_REL_TOPIC];
 		rel->cdc_sum   = 0;

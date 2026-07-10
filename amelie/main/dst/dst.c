@@ -132,7 +132,7 @@ dst_close(Dst* self)
 static void
 dst_execute_cmd(Dst* self, Client* client, bool must_fail, Str* cmd)
 {
-	info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
+	//info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
 
 	// breakpoint
 	if (self->step == (int)self->opt_bp.integer)
