@@ -13,7 +13,6 @@
 
 // dst
 #include "dst/dst_key.h"
-#include "dst/dst_event.h"
 #include "dst/dst_rel.h"
 #include "dst/dst_log.h"
 #include "dst/dst_user.h"

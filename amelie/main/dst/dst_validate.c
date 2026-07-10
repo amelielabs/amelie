@@ -153,10 +153,11 @@ dst_validate_sub_table(DstUser* self)
 	auto client = self->client;
 
 	// table
-	dst_execute(self->dst, client, false, "SELECT * FROM dst_sub_table");
+	dst_execute(self->dst, client, false,
+	            "SELECT count(*), sum(row.id::int), max(lsn) FROM dst_sub_table");
 	Str content;
 	buf_str(&client->reply.content, &content);
-	//info("{str}", &content);
+	info("{str}", &content);
 
 	// parse json result
 	Json json;
@@ -175,82 +176,27 @@ dst_validate_sub_table(DstUser* self)
 	};
 	decode_obj(obj, "result", &pos);
 
-	// read and validate rows
-
-	// [[...], ...]
-
-	int64_t ack = 0;
-	auto count = 0;
+	// [[count, sum, lsn]]
 	unpack_array(&rows);
-	while (! unpack_array_end(&rows))
-	{
-		// [lsn, lsn_op, cmd, {row}]
-		unpack_array(&rows);
-		int64_t  lsn;
-		int64_t  lsn_op;
-		Str      cmd;
-		uint8_t* row;
-		unpack_int(&rows, &lsn);
-		unpack_int(&rows, &lsn_op);
-		unpack_str(&rows, &cmd);
-		row = rows;
-		data_skip(&rows);
-		unpack_array_end(&rows);
+	unpack_array(&rows);
+	int64_t count;
+	int64_t sum;
+	int64_t lsn;
+	unpack_int(&rows, &count);
+	unpack_int(&rows, &sum);
+	unpack_int(&rows, &lsn);
+	unpack_array_end(&rows);
+	unpack_array_end(&rows);
 
-		// {id, state}
-		int64_t key;
-		int64_t value;
-		unpack_obj(&row);
-		data_skip(&row);
-		unpack_int(&row, &key);
-		data_skip(&row);
-		unpack_int(&row, &value);
-		unpack_obj_end(&row);
+	// validate
+	if (count != rel->cdc_count)
+		error("dst_sub_table: count mismatch expected {i64} got {i64}",
+		      count, rel->cdc_count);
 
-		// checkout count
-		if (count + 1 > rel->events_count)
-			error("dst_sub_table: count mismatch expected {d} got {d}",
-			      count + 1, rel->state.count);
+	if (sum != rel->cdc_sum)
+		error("dst_sub_table: keys sum mismatch");
 
-		auto ref = dst_rel_event(rel, count);
-
-		// validate event
-		if ((int)ref->key.key != key ||
-		    ref->key.value    != value)
-			error("dst_sub_table: key {u64} value expected '{u64}' got '{u64}'",
-				  ref->key.key, ref->key.value, value);
-
-		// validate command
-		if (ref->op == DST_EVENT_REPLACE)
-		{
-			if (! str_is(&cmd, "write", 5))
-				error("dst_sub_table: key {u64} command mismatch",
-				      ref->key.key);
-		} else
-		if (ref->op == DST_EVENT_DELETE)
-		{
-			if (! str_is(&cmd, "delete", 6))
-				error("dst_sub_table: key {u64} command mismatch",
-				      ref->key.key);
-		} else
-		if (ref->op == DST_EVENT_PUBLISH)
-		{
-			if (! str_is(&cmd, "publish", 7))
-				error("dst_sub_table: key {u64} command mismatch",
-				      ref->key.key);
-		}
-
-		// sync ack
-		if (lsn > ack)
-			ack = lsn;
-
-		count++;
-	}
-	if (count > rel->events_count)
-		error("dst_sub_table: count mismatch expected {d} got {d}",
-		      count, rel->state.count);
-
-	return ack;
+	return lsn;
 }
 
 static uint64_t
@@ -260,7 +206,8 @@ dst_validate_sub_topic(DstUser* self)
 	auto client = self->client;
 
 	// topic
-	dst_execute(self->dst, client, false, "SELECT * FROM dst_sub_topic");
+	dst_execute(self->dst, client, false,
+	            "SELECT count(*), sum(row[0]::int), max(lsn) FROM dst_sub_topic");
 	Str content;
 	buf_str(&client->reply.content, &content);
 	//info("{str}", &content);
@@ -282,64 +229,27 @@ dst_validate_sub_topic(DstUser* self)
 	};
 	decode_obj(obj, "result", &pos);
 
-	// read and validate rows
-
-	// [[...], ...]
-	int64_t ack = 0;
-	auto count = 0;
+	// [[count, sum, lsn]]
 	unpack_array(&rows);
-	while (! unpack_array_end(&rows))
-	{
-		// [lsn, lsn_op, cmd, [row]]
-		unpack_array(&rows);
-		int64_t  lsn;
-		int64_t  lsn_op;
-		Str      cmd;
-		uint8_t* row;
-		unpack_int(&rows, &lsn);
-		unpack_int(&rows, &lsn_op);
-		unpack_str(&rows, &cmd);
-		row = rows;
-		data_skip(&rows);
-		unpack_array_end(&rows);
+	unpack_array(&rows);
+	int64_t count;
+	int64_t sum;
+	int64_t lsn;
+	unpack_int(&rows, &count);
+	unpack_int(&rows, &sum);
+	unpack_int(&rows, &lsn);
+	unpack_array_end(&rows);
+	unpack_array_end(&rows);
 
-		// [id, state]
-		int64_t key;
-		int64_t value;
-		unpack_array(&row);
-		unpack_int(&row, &key);
-		unpack_int(&row, &value);
-		unpack_array_end(&row);
+	// validate
+	if (count != rel->cdc_count)
+		error("dst_sub_topic: count mismatch expected {i64} got {i64}",
+		      count, rel->cdc_count);
 
-		// checkout count
-		if (count + 1 > rel->events_count)
-			error("dst_sub_topic: count mismatch expected {d} got {d}",
-			      count + 1, rel->state.count);
+	if (sum != rel->cdc_sum)
+		error("dst_sub_topic: keys sum mismatch");
 
-		auto ref = dst_rel_event(rel, count);
-
-		// validate event
-		if ((int)ref->key.key != key ||
-		    ref->key.value    != value)
-			error("dst_sub_topic: key {u64} value expected '{u64}' got '{u64}'",
-				  ref->key.key, ref->key.value, value);
-
-		// validate commands
-		if (! str_is(&cmd, "publish", 7))
-			error("dst_sub_topic: key {u64} command mismatch",
-			      ref->key.key);
-
-		// sync ack
-		if (lsn > ack)
-			ack = lsn;
-
-		count++;
-	}
-	if (count > rel->events_count)
-		error("dst_sub_topic: count mismatch expected {d} got {d}",
-		      count, rel->state.count);
-
-	return ack;
+	return lsn;
 }
 
 void
@@ -363,30 +273,30 @@ dst_validate_user(DstUser* self)
 	if (ack_table)
 	{
 		dst_execute(self->dst, self->client, false,
-		            "ACKNOWLEDGE dst_sub_table TO {u64}",
+		            "ACKNOWLEDGE dst_sub_table TO {u64}, 2",
 		            ack_table);
 		auto rel = &self->rels[DST_REL_TABLE];
-		rel->events_count = 0;
-		buf_reset(&rel->events);
+		rel->cdc_sum   = 0;
+		rel->cdc_count = 0;
 	}
 
 	// ack dst_sub_table_vector
 	if (1)
 	{
 		auto rel = &self->rels[DST_REL_TABLE_VECTOR];
-		rel->events_count = 0;
-		buf_reset(&rel->events);
+		rel->cdc_sum   = 0;
+		rel->cdc_count = 0;
 	}
 
 	// ack dst_sub_topic
 	if (ack_topic)
 	{
 		dst_execute(self->dst, self->client, false,
-		            "ACKNOWLEDGE dst_sub_topic TO {u64}",
+		            "ACKNOWLEDGE dst_sub_topic TO {u64}, 2",
 		            ack_topic);
 		auto rel = &self->rels[DST_REL_TOPIC];
-		rel->events_count = 0;
-		buf_reset(&rel->events);
+		rel->cdc_sum   = 0;
+		rel->cdc_count = 0;
 	}
 }
 

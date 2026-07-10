@@ -43,7 +43,7 @@ dst_stmt(DstUser* self)
 		            key.key, key.value);
 
 		// add cdc event
-		dst_rel_event_add(rel, DST_EVENT_PUBLISH, &key);
+		dst_rel_cdc(rel, &key);
 		return;
 	}
 
@@ -78,7 +78,7 @@ dst_stmt(DstUser* self)
 			            key->value_vector[2],
 			            key->value_vector[3]);
 		}
-		dst_rel_event_add(rel, DST_EVENT_REPLACE, key);
+		dst_rel_cdc(rel, key);
 		return;
 	}
 	op->prev = *key;
@@ -109,7 +109,7 @@ dst_stmt(DstUser* self)
 			           key->value_vector[2],
 			           key->value_vector[3]);
 		}
-		dst_rel_event_add(rel, DST_EVENT_REPLACE, key);
+		dst_rel_cdc(rel, key);
 
 		op->key = *key;
 		return;
@@ -140,7 +140,7 @@ dst_stmt(DstUser* self)
 			           key->value_vector[3],
 			           key->key);
 		}
-		dst_rel_event_add(rel, DST_EVENT_REPLACE, key);
+		dst_rel_cdc(rel, key);
 		op->key = *key;
 		return;
 	}
@@ -158,7 +158,7 @@ dst_stmt(DstUser* self)
 		           "DELETE FROM dst_table_vector WHERE id = {u64};",
 		           key->key);
 	}
-	dst_rel_event_add(rel, DST_EVENT_DELETE, key);
+	dst_rel_cdc(rel, key);
 	dst_rel_delete(rel, key);
 	dst_key_free(key);
 }

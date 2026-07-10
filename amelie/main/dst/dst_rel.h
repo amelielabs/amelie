@@ -25,17 +25,17 @@ struct DstRel
 {
 	int       type;
 	Hashtable state;
-	Buf       events;
-	int       events_count;
+
+	// cdc
+	int64_t   cdc_sum;
+	int       cdc_count;
 };
 
 static inline void
 dst_rel_init(DstRel* self, int type)
 {
-	self->type         = type;
-	self->events_count = 0;
-	buf_init(&self->events);
-	hashtable_init(&self->state);
+	memset(self, 0, sizeof(*self));
+	self->type = type;
 }
 
 static inline void
@@ -50,7 +50,6 @@ dst_rel_free(DstRel* self)
 		dst_key_free(key);
 	}
 	hashtable_free(&self->state);
-	buf_free(&self->events);
 }
 
 hot static inline bool
@@ -84,19 +83,8 @@ dst_rel_delete(DstRel* self, DstKey* key)
 }
 
 static inline void
-dst_rel_event_add(DstRel* self, int op, DstKey* key)
+dst_rel_cdc(DstRel* self, DstKey* key)
 {
-	DstEvent event =
-	{
-		.op  = op,
-		.key = *key
-	};
-	buf_write(&self->events, &event, sizeof(event));
-	self->events_count++;
-}
-
-static inline DstEvent*
-dst_rel_event(DstRel* self, int at)
-{
-	return &((DstEvent*)self->events.start)[at];
+	self->cdc_sum += key->key;
+	self->cdc_count++;
 }

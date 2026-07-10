@@ -32,6 +32,7 @@ struct Dst
 	Opt      opt_steps;
 	Opt      opt_keys;
 	Opt      opt_sync;
+	Opt      opt_bp;
 	Opts     opts;
 	Runtime  runtime;
 };

@@ -43,6 +43,7 @@ dst_init(Dst* self)
 		{ "steps", OPT_INT,    OPT_C|OPT_Z, &self->opt_steps, NULL,      1000  },
 		{ "keys",  OPT_INT,    OPT_C|OPT_Z, &self->opt_keys,  NULL,      1000  },
 		{ "sync",  OPT_INT,    OPT_C|OPT_Z, &self->opt_sync,  NULL,      1000  },
+		{ "bp",    OPT_INT,    OPT_C,       &self->opt_bp,    NULL,      -1    },
 		{  NULL,   0,          0,            NULL,            NULL,      0     }
 	};
 	opts_define(&self->opts, defs);
@@ -131,7 +132,12 @@ dst_close(Dst* self)
 static void
 dst_execute_cmd(Dst* self, Client* client, bool must_fail, Str* cmd)
 {
-	//info("[{u64}] {str}", self->step, &cmd);
+	info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
+
+	// breakpoint
+	if (self->step == (int)self->opt_bp.integer)
+		raise(SIGTRAP);
+
 	auto code = client_execute(client, cmd, NULL);
 	if (must_fail)
 	{
@@ -145,8 +151,11 @@ dst_execute_cmd(Dst* self, Client* client, bool must_fail, Str* cmd)
 
 	auto reply = &client->reply;
 	if (buf_empty(&reply->content))
-		error("[{u64}] {str}", self->step, &reply->options[HTTP_MSG]);
-	error("[{u64}] {buf}", self->step, &reply->content);
+		error("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string,
+		      &reply->options[HTTP_MSG]);
+
+	error("[{u64}] ({str}) {buf}", &client->endpoint->user.string,
+	      self->step, &reply->content);
 }
 
 void
