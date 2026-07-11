@@ -129,8 +129,8 @@ dst_close(Dst* self)
 	runtime_init(&self->runtime);
 }
 
-static void
-dst_execute_cmd(Dst* self, Client* client, bool must_fail, Str* cmd)
+static bool
+dst_execute_cmd(Dst* self, Client* client, bool can_fail, Str* cmd)
 {
 	//info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
 
@@ -139,15 +139,12 @@ dst_execute_cmd(Dst* self, Client* client, bool must_fail, Str* cmd)
 		raise(SIGTRAP);
 
 	auto code = client_execute(client, cmd, NULL);
-	if (must_fail)
-	{
-		if (code >= 400)
-			return;
-		error("[{u64}] failure expected");
-		return;
-	}
 	if (code < 400)
-		return;
+		return true;
+
+	// error
+	if (can_fail)
+		return false;
 
 	auto reply = &client->reply;
 	if (buf_empty(&reply->content))
@@ -156,10 +153,12 @@ dst_execute_cmd(Dst* self, Client* client, bool must_fail, Str* cmd)
 
 	error("[{u64}] ({str}) {buf}", &client->endpoint->user.string,
 	      self->step, &reply->content);
+
+	return false;
 }
 
 void
-dst_execute(Dst* self, Client* client, bool must_fail, char* fmt, ...)
+dst_execute(Dst* self, Client* client, char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -169,15 +168,15 @@ dst_execute(Dst* self, Client* client, bool must_fail, char* fmt, ...)
 
 	Str cmd;
 	str_set(&cmd, msg, msg_size);
-	dst_execute_cmd(self, client, must_fail, &cmd);
+	dst_execute_cmd(self, client, false, &cmd);
 }
 
-void
+bool
 dst_execute_log(DstUser* self)
 {
 	Str cmd;
 	buf_str(&self->log.sql, &cmd);
-	dst_execute_cmd(self->dst, self->client, false, &cmd);
+	return dst_execute_cmd(self->dst, self->client, true, &cmd);
 }
 
 static void
@@ -201,7 +200,7 @@ dst_bootstrap(Dst* self)
 	for (auto i = 0; i < self->users_count; i++)
 	{
 		auto user = &self->users[i];
-		dst_execute(self, client, false, "CREATE USER user_{u64}", i);
+		dst_execute(self, client, "CREATE USER user_{u64}", i);
 		dst_user_connect(user);
 		dst_user_create(user);
 	}

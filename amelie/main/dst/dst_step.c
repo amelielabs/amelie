@@ -163,10 +163,92 @@ dst_stmt(DstUser* self)
 	dst_key_free(key);
 }
 
+static void
+dst_begin(DstUser* self)
+{
+	auto log = &self->log;
+	dst_log_reset(log);
+
+	// save cdc metrics
+	for (auto i = 0; i < DST_REL_MAX; i++)
+	{
+		auto rel = &self->rels[i];
+		log->cdc[i].cdc_sum   = rel->cdc_sum;
+		log->cdc[i].cdc_count = rel->cdc_count;
+	}
+}
+
+static void
+dst_rollback(DstUser* self)
+{
+	auto log = &self->log;
+	for (auto i = log->ops_count - 1; i >= 0; i--)
+	{
+		auto op = dst_log_at(log, i);
+		switch (op->op) {
+		case DST_OP_PUBLISH:
+		{
+			// nothing
+			break;
+		}
+		case DST_OP_INSERT:
+		{
+			// delete (table, table_vector)
+			auto ref = dst_rel_get(op->rel, op->key.key);
+			assert(ref);
+			dst_rel_delete(op->rel, ref);
+			dst_key_free(ref);
+			break;
+		}
+		case DST_OP_UPSERT:
+		case DST_OP_UPDATE:
+		{
+			// replace (table, table_vector)
+			auto ref = dst_rel_get(op->rel, op->key.key);
+			assert(ref);
+			if (op->rel->type == DST_REL_TABLE) {
+				ref->value = op->prev.value;
+			} else {
+				ref->value_vector[0] = op->prev.value_vector[0];
+				ref->value_vector[1] = op->prev.value_vector[1];
+				ref->value_vector[2] = op->prev.value_vector[2];
+				ref->value_vector[3] = op->prev.value_vector[3];
+			}
+			break;
+		}
+		case DST_OP_DELETE:
+		{
+			// insert (table, table_vector)
+			auto ref = dst_key_allocate(op->prev.key);
+			dst_rel_set(op->rel, ref);
+			if (op->rel->type == DST_REL_TABLE) {
+				ref->value = op->prev.value;
+			} else {
+				ref->value_vector[0] = op->prev.value_vector[0];
+				ref->value_vector[1] = op->prev.value_vector[1];
+				ref->value_vector[2] = op->prev.value_vector[2];
+				ref->value_vector[3] = op->prev.value_vector[3];
+			}
+			break;
+		}
+		}
+	}
+
+	// restore cdc metrics
+	for (auto i = 0; i < DST_REL_MAX; i++)
+	{
+		auto rel = &self->rels[i];
+		rel->cdc_sum = log->cdc[i].cdc_sum;
+		rel->cdc_count = log->cdc[i].cdc_count;
+	}
+
+	dst_log_reset(log);
+}
+
 void
 dst_step(DstUser* self)
 {
-	dst_log_reset(&self->log);
+	dst_begin(self);
 
 	// generate single or multi-stmts
 	int stmts = random_generate(&am_task->random) % 9 + 1;
@@ -181,5 +263,7 @@ dst_step(DstUser* self)
 		buf_format(&self->log.sql, "END;");
 	}
 
-	dst_execute_log(self);
+	// execute (rollback state on failure)
+	if (! dst_execute_log(self))
+		dst_rollback(self);
 }

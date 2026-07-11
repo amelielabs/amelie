@@ -90,5 +90,5 @@ dst_user_create(DstUser* self)
 		 NULL
 	};
 	for (auto i = 0; ddl[i]; i++)
-		dst_execute(self->dst, self->client, false, "{s}", ddl[i]);
+		dst_execute(self->dst, self->client, "{s}", ddl[i]);
 }

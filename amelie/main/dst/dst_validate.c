@@ -22,7 +22,7 @@ dst_validate_table(DstUser* self)
 	auto client = self->client;
 
 	// table
-	dst_execute(self->dst, client, false, "SELECT * FROM dst_table");
+	dst_execute(self->dst, client, "SELECT * FROM dst_table");
 	Str content;
 	buf_str(&client->reply.content, &content);
 	//info("{str}", &content);
@@ -83,7 +83,7 @@ dst_validate_table_vector(DstUser* self)
 	auto client = self->client;
 
 	// table
-	dst_execute(self->dst, client, false, "SELECT * FROM dst_table_vector");
+	dst_execute(self->dst, client, "SELECT * FROM dst_table_vector");
 	Str content;
 	buf_str(&client->reply.content, &content);
 	//info("{str}", &content);
@@ -153,7 +153,7 @@ dst_validate_sub_table(DstUser* self)
 	auto client = self->client;
 
 	// table
-	dst_execute(self->dst, client, false,
+	dst_execute(self->dst, client,
 	            "SELECT count(*), sum(row.id::int), max(lsn) FROM dst_sub_table");
 	Str content;
 	buf_str(&client->reply.content, &content);
@@ -206,7 +206,7 @@ dst_validate_sub_topic(DstUser* self)
 	auto client = self->client;
 
 	// topic
-	dst_execute(self->dst, client, false,
+	dst_execute(self->dst, client,
 	            "SELECT count(*), sum(row[0]::int), max(lsn) FROM dst_sub_topic");
 	Str content;
 	buf_str(&client->reply.content, &content);
@@ -272,7 +272,7 @@ dst_validate_user(DstUser* self)
 	// ack dst_sub_table
 	if (ack_table)
 	{
-		dst_execute(self->dst, self->client, false,
+		dst_execute(self->dst, self->client,
 		            "ACKNOWLEDGE dst_sub_table TO {u64}, 10",
 		            ack_table);
 		auto rel = &self->rels[DST_REL_TABLE];
@@ -291,7 +291,7 @@ dst_validate_user(DstUser* self)
 	// ack dst_sub_topic
 	if (ack_topic)
 	{
-		dst_execute(self->dst, self->client, false,
+		dst_execute(self->dst, self->client,
 		            "ACKNOWLEDGE dst_sub_topic TO {u64}, 10",
 		            ack_topic);
 		auto rel = &self->rels[DST_REL_TOPIC];
