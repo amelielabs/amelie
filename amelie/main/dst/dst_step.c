@@ -252,14 +252,24 @@ dst_step(DstUser* self)
 
 	// generate single or multi-stmts
 	int stmts = random_generate(&am_task->random) % 9 + 1;
+	auto error_inject = (random_generate(&am_task->random) % 100) < 10;
 	if (stmts == 1)
 	{
 		dst_stmt(self);
+		if (error_inject)
+			buf_format(&self->log.sql, "select error('injected');");
 	} else
 	{
+		auto error_at = -1;
+		if (error_inject)
+			error_at = random_generate(&am_task->random) % stmts;
 		buf_format(&self->log.sql, "BEGIN;");
 		for (auto i = 0; i < stmts; i++)
+		{
 			dst_stmt(self);
+			if (i == error_at)
+				buf_format(&self->log.sql, "select error('injected');");
+		}
 		buf_format(&self->log.sql, "END;");
 	}
 
