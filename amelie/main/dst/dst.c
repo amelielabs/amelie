@@ -124,9 +124,28 @@ dst_open(Dst* self)
 static void
 dst_close(Dst* self)
 {
+	for (auto i = 0; i < self->users_count; i++)
+	{
+		auto user = &self->users[i];
+		dst_user_close(user);
+	}
 	runtime_stop(&self->runtime);
 	runtime_free(&self->runtime);
 	runtime_init(&self->runtime);
+}
+
+static void
+dst_restart(Dst* self)
+{
+	dst_close(self);
+	dst_open(self);
+
+	// reconnect
+	for (auto i = 0; i < self->users_count; i++)
+	{
+		auto user = &self->users[i];
+		dst_user_connect(user);
+	}
 }
 
 static bool
@@ -246,8 +265,14 @@ dst_run(Dst* self)
 
 	// validate
 	dst_validate(self);
-
 	dst_close(self);
+
+	(void)dst_restart;
+	/*
+	dst_restart(self);
+	dst_validate(self);
+	dst_close(self);
+	*/
 
 	// cleanup
 	dst_cleanup(self);

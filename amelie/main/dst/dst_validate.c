@@ -180,11 +180,18 @@ dst_validate_sub_table(DstUser* self)
 	unpack_array(&rows);
 	unpack_array(&rows);
 	int64_t count;
-	int64_t sum;
-	int64_t lsn;
+	int64_t sum   = 0;
+	int64_t lsn   = 0;
 	unpack_int(&rows, &count);
-	unpack_int(&rows, &sum);
-	unpack_int(&rows, &lsn);
+	if (count == 0)
+	{
+		unpack_null(&rows);
+		unpack_null(&rows);
+	} else
+	{
+		unpack_int(&rows, &sum);
+		unpack_int(&rows, &lsn);
+	}
 	unpack_array_end(&rows);
 	unpack_array_end(&rows);
 
@@ -233,11 +240,18 @@ dst_validate_sub_topic(DstUser* self)
 	unpack_array(&rows);
 	unpack_array(&rows);
 	int64_t count;
-	int64_t sum;
-	int64_t lsn;
+	int64_t sum   = 0;
+	int64_t lsn   = 0;
 	unpack_int(&rows, &count);
-	unpack_int(&rows, &sum);
-	unpack_int(&rows, &lsn);
+	if (count == 0)
+	{
+		unpack_null(&rows);
+		unpack_null(&rows);
+	} else
+	{
+		unpack_int(&rows, &sum);
+		unpack_int(&rows, &lsn);
+	}
 	unpack_array_end(&rows);
 	unpack_array_end(&rows);
 
