@@ -202,7 +202,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		target->type          = TARGET_TABLE;
 		target->from_lock     = lock;
 		target->from_table    = table;
-		target->from_snapshot = table_main(table);
+		target->from_timeline = table_main(table);
 		target->columns       = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
 		access_add(&self->parser->program->access, &table->rel, lock, perms);
@@ -229,7 +229,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		target->type          = TARGET_TABLE;
 		target->from_lock     = lock;
 		target->from_table    = table;
-		target->from_snapshot = &clone->config->snapshot;
+		target->from_timeline = &clone->config->timeline;
 		target->columns       = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
 		// adding clone relation to the access list for dependency

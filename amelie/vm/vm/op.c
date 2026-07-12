@@ -459,18 +459,18 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CINSERT:
 		{
 			auto table    = (Table*)op->a;
-			auto snapshot = (Snapshot*)op->b;
-			if (snapshot->rel->type == REL_TABLE)
+			auto timeline = (Timeline*)op->b;
+			if (timeline->rel->type == REL_TABLE)
 				op_write(buf, op, false, false, false,
 				         "{str}.{str}",
 				         &table->config->user, &table->config->name);
 			else
-			if (snapshot->rel->type == REL_CLONE)
+			if (timeline->rel->type == REL_CLONE)
 				op_write(buf, op, false, false, false,
 				         "{str}.{str} [{str}.{str}]",
 				         &table->config->user, &table->config->name,
-				         snapshot->rel->user,
-				         snapshot->rel->name);
+				         timeline->rel->user,
+				         timeline->rel->name);
 			break;
 		}
 		case CTABLE_OPEN:
@@ -487,8 +487,8 @@ op_dump(Program* self, Code* code, Buf* buf)
 				buf_write(desc, "part", 4);
 			}
 
-			auto snapshot = open->snapshot;
-			if (snapshot->rel->type == REL_TABLE)
+			auto timeline = open->timeline;
+			if (timeline->rel->type == REL_TABLE)
 				op_write(buf, op, true, true, true,
 				         "{str}.{str} ({str}) {buf}",
 				         &open->table->config->user,
@@ -496,14 +496,14 @@ op_dump(Program* self, Code* code, Buf* buf)
 				         &open->index->name,
 				         desc);
 			else
-			if (snapshot->rel->type == REL_CLONE)
+			if (timeline->rel->type == REL_CLONE)
 				op_write(buf, op, true, true, true,
 				         "{str}.{str} ({str}) [{str}.{str}] {buf}",
 				         &open->table->config->user,
 				         &open->table->config->name,
 				         &open->index->name,
-				         snapshot->rel->user,
-				         snapshot->rel->name,
+				         timeline->rel->user,
+				         timeline->rel->name,
 				         desc);
 			break;
 		}
@@ -515,20 +515,20 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CTABLE_PREPARE:
 		{
 			auto table    = (Table*)op->b;
-			auto snapshot = (Snapshot*)op->c;
-			if (snapshot->rel->type == REL_TABLE)
+			auto timeline = (Timeline*)op->c;
+			if (timeline->rel->type == REL_TABLE)
 				op_write(buf, op, true, false, false,
 				         "{str}.{str}",
 				         &table->config->user,
 				         &table->config->name);
 			else
-			if (snapshot->rel->type == REL_CLONE)
+			if (timeline->rel->type == REL_CLONE)
 				op_write(buf, op, true, false, false,
 				         "{str}.{str} [{str}.{str}]",
 				         &table->config->user,
 				         &table->config->name,
-				         snapshot->rel->user,
-				         snapshot->rel->name);
+				         timeline->rel->user,
+				         timeline->rel->name);
 			break;
 		}
 		case CTABLE_READB:

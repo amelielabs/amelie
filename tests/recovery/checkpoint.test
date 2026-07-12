@@ -71,7 +71,7 @@ insert into b () values (), ();
 insert into b () values (), ();
 select * from b;
 
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -81,7 +81,7 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 select * from a;
 select * from b;
 select * from test;
@@ -99,7 +99,7 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 
 select * from a;
 select * from b;

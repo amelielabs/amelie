@@ -15,17 +15,17 @@ typedef struct Row Row;
 
 struct Row
 {
-	// 12 bytes (28 with heap chunk)
+	// 8 bytes
+
+	// timeline
+	uint32_t timeline;
 
 	// meta data
 	uint64_t size_factor: 2;
 	uint64_t is_delete:   1;
-
-	// transaction id
-	uint64_t tsn:         61;
-
-	// snapshot id
-	uint32_t snapshot;
+	uint64_t head:        1;
+	uint64_t main:        1;
+	uint64_t padding:     11;
 
 	// columns in the row
 	uint16_t columns;
@@ -35,15 +35,16 @@ struct Row
 
 always_inline hot static inline void
 row_init(Row*     self,
-         uint64_t tsn,
-         uint32_t snapshot,
+         bool     main,
+         uint32_t timeline,
          int      columns,
          int      size_factor, int size)
 {
+	self->timeline    = timeline;
 	self->size_factor = size_factor;
 	self->is_delete   = false;
-	self->tsn         = tsn;
-	self->snapshot    = snapshot;
+	self->head        = false;
+	self->main        = main;
 	self->columns     = columns;
 	if (size_factor == 0)
 		*self->data = size;

@@ -119,11 +119,11 @@ select * from a;
 select * from b;
 
 # test: clone (aba)
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 drop clone b;
 
 create clone b of main;
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 
 select * from a;
 select * from b;

@@ -85,7 +85,8 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 			break;
 		case TYPE_VECTOR:
 			// todo: use flat storage
-			encode_vector(buf, column->size_flat, (float*)pos);
+			abort();
+			// encode_vector(buf, column->size_flat, (float*)pos);
 			break;
 		default:
 			abort();

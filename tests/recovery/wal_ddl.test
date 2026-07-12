@@ -187,7 +187,7 @@ insert into b values (4, {});
 insert into b values (5, []);
 select * from b;
 
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 
 # test: restart
 disconnect S0;
@@ -197,7 +197,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 
 select * from a;
 select * from b;

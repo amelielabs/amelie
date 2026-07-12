@@ -53,7 +53,7 @@ struct Target
 		struct {
 			LockId       from_lock;
 			Table*       from_table;
-			Snapshot*    from_snapshot;
+			Timeline*    from_timeline;
 			IndexConfig* from_index;
 		};
 		AstList* from_group_by;

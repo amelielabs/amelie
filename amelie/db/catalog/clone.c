@@ -25,7 +25,7 @@ static inline void
 clone_free(Clone* self, bool drop)
 {
 	unused(drop);
-	snapshots_remove(&self->table->snapshots, &self->config->snapshot);
+	timelines_remove(&self->table->timelines, &self->config->timeline);
 	clone_config_free(self->config);
 	am_free(self);
 }
@@ -93,11 +93,15 @@ clone_create(Catalog*     self,
 	// create clone
 	auto clone = clone_allocate(config);
 	clone->table = table;
-	clone->config->snapshot.main = &table->snapshots.main;
-	clone->config->snapshot.rel  = &clone->rel;
+	clone->config->timeline.rel = &clone->rel;
 	rels_create(&self->rels, tr, &clone->rel);
 
-	// register clone snapshot
-	snapshots_add(&table->snapshots, &clone->config->snapshot);
+	// register clone timeline
+	auto timelines = &table->timelines;
+	timelines_add(timelines, &clone->config->timeline);
+
+	// advance main timeline (online only)
+	timelines->main.timeline++;
+	table_config_set_timeline(table->config, timelines->main.timeline);
 	return true;
 }

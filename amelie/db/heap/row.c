@@ -42,7 +42,7 @@ row_copykey(Heap* heap, Row* self, Columns* columns)
 		}
 	}
 
-	auto row = row_allocate(heap, self->tsn, self->snapshot, columns->count, size);
+	auto row = row_allocate(heap, self->main, self->timeline, columns->count, size);
 	uint8_t* pos = row_data(row, columns->count);
 	list_foreach(&columns->list)
 	{

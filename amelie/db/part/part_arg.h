@@ -17,5 +17,5 @@ struct PartArg
 {
 	Sequence*  seq;
 	Rel*       rel;
-	Snapshots* snapshots;
+	Timelines* timelines;
 };

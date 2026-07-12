@@ -160,19 +160,17 @@ id
 8
 2
 5
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 
-snapshot
+timeline
 ────────
 {
-  "id": 1,
-  "snapshot": 5,
-  "snapshot_max": 5
+  "timeline": 1,
+  "timeline_max": 0
 }
 {
-  "id": 2,
-  "snapshot": 7,
-  "snapshot_max": 7
+  "timeline": 2,
+  "timeline_max": 0
 }
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -189,19 +187,17 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 3
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 
-snapshot
+timeline
 ────────
 {
-  "id": 1,
-  "snapshot": 4,
-  "snapshot_max": 4
+  "timeline": 1,
+  "timeline_max": 0
 }
 {
-  "id": 2,
-  "snapshot": 6,
-  "snapshot_max": 6
+  "timeline": 2,
+  "timeline_max": 0
 }
 select * from a;
 
@@ -257,19 +253,17 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 8
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 
-snapshot
+timeline
 ────────
 {
-  "id": 1,
-  "snapshot": 4,
-  "snapshot_max": 4
+  "timeline": 1,
+  "timeline_max": 0
 }
 {
-  "id": 2,
-  "snapshot": 6,
-  "snapshot_max": 6
+  "timeline": 2,
+  "timeline_max": 0
 }
 select * from a;
 

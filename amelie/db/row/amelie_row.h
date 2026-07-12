@@ -27,9 +27,9 @@
 #include "row/key.h"
 #include "row/keys.h"
 
-// snapshot
-#include "row/snapshot.h"
-#include "row/snapshots.h"
+// timeline
+#include "row/timeline.h"
+#include "row/timelines.h"
 
 // row
 #include "row/row.h"

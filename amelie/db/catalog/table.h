@@ -19,7 +19,7 @@ struct Table
 	Parts        parts;
 	PartArg      part_arg;
 	Sequence     seq;
-	Snapshots    snapshots;
+	Timelines    timelines;
 	TableConfig* config;
 };
 
@@ -38,10 +38,10 @@ table_primary(Table* self)
 	return container_of(self->config->indexes.next, IndexConfig, link);
 }
 
-static inline Snapshot*
+static inline Timeline*
 table_main(Table* self)
 {
-	return &self->snapshots.main;
+	return &self->timelines.main;
 }
 
 static inline Columns*
@@ -54,17 +54,4 @@ static inline Keys*
 table_keys(Table* self)
 {
 	return &table_primary(self)->keys;
-}
-
-static inline Snapshot*
-table_find_snapshot(Table* self, int id, bool error_if_not_exists)
-{
-	auto snapshot = snapshots_find(&self->snapshots, id);
-	if (! snapshot)
-	{
-		if (error_if_not_exists)
-			error("table '{str}': snapshot {d} not found",
-			      &self->config->name, id);
-	}
-	return snapshot;
 }

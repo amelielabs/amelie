@@ -47,7 +47,6 @@ heap_prepare(Heap* self)
 	header->count      = 0;
 	header->used_count = 0;
 	header->used       = 0;
-	header->ssn        = 0;
 
 	self->header  = header;
 	self->buckets = header->buckets;

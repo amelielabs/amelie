@@ -31,7 +31,7 @@ emit_matching(Compiler* self, Ast* ast)
 	// CTABLE_PREPARE
 	auto rcursor = op3pin(self, CTABLE_PREPARE, TYPE_CURSOR,
 	                      (intptr_t)target->from_table,
-	                      (intptr_t)target->from_snapshot);
+	                      (intptr_t)target->from_timeline);
 
 	// CMATCHING(rset, cursor, column, top)
 	auto rset = op4pin(self, CMATCHING, TYPE_STORE,

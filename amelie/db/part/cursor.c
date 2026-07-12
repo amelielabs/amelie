@@ -24,7 +24,7 @@ hot static Iterator*
 cursor_lookup(Parts*       self,
               Part*        part,
               IndexConfig* config,
-              Snapshot*    snapshot,
+              Timeline*    timeline,
               Row*         key)
 {
 	unused(self);
@@ -33,7 +33,7 @@ cursor_lookup(Parts*       self,
 	// check heap first
 	auto it = index_iterator(index);
 	errdefer(iterator_close, it);
-	iterator_open(it, part->heap, snapshot, key);
+	iterator_open(it, part->heap, timeline, key);
 	return it;
 }
 
@@ -41,20 +41,20 @@ hot static Iterator*
 cursor_scan(Parts*       self,
             Part*        part,
             IndexConfig* config,
-            Snapshot*    snapshot,
+            Timeline*    timeline,
             Row*         key)
 {
 	unused(self);
 	auto index = part_index_find(part, &config->name, true);
 	auto it = index_iterator(index);
-	iterator_open(it, part->heap, snapshot, key);
+	iterator_open(it, part->heap, timeline, key);
 	return it;
 }
 
 hot static Iterator*
 cursor_scan_cross(Parts*       self,
                   IndexConfig* config,
-                  Snapshot*    snapshot,
+                  Timeline*    timeline,
                   Row*         key)
 {
 	// prepare heap merge iterators per partition
@@ -67,7 +67,7 @@ cursor_scan_cross(Parts*       self,
 	}
 
 	// iterator use per partition heaps
-	iterator_open(it, NULL, snapshot, key);
+	iterator_open(it, NULL, timeline, key);
 	return it;
 }
 
@@ -76,7 +76,7 @@ cursor_open(Parts*       self,
             Part*        part,
             IndexConfig* config,
             bool         point_lookup,
-            Snapshot*    snapshot,
+            Timeline*    timeline,
             Row*         key)
 {
 	// partition query
@@ -84,10 +84,10 @@ cursor_open(Parts*       self,
 	{
 		// point lookup
 		if (point_lookup)
-			return cursor_lookup(self, part, config, snapshot, key);
+			return cursor_lookup(self, part, config, timeline, key);
 
 		// range scan
-		return cursor_scan(self, part, config, snapshot, key);
+		return cursor_scan(self, part, config, timeline, key);
 	}
 
 	// cross-partition query
@@ -96,7 +96,7 @@ cursor_open(Parts*       self,
 	if (point_lookup)
 	{
 		part = part_mapping_map(&self->mapping, key);
-		return cursor_lookup(self, part, config, snapshot, key);
+		return cursor_lookup(self, part, config, timeline, key);
 	}
 
 	// range scan
@@ -104,5 +104,5 @@ cursor_open(Parts*       self,
 	// merge all hash partitions (without key)
 	// merge all tree partitions (without key, ordered)
 	// merge all tree partitions (with key, ordered)
-	return cursor_scan_cross(self, config, snapshot, key);
+	return cursor_scan_cross(self, config, timeline, key);
 }

@@ -493,19 +493,17 @@ id  obj
 2   null
 4   {}
 5   []
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 
-snapshot
+timeline
 ────────
 {
-  "id": 1,
-  "snapshot": 3,
-  "snapshot_max": 3
+  "timeline": 1,
+  "timeline_max": 0
 }
 {
-  "id": 2,
-  "snapshot": 5,
-  "snapshot_max": 5
+  "timeline": 2,
+  "timeline_max": 0
 }
 # test: restart
 disconnect S0;
@@ -518,19 +516,17 @@ select show('state').lsn;
 lsn
 ───
 17
-select snapshot from show clones verbose;
+select timeline from show clones verbose;
 
-snapshot
+timeline
 ────────
 {
-  "id": 1,
-  "snapshot": 2,
-  "snapshot_max": 2
+  "timeline": 1,
+  "timeline_max": 0
 }
 {
-  "id": 2,
-  "snapshot": 4,
-  "snapshot_max": 4
+  "timeline": 2,
+  "timeline_max": 0
 }
 select * from a;
 

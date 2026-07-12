@@ -49,14 +49,7 @@ parse_clone_create(Stmt* self)
 		stmt_error(self, path, "table not found");
 
 	// calculate clone id
-	uint32_t id = snapshots_max(&table->snapshots);
-	list_foreach(&table->parts.list)
-	{
-		auto part = list_at(Part, link);
-		if (part->heap->header->ssn > id)
-			id = part->heap->header->ssn;
-	}
-	id++;
+	uint32_t id = table->timelines.main.timeline;
 
 	// create clone config
 	auto config = clone_config_allocate();
@@ -70,10 +63,9 @@ parse_clone_create(Stmt* self)
 	uuid_generate(&uuid, &self->parser->local->random);
 	clone_config_set_id(config, &uuid);
 
-	// set clone snapshot
-	auto snapshot = &config->snapshot;
-	snapshot_set_id(snapshot, id);
-	snapshot_set_snapshot(snapshot, state_tsn());
+	// set clone timeline
+	auto timeline = &config->timeline;
+	timeline_set_timeline(timeline, id);
 
 	// [DESCRIPTION]
 	auto description = stmt_if(self, KDESCRIPTION);

@@ -112,12 +112,12 @@ import_insert(Parser* self, Table* table, Clone* clone, uint8_t* args)
 	auto insert  = ast_insert_of(stmt->ast);
 	stmt->ret = &insert->ret;
 
-	// set snapshot
-	Snapshot* snapshot;
+	// set timeline
+	Timeline* timeline;
 	if (clone)
-		snapshot = &clone->config->snapshot;
+		timeline = &clone->config->timeline;
 	else
-		snapshot = table_main(table);
+		timeline = table_main(table);
 
 	auto columns = table_columns(table);
 	auto target  = target_allocate();
@@ -125,7 +125,7 @@ import_insert(Parser* self, Table* table, Clone* clone, uint8_t* args)
 	target->ast           = stmt->ast;
 	target->from_lock     = LOCK_SHARED_RW;
 	target->from_table    = table;
-	target->from_snapshot = snapshot;
+	target->from_timeline = timeline;
 	target->columns       = columns;
 	str_set_str(&target->name, &table->config->name);
 	from_add(&insert->from, target);

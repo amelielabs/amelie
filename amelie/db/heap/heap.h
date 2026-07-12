@@ -55,7 +55,6 @@ struct HeapHeader
 	uint32_t   count;
 	uint32_t   used_count;
 	uint64_t   used;
-	uint32_t   ssn;
 	HeapBucket buckets[];
 } packed;
 
@@ -82,13 +81,6 @@ always_inline static inline Page*
 heap_page_of(HeapChunk* self)
 {
 	return (Page*)((uintptr_t)self - self->offset);
-}
-
-static inline void
-heap_follow(Heap* self, uint32_t ssn)
-{
-	if (ssn > self->header->ssn)
-		self->header->ssn = ssn;
 }
 
 Heap*  heap_allocate(void);

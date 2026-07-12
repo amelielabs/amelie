@@ -84,18 +84,16 @@ part_open_heap(Part* self, uint64_t checkpoint)
 		if (! row)
 			break;
 
+		if (! row->head)
+			continue;
+
 		// sync last identity column value during recover
 		part_follow(self, row, columns);
 		count++;
 
 		// update index to track the latest version
-		if (index_upsert(primary, row, it_upsert))
-		{
-			auto at = iterator_at(it_upsert);
-			if (at->tsn > row->tsn)
-				continue;
-			index_replace(primary, row, it_upsert);
-		}
+		auto exists = index_upsert(primary, row, it_upsert);
+		assert(! exists);
 		for (auto index = primary->next; index; index = index->next)
 			index_replace_by(index, row);
 	}

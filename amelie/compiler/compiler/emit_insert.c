@@ -91,5 +91,5 @@ emit_insert(Compiler* self, Ast* ast)
 	// set target origin
 	target_set_origin(target, self->origin);
 	op2(self, CINSERT, (intptr_t)target->from_table,
-	    (intptr_t)target->from_snapshot);
+	    (intptr_t)target->from_timeline);
 }

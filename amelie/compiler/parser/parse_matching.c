@@ -46,7 +46,7 @@ parse_matching(Stmt* self, From* from, Table* table)
 	target->type          = TARGET_TABLE;
 	target->from_lock     = LOCK_SHARED;
 	target->from_table    = table;
-	target->from_snapshot = table_main(table);
+	target->from_timeline = table_main(table);
 	target->columns       = &table->config->columns;
 	str_set_str(&target->name, &table->config->name);
 	access_add(&self->parser->program->access, &table->rel, LOCK_SHARED, PERM_SELECT);

@@ -21,7 +21,7 @@ struct CloneConfig
 	Uuid     id;
 	Str      table_user;
 	Str      table;
-	Snapshot snapshot;
+	Timeline timeline;
 	Grants   grants;
 };
 
@@ -36,7 +36,7 @@ clone_config_allocate(void)
 	str_init(&self->table_user);
 	str_init(&self->table);
 	uuid_init(&self->id);
-	snapshot_init(&self->snapshot);
+	timeline_init(&self->timeline);
 	grants_init(&self->grants);
 	return self;
 }
@@ -104,7 +104,7 @@ clone_config_copy(CloneConfig* self)
 	clone_config_set_id(copy, &self->id);
 	clone_config_set_table_user(copy, &self->table_user);
 	clone_config_set_table(copy, &self->table);
-	snapshot_copy(&copy->snapshot, &self->snapshot);
+	timeline_copy(&copy->timeline, &self->timeline);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -114,7 +114,7 @@ clone_config_read(uint8_t** pos)
 {
 	auto self = clone_config_allocate();
 	errdefer(clone_config_free, self);
-	uint8_t* pos_snapshot = NULL;
+	uint8_t* pos_timeline = NULL;
 	uint8_t* pos_grants   = NULL;
 	Decode obj[] =
 	{
@@ -124,12 +124,12 @@ clone_config_read(uint8_t** pos)
 		{ DECODE_UUID,  "id",          &self->id          },
 		{ DECODE_STR,   "table_user",  &self->table_user  },
 		{ DECODE_STR,   "table",       &self->table       },
-		{ DECODE_OBJ,   "snapshot",    &pos_snapshot      },
+		{ DECODE_OBJ,   "timeline",    &pos_timeline      },
 		{ DECODE_ARRAY, "grants",      &pos_grants        },
 		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "clone", pos);
-	snapshot_read(&self->snapshot, &pos_snapshot);
+	timeline_read(&self->timeline, &pos_timeline);
 
 	// grants
 	grants_read(&self->grants, &pos_grants);
@@ -172,9 +172,9 @@ clone_config_write(CloneConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "id", 2);
 	encode_uuid(buf, &self->id);
 
-	// snapshot
-	encode_raw(buf, "snapshot", 8);
-	snapshot_write(&self->snapshot, buf, flags);
+	// timeline
+	encode_raw(buf, "timeline", 8);
+	timeline_write(&self->timeline, buf, flags);
 
 	// grants
 	encode_raw(buf, "grants", 6);

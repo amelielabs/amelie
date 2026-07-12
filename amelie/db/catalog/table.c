@@ -54,14 +54,15 @@ table_allocate(TableConfig* config,
 	auto arg = &self->part_arg;
 	arg->seq       = &self->seq;
 	arg->rel       = &self->rel;
-	arg->snapshots = &self->snapshots;
+	arg->timelines = &self->timelines;
 
 	// partition manager
 	auto primary = table_primary(self);
 	parts_init(&self->parts, iface, iface_arg, arg, &primary->keys);
 
-	// snapshot manager
-	snapshots_init(&self->snapshots, &self->rel);
+	// timelines
+	timelines_init(&self->timelines, &self->rel,
+	                self->config->timeline);
 
 	// set relation
 	auto rel = &self->rel;

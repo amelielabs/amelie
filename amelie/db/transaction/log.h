@@ -39,7 +39,7 @@ struct LogOp
 		struct {
 			Row*      row;
 			Row*      row_prev;
-			Snapshot* snapshot;
+			Timeline* timeline;
 		};
 		struct {
 			Rel*      rel;
@@ -107,7 +107,7 @@ log_dml(Log*      self,
         void*     iface_arg,
         Row*      row,
         Row*      row_prev,
-        Snapshot* snapshot)
+        Timeline* timeline)
 {
 	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
 	op->iface     = iface;
@@ -115,7 +115,7 @@ log_dml(Log*      self,
 	op->cmd       = cmd;
 	op->row       = row;
 	op->row_prev  = row_prev;
-	op->snapshot  = snapshot;
+	op->timeline  = timeline;
 	self->count++;
 	return op;
 }

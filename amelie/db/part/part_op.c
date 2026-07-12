@@ -35,19 +35,19 @@ rollback(LogOp* op)
 hot static void
 log_if_commit(Log* self, LogOp* op)
 {
+	unused(self);
 	auto index = (Index*)op->iface_arg;
 	auto part  = (Part*)index->iface_arg;
 	auto heap  = part->heap;
 	if (op->cmd == LOG_DELETE)
 	{
-		// no snapshots or versions
+		// no clones or versions
 		row_free(heap, &part->flats, op->row);
 		return;
 	}
 
-	// cleanup row chain
-	auto tr = container_of(self, Tr, log);
-	row_gc(op->row, heap, &part->flats, op->snapshot, tr->id);
+	// mark row head and cleanup versions
+	row_seal_and_gc(op->row, heap, &part->flats, op->timeline);
 
 	// last delete in the chain
 	if (op->row->is_delete && !row_prev(op->row, heap))
@@ -109,35 +109,35 @@ static LogIf log_if_secondary =
 };
 
 static inline void
-part_cdc(Part* self, Tr* tr, Snapshot* snapshot, Index* primary)
+part_cdc(Part* self, Tr* tr, Timeline* timeline, Index* primary)
 {
 	unused(self);
-	if (! snapshot->rel->subs)
+	if (! timeline->rel->subs)
 		return;
 	auto last = log_last(&tr->log);
-	log_cdc(&tr->log, last->cmd, snapshot->rel->id, last->row,
+	log_cdc(&tr->log, last->cmd, timeline->rel->id, last->row,
 	        index_keys(primary)->columns,
 	        runtime()->timezone);
 }
 
 hot void
 part_insert(Part*     self, Tr* tr,
-            Snapshot* snapshot,
+            Timeline* timeline,
             Row*      row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_dml(&tr->log, LOG_REPLACE, &log_if, primary, row, NULL, snapshot);
+	auto op = log_dml(&tr->log, LOG_REPLACE, &log_if, primary, row, NULL, timeline);
 
 	// handle cdc
-	part_cdc(self, tr, snapshot, primary);
+	part_cdc(self, tr, timeline, primary);
 
 	// update primary index
 	op->row_prev = index_replace_by(primary, row);
 	if (op->row_prev)
 	{
 		// check unique constraint
-		if (row_visible(op->row_prev, self->heap, snapshot))
+		if (row_visible(op->row_prev, self->heap, timeline))
 			error("index '{str}': unique key constraint violation",
 			      &primary->config->name);
 
@@ -149,10 +149,10 @@ part_insert(Part*     self, Tr* tr,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
+		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary, index, row, NULL, timeline);
 		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev))
-			if (row_visible(op->row_prev, self->heap, snapshot))
+			if (row_visible(op->row_prev, self->heap, timeline))
 				error("index '{str}': unique key constraint violation",
 				      &index->config->name);
 	}
@@ -164,7 +164,7 @@ part_insert(Part*     self, Tr* tr,
 
 hot bool
 part_upsert(Part*     self, Tr* tr, Iterator* it,
-            Snapshot* snapshot,
+            Timeline* timeline,
             Row*      row)
 {
 	// get if exists (iterator is openned in both cases)
@@ -178,20 +178,20 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	// insert
 
 	// add log record
-	auto op = log_dml(&tr->log, LOG_REPLACE, &log_if, primary, row, NULL, snapshot);
+	auto op = log_dml(&tr->log, LOG_REPLACE, &log_if, primary, row, NULL, timeline);
 
 	// handle cdc
-	part_cdc(self, tr, snapshot, primary);
+	part_cdc(self, tr, timeline, primary);
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
+		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary, index, row, NULL, timeline);
 		op->row_prev = index_replace_by(index, row);
 
 		if (unlikely(op->row_prev))
-			if (row_visible(op->row_prev, self->heap, snapshot))
+			if (row_visible(op->row_prev, self->heap, timeline))
 				error("index '{str}': unique key constraint violation",
 				      &index->config->name);
 	}
@@ -205,15 +205,15 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 
 hot void
 part_update(Part*     self, Tr* tr, Iterator* it,
-            Snapshot* snapshot,
+            Timeline* timeline,
             Row*      row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_dml(&tr->log, LOG_REPLACE, &log_if, primary, row, NULL, snapshot);
+	auto op = log_dml(&tr->log, LOG_REPLACE, &log_if, primary, row, NULL, timeline);
 
 	// handle cdc
-	part_cdc(self, tr, snapshot, primary);
+	part_cdc(self, tr, timeline, primary);
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
@@ -228,12 +228,12 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary, index, row, NULL, snapshot);
+		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary, index, row, NULL, timeline);
 
 		// find and replace existing secondary row (keys are not updated)
 		auto index_it = index_iterator(index);
 		defer(iterator_close, index_it);
-		iterator_open(index_it, self->heap, snapshot, row);
+		iterator_open(index_it, self->heap, timeline, row);
 		op->row_prev = index_replace(index, row, index_it);
 	}
 
@@ -243,35 +243,35 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 }
 
 hot void
-part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
+part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 {
 	auto primary = part_primary(self);
 
 	// handle delete as update to support clonning
 	auto arg = self->arg;
-	if (arg->snapshots->list_count > 1)
+	if (arg->timelines->list_count > 0)
 	{
 		auto row = iterator_at(it);
-		row = row_visible(row, self->heap, snapshot);
+		row = row_visible(row, self->heap, timeline);
 		if (! row)
 			return;
 
 		auto columns = index_keys(primary)->columns;
 		auto row_delete = row_copykey(self->heap, row, columns);
 		row_delete->is_delete = true;
-		row_delete->tsn       = tr->id;
-		row_delete->snapshot  = snapshot->id;
+		row_delete->main      = timeline->main;
+		row_delete->timeline  = timeline->timeline;
 
-		part_update(self, tr, it, snapshot, row_delete);
+		part_update(self, tr, it, timeline, row_delete);
 		return;
 	}
 
 	// add log record
 	auto row = iterator_at(it);
-	auto op = log_dml(&tr->log, LOG_DELETE, &log_if, primary, row, NULL, snapshot);
+	auto op = log_dml(&tr->log, LOG_DELETE, &log_if, primary, row, NULL, timeline);
 
 	// handle cdc
-	part_cdc(self, tr, snapshot, primary);
+	part_cdc(self, tr, timeline, primary);
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);
@@ -283,7 +283,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, LOG_DELETE, &log_if_secondary, index, row, NULL, snapshot);
+		op = log_dml(&tr->log, LOG_DELETE, &log_if_secondary, index, row, NULL, timeline);
 
 		// delete by key
 		op->row_prev = index_delete_by(index, row);
@@ -295,16 +295,16 @@ part_delete(Part* self, Tr* tr, Iterator* it, Snapshot* snapshot)
 }
 
 hot void
-part_delete_by(Part* self, Tr* tr, Snapshot* snapshot, Row* row)
+part_delete_by(Part* self, Tr* tr, Timeline* timeline, Row* row)
 {
 	// note: transaction memory limit is not ensured here
 	// since this operation is used for recovery
 	auto primary = part_primary(self);
 	auto it = index_iterator(primary);
 	defer(iterator_close, it);
-	if (unlikely(! iterator_open(it, self->heap, snapshot, row)))
+	if (unlikely(! iterator_open(it, self->heap, timeline, row)))
 		error("delete by key does not match");
-	part_delete(self, tr, it, snapshot);
+	part_delete(self, tr, it, timeline);
 }
 
 void
