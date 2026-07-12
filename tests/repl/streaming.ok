@@ -10245,7 +10245,6 @@ state
   "frontends": 1,
   "backends": 3,
   "lsn": 10016,
-  "tsn": 10016,
   "psn": 3,
   "checkpoint": 1
 }
@@ -10332,7 +10331,6 @@ state
   "frontends": 1,
   "backends": 3,
   "lsn": 10023,
-  "tsn": 10020,
   "psn": 6,
   "checkpoint": 1
 }

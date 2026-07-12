@@ -125,9 +125,8 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 static void
 catalog_restore(Catalog* self, uint8_t** pos)
 {
-	// { lsn, tsn, users, tables, clones, udfs, topics, subs }
+	// { lsn, users, tables, clones, udfs, topics, subs }
 	int64_t  lsn        = 0;
-	int64_t  tsn        = 0;
 	uint8_t* pos_users  = NULL;
 	uint8_t* pos_tables = NULL;
 	uint8_t* pos_clones = NULL;
@@ -137,7 +136,6 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	Decode obj[] =
 	{
 		{ DECODE_INT,   "lsn",    &lsn          },
-		{ DECODE_INT,   "tsn",    &tsn          },
 		{ DECODE_ARRAY, "users",  &pos_users    },
 		{ DECODE_ARRAY, "tables", &pos_tables   },
 		{ DECODE_ARRAY, "clones", &pos_clones   },
@@ -178,11 +176,10 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	while (! unpack_array_end(&pos_subs))
 		catalog_restore_object(self, RESTORE_SUB, &pos_subs);
 
-	// set catalog lsn and tsn
-	opt_int_set(&state()->checkpoint, lsn);
-
+	// set catalog lsn
 	state_lsn_follow(lsn);
-	state_tsn_follow(tsn);
+
+	opt_int_set(&state()->checkpoint, lsn);
 }
 
 void
@@ -206,19 +203,15 @@ catalog_read(Catalog* self, char* path)
 }
 
 Buf*
-catalog_state(Catalog* self, uint64_t lsn, uint64_t tsn)
+catalog_state(Catalog* self, uint64_t lsn)
 {
-	// { lsn, tsn, users, tables, clones, udfs, topics, subs }
+	// { lsn, users, tables, clones, udfs, topics, subs }
 	auto buf = buf_create();
 	encode_obj(buf);
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_int(buf, lsn);
-
-	// tsn
-	encode_raw(buf, "tsn", 3);
-	encode_int(buf, tsn);
 
 	// users
 	encode_raw(buf, "users", 5);
@@ -255,8 +248,7 @@ catalog_write(Catalog* self, char* path)
 
 	// prepare catalog dump
 	auto lsn  = state_lsn();
-	auto tsn  = state_tsn();
-	auto data = catalog_state(self, lsn, tsn);
+	auto data = catalog_state(self, lsn);
 	defer_buf(data);
 
 	// convert to json

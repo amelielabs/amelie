@@ -57,7 +57,6 @@ static void
 db_bootstrap(Db* self)
 {
 	// first valid transaction id starts from 1
-	state_tsn_set(1);
 	state_lsn_set(1);
 	state_checkpoint_set(1);
 
@@ -130,10 +129,6 @@ db_state(Db* self, Buf* buf)
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_int(buf, state_lsn());
-
-	// tsn
-	encode_raw(buf, "tsn", 3);
-	encode_int(buf, state_tsn());
 
 	// psn
 	encode_raw(buf, "psn", 3);

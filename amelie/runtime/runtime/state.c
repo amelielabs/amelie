@@ -39,7 +39,6 @@ state_prepare(State* self)
 		{ "version",         OPT_STRING, OPT_C,             &self->version,        AMELIE_VERSION, 0           },
 		{ "directory",       OPT_STRING, OPT_E,             &self->directory,      NULL,           0           },
 		{ "lsn",             OPT_INT,    OPT_E,             &self->lsn,            NULL,           0           },
-		{ "tsn",             OPT_INT,    OPT_E,             &self->tsn,            NULL,           0           },
 		{ "psn",             OPT_INT,    OPT_E,             &self->psn,            NULL,           0           },
 		{ "rsn",             OPT_INT,    OPT_E,             &self->rsn,            NULL,           REL_MAX     },
 		{ "checkpoint",      OPT_INT,    OPT_E,             &self->checkpoint,     NULL,           0           },

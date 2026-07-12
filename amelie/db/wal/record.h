@@ -24,7 +24,6 @@ struct Record
 	uint32_t size;
 	uint8_t  flags;
 	uint64_t lsn;
-	uint64_t tsn;
 } packed;
 
 static inline uint8_t*

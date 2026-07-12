@@ -119,9 +119,10 @@ track_sync(Track* self, Consensus* consensus)
 }
 
 hot static inline void
-track_follow(Track* self, uint64_t tsn)
+track_follow(Track* self, uint64_t id)
 {
+	// follow transaction id
 	auto consensus = &self->consensus;
-	if (consensus->commit < tsn)
-		consensus->commit = tsn;
+	if (consensus->commit < id)
+		consensus->commit = id;
 }

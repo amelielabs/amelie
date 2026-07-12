@@ -58,12 +58,6 @@ write_set_flags(Write* self, uint8_t flags)
 }
 
 static inline void
-write_set_tsn(Write* self, uint64_t tsn)
-{
-	self->record.tsn = tsn;
-}
-
-static inline void
 write_set_lsn(Write* self, uint64_t lsn)
 {
 	self->record.lsn = lsn;

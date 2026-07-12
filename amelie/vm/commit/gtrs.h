@@ -17,6 +17,7 @@ struct Gtrs
 {
 	Spinlock   lock;
 	uint64_t   id;
+	uint64_t   id_group;
 	List       list;
 	GtrRecover recover;
 };
@@ -25,6 +26,7 @@ static inline void
 gtrs_init(Gtrs* self)
 {
 	self->id = 1;
+	self->id_group = 1;
 	list_init(&self->list);
 	spinlock_init(&self->lock);
 	gtr_recover_init(&self->recover);
@@ -69,7 +71,10 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 {
 	spinlock_lock(&self->lock);
 
-	uint64_t id;
+	// set transaction id
+	gtr->id = self->id++;
+
+	// set transaction group id
 	if (gtr->write.recover)
 	{
 		// recovery path
@@ -77,21 +82,11 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 		// ensure transaction is serialized around lsn
 		gtrs_recover(self, gtr);
 
-		// recover id
-		id = gtr->write.recover->record->tsn;
-		state_tsn_follow(id);
-
 		// force commit writer to order transactions by lsn
 		gtr->group       = 0;
 		gtr->group_order = gtr->write.recover->record->lsn;
 	} else
 	{
-		// the id must not be modified globally on replica
-		if (state_is_primary())
-			id = state_tsn_next();
-		else
-			id = state_tsn();
-
 		// match overlapping transactions
 		auto is_snapshot = gtr->program->snapshot;
 		list_foreach_reverse(&self->list)
@@ -126,13 +121,10 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 		// start new transaction group or set group order
 		if (! gtr->group)
 		{
-			gtr->group = self->id++;
+			gtr->group = self->id_group++;
 			gtr->group_order = 0;
 		}
 	}
-
-	// set transaction id (tsn)
-	gtr->id = id;
 
 	// register transaction
 	list_append(&self->list, &gtr->link);

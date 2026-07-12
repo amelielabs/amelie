@@ -382,7 +382,6 @@ STATE
   "frontends": 1,
   "backends": 1,
   "lsn": 4,
-  "tsn": 1,
   "psn": 1,
   "checkpoint": 1
 }
@@ -397,7 +396,6 @@ show
   "frontends": 1,
   "backends": 1,
   "lsn": 4,
-  "tsn": 1,
   "psn": 1,
   "checkpoint": 1
 }

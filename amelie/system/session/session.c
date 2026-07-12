@@ -155,9 +155,6 @@ session_run(Session* self)
 		profile_start(&profile->time_commit_us);
 	}
 
-	// assign id
-	write_set_tsn(write, gtr->id);
-
 	// do group commit and wal write, handle group abort
 	commit(share()->commit, gtr, error);
 
@@ -269,7 +266,6 @@ session_run_utility(Session* self)
 			write_set_recover(&write, query->recover);
 		} else
 		{
-			write_set_tsn(&write, 0);
 			write_set_flags(&write, RECORD_UTILITY);
 			query_write(query, &self->req->endpoint, &write.record_data);
 		}
