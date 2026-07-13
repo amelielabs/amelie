@@ -67,6 +67,10 @@ commit_main(void* arg)
 				batch_abort(&batch);
 		}
 
+		// publish cdc events
+		if (batch.pending_cdc)
+			batch_publish(&batch, self->db->cdc);
+
 		// do group completion
 		//
 		// update global commit/abort metrics and detach
@@ -74,8 +78,8 @@ commit_main(void* arg)
 		//
 		auto group_min = gtrs_detach(self->gtrs, &batch);
 
-		// publish cdc events and wakeup transactions
-		batch_complete(&batch, self->db->cdc);
+		// wakeup transactions
+		batch_complete(&batch);
 
 		// remove all groups < group_min
 		gtr_queue_gc(queue, group_min);

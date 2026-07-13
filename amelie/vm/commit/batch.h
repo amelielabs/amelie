@@ -18,6 +18,7 @@ struct Batch
 	Buf       list;
 	int       list_count;
 	Track*    pending;
+	bool      pending_cdc;
 	WriteList write;
 };
 
@@ -30,8 +31,9 @@ batch_at(Batch* self, int order)
 static inline void
 batch_init(Batch* self)
 {
-	self->pending    = NULL;
-	self->list_count = 0;
+	self->pending     = NULL;
+	self->pending_cdc = false;
+	self->list_count  = 0;
 	buf_init(&self->list);
 	write_list_init(&self->write);
 }
@@ -45,8 +47,9 @@ batch_free(Batch* self)
 static inline void
 batch_reset(Batch* self)
 {
-	self->pending    = NULL;
-	self->list_count = 0;
+	self->pending     = NULL;
+	self->pending_cdc = false;
+	self->list_count  = 0;
 	buf_reset(&self->list);
 	write_list_reset(&self->write);
 }
@@ -105,7 +108,6 @@ batch_process(Batch* self)
 
 		// sync metrics and prepare gtr for wal write
 		auto write = &gtr->write;
-
 		list_foreach(&gtr->dispatches.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
@@ -128,16 +130,22 @@ batch_process(Batch* self)
 
 				// collect cdc per ltr
 				if (! log_cdc_empty(&tr->log.cdc))
+				{
 					list_append(&gtr->write_cdc, &tr->log.cdc.link);
+					self->pending_cdc = true;
+				}
 			}
 		}
 
 		if (gtr->abort)
 			continue;
 
-		// collect cdc
+		// collect cdc (publish)
 		if (! log_cdc_empty(&gtr->tr.log.cdc))
+		{
 			list_append(&gtr->write_cdc, &gtr->tr.log.cdc.link);
+			self->pending_cdc = true;
+		}
 
 		if (! gtr->program->ro)
 			write_list_add(&self->write, write);
@@ -170,23 +178,37 @@ batch_abort(Batch* self)
 			if (tr->id > pending->abort)
 				pending->abort = tr->id;
 		}
+
+		// reset cdc list
+		list_init(&gtr->write_cdc);
 	}
+
+	self->pending_cdc = false;
 	write_list_reset(&self->write);
 }
 
 hot static inline void
-batch_complete(Batch* self, Cdc* cdc)
+batch_publish(Batch* self, Cdc* cdc)
+{
+	// publish cdc events
+	for (auto it = 0; it < self->list_count; it++)
+	{
+		auto gtr = batch_at(self, it);
+		if (gtr->abort)
+			continue;
+		if (list_empty(&gtr->write_cdc))
+			continue;
+		auto lsn = write_lsn(&gtr->write);
+		cdc_write_batch(cdc, lsn, &gtr->write_cdc);
+	}
+}
+
+hot static inline void
+batch_complete(Batch* self)
 {
 	for (auto it = 0; it < self->list_count; it++)
 	{
 		auto gtr = batch_at(self, it);
-
-		// publish cdc events
-		if (! list_empty(&gtr->write_cdc))
-		{
-			auto lsn = write_lsn(&gtr->write);
-			cdc_write_batch(cdc, lsn, &gtr->write_cdc);
-		}
 
 		// commit utility transaction
 		tr_commit(&gtr->tr);

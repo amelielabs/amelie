@@ -120,6 +120,9 @@ session_run(Session* self)
 			write_set_recover(write, query->recover);
 		else
 			query_write(query, &self->req->endpoint, &write->record_data);
+
+		if (compiler_stmt(compiler)->id == STMT_ACKNOWLEDGE)
+			write_set_flags(write, RECORD_UTILITY);
 	}
 
 	// [PROFILE]

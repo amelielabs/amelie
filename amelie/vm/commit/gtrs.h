@@ -71,9 +71,6 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 {
 	spinlock_lock(&self->lock);
 
-	// set transaction id
-	gtr->id = self->id++;
-
 	// set transaction group id
 	if (gtr->write.recover)
 	{
@@ -125,6 +122,9 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 			gtr->group_order = 0;
 		}
 	}
+
+	// set transaction id
+	gtr->id = self->id++;
 
 	// register transaction
 	list_append(&self->list, &gtr->link);

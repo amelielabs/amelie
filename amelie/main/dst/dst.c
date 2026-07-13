@@ -151,7 +151,7 @@ dst_restart(Dst* self)
 static bool
 dst_execute_cmd(Dst* self, Client* client, bool can_fail, Str* cmd)
 {
-	//info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
+	// info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
 
 	// breakpoint
 	if (self->step == (int)self->opt_bp.integer)
@@ -265,14 +265,11 @@ dst_run(Dst* self)
 
 	// validate
 	dst_validate(self);
-	dst_close(self);
+	//dst_close(self);
 
-	(void)dst_restart;
-	/*
 	dst_restart(self);
 	dst_validate(self);
 	dst_close(self);
-	*/
 
 	// cleanup
 	dst_cleanup(self);
