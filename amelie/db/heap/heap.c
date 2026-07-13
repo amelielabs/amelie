@@ -26,7 +26,6 @@ heap_set(Heap* self, int id, int id_end, int size, int step)
 		bucket->size        = size + step;
 		bucket->list        = 0;
 		bucket->list_offset = 0;
-		bucket->list_count  = 0;
 		bucket->id          = id;
 		bucket->unused      = 0;
 		size += step;
@@ -42,7 +41,7 @@ heap_prepare(Heap* self)
 	// prepare heap header
 
 	// header + buckets[]
-	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
+	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
 	auto header = (HeapHeader*)am_malloc(size);
 	header->count      = 0;
 	header->used_count = 0;
@@ -63,26 +62,17 @@ heap_prepare(Heap* self)
 	// 160     13     8192      256
 	// 192     14     16384     512
 	// 224     15     32768     1024
-	// 256     16     65536     2048
-	// 288     17     131072    4096
-	// 320     18     262144    8192
-	// 352     19     524288    16384
-	// 384     20     1048576   -
+	// 256     16     65536     -
 	//
 	// /32 buckets per each log group (except 1-9)
 	//
-	heap_set(self, 0,   64,  0,       16);    // 64 buckets
-	heap_set(self, 64,  96,  1024,    32);    // 32
-	heap_set(self, 96,  128, 2048,    64);
-	heap_set(self, 128, 160, 4096,    128);
-	heap_set(self, 160, 192, 8192,    256);
-	heap_set(self, 192, 224, 16384,   512);
-	heap_set(self, 224, 256, 32768,   1024);
-	heap_set(self, 256, 288, 65536,   2048);
-	heap_set(self, 288, 320, 131072,  4096);
-	heap_set(self, 320, 352, 262144,  8192);
-	heap_set(self, 352, 384, 524288,  16384);
-	heap_set(self, 384, 385, 1048576, 0);     // max
+	heap_set(self, 0,   64,  0,     16);   // 64 buckets
+	heap_set(self, 64,  96,  1024,  32);   // 32
+	heap_set(self, 96,  128, 2048,  64);
+	heap_set(self, 128, 160, 4096,  128);
+	heap_set(self, 160, 192, 8192,  256);
+	heap_set(self, 192, 224, 16384, 512);
+	heap_set(self, 224, 256, 32768, 1024); // max 64k
 }
 
 Heap*
@@ -109,7 +99,7 @@ size_t
 heap_create(Heap* self, char* path)
 {
 	// create heap storage file
-	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
+	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
 	return storage_create(&self->storage, path, (uint8_t*)self->header, size);
 }
 
@@ -123,7 +113,7 @@ heap_open(Heap* self, char* path)
 	auto size_file = storage_open(&self->storage, path, STORAGE_HEAP, &meta);
 
 	// validate heap header size
-	int size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
+	int size = sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
 	if (unlikely(buf_size(&meta) != size))
 		error("storage: file '{str}' has invalid heap header", path);
 
@@ -138,7 +128,7 @@ typedef struct
 	int step;
 } HeapGroup;
 
-static HeapGroup heap_log_to_bucket[20] =
+static HeapGroup heap_log_to_bucket[16] =
 {
 	{ 0,   16    }, // 1
 	{ 0,   16    }, // 2
@@ -155,44 +145,31 @@ static HeapGroup heap_log_to_bucket[20] =
 	{ 160, 256   }, // 13
 	{ 192, 512   }, // 14
 	{ 224, 1024  }, // 15
-	{ 256, 2048  }, // 16
-	{ 288, 4096  }, // 17
-	{ 320, 8192  }, // 18
-	{ 352, 16384 }, // 19
-	{ 384, 0     }, // 20 (max)
+	{ 256, 0     }, // 16 (max)
 };
 
 hot static inline HeapBucket*
 heap_bucket_of(Heap* self, int size)
 {
-	assert(size <= 1*1024*1024);
+	// 64KB max row (including chunk)
+	assert(size <= (int)((64l * 1024) + sizeof(HeapChunk)));
 
-	// calculate size log
-	int log2 = (8 * sizeof(unsigned long long) - __builtin_clzl((size)) - 1);
-	assert(log2 != 0);
-	assert(log2 <= 20);
+	// log2(10) below
+	if (likely(size < 1024))
+		return &self->buckets[size >> 4]; // 16
 
-	// match log group
+	auto log2 = (8 * sizeof(unsigned long long) - __builtin_clzl((size)) - 1);
+
+	// log(16) max
+	if (unlikely(log2 >= 16))
+		return &self->buckets[255];
+
+	// match the log group
 	auto group = &heap_log_to_bucket[log2 - 1];
 
-	// match bucket by calculating the step align
-	HeapBucket* bucket;
-	if (likely(group->step))
-	{
-		int bucket_offset;
-		if (log2 <= 9)
-			bucket_offset = (size) / group->step;
-		else
-			bucket_offset = (size - (1 << log2)) / group->step;
-		bucket = &self->buckets[group->bucket + bucket_offset];
-	} else {
-		// 20
-		bucket = &self->buckets[group->bucket];
-	}
-	assert(bucket->size >= size);
-
-	// todo: find first non-empty bucket (using bitmaps)
-	return bucket;
+	// match the bucket
+	auto offset = (size - (1 << log2)) / group->step;
+	return &self->buckets[group->bucket + offset];
 }
 
 hot void*
@@ -203,7 +180,7 @@ heap_add(Heap* self, int size)
 
 	// get chunk from the free list
 	HeapChunk* chunk;
-	if (likely(bucket->list_count > 0))
+	if (likely(bucket->list_offset > 0))
 	{
 		auto page_id     = (int)bucket->list;
 		auto page_offset = (int)bucket->list_offset;
@@ -212,7 +189,6 @@ heap_add(Heap* self, int size)
 		assert(chunk->is_free);
 		bucket->list        = chunk->prev;
 		bucket->list_offset = chunk->prev_offset;
-		bucket->list_count--;
 	} else
 	{
 		// ensure current page fit the bucket
@@ -227,10 +203,10 @@ heap_add(Heap* self, int size)
 		page->position += bucket->size;
 
 	}
-	chunk->prev           = 0;
-	chunk->prev_offset    = 0;
-	chunk->reserved       = 0;
-	chunk->is_free        = false;
+	chunk->prev        = 0;
+	chunk->prev_offset = 0;
+	chunk->reserved    = 0;
+	chunk->is_free     = false;
 
 	// update total used metrics
 	self->header->used_count++;
@@ -253,14 +229,10 @@ heap_remove(Heap* self, void* pointer)
 	chunk->is_free        = true;
 	bucket->list          = heap_page_of(chunk)->id;
 	bucket->list_offset   = chunk->offset;
-	bucket->list_count++;
+
+	// todo: update bitmap
 
 	// update total used metrics
 	self->header->used_count--;
 	self->header->used -= bucket->size;
-
-	// if not first, merge left  if left->free (use chunk->bucket_left to match)
-	// if not last,  merge right if right->free
-
-	// todo: bitmap
 }

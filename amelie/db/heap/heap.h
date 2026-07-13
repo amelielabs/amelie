@@ -27,13 +27,13 @@ struct HeapChunk
 	// reserve (38 bits)
 	uint64_t reserved: 38;
 
-	// chunk (33 + 19 bits)
+	// chunk
 	uint64_t offset: 19;
-	uint64_t bucket: 9;
+	uint64_t bucket: 8;
 	uint64_t is_free: 1;
 
 	// unused
-	uint64_t padding: 23;
+	uint64_t padding: 24;
 
 	// row data
 	uint8_t  data[];
@@ -41,13 +41,12 @@ struct HeapChunk
 
 struct HeapBucket
 {
-	// 16 bytes
-	uint64_t size: 24;
+	// 8 bytes
+	uint64_t size: 16;
 	uint64_t list: 19;
-	uint64_t list_offset: 21;
-	uint64_t list_count: 40;
-	uint64_t id: 9;
-	uint64_t unused: 15;
+	uint64_t list_offset: 19;
+	uint64_t id: 8;
+	uint64_t unused: 2;
 } packed;
 
 struct HeapHeader
