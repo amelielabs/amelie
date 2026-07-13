@@ -51,7 +51,7 @@ struct HeapBucket
 
 struct HeapHeader
 {
-	uint32_t   count;
+	uint64_t   free[4];
 	uint32_t   used_count;
 	uint64_t   used;
 	HeapBucket buckets[];

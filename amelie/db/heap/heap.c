@@ -43,7 +43,7 @@ heap_prepare(Heap* self)
 	// header + buckets[]
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
 	auto header = (HeapHeader*)am_malloc(size);
-	header->count      = 0;
+	memset(header->free, 0, sizeof(header->free));
 	header->used_count = 0;
 	header->used       = 0;
 
@@ -148,8 +148,52 @@ static HeapGroup heap_log_to_bucket[16] =
 	{ 256, 0     }, // 16 (max)
 };
 
+always_inline static inline void
+heap_bucket_set(Heap* self, HeapBucket* bucket)
+{
+	// mark bucket as having free chunks
+	const int id = bucket->id;
+	self->header->free[id >> 6] |= (1ULL << (id & 63));
+}
+
+always_inline static inline void
+heap_bucket_unset(Heap* self, HeapBucket* bucket)
+{
+	// mark bucket as empty
+	const int id = bucket->id;
+	self->header->free[id >> 6] &= ~(1ULL << (id & 63));
+}
+
 hot static inline HeapBucket*
-heap_bucket_of(Heap* self, int size)
+heap_match_after(Heap* self, int id)
+{
+	// search for a next available chunk in the larger buckets
+	const auto bitmaps    = self->header->free;
+	auto       bitmap_pos = id >> 6;  // / 64
+	auto       bit        = id  & 63; // % 64
+
+	// mask smaller buckets in the current bitmap
+	uint64_t mask = bitmaps[bitmap_pos] & ~((1ULL << bit) - 1);
+	if (mask != 0)
+	{
+		auto id = (bitmap_pos << 6) + __builtin_ctzll(mask);
+		return &self->buckets[id];
+	}
+
+	// look for the rest of the buckets
+	for (auto i = bitmap_pos + 1; i < 4; i++)
+	{
+		if (! bitmaps[i])
+			continue;
+		auto id = (i << 6) + __builtin_ctzll(bitmaps[i]);
+		return &self->buckets[id];
+	}
+
+	return NULL;
+}
+
+hot static inline HeapBucket*
+heap_match(Heap* self, int size)
 {
 	// 64KB max row (including chunk)
 	assert(size <= (int)((64l * 1024) + sizeof(HeapChunk)));
@@ -169,14 +213,27 @@ heap_bucket_of(Heap* self, int size)
 
 	// match the bucket
 	auto offset = (size - (1 << log2)) / group->step;
-	return &self->buckets[group->bucket + offset];
+	auto id = group->bucket + offset;
+
+	// return if the bucket has free chunks
+	auto bucket = &self->buckets[id];
+	if (likely(bucket->list_offset > 0))
+		return bucket;
+
+	// search a next available chunk in the larger buckets
+	auto bucket_next = heap_match_after(self, id);
+	if (bucket_next)
+		return bucket_next;
+
+	// no free chunks found, allocate a new one
+	return bucket;
 }
 
 hot void*
 heap_add(Heap* self, int size)
 {
-	// match bucket by size
-	auto bucket = heap_bucket_of(self, sizeof(HeapChunk) + size);
+	// match next free bucket
+	auto bucket = heap_match(self, sizeof(HeapChunk) + size);
 
 	// get chunk from the free list
 	HeapChunk* chunk;
@@ -189,11 +246,14 @@ heap_add(Heap* self, int size)
 		assert(chunk->is_free);
 		bucket->list        = chunk->prev;
 		bucket->list_offset = chunk->prev_offset;
+
+		// mark bucket as empty
+		if (! bucket->list_offset)
+			heap_bucket_unset(self, bucket);
 	} else
 	{
 		// ensure current page fit the bucket
-		if (storage_ensure(&self->storage, bucket->size))
-			self->header->count++;
+		storage_ensure(&self->storage, bucket->size);
 
 		auto page = self->storage.current;
 		chunk = (HeapChunk*)page_at(page, page->position);
@@ -227,10 +287,13 @@ heap_remove(Heap* self, void* pointer)
 	chunk->prev           = bucket->list;
 	chunk->prev_offset    = bucket->list_offset;
 	chunk->is_free        = true;
+
+	// mark bucket as having free row
+	if (! bucket->list_offset)
+		heap_bucket_set(self, bucket);
+
 	bucket->list          = heap_page_of(chunk)->id;
 	bucket->list_offset   = chunk->offset;
-
-	// todo: update bitmap
 
 	// update total used metrics
 	self->header->used_count--;
