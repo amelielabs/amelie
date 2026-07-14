@@ -37,15 +37,16 @@ dst_init(Dst* self)
 
 	OptsDef defs[] =
 	{
-		{ "dir",     OPT_STRING, OPT_C,       &self->opt_dir,     "_output", 0     },
-		{ "seed",    OPT_INT,    OPT_C,       &self->opt_seed,    NULL,      0     },
-		{ "users",   OPT_INT,    OPT_C|OPT_Z, &self->opt_users,   NULL,      3     },
-		{ "steps",   OPT_INT,    OPT_C|OPT_Z, &self->opt_steps,   NULL,      10000 },
-		{ "keys",    OPT_INT,    OPT_C|OPT_Z, &self->opt_keys,    NULL,      1000  },
-		{ "sync",    OPT_INT,    OPT_C|OPT_Z, &self->opt_sync,    NULL,      1000  },
-		{ "restart", OPT_INT,    OPT_C|OPT_Z, &self->opt_restart, NULL,      3000  },
-		{ "bp",      OPT_INT,    OPT_C,       &self->opt_bp,      NULL,      -1    },
-		{  NULL,     0,          0,            NULL,              NULL,      0     }
+		{ "dir",        OPT_STRING, OPT_C,       &self->opt_dir,        "_output", 0     },
+		{ "seed",       OPT_INT,    OPT_C,       &self->opt_seed,       NULL,      0     },
+		{ "users",      OPT_INT,    OPT_C|OPT_Z, &self->opt_users,      NULL,      3     },
+		{ "steps",      OPT_INT,    OPT_C|OPT_Z, &self->opt_steps,      NULL,      10000 },
+		{ "keys",       OPT_INT,    OPT_C|OPT_Z, &self->opt_keys,       NULL,      1000  },
+		{ "sync",       OPT_INT,    OPT_C|OPT_Z, &self->opt_sync,       NULL,      1000  },
+		{ "restart",    OPT_INT,    OPT_C|OPT_Z, &self->opt_restart,    NULL,      3000  },
+		{ "checkpoint", OPT_INT,    OPT_C|OPT_Z, &self->opt_checkpoint, NULL,      9000  },
+		{ "bp",         OPT_INT,    OPT_C,       &self->opt_bp,         NULL,      -1    },
+		{  NULL,        0,          0,            NULL,                 NULL,      0     }
 	};
 	opts_define(&self->opts, defs);
 }
@@ -151,6 +152,28 @@ dst_restart(Dst* self)
 	}
 }
 
+static void
+dst_checkpoint(Dst* self)
+{
+	info("[{u64}] CHECKPOINT", self->step);
+
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{str}/env", opt_string_of(&self->opt_dir));
+
+	// connect (superuser)
+	Endpoint endpoint;
+	endpoint_init(&endpoint);
+	defer(endpoint_free, &endpoint);
+	opt_string_set_cstr(&endpoint.path, path);
+
+	auto client = client_allocate();
+	defer(client_free, client);
+	client_set_endpoint(client, &endpoint);
+	client_connect(client);
+
+	dst_execute(self, client, "CHECKPOINT");
+}
+
 static bool
 dst_execute_cmd(Dst* self, Client* client, bool can_fail, Str* cmd)
 {
@@ -251,9 +274,10 @@ dst_run(Dst* self)
 	random->seed[1] = 1;
 
 	// main loop
-	auto sync    = (int)opt_int_of(&self->opt_sync);
-	auto restart = (int)opt_int_of(&self->opt_restart);
-	auto steps   = (int)opt_int_of(&self->opt_steps);
+	auto sync       = (int)opt_int_of(&self->opt_sync);
+	auto restart    = (int)opt_int_of(&self->opt_restart);
+	auto checkpoint = (int)opt_int_of(&self->opt_checkpoint);
+	auto steps      = (int)opt_int_of(&self->opt_steps);
 	while (self->step < steps)
 	{
 		auto user_id = random_generate(&am_task->random) % self->users_count;
@@ -262,9 +286,9 @@ dst_run(Dst* self)
 
 		if (self->step > 0)
 		{
-			// validate
-			if (self->step % sync == 0)
-				dst_validate(self);
+			// checkpoint
+			if (self->step % checkpoint == 0)
+				dst_checkpoint(self);
 
 			// restart
 			if (self->step % restart == 0)
@@ -272,6 +296,10 @@ dst_run(Dst* self)
 				dst_restart(self);
 				dst_validate(self);
 			}
+
+			// validate
+			if (self->step % sync == 0)
+				dst_validate(self);
 		}
 
 		self->step++;

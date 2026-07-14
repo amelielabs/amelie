@@ -25,6 +25,7 @@ struct Dst
 	Opt      opt_keys;
 	Opt      opt_sync;
 	Opt      opt_restart;
+	Opt      opt_checkpoint;
 	Opt      opt_bp;
 	Opts     opts;
 	Runtime  runtime;
