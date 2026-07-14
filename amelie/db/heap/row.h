@@ -15,53 +15,82 @@ typedef struct Row Row;
 
 struct Row
 {
-	// 8 bytes
+	// 16 bytes
 
-	// timeline
-	uint32_t timeline;
+	// version
+	uint64_t timeline:    32;
 
-	// meta data
+	// row
+	uint64_t columns:     16;
 	uint64_t size_factor: 2;
-	uint64_t is_delete:   1;
-	uint64_t head:        1;
+	uint64_t deleted:     1;
 	uint64_t main:        1;
-	uint64_t padding:     11;
+	uint64_t head:        1;
 
-	// columns in the row
-	uint16_t columns;
+	// heap
+	uint64_t bucket:      8;
+	uint64_t free:        1;
+	uint64_t reserved:    2;
 
+	// heap version (64bit cut)
+	uint64_t offset:      19;
+	uint64_t prev:        19;
+	uint64_t prev_offset: 19;
+	uint64_t padding:     7;
+
+	// data
 	uint8_t  data[];
 } packed;
 
 always_inline hot static inline void
-row_init(Row*     self,
-         bool     main,
-         uint32_t timeline,
-         int      columns,
-         int      size_factor, int size)
+row_init(Row* self)
+{
+	auto init = (uint64_t*)self;
+	init[0] = 0;
+	init[1] = 0;
+}
+
+always_inline hot static inline void
+row_prepare(Row*     self,
+            bool     main,
+            uint32_t timeline,
+            int      columns,
+            int      size_factor,
+            int      size)
 {
 	self->timeline    = timeline;
-	self->size_factor = size_factor;
-	self->is_delete   = false;
-	self->head        = false;
-	self->main        = main;
 	self->columns     = columns;
-	if (size_factor == 0)
+	self->size_factor = size_factor;
+	self->deleted     = false;
+	self->main        = main;
+	self->head        = false;
+
+	// set size
+	switch (size_factor) {
+	case 0:
 		*self->data = size;
-	else
-	if (size_factor == 1)
+		break;
+	case 1:
 		*(uint16_t*)self->data = size;
-	else
+		break;
+	default:
 		*(uint32_t*)self->data = size;
+		break;
+
+	}
 }
 
 always_inline hot static inline uint32_t
 row_size(Row* self)
 {
-	if (self->size_factor == 0)
+	switch (self->size_factor) {
+	case 0:
 		return *self->data;
-	if (self->size_factor == 1)
+	case 1:
 		return *(uint16_t*)self->data;
+	default:
+		break;
+	}
 	return *(uint32_t*)self->data;
 }
 

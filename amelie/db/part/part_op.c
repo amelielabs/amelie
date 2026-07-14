@@ -50,7 +50,7 @@ log_if_commit(Log* self, LogOp* op)
 	row_seal_and_gc(op->row, heap, &part->flats, op->timeline);
 
 	// last delete in the chain
-	if (op->row->is_delete && !row_prev(op->row, heap))
+	if (op->row->deleted && !row_prev(op->row, heap))
 	{
 		index_delete_by(index, op->row);
 		for (index = index->next; index; index = index->next)
@@ -258,9 +258,9 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 
 		auto columns = index_keys(primary)->columns;
 		auto row_delete = row_copykey(self->heap, row, columns);
-		row_delete->is_delete = true;
-		row_delete->main      = timeline->main;
-		row_delete->timeline  = timeline->timeline;
+		row_delete->deleted  = true;
+		row_delete->main     = timeline->main;
+		row_delete->timeline = timeline->timeline;
 
 		part_update(self, tr, it, timeline, row_delete);
 		return;

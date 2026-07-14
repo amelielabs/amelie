@@ -94,6 +94,7 @@ part_open_heap(Part* self, uint64_t checkpoint)
 		// update index to track the latest version
 		auto exists = index_upsert(primary, row, it_upsert);
 		assert(! exists);
+		unused(exists);
 		for (auto index = primary->next; index; index = index->next)
 			index_replace_by(index, row);
 	}

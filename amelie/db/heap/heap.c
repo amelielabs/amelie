@@ -150,7 +150,7 @@ static HeapGroup heap_log_to_bucket[16] =
 always_inline static inline void
 heap_bucket_set(Heap* self, HeapBucket* bucket)
 {
-	// mark bucket as having free chunks
+	// mark bucket as having free rows
 	const int id = bucket->id;
 	self->header->free[id >> 6] |= (1ULL << (id & 63));
 }
@@ -166,7 +166,7 @@ heap_bucket_unset(Heap* self, HeapBucket* bucket)
 hot static inline HeapBucket*
 heap_match_after(Heap* self, int id)
 {
-	// search for a next available chunk in the larger buckets
+	// search for a next free row in the larger buckets
 	const auto bitmaps    = self->header->free;
 	auto       bitmap_pos = id >> 6;  // / 64
 	auto       bit        = id  & 63; // % 64
@@ -194,8 +194,8 @@ heap_match_after(Heap* self, int id)
 hot static inline HeapBucket*
 heap_match(Heap* self, int size)
 {
-	// 64KB max row (including chunk)
-	assert(size <= (int)((64l * 1024) + sizeof(HeapChunk)));
+	// 64KB max row (including row)
+	assert(size <= (int)(64 * 1024));
 
 	// log2(10) below
 	if (likely(size < 1024))
@@ -214,85 +214,81 @@ heap_match(Heap* self, int size)
 	auto offset = (size - (1 << log2)) / group->step;
 	auto id = group->bucket + offset;
 
-	// return if the bucket has free chunks
+	// return if the bucket has free rows
 	auto bucket = &self->buckets[id];
 	if (likely(bucket->list_offset > 0))
 		return bucket;
 
-	// search a next available chunk in the larger buckets
+	// search for a next free row in the larger buckets
 	auto bucket_next = heap_match_after(self, id);
 	if (bucket_next)
 		return bucket_next;
 
-	// no free chunks found, allocate a new one
+	// no free rows found, allocate a new one
 	return bucket;
 }
 
-hot void*
+hot Row*
 heap_add(Heap* self, int size)
 {
-	// match next free bucket
-	auto bucket = heap_match(self, sizeof(HeapChunk) + size);
+	// match next free bucket (size includes Row)
+	auto bucket = heap_match(self, size);
 
-	// get chunk from the free list
-	HeapChunk* chunk;
+	// get a row from the bucket free list
+	Row* row;
 	if (likely(bucket->list_offset > 0))
 	{
-		auto page_id     = (int)bucket->list;
-		auto page_offset = (int)bucket->list_offset;
-		chunk = storage_pointer_of(&self->storage, page_id, page_offset);
-		assert(chunk->bucket == bucket->id);
-		assert(chunk->is_free);
-		bucket->list        = chunk->prev;
-		bucket->list_offset = chunk->prev_offset;
+		row = heap_at(self, bucket->list, bucket->list_offset);
+		assert(row->bucket == bucket->id);
+		assert(row->free);
+		bucket->list        = row->prev;
+		bucket->list_offset = row->prev_offset;
+		row->prev           = 0;
+		row->prev_offset    = 0;
+		row->free           = false;
 
 		// mark bucket as empty
 		if (! bucket->list_offset)
 			heap_bucket_unset(self, bucket);
 	} else
 	{
-		// ensure current page fit the bucket
+		// ensure current page fits the bucket
 		storage_ensure(&self->storage, bucket->size);
 
 		auto page = self->storage.current;
-		chunk = (HeapChunk*)page_at(page, page->position);
-		chunk->offset  = page->position;
-		chunk->bucket  = bucket->id;
-		chunk->padding = 0;
-		page->position += bucket->size;
+		row = (Row*)page_at(page, page->position);
+		row_init(row);
+		row->bucket = bucket->id;
+		row->offset = page->position;
 
+		page->position += bucket->size;
 	}
-	chunk->prev        = 0;
-	chunk->prev_offset = 0;
-	chunk->reserved    = 0;
-	chunk->is_free     = false;
 
 	// update total used metrics
 	self->header->used_count++;
 	self->header->used += bucket->size;
 
-	assert(misalign_of(chunk->data) == 0);
-	return chunk->data;
+	assert(misalign_of(row->data) == 0);
+	return row;
 }
 
 hot void
-heap_remove(Heap* self, void* pointer)
+heap_remove(Heap* self, Row* row)
 {
-	auto chunk = heap_chunk_of(pointer);
-	assert(! chunk->is_free);
+	assert(! row->free);
 
-	// add chunk to the free list
-	auto bucket = &self->buckets[chunk->bucket];
-	chunk->prev           = bucket->list;
-	chunk->prev_offset    = bucket->list_offset;
-	chunk->is_free        = true;
+	// add row to the free list
+	auto bucket = &self->buckets[row->bucket];
+	row->free        = true;
+	row->prev        = bucket->list;
+	row->prev_offset = bucket->list_offset;
 
 	// mark bucket as having free row
 	if (! bucket->list_offset)
 		heap_bucket_set(self, bucket);
 
-	bucket->list          = heap_page_of(chunk)->id;
-	bucket->list_offset   = chunk->offset;
+	bucket->list        = heap_page_of(row)->id;
+	bucket->list_offset = row->offset;
 
 	// update total used metrics
 	self->header->used_count--;

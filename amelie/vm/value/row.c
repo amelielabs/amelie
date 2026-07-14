@@ -140,11 +140,10 @@ row_create_vector(Part*   part,
                   Column* column,
                   Value*  value)
 {
-	auto flat      = flats_at(&part->flats, column);
-	auto row_chunk = heap_chunk_of(row);
-	auto row_page  = heap_page_of(row_chunk)->id;
+	auto flat = flats_at(&part->flats, column);
+	auto page = heap_page_of(row)->id;
 
-	auto id = flat_add(flat, row_page, row_chunk->offset);
+	auto id = flat_add(flat, page, row->offset);
 	memcpy(flat_vector_at(flat, id), value->vector, column->size_flat);
 
 	*(uint32_t*)row_column(row, column) = id;
@@ -326,11 +325,10 @@ row_update(Part*     part,
 		case TYPE_VECTOR:
 		{
 			// create a new vector copy
-			auto flat      = flats_at(&part->flats, column);
-			auto row_chunk = heap_chunk_of(row);
-			auto row_page  = heap_page_of(row_chunk)->id;
+			auto flat = flats_at(&part->flats, column);
+			auto page = heap_page_of(row)->id;
 
-			auto id = flat_add(flat, row_page, row_chunk->offset);
+			auto id = flat_add(flat, page, row->offset);
 			*(uint32_t*)row_column(row, column) = id;
 
 			auto id_src = *(uint32_t*)pos_src;

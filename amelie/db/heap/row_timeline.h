@@ -15,26 +15,23 @@ hot static inline void
 row_prev_set(Row* row, Row* prev)
 {
 	// row->prev = prev
-	auto chunk = heap_chunk_of(row);
 	if (prev)
 	{
-		auto chunk_prev = heap_chunk_of(prev);
-		chunk->prev        = heap_page_of(chunk_prev)->id;
-		chunk->prev_offset = chunk_prev->offset;
+		row->prev        = heap_page_of(prev)->id;
+		row->prev_offset = prev->offset;
 	} else
 	{
-		chunk->prev        = 0;
-		chunk->prev_offset = 0;
+		row->prev        = 0;
+		row->prev_offset = 0;
 	}
 }
 
 hot static inline Row*
 row_prev(Row* row, Heap* heap)
 {
-	auto chunk = heap_chunk_of(row);
-	if (likely(! chunk->prev_offset))
+	if (likely(! row->prev_offset))
 		return NULL;
-	return(Row*)heap_chunk_at(heap, chunk->prev, chunk->prev_offset)->data;
+	return heap_at(heap, row->prev, row->prev_offset);
 }
 
 hot static inline bool
@@ -79,7 +76,7 @@ row_visible(Row* row, Heap* heap, Timeline* timeline)
 				break;
 		}
 	}
-	if (row && row->is_delete)
+	if (row && row->deleted)
 		row = NULL;
 	return row;
 }

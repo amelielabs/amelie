@@ -15,26 +15,26 @@ typedef struct HeapIterator HeapIterator;
 
 struct HeapIterator
 {
-	HeapChunk* current;
-	Page*      page;
-	int        page_order;
-	Storage*   storage;
-	Heap*      heap;
+	Row*     current;
+	Page*    page;
+	int      page_order;
+	Storage* storage;
+	Heap*    heap;
 };
 
 hot static inline void
-heap_iterator_next_chunk(HeapIterator* self)
+heap_iterator_next_row(HeapIterator* self)
 {
 	auto current = self->current;
 	if (unlikely(! current))
 		return;
 
-	// next chunk
+	// next row
 	auto next = (uintptr_t)current + self->heap->buckets[current->bucket].size;
 	auto end  = page_end(self->page);
 	if (likely(next < end))
 	{
-		self->current = (HeapChunk*)next;
+		self->current = (Row*)next;
 		return;
 	}
 
@@ -44,14 +44,14 @@ heap_iterator_next_chunk(HeapIterator* self)
 	if (unlikely(self->page_order >= self->storage->list_count))
 		return;
 	self->page = storage_at(self->storage, self->page_order);
-	self->current = (HeapChunk*)page_at(self->page, sizeof(Page));
+	self->current = (Row*)page_at(self->page, sizeof(Page));
 }
 
 hot static inline void
 heap_iterator_next_allocated(HeapIterator* self)
 {
-	while (self->current && self->current->is_free)
-		heap_iterator_next_chunk(self);
+	while (self->current && self->current->free)
+		heap_iterator_next_row(self);
 }
 
 static inline bool
@@ -64,7 +64,7 @@ heap_iterator_open(HeapIterator* self, Heap* heap, Row* key)
 	self->storage    = &heap->storage;
 	self->page       = storage_at(self->storage, 0);
 	self->page_order = 0;
-	self->current    = heap_chunk_at(heap, 0, sizeof(Page));
+	self->current    = heap_at(heap, 0, sizeof(Page));
 	heap_iterator_next_allocated(self);
 	return self->current != NULL;
 }
@@ -78,21 +78,13 @@ heap_iterator_has(HeapIterator* self)
 always_inline static inline Row*
 heap_iterator_at(HeapIterator* self)
 {
-	if (! self->current)
-		return NULL;
-	return (Row*)self->current->data;
-}
-
-always_inline static inline HeapChunk*
-heap_iterator_at_chunk(HeapIterator* self)
-{
 	return self->current;
 }
 
 static inline void
 heap_iterator_next(HeapIterator* self)
 {
-	heap_iterator_next_chunk(self);
+	heap_iterator_next_row(self);
 	heap_iterator_next_allocated(self);
 }
 

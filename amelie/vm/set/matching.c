@@ -161,9 +161,8 @@ matching_merge(Value* result, Value** values, int count)
 		{
 			auto column = list_at(Column, link);
 
-			auto row_ref   = flat_row_at(at->flat, at->row);
-			auto row_chunk = heap_chunk_at(at->heap, row_ref->row_page, row_ref->row_offset);
-			auto row = (Row*)row_chunk->data;
+			auto row_ref = flat_row_at(at->flat, at->row);
+			auto row = heap_at(at->heap, row_ref->row_page, row_ref->row_offset);
 
 			auto data = row_column(row, column);
 			if (! data)

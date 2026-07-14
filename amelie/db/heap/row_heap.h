@@ -16,8 +16,8 @@ row_allocate(Heap* heap, bool main, uint32_t timeline, int columns, int data_siz
 {
 	int  size_factor;
 	auto size = row_measure(columns, data_size, &size_factor);
-	auto self = (Row*)heap_add(heap, size);
-	row_init(self, main, timeline, columns, size_factor, size);
+	auto self = heap_add(heap, size);
+	row_prepare(self, main, timeline, columns, size_factor, size);
 	return self;
 }
 
@@ -27,7 +27,8 @@ row_allocate_buf(Buf* buf, int columns, int data_size)
 	int  size_factor;
 	auto size = row_measure(columns, data_size, &size_factor);
 	auto self = (Row*)buf_emplace(buf, size);
-	row_init(self, false, 0, columns, size_factor, size);
+	row_init(self);
+	row_prepare(self, false, 0, columns, size_factor, size);
 	return self;
 }
 
