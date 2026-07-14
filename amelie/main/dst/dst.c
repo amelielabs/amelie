@@ -37,14 +37,15 @@ dst_init(Dst* self)
 
 	OptsDef defs[] =
 	{
-		{ "dir",   OPT_STRING, OPT_C,       &self->opt_dir,   "_output", 0     },
-		{ "seed",  OPT_INT,    OPT_C,       &self->opt_seed,  NULL,      0     },
-		{ "users", OPT_INT,    OPT_C|OPT_Z, &self->opt_users, NULL,      3     },
-		{ "steps", OPT_INT,    OPT_C|OPT_Z, &self->opt_steps, NULL,      1000  },
-		{ "keys",  OPT_INT,    OPT_C|OPT_Z, &self->opt_keys,  NULL,      1000  },
-		{ "sync",  OPT_INT,    OPT_C|OPT_Z, &self->opt_sync,  NULL,      1000  },
-		{ "bp",    OPT_INT,    OPT_C,       &self->opt_bp,    NULL,      -1    },
-		{  NULL,   0,          0,            NULL,            NULL,      0     }
+		{ "dir",     OPT_STRING, OPT_C,       &self->opt_dir,     "_output", 0     },
+		{ "seed",    OPT_INT,    OPT_C,       &self->opt_seed,    NULL,      0     },
+		{ "users",   OPT_INT,    OPT_C|OPT_Z, &self->opt_users,   NULL,      3     },
+		{ "steps",   OPT_INT,    OPT_C|OPT_Z, &self->opt_steps,   NULL,      10000 },
+		{ "keys",    OPT_INT,    OPT_C|OPT_Z, &self->opt_keys,    NULL,      1000  },
+		{ "sync",    OPT_INT,    OPT_C|OPT_Z, &self->opt_sync,    NULL,      1000  },
+		{ "restart", OPT_INT,    OPT_C|OPT_Z, &self->opt_restart, NULL,      3000  },
+		{ "bp",      OPT_INT,    OPT_C,       &self->opt_bp,      NULL,      -1    },
+		{  NULL,     0,          0,            NULL,              NULL,      0     }
 	};
 	opts_define(&self->opts, defs);
 }
@@ -137,6 +138,8 @@ dst_close(Dst* self)
 static void
 dst_restart(Dst* self)
 {
+	info("[{u64}] RESTART", self->step);
+
 	dst_close(self);
 	dst_open(self);
 
@@ -248,24 +251,34 @@ dst_run(Dst* self)
 	random->seed[1] = 1;
 
 	// main loop
-	auto sync  = (int)opt_int_of(&self->opt_sync);
-	auto steps = (int)opt_int_of(&self->opt_steps);
+	auto sync    = (int)opt_int_of(&self->opt_sync);
+	auto restart = (int)opt_int_of(&self->opt_restart);
+	auto steps   = (int)opt_int_of(&self->opt_steps);
 	while (self->step < steps)
 	{
 		auto user_id = random_generate(&am_task->random) % self->users_count;
 		auto user = &self->users[user_id];
 		dst_step(user);
 
-		// validate
-		if (self->step > 0 && self->step % sync == 0)
-			dst_validate(self);
+		if (self->step > 0)
+		{
+			// validate
+			if (self->step % sync == 0)
+				dst_validate(self);
+
+			// restart
+			if (self->step % restart == 0)
+			{
+				dst_restart(self);
+				dst_validate(self);
+			}
+		}
 
 		self->step++;
 	}
 
 	// validate
 	dst_validate(self);
-	//dst_close(self);
 
 	dst_restart(self);
 	dst_validate(self);

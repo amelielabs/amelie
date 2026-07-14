@@ -13,14 +13,6 @@
 
 typedef struct Dst Dst;
 
-enum
-{
-	DST_STEP_OP,
-	DST_STEP_ERROR,
-	DST_STEP_VALIDATE,
-	DST_STEP_RESTART
-};
-
 struct Dst
 {
 	DstUser* users;
@@ -32,6 +24,7 @@ struct Dst
 	Opt      opt_steps;
 	Opt      opt_keys;
 	Opt      opt_sync;
+	Opt      opt_restart;
 	Opt      opt_bp;
 	Opts     opts;
 	Runtime  runtime;
