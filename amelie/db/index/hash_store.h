@@ -62,30 +62,49 @@ hash_store_create(HashStore* self, Comparable* comparable, size_t size)
 hot static inline Row*
 hash_store_set(HashStore* self, Row* key)
 {
-	auto     comparable = self->comparable;
-	uint64_t start = row_hash(key, comparable) % self->size;
-	uint64_t pos   = start;
+	auto     comparable  = self->comparable;
+	uint64_t start       = row_hash(key, comparable) % self->size;
+	uint64_t pos         = start;
+	int64_t  pos_deleted = -1;
 	do
 	{
 		auto ref = self->rows[pos];
-		if (!ref || ref == HT_DELETED)
+		if (! ref)
 		{
-			self->rows[pos] = key;
+			// place key on the first deleted pos
+			if (pos_deleted == -1)
+				self->rows[pos] = key;
+			else
+				self->rows[pos_deleted] = key;
 			self->count++;
 			return NULL;
 		}
 
-		if (! compare(comparable, ref, key))
+		if (ref == HT_DELETED)
 		{
-			self->rows[pos] = key;
-			return ref;
+			if (pos_deleted == -1)
+				pos_deleted = pos;
+		} else
+		{
+			if (! compare(comparable, ref, key))
+			{
+				self->rows[pos] = key;
+				return ref;
+			}
 		}
 
 		pos = (pos + 1) % self->size;
 	} while (start != pos);
 
+	if (pos_deleted != -1)
+	{
+		self->rows[pos_deleted] = key;
+		self->count++;
+		return NULL;
+	}
+
 	error("hashtable overflow");
-	return false;
+	return NULL;
 }
 
 hot static inline Row*
@@ -119,20 +138,25 @@ hash_store_delete(HashStore* self, Row* key)
 hot static inline Row*
 hash_store_get(HashStore* self, Row* key, uint64_t* at)
 {
-	auto     comparable = self->comparable;
-	uint64_t start = row_hash(key, comparable) % self->size;
-	uint64_t pos   = start;
+	auto     comparable  = self->comparable;
+	uint64_t start       = row_hash(key, comparable) % self->size;
+	uint64_t pos         = start;
+	int64_t  pos_deleted = -1;
 	do
 	{
 		auto ref = self->rows[pos];
 		if (! ref)
 		{
-			*at = pos;
+			if (pos_deleted == -1)
+				*at = pos;
+			else
+				*at = pos_deleted;
 			return NULL;
 		}
 		if (ref == HT_DELETED)
 		{
-			*at = pos;
+			if (pos_deleted == -1)
+				pos_deleted = pos;
 		} else
 		{
 			if (! compare(comparable, ref, key))
@@ -144,6 +168,12 @@ hash_store_get(HashStore* self, Row* key, uint64_t* at)
 
 		pos = (pos + 1) % self->size;
 	} while (start != pos);
+
+	if (pos_deleted != -1)
+	{
+		*at = pos_deleted;
+		return NULL;
+	}
 
 	error("hashtable overflow");
 	return NULL;

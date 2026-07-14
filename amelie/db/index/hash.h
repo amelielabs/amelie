@@ -78,7 +78,7 @@ hash_rehash(Hash* self)
 			continue;
 		}
 		hash_store_set(self->current, ref);
-		prev->rows[self->rehashing_pos] = NULL;
+		prev->rows[self->rehashing_pos] = HT_DELETED;
 		prev->count--;
 
 		self->rehashing_pos++;
@@ -131,7 +131,7 @@ hash_get_or_set(Hash* self, Row* key, uint64_t* pos)
 			{
 				// move to the current
 				self->current->rows[current_pos] = prev;
-				self->prev->rows[prev_pos] = NULL;
+				self->prev->rows[prev_pos] = HT_DELETED;
 				self->prev->count--;
 				self->current->count++;
 			}

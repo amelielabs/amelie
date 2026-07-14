@@ -62,7 +62,7 @@ dst_validate_table(DstUser* self)
 		auto ref = dst_rel_get(rel, key);
 		if (! ref)
 		{
-			error("dst_table: key {u64} is missing", ref->key);
+			error("dst_table: key {u64} is missing", key);
 		} else
 		{
 			if (ref->value != value)
@@ -129,7 +129,7 @@ dst_validate_table_vector(DstUser* self)
 		auto ref = dst_rel_get(rel, key);
 		if (! ref)
 		{
-			error("dst_table_vector: key {u64} is missing", ref->key);
+			error("dst_table_vector: key {u64} is missing", key);
 		} else
 		{
 			if (!float_compare(ref->value_vector[0], vector[0], 1e-6f) ||

@@ -81,7 +81,7 @@ dst_user_create(DstUser* self)
 	// create relations
 	char* ddl[] =
 	{
-		"CREATE TABLE dst_table (id int primary key, state bigint)",
+		"CREATE TABLE dst_table (id int primary key using hash, state bigint)",
 		"CREATE TABLE dst_table_vector (id int primary key, state vector(4))",
 		"CREATE TOPIC dst_topic",
 		"CREATE SUBSCRIPTION dst_sub_table ON dst_table",
