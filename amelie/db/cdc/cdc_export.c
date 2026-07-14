@@ -11,24 +11,28 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_row.h>
-#include <amelie_transaction.h>
+#include <amelie_type.h>
 #include <amelie_storage.h>
+#include <amelie_flat.h>
+#include <amelie_heap.h>
 #include <amelie_cdc.h>
 
 void
 cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 {
-	// cmd
+	// command (matching log commands)
 	Str cmd;
 	switch (event->cmd) {
-	case LOG_REPLACE:
+	// write
+	case 0:
 		str_set(&cmd, "write", 5);
 		break;
-	case LOG_DELETE:
+	// delete
+	case 1:
 		str_set(&cmd, "delete", 6);
 		break;
-	case LOG_PUBLISH:
+	// publish
+	case 2:
 		str_set(&cmd, "publish", 7);
 		break;
 	}

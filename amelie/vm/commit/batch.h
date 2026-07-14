@@ -129,7 +129,7 @@ batch_process(Batch* self)
 					pending->commit = tr->id;
 
 				// collect cdc per ltr
-				if (! log_cdc_empty(&tr->log.cdc))
+				if (! cdc_log_empty(&tr->log.cdc))
 				{
 					list_append(&gtr->write_cdc, &tr->log.cdc.link);
 					self->pending_cdc = true;
@@ -141,7 +141,7 @@ batch_process(Batch* self)
 			continue;
 
 		// collect cdc (publish)
-		if (! log_cdc_empty(&gtr->tr.log.cdc))
+		if (! cdc_log_empty(&gtr->tr.log.cdc))
 		{
 			list_append(&gtr->write_cdc, &gtr->tr.log.cdc.link);
 			self->pending_cdc = true;

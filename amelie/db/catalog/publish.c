@@ -11,12 +11,12 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_row.h>
-#include <amelie_transaction.h>
+#include <amelie_type.h>
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_cdc.h>
+#include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
@@ -52,6 +52,6 @@ publish(Topic* self, Tr* tr, uint8_t* data, int data_size)
 		return;
 
 	log_cmd(&tr->log, LOG_PUBLISH, &publish_if, NULL, &self->rel);
-	log_cdc_add(&tr->log.cdc, LOG_PUBLISH, &self->config->id,
+	cdc_log_add(&tr->log.cdc, LOG_PUBLISH, &self->config->id,
 	            data, data_size);
 }

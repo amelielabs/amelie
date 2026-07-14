@@ -11,9 +11,10 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_row.h>
-#include <amelie_transaction.h>
+#include <amelie_type.h>
 #include <amelie_storage.h>
+#include <amelie_flat.h>
+#include <amelie_heap.h>
 #include <amelie_cdc.h>
 
 void
@@ -215,19 +216,19 @@ cdc_add(Cdc*     self,
 }
 
 hot void
-cdc_write(Cdc* self, uint64_t lsn, LogCdc* write)
+cdc_write(Cdc* self, uint64_t lsn, CdcLog* write)
 {
 	spinlock_lock(&self->lock);
 
 	// add event to the queue
 	uint32_t op = 0;
-	auto pos = (LogCdcRecord*)write->data.start;
-	auto end = (LogCdcRecord*)write->data.position;
+	auto pos = (CdcLogRecord*)write->data.start;
+	auto end = (CdcLogRecord*)write->data.position;
 	while (pos < end)
 	{
 		cdc_add(self, lsn, op, pos->cmd, pos->id, pos->data, pos->data_size);
 		op++;
-		pos = (LogCdcRecord*)(pos->data + pos->data_size);
+		pos = (CdcLogRecord*)(pos->data + pos->data_size);
 	}
 
 	// wakeup subscribers
@@ -245,14 +246,14 @@ cdc_write_batch(Cdc* self, uint64_t lsn, List* batch)
 	uint32_t op = 0;
 	list_foreach(batch)
 	{
-		auto ref = list_at(LogCdc, link);
-		auto pos = (LogCdcRecord*)ref->data.start;
-		auto end = (LogCdcRecord*)ref->data.position;
+		auto ref = list_at(CdcLog, link);
+		auto pos = (CdcLogRecord*)ref->data.start;
+		auto end = (CdcLogRecord*)ref->data.position;
 		while (pos < end)
 		{
 			cdc_add(self, lsn, op, pos->cmd, pos->id, pos->data, pos->data_size);
 			op++;
-			pos = (LogCdcRecord*)(pos->data + pos->data_size);
+			pos = (CdcLogRecord*)(pos->data + pos->data_size);
 		}
 	}
 

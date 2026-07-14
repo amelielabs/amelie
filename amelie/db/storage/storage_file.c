@@ -11,8 +11,7 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_row.h>
-#include <amelie_transaction.h>
+#include <amelie_type.h>
 #include <amelie_storage.h>
 
 size_t

@@ -11,6 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
+// cdc log
+#include "cdc/cdc_log.h"
+
 // cdc
 #include "cdc/cdc_sub.h"
 #include "cdc/cdc_slot.h"

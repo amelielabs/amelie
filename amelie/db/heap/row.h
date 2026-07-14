@@ -11,60 +11,176 @@
 // AGPL-3.0 Licensed.
 //
 
-hot static inline Row*
-row_allocate(Heap* heap, bool main, uint32_t timeline, int columns, int data_size)
+typedef struct Row Row;
+
+struct Row
 {
-	int  size_factor;
-	auto size = row_measure(columns, data_size, &size_factor);
-	auto self = (Row*)heap_add(heap, size);
-	row_init(self, main, timeline, columns, size_factor, size);
-	return self;
+	// 8 bytes
+
+	// timeline
+	uint32_t timeline;
+
+	// meta data
+	uint64_t size_factor: 2;
+	uint64_t is_delete:   1;
+	uint64_t head:        1;
+	uint64_t main:        1;
+	uint64_t padding:     11;
+
+	// columns in the row
+	uint16_t columns;
+
+	uint8_t  data[];
+} packed;
+
+always_inline hot static inline void
+row_init(Row*     self,
+         bool     main,
+         uint32_t timeline,
+         int      columns,
+         int      size_factor, int size)
+{
+	self->timeline    = timeline;
+	self->size_factor = size_factor;
+	self->is_delete   = false;
+	self->head        = false;
+	self->main        = main;
+	self->columns     = columns;
+	if (size_factor == 0)
+		*self->data = size;
+	else
+	if (size_factor == 1)
+		*(uint16_t*)self->data = size;
+	else
+		*(uint32_t*)self->data = size;
 }
 
-hot static inline Row*
-row_allocate_buf(Buf* buf, int columns, int data_size)
+always_inline hot static inline uint32_t
+row_size(Row* self)
 {
-	int  size_factor;
-	auto size = row_measure(columns, data_size, &size_factor);
-	auto self = (Row*)buf_emplace(buf, size);
-	row_init(self, false, 0, columns, size_factor, size);
-	return self;
+	if (self->size_factor == 0)
+		return *self->data;
+	if (self->size_factor == 1)
+		return *(uint16_t*)self->data;
+	return *(uint32_t*)self->data;
 }
 
-hot static inline void
-row_free(Heap* heap, Flats* flats, Row* row)
+always_inline hot static inline void*
+row_at(Row* self, int column)
 {
-	heap_remove(heap, row);
+	if (unlikely(column >= self->columns))
+		return NULL;
+	register uint32_t offset;
+	if (self->size_factor == 0)
+		offset = self->data[1 + column];
+	else
+	if (self->size_factor == 1)
+		offset = ((uint16_t*)self->data)[1 + column];
+	else
+		offset = ((uint32_t*)self->data)[1 + column];
+	if (offset == 0)
+		return NULL;
+	return (uint8_t*)self + offset;
+}
 
-	if (! flats->list_count)
-		return;
+always_inline hot static inline void*
+row_column(Row* self, Column* column)
+{
+	return row_at(self, column->order);
+}
 
-	auto pos = (Flat**)flats->list.start;
-	auto end = (Flat**)flats->list.position;
-	for (; pos < end; pos++)
+always_inline hot static inline void*
+row_data(Row* self, int columns)
+{
+	return self->data + ((1 + columns) * (self->size_factor + 1));
+}
+
+always_inline hot static inline uint32_t
+row_data_size(Row* self, int columns)
+{
+	return row_size(self) - sizeof(Row) +
+	       ((1 + columns) * (self->size_factor + 1));
+}
+
+always_inline hot static inline void
+row_set(Row* self, int column, int offset)
+{
+	if (self->size_factor == 0)
+		self->data[1 + column]  = offset;
+	else
+	if (self->size_factor == 1)
+		((uint16_t*)self->data)[1 + column] = offset;
+	else
+		((uint32_t*)self->data)[1 + column] = offset;
+}
+
+always_inline hot static inline void
+row_set_null(Row* self, int column)
+{
+	row_set(self, column, 0);
+}
+
+always_inline hot static inline int
+row_measure(int columns, int data_size, int* size_factor)
+{
+	// [row_header][size + index][data]
+	int size_base = sizeof(Row) + data_size;
+	int size = size_base + sizeof(uint8_t) * (1 + columns);
+	if (size > UINT8_MAX)
 	{
-		auto flat = *pos;
-		auto ref  = row_at(row, flat->column->order);
-		if (ref)
-			flat_remove(flat, *(uint32_t*)ref);
+		size = size_base + sizeof(uint16_t) * (1 + columns);
+		if (size > UINT16_MAX)
+		{
+			size = size_base + sizeof(uint32_t) * (1 + columns);
+			*size_factor = 3;
+		} else {
+			*size_factor = 1;
+		}
+	} else {
+		*size_factor = 0;
 	}
+	return size;
 }
 
-hot static inline void
-row_filter(Flats* flats, Row* row, bool filter)
+always_inline hot static inline uint32_t
+row_hash(Row* self, Comparable* comparable)
 {
-	if (! flats->list_count)
-		return;
-
-	auto pos = (Flat**)flats->list.start;
-	auto end = (Flat**)flats->list.position;
-	for (; pos < end; pos++)
+	uint32_t  hash = 0;
+	const int keys = comparable->keys_count;
+	for (auto at = 0; at < keys; at++)
 	{
-		auto flat = *pos;
-		auto ref  = row_at(row, flat->column->order);
-		if (ref)
-			flat_set_at(flat, *(uint32_t*)ref, !filter);
+		auto key = &((const ComparableKey*)comparable->keys.start)[at];
+		auto pos = (uint8_t*)row_at(self, key->column);
+		switch (key->type) {
+		case COMPARE_I64:
+		{
+			// int64, timestamp
+			hash = hash_murmur3_32(pos, sizeof(int64_t), hash);
+			break;
+		}
+		case COMPARE_I32:
+		{
+			// int32
+			hash = hash_murmur3_32(pos, sizeof(int32_t), hash);
+			break;
+		}
+		case COMPARE_UUID:
+		{
+			// uuid
+			hash = hash_murmur3_32(pos, sizeof(Uuid), hash);
+			break;
+		}
+		case COMPARE_STR:
+		{
+			// string
+			Str str;
+			unpack_str(&pos, &str);
+			hash = hash_murmur3_32(str_u8(&str), str_size(&str), hash);
+			break;
+		}
+		default: __builtin_unreachable();
+			break;
+		}
 	}
+	return hash;
 }
-
-Row* row_copykey(Heap*, Row*, Columns*);
