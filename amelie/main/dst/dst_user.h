@@ -20,6 +20,7 @@ struct DstUser
 	Client*  client;
 	Endpoint endpoint;
 	DstLog   log;
+	uint64_t rels_seq;
 	List     rels;
 	int      rels_count;
 	Dst*     dst;
@@ -29,7 +30,8 @@ void dst_user_init(DstUser*, Dst*, int);
 void dst_user_free(DstUser*);
 void dst_user_connect(DstUser*);
 void dst_user_close(DstUser*);
-void dst_user_create(DstUser*);
+void dst_user_create(DstUser*, int);
+void dst_user_drop(DstUser*, DstRel*);
 
 static inline DstRel*
 dst_user_rel(DstUser* self, int order)

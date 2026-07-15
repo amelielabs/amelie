@@ -280,3 +280,31 @@ dst_step(DstUser* self)
 	if (! dst_execute_log(self))
 		dst_rollback(self);
 }
+
+void
+dst_step_ddl(DstUser* self)
+{
+	info("[{u64}] DDL", self->dst->step);
+
+	auto create = 0;
+	if (self->rels_count == 1)
+		create = 1;
+	else
+	if (self->rels_count == (int)self->dst->opt_rels.integer)
+		create = 0;
+	else
+		create = random_generate(&am_task->random) % 2;
+
+	if (create)
+	{
+		// create any relation
+		auto type = random_generate(&am_task->random) % (DST_REL_TOPIC + 1);
+		dst_user_create(self, type);
+	} else
+	{
+		// drop any relation
+		auto rel_order = random_generate(&am_task->random) % self->rels_count;
+		auto rel = dst_user_rel(self, rel_order);
+		dst_user_drop(self, rel);
+	}
+}

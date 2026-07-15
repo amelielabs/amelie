@@ -12,3 +12,4 @@
 //
 
 void dst_step(DstUser*);
+void dst_step_ddl(DstUser*);

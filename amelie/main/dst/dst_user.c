@@ -20,6 +20,7 @@ dst_user_init(DstUser* self, Dst* dst, int id)
 	self->id         = id;
 	self->client     = NULL;
 	self->dst        = dst;
+	self->rels_seq   = 0;
 	self->rels_count = 0;
 	endpoint_init(&self->endpoint);
 	dst_log_init(&self->log);
@@ -70,9 +71,12 @@ dst_user_close(DstUser* self)
 	self->client = NULL;
 }
 
-static void
-dst_user_create_rel(DstUser* self, int id, int type)
+void
+dst_user_create(DstUser* self, int type)
 {
+	// set next id
+	auto id = self->rels_seq++;
+
 	// create object
 	auto rel = dst_rel_allocate(id, type, self->dst->opt_keys.integer);
 	list_append(&self->rels, &rel->link);
@@ -116,14 +120,27 @@ dst_user_create_rel(DstUser* self, int id, int type)
 }
 
 void
-dst_user_create(DstUser* self)
+dst_user_drop(DstUser* self, DstRel* rel)
 {
-	// table
-	dst_user_create_rel(self, 0, DST_REL_TABLE);
-
-	// table vector
-	dst_user_create_rel(self, 1, DST_REL_TABLE_VECTOR);
-
-	// topic
-	dst_user_create_rel(self, 2, DST_REL_TOPIC);
+	switch (rel->type) {
+	case DST_REL_TABLE:
+		dst_execute(self->dst, self->client,
+		            "DROP TABLE table_{u64} CASCADE",
+		            rel->id);
+		break;
+	case DST_REL_TABLE_VECTOR:
+		dst_execute(self->dst, self->client,
+		            "DROP TABLE table_vector_{u64} CASCADE",
+		            rel->id);
+		break;
+	case DST_REL_TOPIC:
+		dst_execute(self->dst, self->client,
+		            "DROP TOPIC topic_{u64} CASCADE",
+		            rel->id);
+		break;
+	}
+	list_unlink(&rel->link);
+	self->rels_count--;
+	assert(self->rels_count > 0);
+	dst_rel_free(rel);
 }

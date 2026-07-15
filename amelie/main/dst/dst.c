@@ -42,9 +42,11 @@ dst_init(Dst* self)
 		{ "users",      OPT_INT,    OPT_C|OPT_Z, &self->opt_users,      NULL,      3     },
 		{ "steps",      OPT_INT,    OPT_C|OPT_Z, &self->opt_steps,      NULL,      10000 },
 		{ "keys",       OPT_INT,    OPT_C|OPT_Z, &self->opt_keys,       NULL,      1000  },
+		{ "rels",       OPT_INT,    OPT_C|OPT_Z, &self->opt_rels,       NULL,      10    },
 		{ "sync",       OPT_INT,    OPT_C|OPT_Z, &self->opt_sync,       NULL,      1000  },
 		{ "restart",    OPT_INT,    OPT_C|OPT_Z, &self->opt_restart,    NULL,      3000  },
 		{ "checkpoint", OPT_INT,    OPT_C|OPT_Z, &self->opt_checkpoint, NULL,      9000  },
+		{ "ddl",        OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl,        NULL,      6000  },
 		{ "bp",         OPT_INT,    OPT_C,       &self->opt_bp,         NULL,      -1    },
 		{  NULL,        0,          0,            NULL,                 NULL,      0     }
 	};
@@ -152,28 +154,6 @@ dst_restart(Dst* self)
 	}
 }
 
-static void
-dst_checkpoint(Dst* self)
-{
-	info("[{u64}] CHECKPOINT", self->step);
-
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{str}/env", opt_string_of(&self->opt_dir));
-
-	// connect (superuser)
-	Endpoint endpoint;
-	endpoint_init(&endpoint);
-	defer(endpoint_free, &endpoint);
-	opt_string_set_cstr(&endpoint.path, path);
-
-	auto client = client_allocate();
-	defer(client_free, client);
-	client_set_endpoint(client, &endpoint);
-	client_connect(client);
-
-	dst_execute(self, client, "CHECKPOINT");
-}
-
 static bool
 dst_execute_cmd(Dst* self, Client* client, bool can_fail, Str* cmd)
 {
@@ -247,8 +227,38 @@ dst_bootstrap(Dst* self)
 		auto user = &self->users[i];
 		dst_execute(self, client, "CREATE USER user_{u64}", i);
 		dst_user_connect(user);
-		dst_user_create(user);
+
+		// table
+		dst_user_create(user, DST_REL_TABLE);
+
+		// table vector
+		dst_user_create(user, DST_REL_TABLE_VECTOR);
+
+		// topic
+		dst_user_create(user, DST_REL_TOPIC);
 	}
+}
+
+static void
+dst_checkpoint(Dst* self)
+{
+	info("[{u64}] CHECKPOINT", self->step);
+
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{str}/env", opt_string_of(&self->opt_dir));
+
+	// connect (superuser)
+	Endpoint endpoint;
+	endpoint_init(&endpoint);
+	defer(endpoint_free, &endpoint);
+	opt_string_set_cstr(&endpoint.path, path);
+
+	auto client = client_allocate();
+	defer(client_free, client);
+	client_set_endpoint(client, &endpoint);
+	client_connect(client);
+
+	dst_execute(self, client, "CHECKPOINT");
 }
 
 void
@@ -277,6 +287,7 @@ dst_run(Dst* self)
 	auto sync       = (int)opt_int_of(&self->opt_sync);
 	auto restart    = (int)opt_int_of(&self->opt_restart);
 	auto checkpoint = (int)opt_int_of(&self->opt_checkpoint);
+	auto ddl        = (int)opt_int_of(&self->opt_ddl);
 	auto steps      = (int)opt_int_of(&self->opt_steps);
 	while (self->step < steps)
 	{
@@ -286,6 +297,10 @@ dst_run(Dst* self)
 
 		if (self->step > 0)
 		{
+			// ddl
+			if (self->step % ddl == 0)
+				dst_step_ddl(user);
+
 			// checkpoint
 			if (self->step % checkpoint == 0)
 				dst_checkpoint(self);
