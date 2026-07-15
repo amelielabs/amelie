@@ -98,7 +98,10 @@ storage_import(Storage* self, Page* page)
 	self->list_count++;
 
 	if (self->list_count == 1)
+	{
 		self->id_first = page->id;
+		self->id_seq   = page->id;
+	}
 
 	if (page->id > self->id_seq)
 		self->id_seq = page->id;
