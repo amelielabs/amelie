@@ -17,16 +17,13 @@
 void
 dst_user_init(DstUser* self, Dst* dst, int id)
 {
-	self->id     = id;
-	self->client = NULL;
-	self->dst    = dst;
+	self->id         = id;
+	self->client     = NULL;
+	self->dst        = dst;
+	self->rels_count = 0;
 	endpoint_init(&self->endpoint);
 	dst_log_init(&self->log);
-	for (auto i = 0; i < DST_REL_MAX; i++)
-	{
-		auto rel = &self->rels[i];
-		dst_rel_init(rel, i);
-	}
+	list_init(&self->rels);
 }
 
 void
@@ -36,8 +33,11 @@ dst_user_free(DstUser* self)
 		client_free(self->client);
 	dst_log_free(&self->log);
 	endpoint_free(&self->endpoint);
-	for (auto i = 0; i < DST_REL_MAX; i++)
-		dst_rel_free(&self->rels[i]);
+	list_foreach_safe(&self->rels)
+	{
+		auto rel = list_at(DstRel, link);
+		dst_rel_free(rel);
+	}
 }
 
 void
@@ -70,25 +70,60 @@ dst_user_close(DstUser* self)
 	self->client = NULL;
 }
 
+static void
+dst_user_create_rel(DstUser* self, int id, int type)
+{
+	// create object
+	auto rel = dst_rel_allocate(id, type, self->dst->opt_keys.integer);
+	list_append(&self->rels, &rel->link);
+	self->rels_count++;
+
+	// create relation
+	switch (type) {
+	case DST_REL_TABLE:
+	{
+		dst_execute(self->dst, self->client,
+		            "CREATE TABLE table_{u64} (id int primary key using hash, state bigint)",
+		            id);
+		dst_execute(self->dst, self->client,
+		            "CREATE SUBSCRIPTION table_sub_{u64} ON table_{u64}",
+		            id, id);
+		break;
+	}
+	case DST_REL_TABLE_VECTOR:
+	{
+		dst_execute(self->dst, self->client,
+		            "CREATE TABLE table_vector_{u64} (id int primary key, state vector(4))",
+		            id);
+		/*
+		dst_execute(self->dst, self->client,
+		            "CREATE SUBSCRIPTION table_vector_sub_{u64} ON table_vector_{u64}",
+		            id, id);
+		*/
+		break;
+	}
+	case DST_REL_TOPIC:
+	{
+		dst_execute(self->dst, self->client,
+		            "CREATE TOPIC topic_{u64}",
+		            id);
+		dst_execute(self->dst, self->client,
+		            "CREATE SUBSCRIPTION topic_sub_{u64} ON topic_{u64}",
+		            id, id);
+		break;
+	}
+	}
+}
+
 void
 dst_user_create(DstUser* self)
 {
-	// prepare relations
-	auto keys = self->dst->opt_keys.integer * 2;
-	hashtable_create(&self->rels[DST_REL_TABLE].state, keys);
-	hashtable_create(&self->rels[DST_REL_TABLE_VECTOR].state, keys);
+	// table
+	dst_user_create_rel(self, 0, DST_REL_TABLE);
 
-	// create relations
-	char* ddl[] =
-	{
-		"CREATE TABLE dst_table (id int primary key using hash, state bigint)",
-		"CREATE TABLE dst_table_vector (id int primary key, state vector(4))",
-		"CREATE TOPIC dst_topic",
-		"CREATE SUBSCRIPTION dst_sub_table ON dst_table",
-		//"CREATE SUBSCRIPTION dst_sub_table_vector ON dst_table_vector",
-		"CREATE SUBSCRIPTION dst_sub_topic ON dst_topic",
-		 NULL
-	};
-	for (auto i = 0; ddl[i]; i++)
-		dst_execute(self->dst, self->client, "{s}", ddl[i]);
+	// table vector
+	dst_user_create_rel(self, 1, DST_REL_TABLE_VECTOR);
+
+	// topic
+	dst_user_create_rel(self, 2, DST_REL_TOPIC);
 }

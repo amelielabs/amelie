@@ -20,8 +20,9 @@ dst_stmt(DstUser* self)
 	auto op = dst_log_add(&self->log);
 
 	// generate relation (table, table_vector, topic)
-	auto rel_id = random_generate(&am_task->random) % DST_REL_MAX;
-	auto rel = &self->rels[rel_id];
+	auto rel_order = random_generate(&am_task->random) % self->rels_count;
+	auto rel = dst_user_rel(self, rel_order);
+	assert(rel);
 	op->rel = rel;
 
 	// generate key
@@ -38,8 +39,8 @@ dst_stmt(DstUser* self)
 		key.value = random_generate(&am_task->random);
 
 		buf_format(&self->log.sql,
-		            "PUBLISH INTO dst_topic [{u64}, {i64}];",
-		            key.key, key.value);
+		            "PUBLISH INTO topic_{u64} [{u64}, {i64}];",
+		            rel->id, key.key, key.value);
 
 		// add cdc event
 		dst_rel_cdc(rel, &key);
@@ -60,8 +61,8 @@ dst_stmt(DstUser* self)
 		{
 			key->value = random_generate(&am_task->random);
 			buf_format(&self->log.sql,
-			            "INSERT INTO dst_table VALUES ({u64}, {i64});",
-			            key->key, key->value);
+			            "INSERT INTO table_{u64} VALUES ({u64}, {i64});",
+			            rel->id, key->key, key->value);
 		} else
 		{
 			// table_vector
@@ -70,7 +71,8 @@ dst_stmt(DstUser* self)
 			key->value_vector[2] = random_generate_fp(&am_task->random, -1.0, 1.0);
 			key->value_vector[3] = random_generate_fp(&am_task->random, -1.0, 1.0);
 			buf_format(&self->log.sql,
-			            "INSERT INTO dst_table_vector VALUES ({u64}, vector [{f}, {f}, {f}, {f}]);",
+			            "INSERT INTO table_vector_{u64} VALUES ({u64}, vector [{f}, {f}, {f}, {f}]);",
+			            rel->id,
 			            key->key,
 			            key->value_vector[0],
 			            key->value_vector[1],
@@ -91,8 +93,8 @@ dst_stmt(DstUser* self)
 		{
 			key->value = random_generate(&am_task->random);
 			buf_format(&self->log.sql,
-			            "INSERT INTO dst_table VALUES ({u64}, null) ON CONFLICT DO UPDATE SET state = {i64};",
-			            key->key, key->value);
+			            "INSERT INTO table_{u64} VALUES ({u64}, null) ON CONFLICT DO UPDATE SET state = {i64};",
+			            rel->id, key->key, key->value);
 		} else
 		{
 			key->value_vector[0] = random_generate_fp(&am_task->random, -1.0, 1.0);
@@ -100,8 +102,9 @@ dst_stmt(DstUser* self)
 			key->value_vector[2] = random_generate_fp(&am_task->random, -1.0, 1.0);
 			key->value_vector[3] = random_generate_fp(&am_task->random, -1.0, 1.0);
 			buf_format(&self->log.sql,
-			           "INSERT INTO dst_table_vector VALUES ({u64}, null) "
+			           "INSERT INTO table_vector_{u64} VALUES ({u64}, null) "
 			           "ON CONFLICT DO UPDATE SET state = vector [{f}, {f}, {f}, {f}];",
+			           rel->id,
 			           key->key,
 			           key->value_vector[0],
 			           key->value_vector[1],
@@ -122,8 +125,8 @@ dst_stmt(DstUser* self)
 		{
 			key->value = random_generate(&am_task->random);
 			buf_format(&self->log.sql,
-			            "UPDATE dst_table SET state = {i64} WHERE id = {i64};",
-			            key->value, key->key);
+			            "UPDATE table_{u64} SET state = {i64} WHERE id = {i64};",
+			            rel->id, key->value, key->key);
 		} else
 		{
 			key->value_vector[0] = random_generate_fp(&am_task->random, -1.0, 1.0);
@@ -131,8 +134,9 @@ dst_stmt(DstUser* self)
 			key->value_vector[2] = random_generate_fp(&am_task->random, -1.0, 1.0);
 			key->value_vector[3] = random_generate_fp(&am_task->random, -1.0, 1.0);
 			buf_format(&self->log.sql,
-			           "UPDATE dst_table_vector "
+			           "UPDATE table_vector_{u64} "
 			           "SET state = vector [{f}, {f}, {f}, {f}] WHERE id = {u64};",
+			           rel->id,
 			           key->value_vector[0],
 			           key->value_vector[1],
 			           key->value_vector[2],
@@ -149,13 +153,13 @@ dst_stmt(DstUser* self)
 	if (rel->type == DST_REL_TABLE)
 	{
 		buf_format(&self->log.sql,
-		           "DELETE FROM dst_table WHERE id = {u64};",
-		            key->key);
+		           "DELETE FROM table_{u64} WHERE id = {u64};",
+		            rel->id, key->key);
 	} else
 	{
 		buf_format(&self->log.sql,
-		           "DELETE FROM dst_table_vector WHERE id = {u64};",
-		           key->key);
+		           "DELETE FROM table_vector_{u64} WHERE id = {u64};",
+		           rel->id, key->key);
 	}
 	dst_rel_cdc(rel, key);
 	dst_rel_delete(rel, key);
@@ -169,11 +173,11 @@ dst_begin(DstUser* self)
 	dst_log_reset(log);
 
 	// save cdc metrics
-	for (auto i = 0; i < DST_REL_MAX; i++)
+	list_foreach(&self->rels)
 	{
-		auto rel = &self->rels[i];
-		log->cdc[i].cdc_sum   = rel->cdc_sum;
-		log->cdc[i].cdc_count = rel->cdc_count;
+		auto rel = list_at(DstRel, link);
+		rel->step_cdc_sum   = rel->cdc_sum;
+		rel->step_cdc_count = rel->cdc_count;
 	}
 }
 
@@ -234,11 +238,11 @@ dst_rollback(DstUser* self)
 	}
 
 	// restore cdc metrics
-	for (auto i = 0; i < DST_REL_MAX; i++)
+	list_foreach(&self->rels)
 	{
-		auto rel = &self->rels[i];
-		rel->cdc_sum = log->cdc[i].cdc_sum;
-		rel->cdc_count = log->cdc[i].cdc_count;
+		auto rel = list_at(DstRel, link);
+		rel->cdc_sum   = rel->step_cdc_sum;
+		rel->cdc_count = rel->step_cdc_count;
 	}
 
 	dst_log_reset(log);

@@ -36,11 +36,6 @@ struct DstLog
 	Buf ops;
 	int ops_count;
 	Buf sql;
-	struct
-	{
-		int64_t cdc_sum;
-		int     cdc_count;
-	} cdc[DST_REL_MAX];
 };
 
 static inline DstLogOp*
@@ -55,7 +50,6 @@ dst_log_init(DstLog* self)
 	self->ops_count = 0;
 	buf_init(&self->ops);
 	buf_init(&self->sql);
-	memset(self->cdc, 0, sizeof(self->cdc));
 }
 
 static inline void
@@ -71,7 +65,6 @@ dst_log_reset(DstLog* self)
 	self->ops_count = 0;
 	buf_reset(&self->ops);
 	buf_reset(&self->sql);
-	memset(self->cdc, 0, sizeof(self->cdc));
 }
 
 static inline bool

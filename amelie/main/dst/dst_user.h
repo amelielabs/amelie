@@ -20,7 +20,8 @@ struct DstUser
 	Client*  client;
 	Endpoint endpoint;
 	DstLog   log;
-	DstRel   rels[DST_REL_MAX];
+	List     rels;
+	int      rels_count;
 	Dst*     dst;
 };
 
@@ -29,3 +30,17 @@ void dst_user_free(DstUser*);
 void dst_user_connect(DstUser*);
 void dst_user_close(DstUser*);
 void dst_user_create(DstUser*);
+
+static inline DstRel*
+dst_user_rel(DstUser* self, int order)
+{
+	auto pos = 0;
+	list_foreach(&self->rels)
+	{
+		auto rel = list_at(DstRel, link);
+		if (pos == order)
+			return rel;
+		pos++;
+	}
+	return NULL;
+}

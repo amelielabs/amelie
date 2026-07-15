@@ -16,13 +16,12 @@
 #include "overflow_fp.h"
 
 static void
-dst_validate_table(DstUser* self)
+dst_validate_table(DstUser* self, DstRel* rel)
 {
-	auto rel = &self->rels[DST_REL_TABLE];
 	auto client = self->client;
 
 	// table
-	dst_execute(self->dst, client, "SELECT * FROM dst_table");
+	dst_execute(self->dst, client, "SELECT * FROM table_{u64}", rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);
 	//info("{str}", &content);
@@ -62,28 +61,89 @@ dst_validate_table(DstUser* self)
 		auto ref = dst_rel_get(rel, key);
 		if (! ref)
 		{
-			error("dst_table: key {u64} is missing", key);
+			error("table_{u64}: key {u64} is missing",
+			      rel->id, key);
 		} else
 		{
 			if (ref->value != value)
-				error("dst_table: key {u64} value expected '{u64}' got '{u64}'",
-				      ref->key, ref->value, value);
+				error("table_{u64}: key {u64} value expected '{u64}' got '{u64}'",
+				      rel->id, ref->key, ref->value, value);
 		}
 		count++;
 	}
 	if (count != rel->state.count)
-		error("dst_table: keys count expected '{d}' got '{d}'",
-		      count, rel->state.count);
+		error("table_{u64}: keys count expected '{d}' got '{d}'",
+		      rel->id, count, rel->state.count);
 }
 
-static void
-dst_validate_table_vector(DstUser* self)
+static uint64_t
+dst_validate_table_sub(DstUser* self, DstRel* rel)
 {
-	auto rel = &self->rels[DST_REL_TABLE_VECTOR];
 	auto client = self->client;
 
 	// table
-	dst_execute(self->dst, client, "SELECT * FROM dst_table_vector");
+	dst_execute(self->dst, client,
+	            "SELECT count(*), sum(row.id::int), max(lsn) FROM table_sub_{u64}",
+	            rel->id);
+	Str content;
+	buf_str(&client->reply.content, &content);
+	//info("{str}", &content);
+
+	// parse json result
+	Json json;
+	json_init(&json);
+	defer(json_free, &json);
+	json_parse(&json, &content, NULL);
+
+	uint8_t* pos     = json.buf->start;
+	uint8_t* columns = NULL;
+	uint8_t* rows    = NULL;
+	Decode obj[] =
+	{
+		{ DECODE_ARRAY, "columns", &columns },
+		{ DECODE_ARRAY, "rows",    &rows    },
+		{ 0,             NULL,      NULL    },
+	};
+	decode_obj(obj, "result", &pos);
+
+	// [[count, sum, lsn]]
+	unpack_array(&rows);
+	unpack_array(&rows);
+	int64_t count;
+	int64_t sum   = 0;
+	int64_t lsn   = 0;
+	unpack_int(&rows, &count);
+	if (count == 0)
+	{
+		unpack_null(&rows);
+		unpack_null(&rows);
+	} else
+	{
+		unpack_int(&rows, &sum);
+		unpack_int(&rows, &lsn);
+	}
+	unpack_array_end(&rows);
+	unpack_array_end(&rows);
+
+	// validate
+	if (count != rel->cdc_count)
+		error("table_sub_{u64}: count mismatch expected {i64} got {i64}",
+		      rel->id, count, rel->cdc_count);
+
+	if (sum != rel->cdc_sum)
+		error("table_sub_{u64}: keys sum mismatch",
+		      rel->id);
+
+	return lsn;
+}
+
+static void
+dst_validate_table_vector(DstUser* self, DstRel* rel)
+{
+	auto client = self->client;
+
+	// table
+	dst_execute(self->dst, client, "SELECT * FROM table_vector_{u64}", rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);
 	//info("{str}", &content);
@@ -129,92 +189,33 @@ dst_validate_table_vector(DstUser* self)
 		auto ref = dst_rel_get(rel, key);
 		if (! ref)
 		{
-			error("dst_table_vector: key {u64} is missing", key);
+			error("table_vector_{u64}: key {u64} is missing",
+			      rel->id, key);
 		} else
 		{
 			if (!float_compare(ref->value_vector[0], vector[0], 1e-6f) ||
 			    !float_compare(ref->value_vector[1], vector[1], 1e-6f) ||
 			    !float_compare(ref->value_vector[2], vector[2], 1e-6f) ||
 			    !float_compare(ref->value_vector[3], vector[3], 1e-6f))
-				error("dst_table_vector: key {u64} vector does not match",
-				      ref->key);
+				error("table_vector_{u64}: key {u64} vector does not match",
+				      rel->id, ref->key);
 		}
 		count++;
 	}
 	if (count != rel->state.count)
-		error("dst_table_vector: keys count expected '{d}' got {d}'",
-		      count, rel->state.count);
+		error("table_vector_{u64}: keys count expected '{d}' got {d}'",
+		      rel->id, count, rel->state.count);
 }
 
 static uint64_t
-dst_validate_sub_table(DstUser* self)
+dst_validate_topic_sub(DstUser* self, DstRel* rel)
 {
-	auto rel = &self->rels[DST_REL_TABLE];
-	auto client = self->client;
-
-	// table
-	dst_execute(self->dst, client,
-	            "SELECT count(*), sum(row.id::int), max(lsn) FROM dst_sub_table");
-	Str content;
-	buf_str(&client->reply.content, &content);
-	//info("{str}", &content);
-
-	// parse json result
-	Json json;
-	json_init(&json);
-	defer(json_free, &json);
-	json_parse(&json, &content, NULL);
-
-	uint8_t* pos     = json.buf->start;
-	uint8_t* columns = NULL;
-	uint8_t* rows    = NULL;
-	Decode obj[] =
-	{
-		{ DECODE_ARRAY, "columns", &columns },
-		{ DECODE_ARRAY, "rows",    &rows    },
-		{ 0,             NULL,      NULL    },
-	};
-	decode_obj(obj, "result", &pos);
-
-	// [[count, sum, lsn]]
-	unpack_array(&rows);
-	unpack_array(&rows);
-	int64_t count;
-	int64_t sum   = 0;
-	int64_t lsn   = 0;
-	unpack_int(&rows, &count);
-	if (count == 0)
-	{
-		unpack_null(&rows);
-		unpack_null(&rows);
-	} else
-	{
-		unpack_int(&rows, &sum);
-		unpack_int(&rows, &lsn);
-	}
-	unpack_array_end(&rows);
-	unpack_array_end(&rows);
-
-	// validate
-	if (count != rel->cdc_count)
-		error("dst_sub_table: count mismatch expected {i64} got {i64}",
-		      count, rel->cdc_count);
-
-	if (sum != rel->cdc_sum)
-		error("dst_sub_table: keys sum mismatch");
-
-	return lsn;
-}
-
-static uint64_t
-dst_validate_sub_topic(DstUser* self)
-{
-	auto rel = &self->rels[DST_REL_TOPIC];
 	auto client = self->client;
 
 	// topic
 	dst_execute(self->dst, client,
-	            "SELECT count(*), sum(row[0]::int), max(lsn) FROM dst_sub_topic");
+	            "SELECT count(*), sum(row[0]::int), max(lsn) FROM topic_sub_{u64}",
+	            rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);
 	//info("{str}", &content);
@@ -257,11 +258,12 @@ dst_validate_sub_topic(DstUser* self)
 
 	// validate
 	if (count != rel->cdc_count)
-		error("dst_sub_topic: count mismatch expected {i64} got {i64}",
-		      count, rel->cdc_count);
+		error("topic_sub_{u64}: count mismatch expected {i64} got {i64}",
+		      rel->id, count, rel->cdc_count);
 
 	if (sum != rel->cdc_sum)
-		error("dst_sub_topic: keys sum mismatch");
+		error("topic_sub_{u64}: keys sum mismatch",
+		      rel->id);
 
 	return lsn;
 }
@@ -269,48 +271,52 @@ dst_validate_sub_topic(DstUser* self)
 void
 dst_validate_user(DstUser* self)
 {
-	// dst_table
-	dst_validate_table(self);
-
-	// dst_table_vector
-	dst_validate_table_vector(self);
-
-	// dst_sub_table
-	auto ack_table = dst_validate_sub_table(self);
-
-	// todo: sub table_vector
-
-	// dst_sub_topic
-	auto ack_topic = dst_validate_sub_topic(self);
-
-	// ack dst_sub_table
-	if (ack_table)
+	list_foreach(&self->rels)
 	{
-		dst_execute(self->dst, self->client,
-		            "ACKNOWLEDGE dst_sub_table TO {u64}, 10",
-		            ack_table);
-		auto rel = &self->rels[DST_REL_TABLE];
-		rel->cdc_sum   = 0;
-		rel->cdc_count = 0;
-	}
+		auto rel = list_at(DstRel, link);
+		switch (rel->type) {
+		case DST_REL_TABLE:
+		{
+			// table
+			dst_validate_table(self, rel);
 
-	// ack dst_sub_table_vector
-	if (1)
-	{
-		auto rel = &self->rels[DST_REL_TABLE_VECTOR];
-		rel->cdc_sum   = 0;
-		rel->cdc_count = 0;
-	}
+			// subscription
+			auto ack = dst_validate_table_sub(self, rel);
+			if (ack)
+			{
+				dst_execute(self->dst, self->client,
+				            "ACKNOWLEDGE table_sub_{u64} TO {u64}, 10",
+				             rel->id, ack);
+				rel->cdc_sum   = 0;
+				rel->cdc_count = 0;
+			}
+			break;
+		}
+		case DST_REL_TABLE_VECTOR:
+		{
+			// table_vector
+			dst_validate_table_vector(self, rel);
 
-	// ack dst_sub_topic
-	if (ack_topic)
-	{
-		dst_execute(self->dst, self->client,
-		            "ACKNOWLEDGE dst_sub_topic TO {u64}, 10",
-		            ack_topic);
-		auto rel = &self->rels[DST_REL_TOPIC];
-		rel->cdc_sum   = 0;
-		rel->cdc_count = 0;
+			// todo: subscription
+			rel->cdc_sum   = 0;
+			rel->cdc_count = 0;
+			break;
+		}
+		case DST_REL_TOPIC:
+		{
+			// topic (subscription)
+			auto ack = dst_validate_topic_sub(self, rel);
+			if (ack)
+			{
+				dst_execute(self->dst, self->client,
+				            "ACKNOWLEDGE topic_sub_{u64} TO {u64}, 10",
+				             rel->id, ack);
+				rel->cdc_sum   = 0;
+				rel->cdc_count = 0;
+			}
+			break;
+		}
+		}
 	}
 }
 

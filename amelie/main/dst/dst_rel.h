@@ -17,25 +17,36 @@ enum
 {
 	DST_REL_TABLE,
 	DST_REL_TABLE_VECTOR,
-	DST_REL_TOPIC,
-	DST_REL_MAX
+	DST_REL_TOPIC
 };
 
 struct DstRel
 {
+	uint64_t  id;
 	int       type;
 	Hashtable state;
 
 	// cdc
 	int64_t   cdc_sum;
 	int       cdc_count;
+
+	// cdc (step)
+	int64_t   step_cdc_sum;
+	int       step_cdc_count;
+
+	List      link;
 };
 
-static inline void
-dst_rel_init(DstRel* self, int type)
+static inline DstRel*
+dst_rel_allocate(uint64_t id, int type, int keys)
 {
+	auto self = (DstRel*)am_malloc(sizeof(DstRel));
 	memset(self, 0, sizeof(*self));
+	self->id   = id;
 	self->type = type;
+	hashtable_create(&self->state, keys * 2);
+	list_init(&self->link);
+	return self;
 }
 
 static inline void
@@ -50,6 +61,7 @@ dst_rel_free(DstRel* self)
 		dst_key_free(key);
 	}
 	hashtable_free(&self->state);
+	am_free(self);
 }
 
 hot static inline bool
@@ -87,4 +99,11 @@ dst_rel_cdc(DstRel* self, DstKey* key)
 {
 	self->cdc_sum += key->key;
 	self->cdc_count++;
+}
+
+static inline void
+dst_rel_cdc_save(DstRel* self)
+{
+	self->step_cdc_sum   = self->cdc_sum;
+	self->step_cdc_count = self->cdc_count;
 }
