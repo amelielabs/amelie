@@ -308,3 +308,65 @@ dst_step_ddl(DstUser* self)
 		dst_user_drop(self, rel);
 	}
 }
+
+void
+dst_step_ddl_user(DstUser* self)
+{
+	auto dst = self->dst;
+	info("[{u64}] DDL USER", dst->step);
+
+	// connect (superuser)
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{str}/env", opt_string_of(&dst->opt_dir));
+
+	Endpoint endpoint;
+	endpoint_init(&endpoint);
+	defer(endpoint_free, &endpoint);
+	opt_string_set_cstr(&endpoint.path, path);
+
+	auto client = client_allocate();
+	defer(client_free, client);
+	client_set_endpoint(client, &endpoint);
+	client_connect(client);
+
+	// create or drop
+	auto create = 0;
+	if (dst->users_count == 1)
+		create = 1;
+	else
+	if (dst->users_count == (int)dst->opt_users.integer)
+		create = 0;
+	else
+		create = random_generate(&am_task->random) % 2;
+
+	if (create)
+	{
+		// create new user
+		auto user = dst_user_allocate(dst, dst->users_seq++);
+		list_append(&dst->users, &user->link);
+		dst->users_count++;
+
+		dst_execute(dst, client, "CREATE USER user_{u64}", user->id);
+		dst_user_connect(user);
+
+		// table
+		dst_user_create(user, DST_REL_TABLE);
+
+		// table vector
+		dst_user_create(user, DST_REL_TABLE_VECTOR);
+
+		// topic
+		dst_user_create(user, DST_REL_TOPIC);
+	} else
+	{
+		// drop any user
+		auto user_order = random_generate(&am_task->random) % dst->users_count;
+		auto user = dst_user(dst, user_order);
+		dst_execute(dst, client, "DROP USER user_{u64} CASCADE",
+		            user->id);
+
+		list_unlink(&user->link);
+		dst->users_count--;
+		dst_user_free(user);
+	}
+}

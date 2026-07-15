@@ -30,8 +30,9 @@ void
 dst_init(Dst* self)
 {
 	self->step        = 0;
-	self->users       = NULL;
+	self->users_seq   = 0;
 	self->users_count = 0;
+	list_init(&self->users);
 	runtime_init(&self->runtime);
 	opts_init(&self->opts);
 
@@ -47,6 +48,7 @@ dst_init(Dst* self)
 		{ "restart",    OPT_INT,    OPT_C|OPT_Z, &self->opt_restart,    NULL,      3000  },
 		{ "checkpoint", OPT_INT,    OPT_C|OPT_Z, &self->opt_checkpoint, NULL,      9000  },
 		{ "ddl",        OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl,        NULL,      6000  },
+		{ "ddl_user",   OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl_user,   NULL,      25000 },
 		{ "bp",         OPT_INT,    OPT_C,       &self->opt_bp,         NULL,      -1    },
 		{  NULL,        0,          0,            NULL,                 NULL,      0     }
 	};
@@ -56,11 +58,10 @@ dst_init(Dst* self)
 void
 dst_free(Dst* self)
 {
-	if (self->users)
+	list_foreach_safe(&self->users)
 	{
-		for (auto i = 0; i < self->users_count; i++)
-			dst_user_free(&self->users[i]);
-		am_free(self->users);
+		auto user = list_at(DstUser, link);
+		dst_user_free(user);
 	}
 	opts_free(&self->opts);
 	runtime_free(&self->runtime);
@@ -90,11 +91,13 @@ dst_configure(Dst* self)
 	format(path, sizeof(path), "{str}/log", dir);
 	logger_open(logger, path);
 
-	// prepare users
-	self->users_count = (int)self->opt_users.integer;
-	self->users = am_malloc(sizeof(DstUser) * self->users_count);
-	for (auto i = 0; i < self->users_count; i++)
-		dst_user_init(&self->users[i], self, i);
+	// create users
+	for (auto i = 0; i < 3; i++)
+	{
+		auto user = dst_user_allocate(self, self->users_seq++);
+		list_append(&self->users, &user->link);
+		self->users_count++;
+	}
 }
 
 static void
@@ -128,9 +131,9 @@ dst_open(Dst* self)
 static void
 dst_close(Dst* self)
 {
-	for (auto i = 0; i < self->users_count; i++)
+	list_foreach(&self->users)
 	{
-		auto user = &self->users[i];
+		auto user = list_at(DstUser, link);
 		dst_user_close(user);
 	}
 	runtime_stop(&self->runtime);
@@ -147,9 +150,9 @@ dst_restart(Dst* self)
 	dst_open(self);
 
 	// reconnect
-	for (auto i = 0; i < self->users_count; i++)
+	list_foreach(&self->users)
 	{
-		auto user = &self->users[i];
+		auto user = list_at(DstUser, link);
 		dst_user_connect(user);
 	}
 }
@@ -173,11 +176,11 @@ dst_execute_cmd(Dst* self, Client* client, bool can_fail, Str* cmd)
 
 	auto reply = &client->reply;
 	if (buf_empty(&reply->content))
-		error("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string,
-		      &reply->options[HTTP_MSG]);
+		error("[{u64}] ({str}) {str}", self->step,
+		      &client->endpoint->user.string, &reply->options[HTTP_MSG]);
 
-	error("[{u64}] ({str}) {buf}", &client->endpoint->user.string,
-	      self->step, &reply->content);
+	error("[{u64}] ({str}) {buf}", self->step,
+	      &client->endpoint->user.string, &reply->content);
 
 	return false;
 }
@@ -222,10 +225,10 @@ dst_bootstrap(Dst* self)
 	client_connect(client);
 
 	// create users and relations
-	for (auto i = 0; i < self->users_count; i++)
+	list_foreach(&self->users)
 	{
-		auto user = &self->users[i];
-		dst_execute(self, client, "CREATE USER user_{u64}", i);
+		auto user = list_at(DstUser, link);
+		dst_execute(self, client, "CREATE USER user_{u64}", user->id);
 		dst_user_connect(user);
 
 		// table
@@ -288,16 +291,20 @@ dst_run(Dst* self)
 	auto restart    = (int)opt_int_of(&self->opt_restart);
 	auto checkpoint = (int)opt_int_of(&self->opt_checkpoint);
 	auto ddl        = (int)opt_int_of(&self->opt_ddl);
+	auto ddl_user   = (int)opt_int_of(&self->opt_ddl_user);
 	auto steps      = (int)opt_int_of(&self->opt_steps);
 	while (self->step < steps)
 	{
-		auto user_id = random_generate(&am_task->random) % self->users_count;
-		auto user = &self->users[user_id];
+		auto user_order = random_generate(&am_task->random) % self->users_count;
+		auto user = dst_user(self, user_order);
 		dst_step(user);
 
 		if (self->step > 0)
 		{
 			// ddl
+			if (self->step % ddl_user == 0)
+				dst_step_ddl_user(user);
+			else
 			if (self->step % ddl == 0)
 				dst_step_ddl(user);
 

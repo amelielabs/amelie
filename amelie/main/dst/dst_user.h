@@ -16,7 +16,7 @@ typedef struct Dst     Dst;
 
 struct DstUser
 {
-	int      id;
+	uint64_t id;
 	Client*  client;
 	Endpoint endpoint;
 	DstLog   log;
@@ -24,9 +24,11 @@ struct DstUser
 	List     rels;
 	int      rels_count;
 	Dst*     dst;
+	List     link;
 };
 
-void dst_user_init(DstUser*, Dst*, int);
+DstUser*
+dst_user_allocate(Dst*, uint64_t);
 void dst_user_free(DstUser*);
 void dst_user_connect(DstUser*);
 void dst_user_close(DstUser*);

@@ -323,8 +323,11 @@ dst_validate_user(DstUser* self)
 void
 dst_validate(Dst* self)
 {
-	for (auto i = 0; i < self->users_count; i++)
-		dst_validate_user(&self->users[i]);
+	list_foreach(&self->users)
+	{
+		auto user = list_at(DstUser, link);
+		dst_validate_user(user);
+	}
 
 	info("[{u64}] OK", self->step);
 }

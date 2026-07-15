@@ -15,7 +15,8 @@ typedef struct Dst Dst;
 
 struct Dst
 {
-	DstUser* users;
+	uint64_t users_seq;
+	List     users;
 	int      users_count;
 	int64_t  step;
 	Opt      opt_dir;
@@ -28,6 +29,7 @@ struct Dst
 	Opt      opt_restart;
 	Opt      opt_checkpoint;
 	Opt      opt_ddl;
+	Opt      opt_ddl_user;
 	Opt      opt_bp;
 	Opts     opts;
 	Runtime  runtime;
@@ -38,3 +40,17 @@ void dst_free(Dst*);
 void dst_execute(Dst*, Client*, char*, ...);
 bool dst_execute_log(DstUser*);
 void dst_run(Dst*);
+
+static inline DstUser*
+dst_user(Dst* self, int order)
+{
+	auto pos = 0;
+	list_foreach(&self->users)
+	{
+		auto user = list_at(DstUser, link);
+		if (pos == order)
+			return user;
+		pos++;
+	}
+	return NULL;
+}

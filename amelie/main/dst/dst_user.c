@@ -14,9 +14,10 @@
 #include <amelie_main.h>
 #include <amelie_main_dst.h>
 
-void
-dst_user_init(DstUser* self, Dst* dst, int id)
+DstUser*
+dst_user_allocate(Dst* dst, uint64_t id)
 {
+	auto self = (DstUser*)am_malloc(sizeof(DstUser));
 	self->id         = id;
 	self->client     = NULL;
 	self->dst        = dst;
@@ -25,6 +26,8 @@ dst_user_init(DstUser* self, Dst* dst, int id)
 	endpoint_init(&self->endpoint);
 	dst_log_init(&self->log);
 	list_init(&self->rels);
+	list_init(&self->link);
+	return self;
 }
 
 void
@@ -39,6 +42,7 @@ dst_user_free(DstUser* self)
 		auto rel = list_at(DstRel, link);
 		dst_rel_free(rel);
 	}
+	am_free(self);
 }
 
 void
