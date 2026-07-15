@@ -76,67 +76,6 @@ dst_validate_table(DstUser* self, DstRel* rel)
 		      rel->id, count, rel->state.count);
 }
 
-static uint64_t
-dst_validate_table_sub(DstUser* self, DstRel* rel)
-{
-	auto client = self->client;
-
-	// table
-	dst_execute(self->dst, client,
-	            "SELECT count(*), sum(row.id::int), max(lsn) FROM table_sub_{u64}",
-	            rel->id);
-	Str content;
-	buf_str(&client->reply.content, &content);
-	//info("{str}", &content);
-
-	// parse json result
-	Json json;
-	json_init(&json);
-	defer(json_free, &json);
-	json_parse(&json, &content, NULL);
-
-	uint8_t* pos     = json.buf->start;
-	uint8_t* columns = NULL;
-	uint8_t* rows    = NULL;
-	Decode obj[] =
-	{
-		{ DECODE_ARRAY, "columns", &columns },
-		{ DECODE_ARRAY, "rows",    &rows    },
-		{ 0,             NULL,      NULL    },
-	};
-	decode_obj(obj, "result", &pos);
-
-	// [[count, sum, lsn]]
-	unpack_array(&rows);
-	unpack_array(&rows);
-	int64_t count;
-	int64_t sum   = 0;
-	int64_t lsn   = 0;
-	unpack_int(&rows, &count);
-	if (count == 0)
-	{
-		unpack_null(&rows);
-		unpack_null(&rows);
-	} else
-	{
-		unpack_int(&rows, &sum);
-		unpack_int(&rows, &lsn);
-	}
-	unpack_array_end(&rows);
-	unpack_array_end(&rows);
-
-	// validate
-	if (count != rel->cdc_count)
-		error("table_sub_{u64}: count mismatch expected {i64} got {i64}",
-		      rel->id, count, rel->cdc_count);
-
-	if (sum != rel->cdc_sum)
-		error("table_sub_{u64}: keys sum mismatch",
-		      rel->id);
-
-	return lsn;
-}
-
 static void
 dst_validate_table_vector(DstUser* self, DstRel* rel)
 {
@@ -208,14 +147,23 @@ dst_validate_table_vector(DstUser* self, DstRel* rel)
 }
 
 static uint64_t
-dst_validate_topic_sub(DstUser* self, DstRel* rel)
+dst_validate_sub(DstUser* self, DstRel* rel)
 {
 	auto client = self->client;
 
-	// topic
-	dst_execute(self->dst, client,
-	            "SELECT count(*), sum(row[0]::int), max(lsn) FROM topic_sub_{u64}",
-	            rel->id);
+	// sub
+	if (rel->parent->type == DST_REL_TABLE)
+		dst_execute(self->dst, client,
+		            "SELECT count(*), sum(row.id::int), max(lsn) FROM sub_{u64}_{u64}",
+		            rel->parent->id, rel->id);
+	else
+	if (rel->parent->type == DST_REL_TOPIC)
+		dst_execute(self->dst, client,
+		            "SELECT count(*), sum(row[0]::int), max(lsn) FROM sub_{u64}_{u64}",
+		            rel->parent->id, rel->id);
+	else
+		abort();
+
 	Str content;
 	buf_str(&client->reply.content, &content);
 	//info("{str}", &content);
@@ -258,12 +206,12 @@ dst_validate_topic_sub(DstUser* self, DstRel* rel)
 
 	// validate
 	if (count != rel->cdc_count)
-		error("topic_sub_{u64}: count mismatch expected {i64} got {i64}",
-		      rel->id, count, rel->cdc_count);
+		error("sub_{u64}_{u64}: count mismatch expected {i64} got {i64}",
+		      rel->parent->id, rel->id, count, rel->cdc_count);
 
 	if (sum != rel->cdc_sum)
-		error("topic_sub_{u64}: keys sum mismatch",
-		      rel->id);
+		error("sub_{u64}_{u64}: keys sum mismatch",
+		      rel->parent->id, rel->id);
 
 	return lsn;
 }
@@ -279,38 +227,28 @@ dst_validate_user(DstUser* self)
 		{
 			// table
 			dst_validate_table(self, rel);
-
-			// subscription
-			auto ack = dst_validate_table_sub(self, rel);
-			if (ack)
-			{
-				dst_execute(self->dst, self->client,
-				            "ACKNOWLEDGE table_sub_{u64} TO {u64}, 10",
-				             rel->id, ack);
-				rel->cdc_sum   = 0;
-				rel->cdc_count = 0;
-			}
 			break;
 		}
 		case DST_REL_TABLE_VECTOR:
 		{
 			// table_vector
 			dst_validate_table_vector(self, rel);
-
-			// todo: subscription
-			rel->cdc_sum   = 0;
-			rel->cdc_count = 0;
 			break;
 		}
 		case DST_REL_TOPIC:
 		{
-			// topic (subscription)
-			auto ack = dst_validate_topic_sub(self, rel);
+			// nothing
+			break;
+		}
+		case DST_REL_SUBSCRIPTION:
+		{
+			// subscription
+			auto ack = dst_validate_sub(self, rel);
 			if (ack)
 			{
 				dst_execute(self->dst, self->client,
-				            "ACKNOWLEDGE topic_sub_{u64} TO {u64}, 10",
-				             rel->id, ack);
+				            "ACKNOWLEDGE sub_{u64}_{u64} TO {u64}, 10",
+				             rel->parent->id, rel->id, ack);
 				rel->cdc_sum   = 0;
 				rel->cdc_count = 0;
 			}

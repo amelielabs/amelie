@@ -17,34 +17,48 @@ enum
 {
 	DST_REL_TABLE,
 	DST_REL_TABLE_VECTOR,
-	DST_REL_TOPIC
+	DST_REL_TOPIC,
+	DST_REL_SUBSCRIPTION,
+	DST_REL_MAX
 };
 
 struct DstRel
 {
 	uint64_t  id;
 	int       type;
+	DstRel*   parent;
+	List      subs;
+	int       subs_count;
 	Hashtable state;
 
-	// cdc
-	int64_t   cdc_sum;
-	int       cdc_count;
+	// subscription state
+	union
+	{
+		struct
+		{
+			int64_t cdc_sum;
+			int     cdc_count;
+			int64_t step_cdc_sum;
+			int     step_cdc_count;
+		};
+	};
 
-	// cdc (step)
-	int64_t   step_cdc_sum;
-	int       step_cdc_count;
-
+	List      link_parent;
 	List      link;
 };
 
 static inline DstRel*
-dst_rel_allocate(uint64_t id, int type, int keys)
+dst_rel_allocate(DstRel* parent, uint64_t id, int type, int keys)
 {
 	auto self = (DstRel*)am_malloc(sizeof(DstRel));
 	memset(self, 0, sizeof(*self));
-	self->id   = id;
-	self->type = type;
+	self->id         = id;
+	self->type       = type;
+	self->parent     = parent;
+	self->subs_count = 0;
+	list_init(&self->subs);
 	hashtable_create(&self->state, keys * 2);
+	list_init(&self->link_parent);
 	list_init(&self->link);
 	return self;
 }
@@ -97,13 +111,10 @@ dst_rel_delete(DstRel* self, DstKey* key)
 static inline void
 dst_rel_cdc(DstRel* self, DstKey* key)
 {
-	self->cdc_sum += key->key;
-	self->cdc_count++;
-}
-
-static inline void
-dst_rel_cdc_save(DstRel* self)
-{
-	self->step_cdc_sum   = self->cdc_sum;
-	self->step_cdc_count = self->cdc_count;
+	list_foreach(&self->subs)
+	{
+		auto sub = list_at(DstRel, link_parent);
+		sub->cdc_sum += key->key;
+		sub->cdc_count++;
+	}
 }

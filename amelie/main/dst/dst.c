@@ -160,7 +160,7 @@ dst_restart(Dst* self)
 static bool
 dst_execute_cmd(Dst* self, Client* client, bool can_fail, Str* cmd)
 {
-	//info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
+	// info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
 
 	// breakpoint
 	if (self->step == (int)self->opt_bp.integer)
@@ -232,13 +232,19 @@ dst_bootstrap(Dst* self)
 		dst_user_connect(user);
 
 		// table
-		dst_user_create(user, DST_REL_TABLE);
+		auto rel = dst_user_create(user, DST_REL_TABLE);
+
+		// table subscription
+		dst_user_create_for(user, rel, DST_REL_SUBSCRIPTION);
 
 		// table vector
 		dst_user_create(user, DST_REL_TABLE_VECTOR);
 
 		// topic
-		dst_user_create(user, DST_REL_TOPIC);
+		rel = dst_user_create(user, DST_REL_TOPIC);
+
+		// topic subscription
+		dst_user_create_for(user, rel, DST_REL_SUBSCRIPTION);
 	}
 }
 
@@ -297,6 +303,9 @@ dst_run(Dst* self)
 	{
 		auto user_order = random_generate(&am_task->random) % self->users_count;
 		auto user = dst_user(self, user_order);
+		if (! user->rels_count)
+			dst_step_ddl(user);
+
 		dst_step(user);
 
 		if (self->step > 0)

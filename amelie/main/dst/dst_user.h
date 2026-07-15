@@ -27,13 +27,13 @@ struct DstUser
 	List     link;
 };
 
-DstUser*
-dst_user_allocate(Dst*, uint64_t);
-void dst_user_free(DstUser*);
-void dst_user_connect(DstUser*);
-void dst_user_close(DstUser*);
-void dst_user_create(DstUser*, int);
-void dst_user_drop(DstUser*, DstRel*);
+DstUser* dst_user_allocate(Dst*, uint64_t);
+void     dst_user_free(DstUser*);
+void     dst_user_connect(DstUser*);
+void     dst_user_close(DstUser*);
+DstRel*  dst_user_create(DstUser*, int);
+DstRel*  dst_user_create_for(DstUser*, DstRel*, int);
+void     dst_user_drop(DstUser*, DstRel*);
 
 static inline DstRel*
 dst_user_rel(DstUser* self, int order)

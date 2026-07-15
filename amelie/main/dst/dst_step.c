@@ -20,9 +20,15 @@ dst_stmt(DstUser* self)
 	auto op = dst_log_add(&self->log);
 
 	// generate relation (table, table_vector, topic)
-	auto rel_order = random_generate(&am_task->random) % self->rels_count;
-	auto rel = dst_user_rel(self, rel_order);
-	assert(rel);
+	DstRel* rel;
+	for (;;)
+	{
+		auto rel_order = random_generate(&am_task->random) % self->rels_count;
+		rel = dst_user_rel(self, rel_order);
+		assert(rel);
+		if (rel->type != DST_REL_SUBSCRIPTION)
+			break;
+	}
 	op->rel = rel;
 
 	// generate key
@@ -39,8 +45,8 @@ dst_stmt(DstUser* self)
 		key.value = random_generate(&am_task->random);
 
 		buf_format(&self->log.sql,
-		            "PUBLISH INTO topic_{u64} [{u64}, {i64}];",
-		            rel->id, key.key, key.value);
+		           "PUBLISH INTO topic_{u64} [{u64}, {i64}];",
+		           rel->id, key.key, key.value);
 
 		// add cdc event
 		dst_rel_cdc(rel, &key);
@@ -176,6 +182,8 @@ dst_begin(DstUser* self)
 	list_foreach(&self->rels)
 	{
 		auto rel = list_at(DstRel, link);
+		if (rel->type != DST_REL_SUBSCRIPTION)
+			continue;
 		rel->step_cdc_sum   = rel->cdc_sum;
 		rel->step_cdc_count = rel->cdc_count;
 	}
@@ -241,6 +249,8 @@ dst_rollback(DstUser* self)
 	list_foreach(&self->rels)
 	{
 		auto rel = list_at(DstRel, link);
+		if (rel->type != DST_REL_SUBSCRIPTION)
+			continue;
 		rel->cdc_sum   = rel->step_cdc_sum;
 		rel->cdc_count = rel->step_cdc_count;
 	}
@@ -249,45 +259,12 @@ dst_rollback(DstUser* self)
 }
 
 void
-dst_step(DstUser* self)
-{
-	dst_begin(self);
-
-	// generate single or multi-stmts
-	int stmts = random_generate(&am_task->random) % 9 + 1;
-	auto error_inject = (random_generate(&am_task->random) % 100) < 10;
-	if (stmts == 1)
-	{
-		dst_stmt(self);
-		if (error_inject)
-			buf_format(&self->log.sql, "select error('injected');");
-	} else
-	{
-		auto error_at = -1;
-		if (error_inject)
-			error_at = random_generate(&am_task->random) % stmts;
-		buf_format(&self->log.sql, "BEGIN;");
-		for (auto i = 0; i < stmts; i++)
-		{
-			dst_stmt(self);
-			if (i == error_at)
-				buf_format(&self->log.sql, "select error('injected');");
-		}
-		buf_format(&self->log.sql, "END;");
-	}
-
-	// execute (rollback state on failure)
-	if (! dst_execute_log(self))
-		dst_rollback(self);
-}
-
-void
 dst_step_ddl(DstUser* self)
 {
 	info("[{u64}] DDL", self->dst->step);
 
 	auto create = 0;
-	if (self->rels_count == 1)
+	if (self->rels_count == 0)
 		create = 1;
 	else
 	if (self->rels_count == (int)self->dst->opt_rels.integer)
@@ -298,8 +275,53 @@ dst_step_ddl(DstUser* self)
 	if (create)
 	{
 		// create any relation
-		auto type = random_generate(&am_task->random) % (DST_REL_TOPIC + 1);
-		dst_user_create(self, type);
+		auto type = random_generate(&am_task->random) % DST_REL_MAX;
+
+		// get total number of usable relations for subscription
+		auto sub_pos = 0;
+		if (type == DST_REL_SUBSCRIPTION)
+		{
+			list_foreach(&self->rels)
+			{
+				auto rel = list_at(DstRel, link);
+				if (rel->type == DST_REL_TABLE ||
+				    rel->type == DST_REL_TOPIC)
+					sub_pos++;
+			}
+			if (! sub_pos)
+				type = DST_REL_TABLE;
+		}
+
+		if (type == DST_REL_SUBSCRIPTION)
+		{
+			// randomly choose relation order (caped by total count)
+			sub_pos = random_generate(&am_task->random) % sub_pos;
+
+			DstRel* parent = NULL;
+			auto order = 0;
+			list_foreach(&self->rels)
+			{
+				auto rel = list_at(DstRel, link);
+				if (rel->type == DST_REL_TABLE ||
+				    rel->type == DST_REL_TOPIC)
+				{
+					if (order != sub_pos)
+					{
+						order++;
+						continue;
+					}
+					parent = rel;
+					break;
+				}
+			}
+
+			assert(parent);
+			dst_user_create_for(self, parent, type);
+		} else
+		{
+			dst_user_create(self, type);
+		}
+
 	} else
 	{
 		// drop any relation
@@ -369,4 +391,37 @@ dst_step_ddl_user(DstUser* self)
 		dst->users_count--;
 		dst_user_free(user);
 	}
+}
+
+void
+dst_step(DstUser* self)
+{
+	dst_begin(self);
+
+	// generate single or multi-stmts
+	int stmts = random_generate(&am_task->random) % 9 + 1;
+	auto error_inject = (random_generate(&am_task->random) % 100) < 10;
+	if (stmts == 1)
+	{
+		dst_stmt(self);
+		if (error_inject)
+			buf_format(&self->log.sql, "SELECT error('injected');");
+	} else
+	{
+		auto error_at = -1;
+		if (error_inject)
+			error_at = random_generate(&am_task->random) % stmts;
+		buf_format(&self->log.sql, "BEGIN;");
+		for (auto i = 0; i < stmts; i++)
+		{
+			dst_stmt(self);
+			if (i == error_at)
+				buf_format(&self->log.sql, "SELECT error('injected');");
+		}
+		buf_format(&self->log.sql, "END;");
+	}
+
+	// execute (rollback state on failure)
+	if (! dst_execute_log(self))
+		dst_rollback(self);
 }

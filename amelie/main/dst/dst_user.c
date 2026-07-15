@@ -75,14 +75,14 @@ dst_user_close(DstUser* self)
 	self->client = NULL;
 }
 
-void
+DstRel*
 dst_user_create(DstUser* self, int type)
 {
 	// set next id
 	auto id = self->rels_seq++;
 
 	// create object
-	auto rel = dst_rel_allocate(id, type, self->dst->opt_keys.integer);
+	auto rel = dst_rel_allocate(NULL, id, type, self->dst->opt_keys.integer);
 	list_append(&self->rels, &rel->link);
 	self->rels_count++;
 
@@ -93,9 +93,6 @@ dst_user_create(DstUser* self, int type)
 		dst_execute(self->dst, self->client,
 		            "CREATE TABLE table_{u64} (id int primary key using hash, state bigint)",
 		            id);
-		dst_execute(self->dst, self->client,
-		            "CREATE SUBSCRIPTION table_sub_{u64} ON table_{u64}",
-		            id, id);
 		break;
 	}
 	case DST_REL_TABLE_VECTOR:
@@ -103,11 +100,6 @@ dst_user_create(DstUser* self, int type)
 		dst_execute(self->dst, self->client,
 		            "CREATE TABLE table_vector_{u64} (id int primary key, state vector(4))",
 		            id);
-		/*
-		dst_execute(self->dst, self->client,
-		            "CREATE SUBSCRIPTION table_vector_sub_{u64} ON table_vector_{u64}",
-		            id, id);
-		*/
 		break;
 	}
 	case DST_REL_TOPIC:
@@ -115,12 +107,57 @@ dst_user_create(DstUser* self, int type)
 		dst_execute(self->dst, self->client,
 		            "CREATE TOPIC topic_{u64}",
 		            id);
-		dst_execute(self->dst, self->client,
-		            "CREATE SUBSCRIPTION topic_sub_{u64} ON topic_{u64}",
-		            id, id);
+		break;
+	}
+	default:
+	{
+		abort();
 		break;
 	}
 	}
+	return rel;
+}
+
+DstRel*
+dst_user_create_for(DstUser* self, DstRel* parent, int type)
+{
+	// set next id
+	auto id = self->rels_seq++;
+
+	// create object
+	auto rel = dst_rel_allocate(parent, id, type, self->dst->opt_keys.integer);
+	list_append(&self->rels, &rel->link);
+	self->rels_count++;
+
+	// create relation
+	if (type == DST_REL_SUBSCRIPTION)
+	{
+		switch (parent->type) {
+		case DST_REL_TABLE:
+			dst_execute(self->dst, self->client,
+			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON table_{u64}",
+			            parent->id, id, parent->id);
+			break;
+		case DST_REL_TABLE_VECTOR:
+			abort();
+			break;
+		case DST_REL_TOPIC:
+			dst_execute(self->dst, self->client,
+			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON topic_{u64}",
+			            parent->id, id, parent->id);
+			break;
+		default:
+			abort();
+			break;
+		}
+
+		list_append(&parent->subs, &rel->link_parent);
+		parent->subs_count++;
+	} else
+	{
+		abort();
+	}
+	return rel;
 }
 
 void
@@ -142,9 +179,27 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		            "DROP TOPIC topic_{u64} CASCADE",
 		            rel->id);
 		break;
+	case DST_REL_SUBSCRIPTION:
+		dst_execute(self->dst, self->client,
+		            "DROP SUBSCRIPTION sub_{u64}_{u64} CASCADE",
+		            rel->parent->id, rel->id);
+		list_unlink(&rel->link_parent);
+		rel->parent->subs_count--;
+		break;
 	}
+
+	// free subscriptions
+	list_foreach_safe(&rel->subs)
+	{
+		auto sub = list_at(DstRel, link_parent);
+		list_unlink(&sub->link);
+		self->rels_count--;
+		assert(self->rels_count >= 0);
+		dst_rel_free(sub);
+	}
+
 	list_unlink(&rel->link);
 	self->rels_count--;
-	assert(self->rels_count > 0);
+	assert(self->rels_count >= 0);
 	dst_rel_free(rel);
 }
