@@ -123,9 +123,9 @@ catalog_deps(Catalog* self, Rel* rel, Buf* list)
 void
 catalog_deps_drop(Catalog* self, Tr* tr, Buf* list)
 {
-	auto it  = (Rel**)list->position - 1;
-	auto end = (Rel**)list->start;
-	for (; it >= end; it--)
+	auto it  = (Rel**)list->start;
+	auto end = (Rel**)list->position;
+	for (; it < end; it++)
 		catalog_drop_of(self, tr, *it);
 }
 
