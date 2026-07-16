@@ -37,3 +37,11 @@ dst_key_free(DstKey* self)
 {
 	am_free(self);
 }
+
+static inline DstKey*
+dst_key_copy(DstKey* self)
+{
+	auto copy = dst_key_allocate(0);
+	memcpy(copy, self, sizeof(DstKey));
+	return copy;
+}

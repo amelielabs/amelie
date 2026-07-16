@@ -48,3 +48,41 @@ dst_user_rel(DstUser* self, int order)
 	}
 	return NULL;
 }
+
+static inline DstRel*
+dst_user_rel_filter(DstUser* self, int order, bool table, bool topic)
+{
+	auto pos = 0;
+	list_foreach(&self->rels)
+	{
+		auto rel = list_at(DstRel, link);
+		if ((table && rel->type == DST_REL_TABLE) ||
+		    (topic && rel->type == DST_REL_TOPIC))
+		{
+			if (order != pos)
+			{
+				pos++;
+				continue;
+			}
+			return rel;
+		}
+	}
+	return  NULL;
+}
+
+static inline int
+dst_user_count(DstUser* self, bool table, bool topic)
+{
+	auto count = 0;
+	list_foreach(&self->rels)
+	{
+		auto rel = list_at(DstRel, link);
+		if ((table && rel->type == DST_REL_TABLE) ||
+		    (topic && rel->type == DST_REL_TOPIC))
+		{
+			count++;
+			continue;
+		}
+	}
+	return count;
+}

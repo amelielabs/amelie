@@ -154,6 +154,19 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 		list_append(&parent->subs, &rel->link_parent);
 		parent->subs_count++;
 	} else
+	if (type == DST_REL_CLONE)
+	{
+		assert(parent->type == DST_REL_TABLE);
+
+		dst_execute(self->dst, self->client,
+		            "CREATE CLONE clone_{u64}_{u64} OF table_{u64}",
+		            parent->id, id, parent->id);
+
+		dst_rel_copy(rel, parent);
+
+		list_append(&parent->clones, &rel->link_parent);
+		parent->clones_count++;
+	} else
 	{
 		abort();
 	}
@@ -173,6 +186,13 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		dst_execute(self->dst, self->client,
 		            "DROP TABLE table_vector_{u64} CASCADE",
 		            rel->id);
+		break;
+	case DST_REL_CLONE:
+		dst_execute(self->dst, self->client,
+		            "DROP CLONE clone_{u64}_{u64} CASCADE",
+		            rel->parent->id, rel->id);
+		list_unlink(&rel->link_parent);
+		rel->parent->clones_count--;
 		break;
 	case DST_REL_TOPIC:
 		dst_execute(self->dst, self->client,
@@ -196,6 +216,16 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		self->rels_count--;
 		assert(self->rels_count >= 0);
 		dst_rel_free(sub);
+	}
+
+	// free clones
+	list_foreach_safe(&rel->clones)
+	{
+		auto clone = list_at(DstRel, link_parent);
+		list_unlink(&clone->link);
+		self->rels_count--;
+		assert(self->rels_count >= 0);
+		dst_rel_free(clone);
 	}
 
 	list_unlink(&rel->link);

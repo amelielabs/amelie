@@ -19,7 +19,7 @@ dst_stmt(DstUser* self)
 {
 	auto op = dst_log_add(&self->log);
 
-	// generate relation (table, table_vector, topic)
+	// generate relation (table, table_vector, clone, topic)
 	DstRel* rel;
 	for (;;)
 	{
@@ -67,9 +67,10 @@ dst_stmt(DstUser* self)
 		{
 			key->value = random_generate(&am_task->random);
 			buf_format(&self->log.sql,
-			            "INSERT INTO table_{u64} VALUES ({u64}, {i64});",
-			            rel->id, key->key, key->value);
+			           "INSERT INTO table_{u64} VALUES ({u64}, {i64});",
+			           rel->id, key->key, key->value);
 		} else
+		if (rel->type == DST_REL_TABLE_VECTOR)
 		{
 			// table_vector
 			key->value_vector[0] = random_generate_fp(&am_task->random, -1.0, 1.0);
@@ -77,13 +78,22 @@ dst_stmt(DstUser* self)
 			key->value_vector[2] = random_generate_fp(&am_task->random, -1.0, 1.0);
 			key->value_vector[3] = random_generate_fp(&am_task->random, -1.0, 1.0);
 			buf_format(&self->log.sql,
-			            "INSERT INTO table_vector_{u64} VALUES ({u64}, vector [{f}, {f}, {f}, {f}]);",
-			            rel->id,
-			            key->key,
-			            key->value_vector[0],
-			            key->value_vector[1],
-			            key->value_vector[2],
-			            key->value_vector[3]);
+			           "INSERT INTO table_vector_{u64} VALUES ({u64}, vector [{f}, {f}, {f}, {f}]);",
+			           rel->id,
+			           key->key,
+			           key->value_vector[0],
+			           key->value_vector[1],
+			           key->value_vector[2],
+			           key->value_vector[3]);
+		} else
+		if (rel->type == DST_REL_CLONE)
+		{
+			key->value = random_generate(&am_task->random);
+			buf_format(&self->log.sql,
+			           "INSERT INTO clone_{u64}_{u64} VALUES ({u64}, {i64});",
+			           rel->parent->id, rel->id, key->key, key->value);
+		} else {
+			abort();
 		}
 		dst_rel_cdc(rel, key);
 		return;
@@ -99,9 +109,10 @@ dst_stmt(DstUser* self)
 		{
 			key->value = random_generate(&am_task->random);
 			buf_format(&self->log.sql,
-			            "INSERT INTO table_{u64} VALUES ({u64}, null) ON CONFLICT DO UPDATE SET state = {i64};",
-			            rel->id, key->key, key->value);
+			           "INSERT INTO table_{u64} VALUES ({u64}, null) ON CONFLICT DO UPDATE SET state = {i64};",
+			           rel->id, key->key, key->value);
 		} else
+		if (rel->type == DST_REL_TABLE_VECTOR)
 		{
 			key->value_vector[0] = random_generate_fp(&am_task->random, -1.0, 1.0);
 			key->value_vector[1] = random_generate_fp(&am_task->random, -1.0, 1.0);
@@ -116,6 +127,15 @@ dst_stmt(DstUser* self)
 			           key->value_vector[1],
 			           key->value_vector[2],
 			           key->value_vector[3]);
+		} else
+		if (rel->type == DST_REL_CLONE)
+		{
+			key->value = random_generate(&am_task->random);
+			buf_format(&self->log.sql,
+			           "INSERT INTO clone_{u64}_{u64} VALUES ({u64}, null) ON CONFLICT DO UPDATE SET state = {i64};",
+			           rel->parent->id, rel->id, key->key, key->value);
+		} else {
+			abort();
 		}
 		dst_rel_cdc(rel, key);
 
@@ -131,9 +151,10 @@ dst_stmt(DstUser* self)
 		{
 			key->value = random_generate(&am_task->random);
 			buf_format(&self->log.sql,
-			            "UPDATE table_{u64} SET state = {i64} WHERE id = {i64};",
-			            rel->id, key->value, key->key);
+			           "UPDATE table_{u64} SET state = {i64} WHERE id = {i64};",
+			           rel->id, key->value, key->key);
 		} else
+		if (rel->type == DST_REL_TABLE_VECTOR)
 		{
 			key->value_vector[0] = random_generate_fp(&am_task->random, -1.0, 1.0);
 			key->value_vector[1] = random_generate_fp(&am_task->random, -1.0, 1.0);
@@ -148,6 +169,15 @@ dst_stmt(DstUser* self)
 			           key->value_vector[2],
 			           key->value_vector[3],
 			           key->key);
+		} else
+		if (rel->type == DST_REL_CLONE)
+		{
+			key->value = random_generate(&am_task->random);
+			buf_format(&self->log.sql,
+			           "UPDATE clone_{u64}_{u64} SET state = {i64} WHERE id = {i64};",
+			           rel->parent->id, rel->id, key->value, key->key);
+		} else {
+			abort();
 		}
 		dst_rel_cdc(rel, key);
 		op->key = *key;
@@ -162,10 +192,19 @@ dst_stmt(DstUser* self)
 		           "DELETE FROM table_{u64} WHERE id = {u64};",
 		            rel->id, key->key);
 	} else
+	if (rel->type == DST_REL_TABLE_VECTOR)
 	{
 		buf_format(&self->log.sql,
 		           "DELETE FROM table_vector_{u64} WHERE id = {u64};",
 		           rel->id, key->key);
+	} else
+	if (rel->type == DST_REL_CLONE)
+	{
+		buf_format(&self->log.sql,
+		           "DELETE FROM clone_{u64}_{u64} WHERE id = {u64};",
+		            rel->parent->id, rel->id, key->key);
+	} else {
+		abort();
 	}
 	dst_rel_cdc(rel, key);
 	dst_rel_delete(rel, key);
@@ -276,52 +315,42 @@ dst_step_ddl(DstUser* self)
 	{
 		// create any relation
 		auto type = random_generate(&am_task->random) % DST_REL_MAX;
-
-		// get total number of usable relations for subscription
-		auto sub_pos = 0;
 		if (type == DST_REL_SUBSCRIPTION)
 		{
-			list_foreach(&self->rels)
+			// create subscription for table, topic
+			auto count = dst_user_count(self, true, true);
+			if (! count)
 			{
-				auto rel = list_at(DstRel, link);
-				if (rel->type == DST_REL_TABLE ||
-				    rel->type == DST_REL_TOPIC)
-					sub_pos++;
+				dst_user_create(self, DST_REL_TABLE);
+				return;
 			}
-			if (! sub_pos)
-				type = DST_REL_TABLE;
-		}
 
-		if (type == DST_REL_SUBSCRIPTION)
+			// randomly choose table or topic (caped by the count)
+			auto pos = random_generate(&am_task->random) % count;
+			auto parent = dst_user_rel_filter(self, pos, true, true);
+			assert(parent);
+			dst_user_create_for(self, parent, type);
+
+		} else
+		if (type == DST_REL_CLONE)
 		{
-			// randomly choose relation order (caped by total count)
-			sub_pos = random_generate(&am_task->random) % sub_pos;
-
-			DstRel* parent = NULL;
-			auto order = 0;
-			list_foreach(&self->rels)
+			// create table clone
+			auto count = dst_user_count(self, true, false);
+			if (! count)
 			{
-				auto rel = list_at(DstRel, link);
-				if (rel->type == DST_REL_TABLE ||
-				    rel->type == DST_REL_TOPIC)
-				{
-					if (order != sub_pos)
-					{
-						order++;
-						continue;
-					}
-					parent = rel;
-					break;
-				}
+				dst_user_create(self, DST_REL_TABLE);
+				return;
 			}
 
+			// randomly choose table
+			auto pos = random_generate(&am_task->random) % count;
+			auto parent = dst_user_rel_filter(self, pos, true, false);
 			assert(parent);
 			dst_user_create_for(self, parent, type);
 		} else
 		{
 			dst_user_create(self, type);
 		}
-
 	} else
 	{
 		// drop any relation
@@ -371,14 +400,8 @@ dst_step_ddl_user(DstUser* self)
 		dst_execute(dst, client, "CREATE USER user_{u64}", user->id);
 		dst_user_connect(user);
 
-		// table
-		dst_user_create(user, DST_REL_TABLE);
+		// (created empty)
 
-		// table vector
-		dst_user_create(user, DST_REL_TABLE_VECTOR);
-
-		// topic
-		dst_user_create(user, DST_REL_TOPIC);
 	} else
 	{
 		// drop any user
