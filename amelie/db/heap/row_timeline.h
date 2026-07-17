@@ -52,7 +52,8 @@ row_unique(Row* row, Heap* heap)
 hot static inline Row*
 row_visible(Row* row, Heap* heap, Timeline* timeline)
 {
-	// note: row is the head of the version chain
+	// row might not have a head flag in the case of
+	// secondary indexes
 	if (timeline->main)
 	{
 		// first main row
@@ -86,10 +87,10 @@ row_seal_and_gc(Row* row, Heap* heap, Flats* flats, Timeline* timeline)
 {
 	// note: row is the head of the version chain
 	auto head = row;
-	row = row_prev(row, heap);
+	assert(head->head);
 
-	// mark head in the version chain for recovery
-	head->head = true;
+	// start from head->prev
+	row = row_prev(row, heap);
 
 	// main
 	if (timeline->main)
@@ -97,7 +98,6 @@ row_seal_and_gc(Row* row, Heap* heap, Flats* flats, Timeline* timeline)
 		// cleanup duplicates not visible by clones
 		while (row)
 		{
-			row->head = false;
 			auto prev = row_prev(row, heap);
 			if (row->main && row->timeline > timeline->timeline_max)
 			{
@@ -115,7 +115,6 @@ row_seal_and_gc(Row* row, Heap* heap, Flats* flats, Timeline* timeline)
 	while (row)
 	{
 		// cleanup duplicates from this clone
-		row->head = false;
 		auto prev = row_prev(row, heap);
 		if (!row->main && row->timeline == timeline->timeline)
 		{

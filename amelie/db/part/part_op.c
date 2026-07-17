@@ -39,24 +39,29 @@ log_if_commit(Log* self, LogOp* op)
 	auto index = (Index*)op->iface_arg;
 	auto part  = (Part*)index->iface_arg;
 	auto heap  = part->heap;
+	auto row   = op->row;
 	if (op->cmd == LOG_DELETE)
 	{
 		// no clones or versions
-		row_free(heap, &part->flats, op->row);
+		row_free(heap, &part->flats, row);
 		return;
 	}
 
-	// mark row head and cleanup versions
-	row_seal_and_gc(op->row, heap, &part->flats, op->timeline);
+	// cleanup version chain starting from head
+	if (! row->head)
+		return;
 
-	// last delete in the chain
-	if (op->row->deleted && !row_prev(op->row, heap))
+	// free older versions related to this timeline
+	row_seal_and_gc(row, heap, &part->flats, op->timeline);
+
+	// last delete in the index
+	if (row->deleted && !row_prev(row, heap))
 	{
-		index_delete_by(index, op->row);
+		index_delete_by(index, row);
 		for (index = index->next; index; index = index->next)
-			index_delete_by(index, op->row);
+			index_delete_by(index, row);
 
-		row_free(heap, &part->flats, op->row);
+		row_free(heap, &part->flats, row);
 	}
 }
 
@@ -65,6 +70,7 @@ log_if_abort(Log* self, LogOp* op)
 {
 	unused(self);
 	auto row = rollback(op);
+
 	if (op->cmd != LOG_DELETE && row)
 	{
 		auto index = (Index*)op->iface_arg;
@@ -74,6 +80,8 @@ log_if_abort(Log* self, LogOp* op)
 
 	if (op->row_prev)
 	{
+		op->row_prev->head = true;
+
 		// unfilter vector columns
 		auto index = (Index*)op->iface_arg;
 		auto part  = (Part*)index->iface_arg;
@@ -143,7 +151,9 @@ part_insert(Part*     self, Tr* tr,
 
 		// chain head row
 		row_prev_set(row, op->row_prev);
+		op->row_prev->head = false;
 	}
+	op->row->head = true;
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
@@ -176,6 +186,7 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	}
 
 	// insert
+	row->head = true;
 
 	// add log record
 	auto op = log_dml(&tr->log, LOG_REPLACE, &log_if, primary, row, NULL, timeline);
@@ -217,9 +228,11 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
+	op->row_prev->head = false;
 
 	// chain head row
 	row_prev_set(row, op->row_prev);
+	op->row->head = true;
 
 	// filter vector columns
 	row_filter(&self->flats, op->row_prev, true);
@@ -275,6 +288,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);
+	op->row_prev->head = false;
 
 	// filter vector columns
 	row_filter(&self->flats, op->row_prev, true);
