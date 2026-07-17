@@ -141,6 +141,11 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 		case DST_REL_TABLE_VECTOR:
 			abort();
 			break;
+		case DST_REL_CLONE:
+			dst_execute(self->dst, self->client,
+			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON clone_{u64}_{u64}",
+			            parent->id, id, parent->parent->id, parent->id);
+			break;
 		case DST_REL_TOPIC:
 			dst_execute(self->dst, self->client,
 			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON topic_{u64}",

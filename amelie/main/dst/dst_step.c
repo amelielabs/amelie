@@ -318,7 +318,7 @@ dst_step_ddl(DstUser* self)
 		if (type == DST_REL_SUBSCRIPTION)
 		{
 			// create subscription for table, topic
-			auto count = dst_user_count(self, true, true);
+			auto count = dst_user_count(self, true, true, true);
 			if (! count)
 			{
 				dst_user_create(self, DST_REL_TABLE);
@@ -327,7 +327,7 @@ dst_step_ddl(DstUser* self)
 
 			// randomly choose table or topic (caped by the count)
 			auto pos = random_generate(&am_task->random) % count;
-			auto parent = dst_user_rel_filter(self, pos, true, true);
+			auto parent = dst_user_rel_filter(self, pos, true, true, true);
 			assert(parent);
 			dst_user_create_for(self, parent, type);
 
@@ -335,7 +335,7 @@ dst_step_ddl(DstUser* self)
 		if (type == DST_REL_CLONE)
 		{
 			// create table clone
-			auto count = dst_user_count(self, true, false);
+			auto count = dst_user_count(self, true, false, false);
 			if (! count)
 			{
 				dst_user_create(self, DST_REL_TABLE);
@@ -344,7 +344,7 @@ dst_step_ddl(DstUser* self)
 
 			// randomly choose table
 			auto pos = random_generate(&am_task->random) % count;
-			auto parent = dst_user_rel_filter(self, pos, true, false);
+			auto parent = dst_user_rel_filter(self, pos, true, false, false);
 			assert(parent);
 			dst_user_create_for(self, parent, type);
 		} else

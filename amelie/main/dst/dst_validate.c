@@ -215,7 +215,8 @@ dst_validate_sub(DstUser* self, DstRel* rel)
 	auto client = self->client;
 
 	// sub
-	if (rel->parent->type == DST_REL_TABLE)
+	if (rel->parent->type == DST_REL_TABLE ||
+	    rel->parent->type == DST_REL_CLONE)
 		dst_execute(self->dst, client,
 		            "SELECT count(*), sum(row.id::int), max(lsn) FROM sub_{u64}_{u64}",
 		            rel->parent->id, rel->id);
