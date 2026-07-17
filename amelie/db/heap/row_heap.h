@@ -14,21 +14,21 @@
 hot static inline Row*
 row_allocate(Heap* heap, bool main, uint32_t timeline, int columns, int data_size)
 {
-	int  size_factor;
-	auto size = row_measure(columns, data_size, &size_factor);
+	bool byte;
+	auto size = row_measure(columns, data_size, &byte);
 	auto self = heap_add(heap, size);
-	row_prepare(self, main, timeline, columns, size_factor, size);
+	row_prepare(self, main, timeline, columns, byte, size);
 	return self;
 }
 
 hot static inline Row*
 row_allocate_buf(Buf* buf, int columns, int data_size)
 {
-	int  size_factor;
-	auto size = row_measure(columns, data_size, &size_factor);
+	bool byte;
+	auto size = row_measure(columns, data_size, &byte);
 	auto self = (Row*)buf_emplace(buf, size);
 	row_init(self);
-	row_prepare(self, false, 0, columns, size_factor, size);
+	row_prepare(self, false, 0, columns, byte, size);
 	return self;
 }
 

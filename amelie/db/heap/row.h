@@ -22,7 +22,7 @@ struct Row
 
 	// row
 	uint64_t columns:     16;
-	uint64_t size_factor: 2;
+	uint64_t byte:        1;
 	uint64_t deleted:     1;
 	uint64_t main:        1;
 	uint64_t head:        1;
@@ -30,7 +30,7 @@ struct Row
 	// heap
 	uint64_t bucket:      8;
 	uint64_t free:        1;
-	uint64_t reserved:    2;
+	uint64_t reserved:    3;
 
 	// heap version (64bit cut)
 	uint64_t offset:      19;
@@ -55,43 +55,29 @@ row_prepare(Row*     self,
             bool     main,
             uint32_t timeline,
             int      columns,
-            int      size_factor,
+            bool     byte,
             int      size)
 {
-	self->timeline    = timeline;
-	self->columns     = columns;
-	self->size_factor = size_factor;
-	self->deleted     = false;
-	self->main        = main;
-	self->head        = false;
+	self->timeline = timeline;
+	self->columns  = columns;
+	self->byte     = byte;
+	self->deleted  = false;
+	self->main     = main;
+	self->head     = false;
 
 	// set size
-	switch (size_factor) {
-	case 0:
+	if (byte)
 		*self->data = size;
-		break;
-	case 1:
+	else
 		*(uint16_t*)self->data = size;
-		break;
-	default:
-		*(uint32_t*)self->data = size;
-		break;
-
-	}
 }
 
 always_inline hot static inline uint32_t
 row_size(Row* self)
 {
-	switch (self->size_factor) {
-	case 0:
+	if (self->byte)
 		return *self->data;
-	case 1:
-		return *(uint16_t*)self->data;
-	default:
-		break;
-	}
-	return *(uint32_t*)self->data;
+	return *(uint16_t*)self->data;
 }
 
 always_inline hot static inline void*
@@ -99,14 +85,11 @@ row_at(Row* self, int column)
 {
 	if (unlikely(column >= self->columns))
 		return NULL;
-	register uint32_t offset;
-	if (self->size_factor == 0)
+	int offset;
+	if (self->byte)
 		offset = self->data[1 + column];
 	else
-	if (self->size_factor == 1)
 		offset = ((uint16_t*)self->data)[1 + column];
-	else
-		offset = ((uint32_t*)self->data)[1 + column];
 	if (offset == 0)
 		return NULL;
 	return (uint8_t*)self + offset;
@@ -121,26 +104,23 @@ row_column(Row* self, Column* column)
 always_inline hot static inline void*
 row_data(Row* self, int columns)
 {
-	return self->data + ((1 + columns) * (self->size_factor + 1));
+	return self->data + ((1 + columns) * (!self->byte + 1));
 }
 
 always_inline hot static inline uint32_t
 row_data_size(Row* self, int columns)
 {
 	return row_size(self) - sizeof(Row) +
-	       ((1 + columns) * (self->size_factor + 1));
+	       ((1 + columns) * (!self->byte + 1));
 }
 
 always_inline hot static inline void
 row_set(Row* self, int column, int offset)
 {
-	if (self->size_factor == 0)
+	if (self->byte)
 		self->data[1 + column]  = offset;
 	else
-	if (self->size_factor == 1)
 		((uint16_t*)self->data)[1 + column] = offset;
-	else
-		((uint32_t*)self->data)[1 + column] = offset;
 }
 
 always_inline hot static inline void
@@ -150,24 +130,16 @@ row_set_null(Row* self, int column)
 }
 
 always_inline hot static inline int
-row_measure(int columns, int data_size, int* size_factor)
+row_measure(int columns, int data_size, bool* byte)
 {
 	// [row_header][size + index][data]
 	int size_base = sizeof(Row) + data_size;
 	int size = size_base + sizeof(uint8_t) * (1 + columns);
-	if (size > UINT8_MAX)
-	{
-		size = size_base + sizeof(uint16_t) * (1 + columns);
-		if (size > UINT16_MAX)
-		{
-			size = size_base + sizeof(uint32_t) * (1 + columns);
-			*size_factor = 3;
-		} else {
-			*size_factor = 1;
-		}
-	} else {
-		*size_factor = 0;
-	}
+	*byte = size <= UINT8_MAX;
+	if (*byte)
+		return size;
+	size = size_base + sizeof(uint16_t) * (1 + columns);
+	assert(size <= UINT16_MAX);
 	return size;
 }
 
