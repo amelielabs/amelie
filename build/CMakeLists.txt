@@ -199,6 +199,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/index/index_tree.c
     ${AMELIE_ROOT}/db/index/index_hash.c
     ${AMELIE_ROOT}/db/part/part.c
+    ${AMELIE_ROOT}/db/part/part_cleanup.c
     ${AMELIE_ROOT}/db/part/part_op.c
     ${AMELIE_ROOT}/db/part/parts.c
     ${AMELIE_ROOT}/db/part/cursor.c

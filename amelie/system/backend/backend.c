@@ -81,6 +81,13 @@ backend_main(void* arg)
 			ltr_write(req->ltr, msg);
 			break;
 		}
+		case MSG_CLEANUP:
+		{
+			auto cleanup = part_cleanup_of(msg);
+			defer(part_cleanup_free, cleanup);
+			part_cleanup_run(cleanup);
+			break;
+		}
 		default:
 			// rpc commands
 			stop = msg->id == MSG_STOP;

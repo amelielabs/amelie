@@ -52,10 +52,10 @@ log_if_commit(Log* self, LogOp* op)
 		return;
 
 	// free older versions related to this timeline
-	row_seal_and_gc(row, heap, &part->flats, op->timeline);
+	row_gc(row, heap, &part->flats, op->timeline);
 
 	// last delete in the index
-	if (row->deleted && !row_prev(row, heap))
+	if (row->deleted && !row_prev_has(row))
 	{
 		index_delete_by(index, row);
 		for (index = index->next; index; index = index->next)
@@ -241,7 +241,8 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary, index, row, NULL, timeline);
+		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary,
+		             index, row, NULL, timeline);
 
 		// find and replace existing secondary row (keys are not updated)
 		auto index_it = index_iterator(index);

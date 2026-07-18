@@ -15,6 +15,7 @@
 #include "part/part_config.h"
 #include "part/part_arg.h"
 #include "part/part.h"
+#include "part/part_cleanup.h"
 #include "part/part_op.h"
 #include "part/part_mapping.h"
 #include "part/parts.h"

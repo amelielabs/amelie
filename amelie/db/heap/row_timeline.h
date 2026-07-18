@@ -26,6 +26,12 @@ row_prev_set(Row* row, Row* prev)
 	}
 }
 
+always_inline static inline bool
+row_prev_has(Row* row)
+{
+	return row->prev_offset > 0;
+}
+
 hot static inline Row*
 row_prev(Row* row, Heap* heap)
 {
@@ -83,7 +89,7 @@ row_visible(Row* row, Heap* heap, Timeline* timeline)
 }
 
 hot static inline void
-row_seal_and_gc(Row* row, Heap* heap, Flats* flats, Timeline* timeline)
+row_gc(Row* row, Heap* heap, Flats* flats, Timeline* timeline)
 {
 	// note: row is the head of the version chain
 	auto head = row;

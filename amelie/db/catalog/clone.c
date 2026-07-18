@@ -24,9 +24,22 @@
 static inline void
 clone_free(Clone* self, bool drop)
 {
-	unused(drop);
+	auto id = self->config->timeline.timeline;
 	timelines_remove(&self->table->timelines, &self->config->timeline);
 	clone_config_free(self->config);
+
+	// schedule async table cleanup
+	if (drop)
+	{
+		auto table = self->table;
+		list_foreach(&table->parts.list)
+		{
+			auto part = list_at(Part, link);
+			auto msg = part_cleanup_allocate(part, id);
+			track_send(&part->track, msg);
+		}
+	}
+
 	am_free(self);
 }
 
