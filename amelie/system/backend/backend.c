@@ -41,6 +41,13 @@ backend_rpc(Rpc* rpc, void* arg)
 		pods_drop_by(&self->pods, part);
 		break;
 	}
+	case MSG_CLEANUP:
+	{
+		PartCleanup* cleanup = rpc->arg;
+		defer(part_cleanup_free, cleanup);
+		part_cleanup_run(cleanup);
+		break;
+	}
 	case MSG_STOP:
 	{
 		// shutdown pods
@@ -79,13 +86,6 @@ backend_main(void* arg)
 		{
 			auto req = (Req*)msg;
 			ltr_write(req->ltr, msg);
-			break;
-		}
-		case MSG_CLEANUP:
-		{
-			auto cleanup = part_cleanup_of(msg);
-			defer(part_cleanup_free, cleanup);
-			part_cleanup_run(cleanup);
 			break;
 		}
 		default:

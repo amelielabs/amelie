@@ -28,16 +28,26 @@ clone_free(Clone* self, bool drop)
 	timelines_remove(&self->table->timelines, &self->config->timeline);
 	clone_config_free(self->config);
 
-	// schedule async table cleanup
+	// do table cleanup
 	if (drop)
 	{
 		auto table = self->table;
+
+		RpcSet set;
+		rpc_set_init(&set);
+		defer(rpc_set_free, &set);
+		rpc_set_prepare(&set, table->parts.list_count);
+
+		auto order = 0;
 		list_foreach(&table->parts.list)
 		{
 			auto part = list_at(Part, link);
-			auto msg = part_cleanup_allocate(part, id);
-			track_send(&part->track, msg);
+			auto msg  = part_cleanup_allocate(part, id);
+			auto rpc  = rpc_set_add(&set, order, MSG_CLEANUP, msg);
+			rpc_send(rpc, part->track.backend);
+			order++;
 		}
+		rpc_set_wait(&set);
 	}
 
 	am_free(self);

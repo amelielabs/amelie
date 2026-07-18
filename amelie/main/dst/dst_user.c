@@ -230,6 +230,16 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		list_unlink(&clone->link);
 		self->rels_count--;
 		assert(self->rels_count >= 0);
+
+		// free clones subscriptions
+		list_foreach_safe(&clone->subs)
+		{
+			auto sub = list_at(DstRel, link_parent);
+			list_unlink(&sub->link);
+			self->rels_count--;
+			assert(self->rels_count >= 0);
+			dst_rel_free(sub);
+		}
 		dst_rel_free(clone);
 	}
 

@@ -154,13 +154,13 @@ part_cleanup_clone(PartCleanup* self)
 			continue;
 
 		// update indexes
-		if (row->timeline == timeline)
+		if (!row->main && row->timeline == timeline)
 		{
 			// get a first row not related to the timeline
 			auto head      = row;
 			auto head_next = row;
 			for (; head_next; head_next = row_prev(head_next, heap))
-				if (head_next->timeline != timeline)
+				if (head_next->main || head_next->timeline != timeline)
 					break;
 
 			// delete or replace the index
@@ -186,7 +186,7 @@ part_cleanup_clone(PartCleanup* self)
 		while (row)
 		{
 			auto prev = row_prev(row, heap);
-			if (row->timeline == timeline)
+			if (!row->main && row->timeline == timeline)
 			{
 				if (parent)
 					row_prev_set(parent, prev);
@@ -206,7 +206,6 @@ part_cleanup_run(PartCleanup* self)
 	if (self->part->arg->timelines->list_count == 0)
 		return part_cleanup_main(self);
 
-	// partition still has clones, free rows only related
-	// to the timelime
-	return part_cleanup_clone(self);
+	// free rows only related to the timelime
+	part_cleanup_clone(self);
 }
