@@ -28,6 +28,7 @@ struct Dst
 	Opt      opt_sync;
 	Opt      opt_restart;
 	Opt      opt_checkpoint;
+	Opt      opt_backup;
 	Opt      opt_ddl;
 	Opt      opt_ddl_user;
 	Opt      opt_bp;

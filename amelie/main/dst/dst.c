@@ -47,6 +47,7 @@ dst_init(Dst* self)
 		{ "sync",       OPT_INT,    OPT_C|OPT_Z, &self->opt_sync,       NULL,      1000  },
 		{ "restart",    OPT_INT,    OPT_C|OPT_Z, &self->opt_restart,    NULL,      3000  },
 		{ "checkpoint", OPT_INT,    OPT_C|OPT_Z, &self->opt_checkpoint, NULL,      9000  },
+		{ "backup",     OPT_INT,    OPT_C|OPT_Z, &self->opt_backup,     NULL,      30000 },
 		{ "ddl",        OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl,        NULL,      6000  },
 		{ "ddl_user",   OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl_user,   NULL,      25000 },
 		{ "bp",         OPT_INT,    OPT_C,       &self->opt_bp,         NULL,      -1    },
@@ -270,6 +271,58 @@ dst_checkpoint(Dst* self)
 	dst_execute(self, client, "CHECKPOINT");
 }
 
+static void
+dst_backup(Dst* self)
+{
+	info("[{u64}] BACKUP", self->step);
+
+	Runtime rt_backup;
+	runtime_init(&rt_backup);
+	defer(runtime_free, &rt_backup);
+
+	auto dir = opt_string_of(&self->opt_dir);
+	char path[PATH_MAX];
+	char path_backup[PATH_MAX];
+	format(path, sizeof(path), "{str}/env", dir);
+	format(path_backup, sizeof(path_backup), "{str}/backup", dir);
+
+	// backup <uri> <path>
+	int   argc = 5;
+	char* argv[5] =
+	{
+		"amelie",
+		"backup"
+	};
+	argv[2] = path;
+	argv[3] = "--debug=false";
+	argv[4] = path_backup;
+	int rc = runtime_start(&rt_backup, main_runtime, NULL, argc, argv);
+	if (rc == -1)
+		error("backup failed");
+
+	// restart into backup
+	info("[{u64}] RESTORE", self->step);
+	dst_close(self);
+
+	dst_sh("mv {str}/env {str}/origin", dir, dir);
+	dst_sh("mv {str}/backup {str}/env", dir, dir);
+
+	dst_open(self);
+
+	// reconnect
+	list_foreach(&self->users)
+	{
+		auto user = list_at(DstUser, link);
+		dst_user_connect(user);
+	}
+
+	// validate after restart
+	dst_validate(self);
+
+	// cleanup
+	dst_sh("rm -rf {str}/origin", dir);
+}
+
 void
 dst_run(Dst* self)
 {
@@ -296,6 +349,7 @@ dst_run(Dst* self)
 	auto sync       = (int)opt_int_of(&self->opt_sync);
 	auto restart    = (int)opt_int_of(&self->opt_restart);
 	auto checkpoint = (int)opt_int_of(&self->opt_checkpoint);
+	auto backup     = (int)opt_int_of(&self->opt_backup);
 	auto ddl        = (int)opt_int_of(&self->opt_ddl);
 	auto ddl_user   = (int)opt_int_of(&self->opt_ddl_user);
 	auto steps      = (int)opt_int_of(&self->opt_steps);
@@ -316,6 +370,10 @@ dst_run(Dst* self)
 			else
 			if (self->step % ddl == 0)
 				dst_step_ddl(user);
+
+			// backup
+			if (self->step % backup == 0)
+				dst_backup(self);
 
 			// checkpoint
 			if (self->step % checkpoint == 0)
