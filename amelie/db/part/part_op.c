@@ -124,6 +124,7 @@ part_cdc(Part* self, Tr* tr, Timeline* timeline, Index* primary)
 		return;
 	auto last = log_last(&tr->log);
 	log_cdc(&tr->log, last->cmd, timeline->rel->id, last->row,
+	        &self->flats,
 	        index_keys(primary)->columns,
 	        runtime()->timezone);
 }

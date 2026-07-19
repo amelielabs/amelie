@@ -17,7 +17,7 @@
 #include <amelie_heap.h>
 
 void
-row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
+row_encode(Row* self, Flats* flats, Columns* columns, Timezone* tz, Buf* buf)
 {
 	encode_obj(buf);
 	list_foreach(&columns->list)
@@ -87,10 +87,12 @@ row_encode(Row* self, Columns* columns, Timezone* tz, Buf* buf)
 			buf_write(buf, pos, data_sizeof(pos));
 			break;
 		case TYPE_VECTOR:
-			// todo: use flat storage
-			abort();
-			// encode_vector(buf, column->size_flat, (float*)pos);
+		{
+			auto flat = flats_at(flats, column);
+			auto vector = flat_vector_at(flat, *(uint32_t*)pos);
+			encode_vector(buf, column->size_flat / sizeof(float), vector);
 			break;
+		}
 		default:
 			abort();
 			break;

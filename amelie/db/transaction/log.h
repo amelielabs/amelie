@@ -146,8 +146,8 @@ log_ddl(Log*   self,
 }
 
 hot static inline void
-log_cdc(Log* self, int cmd, Uuid* id, Row* row, Columns* columns, Timezone* tz)
+log_cdc(Log* self, int cmd, Uuid* id, Row* row, Flats* flats, Columns* columns, Timezone* tz)
 {
 	// [cmd, id, data, data_size]
-	cdc_log_add_row(&self->cdc, cmd, id, row, columns, tz);
+	cdc_log_add_row(&self->cdc, cmd, id, row, flats, columns, tz);
 }

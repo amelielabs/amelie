@@ -56,6 +56,7 @@ cdc_log_empty(CdcLog* self)
 
 hot static inline void
 cdc_log_add_row(CdcLog*   self, int cmd, Uuid* id, Row* row,
+                Flats*    flats,
                 Columns*  columns,
                 Timezone* tz)
 {
@@ -64,7 +65,7 @@ cdc_log_add_row(CdcLog*   self, int cmd, Uuid* id, Row* row,
 	record->cmd       = cmd;
 	record->id        = id;
 	record->data_size = 0;
-	row_encode(row, columns, tz, &self->data);
+	row_encode(row, flats, columns, tz, &self->data);
 
 	record = (CdcLogRecord*)(self->data.start + offset);
 	record->data_size = buf_size(&self->data) - offset - sizeof(CdcLogRecord);

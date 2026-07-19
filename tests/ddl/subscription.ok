@@ -794,5 +794,19 @@ row
   "visible": "new"
 }
 drop table t cascade;
+# test: create subscription (table with vector)
+create table test (id int primary key, v vector(4));
+create subscription test_sub on test;
+insert into test values (0, [1,2,3,4]);
+insert into test values (1, [5,6,7,8]);
+insert into test values (2, [9,10,11,12]);
+select * from test_sub;
+
+lsn  lsn_op  cmd    row
+─────────────────────────────────────────────────────
+111  0       write  {"id": 0, "v": [1, 2, 3, 4]}
+112  0       write  {"id": 1, "v": [5, 6, 7, 8]}
+113  0       write  {"id": 2, "v": [9, 10, 11, 12]}
+drop table test cascade;
 disconnect S0;
 close E0;
