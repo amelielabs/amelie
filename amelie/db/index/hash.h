@@ -95,21 +95,26 @@ hash_rehash(Hash* self)
 hot static inline Row*
 hash_set(Hash* self, Row* key)
 {
+	if (likely(! self->rehashing))
+	{
+		if (unlikely(hash_store_is_full(self->current)))
+		{
+			hash_rehash_start(self);
+			hash_rehash(self);
+		}
+	} else
+	{
+		hash_rehash(self);
+	}
+
 	Row* prev = NULL;
 	if (self->rehashing)
 	{
 		prev = hash_store_set(self->current, key);
 		if (! prev)
 			prev = hash_store_delete(self->prev, key);
-		hash_rehash(self);
-	} else
-	{
+	} else {
 		prev = hash_store_set(self->current, key);
-		if (hash_store_is_full(self->current))
-		{
-			hash_rehash_start(self);
-			hash_rehash(self);
-		}
 	}
 	return prev;
 }
@@ -117,6 +122,18 @@ hash_set(Hash* self, Row* key)
 hot static inline bool
 hash_get_or_set(Hash* self, Row* key, uint64_t* pos)
 {
+	if (likely(! self->rehashing))
+	{
+		if (unlikely(hash_store_is_full(self->current)))
+		{
+			hash_rehash_start(self);
+			hash_rehash(self);
+		}
+	} else
+	{
+		hash_rehash(self);
+	}
+
 	Row* prev = NULL;
 	if (self->rehashing)
 	{
@@ -144,8 +161,6 @@ hash_get_or_set(Hash* self, Row* key, uint64_t* pos)
 			self->current->count++;
 		}
 		*pos = current_pos;
-
-		hash_rehash(self);
 	} else
 	{
 		uint64_t current_pos = 0;
@@ -157,11 +172,6 @@ hash_get_or_set(Hash* self, Row* key, uint64_t* pos)
 		}
 
 		*pos = current_pos;
-		if (hash_store_is_full(self->current))
-		{
-			hash_rehash_start(self);
-			hash_rehash(self);
-		}
 	}
 
 	return prev != NULL;
@@ -170,13 +180,15 @@ hash_get_or_set(Hash* self, Row* key, uint64_t* pos)
 hot static inline Row*
 hash_delete(Hash* self, Row* key)
 {
+	if (self->rehashing)
+		hash_rehash(self);
+
 	Row* prev = NULL;
 	if (self->rehashing)
 	{
 		prev = hash_store_delete(self->current, key);
 		if (! prev)
 			prev = hash_store_delete(self->prev, key);
-		hash_rehash(self);
 	} else {
 		prev = hash_store_delete(self->current, key);
 	}

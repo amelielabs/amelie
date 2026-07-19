@@ -181,6 +181,7 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	auto primary = part_primary(self);
 	if (index_upsert(primary, row, it))
 	{
+		assert(iterator_at(it));
 		row_free(self->heap, &self->flats, row);
 		return true;
 	}
