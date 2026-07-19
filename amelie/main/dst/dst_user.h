@@ -50,15 +50,20 @@ dst_user_rel(DstUser* self, int order)
 }
 
 static inline DstRel*
-dst_user_rel_filter(DstUser* self, int order, bool table, bool topic, bool clone)
+dst_user_rel_filter(DstUser* self, int order,
+                    bool     table,
+                    bool     table_vector,
+                    bool     topic,
+                    bool     clone)
 {
 	auto pos = 0;
 	list_foreach(&self->rels)
 	{
 		auto rel = list_at(DstRel, link);
-		if ((table && rel->type == DST_REL_TABLE) ||
-		    (topic && rel->type == DST_REL_TOPIC) ||
-		    (clone && rel->type == DST_REL_CLONE))
+		if ((table        && rel->type == DST_REL_TABLE) ||
+		    (table_vector && rel->type == DST_REL_TABLE_VECTOR) ||
+		    (topic        && rel->type == DST_REL_TOPIC) ||
+		    (clone        && rel->type == DST_REL_CLONE))
 		{
 			if (order != pos)
 			{
@@ -72,15 +77,20 @@ dst_user_rel_filter(DstUser* self, int order, bool table, bool topic, bool clone
 }
 
 static inline int
-dst_user_count(DstUser* self, bool table, bool topic, bool clone)
+dst_user_count(DstUser* self,
+               bool     table,
+               bool     table_vector,
+               bool     topic,
+               bool     clone)
 {
 	auto count = 0;
 	list_foreach(&self->rels)
 	{
 		auto rel = list_at(DstRel, link);
-		if ((table && rel->type == DST_REL_TABLE) ||
-		    (topic && rel->type == DST_REL_TOPIC) ||
-		    (clone && rel->type == DST_REL_CLONE))
+		if ((table        && rel->type == DST_REL_TABLE) ||
+		    (table_vector && rel->type == DST_REL_TABLE_VECTOR) ||
+		    (topic        && rel->type == DST_REL_TOPIC) ||
+		    (clone        && rel->type == DST_REL_CLONE))
 		{
 			count++;
 			continue;

@@ -216,6 +216,7 @@ dst_validate_sub(DstUser* self, DstRel* rel)
 
 	// sub
 	if (rel->parent->type == DST_REL_TABLE ||
+	    rel->parent->type == DST_REL_TABLE_VECTOR ||
 	    rel->parent->type == DST_REL_CLONE)
 		dst_execute(self->dst, client,
 		            "SELECT count(*), sum(row.id::int), max(lsn) FROM sub_{u64}_{u64}",
