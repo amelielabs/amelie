@@ -175,8 +175,8 @@ parts_list(Parts* self, Buf* buf, Str* ref, int flags)
 	// show partition id on table
 	if (ref)
 	{
-		int64_t psn;
-		if (str_toint(ref, &psn) == -1)
+		uint64_t psn;
+		if (str_u64(ref, &psn) == -1)
 			error("invalid partition id");
 
 		auto part = parts_find(self, psn);

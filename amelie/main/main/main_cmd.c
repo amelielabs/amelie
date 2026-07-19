@@ -40,8 +40,8 @@ cmd_stop(Main* self)
 	// read pid value
 	Str pid_str;
 	buf_str(buf, &pid_str);
-	int64_t pid = -1;
-	if (str_toint(&pid_str, &pid) == -1)
+	uint64_t pid = -1;
+	if (str_u64(&pid_str, &pid) == -1)
 		error("invalid pid file");
 
 	// signal

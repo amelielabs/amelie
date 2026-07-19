@@ -56,7 +56,7 @@ fn_int(Call* self)
 		value = arg->dbl;
 		break;
 	case TYPE_STRING:
-		if (str_toint(&arg->string, &value) == -1)
+		if (str_i64(&arg->string, &value) == -1)
 			call_error_at(self, 0, "failed to cast string");
 		break;
 	default:

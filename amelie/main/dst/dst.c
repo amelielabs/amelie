@@ -161,7 +161,7 @@ dst_restart(Dst* self)
 static bool
 dst_execute_cmd(Dst* self, Client* client, bool can_fail, Str* cmd)
 {
-	//info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
+	// info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
 
 	// breakpoint
 	if (self->step == (int)self->opt_bp.integer)
@@ -333,17 +333,22 @@ dst_run(Dst* self)
 	dst_configure(self);
 	dst_open(self);
 
+	// set seed
+	auto random = &am_task->random;
+	auto seed = (uint64_t)opt_int_of(&self->opt_seed);
+	if (! seed)
+		seed = random->seed[0];
+	random->seed[0] = seed;
+	random->seed[1] = seed;
+
 	// hello
 	info("amelie dst (deterministic simulation)");
+	info("");
+	info("seed: {u64}", seed);
 	info("");
 
 	// create users and relations
 	dst_bootstrap(self);
-
-	// set seed
-	auto random = &am_task->random;	
-	random->seed[0] = 1;
-	random->seed[1] = 1;
 
 	// main loop
 	auto sync       = (int)opt_int_of(&self->opt_sync);

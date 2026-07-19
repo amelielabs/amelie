@@ -82,8 +82,8 @@ test_session_recv(TestSession* self, File* output)
 	if (buf_size(&reply->content))
 		file_write(output, reply->content.start, buf_size(&reply->content));
 
-	int64_t code;
-	str_toint(&reply->options[HTTP_CODE], &code);
+	uint64_t code;
+	str_u64(&reply->options[HTTP_CODE], &code);
 	if (code == 200 || code == 204)
 		return;
 
@@ -171,8 +171,8 @@ test_session_post(TestSession* self,
 		file_write(output, "\n", 1);
 	}
 
-	int64_t code;
-	str_toint(&reply->options[HTTP_CODE], &code);
+	uint64_t code;
+	str_u64(&reply->options[HTTP_CODE], &code);
 	if (code == 200 || code == 204)
 		return;
 

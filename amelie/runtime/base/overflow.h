@@ -68,3 +68,25 @@ int64_mul_add_overflow(int64_t* result, int64_t a, int64_t mul, int64_t add)
 		return true;
 	return int64_add_overflow(result, *result, add);
 }
+
+always_inline static inline bool
+uint64_add_overflow(uint64_t* result, uint64_t a, uint64_t b)
+{
+	auto result_ptr = (unsigned long long*)result;
+	return __builtin_uaddll_overflow(a, b, result_ptr);
+}
+
+always_inline static inline bool
+uint64_mul_overflow(uint64_t* result, uint64_t a, uint64_t b)
+{
+	auto result_ptr = (unsigned long long*)result;
+	return __builtin_umulll_overflow(a, b, result_ptr);
+}
+
+always_inline static inline bool
+uint64_mul_add_overflow(uint64_t* result, uint64_t a, uint64_t mul, uint64_t add)
+{
+	if (unlikely(uint64_mul_overflow(result, a, mul)))
+		return true;
+	return uint64_add_overflow(result, *result, add);
+}

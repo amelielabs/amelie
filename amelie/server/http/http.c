@@ -214,11 +214,11 @@ http_read_content_limit(Http* self, Readahead* readahead, Buf* content,
 	if (! content_len)
 		return false;
 
-	int64_t len;
-	if (unlikely(str_toint(&content_len->value, &len) == -1))
+	uint64_t len;
+	if (unlikely(str_u64(&content_len->value, &len) == -1))
 		error("failed to parse HTTP request");
 
-	if (unlikely((uint64_t)len >= limit))
+	if (unlikely(len >= limit))
 		return true;
 
 	buf_reserve(content, len + 1);

@@ -310,8 +310,8 @@ opt_set(Opt* self, Str* value)
 	{
 		if (str_empty(value))
 			error("option '{str}': value is not defined", name);
-		int64_t result = 0;
-		if (str_toint(value, &result) == -1)
+		uint64_t result = 0;
+		if (str_u64(value, &result) == -1)
 			error("option '{str}': integer value expected", name);
 		if (unlikely(result == 0 && opt_is(self, OPT_Z)))
 			error("option '{str}': cannot be set to zero", name);

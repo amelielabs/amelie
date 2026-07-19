@@ -34,8 +34,8 @@ client_recv(Client* self, Buf* content)
 		reply_into = &reply->content;
 	http_read_content(reply, &self->readahead, reply_into);
 
-	int64_t code = 0;
-	str_toint(&reply->options[HTTP_CODE], &code);
+	uint64_t code = 0;
+	str_u64(&reply->options[HTTP_CODE], &code);
 	return code;
 }
 
