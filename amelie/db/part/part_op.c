@@ -230,6 +230,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
+	assert(op->row_prev->head);
 	op->row_prev->head = false;
 
 	// chain head row

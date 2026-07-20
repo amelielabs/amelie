@@ -165,9 +165,14 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 	{
 		assert(parent->type == DST_REL_TABLE);
 
+		char* index_type;
+		if ((random_generate(&am_task->random) % 2) == 0)
+			index_type = "TREE";
+		else
+			index_type = "HASH";
 		dst_execute(self->dst, self->client,
-		            "CREATE INDEX index_{u64} ON table_{u64} (state)",
-		            rel->id, rel->parent->id);
+		            "CREATE INDEX index_{u64} ON table_{u64} (id) USING {s}",
+		            rel->id, rel->parent->id, index_type);
 
 		list_append(&parent->indexes, &rel->link_parent);
 		parent->indexes_count++;
@@ -209,6 +214,8 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		dst_execute(self->dst, self->client,
 		            "DROP INDEX index_{u64} ON table_{u64}",
 		            rel->id, rel->parent->id);
+		list_unlink(&rel->link_parent);
+		rel->parent->indexes_count--;
 		break;
 	case DST_REL_CLONE:
 		dst_execute(self->dst, self->client,

@@ -59,11 +59,17 @@ db_indexate(Part* part, IndexConfig* config)
 	HeapIterator it;
 	heap_iterator_init(&it);
 	heap_iterator_open(&it, heap, NULL);
-	for (; heap_iterator_has(&it); heap_iterator_next(&it))
+	for (;; heap_iterator_next(&it))
 	{
 		auto row = heap_iterator_at(&it);
+		if (! row)
+			break;
+		if (! row->head)
+			continue;
+
 		if (unlikely(db_indexate_with_null(index, row)))
 			error("create index: null key column");
+
 		// get index head
 		if (! index_upsert(index, row, it_upsert))
 			continue;

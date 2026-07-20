@@ -156,7 +156,7 @@ dst_validate_index(DstUser* self, DstRel* rel)
 	            rel->parent->id, rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);
-	info("{str}", &content);
+	// info("{str}", &content);
 
 	// parse json result
 	Json json;

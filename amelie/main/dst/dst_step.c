@@ -419,7 +419,6 @@ dst_step_ddl_user(DstUser* self)
 		dst_user_connect(user);
 
 		// (created empty)
-
 	} else
 	{
 		// drop any user
