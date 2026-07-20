@@ -145,6 +145,9 @@ table_index_drop(Catalog* self,
 	// ensure no strict dependecies on udfs
 	catalog_deps_validate_udf(self, &table->rel, true);
 
+	// force commit pending prepared transactions
+	table_sync(table);
+
 	// update table
 	log_ddl(&tr->log, &drop_if, index, &table->rel);
 	return true;

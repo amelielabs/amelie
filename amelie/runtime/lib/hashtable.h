@@ -129,7 +129,6 @@ hashtable_get(Hashtable*       self,
 		pos = (pos + 1) % self->size;
 	} while (start != pos);
 
-	error("hashtable overflow");
 	return NULL;
 }
 

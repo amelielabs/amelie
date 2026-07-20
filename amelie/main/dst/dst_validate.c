@@ -73,7 +73,7 @@ dst_validate_table(DstUser* self, DstRel* rel)
 	}
 	if (count != rel->state.count)
 		error("table_{u64}: keys count expected '{d}' got '{d}'",
-		      rel->id, count, rel->state.count);
+		      rel->id, rel->state.count, count);
 }
 
 static void
@@ -143,7 +143,7 @@ dst_validate_table_vector(DstUser* self, DstRel* rel)
 	}
 	if (count != rel->state.count)
 		error("table_vector_{u64}: keys count expected '{d}' got {d}'",
-		      rel->id, count, rel->state.count);
+		      rel->id, rel->state.count, count);
 }
 
 static void
@@ -156,7 +156,7 @@ dst_validate_index(DstUser* self, DstRel* rel)
 	            rel->parent->id, rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);
-	// info("{str}", &content);
+	//info("{str}", &content);
 
 	// parse json result
 	Json json;
@@ -206,7 +206,7 @@ dst_validate_index(DstUser* self, DstRel* rel)
 	}
 	if (count != rel->parent->state.count)
 		error("index_{u64}: keys count expected '{d}' got '{d}'",
-		      rel->id, count, rel->state.count);
+		      rel->id, rel->parent->state.count, count);
 }
 
 static void
@@ -268,7 +268,7 @@ dst_validate_clone(DstUser* self, DstRel* rel)
 	}
 	if (count != rel->state.count)
 		error("clone_{u64}_{u64}: keys count expected '{d}' got '{d}'",
-		      rel->parent->id, rel->id, count, rel->state.count);
+		      rel->parent->id, rel->id, rel->state.count, count);
 }
 
 
@@ -335,7 +335,7 @@ dst_validate_sub(DstUser* self, DstRel* rel)
 	// validate
 	if (count != rel->cdc_count)
 		error("sub_{u64}_{u64}: count mismatch expected {i64} got {i64}",
-		      rel->parent->id, rel->id, count, rel->cdc_count);
+		      rel->parent->id, rel->id, rel->cdc_count, count);
 
 	if (sum != rel->cdc_sum)
 		error("sub_{u64}_{u64}: keys sum mismatch",

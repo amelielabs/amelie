@@ -68,17 +68,9 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 		catalog_deps_drop(self, tr, &deps);
 	}
 
+	// force commit pending prepared transactions
 	if (type == REL_CLONE)
-	{
-		// force commit pending prepared transactions
-		auto clone = clone_of(rel);
-		list_foreach(&clone->table->parts.list)
-		{
-			auto part = list_at(Part, link);
-			auto consensus = &part->track.consensus;
-			track_sync(&part->track, consensus);
-		}
-	}
+		table_sync(clone_of(rel)->table);
 
 	// self
 	catalog_drop_of(self, tr, rel);

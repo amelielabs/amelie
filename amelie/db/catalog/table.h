@@ -25,6 +25,7 @@ struct Table
 
 bool table_create(Catalog*, Tr*, TableConfig*, bool);
 bool table_truncate(Catalog*, Tr*, Str*, Str*, bool);
+void table_sync(Table*);
 
 always_inline static inline Table*
 table_of(Rel* self)

@@ -125,6 +125,11 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 		return;
 	}
 
+	// todo: exclusive lock
+
+	// force commit pending prepared transactions
+	table_sync(table);
+
 	// create indexes on every table partition under the exclusive_ro lock,
 	// this will make table accessible on backends, while
 	// preventing writes
