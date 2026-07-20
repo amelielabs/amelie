@@ -90,17 +90,33 @@ dst_user_create(DstUser* self, int type)
 	switch (type) {
 	case DST_REL_TABLE:
 	{
+		char* index_type;
+		if ((random_generate(&am_task->random) % 2) == 0)
+			index_type = "tree";
+		else
+			index_type = "hash";
+		auto parts =
+			(int)((random_generate(&am_task->random) % self->dst->opt_parts.integer) + 1);
 		dst_execute(self->dst, self->client,
-		            "CREATE TABLE table_{u64} (id int primary key using hash, state bigint)",
-		            id);
+		            "CREATE TABLE table_{u64} (id int primary key using {s}, state bigint) "
+		            "PARTITIONS {d}",
+		            id, index_type, parts);
 		dst_stat(&self->dst->stats, DST_STAT_CREATE_TABLE);
 		break;
 	}
 	case DST_REL_TABLE_VECTOR:
 	{
+		char* index_type;
+		if ((random_generate(&am_task->random) % 2) == 0)
+			index_type = "tree";
+		else
+			index_type = "hash";
+		auto parts =
+			(int)((random_generate(&am_task->random) % self->dst->opt_parts.integer) + 1);
 		dst_execute(self->dst, self->client,
-		            "CREATE TABLE table_vector_{u64} (id int primary key, state vector(4))",
-		            id);
+		            "CREATE TABLE table_vector_{u64} (id int primary key using {s}, state vector(4))"
+		            "PARTITIONS {d}",
+		            id, index_type, parts);
 		dst_stat(&self->dst->stats, DST_STAT_CREATE_TABLE_VECTOR);
 		break;
 	}

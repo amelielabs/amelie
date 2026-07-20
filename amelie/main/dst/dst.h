@@ -25,6 +25,7 @@ struct Dst
 	Opt      opt_users;
 	Opt      opt_steps;
 	Opt      opt_keys;
+	Opt      opt_parts;
 	Opt      opt_rels;
 	Opt      opt_sync;
 	Opt      opt_restart;

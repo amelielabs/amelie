@@ -44,6 +44,7 @@ dst_init(Dst* self)
 		{ "users",      OPT_INT,    OPT_C|OPT_Z, &self->opt_users,      NULL,      3     },
 		{ "steps",      OPT_INT,    OPT_C|OPT_Z, &self->opt_steps,      NULL,      10000 },
 		{ "keys",       OPT_INT,    OPT_C|OPT_Z, &self->opt_keys,       NULL,      1000  },
+		{ "parts",      OPT_INT,    OPT_C|OPT_Z, &self->opt_parts,      NULL,      16    },
 		{ "rels",       OPT_INT,    OPT_C|OPT_Z, &self->opt_rels,       NULL,      10    },
 		{ "sync",       OPT_INT,    OPT_C|OPT_Z, &self->opt_sync,       NULL,      1000  },
 		{ "restart",    OPT_INT,    OPT_C|OPT_Z, &self->opt_restart,    NULL,      3000  },
