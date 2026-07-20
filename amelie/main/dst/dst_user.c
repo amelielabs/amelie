@@ -93,6 +93,7 @@ dst_user_create(DstUser* self, int type)
 		dst_execute(self->dst, self->client,
 		            "CREATE TABLE table_{u64} (id int primary key using hash, state bigint)",
 		            id);
+		dst_stat(&self->dst->stats, DST_STAT_CREATE_TABLE);
 		break;
 	}
 	case DST_REL_TABLE_VECTOR:
@@ -100,6 +101,7 @@ dst_user_create(DstUser* self, int type)
 		dst_execute(self->dst, self->client,
 		            "CREATE TABLE table_vector_{u64} (id int primary key, state vector(4))",
 		            id);
+		dst_stat(&self->dst->stats, DST_STAT_CREATE_TABLE_VECTOR);
 		break;
 	}
 	case DST_REL_TOPIC:
@@ -107,6 +109,7 @@ dst_user_create(DstUser* self, int type)
 		dst_execute(self->dst, self->client,
 		            "CREATE TOPIC topic_{u64}",
 		            id);
+		dst_stat(&self->dst->stats, DST_STAT_CREATE_TOPIC);
 		break;
 	}
 	default:
@@ -158,6 +161,7 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 			break;
 		}
 
+		dst_stat(&self->dst->stats, DST_STAT_CREATE_SUBSCRIPTION);
 		list_append(&parent->subs, &rel->link_parent);
 		parent->subs_count++;
 	} else
@@ -173,6 +177,7 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 		dst_execute(self->dst, self->client,
 		            "CREATE INDEX index_{u64} ON table_{u64} (id) USING {s}",
 		            rel->id, rel->parent->id, index_type);
+		dst_stat(&self->dst->stats, DST_STAT_CREATE_INDEX);
 
 		list_append(&parent->indexes, &rel->link_parent);
 		parent->indexes_count++;
@@ -184,6 +189,7 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 		dst_execute(self->dst, self->client,
 		            "CREATE CLONE clone_{u64}_{u64} OF table_{u64}",
 		            parent->id, id, parent->id);
+		dst_stat(&self->dst->stats, DST_STAT_CREATE_CLONE);
 
 		dst_rel_copy(rel, parent);
 

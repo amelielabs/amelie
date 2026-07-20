@@ -18,4 +18,5 @@
 #include "dst/dst_user.h"
 #include "dst/dst_step.h"
 #include "dst/dst_validate.h"
+#include "dst/dst_stat.h"
 #include "dst/dst.h"

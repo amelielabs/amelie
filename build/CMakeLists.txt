@@ -389,6 +389,7 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/test/test_command.c
     ${AMELIE_ROOT}/main/test/test_main.c
     ${AMELIE_ROOT}/main/dst/dst_user.c
+    ${AMELIE_ROOT}/main/dst/dst_stat.c
     ${AMELIE_ROOT}/main/dst/dst.c
     ${AMELIE_ROOT}/main/dst/dst_step.c
     ${AMELIE_ROOT}/main/dst/dst_validate.c

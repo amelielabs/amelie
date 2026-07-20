@@ -35,6 +35,7 @@ dst_init(Dst* self)
 	list_init(&self->users);
 	runtime_init(&self->runtime);
 	opts_init(&self->opts);
+	dst_stat_init(&self->stats);
 
 	OptsDef defs[] =
 	{
@@ -174,6 +175,8 @@ dst_execute_cmd(Dst* self, Client* client, bool can_fail, Str* cmd)
 	// error
 	if (can_fail)
 		return false;
+
+	info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
 
 	auto reply = &client->reply;
 	if (buf_empty(&reply->content))
@@ -408,4 +411,8 @@ dst_run(Dst* self)
 
 	// cleanup
 	dst_cleanup(self);
+
+	// print
+	info("");
+	dst_stat_print(&self->stats);
 }

@@ -48,6 +48,7 @@ dst_stmt(DstUser* self)
 		buf_format(&self->log.sql,
 		           "PUBLISH INTO topic_{u64} [{u64}, {i64}];",
 		           rel->id, key.key, key.value);
+		dst_stat(&self->dst->stats, DST_STAT_PUBLISH);
 
 		// add cdc event
 		dst_rel_cdc(rel, &key);
@@ -70,6 +71,7 @@ dst_stmt(DstUser* self)
 			buf_format(&self->log.sql,
 			           "INSERT INTO table_{u64} VALUES ({u64}, {i64});",
 			           rel->id, key->key, key->value);
+			dst_stat(&self->dst->stats, DST_STAT_INSERT);
 		} else
 		if (rel->type == DST_REL_TABLE_VECTOR)
 		{
@@ -86,6 +88,7 @@ dst_stmt(DstUser* self)
 			           key->value_vector[1],
 			           key->value_vector[2],
 			           key->value_vector[3]);
+			dst_stat(&self->dst->stats, DST_STAT_INSERT_VECTOR);
 		} else
 		if (rel->type == DST_REL_CLONE)
 		{
@@ -93,6 +96,7 @@ dst_stmt(DstUser* self)
 			buf_format(&self->log.sql,
 			           "INSERT INTO clone_{u64}_{u64} VALUES ({u64}, {i64});",
 			           rel->parent->id, rel->id, key->key, key->value);
+			dst_stat(&self->dst->stats, DST_STAT_INSERT_CLONE);
 		} else {
 			abort();
 		}
@@ -112,6 +116,7 @@ dst_stmt(DstUser* self)
 			buf_format(&self->log.sql,
 			           "INSERT INTO table_{u64} VALUES ({u64}, null) ON CONFLICT DO UPDATE SET state = {i64};",
 			           rel->id, key->key, key->value);
+			dst_stat(&self->dst->stats, DST_STAT_UPSERT);
 		} else
 		if (rel->type == DST_REL_TABLE_VECTOR)
 		{
@@ -128,6 +133,7 @@ dst_stmt(DstUser* self)
 			           key->value_vector[1],
 			           key->value_vector[2],
 			           key->value_vector[3]);
+			dst_stat(&self->dst->stats, DST_STAT_UPSERT_VECTOR);
 		} else
 		if (rel->type == DST_REL_CLONE)
 		{
@@ -135,6 +141,7 @@ dst_stmt(DstUser* self)
 			buf_format(&self->log.sql,
 			           "INSERT INTO clone_{u64}_{u64} VALUES ({u64}, null) ON CONFLICT DO UPDATE SET state = {i64};",
 			           rel->parent->id, rel->id, key->key, key->value);
+			dst_stat(&self->dst->stats, DST_STAT_UPSERT_CLONE);
 		} else {
 			abort();
 		}
@@ -154,6 +161,7 @@ dst_stmt(DstUser* self)
 			buf_format(&self->log.sql,
 			           "UPDATE table_{u64} SET state = {i64} WHERE id = {i64};",
 			           rel->id, key->value, key->key);
+			dst_stat(&self->dst->stats, DST_STAT_UPDATE);
 		} else
 		if (rel->type == DST_REL_TABLE_VECTOR)
 		{
@@ -170,6 +178,7 @@ dst_stmt(DstUser* self)
 			           key->value_vector[2],
 			           key->value_vector[3],
 			           key->key);
+			dst_stat(&self->dst->stats, DST_STAT_UPDATE_VECTOR);
 		} else
 		if (rel->type == DST_REL_CLONE)
 		{
@@ -177,6 +186,7 @@ dst_stmt(DstUser* self)
 			buf_format(&self->log.sql,
 			           "UPDATE clone_{u64}_{u64} SET state = {i64} WHERE id = {i64};",
 			           rel->parent->id, rel->id, key->value, key->key);
+			dst_stat(&self->dst->stats, DST_STAT_UPDATE_CLONE);
 		} else {
 			abort();
 		}
@@ -192,18 +202,21 @@ dst_stmt(DstUser* self)
 		buf_format(&self->log.sql,
 		           "DELETE FROM table_{u64} WHERE id = {u64};",
 		            rel->id, key->key);
+		dst_stat(&self->dst->stats, DST_STAT_DELETE);
 	} else
 	if (rel->type == DST_REL_TABLE_VECTOR)
 	{
 		buf_format(&self->log.sql,
 		           "DELETE FROM table_vector_{u64} WHERE id = {u64};",
 		           rel->id, key->key);
+		dst_stat(&self->dst->stats, DST_STAT_DELETE_VECTOR);
 	} else
 	if (rel->type == DST_REL_CLONE)
 	{
 		buf_format(&self->log.sql,
 		           "DELETE FROM clone_{u64}_{u64} WHERE id = {u64};",
 		            rel->parent->id, rel->id, key->key);
+		dst_stat(&self->dst->stats, DST_STAT_DELETE_CLONE);
 	} else {
 		abort();
 	}
@@ -417,6 +430,7 @@ dst_step_ddl_user(DstUser* self)
 
 		dst_execute(dst, client, "CREATE USER user_{u64}", user->id);
 		dst_user_connect(user);
+		dst_stat(&dst->stats, DST_STAT_CREATE_USER);
 
 		// (created empty)
 	} else
@@ -445,7 +459,10 @@ dst_step(DstUser* self)
 	{
 		dst_stmt(self);
 		if (error_inject)
+		{
 			buf_format(&self->log.sql, "SELECT error('injected');");
+			dst_stat(&self->dst->stats, DST_STAT_ERRORS_INJECTED);
+		}
 	} else
 	{
 		auto error_at = -1;
@@ -456,12 +473,18 @@ dst_step(DstUser* self)
 		{
 			dst_stmt(self);
 			if (i == error_at)
+			{
 				buf_format(&self->log.sql, "SELECT error('injected');");
+				dst_stat(&self->dst->stats, DST_STAT_ERRORS_INJECTED);
+			}
 		}
 		buf_format(&self->log.sql, "END;");
 	}
 
 	// execute (rollback state on failure)
 	if (! dst_execute_log(self))
+	{
 		dst_rollback(self);
+		dst_stat(&self->dst->stats, DST_STAT_ROLLBACK);
+	}
 }

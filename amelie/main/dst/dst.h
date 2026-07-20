@@ -19,6 +19,7 @@ struct Dst
 	List     users;
 	int      users_count;
 	int64_t  step;
+	DstStat  stats;
 	Opt      opt_dir;
 	Opt      opt_seed;
 	Opt      opt_users;
