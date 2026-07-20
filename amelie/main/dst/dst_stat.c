@@ -41,9 +41,16 @@ static const char* dst_ops[DST_STAT_MAX] =
 	"create clone",
 	"create topic",
 	"create subscription",
+	"drop",
 
 	"errors injected",
 	"rollback",
+
+	"backup",
+	"checkpoint",
+	"restart",
+	"validation",
+	"sql"
 };
 
 void

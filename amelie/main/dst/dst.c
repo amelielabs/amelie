@@ -147,6 +147,7 @@ static void
 dst_restart(Dst* self)
 {
 	info("[{u64}] RESTART", self->step);
+	dst_stat(&self->stats, DST_STAT_RESTART);
 
 	dst_close(self);
 	dst_open(self);
@@ -163,6 +164,7 @@ static bool
 dst_execute_cmd(Dst* self, Client* client, bool can_fail, Str* cmd)
 {
 	// info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
+	dst_stat(&self->stats, DST_STAT_SQL);
 
 	// breakpoint
 	if (self->step == (int)self->opt_bp.integer)
@@ -256,6 +258,7 @@ static void
 dst_checkpoint(Dst* self)
 {
 	info("[{u64}] CHECKPOINT", self->step);
+	dst_stat(&self->stats, DST_STAT_CHECKPOINT);
 
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{str}/env", opt_string_of(&self->opt_dir));
@@ -278,6 +281,7 @@ static void
 dst_backup(Dst* self)
 {
 	info("[{u64}] BACKUP", self->step);
+	dst_stat(&self->stats, DST_STAT_BACKUP);
 
 	Runtime rt_backup;
 	runtime_init(&rt_backup);

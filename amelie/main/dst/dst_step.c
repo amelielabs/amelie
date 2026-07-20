@@ -440,6 +440,7 @@ dst_step_ddl_user(DstUser* self)
 		auto user = dst_user(dst, user_order);
 		dst_execute(dst, client, "DROP USER user_{u64} CASCADE",
 		            user->id);
+		dst_stat(&dst->stats, DST_STAT_DROP);
 
 		list_unlink(&user->link);
 		dst->users_count--;

@@ -400,6 +400,8 @@ dst_validate_user(DstUser* self)
 void
 dst_validate(Dst* self)
 {
+	dst_stat(&self->stats, DST_STAT_VALIDATION);
+
 	list_foreach(&self->users)
 	{
 		auto user = list_at(DstUser, link);

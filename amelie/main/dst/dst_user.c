@@ -205,6 +205,8 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 void
 dst_user_drop(DstUser* self, DstRel* rel)
 {
+	dst_stat(&self->dst->stats, DST_STAT_DROP);
+
 	switch (rel->type) {
 	case DST_REL_TABLE:
 		dst_execute(self->dst, self->client,
