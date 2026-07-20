@@ -147,6 +147,69 @@ dst_validate_table_vector(DstUser* self, DstRel* rel)
 }
 
 static void
+dst_validate_index(DstUser* self, DstRel* rel)
+{
+	auto client = self->client;
+
+	// index
+	dst_execute(self->dst, client, "SELECT * FROM table_{u64} USE INDEX (index_{u64})",
+	            rel->parent->id, rel->id);
+	Str content;
+	buf_str(&client->reply.content, &content);
+	info("{str}", &content);
+
+	// parse json result
+	Json json;
+	json_init(&json);
+	defer(json_free, &json);
+	json_parse(&json, &content, NULL);
+
+	uint8_t* pos     = json.buf->start;
+	uint8_t* columns = NULL;
+	uint8_t* rows    = NULL;
+	Decode obj[] =
+	{
+		{ DECODE_ARRAY, "columns", &columns },
+		{ DECODE_ARRAY, "rows",    &rows    },
+		{ 0,             NULL,      NULL    },
+	};
+	decode_obj(obj, "result", &pos);
+
+	// read and validate rows
+
+	// [[...], ...]
+	auto count = 0;
+	unpack_array(&rows);
+	while (! unpack_array_end(&rows))
+	{
+		// [key, value]
+		unpack_array(&rows);
+		int64_t key;
+		int64_t value;
+		unpack_int(&rows, &key);
+		unpack_int(&rows, &value);
+		unpack_array_end(&rows);
+
+		// using parent table state
+		auto ref = dst_rel_get(rel->parent, key);
+		if (! ref)
+		{
+			error("index_{u64}: key {u64} is missing",
+			      rel->id, key);
+		} else
+		{
+			if (ref->value != value)
+				error("index_{u64}: key {u64} value expected '{u64}' got '{u64}'",
+				      rel->id, ref->key, ref->value, value);
+		}
+		count++;
+	}
+	if (count != rel->parent->state.count)
+		error("index_{u64}: keys count expected '{d}' got '{d}'",
+		      rel->id, count, rel->state.count);
+}
+
+static void
 dst_validate_clone(DstUser* self, DstRel* rel)
 {
 	auto client = self->client;
@@ -298,6 +361,12 @@ dst_validate_user(DstUser* self)
 		{
 			// table_vector
 			dst_validate_table_vector(self, rel);
+			break;
+		}
+		case DST_REL_INDEX:
+		{
+			// table index
+			dst_validate_index(self, rel);
 			break;
 		}
 		case DST_REL_CLONE:

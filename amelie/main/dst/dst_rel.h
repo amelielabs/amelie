@@ -17,6 +17,7 @@ enum
 {
 	DST_REL_TABLE,
 	DST_REL_TABLE_VECTOR,
+	DST_REL_INDEX,
 	DST_REL_CLONE,
 	DST_REL_TOPIC,
 	DST_REL_SUBSCRIPTION,
@@ -28,6 +29,8 @@ struct DstRel
 	uint64_t  id;
 	int       type;
 	DstRel*   parent;
+	List      indexes;
+	int       indexes_count;
 	List      subs;
 	int       subs_count;
 	List      clones;
@@ -55,11 +58,13 @@ dst_rel_allocate(DstRel* parent, uint64_t id, int type, int keys)
 {
 	auto self = (DstRel*)am_malloc(sizeof(DstRel));
 	memset(self, 0, sizeof(*self));
-	self->id           = id;
-	self->type         = type;
-	self->parent       = parent;
-	self->subs_count   = 0;
-	self->clones_count = 0;
+	self->id            = id;
+	self->type          = type;
+	self->parent        = parent;
+	self->indexes_count = 0;
+	self->subs_count    = 0;
+	self->clones_count  = 0;
+	list_init(&self->indexes);
 	list_init(&self->subs);
 	list_init(&self->clones);
 	hashtable_create(&self->state, keys * 2);

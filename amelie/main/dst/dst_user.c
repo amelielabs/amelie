@@ -161,6 +161,17 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 		list_append(&parent->subs, &rel->link_parent);
 		parent->subs_count++;
 	} else
+	if (type == DST_REL_INDEX)
+	{
+		assert(parent->type == DST_REL_TABLE);
+
+		dst_execute(self->dst, self->client,
+		            "CREATE INDEX index_{u64} ON table_{u64} (state)",
+		            rel->id, rel->parent->id);
+
+		list_append(&parent->indexes, &rel->link_parent);
+		parent->indexes_count++;
+	} else
 	if (type == DST_REL_CLONE)
 	{
 		assert(parent->type == DST_REL_TABLE);
@@ -194,6 +205,11 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		            "DROP TABLE table_vector_{u64} CASCADE",
 		            rel->id);
 		break;
+	case DST_REL_INDEX:
+		dst_execute(self->dst, self->client,
+		            "DROP INDEX index_{u64} ON table_{u64}",
+		            rel->id, rel->parent->id);
+		break;
 	case DST_REL_CLONE:
 		dst_execute(self->dst, self->client,
 		            "DROP CLONE clone_{u64}_{u64} CASCADE",
@@ -213,6 +229,16 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		list_unlink(&rel->link_parent);
 		rel->parent->subs_count--;
 		break;
+	}
+
+	// free indexes
+	list_foreach_safe(&rel->indexes)
+	{
+		auto index = list_at(DstRel, link_parent);
+		list_unlink(&index->link);
+		self->rels_count--;
+		assert(self->rels_count >= 0);
+		dst_rel_free(index);
 	}
 
 	// free subscriptions

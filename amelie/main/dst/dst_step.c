@@ -26,7 +26,8 @@ dst_stmt(DstUser* self)
 		auto rel_order = random_generate(&am_task->random) % self->rels_count;
 		rel = dst_user_rel(self, rel_order);
 		assert(rel);
-		if (rel->type != DST_REL_SUBSCRIPTION)
+		if (rel->type != DST_REL_SUBSCRIPTION &&
+		    rel->type != DST_REL_INDEX)
 			break;
 	}
 	op->rel = rel;
@@ -328,6 +329,23 @@ dst_step_ddl(DstUser* self)
 			// randomly choose table or topic (caped by the count)
 			auto pos = random_generate(&am_task->random) % count;
 			auto parent = dst_user_rel_filter(self, pos, true, true, true, true);
+			assert(parent);
+			dst_user_create_for(self, parent, type);
+
+		} else
+		if (type == DST_REL_INDEX)
+		{
+			// create index for table
+			auto count = dst_user_count(self, true, false, false, false);
+			if (! count)
+			{
+				dst_user_create(self, DST_REL_TABLE);
+				return;
+			}
+
+			// randomly choose table (caped by the count)
+			auto pos = random_generate(&am_task->random) % count;
+			auto parent = dst_user_rel_filter(self, pos, true, false, false, false);
 			assert(parent);
 			dst_user_create_for(self, parent, type);
 
