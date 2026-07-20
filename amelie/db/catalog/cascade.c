@@ -151,6 +151,34 @@ catalog_deps_validate(Catalog* self, Rel* rel, bool error_on_match)
 }
 
 bool
+catalog_deps_validate_udf(Catalog* self, Rel* rel, bool error_on_match)
+{
+	// no recursion
+	list_foreach(&self->rels.list)
+	{
+		auto at = list_at(Rel, link);
+		if (at == rel)
+			continue;
+
+		if (at->type != REL_UDF)
+			continue;
+
+		// udf depends on the relation
+		auto udf = udf_of(at);
+		auto dep = self->iface->udf_depends(udf, rel->user, rel->name);
+		if (dep)
+		{
+			if (error_on_match)
+				error("{s} '{str}.{str}' depends on {s} '{str}'",
+				      rel_type_of(at->type), at->user, at->name,
+				      rel_type_of(rel->type), rel->name);
+			return false;
+		}
+	}
+	return true;
+}
+
+bool
 catalog_deps_validate_user(Catalog* self, Str* user, bool error_on_match)
 {
 	// no recursion

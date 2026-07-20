@@ -142,8 +142,8 @@ table_index_drop(Catalog* self,
 		error("table '{str}' index '{str}': primary index cannot be dropped",
 		      &table->config->name, name);
 
-	// ensure no strict dependecies
-	catalog_deps_validate(self, &table->rel, true);
+	// ensure no strict dependecies on udfs
+	catalog_deps_validate_udf(self, &table->rel, true);
 
 	// update table
 	log_ddl(&tr->log, &drop_if, index, &table->rel);
