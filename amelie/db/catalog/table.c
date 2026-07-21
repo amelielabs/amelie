@@ -24,6 +24,8 @@
 static inline void
 table_free(Table* self, bool drop)
 {
+	table_sync(self);
+
 	unused(drop);
 	auto parts = &self->parts;
 	parts_close(parts);
