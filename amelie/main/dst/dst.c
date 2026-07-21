@@ -36,6 +36,7 @@ dst_init(Dst* self)
 	runtime_init(&self->runtime);
 	opts_init(&self->opts);
 	dst_stat_init(&self->stats);
+	buf_init(&self->payload);
 
 	OptsDef defs[] =
 	{
@@ -44,6 +45,7 @@ dst_init(Dst* self)
 		{ "users",      OPT_INT,    OPT_C|OPT_Z, &self->opt_users,      NULL,      3     },
 		{ "steps",      OPT_INT,    OPT_C|OPT_Z, &self->opt_steps,      NULL,      10000 },
 		{ "keys",       OPT_INT,    OPT_C|OPT_Z, &self->opt_keys,       NULL,      1000  },
+		{ "payload",    OPT_INT,    OPT_C|OPT_Z, &self->opt_payload,    NULL,      512   },
 		{ "parts",      OPT_INT,    OPT_C|OPT_Z, &self->opt_parts,      NULL,      16    },
 		{ "rels",       OPT_INT,    OPT_C|OPT_Z, &self->opt_rels,       NULL,      10    },
 		{ "sync",       OPT_INT,    OPT_C|OPT_Z, &self->opt_sync,       NULL,      1000  },
@@ -68,6 +70,7 @@ dst_free(Dst* self)
 	}
 	opts_free(&self->opts);
 	runtime_free(&self->runtime);
+	buf_free(&self->payload);
 }
 
 static void
@@ -93,6 +96,12 @@ dst_configure(Dst* self)
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{str}/log", dir);
 	logger_open(logger, path);
+
+	// prepare payload
+	auto payload = &self->payload;
+	auto payload_size = opt_int_of(&self->opt_payload);
+	buf_reserve(payload, payload_size);
+	memset(payload->start, 'x', payload_size);
 
 	// create users
 	for (auto i = 0; i < 3; i++)

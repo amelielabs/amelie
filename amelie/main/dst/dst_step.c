@@ -68,9 +68,13 @@ dst_stmt(DstUser* self)
 		if (rel->type == DST_REL_TABLE)
 		{
 			key->value = random_generate(&am_task->random);
+			auto payload_size = random_generate(&am_task->random) % opt_int_of(&self->dst->opt_payload);
 			buf_format(&self->log.sql,
-			           "INSERT INTO table_{u64} VALUES ({u64}, {i64});",
-			           rel->id, key->key, key->value);
+			           "INSERT INTO table_{u64} VALUES ({u64}, {i64}, '{.*s}');",
+			           rel->id, key->key, key->value,
+			           payload_size,
+			           self->dst->payload.start);
+
 			dst_stat(&self->dst->stats, DST_STAT_INSERT);
 		} else
 		if (rel->type == DST_REL_TABLE_VECTOR)

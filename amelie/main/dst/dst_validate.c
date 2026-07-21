@@ -21,10 +21,10 @@ dst_validate_table(DstUser* self, DstRel* rel)
 	auto client = self->client;
 
 	// table
-	dst_execute(self->dst, client, "SELECT * FROM table_{u64}", rel->id);
+	dst_execute(self->dst, client, "SELECT id, state FROM table_{u64}", rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);
-	//info("{str}", &content);
+	// info("{str}", &content);
 
 	// parse json result
 	Json json;
@@ -152,7 +152,7 @@ dst_validate_index(DstUser* self, DstRel* rel)
 	auto client = self->client;
 
 	// index
-	dst_execute(self->dst, client, "SELECT * FROM table_{u64} USE INDEX (index_{u64})",
+	dst_execute(self->dst, client, "SELECT id, state FROM table_{u64} USE INDEX (index_{u64})",
 	            rel->parent->id, rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);
@@ -215,7 +215,7 @@ dst_validate_clone(DstUser* self, DstRel* rel)
 	auto client = self->client;
 
 	// clone
-	dst_execute(self->dst, client, "SELECT * FROM clone_{u64}_{u64}",
+	dst_execute(self->dst, client, "SELECT id, state FROM clone_{u64}_{u64}",
 	            rel->parent->id, rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);

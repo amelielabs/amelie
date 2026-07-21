@@ -98,7 +98,7 @@ dst_user_create(DstUser* self, int type)
 		auto parts =
 			(int)((random_generate(&am_task->random) % self->dst->opt_parts.integer) + 1);
 		dst_execute(self->dst, self->client,
-		            "CREATE TABLE table_{u64} (id int primary key using {s}, state bigint) "
+		            "CREATE TABLE table_{u64} (id int primary key using {s}, state bigint, payload text) "
 		            "PARTITIONS {d}",
 		            id, index_type, parts);
 		dst_stat(&self->dst->stats, DST_STAT_CREATE_TABLE);

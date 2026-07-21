@@ -25,6 +25,7 @@ struct Dst
 	Opt      opt_users;
 	Opt      opt_steps;
 	Opt      opt_keys;
+	Opt      opt_payload;
 	Opt      opt_parts;
 	Opt      opt_rels;
 	Opt      opt_sync;
@@ -35,6 +36,7 @@ struct Dst
 	Opt      opt_ddl_user;
 	Opt      opt_bp;
 	Opts     opts;
+	Buf      payload;
 	Runtime  runtime;
 };
 
