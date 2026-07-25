@@ -95,44 +95,47 @@ timezones_read(Timezones* self, char* location, char* location_nested)
 	}
 }
 
-#if 0
-static void
-timezones_read_system_timezone(Timezones* self)
-{
-	// read /etc/timezone content
-	auto buf = file_import("/etc/timezone");
-	defer(buf_free, buf);
-
-	Str name;
-	str_init(&name);
-	buf_str(buf, &name);
-	str_chomp(&name);
-
-	// set as system timezone in timezone mgr
-	self->system = timezones_find(self, &name);
-	if (! self->system)
-		error("timezone: failed to set system timezone '{str}'", &name);
-}
-#endif
-
 static void
 timezones_read_system_localtime(Timezones* self)
 {
-	char path[PATH_MAX];
-	auto size = readlink("/etc/localtime", path, sizeof(path));
+	// read /etc/localtime symlink path
+	char link_path[PATH_MAX];
+	auto size = readlink("/etc/localtime", link_path, sizeof(link_path));
 	if (size == -1)
 		error("timezone: failed to read /etc/localtime symlink");
 
-	// exclude directory name from the path
-	if (size <= 20 || memcmp(path, "/usr/share/zoneinfo/", 20) != 0)
-		error("timezone: /etc/localtime has invalid path");
+	// parse timezone name
+	Str path;
+	str_set(&path, link_path, size);
+	for (;;)
+	{
+		if (str_is_prefix(&path, "zoneinfo/", 9))
+		{
+			str_advance(&path, 9);
+			break;
+		}
 
-	// set as system timezone in timezone mgr
-	Str name;
-	str_set(&name, path + 20, size - 20);
-	self->system = timezones_find(self, &name);
+		Str name;
+		str_init(&name);
+		if (! str_split(&path, &name, '/'))
+		{
+			str_init(&path);
+			break;
+		}
+
+		str_advance(&path, str_size(&name) + 1);
+	}
+
+	// fallback to UTC
+	if (str_empty(&path))
+	{
+		info("timezone: failed to read system timezone '{.*s}', fallback to UTC",
+		     size, link_path);
+	}
+
+	self->system = timezones_find(self, &path);
 	if (! self->system)
-		error("timezone: failed to set system timezone '{str}'", &name);
+		error("timezone: failed to set system timezone '{str}'", &path);
 }
 
 void
