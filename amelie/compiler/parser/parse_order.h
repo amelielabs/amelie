@@ -45,7 +45,7 @@ ast_order_list_match_index(AstList* exprs, Target* target)
 	if (index->keys.list_count != exprs->count)
 		return false;
 
-	auto ref  = index->keys.list.next;
+	auto key  = keys_at(&index->keys, 0);
 	auto node = exprs->list;
 	for (; node; node = node->next)
 	{
@@ -53,7 +53,6 @@ ast_order_list_match_index(AstList* exprs, Target* target)
 		if (! order->asc)
 			return false;
 
-		auto key = container_of(ref, Key, link);
 		if (order->expr->id == KNAME)
 		{
 			// compare key name
@@ -79,7 +78,7 @@ ast_order_list_match_index(AstList* exprs, Target* target)
 			return false;
 		}
 
-		ref = ref->next;
+		key++;
 	}
 	return true;
 }

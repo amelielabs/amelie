@@ -61,10 +61,7 @@ parse_key(Stmt* self, Keys* keys)
 			asc = false;
 
 		// create key
-		auto key = key_allocate();
-		key_set_ref(key, column->order);
-		key_set_asc(key, asc);
-		keys_add(keys, key);
+		keys_add(keys, column->order, asc);
 
 		if (partitioning)
 			partition_key++;
@@ -179,9 +176,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 				stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
 			// create key
-			auto key = key_allocate();
-			key_set_ref(key, column->order);
-			keys_add(keys, key);
+			keys_add(keys, column->order, true);
 
 			// partition by primary key
 			auto config = ast_table_create_of(self->ast)->config;
@@ -273,9 +268,9 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 			table_config_set_partition_by(config, partition_key);
 
 			// force column not_null constraint
-			list_foreach(&keys->list)
+			for (auto at = 0; at < keys->list_count; at++)
 			{
-				auto key = list_at(Key, link);
+				auto key = keys_at(keys, at);
 				constraints_set_not_null(&key->column->constraints, true);
 			}
 
@@ -350,9 +345,9 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 	if (identity)
 	{
 		auto match = false;
-		list_foreach(&keys->list)
+		for (auto at = 0; at < keys->list_count; at++)
 		{
-			auto key = list_at(Key, link);
+			auto key = keys_at(keys, at);
 			if (key->column != identity)
 				continue;
 			match = true;

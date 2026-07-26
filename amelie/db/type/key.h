@@ -17,32 +17,23 @@ struct Key
 {
 	int     order;
 	Column* column;
-	int64_t ref;
+	int64_t column_order;
 	bool    asc;
-	List    link;
 };
 
-static inline Key*
-key_allocate(void)
+static inline void
+key_init(Key* self)
 {
-	Key* self = am_malloc(sizeof(Key));
-	self->order  = -1;
-	self->asc    = true;
-	self->column = NULL;
-	list_init(&self->link);
-	return self;
+	self->order        = -1;
+	self->column       = NULL;
+	self->column_order = -1;
+	self->asc          = true;
 }
 
 static inline void
-key_free(Key* self)
+key_set_column_order(Key* self, int value)
 {
-	am_free(self);
-}
-
-static inline void
-key_set_ref(Key* self, int value)
-{
-	self->ref = value;
+	self->column_order = value;
 }
 
 static inline void
@@ -51,28 +42,16 @@ key_set_asc(Key* self, bool value)
 	self->asc = value;
 }
 
-static inline Key*
-key_copy(Key* self)
+static inline void
+key_read(Key* self, uint8_t** pos)
 {
-	auto copy = key_allocate();
-	key_set_ref(copy, self->ref);
-	key_set_asc(copy, self->asc);
-	return copy;
-}
-
-static inline Key*
-key_read(uint8_t** pos)
-{
-	auto self = key_allocate();
-	errdefer(key_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_INT,  "column", &self->ref },
-		{ DECODE_BOOL, "asc",    &self->asc },
-		{ 0,            NULL,     NULL      },
+		{ DECODE_INT,  "column", &self->column_order },
+		{ DECODE_BOOL, "asc",    &self->asc          },
+		{ 0,            NULL,     NULL               },
 	};
 	decode_obj(obj, "key", pos);
-	return self;
 }
 
 static inline void
@@ -83,7 +62,7 @@ key_write(Key* self, Buf* buf, int flags)
 
 	// column
 	encode_raw(buf, "column", 6);
-	encode_int(buf, self->ref);
+	encode_int(buf, self->column_order);
 
 	// asc
 	encode_raw(buf, "asc", 3);

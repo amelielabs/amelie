@@ -66,9 +66,10 @@ value_hash_row(Keys*  keys, Value* refs,
 {
 	// values are row columns
 	uint32_t hash = 0;
-	list_foreach(&keys->list)
+	for (auto at = 0; at < keys->list_count; at++)
 	{
-		auto column = list_at(Key, link)->column;
+		auto key = keys_at(keys, at);
+		auto column = key->column;
 		auto value = values + column->order;
 		hash = value_hash_refs(value, column, refs, identity, hash);
 	}
@@ -82,9 +83,9 @@ value_hash_keys(Keys*  keys, Value* refs,
 {
 	// values are row keys
 	uint32_t hash = 0;
-	list_foreach(&keys->list)
+	for (auto at = 0; at < keys->list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(keys, at);
 		auto value = values + key->order;
 		hash = value_hash_refs(value, key->column, refs, identity, hash);
 	}

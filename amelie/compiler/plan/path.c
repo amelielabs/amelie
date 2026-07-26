@@ -28,9 +28,10 @@ path_allocate(Target* target, Keys* keys)
 	self->match_start       = 0;
 	self->match_start_exprs = 0;
 	self->match_stop        = 0;
-	list_foreach(&keys->list)
+
+	for (auto at = 0; at < keys->list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(keys, at);
 		auto ref = &self->keys[key->order];
 		ref->key      = key;
 		ref->start_op = NULL;
@@ -322,9 +323,9 @@ path_create(Target* target, Block* block, Keys* keys, PathOps* ops)
 	auto match_eq = 0;
 	auto match_last_start = -1;
 	auto match_last_stop  = -1;
-	list_foreach(&keys->list)
+	for (auto at = 0; at < keys->list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(keys, at);
 		auto key_path = &self->keys[key->order];
 		path_key(self, key_path, ops);
 

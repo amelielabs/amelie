@@ -50,9 +50,9 @@ add_if_abort(Log* self, LogOp* op)
 
 	// restore key column constraints (reset not null constraint)
 	uint8_t* pos = log_data_of(self, op);
-	list_foreach(&index->keys.list)
+	for (auto at = 0; at < index->keys.list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(&index->keys, at);
 		auto column = key->column;
 		auto cons = &column->constraints;
 		constraints_free(cons);
@@ -83,9 +83,10 @@ table_index_add(Catalog* self, Table* table, Tr* tr, IndexConfig* config)
 	log_ddl(&tr->log, &add_if, index, &table->rel);
 
 	// create not null constraints on the columns
-	list_foreach(&config->keys.list)
+	auto keys = &config->keys;
+	for (auto at = 0; at < keys->list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(keys, at);
 		auto column = key->column;
 		constraints_write(&column->constraints, &tr->log.data, 0);
 		constraints_set_not_null(&column->constraints, true);

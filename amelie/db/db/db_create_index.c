@@ -27,10 +27,10 @@
 static inline bool
 db_indexate_with_null(Index* index, Row* row)
 {
-	list_foreach(&index->config->keys.list)
+	for (auto at = 0; at < index->config->keys.list_count; at++)
 	{
-		const auto column = list_at(Key, link)->column;
-		if (! row_column(row, column))
+		auto key = keys_at(&index->config->keys, at);
+		if (! row_column(row, key->column))
 			return true;
 	}
 	return false;

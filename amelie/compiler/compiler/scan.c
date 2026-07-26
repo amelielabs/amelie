@@ -24,11 +24,11 @@ scan_key(Scan* self, Target* target)
 {
 	auto cp    = self->compiler;
 	auto path  = target->path;
+	auto keys  = &target->from_index->keys;
 	auto count = 0;
-
-	list_foreach(&target->from_index->keys.list)
+	for (auto at = 0; at < keys->list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(keys, at);
 		auto ref = &path->keys[key->order];
 
 		// use value from >, >=, = expression as a key
@@ -47,10 +47,10 @@ scan_stop(Scan* self, Target* target, int scan_stop_jntr[])
 {
 	auto cp   = self->compiler;
 	auto path = target->path;
-
-	list_foreach(&target->from_index->keys.list)
+	auto keys = &target->from_index->keys;
+	for (auto at = 0; at < keys->list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(keys, at);
 		auto ref = &path->keys[key->order];
 		if (! ref->stop)
 			break;

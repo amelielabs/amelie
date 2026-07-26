@@ -21,9 +21,9 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 {
 	// create a row which has only key columns (others are set to NULL)
 	int size = 0;
-	list_foreach(&self->list)
+	for (auto at = 0; at < self->list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(self, at);
 
 		// int, timestamp, uuid
 		auto column = key->column;

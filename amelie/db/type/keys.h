@@ -16,56 +16,64 @@ typedef struct Keys Keys;
 struct Keys
 {
 	Comparable comparable;
-	List       list;
+	Buf        list;
 	int        list_count;
 	Columns*   columns;
 };
 
+always_inline static inline Key*
+keys_at(Keys* self, int order)
+{
+	return &((Key*)self->list.start)[order];
+}
+
 static inline void
 keys_init(Keys* self, Columns* columns)
 {
-	self->list_count = 0;
 	self->columns    = columns;
+	self->list_count = 0;
+	buf_init(&self->list);
 	comparable_init(&self->comparable);
-	list_init(&self->list);
 }
 
 static inline void
 keys_free(Keys* self)
 {
-	list_foreach_safe(&self->list)
+	for (auto at = 0; at < self->list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(self, at);
 		key->column->refs--;
-		key_free(key);
 	}
+	buf_free(&self->list);
 	comparable_free(&self->comparable);
 }
 
-static inline void
-keys_add(Keys* self, Key* key)
+static inline Key*
+keys_add(Keys* self, int column_order, bool asc)
 {
-	assert(key->order == -1);
-
 	// add key
-	key->order = self->list_count;
-	list_append(&self->list, &key->link);
+	auto key = (Key*)buf_emplace(&self->list, sizeof(Key));
+	key_init(key);
+	key->order        = self->list_count;
+	key->column_order = column_order;
+	key->asc          = asc;
 	self->list_count++;
 
-	// set column pointer
-	key->column = columns_find_by(self->columns, key->ref);
+	// resolve column
+	key->column = columns_find_by(self->columns, column_order);
 	key->column->refs++;
 
 	// add to the comparable
 	comparable_add(&self->comparable, key->column);
+	return key;
 }
 
 hot static inline Key*
 keys_find(Keys* self, Str* name)
 {
-	list_foreach(&self->list)
+	for (auto at = 0; at < self->list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(self, at);
 		if (str_compare(&key->column->name, name))
 			return key;
 	}
@@ -75,10 +83,10 @@ keys_find(Keys* self, Str* name)
 hot static inline Key*
 keys_find_column(Keys* self, int order)
 {
-	list_foreach(&self->list)
+	for (auto at = 0; at < self->list_count; at++)
 	{
-		auto key = list_at(Key, link);
-		if (key->ref == order)
+		auto key = keys_at(self, at);
+		if (key->column_order == order)
 			return key;
 	}
 	return NULL;
@@ -87,24 +95,22 @@ keys_find_column(Keys* self, int order)
 static inline void
 keys_copy(Keys* self, Keys* src)
 {
-	list_foreach(&src->list)
+	for (auto at = 0; at < src->list_count; at++)
 	{
-		auto copy = key_copy(list_at(Key, link));
-		keys_add(self, copy);
+		auto key = keys_at(src, at);
+		keys_add(self, key->column_order, key->asc);
 	}
 }
 
 static inline void
 keys_copy_distinct(Keys* self, Keys* primary)
 {
-	// add keys which are not already present
-	list_foreach_safe(&primary->list)
+	for (auto at = 0; at < primary->list_count; at++)
 	{
-		auto key = list_at(Key, link);
-		if (keys_find_column(self, key->ref))
+		auto key = keys_at(primary, at);
+		if (keys_find_column(self, key->column_order))
 			continue;
-		auto copy = key_copy(list_at(Key, link));
-		keys_add(self, copy);
+		keys_add(self, key->column_order, key->asc);
 	}
 }
 
@@ -115,8 +121,10 @@ keys_read(Keys* self, uint8_t** pos)
 	unpack_array(pos);
 	while (! unpack_array_end(pos))
 	{
-		auto key = key_read(pos);
-		keys_add(self, key);
+		Key read;
+		key_init(&read);
+		key_read(&read, pos);
+		keys_add(self, read.column_order, read.asc);
 	}
 }
 
@@ -125,9 +133,9 @@ keys_write(Keys* self, Buf* buf, int flags)
 {
 	// []
 	encode_array(buf);
-	list_foreach(&self->list)
+	for (auto at = 0; at < self->list_count; at++)
 	{
-		auto key = list_at(Key, link);
+		auto key = keys_at(self, at);
 		key_write(key, buf, flags);
 	}
 	encode_array_end(buf);
