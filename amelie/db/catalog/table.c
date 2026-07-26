@@ -24,7 +24,7 @@
 static inline void
 table_free(Table* self, bool drop)
 {
-	table_sync(self);
+	assert(! self->rel.subs);
 
 	unused(drop);
 	auto parts = &self->parts;

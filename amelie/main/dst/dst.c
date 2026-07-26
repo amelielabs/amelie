@@ -174,7 +174,6 @@ dst_restart(Dst* self)
 static bool
 dst_execute_cmd(Dst* self, Client* client, bool print, bool can_fail, Str* cmd)
 {
-	print = true;
 	if (print)
 		info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
 

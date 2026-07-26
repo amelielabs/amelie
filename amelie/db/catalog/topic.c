@@ -25,6 +25,7 @@ static inline void
 topic_free(Topic* self, bool drop)
 {
 	unused(drop);
+	assert(! self->rel.subs);
 	topic_config_free(self->config);
 	am_free(self);
 }

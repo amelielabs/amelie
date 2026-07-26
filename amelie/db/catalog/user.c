@@ -111,7 +111,8 @@ user_drop_of(Catalog* self,
 				continue;
 			}
 			count += catalog_deps(self, rel, &deps) + 1;
-			catalog_deps_add(&deps, rel);
+			if (! catalog_deps_has(&deps, rel))
+				catalog_deps_add(&deps, rel);
 		}
 
 		// drop relations

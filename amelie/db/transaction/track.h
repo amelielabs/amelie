@@ -49,6 +49,7 @@ static inline void
 track_free(Track* self)
 {
 	assert(list_empty(&self->queue.list));
+	tr_list_reset(&self->prepared, &self->cache);
 	tr_cache_free(&self->cache);
 }
 

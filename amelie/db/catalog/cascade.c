@@ -22,15 +22,20 @@
 #include <amelie_catalog.h>
 
 hot bool
-catalog_deps_add(Buf* list, Rel* rel)
+catalog_deps_has(Buf* list, Rel* rel)
 {
 	auto it  = (Rel**)list->start;
 	auto end = (Rel**)list->position;
 	for (; it < end; it++)
 		if (*it == rel)
-			return false;
+			return true;
+	return false;
+}
+
+hot void
+catalog_deps_add(Buf* list, Rel* rel)
+{
 	buf_write(list, &rel, sizeof(Rel**));
-	return true;
 }
 
 hot static inline bool
@@ -114,8 +119,11 @@ catalog_deps(Catalog* self, Rel* rel, Buf* list)
 		if (! catalog_depends(self, rel, at))
 			continue;
 
-		if (catalog_deps_add(list, at))
-			count += catalog_deps(self, at, list) + 1;
+		if (catalog_deps_has(list, at))
+			continue;
+
+		count += catalog_deps(self, at, list) + 1;
+		catalog_deps_add(list, at);
 	}
 	return count;
 }

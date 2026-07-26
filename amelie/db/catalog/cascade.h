@@ -11,7 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-bool catalog_deps_add(Buf*, Rel*);
+bool catalog_deps_has(Buf*, Rel*);
+void catalog_deps_add(Buf*, Rel*);
 int  catalog_deps(Catalog*, Rel*, Buf*);
 void catalog_deps_drop(Catalog*, Tr*, Buf*);
 bool catalog_deps_validate(Catalog*, Rel*, bool);
