@@ -109,7 +109,6 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 
 	auto config = index_config_read(table_columns(table), &pos);
 	errdefer(index_config_free, config);
-	keys_set_primary(&config->keys, false);
 
 	// find index
 	auto if_not_exists = ddl_if_not_exists(flags);

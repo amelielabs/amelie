@@ -144,15 +144,11 @@ table_config_copy(TableConfig* self)
 	columns_copy(&copy->columns, &self->columns);
 	grants_copy(&copy->grants, &self->grants);
 
-	Keys* primary_keys = NULL;
 	list_foreach(&self->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
 		auto config_copy = index_config_copy(config, &copy->columns);
 		table_config_index_add(copy, config_copy);
-		keys_set_primary(&config_copy->keys, !primary_keys);
-		if (primary_keys == NULL)
-			primary_keys = &config_copy->keys;
 	}
 	list_foreach(&self->parts)
 	{

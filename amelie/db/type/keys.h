@@ -18,7 +18,6 @@ struct Keys
 	Comparable comparable;
 	List       list;
 	int        list_count;
-	bool       primary;
 	Columns*   columns;
 };
 
@@ -26,7 +25,6 @@ static inline void
 keys_init(Keys* self, Columns* columns)
 {
 	self->list_count = 0;
-	self->primary    = false;
 	self->columns    = columns;
 	comparable_init(&self->comparable);
 	list_init(&self->list);
@@ -42,12 +40,6 @@ keys_free(Keys* self)
 		key_free(key);
 	}
 	comparable_free(&self->comparable);
-}
-
-static inline void
-keys_set_primary(Keys* self, bool value)
-{
-	self->primary = value;
 }
 
 static inline void
