@@ -81,3 +81,17 @@ dst_log_add(DstLog* self)
 	self->ops_count++;
 	return  op;
 }
+
+static inline bool
+dst_log_include(DstLog* self, uint64_t key)
+{
+	for (auto i = 0; i < self->ops_count; i++)
+	{
+		auto op = dst_log_at(self, i);
+		if (op->key.key == key)
+			return true;
+		if (op->prev.key == key)
+			return true;
+	}
+	return false;
+}

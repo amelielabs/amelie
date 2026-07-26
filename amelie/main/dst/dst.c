@@ -55,6 +55,7 @@ dst_init(Dst* self)
 		{ "ddl",        OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl,        NULL,      6000  },
 		{ "ddl_user",   OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl_user,   NULL,      25000 },
 		{ "bp",         OPT_INT,    OPT_C,       &self->opt_bp,         NULL,      -1    },
+		{ "track_key",  OPT_INT,    OPT_C,       &self->opt_track_key,  NULL,      -1    },
 		{  NULL,        0,          0,            NULL,                 NULL,      0     }
 	};
 	opts_define(&self->opts, defs);
@@ -171,9 +172,12 @@ dst_restart(Dst* self)
 }
 
 static bool
-dst_execute_cmd(Dst* self, Client* client, bool can_fail, Str* cmd)
+dst_execute_cmd(Dst* self, Client* client, bool print, bool can_fail, Str* cmd)
 {
-	//info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
+	print = true;
+	if (print)
+		info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
+
 	dst_stat(&self->stats, DST_STAT_SQL);
 
 	// breakpoint
@@ -212,15 +216,21 @@ dst_execute(Dst* self, Client* client, char* fmt, ...)
 
 	Str cmd;
 	str_set(&cmd, msg, msg_size);
-	dst_execute_cmd(self, client, false, &cmd);
+	dst_execute_cmd(self, client, false, false, &cmd);
 }
 
 bool
 dst_execute_log(DstUser* self)
 {
+	auto print = false;
+	auto dst = self->dst;
+	auto track_key = opt_int_of(&dst->opt_track_key);
+	if (track_key != (uint64_t)-1)
+		print = dst_log_include(&self->log, track_key);
+
 	Str cmd;
 	buf_str(&self->log.sql, &cmd);
-	return dst_execute_cmd(self->dst, self->client, true, &cmd);
+	return dst_execute_cmd(dst, self->client, print, true, &cmd);
 }
 
 static void

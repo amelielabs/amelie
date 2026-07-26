@@ -66,7 +66,7 @@ dst_validate_table(DstUser* self, DstRel* rel)
 		} else
 		{
 			if (ref->value != value)
-				error("table_{u64}: key {u64} value expected '{u64}' got '{u64}'",
+				error("table_{u64}: key {u64} value expected '{i64}' got '{i64}'",
 				      rel->id, ref->key, ref->value, value);
 		}
 		count++;
@@ -156,7 +156,7 @@ dst_validate_index(DstUser* self, DstRel* rel)
 	            rel->parent->id, rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);
-	//info("{str}", &content);
+	// info("{str}", &content);
 
 	// parse json result
 	Json json;
@@ -199,7 +199,7 @@ dst_validate_index(DstUser* self, DstRel* rel)
 		} else
 		{
 			if (ref->value != value)
-				error("index_{u64}: key {u64} value expected '{u64}' got '{u64}'",
+				error("index_{u64}: key {u64} value expected '{i64}' got '{i64}'",
 				      rel->id, ref->key, ref->value, value);
 		}
 		count++;
@@ -261,7 +261,7 @@ dst_validate_clone(DstUser* self, DstRel* rel)
 		} else
 		{
 			if (ref->value != value)
-				error("clone_{u64}_{u64}: key {u64} value expected '{u64}' got '{u64}'",
+				error("clone_{u64}_{u64}: key {u64} value expected '{i64}' got '{i64}'",
 				      rel->parent->id, rel->id, ref->key, ref->value, value);
 		}
 		count++;

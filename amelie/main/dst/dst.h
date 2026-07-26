@@ -35,6 +35,7 @@ struct Dst
 	Opt      opt_ddl;
 	Opt      opt_ddl_user;
 	Opt      opt_bp;
+	Opt      opt_track_key;
 	Opts     opts;
 	Buf      payload;
 	Runtime  runtime;

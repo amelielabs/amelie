@@ -97,9 +97,12 @@ dst_stmt(DstUser* self)
 		if (rel->type == DST_REL_CLONE)
 		{
 			key->value = random_generate(&am_task->random);
+			auto payload_size = random_generate(&am_task->random) % opt_int_of(&self->dst->opt_payload);
 			buf_format(&self->log.sql,
-			           "INSERT INTO clone_{u64}_{u64} VALUES ({u64}, {i64});",
-			           rel->parent->id, rel->id, key->key, key->value);
+			           "INSERT INTO clone_{u64}_{u64} VALUES ({u64}, {i64}, '{.*s}');",
+			           rel->parent->id, rel->id, key->key, key->value,
+			           payload_size,
+			           self->dst->payload.start);
 			dst_stat(&self->dst->stats, DST_STAT_INSERT_CLONE);
 		} else {
 			abort();
@@ -118,7 +121,7 @@ dst_stmt(DstUser* self)
 		{
 			key->value = random_generate(&am_task->random);
 			buf_format(&self->log.sql,
-			           "INSERT INTO table_{u64} VALUES ({u64}, null) ON CONFLICT DO UPDATE SET state = {i64};",
+			           "INSERT INTO table_{u64} VALUES ({u64}, null, null) ON CONFLICT DO UPDATE SET state = {i64};",
 			           rel->id, key->key, key->value);
 			dst_stat(&self->dst->stats, DST_STAT_UPSERT);
 		} else
@@ -143,7 +146,7 @@ dst_stmt(DstUser* self)
 		{
 			key->value = random_generate(&am_task->random);
 			buf_format(&self->log.sql,
-			           "INSERT INTO clone_{u64}_{u64} VALUES ({u64}, null) ON CONFLICT DO UPDATE SET state = {i64};",
+			           "INSERT INTO clone_{u64}_{u64} VALUES ({u64}, null, null) ON CONFLICT DO UPDATE SET state = {i64};",
 			           rel->parent->id, rel->id, key->key, key->value);
 			dst_stat(&self->dst->stats, DST_STAT_UPSERT_CLONE);
 		} else {
