@@ -59,16 +59,18 @@ parse_index_create(Stmt* self, bool unique)
 	stmt->table_name = target->string;
 
 	// find table
-	auto table = catalog_find_table(&share()->db->catalog,
-	                                self->parser->user,
+	auto table = catalog_find_table(&share()->db->catalog, self->parser->user,
 	                                &stmt->table_name,
 	                                false);
 	if (! table)
 		stmt_error(self, target, "table not found");
 
-	// todo: unique indexes can be created only with 1 partition table
-	if (unique && table->parts.list_count != 1)
-		stmt_error(self, target, "secondary UNIQUE INDEX allowed only for tables with one partition");
+	// unique index rules
+	if (unique)
+	{
+		if (table->parts.list_count != 1)
+			stmt_error(self, target, "secondary UNIQUE INDEX allowed only for tables with one partition");
+	}
 
 	// create index config
 	auto config = index_config_allocate(table_columns(table));

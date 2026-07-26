@@ -144,6 +144,40 @@ create table test(id int primary key primary key);
 create table test(id json primary key);
 create table test(id json, primary key(id));
 
+# test: primary key partition by (default)
+create table test(id int primary key);
+select show('table', 'test', true).partition_by;
+drop table test;
+
+# test: primary key partition by (default #2)
+create table test(id int, primary key(id));
+select show('table', 'test', true).partition_by;
+drop table test;
+
+create table test(id int, primary key((id)));
+select show('table', 'test', true).partition_by;
+drop table test;
+
+# test: primary key partition by (compound)
+create table test(id int, data int, primary key((id)));
+select show('table', 'test', true).partition_by;
+drop table test;
+
+create table test(id int, data int, primary key((id, id)));
+select show('table', 'test', true).partition_by;
+drop table test;
+
+create table test(id int, data int, primary key((id, data)));
+select show('table', 'test', true).partition_by;
+drop table test;
+
+create table test(id int, data int, primary key((id, data), id));
+select show('table', 'test', true).partition_by;
+drop table test;
+
+# test: primary key partition by (mismatch)
+create table test(id int, data int, primary key(id, (data), id));
+
 ## test: table already exists
 create table test (id int primary key);
 create table test (id int primary key);

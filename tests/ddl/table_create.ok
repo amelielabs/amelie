@@ -532,6 +532,61 @@ create table test(id json primary key);
 error: create table test(id json ❰primary❱ ⟵ supported key types are int32, int64, uuid, timestamp or text
 create table test(id json, primary key(id));
 error: create table test(id json, primary key(❰id❱ ⟵ supported key types are int32, int64, uuid, timestamp or text
+# test: primary key partition by (default)
+create table test(id int primary key);
+select show('table', 'test', true).partition_by;
+
+partition_by
+────────────
+1
+drop table test;
+# test: primary key partition by (default #2)
+create table test(id int, primary key(id));
+select show('table', 'test', true).partition_by;
+
+partition_by
+────────────
+1
+drop table test;
+create table test(id int, primary key((id)));
+select show('table', 'test', true).partition_by;
+
+partition_by
+────────────
+1
+drop table test;
+# test: primary key partition by (compound)
+create table test(id int, data int, primary key((id)));
+select show('table', 'test', true).partition_by;
+
+partition_by
+────────────
+1
+drop table test;
+create table test(id int, data int, primary key((id, id)));
+select show('table', 'test', true).partition_by;
+
+partition_by
+────────────
+2
+drop table test;
+create table test(id int, data int, primary key((id, data)));
+select show('table', 'test', true).partition_by;
+
+partition_by
+────────────
+2
+drop table test;
+create table test(id int, data int, primary key((id, data), id));
+select show('table', 'test', true).partition_by;
+
+partition_by
+────────────
+2
+drop table test;
+# test: primary key partition by (mismatch)
+create table test(id int, data int, primary key(id, (data), id));
+error: create table test(id int, data int, primary key(id, ❰(❱ ⟵ partition key must be defined first
 create table test (id int primary key);
 create table test (id int primary key);
 error: relation 'test': already exists
@@ -846,19 +901,19 @@ select show('table', 'test', true).partitions;
 partitions
 ──────────
 [{
-  "id": 33,
+  "id": 40,
   "hash_min": 0,
   "hash_max": 2024
 }, {
-  "id": 34,
+  "id": 41,
   "hash_min": 2024,
   "hash_max": 4048
 }, {
-  "id": 35,
+  "id": 42,
   "hash_min": 4048,
   "hash_max": 6072
 }, {
-  "id": 36,
+  "id": 43,
   "hash_min": 6072,
   "hash_max": 8096
 }]
@@ -867,25 +922,25 @@ show partitions on test;
 partitions
 ──────────
 {
-  "id": 33,
+  "id": 40,
   "min": 0,
   "max": 2024,
   "size": 0
 }
 {
-  "id": 34,
+  "id": 41,
   "min": 2024,
   "max": 4048,
   "size": 0
 }
 {
-  "id": 35,
+  "id": 42,
   "min": 4048,
   "max": 6072,
   "size": 0
 }
 {
-  "id": 36,
+  "id": 43,
   "min": 6072,
   "max": 8096,
   "size": 0

@@ -23,6 +23,7 @@ struct TableConfig
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
+	int64_t partition_by;
 	List    parts;
 	int     parts_count;
 	Grants  grants;
@@ -34,6 +35,7 @@ table_config_allocate(void)
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
 	self->indexes_count = 0;
+	self->partition_by  = 0;
 	self->parts_count   = 0;
 	self->timeline      = 1;
 	str_init(&self->name);
@@ -105,6 +107,12 @@ table_config_set_timeline(TableConfig* self, int64_t value)
 }
 
 static inline void
+table_config_set_partition_by(TableConfig* self, int64_t value)
+{
+	self->partition_by = value;
+}
+
+static inline void
 table_config_index_add(TableConfig* self, IndexConfig* config)
 {
 	list_append(&self->indexes, &config->link);
@@ -141,6 +149,7 @@ table_config_copy(TableConfig* self)
 	table_config_set_description(copy, &self->description);
 	table_config_set_id(copy, &self->id);
 	table_config_set_timeline(copy, self->timeline);
+	table_config_set_partition_by(copy, self->partition_by);
 	columns_copy(&copy->columns, &self->columns);
 	grants_copy(&copy->grants, &self->grants);
 
@@ -171,16 +180,17 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_grants  = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",        &self->user        },
-		{ DECODE_STR,   "name",        &self->name        },
-		{ DECODE_STR,   "description", &self->description },
-		{ DECODE_UUID,  "id",          &self->id          },
-		{ DECODE_INT,   "timeline",    &self->timeline    },
-		{ DECODE_ARRAY, "columns",     &pos_columns       },
-		{ DECODE_ARRAY, "indexes",     &pos_indexes       },
-		{ DECODE_ARRAY, "partitions",  &pos_parts         },
-		{ DECODE_ARRAY, "grants",      &pos_grants        },
-		{ 0,             NULL,          NULL              },
+		{ DECODE_STR,   "user",         &self->user         },
+		{ DECODE_STR,   "name",         &self->name         },
+		{ DECODE_STR,   "description",  &self->description  },
+		{ DECODE_UUID,  "id",           &self->id           },
+		{ DECODE_INT,   "timeline",     &self->timeline     },
+		{ DECODE_ARRAY, "columns",      &pos_columns        },
+		{ DECODE_ARRAY, "indexes",      &pos_indexes        },
+		{ DECODE_INT,   "partition_by", &self->partition_by },
+		{ DECODE_ARRAY, "partitions",   &pos_parts          },
+		{ DECODE_ARRAY, "grants",       &pos_grants         },
+		{ 0,             NULL,           NULL               },
 	};
 	decode_obj(obj, "table", pos);
 
@@ -253,6 +263,10 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 		index_config_write(config, buf, flags);
 	}
 	encode_array_end(buf);
+
+	// partition_by
+	encode_raw(buf, "partition_by", 12);
+	encode_int(buf, self->partition_by);
 
 	// partitions
 	encode_raw(buf, "partitions", 10);

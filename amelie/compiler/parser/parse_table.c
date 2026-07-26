@@ -17,13 +17,25 @@
 #include <amelie_vm>
 #include <amelie_parser.h>
 
-void
+int
 parse_key(Stmt* self, Keys* keys)
 {
-	// (
+	// ( [(partition key),] key, ... )
 	stmt_expect(self, '(');
+
+	auto partitioning  = false;
+	auto partition_key = 0;
 	for (;;)
 	{
+		// partition key
+		auto ast = stmt_if(self, '(');
+		if (ast)
+		{
+			if (partitioning || keys->list_count)
+				stmt_error(self, ast, "partition key must be defined first");
+			partitioning = true;
+		}
+
 		// (column, ...)
 		auto name = stmt_expect(self, KNAME);
 
@@ -54,13 +66,33 @@ parse_key(Stmt* self, Keys* keys)
 		key_set_asc(key, asc);
 		keys_add(keys, key);
 
+		if (partitioning)
+			partition_key++;
+
 		// ,
-		if (! stmt_if(self, ','))
+		ast = stmt_next(self);
+		if (ast->id == ',')
+			continue;
+
+		// )
+		stmt_push(self, ast);
+		stmt_expect(self, ')');
+		if (! partitioning)
 			break;
+		partitioning = false;
+
+		// [),]
+		if (stmt_if(self, ','))
+			continue;
+
+		stmt_expect(self, ')');
+		break;
 	}
 
-	// )
-	stmt_expect(self, ')');
+	if (! partition_key)
+		partition_key = 1;
+
+	return partition_key;
 }
 
 static inline bool
@@ -151,6 +183,10 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			key_set_ref(key, column->order);
 			keys_add(keys, key);
 
+			// partition by primary key
+			auto config = ast_table_create_of(self->ast)->config;
+			table_config_set_partition_by(config, 1);
+
 			has_primary_key = true;
 
 			// [USING type]
@@ -231,7 +267,10 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		// PRIMARY KEY (columns) [USING type]
 		if (parse_primary_key(self))
 		{
-			parse_key(self, keys);
+			auto partition_key = parse_key(self, keys);
+
+			auto config = ast_table_create_of(self->ast)->config;
+			table_config_set_partition_by(config, partition_key);
 
 			// force column not_null constraint
 			list_foreach(&keys->list)
