@@ -355,7 +355,6 @@ vm_run(Vm*       self,
 		&&cupsert,
 		&&cdelete,
 		&&cupdate,
-		&&cupdate_store,
 
 		// storage
 		&&ccheckpoint,
@@ -1935,10 +1934,6 @@ cdelete:
 
 cupdate:
 	cupdate(self, op);
-	op_next;
-
-cupdate_store:
-	cupdate_store(self, op);
 	op_next;
 
 ccheckpoint:

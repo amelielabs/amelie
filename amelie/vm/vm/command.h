@@ -33,7 +33,6 @@ void cinsert(Vm*, Op*);
 Op*  cupsert(Vm*, Op*);
 void cdelete(Vm*, Op*);
 void cupdate(Vm*, Op*);
-void cupdate_store(Vm*, Op*);
 
 void ccall_udf(Vm*, Op*);
 

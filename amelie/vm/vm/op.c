@@ -277,7 +277,6 @@ OpDesc ops[] =
 	{ CUPSERT, "upsert" },
 	{ CDELETE, "delete" },
 	{ CUPDATE, "update" },
-	{ CUPDATE_STORE, "update_store" },
 
 	// storage
 	{ CCHECKPOINT, "checkpoint" },

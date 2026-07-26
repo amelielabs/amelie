@@ -599,21 +599,6 @@ cupdate(Vm* self, Op* op)
 }
 
 hot void
-cupdate_store(Vm* self, Op* op)
-{
-	// [cursor, count]
-	auto cursor = reg_at(&self->r, op->a);
-	assert(cursor->type == TYPE_CURSOR_STORE);
-	auto count = op->b * 2;
-	auto row = store_iterator_at(cursor->cursor_store);
-	auto values = stack_at(&self->stack, count);
-
-	// [column_order, value], ...
-	for (auto order = 0; order < count; order += 2)
-		value_move(&row[values[order].integer], &values[order + 1]);
-}
-
-hot void
 ccall_udf(Vm* self, Op* op)
 {
 	// [result, udf*]

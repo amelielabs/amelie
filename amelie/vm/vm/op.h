@@ -270,7 +270,6 @@ enum
 	CUPSERT,
 	CDELETE,
 	CUPDATE,
-	CUPDATE_STORE,
 
 	// storage
 	CCHECKPOINT,
