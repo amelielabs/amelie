@@ -129,7 +129,7 @@ select * from test2;
 
 # test: create index
 create index i on test2 (id);
-select * from test2 use index (i);
+select * from test2 use index i;
 
 # test: restart
 disconnect S0;
@@ -140,12 +140,12 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 select identity_of("test2");
-select * from test2 use index (i);
+select * from test2 use index i;
 
 # test: alter index rename
 alter index i on test2 rename to i2;
 select show('state').lsn;
-select * from test2 use index (i2);
+select * from test2 use index i2;
 
 # test: restart
 disconnect S0;
@@ -156,12 +156,12 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 select identity_of("test2");
-select * from test2 use index (i2);
+select * from test2 use index i2;
 
 # test: drop index
 drop index i2 on test2;
-select * from test2 use index (i);
-select * from test2 use index (i2);
+select * from test2 use index i;
+select * from test2 use index i2;
 select * from test2;
 
 # test: restart
@@ -173,8 +173,8 @@ connect E0 S0 127.0.0.1:3485;
 # test: validate state
 select show('state').lsn;
 select identity_of("test2");
-select * from test2 use index (i);
-select * from test2 use index (i2);
+select * from test2 use index i;
+select * from test2 use index i2;
 select * from test2;
 
 # test: create clone

@@ -114,11 +114,11 @@ insert into test values (2, 0);
 
 delete from test where id = 1;
 select * from test;
-select * from test use index (i);
+select * from test use index i;
 
 delete from test;
 select * from test;
-select * from test use index (i);
+select * from test use index i;
 drop table test;
 
 # test: delete secondary index (2)

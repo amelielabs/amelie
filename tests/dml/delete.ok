@@ -276,7 +276,7 @@ id  data
 ──────────
 0   2
 2   0
-select * from test use index (i);
+select * from test use index i;
 
 id  data
 ──────────
@@ -287,7 +287,7 @@ select * from test;
 
 id  data
 ──────────
-select * from test use index (i);
+select * from test use index i;
 
 id  data
 ──────────

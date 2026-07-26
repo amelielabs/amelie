@@ -10008,8 +10008,8 @@ create index i on test (id);
 
 # test: validate
 select count(*) from test;
-select count(*) from test use index (primary);
-select count(*) from test use index (i);
+select count(*) from test use index primary;
+select count(*) from test use index i;
 
 drop table test;
 

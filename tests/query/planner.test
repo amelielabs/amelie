@@ -21,8 +21,8 @@ select * from test use index 1;
 select * from test use index (;
 select * from test use index (123;
 
-explain select * from test use index (i);
-select * from test use index (i);
+explain select * from test use index i;
+select * from test use index i;
 
 drop index i on test;
 drop table test;

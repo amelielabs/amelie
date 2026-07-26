@@ -492,8 +492,8 @@ insert into test values (4, 0);
 explain select * from test;
 select * from test;
 
-explain select * from test use index (i);
-select * from test use index (i);
+explain select * from test use index i;
+select * from test use index i;
 
 drop index i on test;
 drop table test;

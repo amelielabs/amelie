@@ -14372,7 +14372,7 @@ id   data
 1023 123
 1024 123
 1025 123
-select * from test use index (i);
+select * from test use index i;
 
 id   data
 ───────────
@@ -15401,7 +15401,7 @@ id   data
 1023 123
 1024 123
 1025 123
-select * from test use index (i) where data <> 0;
+select * from test use index i where data <> 0;
 
 id   data
 ───────────
@@ -16433,12 +16433,12 @@ id   data
 # test: tree update/abort
 begin update test set data = null; select error("abort"); end;
 error: abort
-select count(*) from test use index (i);
+select count(*) from test use index i;
 
 count
 ─────
 1025
-select count(*) from test use index (i) where data = null;
+select count(*) from test use index i where data = null;
 
 count
 ─────
@@ -17485,7 +17485,7 @@ select count(*), min(id), max(id) from test;
 count  min  max
 ──────────────────
 1025   1    1025
-select count(*), min(id), max(id) from test use index (i);
+select count(*), min(id), max(id) from test use index i;
 
 count  min  max
 ──────────────────
@@ -18529,7 +18529,7 @@ select * from test;
 
 id
 ──
-select count(*) from test use index (i);
+select count(*) from test use index i;
 
 count
 ─────

@@ -152,7 +152,7 @@ dst_validate_index(DstUser* self, DstRel* rel)
 	auto client = self->client;
 
 	// index
-	dst_execute(self->dst, client, "SELECT id, state FROM table_{u64} USE INDEX (index_{u64})",
+	dst_execute(self->dst, client, "SELECT id, state FROM table_{u64} USE INDEX index_{u64}",
 	            rel->parent->id, rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);

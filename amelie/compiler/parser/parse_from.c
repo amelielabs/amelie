@@ -207,15 +207,16 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		str_set_str(&target->name, &table->config->name);
 		access_add(&self->parser->program->access, &table->rel, lock, perms);
 
-		// [USE INDEX (name)]
+		// [USE INDEX name]
 		if (stmt_if(self, KUSE))
 		{
 			stmt_expect(self, KINDEX);
-			stmt_expect(self, '(');
+
+			// name
 			auto name_index = stmt_next_shadow(self);
 			if (name_index->id != KNAME)
 				stmt_error(self, name_index, "index name expected");
-			stmt_expect(self, ')');
+
 			target->from_index = table_index_find(target->from_table, &name_index->string, false);
 			if (! target->from_index)
 				stmt_error(self, name_index, "index not found");

@@ -295,12 +295,12 @@ insert into test values (1, 1, 0);
 insert into test values (2, 0, 0);
 
 select * from test;
-select * from test use index (i);
+select * from test use index i;
 
 update test set value = data;
 
 select * from test;
-select * from test use index (i);
+select * from test use index i;
 
 # test: update secondary index (key)
 update test set data = id;

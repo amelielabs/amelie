@@ -10008,12 +10008,12 @@ select count(*) from test;
 count
 ─────
 9999
-select count(*) from test use index (primary);
+select count(*) from test use index primary;
 
 count
 ─────
 9999
-select count(*) from test use index (i);
+select count(*) from test use index i;
 
 count
 ─────

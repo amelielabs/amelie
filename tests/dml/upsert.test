@@ -228,15 +228,15 @@ insert into test values (1, 1, 0);
 insert into test values (2, 0, 0);
 
 select * from test;
-select * from test use index (i);
+select * from test use index i;
 
 insert into test values (0, 2, 0) on conflict do update set value = value + 1;
 select * from test;
-select * from test use index (i);
+select * from test use index i;
 
 insert into test values (3, 2, 0) on conflict do update set value = 10;
 select * from test;
-select * from test use index (i);
+select * from test use index i;
 drop table test;
 
 # test: upsert select
