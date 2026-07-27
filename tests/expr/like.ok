@@ -125,11 +125,11 @@ col1
 true
 # test: not like
 select not like;
-error: select ❰not❱ ⟵ bad expression
+error: select not like❰;❱ ⟵ bad expression
 select not;
-error: select ❰not❱ ⟵ bad expression
+error: select not❰;❱ ⟵ bad expression
 select not like 20;
-error: select ❰not❱ ⟵ bad expression
+error: select not like ❰20❱ ⟵ bad expression
 select 'abcd' like 'abc%d';
 
 col1

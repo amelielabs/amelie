@@ -120,13 +120,13 @@ expr_pop(Stmt* self, AstStack* ops, AstStack* result)
 		// unary
 		head->l = ast_pop(result);
 		if (unlikely(head->l == NULL))
-			stmt_error(self, head, "bad expression");
+			stmt_error(self, NULL, "bad expression");
 	} else
 	{
 		head->r = ast_pop(result);
 		head->l = ast_pop(result);
 		if (unlikely(head->r == NULL || head->l == NULL))
-			stmt_error(self, head, "bad expression");
+			stmt_error(self, NULL, "bad expression");
 	}
 
 	// apply method constify, if possible

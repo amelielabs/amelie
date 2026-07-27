@@ -6,11 +6,11 @@ error: select ❰is❱ ⟵ bad expression
 select is 1;
 error: select ❰is❱ ⟵ bad expression
 select 1 is;
-error: select 1 ❰is❱ ⟵ bad expression
+error: select 1 is❰;❱ ⟵ bad expression
 select 1 is;
-error: select 1 ❰is❱ ⟵ bad expression
+error: select 1 is❰;❱ ⟵ bad expression
 select 1 is not;
-error: select 1 ❰is❱ ⟵ bad expression
+error: select 1 is not❰;❱ ⟵ bad expression
 select 1 is 1;
 error: select 1 is ❰1❱ ⟵ NOT or NULL expected
 explain select 1 is null;

@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: select expr where
 select 1 * where false;
-error: select 1 ❰*❱ ⟵ bad expression
+error: select 1 * ❰where❱ ⟵ bad expression
 # test: select from table where column
 create table test (id serial primary key, data int default 0);
 insert into test () values ();

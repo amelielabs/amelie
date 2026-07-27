@@ -4,7 +4,7 @@ connect E0 S0 127.0.0.1:3485;
 select and;
 error: select ❰and❱ ⟵ bad expression
 select 1 and;
-error: select 1 ❰and❱ ⟵ bad expression
+error: select 1 and❰;❱ ⟵ bad expression
 select true and true;
 
 col1
@@ -65,7 +65,7 @@ null
 select or;
 error: select ❰or❱ ⟵ bad expression
 select 1 or;
-error: select 1 ❰or❱ ⟵ bad expression
+error: select 1 or❰;❱ ⟵ bad expression
 select true or true;
 
 col1
