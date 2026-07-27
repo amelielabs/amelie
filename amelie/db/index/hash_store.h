@@ -63,7 +63,7 @@ hot static inline Row*
 hash_store_set(HashStore* self, Row* key)
 {
 	auto     comparable  = self->comparable;
-	uint64_t start       = row_hash(key, comparable, comparable->keys_count) % self->size;
+	uint64_t start       = row_hash(key, comparable) % self->size;
 	uint64_t pos         = start;
 	int64_t  pos_deleted = -1;
 	do
@@ -111,7 +111,7 @@ hot static inline Row*
 hash_store_delete(HashStore* self, Row* key)
 {
 	auto     comparable = self->comparable;
-	uint64_t start = row_hash(key, comparable, comparable->keys_count) % self->size;
+	uint64_t start = row_hash(key, comparable) % self->size;
 	uint64_t pos   = start;
 	do
 	{
@@ -139,7 +139,7 @@ hot static inline Row*
 hash_store_get(HashStore* self, Row* key, uint64_t* at)
 {
 	auto     comparable  = self->comparable;
-	uint64_t start       = row_hash(key, comparable, comparable->keys_count) % self->size;
+	uint64_t start       = row_hash(key, comparable) % self->size;
 	uint64_t pos         = start;
 	int64_t  pos_deleted = -1;
 	do

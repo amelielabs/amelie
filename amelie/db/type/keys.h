@@ -16,6 +16,7 @@ typedef struct Keys Keys;
 struct Keys
 {
 	Comparable comparable;
+	Comparable mapping;
 	Buf        list;
 	int        count;
 	Columns*   columns;
@@ -34,18 +35,20 @@ keys_init(Keys* self, Columns* columns)
 	self->count   = 0;
 	buf_init(&self->list);
 	comparable_init(&self->comparable);
+	comparable_init(&self->mapping);
 }
 
 static inline void
 keys_free(Keys* self)
 {
+	comparable_free(&self->comparable);
+	comparable_free(&self->mapping);
 	for (auto at = 0; at < self->count; at++)
 	{
 		auto key = keys_at(self, at);
 		key->column->refs--;
 	}
 	buf_free(&self->list);
-	comparable_free(&self->comparable);
 }
 
 static inline Key*
@@ -66,6 +69,11 @@ keys_add(Keys* self, int column_order, bool asc, bool partitioning)
 
 	// add to the comparable
 	comparable_add(&self->comparable, key->column);
+
+	// if key is used for partitioning add to the mapping
+	if (partitioning)
+		comparable_add(&self->mapping, key->column);
+
 	return key;
 }
 

@@ -16,31 +16,37 @@ value_hash(Value* self, Column* column, uint32_t hash)
 {
 	void*   data;
 	int     data_size;
-	int32_t integer_32;
-	if (self->type == TYPE_INT || self->type == TYPE_TIMESTAMP)
+	int32_t i32;
+	switch (self->type) {
+	case TYPE_INT:
+	case TYPE_TIMESTAMP:
 	{
 		if (column->size == 4)
 		{
-			integer_32 = self->integer;
-			data = &integer_32;
-			data_size = sizeof(integer_32);
+			i32 = self->integer;
+			data = &i32;
+			data_size = sizeof(i32);
 		} else
 		{
 			data = &self->integer;
 			data_size = sizeof(self->integer);
 		}
-	} else
-	if (self->type == TYPE_UUID)
+		break;
+	}
+	case TYPE_UUID:
 	{
 		data = &self->uuid;
 		data_size = sizeof(self->uuid);
-	} else
-	if (self->type == TYPE_STRING)
+		break;
+	}
+	case TYPE_STRING:
 	{
 		data = str_u8(&self->string);
 		data_size = str_size(&self->string);
-	} else {
-		abort();
+		break;
+	}
+	default: __builtin_unreachable();
+		break;
 	}
 	return hash_murmur3_32(data, data_size, hash);
 }
@@ -69,6 +75,8 @@ value_hash_row(Keys*  keys, Value* refs,
 	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
+		if (! key->partitioning)
+			continue;
 		auto column = key->column;
 		auto value = values + column->order;
 		hash = value_hash_refs(value, column, refs, identity, hash);
@@ -86,6 +94,8 @@ value_hash_keys(Keys*  keys, Value* refs,
 	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
+		if (! key->partitioning)
+			continue;
 		auto value = values + key->order;
 		hash = value_hash_refs(value, key->column, refs, identity, hash);
 	}
