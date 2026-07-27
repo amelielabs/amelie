@@ -174,7 +174,7 @@ indexes
   }, {
     "column": 0,
     "asc": true,
-    "partitioning": false
+    "partitioning": true
   }]
 }]
 drop table test;

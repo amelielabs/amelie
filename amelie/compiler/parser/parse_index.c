@@ -87,6 +87,19 @@ parse_index_create(Stmt* self, bool unique)
 	if (! config->unique)
 		keys_copy_distinct(&config->keys, table_keys(table));
 
+	// mark all partitioning keys
+	auto primary = table_primary(table);
+	for (auto at = 0; at < config->keys.count; at++)
+	{
+		auto key = keys_at(&config->keys, at);
+		for (auto at = 0; at < primary->keys.count; at++)
+		{
+			auto ref = keys_at(&primary->keys, at);
+			if (ref->partitioning && ref->column == key->column)
+				key->partitioning = true;
+		}
+	}
+
 	// [USING type]
 	parse_index_using(self, stmt->config);
 }
