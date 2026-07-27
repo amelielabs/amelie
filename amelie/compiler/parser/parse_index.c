@@ -65,13 +65,6 @@ parse_index_create(Stmt* self, bool unique)
 	if (! table)
 		stmt_error(self, target, "table not found");
 
-	// unique index rules
-	if (unique)
-	{
-		if (table->parts.list_count != 1)
-			stmt_error(self, target, "secondary UNIQUE INDEX allowed only for tables with one partition");
-	}
-
 	// create index config
 	auto config = index_config_allocate(table_columns(table));
 	stmt->config = config;
@@ -83,12 +76,42 @@ parse_index_create(Stmt* self, bool unique)
 	// (keys)
 	parse_key(self, &config->keys, false);
 
-	// copy primary keys, which are not already present (non unique support)
-	if (! config->unique)
+	auto primary = table_primary(table);
+	if (config->unique)
+	{
+		if (table->parts.list_count == 1)
+		{
+			// any keys allowed
+		} else
+		{
+			// ensure all partitioning keys are explicitly made part of the
+			// secondary index key
+			auto primary = table_primary(table);
+			for (auto at = 0; at < config->keys.count; at++)
+			{
+				auto key   = keys_at(&config->keys, at);
+				auto match = false;
+				for (auto at = 0; at < primary->keys.count; at++)
+				{
+					auto ref = keys_at(&primary->keys, at);
+					if (ref->partitioning && ref->column == key->column)
+					{
+						match = true;
+						break;
+					}
+				}
+				if (! match)
+					stmt_error(self, target, "secondary UNIQUE INDEX must include partitioning keys");
+			}
+		}
+
+	} else
+	{
+		// copy primary keys, which are not already present
 		keys_copy_distinct(&config->keys, table_keys(table));
+	}
 
 	// mark all partitioning keys
-	auto primary = table_primary(table);
 	for (auto at = 0; at < config->keys.count; at++)
 	{
 		auto key = keys_at(&config->keys, at);
