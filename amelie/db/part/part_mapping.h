@@ -69,6 +69,9 @@ part_mapping_remove(PartMapping* self, Part* part)
 hot static inline Part*
 part_mapping_map(PartMapping* self, Row* key)
 {
-	auto hash_partition = row_hash(key, self->comparable) % PART_MAPPING_MAX;
+	auto hash_partition =
+		row_hash(key,
+		         self->comparable,
+		         self->comparable->keys_count) % PART_MAPPING_MAX;
 	return self->map[hash_partition];
 }

@@ -31,7 +31,7 @@ parse_key(Stmt* self, Keys* keys)
 		auto ast = stmt_if(self, '(');
 		if (ast)
 		{
-			if (partitioning || keys->list_count)
+			if (partitioning || keys->count)
 				stmt_error(self, ast, "partition key must be defined first");
 			partitioning = true;
 		}
@@ -268,7 +268,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 			table_config_set_partition_by(config, partition_key);
 
 			// force column not_null constraint
-			for (auto at = 0; at < keys->list_count; at++)
+			for (auto at = 0; at < keys->count; at++)
 			{
 				auto key = keys_at(keys, at);
 				constraints_set_not_null(&key->column->constraints, true);
@@ -338,14 +338,14 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 	auto rbr = stmt_expect(self, ')');
 
 	// ensure primary key is defined
-	if (keys->list_count == 0)
+	if (keys->count == 0)
 		stmt_error(self, rbr, "primary key is not defined");
 
 	// ensure identity column is a key
 	if (identity)
 	{
 		auto match = false;
-		for (auto at = 0; at < keys->list_count; at++)
+		for (auto at = 0; at < keys->count; at++)
 		{
 			auto key = keys_at(keys, at);
 			if (key->column != identity)

@@ -26,7 +26,7 @@ scan_key(Scan* self, Target* target)
 	auto path  = target->path;
 	auto keys  = &target->from_index->keys;
 	auto count = 0;
-	for (auto at = 0; at < keys->list_count; at++)
+	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
 		auto ref = &path->keys[key->order];
@@ -48,7 +48,7 @@ scan_stop(Scan* self, Target* target, int scan_stop_jntr[])
 	auto cp   = self->compiler;
 	auto path = target->path;
 	auto keys = &target->from_index->keys;
-	for (auto at = 0; at < keys->list_count; at++)
+	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
 		auto ref = &path->keys[key->order];

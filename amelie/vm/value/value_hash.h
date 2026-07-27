@@ -66,7 +66,7 @@ value_hash_row(Keys*  keys, Value* refs,
 {
 	// values are row columns
 	uint32_t hash = 0;
-	for (auto at = 0; at < keys->list_count; at++)
+	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
 		auto column = key->column;
@@ -83,7 +83,7 @@ value_hash_keys(Keys*  keys, Value* refs,
 {
 	// values are row keys
 	uint32_t hash = 0;
-	for (auto at = 0; at < keys->list_count; at++)
+	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
 		auto value = values + key->order;

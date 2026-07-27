@@ -50,7 +50,7 @@ add_if_abort(Log* self, LogOp* op)
 
 	// restore key column constraints (reset not null constraint)
 	uint8_t* pos = log_data_of(self, op);
-	for (auto at = 0; at < index->keys.list_count; at++)
+	for (auto at = 0; at < index->keys.count; at++)
 	{
 		auto key = keys_at(&index->keys, at);
 		auto column = key->column;
@@ -84,7 +84,7 @@ table_index_add(Catalog* self, Table* table, Tr* tr, IndexConfig* config)
 
 	// create not null constraints on the columns
 	auto keys = &config->keys;
-	for (auto at = 0; at < keys->list_count; at++)
+	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
 		auto column = key->column;

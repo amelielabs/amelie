@@ -125,9 +125,9 @@ csend_lookup(Vm* self, Op* op)
 		dispatch_set_close(dispatch);
 
 	// map partition using keys
-	auto values = stack_at(&self->stack, index->keys.list_count);
+	auto values = stack_at(&self->stack, index->keys.count);
 	auto part = row_map_keys(table, values);
-	stack_popn(&self->stack, index->keys.list_count);
+	stack_popn(&self->stack, index->keys.count);
 
 	auto req  = dispatch_add(dispatch, &dispatches->cache_req,
 	                         REQ_EXECUTE,

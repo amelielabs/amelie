@@ -144,11 +144,10 @@ row_measure(int columns, int data_size, bool* byte)
 }
 
 always_inline hot static inline uint32_t
-row_hash(Row* self, Comparable* comparable)
+row_hash(Row* self, Comparable* comparable, int n)
 {
-	uint32_t  hash = 0;
-	const int keys = comparable->keys_count;
-	for (auto at = 0; at < keys; at++)
+	uint32_t hash = 0;
+	for (auto at = 0; at < n; at++)
 	{
 		auto key = &((const ComparableKey*)comparable->keys.start)[at];
 		auto pos = (uint8_t*)row_at(self, key->column);

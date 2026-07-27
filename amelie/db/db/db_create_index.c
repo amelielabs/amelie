@@ -27,7 +27,7 @@
 static inline bool
 db_indexate_with_null(Index* index, Row* row)
 {
-	for (auto at = 0; at < index->config->keys.list_count; at++)
+	for (auto at = 0; at < index->config->keys.count; at++)
 	{
 		auto key = keys_at(&index->config->keys, at);
 		if (! row_column(row, key->column))

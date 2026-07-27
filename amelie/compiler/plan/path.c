@@ -22,14 +22,14 @@ static Path*
 path_allocate(Target* target, Keys* keys)
 {
 	Path* self;
-	self = palloc(sizeof(Path) + sizeof(PathKey) * keys->list_count);
+	self = palloc(sizeof(Path) + sizeof(PathKey) * keys->count);
 	self->type              = PATH_SCAN;
 	self->target            = target;
 	self->match_start       = 0;
 	self->match_start_exprs = 0;
 	self->match_stop        = 0;
 
-	for (auto at = 0; at < keys->list_count; at++)
+	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
 		auto ref = &self->keys[key->order];
@@ -323,7 +323,7 @@ path_create(Target* target, Block* block, Keys* keys, PathOps* ops)
 	auto match_eq = 0;
 	auto match_last_start = -1;
 	auto match_last_stop  = -1;
-	for (auto at = 0; at < keys->list_count; at++)
+	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
 		auto key_path = &self->keys[key->order];
@@ -347,7 +347,7 @@ path_create(Target* target, Block* block, Keys* keys, PathOps* ops)
 	}
 
 	// point lookup
-	if (match_eq == keys->list_count)
+	if (match_eq == keys->count)
 		self->type = PATH_LOOKUP;
 
 	return self;

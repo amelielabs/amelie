@@ -17,7 +17,7 @@ struct Keys
 {
 	Comparable comparable;
 	Buf        list;
-	int        list_count;
+	int        count;
 	Columns*   columns;
 };
 
@@ -30,8 +30,8 @@ keys_at(Keys* self, int order)
 static inline void
 keys_init(Keys* self, Columns* columns)
 {
-	self->columns    = columns;
-	self->list_count = 0;
+	self->columns = columns;
+	self->count   = 0;
 	buf_init(&self->list);
 	comparable_init(&self->comparable);
 }
@@ -39,7 +39,7 @@ keys_init(Keys* self, Columns* columns)
 static inline void
 keys_free(Keys* self)
 {
-	for (auto at = 0; at < self->list_count; at++)
+	for (auto at = 0; at < self->count; at++)
 	{
 		auto key = keys_at(self, at);
 		key->column->refs--;
@@ -54,10 +54,10 @@ keys_add(Keys* self, int column_order, bool asc)
 	// add key
 	auto key = (Key*)buf_emplace(&self->list, sizeof(Key));
 	key_init(key);
-	key->order        = self->list_count;
+	key->order        = self->count;
 	key->column_order = column_order;
 	key->asc          = asc;
-	self->list_count++;
+	self->count++;
 
 	// resolve column
 	key->column = columns_find_by(self->columns, column_order);
@@ -71,7 +71,7 @@ keys_add(Keys* self, int column_order, bool asc)
 hot static inline Key*
 keys_find(Keys* self, Str* name)
 {
-	for (auto at = 0; at < self->list_count; at++)
+	for (auto at = 0; at < self->count; at++)
 	{
 		auto key = keys_at(self, at);
 		if (str_compare(&key->column->name, name))
@@ -83,7 +83,7 @@ keys_find(Keys* self, Str* name)
 hot static inline Key*
 keys_find_column(Keys* self, int order)
 {
-	for (auto at = 0; at < self->list_count; at++)
+	for (auto at = 0; at < self->count; at++)
 	{
 		auto key = keys_at(self, at);
 		if (key->column_order == order)
@@ -95,7 +95,7 @@ keys_find_column(Keys* self, int order)
 static inline void
 keys_copy(Keys* self, Keys* src)
 {
-	for (auto at = 0; at < src->list_count; at++)
+	for (auto at = 0; at < src->count; at++)
 	{
 		auto key = keys_at(src, at);
 		keys_add(self, key->column_order, key->asc);
@@ -105,7 +105,7 @@ keys_copy(Keys* self, Keys* src)
 static inline void
 keys_copy_distinct(Keys* self, Keys* primary)
 {
-	for (auto at = 0; at < primary->list_count; at++)
+	for (auto at = 0; at < primary->count; at++)
 	{
 		auto key = keys_at(primary, at);
 		if (keys_find_column(self, key->column_order))
@@ -133,7 +133,7 @@ keys_write(Keys* self, Buf* buf, int flags)
 {
 	// []
 	encode_array(buf);
-	for (auto at = 0; at < self->list_count; at++)
+	for (auto at = 0; at < self->count; at++)
 	{
 		auto key = keys_at(self, at);
 		key_write(key, buf, flags);
