@@ -209,7 +209,7 @@ task_init(Task* self)
 	buf_cache_init(&self->buf_cache);
 	task_log_init(&self->log);
 	random_init(&self->random);
-	coroutines_init(&self->coroutines, 4096 * 32); // 128kb
+	coroutines_init(&self->coroutines, 4096 * 32, &self->buf_cache); // 128kb
 	clock_init(&self->clock);
 	poller_init(&self->poller);
 	bus_init(&self->bus);

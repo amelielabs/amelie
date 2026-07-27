@@ -23,24 +23,26 @@ struct Coroutines
 	int        count_ready;
 	int        count;
 	int        stack_size;
+	BufCache*  buf_cache;
 	uint64_t   seq;
 	Event      on_exit;
 	Coroutine  main;
 };
 
 static inline void
-coroutines_init(Coroutines* self, int stack_size)
+coroutines_init(Coroutines* self, int stack_size, BufCache* buf_cache)
 {
 	self->seq         = 0;
 	self->count       = 0;
 	self->count_ready = 0;
 	self->count_free  = 0;
 	self->stack_size  = stack_size;
+	self->buf_cache   = buf_cache;
 	list_init(&self->list);
 	list_init(&self->list_ready);
 	list_init(&self->list_free);
 	event_init(&self->on_exit);
-	coroutine_init(&self->main, self);
+	coroutine_init(&self->main, self, buf_cache);
 	self->current = &self->main;
 }
 
@@ -139,7 +141,7 @@ coroutines_create(Coroutines*  self,
 	} else
 	{
 		coro = am_malloc(sizeof(Coroutine));
-		coroutine_init(coro, self);
+		coroutine_init(coro, self, self->buf_cache);
 		context_stack_allocate(&coro->stack, self->stack_size);
 	}
 	coro->id       = self->seq++;

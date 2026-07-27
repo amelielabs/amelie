@@ -37,7 +37,7 @@ struct Coroutine
 };
 
 static inline void
-coroutine_init(Coroutine* self, Coroutines* coros)
+coroutine_init(Coroutine* self, Coroutines* coros, BufCache* buf_cache)
 {
 	self->id                = 0;
 	self->cancel            = false;
@@ -52,7 +52,7 @@ coroutine_init(Coroutine* self, Coroutines* coros)
 	context_stack_init(&self->stack);
 	exceptions_init(&self->exceptions);
 	error_init(&self->error);
-	arena_init(&self->arena, 4096 - sizeof(ArenaPage));
+	arena_init(&self->arena, buf_cache, 4096);
 	list_init(&self->locks);
 	list_init(&self->link);
 	list_init(&self->link_ready);

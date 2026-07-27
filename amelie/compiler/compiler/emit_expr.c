@@ -398,7 +398,7 @@ emit_name_compound(Compiler* self, From* from, Ast* ast)
 		           &target->name, &name);
 
 	// target.path
-	if (rtype(self, target->r) != TYPE_JSON)
+	if (target->r == -1 || (rtype(self, target->r) != TYPE_JSON))
 		stmt_error(self->current, ast, "column {str}.{str} not found",
 		           &target->name, &name);
 

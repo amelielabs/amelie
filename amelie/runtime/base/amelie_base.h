@@ -33,7 +33,6 @@
 
 // memory
 #include "base/allocator.h"
-#include "base/arena.h"
 
 // string
 #include "base/str.h"
@@ -42,6 +41,7 @@
 #include "base/buf.h"
 #include "base/bufs.h"
 #include "base/buf_cache.h"
+#include "base/arena.h"
 
 // format
 #include "base/format.h"
