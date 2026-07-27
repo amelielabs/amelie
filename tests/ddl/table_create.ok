@@ -521,46 +521,146 @@ create table test(id json, primary key(id));
 error: create table test(id json, primary key(❰id❱ ⟵ supported key types are int32, int64, uuid, timestamp or text
 # test: primary key partition by (default)
 create table test(id int primary key);
-select show('table', 'test', true).partition_by;
+select show('table', 'test', true).indexes;
 
-partition_by
-────────────
-1
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true,
+    "partitioning": true
+  }]
+}]
 drop table test;
 # test: primary key partition by (default #2)
 create table test(id int, primary key(id));
-select show('table', 'test', true).partition_by;
+select show('table', 'test', true).indexes;
 
-partition_by
-────────────
-1
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true,
+    "partitioning": true
+  }]
+}]
 drop table test;
 create table test(id int, primary key((id)));
-select show('table', 'test', true).partition_by;
+select show('table', 'test', true).indexes;
 
-partition_by
-────────────
-1
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true,
+    "partitioning": true
+  }]
+}]
+drop table test;
+# test: primary key partition by (default compound)
+create table test(id int, data int, primary key (id, data));
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true,
+    "partitioning": true
+  }, {
+    "column": 1,
+    "asc": true,
+    "partitioning": false
+  }]
+}]
 drop table test;
 # test: primary key partition by (compound)
 create table test(id int, data int, primary key((id)));
-select show('table', 'test', true).partition_by;
+select show('table', 'test', true).indexes;
 
-partition_by
-────────────
-1
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true,
+    "partitioning": true
+  }]
+}]
 drop table test;
 create table test(id int, data int, primary key((id, data)));
-select show('table', 'test', true).partition_by;
+select show('table', 'test', true).indexes;
 
-partition_by
-────────────
-2
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true,
+    "partitioning": true
+  }, {
+    "column": 1,
+    "asc": true,
+    "partitioning": true
+  }]
+}]
 drop table test;
+create table test(id int, data int, data2 int, primary key((id, data), data2));
+select show('table', 'test', true).indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true,
+    "partitioning": true
+  }, {
+    "column": 1,
+    "asc": true,
+    "partitioning": true
+  }, {
+    "column": 2,
+    "asc": true,
+    "partitioning": false
+  }]
+}]
+drop table test;
+# test: primary key partition by (redefined)
 create table test(id int, data int, primary key((id, data), id));
 error: create table test(id int, data int, primary key((id, data), ❰id❱ ⟵ key column is redefined
-create table test(id int, data int, data2 int, primary key((id, data), data2));
-drop table test;
 # test: primary key partition by (mismatch)
 create table test(id int, data int, primary key(id, (data)));
 error: create table test(id int, data int, primary key(id, ❰(❱ ⟵ partition key must be defined first
@@ -878,19 +978,19 @@ select show('table', 'test', true).partitions;
 partitions
 ──────────
 [{
-  "id": 38,
+  "id": 39,
   "hash_min": 0,
   "hash_max": 2024
 }, {
-  "id": 39,
+  "id": 40,
   "hash_min": 2024,
   "hash_max": 4048
 }, {
-  "id": 40,
+  "id": 41,
   "hash_min": 4048,
   "hash_max": 6072
 }, {
-  "id": 41,
+  "id": 42,
   "hash_min": 6072,
   "hash_max": 8096
 }]
@@ -899,25 +999,25 @@ show partitions on test;
 partitions
 ──────────
 {
-  "id": 38,
+  "id": 39,
   "min": 0,
   "max": 2024,
   "size": 0
 }
 {
-  "id": 39,
+  "id": 40,
   "min": 2024,
   "max": 4048,
   "size": 0
 }
 {
-  "id": 40,
+  "id": 41,
   "min": 4048,
   "max": 6072,
   "size": 0
 }
 {
-  "id": 41,
+  "id": 42,
   "min": 6072,
   "max": 8096,
   "size": 0

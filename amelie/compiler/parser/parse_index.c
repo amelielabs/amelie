@@ -81,7 +81,7 @@ parse_index_create(Stmt* self, bool unique)
 	index_config_set_type(config, INDEX_TREE);
 
 	// (keys)
-	parse_key(self, &config->keys);
+	parse_key(self, &config->keys, false);
 
 	// copy primary keys, which are not already present (non unique support)
 	if (! config->unique)

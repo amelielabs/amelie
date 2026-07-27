@@ -205,7 +205,8 @@ show
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 # test: index
@@ -220,7 +221,8 @@ show
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }
 # test: partitions

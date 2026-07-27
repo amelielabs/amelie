@@ -49,7 +49,7 @@ keys_free(Keys* self)
 }
 
 static inline Key*
-keys_add(Keys* self, int column_order, bool asc)
+keys_add(Keys* self, int column_order, bool asc, bool partitioning)
 {
 	// add key
 	auto key = (Key*)buf_emplace(&self->list, sizeof(Key));
@@ -57,6 +57,7 @@ keys_add(Keys* self, int column_order, bool asc)
 	key->order        = self->count;
 	key->column_order = column_order;
 	key->asc          = asc;
+	key->partitioning = partitioning;
 	self->count++;
 
 	// resolve column
@@ -98,7 +99,7 @@ keys_copy(Keys* self, Keys* src)
 	for (auto at = 0; at < src->count; at++)
 	{
 		auto key = keys_at(src, at);
-		keys_add(self, key->column_order, key->asc);
+		keys_add(self, key->column_order, key->asc, key->partitioning);
 	}
 }
 
@@ -110,7 +111,7 @@ keys_copy_distinct(Keys* self, Keys* primary)
 		auto key = keys_at(primary, at);
 		if (keys_find_column(self, key->column_order))
 			continue;
-		keys_add(self, key->column_order, key->asc);
+		keys_add(self, key->column_order, key->asc, key->partitioning);
 	}
 }
 
@@ -124,7 +125,7 @@ keys_read(Keys* self, uint8_t** pos)
 		Key read;
 		key_init(&read);
 		key_read(&read, pos);
-		keys_add(self, read.column_order, read.asc);
+		keys_add(self, read.column_order, read.asc, read.partitioning);
 	}
 }
 

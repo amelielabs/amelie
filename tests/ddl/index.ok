@@ -39,7 +39,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "i",
@@ -48,10 +49,12 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 # test: create index if not exists
@@ -69,7 +72,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "i",
@@ -78,10 +82,12 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 drop index i on test;
@@ -98,7 +104,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "i",
@@ -107,13 +114,16 @@ indexes
   "primary": false,
   "keys": [{
     "column": 2,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 drop index i on test;
@@ -135,7 +145,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "i",
@@ -144,7 +155,8 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }]
 }, {
   "name": "j",
@@ -153,13 +165,16 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 2,
-    "asc": false
+    "asc": false,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }]
 }]
 drop table test;
@@ -179,7 +194,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "i",
@@ -188,10 +204,12 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 drop index i on test;
@@ -207,7 +225,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "i",
@@ -216,10 +235,12 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 drop index i on test;
@@ -255,7 +276,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "i",
@@ -264,10 +286,12 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 drop index i on test;
@@ -282,7 +306,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 # test: drop index if exists
@@ -325,7 +350,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 # test: drop index (not null constraint)
@@ -406,7 +432,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "i",
@@ -415,10 +442,12 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 alter index i on test rename to j;
@@ -433,7 +462,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "j",
@@ -442,10 +472,12 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 # test: alter index rename if exists
@@ -469,7 +501,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "j",
@@ -478,10 +511,12 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 drop table test;

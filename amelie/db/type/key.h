@@ -19,6 +19,7 @@ struct Key
 	Column* column;
 	int64_t column_order;
 	bool    asc;
+	bool    partitioning;
 };
 
 static inline void
@@ -28,6 +29,7 @@ key_init(Key* self)
 	self->column       = NULL;
 	self->column_order = -1;
 	self->asc          = true;
+	self->partitioning = false;
 }
 
 static inline void
@@ -43,13 +45,20 @@ key_set_asc(Key* self, bool value)
 }
 
 static inline void
+key_set_partitioning(Key* self, bool value)
+{
+	self->partitioning = value;
+}
+
+static inline void
 key_read(Key* self, uint8_t** pos)
 {
 	Decode obj[] =
 	{
-		{ DECODE_INT,  "column", &self->column_order },
-		{ DECODE_BOOL, "asc",    &self->asc          },
-		{ 0,            NULL,     NULL               },
+		{ DECODE_INT,  "column",       &self->column_order },
+		{ DECODE_BOOL, "asc",          &self->asc          },
+		{ DECODE_BOOL, "partitioning", &self->partitioning },
+		{ 0,            NULL,           NULL               },
 	};
 	decode_obj(obj, "key", pos);
 }
@@ -67,6 +76,10 @@ key_write(Key* self, Buf* buf, int flags)
 	// asc
 	encode_raw(buf, "asc", 3);
 	encode_bool(buf, self->asc);
+
+	// partitioning
+	encode_raw(buf, "partitioning", 12);
+	encode_bool(buf, self->partitioning);
 
 	encode_obj_end(buf);
 }

@@ -433,7 +433,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }, {
   "name": "i",
@@ -442,10 +443,12 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true
+    "asc": true,
+    "partitioning": false
   }, {
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 explain select * from test where data = 1 and id = 1;

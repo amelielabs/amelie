@@ -84,7 +84,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }
 select show('indexes', '', 'test', false);
@@ -98,7 +99,8 @@ show
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }]
 select * from show indexes on test;
@@ -112,7 +114,8 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }
 # test: show index
@@ -127,7 +130,8 @@ index
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }
 select show('index', 'primary', 'test', false);
@@ -141,7 +145,8 @@ show
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }
 show index xyz on test;
@@ -160,7 +165,8 @@ index
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true
+    "asc": true,
+    "partitioning": true
   }]
 }
 # test: show partitions

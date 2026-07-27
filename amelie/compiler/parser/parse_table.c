@@ -17,20 +17,23 @@
 #include <amelie_vm>
 #include <amelie_parser.h>
 
-int
-parse_key(Stmt* self, Keys* keys)
+void
+parse_key(Stmt* self, Keys* keys, bool with_partitioning)
 {
 	// ( [(partition key),] key, ... )
 	stmt_expect(self, '(');
 
-	auto partitioning  = false;
-	auto partition_key = 0;
+	auto partitioning   = false;
+	auto partitioning_n = 0;
 	for (;;)
 	{
 		// partition key
 		auto ast = stmt_if(self, '(');
 		if (ast)
 		{
+			if (! with_partitioning)
+				stmt_error(self, ast, "partition key is not supported here");
+
 			if (partitioning || keys->count)
 				stmt_error(self, ast, "partition key must be defined first");
 			partitioning = true;
@@ -66,10 +69,10 @@ parse_key(Stmt* self, Keys* keys)
 			stmt_error(self, name, "key column is redefined");
 
 		// create key
-		keys_add(keys, column->order, asc);
+		keys_add(keys, column->order, asc, partitioning);
 
 		if (partitioning)
-			partition_key++;
+			partitioning_n++;
 
 		// ,
 		ast = stmt_next(self);
@@ -91,10 +94,9 @@ parse_key(Stmt* self, Keys* keys)
 		break;
 	}
 
-	if (! partition_key)
-		partition_key = 1;
-
-	return partition_key;
+	// set first key as partitioning, if no explicit syntax used
+	if (with_partitioning && !partitioning_n)
+		keys_at(keys, 0)->partitioning = true;
 }
 
 static inline bool
@@ -181,12 +183,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 				stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
 			// create key
-			keys_add(keys, column->order, true);
-
-			// partition by primary key
-			auto config = ast_table_create_of(self->ast)->config;
-			table_config_set_partition_by(config, 1);
-
+			keys_add(keys, column->order, true, true);
 			has_primary_key = true;
 
 			// [USING type]
@@ -267,10 +264,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		// PRIMARY KEY (columns) [USING type]
 		if (parse_primary_key(self))
 		{
-			auto partition_key = parse_key(self, keys);
-
-			auto config = ast_table_create_of(self->ast)->config;
-			table_config_set_partition_by(config, partition_key);
+			parse_key(self, keys, true);
 
 			// force column not_null constraint
 			for (auto at = 0; at < keys->count; at++)
