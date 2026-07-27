@@ -60,6 +60,11 @@ parse_key(Stmt* self, Keys* keys)
 		if (stmt_if(self, KDESC))
 			asc = false;
 
+		// ensure key is not redefined
+		auto key = keys_find_column(keys, column->order);
+		if (key)
+			stmt_error(self, name, "key column is redefined");
+
 		// create key
 		keys_add(keys, column->order, asc);
 

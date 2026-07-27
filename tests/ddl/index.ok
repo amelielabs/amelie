@@ -119,36 +119,7 @@ indexes
 drop index i on test;
 # test: create index (key reuse)
 create index i on test (a, a);
-select show('table', 'test', true).indexes;
-
-indexes
-───────
-[{
-  "name": "primary",
-  "type": 2,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }]
-}, {
-  "name": "i",
-  "type": 2,
-  "unique": false,
-  "primary": false,
-  "keys": [{
-    "column": 1,
-    "asc": true
-  }, {
-    "column": 1,
-    "asc": true
-  }, {
-    "column": 0,
-    "asc": true
-  }]
-}]
-drop index i on test;
+error: create index i on test (a, ❰a❱ ⟵ key column is redefined
 # test: create index (unique)
 create unique index i on test (a);
 # test: create index (asc/desc)

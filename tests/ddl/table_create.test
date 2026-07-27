@@ -133,9 +133,6 @@ create table test(id int, primary key(idd));
 # test: primary key redefined
 create table test(id int, primary key(id, id));
 create table test(id int primary key, primary key(id));
-create table if not exists test(id int primary key, primary key(id));
-select show('table', 'test', true).columns;
-drop table test;
 
 # test: primary key redefined #2
 create table test(id int primary key primary key);
@@ -163,20 +160,17 @@ create table test(id int, data int, primary key((id)));
 select show('table', 'test', true).partition_by;
 drop table test;
 
-create table test(id int, data int, primary key((id, id)));
-select show('table', 'test', true).partition_by;
-drop table test;
-
 create table test(id int, data int, primary key((id, data)));
 select show('table', 'test', true).partition_by;
 drop table test;
 
+# redefined
 create table test(id int, data int, primary key((id, data), id));
-select show('table', 'test', true).partition_by;
+create table test(id int, data int, data2 int, primary key((id, data), data2));
 drop table test;
 
 # test: primary key partition by (mismatch)
-create table test(id int, data int, primary key(id, (data), id));
+create table test(id int, data int, primary key(id, (data)));
 
 ## test: table already exists
 create table test (id int primary key);

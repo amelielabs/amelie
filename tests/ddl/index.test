@@ -36,8 +36,6 @@ drop index i on test;
 
 # test: create index (key reuse)
 create index i on test (a, a);
-select show('table', 'test', true).indexes;
-drop index i on test;
 
 # test: create index (unique)
 create unique index i on test (a);
