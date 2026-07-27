@@ -36,6 +36,7 @@ struct PathKey
 struct Path
 {
 	int      type;
+	int      type_mapping;
 	Target*  target;
 	int      match_start;
 	int      match_start_exprs;

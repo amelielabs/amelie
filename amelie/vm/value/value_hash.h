@@ -89,15 +89,16 @@ value_hash_keys(Keys*  keys, Value* refs,
                 Value* values,
                 Value* identity)
 {
-	// values are row keys
-	uint32_t hash = 0;
+	// values are partitioning keys
+	auto     value = values;
+	uint32_t hash  = 0;
 	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
 		if (! key->partitioning)
 			continue;
-		auto value = values + key->order;
 		hash = value_hash_refs(value, key->column, refs, identity, hash);
+		value++;
 	}
 	return hash;
 }

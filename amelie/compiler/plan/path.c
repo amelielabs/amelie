@@ -24,6 +24,7 @@ path_allocate(Target* target, Keys* keys)
 	Path* self;
 	self = palloc(sizeof(Path) + sizeof(PathKey) * keys->count);
 	self->type              = PATH_SCAN;
+	self->type_mapping      = PATH_SCAN;
 	self->target            = target;
 	self->match_start       = 0;
 	self->match_start_exprs = 0;
@@ -321,6 +322,7 @@ path_create(Target* target, Block* block, Keys* keys, PathOps* ops)
 	unused(block);
 	auto self = path_allocate(target, keys);
 	auto match_eq = 0;
+	auto match_eq_mapping = 0;
 	auto match_last_start = -1;
 	auto match_last_stop  = -1;
 	for (auto at = 0; at < keys->count; at++)
@@ -337,7 +339,11 @@ path_create(Target* target, Block* block, Keys* keys, PathOps* ops)
 			if (parse_expr_is_const(key_path->start))
 				self->match_start_exprs++;
 			if (key_path->start_op->id == '=')
+			{
 				match_eq++;
+				if (key->partitioning)
+					match_eq_mapping++;
+			}
 		}
 		if (key_path->stop && (match_last_stop == (key->order - 1)))
 		{
@@ -346,9 +352,13 @@ path_create(Target* target, Block* block, Keys* keys, PathOps* ops)
 		}
 	}
 
-	// point lookup
+	// point lookup (index)
 	if (match_eq == keys->count)
 		self->type = PATH_LOOKUP;
+
+	// point lookup (partitioning)
+	if (match_eq_mapping == keys->mapping.keys_count)
+		self->type_mapping = PATH_LOOKUP;
 
 	return self;
 }

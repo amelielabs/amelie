@@ -56,11 +56,11 @@ row_map(Table* table, Value* refs, Value* values, Value* identity)
 }
 
 hot static inline Part*
-row_map_keys(Table* table, Value* values)
+row_map_keys(Table* table, Value* keys)
 {
 	// values are row keys
 	auto mapping = &table->parts.mapping;
-	auto hash_partition = value_hash_keys(mapping->keys, NULL, values, NULL);
+	auto hash_partition = value_hash_keys(mapping->keys, NULL, keys, NULL);
 	hash_partition %= PART_MAPPING_MAX;
 	return mapping->map[hash_partition];
 }

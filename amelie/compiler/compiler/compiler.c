@@ -189,11 +189,16 @@ emit_send(Compiler* self, Target* target, int type, int start)
 		// point-lookup or range scan
 		//
 		auto path = target->path_primary;
-		if (path && path->type == PATH_LOOKUP)
+		if (path && path->type_mapping == PATH_LOOKUP)
 		{
-			// push keys for point lookup to match the exact partition
+			// push partitioning keys for point lookup to match the partition
 			for (auto i = 0; i < path->match_start; i++)
-				emit_push(self, target->from, path->keys[i].start);
+			{
+				auto key = &path->keys[i];
+				if (! key->key->partitioning)
+					continue;
+				emit_push(self, target->from, key->start);
+			}
 
 			// CSEND_LOOKUP
 			op3(self, CSEND_LOOKUP, rdispatch, refs_count, send_offset);

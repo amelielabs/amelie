@@ -124,10 +124,11 @@ csend_lookup(Vm* self, Op* op)
 	    self->program->send_last == code_posof(self->code, op))
 		dispatch_set_close(dispatch);
 
-	// map partition using keys
-	auto values = stack_at(&self->stack, index->keys.count);
-	auto part = row_map_keys(table, values);
-	stack_popn(&self->stack, index->keys.count);
+	// map partition using partitioning keys
+	auto keys_count = index->keys.mapping.keys_count;
+	auto keys = stack_at(&self->stack, keys_count);
+	auto part = row_map_keys(table, keys);
+	stack_popn(&self->stack, keys_count);
 
 	auto req  = dispatch_add(dispatch, &dispatches->cache_req,
 	                         REQ_EXECUTE,
