@@ -29,18 +29,21 @@ csend_shard(Vm* self, Op* op)
 	auto table = send->table;
 
 	// create dispatch
-	auto gtr = self->gtr;
+	auto gtr        = self->gtr;
+	auto program    = self->program;
 	auto dispatches = &gtr->dispatches;
-	auto dispatch = dispatch_create(&dispatches->cache);
+	auto dispatch   = dispatch_create(&dispatches->cache);
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
 
-	if (self->allow_close &&
-	    self->program->send_last == code_posof(self->code, op))
+	if (self->allow_close && program->send_last == code_posof(self->code, op))
 		dispatch_set_close(dispatch);
 
+	// prepare identity
+	auto  identity_column = table_columns(table)->identity;
 	Value identity;
 	value_init(&identity);
+	value_set_int(&identity, 0);
 
 	// redistribute rows between partitions
 	auto refs  = stack_at(&self->stack, op->c);
@@ -51,7 +54,8 @@ csend_shard(Vm* self, Op* op)
 		for (auto order = 0; order < set->count_rows; order++)
 		{
 			auto row = set_row(set, order);
-			row_get_identity(self->local, table, refs, row, &identity);
+			if (identity_column)
+				row_identity(identity_column, refs, row, &identity, self->local);
 
 			auto part = row_map(table, refs, row, &identity);
 			auto req  = dispatch_find(dispatch, part);
@@ -60,8 +64,8 @@ csend_shard(Vm* self, Op* op)
 				req = dispatch_add(dispatch, &dispatches->cache_req,
 				                   REQ_EXECUTE,
 				                   send->start,
-				                   &self->program->code_backend,
-				                   &self->program->code_data,
+				                   &program->code_backend,
+				                   &program->code_data,
 				                   part);
 				if (op->c > 0)
 					req_copy_refs(req, refs, op->c);
@@ -76,7 +80,9 @@ csend_shard(Vm* self, Op* op)
 		Value* row;
 		for (; (row = store_iterator_at(it)); store_iterator_next(it))
 		{
-			row_get_identity(self->local, table, refs, row, &identity);
+			if (identity_column)
+				row_identity(identity_column, refs, row, &identity, self->local);
+
 			auto part = row_map(table, refs, row, &identity);
 			auto req = dispatch_find(dispatch, part);
 			if (! req)
@@ -84,8 +90,8 @@ csend_shard(Vm* self, Op* op)
 				req = dispatch_add(dispatch, &dispatches->cache_req,
 				                   REQ_EXECUTE,
 				                   send->start,
-				                   &self->program->code_backend,
-				                   &self->program->code_data,
+				                   &program->code_backend,
+				                   &program->code_data,
 				                   part);
 				if (op->c > 0)
 					req_copy_refs(req, refs, op->c);
