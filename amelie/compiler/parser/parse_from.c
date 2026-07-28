@@ -207,11 +207,9 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		str_set_str(&target->name, &table->config->name);
 		access_add(&self->parser->program->access, &table->rel, lock, perms);
 
-		// [USE INDEX name]
-		if (stmt_if(self, KUSE))
+		// [INDEX name]
+		if (stmt_if(self, KINDEX))
 		{
-			stmt_expect(self, KINDEX);
-
 			// name
 			auto name_index = stmt_next_shadow(self);
 			if (name_index->id != KNAME)
@@ -238,11 +236,9 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		access_add(&self->parser->program->access, &table->rel, lock, PERM_SELECT);
 		access_add(&self->parser->program->access, &clone->rel, LOCK_NONE, perms);
 
-		// [USE INDEX name]
-		if (stmt_if(self, KUSE))
+		// [INDEX name]
+		if (stmt_if(self, KINDEX))
 		{
-			stmt_expect(self, KINDEX);
-
 			// name
 			auto name_index = stmt_next_shadow(self);
 			if (name_index->id != KNAME)

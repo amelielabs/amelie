@@ -319,7 +319,7 @@ id  obj
 2   null
 # test: create index
 create index i on test2 (id);
-select * from test2 use index i;
+select * from test2 index i;
 
 id  obj
 ──────────
@@ -337,7 +337,7 @@ select show('state').lsn;
 lsn
 ───
 10
-select * from test2 use index i;
+select * from test2 index i;
 
 id  obj
 ──────────
@@ -351,7 +351,7 @@ select show('state').lsn;
 lsn
 ───
 11
-select * from test2 use index i2;
+select * from test2 index i2;
 
 id  obj
 ──────────
@@ -369,7 +369,7 @@ select show('state').lsn;
 lsn
 ───
 11
-select * from test2 use index i2;
+select * from test2 index i2;
 
 id  obj
 ──────────
@@ -378,10 +378,10 @@ id  obj
 2   null
 # test: drop index
 drop index i2 on test2;
-select * from test2 use index i;
-error: select * from test2 use index ❰i❱ ⟵ index not found
-select * from test2 use index i2;
-error: select * from test2 use index ❰i2❱ ⟵ index not found
+select * from test2 index i;
+error: select * from test2 index ❰i❱ ⟵ index not found
+select * from test2 index i2;
+error: select * from test2 index ❰i2❱ ⟵ index not found
 select * from test2;
 
 id  obj
@@ -400,10 +400,10 @@ select show('state').lsn;
 lsn
 ───
 12
-select * from test2 use index i;
-error: select * from test2 use index ❰i❱ ⟵ index not found
-select * from test2 use index i2;
-error: select * from test2 use index ❰i2❱ ⟵ index not found
+select * from test2 index i;
+error: select * from test2 index ❰i❱ ⟵ index not found
+select * from test2 index i2;
+error: select * from test2 index ❰i2❱ ⟵ index not found
 select * from test2;
 
 id  obj

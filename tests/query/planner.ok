@@ -1,6 +1,6 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: from use index
+# test: from index
 create table test (id int primary key, data int);
 create index i on test (data);
 insert into test values (0, 2);
@@ -38,19 +38,19 @@ id  data
 0   2
 1   1
 2   0
-select * from test use;
-error: select * from test use❰;❱ ⟵ INDEX expected
-select * from test use 1;
-error: select * from test use ❰1❱ ⟵ INDEX expected
-select * from test use index;
-error: select * from test use index❰;❱ ⟵ index name expected
-select * from test use index 1;
-error: select * from test use index ❰1❱ ⟵ index name expected
-select * from test use index (;
-error: select * from test use index ❰(❱ ⟵ index name expected
-select * from test use index (123;
-error: select * from test use index ❰(❱ ⟵ index name expected
-explain select * from test use index i;
+select * from test index;
+error: select * from test index❰;❱ ⟵ index name expected
+select * from test index 1;
+error: select * from test index ❰1❱ ⟵ index name expected
+select * from test index;
+error: select * from test index❰;❱ ⟵ index name expected
+select * from test index 1;
+error: select * from test index ❰1❱ ⟵ index name expected
+select * from test index (;
+error: select * from test index ❰(❱ ⟵ index name expected
+select * from test index (123;
+error: select * from test index ❰(❱ ⟵ index name expected
+explain select * from test index i;
 
 explain
 ───────
@@ -75,7 +75,7 @@ pushdown
 
 access
   •   amelie.test shared [select]
-select * from test use index i;
+select * from test index i;
 
 id  data
 ──────────

@@ -192,7 +192,6 @@ Keyword keywords[] =
 	{ KUPDATE,                "update",                6  },
 	{ KUUID,                  "uuid",                  4  },
 	{ KUNSET,                 "unset",                 5  },
-	{ KUSE,                   "use",                   3  },
 	{ KUSER,                  "user",                  4  },
 	{ KUNIQUE,                "unique",                6  },
 	{ KUSING,                 "using",                 5  },

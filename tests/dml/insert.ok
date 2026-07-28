@@ -1161,7 +1161,7 @@ id  data
 2   0
 3   0
 4   0
-explain select * from test use index i;
+explain select * from test index i;
 
 explain
 ───────
@@ -1186,7 +1186,7 @@ pushdown
 
 access
   •   amelie.test shared [select]
-select * from test use index i;
+select * from test index i;
 
 id  data
 ──────────

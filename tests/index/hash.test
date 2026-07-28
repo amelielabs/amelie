@@ -3089,20 +3089,20 @@ update test set data = 123;
 select count(*) from test where data = 123;
 select * from test;
 select * from test where data <> 0;
-select * from test use index i;
-select * from test use index i where data <> 0;
+select * from test index i;
+select * from test index i where data <> 0;
 
 # test: hash update/abort
 begin update test set data = null; select error("abort"); end;
-select count(*) from test use index i;
-select count(*) from test use index i where data = null;
+select count(*) from test index i;
+select count(*) from test index i where data = null;
 select * from test;
 
 # test: hash delete/abort
 select count(*), min(id), max(id) from test;
 begin delete from test; select error("abort"); end;
 select count(*), min(id), max(id) from test;
-select count(*), min(id), max(id) from test use index i;
+select count(*), min(id), max(id) from test index i;
 select * from test;
 drop table test;
 
@@ -3111,7 +3111,7 @@ create table test (id int primary key using hash as identity random);
 create index i on test (id);
 begin insert into test generate 1025; select error("abort"); end;
 select count(*) from test;
-select count(*) from test use index i;
+select count(*) from test index i;
 drop table test;
 
 disconnect S0;
