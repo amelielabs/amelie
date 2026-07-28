@@ -81,10 +81,10 @@ error: select ❰*❱ ⟵ no targets defined
 select *, *;
 error: select ❰*❱ ⟵ no targets defined
 # test: select * from table
-create table test (id serial primary key);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
+create table test (id int primary key);
+insert into test values (0);
+insert into test values (1);
+insert into test values (2);
 explain select * from test;
 
 explain
@@ -99,7 +99,7 @@ main
 pushdown
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test (primary) part
-  2   table_readi64       2      1      -     # id
+  2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
@@ -147,10 +147,10 @@ id
 2
 drop table test;
 # test: select column from table
-create table test (id serial primary key, data int default 0);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
+create table test (id int primary key, data int default 0);
+insert into test (id) values (0);
+insert into test (id) values (1);
+insert into test (id) values (2);
 select * from test;
 
 id  data
@@ -172,7 +172,7 @@ main
 pushdown
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (primary) part
-  2   table_readi64       2      1      -     # id
+  2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
   5   push                2      0      0
@@ -199,10 +199,10 @@ id  data
 2   0
 drop table test;
 # test: select column.path from table
-create table test (id serial primary key, data json);
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
-insert into test (`data`) values ({"data": 123});
+create table test (id int primary key, data json);
+insert into test values (0, {"data": 123});
+insert into test values (1, {"data": 123});
+insert into test (id, `data`) values (2, {"data": 123});
 select * from test;
 
 id  data
@@ -244,10 +244,10 @@ col1
 123
 drop table test;
 # test: select column.path from table #2
-create table test (id serial primary key, data json);
-insert into test (data) values ({"data": {"data": 123}});
-insert into test (data) values ({"data": {"data": 123}});
-insert into test (data) values ({"data": {"data": 123}});
+create table test (id int primary key, data json);
+insert into test values (0, {"data": {"data": 123}});
+insert into test values (1, {"data": {"data": 123}});
+insert into test values (2, {"data": {"data": 123}});
 select * from test;
 
 id  data
@@ -289,10 +289,10 @@ col1
 123
 drop table test;
 # test: select target.column from table
-create table test (id serial primary key, data int default 0);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
+create table test (id int primary key, data int default 0);
+insert into test (id) values (0);
+insert into test (id) values (1);
+insert into test (id) values (2);
 explain select test.id, test.data from test;
 
 explain
@@ -307,7 +307,7 @@ main
 pushdown
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (primary) part
-  2   table_readi64       2      1      -     # id
+  2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
   5   push                2      0      0
@@ -327,10 +327,10 @@ col1  col2
 2     0
 drop table test;
 # test: select target.column.path from table
-create table test (id serial primary key, data json);
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
+create table test (id int primary key, data json);
+insert into test values (0, {"data": 123});
+insert into test values (1, {"data": 123});
+insert into test values (2, {"data": 123});
 explain select test.data.data from test;
 
 explain
@@ -379,10 +379,10 @@ col1  id  data           id  data
 123   2   {"data": 123}  2   {"data": 123}
 drop table test;
 # test: select alias.column from table
-create table test (id serial primary key, data int default 0);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
+create table test (id int primary key, data int default 0);
+insert into test (id) values (0);
+insert into test (id) values (1);
+insert into test (id) values (2);
 select * from test;
 
 id  data
@@ -404,7 +404,7 @@ main
 pushdown
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (primary) part
-  2   table_readi64       2      1      -     # id
+  2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
   5   push                2      0      0
@@ -424,10 +424,10 @@ col1  col2
 2     0
 drop table test;
 # test: select alias.column.path from table
-create table test (id serial primary key, data json);
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
+create table test (id int primary key, data json);
+insert into test values (0, {"data": 123});
+insert into test values (1, {"data": 123});
+insert into test values (2, {"data": 123});
 explain select alias.data.data from test alias;
 
 explain
@@ -469,10 +469,10 @@ col1
 123
 drop table test;
 # test: select alias.* from table
-create table test (id serial primary key, data int default 0);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
+create table test (id int primary key, data int default 0);
+insert into test (id) values (0);
+insert into test (id) values (1);
+insert into test (id) values (2);
 select * from test;
 
 id  data
@@ -494,7 +494,7 @@ main
 pushdown
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (primary) part
-  2   table_readi64       2      1      -     # id
+  2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
   5   push                2      0      0
@@ -590,7 +590,7 @@ col1
 "test"
 drop user test;
 # test: select target.column.path from function()
-create table test (id serial primary key);
+create table test (id int primary key);
 select indexes[0].type from main.show('tables', true);
 
 type

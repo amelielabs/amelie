@@ -230,10 +230,10 @@ col1
 3
 drop table test;
 # test: select (select target.path) from table
-create table test (id serial primary key, data json);
-insert into test (data) values({"data": {"id": 1}});
-insert into test (data) values({"data": {"id": 2}});
-insert into test (data) values({"data": {"id": 3}});
+create table test (id int primary key, data json);
+insert into test values(0, {"data": {"id": 1}});
+insert into test values(1, {"data": {"id": 2}});
+insert into test values(2, {"data": {"id": 3}});
 select (select *) from test;
 error: select (❰select❱ ⟵ subquery must return only one column
 select (select test) from test;
@@ -432,10 +432,10 @@ id
 2
 3
 drop table test;
-create table test (id serial primary key, obj json);
-insert into test (obj) values({"data": {"id": 1}});
-insert into test (obj) values({"data": {"id": 2}});
-insert into test (obj) values({"data": {"id": 3}});
+create table test (id int primary key, obj json);
+insert into test values(0, {"data": {"id": 1}});
+insert into test values(1, {"data": {"id": 2}});
+insert into test values(2, {"data": {"id": 3}});
 # test: select target.path from (select from table)
 select obj from (select * from test);
 error: select obj from (select * from test)❰;❱ ⟵ subquery must have an alias
@@ -663,10 +663,10 @@ col1
 2
 3
 # test: select (select from table) from table #3
-create table a (id serial primary key, data int default 0);
-create table b (id serial primary key, data int default 1);
-insert into a () values (), (), ();
-insert into b () values (), (), ();
+create table a (id int primary key, data int default 0);
+create table b (id int primary key, data int default 1);
+insert into a (id) values (0), (1), (2);
+insert into b (id) values (0), (1), (2);
 select (select * from b where a.id = b.id) from a;
 error: select (❰select❱ ⟵ subquery must return only one column
 select (select a.* from b where a.id = b.id) from a;
@@ -703,11 +703,11 @@ pushdown
   0   set                 0      2      0
   1   table_open          1      0      21    # amelie.a (primary) part
   2   set                 2      1      0
-  3   table_readi64       3      1      -     # id
+  3   table_readi32       3      1      -     # id
   4   push                3      0      0
   5   table_open          3      32     12    # amelie.b (primary) point_lookup
-  6   table_readi64       4      1      -     # id
-  7   table_readi64       5      3      -     # id
+  6   table_readi32       4      1      -     # id
+  7   table_readi32       5      3      -     # id
   8   equii               6      4      5
   9   jntr                12     6      0
  10   push_bool           1      0      0
@@ -715,7 +715,7 @@ pushdown
  12   free                3      0      0
  13   first               3      2      0
  14   jntr                20     3      0
- 15   table_readi64       2      1      -     # id
+ 15   table_readi32       2      1      -     # id
  16   push                2      0      0
  17   table_readi32       2      1      -     # data
  18   push                2      0      0

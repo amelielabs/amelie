@@ -21,9 +21,8 @@ select show('state').lsn;
 show all;
 
 # test: create table
-create table test (id serial primary key, data int default 0);
+create table test (id i64 primary key, data int default 0);
 select show('state').lsn;
-select identity_of("test");
 
 # test: restart
 disconnect S0;
@@ -33,12 +32,10 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select identity_of("test");
 
 # test: insert
-insert into test () values (), (), ();
+insert into test (id) values (0), (1), (2);
 select show('state').lsn;
-select identity_of("test");
 select * from test;
 
 # test: restart
@@ -49,13 +46,11 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select identity_of("test");
 select * from test;
 
 # test: update
 update test set data = id;
 select show('state').lsn;
-select identity_of("test");
 select * from test;
 
 # test: restart
@@ -66,13 +61,11 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select identity_of("test");
 select * from test;
 
 # test: upsert
 insert into test values (2, 0) on conflict do update set data = data + 1;
 select show('state').lsn;
-select identity_of("test");
 select * from test;
 
 # test: restart
@@ -83,13 +76,11 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select identity_of("test");
 select * from test;
 
 # test: delete
 delete from test where id in (0, 1);
 select show('state').lsn;
-select identity_of("test");
 select * from test;
 
 # test: restart
@@ -100,7 +91,6 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select identity_of("test");
 select * from test;
 
 # test: drop column

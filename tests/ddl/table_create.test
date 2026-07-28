@@ -262,20 +262,6 @@ insert into test (id) values(3);
 select * from test;
 drop table test;
 
-# test: constraint serial (non key column)
-create table test (id int primary key, data serial);
-
-# test: constraint serial key
-create table test (id serial primary key);
-select show('table', 'test', true).columns;
-drop table test;
-
-# test: constraint serial multiple columns
-create table test (id serial primary key, data serial);
-
-# test: constraint serial as identity
-create table test (id serial primary key as identity);
-
 # test: as identity parsing
 create table test (id int primary key, data int always;
 create table test (id int primary key, data int always generated;
@@ -284,12 +270,12 @@ create table test (id int primary key, data int as;
 create table test (id int primary key, data int as identity;
 
 # test: as identity primary key
-create table test (id int primary key as identity);
+create table test (id int primary key as identity random);
 select show('table', 'test', true).columns;
 insert into test () values ();
 insert into test () values ();
 insert into test () values ();
-select * from test;
+select count(*) from test;
 drop table test;
 
 # test: primary key using

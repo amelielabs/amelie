@@ -31,33 +31,6 @@ create table test (id int primary key);
 alter table abc rename to test;
 drop table test;
 
-# test: set identity
-create table test (id serial primary key, data int default 0);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
-select * from test;
-alter table test set;
-alter table test set identity ;
-alter table test set identity 123;
-alter table test set identity =;
-alter table test set identity to;
-alter table test set identity to "123";
-alter table test set identity to 0;
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
-select * from test;
-alter table test set identity to 0;
-insert into test () values ();
-select * from test;
-drop table test;
-
-# test: set identity if exists
-alter table if exists test set identity to 0;
-alter table test set identity to 0;
-
 # test: rename column parsing
 alter table rename;
 alter table test rename;
@@ -69,7 +42,7 @@ alter table test rename column data to;
 alter table test rename column data to 1;
 
 # test: rename column
-create table test (id serial primary key, data int default 0);
+create table test (id int primary key, data int default 0);
 select show('table', 'test', true).columns;
 alter table test rename column data to data2;
 select show('table', 'test', true).columns;
@@ -87,7 +60,7 @@ select id2 from test;
 drop table test;
 
 # test: rename column (already exists)
-create table test (id serial primary key, data int default 0);
+create table test (id int primary key, data int default 0);
 select show('table', 'test', true).columns;
 alter table test rename column data to data;
 select show('table', 'test', true).columns;
@@ -174,19 +147,10 @@ alter table test add column data int not null default 123;
 select show('table', 'test', true).columns;
 drop table test;
 
-# test: add column (serial)
+# test: add column (identity)
 create table test (id int primary key);
 insert into test values (1),(2),(3);
-alter table test add column data serial;
-select show('table', 'test', true).columns;
-select data from test;
-insert into test (id) values (4), (5), (6);
-select data from test;
-drop table test;
-
-# test: add column (serial already exists)
-create table test (id serial primary key);
-alter table test add column data serial;
+alter table test add column data int as identity random;
 drop table test;
 
 # test: add column (vector)

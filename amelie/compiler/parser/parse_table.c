@@ -202,12 +202,10 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			fallthrough;
 		}
 
-		// AS IDENTITY
 		// AS IDENTITY RANDOM [(modulo])
 		case KAS:
 		{
 			auto identity = stmt_expect(self, KIDENTITY);
-
 			if (cons->as_identity)
 				stmt_error(self, identity, "IDENTITY defined twice");
 
@@ -215,25 +213,21 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			if (column->type != TYPE_INT || column->size < 4)
 				stmt_error(self, identity, "identity column must be int or int64");
 
-			constraints_set_as_identity(cons, IDENTITY_SERIAL);
-
 			// RANDOM
-			if (stmt_if(self, KRANDOM))
+			stmt_expect(self, KRANDOM);
+			constraints_set_as_identity(cons, IDENTITY_RANDOM);
+
+			// [(modulo)]
+			if (stmt_if(self, '('))
 			{
-				constraints_set_as_identity(cons, IDENTITY_RANDOM);
+				// int
+				auto value = stmt_expect(self, KINT);
+				// )
+				stmt_expect(self, ')');
+				if (value->integer == 0)
+					stmt_error(self, value, "RANDOM modulo value cannot be zero");
 
-				// [(modulo)]
-				if (stmt_if(self, '('))
-				{
-					// int
-					auto value = stmt_expect(self, KINT);
-					// )
-					stmt_expect(self, ')');
-					if (value->integer == 0)
-						stmt_error(self, value, "RANDOM modulo value cannot be zero");
-
-					constraints_set_as_identity_modulo(cons, value->integer);
-				}
+				constraints_set_as_identity_modulo(cons, value->integer);
 			}
 			break;
 		}
@@ -291,25 +285,10 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		column_set_name(column, &name->string);
 		columns_add(columns, column);
 
-		// SERIAL | type
-		auto ast = stmt_next_shadow(self);
-		if (ast->id != KNAME)
-			stmt_error(self, ast, "unrecognized data type");
-
-		int size_flat;
-		int size;
-		int type;
-		if (str_is_case(&ast->string, "serial", 6))
-		{
-			type = TYPE_INT;
-			size_flat = 0;
-			size = sizeof(int64_t);
-			constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
-		} else
-		{
-			stmt_push(self, ast);
-			type = parse_type(self->lex, &size, &size_flat);
-		}
+		// type
+		int  size_flat;
+		int  size;
+		auto type = parse_type(self->lex, &size, &size_flat);
 		column_set_type(column, type, size);
 		column_set_size_flat(column, size_flat);
 
@@ -517,7 +496,6 @@ parse_table_alter(Stmt* self)
 {
 	// ALTER TABLE [IF EXISTS] name RENAME TO name
 	// ALTER TABLE [IF EXISTS] name DESCRIPTION value 
-	// ALTER TABLE [IF EXISTS] name SET IDENTITY TO value
 	// ALTER TABLE [IF EXISTS] name ADD COLUMN [IF NOT EXISTS] name type [constraint]
 	// ALTER TABLE [IF EXISTS] name DROP COLUMN [IF EXISTS] name
 	// ALTER TABLE [IF EXISTS] name RENAME COLUMN [IF EXISTS] name TO name
@@ -551,25 +529,11 @@ parse_table_alter(Stmt* self)
 			auto column = stmt->column;
 			column_set_name(column, &name->string);
 
-			// SERIAL | type
-			auto ast = stmt_next_shadow(self);
-			if (ast->id != KNAME)
-				stmt_error(self, ast, "unrecognized data type");
+			// type
+			int  size_flat;
+			int  size;
+			auto type = parse_type(self->lex, &size, &size_flat);
 
-			int size_flat;
-			int size;
-			int type;
-			if (str_is_case(&ast->string, "serial", 6))
-			{
-				type = TYPE_INT;
-				size_flat = 0;
-				size = sizeof(int64_t);
-				constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
-			} else
-			{
-				stmt_push(self, ast);
-				type = parse_type(self->lex, &size, &size_flat);
-			}
 			column_set_type(column, type, size);
 			column_set_size_flat(column, size_flat);
 
@@ -582,6 +546,9 @@ parse_table_alter(Stmt* self)
 			auto cons = &stmt->column->constraints;
 			if (cons->not_null)
 				stmt_error(self, NULL, "NOT NULL currently not supported with ALTER");
+
+			if (cons->as_identity)
+				stmt_error(self, NULL, "IDENTITY column cannot be added");
 
 			stmt->type = TABLE_ALTER_COLUMN_ADD;
 		} else {
@@ -655,18 +622,6 @@ parse_table_alter(Stmt* self)
 	// [SET]
 	if (stmt_if(self, KSET))
 	{
-		// SET IDENTITY TO value
-		if (stmt_if(self, KIDENTITY))
-		{
-			// TO
-			stmt_expect(self, KTO);
-
-			// int
-			stmt->identity = stmt_expect(self, KINT);
-			stmt->type = TABLE_ALTER_SET_IDENTITY;
-			return;
-		}
-
 		// SET COLUMN DEFAULT
 		if (stmt_if(self, KCOLUMN))
 		{

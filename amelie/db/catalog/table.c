@@ -31,7 +31,6 @@ table_free(Table* self, bool drop)
 	parts_close(parts);
 	parts_free(parts);
 
-	sequence_free(&self->seq);
 	if (self->config)
 		table_config_free(self->config);
 	am_free(self);
@@ -50,11 +49,9 @@ table_allocate(TableConfig* config,
 {
 	auto self = (Table*)am_malloc(sizeof(Table));
 	self->config = table_config_copy(config);
-	sequence_init(&self->seq);
 
 	// part context
 	auto arg = &self->part_arg;
-	arg->seq       = &self->seq;
 	arg->rel       = &self->rel;
 	arg->timelines = &self->timelines;
 

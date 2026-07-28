@@ -900,30 +900,6 @@ id  data
 2   {"id": 48, "data": [1, 2, 3]}
 3   {"id": 48, "data": [1, 2, 3]}
 drop table test;
-# test: constraint serial (non key column)
-create table test (id int primary key, data serial);
-error: create table test (id int primary key, data serial❰)❱ ⟵ IDENTITY column can only be used with primary key
-# test: constraint serial key
-create table test (id serial primary key);
-select show('table', 'test', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "size": 8,
-  "size_flat": 0,
-  "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
-}]
-drop table test;
-# test: constraint serial multiple columns
-create table test (id serial primary key, data serial);
-error: create table test (id serial primary key, ❰data❱ ⟵ only one IDENTITY column is allowed
-# test: constraint serial as identity
-create table test (id serial primary key as identity);
-error: create table test (id serial primary key as ❰identity❱ ⟵ IDENTITY defined twice
 # test: as identity parsing
 create table test (id int primary key, data int always;
 error: create table test (id int primary key, data int ❰always❱ ⟵ ) expected
@@ -934,9 +910,9 @@ error: create table test (id int primary key, data int ❰always❱ ⟵ ) expect
 create table test (id int primary key, data int as;
 error: create table test (id int primary key, data int as❰;❱ ⟵ IDENTITY expected
 create table test (id int primary key, data int as identity;
-error: create table test (id int primary key, data int as identity❰;❱ ⟵ ) expected
+error: create table test (id int primary key, data int as identity❰;❱ ⟵ RANDOM expected
 # test: as identity primary key
-create table test (id int primary key as identity);
+create table test (id int primary key as identity random);
 select show('table', 'test', true).columns;
 
 columns
@@ -952,13 +928,11 @@ columns
 insert into test () values ();
 insert into test () values ();
 insert into test () values ();
-select * from test;
+select count(*) from test;
 
-id
-──
-0
-1
-2
+count
+─────
+3
 drop table test;
 # test: primary key using
 create table test (id int primary key using);
@@ -978,19 +952,19 @@ select show('table', 'test', true).partitions;
 partitions
 ──────────
 [{
-  "id": 39,
+  "id": 38,
   "hash_min": 0,
   "hash_max": 2024
 }, {
-  "id": 40,
+  "id": 39,
   "hash_min": 2024,
   "hash_max": 4048
 }, {
-  "id": 41,
+  "id": 40,
   "hash_min": 4048,
   "hash_max": 6072
 }, {
-  "id": 42,
+  "id": 41,
   "hash_min": 6072,
   "hash_max": 8096
 }]
@@ -999,25 +973,25 @@ show partitions on test;
 partitions
 ──────────
 {
-  "id": 39,
+  "id": 38,
   "min": 0,
   "max": 2024,
   "size": 0
 }
 {
-  "id": 40,
+  "id": 39,
   "min": 2024,
   "max": 4048,
   "size": 0
 }
 {
-  "id": 41,
+  "id": 40,
   "min": 4048,
   "max": 6072,
   "size": 0
 }
 {
-  "id": 42,
+  "id": 41,
   "min": 6072,
   "max": 8096,
   "size": 0

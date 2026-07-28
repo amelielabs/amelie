@@ -14,9 +14,6 @@
 // data type
 #include "type/type.h"
 
-// sequence
-#include "type/sequence.h"
-
 // column
 #include "type/constraints.h"
 #include "type/column.h"

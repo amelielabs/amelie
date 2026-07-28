@@ -242,73 +242,6 @@ id  data
 ──────────
 1   123
 drop table test;
-# test: insert serial
-create table test (id serial primary key);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
-select * from test;
-
-id
-──
-0
-1
-2
-drop table test;
-# test: insert serial #2
-create table test (id serial primary key, data int);
-insert into test (data) values (123);
-insert into test () values ();
-select * from test;
-
-id  data
-──────────
-0   123
-1   null
-drop table test;
-# test: insert serial alias
-create table test (id serial primary key);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
-select * from test;
-
-id
-──
-0
-1
-2
-drop table test;
-# test: insert serial directly
-create table test (id serial primary key, data int);
-insert into test (data) values (123);
-insert into test (id, data) values (1, 123);
-# test: insert serial directly (conflict)
-insert into test () values ();
-error: index 'primary': unique key constraint violation
-select * from test;
-
-id  data
-──────────
-0   123
-1   123
-drop table test;
-# test: insert serial null
-create table test (id serial primary key, data int);
-insert into test (id, data) values (null, 123);
-select * from test;
-
-id  data
-──────────
-0   123
-insert into test (data) values (123);
-select * from test;
-
-id  data
-──────────
-0   123
-1   123
-drop table test;
 # test: insert insert error
 create table test (id int primary key);
 insert into test values (1),(2),(3),(1);
@@ -334,26 +267,17 @@ id
 100
 drop table test;
 # test: insert generate
-create table test (id serial primary key, data int default 0);
+create table test (id bigint primary key as identity random, data int default 0);
 insert into test generate;
 error: insert into test generate❰;❱ ⟵ int expected
 insert into test generate "10";
 error: insert into test generate ❰"10"❱ ⟵ int expected
 insert into test generate 10;
-select * from test;
+select count(*) from test;
 
-id  data
-──────────
-0   0
-1   0
-2   0
-3   0
-4   0
-5   0
-6   0
-7   0
-8   0
-9   0
+count
+─────
+10
 drop table test;
 # test: insert returning
 create table test (id int primary key);
@@ -394,51 +318,6 @@ id
 3
 insert into test values (1),(2),(3) returning *;
 error: unique key constraint violation
-drop table test;
-# test: insert returning (serial)
-create table test (id serial primary key);
-explain insert into test () values (), (), () returning *;
-
-explain
-───────
-
-main
-  0   set_ptr             1      -      0
-  1   send_shard          0      1      0     # amelie.test (insert, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_prepare       1      -      -     # amelie.test
-  2   jmp                 9      0      0
-  3   string              2      0      0     # unique key constraint violation
-  4   push                2      0      0
-  5   call                2      -      1     # error()
-  6   table_readi64       2      1      -     # id
-  7   push                2      0      0
-  8   set_add             0      0      0
-  9   upsert              1      3      6
- 10   free                1      0      0
- 11   ret                 0      0      -
-
-access
-  •   amelie.test shared_rw [insert, select]
-insert into test () values (), (), () returning *;
-
-id
-──
-0
-1
-2
-insert into test () values (), (), () returning id;
-
-id
-──
-3
-4
-5
 drop table test;
 # test: insert column (bool)
 create table test (id int primary key, data bool);

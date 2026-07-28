@@ -271,17 +271,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = table_truncate(self, tr, &user, &name, if_exists);
 		break;
 	}
-	case DDL_TABLE_SET_IDENTITY:
-	{
-		Str     user;
-		Str     name;
-		int64_t value;
-		table_op_set_identity_read(op, &user, &name, &value);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = table_set_identity(self, tr, &user, &name, value, if_exists);
-		break;
-	}
 	case DDL_TABLE_COLUMN_ADD:
 	{
 		Str  user;

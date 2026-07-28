@@ -177,17 +177,6 @@ fn_decode(Call* self)
 }
 
 static void
-fn_identity_of(Call* self)
-{
-	auto argv = self->argv;
-	call_expect(self, 1);
-	call_arg(self, 0, TYPE_STRING);
-	auto table = catalog_find_table(&share()->db->catalog, &self->local->user,
-	                                &argv[0].string, true);
-	value_set_int(self->result, sequence_get(&table->seq));
-}
-
-static void
 fn_jwt(Call* self)
 {
 	auto argv = self->argv;
@@ -301,11 +290,6 @@ fn_misc_register(Functions* self)
 
 	// decode()
 	func = function_allocate(TYPE_STRING, "decode", fn_decode);
-	functions_add(self, func);
-
-	// identity_of()
-	func = function_allocate(TYPE_INT, "identity_of", fn_identity_of);
-	function_unset(func, FN_CONST);
 	functions_add(self, func);
 
 	// jwt()

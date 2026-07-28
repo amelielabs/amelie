@@ -200,10 +200,10 @@ id  data
 2   {"id": 51}
 drop table test;
 # test: update json rewrite
-create table test(id serial primary key, data json);
-insert into test (data) values ({"id": 48});
-insert into test (data) values ({"id": 49});
-insert into test (data) values ({"id": 50});
+create table test(id int primary key, data json);
+insert into test values (0, {"id": 48});
+insert into test values (1, {"id": 49});
+insert into test values (2, {"id": 50});
 update test set data = {"id": id};
 select * from test;
 
@@ -214,10 +214,10 @@ id  data
 2   {"id": 2}
 drop table test;
 # test: update json rewrite #2
-create table test(id serial primary key, data json);
-insert into test (data) values ({"id": 48});
-insert into test (data) values ({"id": 49});
-insert into test (data) values ({"id": 50});
+create table test(id int primary key, data json);
+insert into test values (0, {"id": 48});
+insert into test values (1, {"id": 49});
+insert into test values (2, {"id": 50});
 update test set data = [id, data.id];
 select * from test;
 

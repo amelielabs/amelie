@@ -324,17 +324,3 @@ part_delete_by(Part* self, Tr* tr, Timeline* timeline, Row* row)
 		error("delete by key does not match");
 	part_delete(self, tr, it, timeline);
 }
-
-void
-part_follow(Part* self, Row* row, Columns* columns)
-{
-	// use first identity column to sync the sequence
-	if (! columns->identity)
-		return;
-	int64_t value;
-	if (columns->identity->size == 4)
-		value = *(int32_t*)row_column(row, columns->identity);
-	else
-		value = *(int64_t*)row_column(row, columns->identity);
-	sequence_sync(self->arg->seq, value);
-}

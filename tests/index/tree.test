@@ -3107,10 +3107,10 @@ select * from test;
 drop table test;
 
 # test: tree insert/abort
-create table test (id serial primary key using tree);
+create table test (id int primary key using tree as identity random);
 create index i on test (id);
 begin insert into test generate 1025; select error("abort"); end;
-select * from test;
+select count(*) from test;
 select count(*) from test use index i;
 drop table test;
 

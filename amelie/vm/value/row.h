@@ -38,10 +38,7 @@ row_get_identity(Local* local, Table* table, Value* refs, Value* row, Value* ide
 	// generate identity column value
 	auto cons = &columns->identity->constraints;
 	uint64_t id;
-	if (cons->as_identity == IDENTITY_SERIAL)
-		id = sequence_next(&table->seq);
-	else
-		id = random_generate(&local->random) % cons->as_identity_modulo;
+	id = random_generate(&local->random) % cons->as_identity_modulo;
 	value_set_int(identity, id);
 }
 

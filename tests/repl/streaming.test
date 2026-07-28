@@ -10115,18 +10115,17 @@ show repl;
 switch S1;
 select count(id2) from test;
 
-# test: create table (serial)
+# test: create table (identity)
 switch S0;
-create table test2 (id serial primary key);
+create table test2 (id i64 primary key as identity random);
 insert into test2 () values (), (), (), ();
-select identity_of("test2");
 
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
 
 switch S1;
-select identity_of("test2");
+select count(*) from test2;
 
 # test: topic (subscription)
 switch S0;

@@ -4,10 +4,10 @@ connect E0 S0 127.0.0.1:3485;
 select 1 * where false;
 error: select 1 * ❰where❱ ⟵ bad expression
 # test: select from table where column
-create table test (id serial primary key, data int default 0);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
+create table test (id int primary key, data int default 0);
+insert into test (id) values (0);
+insert into test (id) values (1);
+insert into test (id) values (2);
 explain select * from test where id >= 0;
 
 explain
@@ -23,11 +23,11 @@ pushdown
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
   2   table_open          1      0      13    # amelie.test (primary) part
-  3   table_readi64       2      1      -     # id
+  3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 0
   5   gteii               4      2      3
   6   jntr                12     4      0
-  7   table_readi64       2      1      -     # id
+  7   table_readi32       2      1      -     # id
   8   push                2      0      0
   9   table_readi32       2      1      -     # data
  10   push                2      0      0
@@ -47,10 +47,10 @@ id  data
 2   0
 drop table test;
 # test: select from table where column.path
-create table test (id serial primary key, data json);
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
+create table test (id int primary key, data json);
+insert into test values (0, {"data": 123});
+insert into test values (1, {"data": 123});
+insert into test values (2, {"data": 123});
 select * from test;
 
 id  data
@@ -82,7 +82,7 @@ pushdown
   7   int                 3      -      0     # 0
   8   gteii               4      2      3
   9   jntr                15     4      0
- 10   table_readi64       2      1      -     # id
+ 10   table_readi32       2      1      -     # id
  11   push                2      0      0
  12   table_readj         2      1      -     # data
  13   push                2      0      0
@@ -102,10 +102,10 @@ id  data
 2   {"data": 123}
 drop table test;
 # test: select from table where column.path #2
-create table test (id serial primary key, data json);
-insert into test (data) values ({"data": {"data": 123}});
-insert into test (data) values ({"data": {"data": 123}});
-insert into test (data) values ({"data": {"data": 123}});
+create table test (id int primary key, data json);
+insert into test values (0, {"data": {"data": 123}});
+insert into test values (1, {"data": {"data": 123}});
+insert into test values (2, {"data": {"data": 123}});
 select * from test;
 
 id  data
@@ -135,7 +135,7 @@ pushdown
   7   int                 3      -      0     # 0
   8   gteii               4      2      3
   9   jntr                15     4      0
- 10   table_readi64       2      1      -     # id
+ 10   table_readi32       2      1      -     # id
  11   push                2      0      0
  12   table_readj         2      1      -     # data
  13   push                2      0      0
@@ -155,10 +155,10 @@ id  data
 2   {"data": {"data": 123}}
 drop table test;
 # test: select from table where target.column
-create table test (id serial primary key, data int default 0);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
+create table test (id int primary key, data int default 0);
+insert into test (id) values (0);
+insert into test (id) values (1);
+insert into test (id) values (2);
 explain select * from test where test.id >= 0;
 
 explain
@@ -174,11 +174,11 @@ pushdown
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
   2   table_open          1      0      13    # amelie.test (primary) part
-  3   table_readi64       2      1      -     # id
+  3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 0
   5   gteii               4      2      3
   6   jntr                12     4      0
-  7   table_readi64       2      1      -     # id
+  7   table_readi32       2      1      -     # id
   8   push                2      0      0
   9   table_readi32       2      1      -     # data
  10   push                2      0      0
@@ -198,10 +198,10 @@ id  data
 2   0
 drop table test;
 # test: select from table where target.column.path
-create table test (id serial primary key, data json);
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
+create table test (id int primary key, data json);
+insert into test values (0, {"data": 123});
+insert into test values (1, {"data": 123});
+insert into test values (2, {"data": 123});
 explain select * from test where test.data.data::int >= 0;
 
 explain
@@ -224,7 +224,7 @@ pushdown
   7   int                 3      -      0     # 0
   8   gteii               4      2      3
   9   jntr                15     4      0
- 10   table_readi64       2      1      -     # id
+ 10   table_readi32       2      1      -     # id
  11   push                2      0      0
  12   table_readj         2      1      -     # data
  13   push                2      0      0
@@ -244,10 +244,10 @@ id  data
 2   {"data": 123}
 drop table test;
 # test: select from table where alias.column
-create table test (id serial primary key, data int default 0);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
+create table test (id int primary key, data int default 0);
+insert into test (id) values (0);
+insert into test (id) values (1);
+insert into test (id) values (2);
 explain select * from test alias where alias.id >= 0;
 
 explain
@@ -263,11 +263,11 @@ pushdown
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
   2   table_open          1      0      13    # amelie.test (primary) part
-  3   table_readi64       2      1      -     # id
+  3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 0
   5   gteii               4      2      3
   6   jntr                12     4      0
-  7   table_readi64       2      1      -     # id
+  7   table_readi32       2      1      -     # id
   8   push                2      0      0
   9   table_readi32       2      1      -     # data
  10   push                2      0      0
@@ -287,10 +287,10 @@ id  data
 2   0
 drop table test;
 # test: select from table where alias.column.path
-create table test (id serial primary key, data json);
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
-insert into test (data) values ({"data": 123});
+create table test (id int primary key, data json);
+insert into test values (0, {"data": 123});
+insert into test values (1, {"data": 123});
+insert into test values (2, {"data": 123});
 explain select * from test alias where alias.data.data::int >= 0;
 
 explain
@@ -313,7 +313,7 @@ pushdown
   7   int                 3      -      0     # 0
   8   gteii               4      2      3
   9   jntr                15     4      0
- 10   table_readi64       2      1      -     # id
+ 10   table_readi32       2      1      -     # id
  11   push                2      0      0
  12   table_readj         2      1      -     # data
  13   push                2      0      0
@@ -333,10 +333,10 @@ id  data
 2   {"data": 123}
 drop table test;
 # test: select from table where *
-create table test (id serial primary key, data int default 0);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
+create table test (id int primary key, data int default 0);
+insert into test (id) values (0);
+insert into test (id) values (1);
+insert into test (id) values (2);
 explain select * from test alias where *;
 error: explain select * from test alias where ❰*❱ ⟵ bad expression
 drop table test;

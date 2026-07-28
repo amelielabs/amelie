@@ -10271,15 +10271,10 @@ select count(id2) from test;
 count
 ─────
 10
-# test: create table (serial)
+# test: create table (identity)
 switch S0;
-create table test2 (id serial primary key);
+create table test2 (id i64 primary key as identity random);
 insert into test2 () values (), (), (), ();
-select identity_of("test2");
-
-identity_of
-───────────
-4
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
@@ -10299,10 +10294,10 @@ repl
   }]
 }
 switch S1;
-select identity_of("test2");
+select count(*) from test2;
 
-identity_of
-───────────
+count
+─────
 4
 # test: topic (subscription)
 switch S0;

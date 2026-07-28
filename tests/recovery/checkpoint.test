@@ -13,7 +13,7 @@ select show('state').lsn;
 select show('state').checkpoint;
 
 # test: create table
-create table test (id serial primary key);
+create table test (id i64 primary key);
 select show('state').lsn;
 
 # test: checkpoint
@@ -31,8 +31,7 @@ select show('state').checkpoint;
 select * from test;
 
 # test: insert
-insert into test () values (), (), ();
-select identity_of("test");
+insert into test values (0), (1), (2);
 
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -42,7 +41,6 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-select identity_of("test");
 select * from test;
 
 # test: checkpoint
@@ -58,17 +56,16 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-select identity_of("test");
 select * from test;
 
 # test: create clone
 create clone a of test;
-insert into a () values (), ();
+insert into a values (3), (4);
 select * from a;
 
 create clone b of test;
-insert into b () values (), ();
-insert into b () values (), ();
+insert into b values (5), (6);
+insert into b values (7), (8);
 select * from b;
 
 select timeline from show clones verbose;
@@ -260,7 +257,6 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('state').checkpoint;
 select show('user', 'test').name;
-select identity_of("test");
 
 # test: checkpoint
 checkpoint;
@@ -276,7 +272,6 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('state').checkpoint;
 select show('user', 'test').name;
-select identity_of("test");
 
 # test: truncate
 drop table test cascade;

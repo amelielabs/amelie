@@ -1,17 +1,12 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
 connect E0 S0 127.0.0.1:3485;
 # test: create table
-create table test (id serial primary key, data int default 0);
+create table test (id i64 primary key, data int default 0);
 select show('state').lsn;
 
 lsn
 ───
 2
-select identity_of("test");
-
-identity_of
-───────────
-0
 # test: restart
 disconnect S0;
 close E0;
@@ -23,11 +18,6 @@ select show('state').lsn;
 lsn
 ───
 2
-select identity_of("test");
-
-identity_of
-───────────
-0
 # test: alter table rename
 alter table test rename to test2;
 select show('state').lsn;
@@ -35,13 +25,6 @@ select show('state').lsn;
 lsn
 ───
 3
-select identity_of("test");
-error: table 'test': not exists
-select identity_of("test2");
-
-identity_of
-───────────
-0
 # test: restart
 disconnect S0;
 close E0;
@@ -53,15 +36,8 @@ select show('state').lsn;
 lsn
 ───
 3
-select identity_of("test");
-error: table 'test': not exists
-select identity_of("test2");
-
-identity_of
-───────────
-0
 # test: alter table column add
-insert into test2() values (), (), ();
+insert into test2 (id) values (0), (1), (2);
 select * from test2;
 
 id  data
@@ -74,11 +50,6 @@ select show('state').lsn;
 lsn
 ───
 4
-select identity_of("test2");
-
-identity_of
-───────────
-3
 alter table test2 add column obj json;
 select * from test2;
 
@@ -105,11 +76,6 @@ select show('state').lsn;
 lsn
 ───
 5
-select identity_of("test2");
-
-identity_of
-───────────
-3
 select * from test2;
 
 id  data  obj
@@ -146,11 +112,6 @@ select show('state').lsn;
 lsn
 ───
 6
-select identity_of("test2");
-
-identity_of
-───────────
-3
 select data from test2;
 error: select ❰data❱ ⟵ column not found
 select abc from test2;
@@ -172,7 +133,7 @@ columns
   "size": 8,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "abc",
   "type": 2,
@@ -209,7 +170,7 @@ columns
   "size": 8,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "abc",
   "type": 2,
@@ -237,7 +198,7 @@ columns
   "size": 8,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "abc",
   "type": 2,
@@ -274,7 +235,7 @@ columns
   "size": 8,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "abc",
   "type": 2,
@@ -311,7 +272,7 @@ columns
   "size": 8,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "abc",
   "type": 2,
@@ -349,11 +310,6 @@ select show('state').lsn;
 lsn
 ───
 9
-select identity_of("test2");
-
-identity_of
-───────────
-3
 select * from test2;
 
 id  obj
@@ -381,11 +337,6 @@ select show('state').lsn;
 lsn
 ───
 10
-select identity_of("test2");
-
-identity_of
-───────────
-3
 select * from test2 use index i;
 
 id  obj
@@ -418,11 +369,6 @@ select show('state').lsn;
 lsn
 ───
 11
-select identity_of("test2");
-
-identity_of
-───────────
-3
 select * from test2 use index i2;
 
 id  obj
@@ -454,11 +400,6 @@ select show('state').lsn;
 lsn
 ───
 12
-select identity_of("test2");
-
-identity_of
-───────────
-3
 select * from test2 use index i;
 error: select * from test2 use index ❰i❱ ⟵ index not found
 select * from test2 use index i2;
@@ -587,11 +528,6 @@ select show('state').lsn;
 lsn
 ───
 20
-select identity_of("test2");
-
-identity_of
-───────────
-3
 select * from test2;
 
 id  obj
@@ -603,8 +539,6 @@ select show('state').lsn;
 lsn
 ───
 21
-select identity_of("test2");
-error: table 'test2': not exists
 # test: restart
 disconnect S0;
 close E0;

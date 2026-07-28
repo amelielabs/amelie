@@ -124,17 +124,6 @@ select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarek
 sha1
 ────
 b180886d94d595bf0b52ea31ec7d4a178cde1926
-# test: identity_of()
-select identity_of("abc");
-error: table 'abc': not exists
-create table test (id serial primary key);
-insert into test () values (), (), ();
-select identity_of("test");
-
-identity_of
-───────────
-3
-drop table test;
 # test: jwt()
 select jwt({"alg": "HS256", "typ": "JWT"}, {}, "123");
 

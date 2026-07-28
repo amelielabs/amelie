@@ -39,62 +39,6 @@ create table test (id int primary key);
 alter table abc rename to test;
 error: relation 'test': already exists
 drop table test;
-# test: set identity
-create table test (id serial primary key, data int default 0);
-insert into test () values ();
-insert into test () values ();
-insert into test () values ();
-select * from test;
-
-id  data
-──────────
-0   0
-1   0
-2   0
-alter table test set;
-error: alter table test set❰;❱ ⟵ 'COLUMN DEFAULT' expected
-alter table test set identity ;
-error: alter table test set identity ❰;❱ ⟵ TO expected
-alter table test set identity 123;
-error: alter table test set identity ❰123❱ ⟵ TO expected
-alter table test set identity =;
-error: alter table test set identity ❰=❱ ⟵ TO expected
-alter table test set identity to;
-error: alter table test set identity to❰;❱ ⟵ int expected
-alter table test set identity to "123";
-error: alter table test set identity to ❰"123"❱ ⟵ int expected
-alter table test set identity to 0;
-insert into test () values ();
-error: index 'primary': unique key constraint violation
-insert into test () values ();
-error: index 'primary': unique key constraint violation
-insert into test () values ();
-error: index 'primary': unique key constraint violation
-insert into test () values ();
-select * from test;
-
-id  data
-──────────
-0   0
-1   0
-2   0
-3   0
-alter table test set identity to 0;
-insert into test () values ();
-error: index 'primary': unique key constraint violation
-select * from test;
-
-id  data
-──────────
-0   0
-1   0
-2   0
-3   0
-drop table test;
-# test: set identity if exists
-alter table if exists test set identity to 0;
-alter table test set identity to 0;
-error: table 'test': not exists
 # test: rename column parsing
 alter table rename;
 error: alter table ❰rename❱ ⟵ name expected
@@ -113,7 +57,7 @@ error: alter table test rename column data to❰;❱ ⟵ name expected
 alter table test rename column data to 1;
 error: alter table test rename column data to ❰1❱ ⟵ name expected
 # test: rename column
-create table test (id serial primary key, data int default 0);
+create table test (id int primary key, data int default 0);
 select show('table', 'test', true).columns;
 
 columns
@@ -121,10 +65,10 @@ columns
 [{
   "name": "id",
   "type": 2,
-  "size": 8,
+  "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
@@ -141,10 +85,10 @@ columns
 [{
   "name": "id",
   "type": 2,
-  "size": 8,
+  "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data2",
   "type": 2,
@@ -202,7 +146,7 @@ id2
 3
 drop table test;
 # test: rename column (already exists)
-create table test (id serial primary key, data int default 0);
+create table test (id int primary key, data int default 0);
 select show('table', 'test', true).columns;
 
 columns
@@ -210,10 +154,10 @@ columns
 [{
   "name": "id",
   "type": 2,
-  "size": 8,
+  "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
@@ -231,10 +175,10 @@ columns
 [{
   "name": "id",
   "type": 2,
-  "size": 8,
+  "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
+  "constraints": [["not_null", true]]
 }, {
   "name": "data",
   "type": 2,
@@ -458,52 +402,11 @@ columns
   "constraints": [["not_null", true]]
 }]
 drop table test;
-# test: add column (serial)
+# test: add column (identity)
 create table test (id int primary key);
 insert into test values (1),(2),(3);
-alter table test add column data serial;
-select show('table', 'test', true).columns;
-
-columns
-───────
-[{
-  "name": "id",
-  "type": 2,
-  "size": 4,
-  "size_flat": 0,
-  "dropped": false,
-  "constraints": [["not_null", true]]
-}, {
-  "name": "data",
-  "type": 2,
-  "size": 8,
-  "size_flat": 0,
-  "dropped": false,
-  "constraints": [["as_identity", 1]]
-}]
-select data from test;
-
-data
-────
-null
-null
-null
-insert into test (id) values (4), (5), (6);
-select data from test;
-
-data
-────
-null
-null
-null
-0
-1
-2
-drop table test;
-# test: add column (serial already exists)
-create table test (id serial primary key);
-alter table test add column data serial;
-error: table 'test': already has identity column
+alter table test add column data int as identity random;
+error: alter table test add column data int as identity random❰;❱ ⟵ IDENTITY column cannot be added
 drop table test;
 # test: add column (vector)
 create table test (id int primary key);

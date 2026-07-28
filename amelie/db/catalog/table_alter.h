@@ -11,9 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-// alter table
-bool table_set_identity(Catalog*, Tr*, Str*, Str*, int64_t, bool);
-
 // alter column
 bool table_column_rename(Catalog*, Tr*, Str*, Str*, Str*, Str*, bool, bool);
 bool table_column_add(Catalog*, Tr*, Str*, Str*, Column*, bool, bool);

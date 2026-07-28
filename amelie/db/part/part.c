@@ -67,7 +67,6 @@ part_open_heap(Part* self, uint64_t checkpoint)
 
 	// create primary index iterator for upsert
 	auto primary = part_primary(self);
-	auto columns = index_keys(primary)->columns;
 	auto it_upsert = index_iterator(primary);
 	defer(iterator_close, it_upsert);
 
@@ -87,16 +86,14 @@ part_open_heap(Part* self, uint64_t checkpoint)
 		if (! row->head)
 			continue;
 
-		// sync last identity column value during recover
-		part_follow(self, row, columns);
-		count++;
-
 		// update index to track the latest version
 		auto exists = index_upsert(primary, row, it_upsert);
 		assert(! exists);
 		unused(exists);
 		for (auto index = primary->next; index; index = index->next)
 			index_replace_by(index, row);
+
+		count++;
 	}
 
 	auto total = (double)storage_size(&self->heap->storage) / 1024 / 1024;

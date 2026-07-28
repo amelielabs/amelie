@@ -16,7 +16,6 @@ typedef struct Constraints Constraints;
 enum
 {
 	IDENTITY_NONE,
-	IDENTITY_SERIAL,
 	IDENTITY_RANDOM
 };
 

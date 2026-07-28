@@ -18,7 +18,6 @@ struct Table
 	Rel          rel;
 	Parts        parts;
 	PartArg      part_arg;
-	Sequence     seq;
 	Timelines    timelines;
 	TableConfig* config;
 };

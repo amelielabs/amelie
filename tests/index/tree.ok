@@ -18521,14 +18521,15 @@ id   data
 1025 123
 drop table test;
 # test: tree insert/abort
-create table test (id serial primary key using tree);
+create table test (id int primary key using tree as identity random);
 create index i on test (id);
 begin insert into test generate 1025; select error("abort"); end;
 error: abort
-select * from test;
+select count(*) from test;
 
-id
-──
+count
+─────
+0
 select count(*) from test use index i;
 
 count

@@ -322,8 +322,9 @@ id  data
 3   null
 drop table test;
 # test: upsert generate
-create table test (id serial primary key, data int default 0);
-insert into test generate 10 on conflict do update set data = data + 1;
+create table test (id int primary key, data int default 0);
+insert into test (id) values (0), (1), (2), (3), (4), (5), (6), (7), (8), (9)
+    on conflict do update set data = data + 1;
 select * from test;
 
 id  data
@@ -338,8 +339,8 @@ id  data
 7   0
 8   0
 9   0
-alter table test set identity to 0;
-insert into test generate 10 on conflict do update set data = data + 1;
+insert into test (id) values (0), (1), (2), (3), (4), (5), (6), (7), (8), (9)
+    on conflict do update set data = data + 1;
 select * from test;
 
 id  data

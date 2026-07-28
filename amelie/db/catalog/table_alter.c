@@ -22,60 +22,6 @@
 #include <amelie_catalog.h>
 
 static void
-set_identity_if_commit(Log* self, LogOp* op)
-{
-	unused(self);
-	unused(op);
-}
-
-static void
-set_identity_if_abort(Log* self, LogOp* op)
-{
-	uint8_t* pos = log_data_of(self, op);
-	int64_t value;
-	unpack_int(&pos, &value);
-
-	auto table = table_of(op->rel);
-	sequence_set(&table->seq, value);
-}
-
-static LogIf set_identity_if =
-{
-	.commit = set_identity_if_commit,
-	.abort  = set_identity_if_abort
-};
-
-bool
-table_set_identity(Catalog* self,
-                   Tr*       tr,
-                   Str*      user,
-                   Str*      name,
-                   int64_t   value,
-                   bool      if_exists)
-{
-	auto table = catalog_find_table(self, user, name, false);
-	if (! table)
-	{
-		if (! if_exists)
-			error("table '{str}': not exists", name);
-		return false;
-	}
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
-
-	// update table
-	log_ddl(&tr->log, &set_identity_if, NULL, &table->rel);
-
-	// save previous sequence value
-	encode_int(&tr->log.data, sequence_get(&table->seq));
-
-	// set new sequence
-	sequence_set(&table->seq, value);
-	return true;
-}
-
-static void
 column_rename_if_commit(Log* self, LogOp* op)
 {
 	unused(self);

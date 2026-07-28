@@ -264,15 +264,6 @@ explain select * from (select data from test where data > 0 group by data having
 select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1) t;
 drop table test;
 
-# test: select from table group by (large table)
-create table test (id serial primary key);
-insert into test generate 10000;
-explain select * from (select count(*), sum(2 * id) from test group by id) t;
-select * from (select count(*), sum(2 * id) from test group by id) t;
-explain select count(*) from (select count(*) from test group by id) t;
-select count(*) from (select count(*) from test group by id) t;
-drop table test;
-
 # test: select from table group by 1
 create table test (id int primary key, data int);
 insert into test values (0, 0);
