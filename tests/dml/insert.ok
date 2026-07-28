@@ -267,7 +267,7 @@ id
 100
 drop table test;
 # test: insert generate
-create table test (id bigint primary key as identity random, data int default 0);
+create table test (id bigint primary key as identity, data int default 0);
 insert into test generate;
 error: insert into test generate❰;❱ ⟵ int expected
 insert into test generate "10";

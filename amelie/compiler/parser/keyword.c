@@ -159,7 +159,6 @@ Keyword keywords[] =
 	{ KREPLICA,               "replica",               7  },
 	{ KREPL,                  "repl",                  4  },
 	{ KREPLICATION,           "replication",           11 },
-	{ KRANDOM,                "random",                6  },
 	{ KRESUME,                "resume",                6  },
 	{ KREVOKE,                "revoke",                6  },
 

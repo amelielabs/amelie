@@ -18521,7 +18521,7 @@ id    data
 522   123
 drop table test;
 # test: hash insert/abort
-create table test (id int primary key using hash as identity random);
+create table test (id int primary key using hash as identity);
 create index i on test (id);
 begin insert into test generate 1025; select error("abort"); end;
 error: abort

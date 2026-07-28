@@ -191,30 +191,32 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			break;
 		}
 
-		// [GENERATED ALWAYS] AS ...
+		// [GENERATED ALWAYS] [AS] ...
 		case KGENERATED:
 		{
 			// ALWAYS
 			stmt_expect(self, KALWAYS);
-
-			// AS
-			stmt_expect(self, KAS);
 			fallthrough;
 		}
 
-		// AS IDENTITY RANDOM [(modulo])
+		// [AS] ...
 		case KAS:
 		{
-			auto identity = stmt_expect(self, KIDENTITY);
+			// IDENTITY
+			stmt_expect(self, KIDENTITY);
+			fallthrough;
+		}
+
+		// IDENTITY [(modulo])
+		case KIDENTITY:
+		{
 			if (cons->as_identity)
-				stmt_error(self, identity, "IDENTITY defined twice");
+				stmt_error(self, name, "IDENTITY defined twice");
 
 			// ensure the column has type INT64
 			if (column->type != TYPE_INT || column->size < 4)
-				stmt_error(self, identity, "identity column must be int or int64");
+				stmt_error(self, name, "identity column must be int or int64");
 
-			// RANDOM
-			stmt_expect(self, KRANDOM);
 			constraints_set_as_identity(cons, IDENTITY_RANDOM);
 
 			// [(modulo)]
@@ -225,7 +227,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 				// )
 				stmt_expect(self, ')');
 				if (value->integer == 0)
-					stmt_error(self, value, "RANDOM modulo value cannot be zero");
+					stmt_error(self, value, "IDENTITY modulo value cannot be zero");
 
 				constraints_set_as_identity_modulo(cons, value->integer);
 			}

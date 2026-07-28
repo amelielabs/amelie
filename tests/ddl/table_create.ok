@@ -910,9 +910,9 @@ error: create table test (id int primary key, data int ❰always❱ ⟵ ) expect
 create table test (id int primary key, data int as;
 error: create table test (id int primary key, data int as❰;❱ ⟵ IDENTITY expected
 create table test (id int primary key, data int as identity;
-error: create table test (id int primary key, data int as identity❰;❱ ⟵ RANDOM expected
+error: create table test (id int primary key, data int as identity❰;❱ ⟵ ) expected
 # test: as identity primary key
-create table test (id int primary key as identity random);
+create table test (id int primary key as identity);
 select show('table', 'test', true).columns;
 
 columns

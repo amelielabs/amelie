@@ -150,7 +150,7 @@ drop table test;
 # test: add column (identity)
 create table test (id int primary key);
 insert into test values (1),(2),(3);
-alter table test add column data int as identity random;
+alter table test add column data int as identity;
 drop table test;
 
 # test: add column (vector)

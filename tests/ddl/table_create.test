@@ -270,7 +270,7 @@ create table test (id int primary key, data int as;
 create table test (id int primary key, data int as identity;
 
 # test: as identity primary key
-create table test (id int primary key as identity random);
+create table test (id int primary key as identity);
 select show('table', 'test', true).columns;
 insert into test () values ();
 insert into test () values ();

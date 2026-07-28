@@ -10117,7 +10117,7 @@ select count(id2) from test;
 
 # test: create table (identity)
 switch S0;
-create table test2 (id i64 primary key as identity random);
+create table test2 (id i64 primary key as identity);
 insert into test2 () values (), (), (), ();
 
 # test: wait replica sync

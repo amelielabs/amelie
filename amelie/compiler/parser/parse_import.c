@@ -57,7 +57,7 @@ import_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
 	if (match_count == columns->count)
 		return;
 
-	// default value, write IDENTITY, RANDOM or DEFAULT
+	// default value, write IDENTITY, DEFAULT
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);

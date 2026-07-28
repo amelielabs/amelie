@@ -405,8 +405,8 @@ drop table test;
 # test: add column (identity)
 create table test (id int primary key);
 insert into test values (1),(2),(3);
-alter table test add column data int as identity random;
-error: alter table test add column data int as identity random❰;❱ ⟵ IDENTITY column cannot be added
+alter table test add column data int as identity;
+error: alter table test add column data int as identity❰;❱ ⟵ IDENTITY column cannot be added
 drop table test;
 # test: add column (vector)
 create table test (id int primary key);
