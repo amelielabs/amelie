@@ -107,7 +107,7 @@ repo_bootstrap(void)
 	if (opt_uuid_empty(&config->uuid))
 	{
 		Uuid uuid;
-		uuid_generate(&uuid, &am_task->random);
+		uuid_generate(&uuid, &am_task->random, time_ms());
 		opt_uuid_set(&config->uuid, &uuid);
 	}
 

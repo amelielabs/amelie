@@ -55,7 +55,7 @@ fn_random_uuid(Call* self)
 	call_expect(self, 0);
 	Uuid id;
 	uuid_init(&id);
-	uuid_generate(&id, &self->local->random);
+	uuid_generate(&id, &self->local->random, self->local->time_ms);
 	value_set_uuid(self->result, &id);
 }
 

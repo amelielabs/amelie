@@ -14,61 +14,44 @@
 #include <amelie_io.h>
 #include <amelie_lib.h>
 
-typedef struct uuid_bits uuid_bits_t;
-
-struct uuid_bits
-{
-	uint32_t a;
-	uint16_t b;
-	uint16_t c;
-	uint16_t d;
-	uint16_t e;
-	uint32_t f;
-} packed;
-
 int
 uuid_set_nothrow(Uuid* self, Str* src)
 {
 	if (unlikely(str_size(src) < (UUID_SZ - 1)))
 		return -1;
 
-	auto string = str_of(src);
-	auto bits = (uuid_bits_t*)self;
-
-	// convert
+	uint64_t a     = 0;
+	uint64_t b     = 0;
 	uint64_t value = 0;
-	int i = 0;
-	for (; i < 36; i++)
+
+	auto string = str_of(src);
+	for (int i = 0; i < 36; i++)
 	{
 		switch (i) {
 		case 8:
 			if (unlikely(string[i] != '-'))
 				return -1;
-			bits->a = value;
+			a |= (value << 32);
 			value = 0;
 			break;
 		case 13:
 			if (unlikely(string[i] != '-'))
 				return -1;
-			bits->b = value;
+			a |= (value << 16);
 			value = 0;
 			break;
 		case 18:
 			if (unlikely(string[i] != '-'))
 				return -1;
-			bits->c = value;
+			a |= value;
 			value = 0;
 			break;
 		case 23:
 			if (unlikely(string[i] != '-'))
 				return -1;
-			bits->d = value;
+			b |= (value << 48);
 			value = 0;
 			break;
-		case 28:
-			bits->e = value;
-			value = 0;
-			// fallthrough
 		default:
 		{
 			uint8_t byte = string[i];
@@ -82,12 +65,17 @@ uuid_set_nothrow(Uuid* self, Str* src)
 				byte = byte - 'A' + 10;
 			else
 				return -1;
-			value = (value << 4) | (byte & 0xF);
+			value = (value << 4) | byte;
 			break;
 		}
 		}
 	}
-	bits->f = value;
+
+	// last 12 hex chars (48 bits)
+	b |= (value & 0xFFFFFFFFFFFFULL);
+
+	self->a = a;
+	self->b = b;
 	return 0;
 }
 
@@ -103,16 +91,25 @@ void
 uuid_get(Uuid* self, char* string, int size)
 {
 	assert(size >= UUID_SZ);
-	auto bits = (uuid_bits_t*)self;
-	format(string, size, "{08x}-{04x}-{04x}-{04x}-{04x}{08x}",
-	       bits->a, bits->b, bits->c,
-	       bits->d, bits->e, bits->f);
+	format(string, size, "{08x}-{04x}-{04x}-{04x}-{012llx}",
+	       (uint32_t)(self->a >> 32),
+	       (uint16_t)(self->a >> 16),
+	       (uint16_t)(self->a),
+	       (uint16_t)(self->b >> 48),
+	       (unsigned long long)(self->b & 0xFFFFFFFFFFFFULL));
 }
 
 void
-uuid_get_short(Uuid* self, char* string, int size)
+uuid_generate(Uuid* self, Random* random, uint64_t time_ms)
 {
-	assert(size >= 9);
-	auto bits = (uuid_bits_t*)self;
-	format(string, size, "{08x}", bits->a);
+	// RFC 9562
+	auto a = random_generate(random);
+	auto b = random_generate(random);
+
+	// high 64 bits: [48-bit timestamp] [4-bit version 0b0111] [12-bit a]
+	self->a = ((time_ms & 0xFFFFFFFFFFFFULL) << 16) | (0x7ULL << 12)
+	          | (a & 0xFFFULL);
+
+	// low 64 bits: [2-bit variant 0b10] [62-bit b]
+	self->b  = (b & 0x3FFFFFFFFFFFFFFFULL) | 0x8000000000000000ULL;
 }

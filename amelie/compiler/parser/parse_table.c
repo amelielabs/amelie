@@ -438,9 +438,11 @@ parse_table_create(Stmt* self)
 	stmt->config = config;
 	table_config_set_user(config, self->parser->user);
 	table_config_set_name(config, &name->string);
+
 	Uuid id;
 	uuid_init(&id);
-	uuid_generate(&id, &self->parser->local->random);
+	auto local = self->parser->local;
+	uuid_generate(&id, &local->random, local->time_ms);
 	table_config_set_id(config, &id);
 
 	// create primary index config

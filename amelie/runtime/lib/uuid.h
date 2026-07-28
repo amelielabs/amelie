@@ -49,14 +49,7 @@ uuid_is(Uuid* a, Uuid* b)
 	return a->a == b->a && a->b == b->b;
 }
 
-static inline void
-uuid_generate(Uuid* self, Random* random)
-{
-	self->a = random_generate(random);
-	self->b = random_generate(random);
-}
-
 int  uuid_set_nothrow(Uuid*, Str*);
 void uuid_set(Uuid*, Str*);
 void uuid_get(Uuid*, char*, int);
-void uuid_get_short(Uuid*, char*, int);
+void uuid_generate(Uuid*, Random*, uint64_t);

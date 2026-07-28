@@ -58,9 +58,11 @@ parse_clone_create(Stmt* self)
 	clone_config_set_name(config, &name->string);
 	clone_config_set_table_user(config, &table->config->user);
 	clone_config_set_table(config, &table->config->name);
+
 	Uuid uuid;
 	uuid_init(&uuid);
-	uuid_generate(&uuid, &self->parser->local->random);
+	auto local = self->parser->local;
+	uuid_generate(&uuid, &local->random, local->time_ms);
 	clone_config_set_id(config, &uuid);
 
 	// set clone timeline

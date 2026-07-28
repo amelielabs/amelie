@@ -37,7 +37,7 @@ clock_time(void)
 {
 	struct timespec t;
 	clock_gettime(CLOCK_REALTIME_COARSE, &t);
-	return t.tv_sec * (uint64_t)1e9 + t.tv_nsec;
+	return (uint64_t)t.tv_sec * 1000000000ULL + t.tv_nsec;
 }
 
 void

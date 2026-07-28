@@ -83,6 +83,7 @@ session_set(Session* self, Request* req, Query* query)
 
 	// set time
 	local->time_us = opt_int_of(&req->endpoint.time);
+	local->time_ms = local->time_us / 1000;
 
 	// set random seed
 	auto random = &local->random;

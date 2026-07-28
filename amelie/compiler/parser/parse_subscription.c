@@ -46,7 +46,9 @@ parse_sub_create(Stmt* self)
 	sub_config_set_name(config, &name->string);
 	Uuid id;
 	uuid_init(&id);
-	uuid_generate(&id, &self->parser->local->random);
+	auto local = self->parser->local;
+	uuid_generate(&id, &local->random, local->time_ms);
+
 	sub_config_set_id(config, &id);
 	sub_config_set_rel_user(config, &user);
 	sub_config_set_rel(config, &target);
