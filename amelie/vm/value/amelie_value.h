@@ -35,6 +35,7 @@
 
 // row
 #include "value/row.h"
+#include "value/row_identity.h"
 
 // operations
 #include "value/like.h"

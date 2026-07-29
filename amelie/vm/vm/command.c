@@ -40,10 +40,10 @@ csend_shard(Vm* self, Op* op)
 		dispatch_set_close(dispatch);
 
 	// prepare identity
-	auto  identity_column = table_columns(table)->identity;
-	Value identity;
+	auto    identity_column = table_columns(table)->identity;
+	int64_t identity_seed   = 0;
+	Value   identity;
 	value_init(&identity);
-	value_set_int(&identity, 0);
 
 	// redistribute rows between partitions
 	auto refs  = stack_at(&self->stack, op->c);
@@ -55,7 +55,7 @@ csend_shard(Vm* self, Op* op)
 		{
 			auto row = set_row(set, order);
 			if (identity_column)
-				row_identity(identity_column, refs, row, &identity, self->local);
+				identity_seed = row_identity(identity_column, refs, row, &identity, self->local);
 
 			auto part = row_map(table, refs, row, &identity);
 			auto req  = dispatch_find(dispatch, part);
@@ -71,7 +71,7 @@ csend_shard(Vm* self, Op* op)
 					req_copy_refs(req, refs, op->c);
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
-			buf_write(&req->arg, &identity.integer, sizeof(int64_t));
+			buf_write(&req->arg, &identity_seed, sizeof(int64_t));
 		}
 	} else
 	{
@@ -81,7 +81,7 @@ csend_shard(Vm* self, Op* op)
 		for (; (row = store_iterator_at(it)); store_iterator_next(it))
 		{
 			if (identity_column)
-				row_identity(identity_column, refs, row, &identity, self->local);
+				identity_seed = row_identity(identity_column, refs, row, &identity, self->local);
 
 			auto part = row_map(table, refs, row, &identity);
 			auto req = dispatch_find(dispatch, part);
@@ -97,7 +97,7 @@ csend_shard(Vm* self, Op* op)
 					req_copy_refs(req, refs, op->c);
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
-			buf_write(&req->arg, &identity.integer, sizeof(int64_t));
+			buf_write(&req->arg, &identity_seed, sizeof(int64_t));
 		}
 	}
 	if (op->c > 0)
