@@ -103,7 +103,6 @@ bench_init(Bench* self, Main* main)
 	OptsDef defs[] =
 	{
 		{ "type",      OPT_STRING, OPT_C,       &self->type,     "tpcb", 0     },
-		{ "threads",   OPT_INT,    OPT_C|OPT_Z, &self->threads,   NULL,  1     },
 		{ "clients",   OPT_INT,    OPT_C|OPT_Z, &self->clients,   NULL,  32    },
 		{ "duration",  OPT_INT,    OPT_C|OPT_Z, &self->duration,  NULL,  10    },
 		{ "scale",     OPT_INT,    OPT_C|OPT_Z, &self->scale,     NULL,  1     },
@@ -174,15 +173,13 @@ void
 bench_run(Bench* self)
 {
 	// validate options
-	auto type               = opt_string_of(&self->type);
-	auto scale              = opt_int_of(&self->scale);
-	auto batch              = opt_int_of(&self->batch);
-	auto duration           = opt_int_of(&self->duration);
-	auto workers            = opt_int_of(&self->threads);
-	auto clients            = opt_int_of(&self->clients);
-	auto clients_per_worker = clients / workers;
-	auto init               = opt_int_of(&self->init);
-	auto histogram          = opt_int_of(&self->histogram);
+	auto type      = opt_string_of(&self->type);
+	auto scale     = opt_int_of(&self->scale);
+	auto batch     = opt_int_of(&self->batch);
+	auto duration  = opt_int_of(&self->duration);
+	auto clients   = opt_int_of(&self->clients);
+	auto init      = opt_int_of(&self->init);
+	auto histogram = opt_int_of(&self->histogram);
 
 	// set benchmark
 	if (str_is_cstr(type, "tpcb"))
@@ -214,8 +211,7 @@ bench_run(Bench* self)
 	info("");
 	info("type:      {str}", type);
 	info("duration:  {u64} sec", duration);
-	info("threads:   {u64}", workers);
-	info("clients:   {u64} ({u64} per thread)", clients, clients_per_worker);
+	info("clients:   {u64} ", clients);
 	info("batch:     {u64}", batch);
 	info("scale:     {u64}", scale);
 	info("init:      {u64}", init);
@@ -223,9 +219,10 @@ bench_run(Bench* self)
 	info("");
 
 	// prepare workers
+	auto workers = 1;
 	while (workers-- > 0)
 	{
-		auto worker = bench_worker_allocate(self, clients_per_worker);
+		auto worker = bench_worker_allocate(self, clients);
 		list_append(&self->list, &worker->link);
 	}
 

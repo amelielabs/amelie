@@ -38,7 +38,6 @@ struct Bench
 	atomic_u64 transactions;
 	atomic_u64 writes;
 	Opt        type;
-	Opt        threads;
 	Opt        clients;
 	Opt        duration;
 	Opt        scale;
