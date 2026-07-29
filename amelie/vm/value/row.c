@@ -167,7 +167,7 @@ row_create(Part*     part,
 
 		// NOT NULL constraint
 		if (value->type == TYPE_NULL)
-			if (unlikely(column->constraints.not_null && !column->constraints.as_identity))
+			if (unlikely(column->constraints.not_null && !column->constraints.identity))
 				error("column '{str}' cannot be NULL", &column->name);
 
 		if (value->type == TYPE_VECTOR)
@@ -219,7 +219,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		{
 			// NOT NULL constraint
 			if (value->type == TYPE_NULL)
-				if (unlikely(column->constraints.not_null && !column->constraints.as_identity))
+				if (unlikely(column->constraints.not_null && !column->constraints.identity))
 					error("column '{str}' cannot be NULL", &column->name);
 
 			if (value->type == TYPE_VECTOR)

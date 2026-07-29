@@ -923,7 +923,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["as_identity", 1]]
+  "constraints": [["not_null", true], ["identity", true]]
 }]
 insert into test () values ();
 insert into test () values ();

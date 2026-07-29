@@ -13,26 +13,20 @@
 
 typedef struct Constraints Constraints;
 
-enum
-{
-	IDENTITY_NONE,
-	IDENTITY_RANDOM
-};
-
 struct Constraints
 {
 	bool    not_null;
-	int64_t as_identity;
-	int64_t as_identity_modulo;
+	bool    identity;
+	int64_t identity_modulo;
 	Buf     value;
 };
 
 static inline void
 constraints_init(Constraints* self)
 {
-	self->not_null           = false;
-	self->as_identity        = IDENTITY_NONE;
-	self->as_identity_modulo = INT64_MAX;
+	self->not_null        = false;
+	self->identity        = false;
+	self->identity_modulo = INT64_MAX;
 	buf_init(&self->value);
 }
 
@@ -49,15 +43,15 @@ constraints_set_not_null(Constraints* self, bool value)
 }
 
 static inline void
-constraints_set_as_identity(Constraints* self, int value)
+constraints_set_identity(Constraints* self, bool value)
 {
-	self->as_identity = value;
+	self->identity = value;
 }
 
 static inline void
-constraints_set_as_identity_modulo(Constraints* self, int64_t value)
+constraints_set_identity_modulo(Constraints* self, int64_t value)
 {
-	self->as_identity_modulo = value;
+	self->identity_modulo = value;
 }
 
 static inline void
@@ -78,8 +72,8 @@ static inline void
 constraints_copy(Constraints* self, Constraints* copy)
 {
 	constraints_set_not_null(copy, self->not_null);
-	constraints_set_as_identity(copy, self->as_identity);
-	constraints_set_as_identity_modulo(copy, self->as_identity_modulo);
+	constraints_set_identity(copy, self->identity);
+	constraints_set_identity_modulo(copy, self->identity_modulo);
 	constraints_set_default(copy, &self->value);
 }
 
@@ -99,11 +93,11 @@ constraints_read(Constraints* self, uint8_t** pos)
 		if (str_is_case(&name, "not_null", 8))
 			unpack_bool(pos, &self->not_null);
 		else
-		if (str_is_case(&name, "as_identity", 11))
-			unpack_int(pos, &self->as_identity);
+		if (str_is_case(&name, "identity", 8))
+			unpack_bool(pos, &self->identity);
 		else
-		if (str_is_case(&name, "as_identity_modulo", 18))
-			unpack_int(pos, &self->as_identity_modulo);
+		if (str_is_case(&name, "identity_modulo", 15))
+			unpack_int(pos, &self->identity_modulo);
 		else
 		if (str_is_case(&name, "default", 7))
 		{
@@ -133,21 +127,21 @@ constraints_write(Constraints* self, Buf* buf, int flags)
 		encode_array_end(buf);
 	}
 
-	// as_identity
-	if (self->as_identity)
+	// identity
+	if (self->identity)
 	{
 		encode_array(buf);
-		encode_raw(buf, "as_identity", 11);
-		encode_int(buf, self->as_identity);
+		encode_raw(buf, "identity", 8);
+		encode_bool(buf, self->identity);
 		encode_array_end(buf);
 	}
 
-	// as_identity_modulo
-	if (self->as_identity_modulo != INT64_MAX)
+	// identity_modulo
+	if (self->identity_modulo != INT64_MAX)
 	{
 		encode_array(buf);
-		encode_raw(buf, "as_identity_modulo", 18);
-		encode_int(buf, self->as_identity_modulo);
+		encode_raw(buf, "identity_modulo", 15);
+		encode_int(buf, self->identity_modulo);
 		encode_array_end(buf);
 	}
 

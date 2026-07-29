@@ -154,7 +154,7 @@ table_column_add(Catalog* self,
 	}
 
 	// ensure only one identity column defined
-	if (column->constraints.as_identity && table->config->columns.identity)
+	if (column->constraints.identity && table->config->columns.identity)
 		error("table '{str}': already has identity column", name);
 
 	// ensure table has no clones to support vector column

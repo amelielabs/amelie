@@ -33,10 +33,10 @@ row_identity(Column* column, Value* refs,
 
 	// generate
 	auto cons = &column->constraints;
-	if (cons->as_identity == IDENTITY_RANDOM)
+	if (cons->identity)
 	{
 		uint64_t id;
-		id = random_generate(&local->random) % cons->as_identity_modulo;
+		id = random_generate(&local->random) % cons->identity_modulo;
 		value_set_int(identity, id);
 	}
 }

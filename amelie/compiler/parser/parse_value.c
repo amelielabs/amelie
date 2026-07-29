@@ -451,7 +451,7 @@ parse_value_default(Column* column, Value* column_value)
 {
 	// IDENTITY or DEFAULT
 	auto cons = &column->constraints;
-	if (cons->as_identity)
+	if (cons->identity)
 	{
 		value_set_null(column_value);
 		return;
@@ -472,7 +472,7 @@ parse_value_validate(Stmt* self, Column* column, Value* value, Ast* expr)
 		return;
 
 	auto cons = &column->constraints;
-	if (cons->not_null && !cons->as_identity)
+	if (cons->not_null && !cons->identity)
 	{
 		if (self)
 			stmt_error(self, expr, "column '{str}' value cannot be NULL",

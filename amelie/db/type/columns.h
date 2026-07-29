@@ -56,7 +56,7 @@ columns_add(Columns* self, Column* column)
 
 	// save order of the first identity column
 	auto cons = &column->constraints;
-	if (cons->as_identity && !self->identity)
+	if (cons->identity && !self->identity)
 		self->identity = column;
 }
 
@@ -84,7 +84,7 @@ columns_sync(Columns* self)
 	{
 		auto column = list_at(Column, link);
 		auto cons = &column->constraints;
-		if (cons->as_identity && !self->identity)
+		if (cons->identity && !self->identity)
 			self->identity = column;
 	}
 }

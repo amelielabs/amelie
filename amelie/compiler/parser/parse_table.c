@@ -210,14 +210,14 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		// IDENTITY [(modulo])
 		case KIDENTITY:
 		{
-			if (cons->as_identity)
+			if (cons->identity)
 				stmt_error(self, name, "IDENTITY defined twice");
 
 			// ensure the column has type INT64
 			if (column->type != TYPE_INT || column->size < 4)
 				stmt_error(self, name, "identity column must be int or int64");
 
-			constraints_set_as_identity(cons, IDENTITY_RANDOM);
+			constraints_set_identity(cons, true);
 
 			// [(modulo)]
 			if (stmt_if(self, '('))
@@ -229,7 +229,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 				if (value->integer == 0)
 					stmt_error(self, value, "IDENTITY modulo value cannot be zero");
 
-				constraints_set_as_identity_modulo(cons, value->integer);
+				constraints_set_identity_modulo(cons, value->integer);
 			}
 			break;
 		}
@@ -242,7 +242,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 	}
 
 	// do not allow identity columns and default values together
-	if (cons->as_identity && !buf_empty(&cons->value))
+	if (cons->identity && !buf_empty(&cons->value))
 		stmt_error(self, NULL, "identity column cannot have default value");
 }
 
@@ -299,7 +299,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 
 		// ensure identity column only one
 		auto cons = &column->constraints;
-		if (cons->as_identity)
+		if (cons->identity)
 		{
 			if (identity)
 				stmt_error(self, name, "only one IDENTITY column is allowed");
@@ -551,7 +551,7 @@ parse_table_alter(Stmt* self)
 			if (cons->not_null)
 				stmt_error(self, NULL, "NOT NULL currently not supported with ALTER");
 
-			if (cons->as_identity)
+			if (cons->identity)
 				stmt_error(self, NULL, "IDENTITY column cannot be added");
 
 			stmt->type = TABLE_ALTER_COLUMN_ADD;

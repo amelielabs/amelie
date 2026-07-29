@@ -15,7 +15,7 @@ hot static inline int
 value_data_size(Value* self, Column* column, Value* refs)
 {
 	// identity column
-	if (column->constraints.as_identity)
+	if (column->constraints.identity)
 		return column->size;
 
 	// use reference
@@ -56,7 +56,7 @@ value_data_encode(Value*    self, Column* column,
 	if (self->type == TYPE_REF)
 		self = &refs[self->integer];
 
-	if (column->constraints.as_identity)
+	if (column->constraints.identity)
 		self = identity;
 
 	// NULL
