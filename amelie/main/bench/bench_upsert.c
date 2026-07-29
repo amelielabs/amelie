@@ -27,7 +27,7 @@ bench_upsert_create(Bench* self, Client* client)
 	buf_init(&buf);
 	defer_buf(&buf);
 	buf_format(&buf,
-	           "create function upsert() "
+	           "create function upsert_func() "
 	           "begin "
 	           "  insert into test () values ");
 	for (uint64_t i = 0; i < batch; i++)
@@ -51,7 +51,7 @@ bench_upsert_main(BenchWorker* self, Client* client)
 	auto batch = opt_int_of(&bench->batch);
 
 	Str cmd;
-	str_set_cstr(&cmd,  "execute upsert();");
+	str_set_cstr(&cmd,  "execute upsert_func();");
 	while (! self->shutdown)
 	{
 		client_execute(client, &cmd, NULL);
