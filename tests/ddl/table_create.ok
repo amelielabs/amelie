@@ -911,7 +911,10 @@ create table test (id int primary key, data int as;
 error: create table test (id int primary key, data int as❰;❱ ⟵ IDENTITY expected
 create table test (id int primary key, data int as identity;
 error: create table test (id int primary key, data int as identity❰;❱ ⟵ ) expected
-# test: as identity primary key
+# test: as identity (not primary)
+create table test (id int primary key, data int identity);
+error: create table test (id int primary key, data int identity❰)❱ ⟵ IDENTITY column can only be used with primary key
+# test: as identity int
 create table test (id int primary key as identity);
 select show('table', 'test', true).columns;
 
@@ -921,6 +924,29 @@ columns
   "name": "id",
   "type": 2,
   "size": 4,
+  "size_flat": 0,
+  "dropped": false,
+  "constraints": [["not_null", true], ["identity", true]]
+}]
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select count(*) from test;
+
+count
+─────
+3
+drop table test;
+# test: as identity uuid
+create table test (id uuid primary key identity);
+select show('table', 'test', true).columns;
+
+columns
+───────
+[{
+  "name": "id",
+  "type": 7,
+  "size": 16,
   "size_flat": 0,
   "dropped": false,
   "constraints": [["not_null", true], ["identity", true]]
@@ -952,19 +978,19 @@ select show('table', 'test', true).partitions;
 partitions
 ──────────
 [{
-  "id": 38,
+  "id": 39,
   "hash_min": 0,
   "hash_max": 2024
 }, {
-  "id": 39,
+  "id": 40,
   "hash_min": 2024,
   "hash_max": 4048
 }, {
-  "id": 40,
+  "id": 41,
   "hash_min": 4048,
   "hash_max": 6072
 }, {
-  "id": 41,
+  "id": 42,
   "hash_min": 6072,
   "hash_max": 8096
 }]
@@ -973,25 +999,25 @@ show partitions on test;
 partitions
 ──────────
 {
-  "id": 38,
+  "id": 39,
   "min": 0,
   "max": 2024,
   "size": 0
 }
 {
-  "id": 39,
+  "id": 40,
   "min": 2024,
   "max": 4048,
   "size": 0
 }
 {
-  "id": 40,
+  "id": 41,
   "min": 4048,
   "max": 6072,
   "size": 0
 }
 {
-  "id": 41,
+  "id": 42,
   "min": 6072,
   "max": 8096,
   "size": 0

@@ -99,17 +99,33 @@ uuid_get(Uuid* self, char* string, int size)
 	       (unsigned long long)(self->b & 0xFFFFFFFFFFFFULL));
 }
 
+hot void
+uuid_generate_as(Uuid* self, uint64_t seed, uint64_t time_ms)
+{
+	// RFC 9562 (UUIDv7)
+
+	// get 12 bits from top of the seed for rand_a
+	uint64_t rand_a = (seed >> 52) & 0xFFFULL;
+
+	// high 64 bits: [48-bit timestamp] [4-bit version 0b0111] [12-bit rand_a]
+	self->a = ((time_ms & 0xFFFFFFFFFFFFULL) << 16)
+	          | (0x7ULL << 12)
+	          | rand_a;
+
+	// derive the missing 10 bits by scrambling seed with time_ms
+	uint64_t rand_b_10 = ((seed * 0x9e3779b97f4a7c15ULL) ^ time_ms) & 0x3FFULL;
+
+	// 52 remaining random bits from the seed
+	uint64_t rand_b_52 = seed & 0x000FFFFFFFFFFFFFULL;
+	uint64_t rand_b = (rand_b_10 << 52) | rand_b_52;
+
+	// low 64 bits: [2-bit variant 0b10] [62-bit rand_b]
+	self->b = (rand_b & 0x3FFFFFFFFFFFFFFFULL) | 0x8000000000000000ULL;
+}
+
 void
 uuid_generate(Uuid* self, Random* random, uint64_t time_ms)
 {
-	// RFC 9562
-	auto a = random_generate(random);
-	auto b = random_generate(random);
-
-	// high 64 bits: [48-bit timestamp] [4-bit version 0b0111] [12-bit a]
-	self->a = ((time_ms & 0xFFFFFFFFFFFFULL) << 16) | (0x7ULL << 12)
-	          | (a & 0xFFFULL);
-
-	// low 64 bits: [2-bit variant 0b10] [62-bit b]
-	self->b  = (b & 0x3FFFFFFFFFFFFFFFULL) | 0x8000000000000000ULL;
+	auto seed = random_generate(random);
+	uuid_generate_as(self, seed, time_ms);
 }

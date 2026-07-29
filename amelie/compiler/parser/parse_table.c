@@ -214,8 +214,14 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 				stmt_error(self, name, "IDENTITY defined twice");
 
 			// ensure the column has type INT64
-			if (column->type != TYPE_INT || column->size < 4)
-				stmt_error(self, name, "identity column must be int or int64");
+			auto valid = true;
+			if (column->type == TYPE_INT)
+				valid = column->size >= 4;
+			else
+			if (column->type != TYPE_UUID)
+				valid = false;
+			if (! valid)
+				stmt_error(self, name, "identity column must be UUID, INT or INT64");
 
 			constraints_set_identity(cons, true);
 

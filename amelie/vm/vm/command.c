@@ -41,7 +41,7 @@ csend_shard(Vm* self, Op* op)
 
 	// prepare identity
 	auto    identity_column = table_columns(table)->identity;
-	int64_t identity_seed   = 0;
+	int64_t identity_seed = 0;
 	Value   identity;
 	value_init(&identity);
 
@@ -515,18 +515,35 @@ cinsert(Vm* self, Op* op)
 	auto part     = self->part;
 	auto columns  = table_columns(table);
 
+	auto  identity_type = TYPE_NULL;
 	Value identity;
 	value_init(&identity);
+	if (columns->identity)
+		identity_type = columns->identity->type;
 
 	// insert
 	auto pos = self->code_arg->start;
 	auto end = self->code_arg->position;
 	while (pos < end)
 	{
-		auto value    = *(Value**)pos;
-		auto value_id = *(int64_t*)(pos + sizeof(Value*));
+		auto value      = *(Value**)pos;
+		auto value_seed = *(int64_t*)(pos + sizeof(Value*));
 		pos += sizeof(Value*) + sizeof(int64_t);
-		value_set_int(&identity, value_id);
+
+		// set identity column
+		switch (identity_type) {
+		case TYPE_NULL:
+			break;
+		case TYPE_INT:
+			value_set_int(&identity, value_seed);
+			break;
+		case TYPE_UUID:
+			identity.type = TYPE_UUID;
+			uuid_generate_as(&identity.uuid, value_seed, self->local->time_ms);
+			break;
+		default: __builtin_unreachable();
+			break;
+		}
 
 		auto row = row_create(part, timeline, columns, value, self->refs, &identity);
 		part_insert(part, self->tr, timeline, row);
@@ -539,22 +556,40 @@ cupsert(Vm* self, Op* op)
 	// [cursor, _jmp, _jmp_returning]
 	auto cursor = reg_at(&self->r, op->a);
 	assert(cursor->type == TYPE_CURSOR);
+	auto columns = table_columns(cursor->table);
 
+	auto  identity_type = TYPE_NULL;
 	Value identity;
 	value_init(&identity);
+	if (columns->identity)
+		identity_type = columns->identity->type;
 
-	auto columns = table_columns(cursor->table);
 	auto end = self->code_arg->position;
 	while (self->upsert < end)
 	{
-		// set cursor ref pointer to the current insert row
-		auto value    = *(Value**)self->upsert;
-		auto value_id = *(int64_t*)(self->upsert + sizeof(Value*));
+		// set upsert pointer to the current insert row
+		auto value      = *(Value**)self->upsert;
+		auto value_seed = *(int64_t*)(self->upsert + sizeof(Value*));
 		self->upsert += sizeof(Value*) + sizeof(int64_t);
-		value_set_int(&identity, value_id);
 
-		auto row = row_create(cursor->part, cursor->timeline,
-		                      columns, value, self->refs,
+		// set identity column
+		switch (identity_type) {
+		case TYPE_NULL:
+			break;
+		case TYPE_INT:
+			value_set_int(&identity, value_seed);
+			break;
+		case TYPE_UUID:
+			identity.type = TYPE_UUID;
+			uuid_generate_as(&identity.uuid, value_seed, self->local->time_ms);
+			break;
+		default: __builtin_unreachable();
+			break;
+		}
+
+		// create row
+		auto row = row_create(cursor->part, cursor->timeline, columns,
+		                      value, self->refs,
 		                      &identity);
 
 		// insert or get (open iterator in both cases)

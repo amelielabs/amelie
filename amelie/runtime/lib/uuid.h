@@ -52,4 +52,5 @@ uuid_is(Uuid* a, Uuid* b)
 int  uuid_set_nothrow(Uuid*, Str*);
 void uuid_set(Uuid*, Str*);
 void uuid_get(Uuid*, char*, int);
+void uuid_generate_as(Uuid*, uint64_t, uint64_t);
 void uuid_generate(Uuid*, Random*, uint64_t);

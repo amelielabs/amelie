@@ -22,15 +22,19 @@ row_identity(Column* column, Value* refs,
 	if (value->type == TYPE_REF)
 		value = &refs[value->integer];
 	if (value->type != TYPE_NULL)
-	{
-		*identity = *value;
-		return identity->integer;
-	}
+		return 0;
 
 	// generate
-	auto cons = &column->constraints;
-	uint64_t id;
-	id = random_generate(&local->random) % cons->identity_modulo;
-	value_set_int(identity, id);
-	return id;
+	auto seed = random_generate(&local->random);
+	if (column->type == TYPE_INT)
+	{
+		seed %= column->constraints.identity_modulo;
+		value_set_int(identity, seed);
+	} else
+	{
+		// uuid
+		identity->type = TYPE_UUID;
+		uuid_generate_as(&identity->uuid, seed, local->time_ms);
+	}
+	return seed;
 }

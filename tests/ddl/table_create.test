@@ -269,8 +269,20 @@ create table test (id int primary key, data int always generated as;
 create table test (id int primary key, data int as;
 create table test (id int primary key, data int as identity;
 
-# test: as identity primary key
+# test: as identity (not primary)
+create table test (id int primary key, data int identity);
+
+# test: as identity int
 create table test (id int primary key as identity);
+select show('table', 'test', true).columns;
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select count(*) from test;
+drop table test;
+
+# test: as identity uuid
+create table test (id uuid primary key identity);
 select show('table', 'test', true).columns;
 insert into test () values ();
 insert into test () values ();
