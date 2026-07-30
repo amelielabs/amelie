@@ -175,7 +175,7 @@ bench_tpcb_create(Bench* self, Client* client)
 		"create table bench_branches (bid int primary key using hash, bbalance int, filler text)",
 		"create table bench_tellers (tid int primary key using hash, bid int, tbalance int, filler text)",
 		"create table bench_accounts (aid int primary key using hash, bid int, abalance int, filler text)",
-		"create table bench_history (tid int, bid int, aid int, delta int, time timestamp, seq serial primary key, filler text)",
+		"create table bench_history (tid int, bid int, aid int, delta int, time timestamp, seq uuid primary key identity, filler text)",
 		 NULL
 	};
 
