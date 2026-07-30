@@ -20,21 +20,27 @@ bench_decre_create(Bench* self, Client* client)
 	unused(self);
 
 	Str str;
-	str_set_cstr(&str, "create table test(id serial primary key using hash, money double default 100.0)");
+	str_set_cstr(&str, "create table accounts(id int primary key using hash, money double default 100.0)");
 	client_execute(client, &str, NULL);
 
-	str_set_cstr(&str, "create table history(id serial primary key using hash, src int, dst int, amount double)");
+	str_set_cstr(&str, "create table history(id uuid primary key identity, src int, dst int, amount double)");
 	client_execute(client, &str, NULL);
 
+	// prepare dataset
 	Buf buf;
 	buf_init(&buf);
 	defer_buf(&buf);
-
 	auto n = 100000ul / 500;
 	for (auto i = 0ul; i < n; i++)
 	{
 		buf_reset(&buf);
-		buf_format(&buf, "insert into test generate 500");
+		buf_format(&buf, "insert into accounts (id) values ");
+		for (uint64_t j = 0; j < 500; j++)
+		{
+			buf_format(&buf, "({d})", i * 500 + j);
+			if ((j + 1) != 500)
+				buf_write(&buf, ",", 1);
+		}
 		buf_str(&buf, &str);
 		client_execute(client, &str, NULL);
 	}
@@ -43,10 +49,10 @@ bench_decre_create(Bench* self, Client* client)
 	char func[] =
 	"create function debit_credit(src int, dst int, amount double)"
 	"begin"
-	"	update test set money = money - amount"
+	"	update accounts set money = money - amount"
 	"	 where id = src;"
 	""
-	"	update test set money = money + amount"
+	"	update accounts set money = money + amount"
 	"	 where id = dst;"
 	""
 	"	insert into history (src, dst, amount)"
