@@ -164,6 +164,14 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 	}
 	case TYPE_DATE:
 	{
+		// CURRENT_DATE
+		if (ast->id == KCURRENT_DATE)
+		{
+			auto ref = refs_add(&self->refs, from, ast, -1);
+			value_set_ref(value, ref->order);
+			return ast;
+		}
+
 		// [DATE] string
 		if (ast->id == KDATE)
 			ast = stmt_next(self);
@@ -181,6 +189,14 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		// unixtime
 		if (ast->id == KINT) {
 			value_set_timestamp(value, ast->integer);
+			return ast;
+		}
+
+		// CURRENT_TIMESTAMP
+		if (ast->id == KCURRENT_TIMESTAMP)
+		{
+			auto ref = refs_add(&self->refs, from, ast, -1);
+			value_set_ref(value, ref->order);
 			return ast;
 		}
 
