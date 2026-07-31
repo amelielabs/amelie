@@ -82,6 +82,10 @@ parse_row(Stmt* self, From* from, Table* table, Set* values)
 			continue;
 		}
 
+		// )
+		if (unlikely(stmt_if(self, ')')))
+			stmt_error(self, NULL, "row has incorrect number of columns");
+
 		// DEFAULT | value
 		Ast* value = stmt_if(self, KDEFAULT);
 		if (! value)
@@ -102,7 +106,6 @@ parse_row(Stmt* self, From* from, Table* table, Set* values)
 		{
 			if (list_is_last(&columns->list, &column->link))
 				stmt_error(self, NULL, "row has incorrect number of columns");
-			continue;
 		}
 	}
 

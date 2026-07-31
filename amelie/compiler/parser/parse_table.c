@@ -122,7 +122,7 @@ parse_default(Stmt* self, Column* column, Buf* buf)
 	Value value;
 	value_init(&value);
 	defer(value_free, &value);
-	parse_value(self, NULL, column, &value);
+	parse_value_const(self, column, &value);
 
 	// encode value as row data
 	auto size = value_data_size(&value, column, NULL);

@@ -492,7 +492,7 @@ id  data
 ──────────
 0   2
 update test set data = null;
-error: column 'data' cannot be NULL
+error: column 'data': cannot be NULL
 select * from test;
 
 id  data
@@ -689,12 +689,12 @@ id  d
 drop table test;
 # test: update column (vector)
 create table test (id int primary key, vec vector(2));
-insert into test values (3, [1.0, 1.1]);
+insert into test values (3, vector [1.0, 1.1]);
 update test set vec = vec + [1.0, 1.1]::vector;
 update test set vec = vec + vector [1.0, 1.1, 2.0];
 error: vector sizes mismatch
 update test set vec = vector [1.0, 1.1, 2.0];
-error: column 'vec' invalid vector dimension
+error: column 'vec': invalid vector dimension
 select * from test;
 
 id  vec

@@ -123,6 +123,11 @@ emit_column(Compiler* self,
 	// generate cursor read based on the target
 	if (target->type == TARGET_TABLE)
 	{
+		// prevent addressing own columns by INSERT
+		if (self->current->id == STMT_INSERT)
+			if (self->origin == ORIGIN_FRONTEND)
+				stmt_error(self->current, ast, "column cannot be used here");
+
 		int op;
 		switch (column->type) {
 		case TYPE_BOOL:

@@ -165,14 +165,23 @@ row_create(Part*     part,
 		auto value  = values + column->order;
 		size += value_data_size(value, column, refs);
 
+		if (value->type == TYPE_REF)
+			value = &refs[value->integer];
+
 		// NOT NULL constraint
 		if (value->type == TYPE_NULL)
+		{
 			if (unlikely(column->constraints.not_null && !column->constraints.identity))
-				error("column '{str}' cannot be NULL", &column->name);
+				error("column '{str}': cannot be NULL", &column->name);
+			continue;
+		}
 
-		if (value->type == TYPE_VECTOR)
-			if (value->vector_dim != (column->size_flat / sizeof(float)))
-				error("column '{str}' invalid vector dimension", &column->name);
+		if (column->type == TYPE_VECTOR)
+		{
+			if (value->type != TYPE_VECTOR ||
+			    value->vector_dim != (column->size_flat / sizeof(float)))
+				error("column '{str}': invalid vector dimension", &column->name);
+		}
 	}
 
 	// create and write row
@@ -194,7 +203,12 @@ row_create(Part*     part,
 		row_set(row, column->order, offset);
 
 		if (column->type == TYPE_VECTOR)
-			row_create_vector(part, row, column, &values[column->order]);
+		{
+			auto value = &values[column->order];
+			if (value->type == TYPE_REF)
+				value = &refs[value->integer];
+			row_create_vector(part, row, column, value);
+		}
 	}
 	return row;
 }
@@ -219,12 +233,18 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		{
 			// NOT NULL constraint
 			if (value->type == TYPE_NULL)
+			{
 				if (unlikely(column->constraints.not_null && !column->constraints.identity))
-					error("column '{str}' cannot be NULL", &column->name);
+					error("column '{str}': cannot be NULL", &column->name);
+				continue;
+			}
 
-			if (value->type == TYPE_VECTOR)
-				if (value->vector_dim != (column->size_flat / sizeof(float)))
-					error("column '{str}' invalid vector dimension", &column->name);
+			if (column->type == TYPE_VECTOR)
+			{
+				if (value->type != TYPE_VECTOR || value->vector_dim != (column->size_flat / sizeof(float)))
+				    error("column '{str}': invalid vector dimension", &column->name);
+			}
+
 			size += value_data_size(value, column, NULL);
 			continue;
 		}

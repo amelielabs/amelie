@@ -59,7 +59,7 @@ parse_publish(Stmt* self)
 
 		// parse and set argument value
 		auto value = &row[0];
-		parse_value(self, NULL, column, value);
+		parse_value(self, &stmt->from, column, value);
 
 		// ,
 		if (! stmt_if(self, ','))

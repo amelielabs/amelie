@@ -145,16 +145,25 @@ emit_send(Compiler* self, Target* target, int type, int start)
 	while (ref)
 	{
 		if (ref->ast) {
+			int type;
 			if (ref->ast->id == KVAR)
 			{
 				auto var = ref->ast->var;
 				op3(self, CPUSH_VAR, var->order, var->is_arg, ref->not_null);
+				type = var->type;
 			} else
 			{
 				auto r = emit_expr(self, ref->from, ref->ast);
 				op3(self, CPUSH_REF, r, 0, ref->not_null);
+				type = rtype(self, r);
 				runpin(self, r);
 			}
+			if (ref->column)
+			{
+				if (ref->column->type != type)
+					stmt_error(stmt, ref->ast, "expected '{s}'", type_of(ref->column->type));
+			}
+
 		} else {
 			op3(self, CPUSH_REF, ref->r, 1, ref->not_null);
 		}

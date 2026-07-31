@@ -56,7 +56,7 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 	case KARRAY:
 	{
 		if (! ast_args_of(self->l)->constable)
-			lex_error(lex, self, "DATA value contains expressions");
+			lex_error(lex, self, "value contains expressions");
 		encode_array(buf);
 		auto current = self->l->l;
 		for (; current; current = current->next)
@@ -68,7 +68,7 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 	case '{':
 	{
 		if (! ast_args_of(self->l)->constable)
-			lex_error(lex, self, "DATA value contains expressions");
+			lex_error(lex, self, "value contains expressions");
 		encode_obj(buf);
 		auto current = self->l->l;
 		for (; current; current = current->next)
@@ -83,7 +83,7 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		break;
 
 	default:
-		lex_error(lex, self, "unexpected DATA value");
+		lex_error(lex, self, "unexpected value");
 		break;
 	}
 }

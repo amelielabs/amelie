@@ -19,16 +19,16 @@ error: insert into test❰;❱ ⟵ 'VALUES | SELECT' expected
 insert into test values;
 error: insert into test values❰;❱ ⟵ ( expected
 insert into test values(;
-error: insert into test values(❰;❱ ⟵ 'int' expected for column 'id'
+error: insert into test values(❰;❱ ⟵ bad expression
 insert into test values(,;
-error: insert into test values(❰,❱ ⟵ 'int' expected for column 'id'
+error: insert into test values(❰,❱ ⟵ bad expression
 insert into test values(123;
 error: insert into test values(123❰;❱ ⟵ ) expected
 insert into test values(123,;
 error: insert into test values(123,❰;❱ ⟵ row has incorrect number of columns
 # test: insert type validate
 insert into test values ("123");
-error: insert into test values (❰"123"❱ ⟵ 'int' expected for column 'id'
+error: insert into test values (❰"123"❱ ⟵ expected 'int'
 insert into test values (123, 123);
 error: insert into test values (123, ❰123❱ ⟵ row has incorrect number of columns
 select * from test;
@@ -63,7 +63,7 @@ columns
   "constraints": [["not_null", true]]
 }]
 insert into test values (123);
-error: insert into test values (123❰)❱ ⟵ 'int' expected for column 'id2'
+error: insert into test values (123)❰;❱ ⟵ row has incorrect number of columns
 insert into test values (1, 2, 3);
 error: insert into test values (1, 2, ❰3❱ ⟵ row has incorrect number of columns
 insert into amelie.test values (1, 2);
@@ -76,7 +76,7 @@ drop table test;
 # test: insert list
 create table test (id int primary key, data int);
 insert into test (id, data) values ();
-error: insert into test (id, data) values (❰)❱ ⟵ 'int' expected for column 'id'
+error: insert into test (id, data) values (❰)❱ ⟵ bad expression
 insert into test (id, data) values (123);
 error: insert into test (id, data) values (123❰)❱ ⟵ , expected
 insert into test (id, data) values (123, 123, 123);
@@ -576,11 +576,11 @@ id  ts
 3   1970-01-01 01:13:01+00
 # test: insert column (timestamp current_timestamp)
 insert into test values (4, current_timestamp);
-error: insert into test values (4, ❰current_timestamp❱ ⟵ 'timestamp' expected for column 'ts'
 select ts::int > 0 from test where id = 4;
 
 col1
 ────
+true
 drop table test;
 # test: insert column (timestamp auto cast)
 create table test (id int primary key, ts timestamp);
@@ -938,32 +938,33 @@ drop table test;
 # test: insert column (date current_date)
 create table test (id int primary key, d date);
 insert into test values (0, current_date);
-error: insert into test values (0, ❰current_date❱ ⟵ 'date' expected for column 'd'
 select count(d) from test;
 
 count
 ─────
-0
+1
 drop table test;
 # test: insert column (vector)
 create table test (id int primary key, vec vector(2));
 insert into test values (0, []);
-error: insert into test values (0, ❰[❱ ⟵ invalid vector dimension
+error: insert into test values (0, ❰[❱ ⟵ expected 'vector'
 insert into test values (1, [1.0]);
-error: insert into test values (1, ❰[❱ ⟵ invalid vector dimension
+error: insert into test values (1, ❰[❱ ⟵ expected 'vector'
 insert into test values (2, [1]);
-error: insert into test values (2, ❰[❱ ⟵ invalid vector dimension
+error: insert into test values (2, ❰[❱ ⟵ expected 'vector'
 insert into test values (3, [1.0, 1.1,]);
-error: insert into test values (3, [1.0, 1.1,❰]❱ ⟵ invalid vector value
+error: insert into test values (3, [1.0, 1.1,❰]❱ ⟵ bad expression
 insert into test values (4, [1.0,);
-error: insert into test values (4, [1.0,❰)❱ ⟵ invalid vector value
+error: insert into test values (4, [1.0,❰)❱ ⟵ bad expression
 insert into test values (5, [1.0,]);
-error: insert into test values (5, [1.0,❰]❱ ⟵ invalid vector value
+error: insert into test values (5, [1.0,❰]❱ ⟵ bad expression
 insert into test values (7, [1.0, 1.1, -2.2, -8]);
-error: insert into test values (7, ❰[❱ ⟵ invalid vector dimension
+error: insert into test values (7, ❰[❱ ⟵ expected 'vector'
 insert into test values (8, vector [1.0, 1.1, -2.2, -8]);
-error: insert into test values (8, vector ❰[❱ ⟵ invalid vector dimension
+error: insert into test values (8, ❰vector❱ ⟵ invalid vector dimension
 insert into test values (6, [1.0, 1.1]);
+error: insert into test values (6, ❰[❱ ⟵ expected 'vector'
+insert into test values (6, vector [1.0, 1.1]);
 select * from test;
 
 id  vec
@@ -1069,10 +1070,16 @@ pushdown
 access
   •   amelie.test shared [select]
 drop table test;
-# test: insert var
+# test: insert column (not exists)
 create table test (id uuid primary key);
 insert into test values (x);
-error: insert into test values (❰x❱ ⟵ variable not found
+error: insert into test values (❰x❱ ⟵ column not found
+# test: insert column (own)
+insert into test values (id);
+error: insert into test values (❰id❱ ⟵ column cannot be used here
+drop table test;
+# test: insert var
+create table test (id uuid primary key);
 begin;
 	declare id0 uuid := uuid "00000000-0000-0000-0000-000000000000";
 	declare id1 uuid := uuid "00000000-0000-0000-0000-000000000001";
@@ -1091,7 +1098,7 @@ begin;
 end;
 error: begin;
 	declare x int;
-	insert into test values (❰x❱ ⟵ variable does not match column 'id' type
+	insert into test values (❰x❱ ⟵ expected 'uuid'
 drop table test;
 create table test (id int primary key, data int);
 # test: insert var (key null)
@@ -1118,6 +1125,148 @@ begin;
 	insert into test values(0, x);
 end;
 error: variable cannot be NULL
+drop table test;
+# test: insert expr
+create table test (id int primary key, data int default 0);
+explain insert into test (id) values (2 * 2);
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 2
+  1   int                 1      -      0     # 2
+  2   mulii               2      0      1
+  3   push_ref            2      0      1
+  4   set_ptr             1      -      0
+  5   send_shard          0      1      1     # amelie.test (insert, closing)
+  6   ret                 -1     0      -
+
+pushdown
+  0   insert              -      -      -     # amelie.test
+  1   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [insert]
+insert into test (id) values (2 * 2);
+select * from test;
+
+id  data
+──────────
+4   0
+# test: insert expr (-negative)
+explain insert into test (id) values (-2);
+
+explain
+───────
+
+main
+  0   set_ptr             1      -      0
+  1   send_shard          0      1      0     # amelie.test (insert, closing)
+  2   ret                 -1     0      -
+
+pushdown
+  0   insert              -      -      -     # amelie.test
+  1   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [insert]
+insert into test (id) values (-2);
+select * from test;
+
+id  data
+──────────
+-2  0
+4   0
+# test: insert expr (func constify)
+explain insert into test (id) values (8::string::int);
+
+explain
+───────
+
+main
+  0   set_ptr             1      -      0
+  1   send_shard          0      1      0     # amelie.test (insert, closing)
+  2   ret                 -1     0      -
+
+pushdown
+  0   insert              -      -      -     # amelie.test
+  1   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [insert]
+insert into test (id) values (8::string::int);
+select * from test;
+
+id  data
+──────────
+-2  0
+4   0
+8   0
+explain insert into test (id) values (8::string::int * 2);
+
+explain
+───────
+
+main
+  0   value               0      -      0     # int
+  1   int                 1      -      0     # 2
+  2   mulii               2      0      1
+  3   push_ref            2      0      1
+  4   set_ptr             1      -      0
+  5   send_shard          0      1      1     # amelie.test (insert, closing)
+  6   ret                 -1     0      -
+
+pushdown
+  0   insert              -      -      -     # amelie.test
+  1   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [insert]
+insert into test (id) values (8::string::int * 2);
+select * from test;
+
+id  data
+──────────
+-2  0
+4   0
+8   0
+16  0
+# test: insert expr (func)
+explain insert into test (id) values ( string(8 * 8)::int );
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 8
+  1   int                 1      -      0     # 8
+  2   mulii               2      0      1
+  3   push                2      0      0
+  4   call                0      -      1     # string()
+  5   push                0      0      0
+  6   call                0      -      1     # int()
+  7   push_ref            0      0      1
+  8   set_ptr             1      -      0
+  9   send_shard          0      1      1     # amelie.test (insert, closing)
+ 10   ret                 -1     0      -
+
+pushdown
+  0   insert              -      -      -     # amelie.test
+  1   ret                 -1     0      -
+
+access
+  •   amelie.test shared_rw [insert]
+insert into test values ( string(8 * 8)::int, 5 + 5);
+select * from test;
+
+id  data
+──────────
+-2  0
+4   0
+8   0
+16  0
+64  10
 drop table test;
 # test: insert secondary index
 create table test (id int primary key, data int);

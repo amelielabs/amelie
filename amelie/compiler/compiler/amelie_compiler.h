@@ -33,6 +33,7 @@
 #include "compiler/emit_publish.h"
 #include "compiler/emit_watch.h"
 #include "compiler/emit_utility.h"
+#include "compiler/emit_ref.h"
 
 // explain
 #include "compiler/explain.h"

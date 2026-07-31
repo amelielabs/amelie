@@ -567,7 +567,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CPUBLISH:
 		{
 			auto topic = (Topic*)op->a;
-			op_write(buf, op, false, true, false, "{str}.{str}",
+			op_write(buf, op, false, false, false, "{str}.{str}",
 			         &topic->config->user, &topic->config->name);
 			break;
 		}

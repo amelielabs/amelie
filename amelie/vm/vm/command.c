@@ -680,7 +680,7 @@ ccall_udf(Vm* self, Op* op)
 void
 cpublish(Vm* self, Op* op)
 {
-	// [topic*, set*]
+	// [topic*, set*, refs]
 
 	// create dispatch
 	auto gtr = self->gtr;
@@ -688,19 +688,24 @@ cpublish(Vm* self, Op* op)
 	auto dispatch = dispatch_create(&dispatches->cache);
 
 	// prepare publish
-	auto buf = &dispatch->publish;
+	auto buf  = &dispatch->publish;
 
 	// encode values
 	if (op->b != -1)
 	{
+		auto refs = stack_at(&self->stack, op->c);
 		encode_array(buf);
 		auto set = (Set*)op->b;
 		for (auto order = 0; order < set->count_rows; order++)
 		{
 			auto value = set_row(set, order);
+			if (value->type == TYPE_REF)
+				value = &refs[value->integer];
 			value_encode(value, self->local->timezone, buf);
 		}
 		encode_array_end(buf);
+		if (op->c > 0)
+			stack_popn(&self->stack, op->c);
 
 		auto pos = buf->start;
 		unpack_array(&pos);

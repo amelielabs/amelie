@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: create table (with vector columns)
 create table test_flat(id int primary key, v1 vector(2), data int, v2 vector(1));
-insert into test_flat values (0, [0,0], null, [0]);
-insert into test_flat values (1, [1,1], null, [1]);
-insert into test_flat values (2, [2,2], null, [2]);
+insert into test_flat values (0, vector [0,0], null, vector [0]);
+insert into test_flat values (1, vector [1,1], null, vector [1]);
+insert into test_flat values (2, vector [2,2], null, vector [2]);
 select * from test_flat;
 
 id  v1      data  v2
@@ -38,7 +38,7 @@ id  v1      data  v2
 2   [2, 2]  null  [2]
 # test: add column (vector)
 alter table test_flat add column v3 vector(3);
-insert into test_flat values (3, [3,3], null, [3], [1,2,3]);
+insert into test_flat values (3, vector [3,3], null, vector [3], vector [1,2,3]);
 select * from test_flat;
 
 id  v1      data  v2   v3
@@ -116,7 +116,7 @@ id  data  v2   v3
 0   null  [0]  null
 3   null  [3]  [1, 2, 3]
 2   null  [2]  null
-insert into test_flat values (4, null, null, [4,4,4]);
+insert into test_flat values (4, null, null, vector [4,4,4]);
 select * from test_flat;
 
 id  data  v2    v3
@@ -128,10 +128,10 @@ id  data  v2    v3
 drop table test_flat;
 # test: delete/insert
 create table test(id int primary key, v1 vector(2));
-insert into test values (0, [0,0]);
-insert into test values (1, [1,1]);
+insert into test values (0, vector [0,0]);
+insert into test values (1, vector [1,1]);
 delete from test where id = 1;
-insert into test values (1, [2,2]);
+insert into test values (1, vector [2,2]);
 select * from test;
 
 id  v1

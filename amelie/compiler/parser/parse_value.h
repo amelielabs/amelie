@@ -12,6 +12,7 @@
 //
 
 int  parse_vector(Stmt*, Buf*);
+Ast* parse_value_const(Stmt*, Column*, Value*);
 Ast* parse_value(Stmt*, From*, Column*, Value*);
 void parse_value_decode(Local*, Column*, Value*, uint8_t**);
 

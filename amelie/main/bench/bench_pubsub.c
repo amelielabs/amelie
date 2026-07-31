@@ -17,7 +17,7 @@
 static void
 bench_pubsub_create(Bench* self, Client* client)
 {
-	unused(self);
+	auto batch = (int)opt_int_of(&self->batch);
 
 	info("preparing topic.");
 	Str str;
@@ -28,6 +28,21 @@ bench_pubsub_create(Bench* self, Client* client)
 	str_set_cstr(&str, "create subscription bench_sub on bench_topic");
 	client_execute(client, &str, NULL);
 
+	info("preparing function.");
+	Buf buf;
+	buf_init(&buf);
+	defer_buf(&buf);
+	buf_format(&buf,
+	           "create function publish_func() "
+	           "begin "
+	           "  PUBLISH INTO bench_topic ");
+	for (int i = 0; i < batch; i++)
+		buf_format(&buf, "{s}1", i > 0 ? "," : "");
+	buf_format(&buf, ";");
+	buf_format(&buf, "end");
+	buf_str(&buf, &str);
+	client_execute(client, &str, NULL);
+
 	info("done.");
 	info("");
 }
@@ -36,23 +51,14 @@ hot static void
 bench_pubsub_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
-	int batch = (int)opt_int_of(&bench->batch);
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
+	auto batch = (int)opt_int_of(&bench->batch);
 
-	const char* payload = "1";
+	Str cmd;
+	str_set_cstr(&cmd,  "execute publish_func();");
+
 	while (! self->shutdown)
 	{
-		buf_reset(&buf);
-		buf_format(&buf, "PUBLISH INTO bench_topic ");
-		for (int i = 0; i < batch; i++)
-			buf_format(&buf, "{s}{s}", i > 0 ? "," : "", payload);
-
-		Str cmd;
-		buf_str(&buf, &cmd);
 		client_execute(client, &cmd, NULL);
-
 		atomic_u64_add(&bench->transactions, 1);
 		atomic_u64_add(&bench->writes, batch);
 	}

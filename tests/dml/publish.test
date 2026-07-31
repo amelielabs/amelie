@@ -1,0 +1,42 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: publish (expr)
+create topic x;
+create subscription sub on x;
+
+explain publish into x 123;
+publish into x 123;
+select * from sub;
+
+explain publish into x [2 + 2];
+publish into x [2 + 2];
+select * from sub;
+
+# test: publish (func constify)
+publish into x [8::string];
+select * from sub;
+
+# test: publish (func)
+publish into x [8::string::int * 2];
+select * from sub;
+
+# test: publish (expr json)
+publish into x {
+	"id": 48,
+	"data": 8::string::int * 2,
+	"hash": 8::string::sha1
+};
+select * from sub;
+
+publish into x 1,2,3;
+publish into x (1 * 2)::json, (2 * 2)::json, (3 * 2::string::int)::json;
+select * from sub;
+
+drop subscription sub;
+drop topic x;
+
+disconnect S0;
+close E0;

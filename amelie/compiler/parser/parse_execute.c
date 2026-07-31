@@ -34,7 +34,7 @@ parse_args(Stmt* self, Udf* udf, Set* args)
 		auto column_value = &row[column->order];
 
 		// parse and set argument value
-		parse_value(self, NULL, column, column_value);
+		parse_value_const(self, column, column_value);
 
 		// ,
 		if (stmt_if(self, ','))

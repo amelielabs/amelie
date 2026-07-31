@@ -92,33 +92,12 @@ parse_vector_decode(Buf* buf, uint8_t** pos)
 }
 
 hot Ast*
-parse_value(Stmt* self, From* from, Column* column, Value* value)
+parse_value_const(Stmt* self, Column* column, Value* value)
 {
 	auto ast = stmt_next(self);
 	if (ast->id == KNULL)
 	{
 		value_set_null(value);
-		return ast;
-	}
-
-	// variable
-	if (ast->id == KNAME)
-	{
-		auto var = namespace_find_var(self->block->ns, &ast->string);
-		if (! var)
-			stmt_error(self, ast, "variable not found");
-
-		if (var->type != column->type)
-			stmt_error(self, ast, "variable does not match column '{str}' type",
-			           &column->name);
-		ast->id  = KVAR;
-		ast->var = var;
-		if (var->writer)
-			deps_add_var(&self->deps, var->writer, var);
-
-		auto ref = refs_add(&self->refs, from, ast, -1);
-		ref->not_null = column->constraints.not_null;
-		value_set_ref(value, ref->order);
 		return ast;
 	}
 
@@ -164,14 +143,6 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 	}
 	case TYPE_DATE:
 	{
-		// CURRENT_DATE
-		if (ast->id == KCURRENT_DATE)
-		{
-			auto ref = refs_add(&self->refs, from, ast, -1);
-			value_set_ref(value, ref->order);
-			return ast;
-		}
-
 		// [DATE] string
 		if (ast->id == KDATE)
 			ast = stmt_next(self);
@@ -189,16 +160,8 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		// unixtime
 		if (ast->id == KINT) {
 			value_set_timestamp(value, ast->integer);
-			return ast;
 		}
 
-		// CURRENT_TIMESTAMP
-		if (ast->id == KCURRENT_TIMESTAMP)
-		{
-			auto ref = refs_add(&self->refs, from, ast, -1);
-			value_set_ref(value, ref->order);
-			return ast;
-		}
 
 		// [TIMESTAMP] string
 		if (ast->id == KTIMESTAMP)
@@ -288,6 +251,160 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 
 	stmt_error(self, ast, "'{s}' expected for column '{str}'",
 	           type_of(column->type), &column->name);
+	return NULL;
+}
+
+hot Ast*
+parse_value(Stmt* self, From* from, Column* column, Value* value)
+{
+	// handle as reference pushdown (execute before send)
+	auto ast = parse_expr(self, NULL);
+	if (! parse_expr_is_const(ast))
+	{
+		// vector, { or [ with expressions
+		auto ref = refs_add(&self->refs, from, ast, -1);
+		ref->not_null = column->constraints.not_null;
+		ref->column   = column;
+		value_set_ref(value, ref->order);
+
+		// do early vector dimension check
+		if (column->type == TYPE_VECTOR && ast->id == KVECTOR)
+		{
+			int dim = (column->size_flat / sizeof(float));
+			if (ast->vector_dim != dim)
+				stmt_error(self, ast, "invalid vector dimension");
+		}
+		return ast;
+	}
+
+	// const path
+	if (ast->id == KNULL)
+	{
+		value_set_null(value);
+		return ast;
+	}
+
+	// result of compile time function execution
+	if (ast->id == KVALUE)
+	{
+		auto result = set_value(ast->set, 0);
+		if (result->type == TYPE_NULL)
+		{
+			value_set_null(value);
+			return ast;
+		}
+		if (result->type != column->type)
+			stmt_error(self, ast, "expected '{s}'", type_of(column->type));
+		value_copy(value, result);
+		return ast;
+	}
+
+	switch (column->type) {
+	case TYPE_BOOL:
+	{
+		if (unlikely(ast->id != KTRUE && ast->id != KFALSE))
+			break;
+		value_set_bool(value, ast->id == KTRUE);
+		return ast;
+	}
+	case TYPE_INT:
+	{
+		if (likely(ast->id == KINT))
+			value_set_int(value, ast->integer);
+		else
+		if (ast->id == KREAL)
+			value_set_int(value, ast->real);
+		else
+			break;
+		return ast;
+	}
+	case TYPE_DOUBLE:
+	{
+		if (likely(ast->id == KREAL))
+			value_set_double(value, ast->real);
+		else
+		if (likely(ast->id == KINT))
+			value_set_double(value, ast->integer);
+		else
+			break;
+		return ast;
+	}
+	case TYPE_DATE:
+	{
+		// [DATE] string
+		if (unlikely(ast->id != KDATE && ast->id != KSTRING))
+			break;
+		int julian;
+		if (unlikely(error_catch( julian = date_set(&ast->string) )))
+			stmt_error(self, ast, "invalid date value");
+		value_set_date(value, julian);
+		return ast;
+	}
+	case TYPE_TIMESTAMP:
+	{
+		// unixtime
+		if (ast->id == KINT) {
+			value_set_timestamp(value, ast->integer);
+			return ast;
+		}
+
+		// [TIMESTAMP] string
+		if (unlikely(ast->id != KTIMESTAMP && ast->id != KSTRING))
+			break;
+		Timestamp ts;
+		timestamp_init(&ts);
+		if (unlikely(error_catch( timestamp_set(&ts, &ast->string) )))
+			stmt_error(self, ast, "invalid timestamp value");
+		value_set_timestamp(value, timestamp_get_unixtime(&ts, self->parser->local->timezone));
+		return ast;
+	}
+	case TYPE_INTERVAL:
+	{
+		// [INTERVAL] string
+		if (unlikely(ast->id != KINTERVAL && ast->id != KSTRING))
+			break;
+		Interval iv;
+		interval_init(&iv);
+		if (unlikely(error_catch( interval_set(&iv, &ast->string) )))
+			stmt_error(self, ast, "invalid interval value");
+		value_set_interval(value, &iv);
+		return ast;
+	}
+	case TYPE_UUID:
+	{
+		// [UUID] string
+		if (unlikely(ast->id != KUUID && ast->id != KSTRING))
+			break;
+		Uuid uuid;
+		uuid_init(&uuid);
+		if (uuid_set_nothrow(&uuid, &ast->string) == -1)
+			stmt_error(self, ast, "invalid uuid value");
+		value_set_uuid(value, &uuid);
+		return ast;
+	}
+	case TYPE_STRING:
+	{
+		if (unlikely(ast->id != KSTRING))
+			break;
+		value_set_string(value, &ast->string, NULL);
+		return ast;
+	}
+	case TYPE_JSON:
+	{
+		auto buf = buf_create();
+		errdefer_buf(buf);
+		ast_encode(ast, &self->parser->lex, self->parser->local, buf);
+		value_set_json_buf(value, buf);
+		return ast;
+	}
+	case TYPE_VECTOR:
+	{
+		// expected explicit VECTOR [...]
+		break;
+	}
+	}
+
+	stmt_error(self, ast, "expected '{s}'", type_of(column->type));
 	return NULL;
 }
 

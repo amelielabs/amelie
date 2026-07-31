@@ -73,6 +73,7 @@ test insert
 test update
 test delete
 test upsert
+test publish
 test truncate
 
 # query

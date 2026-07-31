@@ -39,9 +39,9 @@ end;
 select show('state').lsn;
 
 create table test_flat(id int primary key, v1 vector(2), data int, v2 vector(1));
-insert into test_flat values (0, [0,0], null, [0]);
-insert into test_flat values (1, [1,1], null, [1]);
-insert into test_flat values (2, [2,2], null, [2]);
+insert into test_flat values (0, vector [0,0], null, vector [0]);
+insert into test_flat values (1, vector [1,1], null, vector [1]);
+insert into test_flat values (2, vector [2,2], null, vector [2]);
 
 backup E2 http://127.0.0.1:3480;
 close E2;

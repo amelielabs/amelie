@@ -24,10 +24,13 @@ emit_publish(Compiler* self, Ast* ast)
 {
 	auto publish = ast_publish_of(ast);
 
+	// push references (expressions used by the publish values)
+	auto refs_count = emit_refs(self);
+
 	intptr_t values = -1;
 	if (publish->values)
 		values = (intptr_t)publish->values;
 
 	// CPUBLISH
-	op2(self, CPUBLISH, (intptr_t)publish->topic, values);
+	op3(self, CPUBLISH, (intptr_t)publish->topic, values, refs_count);
 }
