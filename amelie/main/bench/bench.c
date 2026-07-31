@@ -174,7 +174,6 @@ bench_run(Bench* self)
 {
 	// validate options
 	auto type      = opt_string_of(&self->type);
-	auto scale     = opt_int_of(&self->scale);
 	auto batch     = opt_int_of(&self->batch);
 	auto duration  = opt_int_of(&self->duration);
 	auto clients   = opt_int_of(&self->clients);
@@ -209,13 +208,10 @@ bench_run(Bench* self)
 	info("");
 	info("amelie benchmark.");
 	info("");
-	info("type:      {str}", type);
-	info("duration:  {u64} sec", duration);
-	info("clients:   {u64} ", clients);
-	info("batch:     {u64}", batch);
-	info("scale:     {u64}", scale);
-	info("init:      {u64}", init);
-	info("histogram: {u64}", histogram);
+	info("type:     {str}", type);
+	info("duration: {u64} sec", duration);
+	info("clients:  {u64} ", clients);
+	info("batch:    {u64}", batch);
 	info("");
 
 	// prepare workers
