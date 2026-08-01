@@ -15,43 +15,43 @@
 #include <amelie_lib.h>
 
 static void
-job_worker_main(void* arg)
+worker_main(void* arg)
 {
-	auto self = (JobWorker*)arg;
+	auto self = (Worker*)arg;
 	for (;;)
 	{
-		auto job = jobs_next(self->jobs);
-		if (! job)
+		auto req = workers_next(self->workers);
+		if (! req)
 			break;
-		job_run(job);
+		worker_req_run(req);
 	}
 }
 
-JobWorker*
-job_worker_allocate(Jobs* jobs)
+Worker*
+worker_allocate(Workers* workers)
 {
-	auto self = (JobWorker*)am_malloc(sizeof(JobWorker));
-	self->jobs = jobs;
+	auto self = (Worker*)am_malloc(sizeof(Worker));
+	self->workers = workers;
 	task_init(&self->task);
 	list_init(&self->link);
 	return self;
 }
 
 void
-job_worker_free(JobWorker* self)
+worker_free(Worker* self)
 {
 	task_free(&self->task);
 	am_free(self);
 }
 
 void
-job_worker_start(JobWorker* self)
+worker_start(Worker* self)
 {
-	task_create(&self->task, "job_worker", job_worker_main, self);
+	task_create(&self->task, "worker", worker_main, self);
 }
 
 void
-job_worker_stop(JobWorker* self)
+worker_stop(Worker* self)
 {
 	task_wait(&self->task);
 }

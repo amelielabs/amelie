@@ -52,7 +52,7 @@ config_prepare(Config* self)
 		// workers
 		{ "frontends",               OPT_INT,    OPT_C|OPT_Z,             &self->frontends,               NULL,             4                   },
 		{ "backends",                OPT_INT,    OPT_C|OPT_Z,             &self->backends,                NULL,             6                   },
-		{ "jobs",                    OPT_INT,    OPT_C|OPT_Z,             &self->jobs,                    NULL,             3                   },
+		{ "workers",                 OPT_INT,    OPT_C|OPT_Z,             &self->workers,                 NULL,             1                   },
 		{ "cpu_affinity",            OPT_BOOL,   OPT_C,                   &self->cpu_affinity,            NULL,             true                },
 		// wal
 		{ "wal_crc",                 OPT_BOOL,   OPT_C,                   &self->wal_crc,                 NULL,             true                },

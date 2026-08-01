@@ -33,7 +33,7 @@ struct Config
 	// workers
 	Opt  frontends;
 	Opt  backends;
-	Opt  jobs;
+	Opt  workers;
 	Opt  cpu_affinity;
 	// wal
 	Opt  wal_crc;

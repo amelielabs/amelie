@@ -112,9 +112,9 @@ state_is_primary(void)
 	return opt_uuid_empty(&state()->repl_primary);
 }
 
-// background jobs manager
+// background function in background
 static inline void
-run(JobFunction main, int argc, ...)
+run(WorkerMain main, int argc, ...)
 {
 	// prepare arguments
 	intptr_t argv[argc];
@@ -129,14 +129,14 @@ run(JobFunction main, int argc, ...)
 	auto error = &am_self()->error;
 	error->code = ERROR_NONE;
 
-	// add job and wait for completion
-	Job job;
-	job_init(&job, error, main, argv);
-	event_attach(&job.on_complete);
-	jobs_add(&runtime()->jobs, &job);
+	// add request and wait for completion
+	WorkerReq req;
+	worker_req_init(&req, error, main, argv);
+	event_attach(&req.on_complete);
+	workers_add(&runtime()->workers, &req);
 
 	cancel_pause();
-	event_wait(&job.on_complete, -1);
+	event_wait(&req.on_complete, -1);
 	cancel_resume();
 
 	// rethrow on error

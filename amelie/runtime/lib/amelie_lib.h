@@ -47,10 +47,10 @@
 #include "lib/codec_cache.h"
 #include "lib/codec_compression.h"
 
-// background jobs
-#include "lib/job.h"
-#include "lib/job_worker.h"
-#include "lib/jobs.h"
+// background workers
+#include "lib/worker_req.h"
+#include "lib/worker.h"
+#include "lib/workers.h"
 
 // logger
 #include "lib/logger.h"

@@ -15,39 +15,39 @@
 #include <amelie_lib.h>
 
 void
-jobs_init(Jobs* self)
+workers_init(Workers* self)
 {
-	self->shutdown = false;
-	self->jobs_count = 0;
+	self->shutdown      = false;
+	self->reqs_count    = 0;
 	self->workers_count = 0;
-	list_init(&self->jobs);
+	list_init(&self->reqs);
 	list_init(&self->workers);
 	mutex_init(&self->lock);
 	cond_var_init(&self->cond_var);
 }
 
 void
-jobs_free(Jobs* self)
+workers_free(Workers* self)
 {
 	mutex_free(&self->lock);
 	cond_var_free(&self->cond_var);
 }
 
 void
-jobs_start(Jobs* self, int count)
+workers_start(Workers* self, int count)
 {
 	self->shutdown = false;
 	for (auto i = count; i > 0; i--)
 	{
-		auto worker = job_worker_allocate(self);
+		auto worker = worker_allocate(self);
 		list_append(&self->workers, &worker->link);
 		self->workers_count++;
-		job_worker_start(worker);
+		worker_start(worker);
 	}
 }
 
 static void
-jobs_shutdown(Jobs* self)
+workers_shutdown(Workers* self)
 {
 	mutex_lock(&self->lock);
 	self->shutdown = true;
@@ -56,41 +56,41 @@ jobs_shutdown(Jobs* self)
 }
 
 void
-jobs_stop(Jobs* self)
+workers_stop(Workers* self)
 {
-	jobs_shutdown(self);
+	workers_shutdown(self);
 	list_foreach_safe(&self->workers)
 	{
-		auto worker = list_at(JobWorker, link);
-		job_worker_stop(worker);
-		job_worker_free(worker);
+		auto worker = list_at(Worker, link);
+		worker_stop(worker);
+		worker_free(worker);
 	}
 	list_init(&self->workers);
 	self->workers_count = 0;
 }
 
 void
-jobs_add(Jobs* self, Job* job)
+workers_add(Workers* self, WorkerReq* req)
 {
 	mutex_lock(&self->lock);
-	list_append(&self->jobs, &job->link);
-	self->jobs_count++;
+	list_append(&self->reqs, &req->link);
+	self->reqs_count++;
 	cond_var_signal(&self->cond_var);
 	mutex_unlock(&self->lock);
 }
 
-Job*
-jobs_next(Jobs* self)
+WorkerReq*
+workers_next(Workers* self)
 {
 	mutex_lock(&self->lock);
 
-	Job* job = NULL;
+	WorkerReq* req = NULL;
 	for (;;)
 	{
-		if (self->jobs_count > 0)
+		if (self->reqs_count > 0)
 		{
-			job = container_of(list_pop(&self->jobs), Job, link);
-			self->jobs_count--;
+			req = container_of(list_pop(&self->reqs), WorkerReq, link);
+			self->reqs_count--;
 			break;
 		}
 
@@ -101,5 +101,5 @@ jobs_next(Jobs* self)
 	}
 
 	mutex_unlock(&self->lock);
-	return job;
+	return req;
 }

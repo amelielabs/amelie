@@ -42,7 +42,7 @@ struct Runtime
 	Timezones   timezones;
 	CrcFunction crc;
 	CodecCache  cache_compression;
-	Jobs        jobs;
+	Workers     workers;
 	Logger      logger;
 	Task        task;
 };

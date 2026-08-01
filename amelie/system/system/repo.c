@@ -246,13 +246,13 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	if (! opt_int_of(&config->log_file))
 		logger_close(logger);
 
-	// reconfigure jobs manager
-	auto jobs = &runtime()->jobs;
-	auto jobs_count = (int)opt_int_of(&config->jobs);
-	if (jobs_count != jobs->workers_count)
+	// reconfigure workers
+	auto workers = &runtime()->workers;
+	auto workers_count = (int)opt_int_of(&config->workers);
+	if (workers_count != workers->workers_count)
 	{
-		jobs_stop(jobs);
-		jobs_start(jobs, jobs_count);
+		workers_stop(workers);
+		workers_start(workers, workers_count);
 	}
 }
 

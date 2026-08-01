@@ -28,7 +28,7 @@ runtime_init(Runtime* self)
 	state_init(&self->state);
 	timezones_init(&self->timezones);
 	codec_cache_init(&self->cache_compression);
-	jobs_init(&self->jobs);
+	workers_init(&self->workers);
 	logger_init(&self->logger);
 	task_init(&self->task);
 	locks_init(&self->locks);
@@ -41,7 +41,7 @@ runtime_free(Runtime* self)
 	locks_free(&self->locks);
 	lockables_free(&self->lockables);
 	task_free(&self->task);
-	jobs_free(&self->jobs);
+	workers_free(&self->workers);
 	config_free(&self->config);
 	state_free(&self->state);
 	timezones_free(&self->timezones);
@@ -82,8 +82,8 @@ runtime_prepare(Runtime* self)
 	self->timezone = self->timezones.system;
 	logger_set_timezone(logger, self->timezone);
 
-	// start background job manager
-	jobs_start(&self->jobs, 1);
+	// start background workers
+	workers_start(&self->workers, 1);
 
 	// prepare default configuration
 	config_prepare(&self->config);
@@ -95,8 +95,8 @@ runtime_prepare(Runtime* self)
 static void
 runtime_shutdown(Runtime* self)
 {
-	// stop background job manager
-	jobs_stop(&self->jobs);
+	// stop background workers
+	workers_stop(&self->workers);
 }
 
 static void

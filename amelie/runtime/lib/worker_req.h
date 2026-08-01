@@ -11,21 +11,21 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Job Job;
+typedef struct WorkerReq WorkerReq;
 
-typedef void (*JobFunction)(intptr_t*);
+typedef void (*WorkerMain)(intptr_t*);
 
-struct Job
+struct WorkerReq
 {
-	JobFunction main;
-	intptr_t*   main_argv;
-	Error*      error;
-	Event       on_complete;
-	List        link;
+	WorkerMain main;
+	intptr_t*  main_argv;
+	Error*     error;
+	Event      on_complete;
+	List       link;
 };
 
 static inline void
-job_init(Job* self, Error* error, JobFunction main, intptr_t* main_argv)
+worker_req_init(WorkerReq* self, Error* error, WorkerMain main, intptr_t* main_argv)
 {
 	self->main      = main;
 	self->main_argv = main_argv;
@@ -35,7 +35,7 @@ job_init(Job* self, Error* error, JobFunction main, intptr_t* main_argv)
 }
 
 static inline void
-job_run(Job* self)
+worker_req_run(WorkerReq* self)
 {
 	if (error_catch( self->main(self->main_argv) ))
 		error_copy(self->error, &am_self()->error);
