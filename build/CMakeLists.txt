@@ -157,6 +157,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/interval.c
     ${AMELIE_ROOT}/runtime/lib/timestamp.c
     ${AMELIE_ROOT}/runtime/lib/vector.c
+    ${AMELIE_ROOT}/runtime/lib/decimal.c
     ${AMELIE_ROOT}/runtime/lib/codec_compression.c
     ${AMELIE_ROOT}/runtime/lib/worker.c
     ${AMELIE_ROOT}/runtime/lib/workers.c

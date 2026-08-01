@@ -70,6 +70,14 @@ int64_mul_add_overflow(int64_t* result, int64_t a, int64_t mul, int64_t add)
 }
 
 always_inline static inline bool
+int64_mul_sub_overflow(int64_t* result, int64_t a, int64_t mul, int64_t add)
+{
+	if (unlikely(int64_mul_overflow(result, a, mul)))
+		return true;
+	return int64_sub_overflow(result, *result, add);
+}
+
+always_inline static inline bool
 uint64_add_overflow(uint64_t* result, uint64_t a, uint64_t b)
 {
 	auto result_ptr = (unsigned long long*)result;

@@ -38,8 +38,9 @@
 // types
 #include "lib/avg.h"
 #include "lib/vector.h"
+#include "lib/decimal.h"
 
-// generilized flags
+// generalized flags
 #include "lib/flags.h"
 
 // codec
