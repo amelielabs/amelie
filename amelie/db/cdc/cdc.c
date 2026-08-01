@@ -100,6 +100,9 @@ cdc_detach(Cdc* self, CdcSlot* slot)
 	self->slots_count--;
 	spinlock_unlock(&self->lock);
 	slot->attached = false;
+
+	// run gc
+	cdc_gc(self);
 }
 
 void
@@ -259,6 +262,44 @@ cdc_write_batch(Cdc* self, uint64_t lsn, List* batch)
 
 	// wakeup subscribers
 	cdc_notify(self);
+
+	spinlock_unlock(&self->lock);
+}
+
+void
+cdc_state(Cdc* self, Buf* buf)
+{
+	spinlock_lock(&self->lock);
+
+	// {}
+	encode_obj(buf);
+
+	// slots
+	encode_raw(buf, "slots", 5);
+	encode_int(buf, self->slots_count);
+
+	// slots_min
+	uint64_t min = cdc_minof(self);
+	encode_raw(buf, "slots_min", 9);
+	encode_int(buf, min);
+
+	// subs
+	encode_raw(buf, "subs", 4);
+	encode_int(buf, self->subs_count);
+
+	// lsn
+	encode_raw(buf, "lsn", 3);
+	encode_int(buf, self->lsn);
+
+	// size
+	encode_raw(buf, "size", 4);
+	encode_int(buf, storage_size(&self->storage));
+
+	// pages
+	encode_raw(buf, "pages", 5);
+	encode_int(buf, self->storage.list_count);
+
+	encode_obj_end(buf);
 
 	spinlock_unlock(&self->lock);
 }

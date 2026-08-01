@@ -26,9 +26,9 @@ enum
 	RESTORE_USER,
 	RESTORE_TABLE,
 	RESTORE_CLONE,
-	RESTORE_UDF,
 	RESTORE_TOPIC,
-	RESTORE_SUB
+	RESTORE_SUB,
+	RESTORE_UDF
 };
 
 static void
@@ -71,16 +71,6 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		clone_create(self, tr, config, false);
 		break;
 	}
-	case RESTORE_UDF:
-	{
-		// read udf config
-		auto config = udf_config_read(pos);
-		defer(udf_config_free, config);
-
-		// create udf
-		udf_create(self, tr, config, false);
-		break;
-	}
 	case RESTORE_TOPIC:
 	{
 		// read topic config
@@ -99,6 +89,16 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 
 		// create subscription
 		sub_create(self, tr, config, false);
+		break;
+	}
+	case RESTORE_UDF:
+	{
+		// read udf config
+		auto config = udf_config_read(pos);
+		defer(udf_config_free, config);
+
+		// create udf
+		udf_create(self, tr, config, false);
 		break;
 	}
 	}
@@ -130,18 +130,18 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	uint8_t* pos_users  = NULL;
 	uint8_t* pos_tables = NULL;
 	uint8_t* pos_clones = NULL;
-	uint8_t* pos_udfs   = NULL;
 	uint8_t* pos_topics = NULL;
 	uint8_t* pos_subs   = NULL;
+	uint8_t* pos_udfs   = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_INT,   "lsn",    &lsn          },
 		{ DECODE_ARRAY, "users",  &pos_users    },
 		{ DECODE_ARRAY, "tables", &pos_tables   },
 		{ DECODE_ARRAY, "clones", &pos_clones   },
-		{ DECODE_ARRAY, "udfs",   &pos_udfs     },
 		{ DECODE_ARRAY, "topics", &pos_topics   },
 		{ DECODE_ARRAY, "subs",   &pos_subs     },
+		{ DECODE_ARRAY, "udfs",   &pos_udfs     },
 		{ 0,             NULL,     NULL         },
 	};
 	decode_obj(obj, "catalog", pos);
@@ -161,11 +161,6 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	while (! unpack_array_end(&pos_clones))
 		catalog_restore_object(self, RESTORE_CLONE, &pos_clones);
 
-	// udfs
-	unpack_array(&pos_udfs);
-	while (! unpack_array_end(&pos_udfs))
-		catalog_restore_object(self, RESTORE_UDF, &pos_udfs);
-
 	// topics
 	unpack_array(&pos_topics);
 	while (! unpack_array_end(&pos_topics))
@@ -175,6 +170,11 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	unpack_array(&pos_subs);
 	while (! unpack_array_end(&pos_subs))
 		catalog_restore_object(self, RESTORE_SUB, &pos_subs);
+
+	// udfs
+	unpack_array(&pos_udfs);
+	while (! unpack_array_end(&pos_udfs))
+		catalog_restore_object(self, RESTORE_UDF, &pos_udfs);
 
 	// set catalog lsn
 	state_lsn_follow(lsn);
@@ -225,10 +225,6 @@ catalog_state(Catalog* self, uint64_t lsn)
 	encode_raw(buf, "clones", 6);
 	rels_dump(&self->rels, REL_CLONE, buf, 0);
 
-	// udfs
-	encode_raw(buf, "udfs", 4);
-	rels_dump(&self->rels, REL_UDF, buf, 0);
-
 	// topics
 	encode_raw(buf, "topics", 6);
 	rels_dump(&self->rels, REL_TOPIC, buf, 0);
@@ -236,6 +232,10 @@ catalog_state(Catalog* self, uint64_t lsn)
 	// subs
 	encode_raw(buf, "subs", 4);
 	rels_dump(&self->rels, REL_SUBSCRIPTION, buf, 0);
+
+	// udfs
+	encode_raw(buf, "udfs", 4);
+	rels_dump(&self->rels, REL_UDF, buf, 0);
 
 	encode_obj_end(buf);
 	return buf;

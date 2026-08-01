@@ -41,6 +41,18 @@ lsn  lsn_op
 create subscription test_sub on test;
 error: relation 'test_sub': already exists
 create subscription if not exists test_sub on test;
+show cdc;
+
+cdc
+───
+{
+  "slots": 1,
+  "slots_min": 3,
+  "subs": 0,
+  "lsn": 0,
+  "size": 0,
+  "pages": 0
+}
 # test: select from subscription (empty)
 select * from test_sub;
 
@@ -50,6 +62,18 @@ lsn  lsn_op  cmd  row
 insert into test values (1, 0);
 insert into test values (2, 0);
 insert into test values (3, 0);
+show cdc;
+
+cdc
+───
+{
+  "slots": 1,
+  "slots_min": 3,
+  "subs": 0,
+  "lsn": 6,
+  "size": 262144,
+  "pages": 1
+}
 # test: select from subscription
 select * from test_sub;
 
@@ -365,6 +389,18 @@ error: drop subscription ❰123❱ ⟵ name expected
 drop subscription test_sub;
 error: subscription 'test_sub': not exists
 drop subscription if exists test_sub;
+show cdc;
+
+cdc
+───
+{
+  "slots": 0,
+  "slots_min": -1,
+  "subs": 0,
+  "lsn": 11,
+  "size": 262144,
+  "pages": 1
+}
 # test: create subscription (topic)
 create topic test;
 create subscription test_sub on test;

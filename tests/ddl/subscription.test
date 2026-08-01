@@ -19,6 +19,7 @@ select lsn, lsn_op from show subscriptions verbose;
 # test: create subscription (table, if exists)
 create subscription test_sub on test;
 create subscription if not exists test_sub on test;
+show cdc;
 
 # test: select from subscription (empty)
 select * from test_sub;
@@ -27,6 +28,7 @@ select * from test_sub;
 insert into test values (1, 0);
 insert into test values (2, 0);
 insert into test values (3, 0);
+show cdc;
 
 # test: select from subscription
 select * from test_sub;
@@ -132,6 +134,7 @@ drop subscription 123;
 # test: drop subscription (if exists)
 drop subscription test_sub;
 drop subscription if exists test_sub;
+show cdc;
 
 # test: create subscription (topic)
 create topic test;

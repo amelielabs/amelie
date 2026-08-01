@@ -26,6 +26,7 @@ enum
 	SHOW_REPLICA,
 	SHOW_REPL,
 	SHOW_WAL,
+	SHOW_CDC,
 	SHOW_METRICS,
 	SHOW_GRANTS,
 	SHOW_USERS,
@@ -73,6 +74,7 @@ static ShowCmd show_cmds[] =
 	{ SHOW_REPL,          "repl",          4,  false, false, true  },
 	{ SHOW_REPL,          "replication",   11, false, false, true  },
 	{ SHOW_WAL,           "wal",           3,  false, false, true  },
+	{ SHOW_CDC,           "cdc",           3,  false, false, true  },
 	{ SHOW_METRICS,       "metrics",       7,  false, false, true  },
 	{ SHOW_GRANTS,        "grants",        6,  false, true,  false },
 	{ SHOW_USERS,         "users",         5,  false, false, false },
@@ -261,6 +263,11 @@ fn_show(Call* self)
 	case SHOW_WAL:
 	{
 		wal_status(&share()->db->wal, buf);
+		break;
+	}
+	case SHOW_CDC:
+	{
+		cdc_state(share()->db->cdc, buf);
 		break;
 	}
 	case SHOW_METRICS:
