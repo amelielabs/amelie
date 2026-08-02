@@ -18,6 +18,8 @@ struct Constraints
 	bool    not_null;
 	bool    identity;
 	int64_t identity_modulo;
+	int64_t decimal;
+	int64_t decimal_scale;
 	Buf     value;
 };
 
@@ -27,6 +29,8 @@ constraints_init(Constraints* self)
 	self->not_null        = false;
 	self->identity        = false;
 	self->identity_modulo = INT64_MAX;
+	self->decimal         = 0;
+	self->decimal_scale   = 0;
 	buf_init(&self->value);
 }
 
@@ -55,6 +59,13 @@ constraints_set_identity_modulo(Constraints* self, int64_t value)
 }
 
 static inline void
+constraints_set_decimal(Constraints* self, int precision, int scale)
+{
+	self->decimal = precision;
+	self->decimal_scale = scale;
+}
+
+static inline void
 constraints_set_default(Constraints* self, Buf* value)
 {
 	buf_reset(&self->value);
@@ -74,6 +85,7 @@ constraints_copy(Constraints* self, Constraints* copy)
 	constraints_set_not_null(copy, self->not_null);
 	constraints_set_identity(copy, self->identity);
 	constraints_set_identity_modulo(copy, self->identity_modulo);
+	constraints_set_decimal(copy, self->decimal, self->decimal_scale);
 	constraints_set_default(copy, &self->value);
 }
 
@@ -99,6 +111,11 @@ constraints_read(Constraints* self, uint8_t** pos)
 		if (str_is_case(&name, "identity_modulo", 15))
 			unpack_int(pos, &self->identity_modulo);
 		else
+		if (str_is_case(&name, "decimal", 7))
+		{
+			unpack_int(pos, &self->decimal);
+			unpack_int(pos, &self->decimal_scale);
+		} else
 		if (str_is_case(&name, "default", 7))
 		{
 			Str str;
@@ -142,6 +159,16 @@ constraints_write(Constraints* self, Buf* buf, int flags)
 		encode_array(buf);
 		encode_raw(buf, "identity_modulo", 15);
 		encode_int(buf, self->identity_modulo);
+		encode_array_end(buf);
+	}
+
+	// decimal
+	if (self->decimal)
+	{
+		encode_array(buf);
+		encode_raw(buf, "decimal", 7);
+		encode_int(buf, self->decimal);
+		encode_int(buf, self->decimal_scale);
 		encode_array_end(buf);
 	}
 
