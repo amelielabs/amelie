@@ -15,9 +15,7 @@
 #include <amelie_lib.h>
 #include "base/overflow_fp.h"
 
-#define DECIMAL_MAX_SCALE 18
-
-static const int64_t decimal_pow10[19] =
+static const int64_t decimal_pow10[16] =
 {
 	1LL,
 	10LL,
@@ -34,13 +32,10 @@ static const int64_t decimal_pow10[19] =
 	1000000000000LL,
 	10000000000000LL,
 	100000000000000LL,
-	1000000000000000LL,
-	10000000000000000LL,
-	100000000000000000LL,
-	1000000000000000000LL
+	1000000000000000LL
 };
 
-static const double decimal_pow10_dbl[19] =
+static const double decimal_pow10_dbl[16] =
 {
 	1.0,
 	10.0,
@@ -57,40 +52,331 @@ static const double decimal_pow10_dbl[19] =
 	1000000000000.0,
 	10000000000000.0,
 	100000000000000.0,
-	1000000000000000.0,
-	10000000000000000.0,
-	100000000000000000.0,
-	1000000000000000000.0
+	1000000000000000.0
 };
 
-void
-decimal_set(Decimal* result, Str* spec)
+hot uint64_t
+decimal_add(uint64_t a, uint64_t b)
+{
+	// decimal + decimal
+	auto a_value = decimal_value(a);
+	auto a_scale = decimal_scale(a);
+	auto b_value = decimal_value(b);
+	auto b_scale = decimal_scale(b);
+
+	if (likely(a_scale == b_scale))
+	{
+		int64_t value;
+		if (unlikely(int64_add_overflow(&value, a_value, b_value)))
+			goto error;
+		if (unlikely(value > DECIMAL_MAX || value < DECIMAL_MIN))
+			goto error;
+		return decimal_set(value, a_scale);
+	}
+
+	// scale values to match the max scale
+	if (a_scale < b_scale)
+	{
+		if (unlikely(int64_mul_overflow(&a_value, a_value, decimal_pow10[b_scale - a_scale])))
+			goto error;
+		a_scale = b_scale;
+	} else {
+		if (unlikely(int64_mul_overflow(&b_value, b_value, decimal_pow10[a_scale - b_scale])))
+			goto error;
+	}
+
+	int64_t value;
+	if (unlikely(int64_add_overflow(&value, a_value, b_value)))
+		goto error;
+
+	if (unlikely(value > DECIMAL_MAX || value < DECIMAL_MIN))
+		goto error;
+
+	return decimal_set(value, a_scale);
+
+error:
+	error("decimal add overflow");
+}
+
+hot uint64_t
+decimal_addei(uint64_t a, int64_t b)
+{
+	// decimal + int
+	auto    a_value = decimal_value(a);
+	auto    a_scale = decimal_scale(a);
+	int64_t b_upscale;
+	if (unlikely(int64_mul_overflow(&b_upscale, b, decimal_pow10[a_scale])))
+		goto error;
+
+	int64_t value;
+	if (unlikely(int64_add_overflow(&value, a_value, b_upscale)))
+		goto error;
+
+	if (unlikely(value > DECIMAL_MAX || value < DECIMAL_MIN))
+		goto error;
+
+	return decimal_set(value, a_scale);
+
+error:
+	error("decimal add overflow");
+}
+
+hot uint64_t
+decimal_sub(uint64_t a, uint64_t b)
+{
+	// decimal - decimal
+	auto a_value = decimal_value(a);
+	auto a_scale = decimal_scale(a);
+	auto b_value = decimal_value(b);
+	auto b_scale = decimal_scale(b);
+
+	if (likely(a_scale == b_scale))
+	{
+		int64_t value;
+		if (unlikely(int64_sub_overflow(&value, a_value, b_value)))
+			goto error;
+		if (unlikely(value > DECIMAL_MAX || value < DECIMAL_MIN))
+			goto error;
+		return decimal_set(value, a_scale);
+	}
+
+	// scale values to match the max scale
+	if (a_scale < b_scale)
+	{
+		if (unlikely(int64_mul_overflow(&a_value, a_value, decimal_pow10[b_scale - a_scale])))
+			goto error;
+		a_scale = b_scale;
+	} else {
+		if (unlikely(int64_mul_overflow(&b_value, b_value, decimal_pow10[a_scale - b_scale])))
+			goto error;
+	}
+
+	int64_t value;
+	if (unlikely(int64_sub_overflow(&value, a_value, b_value)))
+		goto error;
+
+	if (unlikely(value > DECIMAL_MAX || value < DECIMAL_MIN))
+		goto error;
+
+	return decimal_set(value, a_scale);
+
+error:
+	error("decimal sub overflow");
+}
+
+hot uint64_t
+decimal_subei(uint64_t a, int64_t b)
+{
+	// decimal - int
+	auto    a_value = decimal_value(a);
+	auto    a_scale = decimal_scale(a);
+	int64_t b_upscale;
+	if (unlikely(int64_mul_overflow(&b_upscale, b, decimal_pow10[a_scale])))
+		goto error;
+
+	int64_t value;
+	if (unlikely(int64_sub_overflow(&value, a_value, b_upscale)))
+		goto error;
+
+	if (unlikely(value > DECIMAL_MAX || value < DECIMAL_MIN))
+		goto error;
+
+	return decimal_set(value, a_scale);
+
+error:
+	error("decimal sub overflow");
+}
+
+hot uint64_t
+decimal_subie(int64_t a, uint64_t b)
+{
+	// int - decimal
+	auto    b_value = decimal_value(b);
+	auto    b_scale = decimal_scale(b);
+	int64_t a_upscale;
+	if (unlikely(int64_mul_overflow(&a_upscale, a, decimal_pow10[b_scale])))
+		goto error;
+
+	int64_t value;
+	if (unlikely(int64_sub_overflow(&value, a_upscale, b_value)))
+		goto error;
+
+	if (unlikely(value > DECIMAL_MAX || value < DECIMAL_MIN))
+		goto error;
+
+	return decimal_set(value, b_scale);
+
+error:
+	error("decimal sub overflow");
+}
+
+hot uint64_t
+decimal_mul(uint64_t a, uint64_t b)
+{
+	// decimal * decimal
+	auto a_value = decimal_value(a);
+	auto a_scale = decimal_scale(a);
+	auto b_value = decimal_value(b);
+	auto b_scale = decimal_scale(b);
+
+	__int128_t mul = (__int128_t)a_value * (__int128_t)b_value;
+
+	// scale down
+	uint32_t scale = a_scale + b_scale;
+	for (; scale > DECIMAL_MAX_SCALE; scale--)
+	{
+		if (mul >= 0)
+			mul = (mul + 5) / 10;
+		else
+			mul = (mul - 5) / 10;
+	}
+
+	if (unlikely(mul > DECIMAL_MAX || mul < DECIMAL_MIN))
+		error("decimal mul overflow");
+
+	return decimal_set((int64_t)mul, scale);
+}
+
+hot uint64_t
+decimal_mulei(uint64_t a, int64_t b)
+{
+	// decimal * int
+	auto a_value = decimal_value(a);
+	auto a_scale = decimal_scale(a);
+
+	__int128_t mul = (__int128_t)a_value * (__int128_t)b;
+	if (unlikely(mul > DECIMAL_MAX || mul < DECIMAL_MIN))
+		error("decimal mul overflow");
+
+	return decimal_set((int64_t)mul, a_scale);
+}
+
+hot uint64_t
+decimal_div(uint64_t a, uint64_t b)
+{
+	// decimal / decimal
+	auto a_value = decimal_value(a);
+	auto a_scale = decimal_scale(a);
+	auto b_value = decimal_value(b);
+	auto b_scale = decimal_scale(b);
+
+	if (unlikely(! b_value))
+		error("decimal zero division");
+
+	// scale up
+	__int128_t mul = (__int128_t)decimal_pow10[b_scale] * 10;
+	__int128_t div = (__int128_t)a_value * mul;
+	__int128_t quotient = div / b_value;
+
+	// rounding
+	if (quotient >= 0)
+		quotient = (quotient + 5) / 10;
+	else
+		quotient = (quotient - 5) / 10;
+
+	if (unlikely(quotient > DECIMAL_MAX || quotient < DECIMAL_MIN))
+		error("decimal div overflow");
+
+	return decimal_set((int64_t)quotient, a_scale);
+}
+
+hot uint64_t
+decimal_divei(uint64_t a, int64_t b)
+{
+	// decimal / int
+	auto a_value = decimal_value(a);
+	auto a_scale = decimal_scale(a);
+
+	if (unlikely(! b))
+		error("decimal zero division");
+
+	__int128_t div = (__int128_t)a_value * 10;
+	__int128_t quotient = div / b;
+
+	// rounding
+	if (quotient >= 0)
+		quotient = (quotient + 5) / 10;
+	else
+		quotient = (quotient - 5) / 10;
+
+	if (unlikely(quotient > DECIMAL_MAX || quotient < DECIMAL_MIN))
+		error("decimal div overflow");
+
+	return decimal_set((int64_t)quotient, a_scale);
+}
+
+hot uint64_t
+decimal_divie(int64_t a, uint64_t b)
+{
+	// int / decimal
+	auto b_value = decimal_value(b);
+	auto b_scale = decimal_scale(b);
+
+	if (unlikely(! b_value))
+		error("decimal zero division");
+
+	// upscale
+	__int128_t pow_b = decimal_pow10[b_scale];
+	__int128_t div   = (__int128_t)a * pow_b * pow_b * 10;
+	__int128_t quotient = div / b_value;
+
+	// rounding
+	if (quotient >= 0)
+		quotient = (quotient + 5) / 10;
+	else
+		quotient = (quotient - 5) / 10;
+
+	if (unlikely(quotient > DECIMAL_MAX || quotient < DECIMAL_MIN))
+		error("decimal div overflow");
+
+	return decimal_set((int64_t)quotient, b_scale);
+}
+
+hot uint64_t
+decimal_modei(uint64_t a, int64_t b)
+{
+	// decimal % int
+	int64_t  a_value = decimal_value(a);
+	uint32_t a_scale = decimal_scale(a);
+
+	if (unlikely(! b))
+		error("decimal zero div");
+
+	int64_t b_upscale;
+	if (unlikely(int64_mul_overflow(&b_upscale, b, decimal_pow10[a_scale])))
+		error("decimal mod overflow");
+
+	return decimal_set(a_value % b_upscale, a_scale);
+}
+
+uint64_t
+decimal_set_str(Str* spec)
 {
 	if (unlikely(str_empty(spec)))
 		goto error;
 
-    auto    sign   = false;
-    int64_t value  = 0;
-    auto    scale  = 0;
-    auto    dot    = false;
-    auto    digits = false;
+	auto    sign   = false;
+	int64_t value  = 0;
+	auto    scale  = 0;
+	auto    dot    = false;
+	auto    digits = false;
 
 	// -+
 	auto pos = spec->pos;
 	auto end = spec->end;
-    if (*pos == '-') {
-        sign = true;
-        pos++;
-    } else
+	if (*pos == '-') {
+		sign = true;
+		pos++;
+	} else
 	if (*pos == '+') {
-        pos++;
-    }
+		pos++;
+	}
 
 	// [-+]0-9[.0-9]
 	for (; pos < end; pos++)
 	{
 		auto at = *pos;
-        if (at >= '0' && at <= '9')
+		if (at >= '0' && at <= '9')
 		{
 			digits = true;
 
@@ -119,7 +405,7 @@ decimal_set(Decimal* result, Str* spec)
 			continue;
         }
 
-        if (at == '.' && !dot)
+		if (at == '.' && !dot)
 		{
 			dot = true;
 			continue;
@@ -128,320 +414,53 @@ decimal_set(Decimal* result, Str* spec)
 		goto error;
 	}
 
+	if (unlikely(value > DECIMAL_MAX || value < DECIMAL_MIN))
+		goto error;
+
 	if (unlikely(scale > DECIMAL_MAX_SCALE || !digits))
 		goto error;
 
-	result->value = value;
-	result->scale = scale;
-	return;
+	return decimal_set(value, scale);
+
 error:
 	error("decimal overflow");
 }
 
-void
-decimal_set_int(Decimal* result, int scale, int64_t value)
+uint64_t
+decimal_set_int(int scale, int64_t value)
 {
 	if (unlikely(scale < 0 || scale > DECIMAL_MAX_SCALE))
 		goto error;
 
 	if (scale == 0)
-	{
-		result->value = value;
-		result->scale = 0;
-		return;
-	}
+		return decimal_set(value, 0);
 
 	int64_t value_scaled;
 	if (unlikely(int64_mul_overflow(&value_scaled, value, decimal_pow10[scale])))
 		goto error;
+	if (unlikely(value_scaled > DECIMAL_MAX ||
+	             value_scaled < DECIMAL_MIN))
+		goto error;
 
-	result->value = value_scaled;
-	result->scale = scale;
-	return;
+	return decimal_set(value_scaled, scale);
+
 error:
 	error("decimal overflow");
 }
 
-void
-decimal_set_double(Decimal* result, int scale, double value)
+uint64_t
+decimal_set_double(int scale, double value)
 {
-    if (unlikely(isnan(value) || isinf(value) || scale < 0 || scale > DECIMAL_MAX_SCALE))
+	if (unlikely(isnan(value) || isinf(value) || scale < 0 || scale > DECIMAL_MAX_SCALE))
 		goto error;
 
 	double value_scaled = value * decimal_pow10_dbl[scale];
-	if (unlikely(value_scaled >=  9223372036854775808.0 ||
-	             value_scaled <= -9223372036854775809.0))
+	if (unlikely(value_scaled > DECIMAL_MAX ||
+	             value_scaled < DECIMAL_MIN))
 		goto error;
 
-    result->value = (int64_t)llround(value_scaled);
-    result->scale = scale;
-	return;
+	return decimal_set((int64_t)llround(value_scaled), scale);
+
 error:
 	error("decimal overflow");
-}
-
-hot void
-decimal_add(Decimal* result, Decimal* a, Decimal* b)
-{
-	if (likely(a->scale == b->scale))
-	{
-		int64_t value;
-		if (unlikely(int64_add_overflow(&value, a->value, b->value)))
-			goto error;
-		result->value = value;
-		result->scale = a->scale;
-		return;
-	}
-	int scale;
-	if (a->scale > b->scale)
-		scale = a->scale;
-	else
-		scale = b->scale;
-    int64_t a_scaled = a->value * decimal_pow10[scale - a->scale];
-    int64_t b_scaled = b->value * decimal_pow10[scale - b->scale];
-	int64_t value;
-	if (unlikely(int64_add_overflow(&value, a_scaled, b_scaled)))
-		goto error;
-	result->value = value;
-	result->scale = scale;
-	return;
-error:
-	error("decimal add overflow");
-}
-
-hot void
-decimal_addei(Decimal* result, Decimal* a, int64_t b)
-{
-	int64_t value;
-	if (unlikely(int64_mul_overflow(&value, b, decimal_pow10[a->scale])))
-		goto error;
-	if (unlikely(int64_add_overflow(&value, a->value, value)))
-		goto error;
-	result->value = value;
-	result->scale = a->scale;
-	return;
-error:
-	error("decimal add overflow");
-}
-
-hot void
-decimal_addef(double* result, Decimal* a, double b)
-{
-    double a_dbl = (double)a->value / decimal_pow10_dbl[a->scale];
-	if (unlikely(double_add_overflow(result, a_dbl, b)))
-		error("decimal add overflow");
-}
-
-hot void
-decimal_sub(Decimal* result, Decimal* a, Decimal* b)
-{
-	if (likely(a->scale == b->scale))
-	{
-		int64_t value;
-		if (unlikely(int64_sub_overflow(&value, a->value, b->value)))
-			goto error;
-		result->value = value;
-		result->scale = a->scale;
-		return;
-	}
-	int scale;
-	if (a->scale > b->scale)
-		scale = a->scale;
-	else
-		scale = b->scale;
-    int64_t a_scaled = a->value * decimal_pow10[scale - a->scale];
-    int64_t b_scaled = b->value * decimal_pow10[scale - b->scale];
-	int64_t value;
-	if (unlikely(int64_sub_overflow(&value, a_scaled, b_scaled)))
-		goto error;
-	result->value = value;
-	result->scale = scale;
-	return;
-error:
-	error("decimal sub overflow");
-}
-
-hot void
-decimal_subei(Decimal* result, Decimal* a, int64_t b)
-{
-	int64_t value;
-	if (unlikely(int64_mul_overflow(&value, b, decimal_pow10[a->scale])))
-		goto error;
-	if (unlikely(int64_sub_overflow(&value, a->value, value)))
-		goto error;
-	result->value = value;
-	result->scale = a->scale;
-	return;
-error:
-	error("decimal sub overflow");
-}
-
-hot void
-decimal_subie(Decimal* result, int64_t a, Decimal* b)
-{
-	int64_t value;
-	if (unlikely(int64_mul_overflow(&value, a, decimal_pow10[b->scale])))
-		goto error;
-	if (unlikely(int64_sub_overflow(&value, a, b->value)))
-		goto error;
-	result->value = value;
-	result->scale = b->scale;
-	return;
-error:
-	error("decimal sub overflow");
-}
-
-hot void
-decimal_subef(double* result, Decimal* a, double b)
-{
-	double a_dbl = (double)a->value / decimal_pow10_dbl[a->scale];
-	if (unlikely(double_sub_overflow(result, a_dbl, b)))
-		error("decimal sub overflow");
-}
-
-hot void
-decimal_subfe(double* result, double a, Decimal* b)
-{
-	double b_dbl = (double)b->value / decimal_pow10_dbl[b->scale];
-	if (unlikely(double_sub_overflow(result, a, b_dbl)))
-		error("decimal sub overflow");
-}
-
-hot void
-decimal_mul(Decimal* result, Decimal* a, Decimal* b)
-{
-	__int128_t value = (__int128_t)a->value * (__int128_t)b->value;
-
-	// rescale down if target scale exceeds max
-	auto scale = a->scale + b->scale;
-	for (; scale > DECIMAL_MAX_SCALE; scale--)
-	{
-		if (value >= 0)
-			value = (value + 5) / 10;
-		else
-			value = (value - 5) / 10;
-	}
-
-	if (unlikely(value > INT64_MAX || value < INT64_MIN))
-		error("decimal mul overflow");
-
-	result->value = (int64_t)value;
-	result->scale = scale;
-}
-
-hot void
-decimal_mulei(Decimal* result, Decimal* a, int64_t b)
-{
-	int64_t value;
-	if (unlikely(int64_mul_overflow(&value, a->value, b)))
-		error("decimal mul overflow");
-	result->value = value;
-	result->scale = a->scale;
-}
-
-hot void
-decimal_mulef(double* result, Decimal* a, double b)
-{
-    double a_dbl = (double)a->value / decimal_pow10_dbl[a->scale];
-	if (unlikely(double_mul_overflow(result, a_dbl, b)))
-		error("decimal mul overflow");
-}
-
-hot void
-decimal_div(Decimal* result, Decimal* a, Decimal* b)
-{
-	if (unlikely(! b->value))
-		error("decimal zero division");
-
-	auto scale = a->scale;
-	__int128_t mul = (__int128_t)decimal_pow10[b->scale] * 10;
-	__int128_t div = (__int128_t)a->value * mul;
-	__int128_t quotient = div / b->value;
-
-	// rounding
-	if (quotient >= 0)
-		quotient = (quotient + 5) / 10;
-	else
-		quotient = (quotient - 5) / 10;
-
-	if (unlikely(quotient > INT64_MAX || quotient < INT64_MIN))
-		error("decimal div overflow");
-
-	result->value = (int64_t)quotient;
-	result->scale = scale;
-}
-
-hot void
-decimal_divei(Decimal* result, Decimal* a, int64_t b)
-{
-	if (unlikely(! b))
-		error("decimal zero division");
-
-	__int128_t div = (__int128_t)a->value * 10;
-	__int128_t quotient = div / b;
-
-	// rouding
-	if (quotient >= 0)
-		quotient = (quotient + 5) / 10;
-	else
-		quotient = (quotient - 5) / 10;
-
-	if (unlikely(quotient > INT64_MAX || quotient < INT64_MIN))
-		error("decimal div overflow");
-
-	result->value = (int64_t)quotient;
-	result->scale = a->scale;
-}
-
-hot void
-decimal_divie(Decimal* result, int64_t a, Decimal* b)
-{
-	if (unlikely(! b->value))
-		error("decimal zero division");
-
-	auto shift = b->scale * 2 + 1;
-	__int128_t div = (__int128_t)a * decimal_pow10[shift];
-	__int128_t quotient = div / b->value;
-
-	// rouding
-	if (quotient >= 0)
-		quotient = (quotient + 5) / 10;
-	else
-		quotient = (quotient - 5) / 10;
-
-	if (unlikely(quotient > INT64_MAX || quotient < INT64_MIN))
-		error("decimal div overflow");
-
-	result->value = (int64_t)quotient;
-	result->scale = b->scale;
-}
-
-hot void
-decimal_divef(double* result, Decimal* a, double b)
-{
-    double a_dbl = (double)a->value / decimal_pow10_dbl[a->scale];
-	if (unlikely(double_div_overflow(result, a_dbl, b)))
-		error("decimal div overflow");
-}
-
-hot void
-decimal_divfe(double* result, double a, Decimal* b)
-{
-    double b_dbl = (double)b->value / decimal_pow10_dbl[b->scale];
-	if (unlikely(double_div_overflow(result, a, b_dbl)))
-		error("decimal div overflow");
-}
-
-void
-decimal_modei(Decimal* result, Decimal* a, int64_t b)
-{
-	if (unlikely(! b))
-		error("decimal zero division");
-
-	int64_t value_scaled;
-	if (unlikely(int64_mul_overflow(&value_scaled, b, decimal_pow10[a->scale])))
-		error("decimal mod overflow");
-
-	result->value = a->value % value_scaled;
-	result->scale = a->scale;
 }

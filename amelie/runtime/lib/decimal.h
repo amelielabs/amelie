@@ -11,49 +11,48 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Decimal Decimal;
+/*
+   Decimal (64bit)
 
-struct Decimal
-{
-	int64_t value;
-	uint8_t scale;
-} packed;
+   Bits  0-59: signed 60-bit integer (2^53 - 1 max)
+   Bits 60-63: 4-bit scale (0 to 15)
+*/
 
-static inline void
-decimal_init(Decimal* self)
+#define DECIMAL_MAX_SCALE 15
+#define DECIMAL_MIN       -9007199254740991LL
+#define DECIMAL_MAX        9007199254740991LL
+
+always_inline static inline uint64_t
+decimal_set(int64_t value, uint32_t scale)
 {
-	self->value = 0;
-	self->scale = 0;
+	return (((uint64_t)scale & 0x0FULL) << 60) |
+	        ((uint64_t)value & 0x0FFFFFFFFFFFFFFFULL);
 }
 
-// casting
-void decimal_set(Decimal*, Str*);
-void decimal_set_int(Decimal*, int, int64_t);
-void decimal_set_double(Decimal*, int, double);
+always_inline static inline uint32_t
+decimal_scale(uint64_t self)
+{
+    return (uint32_t)(self >> 60);
+}
 
-// add
-void decimal_add(Decimal*, Decimal*, Decimal*);
-void decimal_addei(Decimal*, Decimal*, int64_t);
-void decimal_addef(double*, Decimal*, double);
+always_inline static inline int64_t
+decimal_value(uint64_t self)
+{
+    int64_t val = (int64_t)(self << 4);
+    return val >> 4;
+}
 
-// sub
-void decimal_sub(Decimal*, Decimal*, Decimal*);
-void decimal_subei(Decimal*, Decimal*, int64_t);
-void decimal_subie(Decimal*, int64_t, Decimal*);
-void decimal_subef(double*, Decimal*, double);
-void decimal_subfe(double*, double, Decimal*);
-
-// mul
-void decimal_mul(Decimal*, Decimal*, Decimal*);
-void decimal_mulei(Decimal*, Decimal*, int64_t);
-void decimal_mulef(double*, Decimal*, double);
-
-// div
-void decimal_div(Decimal*, Decimal*, Decimal*);
-void decimal_divei(Decimal*, Decimal*, int64_t);
-void decimal_divie(Decimal*, int64_t, Decimal*);
-void decimal_divef(double*, Decimal*, double);
-void decimal_divfe(double*, double, Decimal*);
-
-// mod
-void decimal_modei(Decimal*, Decimal*, int64_t);
+uint64_t decimal_add(uint64_t, uint64_t);
+uint64_t decimal_addei(uint64_t, int64_t);
+uint64_t decimal_sub(uint64_t, uint64_t);
+uint64_t decimal_subei(uint64_t, int64_t);
+uint64_t decimal_subie(int64_t, uint64_t);
+uint64_t decimal_mul(uint64_t, uint64_t);
+uint64_t decimal_mulei(uint64_t, int64_t);
+uint64_t decimal_div(uint64_t, uint64_t);
+uint64_t decimal_divei(uint64_t, int64_t);
+uint64_t decimal_divie(int64_t, uint64_t);
+uint64_t decimal_modei(uint64_t, int64_t);
+uint64_t decimal_set_str(Str*);
+uint64_t decimal_set_int(int, int64_t);
+uint64_t decimal_set_double(int, double);
