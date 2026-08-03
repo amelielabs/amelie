@@ -55,6 +55,9 @@ fn_int(Call* self)
 	case TYPE_DOUBLE:
 		value = arg->dbl;
 		break;
+	case TYPE_DECIMAL:
+		value = decimal_get_int(arg->decimal);
+		break;
 	case TYPE_STRING:
 		if (str_i64(&arg->string, &value) == -1)
 			call_error_at(self, 0, "failed to cast string");
@@ -88,6 +91,9 @@ fn_bool(Call* self)
 		break;
 	case TYPE_DOUBLE:
 		value = arg->dbl > 0.0;
+		break;
+	case TYPE_DECIMAL:
+		value = decimal_value(arg->decimal) > 0;
 		break;
 	case TYPE_INTERVAL:
 		value = (arg->interval.us + arg->interval.d + arg->interval.m) > 0;
@@ -133,11 +139,52 @@ fn_double(Call* self)
 	case TYPE_DOUBLE:
 		value = arg->dbl;
 		break;
+	case TYPE_DECIMAL:
+		value = decimal_get_double(arg->decimal);
+		break;
 	default:
 		call_unsupported(self, 0);
 		break;
 	}
 	value_set_double(self->result, value);
+}
+
+hot static void
+fn_decimal(Call* self)
+{
+	call_expect(self, 1);
+	auto arg = &self->argv[0];
+	if (arg->type == TYPE_JSON)
+	{
+		value_decode(self->result, arg->json, NULL);
+		arg = self->result;
+	}
+
+	uint64_t value = 0;
+	switch (arg->type) {
+	case TYPE_NULL:
+		value_set_null(self->result);
+		return;
+	case TYPE_BOOL:
+	case TYPE_INT:
+	case TYPE_TIMESTAMP:
+	case TYPE_DATE:
+		value = decimal_set(arg->integer, 0);
+		break;
+	case TYPE_DOUBLE:
+		value = decimal_set_double(arg->dbl);
+		break;
+	case TYPE_DECIMAL:
+		value = arg->decimal;
+		break;
+	case TYPE_STRING:
+		value = decimal_set_str(&arg->string);
+		break;
+	default:
+		call_unsupported(self, 0);
+		break;
+	}
+	value_set_decimal(self->result, value);
 }
 
 hot static void
@@ -492,6 +539,10 @@ fn_cast_register(Functions* self)
 
 	// double()
 	func = function_allocate(TYPE_DOUBLE, "double", fn_double);
+	functions_add(self, func);
+
+	// decimal()
+	func = function_allocate(TYPE_DOUBLE, "decimal", fn_decimal);
 	functions_add(self, func);
 
 	// string()

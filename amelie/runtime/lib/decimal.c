@@ -449,7 +449,36 @@ error:
 }
 
 uint64_t
-decimal_set_double(int scale, double value)
+decimal_set_double(double value)
+{
+	if (isnan(value) || isinf(value))
+		error("decimal overflow");
+
+	double value_abs = fabs(value);
+
+	// find the minimal scale that turns the fraction into an integer
+	// without exceeding the max
+	uint32_t scale = 0;
+	for (; scale < DECIMAL_MAX_SCALE; scale++)
+	{
+		if (floor(value_abs) == value_abs)
+			break;
+		value_abs *= 10.0;
+	}
+
+	// scale up the original value and round to the nearest 60-bit int
+	auto value_scaled = value * decimal_pow10_dbl[scale];
+	auto integer = (int64_t)round(value_scaled);
+
+	// min/max
+	if (unlikely(integer > DECIMAL_MAX || integer < DECIMAL_MIN))
+		error("decimal overflow");
+
+	return decimal_set(integer, scale);
+}
+
+uint64_t
+decimal_set_double_round(int scale, double value)
 {
 	if (unlikely(isnan(value) || isinf(value) || scale < 0 || scale > DECIMAL_MAX_SCALE))
 		goto error;
@@ -486,6 +515,26 @@ decimal_get(uint64_t self, char* str, int str_size)
 	              sign,
 	              integer_part,
 	              (int)scale, frac_part);
+}
+
+hot int64_t
+decimal_get_int(uint64_t self)
+{
+	auto value = decimal_value(self);
+	auto scale = decimal_scale(self);
+	if (! scale)
+		return value;
+	return value / decimal_pow10[scale];
+}
+
+hot double
+decimal_get_double(uint64_t self)
+{
+	auto value = decimal_value(self);
+	auto scale = decimal_scale(self);
+	if (! scale)
+		return (double)value;
+	return (double)value / decimal_pow10_dbl[scale];
 }
 
 hot int

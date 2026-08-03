@@ -573,6 +573,9 @@ expr_cast(Stmt* self, Expr* expr)
 	case TYPE_DOUBLE:
 		str_set(&name->string, "double", 6);
 		break;
+	case TYPE_DECIMAL:
+		str_set(&name->string, "decimal", 7);
+		break;
 	case TYPE_DATE:
 		str_set(&name->string, "date", 4);
 		break;
