@@ -139,6 +139,13 @@ encode_real(Buf* self, double value)
 }
 
 always_inline hot static inline void
+encode_decimal(Buf* self, uint64_t value)
+{
+	auto pos = buf_reserve(self, data_size_decimal());
+	pack_decimal(pos, value);
+}
+
+always_inline hot static inline void
 encode_null(Buf* self)
 {
 	auto pos = buf_reserve(self, data_size_null());

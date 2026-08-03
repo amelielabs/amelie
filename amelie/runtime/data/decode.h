@@ -21,13 +21,14 @@ enum
 	DECODE_INT      = 1 << 3,
 	DECODE_BOOL     = 1 << 4,
 	DECODE_REAL     = 1 << 5,
-	DECODE_NULL     = 1 << 6,
-	DECODE_ARRAY    = 1 << 7,
-	DECODE_OBJ      = 1 << 8,
-	DECODE_DATA     = 1 << 9,
-	DECODE_BASE64   = 1 << 10,
-	DECODE_OPT      = 1 << 11,
-	DECODE_FOUND    = 1 << 12
+	DECODE_DECIMAL  = 1 << 6,
+	DECODE_NULL     = 1 << 7,
+	DECODE_ARRAY    = 1 << 8,
+	DECODE_OBJ      = 1 << 9,
+	DECODE_DATA     = 1 << 10,
+	DECODE_BASE64   = 1 << 11,
+	DECODE_OPT      = 1 << 12,
+	DECODE_FOUND    = 1 << 13
 };
 
 struct Decode
@@ -111,6 +112,15 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 					      ref->key);
 				auto value = (double*)ref->value;
 				unpack_real(pos, value);
+				break;
+			}
+			case DECODE_DECIMAL:
+			{
+				if (unlikely(! data_is_decimal(*pos)))
+					error("{s}: decimal expected for '{s}'", context,
+					      ref->key);
+				auto value = (uint64_t*)ref->value;
+				unpack_decimal(pos, value);
 				break;
 			}
 			case DECODE_NULL:

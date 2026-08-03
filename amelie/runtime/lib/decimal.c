@@ -464,3 +464,31 @@ decimal_set_double(int scale, double value)
 error:
 	error("decimal overflow");
 }
+
+hot int
+decimal_compare(uint64_t a, uint64_t b)
+{
+	if (a == b)
+		return 0;
+
+	auto a_scale = decimal_scale(a);
+	auto b_scale = decimal_scale(b);
+	auto a_value = decimal_value(a);
+	auto b_value = decimal_value(b);
+	if (likely(a_scale == b_scale))
+		return compare_int64(a_value, b_value);
+
+	// scale values to match the max scale
+	__int128 a_128;
+	__int128 b_128;
+	if (a_scale < b_scale)
+	{
+		a_128 = (__int128)a_value * decimal_pow10[b_scale - a_scale];
+		b_128 = (__int128)b_value;
+	} else
+	{
+		a_128 = (__int128)a_value;
+		b_128 = (__int128)b_value * decimal_pow10[a_scale - b_scale];
+	}
+	return (a_128 > b_128) - (a_128 < b_128);
+}

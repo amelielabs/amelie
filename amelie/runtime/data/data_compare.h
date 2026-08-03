@@ -87,6 +87,19 @@ data_compare(uint8_t* a, uint8_t* b)
 				return rc;
 			break;
 		}
+		case DATA_DECIMAL:
+		{
+			if (! data_is_decimal(b))
+				return compare_int64(*a, *b);
+			uint64_t a_value;
+			uint64_t b_value;
+			unpack_decimal(&a, &a_value);
+			unpack_decimal(&b, &b_value);
+			rc = decimal_compare(a_value, b_value);
+			if (rc != 0)
+				return rc;
+			break;
+		}
 		case DATA_INTV0 ... DATA_INT64:
 		{
 			if (! data_is_int(b))

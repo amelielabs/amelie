@@ -297,6 +297,34 @@ unpack_real_at(uint8_t* pos)
 	return value;
 }
 
+// decimal
+always_inline hot static inline void
+pack_decimal(uint8_t** pos, uint32_t value)
+{
+	uint8_t* data = *pos;
+	*data = DATA_DECIMAL;
+	*(uint64_t*)(data + data_size_type()) = value;
+	*pos += data_size_decimal();
+}
+
+always_inline hot static inline void
+unpack_decimal(uint8_t** pos, uint64_t* value)
+{
+	uint8_t* data = *pos;
+	if (unlikely(*data != DATA_DECIMAL))
+		data_error(*pos, DATA_DECIMAL);
+	*value = *(uint64_t*)(data + data_size_type());
+	*pos += data_size_decimal();
+}
+
+always_inline hot static inline uint64_t
+unpack_decimal_at(uint8_t* pos)
+{
+	uint64_t value;
+	unpack_decimal(&pos, &value);
+	return value;
+}
+
 // obj
 always_inline hot static inline void
 pack_obj(uint8_t** pos)

@@ -19,24 +19,25 @@ enum
 	DATA_FALSE     = 2,
 	DATA_REAL32    = 3,
 	DATA_REAL64    = 4,
+	DATA_DECIMAL   = 5,
 
-	DATA_INTV0     = 5,  // reserved values from 0 .. 31
-	DATA_INTV31    = 37,
-	DATA_INT8      = 38,
-	DATA_INT16     = 39,
-	DATA_INT32     = 40,
-	DATA_INT64     = 41,
+	DATA_INTV0     = 6,  // reserved values from 0 .. 31
+	DATA_INTV31    = 38,
+	DATA_INT8      = 39,
+	DATA_INT16     = 40,
+	DATA_INT32     = 41,
+	DATA_INT64     = 42,
 
-	DATA_STRV0     = 42, // reserved values from 0 .. 31
-	DATA_STRV31    = 74,
-	DATA_STR8      = 75,
-	DATA_STR16     = 76,
-	DATA_STR32     = 77,
+	DATA_STRV0     = 43, // reserved values from 0 .. 31
+	DATA_STRV31    = 75,
+	DATA_STR8      = 76,
+	DATA_STR16     = 77,
+	DATA_STR32     = 78,
 
-	DATA_OBJ       = 78,
-	DATA_OBJ_END   = 79,
-	DATA_ARRAY     = 80,
-	DATA_ARRAY_END = 81
+	DATA_OBJ       = 79,
+	DATA_OBJ_END   = 80,
+	DATA_ARRAY     = 81,
+	DATA_ARRAY_END = 82
 };
 
 static inline char*
@@ -51,6 +52,8 @@ data_typeof(int type)
 	case DATA_REAL32:
 	case DATA_REAL64:
 		return "real";
+	case DATA_DECIMAL:
+		return "decimal";
 	case DATA_INTV0 ... DATA_INT64:
 		return "int";
 	case DATA_STRV0 ... DATA_STR32:
@@ -154,6 +157,12 @@ data_size_real(double value)
 }
 
 always_inline hot static inline int
+data_size_decimal(void)
+{
+	return data_size_type() + sizeof(uint64_t);
+}
+
+always_inline hot static inline int
 data_size_obj(void)
 {
 	return data_size_type();
@@ -205,6 +214,12 @@ always_inline hot static inline bool
 data_is_real(uint8_t* data)
 {
 	return *data == DATA_REAL32 || *data == DATA_REAL64;
+}
+
+always_inline hot static inline bool
+data_is_decimal(uint8_t* data)
+{
+	return *data == DATA_DECIMAL;
 }
 
 always_inline hot static inline bool

@@ -37,6 +37,12 @@ data_skip(uint8_t** pos)
 			unpack_real(pos, &value);
 			break;
 		}
+		case DATA_DECIMAL:
+		{
+			uint64_t value;
+			unpack_decimal(pos, &value);
+			break;
+		}
 		case DATA_INTV0 ... DATA_INT64:
 		{
 			int64_t value;
