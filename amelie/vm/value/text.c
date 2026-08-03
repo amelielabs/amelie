@@ -53,6 +53,8 @@ value_print_estimate(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_format(buf, "{g}", self->dbl);
 		return buf_size(buf);
 	}
+	case TYPE_DECIMAL:
+		return 18;
 	case TYPE_DATE:
 		return 10;
 	case TYPE_TIMESTAMP:

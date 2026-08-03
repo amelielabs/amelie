@@ -425,7 +425,7 @@ columns
   "constraints": [["not_null", true]]
 }, {
   "name": "v",
-  "type": 10,
+  "type": 11,
   "size": 4,
   "size_flat": 8,
   "dropped": false,
@@ -595,7 +595,7 @@ columns
   "constraints": [["not_null", true]]
 }, {
   "name": "a",
-  "type": 8,
+  "type": 9,
   "size": 0,
   "size_flat": 0,
   "dropped": false,
@@ -644,7 +644,7 @@ columns
   "constraints": [["not_null", true]]
 }, {
   "name": "a",
-  "type": 8,
+  "type": 9,
   "size": 0,
   "size_flat": 0,
   "dropped": true,
@@ -686,7 +686,7 @@ columns
   "constraints": [["not_null", true]]
 }, {
   "name": "a",
-  "type": 8,
+  "type": 9,
   "size": 0,
   "size_flat": 0,
   "dropped": true,
@@ -713,7 +713,7 @@ columns
   "constraints": [["not_null", true]]
 }, {
   "name": "a",
-  "type": 8,
+  "type": 9,
   "size": 0,
   "size_flat": 0,
   "dropped": true,
@@ -753,7 +753,7 @@ columns
 ───────
 [{
   "name": "a",
-  "type": 8,
+  "type": 9,
   "size": 0,
   "size_flat": 0,
   "dropped": false,
@@ -809,7 +809,7 @@ columns
 ───────
 [{
   "name": "a",
-  "type": 8,
+  "type": 9,
   "size": 0,
   "size_flat": 0,
   "dropped": true,
@@ -858,7 +858,7 @@ columns
 ───────
 [{
   "name": "a",
-  "type": 8,
+  "type": 9,
   "size": 0,
   "size_flat": 0,
   "dropped": true,
@@ -885,7 +885,7 @@ columns
 ───────
 [{
   "name": "a",
-  "type": 8,
+  "type": 9,
   "size": 0,
   "size_flat": 0,
   "dropped": true,

@@ -30,6 +30,13 @@ value_print(Value* self, Timezone* tz, bool pretty, Buf* buf)
 	case TYPE_DOUBLE:
 		buf_format(buf, "{g}", self->dbl);
 		break;
+	case TYPE_DECIMAL:
+	{
+		buf_reserve(buf, 18);
+		int size = decimal_get(self->decimal, (char*)buf->position, 18);
+		buf_advance(buf, size);
+		break;
+	}
 	case TYPE_DATE:
 	{
 		buf_reserve(buf, 16);

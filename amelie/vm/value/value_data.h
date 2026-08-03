@@ -112,6 +112,10 @@ value_data_encode(Value*    self, Column* column,
 		}
 		break;
 	}
+	case TYPE_DECIMAL:
+		*(uint64_t*)*pos = self->decimal;
+		*pos += sizeof(uint64_t);
+		break;
 	case TYPE_INTERVAL:
 		*(Interval*)*pos = self->interval;
 		*pos += sizeof(Interval);
@@ -213,6 +217,9 @@ value_data_decode(Value* self, Column* column, uint8_t* data, int data_size)
 		}
 		break;
 	}
+	case TYPE_DECIMAL:
+		value_set_decimal(self, *(uint64_t*)data);
+		break;
 	case TYPE_INTERVAL:
 		value_set_interval(self, (Interval*)data);
 		break;

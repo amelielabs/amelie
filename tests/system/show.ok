@@ -265,7 +265,7 @@ functions
   "name": "test_fn",
   "description": "",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
-  "type": 9,
+  "type": 10,
   "args": [{
     "name": "id",
     "type": 2,
@@ -286,7 +286,7 @@ functions
   "name": "test_fn",
   "description": "",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
-  "type": 9,
+  "type": 10,
   "args": [{
     "name": "id",
     "type": 2,
@@ -319,7 +319,7 @@ function
   "name": "test_fn",
   "description": "",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
-  "type": 9,
+  "type": 10,
   "args": [{
     "name": "id",
     "type": 2,

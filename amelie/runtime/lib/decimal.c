@@ -466,6 +466,29 @@ error:
 }
 
 hot int
+decimal_get(uint64_t self, char* str, int str_size)
+{
+	auto value = decimal_value(self);
+	auto scale = decimal_scale(self);
+	if (! scale)
+		return format(str, str_size, "{i64}", value);
+
+	char* sign = "";
+	if (value < 0)
+	{
+		value = -value;
+		sign  = "-";
+	}
+	auto div          = decimal_pow10[scale];
+	auto integer_part = value / div;
+	auto frac_part    = value % div;
+	return format(str, str_size, "{s}{i64}.{0*" PRId64 "}",
+	              sign,
+	              integer_part,
+	              (int)scale, frac_part);
+}
+
+hot int
 decimal_compare(uint64_t a, uint64_t b)
 {
 	if (a == b)

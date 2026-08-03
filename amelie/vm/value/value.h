@@ -20,6 +20,7 @@ struct Value
 	union
 	{
 		int64_t        integer;
+		uint64_t       decimal;
 		double         dbl;
 		Str            string;
 		Interval       interval;
@@ -110,6 +111,13 @@ value_set_double(Value* self, double value)
 {
 	self->type = TYPE_DOUBLE;
 	self->dbl  = value;
+}
+
+always_inline hot static inline void
+value_set_decimal(Value* self, uint64_t value)
+{
+	self->type    = TYPE_DECIMAL;
+	self->decimal = value;
 }
 
 always_inline hot static inline void

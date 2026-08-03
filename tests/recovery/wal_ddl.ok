@@ -143,7 +143,7 @@ columns
   "constraints": [["default", true]]
 }, {
   "name": "obj",
-  "type": 9,
+  "type": 10,
   "size": 0,
   "size_flat": 0,
   "dropped": false,
@@ -180,7 +180,7 @@ columns
   "constraints": [["default", true]]
 }, {
   "name": "obj",
-  "type": 9,
+  "type": 10,
   "size": 0,
   "size_flat": 0,
   "dropped": false,
@@ -208,7 +208,7 @@ columns
   "constraints": []
 }, {
   "name": "obj",
-  "type": 9,
+  "type": 10,
   "size": 0,
   "size_flat": 0,
   "dropped": false,
@@ -245,7 +245,7 @@ columns
   "constraints": []
 }, {
   "name": "obj",
-  "type": 9,
+  "type": 10,
   "size": 0,
   "size_flat": 0,
   "dropped": false,
@@ -282,7 +282,7 @@ columns
   "constraints": []
 }, {
   "name": "obj",
-  "type": 9,
+  "type": 10,
   "size": 0,
   "size_flat": 0,
   "dropped": false,
@@ -896,10 +896,10 @@ functions
   "name": "reverse",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
-  "type": 9,
+  "type": 10,
   "args": [{
     "name": "array",
-    "type": 9,
+    "type": 10,
     "size": 0,
     "size_flat": 0,
     "dropped": false,
@@ -933,10 +933,10 @@ functions
   "name": "reverse",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
-  "type": 9,
+  "type": 10,
   "args": [{
     "name": "array",
-    "type": 9,
+    "type": 10,
     "size": 0,
     "size_flat": 0,
     "dropped": false,
@@ -990,10 +990,10 @@ functions
   "name": "reverse",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
-  "type": 9,
+  "type": 10,
   "args": [{
     "name": "array",
-    "type": 9,
+    "type": 10,
     "size": 0,
     "size_flat": 0,
     "dropped": false,
@@ -1027,10 +1027,10 @@ functions
   "name": "reverse",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
-  "type": 9,
+  "type": 10,
   "args": [{
     "name": "array",
-    "type": 9,
+    "type": 10,
     "size": 0,
     "size_flat": 0,
     "dropped": false,
@@ -1085,10 +1085,10 @@ functions
   "name": "reverse2",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
-  "type": 9,
+  "type": 10,
   "args": [{
     "name": "array",
-    "type": 9,
+    "type": 10,
     "size": 0,
     "size_flat": 0,
     "dropped": false,

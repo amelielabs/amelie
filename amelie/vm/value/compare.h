@@ -24,6 +24,8 @@ value_is_true(Value* a)
 		return a->integer > 0;
 	case TYPE_DOUBLE:
 		return a->dbl > 0.0;
+	case TYPE_DECIMAL:
+		return decimal_value(a->decimal) > 0;
 	case TYPE_INTERVAL:
 		return !interval_empty(&a->interval);
 	case TYPE_UUID:
@@ -62,6 +64,8 @@ value_compare(Value* a, Value* b)
 		return compare_int64(a->integer, b->integer);
 	case TYPE_DOUBLE:
 		return compare_double(a->dbl, b->dbl);
+	case TYPE_DECIMAL:
+		return decimal_compare(a->decimal, b->decimal);
 	case TYPE_INTERVAL:
 		return interval_compare(&a->interval, &b->interval);
 	case TYPE_UUID:

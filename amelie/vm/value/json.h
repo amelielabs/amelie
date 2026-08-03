@@ -27,6 +27,9 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 	case TYPE_DOUBLE:
 		encode_real(buf, self->dbl);
 		break;
+	case TYPE_DECIMAL:
+		encode_decimal(buf, self->decimal);
+		break;
 	case TYPE_DATE:
 		encode_date(buf, self->integer);
 		break;
@@ -134,6 +137,13 @@ value_export_as(Value* self, Timezone* tz, bool pretty, int deep, Buf* buf)
 	case TYPE_DOUBLE:
 		buf_format(buf, "{g}", self->dbl);
 		break;
+	case TYPE_DECIMAL:
+	{
+		buf_reserve(buf, 18);
+		int size = decimal_get(self->decimal, (char*)buf->position, 18);
+		buf_advance(buf, size);
+		break;
+	}
 	case TYPE_DATE:
 	{
 		buf_write(buf, "\"", 1);

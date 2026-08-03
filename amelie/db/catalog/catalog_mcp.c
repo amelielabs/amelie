@@ -53,6 +53,7 @@ catalog_mcp_schema(Columns* columns, Buf* buf)
 			encode_raw(buf, "integer", 7);
 			break;
 		case TYPE_DOUBLE:
+		case TYPE_DECIMAL:
 			encode_raw(buf, "type", 4);
 			encode_raw(buf, "number", 6);
 			break;

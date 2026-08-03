@@ -56,4 +56,5 @@ uint64_t decimal_modei(uint64_t, int64_t);
 uint64_t decimal_set_str(Str*);
 uint64_t decimal_set_int(int, int64_t);
 uint64_t decimal_set_double(int, double);
+int      decimal_get(uint64_t, char*, int);
 int      decimal_compare(uint64_t, uint64_t);

@@ -18,6 +18,7 @@ typedef enum
 	TYPE_BOOL,
 	TYPE_INT,
 	TYPE_DOUBLE,
+	TYPE_DECIMAL,
 	TYPE_DATE,
 	TYPE_TIMESTAMP,
 	TYPE_INTERVAL,
@@ -54,6 +55,9 @@ type_of(Type type)
 		break;
 	case TYPE_DOUBLE:
 		name = "double";
+		break;
+	case TYPE_DECIMAL:
+		name = "decimal";
 		break;
 	case TYPE_DATE:
 		name = "date";
@@ -115,6 +119,8 @@ type_sizeof(Type type)
 		return sizeof(int64_t);
 	case TYPE_DOUBLE:
 		return sizeof(double);
+	case TYPE_DECIMAL:
+		return sizeof(uint64_t);
 	case TYPE_INTERVAL:
 		return sizeof(Interval);
 	case TYPE_UUID:
@@ -179,6 +185,12 @@ type_read(Str* name, int* type_size)
 	{
 		type = TYPE_DOUBLE;
 		*type_size = sizeof(double);
+	} else
+	if (str_is_case(name, "decimal", 7) ||
+	    str_is_case(name, "numeric", 7))
+	{
+		type = TYPE_DECIMAL;
+		*type_size = sizeof(uint64_t);
 	} else
 	if (str_is_case(name, "text", 4)    ||
 	    str_is_case(name, "string", 6)  ||

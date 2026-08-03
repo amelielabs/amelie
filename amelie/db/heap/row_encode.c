@@ -69,7 +69,9 @@ row_encode(Row* self, Flats* flats, Columns* columns, Timezone* tz, Buf* buf)
 			else
 				encode_real(buf, *(double*)pos);
 			break;
-
+		case TYPE_DECIMAL:
+			encode_decimal(buf, *(uint64_t*)pos);
+			break;
 		case TYPE_DATE:
 			encode_date(buf, *(int32_t*)pos);
 			break;
