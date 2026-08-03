@@ -333,6 +333,15 @@ decimal_divie(int64_t a, uint64_t b)
 }
 
 hot uint64_t
+decimal_neg(uint64_t self)
+{
+	// -decimal
+	int64_t  value = decimal_value(self);
+	uint32_t scale = decimal_scale(self);
+	return decimal_set(-value, scale);
+}
+
+hot uint64_t
 decimal_modei(uint64_t a, int64_t b)
 {
 	// decimal % int

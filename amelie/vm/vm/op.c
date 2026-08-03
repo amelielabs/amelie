@@ -45,6 +45,7 @@ OpDesc ops[] =
 	{ CPUSH_BOOL, "push_bool" },
 	{ CPUSH_INT, "push_int" },
 	{ CPUSH_DOUBLE, "push_double" },
+	{ CPUSH_DECIMAL, "push_decimal" },
 	{ CPUSH_STRING, "push_string" },
 	{ CPUSH_JSON, "push_json" },
 	{ CPUSH_INTERVAL, "push_interval" },
@@ -62,6 +63,7 @@ OpDesc ops[] =
 	{ CBOOL, "bool" },
 	{ CINT, "int" },
 	{ CDOUBLE, "double" },
+	{ CDECIMAL, "decimal" },
 	{ CSTRING, "string" },
 	{ CJSON, "json" },
 	{ CJSON_OBJ, "json_obj" },
@@ -99,8 +101,11 @@ OpDesc ops[] =
 	// equ
 	{ CEQUII, "equii" },
 	{ CEQUIF, "equif" },
+	{ CEQUIE, "equie" },
 	{ CEQUFI, "equfi" },
 	{ CEQUFF, "equff" },
+	{ CEQUEI, "equei" },
+	{ CEQUEE, "equee" },
 	{ CEQULL, "equll" },
 	{ CEQUSS, "equss" },
 	{ CEQUJJ, "equjj" },
@@ -110,8 +115,11 @@ OpDesc ops[] =
 	// gte
 	{ CGTEII, "gteii" },
 	{ CGTEIF, "gteif" },
+	{ CGTEIE, "gteie" },
 	{ CGTEFI, "gtefi" },
 	{ CGTEFF, "gteff" },
+	{ CGTEEI, "gteei" },
+	{ CGTEEE, "gteee" },
 	{ CGTELL, "gtell" },
 	{ CGTESS, "gtess" },
 	{ CGTEVV, "gtevv" },
@@ -120,8 +128,11 @@ OpDesc ops[] =
 	// gt
 	{ CGTII, "gtii" },
 	{ CGTIF, "gtif" },
+	{ CGTIE, "gtie" },
 	{ CGTFI, "gtfi" },
 	{ CGTFF, "gtff" },
+	{ CGTEI, "gtei" },
+	{ CGTEE, "gtee" },
 	{ CGTLL, "gtll" },
 	{ CGTSS, "gtss" },
 	{ CGTVV, "gtvv" },
@@ -130,8 +141,11 @@ OpDesc ops[] =
 	// lte
 	{ CLTEII, "lteii" },
 	{ CLTEIF, "lteif" },
+	{ CLTEIE, "lteie" },
 	{ CLTEFI, "ltefi" },
 	{ CLTEFF, "lteff" },
+	{ CLTEEI, "lteei" },
+	{ CLTEEE, "lteee" },
 	{ CLTELL, "ltell" },
 	{ CLTESS, "ltess" },
 	{ CLTEVV, "ltevv" },
@@ -140,8 +154,11 @@ OpDesc ops[] =
 	// lt
 	{ CLTII, "ltii" },
 	{ CLTIF, "ltif" },
+	{ CLTIE, "ltie" },
 	{ CLTFI, "ltfi" },
 	{ CLTFF, "ltff" },
+	{ CLTEI, "ltei" },
+	{ CLTEE, "ltee" },
 	{ CLTLL, "ltll" },
 	{ CLTSS, "ltss" },
 	{ CLTVV, "ltvv" },
@@ -150,8 +167,11 @@ OpDesc ops[] =
 	// add
 	{ CADDII, "addii" },
 	{ CADDIF, "addif" },
+	{ CADDIE, "addie" },
 	{ CADDFI, "addfi" },
 	{ CADDFF, "addff" },
+	{ CADDEI, "addei" },
+	{ CADDEE, "addee" },
 	{ CADDTL, "addtl" },
 	{ CADDLL, "addll" },
 	{ CADDLT, "addlt" },
@@ -164,8 +184,11 @@ OpDesc ops[] =
 	// sub
 	{ CSUBII, "subii" },
 	{ CSUBIF, "subif" },
+	{ CSUBIE, "subie" },
 	{ CSUBFI, "subfi" },
 	{ CSUBFF, "subff" },
+	{ CSUBEI, "subei" },
+	{ CSUBEE, "subee" },
 	{ CSUBTL, "subtl" },
 	{ CSUBTT, "subtt" },
 	{ CSUBLL, "subll" },
@@ -176,15 +199,21 @@ OpDesc ops[] =
 	// mul
 	{ CMULII, "mulii" },
 	{ CMULIF, "mulif" },
+	{ CMULIE, "mulie" },
 	{ CMULFI, "mulfi" },
 	{ CMULFF, "mulff" },
+	{ CMULEI, "mulei" },
+	{ CMULEE, "mulee" },
 	{ CMULVV, "mulvv" },
 
 	// div
 	{ CDIVII, "divii" },
 	{ CDIVIF, "divif" },
+	{ CDIVIE, "divie" },
 	{ CDIVFI, "divfi" },
 	{ CDIVFF, "divff" },
+	{ CDIVEI, "divei" },
+	{ CDIVEE, "divee" },
 
 	// mod
 	{ CMODII, "modii" },
@@ -192,6 +221,7 @@ OpDesc ops[] =
 	// neg
 	{ CNEGI, "negi" },
 	{ CNEGF, "negf" },
+	{ CNEGE, "nege" },
 	{ CNEGL, "negl" },
 
 	// cat

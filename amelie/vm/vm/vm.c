@@ -122,6 +122,7 @@ vm_run(Vm*       self,
 		&&cpush_bool,
 		&&cpush_int,
 		&&cpush_double,
+		&&cpush_decimal,
 		&&cpush_string,
 		&&cpush_json,
 		&&cpush_interval,
@@ -139,6 +140,7 @@ vm_run(Vm*       self,
 		&&cbool,
 		&&cint,
 		&&cdouble,
+		&&cdecimal,
 		&&cstring,
 		&&cjson,
 		&&cjson_obj,
@@ -176,8 +178,11 @@ vm_run(Vm*       self,
 		// equ
 		&&cequii,
 		&&cequif,
+		&&cequie,
 		&&cequfi,
 		&&cequff,
+		&&cequei,
+		&&cequee,
 		&&cequll,
 		&&cequss,
 		&&cequjj,
@@ -187,8 +192,11 @@ vm_run(Vm*       self,
 		// gte
 		&&cgteii,
 		&&cgteif,
+		&&cgteie,
 		&&cgtefi,
 		&&cgteff,
+		&&cgteei,
+		&&cgteee,
 		&&cgtell,
 		&&cgtess,
 		&&cgtevv,
@@ -197,8 +205,11 @@ vm_run(Vm*       self,
 		// gt
 		&&cgtii,
 		&&cgtif,
+		&&cgtie,
 		&&cgtfi,
 		&&cgtff,
+		&&cgtei,
+		&&cgtee,
 		&&cgtll,
 		&&cgtss,
 		&&cgtvv,
@@ -207,8 +218,11 @@ vm_run(Vm*       self,
 		// lte
 		&&clteii,
 		&&clteif,
+		&&clteie,
 		&&cltefi,
 		&&clteff,
+		&&clteei,
+		&&clteee,
 		&&cltell,
 		&&cltess,
 		&&cltevv,
@@ -217,8 +231,11 @@ vm_run(Vm*       self,
 		// lt
 		&&cltii,
 		&&cltif,
+		&&cltie,
 		&&cltfi,
 		&&cltff,
+		&&cltei,
+		&&cltee,
 		&&cltll,
 		&&cltss,
 		&&cltvv,
@@ -227,8 +244,11 @@ vm_run(Vm*       self,
 		// add
 		&&caddii,
 		&&caddif,
+		&&caddie,
 		&&caddfi,
 		&&caddff,
+		&&caddei,
+		&&caddee,
 		&&caddtl,
 		&&caddll,
 		&&caddlt,
@@ -241,8 +261,11 @@ vm_run(Vm*       self,
 		// sub
 		&&csubii,
 		&&csubif,
+		&&csubie,
 		&&csubfi,
 		&&csubff,
+		&&csubei,
+		&&csubee,
 		&&csubtl,
 		&&csubtt,
 		&&csubll,
@@ -253,15 +276,21 @@ vm_run(Vm*       self,
 		// mul
 		&&cmulii,
 		&&cmulif,
+		&&cmulie,
 		&&cmulfi,
 		&&cmulff,
+		&&cmulei,
+		&&cmulee,
 		&&cmulvv,
 
 		// div
 		&&cdivii,
 		&&cdivif,
+		&&cdivie,
 		&&cdivfi,
 		&&cdivff,
+		&&cdivei,
+		&&cdivee,
 
 		// mod
 		&&cmodii,
@@ -269,6 +298,7 @@ vm_run(Vm*       self,
 		// neg
 		&&cnegi,
 		&&cnegf,
+		&&cnege,
 		&&cnegl,
 
 		// cat
@@ -565,6 +595,13 @@ cpush_double:
 	value_set_double(a, code_data_at_double(code_data, op->a));
 	op_next;
 
+cpush_decimal:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_decimal(a, (uint64_t)op->a);
+	op_next;
+
 cpush_string:
 	// [value]
 	code_data_at_string(code_data, op->a, &string);
@@ -654,6 +691,10 @@ cint:
 
 cdouble:
 	value_set_double(&r[op->a], code_data_at_double(code_data, op->b));
+	op_next;
+
+cdecimal:
+	value_set_decimal(&r[op->a], (uint64_t)op->b);
 	op_next;
 
 cstring:
@@ -808,6 +849,11 @@ cequif:
 		value_set_bool(&r[op->a], r[op->b].integer == r[op->c].dbl);
 	op_next;
 
+cequie:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], r[op->b].integer == decimal_get_int(r[op->c].decimal));
+	op_next;
+
 cequfi:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl == r[op->c].integer);
@@ -816,6 +862,16 @@ cequfi:
 cequff:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl == r[op->c].dbl);
+	op_next;
+
+cequei:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], decimal_get_int(r[op->b].decimal) == r[op->c].integer);
+	op_next;
+
+cequee:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], !decimal_compare(r[op->b].decimal, r[op->c].decimal));
 	op_next;
 
 cequll:
@@ -870,6 +926,11 @@ cgteif:
 		value_set_bool(&r[op->a], r[op->b].integer >= r[op->c].dbl);
 	op_next;
 
+cgteie:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], r[op->b].integer >= decimal_get_int(r[op->c].decimal));
+	op_next;
+
 cgtefi:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl >= r[op->c].integer);
@@ -878,6 +939,16 @@ cgtefi:
 cgteff:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl >= r[op->c].dbl);
+	op_next;
+
+cgteei:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], decimal_get_int(r[op->b].decimal) >= r[op->c].integer);
+	op_next;
+
+cgteee:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], decimal_compare(r[op->b].decimal, r[op->c].decimal) >= 0);
 	op_next;
 
 cgtell:
@@ -923,6 +994,11 @@ cgtif:
 		value_set_bool(&r[op->a], r[op->b].integer > r[op->c].dbl);
 	op_next;
 
+cgtie:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], r[op->b].integer > decimal_get_int(r[op->c].decimal));
+	op_next;
+
 cgtfi:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl > r[op->c].integer);
@@ -931,6 +1007,16 @@ cgtfi:
 cgtff:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl > r[op->c].dbl);
+	op_next;
+
+cgtei:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], decimal_get_int(r[op->b].decimal) > r[op->c].integer);
+	op_next;
+
+cgtee:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], decimal_compare(r[op->b].decimal, r[op->c].decimal) > 0);
 	op_next;
 
 cgtll:
@@ -975,6 +1061,11 @@ clteif:
 		value_set_bool(&r[op->a], r[op->b].integer <= r[op->c].dbl);
 	op_next;
 
+clteie:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], r[op->b].integer <= decimal_get_int(r[op->c].decimal));
+	op_next;
+
 cltefi:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl <= r[op->c].integer);
@@ -983,6 +1074,16 @@ cltefi:
 clteff:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl <= r[op->c].dbl);
+	op_next;
+
+clteei:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], decimal_get_int(r[op->b].decimal) <= r[op->c].integer);
+	op_next;
+
+clteee:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], decimal_compare(r[op->b].decimal, r[op->c].decimal) <= 0);
 	op_next;
 
 cltell:
@@ -1028,6 +1129,11 @@ cltif:
 		value_set_bool(&r[op->a], r[op->b].integer < r[op->c].dbl);
 	op_next;
 
+cltie:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], r[op->b].integer < decimal_get_int(r[op->c].decimal));
+	op_next;
+
 cltfi:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl < r[op->c].integer);
@@ -1036,6 +1142,16 @@ cltfi:
 cltff:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl < r[op->c].dbl);
+	op_next;
+
+cltei:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], decimal_get_int(r[op->b].decimal) < r[op->c].integer);
+	op_next;
+
+cltee:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], decimal_compare(r[op->b].decimal, r[op->c].decimal) < 0);
 	op_next;
 
 cltll:
@@ -1089,6 +1205,11 @@ caddif:
 	}
 	op_next;
 
+caddie:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_addei(r[op->c].decimal, r[op->b].integer));
+	op_next;
+
 caddfi:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
@@ -1105,6 +1226,16 @@ caddff:
 			error("double + double overflow");
 		value_set_double(&r[op->a], dbl);
 	}
+	op_next;
+
+caddei:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_addei(r[op->b].decimal, r[op->c].integer));
+	op_next;
+
+caddee:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_add(r[op->b].decimal, r[op->c].decimal));
 	op_next;
 
 caddtl:
@@ -1199,6 +1330,11 @@ csubif:
 	}
 	op_next;
 
+csubie:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_subie(r[op->b].integer, r[op->c].decimal));
+	op_next;
+
 csubfi:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
@@ -1215,6 +1351,16 @@ csubff:
 			error("double - double overflow");
 		value_set_double(&r[op->a], dbl);
 	}
+	op_next;
+
+csubei:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_subei(r[op->b].decimal, r[op->c].integer));
+	op_next;
+
+csubee:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_sub(r[op->b].decimal, r[op->c].decimal));
 	op_next;
 
 csubtl:
@@ -1294,6 +1440,11 @@ cmulif:
 	}
 	op_next;
 
+cmulie:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_mulei(r[op->c].decimal, r[op->b].integer));
+	op_next;
+
 cmulfi:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
@@ -1310,6 +1461,16 @@ cmulff:
 			error("double * double overflow");
 		value_set_double(&r[op->a], dbl);
 	}
+	op_next;
+
+cmulei:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_mulei(r[op->b].decimal, r[op->c].integer));
+	op_next;
+
+cmulee:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_mul(r[op->b].decimal, r[op->c].decimal));
 	op_next;
 
 cmulvv:
@@ -1347,6 +1508,11 @@ cdivif:
 	}
 	op_next;
 
+cdivie:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_divie(r[op->b].integer, r[op->c].decimal));
+	op_next;
+
 cdivfi:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
@@ -1369,6 +1535,16 @@ cdivff:
 	}
 	op_next;
 
+cdivei:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_divei(r[op->b].decimal, r[op->c].integer));
+	op_next;
+
+cdivee:
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_decimal(&r[op->a], decimal_div(r[op->b].decimal, r[op->c].decimal));
+	op_next;
+
 // mod
 cmodii:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
@@ -1388,6 +1564,11 @@ cnegi:
 cnegf:
 	if (likely(value_nullu_fast(&r[op->a], &r[op->b])))
 		value_set_double(&r[op->a], -r[op->b].dbl);
+	op_next;
+
+cnege:
+	if (likely(value_nullu_fast(&r[op->a], &r[op->b])))
+		value_set_decimal(&r[op->a], decimal_neg(r[op->b].decimal));
 	op_next;
 
 cnegl:
