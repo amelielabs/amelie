@@ -542,7 +542,7 @@ fn_cast_register(Functions* self)
 	functions_add(self, func);
 
 	// decimal()
-	func = function_allocate(TYPE_DOUBLE, "decimal", fn_decimal);
+	func = function_allocate(TYPE_DECIMAL, "decimal", fn_decimal);
 	functions_add(self, func);
 
 	// string()

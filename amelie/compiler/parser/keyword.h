@@ -94,6 +94,7 @@ enum
 
 	// d
 	KDELETE,
+	KDECIMAL,
 	KDECLARE,
 	KDISTINCT,
 	KDO,

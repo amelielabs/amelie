@@ -86,6 +86,13 @@ value_decode(Value* self, uint8_t* json, Buf* buf)
 		value_set_double(self, real);
 		break;
 	}
+	case DATA_DECIMAL:
+	{
+		uint64_t decimal;
+		unpack_decimal(&json, &decimal);
+		value_set_decimal(self, decimal);
+		break;
+	}
 	case DATA_INTV0 ... DATA_INT64:
 	{
 		int64_t integer;

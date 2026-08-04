@@ -54,6 +54,7 @@ uint64_t decimal_divei(uint64_t, int64_t);
 uint64_t decimal_divie(int64_t, uint64_t);
 uint64_t decimal_neg(uint64_t);
 uint64_t decimal_modei(uint64_t, int64_t);
+uint64_t decimal_set_str_nothrow(Str*, bool*);
 uint64_t decimal_set_str(Str*);
 uint64_t decimal_set_int(int, int64_t);
 uint64_t decimal_set_double(double);

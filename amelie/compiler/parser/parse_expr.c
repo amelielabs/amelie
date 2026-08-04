@@ -91,6 +91,7 @@ priority_map[KEYWORD_MAX] =
 	[KSTRING]                  = priority_value,
 	[KINTERVAL]                = priority_value,
 	[KTIMESTAMP]               = priority_value,
+	[KDECIMAL]                 = priority_value,
 	[KDATE]                    = priority_value,
 	[KCURRENT_TIMESTAMP]       = priority_value,
 	[KCURRENT_DATE]            = priority_value,
@@ -177,6 +178,7 @@ parse_expr_is_const(Ast* self)
 	// time-related consts
 	case KINTERVAL:
 	case KTIMESTAMP:
+	case KDECIMAL:
 	case KDATE:
 		return true;
 	// nested
@@ -739,6 +741,26 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		// timestamp 'spec'
 		auto spec = stmt_expect(self, KSTRING);
 		value->string    = spec->string;
+		value->pos_start = spec->pos_start;
+		value->pos_end   = spec->pos_end;
+		break;
+	}
+	case KDECIMAL:
+	{
+		// ()
+		if (stmt_if(self, '('))
+		{
+			value->id = KNAME;
+			value = expr_func(self, expr, value, true);
+			value = expr_func_constify(self, value, NULL);
+			break;
+		}
+		// decimal 'spec'
+		auto spec = stmt_expect(self, KSTRING);
+		bool ok;
+		value->decimal   = decimal_set_str_nothrow(&spec->string, &ok);
+		if (unlikely(! ok))
+			stmt_error(self, spec, "failed to read decimal");
 		value->pos_start = spec->pos_start;
 		value->pos_end   = spec->pos_end;
 		break;

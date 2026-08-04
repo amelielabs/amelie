@@ -299,7 +299,7 @@ unpack_real_at(uint8_t* pos)
 
 // decimal
 always_inline hot static inline void
-pack_decimal(uint8_t** pos, uint32_t value)
+pack_decimal(uint8_t** pos, uint64_t value)
 {
 	uint8_t* data = *pos;
 	*data = DATA_DECIMAL;

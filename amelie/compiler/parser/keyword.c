@@ -59,6 +59,7 @@ Keyword keywords[] =
 
 	// d
 	{ KDELETE,                "delete",                6  },
+	{ KDECIMAL,               "decimal",               7  },
 	{ KDECLARE,               "declare",               7  },
 	{ KDISTINCT,              "distinct",              8  },
 	{ KDO,                    "do",                    2  },

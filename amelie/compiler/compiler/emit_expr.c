@@ -976,6 +976,8 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	case KREAL:
 		return op2pin(self, CDOUBLE, TYPE_DOUBLE,
 		              code_data_add_double(self->code_data, ast->real));
+	case KDECIMAL:
+		return op2pin(self, CDECIMAL, TYPE_DECIMAL, (int64_t)ast->decimal);
 	case KSTRING:
 		return emit_string(self, &ast->string, ast->string_escape);
 
@@ -1162,6 +1164,9 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		if (rt == TYPE_DOUBLE)
 			rneg = op2pin(self, CNEGF, TYPE_DOUBLE, r);
 		else
+		if (rt == TYPE_DECIMAL)
+			rneg = op2pin(self, CNEGE, TYPE_DECIMAL, r);
+		else
 		if (rt == TYPE_INTERVAL)
 			rneg = op2pin(self, CNEGL, TYPE_INTERVAL, r);
 		else
@@ -1281,6 +1286,9 @@ emit_push(Compiler* self, From* from, Ast* ast)
 	case KREAL:
 		op1(self, CPUSH_DOUBLE, code_data_add_double(self->code_data, ast->real));
 		return TYPE_DOUBLE;
+	case KDECIMAL:
+		op1(self, CPUSH_DECIMAL, (int64_t)ast->decimal);
+		return TYPE_DECIMAL;
 	case KSTRING:
 	{
 		int offset;

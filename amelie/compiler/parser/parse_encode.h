@@ -22,6 +22,9 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 	case KREAL:
 		encode_real(buf, self->real);
 		break;
+	case KDECIMAL:
+		encode_decimal(buf, self->decimal);
+		break;
 	case KINT:
 		encode_int(buf, self->integer);
 		break;
@@ -106,6 +109,10 @@ ast_decode(Ast* self, uint8_t* json)
 		self->id = KREAL;
 		unpack_real(&json, &self->real);
 		break;
+	case DATA_DECIMAL:
+		self->id = KDECIMAL;
+		unpack_decimal(&json, &self->decimal);
+		break;
 	case DATA_INTV0 ... DATA_INT64:
 		self->id = KINT;
 		unpack_int(&json, &self->integer);
@@ -132,6 +139,9 @@ parse_encode_value(Stmt* self, Ast* ast, Value* value)
 		break;
 	case KREAL:
 		value_set_double(value, ast->real);
+		break;
+	case KDECIMAL:
+		value_set_decimal(value, ast->decimal);
 		break;
 	case KINT:
 		value_set_int(value, ast->integer);

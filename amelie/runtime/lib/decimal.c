@@ -358,9 +358,10 @@ decimal_modei(uint64_t a, int64_t b)
 	return decimal_set(a_value % b_upscale, a_scale);
 }
 
-uint64_t
-decimal_set_str(Str* spec)
+hot uint64_t
+decimal_set_str_nothrow(Str* spec, bool* success)
 {
+	*success = true;
 	if (unlikely(str_empty(spec)))
 		goto error;
 
@@ -432,7 +433,18 @@ decimal_set_str(Str* spec)
 	return decimal_set(value, scale);
 
 error:
-	error("decimal overflow");
+	*success = false;
+	return 0;
+}
+
+uint64_t
+decimal_set_str(Str* spec)
+{
+	bool ok;
+	auto result = decimal_set_str_nothrow(spec, &ok);
+	if (unlikely(! ok))
+		error("decimal read error");
+	return result;
 }
 
 uint64_t

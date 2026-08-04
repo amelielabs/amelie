@@ -42,6 +42,15 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		buf_format(data, "{g}", value);
 		break;
 	}
+	case DATA_DECIMAL:
+	{
+		uint64_t value;
+		unpack_decimal(pos, &value);
+		buf_reserve(data, 18);
+		auto size = decimal_get(value, (char*)data->position, 18);
+		buf_advance(data, size);
+		break;
+	}
 	case DATA_INTV0 ... DATA_INT64:
 	{
 		int64_t value;

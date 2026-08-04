@@ -19,10 +19,11 @@ struct Ast
 	int     id;
 	uint8_t priority;
 	union {
-		int64_t integer;
-		double  real;
-		Column* column;
-		Var*    var;
+		int64_t  integer;
+		uint64_t decimal;
+		double   real;
+		Column*  column;
+		Var*     var;
 		struct {
 			int       vector;
 			int       vector_dim;
