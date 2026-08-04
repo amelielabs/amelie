@@ -40,6 +40,13 @@ select 1 = 12.3;
 select 1 = 0.14;
 explain select 1 = 1.0000;
 
+# test: int = decimal
+select 1 = decimal '1.0';
+select 1 = decimal '1';
+select 1 = decimal '12.3';
+select 1 = decimal '0.14';
+explain select 1 = decimal '1.0000';
+
 # test: int = timestamp
 select 0 = '1970-01-01 00:00:00'::timestamp;
 explain select 0 = '1970-01-01 00:00:00'::timestamp;
@@ -70,6 +77,11 @@ select 1 <> 12.3;
 select 1 <> 0.14;
 explain select 1 <> 1.0000;
 
+# test: int <> decimal
+select 1 <> decimal '1.0';
+select 1 <> decimal '1.1';
+explain select 1 <> decimal '1.0000';
+
 # test: int <> timestamp
 select 0 <> '1970-01-01 00:00:00'::timestamp;
 explain select 0 <> '1970-01-01 00:00:00'::timestamp;
@@ -98,6 +110,11 @@ select 1 >= 0.11;
 select 1 >= 1.11;
 explain select 1 >= 1.11;
 
+# test: int >= decimal
+select 1 >= decimal '0.11';
+select 1 >= decimal '1.11';
+explain select 1 >= decimal '1.11';
+
 # test: int >= timestamp
 select 1 >= current_timestamp;
 select 0 >= '1970-01-01 00:00:00'::timestamp;
@@ -124,6 +141,11 @@ explain select -1 > -10;
 select 1 > 0.11;
 select 1 > 1.11;
 explain select 1 > 1.11;
+
+# test: int > decimal
+select 1 > decimal '0.11';
+select 1 > decimal '1.11';
+explain select 1 > decimal '1.11';
 
 # test: int > timestamp
 select 1 > current_timestamp;
@@ -152,6 +174,11 @@ select 1 <= 0.11;
 select 1 <= 1.11;
 explain select 1 <= 1.11;
 
+# test: int <= decimal
+select 1 <= decimal '0.11';
+select 1 <= decimal '1.11';
+explain select 1 <= decimal '1.11';
+
 # test: int <= timestamp
 select 1 <= current_timestamp;
 select 0 <= '1970-01-01 00:00:00'::timestamp;
@@ -179,6 +206,11 @@ select 1 < 0.11;
 select 1 < 1.11;
 explain select 1 < 1.11;
 
+# test: int < decimal
+select 1 < decimal '0.11';
+select 1 < decimal '1.11';
+explain select 1 < decimal '1.11';
+
 # test: int < timestamp
 select 1 < current_timestamp;
 select 0 < '1970-01-01 00:00:00'::timestamp;
@@ -205,6 +237,10 @@ select 1 + -9223372036854775807;
 select 1 + 1.5;
 explain select 1 + 1.5;
 
+# test: int + decimal
+select 1 + decimal '1.5';
+explain select 1 + decimal '1.5';
+
 # test: int + null
 select 1 + null;
 
@@ -224,6 +260,10 @@ select 1 - -9223372036854775807;
 # test: int - double
 select 1 - 1.5;
 explain select 1 - 1.5;
+
+# test: int - decimal
+select 1 - decimal '1.5';
+explain select 1 - decimal '1.5';
 
 # test: int - null
 select 1 - null;
@@ -246,6 +286,10 @@ select 10 * -9223372036854775807;
 select 2 * 1.5;
 explain select 2 * 1.5;
 
+# test: int * decimal
+select 2 * decimal '1.5';
+explain select 2 * decimal '1.5';
+
 # test: int * null
 select 1 * null;
 
@@ -262,6 +306,10 @@ select 4 / 4294967295;
 # test: int / double
 select 35 / 1.5;
 explain select 35 / 1.5;
+
+# test: int / decimal
+select 35 / decimal '1.5';
+explain select 35 / decimal '1.5';
 
 # test: int / null
 select 1 * null;

@@ -32,8 +32,8 @@ value_print(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		break;
 	case TYPE_DECIMAL:
 	{
-		buf_reserve(buf, 18);
-		int size = decimal_get(self->decimal, (char*)buf->position, 18);
+		buf_reserve(buf, 34);
+		int size = decimal_get(self->decimal, (char*)buf->position, 34);
 		buf_advance(buf, size);
 		break;
 	}

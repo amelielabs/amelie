@@ -12,6 +12,7 @@ test null
 test bool
 test int
 test double
+test decimal
 test string
 test json
 test timestamp

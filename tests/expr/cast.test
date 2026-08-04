@@ -27,6 +27,11 @@ select cast (true as double)::type;
 select cast (true as double);
 select cast (false as double);
 
+# test: cast (bool as decimal)
+select cast (true as decimal)::type;
+select cast (true as decimal);
+select cast (false as decimal);
+
 # test: cast (bool as string)
 select cast (true as string)::type;
 select cast (true as string);
@@ -64,6 +69,10 @@ select cast (123 as int);
 select cast (123 as double)::type;
 select cast (123 as double);
 
+# test: cast (int as decimal)
+select cast (123 as decimal)::type;
+select cast (123 as decimal);
+
 # test: cast (int as string)
 select cast (123 as string)::type;
 select cast (123 as string);
@@ -100,6 +109,10 @@ select cast (123.321 as int);
 select cast (123.321 as double)::type;
 select cast (123.321 as double);
 
+# test: cast (double as decimal)
+select cast (123.321 as decimal)::type;
+select cast (123.321 as decimal);
+
 # test: cast (double as string)
 select cast (123.321 as string)::type;
 select cast (123.321 as string);
@@ -123,6 +136,45 @@ select cast (123.321 as vector);
 # test: cast (double as uuid)
 select cast (123.321 as uuid);
 
+# test: cast (decimal as bool)
+select cast (decimal '123.321' as bool)::type;
+select cast (decimal '123.321' as bool);
+
+# test: cast (decimal as int)
+select cast (decimal '123.321' as int)::type;
+select cast (decimal '123.321' as int);
+
+# test: cast (decimal as double)
+select cast (decimal '123.321' as double)::type;
+select cast (decimal '123.321' as double);
+
+# test: cast (decimal as decimal)
+select cast (decimal '123.321' as decimal)::type;
+select cast (decimal '123.321' as decimal);
+
+# test: cast (decimal as string)
+select cast (decimal '123.321' as string)::type;
+select cast (decimal '123.321' as string);
+
+# test: cast (decimal as json)
+select cast (decimal '123.321' as json)::type;
+select cast (decimal '123.321' as json);
+
+# test: cast (decimal as date)
+select cast (decimal '123.321' as date);
+
+# test: cast (decimal as timestamp)
+select cast (decimal '123.321' as timestamp);
+
+# test: cast (decimal as interval)
+select cast (decimal '123.321' as interval);
+
+# test: cast (decimal as vector)
+select cast (decimal '123.321' as vector);
+
+# test: cast (decimal as uuid)
+select cast (decimal '123.321' as uuid);
+
 # test: cast (string as bool)
 select cast ('string' as bool)::type;
 select cast ('string' as bool);
@@ -138,6 +190,13 @@ select cast ('123' as int);
 select cast ('string' as double)::type;
 select cast ('string' as double);
 select cast ('123.321' as double);
+
+# test: cast (string as decimal)
+select cast ('string' as decimal)::type;
+select cast ('string' as decimal);
+select cast ('123.321' as decimal);
+select cast ('-123.321' as decimal);
+select cast ('+123.321' as decimal);
 
 # test: cast (string as string)
 select cast ('string' as string)::type;
@@ -180,6 +239,10 @@ select cast (123::json as int);
 select cast (123.321::json as double)::type;
 select cast (123.321::json as double);
 
+# test: cast (json as decimal)
+select cast (123.321::json as decimal)::type;
+select cast (123.321::json as decimal);
+
 # test: cast (json as string)
 select cast ('str'::json as string)::type;
 select cast ('str'::json as string);
@@ -214,6 +277,10 @@ select cast (date '1970-01-01' as int);
 # test: cast (date as double)
 select cast (date '1970-01-01' as double)::type;
 select cast (date '1970-01-01' as double);
+
+# test: cast (date as decimal)
+select cast (date '1970-01-01' as decimal)::type;
+select cast (date '1970-01-01' as decimal);
 
 # test: cast (date as string)
 select cast (date '1970-01-01' as string)::type;
@@ -250,6 +317,10 @@ select cast (timestamp '1970-01-01 00:00:00.99' as int);
 select cast (timestamp '1970-01-01 00:00:00.99' as double)::type;
 select cast (timestamp '1970-01-01 00:00:00.99' as double);
 
+# test: cast (timestamp as decimal)
+select cast (timestamp '1970-01-01 00:00:00.99' as decimal)::type;
+select cast (timestamp '1970-01-01 00:00:00.99' as decimal);
+
 # test: cast (timestamp as string)
 select cast (timestamp '1970-01-01 00:00:00.99' as string)::type;
 select cast (timestamp '1970-01-01 00:00:00.99' as string);
@@ -284,6 +355,10 @@ select cast (interval '5 days 5 hours' as int);
 # test: cast (interval as double)
 select cast (interval '5 days 5 hours' as double)::type;
 select cast (interval '5 days 5 hours' as double);
+
+# test: cast (interval as decimal)
+select cast (interval '5 days 5 hours' as decimal)::type;
+select cast (interval '5 days 5 hours' as decimal);
 
 # test: cast (interval as string)
 select cast (interval '5 days 5 hours' as string)::type;
@@ -320,6 +395,10 @@ select cast (vector [1,2,3] as int);
 select cast (vector [1,2,3] as double)::type;
 select cast (vector [1,2,3] as double);
 
+# test: cast (vector as decimal)
+select cast (vector [1,2,3] as decimal)::type;
+select cast (vector [1,2,3] as decimal);
+
 # test: cast (vector as string)
 select cast (vector [1,2,3] as string)::type;
 select cast (vector [1,2,3] as string);
@@ -355,6 +434,10 @@ select cast (uuid '00000000-0000-0000-0000-000000000000' as int);
 select cast (uuid '00000000-0000-0000-0000-000000000000' as double)::type;
 select cast (uuid '00000000-0000-0000-0000-000000000000' as double);
 
+# test: cast (uuid as decimal)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as decimal)::type;
+select cast (uuid '00000000-0000-0000-0000-000000000000' as decimal);
+
 # test: cast (uuid as string)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as string)::type;
 select cast (uuid '00000000-0000-0000-0000-000000000000' as string);
@@ -389,6 +472,10 @@ select cast (null as int);
 # test: cast (null as double)
 select cast (null as double)::type;
 select cast (null as double);
+
+# test: cast (null as decimal)
+select cast (null as decimal)::type;
+select cast (null as decimal);
 
 # test: cast (null as string)
 select cast (null as string)::type;

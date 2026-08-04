@@ -1,0 +1,790 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: decimal
+select decimal;
+error: select decimal❰;❱ ⟵ string expected
+select decimal '1.0';
+
+col1
+────
+1.0
+select decimal '1.0'::type;
+
+type
+────
+decimal
+select decimal '3.14';
+
+col1
+────
+3.14
+select decimal '1.1234';
+
+col1
+────
+1.1234
+# test: decimal limits
+select decimal '1';
+
+col1
+────
+1
+select decimal '12';
+
+col1
+────
+12
+select decimal '123';
+
+col1
+────
+123
+select decimal '1234';
+
+col1
+────
+1234
+select decimal '12345';
+
+col1
+────
+12345
+select decimal '123456';
+
+col1
+────
+123456
+select decimal '1234567';
+
+col1
+────
+1234567
+select decimal '12345678';
+
+col1
+────
+12345678
+select decimal '123456789';
+
+col1
+────
+123456789
+select decimal '1234567899';
+
+col1
+────
+1234567899
+select decimal '1234567891';
+
+col1
+────
+1234567891
+select decimal '12345678912';
+
+col1
+────
+12345678912
+select decimal '123456789123';
+
+col1
+────
+123456789123
+select decimal '1234567891234';
+
+col1
+────
+1234567891234
+select decimal '12345678912345';
+
+col1
+────
+12345678912345
+select decimal '123456789123456';
+
+col1
+────
+123456789123456
+select decimal '1234567891234567';
+
+col1
+────
+1234567891234567
+select decimal '12345678912345670';
+error: select decimal ❰'12345678912345670'❱ ⟵ failed to read decimal
+select decimal '9007199254740991';
+
+col1
+────
+9007199254740991
+select decimal '-9007199254740991';
+
+col1
+────
+-9007199254740991
+select decimal '0.900719925474099';
+
+col1
+────
+0.900719925474099
+select decimal '0.9007199254740999';
+error: select decimal ❰'0.9007199254740999'❱ ⟵ failed to read decimal
+select decimal '-0.900719925474099';
+
+col1
+────
+-0.900719925474099
+select decimal '0.000000000000001';
+
+col1
+────
+0.000000000000001
+select decimal '-0.000000000000001';
+
+col1
+────
+-0.000000000000001
+# test: decimal overflow
+select decimal '9007199254740992';
+error: select decimal ❰'9007199254740992'❱ ⟵ failed to read decimal
+select decimal '-9007199254740992';
+error: select decimal ❰'-9007199254740992'❱ ⟵ failed to read decimal
+select decimal '0.0000000000000001';
+error: select decimal ❰'0.0000000000000001'❱ ⟵ failed to read decimal
+select decimal '9.007199254740992';
+error: select decimal ❰'9.007199254740992'❱ ⟵ failed to read decimal
+# test: decimal = int
+select decimal '12.3' = 1;
+
+col1
+────
+false
+select decimal '1' = 1;
+
+col1
+────
+true
+select decimal '0.14' = 1;
+
+col1
+────
+false
+explain select decimal '1.0000' = 1;
+
+explain
+───────
+
+main
+  0   decimal             0      4611686018427397904 0
+  1   int                 1      -      0     # 1
+  2   equei               2      0      1
+  3   ret                 2      0      -
+select decimal '1.0000' = 1;
+
+col1
+────
+true
+# test: decimal = decimal
+select decimal '12.3' = decimal '1.3';
+
+col1
+────
+false
+select decimal '12.3' = 12.3::decimal;
+
+col1
+────
+true
+explain select decimal '12.3' = '12.3'::decimal;
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606847099 0
+  1   value               1      -      0     # decimal
+  2   equee               2      0      1
+  3   ret                 2      0      -
+select decimal '0.900719925474099' = decimal '0.900719925474098';
+
+col1
+────
+false
+# test: decimal = null
+select decimal '12.3' = null;
+
+col1
+────
+null
+# test: decimal = unsupported
+select decimal '12.3' = [1,2];
+error: select decimal '12.3' = ❰[❱ ⟵ operation decimal = json is not supported
+# test: decimal <> int
+select decimal '1' <> 1;
+
+col1
+────
+false
+select decimal '1.1' <> 1;
+
+col1
+────
+true
+explain select decimal '1.1' <> 1;
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606846987 0
+  1   int                 1      -      0     # 1
+  2   equei               2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
+# test: decimal >= int
+select decimal '0.11' >= 1;
+
+col1
+────
+false
+select decimal '1.11' >= 1;
+
+col1
+────
+true
+select decimal '1.0' >= 1;
+
+col1
+────
+true
+explain select decimal '11.1' >= 1;
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606847087 0
+  1   int                 1      -      0     # 1
+  2   gteei               2      0      1
+  3   ret                 2      0      -
+# test: decimal >= decimal
+select decimal '0.11' >= decimal '1.2';
+
+col1
+────
+false
+select decimal '1.11' >= decimal '1.11';
+
+col1
+────
+true
+select decimal '1.13' >= decimal '1.13';
+
+col1
+────
+true
+explain select decimal '1.11' >= decimal '1.13';
+
+explain
+───────
+
+main
+  0   decimal             0      2305843009213694063 0
+  1   decimal             1      2305843009213694065 0
+  2   gteee               2      0      1
+  3   ret                 2      0      -
+# test: decimal >= null
+select decimal '0.11' >= null;
+
+col1
+────
+null
+explain select decimal '0.11' >= null;
+
+explain
+───────
+
+main
+  0   decimal             0      2305843009213693963 0
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
+# test: decimal >= unsupported
+select decimal '0.11' >= [];
+error: select decimal '0.11' >= ❰[❱ ⟵ operation decimal >= json is not supported
+# test: decimal > int
+select decimal '0.11' > 1;
+
+col1
+────
+false
+select decimal '1.11' > 1;
+
+col1
+────
+true
+select decimal '1.0' > 1;
+
+col1
+────
+false
+explain select decimal '11.1' > 1;
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606847087 0
+  1   int                 1      -      0     # 1
+  2   gtei                2      0      1
+  3   ret                 2      0      -
+select decimal '11.1' > 1;
+
+col1
+────
+true
+# test: decimal > decimal
+select decimal '0.11' > decimal '1.2';
+
+col1
+────
+false
+select decimal '1.11' > decimal '1.11';
+
+col1
+────
+false
+select decimal '1.13' > decimal '1.13';
+
+col1
+────
+false
+select decimal '1.14' > decimal '1.13';
+
+col1
+────
+true
+explain select decimal '1.11' > decimal '1.13';
+
+explain
+───────
+
+main
+  0   decimal             0      2305843009213694063 0
+  1   decimal             1      2305843009213694065 0
+  2   gtee                2      0      1
+  3   ret                 2      0      -
+select decimal '0.000000000000001' > decimal '0';
+
+col1
+────
+true
+# test: decimal > null
+select decimal '0.11' > null;
+
+col1
+────
+null
+# test: decimal > unsupported
+select decimal '0.11' > [];
+error: select decimal '0.11' > ❰[❱ ⟵ operation decimal > json is not supported
+# test: decimal <= int
+select decimal '0.11' <= 1;
+
+col1
+────
+true
+select decimal '1.11' <= 1;
+
+col1
+────
+false
+select decimal '1.0' <= 1;
+
+col1
+────
+true
+explain select decimal '11.1' <= 1;
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606847087 0
+  1   int                 1      -      0     # 1
+  2   lteei               2      0      1
+  3   ret                 2      0      -
+# test: decimal <= decimal
+select decimal '0.11' <= decimal '1.2';
+
+col1
+────
+true
+select decimal '1.11' <= decimal '1.11';
+
+col1
+────
+true
+select decimal '1.13' <= decimal '1.13';
+
+col1
+────
+true
+select decimal '1.14' <= decimal '1.13';
+
+col1
+────
+false
+explain select decimal '1.11' <= decimal '1.13';
+
+explain
+───────
+
+main
+  0   decimal             0      2305843009213694063 0
+  1   decimal             1      2305843009213694065 0
+  2   lteee               2      0      1
+  3   ret                 2      0      -
+# test: decimal <= null
+select decimal '0.11' <= null;
+
+col1
+────
+null
+explain select decimal '0.11' <= null;
+
+explain
+───────
+
+main
+  0   decimal             0      2305843009213693963 0
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
+# test: decimal <= unsupported
+select decimal '0.11' <= [];
+error: select decimal '0.11' <= ❰[❱ ⟵ operation decimal <= json is not supported
+# test: decimal < int
+select decimal '0.11' < 1;
+
+col1
+────
+true
+select decimal '1.11' < 1;
+
+col1
+────
+false
+select decimal '1.0' < 1;
+
+col1
+────
+false
+explain select decimal '11.1' < 1;
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606847087 0
+  1   int                 1      -      0     # 1
+  2   ltei                2      0      1
+  3   ret                 2      0      -
+# test: decimal < decimal
+select decimal '0.11' < decimal '1.2';
+
+col1
+────
+true
+select decimal '1.11' < decimal '1.11';
+
+col1
+────
+false
+select decimal '1.13' < decimal '1.13';
+
+col1
+────
+false
+explain select decimal '1.11' < decimal '1.13';
+
+explain
+───────
+
+main
+  0   decimal             0      2305843009213694063 0
+  1   decimal             1      2305843009213694065 0
+  2   ltee                2      0      1
+  3   ret                 2      0      -
+select decimal '-0.900719925474099' < decimal '-0.900719925474098';
+
+col1
+────
+true
+# test: decimal < null
+select decimal '0.11' < null;
+
+col1
+────
+null
+explain select decimal '0.11' < null;
+
+explain
+───────
+
+main
+  0   decimal             0      2305843009213693963 0
+  1   null                1      0      0
+  2   nullop              2      0      1
+  3   ret                 2      0      -
+# test: decimal < unsupported
+select decimal '0.11' < [];
+error: select decimal '0.11' < ❰[❱ ⟵ operation decimal < json is not supported
+# test: decimal + int
+select decimal '1.5' + 1;
+
+col1
+────
+2.5
+explain select decimal '1.5' + 1;
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606846991 0
+  1   int                 1      -      0     # 1
+  2   addei               2      0      1
+  3   ret                 2      0      -
+# test: decimal + decimal
+select decimal '1.5' + decimal '1.5';
+
+col1
+────
+3.0
+explain select decimal '1.5' + decimal '1.5';
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606846991 0
+  1   decimal             1      1152921504606846991 0
+  2   addee               2      0      1
+  3   ret                 2      0      -
+select decimal '0.900719925474098' + decimal '0.000000000000001';
+
+col1
+────
+0.900719925474099
+select decimal '0.900719925474099' + decimal '0.000000000000001';
+
+col1
+────
+0.900719925474100
+select decimal '0.900719925474100';
+
+col1
+────
+0.900719925474100
+select decimal '-0.000000000000001' + decimal '0.000000000000001';
+
+col1
+────
+0.000000000000000
+# test: decimal + null
+select decimal '1.5' + null;
+
+col1
+────
+null
+# test: decimal + unsupported
+select decimal '1.5' + [];
+error: select decimal '1.5' + ❰[❱ ⟵ operation decimal + json is not supported
+# test: decimal - int
+select decimal '1.5' - 1;
+
+col1
+────
+0.5
+explain select decimal '1.5' - 1;
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606846991 0
+  1   int                 1      -      0     # 1
+  2   subei               2      0      1
+  3   ret                 2      0      -
+select decimal '1.5' - 5;
+
+col1
+────
+-3.5
+# test: decimal - decimal
+select decimal '1.5' - decimal '1.5';
+
+col1
+────
+0.0
+explain select decimal '1.5' - decimal '1.5';
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606846991 0
+  1   decimal             1      1152921504606846991 0
+  2   subee               2      0      1
+  3   ret                 2      0      -
+select decimal  '0.900719925474100' - decimal '0.000000000000001';
+
+col1
+────
+0.900719925474099
+select decimal '-0.900719925474098' - decimal '0.000000000000001';
+
+col1
+────
+-0.900719925474099
+select decimal '-0.900719925474099' - decimal '0.000000000000001';
+
+col1
+────
+-0.900719925474100
+# test: decimal - null
+select decimal '1.5' - null;
+
+col1
+────
+null
+# test: decimal - unsupported
+select decimal '1.5' - [];
+error: select decimal '1.5' - ❰[❱ ⟵ operation decimal - json is not supported
+# test: double * int
+select decimal '1.5' * 2;
+
+col1
+────
+3.0
+explain select decimal '1.5' * 2;
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606846991 0
+  1   int                 1      -      0     # 2
+  2   mulei               2      0      1
+  3   ret                 2      0      -
+# test: decimal * decimal
+select decimal '1.5' * decimal '1.5';
+
+col1
+────
+2.25
+explain select decimal '1.5' * decimal '1.5';
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606846991 0
+  1   decimal             1      1152921504606846991 0
+  2   mulee               2      0      1
+  3   ret                 2      0      -
+select decimal '0.900719925474099' * decimal '1';
+
+col1
+────
+0.900719925474099
+select decimal '0.900719925474099' * decimal '-1';
+
+col1
+────
+-0.900719925474099
+# test: decimal * null
+select decimal '1.5' * null;
+
+col1
+────
+null
+# test: decimal * unsupported
+select decimal '1.5' * [];
+error: select decimal '1.5' * ❰[❱ ⟵ operation decimal * json is not supported
+# test: decimal / int
+select decimal '3.5' / 2;
+
+col1
+────
+1.8
+explain select decimal '3.5' / 2;
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606847011 0
+  1   int                 1      -      0     # 2
+  2   divei               2      0      1
+  3   ret                 2      0      -
+select decimal '3.5' / 0;
+error: decimal zero division
+# test: decimal / decimal
+select decimal '3.5' / decimal '1.5';
+
+col1
+────
+2.3
+explain select decimal '3.5' / decimal '1.5';
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606847011 0
+  1   decimal             1      1152921504606846991 0
+  2   divee               2      0      1
+  3   ret                 2      0      -
+select decimal '3.5' / decimal '0.0';
+error: decimal zero division
+# test: decimal / null
+select decimal '1.5' / null;
+
+col1
+────
+null
+# test: decimal / unsupported
+select decimal '1.5' / [];
+error: select decimal '1.5' / ❰[❱ ⟵ operation decimal / json is not supported
+# test: -decimal
+select decimal '-18.8';
+
+col1
+────
+-18.8
+select - decimal '18.8';
+
+col1
+────
+-18.8
+explain select - decimal '18.8';
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606847164 0
+  1   nege                1      0      0
+  2   ret                 1      0      -
+explain select - decimal '18.8';
+
+explain
+───────
+
+main
+  0   decimal             0      1152921504606847164 0
+  1   nege                1      0      0
+  2   ret                 1      0      -
+disconnect S0;
+close E0;

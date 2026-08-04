@@ -46,8 +46,8 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 	{
 		uint64_t value;
 		unpack_decimal(pos, &value);
-		buf_reserve(data, 18);
-		auto size = decimal_get(value, (char*)data->position, 18);
+		buf_reserve(data, 34);
+		auto size = decimal_get(value, (char*)data->position, 34);
 		buf_advance(data, size);
 		break;
 	}

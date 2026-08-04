@@ -21,6 +21,9 @@ select 1::int(123);
 # test: int(double)
 select 3.14::int;
 
+# test: int(decimal)
+select decimal '3.14'::int;
+
 # test: int(bool)
 select true::int;
 select false::int;
@@ -56,6 +59,9 @@ select 3.14::bool;
 select 0.14::bool;
 select 0.0::bool;
 
+# test: bool(decimal)
+select decimal '3.14'::bool;
+
 # test: bool(json)
 select true::json::bool;
 select false::json::bool;
@@ -77,6 +83,9 @@ select 1::double;
 # test: double(double)
 select 3.14::double;
 
+# test: double(decimal)
+select decimal '3.14'::double;
+
 # test: double(bool)
 select true::double;
 select false::double;
@@ -89,11 +98,38 @@ select 1722517792056945::timestamp;
 select 1722517792056945::timestamp::double;
 select 1722517792056945::timestamp::double::timestamp;
 
+# test: decimal(null)
+select 1::decimal;
+
+# test: decimal(int)
+select 1::decimal;
+
+# test: decimal(double)
+select 3.14::decimal;
+
+# test: decimal(decimal)
+select decimal '3.14'::decimal;
+
+# test: decimal(bool)
+select true::decimal;
+select false::decimal;
+
+# test: decimal(json)
+select 1.56::json::decimal;
+
+# test: decimal(timestamp)
+select 1722517792056945::timestamp;
+select 1722517792056945::timestamp::decimal;
+select 1722517792056945::timestamp::decimal::timestamp;
+
 # test: string(null)
 select null::string;
 
 # test: string(int)
 select 16384::string;
+
+# test: string(decimal)
+select decimal '16384.123'::string;
 
 # test: string(string)
 select 'hello'::string;
@@ -132,6 +168,9 @@ select (-123)::json;
 select 123.321::json;
 select -123.321::json;
 select (-123.321)::json;
+
+# test: json(decimal)
+select decimal '123.321'::json;
 
 # test: json(string)
 select '1'::json;

@@ -585,3 +585,44 @@ decimal_compare(uint64_t a, uint64_t b)
 	}
 	return (a_128 > b_128) - (a_128 < b_128);
 }
+
+hot int
+decimal_compareei(uint64_t a, int64_t b)
+{
+	auto scale = decimal_scale(a);
+	auto value = decimal_value(a);
+
+	if (scale > 0)
+	{
+		if (unlikely(int64_mul_overflow(&b, b, decimal_pow10[scale])))
+			return (b > 0) ? -1 : 1;
+	}
+
+	if (unlikely(b > DECIMAL_MAX))
+		return -1;
+
+	if (unlikely(b < DECIMAL_MIN))
+		return 1;
+
+	return compare_int64(value, b);
+}
+
+hot int
+decimal_compareie(int64_t a, uint64_t b)
+{
+	auto scale = decimal_scale(b);
+	auto value = decimal_value(b);
+	if (scale > 0)
+	{
+		if (unlikely(int64_mul_overflow(&a, a, decimal_pow10[scale])))
+			return (a > 0) ? 1 : -1;
+	}
+
+	if (unlikely(a > DECIMAL_MAX))
+		return 1;
+
+	if (unlikely(a < DECIMAL_MIN))
+		return -1;
+
+	return compare_int64(a, value);
+}

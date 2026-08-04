@@ -1,0 +1,242 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: decimal
+select decimal;
+select decimal '1.0';
+select decimal '1.0'::type;
+select decimal '3.14';
+select decimal '1.1234';
+
+# test: decimal limits
+select decimal '1';
+select decimal '12';
+select decimal '123';
+select decimal '1234';
+select decimal '12345';
+select decimal '123456';
+select decimal '1234567';
+select decimal '12345678';
+select decimal '123456789';
+select decimal '1234567899';
+select decimal '1234567891';
+select decimal '12345678912';
+select decimal '123456789123';
+select decimal '1234567891234';
+select decimal '12345678912345';
+select decimal '123456789123456';
+select decimal '1234567891234567';
+# limit (16 chars)
+select decimal '12345678912345670';
+
+# max positive unscaled
+select decimal '9007199254740991';
+
+# min negative unscaled
+select decimal '-9007199254740991';
+
+# max positive value at full 15-decimal scale
+select decimal '0.900719925474099';
+select decimal '0.9007199254740999';
+
+# min negative value at full 15-decimal scale
+select decimal '-0.900719925474099';
+
+# smallest non-zero scale (10^-15)
+select decimal '0.000000000000001';
+
+# negative smallest scale
+select decimal '-0.000000000000001';
+
+# test: decimal overflow
+select decimal '9007199254740992';
+select decimal '-9007199254740992';
+select decimal '0.0000000000000001';
+select decimal '9.007199254740992';
+
+# test: decimal = int
+select decimal '12.3' = 1;
+select decimal '1' = 1;
+select decimal '0.14' = 1;
+explain select decimal '1.0000' = 1;
+select decimal '1.0000' = 1;
+
+# test: decimal = decimal
+select decimal '12.3' = decimal '1.3';
+select decimal '12.3' = 12.3::decimal;
+explain select decimal '12.3' = '12.3'::decimal;
+
+select decimal '0.900719925474099' = decimal '0.900719925474098';
+
+# test: decimal = null
+select decimal '12.3' = null;
+
+# test: decimal = unsupported
+select decimal '12.3' = [1,2];
+
+# test: decimal <> int
+select decimal '1' <> 1;
+select decimal '1.1' <> 1;
+explain select decimal '1.1' <> 1;
+
+# test: decimal >= int
+select decimal '0.11' >= 1;
+select decimal '1.11' >= 1;
+select decimal '1.0' >= 1;
+explain select decimal '11.1' >= 1;
+
+# test: decimal >= decimal
+select decimal '0.11' >= decimal '1.2';
+select decimal '1.11' >= decimal '1.11';
+select decimal '1.13' >= decimal '1.13';
+explain select decimal '1.11' >= decimal '1.13';
+
+# test: decimal >= null
+select decimal '0.11' >= null;
+explain select decimal '0.11' >= null;
+
+# test: decimal >= unsupported
+select decimal '0.11' >= [];
+
+# test: decimal > int
+select decimal '0.11' > 1;
+select decimal '1.11' > 1;
+select decimal '1.0' > 1;
+explain select decimal '11.1' > 1;
+select decimal '11.1' > 1;
+
+# test: decimal > decimal
+select decimal '0.11' > decimal '1.2';
+select decimal '1.11' > decimal '1.11';
+select decimal '1.13' > decimal '1.13';
+select decimal '1.14' > decimal '1.13';
+explain select decimal '1.11' > decimal '1.13';
+select decimal '0.000000000000001' > decimal '0';
+
+# test: decimal > null
+select decimal '0.11' > null;
+
+# test: decimal > unsupported
+select decimal '0.11' > [];
+
+# test: decimal <= int
+select decimal '0.11' <= 1;
+select decimal '1.11' <= 1;
+select decimal '1.0' <= 1;
+explain select decimal '11.1' <= 1;
+
+# test: decimal <= decimal
+select decimal '0.11' <= decimal '1.2';
+select decimal '1.11' <= decimal '1.11';
+select decimal '1.13' <= decimal '1.13';
+select decimal '1.14' <= decimal '1.13';
+explain select decimal '1.11' <= decimal '1.13';
+
+# test: decimal <= null
+select decimal '0.11' <= null;
+explain select decimal '0.11' <= null;
+
+# test: decimal <= unsupported
+select decimal '0.11' <= [];
+
+# test: decimal < int
+select decimal '0.11' < 1;
+select decimal '1.11' < 1;
+select decimal '1.0' < 1;
+explain select decimal '11.1' < 1;
+
+# test: decimal < decimal
+select decimal '0.11' < decimal '1.2';
+select decimal '1.11' < decimal '1.11';
+select decimal '1.13' < decimal '1.13';
+explain select decimal '1.11' < decimal '1.13';
+select decimal '-0.900719925474099' < decimal '-0.900719925474098';
+
+# test: decimal < null
+select decimal '0.11' < null;
+explain select decimal '0.11' < null;
+
+# test: decimal < unsupported
+select decimal '0.11' < [];
+
+# test: decimal + int
+select decimal '1.5' + 1;
+explain select decimal '1.5' + 1;
+
+# test: decimal + decimal
+select decimal '1.5' + decimal '1.5';
+explain select decimal '1.5' + decimal '1.5';
+
+select decimal '0.900719925474098' + decimal '0.000000000000001';
+select decimal '0.900719925474099' + decimal '0.000000000000001';
+select decimal '0.900719925474100';
+select decimal '-0.000000000000001' + decimal '0.000000000000001';
+
+# test: decimal + null
+select decimal '1.5' + null;
+
+# test: decimal + unsupported
+select decimal '1.5' + [];
+
+# test: decimal - int
+select decimal '1.5' - 1;
+explain select decimal '1.5' - 1;
+select decimal '1.5' - 5;
+
+# test: decimal - decimal
+select decimal '1.5' - decimal '1.5';
+explain select decimal '1.5' - decimal '1.5';
+
+select decimal  '0.900719925474100' - decimal '0.000000000000001';
+select decimal '-0.900719925474098' - decimal '0.000000000000001';
+select decimal '-0.900719925474099' - decimal '0.000000000000001';
+
+# test: decimal - null
+select decimal '1.5' - null;
+
+# test: decimal - unsupported
+select decimal '1.5' - [];
+
+# test: double * int
+select decimal '1.5' * 2;
+explain select decimal '1.5' * 2;
+
+# test: decimal * decimal
+select decimal '1.5' * decimal '1.5';
+explain select decimal '1.5' * decimal '1.5';
+
+select decimal '0.900719925474099' * decimal '1';
+select decimal '0.900719925474099' * decimal '-1';
+
+# test: decimal * null
+select decimal '1.5' * null;
+
+# test: decimal * unsupported
+select decimal '1.5' * [];
+
+# test: decimal / int
+select decimal '3.5' / 2;
+explain select decimal '3.5' / 2;
+select decimal '3.5' / 0;
+
+# test: decimal / decimal
+select decimal '3.5' / decimal '1.5';
+explain select decimal '3.5' / decimal '1.5';
+select decimal '3.5' / decimal '0.0';
+
+# test: decimal / null
+select decimal '1.5' / null;
+
+# test: decimal / unsupported
+select decimal '1.5' / [];
+
+# test: -decimal
+select decimal '-18.8';
+select - decimal '18.8';
+explain select - decimal '18.8';
+explain select - decimal '18.8';
+
+disconnect S0;
+close E0;

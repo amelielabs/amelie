@@ -133,6 +133,37 @@ main
   1   double              1      0      0     # 1
   2   equif               2      0      1
   3   ret                 2      0      -
+# test: int = decimal
+select 1 = decimal '1.0';
+
+col1
+────
+true
+select 1 = decimal '1';
+
+col1
+────
+true
+select 1 = decimal '12.3';
+
+col1
+────
+false
+select 1 = decimal '0.14';
+
+col1
+────
+false
+explain select 1 = decimal '1.0000';
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   decimal             1      4611686018427397904 0
+  2   equie               2      0      1
+  3   ret                 2      0      -
 # test: int = timestamp
 select 0 = '1970-01-01 00:00:00'::timestamp;
 
@@ -251,6 +282,28 @@ main
   2   equif               2      0      1
   3   not                 0      2      0
   4   ret                 0      0      -
+# test: int <> decimal
+select 1 <> decimal '1.0';
+
+col1
+────
+false
+select 1 <> decimal '1.1';
+
+col1
+────
+true
+explain select 1 <> decimal '1.0000';
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   decimal             1      4611686018427397904 0
+  2   equie               2      0      1
+  3   not                 0      2      0
+  4   ret                 0      0      -
 # test: int <> timestamp
 select 0 <> '1970-01-01 00:00:00'::timestamp;
 
@@ -362,6 +415,27 @@ main
   1   double              1      0      0     # 1.11
   2   gteif               2      0      1
   3   ret                 2      0      -
+# test: int >= decimal
+select 1 >= decimal '0.11';
+
+col1
+────
+true
+select 1 >= decimal '1.11';
+
+col1
+────
+false
+explain select 1 >= decimal '1.11';
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   decimal             1      2305843009213694063 0
+  2   gteie               2      0      1
+  3   ret                 2      0      -
 # test: int >= timestamp
 select 1 >= current_timestamp;
 
@@ -468,6 +542,27 @@ main
   0   int                 0      -      0     # 1
   1   double              1      0      0     # 1.11
   2   gtif                2      0      1
+  3   ret                 2      0      -
+# test: int > decimal
+select 1 > decimal '0.11';
+
+col1
+────
+true
+select 1 > decimal '1.11';
+
+col1
+────
+false
+explain select 1 > decimal '1.11';
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   decimal             1      2305843009213694063 0
+  2   gtie                2      0      1
   3   ret                 2      0      -
 # test: int > timestamp
 select 1 > current_timestamp;
@@ -576,6 +671,27 @@ main
   1   double              1      0      0     # 1.11
   2   lteif               2      0      1
   3   ret                 2      0      -
+# test: int <= decimal
+select 1 <= decimal '0.11';
+
+col1
+────
+false
+select 1 <= decimal '1.11';
+
+col1
+────
+true
+explain select 1 <= decimal '1.11';
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   decimal             1      2305843009213694063 0
+  2   lteie               2      0      1
+  3   ret                 2      0      -
 # test: int <= timestamp
 select 1 <= current_timestamp;
 
@@ -683,6 +799,27 @@ main
   1   double              1      0      0     # 1.11
   2   ltif                2      0      1
   3   ret                 2      0      -
+# test: int < decimal
+select 1 < decimal '0.11';
+
+col1
+────
+false
+select 1 < decimal '1.11';
+
+col1
+────
+true
+explain select 1 < decimal '1.11';
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   decimal             1      2305843009213694063 0
+  2   ltie                2      0      1
+  3   ret                 2      0      -
 # test: int < timestamp
 select 1 < current_timestamp;
 
@@ -773,6 +910,22 @@ main
   1   double              1      0      0     # 1.5
   2   addif               2      0      1
   3   ret                 2      0      -
+# test: int + decimal
+select 1 + decimal '1.5';
+
+col1
+────
+2.5
+explain select 1 + decimal '1.5';
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   decimal             1      1152921504606846991 0
+  2   addie               2      0      1
+  3   ret                 2      0      -
 # test: int + null
 select 1 + null;
 
@@ -832,6 +985,22 @@ main
   1   double              1      0      0     # 1.5
   2   subif               2      0      1
   3   ret                 2      0      -
+# test: int - decimal
+select 1 - decimal '1.5';
+
+col1
+────
+-0.5
+explain select 1 - decimal '1.5';
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   decimal             1      1152921504606846991 0
+  2   subie               2      0      1
+  3   ret                 2      0      -
 # test: int - null
 select 1 - null;
 
@@ -888,6 +1057,22 @@ main
   1   double              1      0      0     # 1.5
   2   mulif               2      0      1
   3   ret                 2      0      -
+# test: int * decimal
+select 2 * decimal '1.5';
+
+col1
+────
+3.0
+explain select 2 * decimal '1.5';
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 2
+  1   decimal             1      1152921504606846991 0
+  2   mulie               2      0      1
+  3   ret                 2      0      -
 # test: int * null
 select 1 * null;
 
@@ -935,6 +1120,22 @@ main
   0   int                 0      -      0     # 35
   1   double              1      0      0     # 1.5
   2   divif               2      0      1
+  3   ret                 2      0      -
+# test: int / decimal
+select 35 / decimal '1.5';
+
+col1
+────
+23.3
+explain select 35 / decimal '1.5';
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 35
+  1   decimal             1      1152921504606846991 0
+  2   divie               2      0      1
   3   ret                 2      0      -
 # test: int / null
 select 1 * null;

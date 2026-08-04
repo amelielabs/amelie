@@ -69,6 +69,22 @@ select cast (false as double);
 double
 ──────
 0
+# test: cast (bool as decimal)
+select cast (true as decimal)::type;
+
+type
+────
+decimal
+select cast (true as decimal);
+
+decimal
+───────
+1
+select cast (false as decimal);
+
+decimal
+───────
+0
 # test: cast (bool as string)
 select cast (true as string)::type;
 
@@ -148,6 +164,17 @@ select cast (123 as double);
 
 double
 ──────
+123
+# test: cast (int as decimal)
+select cast (123 as decimal)::type;
+
+type
+────
+decimal
+select cast (123 as decimal);
+
+decimal
+───────
 123
 # test: cast (int as string)
 select cast (123 as string)::type;
@@ -230,6 +257,17 @@ select cast (123.321 as double);
 double
 ──────
 123.321
+# test: cast (double as decimal)
+select cast (123.321 as decimal)::type;
+
+type
+────
+decimal
+select cast (123.321 as decimal);
+
+decimal
+───────
+123.321
 # test: cast (double as string)
 select cast (123.321 as string)::type;
 
@@ -267,6 +305,87 @@ error: vector(❰double❱ ⟵ unsupported argument type
 # test: cast (double as uuid)
 select cast (123.321 as uuid);
 error: uuid(❰double❱ ⟵ unsupported argument type
+# test: cast (decimal as bool)
+select cast (decimal '123.321' as bool)::type;
+
+type
+────
+bool
+select cast (decimal '123.321' as bool);
+
+bool
+────
+true
+# test: cast (decimal as int)
+select cast (decimal '123.321' as int)::type;
+
+type
+────
+int
+select cast (decimal '123.321' as int);
+
+int
+───
+123
+# test: cast (decimal as double)
+select cast (decimal '123.321' as double)::type;
+
+type
+────
+double
+select cast (decimal '123.321' as double);
+
+double
+──────
+123.321
+# test: cast (decimal as decimal)
+select cast (decimal '123.321' as decimal)::type;
+
+type
+────
+decimal
+select cast (decimal '123.321' as decimal);
+
+decimal
+───────
+123.321
+# test: cast (decimal as string)
+select cast (decimal '123.321' as string)::type;
+
+type
+────
+string
+select cast (decimal '123.321' as string);
+
+string
+──────
+123.321
+# test: cast (decimal as json)
+select cast (decimal '123.321' as json)::type;
+
+type
+────
+json
+select cast (decimal '123.321' as json);
+
+json
+────
+123.321
+# test: cast (decimal as date)
+select cast (decimal '123.321' as date);
+error: date(❰decimal❱ ⟵ unsupported argument type
+# test: cast (decimal as timestamp)
+select cast (decimal '123.321' as timestamp);
+error: timestamp(❰decimal❱ ⟵ unsupported argument type
+# test: cast (decimal as interval)
+select cast (decimal '123.321' as interval);
+error: interval(❰decimal❱ ⟵ unsupported argument type
+# test: cast (decimal as vector)
+select cast (decimal '123.321' as vector);
+error: vector(❰decimal❱ ⟵ unsupported argument type
+# test: cast (decimal as uuid)
+select cast (decimal '123.321' as uuid);
+error: uuid(❰decimal❱ ⟵ unsupported argument type
 # test: cast (string as bool)
 select cast ('string' as bool)::type;
 error: bool(❰string❱ ⟵ failed to cast string to bool
@@ -299,6 +418,26 @@ select cast ('string' as double);
 error: double(❰string❱ ⟵ unsupported argument type
 select cast ('123.321' as double);
 error: double(❰string❱ ⟵ unsupported argument type
+# test: cast (string as decimal)
+select cast ('string' as decimal)::type;
+error: decimal read error
+select cast ('string' as decimal);
+error: decimal read error
+select cast ('123.321' as decimal);
+
+decimal
+───────
+123.321
+select cast ('-123.321' as decimal);
+
+decimal
+───────
+-123.321
+select cast ('+123.321' as decimal);
+
+decimal
+───────
+123.321
 # test: cast (string as string)
 select cast ('string' as string)::type;
 
@@ -396,6 +535,17 @@ select cast (123.321::json as double);
 double
 ──────
 123.321
+# test: cast (json as decimal)
+select cast (123.321::json as decimal)::type;
+
+type
+────
+decimal
+select cast (123.321::json as decimal);
+
+decimal
+───────
+123.3209991455078
 # test: cast (json as string)
 select cast ('str'::json as string)::type;
 
@@ -475,6 +625,17 @@ select cast (date '1970-01-01' as double);
 double
 ──────
 2.44059e+06
+# test: cast (date as decimal)
+select cast (date '1970-01-01' as decimal)::type;
+
+type
+────
+decimal
+select cast (date '1970-01-01' as decimal);
+
+decimal
+───────
+2440588
 # test: cast (date as string)
 select cast (date '1970-01-01' as string)::type;
 
@@ -545,6 +706,17 @@ select cast (timestamp '1970-01-01 00:00:00.99' as double);
 double
 ──────
 990000
+# test: cast (timestamp as decimal)
+select cast (timestamp '1970-01-01 00:00:00.99' as decimal)::type;
+
+type
+────
+decimal
+select cast (timestamp '1970-01-01 00:00:00.99' as decimal);
+
+decimal
+───────
+990000
 # test: cast (timestamp as string)
 select cast (timestamp '1970-01-01 00:00:00.99' as string)::type;
 
@@ -609,6 +781,11 @@ select cast (interval '5 days 5 hours' as double)::type;
 error: double(❰interval❱ ⟵ unsupported argument type
 select cast (interval '5 days 5 hours' as double);
 error: double(❰interval❱ ⟵ unsupported argument type
+# test: cast (interval as decimal)
+select cast (interval '5 days 5 hours' as decimal)::type;
+error: decimal(❰interval❱ ⟵ unsupported argument type
+select cast (interval '5 days 5 hours' as decimal);
+error: decimal(❰interval❱ ⟵ unsupported argument type
 # test: cast (interval as string)
 select cast (interval '5 days 5 hours' as string)::type;
 
@@ -664,6 +841,11 @@ select cast (vector [1,2,3] as double)::type;
 error: double(❰vector❱ ⟵ unsupported argument type
 select cast (vector [1,2,3] as double);
 error: double(❰vector❱ ⟵ unsupported argument type
+# test: cast (vector as decimal)
+select cast (vector [1,2,3] as decimal)::type;
+error: decimal(❰vector❱ ⟵ unsupported argument type
+select cast (vector [1,2,3] as decimal);
+error: decimal(❰vector❱ ⟵ unsupported argument type
 # test: cast (vector as string)
 select cast (vector [1,2,3] as string)::type;
 
@@ -719,6 +901,11 @@ select cast (uuid '00000000-0000-0000-0000-000000000000' as double)::type;
 error: double(❰uuid❱ ⟵ unsupported argument type
 select cast (uuid '00000000-0000-0000-0000-000000000000' as double);
 error: double(❰uuid❱ ⟵ unsupported argument type
+# test: cast (uuid as decimal)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as decimal)::type;
+error: decimal(❰uuid❱ ⟵ unsupported argument type
+select cast (uuid '00000000-0000-0000-0000-000000000000' as decimal);
+error: decimal(❰uuid❱ ⟵ unsupported argument type
 # test: cast (uuid as string)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as string)::type;
 
@@ -791,6 +978,17 @@ select cast (null as double);
 
 double
 ──────
+null
+# test: cast (null as decimal)
+select cast (null as decimal)::type;
+
+type
+────
+null
+select cast (null as decimal);
+
+decimal
+───────
 null
 # test: cast (null as string)
 select cast (null as string)::type;

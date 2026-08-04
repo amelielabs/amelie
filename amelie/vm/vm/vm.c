@@ -851,7 +851,7 @@ cequif:
 
 cequie:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_bool(&r[op->a], r[op->b].integer == decimal_get_int(r[op->c].decimal));
+		value_set_bool(&r[op->a], !decimal_compareie(r[op->b].integer, r[op->c].decimal));
 	op_next;
 
 cequfi:
@@ -866,7 +866,7 @@ cequff:
 
 cequei:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_bool(&r[op->a], decimal_get_int(r[op->b].decimal) == r[op->c].integer);
+		value_set_bool(&r[op->a], !decimal_compareei(r[op->b].decimal, r[op->c].integer));
 	op_next;
 
 cequee:
@@ -928,7 +928,7 @@ cgteif:
 
 cgteie:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_bool(&r[op->a], r[op->b].integer >= decimal_get_int(r[op->c].decimal));
+		value_set_bool(&r[op->a], decimal_compareie(r[op->b].integer, r[op->c].decimal) >= 0);
 	op_next;
 
 cgtefi:
@@ -943,7 +943,7 @@ cgteff:
 
 cgteei:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_bool(&r[op->a], decimal_get_int(r[op->b].decimal) >= r[op->c].integer);
+		value_set_bool(&r[op->a], decimal_compareei(r[op->b].decimal, r[op->c].integer) >= 0);
 	op_next;
 
 cgteee:
@@ -996,7 +996,7 @@ cgtif:
 
 cgtie:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_bool(&r[op->a], r[op->b].integer > decimal_get_int(r[op->c].decimal));
+		value_set_bool(&r[op->a], decimal_compareie(r[op->b].integer, r[op->c].decimal) > 0);
 	op_next;
 
 cgtfi:
@@ -1011,7 +1011,7 @@ cgtff:
 
 cgtei:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_bool(&r[op->a], decimal_get_int(r[op->b].decimal) > r[op->c].integer);
+		value_set_bool(&r[op->a], decimal_compareei(r[op->b].decimal, r[op->c].integer) > 0);
 	op_next;
 
 cgtee:
@@ -1063,7 +1063,7 @@ clteif:
 
 clteie:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_bool(&r[op->a], r[op->b].integer <= decimal_get_int(r[op->c].decimal));
+		value_set_bool(&r[op->a], decimal_compareie(r[op->b].integer, r[op->c].decimal) <= 0);
 	op_next;
 
 cltefi:
@@ -1078,7 +1078,7 @@ clteff:
 
 clteei:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_bool(&r[op->a], decimal_get_int(r[op->b].decimal) <= r[op->c].integer);
+		value_set_bool(&r[op->a], decimal_compareei(r[op->b].decimal, r[op->c].integer) <= 0);
 	op_next;
 
 clteee:
@@ -1131,7 +1131,7 @@ cltif:
 
 cltie:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_bool(&r[op->a], r[op->b].integer < decimal_get_int(r[op->c].decimal));
+		value_set_bool(&r[op->a], decimal_compareie(r[op->b].integer, r[op->c].decimal) < 0);
 	op_next;
 
 cltfi:
@@ -1146,7 +1146,7 @@ cltff:
 
 cltei:
 	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_bool(&r[op->a], decimal_get_int(r[op->b].decimal) < r[op->c].integer);
+		value_set_bool(&r[op->a], decimal_compareei(r[op->b].decimal, r[op->c].integer) < 0);
 	op_next;
 
 cltee:

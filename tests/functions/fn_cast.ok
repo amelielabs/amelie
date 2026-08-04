@@ -51,6 +51,12 @@ select 3.14::int;
 int
 ───
 3
+# test: int(decimal)
+select decimal '3.14'::int;
+
+int
+───
+3
 # test: int(bool)
 select true::int;
 
@@ -145,6 +151,12 @@ select 0.0::bool;
 bool
 ────
 false
+# test: bool(decimal)
+select decimal '3.14'::bool;
+
+bool
+────
+true
 # test: bool(json)
 select true::json::bool;
 
@@ -190,6 +202,12 @@ select 3.14::double;
 double
 ──────
 3.14
+# test: double(decimal)
+select decimal '3.14'::double;
+
+double
+──────
+3.14
 # test: double(bool)
 select true::double;
 
@@ -220,6 +238,60 @@ double
 1.72252e+15
 select 1722517792056945::timestamp::double::timestamp;
 error: timestamp(❰double❱ ⟵ unsupported argument type
+# test: decimal(null)
+select 1::decimal;
+
+decimal
+───────
+1
+# test: decimal(int)
+select 1::decimal;
+
+decimal
+───────
+1
+# test: decimal(double)
+select 3.14::decimal;
+
+decimal
+───────
+3.14
+# test: decimal(decimal)
+select decimal '3.14'::decimal;
+
+decimal
+───────
+3.14
+# test: decimal(bool)
+select true::decimal;
+
+decimal
+───────
+1
+select false::decimal;
+
+decimal
+───────
+0
+# test: decimal(json)
+select 1.56::json::decimal;
+
+decimal
+───────
+1.559999942779541
+# test: decimal(timestamp)
+select 1722517792056945::timestamp;
+
+timestamp
+─────────
+2024-08-01 13:09:52.056945+00
+select 1722517792056945::timestamp::decimal;
+
+decimal
+───────
+1722517792056945
+select 1722517792056945::timestamp::decimal::timestamp;
+error: timestamp(❰decimal❱ ⟵ unsupported argument type
 # test: string(null)
 select null::string;
 
@@ -232,6 +304,12 @@ select 16384::string;
 string
 ──────
 16384
+# test: string(decimal)
+select decimal '16384.123'::string;
+
+string
+──────
+16384.123
 # test: string(string)
 select 'hello'::string;
 
@@ -338,6 +416,12 @@ select (-123.321)::json;
 json
 ────
 -123.321
+# test: json(decimal)
+select decimal '123.321'::json;
+
+json
+────
+123.321
 # test: json(string)
 select '1'::json;
 

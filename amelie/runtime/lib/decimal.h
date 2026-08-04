@@ -63,3 +63,5 @@ int      decimal_get(uint64_t, char*, int);
 int64_t  decimal_get_int(uint64_t);
 double   decimal_get_double(uint64_t);
 int      decimal_compare(uint64_t, uint64_t);
+int      decimal_compareei(uint64_t, int64_t);
+int      decimal_compareie(int64_t, uint64_t);
