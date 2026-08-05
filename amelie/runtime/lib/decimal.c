@@ -437,7 +437,7 @@ error:
 	return 0;
 }
 
-uint64_t
+hot uint64_t
 decimal_set_str(Str* spec)
 {
 	bool ok;
@@ -447,32 +447,35 @@ decimal_set_str(Str* spec)
 	return result;
 }
 
-uint64_t
-decimal_set_int(int scale, int64_t value)
+hot uint64_t
+decimal_set_int(int precision, int scale, int64_t value)
 {
-	if (unlikely(scale < 0 || scale > DECIMAL_MAX_SCALE))
+	if (precision > 0)
+	{
+		if (scale > 0) {
+			if (unlikely(int64_mul_overflow(&value, value, decimal_pow10[scale])))
+				goto error;
+		}
+
+		// validate precision
+		int64_t max = decimal_pow10[precision] - 1;
+		if (unlikely(value > max || value < -max))
+			goto error;
+	}
+
+	if (unlikely(value > DECIMAL_MAX || value < DECIMAL_MIN))
 		goto error;
 
-	if (scale == 0)
-		return decimal_set(value, 0);
-
-	int64_t value_scaled;
-	if (unlikely(int64_mul_overflow(&value_scaled, value, decimal_pow10[scale])))
-		goto error;
-	if (unlikely(value_scaled > DECIMAL_MAX ||
-	             value_scaled < DECIMAL_MIN))
-		goto error;
-
-	return decimal_set(value_scaled, scale);
+	return decimal_set(value, scale);
 
 error:
 	error("decimal overflow");
 }
 
-uint64_t
+hot uint64_t
 decimal_set_double(double value)
 {
-	if (isnan(value) || isinf(value))
+	if (unlikely(isnan(value) || isinf(value)))
 		error("decimal overflow");
 
 	double value_abs = fabs(value);
@@ -498,18 +501,64 @@ decimal_set_double(double value)
 	return decimal_set(integer, scale);
 }
 
-uint64_t
-decimal_set_double_round(int scale, double value)
+hot uint64_t
+decimal_set_double_round(int precision, int scale, double value)
 {
-	if (unlikely(isnan(value) || isinf(value) || scale < 0 || scale > DECIMAL_MAX_SCALE))
+	if (precision == 0)
+		return decimal_set_double(value);
+
+	if (unlikely(isnan(value) || isinf(value)))
 		goto error;
 
-	double value_scaled = value * decimal_pow10_dbl[scale];
-	if (unlikely(value_scaled > DECIMAL_MAX ||
-	             value_scaled < DECIMAL_MIN))
+	int64_t value_rounded = (int64_t)llround(value * decimal_pow10_dbl[scale]);
+	if (unlikely(value_rounded > DECIMAL_MAX || value_rounded < DECIMAL_MIN))
 		goto error;
 
-	return decimal_set((int64_t)llround(value_scaled), scale);
+	// validate precision
+	int64_t max = decimal_pow10[precision] - 1;
+	if (unlikely(value_rounded > max || value_rounded < -max))
+		goto error;
+
+	return decimal_set(value_rounded, scale);
+
+error:
+	error("decimal overflow");
+}
+
+hot uint64_t
+decimal_set_decimal(int precision, int scale, uint64_t decimal)
+{
+	// decimal
+	if (precision == 0)
+		return decimal;
+
+	int64_t src_value = decimal_value(decimal);
+	int     src_scale = decimal_scale(decimal);
+	if (src_scale < scale)
+	{
+		// upscale
+		if (unlikely(int64_mul_overflow(&src_value, src_value, decimal_pow10[scale - src_scale])))
+			goto error;
+	} else
+	if (src_scale > scale)
+	{
+		// downscale
+		int64_t div = decimal_pow10[src_scale - scale];
+		int64_t remainder = src_value % div;
+		src_value /= div;
+
+		// round
+		int64_t half = div / 2;
+		if (llabs(remainder) > half || (llabs(remainder) == half && (src_value & 1)))
+			src_value += (src_value > 0) ? 1 : -1;
+	}
+
+	// validate precision
+	int64_t max = decimal_pow10[precision] - 1;
+	if (unlikely(src_value > max || src_value < -max))
+		goto error;
+
+	return decimal_set(src_value, scale);
 
 error:
 	error("decimal overflow");

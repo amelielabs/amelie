@@ -200,6 +200,11 @@ drop table test;
 create table test (id int primary key, data i32);
 insert into test values (1, 123), (2, 256), (3, -32768);
 insert into test values (4, -32768), (5, 2147483647) returning *;
+insert into test values (6, decimal '123.0');
+insert into test values (7, decimal '123.999');
+insert into test values (8, decimal '-123.999');
+insert into test values (9, decimal '2147483647.0');
+insert into test values (10, decimal '2147483648.0');
 select * from test;
 drop table test;
 
@@ -207,6 +212,7 @@ drop table test;
 create table test (id int primary key, data i64);
 insert into test values (1, 123), (2, 256), (3, -32768);
 insert into test values (4, 9223372036854775807) returning *;
+insert into test values (5, decimal '9007199254740991.0') returning *;
 select * from test;
 drop table test;
 
@@ -221,6 +227,56 @@ drop table test;
 create table test (id int primary key, data double);
 insert into test values (1, 123.32), (2, 3.14);
 insert into test values (4, 2.2250738585072014e-308), (5, 1.79769e+308) returning *;
+select * from test;
+drop table test;
+
+# test: insert column (decimal)
+create table test (id int primary key, data decimal);
+insert into test values (0, decimal '3.14');
+# int
+insert into test values (1, 123);
+# double
+insert into test values (2, 3.14);
+select * from test;
+drop table test;
+
+# test: insert column (decimal p,s) upscale
+create table test (id int primary key, a decimal(5,2), b decimal(6,4), c decimal(15,15), d decimal(5,2));
+insert into test values (0, decimal '1', decimal '1.5', decimal '0.1', decimal '-42.1');
+select * from test;
+drop table test;
+
+# test: insert column (decimal p,s) downscale
+create table test (id int primary key, a decimal(5,2));
+insert into test values (0, decimal '1.234');
+insert into test values (1, decimal '1.236');
+insert into test values (2, decimal '1.235');
+insert into test values (3, decimal '-1.236');
+select * from test;
+drop table test;
+
+create table test (id int primary key, a decimal(4,2));
+insert into test values (0, decimal '0.000001');
+select * from test;
+drop table test;
+
+# test: insert column (decimal p,s) overflow
+create table test (id int primary key, a decimal(4,2));
+insert into test values (0, decimal '100.00');
+insert into test values (1, decimal '-100.00');
+insert into test values (2, decimal '99.995');
+drop table test;
+
+create table test (id int primary key, a decimal(10,2));
+insert into test values (0, decimal '9007199254740991');
+drop table test;
+
+# test: insert column (decimal p,s) convertion
+create table test (id int primary key, a decimal(5,0));
+insert into test values (0, decimal '123.000');
+insert into test values (1, decimal '123.499');
+insert into test values (2, decimal '123.500');
+insert into test values (3, decimal '-123.500');
 select * from test;
 drop table test;
 

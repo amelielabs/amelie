@@ -149,16 +149,19 @@ parse_value_const(Stmt* self, Column* column, Value* value)
 	}
 	case TYPE_DECIMAL:
 	{
+		auto     cons = &column->constraints;
+		uint64_t decimal;
 		if (likely(ast->id == KDECIMAL))
-			value_set_decimal(value, ast->decimal);
+			decimal = decimal_set_decimal(cons->decimal, cons->decimal_scale, ast->decimal);
 		else
 		if (ast->id == KINT)
-			value_set_decimal(value, decimal_set_int(column->constraints.decimal_scale, ast->integer));
+			decimal = decimal_set_int(cons->decimal, cons->decimal_scale, ast->integer);
 		else
 		if (ast->id == KREAL)
-			value_set_decimal(value, decimal_set_double_round(column->constraints.decimal_scale, ast->real));
+			decimal = decimal_set_double_round(cons->decimal, cons->decimal_scale, ast->real);
 		else
 			break;
+		value_set_decimal(value, decimal);
 		return ast;
 	}
 	case TYPE_DATE:
@@ -357,16 +360,19 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 	}
 	case TYPE_DECIMAL:
 	{
+		auto     cons = &column->constraints;
+		uint64_t decimal;
 		if (likely(ast->id == KDECIMAL))
-			value_set_decimal(value, ast->decimal);
+			decimal = decimal_set_decimal(cons->decimal, cons->decimal_scale, ast->decimal);
 		else
 		if (ast->id == KINT)
-			value_set_decimal(value, decimal_set_int(column->constraints.decimal_scale, ast->integer));
+			decimal = decimal_set_int(cons->decimal, cons->decimal_scale, ast->integer);
 		else
 		if (ast->id == KREAL)
-			value_set_decimal(value, decimal_set_double_round(column->constraints.decimal_scale, ast->real));
+			decimal = decimal_set_double_round(cons->decimal, cons->decimal_scale, ast->real);
 		else
 			break;
+		value_set_decimal(value, decimal);
 		return ast;
 	}
 	case TYPE_DATE:
@@ -527,30 +533,29 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	}
 	case TYPE_DECIMAL:
 	{
+		auto     cons = &column->constraints;
+		uint64_t decimal;
 		if (data_is_decimal(*pos))
 		{
 			uint64_t ref;
 			unpack_decimal(pos, &ref);
-			value_set_decimal(value, ref);
-			return;
-		}
-
+			decimal = decimal_set_decimal(cons->decimal, cons->decimal_scale, ref);
+		} else
 		if (data_is_int(*pos))
 		{
 			int64_t ref;
 			unpack_int(pos, &ref);
-			value_set_decimal(value, decimal_set_int(column->constraints.decimal_scale, ref));
-			return;
-		}
-
+			decimal = decimal_set_int(cons->decimal, cons->decimal_scale, ref);
+		} else
 		if (data_is_real(*pos))
 		{
 			double ref;
 			unpack_real(pos, &ref);
-			value_set_decimal(value, decimal_set_double_round(column->constraints.decimal_scale, ref));
-			return;
-		}
-		break;
+			decimal = decimal_set_double_round(cons->decimal, cons->decimal_scale, ref);
+		} else
+			break;
+		value_set_decimal(value, decimal);
+		return;
 	}
 	case TYPE_DATE:
 	{
