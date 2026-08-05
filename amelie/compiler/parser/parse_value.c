@@ -118,6 +118,9 @@ parse_value_const(Stmt* self, Column* column, Value* value)
 		if (likely(ast->id == KINT))
 			value_set_int(value, ast->integer * minus);
 		else
+		if (ast->id == KDECIMAL)
+			value_set_int(value, decimal_get_int(ast->decimal) * minus);
+		else
 		if (ast->id == KREAL)
 			value_set_int(value, ast->real * minus);
 		else
@@ -135,8 +138,25 @@ parse_value_const(Stmt* self, Column* column, Value* value)
 		if (likely(ast->id == KINT))
 			value_set_double(value, ast->integer * minus);
 		else
+		if (ast->id == KDECIMAL)
+			value_set_double(value, decimal_get_double(ast->decimal) * minus);
+		else
 		if (ast->id == KREAL)
 			value_set_double(value, ast->real * minus);
+		else
+			break;
+		return ast;
+	}
+	case TYPE_DECIMAL:
+	{
+		if (likely(ast->id == KDECIMAL))
+			value_set_decimal(value, ast->decimal);
+		else
+		if (ast->id == KINT)
+			value_set_decimal(value, decimal_set_int(column->constraints.decimal_scale, ast->integer));
+		else
+		if (ast->id == KREAL)
+			value_set_decimal(value, decimal_set_double_round(column->constraints.decimal_scale, ast->real));
 		else
 			break;
 		return ast;
@@ -312,6 +332,9 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		if (likely(ast->id == KINT))
 			value_set_int(value, ast->integer);
 		else
+		if (ast->id == KDECIMAL)
+			value_set_int(value, decimal_get_int(ast->decimal));
+		else
 		if (ast->id == KREAL)
 			value_set_int(value, ast->real);
 		else
@@ -323,8 +346,25 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		if (likely(ast->id == KREAL))
 			value_set_double(value, ast->real);
 		else
-		if (likely(ast->id == KINT))
+		if (ast->id == KDECIMAL)
+			value_set_double(value, decimal_get_double(ast->decimal));
+		else
+		if (ast->id == KINT)
 			value_set_double(value, ast->integer);
+		else
+			break;
+		return ast;
+	}
+	case TYPE_DECIMAL:
+	{
+		if (likely(ast->id == KDECIMAL))
+			value_set_decimal(value, ast->decimal);
+		else
+		if (ast->id == KINT)
+			value_set_decimal(value, decimal_set_int(column->constraints.decimal_scale, ast->integer));
+		else
+		if (ast->id == KREAL)
+			value_set_decimal(value, decimal_set_double_round(column->constraints.decimal_scale, ast->real));
 		else
 			break;
 		return ast;
@@ -440,6 +480,14 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 			return;
 		}
 
+		if (data_is_decimal(*pos))
+		{
+			uint64_t ref;
+			unpack_decimal(pos, &ref);
+			value_set_int(value, decimal_get_int(ref));
+			return;
+		}
+
 		if (data_is_real(*pos))
 		{
 			double ref;
@@ -451,6 +499,22 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 	}
 	case TYPE_DOUBLE:
 	{
+		if (data_is_real(*pos))
+		{
+			double ref;
+			unpack_real(pos, &ref);
+			value_set_double(value, ref);
+			return;
+		}
+
+		if (data_is_decimal(*pos))
+		{
+			uint64_t ref;
+			unpack_decimal(pos, &ref);
+			value_set_double(value, decimal_get_double(ref));
+			return;
+		}
+
 		if (data_is_int(*pos))
 		{
 			int64_t ref;
@@ -459,11 +523,31 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 			return;
 		}
 
+		break;
+	}
+	case TYPE_DECIMAL:
+	{
+		if (data_is_decimal(*pos))
+		{
+			uint64_t ref;
+			unpack_decimal(pos, &ref);
+			value_set_decimal(value, ref);
+			return;
+		}
+
+		if (data_is_int(*pos))
+		{
+			int64_t ref;
+			unpack_int(pos, &ref);
+			value_set_decimal(value, decimal_set_int(column->constraints.decimal_scale, ref));
+			return;
+		}
+
 		if (data_is_real(*pos))
 		{
 			double ref;
 			unpack_real(pos, &ref);
-			value_set_double(value, ref);
+			value_set_decimal(value, decimal_set_double_round(column->constraints.decimal_scale, ref));
 			return;
 		}
 		break;

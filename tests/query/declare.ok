@@ -17,8 +17,10 @@ error: ❰explain❱ ⟵ EXPLAIN without command
 # test: declare char/varchar
 declare c char;
 declare c char(123);
+error: declare c char❰(❱ ⟵ ; expected
 declare c varchar;
 declare c varchar(123);
+error: declare c varchar❰(❱ ⟵ ; expected
 # test: declare begin/end
 explain begin;
 	declare a int;

@@ -275,6 +275,7 @@ OpDesc ops[] =
 	{ CTABLE_READI64, "table_readi64" },
 	{ CTABLE_READF32, "table_readf32" },
 	{ CTABLE_READF64, "table_readf64" },
+	{ CTABLE_READE, "table_reade" },
 	{ CTABLE_READT, "table_readt" },
 	{ CTABLE_READL, "table_readl" },
 	{ CTABLE_READD, "table_readd" },
@@ -567,6 +568,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CTABLE_READI64:
 		case CTABLE_READF32:
 		case CTABLE_READF64:
+		case CTABLE_READE:
 		case CTABLE_READT:
 		case CTABLE_READL:
 		case CTABLE_READD:

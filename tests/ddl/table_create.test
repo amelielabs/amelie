@@ -68,6 +68,16 @@ create table test(id int primary key, a double, b f64);
 select show('table', 'test', true).columns;
 drop table test;
 
+# test: column decimal
+create table test(id int primary key, a decimal, b decimal(3, 2), c decimal (2, 0));
+select show('table', 'test', true).columns;
+drop table test;
+
+create table test(id int primary key, a decimal(0, 2));
+create table test(id int primary key, a decimal(16, 2));
+create table test(id int primary key, a decimal(15, 16));
+create table test(id int primary key, a decimal(2, 3));
+
 # test: column text/string
 create table test(id int primary key, a text, b string);
 select show('table', 'test', true).columns;

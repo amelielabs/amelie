@@ -18,9 +18,10 @@
    Bits 60-63: 4-bit scale (0 to 15)
 */
 
-#define DECIMAL_MAX_SCALE 15
-#define DECIMAL_MIN       -9007199254740991LL
-#define DECIMAL_MAX        9007199254740991LL
+#define DECIMAL_MAX_PRECISION 15
+#define DECIMAL_MAX_SCALE     15
+#define DECIMAL_MIN           -9007199254740991LL
+#define DECIMAL_MAX            9007199254740991LL
 
 always_inline static inline uint64_t
 decimal_set(int64_t value, uint32_t scale)

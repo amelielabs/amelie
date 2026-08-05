@@ -163,6 +163,9 @@ emit_column(Compiler* self,
 			}
 			break;
 		}
+		case TYPE_DECIMAL:
+			op = CTABLE_READE;
+			break;
 		case TYPE_DATE:
 			op = CTABLE_READD;
 			break;

@@ -294,11 +294,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		columns_add(columns, column);
 
 		// type
-		int  size_flat;
-		int  size;
-		auto type = parse_type(self->lex, &size, &size_flat);
-		column_set_type(column, type, size);
-		column_set_size_flat(column, size_flat);
+		parse_type_column(self->lex, column);
 
 		// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
 		parse_constraints(self, keys, column);
@@ -540,12 +536,7 @@ parse_table_alter(Stmt* self)
 			column_set_name(column, &name->string);
 
 			// type
-			int  size_flat;
-			int  size;
-			auto type = parse_type(self->lex, &size, &size_flat);
-
-			column_set_type(column, type, size);
-			column_set_size_flat(column, size_flat);
+			parse_type_column(self->lex, stmt->column);
 
 			// [NOT NULL | DEFAULT | AS]
 			parse_constraints(self, NULL, column);

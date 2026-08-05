@@ -54,7 +54,11 @@ value_print_estimate(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		return buf_size(buf);
 	}
 	case TYPE_DECIMAL:
-		return 34;
+	{
+		buf_reset(buf);
+		buf_reserve(buf, 34);
+		return decimal_get(self->decimal, (char*)buf->start, 34);
+	}
 	case TYPE_DATE:
 		return 10;
 	case TYPE_TIMESTAMP:

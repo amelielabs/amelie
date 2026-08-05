@@ -353,6 +353,7 @@ vm_run(Vm*       self,
 		&&ctable_readi64,
 		&&ctable_readf32,
 		&&ctable_readf64,
+		&&ctable_reade,
 		&&ctable_readt,
 		&&ctable_readl,
 		&&ctable_readd,
@@ -1917,6 +1918,14 @@ ctable_readf64:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 		value_set_double(&r[op->a], *(double*)ptr);
+	else
+		value_set_null(&r[op->a]);
+	op_next;
+
+ctable_reade:
+	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
+	if (likely(ptr))
+		value_set_decimal(&r[op->a], *(uint64_t*)ptr);
 	else
 		value_set_null(&r[op->a]);
 	op_next;
