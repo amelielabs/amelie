@@ -363,7 +363,8 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		auto     cons = &column->constraints;
 		uint64_t decimal;
 		if (likely(ast->id == KDECIMAL))
-			decimal = decimal_set_decimal(cons->decimal, cons->decimal_scale, ast->decimal);
+			// decimal value will be converted during row creation
+			decimal = ast->decimal;
 		else
 		if (ast->id == KINT)
 			decimal = decimal_set_int(cons->decimal, cons->decimal_scale, ast->integer);
@@ -537,9 +538,8 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 		uint64_t decimal;
 		if (data_is_decimal(*pos))
 		{
-			uint64_t ref;
-			unpack_decimal(pos, &ref);
-			decimal = decimal_set_decimal(cons->decimal, cons->decimal_scale, ref);
+			// decimal value will be converted during row creation
+			unpack_decimal(pos, &decimal);
 		} else
 		if (data_is_int(*pos))
 		{

@@ -635,6 +635,21 @@ id  data
 1   123.33
 2   3.15
 drop table test;
+# test: update column (decimal)
+create table test (id int primary key, d decimal(5,2));
+insert into test values (0, decimal '1');
+select * from test;
+
+id  d
+──────────
+0   1.00
+update test set d = decimal '1.5';
+select * from test;
+
+id  d
+──────────
+0   1.50
+drop table test;
 # test: update column (text)
 create table test (id int primary key, data text);
 insert into test values (1, 'hello');

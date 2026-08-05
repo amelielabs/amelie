@@ -1588,5 +1588,14 @@ create table test (id int primary key, s string);
 insert into test select 1, 'x' like 'x';
 error: insert into test ❰select❱ ⟵ SELECT columns must match the INSERT table
 drop table test;
+# test: insert select decimal
+create table test (id int primary key, d decimal(5,2));
+insert into test select 0, decimal '1.5';
+select * from test;
+
+id  d
+──────────
+0   1.50
+drop table test;
 disconnect S0;
 close E0;

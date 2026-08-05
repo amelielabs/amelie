@@ -169,13 +169,19 @@ row_create(Part*     part,
 			value = &refs[value->integer];
 
 		// NOT NULL constraint
+		const auto cons = &column->constraints;
 		if (value->type == TYPE_NULL)
 		{
-			if (unlikely(column->constraints.not_null && !column->constraints.identity))
+			if (unlikely(cons->not_null && !cons->identity))
 				error("column '{str}': cannot be NULL", &column->name);
 			continue;
 		}
 
+		// validate decimal
+		if (column->type == TYPE_DECIMAL && cons->decimal > 0)
+			decimal_set_decimal(cons->decimal, cons->decimal_scale, value->decimal);
+
+		// validate vector
 		if (column->type == TYPE_VECTOR)
 		{
 			if (value->type != TYPE_VECTOR ||
@@ -232,16 +238,23 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		if (value)
 		{
 			// NOT NULL constraint
+			const auto cons = &column->constraints;
 			if (value->type == TYPE_NULL)
 			{
-				if (unlikely(column->constraints.not_null && !column->constraints.identity))
+				if (unlikely(cons->not_null && !cons->identity))
 					error("column '{str}': cannot be NULL", &column->name);
 				continue;
 			}
 
+			// validate decimal
+			if (column->type == TYPE_DECIMAL && cons->decimal > 0)
+				decimal_set_decimal(cons->decimal, cons->decimal_scale, value->decimal);
+
+			// validate vector
 			if (column->type == TYPE_VECTOR)
 			{
-				if (value->type != TYPE_VECTOR || value->vector_dim != (column->size_flat / sizeof(float)))
+				if (value->type != TYPE_VECTOR ||
+				    value->vector_dim != (column->size_flat / sizeof(float)))
 				    error("column '{str}': invalid vector dimension", &column->name);
 			}
 

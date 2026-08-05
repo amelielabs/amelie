@@ -51,6 +51,11 @@ post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name":
 select * from test;
 drop table test;
 
+create table test (id int primary key, data decimal(5,2));
+post /api - - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "test", "arguments": {"id": 0, "data": 1.5} }};
+select * from test;
+drop table test;
+
 # test: POST /api (execute)
 create function x (a int, b int) return int
 begin

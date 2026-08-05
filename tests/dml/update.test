@@ -240,6 +240,14 @@ update test set data = data + 0.01;
 select * from test;
 drop table test;
 
+# test: update column (decimal)
+create table test (id int primary key, d decimal(5,2));
+insert into test values (0, decimal '1');
+select * from test;
+update test set d = decimal '1.5';
+select * from test;
+drop table test;
+
 # test: update column (text)
 create table test (id int primary key, data text);
 insert into test values (1, 'hello');

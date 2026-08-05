@@ -113,9 +113,15 @@ value_data_encode(Value*    self, Column* column,
 		break;
 	}
 	case TYPE_DECIMAL:
-		*(uint64_t*)*pos = self->decimal;
+	{
+		const auto cons = &column->constraints;
+		if (cons->decimal > 0)
+			*(uint64_t*)*pos = decimal_set_decimal(cons->decimal, cons->decimal_scale, self->decimal);
+		else
+			*(uint64_t*)*pos = self->decimal;
 		*pos += sizeof(uint64_t);
 		break;
+	}
 	case TYPE_INTERVAL:
 		*(Interval*)*pos = self->interval;
 		*pos += sizeof(Interval);

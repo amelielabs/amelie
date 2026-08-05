@@ -534,23 +534,25 @@ decimal_set_decimal(int precision, int scale, uint64_t decimal)
 
 	int64_t src_value = decimal_value(decimal);
 	int     src_scale = decimal_scale(decimal);
-	if (src_scale < scale)
+	if (unlikely(src_scale != scale))
 	{
-		// upscale
-		if (unlikely(int64_mul_overflow(&src_value, src_value, decimal_pow10[scale - src_scale])))
-			goto error;
-	} else
-	if (src_scale > scale)
-	{
-		// downscale
-		int64_t div = decimal_pow10[src_scale - scale];
-		int64_t remainder = src_value % div;
-		src_value /= div;
+		if (src_scale < scale)
+		{
+			// upscale
+			if (unlikely(int64_mul_overflow(&src_value, src_value, decimal_pow10[scale - src_scale])))
+				goto error;
+		} else
+		{
+			// downscale
+			int64_t div = decimal_pow10[src_scale - scale];
+			int64_t remainder = src_value % div;
+			src_value /= div;
 
-		// round
-		int64_t half = div / 2;
-		if (llabs(remainder) > half || (llabs(remainder) == half && (src_value & 1)))
-			src_value += (src_value > 0) ? 1 : -1;
+			// round
+			int64_t half = div / 2;
+			if (llabs(remainder) > half || (llabs(remainder) == half && (src_value & 1)))
+				src_value += (src_value > 0) ? 1 : -1;
+		}
 	}
 
 	// validate precision
