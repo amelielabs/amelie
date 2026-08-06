@@ -20,6 +20,7 @@ enum
 
 	// consts
 	KREAL,
+	KDECIMAL,
 	KINT,
 	KSTRING,
 
@@ -94,7 +95,7 @@ enum
 
 	// d
 	KDELETE,
-	KDECIMAL,
+	KDECIMAL_NAME,
 	KDECLARE,
 	KDISTINCT,
 	KDO,

@@ -150,7 +150,7 @@ parse_value_const(Stmt* self, Column* column, Value* value)
 	case TYPE_DECIMAL:
 	{
 		// [DECIMAL] string
-		if (ast->id == KDECIMAL)
+		if (ast->id == KDECIMAL_NAME)
 			ast = stmt_expect(self, KSTRING);
 		auto     cons = &column->constraints;
 		uint64_t decimal;

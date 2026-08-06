@@ -85,6 +85,9 @@ lex_error_expect(Lex* self, Ast* ast, int id)
 		case KREAL:
 			ref = "float";
 			break;
+		case KDECIMAL:
+			ref = "decimal";
+			break;
 		case KINT:
 			ref = "int";
 			break;

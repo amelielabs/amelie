@@ -92,6 +92,7 @@ priority_map[KEYWORD_MAX] =
 	[KINTERVAL]                = priority_value,
 	[KTIMESTAMP]               = priority_value,
 	[KDECIMAL]                 = priority_value,
+	[KDECIMAL_NAME]            = priority_value,
 	[KDATE]                    = priority_value,
 	[KCURRENT_TIMESTAMP]       = priority_value,
 	[KCURRENT_DATE]            = priority_value,
@@ -164,6 +165,7 @@ parse_expr_is_const(Ast* self)
 	// consts
 	case KNULL:
 	case KREAL:
+	case KDECIMAL:
 	case KINT:
 	case KSTRING:
 	case KTRUE:
@@ -178,7 +180,6 @@ parse_expr_is_const(Ast* self)
 	// time-related consts
 	case KINTERVAL:
 	case KTIMESTAMP:
-	case KDECIMAL:
 	case KDATE:
 		return true;
 	// nested
@@ -704,6 +705,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// const
 	case KNULL:
 	case KREAL:
+	case KDECIMAL:
 	case KINT:
 	case KSTRING:
 	case KTRUE:
@@ -745,7 +747,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		value->pos_end   = spec->pos_end;
 		break;
 	}
-	case KDECIMAL:
+	case KDECIMAL_NAME:
 	{
 		// ()
 		if (stmt_if(self, '('))
@@ -758,6 +760,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		// decimal 'spec'
 		auto spec = stmt_expect(self, KSTRING);
 		bool ok;
+		value->id        = KDECIMAL;
 		value->decimal   = decimal_set_str_nothrow(&spec->string, &ok);
 		if (unlikely(! ok))
 			stmt_error(self, spec, "failed to read decimal");
