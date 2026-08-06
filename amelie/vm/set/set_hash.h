@@ -107,6 +107,10 @@ set_hash_value(Value* value, uint32_t hash)
 		data = &value->dbl;
 		data_size = sizeof(value->dbl);
 		break;
+	case TYPE_DECIMAL:
+		data = &value->decimal;
+		data_size = sizeof(value->decimal);
+		break;
 	case TYPE_INTERVAL:
 		data = &value->interval;
 		data_size = sizeof(value->interval);

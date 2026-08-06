@@ -117,6 +117,50 @@ agg_compute(Agg* self, Value* src, Value* data)
 		avg_add_double(&src->avg, value, 1);
 		break;
 	}
+	case AGG_DECIMAL_MIN:
+	{
+		auto value = data->decimal;
+		if (likely(src->type == TYPE_DECIMAL))
+		{
+			if (decimal_compare(value, src->decimal) < 0)
+				src->decimal = value;
+		} else {
+			value_set_decimal(src, value);
+		}
+		break;
+	}
+	case AGG_DECIMAL_MAX:
+	{
+		auto value = data->decimal;
+		if (likely(src->type == TYPE_DECIMAL))
+		{
+			if (decimal_compare(value, src->decimal) > 0)
+				src->decimal = value;
+		} else {
+			value_set_decimal(src, value);
+		}
+		break;
+	}
+	case AGG_DECIMAL_SUM:
+	{
+		auto value = data->decimal;
+		if (likely(src->type == TYPE_DECIMAL))
+			src->decimal = decimal_add(src->decimal, value);
+		else
+			value_set_decimal(src, value);
+		break;
+	}
+	case AGG_DECIMAL_AVG:
+	{
+		auto value = data->decimal;
+		if (unlikely(src->type == TYPE_NULL))
+		{
+			src->type = TYPE_AVG;
+			avg_init(&src->avg);
+		}
+		avg_add_decimal(&src->avg, value, 1);
+		break;
+	}
 	case AGG_LAMBDA:
 	{
 		value_move(src, data);
@@ -214,6 +258,20 @@ agg_merge(Agg* self, Value* a, Value* b)
 		break;
 	case AGG_DOUBLE_AVG:
 		avg_add_double(&a->avg, b->avg.sum_double, b->avg.count);
+		break;
+	case AGG_DECIMAL_MIN:
+		if (decimal_compare(b->decimal, a->decimal) < 0)
+			a->decimal = b->decimal;
+		break;
+	case AGG_DECIMAL_MAX:
+		if (decimal_compare(b->decimal, a->decimal) > 0)
+			a->decimal = b->decimal;
+		break;
+	case AGG_DECIMAL_SUM:
+		a->decimal = decimal_add(a->decimal, b->decimal);
+		break;
+	case AGG_DECIMAL_AVG:
+		avg_add_decimal(&a->avg, b->avg.sum_decimal, b->avg.count);
 		break;
 	case AGG_LAMBDA:
 		error("distributed operation on lambda is not supported");

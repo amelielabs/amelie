@@ -292,6 +292,7 @@ enum
 	CCOUNT,
 	CAVGI,
 	CAVGF,
+	CAVGE,
 
 	// matching
 	CMATCHING,

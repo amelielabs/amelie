@@ -24,6 +24,10 @@ typedef enum
 	AGG_DOUBLE_MAX,
 	AGG_DOUBLE_SUM,
 	AGG_DOUBLE_AVG,
+	AGG_DECIMAL_MIN,
+	AGG_DECIMAL_MAX,
+	AGG_DECIMAL_SUM,
+	AGG_DECIMAL_AVG,
 	AGG_LAMBDA
 } AggType;
 
@@ -41,15 +45,19 @@ agg_nameof(int id)
 		return "count";
 	case AGG_INT_MIN:
 	case AGG_DOUBLE_MIN:
+	case AGG_DECIMAL_MIN:
 		return "min";
 	case AGG_INT_MAX:
 	case AGG_DOUBLE_MAX:
+	case AGG_DECIMAL_MAX:
 		return "max";
 	case AGG_INT_SUM:
 	case AGG_DOUBLE_SUM:
+	case AGG_DECIMAL_SUM:
 		return "sum";
 	case AGG_INT_AVG:
 	case AGG_DOUBLE_AVG:
+	case AGG_DECIMAL_AVG:
 		return "avg";
 	}
 	return NULL;

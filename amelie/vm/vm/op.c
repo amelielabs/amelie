@@ -299,6 +299,7 @@ OpDesc ops[] =
 	{ CCOUNT, "count" },
 	{ CAVGI, "avgi" },
 	{ CAVGF, "avgf" },
+	{ CAVGE, "avge" },
 
 	// matching
 	{ CMATCHING, "matching" },

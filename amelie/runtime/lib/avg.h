@@ -16,8 +16,9 @@ typedef struct Avg Avg;
 struct Avg
 {
 	union {
-		int64_t sum_int;
-		double  sum_double;
+		int64_t  sum_int;
+		double   sum_double;
+		uint64_t sum_decimal;
 	};
 	uint64_t count;
 };
@@ -42,6 +43,13 @@ avg_add_double(Avg* self, double value, int count)
 	self->count      += count;
 }
 
+static inline void
+avg_add_decimal(Avg* self, uint64_t value, int count)
+{
+	self->sum_decimal = decimal_add(self->sum_decimal, value);
+	self->count      += count;
+}
+
 static inline int64_t
 avg_int(Avg* self)
 {
@@ -52,4 +60,10 @@ static inline double
 avg_double(Avg* self)
 {
 	return self->sum_double / self->count;
+}
+
+static inline uint64_t
+avg_decimal(Avg* self)
+{
+	return decimal_div(self->sum_decimal, self->count);
 }

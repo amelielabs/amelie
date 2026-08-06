@@ -100,37 +100,49 @@ on_match_aggs(Scan* self)
 			if (rt == TYPE_INT || rt == TYPE_NULL)
 				agg->id = AGG_INT_MIN;
 			else
+			if (rt == TYPE_DECIMAL)
+				agg->id = AGG_DECIMAL_MIN;
+			else
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_MIN;
 			else
-				stmt_error(cp->current, agg->expr, "int or double expected");
+				stmt_error(cp->current, agg->expr, "int, decimal or double expected");
 			break;
 		case KMAX:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
 				agg->id = AGG_INT_MAX;
 			else
+			if (rt == TYPE_DECIMAL)
+				agg->id = AGG_DECIMAL_MAX;
+			else
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_MAX;
 			else
-				stmt_error(cp->current, agg->expr, "int or double expected");
+				stmt_error(cp->current, agg->expr, "int, decimal or double expected");
 			break;
 		case KSUM:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
 				agg->id = AGG_INT_SUM;
 			else
+			if (rt == TYPE_DECIMAL)
+				agg->id = AGG_DECIMAL_SUM;
+			else
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_SUM;
 			else
-				stmt_error(cp->current, agg->expr, "int or double expected");
+				stmt_error(cp->current, agg->expr, "int, decimal or double expected");
 			break;
 		case KAVG:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
 				agg->id = AGG_INT_AVG;
 			else
+			if (rt == TYPE_DECIMAL)
+				agg->id = AGG_DECIMAL_AVG;
+			else
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_AVG;
 			else
-				stmt_error(cp->current, agg->expr, "int or double expected");
+				stmt_error(cp->current, agg->expr, "int, decimal or double expected");
 			break;
 		}
 		aggs[agg->order].type = agg->id;

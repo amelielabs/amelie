@@ -377,6 +377,7 @@ vm_run(Vm*       self,
 		&&ccount,
 		&&cavgi,
 		&&cavgf,
+		&&cavge,
 
 		// matching
 		&&cmatching,
@@ -2102,6 +2103,15 @@ cavgf:
 	c = &store_iterator_at(r[op->b].cursor_store)[op->c];
 	if (likely(c->type == TYPE_AVG))
 		value_set_double(&r[op->a], avg_double(&c->avg));
+	else
+		value_set_null(&r[op->a]);
+	op_next;
+
+cavge:
+	// [result, cursor, column]
+	c = &store_iterator_at(r[op->b].cursor_store)[op->c];
+	if (likely(c->type == TYPE_AVG))
+		value_set_decimal(&r[op->a], avg_decimal(&c->avg));
 	else
 		value_set_null(&r[op->a]);
 	op_next;

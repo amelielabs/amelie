@@ -451,6 +451,12 @@ emit_aggregate(Compiler* self, From* from, Ast* ast)
 		agg_op   = CAGG;
 		agg_type = TYPE_DOUBLE;
 		break;
+	case AGG_DECIMAL_MIN:
+	case AGG_DECIMAL_MAX:
+	case AGG_DECIMAL_SUM:
+		agg_op   = CAGG;
+		agg_type = TYPE_DECIMAL;
+		break;
 	case AGG_INT_AVG:
 		agg_op   = CAVGI;
 		agg_type = TYPE_INT;
@@ -458,6 +464,10 @@ emit_aggregate(Compiler* self, From* from, Ast* ast)
 	case AGG_DOUBLE_AVG:
 		agg_op   = CAVGF;
 		agg_type = TYPE_DOUBLE;
+		break;
+	case AGG_DECIMAL_AVG:
+		agg_op   = CAVGE;
+		agg_type = TYPE_DECIMAL;
 		break;
 	default:
 		abort();

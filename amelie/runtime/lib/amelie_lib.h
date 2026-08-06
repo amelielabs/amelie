@@ -36,9 +36,9 @@
 #include "lib/timestamp.h"
 
 // types
-#include "lib/avg.h"
 #include "lib/vector.h"
 #include "lib/decimal.h"
+#include "lib/avg.h"
 
 // generalized flags
 #include "lib/flags.h"

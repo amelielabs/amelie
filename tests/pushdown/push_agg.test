@@ -4,19 +4,19 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 
 # test: select count(*) from table empty
-create table test_empty (id int primary key, data int, data2 double);
+create table test_empty (id int primary key, data int, data2 double, data3 decimal);
 
-create table test_null (id int primary key, data int, data2 double);
-insert into test_null values (0, null, null);
+create table test_null (id int primary key, data int, data2 double, data3 decimal);
+insert into test_null values (0, null, null, null);
 
-create table test (id int primary key, data int, data2 double);
-insert into test values (0, 0, 0.0);
-insert into test values (1, 0, 0.0);
-insert into test values (2, 1, 1.0);
-insert into test values (3, 1, 1.0);
-insert into test values (4, 2  2.0);
-insert into test values (5, null, null);
-insert into test values (6, 3, 3.1);
+create table test (id int primary key, data int, data2 double, data3 decimal);
+insert into test values (0, 0, 0.0, decimal '0.0');
+insert into test values (1, 0, 0.0, decimal '0.0');
+insert into test values (2, 1, 1.0, decimal '1.0');
+insert into test values (3, 1, 1.0, decimal '1.0');
+insert into test values (4, 2  2.0, decimal '2.0');
+insert into test values (5, null, null, null);
+insert into test values (6, 3, 3.1, decimal '3.1');
 
 explain select count(*) from test_empty;
 select count(*) from test_empty;
@@ -51,7 +51,8 @@ explain select count(distinct id) from test;
 select count(distinct id) from test;
 select count(distinct data) from test;
 select count(distinct data2) from test;
-select count(distinct data), count(distinct data2) from test;
+select count(distinct data3) from test;
+select count(distinct data), count(distinct data2), count(distinct data3) from test;
 select count(distinct data), count(distinct data2), count(distinct data) from test;
 
 select count(distinct 1), count(1), count(distinct null) from test;
@@ -71,7 +72,15 @@ select sum(data2) from test_empty;
 
 # test: select sum(column double) from table
 explain select sum(data2) from test;
-select sum(data2) from test_empty;
+select sum(data2) from test;
+
+# test: select sum(column decimal) from table empty
+explain select sum(data3) from test_empty;
+select sum(data3) from test_empty;
+
+# test: select sum(column decimal) from table
+explain select sum(data3) from test;
+select sum(data3) from test;
 
 # test: select sum(any) from table
 explain select sum('string') from test;
@@ -92,8 +101,17 @@ select avg(data) from test;
 # test: select avg(column double) from table empty
 select avg(data2) from test_empty;
 
+# test: select avg(column decimal) from table empty
+select avg(data3) from test_empty;
+
 # test: select avg(column int) from table
+select avg(data) from test;
+
+# test: select avg(column double) from table
 select avg(data2) from test;
+
+# test: select avg(column decimal) from table
+select avg(data3) from test;
 
 # test: select avg(any) from table
 explain select avg('string') from test;
@@ -102,6 +120,8 @@ select avg('string') from test;
 # test: select avg(null) from table
 explain select avg(data2) from test_null;
 select avg(data2) from test_null;
+explain select avg(data3) from test_null;
+select avg(data3) from test_null;
 
 # test: select min(column int) from table empty
 select min(id) from test_empty;
@@ -116,9 +136,18 @@ select min(data2) from test_empty;
 # test: select min(column double) from table
 select min(data2) from test;
 
+# test: select min(column decimal) from table empty
+select min(data3) from test_empty;
+
+# test: select min(column decimal) from table
+select min(data3) from test;
+
 # test: select min(null) from table
 explain select min(data2) from test_null;
 select min(data2) from test_null;
+
+explain select min(data3) from test_null;
+select min(data3) from test_null;
 
 # test: select max(column int) from table empty
 select max(id) from test_empty;
@@ -133,9 +162,18 @@ select max(data2) from test_empty;
 # test: select max(column double) from table
 select max(data2) from test;
 
+# test: select max(column decimal) from table empty
+select max(data3) from test_empty;
+
+# test: select max(column decimal) from table
+select max(data3) from test;
+
 # test: select max(null) from table
 explain select max(data2) from test_null;
 select max(data2) from test_null;
+
+explain select max(data3) from test_null;
+select max(data3) from test_null;
 
 # test: select count(*), min(column), max(column) from table
 select count(*), min(id), max(id) from test;
@@ -146,6 +184,7 @@ explain select id, count(*) from test group by id;
 select id, count(*) from test group by id;
 select data, count(*) from test group by data;
 select data2, count(*) from test group by data2;
+select data3, count(*) from test group by data3;
 select data, count(*) from test_empty group by data;
 select data, count(*) from test_null group by data;
 
@@ -154,6 +193,7 @@ explain select id, count(*) from test group by 1;
 select id, count(*) from test group by 1;
 select data, count(*) from test group by 1;
 select data2, count(*) from test group by 1;
+select data3, count(*) from test group by 1;
 select data, count(*) from test_empty group by 1;
 select data, count(*) from test_null group by 1;
 
@@ -191,6 +231,7 @@ explain select id, count(*) from test group by 1 order by 1;
 select id, count(*) from test group by 1 order by 1;
 select data, count(*) from test group by 1 order by 1;
 select data2, count(*) from test group by 1 order by 1;
+select data3, count(*) from test group by 1 order by 1;
 select data, count(*) from test_empty group by 1 order by 1;
 select data, count(*) from test_null group by 1 order by 1;
 
@@ -261,10 +302,12 @@ select distinct on (count(data)) data from test group by data;
 
 # test: select count(distinct) from table group by
 select id, count(distinct data), count(distinct data2) from test group by id;
+select id, count(distinct data), count(distinct data3) from test group by id;
 select count(data) from test group by data;
 select count(distinct data) from test group by data;
 
 select count(distinct data), count(distinct data2) from test group by true;
+select count(distinct data), count(distinct data3) from test group by true;
 
 # test: select (select count(distinct) from table group by)
 explain select (select count(distinct data) from test group by id);
