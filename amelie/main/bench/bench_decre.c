@@ -20,10 +20,10 @@ bench_decre_create(Bench* self, Client* client)
 	unused(self);
 
 	Str str;
-	str_set_cstr(&str, "create table accounts(id int primary key using hash, money double default 100.0)");
+	str_set_cstr(&str, "create table accounts(id int primary key using hash, money decimal default decimal '100.0')");
 	client_execute(client, &str, NULL);
 
-	str_set_cstr(&str, "create table history(id uuid primary key identity, src int, dst int, amount double)");
+	str_set_cstr(&str, "create table history(id uuid primary key identity, src int, dst int, amount decimal)");
 	client_execute(client, &str, NULL);
 
 	// prepare dataset
@@ -47,7 +47,7 @@ bench_decre_create(Bench* self, Client* client)
 
 	// create benchmark functions
 	char func[] =
-	"create function debit_credit(src int, dst int, amount double)"
+	"create function debit_credit(src int, dst int, amount decimal)"
 	"begin"
 	"	update accounts set money = money - amount"
 	"	 where id = src;"
@@ -63,7 +63,7 @@ bench_decre_create(Bench* self, Client* client)
 	"create function debit_credit_batch(batch int, total int)"
 	"begin"
 	"	while batch > 0 do"
-	"		select debit_credit(random() \% total, random() \% total, 1.0);"
+	"		select debit_credit(random() \% total, random() \% total, decimal '1.0');"
 	"		batch := batch - 1;"
 	"	end;"
 	"end;";

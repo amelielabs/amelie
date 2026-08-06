@@ -149,10 +149,14 @@ parse_value_const(Stmt* self, Column* column, Value* value)
 	}
 	case TYPE_DECIMAL:
 	{
+		// [DECIMAL] string
+		if (ast->id == KDECIMAL)
+			ast = stmt_expect(self, KSTRING);
 		auto     cons = &column->constraints;
 		uint64_t decimal;
-		if (likely(ast->id == KDECIMAL))
-			decimal = decimal_set_decimal(cons->decimal, cons->decimal_scale, ast->decimal);
+		if (likely(ast->id == KSTRING))
+			// decimal value will be converted during row creation
+			decimal = decimal_set_str(&ast->string);
 		else
 		if (ast->id == KINT)
 			decimal = decimal_set_int(cons->decimal, cons->decimal_scale, ast->integer);
@@ -183,14 +187,12 @@ parse_value_const(Stmt* self, Column* column, Value* value)
 		// unixtime
 		if (ast->id == KINT) {
 			value_set_timestamp(value, ast->integer);
+			return ast;
 		}
-
 
 		// [TIMESTAMP] string
 		if (ast->id == KTIMESTAMP)
-			ast = stmt_next(self);
-		if (likely(ast->id != KSTRING))
-			break;
+			ast = stmt_expect(self, KSTRING);
 
 		Timestamp ts;
 		timestamp_init(&ts);
@@ -203,9 +205,8 @@ parse_value_const(Stmt* self, Column* column, Value* value)
 	{
 		// [INTERVAL] string
 		if (ast->id == KINTERVAL)
-			ast = stmt_next(self);
-		if (likely(ast->id != KSTRING))
-			break;
+			ast = stmt_expect(self, KSTRING);
+
 		Interval iv;
 		interval_init(&iv);
 		if (unlikely(error_catch( interval_set(&iv, &ast->string) )))
@@ -217,9 +218,8 @@ parse_value_const(Stmt* self, Column* column, Value* value)
 	{
 		// [UUID] string
 		if (ast->id == KUUID)
-			ast = stmt_next(self);
-		if (likely(ast->id != KSTRING))
-			break;
+			ast = stmt_expect(self, KSTRING);
+
 		Uuid uuid;
 		uuid_init(&uuid);
 		if (uuid_set_nothrow(&uuid, &ast->string) == -1)

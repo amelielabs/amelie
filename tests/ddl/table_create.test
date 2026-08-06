@@ -228,6 +228,17 @@ drop table test;
 create table test (id int primary key, data json default {"id": 48, "data": [1,2,3]});
 drop table test;
 
+# test: constraint default (decimal)
+create table test (id int primary key, data decimal default decimal '3.14');
+insert into test (id) values (1);
+select * from test;
+drop table test;
+
+create table test (id int primary key, data decimal (5, 4) default decimal '3.14');
+insert into test (id) values (1);
+select * from test;
+drop table test;
+
 # test: constraint not null with key
 create table test (id int not null primary key);
 select show('table', 'test', true).columns;
