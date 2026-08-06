@@ -68,6 +68,7 @@ select id, (select o.id -> self + 1 from test) from test as o;
 select (select o.id -> self + 1 from test) from test as o;
 
 # test: select -> / ->
+select (0.0e0 -> self + id) / (0 -> self + 1) from test;
 select (0.0 -> self + id) / (0 -> self + 1) from test;
 
 drop table test;

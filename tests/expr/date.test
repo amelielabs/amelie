@@ -63,7 +63,7 @@ select date '1970-01-01' = '1970-01-01'::date;
 select date '1970-01-01' = null;
 
 # test: date = unsupported
-select date '1970-01-01' = 3.14;
+select date '1970-01-01' = 3.14e0;
 
 # test: date <> int
 select date '1970-01-01' <> 123;

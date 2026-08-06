@@ -384,11 +384,11 @@ id  data
 ────────────────
 4   -32768
 5   2147483647
-insert into test values (6, decimal '123.0');
-insert into test values (7, decimal '123.999');
-insert into test values (8, decimal '-123.999');
-insert into test values (9, decimal '2147483647.0');
-insert into test values (10, decimal '2147483648.0');
+insert into test values (6, 123.0);
+insert into test values (7, 123.999);
+insert into test values (8, -123.999);
+insert into test values (9, 2147483647.0);
+insert into test values (10, 2147483648.0);
 select * from test;
 
 id  data
@@ -425,7 +425,7 @@ id  data
 drop table test;
 # test: insert column (float)
 create table test (id int primary key, data float);
-insert into test values (1, 123.32), (2, 3.14);
+insert into test values (1, 123.32e0), (2, 3.14);
 insert into test values (4, 1.17549e-38), (5, 3.40282e+38) returning *;
 
 id  data
@@ -443,7 +443,7 @@ id  data
 drop table test;
 # test: insert column (double)
 create table test (id int primary key, data double);
-insert into test values (1, 123.32), (2, 3.14);
+insert into test values (1, 123.32e0), (2, 3.14);
 insert into test values (4, 2.2250738585072014e-308), (5, 1.79769e+308) returning *;
 
 id  data
@@ -461,9 +461,9 @@ id  data
 drop table test;
 # test: insert column (decimal)
 create table test (id int primary key, data decimal);
-insert into test values (0, decimal '3.14');
+insert into test values (0, 3.14);
 insert into test values (1, 123);
-insert into test values (2, 3.14);
+insert into test values (2, 3.14e0);
 select * from test;
 
 id  data
@@ -474,7 +474,7 @@ id  data
 drop table test;
 # test: insert column (decimal p,s) upscale
 create table test (id int primary key, a decimal(5,2), b decimal(6,4), c decimal(15,15), d decimal(5,2));
-insert into test values (0, decimal '1', decimal '1.5', decimal '0.1', decimal '-42.1');
+insert into test values (0, decimal '1', 1.5, 0.1, -42.1);
 select * from test;
 
 id  a     b       c                  d
@@ -483,10 +483,10 @@ id  a     b       c                  d
 drop table test;
 # test: insert column (decimal p,s) downscale
 create table test (id int primary key, a decimal(5,2));
-insert into test values (0, decimal '1.234');
-insert into test values (1, decimal '1.236');
-insert into test values (2, decimal '1.235');
-insert into test values (3, decimal '-1.236');
+insert into test values (0, 1.234);
+insert into test values (1, 1.236);
+insert into test values (2, 1.235);
+insert into test values (3, -1.236);
 select * from test;
 
 id  a
@@ -497,7 +497,7 @@ id  a
 3   -1.24
 drop table test;
 create table test (id int primary key, a decimal(4,2));
-insert into test values (0, decimal '0.000001');
+insert into test values (0, 0.000001);
 select * from test;
 
 id  a
@@ -506,11 +506,11 @@ id  a
 drop table test;
 # test: insert column (decimal p,s) overflow
 create table test (id int primary key, a decimal(4,2));
-insert into test values (0, decimal '100.00');
+insert into test values (0, 100.00);
 error: decimal overflow
-insert into test values (1, decimal '-100.00');
+insert into test values (1, -100.00);
 error: decimal overflow
-insert into test values (2, decimal '99.995');
+insert into test values (2, 99.995);
 error: decimal overflow
 drop table test;
 create table test (id int primary key, a decimal(10,2));
@@ -519,10 +519,10 @@ error: decimal overflow
 drop table test;
 # test: insert column (decimal p,s) convertion
 create table test (id int primary key, a decimal(5,0));
-insert into test values (0, decimal '123.000');
-insert into test values (1, decimal '123.499');
-insert into test values (2, decimal '123.500');
-insert into test values (3, decimal '-123.500');
+insert into test values (0, 123.000);
+insert into test values (1, 123.499);
+insert into test values (2, 123.500);
+insert into test values (3, -123.500);
 select * from test;
 
 id  a
@@ -544,7 +544,7 @@ drop table test;
 # test: insert column (json)
 create table test (id int primary key, data json);
 insert into test values (1, 1);
-insert into test values (2, 13.4);
+insert into test values (2, 13.4e0);
 insert into test values (3, 'test');
 insert into test values (4, [1,2,3]);
 insert into test values (5, {'id': 48, 'data': [], 'misc': null});
@@ -1033,21 +1033,21 @@ drop table test;
 create table test (id int primary key, vec vector(2));
 insert into test values (0, []);
 error: insert into test values (0, ❰[❱ ⟵ expected 'vector'
-insert into test values (1, [1.0]);
+insert into test values (1, [1.0e0]);
 error: insert into test values (1, ❰[❱ ⟵ expected 'vector'
 insert into test values (2, [1]);
 error: insert into test values (2, ❰[❱ ⟵ expected 'vector'
-insert into test values (3, [1.0, 1.1,]);
-error: insert into test values (3, [1.0, 1.1,❰]❱ ⟵ bad expression
+insert into test values (3, [1.0e0, 1.1,]);
+error: insert into test values (3, [1.0e0, 1.1,❰]❱ ⟵ bad expression
 insert into test values (4, [1.0,);
 error: insert into test values (4, [1.0,❰)❱ ⟵ bad expression
 insert into test values (5, [1.0,]);
 error: insert into test values (5, [1.0,❰]❱ ⟵ bad expression
-insert into test values (7, [1.0, 1.1, -2.2, -8]);
+insert into test values (7, [1.0, 1.1, -2.2e0, -8]);
 error: insert into test values (7, ❰[❱ ⟵ expected 'vector'
-insert into test values (8, vector [1.0, 1.1, -2.2, -8]);
+insert into test values (8, vector [1.0, 1.1e0, -2.2, -8]);
 error: insert into test values (8, ❰vector❱ ⟵ invalid vector dimension
-insert into test values (6, [1.0, 1.1]);
+insert into test values (6, [1.0, 1.1e0]);
 error: insert into test values (6, ❰[❱ ⟵ expected 'vector'
 insert into test values (6, vector [1.0, 1.1]);
 select * from test;
@@ -1590,7 +1590,7 @@ error: insert into test ❰select❱ ⟵ SELECT columns must match the INSERT ta
 drop table test;
 # test: insert select decimal
 create table test (id int primary key, d decimal(5,2));
-insert into test select 0, decimal '1.5';
+insert into test select 0, 1.5;
 select * from test;
 
 id  d

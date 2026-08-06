@@ -228,15 +228,15 @@ drop table test;
 
 # test: update column (float)
 create table test (id int primary key, data float);
-insert into test values (1, 123.32), (2, 3.14);
-update test set data = data + 0.01;
+insert into test values (1, 123.32e0), (2, 3.14e0);
+update test set data = data + 0.01e0;
 select * from test;
 drop table test;
 
 # test: update column (double)
 create table test (id int primary key, data double);
-insert into test values (1, 123.32), (2, 3.14);
-update test set data = data + 0.01;
+insert into test values (1, 123.32e0), (2, 3.14e0);
+update test set data = data + 0.01e0;
 select * from test;
 drop table test;
 
@@ -244,7 +244,7 @@ drop table test;
 create table test (id int primary key, d decimal(5,2));
 insert into test values (0, decimal '1');
 select * from test;
-update test set d = decimal '1.5';
+update test set d = 1.5;
 select * from test;
 drop table test;
 
@@ -287,9 +287,9 @@ drop table test;
 
 # test: update column (vector)
 create table test (id int primary key, vec vector(2));
-insert into test values (3, vector [1.0, 1.1]);
+insert into test values (3, vector [1.0e0, 1.1]);
 update test set vec = vec + [1.0, 1.1]::vector;
-update test set vec = vec + vector [1.0, 1.1, 2.0];
+update test set vec = vec + vector [1.0, 1.1e0, 2.0];
 update test set vec = vector [1.0, 1.1, 2.0];
 select * from test;
 drop table test;

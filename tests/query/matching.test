@@ -21,7 +21,7 @@ select * from test matching v to vector [1.35];
 select * from test matching v to vector [1.35] top;
 
 # test: matching
-select * from test matching v to vector [1.35] top 3;
+select * from test matching v to vector [1.35e0] top 3;
 drop table test;
 
 # test: matching (1 partitions)

@@ -46,13 +46,13 @@ int
 select 1::int(123);
 error: int(int, int) ⟵ expected 1 argument
 # test: int(double)
-select 3.14::int;
+select 3.14e0::int;
 
 int
 ───
 3
 # test: int(decimal)
-select decimal '3.14'::int;
+select 3.14::int;
 
 int
 ───
@@ -136,23 +136,23 @@ bool
 ────
 true
 # test: bool(double)
-select 3.14::bool;
+select 3.14e0::bool;
 
 bool
 ────
 true
-select 0.14::bool;
+select 0.14e0::bool;
 
 bool
 ────
 true
-select 0.0::bool;
+select 0.0e0::bool;
 
 bool
 ────
 false
 # test: bool(decimal)
-select decimal '3.14'::bool;
+select 3.14::bool;
 
 bool
 ────
@@ -197,13 +197,13 @@ double
 ──────
 1
 # test: double(double)
-select 3.14::double;
+select 3.14e0::double;
 
 double
 ──────
 3.14
 # test: double(decimal)
-select decimal '3.14'::double;
+select 3.14::double;
 
 double
 ──────
@@ -220,7 +220,7 @@ double
 ──────
 0
 # test: double(json)
-select 1.56::json::double;
+select 1.56e0::json::double;
 
 double
 ──────
@@ -251,13 +251,13 @@ decimal
 ───────
 1
 # test: decimal(double)
-select 3.14::decimal;
+select 3.14e0::decimal;
 
 decimal
 ───────
 3.14
 # test: decimal(decimal)
-select decimal '3.14'::decimal;
+select 3.14::decimal;
 
 decimal
 ───────
@@ -278,7 +278,7 @@ select 1.56::json::decimal;
 
 decimal
 ───────
-1.559999942779541
+1.56
 # test: decimal(timestamp)
 select 1722517792056945::timestamp;
 
@@ -305,7 +305,7 @@ string
 ──────
 16384
 # test: string(decimal)
-select decimal '16384.123'::string;
+select 16384.123::string;
 
 string
 ──────
@@ -401,23 +401,23 @@ json
 ────
 -123
 # test: json(double)
-select 123.321::json;
+select 123.321e0::json;
 
 json
 ────
 123.321
-select -123.321::json;
+select -123.321e0::json;
 
 json
 ────
 -123.321
-select (-123.321)::json;
+select (-123.321e0)::json;
 
 json
 ────
 -123.321
 # test: json(decimal)
-select decimal '123.321'::json;
+select 123.321::json;
 
 json
 ────
@@ -550,6 +550,11 @@ select []::vector::length;
 length
 ──────
 0
+select [1.0e0]::vector;
+
+vector
+──────
+[1]
 select [1.0]::vector;
 
 vector

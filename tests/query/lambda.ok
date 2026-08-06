@@ -231,11 +231,16 @@ col1
 8
 9
 # test: select -> / ->
-select (0.0 -> self + id) / (0 -> self + 1) from test;
+select (0.0e0 -> self + id) / (0 -> self + 1) from test;
 
 col1
 ────
 2
+select (0.0 -> self + id) / (0 -> self + 1) from test;
+
+col1
+────
+2.0
 drop table test;
 # test: select int -> self from table (partitions N, unsupported)
 create table test (id int primary key, data int) partitions 2;

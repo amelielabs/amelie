@@ -136,7 +136,6 @@ select * as alias from test;
 select test.* as alias from test;
 drop table test;
 
-
 # test: select * from function() (missing)
 select * from unknown();
 

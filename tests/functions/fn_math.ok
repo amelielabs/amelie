@@ -13,23 +13,25 @@ abs
 485
 # test: fabs()
 select fabs(13.485);
+error: fabs(❰decimal❱ ⟵ expected double
+select fabs(13.485e0);
 
 fabs
 ────
 13.485
-select fabs(-13.485);
+select fabs(-13.485e0);
 
 fabs
 ────
 13.485
 # test: round()
-select 13.485::round;
+select 13.485e0::round;
 
 round
 ─────
 13
 # test: sign()
-select 13.485::sign;
+select 13.485e0::sign;
 
 sign
 ────
@@ -52,23 +54,23 @@ sign
 # test: ceil()
 select 42::ceil;
 error: ceil(❰int❱ ⟵ expected double
-select 42.2::ceil;
+select 42.2e0::ceil;
 
 ceil
 ────
 43
-select ceil(-42.8);
+select ceil(-42.8e0);
 
 ceil
 ────
 -42
 # test: floor()
-select floor(42.8);
+select floor(42.8e0);
 
 floor
 ─────
 42
-select floor(-42.8);
+select floor(-42.8e0);
 
 floor
 ─────
@@ -76,12 +78,12 @@ floor
 # test: exp()
 select exp(1);
 error: exp(❰int❱ ⟵ expected double
-select exp(1.0);
+select exp(1.0e0);
 
 exp
 ───
 2.71828
-select 1.0::exp;
+select 1.0e0::exp;
 
 exp
 ───
@@ -93,7 +95,7 @@ mod
 ───
 1
 # test: fmod()
-select fmod(30.0, 3.6);
+select fmod(30.0e0, 3.6e0);
 
 fmod
 ────
@@ -111,18 +113,18 @@ pow
 ───
 729
 # test: fpow()
-select fpow(9.1, 3.2);
+select fpow(9.1e0, 3.2e0);
 
 fpow
 ────
 1172.01
 # test: trunc()
-select trunc(42.8);
+select trunc(42.8e0);
 
 trunc
 ─────
 42
-select trunc(-48.8023);
+select trunc(-48.8023e0);
 
 trunc
 ─────
@@ -133,17 +135,17 @@ select sqrt(2);
 sqrt
 ────
 1.41421
-select sqrt(2.0);
+select sqrt(2.0e0);
 
 sqrt
 ────
 1.41421
-select sqrt(2.3);
+select sqrt(2.3e0);
 
 sqrt
 ────
 1.51658
-select sqrt(-2.3);
+select sqrt(-2.3e0);
 error: sqrt(double) ⟵ operation failed
 # test: acos()
 select acos(1);
@@ -176,7 +178,7 @@ atan
 ────
 0.785398
 # test: atanh()
-select atanh(0.5);
+select atanh(0.5e0);
 
 atanh
 ─────
@@ -188,7 +190,7 @@ atan2
 ─────
 1.5708
 # test: ln()
-select ln(2.0);
+select ln(2.0e0);
 
 ln
 ──
@@ -270,7 +272,7 @@ select least(null, 1, 3);
 least
 ─────
 1
-select least(8.1, null, 1, 3);
-error: select least(8.1, null, ❰1❱ ⟵ argument type must match other arguments
+select least(8.1e0, null, 1, 3);
+error: select least(8.1e0, null, ❰1❱ ⟵ argument type must match other arguments
 disconnect S0;
 close E0;

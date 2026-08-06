@@ -45,6 +45,11 @@ select true and 0.15;
 col1
 ────
 true
+select true and 1.15e0;
+
+col1
+────
+true
 # test: and null
 select null and null;
 

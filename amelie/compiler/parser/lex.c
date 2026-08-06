@@ -182,6 +182,7 @@ lex_return(Lex* self, Ast* ast, int id, char* start)
 hot always_inline static inline void
 lex_return_error(Lex* self, Ast* ast, char* start, char* msg)
 {
+	ast->id = '_';
 	ast->pos_start = start - self->start;
 	ast->pos_end = self->pos - self->start;
 	lex_error(self, ast, msg);
@@ -223,36 +224,64 @@ lex_next(Lex* self)
 	}
 	auto start = self->pos;
 
-	// integer or float
+	// integer, decimal or double
 	if (isdigit(*self->pos))
 	{
-		while (self->pos < self->end)
+		int64_t value = 0;
+		auto    scale = 0;
+		auto    dot   = false;
+
+		// 0-9+[.0-9+][e0-9+]
+		for (; self->pos < self->end; self->pos++)
 		{
-			// float
-			if (*self->pos == '.' ||
-			    *self->pos == 'e' ||
-			    *self->pos == 'E')
+			auto at = *self->pos;
+			if (at >= '0' && at <= '9')
 			{
-				self->pos = start;
-				goto reread_as_float;
+				if (unlikely(int64_mul_add_overflow(&value, value, 10, at - '0')))
+					lex_return_error(self, ast, start, "int overflow");
+				// .scale
+				if (dot)
+					scale++;
+				continue;
 			}
-			if (! isdigit(*self->pos))
-				break;
 
-			if (int64_mul_add_overflow(&ast->integer, ast->integer, 10, *self->pos - '0'))
-				lex_return_error(self, ast, start, "int overflow");
+			if (at == '.' && !dot)
+			{
+				dot = true;
+				continue;
+			}
 
-			self->pos++;
+			if (at == 'e')
+			{
+				// double
+				self->pos = start;
+				goto reread_as_double;
+			}
+
+			break;
 		}
-		return lex_return(self, ast, KINT, start);
 
-reread_as_float:;
+		// int
+		if (! dot)
+		{
+			ast->integer = value;
+			return lex_return(self, ast, KINT, start);
+		}
+
+		// decimal
+		if (unlikely(value > DECIMAL_MAX || scale > DECIMAL_MAX_SCALE))
+			lex_return_error(self, ast, start, "decimal overflow");
+
+		ast->decimal = decimal_set(value, scale);
+		return lex_return(self, ast, KDECIMAL, start);
+
+reread_as_double:;
 		char* end = NULL;
 		errno = 0;
 		ast->real = strtod(start, &end);
+		self->pos = end;
 		if (errno == ERANGE)
 			lex_return_error(self, ast, start, "float overflow");
-		self->pos = end;
 		return lex_return(self, ast, KREAL, start);
 	}
 

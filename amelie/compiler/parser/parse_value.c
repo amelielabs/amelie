@@ -46,6 +46,9 @@ parse_vector(Stmt* self, Buf* buf)
 		if (ast->id == KREAL)
 			value = ast->real;
 		else
+		if (ast->id == KDECIMAL)
+			value = (float)decimal_get_double(ast->decimal);
+		else
 			stmt_error(self, ast, "invalid vector value");
 		if (minus)
 			value = -value;
@@ -149,14 +152,11 @@ parse_value_const(Stmt* self, Column* column, Value* value)
 	}
 	case TYPE_DECIMAL:
 	{
-		// [DECIMAL] string
-		if (ast->id == KDECIMAL_NAME)
-			ast = stmt_expect(self, KSTRING);
 		auto     cons = &column->constraints;
 		uint64_t decimal;
-		if (likely(ast->id == KSTRING))
+		if (likely(ast->id == KDECIMAL))
 			// decimal value will be converted during row creation
-			decimal = decimal_set_str(&ast->string);
+			decimal = ast->decimal;
 		else
 		if (ast->id == KINT)
 			decimal = decimal_set_int(cons->decimal, cons->decimal_scale, ast->integer);

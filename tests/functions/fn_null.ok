@@ -48,8 +48,12 @@ coalesce
 1
 select coalesce(1, null, 2.5);
 error: select coalesce(1, null, ❰2.5❱ ⟵ argument type must match other arguments
+select coalesce(1, null, 2.5e0);
+error: select coalesce(1, null, ❰2.5e0❱ ⟵ argument type must match other arguments
 select coalesce('1', null, 2.5);
 error: select coalesce('1', null, ❰2.5❱ ⟵ argument type must match other arguments
+select coalesce('1', null, 2.5e0);
+error: select coalesce('1', null, ❰2.5e0❱ ⟵ argument type must match other arguments
 # test: nullif()
 select nullif();
 error: nullif() ⟵ expected 2 arguments
@@ -86,5 +90,7 @@ select nullif(1, '1');
 error: select nullif(1, ❰'1'❱ ⟵ argument type must match other arguments
 select nullif(1, 1.5);
 error: select nullif(1, ❰1.5❱ ⟵ argument type must match other arguments
+select nullif(1, 1.5e0);
+error: select nullif(1, ❰1.5e0❱ ⟵ argument type must match other arguments
 disconnect S0;
 close E0;

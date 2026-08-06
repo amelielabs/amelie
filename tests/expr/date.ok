@@ -198,8 +198,8 @@ col1
 ────
 null
 # test: date = unsupported
-select date '1970-01-01' = 3.14;
-error: select date '1970-01-01' = ❰3.14❱ ⟵ operation date = double is not supported
+select date '1970-01-01' = 3.14e0;
+error: select date '1970-01-01' = ❰3.14e0❱ ⟵ operation date = double is not supported
 # test: date <> int
 select date '1970-01-01' <> 123;
 
@@ -225,7 +225,7 @@ col1
 null
 # test: date <> unsupported
 select date '1970-01-01' <> 3.14;
-error: select date '1970-01-01' <> ❰3.14❱ ⟵ operation date = double is not supported
+error: select date '1970-01-01' <> ❰3.14❱ ⟵ operation date = decimal is not supported
 # test: date >= int
 select date '1970-01-01' >= 123;
 
@@ -302,7 +302,7 @@ col1
 null
 # test: date > unsupported
 select date '1970-01-01' > 3.14;
-error: select date '1970-01-01' > ❰3.14❱ ⟵ operation date > double is not supported
+error: select date '1970-01-01' > ❰3.14❱ ⟵ operation date > decimal is not supported
 # test: date <= int
 select date '1970-01-01' <= 123;
 
@@ -343,7 +343,7 @@ col1
 null
 # test: date <= unsupported
 select date '1970-01-01' <= 3.14;
-error: select date '1970-01-01' <= ❰3.14❱ ⟵ operation date <= double is not supported
+error: select date '1970-01-01' <= ❰3.14❱ ⟵ operation date <= decimal is not supported
 # test: date + int = date
 select date '1970-01-01' + 10;
 

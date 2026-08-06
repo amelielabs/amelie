@@ -27,6 +27,7 @@ explain select true = null;
 # test: bool = unsupported
 select true = [1,2];
 select true = 1.23;
+select true = 1.23e0;
 
 # test: bool <> bool
 select true <> true;
@@ -45,6 +46,8 @@ explain select true <> null;
 
 # test: bool <> unsupported
 select true <> [1,2];
+select true <> 1.23e0;
+explain select true <> 1.23e0;
 select true <> 1.23;
 explain select true <> 1.23;
 

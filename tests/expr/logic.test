@@ -14,6 +14,7 @@ select true and 0;
 select true and [];
 select true and 1.15;
 select true and 0.15;
+select true and 1.15e0;
 
 # test: and null
 select null and null;

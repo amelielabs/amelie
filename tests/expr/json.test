@@ -7,6 +7,13 @@ connect E0 S0 127.0.0.1:3485;
 select '123'::json_decode;
 select '184467440737095516155'::json_decode;
 
+# test: decimal
+select '3.14'::json;
+select '3.14'::json_decode;
+select '3.14e0'::json_decode;
+select '3.14'::json_decode::decimal;
+select '3.14'::json_decode::double;
+
 # test: array []
 select [];
 select []::type;
@@ -23,6 +30,11 @@ select [-123];
 explain select [-123];
 
 # test: array [double]
+select [123.321e0];
+select [-123.321e0];
+explain select [-123.321e0];
+
+# test: array [decimal]
 select [123.321];
 select [-123.321];
 explain select [-123.321];
@@ -78,6 +90,9 @@ select {"id": true};
 select {"id": 123};
 
 # test: object {double}
+select {"id": 123.321e0};
+
+# test: object {decimal}
 select {"id": 123.321};
 
 # test: object {string}

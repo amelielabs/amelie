@@ -55,11 +55,11 @@ col1
 -9223372036854775807
 # test: int overflow
 select -92233720368547758077;
-error: select - ⟵ int overflow
+error: select -❰9223372036854775807❱ ⟵ int overflow
 select 18446744073709551615;
-error: select ⟵ int overflow
+error: select ❰1844674407370955161❱ ⟵ int overflow
 select 184467440737095516155;
-error: select ⟵ int overflow
+error: select ❰1844674407370955161❱ ⟵ int overflow
 # test: int = bool
 select 1 = true;
 
@@ -108,7 +108,38 @@ main
   2   equii               2      0      1
   3   ret                 2      0      -
 # test: int = double
+select 1 = 1.0e0;
+
+col1
+────
+true
+select 1 = 12.3e0;
+
+col1
+────
+false
+select 1 = 0.14e0;
+
+col1
+────
+false
+explain select 1 = 1.0000e0;
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1
+  2   equif               2      0      1
+  3   ret                 2      0      -
+# test: int = decimal
 select 1 = 1.0;
+
+col1
+────
+true
+select 1 = decimal '1';
 
 col1
 ────
@@ -124,37 +155,6 @@ col1
 ────
 false
 explain select 1 = 1.0000;
-
-explain
-───────
-
-main
-  0   int                 0      -      0     # 1
-  1   double              1      0      0     # 1
-  2   equif               2      0      1
-  3   ret                 2      0      -
-# test: int = decimal
-select 1 = decimal '1.0';
-
-col1
-────
-true
-select 1 = decimal '1';
-
-col1
-────
-true
-select 1 = decimal '12.3';
-
-col1
-────
-false
-select 1 = decimal '0.14';
-
-col1
-────
-false
-explain select 1 = decimal '1.0000';
 
 explain
 ───────
@@ -256,22 +256,22 @@ main
   3   not                 0      2      0
   4   ret                 0      0      -
 # test: int <> double
-select 1 <> 1.0;
+select 1 <> 1.0e0;
 
 col1
 ────
 false
-select 1 <> 12.3;
+select 1 <> 12.3e0;
 
 col1
 ────
 true
-select 1 <> 0.14;
+select 1 <> 0.14e0;
 
 col1
 ────
 true
-explain select 1 <> 1.0000;
+explain select 1 <> 1.0000e0;
 
 explain
 ───────
@@ -283,17 +283,17 @@ main
   3   not                 0      2      0
   4   ret                 0      0      -
 # test: int <> decimal
-select 1 <> decimal '1.0';
+select 1 <> 1.0;
 
 col1
 ────
 false
-select 1 <> decimal '1.1';
+select 1 <> 1.1;
 
 col1
 ────
 true
-explain select 1 <> decimal '1.0000';
+explain select 1 <> 1.0000;
 
 explain
 ───────
@@ -395,6 +395,27 @@ main
   2   gteii               2      0      1
   3   ret                 2      0      -
 # test: int >= double
+select 1 >= 0.11e0;
+
+col1
+────
+true
+select 1 >= 1.11e0;
+
+col1
+────
+false
+explain select 1 >= 1.11e0;
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1.11
+  2   gteif               2      0      1
+  3   ret                 2      0      -
+# test: int >= decimal
 select 1 >= 0.11;
 
 col1
@@ -406,27 +427,6 @@ col1
 ────
 false
 explain select 1 >= 1.11;
-
-explain
-───────
-
-main
-  0   int                 0      -      0     # 1
-  1   double              1      0      0     # 1.11
-  2   gteif               2      0      1
-  3   ret                 2      0      -
-# test: int >= decimal
-select 1 >= decimal '0.11';
-
-col1
-────
-true
-select 1 >= decimal '1.11';
-
-col1
-────
-false
-explain select 1 >= decimal '1.11';
 
 explain
 ───────
@@ -523,6 +523,27 @@ main
   2   gtii                2      0      1
   3   ret                 2      0      -
 # test: int > double
+select 1 > 0.11e0;
+
+col1
+────
+true
+select 1 > 1.11e0;
+
+col1
+────
+false
+explain select 1 > 1.11e0;
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1.11
+  2   gtif                2      0      1
+  3   ret                 2      0      -
+# test: int > decimal
 select 1 > 0.11;
 
 col1
@@ -534,27 +555,6 @@ col1
 ────
 false
 explain select 1 > 1.11;
-
-explain
-───────
-
-main
-  0   int                 0      -      0     # 1
-  1   double              1      0      0     # 1.11
-  2   gtif                2      0      1
-  3   ret                 2      0      -
-# test: int > decimal
-select 1 > decimal '0.11';
-
-col1
-────
-true
-select 1 > decimal '1.11';
-
-col1
-────
-false
-explain select 1 > decimal '1.11';
 
 explain
 ───────
@@ -651,6 +651,27 @@ main
   2   lteii               2      0      1
   3   ret                 2      0      -
 # test: int <= double
+select 1 <= 0.11e0;
+
+col1
+────
+false
+select 1 <= 1.11e0;
+
+col1
+────
+true
+explain select 1 <= 1.11e0;
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1.11
+  2   lteif               2      0      1
+  3   ret                 2      0      -
+# test: int <= decimal
 select 1 <= 0.11;
 
 col1
@@ -662,27 +683,6 @@ col1
 ────
 true
 explain select 1 <= 1.11;
-
-explain
-───────
-
-main
-  0   int                 0      -      0     # 1
-  1   double              1      0      0     # 1.11
-  2   lteif               2      0      1
-  3   ret                 2      0      -
-# test: int <= decimal
-select 1 <= decimal '0.11';
-
-col1
-────
-false
-select 1 <= decimal '1.11';
-
-col1
-────
-true
-explain select 1 <= decimal '1.11';
 
 explain
 ───────
@@ -779,6 +779,27 @@ main
   2   ltii                2      0      1
   3   ret                 2      0      -
 # test: int < double
+select 1 < 0.11e0;
+
+col1
+────
+false
+select 1 < 1.11e0;
+
+col1
+────
+true
+explain select 1 < 1.11e0;
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   double              1      0      0     # 1.11
+  2   ltif                2      0      1
+  3   ret                 2      0      -
+# test: int < decimal
 select 1 < 0.11;
 
 col1
@@ -790,27 +811,6 @@ col1
 ────
 true
 explain select 1 < 1.11;
-
-explain
-───────
-
-main
-  0   int                 0      -      0     # 1
-  1   double              1      0      0     # 1.11
-  2   ltif                2      0      1
-  3   ret                 2      0      -
-# test: int < decimal
-select 1 < decimal '0.11';
-
-col1
-────
-false
-select 1 < decimal '1.11';
-
-col1
-────
-true
-explain select 1 < decimal '1.11';
 
 explain
 ───────
@@ -895,12 +895,12 @@ col1
 ────
 -9223372036854775806
 # test: int + double
-select 1 + 1.5;
+select 1 + 1.5e0;
 
 col1
 ────
 2.5
-explain select 1 + 1.5;
+explain select 1 + 1.5e0;
 
 explain
 ───────
@@ -911,7 +911,7 @@ main
   2   addif               2      0      1
   3   ret                 2      0      -
 # test: int + decimal
-select 1 + decimal '1.5';
+select 1 + 1.5;
 
 col1
 ────
@@ -970,12 +970,12 @@ col1
 select 1 - -9223372036854775807;
 error: int - int overflow
 # test: int - double
-select 1 - 1.5;
+select 1 - 1.5e0;
 
 col1
 ────
 -0.5
-explain select 1 - 1.5;
+explain select 1 - 1.5e0;
 
 explain
 ───────
@@ -986,12 +986,12 @@ main
   2   subif               2      0      1
   3   ret                 2      0      -
 # test: int - decimal
-select 1 - decimal '1.5';
+select 1 - 1.5;
 
 col1
 ────
 -0.5
-explain select 1 - decimal '1.5';
+explain select 1 - 1.5;
 
 explain
 ───────
@@ -1042,12 +1042,12 @@ error: int * int overflow
 select 10 * -9223372036854775807;
 error: int * int overflow
 # test: int * double
-select 2 * 1.5;
+select 2 * 1.5e0;
 
 col1
 ────
 3
-explain select 2 * 1.5;
+explain select 2 * 1.5e0;
 
 explain
 ───────
@@ -1058,12 +1058,12 @@ main
   2   mulif               2      0      1
   3   ret                 2      0      -
 # test: int * decimal
-select 2 * decimal '1.5';
+select 2 * 1.5;
 
 col1
 ────
 3.0
-explain select 2 * decimal '1.5';
+explain select 2 * 1.5;
 
 explain
 ───────
@@ -1106,12 +1106,12 @@ col1
 ────
 0
 # test: int / double
-select 35 / 1.5;
+select 35 / 1.5e0;
 
 col1
 ────
 23.3333
-explain select 35 / 1.5;
+explain select 35 / 1.5e0;
 
 explain
 ───────
@@ -1122,12 +1122,12 @@ main
   2   divif               2      0      1
   3   ret                 2      0      -
 # test: int / decimal
-select 35 / decimal '1.5';
+select 35 / 1.5;
 
 col1
 ────
 23.3
-explain select 35 / decimal '1.5';
+explain select 35 / 1.5;
 
 explain
 ───────

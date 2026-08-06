@@ -16,7 +16,9 @@ select coalesce('1', null, '2');
 
 # type mismatch
 select coalesce(1, null, 2.5);
+select coalesce(1, null, 2.5e0);
 select coalesce('1', null, 2.5);
+select coalesce('1', null, 2.5e0);
 
 # test: nullif()
 select nullif();
@@ -31,6 +33,7 @@ select 1::nullif(1);
 select nullif(1, '1');
 select nullif(1, '1');
 select nullif(1, 1.5);
+select nullif(1, 1.5e0);
 
 disconnect S0;
 close E0;

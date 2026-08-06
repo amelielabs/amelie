@@ -917,6 +917,14 @@ parse_unary(Stmt*     self, Expr* expr,
 			ast_push(result, ast);
 			break;
 		}
+		if (next->id == KDECIMAL)
+		{
+			ast->id = KDECIMAL;
+			ast->decimal = decimal_neg(next->decimal);
+			ast->pos_end = next->pos_end;
+			ast_push(result, ast);
+			break;
+		}
 		if (next->id == KREAL)
 		{
 			ast->id = KREAL;

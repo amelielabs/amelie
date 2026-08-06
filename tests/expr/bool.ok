@@ -91,7 +91,9 @@ main
 select true = [1,2];
 error: select true = ❰[❱ ⟵ operation bool = json is not supported
 select true = 1.23;
-error: select true = ❰1.23❱ ⟵ operation bool = double is not supported
+error: select true = ❰1.23❱ ⟵ operation bool = decimal is not supported
+select true = 1.23e0;
+error: select true = ❰1.23e0❱ ⟵ operation bool = double is not supported
 # test: bool <> bool
 select true <> true;
 
@@ -161,10 +163,14 @@ main
 # test: bool <> unsupported
 select true <> [1,2];
 error: select true <> ❰[❱ ⟵ operation bool = json is not supported
+select true <> 1.23e0;
+error: select true <> ❰1.23e0❱ ⟵ operation bool = double is not supported
+explain select true <> 1.23e0;
+error: explain select true <> ❰1.23e0❱ ⟵ operation bool = double is not supported
 select true <> 1.23;
-error: select true <> ❰1.23❱ ⟵ operation bool = double is not supported
+error: select true <> ❰1.23❱ ⟵ operation bool = decimal is not supported
 explain select true <> 1.23;
-error: explain select true <> ❰1.23❱ ⟵ operation bool = double is not supported
+error: explain select true <> ❰1.23❱ ⟵ operation bool = decimal is not supported
 # test: - bool
 select - true;
 error: select - ❰true❱ ⟵ unsupported operation -bool

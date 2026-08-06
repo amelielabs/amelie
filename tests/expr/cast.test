@@ -98,82 +98,82 @@ select cast (123 as vector);
 select cast (123 as uuid);
 
 # test: cast (double as bool)
+select cast (123.321e0 as bool)::type;
+select cast (123.321e0 as bool);
+
+# test: cast (double as int)
+select cast (123.321e0 as int)::type;
+select cast (123.321e0 as int);
+
+# test: cast (double as double)
+select cast (123.321e0 as double)::type;
+select cast (123.321e0 as double);
+
+# test: cast (double as decimal)
+select cast (123.321e0 as decimal)::type;
+select cast (123.321e0 as decimal);
+
+# test: cast (double as string)
+select cast (123.321e0 as string)::type;
+select cast (123.321e0 as string);
+
+# test: cast (double as json)
+select cast (123.321e0 as json)::type;
+select cast (123.321e0 as json);
+
+# test: cast (double as date)
+select cast (123.321e0 as date);
+
+# test: cast (double as timestamp)
+select cast (123.321e0 as timestamp);
+
+# test: cast (double as interval)
+select cast (123.321e0 as interval);
+
+# test: cast (double as vector)
+select cast (123.321e0 as vector);
+
+# test: cast (double as uuid)
+select cast (123.321e0 as uuid);
+
+# test: cast (decimal as bool)
 select cast (123.321 as bool)::type;
 select cast (123.321 as bool);
 
-# test: cast (double as int)
+# test: cast (decimal as int)
 select cast (123.321 as int)::type;
 select cast (123.321 as int);
 
-# test: cast (double as double)
+# test: cast (decimal as double)
 select cast (123.321 as double)::type;
 select cast (123.321 as double);
 
-# test: cast (double as decimal)
+# test: cast (decimal as decimal)
 select cast (123.321 as decimal)::type;
 select cast (123.321 as decimal);
 
-# test: cast (double as string)
+# test: cast (decimal as string)
 select cast (123.321 as string)::type;
 select cast (123.321 as string);
 
-# test: cast (double as json)
+# test: cast (decimal as json)
 select cast (123.321 as json)::type;
 select cast (123.321 as json);
 
-# test: cast (double as date)
+# test: cast (decimal as date)
 select cast (123.321 as date);
 
-# test: cast (double as timestamp)
+# test: cast (decimal as timestamp)
 select cast (123.321 as timestamp);
 
-# test: cast (double as interval)
+# test: cast (decimal as interval)
 select cast (123.321 as interval);
 
-# test: cast (double as vector)
+# test: cast (decimal as vector)
 select cast (123.321 as vector);
 
-# test: cast (double as uuid)
-select cast (123.321 as uuid);
-
-# test: cast (decimal as bool)
-select cast (decimal '123.321' as bool)::type;
-select cast (decimal '123.321' as bool);
-
-# test: cast (decimal as int)
-select cast (decimal '123.321' as int)::type;
-select cast (decimal '123.321' as int);
-
-# test: cast (decimal as double)
-select cast (decimal '123.321' as double)::type;
-select cast (decimal '123.321' as double);
-
-# test: cast (decimal as decimal)
-select cast (decimal '123.321' as decimal)::type;
-select cast (decimal '123.321' as decimal);
-
-# test: cast (decimal as string)
-select cast (decimal '123.321' as string)::type;
-select cast (decimal '123.321' as string);
-
-# test: cast (decimal as json)
-select cast (decimal '123.321' as json)::type;
-select cast (decimal '123.321' as json);
-
-# test: cast (decimal as date)
-select cast (decimal '123.321' as date);
-
-# test: cast (decimal as timestamp)
-select cast (decimal '123.321' as timestamp);
-
-# test: cast (decimal as interval)
-select cast (decimal '123.321' as interval);
-
-# test: cast (decimal as vector)
-select cast (decimal '123.321' as vector);
-
 # test: cast (decimal as uuid)
-select cast (decimal '123.321' as uuid);
+select cast (123.321 as uuid);
 
 # test: cast (string as bool)
 select cast ('string' as bool)::type;
@@ -236,8 +236,8 @@ select cast (123::json as int)::type;
 select cast (123::json as int);
 
 # test: cast (json as double)
-select cast (123.321::json as double)::type;
-select cast (123.321::json as double);
+select cast (123.321e0::json as double)::type;
+select cast (123.321e0::json as double);
 
 # test: cast (json as decimal)
 select cast (123.321::json as decimal)::type;

@@ -478,6 +478,12 @@ fn_vector(Call* self)
 			unpack_real(&pos, &value);
 			value_flt = value;
 		} else
+		if (data_is_decimal(pos))
+		{
+			uint64_t value;
+			unpack_decimal(&pos, &value);
+			value_flt = (float)decimal_get_double(value);
+		} else
 		if (data_is_int(pos))
 		{
 			int64_t value;

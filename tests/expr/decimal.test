@@ -10,6 +10,10 @@ select decimal '1.0'::type;
 select decimal '3.14';
 select decimal '1.1234';
 
+select 1.0::type;
+select 3.14;
+select 1.1234;
+
 # test: decimal limits
 select decimal '1';
 select decimal '12';
@@ -38,204 +42,204 @@ select decimal '9007199254740991';
 select decimal '-9007199254740991';
 
 # max positive value at full 15-decimal scale
-select decimal '0.900719925474099';
-select decimal '0.9007199254740999';
+select 0.900719925474099;
+select 0.9007199254740999;
 
 # min negative value at full 15-decimal scale
-select decimal '-0.900719925474099';
+select -0.900719925474099;
 
 # smallest non-zero scale (10^-15)
-select decimal '0.000000000000001';
+select 0.000000000000001;
 
 # negative smallest scale
-select decimal '-0.000000000000001';
+select -0.000000000000001;
 
 # test: decimal overflow
 select decimal '9007199254740992';
 select decimal '-9007199254740992';
-select decimal '0.0000000000000001';
-select decimal '9.007199254740992';
+select 0.0000000000000001;
+select 9.007199254740992;
 
 # test: decimal = int
-select decimal '12.3' = 1;
+select 12.3 = 1;
 select decimal '1' = 1;
-select decimal '0.14' = 1;
-explain select decimal '1.0000' = 1;
-select decimal '1.0000' = 1;
+select 0.14 = 1;
+explain select 1.0000 = 1;
+select 1.0000 = 1;
 
 # test: decimal = decimal
-select decimal '12.3' = decimal '1.3';
-select decimal '12.3' = 12.3::decimal;
-explain select decimal '12.3' = '12.3'::decimal;
+select 12.3 = 1.3;
+select 12.3 = 12.3;
+explain select 12.3 = 12.3;
 
-select decimal '0.900719925474099' = decimal '0.900719925474098';
+select 0.900719925474099 = 0.900719925474098;
 
 # test: decimal = null
-select decimal '12.3' = null;
+select 12.3 = null;
 
 # test: decimal = unsupported
-select decimal '12.3' = [1,2];
+select 12.3 = [1,2];
 
 # test: decimal <> int
 select decimal '1' <> 1;
-select decimal '1.1' <> 1;
-explain select decimal '1.1' <> 1;
+select 1.1 <> 1;
+explain select 1.1 <> 1;
 
 # test: decimal >= int
-select decimal '0.11' >= 1;
-select decimal '1.11' >= 1;
-select decimal '1.0' >= 1;
-explain select decimal '11.1' >= 1;
+select 0.11 >= 1;
+select 1.11 >= 1;
+select 1.0 >= 1;
+explain select 11.1 >= 1;
 
 # test: decimal >= decimal
-select decimal '0.11' >= decimal '1.2';
-select decimal '1.11' >= decimal '1.11';
-select decimal '1.13' >= decimal '1.13';
+select 0.11 >= 1.2;
+select 1.11 >= 1.11;
+select 1.13 >= 1.13;
 explain select decimal '1.11' >= decimal '1.13';
 
 # test: decimal >= null
-select decimal '0.11' >= null;
-explain select decimal '0.11' >= null;
+select 0.11 >= null;
+explain select 0.11 >= null;
 
 # test: decimal >= unsupported
-select decimal '0.11' >= [];
+select 0.11 >= [];
 
 # test: decimal > int
-select decimal '0.11' > 1;
-select decimal '1.11' > 1;
-select decimal '1.0' > 1;
-explain select decimal '11.1' > 1;
-select decimal '11.1' > 1;
+select 0.11 > 1;
+select 1.11 > 1;
+select 1.0 > 1;
+explain select 11.1 > 1;
+select 11.1 > 1;
 
 # test: decimal > decimal
-select decimal '0.11' > decimal '1.2';
-select decimal '1.11' > decimal '1.11';
-select decimal '1.13' > decimal '1.13';
-select decimal '1.14' > decimal '1.13';
-explain select decimal '1.11' > decimal '1.13';
-select decimal '0.000000000000001' > decimal '0';
+select 0.11 > 1.2;
+select 1.11 > 1.11;
+select 1.13 > 1.13;
+select 1.14 > 1.13;
+explain select 1.11 > 1.13;
+select 0.000000000000001 > decimal '0';
 
 # test: decimal > null
-select decimal '0.11' > null;
+select 0.11 > null;
 
 # test: decimal > unsupported
-select decimal '0.11' > [];
+select 0.11 > [];
 
 # test: decimal <= int
-select decimal '0.11' <= 1;
-select decimal '1.11' <= 1;
-select decimal '1.0' <= 1;
-explain select decimal '11.1' <= 1;
+select 0.11 <= 1;
+select 1.11 <= 1;
+select 1.0 <= 1;
+explain select 11.1 <= 1;
 
 # test: decimal <= decimal
-select decimal '0.11' <= decimal '1.2';
-select decimal '1.11' <= decimal '1.11';
-select decimal '1.13' <= decimal '1.13';
-select decimal '1.14' <= decimal '1.13';
-explain select decimal '1.11' <= decimal '1.13';
+select 0.11 <= 1.2;
+select 1.11 <= 1.11;
+select 1.13 <= 1.13;
+select 1.14 <= 1.13;
+explain select 1.11 <= 1.13;
 
 # test: decimal <= null
-select decimal '0.11' <= null;
-explain select decimal '0.11' <= null;
+select 0.11 <= null;
+explain select 0.11 <= null;
 
 # test: decimal <= unsupported
-select decimal '0.11' <= [];
+select 0.11 <= [];
 
 # test: decimal < int
-select decimal '0.11' < 1;
-select decimal '1.11' < 1;
-select decimal '1.0' < 1;
-explain select decimal '11.1' < 1;
+select 0.11 < 1;
+select 1.11 < 1;
+select 1.0 < 1;
+explain select 11.1 < 1;
 
 # test: decimal < decimal
-select decimal '0.11' < decimal '1.2';
-select decimal '1.11' < decimal '1.11';
-select decimal '1.13' < decimal '1.13';
-explain select decimal '1.11' < decimal '1.13';
-select decimal '-0.900719925474099' < decimal '-0.900719925474098';
+select 0.11 < 1.2;
+select 1.11 < 1.11;
+select 1.13 < 1.13;
+explain select 1.11 < 1.13;
+select -0.900719925474099 < -0.900719925474098;
 
 # test: decimal < null
-select decimal '0.11' < null;
-explain select decimal '0.11' < null;
+select 0.11 < null;
+explain select 0.11 < null;
 
 # test: decimal < unsupported
-select decimal '0.11' < [];
+select 0.11 < [];
 
 # test: decimal + int
-select decimal '1.5' + 1;
-explain select decimal '1.5' + 1;
+select 1.5 + 1;
+explain select 1.5 + 1;
 
 # test: decimal + decimal
-select decimal '1.5' + decimal '1.5';
-explain select decimal '1.5' + decimal '1.5';
+select 1.5 + 1.5;
+explain select 1.5 + 1.5;
 
-select decimal '0.900719925474098' + decimal '0.000000000000001';
-select decimal '0.900719925474099' + decimal '0.000000000000001';
-select decimal '0.900719925474100';
-select decimal '-0.000000000000001' + decimal '0.000000000000001';
+select 0.900719925474098 + 0.000000000000001;
+select 0.900719925474099 + 0.000000000000001;
+select 0.900719925474100;
+select -0.000000000000001 + 0.000000000000001;
 
 # test: decimal + null
-select decimal '1.5' + null;
+select 1.5 + null;
 
 # test: decimal + unsupported
-select decimal '1.5' + [];
+select 1.5 + [];
 
 # test: decimal - int
-select decimal '1.5' - 1;
-explain select decimal '1.5' - 1;
-select decimal '1.5' - 5;
+select 1.5 - 1;
+explain select 1.5 - 1;
+select 1.5 - 5;
 
 # test: decimal - decimal
-select decimal '1.5' - decimal '1.5';
-explain select decimal '1.5' - decimal '1.5';
+select 1.5 - 1.5;
+explain select 1.5 - 1.5;
 
-select decimal  '0.900719925474100' - decimal '0.000000000000001';
-select decimal '-0.900719925474098' - decimal '0.000000000000001';
-select decimal '-0.900719925474099' - decimal '0.000000000000001';
+select 0.900719925474100 - 0.000000000000001;
+select -0.900719925474098 - 0.000000000000001;
+select -0.900719925474099 - 0.000000000000001;
 
 # test: decimal - null
-select decimal '1.5' - null;
+select 1.5 - null;
 
 # test: decimal - unsupported
-select decimal '1.5' - [];
+select 1.5 - [];
 
-# test: double * int
-select decimal '1.5' * 2;
-explain select decimal '1.5' * 2;
+# test: decimal * int
+select 1.5 * 2;
+explain select 1.5 * 2;
 
 # test: decimal * decimal
-select decimal '1.5' * decimal '1.5';
-explain select decimal '1.5' * decimal '1.5';
+select 1.5 * 1.5;
+explain select 1.5 * 1.5;
 
-select decimal '0.900719925474099' * decimal '1';
-select decimal '0.900719925474099' * decimal '-1';
+select 0.900719925474099 * decimal '1';
+select 0.900719925474099 * decimal '-1';
 
 # test: decimal * null
-select decimal '1.5' * null;
+select 1.5 * null;
 
 # test: decimal * unsupported
-select decimal '1.5' * [];
+select 1.5 * [];
 
 # test: decimal / int
-select decimal '3.5' / 2;
-explain select decimal '3.5' / 2;
-select decimal '3.5' / 0;
+select 3.5 / 2;
+explain select 3.5 / 2;
+select 3.5 / 0;
 
 # test: decimal / decimal
-select decimal '3.5' / decimal '1.5';
-explain select decimal '3.5' / decimal '1.5';
-select decimal '3.5' / decimal '0.0';
+select 3.5 / 1.5;
+explain select 3.5 / 1.5;
+select 3.5 / 0.0;
 
 # test: decimal / null
-select decimal '1.5' / null;
+select 1.5 / null;
 
 # test: decimal / unsupported
-select decimal '1.5' / [];
+select 1.5 / [];
 
 # test: -decimal
-select decimal '-18.8';
-select - decimal '18.8';
-explain select - decimal '18.8';
+select -18.8;
+select - 18.8;
+explain select - 18.8;
 explain select - decimal '18.8';
 
 disconnect S0;

@@ -1,22 +1,22 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: double
-select 1.0;
+select 1.0e0;
 
 col1
 ────
 1
-select 1.0::type;
+select 1.0e0::type;
 
 type
 ────
 double
-select 3.14;
+select 3.14e0;
 
 col1
 ────
 3.14
-select 1.1234;
+select 1.1234e0;
 
 col1
 ────
@@ -54,9 +54,9 @@ col1
 1e+308
 # test: double overflow
 select 1.79770e+308;
-error: select ⟵ float overflow
+error: select ❰1.79770e+308❱ ⟵ float overflow
 select 2.2250738585072014e-309;
-error: select ⟵ float overflow
+error: select ❰2.2250738585072014e-309❱ ⟵ float overflow
 select 1e1;
 
 col1
@@ -83,32 +83,32 @@ col1
 ────
 1e+40
 # test: double = bool
-select 1.0 = true;
+select 1.0e0 = true;
 
 col1
 ────
 true
-select 1.34 = true;
+select 1.34e0 = true;
 
 col1
 ────
 false
-select 1.34 = false;
+select 1.34e0 = false;
 
 col1
 ────
 false
-select 0.34 = false;
+select 0.34e0 = false;
 
 col1
 ────
 false
-select 0.0 = false;
+select 0.0e0 = false;
 
 col1
 ────
 true
-explain select 0.0 = false;
+explain select 0.0e0 = false;
 
 explain
 ───────
@@ -119,22 +119,22 @@ main
   2   equfi               2      0      1
   3   ret                 2      0      -
 # test: double = int
-select 1.0 = 1.0;
+select 1.0e0 = 1;
 
 col1
 ────
 true
-select 12.3 = 1;
+select 12.3e0 = 1;
 
 col1
 ────
 false
-select 0.14 = 1;
+select 0.14e0 = 1;
 
 col1
 ────
 false
-explain select 1.0000 = 1;
+explain select 1.0000e0 = 1;
 
 explain
 ───────
@@ -145,22 +145,22 @@ main
   2   equfi               2      0      1
   3   ret                 2      0      -
 # test: double = double
-select 12.3 = 1.3;
+select 12.3e0 = 1.3e0;
 
 col1
 ────
 false
-select 12.3 = 12.3;
+select 12.3e0 = 12.3e0;
 
 col1
 ────
 true
-select 12.3 = 12.4;
+select 12.3e0 = 12.4e0;
 
 col1
 ────
 false
-explain select 12.3 = 12.4;
+explain select 12.3e0 = 12.4e0;
 
 explain
 ───────
@@ -171,12 +171,12 @@ main
   2   equff               2      0      1
   3   ret                 2      0      -
 # test: double = null
-select 12.3 = null;
+select 12.3e0 = null;
 
 col1
 ────
 null
-explain select 12.3 = null;
+explain select 12.3e0 = null;
 
 explain
 ───────
@@ -187,35 +187,35 @@ main
   2   nullop              2      0      1
   3   ret                 2      0      -
 # test: double = unsupported
-select 12.3 = [1,2];
-error: select 12.3 = ❰[❱ ⟵ operation double = json is not supported
+select 12.3e0 = [1,2e0];
+error: select 12.3e0 = ❰[❱ ⟵ operation double = json is not supported
 # test: double <> bool
-select 1.0 <> true;
+select 1.0e0 <> true;
 
 col1
 ────
 false
-select 1.34 <> true;
+select 1.34e0 <> true;
 
 col1
 ────
 true
-select 1.34 <> false;
+select 1.34e0 <> false;
 
 col1
 ────
 true
-select 0.34 <> false;
+select 0.34e0 <> false;
 
 col1
 ────
 true
-select 0.0 <> false;
+select 0.0e0 <> false;
 
 col1
 ────
 false
-explain select 0.0 <> false;
+explain select 0.0e0 <> false;
 
 explain
 ───────
@@ -227,22 +227,22 @@ main
   3   not                 0      2      0
   4   ret                 0      0      -
 # test: double <> int
-select 1.0 <> 1.0;
+select 1.0e0 <> 1;
 
 col1
 ────
 false
-select 12.3 <> 1;
+select 12.3e0 <> 1;
 
 col1
 ────
 true
-select 0.14 <> 1;
+select 0.14e0 <> 1;
 
 col1
 ────
 true
-explain select 1.0000 <> 1;
+explain select 1.0000e0 <> 1;
 
 explain
 ───────
@@ -254,22 +254,22 @@ main
   3   not                 0      2      0
   4   ret                 0      0      -
 # test: double <> double
-select 12.3 <> 1.3;
+select 12.3e0 <> 1.3e0;
 
 col1
 ────
 true
-select 12.3 <> 12.3;
+select 12.3e0 <> 12.3e0;
 
 col1
 ────
 false
-select 12.3 <> 12.4;
+select 12.3e0 <> 12.4e0;
 
 col1
 ────
 true
-explain select 12.3 <> 12.4;
+explain select 12.3e0 <> 12.4e0;
 
 explain
 ───────
@@ -281,12 +281,12 @@ main
   3   not                 0      2      0
   4   ret                 0      0      -
 # test: double <> null
-select 12.3 <> null;
+select 12.3e0 <> null;
 
 col1
 ────
 null
-explain select 12.3 <> null;
+explain select 12.3e0 <> null;
 
 explain
 ───────
@@ -298,25 +298,25 @@ main
   3   not                 0      2      0
   4   ret                 0      0      -
 # test: double <> unsupported
-select 12.3 <> [1,2];
-error: select 12.3 <> ❰[❱ ⟵ operation double = json is not supported
+select 12.3e0 <> [1,2e0];
+error: select 12.3e0 <> ❰[❱ ⟵ operation double = json is not supported
 # test: double >= int
-select 0.11 >= 1;
+select 0.11e0 >= 1;
 
 col1
 ────
 false
-select 1.11 >= 1;
+select 1.11e0 >= 1;
 
 col1
 ────
 true
-select 1.0 >= 1;
+select 1.0e0 >= 1;
 
 col1
 ────
 true
-explain select 11.1 >= 1;
+explain select 11.1e0 >= 1;
 
 explain
 ───────
@@ -327,22 +327,22 @@ main
   2   gtefi               2      0      1
   3   ret                 2      0      -
 # test: double >= double
-select 0.11 >= 1.2;
+select 0.11e0 >= 1.2e0;
 
 col1
 ────
 false
-select 1.11 >= 1.11;
+select 1.11e0 >= 1.11e0;
 
 col1
 ────
 true
-select 1.13 >= 1.13;
+select 1.13e0 >= 1.13e0;
 
 col1
 ────
 true
-explain select 1.11 >= 1.13;
+explain select 1.11e0 >= 1.13e0;
 
 explain
 ───────
@@ -353,12 +353,12 @@ main
   2   gteff               2      0      1
   3   ret                 2      0      -
 # test: double >= null
-select 0.11 >= null;
+select 0.11e0 >= null;
 
 col1
 ────
 null
-explain select 0.11 >= null;
+explain select 0.11e0 >= null;
 
 explain
 ───────
@@ -369,25 +369,25 @@ main
   2   nullop              2      0      1
   3   ret                 2      0      -
 # test: double >= unsupported
-select 0.11 >= [];
-error: select 0.11 >= ❰[❱ ⟵ operation double >= json is not supported
+select 0.11e0 >= [];
+error: select 0.11e0 >= ❰[❱ ⟵ operation double >= json is not supported
 # test: double > int
-select 0.11 > 1;
+select 0.11e0 > 1;
 
 col1
 ────
 false
-select 1.11 > 1;
+select 1.11e0 > 1;
 
 col1
 ────
 true
-select 1.0 > 1;
+select 1.0e0 > 1;
 
 col1
 ────
 false
-explain select 11.1 > 1;
+explain select 11.1e0 > 1;
 
 explain
 ───────
@@ -398,22 +398,22 @@ main
   2   gtfi                2      0      1
   3   ret                 2      0      -
 # test: double > double
-select 0.11 > 1.2;
+select 0.11e0 > 1.2e0;
 
 col1
 ────
 false
-select 1.11 > 1.11;
+select 1.11e0 > 1.11e0;
 
 col1
 ────
 false
-select 1.13 > 1.13;
+select 1.13e0 > 1.13e0;
 
 col1
 ────
 false
-explain select 1.11 > 1.13;
+explain select 1.11e0 > 1.13e0;
 
 explain
 ───────
@@ -424,12 +424,12 @@ main
   2   gtff                2      0      1
   3   ret                 2      0      -
 # test: double > null
-select 0.11 > null;
+select 0.11e0 > null;
 
 col1
 ────
 null
-explain select 0.11 > null;
+explain select 0.11e0 > null;
 
 explain
 ───────
@@ -440,25 +440,25 @@ main
   2   nullop              2      0      1
   3   ret                 2      0      -
 # test: double > unsupported
-select 0.11 > [];
-error: select 0.11 > ❰[❱ ⟵ operation double > json is not supported
+select 0.11e0 > [];
+error: select 0.11e0 > ❰[❱ ⟵ operation double > json is not supported
 # test: double <= int
-select 0.11 <= 1;
+select 0.11e0 <= 1;
 
 col1
 ────
 true
-select 1.11 <= 1;
+select 1.11e0 <= 1;
 
 col1
 ────
 false
-select 1.0 <= 1;
+select 1.0e0 <= 1;
 
 col1
 ────
 true
-explain select 11.1 <= 1;
+explain select 11.1e0 <= 1;
 
 explain
 ───────
@@ -469,22 +469,22 @@ main
   2   ltefi               2      0      1
   3   ret                 2      0      -
 # test: double <= double
-select 0.11 <= 1.2;
+select 0.11e0 <= 1.2e0;
 
 col1
 ────
 true
-select 1.11 <= 1.11;
+select 1.11e0 <= 1.11e0;
 
 col1
 ────
 true
-select 1.13 <= 1.13;
+select 1.13e0 <= 1.13e0;
 
 col1
 ────
 true
-explain select 1.11 <= 1.13;
+explain select 1.11e0 <= 1.13e0;
 
 explain
 ───────
@@ -495,12 +495,12 @@ main
   2   lteff               2      0      1
   3   ret                 2      0      -
 # test: double <= null
-select 0.11 <= null;
+select 0.11e0 <= null;
 
 col1
 ────
 null
-explain select 0.11 <= null;
+explain select 0.11e0 <= null;
 
 explain
 ───────
@@ -511,25 +511,25 @@ main
   2   nullop              2      0      1
   3   ret                 2      0      -
 # test: double <= unsupported
-select 0.11 <= [];
-error: select 0.11 <= ❰[❱ ⟵ operation double <= json is not supported
+select 0.11e0 <= [];
+error: select 0.11e0 <= ❰[❱ ⟵ operation double <= json is not supported
 # test: double < int
-select 0.11 < 1;
+select 0.11e0 < 1;
 
 col1
 ────
 true
-select 1.11 < 1;
+select 1.11e0 < 1;
 
 col1
 ────
 false
-select 1.0 < 1;
+select 1.0e0 < 1;
 
 col1
 ────
 false
-explain select 11.1 < 1;
+explain select 11.1e0 < 1;
 
 explain
 ───────
@@ -540,22 +540,22 @@ main
   2   ltfi                2      0      1
   3   ret                 2      0      -
 # test: double < double
-select 0.11 < 1.2;
+select 0.11e0 < 1.2e0;
 
 col1
 ────
 true
-select 1.11 < 1.11;
+select 1.11e0 < 1.11e0;
 
 col1
 ────
 false
-select 1.13 < 1.13;
+select 1.13e0 < 1.13e0;
 
 col1
 ────
 false
-explain select 1.11 < 1.13;
+explain select 1.11e0 < 1.13e0;
 
 explain
 ───────
@@ -566,12 +566,12 @@ main
   2   ltff                2      0      1
   3   ret                 2      0      -
 # test: double < null
-select 0.11 < null;
+select 0.11e0 < null;
 
 col1
 ────
 null
-explain select 0.11 < null;
+explain select 0.11e0 < null;
 
 explain
 ───────
@@ -582,15 +582,15 @@ main
   2   nullop              2      0      1
   3   ret                 2      0      -
 # test: double < unsupported
-select 0.11 < [];
-error: select 0.11 < ❰[❱ ⟵ operation double < json is not supported
+select 0.11e0 < [];
+error: select 0.11e0 < ❰[❱ ⟵ operation double < json is not supported
 # test: double + int
-select 1.5 + 1;
+select 1.5e0 + 1;
 
 col1
 ────
 2.5
-explain select 1.5 + 1;
+explain select 1.5e0 + 1;
 
 explain
 ───────
@@ -601,12 +601,12 @@ main
   2   addfi               2      0      1
   3   ret                 2      0      -
 # test: double + double
-select 1.5 + 1.5;
+select 1.5e0 + 1.5e0;
 
 col1
 ────
 3
-explain select 1.5 + 1.5;
+explain select 1.5e0 + 1.5e0;
 
 explain
 ───────
@@ -617,21 +617,21 @@ main
   2   addff               2      0      1
   3   ret                 2      0      -
 # test: double + null
-select 1.5 + null;
+select 1.5e0 + null;
 
 col1
 ────
 null
 # test: double + unsupported
-select 1.5 + [];
-error: select 1.5 + ❰[❱ ⟵ operation double + json is not supported
+select 1.5e0 + [];
+error: select 1.5e0 + ❰[❱ ⟵ operation double + json is not supported
 # test: double - int
-select 1.5 - 1;
+select 1.5e0 - 1;
 
 col1
 ────
 0.5
-explain select 1.5 - 1;
+explain select 1.5e0 - 1;
 
 explain
 ───────
@@ -642,12 +642,12 @@ main
   2   subfi               2      0      1
   3   ret                 2      0      -
 # test: double - double
-select 1.5 - 1.5;
+select 1.5e0 - 1.5e0;
 
 col1
 ────
 0
-explain select 1.5 - 1.5;
+explain select 1.5e0 - 1.5e0;
 
 explain
 ───────
@@ -658,21 +658,21 @@ main
   2   subff               2      0      1
   3   ret                 2      0      -
 # test: double - null
-select 1.5 - null;
+select 1.5e0 - null;
 
 col1
 ────
 null
 # test: double - unsupported
-select 1.5 - [];
-error: select 1.5 - ❰[❱ ⟵ operation double - json is not supported
+select 1.5e0 - [];
+error: select 1.5e0 - ❰[❱ ⟵ operation double - json is not supported
 # test: double * int
-select 1.5 * 2;
+select 1.5e0 * 2;
 
 col1
 ────
 3
-explain select 1.5 * 2;
+explain select 1.5e0 * 2;
 
 explain
 ───────
@@ -686,12 +686,12 @@ main
 select 1e+308 * 2;
 error: double * int overflow
 # test: double * double
-select 1.5 * 1.5;
+select 1.5e0 * 1.5e0;
 
 col1
 ────
 2.25
-explain select 1.5 * 1.5;
+explain select 1.5e0 * 1.5e0;
 
 explain
 ───────
@@ -702,21 +702,21 @@ main
   2   mulff               2      0      1
   3   ret                 2      0      -
 # test: double * null
-select 1.5 * null;
+select 1.5e0 * null;
 
 col1
 ────
 null
 # test: double * unsupported
-select 1.5 * [];
-error: select 1.5 * ❰[❱ ⟵ operation double * json is not supported
+select 1.5e0 * [];
+error: select 1.5e0 * ❰[❱ ⟵ operation double * json is not supported
 # test: double / int
-select 3.5 / 2;
+select 3.5e0 / 2;
 
 col1
 ────
 1.75
-explain select 3.5 / 2;
+explain select 3.5e0 / 2;
 
 explain
 ───────
@@ -726,15 +726,15 @@ main
   1   int                 1      -      0     # 2
   2   divfi               2      0      1
   3   ret                 2      0      -
-select 3.5 / 0;
+select 3.5e0 / 0;
 error: zero division
 # test: double / double
-select 3.5 / 1.5;
+select 3.5e0 / 1.5e0;
 
 col1
 ────
 2.33333
-explain select 3.5 / 1.5;
+explain select 3.5e0 / 1.5e0;
 
 explain
 ───────
@@ -744,24 +744,24 @@ main
   1   double              1      8      0     # 1.5
   2   divff               2      0      1
   3   ret                 2      0      -
-select 3.5 / 0.0;
+select 3.5e0 / 0.0e0;
 error: zero division
 # test: double / null
-select 1.5 / null;
+select 1.5e0 / null;
 
 col1
 ────
 null
 # test: double / unsupported
-select 1.5 / [];
-error: select 1.5 / ❰[❱ ⟵ operation double / json is not supported
+select 1.5e0 / [];
+error: select 1.5e0 / ❰[❱ ⟵ operation double / json is not supported
 # test: -double
-select -18.8;
+select -18.8e0;
 
 col1
 ────
 -18.8
-explain select -18.8;
+explain select -18.8e0;
 
 explain
 ───────

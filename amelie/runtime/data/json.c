@@ -135,56 +135,78 @@ json_string(Json* self, Str* str, bool* unescape)
 	return true;
 }
 
-hot static inline bool
-json_integer_read(Json* self, int64_t* value, double* real)
+hot static inline void
+json_integer(Json* self)
 {
+	// -
 	bool minus = false;
 	if (*self->pos == '-')
 	{
 		minus = true;
 		self->pos++;
 	}
-	auto start = self->pos;
-	while (self->pos < self->end)
-	{
-		if (*self->pos == '.' ||
-		    *self->pos == 'e' ||
-		    *self->pos == 'E')
-		{
-			self->pos = start;
-			goto read_as_double;
-		}
-		if (! isdigit(*self->pos))
-			break;
-		if (unlikely(int64_mul_add_overflow(value, *value, 10, *self->pos - '0')))
-			error("json int overflow");
-		self->pos++;
-	}
-	if (minus)
-		*value = -(*value);
-	return true;
 
+	// 0-9+[.0-9+][e0-9+]
+	auto    start = self->pos;
+	int64_t value = 0;
+	auto    scale = 0;
+	auto    dot   = false;
+	for (; self->pos < self->end; self->pos++)
+	{
+		auto at = *self->pos;
+		if (at >= '0' && at <= '9')
+		{
+			if (unlikely(int64_mul_add_overflow(&value, value, 10, at - '0')))
+				error("json int overflow");
+
+			// .scale
+			if (dot)
+				scale++;
+			continue;
+		}
+
+		if (at == '.' && !dot)
+		{
+			dot = true;
+			continue;
+		}
+
+		// double
+		if (at == 'e')
+			goto read_as_double;
+
+		break;
+	}
+
+	// int
+	if (! dot)
+	{
+		if (minus)
+			value = -value;
+		encode_int(self->buf, value);
+		return;
+	}
+
+	// decimal
+	if (unlikely(value > DECIMAL_MAX || scale > DECIMAL_MAX_SCALE))
+		error("json decimal overflow");
+	auto decimal = decimal_set(value, scale);
+	if (minus)
+		decimal = decimal_neg(decimal);
+	encode_decimal(self->buf, decimal);
+	return;
+
+	// double
 read_as_double:
 	errno = 0;
 	char* end = NULL;
-	*real = strtod(start, &end);
+	auto real = strtod(start, &end);
 	if (errno == ERANGE)
 		error("bad json float number");
 	self->pos = end;
 	if (minus)
-		*real = -(*real);
-	return false;
-}
-
-hot static inline void
-json_integer(Json* self)
-{
-	int64_t value = 0;
-	double  value_real = 0;
-	if (json_integer_read(self, &value, &value_real))
-		encode_int(self->buf, value);
-	else
-		encode_real(self->buf, value_real);
+		real = -real;
+	encode_real(self->buf, real);
 }
 
 hot static inline void
