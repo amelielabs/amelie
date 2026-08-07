@@ -141,6 +141,26 @@ bench_vector_create(Bench* self, Client* client)
 	str_set_cstr(&str, "create table bench_vector (id int primary key, v vector(128))");
 	client_execute(client, &str, NULL);
 
+	info("preparing function.");
+	Buf buf;
+	buf_init(&buf);
+	defer_buf(&buf);
+
+	buf_format(&buf,
+	           "create function matching_func() "
+	           "begin ");
+	buf_format(&buf,
+	           "  SELECT id FROM bench_vector MATCHING v TO vector [");
+	for (int j = 0; j < vector_dim; j++)
+	{
+		float val = (float)random_generate(&am_task->random) / (float)UINT64_MAX;
+		buf_format(&buf, "{s}{.4f}", j > 0 ? "," : "", val);
+	}
+	buf_format(&buf, "] TOP 10;");
+	buf_format(&buf, "end");
+	buf_str(&buf, &str);
+	client_execute(client, &str, NULL);
+
 	info("preparing data.");
 	auto batch   = (int)opt_int_of(&self->batch);
 	auto scale   = (int)opt_int_of(&self->scale);
@@ -155,34 +175,12 @@ hot static void
 bench_vector_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
 
+	Str cmd;
+	str_set_cstr(&cmd,  "execute matching_func();");
 	while (! self->shutdown)
 	{
-		buf_reset(&buf);
-#if 0
-		buf_format(&buf, "SELECT id FROM bench_vector ORDER BY v::cos_distance(vector [");
-		for (int j = 0; j < vector_dim; j++)
-		{
-			float val = (float)random_generate(&am_task->random) / (float)UINT64_MAX;
-			buf_format(&buf, "{s}{.4f}", j > 0 ? "," : "", val);
-		}
-		buf_format(&buf, "]) ASC LIMIT 10");
-#endif
-		buf_format(&buf, "SELECT id FROM bench_vector MATCHING v TO vector [");
-		for (int j = 0; j < vector_dim; j++)
-		{
-			float val = (float)random_generate(&am_task->random) / (float)UINT64_MAX;
-			buf_format(&buf, "{s}{.4f}", j > 0 ? "," : "", val);
-		}
-		buf_format(&buf, "] TOP 10");
-
-		Str cmd;
-		buf_str(&buf, &cmd);
 		client_execute(client, &cmd, NULL);
-
 		atomic_u64_add(&bench->transactions, 1);
 	}
 }

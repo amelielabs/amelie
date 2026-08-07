@@ -279,6 +279,12 @@ unpack_real(uint8_t** pos, double* value)
 		*value = *(double*)(data + data_size_type());
 		*pos += data_size_type() + sizeof(double);
 	} else
+	if (*data == DATA_DECIMAL)
+	{
+		auto decimal = *(uint64_t*)(data + data_size_type());
+		*pos += data_size_type() + sizeof(uint64_t);
+		*value = decimal_get_double(decimal);
+	} else
 	if (data_is_int(data))
 	{
 		int64_t i64;
