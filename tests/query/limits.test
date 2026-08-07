@@ -15,6 +15,7 @@ open E0 "limit_write": 1;
 connect E0 S0 127.0.0.1:3485;
 
 insert into test values (123);
+insert into test values (124), (125);
 
 disconnect S0;
 close E0;

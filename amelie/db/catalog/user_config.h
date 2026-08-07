@@ -23,6 +23,7 @@ struct UserConfig
 	bool   agent;
 	bool   superuser;
 	Grants grants;
+	Limits limits;
 };
 
 static inline UserConfig*
@@ -38,6 +39,7 @@ user_config_allocate()
 	str_init(&self->created_at);
 	str_init(&self->revoked_at);
 	grants_init(&self->grants);
+	limits_init(&self->limits);
 	return self;
 }
 
@@ -112,6 +114,7 @@ user_config_copy(UserConfig* self)
 	user_config_set_agent(copy, self->agent);
 	user_config_set_superuser(copy, self->superuser);
 	grants_copy(&copy->grants, &self->grants);
+	limits_copy(&copy->limits, &self->limits);
 	return copy;
 }
 
@@ -121,6 +124,7 @@ user_config_read(uint8_t** pos)
 	auto self = user_config_allocate();
 	errdefer(user_config_free, self);
 	uint8_t* pos_grants = NULL;
+	uint8_t* pos_limits = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_STR,   "name",        &self->name        },
@@ -131,12 +135,16 @@ user_config_read(uint8_t** pos)
 		{ DECODE_BOOL,  "agent",       &self->agent       },
 		{ DECODE_BOOL,  "superuser",   &self->superuser   },
 		{ DECODE_ARRAY, "grants",      &pos_grants        },
+		{ DECODE_ARRAY, "limits",      &pos_limits        },
 		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "user", pos);
 
 	// grants
 	grants_read(&self->grants, &pos_grants);
+
+	// limits
+	limits_read(&self->limits, &pos_limits);
 	return self;
 }
 
@@ -185,6 +193,10 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 	// grants
 	encode_raw(buf, "grants", 6);
 	grants_write(&self->grants, buf, 0);
+
+	// limits
+	encode_raw(buf, "limits", 6);
+	limits_write(&self->limits, buf);
 
 	encode_obj_end(buf);
 }

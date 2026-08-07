@@ -75,7 +75,7 @@ gtr_reset(Gtr* self)
 		self->error = NULL;
 	}
 	dispatches_reset(&self->dispatches);
-	limit_reset(&self->limit, opt_int_of(&config()->limit_write));
+	limit_init(&self->limit, opt_int_of(&config()->limit_write));
 	tr_reset(&self->tr);
 	write_reset(&self->write);
 	list_init(&self->write_cdc);

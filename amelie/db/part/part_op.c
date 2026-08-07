@@ -170,7 +170,7 @@ part_insert(Part*     self, Tr* tr,
 
 	// ensure transaction log limit
 	if (tr->limit)
-		limit_ensure(tr->limit, row);
+		limit_add(tr->limit);
 }
 
 hot bool
@@ -211,7 +211,7 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 
 	// ensure transaction log limit
 	if (tr->limit)
-		limit_ensure(tr->limit, row);
+		limit_add(tr->limit);
 
 	return false;
 }
@@ -256,7 +256,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 
 	// ensure transaction log limit
 	if (tr->limit)
-		limit_ensure(tr->limit, row);
+		limit_add(tr->limit);
 }
 
 hot void
@@ -309,7 +309,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 
 	// ensure transaction log limit
 	if (tr->limit)
-		limit_ensure(tr->limit, row);
+		limit_add(tr->limit);
 }
 
 hot void

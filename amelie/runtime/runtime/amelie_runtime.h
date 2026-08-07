@@ -22,6 +22,10 @@
 // runtime
 #include "runtime/runtime.h"
 
-// global/local
+// global
 #include "runtime/global.h"
+
+// local
+#include "runtime/limits_.h"
+#include "runtime/limit.h"
 #include "runtime/local.h"
