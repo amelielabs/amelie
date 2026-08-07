@@ -47,7 +47,6 @@ config_prepare(Config* self)
 		{ "log_options",             OPT_BOOL,   OPT_C,                   &self->log_options,             NULL,             false               },
 		// limits
 		{ "limit_send",              OPT_INT,    OPT_C,                   &self->limit_send,              NULL,             3 * 1024 * 1024     },
-		{ "limit_recv",              OPT_INT,    OPT_C,                   &self->limit_recv,              NULL,             1 * 1024 * 1024     },
 		{ "limit_write",             OPT_INT,    OPT_C,                   &self->limit_write,             NULL,             0                   },
 		// workers
 		{ "frontends",               OPT_INT,    OPT_C|OPT_Z,             &self->frontends,               NULL,             4                   },
@@ -72,7 +71,8 @@ config_prepare(Config* self)
 		// replication
 		{ "repl_readahead",          OPT_INT,    OPT_C|OPT_Z,             &self->repl_readahead,          NULL,             256 * 1024          },
 		{ "repl_reconnect_ms",       OPT_INT,    OPT_C,                   &self->repl_reconnect_ms,       NULL,             3000                },
-		// server
+		// network
+		{ "recv",                    OPT_INT,    OPT_C,                   &self->recv,                    NULL,             1 * 1024 * 1024     },
 		{ "listen",                  OPT_JSON,   OPT_C|OPT_H,             &self->listen,                  NULL,             0                   },
 		{  NULL,                     0,          0,                       NULL,                           NULL,             0                   },
 	};

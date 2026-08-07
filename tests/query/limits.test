@@ -38,10 +38,10 @@ connect E0 S0 127.0.0.1:3485;
 
 select show();
 
-# test: limit_recv
+# test: recv
 disconnect S0;
 close E0;
-open E0 "limit_recv": 0;
+open E0 "recv": 0;
 connect E0 S0 127.0.0.1:3485;
 
 select 1;

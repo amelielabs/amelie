@@ -28,7 +28,6 @@ struct Config
 	Opt  log_options;
 	// limits
 	Opt  limit_send;
-	Opt  limit_recv;
 	Opt  limit_write;
 	// workers
 	Opt  frontends;
@@ -54,7 +53,8 @@ struct Config
 	Opt  repl_readahead;
 	Opt  repl_reconnect_ms;
 	Opts opts;
-	// server
+	// network
+	Opt  recv;
 	Opt  listen;
 };
 

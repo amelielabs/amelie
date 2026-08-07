@@ -425,7 +425,6 @@ config
   "log_connections": true,
   "log_options": true,
   "limit_send": 3145728,
-  "limit_recv": 1048576,
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
@@ -445,7 +444,8 @@ config
   "storage_compression": "zstd",
   "storage_sync": false,
   "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000
+  "repl_reconnect_ms": 3000,
+  "recv": 1048576
 }
 select * from show config;
 
@@ -461,7 +461,6 @@ config
   "log_connections": true,
   "log_options": true,
   "limit_send": 3145728,
-  "limit_recv": 1048576,
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
@@ -481,7 +480,8 @@ config
   "storage_compression": "zstd",
   "storage_sync": false,
   "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000
+  "repl_reconnect_ms": 3000,
+  "recv": 1048576
 }
 # test: show all
 show all;
@@ -498,7 +498,6 @@ config
   "log_connections": true,
   "log_options": true,
   "limit_send": 3145728,
-  "limit_recv": 1048576,
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
@@ -518,7 +517,8 @@ config
   "storage_compression": "zstd",
   "storage_sync": false,
   "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000
+  "repl_reconnect_ms": 3000,
+  "recv": 1048576
 }
 select show('config').uuid;
 
@@ -575,7 +575,6 @@ config
   "log_connections": true,
   "log_options": true,
   "limit_send": 3145728,
-  "limit_recv": 1048576,
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
@@ -595,7 +594,8 @@ config
   "storage_compression": "zstd",
   "storage_sync": false,
   "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000
+  "repl_reconnect_ms": 3000,
+  "recv": 1048576
 }
 show timezone;
 

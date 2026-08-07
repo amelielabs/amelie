@@ -261,7 +261,7 @@ frontend_client(Frontend* self, Client* client)
 			break;
 
 		// read content
-		auto limit = opt_int_of(&config()->limit_recv);
+		auto limit = opt_int_of(&config()->recv);
 		auto limit_reached =
 			http_read_content_limit(http, readahead, &http->content, limit);
 		if (unlikely(limit_reached))
