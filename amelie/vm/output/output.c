@@ -22,7 +22,7 @@ void
 output_init(Output* self)
 {
 	self->buf       = NULL;
-	self->limits    = NULL;
+	self->local     = NULL;
 	self->iface     = NULL;
 	self->iface_arg = NULL;
 	self->timezone  = runtime()->timezone;
@@ -43,7 +43,7 @@ output_reset(Output* self)
 	self->iface_arg = NULL;
 	self->timezone  = runtime()->timezone;
 	self->endpoint  = NULL;
-	self->limits    = NULL;
+	self->local     = NULL;
 	if (self->buf)
 		buf_reset(self->buf);
 	print_reset(&self->print);
@@ -56,9 +56,9 @@ output_set_buf(Output* self, Buf* buf)
 }
 
 void
-output_set_limits(Output* self, Limits* limits)
+output_set_local(Output* self, Local* local)
 {
-	self->limits = limits;
+	self->local = local;
 }
 
 void

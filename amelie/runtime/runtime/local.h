@@ -55,3 +55,11 @@ local_encode_opt(Local* self, Buf* buf, Opt* opt)
 	}
 	opt_encode(opt, buf);
 }
+
+static inline bool
+local_limit(Local* self, int id, int64_t value)
+{
+	if (unlikely(! self))
+		return  true;
+	return limits_check(self->limits, id, value);
+}

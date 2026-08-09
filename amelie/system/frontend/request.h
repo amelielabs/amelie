@@ -49,11 +49,12 @@ request_unlock(Request* self)
 }
 
 hot static inline void
-request_set_local(Request* self)
+request_set_local(Request* self, bool with_limits)
 {
 	// set limits
 	auto local = &self->local;
-	local->limits = &self->user->config->limits;
+	if (with_limits)
+		local->limits = &self->user->config->limits;
 
 	// set timezone
 	local->timezone = self->output.timezone;
@@ -104,11 +105,14 @@ request_auth(Request* self, Auth* auth_ref)
 	}
 
 	// configure local
-	request_set_local(self);
+	request_set_local(self, true);
+
+	// set output local (enforce send limit)
+	output_set_local(&self->output, &self->local);
 }
 
 hot static inline void
-request_auth_as(Request* self, Str* user)
+request_auth_as(Request* self, Str* user, bool with_limits)
 {
 	// take catalog lock
 	self->lock = lock_system(REL_CATALOG, LOCK_SHARED);
@@ -118,7 +122,10 @@ request_auth_as(Request* self, Str* user)
 	self->user = catalog_find_user(&share()->db->catalog, user, true);
 
 	// configure local
-	request_set_local(self);
+	request_set_local(self, with_limits);
+
+	// set output local (enforce send limit)
+	output_set_local(&self->output, &self->local);
 }
 
 static inline void

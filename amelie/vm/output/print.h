@@ -35,7 +35,7 @@ struct Print
 	Str       chr_cut;
 	Str       chr_line;
 	Timezone* tz;
-	Limits*   limits;
+	Local*    local;
 };
 
 static inline PrintCol*
@@ -47,5 +47,5 @@ print_at(Print* self, int order)
 void print_init(Print*);
 void print_free(Print*);
 void print_reset(Print*);
-void print_create(Print*, Columns*, Value*, Timezone*, Buf*, Limits*);
+void print_create(Print*, Local*, Timezone*, Columns*, Value*, Buf*);
 void print_run(Print*);

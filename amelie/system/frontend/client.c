@@ -217,15 +217,9 @@ hot static inline bool
 frontend_auth(Frontend* self, Request* req)
 {
 	// take catalog lock and authenticate user
-	auto on_error = error_catch (
+	return !error_catch (
 		request_auth(req, &self->auth);
 	);
-	if (unlikely(on_error))
-		return false;
-
-	// set send limit (output)
-	output_set_limits(&req->output, &req->user->config->limits);
-	return true;
 }
 
 void

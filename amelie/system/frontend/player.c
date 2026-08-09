@@ -69,7 +69,10 @@ player_record(Player* self, RecordMsg* record, void* session)
 	auto on_error = error_catch
 	(	
 		// set user (takes shared catalog lock)
-		request_auth_as(req, opt_string_of(&endpoint->user));
+		//
+		// ignore user limits during recovery
+		//
+		request_auth_as(req, opt_string_of(&endpoint->user), false);
 
 		// validate replicated record
 		if (! uuid_is(&record->instance_id, opt_uuid_of(&config()->uuid)))

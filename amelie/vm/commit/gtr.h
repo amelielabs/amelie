@@ -98,9 +98,10 @@ gtr_prepare(Gtr* self, Local* local, User* user, Program* program)
 	self->local = local;
 
 	// set transaction write limit
+	auto limits = local->limits;
 	auto limit_write = 0;
-	if (limits_is_set(local->limits, LIMIT_WRITE))
-		limit_write = limits_get(local->limits, LIMIT_WRITE);
+	if (limits && limits_is_set(limits, LIMIT_WRITE))
+		limit_write = limits_get(limits, LIMIT_WRITE);
 	limit_init(&self->limit, limit_write);
 
 	// set user
