@@ -32,6 +32,7 @@ enum
 	LIMIT_TOPICS,
 	LIMIT_SUBSCRIPTIONS,
 	LIMIT_FUNCTIONS,
+
 	LIMIT_STATEMENTS,
 	LIMIT_COLUMNS,
 	LIMIT_COLUMNS_VECTOR,
@@ -85,7 +86,7 @@ hot static inline bool
 limits_check(Limits* self, int id, int64_t value)
 {
 	// check if limit is set
-	if (! (self->flags & (1 << id)))
+	if (!self || !(self->flags & (1 << id)))
 		return true;
 	return value <= self->limits[id];
 }

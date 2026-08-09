@@ -21,13 +21,12 @@
 void
 output_init(Output* self)
 {
-	self->buf           = NULL;
-	self->buf_limit     = 0;
-	self->buf_limit_has = false;
-	self->iface         = NULL;
-	self->iface_arg     = NULL;
-	self->timezone      = runtime()->timezone;
-	self->endpoint      = NULL;
+	self->buf       = NULL;
+	self->limits    = NULL;
+	self->iface     = NULL;
+	self->iface_arg = NULL;
+	self->timezone  = runtime()->timezone;
+	self->endpoint  = NULL;
 	print_init(&self->print);
 }
 
@@ -40,12 +39,11 @@ output_free(Output* self)
 void
 output_reset(Output* self)
 {
-	self->iface         = NULL;
-	self->iface_arg     = NULL;
-	self->timezone      = runtime()->timezone;
-	self->endpoint      = NULL;
-	self->buf_limit     = 0;
-	self->buf_limit_has = false;
+	self->iface     = NULL;
+	self->iface_arg = NULL;
+	self->timezone  = runtime()->timezone;
+	self->endpoint  = NULL;
+	self->limits    = NULL;
 	if (self->buf)
 		buf_reset(self->buf);
 	print_reset(&self->print);
@@ -58,10 +56,9 @@ output_set_buf(Output* self, Buf* buf)
 }
 
 void
-output_set_buf_limit(Output* self, int limit)
+output_set_limits(Output* self, Limits* limits)
 {
-	self->buf_limit = limit;
-	self->buf_limit_has = true;
+	self->limits = limits;
 }
 
 void

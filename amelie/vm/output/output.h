@@ -26,8 +26,7 @@ struct OutputIf
 struct Output
 {
 	Buf*      buf;
-	int       buf_limit;
-	bool      buf_limit_has;
+	Limits*   limits;
 	OutputIf* iface;
 	void*     iface_arg;
 	Timezone* timezone;
@@ -38,7 +37,7 @@ struct Output
 hot static inline void
 output_ensure_limit(Output* self)
 {
-	if (unlikely(self->buf_limit_has && buf_size(self->buf) > self->buf_limit))
+	if (unlikely(! limits_check(self->limits, LIMIT_SEND, buf_size(self->buf))))
 		error("output limit reached");
 }
 
@@ -47,7 +46,7 @@ void output_free(Output*);
 void output_reset(Output*);
 void output_set(Output*, Endpoint*, OutputIf*, void*);
 void output_set_buf(Output*, Buf*);
-void output_set_buf_limit(Output*, int);
+void output_set_limits(Output*, Limits*);
 
 static inline void
 output_value(Output* self, Columns* columns, Value* value)

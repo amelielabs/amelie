@@ -22,7 +22,7 @@ static void
 output_text_write(Output* self, Columns* columns, Value* value)
 {
 	auto print = &self->print;
-	print_create(print, columns, value, self->timezone, self->buf, self->buf_limit);
+	print_create(print, columns, value, self->timezone, self->buf, self->limits);
 	print_run(print);
 }
 
