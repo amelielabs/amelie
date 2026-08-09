@@ -34,18 +34,22 @@ enum
 {
 	USER_ALTER_RENAME,
 	USER_ALTER_REVOKE_TOKEN,
-	USER_ALTER_DESCRIPTION
+	USER_ALTER_DESCRIPTION,
+	USER_ALTER_LIMIT_SET,
+	USER_ALTER_LIMIT_UNSET
 };
 
 struct AstUserAlter
 {
-	Ast  ast;
-	bool if_exists;
-	int  type;
-	Ast* name;
-	Ast* name_new;
-	Str  revoked_at;
-	Str  description;
+	Ast      ast;
+	bool     if_exists;
+	int      type;
+	Ast*     name;
+	Ast*     name_new;
+	Str      revoked_at;
+	Str      description;
+	Limits   limits;
+	uint64_t limits_mask;
 };
 
 static inline AstUserCreate*

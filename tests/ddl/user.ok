@@ -434,6 +434,64 @@ users
   "description": ""
 }
 drop user test;
+# test: alter user set limit
+create user test;
+alter user test set;
+error: alter user test set❰;❱ ⟵ LIMIT expected
+alter user test set 123;
+error: alter user test set ❰123❱ ⟵ LIMIT expected
+alter user test set limit;
+error: alter user test set limit❰;❱ ⟵ limit name expected
+alter user test set limit write;
+error: alter user test set limit write❰;❱ ⟵ = expected
+alter user test set limit write =;
+error: alter user test set limit write =❰;❱ ⟵ int expected
+alter user test set limit write = 123;
+select show('user', 'test', true).limits;
+
+limits
+──────
+{
+  "send": 3145728,
+  "write": 123
+}
+alter user test set limit write = 123,;
+error: alter user test set limit write = 123,❰;❱ ⟵ limit name expected
+alter user test set limit write = 123, send = 123;
+select show('user', 'test', true).limits;
+
+limits
+──────
+{
+  "send": 123,
+  "write": 123
+}
+# test: alter user unset limit
+alter user test unset;
+error: alter user test unset❰;❱ ⟵ LIMIT expected
+alter user test unset 123;
+error: alter user test unset ❰123❱ ⟵ LIMIT expected
+alter user test unset limit;
+error: alter user test unset limit❰;❱ ⟵ limit name expected
+alter user test unset limit name;
+error: alter user test unset limit ❰name❱ ⟵ failed to find the limit
+alter user test unset limit write;
+select show('user', 'test', true).limits;
+
+limits
+──────
+{
+  "send": 123
+}
+alter user test unset limit write,;
+error: alter user test unset limit write,❰;❱ ⟵ limit name expected
+alter user test unset limit write, send;
+select show('user', 'test', true).limits;
+
+limits
+──────
+{}
+drop user test;
 # test: create agent
 create agent test description 'agent test';
 select show('user', 'amelie').name;

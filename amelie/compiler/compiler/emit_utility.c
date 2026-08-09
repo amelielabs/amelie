@@ -130,6 +130,12 @@ emit_ddl(Compiler* self)
 		else
 		if (arg->type == USER_ALTER_DESCRIPTION)
 			offset = user_op_describe(data, &arg->name->string, &arg->description);
+		else
+		if (arg->type == USER_ALTER_LIMIT_SET)
+			offset = user_op_limit_set(data, &arg->name->string, &arg->limits);
+		else
+		if (arg->type == USER_ALTER_LIMIT_UNSET)
+			offset = user_op_limit_unset(data, &arg->name->string, arg->limits_mask);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

@@ -370,6 +370,34 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 select show('user', 'test2').name;
 
+# test: alter user set limit
+alter user test2 set limit write = 10000;
+select show('state').lsn;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+select show('state').lsn;
+select show('user', 'test2', true).limits;
+
+# test: alter user unset limit
+alter user test2 unset limit write;
+select show('state').lsn;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+select show('state').lsn;
+select show('user', 'test2', true).limits;
+
 # test: drop user
 drop user test2;
 select show('state').lsn;

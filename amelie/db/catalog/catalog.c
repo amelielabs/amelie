@@ -195,9 +195,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_DESCRIBE:
 	{
-		Str     user;
-		Str     name;
-		Str     description;
+		Str  user;
+		Str  name;
+		Str  description;
 		auto type = rel_op_describe_read(op, &user, &name, &description);
 
 		auto if_exists = ddl_if_exists(flags);
@@ -251,6 +251,27 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_exists = ddl_if_exists(flags);
 		write = user_describe(self, tr, &name, &description, if_exists);
+		break;
+	}
+	case DDL_USER_LIMIT_SET:
+	{
+		Str    name;
+		Limits limits;
+		limits_init(&limits);
+		user_op_limit_set_read(op, &name, &limits);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_limit_set(self, tr, &name, &limits, if_exists);
+		break;
+	}
+	case DDL_USER_LIMIT_UNSET:
+	{
+		Str      name;
+		uint64_t mask;
+		user_op_limit_unset_read(op, &name, &mask);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_limit_unset(self, tr, &name, mask, if_exists);
 		break;
 	}
 	case DDL_TABLE_CREATE:

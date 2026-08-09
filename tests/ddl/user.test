@@ -225,6 +225,32 @@ alter user test description '';
 show users;
 drop user test;
 
+# test: alter user set limit
+create user test;
+alter user test set;
+alter user test set 123;
+alter user test set limit;
+alter user test set limit write;
+alter user test set limit write =;
+alter user test set limit write = 123;
+select show('user', 'test', true).limits;
+alter user test set limit write = 123,;
+alter user test set limit write = 123, send = 123;
+select show('user', 'test', true).limits;
+
+# test: alter user unset limit
+alter user test unset;
+alter user test unset 123;
+alter user test unset limit;
+# unknown
+alter user test unset limit name;
+alter user test unset limit write;
+select show('user', 'test', true).limits;
+alter user test unset limit write,;
+alter user test unset limit write, send;
+select show('user', 'test', true).limits;
+drop user test;
+
 # test: create agent
 create agent test description 'agent test';
 select show('user', 'amelie').name;

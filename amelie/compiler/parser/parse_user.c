@@ -17,6 +17,58 @@
 #include <amelie_vm>
 #include <amelie_parser.h>
 
+static void
+parse_user_limits(Stmt* self, Limits* limits)
+{
+	for (;;)
+	{
+		// name
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+			stmt_error(self, name, "limit name expected");
+
+		// =
+		stmt_expect(self, '=');
+
+		// value
+		auto value = stmt_expect(self, KINT);
+		auto id = limits_find(&name->string);
+		if (id == -1)
+			stmt_error(self, name, "failed to find the limit");
+		limits_set(limits, id, value->integer);
+
+		// ',
+		if (stmt_if(self, ','))
+			continue;
+
+		break;
+	}
+}
+
+static uint64_t
+parse_user_limits_mask(Stmt* self)
+{
+	uint64_t mask = 0;
+	for (;;)
+	{
+		// name
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+			stmt_error(self, name, "limit name expected");
+		auto id = limits_find(&name->string);
+		if (id == -1)
+			stmt_error(self, name, "failed to find the limit");
+		mask |= (1 << id);
+
+		// ',
+		if (stmt_if(self, ','))
+			continue;
+
+		break;
+	}
+	return mask;
+}
+
 void
 parse_user_create(Stmt* self, bool agent)
 {
@@ -69,31 +121,7 @@ parse_user_create(Stmt* self, bool agent)
 	// [LIMIT]
 	auto limit = stmt_if(self, KLIMIT);
 	if (limit)
-	{
-		for (;;)
-		{
-			// name
-			auto name = stmt_next_shadow(self);
-			if (name->id != KNAME)
-				stmt_error(self, name, "limit name expected");
-
-			// =
-			stmt_expect(self, '=');
-
-			// value
-			auto value = stmt_expect(self, KINT);
-			auto id = limits_find(&name->string);
-			if (id == -1)
-				stmt_error(self, name, "failed to find the limit");
-			limits_set(&stmt->config->limits, id, value->integer);
-
-			// ',
-			if (stmt_if(self, ','))
-				continue;
-
-			break;
-		}
-	}
+		parse_user_limits(self, &stmt->config->limits);
 }
 
 void
@@ -120,6 +148,8 @@ parse_user_alter(Stmt* self)
 	// ALTER USER|AGENT [IF EXISTS] name RENAME name
 	// ALTER USER|AGENT [IF EXISTS] name REVOKE TOKEN
 	// ALTER USER|AGENT [IF EXISTS] name DESCRIPTION value
+	// ALTER USER|AGENT [IF EXISTS] name SET LIMIT name = value, ...
+	// ALTER USER|AGENT [IF EXISTS] name UNSET LIMIT name, ...
 	auto stmt = ast_user_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -129,7 +159,7 @@ parse_user_alter(Stmt* self)
 	// name
 	stmt->name = stmt_expect(self, KNAME);
 
-	// RENAME | REVOKE
+	// RENAME | REVOKE | DESCRIPTION | SET | UNSET
 	if (stmt_if(self, KRENAME))
 	{
 		// RENAME
@@ -160,6 +190,21 @@ parse_user_alter(Stmt* self)
 		auto text = stmt_expect(self, KSTRING);
 		stmt->type = USER_ALTER_DESCRIPTION;
 		stmt->description = text->string;
+	} else
+	if (stmt_if(self, KSET))
+	{
+		// SET LIMIT name = value, ...
+		stmt_expect(self, KLIMIT);
+		stmt->type = USER_ALTER_LIMIT_SET;
+		parse_user_limits(self, &stmt->limits);
+
+	} else
+	if (stmt_if(self, KUNSET))
+	{
+		// UNSET LIMIT name, ...
+		stmt_expect(self, KLIMIT);
+		stmt->type = USER_ALTER_LIMIT_UNSET;
+		stmt->limits_mask = parse_user_limits_mask(self);
 	} else
 	{
 		stmt_error(self, NULL, "RENAME, REVOKE or DESCRIPTION expected");

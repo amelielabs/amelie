@@ -455,3 +455,87 @@ user_describe(Catalog* self,
 	user_config_set_description(user->config, description);
 	return true;
 }
+
+static void
+limit_set_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+limit_set_if_abort(Log* self, LogOp* op)
+{
+	// set previous limits
+	uint8_t* pos = log_data_of(self, op);
+	Limits limits;
+	limits_init(&limits);
+	limits_read(&limits, &pos);
+
+	auto user = user_of(op->rel);
+	limits_copy(&user->config->limits, &limits);
+}
+
+static LogIf limit_set_if =
+{
+	.commit = limit_set_if_commit,
+	.abort  = limit_set_if_abort
+};
+
+bool
+user_limit_set(Catalog* self,
+               Tr*      tr,
+               Str*     name,
+               Limits*  limits,
+               bool     if_exists)
+{
+	auto user = catalog_find_user(self, name, false);
+	if (! user)
+	{
+		if (! if_exists)
+			error("user '{str}': not exists", name);
+		return false;
+	}
+
+	// only owner or superuser
+	check_ownership_user(tr, &user->rel);
+
+	// update user
+	log_ddl(&tr->log, &limit_set_if, NULL, &user->rel);
+
+	// save previous limits
+	limits_write(&user->config->limits, &tr->log.data);
+
+	// set new limits
+	limits_copy(&user->config->limits, limits);
+	return true;
+}
+
+bool
+user_limit_unset(Catalog* self,
+                 Tr*      tr,
+                 Str*     name,
+                 uint64_t mask,
+                 bool     if_exists)
+{
+	auto user = catalog_find_user(self, name, false);
+	if (! user)
+	{
+		if (! if_exists)
+			error("user '{str}': not exists", name);
+		return false;
+	}
+
+	// only owner or superuser
+	check_ownership_user(tr, &user->rel);
+
+	// update user
+	log_ddl(&tr->log, &limit_set_if, NULL, &user->rel);
+
+	// save previous limits
+	limits_write(&user->config->limits, &tr->log.data);
+
+	// update limits
+	user->config->limits.flags &= ~mask;
+	return true;
+}

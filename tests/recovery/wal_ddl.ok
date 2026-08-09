@@ -840,13 +840,64 @@ select show('user', 'test2').name;
 name
 ────
 "test2"
+# test: alter user set limit
+alter user test2 set limit write = 10000;
+select show('state').lsn;
+
+lsn
+───
+53
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select show('state').lsn;
+
+lsn
+───
+53
+select show('user', 'test2', true).limits;
+
+limits
+──────
+{
+  "send": 3145728,
+  "write": 10000
+}
+# test: alter user unset limit
+alter user test2 unset limit write;
+select show('state').lsn;
+
+lsn
+───
+54
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select show('state').lsn;
+
+lsn
+───
+54
+select show('user', 'test2', true).limits;
+
+limits
+──────
+{
+  "send": 3145728
+}
 # test: drop user
 drop user test2;
 select show('state').lsn;
 
 lsn
 ───
-53
+55
 select show('user', 'test2').name;
 
 name
@@ -862,7 +913,7 @@ select show('state').lsn;
 
 lsn
 ───
-53
+55
 select show('user', 'test').name;
 
 name
@@ -886,7 +937,7 @@ select show('state').lsn;
 
 lsn
 ───
-54
+56
 show functions verbose;
 
 functions
@@ -923,7 +974,7 @@ select show('state').lsn;
 
 lsn
 ───
-54
+56
 show functions verbose;
 
 functions
@@ -980,7 +1031,7 @@ select show('state').lsn;
 
 lsn
 ───
-55
+57
 show functions verbose;
 
 functions
@@ -1017,7 +1068,7 @@ select show('state').lsn;
 
 lsn
 ───
-55
+57
 show functions verbose;
 
 functions
@@ -1059,7 +1110,7 @@ select show('state').lsn;
 
 lsn
 ───
-56
+58
 select [1,2,3]::reverse2;
 
 col1
@@ -1075,7 +1126,7 @@ select show('state').lsn;
 
 lsn
 ───
-56
+58
 show functions verbose;
 
 functions
@@ -1108,7 +1159,7 @@ select show('state').lsn;
 
 lsn
 ───
-57
+59
 show functions verbose;
 
 functions
@@ -1127,6 +1178,6 @@ select show('state').lsn;
 
 lsn
 ───
-57
+59
 disconnect S0;
 close E0;
