@@ -17,41 +17,52 @@
 #include <amelie_rel.h>
 #include <amelie_runtime.h>
 
-static const char*
+typedef struct LimitName LimitName;
+
+struct LimitName
+{
+	char* name;
+	int   name_size;
+};
+
+static LimitName
 limits_names[LIMIT_MAX] =
 {
 	// network
-	"send",
-	"write",
-	"connections",
+	{ "send",           4  },
+	{ "write",          5  },
+	{ "connections",    11 },
 
 	// db and runtime
-	"memory",
-	"compute",
+	{ "memory",         6  },
+	{ "compute",        7  },
 
 	// relations
-	"users",
-	"tables",
-	"indexes",
-	"clones",
-	"topics",
-	"subscriptions",
-	"functions",
-	"statements",
-	"columns",
-	"columns_vector",
-	"values",
-	"args",
-	"partitions",
-	"vector"
+	{ "users",          5  },
+	{ "tables",         6  },
+	{ "indexes",        7  },
+	{ "clones",         6  },
+	{ "topics",         6  },
+	{ "subscriptions",  13 },
+	{ "functions",      9  },
+	{ "statements",     10 },
+	{ "columns",        7  },
+	{ "columns_vector", 14 },
+	{ "values",         6  },
+	{ "args",           4  },
+	{ "partitions",     10 },
+	{ "vector",         66 }
 };
 
-static inline int
-limits_of(Str* self)
-{	
+int
+limits_find(Str* self)
+{
 	for (auto i = 0; i < LIMIT_MAX; i++)
-		if (str_is_cstr(self, limits_names[i]))
+	{
+		auto name = &limits_names[i];
+		if (str_is_case(self, name->name, name->name_size))
 			return i;
+	}
 	return -1;
 }
 
@@ -74,16 +85,14 @@ limits_copy(Limits* self, Limits* from)
 void
 limits_read(Limits* self, uint8_t** pos)
 {
-	// [[name, value], ...]
-	unpack_array(pos);
-	while (! unpack_array_end(pos))
+	// {name, ...}
+	unpack_obj(pos);
+	while (! unpack_obj_end(pos))
 	{
-		unpack_array(pos);
-
 		// name
 		Str name;
 		unpack_str(pos, &name);
-		auto id = limits_of(&name);
+		auto id = limits_find(&name);
 		if (unlikely(id == -1))
 			error("unrecognized limit name {str}", &name);
 
@@ -92,25 +101,21 @@ limits_read(Limits* self, uint8_t** pos)
 		unpack_int(pos, &value);
 		self->flags |= (1 << id);
 		self->limits[id] = value;
-
-		unpack_array_end(pos);
 	}
 }
 
 void
 limits_write(Limits* self, Buf* buf)
 {
-	encode_array(buf);
+	encode_obj(buf);
 
 	for (auto i = 0; i < LIMIT_MAX; i++)
 	{
 		if (! (self->flags & (1 << i)))
 			continue;
-		encode_array(buf);
-		encode_cstr(buf, limits_names[i]);
+		encode_cstr(buf, limits_names[i].name);
 		encode_int(buf, self->limits[i]);
-		encode_array_end(buf);
 	}
 
-	encode_array_end(buf);
+	encode_obj_end(buf);
 }

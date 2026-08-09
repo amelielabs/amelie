@@ -135,7 +135,7 @@ user_config_read(uint8_t** pos)
 		{ DECODE_BOOL,  "agent",       &self->agent       },
 		{ DECODE_BOOL,  "superuser",   &self->superuser   },
 		{ DECODE_ARRAY, "grants",      &pos_grants        },
-		{ DECODE_ARRAY, "limits",      &pos_limits        },
+		{ DECODE_OBJ,   "limits",      &pos_limits        },
 		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "user", pos);
