@@ -65,6 +65,35 @@ parse_user_create(Stmt* self, bool agent)
 	Str user;
 	str_set_cstr(&user, "self");
 	grants_add(&stmt->config->grants, &user, perms_all);
+
+	// [LIMIT]
+	auto limit = stmt_if(self, KLIMIT);
+	if (limit)
+	{
+		for (;;)
+		{
+			// name
+			auto name = stmt_next_shadow(self);
+			if (name->id != KNAME)
+				stmt_error(self, name, "limit name expected");
+
+			// =
+			stmt_expect(self, '=');
+
+			// value
+			auto value = stmt_expect(self, KINT);
+			auto id = limits_find(&name->string);
+			if (id == -1)
+				stmt_error(self, name, "failed to find the limit");
+			limits_set(&stmt->config->limits, id, value->integer);
+
+			// ',
+			if (stmt_if(self, ','))
+				continue;
+
+			break;
+		}
+	}
 }
 
 void

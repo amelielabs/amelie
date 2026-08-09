@@ -24,6 +24,9 @@ select show('repl');
 # test: replication
 select show('replication');
 
+# test: limits
+select show('limits');
+
 # test: users
 select show('users')[0].name;
 

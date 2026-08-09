@@ -54,18 +54,6 @@ limits_names[LIMIT_MAX] =
 	{ "vector",         66 }
 };
 
-int
-limits_find(Str* self)
-{
-	for (auto i = 0; i < LIMIT_MAX; i++)
-	{
-		auto name = &limits_names[i];
-		if (str_is_case(self, name->name, name->name_size))
-			return i;
-	}
-	return -1;
-}
-
 void
 limits_init(Limits* self)
 {
@@ -80,6 +68,32 @@ void
 limits_copy(Limits* self, Limits* from)
 {
 	memcpy(self, from, sizeof(*self));
+}
+
+void
+limits_set(Limits* self, int id, int64_t value)
+{
+	self->flags |= (1 << id);
+	self->limits[id] = value;
+}
+
+void
+limits_unset(Limits* self, int id)
+{
+	self->flags &= ~(1 << id);
+	self->limits[id] = 0;
+}
+
+int
+limits_find(Str* self)
+{
+	for (auto i = 0; i < LIMIT_MAX; i++)
+	{
+		auto name = &limits_names[i];
+		if (str_is_case(self, name->name, name->name_size))
+			return i;
+	}
+	return -1;
 }
 
 void
@@ -99,8 +113,7 @@ limits_read(Limits* self, uint8_t** pos)
 		// value
 		int64_t value;
 		unpack_int(pos, &value);
-		self->flags |= (1 << id);
-		self->limits[id] = value;
+		limits_set(self, id, value);
 	}
 }
 

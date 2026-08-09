@@ -31,6 +31,17 @@ select show('user', 'test').name;
 create user test_with_desc description 'test test!';
 show users;
 
+# test: create user limit
+create user test_limit limit;
+create user test_limit limit name;
+create user test_limit limit name;
+create user test_limit limit name to;
+create user test_limit limit name =;
+create user test_limit limit name = value;
+create user test_limit limit name = 123;
+create user test_limit limit send = 123;
+select show('user', 'test_limit', true).limits;
+
 # test: drop user statement parsing
 drop user;
 drop user 123;
@@ -42,6 +53,7 @@ drop user test abc;
 drop user test;
 select show('user', 'test').name;
 drop user test_with_desc;
+drop user test_limit;
 
 # test: drop user if exists
 drop user test;

@@ -19,6 +19,9 @@ create user test;
 #show user test;
 #show user test;
 
+# test: show limits
+show limits;
+
 # test: show tables
 create table test (id int primary key);
 show tables;

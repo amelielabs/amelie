@@ -51,9 +51,11 @@ struct Limits
 
 void limits_init(Limits*);
 void limits_copy(Limits*, Limits*);
+void limits_set(Limits*, int, int64_t);
+void limits_unset(Limits*, int);
+int  limits_find(Str*);
 void limits_read(Limits*, uint8_t**);
 void limits_write(Limits*, Buf*);
-int  limits_find(Str*);
 
 hot static inline bool
 limits_check(Limits* self, int category, int64_t value)

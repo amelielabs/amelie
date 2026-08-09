@@ -160,6 +160,14 @@ show
   "primary": null,
   "replicas": []
 }
+# test: limits
+select show('limits');
+
+show
+────
+{
+  "send": 3145728
+}
 # test: users
 select show('users')[0].name;
 

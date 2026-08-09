@@ -10,6 +10,14 @@ error: show ❰1234❱ ⟵ name expected
 # test: show users
 create user test;
 # test: show user
+# test: show limits
+show limits;
+
+limits
+──────
+{
+  "send": 3145728
+}
 # test: show tables
 create table test (id int primary key);
 show tables;

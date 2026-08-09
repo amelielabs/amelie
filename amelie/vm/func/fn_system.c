@@ -29,6 +29,7 @@ enum
 	SHOW_CDC,
 	SHOW_METRICS,
 	SHOW_GRANTS,
+	SHOW_LIMITS,
 	SHOW_USERS,
 	SHOW_USER,
 	SHOW_TABLES,
@@ -77,6 +78,7 @@ static ShowCmd show_cmds[] =
 	{ SHOW_CDC,           "cdc",           3,  false, false, true  },
 	{ SHOW_METRICS,       "metrics",       7,  false, false, true  },
 	{ SHOW_GRANTS,        "grants",        6,  false, true,  false },
+	{ SHOW_LIMITS,        "limits",        6,  false, false, false },
 	{ SHOW_USERS,         "users",         5,  false, false, false },
 	{ SHOW_USER,          "user",          4,  true,  false, true  },
 	{ SHOW_TABLES,        "tables",        6,  false, false, false },
@@ -282,6 +284,12 @@ fn_show(Call* self)
 			grants_write(rel->grants, buf, 0);
 		else
 			encode_null(buf);
+		break;
+	}
+	case SHOW_LIMITS:
+	{
+		auto ref = catalog_find_user(catalog, user, true);
+		limits_write(&ref->config->limits, buf);
 		break;
 	}
 	case SHOW_USERS:

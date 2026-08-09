@@ -70,6 +70,29 @@ users
   "parent": "amelie",
   "description": "test test!"
 }
+# test: create user limit
+create user test_limit limit;
+error: create user test_limit limit❰;❱ ⟵ limit name expected
+create user test_limit limit name;
+error: create user test_limit limit name❰;❱ ⟵ = expected
+create user test_limit limit name;
+error: create user test_limit limit name❰;❱ ⟵ = expected
+create user test_limit limit name to;
+error: create user test_limit limit name ❰to❱ ⟵ = expected
+create user test_limit limit name =;
+error: create user test_limit limit name =❰;❱ ⟵ int expected
+create user test_limit limit name = value;
+error: create user test_limit limit name = ❰value❱ ⟵ int expected
+create user test_limit limit name = 123;
+error: create user test_limit limit ❰name❱ ⟵ failed to find the limit
+create user test_limit limit send = 123;
+select show('user', 'test_limit', true).limits;
+
+limits
+──────
+{
+  "send": 123
+}
 # test: drop user statement parsing
 drop user;
 error: drop user❰;❱ ⟵ name expected
@@ -89,6 +112,7 @@ name
 ────
 null
 drop user test_with_desc;
+drop user test_limit;
 # test: drop user if exists
 drop user test;
 error: user 'test': not exists
