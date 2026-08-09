@@ -18,6 +18,7 @@ struct Request
 	User*    user;
 	Lock*    lock;
 	Endpoint endpoint;
+	Local    local;
 	Output   output;
 };
 
@@ -45,6 +46,27 @@ request_unlock(Request* self)
 		unlock(self->lock);
 		self->lock = NULL;
 	}
+}
+
+hot static inline void
+request_set_local(Request* self)
+{
+	// set limits
+	auto local = &self->local;
+	local->limits = &self->user->config->limits;
+
+	// set timezone
+	local->timezone = self->output.timezone;
+	str_set_str(&local->user, &self->user->config->name);
+
+	// set time
+	local->time_us = opt_int_of(&self->endpoint.time);
+	local->time_ms = local->time_us / 1000;
+
+	// set random seed
+	auto random = &local->random;
+	random->seed[0] = opt_int_of(&self->endpoint.seed);
+	random->seed[1] = random->seed[0] ^ local->time_us;
 }
 
 hot static inline void
@@ -80,6 +102,9 @@ request_auth(Request* self, Auth* auth_ref)
 		user_check(self->user, PERM_SERVICE);
 		break;
 	}
+
+	// configure local
+	request_set_local(self);
 }
 
 hot static inline void
@@ -91,6 +116,9 @@ request_auth_as(Request* self, Str* user)
 
 	// find user
 	self->user = catalog_find_user(&share()->db->catalog, user, true);
+
+	// configure local
+	request_set_local(self);
 }
 
 static inline void
@@ -101,6 +129,7 @@ request_reset(Request* self, bool with_endpoint)
 	if (with_endpoint)
 		endpoint_reset(&self->endpoint);
 	output_reset(&self->output);
+	local_reset(&self->local);
 }
 
 static inline void
@@ -117,6 +146,7 @@ request_init(Request* self)
 	self->user = NULL;
 	self->lock = NULL;
 	endpoint_init(&self->endpoint);
+	local_init(&self->local);
 	output_init(&self->output);
 }
 

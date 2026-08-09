@@ -36,12 +36,6 @@ local_init(Local* self)
 }
 
 static inline void
-local_free(Local* self)
-{
-	unused(self);
-}
-
-static inline void
 local_reset(Local* self)
 {
 	// derive default configuration

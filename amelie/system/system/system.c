@@ -32,11 +32,12 @@ catalog_if_user_invalidate(Catalog* catalog, User* user)
 static void
 catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 {
-	unused(catalog);
+	auto user = catalog_find_user(catalog, &udf->config->user, true);
 	Local local;
 	local_init(&local);
-	local.user = udf->config->user;
+	local.user    = user->config->name;
 	local.time_us = time_us();
+	local.limits  = &user->config->limits;
 
 	auto program = program_allocate();
 	errdefer(program_free, program);
@@ -46,9 +47,9 @@ catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 	defer(set_cache_free, &set_cache);
 
 	Compiler compiler;
-	compiler_init(&compiler, &local, &set_cache);
+	compiler_init(&compiler, &set_cache);
 	defer(compiler_free, &compiler);
-	compiler_set(&compiler, program);
+	compiler_set(&compiler, &local, program);
 
 	// parse SQL statements
 	compiler_parse_udf(&compiler, udf);

@@ -26,6 +26,7 @@ struct Parser
 	Local*     local;
 };
 
-void parser_init(Parser*, Local*, SetCache*);
-void parser_reset(Parser*);
+void parser_init(Parser*, SetCache*);
 void parser_free(Parser*);
+void parser_reset(Parser*);
+void parser_prepare(Parser*, Local*);

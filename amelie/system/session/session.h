@@ -23,7 +23,6 @@ struct Session
 	Query*   query;
 	SetCache set_cache;
 	Profile  profile;
-	Local    local;
 };
 
 Session*

@@ -18,17 +18,24 @@
 #include <amelie_parser.h>
 
 void
-parser_init(Parser* self, Local* local, SetCache* set_cache)
+parser_init(Parser* self, SetCache* set_cache)
 {
 	self->explain   = false;
 	self->profile   = false;
 	self->program   = NULL;
 	self->set_cache = set_cache;
-	self->user      = &local->user;
-	self->local     = local;
+	self->user      = NULL;
+	self->local     = NULL;
 	namespaces_init(&self->nss);
 	lex_init(&self->lex, keywords_alpha);
 	json_init(&self->json);
+}
+
+void
+parser_free(Parser* self)
+{
+	parser_reset(self);
+	json_free(&self->json);
 }
 
 void
@@ -37,6 +44,8 @@ parser_reset(Parser* self)
 	self->explain = false;
 	self->profile = false;
 	self->program = NULL;
+	self->user    = NULL;
+	self->local   = NULL;
 	for (auto ns = self->nss.list; ns; ns = ns->next)
 	{
 		vars_free(&ns->vars);
@@ -58,8 +67,8 @@ parser_reset(Parser* self)
 }
 
 void
-parser_free(Parser* self)
+parser_prepare(Parser* self, Local* local)
 {
-	parser_reset(self);
-	json_free(&self->json);
+	self->local = local;
+	self->user  = &local->user;
 }

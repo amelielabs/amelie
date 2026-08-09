@@ -20,7 +20,7 @@
 #include <amelie_compiler.h>
 
 void
-compiler_init(Compiler* self, Local* local, SetCache* set_cache)
+compiler_init(Compiler* self, SetCache* set_cache)
 {
 	self->program           = NULL;
 	self->program_args      = NULL;
@@ -33,7 +33,7 @@ compiler_init(Compiler* self, Local* local, SetCache* set_cache)
 	self->code              = NULL;
 	self->code_data         = NULL;
 	self->origin            = ORIGIN_FRONTEND;
-	parser_init(&self->parser, local, self->set_cache);
+	parser_init(&self->parser, self->set_cache);
 	rmap_init(&self->map);
 }
 
@@ -61,11 +61,12 @@ compiler_reset(Compiler* self)
 }
 
 void
-compiler_set(Compiler* self, Program* program)
+compiler_set(Compiler* self, Local* local, Program* program)
 {
 	self->program   = program;
 	self->code      = &self->program->code;
 	self->code_data = &self->program->code_data;
+	parser_prepare(&self->parser, local);
 }
 
 static void

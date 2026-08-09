@@ -27,9 +27,8 @@ session_create(void)
 	self->program = program_allocate();
 	self->req     = NULL;
 	self->query   = NULL;
-	local_init(&self->local);
 	set_cache_init(&self->set_cache);
-	compiler_init(&self->compiler, &self->local, &self->set_cache);
+	compiler_init(&self->compiler, &self->set_cache);
 	vm_init(&self->vm, NULL);
 	profile_init(&self->profile);
 	gtr_init(&self->gtr);
@@ -52,7 +51,6 @@ session_reset(Session* self)
 	program_reset(self->program, &self->set_cache);
 	gtr_reset(&self->gtr);
 	profile_reset(&self->profile);
-	local_reset(&self->local);
 }
 
 void
@@ -65,38 +63,13 @@ session_free(Session *self)
 	program_free(self->program);
 	set_cache_free(&self->set_cache);
 	gtr_free(&self->gtr);
-	local_free(&self->local);
 	am_free(self);
-}
-
-hot static inline void
-session_set(Session* self, Request* req, Query* query)
-{
-	// set request
-	self->req   = req;
-	self->query = query;
-
-	// set limits
-	auto local = &self->local;
-	local->limits = &req->user->config->limits;
-
-	// set timezone
-	local->timezone = req->output.timezone;
-	str_set_str(&local->user, &req->user->config->name);
-
-	// set time
-	local->time_us = opt_int_of(&req->endpoint.time);
-	local->time_ms = local->time_us / 1000;
-
-	// set random seed
-	auto random = &local->random;
-	random->seed[0] = opt_int_of(&req->endpoint.seed);
-	random->seed[1] = random->seed[0] ^ local->time_us;
 }
 
 hot static inline void
 session_run(Session* self)
 {
+	auto req      = self->req;
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	auto profile  = &self->profile;
@@ -113,7 +86,7 @@ session_run(Session* self)
 	lock_access(&program->access);
 
 	// prepare global transaction
-	gtr_prepare(gtr, &self->local, self->req->user, program);
+	gtr_prepare(gtr, &req->local, req->user, program);
 
 	// prepare request for the wal writer
 	auto write = &gtr->write;
@@ -123,7 +96,7 @@ session_run(Session* self)
 		if (query->recover)
 			write_set_recover(write, query->recover);
 		else
-			query_write(query, &self->req->endpoint, &write->record_data);
+			query_write(query, &req->endpoint, &write->record_data);
 
 		if (compiler_stmt(compiler)->id == STMT_ACKNOWLEDGE)
 			write_set_flags(write, RECORD_UTILITY);
@@ -138,7 +111,7 @@ session_run(Session* self)
 	return_init(&ret);
 	auto on_error = error_catch
 	(
-		vm_run(&self->vm, &self->local,
+		vm_run(&self->vm, &req->local,
 		       gtr,
 		       &gtr->tr,
 		       program,
@@ -167,7 +140,7 @@ session_run(Session* self)
 
 	// write result
 	auto returning = compiler->program_returning;
-	auto output    = &self->req->output;
+	auto output    = &req->output;
 	if (returning && ret.value)
 		output_value(output, returning, ret.value);
 
@@ -182,6 +155,7 @@ session_run(Session* self)
 hot static inline void
 session_run_utility(Session* self)
 {
+	auto req      = self->req;
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	reg_prepare(&self->vm.r, program->code.regs);
@@ -197,7 +171,7 @@ session_run_utility(Session* self)
 	//
 	// note: user not changed
 	//
-	request_lock(self->req, program->lock_catalog);
+	request_lock(req, program->lock_catalog);
 
 	// prevent concurrent ddls
 	lock_system(REL_DDL, program->lock_ddl);
@@ -210,14 +184,14 @@ session_run_utility(Session* self)
 	// execute utility/ddl transaction
 	Tr tr;
 	tr_init(&tr);
-	tr_set_user(&tr, &self->req->user->rel);
+	tr_set_user(&tr, &req->user->rel);
 	defer(tr_free, &tr);
 
 	Return ret;
 	return_init(&ret);
 	auto on_error = error_catch
 	(
-		vm_run(&self->vm, &self->local,
+		vm_run(&self->vm, &req->local,
 		       &self->gtr,
 		       &tr,
 		       program,
@@ -237,7 +211,7 @@ session_run_utility(Session* self)
 		rethrow();
 	}
 
-	auto output = &self->req->output;
+	auto output = &req->output;
 	if (compiler->program_profile)
 	{
 		profile_end(&profile->time_run_us);
@@ -274,7 +248,7 @@ session_run_utility(Session* self)
 		} else
 		{
 			write_set_flags(&write, RECORD_UTILITY);
-			query_write(query, &self->req->endpoint, &write.record_data);
+			query_write(query, &req->endpoint, &write.record_data);
 		}
 
 		WriteList write_list;
@@ -311,7 +285,7 @@ session_request(Session* self)
 	auto req      = self->req;
 	auto query    = self->query;
 	auto compiler = &self->compiler;
-	compiler_set(compiler, self->program);
+	compiler_set(compiler, &req->local, self->program);
 
 	switch (query->type) {
 	case QUERY_SQL:
@@ -384,7 +358,8 @@ session_execute(Session* self, Request* req, Query* query)
 		session_reset(self);
 
 		// set session local settings
-		session_set(self, req, query);
+		self->req   = req;
+		self->query = query;
 
 		// parse and execute request
 		session_request(self);
