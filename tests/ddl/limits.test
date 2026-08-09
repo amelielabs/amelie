@@ -1,0 +1,34 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: default
+show limits;
+
+# test: write
+create table test (id int primary key);
+alter user amelie set limit write = 1;
+insert into test values (123);
+# error
+insert into test values (124), (125);
+drop table test;
+alter user amelie unset limit write;
+
+# test: send
+alter user amelie set limit send = 0;
+# error
+show limits;
+alter user amelie unset limit send;
+show limits;
+
+# test: recv
+disconnect S0;
+close E0;
+open E0 "recv": 0;
+connect E0 S0 127.0.0.1:3485;
+
+select 1;
+
+disconnect S0;
+close E0;

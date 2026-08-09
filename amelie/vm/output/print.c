@@ -27,6 +27,7 @@ print_init(Print* self)
 	self->size       = 0;
 	self->size_max   = 120;
 	self->buf        = NULL;
+	self->buf_limit  = 0;
 	self->tz         = NULL;
 	buf_init(&self->cols);
 	str_set(&self->chr_cut, "…", sizeof("…") - 1);
@@ -47,6 +48,7 @@ print_reset(Print* self)
 	self->value      = NULL;
 	self->size       = 0;
 	self->buf        = NULL;
+	self->buf_limit  = 0;
 	self->tz         = NULL;
 	buf_reset(&self->cols);
 }
@@ -105,7 +107,12 @@ print_estimate(Print* self)
 }
 
 void
-print_create(Print* self, Columns* columns, Value* value, Timezone* tz, Buf* buf)
+print_create(Print*    self,
+             Columns*  columns,
+             Value*    value,
+             Timezone* tz,
+             Buf*      buf,
+             int       buf_limit)
 {
 	// allocate columns
 	auto cols_size = sizeof(PrintCol) * columns->count;
@@ -118,6 +125,7 @@ print_create(Print* self, Columns* columns, Value* value, Timezone* tz, Buf* buf
 	self->value      = value;
 	self->size       = 0;
 	self->buf        = buf;
+	self->buf_limit  = buf_limit;
 	self->tz         = tz;
 
 	// estimate columns values sizes
@@ -168,8 +176,7 @@ print_create(Print* self, Columns* columns, Value* value, Timezone* tz, Buf* buf
 static inline void
 print_ensure_limit(Print* self)
 {
-	auto limit = opt_int_of(&config()->limit_send);
-	if (unlikely((uint64_t)buf_size(self->buf) >= limit))
+	if (unlikely(self->buf_limit > 0 && buf_size(self->buf) > self->buf_limit))
 		error("output limit reached");
 }
 

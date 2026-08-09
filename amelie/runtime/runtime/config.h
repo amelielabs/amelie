@@ -26,9 +26,6 @@ struct Config
 	Opt  log_stdout_time;
 	Opt  log_connections;
 	Opt  log_options;
-	// limits
-	Opt  limit_send;
-	Opt  limit_write;
 	// workers
 	Opt  frontends;
 	Opt  backends;

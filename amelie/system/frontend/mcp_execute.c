@@ -197,7 +197,7 @@ output_mcp_write(Output* self, Columns* columns, Value* value)
 	defer_buf(text);
 
 	auto print = &self->print;
-	print_create(print, columns, value, self->timezone, text);
+	print_create(print, columns, value, self->timezone, text, self->buf_limit);
 	print_run(print);
 
 	Str text_str;

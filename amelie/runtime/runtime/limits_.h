@@ -51,17 +51,41 @@ struct Limits
 
 void limits_init(Limits*);
 void limits_copy(Limits*, Limits*);
-void limits_set(Limits*, int, int64_t);
-void limits_unset(Limits*, int);
 int  limits_find(Str*);
 void limits_read(Limits*, uint8_t**);
 void limits_write(Limits*, Buf*);
 
+static inline bool
+limits_is_set(Limits* self, int id)
+{
+	return (self->flags & id) > 0;
+}
+
+static inline void
+limits_set(Limits* self, int id, int64_t value)
+{
+	self->flags |= (1 << id);
+	self->limits[id] = value;
+}
+
+static inline void
+limits_unset(Limits* self, int id)
+{
+	self->flags &= ~(1 << id);
+	self->limits[id] = 0;
+}
+
+static inline int64_t
+limits_get(Limits* self, int id)
+{
+	return self->limits[id];
+}
+
 hot static inline bool
-limits_check(Limits* self, int category, int64_t value)
+limits_check(Limits* self, int id, int64_t value)
 {
 	// check if limit is set
-	if (! (self->flags & (1 << category)))
+	if (! (self->flags & (1 << id)))
 		return true;
-	return value <= self->limits[category];
+	return value <= self->limits[id];
 }

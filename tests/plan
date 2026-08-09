@@ -66,6 +66,7 @@ test topic
 test subscription
 test function
 test grant
+test limits
 
 # dml
 directory dml
@@ -94,7 +95,6 @@ test in
 test any
 test all
 test lambda
-test limits
 test begin_end
 test declare
 test deps

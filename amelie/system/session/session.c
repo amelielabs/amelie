@@ -32,7 +32,7 @@ session_create(void)
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
 	vm_init(&self->vm, NULL);
 	profile_init(&self->profile);
-	gtr_init(&self->gtr, &self->local);
+	gtr_init(&self->gtr);
 	return self;
 }
 
@@ -76,8 +76,11 @@ session_set(Session* self, Request* req, Query* query)
 	self->req   = req;
 	self->query = query;
 
-	// set timezone
+	// set limits
 	auto local = &self->local;
+	local->limits = &req->user->config->limits;
+
+	// set timezone
 	local->timezone = req->output.timezone;
 	str_set_str(&local->user, &req->user->config->name);
 
@@ -110,7 +113,7 @@ session_run(Session* self)
 	lock_access(&program->access);
 
 	// prepare global transaction
-	gtr_prepare(gtr, program, self->req->user);
+	gtr_prepare(gtr, &self->local, self->req->user, program);
 
 	// prepare request for the wal writer
 	auto write = &gtr->write;

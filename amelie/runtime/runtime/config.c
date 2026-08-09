@@ -45,9 +45,6 @@ config_prepare(Config* self)
 		{ "log_stdout_time",         OPT_BOOL,   OPT_C,                   &self->log_stdout_time,         NULL,             true                },
 		{ "log_connections",         OPT_BOOL,   OPT_C,                   &self->log_connections,         NULL,             true                },
 		{ "log_options",             OPT_BOOL,   OPT_C,                   &self->log_options,             NULL,             false               },
-		// limits
-		{ "limit_send",              OPT_INT,    OPT_C,                   &self->limit_send,              NULL,             3 * 1024 * 1024     },
-		{ "limit_write",             OPT_INT,    OPT_C,                   &self->limit_write,             NULL,             0                   },
 		// workers
 		{ "frontends",               OPT_INT,    OPT_C|OPT_Z,             &self->frontends,               NULL,             4                   },
 		{ "backends",                OPT_INT,    OPT_C|OPT_Z,             &self->backends,                NULL,             6                   },

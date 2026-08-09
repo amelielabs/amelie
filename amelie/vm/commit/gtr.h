@@ -37,7 +37,7 @@ struct Gtr
 };
 
 static inline void
-gtr_init(Gtr* self, Local* local)
+gtr_init(Gtr* self)
 {
 	self->id           = 0;
 	self->group        = 0;
@@ -45,19 +45,19 @@ gtr_init(Gtr* self, Local* local)
 	self->program      = NULL;
 	self->error        = NULL;
 	self->abort        = false;
-	self->local        = local;
+	self->local        = NULL;
 	self->on_recover   = NULL;
 	self->link_recover = NULL;
 	self->link_group   = NULL;
 	dispatches_init(&self->dispatches, self);
 	event_init(&self->on_commit);
-	limit_init(&self->limit, opt_int_of(&config()->limit_write));
 	tr_init(&self->tr);
 	write_init(&self->write);
 	list_init(&self->write_cdc);
 	list_init(&self->link_batch);
 	list_init(&self->link);
 	msg_init(&self->msg, MSG_GTR);
+
 }
 
 static inline void
@@ -68,6 +68,7 @@ gtr_reset(Gtr* self)
 	self->group_order = 0;
 	self->program     = NULL;
 	self->abort       = false;
+	self->local       = NULL;
 	self->link_group  = NULL;
 	if (self->error)
 	{
@@ -75,7 +76,6 @@ gtr_reset(Gtr* self)
 		self->error = NULL;
 	}
 	dispatches_reset(&self->dispatches);
-	limit_init(&self->limit, opt_int_of(&config()->limit_write));
 	tr_reset(&self->tr);
 	write_reset(&self->write);
 	list_init(&self->write_cdc);
@@ -93,16 +93,24 @@ gtr_free(Gtr* self)
 }
 
 static inline void
-gtr_prepare(Gtr* self, Program* program, User* user)
+gtr_prepare(Gtr* self, Local* local, User* user, Program* program)
 {
-	// set program
-	self->program = program;
+	self->local = local;
+
+	// set transaction write limit
+	auto limit_write = 0;
+	if (limits_is_set(local->limits, LIMIT_WRITE))
+		limit_write = limits_get(local->limits, LIMIT_WRITE);
+	limit_init(&self->limit, limit_write);
 
 	// set user
 	tr_set_user(&self->tr, &user->rel);
 
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
+
+	// set program
+	self->program = program;
 }
 
 static inline bool

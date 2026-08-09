@@ -32,6 +32,7 @@ struct Print
 	int       size;
 	int       size_max;
 	Buf*      buf;
+	int       buf_limit;
 	Str       chr_cut;
 	Str       chr_line;
 	Timezone* tz;
@@ -46,5 +47,5 @@ print_at(Print* self, int order)
 void print_init(Print*);
 void print_free(Print*);
 void print_reset(Print*);
-void print_create(Print*, Columns*, Value*, Timezone*, Buf*);
+void print_create(Print*, Columns*, Value*, Timezone*, Buf*, int);
 void print_run(Print*);

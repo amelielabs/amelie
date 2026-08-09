@@ -70,20 +70,6 @@ limits_copy(Limits* self, Limits* from)
 	memcpy(self, from, sizeof(*self));
 }
 
-void
-limits_set(Limits* self, int id, int64_t value)
-{
-	self->flags |= (1 << id);
-	self->limits[id] = value;
-}
-
-void
-limits_unset(Limits* self, int id)
-{
-	self->flags &= ~(1 << id);
-	self->limits[id] = 0;
-}
-
 int
 limits_find(Str* self)
 {

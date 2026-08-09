@@ -15,6 +15,7 @@ typedef struct Local Local;
 
 struct Local
 {
+	Limits*   limits;
 	Timezone* timezone;
 	uint64_t  time_us;
 	uint64_t  time_ms;
@@ -26,6 +27,7 @@ static inline void
 local_init(Local* self)
 {
 	// derive default configuration
+	self->limits   = NULL;
 	self->timezone = runtime()->timezone;
 	self->time_us  = 0;
 	self->time_ms  = 0;
@@ -43,6 +45,7 @@ static inline void
 local_reset(Local* self)
 {
 	// derive default configuration
+	self->limits   = NULL;
 	self->timezone = runtime()->timezone;
 	str_init(&self->user);
 }

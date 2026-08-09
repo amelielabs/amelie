@@ -1,0 +1,42 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: default
+show limits;
+
+limits
+──────
+{
+  "send": 3145728
+}
+# test: write
+create table test (id int primary key);
+alter user amelie set limit write = 1;
+insert into test values (123);
+insert into test values (124), (125);
+error: transaction log limit reached
+drop table test;
+alter user amelie unset limit write;
+# test: send
+alter user amelie set limit send = 0;
+show limits;
+
+limits
+──────
+{
+  "send": 0
+}
+alter user amelie unset limit send;
+show limits;
+
+limits
+──────
+{}
+# test: recv
+disconnect S0;
+close E0;
+open E0 "recv": 0;
+connect E0 S0 127.0.0.1:3485;
+select 1;
+Payload Too Large
+disconnect S0;
+close E0;
