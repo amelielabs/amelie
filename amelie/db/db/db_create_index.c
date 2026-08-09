@@ -124,6 +124,11 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 		return;
 	}
 
+	// check limit
+	if (unlikely(! limits_check(tr->local->limits, LIMIT_INDEXES, table->config->indexes_count + 1)))
+		error("table '{str}': indexes limit reached",
+		      &table->config->name);
+
 	// todo: exclusive lock
 
 	// force commit pending prepared transactions

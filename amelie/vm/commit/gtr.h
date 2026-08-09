@@ -106,6 +106,7 @@ gtr_prepare(Gtr* self, Local* local, User* user, Program* program)
 
 	// set user
 	tr_set_user(&self->tr, &user->rel);
+	tr_set_local(&self->tr, local);
 
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);

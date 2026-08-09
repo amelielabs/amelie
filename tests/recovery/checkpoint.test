@@ -466,5 +466,23 @@ select * from a order by id;
 select * from b order by id;
 drop table main cascade;
 
+# test: limits
+show rels;
+alter user amelie set limit topics = 0;
+
+# test: restart/recover (checkpoint)
+checkpoint;
+
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+show limits;
+show rels;
+
+create topic test_top2;
+alter user amelie unset limit topics;
+
 disconnect S0;
 close E0;

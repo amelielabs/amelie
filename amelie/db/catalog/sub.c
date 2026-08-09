@@ -85,6 +85,9 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 	// check permission
 	check_permission(tr, on, PERM_CREATE_SUBSCRIPTION);
 
+	// check limit
+	catalog_limit(self, tr, REL_SUBSCRIPTION, LIMIT_SUBSCRIPTIONS);
+
 	// create subscription
 	auto sub = sub_allocate(config, self, on);
 	rels_create(&self->rels, tr, &sub->rel);

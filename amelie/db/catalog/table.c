@@ -95,6 +95,9 @@ table_create(Catalog*     self,
 		return false;
 	}
 
+	// check limit
+	catalog_limit(self, tr, REL_TABLE, LIMIT_TABLES);
+
 	// allocate table
 	auto table = table_allocate(config, self->iface_part, self->iface_part_arg);
 

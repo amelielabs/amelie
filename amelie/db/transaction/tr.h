@@ -19,6 +19,7 @@ struct Tr
 	Log      log;
 	Limit*   limit;
 	Rel*     user;
+	Local*   local;
 	bool     allocated;
 	List     link;
 };
@@ -29,6 +30,7 @@ tr_init(Tr* self)
 	self->id        = 0;
 	self->limit     = NULL;
 	self->user      = NULL;
+	self->local     = NULL;
 	self->allocated = false;
 	log_init(&self->log);
 	list_init(&self->link);
@@ -40,6 +42,7 @@ tr_reset(Tr* self)
 	self->id    = 0;
 	self->limit = NULL;
 	self->user  = NULL;
+	self->local = NULL;
 	log_reset(&self->log);
 	list_init(&self->link);
 }
@@ -61,10 +64,22 @@ tr_free(Tr* self)
 		am_free(self);
 }
 
+always_inline static inline bool
+tr_active(Tr* self)
+{
+	return self->log.count > 0;
+}
+
 static inline void
 tr_set_id(Tr* self, uint64_t value)
 {
 	self->id = value;
+}
+
+static inline void
+tr_set_local(Tr* self, Local* local)
+{
+	self->local = local;
 }
 
 static inline void
@@ -77,10 +92,4 @@ static inline void
 tr_set_user(Tr* self, Rel* user)
 {
 	self->user = user;
-}
-
-always_inline static inline bool
-tr_active(Tr* self)
-{
-	return self->log.count > 0;
 }

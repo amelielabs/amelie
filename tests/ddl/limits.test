@@ -27,8 +27,73 @@ disconnect S0;
 close E0;
 open E0 "recv": 0;
 connect E0 S0 127.0.0.1:3485;
-
 select 1;
+
+disconnect S0;
+close E0;
+
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: users
+alter user amelie set limit users = 0;
+create user test;
+# amelie is owner to self
+alter user amelie set limit users = 2;
+show limits;
+create user test;
+drop user test;
+
+# test: tables
+alter user amelie set limit tables = 0;
+create table test (id int primary key);
+alter user amelie set limit tables = 1;
+create table test (id int primary key);
+drop table test;
+
+# test: indexes
+create table test (id int primary key);
+alter user amelie set limit indexes = 1;
+create index i on test (id);
+alter user amelie set limit indexes = 2;
+create index i on test (id);
+drop table test;
+
+# test: clones
+create table test (id int primary key);
+alter user amelie set limit clones = 0;
+create clone test_clone of test;
+alter user amelie set limit clones = 1;
+create clone test_clone of test;
+create clone test_clone2 of test;
+drop table test cascade;
+
+# test: topics
+alter user amelie set limit topics = 0;
+create topic test;
+alter user amelie set limit topics = 1;
+create topic test;
+show limits;
+drop topic test;
+create topic test;
+create topic test2;
+drop topic test;
+
+# test: subscriptions
+create topic test;
+alter user amelie set limit subscriptions = 0;
+create subscription test_sub on test;
+alter user amelie set limit subscriptions = 1;
+create subscription test_sub on test;
+drop topic test cascade;
+
+# test: functions
+alter user amelie set limit functions = 0;
+create function test () begin end;
+alter user amelie set limit functions = 1;
+create function test () begin end;
+select test();
+drop function test;
 
 disconnect S0;
 close E0;

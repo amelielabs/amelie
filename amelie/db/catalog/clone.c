@@ -105,6 +105,9 @@ clone_create(Catalog*     self,
 	// ensure permission to create clone
 	check_permission(tr, &table->rel, PERM_CREATE_CLONE);
 
+	// check limit
+	catalog_limit(self, tr, REL_CLONE, LIMIT_CLONES);
+
 	// ensure table has no vector columns
 	list_foreach(&table_columns(table)->list)
 	{

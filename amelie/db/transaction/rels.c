@@ -377,3 +377,18 @@ rels_find_by(Rels* self, RelType type, Uuid* id, bool error_if_not_exists)
 	}
 	return NULL;
 }
+
+hot int
+rels_count(Rels* self, RelType type, Str* user)
+{
+	int count = 0;
+	list_foreach(&self->list)
+	{
+		auto rel = list_at(Rel, link);
+		if (rel->type != type)
+			continue;
+		if (rel->user && str_compare(rel->user, user))
+			count++;
+	}
+	return count;
+}

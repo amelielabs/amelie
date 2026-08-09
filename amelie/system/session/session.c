@@ -185,6 +185,7 @@ session_run_utility(Session* self)
 	Tr tr;
 	tr_init(&tr);
 	tr_set_user(&tr, &req->user->rel);
+	tr_set_local(&tr, &req->local);
 	defer(tr_free, &tr);
 
 	Return ret;

@@ -217,6 +217,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/acknowledge.c
     ${AMELIE_ROOT}/db/catalog/rel.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
+    ${AMELIE_ROOT}/db/catalog/catalog_limit.c
     ${AMELIE_ROOT}/db/catalog/catalog_file.c
     ${AMELIE_ROOT}/db/catalog/catalog_mcp.c
     ${AMELIE_ROOT}/db/catalog/cascade.c

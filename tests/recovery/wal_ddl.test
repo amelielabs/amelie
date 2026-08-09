@@ -508,5 +508,23 @@ connect E0 S0 127.0.0.1:3485;
 show functions verbose;
 select show('state').lsn;
 
+# test: limit
+alter user amelie set limit tables = 1;
+create table test (id int primary key);
+alter user amelie set limit tables = 0;
+create table test2 (id int primary key);
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+show rels;
+show limits;
+drop table test;
+alter user amelie unset limit tables;
+
 disconnect S0;
 close E0;

@@ -1138,5 +1138,68 @@ id  data
 ──────────
 2   20
 drop table main cascade;
+# test: limits
+show rels;
+
+rels
+────
+{
+  "user": "amelie",
+  "name": "test_top",
+  "type": "topic",
+  "description": ""
+}
+{
+  "user": "amelie",
+  "name": "top_sub",
+  "type": "subscription",
+  "description": ""
+}
+{
+  "user": "amelie",
+  "name": "reverse",
+  "type": "function",
+  "description": ""
+}
+alter user amelie set limit topics = 0;
+# test: restart/recover (checkpoint)
+checkpoint;
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+show limits;
+
+limits
+──────
+{
+  "send": 3145728,
+  "topics": 0
+}
+show rels;
+
+rels
+────
+{
+  "user": "amelie",
+  "name": "test_top",
+  "type": "topic",
+  "description": ""
+}
+{
+  "user": "amelie",
+  "name": "top_sub",
+  "type": "subscription",
+  "description": ""
+}
+{
+  "user": "amelie",
+  "name": "reverse",
+  "type": "function",
+  "description": ""
+}
+create topic test_top2;
+error: user 'amelie': topics limit reached
+alter user amelie unset limit topics;
 disconnect S0;
 close E0;

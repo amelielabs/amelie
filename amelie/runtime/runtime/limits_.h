@@ -59,7 +59,7 @@ void limits_write(Limits*, Buf*);
 static inline bool
 limits_is_set(Limits* self, int id)
 {
-	return (self->flags & id) > 0;
+	return (self->flags & (1 << id)) > 0;
 }
 
 static inline void

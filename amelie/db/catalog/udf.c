@@ -189,6 +189,9 @@ udf_create(Catalog*   self,
 	if (rel)
 		error("relation '{str}': already exists", &config->name);
 
+	// check limit
+	catalog_limit(self, tr, REL_UDF, LIMIT_FUNCTIONS);
+
 	// create udf
 	udf = udf_allocate(config, self->iface->udf_free, self->iface_arg);
 	rels_create(&self->rels, tr, &udf->rel);

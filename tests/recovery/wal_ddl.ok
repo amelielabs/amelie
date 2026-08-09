@@ -1179,5 +1179,37 @@ select show('state').lsn;
 lsn
 ───
 59
+# test: limit
+alter user amelie set limit tables = 1;
+create table test (id int primary key);
+alter user amelie set limit tables = 0;
+create table test2 (id int primary key);
+error: user 'amelie': tables limit reached
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+show rels;
+
+rels
+────
+{
+  "user": "amelie",
+  "name": "test",
+  "type": "table",
+  "description": ""
+}
+show limits;
+
+limits
+──────
+{
+  "send": 3145728,
+  "tables": 0
+}
+drop table test;
+alter user amelie unset limit tables;
 disconnect S0;
 close E0;

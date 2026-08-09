@@ -74,6 +74,9 @@ topic_create(Catalog*     self,
 		return false;
 	}
 
+	// check limit
+	catalog_limit(self, tr, REL_TOPIC, LIMIT_TOPICS);
+
 	// create topic
 	auto topic = topic_allocate(config);
 	rels_create(&self->rels, tr, &topic->rel);

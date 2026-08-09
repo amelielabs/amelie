@@ -60,8 +60,7 @@ limits_init(Limits* self)
 	memset(self, 0, sizeof(*self));
 
 	// send
-	self->flags |= (1 << LIMIT_SEND);
-	self->limits[LIMIT_SEND] = 3 * 1024 * 1024;
+	limits_set(self, LIMIT_SEND, 3 * 1024 * 1024);
 }
 
 void
@@ -110,7 +109,7 @@ limits_write(Limits* self, Buf* buf)
 
 	for (auto i = 0; i < LIMIT_MAX; i++)
 	{
-		if (! (self->flags & (1 << i)))
+		if (! limits_is_set(self, i))
 			continue;
 		encode_cstr(buf, limits_names[i].name);
 		encode_int(buf, self->limits[i]);

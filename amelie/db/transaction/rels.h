@@ -32,3 +32,4 @@ void rels_list(Rels*, RelType, Buf*, Str*, Str*, bool, int);
 void rels_list_rel(Rels*, Buf*, Str*, Str*, bool, int);
 Rel* rels_find(Rels*, RelType, Str*, Str*, bool);
 Rel* rels_find_by(Rels*, RelType, Uuid*, bool);
+int  rels_count(Rels*, RelType, Str*);

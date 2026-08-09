@@ -77,6 +77,9 @@ user_create(Catalog*    self,
 		return false;
 	}
 
+	// check limit
+	catalog_limit(self, tr, REL_USER, LIMIT_USERS);
+
 	// create user
 	user = user_allocate(config);
 	rels_create(&self->users, tr, &user->rel);
