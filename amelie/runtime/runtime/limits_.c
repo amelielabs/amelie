@@ -45,13 +45,14 @@ limits_names[LIMIT_MAX] =
 	{ "topics",         6  },
 	{ "subscriptions",  13 },
 	{ "functions",      9  },
-	{ "statements",     10 },
+
+	// options
 	{ "columns",        7  },
-	{ "columns_vector", 14 },
+	{ "keys",           4  },
 	{ "values",         6  },
 	{ "args",           4  },
 	{ "partitions",     10 },
-	{ "vector",         66 }
+	{ "vector",         6  }
 };
 
 void

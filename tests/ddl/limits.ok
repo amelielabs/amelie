@@ -121,5 +121,60 @@ test
 ────
 null
 drop function test;
+# test: columns
+alter user amelie set limit columns = 1;
+create table test (id int primary key);
+create table test2 (id int primary key, data int);
+error: create table test2 (id int primary key, ❰data❱ ⟵ columns limit reached
+drop table test;
+alter user amelie unset limit columns;
+# test: keys
+alter user amelie set limit keys = 1;
+create table test (id int primary key);
+drop table test;
+create table test (id int, data int, primary key (id, data));
+error: create table test (id int, data int, primary key (id, ❰data❱ ⟵ key limit reached
+alter user amelie unset limit keys;
+# test: args
+alter user amelie set limit args = 0;
+create function test() begin end;
+create function test2(id int) begin end;
+error: create function test2(❰id❱ ⟵ arguments limit reached
+drop function test;
+alter user amelie unset limit args;
+# test: values
+alter user amelie set limit values = 1;
+create table test (id int primary key);
+insert into test values (1);
+insert into test values (2), (3);
+error: insert into test values (2), (3)❰;❱ ⟵ values limit reached
+drop table test;
+create topic test;
+publish into test 1;
+publish into test 2, 3;
+error: publish into test 2, 3❰;❱ ⟵ values limit reached
+drop topic test;
+alter user amelie unset limit values;
+# test: partitions
+alter user amelie set limit partitions = 1;
+create table test (id int primary key) partitions 3;
+error: create table test (id int primary key) partitions 3❰;❱ ⟵ partitions limit reached
+create table test (id int primary key) partitions 1;
+drop table test;
+alter user amelie unset limit partitions;
+# test: vector
+alter user amelie set limit vector = 1;
+create table test (id int primary key, v vector(1));
+create table test2 (id int primary key, v vector(3));
+error: create table test2 (id int primary key, v vector(❰3❱ ⟵ vector size limit
+drop table test;
+alter user amelie unset limit vector;
+show limits;
+
+limits
+──────
+{
+  "send": 3145728
+}
 disconnect S0;
 close E0;

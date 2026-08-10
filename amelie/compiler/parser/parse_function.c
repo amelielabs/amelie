@@ -25,6 +25,7 @@ parse_function_args(Stmt* self, Columns* columns)
 	if (stmt_if(self, ')'))
 		return;
 
+	auto local = self->parser->local;
 	for (;;)
 	{
 		// name
@@ -40,8 +41,12 @@ parse_function_args(Stmt* self, Columns* columns)
 		column_set_name(arg, &name->string);
 		columns_add(columns, arg);
 
+		// check arguments limit
+		if (! local_limit(local, LIMIT_ARGS, columns->count))
+			stmt_error(self, name, "arguments limit reached");
+
 		// type
-		parse_type_column(self->lex, arg);
+		parse_type_column(self->lex, local, arg);
 
 		// ,
 		if (! stmt_if(self, ','))

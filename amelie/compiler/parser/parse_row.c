@@ -150,7 +150,12 @@ parse_rows(Stmt* self, From* from, Table* table, Set* values,
 			parse_row_list(self, from, table, values, list);
 		else
 			parse_row(self, from, table, values);
+
 		if (! stmt_if(self, ','))
 			break;
 	}
+
+	// check values limit
+	if (! local_limit(self->parser->local, LIMIT_VALUES, values->count_rows))
+		stmt_error(self, NULL, "values limit reached");
 }

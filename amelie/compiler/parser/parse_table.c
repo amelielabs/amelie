@@ -71,6 +71,10 @@ parse_key(Stmt* self, Keys* keys, bool with_partitioning)
 		// create key
 		keys_add(keys, column->order, asc, partitioning);
 
+		// check keys limit
+		if (! local_limit(self->parser->local, LIMIT_KEYS, keys->count))
+			stmt_error(self, name, "key limit reached");
+
 		if (partitioning)
 			partitioning_n++;
 
@@ -260,6 +264,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 	// (
 	stmt_expect(self, '(');
 
+	auto local = self->parser->local;
 	Column* identity = NULL;
 	for (;;)
 	{
@@ -293,8 +298,12 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		column_set_name(column, &name->string);
 		columns_add(columns, column);
 
+		// check columns limit
+		if (! local_limit(local, LIMIT_COLUMNS, columns->count))
+			stmt_error(self, name, "columns limit reached");
+
 		// type
-		parse_type_column(self->lex, column);
+		parse_type_column(self->lex, local, column);
 
 		// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
 		parse_constraints(self, keys, column);
@@ -387,6 +396,10 @@ parse_table_partitions(Stmt* self, TableConfig* table_config)
 	}
 	if (partitions < 1 || partitions >= PART_MAPPING_MAX)
 		stmt_error(self, NULL, "table has invalid hash partitions number");
+
+	// check partitions limit
+	if (! local_limit(self->parser->local, LIMIT_PARTITIONS, partitions))
+		stmt_error(self, NULL, "partitions limit reached");
 
 	// partition_max / partitions
 	auto psn = state_psn();
@@ -536,7 +549,7 @@ parse_table_alter(Stmt* self)
 			column_set_name(column, &name->string);
 
 			// type
-			parse_type_column(self->lex, stmt->column);
+			parse_type_column(self->lex, self->parser->local, stmt->column);
 
 			// [NOT NULL | DEFAULT | AS]
 			parse_constraints(self, NULL, column);

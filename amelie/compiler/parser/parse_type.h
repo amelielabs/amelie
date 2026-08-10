@@ -27,7 +27,7 @@ parse_type(Lex* self)
 }
 
 static inline void
-parse_type_column(Lex* self, Column* column)
+parse_type_column(Lex* self, Local* local, Column* column)
 {
 	auto ast = lex_next_shadow(self);
 	if (ast->id != KNAME)
@@ -70,6 +70,10 @@ parse_type_column(Lex* self, Column* column)
 			lex_error(self, ast, "invalid vector dimension");
 		size_flat = ast->integer * sizeof(float);
 		lex_expect(self, ')');
+
+		// check vector limit
+		if (! local_limit(local, LIMIT_VECTOR, ast->integer))
+			lex_error(self, ast, "vector size limit");
 	} else
 	if (str_is_case(&ast->string, "char", 4))
 	{

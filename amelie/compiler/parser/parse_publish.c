@@ -65,4 +65,8 @@ parse_publish(Stmt* self)
 		if (! stmt_if(self, ','))
 			break;
 	}
+
+	// check values limit
+	if (! local_limit(self->parser->local, LIMIT_VALUES, stmt->values->count_rows))
+		stmt_error(self, NULL, "values limit reached");
 }
