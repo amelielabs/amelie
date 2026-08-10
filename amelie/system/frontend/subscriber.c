@@ -22,7 +22,7 @@ typedef struct Subscriber Subscriber;
 struct Subscriber
 {
 	Websocket ws;
-	Request*  req;
+	Portal*   portal;
 	Api*      api;
 	Query     query;
 	void*     session;
@@ -34,10 +34,10 @@ struct Subscriber
 
 static inline void
 subscriber_init(Subscriber* self, Frontend* fe, Client* client,
-                Request*    req,
+                Portal*     portal,
                 Api*        api, void* session)
 {
-	self->req     = req;
+	self->portal  = portal;
 	self->api     = api;
 	self->session = session;
 	self->fe      = fe;
@@ -70,9 +70,9 @@ static inline void
 subscriber_reset(Subscriber* self)
 {
 	// unlock catalog
-	auto req = self->req;
-	request_reset(req, false);
-	output_set(&req->output, &req->endpoint, &output_jsonrpc, NULL);
+	auto portal = self->portal;
+	portal_reset(portal, false);
+	output_set(&portal->output, &portal->endpoint, &output_jsonrpc, NULL);
 	api_reset(self->api);
 	query_init(&self->query);
 }
@@ -89,13 +89,13 @@ subscriber_subscribe(Subscriber* self)
 {
 	// PERM_CREATE_SUBSCRIPTION
 	auto api = self->api;
-	auto req = self->req;
-	user_check(req->user, PERM_CREATE_SUBSCRIPTION);
+	auto portal = self->portal;
+	user_check(portal->user, PERM_CREATE_SUBSCRIPTION);
 
 	// find existing feed
 	Str* user;
 	if (str_empty(&api->rel_user))
-		user = &req->user->config->name;
+		user = &portal->user->config->name;
 	else
 		user = &api->rel_user;
 	auto feed = feeds_find(&self->feeds, user, &api->rel);
@@ -131,7 +131,7 @@ subscriber_subscribe(Subscriber* self)
 	}
 
 	// ensure user can create subscription for that relation
-	user_check_permission(req->user, rel_on, PERM_CREATE_SUBSCRIPTION);
+	user_check_permission(portal->user, rel_on, PERM_CREATE_SUBSCRIPTION);
 	rel_on->subs++;
 
 	// create and register feed
@@ -154,7 +154,7 @@ subscriber_unsubscribe(Subscriber* self)
 	// find existing feed
 	Str* user;
 	if (str_empty(&api->rel_user))
-		user = &self->req->user->config->name;
+		user = &self->portal->user->config->name;
 	else
 		user = &api->rel_user;
 	auto feed = feeds_find(&self->feeds, user, &api->rel);
@@ -177,8 +177,8 @@ hot static void
 subscriber_execute(Subscriber* self, Str* content)
 {
 	// set time and random seed
-	auto req = self->req;
-	request_prepare(req);
+	auto portal = self->portal;
+	portal_prepare(portal);
 
 	// parse
 	auto query = &self->query;
@@ -186,7 +186,7 @@ subscriber_execute(Subscriber* self, Str* content)
 	auto on_error = error_catch
 	(
 		// auth (take catalog lock)
-		request_auth(req, &self->fe->auth);
+		portal_auth(portal, &self->fe->auth);
 
 		// parse
 		if (! api_parse(api, content, query, true))
@@ -200,23 +200,23 @@ subscriber_execute(Subscriber* self, Str* content)
 	);
 	if (on_error)
 	{
-		output_error(&req->output, &am_self()->error);
+		output_error(&portal->output, &am_self()->error);
 		return;
 	}
 
 	// execute by session, unle
 	if (query->type != QUERY_UNDEF)
-		self->fe->iface->session_execute(self->session, req, query);
+		self->fe->iface->session_execute(self->session, portal, query);
 
 	// handle empty result
-	if (buf_empty(req->output.buf))
-		output_none(&req->output);
+	if (buf_empty(portal->output.buf))
+		output_none(&portal->output);
 }
 
 hot static void
 subscriber_collect(Subscriber* self)
 {
-	auto buf = self->req->output.buf;
+	auto buf = self->portal->output.buf;
 	feeds_collect(&self->feeds, buf);
 }
 
@@ -289,7 +289,7 @@ subscriber_recv(Subscriber* self, Str* content)
 static inline void
 subscriber_send(Subscriber* self)
 {
-	auto buf = self->req->output.buf;
+	auto buf = self->portal->output.buf;
 	if (buf_empty(buf))
 		return;
 	struct iovec iov;
@@ -299,11 +299,11 @@ subscriber_send(Subscriber* self)
 
 hot void
 frontend_subscriber(Frontend* self, Client* client,
-                    Request*  req,
+                    Portal*   portal,
                     Api*      api, void* session)
 {
 	Subscriber sub;
-	subscriber_init(&sub, self, client, req, api, session);
+	subscriber_init(&sub, self, client, portal, api, session);
 	defer(subscriber_free, &sub);
 	subscriber_accept(&sub);
 

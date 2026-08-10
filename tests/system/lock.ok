@@ -33,7 +33,7 @@ locks
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "request_auth"
+  "function": "portal_auth"
 }
 # test: create lock (unknown)
 create lock test on xyz (invalid);
@@ -53,7 +53,7 @@ locks
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "request_auth"
+  "function": "portal_auth"
 }
 # test: create lock (shared)
 create lock test1 on xyz (shared);
@@ -79,7 +79,7 @@ locks
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "request_auth"
+  "function": "portal_auth"
 }
 # test: create lock (catalog)
 create lock test2 on catalog (shared);
@@ -116,7 +116,7 @@ locks
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "request_auth"
+  "function": "portal_auth"
 }
 drop lock test1;
 show locks;
@@ -127,7 +127,7 @@ locks
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "request_auth"
+  "function": "portal_auth"
 }
 # test: drop lock if exists
 drop lock test;

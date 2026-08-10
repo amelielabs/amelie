@@ -18,12 +18,12 @@
 #include <amelie_frontend.h>
 
 void
-mcp_init(Mcp* self, Request* req)
+mcp_init(Mcp* self, Portal* portal)
 {
 	self->type      = MCP_UNDEF;
 	self->args      = NULL;
 	self->args_size = 0;
-	self->request   = req;
+	self->portal    = portal;
 	str_init(&self->rel_user);
 	str_init(&self->rel);
 	jsonrpc_init(&self->jsonrpc);
@@ -203,7 +203,7 @@ mcp_parse_content(Mcp* self, Str* content)
 	auto cmd = jsonrpc_first(jsonrpc);
 
 	// set endpoint id
-	opt_json_set_data(&self->request->endpoint.id, cmd->id);
+	opt_json_set_data(&self->portal->endpoint.id, cmd->id);
 
 	// initialize
 	if (str_is(&cmd->method, "initialize", 10))
@@ -238,7 +238,7 @@ mcp_parse(Mcp* self, Str* content, Query* query)
 	);
 	if (on_error)
 	{
-		output_error(&self->request->output, &am_self()->error);
+		output_error(&self->portal->output, &am_self()->error);
 		return false;
 	}
 

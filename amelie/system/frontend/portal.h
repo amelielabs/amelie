@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Request Request;
+typedef struct Portal Portal;
 
-struct Request
+struct Portal
 {
 	User*    user;
 	Lock*    lock;
@@ -23,7 +23,7 @@ struct Request
 };
 
 static inline void
-request_lock(Request* self, LockId id)
+portal_lock(Portal* self, LockId id)
 {
 	// take catalog lock
 	if (self->lock)
@@ -39,7 +39,7 @@ request_lock(Request* self, LockId id)
 }
 
 static inline void
-request_unlock(Request* self)
+portal_unlock(Portal* self)
 {
 	if (self->lock)
 	{
@@ -49,7 +49,7 @@ request_unlock(Request* self)
 }
 
 hot static inline void
-request_set_local(Request* self, bool with_limits)
+portal_set_local(Portal* self, bool with_limits)
 {
 	// set limits
 	auto local = &self->local;
@@ -71,7 +71,7 @@ request_set_local(Request* self, bool with_limits)
 }
 
 hot static inline void
-request_auth(Request* self, Auth* auth_ref)
+portal_auth(Portal* self, Auth* auth_ref)
 {
 	// take catalog lock
 	self->lock = lock_system(REL_CATALOG, LOCK_SHARED);
@@ -105,14 +105,14 @@ request_auth(Request* self, Auth* auth_ref)
 	}
 
 	// configure local
-	request_set_local(self, true);
+	portal_set_local(self, true);
 
 	// set output local (enforce send limit)
 	output_set_local(&self->output, &self->local);
 }
 
 hot static inline void
-request_auth_as(Request* self, Str* user, bool with_limits)
+portal_auth_as(Portal* self, Str* user, bool with_limits)
 {
 	// take catalog lock
 	self->lock = lock_system(REL_CATALOG, LOCK_SHARED);
@@ -122,16 +122,16 @@ request_auth_as(Request* self, Str* user, bool with_limits)
 	self->user = catalog_find_user(&share()->db->catalog, user, true);
 
 	// configure local
-	request_set_local(self, with_limits);
+	portal_set_local(self, with_limits);
 
 	// set output local (enforce send limit)
 	output_set_local(&self->output, &self->local);
 }
 
 static inline void
-request_reset(Request* self, bool with_endpoint)
+portal_reset(Portal* self, bool with_endpoint)
 {
-	request_unlock(self);
+	portal_unlock(self);
 	self->user = NULL;
 	if (with_endpoint)
 		endpoint_reset(&self->endpoint);
@@ -140,15 +140,15 @@ request_reset(Request* self, bool with_endpoint)
 }
 
 static inline void
-request_free(Request* self)
+portal_free(Portal* self)
 {
-	request_reset(self, true);
+	portal_reset(self, true);
 	endpoint_free(&self->endpoint);
 	output_free(&self->output);
 }
 
 static inline void
-request_init(Request* self)
+portal_init(Portal* self)
 {
 	self->user = NULL;
 	self->lock = NULL;
@@ -158,7 +158,7 @@ request_init(Request* self)
 }
 
 static inline void
-request_prepare(Request* self)
+portal_prepare(Portal* self)
 {
 	// timestamp
 	auto endpoint = &self->endpoint;

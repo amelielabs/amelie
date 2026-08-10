@@ -31,11 +31,11 @@ struct Api
 	Str      rel;
 	uint8_t* args;
 	int      args_size;
-	Request* request;
+	Portal*  portal;
 	Jsonrpc  jsonrpc;
 };
 
-void api_init(Api*, Request*);
+void api_init(Api*, Portal*);
 void api_free(Api*);
 void api_reset(Api*);
 bool api_parse(Api*, Str*, Query*, bool);

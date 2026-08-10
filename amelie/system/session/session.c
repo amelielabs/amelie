@@ -25,7 +25,7 @@ session_create(void)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->program = program_allocate();
-	self->req     = NULL;
+	self->portal  = NULL;
 	self->query   = NULL;
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->set_cache);
@@ -45,8 +45,8 @@ session_reset_query(Session* self)
 static inline void
 session_reset(Session* self)
 {
-	self->req = NULL;
-	self->query = NULL;
+	self->portal = NULL;
+	self->query  = NULL;
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	gtr_reset(&self->gtr);
@@ -69,7 +69,7 @@ session_free(Session *self)
 hot static inline void
 session_run(Session* self)
 {
-	auto req      = self->req;
+	auto portal   = self->portal;
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	auto profile  = &self->profile;
@@ -86,7 +86,7 @@ session_run(Session* self)
 	lock_access(&program->access);
 
 	// prepare global transaction
-	gtr_prepare(gtr, &req->local, req->user, program);
+	gtr_prepare(gtr, &portal->local, portal->user, program);
 
 	// prepare request for the wal writer
 	auto write = &gtr->write;
@@ -96,7 +96,7 @@ session_run(Session* self)
 		if (query->recover)
 			write_set_recover(write, query->recover);
 		else
-			query_write(query, &req->endpoint, &write->record_data);
+			query_write(query, &portal->endpoint, &write->record_data);
 
 		if (compiler_stmt(compiler)->id == STMT_ACKNOWLEDGE)
 			write_set_flags(write, RECORD_UTILITY);
@@ -111,7 +111,7 @@ session_run(Session* self)
 	return_init(&ret);
 	auto on_error = error_catch
 	(
-		vm_run(&self->vm, &req->local,
+		vm_run(&self->vm, &portal->local,
 		       gtr,
 		       &gtr->tr,
 		       program,
@@ -140,7 +140,7 @@ session_run(Session* self)
 
 	// write result
 	auto returning = compiler->program_returning;
-	auto output    = &req->output;
+	auto output    = &portal->output;
 	if (returning && ret.value)
 		output_value(output, returning, ret.value);
 
@@ -155,7 +155,7 @@ session_run(Session* self)
 hot static inline void
 session_run_utility(Session* self)
 {
-	auto req      = self->req;
+	auto portal   = self->portal;
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	reg_prepare(&self->vm.r, program->code.regs);
@@ -171,7 +171,7 @@ session_run_utility(Session* self)
 	//
 	// note: user not changed
 	//
-	request_lock(req, program->lock_catalog);
+	portal_lock(portal, program->lock_catalog);
 
 	// prevent concurrent ddls
 	lock_system(REL_DDL, program->lock_ddl);
@@ -184,15 +184,15 @@ session_run_utility(Session* self)
 	// execute utility/ddl transaction
 	Tr tr;
 	tr_init(&tr);
-	tr_set_user(&tr, &req->user->rel);
-	tr_set_local(&tr, &req->local);
+	tr_set_user(&tr, &portal->user->rel);
+	tr_set_local(&tr, &portal->local);
 	defer(tr_free, &tr);
 
 	Return ret;
 	return_init(&ret);
 	auto on_error = error_catch
 	(
-		vm_run(&self->vm, &req->local,
+		vm_run(&self->vm, &portal->local,
 		       &self->gtr,
 		       &tr,
 		       program,
@@ -212,7 +212,7 @@ session_run_utility(Session* self)
 		rethrow();
 	}
 
-	auto output = &req->output;
+	auto output = &portal->output;
 	if (compiler->program_profile)
 	{
 		profile_end(&profile->time_run_us);
@@ -249,7 +249,7 @@ session_run_utility(Session* self)
 		} else
 		{
 			write_set_flags(&write, RECORD_UTILITY);
-			query_write(query, &req->endpoint, &write.record_data);
+			query_write(query, &portal->endpoint, &write.record_data);
 		}
 
 		WriteList write_list;
@@ -283,15 +283,15 @@ hot static void
 session_request(Session* self)
 {
 	// parser sql
-	auto req      = self->req;
+	auto portal   = self->portal;
 	auto query    = self->query;
 	auto compiler = &self->compiler;
-	compiler_set(compiler, &req->local, self->program);
+	compiler_set(compiler, &portal->local, self->program);
 
 	switch (query->type) {
 	case QUERY_SQL:
 	{
-		user_check(req->user, PERM_SQL);
+		user_check(portal->user, PERM_SQL);
 		compiler_parse(compiler, &query->text);
 		break;
 	}
@@ -329,16 +329,16 @@ session_request(Session* self)
 		str_set(&column, "explain", 7);
 		Str str;
 		buf_str(&program->explain, &str);
-		output_str(&req->output, &column, &str);
+		output_str(&portal->output, &column, &str);
 		return;
 	}
 
 	// permission to EXECUTE
 	if (stmt->id == STMT_EXECUTE)
-		user_check_permission(req->user, &compiler->program_udf->rel, PERM_EXECUTE);
+		user_check_permission(portal->user, &compiler->program_udf->rel, PERM_EXECUTE);
 
 	// validate user permissions
-	user_check_access(req->user, &program->access);
+	user_check_access(portal->user, &program->access);
 
 	// execute utility, DDL, DML or Query
 	if (program->utility)
@@ -348,7 +348,7 @@ session_request(Session* self)
 }
 
 hot bool
-session_execute(Session* self, Request* req, Query* query)
+session_execute(Session* self, Portal* portal, Query* query)
 {
 	cancel_pause();
 
@@ -359,8 +359,8 @@ session_execute(Session* self, Request* req, Query* query)
 		session_reset(self);
 
 		// set session local settings
-		self->req   = req;
-		self->query = query;
+		self->portal = portal;
+		self->query  = query;
 
 		// parse and execute request
 		session_request(self);
@@ -371,8 +371,8 @@ session_execute(Session* self, Request* req, Query* query)
 
 	if (on_error)
 	{
-		buf_reset(req->output.buf);
-		output_error(&req->output, &am_self()->error);
+		buf_reset(portal->output.buf);
+		output_error(&portal->output, &am_self()->error);
 		unlock_all();
 	}
 

@@ -18,9 +18,9 @@
 #include <amelie_frontend.h>
 
 hot static inline void
-frontend_endpoint_sql(Request* req, Client* client)
+frontend_endpoint_sql(Portal* portal, Client* client)
 {
-	auto endpoint = &req->endpoint;
+	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
 	// POST /sql (text/plain)
@@ -52,13 +52,13 @@ frontend_endpoint_sql(Request* req, Client* client)
 	}
 
 	// set output type
-	output_set(&req->output, endpoint, output_if, NULL);
+	output_set(&portal->output, endpoint, output_if, NULL);
 }
 
 hot static inline void
-frontend_endpoint_api(Request* req, Client* client)
+frontend_endpoint_api(Portal* portal, Client* client)
 {
-	auto endpoint = &req->endpoint;
+	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
 	// POST /api (application/json)
@@ -80,7 +80,7 @@ frontend_endpoint_api(Request* req, Client* client)
 	str_set(accept, "application/json", 16);
 
 	// set output type
-	output_set(&req->output, endpoint, &output_jsonrpc, NULL);
+	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
 
 	// check method
 	auto method = &http->options[HTTP_METHOD];
@@ -91,9 +91,9 @@ frontend_endpoint_api(Request* req, Client* client)
 }
 
 hot static inline void
-frontend_endpoint_mcp(Request* req, Client* client)
+frontend_endpoint_mcp(Portal* portal, Client* client)
 {
-	auto endpoint = &req->endpoint;
+	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
 	// POST /mcp (application/json)
@@ -117,13 +117,13 @@ frontend_endpoint_mcp(Request* req, Client* client)
 	str_set(accept, "application/json", 16);
 
 	// set output type
-	output_set(&req->output, endpoint, &output_jsonrpc, NULL);
+	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
 }
 
 hot static inline void
-frontend_endpoint_service(Request* req, Client* client)
+frontend_endpoint_service(Portal* portal, Client* client)
 {
-	auto endpoint = &req->endpoint;
+	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
 	// GET /backup
@@ -139,13 +139,13 @@ frontend_endpoint_service(Request* req, Client* client)
 	str_set(accept, "application/json", 16);
 
 	// set output type
-	output_set(&req->output, endpoint, &output_json, NULL);
+	output_set(&portal->output, endpoint, &output_json, NULL);
 }
 
 hot static inline bool
-frontend_endpoint(Request* req, Client* client)
+frontend_endpoint(Portal* portal, Client* client)
 {
-	auto endpoint = &req->endpoint;
+	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
 	// POST /sql
@@ -177,13 +177,13 @@ frontend_endpoint(Request* req, Client* client)
 		endpoint->token.string = auth->value;
 
 	// update time and random seed
-	request_prepare(req);
+	portal_prepare(portal);
 
 	// if auth is required
 	opt_int_set(&endpoint->trusted, client->trusted);
 
 	// parse uri endpoint request
-	auto output = &req->output;
+	auto output = &portal->output;
 	output_reset(output);
 	output_set_buf(output, &client->reply.content);
 
@@ -194,15 +194,15 @@ frontend_endpoint(Request* req, Client* client)
 
 		auto endpoint_type = opt_int_of(&endpoint->endpoint);
 		if (endpoint_type == ENDPOINT_SQL)
-			frontend_endpoint_sql(req, client);
+			frontend_endpoint_sql(portal, client);
 		else
 		if (endpoint_type == ENDPOINT_API)
-			frontend_endpoint_api(req, client);
+			frontend_endpoint_api(portal, client);
 		else
 		if (endpoint_type == ENDPOINT_MCP)
-			frontend_endpoint_mcp(req, client);
+			frontend_endpoint_mcp(portal, client);
 		else
-			frontend_endpoint_service(req, client);
+			frontend_endpoint_service(portal, client);
 	);
 	if (on_error)
 	{
@@ -214,11 +214,11 @@ frontend_endpoint(Request* req, Client* client)
 }
 
 hot static inline bool
-frontend_auth(Frontend* self, Request* req)
+frontend_auth(Frontend* self, Portal* portal)
 {
 	// take catalog lock and authenticate user
 	return !error_catch (
-		request_auth(req, &self->auth);
+		portal_auth(portal, &self->auth);
 	);
 }
 
@@ -228,21 +228,21 @@ frontend_client(Frontend* self, Client* client)
 	auto readahead = &client->readahead;
 	auto http      = &client->request;
 
-	// prepare request
-	Request req;
-	request_init(&req);
-	defer(request_free, &req);
-	client_set_endpoint(client, &req.endpoint);
+	// prepare portal and request
+	Portal portal;
+	portal_init(&portal);
+	defer(portal_free, &portal);
+	client_set_endpoint(client, &portal.endpoint);
 
 	Query query;
 	query_init(&query);
 
 	Api api;
-	api_init(&api, &req);
+	api_init(&api, &portal);
 	defer(api_free, &api);
 
 	Mcp mcp;
-	mcp_init(&mcp, &req);
+	mcp_init(&mcp, &portal);
 	defer(mcp_free, &mcp);
 
 	// create sesssion
@@ -252,7 +252,7 @@ frontend_client(Frontend* self, Client* client)
 
 	for (;;)
 	{
-		request_reset(&req, true);
+		portal_reset(&portal, true);
 
 		// read header
 		http_reset(http);
@@ -274,15 +274,15 @@ frontend_client(Frontend* self, Client* client)
 		buf_str(&http->content, &content);
 
 		// parse endpoint request
-		if (! frontend_endpoint(&req, client))
+		if (! frontend_endpoint(&portal, client))
 		{
-			// 400 Bad Request
-			client_400(client, req.output.buf);
+			// 400 Bad Portal
+			client_400(client, portal.output.buf);
 			continue;
 		}
 
 		// authenticate user
-		if (! frontend_auth(self, &req))
+		if (! frontend_auth(self, &portal))
 		{
 			// 403 Forbidden
 			client_403(client);
@@ -290,15 +290,15 @@ frontend_client(Frontend* self, Client* client)
 		}
 
 		// execute
-		auto endpoint = opt_int_of(&req.endpoint.endpoint);
+		auto endpoint = opt_int_of(&portal.endpoint.endpoint);
 		switch (endpoint) {
 		case ENDPOINT_API:
 		{
 			// switch to the websocket session
 			if (str_is(&http->options[HTTP_METHOD], "GET", 3))
 			{
-				request_reset(&req, false);
-				return frontend_subscriber(self, client, &req, &api, session);
+				portal_reset(&portal, false);
+				return frontend_subscriber(self, client, &portal, &api, session);
 			}
 
 			// parse api request
@@ -306,19 +306,19 @@ frontend_client(Frontend* self, Client* client)
 			api_reset(&api);
 			if (! api_parse(&api, &content, &query, false))
 			{
-				// 400 Bad Request
-				client_400(client, req.output.buf);
+				// 400 Bad Portal
+				client_400(client, portal.output.buf);
 				break;
 			}
 
 			// execute request
 			if (query.type != QUERY_UNDEF)
-				ctl->session_execute(session, &req, &query);
+				ctl->session_execute(session, &portal, &query);
 
 			// 200 OK (includes errors)
-			if (buf_empty(req.output.buf))
-				output_none(&req.output);
-			client_200(client, req.output.buf);
+			if (buf_empty(portal.output.buf))
+				output_none(&portal.output);
+			client_200(client, portal.output.buf);
 			break;
 		}
 		case ENDPOINT_MCP:
@@ -328,19 +328,19 @@ frontend_client(Frontend* self, Client* client)
 			mcp_reset(&mcp);
 			if (! mcp_parse(&mcp, &content, &query))
 			{
-				// 400 Bad Request
-				client_400(client, req.output.buf);
+				// 400 Bad Portal
+				client_400(client, portal.output.buf);
 				break;
 			}
 
 			// execute request
 			if (query.type != QUERY_UNDEF)
-				ctl->session_execute(session, &req, &query);
+				ctl->session_execute(session, &portal, &query);
 
 			// 200 OK (includes errors)
-			if (buf_empty(req.output.buf))
-				output_none(&req.output);
-			client_200(client, req.output.buf);
+			if (buf_empty(portal.output.buf))
+				output_none(&portal.output);
+			client_200(client, portal.output.buf);
 			break;
 		}
 		case ENDPOINT_SQL:
@@ -348,25 +348,25 @@ frontend_client(Frontend* self, Client* client)
 			// execute query
 			query.type = QUERY_SQL;
 			query.text = content;
-			if (ctl->session_execute(session, &req, &query))
+			if (ctl->session_execute(session, &portal, &query))
 			{
 				// 204 No Content
 				// 200 OK
-				if (buf_empty(req.output.buf))
+				if (buf_empty(portal.output.buf))
 					client_204(client);
 				else
-					client_200(client, req.output.buf);
+					client_200(client, portal.output.buf);
 				break;
 			}
 
-			// 400 Bad Request
-			client_400(client, req.output.buf);
+			// 400 Bad Portal
+			client_400(client, portal.output.buf);
 			break;
 		}
 		case ENDPOINT_BACKUP:
 		{
 			// restore connection (remote backup)
-			request_reset(&req, true);
+			portal_reset(&portal, true);
 			return backup(share()->db, client);
 		}
 		case ENDPOINT_REPL:
@@ -381,7 +381,7 @@ frontend_client(Frontend* self, Client* client)
 			}
 
 			// unlock
-			request_reset(&req, true);
+			portal_reset(&portal, true);
 
 			// process by receiver (wait for completion)
 			client_detach(client);

@@ -611,7 +611,7 @@ locks
   "relation": "catalog",
   "lock": "shared",
   "waiting": false,
-  "function": "request_auth"
+  "function": "portal_auth"
 }
 disconnect S0;
 close E0;

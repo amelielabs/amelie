@@ -25,7 +25,7 @@ player_init(Player* self, PlayerSync* sync, Frontend* fe)
 	self->arg  = NULL;
 	msg_init(&self->msg, MSG_PLAYER);
 	msg_init(&self->msg_stop, MSG_PLAYER_STOP);
-	request_init(&self->req);
+	portal_init(&self->portal);
 	query_init(&self->query);
 	mailbox_init(&self->queue);
 	buf_init(&self->buf);
@@ -34,7 +34,7 @@ player_init(Player* self, PlayerSync* sync, Frontend* fe)
 void
 player_free(Player* self)
 {
-	request_free(&self->req);
+	portal_free(&self->portal);
 	buf_free(&self->buf);
 }
 
@@ -53,8 +53,8 @@ player_record_primary(RecordMsg* record)
 static void
 player_record(Player* self, RecordMsg* record, void* session)
 {
-	auto req      = &self->req;
-	auto endpoint = &req->endpoint;
+	auto portal   = &self->portal;
+	auto endpoint = &portal->endpoint;
 	query_reset(&self->query);
 
 	// restore query and request data
@@ -62,8 +62,8 @@ player_record(Player* self, RecordMsg* record, void* session)
 
 	// todo: output to none
 	buf_reset(&self->buf);
-	output_set_buf(&req->output, &self->buf);
-	output_set(&req->output, endpoint, &output_json, NULL);
+	output_set_buf(&portal->output, &self->buf);
+	output_set(&portal->output, endpoint, &output_json, NULL);
 
 	// process request
 	auto on_error = error_catch
@@ -72,16 +72,16 @@ player_record(Player* self, RecordMsg* record, void* session)
 		//
 		// ignore user limits during recovery
 		//
-		request_auth_as(req, opt_string_of(&endpoint->user), false);
+		portal_auth_as(portal, opt_string_of(&endpoint->user), false);
 
 		// validate replicated record
 		if (! uuid_is(&record->instance_id, opt_uuid_of(&config()->uuid)))
 			player_record_primary(record);
 
 		// execute
-		self->fe->iface->session_execute(session, req, &self->query);
+		self->fe->iface->session_execute(session, portal, &self->query);
 	);
-	request_reset(req, true);
+	portal_reset(portal, true);
 	if (on_error)
 		rethrow();
 }

@@ -18,12 +18,12 @@
 #include <amelie_frontend.h>
 
 void
-api_init(Api* self, Request* req)
+api_init(Api* self, Portal* portal)
 {
 	self->type      = API_UNDEF;
 	self->args      = NULL;
 	self->args_size = 0;
-	self->request   = req;
+	self->portal    = portal;
 	str_init(&self->text);
 	str_init(&self->rel_user);
 	str_init(&self->rel);
@@ -151,7 +151,7 @@ api_parse_content(Api* self, Str* content)
 	auto cmd = jsonrpc_first(jsonrpc);
 
 	// set endpoint id
-	opt_json_set_data(&self->request->endpoint.id, cmd->id);
+	opt_json_set_data(&self->portal->endpoint.id, cmd->id);
 
 	// sql
 	if (str_is(&cmd->method, "sql", 3))
@@ -198,7 +198,7 @@ api_parse(Api* self, Str* content, Query* query, bool subscribe)
 	);
 	if (on_error)
 	{
-		output_error(&self->request->output, &am_self()->error);
+		output_error(&self->portal->output, &am_self()->error);
 		return false;
 	}
 
