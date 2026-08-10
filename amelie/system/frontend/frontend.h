@@ -18,7 +18,7 @@ struct FrontendIf
 {
 	void* (*session_create)(Frontend*, void*);
 	void  (*session_free)(void*);
-	bool  (*session_execute)(void*, Portal*, Query*);
+	bool  (*session_execute)(void*, Portal*, Request*);
 };
 
 struct Frontend

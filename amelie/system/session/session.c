@@ -26,7 +26,7 @@ session_create(void)
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->program = program_allocate();
 	self->portal  = NULL;
-	self->query   = NULL;
+	self->req     = NULL;
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->set_cache);
 	vm_init(&self->vm, NULL);
@@ -36,7 +36,7 @@ session_create(void)
 }
 
 static inline void
-session_reset_query(Session* self)
+session_reset_compiler(Session* self)
 {
 	compiler_reset(&self->compiler);
 	palloc_reset();
@@ -46,7 +46,7 @@ static inline void
 session_reset(Session* self)
 {
 	self->portal = NULL;
-	self->query  = NULL;
+	self->req    = NULL;
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	gtr_reset(&self->gtr);
@@ -56,7 +56,7 @@ session_reset(Session* self)
 void
 session_free(Session *self)
 {
-	session_reset_query(self);
+	session_reset_compiler(self);
 	session_reset(self);
 	compiler_free(&self->compiler);
 	vm_free(&self->vm);
@@ -77,7 +77,7 @@ session_run(Session* self)
 
 	// prevent client writes on replica
 	if (!program->ro && !state_is_primary())
-		if (! self->query->recover)
+		if (! self->req->recover)
 			error("system is in read-only mode");
 
 	reg_prepare(&self->vm.r, program->code.regs);
@@ -92,11 +92,11 @@ session_run(Session* self)
 	auto write = &gtr->write;
 	if (! program->ro)
 	{
-		auto query = self->query;
-		if (query->recover)
-			write_set_recover(write, query->recover);
+		auto req = self->req;
+		if (req->recover)
+			write_set_recover(write, req->recover);
 		else
-			query_write(query, &portal->endpoint, &write->record_data);
+			request_write(req, &portal->endpoint, &write->record_data);
 
 		if (compiler_stmt(compiler)->id == STMT_ACKNOWLEDGE)
 			write_set_flags(write, RECORD_UTILITY);
@@ -163,7 +163,7 @@ session_run_utility(Session* self)
 	// prevent client writes on replica
 	if (! state_is_primary())
 	{
-		if (!self->query->recover && !stmt_is_utility_ro(compiler_stmt(compiler)))
+		if (!self->req->recover && !stmt_is_utility_ro(compiler_stmt(compiler)))
 			error("system is in read-only mode");
 	}
 
@@ -243,13 +243,13 @@ session_run_utility(Session* self)
 		defer(write_free, &write);
 
 		// prepare request for the wal writer
-		auto query = self->query;
-		if (query->recover) {
-			write_set_recover(&write, query->recover);
+		auto req = self->req;
+		if (req->recover) {
+			write_set_recover(&write, req->recover);
 		} else
 		{
 			write_set_flags(&write, RECORD_UTILITY);
-			query_write(query, &portal->endpoint, &write.record_data);
+			request_write(req, &portal->endpoint, &write.record_data);
 		}
 
 		WriteList write_list;
@@ -280,27 +280,29 @@ session_run_utility(Session* self)
 }
 
 hot static void
-session_request(Session* self)
+session_main(Session* self, Portal* portal, Request* req)
 {
+	// set session local settings
+	self->portal = portal;
+	self->req    = req;
+
 	// parser sql
-	auto portal   = self->portal;
-	auto query    = self->query;
 	auto compiler = &self->compiler;
 	compiler_set(compiler, &portal->local, self->program);
 
-	switch (query->type) {
-	case QUERY_SQL:
+	switch (req->type) {
+	case REQUEST_SQL:
 	{
 		user_check(portal->user, PERM_SQL);
-		compiler_parse(compiler, &query->text);
+		compiler_parse(compiler, &req->text);
 		break;
 	}
-	case QUERY_WRITE:
-	case QUERY_EXECUTE:
+	case REQUEST_WRITE:
+	case REQUEST_EXECUTE:
 	{
-		auto execute = query->type == QUERY_EXECUTE;
-		compiler_parse_import(compiler, &query->rel_user, &query->rel,
-		                      query->args, execute);
+		auto execute = req->type == REQUEST_EXECUTE;
+		compiler_parse_import(compiler, &req->rel_user, &req->rel,
+		                      req->args, execute);
 		break;
 	}
 	default:
@@ -348,7 +350,7 @@ session_request(Session* self)
 }
 
 hot bool
-session_execute(Session* self, Portal* portal, Query* query)
+session_execute(Session* self, Portal* portal, Request* req)
 {
 	cancel_pause();
 
@@ -358,12 +360,8 @@ session_execute(Session* self, Portal* portal, Query* query)
 		// reset session session state
 		session_reset(self);
 
-		// set session local settings
-		self->portal = portal;
-		self->query  = query;
-
 		// parse and execute request
-		session_request(self);
+		session_main(self, portal, req);
 
 		// done
 		unlock_all();
@@ -376,7 +374,7 @@ session_execute(Session* self, Portal* portal, Query* query)
 		unlock_all();
 	}
 
-	session_reset_query(self);
+	session_reset_compiler(self);
 
 	// cancellation point
 	cancel_resume();

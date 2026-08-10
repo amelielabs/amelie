@@ -24,7 +24,7 @@ struct Subscriber
 	Websocket ws;
 	Portal*   portal;
 	Api*      api;
-	Query     query;
+	Request   req;
 	void*     session;
 	CdcSub    cdc_sub;
 	Feeds     feeds;
@@ -45,7 +45,7 @@ subscriber_init(Subscriber* self, Frontend* fe, Client* client,
 	websocket_init(&self->ws);
 	websocket_set(&self->ws, &self->protocol, client, false);
 	feeds_init(&self->feeds, share()->cdc);
-	query_init(&self->query);
+	request_init(&self->req);
 }
 
 static inline void
@@ -74,7 +74,7 @@ subscriber_reset(Subscriber* self)
 	portal_reset(portal, false);
 	output_set(&portal->output, &portal->endpoint, &output_jsonrpc, NULL);
 	api_reset(self->api);
-	query_init(&self->query);
+	request_init(&self->req);
 }
 
 static inline void
@@ -181,7 +181,7 @@ subscriber_execute(Subscriber* self, Str* content)
 	portal_prepare(portal);
 
 	// parse
-	auto query = &self->query;
+	auto req = &self->req;
 	auto api = self->api;
 	auto on_error = error_catch
 	(
@@ -189,7 +189,7 @@ subscriber_execute(Subscriber* self, Str* content)
 		portal_auth(portal, &self->fe->auth);
 
 		// parse
-		if (! api_parse(api, content, query, true))
+		if (! api_parse(api, content, req, true))
 			rethrow();
 
 		if (api->type == API_SUBSCRIBE)
@@ -205,8 +205,8 @@ subscriber_execute(Subscriber* self, Str* content)
 	}
 
 	// execute by session, unle
-	if (query->type != QUERY_UNDEF)
-		self->fe->iface->session_execute(self->session, portal, query);
+	if (req->type != REQUEST_UNDEF)
+		self->fe->iface->session_execute(self->session, portal, req);
 
 	// handle empty result
 	if (buf_empty(portal->output.buf))

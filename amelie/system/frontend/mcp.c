@@ -229,7 +229,7 @@ mcp_parse_content(Mcp* self, Str* content)
 }
 
 bool
-mcp_parse(Mcp* self, Str* content, Query* query)
+mcp_parse(Mcp* self, Str* content, Request* req)
 {
 	// parser jsonrpc request
 	auto on_error = error_catch
@@ -242,7 +242,7 @@ mcp_parse(Mcp* self, Str* content, Query* query)
 		return false;
 	}
 
-	// execute mcp request or prepare query
-	mcp_execute(self, query);
+	// execute or prepare mcp request
+	mcp_execute(self, req);
 	return true;
 }

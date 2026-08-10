@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Query Query;
-typedef struct Api   Api;
+typedef struct Request Request;
+typedef struct Api     Api;
 
 typedef enum
 {
@@ -38,4 +38,4 @@ struct Api
 void api_init(Api*, Portal*);
 void api_free(Api*);
 void api_reset(Api*);
-bool api_parse(Api*, Str*, Query*, bool);
+bool api_parse(Api*, Str*, Request*, bool);

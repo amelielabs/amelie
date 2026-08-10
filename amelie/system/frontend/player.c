@@ -26,7 +26,7 @@ player_init(Player* self, PlayerSync* sync, Frontend* fe)
 	msg_init(&self->msg, MSG_PLAYER);
 	msg_init(&self->msg_stop, MSG_PLAYER_STOP);
 	portal_init(&self->portal);
-	query_init(&self->query);
+	request_init(&self->req);
 	mailbox_init(&self->queue);
 	buf_init(&self->buf);
 }
@@ -55,10 +55,10 @@ player_record(Player* self, RecordMsg* record, void* session)
 {
 	auto portal   = &self->portal;
 	auto endpoint = &portal->endpoint;
-	query_reset(&self->query);
+	request_reset(&self->req);
 
-	// restore query and request data
-	query_read(&self->query, endpoint, record);
+	// restore request
+	request_read(&self->req, endpoint, record);
 
 	// todo: output to none
 	buf_reset(&self->buf);
@@ -79,7 +79,7 @@ player_record(Player* self, RecordMsg* record, void* session)
 			player_record_primary(record);
 
 		// execute
-		self->fe->iface->session_execute(session, portal, &self->query);
+		self->fe->iface->session_execute(session, portal, &self->req);
 	);
 	portal_reset(portal, true);
 	if (on_error)

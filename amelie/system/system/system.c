@@ -113,9 +113,9 @@ frontend_if_session_free(void* ptr)
 }
 
 static bool
-frontend_if_session_execute(void* ptr, Portal* portal, Query* query)
+frontend_if_session_execute(void* ptr, Portal* portal, Request* req)
 {
-	return session_execute(ptr, portal, query);
+	return session_execute(ptr, portal, req);
 }
 
 static FrontendIf frontend_if =

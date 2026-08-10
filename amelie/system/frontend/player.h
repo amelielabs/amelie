@@ -18,7 +18,7 @@ struct Player
 	Msg         msg;
 	Msg         msg_stop;
 	Portal      portal;
-	Query       query;
+	Request     req;
 	Mailbox     queue;
 	PlayerSync* sync;
 	Buf         buf;

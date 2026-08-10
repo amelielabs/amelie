@@ -24,7 +24,7 @@
 #include "frontend/mcp_execute.h"
 
 // frontend
-#include "frontend/query.h"
+#include "frontend/request.h"
 #include "frontend/frontend.h"
 #include "frontend/frontends.h"
 

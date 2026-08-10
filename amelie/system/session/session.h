@@ -20,7 +20,7 @@ struct Session
 	Program* program;
 	Gtr      gtr;
 	Portal*  portal;
-	Query*   query;
+	Request* req;
 	SetCache set_cache;
 	Profile  profile;
 };
@@ -28,4 +28,4 @@ struct Session
 Session*
 session_create(void);
 void session_free(Session*);
-bool session_execute(Session*, Portal*, Query*);
+bool session_execute(Session*, Portal*, Request*);

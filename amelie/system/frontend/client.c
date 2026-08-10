@@ -234,8 +234,8 @@ frontend_client(Frontend* self, Client* client)
 	defer(portal_free, &portal);
 	client_set_endpoint(client, &portal.endpoint);
 
-	Query query;
-	query_init(&query);
+	Request req;
+	request_init(&req);
 
 	Api api;
 	api_init(&api, &portal);
@@ -302,9 +302,9 @@ frontend_client(Frontend* self, Client* client)
 			}
 
 			// parse api request
-			query_reset(&query);
+			request_reset(&req);
 			api_reset(&api);
-			if (! api_parse(&api, &content, &query, false))
+			if (! api_parse(&api, &content, &req, false))
 			{
 				// 400 Bad Portal
 				client_400(client, portal.output.buf);
@@ -312,8 +312,8 @@ frontend_client(Frontend* self, Client* client)
 			}
 
 			// execute request
-			if (query.type != QUERY_UNDEF)
-				ctl->session_execute(session, &portal, &query);
+			if (req.type != REQUEST_UNDEF)
+				ctl->session_execute(session, &portal, &req);
 
 			// 200 OK (includes errors)
 			if (buf_empty(portal.output.buf))
@@ -324,9 +324,9 @@ frontend_client(Frontend* self, Client* client)
 		case ENDPOINT_MCP:
 		{
 			// parse mcp request
-			query_reset(&query);
+			request_reset(&req);
 			mcp_reset(&mcp);
-			if (! mcp_parse(&mcp, &content, &query))
+			if (! mcp_parse(&mcp, &content, &req))
 			{
 				// 400 Bad Portal
 				client_400(client, portal.output.buf);
@@ -334,8 +334,8 @@ frontend_client(Frontend* self, Client* client)
 			}
 
 			// execute request
-			if (query.type != QUERY_UNDEF)
-				ctl->session_execute(session, &portal, &query);
+			if (req.type != REQUEST_UNDEF)
+				ctl->session_execute(session, &portal, &req);
 
 			// 200 OK (includes errors)
 			if (buf_empty(portal.output.buf))
@@ -346,9 +346,9 @@ frontend_client(Frontend* self, Client* client)
 		case ENDPOINT_SQL:
 		{
 			// execute query
-			query.type = QUERY_SQL;
-			query.text = content;
-			if (ctl->session_execute(session, &portal, &query))
+			req.type = REQUEST_SQL;
+			req.text = content;
+			if (ctl->session_execute(session, &portal, &req))
 			{
 				// 204 No Content
 				// 200 OK

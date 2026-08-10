@@ -288,10 +288,10 @@ OutputIf output_mcp =
 };
 
 void
-mcp_execute(Mcp* self, Query* query)
+mcp_execute(Mcp* self, Request* req)
 {
 	// process request
-	query->type = QUERY_UNDEF;
+	req->type = REQUEST_UNDEF;
 	switch (self->type) {
 	case MCP_INITIALIZE:
 	{
@@ -305,11 +305,11 @@ mcp_execute(Mcp* self, Query* query)
 	}
 	case MCP_TOOLS_CALL:
 	{
-		// execute UDF call as query
-		query->type      = QUERY_EXECUTE;
-		query->rel       = self->rel;
-		query->args      = self->args;
-		query->args_size = self->args_size;
+		// execute UDF call
+		req->type      = REQUEST_EXECUTE;
+		req->rel       = self->rel;
+		req->args      = self->args;
+		req->args_size = self->args_size;
 
 		auto output = &self->portal->output;
 		output->iface_arg = self;
@@ -323,12 +323,12 @@ mcp_execute(Mcp* self, Query* query)
 	}
 	case MCP_RESOURCES_READ:
 	{
-		// execute UDF call as query
-		query->type      = QUERY_EXECUTE;
-		query->rel_user  = self->rel_user;
-		query->rel       = self->rel;
-		query->args      = NULL;
-		query->args_size = 0;
+		// execute UDF call
+		req->type      = REQUEST_EXECUTE;
+		req->rel_user  = self->rel_user;
+		req->rel       = self->rel;
+		req->args      = NULL;
+		req->args_size = 0;
 
 		auto output = &self->portal->output;
 		output->iface_arg = self;

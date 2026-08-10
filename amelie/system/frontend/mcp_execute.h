@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void mcp_execute(Mcp*, Query*);
+void mcp_execute(Mcp*, Request*);

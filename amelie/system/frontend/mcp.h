@@ -11,8 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Query Query;
-typedef struct Mcp   Mcp;
+typedef struct Mcp Mcp;
 
 typedef enum
 {
@@ -38,4 +37,4 @@ struct Mcp
 void mcp_init(Mcp*, Portal*);
 void mcp_free(Mcp*);
 void mcp_reset(Mcp*);
-bool mcp_parse(Mcp*, Str*, Query*);
+bool mcp_parse(Mcp*, Str*, Request*);

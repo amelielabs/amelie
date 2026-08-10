@@ -186,7 +186,7 @@ api_parse_content(Api* self, Str* content)
 }
 
 bool
-api_parse(Api* self, Str* content, Query* query, bool subscribe)
+api_parse(Api* self, Str* content, Request* req, bool subscribe)
 {
 	// parser jsonrpc request
 	auto on_error = error_catch
@@ -202,25 +202,25 @@ api_parse(Api* self, Str* content, Query* query, bool subscribe)
 		return false;
 	}
 
-	// prepare query
+	// prepare request
 	switch (self->type) {
 	case API_SQL:
 	{
-		query->type      = QUERY_SQL;
-		query->text      = self->text;
+		req->type      = REQUEST_SQL;
+		req->text      = self->text;
 		break;
 	}
 	case API_WRITE:
 	{
-		query->type      = QUERY_WRITE;
-		query->rel_user  = self->rel_user;
-		query->rel       = self->rel;
-		query->args      = self->args;
-		query->args_size = self->args_size;
+		req->type      = REQUEST_WRITE;
+		req->rel_user  = self->rel_user;
+		req->rel       = self->rel;
+		req->args      = self->args;
+		req->args_size = self->args_size;
 		break;
 	}
 	default:
-		query->type      = QUERY_UNDEF;
+		req->type      = REQUEST_UNDEF;
 		break;
 	}
 	return true;
