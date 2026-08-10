@@ -113,6 +113,10 @@ catalog_create(Catalog* self)
 		user_config_set_name(user_config, &name);
 		user_config_set_parent(user_config, &name);
 		user_config_set_superuser(user_config, true);
+		Uuid id;
+		uuid_init(&id);
+		uuid_generate(&id, &am_task->random, time_ms());
+		user_config_set_id(user_config, &id);
 
 		// set timestamp
 		char ts[64];

@@ -96,6 +96,13 @@ parse_user_create(Stmt* self, bool agent)
 		user_config_set_description(stmt->config, &text->string);
 	}
 
+	// id
+	Uuid id;
+	uuid_init(&id);
+	auto local = self->parser->local;
+	uuid_generate(&id, &local->random, local->time_ms);
+	user_config_set_id(stmt->config, &id);
+
 	// set timestamp
 	char ts[64];
 	auto time = time_us();

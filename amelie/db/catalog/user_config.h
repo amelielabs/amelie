@@ -18,6 +18,7 @@ struct UserConfig
 	Str    name;
 	Str    parent;
 	Str    description;
+	Uuid   id;
 	Str    created_at;
 	Str    revoked_at;
 	bool   agent;
@@ -36,6 +37,7 @@ user_config_allocate()
 	str_init(&self->name);
 	str_init(&self->parent);
 	str_init(&self->description);
+	uuid_init(&self->id);
 	str_init(&self->created_at);
 	str_init(&self->revoked_at);
 	grants_init(&self->grants);
@@ -77,6 +79,12 @@ user_config_set_description(UserConfig* self, Str* value)
 }
 
 static inline void
+user_config_set_id(UserConfig* self, Uuid* id)
+{
+	self->id = *id;
+}
+
+static inline void
 user_config_set_created_at(UserConfig* self, Str* value)
 {
 	str_free(&self->created_at);
@@ -109,6 +117,7 @@ user_config_copy(UserConfig* self)
 	user_config_set_name(copy, &self->name);
 	user_config_set_parent(copy, &self->parent);
 	user_config_set_description(copy, &self->description);
+	user_config_set_id(copy, &self->id);
 	user_config_set_created_at(copy, &self->created_at);
 	user_config_set_revoked_at(copy, &self->revoked_at);
 	user_config_set_agent(copy, self->agent);
@@ -130,6 +139,7 @@ user_config_read(uint8_t** pos)
 		{ DECODE_STR,   "name",        &self->name        },
 		{ DECODE_STR,   "parent",      &self->parent      },
 		{ DECODE_STR,   "description", &self->description },
+		{ DECODE_UUID,  "id",          &self->id          },
 		{ DECODE_STR,   "created_at",  &self->created_at  },
 		{ DECODE_STR,   "revoked_at",  &self->revoked_at  },
 		{ DECODE_BOOL,  "agent",       &self->agent       },
@@ -173,6 +183,10 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_uuid(buf, &self->id);
 
 	// created_at
 	encode_raw(buf, "created_at", 10);
