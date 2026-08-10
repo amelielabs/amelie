@@ -18,7 +18,6 @@ struct SubConfig
 	Str     user;
 	Str     name;
 	Str     description;
-	Uuid    id;
 	Str     rel_user;
 	Str     rel;
 	int64_t lsn;
@@ -38,7 +37,6 @@ sub_config_allocate(void)
 	str_init(&self->description);
 	str_init(&self->rel_user);
 	str_init(&self->rel);
-	uuid_init(&self->id);
 	grants_init(&self->grants);
 	return self;
 }
@@ -77,12 +75,6 @@ sub_config_set_description(SubConfig* self, Str* value)
 }
 
 static inline void
-sub_config_set_id(SubConfig* self, Uuid* id)
-{
-	self->id = *id;
-}
-
-static inline void
 sub_config_set_rel_user(SubConfig* self, Str* name)
 {
 	str_free(&self->rel_user);
@@ -110,7 +102,6 @@ sub_config_copy(SubConfig* self)
 	sub_config_set_user(copy, &self->user);
 	sub_config_set_name(copy, &self->name);
 	sub_config_set_description(copy, &self->description);
-	sub_config_set_id(copy, &self->id);
 	sub_config_set_rel_user(copy, &self->rel_user);
 	sub_config_set_rel(copy, &self->rel);
 	sub_config_set_pos(copy, self->lsn, self->lsn_op);
@@ -129,7 +120,6 @@ sub_config_read(uint8_t** pos)
 		{ DECODE_STR,   "user",        &self->user        },
 		{ DECODE_STR,   "name",        &self->name        },
 		{ DECODE_STR,   "description", &self->description },
-		{ DECODE_UUID,  "id",          &self->id          },
 		{ DECODE_STR,   "rel_user",    &self->rel_user    },
 		{ DECODE_STR,   "rel",         &self->rel         },
 		{ DECODE_INT,   "lsn",         &self->lsn         },
@@ -167,10 +157,6 @@ sub_config_write(SubConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
-
-	// id
-	encode_raw(buf, "id", 2);
-	encode_uuid(buf, &self->id);
 
 	// rel_user
 	encode_raw(buf, "rel_user", 8);
