@@ -21,7 +21,8 @@ enum
 	LOG_DELETE,
 	LOG_PUBLISH,
 	LOG_ACK,
-	LOG_DDL
+	LOG_DDL,
+	LOG_REQUEST
 };
 
 struct LogIf

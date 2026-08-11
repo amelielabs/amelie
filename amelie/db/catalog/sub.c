@@ -78,8 +78,14 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 		return false;
 	}
 
-	// find and validate relation
-	auto on = catalog_find(self, REL_UNDEF, &config->rel_user, &config->rel, true);
+	// find user or relation
+	Rel* on;
+	if (str_empty(&config->rel)) {
+		auto user = catalog_find_user(self, &config->rel_user, true);
+		on = &user->rel;
+	} else {
+		on = catalog_find(self, REL_UNDEF, &config->rel_user, &config->rel, true);
+	}
 
 	// check permission
 	check_permission(tr, on, PERM_CREATE_SUBSCRIPTION);

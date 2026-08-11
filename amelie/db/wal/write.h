@@ -88,3 +88,24 @@ write_lsn(Write* self)
 		return self->recover->record->lsn;
 	return self->record.lsn;
 }
+
+static inline void
+write_cdc(Write* self, Cdc* cdc, Uuid* uuid, int cmd)
+{
+	uint64_t lsn;
+	uint8_t* data;
+	uint32_t data_size;
+	if (self->recover)
+	{
+		auto record = self->recover->record;
+		lsn       = record->lsn;
+		data      = record_data(record);
+		data_size = record_data_size(record);
+	} else
+	{
+		lsn       = self->record.lsn;
+		data      = self->record_data.start;
+		data_size = buf_size(&self->record_data);
+	}
+	cdc_write(cdc, lsn, 0, cmd, uuid, data, data_size);
+}

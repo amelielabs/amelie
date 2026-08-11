@@ -107,13 +107,20 @@ user_drop_of(Catalog* self,
 		list_foreach_safe(&self->rels.list)
 		{
 			auto rel = list_at(Rel, link);
-			if (! str_compare(rel->user, user->name))
+
+			// user subscription
+			auto drop_sub = false;
+			if (rel->type == REL_SUBSCRIPTION)
+				drop_sub = sub_of(rel)->rel_on == user;
+
+			if (!drop_sub && !str_compare(rel->user, user->name))
 			{
 				// revoke all permissions
 				if (grants_find(rel->grants, user->name))
 					catalog_grant_of(self, tr, rel, user->name, false, PERM_ALL);
 				continue;
 			}
+
 			count += catalog_deps(self, rel, &deps) + 1;
 			if (! catalog_deps_has(&deps, rel))
 				catalog_deps_add(&deps, rel);
@@ -134,7 +141,7 @@ user_drop_of(Catalog* self,
 
 	} else
 	{
-		// ensure no indirect dependecies on the user name (udfs, clones or users)
+		// ensure no indirect dependecies on the user name (udfs, clones, subs or users)
 		catalog_deps_validate_user(self, user->name, true);
 
 		// revoke all permissions

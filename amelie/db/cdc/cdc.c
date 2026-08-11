@@ -188,7 +188,7 @@ cdc_gc(Cdc* self)
 	spinlock_unlock(&self->lock);
 }
 
-hot static inline void
+hot void
 cdc_add(Cdc*     self,
         uint64_t lsn,
         uint32_t lsn_op,
@@ -219,20 +219,17 @@ cdc_add(Cdc*     self,
 }
 
 hot void
-cdc_write(Cdc* self, uint64_t lsn, CdcLog* write)
+cdc_write(Cdc*     self,
+          uint64_t lsn,
+          uint32_t lsn_op,
+          int      cmd,
+          Uuid*    id,
+          uint8_t* data,
+          uint32_t data_size)
 {
 	spinlock_lock(&self->lock);
 
-	// add event to the queue
-	uint32_t op = 0;
-	auto pos = (CdcLogRecord*)write->data.start;
-	auto end = (CdcLogRecord*)write->data.position;
-	while (pos < end)
-	{
-		cdc_add(self, lsn, op, pos->cmd, pos->id, pos->data, pos->data_size);
-		op++;
-		pos = (CdcLogRecord*)(pos->data + pos->data_size);
-	}
+	cdc_add(self, lsn, lsn_op, cmd, id, data, data_size);
 
 	// wakeup subscribers
 	cdc_notify(self);

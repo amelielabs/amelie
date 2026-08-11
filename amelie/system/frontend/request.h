@@ -23,10 +23,10 @@ typedef enum
 
 typedef enum
 {
+	META_USER,
 	META_TIMEZONE,
 	META_TIME,
 	META_SEED,
-	META_USER,
 	META_SQL,
 	META_WRITE
 } RequestMeta;
@@ -65,6 +65,10 @@ request_write(Request* self, Endpoint* endpoint, Buf* buf)
 	// []
 	encode_array(buf);
 
+	// user
+	encode_int(buf, META_USER);
+	encode_str(buf, opt_string_of(&endpoint->user));
+
 	// timezone
 	encode_int(buf, META_TIMEZONE);
 	encode_str(buf, opt_string_of(&endpoint->timezone));
@@ -76,10 +80,6 @@ request_write(Request* self, Endpoint* endpoint, Buf* buf)
 	// seed
 	encode_int(buf, META_SEED);
 	encode_int(buf, opt_int_of(&endpoint->seed));
-
-	// user
-	encode_int(buf, META_USER);
-	encode_str(buf, opt_string_of(&endpoint->user));
 
 	// data
 	switch (self->type) {
@@ -129,6 +129,9 @@ request_read(Request* self, Endpoint* endpoint, RecordMsg* msg)
 
 		int64_t integer;
 		switch (field) {
+		case META_USER:
+			unpack_str(&pos, &endpoint->user.string);
+			break;
 		case META_TIMEZONE:
 			unpack_str(&pos, &endpoint->timezone.string);
 			break;
@@ -139,9 +142,6 @@ request_read(Request* self, Endpoint* endpoint, RecordMsg* msg)
 		case META_SEED:
 			unpack_int(&pos, &integer);
 			opt_int_set(&endpoint->seed, integer);
-			break;
-		case META_USER:
-			unpack_str(&pos, &endpoint->user.string);
 			break;
 		case META_SQL:
 		{

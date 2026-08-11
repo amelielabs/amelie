@@ -35,6 +35,10 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 	case 2:
 		str_set(&cmd, "publish", 7);
 		break;
+	// request
+	case 5:
+		str_set(&cmd, "request", 7);
+		break;
 	}
 	char fmt[] =
 		"\n"

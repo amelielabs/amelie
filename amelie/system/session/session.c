@@ -266,6 +266,10 @@ session_run_utility(Session* self)
 			tr_abort(&tr);
 			rethrow();
 		}
+
+		// capture user request
+		if (tr.user->subs)
+			write_cdc(&write, share()->cdc, tr.user->id, LOG_REQUEST);
 	}
 
 	// commit

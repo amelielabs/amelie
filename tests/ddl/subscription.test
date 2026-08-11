@@ -370,5 +370,31 @@ insert into test values (2, vector [9,10,11,12]);
 select * from test_sub;
 drop table test cascade;
 
+# test: create subscription (user)
+create user test_user;
+
+create subscription test_user_sub on user;
+create subscription test_user_sub on user 123;
+create subscription test_user_sub on test_user;
+
+create subscription test_user_sub on user test_user;
+select * from test_user_sub;
+
+connect E0 S1 test_user@127.0.0.1:3485;
+switch S1;
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+drop table test;
+
+switch S0;
+select row[1] as `user`, row[4 * 2 + 1] as sql from test_user_sub;
+disconnect S1;
+
+# test: drop subscription (user)
+drop user test_user;
+drop user test_user cascade;
+show rels;
+show users;
+
 disconnect S0;
 close E0;

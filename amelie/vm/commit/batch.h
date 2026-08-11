@@ -147,6 +147,10 @@ batch_process(Batch* self)
 			self->pending_cdc = true;
 		}
 
+		// collect cdc (request)
+		if (gtr->tr.user->subs)
+			self->pending_cdc = true;
+
 		if (! gtr->program->ro)
 			write_list_add(&self->write, write);
 	}
@@ -196,8 +200,15 @@ batch_publish(Batch* self, Cdc* cdc)
 		auto gtr = batch_at(self, it);
 		if (gtr->abort)
 			continue;
+
+		// publish cdc for the user request
+		if (gtr->tr.user->subs)
+			write_cdc(&gtr->write, cdc, gtr->tr.user->id, LOG_REQUEST);
+
+		// publish cdc events
 		if (list_empty(&gtr->write_cdc))
 			continue;
+
 		auto lsn = write_lsn(&gtr->write);
 		cdc_write_batch(cdc, lsn, &gtr->write_cdc);
 	}

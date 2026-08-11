@@ -488,5 +488,40 @@ select * from u.owned;
 disconnect S1;
 drop user u cascade;
 
+## test: create_subscription (user)
+#create user u;
+#create user uu;
+
+#connect E0 S1 u@127.0.0.1:3485;
+#switch S1;
+#create subscription uu_sub on user uu;
+
+#connect E0 S2 uu@127.0.0.1:3485;
+#switch S2;
+#grant create_subscription to u;
+
+#switch S1;
+#create subscription uu_sub on user uu;
+
+#switch S2;
+#create topic test;
+#publish into test {"hello": "world"};
+
+#switch S1;
+#select * from uu_sub;
+
+#switch S0;
+#drop user uu;
+#drop user uu cascde;
+
+#switch S1;
+#show rels;
+
+#switch S0;
+#drop user u;
+
+#disconnect S1;
+#disconnect S2;
+
 disconnect S0;
 close E0;

@@ -20,7 +20,7 @@
 void
 parse_sub_create(Stmt* self)
 {
-	// CREATE SUBSCRIPTION [IF NOT EXISTS] name ON [user.]relation
+	// CREATE SUBSCRIPTION [IF NOT EXISTS] name ON [USER] [user.]relation
 	// [DESCRIPTION text]
 	auto stmt = ast_sub_create_allocate();
 	self->ast = &stmt->ast;
@@ -34,10 +34,19 @@ parse_sub_create(Stmt* self)
 	// ON
 	stmt_expect(self, KON);
 
-	// [user.]relation
 	Str user;
 	Str target;
-	parse_target(self, &user, &target);
+	if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
+	{
+		// USER|AGENT name
+		auto user_name = stmt_expect(self, KNAME);
+		user = user_name->string;
+		str_init(&target);
+	} else
+	{
+		// [user.]relation
+		parse_target(self, &user, &target);
+	}
 
 	// create subscription config
 	auto config = sub_config_allocate();

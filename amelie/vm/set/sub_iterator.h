@@ -53,6 +53,9 @@ sub_store_iterator_set(SubIterator* self)
 	case LOG_PUBLISH:
 		str_set(&cmd, "publish", 7);
 		break;
+	case LOG_REQUEST:
+		str_set(&cmd, "request", 7);
+		break;
 	}
 	value_set_string(&self->value[2], &cmd, NULL);
 
