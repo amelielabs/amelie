@@ -844,7 +844,7 @@ lsn  lsn_op  cmd    row
 112  0       write  {"id": 1, "v": [5, 6, 7, 8]}
 113  0       write  {"id": 2, "v": [9, 10, 11, 12]}
 drop table test cascade;
-# test: create subscription (user)
+# test: create subscription (user superuser)
 create user test_user;
 create subscription test_user_sub on user;
 error: create subscription test_user_sub on user❰;❱ ⟵ name expected
@@ -879,6 +879,45 @@ show rels;
 
 rels
 ────
+show users;
+
+users
+─────
+{
+  "name": "amelie",
+  "parent": "amelie",
+  "description": ""
+}
+# test: create subscription (user self)
+create user test_user;
+connect E0 S1 test_user@127.0.0.1:3485;
+create subscription self_ on user test_user;
+error: relation 'amelie.test_user': permission denied
+switch S0;
+disconnect S1;
+drop user test_user cascade;
+# test: create subscription (user parent)
+create user test_user;
+grant create_user to test_user;
+connect E0 S1 test_user@127.0.0.1:3485;
+create user test_user_child;
+create subscription child_sub on user test_user_child;
+connect E0 S2 test_user_child@127.0.0.1:3485;
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+drop table test;
+switch S1;
+select row[9] from child_sub;
+
+col1
+────
+"create table test (id int primary key);"
+"insert into test values (1), (2), (3);"
+"drop table test;"
+switch S0;
+disconnect S1;
+disconnect S2;
+drop user test_user cascade;
 show users;
 
 users

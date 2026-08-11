@@ -218,7 +218,7 @@ catalog_grant(Catalog* self,
 	check_user(tr, PERM_GRANT);
 
 	// user grants
-	if (str_empty(user))
+	if (str_empty(name))
 	{
 		// PERM_SYSTEM for system wide grants
 		if (((perms & PERM_SYSTEM) > 0) ||

@@ -488,40 +488,43 @@ select * from u.owned;
 disconnect S1;
 drop user u cascade;
 
-## test: create_subscription (user)
-#create user u;
-#create user uu;
+# test: create_subscription (user)
+create user u;
+create user uu;
 
-#connect E0 S1 u@127.0.0.1:3485;
-#switch S1;
-#create subscription uu_sub on user uu;
+connect E0 S1 u@127.0.0.1:3485;
+switch S1;
+# cannot be done (only parent or superuser)
+create subscription uu_sub on user uu;
 
-#connect E0 S2 uu@127.0.0.1:3485;
-#switch S2;
-#grant create_subscription to u;
+connect E0 S2 uu@127.0.0.1:3485;
+switch S2;
 
-#switch S1;
-#create subscription uu_sub on user uu;
+switch S0;
+create subscription u_sub on user u;
+create subscription uu_sub on user uu;
 
-#switch S2;
-#create topic test;
-#publish into test {"hello": "world"};
+switch S1;
+create table test (id int primary key);
+insert into test values (1), (2);
+drop table test;
 
-#switch S1;
-#select * from uu_sub;
+switch S2;
+create topic test;
+publish into test 1,2;
+drop topic test;
 
-#switch S0;
-#drop user uu;
-#drop user uu cascde;
+switch S0;
+select row[9] from u_sub;
+select row[9] from uu_sub;
 
-#switch S1;
-#show rels;
+drop user u;
+drop user u cascade;
+drop user uu;
+drop user uu cascade;
 
-#switch S0;
-#drop user u;
-
-#disconnect S1;
-#disconnect S2;
+disconnect S1;
+disconnect S2;
 
 disconnect S0;
 close E0;

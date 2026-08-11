@@ -672,5 +672,48 @@ id
 1
 disconnect S1;
 drop user u cascade;
+# test: create_subscription (user)
+create user u;
+create user uu;
+connect E0 S1 u@127.0.0.1:3485;
+switch S1;
+create subscription uu_sub on user uu;
+error: relation 'amelie.uu': permission denied
+connect E0 S2 uu@127.0.0.1:3485;
+switch S2;
+switch S0;
+create subscription u_sub on user u;
+create subscription uu_sub on user uu;
+switch S1;
+create table test (id int primary key);
+insert into test values (1), (2);
+drop table test;
+switch S2;
+create topic test;
+publish into test 1,2;
+drop topic test;
+switch S0;
+select row[9] from u_sub;
+
+col1
+────
+"create table test (id int primary key);"
+"insert into test values (1), (2);"
+"drop table test;"
+select row[9] from uu_sub;
+
+col1
+────
+"create topic test;"
+"publish into test 1,2;"
+"drop topic test;"
+drop user u;
+error: subscription 'amelie.u_sub' depends on user 'u'
+drop user u cascade;
+drop user uu;
+error: subscription 'amelie.uu_sub' depends on user 'uu'
+drop user uu cascade;
+disconnect S1;
+disconnect S2;
 disconnect S0;
 close E0;
