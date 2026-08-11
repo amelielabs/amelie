@@ -122,17 +122,15 @@ api_parse_cmd(Api* self, ApiType type, bool with_args)
 		}
 	}
 
-	// validate options
-	if (str_empty(&self->rel))
-		error("'name' is not defined");
-
 	if (with_args)
 	{
+		// require args and rels
+		if (str_empty(&self->rel))
+			error("'name' is not defined");
+
 		if (! self->args)
 			error("'arguments' is not defined");
-	} else
-	if (self->args)
-		error("'arguments' is not expected for this command");
+	}
 
 	self->type = type;
 }

@@ -49,18 +49,27 @@ subscriber_init(Subscriber* self, Frontend* fe, Client* client,
 }
 
 static inline void
+subscriber_unsubscribe_feed(Feed* feed)
+{
+	auto catalog = &share()->db->catalog;
+	auto rel_match = catalog_find_by(catalog, REL_UNDEF, &feed->id, false);
+	if (! rel_match)
+		rel_match = rels_find_by(&catalog->users, REL_UNDEF, &feed->id, false);
+	if (rel_match)
+	{
+		rel_match->subs--;
+		assert(rel_match->subs >= 0);
+	}
+}
+
+static inline void
 subscriber_free(Subscriber* self)
 {
 	// unreference relations
 	list_foreach(&self->feeds.list)
 	{
 		auto feed = list_at(Feed, link);
-		auto rel_match = catalog_find_by(&share()->db->catalog, REL_UNDEF, &feed->id, false);
-		if (rel_match)
-		{
-			rel_match->subs--;
-			assert(rel_match->subs >= 0);
-		}
+		subscriber_unsubscribe_feed(feed);
 	}
 	feeds_free(&self->feeds);
 	websocket_free(&self->ws);
@@ -102,17 +111,28 @@ subscriber_subscribe(Subscriber* self)
 	if (feed)
 		error("feed '{str}': already exists", &api->rel);
 
-	// find relation
-	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, user, &api->rel, false);
-	if (! rel)
-		error("feed '{str}': relation not found", &api->rel);
+	Rel* rel = NULL;
+	if (str_empty(&api->rel))
+	{
+		// find user
+		auto ref = catalog_find_user(&share()->db->catalog, user, false);
+		if (! ref)
+			error("feed '{str}': user not found", user);
+		rel = &ref->rel;
+	} else
+	{
+		// find relation
+		rel = catalog_find(&share()->db->catalog, REL_UNDEF, user, &api->rel, false);
+		if (! rel)
+			error("feed '{str}': relation not found", &api->rel);
 
-	if (rel->type != REL_TABLE &&
-	    rel->type != REL_CLONE &&
-	    rel->type != REL_TOPIC &&
-	    rel->type != REL_SUBSCRIPTION)
-		error("feed '{str}': {s} cannot be used here", &api->rel,
-		      rel_type_of(rel->type));
+		if (rel->type != REL_TABLE &&
+		    rel->type != REL_CLONE &&
+		    rel->type != REL_TOPIC &&
+		    rel->type != REL_SUBSCRIPTION)
+			error("feed '{str}': {s} cannot be used here", &api->rel,
+			      rel_type_of(rel->type));
+	}
 
 	uint64_t lsn    = state_lsn() + 1;
 	uint32_t lsn_op = 0;
@@ -137,7 +157,8 @@ subscriber_subscribe(Subscriber* self)
 	// create and register feed
 	feed = feed_allocate();
 	feed_set_user(feed, user);
-	feed_set_name(feed, &api->rel);
+	if (! str_empty(&api->rel))
+		feed_set_name(feed, &api->rel);
 	feed_set_id(feed, id);
 	feeds_add(&self->feeds, feed);
 
@@ -157,17 +178,14 @@ subscriber_unsubscribe(Subscriber* self)
 		user = &self->portal->user->config->name;
 	else
 		user = &api->rel_user;
+
+	// relation name can be empty, in case of user feeds
 	auto feed = feeds_find(&self->feeds, user, &api->rel);
 	if (! feed)
-		error("feed '{str}': does not exists", &api->rel);
+		error("feed: does not exists");
 
 	// unref and remove
-	auto rel_match = catalog_find_by(&share()->db->catalog, REL_UNDEF, &feed->id, false);
-	if (rel_match)
-	{
-		rel_match->subs--;
-		assert(rel_match->subs >= 0);
-	}
+	subscriber_unsubscribe_feed(feed);
 
 	feeds_remove(&self->feeds, feed);
 	feed_free(feed);
