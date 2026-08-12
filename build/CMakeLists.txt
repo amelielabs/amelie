@@ -350,7 +350,6 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/mcp_execute.c
     ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/frontend/client.c
-    ${AMELIE_ROOT}/system/frontend/subscriber.c
     ${AMELIE_ROOT}/system/frontend/player.c
     ${AMELIE_ROOT}/system/frontend/players.c
     ${AMELIE_ROOT}/system/backend/pod.c

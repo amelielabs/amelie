@@ -62,7 +62,6 @@ frontend_endpoint_api(Portal* portal, Client* client)
 	auto http     = &client->request;
 
 	// POST /api (application/json)
-	// GET  /api (application/json) (websocket)
 
 	// content type
 	auto content_type = &endpoint->content_type.string;
@@ -150,7 +149,6 @@ frontend_endpoint(Portal* portal, Client* client)
 
 	// POST /sql
 	// POST /api
-	// GET  /api (websocket)
 	// GET  /backup
 	// GET  /repl
 
@@ -294,17 +292,10 @@ frontend_client(Frontend* self, Client* client)
 		switch (endpoint) {
 		case ENDPOINT_API:
 		{
-			// switch to the websocket session
-			if (str_is(&http->options[HTTP_METHOD], "GET", 3))
-			{
-				portal_reset(&portal, false);
-				return frontend_subscriber(self, client, &portal, &api, session);
-			}
-
 			// parse api request
 			request_reset(&req);
 			api_reset(&api);
-			if (! api_parse(&api, &content, &req, false))
+			if (! api_parse(&api, &content, &req))
 			{
 				// 400 Bad Portal
 				client_400(client, portal.output.buf);

@@ -31,9 +31,6 @@
 // client
 #include "frontend/client.h"
 
-// subscriber (websocket session)
-#include "frontend/subscriber.h"
-
 // player
 #include "frontend/player_sync.h"
 #include "frontend/player.h"

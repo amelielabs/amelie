@@ -166,33 +166,16 @@ api_parse_content(Api* self, Str* content)
 		return;
 	}
 
-	// subscribe
-	if (str_is(&cmd->method, "subscribe", 9))
-	{
-		api_parse_cmd(self, API_SUBSCRIBE, false);
-		return;
-	}
-
-	// unsubscribe
-	if (str_is(&cmd->method, "unsubscribe", 11))
-	{
-		api_parse_cmd(self, API_UNSUBSCRIBE, false);
-		return;
-	}
-
 	error("unknown jsonrpc method: {str}", &cmd->method);
 }
 
 bool
-api_parse(Api* self, Str* content, Request* req, bool subscribe)
+api_parse(Api* self, Str* content, Request* req)
 {
 	// parser jsonrpc request
 	auto on_error = error_catch
 	(
 		api_parse_content(self, content);
-		if (! subscribe)
-			if (self->type == API_SUBSCRIBE || self->type == API_UNSUBSCRIBE)
-				error("websocket connection required to subscribe");
 	);
 	if (on_error)
 	{

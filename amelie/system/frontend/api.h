@@ -18,9 +18,7 @@ typedef enum
 {
 	API_UNDEF,
 	API_SQL,
-	API_WRITE,
-	API_SUBSCRIBE,
-	API_UNSUBSCRIBE
+	API_WRITE
 } ApiType;
 
 struct Api
@@ -38,4 +36,4 @@ struct Api
 void api_init(Api*, Portal*);
 void api_free(Api*);
 void api_reset(Api*);
-bool api_parse(Api*, Str*, Request*, bool);
+bool api_parse(Api*, Str*, Request*);
