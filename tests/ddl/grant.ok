@@ -691,14 +691,14 @@ create topic test;
 publish into test 1,2;
 drop topic test;
 switch S0;
-select row[9] from u_sub;
+select data[9] from u_sub;
 
 col1
 ────
 "create table test (id int primary key);"
 "insert into test values (1), (2);"
 "drop table test;"
-select row[9] from uu_sub;
+select data[9] from uu_sub;
 
 col1
 ────

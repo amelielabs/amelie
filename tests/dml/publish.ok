@@ -17,8 +17,8 @@ access
 publish into x 123;
 select * from sub;
 
-lsn  cmd      row
-───────────────────
+lsn  cmd      data
+────────────────────
 4    publish  123
 explain publish into x [2 + 2];
 
@@ -40,15 +40,15 @@ access
 publish into x [2 + 2];
 select * from sub;
 
-lsn  cmd      row
-───────────────────
+lsn  cmd      data
+────────────────────
 4    publish  123
 5    publish  [4]
 # test: publish (func constify)
 publish into x [8::string];
 select * from sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ─────────────────────
 4    publish  123
 5    publish  [4]
@@ -57,7 +57,7 @@ lsn  cmd      row
 publish into x [8::string::int * 2];
 select * from sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ─────────────────────
 4    publish  123
 5    publish  [4]
@@ -71,7 +71,7 @@ publish into x {
 };
 select * from sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ──────────────────────────────────────────────────────────────────────────────────────────
 4    publish  123
 5    publish  [4]
@@ -82,7 +82,7 @@ publish into x 1,2,3;
 publish into x (1 * 2)::json, (2 * 2)::json, (3 * 2::string::int)::json;
 select * from sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ──────────────────────────────────────────────────────────────────────────────────────────
 4    publish  123
 5    publish  [4]

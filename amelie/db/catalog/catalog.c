@@ -68,9 +68,9 @@ catalog_init(Catalog*   self,
 	column_set_type(column, TYPE_STRING, 0);
 	columns_add(columns, column);
 
-	// row
+	// data
 	column = column_allocate();
-	str_set(&name, "row", 3);
+	str_set(&name, "data", 4);
 	column_set_name(column, &name);
 	column_set_type(column, TYPE_JSON, 0);
 	columns_add(columns, column);

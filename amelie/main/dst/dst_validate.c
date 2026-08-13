@@ -282,12 +282,12 @@ dst_validate_sub(DstUser* self, DstRel* rel)
 	    rel->parent->type == DST_REL_TABLE_VECTOR ||
 	    rel->parent->type == DST_REL_CLONE)
 		dst_execute(self->dst, client,
-		            "SELECT count(*), sum(row.id::int), max(lsn) FROM sub_{u64}_{u64}",
+		            "SELECT count(*), sum(data.id::int), max(lsn) FROM sub_{u64}_{u64}",
 		            rel->parent->id, rel->id);
 	else
 	if (rel->parent->type == DST_REL_TOPIC)
 		dst_execute(self->dst, client,
-		            "SELECT count(*), sum(row[0]::int), max(lsn) FROM sub_{u64}_{u64}",
+		            "SELECT count(*), sum(data[0]::int), max(lsn) FROM sub_{u64}_{u64}",
 		            rel->parent->id, rel->id);
 	else
 		abort();

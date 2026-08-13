@@ -594,7 +594,7 @@ publish into test_top 1,2,3;
 publish into test_top;
 select * from top_sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ────────────────────
 24   publish  123
 25   publish  1
@@ -656,7 +656,7 @@ subs
 }
 select * from top_sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ────────────────────
 24   publish  123
 25   publish  1
@@ -680,17 +680,17 @@ id
 3
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────
 33   write  {"id": 1}
 select * from test_clone_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────
 34   write  {"id": 2}
 select * from test_clone2_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────
 35   write  {"id": 3}
 # test: drop subscription
@@ -736,13 +736,13 @@ begin
 end;
 select * from sa;
 
-lsn  cmd      row
-───────────────────
+lsn  cmd      data
+────────────────────
 46   publish  1
 select * from sb;
 
-lsn  cmd      row
-───────────────────
+lsn  cmd      data
+────────────────────
 46   publish  2
 46   publish  3
 46   publish  4
@@ -754,13 +754,13 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from sa;
 
-lsn  cmd      row
-───────────────────
+lsn  cmd      data
+────────────────────
 46   publish  1
 select * from sb;
 
-lsn  cmd      row
-───────────────────
+lsn  cmd      data
+────────────────────
 46   publish  2
 46   publish  3
 46   publish  4

@@ -56,8 +56,8 @@ cdc
 # test: select from subscription (empty)
 select * from test_sub;
 
-lsn  cmd  row
-───────────────
+lsn  cmd  data
+────────────────
 # test: cdc (insert)
 insert into test values (1, 0);
 insert into test values (2, 0);
@@ -77,7 +77,7 @@ cdc
 # test: select from subscription
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ──────────────────────────────────
 4    write  {"id": 1, "data": 0}
 5    write  {"id": 2, "data": 0}
@@ -87,7 +87,7 @@ insert into test values (4, 0), (5, 0), (6, 0);
 # test: select from subscription
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ──────────────────────────────────
 4    write  {"id": 1, "data": 0}
 5    write  {"id": 2, "data": 0}
@@ -113,7 +113,7 @@ delete from test where id = 1;
 # test: select from subscription
 select * from test_sub;
 
-lsn  cmd     row
+lsn  cmd     data
 ───────────────────────────────────
 4    write   {"id": 1, "data": 0}
 5    write   {"id": 2, "data": 0}
@@ -127,7 +127,7 @@ delete from test where id <= 3;
 # test: select from subscription
 select * from test_sub;
 
-lsn  cmd     row
+lsn  cmd     data
 ───────────────────────────────────
 4    write   {"id": 1, "data": 0}
 5    write   {"id": 2, "data": 0}
@@ -143,7 +143,7 @@ update test set data = 1 where id = 4;
 # test: select from subscription
 select * from test_sub;
 
-lsn  cmd     row
+lsn  cmd     data
 ───────────────────────────────────
 4    write   {"id": 1, "data": 0}
 5    write   {"id": 2, "data": 0}
@@ -160,7 +160,7 @@ update test set data = 2;
 # test: select from subscription
 select * from test_sub;
 
-lsn  cmd     row
+lsn  cmd     data
 ───────────────────────────────────
 4    write   {"id": 1, "data": 0}
 5    write   {"id": 2, "data": 0}
@@ -197,7 +197,7 @@ lsn
 3
 select * from test_sub;
 
-lsn  cmd     row
+lsn  cmd     data
 ───────────────────────────────────
 4    write   {"id": 1, "data": 0}
 5    write   {"id": 2, "data": 0}
@@ -220,7 +220,7 @@ lsn
 4
 select * from test_sub;
 
-lsn  cmd     row
+lsn  cmd     data
 ───────────────────────────────────
 5    write   {"id": 2, "data": 0}
 6    write   {"id": 3, "data": 0}
@@ -243,8 +243,8 @@ lsn
 11
 select * from test_sub;
 
-lsn  cmd  row
-───────────────
+lsn  cmd  data
+────────────────
 # test: acknowledge (same value)
 acknowledge test_sub to 11;
 # test: acknowledge (downgrade)
@@ -323,7 +323,7 @@ publish into test 1,2,3;
 # test: select from subscription
 select * from test_sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ────────────────────
 18   publish  null
 19   publish  123
@@ -339,8 +339,8 @@ lsn
 19
 select * from test_sub;
 
-lsn  cmd      row
-───────────────────
+lsn  cmd      data
+────────────────────
 20   publish  1
 20   publish  2
 20   publish  3
@@ -377,12 +377,12 @@ insert into test values (123);
 insert into test_clone values (1), (2), (3);
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ─────────────────────────
 27   write  {"id": 123}
 select * from test_clone_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────
 28   write  {"id": 1}
 28   write  {"id": 2}
@@ -397,7 +397,7 @@ create subscription test_clone_sub on test_clone;
 insert into test_clone values (1), (2), (3);
 select * from test_clone_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────
 35   write  {"id": 1}
 35   write  {"id": 2}
@@ -419,14 +419,14 @@ create subscription clone_sub on test_clone;
 insert into test_clone values (1);
 select * from clone_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────
 42   write  {"id": 1}
 drop subscription base_sub;
 insert into test_clone values (2);
 select * from clone_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────
 42   write  {"id": 1}
 44   write  {"id": 2}
@@ -494,11 +494,11 @@ create subscription b_sub on b;
 insert into b values (42, 900);
 select * from a_sub;
 
-lsn  cmd  row
-───────────────
+lsn  cmd  data
+────────────────
 select * from b_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ─────────────────────────────────────
 60   write  {"id": 42, "data": 900}
 drop subscription a_sub;
@@ -578,13 +578,13 @@ name    lsn
 "sub2"  80
 select * from sub1;
 
-lsn  cmd    row
+lsn  cmd    data
 ──────────────────────────────────
 79   write  {"id": 1, "data": 0}
 select * from sub2;
 
-lsn  cmd  row
-───────────────
+lsn  cmd  data
+────────────────
 drop table test cascade;
 # test: create subscription (start after multi-stmt)
 create table test (id int primary key, data int);
@@ -604,15 +604,15 @@ name    lsn
 "sub2"  85
 select * from sub1;
 
-lsn  cmd    row
+lsn  cmd    data
 ──────────────────────────────────
 84   write  {"id": 1, "data": 0}
 84   write  {"id": 2, "data": 0}
 84   write  {"id": 3, "data": 0}
 select * from sub2;
 
-lsn  cmd  row
-───────────────
+lsn  cmd  data
+────────────────
 drop table test cascade;
 # test: create subscription (with dropped column)
 create table t (id int primary key, secret text, visible text);
@@ -625,10 +625,10 @@ select * from t;
 id  visible
 ─────────────
 1   new
-select row from t_sub;
+select data from t_sub;
 
-row
-───
+data
+────
 {
   "id": 1,
   "visible": "new"
@@ -642,7 +642,7 @@ insert into test values (1, vector [5,6,7,8]);
 insert into test values (2, vector [9,10,11,12]);
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ─────────────────────────────────────────────
 95   write  {"id": 0, "v": [1, 2, 3, 4]}
 96   write  {"id": 1, "v": [5, 6, 7, 8]}
@@ -659,15 +659,15 @@ error: relation 'test_user': not exists
 create subscription test_user_sub on user test_user;
 select * from test_user_sub;
 
-lsn  cmd  row
-───────────────
+lsn  cmd  data
+────────────────
 connect E0 S1 test_user@127.0.0.1:3485;
 switch S1;
 create table test (id int primary key);
 insert into test values (1), (2), (3);
 drop table test;
 switch S0;
-select row[1] as `user`, row[4 * 2 + 1] as sql from test_user_sub;
+select data[1] as `user`, data[4 * 2 + 1] as sql from test_user_sub;
 
 user         sql
 ────────────────────────────────────────────────────────
@@ -711,7 +711,7 @@ create table test (id int primary key);
 insert into test values (1), (2), (3);
 drop table test;
 switch S1;
-select row[9] from child_sub;
+select data[9] from child_sub;
 
 col1
 ────

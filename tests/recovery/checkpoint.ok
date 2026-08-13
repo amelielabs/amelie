@@ -631,7 +631,7 @@ publish into test_top 1,2,3;
 publish into test_top;
 select * from top_sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ────────────────────
 13   publish  123
 14   publish  1
@@ -655,7 +655,7 @@ checkpoint
 11
 select * from top_sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ────────────────────
 13   publish  123
 14   publish  1
@@ -676,7 +676,7 @@ checkpoint
 15
 select * from top_sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ────────────────────
 13   publish  123
 14   publish  1
@@ -700,7 +700,7 @@ checkpoint
 15
 select * from top_sub;
 
-lsn  cmd      row
+lsn  cmd      data
 ────────────────────
 13   publish  123
 14   publish  1
@@ -906,7 +906,7 @@ create subscription test_sub on test;
 insert into test values (1, 10), (2, 20), (3, 30);
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 30   write  {"id": 1, "data": 10}
 30   write  {"id": 2, "data": 20}
@@ -919,7 +919,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 30   write  {"id": 1, "data": 10}
 30   write  {"id": 2, "data": 20}
@@ -940,7 +940,7 @@ insert into test values (1, 10), (2, 20), (3, 30);
 acknowledge test_sub to 34;
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 35   write  {"id": 1, "data": 10}
 35   write  {"id": 2, "data": 20}
@@ -949,7 +949,7 @@ lsn  cmd    row
 checkpoint;
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 35   write  {"id": 1, "data": 10}
 35   write  {"id": 2, "data": 20}
@@ -966,7 +966,7 @@ lsn
 34
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 35   write  {"id": 1, "data": 10}
 35   write  {"id": 2, "data": 20}
@@ -1011,14 +1011,14 @@ create subscription test_sub on test;
 insert into test values (1, 10);
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 42   write  {"id": 1, "data": 10}
 alter table test rename column data to data_new;
 error: subscription 'amelie.test_sub' depends on table 'test'
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 42   write  {"id": 1, "data": 10}
 checkpoint;
@@ -1028,7 +1028,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 42   write  {"id": 1, "data": 10}
 select * from test order by id;
@@ -1045,7 +1045,7 @@ insert into test values (1, 0);
 insert into test values (2, 0);
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ──────────────────────────────────
 46   write  {"id": 1, "data": 0}
 47   write  {"id": 2, "data": 0}
@@ -1061,7 +1061,7 @@ id  data
 2   0
 select * from test_sub;
 
-lsn  cmd    row
+lsn  cmd    data
 ──────────────────────────────────
 46   write  {"id": 1, "data": 0}
 47   write  {"id": 2, "data": 0}
@@ -1078,12 +1078,12 @@ insert into b values (2, 20);
 end;
 select * from sub_a;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 54   write  {"id": 1, "data": 10}
 select * from sub_b;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 54   write  {"id": 2, "data": 20}
 # test: restart/recover (wal)
@@ -1093,12 +1093,12 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from sub_a;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 54   write  {"id": 1, "data": 10}
 select * from sub_b;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 54   write  {"id": 2, "data": 20}
 select * from a order by id;
@@ -1119,12 +1119,12 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from sub_a;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 54   write  {"id": 1, "data": 10}
 select * from sub_b;
 
-lsn  cmd    row
+lsn  cmd    data
 ───────────────────────────────────
 54   write  {"id": 2, "data": 20}
 select * from a order by id;

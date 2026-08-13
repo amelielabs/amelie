@@ -515,8 +515,8 @@ publish into test 1,2;
 drop topic test;
 
 switch S0;
-select row[9] from u_sub;
-select row[9] from uu_sub;
+select data[9] from u_sub;
+select data[9] from uu_sub;
 
 drop user u;
 drop user u cascade;

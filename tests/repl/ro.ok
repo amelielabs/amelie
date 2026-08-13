@@ -42,7 +42,7 @@ lsn
 3
 select * from t_sub;
 
-lsn  cmd  row
-───────────────
+lsn  cmd  data
+────────────────
 disconnect S0;
 close E0;

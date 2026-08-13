@@ -46,8 +46,8 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 		 "{{"
 			"\"lsn\": {u64}, "
 			"\"cmd\": \"{str}\", "
-			"\"user\": \"{str}\", "
-			"\"row\": ";
+			"\"target\": \"{str}\", "
+			"\"data\": ";
 		buf_format(buf, fmt, event->lsn, &cmd, rel_user);
 	} else
 	{
@@ -55,9 +55,8 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 		 "{{"
 			"\"lsn\": {u64}, "
 			"\"cmd\": \"{str}\", "
-			"\"user\": \"{str}\", "
-			"\"name\": \"{str}\", "
-			"\"row\": ";
+			"\"target\": \"{str}.{str}\", "
+			"\"data\": ";
 		buf_format(buf, fmt, event->lsn, &cmd, rel_user, rel);
 	}
 	uint8_t* pos = event->data;

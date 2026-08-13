@@ -308,7 +308,7 @@ alter table t drop column secret;
 create subscription t_sub on t;
 update t set visible = "new" where id = 1;
 select * from t;
-select row from t_sub;
+select data from t_sub;
 drop table t cascade;
 
 # test: create subscription (table with vector)
@@ -337,7 +337,7 @@ insert into test values (1), (2), (3);
 drop table test;
 
 switch S0;
-select row[1] as `user`, row[4 * 2 + 1] as sql from test_user_sub;
+select data[1] as `user`, data[4 * 2 + 1] as sql from test_user_sub;
 disconnect S1;
 
 # test: drop subscription (user)
@@ -367,7 +367,7 @@ insert into test values (1), (2), (3);
 drop table test;
 
 switch S1;
-select row[9] from child_sub;
+select data[9] from child_sub;
 
 switch S0;
 disconnect S1;

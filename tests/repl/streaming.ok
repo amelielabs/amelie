@@ -10331,7 +10331,7 @@ state
 }
 select * from top_sub;
 
-lsn    cmd      row
+lsn    cmd      data
 ──────────────────────
 10021  publish  null
 10022  publish  123
@@ -10377,7 +10377,7 @@ subs
 }
 select * from top_sub;
 
-lsn    cmd      row
+lsn    cmd      data
 ──────────────────────
 10021  publish  null
 10022  publish  123
@@ -10426,8 +10426,8 @@ subs
 }
 select * from top_sub;
 
-lsn    cmd      row
-─────────────────────
+lsn    cmd      data
+──────────────────────
 10023  publish  1
 10023  publish  2
 10023  publish  3
@@ -10473,8 +10473,8 @@ subs
 }
 select * from top_sub;
 
-lsn  cmd  row
-───────────────
+lsn  cmd  data
+────────────────
 # test: topic (multi-stmt)
 switch S0;
 create table abc (id int primary key);
@@ -10492,13 +10492,13 @@ begin
 end;
 select * from sa;
 
-lsn    cmd      row
-─────────────────────
+lsn    cmd      data
+──────────────────────
 10031  publish  1
 select * from sb;
 
-lsn    cmd      row
-─────────────────────
+lsn    cmd      data
+──────────────────────
 10031  publish  2
 10031  publish  3
 10031  publish  4
@@ -10530,13 +10530,13 @@ repl
 switch S1;
 select * from sa;
 
-lsn    cmd      row
-─────────────────────
+lsn    cmd      data
+──────────────────────
 10031  publish  1
 select * from sb;
 
-lsn    cmd      row
-─────────────────────
+lsn    cmd      data
+──────────────────────
 10031  publish  2
 10031  publish  3
 10031  publish  4
