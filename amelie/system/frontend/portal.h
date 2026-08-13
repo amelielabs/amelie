@@ -96,6 +96,9 @@ portal_auth(Portal* self, Auth* auth_ref)
 	case ENDPOINT_API:
 		user_check(self->user, PERM_API);
 		break;
+	case ENDPOINT_STREAM:
+		user_check(self->user, PERM_CREATE_SUBSCRIPTION);
+		break;
 	case ENDPOINT_MCP:
 		break;
 	case ENDPOINT_BACKUP:

@@ -90,6 +90,34 @@ frontend_endpoint_api(Portal* portal, Client* client)
 }
 
 hot static inline void
+frontend_endpoint_stream(Portal* portal, Client* client)
+{
+	auto endpoint = &portal->endpoint;
+	auto http     = &client->request;
+
+	// GET /stream (text/event-stream) SSE
+	auto content_type = &endpoint->content_type.string;
+	str_set(content_type, "text/event-stream", 17);
+
+	// accept (text/event-stream)
+	auto accept = &endpoint->accept.string;
+	if (!str_empty(accept) &&
+	    !str_is(accept, "text/event-stream", 17) &&
+	    !str_is(accept, "*/*", 3))
+		error("unsupported operation accept");
+
+	str_set(accept, "application/json", 16);
+
+	// set output type (only for errors)
+	output_set(&portal->output, endpoint, &output_json, NULL);
+
+	// check method
+	auto method = &http->options[HTTP_METHOD];
+	if (! str_is(method, "GET", 3))
+		error("unsupported operation method");
+}
+
+hot static inline void
 frontend_endpoint_mcp(Portal* portal, Client* client)
 {
 	auto endpoint = &portal->endpoint;
@@ -149,6 +177,7 @@ frontend_endpoint(Portal* portal, Client* client)
 
 	// POST /sql
 	// POST /api
+	// GET  /stream
 	// GET  /backup
 	// GET  /repl
 
@@ -196,6 +225,9 @@ frontend_endpoint(Portal* portal, Client* client)
 		else
 		if (endpoint_type == ENDPOINT_API)
 			frontend_endpoint_api(portal, client);
+		else
+		if (endpoint_type == ENDPOINT_STREAM)
+			frontend_endpoint_stream(portal, client);
 		else
 		if (endpoint_type == ENDPOINT_MCP)
 			frontend_endpoint_mcp(portal, client);
@@ -274,7 +306,7 @@ frontend_client(Frontend* self, Client* client)
 		// parse endpoint request
 		if (! frontend_endpoint(&portal, client))
 		{
-			// 400 Bad Portal
+			// 400 Bad Source
 			client_400(client, portal.output.buf);
 			continue;
 		}
@@ -297,7 +329,7 @@ frontend_client(Frontend* self, Client* client)
 			api_reset(&api);
 			if (! api_parse(&api, &content, &req))
 			{
-				// 400 Bad Portal
+				// 400 Bad Source
 				client_400(client, portal.output.buf);
 				break;
 			}
@@ -319,7 +351,7 @@ frontend_client(Frontend* self, Client* client)
 			mcp_reset(&mcp);
 			if (! mcp_parse(&mcp, &content, &req))
 			{
-				// 400 Bad Portal
+				// 400 Bad Source
 				client_400(client, portal.output.buf);
 				break;
 			}
@@ -350,9 +382,18 @@ frontend_client(Frontend* self, Client* client)
 				break;
 			}
 
-			// 400 Bad Portal
+			// 400 Bad Source
 			client_400(client, portal.output.buf);
 			break;
+		}
+		case ENDPOINT_STREAM:
+		{
+			// /stream
+			//
+			// pass to the SSE processing (portal keeps lock)
+			//
+			frontend_stream(self, client, &portal);
+			return;
 		}
 		case ENDPOINT_BACKUP:
 		{

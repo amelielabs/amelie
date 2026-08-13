@@ -336,6 +336,7 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
 	// /sql
 	// /api
+	// /stream
 	// /mcp
 	// /backup
 	// /repl
@@ -356,6 +357,11 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 	{
 		opt_int_set(&endpoint->endpoint, ENDPOINT_API);
 		self.pos += 4;
+	} else
+	if (str_is_prefix(spec, "/stream", 7))
+	{
+		opt_int_set(&endpoint->endpoint, ENDPOINT_STREAM);
+		self.pos += 7;
 	} else
 	if (str_is_prefix(spec, "/mcp", 4))
 	{

@@ -42,22 +42,15 @@ cdc_cursor_at(CdcCursor* self)
 	return self->current;
 }
 
-static inline void
-cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id,
-                uint64_t   lsn,
-                uint32_t   lsn_op)
+static inline bool
+cdc_cursor_reposition(CdcCursor* self)
 {
-	auto storage = &cdc->storage;
-
-	self->id  = *id;
-	self->cdc = cdc;
-
-	spinlock_lock(&cdc->lock);
+	auto storage = &self->cdc->storage;
 	if (storage_empty(storage))
-	{
-		spinlock_unlock(&cdc->lock);
-		return;
-	}
+		return false;
+
+	auto lsn    = self->lsn;
+	auto lsn_op = self->lsn_op;
 
 	// rewind to match the position
 	self->page   = storage_at(storage, 0);
@@ -100,6 +93,22 @@ cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id,
 		}
 		self->offset += sizeof(CdcEvent) + at->data_size;
 	}
+	return true;
+}
+
+static inline void
+cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id,
+                uint64_t   lsn,
+                uint32_t   lsn_op)
+{
+	self->id     = *id;
+	self->cdc    = cdc;
+	self->lsn    = lsn;
+	self->lsn_op = lsn_op;
+
+	spinlock_lock(&cdc->lock);
+
+	cdc_cursor_reposition(self);
 
 	spinlock_unlock(&cdc->lock);
 }
@@ -108,13 +117,21 @@ hot static inline bool
 cdc_cursor_next(CdcCursor* self)
 {
 	auto cdc     = self->cdc;
-	auto page    = self->page;
 	auto storage = &cdc->storage;
 	auto lock    = &cdc->lock;
-	if (unlikely(! page))
-		return false;
 
 	spinlock_lock(lock);
+
+	if (unlikely(! self->page))
+	{
+		if (! cdc_cursor_reposition(self))
+		{
+			spinlock_unlock(lock);
+			return false;
+		}
+		self->current = NULL;
+	}
+	auto page = self->page;
 
 	// eof
 	if (self->offset == page->position && storage_is_last(storage, page->id))

@@ -45,6 +45,7 @@ endpoint_init(Endpoint* self)
 		{ "time",         OPT_INT,     OPT_E,       &self->time,         NULL, 0     },
 		{ "seed",         OPT_INT,     OPT_E,       &self->seed,         NULL, 0     },
 		// misc
+		{ "target",       OPT_STRING,  OPT_C|OPT_U, &self->target,       NULL, 0     },
 		{ "id",           OPT_JSON,    OPT_E,       &self->id,           NULL, 0     },
 		{ "trusted",      OPT_BOOL,    OPT_E,       &self->trusted,      NULL, false },
 		{ "name",         OPT_STRING,  OPT_C,       &self->name,         NULL, 0     },

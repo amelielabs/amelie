@@ -24,6 +24,7 @@ enum
 {
 	ENDPOINT_SQL,
 	ENDPOINT_API,
+	ENDPOINT_STREAM,
 	ENDPOINT_MCP,
 	ENDPOINT_BACKUP,
 	ENDPOINT_REPL
@@ -57,6 +58,7 @@ struct Endpoint
 	Opt  time;
 	Opt  seed;
 	// misc
+	Opt  target;
 	Opt  id;
 	Opt  trusted;
 	Opt  name;

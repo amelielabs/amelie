@@ -272,6 +272,9 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	case ENDPOINT_API:
 		buf_write(buf, "api", 3);
 		break;
+	case ENDPOINT_STREAM:
+		buf_write(buf, "stream", 6);
+		break;
 	case ENDPOINT_MCP:
 		buf_write(buf, "mcp", 3);
 		break;
@@ -292,6 +295,7 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	//
 	bool first = true;
 	uri_export_arg(&endpoint->timezone, buf, &first);
+	uri_export_arg(&endpoint->target, buf, &first);
 
 	buf_write(buf, " HTTP/1.1\r\n", 11);
 

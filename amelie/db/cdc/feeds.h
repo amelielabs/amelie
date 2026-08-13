@@ -100,7 +100,11 @@ feeds_collect(Feeds* self, Buf* buf)
 		{
 			auto event = cdc_cursor_at(&feed->cursor);
 			if (event)
+			{
+				buf_write(buf, "data: ", 6);
 				cdc_export(buf, &feed->user, &feed->name, event);
+				buf_write(buf, "\n\n", 2);
+			}
 			if (! cdc_cursor_next(&feed->cursor))
 				break;
 		}
