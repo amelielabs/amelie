@@ -631,13 +631,13 @@ publish into test_top 1,2,3;
 publish into test_top;
 select * from top_sub;
 
-lsn  lsn_op  cmd      row
-────────────────────────────
-13   0       publish  123
-14   0       publish  1
-14   1       publish  2
-14   2       publish  3
-15   0       publish  null
+lsn  cmd      row
+────────────────────
+13   publish  123
+14   publish  1
+14   publish  2
+14   publish  3
+15   publish  null
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
@@ -655,13 +655,13 @@ checkpoint
 11
 select * from top_sub;
 
-lsn  lsn_op  cmd      row
-────────────────────────────
-13   0       publish  123
-14   0       publish  1
-14   1       publish  2
-14   2       publish  3
-15   0       publish  null
+lsn  cmd      row
+────────────────────
+13   publish  123
+14   publish  1
+14   publish  2
+14   publish  3
+15   publish  null
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
@@ -676,13 +676,13 @@ checkpoint
 15
 select * from top_sub;
 
-lsn  lsn_op  cmd      row
-────────────────────────────
-13   0       publish  123
-14   0       publish  1
-14   1       publish  2
-14   2       publish  3
-15   0       publish  null
+lsn  cmd      row
+────────────────────
+13   publish  123
+14   publish  1
+14   publish  2
+14   publish  3
+15   publish  null
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -700,13 +700,13 @@ checkpoint
 15
 select * from top_sub;
 
-lsn  lsn_op  cmd      row
-────────────────────────────
-13   0       publish  123
-14   0       publish  1
-14   1       publish  2
-14   2       publish  3
-15   0       publish  null
+lsn  cmd      row
+────────────────────
+13   publish  123
+14   publish  1
+14   publish  2
+14   publish  3
+15   publish  null
 # test: create user
 create user test;
 select show('state').lsn;
@@ -906,11 +906,11 @@ create subscription test_sub on test;
 insert into test values (1, 10), (2, 20), (3, 30);
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-30   0       write  {"id": 1, "data": 10}
-30   1       write  {"id": 2, "data": 20}
-30   2       write  {"id": 3, "data": 30}
+lsn  cmd    row
+───────────────────────────────────
+30   write  {"id": 1, "data": 10}
+30   write  {"id": 2, "data": 20}
+30   write  {"id": 3, "data": 30}
 # test: checkpoint and restart
 checkpoint;
 disconnect S0;
@@ -919,11 +919,11 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-30   0       write  {"id": 1, "data": 10}
-30   1       write  {"id": 2, "data": 20}
-30   2       write  {"id": 3, "data": 30}
+lsn  cmd    row
+───────────────────────────────────
+30   write  {"id": 1, "data": 10}
+30   write  {"id": 2, "data": 20}
+30   write  {"id": 3, "data": 30}
 select * from test order by id;
 
 id  data
@@ -937,40 +937,40 @@ drop table test;
 create table test (id int primary key, data int);
 create subscription test_sub on test;
 insert into test values (1, 10), (2, 20), (3, 30);
-acknowledge test_sub to 34, 0;
+acknowledge test_sub to 34;
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-35   0       write  {"id": 1, "data": 10}
-35   1       write  {"id": 2, "data": 20}
-35   2       write  {"id": 3, "data": 30}
+lsn  cmd    row
+───────────────────────────────────
+35   write  {"id": 1, "data": 10}
+35   write  {"id": 2, "data": 20}
+35   write  {"id": 3, "data": 30}
 # test: checkpoint and restart
 checkpoint;
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-35   0       write  {"id": 1, "data": 10}
-35   1       write  {"id": 2, "data": 20}
-35   2       write  {"id": 3, "data": 30}
+lsn  cmd    row
+───────────────────────────────────
+35   write  {"id": 1, "data": 10}
+35   write  {"id": 2, "data": 20}
+35   write  {"id": 3, "data": 30}
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
-lsn  lsn_op
-─────────────
-12   0
-34   0
+lsn
+───
+12
+34
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-35   0       write  {"id": 1, "data": 10}
-35   1       write  {"id": 2, "data": 20}
-35   2       write  {"id": 3, "data": 30}
+lsn  cmd    row
+───────────────────────────────────
+35   write  {"id": 1, "data": 10}
+35   write  {"id": 2, "data": 20}
+35   write  {"id": 3, "data": 30}
 select * from test order by id;
 
 id  data
@@ -1011,16 +1011,16 @@ create subscription test_sub on test;
 insert into test values (1, 10);
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-42   0       write  {"id": 1, "data": 10}
+lsn  cmd    row
+───────────────────────────────────
+42   write  {"id": 1, "data": 10}
 alter table test rename column data to data_new;
 error: subscription 'amelie.test_sub' depends on table 'test'
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-42   0       write  {"id": 1, "data": 10}
+lsn  cmd    row
+───────────────────────────────────
+42   write  {"id": 1, "data": 10}
 checkpoint;
 disconnect S0;
 close E0;
@@ -1028,9 +1028,9 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-42   0       write  {"id": 1, "data": 10}
+lsn  cmd    row
+───────────────────────────────────
+42   write  {"id": 1, "data": 10}
 select * from test order by id;
 
 id  data
@@ -1045,10 +1045,10 @@ insert into test values (1, 0);
 insert into test values (2, 0);
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-──────────────────────────────────────────
-46   0       write  {"id": 1, "data": 0}
-47   0       write  {"id": 2, "data": 0}
+lsn  cmd    row
+──────────────────────────────────
+46   write  {"id": 1, "data": 0}
+47   write  {"id": 2, "data": 0}
 disconnect S0;
 close E0;
 open E0;
@@ -1061,10 +1061,10 @@ id  data
 2   0
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-──────────────────────────────────────────
-46   0       write  {"id": 1, "data": 0}
-47   0       write  {"id": 2, "data": 0}
+lsn  cmd    row
+──────────────────────────────────
+46   write  {"id": 1, "data": 0}
+47   write  {"id": 2, "data": 0}
 drop table test cascade;
 # test: subscription (clone)
 create table main (id int primary key, data int) partitions 1;
@@ -1078,14 +1078,14 @@ insert into b values (2, 20);
 end;
 select * from sub_a;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-54   0       write  {"id": 1, "data": 10}
+lsn  cmd    row
+───────────────────────────────────
+54   write  {"id": 1, "data": 10}
 select * from sub_b;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-54   1       write  {"id": 2, "data": 20}
+lsn  cmd    row
+───────────────────────────────────
+54   write  {"id": 2, "data": 20}
 # test: restart/recover (wal)
 disconnect S0;
 close E0;
@@ -1093,14 +1093,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from sub_a;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-54   0       write  {"id": 1, "data": 10}
+lsn  cmd    row
+───────────────────────────────────
+54   write  {"id": 1, "data": 10}
 select * from sub_b;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-54   1       write  {"id": 2, "data": 20}
+lsn  cmd    row
+───────────────────────────────────
+54   write  {"id": 2, "data": 20}
 select * from a order by id;
 
 id  data
@@ -1119,14 +1119,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from sub_a;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-54   0       write  {"id": 1, "data": 10}
+lsn  cmd    row
+───────────────────────────────────
+54   write  {"id": 1, "data": 10}
 select * from sub_b;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────────────────
-54   1       write  {"id": 2, "data": 20}
+lsn  cmd    row
+───────────────────────────────────
+54   write  {"id": 2, "data": 20}
 select * from a order by id;
 
 id  data

@@ -512,22 +512,20 @@ explain
 ───────
 
 main
-  0   set                 0      4      0
+  0   set                 0      3      0
   1   subscription        1      -      -     # amelie.t_sub
-  2   store_open          2      1      13
+  2   store_open          2      1      11
   3   store_read          3      2      0
   4   push                3      0      0
   5   store_read          3      2      1
   6   push                3      0      0
   7   store_read          3      2      2
   8   push                3      0      0
-  9   store_read          3      2      3
- 10   push                3      0      0
- 11   set_add             0      0      0
- 12   store_next          2      3      0
- 13   free                2      0      0
- 14   free                1      0      0
- 15   ret                 0      0      -
+  9   set_add             0      0      0
+ 10   store_next          2      3      0
+ 11   free                2      0      0
+ 12   free                1      0      0
+ 13   ret                 0      0      -
 
 access
   •   amelie.t_sub shared [select]

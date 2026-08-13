@@ -32,11 +32,11 @@ subscriptions
   "name": "test_sub",
   "description": "test test"
 }
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
-lsn  lsn_op
-─────────────
-3    0
+lsn
+───
+3
 # test: create subscription (table, if exists)
 create subscription test_sub on test;
 error: relation 'test_sub': already exists
@@ -56,8 +56,8 @@ cdc
 # test: select from subscription (empty)
 select * from test_sub;
 
-lsn  lsn_op  cmd  row
-───────────────────────
+lsn  cmd  row
+───────────────
 # test: cdc (insert)
 insert into test values (1, 0);
 insert into test values (2, 0);
@@ -77,24 +77,24 @@ cdc
 # test: select from subscription
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-──────────────────────────────────────────
-4    0       write  {"id": 1, "data": 0}
-5    0       write  {"id": 2, "data": 0}
-6    0       write  {"id": 3, "data": 0}
+lsn  cmd    row
+──────────────────────────────────
+4    write  {"id": 1, "data": 0}
+5    write  {"id": 2, "data": 0}
+6    write  {"id": 3, "data": 0}
 # test: cdc (batch insert)
 insert into test values (4, 0), (5, 0), (6, 0);
 # test: select from subscription
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-──────────────────────────────────────────
-4    0       write  {"id": 1, "data": 0}
-5    0       write  {"id": 2, "data": 0}
-6    0       write  {"id": 3, "data": 0}
-7    0       write  {"id": 4, "data": 0}
-7    1       write  {"id": 5, "data": 0}
-7    2       write  {"id": 6, "data": 0}
+lsn  cmd    row
+──────────────────────────────────
+4    write  {"id": 1, "data": 0}
+5    write  {"id": 2, "data": 0}
+6    write  {"id": 3, "data": 0}
+7    write  {"id": 4, "data": 0}
+7    write  {"id": 5, "data": 0}
+7    write  {"id": 6, "data": 0}
 select count(*) from test_sub;
 
 count
@@ -113,74 +113,74 @@ delete from test where id = 1;
 # test: select from subscription
 select * from test_sub;
 
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-4    0       write   {"id": 1, "data": 0}
-5    0       write   {"id": 2, "data": 0}
-6    0       write   {"id": 3, "data": 0}
-7    0       write   {"id": 4, "data": 0}
-7    1       write   {"id": 5, "data": 0}
-7    2       write   {"id": 6, "data": 0}
-8    0       delete  {"id": 1, "data": 0}
+lsn  cmd     row
+───────────────────────────────────
+4    write   {"id": 1, "data": 0}
+5    write   {"id": 2, "data": 0}
+6    write   {"id": 3, "data": 0}
+7    write   {"id": 4, "data": 0}
+7    write   {"id": 5, "data": 0}
+7    write   {"id": 6, "data": 0}
+8    delete  {"id": 1, "data": 0}
 # test: cdc (batch delete)
 delete from test where id <= 3;
 # test: select from subscription
 select * from test_sub;
 
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-4    0       write   {"id": 1, "data": 0}
-5    0       write   {"id": 2, "data": 0}
-6    0       write   {"id": 3, "data": 0}
-7    0       write   {"id": 4, "data": 0}
-7    1       write   {"id": 5, "data": 0}
-7    2       write   {"id": 6, "data": 0}
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
+lsn  cmd     row
+───────────────────────────────────
+4    write   {"id": 1, "data": 0}
+5    write   {"id": 2, "data": 0}
+6    write   {"id": 3, "data": 0}
+7    write   {"id": 4, "data": 0}
+7    write   {"id": 5, "data": 0}
+7    write   {"id": 6, "data": 0}
+8    delete  {"id": 1, "data": 0}
+9    delete  {"id": 2, "data": 0}
+9    delete  {"id": 3, "data": 0}
 # test: cdc (update)
 update test set data = 1 where id = 4;
 # test: select from subscription
 select * from test_sub;
 
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-4    0       write   {"id": 1, "data": 0}
-5    0       write   {"id": 2, "data": 0}
-6    0       write   {"id": 3, "data": 0}
-7    0       write   {"id": 4, "data": 0}
-7    1       write   {"id": 5, "data": 0}
-7    2       write   {"id": 6, "data": 0}
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
-10   0       write   {"id": 4, "data": 1}
+lsn  cmd     row
+───────────────────────────────────
+4    write   {"id": 1, "data": 0}
+5    write   {"id": 2, "data": 0}
+6    write   {"id": 3, "data": 0}
+7    write   {"id": 4, "data": 0}
+7    write   {"id": 5, "data": 0}
+7    write   {"id": 6, "data": 0}
+8    delete  {"id": 1, "data": 0}
+9    delete  {"id": 2, "data": 0}
+9    delete  {"id": 3, "data": 0}
+10   write   {"id": 4, "data": 1}
 # test: cdc (batch update)
 update test set data = 2;
 # test: select from subscription
 select * from test_sub;
 
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-4    0       write   {"id": 1, "data": 0}
-5    0       write   {"id": 2, "data": 0}
-6    0       write   {"id": 3, "data": 0}
-7    0       write   {"id": 4, "data": 0}
-7    1       write   {"id": 5, "data": 0}
-7    2       write   {"id": 6, "data": 0}
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
-10   0       write   {"id": 4, "data": 1}
-11   0       write   {"id": 4, "data": 2}
-11   1       write   {"id": 5, "data": 2}
-11   2       write   {"id": 6, "data": 2}
+lsn  cmd     row
+───────────────────────────────────
+4    write   {"id": 1, "data": 0}
+5    write   {"id": 2, "data": 0}
+6    write   {"id": 3, "data": 0}
+7    write   {"id": 4, "data": 0}
+7    write   {"id": 5, "data": 0}
+7    write   {"id": 6, "data": 0}
+8    delete  {"id": 1, "data": 0}
+9    delete  {"id": 2, "data": 0}
+9    delete  {"id": 3, "data": 0}
+10   write   {"id": 4, "data": 1}
+11   write   {"id": 4, "data": 2}
+11   write   {"id": 5, "data": 2}
+11   write   {"id": 6, "data": 2}
 # test: acknowledge
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
-lsn  lsn_op
-─────────────
-3    0
+lsn
+───
+3
 acknowledge;
 error: acknowledge❰;❱ ⟵ name expected
 acknowledge 123;
@@ -190,188 +190,77 @@ error: acknowledge test_sub❰;❱ ⟵ TO expected
 acknowledge test_sub to;
 error: acknowledge test_sub to❰;❱ ⟵ int expected
 acknowledge test_sub to 3;
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
-lsn  lsn_op
-─────────────
-3    0
+lsn
+───
+3
 select * from test_sub;
 
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-4    0       write   {"id": 1, "data": 0}
-5    0       write   {"id": 2, "data": 0}
-6    0       write   {"id": 3, "data": 0}
-7    0       write   {"id": 4, "data": 0}
-7    1       write   {"id": 5, "data": 0}
-7    2       write   {"id": 6, "data": 0}
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
-10   0       write   {"id": 4, "data": 1}
-11   0       write   {"id": 4, "data": 2}
-11   1       write   {"id": 5, "data": 2}
-11   2       write   {"id": 6, "data": 2}
-acknowledge test_sub to 3, 10;
-select lsn, lsn_op from show subscriptions verbose;
-
-lsn  lsn_op
-─────────────
-3    10
-select * from test_sub;
-
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-4    0       write   {"id": 1, "data": 0}
-5    0       write   {"id": 2, "data": 0}
-6    0       write   {"id": 3, "data": 0}
-7    0       write   {"id": 4, "data": 0}
-7    1       write   {"id": 5, "data": 0}
-7    2       write   {"id": 6, "data": 0}
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
-10   0       write   {"id": 4, "data": 1}
-11   0       write   {"id": 4, "data": 2}
-11   1       write   {"id": 5, "data": 2}
-11   2       write   {"id": 6, "data": 2}
+lsn  cmd     row
+───────────────────────────────────
+4    write   {"id": 1, "data": 0}
+5    write   {"id": 2, "data": 0}
+6    write   {"id": 3, "data": 0}
+7    write   {"id": 4, "data": 0}
+7    write   {"id": 5, "data": 0}
+7    write   {"id": 6, "data": 0}
+8    delete  {"id": 1, "data": 0}
+9    delete  {"id": 2, "data": 0}
+9    delete  {"id": 3, "data": 0}
+10   write   {"id": 4, "data": 1}
+11   write   {"id": 4, "data": 2}
+11   write   {"id": 5, "data": 2}
+11   write   {"id": 6, "data": 2}
 acknowledge test_sub to 4;
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
-lsn  lsn_op
-─────────────
-4    0
+lsn
+───
+4
 select * from test_sub;
 
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-5    0       write   {"id": 2, "data": 0}
-6    0       write   {"id": 3, "data": 0}
-7    0       write   {"id": 4, "data": 0}
-7    1       write   {"id": 5, "data": 0}
-7    2       write   {"id": 6, "data": 0}
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
-10   0       write   {"id": 4, "data": 1}
-11   0       write   {"id": 4, "data": 2}
-11   1       write   {"id": 5, "data": 2}
-11   2       write   {"id": 6, "data": 2}
-acknowledge test_sub to 7, 0;
-select lsn, lsn_op from show subscriptions verbose;
+lsn  cmd     row
+───────────────────────────────────
+5    write   {"id": 2, "data": 0}
+6    write   {"id": 3, "data": 0}
+7    write   {"id": 4, "data": 0}
+7    write   {"id": 5, "data": 0}
+7    write   {"id": 6, "data": 0}
+8    delete  {"id": 1, "data": 0}
+9    delete  {"id": 2, "data": 0}
+9    delete  {"id": 3, "data": 0}
+10   write   {"id": 4, "data": 1}
+11   write   {"id": 4, "data": 2}
+11   write   {"id": 5, "data": 2}
+11   write   {"id": 6, "data": 2}
+acknowledge test_sub to 7;
+acknowledge test_sub to 11;
+select lsn from show subscriptions verbose;
 
-lsn  lsn_op
-─────────────
-7    0
+lsn
+───
+11
 select * from test_sub;
 
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-7    1       write   {"id": 5, "data": 0}
-7    2       write   {"id": 6, "data": 0}
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
-10   0       write   {"id": 4, "data": 1}
-11   0       write   {"id": 4, "data": 2}
-11   1       write   {"id": 5, "data": 2}
-11   2       write   {"id": 6, "data": 2}
-acknowledge test_sub to 7, 1;
-select lsn, lsn_op from show subscriptions verbose;
-
-lsn  lsn_op
-─────────────
-7    1
-select * from test_sub;
-
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-7    2       write   {"id": 6, "data": 0}
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
-10   0       write   {"id": 4, "data": 1}
-11   0       write   {"id": 4, "data": 2}
-11   1       write   {"id": 5, "data": 2}
-11   2       write   {"id": 6, "data": 2}
-acknowledge test_sub to 7, 2;
-select lsn, lsn_op from show subscriptions verbose;
-
-lsn  lsn_op
-─────────────
-7    2
-select * from test_sub;
-
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
-10   0       write   {"id": 4, "data": 1}
-11   0       write   {"id": 4, "data": 2}
-11   1       write   {"id": 5, "data": 2}
-11   2       write   {"id": 6, "data": 2}
-acknowledge test_sub to 7, 3;
-select lsn, lsn_op from show subscriptions verbose;
-
-lsn  lsn_op
-─────────────
-7    3
-select * from test_sub;
-
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
-10   0       write   {"id": 4, "data": 1}
-11   0       write   {"id": 4, "data": 2}
-11   1       write   {"id": 5, "data": 2}
-11   2       write   {"id": 6, "data": 2}
-acknowledge test_sub to 7, 4;
-select lsn, lsn_op from show subscriptions verbose;
-
-lsn  lsn_op
-─────────────
-7    4
-select * from test_sub;
-
-lsn  lsn_op  cmd     row
-───────────────────────────────────────────
-8    0       delete  {"id": 1, "data": 0}
-9    0       delete  {"id": 2, "data": 0}
-9    1       delete  {"id": 3, "data": 0}
-10   0       write   {"id": 4, "data": 1}
-11   0       write   {"id": 4, "data": 2}
-11   1       write   {"id": 5, "data": 2}
-11   2       write   {"id": 6, "data": 2}
-acknowledge test_sub to 11, 1;
-select lsn, lsn_op from show subscriptions verbose;
-
-lsn  lsn_op
-─────────────
-11   1
-select * from test_sub;
-
-lsn  lsn_op  cmd    row
-──────────────────────────────────────────
-11   2       write  {"id": 6, "data": 2}
+lsn  cmd  row
+───────────────
 # test: acknowledge (same value)
-acknowledge test_sub to 11, 1;
+acknowledge test_sub to 11;
 # test: acknowledge (downgrade)
-acknowledge test_sub to 7, 4;
+acknowledge test_sub to 7;
 error: subscription 'test_sub': ack position is out of range
 # test: acknowledge (abort)
 begin
-  acknowledge test_sub to 11, 2;
+  acknowledge test_sub to 11;
   select error("abort");
 end;
 error: abort
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
-lsn  lsn_op
-─────────────
-11   2
+lsn
+───
+11
 # test: drop table (cascade)
 drop table test;
 error: table 'test': depends on subscription 'amelie.test_sub'
@@ -422,11 +311,11 @@ subscriptions
   "name": "test_sub",
   "description": ""
 }
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
-lsn  lsn_op
-─────────────
-22   0
+lsn
+───
+17
 # test: cdc (publish)
 publish into test;
 publish into test 123;
@@ -434,37 +323,27 @@ publish into test 1,2,3;
 # test: select from subscription
 select * from test_sub;
 
-lsn  lsn_op  cmd      row
-────────────────────────────
-23   0       publish  null
-24   0       publish  123
-25   0       publish  1
-25   1       publish  2
-25   2       publish  3
+lsn  cmd      row
+────────────────────
+18   publish  null
+19   publish  123
+20   publish  1
+20   publish  2
+20   publish  3
 # test: acknowledge
-acknowledge test_sub to 25;
-select lsn, lsn_op from show subscriptions verbose;
+acknowledge test_sub to 19;
+select lsn from show subscriptions verbose;
 
-lsn  lsn_op
-─────────────
-25   0
+lsn
+───
+19
 select * from test_sub;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-25   1       publish  2
-25   2       publish  3
-acknowledge test_sub to 25, 1;
-select lsn, lsn_op from show subscriptions verbose;
-
-lsn  lsn_op
-─────────────
-25   1
-select * from test_sub;
-
-lsn  lsn_op  cmd      row
-───────────────────────────
-25   2       publish  3
+lsn  cmd      row
+───────────────────
+20   publish  1
+20   publish  2
+20   publish  3
 # test: drop topic
 drop topic test;
 error: topic 'test': depends on subscription 'amelie.test_sub'
@@ -488,26 +367,26 @@ create table test (id int primary key);
 create subscription test_sub on test;
 create clone test_clone of test;
 create subscription test_clone_sub on test_clone;
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
-lsn  lsn_op
-─────────────
-30   0
-32   0
+lsn
+───
+24
+26
 insert into test values (123);
 insert into test_clone values (1), (2), (3);
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-─────────────────────────────────
-33   0       write  {"id": 123}
+lsn  cmd    row
+─────────────────────────
+27   write  {"id": 123}
 select * from test_clone_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────
-34   0       write  {"id": 1}
-34   1       write  {"id": 2}
-34   2       write  {"id": 3}
+lsn  cmd    row
+───────────────────────
+28   write  {"id": 1}
+28   write  {"id": 2}
+28   write  {"id": 3}
 drop subscription test_sub;
 drop subscription test_clone_sub;
 drop table test cascade;
@@ -518,11 +397,11 @@ create subscription test_clone_sub on test_clone;
 insert into test_clone values (1), (2), (3);
 select * from test_clone_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────
-41   0       write  {"id": 1}
-41   1       write  {"id": 2}
-41   2       write  {"id": 3}
+lsn  cmd    row
+───────────────────────
+35   write  {"id": 1}
+35   write  {"id": 2}
+35   write  {"id": 3}
 select * from test_clone;
 
 id
@@ -540,17 +419,17 @@ create subscription clone_sub on test_clone;
 insert into test_clone values (1);
 select * from clone_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────
-48   0       write  {"id": 1}
+lsn  cmd    row
+───────────────────────
+42   write  {"id": 1}
 drop subscription base_sub;
 insert into test_clone values (2);
 select * from clone_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────
-48   0       write  {"id": 1}
-50   0       write  {"id": 2}
+lsn  cmd    row
+───────────────────────
+42   write  {"id": 1}
+44   write  {"id": 2}
 select * from test_clone order by id;
 
 id
@@ -615,13 +494,13 @@ create subscription b_sub on b;
 insert into b values (42, 900);
 select * from a_sub;
 
-lsn  lsn_op  cmd  row
-───────────────────────
+lsn  cmd  row
+───────────────
 select * from b_sub;
 
-lsn  lsn_op  cmd    row
-─────────────────────────────────────────────
-66   0       write  {"id": 42, "data": 900}
+lsn  cmd    row
+─────────────────────────────────────
+60   write  {"id": 42, "data": 900}
 drop subscription a_sub;
 drop subscription b_sub;
 drop table a;
@@ -645,35 +524,17 @@ begin
   insert into test values (7, s);
   insert into test values (8, s);
 end;
-select lsn, lsn_op from test_sub order by lsn_op;
+select lsn, count(*) from test_sub group by 1;
 
-lsn  lsn_op
-─────────────
-73   0
-73   1
-73   2
-73   3
-73   4
-73   5
-73   6
-73   7
-acknowledge test_sub to 73, 0;
-select lsn, lsn_op from test_sub order by lsn_op;
-
-lsn  lsn_op
-─────────────
-73   1
-73   2
-73   3
-73   4
-73   5
-73   6
-73   7
+lsn  count
+────────────
+67   8
+acknowledge test_sub to 67;
 select count(*) from test_sub;
 
 count
 ─────
-7
+0
 select count(*) from test;
 
 count
@@ -708,22 +569,22 @@ select lsn from show state;
 
 lsn
 ───
-86
-select name, lsn, lsn_op  from show subs verbose;
+80
+select name, lsn  from show subs verbose;
 
-name    lsn  lsn_op
-─────────────────────
-"sub1"  84   0
-"sub2"  86   0
+name    lsn
+─────────────
+"sub1"  78
+"sub2"  80
 select * from sub1;
 
-lsn  lsn_op  cmd    row
-──────────────────────────────────────────
-85   0       write  {"id": 1, "data": 0}
+lsn  cmd    row
+──────────────────────────────────
+79   write  {"id": 1, "data": 0}
 select * from sub2;
 
-lsn  lsn_op  cmd  row
-───────────────────────
+lsn  cmd  row
+───────────────
 drop table test cascade;
 # test: create subscription (start after multi-stmt)
 create table test (id int primary key, data int);
@@ -734,82 +595,25 @@ select lsn from show state;
 
 lsn
 ───
-91
-select name, lsn, lsn_op  from show subs verbose;
+85
+select name, lsn from show subs verbose;
 
-name    lsn  lsn_op
-─────────────────────
-"sub1"  89   0
-"sub2"  91   0
+name    lsn
+─────────────
+"sub1"  83
+"sub2"  85
 select * from sub1;
 
-lsn  lsn_op  cmd    row
-──────────────────────────────────────────
-90   0       write  {"id": 1, "data": 0}
-90   1       write  {"id": 2, "data": 0}
-90   2       write  {"id": 3, "data": 0}
+lsn  cmd    row
+──────────────────────────────────
+84   write  {"id": 1, "data": 0}
+84   write  {"id": 2, "data": 0}
+84   write  {"id": 3, "data": 0}
 select * from sub2;
 
-lsn  lsn_op  cmd  row
-───────────────────────
+lsn  cmd  row
+───────────────
 drop table test cascade;
-# test: acknowledge (lsn_op out-of-bounds check)
-create table test (id int primary key, data int);
-create subscription test_sub on test;
-insert into test values (1, 0), (2, 0), (3, 0);
-select * from test_sub;
-
-lsn  lsn_op  cmd    row
-──────────────────────────────────────────
-95   0       write  {"id": 1, "data": 0}
-95   1       write  {"id": 2, "data": 0}
-95   2       write  {"id": 3, "data": 0}
-select lsn, lsn_op from test_sub;
-
-lsn  lsn_op
-─────────────
-95   0
-95   1
-95   2
-acknowledge test_sub to 95, 99;
-select lsn, lsn_op from show subscriptions verbose;
-
-lsn  lsn_op
-─────────────
-95   99
-select * from test_sub;
-
-lsn  lsn_op  cmd  row
-───────────────────────
-drop table test cascade;
-# test: acknowledge (lsn_op rewind)
-create topic t;
-create subscription s on t;
-publish into t 1,2,3;
-select * from s;
-
-lsn  lsn_op  cmd      row
-───────────────────────────
-100  0       publish  1
-100  1       publish  2
-100  2       publish  3
-acknowledge s to 100, 2;
-select * from s;
-
-lsn  lsn_op  cmd  row
-───────────────────────
-acknowledge s to 100, 0;
-error: subscription 's': ack position is out of range
-select lsn, lsn_op from show subscriptions verbose;
-
-lsn  lsn_op
-─────────────
-100  2
-select * from s;
-
-lsn  lsn_op  cmd  row
-───────────────────────
-drop topic t cascade;
 # test: create subscription (with dropped column)
 create table t (id int primary key, secret text, visible text);
 insert into t values (1, "top-secret", "old");
@@ -838,11 +642,11 @@ insert into test values (1, vector [5,6,7,8]);
 insert into test values (2, vector [9,10,11,12]);
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-─────────────────────────────────────────────────────
-111  0       write  {"id": 0, "v": [1, 2, 3, 4]}
-112  0       write  {"id": 1, "v": [5, 6, 7, 8]}
-113  0       write  {"id": 2, "v": [9, 10, 11, 12]}
+lsn  cmd    row
+─────────────────────────────────────────────
+95   write  {"id": 0, "v": [1, 2, 3, 4]}
+96   write  {"id": 1, "v": [5, 6, 7, 8]}
+97   write  {"id": 2, "v": [9, 10, 11, 12]}
 drop table test cascade;
 # test: create subscription (user superuser)
 create user test_user;
@@ -855,8 +659,8 @@ error: relation 'test_user': not exists
 create subscription test_user_sub on user test_user;
 select * from test_user_sub;
 
-lsn  lsn_op  cmd  row
-───────────────────────
+lsn  cmd  row
+───────────────
 connect E0 S1 test_user@127.0.0.1:3485;
 switch S1;
 create table test (id int primary key);

@@ -594,13 +594,13 @@ publish into test_top 1,2,3;
 publish into test_top;
 select * from top_sub;
 
-lsn  lsn_op  cmd      row
-────────────────────────────
-24   0       publish  123
-25   0       publish  1
-25   1       publish  2
-25   2       publish  3
-26   0       publish  null
+lsn  cmd      row
+────────────────────
+24   publish  123
+25   publish  1
+25   publish  2
+25   publish  3
+26   publish  null
 show subs;
 
 subs
@@ -656,13 +656,13 @@ subs
 }
 select * from top_sub;
 
-lsn  lsn_op  cmd      row
-────────────────────────────
-24   0       publish  123
-25   0       publish  1
-25   1       publish  2
-25   2       publish  3
-26   0       publish  null
+lsn  cmd      row
+────────────────────
+24   publish  123
+25   publish  1
+25   publish  2
+25   publish  3
+26   publish  null
 select * from test_;
 
 id
@@ -680,19 +680,19 @@ id
 3
 select * from test_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────
-33   0       write  {"id": 1}
+lsn  cmd    row
+───────────────────────
+33   write  {"id": 1}
 select * from test_clone_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────
-34   0       write  {"id": 2}
+lsn  cmd    row
+───────────────────────
+34   write  {"id": 2}
 select * from test_clone2_sub;
 
-lsn  lsn_op  cmd    row
-───────────────────────────────
-35   0       write  {"id": 3}
+lsn  cmd    row
+───────────────────────
+35   write  {"id": 3}
 # test: drop subscription
 drop subscription test_sub;
 drop subscription test_clone_sub;
@@ -736,17 +736,17 @@ begin
 end;
 select * from sa;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-46   0       publish  1
+lsn  cmd      row
+───────────────────
+46   publish  1
 select * from sb;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-46   1       publish  2
-46   2       publish  3
-46   3       publish  4
-46   4       publish  5
+lsn  cmd      row
+───────────────────
+46   publish  2
+46   publish  3
+46   publish  4
+46   publish  5
 # test: restart
 disconnect S0;
 close E0;
@@ -754,17 +754,17 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 select * from sa;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-46   0       publish  1
+lsn  cmd      row
+───────────────────
+46   publish  1
 select * from sb;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-46   1       publish  2
-46   2       publish  3
-46   3       publish  4
-46   4       publish  5
+lsn  cmd      row
+───────────────────
+46   publish  2
+46   publish  3
+46   publish  4
+46   publish  5
 drop subscription sa;
 drop subscription sb;
 drop topic a;

@@ -51,8 +51,7 @@ struct AstAck
 {
 	Ast      ast;
 	Str      name;
-	uint64_t to_lsn;
-	uint64_t to_op;
+	uint64_t lsn;
 	Sub*     sub;
 };
 

@@ -818,7 +818,7 @@ emit_acknowledge(Compiler* self, Stmt* stmt)
 {
 	compiler_switch_frontend(self);
 	auto ack = ast_ack_of(stmt->ast);
-	auto offset = acknowledge_op(&self->code_data->data, ack->to_lsn, ack->to_op);
+	auto offset = acknowledge_op(&self->code_data->data, ack->lsn);
 	op2(self, CACK, (intptr_t)ack->sub, offset);
 }
 

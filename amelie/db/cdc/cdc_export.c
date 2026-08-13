@@ -45,22 +45,20 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 		const char fmt[] =
 		 "{{"
 			"\"lsn\": {u64}, "
-			"\"lsn_op\": {u32}, "
 			"\"cmd\": \"{str}\", "
 			"\"user\": \"{str}\", "
 			"\"row\": ";
-		buf_format(buf, fmt, event->lsn, event->lsn_op, &cmd, rel_user);
+		buf_format(buf, fmt, event->lsn, &cmd, rel_user);
 	} else
 	{
 		const char fmt[] =
 		 "{{"
 			"\"lsn\": {u64}, "
-			"\"lsn_op\": {u32}, "
 			"\"cmd\": \"{str}\", "
 			"\"user\": \"{str}\", "
 			"\"name\": \"{str}\", "
 			"\"row\": ";
-		buf_format(buf, fmt, event->lsn, event->lsn_op, &cmd, rel_user, rel);
+		buf_format(buf, fmt, event->lsn, &cmd, rel_user, rel);
 	}
 	uint8_t* pos = event->data;
 	json_export(buf, runtime()->timezone, &pos);

@@ -10331,13 +10331,13 @@ state
 }
 select * from top_sub;
 
-lsn    lsn_op  cmd      row
-──────────────────────────────
-10021  0       publish  null
-10022  0       publish  123
-10023  0       publish  1
-10023  1       publish  2
-10023  2       publish  3
+lsn    cmd      row
+──────────────────────
+10021  publish  null
+10022  publish  123
+10023  publish  1
+10023  publish  2
+10023  publish  3
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
@@ -10377,13 +10377,13 @@ subs
 }
 select * from top_sub;
 
-lsn    lsn_op  cmd      row
-──────────────────────────────
-10021  0       publish  null
-10022  0       publish  123
-10023  0       publish  1
-10023  1       publish  2
-10023  2       publish  3
+lsn    cmd      row
+──────────────────────
+10021  publish  null
+10022  publish  123
+10023  publish  1
+10023  publish  2
+10023  publish  3
 # test: acknowledge
 switch S0;
 acknowledge top_sub to 10022;
@@ -10426,14 +10426,14 @@ subs
 }
 select * from top_sub;
 
-lsn    lsn_op  cmd      row
-─────────────────────────────
-10023  0       publish  1
-10023  1       publish  2
-10023  2       publish  3
+lsn    cmd      row
+─────────────────────
+10023  publish  1
+10023  publish  2
+10023  publish  3
 # test: acknowledge
 switch S0;
-acknowledge top_sub to 10023, 1;
+acknowledge top_sub to 10023;
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
@@ -10473,9 +10473,8 @@ subs
 }
 select * from top_sub;
 
-lsn    lsn_op  cmd      row
-─────────────────────────────
-10023  2       publish  3
+lsn  cmd  row
+───────────────
 # test: topic (multi-stmt)
 switch S0;
 create table abc (id int primary key);
@@ -10493,17 +10492,17 @@ begin
 end;
 select * from sa;
 
-lsn    lsn_op  cmd      row
-─────────────────────────────
-10031  0       publish  1
+lsn    cmd      row
+─────────────────────
+10031  publish  1
 select * from sb;
 
-lsn    lsn_op  cmd      row
-─────────────────────────────
-10031  1       publish  2
-10031  2       publish  3
-10031  3       publish  4
-10031  4       publish  5
+lsn    cmd      row
+─────────────────────
+10031  publish  2
+10031  publish  3
+10031  publish  4
+10031  publish  5
 select * from abc;
 
 id
@@ -10531,17 +10530,17 @@ repl
 switch S1;
 select * from sa;
 
-lsn    lsn_op  cmd      row
-─────────────────────────────
-10031  0       publish  1
+lsn    cmd      row
+─────────────────────
+10031  publish  1
 select * from sb;
 
-lsn    lsn_op  cmd      row
-─────────────────────────────
-10031  1       publish  2
-10031  2       publish  3
-10031  3       publish  4
-10031  4       publish  5
+lsn    cmd      row
+─────────────────────
+10031  publish  2
+10031  publish  3
+10031  publish  4
+10031  publish  5
 select * from abc;
 
 id

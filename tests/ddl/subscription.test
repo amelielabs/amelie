@@ -14,7 +14,7 @@ create table test (id int primary key, data int);
 create subscription test_sub on test description 'test test';
 show subs;
 show subscriptions;
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
 # test: create subscription (table, if exists)
 create subscription test_sub on test;
@@ -66,7 +66,7 @@ update test set data = 2;
 select * from test_sub;
 
 # test: acknowledge
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
 acknowledge;
 acknowledge 123;
@@ -74,53 +74,31 @@ acknowledge test_sub;
 acknowledge test_sub to;
 
 acknowledge test_sub to 3;
-select lsn, lsn_op from show subscriptions verbose;
-select * from test_sub;
-
-acknowledge test_sub to 3, 10;
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 select * from test_sub;
 
 acknowledge test_sub to 4;
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 select * from test_sub;
 
-acknowledge test_sub to 7, 0;
-select lsn, lsn_op from show subscriptions verbose;
-select * from test_sub;
+acknowledge test_sub to 7;
 
-acknowledge test_sub to 7, 1;
-select lsn, lsn_op from show subscriptions verbose;
-select * from test_sub;
-
-acknowledge test_sub to 7, 2;
-select lsn, lsn_op from show subscriptions verbose;
-select * from test_sub;
-
-acknowledge test_sub to 7, 3;
-select lsn, lsn_op from show subscriptions verbose;
-select * from test_sub;
-
-acknowledge test_sub to 7, 4;
-select lsn, lsn_op from show subscriptions verbose;
-select * from test_sub;
-
-acknowledge test_sub to 11, 1;
-select lsn, lsn_op from show subscriptions verbose;
+acknowledge test_sub to 11;
+select lsn from show subscriptions verbose;
 select * from test_sub;
 
 # test: acknowledge (same value)
-acknowledge test_sub to 11, 1;
+acknowledge test_sub to 11;
 
 # test: acknowledge (downgrade)
-acknowledge test_sub to 7, 4;
+acknowledge test_sub to 7;
 
 # test: acknowledge (abort)
 begin
-  acknowledge test_sub to 11, 2;
+  acknowledge test_sub to 11;
   select error("abort");
 end;
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
 # test: drop table (cascade)
 drop table test;
@@ -141,7 +119,7 @@ create topic test;
 create subscription test_sub on test;
 show subs;
 show subscriptions;
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
 # test: cdc (publish)
 publish into test;
@@ -152,12 +130,8 @@ publish into test 1,2,3;
 select * from test_sub;
 
 # test: acknowledge
-acknowledge test_sub to 25;
-select lsn, lsn_op from show subscriptions verbose;
-select * from test_sub;
-
-acknowledge test_sub to 25, 1;
-select lsn, lsn_op from show subscriptions verbose;
+acknowledge test_sub to 19;
+select lsn from show subscriptions verbose;
 select * from test_sub;
 
 # test: drop topic
@@ -175,7 +149,7 @@ create subscription test_sub on test;
 create clone test_clone of test;
 create subscription test_clone_sub on test_clone;
 
-select lsn, lsn_op from show subscriptions verbose;
+select lsn from show subscriptions verbose;
 
 insert into test values (123);
 insert into test_clone values (1), (2), (3);
@@ -280,9 +254,8 @@ begin
   insert into test values (8, s);
 end;
 
-select lsn, lsn_op from test_sub order by lsn_op;
-acknowledge test_sub to 73, 0;
-select lsn, lsn_op from test_sub order by lsn_op;
+select lsn, count(*) from test_sub group by 1;
+acknowledge test_sub to 67;
 select count(*) from test_sub;
 select count(*) from test;
 
@@ -311,7 +284,7 @@ create subscription sub1 on test;
 insert into test values (1, 0);
 create subscription sub2 on test;
 select lsn from show state;
-select name, lsn, lsn_op  from show subs verbose;
+select name, lsn  from show subs verbose;
 select * from sub1;
 select * from sub2;
 drop table test cascade;
@@ -322,34 +295,11 @@ create subscription sub1 on test;
 insert into test values (1, 0), (2, 0), (3, 0);
 create subscription sub2 on test;
 select lsn from show state;
-select name, lsn, lsn_op  from show subs verbose;
+select name, lsn from show subs verbose;
 
 select * from sub1;
 select * from sub2;
 drop table test cascade;
-
-# test: acknowledge (lsn_op out-of-bounds check)
-create table test (id int primary key, data int);
-create subscription test_sub on test;
-insert into test values (1, 0), (2, 0), (3, 0);
-select * from test_sub;
-select lsn, lsn_op from test_sub;
-acknowledge test_sub to 95, 99;
-select lsn, lsn_op from show subscriptions verbose;
-select * from test_sub;
-drop table test cascade;
-
-# test: acknowledge (lsn_op rewind)
-create topic t;
-create subscription s on t;
-publish into t 1,2,3;
-select * from s;
-acknowledge s to 100, 2;
-select * from s;
-acknowledge s to 100, 0;
-select lsn, lsn_op from show subscriptions verbose;
-select * from s;
-drop topic t cascade;
 
 # test: create subscription (with dropped column)
 create table t (id int primary key, secret text, visible text);

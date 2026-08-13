@@ -99,7 +99,7 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 	on->subs++;
 
 	// set pos and prepare slot
-	cdc_slot_set(&sub->slot, config->lsn, config->lsn_op);
+	cdc_slot_set(&sub->slot, config->lsn);
 
 	// attach slot
 	cdc_attach(self->cdc, &sub->slot);

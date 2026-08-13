@@ -17,9 +17,9 @@ access
 publish into x 123;
 select * from sub;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-4    0       publish  123
+lsn  cmd      row
+───────────────────
+4    publish  123
 explain publish into x [2 + 2];
 
 explain
@@ -40,29 +40,29 @@ access
 publish into x [2 + 2];
 select * from sub;
 
-lsn  lsn_op  cmd      row
-───────────────────────────
-4    0       publish  123
-5    0       publish  [4]
+lsn  cmd      row
+───────────────────
+4    publish  123
+5    publish  [4]
 # test: publish (func constify)
 publish into x [8::string];
 select * from sub;
 
-lsn  lsn_op  cmd      row
-─────────────────────────────
-4    0       publish  123
-5    0       publish  [4]
-6    0       publish  ["8"]
+lsn  cmd      row
+─────────────────────
+4    publish  123
+5    publish  [4]
+6    publish  ["8"]
 # test: publish (func)
 publish into x [8::string::int * 2];
 select * from sub;
 
-lsn  lsn_op  cmd      row
-─────────────────────────────
-4    0       publish  123
-5    0       publish  [4]
-6    0       publish  ["8"]
-7    0       publish  [16]
+lsn  cmd      row
+─────────────────────
+4    publish  123
+5    publish  [4]
+6    publish  ["8"]
+7    publish  [16]
 # test: publish (expr json)
 publish into x {
 	"id": 48,
@@ -71,30 +71,30 @@ publish into x {
 };
 select * from sub;
 
-lsn  lsn_op  cmd      row
-──────────────────────────────────────────────────────────────────────────────────────────────────
-4    0       publish  123
-5    0       publish  [4]
-6    0       publish  ["8"]
-7    0       publish  [16]
-8    0       publish  {"id": 48, "data": 16, "hash": "fe5dbbcea5ce7e2988b8c69bcfdfde8904aabc1f"}
+lsn  cmd      row
+──────────────────────────────────────────────────────────────────────────────────────────
+4    publish  123
+5    publish  [4]
+6    publish  ["8"]
+7    publish  [16]
+8    publish  {"id": 48, "data": 16, "hash": "fe5dbbcea5ce7e2988b8c69bcfdfde8904aabc1f"}
 publish into x 1,2,3;
 publish into x (1 * 2)::json, (2 * 2)::json, (3 * 2::string::int)::json;
 select * from sub;
 
-lsn  lsn_op  cmd      row
-──────────────────────────────────────────────────────────────────────────────────────────────────
-4    0       publish  123
-5    0       publish  [4]
-6    0       publish  ["8"]
-7    0       publish  [16]
-8    0       publish  {"id": 48, "data": 16, "hash": "fe5dbbcea5ce7e2988b8c69bcfdfde8904aabc1f"}
-9    0       publish  1
-9    1       publish  2
-9    2       publish  3
-10   0       publish  2
-10   1       publish  4
-10   2       publish  6
+lsn  cmd      row
+──────────────────────────────────────────────────────────────────────────────────────────
+4    publish  123
+5    publish  [4]
+6    publish  ["8"]
+7    publish  [16]
+8    publish  {"id": 48, "data": 16, "hash": "fe5dbbcea5ce7e2988b8c69bcfdfde8904aabc1f"}
+9    publish  1
+9    publish  2
+9    publish  3
+10   publish  2
+10   publish  4
+10   publish  6
 drop subscription sub;
 drop topic x;
 disconnect S0;

@@ -258,27 +258,14 @@ import_ack(Parser* self, Sub* sub, uint8_t* args)
 
 	// parse arguments
 
-	// [lsn, lsn_op]
+	// lsn
 	auto pos = args;
-	if (! data_is_array(pos))
-		goto error;
-	unpack_array(&pos);
-
 	int64_t lsn;
 	if (! data_is_int(pos))
 		goto error;
 	unpack_int(&pos, &lsn);
 
-	int64_t lsn_op;
-	if (! data_is_int(pos))
-		goto error;
-
-	unpack_int(&pos, &lsn_op);
-	if (! unpack_array_end(&pos))
-		goto error;
-
-	ack->to_lsn = lsn;
-	ack->to_op  = lsn_op;
+	ack->lsn = lsn;
 	return;
 
 error:

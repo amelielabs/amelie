@@ -191,7 +191,6 @@ cdc_gc(Cdc* self)
 hot void
 cdc_add(Cdc*     self,
         uint64_t lsn,
-        uint32_t lsn_op,
         int      cmd,
         Uuid*    id,
         uint8_t* data,
@@ -205,7 +204,6 @@ cdc_add(Cdc*     self,
 	auto page  = self->storage.current;
 	auto event = (CdcEvent*)page_at(page, page->position);
 	event->lsn       = lsn;
-	event->lsn_op    = lsn_op;
 	event->cmd       = cmd;
 	event->id        = *id;
 	event->data_size = data_size;
@@ -221,7 +219,6 @@ cdc_add(Cdc*     self,
 hot void
 cdc_write(Cdc*     self,
           uint64_t lsn,
-          uint32_t lsn_op,
           int      cmd,
           Uuid*    id,
           uint8_t* data,
@@ -229,7 +226,7 @@ cdc_write(Cdc*     self,
 {
 	spinlock_lock(&self->lock);
 
-	cdc_add(self, lsn, lsn_op, cmd, id, data, data_size);
+	cdc_add(self, lsn, cmd, id, data, data_size);
 
 	// wakeup subscribers
 	cdc_notify(self);
@@ -243,7 +240,6 @@ cdc_write_batch(Cdc* self, uint64_t lsn, List* batch)
 	spinlock_lock(&self->lock);
 
 	// add all records from the batch
-	uint32_t op = 0;
 	list_foreach(batch)
 	{
 		auto ref = list_at(CdcLog, link);
@@ -251,8 +247,7 @@ cdc_write_batch(Cdc* self, uint64_t lsn, List* batch)
 		auto end = (CdcLogRecord*)ref->data.position;
 		while (pos < end)
 		{
-			cdc_add(self, lsn, op, pos->cmd, pos->id, pos->data, pos->data_size);
-			op++;
+			cdc_add(self, lsn, pos->cmd, pos->id, pos->data, pos->data_size);
 			pos = (CdcLogRecord*)(pos->data + pos->data_size);
 		}
 	}

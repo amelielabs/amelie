@@ -55,7 +55,7 @@ parse_sub_create(Stmt* self)
 	sub_config_set_name(config, &name->string);
 	sub_config_set_rel_user(config, &user);
 	sub_config_set_rel(config, &target);
-	sub_config_set_pos(config, state_lsn() + 1, 0);
+	sub_config_set_pos(config, state_lsn() + 1);
 
 	// [DESCRIPTION]
 	auto description = stmt_if(self, KDESCRIPTION);
@@ -140,15 +140,7 @@ parse_acknowledge(Stmt* self)
 
 	// lsn
 	auto value = stmt_expect(self, KINT);
-	stmt->to_lsn = value->integer;
-	stmt->to_op  = 0;
-
-	// [, op]
-	if (stmt_if(self, ','))
-	{
-		value = stmt_expect(self, KINT);
-		stmt->to_op = value->integer;
-	}
+	stmt->lsn = value->integer;
 
 	// subscription
 	stmt->sub = catalog_find_sub(&share()->db->catalog, self->parser->user, &name->string, false);

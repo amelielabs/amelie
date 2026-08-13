@@ -37,13 +37,11 @@ ack_if_abort(Log* self, LogOp* op)
 	uint8_t* pos = log_data_of(self, op);
 
 	int64_t pos_lsn;
-	int64_t pos_op;
 	unpack_int(&pos, &pos_lsn);
-	unpack_int(&pos, &pos_op);
 
 	auto sub = sub_of(op->rel);
-	sub_config_set_pos(sub->config, pos_lsn, pos_op);
-	cdc_slot_set(&sub->slot, pos_lsn, pos_op);
+	sub_config_set_pos(sub->config, pos_lsn);
+	cdc_slot_set(&sub->slot, pos_lsn);
 }
 
 static LogIf ack_if =
@@ -58,21 +56,16 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 	// only owner or superuser
 	check_ownership_user(tr, &self->rel);
 
-	int64_t to_lsn;
-	int64_t to_op;
-	acknowledge_op_read(op, &to_lsn, &to_op);
+	int64_t lsn;
+	acknowledge_op_read(op, &lsn);
 
 	// do nothing, if value is the same
 	int64_t current_lsn = atomic_u64_of(&self->slot.lsn);
-	int32_t current_op  = atomic_u32_of(&self->slot.op);
-	if (to_lsn == current_lsn && to_op == current_op)
+	if (lsn == current_lsn)
 		return false;
 
 	// ensure value is valid
-	auto out_of_range =
-	(to_lsn  < current_lsn || to_lsn > (int64_t)state_lsn()) ||
-	(to_lsn == current_lsn && to_op < current_op);
-	if (unlikely(out_of_range))
+	if (lsn < current_lsn || lsn > (int64_t)state_lsn())
 		error("subscription '{str}': ack position is out of range",
 		      &self->config->name);
 
@@ -81,7 +74,6 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 
 	// save previous value
 	encode_int(&tr->log.data, current_lsn);
-	encode_int(&tr->log.data, current_op);
 
 	// update slot
 	//
@@ -89,7 +81,7 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 	// avoid any concurrent wal gc/checkpoint till this transaction
 	// completes
 	//
-	sub_config_set_pos(self->config, to_lsn, to_op);
-	cdc_slot_set(&self->slot, to_lsn, to_op);
+	sub_config_set_pos(self->config, lsn);
+	cdc_slot_set(&self->slot, lsn);
 	return true;
 }

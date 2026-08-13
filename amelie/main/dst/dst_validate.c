@@ -334,7 +334,7 @@ dst_validate_sub(DstUser* self, DstRel* rel)
 
 	// validate
 	if (count != rel->cdc_count)
-		error("sub_{u64}_{u64}: count mismatch expected {i64} got {i64}",
+		error("sub_{u64}_{u64}: count mismatch expected {d} got {i64}",
 		      rel->parent->id, rel->id, rel->cdc_count, count);
 
 	if (sum != rel->cdc_sum)
@@ -386,7 +386,7 @@ dst_validate_user(DstUser* self)
 			if (ack)
 			{
 				dst_execute(self->dst, self->client,
-				            "ACKNOWLEDGE sub_{u64}_{u64} TO {u64}, 10",
+				            "ACKNOWLEDGE sub_{u64}_{u64} TO {u64}",
 				             rel->parent->id, rel->id, ack);
 				rel->cdc_sum   = 0;
 				rel->cdc_count = 0;

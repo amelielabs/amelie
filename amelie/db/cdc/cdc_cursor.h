@@ -18,7 +18,6 @@ struct CdcCursor
 	Uuid      id;
 	uint32_t  offset;
 	uint64_t  lsn;
-	uint32_t  lsn_op;
 	CdcEvent* current;
 	Page*     page;
 	Cdc*      cdc;
@@ -29,7 +28,6 @@ cdc_cursor_init(CdcCursor* self)
 {
 	self->offset  = 0;
 	self->lsn     = 0;
-	self->lsn_op  = 0;
 	self->current = NULL;
 	self->page    = NULL;
 	self->cdc     = NULL;
@@ -49,8 +47,7 @@ cdc_cursor_reposition(CdcCursor* self)
 	if (storage_empty(storage))
 		return false;
 
-	auto lsn    = self->lsn;
-	auto lsn_op = self->lsn_op;
+	auto lsn = self->lsn;
 
 	// rewind to match the position
 	self->page   = storage_at(storage, 0);
@@ -73,23 +70,11 @@ cdc_cursor_reposition(CdcCursor* self)
 		auto at = (CdcEvent*)page_at(self->page, self->offset);
 
 		// set last seen lsn (not related to the start position)
-		self->lsn    = at->lsn;
-		self->lsn_op = at->lsn_op;
-		if (uuid_is(&at->id, &self->id))
+		self->lsn = at->lsn;
+		if (at->lsn > lsn && uuid_is(&at->id, &self->id))
 		{
-			if (at->lsn > lsn)
-			{
-				self->current = at;
-				break;
-			}
-			if (at->lsn == lsn)
-			{
-				if (at->lsn_op >= lsn_op)
-				{
-					self->current = at;
-					break;
-				}
-			}
+			self->current = at;
+			break;
 		}
 		self->offset += sizeof(CdcEvent) + at->data_size;
 	}
@@ -97,14 +82,11 @@ cdc_cursor_reposition(CdcCursor* self)
 }
 
 static inline void
-cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id,
-                uint64_t   lsn,
-                uint32_t   lsn_op)
+cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id, uint64_t lsn)
 {
-	self->id     = *id;
-	self->cdc    = cdc;
-	self->lsn    = lsn;
-	self->lsn_op = lsn_op;
+	self->id  = *id;
+	self->cdc = cdc;
+	self->lsn = lsn;
 
 	spinlock_lock(&cdc->lock);
 
@@ -165,8 +147,7 @@ cdc_cursor_next(CdcCursor* self)
 		}
 
 		at = (CdcEvent*)page_at(self->page, self->offset);
-		self->lsn     = at->lsn;
-		self->lsn_op  = at->lsn_op;
+		self->lsn = at->lsn;
 		if (uuid_is(&at->id, &self->id))
 		{
 			self->current = at;

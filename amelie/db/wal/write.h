@@ -107,5 +107,5 @@ write_cdc(Write* self, Cdc* cdc, Uuid* uuid, int cmd)
 		data      = self->record_data.start;
 		data_size = buf_size(&self->record_data);
 	}
-	cdc_write(cdc, lsn, 0, cmd, uuid, data, data_size);
+	cdc_write(cdc, lsn, cmd, uuid, data, data_size);
 }

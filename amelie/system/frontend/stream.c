@@ -70,18 +70,16 @@ stream_subscribe_to(Stream* self, Str* user, Str* name)
 	}
 
 	// use subscription relation
-	uint64_t lsn    = state_lsn() + 1;
-	uint32_t lsn_op = 0;
+	uint64_t lsn = state_lsn();
 	Uuid*    id;
 	if (rel->type == REL_SUBSCRIPTION)
 	{
 		auto sub = sub_of(rel);
-		lsn    = sub->config->lsn;
-		lsn_op = sub->config->lsn_op + 1;
-		id     = sub->rel_on->id;
-		rel    = sub->rel_on;
+		lsn = sub->config->lsn;
+		id  = sub->rel_on->id;
+		rel = sub->rel_on;
 	} else {
-		id     = rel->id;
+		id  = rel->id;
 	}
 
 	// ensure user can create subscription for that relation
@@ -99,8 +97,8 @@ stream_subscribe_to(Stream* self, Str* user, Str* name)
 	feeds_add(&self->feeds, feed);
 
 	// open cursor
-	cdc_slot_set(&feed->slot, lsn, lsn_op);
-	cdc_cursor_open(&feed->cursor, share()->cdc, id, lsn, lsn_op);
+	cdc_slot_set(&feed->slot, lsn);
+	cdc_cursor_open(&feed->cursor, share()->cdc, id, lsn);
 }
 
 hot static inline bool
