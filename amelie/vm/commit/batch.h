@@ -201,16 +201,19 @@ batch_publish(Batch* self, Cdc* cdc)
 		if (gtr->abort)
 			continue;
 
-		// publish cdc for the user request
-		if (gtr->tr.user->subs)
-			write_cdc(&gtr->write, cdc, gtr->tr.user->id, LOG_REQUEST);
-
-		// publish cdc events
-		if (list_empty(&gtr->write_cdc))
+		auto user = gtr->tr.user;
+		if (!user->subs && list_empty(&gtr->write_cdc))
 			continue;
 
-		auto lsn = write_lsn(&gtr->write);
-		cdc_write_batch(cdc, lsn, &gtr->write_cdc);
+		// do atomic add of all cdc events from this
+		// transaction (under same lsn)
+		//
+		// this includes user request and all cdc logs
+		//
+		CdcBatch batch;
+		write_cdc_prepare(&gtr->write, &batch, user, &gtr->write_cdc);
+
+		cdc_write(cdc, &batch);
 	}
 }
 

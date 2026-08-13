@@ -13,6 +13,7 @@
 
 // cdc log
 #include "cdc/cdc_log.h"
+#include "cdc/cdc_batch.h"
 
 // cdc
 #include "cdc/cdc_sub.h"

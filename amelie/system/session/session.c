@@ -269,7 +269,11 @@ session_run_utility(Session* self)
 
 		// capture user request
 		if (tr.user->subs)
-			write_cdc(&write, share()->cdc, tr.user->id, LOG_REQUEST);
+		{
+			CdcBatch batch;
+			write_cdc_prepare(&write, &batch, tr.user, NULL);
+			cdc_write(share()->cdc, &batch);
+		}
 	}
 
 	// commit

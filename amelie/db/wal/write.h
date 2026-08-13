@@ -81,31 +81,21 @@ write_seal(Write* self)
 	}
 }
 
-static inline uint64_t
-write_lsn(Write* self)
-{
-	if (self->recover)
-		return self->recover->record->lsn;
-	return self->record.lsn;
-}
-
 static inline void
-write_cdc(Write* self, Cdc* cdc, Uuid* uuid, int cmd)
+write_cdc_prepare(Write* self, CdcBatch* batch, Rel* user, List* list)
 {
-	uint64_t lsn;
-	uint8_t* data;
-	uint32_t data_size;
 	if (self->recover)
 	{
 		auto record = self->recover->record;
-		lsn       = record->lsn;
-		data      = record_data(record);
-		data_size = record_data_size(record);
+		batch->lsn          = record->lsn;
+		batch->request_size = record_data_size(record);
+		batch->request      = record_data(record);
 	} else
 	{
-		lsn       = self->record.lsn;
-		data      = self->record_data.start;
-		data_size = buf_size(&self->record_data);
+		batch->lsn          = self->record.lsn;
+		batch->request_size = buf_size(&self->record_data);
+		batch->request      = self->record_data.start;
 	}
-	cdc_write(cdc, lsn, cmd, uuid, data, data_size);
+	batch->list = list;
+	batch->user = user;
 }

@@ -54,6 +54,5 @@ void   cdc_min(Cdc*, uint64_t*);
 
 // operations
 void   cdc_gc(Cdc*);
-void   cdc_write(Cdc*, uint64_t, int, Uuid*, uint8_t*, uint32_t);
-void   cdc_write_batch(Cdc*, uint64_t, List*);
+void   cdc_write(Cdc*, CdcBatch*);
 void   cdc_state(Cdc*, Buf*);

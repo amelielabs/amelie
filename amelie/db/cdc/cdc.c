@@ -188,7 +188,7 @@ cdc_gc(Cdc* self)
 	spinlock_unlock(&self->lock);
 }
 
-hot void
+hot static inline void
 cdc_add(Cdc*     self,
         uint64_t lsn,
         int      cmd,
@@ -217,38 +217,32 @@ cdc_add(Cdc*     self,
 }
 
 hot void
-cdc_write(Cdc*     self,
-          uint64_t lsn,
-          int      cmd,
-          Uuid*    id,
-          uint8_t* data,
-          uint32_t data_size)
+cdc_write(Cdc* self, CdcBatch* batch)
 {
 	spinlock_lock(&self->lock);
 
-	cdc_add(self, lsn, cmd, id, data, data_size);
+	// do atomic write of all updates from the current
+	// transaction under one lsn
 
-	// wakeup subscribers
-	cdc_notify(self);
-
-	spinlock_unlock(&self->lock);
-}
-
-hot void
-cdc_write_batch(Cdc* self, uint64_t lsn, List* batch)
-{
-	spinlock_lock(&self->lock);
+	// write user request first (if the user has subs)
+	if (batch->user->subs > 0)
+		cdc_add(self, batch->lsn, 5, batch->user->id,
+		        batch->request,
+		        batch->request_size);
 
 	// add all records from the batch
-	list_foreach(batch)
+	if (batch->list)
 	{
-		auto ref = list_at(CdcLog, link);
-		auto pos = (CdcLogRecord*)ref->data.start;
-		auto end = (CdcLogRecord*)ref->data.position;
-		while (pos < end)
+		list_foreach(batch->list)
 		{
-			cdc_add(self, lsn, pos->cmd, pos->id, pos->data, pos->data_size);
-			pos = (CdcLogRecord*)(pos->data + pos->data_size);
+			auto ref = list_at(CdcLog, link);
+			auto pos = (CdcLogRecord*)ref->data.start;
+			auto end = (CdcLogRecord*)ref->data.position;
+			while (pos < end)
+			{
+				cdc_add(self, batch->lsn, pos->cmd, pos->id, pos->data, pos->data_size);
+				pos = (CdcLogRecord*)(pos->data + pos->data_size);
+			}
 		}
 	}
 
