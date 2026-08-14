@@ -212,7 +212,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/clone.c
     ${AMELIE_ROOT}/db/catalog/udf.c
     ${AMELIE_ROOT}/db/catalog/topic.c
-    ${AMELIE_ROOT}/db/catalog/publish.c
     ${AMELIE_ROOT}/db/catalog/sub.c
     ${AMELIE_ROOT}/db/catalog/acknowledge.c
     ${AMELIE_ROOT}/db/catalog/rel.c

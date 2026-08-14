@@ -41,7 +41,6 @@
 #include "catalog/topic_config.h"
 #include "catalog/topic_op.h"
 #include "catalog/topic.h"
-#include "catalog/publish.h"
 
 // subscription
 #include "catalog/sub_config.h"

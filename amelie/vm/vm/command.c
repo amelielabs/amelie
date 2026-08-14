@@ -677,7 +677,26 @@ ccall_udf(Vm* self, Op* op)
 	stack_popn(&self->stack, argc);
 }
 
-void
+hot static inline void
+cpublish_encode(Vm* self, Uuid* id, Value* value)
+{
+	auto data = &self->tr->log.cdc.data;
+	auto record_offset = buf_size(data);
+	auto record = (CdcLogRecord*)buf_emplace(data, sizeof(CdcLogRecord));
+	record->cmd       = LOG_PUBLISH;
+	record->id        = id;
+	record->data_size = 0;
+
+	if (value)
+		value_encode(value, self->local->timezone, data);
+	else
+		encode_null(data);
+
+	record = (CdcLogRecord*)(data->start + record_offset);
+	record->data_size = (buf_size(data) - record_offset) - sizeof(CdcLogRecord);
+}
+
+hot void
 cpublish(Vm* self, Op* op)
 {
 	// [topic*, set*, refs]
@@ -687,38 +706,28 @@ cpublish(Vm* self, Op* op)
 	auto dispatches = &gtr->dispatches;
 	auto dispatch = dispatch_create(&dispatches->cache);
 
-	// prepare publish
-	auto buf  = &dispatch->publish;
-
-	// encode values
-	if (op->b != -1)
+	auto topic = (Topic*)op->a;
+	if (topic->rel.subs)
 	{
-		auto refs = stack_at(&self->stack, op->c);
-		encode_array(buf);
-		auto set = (Set*)op->b;
-		for (auto order = 0; order < set->count_rows; order++)
+		// encode values directly to the cdc log buf
+		if (op->b != -1)
 		{
-			auto value = set_row(set, order);
-			if (value->type == TYPE_REF)
-				value = &refs[value->integer];
-			value_encode(value, self->local->timezone, buf);
-		}
-		encode_array_end(buf);
-		if (op->c > 0)
-			stack_popn(&self->stack, op->c);
+			auto refs = stack_at(&self->stack, op->c);
+			auto set = (Set*)op->b;
+			for (auto order = 0; order < set->count_rows; order++)
+			{
+				auto value = set_row(set, order);
+				if (value->type == TYPE_REF)
+					value = &refs[value->integer];
+				cpublish_encode(self, topic->rel.id, value);
+			}
 
-		auto pos = buf->start;
-		unpack_array(&pos);
-		while (! unpack_array_end(&pos))
+			if (op->c > 0)
+				stack_popn(&self->stack, op->c);
+		} else
 		{
-			auto size = data_sizeof(pos);
-			publish((Topic*)op->a, self->tr, pos, size);
-			pos += size;
+			cpublish_encode(self, topic->rel.id, NULL);
 		}
-	} else
-	{
-		encode_null(buf);
-		publish((Topic*)op->a, self->tr, buf->start, buf_size(buf));
 	}
 
 	// (dispatch has no partitions)
