@@ -151,6 +151,7 @@ batch_process(Batch* self)
 		if (gtr->tr.user->subs)
 			self->pending_cdc = true;
 
+		// add for wal write
 		if (! gtr->program->ro)
 			write_list_add(&self->write, write);
 	}

@@ -18,6 +18,7 @@ struct CdcCursor
 	Uuid      id;
 	uint32_t  offset;
 	uint64_t  lsn;
+	uint64_t  lsn_open;
 	CdcEvent* current;
 	Page*     page;
 	Cdc*      cdc;
@@ -26,11 +27,12 @@ struct CdcCursor
 static inline void
 cdc_cursor_init(CdcCursor* self)
 {
-	self->offset  = 0;
-	self->lsn     = 0;
-	self->current = NULL;
-	self->page    = NULL;
-	self->cdc     = NULL;
+	self->offset   = 0;
+	self->lsn      = 0;
+	self->lsn_open = 0;
+	self->current  = NULL;
+	self->page     = NULL;
+	self->cdc      = NULL;
 	uuid_init(&self->id);
 }
 
@@ -41,13 +43,13 @@ cdc_cursor_at(CdcCursor* self)
 }
 
 static inline bool
-cdc_cursor_reposition(CdcCursor* self)
+cdc_cursor_reposition(CdcCursor* self, bool with_ro)
 {
 	auto storage = &self->cdc->storage;
 	if (storage_empty(storage))
 		return false;
 
-	auto lsn = self->lsn;
+	auto lsn = self->lsn_open;
 
 	// rewind to match the position
 	self->page   = storage_at(storage, 0);
@@ -69,13 +71,24 @@ cdc_cursor_reposition(CdcCursor* self)
 
 		auto at = (CdcEvent*)page_at(self->page, self->offset);
 
-		// set last seen lsn (not related to the start position)
-		self->lsn = at->lsn;
-		if (at->lsn > lsn && uuid_is(&at->id, &self->id))
+		if (at->lsn)
 		{
-			self->current = at;
-			break;
+			// set last seen lsn (not related to the start position)
+			self->lsn = at->lsn;
+			if (at->lsn > lsn && uuid_is(&at->id, &self->id))
+			{
+				self->current = at;
+				break;
+			}
+		} else
+		{
+			if (with_ro && uuid_is(&at->id, &self->id))
+			{
+				self->current = at;
+				break;
+			}
 		}
+
 		self->offset += sizeof(CdcEvent) + at->data_size;
 	}
 	return true;
@@ -84,13 +97,14 @@ cdc_cursor_reposition(CdcCursor* self)
 static inline void
 cdc_cursor_open(CdcCursor* self, Cdc* cdc, Uuid* id, uint64_t lsn)
 {
-	self->id  = *id;
-	self->cdc = cdc;
-	self->lsn = lsn;
+	self->id       = *id;
+	self->lsn      = 0;
+	self->lsn_open = lsn;
+	self->cdc      = cdc;
 
 	spinlock_lock(&cdc->lock);
 
-	cdc_cursor_reposition(self);
+	cdc_cursor_reposition(self, false);
 
 	spinlock_unlock(&cdc->lock);
 }
@@ -106,7 +120,7 @@ cdc_cursor_next(CdcCursor* self)
 
 	if (unlikely(! self->page))
 	{
-		if (! cdc_cursor_reposition(self))
+		if (! cdc_cursor_reposition(self, true))
 		{
 			spinlock_unlock(lock);
 			return false;
@@ -147,7 +161,9 @@ cdc_cursor_next(CdcCursor* self)
 		}
 
 		at = (CdcEvent*)page_at(self->page, self->offset);
-		self->lsn = at->lsn;
+		if (at->lsn)
+			self->lsn = at->lsn;
+
 		if (uuid_is(&at->id, &self->id))
 		{
 			self->current = at;

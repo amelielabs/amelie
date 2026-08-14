@@ -90,7 +90,7 @@ session_run(Session* self)
 
 	// prepare request for the wal writer
 	auto write = &gtr->write;
-	if (! program->ro)
+	if (!program->ro || portal->user->rel.subs > 0)
 	{
 		auto req = self->req;
 		if (req->recover)
@@ -235,14 +235,13 @@ session_run_utility(Session* self)
 		}
 	}
 
-	// wal write
-	if (tr_active(&tr))
-	{
-		Write write;
-		write_init(&write);
-		defer(write_free, &write);
+	// prepare write (both for wal write and cdc)
+	Write write;
+	write_init(&write);
+	defer(write_free, &write);
 
-		// prepare request for the wal writer
+	if (tr_active(&tr) || tr.user->subs)
+	{
 		auto req = self->req;
 		if (req->recover) {
 			write_set_recover(&write, req->recover);
@@ -251,7 +250,11 @@ session_run_utility(Session* self)
 			write_set_flags(&write, RECORD_UTILITY);
 			request_write(req, &portal->endpoint, &write.record_data);
 		}
+	}
 
+	// wal write
+	if (tr_active(&tr))
+	{
 		WriteList write_list;
 		write_list_init(&write_list);
 
@@ -266,14 +269,14 @@ session_run_utility(Session* self)
 			tr_abort(&tr);
 			rethrow();
 		}
+	}
 
-		// capture user request
-		if (tr.user->subs)
-		{
-			CdcBatch batch;
-			write_cdc_prepare(&write, &batch, tr.user, NULL);
-			cdc_write(share()->cdc, &batch);
-		}
+	// capture user request
+	if (tr.user->subs)
+	{
+		CdcBatch batch;
+		write_cdc_prepare(&write, &batch, tr.user, NULL);
+		cdc_write(share()->cdc, &batch);
 	}
 
 	// commit

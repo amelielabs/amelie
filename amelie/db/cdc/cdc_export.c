@@ -40,25 +40,22 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 		str_set(&cmd, "request", 7);
 		break;
 	}
+
+	// cmd
+	buf_format(buf, "{{\"cmd\": \"{str}\", ", &cmd, rel_user);
+
+	// target
 	if (str_empty(rel))
-	{
-		const char fmt[] =
-		 "{{"
-			"\"lsn\": {u64}, "
-			"\"cmd\": \"{str}\", "
-			"\"target\": \"{str}\", "
-			"\"data\": ";
-		buf_format(buf, fmt, event->lsn, &cmd, rel_user);
-	} else
-	{
-		const char fmt[] =
-		 "{{"
-			"\"lsn\": {u64}, "
-			"\"cmd\": \"{str}\", "
-			"\"target\": \"{str}.{str}\", "
-			"\"data\": ";
-		buf_format(buf, fmt, event->lsn, &cmd, rel_user, rel);
-	}
+		buf_format(buf, "\"target\": \"{str}\", ", rel_user);
+	else
+		buf_format(buf, "\"target\": \"{str}.{str}\", ", rel_user, rel);
+
+	// [lsn]
+	if (event->lsn > 0)
+		buf_format(buf, "\"lsn\": {u64}, ", event->lsn);
+
+	// data
+	buf_write(buf, "\"data\": ", 8);
 	uint8_t* pos = event->data;
 	json_export(buf, runtime()->timezone, &pos);
 	buf_write(buf, "}", 1);
