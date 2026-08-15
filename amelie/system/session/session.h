@@ -17,6 +17,7 @@ struct Session
 {
 	Compiler compiler;
 	Vm       vm;
+	Quota    quota;
 	Program* program;
 	Gtr      gtr;
 	Portal*  portal;

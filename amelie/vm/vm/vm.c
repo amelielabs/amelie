@@ -23,7 +23,7 @@
 #include "base/overflow_fp.h"
 
 void
-vm_init(Vm* self, Part* part)
+vm_init(Vm* self, Quota* quota, Part* part)
 {
 	self->code        = NULL;
 	self->code_data   = NULL;
@@ -35,6 +35,7 @@ vm_init(Vm* self, Part* part)
 	self->part        = part;
 	self->gtr         = NULL;
 	self->program     = NULL;
+	self->quota       = quota;
 	self->tr          = NULL;
 	self->local       = NULL;
 	reg_init(&self->r);
@@ -107,6 +108,9 @@ vm_run(Vm*       self,
 		&&cjntr,
 		&&cjgted,
 		&&cjltd,
+
+		// quota
+		&&cquota,
 
 		// values
 		&&cfree,
@@ -457,6 +461,7 @@ vm_run(Vm*       self,
 	Flat*     flat;
 	str_init(&string);
 
+	auto quota = self->quota;
 	auto stack = &self->stack;
 	auto r     = self->r.r;
 	auto op    = code_at(self->code, start);
@@ -508,6 +513,11 @@ cjltd:
 		op = code_at(code, op->a);
 		op_jmp;
 	}
+	op_next;
+
+cquota:
+	// []
+	quota_add(quota);
 	op_next;
 
 cfree:
@@ -1860,6 +1870,7 @@ ctable_prepare:
 
 ctable_next:
 	// [cursor, _on_success]
+	quota_add(quota);
 	iterator_next(r[op->a].cursor);
 	// jmp on success or skip to the next op on eof
 	op = likely(iterator_has(r[op->a].cursor)) ? code_at(self->code, op->b) : op + 1;
@@ -2019,6 +2030,7 @@ cstore_open:
 
 cstore_next:
 	// [cursor, _on_success]
+	quota_add(quota);
 	a = &r[op->a];
 	store_iterator_next(a->cursor_store);
 	// jmp on success or skip to the next op on eof
@@ -2059,6 +2071,7 @@ cjson_open:
 
 cjson_next:
 	// [cursor, _on_success]
+	quota_add(quota);
 	a = &r[op->a];
 	data_skip(&a->json);
 	if (likely(! unpack_array_end(&a->json))) {

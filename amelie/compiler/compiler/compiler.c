@@ -635,6 +635,7 @@ emit_while(Compiler* self, Stmt* stmt)
 	//   expr
 	//   jntr _stop
 	//   block
+	//   quota
 	//   jmp _start
 	//
 	// _stop:
@@ -653,6 +654,9 @@ emit_while(Compiler* self, Stmt* stmt)
 
 	// block
 	emit_block(self, whilea->block);
+
+	// compute limit check
+	op0(self, CQUOTA);
 
 	// jmp _start
 	op1(self, CJMP, _start);

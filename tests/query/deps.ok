@@ -2241,13 +2241,14 @@ main
   4   var_set             0      0      1
   5   free                1      0      0
   6   var                 0      0      0
-  7   jntr                13     0      0
+  7   jntr                14     0      0
   8   var                 0      0      0
   9   int                 1      -      0     # 1
  10   subii               2      0      1
  11   var_set             0      0      2
- 12   jmp                 6      0      0
- 13   ret                 -1     0      -
+ 12   quota               0      0      0
+ 13   jmp                 6      0      0
+ 14   ret                 -1     0      -
 
 pushdown
   0   set                 0      1      0
@@ -2291,7 +2292,7 @@ main
   4   var_set             0      0      1
   5   free                1      0      0
   6   var                 0      0      0
-  7   jntr                17     0      0
+  7   jntr                18     0      0
   8   var                 0      0      0
   9   int                 1      -      0     # 1
  10   addii               2      0      1
@@ -2300,12 +2301,13 @@ main
  13   int                 1      -      0     # 1
  14   subii               2      0      1
  15   var_set             0      0      2
- 16   jmp                 6      0      0
- 17   set                 0      2      0
- 18   push_var            0      0      0
- 19   push_var            1      0      0
- 20   set_add             0      0      0
- 21   ret                 0      0      -
+ 16   quota               0      0      0
+ 17   jmp                 6      0      0
+ 18   set                 0      2      0
+ 19   push_var            0      0      0
+ 20   push_var            1      0      0
+ 21   set_add             0      0      0
+ 22   ret                 0      0      -
 
 pushdown
   0   set                 0      1      0
@@ -2352,7 +2354,7 @@ main
   3   var                 0      0      0
   4   int                 1      -      0     # 8
   5   ltii                2      0      1
-  6   jntr                15     2      0
+  6   jntr                16     2      0
   7   push_var            0      0      1
   8   set_ptr             1      -      0
   9   send_shard          0      1      1     # amelie.test (insert)
@@ -2360,9 +2362,10 @@ main
  11   int                 1      -      0     # 1
  12   addii               2      0      1
  13   var_set             0      0      2
- 14   jmp                 3      0      0
- 15   close               0      0      0
- 16   ret                 -1     0      -
+ 14   quota               0      0      0
+ 15   jmp                 3      0      0
+ 16   close               0      0      0
+ 17   ret                 -1     0      -
 
 pushdown
   0   insert              -      -      -     # amelie.test
@@ -2396,7 +2399,7 @@ main
   3   var                 0      0      0
   4   int                 1      -      0     # 10
   5   ltii                2      0      1
-  6   jntr                15     2      0
+  6   jntr                16     2      0
   7   push_var            0      0      1
   8   set_ptr             1      -      0
   9   send_shard          0      1      1     # amelie.test (insert)
@@ -2404,11 +2407,12 @@ main
  11   int                 1      -      0     # 1
  12   addii               2      0      1
  13   var_set             0      0      2
- 14   jmp                 3      0      0
- 15   send_all            0      0      56    # amelie.test (select, closing)
- 16   union               1      0      0
- 17   recv                1      0      0
- 18   ret                 1      0      -
+ 14   quota               0      0      0
+ 15   jmp                 3      0      0
+ 16   send_all            0      0      56    # amelie.test (select, closing)
+ 17   union               1      0      0
+ 18   recv                1      0      0
+ 19   ret                 1      0      -
 
 pushdown
   0   insert              -      -      -     # amelie.test
@@ -2461,15 +2465,16 @@ main
   0   push_nulls          1      0      0
   1   send_all            0      0      32    # amelie.test (select, closing)
   2   bool                1      1      0
-  3   jntr                6      1      0
-  4   jmp                 6      0      0
-  5   jmp                 2      0      0
-  6   union               1      0      0
-  7   recv                1      0      0
-  8   var_set             0      0      1
-  9   free                1      0      0
- 10   var                 0      0      0
- 11   ret                 0      0      -
+  3   jntr                7      1      0
+  4   jmp                 7      0      0
+  5   quota               0      0      0
+  6   jmp                 2      0      0
+  7   union               1      0      0
+  8   recv                1      0      0
+  9   var_set             0      0      1
+ 10   free                1      0      0
+ 11   var                 0      0      0
+ 12   ret                 0      0      -
 
 pushdown
   0   set                 0      1      0
@@ -2514,17 +2519,18 @@ main
   0   push_nulls          1      0      0
   1   send_all            0      0      32    # amelie.test (select, closing)
   2   bool                1      1      0
-  3   jntr                8      1      0
+  3   jntr                9      1      0
   4   bool                1      1      0
   5   jntr                7      1      0
-  6   jmp                 8      0      0
-  7   jmp                 2      0      0
-  8   union               1      0      0
-  9   recv                1      0      0
- 10   var_set             0      0      1
- 11   free                1      0      0
- 12   var                 0      0      0
- 13   ret                 0      0      -
+  6   jmp                 9      0      0
+  7   quota               0      0      0
+  8   jmp                 2      0      0
+  9   union               1      0      0
+ 10   recv                1      0      0
+ 11   var_set             0      0      1
+ 12   free                1      0      0
+ 13   var                 0      0      0
+ 14   ret                 0      0      -
 
 pushdown
   0   set                 0      1      0
@@ -2569,19 +2575,20 @@ explain
 main
   0   push_nulls          1      0      0
   1   bool                0      1      0
-  2   jntr                12     0      0
+  2   jntr                13     0      0
   3   send_all            0      0      32    # amelie.test (select)
   4   union               1      0      0
   5   recv                1      0      0
   6   var_set             0      0      1
   7   free                1      0      0
-  8   jmp                 12     0      0
+  8   jmp                 13     0      0
   9   null                0      0      0
  10   var_set             0      0      0
- 11   jmp                 1      0      0
- 12   close               0      0      0
- 13   var                 0      0      0
- 14   ret                 0      0      -
+ 11   quota               0      0      0
+ 12   jmp                 1      0      0
+ 13   close               0      0      0
+ 14   var                 0      0      0
+ 15   ret                 0      0      -
 
 pushdown
   0   set                 0      1      0
@@ -2627,7 +2634,7 @@ explain
 main
   0   push_nulls          1      0      0
   1   bool                0      1      0
-  2   jntr                14     0      0
+  2   jntr                15     0      0
   3   send_all            0      0      32    # amelie.test (select)
   4   union               1      0      0
   5   recv                1      0      0
@@ -2635,13 +2642,14 @@ main
   7   free                1      0      0
   8   bool                0      1      0
   9   jntr                11     0      0
- 10   jmp                 14     0      0
+ 10   jmp                 15     0      0
  11   null                0      0      0
  12   var_set             0      0      0
- 13   jmp                 1      0      0
- 14   close               0      0      0
- 15   var                 0      0      0
- 16   ret                 0      0      -
+ 13   quota               0      0      0
+ 14   jmp                 1      0      0
+ 15   close               0      0      0
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
 
 pushdown
   0   set                 0      1      0
@@ -2691,7 +2699,7 @@ explain
 main
   0   push_nulls          1      0      0
   1   bool                0      1      0
-  2   jntr                16     0      0
+  2   jntr                17     0      0
   3   send_all            0      0      32    # amelie.test (select)
   4   union               1      0      0
   5   recv                1      0      0
@@ -2701,13 +2709,14 @@ main
   9   jntr                13     0      0
  10   bool                0      1      0
  11   jntr                13     0      0
- 12   jmp                 16     0      0
+ 12   jmp                 17     0      0
  13   null                0      0      0
  14   var_set             0      0      0
- 15   jmp                 1      0      0
- 16   close               0      0      0
- 17   var                 0      0      0
- 18   ret                 0      0      -
+ 15   quota               0      0      0
+ 16   jmp                 1      0      0
+ 17   close               0      0      0
+ 18   var                 0      0      0
+ 19   ret                 0      0      -
 
 pushdown
   0   set                 0      1      0
@@ -2767,12 +2776,12 @@ main
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
   3   bool                0      1      0
-  4   jntr                27     0      0
+  4   jntr                28     0      0
   5   var                 0      0      0
   6   int                 1      -      0     # 3
   7   equii               2      0      1
   8   jntr                10     2      0
-  9   jmp                 27     0      0
+  9   jmp                 28     0      0
  10   var                 0      0      0
  11   int                 1      -      0     # 1
  12   addii               2      0      1
@@ -2789,13 +2798,14 @@ main
  23   jmp                 3      0      0
  24   null                0      0      0
  25   var_set             1      0      0
- 26   jmp                 3      0      0
- 27   close               0      0      0
- 28   set                 0      2      0
- 29   push_var            0      0      0
- 30   push_var            1      0      0
- 31   set_add             0      0      0
- 32   ret                 0      0      -
+ 26   quota               0      0      0
+ 27   jmp                 3      0      0
+ 28   close               0      0      0
+ 29   set                 0      2      0
+ 30   push_var            0      0      0
+ 31   push_var            1      0      0
+ 32   set_add             0      0      0
+ 33   ret                 0      0      -
 
 pushdown
   0   set                 0      1      0

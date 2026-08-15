@@ -144,5 +144,22 @@ drop table test;
 alter user amelie unset limit vector;
 show limits;
 
+# test: compute
+alter user amelie set limit compute = 100;
+explain while 1 do end;
+while 1 do end;
+
+alter user amelie set limit partitions = 1;
+create table test (id int primary key, data int) partitions 1;
+insert into test values (1, 0);
+insert into test values (2, 0);
+insert into test values (3, 0);
+insert into test values (4, 0);
+
+alter user amelie set limit compute = 3;
+update test set data = id;
+
+drop table test;
+
 disconnect S0;
 close E0;

@@ -17,12 +17,13 @@ enum
 {
 	// network
 	LIMIT_SEND,
-	LIMIT_WRITE,
-	LIMIT_CONNECTIONS,
 
-	// db and runtime
-	LIMIT_MEMORY,
+	// transaction
+	LIMIT_WRITE,
 	LIMIT_COMPUTE,
+
+	// db
+	LIMIT_MEMORY,
 
 	// relations
 	LIMIT_USERS,

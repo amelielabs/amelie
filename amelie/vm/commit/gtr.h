@@ -57,7 +57,6 @@ gtr_init(Gtr* self)
 	list_init(&self->link_batch);
 	list_init(&self->link);
 	msg_init(&self->msg, MSG_GTR);
-
 }
 
 static inline void

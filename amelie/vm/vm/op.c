@@ -31,6 +31,9 @@ OpDesc ops[] =
 	{ CJGTED, "cjgted" },
 	{ CJLTD, "cjltd" },
 
+	// quota
+	{ CQUOTA, "quota" },
+
 	// values
 	{ CFREE, "free" },
 	{ CDUP, "dup" },

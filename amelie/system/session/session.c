@@ -29,7 +29,8 @@ session_create(void)
 	self->req     = NULL;
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->set_cache);
-	vm_init(&self->vm, NULL);
+	quota_init(&self->quota);
+	vm_init(&self->vm, &self->quota, NULL);
 	profile_init(&self->profile);
 	gtr_init(&self->gtr);
 	return self;
@@ -47,6 +48,7 @@ session_reset(Session* self)
 {
 	self->portal = NULL;
 	self->req    = NULL;
+	quota_reset(&self->quota);
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	gtr_reset(&self->gtr);
@@ -105,6 +107,15 @@ session_run(Session* self)
 	// [PROFILE]
 	if (compiler->program_profile)
 		profile_start(&profile->time_run_us);
+
+	// set compute limit
+	auto limits = portal->local.limits;
+	if (limits)
+	{
+		auto quota = &self->quota;
+		if (limits_is_set(limits, LIMIT_COMPUTE))
+			quota_set(quota, limits_get(limits, LIMIT_COMPUTE));
+	}
 
 	// execute coordinator
 	Return ret;

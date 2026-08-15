@@ -176,5 +176,30 @@ limits
 {
   "send": 3145728
 }
+# test: compute
+alter user amelie set limit compute = 100;
+explain while 1 do end;
+
+explain
+───────
+
+main
+  0   int                 0      -      0     # 1
+  1   jntr                4      0      0
+  2   quota               0      0      0
+  3   jmp                 0      0      0
+  4   ret                 -1     0      -
+while 1 do end;
+error: compute limit reached
+alter user amelie set limit partitions = 1;
+create table test (id int primary key, data int) partitions 1;
+insert into test values (1, 0);
+insert into test values (2, 0);
+insert into test values (3, 0);
+insert into test values (4, 0);
+alter user amelie set limit compute = 3;
+update test set data = id;
+error: compute limit reached
+drop table test;
 disconnect S0;
 close E0;

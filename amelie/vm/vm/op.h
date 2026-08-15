@@ -23,6 +23,9 @@ enum
 	CJGTED,
 	CJLTD,
 
+	// compute quota
+	CQUOTA,
+
 	// values
 	CFREE,
 	CDUP,

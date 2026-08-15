@@ -51,6 +51,9 @@ emit_watch(Compiler* self, Ast* ast)
 	// CALL
 	r = op4pin(self, CCALL, func->type, (intptr_t)func, 1, -1);
 
+	// quota
+	op0(self, CQUOTA);
+
 	// jmp _start
 	op1(self, CJMP, _start);
 

@@ -66,6 +66,17 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 hot static void
 pod_run(Pod* self, Ltr* ltr)
 {
+	// set compute limit
+	auto limits = ltr->gtr->local->limits;
+	if (limits)
+	{
+		auto quota = &self->quota;
+		if (limits_is_set(limits, LIMIT_COMPUTE))
+			quota_set(quota, limits_get(limits, LIMIT_COMPUTE));
+		else
+			quota_reset(quota);
+	}
+
 	// execute incoming requests till close
 	auto active = true;
 	while (active)
@@ -118,7 +129,8 @@ pod_allocate(Part* part)
 	self->part      =  part;
 	self->track     = &part->track;
 	self->worker_id = -1;
-	vm_init(&self->vm, part);
+	quota_init(&self->quota);
+	vm_init(&self->vm, &self->quota, part);
 	list_init(&self->link);
 	return self;
 }

@@ -20,6 +20,7 @@
 
 // vm
 #include "vm/return.h"
+#include "vm/quota.h"
 #include "vm/vm.h"
 #include "vm/command.h"
 #include "vm/command_utility.h"

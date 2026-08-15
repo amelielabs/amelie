@@ -26,14 +26,15 @@ main
   3   var                 0      0      0
   4   int                 1      -      0     # 3
   5   ltii                2      0      1
-  6   jntr                12     2      0
+  6   jntr                13     2      0
   7   var                 0      0      0
   8   int                 1      -      0     # 1
   9   addii               2      0      1
  10   var_set             0      0      2
- 11   jmp                 3      0      0
- 12   var                 0      0      0
- 13   ret                 0      0      -
+ 11   quota               0      0      0
+ 12   jmp                 3      0      0
+ 13   var                 0      0      0
+ 14   ret                 0      0      -
 begin
 	declare i int := 0;
 	while i < 3 do
@@ -75,13 +76,13 @@ main
   7   var                 0      0      0
   8   int                 1      -      0     # 3
   9   ltii                2      0      1
- 10   jntr                31     2      0
+ 10   jntr                33     2      0
  11   int                 0      -      0     # 0
  12   var_set             1      0      0
  13   var                 0      1      0
  14   int                 1      -      0     # 3
  15   ltii                2      0      1
- 16   jntr                26     2      0
+ 16   jntr                27     2      0
  17   var                 0      1      0
  18   int                 1      -      0     # 1
  19   addii               2      0      1
@@ -90,18 +91,20 @@ main
  22   int                 1      -      0     # 1
  23   addii               2      0      1
  24   var_set             2      0      2
- 25   jmp                 13     0      0
- 26   var                 0      0      0
- 27   int                 1      -      0     # 1
- 28   addii               2      0      1
- 29   var_set             0      0      2
- 30   jmp                 7      0      0
- 31   set                 0      3      0
- 32   push_var            0      0      0
- 33   push_var            1      0      0
- 34   push_var            2      0      0
- 35   set_add             0      0      0
- 36   ret                 0      0      -
+ 25   quota               0      0      0
+ 26   jmp                 13     0      0
+ 27   var                 0      0      0
+ 28   int                 1      -      0     # 1
+ 29   addii               2      0      1
+ 30   var_set             0      0      2
+ 31   quota               0      0      0
+ 32   jmp                 7      0      0
+ 33   set                 0      3      0
+ 34   push_var            0      0      0
+ 35   push_var            1      0      0
+ 36   push_var            2      0      0
+ 37   set_add             0      0      0
+ 38   ret                 0      0      -
 begin
 	declare i int := 0;
 	declare j int := 0;
@@ -172,7 +175,7 @@ main
  12   var                 0      0      0
  13   var                 1      1      0
  14   ltii                2      0      1
- 15   jntr                31     2      0
+ 15   jntr                32     2      0
  16   var                 0      0      0
  17   int                 1      -      0     # 2
  18   modii               2      0      1
@@ -187,12 +190,13 @@ main
  27   int                 1      -      0     # 1
  28   addii               2      0      1
  29   var_set             0      0      2
- 30   jmp                 12     0      0
- 31   set                 0      2      0
- 32   push_var            2      0      0
- 33   push_var            1      0      0
- 34   set_add             0      0      0
- 35   ret                 0      0      -
+ 30   quota               0      0      0
+ 31   jmp                 12     0      0
+ 32   set                 0      2      0
+ 33   push_var            2      0      0
+ 34   push_var            1      0      0
+ 35   set_add             0      0      0
+ 36   ret                 0      0      -
 
 pushdown
   0   set                 0      1      0
@@ -294,7 +298,7 @@ main
  23   var                 0      0      0
  24   var                 1      1      0
  25   ltii                2      0      1
- 26   jntr                38     2      0
+ 26   jntr                39     2      0
  27   push_var            0      0      1
  28   set_ptr             1      -      0
  29   send_shard          0      1      1     # amelie.test (insert)
@@ -305,10 +309,11 @@ main
  34   union               1      0      0
  35   recv                1      0      0
  36   free                1      0      0
- 37   jmp                 23     0      0
- 38   close               0      0      0
- 39   var                 0      1      0
- 40   ret                 0      0      -
+ 37   quota               0      0      0
+ 38   jmp                 23     0      0
+ 39   close               0      0      0
+ 40   var                 0      1      0
+ 41   ret                 0      0      -
 
 pushdown
   0   set                 0      1      1
@@ -423,7 +428,7 @@ main
  25   var                 0      0      0
  26   var                 1      1      0
  27   ltii                2      0      1
- 28   jntr                41     2      0
+ 28   jntr                42     2      0
  29   push_var            0      0      1
  30   set_ptr             1      -      0
  31   send_shard          0      1      1     # amelie.test (insert)
@@ -435,13 +440,14 @@ main
  37   recv                1      0      0
  38   var_set             2      0      1
  39   free                1      0      0
- 40   jmp                 25     0      0
- 41   close               0      0      0
- 42   set                 0      2      0
- 43   push_var            1      0      0
- 44   push_var            2      0      0
- 45   set_add             0      0      0
- 46   ret                 0      0      -
+ 40   quota               0      0      0
+ 41   jmp                 25     0      0
+ 42   close               0      0      0
+ 43   set                 0      2      0
+ 44   push_var            1      0      0
+ 45   push_var            2      0      0
+ 46   set_add             0      0      0
+ 47   ret                 0      0      -
 
 pushdown
   0   set                 0      1      1
@@ -564,19 +570,20 @@ main
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
   3   bool                0      1      0
-  4   jntr                15     0      0
+  4   jntr                16     0      0
   5   var                 0      0      0
   6   int                 1      -      0     # 10
   7   equii               2      0      1
   8   jntr                10     2      0
-  9   jmp                 15     0      0
+  9   jmp                 16     0      0
  10   var                 0      0      0
  11   int                 1      -      0     # 1
  12   addii               2      0      1
  13   var_set             0      0      2
- 14   jmp                 3      0      0
- 15   var                 0      0      0
- 16   ret                 0      0      -
+ 14   quota               0      0      0
+ 15   jmp                 3      0      0
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
 begin
 	declare i int := 0;
 	while true do
@@ -613,23 +620,25 @@ main
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
   3   bool                0      1      0
-  4   jntr                19     0      0
+  4   jntr                21     0      0
   5   bool                0      1      0
-  6   jntr                13     0      0
-  7   jmp                 13     0      0
+  6   jntr                14     0      0
+  7   jmp                 14     0      0
   8   var                 0      0      0
   9   int                 1      -      0     # 1
  10   addii               2      0      1
  11   var_set             0      0      2
- 12   jmp                 5      0      0
- 13   jmp                 19     0      0
- 14   var                 0      0      0
- 15   int                 1      -      0     # 1
- 16   addii               2      0      1
- 17   var_set             0      0      2
- 18   jmp                 3      0      0
- 19   var                 0      0      0
- 20   ret                 0      0      -
+ 12   quota               0      0      0
+ 13   jmp                 5      0      0
+ 14   jmp                 21     0      0
+ 15   var                 0      0      0
+ 16   int                 1      -      0     # 1
+ 17   addii               2      0      1
+ 18   var_set             0      0      2
+ 19   quota               0      0      0
+ 20   jmp                 3      0      0
+ 21   var                 0      0      0
+ 22   ret                 0      0      -
 begin
 	declare i int := 0;
 	while true do
@@ -672,7 +681,7 @@ main
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
   3   bool                0      1      0
-  4   jntr                16     0      0
+  4   jntr                17     0      0
   5   var                 0      0      0
   6   int                 1      -      0     # 10
   7   ltii                2      0      1
@@ -682,10 +691,11 @@ main
  11   addii               2      0      1
  12   var_set             0      0      2
  13   jmp                 3      0      0
- 14   jmp                 16     0      0
- 15   jmp                 3      0      0
- 16   var                 0      0      0
- 17   ret                 0      0      -
+ 14   jmp                 17     0      0
+ 15   quota               0      0      0
+ 16   jmp                 3      0      0
+ 17   var                 0      0      0
+ 18   ret                 0      0      -
 begin
 	declare i int := 0;
 	while true do
@@ -729,9 +739,9 @@ main
   5   var                 0      0      0
   6   int                 1      -      0     # 10
   7   ltii                2      0      1
-  8   jntr                26     2      0
+  8   jntr                28     2      0
   9   bool                0      1      0
- 10   jntr                21     0      0
+ 10   jntr                22     0      0
  11   var                 0      1      0
  12   int                 1      -      0     # 10
  13   ltii                2      0      1
@@ -741,17 +751,19 @@ main
  17   addii               2      0      1
  18   var_set             1      0      2
  19   jmp                 9      0      0
- 20   jmp                 9      0      0
- 21   var                 0      0      0
- 22   int                 1      -      0     # 1
- 23   addii               2      0      1
- 24   var_set             0      0      2
- 25   jmp                 5      0      0
- 26   set                 0      2      0
- 27   push_var            0      0      0
- 28   push_var            1      0      0
- 29   set_add             0      0      0
- 30   ret                 0      0      -
+ 20   quota               0      0      0
+ 21   jmp                 9      0      0
+ 22   var                 0      0      0
+ 23   int                 1      -      0     # 1
+ 24   addii               2      0      1
+ 25   var_set             0      0      2
+ 26   quota               0      0      0
+ 27   jmp                 5      0      0
+ 28   set                 0      2      0
+ 29   push_var            0      0      0
+ 30   push_var            1      0      0
+ 31   set_add             0      0      0
+ 32   ret                 0      0      -
 begin
 	declare i int := 0;
 	declare j int := 0;

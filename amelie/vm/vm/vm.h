@@ -27,12 +27,13 @@ struct Vm
 	Part*     part;
 	Gtr*      gtr;
 	Program*  program;
+	Quota*    quota;
 	Tr*       tr;
 	Local*    local;
 	Calls     calls;
 };
 
-void vm_init(Vm*, Part*);
+void vm_init(Vm*, Quota*, Part*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
 void vm_run(Vm*, Local*, Gtr*, Tr*, Program*, Code*, CodeData*, Buf*,

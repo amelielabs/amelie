@@ -16,6 +16,7 @@ typedef struct Pod Pod;
 struct Pod
 {
 	Vm      vm;
+	Quota   quota;
 	Track*  track;
 	Part*   part;
 	int64_t worker_id;

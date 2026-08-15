@@ -32,13 +32,14 @@ main
   5   call                0      -      1     # int()
   6   int                 1      -      0     # 1
   7   equii               2      0      1
-  8   jtr                 13     2      0
+  8   jtr                 14     2      0
   9   int                 0      -      0     # 333
  10   push                0      0      0
  11   call                0      -      1     # sleep()
- 12   jmp                 0      0      0
- 13   nop                 0      0      0
- 14   ret                 -1     0      -
+ 12   quota               0      0      0
+ 13   jmp                 0      0      0
+ 14   nop                 0      0      0
+ 15   ret                 -1     0      -
 watch show('state').lsn::int = 1;
 disconnect S0;
 close E0;

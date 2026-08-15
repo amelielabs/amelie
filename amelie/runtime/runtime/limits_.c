@@ -30,12 +30,13 @@ limits_names[LIMIT_MAX] =
 {
 	// network
 	{ "send",           4  },
-	{ "write",          5  },
-	{ "connections",    11 },
 
-	// db and runtime
-	{ "memory",         6  },
+	// transaction
+	{ "write",          5  },
 	{ "compute",        7  },
+
+	// db
+	{ "memory",         6  },
 
 	// relations
 	{ "users",          5  },

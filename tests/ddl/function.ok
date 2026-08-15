@@ -548,7 +548,7 @@ main
   5   var                 0      1      0
   6   var                 1      0      1
   7   ltii                2      0      1
-  8   jntr                18     2      0
+  8   jntr                19     2      0
   9   var                 0      0      0
  10   var                 1      1      0
  11   addii               2      0      1
@@ -557,9 +557,10 @@ main
  14   int                 1      -      0     # 1
  15   addii               2      0      1
  16   var_set             1      0      2
- 17   jmp                 5      0      0
- 18   var                 0      0      0
- 19   ret                 0      0      -
+ 17   quota               0      0      0
+ 18   jmp                 5      0      0
+ 19   var                 0      0      0
+ 20   ret                 0      0      -
 select test(10);
 
 test
@@ -581,7 +582,7 @@ main
   5   var                 0      1      0
   6   var                 1      0      1
   7   ltii                2      0      1
-  8   jntr                18     2      0
+  8   jntr                19     2      0
   9   var                 0      0      0
  10   var                 1      1      0
  11   addii               2      0      1
@@ -590,9 +591,10 @@ main
  14   int                 1      -      0     # 1
  15   addii               2      0      1
  16   var_set             1      0      2
- 17   jmp                 5      0      0
- 18   var                 0      0      0
- 19   ret                 0      0      -
+ 17   quota               0      0      0
+ 18   jmp                 5      0      0
+ 19   var                 0      0      0
+ 20   ret                 0      0      -
 execute test(10);
 
 test

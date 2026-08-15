@@ -657,7 +657,7 @@ ccall_udf(Vm* self, Op* op)
 
 	// execute udf
 	Vm vm;
-	vm_init(&vm, self->part);
+	vm_init(&vm, self->quota, self->part);
 	defer(vm_free, &vm);
 	reg_prepare(&vm.r, program->code.regs);
 
