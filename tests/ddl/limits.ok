@@ -13,7 +13,7 @@ create table test (id int primary key);
 alter user amelie set limit write = 1;
 insert into test values (123);
 insert into test values (124), (125);
-error: transaction log limit reached
+error: write limit reached
 drop table test;
 alter user amelie unset limit write;
 # test: send

@@ -51,6 +51,7 @@ gtr_init(Gtr* self)
 	self->link_group   = NULL;
 	dispatches_init(&self->dispatches, self);
 	event_init(&self->on_commit);
+	limit_init(&self->limit, "write");
 	tr_init(&self->tr);
 	write_init(&self->write);
 	list_init(&self->write_cdc);
@@ -75,6 +76,7 @@ gtr_reset(Gtr* self)
 		self->error = NULL;
 	}
 	dispatches_reset(&self->dispatches);
+	limit_reset(&self->limit);
 	tr_reset(&self->tr);
 	write_reset(&self->write);
 	list_init(&self->write_cdc);
@@ -98,10 +100,8 @@ gtr_prepare(Gtr* self, Local* local, User* user, Program* program)
 
 	// set transaction write limit
 	auto limits = local->limits;
-	auto limit_write = 0;
 	if (limits && limits_is_set(limits, LIMIT_WRITE))
-		limit_write = limits_get(limits, LIMIT_WRITE);
-	limit_init(&self->limit, limit_write);
+		limit_set(&self->limit, true, limits_get(limits, LIMIT_WRITE));
 
 	// set user
 	tr_set_user(&self->tr, &user->rel);
