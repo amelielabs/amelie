@@ -60,8 +60,7 @@ table_allocate(TableConfig* config,
 	parts_init(&self->parts, iface, iface_arg, arg, &primary->keys);
 
 	// timelines
-	timelines_init(&self->timelines, &self->rel,
-	                self->config->timeline);
+	timelines_init(&self->timelines, &self->rel, self->config->timeline);
 
 	// set relation
 	auto rel = &self->rel;

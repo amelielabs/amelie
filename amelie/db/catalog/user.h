@@ -19,6 +19,7 @@ struct User
 	Rel         rel;
 	int64_t     revoked_at;
 	UserConfig* config;
+	Limit       limit_memory;
 };
 
 bool user_create(Catalog*, Tr*, UserConfig*, bool);

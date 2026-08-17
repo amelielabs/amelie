@@ -21,6 +21,17 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
+static void
+user_limits_sync(User* self)
+{
+	// memory
+	auto limits = &self->config->limits;
+	if (limits_is_set(limits, LIMIT_MEMORY))
+		limit_set(&self->limit_memory, true, limits_get(limits, LIMIT_MEMORY));
+	else
+		limit_set(&self->limit_memory, false, 0);
+}
+
 static inline void
 user_free(User* self, bool drop)
 {
@@ -42,6 +53,10 @@ user_allocate(UserConfig* config)
 	User* self = am_malloc(sizeof(User));
 	self->revoked_at = 0;
 	self->config     = user_config_copy(config);
+
+	// set memory limit
+	limit_init(&self->limit_memory, "memory");
+	user_limits_sync(self);
 
 	// set relation
 	auto rel = &self->rel;
@@ -485,6 +500,8 @@ limit_set_if_abort(Log* self, LogOp* op)
 
 	auto user = user_of(op->rel);
 	limits_copy(&user->config->limits, &limits);
+
+	user_limits_sync(user);
 }
 
 static LogIf limit_set_if =
@@ -519,6 +536,8 @@ user_limit_set(Catalog* self,
 
 	// set new limits
 	limits_copy(&user->config->limits, limits);
+
+	user_limits_sync(user);
 	return true;
 }
 
@@ -548,5 +567,7 @@ user_limit_unset(Catalog* self,
 
 	// update limits
 	user->config->limits.flags &= ~mask;
+
+	user_limits_sync(user);
 	return true;
 }

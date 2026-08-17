@@ -41,9 +41,8 @@ limit_reset(Limit* self)
 static inline void
 limit_set(Limit* self, bool enable, uint64_t limit)
 {
-	self->current = 0;
-	self->limit   = limit;
-	self->enable  = enable;
+	self->limit  = limit;
+	self->enable = enable;
 }
 
 hot static inline bool
@@ -77,4 +76,19 @@ limit_add(Limit* self, uint64_t size)
 		return;
 
 	error("{s} limit reached", self->name);
+}
+
+hot static inline void
+limit_sub(Limit* self, uint64_t size)
+{
+	uint64_t current = atomic_load_explicit(&self->current, memory_order_relaxed);
+	for (;;)
+	{
+		// atomically sub total usage (if it has not changed)
+		if (likely(atomic_compare_exchange_weak_explicit(&self->current, &current,
+		                                                 current - size,
+		                                                 memory_order_relaxed,
+		                                                 memory_order_relaxed)))
+			break;
+	}
 }
