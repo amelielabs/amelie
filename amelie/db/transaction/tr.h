@@ -17,9 +17,9 @@ struct Tr
 {
 	uint64_t id;
 	Log      log;
-	Limit*   limit;
 	Rel*     user;
 	Local*   local;
+	Usage*   write;
 	bool     allocated;
 	List     link;
 };
@@ -28,9 +28,9 @@ static inline void
 tr_init(Tr* self)
 {
 	self->id        = 0;
-	self->limit     = NULL;
 	self->user      = NULL;
 	self->local     = NULL;
+	self->write     = NULL;
 	self->allocated = false;
 	log_init(&self->log);
 	list_init(&self->link);
@@ -40,9 +40,9 @@ static inline void
 tr_reset(Tr* self)
 {
 	self->id    = 0;
-	self->limit = NULL;
 	self->user  = NULL;
 	self->local = NULL;
+	self->write = NULL;
 	log_reset(&self->log);
 	list_init(&self->link);
 }
@@ -83,9 +83,9 @@ tr_set_local(Tr* self, Local* local)
 }
 
 static inline void
-tr_set_limit(Tr* self, Limit* limit)
+tr_set_limit(Tr* self, Usage* write)
 {
-	self->limit = limit;
+	self->write = write;
 }
 
 static inline void

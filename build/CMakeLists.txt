@@ -171,7 +171,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/runtime/opts.c
     ${AMELIE_ROOT}/runtime/runtime/config.c
     ${AMELIE_ROOT}/runtime/runtime/state.c
-    ${AMELIE_ROOT}/runtime/runtime/limits_.c
+    ${AMELIE_ROOT}/runtime/runtime/limit.c
     ${AMELIE_ROOT}/runtime/runtime/runtime.c)
 
 set(AMELIE_SOURCES_SERVER

@@ -11,84 +11,83 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Limit Limit;
+typedef struct Limits Limits;
 
-struct Limit
+enum
 {
-	_Atomic uint64_t current;
-	uint64_t         limit;
-	bool             enable;
-	char*            name;
+	// network
+	LIMIT_SEND,
+
+	// transaction
+	LIMIT_WRITE,
+	LIMIT_COMPUTE,
+
+	// db
+	LIMIT_MEMORY,
+
+	// relations
+	LIMIT_USERS,
+	LIMIT_TABLES,
+	LIMIT_INDEXES,
+	LIMIT_CLONES,
+	LIMIT_TOPICS,
+	LIMIT_SUBSCRIPTIONS,
+	LIMIT_FUNCTIONS,
+
+	// options
+	LIMIT_COLUMNS,
+	LIMIT_KEYS,
+	LIMIT_VALUES,
+	LIMIT_ARGS,
+	LIMIT_PARTITIONS,
+	LIMIT_VECTOR,
+
+	LIMIT_MAX
 };
 
-static inline void
-limit_init(Limit* self, char* name)
+struct Limits
 {
-	self->current = 0;
-	self->limit   = 0;
-	self->enable  = false;
-	self->name    = name;
+	uint64_t flags;
+	int64_t  limits[LIMIT_MAX];
+};
+
+void limits_init(Limits*);
+void limits_copy(Limits*, Limits*);
+int  limits_find(Str*);
+void limits_read(Limits*, uint8_t**);
+void limits_write(Limits*, Buf*);
+
+static inline bool
+limits_is_set(Limits* self, int id)
+{
+	return (self->flags & (1 << id)) > 0;
 }
 
 static inline void
-limit_reset(Limit* self)
+limits_set(Limits* self, int id, int64_t value)
 {
-	self->current = 0;
-	self->limit   = 0;
-	self->enable  = false;
+	self->flags |= (1 << id);
+	self->limits[id] = value;
 }
 
 static inline void
-limit_set(Limit* self, bool enable, uint64_t limit)
+limits_unset(Limits* self, int id)
 {
-	self->limit  = limit;
-	self->enable = enable;
+	self->flags &= ~(1 << id);
+	self->limits[id] = 0;
+}
+
+static inline int64_t
+limits_get(Limits* self, int id)
+{
+	return self->limits[id];
 }
 
 hot static inline bool
-limit_reserve(Limit* self, uint64_t size)
+limits_check(Limits* self, int id, int64_t value)
 {
-	uint64_t current = atomic_load_explicit(&self->current, memory_order_relaxed);
-	for (;;)
-	{
-		// global limit reached (with overflow check)
-		if (unlikely(current + size < current || current + size > self->limit))
-			return false;
-
-		// atomically add total usage (if it has not changed)
-		if (likely(atomic_compare_exchange_weak_explicit(&self->current, &current,
-		                                                 current + size,
-		                                                 memory_order_relaxed,
-		                                                 memory_order_relaxed)))
-			break;
-	}
-
-	return true;
-}
-
-hot static inline void
-limit_add(Limit* self, uint64_t size)
-{
-	if (! self->enable)
-		return;
-
-	if (likely(limit_reserve(self, size)))
-		return;
-
-	error("{s} limit reached", self->name);
-}
-
-hot static inline void
-limit_sub(Limit* self, uint64_t size)
-{
-	uint64_t current = atomic_load_explicit(&self->current, memory_order_relaxed);
-	for (;;)
-	{
-		// atomically sub total usage (if it has not changed)
-		if (likely(atomic_compare_exchange_weak_explicit(&self->current, &current,
-		                                                 current - size,
-		                                                 memory_order_relaxed,
-		                                                 memory_order_relaxed)))
-			break;
-	}
+	// check if limit is set
+	if (!self || !(self->flags & (1 << id)))
+		return true;
+	return value <= self->limits[id];
 }

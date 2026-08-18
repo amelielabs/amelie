@@ -181,9 +181,9 @@ part_insert(Part*     self, Tr* tr,
 	// capture write
 	part_cdc(self, tr, timeline, row, CDC_WRITE);
 
-	// ensure transaction log limit
-	if (tr->limit)
-		limit_add(tr->limit, 1);
+	// ensure write limit
+	if (tr->write)
+		usage_add(tr->write, 1);
 }
 
 hot bool
@@ -231,9 +231,9 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	// capture write
 	part_cdc(self, tr, timeline, row, CDC_WRITE);
 
-	// ensure transaction log limit
-	if (tr->limit)
-		limit_add(tr->limit, 1);
+	// ensure write limit
+	if (tr->write)
+		usage_add(tr->write, 1);
 
 	return false;
 }
@@ -282,9 +282,9 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	// capture
 	part_cdc(self, tr, timeline, row, row->deleted? CDC_DELETE: CDC_WRITE);
 
-	// ensure transaction log limit
-	if (tr->limit)
-		limit_add(tr->limit, 1);
+	// ensure write limit
+	if (tr->write)
+		usage_add(tr->write, 1);
 }
 
 hot void
@@ -346,9 +346,9 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 	// capture delete
 	part_cdc(self, tr, timeline, row, CDC_DELETE);
 
-	// ensure transaction log limit
-	if (tr->limit)
-		limit_add(tr->limit, 1);
+	// ensure write limit
+	if (tr->write)
+		usage_add(tr->write, 1);
 }
 
 hot void

@@ -25,10 +25,10 @@ struct Gtr
 	bool       abort;
 	Tr         tr;
 	Write      write;
+	Usage      usage_write;
 	List       write_cdc;
 	Event      on_commit;
 	Event*     on_recover;
-	Limit      limit;
 	Local*     local;
 	Gtr*       link_recover;
 	Gtr*       link_group;
@@ -51,9 +51,9 @@ gtr_init(Gtr* self)
 	self->link_group   = NULL;
 	dispatches_init(&self->dispatches, self);
 	event_init(&self->on_commit);
-	limit_init(&self->limit, "write");
 	tr_init(&self->tr);
 	write_init(&self->write);
+	usage_init(&self->usage_write, "write");
 	list_init(&self->write_cdc);
 	list_init(&self->link_batch);
 	list_init(&self->link);
@@ -76,9 +76,9 @@ gtr_reset(Gtr* self)
 		self->error = NULL;
 	}
 	dispatches_reset(&self->dispatches);
-	limit_reset(&self->limit);
 	tr_reset(&self->tr);
 	write_reset(&self->write);
+	usage_reset(&self->usage_write);
 	list_init(&self->write_cdc);
 	list_init(&self->link_batch);
 	list_init(&self->link);
@@ -98,10 +98,10 @@ gtr_prepare(Gtr* self, Local* local, User* user, Program* program)
 {
 	self->local = local;
 
-	// set transaction write limit
+	// set write limit
 	auto limits = local->limits;
 	if (limits && limits_is_set(limits, LIMIT_WRITE))
-		limit_set(&self->limit, true, limits_get(limits, LIMIT_WRITE));
+		usage_set_limit(&self->usage_write, true, limits_get(limits, LIMIT_WRITE));
 
 	// set user
 	tr_set_user(&self->tr, &user->rel);

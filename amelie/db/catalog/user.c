@@ -27,9 +27,9 @@ user_limits_sync(User* self)
 	// memory
 	auto limits = &self->config->limits;
 	if (limits_is_set(limits, LIMIT_MEMORY))
-		limit_set(&self->limit_memory, true, limits_get(limits, LIMIT_MEMORY));
+		usage_set_limit(&self->memory, true, limits_get(limits, LIMIT_MEMORY));
 	else
-		limit_set(&self->limit_memory, false, 0);
+		usage_set_limit(&self->memory, false, 0);
 }
 
 static inline void
@@ -54,8 +54,8 @@ user_allocate(UserConfig* config)
 	self->revoked_at = 0;
 	self->config     = user_config_copy(config);
 
-	// set memory limit
-	limit_init(&self->limit_memory, "memory");
+	// prepare memory usage
+	usage_init(&self->memory, "memory");
 	user_limits_sync(self);
 
 	// set relation
