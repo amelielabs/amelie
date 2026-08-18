@@ -41,16 +41,16 @@ sub_store_iterator_set(SubIterator* self)
 	// cmd
 	Str cmd;
 	switch (at->cmd) {
-	case LOG_REPLACE:
+	case CDC_WRITE:
 		str_set(&cmd, "write", 5);
 		break;
-	case LOG_DELETE:
+	case CDC_DELETE:
 		str_set(&cmd, "delete", 6);
 		break;
-	case LOG_PUBLISH:
+	case CDC_PUBLISH:
 		str_set(&cmd, "publish", 7);
 		break;
-	case LOG_REQUEST:
+	case CDC_REQUEST:
 		str_set(&cmd, "request", 7);
 		break;
 	}

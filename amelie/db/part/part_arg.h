@@ -16,5 +16,6 @@ typedef struct PartArg PartArg;
 struct PartArg
 {
 	Rel*       rel;
+	Columns*   columns;
 	Timelines* timelines;
 };

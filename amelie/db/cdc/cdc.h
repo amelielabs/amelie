@@ -15,6 +15,14 @@ typedef struct CdcEvent  CdcEvent;
 typedef struct CdcHeader CdcHeader;
 typedef struct Cdc       Cdc;
 
+enum
+{
+	CDC_WRITE,
+	CDC_DELETE,
+	CDC_PUBLISH,
+	CDC_REQUEST
+};
+
 struct CdcEvent
 {
 	uint64_t lsn;

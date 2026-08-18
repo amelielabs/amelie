@@ -20,28 +20,22 @@
 void
 cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 {
-	// command (matching log commands)
+	// cmd
 	Str cmd;
 	switch (event->cmd) {
-	// write
-	case 0:
+	case CDC_WRITE:
 		str_set(&cmd, "write", 5);
 		break;
-	// delete
-	case 1:
+	case CDC_DELETE:
 		str_set(&cmd, "delete", 6);
 		break;
-	// publish
-	case 2:
+	case CDC_PUBLISH:
 		str_set(&cmd, "publish", 7);
 		break;
-	// request
-	case 5:
+	case CDC_REQUEST:
 		str_set(&cmd, "request", 7);
 		break;
 	}
-
-	// cmd
 	buf_format(buf, "{{\"cmd\": \"{str}\", ", &cmd, rel_user);
 
 	// target

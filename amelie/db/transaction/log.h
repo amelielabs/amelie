@@ -20,7 +20,6 @@ enum
 	LOG_REPLACE,
 	LOG_DELETE,
 	LOG_PUBLISH,
-	LOG_ACK,
 	LOG_DDL,
 	LOG_REQUEST
 };
@@ -107,7 +106,6 @@ log_dml(Log*      self,
         LogIf*    iface,
         void*     iface_arg,
         Row*      row,
-        Row*      row_prev,
         Timeline* timeline)
 {
 	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
@@ -115,26 +113,30 @@ log_dml(Log*      self,
 	op->iface_arg = iface_arg;
 	op->cmd       = cmd;
 	op->row       = row;
-	op->row_prev  = row_prev;
+	op->row_prev  = NULL;
 	op->timeline  = timeline;
 	self->count++;
 	return op;
 }
 
-static inline void
-log_cmd(Log*   self,
-        int    cmd,
-        LogIf* iface,
-        void*  iface_arg,
-        Rel*   rel)
+hot static inline LogOp*
+log_replace(Log*      self,
+            LogIf*    iface,
+            void*     iface_arg,
+            Row*      row,
+            Timeline* timeline)
 {
-	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
-	op->iface     = iface;
-	op->iface_arg = iface_arg;
-	op->cmd       = cmd;
-	op->rel       = rel;
-	op->rel_data  = buf_size(&self->data);
-	self->count++;
+	return log_dml(self, LOG_REPLACE, iface, iface_arg, row, timeline);
+}
+
+hot static inline LogOp*
+log_delete(Log*      self,
+           LogIf*    iface,
+           void*     iface_arg,
+           Row*      row,
+           Timeline* timeline)
+{
+	return log_dml(self, LOG_DELETE, iface, iface_arg, row, timeline);
 }
 
 static inline void
@@ -143,12 +145,11 @@ log_ddl(Log*   self,
         void*  iface_arg,
         Rel*   rel)
 {
-	log_cmd(self, LOG_DDL, iface, iface_arg, rel);
-}
-
-hot static inline void
-log_cdc(Log* self, int cmd, Uuid* id, Row* row, Flats* flats, Columns* columns, Timezone* tz)
-{
-	// [cmd, id, data, data_size]
-	cdc_log_add_row(&self->cdc, cmd, id, row, flats, columns, tz);
+	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
+	op->iface     = iface;
+	op->iface_arg = iface_arg;
+	op->cmd       = LOG_DDL;
+	op->rel       = rel;
+	op->rel_data  = buf_size(&self->data);
+	self->count++;
 }

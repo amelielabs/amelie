@@ -117,16 +117,15 @@ static LogIf log_if_secondary =
 };
 
 static inline void
-part_cdc(Part* self, Tr* tr, Timeline* timeline, Index* primary)
+part_cdc(Part* self, Tr* tr, Timeline* timeline, Row* row, int cdc_cmd)
 {
-	unused(self);
 	if (! timeline->rel->subs)
 		return;
-	auto last = log_last(&tr->log);
-	log_cdc(&tr->log, last->cmd, timeline->rel->id, last->row,
-	        &self->flats,
-	        index_keys(primary)->columns,
-	        runtime()->timezone);
+	cdc_log_add_row(&tr->log.cdc, cdc_cmd, timeline->rel->id,
+	                row,
+	                &self->flats,
+	                self->arg->columns,
+	                runtime()->timezone);
 }
 
 hot void
@@ -136,10 +135,7 @@ part_insert(Part*     self, Tr* tr,
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_dml(&tr->log, LOG_REPLACE, &log_if, primary, row, NULL, timeline);
-
-	// handle cdc
-	part_cdc(self, tr, timeline, primary);
+	auto op = log_replace(&tr->log, &log_if, primary, row, timeline);
 
 	// update primary index
 	op->row_prev = index_replace_by(primary, row);
@@ -160,13 +156,16 @@ part_insert(Part*     self, Tr* tr,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary, index, row, NULL, timeline);
+		op = log_replace(&tr->log, &log_if_secondary, index, row, timeline);
 		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev))
 			if (row_visible(op->row_prev, self->heap, timeline))
 				error("index '{str}': unique key constraint violation",
 				      &index->config->name);
 	}
+
+	// capture write
+	part_cdc(self, tr, timeline, row, CDC_WRITE);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -191,16 +190,13 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	row->head = true;
 
 	// add log record
-	auto op = log_dml(&tr->log, LOG_REPLACE, &log_if, primary, row, NULL, timeline);
-
-	// handle cdc
-	part_cdc(self, tr, timeline, primary);
+	auto op = log_replace(&tr->log, &log_if, primary, row, timeline);
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary, index, row, NULL, timeline);
+		op = log_replace(&tr->log, &log_if_secondary, index, row, timeline);
 		op->row_prev = index_replace_by(index, row);
 
 		if (unlikely(op->row_prev))
@@ -208,6 +204,9 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 				error("index '{str}': unique key constraint violation",
 				      &index->config->name);
 	}
+
+	// capture write
+	part_cdc(self, tr, timeline, row, CDC_WRITE);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -223,10 +222,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_dml(&tr->log, LOG_REPLACE, &log_if, primary, row, NULL, timeline);
-
-	// handle cdc
-	part_cdc(self, tr, timeline, primary);
+	auto op = log_replace(&tr->log, &log_if, primary, row, timeline);
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
@@ -244,8 +240,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, LOG_REPLACE, &log_if_secondary,
-		             index, row, NULL, timeline);
+		op = log_replace(&tr->log,&log_if_secondary, index, row, timeline);
 
 		// find and replace existing secondary row (keys are not updated)
 		auto index_it = index_iterator(index);
@@ -253,6 +248,9 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 		iterator_open(index_it, self->heap, timeline, row);
 		op->row_prev = index_replace(index, row, index_it);
 	}
+
+	// capture
+	part_cdc(self, tr, timeline, row, row->deleted? CDC_DELETE: CDC_WRITE);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -285,10 +283,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 
 	// add log record
 	auto row = iterator_at(it);
-	auto op = log_dml(&tr->log, LOG_DELETE, &log_if, primary, row, NULL, timeline);
-
-	// handle cdc
-	part_cdc(self, tr, timeline, primary);
+	auto op = log_delete(&tr->log, &log_if, primary, row, timeline);
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);
@@ -301,11 +296,14 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, LOG_DELETE, &log_if_secondary, index, row, NULL, timeline);
+		op = log_delete(&tr->log, &log_if_secondary, index, row, timeline);
 
 		// delete by key
 		op->row_prev = index_delete_by(index, row);
 	}
+
+	// capture delete
+	part_cdc(self, tr, timeline, row, CDC_DELETE);
 
 	// ensure transaction log limit
 	if (tr->limit)

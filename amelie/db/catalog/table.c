@@ -53,6 +53,7 @@ table_allocate(TableConfig* config,
 	// part context
 	auto arg = &self->part_arg;
 	arg->rel       = &self->rel;
+	arg->columns   = &self->config->columns;
 	arg->timelines = &self->timelines;
 
 	// partition manager
