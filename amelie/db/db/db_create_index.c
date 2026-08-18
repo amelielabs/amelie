@@ -54,6 +54,14 @@ db_indexate(Part* part, IndexConfig* config)
 	auto it_upsert = index_iterator(index);
 	defer(iterator_close, it_upsert);
 
+	IndexOp io =
+	{
+		.row      = NULL,
+		.row_prev = NULL,
+		.it       = it_upsert,
+		.delta    = 0
+	};
+
 	// indexate heap
 	auto heap = part->heap;
 	HeapIterator it;
@@ -71,7 +79,8 @@ db_indexate(Part* part, IndexConfig* config)
 			error("create index: null key column");
 
 		// get index head
-		if (! index_upsert(index, row, it_upsert))
+		io.row = row;
+		if (! index_upsert(index, &io))
 			continue;
 		// check unique constraint violation
 		auto head = iterator_at(it_upsert);
@@ -148,12 +157,14 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	if (on_error)
 	{
 		// abort index creation
+		IndexOp io;
+		index_op_init(&io);
 		list_foreach(&table->parts.list)
 		{
 			auto part = list_at(Part, link);
 			if (! part->in_progress)
 				continue;
-			index_free(part->in_progress);
+			index_free(part->in_progress, &io);
 			part->in_progress = NULL;
 		}
 		unlock(lock_catalog);

@@ -20,7 +20,7 @@ bench_decre_create(Bench* self, Client* client)
 	unused(self);
 
 	Str str;
-	str_set_cstr(&str, "create table accounts(id int primary key using hash, money decimal default decimal '100.0')");
+	str_set_cstr(&str, "create table accounts(id int primary key using hash, money decimal default 100.0)");
 	client_execute(client, &str, NULL);
 
 	str_set_cstr(&str, "create table history(id uuid primary key identity, src int, dst int, amount decimal)");

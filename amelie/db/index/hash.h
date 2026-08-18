@@ -51,6 +51,12 @@ hash_create(Hash* self, Comparable* comparable)
 	hash_store_create(self->current, comparable, 256);
 }
 
+always_inline static inline int64_t
+hash_size(Hash* self)
+{
+	return self->a.size + self->b.size;
+}
+
 static inline void
 hash_rehash_start(Hash* self)
 {

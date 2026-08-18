@@ -19,88 +19,106 @@
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 
-always_inline static inline IndexTree*
-index_tree_of(Index* self)
+hot static inline void
+tree_delta(Tree* self, IndexOp* op, int64_t before)
 {
-	return (IndexTree*)self;
+	// update memory usage delta
+	int64_t after = self->count_pages;
+	if (likely(after == before))
+		return;
+	int64_t page_delta = after - before;
+	int64_t page_bytes = (int64_t)(sizeof(TreePage) + self->size_page * sizeof(Row*));
+	op->delta += page_delta * page_bytes;
 }
 
 hot static bool
-index_tree_upsert(Index* arg, Row* key, Iterator* it)
+index_tree_upsert(Index* self, IndexOp* op)
 {
-	auto self = index_tree_of(arg);
+	auto tree = &index_tree_of(self)->tree;
+
+	// upsert
+	auto before = tree->count_pages;
 	TreePos pos;
-	auto exists = tree_upsert(&self->tree, &pos, key);
+	auto exists = tree_upsert(tree, &pos, op->row);
+	tree_delta(tree, op, before);
+
+	// set iterator
+	auto it      = op->it;
 	auto tree_it = index_tree_iterator_of(it);
 	tree_iterator_open_at(&tree_it->iterator, &pos);
 	it->current = tree_iterator_at(&tree_it->iterator);
 	return exists;
 }
 
-hot static Row*
-index_tree_replace_by(Index* arg, Row* key)
+hot static bool
+index_tree_replace(Index* self, IndexOp* op)
 {
-	auto self = index_tree_of(arg);
-	return tree_replace(&self->tree, key);
+	auto tree = &index_tree_of(self)->tree;
+	auto before = tree->count_pages;
+	if (! op->it)
+	{
+		// replace by key
+		op->row_prev = tree_replace(tree, op->row);
+	} else
+	{
+		// replace by iterator
+		auto tree_it = index_tree_iterator_of(op->it);
+		op->row_prev = tree_iterator_replace(&tree_it->iterator, op->row);
+		op->it->current = tree_iterator_at(&tree_it->iterator);
+	}
+	tree_delta(tree, op, before);
+	return op->row_prev != NULL;
 }
 
-hot static Row*
-index_tree_replace(Index* arg, Row* key, Iterator* it)
+hot static bool
+index_tree_delete(Index* self, IndexOp* op)
 {
-	unused(arg);
-	auto tree_it = index_tree_iterator_of(it);
-	auto row = tree_iterator_replace(&tree_it->iterator, key);
-	it->current = tree_iterator_at(&tree_it->iterator);
-	return row;
+	auto tree = &index_tree_of(self)->tree;
+	auto before = tree->count_pages;
+	if (! op->it)
+	{
+		// delete by key
+		op->row_prev = tree_delete_by(tree, op->row);
+	} else
+	{
+		// delete by iterator
+		auto tree_it = index_tree_iterator_of(op->it);
+		op->row_prev = tree_iterator_delete(&tree_it->iterator);
+		op->it->current = tree_iterator_at(&tree_it->iterator);
+	}
+	tree_delta(tree, op, before);
+	return op->row_prev != NULL;
 }
 
-hot static Row*
-index_tree_delete_by(Index* arg, Row* key)
+static void
+index_tree_truncate(Index* self, IndexOp* op)
 {
-	auto self = index_tree_of(arg);
-	return tree_delete_by(&self->tree, key);
+	auto tree = &index_tree_of(self)->tree;
+	auto before = tree->count_pages;
+	tree_free(tree);
+	tree_delta(tree, op, before);
 }
 
-hot static Row*
-index_tree_delete(Index* arg, Iterator* it)
+static void
+index_tree_free(Index* self, IndexOp* op)
 {
-	unused(arg);
-	auto tree_it = index_tree_iterator_of(it);
-	auto row = tree_iterator_delete(&tree_it->iterator);
-	it->current = tree_iterator_at(&tree_it->iterator);
-	return row;
+	index_tree_truncate(self, op);
+	am_free(self);
 }
 
 hot static Iterator*
-index_tree_iterator(Index* arg)
+index_tree_iterator(Index* self)
 {
-	auto self = index_tree_of(arg);
-	return index_tree_iterator_allocate(self);
+	return index_tree_iterator_allocate(index_tree_of(self));
 }
 
 hot static Iterator*
-index_tree_iterator_merge(Index* arg, Iterator* it, Heap* heap)
+index_tree_iterator_merge(Index* self, Iterator* it, Heap* heap)
 {
-	auto self = index_tree_of(arg);
 	if (! it)
 		it = index_tree_merge_allocate();
-	index_tree_merge_add(index_tree_merge_of(it), self, heap);
+	index_tree_merge_add(index_tree_merge_of(it), index_tree_of(self), heap);
 	return it;
-}
-
-static void
-index_tree_truncate(Index* arg)
-{
-	auto self = index_tree_of(arg);
-	tree_free(&self->tree);
-}
-
-static void
-index_tree_free(Index* arg)
-{
-	auto self = index_tree_of(arg);
-	tree_free(&self->tree);
-	am_free(self);
 }
 
 Index*
@@ -112,13 +130,11 @@ index_tree_allocate(IndexConfig* config, void* arg)
 
 	auto iface = &self->index.iface;
 	iface->upsert         = index_tree_upsert;
-	iface->replace_by     = index_tree_replace_by;
 	iface->replace        = index_tree_replace;
-	iface->delete_by      = index_tree_delete_by;
 	iface->delete         = index_tree_delete;
-	iface->iterator       = index_tree_iterator;
-	iface->iterator_merge = index_tree_iterator_merge;
 	iface->truncate       = index_tree_truncate;
 	iface->free           = index_tree_free;
+	iface->iterator       = index_tree_iterator;
+	iface->iterator_merge = index_tree_iterator_merge;
 	return &self->index;
 }

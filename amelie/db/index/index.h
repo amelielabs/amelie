@@ -12,19 +12,26 @@
 //
 
 typedef struct IndexIf IndexIf;
+typedef struct IndexOp IndexOp;
 typedef struct Index   Index;
 
 struct IndexIf
 {
-	bool      (*upsert)(Index*, Row*, Iterator*);
-	Row*      (*replace_by)(Index*, Row*);
-	Row*      (*replace)(Index*, Row*, Iterator*);
-	Row*      (*delete_by)(Index*, Row*);
-	Row*      (*delete)(Index*, Iterator*);
+	bool      (*replace)(Index*, IndexOp*);
+	bool      (*upsert)(Index*, IndexOp*);
+	bool      (*delete)(Index*, IndexOp*);
+	void      (*truncate)(Index*, IndexOp*);
+	void      (*free)(Index*, IndexOp*);
 	Iterator* (*iterator)(Index*);
 	Iterator* (*iterator_merge)(Index*, Iterator*, Heap*);
-	void      (*truncate)(Index*);
-	void      (*free)(Index*);
+};
+
+struct IndexOp
+{
+	Row*      row;
+	Row*      row_prev;
+	Iterator* it;
+	int64_t   delta;
 };
 
 struct Index
@@ -36,6 +43,21 @@ struct Index
 };
 
 static inline void
+index_op_init(IndexOp* self)
+{
+	memset(self, 0, sizeof(*self));
+}
+
+static inline void
+index_op_set(IndexOp* self, Row* row)
+{
+	self->row      = row;
+	self->row_prev = NULL;
+	self->it       = NULL;
+	self->delta    = 0;
+}
+
+static inline void
 index_init(Index* self, IndexConfig* config, void* arg)
 {
 	memset(self, 0, sizeof(*self));
@@ -45,39 +67,33 @@ index_init(Index* self, IndexConfig* config, void* arg)
 }
 
 static inline void
-index_free(Index* self)
+index_free(Index* self, IndexOp* op)
 {
-	self->iface.free(self);
+	self->iface.free(self, op);
+}
+
+static inline void
+index_truncate(Index* self, IndexOp* op)
+{
+	self->iface.truncate(self, op);
 }
 
 static inline bool
-index_upsert(Index* self, Row* key, Iterator* it)
+index_upsert(Index* self, IndexOp* op)
 {
-	return self->iface.upsert(self, key, it);
+	return self->iface.upsert(self, op);
 }
 
-static inline Row*
-index_replace_by(Index* self, Row* key)
+static inline bool
+index_replace(Index* self, IndexOp* op)
 {
-	return self->iface.replace_by(self, key);
+	return self->iface.replace(self, op);
 }
 
-static inline Row*
-index_replace(Index* self, Row* key, Iterator* it)
+static inline bool
+index_delete(Index* self, IndexOp* op)
 {
-	return self->iface.replace(self, key, it);
-}
-
-static inline Row*
-index_delete_by(Index* self, Row* key)
-{
-	return self->iface.delete_by(self, key);
-}
-
-static inline Row*
-index_delete(Index* self, Iterator* it)
-{
-	return self->iface.delete(self, it);
+	return self->iface.delete(self, op);
 }
 
 static inline Iterator*
@@ -90,12 +106,6 @@ static inline Iterator*
 index_iterator_merge(Index* self, Iterator* it, Heap* heap)
 {
 	return self->iface.iterator_merge(self, it, heap);
-}
-
-static inline void
-index_truncate(Index* self)
-{
-	self->iface.truncate(self);
 }
 
 static inline Keys*

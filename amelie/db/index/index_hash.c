@@ -19,83 +19,110 @@
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 
-hot static bool
-index_hash_upsert(Index* arg, Row* key, Iterator* it)
+hot static inline void
+hash_delta(Hash* self, IndexOp* op, int64_t before)
 {
-	auto self = index_hash_of(arg);
+	// update memory usage delta
+	int64_t after = hash_size(self);
+	if (likely(after == before))
+		return;
+	op->delta += sizeof(Row*) * (after - before);
+}
+
+hot static bool
+index_hash_upsert(Index* self, IndexOp* op)
+{
+	auto hash = &index_hash_of(self)->hash;
+
+	// upsert
+	auto before = hash_size(hash);
 	uint64_t pos = 0;
-	auto exists = hash_get_or_set(&self->hash, key, &pos);
+	auto exists = hash_get_or_set(hash, op->row, &pos);
+	hash_delta(hash, op, before);
+
+	// set iterator
+	auto it      = op->it;
 	auto hash_it = index_hash_iterator_of(it);
 	hash_iterator_open_at(&hash_it->iterator, pos);
 	it->current = hash_iterator_at(&hash_it->iterator);
 	return exists;
 }
 
-hot static Row*
-index_hash_replace_by(Index* arg, Row* key)
+hot static bool
+index_hash_replace(Index* self, IndexOp* op)
 {
-	auto self = index_hash_of(arg);
-	return hash_set(&self->hash, key);
+	auto hash = &index_hash_of(self)->hash;
+	auto before = hash_size(hash);
+	if (! op->it)
+	{
+		// replace by key
+		op->row_prev = hash_set(hash, op->row);
+	} else
+	{
+		// replace by iterator
+		auto hash_it = index_hash_iterator_of(op->it);
+		op->row_prev = hash_iterator_replace(&hash_it->iterator, op->row);
+		op->it->current = hash_iterator_at(&hash_it->iterator);
+	}
+	hash_delta(hash, op, before);
+	return op->row_prev != NULL;
 }
 
-hot static Row*
-index_hash_replace(Index* arg, Row* key, Iterator* it)
+hot static bool
+index_hash_delete(Index* self, IndexOp* op)
 {
-	unused(arg);
-	auto hash_it = index_hash_iterator_of(it);
-	auto row = hash_iterator_replace(&hash_it->iterator, key);
-	it->current = hash_iterator_at(&hash_it->iterator);
-	return row;
+	auto hash = &index_hash_of(self)->hash;
+	auto before = hash_size(hash);
+	if (! op->it)
+	{
+		// delete by key
+		op->row_prev = hash_delete(hash, op->row);
+	} else
+	{
+		// delete by iterator
+		auto hash_it = index_hash_iterator_of(op->it);
+		op->row_prev = hash_iterator_delete(&hash_it->iterator);
+		op->it->current = hash_iterator_at(&hash_it->iterator);
+	}
+	hash_delta(hash, op, before);
+	return op->row_prev != NULL;
 }
 
-hot static Row*
-index_hash_delete_by(Index* arg, Row* key)
+static void
+index_hash_truncate(Index* self, IndexOp* op)
 {
-	auto self = index_hash_of(arg);
-	return hash_delete(&self->hash, key);
+	auto hash = &index_hash_of(self)->hash;
+	auto comparable = hash->comparable;
+	auto before = hash_size(hash);
+	hash_free(hash);
+	hash_create(hash, comparable);
+	hash_delta(hash, op, before);
 }
 
-hot static Row*
-index_hash_delete(Index* arg, Iterator* it)
+static void
+index_hash_free(Index* self, IndexOp* op)
 {
-	unused(arg);
-	auto hash_it = index_hash_iterator_of(it);
-	auto row = hash_iterator_delete(&hash_it->iterator);
-	it->current = hash_iterator_at(&hash_it->iterator);
-	return row;
+	auto hash = &index_hash_of(self)->hash;
+	auto before = hash_size(hash);
+	hash_free(hash);
+	hash_delta(hash, op, before);
+
+	am_free(self);
 }
 
 hot static Iterator*
-index_hash_iterator(Index* arg)
+index_hash_iterator(Index* self)
 {
-	auto self = index_hash_of(arg);
-	return index_hash_iterator_allocate(self);
+	return index_hash_iterator_allocate(index_hash_of(self));
 }
 
 hot static Iterator*
-index_hash_iterator_merge(Index* arg, Iterator* it, Heap* heap)
+index_hash_iterator_merge(Index* self, Iterator* it, Heap* heap)
 {
-	auto self = index_hash_of(arg);
 	if (! it)
 		it = index_hash_merge_allocate();
-	index_hash_merge_add(index_hash_merge_of(it), self, heap);
+	index_hash_merge_add(index_hash_merge_of(it), index_hash_of(self), heap);
 	return it;
-}
-
-static void
-index_hash_truncate(Index* arg)
-{
-	auto self = index_hash_of(arg);
-	hash_free(&self->hash);
-	hash_create(&self->hash, &arg->config->keys.comparable);
-}
-
-static void
-index_hash_free(Index* arg)
-{
-	auto self = index_hash_of(arg);
-	hash_free(&self->hash);
-	am_free(self);
 }
 
 Index*
@@ -107,15 +134,21 @@ index_hash_allocate(IndexConfig* config, void* arg)
 
 	auto iface = &self->index.iface;
 	iface->upsert         = index_hash_upsert;
-	iface->replace_by     = index_hash_replace_by;
 	iface->replace        = index_hash_replace;
-	iface->delete_by      = index_hash_delete_by;
 	iface->delete         = index_hash_delete;
-	iface->iterator       = index_hash_iterator;
-	iface->iterator_merge = index_hash_iterator_merge;
 	iface->truncate       = index_hash_truncate;
 	iface->free           = index_hash_free;
+	iface->iterator       = index_hash_iterator;
+	iface->iterator_merge = index_hash_iterator_merge;
 
 	hash_create(&self->hash, &config->keys.comparable);
 	return &self->index;
+}
+
+uint64_t
+index_hash_size(IndexConfig* config)
+{
+	// default
+	unused(config);
+	return sizeof(Row*) * 256;
 }

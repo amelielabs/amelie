@@ -31,9 +31,11 @@ part_cleanup_main_head(PartCleanup* self, Heap* heap, Row* row)
 	if (row->deleted)
 	{
 		// remove whole chain from the indexes
-		index_delete_by(primary, row);
+		IndexOp op;
+		index_op_set(&op, row);
+		index_delete(primary, &op);
 		for (auto index = primary->next; index; index = index->next)
-			index_delete_by(index, row);
+			index_delete(index, &op);
 		row->head = false;
 	} else
 	{
@@ -74,9 +76,11 @@ part_cleanup_main_prev(PartCleanup* self, Heap* heap, Row* row)
 	auto primary = part_primary(self->part);
 	if (head_next)
 	{
-		index_replace_by(primary, head_next);
+		IndexOp op;
+		index_op_set(&op, head_next);
+		index_replace(primary, &op);
 		for (auto index = primary->next; index; index = index->next)
-			index_replace_by(index, head_next);
+			index_replace(index, &op);
 
 		// mark new head
 		head_next->head = true;
@@ -95,9 +99,11 @@ part_cleanup_main_prev(PartCleanup* self, Heap* heap, Row* row)
 	}
 
 	// free whole chain
-	index_delete_by(primary, row);
+	IndexOp op;
+	index_op_set(&op, row);
+	index_delete(primary, &op);
 	for (auto index = primary->next; index; index = index->next)
-		index_delete_by(index, row);
+		index_delete(index, &op);
 	while (row)
 	{
 		auto prev = row_prev(row, heap);
@@ -167,17 +173,21 @@ part_cleanup_clone(PartCleanup* self)
 			head->head = false;
 			if (head_next)
 			{
-				index_replace_by(primary, head_next);
+				IndexOp op;
+				index_op_set(&op, head_next);
+				index_replace(primary, &op);
 				for (auto index = primary->next; index; index = index->next)
-					index_replace_by(index, head_next);
+					index_replace(index, &op);
 
 				// mark new head
 				head_next->head = true;
 			} else
 			{
-				index_delete_by(primary, head);
+				IndexOp op;
+				index_op_set(&op, head);
+				index_delete(primary, &op);
 				for (auto index = primary->next; index; index = index->next)
-					index_delete_by(index, head);
+					index_delete(index, &op);
 			}
 		}
 

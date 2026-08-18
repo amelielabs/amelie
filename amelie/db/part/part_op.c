@@ -24,11 +24,17 @@ static inline Row*
 rollback(LogOp* op)
 {
 	auto index = (Index*)op->iface_arg;
+	IndexOp io;
 	if (op->row_prev)
-		index_replace_by(index, op->row_prev);
-	else
+	{
+		index_op_set(&io, op->row_prev);
+		index_replace(index, &io);
+	} else
 	if (op->row)
-		index_delete_by(index, op->row);
+	{
+		index_op_set(&io, op->row);
+		index_delete(index, &io);
+	}
 	return op->row;
 }
 
@@ -57,9 +63,11 @@ log_if_commit(Log* self, LogOp* op)
 	// last delete in the index
 	if (row->deleted && !row_prev_has(row))
 	{
-		index_delete_by(index, row);
+		IndexOp io;
+		index_op_set(&io, row);
+		index_delete(index, &io);
 		for (index = index->next; index; index = index->next)
-			index_delete_by(index, row);
+			index_delete(index, &io);
 
 		row_free(heap, &part->flats, row);
 	}
@@ -137,12 +145,16 @@ part_insert(Part*     self, Tr* tr,
 	auto primary = part_primary(self);
 	auto op = log_replace(&tr->log, &log_if, primary, row, timeline);
 
+	IndexOp io;
+	index_op_set(&io, row);
+
 	// update primary index
-	op->row_prev = index_replace_by(primary, row);
-	if (op->row_prev)
+	if (index_replace(primary, &io))
 	{
+		op->row_prev = io.row_prev;
+
 		// check unique constraint
-		if (row_visible(op->row_prev, self->heap, timeline))
+		if (row_visible(io.row_prev, self->heap, timeline))
 			error("index '{str}': unique key constraint violation",
 			      &primary->config->name);
 
@@ -150,18 +162,20 @@ part_insert(Part*     self, Tr* tr,
 		row_prev_set(row, op->row_prev);
 		op->row_prev->head = false;
 	}
-	op->row->head = true;
+	row->head = true;
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
 		op = log_replace(&tr->log, &log_if_secondary, index, row, timeline);
-		op->row_prev = index_replace_by(index, row);
-		if (unlikely(op->row_prev))
-			if (row_visible(op->row_prev, self->heap, timeline))
+		if (index_replace(index, &io))
+		{
+			op->row_prev = io.row_prev;
+			if (unlikely(row_visible(io.row_prev, self->heap, timeline)))
 				error("index '{str}': unique key constraint violation",
 				      &index->config->name);
+		}
 	}
 
 	// capture write
@@ -179,7 +193,14 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 {
 	// get if exists (iterator is openned in both cases)
 	auto primary = part_primary(self);
-	if (index_upsert(primary, row, it))
+	IndexOp io =
+	{
+		.row      = row,
+		.row_prev = NULL,
+		.it       = it,
+		.delta    = 0
+	};
+	if (index_upsert(primary, &io))
 	{
 		assert(iterator_at(it));
 		row_free(self->heap, &self->flats, row);
@@ -193,16 +214,18 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	auto op = log_replace(&tr->log, &log_if, primary, row, timeline);
 
 	// update secondary indexes
+	io.it = NULL;
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
 		op = log_replace(&tr->log, &log_if_secondary, index, row, timeline);
-		op->row_prev = index_replace_by(index, row);
-
-		if (unlikely(op->row_prev))
-			if (row_visible(op->row_prev, self->heap, timeline))
+		if (index_replace(index, &io))
+		{
+			op->row_prev = io.row_prev;
+			if (unlikely(row_visible(io.row_prev, self->heap, timeline)))
 				error("index '{str}': unique key constraint violation",
 				      &index->config->name);
+		}
 	}
 
 	// capture write
@@ -225,28 +248,35 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	auto op = log_replace(&tr->log, &log_if, primary, row, timeline);
 
 	// update primary index
-	op->row_prev = index_replace(primary, row, it);
+	IndexOp io =
+	{
+		.row      = row,
+		.row_prev = NULL,
+		.it       = it,
+		.delta    = 0
+	};
+	index_replace(primary, &io);
+	op->row_prev = io.row_prev;
 	assert(op->row_prev->head);
 	op->row_prev->head = false;
 
 	// chain head row
 	row_prev_set(row, op->row_prev);
-	op->row->head = true;
+	row->head = true;
 
 	// filter vector columns
-	row_filter(&self->flats, op->row_prev, true);
+	row_filter(&self->flats, io.row_prev, true);
 
 	// update secondary indexes
+	io.it = NULL;
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
 		op = log_replace(&tr->log,&log_if_secondary, index, row, timeline);
 
-		// find and replace existing secondary row (keys are not updated)
-		auto index_it = index_iterator(index);
-		defer(iterator_close, index_it);
-		iterator_open(index_it, self->heap, timeline, row);
-		op->row_prev = index_replace(index, row, index_it);
+		// replace by key
+		if (index_replace(index, &io))
+			op->row_prev = io.row_prev;
 	}
 
 	// capture
@@ -262,7 +292,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 {
 	auto primary = part_primary(self);
 
-	// handle delete as update to support clonning
+	// handle delete as update to support cloning
 	auto arg = self->arg;
 	if (arg->timelines->list_count > 0)
 	{
@@ -286,20 +316,31 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 	auto op = log_delete(&tr->log, &log_if, primary, row, timeline);
 
 	// update primary index
-	op->row_prev = index_delete(primary, it);
+	IndexOp io =
+	{
+		.row      = NULL,
+		.row_prev = NULL,
+		.it       = it,
+		.delta    = 0
+	};
+	index_delete(primary, &io);
+	op->row_prev = io.row_prev;
 	op->row_prev->head = false;
 
 	// filter vector columns
 	row_filter(&self->flats, op->row_prev, true);
 
 	// secondary indexes
+	io.row = row;
+	io.it  = NULL;
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
 		op = log_delete(&tr->log, &log_if_secondary, index, row, timeline);
 
 		// delete by key
-		op->row_prev = index_delete_by(index, row);
+		if (index_delete(index, &io))
+			op->row_prev = io.row_prev;
 	}
 
 	// capture delete

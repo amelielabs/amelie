@@ -41,11 +41,13 @@ void
 part_free(Part* self)
 {
 	track_free(&self->track);
+	IndexOp op;
+	index_op_init(&op);
 	auto index = self->indexes;
 	while (index)
 	{
 		auto next = index->next;
-		index_free(index);
+		index_free(index, &op);
 		index = next;
 	}
 	heap_free(self->heap);
@@ -87,12 +89,18 @@ part_open_heap(Part* self, uint64_t checkpoint)
 			continue;
 
 		// update index to track the latest version
-		auto exists = index_upsert(primary, row, it_upsert);
-		assert(! exists);
-		unused(exists);
+		IndexOp op =
+		{
+			.row      = row,
+			.row_prev = NULL,
+			.it       = it_upsert,
+			.delta    = 0
+		};
+		if (unlikely(index_upsert(primary, &op)))
+			abort();
+		op.it = NULL;
 		for (auto index = primary->next; index; index = index->next)
-			index_replace_by(index, row);
-
+			index_replace(index, &op);
 		count++;
 	}
 
@@ -142,8 +150,10 @@ part_open(Part* self, uint64_t checkpoint)
 void
 part_truncate(Part* self)
 {
+	IndexOp op;
+	index_op_init(&op);
 	for (auto index = self->indexes; index; index = index->next)
-		index_truncate(index);
+		index_truncate(index, &op);
 
 	// create a new empty heap with matching metadata
 	auto new = heap_allocate();
@@ -200,7 +210,10 @@ part_index_drop(Part* self, Str* name)
 	else
 		self->indexes = index->next;
 	self->indexes_count--;
-	index_free(index);
+
+	IndexOp op;
+	index_op_init(&op);
+	index_free(index, &op);
 }
 
 Index*

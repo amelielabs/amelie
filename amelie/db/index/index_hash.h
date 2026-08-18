@@ -25,4 +25,5 @@ index_hash_of(Index* self)
 	return (IndexHash*)self;
 }
 
-Index* index_hash_allocate(IndexConfig*, void*);
+Index*   index_hash_allocate(IndexConfig*, void*);
+uint64_t index_hash_size(IndexConfig*);

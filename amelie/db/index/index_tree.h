@@ -19,4 +19,10 @@ struct IndexTree
 	Tree  tree;
 };
 
+always_inline static inline IndexTree*
+index_tree_of(Index* self)
+{
+	return (IndexTree*)self;
+}
+
 Index* index_tree_allocate(IndexConfig*, void*);
