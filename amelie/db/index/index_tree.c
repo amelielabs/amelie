@@ -100,6 +100,14 @@ index_tree_truncate(Index* self, IndexOp* op)
 }
 
 static void
+index_tree_create(Index* self, IndexOp* op)
+{
+	unused(self);
+	unused(op);
+	// does nothing
+}
+
+static void
 index_tree_free(Index* self, IndexOp* op)
 {
 	index_tree_truncate(self, op);
@@ -133,6 +141,7 @@ index_tree_allocate(IndexConfig* config, void* arg)
 	iface->replace        = index_tree_replace;
 	iface->delete         = index_tree_delete;
 	iface->truncate       = index_tree_truncate;
+	iface->create         = index_tree_create;
 	iface->free           = index_tree_free;
 	iface->iterator       = index_tree_iterator;
 	iface->iterator_merge = index_tree_iterator_merge;

@@ -15,10 +15,10 @@ typedef struct Usage Usage;
 
 struct Usage
 {
-	atomic_u64 usage;
-	uint64_t   limit;
-	bool       limit_enable;
-	char*      name;
+	int64_t   usage;
+	uint64_t  limit;
+	bool      limit_enable;
+	char*     name;
 };
 
 static inline void
@@ -46,7 +46,7 @@ usage_set_limit(Usage* self, bool limit_enable, uint64_t limit)
 }
 
 hot static inline uint64_t
-usage_track(Usage* self, int64_t size)
+usage_sync(Usage* self, int64_t size)
 {
 	int64_t usage = __sync_fetch_and_add(&self->usage, size);
 	usage += size;
@@ -55,9 +55,50 @@ usage_track(Usage* self, int64_t size)
 }
 
 hot static inline void
+usage_update(Usage* self, int64_t size)
+{
+	if (likely(! size))
+		return;
+	usage_sync(self, size);
+}
+
+hot static inline void
 usage_add(Usage* self, int64_t size)
 {
-	auto usage = usage_track(self, size);
+	if (likely(! size))
+		return;
+	auto usage = usage_sync(self, size);
 	if (unlikely(self->limit_enable && usage > self->limit))
 		error("{s} limit reached", self->name);
+}
+
+hot static inline void
+usage_add_reserve(Usage* self, int64_t size)
+{
+	if (likely(! size))
+		return;
+	auto usage = usage_sync(self, 0) + size;
+	if (unlikely(self->limit_enable && usage > self->limit))
+		error("{s} limit reached", self->name);
+}
+
+static inline void
+usage_status(Usage* self, Buf* buf)
+{
+	// {}
+	encode_obj(buf);
+
+	// usage
+	encode_raw(buf, "usage", 5);
+	encode_int(buf, __sync_fetch_and_add(&self->usage, 0));
+
+	// limit_enable
+	encode_raw(buf, "limit_enabled", 13);
+	encode_bool(buf, self->limit_enable);
+
+	// limit
+	encode_raw(buf, "limit", 5);
+	encode_int(buf, self->limit);
+
+	encode_obj_end(buf);
 }

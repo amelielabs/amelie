@@ -21,6 +21,7 @@ struct IndexIf
 	bool      (*upsert)(Index*, IndexOp*);
 	bool      (*delete)(Index*, IndexOp*);
 	void      (*truncate)(Index*, IndexOp*);
+	void      (*create)(Index*, IndexOp*);
 	void      (*free)(Index*, IndexOp*);
 	Iterator* (*iterator)(Index*);
 	Iterator* (*iterator_merge)(Index*, Iterator*, Heap*);
@@ -64,6 +65,12 @@ index_init(Index* self, IndexConfig* config, void* arg)
 	self->config    = config;
 	self->iface_arg = arg;
 	self->next      = NULL;
+}
+
+static inline void
+index_create(Index* self, IndexOp* op)
+{
+	self->iface.create(self, op);
 }
 
 static inline void

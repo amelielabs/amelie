@@ -158,8 +158,38 @@ insert into test values (4, 0);
 
 alter user amelie set limit compute = 3;
 update test set data = id;
+drop table test;
+
+# test: memory
+show rels;
+show memory;
+
+create table test (id int primary key, data int) partitions 1;
+show memory;
+
+insert into test values (1, 0);
+show memory;
 
 drop table test;
+show memory;
+
+alter user amelie set limit memory = 128;
+show memory;
+show limits;
+
+create table test (id int primary key, data int) partitions 1;
+
+insert into test values (1, 0);
+select * from test;
+
+alter user amelie unset limit memory;
+show memory;
+show limits;
+
+insert into test values (1, 0);
+
+drop table test;
+show memory;
 
 disconnect S0;
 close E0;

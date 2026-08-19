@@ -27,7 +27,8 @@ part_cleanup_main_head(PartCleanup* self, Heap* heap, Row* row)
 	//
 	// [head] <- [row] <- ...
 	//
-	auto primary = part_primary(self->part);
+	auto part = self->part;
+	auto primary = part_primary(part);
 	if (row->deleted)
 	{
 		// remove whole chain from the indexes
@@ -36,6 +37,7 @@ part_cleanup_main_head(PartCleanup* self, Heap* heap, Row* row)
 		index_delete(primary, &op);
 		for (auto index = primary->next; index; index = index->next)
 			index_delete(index, &op);
+		usage_update(part->arg->memory, op.delta);
 		row->head = false;
 	} else
 	{
@@ -48,7 +50,7 @@ part_cleanup_main_head(PartCleanup* self, Heap* heap, Row* row)
 	while (row)
 	{
 		auto prev = row_prev(row, heap);
-		row_free(heap, &self->part->flats, row);
+		row_free(heap, &part->flats, row);
 		row = prev;
 	}
 }
@@ -73,7 +75,8 @@ part_cleanup_main_prev(PartCleanup* self, Heap* heap, Row* row)
 		head_next = NULL;
 
 	// delete or replace the index
-	auto primary = part_primary(self->part);
+	auto part    = self->part;
+	auto primary = part_primary(part);
 	if (head_next)
 	{
 		IndexOp op;
@@ -81,6 +84,7 @@ part_cleanup_main_prev(PartCleanup* self, Heap* heap, Row* row)
 		index_replace(primary, &op);
 		for (auto index = primary->next; index; index = index->next)
 			index_replace(index, &op);
+		usage_update(part->arg->memory, op.delta);
 
 		// mark new head
 		head_next->head = true;
@@ -90,7 +94,7 @@ part_cleanup_main_prev(PartCleanup* self, Heap* heap, Row* row)
 		{
 			auto prev = row_prev(row, heap);
 			if (row != head_next)
-				row_free(heap, &self->part->flats, row);
+				row_free(heap, &part->flats, row);
 			row = prev;
 		}
 
@@ -104,10 +108,12 @@ part_cleanup_main_prev(PartCleanup* self, Heap* heap, Row* row)
 	index_delete(primary, &op);
 	for (auto index = primary->next; index; index = index->next)
 		index_delete(index, &op);
+	usage_update(part->arg->memory, op.delta);
+
 	while (row)
 	{
 		auto prev = row_prev(row, heap);
-		row_free(heap, &self->part->flats, row);
+		row_free(heap, &part->flats, row);
 		row = prev;
 	}
 }
@@ -178,6 +184,7 @@ part_cleanup_clone(PartCleanup* self)
 				index_replace(primary, &op);
 				for (auto index = primary->next; index; index = index->next)
 					index_replace(index, &op);
+				usage_update(part->arg->memory, op.delta);
 
 				// mark new head
 				head_next->head = true;
@@ -188,6 +195,7 @@ part_cleanup_clone(PartCleanup* self)
 				index_delete(primary, &op);
 				for (auto index = primary->next; index; index = index->next)
 					index_delete(index, &op);
+				usage_update(part->arg->memory, op.delta);
 			}
 		}
 

@@ -201,5 +201,102 @@ alter user amelie set limit compute = 3;
 update test set data = id;
 error: compute limit reached
 drop table test;
+# test: memory
+show rels;
+
+rels
+────
+show memory;
+
+memory
+──────
+{
+  "usage": 0,
+  "limit_enabled": false,
+  "limit": 0
+}
+create table test (id int primary key, data int) partitions 1;
+show memory;
+
+memory
+──────
+{
+  "usage": 0,
+  "limit_enabled": false,
+  "limit": 0
+}
+insert into test values (1, 0);
+show memory;
+
+memory
+──────
+{
+  "usage": 4136,
+  "limit_enabled": false,
+  "limit": 0
+}
+drop table test;
+show memory;
+
+memory
+──────
+{
+  "usage": 0,
+  "limit_enabled": false,
+  "limit": 0
+}
+alter user amelie set limit memory = 128;
+show memory;
+
+memory
+──────
+{
+  "usage": 0,
+  "limit_enabled": true,
+  "limit": 128
+}
+show limits;
+
+limits
+──────
+{
+  "send": 3145728,
+  "memory": 128
+}
+create table test (id int primary key, data int) partitions 1;
+insert into test values (1, 0);
+error: memory limit reached
+select * from test;
+
+id  data
+──────────
+alter user amelie unset limit memory;
+show memory;
+
+memory
+──────
+{
+  "usage": 0,
+  "limit_enabled": false,
+  "limit": 0
+}
+show limits;
+
+limits
+──────
+{
+  "send": 3145728
+}
+insert into test values (1, 0);
+drop table test;
+show memory;
+
+memory
+──────
+{
+  "usage": 0,
+  "limit_enabled": false,
+  "limit": 0
+}
 disconnect S0;
 close E0;

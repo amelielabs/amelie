@@ -41,6 +41,7 @@ void
 part_free(Part* self)
 {
 	track_free(&self->track);
+
 	IndexOp op;
 	index_op_init(&op);
 	auto index = self->indexes;
@@ -50,6 +51,8 @@ part_free(Part* self)
 		index_free(index, &op);
 		index = next;
 	}
+	usage_update(self->arg->memory, op.delta);
+
 	heap_free(self->heap);
 	flats_free(&self->flats);
 	part_config_free(self->config);
@@ -101,6 +104,7 @@ part_open_heap(Part* self, uint64_t checkpoint)
 		op.it = NULL;
 		for (auto index = primary->next; index; index = index->next)
 			index_replace(index, &op);
+		usage_update(self->arg->memory, op.delta);
 		count++;
 	}
 
@@ -154,6 +158,7 @@ part_truncate(Part* self)
 	index_op_init(&op);
 	for (auto index = self->indexes; index; index = index->next)
 		index_truncate(index, &op);
+	usage_update(self->arg->memory, op.delta);
 
 	// create a new empty heap with matching metadata
 	auto new = heap_allocate();
@@ -186,8 +191,19 @@ part_index_create(Part* self, IndexConfig* config)
 		index = index_hash_allocate(config, self);
 	else
 		error("unrecognized index type");
-
 	part_index_add(self, index);
+
+	// check memory limit
+	if (config->type == INDEX_HASH)
+	{
+		auto size = index_hash_size(config);
+		usage_add_reserve(self->arg->memory, size);
+
+		IndexOp op;
+		index_op_init(&op);
+		index_create(index, &op);
+		usage_add(self->arg->memory, size);
+	}
 }
 
 void
@@ -214,6 +230,7 @@ part_index_drop(Part* self, Str* name)
 	IndexOp op;
 	index_op_init(&op);
 	index_free(index, &op);
+	usage_update(self->arg->memory, op.delta);
 }
 
 Index*

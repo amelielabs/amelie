@@ -24,16 +24,19 @@ static inline Row*
 rollback(LogOp* op)
 {
 	auto index = (Index*)op->iface_arg;
+	auto part  = (Part*)index->iface_arg;
 	IndexOp io;
 	if (op->row_prev)
 	{
 		index_op_set(&io, op->row_prev);
 		index_replace(index, &io);
+		usage_update(part->arg->memory, io.delta);
 	} else
 	if (op->row)
 	{
 		index_op_set(&io, op->row);
 		index_delete(index, &io);
+		usage_update(part->arg->memory, io.delta);
 	}
 	return op->row;
 }
@@ -68,6 +71,7 @@ log_if_commit(Log* self, LogOp* op)
 		index_delete(index, &io);
 		for (index = index->next; index; index = index->next)
 			index_delete(index, &io);
+		usage_update(part->arg->memory, io.delta);
 
 		row_free(heap, &part->flats, row);
 	}
@@ -184,6 +188,9 @@ part_insert(Part*     self, Tr* tr,
 	// ensure write limit
 	if (tr->write)
 		usage_add(tr->write, 1);
+
+	// ensure memory limit
+	usage_add(self->arg->memory, io.delta);
 }
 
 hot bool
@@ -204,6 +211,9 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	{
 		assert(iterator_at(it));
 		row_free(self->heap, &self->flats, row);
+
+		// ensure memory limit
+		usage_add(self->arg->memory, io.delta);
 		return true;
 	}
 
@@ -235,6 +245,8 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	if (tr->write)
 		usage_add(tr->write, 1);
 
+	// ensure memory limit
+	usage_add(self->arg->memory, io.delta);
 	return false;
 }
 
@@ -285,6 +297,9 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	// ensure write limit
 	if (tr->write)
 		usage_add(tr->write, 1);
+
+	// ensure memory limit
+	usage_add(self->arg->memory, io.delta);
 }
 
 hot void
@@ -349,6 +364,9 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 	// ensure write limit
 	if (tr->write)
 		usage_add(tr->write, 1);
+
+	// ensure memory limit
+	usage_add(self->arg->memory, io.delta);
 }
 
 hot void

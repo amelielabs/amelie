@@ -45,7 +45,8 @@ table_show(Table* self, Buf* buf, int flags)
 static inline Table*
 table_allocate(TableConfig* config,
                PartsIf*     iface,
-               void*        iface_arg)
+               void*        iface_arg,
+               Usage*       memory)
 {
 	auto self = (Table*)am_malloc(sizeof(Table));
 	self->config = table_config_copy(config);
@@ -53,6 +54,7 @@ table_allocate(TableConfig* config,
 	// part context
 	auto arg = &self->part_arg;
 	arg->rel       = &self->rel;
+	arg->memory    = memory;
 	arg->columns   = &self->config->columns;
 	arg->timelines = &self->timelines;
 
@@ -99,7 +101,9 @@ table_create(Catalog*     self,
 	catalog_limit(self, tr, REL_TABLE, LIMIT_TABLES);
 
 	// allocate table
-	auto table = table_allocate(config, self->iface_part, self->iface_part_arg);
+	auto user  = user_of(tr->user);
+	auto table = table_allocate(config, self->iface_part, self->iface_part_arg,
+	                            &user->memory);
 
 	// update tables
 	rels_create(&self->rels, tr, &table->rel);

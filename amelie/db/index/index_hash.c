@@ -100,6 +100,15 @@ index_hash_truncate(Index* self, IndexOp* op)
 }
 
 static void
+index_hash_create(Index* self, IndexOp* op)
+{
+	auto hash = &index_hash_of(self)->hash;
+	auto before = hash_size(hash);
+	hash_create(hash, &self->config->keys.comparable);
+	hash_delta(hash, op, before);
+}
+
+static void
 index_hash_free(Index* self, IndexOp* op)
 {
 	auto hash = &index_hash_of(self)->hash;
@@ -137,11 +146,10 @@ index_hash_allocate(IndexConfig* config, void* arg)
 	iface->replace        = index_hash_replace;
 	iface->delete         = index_hash_delete;
 	iface->truncate       = index_hash_truncate;
+	iface->create         = index_hash_create;
 	iface->free           = index_hash_free;
 	iface->iterator       = index_hash_iterator;
 	iface->iterator_merge = index_hash_iterator_merge;
-
-	hash_create(&self->hash, &config->keys.comparable);
 	return &self->index;
 }
 

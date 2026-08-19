@@ -54,6 +54,19 @@ db_indexate(Part* part, IndexConfig* config)
 	auto it_upsert = index_iterator(index);
 	defer(iterator_close, it_upsert);
 
+	// ensure memory limit and allocate hash
+	auto memory = part->arg->memory;
+	if (config->type == INDEX_HASH)
+	{
+		auto size = index_hash_size(config);
+		usage_add_reserve(memory, size);
+
+		IndexOp op;
+		index_op_init(&op);
+		index_create(index, &op);
+		usage_add(memory, op.delta);
+	}
+
 	IndexOp io =
 	{
 		.row      = NULL,
@@ -79,9 +92,15 @@ db_indexate(Part* part, IndexConfig* config)
 			error("create index: null key column");
 
 		// get index head
-		io.row = row;
-		if (! index_upsert(index, &io))
+		io.row   = row;
+		io.delta = 0;
+		auto exists = index_upsert(index, &io);
+
+		// ensure memory limit
+		usage_add(memory, io.delta);
+		if (! exists)
 			continue;
+
 		// check unique constraint violation
 		auto head = iterator_at(it_upsert);
 		if (row_unique(head, heap))
@@ -167,6 +186,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 			index_free(part->in_progress, &io);
 			part->in_progress = NULL;
 		}
+		usage_update(&user_of(tr->user)->memory, io.delta);
 		unlock(lock_catalog);
 		rethrow();
 	}
