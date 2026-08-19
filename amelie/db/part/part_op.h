@@ -15,4 +15,3 @@ void part_insert(Part*, Tr*, Timeline*, Row*);
 bool part_upsert(Part*, Tr*, Iterator*, Timeline*, Row*);
 void part_update(Part*, Tr*, Iterator*, Timeline*, Row*);
 void part_delete(Part*, Tr*, Iterator*, Timeline*);
-void part_delete_by(Part*, Tr*, Timeline*, Row*);

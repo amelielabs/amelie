@@ -67,5 +67,3 @@ row_filter(Flats* flats, Row* row, bool filter)
 			flat_set_at(flat, *(uint32_t*)ref, !filter);
 	}
 }
-
-Row* row_copykey(Heap*, Row*, Columns*);

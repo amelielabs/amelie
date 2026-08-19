@@ -307,25 +307,6 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 {
 	auto primary = part_primary(self);
 
-	// handle delete as update to support cloning
-	auto arg = self->arg;
-	if (arg->timelines->list_count > 0)
-	{
-		auto row = iterator_at(it);
-		row = row_visible(row, self->heap, timeline);
-		if (! row)
-			return;
-
-		auto columns = index_keys(primary)->columns;
-		auto row_delete = row_copykey(self->heap, row, columns);
-		row_delete->deleted  = true;
-		row_delete->main     = timeline->main;
-		row_delete->timeline = timeline->timeline;
-
-		part_update(self, tr, it, timeline, row_delete);
-		return;
-	}
-
 	// add log record
 	auto row = iterator_at(it);
 	auto op = log_delete(&tr->log, &log_if, primary, row, timeline);
@@ -367,17 +348,4 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 
 	// ensure memory limit
 	usage_add(self->arg->memory, io.delta);
-}
-
-hot void
-part_delete_by(Part* self, Tr* tr, Timeline* timeline, Row* row)
-{
-	// note: transaction memory limit is not ensured here
-	// since this operation is used for recovery
-	auto primary = part_primary(self);
-	auto it = index_iterator(primary);
-	defer(iterator_close, it);
-	if (unlikely(! iterator_open(it, self->heap, timeline, row)))
-		error("delete by key does not match");
-	part_delete(self, tr, it, timeline);
 }

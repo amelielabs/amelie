@@ -622,7 +622,28 @@ cdelete(Vm* self, Op* op)
 {
 	// [cursor]
 	auto cursor = reg_at(&self->r, op->a);
-	part_delete(cursor->part, self->tr, cursor->cursor, cursor->timeline);
+
+	// clone update
+	auto timeline = cursor->timeline;
+	auto part = self->part;
+	if (part->arg->timelines->list_count > 0)
+	{
+		auto row = iterator_at(cursor->cursor);
+		row = row_visible(row, part->heap, timeline);
+		if (! row)
+			return;
+
+		// create new row for delete (copy keys)
+		auto columns = part->arg->columns;
+		auto row_for_delete = row_delete(part, timeline, columns, row);
+
+		// update by cursor
+		part_update(part, self->tr, cursor->cursor, timeline, row_for_delete);
+		return;
+	}
+
+	// delete by cursor
+	part_delete(part, self->tr, cursor->cursor, timeline);
 }
 
 hot void

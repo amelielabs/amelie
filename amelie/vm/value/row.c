@@ -380,3 +380,62 @@ row_update(Part*     part,
 
 	return row;
 }
+
+Row*
+row_delete(Part* part, Timeline* timeline, Columns* columns, Row* origin)
+{
+	// create a row which has only key columns (others are set to NULL)
+	int size = 0;
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		if (! column->refs)
+			continue;
+
+		// int, timestamp, uuid
+		if (column->size > 0)
+		{
+			size += column->size;
+		} else
+		{
+			// string
+			uint8_t* start = row_column(origin, column);
+			uint8_t* pos = start;
+			data_skip(&pos);
+			size += pos - start;
+		}
+	}
+
+	auto row = row_allocate(part->heap, timeline->main, timeline->timeline,
+	                        columns->count, size);
+
+	uint8_t* pos = row_data(row, columns->count);
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+
+		// column is not a key
+		if (! column->refs)
+		{
+			row_set_null(row, column->order);
+			continue;
+		}
+		row_set(row, column->order, pos - (uint8_t*)row);
+
+		// int, timestamp, uuid
+		if (column->size > 0)
+		{
+			memcpy(row_column(row, column), row_column(origin, column), column->size);
+		} else
+		{
+			// string
+			uint8_t* start = row_column(origin, column);
+			uint8_t* pos = start;
+			data_skip(&pos);
+			memcpy(row_column(row, column), start, pos - start);
+		}
+	}
+
+	row->deleted = true;
+	return row;
+}
