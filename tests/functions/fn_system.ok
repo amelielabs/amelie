@@ -162,6 +162,16 @@ show
 {
   "send": 3145728
 }
+# test: memory
+select show('memory');
+
+show
+────
+{
+  "usage": 0,
+  "limit_enabled": false,
+  "limit": 0
+}
 # test: users
 select show('users')[0].name;
 

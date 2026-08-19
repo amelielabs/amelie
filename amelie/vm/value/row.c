@@ -135,17 +135,19 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 }
 
 hot static inline void
-row_create_vector(Part*   part,
-                  Row*    row,
-                  Column* column,
-                  Value*  value)
+row_create_vector(Part*    part,
+                  Row*     row,
+                  Column*  column,
+                  Value*   value,
+                  int64_t* delta)
 {
 	auto flat = flats_at(&part->flats, column);
-	auto page = heap_page_of(row)->id;
 
-	auto id = flat_add(flat, page, row->offset);
+	auto current = flat->storage.current;
+	auto id = flat_add(flat, heap_page_of(row)->id, row->offset);
+	*delta += storage_delta(&flat->storage, current);
+
 	memcpy(flat_vector_at(flat, id), value->vector, column->size_flat);
-
 	*(uint32_t*)row_column(row, column) = id;
 }
 
@@ -191,8 +193,9 @@ row_create(Part*     part,
 	}
 
 	// create and write row
-	auto row = row_allocate(part->heap, timeline->main, timeline->timeline,
-	                        columns->count, size);
+	int64_t delta = 0;
+	auto    row = row_allocate(part->heap, timeline->main, timeline->timeline,
+	                           columns->count, size, &delta);
 
 	uint8_t* pos = row_data(row, columns->count);
 	list_foreach(&columns->list)
@@ -213,9 +216,20 @@ row_create(Part*     part,
 			auto value = &values[column->order];
 			if (value->type == TYPE_REF)
 				value = &refs[value->integer];
-			row_create_vector(part, row, column, value);
+			row_create_vector(part, row, column, value, &delta);
 		}
 	}
+
+	// update memory usage and check limits
+	if (unlikely(delta != 0))
+	{
+		if (unlikely(error_catch(usage_add(part->arg->memory, delta))))
+		{
+			row_free(part->heap, &part->flats, row);
+			rethrow();
+		}
+	}
+
 	return row;
 }
 
@@ -304,9 +318,11 @@ row_update(Part*     part,
 	//
 	// [order, value, order, value, ...]
 	//
+
+	int64_t  delta    = 0;
 	auto     row_size = row_update_prepare(origin, columns, values, count);
 	auto     row      = row_allocate(part->heap, timeline->main, timeline->timeline,
-	                                 columns->count, row_size);
+	                                 columns->count, row_size, &delta);
 	uint8_t* pos      = row_data(row, columns->count);
 
 	auto order = 0;
@@ -332,7 +348,7 @@ row_update(Part*     part,
 			row_set(row, column->order, offset);
 
 			if (column->type == TYPE_VECTOR)
-				row_create_vector(part, row, column, value);
+				row_create_vector(part, row, column, value, &delta);
 			continue;
 		}
 
@@ -359,11 +375,12 @@ row_update(Part*     part,
 		{
 			// create a new vector copy
 			auto flat = flats_at(&part->flats, column);
-			auto page = heap_page_of(row)->id;
 
-			auto id = flat_add(flat, page, row->offset);
+			auto current = flat->storage.current;
+			auto id = flat_add(flat, heap_page_of(row)->id, row->offset);
+			delta += storage_delta(&flat->storage, current);
+
 			*(uint32_t*)row_column(row, column) = id;
-
 			auto id_src = *(uint32_t*)pos_src;
 			memcpy(flat_vector_at(flat, id),
 			       flat_vector_at(flat, id_src), column->size_flat);
@@ -375,6 +392,16 @@ row_update(Part*     part,
 			memcpy(pos, pos_src, column->size);
 			pos += column->size;
 			break;
+		}
+	}
+
+	// update memory usage and check limits
+	if (unlikely(delta != 0))
+	{
+		if (unlikely(error_catch(usage_add(part->arg->memory, delta))))
+		{
+			row_free(part->heap, &part->flats, row);
+			rethrow();
 		}
 	}
 
@@ -406,8 +433,9 @@ row_delete(Part* part, Timeline* timeline, Columns* columns, Row* origin)
 		}
 	}
 
+	int64_t delta = 0;
 	auto row = row_allocate(part->heap, timeline->main, timeline->timeline,
-	                        columns->count, size);
+	                        columns->count, size, &delta);
 
 	uint8_t* pos = row_data(row, columns->count);
 	list_foreach(&columns->list)
@@ -435,7 +463,17 @@ row_delete(Part* part, Timeline* timeline, Columns* columns, Row* origin)
 			memcpy(row_column(row, column), start, pos - start);
 		}
 	}
-
 	row->deleted = true;
+
+	// update memory usage and check limits
+	if (unlikely(delta != 0))
+	{
+		if (unlikely(error_catch(usage_add(part->arg->memory, delta))))
+		{
+			row_free(part->heap, &part->flats, row);
+			rethrow();
+		}
+	}
+
 	return row;
 }

@@ -22,6 +22,9 @@ create user test;
 # test: show limits
 show limits;
 
+# test: show memory
+show memory;
+
 # test: show tables
 create table test (id int primary key);
 show tables;

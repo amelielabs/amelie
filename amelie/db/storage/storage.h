@@ -163,3 +163,11 @@ storage_pop(Storage* self)
 	}
 	return page;
 }
+
+always_inline static inline int64_t
+storage_delta(Storage* self, Page* current)
+{
+	if (likely(self->current == current))
+		return 0;
+	return self->size_page;
+}

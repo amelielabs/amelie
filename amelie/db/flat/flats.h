@@ -32,6 +32,17 @@ flats_init(Flats* self)
 	buf_init(&self->list);
 }
 
+static inline int64_t
+flats_size(Flats* self)
+{
+	int64_t size = 0;
+	auto pos = (Flat**)self->list.start;
+	auto end = (Flat**)self->list.position;
+	for (; pos < end; pos++)
+		size += storage_size(&(*pos)->storage);
+	return size;
+}
+
 static inline void
 flats_free(Flats* self)
 {

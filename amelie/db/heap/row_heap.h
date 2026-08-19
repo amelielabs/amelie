@@ -12,12 +12,19 @@
 //
 
 hot static inline Row*
-row_allocate(Heap* heap, bool main, uint32_t timeline, int columns, int data_size)
+row_allocate(Heap*    heap,
+             bool     main,
+             uint32_t timeline,
+             int      columns,
+             int      data_size,
+             int64_t* delta)
 {
 	bool byte;
-	auto size = row_measure(columns, data_size, &byte);
-	auto self = heap_add(heap, size);
+	auto size    = row_measure(columns, data_size, &byte);
+	auto current = heap->storage.current;
+	auto self    = heap_add(heap, size);
 	row_prepare(self, main, timeline, columns, byte, size);
+	*delta += storage_delta(&heap->storage, current);
 	return self;
 }
 

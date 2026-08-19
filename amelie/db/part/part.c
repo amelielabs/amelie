@@ -42,6 +42,7 @@ part_free(Part* self)
 {
 	track_free(&self->track);
 
+	// free index
 	IndexOp op;
 	index_op_init(&op);
 	auto index = self->indexes;
@@ -51,10 +52,15 @@ part_free(Part* self)
 		index_free(index, &op);
 		index = next;
 	}
-	usage_update(self->arg->memory, op.delta);
+
+	// free heap, flats and update memory usage
+	op.delta -= storage_size(&self->heap->storage);
+	op.delta -= flats_size(&self->flats);
 
 	heap_free(self->heap);
 	flats_free(&self->flats);
+	usage_update(self->arg->memory, op.delta);
+
 	part_config_free(self->config);
 	am_free(self);
 }
@@ -107,6 +113,7 @@ part_open_heap(Part* self, uint64_t checkpoint)
 		usage_update(self->arg->memory, op.delta);
 		count++;
 	}
+	usage_update(self->arg->memory, storage_size(&self->heap->storage));
 
 	auto total = (double)storage_size(&self->heap->storage) / 1024 / 1024;
 	info("recover: {u64}/{u64} ({.2f} MiB, {u64} rows)",
@@ -125,6 +132,7 @@ part_open_flat(Part* self, Flat* flat, uint64_t checkpoint)
 
 	// read flat file
 	flat_open(flat, path);
+	usage_update(self->arg->memory, storage_size(&flat->storage));
 
 	auto total = (double)storage_size(&flat->storage) / 1024 / 1024;
 	info("recover: {u64}/{u64}.{d} ({.2f} MiB)",
@@ -158,12 +166,14 @@ part_truncate(Part* self)
 	index_op_init(&op);
 	for (auto index = self->indexes; index; index = index->next)
 		index_truncate(index, &op);
-	usage_update(self->arg->memory, op.delta);
 
 	// create a new empty heap with matching metadata
 	auto new = heap_allocate();
+	int64_t delta = -storage_size(&self->heap->storage) + storage_size(&new->storage);
 	heap_free(self->heap);
 	self->heap = new;
+
+	usage_update(self->arg->memory, op.delta + delta);
 }
 
 void

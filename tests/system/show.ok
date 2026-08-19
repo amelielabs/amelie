@@ -18,6 +18,16 @@ limits
 {
   "send": 3145728
 }
+# test: show memory
+show memory;
+
+memory
+──────
+{
+  "usage": 0,
+  "limit_enabled": false,
+  "limit": 0
+}
 # test: show tables
 create table test (id int primary key);
 show tables;
