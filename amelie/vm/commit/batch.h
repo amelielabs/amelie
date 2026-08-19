@@ -87,6 +87,7 @@ batch_process(Batch* self)
 	{
 		// handle aborts per partition
 		auto gtr = batch_at(self, it);
+		auto gtr_cdc = false;
 		list_foreach(&gtr->dispatches.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
@@ -104,6 +105,30 @@ batch_process(Batch* self)
 			auto last    = &track->consensus;
 			if (pending->abort >= tr->id || last->abort >= tr->id)
 				gtr_set_abort(gtr);
+
+			// collect cdc per partition (table dml)
+			if (! cdc_log_empty(&tr->log.cdc))
+			{
+				list_append(&gtr->write_cdc, &tr->log.cdc.link);
+				gtr_cdc = true;
+			}
+		}
+
+		// collect cdc (publish)
+		if (! cdc_log_empty(&gtr->tr.log.cdc))
+		{
+			list_append(&gtr->write_cdc, &gtr->tr.log.cdc.link);
+			gtr_cdc = true;
+		}
+
+		// collect cdc (request)
+		if (gtr->tr.user->subs)
+			gtr_cdc = true;
+
+		// check current cdc memory limit before commit
+		if (gtr_cdc)
+		{
+			// todo:
 		}
 
 		// sync metrics and prepare gtr for wal write
@@ -127,28 +152,13 @@ batch_process(Batch* self)
 				// sync commit id
 				if (tr->id > pending->commit)
 					pending->commit = tr->id;
-
-				// collect cdc per ltr
-				if (! cdc_log_empty(&tr->log.cdc))
-				{
-					list_append(&gtr->write_cdc, &tr->log.cdc.link);
-					self->pending_cdc = true;
-				}
 			}
 		}
 
 		if (gtr->abort)
 			continue;
 
-		// collect cdc (publish)
-		if (! cdc_log_empty(&gtr->tr.log.cdc))
-		{
-			list_append(&gtr->write_cdc, &gtr->tr.log.cdc.link);
-			self->pending_cdc = true;
-		}
-
-		// collect cdc (request)
-		if (gtr->tr.user->subs)
+		if (gtr_cdc)
 			self->pending_cdc = true;
 
 		// add for wal write
