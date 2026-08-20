@@ -1348,5 +1348,36 @@ explain
 main
   0   int                 0      -      0     # -18
   1   ret                 0      0      -
+# test: kb, mb, gb
+select 1k;
+
+col1
+────
+1024
+select 1kb;
+
+col1
+────
+1024
+select 1m;
+
+col1
+────
+1048576
+select 1mb;
+
+col1
+────
+1048576
+select 1g;
+
+col1
+────
+1073741824
+select 1gb;
+
+col1
+────
+1073741824
 disconnect S0;
 close E0;

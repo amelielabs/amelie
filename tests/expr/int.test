@@ -388,5 +388,13 @@ select ~10;
 select -18;
 explain select -18;
 
+# test: kb, mb, gb
+select 1k;
+select 1kb;
+select 1m;
+select 1mb;
+select 1g;
+select 1gb;
+
 disconnect S0;
 close E0;

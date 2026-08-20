@@ -21,6 +21,9 @@ row_allocate(Heap*    heap,
 {
 	bool byte;
 	auto size    = row_measure(columns, data_size, &byte);
+	if (unlikely(size > 64 * 1024))
+		error("row limit reached");
+
 	auto current = heap->storage.current;
 	auto self    = heap_add(heap, size);
 	row_prepare(self, main, timeline, columns, byte, size);
@@ -33,6 +36,9 @@ row_allocate_buf(Buf* buf, int columns, int data_size)
 {
 	bool byte;
 	auto size = row_measure(columns, data_size, &byte);
+	if (unlikely(size > 64 * 1024))
+		error("row limit reached");
+
 	auto self = (Row*)buf_emplace(buf, size);
 	row_init(self);
 	row_prepare(self, false, 0, columns, byte, size);

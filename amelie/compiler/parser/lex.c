@@ -264,6 +264,28 @@ lex_next(Lex* self)
 		// int
 		if (! dot)
 		{
+			// kb, mb, gb
+			if (self->pos != self->end)
+			{
+				int64_t mul = 1;
+				switch (*self->pos) {
+				case 'k': mul = 1024ll;
+					break;
+				case 'm': mul = 1024ll * 1024;
+					break;
+				case 'g': mul = 1024ll * 1024 * 1024;
+					break;
+				}
+				if (unlikely(mul > 1))
+				{
+					self->pos++;
+					if (unlikely(int64_mul_overflow(&value, value, mul)))
+						lex_return_error(self, ast, start, "int overflow");
+					if (self->pos != self->end && *self->pos == 'b')
+						self->pos++;
+				}
+			}
+
 			ast->integer = value;
 			return lex_return(self, ast, KINT, start);
 		}
