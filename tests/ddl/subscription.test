@@ -375,5 +375,25 @@ disconnect S2;
 drop user test_user cascade;
 show users;
 
+# test: acknowledge (multi-stmt)
+create topic t;
+create subscription t_sub on t;
+publish into t 123;
+publish into t 124;
+select * from t_sub;
+
+# returns 2 (ack happens only after commit)
+begin
+  declare x int := 0;
+  select count(*) into x from t_sub;
+  acknowledge t_sub to 117;
+  select count(*) into x from t_sub;
+  select x;
+end;
+
+# returns 1
+select count(*) from t_sub;
+drop topic t cascade;
+
 disconnect S0;
 close E0;

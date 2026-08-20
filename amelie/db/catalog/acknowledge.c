@@ -24,24 +24,25 @@
 static void
 ack_if_commit(Log* self, LogOp* op)
 {
-	unused(self);
-	// cdc gc
+	uint8_t* pos = log_data_of(self, op);
+
+	int64_t lsn;
+	unpack_int(&pos, &lsn);
+
+	// update slot on commit
 	auto sub = sub_of(op->rel);
+	sub_config_set_pos(sub->config, lsn);
+	cdc_slot_set(&sub->slot, lsn);
+
+	// cdc gc
 	cdc_gc(sub->catalog->cdc);
 }
 
 static void
 ack_if_abort(Log* self, LogOp* op)
 {
-	// restore subscription
-	uint8_t* pos = log_data_of(self, op);
-
-	int64_t pos_lsn;
-	unpack_int(&pos, &pos_lsn);
-
-	auto sub = sub_of(op->rel);
-	sub_config_set_pos(sub->config, pos_lsn);
-	cdc_slot_set(&sub->slot, pos_lsn);
+	unused(self);
+	unused(op);
 }
 
 static LogIf ack_if =
@@ -69,19 +70,10 @@ acknowledge(Sub* self, Tr* tr, uint8_t* op)
 		error("subscription '{str}': ack position is out of range",
 		      &self->config->name);
 
-	// update subscription slot
+	// schedule subscription slot update
 	log_ddl(&tr->log, &ack_if, NULL, &self->rel);
 
-	// save previous value
-	encode_int(&tr->log.data, current_lsn);
-
-	// update slot
-	//
-	// This assumes global catalog shared lock is taken to
-	// avoid any concurrent wal gc/checkpoint till this transaction
-	// completes
-	//
-	sub_config_set_pos(self->config, lsn);
-	cdc_slot_set(&self->slot, lsn);
+	// save new state
+	encode_int(&tr->log.data, lsn);
 	return true;
 }

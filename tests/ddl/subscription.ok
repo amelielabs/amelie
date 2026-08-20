@@ -731,5 +731,33 @@ users
   "parent": "amelie",
   "description": ""
 }
+# test: acknowledge (multi-stmt)
+create topic t;
+create subscription t_sub on t;
+publish into t 123;
+publish into t 124;
+select * from t_sub;
+
+lsn  cmd      data
+────────────────────
+117  publish  123
+118  publish  124
+begin
+  declare x int := 0;
+  select count(*) into x from t_sub;
+  acknowledge t_sub to 117;
+  select count(*) into x from t_sub;
+  select x;
+end;
+
+col1
+────
+2
+select count(*) from t_sub;
+
+count
+─────
+1
+drop topic t cascade;
 disconnect S0;
 close E0;
