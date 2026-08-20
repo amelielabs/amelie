@@ -64,3 +64,4 @@ void   cdc_min(Cdc*, uint64_t*);
 void   cdc_gc(Cdc*);
 void   cdc_write(Cdc*, CdcBatch*);
 void   cdc_state(Cdc*, Buf*);
+size_t cdc_size(Cdc*);

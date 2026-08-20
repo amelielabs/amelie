@@ -15,13 +15,16 @@ typedef struct AstSystemAlter  AstSystemAlter;
 
 enum
 {
-	SYSTEM_ALTER_SECRET_ROTATE
+	SYSTEM_ALTER_SECRET_ROTATE,
+	SYSTEM_ALTER_SET_CDC,
+	SYSTEM_ALTER_UNSET_CDC
 };
 
 struct AstSystemAlter
 {
-	Ast ast;
-	int type;
+	Ast      ast;
+	int      type;
+	uint64_t cdc_limit;
 };
 
 static inline AstSystemAlter*

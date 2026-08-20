@@ -37,7 +37,7 @@ commit_main(void* arg)
 
 	auto queue = &self->queue;
 	Batch batch;
-	batch_init(&batch);
+	batch_init(&batch, self->db->cdc);
 	defer(batch_free, &batch);
 	for (;;)
 	{
@@ -69,7 +69,7 @@ commit_main(void* arg)
 
 		// publish cdc events
 		if (batch.pending_cdc)
-			batch_publish(&batch, self->db->cdc);
+			batch_publish(&batch);
 
 		// do group completion
 		//

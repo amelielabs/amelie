@@ -44,6 +44,7 @@ state_prepare(State* self)
 		{ "checkpoint",      OPT_INT,    OPT_E,             &self->checkpoint,     NULL,           0           },
 		{ "recover",         OPT_INT,    OPT_E|OPT_H,       &self->recover,        NULL,           0           },
 		// persistent
+		{ "cdc",             OPT_INT,    OPT_C|OPT_S|OPT_H, &self->cdc,            0,              UINT64_MAX  },
 		{ "secret",          OPT_STRING, OPT_C|OPT_S|OPT_H, &self->secret,         0,              0           },
 		{ "repl",            OPT_BOOL,   OPT_C,             &self->repl,           0,              false       },
 		{ "repl_primary",    OPT_UUID,   OPT_C,             &self->repl_primary,   NULL,           0           },

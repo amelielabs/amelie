@@ -17,6 +17,7 @@ void ccheckpoint(Vm*, Op*);
 // system
 void ccreate_secret(Vm*, Op*);
 void ccreate_token(Vm*, Op*);
+void ccdc_limit(Vm*, Op*);
 
 // replica
 void creplica_create(Vm*, Op*);

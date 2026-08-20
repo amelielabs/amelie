@@ -32,6 +32,7 @@ struct State
 	Opt  checkpoint;
 	Opt  recover;
 	// persistent
+	Opt  cdc;
 	Opt  secret;
 	Opt  repl;
 	Opt  repl_primary;

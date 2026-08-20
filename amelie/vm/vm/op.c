@@ -319,6 +319,7 @@ OpDesc ops[] =
 	// system
 	{ CCREATE_SECRET, "create_secret" },
 	{ CCREATE_TOKEN, "create_token" },
+	{ CCDC_LIMIT, "cdc_limit" },
 
 	// replica
 	{ CREPLICA_CREATE, "replica_create" },

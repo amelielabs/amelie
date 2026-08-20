@@ -398,6 +398,7 @@ vm_run(Vm*       self,
 		// system
 		&&ccreate_secret,
 		&&ccreate_token,
+		&&ccdc_limit,
 
 		// replica
 		&&creplica_create,
@@ -2159,6 +2160,10 @@ ccreate_secret:
 
 ccreate_token:
 	ccreate_token(self, op);
+	op_next;
+
+ccdc_limit:
+	ccdc_limit(self, op);
 	op_next;
 
 creplica_create:

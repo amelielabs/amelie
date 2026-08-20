@@ -281,6 +281,14 @@ cdc_state(Cdc* self, Buf* buf)
 	encode_raw(buf, "size", 4);
 	encode_int(buf, storage_size(&self->storage));
 
+	// limit
+	auto limit = opt_int_of(&state()->cdc);
+	if (limit != UINT64_MAX)
+	{
+		encode_raw(buf, "limit", 5);
+		encode_int(buf, limit);
+	}
+
 	// pages
 	encode_raw(buf, "pages", 5);
 	encode_int(buf, self->storage.list_count);
@@ -288,4 +296,13 @@ cdc_state(Cdc* self, Buf* buf)
 	encode_obj_end(buf);
 
 	spinlock_unlock(&self->lock);
+}
+
+size_t
+cdc_size(Cdc* self)
+{
+	spinlock_lock(&self->lock);
+	auto size = storage_size(&self->storage);
+	spinlock_unlock(&self->lock);
+	return size;
 }

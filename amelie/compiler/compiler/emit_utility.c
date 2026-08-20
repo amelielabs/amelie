@@ -376,8 +376,15 @@ emit_utility(Compiler* self)
 	{
 		auto arg = ast_system_alter_of(stmt->ast);
 		unused(arg);
-		op0(self, CCREATE_SECRET);
-
+		if (arg->type == SYSTEM_ALTER_SECRET_ROTATE)
+		{
+			op0(self, CCREATE_SECRET);
+		} else
+		if (arg->type == SYSTEM_ALTER_SET_CDC ||
+		    arg->type == SYSTEM_ALTER_UNSET_CDC)
+		{
+			op1(self, CCDC_LIMIT, arg->cdc_limit);
+		}
 		lock_catalog = LOCK_SHARED;
 		lock_ddl     = LOCK_NONE;
 		break;

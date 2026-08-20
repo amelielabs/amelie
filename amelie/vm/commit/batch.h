@@ -20,6 +20,7 @@ struct Batch
 	Track*    pending;
 	bool      pending_cdc;
 	WriteList write;
+	Cdc*      cdc;
 };
 
 static inline Gtr*
@@ -29,11 +30,12 @@ batch_at(Batch* self, int order)
 }
 
 static inline void
-batch_init(Batch* self)
+batch_init(Batch* self, Cdc* cdc)
 {
 	self->pending     = NULL;
 	self->pending_cdc = false;
 	self->list_count  = 0;
+	self->cdc         = cdc;
 	buf_init(&self->list);
 	write_list_init(&self->write);
 }
@@ -125,10 +127,16 @@ batch_process(Batch* self)
 		if (gtr->tr.user->subs)
 			gtr_cdc = true;
 
-		// check current cdc memory limit before commit
+		// enforce global cdc memory limit
 		if (gtr_cdc)
 		{
-			// todo:
+			auto limit = opt_int_of(&state()->cdc);
+			if (limit != UINT64_MAX)
+			{
+				auto size = cdc_size(self->cdc);
+				if (unlikely(size >= limit))
+					gtr_set_abort(gtr);
+			}
 		}
 
 		// sync metrics and prepare gtr for wal write
@@ -203,7 +211,7 @@ batch_abort(Batch* self)
 }
 
 hot static inline void
-batch_publish(Batch* self, Cdc* cdc)
+batch_publish(Batch* self)
 {
 	// publish cdc events
 	for (auto it = 0; it < self->list_count; it++)
@@ -224,7 +232,7 @@ batch_publish(Batch* self, Cdc* cdc)
 		CdcBatch batch;
 		write_cdc_prepare(&gtr->write, &batch, user, &gtr->write_cdc);
 
-		cdc_write(cdc, &batch);
+		cdc_write(self->cdc, &batch);
 	}
 }
 

@@ -312,6 +312,7 @@ enum
 	// system
 	CCREATE_SECRET,
 	CCREATE_TOKEN,
+	CCDC_LIMIT,
 
 	// replica
 	CREPLICA_CREATE,

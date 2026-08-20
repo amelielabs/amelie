@@ -191,5 +191,23 @@ insert into test values (1, 0);
 drop table test;
 show memory;
 
+# test: cdc
+show cdc;
+create topic t;
+create subscription t_sub on t;
+publish into t 123;
+show cdc;
+
+alter system set limit cdc = 1;
+show cdc;
+publish into t 124;
+
+alter system unset limit cdc;
+show cdc;
+
+publish into t 125;
+select * from t_sub;
+drop topic t cascade;
+
 disconnect S0;
 close E0;

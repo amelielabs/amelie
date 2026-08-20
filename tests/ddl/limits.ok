@@ -298,5 +298,70 @@ memory
   "limit_enabled": false,
   "limit": 0
 }
+# test: cdc
+show cdc;
+
+cdc
+───
+{
+  "slots": 0,
+  "slots_min": -1,
+  "subs": 0,
+  "lsn": 0,
+  "size": 0,
+  "pages": 0
+}
+create topic t;
+create subscription t_sub on t;
+publish into t 123;
+show cdc;
+
+cdc
+───
+{
+  "slots": 1,
+  "slots_min": 88,
+  "subs": 0,
+  "lsn": 89,
+  "size": 262144,
+  "pages": 1
+}
+alter system set limit cdc = 1;
+show cdc;
+
+cdc
+───
+{
+  "slots": 1,
+  "slots_min": 88,
+  "subs": 0,
+  "lsn": 89,
+  "size": 262144,
+  "limit": 1,
+  "pages": 1
+}
+publish into t 124;
+error: transaction aborted during commit
+alter system unset limit cdc;
+show cdc;
+
+cdc
+───
+{
+  "slots": 1,
+  "slots_min": 88,
+  "subs": 0,
+  "lsn": 89,
+  "size": 262144,
+  "pages": 1
+}
+publish into t 125;
+select * from t_sub;
+
+lsn  cmd      data
+────────────────────
+89   publish  123
+90   publish  125
+drop topic t cascade;
 disconnect S0;
 close E0;

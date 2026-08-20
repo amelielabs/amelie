@@ -91,6 +91,16 @@ ccreate_token(Vm* self, Op* op)
 }
 
 void
+ccdc_limit(Vm* self, Op* op)
+{
+	// PERM_SYSTEM
+	check_user(self->tr, PERM_SYSTEM);
+
+	opt_int_set(&state()->cdc, (uint64_t)op->a);
+	control_save_state();
+}
+
+void
 creplica_create(Vm* self, Op* op)
 {
 	// PERM_SYSTEM
