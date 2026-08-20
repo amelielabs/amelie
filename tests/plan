@@ -43,17 +43,12 @@ test fn_math
 test fn_null
 test fn_system
 
-# system
-directory system
-group system
-test bootstrap
-test show
-test watch
-test lock
-
 # ddl
 directory ddl
 group ddl
+test show
+test watch
+test lock
 test user
 test table_create
 test table_drop
@@ -125,6 +120,7 @@ directory index
 group index
 test tree
 test hash
+test indexate
 
 # executor
 directory executor
@@ -132,14 +128,10 @@ group executor
 test abort
 test async
 
-# backend
-directory backend
-group backend
-test indexate
-
 # recovery
 directory recovery
 group recovery
+test bootstrap
 test wal_dml
 test wal_ddl
 test checkpoint
