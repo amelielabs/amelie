@@ -16,6 +16,15 @@ insert into test values (124), (125);
 error: write limit reached
 drop table test;
 alter user amelie unset limit write;
+# test: write (publish)
+create topic t;
+create subscription t_sub on t;
+alter user amelie set limit write = 1;
+publish into t 123;
+publish into t 124, 125;
+error: write limit reached
+alter user amelie unset limit write;
+drop topic t cascade;
 # test: send
 alter user amelie set limit send = 0;
 show limits;
@@ -307,9 +316,9 @@ cdc
   "slots": 0,
   "slots_min": -1,
   "subs": 0,
-  "lsn": 0,
-  "size": 0,
-  "pages": 0
+  "lsn": 10,
+  "size": 262144,
+  "pages": 1
 }
 create topic t;
 create subscription t_sub on t;
@@ -320,9 +329,9 @@ cdc
 ───
 {
   "slots": 1,
-  "slots_min": 88,
+  "slots_min": 94,
   "subs": 0,
-  "lsn": 89,
+  "lsn": 95,
   "size": 262144,
   "pages": 1
 }
@@ -333,9 +342,9 @@ cdc
 ───
 {
   "slots": 1,
-  "slots_min": 88,
+  "slots_min": 94,
   "subs": 0,
-  "lsn": 89,
+  "lsn": 95,
   "size": 262144,
   "limit": 1,
   "pages": 1
@@ -349,9 +358,9 @@ cdc
 ───
 {
   "slots": 1,
-  "slots_min": 88,
+  "slots_min": 94,
   "subs": 0,
-  "lsn": 89,
+  "lsn": 95,
   "size": 262144,
   "pages": 1
 }
@@ -360,8 +369,8 @@ select * from t_sub;
 
 lsn  cmd      data
 ────────────────────
-89   publish  123
-90   publish  125
+95   publish  123
+96   publish  125
 drop topic t cascade;
 disconnect S0;
 close E0;

@@ -15,6 +15,16 @@ insert into test values (124), (125);
 drop table test;
 alter user amelie unset limit write;
 
+# test: write (publish)
+create topic t;
+create subscription t_sub on t;
+alter user amelie set limit write = 1;
+publish into t 123;
+# error
+publish into t 124, 125;
+alter user amelie unset limit write;
+drop topic t cascade;
+
 # test: send
 alter user amelie set limit send = 0;
 # error

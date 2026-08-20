@@ -386,7 +386,6 @@ emit_utility(Compiler* self)
 			op1(self, CCDC_LIMIT, arg->cdc_limit);
 		}
 		lock_catalog = LOCK_SHARED;
-		lock_ddl     = LOCK_NONE;
 		break;
 	}
 	case STMT_CHECKPOINT:
@@ -417,7 +416,6 @@ emit_utility(Compiler* self)
 
 		// lock
 		lock_catalog = LOCK_SHARED;
-		lock_ddl     = LOCK_EXCLUSIVE;
 		break;
 	}
 
@@ -475,7 +473,6 @@ emit_utility(Compiler* self)
 		// start without locks and require manual locking control
 		// during execution
 		lock_catalog = LOCK_NONE;
-		lock_ddl     = LOCK_EXCLUSIVE;
 		break;
 	}
 
@@ -489,7 +486,6 @@ emit_utility(Compiler* self)
 		op4(self, CLOCK, name, name_rel, name_lock, arg->if_not_exists);
 
 		lock_catalog = LOCK_SHARED;
-		lock_ddl     = LOCK_EXCLUSIVE;
 		break;
 	}
 	case STMT_DROP_LOCK:
@@ -499,7 +495,6 @@ emit_utility(Compiler* self)
 		op2(self, CUNLOCK, name, arg->if_exists);
 
 		lock_catalog = LOCK_SHARED;
-		lock_ddl     = LOCK_EXCLUSIVE;
 		break;
 	}
 

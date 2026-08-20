@@ -701,7 +701,8 @@ ccall_udf(Vm* self, Op* op)
 hot static inline void
 cpublish_encode(Vm* self, Uuid* id, Value* value)
 {
-	auto data = &self->tr->log.cdc.data;
+	auto tr   = self->tr;
+	auto data = &tr->log.cdc.data;
 	auto record_offset = buf_size(data);
 	auto record = (CdcLogRecord*)buf_emplace(data, sizeof(CdcLogRecord));
 	record->cmd       = LOG_PUBLISH;
@@ -715,6 +716,10 @@ cpublish_encode(Vm* self, Uuid* id, Value* value)
 
 	record = (CdcLogRecord*)(data->start + record_offset);
 	record->data_size = (buf_size(data) - record_offset) - sizeof(CdcLogRecord);
+
+	// ensure write limit
+	if (tr->write)
+		usage_add(tr->write, 1);
 }
 
 hot void

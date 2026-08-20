@@ -104,8 +104,10 @@ gtr_prepare(Gtr* self, Local* local, User* user, Program* program)
 		usage_set_limit(&self->usage_write, true, limits_get(limits, LIMIT_WRITE));
 
 	// set user
-	tr_set_user(&self->tr, &user->rel);
-	tr_set_local(&self->tr, local);
+	auto tr = &self->tr;
+	tr_set_user(tr, &user->rel);
+	tr_set_local(tr, local);
+	tr_set_limit(tr, &self->usage_write);
 
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
