@@ -18,7 +18,7 @@
 #include <amelie_parser.h>
 
 void
-parse_index_using(Stmt* self, IndexConfig* index_config)
+parse_index_using(Stmt* self, IndexConfig* config)
 {
 	// [USING type]
 	if (! stmt_if(self, KUSING))
@@ -29,12 +29,63 @@ parse_index_using(Stmt* self, IndexConfig* index_config)
 
 	// tree | hash
 	if (str_is_case(&type->string, "tree", 4))
-		index_config_set_type(index_config, INDEX_TREE);
+		index_config_set_type(config, INDEX_TREE);
 	else
 	if (str_is_case(&type->string, "hash", 4))
-		index_config_set_type(index_config, INDEX_HASH);
+		index_config_set_type(config, INDEX_HASH);
 	else
 		stmt_error(self, type, "unrecognized index type");
+
+	// [(options)]
+	if (!stmt_if(self, '(') || stmt_if(self, ')'))
+		return;
+
+	for (;;)
+	{
+		// name value
+		auto name = stmt_expect(self, KNAME);
+
+		// size value
+		if (str_is(&name->string, "size", 4))
+		{
+			auto value = stmt_expect(self, KINT);
+			if (value->integer <= 0)
+				stmt_error(self, value, "invalid index size");
+			index_config_set_size(config, value->integer);
+		} else {
+			stmt_error(self, name, "unknown index option");
+		}
+
+		// )
+		if (stmt_if(self, ')'))
+			break;
+
+		// ,
+		stmt_expect(self, ',');
+	}
+}
+
+void
+parse_index_size(Stmt* self, IndexConfig* config, int partitions)
+{
+	unused(self);
+	if (! config->size)
+		return;
+
+	// calculate size per partition
+	uint64_t size = (config->size + partitions - 1) / partitions;
+
+	// get next power of two rounding
+	if (size < 64)
+		size = 64;
+	else
+	if (size > 1ULL << 32)
+		size = 1ULL << 32;
+	else
+		size = 1ULL << (64 - __builtin_clzll(size - 1));
+
+	// set size per partition
+	index_config_set_size(config, size);
 }
 
 void
@@ -125,6 +176,9 @@ parse_index_create(Stmt* self, bool unique)
 
 	// [USING type]
 	parse_index_using(self, stmt->config);
+
+	// configure index size according to the table partitions
+	parse_index_size(self, stmt->config, table->config->parts_count);
 }
 
 void

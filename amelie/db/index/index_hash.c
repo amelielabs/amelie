@@ -95,7 +95,10 @@ index_hash_truncate(Index* self, IndexOp* op)
 	auto comparable = hash->comparable;
 	auto before = hash_size(hash);
 	hash_free(hash);
-	hash_create(hash, comparable);
+	auto size = self->config->size;
+	if (! size)
+		size = 256;
+	hash_create(hash, comparable, size);
 	hash_delta(hash, op, before);
 }
 
@@ -104,7 +107,10 @@ index_hash_create(Index* self, IndexOp* op)
 {
 	auto hash = &index_hash_of(self)->hash;
 	auto before = hash_size(hash);
-	hash_create(hash, &self->config->keys.comparable);
+	auto size = self->config->size;
+	if (! size)
+		size = 256;
+	hash_create(hash, &self->config->keys.comparable, size);
 	hash_delta(hash, op, before);
 }
 
@@ -156,7 +162,8 @@ index_hash_allocate(IndexConfig* config, void* arg)
 uint64_t
 index_hash_size(IndexConfig* config)
 {
-	// default
-	unused(config);
-	return sizeof(Row*) * 256;
+	auto size = config->size;
+	if (! size)
+		size = 256;
+	return sizeof(Row*) * size;
 }

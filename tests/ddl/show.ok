@@ -98,6 +98,7 @@ indexes
 {
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -113,6 +114,7 @@ show
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -128,6 +130,7 @@ indexes
 {
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -144,6 +147,7 @@ index
 {
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -159,6 +163,7 @@ show
 {
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -179,6 +184,7 @@ index
 {
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{

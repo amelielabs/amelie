@@ -24,6 +24,7 @@ struct IndexConfig
 {
 	Str     name;
 	int64_t type;
+	int64_t size;
 	bool    unique;
 	bool    primary;
 	Keys    keys;
@@ -36,6 +37,7 @@ index_config_allocate(Columns* columns)
 	IndexConfig *self;
 	self = am_malloc(sizeof(IndexConfig));
 	self->type    = INDEX_UNDEF;
+	self->size    = 0;
 	self->unique  = false;
 	self->primary = false;
 	str_init(&self->name);
@@ -77,12 +79,19 @@ index_config_set_type(IndexConfig* self, int type)
 	self->type = type;
 }
 
+static inline void
+index_config_set_size(IndexConfig* self, int64_t size)
+{
+	self->size = size;
+}
+
 static inline IndexConfig*
 index_config_copy(IndexConfig* self, Columns* columns)
 {
 	auto copy = index_config_allocate(columns);
 	index_config_set_name(copy, &self->name);
 	index_config_set_type(copy, self->type);
+	index_config_set_size(copy, self->size);
 	index_config_set_unique(copy, self->unique);
 	index_config_set_primary(copy, self->primary);
 	keys_copy(&copy->keys, &self->keys);
@@ -99,6 +108,7 @@ index_config_read(Columns* columns, uint8_t** pos)
 	{
 		{ DECODE_STR,   "name",    &self->name    },
 		{ DECODE_INT,   "type",    &self->type    },
+		{ DECODE_INT,   "size",    &self->size    },
 		{ DECODE_BOOL,  "unique",  &self->unique  },
 		{ DECODE_BOOL,  "primary", &self->primary },
 		{ DECODE_ARRAY, "keys",    &keys          },
@@ -122,6 +132,10 @@ index_config_write(IndexConfig* self, Buf* buf, int flags)
 	// type
 	encode_raw(buf, "type", 4);
 	encode_int(buf, self->type);
+
+	// size
+	encode_raw(buf, "size", 4);
+	encode_int(buf, self->size);
 
 	// unique
 	encode_raw(buf, "unique", 6);

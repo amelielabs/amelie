@@ -44,11 +44,11 @@ hash_free(Hash* self)
 }
 
 static inline void
-hash_create(Hash* self, Comparable* comparable)
+hash_create(Hash* self, Comparable* comparable, uint64_t size)
 {
 	self->comparable = comparable;
 	self->current = &self->a;
-	hash_store_create(self->current, comparable, 256);
+	hash_store_create(self->current, comparable, size);
 }
 
 always_inline static inline int64_t

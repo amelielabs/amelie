@@ -35,6 +35,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -45,6 +46,7 @@ indexes
 }, {
   "name": "i",
   "type": 2,
+  "size": 0,
   "unique": false,
   "primary": false,
   "keys": [{
@@ -68,6 +70,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -78,6 +81,7 @@ indexes
 }, {
   "name": "i",
   "type": 2,
+  "size": 0,
   "unique": false,
   "primary": false,
   "keys": [{
@@ -100,6 +104,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -110,6 +115,7 @@ indexes
 }, {
   "name": "i",
   "type": 2,
+  "size": 0,
   "unique": false,
   "primary": false,
   "keys": [{
@@ -141,6 +147,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -151,6 +158,7 @@ indexes
 }, {
   "name": "i",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": false,
   "keys": [{
@@ -161,6 +169,7 @@ indexes
 }, {
   "name": "j",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": false,
   "keys": [{
@@ -190,6 +199,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -200,6 +210,7 @@ indexes
 }, {
   "name": "i",
   "type": 1,
+  "size": 0,
   "unique": false,
   "primary": false,
   "keys": [{
@@ -221,6 +232,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -231,6 +243,7 @@ indexes
 }, {
   "name": "i",
   "type": 2,
+  "size": 0,
   "unique": false,
   "primary": false,
   "keys": [{
@@ -272,6 +285,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -282,6 +296,7 @@ indexes
 }, {
   "name": "i",
   "type": 2,
+  "size": 0,
   "unique": false,
   "primary": false,
   "keys": [{
@@ -302,6 +317,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -346,6 +362,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -428,6 +445,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -438,6 +456,7 @@ indexes
 }, {
   "name": "i",
   "type": 2,
+  "size": 0,
   "unique": false,
   "primary": false,
   "keys": [{
@@ -458,6 +477,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -468,6 +488,7 @@ indexes
 }, {
   "name": "j",
   "type": 2,
+  "size": 0,
   "unique": false,
   "primary": false,
   "keys": [{
@@ -497,6 +518,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -507,6 +529,7 @@ indexes
 }, {
   "name": "j",
   "type": 2,
+  "size": 0,
   "unique": false,
   "primary": false,
   "keys": [{
@@ -627,6 +650,75 @@ columns
   "dropped": false,
   "constraints": []
 }]
+drop table test;
+# test: create index (size)
+create table test (id int primary key using hash (size 1234));
+show partitions on test;
+
+partitions
+──────────
+{
+  "id": 10,
+  "min": 0,
+  "max": 8096,
+  "size": 0
+}
+show indexes on test;
+
+indexes
+───────
+{
+  "name": "primary",
+  "type": 1,
+  "size": 2048,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true,
+    "partitioning": true
+  }]
+}
+drop table test;
+create table test (id int primary key using hash (size 1234)) partitions 3;
+show partitions on test;
+
+partitions
+──────────
+{
+  "id": 11,
+  "min": 0,
+  "max": 2698,
+  "size": 0
+}
+{
+  "id": 12,
+  "min": 2698,
+  "max": 5396,
+  "size": 0
+}
+{
+  "id": 13,
+  "min": 5396,
+  "max": 8096,
+  "size": 0
+}
+show indexes on test;
+
+indexes
+───────
+{
+  "name": "primary",
+  "type": 1,
+  "size": 512,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true,
+    "partitioning": true
+  }]
+}
 drop table test;
 disconnect S0;
 close E0;

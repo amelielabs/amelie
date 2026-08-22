@@ -480,6 +480,9 @@ parse_table_create(Stmt* self)
 	// [PARTITIONS]
 	parse_table_partitions(self, config);
 
+	// configure index size according to the table partitions
+	parse_index_size(self, config_index, config->parts_count);
+
 	// [WITH]
 	if (stmt_if(self, KWITH))
 		parse_table_create_with(self);

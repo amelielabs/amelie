@@ -188,5 +188,16 @@ explain create index i on test (data);
 select show('table', 'test', true).columns;
 drop table test;
 
+# test: create index (size)
+create table test (id int primary key using hash (size 1234));
+show partitions on test;
+show indexes on test;
+drop table test;
+
+create table test (id int primary key using hash (size 1234)) partitions 3;
+show partitions on test;
+show indexes on test;
+drop table test;
+
 disconnect S0;
 close E0;

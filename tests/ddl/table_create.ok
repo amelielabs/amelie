@@ -572,6 +572,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -590,6 +591,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -607,6 +609,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -625,6 +628,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -647,6 +651,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -664,6 +669,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -685,6 +691,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{

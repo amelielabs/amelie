@@ -428,6 +428,7 @@ indexes
 [{
   "name": "primary",
   "type": 2,
+  "size": 0,
   "unique": true,
   "primary": true,
   "keys": [{
@@ -438,6 +439,7 @@ indexes
 }, {
   "name": "i",
   "type": 1,
+  "size": 0,
   "unique": false,
   "primary": false,
   "keys": [{
