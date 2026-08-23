@@ -140,6 +140,33 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
+	// compute
+	case STMT_CREATE_COMPUTE:
+	{
+		auto arg = ast_compute_create_of(stmt->ast);
+		offset = compute_op_create(data, arg->config);
+		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		break;
+	}
+	case STMT_DROP_COMPUTE:
+	{
+		auto arg = ast_compute_drop_of(stmt->ast);
+		offset = rel_op_drop(data, REL_COMPUTE, user, &arg->name, arg->cascade);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+	case STMT_ALTER_COMPUTE:
+	{
+		auto arg = ast_topic_alter_of(stmt->ast);
+		if (arg->type == COMPUTE_ALTER_RENAME)
+			offset = rel_op_rename(data, REL_COMPUTE, user, &arg->name, user, &arg->name_new);
+		else
+		if (arg->type == COMPUTE_ALTER_DESCRIPTION)
+			offset = rel_op_describe(data, REL_COMPUTE, user, &arg->name, &arg->description);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+
 	// table
 	case STMT_CREATE_TABLE:
 	{

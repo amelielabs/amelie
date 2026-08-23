@@ -92,6 +92,7 @@ enum
 	KCOLUMN,
 	KCONTINUE,
 	KCLONE,
+	KCOMPUTE,
 
 	// d
 	KDELETE,

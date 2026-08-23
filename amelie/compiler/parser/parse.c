@@ -35,6 +35,13 @@ parse_stmt_free(Stmt* stmt)
 			user_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_COMPUTE:
+	{
+		auto ast = ast_compute_create_of(stmt->ast);
+		if (ast->config)
+			compute_config_free(ast->config);
+		break;
+	}
 	case STMT_CREATE_TABLE:
 	{
 		auto ast = ast_table_create_of(stmt->ast);
@@ -290,6 +297,11 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_USER;
 			parse_user_create(self, true);
 		} else
+		if (stmt_if(self, KCOMPUTE))
+		{
+			self->id = STMT_CREATE_COMPUTE;
+			parse_compute_create(self);
+		} else
 		if (stmt_if(self, KTABLE))
 		{
 			self->id = STMT_CREATE_TABLE;
@@ -344,6 +356,11 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_USER;
 			parse_user_drop(self);
 		} else
+		if (stmt_if(self, KCOMPUTE))
+		{
+			self->id = STMT_DROP_COMPUTE;
+			parse_compute_drop(self);
+		} else
 		if (stmt_if(self, KTABLE))
 		{
 			self->id = STMT_DROP_TABLE;
@@ -397,6 +414,11 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_USER;
 			parse_user_alter(self);
+		} else
+		if (stmt_if(self, KCOMPUTE))
+		{
+			self->id = STMT_ALTER_COMPUTE;
+			parse_compute_alter(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{

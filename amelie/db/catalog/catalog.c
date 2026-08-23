@@ -271,6 +271,14 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = user_limit_unset(self, tr, &name, mask, if_exists);
 		break;
 	}
+	case DDL_COMPUTE_CREATE:
+	{
+		auto config = compute_op_create_read(op);
+		defer(compute_config_free, config);
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = compute_create(self, tr, config, if_not_exists);
+		break;
+	}
 	case DDL_TABLE_CREATE:
 	{
 		auto config = table_op_create_read(op);

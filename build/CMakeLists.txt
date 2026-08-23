@@ -205,6 +205,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/part/parts.c
     ${AMELIE_ROOT}/db/part/cursor.c
     ${AMELIE_ROOT}/db/catalog/user.c
+    ${AMELIE_ROOT}/db/catalog/compute.c
     ${AMELIE_ROOT}/db/catalog/table.c
     ${AMELIE_ROOT}/db/catalog/table_alter.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
@@ -300,6 +301,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_subscription.c
     ${AMELIE_ROOT}/compiler/parser/parse_grant.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c
+    ${AMELIE_ROOT}/compiler/parser/parse_compute.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
     ${AMELIE_ROOT}/compiler/parser/parse_clone.c

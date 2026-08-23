@@ -339,6 +339,7 @@ user_grant(Catalog* self,
 	     PERM_GRANT               |
 	     PERM_SYSTEM              |
 	     PERM_CREATE_USER         |
+	     PERM_CREATE_COMPUTE      |
 	     PERM_CREATE_TOKEN        |
 	     PERM_CREATE_TABLE        |
 	     PERM_CREATE_CLONE        |

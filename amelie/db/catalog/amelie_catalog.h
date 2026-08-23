@@ -20,6 +20,11 @@
 #include "catalog/user.h"
 #include "catalog/check.h"
 
+// compute
+#include "catalog/compute_config.h"
+#include "catalog/compute_op.h"
+#include "catalog/compute.h"
+
 // table
 #include "catalog/table_config.h"
 #include "catalog/table_op.h"

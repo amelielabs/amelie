@@ -31,6 +31,13 @@ catalog_find_by(Catalog* self, RelType type, Uuid* id, bool error_if_not_exists)
 	return rels_find_by(&self->rels, type, id, error_if_not_exists);
 }
 
+static inline Compute*
+catalog_find_compute(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
+{
+	return compute_of(rels_find(&self->rels, REL_COMPUTE, user, name,
+	                            error_if_not_exists));
+}
+
 static inline Table*
 catalog_find_table(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 {
