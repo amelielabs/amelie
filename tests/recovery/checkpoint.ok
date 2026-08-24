@@ -1145,6 +1145,12 @@ rels
 ────
 {
   "user": "amelie",
+  "name": "default_compute",
+  "type": "compute",
+  "description": ""
+}
+{
+  "user": "amelie",
   "name": "test_top",
   "type": "topic",
   "description": ""
@@ -1180,6 +1186,12 @@ show rels;
 
 rels
 ────
+{
+  "user": "amelie",
+  "name": "default_compute",
+  "type": "compute",
+  "description": ""
+}
 {
   "user": "amelie",
   "name": "test_top",

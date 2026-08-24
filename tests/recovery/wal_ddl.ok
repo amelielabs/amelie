@@ -1197,6 +1197,12 @@ rels
 ────
 {
   "user": "amelie",
+  "name": "default_compute",
+  "type": "compute",
+  "description": ""
+}
+{
+  "user": "amelie",
   "name": "test",
   "type": "table",
   "description": ""

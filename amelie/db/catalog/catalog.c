@@ -110,7 +110,6 @@ catalog_create(Catalog* self)
 		uuid_init(&id);
 		uuid_generate(&id, &am_task->random, time_ms());
 		user_config_set_id(user_config, &id);
-
 		// set timestamp
 		char ts[64];
 		auto time = time_us();
@@ -119,6 +118,19 @@ catalog_create(Catalog* self)
 		str_set(&created_at, ts, size);
 		user_config_set_created_at(user_config, &created_at);
 		user_create(self, &tr, user_config, false);
+
+		auto user = catalog_find_user(self, &name, true);
+		tr_set_user(&tr, &user->rel);
+
+		// create default compute
+		auto compute_config = compute_config_allocate();
+		defer(compute_config_free, compute_config);
+		compute_config_set_user(compute_config, &name);
+		str_init(&name);
+		str_set_cstr(&name, "default_compute");
+		compute_config_set_name(compute_config, &name);
+		compute_config_set_system(compute_config, true);
+		compute_create(self, &tr, compute_config, false);
 
 		// commit
 		tr_commit(&tr);

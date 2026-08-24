@@ -18,6 +18,7 @@ struct ComputeConfig
 	Str    name;
 	Str    user;
 	Str    description;
+	bool   system;
 	Grants grants;
 };
 
@@ -26,6 +27,7 @@ compute_config_allocate()
 {
 	ComputeConfig* self;
 	self = am_malloc(sizeof(ComputeConfig));
+	self->system = false;
 	str_init(&self->name);
 	str_init(&self->user);
 	str_init(&self->description);
@@ -64,6 +66,12 @@ compute_config_set_description(ComputeConfig* self, Str* value)
 	str_copy(&self->description, value);
 }
 
+static inline void
+compute_config_set_system(ComputeConfig* self, bool value)
+{
+	self->system = value;
+}
+
 static inline ComputeConfig*
 compute_config_copy(ComputeConfig* self)
 {
@@ -71,6 +79,7 @@ compute_config_copy(ComputeConfig* self)
 	compute_config_set_name(copy, &self->name);
 	compute_config_set_user(copy, &self->user);
 	compute_config_set_description(copy, &self->description);
+	compute_config_set_system(copy, self->system);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -87,6 +96,7 @@ compute_config_read(uint8_t** pos)
 		{ DECODE_STR,   "user",        &self->user        },
 		{ DECODE_STR,   "description", &self->description },
 		{ DECODE_ARRAY, "grants",      &pos_grants        },
+		{ DECODE_BOOL,  "system",      &self->system      },
 		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "compute", pos);
@@ -121,6 +131,10 @@ compute_config_write(ComputeConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
+
+	// system
+	encode_raw(buf, "system", 6);
+	encode_bool(buf, self->system);
 
 	// grants
 	encode_raw(buf, "grants", 6);
