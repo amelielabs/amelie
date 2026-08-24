@@ -169,6 +169,70 @@ table_truncate(Catalog* self,
 	return true;
 }
 
+static void
+set_compute_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+set_compute_if_abort(Log* self, LogOp* op)
+{
+	uint8_t* pos = log_data_of(self, op);
+	Str name;
+	unpack_str(&pos, &name);
+
+	// restore compute
+	auto table = table_of(op->rel);
+	table_config_set_compute(table->config, &name);
+}
+
+static LogIf set_compute_if =
+{
+	.commit = set_compute_if_commit,
+	.abort  = set_compute_if_abort
+};
+
+bool
+table_set_compute(Catalog* self,
+                  Tr*      tr,
+                  Str*     user,
+                  Str*     name,
+                  Str*     name_compute,
+                  bool     if_exists)
+{
+	auto table = catalog_find_table(self, user, name, false);
+	if (! table)
+	{
+		if (! if_exists)
+			error("table '{str}': not exists", name);
+		return false;
+	}
+
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
+
+	// compute not changed
+	if (str_compare(&table->config->compute, name_compute))
+		return false;
+
+	// find compute and check permission to use it
+	auto compute = catalog_find_compute(self, name_compute, true);
+	if (! compute->config->system)
+		check_user(tr, PERM_COMPUTE);
+
+	// update table
+	log_ddl(&tr->log, &set_compute_if, NULL, &table->rel);
+
+	// save previous name
+	encode_str(&tr->log.data, &table->config->compute);
+
+	// update compute
+	table_config_set_compute(table->config, name_compute);
+	return true;
+}
+
 void
 table_sync(Table* self)
 {

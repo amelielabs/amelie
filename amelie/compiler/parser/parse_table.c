@@ -531,6 +531,7 @@ parse_table_alter(Stmt* self)
 {
 	// ALTER TABLE [IF EXISTS] name RENAME TO name
 	// ALTER TABLE [IF EXISTS] name DESCRIPTION value 
+	// ALTER TABLE [IF EXISTS] name SET COMPUTE name
 	// ALTER TABLE [IF EXISTS] name ADD COLUMN [IF NOT EXISTS] name type [constraint]
 	// ALTER TABLE [IF EXISTS] name DROP COLUMN [IF EXISTS] name
 	// ALTER TABLE [IF EXISTS] name RENAME COLUMN [IF EXISTS] name TO name
@@ -652,6 +653,17 @@ parse_table_alter(Stmt* self)
 	// [SET]
 	if (stmt_if(self, KSET))
 	{
+		// SET COMPUTE name
+		if (stmt_if(self, KCOMPUTE))
+		{
+			// name
+			auto name = stmt_expect(self, KNAME);
+			str_set_str(&stmt->name_new, &name->string);
+
+			stmt->type = TABLE_ALTER_SET_COMPUTE;
+			return;
+		}
+
 		// SET COLUMN DEFAULT
 		if (stmt_if(self, KCOLUMN))
 		{

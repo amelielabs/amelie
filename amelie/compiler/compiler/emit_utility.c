@@ -41,6 +41,12 @@ emit_alter_table(Compiler* self)
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
+	case TABLE_ALTER_SET_COMPUTE:
+	{
+		offset = table_op_set_compute(data, user, &arg->name, &arg->name_new);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
 	case TABLE_ALTER_COLUMN_RENAME:
 	{
 		offset = table_op_column_rename(data, user, &arg->name, &arg->column_name,

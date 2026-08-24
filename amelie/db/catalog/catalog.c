@@ -329,6 +329,17 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = table_truncate(self, tr, &user, &name, if_exists);
 		break;
 	}
+	case DDL_TABLE_SET_COMPUTE:
+	{
+		Str user;
+		Str name;
+		Str name_compute;
+		table_op_set_compute_read(op, &user, &name, &name_compute);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = table_set_compute(self, tr, &user, &name, &name_compute, if_exists);
+		break;
+	}
 	case DDL_TABLE_COLUMN_ADD:
 	{
 		Str  user;
