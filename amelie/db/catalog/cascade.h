@@ -18,3 +18,4 @@ void catalog_deps_drop(Catalog*, Tr*, Buf*);
 bool catalog_deps_validate(Catalog*, Rel*, bool);
 bool catalog_deps_validate_udf(Catalog*, Rel*, bool);
 bool catalog_deps_validate_user(Catalog*, Str*, bool);
+bool catalog_deps_validate_compute(Catalog*, Str*, bool);

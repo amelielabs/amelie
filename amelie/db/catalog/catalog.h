@@ -24,6 +24,7 @@ struct CatalogIf
 
 struct Catalog
 {
+	Rels       computes;
 	Rels       users;
 	Rels       rels;
 	Columns    topic_columns;

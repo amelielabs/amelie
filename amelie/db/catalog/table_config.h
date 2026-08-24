@@ -19,6 +19,7 @@ struct TableConfig
 	Str     name;
 	Str     description;
 	Uuid    id;
+	Str     compute;
 	int64_t timeline;
 	Columns columns;
 	List    indexes;
@@ -39,6 +40,7 @@ table_config_allocate(void)
 	str_init(&self->name);
 	str_init(&self->user);
 	str_init(&self->description);
+	str_init(&self->compute);
 	uuid_init(&self->id);
 	columns_init(&self->columns);
 	list_init(&self->indexes);
@@ -53,6 +55,7 @@ table_config_free(TableConfig* self)
 	str_free(&self->user);
 	str_free(&self->name);
 	str_free(&self->description);
+	str_free(&self->compute);
 
 	list_foreach_safe(&self->indexes)
 	{
@@ -99,6 +102,13 @@ table_config_set_id(TableConfig* self, Uuid* id)
 }
 
 static inline void
+table_config_set_compute(TableConfig* self, Str* value)
+{
+	str_free(&self->compute);
+	str_copy(&self->compute, value);
+}
+
+static inline void
 table_config_set_timeline(TableConfig* self, int64_t value)
 {
 	self->timeline = value;
@@ -140,6 +150,7 @@ table_config_copy(TableConfig* self)
 	table_config_set_user(copy, &self->user);
 	table_config_set_description(copy, &self->description);
 	table_config_set_id(copy, &self->id);
+	table_config_set_compute(copy, &self->compute);
 	table_config_set_timeline(copy, self->timeline);
 	columns_copy(&copy->columns, &self->columns);
 	grants_copy(&copy->grants, &self->grants);
@@ -171,16 +182,17 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_grants  = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",         &self->user         },
-		{ DECODE_STR,   "name",         &self->name         },
-		{ DECODE_STR,   "description",  &self->description  },
-		{ DECODE_UUID,  "id",           &self->id           },
-		{ DECODE_INT,   "timeline",     &self->timeline     },
-		{ DECODE_ARRAY, "columns",      &pos_columns        },
-		{ DECODE_ARRAY, "indexes",      &pos_indexes        },
-		{ DECODE_ARRAY, "partitions",   &pos_parts          },
-		{ DECODE_ARRAY, "grants",       &pos_grants         },
-		{ 0,             NULL,           NULL               },
+		{ DECODE_STR,   "user",        &self->user        },
+		{ DECODE_STR,   "name",        &self->name        },
+		{ DECODE_STR,   "description", &self->description },
+		{ DECODE_UUID,  "id",          &self->id          },
+		{ DECODE_STR,   "compute",     &self->compute     },
+		{ DECODE_INT,   "timeline",    &self->timeline    },
+		{ DECODE_ARRAY, "columns",     &pos_columns       },
+		{ DECODE_ARRAY, "indexes",     &pos_indexes       },
+		{ DECODE_ARRAY, "partitions",  &pos_parts         },
+		{ DECODE_ARRAY, "grants",      &pos_grants        },
+		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "table", pos);
 
@@ -235,6 +247,10 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	// id
 	encode_raw(buf, "id", 2);
 	encode_uuid(buf, &self->id);
+
+	// compute
+	encode_raw(buf, "compute", 7);
+	encode_str(buf, &self->compute);
 
 	// timeline
 	encode_raw(buf, "timeline", 8);

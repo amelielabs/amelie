@@ -28,18 +28,18 @@ parse_stmt_free(Stmt* stmt)
 			replica_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_USER:
-	{
-		auto ast = ast_user_create_of(stmt->ast);
-		if (ast->config)
-			user_config_free(ast->config);
-		break;
-	}
 	case STMT_CREATE_COMPUTE:
 	{
 		auto ast = ast_compute_create_of(stmt->ast);
 		if (ast->config)
 			compute_config_free(ast->config);
+		break;
+	}
+	case STMT_CREATE_USER:
+	{
+		auto ast = ast_user_create_of(stmt->ast);
+		if (ast->config)
+			user_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_TABLE:
@@ -287,6 +287,11 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_REPLICA;
 			parse_replica_create(self);
 		} else
+		if (stmt_if(self, KCOMPUTE))
+		{
+			self->id = STMT_CREATE_COMPUTE;
+			parse_compute_create(self);
+		} else
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_CREATE_USER;
@@ -296,11 +301,6 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_CREATE_USER;
 			parse_user_create(self, true);
-		} else
-		if (stmt_if(self, KCOMPUTE))
-		{
-			self->id = STMT_CREATE_COMPUTE;
-			parse_compute_create(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{
@@ -351,15 +351,15 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_REPLICA;
 			parse_replica_drop(self);
 		} else
-		if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
-		{
-			self->id = STMT_DROP_USER;
-			parse_user_drop(self);
-		} else
 		if (stmt_if(self, KCOMPUTE))
 		{
 			self->id = STMT_DROP_COMPUTE;
 			parse_compute_drop(self);
+		} else
+		if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
+		{
+			self->id = STMT_DROP_USER;
+			parse_user_drop(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{
@@ -410,15 +410,15 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_SYSTEM;
 			parse_system_alter(self);
 		} else
-		if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
-		{
-			self->id = STMT_ALTER_USER;
-			parse_user_alter(self);
-		} else
 		if (stmt_if(self, KCOMPUTE))
 		{
 			self->id = STMT_ALTER_COMPUTE;
 			parse_compute_alter(self);
+		} else
+		if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
+		{
+			self->id = STMT_ALTER_USER;
+			parse_user_alter(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{

@@ -44,7 +44,7 @@ user_check_permission(User* self, Rel* rel, uint32_t perms)
 		return;
 
 	// owner
-	if (str_compare(&self->config->name, rel->user))
+	if (rel->user && str_compare(&self->config->name, rel->user))
 		return;
 
 	// check permissions

@@ -35,6 +35,7 @@ catalog_init(Catalog*   self,
 	self->iface_part_arg = iface_part_arg;
 	self->cdc            = cdc;
 
+	rels_init(&self->computes);
 	rels_init(&self->users);
 	rels_init(&self->rels);
 
@@ -81,6 +82,7 @@ catalog_free(Catalog* self)
 {
 	rels_free(&self->rels);
 	rels_free(&self->users);
+	rels_free(&self->computes);
 	columns_free(&self->cdc_columns);
 	columns_free(&self->topic_columns);
 }
@@ -125,9 +127,8 @@ catalog_create(Catalog* self)
 		// create default compute
 		auto compute_config = compute_config_allocate();
 		defer(compute_config_free, compute_config);
-		compute_config_set_user(compute_config, &name);
 		str_init(&name);
-		str_set_cstr(&name, "default_compute");
+		str_set_cstr(&name, "main");
 		compute_config_set_name(compute_config, &name);
 		compute_config_set_system(compute_config, true);
 		compute_create(self, &tr, compute_config, false);
@@ -213,7 +214,34 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = catalog_describe(self, tr, type, &user, &name, &description, if_exists);
 		break;
 	}
+	case DDL_COMPUTE_CREATE:
+	{
+		auto config = compute_op_create_read(op);
+		defer(compute_config_free, config);
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = compute_create(self, tr, config, if_not_exists);
+		break;
+	}
+	case DDL_COMPUTE_DROP:
+	{
+		Str  name;
+		bool cascade;
+		compute_op_drop_read(op, &name, &cascade);
 
+		auto if_exists = ddl_if_exists(flags);
+		write = compute_drop(self, tr, &name, if_exists, cascade);
+		break;
+	}
+	case DDL_COMPUTE_RENAME:
+	{
+		Str name;
+		Str name_new;
+		compute_op_rename_read(op, &name, &name_new);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = compute_rename(self, tr, &name, &name_new, if_exists);
+		break;
+	}
 	case DDL_USER_CREATE:
 	{
 		auto config = user_op_create_read(op);
@@ -281,14 +309,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_exists = ddl_if_exists(flags);
 		write = user_limit_unset(self, tr, &name, mask, if_exists);
-		break;
-	}
-	case DDL_COMPUTE_CREATE:
-	{
-		auto config = compute_op_create_read(op);
-		defer(compute_config_free, config);
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = compute_create(self, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_TABLE_CREATE:

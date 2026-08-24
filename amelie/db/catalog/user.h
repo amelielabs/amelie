@@ -11,7 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Catalog Catalog;
 typedef struct User User;
 
 struct User

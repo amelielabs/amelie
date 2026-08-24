@@ -59,6 +59,9 @@ static Permission perms[] =
 	// Topic
 	{ PERM_PUBLISH,             "publish",             7  },
 
+	// Compute
+	{ PERM_COMPUTE,             "compute",             7  },
+
 	// Connections
 	{ PERM_SERVICE,             "service",             7  },
 	{ PERM_API,                 "api",                 3  },

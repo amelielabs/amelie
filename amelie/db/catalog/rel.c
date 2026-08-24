@@ -44,10 +44,6 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 	// only owner or superuser
 	check_ownership(tr, rel);
 
-	// ensure not a main compute
-	if (rel->type == REL_COMPUTE && compute_of(rel)->config->system)
-		error("{s} '{str}': cannot be dropped", rel_type_of(type), name);
-
 	// collect dependencies
 	Buf deps;
 	buf_init(&deps);

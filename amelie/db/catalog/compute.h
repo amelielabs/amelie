@@ -11,6 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
+typedef struct Catalog Catalog;
 typedef struct Compute Compute;
 
 struct Compute
@@ -20,6 +21,8 @@ struct Compute
 };
 
 bool compute_create(Catalog*, Tr*, ComputeConfig*, bool);
+bool compute_drop(Catalog*, Tr*, Str*, bool, bool);
+bool compute_rename(Catalog*, Tr*, Str*, Str*, bool);
 
 always_inline static inline Compute*
 compute_of(Rel* self)

@@ -683,12 +683,6 @@ show rels;
 
 rels
 ────
-{
-  "user": "amelie",
-  "name": "default_compute",
-  "type": "compute",
-  "description": ""
-}
 show users;
 
 users

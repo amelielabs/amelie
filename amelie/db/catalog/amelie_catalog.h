@@ -14,16 +14,16 @@
 // ddl
 #include "catalog/ddl.h"
 
+// compute
+#include "catalog/compute_config.h"
+#include "catalog/compute_op.h"
+#include "catalog/compute.h"
+
 // user
 #include "catalog/user_config.h"
 #include "catalog/user_op.h"
 #include "catalog/user.h"
 #include "catalog/check.h"
-
-// compute
-#include "catalog/compute_config.h"
-#include "catalog/compute_op.h"
-#include "catalog/compute.h"
 
 // table
 #include "catalog/table_config.h"

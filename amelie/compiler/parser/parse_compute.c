@@ -33,7 +33,6 @@ parse_compute_create(Stmt* self)
 	// create compute config
 	auto config = compute_config_allocate();
 	stmt->config = config;
-	compute_config_set_user(config, self->parser->user);
 	compute_config_set_name(config, &name->string);
 
 	// [DESCRIPTION]

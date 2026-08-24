@@ -204,8 +204,8 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/part/part_op.c
     ${AMELIE_ROOT}/db/part/parts.c
     ${AMELIE_ROOT}/db/part/cursor.c
-    ${AMELIE_ROOT}/db/catalog/user.c
     ${AMELIE_ROOT}/db/catalog/compute.c
+    ${AMELIE_ROOT}/db/catalog/user.c
     ${AMELIE_ROOT}/db/catalog/table.c
     ${AMELIE_ROOT}/db/catalog/table_alter.c
     ${AMELIE_ROOT}/db/catalog/table_index.c

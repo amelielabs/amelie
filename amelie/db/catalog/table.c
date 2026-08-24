@@ -100,6 +100,11 @@ table_create(Catalog*     self,
 	// check limit
 	catalog_limit(self, tr, REL_TABLE, LIMIT_TABLES);
 
+	// find compute and check permission to use it
+	auto compute = catalog_find_compute(self, &config->compute, true);
+	if (! compute->config->system)
+		check_user(tr, PERM_COMPUTE);
+
 	// allocate table
 	auto user  = user_of(tr->user);
 	auto table = table_allocate(config, self->iface_part, self->iface_part_arg,

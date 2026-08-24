@@ -317,12 +317,12 @@ fn_show(Call* self)
 	}
 	case SHOW_COMPUTES:
 	{
-		rels_list(&catalog->rels, REL_COMPUTE, buf, user, NULL, all, flags);
+		rels_list(&catalog->computes, REL_COMPUTE, buf, NULL, NULL, all, flags);
 		break;
 	}
 	case SHOW_COMPUTE:
 	{
-		rels_list(&catalog->rels, REL_COMPUTE, buf, user, name, all, flags);
+		rels_list(&catalog->computes, REL_COMPUTE, buf, NULL, name, all, flags);
 		break;
 	}
 	case SHOW_TABLES:

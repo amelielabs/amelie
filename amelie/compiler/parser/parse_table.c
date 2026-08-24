@@ -436,7 +436,8 @@ void
 parse_table_create(Stmt* self)
 {
 	// CREATE TABLE [IF NOT EXISTS] name (key)
-	// [PARTITIONS n]
+	// [PARTITIONS]
+	// [COMPUTE]
 	// [WITH (options)]
 	// [DESCRIPTION value]
 	auto stmt = ast_table_create_allocate();
@@ -482,6 +483,18 @@ parse_table_create(Stmt* self)
 
 	// configure index size according to the table partitions
 	parse_index_size(self, config_index, config->parts_count);
+
+	// [COMPUTE]
+	if (stmt_if(self, KCOMPUTE))
+	{
+		auto compute_name = stmt_expect(self, KNAME);
+		table_config_set_compute(config, &compute_name->string);
+	} else
+	{
+		Str compute_name;
+		str_set_cstr(&compute_name, "main");
+		table_config_set_compute(config, &compute_name);
+	}
 
 	// [WITH]
 	if (stmt_if(self, KWITH))

@@ -159,7 +159,7 @@ user_drop_of(Catalog* self,
 		// ensure no indirect dependecies on the user name (udfs, clones, subs or users)
 		catalog_deps_validate_user(self, user->name, true);
 
-		// revoke all permissions
+		// revoke all permissions from relations
 		list_foreach(&self->rels.list)
 		{
 			auto rel = list_at(Rel, link);
@@ -167,7 +167,6 @@ user_drop_of(Catalog* self,
 				error("user '{str}' still has {s} '{str}'", user->name,
 				      rel_type_of(rel->type), rel->name);
 
-			// revoke all permissions
 			if (grants_find(rel->grants, user->name))
 				catalog_grant_of(self, tr, rel, user->name, false, PERM_ALL);
 		}
@@ -339,13 +338,13 @@ user_grant(Catalog* self,
 	     PERM_GRANT               |
 	     PERM_SYSTEM              |
 	     PERM_CREATE_USER         |
-	     PERM_CREATE_COMPUTE      |
 	     PERM_CREATE_TOKEN        |
 	     PERM_CREATE_TABLE        |
 	     PERM_CREATE_CLONE        |
 	     PERM_CREATE_FUNCTION     |
 	     PERM_CREATE_TOPIC        |
 	     PERM_CREATE_SUBSCRIPTION |
+	     PERM_COMPUTE             |
 	     PERM_API                 |
 	     PERM_SQL                 |
 	     PERM_SERVICE;

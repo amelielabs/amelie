@@ -45,10 +45,8 @@ compute_allocate(ComputeConfig* config)
 	// set relation
 	auto rel = &self->rel;
 	rel_init(rel, REL_COMPUTE);
-	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_description(rel, &self->config->description);
-	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)compute_show);
 	rel_set_free(rel, (RelFree)compute_free);
 	rel_set_rsn(rel, state_rsn_next());
@@ -62,21 +60,204 @@ compute_create(Catalog*       self,
                bool           if_not_exists)
 {
 	// PERM_CREATE_COMPUTE
-	check_user(tr, PERM_CREATE_COMPUTE);
+	//
+	// (skip user check on bootstrap)
+	if (tr->user)
+		check_user(tr, PERM_CREATE_COMPUTE);
 
 	// make sure compute does not exists
-	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
-	if (rel)
+	auto compute = catalog_find_compute(self, &config->name, false);
+	if (compute)
 	{
 		if (! if_not_exists)
-			error("relation '{str}': already exists", &config->name);
+			error("compute '{str}': already exists", &config->name);
 		return false;
 	}
 
 	// allocate compute
-	auto compute = compute_allocate(config);
+	compute = compute_allocate(config);
 
 	// update relations
-	rels_create(&self->rels, tr, &compute->rel);
+	rels_create(&self->computes, tr, &compute->rel);
+	return true;
+}
+
+bool
+compute_drop(Catalog* self,
+             Tr*      tr,
+             Str*     name,
+             bool     if_exists,
+             bool     cascade)
+{
+	auto compute = catalog_find_compute(self, name, false);
+	if (! compute)
+	{
+		if (! if_exists)
+			error("compute '{str}': not exists", name);
+		return false;
+	}
+
+	// system compute is immutable
+	if (compute->config->system)
+		error("compute '{str}': cannot be dropped", name);
+
+	// only superuser
+	check_user(tr, PERM_CREATE_COMPUTE);
+
+	if (cascade)
+	{
+		// drop cascade all deps (tables and clones)
+		Buf deps;
+		buf_init(&deps);
+		defer_buf(&deps);
+
+		auto count = 0;
+		list_foreach_safe(&self->rels.list)
+		{
+			auto rel = list_at(Rel, link);
+			if (rel->type == REL_TABLE)
+			{
+				auto table = table_of(rel);
+				if (! str_compare(&table->config->compute, name))
+					continue;
+			} else
+			if (rel->type == REL_CLONE)
+			{
+				auto table = clone_of(rel)->table;
+				if (! str_compare(&table->config->compute, name))
+					continue;
+			} else {
+				continue;
+			}
+
+			count += catalog_deps(self, rel, &deps) + 1;
+			if (! catalog_deps_has(&deps, rel))
+				catalog_deps_add(&deps, rel);
+		}
+
+		// drop relations
+		if (count > 0)
+			catalog_deps_drop(self, tr, &deps);
+
+	} else
+	{
+		// ensure no indirect dependecies on the compute name (table and clones)
+		catalog_deps_validate_compute(self, &compute->config->name, true);
+	}
+
+	// drop compute by object
+	rels_drop(&self->computes, tr, &compute->rel);
+	return true;
+}
+
+static void
+rename_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+rename_if_abort(Log* self, LogOp* op)
+{
+	// set previous name
+	uint8_t* pos = log_data_of(self, op);
+	Str name_old;
+	unpack_str(&pos, &name_old);
+
+	Catalog* catalog = op->iface_arg;
+
+	// rename references
+	list_foreach_safe(&catalog->rels.list)
+	{
+		auto rel = list_at(Rel, link);
+
+		TableConfig* config = NULL;
+		if (rel->type == REL_TABLE)
+		{
+			auto table = table_of(rel);
+			if (str_compare(&table->config->compute, op->rel->name))
+				config = table->config;
+		} else
+		if (rel->type == REL_CLONE)
+		{
+			auto table = clone_of(rel)->table;
+			if (str_compare(&table->config->compute, op->rel->name))
+				config = table->config;
+		}
+		if (! config)
+			continue;
+
+		table_config_set_compute(config, &name_old);
+	}
+
+	rels_rename(&catalog->computes, op->rel, NULL, &name_old);
+}
+
+static LogIf rename_if =
+{
+	.commit = rename_if_commit,
+	.abort  = rename_if_abort
+};
+
+bool
+compute_rename(Catalog* self,
+               Tr*      tr,
+               Str*     name,
+               Str*     name_new,
+               bool     if_exists)
+{
+	auto compute = catalog_find_compute(self, name, false);
+	if (! compute)
+	{
+		if (! if_exists)
+			error("compute '{str}': not exists", name);
+		return false;
+	}
+
+	// system compute is immutable
+	if (compute->config->system)
+		error("compute '{str}': cannot be renamed", name);
+
+	// only superuser
+	check_user(tr, PERM_CREATE_COMPUTE);
+
+	// ensure new compute does not exists
+	if (catalog_find_compute(self, name_new, false))
+		error("compute '{str}': already exists", name_new);
+
+	// update compute
+	log_ddl(&tr->log, &rename_if, self, &compute->rel);
+
+	// save name for rollback
+	encode_str(&tr->log.data, name);
+
+	// set new name
+	rels_rename(&self->computes, &compute->rel, NULL, name_new);
+
+	// rename references
+	list_foreach_safe(&self->rels.list)
+	{
+		auto rel = list_at(Rel, link);
+
+		TableConfig* config = NULL;
+		if (rel->type == REL_TABLE)
+		{
+			auto table = table_of(rel);
+			if (str_compare(&table->config->compute, name))
+				config = table->config;
+		} else
+		if (rel->type == REL_CLONE)
+		{
+			auto table = clone_of(rel)->table;
+			if (str_compare(&table->config->compute, name))
+				config = table->config;
+		}
+		if (! config)
+			continue;
+
+		table_config_set_compute(config, name_new);
+	}
+
 	return true;
 }
