@@ -11,6 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_backup.h>
-#include <amelie_repl.h>
-#include <amelie_affinity.h>
+#include "affinity/affinity.h"
+#include "affinity/affinities.h"

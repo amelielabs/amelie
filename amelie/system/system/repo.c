@@ -127,36 +127,20 @@ repo_bootstrap(void)
 		defer_buf(buf);
 		opt_json_set_buf(&config()->listen, buf);
 	}
-}
 
-static void
-repo_open_client_mode(int argc, char** argv)
-{
-	auto runtime = runtime();
-	auto config  = config();
+	// set affinities for bootstrap (main compute)
+	Affinities afs;
+	affinities_init(&afs);
+	defer(affinities_free, &afs);
+	auto af = affinity_allocate();
+	Str name;
+	str_set(&name, "main", 4);
+	affinity_set_name(af, &name);
 
-	// prepare logger
-	auto logger = &runtime->logger;
-	logger_set_enable(logger, true);
-	logger_set_stdout(logger, false);
-
-	// set default settings
-	repo_bootstrap();
-
-	// set options
-	opts_set_argv(&config->opts, argc, argv);
-
-	// set system timezone
-	auto name = &config()->timezone.string;
-	runtime->timezone = timezones_find(&runtime->timezones, name);
-	if (! runtime->timezone)
-		error("failed to find timezone {str}", name);
-
-	// reconfigure logger
-	logger_set_enable(logger, opt_int_of(&config->log_enable));
-	logger_set_timezone(logger, runtime->timezone);
-	logger_set_stdout(logger, opt_int_of(&config->log_stdout));
-	logger_set_stdout_time(logger, opt_int_of(&config->log_stdout_time));
+	// set cores
+	encode_array(&af->cores);
+	encode_array_end(&af->cores);
+	affinities_set(&afs, af);
 }
 
 void
@@ -169,13 +153,6 @@ repo_init(Repo* self)
 void
 repo_open(Repo* self, char* directory, int argc, char** argv)
 {
-	if (! directory)
-	{
-		repo_open_client_mode(argc, argv);
-		self->bootstrap = true;
-		return;
-	}
-
 	auto runtime = runtime();
 	auto config  = config();
 	auto state   = state();

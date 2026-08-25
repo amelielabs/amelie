@@ -15,24 +15,25 @@ typedef struct System System;
 
 struct System
 {
-	Share     share;
+	Share      share;
 	// vm
-	Functions functions;
+	Functions  functions;
 	// cdc
-	Cdc       cdc;
+	Cdc        cdc;
 	// repl
-	Repl      repl;
+	Repl       repl;
 	// transactions
-	Gtrs      gtrs;
-	Commit    commit;
-	Frontends frontends;
-	Backends  backends;
+	Gtrs       gtrs;
+	Commit     commit;
+	Frontends  frontends;
+	Backends   backends;
+	Affinities affinities;
 	// db
-	Db        db;
+	Db         db;
 	// server
-	Servers   servers;
+	Servers    servers;
 	// runtime control
-	RuntimeIf runtime_if;
+	RuntimeIf  runtime_if;
 };
 
 System*
