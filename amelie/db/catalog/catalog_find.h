@@ -11,13 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-static inline Compute*
-catalog_find_compute(Catalog* self, Str* name, bool error_if_not_exists)
-{
-	return compute_of(rels_find(&self->computes, REL_COMPUTE, NULL, name,
-	                            error_if_not_exists));
-}
-
 static inline User*
 catalog_find_user(Catalog* self, Str* name, bool error_if_not_exists)
 {

@@ -37,7 +37,6 @@ static Permission perms[] =
 
 	// DDL
 	{ PERM_CREATE_USER,         "create_user",         11 },
-	{ PERM_CREATE_COMPUTE,      "create_compute",      14 },
 	{ PERM_CREATE_TOKEN,        "create_token",        12 },
 	{ PERM_CREATE_TABLE,        "create_table",        12 },
 	{ PERM_CREATE_CLONE,        "create_clone",        12 },
@@ -58,9 +57,6 @@ static Permission perms[] =
 
 	// Topic
 	{ PERM_PUBLISH,             "publish",             7  },
-
-	// Compute
-	{ PERM_COMPUTE,             "compute",             7  },
 
 	// Connections
 	{ PERM_SERVICE,             "service",             7  },

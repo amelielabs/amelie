@@ -56,7 +56,6 @@ Keyword keywords[] =
 	{ KCOLUMN ,               "column",                6  },
 	{ KCONTINUE,              "continue",              8  },
 	{ KCLONE,                 "clone",                 5  },
-	{ KCOMPUTE,               "compute",               7  },
 
 	// d
 	{ KDELETE,                "delete",                6  },

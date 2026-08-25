@@ -33,8 +33,6 @@ enum
 	SHOW_MEMORY,
 	SHOW_USERS,
 	SHOW_USER,
-	SHOW_COMPUTES,
-	SHOW_COMPUTE,
 	SHOW_TABLES,
 	SHOW_TABLE,
 	SHOW_INDEXES,
@@ -85,8 +83,6 @@ static ShowCmd show_cmds[] =
 	{ SHOW_MEMORY,        "memory",        6,  false, false, true  },
 	{ SHOW_USERS,         "users",         5,  false, false, false },
 	{ SHOW_USER,          "user",          4,  true,  false, true  },
-	{ SHOW_COMPUTES,      "computes",      8,  false, false, false },
-	{ SHOW_COMPUTE,       "compute",       7,  true,  false, true  },
 	{ SHOW_TABLES,        "tables",        6,  false, false, false },
 	{ SHOW_TABLE,         "table",         5,  true,  false, true  },
 	{ SHOW_INDEXES,       "indexes",       7,  false, true,  false },
@@ -313,16 +309,6 @@ fn_show(Call* self)
 	case SHOW_USER:
 	{
 		rels_list(&catalog->users, REL_USER, buf, NULL, name, all, flags);
-		break;
-	}
-	case SHOW_COMPUTES:
-	{
-		rels_list(&catalog->computes, REL_COMPUTE, buf, NULL, NULL, all, flags);
-		break;
-	}
-	case SHOW_COMPUTE:
-	{
-		rels_list(&catalog->computes, REL_COMPUTE, buf, NULL, name, all, flags);
 		break;
 	}
 	case SHOW_TABLES:

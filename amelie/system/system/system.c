@@ -233,7 +233,6 @@ system_create(void)
 	share->repl           = &self->repl;
 	share->functions      = &self->functions;
 	share->db             = &self->db;
-	share->affinities     = &self->affinities;
 	share->recover_if     = &recover_if;
 	share->recover_if_arg = self;
 
@@ -249,9 +248,6 @@ system_create(void)
 	// frontends/backends
 	frontends_init(&self->frontends);
 	backends_init(&self->backends);
-
-	// compute
-	affinities_init(&self->affinities);
 
 	// transactions
 	gtrs_init(&self->gtrs);
@@ -278,7 +274,6 @@ system_free(System* self)
 	cdc_free(&self->cdc);
 	functions_free(&self->functions);
 	servers_free(&self->servers);
-	affinities_free(&self->affinities);
 	am_free(self);
 }
 
@@ -325,9 +320,6 @@ system_start(System* self, bool bootstrap)
 
 	// register builtin functions
 	fn_register(&self->functions);
-
-	// restore affinity
-	affinities_open(&self->affinities);
 
 	// start frontends
 	auto workers = opt_int_of(&config()->frontends);

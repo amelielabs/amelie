@@ -62,7 +62,6 @@
 #include "parser/parse_checkpoint.h"
 #include "parser/parse_show.h"
 #include "parser/parse_user.h"
-#include "parser/parse_compute.h"
 #include "parser/parse_token.h"
 #include "parser/parse_replica.h"
 #include "parser/parse_repl.h"

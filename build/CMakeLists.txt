@@ -93,7 +93,6 @@ include_directories("${AMELIE_ROOT}/db/db")
 
 # repl
 include_directories("${AMELIE_ROOT}/repl")
-include_directories("${AMELIE_ROOT}/repl/affinity")
 include_directories("${AMELIE_ROOT}/repl/backup")
 include_directories("${AMELIE_ROOT}/repl/repl")
 
@@ -205,7 +204,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/part/part_op.c
     ${AMELIE_ROOT}/db/part/parts.c
     ${AMELIE_ROOT}/db/part/cursor.c
-    ${AMELIE_ROOT}/db/catalog/compute.c
     ${AMELIE_ROOT}/db/catalog/user.c
     ${AMELIE_ROOT}/db/catalog/table.c
     ${AMELIE_ROOT}/db/catalog/table_alter.c
@@ -237,7 +235,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/recover.c)
 
 set(AMELIE_SOURCES_REPL
-    ${AMELIE_ROOT}/repl/affinity/affinities.c
     ${AMELIE_ROOT}/repl/backup/backup.c
     ${AMELIE_ROOT}/repl/backup/restore.c
     ${AMELIE_ROOT}/repl/repl/streamer.c
@@ -303,7 +300,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_subscription.c
     ${AMELIE_ROOT}/compiler/parser/parse_grant.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c
-    ${AMELIE_ROOT}/compiler/parser/parse_compute.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
     ${AMELIE_ROOT}/compiler/parser/parse_clone.c

@@ -27,7 +27,6 @@ struct System
 	Commit     commit;
 	Frontends  frontends;
 	Backends   backends;
-	Affinities affinities;
 	// db
 	Db         db;
 	// server

@@ -55,9 +55,7 @@ rels_set_ht(Rels* self, Rel* rel)
 
 	// hash by name
 	uint32_t hash = 0;
-	if (rel->user &&
-	    rel->type != REL_USER &&
-	    rel->type != REL_COMPUTE)
+	if (rel->user && rel->type != REL_USER)
 		hash = hash_murmur3_32(str_u8(rel->user), str_size(rel->user), 0);
 	hash = hash_murmur3_32(str_u8(rel->name), str_size(rel->name), hash);
 	rel->link_ht.hash = hash;

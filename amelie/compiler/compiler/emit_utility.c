@@ -41,12 +41,6 @@ emit_alter_table(Compiler* self)
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
-	case TABLE_ALTER_SET_COMPUTE:
-	{
-		offset = table_op_set_compute(data, user, &arg->name, &arg->name_new);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
 	case TABLE_ALTER_COLUMN_RENAME:
 	{
 		offset = table_op_column_rename(data, user, &arg->name, &arg->column_name,
@@ -107,33 +101,6 @@ emit_ddl(Compiler* self)
 		auto arg = ast_grant_of(stmt->ast);
 		offset = rel_op_grant(data, &arg->rel_user, &arg->rel, &arg->to,
 		                      arg->grant, arg->perms);
-		break;
-	}
-
-	// compute
-	case STMT_CREATE_COMPUTE:
-	{
-		auto arg = ast_compute_create_of(stmt->ast);
-		offset = compute_op_create(data, arg->config);
-		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
-		break;
-	}
-	case STMT_DROP_COMPUTE:
-	{
-		auto arg = ast_compute_drop_of(stmt->ast);
-		offset = compute_op_drop(data, &arg->name, arg->cascade);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-	case STMT_ALTER_COMPUTE:
-	{
-		auto arg = ast_topic_alter_of(stmt->ast);
-		if (arg->type == COMPUTE_ALTER_RENAME)
-			offset = compute_op_rename(data, &arg->name, &arg->name_new);
-		else
-		if (arg->type == COMPUTE_ALTER_DESCRIPTION)
-			offset = rel_op_describe(data, REL_COMPUTE, user, &arg->name, &arg->description);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 

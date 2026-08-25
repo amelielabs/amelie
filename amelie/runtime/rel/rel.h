@@ -20,7 +20,6 @@ typedef enum
 {
 	REL_UNDEF,
 	REL_USER,
-	REL_COMPUTE,
 	REL_TABLE,
 	REL_CLONE,
 	REL_UDF,
@@ -61,7 +60,6 @@ rel_type_of(RelType type)
 	switch (type) {
 	case REL_UNDEF:        return "relation";
 	case REL_USER:         return "user";
-	case REL_COMPUTE:      return "compute";
 	case REL_TABLE:        return "table";
 	case REL_CLONE:        return "clone";
 	case REL_UDF:          return "function";

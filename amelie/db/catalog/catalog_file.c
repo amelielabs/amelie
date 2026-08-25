@@ -23,7 +23,6 @@
 
 enum
 {
-	RESTORE_COMPUTE,
 	RESTORE_USER,
 	RESTORE_TABLE,
 	RESTORE_CLONE,
@@ -42,16 +41,6 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		tr_set_user(tr, &user->rel);
 
 	switch (type) {
-	case RESTORE_COMPUTE:
-	{
-		// read compute config
-		auto config = compute_config_read(pos);
-		defer(compute_config_free, config);
-
-		// create compute
-		compute_create(self, tr, config, false);
-		break;
-	}
 	case RESTORE_USER:
 	{
 		// read user config
@@ -136,19 +125,17 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 static void
 catalog_restore(Catalog* self, uint8_t** pos)
 {
-	// { lsn, computes, users, tables, clones, udfs, topics, subs }
-	int64_t  lsn          = 0;
-	uint8_t* pos_computes = NULL;
-	uint8_t* pos_users    = NULL;
-	uint8_t* pos_tables   = NULL;
-	uint8_t* pos_clones   = NULL;
-	uint8_t* pos_topics   = NULL;
-	uint8_t* pos_subs     = NULL;
-	uint8_t* pos_udfs     = NULL;
+	// { lsn, users, tables, clones, udfs, topics, subs }
+	int64_t  lsn        = 0;
+	uint8_t* pos_users  = NULL;
+	uint8_t* pos_tables = NULL;
+	uint8_t* pos_clones = NULL;
+	uint8_t* pos_topics = NULL;
+	uint8_t* pos_subs   = NULL;
+	uint8_t* pos_udfs   = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_INT,   "lsn",      &lsn          },
-		{ DECODE_ARRAY, "computes", &pos_computes },
 		{ DECODE_ARRAY, "users",    &pos_users    },
 		{ DECODE_ARRAY, "tables",   &pos_tables   },
 		{ DECODE_ARRAY, "clones",   &pos_clones   },
@@ -158,11 +145,6 @@ catalog_restore(Catalog* self, uint8_t** pos)
 		{ 0,             NULL,       NULL         },
 	};
 	decode_obj(obj, "catalog", pos);
-
-	// computes
-	unpack_array(&pos_computes);
-	while (! unpack_array_end(&pos_computes))
-		catalog_restore_object(self, RESTORE_COMPUTE, &pos_computes);
 
 	// users
 	unpack_array(&pos_users);
@@ -223,17 +205,13 @@ catalog_read(Catalog* self, char* path)
 Buf*
 catalog_state(Catalog* self, uint64_t lsn)
 {
-	// { lsn, computes, users, tables, clones, udfs, topics, subs }
+	// { lsn, users, tables, clones, udfs, topics, subs }
 	auto buf = buf_create();
 	encode_obj(buf);
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_int(buf, lsn);
-
-	// computes
-	encode_raw(buf, "computes", 8);
-	rels_dump(&self->computes, REL_COMPUTE, buf, 0);
 
 	// users
 	encode_raw(buf, "users", 5);

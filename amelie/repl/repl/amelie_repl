@@ -13,4 +13,3 @@
 
 #include <amelie_backup.h>
 #include <amelie_repl.h>
-#include <amelie_affinity.h>

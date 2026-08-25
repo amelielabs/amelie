@@ -61,33 +61,6 @@ table_op_truncate_read(uint8_t* op, Str* user, Str* name)
 }
 
 static inline int
-table_op_set_compute(Buf* self, Str* user, Str* name, Str* name_compute)
-{
-	// [op, user, name, name_compute]
-	auto offset = buf_size(self);
-	encode_array(self);
-	encode_int(self, DDL_TABLE_SET_COMPUTE);
-	encode_str(self, user);
-	encode_str(self, name);
-	encode_str(self, name_compute);
-	encode_array_end(self);
-	return offset;
-}
-
-static inline void
-table_op_set_compute_read(uint8_t* op, Str* user, Str* name, Str* name_compute)
-{
-	int64_t cmd;
-	unpack_array(&op);
-	unpack_int(&op, &cmd);
-	assert(cmd == DDL_TABLE_SET_COMPUTE);
-	unpack_str(&op, user);
-	unpack_str(&op, name);
-	unpack_str(&op, name_compute);
-	unpack_array_end(&op);
-}
-
-static inline int
 table_op_column_add(Buf* self, Str* user, Str* name, Column* column)
 {
 	// [op, user, name, column]

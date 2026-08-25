@@ -127,20 +127,6 @@ repo_bootstrap(void)
 		defer_buf(buf);
 		opt_json_set_buf(&config()->listen, buf);
 	}
-
-	// set affinities for bootstrap (main compute)
-	Affinities afs;
-	affinities_init(&afs);
-	defer(affinities_free, &afs);
-	auto af = affinity_allocate();
-	Str name;
-	str_set(&name, "main", 4);
-	affinity_set_name(af, &name);
-
-	// set cores
-	encode_array(&af->cores);
-	encode_array_end(&af->cores);
-	affinities_set(&afs, af);
 }
 
 void

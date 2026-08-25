@@ -437,7 +437,6 @@ parse_table_create(Stmt* self)
 {
 	// CREATE TABLE [IF NOT EXISTS] name (key)
 	// [PARTITIONS]
-	// [COMPUTE]
 	// [WITH (options)]
 	// [DESCRIPTION value]
 	auto stmt = ast_table_create_allocate();
@@ -484,18 +483,6 @@ parse_table_create(Stmt* self)
 	// configure index size according to the table partitions
 	parse_index_size(self, config_index, config->parts_count);
 
-	// [COMPUTE]
-	if (stmt_if(self, KCOMPUTE))
-	{
-		auto compute_name = stmt_expect(self, KNAME);
-		table_config_set_compute(config, &compute_name->string);
-	} else
-	{
-		Str compute_name;
-		str_set_cstr(&compute_name, "main");
-		table_config_set_compute(config, &compute_name);
-	}
-
 	// [WITH]
 	if (stmt_if(self, KWITH))
 		parse_table_create_with(self);
@@ -531,7 +518,6 @@ parse_table_alter(Stmt* self)
 {
 	// ALTER TABLE [IF EXISTS] name RENAME TO name
 	// ALTER TABLE [IF EXISTS] name DESCRIPTION value 
-	// ALTER TABLE [IF EXISTS] name SET COMPUTE name
 	// ALTER TABLE [IF EXISTS] name ADD COLUMN [IF NOT EXISTS] name type [constraint]
 	// ALTER TABLE [IF EXISTS] name DROP COLUMN [IF EXISTS] name
 	// ALTER TABLE [IF EXISTS] name RENAME COLUMN [IF EXISTS] name TO name
@@ -653,17 +639,6 @@ parse_table_alter(Stmt* self)
 	// [SET]
 	if (stmt_if(self, KSET))
 	{
-		// SET COMPUTE name
-		if (stmt_if(self, KCOMPUTE))
-		{
-			// name
-			auto name = stmt_expect(self, KNAME);
-			str_set_str(&stmt->name_new, &name->string);
-
-			stmt->type = TABLE_ALTER_SET_COMPUTE;
-			return;
-		}
-
 		// SET COLUMN DEFAULT
 		if (stmt_if(self, KCOLUMN))
 		{
