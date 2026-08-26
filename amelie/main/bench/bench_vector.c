@@ -16,7 +16,7 @@
 #include <math.h>
 
 static const int vector_dim  = 128;
-static const int vector_rows = 100000;
+static const int vector_rows = 10000;
 
 typedef struct VectorLoader VectorLoader;
 
