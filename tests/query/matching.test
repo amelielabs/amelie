@@ -33,6 +33,15 @@ insert into products values (4, vector [0.5, 0.5]);
 select id from products matching v to vector [1.1, 0.05] top 2;
 drop table products;
 
+# test: matching negative values (1 partition)
+create table embeddings (id int primary key, v vector(3)) partitions 1;
+insert into embeddings values (1, vector [-0.9, -0.8, -0.1]);
+insert into embeddings values (2, vector [0.8, 0.9, 0.1]);
+insert into embeddings values (3, vector [-0.1, 0.2, -0.9]);
+
+select id from embeddings matching v to vector [-1.0, -1.0, 0.0] top 1;
+drop table embeddings;
+
 # test: matching (6 partitions)
 create table products (id int primary key, v vector(2)) partitions 6;
 insert into products values (1, vector [1.0, 0.1]);
@@ -40,6 +49,18 @@ insert into products values (2, vector [0.9, 0.2]);
 insert into products values (3, vector [0.2, 0.9]);
 insert into products values (4, vector [0.5, 0.5]);
 select id from products matching v to vector [1.1, 0.05] top 2;
+
+## test: matching (4 partitions)
+#create table catalog (id int primary key, v vector(2)) partitions 4;
+#insert into catalog values (1, vector [1.0, 0.0]);
+#insert into catalog values (2, vector [0.0, 1.0]);
+#insert into catalog values (3, vector [-1.0, 0.0]);
+#insert into catalog values (4, vector [0.0, -1.0]);
+#insert into catalog values (5, vector [0.70, 0.30]);
+#insert into catalog values (6, vector [0.01, 0.99]);
+## 1, 5
+#select id from catalog matching v to vector [1.0, 0.0] top 2;
+#drop table catalog;
 
 # test: matching (delete)
 delete from products where id = 1;
@@ -59,6 +80,15 @@ end;
 select id from products matching v to vector [1.1, 0.05] top 2;
 
 drop table products;
+
+# test: matching (where)
+create table inventory (id int primary key, category_id int, v vector(2)) partitions 2;
+insert into inventory values (1, 10, vector [0.99, 0.01]);
+insert into inventory values (2, 20, vector [0.90, 0.10]);
+insert into inventory values (3, 20, vector [0.10, 0.90]);
+# 2
+select id from inventory matching v to vector [1.0, 0.0] top 2 where category_id = 20;
+drop table inventory;
 
 disconnect S0;
 close E0;

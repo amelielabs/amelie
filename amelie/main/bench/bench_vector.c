@@ -53,7 +53,7 @@ vector_loader_client_main(VectorLoader* self, Client* client)
 			buf_format(&buf, "{s}({d}, vector [", i > 0 ? "," : "", seq);
 			for (int j = 0; j < vector_dim; j++)
 			{
-				float val = (float)random_generate(&am_task->random) / (float)UINT64_MAX;
+				float val = ((float)random_generate(&am_task->random) / (float)UINT64_MAX) * 2.0f - 1.0f;
 				buf_format(&buf, "{s}{.4f}", j > 0 ? "," : "", val);
 			}
 			buf_format(&buf, "])");
@@ -117,20 +117,8 @@ bench_vector_load(Bench* self, int scale, int batch, int clients)
 		from += next;
 	}
 
-	uint64_t prev_tx = 0;
-	uint64_t prev_wr = 0;
 	while (loaders_complete != loaders_count)
-	{
 		coroutine_sleep(1000);
-		auto tx = transactions;
-		auto wr = writes;
-		info("{u64} transactions/sec, {.2f} millions writes/sec {u64}%",
-		     tx - prev_tx,
-		     (float)(wr - prev_wr) / 1000000.0,
-		     (wr * 100ul) / rows);
-		prev_tx = tx;
-		prev_wr = wr;
-	}
 }
 
 static void
@@ -153,7 +141,7 @@ bench_vector_create(Bench* self, Client* client)
 	           "  SELECT id FROM bench_vector MATCHING v TO vector [");
 	for (int j = 0; j < vector_dim; j++)
 	{
-		float val = (float)random_generate(&am_task->random) / (float)UINT64_MAX;
+		float val = ((float)random_generate(&am_task->random) / (float)UINT64_MAX) * 2.0f - 1.0f;
 		buf_format(&buf, "{s}{.4f}", j > 0 ? "," : "", val);
 	}
 	buf_format(&buf, "] TOP 10;");

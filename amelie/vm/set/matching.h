@@ -16,7 +16,7 @@ typedef struct Matching    Matching;
 
 struct MatchingTop
 {
-	float    distance;
+	int32_t  score;
 	uint32_t row;
 	Flat*    flat;
 	Heap*    heap;
