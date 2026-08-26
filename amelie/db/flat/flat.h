@@ -38,25 +38,46 @@ struct Flat
 {
 	uint32_t   page_rows;
 	uint32_t   page_bitmap;
+	uint32_t   page_offset_i8;
+	uint32_t   page_offset_rows;
+	uint32_t   page_offset_vectors;
+	uint32_t   dim;
 	FlatHeader header;
 	Column*    column;
 	Storage    storage;
 };
 
+always_inline static inline int8_t*
+flat_vector_i8(Flat* self, int page_id, int page_row)
+{
+	// [page_header][bitmap][vectors_sq8][rows][vectors]
+	auto page = storage_at(&self->storage, page_id);
+	return (int8_t*)(page->data + self->page_offset_i8 +
+	                 page_row * self->dim);
+}
+
 always_inline static inline FlatRow*
 flat_row(Flat* self, int page_id, int page_row)
 {
-	// [page_header][bitmap][rows][vectors]
 	auto page = storage_at(&self->storage, page_id);
-	return &((FlatRow*)(page->data + self->page_bitmap))[page_row];
+	return (FlatRow*)(page->data + self->page_offset_rows +
+	                  page_row * sizeof(FlatRow));
 }
 
 always_inline static inline float*
 flat_vector(Flat* self, int page_id, int page_row)
 {
 	auto page = storage_at(&self->storage, page_id);
-	return (float*)(page->data + self->page_bitmap + self->page_rows * sizeof(FlatRow) +
+	return (float*)(page->data + self->page_offset_vectors +
 	                page_row * self->column->size_flat);
+}
+
+always_inline static inline int8_t*
+flat_vector_i8_at(Flat* self, uint32_t id)
+{
+	auto page_id  = id / self->page_rows;
+	auto page_row = id % self->page_rows;
+	return flat_vector_i8(self, page_id, page_row);
 }
 
 always_inline static inline FlatRow*

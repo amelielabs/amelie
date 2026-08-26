@@ -19,17 +19,31 @@ Flat*
 flat_allocate(Column* column)
 {
 	auto self = (Flat*)am_malloc(sizeof(Flat));
+	self->dim = column->size_flat / sizeof(float);
 
-	// calculate how many vectors can fit the page,
-	// we use 64 vectors buckets (64bit bitmap)
+	//
+	// calculate how many vectors can fit the page, we use 64 vectors
+	// buckets (64bit bitmap)
+	//
+	// [page_header][bitmap][vectors_sq8][rows][vectors]
+	//
 	auto size_page   = (512ul * 1024);
 	auto size_bucket =
-		sizeof(uint64_t) + // 64 vectors bitmap
-		sizeof(FlatRow) * 64 +
-		(64 * column->size_flat);
+		sizeof(uint64_t) +         // 64 vectors bitmap
+		(64 * self->dim) +         // 64 vectors in SQ8 encoding (i8)
+		(64 * sizeof(FlatRow)) +   // 64 vectors rows refs
+		(64 * column->size_flat);  // 64 vectors
+
 	auto buckets = (size_page - sizeof(Page)) / size_bucket;
 	self->page_rows   = buckets * 64;
 	self->page_bitmap = buckets * sizeof(uint64_t);
+
+	// set page offsets
+
+	// align SQ8 at 64 bytes (for AVX/NEON)
+	self->page_offset_i8      = (self->page_bitmap + 64 - 1) & ~(64 - 1);
+	self->page_offset_rows    = self->page_offset_i8 + (self->page_rows * self->dim);
+	self->page_offset_vectors = self->page_offset_rows + (self->page_rows * sizeof(FlatRow));
 
 	self->header.list_free = UINT32_MAX;
 	self->column = column;
