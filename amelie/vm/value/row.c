@@ -134,6 +134,25 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 	return row;
 }
 
+always_inline static inline void
+sq8_quantize(int8_t* __restrict sq8, const float* __restrict vector, uint32_t dim)
+{
+	for (uint32_t i = 0; i < dim; i++)
+	{
+		// scale from [-1.0, 1.0] float range to [-127.5, 127.5]
+		float scaled = vector[i] * 127.0f;
+
+		// clamp to signed 8-bit integer bounds [-128, 127]
+		if (scaled > 127.0f)
+			sq8[i] = 127;
+		else
+		if (scaled < -128.0f)
+			sq8[i] = -128;
+		else
+			sq8[i] = (int8_t)lrintf(scaled);
+	}
+}
+
 hot static inline void
 row_create_vector(Part*    part,
                   Row*     row,
@@ -145,10 +164,15 @@ row_create_vector(Part*    part,
 
 	auto current = flat->storage.current;
 	auto id = flat_add(flat, heap_page_of(row)->id, row->offset);
+	*(uint32_t*)row_column(row, column) = id;
 	*delta += storage_delta(&flat->storage, current);
 
+	// copy raw vector (fp32)
 	memcpy(flat_vector_at(flat, id), value->vector, column->size_flat);
-	*(uint32_t*)row_column(row, column) = id;
+
+	// convert vector to SQ8
+	auto dim = column->size_flat / sizeof(float);
+	sq8_quantize(flat_vector_i8_at(flat, id), value->vector, dim);
 }
 
 hot Row*
@@ -382,6 +406,10 @@ row_update(Part*     part,
 
 			*(uint32_t*)row_column(row, column) = id;
 			auto id_src = *(uint32_t*)pos_src;
+
+			auto dim = column->size_flat / sizeof(float);
+			memcpy(flat_vector_i8_at(flat, id),
+			       flat_vector_i8_at(flat, id_src), dim);
 			memcpy(flat_vector_at(flat, id),
 			       flat_vector_at(flat, id_src), column->size_flat);
 
