@@ -37,6 +37,14 @@ str_set(Str* self, char* pos, int size)
 }
 
 static inline void
+str_set_as(Str* self, char* pos, char* end)
+{
+	self->pos = pos;
+	self->end = end;
+	self->allocated = false;
+}
+
+static inline void
 str_set_u8(Str* self, uint8_t* pos, int size)
 {
 	self->pos = (char*)pos;

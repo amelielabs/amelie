@@ -62,3 +62,6 @@
 #include "lib/separator.h"
 #include "lib/console.h"
 #include "lib/histogram.h"
+
+// csv
+#include "lib/csv.h"
