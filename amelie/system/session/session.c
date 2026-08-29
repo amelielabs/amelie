@@ -323,8 +323,8 @@ session_main(Session* self, Portal* portal, Request* req)
 	case REQUEST_EXECUTE:
 	{
 		auto execute = req->type == REQUEST_EXECUTE;
-		compiler_parse_import(compiler, &req->rel_user, &req->rel,
-		                      req->args, execute);
+		compiler_parse_api(compiler, &req->rel_user, &req->rel,
+		                   req->args, execute);
 		break;
 	}
 	default:

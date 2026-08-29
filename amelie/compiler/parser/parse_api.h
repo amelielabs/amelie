@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_import(Parser*, Program*, Str*, Str*, uint8_t*, bool);
+void parse_api(Parser*, Program*, Str*, Str*, uint8_t*, bool);

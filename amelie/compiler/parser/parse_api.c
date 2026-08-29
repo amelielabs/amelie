@@ -273,11 +273,11 @@ error:
 }
 
 void
-parse_import(Parser*  self, Program* program,
-             Str*     rel_user,
-             Str*     rel,
-             uint8_t* args,
-             bool     execute)
+parse_api(Parser*  self, Program* program,
+          Str*     rel_user,
+          Str*     rel,
+          uint8_t* args,
+          bool     execute)
 {
 	Str* user = rel_user;
 	if (str_empty(rel_user))

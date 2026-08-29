@@ -319,7 +319,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_execute.c
     ${AMELIE_ROOT}/compiler/parser/parse_publish.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
-    ${AMELIE_ROOT}/compiler/parser/parse_import.c
+    ${AMELIE_ROOT}/compiler/parser/parse_api.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/plan/path.c
     ${AMELIE_ROOT}/compiler/plan/path_prepare.c
