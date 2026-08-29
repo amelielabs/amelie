@@ -162,7 +162,6 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/worker.c
     ${AMELIE_ROOT}/runtime/lib/workers.c
     ${AMELIE_ROOT}/runtime/lib/logger.c
-    ${AMELIE_ROOT}/runtime/lib/load.c
     ${AMELIE_ROOT}/runtime/lib/console.c
     ${AMELIE_ROOT}/runtime/lib/histogram.c
     ${AMELIE_ROOT}/runtime/data/json.c

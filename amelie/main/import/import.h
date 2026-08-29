@@ -24,7 +24,6 @@ struct Import
 	// worker
 	List     clients_list;
 	Client*  forward;
-	Load     load;
 	// options
 	Opt      batch;
 	Opt      clients;

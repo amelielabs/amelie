@@ -209,3 +209,55 @@ csv_next(Csv* self, Str* value)
 	// note: "" is never treated as CSV_NULL here
 	return CSV_VALUE;
 }
+
+hot static inline int
+csv_collect(Csv* self, Str* batch, int limit)
+{
+	// eof
+	if (unlikely(self->pos == self->end))
+		return CSV_EOF;
+
+	// row <eol>
+	auto start = self->pos;
+	auto quote = self->quote;
+	auto quote_in = false;
+	while (self->pos < self->end)
+	{
+		auto at = *self->pos;
+		self->pos++;
+
+		// \"
+		if (at == '\\' && (self->pos < self->end) && *self->pos == quote)
+		{
+			self->pos++;
+			continue;
+		}
+
+		// "
+		if (at == quote)
+		{
+			quote_in = !quote_in;
+			continue;
+		}
+
+		if (quote_in)
+			continue;
+
+		// \r\n
+		// \r
+		// \n
+		if (unlikely(at == '\r' || at == '\n'))
+		{
+			// \r\n
+			if (at == '\r' && (self->pos < self->end) && *self->pos == '\n')
+				self->pos++;
+
+			// batch limit
+			if ((self->pos - start) >= limit)
+				break;
+		}
+	}
+
+	str_set_as(batch, start, self->pos);
+	return CSV_VALUE;
+}
