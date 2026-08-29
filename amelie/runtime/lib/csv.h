@@ -15,6 +15,7 @@ typedef struct Csv Csv;
 
 enum
 {
+	CSV_NULL,
 	CSV_VALUE,
 	CSV_ERROR,
 	CSV_EOL,
@@ -145,6 +146,10 @@ csv_next(Csv* self, Str* value)
 		if (self->pos != self->end && *self->pos == self->delimiter)
 			self->pos++;
 
+		// ,,
+		if (str_empty(value))
+			return CSV_NULL;
+
 		return CSV_VALUE;
 	}
 
@@ -201,5 +206,6 @@ csv_next(Csv* self, Str* value)
 	if (unlikely(unescape))
 		csv_unescape(self, value);
 
+	// note: "" is never treated as CSV_NULL here
 	return CSV_VALUE;
 }

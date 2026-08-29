@@ -671,13 +671,6 @@ parse_value_data(Local* local, Column* column, Value* value, uint8_t** pos)
 hot void
 parse_value_string(Local* local, Column* column, Value* value, Str* str)
 {
-	// null
-	if (str_empty(str))
-	{
-		value_set_null(value);
-		return;
-	}
-
 	// validate column type and set value
 	switch (column->type) {
 	case TYPE_BOOL:
@@ -701,9 +694,17 @@ parse_value_string(Local* local, Column* column, Value* value, Str* str)
 	}
 	case TYPE_INT:
 	{
-		int64_t ref;
-		if (unlikely(str_i64(str, &ref) == -1))
+		if (str_empty(str))
 			break;
+		Str int_str = *str;
+		int64_t ref;
+		// -
+		if (*int_str.pos == '-')
+			int_str.pos++;
+		if (unlikely(str_i64(&int_str, &ref) == -1))
+			break;
+		if (int_str.pos != str->pos)
+			ref = -ref;
 		value_set_int(value, ref);
 		return;
 	}
@@ -740,6 +741,8 @@ parse_value_string(Local* local, Column* column, Value* value, Str* str)
 	}
 	case TYPE_INTERVAL:
 	{
+		if (str_empty(str))
+			break;
 		Interval iv;
 		interval_init(&iv);
 		if (unlikely(error_catch( interval_set(&iv, str) )))
@@ -763,12 +766,19 @@ parse_value_string(Local* local, Column* column, Value* value, Str* str)
 	}
 	case TYPE_JSON:
 	{
-		Json json;
-		json_init(&json);
-		defer(json_free, &json);
 		auto buf = buf_create();
 		errdefer_buf(buf);
-		json_parse(&json, str, buf);
+		if (str_empty(str))
+		{
+			// ""
+			encode_raw(buf, NULL, 0);
+		} else
+		{
+			Json json;
+			json_init(&json);
+			defer(json_free, &json);
+			json_parse(&json, str, buf);
+		}
 		value_set_json_buf(value, buf);
 		return;
 	}

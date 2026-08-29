@@ -56,6 +56,51 @@ frontend_endpoint_sql(Portal* portal, Client* client)
 }
 
 hot static inline void
+frontend_endpoint_import(Portal* portal, Client* client)
+{
+	auto endpoint = &portal->endpoint;
+	auto http     = &client->request;
+
+	// POST /import (text/plain)
+	auto method = &http->options[HTTP_METHOD];
+	if (unlikely(! str_is(method, "POST", 4)))
+		error("unsupported operation method");
+
+	// content type
+	auto content_type = &endpoint->content_type.string;
+	if (!str_empty(content_type) &&
+	    !str_is(content_type, "text/plain", 10) &&
+	    !str_is(content_type, "text/csv", 8) &&
+	    !str_is(content_type, "application/x-www-form-urlencoded", 33))
+		error("unsupported operation content-type");
+
+	// accept
+	OutputIf* output_if;
+	auto accept = &endpoint->accept.string;
+	if (str_empty(accept) ||
+	    str_is(accept, "*/*", 3)         ||
+	    str_is(accept, "text/plain", 10) ||
+	    str_is(accept, "text/csv", 8))
+	{
+		str_set(accept, "text/plain", 10);
+		output_if = &output_text;
+	} else
+	if (str_is(accept, "application/json", 16)) {
+		output_if = &output_json;
+	} else {
+		error("unsupported operation accept type");
+	}
+
+	// target
+	auto target = opt_string_of(&endpoint->target);
+	if (str_empty(target))
+		error("target argument is missing");
+
+	// set output type
+	output_set(&portal->output, endpoint, output_if, NULL);
+}
+
+hot static inline void
 frontend_endpoint_api(Portal* portal, Client* client)
 {
 	auto endpoint = &portal->endpoint;
@@ -223,11 +268,14 @@ frontend_endpoint(Portal* portal, Client* client)
 		if (endpoint_type == ENDPOINT_SQL)
 			frontend_endpoint_sql(portal, client);
 		else
-		if (endpoint_type == ENDPOINT_API)
-			frontend_endpoint_api(portal, client);
+		if (endpoint_type == ENDPOINT_IMPORT)
+			frontend_endpoint_import(portal, client);
 		else
 		if (endpoint_type == ENDPOINT_STREAM)
 			frontend_endpoint_stream(portal, client);
+		else
+		if (endpoint_type == ENDPOINT_API)
+			frontend_endpoint_api(portal, client);
 		else
 		if (endpoint_type == ENDPOINT_MCP)
 			frontend_endpoint_mcp(portal, client);
@@ -371,6 +419,37 @@ frontend_client(Frontend* self, Client* client)
 			// execute query
 			req.type = REQUEST_SQL;
 			req.text = content;
+			if (ctl->session_execute(session, &portal, &req))
+			{
+				// 204 No Content
+				// 200 OK
+				if (buf_empty(portal.output.buf))
+					client_204(client);
+				else
+					client_200(client, portal.output.buf);
+				break;
+			}
+
+			// 400 Bad Source
+			client_400(client, portal.output.buf);
+			break;
+		}
+		case ENDPOINT_IMPORT:
+		{
+			// import content
+			req.type = REQUEST_IMPORT;
+			req.args = str_u8(&content);
+			req.args_size = str_size(&content);
+			str_init(&req.rel_user);
+			str_init(&req.rel);
+
+			// set target
+			auto target = opt_string_of(&portal.endpoint.target);
+			auto pos = target->pos;
+			auto end = target->end;
+			if (! portal_target(&pos, end, &req.rel_user, &req.rel))
+				error("failed to read target");
+
 			if (ctl->session_execute(session, &portal, &req))
 			{
 				// 204 No Content

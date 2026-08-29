@@ -269,11 +269,14 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	case ENDPOINT_SQL:
 		buf_write(buf, "sql", 3);
 		break;
-	case ENDPOINT_API:
-		buf_write(buf, "api", 3);
+	case ENDPOINT_IMPORT:
+		buf_write(buf, "import", 6);
 		break;
 	case ENDPOINT_STREAM:
 		buf_write(buf, "stream", 6);
+		break;
+	case ENDPOINT_API:
+		buf_write(buf, "api", 3);
 		break;
 	case ENDPOINT_MCP:
 		buf_write(buf, "mcp", 3);

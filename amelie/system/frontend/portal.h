@@ -93,11 +93,14 @@ portal_auth(Portal* self, Auth* auth_ref)
 	case ENDPOINT_SQL:
 		user_check(self->user, PERM_SQL);
 		break;
-	case ENDPOINT_API:
-		user_check(self->user, PERM_API);
+	case ENDPOINT_IMPORT:
+		user_check(self->user, PERM_SQL);
 		break;
 	case ENDPOINT_STREAM:
 		user_check(self->user, PERM_CREATE_SUBSCRIPTION);
+		break;
+	case ENDPOINT_API:
+		user_check(self->user, PERM_API);
 		break;
 	case ENDPOINT_MCP:
 		break;
@@ -175,4 +178,31 @@ portal_prepare(Portal* self)
 	auto timezone = &endpoint->timezone.string;
 	if (str_empty(timezone))
 		str_set_str(timezone, &runtime()->timezone->name);
+}
+
+hot static inline bool
+portal_target(char** pos, char* end, Str* user, Str* name)
+{
+	str_init(user);
+	str_init(name);
+
+	// path
+	// path [,]
+	auto start = *pos;
+	while (*pos < end && **pos != ',')
+		(*pos)++;
+	Str path;
+	str_set(&path, start, *pos - start);
+	if (*pos != end)
+		(*pos)++;
+	if (str_empty(&path))
+		return false;
+
+	// user[.name]
+	if (str_split(&path, user, '.'))
+	{
+		*name = path;
+		str_advance(name, str_size(user) + 1);
+	}
+	return true;
 }

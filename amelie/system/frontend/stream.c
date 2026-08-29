@@ -101,33 +101,6 @@ stream_subscribe_to(Stream* self, Str* user, Str* name)
 	cdc_cursor_open(&feed->cursor, share()->cdc, id, lsn);
 }
 
-hot static inline bool
-stream_target(char** pos, char* end, Str* user, Str* name)
-{
-	str_init(user);
-	str_init(name);
-
-	// path
-	// path [,]
-	auto start = *pos;
-	while (*pos < end && **pos != ',')
-		(*pos)++;
-	Str path;
-	str_set(&path, start, *pos - start);
-	if (*pos != end)
-		(*pos)++;
-	if (str_empty(&path))
-		return false;
-
-	// user[.name]
-	if (str_split(&path, user, '.'))
-	{
-		*name = path;
-		str_advance(name, str_size(user) + 1);
-	}
-	return true;
-}
-
 static inline void
 stream_subscribe(Stream* self)
 {
@@ -144,7 +117,7 @@ stream_subscribe(Stream* self)
 
 	Str user;
 	Str name;
-	while (stream_target(&pos, end, &user, &name))
+	while (portal_target(&pos, end, &user, &name))
 		stream_subscribe_to(self, &user, &name);
 }
 

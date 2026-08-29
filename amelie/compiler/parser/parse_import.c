@@ -38,14 +38,22 @@ import_row(Parser* self, Columns* columns, Set* values, Csv* csv)
 		// read csv value
 		Str value;
 		str_init(&value);
-		auto rc = csv_next(csv, &value);
-		if (rc == CSV_ERROR)
+		switch (csv_next(csv, &value)) {
+		case CSV_NULL:
+			value_set_null(column_value);
+			break;
+		case CSV_VALUE:
+			// parse column value
+			parse_value_string(self->local, column, column_value, &value);
+			break;
+		case CSV_ERROR:
 			error("csv read error");
-		if (rc != CSV_VALUE)
+			break;
+		default:
+			// eof, eol
 			error("csv row is incomplete");
-
-		// parse column value
-		parse_value_string(self->local, column, column_value, &value);
+			break;
+		}
 		parse_value_validate(NULL, column, column_value, NULL);
 	}
 
@@ -55,7 +63,7 @@ import_row(Parser* self, Columns* columns, Set* values, Csv* csv)
 	auto rc = csv_next(csv, &value);
 	if (rc == CSV_ERROR)
 		error("csv read error");
-	if (rc == CSV_VALUE)
+	if (rc != CSV_EOL && rc != CSV_EOF)
 		error("csv row columns mismatch");
 }
 
@@ -137,7 +145,6 @@ parse_import(Parser* self, Program* program,
 	self->program = program;
 
 	auto ref = catalog_find(&share()->db->catalog, REL_UNDEF, user, rel, true);
-
 	switch (ref->type) {
 	case REL_TABLE:
 	{

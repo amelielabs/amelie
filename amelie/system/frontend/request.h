@@ -17,6 +17,7 @@ typedef enum
 {
 	REQUEST_UNDEF,
 	REQUEST_SQL,
+	REQUEST_IMPORT,
 	REQUEST_WRITE,
 	REQUEST_EXECUTE
 } RequestType;
@@ -28,6 +29,7 @@ typedef enum
 	META_TIME,
 	META_SEED,
 	META_SQL,
+	META_IMPORT,
 	META_WRITE
 } RequestMeta;
 
@@ -89,6 +91,25 @@ request_write(Request* self, Endpoint* endpoint, Buf* buf)
 		encode_str(buf, &self->text);
 		break;
 	}
+	case REQUEST_IMPORT:
+	{
+		encode_int(buf, META_IMPORT);
+
+		// []
+		encode_array(buf);
+
+		// rel_user
+		encode_str(buf, &self->rel_user);
+
+		// rel
+		encode_str(buf, &self->rel);
+
+		// content
+		encode_raw(buf, (char*)self->args, self->args_size);
+
+		encode_array_end(buf);
+		break;
+	}
 	case REQUEST_WRITE:
 	case REQUEST_EXECUTE:
 	{
@@ -147,6 +168,19 @@ request_read(Request* self, Endpoint* endpoint, RecordMsg* msg)
 		{
 			self->type = REQUEST_SQL;
 			unpack_str(&pos, &self->text);
+			break;
+		}
+		case META_IMPORT:
+		{
+			self->type = REQUEST_IMPORT;
+			unpack_array(&pos);
+			unpack_str(&pos, &self->rel_user);
+			unpack_str(&pos, &self->rel);
+			Str content;
+			unpack_str(&pos, &content);
+			self->args = str_u8(&content);
+			self->args_size = str_size(&content);
+			unpack_array_end(&pos);
 			break;
 		}
 		case META_WRITE:

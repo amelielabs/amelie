@@ -319,6 +319,14 @@ session_main(Session* self, Portal* portal, Request* req)
 		compiler_parse(compiler, &req->text);
 		break;
 	}
+	case REQUEST_IMPORT:
+	{
+		Str content;
+		str_set_u8(&content, req->args, req->args_size);
+		compiler_parse_import(compiler, &req->rel_user, &req->rel,
+		                      &content);
+		break;
+	}
 	case REQUEST_WRITE:
 	case REQUEST_EXECUTE:
 	{
