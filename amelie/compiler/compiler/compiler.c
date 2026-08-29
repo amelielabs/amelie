@@ -124,6 +124,13 @@ compiler_parse_api(Compiler* self, Str* user, Str* rel, uint8_t* args, bool exec
 	compiler_parse_complete(self);
 }
 
+void
+compiler_parse_import(Compiler* self, Str* user, Str* rel, Str* content)
+{
+	parse_import(&self->parser, self->program, user, rel, content);
+	compiler_parse_complete(self);
+}
+
 static void
 emit_close(Compiler* self, Stmt* stmt)
 {

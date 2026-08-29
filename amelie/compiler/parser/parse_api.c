@@ -50,7 +50,7 @@ import_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
 
 		// parse column value
 		auto column_value = &row[column->order];
-		parse_value_decode(self->local, column, column_value, pos);
+		parse_value_data(self->local, column, column_value, pos);
 		parse_value_validate(NULL, column, column_value, NULL);
 
 	}

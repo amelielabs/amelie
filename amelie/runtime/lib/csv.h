@@ -63,6 +63,12 @@ csv_set(Csv* self, Str* str)
 	self->end = str->end;
 }
 
+static inline bool
+csv_eof(Csv* self)
+{
+	return self->pos == self->end;
+}
+
 hot static inline void
 csv_unescape(Csv* self, Str* value)
 {

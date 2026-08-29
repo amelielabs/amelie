@@ -456,7 +456,7 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 }
 
 hot void
-parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
+parse_value_data(Local* local, Column* column, Value* value, uint8_t** pos)
 {
 	// null
 	if (data_is_null(*pos))
@@ -661,6 +661,121 @@ parse_value_decode(Local* local, Column* column, Value* value, uint8_t** pos)
 			error("invalid vector dimension");
 		value_set_vector_buf(value, dim, buf);
 		return;
+	}
+	}
+
+	error("'{s}' expected for column '{str}'", type_of(column->type),
+	      &column->name);
+}
+
+hot void
+parse_value_string(Local* local, Column* column, Value* value, Str* str)
+{
+	// null
+	if (str_empty(str))
+	{
+		value_set_null(value);
+		return;
+	}
+
+	// validate column type and set value
+	switch (column->type) {
+	case TYPE_BOOL:
+	{
+		bool ref;
+		if (str_is_case(str, "true", 4))
+			ref = true;
+		else
+		if (str_is_case(str, "false", 5))
+			ref = false;
+		else
+		if (str_is_case(str, "1", 0))
+			ref = true;
+		else
+		if (str_is_case(str, "0", 1))
+			ref = false;
+		else
+			break;
+		value_set_bool(value, ref);
+		return;
+	}
+	case TYPE_INT:
+	{
+		int64_t ref;
+		if (unlikely(str_i64(str, &ref) == -1))
+			break;
+		value_set_int(value, ref);
+		return;
+	}
+	case TYPE_DOUBLE:
+	{
+		// TODO:
+		break;
+	}
+	case TYPE_DECIMAL:
+	{
+		bool ok;
+		auto decimal = decimal_set_str_nothrow(str, &ok);
+		if (unlikely(! ok))
+			break;
+		value_set_decimal(value, decimal);
+		return;
+	}
+	case TYPE_DATE:
+	{
+		int julian;
+		if (unlikely(error_catch( julian = date_set(str) )))
+			break;
+		value_set_date(value, julian);
+		return;
+	}
+	case TYPE_TIMESTAMP:
+	{
+		Timestamp ts;
+		timestamp_init(&ts);
+		if (unlikely(error_catch( timestamp_set(&ts, str) )))
+			break;
+		value_set_timestamp(value, timestamp_get_unixtime(&ts, local->timezone));
+		return;
+	}
+	case TYPE_INTERVAL:
+	{
+		Interval iv;
+		interval_init(&iv);
+		if (unlikely(error_catch( interval_set(&iv, str) )))
+			break;
+		value_set_interval(value, &iv);
+		return;
+	}
+	case TYPE_UUID:
+	{
+		Uuid uuid;
+		uuid_init(&uuid);
+		if (uuid_set_nothrow(&uuid, str) == -1)
+			break;
+		value_set_uuid(value, &uuid);
+		return;
+	}
+	case TYPE_STRING:
+	{
+		value_set_string(value, str, NULL);
+		return;
+	}
+	case TYPE_JSON:
+	{
+		Json json;
+		json_init(&json);
+		defer(json_free, &json);
+		auto buf = buf_create();
+		errdefer_buf(buf);
+		json_parse(&json, str, buf);
+		value_set_json_buf(value, buf);
+		return;
+	}
+	case TYPE_VECTOR:
+	{
+		// TODO:
+		break;
 	}
 	}
 
