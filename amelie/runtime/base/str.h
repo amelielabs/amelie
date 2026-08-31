@@ -123,6 +123,12 @@ str_is_prefix_case(Str* self, const void* string, int size)
 }
 
 static inline bool
+str_is_postfix(Str* self, const void* string, int size)
+{
+	return str_size(self) >= size && !memcmp(self->end - size, string, size);
+}
+
+static inline bool
 str_is_cstr(Str* self, const void* string)
 {
 	return str_is(self, string, strlen(string));

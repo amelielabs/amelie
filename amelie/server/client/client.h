@@ -26,6 +26,7 @@ struct Client
 	bool       accepted;
 	uint64_t   coroutine_id;
 	void*      arg;
+	int        sync;
 	Histogram* histogram;
 	List       link;
 };

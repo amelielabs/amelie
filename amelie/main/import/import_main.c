@@ -17,15 +17,10 @@
 void
 cmd_import(Main* self)
 {
-	unused(self);
-#if 0
 	// amelie import <path, uri, bookmark> files ...
 	Import import;
 	import_init(&import, self);
 	defer(import_free, &import);
-
-	main_open(self, &import.opts);
-	defer(main_close, self);
 
 	logger_set_stdout(&runtime()->logger, true);
 	logger_set_stdout_time(&runtime()->logger, false);
@@ -33,6 +28,4 @@ cmd_import(Main* self)
 
 	opt_int_set(&config()->log_connections, false);
 	import_run(&import);
-#endif
 }
-

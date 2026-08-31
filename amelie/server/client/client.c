@@ -24,6 +24,7 @@ client_allocate(void)
 	self->accepted     = false;
 	self->trusted      = false;
 	self->arg          = NULL;
+	self->sync         = 0;
 	self->histogram    = NULL;
 	msg_init(&self->msg, MSG_CLIENT);
 	http_init(&self->request);

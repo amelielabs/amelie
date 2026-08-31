@@ -19,6 +19,7 @@
 #include "io/vfs.h"
 #include "io/fs.h"
 #include "io/file.h"
+#include "io/mmap.h"
 
 // tls
 #include "io/tls_lib.h"
