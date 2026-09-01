@@ -88,7 +88,6 @@ static void
 emit_ddl(Compiler* self)
 {
 	auto stmt   = compiler_stmt(self);
-	auto user     = self->parser.user;
 	auto data   = &self->code_data->data;
 	auto offset = 0;
 	auto flags  = 0;
@@ -176,14 +175,14 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_INDEX:
 	{
 		auto arg = ast_index_drop_of(stmt->ast);
-		offset = table_op_index_drop(data, user, &arg->table_name, &arg->name);
+		offset = table_op_index_drop(data, &arg->table_user, &arg->table_name, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case STMT_ALTER_INDEX:
 	{
 		auto arg = ast_index_alter_of(stmt->ast);
-		offset = table_op_index_rename(data, user, &arg->table_name, &arg->name,
+		offset = table_op_index_rename(data, &arg->table_user, &arg->table_name, &arg->name,
 		                               &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
@@ -227,7 +226,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_FUNCTION:
 	{
 		auto arg = ast_function_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_UDF, user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_UDF, &arg->user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -235,10 +234,10 @@ emit_ddl(Compiler* self)
 	{
 		auto arg = ast_function_alter_of(stmt->ast);
 		if (arg->type == FUNCTION_ALTER_RENAME)
-			offset = rel_op_rename(data, REL_UDF, user, &arg->name, user, &arg->name_new);
+			offset = rel_op_rename(data, REL_UDF, &arg->user, &arg->name, &arg->user, &arg->name_new);
 		else
 		if (arg->type == FUNCTION_ALTER_DESCRIPTION)
-			offset = rel_op_describe(data, REL_UDF, user, &arg->name, &arg->description);
+			offset = rel_op_describe(data, REL_UDF, &arg->user, &arg->name, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -289,7 +288,7 @@ emit_ddl(Compiler* self)
 	{
 		auto arg = ast_sub_alter_of(stmt->ast);
 		if (arg->type == SUBSCRIPTION_ALTER_RENAME)
-			offset = rel_op_rename(data, REL_SUBSCRIPTION, &arg->user, &arg->name, user, &arg->name_new);
+			offset = rel_op_rename(data, REL_SUBSCRIPTION, &arg->user, &arg->name, &arg->user, &arg->name_new);
 		else
 		if (arg->type == SUBSCRIPTION_ALTER_DESCRIPTION)
 			offset = rel_op_describe(data, REL_SUBSCRIPTION, &arg->user, &arg->name, &arg->description);
@@ -464,8 +463,7 @@ emit_utility(Compiler* self)
 	case STMT_CREATE_INDEX:
 	{
 		auto arg    = ast_index_create_of(stmt->ast);
-		auto user     = self->parser.user;
-		auto offset = table_op_index_create(data, user, &arg->table_name, arg->config);
+		auto offset = table_op_index_create(data, &arg->table_user, &arg->table_name, arg->config);
 		auto flags  = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		op2(self, CDDL_CREATE_INDEX, offset, flags);
 

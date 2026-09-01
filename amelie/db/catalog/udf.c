@@ -170,7 +170,7 @@ udf_create(Catalog*   self,
            bool       or_replace)
 {
 	// PERM_CREATE_FUNCTION
-	check_user(tr, PERM_CREATE_FUNCTION);
+	catalog_check(self, tr, PERM_CREATE_FUNCTION, &config->user);
 
 	// find existing udf
 	auto udf = catalog_find_udf(self, &config->user, &config->name, false);

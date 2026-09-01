@@ -17,7 +17,7 @@ error: create index i❰;❱ ⟵ ON expected
 create index i 1;
 error: create index i ❰1❱ ⟵ ON expected
 create index i on;
-error: create index i on❰;❱ ⟵ name expected
+error: create index i on❰;❱ ⟵ target name expected
 create index i on test;
 error: create index i on test❰;❱ ⟵ ( expected
 create index i on test 1;
@@ -271,9 +271,9 @@ error: drop index i❰;❱ ⟵ ON expected
 drop index i 1;
 error: drop index i ❰1❱ ⟵ ON expected
 drop index i on;
-error: drop index i on❰;❱ ⟵ name expected
+error: drop index i on❰;❱ ⟵ target name expected
 drop index i on 1;
-error: drop index i on ❰1❱ ⟵ name expected
+error: drop index i on ❰1❱ ⟵ target name expected
 drop index i on test;
 error: table 'test' index 'i': not exists
 # test: drop index
@@ -421,7 +421,7 @@ error: alter index i❰;❱ ⟵ ON expected
 alter index i 1;
 error: alter index i ❰1❱ ⟵ ON expected
 alter index i on;
-error: alter index i on❰;❱ ⟵ name expected
+error: alter index i on❰;❱ ⟵ target name expected
 alter index i on test;
 error: alter index i on test❰;❱ ⟵ RENAME expected
 alter index i on test 1;

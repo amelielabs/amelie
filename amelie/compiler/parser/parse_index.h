@@ -19,6 +19,7 @@ struct AstIndexCreate
 {
 	Ast          ast;
 	bool         if_not_exists;
+	Str          table_user;
 	Str          table_name;
 	IndexConfig* config;
 };
@@ -27,6 +28,7 @@ struct AstIndexDrop
 {
 	Ast  ast;
 	bool if_exists;
+	Str  table_user;
 	Str  table_name;
 	Str  name;
 };
@@ -35,6 +37,7 @@ struct AstIndexAlter
 {
 	Ast  ast;
 	bool if_exists;
+	Str  table_user;
 	Str  table_name;
 	Str  name;
 	Str  name_new;
@@ -51,9 +54,6 @@ ast_index_create_allocate(void)
 {
 	AstIndexCreate* self;
 	self = ast_allocate(0, sizeof(AstIndexCreate));
-	self->if_not_exists = false;
-	self->config        = NULL;
-	str_init(&self->table_name);
 	return self;
 }
 
@@ -68,9 +68,6 @@ ast_index_drop_allocate(void)
 {
 	AstIndexDrop* self;
 	self = ast_allocate(0, sizeof(AstIndexDrop));
-	self->if_exists = false;
-	str_init(&self->table_name);
-	str_init(&self->name);
 	return self;
 }
 
@@ -85,10 +82,6 @@ ast_index_alter_allocate(void)
 {
 	AstIndexAlter* self;
 	self = ast_allocate(0, sizeof(AstIndexAlter));
-	self->if_exists = false;
-	str_init(&self->table_name);
-	str_init(&self->name);
-	str_init(&self->name_new);
 	return self;
 }
 

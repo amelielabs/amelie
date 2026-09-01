@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: create function parsing
 create function;
-error: create function❰;❱ ⟵ name expected
+error: create function❰;❱ ⟵ target name expected
 create function test;
 error: create function test❰;❱ ⟵ ( expected
 create function test (;
@@ -991,7 +991,7 @@ tables
 # test: drop function
 create function test () begin end;
 drop function;
-error: drop function❰;❱ ⟵ name expected
+error: drop function❰;❱ ⟵ target name expected
 drop function test;
 drop function test;
 error: function 'test': not exists
@@ -1107,15 +1107,15 @@ functions
 alter;
 error: alter❰;❱ ⟵ relation type expected
 alter function;
-error: alter function❰;❱ ⟵ name expected
+error: alter function❰;❱ ⟵ target name expected
 alter function 123;
-error: alter function ❰123❱ ⟵ name expected
+error: alter function ❰123❱ ⟵ target name expected
 alter function if;
 error: alter function if❰;❱ ⟵ EXISTS expected
 alter function if exists;
-error: alter function if exists❰;❱ ⟵ name expected
+error: alter function if exists❰;❱ ⟵ target name expected
 alter function if exists 123;
-error: alter function if exists ❰123❱ ⟵ name expected
+error: alter function if exists ❰123❱ ⟵ target name expected
 # test: alter function if exists
 create function test() begin end;
 alter function test rename to test2;

@@ -75,16 +75,19 @@ parse_function_create(Stmt* self, bool or_replace)
 	// create function config
 	stmt->config = udf_config_allocate();
 
+	// [user.]name
+	Str user;
+	Str name;
+	parse_target(self, &user, &name);
+
 	// name
-	auto name = stmt_expect(self, KNAME);
-	udf_config_set_user(stmt->config, self->parser->user);
-	udf_config_set_name(stmt->config, &name->string);
+	udf_config_set_user(stmt->config, &user);
+	udf_config_set_name(stmt->config, &name);
 
 	// copy existing grants
 	if (stmt->or_replace)
 	{
-		auto udf = catalog_find_udf(&share()->db->catalog, self->parser->user,
-		                            &name->string, false);
+		auto udf = catalog_find_udf(&share()->db->catalog, self->parser->user, &name, false);
 		if (udf)
 			grants_copy(&stmt->config->grants, &udf->config->grants);
 	}
@@ -169,9 +172,8 @@ parse_function_drop(Stmt* self)
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
-	// name
-	auto name  = stmt_expect(self, KNAME);
-	stmt->name = name->string;
+	// [user.]name
+	parse_target(self, &stmt->user, &stmt->name);
 
 	// [CASCADE]
 	stmt->cascade = stmt_if(self, KCASCADE) != NULL;
@@ -188,9 +190,8 @@ parse_function_alter(Stmt* self)
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
-	// name
-	auto name  = stmt_expect(self, KNAME);
-	stmt->name = name->string;
+	// [user.]name
+	parse_target(self, &stmt->user, &stmt->name);
 
 	// RENAME
 	if (stmt_if(self, KRENAME))
@@ -200,7 +201,7 @@ parse_function_alter(Stmt* self)
 		stmt->type = FUNCTION_ALTER_RENAME;
 
 		// name
-		name = stmt_expect(self, KNAME);
+		auto name = stmt_expect(self, KNAME);
 		stmt->name_new = name->string;
 		return;
 	}

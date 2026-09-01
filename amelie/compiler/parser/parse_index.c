@@ -105,12 +105,11 @@ parse_index_create(Stmt* self, bool unique)
 	// ON
 	stmt_expect(self, KON);
 
-	// table_name
-	auto target = stmt_expect(self, KNAME);
-	stmt->table_name = target->string;
+	// [user.]name
+	auto target = parse_target(self, &stmt->table_user, &stmt->table_name);
 
 	// find table
-	auto table = catalog_find_table(&share()->db->catalog, self->parser->user,
+	auto table = catalog_find_table(&share()->db->catalog, &stmt->table_user,
 	                                &stmt->table_name,
 	                                false);
 	if (! table)
@@ -191,16 +190,15 @@ parse_index_drop(Stmt* self)
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
-	// name
-	auto name = stmt_expect(self, KNAME);
+	// table
+	auto name  = stmt_expect(self, KNAME);
 	stmt->name = name->string;
 
 	// ON
 	stmt_expect(self, KON);
 
-	// table
-	auto name_table  = stmt_expect(self, KNAME);
-	stmt->table_name = name_table->string;
+	// [user.]name
+	parse_target(self, &stmt->table_user, &stmt->table_name);
 }
 
 void
@@ -220,9 +218,8 @@ parse_index_alter(Stmt* self)
 	// ON
 	stmt_expect(self, KON);
 
-	// table
-	auto name_table  = stmt_expect(self, KNAME);
-	stmt->table_name = name_table->string;
+	// [user.]name
+	parse_target(self, &stmt->table_user, &stmt->table_name);
 
 	// RENAME
 	stmt_expect(self, KRENAME);
