@@ -26,6 +26,7 @@ struct AstTopicDrop
 {
 	Ast  ast;
 	bool if_exists;
+	Str  user;
 	Str  name;
 	bool cascade;
 };
@@ -41,6 +42,7 @@ struct AstTopicAlter
 	Ast  ast;
 	bool if_exists;
 	int  type;
+	Str  user;
 	Str  name;
 	Str  name_new;
 	Str  description;

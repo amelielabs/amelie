@@ -28,32 +28,34 @@ parse_sub_create(Stmt* self)
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
 
-	// name
-	auto name = stmt_expect(self, KNAME);
+	// [user.]name
+	Str user;
+	Str name;
+	parse_target(self, &user, &name);
 
 	// ON
 	stmt_expect(self, KON);
 
-	Str user;
+	Str target_user;
 	Str target;
 	if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
 	{
 		// USER|AGENT name
 		auto user_name = stmt_expect(self, KNAME);
-		user = user_name->string;
+		target_user = user_name->string;
 		str_init(&target);
 	} else
 	{
 		// [user.]relation
-		parse_target(self, &user, &target);
+		parse_target(self, &target_user, &target);
 	}
 
 	// create subscription config
 	auto config = sub_config_allocate();
 	stmt->config = config;
-	sub_config_set_user(config, self->parser->user);
-	sub_config_set_name(config, &name->string);
-	sub_config_set_rel_user(config, &user);
+	sub_config_set_user(config, &user);
+	sub_config_set_name(config, &name);
+	sub_config_set_rel_user(config, &target_user);
 	sub_config_set_rel(config, &target);
 	sub_config_set_pos(config, state_lsn() + 1);
 
@@ -76,9 +78,8 @@ parse_sub_drop(Stmt* self)
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
-	// name
-	auto name = stmt_expect(self, KNAME);
-	stmt->name = name->string;
+	// [user.]name
+	parse_target(self, &stmt->user, &stmt->name);
 
 	// [CASCADE]
 	stmt->cascade = stmt_if(self, KCASCADE) != NULL;
@@ -95,9 +96,8 @@ parse_sub_alter(Stmt* self)
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
-	// name
-	auto name = stmt_expect(self, KNAME);
-	stmt->name = name->string;
+	// [user.]name
+	parse_target(self, &stmt->user, &stmt->name);
 
 	// RENAME
 	if (stmt_if(self, KRENAME))
@@ -107,7 +107,7 @@ parse_sub_alter(Stmt* self)
 		stmt->type = SUBSCRIPTION_ALTER_RENAME;
 
 		// name
-		name = stmt_expect(self, KNAME);
+		auto name = stmt_expect(self, KNAME);
 		stmt->name_new = name->string;
 		return;
 	}
@@ -131,9 +131,8 @@ parse_acknowledge(Stmt* self)
 	auto stmt = ast_ack_allocate();
 	self->ast = &stmt->ast;
 
-	// name
-	auto name = stmt_expect(self, KNAME);
-	stmt->name = name->string;
+	// [user.]name
+	auto target = parse_target(self, &stmt->user, &stmt->name);
 
 	// TO
 	stmt_expect(self, KTO);
@@ -143,9 +142,9 @@ parse_acknowledge(Stmt* self)
 	stmt->lsn = value->integer;
 
 	// subscription
-	stmt->sub = catalog_find_sub(&share()->db->catalog, self->parser->user, &name->string, false);
+	stmt->sub = catalog_find_sub(&share()->db->catalog, &stmt->user, &stmt->name, false);
 	if (! stmt->sub)
-		stmt_error(self, name, "subscription not found");
+		stmt_error(self, target, "subscription not found");
 
 	// require exclusive lock
 	access_add(&self->parser->program->access, &stmt->sub->rel,

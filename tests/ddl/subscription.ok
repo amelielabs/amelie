@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: create subscription statement parsing
 create subscription;
-error: create subscription❰;❱ ⟵ name expected
+error: create subscription❰;❱ ⟵ target name expected
 create subscription x;
 error: create subscription x❰;❱ ⟵ ON expected
 create subscription x 123;
@@ -182,9 +182,9 @@ lsn
 ───
 3
 acknowledge;
-error: acknowledge❰;❱ ⟵ name expected
+error: acknowledge❰;❱ ⟵ target name expected
 acknowledge 123;
-error: acknowledge ❰123❱ ⟵ name expected
+error: acknowledge ❰123❱ ⟵ target name expected
 acknowledge test_sub;
 error: acknowledge test_sub❰;❱ ⟵ TO expected
 acknowledge test_sub to;
@@ -271,9 +271,9 @@ tables
 ──────
 # test: drop subscription statement parsing
 drop subscription;
-error: drop subscription❰;❱ ⟵ name expected
+error: drop subscription❰;❱ ⟵ target name expected
 drop subscription 123;
-error: drop subscription ❰123❱ ⟵ name expected
+error: drop subscription ❰123❱ ⟵ target name expected
 # test: drop subscription (if exists)
 drop subscription test_sub;
 error: subscription 'test_sub': not exists
@@ -442,9 +442,9 @@ drop table test cascade;
 create topic test;
 create subscription test_sub on test;
 alter subscription;
-error: alter subscription❰;❱ ⟵ name expected
+error: alter subscription❰;❱ ⟵ target name expected
 alter subscription 123;
-error: alter subscription ❰123❱ ⟵ name expected
+error: alter subscription ❰123❱ ⟵ target name expected
 alter subscription test;
 error: alter subscription test❰;❱ ⟵ RENAME or DESCRIPTION expected
 alter subscription test rename;

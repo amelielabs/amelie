@@ -254,7 +254,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_TOPIC:
 	{
 		auto arg = ast_topic_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_TOPIC, user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_TOPIC, &arg->user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -262,10 +262,10 @@ emit_ddl(Compiler* self)
 	{
 		auto arg = ast_topic_alter_of(stmt->ast);
 		if (arg->type == TOPIC_ALTER_RENAME)
-			offset = rel_op_rename(data, REL_TOPIC, user, &arg->name, user, &arg->name_new);
+			offset = rel_op_rename(data, REL_TOPIC, &arg->user, &arg->name, &arg->user, &arg->name_new);
 		else
 		if (arg->type == TOPIC_ALTER_DESCRIPTION)
-			offset = rel_op_describe(data, REL_TOPIC, user, &arg->name, &arg->description);
+			offset = rel_op_describe(data, REL_TOPIC, &arg->user, &arg->name, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -281,7 +281,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_SUBSCRIPTION:
 	{
 		auto arg = ast_sub_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_SUBSCRIPTION, user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_SUBSCRIPTION, &arg->user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -289,10 +289,10 @@ emit_ddl(Compiler* self)
 	{
 		auto arg = ast_sub_alter_of(stmt->ast);
 		if (arg->type == SUBSCRIPTION_ALTER_RENAME)
-			offset = rel_op_rename(data, REL_SUBSCRIPTION, user, &arg->name, user, &arg->name_new);
+			offset = rel_op_rename(data, REL_SUBSCRIPTION, &arg->user, &arg->name, user, &arg->name_new);
 		else
 		if (arg->type == SUBSCRIPTION_ALTER_DESCRIPTION)
-			offset = rel_op_describe(data, REL_SUBSCRIPTION, user, &arg->name, &arg->description);
+			offset = rel_op_describe(data, REL_SUBSCRIPTION, &arg->user, &arg->name, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

@@ -2,11 +2,11 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: create topic statement parsing
 create topic;
-error: create topic❰;❱ ⟵ name expected
+error: create topic❰;❱ ⟵ target name expected
 create topic 1;
-error: create topic ❰1❱ ⟵ name expected
+error: create topic ❰1❱ ⟵ target name expected
 create topic;
-error: create topic❰;❱ ⟵ name expected
+error: create topic❰;❱ ⟵ target name expected
 create topic if exists;
 error: create topic if ❰exists❱ ⟵ NOT expected
 # test: create topic
@@ -61,9 +61,9 @@ publish into test;
 publish into test 123;
 # test: drop topic statement parsing
 drop topic;
-error: drop topic❰;❱ ⟵ name expected
+error: drop topic❰;❱ ⟵ target name expected
 drop topic 123;
-error: drop topic ❰123❱ ⟵ name expected
+error: drop topic ❰123❱ ⟵ target name expected
 # test: drop topic
 drop topic test;
 drop topic test2;
@@ -71,7 +71,7 @@ drop topic test2;
 drop topic test;
 error: topic 'test': not exists
 drop topic if exists;
-error: drop topic if exists❰;❱ ⟵ name expected
+error: drop topic if exists❰;❱ ⟵ target name expected
 drop topic if exists test;
 # test: alter topic statement parsing
 create topic test;
@@ -85,7 +85,7 @@ topics
   "description": ""
 }
 alter topic;
-error: alter topic❰;❱ ⟵ name expected
+error: alter topic❰;❱ ⟵ target name expected
 alter topic test;
 error: alter topic test❰;❱ ⟵ RENAME or DESCRIPTION expected
 alter topic test xyz;

@@ -27,6 +27,7 @@ struct AstSubDrop
 {
 	Ast  ast;
 	bool if_exists;
+	Str  user;
 	Str  name;
 	bool cascade;
 };
@@ -42,6 +43,7 @@ struct AstSubAlter
 	Ast  ast;
 	bool if_exists;
 	int  type;
+	Str  user;
 	Str  name;
 	Str  name_new;
 	Str  description;
@@ -50,6 +52,7 @@ struct AstSubAlter
 struct AstAck
 {
 	Ast      ast;
+	Str      user;
 	Str      name;
 	uint64_t lsn;
 	Sub*     sub;
