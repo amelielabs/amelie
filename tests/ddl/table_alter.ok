@@ -4,15 +4,15 @@ connect E0 S0 127.0.0.1:3485;
 alter;
 error: alter❰;❱ ⟵ relation type expected
 alter table;
-error: alter table❰;❱ ⟵ name expected
+error: alter table❰;❱ ⟵ target name expected
 alter table 123;
-error: alter table ❰123❱ ⟵ name expected
+error: alter table ❰123❱ ⟵ target name expected
 alter table if;
 error: alter table if❰;❱ ⟵ EXISTS expected
 alter table if exists;
-error: alter table if exists❰;❱ ⟵ name expected
+error: alter table if exists❰;❱ ⟵ target name expected
 alter table if exists 123;
-error: alter table if exists ❰123❱ ⟵ name expected
+error: alter table if exists ❰123❱ ⟵ target name expected
 # test: alter table if exists
 alter table test rename to test2;
 error: table 'test': not exists
@@ -41,7 +41,7 @@ error: relation 'test': already exists
 drop table test;
 # test: rename column parsing
 alter table rename;
-error: alter table ❰rename❱ ⟵ name expected
+error: alter table ❰rename❱ ⟵ target name expected
 alter table test rename;
 error: alter table test rename❰;❱ ⟵ TO expected
 alter table test rename column;
@@ -197,7 +197,7 @@ drop table test;
 # test: add column parsing
 create table test (id int primary key);
 alter table;
-error: alter table❰;❱ ⟵ name expected
+error: alter table❰;❱ ⟵ target name expected
 alter table test;
 error: alter table test❰;❱ ⟵ 'RENAME | ADD | DROP | SET | UNSET' expected
 alter table test add;
@@ -451,7 +451,7 @@ drop table test;
 # test: drop column parsing
 create table test (id int primary key);
 alter table;
-error: alter table❰;❱ ⟵ name expected
+error: alter table❰;❱ ⟵ target name expected
 alter table test;
 error: alter table test❰;❱ ⟵ 'RENAME | ADD | DROP | SET | UNSET' expected
 alter table test drop;

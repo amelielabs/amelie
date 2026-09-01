@@ -23,7 +23,6 @@ static void
 emit_alter_table(Compiler* self)
 {
 	auto stmt   = compiler_stmt(self);
-	auto user   = self->parser.user;
 	auto data   = &self->code_data->data;
 	auto arg    = ast_table_alter_of(stmt->ast);
 	auto offset = 0;
@@ -31,19 +30,19 @@ emit_alter_table(Compiler* self)
 	switch (arg->type) {
 	case TABLE_ALTER_RENAME:
 	{
-		offset = rel_op_rename(data, REL_TABLE, user, &arg->name, user, &arg->name_new);
+		offset = rel_op_rename(data, REL_TABLE, &arg->user, &arg->name, &arg->user, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case TABLE_ALTER_DESCRIPTION:
 	{
-		offset = rel_op_describe(data, REL_TABLE, user, &arg->name, &arg->description);
+		offset = rel_op_describe(data, REL_TABLE, &arg->user, &arg->name, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case TABLE_ALTER_COLUMN_RENAME:
 	{
-		offset = table_op_column_rename(data, user, &arg->name, &arg->column_name,
+		offset = table_op_column_rename(data, &arg->user, &arg->name, &arg->column_name,
 		                                &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		if (arg->if_column_exists)
@@ -52,7 +51,7 @@ emit_alter_table(Compiler* self)
 	}
 	case TABLE_ALTER_COLUMN_ADD:
 	{
-		offset = table_op_column_add(data, user, &arg->name, arg->column);
+		offset = table_op_column_add(data, &arg->user, &arg->name, arg->column);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		if (arg->if_column_not_exists)
 			flags |= DDL_IF_COLUMN_NOT_EXISTS;
@@ -60,7 +59,7 @@ emit_alter_table(Compiler* self)
 	}
 	case TABLE_ALTER_COLUMN_DROP:
 	{
-		offset = table_op_column_drop(data, user, &arg->name, &arg->column_name);
+		offset = table_op_column_drop(data, &arg->user, &arg->name, &arg->column_name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		if (arg->if_column_exists)
 			flags |= DDL_IF_COLUMN_EXISTS;
@@ -70,7 +69,7 @@ emit_alter_table(Compiler* self)
 	case TABLE_ALTER_COLUMN_UNSET_DEFAULT:
 	{
 		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_DEFAULT,
-		                             user, &arg->name,
+		                             &arg->user, &arg->name,
 		                             &arg->column_name,
 		                             &arg->value);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
@@ -151,7 +150,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_TABLE:
 	{
 		auto arg = ast_table_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_TABLE, user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_TABLE, &arg->user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -201,7 +200,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_CLONE:
 	{
 		auto arg = ast_clone_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_CLONE, user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_CLONE, &arg->user, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -209,10 +208,10 @@ emit_ddl(Compiler* self)
 	{
 		auto arg = ast_clone_alter_of(stmt->ast);
 		if (arg->type == CLONE_ALTER_RENAME)
-			offset = rel_op_rename(data, REL_CLONE, user, &arg->name, user, &arg->name_new);
+			offset = rel_op_rename(data, REL_CLONE, &arg->user, &arg->name, &arg->user, &arg->name_new);
 		else
 		if (arg->type == CLONE_ALTER_DESCRIPTION)
-			offset = rel_op_describe(data, REL_CLONE, user, &arg->name, &arg->description);
+			offset = rel_op_describe(data, REL_CLONE, &arg->user, &arg->name, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

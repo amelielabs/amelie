@@ -86,7 +86,7 @@ table_create(Catalog*     self,
              bool         if_not_exists)
 {
 	// PERM_CREATE_TABLE
-	check_user(tr, PERM_CREATE_TABLE);
+	catalog_check(self, tr, PERM_CREATE_TABLE, &config->user);
 
 	// make sure table does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);

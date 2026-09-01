@@ -443,14 +443,16 @@ parse_table_create(Stmt* self)
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
 
-	// name
-	auto name = stmt_expect(self, KNAME);
+	// [user.]name
+	Str user;
+	Str name;
+	parse_target(self, &user, &name);
 
 	// create table config
 	auto config = table_config_allocate();
 	stmt->config = config;
-	table_config_set_user(config, self->parser->user);
-	table_config_set_name(config, &name->string);
+	table_config_set_user(config, &user);
+	table_config_set_name(config, &name);
 
 	Uuid id;
 	uuid_init(&id);
@@ -503,9 +505,8 @@ parse_table_drop(Stmt* self)
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
-	// name
-	auto name  = stmt_expect(self, KNAME);
-	stmt->name = name->string;
+	// [user.]name
+	parse_target(self, &stmt->user, &stmt->name);
 
 	// [CASCADE]
 	stmt->cascade = stmt_if(self, KCASCADE) != NULL;
@@ -527,9 +528,8 @@ parse_table_alter(Stmt* self)
 	// [if exists]
 	stmt->if_exists = parse_if_exists(self);
 
-	// name
-	auto target = stmt_expect(self, KNAME);
-	stmt->name = target->string;
+	// [user.]name
+	auto target = parse_target(self, &stmt->user, &stmt->name);
 
 	// [ADD COLUMN]
 	if (stmt_if(self, KADD))

@@ -2,15 +2,15 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: create clone statement parsing
 create clone;
-error: create clone❰;❱ ⟵ name expected
+error: create clone❰;❱ ⟵ target name expected
 create clone 123;
-error: create clone ❰123❱ ⟵ name expected
+error: create clone ❰123❱ ⟵ target name expected
 create clone 123 from;
-error: create clone ❰123❱ ⟵ name expected
+error: create clone ❰123❱ ⟵ target name expected
 create clone 123 of;
-error: create clone ❰123❱ ⟵ name expected
+error: create clone ❰123❱ ⟵ target name expected
 create clone 123 of 1;
-error: create clone ❰123❱ ⟵ name expected
+error: create clone ❰123❱ ⟵ target name expected
 # test: create clone
 create table main (id int primary key);
 insert into main values (1);
@@ -126,9 +126,9 @@ clone
 }
 # test: alter clone statement parsing
 alter clone;
-error: alter clone❰;❱ ⟵ name expected
+error: alter clone❰;❱ ⟵ target name expected
 alter clone 1;
-error: alter clone ❰1❱ ⟵ name expected
+error: alter clone ❰1❱ ⟵ target name expected
 alter clone b;
 error: alter clone b❰;❱ ⟵ RENAME or DESCRIPTION expected
 alter clone b xyz;

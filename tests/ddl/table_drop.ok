@@ -6,7 +6,7 @@ error: drop❰;❱ ⟵ relation type expected
 drop 1;
 error: drop ❰1❱ ⟵ relation type expected
 drop table "name";
-error: drop table ❰"name"❱ ⟵ name expected
+error: drop table ❰"name"❱ ⟵ target name expected
 drop table name junk;
 error: drop table name ❰junk❱ ⟵ ; expected
 # test: drop non-existing table

@@ -55,6 +55,7 @@
 // catalog
 #include "catalog/catalog.h"
 #include "catalog/catalog_find.h"
+#include "catalog/catalog_check.h"
 #include "catalog/catalog_limit.h"
 #include "catalog/catalog_file.h"
 

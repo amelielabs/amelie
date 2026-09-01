@@ -10,17 +10,17 @@ error: create unique❰;❱ ⟵ INDEX expected
 create unique table;
 error: create unique ❰table❱ ⟵ INDEX expected
 create table;
-error: create table❰;❱ ⟵ name expected
+error: create table❰;❱ ⟵ target name expected
 create table "junk_name";
-error: create table ❰"junk_name"❱ ⟵ name expected
+error: create table ❰"junk_name"❱ ⟵ target name expected
 create table if;
 error: create table if❰;❱ ⟵ NOT expected
 create table if not;
 error: create table if not❰;❱ ⟵ EXISTS expected
 create table if not exists;
-error: create table if not exists❰;❱ ⟵ name expected
+error: create table if not exists❰;❱ ⟵ target name expected
 create table 1234;
-error: create table ❰1234❱ ⟵ name expected
+error: create table ❰1234❱ ⟵ target name expected
 create table test(;
 error: create table test(❰;❱ ⟵ name expected
 create table test(0;
@@ -38,7 +38,7 @@ error: create table test(name int,❰;❱ ⟵ name expected
 create table test(name int,);
 error: create table test(name int,❰)❱ ⟵ name expected
 create table if not exists 1234;
-error: create table if not exists ❰1234❱ ⟵ name expected
+error: create table if not exists ❰1234❱ ⟵ target name expected
 create table if not exists test(;
 error: create table if not exists test(❰;❱ ⟵ name expected
 create table if not exists test(0;

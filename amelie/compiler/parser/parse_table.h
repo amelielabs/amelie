@@ -28,6 +28,7 @@ struct AstTableDrop
 {
 	Ast  ast;
 	bool if_exists;
+	Str  user;
 	Str  name;
 	bool cascade;
 };
@@ -57,6 +58,7 @@ struct AstTableAlter
 	bool    if_column_exists;
 	bool    if_column_not_exists;
 	int     type;
+	Str     user;
 	Str     name;
 	Str     name_new;
 	Str     column_name;

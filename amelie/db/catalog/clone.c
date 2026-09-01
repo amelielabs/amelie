@@ -88,7 +88,7 @@ clone_create(Catalog*     self,
              bool         if_not_exists)
 {
 	// PERM_CREATE_CLONE
-	check_user(tr, PERM_CREATE_CLONE);
+	catalog_check(self, tr, PERM_CREATE_CLONE, &config->user);
 
 	// make sure clone does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
