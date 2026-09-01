@@ -56,10 +56,6 @@ show partitions on test;
 select show('partitions', '', 'test', false);
 select * from show partitions on test;
 
-# test: show partition
-show partition '1' on test;
-select show('partition', '1', 'test', false);
-
 # test: show functions
 create function test_fn (id int) return json
 begin

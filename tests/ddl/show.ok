@@ -55,7 +55,7 @@ show partitions on test;
 partitions
 ──────────
 {
-  "id": 1,
+  "id": 0,
   "min": 0,
   "max": 8096,
   "size": 0
@@ -199,7 +199,7 @@ show partitions on test;
 partitions
 ──────────
 {
-  "id": 1,
+  "id": 0,
   "min": 0,
   "max": 8096,
   "size": 0
@@ -209,7 +209,7 @@ select show('partitions', '', 'test', false);
 show
 ────
 [{
-  "id": 1,
+  "id": 0,
   "min": 0,
   "max": 8096,
   "size": 0
@@ -219,28 +219,7 @@ select * from show partitions on test;
 partitions
 ──────────
 {
-  "id": 1,
-  "min": 0,
-  "max": 8096,
-  "size": 0
-}
-# test: show partition
-show partition '1' on test;
-
-partition
-─────────
-{
-  "id": 1,
-  "min": 0,
-  "max": 8096,
-  "size": 0
-}
-select show('partition', '1', 'test', false);
-
-show
-────
-{
-  "id": 1,
+  "id": 0,
   "min": 0,
   "max": 8096,
   "size": 0
@@ -412,7 +391,6 @@ STATE
   "frontends": 1,
   "backends": 1,
   "lsn": 4,
-  "psn": 1,
   "checkpoint": 1
 }
 select show('state');
@@ -426,7 +404,6 @@ show
   "frontends": 1,
   "backends": 1,
   "lsn": 4,
-  "psn": 1,
   "checkpoint": 1
 }
 select show('state').directory;

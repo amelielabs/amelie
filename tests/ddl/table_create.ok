@@ -1046,19 +1046,19 @@ select show('table', 'test', true).partitions;
 partitions
 ──────────
 [{
-  "id": 42,
+  "id": 0,
   "hash_min": 0,
   "hash_max": 2024
 }, {
-  "id": 43,
+  "id": 1,
   "hash_min": 2024,
   "hash_max": 4048
 }, {
-  "id": 44,
+  "id": 2,
   "hash_min": 4048,
   "hash_max": 6072
 }, {
-  "id": 45,
+  "id": 3,
   "hash_min": 6072,
   "hash_max": 8096
 }]
@@ -1067,25 +1067,25 @@ show partitions on test;
 partitions
 ──────────
 {
-  "id": 42,
+  "id": 0,
   "min": 0,
   "max": 2024,
   "size": 0
 }
 {
-  "id": 43,
+  "id": 1,
   "min": 2024,
   "max": 4048,
   "size": 0
 }
 {
-  "id": 44,
+  "id": 2,
   "min": 4048,
   "max": 6072,
   "size": 0
 }
 {
-  "id": 45,
+  "id": 3,
   "min": 6072,
   "max": 8096,
   "size": 0

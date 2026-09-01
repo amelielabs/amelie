@@ -10245,7 +10245,6 @@ state
   "frontends": 1,
   "backends": 3,
   "lsn": 10016,
-  "psn": 3,
   "checkpoint": 1
 }
 watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
@@ -10326,7 +10325,6 @@ state
   "frontends": 1,
   "backends": 3,
   "lsn": 10023,
-  "psn": 6,
   "checkpoint": 1
 }
 select * from top_sub;

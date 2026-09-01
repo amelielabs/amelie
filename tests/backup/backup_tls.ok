@@ -14,7 +14,6 @@ state
   "frontends": 1,
   "backends": 3,
   "lsn": 3,
-  "psn": 3,
   "checkpoint": 1
 }
 # test: backup (using https)
@@ -71,7 +70,6 @@ state
   "frontends": 1,
   "backends": 1,
   "lsn": 3,
-  "psn": 1,
   "checkpoint": 1
 }
 select count(*) from test;

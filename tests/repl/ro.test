@@ -6,9 +6,7 @@ connect E0 S0 127.0.0.1:3480;
 # test: read-only ddl
 start repl;
 follow "00000000-0000-0000-0000-000000000002";
-select show("state").psn;
 create table leaked (id int primary key);
-select show("state").psn;
 show tables;
 select * from leaked;
 

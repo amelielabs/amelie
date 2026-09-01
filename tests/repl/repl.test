@@ -106,10 +106,8 @@ select show('state').lsn;
 insert into test values (10);
 select show('state').lsn;
 
-select show('state').psn;
 create table test2 (id int primary key);
 select show('state').lsn;
-select show('state').psn;
 
 # test: replica read
 select * from test;

@@ -53,9 +53,6 @@ select show('index', 'primary', 'test', false);
 # test: partitions
 select show('partitions', '', 'test', false);
 
-# test: partition
-select show('partition', '0', 'test', false);
-
 # test: functions
 select show('functions');
 

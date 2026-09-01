@@ -116,36 +116,46 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 hot static void
 checkpoint_heap(Checkpoint* self, Part* part)
 {
-	// <base>/checkpoint/<lsn>.incomplete/<partition_id>
+	// <base>/checkpoint/<lsn>.incomplete/<table_id>.<partition>
+	auto rel = part->arg->rel;
+	char uuid[UUID_SZ];
+	uuid_get(rel->id, uuid, sizeof(uuid));
+
 	char path[PATH_MAX];
 	format(path, sizeof(path),
-	       "{s}/checkpoint/{u64}.incomplete/{u64}",
+	       "{s}/checkpoint/{u64}.incomplete/{s}.{02d}",
 	       state_directory(),
 	       self->lsn,
+	       uuid,
 	       part->config->id);
 
 	auto size = heap_create(part->heap, path);
-	info(" {u64}/{u64} ({.2f} MiB)",
-	     self->lsn,
-	     part->config->id,
+	info(" {s}.{02d}    ({.2f} MB)",
+	     uuid,
+	     (int)part->config->id,
 	     (double)size / 1024 / 1024);
 }
 
 hot static void
 checkpoint_flat(Checkpoint* self, Part* part, Flat* flat)
 {
-	// <base>/checkpoint/<lsn>.incomplete/<partition_id>.<flat_id>
+	// <base>/checkpoint/<lsn>.incomplete/<table_id>.<partition>.<column>
+	auto rel = part->arg->rel;
+	char uuid[UUID_SZ];
+	uuid_get(rel->id, uuid, sizeof(uuid));
+
 	char path[PATH_MAX];
 	format(path, sizeof(path),
-	       "{s}/checkpoint/{u64}.incomplete/{u64}.{d}",
+	       "{s}/checkpoint/{u64}.incomplete/{s}.{02d}.{02d}",
 	       state_directory(),
 	       self->lsn,
+	       uuid,
 	       part->config->id,
 	       flat->column->order);
 
 	auto size = flat_create(flat, path);
-	info(" {u64}/{u64}.{d} ({.2f} MiB)",
-	     self->lsn,
+	info(" {s}.{02d}.{02d} ({.2f} MB)",
+	     uuid,
 	     part->config->id,
 	     flat->column->order,
 	     (double)size / 1024 / 1024);
@@ -179,7 +189,7 @@ checkpoint_cdc(Checkpoint* self)
 	       self->lsn);
 
 	auto size = cdc_create(self->catalog->cdc, path);
-	info(" {u64}/cdc ({.2f} MiB)",
+	info(" cdc ({.2f} MB)",
 	     self->lsn,
 	     (double)size / 1024 / 1024);
 }

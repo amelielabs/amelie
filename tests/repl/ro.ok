@@ -3,18 +3,8 @@ connect E0 S0 127.0.0.1:3480;
 # test: read-only ddl
 start repl;
 follow "00000000-0000-0000-0000-000000000002";
-select show("state").psn;
-
-psn
-───
-0
 create table leaked (id int primary key);
 error: system is in read-only mode
-select show("state").psn;
-
-psn
-───
-0
 show tables;
 
 tables

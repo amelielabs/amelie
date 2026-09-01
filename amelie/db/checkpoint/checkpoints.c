@@ -133,7 +133,7 @@ checkpoints_open(Checkpoints* self)
 	       state_directory(), id);
 
 	auto size = cdc_open(self->catalog->cdc, path);
-	info("recover: {u64}/cdc ({.2f} MiB)",
+	info("recover: cdc ({.2f} MiB)",
 	     id, (double)size / 1024 / 1024);
 
 	// restore last checkpoint

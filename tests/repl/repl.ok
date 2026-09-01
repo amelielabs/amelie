@@ -166,11 +166,6 @@ select show('state').lsn;
 lsn
 ───
 9
-select show('state').psn;
-
-psn
-───
-1
 create table test2 (id int primary key);
 error: system is in read-only mode
 select show('state').lsn;
@@ -178,11 +173,6 @@ select show('state').lsn;
 lsn
 ───
 9
-select show('state').psn;
-
-psn
-───
-1
 # test: replica read
 select * from test;
 

@@ -49,12 +49,10 @@ parts_free(Parts* self)
 void
 parts_open(Parts* self, List* parts, List* indexes)
 {
+	// prepare partitions
 	list_foreach(parts)
 	{
 		auto config = list_at(PartConfig, link);
-		state_psn_follow(config->id);
-
-		// prepare part
 		auto part = part_allocate(config, self->arg);
 		parts_add(self, part);
 	}
@@ -122,18 +120,6 @@ parts_remove(Parts* self, Part* part)
 	self->list_count--;
 }
 
-Part*
-parts_find(Parts* self, uint64_t psn)
-{
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		if (part->config->id == (int64_t)psn)
-			return part;
-	}
-	return NULL;
-}
-
 void
 parts_index_create(Parts* self, IndexConfig* config)
 {
@@ -170,23 +156,8 @@ parts_column_create(Parts* self, Column* column)
 }
 
 void
-parts_list(Parts* self, Buf* buf, Str* ref, int flags)
+parts_list(Parts* self, Buf* buf, int flags)
 {
-	// show partition id on table
-	if (ref)
-	{
-		uint64_t psn;
-		if (str_u64(ref, &psn) == -1)
-			error("invalid partition id");
-
-		auto part = parts_find(self, psn);
-		if (! part)
-			encode_null(buf);
-		else
-			part_status(part, buf, flags);
-		return;
-	}
-
 	// show partitions on table
 	encode_array(buf);
 	list_foreach(&self->list)

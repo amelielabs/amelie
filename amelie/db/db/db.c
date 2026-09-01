@@ -130,10 +130,6 @@ db_state(Db* self, Buf* buf)
 	encode_raw(buf, "lsn", 3);
 	encode_int(buf, state_lsn());
 
-	// psn
-	encode_raw(buf, "psn", 3);
-	encode_int(buf, state_psn());
-
 	// checkpoint
 	encode_raw(buf, "checkpoint", 10);
 	encode_int(buf, state_checkpoint());

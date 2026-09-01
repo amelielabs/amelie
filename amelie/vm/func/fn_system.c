@@ -40,7 +40,6 @@ enum
 	SHOW_CLONES,
 	SHOW_CLONE,
 	SHOW_PARTITIONS,
-	SHOW_PARTITION,
 	SHOW_FUNCTIONS,
 	SHOW_FUNCTION,
 	SHOW_TOPICS,
@@ -90,7 +89,6 @@ static ShowCmd show_cmds[] =
 	{ SHOW_CLONES,        "clones",        6,  false, false, false },
 	{ SHOW_CLONE,         "clone",         5,  true,  false, true  },
 	{ SHOW_PARTITIONS,    "partitions",    10, false, true,  false },
-	{ SHOW_PARTITION,     "partition",     9,  true,  true,  true  },
 	{ SHOW_FUNCTIONS,     "functions",     9,  false, false, false },
 	{ SHOW_FUNCTION,      "function",      8,  true,  false, true  },
 	{ SHOW_TOPICS,        "topics",        6,  false, false, false },
@@ -348,13 +346,7 @@ fn_show(Call* self)
 	{
 		// todo: only owned
 		auto table = catalog_find_table(catalog, user, on, true);
-		parts_list(&table->parts, buf, NULL, flags);
-		break;
-	}
-	case SHOW_PARTITION:
-	{
-		auto table = catalog_find_table(catalog, user, on, true);
-		parts_list(&table->parts, buf, name, flags);
+		parts_list(&table->parts, buf, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:

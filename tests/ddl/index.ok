@@ -658,7 +658,7 @@ show partitions on test;
 partitions
 ──────────
 {
-  "id": 10,
+  "id": 0,
   "min": 0,
   "max": 8096,
   "size": 0
@@ -686,19 +686,19 @@ show partitions on test;
 partitions
 ──────────
 {
-  "id": 11,
+  "id": 0,
   "min": 0,
   "max": 2698,
   "size": 0
 }
 {
-  "id": 12,
+  "id": 1,
   "min": 2698,
   "max": 5396,
   "size": 0
 }
 {
-  "id": 13,
+  "id": 2,
   "min": 5396,
   "max": 8096,
   "size": 0

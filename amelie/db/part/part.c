@@ -68,10 +68,16 @@ part_free(Part* self)
 static void
 part_open_heap(Part* self, uint64_t checkpoint)
 {
+	// table id
+	auto rel = self->arg->rel;
+	char uuid[UUID_SZ];
+	uuid_get(rel->id, uuid, sizeof(uuid));
+
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}/{u64}",
+	format(path, sizeof(path), "{s}/checkpoint/{u64}/{s}.{02d}",
 	       state_directory(), checkpoint,
-	       self->config->id);
+	       uuid,
+	       (int)self->config->id);
 
 	// read heap file
 	heap_open(self->heap, path);
@@ -116,27 +122,36 @@ part_open_heap(Part* self, uint64_t checkpoint)
 	usage_update(self->arg->memory, storage_size(&self->heap->storage));
 
 	auto total = (double)storage_size(&self->heap->storage) / 1024 / 1024;
-	info("recover: {u64}/{u64} ({.2f} MiB, {u64} rows)",
-	     checkpoint, self->config->id,
+	info("recover: {s}.{02d}    ({.2f} MB, {u64} rows)",
+	     uuid,
+	     (int)self->config->id,
 	     total, count);
 }
 
 static void
 part_open_flat(Part* self, Flat* flat, uint64_t checkpoint)
 {
+	// table id
+	auto rel = self->arg->rel;
+	char uuid[UUID_SZ];
+	uuid_get(rel->id, uuid, sizeof(uuid));
+
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}/{u64}.{d}",
+	format(path, sizeof(path), "{s}/checkpoint/{u64}/{s}.{02d}.{02d}",
 	       state_directory(), checkpoint,
-	       self->config->id,
-	       flat->column->order);
+	       uuid,
+	       (int)self->config->id,
+	       (int)flat->column->order);
 
 	// read flat file
 	flat_open(flat, path);
 	usage_update(self->arg->memory, storage_size(&flat->storage));
 
 	auto total = (double)storage_size(&flat->storage) / 1024 / 1024;
-	info("recover: {u64}/{u64}.{d} ({.2f} MiB)",
-	     checkpoint, self->config->id, flat->column->order,
+	info("recover: {s}.{02d}.{02d} ({.2f} MB)",
+	     uuid,
+	     (int)self->config->id,
+	     (int)flat->column->order,
 	     total);
 }
 

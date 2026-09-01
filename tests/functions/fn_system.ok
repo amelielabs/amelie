@@ -115,7 +115,6 @@ show
   "frontends": 1,
   "backends": 1,
   "lsn": 1,
-  "psn": 0,
   "checkpoint": 1
 }
 # test: replicas
@@ -245,17 +244,11 @@ select show('partitions', '', 'test', false);
 show
 ────
 [{
-  "id": 1,
+  "id": 0,
   "min": 0,
   "max": 8096,
   "size": 0
 }]
-# test: partition
-select show('partition', '0', 'test', false);
-
-show
-────
-null
 # test: functions
 select show('functions');
 
