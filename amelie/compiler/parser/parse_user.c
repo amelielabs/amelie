@@ -170,6 +170,34 @@ parse_user_create(Stmt* self, bool agent)
 			continue;
 		}
 
+		// CREATED string
+		if (str_is_case(&name->string, "created", 7))
+		{
+			auto value = stmt_expect(self, KSTRING);
+
+			// validate timestamp
+			Timestamp ts;
+			timestamp_init(&ts);
+			if (unlikely(error_catch( timestamp_set(&ts, &value->string) )))
+				stmt_error(self, value, "invalid timestamp value");
+			user_config_set_created_at(stmt->config, &value->string);
+			continue;
+		}
+
+		// REVOKED string
+		if (str_is_case(&name->string, "revoked", 7))
+		{
+			auto value = stmt_expect(self, KSTRING);
+
+			// validate timestamp
+			Timestamp ts;
+			timestamp_init(&ts);
+			if (unlikely(error_catch( timestamp_set(&ts, &value->string) )))
+				stmt_error(self, value, "invalid timestamp value");
+			user_config_set_revoked_at(stmt->config, &value->string);
+			continue;
+		}
+
 		stmt_error(self, name, "unrecognized option");
 	}
 }

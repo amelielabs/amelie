@@ -103,6 +103,16 @@ parse_clone_create(Stmt* self)
 			continue;
 		}
 
+		// TIMELINE int
+		if (str_is_case(&name->string, "timeline", 8))
+		{
+			auto value = stmt_expect(self, KINT);
+			if (value->integer <= 0)
+				stmt_error(self, value, "invalid timeline");
+			timeline_set_timeline(timeline, value->integer);
+			continue;
+		}
+
 		stmt_error(self, name, "unrecognized option");
 	}
 }

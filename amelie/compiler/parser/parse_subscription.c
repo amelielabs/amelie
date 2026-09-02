@@ -78,6 +78,16 @@ parse_sub_create(Stmt* self)
 			continue;
 		}
 
+		// LSN int
+		if (str_is_case(&name->string, "lsn", 3))
+		{
+			auto value = stmt_expect(self, KINT);
+			if (value->integer <= (int64_t)state_lsn())
+				stmt_error(self, value, "invalid lsn");
+			sub_config_set_pos(config, value->integer);
+			continue;
+		}
+
 		stmt_error(self, name, "unrecognized option");
 	}
 }

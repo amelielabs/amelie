@@ -449,8 +449,6 @@ parse_table_create(Stmt* self)
 	// (columns)
 	parse_columns(self, &config->columns, &config_index->keys);
 
-	// ID | PARTITIONS | DESCRIPTION
-
 	// set table options
 	auto partitions = opt_int_of(&config()->backends);
 	for (;;)
@@ -487,7 +485,17 @@ parse_table_create(Stmt* self)
 		if (str_is_case(&name->string, "description", 11))
 		{
 			auto text = stmt_expect(self, KSTRING);
-			table_config_set_description(stmt->config, &text->string);
+			table_config_set_description(config, &text->string);
+			continue;
+		}
+
+		// TIMELINE int
+		if (str_is_case(&name->string, "timeline", 8))
+		{
+			auto value = stmt_expect(self, KINT);
+			if (value->integer <= 0)
+				stmt_error(self, value, "invalid timeline");
+			table_config_set_timeline(config, value->integer);
 			continue;
 		}
 
