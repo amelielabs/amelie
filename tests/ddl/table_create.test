@@ -328,12 +328,12 @@ select show('table', 'test', true).partitions;
 show partitions on test;
 drop table test;
 
-# test: with
-create table test (id int primary key) partitions 3 with;
-create table test (id int primary key) partitions 3 with (;
-create table test (id int primary key) partitions 3 with ();
-
+# test: id
 create table test (id int primary key) partitions 3 with (id "00000000-0000-0000-0000-000000000001");
+create table test (id int primary key) partitions 3 id;
+create table test (id int primary key)
+	partitions 3
+	id "00000000-0000-0000-0000-000000000001";
 select show('table', 'test', true).id;
 drop table test;
 

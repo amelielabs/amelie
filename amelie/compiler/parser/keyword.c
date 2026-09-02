@@ -145,8 +145,6 @@ Keyword keywords[] =
 	// p
 	{ KPUBLISH,               "publish",               7  },
 	{ KPROFILE,               "profile",               7  },
-	{ KPARTITIONS,            "partitions",            10 },
-	{ KPARTITION,             "partition",             9  },
 	{ KPOOL,                  "pool",                  4  },
 	{ KPRIMARY,               "primary",               7  },
 	{ KPAUSE,                 "pause",                 5  },

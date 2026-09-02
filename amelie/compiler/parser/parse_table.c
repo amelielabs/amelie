@@ -350,50 +350,9 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 }
 
 static void
-parse_table_create_with(Stmt* self)
+parse_table_partitions(Stmt* self, TableConfig* table_config, int partitions)
 {
-	auto stmt = ast_table_create_of(self->ast);
-	auto config = stmt->config;
-
-	// (
-	stmt_expect(self, '(');
-
-	for (;;)
-	{
-		// name value
-		auto name = stmt_expect(self, KNAME);
-
-		if (str_is(&name->string, "id", 2))
-		{
-			auto value = stmt_expect(self, KSTRING);
-			Uuid id;
-			uuid_init(&id);
-			if (uuid_set_nothrow(&id, &value->string) == -1)
-				stmt_error(self, value, "failed to parse uuid");
-			table_config_set_id(config, &id);
-		} else {
-			stmt_error(self, name, "unknown option");
-		}
-
-		// )
-		if (stmt_if(self, ')'))
-			break;
-
-		// ,
-		stmt_expect(self, ',');
-	}
-}
-
-static void
-parse_table_partitions(Stmt* self, TableConfig* table_config)
-{
-	// [PARTITIONS]
-	int partitions = opt_int_of(&config()->backends);
-	if (stmt_if(self, KPARTITIONS))
-	{
-		auto n = stmt_expect(self, KINT);
-		partitions = n->integer;
-	}
+	// validate partitions
 	if (partitions < 1 || partitions >= PART_MAPPING_MAX)
 		stmt_error(self, NULL, "table has invalid hash partitions number");
 
@@ -475,24 +434,56 @@ parse_table_create(Stmt* self)
 	// (columns)
 	parse_columns(self, &config->columns, &config_index->keys);
 
-	// configure partitions mapping
+	// ID | PARTITIONS | DESCRIPTION
 
-	// [PARTITIONS]
-	parse_table_partitions(self, config);
+	// set table options
+	auto partitions = opt_int_of(&config()->backends);
+	for (;;)
+	{
+		// name value
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+		{
+			stmt_push(self, name);
+			break;
+		}
+
+		// ID string
+		if (str_is_case(&name->string, "id", 2))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			Uuid id;
+			uuid_init(&id);
+			if (uuid_set_nothrow(&id, &value->string) == -1)
+				stmt_error(self, value, "failed to parse uuid");
+			table_config_set_id(config, &id);
+			continue;
+		}
+
+		// PARTITIONS int
+		if (str_is_case(&name->string, "partitions", 10))
+		{
+			auto n = stmt_expect(self, KINT);
+			partitions = n->integer;
+			continue;
+		}
+
+		// DESCRIPTION string
+		if (str_is_case(&name->string, "description", 11))
+		{
+			auto text = stmt_expect(self, KSTRING);
+			table_config_set_description(stmt->config, &text->string);
+			continue;
+		}
+
+		stmt_error(self, name, "unrecognized option");
+	}
+
+	// configure partitions mapping
+	parse_table_partitions(self, config, partitions);
 
 	// configure index size according to the table partitions
 	parse_index_size(self, config_index, config->parts_count);
-
-	// [WITH]
-	if (stmt_if(self, KWITH))
-		parse_table_create_with(self);
-
-	// [DESCRIPTION]
-	if (stmt_if(self, KDESCRIPTION))
-	{
-		auto text = stmt_expect(self, KSTRING);
-		table_config_set_description(stmt->config, &text->string);
-	}
 }
 
 void

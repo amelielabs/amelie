@@ -1091,14 +1091,14 @@ partitions
   "size": 0
 }
 drop table test;
-# test: with
-create table test (id int primary key) partitions 3 with;
-error: create table test (id int primary key) partitions 3 with❰;❱ ⟵ ( expected
-create table test (id int primary key) partitions 3 with (;
-error: create table test (id int primary key) partitions 3 with (❰;❱ ⟵ name expected
-create table test (id int primary key) partitions 3 with ();
-error: create table test (id int primary key) partitions 3 with (❰)❱ ⟵ name expected
+# test: id
 create table test (id int primary key) partitions 3 with (id "00000000-0000-0000-0000-000000000001");
+error: create table test (id int primary key) partitions 3 ❰with❱ ⟵ unrecognized option
+create table test (id int primary key) partitions 3 id;
+error: create table test (id int primary key) partitions 3 id❰;❱ ⟵ string expected
+create table test (id int primary key)
+	partitions 3
+	id "00000000-0000-0000-0000-000000000001";
 select show('table', 'test', true).id;
 
 id
