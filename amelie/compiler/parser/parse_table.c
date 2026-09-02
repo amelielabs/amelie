@@ -63,6 +63,10 @@ parse_key(Stmt* self, Keys* keys, bool with_partitioning)
 		if (stmt_if(self, KDESC))
 			asc = false;
 
+		// dropped support
+		if (column->dropped)
+			stmt_error(self, name, "column marked as dropped");
+
 		// ensure key is not redefined
 		auto key = keys_find_column(keys, column->order);
 		if (key)
@@ -244,12 +248,23 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			break;
 		}
 
+		// mark column as dropped (recovery support)
+		case KDROP:
+		{
+			column->dropped = true;
+			break;
+		}
+
 		default:
 			stmt_push(self, name);
 			done = true;
 			break;
 		}
 	}
+
+	// dropped column
+	if (column->dropped && column->refs > 0)
+		stmt_error(self, NULL, "dropped column cannot be a key");
 
 	// do not allow identity columns and default values together
 	if (cons->identity && !buf_empty(&cons->value))
