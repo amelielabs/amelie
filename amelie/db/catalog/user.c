@@ -82,7 +82,7 @@ user_create(Catalog*    self,
 	//
 	// (skip user check on bootstrap)
 	if (tr->user)
-		check_user(tr, PERM_CREATE_USER);
+		catalog_check(self, tr, PERM_CREATE_USER, &config->parent);
 
 	// make sure user does not exists
 	auto user = catalog_find_user(self, &config->name, false);

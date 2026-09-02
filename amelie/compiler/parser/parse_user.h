@@ -27,7 +27,7 @@ struct AstUserDrop
 	Ast  ast;
 	bool if_exists;
 	bool cascade;
-	Ast* name;
+	Str  name;
 };
 
 enum
@@ -44,8 +44,8 @@ struct AstUserAlter
 	Ast      ast;
 	bool     if_exists;
 	int      type;
-	Ast*     name;
-	Ast*     name_new;
+	Str      name;
+	Str      name_new;
 	Str      revoked_at;
 	Str      description;
 	Limits   limits;

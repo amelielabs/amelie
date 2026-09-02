@@ -82,10 +82,13 @@ parse_user_create(Stmt* self, bool agent)
 	// create user config
 	stmt->config = user_config_allocate();
 
-	// name
-	auto name = stmt_expect(self, KNAME);
-	user_config_set_name(stmt->config, &name->string);
-	user_config_set_parent(stmt->config, self->parser->user);
+	// [user.]name
+	Str user;
+	Str name;
+	parse_target(self, &user, &name);
+
+	user_config_set_parent(stmt->config, &user);
+	user_config_set_name(stmt->config, &name);
 	user_config_set_agent(stmt->config, agent);
 
 	// [DESCRIPTION]
@@ -121,9 +124,10 @@ parse_user_create(Stmt* self, bool agent)
 	     PERM_CREATE_SUBSCRIPTION |
 	     PERM_SQL                 |
 	     PERM_API;
-	Str user;
-	str_set_cstr(&user, "self");
-	grants_add(&stmt->config->grants, &user, perms_all);
+
+	Str user_self;
+	str_set_cstr(&user_self, "self");
+	grants_add(&stmt->config->grants, &user_self, perms_all);
 
 	// [LIMIT]
 	auto limit = stmt_if(self, KLIMIT);
@@ -142,7 +146,8 @@ parse_user_drop(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	stmt->name = stmt_expect(self, KNAME);
+	auto name = stmt_expect(self, KNAME);
+	stmt->name = name->string;
 
 	// [CASCADE]
 	if (stmt_if(self, KCASCADE))
@@ -164,7 +169,8 @@ parse_user_alter(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	stmt->name = stmt_expect(self, KNAME);
+	auto name = stmt_expect(self, KNAME);
+	stmt->name = name->string;
 
 	// RENAME | REVOKE | DESCRIPTION | SET | UNSET
 	if (stmt_if(self, KRENAME))
@@ -176,7 +182,8 @@ parse_user_alter(Stmt* self)
 		stmt_expect(self, KTO);
 
 		// name
-		stmt->name_new = stmt_expect(self, KNAME);
+		name = stmt_expect(self, KNAME);
+		stmt->name_new = name->string;
 	} else
 	if (stmt_if(self, KREVOKE))
 	{

@@ -113,7 +113,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_USER:
 	{
 		auto arg = ast_user_drop_of(stmt->ast);
-		offset = user_op_drop(data, &arg->name->string, arg->cascade);
+		offset = user_op_drop(data, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -121,19 +121,19 @@ emit_ddl(Compiler* self)
 	{
 		auto arg = ast_user_alter_of(stmt->ast);
 		if (arg->type == USER_ALTER_RENAME)
-			offset = user_op_rename(data, &arg->name->string, &arg->name_new->string);
+			offset = user_op_rename(data, &arg->name, &arg->name_new);
 		else
 		if (arg->type == USER_ALTER_REVOKE_TOKEN)
-			offset = user_op_revoke_token(data, &arg->name->string, &arg->revoked_at);
+			offset = user_op_revoke_token(data, &arg->name, &arg->revoked_at);
 		else
 		if (arg->type == USER_ALTER_DESCRIPTION)
-			offset = user_op_describe(data, &arg->name->string, &arg->description);
+			offset = user_op_describe(data, &arg->name, &arg->description);
 		else
 		if (arg->type == USER_ALTER_LIMIT_SET)
-			offset = user_op_limit_set(data, &arg->name->string, &arg->limits);
+			offset = user_op_limit_set(data, &arg->name, &arg->limits);
 		else
 		if (arg->type == USER_ALTER_LIMIT_UNSET)
-			offset = user_op_limit_unset(data, &arg->name->string, arg->limits_mask);
+			offset = user_op_limit_unset(data, &arg->name, arg->limits_mask);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

@@ -20,9 +20,9 @@ amelie
 create;
 error: create❰;❱ ⟵ relation type expected
 create user;
-error: create user❰;❱ ⟵ name expected
+error: create user❰;❱ ⟵ target name expected
 create user 123;
-error: create user ❰123❱ ⟵ name expected
+error: create user ❰123❱ ⟵ target name expected
 create user if;
 error: create user if❰;❱ ⟵ NOT expected
 create user if not;
@@ -30,7 +30,7 @@ error: create user if not❰;❱ ⟵ EXISTS expected
 create user if not 123;
 error: create user if not ❰123❱ ⟵ EXISTS expected
 create user if not exists;
-error: create user if not exists❰;❱ ⟵ name expected
+error: create user if not exists❰;❱ ⟵ target name expected
 create user test abc;
 error: create user test ❰abc❱ ⟵ ; expected
 # test: create user
