@@ -51,11 +51,12 @@ struct Limits
 	int64_t  limits[LIMIT_MAX];
 };
 
-void limits_init(Limits*);
-void limits_copy(Limits*, Limits*);
-int  limits_find(Str*);
-void limits_read(Limits*, uint8_t**);
-void limits_write(Limits*, Buf*);
+void  limits_init(Limits*);
+void  limits_copy(Limits*, Limits*);
+int   limits_find(Str*);
+char* limits_of(int);
+void  limits_read(Limits*, uint8_t**);
+void  limits_write(Limits*, Buf*);
 
 static inline bool
 limits_is_set(Limits* self, int id)

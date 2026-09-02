@@ -62,5 +62,8 @@
 // cascade operations
 #include "catalog/cascade.h"
 
+// describe
+#include "catalog/describe.h"
+
 // mcp
 #include "catalog/catalog_mcp.h"

@@ -71,6 +71,13 @@ limits_copy(Limits* self, Limits* from)
 	memcpy(self, from, sizeof(*self));
 }
 
+char*
+limits_of(int id)
+{
+	assert(id < LIMIT_MAX);
+	return limits_names[id].name;
+}
+
 int
 limits_find(Str* self)
 {
