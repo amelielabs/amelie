@@ -21,7 +21,7 @@ void
 parse_sub_create(Stmt* self)
 {
 	// CREATE SUBSCRIPTION [IF NOT EXISTS] name ON [USER] [user.]relation
-	// [DESCRIPTION text]
+	// [DESCRIPTION]
 	auto stmt = ast_sub_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -59,12 +59,26 @@ parse_sub_create(Stmt* self)
 	sub_config_set_rel(config, &target);
 	sub_config_set_pos(config, state_lsn() + 1);
 
-	// [DESCRIPTION]
-	auto description = stmt_if(self, KDESCRIPTION);
-	if (description)
+	// set options
+	for (;;)
 	{
-		auto text = stmt_expect(self, KSTRING);
-		sub_config_set_description(stmt->config, &text->string);
+		// name value
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+		{
+			stmt_push(self, name);
+			break;
+		}
+
+		// DESCRIPTION string
+		if (str_is_case(&name->string, "description", 11))
+		{
+			auto text = stmt_expect(self, KSTRING);
+			sub_config_set_description(stmt->config, &text->string);
+			continue;
+		}
+
+		stmt_error(self, name, "unrecognized option");
 	}
 }
 

@@ -72,7 +72,10 @@ parse_user_limits_mask(Stmt* self)
 void
 parse_user_create(Stmt* self, bool agent)
 {
-	// CREATE USER|AGENT [IF NOT EXISTS] name [DESCRIPTION text]
+	// CREATE USER|AGENT [IF NOT EXISTS] name
+	// [ID]
+	// [DESCRIPTION]
+	// [LIMIT]
 	auto stmt = ast_user_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -129,10 +132,46 @@ parse_user_create(Stmt* self, bool agent)
 	str_set_cstr(&user_self, "self");
 	grants_add(&stmt->config->grants, &user_self, perms_all);
 
-	// [LIMIT]
-	auto limit = stmt_if(self, KLIMIT);
-	if (limit)
-		parse_user_limits(self, &stmt->config->limits);
+	// set options
+	for (;;)
+	{
+		// name value
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+		{
+			stmt_push(self, name);
+			break;
+		}
+
+		// ID string
+		if (str_is_case(&name->string, "id", 2))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			Uuid id;
+			uuid_init(&id);
+			if (uuid_set_nothrow(&id, &value->string) == -1)
+				stmt_error(self, value, "failed to parse uuid");
+			user_config_set_id(stmt->config, &id);
+			continue;
+		}
+
+		// DESCRIPTION string
+		if (str_is_case(&name->string, "description", 11))
+		{
+			auto text = stmt_expect(self, KSTRING);
+			user_config_set_description(stmt->config, &text->string);
+			continue;
+		}
+
+		// LIMIT name = value, ...
+		if (str_is_case(&name->string, "limit", 5))
+		{
+			parse_user_limits(self, &stmt->config->limits);
+			continue;
+		}
+
+		stmt_error(self, name, "unrecognized option");
+	}
 }
 
 void

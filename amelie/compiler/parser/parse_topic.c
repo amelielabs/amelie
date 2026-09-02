@@ -20,7 +20,9 @@
 void
 parse_topic_create(Stmt* self)
 {
-	// CREATE TOPIC [IF NOT EXISTS] name [DESCRIPTION text]
+	// CREATE TOPIC [IF NOT EXISTS] name
+	// [ID]
+	// [DESCRIPTION]
 	auto stmt = ast_topic_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -44,12 +46,38 @@ parse_topic_create(Stmt* self)
 	uuid_generate(&id, &local->random, local->time_ms);
 	topic_config_set_id(config, &id);
 
-	// [DESCRIPTION]
-	auto description = stmt_if(self, KDESCRIPTION);
-	if (description)
+	// set options
+	for (;;)
 	{
-		auto text = stmt_expect(self, KSTRING);
-		topic_config_set_description(stmt->config, &text->string);
+		// name value
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+		{
+			stmt_push(self, name);
+			break;
+		}
+
+		// ID string
+		if (str_is_case(&name->string, "id", 2))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			Uuid id;
+			uuid_init(&id);
+			if (uuid_set_nothrow(&id, &value->string) == -1)
+				stmt_error(self, value, "failed to parse uuid");
+			topic_config_set_id(config, &id);
+			continue;
+		}
+
+		// DESCRIPTION string
+		if (str_is_case(&name->string, "description", 11))
+		{
+			auto text = stmt_expect(self, KSTRING);
+			topic_config_set_description(stmt->config, &text->string);
+			continue;
+		}
+
+		stmt_error(self, name, "unrecognized option");
 	}
 }
 

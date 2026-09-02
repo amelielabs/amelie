@@ -21,7 +21,8 @@ void
 parse_clone_create(Stmt* self)
 {
 	// CREATE CLONE [IF NOT EXISTS] name OF relation
-	// [DESCRIPTION text]
+	// [ID]
+	// [DESCRIPTION]
 	auto stmt = ast_clone_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -71,12 +72,38 @@ parse_clone_create(Stmt* self)
 	auto timeline = &config->timeline;
 	timeline_set_timeline(timeline, id);
 
-	// [DESCRIPTION]
-	auto description = stmt_if(self, KDESCRIPTION);
-	if (description)
+	// set options
+	for (;;)
 	{
-		auto text = stmt_expect(self, KSTRING);
-		clone_config_set_description(stmt->config, &text->string);
+		// name value
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+		{
+			stmt_push(self, name);
+			break;
+		}
+
+		// ID string
+		if (str_is_case(&name->string, "id", 2))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			Uuid id;
+			uuid_init(&id);
+			if (uuid_set_nothrow(&id, &value->string) == -1)
+				stmt_error(self, value, "failed to parse uuid");
+			clone_config_set_id(config, &id);
+			continue;
+		}
+
+		// DESCRIPTION string
+		if (str_is_case(&name->string, "description", 11))
+		{
+			auto text = stmt_expect(self, KSTRING);
+			clone_config_set_description(stmt->config, &text->string);
+			continue;
+		}
+
+		stmt_error(self, name, "unrecognized option");
 	}
 }
 

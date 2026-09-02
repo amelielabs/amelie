@@ -32,7 +32,7 @@ error: create user if not ❰123❱ ⟵ EXISTS expected
 create user if not exists;
 error: create user if not exists❰;❱ ⟵ target name expected
 create user test abc;
-error: create user test ❰abc❱ ⟵ ; expected
+error: create user test ❰abc❱ ⟵ unrecognized option
 # test: create user
 create user test;
 select show('user', 'test').name;

@@ -394,8 +394,8 @@ parse_table_create(Stmt* self)
 {
 	// CREATE TABLE [IF NOT EXISTS] name (key)
 	// [PARTITIONS]
-	// [WITH (options)]
-	// [DESCRIPTION value]
+	// [ID]
+	// [DESCRIPTION]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
