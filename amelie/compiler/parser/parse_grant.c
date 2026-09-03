@@ -63,3 +63,64 @@ parse_grant(Stmt* self, bool grant)
 	auto user = stmt_expect(self, KNAME);
 	stmt->to = user->string;
 }
+
+void
+parse_grant_to_inline(Stmt* self, Grants* grants)
+{
+	// GRANT perm, ... TO user
+
+	// permissions
+	uint32_t perms = 0;
+	for (;;)
+	{
+		// name
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+			stmt_error(self, name, "name expected");
+
+		uint32_t id = 0;
+		if (permission_of(&name->string, &id) == -1)
+			stmt_error(self, name, "unknown permission name");
+		perms |= id;
+
+		// ,
+		if (! stmt_if(self, ','))
+			break;
+	}
+
+	// TO
+	stmt_expect(self, KTO);
+
+	// user
+	auto user = stmt_expect(self, KNAME);
+	grants_add(grants, &user->string, perms);
+}
+
+void
+parse_grant_self_inline(Stmt* self, Grants* grants)
+{
+	// GRANT perm, ...
+
+	// permissions
+	uint32_t perms = 0;
+	for (;;)
+	{
+		// name
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+			stmt_error(self, name, "name expected");
+
+		uint32_t id = 0;
+		if (permission_of(&name->string, &id) == -1)
+			stmt_error(self, name, "unknown permission name");
+		perms |= id;
+
+		// ,
+		if (! stmt_if(self, ','))
+			break;
+	}
+
+	Str to;
+	str_set(&to, "self", 4);
+	grants_add(grants, &to, perms);
+}

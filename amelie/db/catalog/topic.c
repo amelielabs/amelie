@@ -77,6 +77,11 @@ topic_create(Catalog*     self,
 	// check limit
 	catalog_limit(self, tr, REL_TOPIC, LIMIT_TOPICS);
 
+	// validate grants
+	catalog_grant_validate(self, tr, REL_TOPIC,
+	                       &config->user,
+	                       &config->name, &config->grants);
+
 	// create topic
 	auto topic = topic_allocate(config);
 	rels_create(&self->rels, tr, &topic->rel);

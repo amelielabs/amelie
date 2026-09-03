@@ -411,6 +411,7 @@ parse_table_create(Stmt* self)
 	// [PARTITIONS]
 	// [ID]
 	// [DESCRIPTION]
+	// [GRANT]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -496,6 +497,13 @@ parse_table_create(Stmt* self)
 			if (value->integer <= 0)
 				stmt_error(self, value, "invalid timeline");
 			table_config_set_timeline(config, value->integer);
+			continue;
+		}
+
+		// GRANT name, ... TO user
+		if (str_is_case(&name->string, "grant", 5))
+		{
+			parse_grant_to_inline(self, &config->grants);
 			continue;
 		}
 

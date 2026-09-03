@@ -22,6 +22,8 @@ parse_sub_create(Stmt* self)
 {
 	// CREATE SUBSCRIPTION [IF NOT EXISTS] name ON [USER] [user.]relation
 	// [DESCRIPTION]
+	// [LSN]
+	// [GRANT]
 	auto stmt = ast_sub_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -85,6 +87,13 @@ parse_sub_create(Stmt* self)
 			if (value->integer <= (int64_t)state_lsn())
 				stmt_error(self, value, "invalid lsn");
 			sub_config_set_pos(config, value->integer);
+			continue;
+		}
+
+		// GRANT name, ... TO user
+		if (str_is_case(&name->string, "grant", 5))
+		{
+			parse_grant_to_inline(self, &config->grants);
 			continue;
 		}
 

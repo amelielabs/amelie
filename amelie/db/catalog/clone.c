@@ -105,6 +105,11 @@ clone_create(Catalog*     self,
 	// ensure permission to create clone
 	check_permission(tr, &table->rel, PERM_CREATE_CLONE);
 
+	// validate grants
+	catalog_grant_validate(self, tr, REL_CLONE,
+	                       &config->user,
+	                       &config->name, &config->grants);
+
 	// check limit
 	catalog_limit(self, tr, REL_CLONE, LIMIT_CLONES);
 

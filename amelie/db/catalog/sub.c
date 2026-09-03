@@ -90,6 +90,11 @@ sub_create(Catalog* self, Tr* tr, SubConfig* config, bool if_not_exists)
 	// check permission
 	check_permission(tr, on, PERM_CREATE_SUBSCRIPTION);
 
+	// validate grants
+	catalog_grant_validate(self, tr, REL_SUBSCRIPTION,
+	                       &config->user,
+	                       &config->name, &config->grants);
+
 	// check limit
 	catalog_limit(self, tr, REL_SUBSCRIPTION, LIMIT_SUBSCRIPTIONS);
 

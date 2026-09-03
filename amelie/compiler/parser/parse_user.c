@@ -83,23 +83,24 @@ parse_user_create(Stmt* self, bool agent)
 	stmt->if_not_exists = parse_if_not_exists(self);
 
 	// create user config
-	stmt->config = user_config_allocate();
+	auto config = user_config_allocate();
+	stmt->config = config;
 
 	// [user.]name
 	Str user;
 	Str name;
 	parse_target(self, &user, &name);
 
-	user_config_set_parent(stmt->config, &user);
-	user_config_set_name(stmt->config, &name);
-	user_config_set_agent(stmt->config, agent);
+	user_config_set_parent(config, &user);
+	user_config_set_name(config, &name);
+	user_config_set_agent(config, agent);
 
 	// [DESCRIPTION]
 	auto description = stmt_if(self, KDESCRIPTION);
 	if (description)
 	{
 		auto text = stmt_expect(self, KSTRING);
-		user_config_set_description(stmt->config, &text->string);
+		user_config_set_description(config, &text->string);
 	}
 
 	// id
@@ -107,7 +108,7 @@ parse_user_create(Stmt* self, bool agent)
 	uuid_init(&id);
 	auto local = self->parser->local;
 	uuid_generate(&id, &local->random, local->time_ms);
-	user_config_set_id(stmt->config, &id);
+	user_config_set_id(config, &id);
 
 	// set timestamp
 	char ts[64];
@@ -115,22 +116,7 @@ parse_user_create(Stmt* self, bool agent)
 	auto size = timestamp_get(time, runtime()->timezone, ts, sizeof(ts));
 	Str created_at;
 	str_set(&created_at, ts, size);
-	user_config_set_created_at(stmt->config, &created_at);
-
-	// set default grants
-	auto perms_all =
-	     PERM_GRANT               |
-	     PERM_CREATE_TABLE        |
-	     PERM_CREATE_CLONE        |
-	     PERM_CREATE_FUNCTION     |
-	     PERM_CREATE_TOPIC        |
-	     PERM_CREATE_SUBSCRIPTION |
-	     PERM_SQL                 |
-	     PERM_API;
-
-	Str user_self;
-	str_set_cstr(&user_self, "self");
-	grants_add(&stmt->config->grants, &user_self, perms_all);
+	user_config_set_created_at(config, &created_at);
 
 	// set options
 	for (;;)
@@ -151,7 +137,7 @@ parse_user_create(Stmt* self, bool agent)
 			uuid_init(&id);
 			if (uuid_set_nothrow(&id, &value->string) == -1)
 				stmt_error(self, value, "failed to parse uuid");
-			user_config_set_id(stmt->config, &id);
+			user_config_set_id(config, &id);
 			continue;
 		}
 
@@ -159,14 +145,14 @@ parse_user_create(Stmt* self, bool agent)
 		if (str_is_case(&name->string, "description", 11))
 		{
 			auto text = stmt_expect(self, KSTRING);
-			user_config_set_description(stmt->config, &text->string);
+			user_config_set_description(config, &text->string);
 			continue;
 		}
 
 		// LIMIT name = value, ...
 		if (str_is_case(&name->string, "limit", 5))
 		{
-			parse_user_limits(self, &stmt->config->limits);
+			parse_user_limits(self, &config->limits);
 			continue;
 		}
 
@@ -180,7 +166,7 @@ parse_user_create(Stmt* self, bool agent)
 			timestamp_init(&ts);
 			if (unlikely(error_catch( timestamp_set(&ts, &value->string) )))
 				stmt_error(self, value, "invalid timestamp value");
-			user_config_set_created_at(stmt->config, &value->string);
+			user_config_set_created_at(config, &value->string);
 			continue;
 		}
 
@@ -194,11 +180,35 @@ parse_user_create(Stmt* self, bool agent)
 			timestamp_init(&ts);
 			if (unlikely(error_catch( timestamp_set(&ts, &value->string) )))
 				stmt_error(self, value, "invalid timestamp value");
-			user_config_set_revoked_at(stmt->config, &value->string);
+			user_config_set_revoked_at(config, &value->string);
+			continue;
+		}
+
+		// GRANT name, ...
+		if (str_is_case(&name->string, "grant", 5))
+		{
+			parse_grant_self_inline(self, &config->grants);
 			continue;
 		}
 
 		stmt_error(self, name, "unrecognized option");
+	}
+
+	// set default grants (unless defined)
+	if (grants_empty(&config->grants))
+	{
+		auto perms_all =
+			PERM_GRANT               |
+			PERM_CREATE_TABLE        |
+			PERM_CREATE_CLONE        |
+			PERM_CREATE_FUNCTION     |
+			PERM_CREATE_TOPIC        |
+			PERM_CREATE_SUBSCRIPTION |
+			PERM_SQL                 |
+			PERM_API;
+		Str user_self;
+		str_set_cstr(&user_self, "self");
+		grants_add(&config->grants, &user_self, perms_all);
 	}
 }
 

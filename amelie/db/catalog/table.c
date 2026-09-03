@@ -100,6 +100,11 @@ table_create(Catalog*     self,
 	// check limit
 	catalog_limit(self, tr, REL_TABLE, LIMIT_TABLES);
 
+	// validate grants
+	catalog_grant_validate(self, tr, REL_TABLE,
+	                       &config->user,
+	                       &config->name, &config->grants);
+
 	// allocate table
 	auto user  = user_of(tr->user);
 	auto table = table_allocate(config, self->iface_part, self->iface_part_arg,

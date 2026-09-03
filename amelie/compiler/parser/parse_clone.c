@@ -23,6 +23,7 @@ parse_clone_create(Stmt* self)
 	// CREATE CLONE [IF NOT EXISTS] name OF relation
 	// [ID]
 	// [DESCRIPTION]
+	// [GRANT]
 	auto stmt = ast_clone_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -110,6 +111,13 @@ parse_clone_create(Stmt* self)
 			if (value->integer <= 0)
 				stmt_error(self, value, "invalid timeline");
 			timeline_set_timeline(timeline, value->integer);
+			continue;
+		}
+
+		// GRANT name, ... TO user
+		if (str_is_case(&name->string, "grant", 5))
+		{
+			parse_grant_to_inline(self, &config->grants);
 			continue;
 		}
 

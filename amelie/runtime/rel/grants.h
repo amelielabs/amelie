@@ -44,6 +44,12 @@ grants_reset(Grants* self)
 	buf_reset(&self->list);
 }
 
+static inline bool
+grants_empty(Grants* self)
+{
+	return buf_empty(&self->list);
+}
+
 always_inline static inline Grant*
 grants_first(Grants* self)
 {

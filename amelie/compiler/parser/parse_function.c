@@ -66,6 +66,8 @@ parse_function_create(Stmt* self, bool or_replace)
 	// BEGIN
 	//   block
 	// END
+	// [DESCRIPTION]
+	// [GRANT]
 	auto stmt = ast_function_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -160,6 +162,35 @@ parse_function_create(Stmt* self, bool or_replace)
 	        end->pos_end - begin->pos_start);
 	str_shrink(&text);
 	udf_config_set_text(stmt->config, &text);
+
+	// set options
+	for (;;)
+	{
+		// name value
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+		{
+			stmt_push(self, name);
+			break;
+		}
+
+		// DESCRIPTION string
+		if (str_is_case(&name->string, "description", 11))
+		{
+			auto text = stmt_expect(self, KSTRING);
+			udf_config_set_description(stmt->config, &text->string);
+			continue;
+		}
+
+		// GRANT name, ... TO user
+		if (str_is_case(&name->string, "grant", 5))
+		{
+			parse_grant_to_inline(self, &stmt->config->grants);
+			continue;
+		}
+
+		stmt_error(self, name, "unrecognized option");
+	}
 }
 
 void

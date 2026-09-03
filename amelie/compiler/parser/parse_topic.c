@@ -23,6 +23,7 @@ parse_topic_create(Stmt* self)
 	// CREATE TOPIC [IF NOT EXISTS] name
 	// [ID]
 	// [DESCRIPTION]
+	// [GRANT]
 	auto stmt = ast_topic_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -74,6 +75,13 @@ parse_topic_create(Stmt* self)
 		{
 			auto text = stmt_expect(self, KSTRING);
 			topic_config_set_description(stmt->config, &text->string);
+			continue;
+		}
+
+		// GRANT name, ... TO user
+		if (str_is_case(&name->string, "grant", 5))
+		{
+			parse_grant_to_inline(self, &config->grants);
 			continue;
 		}
 

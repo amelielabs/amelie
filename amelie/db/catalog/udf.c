@@ -189,6 +189,11 @@ udf_create(Catalog*   self,
 	if (rel)
 		error("relation '{str}': already exists", &config->name);
 
+	// validate grants
+	catalog_grant_validate(self, tr, REL_UDF,
+	                       &config->user,
+	                       &config->name, &config->grants);
+
 	// check limit
 	catalog_limit(self, tr, REL_UDF, LIMIT_FUNCTIONS);
 

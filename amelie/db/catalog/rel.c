@@ -205,6 +205,55 @@ catalog_grant_of(Catalog* self,
 		grants_remove(grants, to, perms);
 }
 
+uint32_t
+catalog_grant_mask(RelType type)
+{
+	uint32_t perms_all = 0;
+	switch (type) {
+	case REL_TABLE:
+		perms_all =
+			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
+			PERM_DELETE | PERM_CREATE_CLONE;
+		break;
+	case REL_CLONE:
+		perms_all =
+			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
+			PERM_DELETE | PERM_CREATE_CLONE;
+		break;
+	case REL_UDF:
+		perms_all =
+			PERM_EXECUTE;
+		break;
+	case REL_TOPIC:
+		perms_all =
+			PERM_PUBLISH;
+		break;
+	case REL_SUBSCRIPTION:
+		perms_all =
+			PERM_NONE;
+		break;
+	case REL_USER:
+		perms_all =
+			PERM_GRANT               |
+			PERM_SYSTEM              |
+			PERM_CREATE_USER         |
+			PERM_CREATE_TOKEN        |
+			PERM_CREATE_TABLE        |
+			PERM_CREATE_CLONE        |
+			PERM_CREATE_FUNCTION     |
+			PERM_CREATE_TOPIC        |
+			PERM_CREATE_SUBSCRIPTION |
+			PERM_API                 |
+			PERM_SQL                 |
+			PERM_SERVICE;
+		break;
+	default:
+		abort();
+		break;
+	}
+	return perms_all;
+}
+
 bool
 catalog_grant(Catalog* self,
               Tr*      tr,
@@ -219,13 +268,7 @@ catalog_grant(Catalog* self,
 
 	// user grants
 	if (str_empty(name))
-	{
-		// PERM_SYSTEM for system wide grants
-		if (((perms & PERM_SYSTEM) > 0) ||
-			((perms & PERM_CREATE_USER) > 0))
-			check_user(tr, PERM_SYSTEM);
 		return user_grant(self, tr, to, grant, perms, 0);
-	}
 
 	// find relation
 	auto rel = catalog_find(self, REL_UNDEF, user, name, true);
@@ -237,36 +280,46 @@ catalog_grant(Catalog* self,
 	catalog_find_user(self, to, true);
 
 	// validate permissions
-	uint32_t perms_all = 0;
-	switch (rel->type) {
-	case REL_TABLE:
-		perms_all =
-			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-			PERM_DELETE | PERM_CREATE_CLONE;
-		break;
-	case REL_CLONE:
-		perms_all =
-			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-			PERM_DELETE | PERM_CREATE_CLONE;
-		break;
-	case REL_UDF:
-		perms_all = PERM_EXECUTE;
-		break;
-	case REL_TOPIC:
-		perms_all = PERM_PUBLISH;
-		break;
-	case REL_SUBSCRIPTION:
-		perms_all = PERM_NONE;
-		break;
-	default:
-		abort();
-		break;
-	}
+	auto perms_all = catalog_grant_mask(rel->type);
 	perms = permission_validate(user, name, perms, perms_all);
 
 	// grant/revoke
 	catalog_grant_of(self, tr, rel, to, grant, perms);
 	return true;
+}
+
+void
+catalog_grant_validate(Catalog* self, Tr* tr, RelType type,
+                       Str*     user,
+                       Str*     name,
+                       Grants*  grants)
+{
+	// validate permissions
+	auto perms_all = catalog_grant_mask(type);
+	auto grant = grants_first(grants);
+	while (grant)
+	{
+		// ensure user exists
+		Str to;
+		str_set(&to, (char*)grant->name, grant->name_size);
+		if (type != REL_USER)
+		{
+			catalog_find_user(self, &to, true);
+		} else {
+			// user permissions are using 'self' as a user name
+		}
+
+		// validate and handle ALL
+		auto perms = permission_validate(user, name, grant->permissions, perms_all);
+
+		// PERM_SYSTEM for system wide grants
+		if (((perms & PERM_SYSTEM) > 0) ||
+		    ((perms & PERM_CREATE_USER) > 0))
+			check_user(tr, PERM_SYSTEM);
+
+		grant->permissions = perms;
+		grant = grants_next(grants, grant);
+	}
 }
 
 void

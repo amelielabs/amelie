@@ -96,6 +96,11 @@ user_create(Catalog*    self,
 	// check limit
 	catalog_limit(self, tr, REL_USER, LIMIT_USERS);
 
+	// validate grants
+	if (! config->superuser)
+		catalog_grant_validate(self, tr, REL_USER, &config->name, NULL,
+		                       &config->grants);
+
 	// create user
 	user = user_allocate(config);
 	rels_create(&self->users, tr, &user->rel);
@@ -334,20 +339,13 @@ user_grant(Catalog* self,
 		error("user '{str}': system user cannot change grants", name);
 
 	// validate permissions
-	auto perms_all =
-	     PERM_GRANT               |
-	     PERM_SYSTEM              |
-	     PERM_CREATE_USER         |
-	     PERM_CREATE_TOKEN        |
-	     PERM_CREATE_TABLE        |
-	     PERM_CREATE_CLONE        |
-	     PERM_CREATE_FUNCTION     |
-	     PERM_CREATE_TOPIC        |
-	     PERM_CREATE_SUBSCRIPTION |
-	     PERM_API                 |
-	     PERM_SQL                 |
-	     PERM_SERVICE;
+	auto perms_all = catalog_grant_mask(REL_USER);
 	perms = permission_validate(NULL, name, perms, perms_all);
+
+	// PERM_SYSTEM for system wide grants
+	if (((perms & PERM_SYSTEM) > 0) ||
+	    ((perms & PERM_CREATE_USER) > 0))
+		check_user(tr, PERM_SYSTEM);
 
 	// update user
 	log_ddl(&tr->log, &grant_if, NULL, &user->rel);

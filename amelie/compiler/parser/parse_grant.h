@@ -37,3 +37,5 @@ ast_grant_allocate(void)
 }
 
 void parse_grant(Stmt*, bool);
+void parse_grant_to_inline(Stmt*, Grants*);
+void parse_grant_self_inline(Stmt*, Grants*);
