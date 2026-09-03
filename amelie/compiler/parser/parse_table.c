@@ -408,10 +408,12 @@ void
 parse_table_create(Stmt* self)
 {
 	// CREATE TABLE [IF NOT EXISTS] name (key)
-	// [PARTITIONS]
 	// [ID]
 	// [DESCRIPTION]
 	// [GRANT]
+	// [TIMELINE]
+	// [PARTITIONS]
+	// [INDEX]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -436,21 +438,22 @@ parse_table_create(Stmt* self)
 	table_config_set_id(config, &id);
 
 	// create primary index config
-	auto config_index = index_config_allocate(&config->columns);
-	stmt->config_index = config_index;
-	table_config_index_add(config, config_index);
+	auto primary = index_config_allocate(&config->columns);
+	stmt->config_index = primary;
+	table_config_index_add(config, primary);
 
 	Str index_name;
 	str_set_cstr(&index_name, "primary");
-	index_config_set_name(config_index, &index_name);
-	index_config_set_type(config_index, INDEX_TREE);
-	index_config_set_unique(config_index, true);
-	index_config_set_primary(config_index, true);
+	index_config_set_name(primary, &index_name);
+	index_config_set_type(primary, INDEX_TREE);
+	index_config_set_unique(primary, true);
+	index_config_set_primary(primary, true);
 
 	// (columns)
-	parse_columns(self, &config->columns, &config_index->keys);
+	parse_columns(self, &config->columns, &primary->keys);
 
 	// set table options
+	auto index_defined = false;
 	auto partitions = opt_int_of(&config()->backends);
 	for (;;)
 	{
@@ -479,6 +482,8 @@ parse_table_create(Stmt* self)
 		{
 			auto n = stmt_expect(self, KINT);
 			partitions = n->integer;
+			if (index_defined)
+				stmt_error(self, n, "partitions must be defined before indexes");
 			continue;
 		}
 
@@ -507,6 +512,40 @@ parse_table_create(Stmt* self)
 			continue;
 		}
 
+		// INDEX name ...
+		if (str_is_case(&name->string, "index", 5))
+		{
+			auto index_name = stmt_expect(self, KNAME);
+			if (table_config_find(config, &index_name->string))
+				stmt_error(self, index_name, "index redefined");
+
+			// create secondary index
+			auto secondary = index_config_allocate(&config->columns);
+			table_config_index_add(config, secondary);
+			index_config_set_name(secondary, &index_name->string);
+			parse_index_create_inline(self, primary, secondary, partitions);
+			index_defined = true;
+			continue;
+		}
+
+		// UNIQUE INDEX name ...
+		if (str_is_case(&name->string, "unique", 6))
+		{
+			stmt_expect(self, KINDEX);
+			auto index_name = stmt_expect(self, KNAME);
+			if (table_config_find(config, &index_name->string))
+				stmt_error(self, index_name, "index redefined");
+
+			// create secondary index
+			auto secondary = index_config_allocate(&config->columns);
+			table_config_index_add(config, secondary);
+			index_config_set_name(secondary, &index_name->string);
+			index_config_set_unique(secondary, true);
+			parse_index_create_inline(self, primary, secondary, partitions);
+			index_defined = true;
+			continue;
+		}
+
 		stmt_error(self, name, "unrecognized option");
 	}
 
@@ -514,7 +553,7 @@ parse_table_create(Stmt* self)
 	parse_table_partitions(self, config, partitions);
 
 	// configure index size according to the table partitions
-	parse_index_size(self, config_index, config->parts_count);
+	parse_index_size(self, primary, config->parts_count);
 }
 
 void

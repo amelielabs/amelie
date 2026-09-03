@@ -118,66 +118,85 @@ parse_index_create(Stmt* self, bool unique)
 	// create index config
 	auto config = index_config_allocate(table_columns(table));
 	stmt->config = config;
-	index_config_set_name(config, &name->string);
 	index_config_set_unique(config, unique);
+	index_config_set_name(config, &name->string);
+
+	// parse index keys
+	auto primary = table_primary(table);
+	parse_index_create_inline(self, primary, config, table->config->parts_count);
+}
+
+void
+parse_index_create_inline(Stmt*        self,
+                          IndexConfig* primary,
+                          IndexConfig* config,
+                          int          partitions)
+{
+	// create index config
 	index_config_set_primary(config, false);
 	index_config_set_type(config, INDEX_TREE);
 
 	// (keys)
 	parse_key(self, &config->keys, false);
 
-	auto primary = table_primary(table);
 	if (config->unique)
 	{
-		if (table->parts.list_count == 1)
+		if (partitions == 1)
 		{
 			// any keys allowed
 		} else
 		{
 			// ensure all partitioning keys are explicitly made part of the
 			// secondary index key
-			auto primary = table_primary(table);
-			for (auto at = 0; at < config->keys.count; at++)
+			for (auto at = 0; at < primary->keys.count; at++)
 			{
-				auto key   = keys_at(&config->keys, at);
+				auto key = keys_at(&primary->keys, at);
+				if (! key->partitioning)
+					continue;
+
 				auto match = false;
-				for (auto at = 0; at < primary->keys.count; at++)
+				for (auto at = 0; at < config->keys.count; at++)
 				{
-					auto ref = keys_at(&primary->keys, at);
-					if (ref->partitioning && ref->column == key->column)
+					auto ref = keys_at(&config->keys, at);
+					if (ref->column == key->column)
 					{
 						match = true;
 						break;
 					}
 				}
 				if (! match)
-					stmt_error(self, target, "secondary UNIQUE INDEX must include partitioning keys");
+					stmt_error(self, NULL, "secondary UNIQUE INDEX must include partitioning keys");
 			}
 		}
 
 	} else
 	{
 		// copy primary keys, which are not already present
-		keys_copy_distinct(&config->keys, table_keys(table));
+		keys_copy_distinct(&config->keys, &primary->keys);
 	}
 
 	// mark all partitioning keys
-	for (auto at = 0; at < config->keys.count; at++)
+	for (auto at = 0; at < primary->keys.count; at++)
 	{
-		auto key = keys_at(&config->keys, at);
-		for (auto at = 0; at < primary->keys.count; at++)
+		auto key = keys_at(&primary->keys, at);
+		if (! key->partitioning)
+			continue;
+		for (auto at = 0; at < config->keys.count; at++)
 		{
-			auto ref = keys_at(&primary->keys, at);
-			if (ref->partitioning && ref->column == key->column)
-				key->partitioning = true;
+			auto ref = keys_at(&config->keys, at);
+			if (ref->column == key->column)
+			{
+				ref->partitioning = true;
+				break;
+			}
 		}
 	}
 
 	// [USING type]
-	parse_index_using(self, stmt->config);
+	parse_index_using(self, config);
 
 	// configure index size according to the table partitions
-	parse_index_size(self, stmt->config, table->config->parts_count);
+	parse_index_size(self, config, partitions);
 }
 
 void

@@ -88,5 +88,6 @@ ast_index_alter_allocate(void)
 void parse_index_using(Stmt*, IndexConfig*);
 void parse_index_size(Stmt*, IndexConfig*, int);
 void parse_index_create(Stmt*, bool);
+void parse_index_create_inline(Stmt*, IndexConfig*, IndexConfig*, int);
 void parse_index_drop(Stmt*);
 void parse_index_alter(Stmt*);
