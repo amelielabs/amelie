@@ -112,7 +112,7 @@ parse_show_func(Stmt* self, Str* target)
 
 	// [VERBOSE]
 	auto flags = ast(KINT);
-	flags->integer = FFROM | FMETRICS;
+	flags->integer = FFROM;
 	if (! stmt_if(self, KVERBOSE))
 		flags->integer |= FMINIMAL;
 

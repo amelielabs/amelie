@@ -65,7 +65,7 @@ timeline_write(Timeline* self, Buf* buf, int flags)
 	encode_int(buf, self->timeline);
 
 	// timeline_max
-	if (flags_has(flags, FMETRICS))
+	if (! flags_has(flags, FMINIMAL))
 	{
 		encode_raw(buf, "timeline_max", 12);
 		encode_int(buf, self->timeline_max);

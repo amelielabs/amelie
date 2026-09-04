@@ -493,7 +493,7 @@ main
   3   push                0      0      0
   4   string              0      12     0     # 
   5   push                0      0      0
-  6   int                 0      -      0     # 11
+  6   int                 0      -      0     # 12
   7   push                0      0      0
   8   call                0      -      4     # show()
   9   ret                 0      0      -

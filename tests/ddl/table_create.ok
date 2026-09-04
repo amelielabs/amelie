@@ -759,7 +759,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["default", true]]
+  "constraints": [["default", "AQAAAA"]]
 }]
 drop table test;
 # test: constraint default with key
@@ -774,7 +774,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", true]]
+  "constraints": [["not_null", true], ["default", "AQAAAA"]]
 }]
 drop table test;
 # test: constraint default with key #2
@@ -789,7 +789,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", true]]
+  "constraints": [["not_null", true], ["default", "AQAAAA"]]
 }]
 drop table test;
 # test: constraint default expr validate
@@ -929,7 +929,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["not_null", true], ["default", true]]
+  "constraints": [["not_null", true], ["default", "ewAAAA"]]
 }]
 insert into test values(1, 1);
 insert into test values(2, null);

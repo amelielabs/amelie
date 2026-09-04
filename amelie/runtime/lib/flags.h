@@ -13,14 +13,14 @@
 
 enum
 {
+	// all visible relations
+	FALL     = 1 << 0,
+
+	// encode SQL CREATE schema
+	FCREATE  = 1 << 1,
+
 	// encode minimal output
-	FMINIMAL = 1 << 0,
-
-	// include metrics
-	FMETRICS = 1 << 1,
-
-	// all relations
-	FALL     = 1 << 2,
+	FMINIMAL = 1 << 2,
 
 	// FROM SHOW
 	FFROM    = 1 << 3

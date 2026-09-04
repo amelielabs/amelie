@@ -134,6 +134,7 @@ static inline void
 constraints_write(Constraints* self, Buf* buf, int flags)
 {
 	encode_array(buf);
+	unused(flags);
 
 	// not_null
 	if (self->not_null)
@@ -177,10 +178,7 @@ constraints_write(Constraints* self, Buf* buf, int flags)
 	{
 		encode_array(buf);
 		encode_raw(buf, "default", 7);
-		if (flags_has(flags, FMETRICS))
-			encode_bool(buf, true);
-		else
-			encode_base64(buf, &self->value);
+		encode_base64(buf, &self->value);
 		encode_array_end(buf);
 	}
 

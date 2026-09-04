@@ -75,7 +75,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["default", true]]
+  "constraints": [["default", "AAAAAA"]]
 }]
 alter table test rename column data to data2;
 select show('table', 'test', null, "verbose").columns;
@@ -95,7 +95,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["default", true]]
+  "constraints": [["default", "AAAAAA"]]
 }]
 select data2 from test;
 
@@ -164,7 +164,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["default", true]]
+  "constraints": [["default", "AAAAAA"]]
 }]
 alter table test rename column data to data;
 error: table 'test': column 'data' already exists
@@ -185,7 +185,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["default", true]]
+  "constraints": [["default", "AAAAAA"]]
 }]
 drop table test;
 # test: rename column (if table exists)
@@ -349,7 +349,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["default", true]]
+  "constraints": [["default", "ewAAAA"]]
 }]
 select data from test;
 
@@ -958,7 +958,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["default", true]]
+  "constraints": [["default", "AAAAAA"]]
 }]
 # test: unset default
 alter table test unset column data default;

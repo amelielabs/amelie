@@ -140,7 +140,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["default", true]]
+  "constraints": [["default", "ewAAAA"]]
 }, {
   "name": "obj",
   "type": 10,
@@ -177,7 +177,7 @@ columns
   "size": 4,
   "size_flat": 0,
   "dropped": false,
-  "constraints": [["default", true]]
+  "constraints": [["default", "ewAAAA"]]
 }, {
   "name": "obj",
   "type": 10,

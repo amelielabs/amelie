@@ -333,7 +333,7 @@ emit_show(Compiler* self)
 	runpin(self, r);
 
 	// flags
-	int flags = FFROM | FMETRICS;
+	int flags = FFROM;
 	if (! arg->verbose)
 		flags |= FMINIMAL;
 	if (arg->all)

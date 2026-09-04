@@ -163,7 +163,7 @@ fn_show_command(Call* self, Str* section, Str* name, Str* on, int* flags)
 	}
 
 	// read flags
-	int mask = FMETRICS|FMINIMAL;
+	int mask = FMINIMAL;
 	for (auto arg = 3; arg < self->argc; arg++)
 	{
 		// int (mask)
