@@ -309,17 +309,13 @@ emit_show(Compiler* self)
 	auto stmt = compiler_stmt(self);
 	auto arg  = ast_show_of(stmt->ast);
 
-	// find show() or show_all() functions
+	// find show() functions
 	Str name;
-	if (arg->all)
-		str_set(&name, "show_all", 8);
-	else
-		str_set(&name, "show", 4);
+	str_set(&name, "show", 4);
 	auto fn = functions_find(share()->functions, &name);
 	assert(fn);
 
-	// show_all(section, name, on, verbose)
-	// show(section, name, on, verbose)
+	// show(section, name, on, flags)
 
 	// section
 	auto r = emit_string(self, &arg->section, false);
@@ -336,8 +332,13 @@ emit_show(Compiler* self)
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
-	// verbose
-	r = op2pin(self, CBOOL, TYPE_BOOL, arg->verbose);
+	// flags
+	int flags = FFROM | FMETRICS;
+	if (! arg->verbose)
+		flags |= FMINIMAL;
+	if (arg->all)
+		flags |= FALL;
+	r = op2pin(self, CINT, TYPE_INT, flags);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 

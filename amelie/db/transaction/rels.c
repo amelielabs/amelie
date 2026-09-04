@@ -240,9 +240,9 @@ rels_list(Rels* self, RelType type,
           Buf*  buf,
           Str*  user,
           Str*  name,
-          bool  all,
           int   flags)
 {
+	auto all = flags_has(flags, FALL);
 	auto superuser = user && str_is(user, "amelie", 6);
 	if (name)
 	{
@@ -274,8 +274,9 @@ rels_list(Rels* self, RelType type,
 }
 
 void
-rels_list_rel(Rels* self, Buf* buf, Str* user, Str* name, bool all, int flags)
+rels_list_rel(Rels* self, Buf* buf, Str* user, Str* name, int flags)
 {
+	auto all = flags_has(flags, FALL);
 	auto superuser = user && str_is(user, "amelie", 6);
 	if (name)
 	{

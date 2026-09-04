@@ -29,7 +29,7 @@ error: alter table test rename to❰;❱ ⟵ name expected
 alter table test rename to asf junk;
 error: alter table test rename to asf ❰junk❱ ⟵ ; expected
 alter table test rename to abc;
-select show('table', 'abc', true).name;
+select show('table', 'abc', null, "verbose").name;
 
 name
 ────
@@ -58,7 +58,7 @@ alter table test rename column data to 1;
 error: alter table test rename column data to ❰1❱ ⟵ name expected
 # test: rename column
 create table test (id int primary key, data int default 0);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -78,7 +78,7 @@ columns
   "constraints": [["default", true]]
 }]
 alter table test rename column data to data2;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -105,7 +105,7 @@ drop table test;
 # test: rename column #2
 create table test (id int primary key);
 insert into test values (1),(2),(3);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -118,7 +118,7 @@ columns
   "constraints": [["not_null", true]]
 }]
 alter table test rename column id to id2;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -147,7 +147,7 @@ id2
 drop table test;
 # test: rename column (already exists)
 create table test (id int primary key, data int default 0);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -168,7 +168,7 @@ columns
 }]
 alter table test rename column data to data;
 error: table 'test': column 'data' already exists
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -227,7 +227,7 @@ error: alter table test add column data int ❰primary❱ ⟵ PRIMARY KEY clause
 drop table test;
 # test: add column (empty table)
 create table test (id int primary key);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -240,7 +240,7 @@ columns
   "constraints": [["not_null", true]]
 }]
 alter table test add column data int;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -272,7 +272,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -315,7 +315,7 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int not null;
 error: alter table test add column data int not null❰;❱ ⟵ NOT NULL currently not supported with ALTER
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -332,7 +332,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int default 123;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -389,7 +389,7 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int not null default 123;
 error: alter table test add column data int not null default 123❰;❱ ⟵ NOT NULL currently not supported with ALTER
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -412,7 +412,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column v vector(2);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -484,7 +484,7 @@ error: table 'test': column 'data' is a key
 drop table test;
 # test: drop column (empty)
 create table test (id int primary key, a int);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -504,7 +504,7 @@ columns
   "constraints": []
 }]
 alter table test drop column a;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -526,7 +526,7 @@ columns
 drop table test;
 # test: drop column (empty, reorder)
 create table test (id int primary key, a int, b int);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -553,7 +553,7 @@ columns
   "constraints": []
 }]
 alter table test drop column a;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -582,7 +582,7 @@ columns
 drop table test;
 # test: drop column
 create table test (id int primary key, a text, b int);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -631,7 +631,7 @@ b
 2
 3
 alter table test drop column a;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -673,7 +673,7 @@ b
 1
 2
 3
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -700,7 +700,7 @@ columns
   "constraints": []
 }]
 alter table test drop column b;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -747,7 +747,7 @@ error: select ❰b❱ ⟵ column not found
 drop table test;
 # test: drop column (key order)
 create table test (a text, b int, id int primary key);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -803,7 +803,7 @@ b
 2
 3
 alter table test drop column a;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -852,7 +852,7 @@ b
 1
 2
 3
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -879,7 +879,7 @@ columns
   "constraints": [["not_null", true]]
 }]
 alter table test drop column b;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -941,7 +941,7 @@ select * from test;
 id  data
 ──────────
 0   0
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -969,7 +969,7 @@ id  data
 ──────────
 0   0
 1   null
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -1037,7 +1037,7 @@ alter table test rename column data to data2;
 drop table test;
 # test: description
 create table test (id int primary key);
-select show('table', 'test', true).description;
+select show('table', 'test', null, "verbose").description;
 
 description
 ───────────
@@ -1047,13 +1047,13 @@ error: alter table test description❰;❱ ⟵ string expected
 alter table test description 123;
 error: alter table test description ❰123❱ ⟵ string expected
 alter table test description 'test test';
-select show('table', 'test', true).description;
+select show('table', 'test', null, "verbose").description;
 
 description
 ───────────
 "test test"
 alter table test description '';
-select show('table', 'test', true).description;
+select show('table', 'test', null, "verbose").description;
 
 description
 ───────────

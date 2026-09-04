@@ -66,7 +66,7 @@ select abc from test2;
 
 # test: alter table set default
 alter table test2 set column abc default 123;
-select show('table', 'test2', true).columns;
+select show('table', 'test2', null, "verbose").columns;
 
 # test: restart
 disconnect S0;
@@ -76,11 +76,11 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select show('table', 'test2', true).columns;
+select show('table', 'test2', null, "verbose").columns;
 
 # test: alter table unset default
 alter table test2 unset column abc default;
-select show('table', 'test2', true).columns;
+select show('table', 'test2', null, "verbose").columns;
 
 # test: restart
 disconnect S0;
@@ -90,7 +90,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select show('table', 'test2', true).columns;
+select show('table', 'test2', null, "verbose").columns;
 
 # test: restart
 disconnect S0;
@@ -100,7 +100,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select show('table', 'test2', true).columns;
+select show('table', 'test2', null, "verbose").columns;
 
 # test: alter table column drop
 alter table test2 drop column abc;
@@ -382,7 +382,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select show('user', 'test2', true).limits;
+select show('user', 'test2', null, "verbose").limits;
 
 # test: alter user unset limit
 alter user test2 unset limit write;
@@ -396,7 +396,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select show('user', 'test2', true).limits;
+select show('user', 'test2', null, "verbose").limits;
 
 # test: drop user
 drop user test2;

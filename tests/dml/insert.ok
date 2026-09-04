@@ -43,7 +43,7 @@ error: index 'primary': unique key constraint violation
 drop table test;
 # test: insert compound key
 create table test (id int, id2 int, primary key (id, id2));
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────

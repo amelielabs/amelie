@@ -1,40 +1,6 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: config
-select show();
-
-show
-────
-{
-  "uuid": "00000000-0000-0000-0000-000000000001",
-  "timezone": "UTC",
-  "log_enable": true,
-  "log_file": true,
-  "log_stdout": false,
-  "log_stdout_time": true,
-  "log_connections": true,
-  "log_options": true,
-  "frontends": 1,
-  "backends": 1,
-  "workers": 1,
-  "cpu_affinity": true,
-  "wal_crc": true,
-  "wal_sync_create": false,
-  "wal_sync_close": false,
-  "wal_sync_write": false,
-  "wal_sync_interval": "1 sec",
-  "wal_service": false,
-  "wal_size": 67108864,
-  "wal_checkpoint": 100,
-  "wal_rewind": false,
-  "wal_rewind_pos": 0,
-  "storage_crc": true,
-  "storage_compression": "zstd",
-  "storage_sync": false,
-  "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000,
-  "recv": 1048576
-}
 select show('config');
 
 show
@@ -129,8 +95,6 @@ select show('replica', '00000000-0000-0000-0000-000000000001');
 show
 ────
 null
-select show('replica', uuid '00000000-0000-0000-0000-000000000001');
-error: show(string, ❰uuid❱ ⟵ string or bool expected
 # test: repl
 select show('repl');
 
@@ -205,7 +169,7 @@ show
   "description": ""
 }
 # test: indexes
-select show('indexes', '', 'test', false);
+select show('indexes', 'test');
 
 show
 ────
@@ -221,25 +185,8 @@ show
     "partitioning": true
   }]
 }]
-# test: index
-select show('index', 'primary', 'test', false);
-
-show
-────
-{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true,
-    "partitioning": true
-  }]
-}
 # test: partitions
-select show('partitions', '', 'test', false);
+select show('partitions', 'test');
 
 show
 ────

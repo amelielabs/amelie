@@ -275,7 +275,7 @@ drop table test cascade;
 create table test (id int primary key, old_col text, keep_col int);
 insert into test values (1, 'gone', 10), (2, 'gone2', 20);
 alter table test drop column old_col;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -309,7 +309,7 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 # test: validate state
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────

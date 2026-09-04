@@ -826,7 +826,7 @@ checkpoint
 ──────────
 21
 alter table test drop column old_col;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -865,7 +865,7 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 26
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────

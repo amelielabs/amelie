@@ -29,9 +29,7 @@ show memory;
 create table test (id int primary key);
 show tables;
 select * from show tables;
-
-show checkpoint_compression;
-show partitions on test;
+show partitions test;
 
 SHOW TABLES;
 
@@ -41,20 +39,14 @@ show table test;
 select * from show table test;
 
 # test: show indexes
-show indexes on test;
-select show('indexes', '', 'test', false);
-select * from show indexes on test;
-
-# test: show index
-show index primary on test;
-select show('index', 'primary', 'test', false);
-show index xyz on test;
-select * from show index primary on test;
+show indexes test;
+select show('indexes', 'test', null);
+select * from show indexes test;
 
 # test: show partitions
-show partitions on test;
-select show('partitions', '', 'test', false);
-select * from show partitions on test;
+show partitions test;
+select show('partitions', 'test', null);
+select * from show partitions test;
 
 # test: show functions
 create function test_fn (id int) return json
@@ -92,22 +84,22 @@ select * from show replica '00000000-0000-0000-0000-000000000001';
 
 # test: show state
 show STATE;
-select show('state');
-select show('state').directory;
+select show('state', null, null);
+select show('state', null, null).directory;
 
 # test: show config
 show config;
 select * from show config;
 
+# test: show name
+show log_enable;
+
 # test: show all
 show all;
 
-select show('config').uuid;
-select show('config', '123');
-
-# test: show name
-show log_enable;
-show "log_enable";
+select show('config', null, null).uuid;
+select show('config', 'checkpoint_compression', null);
+select show('log_enable', null, null);
 
 # test: show unknown
 show asdf;

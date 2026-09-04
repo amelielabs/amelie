@@ -40,7 +40,7 @@ create user test_limit limit name =;
 create user test_limit limit name = value;
 create user test_limit limit name = 123;
 create user test_limit limit send = 123;
-select show('user', 'test_limit', true).limits;
+select show('user', 'test_limit', null, "verbose").limits;
 
 # test: drop user statement parsing
 drop user;
@@ -233,10 +233,10 @@ alter user test set limit;
 alter user test set limit write;
 alter user test set limit write =;
 alter user test set limit write = 123;
-select show('user', 'test', true).limits;
+select show('user', 'test', null, "verbose").limits;
 alter user test set limit write = 123,;
 alter user test set limit write = 123, send = 123;
-select show('user', 'test', true).limits;
+select show('user', 'test', null, "verbose").limits;
 
 # test: alter user unset limit
 alter user test unset;
@@ -245,10 +245,10 @@ alter user test unset limit;
 # unknown
 alter user test unset limit name;
 alter user test unset limit write;
-select show('user', 'test', true).limits;
+select show('user', 'test', null, "verbose").limits;
 alter user test unset limit write,;
 alter user test unset limit write, send;
-select show('user', 'test', true).limits;
+select show('user', 'test', null, "verbose").limits;
 drop user test;
 
 # test: create agent

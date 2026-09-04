@@ -21,17 +21,17 @@ create index i on test ();
 
 # test: create index
 create index i on test (a);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 # test: create index if not exists
 create index i on test (a);
 create index if not exists i on test (a);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 drop index i on test;
 
 # test: create index (compound key)
 create index i on test (b, a);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 drop index i on test;
 
 # test: create index (key reuse)
@@ -42,7 +42,7 @@ create unique index i on test (a);
 
 # test: create index (asc/desc)
 create unique index j on test (a asc, b desc, id);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 drop table test;
 
@@ -50,11 +50,11 @@ drop table test;
 create table test (id int primary key, a int, b int);
 create index i on test (a) using;
 create index i on test (a) using hash;
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 drop index i on test;
 
 create index i on test (a) using tree;
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 drop index i on test;
 
 create index i on test (a) using unknown;
@@ -71,9 +71,9 @@ drop index i on test;
 
 # test: drop index
 create index i on test (a);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 drop index i on test;
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 # test: drop index if exists
 drop index i on test;
@@ -91,14 +91,14 @@ drop index i on test;
 
 # test: drop index primary
 drop index `primary` on test;
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 # test: drop index (not null constraint)
 create table t (id int primary key, v int);
 insert into t values (1, 10);
 create index i on t (v);
 drop index i on t;
-select show("table", "t", true).columns;
+select show("table", "t", null, "verbose").columns;
 insert into t values (2, null);
 select * from t order by id;
 drop table t cascade;
@@ -123,10 +123,10 @@ alter index i on test rename to;
 
 # test: alter index rename
 create index i on test (a);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 alter index i on test rename to j;
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 # test: alter index rename if exists
 alter index k on test rename to z;
@@ -137,7 +137,7 @@ alter index j on test rename to j;
 
 # test: drop index primary rename
 alter index `primary` on test rename to _;
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 drop table test;
 
 # test: create index (with null keys)
@@ -183,20 +183,20 @@ drop table test;
 # test: create index explain
 create table test (id int primary key, data int);
 insert into test values (1, null);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 explain create index i on test (data);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 drop table test;
 
 # test: create index (size)
 create table test (id int primary key using hash (size 1234));
-show partitions on test;
-show indexes on test;
+show partitions test;
+show indexes test;
 drop table test;
 
 create table test (id int primary key using hash (size 1234)) partitions 3;
-show partitions on test;
-show indexes on test;
+show partitions test;
+show indexes test;
 drop table test;
 
 disconnect S0;

@@ -362,7 +362,7 @@ rels
   "type": "table",
   "description": ""
 }
-show grants on test;
+show grants test;
 
 grants
 ──────
@@ -380,7 +380,7 @@ select current_user;
 current_user
 ────────────
 test2
-show grants on test;
+show grants test;
 
 grants
 ──────
@@ -420,7 +420,7 @@ rels
   "type": "table",
   "description": ""
 }
-show grants on test;
+show grants test;
 
 grants
 ──────
@@ -439,7 +439,7 @@ select * from test2.test;
 id
 ──
 switch S2;
-show grants on test;
+show grants test;
 
 grants
 ──────
@@ -455,7 +455,7 @@ begin
   return 1;
 end;
 grant execute on fun to u;
-show grants on fun;
+show grants fun;
 
 grants
 ──────
@@ -464,7 +464,7 @@ create or replace function fun () return int
 begin
   return 2;
 end;
-show grants on fun;
+show grants fun;
 
 grants
 ──────
@@ -487,13 +487,13 @@ fun
 2
 disconnect S1;
 switch S0;
-show grants on fun;
+show grants fun;
 
 grants
 ──────
 ["u", "execute"]
 drop user u;
-show grants on fun;
+show grants fun;
 
 grants
 ──────
@@ -545,7 +545,7 @@ insert into t values (1);
 grant select on t to u1;
 grant select on t to u2;
 grant select on t to u3;
-show grants on t;
+show grants t;
 
 grants
 ──────
@@ -553,14 +553,14 @@ grants
 ["u2", "select"]
 ["u3", "select"]
 revoke select on t from u1;
-show grants on t;
+show grants t;
 
 grants
 ──────
 ["u2", "select"]
 ["u3", "select"]
 grant select on t to u1;
-show grants on t;
+show grants t;
 
 grants
 ──────
@@ -568,27 +568,27 @@ grants
 ["u3", "select"]
 ["u1", "select"]
 revoke select on t from u3;
-show grants on t;
+show grants t;
 
 grants
 ──────
 ["u2", "select"]
 ["u1", "select"]
 revoke select on t from u2;
-show grants on t;
+show grants t;
 
 grants
 ──────
 ["u1", "select"]
 revoke select on t from u1;
-show grants on t;
+show grants t;
 
 grants
 ──────
 grant select on t to u1;
 grant select on t to u2;
 grant select on t to u3;
-show grants on t;
+show grants t;
 
 grants
 ──────

@@ -9,7 +9,7 @@ id
 ──
 0
 alter table test add column a int;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -35,7 +35,7 @@ id  a
 0   null
 insert into test values (1, 1);
 alter table test add column b int;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -77,7 +77,7 @@ id  a     b
 2   2     2
 # test: drop column
 alter table test drop column a;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -170,7 +170,7 @@ id  b
 4   4
 # test: add column (reuse dropped column name)
 alter table test add column a int;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -238,7 +238,7 @@ id  b  a
 5   5  5
 # test: drop column
 alter table test drop column b;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────

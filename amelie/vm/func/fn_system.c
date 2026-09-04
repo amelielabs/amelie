@@ -28,18 +28,14 @@ enum
 	SHOW_WAL,
 	SHOW_CDC,
 	SHOW_METRICS,
-	SHOW_GRANTS,
 	SHOW_LIMITS,
 	SHOW_MEMORY,
 	SHOW_USERS,
 	SHOW_USER,
 	SHOW_TABLES,
 	SHOW_TABLE,
-	SHOW_INDEXES,
-	SHOW_INDEX,
 	SHOW_CLONES,
 	SHOW_CLONE,
-	SHOW_PARTITIONS,
 	SHOW_FUNCTIONS,
 	SHOW_FUNCTION,
 	SHOW_TOPICS,
@@ -48,12 +44,22 @@ enum
 	SHOW_SUBSCRIPTION,
 	SHOW_RELS,
 	SHOW_REL,
+	SHOW_GRANTS,
+	SHOW_INDEXES,
+	SHOW_PARTITIONS,
 	SHOW_TOOLS,
 	SHOW_RESOURCES,
 	SHOW_STATE,
 	SHOW_ALL,
 	SHOW_CONFIG,
 	SHOW_LOCKS
+};
+
+enum
+{
+	SHOW_NO,
+	SHOW_YES,
+	SHOW_MAYBE
 };
 
 typedef struct ShowCmd ShowCmd;
@@ -63,49 +69,58 @@ struct ShowCmd
 	int         id;
 	const char* section;
 	int         section_size;
-	bool        has_name;
-	bool        has_on;
+	int         name;
 	bool        obj;
 };
 
 static ShowCmd show_cmds[] =
 {
-	{ SHOW_REPLICAS,      "replicas",      8,  false, false, false },
-	{ SHOW_REPLICA,       "replica",       7,  true,  false, true  },
-	{ SHOW_REPL,          "repl",          4,  false, false, true  },
-	{ SHOW_REPL,          "replication",   11, false, false, true  },
-	{ SHOW_WAL,           "wal",           3,  false, false, true  },
-	{ SHOW_CDC,           "cdc",           3,  false, false, true  },
-	{ SHOW_METRICS,       "metrics",       7,  false, false, true  },
-	{ SHOW_GRANTS,        "grants",        6,  false, true,  false },
-	{ SHOW_LIMITS,        "limits",        6,  false, false, true  },
-	{ SHOW_MEMORY,        "memory",        6,  false, false, true  },
-	{ SHOW_USERS,         "users",         5,  false, false, false },
-	{ SHOW_USER,          "user",          4,  true,  false, true  },
-	{ SHOW_TABLES,        "tables",        6,  false, false, false },
-	{ SHOW_TABLE,         "table",         5,  true,  false, true  },
-	{ SHOW_INDEXES,       "indexes",       7,  false, true,  false },
-	{ SHOW_INDEX,         "index",         5,  true,  true,  true  },
-	{ SHOW_CLONES,        "clones",        6,  false, false, false },
-	{ SHOW_CLONE,         "clone",         5,  true,  false, true  },
-	{ SHOW_PARTITIONS,    "partitions",    10, false, true,  false },
-	{ SHOW_FUNCTIONS,     "functions",     9,  false, false, false },
-	{ SHOW_FUNCTION,      "function",      8,  true,  false, true  },
-	{ SHOW_TOPICS,        "topics",        6,  false, false, false },
-	{ SHOW_TOPIC,         "topic",         5,  true,  false, true  },
-	{ SHOW_SUBSCRIPTIONS, "subscriptions", 13, false, false, false },
-	{ SHOW_SUBSCRIPTION,  "subscription",  12, true,  false, true  },
-	{ SHOW_SUBSCRIPTIONS, "subs",          4,  false, false, false },
-	{ SHOW_SUBSCRIPTION,  "sub",           3,  true,  false, true  },
-	{ SHOW_RELS,          "rels",          4,  false, false, false },
-	{ SHOW_REL,           "rel",           3,  true,  false, true  },
-	{ SHOW_TOOLS,         "tools",         5,  false, false, false },
-	{ SHOW_RESOURCES,     "resources",     9,  false, false, false },
-	{ SHOW_STATE,         "state",         5,  false, false, true  },
-	{ SHOW_ALL,           "all",           3,  false, false, true  },
-	{ SHOW_CONFIG,        "config",        6,  false, false, true  },
-	{ SHOW_LOCKS,         "locks",         5,  false, false, false },
-	{ 0,                   NULL,           0,  false, false, false }
+	// system
+	{ SHOW_REPLICAS,      "replicas",      8,  SHOW_NO,    false },
+	{ SHOW_REPLICA,       "replica",       7,  SHOW_YES,   true  },
+	{ SHOW_REPL,          "repl",          4,  SHOW_NO,    true  },
+	{ SHOW_REPL,          "replication",   11, SHOW_NO,    true  },
+	{ SHOW_WAL,           "wal",           3,  SHOW_NO,    true  },
+	{ SHOW_CDC,           "cdc",           3,  SHOW_NO,    true  },
+	{ SHOW_METRICS,       "metrics",       7,  SHOW_NO,    true  },
+	{ SHOW_LOCKS,         "locks",         5,  SHOW_NO,    false },
+
+	// user
+	{ SHOW_LIMITS,        "limits",        6,  SHOW_NO,    true  },
+	{ SHOW_MEMORY,        "memory",        6,  SHOW_NO,    true  },
+
+	// relations
+	{ SHOW_USERS,         "users",         5,  SHOW_NO,    false },
+	{ SHOW_USER,          "user",          4,  SHOW_YES,   true  },
+	{ SHOW_TABLES,        "tables",        6,  SHOW_NO,    false },
+	{ SHOW_TABLE,         "table",         5,  SHOW_YES,   true  },
+	{ SHOW_CLONES,        "clones",        6,  SHOW_NO,    false },
+	{ SHOW_CLONE,         "clone",         5,  SHOW_YES,   true  },
+	{ SHOW_FUNCTIONS,     "functions",     9,  SHOW_NO,    false },
+	{ SHOW_FUNCTION,      "function",      8,  SHOW_YES,   true  },
+	{ SHOW_TOPICS,        "topics",        6,  SHOW_NO,    false },
+	{ SHOW_TOPIC,         "topic",         5,  SHOW_YES,   true  },
+	{ SHOW_SUBSCRIPTIONS, "subscriptions", 13, SHOW_NO,    false },
+	{ SHOW_SUBSCRIPTION,  "subscription",  12, SHOW_YES,   true  },
+	{ SHOW_SUBSCRIPTIONS, "subs",          4,  SHOW_NO,    false },
+	{ SHOW_SUBSCRIPTION,  "sub",           3,  SHOW_YES,   true  },
+	{ SHOW_RELS,          "rels",          4,  SHOW_NO,    false },
+	{ SHOW_REL,           "rel",           3,  SHOW_YES,   true  },
+
+	// relations objects
+	{ SHOW_GRANTS,        "grants",        6,  SHOW_MAYBE, false },
+	{ SHOW_PARTITIONS,    "partitions",    10, SHOW_YES,   false },
+	{ SHOW_INDEXES,       "indexes",       7,  SHOW_YES,   false },
+
+	// mcp
+	{ SHOW_TOOLS,         "tools",         5,  SHOW_NO,    false },
+	{ SHOW_RESOURCES,     "resources",     9,  SHOW_NO,    false },
+
+	// config and state
+	{ SHOW_STATE,         "state",         5,  SHOW_NO,    true  },
+	{ SHOW_ALL,           "all",           3,  SHOW_NO,    true  },
+	{ SHOW_CONFIG,        "config",        6,  SHOW_NO,    true  },
+	{ 0,                   NULL,           0,  SHOW_NO,    false }
 };
 
 static inline ShowCmd*
@@ -120,128 +135,125 @@ show_cmd_find(Str* section)
 	return NULL;
 }
 
+static ShowCmd*
+fn_show_command(Call* self, Str* section, Str* name, Str* on, int* flags)
+{
+	// (section [, name, on, ...])
+	str_init(section);
+	str_init(name);
+	str_init(on);
+
+	// section
+	auto argv = self->argv;
+	call_arg(self, 0, TYPE_STRING);
+	*section = argv[0].string;
+
+	// [name]
+	if (self->argc >= 2 && argv[1].type != TYPE_NULL)
+	{
+		call_arg(self, 1, TYPE_STRING);
+		*name = argv[1].string;
+	}
+
+	// [on]
+	if (self->argc >= 3 && argv[2].type != TYPE_NULL)
+	{
+		call_arg(self, 2, TYPE_STRING);
+		*on = argv[2].string;
+	}
+
+	// read flags
+	int mask = FMETRICS|FMINIMAL;
+	for (auto arg = 3; arg < self->argc; arg++)
+	{
+		// int (mask)
+		if (argv[arg].type == TYPE_INT)
+		{
+			// rewrite flags
+			mask = argv[arg].integer;
+			continue;
+		}
+
+		// string
+		call_arg(self, arg, TYPE_STRING);
+		auto at = &argv[arg].string;
+		if (str_is(at, "all", 3))
+			mask |= FALL;
+		else
+		if (str_is(at, "verbose", 7))
+			mask &= ~FMINIMAL;
+		else
+		if (str_is(at, "from", 4))
+			mask |= FFROM;
+		else
+			call_error_noargs(self, "unknown flag");
+	}
+	*flags = mask;
+
+	// match command
+	auto cmd = show_cmd_find(section);
+	if (! cmd)
+		return NULL;
+
+	// [name]
+	switch (cmd->name) {
+	case SHOW_NO:
+		if (! str_empty(name))
+			call_error_noargs(self, "unexpected 'name' argument");
+		break;
+	case SHOW_YES:
+		if (str_empty(name))
+			call_error_noargs(self, "'name' argument is missing for '{str}'", section);
+		break;
+	case SHOW_MAYBE:
+		break;
+	}
+
+	return cmd;
+}
+
 static void
 fn_show(Call* self)
 {
-	// [section, name, on, verbose]
-	Str  section_none;
-	Str* section  = NULL;
-	Str* name     = NULL;
-	Str* on       = NULL;
-	bool verbose  = false;
+	// (section, [name, on, ...])
+	Str  section;
+	Str  name;
+	Str  on;
+	int  flags;
+	auto cmd = fn_show_command(self, &section, &name, &on, &flags);
 
-	switch (self->argc) {
-	case 0:
-		section = &section_none;
-		break;
-	case 1:
-		// [section]
-		call_arg(self, 0, TYPE_STRING);
-		section = &self->argv[0].string;
-		break;
-	case 2:
-		// [section, name | bool]
-		call_arg(self, 0, TYPE_STRING);
-		section = &self->argv[0].string;
-		if (self->argv[1].type == TYPE_STRING)
-			name = &self->argv[1].string;
-		else
-		if (self->argv[1].type == TYPE_BOOL)
-			verbose = self->argv[1].integer;
-		else
-			call_error_at(self, 1, "string or bool expected");
-		break;
-	case 3:
-		// [section, name, bool]
-		call_arg(self, 0, TYPE_STRING);
-		call_arg(self, 1, TYPE_STRING);
-		call_arg(self, 2, TYPE_BOOL);
-		section = &self->argv[0].string;
-		name    = &self->argv[1].string;
-		verbose =  self->argv[2].integer;
-		break;
-	case 4:
-		// [section, name, on, bool]
-		call_arg(self, 0, TYPE_STRING);
-		call_arg(self, 1, TYPE_STRING);
-		call_arg(self, 2, TYPE_STRING);
-		call_arg(self, 3, TYPE_BOOL);
-		section = &self->argv[0].string;
-		name    = &self->argv[1].string;
-		on      = &self->argv[2].string;
-		verbose =  self->argv[3].integer;
-		break;
-	default:
-		call_error_noargs(self, "invalid number of arguments");
-		break;
-	}
-	str_set(&section_none, "all", 3);
+	// on user
+	auto user = &self->local->user;
+	if (! str_empty(&on))
+		user = &on;
 
-	// match command
 	auto buf = buf_create();
 	errdefer_buf(buf);
 
-	auto cmd = show_cmd_find(section);
+	// config or state option
 	if (! cmd)
 	{
-		// config option
-		if (str_empty(section))
-			call_error_noargs(self, "section name is not defined");
-		if (name && !str_empty(name))
-			call_error_noargs(self, "unexpected name argument");
+		if (!str_empty(&name) || !str_empty(&on))
+			call_error_noargs(self, "unexpected arguments");
 
-		auto opt = opts_find(&config()->opts, section);
-		if (opt && opt_is(opt, OPT_S))
-			opt = NULL;
-		if (unlikely(opt == NULL))
-			call_error_noargs(self, "option '{str}' is not found", section);
+		// config or state
+		auto opt = opts_find(&config()->opts, &section);
+		if (! opt)
+			opt = opts_find(&state()->opts, &section);
+		if (!opt || opt_is(opt, OPT_S))
+			call_error_noargs(self, "option '{str}' is not found", &section);
+
 		local_encode_opt(self->local, buf, opt);
 		value_set_json_buf(self->result, buf);
 		return;
 	}
 
-	// validate arguments
-
-	// name
-	if (cmd->has_name) {
-		if (!name || str_empty(name))
-			call_error_noargs(self, "name argument is missing for '{str}'",
-			                  section);
-	} else {
-		if (name && !str_empty(name))
-			call_error_noargs(self, "unexpected name argument");
-	}
-
-	// on
-	if (cmd->has_on) {
-		if (!on || str_empty(on))
-			call_error_noargs(self, "on argument is missing for '{str}'",
-			                  section);
-	} else {
-		if (on && !str_empty(on))
-			call_error_noargs(self, "unexpected on argument");
-	}
-
-	// cover in [] if run as show_from()
+	// wrap in array for FROM SHOW
 	auto wrap = false;
-	auto show_from =
-		str_is(&self->function->name, "show_from", 9) ||
-		str_is(&self->function->name, "show_from_all", 13);
-	if (cmd->obj && show_from)
+	if (cmd->obj && flags_has(flags, FFROM))
 		wrap = true;
 	if (wrap)
 		encode_array(buf);
-
-	// prepare flags
-	int flags = FMETRICS;
-	if (! verbose)
-		flags |= FMINIMAL;
-
-	// [all]
-	auto user = &self->local->user;
-	auto all  =
-		str_is(&self->function->name, "show_all", 8) ||
-		str_is(&self->function->name, "show_from_all", 13);
 
 	auto catalog = &share()->db->catalog;
 	switch (cmd->id) {
@@ -253,7 +265,7 @@ fn_show(Call* self)
 	case SHOW_REPLICA:
 	{
 		Uuid id;
-		uuid_set(&id, name);
+		uuid_set(&id, &name);
 		replicas_list(&share()->repl->replicas, buf, &id, flags);
 		break;
 	}
@@ -277,23 +289,21 @@ fn_show(Call* self)
 		rpc(&runtime()->task, MSG_SHOW_METRICS, &buf);
 		break;
 	}
-	case SHOW_GRANTS:
+	case SHOW_LOCKS:
 	{
-		auto rel = catalog_find(catalog, REL_UNDEF, user, on, true);
-		if (rel->grants)
-			grants_write(rel->grants, buf, 0);
-		else
-			encode_null(buf);
+		locks_list(&runtime()->locks, buf);
 		break;
 	}
 	case SHOW_LIMITS:
 	{
+		// todo: check permissions
 		auto ref = catalog_find_user(catalog, user, true);
 		limits_write(&ref->config->limits, buf);
 		break;
 	}
 	case SHOW_MEMORY:
 	{
+		// todo: check permissions
 		auto ref = catalog_find_user(catalog, user, true);
 		usage_status(&ref->memory, buf);
 		break;
@@ -301,101 +311,116 @@ fn_show(Call* self)
 	case SHOW_USERS:
 	{
 		// created users
-		rels_list(&catalog->users, REL_USER, buf, user, NULL, all, flags);
+		rels_list(&catalog->users, REL_USER, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_USER:
 	{
-		rels_list(&catalog->users, REL_USER, buf, NULL, name, all, flags);
+		rels_list(&catalog->users, REL_USER, buf, NULL, &name, flags);
 		break;
 	}
 	case SHOW_TABLES:
 	{
-		rels_list(&catalog->rels, REL_TABLE, buf, user, NULL, all, flags);
+		rels_list(&catalog->rels, REL_TABLE, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		rels_list(&catalog->rels, REL_TABLE, buf, user, name, all, flags);
-		break;
-	}
-	case SHOW_INDEXES:
-	{
-		// todo: only owned
-		auto table = catalog_find_table(catalog, user, on, true);
-		table_index_list(table, buf, NULL, flags);
-		break;
-	}
-	case SHOW_INDEX:
-	{
-		auto table = catalog_find_table(catalog, user, on, true);
-		table_index_list(table, buf, name, flags);
+		rels_list(&catalog->rels, REL_TABLE, buf, user, &name, flags);
 		break;
 	}
 	case SHOW_CLONES:
 	{
-		rels_list(&catalog->rels, REL_CLONE, buf, user, NULL, all, flags);
+		rels_list(&catalog->rels, REL_CLONE, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_CLONE:
 	{
-		rels_list(&catalog->rels, REL_CLONE, buf, user, name, all, flags);
-		break;
-	}
-	case SHOW_PARTITIONS:
-	{
-		// todo: only owned
-		auto table = catalog_find_table(catalog, user, on, true);
-		parts_list(&table->parts, buf, flags);
+		rels_list(&catalog->rels, REL_CLONE, buf, user, &name, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:
 	{
-		rels_list(&catalog->rels, REL_UDF, buf, user, NULL, all, flags);
+		rels_list(&catalog->rels, REL_UDF, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		rels_list(&catalog->rels, REL_UDF, buf, user, name, all, flags);
+		rels_list(&catalog->rels, REL_UDF, buf, user, &name, flags);
 		break;
 	}
 	case SHOW_TOPICS:
 	{
-		rels_list(&catalog->rels, REL_TOPIC, buf, user, NULL, all, flags);
+		rels_list(&catalog->rels, REL_TOPIC, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_TOPIC:
 	{
-		rels_list(&catalog->rels, REL_TOPIC, buf, user, name, all, flags);
+		rels_list(&catalog->rels, REL_TOPIC, buf, user, &name, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTIONS:
 	{
-		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, NULL, all, flags);
+		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTION:
 	{
-		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, name, all, flags);
+		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, &name, flags);
 		break;
 	}
 	case SHOW_RELS:
 	{
-		rels_list_rel(&catalog->rels, buf, user, NULL, all, flags);
+		rels_list_rel(&catalog->rels, buf, user, NULL, flags);
 		break;
 	}
 	case SHOW_REL:
 	{
-		rels_list_rel(&catalog->rels, buf, user, name, all, flags);
+		rels_list_rel(&catalog->rels, buf, user, &name, flags);
+		break;
+	}
+	case SHOW_GRANTS:
+	{
+		// show grants [on user]
+		if (str_empty(&name))
+		{
+			auto ref = catalog_find_user(catalog, user, true);
+			// todo: check permissions
+			grants_write(ref->rel.grants, buf, 0);
+			break;
+		}
+
+		// show grants rel
+		auto rel = catalog_find(catalog, REL_UNDEF, user, &name, true);
+		if (rel->grants)
+			grants_write(rel->grants, buf, 0);
+		else
+			encode_null(buf);
+		break;
+	}
+	case SHOW_PARTITIONS:
+	{
+		// todo: check permissions
+		auto table = catalog_find_table(catalog, user, &name, true);
+		parts_list(&table->parts, buf, flags);
+		break;
+	}
+	case SHOW_INDEXES:
+	{
+		// todo: check permissions
+		auto table = catalog_find_table(catalog, user, &name, true);
+		table_index_list(table, buf, NULL, flags);
 		break;
 	}
 	case SHOW_TOOLS:
 	{
+		// todo: check permissions
 		catalog_mcp_tools(catalog, user, buf);
 		break;
 	}
 	case SHOW_RESOURCES:
 	{
+		// todo: check permissions
 		catalog_mcp_resources(catalog, user, buf);
 		break;
 	}
@@ -419,11 +444,6 @@ fn_show(Call* self)
 		encode_obj_end(buf);
 		break;
 	}
-	case SHOW_LOCKS:
-	{
-		locks_list(&runtime()->locks, buf);
-		break;
-	}
 	default:
 		abort();
 	}
@@ -437,23 +457,8 @@ fn_show(Call* self)
 void
 fn_system_register(Functions* self)
 {
-	// show()
+	// show(section, name, on, ...)
 	auto func = function_allocate(TYPE_JSON, "show", fn_show);
-	function_unset(func, FN_CONST);
-	functions_add(self, func);
-
-	// show_all()
-	func = function_allocate(TYPE_JSON, "show_all", fn_show);
-	function_unset(func, FN_CONST);
-	functions_add(self, func);
-
-	// show_from()
-	func = function_allocate(TYPE_JSON, "show_from", fn_show);
-	function_unset(func, FN_CONST);
-	functions_add(self, func);
-
-	// show_from_all()
-	func = function_allocate(TYPE_JSON, "show_from_all", fn_show);
 	function_unset(func, FN_CONST);
 	functions_add(self, func);
 }

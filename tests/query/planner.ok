@@ -421,7 +421,7 @@ select * from test where data = 1;
 id  data
 ──────────
 1   1
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────

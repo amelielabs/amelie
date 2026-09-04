@@ -15,26 +15,26 @@ error: table 'name': not exists
 drop table if exists test;
 # test: drop table
 create table test(id int primary key);
-select show('table', 'test', true).name;
+select show('table', 'test', null, "verbose").name;
 
 name
 ────
 "test"
 drop table test;
-select show('table', 'test', true).name;
+select show('table', 'test', null, "verbose").name;
 
 name
 ────
 null
 # test: drop table if exists
 create table test(id int primary key);
-select show('table', 'test', true).name;
+select show('table', 'test', null, "verbose").name;
 
 name
 ────
 "test"
 drop table test;
-select show('table', 'test', true).name;
+select show('table', 'test', null, "verbose").name;
 
 name
 ────
@@ -42,14 +42,14 @@ null
 drop table if exists test;
 # test: recreate same table after drop
 create table test (id int primary key);
-select show('table', 'test', true).name;
+select show('table', 'test', null, "verbose").name;
 
 name
 ────
 "test"
 drop table test;
 create table test (id int primary key);
-select show('table', 'test', true).name;
+select show('table', 'test', null, "verbose").name;
 
 name
 ────

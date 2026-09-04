@@ -276,7 +276,7 @@ switch S2;
 create table test (id int primary key);
 grant select on test to test;
 show rels;
-show grants on test;
+show grants test;
 
 switch S1;
 select * from test2.test;
@@ -288,7 +288,7 @@ switch S2;
 select current_user;
 
 # <<
-show grants on test;
+show grants test;
 select * from test;
 show rels;
 
@@ -310,7 +310,7 @@ switch S2;
 create table test (id int primary key);
 grant select on test to test;
 show rels;
-show grants on test;
+show grants test;
 
 switch S1;
 select * from test2.test;
@@ -322,7 +322,7 @@ connect E0 S1 test_renamed@127.0.0.1:3485;
 select * from test2.test;
 
 switch S2;
-show grants on test;
+show grants test;
 
 switch S0;
 
@@ -340,13 +340,13 @@ begin
 end;
 
 grant execute on fun to u;
-show grants on fun;
+show grants fun;
 
 create or replace function fun () return int
 begin
   return 2;
 end;
-show grants on fun;
+show grants fun;
 
 connect E0 S1 u@127.0.0.1:3485;
 switch S1;
@@ -362,9 +362,9 @@ execute amelie.fun();
 disconnect S1;
 
 switch S0;
-show grants on fun;
+show grants fun;
 drop user u;
-show grants on fun;
+show grants fun;
 
 # test: select (from subscription)
 create user u;
@@ -396,27 +396,27 @@ insert into t values (1);
 grant select on t to u1;
 grant select on t to u2;
 grant select on t to u3;
-show grants on t;
+show grants t;
 
 revoke select on t from u1;
-show grants on t;
+show grants t;
 
 grant select on t to u1;
-show grants on t;
+show grants t;
 
 revoke select on t from u3;
-show grants on t;
+show grants t;
 
 revoke select on t from u2;
-show grants on t;
+show grants t;
 
 revoke select on t from u1;
-show grants on t;
+show grants t;
 
 grant select on t to u1;
 grant select on t to u2;
 grant select on t to u3;
-show grants on t;
+show grants t;
 drop table t;
 
 # test: returning (select grant, insert)

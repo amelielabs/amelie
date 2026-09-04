@@ -17,7 +17,13 @@ enum
 	FMINIMAL = 1 << 0,
 
 	// include metrics
-	FMETRICS = 1 << 1
+	FMETRICS = 1 << 1,
+
+	// all relations
+	FALL     = 1 << 2,
+
+	// FROM SHOW
+	FFROM    = 1 << 3
 };
 
 static inline bool

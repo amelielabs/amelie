@@ -46,7 +46,7 @@ parse_show(Stmt* self)
 		return;
 	}
 
-	// section | option name
+	// section
 	auto name = stmt_next_shadow(self);
 	if (name->id != KNAME && name->id != KSTRING)
 		stmt_error(self, name, "name expected");
@@ -111,9 +111,10 @@ parse_show_func(Stmt* self, Str* target)
 	on->id = KSTRING;
 
 	// [VERBOSE]
-	auto verbose = ast(KFALSE);
-	if (stmt_if(self, KVERBOSE))
-		verbose->id = KTRUE;
+	auto flags = ast(KINT);
+	flags->integer = FFROM | FMETRICS;
+	if (! stmt_if(self, KVERBOSE))
+		flags->integer |= FMINIMAL;
 
 	// SHOW ALL
 	if (all &&
@@ -126,12 +127,16 @@ parse_show_func(Stmt* self, Str* target)
 		all = false;
 	}
 
-	// show(section, name, on, verbose)
+	// flags
+	if (all)
+		flags->integer |= FALL;
+
+	// show(section, name, on, flags)
 	auto args_list = section;
 	section->next = name;
 	name->next    = on;
-	on->next      = verbose;
-	verbose->next = NULL;
+	on->next      = flags;
+	flags->next   = NULL;
 
 	// args(list_head, NULL)
 	auto args = ast_args_allocate();
@@ -142,10 +147,7 @@ parse_show_func(Stmt* self, Str* target)
 
 	// func(NULL, args)
 	Str fn;
-	if (all)
-		str_set(&fn, "show_from_all", 13);
-	else
-		str_set(&fn, "show_from", 9);
+	str_set(&fn, "show", 4);
 
 	auto func = ast_func_allocate();
 	func->fn    = functions_find(share()->functions, &fn);

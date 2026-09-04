@@ -28,7 +28,7 @@ create index i on test ();
 error: create index i on test (❰)❱ ⟵ name expected
 # test: create index
 create index i on test (a);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -63,7 +63,7 @@ indexes
 create index i on test (a);
 error: table 'test' index 'i': already exists
 create index if not exists i on test (a);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -97,7 +97,7 @@ indexes
 drop index i on test;
 # test: create index (compound key)
 create index i on test (b, a);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -140,7 +140,7 @@ error: create index i on test (a, ❰a❱ ⟵ key column is redefined
 create unique index i on test (a);
 # test: create index (asc/desc)
 create unique index j on test (a asc, b desc, id);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -192,7 +192,7 @@ create table test (id int primary key, a int, b int);
 create index i on test (a) using;
 error: create index i on test (a) using❰;❱ ⟵ index type expected
 create index i on test (a) using hash;
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -225,7 +225,7 @@ indexes
 }]
 drop index i on test;
 create index i on test (a) using tree;
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -278,7 +278,7 @@ drop index i on test;
 error: table 'test' index 'i': not exists
 # test: drop index
 create index i on test (a);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -310,7 +310,7 @@ indexes
   }]
 }]
 drop index i on test;
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -355,7 +355,7 @@ drop index i on test;
 # test: drop index primary
 drop index `primary` on test;
 error: table 'test' index 'primary': primary index cannot be dropped
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -376,7 +376,7 @@ create table t (id int primary key, v int);
 insert into t values (1, 10);
 create index i on t (v);
 drop index i on t;
-select show("table", "t", true).columns;
+select show("table", "t", null, "verbose").columns;
 
 columns
 ───────
@@ -438,7 +438,7 @@ alter index i on test rename to;
 error: alter index i on test rename to❰;❱ ⟵ name expected
 # test: alter index rename
 create index i on test (a);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -470,7 +470,7 @@ indexes
   }]
 }]
 alter index i on test rename to j;
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -511,7 +511,7 @@ error: table 'test' index 'j': already exists
 # test: drop index primary rename
 alter index `primary` on test rename to _;
 error: table 'test' index 'primary': primary index cannot be renamed
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -604,7 +604,7 @@ drop table test;
 # test: create index explain
 create table test (id int primary key, data int);
 insert into test values (1, null);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -631,7 +631,7 @@ explain
 main
   0   ddl_create_index    0      0      0
   1   ret                 -1     0      -
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -653,7 +653,7 @@ columns
 drop table test;
 # test: create index (size)
 create table test (id int primary key using hash (size 1234));
-show partitions on test;
+show partitions test;
 
 partitions
 ──────────
@@ -663,7 +663,7 @@ partitions
   "max": 8096,
   "size": 0
 }
-show indexes on test;
+show indexes test;
 
 indexes
 ───────
@@ -681,7 +681,7 @@ indexes
 }
 drop table test;
 create table test (id int primary key using hash (size 1234)) partitions 3;
-show partitions on test;
+show partitions test;
 
 partitions
 ──────────
@@ -703,7 +703,7 @@ partitions
   "max": 8096,
   "size": 0
 }
-show indexes on test;
+show indexes test;
 
 indexes
 ───────

@@ -4,7 +4,7 @@ connect E0 S0 127.0.0.1:3485;
 show;
 error: show; ⟵ ALL or name expected
 show all junk;
-error: show_all() ⟵ option 'junk' is not found
+error: show() ⟵ option 'junk' is not found
 show 1234;
 error: show ❰1234❱ ⟵ name expected
 # test: show users
@@ -48,9 +48,7 @@ tables
   "name": "test",
   "description": ""
 }
-show checkpoint_compression;
-error: show() ⟵ option 'checkpoint_compression' is not found
-show partitions on test;
+show partitions test;
 
 partitions
 ──────────
@@ -71,7 +69,7 @@ TABLES
 }
 # test: show table
 show table;
-error: show() ⟵ name argument is missing for 'table'
+error: show() ⟵ 'name' argument is missing for 'table'
 show table test;
 
 table
@@ -91,7 +89,7 @@ table
   "description": ""
 }
 # test: show indexes
-show indexes on test;
+show indexes test;
 
 indexes
 ───────
@@ -107,7 +105,7 @@ indexes
     "partitioning": true
   }]
 }
-select show('indexes', '', 'test', false);
+select show('indexes', 'test', null);
 
 show
 ────
@@ -123,64 +121,10 @@ show
     "partitioning": true
   }]
 }]
-select * from show indexes on test;
+select * from show indexes test;
 
 indexes
 ───────
-{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true,
-    "partitioning": true
-  }]
-}
-# test: show index
-show index primary on test;
-
-index
-─────
-{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true,
-    "partitioning": true
-  }]
-}
-select show('index', 'primary', 'test', false);
-
-show
-────
-{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true,
-    "partitioning": true
-  }]
-}
-show index xyz on test;
-
-index
-─────
-null
-select * from show index primary on test;
-
-index
-─────
 {
   "name": "primary",
   "type": 2,
@@ -194,7 +138,7 @@ index
   }]
 }
 # test: show partitions
-show partitions on test;
+show partitions test;
 
 partitions
 ──────────
@@ -204,7 +148,7 @@ partitions
   "max": 8096,
   "size": 0
 }
-select show('partitions', '', 'test', false);
+select show('partitions', 'test', null);
 
 show
 ────
@@ -214,7 +158,7 @@ show
   "max": 8096,
   "size": 0
 }]
-select * from show partitions on test;
+select * from show partitions test;
 
 partitions
 ──────────
@@ -303,7 +247,7 @@ functions
 }
 # test: show function
 show function;
-error: show() ⟵ name argument is missing for 'function'
+error: show() ⟵ 'name' argument is missing for 'function'
 show function test_fn;
 
 function
@@ -393,7 +337,7 @@ STATE
   "lsn": 4,
   "checkpoint": 1
 }
-select show('state');
+select show('state', null, null);
 
 show
 ────
@@ -406,7 +350,7 @@ show
   "lsn": 4,
   "checkpoint": 1
 }
-select show('state').directory;
+select show('state', null, null).directory;
 
 directory
 ─────────
@@ -480,6 +424,12 @@ config
   "repl_reconnect_ms": 3000,
   "recv": 1048576
 }
+# test: show name
+show log_enable;
+
+log_enable
+──────────
+true
 # test: show all
 show all;
 
@@ -515,23 +465,17 @@ config
   "repl_reconnect_ms": 3000,
   "recv": 1048576
 }
-select show('config').uuid;
+select show('config', null, null).uuid;
 
 uuid
 ────
 "00000000-0000-0000-0000-000000000001"
-select show('config', '123');
-error: show() ⟵ unexpected name argument
-# test: show name
-show log_enable;
+select show('config', 'checkpoint_compression', null);
+error: show() ⟵ unexpected 'name' argument
+select show('log_enable', null, null);
 
-log_enable
-──────────
-true
-show "log_enable";
-
-log_enable
-──────────
+show
+────
 true
 # test: show unknown
 show asdf;
@@ -549,7 +493,7 @@ main
   3   push                0      0      0
   4   string              0      12     0     # 
   5   push                0      0      0
-  6   bool                0      0      0
+  6   int                 0      -      0     # 11
   7   push                0      0      0
   8   call                0      -      4     # show()
   9   ret                 0      0      -

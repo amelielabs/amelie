@@ -57,12 +57,12 @@ create table test();
 error: create table test(❰)❱ ⟵ name expected
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean);
-select show('table', 'test', true).name;
+select show('table', 'test', null, "verbose").name;
 
 name
 ────
 "test"
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -91,7 +91,7 @@ columns
 drop table test;
 # test: column int8/i8
 create table test(id int primary key, id2 int8, id3 i8);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -120,7 +120,7 @@ columns
 drop table test;
 # test: column int16/i16
 create table test(id int primary key, id2 int16, id3 i16);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -149,7 +149,7 @@ columns
 drop table test;
 # test: column int/integer/int32/i32
 create table test(id int primary key, id2 integer, id3 int32, id4 i32);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -185,7 +185,7 @@ columns
 drop table test;
 # test: column int64/i64
 create table test(id int64 primary key, id2 i64);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -207,7 +207,7 @@ columns
 drop table test;
 # test: column float/f32
 create table test(id int primary key, a float, b f32);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -236,7 +236,7 @@ columns
 drop table test;
 # test: column double/f64
 create table test(id int primary key, a double, b f64);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -265,7 +265,7 @@ columns
 drop table test;
 # test: column decimal
 create table test(id int primary key, a decimal, b decimal(3, 2), c decimal (2, 0));
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -309,7 +309,7 @@ create table test(id int primary key, a decimal(2, 3));
 error: create table test(id int primary key, a decimal(2, ❰3❱ ⟵ invalid decimal scale
 # test: column text/string
 create table test(id int primary key, a text, b string);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -338,7 +338,7 @@ columns
 drop table test;
 # test: column varchar/char
 create table test(id int primary key, a varchar, b varchar(123), c char(123), d char);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -381,7 +381,7 @@ columns
 drop table test;
 # test: column json
 create table test(id int primary key, a json, b json);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -410,7 +410,7 @@ columns
 drop table test;
 # test: column timestamp
 create table test(id int primary key, a timestamp);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -432,7 +432,7 @@ columns
 drop table test;
 # test: column interval
 create table test(id int primary key, a interval);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -454,7 +454,7 @@ columns
 drop table test;
 # test: column date
 create table test(id int primary key, a date);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -482,7 +482,7 @@ error: create table test(id int primary key, a vector(❰)❱ ⟵ int expected
 create table test(id int primary key, a vector(1);
 error: create table test(id int primary key, a vector(1)❰;❱ ⟵ ) expected
 create table test(id int primary key, a vector(1));
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -504,7 +504,7 @@ columns
 drop table test;
 # test: column uuid
 create table test(id int primary key, a uuid);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -565,7 +565,7 @@ create table test(id json, primary key(id));
 error: create table test(id json, primary key(❰id❱ ⟵ supported key types are int32, int64, uuid, timestamp or text
 # test: primary key partition by (default)
 create table test(id int primary key);
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -584,7 +584,7 @@ indexes
 drop table test;
 # test: primary key partition by (default #2)
 create table test(id int, primary key(id));
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -602,7 +602,7 @@ indexes
 }]
 drop table test;
 create table test(id int, primary key((id)));
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -621,7 +621,7 @@ indexes
 drop table test;
 # test: primary key partition by (default compound)
 create table test(id int, data int, primary key (id, data));
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -644,7 +644,7 @@ indexes
 drop table test;
 # test: primary key partition by (compound)
 create table test(id int, data int, primary key((id)));
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -662,7 +662,7 @@ indexes
 }]
 drop table test;
 create table test(id int, data int, primary key((id, data)));
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -684,7 +684,7 @@ indexes
 }]
 drop table test;
 create table test(id int, data int, data2 int, primary key((id, data), data2));
-select show('table', 'test', true).indexes;
+select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
@@ -722,7 +722,7 @@ error: relation 'test': already exists
 create table test (id int primary key);
 error: relation 'test': already exists
 create table if not exists test (id int primary key);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -735,14 +735,14 @@ columns
   "constraints": [["not_null", true]]
 }]
 drop table test;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
 null
 # test: constraint default
 create table test (id int primary key, data int default 1);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -764,7 +764,7 @@ columns
 drop table test;
 # test: constraint default with key
 create table test (id int default 1 primary key);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -779,7 +779,7 @@ columns
 drop table test;
 # test: constraint default with key #2
 create table test (id int default 1, primary key(id));
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -824,7 +824,7 @@ id  data
 drop table test;
 # test: constraint not null with key
 create table test (id int not null primary key);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -839,7 +839,7 @@ columns
 drop table test;
 # test: constraint not null forced for keys
 create table test (id int primary key, data int);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -861,7 +861,7 @@ columns
 drop table test;
 # test: constraint not null forced for keys #2
 create table test (id int, data int, primary key(id));
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -885,7 +885,7 @@ drop table test;
 create table test (id int primary key, data int not);
 error: create table test (id int primary key, data int not❰)❱ ⟵ NULL expected
 create table test (id int primary key, data int not null);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -912,7 +912,7 @@ error: insert into test values(❰null❱ ⟵ column 'id' value cannot be NULL
 drop table test;
 # test: constraint not null default
 create table test (id int primary key, data int not null default 123);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -984,7 +984,7 @@ create table test (id int primary key, data int identity);
 error: create table test (id int primary key, data int identity❰)❱ ⟵ IDENTITY column can only be used with primary key
 # test: as identity int
 create table test (id int primary key as identity);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -1007,7 +1007,7 @@ count
 drop table test;
 # test: as identity uuid
 create table test (id uuid primary key identity);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 columns
 ───────
@@ -1041,7 +1041,7 @@ drop table test;
 create table test (id int primary key) partitions;
 error: create table test (id int primary key) partitions❰;❱ ⟵ int expected
 create table test (id int primary key) partitions 4;
-select show('table', 'test', true).partitions;
+select show('table', 'test', null, "verbose").partitions;
 
 partitions
 ──────────
@@ -1062,7 +1062,7 @@ partitions
   "hash_min": 6072,
   "hash_max": 8096
 }]
-show partitions on test;
+show partitions test;
 
 partitions
 ──────────
@@ -1099,7 +1099,7 @@ error: create table test (id int primary key) partitions 3 id❰;❱ ⟵ string 
 create table test (id int primary key)
 	partitions 3
 	id "00000000-0000-0000-0000-000000000001";
-select show('table', 'test', true).id;
+select show('table', 'test', null, "verbose").id;
 
 id
 ──
@@ -1111,7 +1111,7 @@ error: create table test (id int primary key) description❰;❱ ⟵ string expe
 create table test (id int primary key) description 123;
 error: create table test (id int primary key) description ❰123❱ ⟵ string expected
 create table test (id int primary key) description 'test test';
-select show('table', 'test', true).description;
+select show('table', 'test', null, "verbose").description;
 
 description
 ───────────

@@ -24,7 +24,7 @@ alter table test rename;
 alter table test rename to;
 alter table test rename to asf junk;
 alter table test rename to abc;
-select show('table', 'abc', true).name;
+select show('table', 'abc', null, "verbose").name;
 
 # test: rename table exists
 create table test (id int primary key);
@@ -43,27 +43,27 @@ alter table test rename column data to 1;
 
 # test: rename column
 create table test (id int primary key, data int default 0);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 alter table test rename column data to data2;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 select data2 from test;
 drop table test;
 
 # test: rename column #2
 create table test (id int primary key);
 insert into test values (1),(2),(3);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 alter table test rename column id to id2;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 select * from test;
 select id2 from test;
 drop table test;
 
 # test: rename column (already exists)
 create table test (id int primary key, data int default 0);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 alter table test rename column data to data;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 drop table test;
 
 # test: rename column (if table exists)
@@ -104,9 +104,9 @@ drop table test;
 
 # test: add column (empty table)
 create table test (id int primary key);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 alter table test add column data int;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 insert into test values (1,1), (2,2), (3,3);
 select data from test;
 drop table test;
@@ -115,7 +115,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 select data from test;
 insert into test values (4,4), (5,5), (6,6);
 select data from test;
@@ -125,14 +125,14 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int not null;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 drop table test;
 
 # test: add column (default)
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int default 123;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 select data from test;
 insert into test values (4,4), (5,5), (6,6);
 select data from test;
@@ -144,7 +144,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int not null default 123;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 drop table test;
 
 # test: add column (identity)
@@ -157,7 +157,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column v vector(2);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 select * from test;
 insert into test values (4, vector [4,4]);
 select * from test;
@@ -195,21 +195,21 @@ drop table test;
 
 # test: drop column (empty)
 create table test (id int primary key, a int);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 alter table test drop column a;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 drop table test;
 
 # test: drop column (empty, reorder)
 create table test (id int primary key, a int, b int);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 alter table test drop column a;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 drop table test;
 
 # test: drop column
 create table test (id int primary key, a text, b int);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 insert into test values (1,"id",1), (2,"a",2), (3,"b",3);
 select * from test;
@@ -217,15 +217,15 @@ select a from test;
 select b from test;
 
 alter table test drop column a;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 select * from test;
 select a from test;
 select b from test;
 
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 alter table test drop column b;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 select * from test;
 select id from test;
@@ -236,7 +236,7 @@ drop table test;
 
 # test: drop column (key order)
 create table test (a text, b int, id int primary key);
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 insert into test values ("id",1, 1), ("a",2, 2), ("b",3, 3);
 select * from test;
@@ -245,16 +245,16 @@ select a from test;
 select b from test;
 
 alter table test drop column a;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 select * from test;
 select id from test;
 select a from test;
 select b from test;
 
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 alter table test drop column b;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 select * from test;
 select id from test;
@@ -275,13 +275,13 @@ create table test (id int primary key, data int);
 alter table test set column data default 0;
 insert into test (id) values (0);
 select * from test;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 
 # test: unset default
 alter table test unset column data default;
 insert into test (id) values (1);
 select * from test;
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 drop table test;
 
 # test: rename with udf dep
@@ -308,13 +308,13 @@ drop table test;
 
 # test: description
 create table test (id int primary key);
-select show('table', 'test', true).description;
+select show('table', 'test', null, "verbose").description;
 alter table test description;
 alter table test description 123;
 alter table test description 'test test';
-select show('table', 'test', true).description;
+select show('table', 'test', null, "verbose").description;
 alter table test description '';
-select show('table', 'test', true).description;
+select show('table', 'test', null, "verbose").description;
 drop table test;
 
 disconnect S0;

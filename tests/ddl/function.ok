@@ -1137,7 +1137,7 @@ error: alter function test rename to❰;❱ ⟵ name expected
 alter function test rename to asf junk;
 error: alter function test rename to asf ❰junk❱ ⟵ ; expected
 alter function test2 rename to abc;
-select show('function', 'abc', true).name;
+select show('function', 'abc', null, "verbose").name;
 
 name
 ────

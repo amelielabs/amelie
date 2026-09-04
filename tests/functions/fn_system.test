@@ -4,7 +4,6 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 
 # test: config
-select show();
 select show('config');
 select show('all');
 
@@ -16,7 +15,6 @@ select show('replicas');
 
 # test: replica
 select show('replica', '00000000-0000-0000-0000-000000000001');
-select show('replica', uuid '00000000-0000-0000-0000-000000000001');
 
 # test: repl
 select show('repl');
@@ -45,13 +43,10 @@ select show('tables');
 select show('table', 'test');
 
 # test: indexes
-select show('indexes', '', 'test', false);
-
-# test: index
-select show('index', 'primary', 'test', false);
+select show('indexes', 'test');
 
 # test: partitions
-select show('partitions', '', 'test', false);
+select show('partitions', 'test');
 
 # test: functions
 select show('functions');

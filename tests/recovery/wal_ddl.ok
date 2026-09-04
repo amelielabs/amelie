@@ -123,7 +123,7 @@ abc
 0
 # test: alter table set default
 alter table test2 set column abc default 123;
-select show('table', 'test2', true).columns;
+select show('table', 'test2', null, "verbose").columns;
 
 columns
 ───────
@@ -160,7 +160,7 @@ select show('state').lsn;
 lsn
 ───
 7
-select show('table', 'test2', true).columns;
+select show('table', 'test2', null, "verbose").columns;
 
 columns
 ───────
@@ -188,7 +188,7 @@ columns
 }]
 # test: alter table unset default
 alter table test2 unset column abc default;
-select show('table', 'test2', true).columns;
+select show('table', 'test2', null, "verbose").columns;
 
 columns
 ───────
@@ -225,7 +225,7 @@ select show('state').lsn;
 lsn
 ───
 8
-select show('table', 'test2', true).columns;
+select show('table', 'test2', null, "verbose").columns;
 
 columns
 ───────
@@ -262,7 +262,7 @@ select show('state').lsn;
 lsn
 ───
 8
-select show('table', 'test2', true).columns;
+select show('table', 'test2', null, "verbose").columns;
 
 columns
 ───────
@@ -858,7 +858,7 @@ select show('state').lsn;
 lsn
 ───
 53
-select show('user', 'test2', true).limits;
+select show('user', 'test2', null, "verbose").limits;
 
 limits
 ──────
@@ -884,7 +884,7 @@ select show('state').lsn;
 lsn
 ───
 54
-select show('user', 'test2', true).limits;
+select show('user', 'test2', null, "verbose").limits;
 
 limits
 ──────

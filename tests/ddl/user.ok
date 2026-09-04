@@ -86,7 +86,7 @@ error: create user test_limit limit name = ❰value❱ ⟵ int expected
 create user test_limit limit name = 123;
 error: create user test_limit limit ❰name❱ ⟵ failed to find the limit
 create user test_limit limit send = 123;
-select show('user', 'test_limit', true).limits;
+select show('user', 'test_limit', null, "verbose").limits;
 
 limits
 ──────
@@ -447,7 +447,7 @@ error: alter user test set limit write❰;❱ ⟵ = expected
 alter user test set limit write =;
 error: alter user test set limit write =❰;❱ ⟵ int expected
 alter user test set limit write = 123;
-select show('user', 'test', true).limits;
+select show('user', 'test', null, "verbose").limits;
 
 limits
 ──────
@@ -458,7 +458,7 @@ limits
 alter user test set limit write = 123,;
 error: alter user test set limit write = 123,❰;❱ ⟵ limit name expected
 alter user test set limit write = 123, send = 123;
-select show('user', 'test', true).limits;
+select show('user', 'test', null, "verbose").limits;
 
 limits
 ──────
@@ -476,7 +476,7 @@ error: alter user test unset limit❰;❱ ⟵ limit name expected
 alter user test unset limit name;
 error: alter user test unset limit ❰name❱ ⟵ failed to find the limit
 alter user test unset limit write;
-select show('user', 'test', true).limits;
+select show('user', 'test', null, "verbose").limits;
 
 limits
 ──────
@@ -486,7 +486,7 @@ limits
 alter user test unset limit write,;
 error: alter user test unset limit write,❰;❱ ⟵ limit name expected
 alter user test unset limit write, send;
-select show('user', 'test', true).limits;
+select show('user', 'test', null, "verbose").limits;
 
 limits
 ──────

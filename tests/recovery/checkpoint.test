@@ -316,7 +316,7 @@ select show('state').checkpoint;
 
 alter table test drop column old_col;
 
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 select old_col from test order by id;
 
 # test: checkpoint and restart
@@ -329,7 +329,7 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').checkpoint;
 
-select show('table', 'test', true).columns;
+select show('table', 'test', null, "verbose").columns;
 select old_col from test order by id;
 select * from test order by id;
 drop table test;
