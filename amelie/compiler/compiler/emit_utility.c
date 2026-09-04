@@ -334,10 +334,12 @@ emit_show(Compiler* self)
 
 	// flags
 	int flags = FFROM;
-	if (! arg->verbose)
-		flags |= FMINIMAL;
 	if (arg->all)
 		flags |= FALL;
+	if (arg->create)
+		flags |= FCREATE;
+	if (! arg->verbose)
+		flags |= FMINIMAL;
 	r = op2pin(self, CINT, TYPE_INT, flags);
 	op1(self, CPUSH, r);
 	runpin(self, r);

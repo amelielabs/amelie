@@ -44,7 +44,10 @@ user_free(User* self, bool drop)
 static inline void
 user_show(User* self, Buf* buf, int flags)
 {
-	user_config_write(self->config, buf, flags);
+	if (flags_has(flags, FCREATE))
+		describe(&self->rel, buf, flags);
+	else
+		user_config_write(self->config, buf, flags);
 }
 
 static inline User*

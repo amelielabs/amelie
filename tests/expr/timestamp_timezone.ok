@@ -5,7 +5,7 @@ show timezone;
 
 timezone
 ────────
-"UTC"
+UTC
 # test: utc
 select '2024-07-29 18:40:19'::timestamp;
 
@@ -166,7 +166,7 @@ show timezone;
 
 timezone
 ────────
-"Asia/Tokyo"
+Asia/Tokyo
 select "2024-07-29 18:40:19"::timestamp;
 
 timestamp

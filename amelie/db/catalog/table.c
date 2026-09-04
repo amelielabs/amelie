@@ -39,7 +39,10 @@ table_free(Table* self, bool drop)
 static inline void
 table_show(Table* self, Buf* buf, int flags)
 {
-	table_config_write(self->config, buf, flags);
+	if (flags_has(flags, FCREATE))
+		describe(&self->rel, buf, flags);
+	else
+		table_config_write(self->config, buf, flags);
 }
 
 static inline Table*

@@ -35,7 +35,10 @@ udf_free(Udf* self, bool drop)
 static inline void
 udf_show(Udf* self, Buf* buf, int flags)
 {
-	udf_config_write(self->config, buf, flags);
+	if (flags_has(flags, FCREATE))
+		describe(&self->rel, buf, flags);
+	else
+		udf_config_write(self->config, buf, flags);
 }
 
 static inline Udf*

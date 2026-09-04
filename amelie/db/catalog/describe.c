@@ -85,7 +85,7 @@ static void
 describe_column(Column* self, Buf* buf, int flags)
 {
 	// name
-	buf_format(buf, "{str}", self->name);
+	buf_format(buf, "{str} ", &self->name);
 
 	// type
 	describe_type(self, buf, flags);
@@ -103,7 +103,7 @@ describe_column(Column* self, Buf* buf, int flags)
 
 	// [(mod)]
 	if (cons->identity_modulo != INT64_MAX)
-		buf_format(buf, "({i64}", cons->identity_modulo);
+		buf_format(buf, "({i64})", cons->identity_modulo);
 
 	// default
 	if (! buf_empty(&cons->value))
@@ -131,7 +131,7 @@ describe_table(Table* self, Buf* buf, int flags)
 	{
 		auto column = list_at(Column, link);
 		describe_column(column, buf, flags);
-		if (! list_is_first(&config->columns.list, &column->link))
+		if (! list_is_last(&config->columns.list, &column->link))
 			buf_write(buf, ", ", 2);
 	}
 
@@ -145,9 +145,12 @@ describe_table(Table* self, Buf* buf, int flags)
 		auto key = keys_at(keys, at);
 		if (partitioning && !key->partitioning)
 		{
-			buf_format(buf, "), ");
+			buf_format(buf, ")");
 			partitioning = false;
 		}
+		if (at > 0)
+			buf_write(buf, ", ", 2);
+		buf_format(buf, "{str}", &key->column->name);
 	}
 	if (partitioning)
 		buf_write(buf, ")", 1);
@@ -251,7 +254,7 @@ describe_udf(Udf* self, Buf* buf, int flags)
 	{
 		auto column = list_at(Column, link);
 		describe_column(column, buf, flags);
-		if (! list_is_first(&config->args.list, &column->link))
+		if (! list_is_last(&config->args.list, &column->link))
 			buf_write(buf, ", ", 2);
 	}
 	buf_write(buf, ")", 1);
@@ -267,7 +270,7 @@ describe_udf(Udf* self, Buf* buf, int flags)
 		{
 			auto column = list_at(Column, link);
 			describe_column(column, buf, flags);
-			if (! list_is_first(&config->returning.list, &column->link))
+			if (! list_is_last(&config->returning.list, &column->link))
 				buf_write(buf, ", ", 2);
 		}
 		buf_write(buf, ")", 1);
@@ -342,6 +345,9 @@ describe_user(User* self, Buf* buf, int flags)
 void
 describe(Rel* self, Buf* buf, int flags)
 {
+	auto offset = buf_size(buf);
+	encode_str32(buf, 0);
+
 	switch (self->type) {
 	case REL_TABLE:
 		describe_table(table_of(self), buf, flags);
@@ -365,5 +371,9 @@ describe(Rel* self, Buf* buf, int flags)
 		abort();
 		break;
 	}
-	buf_write(buf, ";\n", 2);
+	buf_write(buf, ";", 1);
+
+	// update generated string size
+	auto start = buf->start + offset;
+	pack_str32(&start, buf_size(buf) - (offset + data_size_str32()));
 }

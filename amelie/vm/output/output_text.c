@@ -61,12 +61,26 @@ output_text_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 		buf_write(buf, "─", sizeof("─") - 1);
 	buf_write(buf, "\n", 1);
 
+	if (data_is_str(pos))
+	{
+		Str str;
+		unpack_str(&pos, &str);
+		unescape_str(buf, &str);
+		buf_write(buf, "\n", 1);
+	} else
 	if (data_is_array(pos))
 	{
 		unpack_array(&pos);
 		while (! unpack_array_end(&pos))
 		{
-			json_export_as(self->buf, self->timezone, true, 0, &pos);
+			if (data_is_str(pos))
+			{
+				Str str;
+				unpack_str(&pos, &str);
+				unescape_str(buf, &str);
+			} else {
+				json_export_as(self->buf, self->timezone, true, 0, &pos);
+			}
 			buf_write(buf, "\n", 1);
 		}
 	} else

@@ -180,6 +180,9 @@ fn_show_command(Call* self, Str* section, Str* name, Str* on, int* flags)
 		if (str_is(at, "all", 3))
 			mask |= FALL;
 		else
+		if (str_is(at, "create", 6))
+			mask |= FCREATE;
+		else
 		if (str_is(at, "verbose", 7))
 			mask &= ~FMINIMAL;
 		else

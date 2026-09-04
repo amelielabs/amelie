@@ -39,7 +39,10 @@ sub_free(Sub* self, bool drop)
 static inline void
 sub_show(Sub* self, Buf* buf, int flags)
 {
-	sub_config_write(self->config, buf, flags);
+	if (flags_has(flags, FCREATE))
+		describe(&self->rel, buf, flags);
+	else
+		sub_config_write(self->config, buf, flags);
 }
 
 static Sub*

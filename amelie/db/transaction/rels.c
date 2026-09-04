@@ -286,7 +286,10 @@ rels_list_rel(Rels* self, Buf* buf, Str* user, Str* name, int flags)
 		{
 			if (user && !rel_accessible(rel, all, superuser, user))
 				return;
-			rel_write(rel, buf, flags);
+			if (flags_has(flags, FCREATE))
+				rel_show(rel, buf, flags);
+			else
+				rel_write(rel, buf, flags);
 			return;
 		}
 		encode_null(buf);
@@ -300,7 +303,10 @@ rels_list_rel(Rels* self, Buf* buf, Str* user, Str* name, int flags)
 		auto rel = list_at(Rel, link);
 		if (user && !rel_accessible(rel, all, superuser, user))
 			continue;
-		rel_write(rel, buf, flags);
+		if (flags_has(flags, FCREATE))
+			rel_show(rel, buf, flags);
+		else
+			rel_write(rel, buf, flags);
 	}
 	encode_array_end(buf);
 }

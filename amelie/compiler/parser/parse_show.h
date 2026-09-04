@@ -22,6 +22,7 @@ struct AstShow
 	Str       name;
 	Str       on;
 	bool      all;
+	bool      create;
 	bool      verbose;
 };
 

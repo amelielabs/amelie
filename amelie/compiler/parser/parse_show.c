@@ -20,7 +20,7 @@
 void
 parse_show(Stmt* self)
 {
-	// SHOW [ALL] [section] [name] [ON name] [VERBOSE]
+	// SHOW [ALL] [CREATE] [section] [name] [ON name] [VERBOSE]
 	auto stmt = ast_show_allocate();
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;
@@ -32,6 +32,9 @@ parse_show(Stmt* self)
 
 	// [ALL]
 	stmt->all = stmt_if(self, KALL) != NULL;
+
+	// [CREATE]
+	stmt->create = stmt_if(self, KCREATE) != NULL;
 
 	// SHOW ALL
 	if (stmt_if(self, KEOF) || stmt_if(self, ';'))
@@ -78,6 +81,9 @@ parse_show_func(Stmt* self, Str* target)
 {
 	// [ALL]
 	auto all = stmt_if(self, KALL) != NULL;
+
+	// [CREATE]
+	auto create = stmt_if(self, KCREATE) != NULL;
 
 	// section | option name
 	auto section = stmt_next_shadow(self);
@@ -130,6 +136,8 @@ parse_show_func(Stmt* self, Str* target)
 	// flags
 	if (all)
 		flags->integer |= FALL;
+	if (create)
+		flags->integer |= FCREATE;
 
 	// show(section, name, on, flags)
 	auto args_list = section;

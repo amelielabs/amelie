@@ -538,7 +538,7 @@ show timezone;
 
 timezone
 ────────
-"Asia/Tokyo"
+Asia/Tokyo
 # test: show locks
 show locks;
 
