@@ -11,4 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
+void describe_text(Rel*, Buf*, int);
 void describe(Rel*, Buf*, int);

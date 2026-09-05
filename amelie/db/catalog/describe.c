@@ -30,25 +30,25 @@ describe_type(Column* self, Buf* buf, int flags)
 	// type
 	switch (self->type) {
 	case TYPE_BOOL:
-		buf_format(buf, "bool");
+		buf_write(buf, "bool", 4);
 		break;
 	case TYPE_INT:
 		if (self->size == sizeof(int8_t))
-			buf_format(buf, "i8");
+			buf_write(buf, "i8", 2);
 		else
 		if (self->size == sizeof(int16_t))
-			buf_format(buf, "i16");
+			buf_write(buf, "i16", 3);
 		else
 		if (self->size == sizeof(int32_t))
-			buf_format(buf, "int");
+			buf_write(buf, "int", 3);
 		else
-			buf_format(buf, "i64");
+			buf_write(buf, "i64", 3);
 		break;
 	case TYPE_DOUBLE:
 		if (self->size == sizeof(float))
-			buf_format(buf, "float");
+			buf_write(buf, "float", 5);
 		else
-			buf_format(buf, "double");
+			buf_write(buf, "double", 6);
 		break;
 	case TYPE_DECIMAL:
 		buf_format(buf, "decimal({i64}, {i64})",
@@ -56,22 +56,22 @@ describe_type(Column* self, Buf* buf, int flags)
 		           cons->decimal_scale);
 		break;
 	case TYPE_DATE:
-		buf_format(buf, "date");
+		buf_write(buf, "date", 4);
 		break;
 	case TYPE_TIMESTAMP:
-		buf_format(buf, "timestamp");
+		buf_write(buf, "timestamp", 9);
 		break;
 	case TYPE_INTERVAL:
-		buf_format(buf, "interval");
+		buf_write(buf, "interval", 8);
 		break;
 	case TYPE_UUID:
-		buf_format(buf, "uuid");
+		buf_write(buf, "uuid", 4);
 		break;
 	case TYPE_STRING:
-		buf_format(buf, "text");
+		buf_write(buf, "text", 4);
 		break;
 	case TYPE_JSON:
-		buf_format(buf, "json");
+		buf_write(buf, "json", 4);
 		break;
 	case TYPE_VECTOR:
 		buf_format(buf, "vector({d})", self->size_flat / sizeof(float));
@@ -117,6 +117,52 @@ describe_column(Column* self, Buf* buf, int flags)
 }
 
 static void
+describe_grants(Grants* self, Buf* buf)
+{
+	if (grants_empty(self))
+		return;
+
+	auto grant = grants_first(self);
+	for (; grant; grant = grants_next(self, grant))
+	{
+		buf_write(buf, " grant ", 7);
+
+		auto n = 0;
+		auto permissions = grant->permissions;
+		while (permissions > 0)
+		{
+			auto id = permission_next(&permissions);
+			if (n > 0)
+				buf_write(buf, ", ", 2);
+			buf_format(buf, "{s}", permission_name_of(id));
+			n++;
+		}
+		buf_format(buf, " to {.*s}", grant->name_size, grant->name);
+	}
+}
+
+static void
+describe_grants_self(Grants* self, Buf* buf)
+{
+	if (grants_empty(self))
+		return;
+
+	auto grant = grants_first(self);
+	buf_write(buf, " grant ", 7);
+
+	auto n = 0;
+	auto permissions = grant->permissions;
+	while (permissions > 0)
+	{
+		auto id = permission_next(&permissions);
+		if (n > 0)
+			buf_write(buf, ", ", 2);
+		buf_format(buf, "{s}", permission_name_of(id));
+		n++;
+	}
+}
+
+static void
 describe_table(Table* self, Buf* buf, int flags)
 {
 	auto config = self->config;
@@ -154,8 +200,13 @@ describe_table(Table* self, Buf* buf, int flags)
 	}
 	if (partitioning)
 		buf_write(buf, ")", 1);
+	buf_write(buf, ")", 1);
 
-	buf_write(buf, "))", 2);
+	// [using hash]
+	auto primary = table_primary(self);
+	if (primary->type == INDEX_HASH)
+		buf_write(buf, " using hash", 11);
+	buf_write(buf, ")", 1);
 
 	// id
 	char id[UUID_SZ];
@@ -170,7 +221,42 @@ describe_table(Table* self, Buf* buf, int flags)
 	buf_format(buf, " partitions {d}", config->parts_count);
 
 	// timeline
-	buf_format(buf, " timeline {i64}", config->timeline);
+	if (config->timeline != 1)
+		buf_format(buf, " timeline {i64}", config->timeline);
+
+	// secondary indexes
+	if (config->indexes_count > 1)
+	{
+		list_foreach(&config->indexes)
+		{
+			auto index = list_at(IndexConfig, link);
+			if (index == primary)
+				continue;
+
+			// [unique] index
+			if (index->unique)
+				buf_write(buf, " unique", 7);
+			buf_format(buf, " index {str}(", &index->name);
+
+			// (keys)
+			keys = &index->keys;
+			for (auto at = 0; at < keys->count; at++)
+			{
+				auto key = keys_at(keys, at);
+				if (at > 0)
+					buf_write(buf, ", ", 2);
+				buf_format(buf, "{str}", &key->column->name);
+			}
+			buf_write(buf, ")", 1);
+
+			// using hash
+			if (index->type == INDEX_HASH)
+				buf_write(buf, " using hash", 11);
+		}
+	}
+
+	// grants
+	describe_grants(&self->config->grants, buf);
 }
 
 static void
@@ -195,6 +281,9 @@ describe_clone(Clone* self, Buf* buf, int flags)
 
 	// timeline
 	buf_format(buf, " timeline {i64}", config->timeline.timeline);
+
+	// grants
+	describe_grants(&self->config->grants, buf);
 }
 
 static void
@@ -215,6 +304,9 @@ describe_topic(Topic* self, Buf* buf, int flags)
 	// description
 	if (! str_empty(&config->description))
 		buf_format(buf, " description {qstr}", &config->description);
+
+	// grants
+	describe_grants(&self->config->grants, buf);
 }
 
 static void
@@ -236,6 +328,9 @@ describe_subscription(Sub* self, Buf* buf, int flags)
 
 	// lsn
 	buf_format(buf, " lsn {i64}", config->lsn);
+
+	// grants
+	describe_grants(&self->config->grants, buf);
 }
 
 static void
@@ -289,6 +384,9 @@ describe_udf(Udf* self, Buf* buf, int flags)
 	buf_format(buf, " begin ");
 	buf_write_str(buf, &config->text);
 	buf_format(buf, " end");
+
+	// grants
+	describe_grants(&self->config->grants, buf);
 }
 
 static void
@@ -340,14 +438,14 @@ describe_user(User* self, Buf* buf, int flags)
 		buf_format(buf, "{s} = {i64}", limits_of(i),
 		           limits->limits[i]);
 	}
+
+	// grants
+	describe_grants_self(&self->config->grants, buf);
 }
 
 void
-describe(Rel* self, Buf* buf, int flags)
+describe_text(Rel* self, Buf* buf, int flags)
 {
-	auto offset = buf_size(buf);
-	encode_str32(buf, 0);
-
 	switch (self->type) {
 	case REL_TABLE:
 		describe_table(table_of(self), buf, flags);
@@ -372,6 +470,16 @@ describe(Rel* self, Buf* buf, int flags)
 		break;
 	}
 	buf_write(buf, ";", 1);
+}
+
+void
+describe(Rel* self, Buf* buf, int flags)
+{
+	auto offset = buf_size(buf);
+	encode_str32(buf, 0);
+
+	// generate schema
+	describe_text(self, buf, flags);
 
 	// update generated string size
 	auto start = buf->start + offset;
