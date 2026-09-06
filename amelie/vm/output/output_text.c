@@ -78,11 +78,19 @@ output_text_write_data(Output* self, Str* column, uint8_t* pos, bool unwrap)
 				Str str;
 				unpack_str(&pos, &str);
 				unescape_str(buf, &str);
+
+				// separate lines
+				buf_write(buf, "\n", 1);
 			} else {
 				json_export_as(self->buf, self->timezone, true, 0, &pos);
 			}
 			buf_write(buf, "\n", 1);
 		}
+
+		if (buf_size(buf) >= 2 &&
+		    buf->position[-1] == '\n' &&
+		    buf->position[-2] == '\n')
+			buf_truncate(buf, 1);
 	} else
 	{
 		// value

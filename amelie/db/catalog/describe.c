@@ -125,7 +125,7 @@ describe_grants(Grants* self, Buf* buf)
 	auto grant = grants_first(self);
 	for (; grant; grant = grants_next(self, grant))
 	{
-		buf_write(buf, " grant ", 7);
+		buf_write(buf, "  grant ", 8);
 
 		auto n = 0;
 		auto permissions = grant->permissions;
@@ -148,7 +148,7 @@ describe_grants_self(Grants* self, Buf* buf)
 		return;
 
 	auto grant = grants_first(self);
-	buf_write(buf, " grant ", 7);
+	buf_write(buf, "  grant ", 8);
 
 	auto n = 0;
 	auto permissions = grant->permissions;
@@ -168,61 +168,66 @@ describe_table(Table* self, Buf* buf, int flags)
 	auto config = self->config;
 
 	// create table
-	buf_format(buf, "create table {str}.{str}", &config->user,
+	buf_format(buf, "create table {str}.{str} (\n", &config->user,
 	           &config->name);
 
 	// (columns)
-	buf_write(buf, "(", 1);
 	list_foreach(&config->columns.list)
 	{
 		auto column = list_at(Column, link);
+		buf_write(buf, "  ", 2);
 		describe_column(column, buf, flags);
-		if (! list_is_last(&config->columns.list, &column->link))
-			buf_write(buf, ", ", 2);
+		buf_write(buf, ",\n", 2);
 	}
 
 	// primary key ((partitioning key), key)
-	buf_format(buf, ", primary key((");
-
-	auto partitioning = true;
 	auto keys = table_keys(self);
-	for (auto at = 0; at < keys->count; at++)
+	if (keys->count == 1)
 	{
-		auto key = keys_at(keys, at);
-		if (partitioning && !key->partitioning)
+		auto key = keys_at(keys, 0);
+		buf_format(buf, "  primary key ({str})",  &key->column->name);
+	} else
+	{
+		buf_format(buf, "  primary key ((");
+		auto partitioning = true;
+		for (auto at = 0; at < keys->count; at++)
 		{
-			buf_format(buf, ")");
-			partitioning = false;
+			auto key = keys_at(keys, at);
+			if (partitioning && !key->partitioning)
+			{
+				buf_format(buf, ")");
+				partitioning = false;
+			}
+			if (at > 0)
+				buf_write(buf, ", ", 2);
+			buf_format(buf, "{str}", &key->column->name);
 		}
-		if (at > 0)
-			buf_write(buf, ", ", 2);
-		buf_format(buf, "{str}", &key->column->name);
-	}
-	if (partitioning)
+		if (partitioning)
+			buf_write(buf, ")", 1);
 		buf_write(buf, ")", 1);
-	buf_write(buf, ")", 1);
+	}
 
 	// [using hash]
 	auto primary = table_primary(self);
 	if (primary->type == INDEX_HASH)
 		buf_write(buf, " using hash", 11);
-	buf_write(buf, ")", 1);
+	buf_write(buf, "\n)\n", 3);
 
 	// id
 	char id[UUID_SZ];
 	uuid_get(&config->id, id, sizeof(id));
-	buf_format(buf, " id {qs}", id);
+	buf_format(buf, "  id {qs}\n", id);
 
 	// description
 	if (! str_empty(&config->description))
-		buf_format(buf, " description {qstr}", &config->description);
+		buf_format(buf, "  description {qstr}\n", &config->description);
 
 	// partitions
-	buf_format(buf, " partitions {d}", config->parts_count);
+	buf_format(buf, "  partitions {d}\n", config->parts_count);
 
 	// timeline
 	if (config->timeline != 1)
-		buf_format(buf, " timeline {i64}", config->timeline);
+		buf_format(buf, "  timeline {i64}\n", config->timeline);
 
 	// secondary indexes
 	if (config->indexes_count > 1)
@@ -235,8 +240,10 @@ describe_table(Table* self, Buf* buf, int flags)
 
 			// [unique] index
 			if (index->unique)
-				buf_write(buf, " unique", 7);
-			buf_format(buf, " index {str}(", &index->name);
+				buf_write(buf, "  unique index", 14);
+			else
+				buf_write(buf, "  index ", 7);
+			buf_format(buf, " {str} (", &index->name);
 
 			// (keys)
 			keys = &index->keys;
@@ -252,6 +259,7 @@ describe_table(Table* self, Buf* buf, int flags)
 			// using hash
 			if (index->type == INDEX_HASH)
 				buf_write(buf, " using hash", 11);
+			buf_write(buf, "\n", 1);
 		}
 	}
 
@@ -266,21 +274,21 @@ describe_clone(Clone* self, Buf* buf, int flags)
 	unused(flags);
 
 	// create clone
-	buf_format(buf, "create clone {str}.{str} of {str}.{str}",
+	buf_format(buf, "create clone {str}.{str} of {str}.{str}\n",
 	           &config->user, &config->name,
 	           &config->table_user, &config->table);
 
 	// id
 	char id[UUID_SZ];
 	uuid_get(&config->id, id, sizeof(id));
-	buf_format(buf, " id {qs}", id);
+	buf_format(buf, "  id {qs}\n", id);
 
 	// description
 	if (! str_empty(&config->description))
-		buf_format(buf, " description {qstr}", &config->description);
+		buf_format(buf, "  description {qstr}\n", &config->description);
 
 	// timeline
-	buf_format(buf, " timeline {i64}", config->timeline.timeline);
+	buf_format(buf, "  timeline {i64}\n", config->timeline.timeline);
 
 	// grants
 	describe_grants(&self->config->grants, buf);
@@ -293,17 +301,17 @@ describe_topic(Topic* self, Buf* buf, int flags)
 	unused(flags);
 
 	// create topic
-	buf_format(buf, "create topic {str}.{str}", &config->user,
+	buf_format(buf, "create topic {str}.{str}\n", &config->user,
 	           &config->name);
 
 	// id
 	char id[UUID_SZ];
 	uuid_get(&config->id, id, sizeof(id));
-	buf_format(buf, " id {qs}", id);
+	buf_format(buf, "  id {qs}\n", id);
 
 	// description
 	if (! str_empty(&config->description))
-		buf_format(buf, " description {qstr}", &config->description);
+		buf_format(buf, "  description {qstr}\n", &config->description);
 
 	// grants
 	describe_grants(&self->config->grants, buf);
@@ -316,7 +324,7 @@ describe_subscription(Sub* self, Buf* buf, int flags)
 	unused(flags);
 
 	// create subscription
-	buf_format(buf, "create subscription {str}.{str} on {str}.{str}",
+	buf_format(buf, "create subscription {str}.{str} on {str}.{str}\n",
 	           &config->user,
 	           &config->name,
 	           &config->rel_user,
@@ -324,10 +332,10 @@ describe_subscription(Sub* self, Buf* buf, int flags)
 
 	// description
 	if (! str_empty(&config->description))
-		buf_format(buf, " description {qstr}", &config->description);
+		buf_format(buf, "  description {qstr}\n", &config->description);
 
 	// lsn
-	buf_format(buf, " lsn {i64}", config->lsn);
+	buf_format(buf, "  lsn {i64}\n", config->lsn);
 
 	// grants
 	describe_grants(&self->config->grants, buf);
@@ -340,7 +348,7 @@ describe_udf(Udf* self, Buf* buf, int flags)
 	unused(flags);
 
 	// create function
-	buf_format(buf, "create function {str}.{str}", &config->user,
+	buf_format(buf, "create function {str}.{str}\n", &config->user,
 	           &config->name);
 
 	// (args)
@@ -375,15 +383,16 @@ describe_udf(Udf* self, Buf* buf, int flags)
 	{
 		buf_format(buf, " return {s}", type_of(config->type));
 	}
+	buf_write(buf, "\n", 1);
 
 	// description
 	if (! str_empty(&config->description))
-		buf_format(buf, " description {qstr}", &config->description);
+		buf_format(buf, "  description {qstr}\n", &config->description);
 
 	// begin text end
-	buf_format(buf, " begin ");
+	buf_format(buf, "begin\\n");
 	buf_write_str(buf, &config->text);
-	buf_format(buf, " end");
+	buf_format(buf, "end\n");
 
 	// grants
 	describe_grants(&self->config->grants, buf);
@@ -397,28 +406,28 @@ describe_user(User* self, Buf* buf, int flags)
 
 	// create user
 	if (config->agent)
-		buf_format(buf, "create agent {str}.{str}", &config->parent,
+		buf_format(buf, "create agent {str}.{str}\n", &config->parent,
 		           &config->name);
 	else
-		buf_format(buf, "create user {str}.{str}", &config->parent,
+		buf_format(buf, "create user {str}.{str}\n", &config->parent,
 		           &config->name);
 
 	// id
 	char id[UUID_SZ];
 	uuid_get(&config->id, id, sizeof(id));
-	buf_format(buf, " id {qs}", id);
+	buf_format(buf, "  id {qs}\n", id);
 
 	// description
 	if (! str_empty(&config->description))
-		buf_format(buf, " description {qstr}", &config->description);
+		buf_format(buf, "  description {qstr}\n", &config->description);
 
 	// created
 	if (! str_empty(&config->created_at))
-		buf_format(buf, " created {qstr}", &config->created_at);
+		buf_format(buf, "  created {qstr}\n", &config->created_at);
 
 	// revoked
 	if (! str_empty(&config->revoked_at))
-		buf_format(buf, " revoked {qstr}", &config->revoked_at);
+		buf_format(buf, "  revoked {qstr}\n", &config->revoked_at);
 
 	// limit name = value, ...
 	auto limit_clause = false;	
@@ -430,7 +439,7 @@ describe_user(User* self, Buf* buf, int flags)
 
 		if (! limit_clause)
 		{
-			buf_format(buf, " limit ");
+			buf_format(buf, "  limit ");
 			limit_clause = true;
 		} else {
 			buf_format(buf, ", ");
@@ -438,6 +447,7 @@ describe_user(User* self, Buf* buf, int flags)
 		buf_format(buf, "{s} = {i64}", limits_of(i),
 		           limits->limits[i]);
 	}
+	buf_write(buf, "\n", 1);
 
 	// grants
 	describe_grants_self(&self->config->grants, buf);
@@ -469,6 +479,9 @@ describe_text(Rel* self, Buf* buf, int flags)
 		abort();
 		break;
 	}
+	if (!buf_empty(buf) && buf->position[-1] == '\n')
+		buf_truncate(buf, 1);
+
 	buf_write(buf, ";", 1);
 }
 
