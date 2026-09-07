@@ -110,7 +110,7 @@ table_create(Catalog*     self,
 
 	// allocate table
 	auto user  = user_of(tr->user);
-	auto table = table_allocate(config, self->iface_part, self->iface_part_arg,
+	auto table = table_allocate(config, self->iface_part, self->iface_arg,
 	                            &user->memory);
 
 	// update tables

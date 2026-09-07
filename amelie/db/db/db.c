@@ -26,18 +26,17 @@
 
 void
 db_init(Db*        self,
+        Cdc*       cdc,
         CatalogIf* iface,
-        void*      iface_arg,
+        EvalIf*    iface_eval,
         PartsIf*   iface_parts,
-        void*      iface_parts_arg,
-        Cdc*       cdc)
+        void*      iface_arg)
 {
 	self->snapshots_count = 0;
 	self->cdc             = cdc;
-	catalog_init(&self->catalog, iface, iface_arg,
-	             iface_parts,
-	             iface_parts_arg,
-	             cdc);
+	catalog_init(&self->catalog, cdc,
+	             iface,
+	             iface_eval, iface_parts, iface_arg);
 	wal_init(&self->wal);
 	list_init(&self->snapshots);
 	checkpoints_init(&self->checkpoints, &self->catalog);

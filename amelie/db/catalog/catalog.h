@@ -30,12 +30,12 @@ struct Catalog
 	Columns    cdc_columns;
 	Cdc*       cdc;
 	PartsIf*   iface_part;
-	void*      iface_part_arg;
+	EvalIf*    iface_eval;
 	CatalogIf* iface;
 	void*      iface_arg;
 };
 
-void catalog_init(Catalog*, CatalogIf*, void*, PartsIf*, void*, Cdc*);
+void catalog_init(Catalog*, Cdc*, CatalogIf*, EvalIf*, PartsIf*, void*);
 void catalog_free(Catalog*);
 void catalog_create(Catalog*);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);

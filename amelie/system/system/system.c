@@ -196,6 +196,34 @@ static RecoverIf recover_if =
 	.sync    = recover_if_sync
 };
 
+
+static void
+eval_if_create(Eval* self)
+{
+	self->state = system_eval_allocate();
+	system_eval_create(self->state);
+}
+
+static void
+eval_if_free(Eval* self)
+{
+	system_eval_free(self->state);
+	self->state = NULL;
+}
+
+static void
+eval_if_execute(Eval* self, Str* command)
+{
+	system_eval(self->state, command);
+}
+
+static EvalIf eval_if =
+{
+	.create  = eval_if_create,
+	.free    = eval_if_free,
+	.execute = eval_if_execute
+};
+
 static void
 system_save_state(void* arg)
 {
@@ -257,7 +285,10 @@ system_create(void)
 	functions_init(&self->functions);
 
 	// db
-	db_init(&self->db, &catalog_if, self, &parts_if, self, &self->cdc);
+	db_init(&self->db, &self->cdc,
+	        &catalog_if,
+	        &eval_if,
+	        &parts_if, self);
 
 	// replication
 	repl_init(&self->repl, &self->db, &recover_if, self);

@@ -52,6 +52,9 @@
 #include "catalog/rel_op.h"
 #include "catalog/rel.h"
 
+// eval
+#include "catalog/eval.h"
+
 // catalog
 #include "catalog/catalog.h"
 #include "catalog/catalog_find.h"

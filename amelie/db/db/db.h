@@ -24,7 +24,7 @@ struct Db
 	Cdc*        cdc;
 };
 
-void db_init(Db*, CatalogIf*, void*, PartsIf*, void*, Cdc*);
+void db_init(Db*, Cdc*, CatalogIf*, EvalIf*, PartsIf*, void*);
 void db_free(Db*);
 void db_open(Db*, bool);
 void db_close(Db*);

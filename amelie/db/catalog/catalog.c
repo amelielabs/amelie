@@ -23,17 +23,18 @@
 
 void
 catalog_init(Catalog*   self,
+             Cdc*       cdc,
              CatalogIf* iface,
-             void*      iface_arg,
+             EvalIf*    iface_eval,
              PartsIf*   iface_part,
-             void*      iface_part_arg,
-             Cdc*       cdc)
+             void*      iface_arg)
 {
-	self->iface          = iface;
-	self->iface_arg      = iface_arg;
-	self->iface_part     = iface_part;
-	self->iface_part_arg = iface_part_arg;
-	self->cdc            = cdc;
+	self->cdc        = cdc;
+
+	self->iface      = iface;
+	self->iface_part = iface_part;
+	self->iface_eval = iface_eval;
+	self->iface_arg  = iface_arg;
 
 	rels_init(&self->users);
 	rels_init(&self->rels);

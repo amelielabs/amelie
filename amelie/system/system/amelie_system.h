@@ -17,6 +17,7 @@
 // system
 #include "system/system.h"
 #include "system/system_metrics.h"
+#include "system/system_eval.h"
 
 // system runtime
 #include "system/main.h"
