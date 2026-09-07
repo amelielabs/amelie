@@ -102,6 +102,9 @@ clone_create(Catalog*     self,
 		return false;
 	}
 
+	// ensure relation has unique id
+	catalog_check_uniqueness(self, &config->id);
+
 	// ensure table exists
 	auto table = catalog_find_table(self, &config->table_user, &config->table, true);
 

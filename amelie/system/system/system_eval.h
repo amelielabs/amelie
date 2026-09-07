@@ -62,6 +62,9 @@ system_eval(SystemEval* self, Str* command)
 	output_set_buf(&portal->output, &self->portal_buf);
 	output_set(&portal->output, &portal->endpoint, &output_json, NULL);
 
+	// update time and random seed
+	portal_prepare(portal);
+
 	// auth portal
 	Str user;
 	str_set(&user, "amelie", 6);

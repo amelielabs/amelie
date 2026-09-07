@@ -77,6 +77,9 @@ topic_create(Catalog*     self,
 		return false;
 	}
 
+	// ensure relation has unique id
+	catalog_check_uniqueness(self, &config->id);
+
 	// check limit
 	catalog_limit(self, tr, REL_TOPIC, LIMIT_TOPICS);
 
