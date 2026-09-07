@@ -180,7 +180,6 @@ hot static inline uint64_t
 gtrs_detach(Gtrs* self, Batch* batch)
 {
 	// group completion (called from Commit)
-	auto lsn = batch->write.lsn;
 
 	// called by Commit
 	spinlock_lock(&self->lock);
@@ -190,7 +189,6 @@ gtrs_detach(Gtrs* self, Batch* batch)
 	while (ref)
 	{
 		auto next = ref->pending_link;
-		track_lsn_follow(ref, lsn);
 		ref->consensus    = ref->pending_consensus;
 		ref->pending      = false;
 		ref->pending_link = NULL;

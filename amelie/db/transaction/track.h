@@ -22,7 +22,6 @@ struct Track
 	Consensus  consensus_pod;
 	// commited (globally)
 	Consensus  consensus;
-	atomic_u64 lsn;
 	// pending commit state
 	bool       pending;
 	Consensus  pending_consensus;
@@ -33,7 +32,6 @@ struct Track
 static inline void
 track_init(Track* self)
 {
-	self->lsn          = 0;
 	self->pending      = false;
 	self->pending_link = NULL;
 	self->backend      = NULL;
@@ -57,25 +55,6 @@ static inline void
 track_set_backend(Track* self, Task* task)
 {
 	self->backend = task;
-}
-
-static inline uint64_t
-track_lsn(Track* self)
-{
-	return atomic_u64_of(&self->lsn);
-}
-
-static inline void
-track_lsn_set(Track* self, uint64_t lsn)
-{
-	atomic_u64_set(&self->lsn, lsn);
-}
-
-static inline void
-track_lsn_follow(Track* self, uint64_t lsn)
-{
-	if (atomic_u64_of(&self->lsn) < lsn)
-		atomic_u64_set(&self->lsn, lsn);
 }
 
 static inline Msg*
