@@ -348,7 +348,7 @@ describe_udf(Udf* self, Buf* buf, int flags)
 	unused(flags);
 
 	// create function
-	buf_format(buf, "create function {str}.{str}\n", &config->user,
+	buf_format(buf, "create function {str}.{str} ", &config->user,
 	           &config->name);
 
 	// (args)
@@ -390,9 +390,7 @@ describe_udf(Udf* self, Buf* buf, int flags)
 		buf_format(buf, "  description {qstr}\n", &config->description);
 
 	// begin text end
-	buf_format(buf, "begin\\n");
 	buf_write_str(buf, &config->text);
-	buf_format(buf, "end\n");
 
 	// grants
 	describe_grants(&self->config->grants, buf);

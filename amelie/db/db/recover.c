@@ -47,7 +47,6 @@ recover_wal_main(Recover* self)
 	// open wal files and maybe truncate wal files according
 	// to the wal_truncate option
 	auto wal = &self->db->wal;
-	wal_open(wal);
 
 	// prepare recovery state
 	self->iface->create(self);

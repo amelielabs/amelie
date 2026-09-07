@@ -84,8 +84,11 @@ parse_sub_create(Stmt* self)
 		if (str_is_case(&name->string, "lsn", 3))
 		{
 			auto value = stmt_expect(self, KINT);
-			if (value->integer <= (int64_t)state_lsn())
+			if (value->integer <= 0)
 				stmt_error(self, value, "invalid lsn");
+
+			// note: lsn can be in future (in case of checkpoint schema recovery)
+			// and in past (must be no less then cdc min)
 			sub_config_set_pos(config, value->integer);
 			continue;
 		}

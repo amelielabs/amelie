@@ -117,6 +117,13 @@ wal_flush(Wal* self, WalFile* current, WalContext* context)
 }
 
 hot static inline void
+wal_recover_checkpoint(WalContext* context)
+{
+	// keep current lsn
+	context->lsn = state_lsn();
+}
+
+hot static inline void
 wal_recover(WalContext* context)
 {
 	context->lsn = state_lsn();
@@ -160,6 +167,10 @@ wal_write_state(Wal* self, WalFile* current, WalContext* context)
 	case RECOVER_OFF:
 		// wal write
 		wal_flush(self, current, context);
+		break;
+	case RECOVER_CHECKPOINT:
+		// wal write druing checkpoint recovery
+		wal_recover_checkpoint(context);
 		break;
 	case RECOVER_WAL:
 		// wal recover

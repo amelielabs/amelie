@@ -55,13 +55,6 @@ db_free(Db* self)
 static void
 db_bootstrap(Db* self)
 {
-	// first valid transaction id starts from 1
-	state_lsn_set(1);
-	state_checkpoint_set(1);
-
-	// create system objects
-	catalog_create(&self->catalog);
-
 	// create initial checkpoint
 	Checkpoint checkpoint;
 	checkpoint_init(&checkpoint, &self->catalog);
@@ -76,6 +69,16 @@ db_bootstrap(Db* self)
 void
 db_open(Db* self, bool bootstrap)
 {
+	state_lsn_set(1);
+	state_checkpoint_set(1);
+
+	// open wal files and maybe truncate wal files according
+	// to the wal_truncate option
+	wal_open(&self->wal);
+
+	// create superuser
+	catalog_create(&self->catalog);
+
 	// create initial checkpoint
 	if (bootstrap)
 	{

@@ -272,8 +272,8 @@ checkpoint_run(Checkpoint* self)
 	     self->lsn, self->workers_count);
 	fs_mkdir(0755, "{s}", path);
 
-	// create <base>/checkpoint/<lsn>.incomplete/catalog.json
-	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/catalog.json",
+	// create <base>/checkpoint/<lsn>.incomplete/schema.sql
+	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/schema.sql",
 	       state_directory(), self->lsn);
 	catalog_write(self->catalog, path);
 

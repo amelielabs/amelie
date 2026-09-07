@@ -136,9 +136,9 @@ checkpoints_open(Checkpoints* self)
 	info("recover: cdc ({.2f} MiB)",
 	     id, (double)size / 1024 / 1024);
 
-	// restore last checkpoint
+	// restore last checkpoint schema
 	format(path, sizeof(path),
-	       "{s}/checkpoint/{u64}/catalog.json",
+	       "{s}/checkpoint/{u64}/schema.sql",
 	       state_directory(), id);
 
 	catalog_read(self->catalog, path);
