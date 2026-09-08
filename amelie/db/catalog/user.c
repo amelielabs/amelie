@@ -414,6 +414,10 @@ user_revoke_token(Catalog* self,
 	// only owner or superuser
 	check_ownership_user(tr, &user->rel);
 
+	// superuser is immutable
+	if (user->config->superuser)
+		error("user '{str}': system user is immutable", name);
+
 	// invalidate auth caches
 	self->iface->user_invalidate(self, user);
 
@@ -473,6 +477,10 @@ user_describe(Catalog* self,
 
 	// only owner or superuser
 	check_ownership_user(tr, &user->rel);
+
+	// superuser is immutable
+	if (user->config->superuser)
+		error("user '{str}': system user is immutable", name);
 
 	// update user
 	log_ddl(&tr->log, &describe_if, NULL, &user->rel);

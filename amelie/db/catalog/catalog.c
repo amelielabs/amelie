@@ -107,17 +107,6 @@ catalog_create(Catalog* self)
 		user_config_set_name(user_config, &name);
 		user_config_set_parent(user_config, &name);
 		user_config_set_superuser(user_config, true);
-		Uuid id;
-		uuid_init(&id);
-		uuid_generate(&id, &am_task->random, time_ms());
-		user_config_set_id(user_config, &id);
-		// set timestamp
-		char ts[64];
-		auto time = time_us();
-		auto size = timestamp_get(time, runtime()->timezone, ts, sizeof(ts));
-		Str created_at;
-		str_set(&created_at, ts, size);
-		user_config_set_created_at(user_config, &created_at);
 		user_create(self, &tr, user_config, false);
 
 		// commit

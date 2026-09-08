@@ -445,7 +445,8 @@ describe_user(User* self, Buf* buf, int flags)
 		buf_format(buf, "{s} = {i64}", limits_of(i),
 		           limits->limits[i]);
 	}
-	buf_write(buf, "\n", 1);
+	if (limit_clause)
+		buf_write(buf, "\n", 1);
 
 	// grants
 	describe_grants_self(&self->config->grants, buf);
