@@ -199,21 +199,6 @@ rels_rename(Rels* self, Rel* rel, Str* user, Str* name)
 	rels_set(self, rel);
 }
 
-void
-rels_dump(Rels* self, RelType type, Buf* buf, int flags)
-{
-	// array
-	encode_array(buf);
-	list_foreach(&self->list)
-	{
-		auto rel = list_at(Rel, link);
-		if (rel->type != type)
-			continue;
-		rel_show(rel, buf, flags);
-	}
-	encode_array_end(buf);
-}
-
 hot static inline bool
 rel_accessible(Rel* self, bool all, bool superuser, Str* user)
 {
@@ -238,21 +223,22 @@ rel_accessible(Rel* self, bool all, bool superuser, Str* user)
 void
 rels_list(Rels* self, RelType type,
           Buf*  buf,
+          Str*  user_by,
           Str*  user,
           Str*  name,
           int   flags)
 {
 	auto all = flags_has(flags, FALL);
-	auto superuser = user && str_is(user, "amelie", 6);
+	auto superuser = user && str_is(user_by, "amelie", 6);
 	if (name)
 	{
 		// show <type>
 		auto rel = rels_find(self, type, user, name, false);
 		if (rel)
 		{
-			if (user && !rel_accessible(rel, all, superuser, user))
+			if (user && !rel_accessible(rel, all, superuser, user_by))
 				return;
-			rel_show(rel, buf, flags);
+			rel_show(rel, buf, user_by, flags);
 			return;
 		}
 		encode_null(buf);
@@ -266,28 +252,32 @@ rels_list(Rels* self, RelType type,
 		auto rel = list_at(Rel, link);
 		if (type != REL_UNDEF && rel->type != type)
 			continue;
-		if (user && !rel_accessible(rel, all, superuser, user))
+		if (user && !rel_accessible(rel, all, superuser, user_by))
 			continue;
-		rel_show(rel, buf, flags);
+		rel_show(rel, buf, user_by, flags);
 	}
 	encode_array_end(buf);
 }
 
 void
-rels_list_rel(Rels* self, Buf* buf, Str* user, Str* name, int flags)
+rels_list_rel(Rels* self, Buf* buf,
+              Str*  user_by,
+              Str*  user,
+              Str*  name,
+              int   flags)
 {
 	auto all = flags_has(flags, FALL);
-	auto superuser = user && str_is(user, "amelie", 6);
+	auto superuser = user && str_is(user_by, "amelie", 6);
 	if (name)
 	{
 		// show rel
 		auto rel = rels_find(self, REL_UNDEF, user, name, false);
 		if (rel)
 		{
-			if (user && !rel_accessible(rel, all, superuser, user))
+			if (user && !rel_accessible(rel, all, superuser, user_by))
 				return;
 			if (flags_has(flags, FCREATE))
-				rel_show(rel, buf, flags);
+				rel_show(rel, buf, user_by, flags);
 			else
 				rel_write(rel, buf, flags);
 			return;
@@ -301,10 +291,10 @@ rels_list_rel(Rels* self, Buf* buf, Str* user, Str* name, int flags)
 	list_foreach(&self->list)
 	{
 		auto rel = list_at(Rel, link);
-		if (user && !rel_accessible(rel, all, superuser, user))
+		if (user && !rel_accessible(rel, all, superuser, user_by))
 			continue;
 		if (flags_has(flags, FCREATE))
-			rel_show(rel, buf, flags);
+			rel_show(rel, buf, user_by, flags);
 		else
 			rel_write(rel, buf, flags);
 	}

@@ -55,10 +55,10 @@ clone_free(Clone* self, bool drop)
 }
 
 static inline void
-clone_show(Clone* self, Buf* buf, int flags)
+clone_show(Clone* self, Buf* buf, Str* user, int flags)
 {
 	if (flags_has(flags, FCREATE))
-		describe(&self->rel, buf, flags);
+		describe(&self->rel, buf, user, flags);
 	else
 		clone_config_write(self->config, buf, flags);
 }

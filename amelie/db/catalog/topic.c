@@ -31,10 +31,10 @@ topic_free(Topic* self, bool drop)
 }
 
 static inline void
-topic_show(Topic* self, Buf* buf, int flags)
+topic_show(Topic* self, Buf* buf, Str* user, int flags)
 {
 	if (flags_has(flags, FCREATE))
-		describe(&self->rel, buf, flags);
+		describe(&self->rel, buf, user, flags);
 	else
 		topic_config_write(self->config, buf, flags);
 }

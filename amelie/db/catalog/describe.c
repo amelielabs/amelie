@@ -163,13 +163,17 @@ describe_grants_self(Grants* self, Buf* buf)
 }
 
 static void
-describe_table(Table* self, Buf* buf, int flags)
+describe_table(Table* self, Buf* buf, Str* user, int flags)
 {
-	auto config = self->config;
+	auto verbose = !flags_has(flags, FMINIMAL);
+	auto config  = self->config;
 
 	// create table
-	buf_format(buf, "create table {str}.{str} (\n", &config->user,
-	           &config->name);
+	if (!verbose && str_compare_case(self->rel.user, user))
+		buf_format(buf, "create table {str} (\n", &config->name);
+	else
+		buf_format(buf, "create table {str}.{str} (\n", &config->user,
+		           &config->name);
 
 	// (columns)
 	list_foreach(&config->columns.list)
@@ -214,7 +218,7 @@ describe_table(Table* self, Buf* buf, int flags)
 	buf_write(buf, "\n)\n", 3);
 
 	// id
-	if (! flags_has(flags, FMINIMAL))
+	if (verbose)
 	{
 		char id[UUID_SZ];
 		uuid_get(&config->id, id, sizeof(id));
@@ -228,7 +232,7 @@ describe_table(Table* self, Buf* buf, int flags)
 	// partitions
 	buf_format(buf, "  partitions {d}\n", config->parts_count);
 
-	if (flags_has(flags, FMINIMAL))
+	if (! verbose)
 		return;
 
 	// timeline
@@ -274,18 +278,27 @@ describe_table(Table* self, Buf* buf, int flags)
 }
 
 static void
-describe_clone(Clone* self, Buf* buf, int flags)
+describe_clone(Clone* self, Buf* buf, Str* user, int flags)
 {
+	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config = self->config;
-	unused(flags);
 
 	// create clone
-	buf_format(buf, "create clone {str}.{str} of {str}.{str}\n",
-	           &config->user, &config->name,
-	           &config->table_user, &config->table);
+	if (!verbose && str_compare_case(self->rel.user, user))
+		buf_format(buf, "create clone {str}",  &config->name);
+	else
+		buf_format(buf, "create clone {str}.{str}",
+		           &config->user, &config->name);
+
+	// of
+	if (!verbose && str_compare_case(&config->table_user, user))
+		buf_format(buf, " of {str}\n", &config->table);
+	else
+		buf_format(buf, " of {str}.{str}\n",
+		           &config->table_user, &config->table);
 
 	// id
-	if (! flags_has(flags, FMINIMAL))
+	if (verbose)
 	{
 		char id[UUID_SZ];
 		uuid_get(&config->id, id, sizeof(id));
@@ -296,7 +309,7 @@ describe_clone(Clone* self, Buf* buf, int flags)
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
 
-	if (flags_has(flags, FMINIMAL))
+	if (! verbose)
 		return;
 
 	// timeline
@@ -307,17 +320,20 @@ describe_clone(Clone* self, Buf* buf, int flags)
 }
 
 static void
-describe_topic(Topic* self, Buf* buf, int flags)
+describe_topic(Topic* self, Buf* buf, Str* user, int flags)
 {
+	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config = self->config;
-	unused(flags);
 
 	// create topic
-	buf_format(buf, "create topic {str}.{str}\n", &config->user,
-	           &config->name);
+	if (!verbose && str_compare_case(self->rel.user, user))
+		buf_format(buf, "create topic {str}\n", &config->name);
+	else
+		buf_format(buf, "create topic {str}.{str}\n", &config->user,
+		           &config->name);
 
 	// id
-	if (! flags_has(flags, FMINIMAL))
+	if (verbose)
 	{
 		char id[UUID_SZ];
 		uuid_get(&config->id, id, sizeof(id));
@@ -328,7 +344,7 @@ describe_topic(Topic* self, Buf* buf, int flags)
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
 
-	if (flags_has(flags, FMINIMAL))
+	if (! verbose)
 		return;
 
 	// grants
@@ -336,24 +352,31 @@ describe_topic(Topic* self, Buf* buf, int flags)
 }
 
 static void
-describe_subscription(Sub* self, Buf* buf, int flags)
+describe_subscription(Sub* self, Buf* buf, Str* user, int flags)
 {
+	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config = self->config;
-	unused(flags);
 
 	// create subscription
-	buf_format(buf, "create subscription {str}.{str} on {str}.{str}\n",
-	           &config->user,
-	           &config->name,
-	           &config->rel_user,
-	           &config->rel);
+	if (!verbose && str_compare_case(self->rel.user, user))
+		buf_format(buf, "create subscription {str}", &config->name);
+	else
+		buf_format(buf, "create subscription {str}.{str}",
+		           &config->user, &config->name);
+
+	// on
+	if (!verbose && str_compare_case(&config->rel_user, user))
+		buf_format(buf, " on {str}\n", &config->rel);
+	else
+		buf_format(buf, " on {str}.{str}\n",
+		           &config->rel_user, &config->rel);
 
 	// description
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
 
 	// id
-	if (flags_has(flags, FMINIMAL))
+	if (! verbose)
 		return;
 
 	// lsn
@@ -364,14 +387,17 @@ describe_subscription(Sub* self, Buf* buf, int flags)
 }
 
 static void
-describe_udf(Udf* self, Buf* buf, int flags)
+describe_udf(Udf* self, Buf* buf, Str* user, int flags)
 {
+	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config = self->config;
-	unused(flags);
 
 	// create function
-	buf_format(buf, "create function {str}.{str} ", &config->user,
-	           &config->name);
+	if (!verbose && str_compare_case(self->rel.user, user))
+		buf_format(buf, "create function {str} ", &config->name);
+	else
+		buf_format(buf, "create function {str}.{str} ", &config->user,
+		           &config->name);
 
 	// (args)
 	buf_write(buf, "(", 1);
@@ -414,7 +440,7 @@ describe_udf(Udf* self, Buf* buf, int flags)
 	// begin text end
 	buf_write_str(buf, &config->text);
 
-	if (flags_has(flags, FMINIMAL))
+	if (! verbose)
 		return;
 
 	// grants
@@ -422,21 +448,26 @@ describe_udf(Udf* self, Buf* buf, int flags)
 }
 
 static void
-describe_user(User* self, Buf* buf, int flags)
+describe_user(User* self, Buf* buf, Str* user, int flags)
 {
+	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config = self->config;
-	unused(flags);
 
 	// create user
 	if (config->agent)
-		buf_format(buf, "create agent {str}.{str}\n", &config->parent,
-		           &config->name);
+		buf_format(buf, "create agent ");
 	else
-		buf_format(buf, "create user {str}.{str}\n", &config->parent,
+		buf_format(buf, "create user ");
+
+	// [parent.]name
+	if (!verbose && str_compare_case(self->rel.user, user))
+		buf_format(buf, "{str}\n", &config->name);
+	else
+		buf_format(buf, "{str}.{str}\n", &config->parent,
 		           &config->name);
 
 	// id
-	if (! flags_has(flags, FMINIMAL))
+	if (verbose)
 	{
 		char id[UUID_SZ];
 		uuid_get(&config->id, id, sizeof(id));
@@ -447,7 +478,7 @@ describe_user(User* self, Buf* buf, int flags)
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
 
-	if (flags_has(flags, FMINIMAL))
+	if (! verbose)
 		return;
 
 	// created
@@ -484,26 +515,28 @@ describe_user(User* self, Buf* buf, int flags)
 }
 
 void
-describe_text(Rel* self, Buf* buf, int flags)
+describe_text(Rel* self, Buf* buf, Str* user, int flags)
 {
+	unused(user);
+
 	switch (self->type) {
 	case REL_TABLE:
-		describe_table(table_of(self), buf, flags);
+		describe_table(table_of(self), buf, user, flags);
 		break;
 	case REL_CLONE:
-		describe_clone(clone_of(self), buf, flags);
+		describe_clone(clone_of(self), buf, user, flags);
 		break;
 	case REL_TOPIC:
-		describe_topic(topic_of(self), buf, flags);
+		describe_topic(topic_of(self), buf, user, flags);
 		break;
 	case REL_SUBSCRIPTION:
-		describe_subscription(sub_of(self), buf, flags);
+		describe_subscription(sub_of(self), buf, user, flags);
 		break;
 	case REL_UDF:
-		describe_udf(udf_of(self), buf, flags);
+		describe_udf(udf_of(self), buf, user, flags);
 		break;
 	case REL_USER:
-		describe_user(user_of(self), buf, flags);
+		describe_user(user_of(self), buf, user, flags);
 		break;
 	default:
 		abort();
@@ -516,13 +549,13 @@ describe_text(Rel* self, Buf* buf, int flags)
 }
 
 void
-describe(Rel* self, Buf* buf, int flags)
+describe(Rel* self, Buf* buf, Str* user, int flags)
 {
 	auto offset = buf_size(buf);
 	encode_str32(buf, 0);
 
 	// generate schema
-	describe_text(self, buf, flags);
+	describe_text(self, buf, user, flags);
 
 	// update generated string size
 	auto start = buf->start + offset;

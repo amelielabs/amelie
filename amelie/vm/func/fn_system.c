@@ -226,7 +226,8 @@ fn_show(Call* self)
 	auto cmd = fn_show_command(self, &section, &name, &on, &flags);
 
 	// on user
-	auto user = &self->local->user;
+	auto user_by = &self->local->user;
+	auto user = user_by;
 	if (! str_empty(&on))
 		user = &on;
 
@@ -314,72 +315,72 @@ fn_show(Call* self)
 	case SHOW_USERS:
 	{
 		// created users
-		rels_list(&catalog->users, REL_USER, buf, user, NULL, flags);
+		rels_list(&catalog->users, REL_USER, buf, user_by, user, NULL, flags);
 		break;
 	}
 	case SHOW_USER:
 	{
-		rels_list(&catalog->users, REL_USER, buf, NULL, &name, flags);
+		rels_list(&catalog->users, REL_USER, buf, user_by, NULL, &name, flags);
 		break;
 	}
 	case SHOW_TABLES:
 	{
-		rels_list(&catalog->rels, REL_TABLE, buf, user, NULL, flags);
+		rels_list(&catalog->rels, REL_TABLE, buf, user_by, user, NULL, flags);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		rels_list(&catalog->rels, REL_TABLE, buf, user, &name, flags);
+		rels_list(&catalog->rels, REL_TABLE, buf, user_by, user, &name, flags);
 		break;
 	}
 	case SHOW_CLONES:
 	{
-		rels_list(&catalog->rels, REL_CLONE, buf, user, NULL, flags);
+		rels_list(&catalog->rels, REL_CLONE, buf, user_by, user, NULL, flags);
 		break;
 	}
 	case SHOW_CLONE:
 	{
-		rels_list(&catalog->rels, REL_CLONE, buf, user, &name, flags);
+		rels_list(&catalog->rels, REL_CLONE, buf, user_by, user, &name, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:
 	{
-		rels_list(&catalog->rels, REL_UDF, buf, user, NULL, flags);
+		rels_list(&catalog->rels, REL_UDF, buf, user_by, user, NULL, flags);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		rels_list(&catalog->rels, REL_UDF, buf, user, &name, flags);
+		rels_list(&catalog->rels, REL_UDF, buf, user_by, user, &name, flags);
 		break;
 	}
 	case SHOW_TOPICS:
 	{
-		rels_list(&catalog->rels, REL_TOPIC, buf, user, NULL, flags);
+		rels_list(&catalog->rels, REL_TOPIC, buf, user_by, user, NULL, flags);
 		break;
 	}
 	case SHOW_TOPIC:
 	{
-		rels_list(&catalog->rels, REL_TOPIC, buf, user, &name, flags);
+		rels_list(&catalog->rels, REL_TOPIC, buf, user_by, user, &name, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTIONS:
 	{
-		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, NULL, flags);
+		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user_by, user, NULL, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTION:
 	{
-		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user, &name, flags);
+		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user_by, user, &name, flags);
 		break;
 	}
 	case SHOW_RELS:
 	{
-		rels_list_rel(&catalog->rels, buf, user, NULL, flags);
+		rels_list_rel(&catalog->rels, buf, user_by, user, NULL, flags);
 		break;
 	}
 	case SHOW_REL:
 	{
-		rels_list_rel(&catalog->rels, buf, user, &name, flags);
+		rels_list_rel(&catalog->rels, buf, user_by, user, &name, flags);
 		break;
 	}
 	case SHOW_GRANTS:

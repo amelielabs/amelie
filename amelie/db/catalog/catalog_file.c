@@ -48,6 +48,9 @@ catalog_read(Catalog* self, char* path)
 static void
 catalog_dump(Rels* rels, RelType type, Buf* buf)
 {
+	Str user;
+	str_set(&user, "amelie", 6);
+
 	list_foreach(&rels->list)
 	{
 		auto rel = list_at(Rel, link);
@@ -55,7 +58,7 @@ catalog_dump(Rels* rels, RelType type, Buf* buf)
 			continue;
 		if (rel->type == REL_USER && user_of(rel)->config->superuser)
 			continue;
-		describe_text(rel, buf, 0);
+		describe_text(rel, buf, &user, 0);
 		buf_write(buf, "\n\n", 2);
 	}
 }

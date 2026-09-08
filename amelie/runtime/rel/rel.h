@@ -14,7 +14,7 @@
 typedef struct Rel Rel;
 
 typedef void (*RelFree)(Rel*, bool);
-typedef void (*RelShow)(Rel*, Buf*, int);
+typedef void (*RelShow)(Rel*, Buf*, Str*, int);
 
 typedef enum
 {
@@ -145,10 +145,10 @@ rel_set_rsn(Rel* self, uint64_t value)
 }
 
 static inline void
-rel_show(Rel* self, Buf* buf, int flags)
+rel_show(Rel* self, Buf* buf, Str* user, int flags)
 {
 	if (self->show)
-		self->show(self, buf, flags);
+		self->show(self, buf, user, flags);
 }
 
 static inline void

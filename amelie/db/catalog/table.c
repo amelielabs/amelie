@@ -37,10 +37,10 @@ table_free(Table* self, bool drop)
 }
 
 static inline void
-table_show(Table* self, Buf* buf, int flags)
+table_show(Table* self, Buf* buf, Str* user, int flags)
 {
 	if (flags_has(flags, FCREATE))
-		describe(&self->rel, buf, flags);
+		describe(&self->rel, buf, user, flags);
 	else
 		table_config_write(self->config, buf, flags);
 }
