@@ -214,9 +214,12 @@ describe_table(Table* self, Buf* buf, int flags)
 	buf_write(buf, "\n)\n", 3);
 
 	// id
-	char id[UUID_SZ];
-	uuid_get(&config->id, id, sizeof(id));
-	buf_format(buf, "  id {qs}\n", id);
+	if (! flags_has(flags, FMINIMAL))
+	{
+		char id[UUID_SZ];
+		uuid_get(&config->id, id, sizeof(id));
+		buf_format(buf, "  id {qs}\n", id);
+	}
 
 	// description
 	if (! str_empty(&config->description))
@@ -224,6 +227,9 @@ describe_table(Table* self, Buf* buf, int flags)
 
 	// partitions
 	buf_format(buf, "  partitions {d}\n", config->parts_count);
+
+	if (flags_has(flags, FMINIMAL))
+		return;
 
 	// timeline
 	if (config->timeline != 1)
@@ -279,13 +285,19 @@ describe_clone(Clone* self, Buf* buf, int flags)
 	           &config->table_user, &config->table);
 
 	// id
-	char id[UUID_SZ];
-	uuid_get(&config->id, id, sizeof(id));
-	buf_format(buf, "  id {qs}\n", id);
+	if (! flags_has(flags, FMINIMAL))
+	{
+		char id[UUID_SZ];
+		uuid_get(&config->id, id, sizeof(id));
+		buf_format(buf, "  id {qs}\n", id);
+	}
 
 	// description
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
+
+	if (flags_has(flags, FMINIMAL))
+		return;
 
 	// timeline
 	buf_format(buf, "  timeline {i64}\n", config->timeline.timeline);
@@ -305,13 +317,19 @@ describe_topic(Topic* self, Buf* buf, int flags)
 	           &config->name);
 
 	// id
-	char id[UUID_SZ];
-	uuid_get(&config->id, id, sizeof(id));
-	buf_format(buf, "  id {qs}\n", id);
+	if (! flags_has(flags, FMINIMAL))
+	{
+		char id[UUID_SZ];
+		uuid_get(&config->id, id, sizeof(id));
+		buf_format(buf, "  id {qs}\n", id);
+	}
 
 	// description
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
+
+	if (flags_has(flags, FMINIMAL))
+		return;
 
 	// grants
 	describe_grants(&self->config->grants, buf);
@@ -333,6 +351,10 @@ describe_subscription(Sub* self, Buf* buf, int flags)
 	// description
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
+
+	// id
+	if (flags_has(flags, FMINIMAL))
+		return;
 
 	// lsn
 	buf_format(buf, "  lsn {i64}\n", config->lsn);
@@ -392,6 +414,9 @@ describe_udf(Udf* self, Buf* buf, int flags)
 	// begin text end
 	buf_write_str(buf, &config->text);
 
+	if (flags_has(flags, FMINIMAL))
+		return;
+
 	// grants
 	describe_grants(&self->config->grants, buf);
 }
@@ -411,13 +436,19 @@ describe_user(User* self, Buf* buf, int flags)
 		           &config->name);
 
 	// id
-	char id[UUID_SZ];
-	uuid_get(&config->id, id, sizeof(id));
-	buf_format(buf, "  id {qs}\n", id);
+	if (! flags_has(flags, FMINIMAL))
+	{
+		char id[UUID_SZ];
+		uuid_get(&config->id, id, sizeof(id));
+		buf_format(buf, "  id {qs}\n", id);
+	}
 
 	// description
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
+
+	if (flags_has(flags, FMINIMAL))
+		return;
 
 	// created
 	if (! str_empty(&config->created_at))
