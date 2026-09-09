@@ -45,9 +45,12 @@ enum
 	PERM_PUBLISH             = 1ul << 14,
 
 	// Endpoints
-	PERM_SERVICE             = 1ul << 15,
-	PERM_API                 = 1ul << 16,
-	PERM_SQL                 = 1ul << 17,
+	PERM_SQL                 = 1ul << 15,
+	PERM_IMPORT              = 1ul << 16,
+	PERM_STREAM              = 1ul << 17,
+	PERM_API                 = 1ul << 18,
+	PERM_MCP                 = 1ul << 19,
+	PERM_SERVICE             = 1ul << 20,
 
 	// all
 	PERM_ALL                 = UINT32_MAX

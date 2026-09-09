@@ -243,8 +243,11 @@ catalog_grant_mask(RelType type)
 			PERM_CREATE_FUNCTION     |
 			PERM_CREATE_TOPIC        |
 			PERM_CREATE_SUBSCRIPTION |
-			PERM_API                 |
 			PERM_SQL                 |
+			PERM_IMPORT              |
+			PERM_STREAM              |
+			PERM_API                 |
+			PERM_MCP                 |
 			PERM_SERVICE;
 		break;
 	default:

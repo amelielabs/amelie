@@ -94,15 +94,16 @@ portal_auth(Portal* self, Auth* auth_ref)
 		user_check(self->user, PERM_SQL);
 		break;
 	case ENDPOINT_IMPORT:
-		user_check(self->user, PERM_SQL);
+		user_check(self->user, PERM_IMPORT);
 		break;
 	case ENDPOINT_STREAM:
-		user_check(self->user, PERM_CREATE_SUBSCRIPTION);
+		user_check(self->user, PERM_STREAM);
 		break;
 	case ENDPOINT_API:
 		user_check(self->user, PERM_API);
 		break;
 	case ENDPOINT_MCP:
+		user_check(self->user, PERM_MCP);
 		break;
 	case ENDPOINT_BACKUP:
 	case ENDPOINT_REPL:

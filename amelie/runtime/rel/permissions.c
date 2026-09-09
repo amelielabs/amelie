@@ -58,10 +58,13 @@ static Permission perms[] =
 	// Topic
 	{ PERM_PUBLISH,             "publish",             7  },
 
-	// Connections
-	{ PERM_SERVICE,             "service",             7  },
-	{ PERM_API,                 "api",                 3  },
+	// Endpoints
 	{ PERM_SQL,                 "sql",                 3  },
+	{ PERM_IMPORT,              "import",              6  },
+	{ PERM_STREAM,              "stream",              6  },
+	{ PERM_API,                 "api",                 3  },
+	{ PERM_MCP,                 "mcp",                 3  },
+	{ PERM_SERVICE,             "service",             7  },
 
 	// all
 	{ PERM_ALL,                 "all",                 3  },
