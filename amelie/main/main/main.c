@@ -204,8 +204,7 @@ main_entry(Main* self)
 	if (!strcmp(argv[1], "-v") ||
 	    !strcmp(argv[1], "--version"))
 	{
-		auto version = &state()->version.string;
-		info("{str}", version);
+		info("{s}", AMELIE_VERSION);
 		return;
 	}
 

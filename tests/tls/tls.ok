@@ -6,6 +6,7 @@ show all;
 config
 ──────
 {
+  "version": "1.0.0-rc1",
   "uuid": "00000000-0000-0000-0000-000000000001",
   "timezone": "UTC",
   "log_enable": true,

@@ -110,7 +110,7 @@ db_state(Db* self, Buf* buf)
 
 	// version
 	encode_raw(buf, "version", 7);
-	encode_str(buf, &state()->version.string);
+	encode_str(buf, &config()->version.string);
 
 	// directory
 	encode_raw(buf, "directory", 9);

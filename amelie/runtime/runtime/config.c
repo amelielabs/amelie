@@ -35,6 +35,7 @@ config_prepare(Config* self)
 {
 	OptsDef defs[] =
 	{
+		{ "version",                 OPT_STRING, OPT_C,                   &self->version,                 AMELIE_VERSION,   0                   },
 		{ "uuid",                    OPT_UUID,   OPT_C,                   &self->uuid,                    NULL,             0                   },
 		{ "timezone",                OPT_STRING, OPT_C,                   &self->timezone,                NULL,             0                   },
 		{ "daemon",                  OPT_BOOL,   OPT_C|OPT_H|OPT_E,       &self->daemon,                  NULL,             false               },

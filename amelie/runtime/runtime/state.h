@@ -24,7 +24,6 @@ enum
 struct State
 {
 	// system
-	Opt  version;
 	Opt  directory;
 	Opt  lsn;
 	Opt  rsn;

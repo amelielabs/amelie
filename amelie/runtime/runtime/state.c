@@ -36,7 +36,6 @@ state_prepare(State* self)
 	OptsDef defs[] =
 	{
 		// system
-		{ "version",         OPT_STRING, OPT_C,             &self->version,        AMELIE_VERSION, 0           },
 		{ "directory",       OPT_STRING, OPT_E,             &self->directory,      NULL,           0           },
 		{ "lsn",             OPT_INT,    OPT_E,             &self->lsn,            NULL,           0           },
 		{ "rsn",             OPT_INT,    OPT_E|OPT_H,       &self->rsn,            NULL,           REL_MAX     },

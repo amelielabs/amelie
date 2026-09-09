@@ -336,7 +336,7 @@ void
 system_start(System* self, bool bootstrap)
 {
 	// hello
-	auto version = &state()->version.string;
+	auto version = &config()->version.string;
 	info("amelie {str}", version);
 
 	// show system options

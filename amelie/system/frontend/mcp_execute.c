@@ -72,7 +72,7 @@ mcp_initialize(Mcp* self)
 
 	// version
 	encode_raw(buf, "version", 7);
-	encode_str(buf, &state()->version.string);
+	encode_str(buf, &config()->version.string);
 	encode_obj_end(buf);
 
 	encode_obj_end(buf);

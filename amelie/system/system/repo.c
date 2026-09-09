@@ -174,6 +174,11 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 		// open config file
 		config_open(config, path);
 
+		// validate version
+		if (! str_is_cstr(&config()->version.string, AMELIE_VERSION))
+			error("repository version {str} does not match the server version {s}",
+			      &config()->version.string, AMELIE_VERSION);
+
 		// redefine options and update config if necessary
 		opts_set_argv(&config->opts, argc, argv);
 	}
@@ -188,11 +193,6 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	{
 		// open state file
 		state_open(state, path);
-
-		// validate version
-		if (! str_is_cstr(&state()->version.string, AMELIE_VERSION))
-			error("repository version {str} does not match the server version {s}",
-			      &state()->version.string, AMELIE_VERSION);
 	}
 
 	// set system timezone

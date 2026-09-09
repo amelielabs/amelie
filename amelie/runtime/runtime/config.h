@@ -16,6 +16,7 @@ typedef struct Config Config;
 struct Config
 {
 	// main
+	Opt  version;
 	Opt  uuid;
 	Opt  timezone;
 	Opt  daemon;

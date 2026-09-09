@@ -118,7 +118,7 @@ system_metrics(System* self, Buf* buf)
 
 	// version
 	encode_raw(buf, "version", 7);
-	encode_str(buf, &state()->version.string);
+	encode_str(buf, &config()->version.string);
 
 	// frontends
 	encode_raw(buf, "frontends", 9);
