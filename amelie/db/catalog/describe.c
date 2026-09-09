@@ -108,7 +108,14 @@ describe_column(Column* self, Buf* buf, int flags)
 	// default
 	if (! buf_empty(&cons->value))
 	{
-		// todo:
+		buf_format(buf, " default ");
+
+		auto value = buf_create();
+		defer_buf(value);
+		row_encode_column(cons->value.start, NULL, self, runtime()->timezone, value);
+
+		auto pos = value->start;
+		json_export(buf, runtime()->timezone, &pos);
 	}
 
 	// drop (support dropped columns)

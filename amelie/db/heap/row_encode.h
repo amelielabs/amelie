@@ -11,4 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
+void row_encode_column(uint8_t*, Flats*, Column*, Timezone*, Buf*);
 void row_encode(Row*, Flats*, Columns*, Timezone*, Buf*);

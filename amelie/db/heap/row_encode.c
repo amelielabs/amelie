@@ -17,6 +17,80 @@
 #include <amelie_heap.h>
 
 void
+row_encode_column(uint8_t* pos, Flats* flats, Column* column, Timezone* tz, Buf* buf)
+{
+	// null
+	if (! pos)
+	{
+		encode_null(buf);
+		return;
+	}
+
+	switch (column->type) {
+	case TYPE_NULL:
+		encode_null(buf);
+		break;
+	case TYPE_BOOL:
+		encode_bool(buf, *(int8_t*)pos);
+		break;
+	case TYPE_INT:
+		switch (column->size) {
+		case sizeof(int8_t):
+			encode_int(buf, *(int8_t*)pos);
+			break;
+		case sizeof(int16_t):
+			encode_int(buf, *(int16_t*)pos);
+			break;
+		case sizeof(int32_t):
+			encode_int(buf, *(int32_t*)pos);
+			break;
+		case sizeof(int64_t):
+			encode_int(buf, *(int64_t*)pos);
+			break;
+		default:
+			abort();
+			break;
+		}
+		break;
+	case TYPE_DOUBLE:
+		if (column->size == sizeof(float))
+			encode_real(buf, *(float*)pos);
+		else
+			encode_real(buf, *(double*)pos);
+		break;
+	case TYPE_DECIMAL:
+		encode_decimal(buf, *(uint64_t*)pos);
+		break;
+	case TYPE_DATE:
+		encode_date(buf, *(int32_t*)pos);
+		break;
+	case TYPE_TIMESTAMP:
+		encode_timestamp(buf, tz, *(int64_t*)pos);
+		break;
+	case TYPE_INTERVAL:
+		encode_interval(buf, (Interval*)pos);
+		break;
+	case TYPE_UUID:
+		encode_uuid(buf, (Uuid*)pos);
+		break;
+	case TYPE_STRING:
+	case TYPE_JSON:
+		buf_write(buf, pos, data_sizeof(pos));
+		break;
+	case TYPE_VECTOR:
+	{
+		auto flat = flats_at(flats, column);
+		auto vector = flat_vector_at(flat, *(uint32_t*)pos);
+		encode_vector(buf, column->size_flat / sizeof(float), vector);
+		break;
+	}
+	default:
+		abort();
+		break;
+	}
+}
+
+void
 row_encode(Row* self, Flats* flats, Columns* columns, Timezone* tz, Buf* buf)
 {
 	encode_obj(buf);
@@ -29,76 +103,9 @@ row_encode(Row* self, Flats* flats, Columns* columns, Timezone* tz, Buf* buf)
 		// name
 		encode_str(buf, &column->name);
 
-		// null
+		// value
 		uint8_t* pos = row_column(self, column);
-		if (! pos)
-		{
-			encode_null(buf);
-			continue;
-		}
-
-		switch (column->type) {
-		case TYPE_NULL:
-			encode_null(buf);
-			break;
-		case TYPE_BOOL:
-			encode_bool(buf, *(int8_t*)pos);
-			break;
-		case TYPE_INT:
-			switch (column->size) {
-			case sizeof(int8_t):
-				encode_int(buf, *(int8_t*)pos);
-				break;
-			case sizeof(int16_t):
-				encode_int(buf, *(int16_t*)pos);
-				break;
-			case sizeof(int32_t):
-				encode_int(buf, *(int32_t*)pos);
-				break;
-			case sizeof(int64_t):
-				encode_int(buf, *(int64_t*)pos);
-				break;
-			default:
-				abort();
-				break;
-			}
-			break;
-		case TYPE_DOUBLE:
-			if (column->size == sizeof(float))
-				encode_real(buf, *(float*)pos);
-			else
-				encode_real(buf, *(double*)pos);
-			break;
-		case TYPE_DECIMAL:
-			encode_decimal(buf, *(uint64_t*)pos);
-			break;
-		case TYPE_DATE:
-			encode_date(buf, *(int32_t*)pos);
-			break;
-		case TYPE_TIMESTAMP:
-			encode_timestamp(buf, tz, *(int64_t*)pos);
-			break;
-		case TYPE_INTERVAL:
-			encode_interval(buf, (Interval*)pos);
-			break;
-		case TYPE_UUID:
-			encode_uuid(buf, (Uuid*)pos);
-			break;
-		case TYPE_STRING:
-		case TYPE_JSON:
-			buf_write(buf, pos, data_sizeof(pos));
-			break;
-		case TYPE_VECTOR:
-		{
-			auto flat = flats_at(flats, column);
-			auto vector = flat_vector_at(flat, *(uint32_t*)pos);
-			encode_vector(buf, column->size_flat / sizeof(float), vector);
-			break;
-		}
-		default:
-			abort();
-			break;
-		}
+		row_encode_column(pos, flats, column, tz, buf);
 	}
 	encode_obj_end(buf);
 }
