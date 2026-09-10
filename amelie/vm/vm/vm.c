@@ -392,13 +392,13 @@ vm_run(Vm*       self,
 		&&cdelete,
 		&&cupdate,
 
+		// system
+		&&csystem_set_secret,
+		&&csystem_set_cdc,
+		&&ccreate_token,
+
 		// storage
 		&&ccheckpoint,
-
-		// system
-		&&ccreate_secret,
-		&&ccreate_token,
-		&&ccdc_limit,
 
 		// replica
 		&&creplica_create,
@@ -2150,20 +2150,20 @@ cupdate:
 	cupdate(self, op);
 	op_next;
 
-ccheckpoint:
-	ccheckpoint(self, op);
+csystem_set_secret:
+	csystem_set_secret(self, op);
 	op_next;
 
-ccreate_secret:
-	ccreate_secret(self, op);
+csystem_set_cdc:
+	csystem_set_cdc(self, op);
 	op_next;
 
 ccreate_token:
 	ccreate_token(self, op);
 	op_next;
 
-ccdc_limit:
-	ccdc_limit(self, op);
+ccheckpoint:
+	ccheckpoint(self, op);
 	op_next;
 
 creplica_create:

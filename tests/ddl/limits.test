@@ -208,11 +208,11 @@ create subscription t_sub on t;
 publish into t 123;
 show cdc;
 
-alter system set limit cdc = 1;
+alter system set cdc = 1;
 show cdc;
 publish into t 124;
 
-alter system unset limit cdc;
+alter system reset cdc;
 show cdc;
 
 publish into t 125;

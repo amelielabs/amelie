@@ -160,6 +160,7 @@ Keyword keywords[] =
 	{ KREPLICATION,           "replication",           11 },
 	{ KRESUME,                "resume",                6  },
 	{ KREVOKE,                "revoke",                6  },
+	{ KRESET,                 "reset",                 5  },
 
 	// s
 	{ KSELECT,                "select",                6  },

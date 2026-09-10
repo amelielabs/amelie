@@ -11,13 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
+// system
+void csystem_set_secret(Vm*, Op*);
+void csystem_set_cdc(Vm*, Op*);
+void ccreate_token(Vm*, Op*);
+
 // storage
 void ccheckpoint(Vm*, Op*);
-
-// system
-void ccreate_secret(Vm*, Op*);
-void ccreate_token(Vm*, Op*);
-void ccdc_limit(Vm*, Op*);
 
 // replica
 void creplica_create(Vm*, Op*);

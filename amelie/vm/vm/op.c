@@ -313,13 +313,13 @@ OpDesc ops[] =
 	{ CDELETE, "delete" },
 	{ CUPDATE, "update" },
 
+	// system
+	{ CSYSTEM_SET_SECRET, "system_set_secret" },
+	{ CSYSTEM_SET_CDC, "system_set_cdc" },
+	{ CCREATE_TOKEN, "create_token" },
+
 	// storage
 	{ CCHECKPOINT, "checkpoint" },
-
-	// system
-	{ CCREATE_SECRET, "create_secret" },
-	{ CCREATE_TOKEN, "create_token" },
-	{ CCDC_LIMIT, "cdc_limit" },
 
 	// replica
 	{ CREPLICA_CREATE, "replica_create" },

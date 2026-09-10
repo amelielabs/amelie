@@ -377,14 +377,16 @@ emit_utility(Compiler* self)
 	{
 		auto arg = ast_system_alter_of(stmt->ast);
 		unused(arg);
-		if (arg->type == SYSTEM_ALTER_SECRET_ROTATE)
+
+		if (arg->type == SYSTEM_ALTER_SET_SECRET)
 		{
-			op0(self, CCREATE_SECRET);
+			auto offset = buf_size(data);
+			encode_str(data, &arg->secret);
+			op1(self, CSYSTEM_SET_SECRET, offset);
 		} else
-		if (arg->type == SYSTEM_ALTER_SET_CDC ||
-		    arg->type == SYSTEM_ALTER_UNSET_CDC)
+		if (arg->type == SYSTEM_ALTER_SET_CDC)
 		{
-			op1(self, CCDC_LIMIT, arg->cdc_limit);
+			op1(self, CSYSTEM_SET_CDC, arg->cdc_limit);
 		}
 		lock_catalog = LOCK_SHARED;
 		break;

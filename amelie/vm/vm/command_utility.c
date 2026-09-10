@@ -22,31 +22,31 @@
 #include <amelie_vm.h>
 
 void
-ccheckpoint(Vm* self, Op* op)
+csystem_set_secret(Vm* self, Op* op)
 {
-	unused(op);
-
-	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
-
-	db_checkpoint(share()->db);
-}
-
-void
-ccreate_secret(Vm* self, Op* op)
-{
-	unused(op);
+	// [secret]
+	auto pos = code_data_at(self->code_data, op->a);
+	Str secret;
+	unpack_str(&pos, &secret);
 
 	// PERM_SYSTEM
 	check_user(self->tr, PERM_SYSTEM);
 
 	// create new system secret
-	uint8_t secret[32];
-	random_generate_alnum(&self->local->random, secret, sizeof(secret));
-	opt_string_set_raw(&state()->secret, (char*)secret, sizeof(secret));
+	opt_string_set(&state()->secret, &secret);
 
 	control_save_state();
 	control_invalidate_auth();
+}
+
+void
+csystem_set_cdc(Vm* self, Op* op)
+{
+	// PERM_SYSTEM
+	check_user(self->tr, PERM_SYSTEM);
+
+	opt_int_set(&state()->cdc, (uint64_t)op->a);
+	control_save_state();
 }
 
 void
@@ -91,13 +91,14 @@ ccreate_token(Vm* self, Op* op)
 }
 
 void
-ccdc_limit(Vm* self, Op* op)
+ccheckpoint(Vm* self, Op* op)
 {
+	unused(op);
+
 	// PERM_SYSTEM
 	check_user(self->tr, PERM_SYSTEM);
 
-	opt_int_set(&state()->cdc, (uint64_t)op->a);
-	control_save_state();
+	db_checkpoint(share()->db);
 }
 
 void

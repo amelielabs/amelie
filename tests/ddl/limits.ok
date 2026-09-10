@@ -335,7 +335,7 @@ cdc
   "size": 262144,
   "pages": 1
 }
-alter system set limit cdc = 1;
+alter system set cdc = 1;
 show cdc;
 
 cdc
@@ -351,7 +351,7 @@ cdc
 }
 publish into t 124;
 error: transaction aborted during commit
-alter system unset limit cdc;
+alter system reset cdc;
 show cdc;
 
 cdc

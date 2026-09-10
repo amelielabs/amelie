@@ -11,19 +11,19 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct AstSystemAlter  AstSystemAlter;
+typedef struct AstSystemAlter AstSystemAlter;
 
 enum
 {
-	SYSTEM_ALTER_SECRET_ROTATE,
-	SYSTEM_ALTER_SET_CDC,
-	SYSTEM_ALTER_UNSET_CDC
+	SYSTEM_ALTER_SET_SECRET,
+	SYSTEM_ALTER_SET_CDC
 };
 
 struct AstSystemAlter
 {
 	Ast      ast;
 	int      type;
+	Str      secret;
 	uint64_t cdc_limit;
 };
 

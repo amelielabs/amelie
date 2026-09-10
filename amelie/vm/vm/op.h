@@ -306,13 +306,13 @@ enum
 	CDELETE,
 	CUPDATE,
 
+	// system
+	CSYSTEM_SET_SECRET,
+	CSYSTEM_SET_CDC,
+	CCREATE_TOKEN,
+
 	// storage
 	CCHECKPOINT,
-
-	// system
-	CCREATE_SECRET,
-	CCREATE_TOKEN,
-	CCDC_LIMIT,
 
 	// replica
 	CREPLICA_CREATE,
