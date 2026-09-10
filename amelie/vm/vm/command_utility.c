@@ -35,7 +35,7 @@ csystem_set_secret(Vm* self, Op* op)
 	// create new system secret
 	opt_string_set(&state()->secret, &secret);
 
-	control_save_state();
+	control_state_write();
 	control_invalidate_auth();
 }
 
@@ -46,7 +46,7 @@ csystem_set_cdc(Vm* self, Op* op)
 	check_user(self->tr, PERM_SYSTEM);
 
 	opt_int_set(&state()->cdc, (uint64_t)op->a);
-	control_save_state();
+	control_state_write();
 }
 
 void
@@ -114,7 +114,7 @@ creplica_create(Vm* self, Op* op)
 
 	bool if_not_exists = op->b;
 	replicas_create(&share()->repl->replicas, config, if_not_exists);
-	control_save_state();
+	control_state_write();
 }
 
 void
@@ -132,7 +132,7 @@ creplica_drop(Vm* self, Op* op)
 
 	bool if_exists = op->b;
 	replicas_drop(&share()->repl->replicas, &id, if_exists);
-	control_save_state();
+	control_state_write();
 }
 
 void
@@ -143,7 +143,7 @@ crepl_start(Vm* self, Op* op)
 
 	unused(op);
 	repl_start(share()->repl);
-	control_save_state();
+	control_state_write();
 }
 
 void
@@ -154,7 +154,7 @@ crepl_stop(Vm* self, Op* op)
 
 	unused(op);
 	repl_stop(share()->repl);
-	control_save_state();
+	control_state_write();
 }
 
 void
@@ -168,7 +168,7 @@ crepl_follow(Vm* self, Op* op)
 	Str  id;
 	unpack_str(&pos, &id);
 	repl_follow(share()->repl, &id);
-	control_save_state();
+	control_state_write();
 }
 
 void
@@ -180,7 +180,7 @@ crepl_unfollow(Vm* self, Op* op)
 	unused(self);
 	unused(op);
 	repl_follow(share()->repl, NULL);
-	control_save_state();
+	control_state_write();
 }
 
 void

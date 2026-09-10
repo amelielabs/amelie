@@ -225,16 +225,19 @@ static EvalIf eval_if =
 };
 
 static void
-system_save_state(void* arg)
+system_ctl_state_write(void* arg)
 {
-	unused(arg);
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/amelie.state", state_directory());
-	state_save(state(), path);
+	system_state_write(arg);
 }
 
 static void
-system_invalidate_auth(void* arg)
+system_ctl_state_read(void* arg, Buf* buf)
+{
+	system_state_create(arg, buf);
+}
+
+static void
+system_ctl_invalidate_auth(void* arg)
 {
 	// note: exclusive catalog lock must be held
 	System* self = arg;
@@ -248,8 +251,9 @@ system_create(void)
 
 	// set runtime control
 	auto control = &self->runtime_if;
-	control->save_state      = system_save_state;
-	control->invalidate_auth = system_invalidate_auth;
+	control->state_write     = system_ctl_state_write;
+	control->state_read      = system_ctl_state_read;
+	control->invalidate_auth = system_ctl_invalidate_auth;
 	control->arg             = self;
 	runtime()->iface         = control;
 
@@ -339,7 +343,10 @@ system_start(System* self, bool bootstrap)
 	auto version = &config()->version.string;
 	info("amelie {str}", version);
 
-	// show system options
+	// save system state on bootstrap
+	if (bootstrap)
+		control_state_write();
+
 	if (bootstrap || opt_int_of(&config()->log_options))
 	{
 		info("");
@@ -371,18 +378,11 @@ system_start(System* self, bool bootstrap)
 	// start periodic wal syncer
 	syncer_start(&self->db.syncer);
 
-	// prepare replication manager
-	repl_open(&self->repl);
-
 	// start servers
 	servers_start(&self->servers);
 
-	// start replication
-	if (opt_int_of(&state()->repl))
-	{
-		opt_int_set(&state()->repl, false);
-		repl_start(&self->repl);
-	}
+	// configure system and replication
+	system_state_read(self);
 }
 
 void

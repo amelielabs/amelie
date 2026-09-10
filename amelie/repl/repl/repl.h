@@ -28,8 +28,8 @@ struct Repl
 
 void repl_init(Repl*, Db*, RecoverIf*, void*);
 void repl_free(Repl*);
-void repl_open(Repl*);
 void repl_start(Repl*);
 void repl_stop(Repl*);
 void repl_follow(Repl*, Str*);
 void repl_status(Repl*, Buf*);
+void repl_describe(Repl*, Buf*);

@@ -40,31 +40,6 @@ repl_free(Repl* self)
 	receiver_free(&self->receiver);
 }
 
-static void
-repl_validate_primary(Uuid* primary_id)
-{
-	if (uuid_is(primary_id, opt_uuid_of(&config()->uuid)))
-		error("repl: primary id cannot match this server id");
-}
-
-void
-repl_open(Repl* self)
-{
-	// restore replicas
-	replicas_open(&self->replicas);
-
-	// current server is replica
-	auto primary_id = opt_uuid_of(&state()->repl_primary);
-	if (! uuid_empty(primary_id))
-	{
-		// validate id
-		repl_validate_primary(primary_id);
-
-		opt_int_set(&state()->recover, RECOVER_REPL);
-		self->role = REPL_REPLICA;
-	}
-}
-
 void
 repl_start(Repl* self)
 {
@@ -114,7 +89,8 @@ repl_follow(Repl* self, Str* primary_id)
 			error("replication: invalid primary uuid");
 
 		// validate id
-		repl_validate_primary(&id);
+		if (uuid_is(&id, opt_uuid_of(&config()->uuid)))
+			error("replication: primary id cannot match this server id");
 
 		opt_int_set(&state()->recover, RECOVER_REPL);
 		self->role = REPL_REPLICA;
@@ -165,4 +141,36 @@ repl_status(Repl* self, Buf* buf)
 	replicas_list(&self->replicas, buf, NULL, 0);
 
 	encode_obj_end(buf);
+}
+
+void
+repl_describe(Repl* self, Buf* buf)
+{
+	// start replication
+	if (opt_int_of(&state()->repl))
+		buf_format(buf, "start replication;\n");
+
+	// follow "uuid"
+	if (! opt_uuid_empty(&state()->repl_primary))
+	{
+		char id[UUID_SZ];
+		uuid_get(&state()->repl_primary.uuid, id, sizeof(id));
+		buf_format(buf, "follow {qs};\n", id);
+	}
+
+	// create replica
+	list_foreach(&self->replicas.list)
+	{
+		auto replica = list_at(Replica, link);
+
+		// id
+		char id[UUID_SZ];
+		uuid_get(&replica->config->id, id, sizeof(id));
+
+		// uri
+		auto uri = buf_create();
+		defer_buf(uri);
+		uri_export(&replica->config->endpoint, uri);
+		buf_format(buf, "create replica {qs} {qbuf};\n", id, uri);
+	}
 }

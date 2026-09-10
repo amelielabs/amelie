@@ -17,9 +17,15 @@
 
 // control
 static inline void
-control_save_state(void)
+control_state_write(void)
 {
-	runtime()->iface->save_state(runtime()->iface->arg);
+	runtime()->iface->state_write(runtime()->iface->arg);
+}
+
+static inline void
+control_state_read(Buf* buf)
+{
+	return runtime()->iface->state_read(runtime()->iface->arg, buf);
 }
 
 static inline void

@@ -34,50 +34,6 @@ replicas_free(Replicas* self)
 	}
 }
 
-static inline void
-replicas_save(Replicas* self)
-{
-	// create dump
-	auto buf = buf_create();
-	defer_buf(buf);
-
-	encode_array(buf);
-	list_foreach(&self->list)
-	{
-		auto replica = list_at(Replica, link);
-		replica_config_write(replica->config, buf, 0);
-	}
-	encode_array_end(buf);
-
-	// update and save state
-	opt_json_set_buf(&state()->replicas, buf);
-}
-
-void
-replicas_open(Replicas* self)
-{
-	auto replicas = &state()->replicas;
-	if (opt_json_empty(replicas))
-		return;
-	auto pos = opt_json_of(replicas);
-	if (data_is_null(pos))
-		return;
-
-	unpack_array(&pos);
-	while (! unpack_array_end(&pos))
-	{
-		auto config = replica_config_read(&pos);
-		defer(replica_config_free, config);
-
-		auto replica = replica_allocate(config, &self->db->wal);
-		list_append(&self->list, &replica->link);
-		self->list_count++;
-
-		// register wal slot
-		wal_attach(&self->db->wal, &replica->wal_slot);
-	}
-}
-
 void
 replicas_start(Replicas* self)
 {
@@ -115,7 +71,6 @@ replicas_create(Replicas* self, ReplicaConfig* config, bool if_not_exists)
 	replica = replica_allocate(config, &self->db->wal);
 	list_append(&self->list, &replica->link);
 	self->list_count++;
-	replicas_save(self);
 
 	// register wal slot
 	wal_attach(&self->db->wal, &replica->wal_slot);
@@ -141,7 +96,6 @@ replicas_drop(Replicas* self, Uuid* id, bool if_exists)
 	}
 	list_unlink(&replica->link);
 	self->list_count--;
-	replicas_save(self);
 
 	// stop streamer
 	if (opt_int_of(&state()->repl))

@@ -264,6 +264,16 @@ format_run(Format* self, const char* spec, va_list args)
 				if (unlikely(! format_add(self, "\"", 1)))
 					break;
 			} else
+			if (format_if(&pos, "qbuf}", 5))
+			{
+				auto value = va_arg(args, Buf*);
+				if (unlikely(! format_add(self, "\"", 1)))
+					break;
+				if (unlikely(! format_add(self, buf_cstr(value), buf_size(value))))
+					break;
+				if (unlikely(! format_add(self, "\"", 1)))
+					break;
+			} else
 			{
 				// ...}
 				auto end = pos;

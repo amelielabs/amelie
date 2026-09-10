@@ -23,23 +23,18 @@ enum
 
 struct State
 {
-	// system
 	Opt  directory;
 	Opt  lsn;
 	Opt  rsn;
 	Opt  checkpoint;
 	Opt  recover;
-	// persistent
 	Opt  cdc;
 	Opt  secret;
 	Opt  repl;
 	Opt  repl_primary;
-	Opt  replicas;
 	Opts opts;
 };
 
 void state_init(State*);
 void state_free(State*);
 void state_prepare(State*);
-void state_open(State*, const char*);
-void state_save(State*, const char*);

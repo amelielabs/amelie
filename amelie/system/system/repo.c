@@ -141,7 +141,6 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 {
 	auto runtime = runtime();
 	auto config  = config();
-	auto state   = state();
 
 	// open or create base directory, take exclusive lock
 	repo_create(self, directory);
@@ -181,18 +180,6 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 
 		// redefine options and update config if necessary
 		opts_set_argv(&config->opts, argc, argv);
-	}
-
-	// read state file
-	format(path, sizeof(path), "{s}/amelie.state", state_directory());
-	if (self->bootstrap)
-	{
-		// create state file
-		state_save(state, path);
-	} else
-	{
-		// open state file
-		state_open(state, path);
 	}
 
 	// set system timezone

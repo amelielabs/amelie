@@ -357,6 +357,7 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/session/session.c
     ${AMELIE_ROOT}/system/system/repo.c
     ${AMELIE_ROOT}/system/system/system.c
+    ${AMELIE_ROOT}/system/system/system_state.c
     ${AMELIE_ROOT}/system/system/system_metrics.c
     ${AMELIE_ROOT}/system/system/main.c
     ${AMELIE_ROOT}/system/api/amelie.c)

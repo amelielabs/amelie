@@ -36,7 +36,7 @@ repl
 start repl;
 # test: follow (using self id)
 follow "00000000-0000-0000-0000-000000000002";
-error: repl: primary id cannot match this server id
+error: replication: primary id cannot match this server id
 # test: follow
 follow "00000000-0000-0000-0000-000000000001";
 show repl;

@@ -67,9 +67,13 @@ db_snapshot(Db* self)
 
 		// state
 		encode_raw(data, "state", 5);
-		buf = opts_list_persistent(&runtime()->state.opts);
-		defer_buf(buf);
-		buf_write_buf(data, buf);
+		auto offset = buf_size(data);
+		encode_str32(data, 0);
+
+		control_state_read(data);
+
+		auto start = data->start + offset;
+		pack_str32(&start, buf_size(data) - (offset + data_size_str32()));
 
 		// use last checkpoint
 		snapshot->checkpoint = checkpoints_ref(&self->checkpoints);

@@ -122,7 +122,7 @@ restore_join(Restore* self)
 }
 
 static void
-restore_file(char* path_relative, uint8_t* data)
+restore_file_data(char* path_relative, uint8_t* data)
 {
 	// <base>/<path_relative>
 	char path[PATH_MAX];
@@ -139,6 +139,24 @@ restore_file(char* path_relative, uint8_t* data)
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
 	file_write_buf(&file, buf);
+
+	info("backup: {s}", path_relative);
+}
+
+static void
+restore_file_str(char* path_relative, Str* data)
+{
+	// <base>/<path_relative>
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/{s}", state_directory(),
+	       path_relative);
+
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
+	if (! str_empty(data))
+		file_write(&file, data->pos, str_size(data));
 
 	info("backup: {s}", path_relative);
 }
@@ -206,14 +224,15 @@ restore_run(Restore* self, char* directory)
 	// parse data
 	auto pos = self->data.start;
 	uint8_t* pos_config = NULL;
-	uint8_t* pos_state  = NULL;
 	uint8_t* pos_files  = NULL;
 	uint8_t* pos_wal    = NULL;
 	int64_t  checkpoint;
+	Str state;
+	str_init(&state);
 	Decode obj[] =
 	{
 		{ DECODE_OBJ,   "config",     &pos_config  },
-		{ DECODE_OBJ,   "state",      &pos_state   },
+		{ DECODE_STR,   "state",      &state       },
 		{ DECODE_INT,   "checkpoint", &checkpoint  },
 		{ DECODE_ARRAY, "files",      &pos_files   },
 		{ DECODE_ARRAY, "wal",        &pos_wal     },
@@ -222,10 +241,10 @@ restore_run(Restore* self, char* directory)
 	decode_obj(obj, "snapshot", &pos);
 
 	// write config
-	restore_file("amelie.config", pos_config);
+	restore_file_data("amelie.config", pos_config);
 
 	// write state
-	restore_file("amelie.state", pos_state);
+	restore_file_str("amelie.sql", &state);
 
 	// create <base>/checkpoint/<id> directory
 	char path[PATH_MAX];

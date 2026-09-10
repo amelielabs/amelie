@@ -46,64 +46,7 @@ state_prepare(State* self)
 		{ "secret",          OPT_STRING, OPT_C|OPT_S|OPT_H, &self->secret,         0,              0           },
 		{ "repl",            OPT_BOOL,   OPT_C,             &self->repl,           0,              false       },
 		{ "repl_primary",    OPT_UUID,   OPT_C,             &self->repl_primary,   NULL,           0           },
-		{ "replicas",        OPT_JSON,   OPT_C,             &self->replicas,       NULL,           0           },
 		{  NULL,             0,          0,                  NULL,                 NULL,           0           },
 	};
 	opts_define(&self->opts, defs);
-}
-
-static void
-state_save_to(State* self, const char* path)
-{
-	// get a list of optiables
-	auto buf = opts_list_persistent(&self->opts);
-	defer_buf(buf);
-
-	// convert to json
-	Buf text;
-	buf_init(&text);
-	defer_buf(&text);
-	uint8_t* pos = buf->start;
-	json_export_pretty(&text, NULL, &pos);
-
-	// create state file
-	File file;
-	file_init(&file);
-	defer(file_close, &file);
-	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
-	file_write_buf(&file, &text);
-}
-
-void
-state_save(State* self, const char* path)
-{
-	if (! fs_exists("{s}", path))
-	{
-		state_save_to(self, path);
-		return;
-	}
-
-	// remove old saved state, if exists
-	if (fs_exists("{s}.old", path))
-		fs_unlink("{s}.old", path);
-
-	// save existing state as a old
-	fs_rename(path, "{s}.old", path);
-
-	// create state file
-	state_save_to(self, path);
-
-	// remove old state file
-	fs_unlink("{s}.old", path);
-}
-
-void
-state_open(State* self, const char* path)
-{
-	auto buf = file_import("{s}", path);
-	defer_buf(buf);
-	Str options;
-	str_init(&options);
-	buf_str(buf, &options);
-	opts_set(&self->opts, &options);
 }

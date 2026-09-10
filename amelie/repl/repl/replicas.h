@@ -22,7 +22,6 @@ struct Replicas
 
 void replicas_init(Replicas*, Db*);
 void replicas_free(Replicas*);
-void replicas_open(Replicas*);
 void replicas_start(Replicas*);
 void replicas_stop(Replicas*);
 void replicas_create(Replicas*, ReplicaConfig*, bool);
