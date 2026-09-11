@@ -244,7 +244,7 @@ restore_run(Restore* self, char* directory)
 	restore_file_data("amelie.config", pos_config);
 
 	// write state
-	restore_file_str("amelie.sql", &state);
+	restore_file_str("amelie.state", &state);
 
 	// create <base>/checkpoint/<id> directory
 	char path[PATH_MAX];

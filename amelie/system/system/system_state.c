@@ -56,7 +56,7 @@ system_state_read(System* self)
 	Separator sep;
 	separator_init(&sep);
 	defer(separator_free, &sep);
-	file_import_stream(&sep.buf, "{s}/amelie.sql", state_directory());
+	file_import_stream(&sep.buf, "{s}/amelie.state", state_directory());
 
 	// prepare eval
 	auto eval = system_eval_allocate();
@@ -95,19 +95,19 @@ system_state_write(System* self)
 	auto basedir = state_directory();
 
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/amelie.sql.next", basedir);
+	format(path, sizeof(path), "{s}/amelie.state.next", basedir);
 
 	// write state
 	system_state_write_to(self, path);
 
-	if (! fs_exists("{s}/amelie.sql", basedir))
+	if (! fs_exists("{s}/amelie.state", basedir))
 	{
-		fs_rename(path, "{s}/amelie.sql", basedir);
+		fs_rename(path, "{s}/amelie.state", basedir);
 		return;
 	}
 
 	// do atomic exchange
-	fs_rename_exchange(path, "{s}/amelie.sql", basedir);
+	fs_rename_exchange(path, "{s}/amelie.state", basedir);
 
 	// remove previous file
 	fs_unlink("{s}", path);
