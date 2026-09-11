@@ -1,0 +1,26 @@
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+#include <amelie_runtime>
+#include <amelie_server>
+#include <amelie_db>
+#include <amelie_repl>
+#include <amelie_vm>
+#include <amelie_parser.h>
+
+void
+parse_backup(Stmt* self)
+{
+	// BACKUP
+	auto stmt = ast_backup_allocate();
+	self->ast = &stmt->ast;
+}

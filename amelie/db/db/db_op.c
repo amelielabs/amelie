@@ -129,6 +129,12 @@ db_checkpoint(Db* self)
 	db_gc(self);
 }
 
+void
+db_backup(Db* self)
+{
+	unused(self);
+}
+
 hot void
 db_write(Db* self, WriteList* write_list)
 {

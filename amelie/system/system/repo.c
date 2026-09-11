@@ -34,6 +34,7 @@ repo_create(Repo* self, char* directory)
 		fs_mkdir(0755, "{s}", state_directory());
 		fs_mkdir(0755, "{s}/security", state_directory());
 		fs_mkdir(0755, "{s}/checkpoint", state_directory());
+		fs_mkdir(0755, "{s}/backup", state_directory());
 	}
 
 	// open directory fd

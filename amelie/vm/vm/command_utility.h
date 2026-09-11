@@ -16,8 +16,9 @@ void csystem_set_secret(Vm*, Op*);
 void csystem_set_cdc(Vm*, Op*);
 void ccreate_token(Vm*, Op*);
 
-// storage
+// db
 void ccheckpoint(Vm*, Op*);
+void cbackup(Vm*, Op*);
 
 // replica
 void creplica_create(Vm*, Op*);

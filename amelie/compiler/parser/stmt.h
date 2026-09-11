@@ -25,6 +25,7 @@ typedef enum
 	STMT_FOLLOW,
 	STMT_UNFOLLOW,
 	STMT_CHECKPOINT,
+	STMT_BACKUP,
 	STMT_GRANT,
 	STMT_REVOKE,
 	STMT_CREATE_TOKEN,
@@ -178,6 +179,7 @@ stmt_is_utility(Stmt* self)
 	case STMT_FOLLOW:
 	case STMT_UNFOLLOW:
 	case STMT_CHECKPOINT:
+	case STMT_BACKUP:
 	case STMT_GRANT:
 	case STMT_REVOKE:
 	case STMT_CREATE_TOKEN:
@@ -225,6 +227,7 @@ stmt_is_utility_ro(Stmt* self)
 	case STMT_FOLLOW:
 	case STMT_UNFOLLOW:
 	case STMT_CHECKPOINT:
+	case STMT_BACKUP:
 	case STMT_CREATE_LOCK:
 	case STMT_DROP_LOCK:
 	case STMT_ALTER_SYSTEM:

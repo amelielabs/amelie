@@ -219,6 +219,12 @@ parse_stmt(Stmt* self)
 		parse_checkpoint(self);
 		break;
 
+	case KBACKUP:
+		// BACKUP
+		self->id = STMT_BACKUP;
+		parse_backup(self);
+		break;
+
 	case KGRANT:
 	{
 		// GRANT

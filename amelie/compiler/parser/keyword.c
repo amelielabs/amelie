@@ -38,6 +38,7 @@ Keyword keywords[] =
 	{ KBETWEEN,               "between",               7  },
 	{ KBY,                    "by",                    2  },
 	{ KBREAK,                 "break",                 5  },
+	{ KBACKUP,                "backup",                6  },
 
 	// c
 	{ KCURRENT_TIMESTAMP,     "current_timestamp",     17 },

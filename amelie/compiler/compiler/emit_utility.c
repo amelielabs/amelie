@@ -399,7 +399,17 @@ emit_utility(Compiler* self)
 
 		// lock
 		lock_catalog = LOCK_NONE;
-		lock_ddl     = LOCK_NONE;
+		break;
+	}
+
+	case STMT_BACKUP:
+	{
+		auto arg = ast_checkpoint_of(stmt->ast);
+		unused(arg);
+		op0(self, CBACKUP);
+
+		// lock
+		lock_catalog = LOCK_SHARED;
 		break;
 	}
 

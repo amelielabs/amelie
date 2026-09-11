@@ -313,6 +313,7 @@ enum
 
 	// storage
 	CCHECKPOINT,
+	CBACKUP,
 
 	// replica
 	CREPLICA_CREATE,

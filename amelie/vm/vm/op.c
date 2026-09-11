@@ -320,6 +320,7 @@ OpDesc ops[] =
 
 	// storage
 	{ CCHECKPOINT, "checkpoint" },
+	{ CBACKUP, "backup" },
 
 	// replica
 	{ CREPLICA_CREATE, "replica_create" },

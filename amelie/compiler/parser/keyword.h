@@ -74,6 +74,7 @@ enum
 	KBETWEEN,
 	KBY,
 	KBREAK,
+	KBACKUP,
 
 	// c
 	KCURRENT_TIMESTAMP,

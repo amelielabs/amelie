@@ -397,8 +397,9 @@ vm_run(Vm*       self,
 		&&csystem_set_cdc,
 		&&ccreate_token,
 
-		// storage
+		// db
 		&&ccheckpoint,
+		&&cbackup,
 
 		// replica
 		&&creplica_create,
@@ -2164,6 +2165,10 @@ ccreate_token:
 
 ccheckpoint:
 	ccheckpoint(self, op);
+	op_next;
+
+cbackup:
+	cbackup(self, op);
 	op_next;
 
 creplica_create:

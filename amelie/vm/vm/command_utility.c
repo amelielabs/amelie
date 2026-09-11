@@ -102,6 +102,17 @@ ccheckpoint(Vm* self, Op* op)
 }
 
 void
+cbackup(Vm* self, Op* op)
+{
+	unused(op);
+
+	// PERM_SYSTEM
+	check_user(self->tr, PERM_SYSTEM);
+
+	db_backup(share()->db);
+}
+
+void
 creplica_create(Vm* self, Op* op)
 {
 	// PERM_SYSTEM
