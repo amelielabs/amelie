@@ -302,6 +302,8 @@ dst_backup(Dst* self)
 	info("[{u64}] BACKUP", self->step);
 	dst_stat(&self->stats, DST_STAT_BACKUP);
 
+	unused(self);
+#if 0
 	Runtime rt_backup;
 	runtime_init(&rt_backup);
 	defer(runtime_free, &rt_backup);
@@ -347,6 +349,7 @@ dst_backup(Dst* self)
 
 	// cleanup
 	dst_sh("rm -rf {str}/origin", dir);
+#endif
 }
 
 void

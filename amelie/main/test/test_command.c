@@ -125,55 +125,6 @@ test_command_close(TestSuite* self, Str* arg)
 }
 
 static void
-test_command_backup(TestSuite* self, Str* arg)
-{
-	// backup <name> <uri>
-	Str name;
-	str_arg(arg, &name);
-	if (str_empty(&name))
-		test_error(self, "backup <name> expected");
-
-	if (str_empty(arg))
-		test_error(self, "backup <name> <args> expected");
-
-	auto env = test_plan_find_env(&self->plan, &name);
-	if (env)
-		test_error(self, "env name redefined");
-	env = test_env_create(&name);
-	test_plan_add_env(&self->plan, env);
-
-	// set client home
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{str}/home", &self->option_result_dir);
-	setenv("AMELIE_HOME", path, 1);
-
-	// set base dir
-	format(path, sizeof(path), "./{str}/{str}",
-	       &self->option_result_dir,
-	       &name);
-
-	// backup <uri> <path>
-	char uri[1024];
-	str_chomp(arg);
-	str_shrink(arg);
-	format(uri, sizeof(uri), "{str}", arg);
-
-	int   argc = 5;
-	char* argv[5] =
-	{
-		"amelie",
-		"backup"
-	};
-	argv[2] = uri;
-	argv[3] = "--debug=false";
-	argv[4] = path;
-
-	int rc = runtime_start(&env->runtime, main_runtime, NULL, argc, argv);
-	if (rc == -1)
-		test_error(self, "start failed");
-}
-
-static void
 test_command_connect_as(TestSuite* self, Str* arg, bool async)
 {
 	Str env_name;
@@ -340,7 +291,6 @@ test_commands[] =
 	{ "unit",          4,  test_command_unit          },
 	{ "open",          4,  test_command_open          } ,
 	{ "close",         5,  test_command_close         },
-	{ "backup",        6,  test_command_backup        },
 	{ "connect_async", 13, test_command_connect_async },
 	{ "connect",       7,  test_command_connect       },
 	{ "disconnect",    10, test_command_disconnect    },

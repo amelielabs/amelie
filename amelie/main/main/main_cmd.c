@@ -49,24 +49,6 @@ cmd_stop(Main* self)
 }
 
 static void
-cmd_backup(Main* self)
-{
-	// amelie backup <path, uri, bookmark> [path]
-
-	// parse command line
-	if (self->argc != 1)
-		error("usage: amelie backup <path, uri, bookmark> <directory>");
-
-	// disable log output
-	if (! self->endpoint.debug.integer)
-		logger_set_stdout(&runtime()->logger, false);
-
-	// create backup
-	opt_int_set(&config()->log_connections, false);
-	restore(&self->endpoint, self->argv[0]);
-}
-
-static void
 cmd_bookmark(Main* self)
 {
 	// amelie bookmark <name> options
@@ -108,7 +90,6 @@ main_cmds[] =
 	// server
 	{ cmd_start,    false, true,  "start",    "Start database"                      },
 	{ cmd_stop,     false, true,  "stop",     "Stop database"                       },
-	{ cmd_backup,   false, true,  "backup",   "Create database backup"              },
 
 	// client
 	{ main_cli,     true,  true,  "cli",      "Open interactive console"            },

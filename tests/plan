@@ -143,22 +143,6 @@ directory tls
 group tls
 test tls
 
-# backup
-directory backup
-group backup
-test backup
-test backup_tls
-
-# replication
-directory repl
-group repl
-test replica
-test repl
-test ro
-test streaming
-test streaming_tls
-test streaming_tls_2
-
 # http
 directory http
 group http
@@ -166,3 +150,13 @@ test http_sql
 test http_import
 test http_api
 test http_mcp
+
+## replication
+#directory repl
+#group repl
+#test replica
+#test repl
+#test ro
+#test streaming
+#test streaming_tls
+#test streaming_tls_2

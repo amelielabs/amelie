@@ -281,9 +281,6 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	case ENDPOINT_MCP:
 		buf_write(buf, "mcp", 3);
 		break;
-	case ENDPOINT_BACKUP:
-		buf_write(buf, "backup", 6);
-		break;
 	case ENDPOINT_REPL:
 		buf_write(buf, "repl", 4);
 		break;

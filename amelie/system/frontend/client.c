@@ -198,7 +198,6 @@ frontend_endpoint_service(Portal* portal, Client* client)
 	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
-	// GET /backup
 	// GET /repl
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is(method, "GET", 3)))
@@ -223,7 +222,6 @@ frontend_endpoint(Portal* portal, Client* client)
 	// POST /sql
 	// POST /api
 	// GET  /stream
-	// GET  /backup
 	// GET  /repl
 
 	// content type
@@ -473,12 +471,6 @@ frontend_client(Frontend* self, Client* client)
 			//
 			frontend_stream(self, client, &portal);
 			return;
-		}
-		case ENDPOINT_BACKUP:
-		{
-			// restore connection (remote backup)
-			portal_reset(&portal, true);
-			return backup(share()->db, client);
 		}
 		case ENDPOINT_REPL:
 		{
