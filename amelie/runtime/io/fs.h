@@ -74,6 +74,19 @@ fs_rename(const char* old, const char* fmt, ...)
 		error_system();
 }
 
+static inline void
+fs_rename_exchange(const char* old, const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	char path[PATH_MAX];
+	formatv(path, sizeof(path), fmt, args);
+	va_end(args);
+	int rc = renameat2(AT_FDCWD, old, AT_FDCWD, path, RENAME_EXCHANGE);
+	if (unlikely(rc == -1))
+		error_system();
+}
+
 static inline int64_t
 fs_size(const char* fmt, ...)
 {

@@ -83,32 +83,32 @@ system_state_write_to(System* self, char* path)
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
-	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
+	file_open_as(&file, path, O_CREAT|O_TRUNC|O_WRONLY, 0600);
 	file_write_buf(&file, buf);
+
+	// todo: sync
 }
 
 void
 system_state_write(System* self)
 {
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/amelie.sql", state_directory());
+	auto basedir = state_directory();
 
-	if (! fs_exists("{s}", path))
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/amelie.sql.next", basedir);
+
+	// write state
+	system_state_write_to(self, path);
+
+	if (! fs_exists("{s}/amelie.sql", basedir))
 	{
-		system_state_write_to(self, path);
+		fs_rename(path, "{s}/amelie.sql", basedir);
 		return;
 	}
 
-	// remove old file, if exists
-	if (fs_exists("{s}.old", path))
-		fs_unlink("{s}.old", path);
+	// do atomic exchange
+	fs_rename_exchange(path, "{s}/amelie.sql", basedir);
 
-	// save existing file old
-	fs_rename(path, "{s}.old", path);
-
-	// create file
-	system_state_write_to(self, path);
-
-	// remove old file
-	fs_unlink("{s}.old", path);
+	// remove previous file
+	fs_unlink("{s}", path);
 }
