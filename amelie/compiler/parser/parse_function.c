@@ -135,6 +135,14 @@ parse_function_create(Stmt* self, bool or_replace)
 		udf_config_set_description(stmt->config, &text->string);
 	}
 
+	// switch to using target user (to compile on behalf on another user)
+	//
+	// only for superuser (bootstrap)
+	//
+	Str user_current = self->parser->local->user;
+	if (!str_compare(&user, &user_current) && str_is(&user_current, "amelie", 6))
+		self->parser->local->user = user;
+
 	// create new namespace
 	auto parser = self->parser;
 	auto ns     = namespaces_add(&parser->nss, self->block->ns, stmt->config);
@@ -154,6 +162,8 @@ parse_function_create(Stmt* self, bool or_replace)
 
 	// END
 	auto end = stmt_expect(self, KEND);
+
+	self->parser->local->user = user_current;
 
 	// set function text
 	Str text;
