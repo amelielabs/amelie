@@ -175,6 +175,10 @@ backup_job(intptr_t* argv)
 void
 backup(Db* self, Uuid* id)
 {
+	// one checkpoint, create index or backup at a time
+	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
+	defer(unlock, checkpoint_lock);
+
 	Backup backup;
 	backup_init(&backup, self, id);
 	defer(backup_free, &backup);

@@ -77,7 +77,7 @@ db_checkpoint(Db* self)
 	if (lsn == state_checkpoint())
 		return;
 
-	// one checkpoint (or create index) at a time
+	// one checkpoint, create index or backup at a time
 	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
 	defer(unlock, checkpoint_lock);
 
