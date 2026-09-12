@@ -75,6 +75,28 @@ fs_rename(const char* old, const char* fmt, ...)
 }
 
 static inline void
+fs_syncdir(const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	char path[PATH_MAX];
+	formatv(path, sizeof(path), fmt, args);
+	va_end(args);
+
+	auto fd = vfs_open(path, O_RDONLY|O_DIRECTORY, 0);
+	if (unlikely(fd == -1))
+		error_system();
+
+	auto rc = vfs_fsync(fd);
+	if (rc == -1)
+	{
+		vfs_close(fd);
+		error_system();
+	}
+	vfs_close(fd);
+}
+
+static inline void
 fs_rename_exchange(const char* old, const char* fmt, ...)
 {
 	va_list args;

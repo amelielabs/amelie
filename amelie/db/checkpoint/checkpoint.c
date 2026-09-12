@@ -321,7 +321,16 @@ checkpoint_wait(Checkpoint* self)
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete",
 	       state_directory(), self->lsn);
+
+	// sync checkpoint dir
+	if (opt_int_of(&config()->storage_sync))
+		fs_syncdir("{s}", path);
+
 	fs_rename(path, "{s}/checkpoint/{u64}", state_directory(), self->lsn);
+
+	// sync checkpoint base dir
+	if (opt_int_of(&config()->storage_sync))
+		fs_syncdir("{s}/checkpoint", state_directory());
 
 	// done
 	info("");

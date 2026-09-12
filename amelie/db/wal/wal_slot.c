@@ -128,7 +128,7 @@ wal_backup(Buf* data, char* path_base)
 	file_init(&dst);
 	defer(file_close, &dst);
 	file_create(&dst, path_backup);
-
 	file_copy(&src, &dst, size);
-	// todo: sync
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&src);
 }

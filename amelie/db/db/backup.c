@@ -100,6 +100,8 @@ backup_file(char* path_base, char* path_relative, Buf* data)
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
 	if (! buf_empty(data))
 		file_write_buf(&file, data);
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&file);
 }
 
 static void
@@ -119,7 +121,10 @@ backup_file_json(char* path_base, char* path_relative, Buf* data)
 	file_init(&file);
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
-	file_write_buf(&file, buf);
+	if (! buf_empty(buf))
+		file_write_buf(&file, buf);
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&file);
 }
 
 static void
@@ -161,8 +166,22 @@ backup_main(Backup* self)
 	// create wal files (hardlinks and copy)
 	wal_backup(&self->wal_files, path);
 
+	// sync all directories
+	if (opt_int_of(&config()->storage_sync))
+	{
+		fs_syncdir("{s}/checkpoint", path);
+		fs_syncdir("{s}/checkpoint/{u64}", path, state_checkpoint());
+		fs_syncdir("{s}/wal", path);
+		fs_syncdir("{s}", path);
+		fs_syncdir("{s}/backup", state_directory());
+	}
+
 	// rename as complete
 	fs_rename(path,  "{s}/backup/{s}", state_directory(), id);
+
+	// post rename sync
+	if (opt_int_of(&config()->storage_sync))
+		fs_syncdir("{s}/backup", state_directory());
 }
 
 static void
