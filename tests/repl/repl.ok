@@ -12,8 +12,8 @@ repl
   "replicas": []
 }
 # test: backup replica
-backup E1 http://127.0.0.1:3480;
-close E1;
+backup id '00000000-0000-0000-0000-000000000002';
+restore E1 E0/backup/00000000-0000-0000-0000-000000000002;
 open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
 connect E1 S1 127.0.0.1:3481;
 switch S1;
