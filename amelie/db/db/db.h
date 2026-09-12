@@ -17,8 +17,6 @@ struct Db
 {
 	Catalog     catalog;
 	Wal         wal;
-	List        snapshots;
-	int         snapshots_count;
 	Checkpoints checkpoints;
 	Syncer      syncer;
 	Cdc*        cdc;

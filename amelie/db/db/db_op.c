@@ -132,7 +132,9 @@ db_checkpoint(Db* self)
 void
 db_backup(Db* self)
 {
-	unused(self);
+	Uuid id;
+	uuid_generate(&id, &am_task->random, time_ms());
+	backup(self, &id);
 }
 
 hot void

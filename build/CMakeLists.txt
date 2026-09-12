@@ -230,8 +230,8 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_op.c
     ${AMELIE_ROOT}/db/db/db_create_index.c
-    ${AMELIE_ROOT}/db/db/db_snapshot.c
-    ${AMELIE_ROOT}/db/db/recover.c)
+    ${AMELIE_ROOT}/db/db/recover.c
+    ${AMELIE_ROOT}/db/db/backup.c)
 
 set(AMELIE_SOURCES_REPL
     ${AMELIE_ROOT}/repl/repl/streamer.c

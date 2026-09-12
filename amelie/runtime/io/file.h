@@ -294,3 +294,18 @@ file_import_stream(Buf* buf, const char* fmt, ...)
 		buf_advance(buf, rc);
 	}
 }
+
+static inline void
+file_copy(File* self, File* dest, uint64_t size)
+{
+	assert(! dest->size);
+	do
+	{
+		auto rc = copy_file_range(self->fd, NULL, dest->fd, NULL, size, 0);
+		if (rc == -1)
+			file_error(self, "copy_file_range");
+		size -= rc;
+	} while (size > 0);
+
+	dest->size = size;
+}

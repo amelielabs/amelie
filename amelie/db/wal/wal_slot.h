@@ -36,5 +36,6 @@ wal_slot_set(WalSlot* self, uint64_t lsn)
 
 void wal_attach(Wal*, WalSlot*);
 void wal_detach(Wal*, WalSlot*);
-void wal_snapshot(Wal*, WalSlot*, Buf*);
 int  wal_slots(Wal*, uint64_t*);
+void wal_snapshot(Wal*, WalSlot*, Buf*);
+void wal_backup(Buf*, char*);

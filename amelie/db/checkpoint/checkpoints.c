@@ -208,7 +208,6 @@ checkpoints_ref(Checkpoints* self)
 	assert(current);
 	current->refs++;
 	spinlock_unlock(&self->lock);
-
 	return current;
 }
 
@@ -222,9 +221,9 @@ checkpoints_unref(Checkpoints* self, CheckpointRef *ref)
 }
 
 void
-checkpoints_list(CheckpointRef* ref, Buf* buf)
+checkpoints_backup(CheckpointRef* ref, char* path_base)
 {
-	char path_relative[PATH_MAX];
+	char path_backup[PATH_MAX];
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{s}/checkpoint/{u64}",
 	       state_directory(), ref->id);
@@ -234,7 +233,7 @@ checkpoints_list(CheckpointRef* ref, Buf* buf)
 		error_system();
 	defer(fs_closedir_defer, dir);
 
-	encode_array(buf);
+	// create hardlinks to the checkpoint files
 	for (;;)
 	{
 		auto entry = readdir(dir);
@@ -244,10 +243,17 @@ checkpoints_list(CheckpointRef* ref, Buf* buf)
 			continue;
 		if (! strcmp(entry->d_name, ".."))
 			continue;
-		format(path_relative, sizeof(path_relative),
-		       "checkpoint/{u64}/{s}", ref->id, entry->d_name);
-		encode_basefile(buf, path_relative);
-	}
 
-	encode_array_end(buf);
+		format(path, sizeof(path),
+		       "{s}/checkpoint/{u64}/{s}",
+		       state_directory(), ref->id, entry->d_name);
+
+		format(path_backup, sizeof(path_backup),
+		       "{s}/checkpoint/{u64}/{s}",
+		       path_base, ref->id, entry->d_name);
+
+		auto rc = link(path, path_backup);
+		if (rc == -1)
+			error_system();
+	}
 }

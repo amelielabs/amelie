@@ -32,13 +32,11 @@ db_init(Db*        self,
         PartsIf*   iface_parts,
         void*      iface_arg)
 {
-	self->snapshots_count = 0;
-	self->cdc             = cdc;
+	self->cdc = cdc;
 	catalog_init(&self->catalog, cdc,
 	             iface,
 	             iface_eval, iface_parts, iface_arg);
 	wal_init(&self->wal);
-	list_init(&self->snapshots);
 	checkpoints_init(&self->checkpoints, &self->catalog);
 	syncer_init(&self->syncer, self);
 }
@@ -46,7 +44,6 @@ db_init(Db*        self,
 void
 db_free(Db* self)
 {
-	assert(! self->snapshots_count);
 	checkpoints_free(&self->checkpoints);
 	catalog_free(&self->catalog);
 	wal_free(&self->wal);

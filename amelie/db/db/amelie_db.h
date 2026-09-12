@@ -18,5 +18,7 @@
 #include "db/db.h"
 #include "db/db_op.h"
 #include "db/db_create_index.h"
-#include "db/db_snapshot.h"
 #include "db/recover.h"
+
+// backup
+#include "db/backup.h"

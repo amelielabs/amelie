@@ -38,4 +38,4 @@ void checkpoints_add(Checkpoints*, uint64_t);
 CheckpointRef*
 checkpoints_ref(Checkpoints*);
 void checkpoints_unref(Checkpoints*, CheckpointRef*);
-void checkpoints_list(CheckpointRef*, Buf*);
+void checkpoints_backup(CheckpointRef*, char*);

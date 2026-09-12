@@ -409,7 +409,7 @@ emit_utility(Compiler* self)
 		op0(self, CBACKUP);
 
 		// lock
-		lock_catalog = LOCK_SHARED;
+		lock_catalog = LOCK_NONE;
 		break;
 	}
 

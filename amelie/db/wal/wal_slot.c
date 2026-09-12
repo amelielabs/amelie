@@ -45,6 +45,22 @@ wal_detach(Wal* self, WalSlot* slot)
 	slot->active = false;
 }
 
+int
+wal_slots(Wal* self, uint64_t* min)
+{
+	spinlock_lock(&self->lock);
+	auto count = self->slots_count;
+	list_foreach(&self->slots)
+	{
+		auto slot = list_at(WalSlot, link);
+		auto lsn = atomic_u64_of(&slot->lsn);
+		if (lsn < *min)
+			*min = lsn;
+	}
+	spinlock_unlock(&self->lock);
+	return count;
+}
+
 void
 wal_snapshot(Wal* self, WalSlot* slot, Buf* data)
 {
@@ -68,18 +84,51 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* data)
 	encode_array_end(data);
 }
 
-int
-wal_slots(Wal* self, uint64_t* min)
+void
+wal_backup(Buf* data, char* path_base)
 {
-	spinlock_lock(&self->lock);
-	auto count = self->slots_count;
-	list_foreach(&self->slots)
+	char path_backup[PATH_MAX];
+	char path[PATH_MAX];
+
+	// read wal files
+	auto    pos = data->start;
+	Str     path_relative;
+	int64_t size;
+	int64_t mode;
+
+	unpack_array(&pos);
+	while (! unpack_array_end(&pos))
 	{
-		auto slot = list_at(WalSlot, link);
-		auto lsn = atomic_u64_of(&slot->lsn);
-		if (lsn < *min)
-			*min = lsn;
+		// [path_relative, size, mode]
+		decode_basefile(&pos, &path_relative, &size, &mode);
+
+		format(path, sizeof(path), "{s}/{str}",
+		       state_directory(), &path_relative);
+
+		format(path_backup, sizeof(path_backup), "{s}/{str}",
+		       path_base, &path_relative);
+
+		// last file
+		if (data_is_array_end(pos))
+			break;
+
+		// create a hardlink
+		auto rc = link(path, path_backup);
+		if (rc == -1)
+			error_system();
 	}
-	spinlock_unlock(&self->lock);
-	return count;
+
+	// copy last file up to captured size
+	File src;
+	file_init(&src);
+	defer(file_close, &src);
+	file_open_rdonly(&src, path);
+
+	File dst;
+	file_init(&dst);
+	defer(file_close, &dst);
+	file_create(&dst, path_backup);
+
+	file_copy(&src, &dst, size);
+	// todo: sync
 }
