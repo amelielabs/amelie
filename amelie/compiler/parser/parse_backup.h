@@ -15,7 +15,8 @@ typedef struct AstBackup AstBackup;
 
 struct AstBackup
 {
-	Ast ast;
+	Ast  ast;
+	Uuid id;
 };
 
 static inline AstBackup*

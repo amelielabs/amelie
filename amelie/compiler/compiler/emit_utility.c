@@ -404,9 +404,13 @@ emit_utility(Compiler* self)
 
 	case STMT_BACKUP:
 	{
-		auto arg = ast_checkpoint_of(stmt->ast);
-		unused(arg);
-		op0(self, CBACKUP);
+		auto arg = ast_backup_of(stmt->ast);
+
+		// set id
+		auto offset = code_data_offset(self->code_data);
+		auto uuid   = (Uuid*)buf_emplace(&self->code_data->data, sizeof(Uuid));
+		*uuid = arg->id;
+		op1(self, CBACKUP, offset);
 
 		// lock
 		lock_catalog = LOCK_NONE;

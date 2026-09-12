@@ -100,8 +100,6 @@ backup_file(char* path_base, char* path_relative, Buf* data)
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
 	if (! buf_empty(data))
 		file_write_buf(&file, data);
-
-	info("backup: {s}", path_relative);
 }
 
 static void
@@ -122,8 +120,6 @@ backup_file_json(char* path_base, char* path_relative, Buf* data)
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
 	file_write_buf(&file, buf);
-
-	info("backup: {s}", path_relative);
 }
 
 static void
@@ -167,8 +163,6 @@ backup_main(Backup* self)
 
 	// rename as complete
 	fs_rename(path,  "{s}/backup/{s}", state_directory(), id);
-
-	info("backup: done");
 }
 
 static void

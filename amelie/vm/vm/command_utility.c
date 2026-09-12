@@ -104,12 +104,13 @@ ccheckpoint(Vm* self, Op* op)
 void
 cbackup(Vm* self, Op* op)
 {
-	unused(op);
+	// [uuid_offset]
+	auto id = (Uuid*)code_data_at(self->code_data, op->a);
 
 	// PERM_SYSTEM
 	check_user(self->tr, PERM_SYSTEM);
 
-	db_backup(share()->db);
+	backup(share()->db, id);
 }
 
 void

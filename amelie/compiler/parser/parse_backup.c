@@ -20,7 +20,37 @@
 void
 parse_backup(Stmt* self)
 {
-	// BACKUP
+	// BACKUP [ID id]
 	auto stmt = ast_backup_allocate();
 	self->ast = &stmt->ast;
+
+	uuid_init(&stmt->id);
+	auto local = self->parser->local;
+	uuid_generate(&stmt->id, &local->random, local->time_ms);
+
+	// set options
+	for (;;)
+	{
+		// name value
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+		{
+			stmt_push(self, name);
+			break;
+		}
+
+		// ID string
+		if (str_is_case(&name->string, "id", 2))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			Uuid id;
+			uuid_init(&id);
+			if (uuid_set_nothrow(&id, &value->string) == -1)
+				stmt_error(self, value, "failed to parse uuid");
+			stmt->id = id;
+			continue;
+		}
+
+		stmt_error(self, name, "unrecognized option");
+	}
 }
