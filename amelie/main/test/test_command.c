@@ -125,6 +125,39 @@ test_command_close(TestSuite* self, Str* arg)
 }
 
 static void
+test_command_restore(TestSuite* self, Str* arg)
+{
+	// restore <name> <path>
+	Str name;
+	str_arg(arg, &name);
+	if (str_empty(&name))
+		test_error(self, "restore <name> expected");
+
+	Str path;
+	str_arg(arg, &path);
+	if (str_empty(&path))
+		test_error(self, "restore name <path> expected");
+
+	// dst path
+	char path_dst[PATH_MAX];
+	format(path_dst, sizeof(path_dst), "./{str}/{str}",
+	       &self->option_result_dir, &name);
+
+	if (fs_exists("{s}", path_dst))
+		test_error(self, "restore dest path exists");
+
+	// src path
+	char path_src[PATH_MAX];
+	format(path_src, sizeof(path_src), "./{str}/{str}",
+	       &self->option_result_dir, &path);
+
+	if (! fs_exists("{s}", path_src))
+		test_error(self, "restore src path not exists");
+
+	test_sh(self, "cp -r {s} {s}", path_src, path_dst);
+}
+
+static void
 test_command_connect_as(TestSuite* self, Str* arg, bool async)
 {
 	Str env_name;
@@ -291,6 +324,7 @@ test_commands[] =
 	{ "unit",          4,  test_command_unit          },
 	{ "open",          4,  test_command_open          } ,
 	{ "close",         5,  test_command_close         },
+	{ "restore",       7,  test_command_restore       },
 	{ "connect_async", 13, test_command_connect_async },
 	{ "connect",       7,  test_command_connect       },
 	{ "disconnect",    10, test_command_disconnect    },

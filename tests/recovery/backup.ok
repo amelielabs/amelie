@@ -1,0 +1,121 @@
+open E0 "uuid": "abc00000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: checkpoint
+show all;
+
+config
+──────
+{
+  "version": "1.0.0-rc1",
+  "uuid": "abc00000-0000-0000-0000-000000000000",
+  "timezone": "UTC",
+  "log_enable": true,
+  "log_file": true,
+  "log_stdout": false,
+  "log_stdout_time": true,
+  "log_connections": true,
+  "log_options": true,
+  "frontends": 1,
+  "backends": 1,
+  "workers": 1,
+  "cpu_affinity": true,
+  "wal_crc": true,
+  "wal_sync_create": false,
+  "wal_sync_close": false,
+  "wal_sync_write": false,
+  "wal_sync_interval": "1 sec",
+  "wal_service": false,
+  "wal_size": 67108864,
+  "wal_checkpoint": 100,
+  "wal_rewind": false,
+  "wal_rewind_pos": 0,
+  "storage_crc": true,
+  "storage_compression": "zstd",
+  "storage_sync": false,
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000,
+  "recv": 1048576
+}
+show state;
+
+state
+─────
+{
+  "version": "1.0.0-rc1",
+  "directory": "./_output/E0",
+  "uuid": "abc00000-0000-0000-0000-000000000000",
+  "frontends": 1,
+  "backends": 1,
+  "lsn": 1,
+  "checkpoint": 1
+}
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+checkpoint;
+insert into test values (4);
+# test: backup
+backup id "00000000-0000-0000-0000-000000000001";
+disconnect S0;
+close E0;
+# test: restore from backup
+restore E1 E0/backup/00000000-0000-0000-0000-000000000001;
+open E1;
+connect E1 S1 127.0.0.1:3485;
+show all;
+
+config
+──────
+{
+  "version": "1.0.0-rc1",
+  "uuid": "abc00000-0000-0000-0000-000000000000",
+  "timezone": "UTC",
+  "log_enable": true,
+  "log_file": true,
+  "log_stdout": false,
+  "log_stdout_time": true,
+  "log_connections": true,
+  "log_options": true,
+  "frontends": 1,
+  "backends": 1,
+  "workers": 1,
+  "cpu_affinity": true,
+  "wal_crc": true,
+  "wal_sync_create": false,
+  "wal_sync_close": false,
+  "wal_sync_write": false,
+  "wal_sync_interval": "1 sec",
+  "wal_service": false,
+  "wal_size": 67108864,
+  "wal_checkpoint": 100,
+  "wal_rewind": false,
+  "wal_rewind_pos": 0,
+  "storage_crc": true,
+  "storage_compression": "zstd",
+  "storage_sync": false,
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000,
+  "recv": 1048576
+}
+show state;
+
+state
+─────
+{
+  "version": "1.0.0-rc1",
+  "directory": "./_output/E1",
+  "uuid": "abc00000-0000-0000-0000-000000000000",
+  "frontends": 1,
+  "backends": 1,
+  "lsn": 4,
+  "checkpoint": 3
+}
+select * from test;
+
+id
+──
+1
+2
+3
+4
+disconnect S1;
+close E1;

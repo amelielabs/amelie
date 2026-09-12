@@ -302,36 +302,31 @@ dst_backup(Dst* self)
 	info("[{u64}] BACKUP", self->step);
 	dst_stat(&self->stats, DST_STAT_BACKUP);
 
-	unused(self);
-#if 0
-	Runtime rt_backup;
-	runtime_init(&rt_backup);
-	defer(runtime_free, &rt_backup);
-
 	auto dir = opt_string_of(&self->opt_dir);
 	char path[PATH_MAX];
-	char path_backup[PATH_MAX];
 	format(path, sizeof(path), "{str}/env", dir);
-	format(path_backup, sizeof(path_backup), "{str}/backup", dir);
 
-	// backup <uri> <path>
-	int   argc = 5;
-	char* argv[5] =
-	{
-		"amelie",
-		"backup"
-	};
-	argv[2] = path;
-	argv[3] = "--debug=false";
-	argv[4] = path_backup;
-	int rc = runtime_start(&rt_backup, main_runtime, NULL, argc, argv);
-	if (rc == -1)
-		error("backup failed");
+	// connect (superuser)
+	Endpoint endpoint;
+	endpoint_init(&endpoint);
+	defer(endpoint_free, &endpoint);
+	opt_string_set_cstr(&endpoint.path, path);
+
+	auto client = client_allocate();
+	defer(client_free, client);
+	client_set_endpoint(client, &endpoint);
+	client_connect(client);
+
+	// create backup
+	unused(self);
+	dst_execute(self, client, "BACKUP ID '00000000-0000-0000-0000-000000000000'");
+	client_close(client);
 
 	// restart into backup
 	info("[{u64}] RESTORE", self->step);
 	dst_close(self);
 
+	dst_sh("mv {str}/env/backup/00000000-0000-0000-0000-000000000000 {str}/backup", dir, dir);
 	dst_sh("mv {str}/env {str}/origin", dir, dir);
 	dst_sh("mv {str}/backup {str}/env", dir, dir);
 
@@ -349,7 +344,6 @@ dst_backup(Dst* self)
 
 	// cleanup
 	dst_sh("rm -rf {str}/origin", dir);
-#endif
 }
 
 void

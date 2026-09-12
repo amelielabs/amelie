@@ -1,0 +1,32 @@
+#
+
+open E0 "uuid": "abc00000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: checkpoint
+show all;
+show state;
+
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+checkpoint;
+insert into test values (4);
+
+# test: backup
+backup id "00000000-0000-0000-0000-000000000001";
+
+disconnect S0;
+close E0;
+
+# test: restore from backup
+restore E1 E0/backup/00000000-0000-0000-0000-000000000001;
+
+open E1;
+connect E1 S1 127.0.0.1:3485;
+
+show all;
+show state;
+select * from test;
+
+disconnect S1;
+close E1;

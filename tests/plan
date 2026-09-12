@@ -137,6 +137,7 @@ test wal_ddl
 test checkpoint
 test checkpoint_cdc
 test checkpoint_flat
+test backup
 
 # tls
 directory tls
