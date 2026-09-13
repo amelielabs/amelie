@@ -33,3 +33,4 @@ void repl_stop(Repl*);
 void repl_follow(Repl*, Str*);
 void repl_status(Repl*, Buf*);
 void repl_describe(Repl*, Buf*);
+void repl_connect(Repl*, Client*);

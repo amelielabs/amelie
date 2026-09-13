@@ -15,11 +15,10 @@ typedef struct Node Node;
 
 struct Node
 {
-	uint64_t  coroutine_id;
-	Websocket websocket;
-	Client*   client;
-	Recover   recover;
-	List      link;
+	Client*  client;
+	Recover  recover;
+	uint64_t coroutine_id;
+	List     link;
 };
 
 void node_init(Node*, Db*, RecoverIf*, void*, Client*);

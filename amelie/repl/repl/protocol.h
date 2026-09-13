@@ -28,13 +28,13 @@ struct NodeMsg
 } packed;
 
 static inline void
-node_send(Websocket* self,
-          int        op,
-          Uuid*      id,
-          uint64_t   lsn,
-          Buf*       data)
+node_send(Client * self,
+          int      op,
+          Uuid*    id,
+          uint64_t lsn,
+          Buf*     data)
 {
-	// [websocket header][msg][data]
+	// [msg][data]
 	NodeMsg msg =
 	{
 		.id   = *id,
@@ -53,16 +53,16 @@ node_send(Websocket* self,
 		iov_count++;
 		msg.size = iov[1].iov_len;
 	}
-	websocket_send(self, WS_BINARY, iov, iov_count, 0);
+	tcp_write(&self->tcp, iov, iov_count);
 }
 
 static inline bool
-node_recv(Websocket* self, NodeMsg* msg, Buf* buf)
+node_recv(Client* self, NodeMsg* msg, Buf* buf)
 {
-	// [websocket header][msg][data]
-	if (! websocket_recv(self, (uint8_t*)msg, sizeof(*msg)))
+	auto readahead = &self->readahead;
+	if (! readahead_recv(readahead, (uint8_t*)msg, sizeof(NodeMsg)))
 		return false;
 	if (buf)
-		readahead_recv_buf(&self->client->readahead, buf, msg->size);
+		readahead_recv_buf(readahead, buf, msg->size);
 	return true;
 }

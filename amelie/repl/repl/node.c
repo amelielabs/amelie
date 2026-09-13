@@ -22,19 +22,12 @@ node_init(Node* self, Db* db, RecoverIf* iface, void* iface_arg, Client* client)
 	self->client = client;
 	list_init(&self->link);
 	recover_init(&self->recover, db, iface, iface_arg);
-
-	// set websocket
-	websocket_init(&self->websocket);
-	Str protocol;
-	str_set(&protocol, "amelie-repl", 11);
-	websocket_set(&self->websocket, &protocol, client, false);
 }
 
 void
 node_free(Node* self)
 {
 	recover_free(&self->recover);
-	websocket_free(&self->websocket);
 }
 
 static void
@@ -75,15 +68,15 @@ node_replay(Node* self, NodeMsg* node_msg, Buf* data)
 static void
 node_process(Node* self)
 {
-	auto websocket = &self->websocket;
-	auto buf = &self->client->request.content;
+	auto client = self->client;
+	auto buf = &client->request.content;
 	for (;;)
 	{
 		// NODE_WRITE
 		buf_reset(buf);
 
 		NodeMsg msg;
-		if (! node_recv(websocket, &msg, buf))
+		if (! node_recv(client, &msg, buf))
 			break;
 		if (msg.op != NODE_WRITE)
 			error("node: unexpected message");
@@ -97,7 +90,7 @@ node_process(Node* self)
 		}
 
 		// NODE_ACK
-		node_send(websocket, NODE_ACK, opt_uuid_of(&config()->uuid),
+		node_send(client, NODE_ACK, opt_uuid_of(&config()->uuid),
 		          state_lsn(), NULL);
 	}
 }
@@ -106,10 +99,6 @@ void
 node_main(Node* self)
 {
 	info("node connected.");
-
-	// do websocket handshake
-	auto websocket = &self->websocket;
-	websocket_accept(websocket);
 
 	// prepare recovery state
 	self->recover.iface->create(&self->recover);

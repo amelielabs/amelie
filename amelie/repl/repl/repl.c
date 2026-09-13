@@ -174,3 +174,19 @@ repl_describe(Repl* self, Buf* buf)
 		buf_format(buf, "create replica {qs} {qbuf};\n", id, uri);
 	}
 }
+
+void
+repl_connect(Repl* self, Client* client)
+{
+	// ensure server is replica
+	if (state_is_primary())
+	{
+		info("replication: server is not a replica");
+		client_close(client);
+		client_free(client);
+		return;
+	}
+
+	client_detach(client);
+	receiver_send(&self->receiver, client);
+}

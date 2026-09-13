@@ -235,8 +235,8 @@ set(AMELIE_SOURCES_DB
 
 set(AMELIE_SOURCES_REPL
     ${AMELIE_ROOT}/repl/repl/streamer.c
-    ${AMELIE_ROOT}/repl/repl/receiver.c
     ${AMELIE_ROOT}/repl/repl/node.c
+    ${AMELIE_ROOT}/repl/repl/receiver.c
     ${AMELIE_ROOT}/repl/repl/replicas.c
     ${AMELIE_ROOT}/repl/repl/repl.c)
 

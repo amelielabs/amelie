@@ -60,7 +60,7 @@ static inline void
 streamer_write(Streamer* self, uint64_t lsn, Buf* content)
 {
 	// NODE_WRITE
-	node_send(&self->websocket, NODE_WRITE, &self->id_primary, lsn, content);
+	node_send(self->client, NODE_WRITE, &self->id_primary, lsn, content);
 }
 
 static inline uint64_t
@@ -68,7 +68,7 @@ streamer_read(Streamer* self)
 {
 	// NODE_ACK
 	NodeMsg msg;
-	if (! node_recv(&self->websocket, &msg, NULL))
+	if (! node_recv(self->client, &msg, NULL))
 		error("streamer: unexpected eof");
 	if (msg.op != NODE_ACK)
 		error("streamer: unexpected replica response");
@@ -80,13 +80,8 @@ streamer_read(Streamer* self)
 static void
 streamer_connect(Streamer* self)
 {
-	// GET /repl
-	auto websocket = &self->websocket;
-	/*opt_int_set(&websocket->client->endpoint->endpoint, ENDPOINT_REPL);*/
+	// connect
 	client_connect(self->client);
-
-	// do websocket handshake
-	websocket_connect(websocket);
 
 	// NODE_WRITE (empty write request)
 	streamer_write(self, 0, NULL);
@@ -186,12 +181,6 @@ streamer_main(void* arg)
 	(
 		self->client = client_allocate();
 		client_set_endpoint(self->client, self->endpoint);
-
-		// set websocket
-		Str protocol;
-		str_set(&protocol, "amelie-repl", 11);
-		websocket_set(&self->websocket, &protocol, self->client, true);
-
 		streamer_process(self);
 	);
 
@@ -236,7 +225,6 @@ streamer_init(Streamer* self, Wal* wal, WalSlot* wal_slot)
 	self->wal       = wal;
 	self->wal_slot  = wal_slot;
 	self->endpoint  = NULL;
-	websocket_init(&self->websocket);
 	uuid_init(&self->id_primary);
 	uuid_init(&self->id_replica);
 	wal_cursor_init(&self->wal_cursor);
@@ -247,7 +235,6 @@ streamer_init(Streamer* self, Wal* wal, WalSlot* wal_slot)
 void
 streamer_free(Streamer* self)
 {
-	websocket_free(&self->websocket);
 	task_free(&self->task);
 }
 
