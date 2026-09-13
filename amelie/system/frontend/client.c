@@ -192,27 +192,6 @@ frontend_endpoint_mcp(Portal* portal, Client* client)
 	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
 }
 
-hot static inline void
-frontend_endpoint_service(Portal* portal, Client* client)
-{
-	auto endpoint = &portal->endpoint;
-	auto http     = &client->request;
-
-	// GET /repl
-	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(! str_is(method, "GET", 3)))
-		error("unsupported operation method");
-
-	// ignoring content-type
-
-	// accept
-	auto accept = &endpoint->accept.string;
-	str_set(accept, "application/json", 16);
-
-	// set output type
-	output_set(&portal->output, endpoint, &output_json, NULL);
-}
-
 hot static inline bool
 frontend_endpoint(Portal* portal, Client* client)
 {
@@ -278,7 +257,7 @@ frontend_endpoint(Portal* portal, Client* client)
 		if (endpoint_type == ENDPOINT_MCP)
 			frontend_endpoint_mcp(portal, client);
 		else
-			frontend_endpoint_service(portal, client);
+			frontend_endpoint_sql(portal, client);
 	);
 	if (on_error)
 	{
@@ -470,25 +449,6 @@ frontend_client(Frontend* self, Client* client)
 			// pass to the SSE processing (portal keeps lock)
 			//
 			frontend_stream(self, client, &portal);
-			return;
-		}
-		case ENDPOINT_REPL:
-		{
-			// ensure server is replica
-			if (state_is_primary())
-			{
-				// todo: change code
-				client_400(client, NULL);
-				error("server is not a replica");
-				return;
-			}
-
-			// unlock
-			portal_reset(&portal, true);
-
-			// process by receiver (wait for completion)
-			client_detach(client);
-			receiver_send(&share()->repl->receiver, client);
 			return;
 		}
 		default:

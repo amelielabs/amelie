@@ -339,7 +339,6 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 	// /stream
 	// /api
 	// /mcp
-	// /repl
 
 	// set uri
 	opt_string_set(&endpoint->uri, spec);
@@ -372,11 +371,6 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 	{
 		opt_int_set(&endpoint->endpoint, ENDPOINT_MCP);
 		self.pos += 4;
-	} else
-	if (str_is_prefix(spec, "/repl", 5))
-	{
-		opt_int_set(&endpoint->endpoint, ENDPOINT_REPL);
-		self.pos += 5;
 	} else {
 		error("failed to parse uri endpoint");
 	}

@@ -105,9 +105,6 @@ portal_auth(Portal* self, Auth* auth_ref)
 	case ENDPOINT_MCP:
 		user_check(self->user, PERM_MCP);
 		break;
-	case ENDPOINT_REPL:
-		user_check(self->user, PERM_SERVICE);
-		break;
 	}
 
 	// configure local

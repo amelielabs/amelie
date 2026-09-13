@@ -82,7 +82,7 @@ streamer_connect(Streamer* self)
 {
 	// GET /repl
 	auto websocket = &self->websocket;
-	opt_int_set(&websocket->client->endpoint->endpoint, ENDPOINT_REPL);
+	/*opt_int_set(&websocket->client->endpoint->endpoint, ENDPOINT_REPL);*/
 	client_connect(self->client);
 
 	// do websocket handshake

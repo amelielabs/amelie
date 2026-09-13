@@ -38,7 +38,6 @@ parse_replica_create(Stmt* self)
 	// uri
 	auto uri = stmt_expect(self, KSTRING);
 	uri_parse(&stmt->config->endpoint, &uri->string);
-	opt_int_set(&stmt->config->endpoint.endpoint, ENDPOINT_REPL);
 }
 
 void
