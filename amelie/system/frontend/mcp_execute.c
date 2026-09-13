@@ -177,7 +177,7 @@ output_mcp_write(Output* self, Columns* columns, Value* value)
 	if (is_resource)
 	{
 		// resource result
-		char result[] = ", \"result\": {\"contents\": [{\"uri\": \"amelie://";
+		char result[] = ", \"result\": {\"contents\": [{\"uri\": \"mcp://";
 		buf_write(buf, result, sizeof(result) - 1);
 		buf_write_str(buf, &mcp->rel_user);
 		buf_write(buf, "/", 1);

@@ -39,7 +39,8 @@ parse_replica_create(Stmt* self)
 	auto uri = stmt_expect(self, KSTRING);
 	uri_parse(&stmt->config->endpoint, &uri->string);
 
-	if (stmt->config->endpoint.proto.integer != PROTO_AMELIE)
+	if (stmt->config->endpoint.proto.integer != PROTO_AMELIE &&
+	    stmt->config->endpoint.proto.integer != PROTO_AMELIES)
 		stmt_error(self, uri, "amelie protocol expected");
 }
 

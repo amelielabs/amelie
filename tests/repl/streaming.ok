@@ -3,13 +3,13 @@ connect E0 S0 127.0.0.1:3480;
 # test: create replica
 backup id '00000000-0000-0000-0000-000000000002';
 restore E1 E0/backup/00000000-0000-0000-0000-000000000002;
-open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
+open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481 }, { "repl": true, "host": "127.0.0.1", "port": 3482 }];
 connect E1 S1 127.0.0.1:3481;
 switch S1;
 start repl;
 follow "00000000-0000-0000-0000-000000000001";
 switch S0;
-create replica "00000000-0000-0000-0000-000000000002" "127.0.0.1:3481";
+create replica "00000000-0000-0000-0000-000000000002" "amelie://127.0.0.1:3482";
 start repl;
 # test: wait for primary connect
 watch show('replica', "00000000-0000-0000-0000-000000000002").connected::bool = true;
@@ -10026,7 +10026,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10001,
     "lag": 0
@@ -10079,7 +10079,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10002,
     "lag": 0
@@ -10116,7 +10116,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10003,
     "lag": 0
@@ -10150,7 +10150,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10004,
     "lag": 0
@@ -10184,7 +10184,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10005,
     "lag": 0
@@ -10211,7 +10211,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10006,
     "lag": 0
@@ -10258,7 +10258,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10016,
     "lag": 0
@@ -10286,7 +10286,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10018,
     "lag": 0
@@ -10348,7 +10348,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10023,
     "lag": 0
@@ -10397,7 +10397,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10024,
     "lag": 0
@@ -10444,7 +10444,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10025,
     "lag": 0
@@ -10519,7 +10519,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "http://127.0.0.1:3481/",
+    "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
     "lsn": 10031,
     "lag": 0

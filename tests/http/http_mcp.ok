@@ -97,25 +97,25 @@ post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/l
   "id": 11,
   "result": {
     "resources": [{
-      "uri": "amelie://amelie/some_resource",
+      "uri": "mcp://amelie/some_resource",
       "name": "some_resource",
       "description": "",
       "mimeType": "text/plain"
     }]
   }
 }
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://" } };
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'uri' is not valid"}}
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie" } };
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'uri' is not valid"}}
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie/" } };
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'uri' is not valid"}}
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/zyx" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie/zyx" } };
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'zyx': not exists"}}
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/some_resource" } };
-{"jsonrpc": "2.0", "id": 11, "result": {"contents": [{"uri": "amelie://amelie/some_resource", "text": "\nsome_resource\n─────────────\n2aae6c35c94fcfb415dbe95f408b9ce91ee846ed\n"}]}}
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie/some_resource" } };
+{"jsonrpc": "2.0", "id": 11, "result": {"contents": [{"uri": "mcp://amelie/some_resource", "text": "\nsome_resource\n─────────────\n2aae6c35c94fcfb415dbe95f408b9ce91ee846ed\n"}]}}
 # test: POST /mcp (resources/read, table)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "amelie://amelie/xyz" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie/xyz" } };
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation amelie.xyz is not a function"}}
 drop table xyz;
 disconnect S0;

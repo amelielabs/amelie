@@ -18,12 +18,12 @@
 static void
 receiver_main(void* arg)
 {
-	Rpc*      rpc    = arg;
-	Client*   client = rpc->arg;
+	Client*   client = arg;
 	Receiver* self   = client->arg;
-	defer(rpc_signal, rpc);
+	defer(client_free, client);
 
 	client_attach(client);
+	client_accept(client);
 
 	Node node;
 	node_init(&node, self->db,
@@ -65,17 +65,15 @@ receiver_task_main(void* arg)
 	for (;;)
 	{
 		auto msg = task_recv();
-		auto rpc = rpc_of(msg);
-
 		if (msg->id == MSG_STOP)
 		{
-			rpc_execute(rpc, receiver_shutdown, self);
+			rpc_execute(rpc_of(msg), receiver_shutdown, self);
 			return;
 		}
 
-		Client* client = rpc->arg;
+		Client* client = (Client*)msg;
 		client->arg = self;
-		coroutine_create(receiver_main, rpc);
+		coroutine_create(receiver_main, client);
 	}
 }
 
@@ -114,5 +112,5 @@ receiver_stop(Receiver* self)
 void
 receiver_send(Receiver* self, Client* client)
 {
-	rpc(&self->task, MSG_CLIENT, client);
+	task_send(&self->task, &client->msg);
 }

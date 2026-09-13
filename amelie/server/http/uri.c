@@ -45,6 +45,11 @@ uri_parse_protocol(Uri* self)
 		opt_int_set(&self->endpoint->proto, PROTO_AMELIE);
 		self->pos += 9;
 	} else
+	if (! strncmp(self->pos, "amelies://", 10))
+	{
+		opt_int_set(&self->endpoint->proto, PROTO_AMELIES);
+		self->pos += 10;
+	} else
 	{
 		// unsupported protocol
 		char *protocol = strstr(self->pos, "://");
@@ -145,40 +150,6 @@ uri_parse_host(Uri* self)
 		return;
 
 	uri_error();
-}
-
-static inline void
-uri_parse_path_next(Uri* self, Str* value)
-{
-	// value[/]
-	auto start = self->pos;
-	while (*self->pos && *self->pos != '/' && *self->pos != '?')
-		self->pos++;
-	str_set(value, start, self->pos - start);
-}
-
-static inline void
-uri_parse_path(Uri* self, Opt* to)
-{
-	if (*self->pos == '/')
-		self->pos++;
-
-	if (!*self->pos || *self->pos == '?')
-		return;
-
-	// name
-	Str name;
-	uri_parse_path_next(self, &name);
-	if (str_empty(&name))
-		uri_error();
-	opt_string_set(to, &name);
-
-	// name?
-	if (!*self->pos || *self->pos == '?')
-		return;
-
-	// name/
-	self->pos++;
 }
 
 static inline int
@@ -309,19 +280,11 @@ uri_parse(Endpoint* endpoint, Str* spec)
 	// [proto://]
 	uri_parse_protocol(&self);
 
-	if (endpoint->proto.integer == PROTO_AMELIE)
-	{
-		// [/user]
-		uri_parse_path(&self, &endpoint->user);
-	} else
-	{
-		// [user@]
-		uri_parse_user(&self);
+	// [user@]
+	uri_parse_user(&self);
 
-		// hostname[:port]
-		if (endpoint->proto.integer != PROTO_AMELIE)
-			uri_parse_host(&self);
-	}
+	// hostname[:port]
+	uri_parse_host(&self);
 
 	// /
 	if (*self.pos == '/')
@@ -411,34 +374,31 @@ uri_export(Endpoint* self, Buf* buf)
 	case PROTO_AMELIE:
 		buf_write(buf, "amelie://", 9);
 		break;
+	case PROTO_AMELIES:
+		buf_write(buf, "amelies://", 10);
+		break;
 	}
 
 	// [user [@]]
 	if (! opt_string_empty(&self->user))
 	{
 		buf_write_str(buf, &self->user.string);
-		if (proto != PROTO_AMELIE)
-			buf_write(buf, "@", 1);
+		buf_write(buf, "@", 1);
 	}
 
 	// [hostname[:port]]
-	if (proto != PROTO_AMELIE)
+	if (! opt_string_empty(&self->host))
 	{
-		if (! opt_string_empty(&self->host))
-		{
-			buf_write_str(buf, &self->host.string);
-			buf_write(buf, ":", 1);
-			buf_format(buf, "{d}", (int)self->port.integer);
-		}
-		buf_write(buf, "/", 1);
+		buf_write_str(buf, &self->host.string);
+		buf_write(buf, ":", 1);
+		buf_format(buf, "{d}", (int)self->port.integer);
 	}
+	buf_write(buf, "/", 1);
 
 	// arguments
 	bool first = true;
-	if (proto == PROTO_AMELIE)
+	if (proto == PROTO_AMELIES)
 	{
-		uri_export_arg(&self->content_type, buf, &first);
-		uri_export_arg(&self->accept, buf, &first);
 		uri_export_arg(&self->tls_capath, buf, &first);
 		uri_export_arg(&self->tls_ca, buf, &first);
 		uri_export_arg(&self->tls_cert, buf, &first);

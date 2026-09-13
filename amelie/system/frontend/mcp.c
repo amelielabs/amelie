@@ -116,12 +116,12 @@ mcp_parse_resources_list(Mcp* self)
 static bool
 mcp_parse_uri(Mcp* self, Str* uri)
 {
-	// amelie://user/rel
-	if (! str_is_prefix(uri, "amelie://", 9))
+	// mcp://user/rel
+	if (! str_is_prefix(uri, "mcp://", 6))
 		return false;
 
 	// user
-	auto start = uri->pos + 9;
+	auto start = uri->pos + 6;
 	auto pos   = start;
 	auto end   = uri->end;
 	while (pos < end && *pos != '/')

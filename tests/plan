@@ -152,12 +152,12 @@ test http_import
 test http_api
 test http_mcp
 
-## replication
-#directory repl
-#group repl
-#test replica
-#test repl
-#test ro
-#test streaming
-#test streaming_tls
-#test streaming_tls_2
+# replication
+directory repl
+group repl
+test replica
+test repl
+test ro
+test streaming
+test streaming_tls
+test streaming_tls_2

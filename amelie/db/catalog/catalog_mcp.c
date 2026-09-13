@@ -163,7 +163,7 @@ catalog_mcp_resources(Catalog* self, Str* user, Buf* buf)
 		// uri
 		encode_raw(buf, "uri", 3);
 		char uri[256];
-		auto uri_size = format(uri, sizeof(uri), "amelie://{str}/{str}",
+		auto uri_size = format(uri, sizeof(uri), "mcp://{str}/{str}",
 		                       rel->user, rel->name);
 		encode_raw(buf, uri, uri_size);
 

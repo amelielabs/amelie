@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }, { "repl": true, "host": "127.0.0.1", "port": 3481 }], "backends": 3, "repl_reconnect_ms": 10;
 connect E0 S0 127.0.0.1:3480;
 # test: primary by default
 show repl;
@@ -14,8 +14,8 @@ repl
 # test: backup replica
 backup id '00000000-0000-0000-0000-000000000002';
 restore E1 E0/backup/00000000-0000-0000-0000-000000000002;
-open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
-connect E1 S1 127.0.0.1:3481;
+open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3482 }, { "repl": true, "host": "127.0.0.1", "port": 3483 }];
+connect E1 S1 127.0.0.1:3482;
 switch S1;
 show uuid;
 
@@ -55,14 +55,14 @@ show replicas;
 
 replicas
 ────────
-create replica "00000000-0000-0000-0000-000000000002" "127.0.0.1:3481";
+create replica "00000000-0000-0000-0000-000000000002" "amelie://127.0.0.1:3483";
 show replicas;
 
 replicas
 ────────
 {
   "id": "00000000-0000-0000-0000-000000000002",
-  "uri": "http://127.0.0.1:3481/",
+  "uri": "amelie://127.0.0.1:3483/",
   "connected": false,
   "lsn": 0,
   "lag": 1
@@ -100,7 +100,7 @@ replicas
 ────────
 {
   "id": "00000000-0000-0000-0000-000000000002",
-  "uri": "http://127.0.0.1:3481/",
+  "uri": "amelie://127.0.0.1:3483/",
   "connected": false,
   "lsn": 3,
   "lag": 3
@@ -109,8 +109,8 @@ replicas
 switch S0;
 watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = false;
 # test: restart replica
-open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
-connect E1 S1 127.0.0.1:3481;
+open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3482 }, { "repl": true, "host": "127.0.0.1", "port": 3483 }];
+connect E1 S1 127.0.0.1:3482;
 # test: wait for primary reconnect
 switch S0;
 watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = true;
@@ -122,7 +122,7 @@ replicas
 ────────
 {
   "id": "00000000-0000-0000-0000-000000000002",
-  "uri": "http://127.0.0.1:3481/",
+  "uri": "amelie://127.0.0.1:3483/",
   "connected": true,
   "lsn": 6,
   "lag": 0
@@ -130,7 +130,7 @@ replicas
 # test: restart primary
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }, { "repl": true, "host": "127.0.0.1", "port": 3481 }], "backends": 3, "repl_reconnect_ms": 10;
 connect E0 S0 127.0.0.1:3480;
 # test: wait for primary reconnect
 switch S0;
@@ -147,7 +147,7 @@ replicas
 ────────
 {
   "id": "00000000-0000-0000-0000-000000000002",
-  "uri": "http://127.0.0.1:3481/",
+  "uri": "amelie://127.0.0.1:3483/",
   "connected": true,
   "lsn": 9,
   "lag": 0
@@ -246,7 +246,7 @@ repl
 }
 # test: create replica
 switch S1;
-create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3480";
+create replica "00000000-0000-0000-0000-000000000001" "amelie://127.0.0.1:3481";
 # test: wait for primary connect
 watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = true;
 watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
@@ -262,7 +262,7 @@ replicas
 ────────
 {
   "id": "00000000-0000-0000-0000-000000000001",
-  "uri": "http://127.0.0.1:3480/",
+  "uri": "amelie://127.0.0.1:3481/",
   "connected": true,
   "lsn": 12,
   "lag": 0

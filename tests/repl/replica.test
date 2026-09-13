@@ -11,11 +11,11 @@ create replica "00000000-0000-0000-0000-000000000000" 1;
 create replica "00000000-0000-0000-0000-000000000000";
 
 # test: create replica
-create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
+create replica "00000000-0000-0000-0000-000000000000" "amelie://127.0.0.1";
 show replicas;
 
 # test: create replica if not exists
-create replica if not exists "00000000-0000-0000-0000-000000000000" "127.0.0.1";
+create replica if not exists "00000000-0000-0000-0000-000000000000" "amelie://127.0.0.1";
 show replicas;
 
 # test: drop replica statement parsing
@@ -32,8 +32,8 @@ drop replica if exists "00000000-0000-0000-0000-000000000000";
 drop replica "00000000-0000-0000-0000-000000000000";
 
 # test: recover
-create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
-create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1";
+create replica "00000000-0000-0000-0000-000000000000" "amelie://127.0.0.1";
+create replica "00000000-0000-0000-0000-000000000001" "amelie://127.0.0.1";
 show replicas;
 
 disconnect S0;

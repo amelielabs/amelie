@@ -154,7 +154,7 @@ client_connect_to(Client* self, Str* host, int port)
 
 	// prepare for https connection
 	auto endpoint = self->endpoint;
-	if (endpoint->proto.integer == PROTO_HTTPS)
+	if (endpoint->proto.integer == PROTO_HTTPS || endpoint->proto.integer == PROTO_AMELIES)
 	{
 		if (! tls_context_created(&self->tls_context))
 		{
