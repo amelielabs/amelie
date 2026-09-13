@@ -23,6 +23,7 @@ struct Client
 	Tcp        tcp;
 	TlsContext tls_context;
 	bool       trusted;
+	bool       repl;
 	bool       accepted;
 	uint64_t   coroutine_id;
 	void*      arg;
@@ -37,6 +38,7 @@ void client_free(Client*);
 void client_set_coroutine_name(Client*);
 void client_set_endpoint(Client*, Endpoint*);
 void client_set_trusted(Client*, bool);
+void client_set_repl(Client*, bool);
 void client_set_histogram(Client*, Histogram*);
 void client_attach(Client*);
 void client_detach(Client*);

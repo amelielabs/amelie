@@ -129,7 +129,10 @@ static void
 system_on_server_connect(Server* server, Client* client)
 {
 	System* self = server->on_connect_arg;
-	frontends_forward(&self->frontends, &client->msg);
+	if (client->repl)
+		repl_connect(&self->repl, client);
+	else
+		frontends_forward(&self->frontends, &client->msg);
 }
 
 static void

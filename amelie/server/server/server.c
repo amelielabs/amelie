@@ -104,6 +104,7 @@ server_accept(Server* self)
 
 		// trust localhost clients (including unixsocket)
 		client_set_trusted(client, is_localhost);
+		client_set_repl(client, config->repl);
 		fd = -1;
 
 		// process client

@@ -187,6 +187,5 @@ repl_connect(Repl* self, Client* client)
 		return;
 	}
 
-	client_detach(client);
 	receiver_send(&self->receiver, client);
 }

@@ -17,6 +17,7 @@ struct ServerConfig
 {
 	Str              host;
 	int64_t          port;
+	bool             repl;
 	bool             tls;
 	Str              tls_capath;
 	Str              tls_ca;
@@ -33,6 +34,7 @@ server_config_allocate(void)
 {
 	auto self = (ServerConfig*)am_malloc(sizeof(ServerConfig));
 	self->port = 8080;
+	self->repl = false;
 	self->tls  = false;
 	self->refs = 0;
 	self->ai   = NULL;
@@ -87,6 +89,12 @@ static inline void
 server_config_set_port(ServerConfig* self, int value)
 {
 	self->port = value;
+}
+
+static inline void
+server_config_set_repl(ServerConfig* self, bool value)
+{
+	self->repl = value;
 }
 
 static inline void
@@ -205,6 +213,7 @@ server_config_read(uint8_t** pos)
 	{
 		{ DECODE_STR,                 "host",       &self->host       },
 		{ DECODE_INT|DECODE_OPT,      "port",       &self->port       },
+		{ DECODE_BOOL|DECODE_OPT,     "repl",       &self->repl       },
 		{ DECODE_BOOL|DECODE_OPT,     "tls",        &self->tls        },
 		{ DECODE_STR_READ|DECODE_OPT, "tls_capath", &tls_capath       },
 		{ DECODE_STR_READ|DECODE_OPT, "tls_ca",     &tls_ca           },
@@ -235,6 +244,10 @@ server_config_write(ServerConfig* self, Buf* buf, int flags)
 	// port
 	encode_raw(buf, "port", 4);
 	encode_int(buf, self->port);
+
+	// repl
+	encode_raw(buf, "repl", 4);
+	encode_bool(buf, self->repl);
 
 	// tls
 	encode_raw(buf, "tls", 3);

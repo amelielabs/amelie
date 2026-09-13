@@ -23,6 +23,7 @@ client_allocate(void)
 	self->coroutine_id = UINT64_MAX;
 	self->accepted     = false;
 	self->trusted      = false;
+	self->repl         = false;
 	self->arg          = NULL;
 	self->sync         = 0;
 	self->histogram    = NULL;
@@ -66,6 +67,12 @@ void
 client_set_trusted(Client* self, bool value)
 {
 	self->trusted = value;
+}
+
+void
+client_set_repl(Client* self, bool value)
+{
+	self->repl = value;
 }
 
 void
