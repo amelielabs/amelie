@@ -1,7 +1,6 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
 connect E0 S0 127.0.0.1:3480;
 # test: read-only ddl
-start repl;
 follow "00000000-0000-0000-0000-000000000002";
 create table leaked (id int primary key);
 error: system is in read-only mode
@@ -13,10 +12,8 @@ select * from leaked;
 error: select * from ❰leaked❱ ⟵ relation not found
 # test: read-only publish
 unfollow;
-stop repl;
 create topic t;
 create subscription t_sub on t;
-start repl;
 follow "00000000-0000-0000-0000-000000000002";
 select show("state").lsn;
 

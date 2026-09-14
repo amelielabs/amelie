@@ -18,22 +18,6 @@
 #include <amelie_parser.h>
 
 void
-parse_repl_start(Stmt* self)
-{
-	// START REPL
-	auto stmt = ast_repl_ctl_allocate(true);
-	self->ast = &stmt->ast;
-}
-
-void
-parse_repl_stop(Stmt* self)
-{
-	// STOP REPL
-	auto stmt = ast_repl_ctl_allocate(false);
-	self->ast = &stmt->ast;
-}
-
-void
 parse_repl_follow(Stmt* self)
 {
 	// FOLLOW id

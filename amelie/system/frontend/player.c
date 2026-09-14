@@ -41,12 +41,8 @@ player_free(Player* self)
 static inline void
 player_record_primary(RecordMsg* record)
 {
-	// check replication state
-	if (unlikely(! opt_int_of(&state()->repl)))
-		error("player: replication is disabled");
-
 	// ensure record comes from the current primary
-	if (! uuid_is(&record->instance_id, opt_uuid_of(&state()->repl_primary)))
+	if (! uuid_is(&record->instance_id, opt_uuid_of(&state()->primary)))
 		error("player: primary id mismatch");
 }
 

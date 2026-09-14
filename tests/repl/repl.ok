@@ -6,7 +6,6 @@ show repl;
 repl
 ────
 {
-  "active": false,
   "role": "primary",
   "primary": null,
   "replicas": []
@@ -27,13 +26,10 @@ show repl;
 repl
 ────
 {
-  "active": false,
   "role": "primary",
   "primary": null,
   "replicas": []
 }
-# test: start replica
-start repl;
 # test: follow (using self id)
 follow "00000000-0000-0000-0000-000000000002";
 error: replication: primary id cannot match this server id
@@ -44,7 +40,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "replica",
   "primary": "00000000-0000-0000-0000-000000000001",
   "replicas": []
@@ -67,8 +62,6 @@ replicas
   "lsn": 0,
   "lag": 1
 }
-# test: start primary
-start repl;
 # test: wait for primary connect
 watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = true;
 # test: write
@@ -192,7 +185,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "replica",
   "primary": "00000000-0000-0000-0000-000000000001",
   "replicas": []
@@ -208,7 +200,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "replica",
   "primary": "00000000-0000-0000-0000-000000000001",
   "replicas": []
@@ -219,7 +210,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": []
@@ -239,7 +229,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "replica",
   "primary": "00000000-0000-0000-0000-000000000002",
   "replicas": []

@@ -20,8 +20,6 @@ typedef enum
 {
 	STMT_UNDEF,
 	STMT_SHOW,
-	STMT_START_REPL,
-	STMT_STOP_REPL,
 	STMT_FOLLOW,
 	STMT_UNFOLLOW,
 	STMT_CHECKPOINT,
@@ -174,8 +172,6 @@ stmt_is_utility(Stmt* self)
 {
 	switch (self->id) {
 	case STMT_SHOW:
-	case STMT_START_REPL:
-	case STMT_STOP_REPL:
 	case STMT_FOLLOW:
 	case STMT_UNFOLLOW:
 	case STMT_CHECKPOINT:
@@ -222,8 +218,6 @@ stmt_is_utility_ro(Stmt* self)
 {
 	switch (self->id) {
 	case STMT_SHOW:
-	case STMT_START_REPL:
-	case STMT_STOP_REPL:
 	case STMT_FOLLOW:
 	case STMT_UNFOLLOW:
 	case STMT_CHECKPOINT:

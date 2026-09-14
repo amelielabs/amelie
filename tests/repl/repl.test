@@ -17,9 +17,6 @@ switch S1;
 show uuid;
 show repl;
 
-# test: start replica
-start repl;
-
 # test: follow (using self id)
 follow "00000000-0000-0000-0000-000000000002";
 
@@ -33,9 +30,6 @@ show replicas;
 
 create replica "00000000-0000-0000-0000-000000000002" "amelie://127.0.0.1:3483";
 show replicas;
-
-# test: start primary
-start repl;
 
 # test: wait for primary connect
 watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = true;

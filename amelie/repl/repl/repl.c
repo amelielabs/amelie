@@ -43,15 +43,6 @@ repl_free(Repl* self)
 void
 repl_start(Repl* self)
 {
-	if (opt_int_of(&state()->repl))
-		return;
-
-	info("replication: start as '{s}'", repl_role_of(self->role));
-	opt_int_set(&state()->repl, true);
-
-	// start replicas
-	replicas_start(&self->replicas);
-
 	// start receiver
 	receiver_start(&self->receiver);
 }
@@ -59,12 +50,6 @@ repl_start(Repl* self)
 void
 repl_stop(Repl* self)
 {
-	if (! opt_int_of(&state()->repl))
-		return;
-
-	info("replication: stop");
-	opt_int_set(&state()->repl, false);
-
 	// stop replicas
 	replicas_stop(&self->replicas);
 
@@ -75,9 +60,6 @@ repl_stop(Repl* self)
 void
 repl_follow(Repl* self, Str* primary_id)
 {
-	if (! opt_int_of(&state()->repl))
-		error("replication: is disabled");
-
 	// switch to replica
 	if (primary_id)
 	{
@@ -96,7 +78,7 @@ repl_follow(Repl* self, Str* primary_id)
 		self->role = REPL_REPLICA;
 
 		// set new primary id
-		opt_uuid_set(&state()->repl_primary, &id);
+		opt_uuid_set(&state()->primary, &id);
 
 		info("replication: switch to replica, new primary is '{str}'",
 		     primary_id);
@@ -108,7 +90,7 @@ repl_follow(Repl* self, Str* primary_id)
 	// remove primary id
 	Uuid empty;
 	uuid_init(&empty);
-	opt_uuid_set(&state()->repl_primary, &empty);
+	opt_uuid_set(&state()->primary, &empty);
 
 	opt_int_set(&state()->recover, RECOVER_OFF);
 	self->role = REPL_PRIMARY;
@@ -122,20 +104,16 @@ repl_status(Repl* self, Buf* buf)
 	// obj
 	encode_obj(buf);
 
-	// active
-	encode_raw(buf, "active", 6);
-	encode_bool(buf, opt_int_of(&state()->repl));
-
 	// role
 	encode_raw(buf, "role", 4);
 	encode_cstr(buf, repl_role_of(self->role));
 
 	// primary
 	encode_raw(buf, "primary", 7);
-	if (opt_uuid_empty(&state()->repl_primary))
+	if (opt_uuid_empty(&state()->primary))
 		encode_null(buf);
 	else
-		encode_uuid(buf, opt_uuid_of((&state()->repl_primary)));
+		encode_uuid(buf, opt_uuid_of((&state()->primary)));
 
 	encode_raw(buf, "replicas", 8);
 	replicas_list(&self->replicas, buf, NULL, 0);
@@ -146,15 +124,11 @@ repl_status(Repl* self, Buf* buf)
 void
 repl_describe(Repl* self, Buf* buf)
 {
-	// start replication
-	if (opt_int_of(&state()->repl))
-		buf_format(buf, "start replication;\n");
-
 	// follow "uuid"
-	if (! opt_uuid_empty(&state()->repl_primary))
+	if (! opt_uuid_empty(&state()->primary))
 	{
 		char id[UUID_SZ];
-		uuid_get(&state()->repl_primary.uuid, id, sizeof(id));
+		uuid_get(&state()->primary.uuid, id, sizeof(id));
 		buf_format(buf, "follow {qs};\n", id);
 	}
 

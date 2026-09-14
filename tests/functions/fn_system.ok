@@ -103,7 +103,6 @@ select show('repl');
 show
 ────
 {
-  "active": false,
   "role": "primary",
   "primary": null,
   "replicas": []
@@ -114,7 +113,6 @@ select show('replication');
 show
 ────
 {
-  "active": false,
   "role": "primary",
   "primary": null,
   "replicas": []

@@ -6,11 +6,9 @@ restore E1 E0/backup/00000000-0000-0000-0000-000000000002;
 open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481 }, { "repl": true, "host": "127.0.0.1", "port": 3482 }];
 connect E1 S1 127.0.0.1:3481;
 switch S1;
-start repl;
 follow "00000000-0000-0000-0000-000000000001";
 switch S0;
 create replica "00000000-0000-0000-0000-000000000002" "amelie://127.0.0.1:3482";
-start repl;
 # test: wait for primary connect
 watch show('replica', "00000000-0000-0000-0000-000000000002").connected::bool = true;
 # test: write
@@ -10021,7 +10019,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10074,7 +10071,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10111,7 +10107,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10145,7 +10140,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10179,7 +10173,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10206,7 +10199,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10253,7 +10245,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10281,7 +10272,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10343,7 +10333,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10392,7 +10381,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10439,7 +10427,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{
@@ -10514,7 +10501,6 @@ show repl;
 repl
 ────
 {
-  "active": true,
   "role": "primary",
   "primary": null,
   "replicas": [{

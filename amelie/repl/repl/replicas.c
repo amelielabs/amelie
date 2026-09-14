@@ -76,8 +76,7 @@ replicas_create(Replicas* self, ReplicaConfig* config, bool if_not_exists)
 	wal_attach(&self->db->wal, &replica->wal_slot);
 
 	// start streamer
-	if (opt_int_of(&state()->repl))
-		replica_start(replica);
+	replica_start(replica);
 }
 
 void
@@ -98,8 +97,7 @@ replicas_drop(Replicas* self, Uuid* id, bool if_exists)
 	self->list_count--;
 
 	// stop streamer
-	if (opt_int_of(&state()->repl))
-		replica_stop(replica);
+	replica_stop(replica);
 
 	// unregister wal slot
 	wal_detach(&self->db->wal, &replica->wal_slot);

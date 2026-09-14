@@ -44,8 +44,7 @@ state_prepare(State* self)
 		// persistent
 		{ "cdc",             OPT_INT,    OPT_C|OPT_S|OPT_H, &self->cdc,            0,              UINT64_MAX  },
 		{ "secret",          OPT_STRING, OPT_C|OPT_S|OPT_H, &self->secret,         0,              0           },
-		{ "repl",            OPT_BOOL,   OPT_C,             &self->repl,           0,              false       },
-		{ "repl_primary",    OPT_UUID,   OPT_C,             &self->repl_primary,   NULL,           0           },
+		{ "primary",         OPT_UUID,   OPT_C,             &self->primary,        NULL,           0           },
 		{  NULL,             0,          0,                  NULL,                 NULL,           0           },
 	};
 	opts_define(&self->opts, defs);

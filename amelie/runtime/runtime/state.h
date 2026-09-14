@@ -30,8 +30,7 @@ struct State
 	Opt  recover;
 	Opt  cdc;
 	Opt  secret;
-	Opt  repl;
-	Opt  repl_primary;
+	Opt  primary;
 	Opts opts;
 };
 

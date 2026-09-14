@@ -90,7 +90,7 @@ state_rsn_next(void)
 static inline bool
 state_is_primary(void)
 {
-	return opt_uuid_empty(&state()->repl_primary);
+	return opt_uuid_empty(&state()->primary);
 }
 
 // background function in background

@@ -189,30 +189,6 @@ parse_stmt(Stmt* self)
 		parse_repl_unfollow(self);
 		break;
 
-	case KSTART:
-		// START REPL
-		if (stmt_if(self, KREPL) ||
-		    stmt_if(self, KREPLICATION))
-		{
-			self->id = STMT_START_REPL;
-			parse_repl_start(self);
-		} else {
-			stmt_error(self, ast, "REPL expected");
-		}
-		break;
-
-	case KSTOP:
-		// STOP REPL
-		if (stmt_if(self, KREPL) ||
-		    stmt_if(self, KREPLICATION))
-		{
-			self->id = STMT_STOP_REPL;
-			parse_repl_stop(self);
-		} else {
-			stmt_error(self, ast, "REPL expected");
-		}
-		break;
-
 	case KCHECKPOINT:
 		// CHECKPOINT
 		self->id = STMT_CHECKPOINT;

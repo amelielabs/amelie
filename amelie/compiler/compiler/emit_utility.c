@@ -455,16 +455,6 @@ emit_utility(Compiler* self)
 	}
 
 	// replication
-	case STMT_START_REPL:
-	{
-		op0(self, CREPL_START);
-		break;
-	}
-	case STMT_STOP_REPL:
-	{
-		op0(self, CREPL_STOP);
-		break;
-	}
 	case STMT_FOLLOW:
 	{
 		auto arg = ast_repl_follow_of(stmt->ast);

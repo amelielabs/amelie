@@ -381,11 +381,14 @@ system_start(System* self, bool bootstrap)
 	// start periodic wal syncer
 	syncer_start(&self->db.syncer);
 
+	// configure system and replicas
+	system_state_read(self);
+
 	// start servers
 	servers_start(&self->servers);
 
-	// configure system and replication
-	system_state_read(self);
+	// start repl
+	repl_start(&self->repl);
 }
 
 void
