@@ -112,7 +112,7 @@ frontend_endpoint_api(Portal* portal, Client* client)
 	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
-	// POST /api (application/json)
+	// POST <custom_api> (application/json)
 
 	// content type
 	auto content_type = &endpoint->content_type.string;
@@ -120,7 +120,7 @@ frontend_endpoint_api(Portal* portal, Client* client)
 	    !str_is(content_type, "application/json", 16))
 		error("unsupported operation content-type");
 
-	// accept (jsonrpc)
+	// accept
 	auto accept = &endpoint->accept.string;
 	if (!str_empty(accept) &&
 	    !str_is(accept, "application/json", 16) &&
@@ -130,7 +130,7 @@ frontend_endpoint_api(Portal* portal, Client* client)
 	str_set(accept, "application/json", 16);
 
 	// set output type
-	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
+	output_set(&portal->output, endpoint, &output_json, NULL);
 
 	// check method
 	auto method = &http->options[HTTP_METHOD];
@@ -212,7 +212,7 @@ frontend_endpoint(Portal* portal, Client* client)
 	auto http     = &client->request;
 
 	// POST /sql
-	// POST /api
+	// POST /<user_api>
 	// GET  /stream
 
 	// content type
@@ -264,13 +264,10 @@ frontend_endpoint(Portal* portal, Client* client)
 		if (str_is(uri, "stream", 6))
 			frontend_endpoint_stream(portal, client);
 		else
-		if (str_is(uri, "api", 3))
-			frontend_endpoint_api(portal, client);
-		else
 		if (str_is(uri, "mcp", 3))
 			frontend_endpoint_mcp(portal, client);
 		else
-			error("unsupported uri");
+			frontend_endpoint_api(portal, client);
 	);
 	if (on_error)
 	{
@@ -304,9 +301,9 @@ frontend_client(Frontend* self, Client* client)
 	Request req;
 	request_init(&req);
 
-	Api api;
-	api_init(&api, &portal);
-	defer(api_free, &api);
+	Resource resource;
+	resource_init(&resource, &portal);
+	defer(resource_free, &resource);
 
 	Mcp mcp;
 	mcp_init(&mcp, &portal);
@@ -362,8 +359,8 @@ frontend_client(Frontend* self, Client* client)
 		{
 			// parse api request
 			request_reset(&req);
-			api_reset(&api);
-			if (! api_parse(&api, &content, &req))
+			resource_reset(&resource);
+			if (! resource_parse(&resource, &content, &req))
 			{
 				// 400 Bad Source
 				client_400(client, portal.output.buf);
@@ -371,8 +368,7 @@ frontend_client(Frontend* self, Client* client)
 			}
 
 			// execute request
-			if (req.type != REQUEST_UNDEF)
-				ctl->session_execute(session, &portal, &req);
+			ctl->session_execute(session, &portal, &req);
 
 			// 200 OK (includes errors)
 			if (buf_empty(portal.output.buf))

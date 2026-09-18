@@ -3,19 +3,19 @@ connect E0 S0 127.0.0.1:3485;
 # test: POST uri parsing
 post / - - -;
 post /db - - -;
-400 Bad Request
+{"msg": "unexpected end of line"}
 post /xyz - - -;
-400 Bad Request
+{"msg": "unexpected end of line"}
 # test: POST /sql
 post /sql - - -;
 post /sql/ - - -;
-400 Bad Request
+{"msg": "unexpected end of line"}
 # test: POST /sql (invalid content type)
 post /sql - - -;
 post /sql json - -;
 400 Bad Request
 post /sql/ application/json - -;
-400 Bad Request
+{"msg": "unexpected end of line"}
 # test: POST /sql (text/plain, no accept, no content)
 post /sql text/plain - -;
 # test: POST /sql (text/plain, no accept)

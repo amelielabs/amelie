@@ -149,7 +149,6 @@ directory http
 group http
 test http_sql
 test http_import
-test http_api
 test http_mcp
 
 # replication

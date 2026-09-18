@@ -267,10 +267,6 @@ select amelie.fun();
 error: relation 'amelie.fun': permission denied
 execute amelie.fun();
 error: relation 'amelie.fun': permission denied
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"name": "fun", "arguments": []}};
-{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'fun': not exists"}}
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "name": "fun", "arguments": []}};
-{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'amelie.fun': permission denied"}}
 switch S0;
 grant execute on fun to test;
 switch S1;
@@ -306,8 +302,6 @@ execute amelie.fun();
 fun
 ───
 123
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "write", "params": {"user": "amelie", "name": "fun", "arguments": []}};
-{"jsonrpc": "2.0", "id": 11, "result": {"columns": ["fun"], "rows": [[123]]}}
 switch S0;
 # test: grant
 revoke grant from test;
@@ -330,8 +324,6 @@ revoke sql from test;
 switch S1;
 select 1;
 Forbidden
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
-{"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "user 'test': permission denied"}}
 switch S0;
 # test: api
 grant sql to test;
@@ -342,8 +334,6 @@ select 1;
 col1
 ────
 1
-post /api application/json - {"jsonrpc": "2.0", "id": 11, "method": "sql", "params": {"text": "select 1"}};
-403 Forbidden
 switch S0;
 # test: user drop revoke
 drop user test2 cascade;
@@ -658,8 +648,6 @@ revoke api from u;
 switch S1;
 select 1;
 Forbidden
-post /api application/json - {"jsonrpc": "2.0", "id": 1, "method": "sql", "params": {"text": "select 1"}};
-403 Forbidden
 post /mcp application/json - {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "addrow", "arguments": {}}};
 {"jsonrpc": "2.0", "id": 2, "result": {}}
 switch S0;

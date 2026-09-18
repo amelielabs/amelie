@@ -17,14 +17,14 @@
 
 // portal
 #include "frontend/portal.h"
+#include "frontend/request.h"
 
-// api
-#include "frontend/api.h"
+// endpoints
+#include "frontend/resource.h"
 #include "frontend/mcp.h"
 #include "frontend/mcp_execute.h"
 
 // frontend
-#include "frontend/request.h"
 #include "frontend/frontend.h"
 #include "frontend/frontends.h"
 

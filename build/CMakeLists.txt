@@ -339,7 +339,7 @@ set(AMELIE_SOURCES_COMPILER
 set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/auth_cache.c
     ${AMELIE_ROOT}/system/frontend/auth.c
-    ${AMELIE_ROOT}/system/frontend/api.c
+    ${AMELIE_ROOT}/system/frontend/resource.c
     ${AMELIE_ROOT}/system/frontend/mcp.c
     ${AMELIE_ROOT}/system/frontend/mcp_execute.c
     ${AMELIE_ROOT}/system/frontend/frontend.c

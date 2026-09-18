@@ -6,7 +6,7 @@ post /import - - -;
 post /import json - -;
 400 Bad Request
 post /import/ application/json - -;
-400 Bad Request
+{"msg": "unexpected end of line"}
 # test: POST /import (text/plain, no accept, no content)
 post /import text/plain - -;
 400 Bad Request
