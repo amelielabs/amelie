@@ -308,12 +308,9 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 		.pos      = opt_string_of(&endpoint->uri)->pos,
 		.endpoint = endpoint
 	};
-
-	// /
-	self.pos++;
 	auto start = self.pos;
 
-	// <endpoint [?]
+	// /<endpoint> [?]
 	while (*self.pos && *self.pos != '?')
 		self.pos++;
 

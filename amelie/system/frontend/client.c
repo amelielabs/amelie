@@ -208,17 +208,17 @@ frontend_endpoint_main(Portal* portal, Client* client)
 
 	uri_parse_endpoint(endpoint, &http->options[HTTP_URL]);
 
-	// POST /<user_api>
-	if (! opt_string_empty(&endpoint->endpoint))
+	// /<user_api>
+	if (str_size(opt_string_of(&endpoint->endpoint)) > 1)
 	{
 		frontend_api(portal, client);
 		return;
 	}
 
-	// POST /
-	// POST /?import
-	// GET  /?stream
-	// POST /?mcp
+	// /
+	// /?import
+	// /?stream
+	// /?mcp
 	if (! opt_string_empty(&endpoint->import))
 		frontend_root_import(portal, client);
 	else
@@ -236,10 +236,6 @@ frontend_endpoint(Portal* portal, Client* client)
 {
 	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
-
-	// POST /sql
-	// POST /<user_api>
-	// GET  /stream
 
 	// content type
 	auto content_type = http_find(http, "Content-Type", 12);

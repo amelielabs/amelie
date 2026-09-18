@@ -250,23 +250,24 @@ http_read_content(Http* self, Readahead* readahead, Buf* content)
 hot Buf*
 http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t size)
 {
-	// request
 	auto buf = &self->raw;
 	buf_reset(buf);
 
-	// POST/GET
+	// method
 	switch (method) {
 	case HTTP_POST:
-		buf_write(buf, "POST /", 6);
+		buf_write(buf, "POST ", 5);
 		break;;
 	case HTTP_GET:
-		buf_write(buf, "GET /", 5);
+		buf_write(buf, "GET ", 4);
 		break;
 	}
 
-	// endpoint
+	// /endpoint
 	if (! opt_string_empty(&endpoint->endpoint))
 		buf_write_str(buf, opt_string_of(&endpoint->endpoint));
+	else
+		buf_write(buf, "/", 1);
 
 	// arguments
 
