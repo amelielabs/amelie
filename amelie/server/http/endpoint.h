@@ -21,15 +21,6 @@ enum
 	PROTO_AMELIES
 };
 
-enum
-{
-	ENDPOINT_SQL,
-	ENDPOINT_IMPORT,
-	ENDPOINT_STREAM,
-	ENDPOINT_API,
-	ENDPOINT_MCP
-};
-
 struct Endpoint
 {
 	// protocol

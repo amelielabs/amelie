@@ -215,7 +215,9 @@ import_main(Import* self)
 		error("import: target relation is not set\n");
 
 	// set endpoint service as import
-	opt_int_set(&self->main->endpoint.endpoint, ENDPOINT_IMPORT);
+	Str uri;
+	str_set(&uri, "import", 6);
+	opt_string_set(&self->main->endpoint.endpoint, &uri);
 
 	// create clients and connect
 	import_connect(self);

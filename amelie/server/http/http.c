@@ -264,32 +264,13 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 		break;
 	}
 
-	// /endpoint
-	switch (endpoint->endpoint.integer) {
-	case ENDPOINT_SQL:
-		buf_write(buf, "sql", 3);
-		break;
-	case ENDPOINT_IMPORT:
-		buf_write(buf, "import", 6);
-		break;
-	case ENDPOINT_STREAM:
-		buf_write(buf, "stream", 6);
-		break;
-	case ENDPOINT_API:
-		buf_write(buf, "api", 3);
-		break;
-	case ENDPOINT_MCP:
-		buf_write(buf, "mcp", 3);
-		break;
-	default:
-		abort();
-		break;
-	}
+	// endpoint
+	if (! opt_string_empty(&endpoint->endpoint))
+		buf_write_str(buf, opt_string_of(&endpoint->endpoint));
 
 	// arguments
-	//
-	// timezone
-	//
+
+	// timezone, target
 	bool first = true;
 	uri_export_arg(&endpoint->timezone, buf, &first);
 	uri_export_arg(&endpoint->target, buf, &first);

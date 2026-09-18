@@ -13,10 +13,21 @@
 
 typedef struct Portal Portal;
 
+enum
+{
+	ENDPOINT_UNDEF,
+	ENDPOINT_SQL,
+	ENDPOINT_IMPORT,
+	ENDPOINT_STREAM,
+	ENDPOINT_API,
+	ENDPOINT_MCP
+};
+
 struct Portal
 {
 	User*    user;
 	Lock*    lock;
+	int      endpoint_type;
 	Endpoint endpoint;
 	Local    local;
 	Output   output;
@@ -46,6 +57,12 @@ portal_unlock(Portal* self)
 		unlock(self->lock);
 		self->lock = NULL;
 	}
+}
+
+hot static inline void
+portal_set_endpoint_type(Portal* self, int type)
+{
+	self->endpoint_type = type;
 }
 
 hot static inline void
@@ -89,7 +106,9 @@ portal_auth(Portal* self, Auth* auth_ref)
 		error("auth: superuser can connect only from localhost");
 
 	// check permissions
-	switch (opt_int_of(&endpoint->endpoint)) {
+	switch (self->endpoint_type) {
+	case ENDPOINT_UNDEF:
+		break;
 	case ENDPOINT_SQL:
 		user_check(self->user, PERM_SQL);
 		break;
@@ -136,6 +155,7 @@ portal_reset(Portal* self, bool with_endpoint)
 {
 	portal_unlock(self);
 	self->user = NULL;
+	self->endpoint_type = ENDPOINT_UNDEF;
 	if (with_endpoint)
 		endpoint_reset(&self->endpoint);
 	output_reset(&self->output);
@@ -153,8 +173,9 @@ portal_free(Portal* self)
 static inline void
 portal_init(Portal* self)
 {
-	self->user = NULL;
-	self->lock = NULL;
+	self->user          = NULL;
+	self->lock          = NULL;
+	self->endpoint_type = ENDPOINT_UNDEF;
 	endpoint_init(&self->endpoint);
 	local_init(&self->local);
 	output_init(&self->output);

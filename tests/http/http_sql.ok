@@ -2,7 +2,6 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: POST uri parsing
 post / - - -;
-400 Bad Request
 post /db - - -;
 400 Bad Request
 post /xyz - - -;
@@ -10,6 +9,7 @@ post /xyz - - -;
 # test: POST /sql
 post /sql - - -;
 post /sql/ - - -;
+400 Bad Request
 # test: POST /sql (invalid content type)
 post /sql - - -;
 post /sql json - -;

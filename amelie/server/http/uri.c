@@ -297,11 +297,8 @@ uri_parse(Endpoint* endpoint, Str* spec)
 void
 uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
-	// /sql
-	// /import
-	// /stream
-	// /api
-	// /mcp
+	if (str_empty(spec) || *spec->pos != '/')
+		error("invalid endpoint");
 
 	// set uri
 	opt_string_set(&endpoint->uri, spec);
@@ -310,37 +307,17 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 		.endpoint = endpoint
 	};
 
-	if (str_is_prefix(spec, "/sql", 4))
-	{
-		opt_int_set(&endpoint->endpoint, ENDPOINT_SQL);
-		self.pos += 4;
-	} else
-	if (str_is_prefix(spec, "/import", 7))
-	{
-		opt_int_set(&endpoint->endpoint, ENDPOINT_IMPORT);
-		self.pos += 7;
-	} else
-	if (str_is_prefix(spec, "/stream", 7))
-	{
-		opt_int_set(&endpoint->endpoint, ENDPOINT_STREAM);
-		self.pos += 7;
-	} else
-	if (str_is_prefix(spec, "/api", 4))
-	{
-		opt_int_set(&endpoint->endpoint, ENDPOINT_API);
-		self.pos += 4;
-	} else
-	if (str_is_prefix(spec, "/mcp", 4))
-	{
-		opt_int_set(&endpoint->endpoint, ENDPOINT_MCP);
-		self.pos += 4;
-	} else {
-		error("failed to parse uri endpoint");
-	}
-
 	// /
-	if (*self.pos == '/')
+	self.pos++;
+	auto start = self.pos;
+
+	// <endpoint [?]
+	while (*self.pos && *self.pos != '?')
 		self.pos++;
+
+	opt_string_set_raw(&endpoint->endpoint, start, self.pos - start);
+	if (! *self.pos)
+		return;
 
 	// ?name=value[& ...]
 	uri_parse_args(&self, true);

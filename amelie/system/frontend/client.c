@@ -53,6 +53,9 @@ frontend_endpoint_sql(Portal* portal, Client* client)
 
 	// set output type
 	output_set(&portal->output, endpoint, output_if, NULL);
+
+	// set endpoint type
+	portal_set_endpoint_type(portal, ENDPOINT_SQL);
 }
 
 hot static inline void
@@ -98,6 +101,9 @@ frontend_endpoint_import(Portal* portal, Client* client)
 
 	// set output type
 	output_set(&portal->output, endpoint, output_if, NULL);
+
+	// set endpoint type
+	portal_set_endpoint_type(portal, ENDPOINT_IMPORT);
 }
 
 hot static inline void
@@ -128,10 +134,11 @@ frontend_endpoint_api(Portal* portal, Client* client)
 
 	// check method
 	auto method = &http->options[HTTP_METHOD];
-	if (str_is(method, "POST", 4))
-		return;
-	if (! str_is(method, "GET", 3))
+	if (!str_is(method, "POST", 4) && !str_is(method, "GET", 3))
 		error("unsupported operation method");
+
+	// set endpoint type
+	portal_set_endpoint_type(portal, ENDPOINT_API);
 }
 
 hot static inline void
@@ -160,6 +167,9 @@ frontend_endpoint_stream(Portal* portal, Client* client)
 	auto method = &http->options[HTTP_METHOD];
 	if (! str_is(method, "GET", 3))
 		error("unsupported operation method");
+
+	// set endpoint type
+	portal_set_endpoint_type(portal, ENDPOINT_STREAM);
 }
 
 hot static inline void
@@ -190,6 +200,9 @@ frontend_endpoint_mcp(Portal* portal, Client* client)
 
 	// set output type
 	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
+
+	// set endpoint type
+	portal_set_endpoint_type(portal, ENDPOINT_MCP);
 }
 
 hot static inline bool
@@ -201,7 +214,6 @@ frontend_endpoint(Portal* portal, Client* client)
 	// POST /sql
 	// POST /api
 	// GET  /stream
-	// GET  /repl
 
 	// content type
 	auto content_type = http_find(http, "Content-Type", 12);
@@ -241,30 +253,30 @@ frontend_endpoint(Portal* portal, Client* client)
 	(
 		uri_parse_endpoint(endpoint, &http->options[HTTP_URL]);
 
-		auto endpoint_type = opt_int_of(&endpoint->endpoint);
-		if (endpoint_type == ENDPOINT_SQL)
+		auto uri = opt_string_of(&endpoint->endpoint);
+		if (str_empty(uri) ||
+		    str_is(uri, "sql", 3))
 			frontend_endpoint_sql(portal, client);
 		else
-		if (endpoint_type == ENDPOINT_IMPORT)
+		if (str_is(uri, "import", 6))
 			frontend_endpoint_import(portal, client);
 		else
-		if (endpoint_type == ENDPOINT_STREAM)
+		if (str_is(uri, "stream", 6))
 			frontend_endpoint_stream(portal, client);
 		else
-		if (endpoint_type == ENDPOINT_API)
+		if (str_is(uri, "api", 3))
 			frontend_endpoint_api(portal, client);
 		else
-		if (endpoint_type == ENDPOINT_MCP)
+		if (str_is(uri, "mcp", 3))
 			frontend_endpoint_mcp(portal, client);
 		else
-			frontend_endpoint_sql(portal, client);
+			error("unsupported uri");
 	);
 	if (on_error)
 	{
 		if (output->iface)
 			output_error(output, &am_self()->error);
 	}
-
 	return !on_error;
 }
 
@@ -345,8 +357,7 @@ frontend_client(Frontend* self, Client* client)
 		}
 
 		// execute
-		auto endpoint = opt_int_of(&portal.endpoint.endpoint);
-		switch (endpoint) {
+		switch (portal.endpoint_type) {
 		case ENDPOINT_API:
 		{
 			// parse api request
