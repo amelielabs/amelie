@@ -138,6 +138,20 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
+	// api
+	case STMT_CREATE_API:
+	{
+		auto arg = ast_api_create_of(stmt->ast);
+		offset = user_op_api_create(data, &self->parser.local->user, arg->config);
+		break;
+	}
+	case STMT_DROP_API:
+	{
+		auto arg = ast_api_drop_of(stmt->ast);
+		offset = user_op_api_drop(data, &self->parser.local->user, &arg->uri);
+		break;
+	}
+
 	// table
 	case STMT_CREATE_TABLE:
 	{

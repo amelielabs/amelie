@@ -68,6 +68,7 @@ enum
 	KALWAYS,
 	KAGENT,
 	KACKNOWLEDGE,
+	KAPI,
 
 	// b
 	KBEGIN,

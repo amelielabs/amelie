@@ -127,7 +127,7 @@ user_config_copy(UserConfig* self)
 	user_config_set_superuser(copy, self->superuser);
 	grants_copy(&copy->grants, &self->grants);
 	limits_copy(&copy->limits, &self->limits);
-	apis_copy(&self->apis, &self->apis);
+	apis_copy(&copy->apis, &self->apis);
 	return copy;
 }
 

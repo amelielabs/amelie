@@ -76,6 +76,7 @@ parse_user_create(Stmt* self, bool agent)
 	// [ID]
 	// [DESCRIPTION]
 	// [LIMIT]
+	// [API]
 	auto stmt = ast_user_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -153,6 +154,21 @@ parse_user_create(Stmt* self, bool agent)
 		if (str_is_case(&name->string, "limit", 5))
 		{
 			parse_user_limits(self, &config->limits);
+			continue;
+		}
+
+		// API uri ON target
+		if (str_is_case(&name->string, "api", 3))
+		{
+			auto uri = stmt_expect(self, KSTRING);
+			if (apis_find(&config->apis, &uri->string))
+				stmt_error(self, uri, "api redefined");
+
+			auto api = api_allocate();
+			apis_add(&config->apis, api);
+			api_set_uri(api, &uri->string);
+
+			parse_api_create_inline(self, api);
 			continue;
 		}
 

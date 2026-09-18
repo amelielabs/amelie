@@ -120,7 +120,7 @@ compiler_parse_udf(Compiler* self, Udf* udf)
 void
 compiler_parse_api(Compiler* self, Str* user, Str* rel, uint8_t* args, bool execute)
 {
-	parse_api(&self->parser, self->program, user, rel, args, execute);
+	parse_import_api(&self->parser, self->program, user, rel, args, execute);
 	compiler_parse_complete(self);
 }
 

@@ -32,6 +32,7 @@ Keyword keywords[] =
 	{ KALWAYS,                "always",                6  },
 	{ KAGENT,                 "agent",                 5  },
 	{ KACKNOWLEDGE,           "acknowledge",           11 },
+	{ KAPI,                   "api",                   3  },
 
 	// b
 	{ KBEGIN,                 "begin",                 5  },
