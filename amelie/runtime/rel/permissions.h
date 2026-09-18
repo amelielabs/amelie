@@ -29,28 +29,29 @@ enum
 	PERM_CREATE_FUNCTION     = 1ul << 6,
 	PERM_CREATE_TOPIC        = 1ul << 7,
 	PERM_CREATE_SUBSCRIPTION = 1ul << 8,
+	PERM_CREATE_API          = 1ul << 9,
 
 	// DML
-	PERM_INSERT              = 1ul << 9,
-	PERM_UPDATE              = 1ul << 10,
-	PERM_DELETE              = 1ul << 11,
+	PERM_INSERT              = 1ul << 10,
+	PERM_UPDATE              = 1ul << 11,
+	PERM_DELETE              = 1ul << 12,
 
 	// Query
-	PERM_SELECT              = 1ul << 12,
+	PERM_SELECT              = 1ul << 13,
 
 	// UDF
-	PERM_EXECUTE             = 1ul << 13,
+	PERM_EXECUTE             = 1ul << 14,
 
 	// Topic
-	PERM_PUBLISH             = 1ul << 14,
+	PERM_PUBLISH             = 1ul << 15,
 
 	// Endpoints
-	PERM_SQL                 = 1ul << 15,
-	PERM_IMPORT              = 1ul << 16,
-	PERM_STREAM              = 1ul << 17,
-	PERM_API                 = 1ul << 18,
-	PERM_MCP                 = 1ul << 19,
-	PERM_SERVICE             = 1ul << 20,
+	PERM_SQL                 = 1ul << 16,
+	PERM_IMPORT              = 1ul << 17,
+	PERM_STREAM              = 1ul << 18,
+	PERM_API                 = 1ul << 19,
+	PERM_MCP                 = 1ul << 20,
+	PERM_SERVICE             = 1ul << 21,
 
 	// all
 	PERM_ALL                 = UINT32_MAX

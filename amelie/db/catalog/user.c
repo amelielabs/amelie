@@ -582,3 +582,99 @@ user_limit_unset(Catalog* self,
 	user_limits_sync(user);
 	return true;
 }
+
+static void
+api_set_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+api_set_if_abort(Log* self, LogOp* op)
+{
+	// restore previous apis
+	auto user = user_of(op->rel);
+	apis_free(&user->config->apis);
+
+	uint8_t* pos = log_data_of(self, op);
+	apis_read(&user->config->apis, &pos);
+}
+
+static LogIf api_set_if =
+{
+	.commit = api_set_if_commit,
+	.abort  = api_set_if_abort
+};
+
+bool
+user_api_create(Catalog* self,
+                Tr*      tr,
+                Str*     name,
+                Api*     api,
+                bool     if_exists)
+{
+	auto user = catalog_find_user(self, name, false);
+	if (! user)
+	{
+		if (! if_exists)
+			error("user '{str}': not exists", name);
+		return false;
+	}
+
+	// only owner or superuser
+	check_ownership_user(tr, &user->rel);
+
+	// ensure api is not redefined
+	auto ref = apis_find(&user->config->apis, &api->uri);
+	if (ref)
+		error("user '{str}': api '{str}' already exists",
+		      name, &api->uri);
+
+	// update user
+	log_ddl(&tr->log, &api_set_if, NULL, &user->rel);
+
+	// save previous apis
+	apis_write(&user->config->apis, &tr->log.data, 0);
+
+	// add new api
+	auto copy = api_copy(api);
+	apis_add(&user->config->apis, copy);
+	return true;
+}
+
+bool
+user_api_drop(Catalog* self,
+              Tr*      tr,
+              Str*     name,
+              Str*     uri,
+              bool     if_exists)
+{
+	auto user = catalog_find_user(self, name, false);
+	if (! user)
+	{
+		if (! if_exists)
+			error("user '{str}': not exists", name);
+		return false;
+	}
+
+	// only owner or superuser
+	check_ownership_user(tr, &user->rel);
+
+	// ensure api is not redefined
+	auto ref = apis_find(&user->config->apis, uri);
+	if (! ref)
+		error("user '{str}': api '{str}' not exists",
+		      name, uri);
+
+	// update user
+	log_ddl(&tr->log, &api_set_if, NULL, &user->rel);
+
+	// save previous apis
+	apis_write(&user->config->apis, &tr->log.data, 0);
+
+	// remove api
+	apis_remove(&user->config->apis, ref);
+	api_free(ref);
+	return true;
+}

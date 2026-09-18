@@ -25,6 +25,7 @@ struct UserConfig
 	bool   superuser;
 	Grants grants;
 	Limits limits;
+	Apis   apis;
 };
 
 static inline UserConfig*
@@ -42,6 +43,7 @@ user_config_allocate()
 	str_init(&self->revoked_at);
 	grants_init(&self->grants);
 	limits_init(&self->limits);
+	apis_init(&self->apis);
 	return self;
 }
 
@@ -54,6 +56,7 @@ user_config_free(UserConfig* self)
 	str_free(&self->created_at);
 	str_free(&self->revoked_at);
 	grants_free(&self->grants);
+	apis_free(&self->apis);
 	am_free(self);
 }
 
@@ -124,6 +127,7 @@ user_config_copy(UserConfig* self)
 	user_config_set_superuser(copy, self->superuser);
 	grants_copy(&copy->grants, &self->grants);
 	limits_copy(&copy->limits, &self->limits);
+	apis_copy(&self->apis, &self->apis);
 	return copy;
 }
 
@@ -134,6 +138,7 @@ user_config_read(uint8_t** pos)
 	errdefer(user_config_free, self);
 	uint8_t* pos_grants = NULL;
 	uint8_t* pos_limits = NULL;
+	uint8_t* pos_apis   = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_STR,   "name",        &self->name        },
@@ -146,6 +151,7 @@ user_config_read(uint8_t** pos)
 		{ DECODE_BOOL,  "superuser",   &self->superuser   },
 		{ DECODE_ARRAY, "grants",      &pos_grants        },
 		{ DECODE_OBJ,   "limits",      &pos_limits        },
+		{ DECODE_ARRAY, "apis",        &pos_apis          },
 		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "user", pos);
@@ -155,6 +161,9 @@ user_config_read(uint8_t** pos)
 
 	// limits
 	limits_read(&self->limits, &pos_limits);
+
+	// apis
+	apis_read(&self->apis, &pos_apis);
 	return self;
 }
 
@@ -211,6 +220,10 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 	// limits
 	encode_raw(buf, "limits", 6);
 	limits_write(&self->limits, buf);
+
+	// apis
+	encode_raw(buf, "apis", 4);
+	apis_write(&self->apis, buf, flags);
 
 	encode_obj_end(buf);
 }

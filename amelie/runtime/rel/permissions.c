@@ -43,6 +43,7 @@ static Permission perms[] =
 	{ PERM_CREATE_FUNCTION,     "create_function",     15 },
 	{ PERM_CREATE_TOPIC,        "create_topic",        12 },
 	{ PERM_CREATE_SUBSCRIPTION, "create_subscription", 19 },
+	{ PERM_CREATE_API,          "create_api",          10 },
 
 	// DML
 	{ PERM_INSERT,              "insert",              6  },

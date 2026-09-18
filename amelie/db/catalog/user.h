@@ -30,6 +30,8 @@ bool user_grant(Catalog*, Tr*, Str*, bool, uint32_t, bool);
 bool user_describe(Catalog*, Tr*, Str*, Str*, bool);
 bool user_limit_set(Catalog*, Tr*, Str*, Limits*, bool);
 bool user_limit_unset(Catalog*, Tr*, Str*, uint64_t, bool);
+bool user_api_create(Catalog*, Tr*, Str*, Api*, bool);
+bool user_api_drop(Catalog*, Tr*, Str*, Str*, bool);
 
 always_inline static inline User*
 user_of(Rel* self)

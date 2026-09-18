@@ -186,3 +186,54 @@ user_op_limit_unset_read(uint8_t* op, Str* name, uint64_t* mask)
 	*mask = (uint64_t)value;
 	unpack_array_end(&op);
 }
+
+static inline int
+user_op_api_create(Buf* self, Str* name, Api* api)
+{
+	// [op, name, api]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_int(self, DDL_USER_API_CREATE);
+	encode_str(self, name);
+	api_write(api, self, 0);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline Api*
+user_op_api_create_read(uint8_t* op, Str* name)
+{
+	int64_t cmd;
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
+	assert(cmd == DDL_USER_API_CREATE);
+	unpack_str(&op, name);
+	auto api = api_read(&op);
+	unpack_array_end(&op);
+	return api;
+}
+
+static inline int
+user_op_api_drop(Buf* self, Str* name, Str* uri)
+{
+	// [op, name, uri]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_int(self, DDL_USER_API_DROP);
+	encode_str(self, name);
+	encode_str(self, uri);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+user_op_api_drop_read(uint8_t* op, Str* name, Str* uri)
+{
+	int64_t cmd;
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
+	assert(cmd == DDL_USER_API_DROP);
+	unpack_str(&op, name);
+	unpack_str(&op, uri);
+	unpack_array_end(&op);
+}

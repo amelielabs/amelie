@@ -259,6 +259,26 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = user_limit_unset(self, tr, &name, mask, if_exists);
 		break;
 	}
+	case DDL_USER_API_CREATE:
+	{
+		Str  name;
+		auto api = user_op_api_create_read(op, &name);
+		defer(api_free, api);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_api_create(self, tr, &name, api, if_exists);
+		break;
+	}
+	case DDL_USER_API_DROP:
+	{
+		Str name;
+		Str uri;
+		user_op_api_drop_read(op, &name, &uri);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_api_drop(self, tr, &name, &uri, if_exists);
+		break;
+	}
 	case DDL_TABLE_CREATE:
 	{
 		auto config = table_op_create_read(op);

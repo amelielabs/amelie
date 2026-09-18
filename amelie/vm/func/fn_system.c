@@ -29,6 +29,7 @@ enum
 	SHOW_CDC,
 	SHOW_METRICS,
 	SHOW_LIMITS,
+	SHOW_API,
 	SHOW_MEMORY,
 	SHOW_USERS,
 	SHOW_USER,
@@ -87,6 +88,8 @@ static ShowCmd show_cmds[] =
 
 	// user
 	{ SHOW_LIMITS,        "limits",        6,  SHOW_NO,    true  },
+	{ SHOW_API,           "apis",          4,  SHOW_NO,    true  },
+	{ SHOW_API,           "api",           3,  SHOW_NO,    true  },
 	{ SHOW_MEMORY,        "memory",        6,  SHOW_NO,    true  },
 
 	// relations
@@ -303,6 +306,13 @@ fn_show(Call* self)
 		// todo: check permissions
 		auto ref = catalog_find_user(catalog, user, true);
 		limits_write(&ref->config->limits, buf);
+		break;
+	}
+	case SHOW_API:
+	{
+		// todo: check permissions
+		auto ref = catalog_find_user(catalog, user, true);
+		apis_write(&ref->config->apis, buf, flags);
 		break;
 	}
 	case SHOW_MEMORY:

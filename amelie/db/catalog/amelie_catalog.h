@@ -15,6 +15,8 @@
 #include "catalog/ddl.h"
 
 // user
+#include "catalog/api.h"
+#include "catalog/apis.h"
 #include "catalog/user_config.h"
 #include "catalog/user_op.h"
 #include "catalog/user.h"
