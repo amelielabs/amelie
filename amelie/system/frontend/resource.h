@@ -15,12 +15,8 @@ typedef struct Resource Resource;
 
 struct Resource
 {
-	Str      rel_user;
-	Str      rel;
-	uint8_t* args;
-	int      args_size;
-	Portal*  portal;
-	Json     json;
+	Portal* portal;
+	Json    json;
 };
 
 void resource_init(Resource*, Portal*);

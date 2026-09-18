@@ -1,0 +1,16 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: POST /user_api
+create table test (id int primary key, data string);
+create api '/v1/your_table' on test;
+
+post /v1/your_table - - {"id": 1, "data": "hello world"};
+post /v1/your_table - - [{"id": 2}, {"id": 3}];
+
+select * from test;
+
+disconnect S0;
+close E0;
