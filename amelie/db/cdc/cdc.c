@@ -226,7 +226,7 @@ cdc_write(Cdc* self, CdcBatch* batch)
 
 	// write user request first (if the user has subs)
 	if (batch->user->subs > 0)
-		cdc_add(self, batch->lsn, 5, batch->user->id,
+		cdc_add(self, batch->lsn, CDC_REQUEST, batch->user->id,
 		        batch->request,
 		        batch->request_size);
 

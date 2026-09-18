@@ -48,8 +48,11 @@ struct Endpoint
 	Opt  timezone;
 	Opt  time;
 	Opt  seed;
+	// operations
+	Opt  stream;
+	Opt  import;
+	Opt  mcp;
 	// misc
-	Opt  target;
 	Opt  id;
 	Opt  trusted;
 	Opt  name;

@@ -3,41 +3,32 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-# test: POST uri parsing
+# test: POST / (invalid content type)
 post / - - -;
-post /db - - -;
-post /xyz - - -;
+post / json - -;
+post / application/json - -;
 
-# test: POST /sql
-post /sql - - -;
-post /sql/ - - -;
+# test: POST / (text/plain, no accept, no content)
+post / text/plain - -;
 
-# test: POST /sql (invalid content type)
-post /sql - - -;
-post /sql json - -;
-post /sql/ application/json - -;
+# test: POST / (text/plain, no accept)
+post / text/plain - select 1;
 
-# test: POST /sql (text/plain, no accept, no content)
-post /sql text/plain - -;
+# test: POST / (text/plain, invalid accept)
+post / text/plain xyz select 1;
 
-# test: POST /sql (text/plain, no accept)
-post /sql text/plain - select 1;
+# test: POST / (text/plain, application/json)
+post / text/plain application/json select 1;
 
-# test: POST /sql (text/plain, invalid accept)
-post /sql text/plain xyz select 1;
+# test: POST / (args parsing)
+post /? text/plain application/json select 1;
+post /?a text/plain application/json select 1;
 
-# test: POST /sql (text/plain, application/json)
-post /sql text/plain application/json select 1;
+post / text/plain application/json select "2024-07-29 18:40:19"::timestamp;
+post /?timezone=Asia/Tokyo text/plain application/json select "2024-07-29 18:40:19"::timestamp;
+post / text/plain application/json explain select "2024-07-29 18:40:19"::timestamp;
 
-# test: POST /sql (args parsing)
-post /sql? text/plain application/json select 1;
-post /sql?a text/plain application/json select 1;
-
-post /sql text/plain application/json select "2024-07-29 18:40:19"::timestamp;
-post /sql?timezone=Asia/Tokyo text/plain application/json select "2024-07-29 18:40:19"::timestamp;
-post /sql text/plain application/json explain select "2024-07-29 18:40:19"::timestamp;
-
-post /sql?trusted=true text/plain application/json select current_user;
+post /?trusted=true text/plain application/json select current_user;
 
 disconnect S0;
 close E0;

@@ -1,48 +1,38 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: POST uri parsing
+# test: POST / (invalid content type)
 post / - - -;
-post /db - - -;
-{"msg": "unexpected end of line"}
-post /xyz - - -;
-{"msg": "unexpected end of line"}
-# test: POST /sql
-post /sql - - -;
-post /sql/ - - -;
-{"msg": "unexpected end of line"}
-# test: POST /sql (invalid content type)
-post /sql - - -;
-post /sql json - -;
+post / json - -;
 400 Bad Request
-post /sql/ application/json - -;
-{"msg": "unexpected end of line"}
-# test: POST /sql (text/plain, no accept, no content)
-post /sql text/plain - -;
-# test: POST /sql (text/plain, no accept)
-post /sql text/plain - select 1;
+post / application/json - -;
+400 Bad Request
+# test: POST / (text/plain, no accept, no content)
+post / text/plain - -;
+# test: POST / (text/plain, no accept)
+post / text/plain - select 1;
 
 col1
 ────
 1
 
-# test: POST /sql (text/plain, invalid accept)
-post /sql text/plain xyz select 1;
+# test: POST / (text/plain, invalid accept)
+post / text/plain xyz select 1;
 400 Bad Request
-# test: POST /sql (text/plain, application/json)
-post /sql text/plain application/json select 1;
+# test: POST / (text/plain, application/json)
+post / text/plain application/json select 1;
 {"columns": ["col1"], "rows": [[1]]}
-# test: POST /sql (args parsing)
-post /sql? text/plain application/json select 1;
+# test: POST / (args parsing)
+post /? text/plain application/json select 1;
 400 Bad Request
-post /sql?a text/plain application/json select 1;
+post /?a text/plain application/json select 1;
 400 Bad Request
-post /sql text/plain application/json select "2024-07-29 18:40:19"::timestamp;
+post / text/plain application/json select "2024-07-29 18:40:19"::timestamp;
 {"columns": ["timestamp"], "rows": [["2024-07-29 18:40:19+00"]]}
-post /sql?timezone=Asia/Tokyo text/plain application/json select "2024-07-29 18:40:19"::timestamp;
+post /?timezone=Asia/Tokyo text/plain application/json select "2024-07-29 18:40:19"::timestamp;
 {"columns": ["timestamp"], "rows": [["2024-07-29 18:40:19+09"]]}
-post /sql text/plain application/json explain select "2024-07-29 18:40:19"::timestamp;
+post / text/plain application/json explain select "2024-07-29 18:40:19"::timestamp;
 {"columns": ["explain"], "rows": ["\nmain\n  0   value               0      -      0     # timestamp\n  1   ret                 0      0      -\n"]}
-post /sql?trusted=true text/plain application/json select current_user;
+post /?trusted=true text/plain application/json select current_user;
 400 Bad Request
 disconnect S0;
 close E0;

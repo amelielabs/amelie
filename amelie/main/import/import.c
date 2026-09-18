@@ -211,13 +211,8 @@ static void
 import_main(Import* self)
 {
 	// ensure relation is defined
-	if (opt_string_empty(&self->main->endpoint.target))
+	if (opt_string_empty(&self->main->endpoint.import))
 		error("import: target relation is not set\n");
-
-	// set endpoint service as import
-	Str uri;
-	str_set(&uri, "import", 6);
-	opt_string_set(&self->main->endpoint.endpoint, &uri);
 
 	// create clients and connect
 	import_connect(self);

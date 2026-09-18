@@ -104,7 +104,7 @@ stream_subscribe_to(Stream* self, Str* user, Str* name)
 static inline void
 stream_subscribe(Stream* self)
 {
-	auto target = opt_string_of(&self->client->endpoint->target);
+	auto target = opt_string_of(&self->client->endpoint->stream);
 	if (str_empty(target))
 		error("target argument is missing");
 

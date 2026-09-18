@@ -228,30 +228,32 @@ uri_parse_args(Uri* self, bool strict)
 	{
 		buf_reset(buf);
 
-		// name =
+		// name [= value] [&]
 		int  name_size;
 		auto name = self->pos;
-		while (*self->pos && *self->pos != '=')
+		while (*self->pos && *self->pos != '=' && *self->pos != '&')
 			self->pos++;
-		if (*self->pos != '=')
-			uri_error();
 		name_size = self->pos - name;
 		if (name_size == 0)
 			uri_error();
-		self->pos++;
 		decode(buf, name, name_size);
 		name_size = buf_size(buf);
 
-		// value [& ...]
-		int   value_size;
-		char* value = self->pos;
-		while (*self->pos && *self->pos != '&')
-			self->pos++;
-		value_size = self->pos - value;
-		if (value_size > 0)
+		// value [&]
+		int   value_size = 0;
+		char* value = NULL;
+		if (*self->pos == '=')
 		{
-			decode(buf, value, value_size);
-			value_size = buf_size(buf) - name_size;
+			self->pos++;
+			value = self->pos;
+			while (*self->pos && *self->pos != '&')
+				self->pos++;
+			value_size = self->pos - value;
+			if (value_size > 0)
+			{
+				decode(buf, value, value_size);
+				value_size = buf_size(buf) - name_size;
+			}
 		}
 
 		// match end set endpoint argument
@@ -384,4 +386,6 @@ uri_export(Endpoint* self, Buf* buf)
 	}
 	uri_export_arg(&self->token, buf, &first);
 	uri_export_arg(&self->timezone, buf, &first);
+	if (! opt_string_empty(&self->import))
+		uri_export_arg(&self->import, buf, &first);
 }

@@ -18,12 +18,12 @@
 #include <amelie_frontend.h>
 
 hot static inline void
-frontend_endpoint_sql(Portal* portal, Client* client)
+frontend_root_sql(Portal* portal, Client* client)
 {
 	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
-	// POST /sql (text/plain)
+	// POST / (text/plain)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is(method, "POST", 4)))
 		error("unsupported operation method");
@@ -59,12 +59,12 @@ frontend_endpoint_sql(Portal* portal, Client* client)
 }
 
 hot static inline void
-frontend_endpoint_import(Portal* portal, Client* client)
+frontend_root_import(Portal* portal, Client* client)
 {
 	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
-	// POST /import (text/plain)
+	// POST /?import=target (text/plain)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is(method, "POST", 4)))
 		error("unsupported operation method");
@@ -94,11 +94,6 @@ frontend_endpoint_import(Portal* portal, Client* client)
 		error("unsupported operation accept type");
 	}
 
-	// target
-	auto target = opt_string_of(&endpoint->target);
-	if (str_empty(target))
-		error("target argument is missing");
-
 	// set output type
 	output_set(&portal->output, endpoint, output_if, NULL);
 
@@ -107,12 +102,76 @@ frontend_endpoint_import(Portal* portal, Client* client)
 }
 
 hot static inline void
-frontend_endpoint_api(Portal* portal, Client* client)
+frontend_root_stream(Portal* portal, Client* client)
 {
 	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
-	// POST <custom_api> (application/json)
+	// GET /?stream=targets (text/event-stream) SSE
+	auto content_type = &endpoint->content_type.string;
+	str_set(content_type, "text/event-stream", 17);
+
+	// accept (text/event-stream)
+	auto accept = &endpoint->accept.string;
+	if (!str_empty(accept) &&
+	    !str_is(accept, "text/event-stream", 17) &&
+	    !str_is(accept, "*/*", 3))
+		error("unsupported operation accept");
+
+	str_set(accept, "application/json", 16);
+
+	// set output type (only for errors)
+	output_set(&portal->output, endpoint, &output_json, NULL);
+
+	// check method
+	auto method = &http->options[HTTP_METHOD];
+	if (! str_is(method, "GET", 3))
+		error("unsupported operation method");
+
+	// set endpoint type
+	portal_set_endpoint_type(portal, ENDPOINT_STREAM);
+}
+
+hot static inline void
+frontend_root_mcp(Portal* portal, Client* client)
+{
+	auto endpoint = &portal->endpoint;
+	auto http     = &client->request;
+
+	// POST /?mcp (application/json)
+	auto method = &http->options[HTTP_METHOD];
+	if (unlikely(! str_is(method, "POST", 4)))
+		error("unsupported operation method");
+
+	// content type
+	auto content_type = &endpoint->content_type.string;
+	if (!str_empty(content_type) &&
+	    !str_is(content_type, "application/json", 16))
+		error("unsupported operation content-type");
+
+	// accept (jsonrpc)
+	auto accept = &endpoint->accept.string;
+	if (!str_empty(accept) &&
+	    !str_is(accept, "application/json", 16) &&
+	    !str_is(accept, "*/*", 3))
+		error("unsupported operation accept");
+
+	str_set(accept, "application/json", 16);
+
+	// set output type
+	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
+
+	// set endpoint type
+	portal_set_endpoint_type(portal, ENDPOINT_MCP);
+}
+
+hot static inline void
+frontend_api(Portal* portal, Client* client)
+{
+	auto endpoint = &portal->endpoint;
+	auto http     = &client->request;
+
+	// POST <custom_uri> (application/json)
 
 	// content type
 	auto content_type = &endpoint->content_type.string;
@@ -142,67 +201,34 @@ frontend_endpoint_api(Portal* portal, Client* client)
 }
 
 hot static inline void
-frontend_endpoint_stream(Portal* portal, Client* client)
+frontend_endpoint_main(Portal* portal, Client* client)
 {
 	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
-	// GET /stream (text/event-stream) SSE
-	auto content_type = &endpoint->content_type.string;
-	str_set(content_type, "text/event-stream", 17);
+	uri_parse_endpoint(endpoint, &http->options[HTTP_URL]);
 
-	// accept (text/event-stream)
-	auto accept = &endpoint->accept.string;
-	if (!str_empty(accept) &&
-	    !str_is(accept, "text/event-stream", 17) &&
-	    !str_is(accept, "*/*", 3))
-		error("unsupported operation accept");
+	// POST /<user_api>
+	if (! opt_string_empty(&endpoint->endpoint))
+	{
+		frontend_api(portal, client);
+		return;
+	}
 
-	str_set(accept, "application/json", 16);
-
-	// set output type (only for errors)
-	output_set(&portal->output, endpoint, &output_json, NULL);
-
-	// check method
-	auto method = &http->options[HTTP_METHOD];
-	if (! str_is(method, "GET", 3))
-		error("unsupported operation method");
-
-	// set endpoint type
-	portal_set_endpoint_type(portal, ENDPOINT_STREAM);
-}
-
-hot static inline void
-frontend_endpoint_mcp(Portal* portal, Client* client)
-{
-	auto endpoint = &portal->endpoint;
-	auto http     = &client->request;
-
-	// POST /mcp (application/json)
-	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(! str_is(method, "POST", 4)))
-		error("unsupported operation method");
-
-	// content type
-	auto content_type = &endpoint->content_type.string;
-	if (!str_empty(content_type) &&
-	    !str_is(content_type, "application/json", 16))
-		error("unsupported operation content-type");
-
-	// accept (jsonrpc)
-	auto accept = &endpoint->accept.string;
-	if (!str_empty(accept) &&
-	    !str_is(accept, "application/json", 16) &&
-	    !str_is(accept, "*/*", 3))
-		error("unsupported operation accept");
-
-	str_set(accept, "application/json", 16);
-
-	// set output type
-	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
-
-	// set endpoint type
-	portal_set_endpoint_type(portal, ENDPOINT_MCP);
+	// POST /
+	// POST /?import
+	// GET  /?stream
+	// POST /?mcp
+	if (! opt_string_empty(&endpoint->import))
+		frontend_root_import(portal, client);
+	else
+	if (! opt_string_empty(&endpoint->stream))
+		frontend_root_stream(portal, client);
+	else
+	if (opt_int_of(&endpoint->mcp))
+		frontend_root_mcp(portal, client);
+	else
+		frontend_root_sql(portal, client);
 }
 
 hot static inline bool
@@ -249,25 +275,8 @@ frontend_endpoint(Portal* portal, Client* client)
 	output_set_buf(output, &client->reply.content);
 
 	// /<endpoint>
-	auto on_error = error_catch
-	(
-		uri_parse_endpoint(endpoint, &http->options[HTTP_URL]);
-
-		auto uri = opt_string_of(&endpoint->endpoint);
-		if (str_empty(uri) ||
-		    str_is(uri, "sql", 3))
-			frontend_endpoint_sql(portal, client);
-		else
-		if (str_is(uri, "import", 6))
-			frontend_endpoint_import(portal, client);
-		else
-		if (str_is(uri, "stream", 6))
-			frontend_endpoint_stream(portal, client);
-		else
-		if (str_is(uri, "mcp", 3))
-			frontend_endpoint_mcp(portal, client);
-		else
-			frontend_endpoint_api(portal, client);
+	auto on_error = error_catch (
+		frontend_endpoint_main(portal, client);
 	);
 	if (on_error)
 	{
@@ -428,7 +437,7 @@ frontend_client(Frontend* self, Client* client)
 			str_init(&req.rel);
 
 			// set target
-			auto target = opt_string_of(&portal.endpoint.target);
+			auto target = opt_string_of(&portal.endpoint.import);
 			auto pos = target->pos;
 			auto end = target->end;
 			if (! portal_target(&pos, end, &req.rel_user, &req.rel))
