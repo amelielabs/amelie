@@ -48,7 +48,7 @@ enum
 	// Endpoints
 	PERM_SQL                 = 1ul << 16,
 	PERM_IMPORT              = 1ul << 17,
-	PERM_STREAM              = 1ul << 18,
+	PERM_FEED                = 1ul << 18,
 	PERM_API                 = 1ul << 19,
 	PERM_MCP                 = 1ul << 20,
 	PERM_SERVICE             = 1ul << 21,

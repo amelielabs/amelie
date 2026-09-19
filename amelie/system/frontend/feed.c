@@ -17,35 +17,35 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
-typedef struct Stream Stream;
+typedef struct Feed Feed;
 
-struct Stream
+struct Feed
 {
 	Client* client;
 	Portal* portal;
-	Feeds   feeds;
+	Streams streams;
 };
 
 static inline void
-stream_init(Stream* self, Client* client, Portal* portal)
+feed_init(Feed* self, Client* client, Portal* portal)
 {
 	self->client = client;
 	self->portal = portal;
-	feeds_init(&self->feeds, share()->cdc);
+	streams_init(&self->streams, share()->cdc);
 }
 
 static inline void
-stream_free(Stream* self)
+feed_free(Feed* self)
 {
-	feeds_free(&self->feeds);
+	streams_free(&self->streams);
 }
 
 static inline void
-stream_subscribe_to(Stream* self, Str* user, Str* name)
+feed_subscribe_to(Feed* self, Str* user, Str* name)
 {
-	// find existing feed
-	auto feed = feeds_find(&self->feeds, user, name);
-	if (feed)
+	// find existing stream
+	auto stream = streams_find(&self->streams, user, name);
+	if (stream)
 		error("relation '{str}': is redefined", name);
 
 	// find user or relation
@@ -88,29 +88,25 @@ stream_subscribe_to(Stream* self, Str* user, Str* name)
 	// (must be under exclusive lock)
 	rel->subs++;
 
-	// create feed
-	feed = feed_allocate();
-	feed_set_user(feed, user);
+	// create stream
+	stream = stream_allocate();
+	stream_set_user(stream, user);
 	if (! str_empty(name))
-		feed_set_name(feed, name);
-	feed_set_id(feed, id);
-	feeds_add(&self->feeds, feed);
+		stream_set_name(stream, name);
+	stream_set_id(stream, id);
+	streams_add(&self->streams, stream);
 
 	// open cursor
-	cdc_slot_set(&feed->slot, lsn);
-	cdc_cursor_open(&feed->cursor, share()->cdc, id, lsn);
+	cdc_slot_set(&stream->slot, lsn);
+	cdc_cursor_open(&stream->cursor, share()->cdc, id, lsn);
 }
 
 static inline void
-stream_subscribe(Stream* self)
+feed_subscribe(Feed* self, Str* targets)
 {
-	auto target = opt_string_of(&self->client->endpoint->stream);
-	if (str_empty(target))
-		error("target argument is missing");
-
 	// target[, ...]
-	auto pos = target->pos;
-	auto end = target->end;
+	auto pos = targets->pos;
+	auto end = targets->end;
 
 	// take exclusive lock
 	portal_lock(self->portal, LOCK_EXCLUSIVE);
@@ -118,13 +114,13 @@ stream_subscribe(Stream* self)
 	Str user;
 	Str name;
 	while (portal_target(&pos, end, &user, &name))
-		stream_subscribe_to(self, &user, &name);
+		feed_subscribe_to(self, &user, &name);
 }
 
 static inline void
-stream_unsubscribe(Stream* self)
+feed_unsubscribe(Feed* self)
 {
-	if (list_empty(&self->feeds.list))
+	if (list_empty(&self->streams.list))
 		return;
 
 	// take exclusive catalog lock
@@ -132,9 +128,9 @@ stream_unsubscribe(Stream* self)
 	defer(unlock, lock);
 
 	auto catalog = &share()->db->catalog;
-	list_foreach(&self->feeds.list)
+	list_foreach(&self->streams.list)
 	{
-		auto feed = list_at(Feed, link);
+		auto feed = list_at(Stream, link);
 		Rels* rels;
 		if (str_empty(&feed->name))
 			rels = &catalog->users;
@@ -149,7 +145,7 @@ stream_unsubscribe(Stream* self)
 }
 
 static inline void
-stream_begin(Stream* self)
+feed_begin(Feed* self)
 {
 	auto client = self->client;
 	auto reply = &client->reply;
@@ -161,7 +157,7 @@ stream_begin(Stream* self)
 }
 
 hot static inline bool
-stream_wait(Stream* self)
+feed_wait(Feed* self)
 {
 	// parent
 	Event event;
@@ -182,9 +178,9 @@ stream_wait(Stream* self)
 
 	// prepare cdc sub
 	//
-	// get min lsn across all feeds
+	// get min lsn across all streams
 	//
-	auto min = feeds_min(&self->feeds);
+	auto min = streams_min(&self->streams);
 	CdcSub sub;
 	cdc_sub_init(&sub, &event_sub, min);
 	cdc_subscribe(share()->cdc, &sub);
@@ -205,26 +201,26 @@ stream_wait(Stream* self)
 }
 
 void
-frontend_stream(Frontend* self, Client* client, Portal* portal)
+frontend_feed(Frontend* self, Client* client, Portal* portal, Str* targets)
 {
 	// note: portal keeps shared lock
 	unused(self);
 
-	Stream stream;
-	stream_init(&stream, client, portal);
-	defer(stream_free, &stream);
+	Feed feed;
+	feed_init(&feed, client, portal);
+	defer(feed_free, &feed);
 
 	// validate and subscribe
 	auto on_error = error_catch
 	(
-		stream_subscribe(&stream);
+		feed_subscribe(&feed, targets);
 	);
 	portal_unlock(portal);
 
 	auto buf = portal->output.buf;
 	if (on_error)
 	{
-		stream_unsubscribe(&stream);
+		feed_unsubscribe(&feed);
 
 		buf_reset(buf);
 		output_error(&portal->output, &am_self()->error);
@@ -232,20 +228,20 @@ frontend_stream(Frontend* self, Client* client, Portal* portal)
 		return;
 	}
 
-	defer(stream_unsubscribe, &stream);
+	defer(feed_unsubscribe, &feed);
 
 	// SSE
-	stream_begin(&stream);
+	feed_begin(&feed);
 
 	for (;;)
 	{
 		// wait for client disconnect or cdc event
-		if (stream_wait(&stream))
+		if (feed_wait(&feed))
 			break;
 
 		// collect pending cdc events
 		buf_reset(buf);
-		feeds_collect(&stream.feeds, buf);
+		streams_collect(&feed.streams, buf);
 		if (! buf_empty(buf))
 			tcp_write_buf(&client->tcp, buf);
 	}

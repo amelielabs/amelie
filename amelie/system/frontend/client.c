@@ -102,12 +102,12 @@ frontend_root_import(Portal* portal, Client* client)
 }
 
 hot static inline void
-frontend_root_stream(Portal* portal, Client* client)
+frontend_root_feed(Portal* portal, Client* client)
 {
 	auto endpoint = &portal->endpoint;
 	auto http     = &client->request;
 
-	// GET /?stream=targets (text/event-stream) SSE
+	// GET /?feed=targets (text/event-stream) SSE
 	auto content_type = &endpoint->content_type.string;
 	str_set(content_type, "text/event-stream", 17);
 
@@ -129,7 +129,7 @@ frontend_root_stream(Portal* portal, Client* client)
 		error("unsupported operation method");
 
 	// set endpoint type
-	portal_set_endpoint_type(portal, ENDPOINT_STREAM);
+	portal_set_endpoint_type(portal, ENDPOINT_FEED);
 }
 
 hot static inline void
@@ -217,13 +217,13 @@ frontend_endpoint_main(Portal* portal, Client* client)
 
 	// /
 	// /?import
-	// /?stream
+	// /?feed
 	// /?mcp
 	if (! opt_string_empty(&endpoint->import))
 		frontend_root_import(portal, client);
 	else
-	if (! opt_string_empty(&endpoint->stream))
-		frontend_root_stream(portal, client);
+	if (! opt_string_empty(&endpoint->feed))
+		frontend_root_feed(portal, client);
 	else
 	if (opt_int_of(&endpoint->mcp))
 		frontend_root_mcp(portal, client);
@@ -454,13 +454,14 @@ frontend_client(Frontend* self, Client* client)
 			client_400(client, portal.output.buf);
 			break;
 		}
-		case ENDPOINT_STREAM:
+		case ENDPOINT_FEED:
 		{
-			// /stream
+			// /feed
 			//
 			// pass to the SSE processing (portal keeps lock)
 			//
-			frontend_stream(self, client, &portal);
+			auto targets = opt_string_of(&portal.endpoint.feed);
+			frontend_feed(self, client, &portal, targets);
 			return;
 		}
 		default:

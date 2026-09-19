@@ -45,7 +45,7 @@ endpoint_init(Endpoint* self)
 		{ "time",         OPT_INT,     OPT_E,       &self->time,         NULL, 0     },
 		{ "seed",         OPT_INT,     OPT_E,       &self->seed,         NULL, 0     },
 		// operations
-		{ "stream",       OPT_STRING,  OPT_C|OPT_U, &self->stream,       NULL, 0     },
+		{ "feed",         OPT_STRING,  OPT_C|OPT_U, &self->feed,         NULL, 0     },
 		{ "import",       OPT_STRING,  OPT_C|OPT_U, &self->import,       NULL, 0     },
 		{ "mcp",          OPT_BOOL,    OPT_C|OPT_U, &self->mcp,          NULL, false },
 		// misc

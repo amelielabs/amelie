@@ -26,6 +26,6 @@
 // row encoding
 #include "cdc/cdc_export.h"
 
-// feed
-#include "cdc/feed.h"
-#include "cdc/feeds.h"
+// stream
+#include "cdc/stream.h"
+#include "cdc/streams.h"

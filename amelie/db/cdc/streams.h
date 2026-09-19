@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Feeds Feeds;
+typedef struct Streams Streams;
 
-struct Feeds
+struct Streams
 {
 	List list;
 	int  list_count;
@@ -21,7 +21,7 @@ struct Feeds
 };
 
 static inline void
-feeds_init(Feeds* self, Cdc* cdc)
+streams_init(Streams* self, Cdc* cdc)
 {
 	self->cdc        = cdc;
 	self->list_count = 0;
@@ -29,26 +29,26 @@ feeds_init(Feeds* self, Cdc* cdc)
 }
 
 static inline void
-feeds_free(Feeds* self)
+streams_free(Streams* self)
 {
 	list_foreach_safe(&self->list)
 	{
-		auto sub = list_at(Feed, link);
+		auto sub = list_at(Stream, link);
 		cdc_detach(self->cdc, &sub->slot);
-		feed_free(sub);
+		stream_free(sub);
 	}
 	list_init(&self->list);
 	self->list_count = 0;
 }
 
 static inline bool
-feeds_empty(Feeds* self)
+streams_empty(Streams* self)
 {
 	return !self->list_count;
 }
 
 static inline void
-feeds_add(Feeds* self, Feed* sub)
+streams_add(Streams* self, Stream* sub)
 {
 	list_append(&self->list, &sub->link);
 	self->list_count++;
@@ -56,19 +56,19 @@ feeds_add(Feeds* self, Feed* sub)
 }
 
 static inline void
-feeds_remove(Feeds* self, Feed* sub)
+streams_remove(Streams* self, Stream* sub)
 {
 	list_unlink(&sub->link);
 	self->list_count--;
 	cdc_detach(self->cdc, &sub->slot);
 }
 
-static inline Feed*
-feeds_find(Feeds* self, Str* user, Str* name)
+static inline Stream*
+streams_find(Streams* self, Str* user, Str* name)
 {
 	list_foreach(&self->list)
 	{
-		auto sub = list_at(Feed, link);
+		auto sub = list_at(Stream, link);
 		if (str_compare(&sub->user, user) &&
 		    str_compare(&sub->name, name))
 			return sub;
@@ -77,12 +77,12 @@ feeds_find(Feeds* self, Str* user, Str* name)
 }
 
 static inline uint64_t
-feeds_min(Feeds* self)
+streams_min(Streams* self)
 {
 	uint64_t min = UINT64_MAX;
 	list_foreach(&self->list)
 	{
-		auto sub = list_at(Feed, link);
+		auto sub = list_at(Stream, link);
 		auto lsn = atomic_u64_of(&sub->slot.lsn);
 		if (lsn < min)
 			min = lsn;
@@ -91,11 +91,11 @@ feeds_min(Feeds* self)
 }
 
 hot static inline void
-feeds_collect(Feeds* self, Buf* buf)
+streams_collect(Streams* self, Buf* buf)
 {
 	list_foreach(&self->list)
 	{
-		auto feed = list_at(Feed, link);
+		auto feed = list_at(Stream, link);
 		for (;;)
 		{
 			auto event = cdc_cursor_at(&feed->cursor);

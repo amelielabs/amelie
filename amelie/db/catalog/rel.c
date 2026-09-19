@@ -246,7 +246,7 @@ catalog_grant_mask(RelType type)
 			PERM_CREATE_API          |
 			PERM_SQL                 |
 			PERM_IMPORT              |
-			PERM_STREAM              |
+			PERM_FEED                |
 			PERM_API                 |
 			PERM_MCP                 |
 			PERM_SERVICE;

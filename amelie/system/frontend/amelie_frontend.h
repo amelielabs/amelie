@@ -30,7 +30,7 @@
 
 // client
 #include "frontend/client.h"
-#include "frontend/stream.h"
+#include "frontend/feed.h"
 
 // player
 #include "frontend/player_sync.h"

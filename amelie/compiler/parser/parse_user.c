@@ -222,7 +222,7 @@ parse_user_create(Stmt* self, bool agent)
 			PERM_CREATE_SUBSCRIPTION |
 			PERM_SQL                 |
 			PERM_IMPORT              |
-			PERM_STREAM              |
+			PERM_FEED                |
 			PERM_API                 |
 			PERM_MCP;
 		Str user_self;

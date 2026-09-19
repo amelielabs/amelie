@@ -18,7 +18,7 @@ enum
 	ENDPOINT_UNDEF,
 	ENDPOINT_SQL,
 	ENDPOINT_IMPORT,
-	ENDPOINT_STREAM,
+	ENDPOINT_FEED,
 	ENDPOINT_API,
 	ENDPOINT_MCP
 };
@@ -115,8 +115,8 @@ portal_auth(Portal* self, Auth* auth_ref)
 	case ENDPOINT_IMPORT:
 		user_check(self->user, PERM_IMPORT);
 		break;
-	case ENDPOINT_STREAM:
-		user_check(self->user, PERM_STREAM);
+	case ENDPOINT_FEED:
+		user_check(self->user, PERM_FEED);
 		break;
 	case ENDPOINT_API:
 		user_check(self->user, PERM_API);

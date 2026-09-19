@@ -49,7 +49,7 @@ struct Endpoint
 	Opt  time;
 	Opt  seed;
 	// operations
-	Opt  stream;
+	Opt  feed;
 	Opt  import;
 	Opt  mcp;
 	// misc

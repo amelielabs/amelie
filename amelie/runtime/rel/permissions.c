@@ -62,7 +62,7 @@ static Permission perms[] =
 	// Endpoints
 	{ PERM_SQL,                 "sql",                 3  },
 	{ PERM_IMPORT,              "import",              6  },
-	{ PERM_STREAM,              "stream",              6  },
+	{ PERM_FEED,                "feed",                4  },
 	{ PERM_API,                 "api",                 3  },
 	{ PERM_MCP,                 "mcp",                 3  },
 	{ PERM_SERVICE,             "service",             7  },
