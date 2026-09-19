@@ -39,6 +39,7 @@ parse_clone_create(Stmt* self)
 	auto ast = stmt_next_shadow(self);
 	if (ast->id != KNAME ||
 	    (!str_is_case(&ast->string, "OF", 2) &&
+	     !str_is_case(&ast->string, "ON", 2) &&
 	     !str_is_case(&ast->string, "FROM", 4)))
 		stmt_error(self, ast, "OF expected");
 

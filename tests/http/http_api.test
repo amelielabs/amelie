@@ -3,14 +3,63 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-# test: POST /user_api
+# test: create api
 create table test (id int primary key, data string);
-create api '/v1/your_table' on test;
+create clone test_clone on test;
 
-post /v1/your_table - - {"id": 1, "data": "hello world"};
-post /v1/your_table - - [{"id": 2}, {"id": 3}];
+create topic test_topic;
+
+create subscription test_sub_topic on test_topic;
+create subscription test_sub_clone on test_clone;
+create subscription test_sub_table on test;
+
+create function test_func (arg int)
+return int
+begin
+	return arg * 2;
+end;
+
+create api '/v1/api_table' on test;
+create api '/v1/api_clone' on test_clone;
+create api '/v1/api_topic' on test_topic;
+create api '/v1/api_sub_table' on test_sub_table;
+create api '/v1/api_sub_topic' on test_sub_topic;
+create api '/v1/api_func' on test_func;
+
+# test: POST /custom_api (table)
+post /v1/api_table - - {"id": 1, "data": "hello world"};
+post /v1/api_table - - [{"id": 2}, {"id": 3}];
 
 select * from test;
+select * from test_sub_table;
+
+# test: POST /custom_api (clone)
+post /v1/api_clone - - {"id": 123};
+
+select * from test;
+select * from test_clone;
+select * from test_sub_table;
+select * from test_sub_clone;
+
+# test: POST /custom_api (topic)
+show lsn;
+show subs verbose;
+
+post /v1/api_topic - - {"event": 1};
+post /v1/api_topic - - {"event": 2};
+post /v1/api_topic - - {"event": 3};
+
+select * from test_sub_topic;
+
+# test: POST /custom_api (udf)
+post /v1/api_func - - {"arg": 15};
+
+# test: POST /custom_api (sub ack)
+select * from test_sub_table;
+
+post /v1/api_sub_table - - 15;
+
+select * from test_sub_table;
 
 disconnect S0;
 close E0;

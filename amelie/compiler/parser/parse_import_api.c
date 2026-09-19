@@ -168,7 +168,7 @@ import_publish(Parser* self, Topic* topic, uint8_t* args)
 	set_prepare(publish->values, 1, 0, NULL);
 
 	access_add(&self->program->access, &topic->rel,
-	           LOCK_SHARED, PERM_PUBLISH);
+	           LOCK_SHARED_RW, PERM_PUBLISH);
 
 	// parse arguments
 	auto pos = args;
@@ -269,7 +269,7 @@ import_ack(Parser* self, Sub* sub, uint8_t* args)
 	return;
 
 error:
-	error("ack: [lsn, lsn_op] expected");
+	error("write: lsn expected for subscription");
 }
 
 void
