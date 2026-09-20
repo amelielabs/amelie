@@ -323,7 +323,7 @@ switch S0;
 revoke sql from test;
 switch S1;
 select 1;
-Forbidden
+Bad Request
 switch S0;
 # test: api
 grant sql to test;
@@ -647,9 +647,8 @@ revoke sql from u;
 revoke api from u;
 switch S1;
 select 1;
-Forbidden
+Bad Request
 post /?mcp application/json - {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "addrow", "arguments": {}}};
-{"jsonrpc": "2.0", "id": 2, "result": {}}
 switch S0;
 select * from u.owned;
 

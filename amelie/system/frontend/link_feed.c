@@ -17,31 +17,8 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
-typedef struct Feed Feed;
-
-struct Feed
-{
-	Client* client;
-	Portal* portal;
-	Streams streams;
-};
-
 static inline void
-feed_init(Feed* self, Client* client, Portal* portal)
-{
-	self->client = client;
-	self->portal = portal;
-	streams_init(&self->streams, share()->cdc);
-}
-
-static inline void
-feed_free(Feed* self)
-{
-	streams_free(&self->streams);
-}
-
-static inline void
-feed_subscribe_to(Feed* self, Str* user, Str* name)
+link_subscribe_to(Link* self, Str* user, Str* name)
 {
 	// find existing stream
 	auto stream = streams_find(&self->streams, user, name);
@@ -83,7 +60,7 @@ feed_subscribe_to(Feed* self, Str* user, Str* name)
 	}
 
 	// ensure user can create subscription for that relation
-	user_check_permission(self->portal->user, rel, PERM_CREATE_SUBSCRIPTION);
+	user_check_permission(self->portal.user, rel, PERM_CREATE_SUBSCRIPTION);
 
 	// (must be under exclusive lock)
 	rel->subs++;
@@ -102,23 +79,23 @@ feed_subscribe_to(Feed* self, Str* user, Str* name)
 }
 
 static inline void
-feed_subscribe(Feed* self, Str* targets)
+link_subscribe(Link* self, Str* targets)
 {
 	// target[, ...]
 	auto pos = targets->pos;
 	auto end = targets->end;
 
 	// take exclusive lock
-	portal_lock(self->portal, LOCK_EXCLUSIVE);
+	portal_lock(&self->portal, LOCK_EXCLUSIVE);
 
 	Str user;
 	Str name;
 	while (portal_target(&pos, end, &user, &name))
-		feed_subscribe_to(self, &user, &name);
+		link_subscribe_to(self, &user, &name);
 }
 
 static inline void
-feed_unsubscribe(Feed* self)
+link_unsubscribe(Link* self)
 {
 	if (list_empty(&self->streams.list))
 		return;
@@ -145,7 +122,7 @@ feed_unsubscribe(Feed* self)
 }
 
 static inline void
-feed_begin(Feed* self)
+link_feed_begin(Link* self)
 {
 	auto client = self->client;
 	auto reply = &client->reply;
@@ -157,7 +134,7 @@ feed_begin(Feed* self)
 }
 
 hot static inline bool
-feed_wait(Feed* self)
+link_wait(Link* self)
 {
 	// parent
 	Event event;
@@ -201,48 +178,40 @@ feed_wait(Feed* self)
 }
 
 void
-frontend_feed(Frontend* self, Client* client, Portal* portal, Str* targets)
+link_feed(Link* self)
 {
-	// note: portal keeps shared lock
-	unused(self);
-
-	Feed feed;
-	feed_init(&feed, client, portal);
-	defer(feed_free, &feed);
-
 	// validate and subscribe
-	auto on_error = error_catch
-	(
-		feed_subscribe(&feed, targets);
+	auto portal   = &self->portal;
+	auto on_error = error_catch (
+		link_subscribe(self, opt_string_of(&portal->endpoint.feed));
 	);
 	portal_unlock(portal);
 
 	auto buf = portal->output.buf;
 	if (on_error)
 	{
-		feed_unsubscribe(&feed);
+		link_unsubscribe(self);
 
 		buf_reset(buf);
 		output_error(&portal->output, &am_self()->error);
-		client_400(client, buf);
+		client_400(self->client, buf);
 		return;
 	}
 
-	defer(feed_unsubscribe, &feed);
+	defer(link_unsubscribe, self);
 
 	// SSE
-	feed_begin(&feed);
-
+	link_feed_begin(self);
 	for (;;)
 	{
 		// wait for client disconnect or cdc event
-		if (feed_wait(&feed))
+		if (link_wait(self))
 			break;
 
 		// collect pending cdc events
 		buf_reset(buf);
-		streams_collect(&feed.streams, buf);
+		streams_collect(&self->streams, buf);
 		if (! buf_empty(buf))
-			tcp_write_buf(&client->tcp, buf);
+			tcp_write_buf(&self->client->tcp, buf);
 	}
 }

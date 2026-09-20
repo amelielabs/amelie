@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void frontend_client(Frontend*, Client*);
+int link_request(Link*);

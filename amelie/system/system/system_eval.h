@@ -68,7 +68,7 @@ system_eval(SystemEval* self, Str* command)
 	// auth portal
 	Str user;
 	str_set(&user, "amelie", 6);
-	portal_auth_as(portal, &user, false);
+	portal_set(portal, &user, false);
 
 	// set request
 	auto request = &self->request;	

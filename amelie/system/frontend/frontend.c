@@ -30,7 +30,7 @@ frontend_main_client(void* arg)
 	(
 		client_attach(client);
 		client_accept(client);
-		frontend_client(self, client);
+		frontend_link(self, client);
 	);
 
 	clients_del(&self->clients, client);

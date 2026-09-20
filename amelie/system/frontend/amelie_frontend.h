@@ -15,22 +15,20 @@
 #include "frontend/auth_cache.h"
 #include "frontend/auth.h"
 
-// portal
-#include "frontend/portal.h"
+// portal / request
 #include "frontend/request.h"
-
-// endpoints
-#include "frontend/resource.h"
-#include "frontend/mcp.h"
-#include "frontend/mcp_execute.h"
+#include "frontend/portal.h"
 
 // frontend
 #include "frontend/frontend.h"
 #include "frontend/frontends.h"
 
-// client
-#include "frontend/client.h"
-#include "frontend/feed.h"
+// link
+#include "frontend/mcp.h"
+#include "frontend/mcp_execute.h"
+#include "frontend/link.h"
+#include "frontend/link_request.h"
+#include "frontend/link_feed.h"
 
 // player
 #include "frontend/player_sync.h"

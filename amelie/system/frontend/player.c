@@ -68,7 +68,7 @@ player_record(Player* self, RecordMsg* record, void* session)
 		//
 		// ignore user limits during recovery
 		//
-		portal_auth_as(portal, opt_string_of(&endpoint->user), false);
+		portal_set(portal, opt_string_of(&endpoint->user), false);
 
 		// validate replicated record
 		if (! uuid_is(&record->instance_id, opt_uuid_of(&config()->uuid)))
