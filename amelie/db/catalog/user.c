@@ -623,7 +623,7 @@ user_api_create(Catalog* self,
 	}
 
 	// only owner or superuser
-	check_ownership_user(tr, &user->rel);
+	check_ownership_self(tr, user);
 
 	// ensure api is not redefined
 	auto ref = apis_find(&user->config->apis, &api->uri);
@@ -659,7 +659,7 @@ user_api_drop(Catalog* self,
 	}
 
 	// only owner or superuser
-	check_ownership_user(tr, &user->rel);
+	check_ownership_self(tr, user);
 
 	// ensure api is not redefined
 	auto ref = apis_find(&user->config->apis, uri);

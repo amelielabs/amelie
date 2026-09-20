@@ -77,6 +77,15 @@ check_user(Tr* tr, uint32_t perms)
 }
 
 static inline void
+check_ownership_self(Tr* tr, User* on)
+{
+	// user must be the owner or self
+	auto self = user_of(tr->user);
+	if (! (user_owns(user_of(tr->user), &on->rel) || self == on))
+		user_permission_error(on);
+}
+
+static inline void
 check_ownership_user(Tr* tr, Rel* rel)
 {
 	// user must be the parent of other user

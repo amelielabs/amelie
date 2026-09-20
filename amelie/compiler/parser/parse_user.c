@@ -160,15 +160,7 @@ parse_user_create(Stmt* self, bool agent)
 		// API uri ON target
 		if (str_is_case(&name->string, "api", 3))
 		{
-			auto uri = stmt_expect(self, KSTRING);
-			if (apis_find(&config->apis, &uri->string))
-				stmt_error(self, uri, "api redefined");
-
-			auto api = api_allocate();
-			apis_add(&config->apis, api);
-			api_set_uri(api, &uri->string);
-
-			parse_api_create_inline(self, api);
+			parse_api_create_inline(self, &config->apis);
 			continue;
 		}
 
@@ -220,6 +212,7 @@ parse_user_create(Stmt* self, bool agent)
 			PERM_CREATE_FUNCTION     |
 			PERM_CREATE_TOPIC        |
 			PERM_CREATE_SUBSCRIPTION |
+			PERM_CREATE_API          |
 			PERM_SQL                 |
 			PERM_IMPORT              |
 			PERM_FEED                |

@@ -68,6 +68,7 @@ catalog_write(Catalog* self, char* path)
 {
 	// users, tables, clones, topics, subs, udfs
 	auto buf = buf_create();
+	defer_buf(buf);
 	catalog_dump(&self->users, REL_USER, buf);
 	catalog_dump(&self->rels, REL_TABLE, buf);
 	catalog_dump(&self->rels, REL_CLONE, buf);

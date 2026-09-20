@@ -55,5 +55,5 @@ ast_api_drop_allocate(void)
 }
 
 void parse_api_create(Stmt*);
-void parse_api_create_inline(Stmt*, Api*);
+void parse_api_create_inline(Stmt*, Apis*);
 void parse_api_drop(Stmt*);

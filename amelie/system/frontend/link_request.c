@@ -210,6 +210,7 @@ link_api(Link* self)
 	if (unlikely(str_is(method, "GET", 3)))
 	{
 		// todo: set feed target?
+
 		return link_get(self);
 	}
 

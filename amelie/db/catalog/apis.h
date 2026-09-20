@@ -36,6 +36,13 @@ apis_free(Apis* self)
 	}
 }
 
+static inline Api*
+apis_first(Apis* self)
+{
+	assert(self->list_count >= 1);
+	return container_of(list_first(&self->list), Api, link);
+}
+
 static inline void
 apis_add(Apis* self, Api* api)
 {

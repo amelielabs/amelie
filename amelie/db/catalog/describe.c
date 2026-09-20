@@ -519,6 +519,18 @@ describe_user(User* self, Buf* buf, Str* user, int flags)
 
 	// grants
 	describe_grants_self(&self->config->grants, buf);
+
+	if (buf->position[-1] != '\n')
+		buf_write(buf, "\n", 1);
+
+	// apis
+	list_foreach(&self->config->apis.list)
+	{
+		auto api = list_at(Api, link);
+		buf_format(buf, "  api {qstr} on {str}.{str}\n",
+		           &api->uri,
+		           &api->rel_user, &api->rel);
+	}
 }
 
 void
