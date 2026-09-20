@@ -20,9 +20,9 @@
 static inline void
 link_subscribe_to(Link* self, Str* user, Str* name)
 {
-	// find existing stream
-	auto stream = streams_find(&self->streams, user, name);
-	if (stream)
+	// find existing feed
+	auto feed = feeds_find(&self->feeds, user, name);
+	if (feed)
 		error("relation '{str}': is redefined", name);
 
 	// find user or relation
@@ -65,17 +65,17 @@ link_subscribe_to(Link* self, Str* user, Str* name)
 	// (must be under exclusive lock)
 	rel->subs++;
 
-	// create stream
-	stream = stream_allocate();
-	stream_set_user(stream, user);
+	// create feed
+	feed = feed_allocate();
+	feed_set_user(feed, user);
 	if (! str_empty(name))
-		stream_set_name(stream, name);
-	stream_set_id(stream, id);
-	streams_add(&self->streams, stream);
+		feed_set_name(feed, name);
+	feed_set_id(feed, id);
+	feeds_add(&self->feeds, feed);
 
 	// open cursor
-	cdc_slot_set(&stream->slot, lsn);
-	cdc_cursor_open(&stream->cursor, share()->cdc, id, lsn);
+	cdc_slot_set(&feed->slot, lsn);
+	cdc_cursor_open(&feed->cursor, share()->cdc, id, lsn);
 }
 
 static inline void
@@ -97,7 +97,7 @@ link_subscribe(Link* self, Str* targets)
 static inline void
 link_unsubscribe(Link* self)
 {
-	if (list_empty(&self->streams.list))
+	if (list_empty(&self->feeds.list))
 		return;
 
 	// take exclusive catalog lock
@@ -105,9 +105,9 @@ link_unsubscribe(Link* self)
 	defer(unlock, lock);
 
 	auto catalog = &share()->db->catalog;
-	list_foreach(&self->streams.list)
+	list_foreach(&self->feeds.list)
 	{
-		auto feed = list_at(Stream, link);
+		auto feed = list_at(Feed, link);
 		Rels* rels;
 		if (str_empty(&feed->name))
 			rels = &catalog->users;
@@ -155,9 +155,9 @@ link_wait(Link* self)
 
 	// prepare cdc sub
 	//
-	// get min lsn across all streams
+	// get min lsn across all feeds
 	//
-	auto min = streams_min(&self->streams);
+	auto min = feeds_min(&self->feeds);
 	CdcSub sub;
 	cdc_sub_init(&sub, &event_sub, min);
 	cdc_subscribe(share()->cdc, &sub);
@@ -210,7 +210,7 @@ link_feed(Link* self)
 
 		// collect pending cdc events
 		buf_reset(buf);
-		streams_collect(&self->streams, buf);
+		feeds_collect(&self->feeds, buf);
 		if (! buf_empty(buf))
 			tcp_write_buf(&self->client->tcp, buf);
 	}

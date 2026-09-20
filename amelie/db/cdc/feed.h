@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Stream Stream;
+typedef struct Feed Feed;
 
-struct Stream
+struct Feed
 {
 	Str       user;
 	Str       name;
@@ -23,10 +23,10 @@ struct Stream
 	List      link;
 };
 
-static inline Stream*
-stream_allocate(void)
+static inline Feed*
+feed_allocate(void)
 {
-	auto self = (Stream*)am_malloc(sizeof(Stream));
+	auto self = (Feed*)am_malloc(sizeof(Feed));
 	str_init(&self->user);
 	str_init(&self->name);
 	uuid_init(&self->id);
@@ -37,7 +37,7 @@ stream_allocate(void)
 }
 
 static inline void
-stream_free(Stream* self)
+feed_free(Feed* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
@@ -45,21 +45,21 @@ stream_free(Stream* self)
 }
 
 static inline void
-stream_set_user(Stream* self, Str* value)
+feed_set_user(Feed* self, Str* value)
 {
 	str_free(&self->user);
 	str_copy(&self->user, value);
 }
 
 static inline void
-stream_set_name(Stream* self, Str* value)
+feed_set_name(Feed* self, Str* value)
 {
 	str_free(&self->name);
 	str_copy(&self->name, value);
 }
 
 static inline void
-stream_set_id(Stream* self, Uuid* id)
+feed_set_id(Feed* self, Uuid* id)
 {
 	self->id = *id;
 }

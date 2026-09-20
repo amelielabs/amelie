@@ -28,7 +28,7 @@ struct Link
 	Json      json;
 	Client*   client;
 	Frontend* fe;
-	Streams   streams;
+	Feeds     feeds;
 };
 
 void link_init(Link*, Frontend*, Client*);
