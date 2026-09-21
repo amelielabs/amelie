@@ -134,6 +134,12 @@ emit_ddl(Compiler* self)
 		else
 		if (arg->type == USER_ALTER_LIMIT_UNSET)
 			offset = user_op_limit_unset(data, &arg->name, arg->limits_mask);
+		else
+		if (arg->type == USER_ALTER_API_ADD)
+			offset = user_op_api_create(data, &arg->name, arg->api);
+		else
+		if (arg->type == USER_ALTER_API_DROP)
+			offset = user_op_api_drop(data, &arg->name, &arg->api_uri);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

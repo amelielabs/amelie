@@ -251,6 +251,8 @@ parse_user_alter(Stmt* self)
 	// ALTER USER|AGENT [IF EXISTS] name DESCRIPTION value
 	// ALTER USER|AGENT [IF EXISTS] name SET LIMIT name = value, ...
 	// ALTER USER|AGENT [IF EXISTS] name UNSET LIMIT name, ...
+	// ALTER USER|AGENT [IF EXISTS] name ADD API uri ON target
+	// ALTER USER|AGENT [IF EXISTS] name DROP API uri
 	auto stmt = ast_user_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -261,7 +263,7 @@ parse_user_alter(Stmt* self)
 	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
 
-	// RENAME | REVOKE | DESCRIPTION | SET | UNSET
+	// RENAME | REVOKE | DESCRIPTION | SET | UNSET | ADD | DROP
 	if (stmt_if(self, KRENAME))
 	{
 		// RENAME
@@ -309,7 +311,25 @@ parse_user_alter(Stmt* self)
 		stmt->type = USER_ALTER_LIMIT_UNSET;
 		stmt->limits_mask = parse_user_limits_mask(self);
 	} else
+	if (stmt_if(self, KADD))
 	{
-		stmt_error(self, NULL, "RENAME, REVOKE or DESCRIPTION expected");
+		stmt_expect(self, KAPI);
+		stmt->type = USER_ALTER_API_ADD;
+
+		Apis apis;
+		apis_init(&apis);
+		errdefer(apis_free, &apis);
+		parse_api_create_inline(self, &apis);
+		stmt->api = apis_first(&apis);
+	} else
+	if (stmt_if(self, KDROP))
+	{
+		stmt_expect(self, KAPI);
+		stmt->type = USER_ALTER_API_DROP;
+		auto uri = stmt_expect(self, KSTRING);
+		stmt->api_uri = uri->string;
+	} else
+	{
+		stmt_error(self, NULL, "operation name expected");
 	}
 }

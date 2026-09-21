@@ -36,7 +36,9 @@ enum
 	USER_ALTER_REVOKE_TOKEN,
 	USER_ALTER_DESCRIPTION,
 	USER_ALTER_LIMIT_SET,
-	USER_ALTER_LIMIT_UNSET
+	USER_ALTER_LIMIT_UNSET,
+	USER_ALTER_API_ADD,
+	USER_ALTER_API_DROP
 };
 
 struct AstUserAlter
@@ -50,6 +52,8 @@ struct AstUserAlter
 	Str      description;
 	Limits   limits;
 	uint64_t limits_mask;
+	Api*     api;
+	Str      api_uri;
 };
 
 static inline AstUserCreate*

@@ -35,6 +35,13 @@ parse_stmt_free(Stmt* stmt)
 			user_config_free(ast->config);
 		break;
 	}
+	case STMT_ALTER_USER:
+	{
+		auto ast = ast_user_alter_of(stmt->ast);
+		if (ast->api)
+			api_free(ast->api);
+		break;
+	}
 	case STMT_CREATE_API:
 	{
 		auto ast = ast_api_create_of(stmt->ast);

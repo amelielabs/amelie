@@ -321,7 +321,7 @@ link_request(Link* self)
 			output_error(output, &am_self()->error);
 	}
 
-	// conigure portal local
+	// configure portal local
 	portal_set_local(portal, true);
 	output_set_local(output, &portal->local);
 	return rc;
