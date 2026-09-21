@@ -17,6 +17,7 @@ struct Feeds
 {
 	List list;
 	int  list_count;
+	int  flags;
 	Cdc* cdc;
 };
 
@@ -25,6 +26,7 @@ feeds_init(Feeds* self, Cdc* cdc)
 {
 	self->cdc        = cdc;
 	self->list_count = 0;
+	self->flags      = 0;
 	list_init(&self->list);
 }
 
@@ -102,7 +104,7 @@ feeds_collect(Feeds* self, Buf* buf)
 			if (event)
 			{
 				buf_write(buf, "data: ", 6);
-				cdc_export(buf, &feed->user, &feed->name, event);
+				cdc_export(buf, &feed->user, &feed->name, event, self->flags);
 				buf_write(buf, "\n\n", 2);
 			}
 			if (! cdc_cursor_next(&feed->cursor))

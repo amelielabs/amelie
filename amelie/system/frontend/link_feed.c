@@ -47,6 +47,7 @@ link_subscribe_to(Link* self, Str* user, Str* name)
 	}
 
 	// use subscription relation
+	int      flags = 0;
 	uint64_t lsn = state_lsn();
 	Uuid*    id;
 	if (rel->type == REL_SUBSCRIPTION)
@@ -55,6 +56,9 @@ link_subscribe_to(Link* self, Str* user, Str* name)
 		lsn = sub->config->lsn;
 		id  = sub->rel_on->id;
 		rel = sub->rel_on;
+
+		// include lsn in the data rows
+		flags |= CDC_LSN;
 	} else {
 		id  = rel->id;
 	}
@@ -72,6 +76,11 @@ link_subscribe_to(Link* self, Str* user, Str* name)
 		feed_set_name(feed, name);
 	feed_set_id(feed, id);
 	feeds_add(&self->feeds, feed);
+
+	// include target name in the data rows
+	if (self->feeds.list_count > 1)
+		flags |= CDC_TARGET;
+	self->feeds.flags |= flags;
 
 	// open cursor
 	cdc_slot_set(&feed->slot, lsn);

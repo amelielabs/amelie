@@ -153,6 +153,14 @@ opt_string_set_cstr(Opt* self, const char* value)
 	opt_string_set_raw(self, value, strlen(value));
 }
 
+static inline void
+opt_string_set_target(Opt* self, Str* user, Str* name)
+{
+	assert(self->type == OPT_STRING);
+	str_free(&self->string);
+	str_dup_target(&self->string, user, name);
+}
+
 static inline Str*
 opt_string_of(Opt* self)
 {

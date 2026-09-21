@@ -108,7 +108,7 @@ link_main(Link* self)
 			http_read_content_limit(http, readahead, &http->content, limit);
 		if (unlikely(limit_reached))
 		{
-			// 413 Payload Too Large
+			// 413 Payload Too Large (disconnect)
 			client_413(client);
 			break;
 		}
@@ -116,9 +116,9 @@ link_main(Link* self)
 		// authenticate
 		if (! link_auth(self))
 		{
-			// 403 Forbidden
-			client_403(client);
-			continue;
+			// 401 Unauthorized (disconnect)
+			client_401(client);
+			break;
 		}
 
 		// read request

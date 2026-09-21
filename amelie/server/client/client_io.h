@@ -90,10 +90,11 @@ client_400(Client* self, Buf* content)
 }
 
 static inline void
-client_403(Client* self)
+client_401(Client* self)
 {
 	auto reply = &self->reply;
-	auto buf = http_begin_reply(reply, self->endpoint, "403 Forbidden", 13, 0);
+	auto buf = http_begin_reply(reply, self->endpoint, "401 Unauthorized", 16, 0);
+	buf_write(buf, "Connection: close\r\n", 19);
 	http_end(buf);
 	tcp_write_buf(&self->tcp, buf);
 }

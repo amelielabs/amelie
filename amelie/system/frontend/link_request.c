@@ -29,7 +29,7 @@ link_sql(Link* self)
 
 	// POST / (text/plain)
 	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(! str_is(method, "POST", 4)))
+	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported operation method");
 
 	// content type
@@ -75,7 +75,7 @@ link_import(Link* self)
 
 	// POST /?import=target (text/plain)
 	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(! str_is(method, "POST", 4)))
+	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported operation method");
 
 	// content type
@@ -182,7 +182,7 @@ link_get(Link* self)
 	    !str_is(accept, "*/*", 3))
 		error("unsupported operation accept");
 
-	str_set(accept, "application/json", 16);
+	str_set(accept, "text/event-stream", 17);
 	output_set(&portal->output, endpoint, &output_json, NULL);
 
 	return LINK_FEED;
@@ -207,17 +207,14 @@ link_api(Link* self)
 
 	// GET /<user_api> (feed)
 	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(str_is(method, "GET", 3)))
+	if (unlikely(str_is_case(method, "GET", 3)))
 	{
-		// todo: set feed target?
-
+		opt_string_set_target(&endpoint->feed, &api->rel_user, &api->rel);
 		return link_get(self);
 	}
 
-	// todo: should be same as write, support csv and accept as sql
-
 	// POST /<user_api> (application/json)
-	if (unlikely(! str_is(method, "POST", 4)))
+	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported method");
 
 	// content type (json)
@@ -271,7 +268,7 @@ link_root(Link* self)
 
 	// GET /
 	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(str_is(method, "GET", 3)))
+	if (unlikely(str_is_case(method, "GET", 3)))
 	{
 		// /?feed
 		if (opt_string_empty(&endpoint->feed))

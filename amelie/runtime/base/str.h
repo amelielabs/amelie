@@ -329,6 +329,23 @@ str_dup_cstr(Str* self, const char* string)
 }
 
 static inline void
+str_dup_target(Str* self, Str* user, Str* name)
+{
+	//  user.name
+	auto size = str_size(user) + 1 + str_size(name);
+	char* pos = am_malloc(size + 1);
+	pos[size] = 0;
+	self->pos       = pos;
+	self->end       = pos + size;
+	self->allocated = true;
+	memcpy(pos, str_of(user), str_size(user));
+	pos += str_size(user);
+	memcpy(pos, ".", 1);
+	pos += 1;
+	memcpy(pos, str_of(name), str_size(name));
+}
+
+static inline void
 str_copy(Str* self, Str* src)
 {
 	str_dup(self, str_of(src), str_size(src));

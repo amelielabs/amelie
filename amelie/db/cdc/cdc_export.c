@@ -18,7 +18,7 @@
 #include <amelie_cdc.h>
 
 void
-cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
+cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event, int flags)
 {
 	// cmd
 	Str cmd;
@@ -39,14 +39,20 @@ cdc_export(Buf* buf, Str* rel_user, Str* rel, CdcEvent* event)
 	buf_format(buf, "{{\"cmd\": \"{str}\", ", &cmd, rel_user);
 
 	// target
-	if (str_empty(rel))
-		buf_format(buf, "\"target\": \"{str}\", ", rel_user);
-	else
-		buf_format(buf, "\"target\": \"{str}.{str}\", ", rel_user, rel);
+	if (flags & CDC_TARGET)
+	{
+		if (str_empty(rel))
+			buf_format(buf, "\"target\": \"{str}\", ", rel_user);
+		else
+			buf_format(buf, "\"target\": \"{str}.{str}\", ", rel_user, rel);
+	}
 
 	// [lsn]
-	if (event->lsn > 0)
-		buf_format(buf, "\"lsn\": {u64}, ", event->lsn);
+	if (flags & CDC_LSN)
+	{
+		if (event->lsn > 0)
+			buf_format(buf, "\"lsn\": {u64}, ", event->lsn);
+	}
 
 	// data
 	buf_write(buf, "\"data\": ", 8);

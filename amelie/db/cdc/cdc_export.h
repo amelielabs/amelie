@@ -11,4 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-void cdc_export(Buf*, Str*, Str*, CdcEvent*);
+enum
+{
+	CDC_NONE   = 0,
+	CDC_LSN    = 1 << 0,
+	CDC_TARGET = 1 << 1
+};
+
+void cdc_export(Buf*, Str*, Str*, CdcEvent*, int);
