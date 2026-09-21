@@ -12,20 +12,20 @@
 
 #include <amelie>
 #include <amelie_main.h>
-#include <amelie_main_import.h>
+#include <amelie_main_copy.h>
 
 void
-cmd_import(Main* self)
+cmd_copy(Main* self)
 {
-	// amelie import <path, uri, bookmark> files ...
-	Import import;
-	import_init(&import, self);
-	defer(import_free, &import);
+	// amelie copy <path, uri, bookmark> files ...
+	Copy copy;
+	copy_init(&copy, self);
+	defer(copy_free, &copy);
 
 	logger_set_stdout(&runtime()->logger, true);
 	logger_set_stdout_time(&runtime()->logger, false);
 	logger_set_stdout_lf(&runtime()->logger, false);
 
 	opt_int_set(&config()->log_connections, false);
-	import_run(&import);
+	copy_run(&copy);
 }

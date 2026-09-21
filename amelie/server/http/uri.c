@@ -383,6 +383,6 @@ uri_export(Endpoint* self, Buf* buf)
 	}
 	uri_export_arg(&self->token, buf, &first);
 	uri_export_arg(&self->timezone, buf, &first);
-	if (! opt_string_empty(&self->import))
-		uri_export_arg(&self->import, buf, &first);
+	if (! opt_string_empty(&self->copy))
+		uri_export_arg(&self->copy, buf, &first);
 }

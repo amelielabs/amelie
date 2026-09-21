@@ -15,7 +15,7 @@
 #include <amelie_main_bench.h>
 
 static void
-bench_import_create(Bench* self, Client* client)
+bench_copy_create(Bench* self, Client* client)
 {
 	unused(self);
 	Str str;
@@ -24,7 +24,7 @@ bench_import_create(Bench* self, Client* client)
 }
 
 hot static void
-bench_import_main(BenchWorker* self, Client* client)
+bench_copy_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
 	auto batch = opt_int_of(&bench->batch);
@@ -54,8 +54,8 @@ bench_import_main(BenchWorker* self, Client* client)
 	}
 }
 
-BenchIf bench_import =
+BenchIf bench_copy =
 {
-	.create = bench_import_create,
-	.main   = bench_import_main
+	.create = bench_copy_create,
+	.main   = bench_copy_main
 };

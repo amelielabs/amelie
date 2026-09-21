@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "import/import.h"
+void parse_copy(Parser*, Program*, Str*, Str*, Str*);

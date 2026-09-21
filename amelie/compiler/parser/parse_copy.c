@@ -18,7 +18,7 @@
 #include <amelie_parser.h>
 
 static void
-import_row(Parser* self, Columns* columns, Set* values, Csv* csv)
+copy_row(Parser* self, Columns* columns, Set* values, Csv* csv)
 {
 	// value, ...
 	auto row = set_reserve(values);
@@ -68,7 +68,7 @@ import_row(Parser* self, Columns* columns, Set* values, Csv* csv)
 }
 
 static void
-import_insert(Parser* self, Table* table, Clone* clone, Str* content)
+copy_insert(Parser* self, Table* table, Clone* clone, Str* content)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -130,14 +130,14 @@ import_insert(Parser* self, Table* table, Clone* clone, Str* content)
 	if (unlikely(csv_eof(&csv)))
 		error("content is empty");
 	while (! csv_eof(&csv))
-		import_row(self, columns, insert->values, &csv);
+		copy_row(self, columns, insert->values, &csv);
 }
 
 void
-parse_import(Parser* self, Program* program,
-             Str*    rel_user,
-             Str*    rel,
-             Str*    content)
+parse_copy(Parser* self, Program* program,
+           Str*    rel_user,
+           Str*    rel,
+           Str*    content)
 {
 	Str* user = rel_user;
 	if (str_empty(rel_user))
@@ -149,13 +149,13 @@ parse_import(Parser* self, Program* program,
 	case REL_TABLE:
 	{
 		auto table = table_of(ref);
-		import_insert(self, table, NULL, content);
+		copy_insert(self, table, NULL, content);
 		break;
 	}
 	case REL_CLONE:
 	{
 		auto clone = clone_of(ref);
-		import_insert(self, clone->table, clone, content);
+		copy_insert(self, clone->table, clone, content);
 		break;
 	}
 	default:

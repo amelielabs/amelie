@@ -12,10 +12,10 @@
 
 #include <amelie>
 #include <amelie_main.h>
-#include <amelie_main_import.h>
+#include <amelie_main_copy.h>
 
 void
-import_init(Import* self, Main* main)
+copy_init(Copy* self, Main* main)
 {
 	self->errors           = 0;
 	self->report_time      = 0;
@@ -36,14 +36,14 @@ import_init(Import* self, Main* main)
 }
 
 void
-import_free(Import* self)
+copy_free(Copy* self)
 {
 	csv_free(&self->csv);
 	opts_free(&self->opts);
 }
 
 static void
-import_connect(Import* self)
+copy_connect(Copy* self)
 {
 	// create clients and connect
 	int count = opt_int_of(&self->clients);
@@ -65,7 +65,7 @@ import_connect(Import* self)
 }
 
 static void
-import_disconnect(Import* self)
+copy_disconnect(Copy* self)
 {
 	list_foreach_safe(&self->clients_list)
 	{
@@ -75,7 +75,7 @@ import_disconnect(Import* self)
 }
 
 static void
-import_sync(Import* self, Client* client)
+copy_sync(Copy* self, Client* client)
 {
 	while (client->sync > 0)
 	{
@@ -87,17 +87,17 @@ import_sync(Import* self, Client* client)
 }
 
 static void
-import_sync_all(Import* self)
+copy_sync_all(Copy* self)
 {
 	list_foreach(&self->clients_list)
 	{
 		auto client = list_at(Client, link);
-		import_sync(self, client);
+		copy_sync(self, client);
 	}
 }
 
 static void
-import_send(Import* self, Str* content)
+copy_send(Copy* self, Str* content)
 {
 	Client* next;
 	if (!self->forward || list_is_last(&self->clients_list, &self->forward->link))
@@ -109,9 +109,9 @@ import_send(Import* self, Str* content)
 	}
 
 	// read reply from previous request
-	import_sync(self, next);
+	copy_sync(self, next);
 
-	// POST /import
+	// POST /?copy
 	client_send(next, content);
 	next->sync++;
 
@@ -119,7 +119,7 @@ import_send(Import* self, Str* content)
 }
 
 hot static inline void
-import_report(Import* self, File* file, uint64_t processed)
+copy_report(Copy* self, File* file, uint64_t processed)
 {
 	clock_reset(&am_task->clock);
 	auto     time           = time_us();
@@ -151,7 +151,7 @@ import_report(Import* self, File* file, uint64_t processed)
 }
 
 static void
-import_file(Import* self, char* path)
+copy_file(Copy* self, char* path)
 {
 	auto csv = &self->csv;
 	csv_reset(csv);
@@ -160,7 +160,7 @@ import_file(Import* self, char* path)
 	Str path_str;
 	str_set_cstr(&path_str, path);
 	if (! str_is_postfix(&path_str, ".csv", 4))
-		error("import: '{s}' csv file expected", path);
+		error("copy: '{s}' csv file expected", path);
 
 	// open and mmap file
 	File file;
@@ -176,7 +176,7 @@ import_file(Import* self, char* path)
 	csv_set(csv, &mmap.mmap);
 
 	// read csv file in batches
-	import_report(self, &file, 0);
+	copy_report(self, &file, 0);
 	auto processed = 0ull;
 	auto processed_report = 0ull;
 	for (;;)
@@ -187,57 +187,57 @@ import_file(Import* self, char* path)
 		if (rc == CSV_EOF)
 			break;
 
-		import_send(self, &batch);
+		copy_send(self, &batch);
 
 		// report
 		processed += str_size(&batch);
 		processed_report += str_size(&batch);
 		if (processed_report >= 100 * 1024 * 1024)
 		{
-			import_report(self, &file, processed);
+			copy_report(self, &file, processed);
 			processed_report = 0;
 		}
 	}
 
 	// read the rest of replies
-	import_sync_all(self);
+	copy_sync_all(self);
 
 	// report
-	import_report(self, &file, processed);
+	copy_report(self, &file, processed);
 	info("\n");
 }
 
 static void
-import_main(Import* self)
+copy_main(Copy* self)
 {
 	// ensure relation is defined
-	if (opt_string_empty(&self->main->endpoint.import))
-		error("import: target relation is not set\n");
+	if (opt_string_empty(&self->main->endpoint.copy))
+		error("copy: target relation is not set\n");
 
 	// create clients and connect
-	import_connect(self);
+	copy_connect(self);
 	self->report_time = time_us();
 
-	// import files or stdin
+	// copy files or stdin
 	auto argc = self->main->argc;
 	auto argv = self->main->argv;
 	if (! argc)
-		error("import: no files defined\n");
+		error("copy: no files defined\n");
 	while (argc > 0)
 	{
 		self->report_processed = 0;
-		import_file(self, argv[0]);
+		copy_file(self, argv[0]);
 		argc--;
 		argv++;
 	}
 }
 
 void
-import_run(Import* self)
+copy_run(Copy* self)
 {
-	// connect and import files
-	error_catch( import_main(self) );
+	// connect and copy files
+	error_catch( copy_main(self) );
 
 	// disconnect clients
-	import_disconnect(self);
+	copy_disconnect(self);
 }

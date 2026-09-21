@@ -50,7 +50,7 @@ struct Endpoint
 	Opt  seed;
 	// operations
 	Opt  feed;
-	Opt  import;
+	Opt  copy;
 	Opt  mcp;
 	// misc
 	Opt  id;

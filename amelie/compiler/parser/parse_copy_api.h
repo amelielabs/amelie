@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern BenchIf bench_import;
+void parse_copy_api(Parser*, Program*, Str*, Str*, uint8_t*, bool);

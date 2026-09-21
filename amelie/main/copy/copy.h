@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Import Import;
+typedef struct Copy Copy;
 
-struct Import
+struct Copy
 {
 	// stats
 	uint64_t errors;
@@ -30,6 +30,6 @@ struct Import
 	Main*    main;
 };
 
-void import_init(Import*, Main*);
-void import_free(Import*);
-void import_run(Import*);
+void copy_init(Copy*, Main*);
+void copy_free(Copy*);
+void copy_run(Copy*);

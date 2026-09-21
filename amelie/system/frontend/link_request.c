@@ -64,7 +64,7 @@ link_sql(Link* self)
 }
 
 hot static inline int
-link_import(Link* self)
+link_copy(Link* self)
 {
 	auto portal   = &self->portal;
 	auto endpoint = &portal->endpoint;
@@ -73,7 +73,7 @@ link_import(Link* self)
 	// check permission
 	user_check(portal->user, PERM_IMPORT);
 
-	// POST /?import=target (text/plain)
+	// POST /?copy=target (text/plain)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported operation method");
@@ -109,12 +109,12 @@ link_import(Link* self)
 
 	// set request
 	auto req = &self->req;
-	req->type = REQUEST_IMPORT;
+	req->type = REQUEST_COPY;
 	req->args = str_u8(&content);
 	req->args_size = str_size(&content);
 
 	// set target
-	auto target = opt_string_of(&portal->endpoint.import);
+	auto target = opt_string_of(&portal->endpoint.copy);
 	auto pos = target->pos;
 	auto end = target->end;
 	if (! portal_target(&pos, end, &req->rel_user, &req->rel))
@@ -279,9 +279,9 @@ link_root(Link* self)
 	if (! opt_string_empty(&endpoint->feed))
 		error("unsupported operation");
 
-	// /?import
-	if (! opt_string_empty(&endpoint->import))
-		return link_import(self);
+	// /?copy
+	if (! opt_string_empty(&endpoint->copy))
+		return link_copy(self);
 
 	// /?mcp
 	if (opt_int_of(&endpoint->mcp))

@@ -319,12 +319,12 @@ session_main(Session* self, Portal* portal, Request* req)
 		compiler_parse(compiler, &req->text);
 		break;
 	}
-	case REQUEST_IMPORT:
+	case REQUEST_COPY:
 	{
 		Str content;
 		str_set_u8(&content, req->args, req->args_size);
-		compiler_parse_import(compiler, &req->rel_user, &req->rel,
-		                      &content);
+		compiler_parse_copy(compiler, &req->rel_user, &req->rel,
+		                    &content);
 		break;
 	}
 	case REQUEST_WRITE:

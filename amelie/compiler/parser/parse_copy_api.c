@@ -18,7 +18,7 @@
 #include <amelie_parser.h>
 
 static void
-import_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
+copy_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
 {
 	auto row = set_reserve(values);
 
@@ -70,12 +70,12 @@ import_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
 }
 
 static void
-import_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
+copy_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
 {
 	// {}
 	auto pos = args;
 	if (data_is_obj(pos))
-		return import_object(self, columns, values, &pos);
+		return copy_object(self, columns, values, &pos);
 
 	// [{}, ...]
 	if (data_is_array(pos))
@@ -85,7 +85,7 @@ import_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
 		{
 			if (unlikely(! data_is_obj(pos)))
 				error("write: {{}} expected");
-			import_object(self, columns, values, &pos);
+			copy_object(self, columns, values, &pos);
 		}
 		return;
 	}
@@ -95,7 +95,7 @@ import_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
 }
 
 static void
-import_insert(Parser* self, Table* table, Clone* clone, uint8_t* args)
+copy_insert(Parser* self, Table* table, Clone* clone, uint8_t* args)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -144,11 +144,11 @@ import_insert(Parser* self, Table* table, Clone* clone, uint8_t* args)
 	set_prepare(insert->values, columns->count, 0, NULL);
 
 	// parse and set values
-	import_args(self, columns, insert->values, args);
+	copy_args(self, columns, insert->values, args);
 }
 
 static void
-import_publish(Parser* self, Topic* topic, uint8_t* args)
+copy_publish(Parser* self, Topic* topic, uint8_t* args)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -191,7 +191,7 @@ import_publish(Parser* self, Topic* topic, uint8_t* args)
 }
 
 static void
-import_execute(Parser* self, Udf* udf, uint8_t* args)
+copy_execute(Parser* self, Udf* udf, uint8_t* args)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -218,7 +218,7 @@ import_execute(Parser* self, Udf* udf, uint8_t* args)
 		args = args_empty;
 
 	// parse arguments
-	import_args(self, &udf->config->args, execute->args, args);
+	copy_args(self, &udf->config->args, execute->args, args);
 
 	// ensure not a batch execution
 	if (execute->args->count_rows > 1)
@@ -235,7 +235,7 @@ import_execute(Parser* self, Udf* udf, uint8_t* args)
 }
 
 static void
-import_ack(Parser* self, Sub* sub, uint8_t* args)
+copy_ack(Parser* self, Sub* sub, uint8_t* args)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -273,11 +273,11 @@ error:
 }
 
 void
-parse_import_api(Parser*  self, Program* program,
-                 Str*     rel_user,
-                 Str*     rel,
-                 uint8_t* args,
-                 bool     execute)
+parse_copy_api(Parser*  self, Program* program,
+               Str*     rel_user,
+               Str*     rel,
+               uint8_t* args,
+               bool     execute)
 {
 	Str* user = rel_user;
 	if (str_empty(rel_user))
@@ -295,31 +295,31 @@ parse_import_api(Parser*  self, Program* program,
 	case REL_TABLE:
 	{
 		auto table = table_of(ref);
-		import_insert(self, table, NULL, args);
+		copy_insert(self, table, NULL, args);
 		break;
 	}
 	case REL_CLONE:
 	{
 		auto clone = clone_of(ref);
-		import_insert(self, clone->table, clone, args);
+		copy_insert(self, clone->table, clone, args);
 		break;
 	}
 	case REL_TOPIC:
 	{
 		auto topic = topic_of(ref);
-		import_publish(self, topic, args);
+		copy_publish(self, topic, args);
 		break;
 	}
 	case REL_UDF:
 	{
 		auto udf = udf_of(ref);
-		import_execute(self, udf, args);
+		copy_execute(self, udf, args);
 		break;
 	}
 	case REL_SUBSCRIPTION:
 	{
 		auto sub = sub_of(ref);
-		import_ack(self, sub, args);
+		copy_ack(self, sub, args);
 		break;
 	}
 	default:

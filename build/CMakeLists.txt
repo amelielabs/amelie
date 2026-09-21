@@ -120,7 +120,7 @@ include_directories("${AMELIE_ROOT}/system/api")
 # main
 include_directories("${AMELIE_ROOT}/main")
 include_directories("${AMELIE_ROOT}/main/main")
-include_directories("${AMELIE_ROOT}/main/import")
+include_directories("${AMELIE_ROOT}/main/copy")
 include_directories("${AMELIE_ROOT}/main/bench")
 include_directories("${AMELIE_ROOT}/main/test")
 include_directories("${AMELIE_ROOT}/main/dst")
@@ -315,8 +315,8 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_execute.c
     ${AMELIE_ROOT}/compiler/parser/parse_publish.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
-    ${AMELIE_ROOT}/compiler/parser/parse_import_api.c
-    ${AMELIE_ROOT}/compiler/parser/parse_import.c
+    ${AMELIE_ROOT}/compiler/parser/parse_copy_api.c
+    ${AMELIE_ROOT}/compiler/parser/parse_copy.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/plan/path.c
     ${AMELIE_ROOT}/compiler/plan/path_prepare.c
@@ -372,13 +372,13 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/main/main.c
     ${AMELIE_ROOT}/main/main/main_cmd.c
     ${AMELIE_ROOT}/main/main/main_cli.c
-    ${AMELIE_ROOT}/main/import/import.c
-    ${AMELIE_ROOT}/main/import/import_main.c
+    ${AMELIE_ROOT}/main/copy/copy.c
+    ${AMELIE_ROOT}/main/copy/copy_main.c
     ${AMELIE_ROOT}/main/bench/bench.c
     ${AMELIE_ROOT}/main/bench/bench_insert.c
     ${AMELIE_ROOT}/main/bench/bench_upsert.c
     ${AMELIE_ROOT}/main/bench/bench_tpcb.c
-    ${AMELIE_ROOT}/main/bench/bench_import.c
+    ${AMELIE_ROOT}/main/bench/bench_copy.c
     ${AMELIE_ROOT}/main/bench/bench_decre.c
     ${AMELIE_ROOT}/main/bench/bench_vector.c
     ${AMELIE_ROOT}/main/bench/bench_pubsub.c

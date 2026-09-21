@@ -79,7 +79,7 @@ cmd_bookmark(Main* self)
 	opt_string_set(&ref->endpoint.name, &name);
 }
 
-extern void cmd_import(Main*);
+extern void cmd_copy(Main*);
 extern void cmd_bench(Main*);
 extern void cmd_test(Main*);
 extern void cmd_dst(Main*);
@@ -93,7 +93,7 @@ main_cmds[] =
 
 	// client
 	{ main_cli,     true,  true,  "cli",      "Open interactive console"            },
-	{ cmd_import,   true,  true,  "import",   "Import data files into the database" },
+	{ cmd_copy,     true,  true,  "copy",     "Copy data files into the database" },
 	{ cmd_bookmark, true,  false, "bookmark", "Create, update or delete bookmark"   },
 	{ cmd_bench,    true,  true,  "bench",    "Run benchmarks"                      },
 	{ cmd_test,     false, false, "test",     "Run tests"                           },

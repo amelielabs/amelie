@@ -275,9 +275,9 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	bool first = true;
 	uri_export_arg(&endpoint->timezone, buf, &first);
 
-	// import
-	if (! opt_string_empty(&endpoint->import))
-		uri_export_arg(&endpoint->import, buf, &first);
+	// copy
+	if (! opt_string_empty(&endpoint->copy))
+		uri_export_arg(&endpoint->copy, buf, &first);
 
 	buf_write(buf, " HTTP/1.1\r\n", 11);
 
