@@ -15,12 +15,11 @@ typedef struct Main Main;
 
 struct Main
 {
-	Console   console;
-	bool      home;
-	Bookmarks bookmarks;
-	Endpoint  endpoint;
-	int       argc;
-	char**    argv;
+	Console  console;
+	bool     home;
+	Endpoint endpoint;
+	int      argc;
+	char**   argv;
 };
 
 static inline void

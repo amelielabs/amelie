@@ -16,7 +16,7 @@
 static void
 main_usage(void)
 {
-	info("Usage: amelie [command] [path | uri | bookmark] [options]");
+	info("Usage: amelie [command] [uri | path] [options]");
 	info("");
 	info("Commands:");
 	for (auto i = 0;; i++)
@@ -36,7 +36,6 @@ main_init(Main* self, int argc, char** argv)
 	self->argc = argc;
 	self->argv = argv;
 	console_init(&self->console);
-	bookmarks_init(&self->bookmarks);
 	endpoint_init(&self->endpoint);
 	opt_int_set(&self->endpoint.debug, true);
 }
@@ -45,28 +44,7 @@ void
 main_free(Main* self)
 {
 	console_free(&self->console);
-	bookmarks_free(&self->bookmarks);
 	endpoint_free(&self->endpoint);
-}
-
-static inline void
-main_path(char* path, int path_size, char* fmt, ...)
-{
-	// use AMELIE_HOME ($HOME/.amelie by default)
-	int  size = 0;
-	auto home = getenv("AMELIE_HOME");
-	if (home)
-	{
-		size = format(path, path_size, "{s}/", home);
-	} else
-	{
-		home = getenv("HOME");
-		size = format(path, path_size, "{s}/.amelie/", home);
-	}
-	va_list args;
-	va_start(args, fmt);
-	size += formatv(path + size, path_size - size, fmt, args);
-	va_end(args);
 }
 
 static void
@@ -75,18 +53,9 @@ main_load(Main* self)
 	if (! self->home)
 		return;
 
-	// create AMELIE_HOME ($HOME/.amelie by default)
+	// $HOME/.amelie_history
 	char path[PATH_MAX];
-	main_path(path, sizeof(path), "");
-	if (! fs_exists("{s}", path))
-		fs_mkdir(0755, "{s}", path);
-
-	// read bookmarks
-	main_path(path, sizeof(path), "bookmarks");
-	bookmarks_open(&self->bookmarks, path);
-
-	// read console history
-	main_path(path, sizeof(path), "history");
+	format(path, sizeof(path), "{s}/.amelie_history", getenv("HOME"));
 	console_load(&self->console, path);
 }
 
@@ -96,13 +65,9 @@ main_save(Main* self)
 	if (! self->home)
 		return;
 
-	// write bookmarks
-	char path[PATH_MAX];
-	main_path(path, sizeof(path), "bookmarks");
-	bookmarks_sync(&self->bookmarks, path);
-
 	// write console history
-	main_path(path, sizeof(path), "history");
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/.amelie_history", getenv("HOME"));
 	console_save(&self->console, path);
 }
 
@@ -114,34 +79,24 @@ main_configure(Main* self)
 	auto argv     = self->argv;
 
 	if (argc == 0)
-		error("path, uri or bookmark expected");
+		error("uri or path expected");
 
-	// [path, uri or bookmark]
+	// [path, uri]
 	int arg = 0;
-	if (!strncmp(argv[0], "http://", 7) ||
-	    !strncmp(argv[0], "https://", 8))
+	if (!strncmp(argv[0], ".", 1) || !strncmp(argv[0], "/", 1))
+	{
+		// path
+		Str path;
+		str_set_cstr(&path, argv[0]);
+		opt_string_set(&endpoint->path, &path);
+		arg = 1;
+	} else
+	if (strncmp(argv[0], "--", 2) != 0)
 	{
 		// parse uri
 		Str uri;
 		str_set_cstr(&uri, argv[0]);
 		uri_parse(endpoint, &uri);
-		arg = 1;
-	} else
-	if (strncmp(argv[0], "--", 2) != 0)
-	{
-		// find bookmark by name
-		Str name;
-		str_set_cstr(&name, argv[0]);
-		auto match = bookmarks_find(&self->bookmarks, &name);
-		if (match)
-		{
-			// use bookmark settings
-			endpoint_copy(endpoint, &match->endpoint);
-		} else
-		{
-			// use as directory path
-			opt_string_set(&endpoint->path, &name);
-		}
 		arg = 1;
 	}
 
@@ -236,7 +191,7 @@ main_entry(Main* self)
 		return;
 	}
 
-	// read bookmarks and history
+	// read history
 	self->home = command->home;
 
 	main_load(self);

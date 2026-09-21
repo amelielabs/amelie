@@ -368,7 +368,6 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_SYSTEM})
 
 set(AMELIE_SOURCES_MAIN
-    ${AMELIE_ROOT}/main/main/bookmarks.c
     ${AMELIE_ROOT}/main/main/main.c
     ${AMELIE_ROOT}/main/main/main_cmd.c
     ${AMELIE_ROOT}/main/main/main_cli.c

@@ -11,10 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-// bookmark
-#include "main/bookmark.h"
-#include "main/bookmarks.h"
-
 // main
 #include "main/main.h"
 #include "main/main_cmd.h"

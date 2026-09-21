@@ -16,7 +16,7 @@
 static void
 cmd_start(Main* self)
 {
-	// amelie start <path, bookmark> [options]
+	// amelie start <path> [options]
 
 	// ensure path is set
 	auto path = opt_string_of(&self->endpoint.path);
@@ -30,10 +30,13 @@ cmd_start(Main* self)
 static void
 cmd_stop(Main* self)
 {
-	// amelie stop <path, bookmark>
+	// amelie stop <path>
 
 	// <path>/pid
 	auto path = opt_string_of(&self->endpoint.path);
+	if (str_empty(path))
+		error("path is not defined");
+
 	auto buf = file_import("{str}/amelie.pid", path);
 	defer_buf(buf);
 
@@ -48,37 +51,6 @@ cmd_stop(Main* self)
 	kill(pid, SIGINT);
 }
 
-static void
-cmd_bookmark(Main* self)
-{
-	// amelie bookmark <name> options
-	if (! self->argc)
-		error("usage: amelie bookmark <name> [options]");
-
-	// set bookmark name
-	Str name;
-	str_set_cstr(&name, self->argv[0]);
-	main_advance(self, 1);
-
-	// delete existing record first
-	bookmarks_delete(&self->bookmarks, &name);
-	if (! self->argc)
-		return;
-
-	// parse options
-	main_configure(self);
-
-	// ensure all options read
-	if (self->argc)
-		error("usage: amelie bookmark <name> [options]");
-
-	// create new bookmark
-	auto ref = bookmark_allocate();
-	bookmarks_add(&self->bookmarks, ref);
-	endpoint_copy(&ref->endpoint, &self->endpoint);
-	opt_string_set(&ref->endpoint.name, &name);
-}
-
 extern void cmd_copy(Main*);
 extern void cmd_bench(Main*);
 extern void cmd_test(Main*);
@@ -88,15 +60,14 @@ MainCmd
 main_cmds[] =
 {
 	// server
-	{ cmd_start,    false, true,  "start",    "Start database"                      },
-	{ cmd_stop,     false, true,  "stop",     "Stop database"                       },
+	{ cmd_start, false, true,  "start", "Start database"                    },
+	{ cmd_stop,  false, true,  "stop",  "Stop database"                     },
 
 	// client
-	{ main_cli,     true,  true,  "cli",      "Open interactive console"            },
-	{ cmd_copy,     true,  true,  "copy",     "Copy data files into the database" },
-	{ cmd_bookmark, true,  false, "bookmark", "Create, update or delete bookmark"   },
-	{ cmd_bench,    true,  true,  "bench",    "Run benchmarks"                      },
-	{ cmd_test,     false, false, "test",     "Run tests"                           },
-	{ cmd_dst,      false, false, "dst",      "Run deterministic simulation"        },
-	{ NULL,         false, false,  NULL,       NULL                                 },
+	{ main_cli,  true,  true,  "cli",   "Open interactive console"          },
+	{ cmd_copy,  true,  true,  "copy",  "Copy data files into the database" },
+	{ cmd_bench, true,  true,  "bench", "Run benchmarks"                    },
+	{ cmd_test,  false, false, "test",  "Run tests"                         },
+	{ cmd_dst,   false, false, "dst",   "Run deterministic simulation"      },
+	{ NULL,      false, false,  NULL,    NULL                               },
 };

@@ -118,7 +118,7 @@ dst_open(Dst* self)
 {
 	// start instance
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{str}/env", opt_string_of(&self->opt_dir));
+	format(path, sizeof(path), "./{str}/env", opt_string_of(&self->opt_dir));
 
 	int   argc = 12;
 	char* argv[18] =
@@ -236,7 +236,7 @@ static void
 dst_bootstrap(Dst* self)
 {
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{str}/env", opt_string_of(&self->opt_dir));
+	format(path, sizeof(path), "./{str}/env", opt_string_of(&self->opt_dir));
 
 	// connect (superuser)
 	Endpoint endpoint;
@@ -280,7 +280,7 @@ dst_checkpoint(Dst* self)
 	dst_stat(&self->stats, DST_STAT_CHECKPOINT);
 
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{str}/env", opt_string_of(&self->opt_dir));
+	format(path, sizeof(path), "./{str}/env", opt_string_of(&self->opt_dir));
 
 	// connect (superuser)
 	Endpoint endpoint;
@@ -304,7 +304,7 @@ dst_backup(Dst* self)
 
 	auto dir = opt_string_of(&self->opt_dir);
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{str}/env", dir);
+	format(path, sizeof(path), "./{str}/env", dir);
 
 	// connect (superuser)
 	Endpoint endpoint;
