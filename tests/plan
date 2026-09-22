@@ -57,7 +57,7 @@ test table_migration
 test index
 test clone
 test clone_visibility
-test topic
+test channel
 test subscription
 test function
 test grant

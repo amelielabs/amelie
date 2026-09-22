@@ -17,14 +17,14 @@ error: write limit reached
 drop table test;
 alter user amelie unset limit write;
 # test: write (publish)
-create topic t;
+create channel t;
 create subscription t_sub on t;
 alter user amelie set limit write = 1;
 publish into t 123;
 publish into t 124, 125;
 error: write limit reached
 alter user amelie unset limit write;
-drop topic t cascade;
+drop channel t cascade;
 # test: send
 alter user amelie set limit send = 0;
 show limits;
@@ -91,33 +91,33 @@ create clone test_clone of test;
 create clone test_clone2 of test;
 error: user 'amelie': clones limit reached
 drop table test cascade;
-# test: topics
-alter user amelie set limit topics = 0;
-create topic test;
-error: user 'amelie': topics limit reached
-alter user amelie set limit topics = 1;
-create topic test;
+# test: channels
+alter user amelie set limit channels = 0;
+create channel test;
+error: user 'amelie': channels limit reached
+alter user amelie set limit channels = 1;
+create channel test;
 show limits;
 
 limits
 ──────
 {
   "send": 3145728,
-  "topics": 1
+  "channels": 1
 }
-drop topic test;
-create topic test;
-create topic test2;
-error: user 'amelie': topics limit reached
-drop topic test;
+drop channel test;
+create channel test;
+create channel test2;
+error: user 'amelie': channels limit reached
+drop channel test;
 # test: subscriptions
-create topic test;
+create channel test;
 alter user amelie set limit subscriptions = 0;
 create subscription test_sub on test;
 error: user 'amelie': subscriptions limit reached
 alter user amelie set limit subscriptions = 1;
 create subscription test_sub on test;
-drop topic test cascade;
+drop channel test cascade;
 # test: functions
 alter user amelie set limit functions = 0;
 create function test () begin end;
@@ -158,11 +158,11 @@ insert into test values (1);
 insert into test values (2), (3);
 error: insert into test values (2), (3)❰;❱ ⟵ values limit reached
 drop table test;
-create topic test;
+create channel test;
 publish into test 1;
 publish into test 2, 3;
 error: publish into test 2, 3❰;❱ ⟵ values limit reached
-drop topic test;
+drop channel test;
 alter user amelie unset limit values;
 # test: partitions
 alter user amelie set limit partitions = 1;
@@ -320,7 +320,7 @@ cdc
   "size": 262144,
   "pages": 1
 }
-create topic t;
+create channel t;
 create subscription t_sub on t;
 publish into t 123;
 show cdc;
@@ -371,6 +371,6 @@ lsn  cmd      data
 ────────────────────
 95   publish  123
 96   publish  125
-drop topic t cascade;
+drop channel t cascade;
 disconnect S0;
 close E0;

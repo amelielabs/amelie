@@ -285,7 +285,7 @@ dst_validate_sub(DstUser* self, DstRel* rel)
 		            "SELECT count(*), sum(data.id::int), max(lsn) FROM sub_{u64}_{u64}",
 		            rel->parent->id, rel->id);
 	else
-	if (rel->parent->type == DST_REL_TOPIC)
+	if (rel->parent->type == DST_REL_CHANNEL)
 		dst_execute(self->dst, client,
 		            "SELECT count(*), sum(data[0]::int), max(lsn) FROM sub_{u64}_{u64}",
 		            rel->parent->id, rel->id);
@@ -374,7 +374,7 @@ dst_validate_user(DstUser* self)
 			dst_validate_clone(self, rel);
 			break;
 		}
-		case DST_REL_TOPIC:
+		case DST_REL_CHANNEL:
 		{
 			// nothing
 			break;

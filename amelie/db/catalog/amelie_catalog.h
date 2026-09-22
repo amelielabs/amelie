@@ -39,10 +39,10 @@
 #include "catalog/udf_op.h"
 #include "catalog/udf.h"
 
-// topic
-#include "catalog/topic_config.h"
-#include "catalog/topic_op.h"
-#include "catalog/topic.h"
+// channel
+#include "catalog/channel_config.h"
+#include "catalog/channel_op.h"
+#include "catalog/channel.h"
 
 // subscription
 #include "catalog/sub_config.h"

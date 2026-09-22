@@ -39,8 +39,8 @@ catalog_init(Catalog*   self,
 	rels_init(&self->users);
 	rels_init(&self->rels);
 
-	// prepare topic columns
-	auto columns = &self->topic_columns;
+	// prepare channel columns
+	auto columns = &self->channel_columns;
 	columns_init(columns);
 
 	// data
@@ -83,7 +83,7 @@ catalog_free(Catalog* self)
 	rels_free(&self->rels);
 	rels_free(&self->users);
 	columns_free(&self->cdc_columns);
-	columns_free(&self->topic_columns);
+	columns_free(&self->channel_columns);
 }
 
 void
@@ -409,12 +409,12 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = udf_create(self, tr, config, replace);
 		break;
 	}
-	case DDL_TOPIC_CREATE:
+	case DDL_CHANNEL_CREATE:
 	{
-		auto config = topic_op_create_read(op);
-		defer(topic_config_free, config);
+		auto config = channel_op_create_read(op);
+		defer(channel_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = topic_create(self, tr, config, if_not_exists);
+		write = channel_create(self, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_SUB_CREATE:

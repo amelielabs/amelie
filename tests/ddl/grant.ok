@@ -7,7 +7,7 @@ select grants from show users verbose;
 grants
 ──────
 []
-[["self", "grant", "create_table", "create_clone", "create_function", "create_topic", "create_subscription", "create_api", "sql", "import", "feed", "api", "mcp"]]
+[["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_subscription", "create_api", "sql", "import", "feed", "api", "mcp"]]
 # test: create_table
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
@@ -32,15 +32,15 @@ error: user 'test': permission denied
 drop clone test_clone;
 drop table test;
 switch S0;
-# test: create_topic
+# test: create_channel
 switch S1;
-create topic test;
+create channel test;
 switch S0;
-revoke create_topic from test;
+revoke create_channel from test;
 switch S1;
-create topic test2;
+create channel test2;
 error: user 'test': permission denied
-drop topic test;
+drop channel test;
 switch S0;
 # test: create_function
 switch S1;
@@ -52,10 +52,10 @@ create function test2 () begin end;
 error: user 'test': permission denied
 drop function test;
 switch S0;
-grant create_topic to test;
+grant create_channel to test;
 # test: create_subscription
 switch S1;
-create topic test;
+create channel test;
 create subscription test_sub on test;
 switch S0;
 revoke create_subscription from test;
@@ -63,7 +63,7 @@ switch S1;
 create subscription test_sub2 on test;
 error: user 'test': permission denied
 drop subscription test_sub;
-drop topic test;
+drop channel test;
 switch S0;
 # test: create_user
 switch S1;
@@ -77,12 +77,12 @@ select parent, `name`, grants from show users verbose;
 
 parent  name     grants
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_topic", "create_subscrip…
+"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_subscr…
 select parent, `name`, grants from show users verbose;
 
 parent  name     grants
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_topic", "create_subscrip…
+"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_subscr…
 drop agent test2;
 select parent, `name`, grants from show users verbose;
 
@@ -204,7 +204,7 @@ id   data
 124  1
 switch S0;
 # test: publish
-create topic test_top;
+create channel test_top;
 grant publish into test;
 error: grant publish ❰into❱ ⟵ TO expected
 switch S1;
@@ -236,7 +236,7 @@ rels
 {
   "user": "amelie",
   "name": "test_top",
-  "type": "topic",
+  "type": "channel",
   "description": ""
 }
 publish into amelie.test_top 123;
@@ -260,7 +260,7 @@ rels
 {
   "user": "amelie",
   "name": "test_top",
-  "type": "topic",
+  "type": "channel",
   "description": ""
 }
 select amelie.fun();
@@ -283,7 +283,7 @@ rels
 {
   "user": "amelie",
   "name": "test_top",
-  "type": "topic",
+  "type": "channel",
   "description": ""
 }
 {
@@ -674,9 +674,9 @@ create table test (id int primary key);
 insert into test values (1), (2);
 drop table test;
 switch S2;
-create topic test;
+create channel test;
 publish into test 1,2;
-drop topic test;
+drop channel test;
 switch S0;
 select data[9] from u_sub;
 
@@ -689,9 +689,9 @@ select data[9] from uu_sub;
 
 col1
 ────
-"create topic test;"
+"create channel test;"
 "publish into test 1,2;"
-"drop topic test;"
+"drop channel test;"
 drop user u;
 error: subscription 'amelie.u_sub' depends on user 'u'
 drop user u cascade;

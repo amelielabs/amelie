@@ -556,12 +556,12 @@ show tables;
 
 tables
 ──────
-# test: create topic
-create topic test_top;
-show topics;
+# test: create channel
+create channel test_top;
+show channels;
 
-topics
-──────
+channels
+────────
 {
   "user": "amelie",
   "name": "test_top",
@@ -578,10 +578,10 @@ select show('state').lsn;
 lsn
 ───
 22
-show topics;
+show channels;
 
-topics
-──────
+channels
+────────
 {
   "user": "amelie",
   "name": "test_top",
@@ -703,12 +703,12 @@ show subs;
 
 subs
 ────
-# test: drop topic
-drop topic test_top;
-show topics;
+# test: drop channel
+drop channel test_top;
+show channels;
 
-topics
-──────
+channels
+────────
 # test: restart
 disconnect S0;
 close E0;
@@ -720,13 +720,13 @@ select show('state').lsn;
 lsn
 ───
 41
-show topics;
+show channels;
 
-topics
-──────
-# test: create topic (multi-stmt)
-create topic a;
-create topic b;
+channels
+────────
+# test: create channel (multi-stmt)
+create channel a;
+create channel b;
 create subscription sa on a;
 create subscription sb on b;
 begin
@@ -767,8 +767,8 @@ lsn  cmd      data
 46   publish  5
 drop subscription sa;
 drop subscription sb;
-drop topic a;
-drop topic b;
+drop channel a;
+drop channel b;
 # test: validate state
 select show('state').lsn;
 

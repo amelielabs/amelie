@@ -16,14 +16,14 @@ drop table test;
 alter user amelie unset limit write;
 
 # test: write (publish)
-create topic t;
+create channel t;
 create subscription t_sub on t;
 alter user amelie set limit write = 1;
 publish into t 123;
 # error
 publish into t 124, 125;
 alter user amelie unset limit write;
-drop topic t cascade;
+drop channel t cascade;
 
 # test: send
 alter user amelie set limit send = 0;
@@ -78,24 +78,24 @@ create clone test_clone of test;
 create clone test_clone2 of test;
 drop table test cascade;
 
-# test: topics
-alter user amelie set limit topics = 0;
-create topic test;
-alter user amelie set limit topics = 1;
-create topic test;
+# test: channels
+alter user amelie set limit channels = 0;
+create channel test;
+alter user amelie set limit channels = 1;
+create channel test;
 show limits;
-drop topic test;
-create topic test;
-create topic test2;
-drop topic test;
+drop channel test;
+create channel test;
+create channel test2;
+drop channel test;
 
 # test: subscriptions
-create topic test;
+create channel test;
 alter user amelie set limit subscriptions = 0;
 create subscription test_sub on test;
 alter user amelie set limit subscriptions = 1;
 create subscription test_sub on test;
-drop topic test cascade;
+drop channel test cascade;
 
 # test: functions
 alter user amelie set limit functions = 0;
@@ -133,10 +133,10 @@ insert into test values (1);
 insert into test values (2), (3);
 drop table test;
 
-create topic test;
+create channel test;
 publish into test 1;
 publish into test 2, 3;
-drop topic test;
+drop channel test;
 alter user amelie unset limit values;
 
 # test: partitions
@@ -203,7 +203,7 @@ show memory;
 
 # test: cdc
 show cdc;
-create topic t;
+create channel t;
 create subscription t_sub on t;
 publish into t 123;
 show cdc;
@@ -217,7 +217,7 @@ show cdc;
 
 publish into t 125;
 select * from t_sub;
-drop topic t cascade;
+drop channel t cascade;
 
 disconnect S0;
 close E0;

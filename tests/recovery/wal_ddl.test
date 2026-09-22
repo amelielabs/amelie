@@ -233,9 +233,9 @@ select show('state').lsn;
 select * from test2;
 show tables;
 
-# test: create topic
-create topic test_top;
-show topics;
+# test: create channel
+create channel test_top;
+show channels;
 
 # test: restart
 disconnect S0;
@@ -245,7 +245,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show topics;
+show channels;
 
 # test: create subscription
 create subscription top_sub on test_top;
@@ -295,9 +295,9 @@ drop table test_ cascade;
 drop subscription top_sub;
 show subs;
 
-# test: drop topic
-drop topic test_top;
-show topics;
+# test: drop channel
+drop channel test_top;
+show channels;
 
 # test: restart
 disconnect S0;
@@ -307,11 +307,11 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show topics;
+show channels;
 
-# test: create topic (multi-stmt)
-create topic a;
-create topic b;
+# test: create channel (multi-stmt)
+create channel a;
+create channel b;
 create subscription sa on a;
 create subscription sb on b;
 begin
@@ -332,8 +332,8 @@ select * from sa;
 select * from sb;
 drop subscription sa;
 drop subscription sb;
-drop topic a;
-drop topic b;
+drop channel a;
+drop channel b;
 
 # test: validate state
 select show('state').lsn;

@@ -1,0 +1,141 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: create channel statement parsing
+create channel;
+error: create channel❰;❱ ⟵ target name expected
+create channel 1;
+error: create channel ❰1❱ ⟵ target name expected
+create channel;
+error: create channel❰;❱ ⟵ target name expected
+create channel if exists;
+error: create channel if ❰exists❱ ⟵ NOT expected
+# test: create channel
+create channel test;
+show channels;
+
+channels
+────────
+{
+  "user": "amelie",
+  "name": "test",
+  "description": ""
+}
+# test: create channel (if exists)
+create channel test;
+error: relation 'test': already exists
+create channel if not exists test;
+# test: create channel description
+create channel test2 description;
+error: create channel test2 description❰;❱ ⟵ string expected
+create channel test2 description 123;
+error: create channel test2 description ❰123❱ ⟵ string expected
+create channel test2 description 'test test';
+show channel test2;
+
+channel
+───────
+{
+  "user": "amelie",
+  "name": "test2",
+  "description": "test test"
+}
+# test: crud/query
+insert into test values (123);
+error: insert into ❰test❱ ⟵ channel cannot be used here
+delete from test;
+error: delete from ❰test❱ ⟵ channel cannot be used here
+select * from test;
+error: select * from ❰test❱ ⟵ channel cannot be used here
+# test: publish (no subscibers)
+publish;
+error: publish❰;❱ ⟵ INTO expected
+publish into;
+error: publish into❰;❱ ⟵ target name expected
+publish into;
+error: publish into❰;❱ ⟵ target name expected
+publish into 1;
+error: publish into ❰1❱ ⟵ target name expected
+publish into xyz;
+error: publish into ❰xyz❱ ⟵ channel not found
+publish into test;
+publish into test 123;
+# test: drop channel statement parsing
+drop channel;
+error: drop channel❰;❱ ⟵ target name expected
+drop channel 123;
+error: drop channel ❰123❱ ⟵ target name expected
+# test: drop channel
+drop channel test;
+drop channel test2;
+# test: drop channel (if exists)
+drop channel test;
+error: channel 'test': not exists
+drop channel if exists;
+error: drop channel if exists❰;❱ ⟵ target name expected
+drop channel if exists test;
+# test: alter channel statement parsing
+create channel test;
+show channels;
+
+channels
+────────
+{
+  "user": "amelie",
+  "name": "test",
+  "description": ""
+}
+alter channel;
+error: alter channel❰;❱ ⟵ target name expected
+alter channel test;
+error: alter channel test❰;❱ ⟵ RENAME or DESCRIPTION expected
+alter channel test xyz;
+error: alter channel test ❰xyz❱ ⟵ RENAME or DESCRIPTION expected
+alter channel test 1;
+error: alter channel test ❰1❱ ⟵ RENAME or DESCRIPTION expected
+# test: alter channel rename to
+alter channel test rename;
+error: alter channel test rename❰;❱ ⟵ TO expected
+alter channel test rename to;
+error: alter channel test rename to❰;❱ ⟵ name expected
+alter channel test rename to xyz;
+show channels;
+
+channels
+────────
+{
+  "user": "amelie",
+  "name": "xyz",
+  "description": ""
+}
+# test: alter channel rename to (if exists)
+alter channel test rename to xyz;
+error: channel 'test': not exists
+alter channel if exists test rename to xyz;
+show channels;
+
+channels
+────────
+{
+  "user": "amelie",
+  "name": "xyz",
+  "description": ""
+}
+publish into xyz 123;
+drop channel xyz;
+drop channel test;
+error: channel 'test': not exists
+# test: alter channel description
+create channel x;
+alter channel x description '__renamed';
+show channel x;
+
+channel
+───────
+{
+  "user": "amelie",
+  "name": "x",
+  "description": "__renamed"
+}
+drop channel x;
+disconnect S0;
+close E0;

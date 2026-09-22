@@ -3,8 +3,8 @@ connect E0 S0 127.0.0.1:3485;
 # test: create api
 create table test (id int primary key, data string);
 create clone test_clone on test;
-create topic test_topic;
-create subscription test_sub_topic on test_topic;
+create channel test_channel;
+create subscription test_sub_channel on test_channel;
 create subscription test_sub_clone on test_clone;
 create subscription test_sub_table on test;
 create function test_func (arg int)
@@ -14,9 +14,9 @@ begin
 end;
 create api '/v1/api_table' on test;
 create api '/v1/api_clone' on test_clone;
-create api '/v1/api_topic' on test_topic;
+create api '/v1/api_channel' on test_channel;
 create api '/v1/api_sub_table' on test_sub_table;
-create api '/v1/api_sub_topic' on test_sub_topic;
+create api '/v1/api_sub_channel' on test_sub_channel;
 create api '/v1/api_func' on test_func;
 # test: POST /custom_api (table)
 post /v1/api_table - - {"id": 1, "data": "hello world"};
@@ -61,7 +61,7 @@ select * from test_sub_clone;
 lsn  cmd    data
 ───────────────────────────────────────
 17   write  {"id": 123, "data": null}
-# test: POST /custom_api (topic)
+# test: POST /custom_api (channel)
 show lsn;
 
 lsn
@@ -73,10 +73,10 @@ subs
 ────
 {
   "user": "amelie",
-  "name": "test_sub_topic",
+  "name": "test_sub_channel",
   "description": "",
   "rel_user": "amelie",
-  "rel": "test_topic",
+  "rel": "test_channel",
   "lsn": 5,
   "grants": []
 }
@@ -98,10 +98,10 @@ subs
   "lsn": 7,
   "grants": []
 }
-post /v1/api_topic - - {"event": 1};
-post /v1/api_topic - - {"event": 2};
-post /v1/api_topic - - {"event": 3};
-select * from test_sub_topic;
+post /v1/api_channel - - {"event": 1};
+post /v1/api_channel - - {"event": 2};
+post /v1/api_channel - - {"event": 3};
+select * from test_sub_channel;
 
 lsn  cmd      data
 ────────────────────────────

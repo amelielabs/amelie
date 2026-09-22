@@ -535,12 +535,12 @@ select [1,2,3]::reverse;
 col1
 ────
 [-3, -2, -1]
-# test: create topic
-create topic test_top;
-show topics;
+# test: create channel
+create channel test_top;
+show channels;
 
-topics
-──────
+channels
+────────
 {
   "user": "amelie",
   "name": "test_top",
@@ -561,10 +561,10 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 10
-show topics;
+show channels;
 
-topics
-──────
+channels
+────────
 {
   "user": "amelie",
   "name": "test_top",
@@ -582,10 +582,10 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 11
-show topics;
+show channels;
 
-topics
-──────
+channels
+────────
 {
   "user": "amelie",
   "name": "test_top",
@@ -606,10 +606,10 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 11
-show topics;
+show channels;
 
-topics
-──────
+channels
+────────
 {
   "user": "amelie",
   "name": "test_top",
@@ -1146,7 +1146,7 @@ rels
 {
   "user": "amelie",
   "name": "test_top",
-  "type": "topic",
+  "type": "channel",
   "description": ""
 }
 {
@@ -1162,8 +1162,8 @@ rels
   "description": ""
 }
 create user x;
-alter user x set limit topics = 0;
-alter user amelie set limit topics = 0;
+alter user x set limit channels = 0;
+alter user amelie set limit channels = 0;
 # test: restart/recover (checkpoint)
 checkpoint;
 disconnect S0;
@@ -1176,14 +1176,14 @@ limits
 ──────
 {
   "send": 3145728,
-  "topics": 0
+  "channels": 0
 }
 show rels;
 
 rels
 ────
-create topic test_top2;
-error: user 'x': topics limit reached
+create channel test_top2;
+error: user 'x': channels limit reached
 disconnect S0;
 close E0;
 open E0;

@@ -26,7 +26,7 @@ struct Catalog
 {
 	Rels       users;
 	Rels       rels;
-	Columns    topic_columns;
+	Columns    channel_columns;
 	Columns    cdc_columns;
 	Cdc*       cdc;
 	PartsIf*   iface_part;

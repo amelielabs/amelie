@@ -327,16 +327,16 @@ describe_clone(Clone* self, Buf* buf, Str* user, int flags)
 }
 
 static void
-describe_topic(Topic* self, Buf* buf, Str* user, int flags)
+describe_channel(Channel* self, Buf* buf, Str* user, int flags)
 {
 	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config = self->config;
 
-	// create topic
+	// create channel
 	if (!verbose && str_compare_case(self->rel.user, user))
-		buf_format(buf, "create topic {str}\n", &config->name);
+		buf_format(buf, "create channel {str}\n", &config->name);
 	else
-		buf_format(buf, "create topic {str}.{str}\n", &config->user,
+		buf_format(buf, "create channel {str}.{str}\n", &config->user,
 		           &config->name);
 
 	// id
@@ -545,8 +545,8 @@ describe_text(Rel* self, Buf* buf, Str* user, int flags)
 	case REL_CLONE:
 		describe_clone(clone_of(self), buf, user, flags);
 		break;
-	case REL_TOPIC:
-		describe_topic(topic_of(self), buf, user, flags);
+	case REL_CHANNEL:
+		describe_channel(channel_of(self), buf, user, flags);
 		break;
 	case REL_SUBSCRIPTION:
 		describe_subscription(sub_of(self), buf, user, flags);

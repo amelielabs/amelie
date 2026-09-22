@@ -58,6 +58,7 @@ Keyword keywords[] =
 	{ KCOLUMN ,               "column",                6  },
 	{ KCONTINUE,              "continue",              8  },
 	{ KCLONE,                 "clone",                 5  },
+	{ KCHANNEL,               "channel",               7  },
 
 	// d
 	{ KDELETE,                "delete",                6  },
@@ -182,7 +183,6 @@ Keyword keywords[] =
 	{ KTABLE,                 "table",                 5  },
 	{ KTRUNCATE,              "truncate",              8  },
 	{ KTOKEN,                 "token",                 5  },
-	{ KTOPIC,                 "topic",                 5  },
 	{ KTOP,                   "top",                   3  },
 
 	// u

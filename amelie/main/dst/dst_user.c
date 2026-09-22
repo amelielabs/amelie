@@ -121,12 +121,12 @@ dst_user_create(DstUser* self, int type)
 		dst_stat(&self->dst->stats, DST_STAT_CREATE_TABLE_VECTOR);
 		break;
 	}
-	case DST_REL_TOPIC:
+	case DST_REL_CHANNEL:
 	{
 		dst_execute(self->dst, self->client,
-		            "CREATE TOPIC topic_{u64}",
+		            "CREATE CHANNEL channel_{u64}",
 		            id);
-		dst_stat(&self->dst->stats, DST_STAT_CREATE_TOPIC);
+		dst_stat(&self->dst->stats, DST_STAT_CREATE_CHANNEL);
 		break;
 	}
 	default:
@@ -168,9 +168,9 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON clone_{u64}_{u64}",
 			            parent->id, id, parent->parent->id, parent->id);
 			break;
-		case DST_REL_TOPIC:
+		case DST_REL_CHANNEL:
 			dst_execute(self->dst, self->client,
-			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON topic_{u64}",
+			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON channel_{u64}",
 			            parent->id, id, parent->id);
 			break;
 		default:
@@ -249,9 +249,9 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		list_unlink(&rel->link_parent);
 		rel->parent->clones_count--;
 		break;
-	case DST_REL_TOPIC:
+	case DST_REL_CHANNEL:
 		dst_execute(self->dst, self->client,
-		            "DROP TOPIC topic_{u64} CASCADE",
+		            "DROP CHANNEL channel_{u64} CASCADE",
 		            rel->id);
 		break;
 	case DST_REL_SUBSCRIPTION:

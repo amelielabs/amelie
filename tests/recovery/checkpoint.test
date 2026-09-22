@@ -180,9 +180,9 @@ select show('state').checkpoint;
 show functions verbose;
 select [1,2,3]::reverse;
 
-# test: create topic
-create topic test_top;
-show topics;
+# test: create channel
+create channel test_top;
+show channels;
 
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -192,13 +192,13 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-show topics;
+show channels;
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
 select show('state').checkpoint;
-show topics;
+show channels;
 
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -208,7 +208,7 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-show topics;
+show channels;
 
 # test: create subscription
 create subscription top_sub on test_top;
@@ -470,8 +470,8 @@ drop table main cascade;
 show rels;
 
 create user x;
-alter user x set limit topics = 0;
-alter user amelie set limit topics = 0;
+alter user x set limit channels = 0;
+alter user amelie set limit channels = 0;
 
 # test: restart/recover (checkpoint)
 checkpoint;
@@ -484,7 +484,7 @@ connect E0 S0 x@127.0.0.1:3485;
 show limits;
 show rels;
 
-create topic test_top2;
+create channel test_top2;
 
 disconnect S0;
 close E0;

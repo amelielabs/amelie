@@ -432,7 +432,7 @@ vm_run(Vm*       self,
 		&&ccall,
 		&&ccall_udf,
 
-		// topic
+		// channel
 		&&cpublish,
 
 		// subscription

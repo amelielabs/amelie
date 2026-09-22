@@ -148,7 +148,7 @@ copy_insert(Parser* self, Table* table, Clone* clone, uint8_t* args)
 }
 
 static void
-copy_publish(Parser* self, Topic* topic, uint8_t* args)
+copy_publish(Parser* self, Channel* channel, uint8_t* args)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -163,11 +163,11 @@ copy_publish(Parser* self, Topic* topic, uint8_t* args)
 
 	// prepare arguments
 	auto publish = ast_publish_of(stmt->ast);
-	publish->topic  = topic;
-	publish->values = set_cache_create(self->set_cache, &self->program->sets);
+	publish->channel = channel;
+	publish->values  = set_cache_create(self->set_cache, &self->program->sets);
 	set_prepare(publish->values, 1, 0, NULL);
 
-	access_add(&self->program->access, &topic->rel,
+	access_add(&self->program->access, &channel->rel,
 	           LOCK_SHARED_RW, PERM_PUBLISH);
 
 	// parse arguments
@@ -304,10 +304,10 @@ parse_copy_api(Parser*  self, Program* program,
 		copy_insert(self, clone->table, clone, args);
 		break;
 	}
-	case REL_TOPIC:
+	case REL_CHANNEL:
 	{
-		auto topic = topic_of(ref);
-		copy_publish(self, topic, args);
+		auto channel = channel_of(ref);
+		copy_publish(self, channel, args);
 		break;
 	}
 	case REL_UDF:

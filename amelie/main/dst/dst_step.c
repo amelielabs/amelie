@@ -19,7 +19,7 @@ dst_stmt(DstUser* self)
 {
 	auto op = dst_log_add(&self->log);
 
-	// generate relation (table, table_vector, clone, topic)
+	// generate relation (table, table_vector, clone, channel)
 	DstRel* rel;
 	for (;;)
 	{
@@ -36,7 +36,7 @@ dst_stmt(DstUser* self)
 	uint64_t key_id = random_generate(&am_task->random) % opt_int_of(&self->dst->opt_keys);
 
 	// PUBLISH
-	if (rel->type == DST_REL_TOPIC)
+	if (rel->type == DST_REL_CHANNEL)
 	{
 		op->op = DST_OP_PUBLISH;
 
@@ -46,7 +46,7 @@ dst_stmt(DstUser* self)
 		key.value = random_generate(&am_task->random);
 
 		buf_format(&self->log.sql,
-		           "PUBLISH INTO topic_{u64} [{u64}, {i64}];",
+		           "PUBLISH INTO channel_{u64} [{u64}, {i64}];",
 		           rel->id, key.key, key.value);
 		dst_stat(&self->dst->stats, DST_STAT_PUBLISH);
 
@@ -338,7 +338,7 @@ dst_step_ddl(DstUser* self)
 		auto type = random_generate(&am_task->random) % DST_REL_MAX;
 		if (type == DST_REL_SUBSCRIPTION)
 		{
-			// create subscription for table, topic
+			// create subscription for table, channel
 			auto count = dst_user_count(self, true, true, true, true);
 			if (! count)
 			{
@@ -346,7 +346,7 @@ dst_step_ddl(DstUser* self)
 				return;
 			}
 
-			// randomly choose table or topic (caped by the count)
+			// randomly choose table or channel (caped by the count)
 			auto pos = random_generate(&am_task->random) % count;
 			auto parent = dst_user_rel_filter(self, pos, true, true, true, true);
 			assert(parent);

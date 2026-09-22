@@ -80,7 +80,7 @@
 #include "parser/parse_index.h"
 #include "parser/parse_clone.h"
 #include "parser/parse_function.h"
-#include "parser/parse_topic.h"
+#include "parser/parse_channel.h"
 
 // dml
 #include "parser/parse_from.h"

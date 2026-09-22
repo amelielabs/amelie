@@ -3,9 +3,9 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
 connect E0 S0 127.0.0.1:3485;
 
-# test: create topic (with subscription)
-create topic test_top;
-show topics;
+# test: create channel (with subscription)
+create channel test_top;
+show channels;
 
 create subscription top_sub on test_top;
 show subs;
@@ -41,7 +41,7 @@ connect E0 S0 127.0.0.1:3485;
 select * from test_sub;
 select * from top_sub;
 
-drop topic test_top cascade;
+drop channel test_top cascade;
 drop table test cascade;
 
 disconnect S0;

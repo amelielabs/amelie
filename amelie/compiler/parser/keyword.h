@@ -94,6 +94,7 @@ enum
 	KCOLUMN,
 	KCONTINUE,
 	KCLONE,
+	KCHANNEL,
 
 	// d
 	KDELETE,
@@ -220,7 +221,6 @@ enum
 	KTABLE,
 	KTRUNCATE,
 	KTOKEN,
-	KTOPIC,
 	KTOP,
 
 	// u

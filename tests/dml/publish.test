@@ -4,7 +4,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 
 # test: publish (expr)
-create topic x;
+create channel x;
 create subscription sub on x;
 
 explain publish into x 123;
@@ -36,7 +36,7 @@ publish into x (1 * 2)::json, (2 * 2)::json, (3 * 2::string::int)::json;
 select * from sub;
 
 drop subscription sub;
-drop topic x;
+drop channel x;
 
 disconnect S0;
 close E0;

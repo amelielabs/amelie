@@ -10288,9 +10288,9 @@ select count(*) from test2;
 count
 ─────
 4
-# test: topic (subscription)
+# test: channel (subscription)
 switch S0;
-create topic test_top;
+create channel test_top;
 create subscription top_sub on test_top;
 publish into test_top;
 publish into test_top 123;
@@ -10344,10 +10344,10 @@ repl
   }]
 }
 switch S1;
-show topics;
+show channels;
 
-topics
-──────
+channels
+────────
 {
   "user": "amelie",
   "name": "test_top",
@@ -10392,10 +10392,10 @@ repl
   }]
 }
 switch S1;
-show topics;
+show channels;
 
-topics
-──────
+channels
+────────
 {
   "user": "amelie",
   "name": "test_top",
@@ -10438,10 +10438,10 @@ repl
   }]
 }
 switch S1;
-show topics;
+show channels;
 
-topics
-──────
+channels
+────────
 {
   "user": "amelie",
   "name": "test_top",
@@ -10460,11 +10460,11 @@ select * from top_sub;
 
 lsn  cmd  data
 ────────────────
-# test: topic (multi-stmt)
+# test: channel (multi-stmt)
 switch S0;
 create table abc (id int primary key);
-create topic a;
-create topic b;
+create channel a;
+create channel b;
 create subscription sa on a;
 create subscription sb on b;
 begin

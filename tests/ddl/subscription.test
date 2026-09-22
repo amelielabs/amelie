@@ -114,8 +114,8 @@ drop subscription test_sub;
 drop subscription if exists test_sub;
 show cdc;
 
-# test: create subscription (topic)
-create topic test;
+# test: create subscription (channel)
+create channel test;
 create subscription test_sub on test;
 show subs;
 show subscriptions;
@@ -134,12 +134,12 @@ acknowledge test_sub to 19;
 select lsn from show subscriptions verbose;
 select * from test_sub;
 
-# test: drop topic
-drop topic test;
+# test: drop channel
+drop channel test;
 show subs;
 
-# test: drop topic (cascade)
-drop topic test cascade;
+# test: drop channel (cascade)
+drop channel test cascade;
 show subs;
 
 # test: create subscription (clone)
@@ -192,7 +192,7 @@ drop subscription clone_sub;
 drop table test cascade;
 
 # test: alter subscription statement parsing
-create topic test;
+create channel test;
 create subscription test_sub on test;
 
 alter subscription;
@@ -210,7 +210,7 @@ alter subscription test_sub rename to test_cdc;
 alter subscription if exists test_sub rename to test_cdc;
 
 drop subscription test_cdc;
-drop topic test;
+drop channel test;
 
 # test: alter subscription description
 create table test (id int primary key);
@@ -270,12 +270,12 @@ alter table test rename column data to data2;
 alter table test rename to test2;
 drop table test cascade;
 
-# test: create subscription (topic dep)
-create topic test;
+# test: create subscription (channel dep)
+create channel test;
 create subscription test_sub on test;
 # error
-alter topic test rename to test2;
-drop topic test cascade;
+alter channel test rename to test2;
+drop channel test cascade;
 show subs;
 
 # test: create subscription (start after single stmt)
@@ -376,7 +376,7 @@ drop user test_user cascade;
 show users;
 
 # test: acknowledge (multi-stmt)
-create topic t;
+create channel t;
 create subscription t_sub on t;
 publish into t 123;
 publish into t 124;
@@ -393,7 +393,7 @@ end;
 
 # returns 1
 select count(*) from t_sub;
-drop topic t cascade;
+drop channel t cascade;
 
 disconnect S0;
 close E0;

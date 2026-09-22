@@ -224,7 +224,7 @@ catalog_grant_mask(RelType type)
 		perms_all =
 			PERM_EXECUTE;
 		break;
-	case REL_TOPIC:
+	case REL_CHANNEL:
 		perms_all =
 			PERM_PUBLISH;
 		break;
@@ -241,7 +241,7 @@ catalog_grant_mask(RelType type)
 			PERM_CREATE_TABLE        |
 			PERM_CREATE_CLONE        |
 			PERM_CREATE_FUNCTION     |
-			PERM_CREATE_TOPIC        |
+			PERM_CREATE_CHANNEL      |
 			PERM_CREATE_SUBSCRIPTION |
 			PERM_CREATE_API          |
 			PERM_SQL                 |

@@ -20,7 +20,7 @@
 void
 parse_publish(Stmt* self)
 {
-	// PUBLISH INTO [user.]topic [value, ...]
+	// PUBLISH INTO [user.]channel [value, ...]
 	auto stmt = ast_publish_allocate(self->block);
 	self->ast = &stmt->ast;
 
@@ -32,13 +32,13 @@ parse_publish(Stmt* self)
 	Str name;
 	auto path = parse_target(self, &user, &name);
 
-	// find topic
-	auto topic = catalog_find_topic(&share()->db->catalog, &user, &name, false);
-	if (! topic)
-		stmt_error(self, path, "topic not found");
-	stmt->topic = topic;
+	// find channel
+	auto channel = catalog_find_channel(&share()->db->catalog, &user, &name, false);
+	if (! channel)
+		stmt_error(self, path, "channel not found");
+	stmt->channel = channel;
 
-	access_add(&self->parser->program->access, &topic->rel,
+	access_add(&self->parser->program->access, &channel->rel,
 	           LOCK_SHARED_RW, PERM_PUBLISH);
 
 	// [value, ...]
@@ -50,8 +50,8 @@ parse_publish(Stmt* self)
 	stmt->values = set_cache_create(parser->set_cache, &parser->program->sets);
 	set_prepare(stmt->values, 1, 0, NULL);
 
-	// topics has single json column
-	auto column = columns_first(&share()->db->catalog.topic_columns);
+	// channels has single json column
+	auto column = columns_first(&share()->db->catalog.channel_columns);
 	for (;;)
 	{
 		// prepare row

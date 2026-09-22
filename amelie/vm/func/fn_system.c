@@ -39,8 +39,8 @@ enum
 	SHOW_CLONE,
 	SHOW_FUNCTIONS,
 	SHOW_FUNCTION,
-	SHOW_TOPICS,
-	SHOW_TOPIC,
+	SHOW_CHANNELS,
+	SHOW_CHANNEL,
 	SHOW_SUBSCRIPTIONS,
 	SHOW_SUBSCRIPTION,
 	SHOW_RELS,
@@ -101,8 +101,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_CLONE,         "clone",         5,  SHOW_YES,   true  },
 	{ SHOW_FUNCTIONS,     "functions",     9,  SHOW_NO,    false },
 	{ SHOW_FUNCTION,      "function",      8,  SHOW_YES,   true  },
-	{ SHOW_TOPICS,        "topics",        6,  SHOW_NO,    false },
-	{ SHOW_TOPIC,         "topic",         5,  SHOW_YES,   true  },
+	{ SHOW_CHANNELS,      "channels",      8,  SHOW_NO,    false },
+	{ SHOW_CHANNEL,       "channel",       7,  SHOW_YES,   true  },
 	{ SHOW_SUBSCRIPTIONS, "subscriptions", 13, SHOW_NO,    false },
 	{ SHOW_SUBSCRIPTION,  "subscription",  12, SHOW_YES,   true  },
 	{ SHOW_SUBSCRIPTIONS, "subs",          4,  SHOW_NO,    false },
@@ -363,14 +363,14 @@ fn_show(Call* self)
 		rels_list(&catalog->rels, REL_UDF, buf, user_by, user, &name, flags);
 		break;
 	}
-	case SHOW_TOPICS:
+	case SHOW_CHANNELS:
 	{
-		rels_list(&catalog->rels, REL_TOPIC, buf, user_by, user, NULL, flags);
+		rels_list(&catalog->rels, REL_CHANNEL, buf, user_by, user, NULL, flags);
 		break;
 	}
-	case SHOW_TOPIC:
+	case SHOW_CHANNEL:
 	{
-		rels_list(&catalog->rels, REL_TOPIC, buf, user_by, user, &name, flags);
+		rels_list(&catalog->rels, REL_CHANNEL, buf, user_by, user, &name, flags);
 		break;
 	}
 	case SHOW_SUBSCRIPTIONS:

@@ -32,5 +32,5 @@ emit_publish(Compiler* self, Ast* ast)
 		values = (intptr_t)publish->values;
 
 	// CPUBLISH
-	op3(self, CPUBLISH, (intptr_t)publish->topic, values, refs_count);
+	op3(self, CPUBLISH, (intptr_t)publish->channel, values, refs_count);
 }

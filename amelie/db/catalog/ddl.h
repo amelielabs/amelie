@@ -54,8 +54,8 @@ enum
 	// udf
 	DDL_UDF_CREATE,
 
-	// topic
-	DDL_TOPIC_CREATE,
+	// channel
+	DDL_CHANNEL_CREATE,
 
 	// subscription
 	DDL_SUB_CREATE,

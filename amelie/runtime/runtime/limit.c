@@ -43,7 +43,7 @@ limits_names[LIMIT_MAX] =
 	{ "tables",         6  },
 	{ "indexes",        7  },
 	{ "clones",         6  },
-	{ "topics",         6  },
+	{ "channels",       8  },
 	{ "subscriptions",  13 },
 	{ "functions",      9  },
 

@@ -39,7 +39,7 @@ static const char* dst_ops[DST_STAT_MAX] =
 	"create table (vector)",
 	"create index",
 	"create clone",
-	"create topic",
+	"create channel",
 	"create subscription",
 	"drop",
 

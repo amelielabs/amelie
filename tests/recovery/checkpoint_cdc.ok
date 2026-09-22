@@ -1,11 +1,11 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
 connect E0 S0 127.0.0.1:3485;
-# test: create topic (with subscription)
-create topic test_top;
-show topics;
+# test: create channel (with subscription)
+create channel test_top;
+show channels;
 
-topics
-──────
+channels
+────────
 {
   "user": "amelie",
   "name": "test_top",
@@ -83,7 +83,7 @@ lsn  cmd      data
 5    publish  2
 5    publish  3
 6    publish  null
-drop topic test_top cascade;
+drop channel test_top cascade;
 drop table test cascade;
 disconnect S0;
 close E0;

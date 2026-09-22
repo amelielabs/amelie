@@ -265,10 +265,10 @@ dst_bootstrap(Dst* self)
 		// table vector
 		dst_user_create(user, DST_REL_TABLE_VECTOR);
 
-		// topic
-		rel = dst_user_create(user, DST_REL_TOPIC);
+		// channel
+		rel = dst_user_create(user, DST_REL_CHANNEL);
 
-		// topic subscription
+		// channel subscription
 		dst_user_create_for(user, rel, DST_REL_SUBSCRIPTION);
 	}
 }

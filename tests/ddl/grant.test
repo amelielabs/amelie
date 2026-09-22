@@ -39,18 +39,18 @@ drop clone test_clone;
 drop table test;
 switch S0;
 
-# test: create_topic
+# test: create_channel
 switch S1;
-create topic test;
+create channel test;
 
 switch S0;
-revoke create_topic from test;
+revoke create_channel from test;
 
 switch S1;
-create topic test2;
+create channel test2;
 
 # still possible
-drop topic test;
+drop channel test;
 switch S0;
 
 # test: create_function
@@ -66,11 +66,11 @@ create function test2 () begin end;
 # still possible
 drop function test;
 switch S0;
-grant create_topic to test;
+grant create_channel to test;
 
 # test: create_subscription
 switch S1;
-create topic test;
+create channel test;
 create subscription test_sub on test;
 
 switch S0;
@@ -81,7 +81,7 @@ create subscription test_sub2 on test;
 
 # still possible
 drop subscription test_sub;
-drop topic test;
+drop channel test;
 switch S0;
 
 # test: create_user
@@ -188,7 +188,7 @@ select * from amelie.test;
 switch S0;
 
 # test: publish
-create topic test_top;
+create channel test_top;
 grant publish into test;
 
 switch S1;
@@ -504,9 +504,9 @@ insert into test values (1), (2);
 drop table test;
 
 switch S2;
-create topic test;
+create channel test;
 publish into test 1,2;
-drop topic test;
+drop channel test;
 
 switch S0;
 select data[9] from u_sub;

@@ -290,8 +290,8 @@ cdc
   "size": 262144,
   "pages": 1
 }
-# test: create subscription (topic)
-create topic test;
+# test: create subscription (channel)
+create channel test;
 create subscription test_sub on test;
 show subs;
 
@@ -344,9 +344,9 @@ lsn  cmd      data
 20   publish  1
 20   publish  2
 20   publish  3
-# test: drop topic
-drop topic test;
-error: topic 'test': depends on subscription 'amelie.test_sub'
+# test: drop channel
+drop channel test;
+error: channel 'test': depends on subscription 'amelie.test_sub'
 show subs;
 
 subs
@@ -356,8 +356,8 @@ subs
   "name": "test_sub",
   "description": ""
 }
-# test: drop topic (cascade)
-drop topic test cascade;
+# test: drop channel (cascade)
+drop channel test cascade;
 show subs;
 
 subs
@@ -439,7 +439,7 @@ id
 drop subscription clone_sub;
 drop table test cascade;
 # test: alter subscription statement parsing
-create topic test;
+create channel test;
 create subscription test_sub on test;
 alter subscription;
 error: alter subscription❰;❱ ⟵ target name expected
@@ -467,7 +467,7 @@ alter subscription test_sub rename to test_cdc;
 error: subscription 'test_sub': not exists
 alter subscription if exists test_sub rename to test_cdc;
 drop subscription test_cdc;
-drop topic test;
+drop channel test;
 # test: alter subscription description
 create table test (id int primary key);
 create subscription x on test;
@@ -550,12 +550,12 @@ error: subscription 'amelie.test_sub' depends on table 'test'
 alter table test rename to test2;
 error: subscription 'amelie.test_sub' depends on table 'test'
 drop table test cascade;
-# test: create subscription (topic dep)
-create topic test;
+# test: create subscription (channel dep)
+create channel test;
 create subscription test_sub on test;
-alter topic test rename to test2;
-error: subscription 'amelie.test_sub' depends on topic 'test'
-drop topic test cascade;
+alter channel test rename to test2;
+error: subscription 'amelie.test_sub' depends on channel 'test'
+drop channel test cascade;
 show subs;
 
 subs
@@ -732,7 +732,7 @@ users
   "description": ""
 }
 # test: acknowledge (multi-stmt)
-create topic t;
+create channel t;
 create subscription t_sub on t;
 publish into t 123;
 publish into t 124;
@@ -758,6 +758,6 @@ select count(*) from t_sub;
 count
 ─────
 1
-drop topic t cascade;
+drop channel t cascade;
 disconnect S0;
 close E0;

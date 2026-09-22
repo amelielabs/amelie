@@ -22,53 +22,53 @@
 #include <amelie_catalog.h>
 
 static inline void
-topic_free(Topic* self, bool drop)
+channel_free(Channel* self, bool drop)
 {
 	unused(drop);
 	assert(! self->rel.subs);
-	topic_config_free(self->config);
+	channel_config_free(self->config);
 	am_free(self);
 }
 
 static inline void
-topic_show(Topic* self, Buf* buf, Str* user, int flags)
+channel_show(Channel* self, Buf* buf, Str* user, int flags)
 {
 	if (flags_has(flags, FCREATE))
 		describe(&self->rel, buf, user, flags);
 	else
-		topic_config_write(self->config, buf, flags);
+		channel_config_write(self->config, buf, flags);
 }
 
-static inline Topic*
-topic_allocate(TopicConfig* config)
+static inline Channel*
+channel_allocate(ChannelConfig* config)
 {
-	auto self = (Topic*)am_malloc(sizeof(Topic));
-	self->config = topic_config_copy(config);
+	auto self = (Channel*)am_malloc(sizeof(Channel));
+	self->config = channel_config_copy(config);
 
 	// set relation
 	auto rel = &self->rel;
-	rel_init(rel, REL_TOPIC);
+	rel_init(rel, REL_CHANNEL);
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_description(rel, &self->config->description);
 	rel_set_id(rel, &self->config->id);
 	rel_set_grants(rel, &self->config->grants);
-	rel_set_show(rel, (RelShow)topic_show);
-	rel_set_free(rel, (RelFree)topic_free);
+	rel_set_show(rel, (RelShow)channel_show);
+	rel_set_free(rel, (RelFree)channel_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 
 bool
-topic_create(Catalog*     self,
-             Tr*          tr,
-             TopicConfig* config,
-             bool         if_not_exists)
+channel_create(Catalog*       self,
+               Tr*            tr,
+               ChannelConfig* config,
+               bool           if_not_exists)
 {
-	// PERM_CREATE_TOPIC
-	catalog_check(self, tr, PERM_CREATE_TOPIC, &config->user);
+	// PERM_CREATE_CHANNEL
+	catalog_check(self, tr, PERM_CREATE_CHANNEL, &config->user);
 
-	// make sure topic does not exists
+	// make sure channel does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
 	if (rel)
 	{
@@ -81,15 +81,15 @@ topic_create(Catalog*     self,
 	catalog_check_uniqueness(self, &config->id);
 
 	// check limit
-	catalog_limit(self, tr, REL_TOPIC, LIMIT_TOPICS);
+	catalog_limit(self, tr, REL_CHANNEL, LIMIT_CHANNELS);
 
 	// validate grants
-	catalog_grant_validate(self, tr, REL_TOPIC,
+	catalog_grant_validate(self, tr, REL_CHANNEL,
 	                       &config->user,
 	                       &config->name, &config->grants);
 
-	// create topic
-	auto topic = topic_allocate(config);
-	rels_create(&self->rels, tr, &topic->rel);
+	// create channel
+	auto channel = channel_allocate(config);
+	rels_create(&self->rels, tr, &channel->rel);
 	return true;
 }

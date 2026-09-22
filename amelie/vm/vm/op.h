@@ -346,7 +346,7 @@ enum
 	CCALL,
 	CCALL_UDF,
 
-	// topic
+	// channel
 	CPUBLISH,
 
 	// subscription

@@ -1,7 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: publish (expr)
-create topic x;
+create channel x;
 create subscription sub on x;
 explain publish into x 123;
 
@@ -96,6 +96,6 @@ lsn  cmd      data
 10   publish  4
 10   publish  6
 drop subscription sub;
-drop topic x;
+drop channel x;
 disconnect S0;
 close E0;

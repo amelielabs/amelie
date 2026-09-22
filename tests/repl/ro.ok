@@ -12,7 +12,7 @@ select * from leaked;
 error: select * from ❰leaked❱ ⟵ relation not found
 # test: read-only publish
 unfollow;
-create topic t;
+create channel t;
 create subscription t_sub on t;
 follow "00000000-0000-0000-0000-000000000002";
 select show("state").lsn;

@@ -18,13 +18,13 @@
 #include <amelie_parser.h>
 
 void
-parse_topic_create(Stmt* self)
+parse_channel_create(Stmt* self)
 {
-	// CREATE TOPIC [IF NOT EXISTS] name
+	// CREATE CHANNEL [IF NOT EXISTS] name
 	// [ID]
 	// [DESCRIPTION]
 	// [GRANT]
-	auto stmt = ast_topic_create_allocate();
+	auto stmt = ast_channel_create_allocate();
 	self->ast = &stmt->ast;
 
 	// if not exists
@@ -35,17 +35,17 @@ parse_topic_create(Stmt* self)
 	Str name;
 	parse_target(self, &user, &name);
 
-	// create topic config
-	auto config = topic_config_allocate();
+	// create channel config
+	auto config = channel_config_allocate();
 	stmt->config = config;
-	topic_config_set_user(config, &user);
-	topic_config_set_name(config, &name);
+	channel_config_set_user(config, &user);
+	channel_config_set_name(config, &name);
 
 	Uuid id;
 	uuid_init(&id);
 	auto local = self->parser->local;
 	uuid_generate(&id, &local->random, local->time_ms);
-	topic_config_set_id(config, &id);
+	channel_config_set_id(config, &id);
 
 	// set options
 	for (;;)
@@ -66,7 +66,7 @@ parse_topic_create(Stmt* self)
 			uuid_init(&id);
 			if (uuid_set_nothrow(&id, &value->string) == -1)
 				stmt_error(self, value, "failed to parse uuid");
-			topic_config_set_id(config, &id);
+			channel_config_set_id(config, &id);
 			continue;
 		}
 
@@ -74,7 +74,7 @@ parse_topic_create(Stmt* self)
 		if (str_is_case(&name->string, "description", 11))
 		{
 			auto text = stmt_expect(self, KSTRING);
-			topic_config_set_description(stmt->config, &text->string);
+			channel_config_set_description(stmt->config, &text->string);
 			continue;
 		}
 
@@ -90,10 +90,10 @@ parse_topic_create(Stmt* self)
 }
 
 void
-parse_topic_drop(Stmt* self)
+parse_channel_drop(Stmt* self)
 {
-	// DROP TOPIC [IF EXISTS] name [CASCADE]
-	auto stmt = ast_topic_drop_allocate();
+	// DROP CHANNEL [IF EXISTS] name [CASCADE]
+	auto stmt = ast_channel_drop_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
@@ -107,11 +107,11 @@ parse_topic_drop(Stmt* self)
 }
 
 void
-parse_topic_alter(Stmt* self)
+parse_channel_alter(Stmt* self)
 {
-	// ALTER TOPIC [IF EXISTS] name RENAME TO name
-	// ALTER TOPIC [IF EXISTS] name DESCRIPTION text
-	auto stmt = ast_topic_alter_allocate();
+	// ALTER CHANNEL [IF EXISTS] name RENAME TO name
+	// ALTER CHANNEL [IF EXISTS] name DESCRIPTION text
+	auto stmt = ast_channel_alter_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
@@ -125,7 +125,7 @@ parse_topic_alter(Stmt* self)
 	{
 		// TO
 		stmt_expect(self, KTO);
-		stmt->type = TOPIC_ALTER_RENAME;
+		stmt->type = CHANNEL_ALTER_RENAME;
 
 		// name
 		auto name = stmt_expect(self, KNAME);
@@ -137,7 +137,7 @@ parse_topic_alter(Stmt* self)
 	if (stmt_if(self, KDESCRIPTION))
 	{
 		auto text = stmt_expect(self, KSTRING);
-		stmt->type = TOPIC_ALTER_DESCRIPTION;
+		stmt->type = CHANNEL_ALTER_DESCRIPTION;
 		stmt->description = text->string;
 		return;
 	}

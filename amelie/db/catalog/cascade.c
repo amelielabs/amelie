@@ -64,7 +64,7 @@ catalog_depends(Catalog* self, Rel* rel, Rel* at)
 		}
 		break;
 	}
-	case REL_TOPIC:
+	case REL_CHANNEL:
 	case REL_CLONE:
 	{
 		if (at->type == REL_UDF)

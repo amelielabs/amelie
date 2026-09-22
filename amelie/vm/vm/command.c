@@ -725,15 +725,15 @@ cpublish_encode(Vm* self, Uuid* id, Value* value)
 hot void
 cpublish(Vm* self, Op* op)
 {
-	// [topic*, set*, refs]
+	// [channel*, set*, refs]
 
 	// create dispatch
 	auto gtr = self->gtr;
 	auto dispatches = &gtr->dispatches;
 	auto dispatch = dispatch_create(&dispatches->cache);
 
-	auto topic = (Topic*)op->a;
-	if (topic->rel.subs)
+	auto channel = (Channel*)op->a;
+	if (channel->rel.subs)
 	{
 		// encode values directly to the cdc log buf
 		if (op->b != -1)
@@ -745,14 +745,14 @@ cpublish(Vm* self, Op* op)
 				auto value = set_row(set, order);
 				if (value->type == TYPE_REF)
 					value = &refs[value->integer];
-				cpublish_encode(self, topic->rel.id, value);
+				cpublish_encode(self, channel->rel.id, value);
 			}
 
 			if (op->c > 0)
 				stack_popn(&self->stack, op->c);
 		} else
 		{
-			cpublish_encode(self, topic->rel.id, NULL);
+			cpublish_encode(self, channel->rel.id, NULL);
 		}
 	}
 

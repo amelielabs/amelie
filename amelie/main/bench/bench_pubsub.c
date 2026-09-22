@@ -19,13 +19,13 @@ bench_pubsub_create(Bench* self, Client* client)
 {
 	auto batch = (int)opt_int_of(&self->batch);
 
-	info("preparing topic.");
+	info("preparing channel.");
 	Str str;
-	str_set_cstr(&str, "create topic bench_topic");
+	str_set_cstr(&str, "create channel bench_channel");
 	client_execute(client, &str, NULL);
 
 	info("preparing subscription.");
-	str_set_cstr(&str, "create subscription bench_sub on bench_topic");
+	str_set_cstr(&str, "create subscription bench_sub on bench_channel");
 	client_execute(client, &str, NULL);
 
 	info("preparing function.");
@@ -35,7 +35,7 @@ bench_pubsub_create(Bench* self, Client* client)
 	buf_format(&buf,
 	           "create function publish_func() "
 	           "begin "
-	           "  PUBLISH INTO bench_topic ");
+	           "  PUBLISH INTO bench_channel ");
 	for (int i = 0; i < batch; i++)
 		buf_format(&buf, "{s}1", i > 0 ? "," : "");
 	buf_format(&buf, ";");

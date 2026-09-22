@@ -27,7 +27,7 @@ enum
 	PERM_CREATE_TABLE        = 1ul << 4,
 	PERM_CREATE_CLONE        = 1ul << 5,
 	PERM_CREATE_FUNCTION     = 1ul << 6,
-	PERM_CREATE_TOPIC        = 1ul << 7,
+	PERM_CREATE_CHANNEL      = 1ul << 7,
 	PERM_CREATE_SUBSCRIPTION = 1ul << 8,
 	PERM_CREATE_API          = 1ul << 9,
 
@@ -42,7 +42,7 @@ enum
 	// UDF
 	PERM_EXECUTE             = 1ul << 14,
 
-	// Topic
+	// Channel
 	PERM_PUBLISH             = 1ul << 15,
 
 	// Endpoints

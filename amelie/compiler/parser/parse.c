@@ -86,11 +86,11 @@ parse_stmt_free(Stmt* stmt)
 			udf_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_TOPIC:
+	case STMT_CREATE_CHANNEL:
 	{
-		auto ast = ast_topic_create_of(stmt->ast);
+		auto ast = ast_channel_create_of(stmt->ast);
 		if (ast->config)
-			topic_config_free(ast->config);
+			channel_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_SUBSCRIPTION:
@@ -311,10 +311,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_FUNCTION;
 			parse_function_create(self, or_replace);
 		} else
-		if (stmt_if(self, KTOPIC))
+		if (stmt_if(self, KCHANNEL))
 		{
-			self->id = STMT_CREATE_TOPIC;
-			parse_topic_create(self);
+			self->id = STMT_CREATE_CHANNEL;
+			parse_channel_create(self);
 		} else
 		if (stmt_if(self, KSUBSCRIPTION))
 		{
@@ -370,10 +370,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
 		} else
-		if (stmt_if(self, KTOPIC))
+		if (stmt_if(self, KCHANNEL))
 		{
-			self->id = STMT_DROP_TOPIC;
-			parse_topic_drop(self);
+			self->id = STMT_DROP_CHANNEL;
+			parse_channel_drop(self);
 		} else
 		if (stmt_if(self, KSUBSCRIPTION))
 		{
@@ -424,10 +424,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
 		} else
-		if (stmt_if(self, KTOPIC))
+		if (stmt_if(self, KCHANNEL))
 		{
-			self->id = STMT_ALTER_TOPIC;
-			parse_topic_alter(self);
+			self->id = STMT_ALTER_CHANNEL;
+			parse_channel_alter(self);
 		} else
 		if (stmt_if(self, KSUBSCRIPTION))
 		{

@@ -41,7 +41,7 @@ static Permission perms[] =
 	{ PERM_CREATE_TABLE,        "create_table",        12 },
 	{ PERM_CREATE_CLONE,        "create_clone",        12 },
 	{ PERM_CREATE_FUNCTION,     "create_function",     15 },
-	{ PERM_CREATE_TOPIC,        "create_topic",        12 },
+	{ PERM_CREATE_CHANNEL,      "create_channel",      14 },
 	{ PERM_CREATE_SUBSCRIPTION, "create_subscription", 19 },
 	{ PERM_CREATE_API,          "create_api",          10 },
 
@@ -56,7 +56,7 @@ static Permission perms[] =
 	// UDF
 	{ PERM_EXECUTE,             "execute",             7  },
 
-	// Topic
+	// Channel
 	{ PERM_PUBLISH,             "publish",             7  },
 
 	// Endpoints

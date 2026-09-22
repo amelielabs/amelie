@@ -15,10 +15,10 @@ typedef struct AstPublish AstPublish;
 
 struct AstPublish
 {
-	Ast    ast;
-	Topic* topic;
-	Set*   values;
-	From   from;
+	Ast      ast;
+	Channel* channel;
+	Set*     values;
+	From     from;
 };
 
 static inline AstPublish*

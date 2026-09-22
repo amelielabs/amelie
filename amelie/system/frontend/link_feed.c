@@ -39,9 +39,9 @@ link_subscribe_to(Link* self, Str* user, Str* name)
 		if (! rel)
 			error("relation '{str}.{str}': does not exists", user, name);
 
-		if (rel->type != REL_TABLE &&
-		    rel->type != REL_CLONE &&
-		    rel->type != REL_TOPIC &&
+		if (rel->type != REL_TABLE   &&
+		    rel->type != REL_CLONE   &&
+		    rel->type != REL_CHANNEL &&
 		    rel->type != REL_SUBSCRIPTION)
 			error("relation '{str}.{str}': is not supported for streaming", user, name);
 	}
