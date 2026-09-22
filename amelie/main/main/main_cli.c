@@ -108,21 +108,10 @@ main_cli(Main* self)
 {
 	opt_int_set(&config()->log_connections, false);
 
-	// set default content_type
-	auto endpoint = &self->endpoint;
-	auto content_type = opt_string_of(&endpoint->content_type);
-	if (str_empty(content_type))
-		opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
-
-	// set default accept
-	auto accept = opt_string_of(&endpoint->accept);
-	if (str_empty(accept))
-		opt_string_set_raw(&endpoint->accept, "text/plain", 10);
-
 	// create client and connect
 	auto client = client_allocate();
 	defer(client_free, client);
-	client_set_endpoint(client, endpoint);
+	client_set_endpoint(client, &self->endpoint);
 	client_connect(client);
 
 	// read commands

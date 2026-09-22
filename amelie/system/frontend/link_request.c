@@ -304,8 +304,8 @@ link_request(Link* self)
 	int  rc;
 	auto on_error = error_catch
 	(
-		// parse endpoint
-		uri_parse_endpoint(endpoint, &http->options[HTTP_URL]);
+		// parse request path and arguments
+		uri_parse_request(endpoint, &http->options[HTTP_URL]);
 		request_init(&self->req);
 
 		// / or /<user_api>

@@ -140,10 +140,8 @@ uri_parse_host(Uri* self)
 		return;
 
 	// /
-	if (*self->pos == '/') {
-		self->pos++;
+	if (*self->pos == '/')
 		return;
-	}
 
 	// eof
 	if (! *self->pos)
@@ -191,7 +189,7 @@ decode(Buf* buf, char* data, int data_size)
 }
 
 static inline void
-uri_parse_args_set(Uri* self, bool strict, Buf* buf, int name_size, int value_size)
+uri_parse_args_set(Uri* self, int flags, Buf* buf, int name_size, int value_size)
 {
 	Str name;
 	str_set(&name, buf_cstr(buf), name_size);
@@ -205,13 +203,13 @@ uri_parse_args_set(Uri* self, bool strict, Buf* buf, int name_size, int value_si
 		error("unknown uri argument '{str}'", &name);
 
 	// do not allow command line arguments
-	if (strict && !opt_is(opt, OPT_U))
+	if (flags && !opt_is(opt, flags))
 		error("unknown uri argument '{str}'", &name);
 	opt_set(opt, &value);
 }
 
 static inline void
-uri_parse_args(Uri* self, bool strict)
+uri_parse_args(Uri* self, int flags)
 {
 	// eof
 	if (! *self->pos)
@@ -257,7 +255,7 @@ uri_parse_args(Uri* self, bool strict)
 		}
 
 		// match end set endpoint argument
-		uri_parse_args_set(self, strict, buf, name_size, value_size);
+		uri_parse_args_set(self, flags, buf, name_size, value_size);
 
 		// eof
 		if (! *self->pos)
@@ -267,6 +265,17 @@ uri_parse_args(Uri* self, bool strict)
 		assert(*self->pos == '&');
 		self->pos++;
 	}
+}
+
+static inline void
+uri_parse_endpoint(Uri* self)
+{
+	// /<endpoint> [?]
+	auto start = self->pos;
+	while (*self->pos && *self->pos != '?')
+		self->pos++;
+
+	opt_string_set_raw(&self->endpoint->endpoint, start, self->pos - start);
 }
 
 void
@@ -288,16 +297,16 @@ uri_parse(Endpoint* endpoint, Str* spec)
 	// hostname[:port]
 	uri_parse_host(&self);
 
-	// /
+	// [/endpoint]
 	if (*self.pos == '/')
-		self.pos++;
+		uri_parse_endpoint(&self);
 
 	// ?name=value[& ...]
-	uri_parse_args(&self, false);
+	uri_parse_args(&self, OPT_A);
 }
 
 void
-uri_parse_endpoint(Endpoint* endpoint, Str* spec)
+uri_parse_request(Endpoint* endpoint, Str* spec)
 {
 	if (str_empty(spec) || *spec->pos != '/')
 		error("invalid endpoint");
@@ -308,28 +317,39 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 		.pos      = opt_string_of(&endpoint->uri)->pos,
 		.endpoint = endpoint
 	};
-	auto start = self.pos;
 
-	// /<endpoint> [?]
-	while (*self.pos && *self.pos != '?')
-		self.pos++;
-
-	opt_string_set_raw(&endpoint->endpoint, start, self.pos - start);
-	if (! *self.pos)
-		return;
+	// /<endpoint>
+	uri_parse_endpoint(&self);
 
 	// ?name=value[& ...]
-	uri_parse_args(&self, true);
+	uri_parse_args(&self, OPT_AE);
 }
 
 void
 uri_export_arg(Opt* opt, Buf* buf, bool* first)
 {
-	if (opt_string_empty(opt))
-		return;
 	// [?|&]name=value
-	buf_format(buf, "{c}{str}={str}", *first? '?': '&',
-	           &opt->name, &opt->string);
+	switch (opt->type) {
+	case OPT_BOOL:
+		if (! opt_int_of(opt))
+			return;
+		buf_format(buf, "{c}{str}", *first? '?': '&',
+		           &opt->name);
+		break;
+	case OPT_INT:
+		buf_format(buf, "{c}{str}={u64}", *first? '?': '&',
+		           &opt->name, opt->integer);
+		break;
+	case OPT_STRING:
+		if (opt_string_empty(opt))
+			return;
+		buf_format(buf, "{c}{str}={str}", *first? '?': '&',
+		           &opt->name, &opt->string);
+		break;
+	case OPT_JSON:
+	case OPT_UUID:
+		break;
+	}
 	*first = false;
 }
 
@@ -373,16 +393,11 @@ uri_export(Endpoint* self, Buf* buf)
 
 	// arguments
 	bool first = true;
-	if (proto == PROTO_AMELIES)
+	list_foreach(&self->opts.list)
 	{
-		uri_export_arg(&self->tls_capath, buf, &first);
-		uri_export_arg(&self->tls_ca, buf, &first);
-		uri_export_arg(&self->tls_cert, buf, &first);
-		uri_export_arg(&self->tls_key, buf, &first);
-		uri_export_arg(&self->tls_server, buf, &first);
+		auto opt = list_at(Opt, link);
+		if (! opt_is(opt, OPT_A))
+			continue;
+		uri_export_arg(opt, buf, &first);
 	}
-	uri_export_arg(&self->token, buf, &first);
-	uri_export_arg(&self->timezone, buf, &first);
-	if (! opt_string_empty(&self->copy))
-		uri_export_arg(&self->copy, buf, &first);
 }

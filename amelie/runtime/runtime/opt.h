@@ -16,17 +16,19 @@ typedef struct Opt Opt;
 enum
 {
 	// can be set in config or command line
-	OPT_C = 1 << 0,
-	// can be set as uri arg
-	OPT_U = 1 << 1,
+	OPT_C  = 1 << 0,
 	// hidden
-	OPT_H = 1 << 2,
+	OPT_H  = 1 << 1,
 	// secret
-	OPT_S = 1 << 3,
+	OPT_S  = 1 << 2,
 	// excluded from config
-	OPT_E = 1 << 4,
+	OPT_E  = 1 << 3,
 	// cannot be zero
-	OPT_Z = 1 << 5
+	OPT_Z  = 1 << 4,
+	// can be set as uri arg
+	OPT_A  = 1 << 5,
+	// can be set as uri arg (endpoint)
+	OPT_AE = 1 << 6
 };
 
 typedef enum

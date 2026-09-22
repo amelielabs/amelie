@@ -59,14 +59,6 @@ test_session_connect(TestSession* self, Str* uri, Str* cafile)
 	if (cafile && !str_empty(cafile))
 		opt_string_set(&endpoint->tls_ca, cafile);
 
-	// set defaults
-	if (opt_string_empty(&endpoint->user))
-		opt_string_set_raw(&endpoint->user, "amelie", 6);
-	if (opt_string_empty(&endpoint->content_type))
-		opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
-	if (opt_string_empty(&endpoint->accept))
-		opt_string_set_raw(&endpoint->accept, "text/plain", 10);
-
 	self->client = client_allocate();
 	client_set_endpoint(self->client, &self->endpoint);
 	client_connect(self->client);

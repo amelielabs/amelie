@@ -270,14 +270,22 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 		buf_write(buf, "/", 1);
 
 	// arguments
-
-	// timezone
 	bool first = true;
-	uri_export_arg(&endpoint->timezone, buf, &first);
 
 	// copy
 	if (! opt_string_empty(&endpoint->copy))
 		uri_export_arg(&endpoint->copy, buf, &first);
+
+	// feed
+	if (! opt_string_empty(&endpoint->feed))
+		uri_export_arg(&endpoint->feed, buf, &first);
+
+	// mcp
+	if (opt_int_of(&endpoint->mcp))
+		uri_export_arg(&endpoint->mcp, buf, &first);
+
+	// timezone
+	uri_export_arg(&endpoint->timezone, buf, &first);
 
 	buf_write(buf, " HTTP/1.1\r\n", 11);
 
