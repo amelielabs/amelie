@@ -21,6 +21,13 @@ enum
 	PROTO_AMELIES
 };
 
+enum
+{
+	TOKEN_NONE,
+	TOKEN_BASIC,
+	TOKEN_JWT
+};
+
 struct Endpoint
 {
 	// protocol
@@ -28,6 +35,7 @@ struct Endpoint
 	// auth
 	Opt  user;
 	Opt  token;
+	Opt  token_type;
 	// host
 	Opt  host;
 	Opt  port;
@@ -66,3 +74,4 @@ void endpoint_reset(Endpoint*);
 void endpoint_copy(Endpoint*, Endpoint*);
 void endpoint_read(Endpoint*, uint8_t**);
 void endpoint_write(Endpoint*, Buf*);
+void endpoint_auth(Endpoint*);

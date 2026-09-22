@@ -12,6 +12,9 @@
 //
 
 // jwt
-#include "jwt/jwt_decode.h"
-#include "jwt/jwt_encode.h"
-#include "jwt/jwt.h"
+#include "token/jwt_decode.h"
+#include "token/jwt_encode.h"
+#include "token/jwt.h"
+
+// basic
+#include "token/basic.h"

@@ -141,6 +141,14 @@ opt_string_set(Opt* self, Str* str)
 }
 
 static inline void
+opt_string_set_buf(Opt* self, Buf* buf)
+{
+	Str str;
+	buf_str(buf, &str);
+	opt_string_set(self, &str);
+}
+
+static inline void
 opt_string_set_raw(Opt* self, const char* value, int size)
 {
 	assert(self->type == OPT_STRING);
