@@ -56,6 +56,7 @@ test_session_connect(TestSession* self, Str* uri, Str* cafile)
 	// create client and connect
 	auto endpoint = &self->endpoint;
 	uri_parse(endpoint, uri);
+	endpoint_auth(endpoint);
 	if (cafile && !str_empty(cafile))
 		opt_string_set(&endpoint->tls_ca, cafile);
 
@@ -146,6 +147,20 @@ test_session_post(TestSession* self,
 		buf_write_str(buf, user);
 		buf_write(buf, "\r\n", 2);
 	}
+
+	// token
+	auto token = opt_string_of(&self->endpoint.token);
+	if (! str_empty(token))
+	{
+		auto type = opt_int_of(&self->endpoint.token_type);
+		if (type == TOKEN_BASIC)
+			buf_write(buf, "Authorization: Basic ", 21);
+		else
+			buf_write(buf, "Authorization: Bearer ", 22);
+		buf_write_str(buf, token);
+		buf_write(buf, "\r\n", 2);
+	}
+
 	buf_write(buf, "\r\n", 2);
 
 	// send

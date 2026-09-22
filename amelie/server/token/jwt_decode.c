@@ -51,11 +51,8 @@ jwt_decode(JwtDecode* self, Str* token)
 	// parse authentication token
 	auto digest = &self->digest;
 
-	// <Bearer> <header.payload.digest>
+	// <header.payload.digest>
 	*digest = *token;
-	if (unlikely(! str_is_prefix(digest, "Bearer ", 7)))
-		goto error_jwt;
-	str_advance(digest, 7);
 
 	// header
 	if (unlikely(! str_split(digest, &self->header, '.')))

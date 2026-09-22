@@ -42,6 +42,9 @@ parse_replica_create(Stmt* self)
 	if (stmt->config->endpoint.proto.integer != PROTO_AMELIE &&
 	    stmt->config->endpoint.proto.integer != PROTO_AMELIES)
 		stmt_error(self, uri, "amelie protocol expected");
+
+	// set token
+	endpoint_auth(&stmt->config->endpoint);
 }
 
 void

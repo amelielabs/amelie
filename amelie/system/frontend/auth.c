@@ -38,14 +38,16 @@ auth_reset(Auth* self)
 }
 
 hot static inline User*
-auth_run(Auth* self, Str* user_id, Str* token)
+auth_jwt(Auth* self, Endpoint* endpoint)
 {
 	auto jwt = &self->jwt;
 	jwt_decode_reset(jwt);
 	auth_cache_prepare(&self->cache);
 
-	// parse authentication token
-	jwt_decode(jwt, token);
+	// parse jwt token
+	Str token = *opt_string_of(&endpoint->token);
+	str_advance(&token, 7);
+	jwt_decode(jwt, &token);
 
 	int64_t now = time_ms() / 1000;
 
@@ -53,10 +55,9 @@ auth_run(Auth* self, Str* user_id, Str* token)
 	auto user_ref = auth_cache_find(&self->cache, &jwt->digest);
 	if (user_ref)
 	{
-		// ensure cached token has not expired and not renamed
+		// ensure cached token has not expired
 		auto user = user_ref->user;
-		auto token_match = str_compare(&user->config->name, user_id);
-		if (likely(token_match && now < user_ref->expire))
+		if (likely(now < user_ref->expire))
 			return user;
 
 		// remove from the cache
@@ -83,10 +84,6 @@ auth_run(Auth* self, Str* user_id, Str* token)
 	if (now >= exp)
 		error("auth: user '{str}' token has expired", &sub);
 
-	// ensure user_id matches sub
-	if (! str_compare(&sub, user_id))
-		error("auth: user '{str}' does not match sub field", &sub);
-
 	// find user
 	auto user = catalog_find_user(&share()->db->catalog, &sub, false);
 	if (! user)
@@ -107,38 +104,56 @@ auth_run(Auth* self, Str* user_id, Str* token)
 }
 
 hot static inline User*
-auth_main(Auth* self, Str* user_id, Str* token, bool token_required)
+auth_basic(Auth* self, Endpoint* endpoint)
 {
-	if (unlikely(str_empty(user_id)))
-		error("auth: user id is missing");
+	unused(self);
 
-	User* user;
-	if (str_empty(token))
-	{
-		if (token_required)
-			error("auth: authentication token is missing");
+	// parse basic token
+	Str token = *opt_string_of(&endpoint->token);
+	str_advance(&token, 6);
 
-		// trusted by the server listen configuration
-		user = catalog_find_user(&share()->db->catalog, user_id, true);
-	} else
-	{
-		user = auth_run(self, user_id, token);
-	}
+	Str name;
+	Str password;
+	auto buf = basic_decode(&token, &name, &password);
+	defer_buf(buf);
+
+	// find user
+	auto user = catalog_find_user(&share()->db->catalog, &name, false);
+	if (! user)
+		error("auth: user '{str}' not found", &name);
 	return user;
 }
 
 hot User*
-auth(Auth* self, Str* user_id, Str* token, bool token_required)
+auth(Auth* self, Endpoint* endpoint)
 {
-	User* user = NULL;
-	auto on_error = error_catch
-	(
-		user = auth_main(self, user_id, token, token_required)
-	);
-	if (on_error)
+	// no token
+	auto token = opt_string_of(&endpoint->token);
+	if (str_empty(token))
 	{
-		am_self()->error.code = ERROR_AUTH;
-		rethrow();
+		// allow only for trusted connections (localhost)
+		if (! opt_int_of(&endpoint->trusted))
+			error("auth: authentication token is missing");
+
+		Str name;
+		str_set(&name, "amelie", 6);
+		return catalog_find_user(&share()->db->catalog, &name, true);
 	}
-	return user;
+
+	// basic (only local)
+	if (str_is_prefix_case(token, "Basic ", 6))
+	{
+		// allow only for trusted connections (localhost)
+		if (! opt_int_of(&endpoint->trusted))
+			error("auth: basic token allowed only for trusted connections");
+
+		return auth_basic(self, endpoint);
+	}
+
+	// jwt
+	if (str_is_prefix_case(token, "Bearer ", 7))
+		return auth_jwt(self, endpoint);
+
+	error("auth: invalid token");
+	return NULL;
 }

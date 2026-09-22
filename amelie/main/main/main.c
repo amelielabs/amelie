@@ -135,6 +135,9 @@ main_configure(Main* self)
 		break;
 	}
 
+	// set token
+	endpoint_auth(endpoint);
+
 	// validate connection string
 	auto uri  = opt_string_of(&endpoint->uri);
 	auto path = opt_string_of(&endpoint->path);

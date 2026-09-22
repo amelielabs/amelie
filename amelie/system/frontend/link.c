@@ -55,13 +55,6 @@ link_auth(Link* self)
 	if (likely(accept))
 		endpoint->accept.string = accept->value;
 
-	// user
-	auto user_id = http_find(http, "X-User-ID", 9);
-	if (user_id)
-		endpoint->user.string = user_id->value;
-	else
-		str_set(&endpoint->user.string, "amelie", 6);
-
 	// token
 	auto auth = http_find(http, "Authorization", 13);
 	if (auth)

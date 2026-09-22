@@ -102,14 +102,14 @@ portal_auth(Portal* self, Auth* auth_ref)
 
 	// authenticate user
 	auto endpoint = &self->endpoint;
-	auto trusted  = opt_int_of(&endpoint->trusted);
-	auto token    = opt_string_of(&endpoint->token);
-	auto user_id  = opt_string_of(&endpoint->user);
-	self->user = auth(auth_ref, user_id, token, !trusted);
+	self->user = auth(auth_ref, endpoint);
 
 	// superuser can connect only from localhost/unixsocket (trusted source)
+	auto trusted = opt_int_of(&endpoint->trusted);
 	if (self->user->config->superuser && !trusted)
 		error("auth: superuser can connect only from localhost");
+
+	opt_string_set(&endpoint->user, &self->user->config->name);
 }
 
 hot static inline void

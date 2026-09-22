@@ -60,6 +60,7 @@ dst_user_connect(DstUser* self)
 	opt_string_set_cstr(&endpoint->user, name);
 	opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
 	opt_string_set_raw(&endpoint->accept, "application/json", 16);
+	endpoint_auth(endpoint);
 
 	self->client = client_allocate();
 	client_set_endpoint(self->client, endpoint);
