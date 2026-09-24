@@ -39,7 +39,6 @@ struct Rel
 	RelShow  show;
 	RelFree  free;
 	Hashnode link_ht;
-	Hashnode link_htid;
 	List     link;
 
 	// lock manager
@@ -84,7 +83,6 @@ rel_init(Rel* self, RelType type)
 	self->lock_wait_count = 0;
 	spinlock_init(&self->lock);
 	hashnode_init(&self->link_ht);
-	hashnode_init(&self->link_htid);
 	list_init(&self->link);
 	memset(self->lock_set, 0, sizeof(self->lock_set));
 	list_init(&self->lock_wait);

@@ -18,7 +18,6 @@ struct CloneConfig
 	Str      user;
 	Str      name;
 	Str      description;
-	Uuid     id;
 	Str      table_user;
 	Str      table;
 	Timeline timeline;
@@ -35,7 +34,6 @@ clone_config_allocate(void)
 	str_init(&self->description);
 	str_init(&self->table_user);
 	str_init(&self->table);
-	uuid_init(&self->id);
 	timeline_init(&self->timeline);
 	grants_init(&self->grants);
 	return self;
@@ -75,12 +73,6 @@ clone_config_set_description(CloneConfig* self, Str* value)
 }
 
 static inline void
-clone_config_set_id(CloneConfig* self, Uuid* id)
-{
-	self->id = *id;
-}
-
-static inline void
 clone_config_set_table_user(CloneConfig* self, Str* name)
 {
 	str_free(&self->table_user);
@@ -101,7 +93,6 @@ clone_config_copy(CloneConfig* self)
 	clone_config_set_user(copy, &self->user);
 	clone_config_set_name(copy, &self->name);
 	clone_config_set_description(copy, &self->description);
-	clone_config_set_id(copy, &self->id);
 	clone_config_set_table_user(copy, &self->table_user);
 	clone_config_set_table(copy, &self->table);
 	timeline_copy(&copy->timeline, &self->timeline);
@@ -121,7 +112,6 @@ clone_config_read(uint8_t** pos)
 		{ DECODE_STR,   "user",        &self->user        },
 		{ DECODE_STR,   "name",        &self->name        },
 		{ DECODE_STR,   "description", &self->description },
-		{ DECODE_UUID,  "id",          &self->id          },
 		{ DECODE_STR,   "table_user",  &self->table_user  },
 		{ DECODE_STR,   "table",       &self->table       },
 		{ DECODE_OBJ,   "timeline",    &pos_timeline      },
@@ -167,10 +157,6 @@ clone_config_write(CloneConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
-
-	// id
-	encode_raw(buf, "id", 2);
-	encode_uuid(buf, &self->id);
 
 	// timeline
 	encode_raw(buf, "timeline", 8);

@@ -49,7 +49,6 @@ channel_allocate(ChannelConfig* config)
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_description(rel, &self->config->description);
-	rel_set_id(rel, &self->config->id);
 	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)channel_show);
 	rel_set_free(rel, (RelFree)channel_free);
@@ -74,9 +73,6 @@ channel_create(Catalog*       self,
 			error("relation '{str}': already exists", &config->name);
 		return false;
 	}
-
-	// ensure relation has unique id
-	catalog_check_uniqueness(self, &config->id);
 
 	// check limit
 	catalog_limit(self, tr, REL_CHANNEL, LIMIT_CHANNELS);

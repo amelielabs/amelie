@@ -73,7 +73,6 @@ void
 parse_user_create(Stmt* self, bool agent)
 {
 	// CREATE USER|AGENT [IF NOT EXISTS] name
-	// [ID]
 	// [DESCRIPTION]
 	// [LIMIT]
 	// [API]
@@ -104,13 +103,6 @@ parse_user_create(Stmt* self, bool agent)
 		user_config_set_description(config, &text->string);
 	}
 
-	// id
-	Uuid id;
-	uuid_init(&id);
-	auto local = self->parser->local;
-	uuid_generate(&id, &local->random, local->time_ms);
-	user_config_set_id(config, &id);
-
 	// set timestamp
 	char ts[64];
 	auto time = time_us();
@@ -128,18 +120,6 @@ parse_user_create(Stmt* self, bool agent)
 		{
 			stmt_push(self, name);
 			break;
-		}
-
-		// ID string
-		if (str_is_case(&name->string, "id", 2))
-		{
-			auto value = stmt_expect(self, KSTRING);
-			Uuid id;
-			uuid_init(&id);
-			if (uuid_set_nothrow(&id, &value->string) == -1)
-				stmt_error(self, value, "failed to parse uuid");
-			user_config_set_id(config, &id);
-			continue;
 		}
 
 		// DESCRIPTION string

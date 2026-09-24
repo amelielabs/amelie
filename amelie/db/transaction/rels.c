@@ -33,8 +33,6 @@ rels_free(Rels* self)
 	{
 		auto rel = list_at(Rel, link);
 		hashtable_delete(&self->ht, &rel->link_ht);
-		if (rel->id != NULL)
-			hashtable_delete(&self->htid, &rel->link_htid);
 		rel_free(rel);
 	}
 	self->list_count = 0;
@@ -62,20 +60,6 @@ rels_set_ht(Rels* self, Rel* rel)
 }
 
 static inline void
-rels_set_htid(Rels* self, Rel* rel)
-{
-	// add relation to the hash table by id
-	if (unlikely(! hashtable_created(&self->htid)))
-		hashtable_create(&self->htid, 256);
-	hashtable_reserve(&self->htid);
-
-	// use uuid as a hash
-	uint32_t hash = rel->id->a ^ rel->id->b;
-	rel->link_htid.hash = hash;
-	hashtable_set(&self->htid, &rel->link_htid);
-}
-
-static inline void
 rels_set(Rels* self, Rel* rel)
 {
 	// previous version should not exists
@@ -84,8 +68,6 @@ rels_set(Rels* self, Rel* rel)
 
 	// add relation to the hash tables by name and id
 	rels_set_ht(self, rel);
-	if (rel->id)
-		rels_set_htid(self, rel);
 }
 
 static inline void
@@ -94,10 +76,7 @@ rels_delete(Rels* self, Rel* rel)
 	list_unlink(&rel->link);
 	list_init(&rel->link);
 	self->list_count--;
-
 	hashtable_delete(&self->ht, &rel->link_ht);
-	if (rel->id != NULL)
-		hashtable_delete(&self->htid, &rel->link_htid);
 }
 
 void
@@ -312,17 +291,6 @@ rels_cmp(Hashnode* node, void* ptr)
 	return str_compare(rel->name, arg[1]);
 }
 
-hot static inline bool
-rels_cmp_by(Hashnode* node, void* ptr)
-{
-	// compare by id
-	Uuid* arg = ptr;
-	auto rel = container_of(node, Rel, link_htid);
-	if (! rel->id)
-		return false;
-	return uuid_is(rel->id, arg);
-}
-
 Rel*
 rels_find(Rels* self, RelType type, Str* user, Str* name,
           bool  error_if_not_exists)
@@ -346,31 +314,6 @@ rels_find(Rels* self, RelType type, Str* user, Str* name,
 
 	if (error_if_not_exists)
 		error("{s} '{str}': not exists", rel_type_of(type), name);
-	return NULL;
-}
-
-Rel*
-rels_find_by(Rels* self, RelType type, Uuid* id, bool error_if_not_exists)
-{
-	// hash by uuid
-	uint32_t hash = id->a ^ id->b;
-
-	// match relation
-	auto node = hashtable_get(&self->htid, hash, rels_cmp_by, id);
-	if (node)
-	{
-		auto rel = container_of(node, Rel, link_htid);
-		if (type != REL_UNDEF && rel->type != type)
-			return NULL;
-		return rel;
-	}
-
-	if (error_if_not_exists)
-	{
-		char uuid[UUID_SZ];
-		uuid_get(id, uuid, sizeof(uuid));
-		error("{s} with uuid '{s}' not found", rel_type_of(type), uuid);
-	}
 	return NULL;
 }
 

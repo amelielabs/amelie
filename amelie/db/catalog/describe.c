@@ -303,14 +303,6 @@ describe_clone(Clone* self, Buf* buf, Str* user, int flags)
 		buf_format(buf, " of {str}.{str}\n",
 		           &config->table_user, &config->table);
 
-	// id
-	if (verbose)
-	{
-		char id[UUID_SZ];
-		uuid_get(&config->id, id, sizeof(id));
-		buf_format(buf, "  id {qs}\n", id);
-	}
-
 	// description
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
@@ -337,14 +329,6 @@ describe_channel(Channel* self, Buf* buf, Str* user, int flags)
 	else
 		buf_format(buf, "create channel {str}.{str}\n", &config->user,
 		           &config->name);
-
-	// id
-	if (verbose)
-	{
-		char id[UUID_SZ];
-		uuid_get(&config->id, id, sizeof(id));
-		buf_format(buf, "  id {qs}\n", id);
-	}
 
 	// description
 	if (! str_empty(&config->description))
@@ -436,14 +420,6 @@ describe_user(User* self, Buf* buf, Str* user, int flags)
 	else
 		buf_format(buf, "{str}.{str}\n", &config->parent,
 		           &config->name);
-
-	// id
-	if (verbose)
-	{
-		char id[UUID_SZ];
-		uuid_get(&config->id, id, sizeof(id));
-		buf_format(buf, "  id {qs}\n", id);
-	}
 
 	// description
 	if (! str_empty(&config->description))

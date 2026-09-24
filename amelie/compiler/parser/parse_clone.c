@@ -21,7 +21,6 @@ void
 parse_clone_create(Stmt* self)
 {
 	// CREATE CLONE [IF NOT EXISTS] name OF relation
-	// [ID]
 	// [DESCRIPTION]
 	// [GRANT]
 	auto stmt = ast_clone_create_allocate();
@@ -64,12 +63,6 @@ parse_clone_create(Stmt* self)
 	clone_config_set_table_user(config, &table->config->user);
 	clone_config_set_table(config, &table->config->name);
 
-	Uuid uuid;
-	uuid_init(&uuid);
-	auto local = self->parser->local;
-	uuid_generate(&uuid, &local->random, local->time_ms);
-	clone_config_set_id(config, &uuid);
-
 	// set clone timeline
 	auto timeline = &config->timeline;
 	timeline_set_timeline(timeline, id);
@@ -83,18 +76,6 @@ parse_clone_create(Stmt* self)
 		{
 			stmt_push(self, name);
 			break;
-		}
-
-		// ID string
-		if (str_is_case(&name->string, "id", 2))
-		{
-			auto value = stmt_expect(self, KSTRING);
-			Uuid id;
-			uuid_init(&id);
-			if (uuid_set_nothrow(&id, &value->string) == -1)
-				stmt_error(self, value, "failed to parse uuid");
-			clone_config_set_id(config, &id);
-			continue;
 		}
 
 		// DESCRIPTION string

@@ -97,8 +97,7 @@ table_create(Catalog*     self,
 		return false;
 	}
 
-	// ensure relation has unique id
-	catalog_check_uniqueness(self, &config->id);
+	// todo: ensure relation has unique id
 
 	// check limit
 	catalog_limit(self, tr, REL_TABLE, LIMIT_TABLES);
