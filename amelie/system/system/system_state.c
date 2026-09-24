@@ -29,12 +29,6 @@ system_describe(System* self, Buf* buf)
 	// secret
 	buf_format(buf, "alter system set secret = {qstr};\n",
 	           &state()->secret.string);
-
-	// cdc
-	auto cdc = opt_int_of(&state()->cdc);
-	if (cdc != UINT64_MAX)
-		buf_format(buf, "alter system set cdc = {u64};\n",
-		           &state()->cdc.integer);
 }
 
 void

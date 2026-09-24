@@ -80,22 +80,3 @@ write_seal(Write* self)
 		record->crc = crc;
 	}
 }
-
-static inline void
-write_cdc_prepare(Write* self, CdcBatch* batch, Rel* user, List* list)
-{
-	if (self->recover)
-	{
-		auto record = self->recover->record;
-		batch->lsn          = record->lsn;
-		batch->request_size = record_data_size(record);
-		batch->request      = record_data(record);
-	} else
-	{
-		batch->lsn          = self->record.lsn;
-		batch->request_size = buf_size(&self->record_data);
-		batch->request      = self->record_data.start;
-	}
-	batch->list = list;
-	batch->user = user;
-}

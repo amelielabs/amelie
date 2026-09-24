@@ -81,7 +81,6 @@ include_directories("${AMELIE_ROOT}/db/type")
 include_directories("${AMELIE_ROOT}/db/storage")
 include_directories("${AMELIE_ROOT}/db/flat")
 include_directories("${AMELIE_ROOT}/db/heap")
-include_directories("${AMELIE_ROOT}/db/cdc")
 include_directories("${AMELIE_ROOT}/db/transaction")
 include_directories("${AMELIE_ROOT}/db/index")
 include_directories("${AMELIE_ROOT}/db/part")
@@ -188,8 +187,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/flat/flat.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/row_encode.c
-    ${AMELIE_ROOT}/db/cdc/cdc.c
-    ${AMELIE_ROOT}/db/cdc/cdc_export.c
     ${AMELIE_ROOT}/db/transaction/rels.c
     ${AMELIE_ROOT}/db/index/tree.c
     ${AMELIE_ROOT}/db/index/index_tree.c

@@ -40,16 +40,6 @@ csystem_set_secret(Vm* self, Op* op)
 }
 
 void
-csystem_set_cdc(Vm* self, Op* op)
-{
-	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
-
-	opt_int_set(&state()->cdc, (uint64_t)op->a);
-	control_state_write();
-}
-
-void
 ccreate_token(Vm* self, Op* op)
 {
 	// PERM_CREATE_TOKEN

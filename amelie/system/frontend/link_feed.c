@@ -17,6 +17,7 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
+#if 0
 static inline void
 link_subscribe_to(Link* self, Str* user, Str* name)
 {
@@ -210,4 +211,11 @@ link_feed(Link* self)
 		if (! buf_empty(buf))
 			tcp_write_buf(&self->client->tcp, buf);
 	}
+}
+#endif
+
+void
+link_feed(Link* self)
+{
+	(void)self;
 }

@@ -28,7 +28,6 @@ struct State
 	Opt  rsn;
 	Opt  checkpoint;
 	Opt  recover;
-	Opt  cdc;
 	Opt  secret;
 	Opt  primary;
 	Opts opts;

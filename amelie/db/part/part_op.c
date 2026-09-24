@@ -15,7 +15,6 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_cdc.h>
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -128,18 +127,6 @@ static LogIf log_if_secondary =
 	.abort  = log_if_secondary_abort
 };
 
-static inline void
-part_cdc(Part* self, Tr* tr, Timeline* timeline, Row* row, int cdc_cmd)
-{
-	if (! timeline->rel->subs)
-		return;
-	cdc_log_add_row(&tr->log.cdc, cdc_cmd, timeline->rel->id,
-	                row,
-	                &self->flats,
-	                self->arg->columns,
-	                runtime()->timezone);
-}
-
 hot void
 part_insert(Part*     self, Tr* tr,
             Timeline* timeline,
@@ -181,9 +168,6 @@ part_insert(Part*     self, Tr* tr,
 				      &index->config->name);
 		}
 	}
-
-	// capture write
-	part_cdc(self, tr, timeline, row, CDC_WRITE);
 
 	// ensure write limit
 	if (tr->write)
@@ -238,9 +222,6 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 		}
 	}
 
-	// capture write
-	part_cdc(self, tr, timeline, row, CDC_WRITE);
-
 	// ensure write limit
 	if (tr->write)
 		usage_add(tr->write, 1);
@@ -291,9 +272,6 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 			op->row_prev = io.row_prev;
 	}
 
-	// capture
-	part_cdc(self, tr, timeline, row, row->deleted? CDC_DELETE: CDC_WRITE);
-
 	// ensure write limit
 	if (tr->write)
 		usage_add(tr->write, 1);
@@ -338,9 +316,6 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 		if (index_delete(index, &io))
 			op->row_prev = io.row_prev;
 	}
-
-	// capture delete
-	part_cdc(self, tr, timeline, row, CDC_DELETE);
 
 	// ensure write limit
 	if (tr->write)

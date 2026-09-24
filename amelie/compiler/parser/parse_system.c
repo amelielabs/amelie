@@ -45,18 +45,6 @@ parse_system_alter(Stmt* self)
 			return;
 		}
 
-		// cdc
-		if (str_is_case(&name->string, "cdc", 3))
-		{
-			// value
-			auto value = stmt_expect(self, KINT);
-			if (value->integer < 0)
-				stmt_error(self, value, "invalid limit value");
-			stmt->cdc_limit = value->integer;
-			stmt->type = SYSTEM_ALTER_SET_CDC;
-			return;
-		}
-
 		stmt_error(self, name, "unknown option");
 		return;
 	}
@@ -77,14 +65,6 @@ parse_system_alter(Stmt* self)
 			random_generate_alnum(&self->parser->local->random, secret, 32);
 			str_set_u8(&stmt->secret, secret, 32);
 			stmt->type = SYSTEM_ALTER_SET_SECRET;
-			return;
-		}
-
-		// cdc
-		if (str_is_case(&name->string, "cdc", 3))
-		{
-			stmt->cdc_limit = UINT64_MAX;
-			stmt->type = SYSTEM_ALTER_SET_CDC;
 			return;
 		}
 

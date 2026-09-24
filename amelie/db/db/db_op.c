@@ -15,7 +15,6 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_cdc.h>
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -30,20 +29,10 @@ db_gc(Db* self)
 	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
 	auto lsn = state_checkpoint();
 
-	// get min cdc slot lsn
-	uint64_t cdc_lsn;
-	auto     cdc = self->cdc;
-	cdc_min(cdc, &cdc_lsn);
-	if (cdc_lsn < lsn)
-		lsn = cdc_lsn;
-
 	unlock(lock_catalog);
 
 	// remove wal files < lsn
 	wal_gc(&self->wal, lsn);
-
-	// cdc gc
-	cdc_gc(cdc);
 
 	// checkpoint gc
 	checkpoints_gc(&self->checkpoints);

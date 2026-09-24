@@ -19,10 +19,9 @@ struct Db
 	Wal         wal;
 	Checkpoints checkpoints;
 	Syncer      syncer;
-	Cdc*        cdc;
 };
 
-void db_init(Db*, Cdc*, CatalogIf*, EvalIf*, PartsIf*, void*);
+void db_init(Db*, CatalogIf*, EvalIf*, PartsIf*, void*);
 void db_free(Db*);
 void db_open(Db*, bool);
 void db_close(Db*);

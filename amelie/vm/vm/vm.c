@@ -394,7 +394,6 @@ vm_run(Vm*       self,
 
 		// system
 		&&csystem_set_secret,
-		&&csystem_set_cdc,
 		&&ccreate_token,
 
 		// db
@@ -2149,10 +2148,6 @@ cupdate:
 
 csystem_set_secret:
 	csystem_set_secret(self, op);
-	op_next;
-
-csystem_set_cdc:
-	csystem_set_cdc(self, op);
 	op_next;
 
 ccreate_token:

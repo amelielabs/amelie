@@ -15,7 +15,6 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_cdc.h>
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -26,14 +25,12 @@
 
 void
 db_init(Db*        self,
-        Cdc*       cdc,
         CatalogIf* iface,
         EvalIf*    iface_eval,
         PartsIf*   iface_parts,
         void*      iface_arg)
 {
-	self->cdc = cdc;
-	catalog_init(&self->catalog, cdc,
+	catalog_init(&self->catalog,
 	             iface,
 	             iface_eval, iface_parts, iface_arg);
 	wal_init(&self->wal);

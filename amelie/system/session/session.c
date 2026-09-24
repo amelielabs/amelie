@@ -243,7 +243,7 @@ session_run_utility(Session* self)
 		}
 	}
 
-	// prepare write (both for wal write and cdc)
+	// prepare write
 	Write write;
 	write_init(&write);
 	defer(write_free, &write);
@@ -277,14 +277,6 @@ session_run_utility(Session* self)
 			tr_abort(&tr);
 			rethrow();
 		}
-	}
-
-	// capture user request
-	if (tr.user->subs)
-	{
-		CdcBatch batch;
-		write_cdc_prepare(&write, &batch, tr.user, NULL);
-		cdc_write(share()->cdc, &batch);
 	}
 
 	// commit

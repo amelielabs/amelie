@@ -264,7 +264,6 @@ system_create(void)
 	auto share = &self->share;
 	share->gtrs           = &self->gtrs;
 	share->commit         = &self->commit;
-	share->cdc            = &self->cdc;
 	share->repl           = &self->repl;
 	share->functions      = &self->functions;
 	share->db             = &self->db;
@@ -276,9 +275,6 @@ system_create(void)
 
 	// server
 	servers_init(&self->servers, system_on_server_connect, self);
-
-	// cdc
-	cdc_init(&self->cdc);
 
 	// frontends/backends
 	frontends_init(&self->frontends);
@@ -292,7 +288,7 @@ system_create(void)
 	functions_init(&self->functions);
 
 	// db
-	db_init(&self->db, &self->cdc,
+	db_init(&self->db,
 	        &catalog_if,
 	        &eval_if,
 	        &parts_if, self);
@@ -309,7 +305,6 @@ system_free(System* self)
 	commit_free(&self->commit);
 	gtrs_free(&self->gtrs);
 	db_free(&self->db);
-	cdc_free(&self->cdc);
 	functions_free(&self->functions);
 	servers_free(&self->servers);
 	am_free(self);

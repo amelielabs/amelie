@@ -73,7 +73,7 @@ flat_open(Flat* self, char* path)
 	defer_buf(&meta);
 	auto size_file = storage_open(&self->storage, path, STORAGE_FLAT, &meta);
 
-	// validate cdc header size
+	// validate header size
 	if (unlikely(buf_size(&meta) != sizeof(FlatHeader)))
 		error("storage: file '{str}' has invalid flat header", path);
 

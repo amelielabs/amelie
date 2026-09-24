@@ -15,7 +15,6 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_cdc.h>
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -126,19 +125,9 @@ checkpoints_open(Checkpoints* self)
 	state_checkpoint_set(id);
 	state_lsn_follow(id);
 
-	// restore cdc
-	char path[PATH_MAX];
-	format(path, sizeof(path),
-	       "{s}/checkpoint/{u64}/cdc",
-	       state_directory(), id);
-
-	auto size = cdc_open(self->catalog->cdc, path);
-	info("recover: cdc ({.2f} MiB)",
-	     id, (double)size / 1024 / 1024);
-
 	// restore last checkpoint schema
-	format(path, sizeof(path),
-	       "{s}/checkpoint/{u64}/schema.sql",
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/checkpoint/{u64}/schema.sql",
 	       state_directory(), id);
 
 	catalog_read(self->catalog, path);

@@ -15,7 +15,6 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_cdc.h>
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -23,14 +22,11 @@
 
 void
 catalog_init(Catalog*   self,
-             Cdc*       cdc,
              CatalogIf* iface,
              EvalIf*    iface_eval,
              PartsIf*   iface_part,
              void*      iface_arg)
 {
-	self->cdc        = cdc;
-
 	self->iface      = iface;
 	self->iface_part = iface_part;
 	self->iface_eval = iface_eval;

@@ -18,9 +18,7 @@ struct Batch
 	Buf       list;
 	int       list_count;
 	Track*    pending;
-	bool      pending_cdc;
 	WriteList write;
-	Cdc*      cdc;
 };
 
 static inline Gtr*
@@ -30,12 +28,10 @@ batch_at(Batch* self, int order)
 }
 
 static inline void
-batch_init(Batch* self, Cdc* cdc)
+batch_init(Batch* self)
 {
-	self->pending     = NULL;
-	self->pending_cdc = false;
-	self->list_count  = 0;
-	self->cdc         = cdc;
+	self->pending    = NULL;
+	self->list_count = 0;
 	buf_init(&self->list);
 	write_list_init(&self->write);
 }
@@ -49,9 +45,8 @@ batch_free(Batch* self)
 static inline void
 batch_reset(Batch* self)
 {
-	self->pending     = NULL;
-	self->pending_cdc = false;
-	self->list_count  = 0;
+	self->pending    = NULL;
+	self->list_count = 0;
 	buf_reset(&self->list);
 	write_list_reset(&self->write);
 }
@@ -89,7 +84,6 @@ batch_process(Batch* self)
 	{
 		// handle aborts per partition
 		auto gtr = batch_at(self, it);
-		auto gtr_cdc = false;
 		list_foreach(&gtr->dispatches.ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
@@ -107,37 +101,9 @@ batch_process(Batch* self)
 			auto last    = &track->consensus;
 			if (pending->abort >= tr->id || last->abort >= tr->id)
 				gtr_set_abort(gtr);
-
-			// collect cdc per partition (table dml)
-			if (! cdc_log_empty(&tr->log.cdc))
-			{
-				list_append(&gtr->write_cdc, &tr->log.cdc.link);
-				gtr_cdc = true;
-			}
 		}
 
-		// collect cdc (publish)
-		if (! cdc_log_empty(&gtr->tr.log.cdc))
-		{
-			list_append(&gtr->write_cdc, &gtr->tr.log.cdc.link);
-			gtr_cdc = true;
-		}
-
-		// collect cdc (request)
-		if (gtr->tr.user->subs)
-			gtr_cdc = true;
-
-		// enforce global cdc memory limit
-		if (gtr_cdc)
-		{
-			auto limit = opt_int_of(&state()->cdc);
-			if (limit != UINT64_MAX)
-			{
-				auto size = cdc_size(self->cdc);
-				if (unlikely(size >= limit))
-					gtr_set_abort(gtr);
-			}
-		}
+		// todo: publish
 
 		// sync metrics and prepare gtr for wal write
 		auto write = &gtr->write;
@@ -165,9 +131,6 @@ batch_process(Batch* self)
 
 		if (gtr->abort)
 			continue;
-
-		if (gtr_cdc)
-			self->pending_cdc = true;
 
 		// add for wal write
 		if (! gtr->program->ro)
@@ -201,39 +164,9 @@ batch_abort(Batch* self)
 			if (tr->id > pending->abort)
 				pending->abort = tr->id;
 		}
-
-		// reset cdc list
-		list_init(&gtr->write_cdc);
 	}
 
-	self->pending_cdc = false;
 	write_list_reset(&self->write);
-}
-
-hot static inline void
-batch_publish(Batch* self)
-{
-	// publish cdc events
-	for (auto it = 0; it < self->list_count; it++)
-	{
-		auto gtr = batch_at(self, it);
-		if (gtr->abort)
-			continue;
-
-		auto user = gtr->tr.user;
-		if (!user->subs && list_empty(&gtr->write_cdc))
-			continue;
-
-		// do atomic add of all cdc events from this
-		// transaction (under same lsn)
-		//
-		// this includes user request and all cdc logs
-		//
-		CdcBatch batch;
-		write_cdc_prepare(&gtr->write, &batch, user, &gtr->write_cdc);
-
-		cdc_write(self->cdc, &batch);
-	}
 }
 
 hot static inline void

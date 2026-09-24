@@ -376,10 +376,6 @@ emit_utility(Compiler* self)
 			auto offset = buf_size(data);
 			encode_str(data, &arg->secret);
 			op1(self, CSYSTEM_SET_SECRET, offset);
-		} else
-		if (arg->type == SYSTEM_ALTER_SET_CDC)
-		{
-			op1(self, CSYSTEM_SET_CDC, arg->cdc_limit);
 		}
 		lock_catalog = LOCK_SHARED;
 		break;

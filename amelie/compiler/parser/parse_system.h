@@ -16,15 +16,13 @@ typedef struct AstSystemAlter AstSystemAlter;
 enum
 {
 	SYSTEM_ALTER_SET_SECRET,
-	SYSTEM_ALTER_SET_CDC
 };
 
 struct AstSystemAlter
 {
-	Ast      ast;
-	int      type;
-	Str      secret;
-	uint64_t cdc_limit;
+	Ast ast;
+	int type;
+	Str secret;
 };
 
 static inline AstSystemAlter*

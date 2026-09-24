@@ -18,7 +18,6 @@ struct Share
 	Gtrs*      gtrs;
 	Commit*    commit;
 	Repl*      repl;
-	Cdc*       cdc;
 	Functions* functions;
 	Db*        db;
 	RecoverIf* recover_if;

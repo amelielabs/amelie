@@ -15,7 +15,6 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_cdc.h>
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
@@ -69,7 +68,6 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto worker = &self->workers[i];
-		worker->cdc        = false;
 		worker->pid        = -1;
 		worker->list_count = 0;
 		event_init(&worker->on_complete);
@@ -100,16 +98,6 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 			list_append(&worker->list, &part->link_cp);
 			worker->list_count++;
 		}
-	}
-
-	// set cdc dump to a first worker
-	for (int i = 0; i < self->workers_count; i++)
-	{
-		auto worker = &self->workers[i];
-		if (! worker->list_count)
-			continue;
-		worker->cdc = true;
-		break;
 	}
 }
 
@@ -178,22 +166,6 @@ checkpoint_part(Checkpoint* self, Part* part)
 	}
 }
 
-hot static void
-checkpoint_cdc(Checkpoint* self)
-{
-	// <base>/checkpoint/<lsn>.incomplete/cdc
-	char path[PATH_MAX];
-	format(path, sizeof(path),
-	       "{s}/checkpoint/{u64}.incomplete/cdc",
-	       state_directory(),
-	       self->lsn);
-
-	auto size = cdc_create(self->catalog->cdc, path);
-	info(" cdc ({.2f} MB)",
-	     self->lsn,
-	     (double)size / 1024 / 1024);
-}
-
 static void
 checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 {
@@ -213,10 +185,6 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 		// create partition files
 		list_foreach(&worker->list)
 			checkpoint_part(self, list_at(Part, link_cp));
-
-		// create cdc file
-		if (worker->cdc)
-			checkpoint_cdc(self);
 	);
 
 	// signal waiter process
@@ -278,19 +246,13 @@ checkpoint_run(Checkpoint* self)
 	catalog_write(self->catalog, path);
 
 	// run workers
-	auto active = 0;
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto worker = &self->workers[i];
 		if (worker->list_count == 0)
 			continue;
 		checkpoint_worker_run(self, worker);
-		active++;
 	}
-
-	// create cdc file (no relations)
-	if (! active)
-		checkpoint_cdc(self);
 }
 
 void

@@ -26,7 +26,6 @@ struct Gtr
 	Tr         tr;
 	Write      write;
 	Usage      usage_write;
-	List       write_cdc;
 	Event      on_commit;
 	Event*     on_recover;
 	Local*     local;
@@ -54,7 +53,6 @@ gtr_init(Gtr* self)
 	tr_init(&self->tr);
 	write_init(&self->write);
 	usage_init(&self->usage_write, "write");
-	list_init(&self->write_cdc);
 	list_init(&self->link_batch);
 	list_init(&self->link);
 	msg_init(&self->msg, MSG_GTR);
@@ -79,7 +77,6 @@ gtr_reset(Gtr* self)
 	tr_reset(&self->tr);
 	write_reset(&self->write);
 	usage_reset(&self->usage_write);
-	list_init(&self->write_cdc);
 	list_init(&self->link_batch);
 	list_init(&self->link);
 }

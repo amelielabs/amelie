@@ -13,7 +13,6 @@
 
 // system
 void csystem_set_secret(Vm*, Op*);
-void csystem_set_cdc(Vm*, Op*);
 void ccreate_token(Vm*, Op*);
 
 // db

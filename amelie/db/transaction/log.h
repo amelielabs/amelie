@@ -50,10 +50,9 @@ struct LogOp
 
 struct Log
 {
-	Buf    op;
-	Buf    data;
-	int    count;
-	CdcLog cdc;
+	Buf op;
+	Buf data;
+	int count;
 };
 
 always_inline static inline LogOp*
@@ -74,7 +73,6 @@ log_init(Log* self)
 	self->count = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
-	cdc_log_init(&self->cdc);
 }
 
 static inline void
@@ -82,7 +80,6 @@ log_free(Log* self)
 {
 	buf_free(&self->op);
 	buf_free(&self->data);
-	cdc_log_free(&self->cdc);
 }
 
 static inline void
@@ -91,7 +88,6 @@ log_reset(Log* self)
 	self->count = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
-	cdc_log_reset(&self->cdc);
 }
 
 static inline LogOp*

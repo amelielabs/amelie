@@ -315,7 +315,6 @@ OpDesc ops[] =
 
 	// system
 	{ CSYSTEM_SET_SECRET, "system_set_secret" },
-	{ CSYSTEM_SET_CDC, "system_set_cdc" },
 	{ CCREATE_TOKEN, "create_token" },
 
 	// storage

@@ -18,8 +18,6 @@ struct System
 	Share      share;
 	// vm
 	Functions  functions;
-	// cdc
-	Cdc        cdc;
 	// repl
 	Repl       repl;
 	// transactions

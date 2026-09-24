@@ -27,14 +27,13 @@ struct Catalog
 	Rels       users;
 	Rels       rels;
 	Columns    channel_columns;
-	Cdc*       cdc;
 	PartsIf*   iface_part;
 	EvalIf*    iface_eval;
 	CatalogIf* iface;
 	void*      iface_arg;
 };
 
-void catalog_init(Catalog*, Cdc*, CatalogIf*, EvalIf*, PartsIf*, void*);
+void catalog_init(Catalog*, CatalogIf*, EvalIf*, PartsIf*, void*);
 void catalog_free(Catalog*);
 void catalog_create(Catalog*);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);

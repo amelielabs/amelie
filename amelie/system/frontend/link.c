@@ -27,7 +27,6 @@ link_init(Link* self, Frontend* fe, Client* client)
 	request_init(&self->req);
 	mcp_init(&self->mcp, &self->portal);
 	json_init(&self->json);
-	feeds_init(&self->feeds, share()->cdc);
 }
 
 void
