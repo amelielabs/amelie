@@ -23,8 +23,6 @@
 static inline void
 table_free(Table* self, bool drop)
 {
-	assert(! self->rel.subs);
-
 	unused(drop);
 	auto parts = &self->parts;
 	parts_close(parts);

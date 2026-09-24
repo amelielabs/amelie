@@ -738,6 +738,9 @@ cpublish(Vm* self, Op* op)
 	auto dispatch = dispatch_create(&dispatches->cache);
 
 	auto channel = (Channel*)op->a;
+	(void)channel;
+	(void)cpublish_encode;
+#if 0
 	if (channel->rel.subs)
 	{
 		// encode values directly to the cdc log buf
@@ -760,6 +763,7 @@ cpublish(Vm* self, Op* op)
 			cpublish_encode(self, channel->rel.id, NULL);
 		}
 	}
+#endif
 
 	// (dispatch has no partitions)
 

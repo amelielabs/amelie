@@ -42,9 +42,6 @@ struct Rel
 	Hashnode link_htid;
 	List     link;
 
-	// subscribers
-	int      subs;
-
 	// lock manager
 	Spinlock lock;
 	uint64_t lock_order;
@@ -85,7 +82,6 @@ rel_init(Rel* self, RelType type)
 	self->free            = NULL;
 	self->lock_order      = 0;
 	self->lock_wait_count = 0;
-	self->subs            = 0;
 	spinlock_init(&self->lock);
 	hashnode_init(&self->link_ht);
 	hashnode_init(&self->link_htid);

@@ -26,7 +26,6 @@ clone_free(Clone* self, bool drop)
 	auto id = self->config->timeline.timeline;
 	timelines_remove(&self->table->timelines, &self->config->timeline);
 	clone_config_free(self->config);
-	assert(! self->rel.subs);
 
 	// do table cleanup
 	if (drop)

@@ -24,7 +24,6 @@ static inline void
 channel_free(Channel* self, bool drop)
 {
 	unused(drop);
-	assert(! self->rel.subs);
 	channel_config_free(self->config);
 	am_free(self);
 }

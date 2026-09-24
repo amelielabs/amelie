@@ -92,7 +92,7 @@ session_run(Session* self)
 
 	// prepare request for the wal writer
 	auto write = &gtr->write;
-	if (!program->ro || portal->user->rel.subs > 0)
+	if (! program->ro)
 	{
 		auto req = self->req;
 		if (req->recover)
@@ -248,7 +248,7 @@ session_run_utility(Session* self)
 	write_init(&write);
 	defer(write_free, &write);
 
-	if (tr_active(&tr) || tr.user->subs)
+	if (tr_active(&tr))
 	{
 		auto req = self->req;
 		if (req->recover) {
