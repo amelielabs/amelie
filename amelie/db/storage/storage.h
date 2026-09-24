@@ -15,8 +15,9 @@ typedef struct Storage Storage;
 
 enum
 {
-	STORAGE_HEAP,
-	STORAGE_FLAT
+	STORAGE_STREAM,
+	STORAGE_FLAT,
+	STORAGE_HEAP
 };
 
 struct Storage

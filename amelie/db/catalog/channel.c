@@ -13,6 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_type.h>
 #include <amelie_storage.h>
+#include <amelie_stream.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>
@@ -24,6 +25,7 @@ static inline void
 channel_free(Channel* self, bool drop)
 {
 	unused(drop);
+	stream_free(&self->stream);
 	channel_config_free(self->config);
 	am_free(self);
 }
@@ -42,6 +44,7 @@ channel_allocate(ChannelConfig* config)
 {
 	auto self = (Channel*)am_malloc(sizeof(Channel));
 	self->config = channel_config_copy(config);
+	stream_init(&self->stream);
 
 	// set relation
 	auto rel = &self->rel;
@@ -49,11 +52,30 @@ channel_allocate(ChannelConfig* config)
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_description(rel, &self->config->description);
+	rel_set_id(rel, &self->config->id);
 	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)channel_show);
 	rel_set_free(rel, (RelFree)channel_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
+}
+
+static void
+channel_open(Channel* self)
+{
+	(void)self;
+#if 0
+	// stream id
+	char uuid[UUID_SZ];
+	uuid_get(&self->config->id, uuid, sizeof(uuid));
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/checkpoint/{u64}/{s}",
+	       state_directory(), state_checkpoint(),
+	       uuid);
+
+	// read stream file
+	stream_open(&self->stream, path);
+#endif
 }
 
 bool
@@ -85,5 +107,9 @@ channel_create(Catalog*       self,
 	// create channel
 	auto channel = channel_allocate(config);
 	rels_create(&self->rels, tr, &channel->rel);
+
+	// read channel stream file on recovery
+	if (opt_int_of(&state()->recover) == RECOVER_CHECKPOINT)
+		channel_open(channel);
 	return true;
 }

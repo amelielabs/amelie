@@ -13,6 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_type.h>
 #include <amelie_storage.h>
+#include <amelie_stream.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>
@@ -329,6 +330,14 @@ describe_channel(Channel* self, Buf* buf, Str* user, int flags)
 	else
 		buf_format(buf, "create channel {str}.{str}\n", &config->user,
 		           &config->name);
+
+	// id
+	if (verbose)
+	{
+		char id[UUID_SZ];
+		uuid_get(&config->id, id, sizeof(id));
+		buf_format(buf, "  id {qs}\n", id);
+	}
 
 	// description
 	if (! str_empty(&config->description))

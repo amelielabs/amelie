@@ -18,6 +18,7 @@ struct ChannelConfig
 	Str    user;
 	Str    name;
 	Str    description;
+	Uuid   id;
 	Grants grants;
 };
 
@@ -29,6 +30,7 @@ channel_config_allocate(void)
 	str_init(&self->user);
 	str_init(&self->name);
 	str_init(&self->description);
+	uuid_init(&self->id);
 	grants_init(&self->grants);
 	return self;
 }
@@ -64,6 +66,12 @@ channel_config_set_description(ChannelConfig* self, Str* value)
 	str_copy(&self->description, value);
 }
 
+static inline void
+channel_config_set_id(ChannelConfig* self, Uuid* id)
+{
+	self->id = *id;
+}
+
 static inline ChannelConfig*
 channel_config_copy(ChannelConfig* self)
 {
@@ -71,6 +79,7 @@ channel_config_copy(ChannelConfig* self)
 	channel_config_set_user(copy, &self->user);
 	channel_config_set_name(copy, &self->name);
 	channel_config_set_description(copy, &self->description);
+	channel_config_set_id(copy, &self->id);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
@@ -86,6 +95,7 @@ channel_config_read(uint8_t** pos)
 		{ DECODE_STR,   "user",        &self->user        },
 		{ DECODE_STR,   "name",        &self->name        },
 		{ DECODE_STR,   "description", &self->description },
+		{ DECODE_UUID,  "id",          &self->id          },
 		{ DECODE_ARRAY, "grants",      &pos_grants        },
 		{ 0,             NULL,          NULL              },
 	};
@@ -119,6 +129,10 @@ channel_config_write(ChannelConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_uuid(buf, &self->id);
 
 	// grants
 	encode_raw(buf, "grants", 6);

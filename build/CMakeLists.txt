@@ -79,6 +79,7 @@ include_directories("${AMELIE_ROOT}/server/server")
 include_directories("${AMELIE_ROOT}/db")
 include_directories("${AMELIE_ROOT}/db/type")
 include_directories("${AMELIE_ROOT}/db/storage")
+include_directories("${AMELIE_ROOT}/db/stream")
 include_directories("${AMELIE_ROOT}/db/flat")
 include_directories("${AMELIE_ROOT}/db/heap")
 include_directories("${AMELIE_ROOT}/db/transaction")
@@ -184,6 +185,7 @@ set(AMELIE_SOURCES_SERVER
 
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/storage/storage_file.c
+    ${AMELIE_ROOT}/db/stream/stream.c
     ${AMELIE_ROOT}/db/flat/flat.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/row_encode.c
