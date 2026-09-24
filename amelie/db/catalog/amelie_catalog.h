@@ -44,12 +44,6 @@
 #include "catalog/channel_op.h"
 #include "catalog/channel.h"
 
-// subscription
-#include "catalog/sub_config.h"
-#include "catalog/sub_op.h"
-#include "catalog/sub.h"
-#include "catalog/acknowledge.h"
-
 // grant
 #include "catalog/rel_op.h"
 #include "catalog/rel.h"

@@ -52,10 +52,3 @@ catalog_find_channel(Catalog* self, Str* user, Str* name, bool error_if_not_exis
 	return channel_of(rels_find(&self->rels, REL_CHANNEL, user, name,
 	                            error_if_not_exists));
 }
-
-static inline Sub*
-catalog_find_sub(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
-{
-	return sub_of(rels_find(&self->rels, REL_SUBSCRIPTION, user, name,
-	                        error_if_not_exists));
-}

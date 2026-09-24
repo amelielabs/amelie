@@ -13,23 +13,18 @@ error: select * from ❰leaked❱ ⟵ relation not found
 # test: read-only publish
 unfollow;
 create channel t;
-create subscription t_sub on t;
 follow "00000000-0000-0000-0000-000000000002";
 select show("state").lsn;
 
 lsn
 ───
-3
+2
 publish into t 123;
 error: system is in read-only mode
 select show("state").lsn;
 
 lsn
 ───
-3
-select * from t_sub;
-
-lsn  cmd  data
-────────────────
+2
 disconnect S0;
 close E0;

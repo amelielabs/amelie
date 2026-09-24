@@ -250,17 +250,6 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		}
 		break;
 	}
-	case REL_SUBSCRIPTION:
-	{
-		auto sub = sub_of(rel);
-		target->type     = TARGET_SUB;
-		target->from_sub = sub;
-		target->columns  = &share()->db->catalog.cdc_columns;
-		str_set_str(&target->name, &sub->config->name);
-		access_add(&self->parser->program->access, &sub->rel,
-		           LOCK_SHARED, PERM_SELECT);
-		break;
-	}
 	default:
 		stmt_error(self, path, "{s} cannot be used here",
 		           rel_type_of(rel->type));

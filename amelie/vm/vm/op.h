@@ -349,10 +349,6 @@ enum
 	// channel
 	CPUBLISH,
 
-	// subscription
-	CSUBSCRIPTION,
-	CACK,
-
 	// locking
 	CLOCK,
 	CUNLOCK,

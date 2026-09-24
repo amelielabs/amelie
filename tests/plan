@@ -58,7 +58,6 @@ test index
 test clone
 test clone_visibility
 test channel
-test subscription
 test function
 test grant
 test limits
@@ -135,7 +134,6 @@ test bootstrap
 test wal_dml
 test wal_ddl
 test checkpoint
-test checkpoint_cdc
 test checkpoint_flat
 test backup
 

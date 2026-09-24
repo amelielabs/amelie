@@ -41,8 +41,6 @@ enum
 	SHOW_FUNCTION,
 	SHOW_CHANNELS,
 	SHOW_CHANNEL,
-	SHOW_SUBSCRIPTIONS,
-	SHOW_SUBSCRIPTION,
 	SHOW_RELS,
 	SHOW_REL,
 	SHOW_GRANTS,
@@ -103,10 +101,6 @@ static ShowCmd show_cmds[] =
 	{ SHOW_FUNCTION,      "function",      8,  SHOW_YES,   true  },
 	{ SHOW_CHANNELS,      "channels",      8,  SHOW_NO,    false },
 	{ SHOW_CHANNEL,       "channel",       7,  SHOW_YES,   true  },
-	{ SHOW_SUBSCRIPTIONS, "subscriptions", 13, SHOW_NO,    false },
-	{ SHOW_SUBSCRIPTION,  "subscription",  12, SHOW_YES,   true  },
-	{ SHOW_SUBSCRIPTIONS, "subs",          4,  SHOW_NO,    false },
-	{ SHOW_SUBSCRIPTION,  "sub",           3,  SHOW_YES,   true  },
 	{ SHOW_RELS,          "rels",          4,  SHOW_NO,    false },
 	{ SHOW_REL,           "rel",           3,  SHOW_YES,   true  },
 
@@ -371,16 +365,6 @@ fn_show(Call* self)
 	case SHOW_CHANNEL:
 	{
 		rels_list(&catalog->rels, REL_CHANNEL, buf, user_by, user, &name, flags);
-		break;
-	}
-	case SHOW_SUBSCRIPTIONS:
-	{
-		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user_by, user, NULL, flags);
-		break;
-	}
-	case SHOW_SUBSCRIPTION:
-	{
-		rels_list(&catalog->rels, REL_SUBSCRIPTION, buf, user_by, user, &name, flags);
 		break;
 	}
 	case SHOW_RELS:

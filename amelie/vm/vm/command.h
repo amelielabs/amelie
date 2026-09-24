@@ -35,7 +35,4 @@ void cdelete(Vm*, Op*);
 void cupdate(Vm*, Op*);
 
 void ccall_udf(Vm*, Op*);
-
 void cpublish(Vm*, Op*);
-void csubscription(Vm*, Op*);
-void cack(Vm*, Op*);

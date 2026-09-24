@@ -42,7 +42,6 @@ static Permission perms[] =
 	{ PERM_CREATE_CLONE,        "create_clone",        12 },
 	{ PERM_CREATE_FUNCTION,     "create_function",     15 },
 	{ PERM_CREATE_CHANNEL,      "create_channel",      14 },
-	{ PERM_CREATE_SUBSCRIPTION, "create_subscription", 19 },
 	{ PERM_CREATE_API,          "create_api",          10 },
 
 	// DML

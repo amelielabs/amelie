@@ -16,15 +16,6 @@ insert into test values (124), (125);
 error: write limit reached
 drop table test;
 alter user amelie unset limit write;
-# test: write (publish)
-create channel t;
-create subscription t_sub on t;
-alter user amelie set limit write = 1;
-publish into t 123;
-publish into t 124, 125;
-error: write limit reached
-alter user amelie unset limit write;
-drop channel t cascade;
 # test: send
 alter user amelie set limit send = 0;
 show limits;
@@ -110,14 +101,6 @@ create channel test;
 create channel test2;
 error: user 'amelie': channels limit reached
 drop channel test;
-# test: subscriptions
-create channel test;
-alter user amelie set limit subscriptions = 0;
-create subscription test_sub on test;
-error: user 'amelie': subscriptions limit reached
-alter user amelie set limit subscriptions = 1;
-create subscription test_sub on test;
-drop channel test cascade;
 # test: functions
 alter user amelie set limit functions = 0;
 create function test () begin end;
@@ -307,70 +290,5 @@ memory
   "limit_enabled": false,
   "limit": 0
 }
-# test: cdc
-show cdc;
-
-cdc
-───
-{
-  "slots": 0,
-  "slots_min": -1,
-  "subs": 0,
-  "lsn": 10,
-  "size": 262144,
-  "pages": 1
-}
-create channel t;
-create subscription t_sub on t;
-publish into t 123;
-show cdc;
-
-cdc
-───
-{
-  "slots": 1,
-  "slots_min": 94,
-  "subs": 0,
-  "lsn": 95,
-  "size": 262144,
-  "pages": 1
-}
-alter system set cdc = 1;
-show cdc;
-
-cdc
-───
-{
-  "slots": 1,
-  "slots_min": 94,
-  "subs": 0,
-  "lsn": 95,
-  "size": 262144,
-  "limit": 1,
-  "pages": 1
-}
-publish into t 124;
-error: transaction aborted during commit
-alter system reset cdc;
-show cdc;
-
-cdc
-───
-{
-  "slots": 1,
-  "slots_min": 94,
-  "subs": 0,
-  "lsn": 95,
-  "size": 262144,
-  "pages": 1
-}
-publish into t 125;
-select * from t_sub;
-
-lsn  cmd      data
-────────────────────
-95   publish  123
-96   publish  125
-drop channel t cascade;
 disconnect S0;
 close E0;

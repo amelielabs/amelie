@@ -234,44 +234,6 @@ copy_execute(Parser* self, Udf* udf, uint8_t* args)
 	}
 }
 
-static void
-copy_ack(Parser* self, Sub* sub, uint8_t* args)
-{
-	// create main namespace and the main block
-	auto ns    = namespaces_add(&self->nss, NULL, NULL);
-	auto block = blocks_add(&ns->blocks, NULL, NULL);
-
-	// prepare execute stmt
-	auto stmt = stmt_allocate(self, &self->lex, block);
-	stmts_add(&block->stmts, stmt);
-	stmt->id  = STMT_ACKNOWLEDGE;
-	stmt->ast = &ast_ack_allocate()->ast;
-	stmt->is_return = true;
-
-	auto ack = ast_ack_of(stmt->ast);
-	ack->name = sub->config->name;
-	ack->sub  = sub;
-
-	// require exclusive lock
-	access_add(&self->program->access, &sub->rel,
-	           LOCK_EXCLUSIVE, PERM_SELECT);
-
-	// parse arguments
-
-	// lsn
-	auto pos = args;
-	int64_t lsn;
-	if (! data_is_int(pos))
-		goto error;
-	unpack_int(&pos, &lsn);
-
-	ack->lsn = lsn;
-	return;
-
-error:
-	error("write: lsn expected for subscription");
-}
-
 void
 parse_copy_api(Parser*  self, Program* program,
                Str*     rel_user,
@@ -314,12 +276,6 @@ parse_copy_api(Parser*  self, Program* program,
 	{
 		auto udf = udf_of(ref);
 		copy_execute(self, udf, args);
-		break;
-	}
-	case REL_SUBSCRIPTION:
-	{
-		auto sub = sub_of(ref);
-		copy_ack(self, sub, args);
 		break;
 	}
 	default:

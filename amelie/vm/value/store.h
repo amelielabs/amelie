@@ -17,7 +17,6 @@ enum
 {
 	STORE_SET,
 	STORE_UNION,
-	STORE_SUB,
 	STORE_MATCHING
 };
 

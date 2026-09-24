@@ -356,10 +356,6 @@ OpDesc ops[] =
 	// channel
 	{ CPUBLISH, "publish" },
 
-	// subscription
-	{ CSUBSCRIPTION, "subscription" },
-	{ CACK, "ack" },
-
 	// locking
 	{ CLOCK, "lock" },
 	{ CUNLOCK, "unlock" },
@@ -609,20 +605,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         &channel->config->user, &channel->config->name);
 			break;
 		}
-		case CSUBSCRIPTION:
-		{
-			auto sub = (Sub*)op->b;
-			op_write(buf, op, true, false, false, "{str}.{str}",
-			         &sub->config->user, &sub->config->name);
-			break;
-		};
-		case CACK:
-		{
-			auto sub = (Sub*)op->a;
-			op_write(buf, op, false, true, false, "{str}.{str}",
-			         &sub->config->user, &sub->config->name);
-			break;
-		};
 		case CVALUE:
 		{
 			auto value = (Value*)op->b;

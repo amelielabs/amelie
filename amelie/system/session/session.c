@@ -99,9 +99,6 @@ session_run(Session* self)
 			write_set_recover(write, req->recover);
 		else
 			request_write(req, &portal->endpoint, &write->record_data);
-
-		if (compiler_stmt(compiler)->id == STMT_ACKNOWLEDGE)
-			write_set_flags(write, RECORD_UTILITY);
 	}
 
 	// [PROFILE]

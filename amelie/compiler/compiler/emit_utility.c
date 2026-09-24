@@ -289,33 +289,6 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
-	// subscription
-	case STMT_CREATE_SUBSCRIPTION:
-	{
-		auto arg = ast_sub_create_of(stmt->ast);
-		offset = sub_op_create(data, arg->config);
-		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
-		break;
-	}
-	case STMT_DROP_SUBSCRIPTION:
-	{
-		auto arg = ast_sub_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_SUBSCRIPTION, &arg->user, &arg->name, arg->cascade);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-	case STMT_ALTER_SUBSCRIPTION:
-	{
-		auto arg = ast_sub_alter_of(stmt->ast);
-		if (arg->type == SUBSCRIPTION_ALTER_RENAME)
-			offset = rel_op_rename(data, REL_SUBSCRIPTION, &arg->user, &arg->name, &arg->user, &arg->name_new);
-		else
-		if (arg->type == SUBSCRIPTION_ALTER_DESCRIPTION)
-			offset = rel_op_describe(data, REL_SUBSCRIPTION, &arg->user, &arg->name, &arg->description);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-
 	default:
 		abort();
 		break;

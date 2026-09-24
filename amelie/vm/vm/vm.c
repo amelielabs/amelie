@@ -435,10 +435,6 @@ vm_run(Vm*       self,
 		// channel
 		&&cpublish,
 
-		// subscription
-		&&csubscription,
-		&&cack,
-
 		// locking
 		&&clock,
 		&&cunlock,
@@ -2274,14 +2270,6 @@ ccall_udf:
 
 cpublish:
 	cpublish(self, op);
-	op_next;
-
-csubscription:
-	csubscription(self, op);
-	op_next;
-
-cack:
-	cack(self, op);
 	op_next;
 
 clock:

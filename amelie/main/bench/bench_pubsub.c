@@ -24,10 +24,6 @@ bench_pubsub_create(Bench* self, Client* client)
 	str_set_cstr(&str, "create channel bench_channel");
 	client_execute(client, &str, NULL);
 
-	info("preparing subscription.");
-	str_set_cstr(&str, "create subscription bench_sub on bench_channel");
-	client_execute(client, &str, NULL);
-
 	info("preparing function.");
 	Buf buf;
 	buf_init(&buf);

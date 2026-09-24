@@ -68,22 +68,6 @@ drop function test;
 switch S0;
 grant create_channel to test;
 
-# test: create_subscription
-switch S1;
-create channel test;
-create subscription test_sub on test;
-
-switch S0;
-revoke create_subscription from test;
-
-switch S1;
-create subscription test_sub2 on test;
-
-# still possible
-drop subscription test_sub;
-drop channel test;
-switch S0;
-
 # test: create_user
 switch S1;
 
@@ -361,26 +345,6 @@ show grants fun;
 drop user u;
 show grants fun;
 
-# test: select (from subscription)
-create user u;
-create table t (id int primary key, data int);
-create subscription t_sub on t;
-insert into t values (1, 10), (2, 20);
-
-connect E0 S1 u@127.0.0.1:3485;
-switch S1;
-
-select * from amelie.t;
-explain select * from amelie.t_sub;
-select * from amelie.t_sub;
-
-switch S0;
-disconnect S1;
-
-drop subscription t_sub;
-drop table t;
-drop user u cascade;
-
 # test: revoke
 create user u1;
 create user u2;
@@ -481,44 +445,6 @@ select * from u.owned;
 
 disconnect S1;
 drop user u cascade;
-
-# test: create_subscription (user)
-create user u;
-create user uu;
-
-connect E0 S1 u@127.0.0.1:3485;
-switch S1;
-# cannot be done (only parent or superuser)
-create subscription uu_sub on user uu;
-
-connect E0 S2 uu@127.0.0.1:3485;
-switch S2;
-
-switch S0;
-create subscription u_sub on user u;
-create subscription uu_sub on user uu;
-
-switch S1;
-create table test (id int primary key);
-insert into test values (1), (2);
-drop table test;
-
-switch S2;
-create channel test;
-publish into test 1,2;
-drop channel test;
-
-switch S0;
-select data[9] from u_sub;
-select data[9] from uu_sub;
-
-drop user u;
-drop user u cascade;
-drop user uu;
-drop user uu cascade;
-
-disconnect S1;
-disconnect S2;
 
 disconnect S0;
 close E0;

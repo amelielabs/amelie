@@ -228,27 +228,22 @@ catalog_grant_mask(RelType type)
 		perms_all =
 			PERM_PUBLISH;
 		break;
-	case REL_SUBSCRIPTION:
-		perms_all =
-			PERM_NONE;
-		break;
 	case REL_USER:
 		perms_all =
-			PERM_GRANT               |
-			PERM_SYSTEM              |
-			PERM_CREATE_USER         |
-			PERM_CREATE_TOKEN        |
-			PERM_CREATE_TABLE        |
-			PERM_CREATE_CLONE        |
-			PERM_CREATE_FUNCTION     |
-			PERM_CREATE_CHANNEL      |
-			PERM_CREATE_SUBSCRIPTION |
-			PERM_CREATE_API          |
-			PERM_SQL                 |
-			PERM_IMPORT              |
-			PERM_FEED                |
-			PERM_API                 |
-			PERM_MCP                 |
+			PERM_GRANT           |
+			PERM_SYSTEM          |
+			PERM_CREATE_USER     |
+			PERM_CREATE_TOKEN    |
+			PERM_CREATE_TABLE    |
+			PERM_CREATE_CLONE    |
+			PERM_CREATE_FUNCTION |
+			PERM_CREATE_CHANNEL  |
+			PERM_CREATE_API      |
+			PERM_SQL             |
+			PERM_IMPORT          |
+			PERM_FEED            |
+			PERM_API             |
+			PERM_MCP             |
 			PERM_SERVICE;
 		break;
 	default:

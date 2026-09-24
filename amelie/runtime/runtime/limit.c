@@ -44,7 +44,6 @@ limits_names[LIMIT_MAX] =
 	{ "indexes",        7  },
 	{ "clones",         6  },
 	{ "channels",       8  },
-	{ "subscriptions",  13 },
 	{ "functions",      9  },
 
 	// options

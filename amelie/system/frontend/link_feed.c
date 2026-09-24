@@ -41,30 +41,17 @@ link_subscribe_to(Link* self, Str* user, Str* name)
 
 		if (rel->type != REL_TABLE   &&
 		    rel->type != REL_CLONE   &&
-		    rel->type != REL_CHANNEL &&
-		    rel->type != REL_SUBSCRIPTION)
+		    rel->type != REL_CHANNEL)
 			error("relation '{str}.{str}': is not supported for streaming", user, name);
 	}
 
 	// use subscription relation
 	int      flags = 0;
 	uint64_t lsn = state_lsn();
-	Uuid*    id;
-	if (rel->type == REL_SUBSCRIPTION)
-	{
-		auto sub = sub_of(rel);
-		lsn = sub->config->lsn;
-		id  = sub->rel_on->id;
-		rel = sub->rel_on;
-
-		// include lsn in the data rows
-		flags |= CDC_LSN;
-	} else {
-		id  = rel->id;
-	}
+	Uuid*    id = rel->id;
 
 	// ensure user can create subscription for that relation
-	user_check_permission(self->portal.user, rel, PERM_CREATE_SUBSCRIPTION);
+	// user_check_permission(self->portal.user, rel, PERM_CREATE_SUBSCRIPTION);
 
 	// (must be under exclusive lock)
 	rel->subs++;

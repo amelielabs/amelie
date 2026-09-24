@@ -10288,20 +10288,19 @@ select count(*) from test2;
 count
 ─────
 4
-# test: channel (subscription)
+# test: channel
 switch S0;
 create channel test_top;
-create subscription top_sub on test_top;
 publish into test_top;
 publish into test_top 123;
 publish into test_top 1,2,3;
-show subs;
+show channels;
 
-subs
-────
+channels
+────────
 {
   "user": "amelie",
-  "name": "top_sub",
+  "name": "test_top",
   "description": ""
 }
 show state;
@@ -10314,18 +10313,9 @@ state
   "uuid": "00000000-0000-0000-0000-000000000001",
   "frontends": 1,
   "backends": 3,
-  "lsn": 10023,
+  "lsn": 10022,
   "checkpoint": 1
 }
-select * from top_sub;
-
-lsn    cmd      data
-──────────────────────
-10021  publish  null
-10022  publish  123
-10023  publish  1
-10023  publish  2
-10023  publish  3
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 show repl;
@@ -10339,7 +10329,7 @@ repl
     "id": "00000000-0000-0000-0000-000000000002",
     "uri": "amelie://127.0.0.1:3482/",
     "connected": true,
-    "lsn": 10023,
+    "lsn": 10022,
     "lag": 0
   }]
 }
@@ -10353,185 +10343,7 @@ channels
   "name": "test_top",
   "description": ""
 }
-show subs;
-
-subs
-────
-{
-  "user": "amelie",
-  "name": "top_sub",
-  "description": ""
-}
-select * from top_sub;
-
-lsn    cmd      data
-──────────────────────
-10021  publish  null
-10022  publish  123
-10023  publish  1
-10023  publish  2
-10023  publish  3
-# test: acknowledge
 switch S0;
-acknowledge top_sub to 10022;
-# test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
-show repl;
-
-repl
-────
-{
-  "role": "primary",
-  "primary": null,
-  "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
-    "connected": true,
-    "lsn": 10024,
-    "lag": 0
-  }]
-}
-switch S1;
-show channels;
-
-channels
-────────
-{
-  "user": "amelie",
-  "name": "test_top",
-  "description": ""
-}
-show subs;
-
-subs
-────
-{
-  "user": "amelie",
-  "name": "top_sub",
-  "description": ""
-}
-select * from top_sub;
-
-lsn    cmd      data
-──────────────────────
-10023  publish  1
-10023  publish  2
-10023  publish  3
-# test: acknowledge
-switch S0;
-acknowledge top_sub to 10023;
-# test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
-show repl;
-
-repl
-────
-{
-  "role": "primary",
-  "primary": null,
-  "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
-    "connected": true,
-    "lsn": 10025,
-    "lag": 0
-  }]
-}
-switch S1;
-show channels;
-
-channels
-────────
-{
-  "user": "amelie",
-  "name": "test_top",
-  "description": ""
-}
-show subs;
-
-subs
-────
-{
-  "user": "amelie",
-  "name": "top_sub",
-  "description": ""
-}
-select * from top_sub;
-
-lsn  cmd  data
-────────────────
-# test: channel (multi-stmt)
-switch S0;
-create table abc (id int primary key);
-create channel a;
-create channel b;
-create subscription sa on a;
-create subscription sb on b;
-begin
-  publish into a 1;
-  publish into b 2;
-  publish into b 3,4,5;
-  insert into abc values (1), (2), (3);
-  delete from abc where id = 3;
-  insert into abc values (4);
-end;
-select * from sa;
-
-lsn    cmd      data
-──────────────────────
-10031  publish  1
-select * from sb;
-
-lsn    cmd      data
-──────────────────────
-10031  publish  2
-10031  publish  3
-10031  publish  4
-10031  publish  5
-select * from abc;
-
-id
-──
-1
-4
-2
-watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
-show repl;
-
-repl
-────
-{
-  "role": "primary",
-  "primary": null,
-  "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
-    "connected": true,
-    "lsn": 10031,
-    "lag": 0
-  }]
-}
-switch S1;
-select * from sa;
-
-lsn    cmd      data
-──────────────────────
-10031  publish  1
-select * from sb;
-
-lsn    cmd      data
-──────────────────────
-10031  publish  2
-10031  publish  3
-10031  publish  4
-10031  publish  5
-select * from abc;
-
-id
-──
-1
-2
-4
 disconnect S1;
 close E1;
 disconnect S0;

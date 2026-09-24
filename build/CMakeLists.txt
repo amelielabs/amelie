@@ -206,8 +206,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/clone.c
     ${AMELIE_ROOT}/db/catalog/udf.c
     ${AMELIE_ROOT}/db/catalog/channel.c
-    ${AMELIE_ROOT}/db/catalog/sub.c
-    ${AMELIE_ROOT}/db/catalog/acknowledge.c
     ${AMELIE_ROOT}/db/catalog/rel.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/catalog_limit.c
@@ -249,7 +247,6 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/set/all.c
     ${AMELIE_ROOT}/vm/set/in.c
     ${AMELIE_ROOT}/vm/set/matching.c
-    ${AMELIE_ROOT}/vm/set/sub.c
     ${AMELIE_ROOT}/vm/output/print.c
     ${AMELIE_ROOT}/vm/output/output.c
     ${AMELIE_ROOT}/vm/output/output_json.c
@@ -292,7 +289,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
     ${AMELIE_ROOT}/compiler/parser/parse_watch.c
     ${AMELIE_ROOT}/compiler/parser/parse_lock.c
-    ${AMELIE_ROOT}/compiler/parser/parse_subscription.c
     ${AMELIE_ROOT}/compiler/parser/parse_grant.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c
     ${AMELIE_ROOT}/compiler/parser/parse_api.c

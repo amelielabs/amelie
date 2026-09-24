@@ -10125,16 +10125,15 @@ show repl;
 switch S1;
 select count(*) from test2;
 
-# test: channel (subscription)
+# test: channel
 switch S0;
 create channel test_top;
-create subscription top_sub on test_top;
+# does nothing
 publish into test_top;
 publish into test_top 123;
 publish into test_top 1,2,3;
-show subs;
+show channels;
 show state;
-select * from top_sub;
 
 # test: wait replica sync
 watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
@@ -10142,63 +10141,8 @@ show repl;
 
 switch S1;
 show channels;
-show subs;
-select * from top_sub;
 
-# test: acknowledge
 switch S0;
-acknowledge top_sub to 10022;
-
-# test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
-show repl;
-
-switch S1;
-show channels;
-show subs;
-select * from top_sub;
-
-# test: acknowledge
-switch S0;
-acknowledge top_sub to 10023;
-
-# test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
-show repl;
-
-switch S1;
-show channels;
-show subs;
-select * from top_sub;
-
-# test: channel (multi-stmt)
-switch S0;
-
-create table abc (id int primary key);
-create channel a;
-create channel b;
-create subscription sa on a;
-create subscription sb on b;
-begin
-  publish into a 1;
-  publish into b 2;
-  publish into b 3,4,5;
-  insert into abc values (1), (2), (3);
-  delete from abc where id = 3;
-  insert into abc values (4);
-end;
-select * from sa;
-select * from sb;
-select * from abc;
-
-watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
-show repl;
-
-switch S1;
-select * from sa;
-select * from sb;
-select * from abc;
-
 disconnect S1;
 close E1;
 

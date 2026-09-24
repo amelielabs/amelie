@@ -31,7 +31,6 @@ Keyword keywords[] =
 	{ KAT,                    "at",                    2  },
 	{ KALWAYS,                "always",                6  },
 	{ KAGENT,                 "agent",                 5  },
-	{ KACKNOWLEDGE,           "acknowledge",           11 },
 	{ KAPI,                   "api",                   3  },
 
 	// b
@@ -169,7 +168,6 @@ Keyword keywords[] =
 	{ KSET,                   "set",                   3  },
 	{ KSHOW,                  "show",                  4  },
 	{ KSUM,                   "sum",                   3  },
-	{ KSUBSCRIPTION,          "subscription",          12 },
 	{ KSWITCH,                "switch",                6  },
 	{ KSTORAGE,               "storage",               7  },
 	{ KSYSTEM,                "system",                6  },

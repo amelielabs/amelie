@@ -587,122 +587,6 @@ channels
   "name": "test_top",
   "description": ""
 }
-# test: create subscription
-create subscription top_sub on test_top;
-publish into test_top 123;
-publish into test_top 1,2,3;
-publish into test_top;
-select * from top_sub;
-
-lsn  cmd      data
-────────────────────
-24   publish  123
-25   publish  1
-25   publish  2
-25   publish  3
-26   publish  null
-show subs;
-
-subs
-────
-{
-  "user": "amelie",
-  "name": "top_sub",
-  "description": ""
-}
-create table test_ (id int primary key);
-create clone test_clone of test_;
-create clone test_clone2 of test_;
-create subscription test_sub on test_;
-create subscription test_clone_sub on test_clone;
-create subscription test_clone2_sub on test_clone2;
-insert into test_ values (1);
-insert into test_clone values (2);
-insert into test_clone2 values (3);
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-# test: validate state
-select show('state').lsn;
-
-lsn
-───
-35
-show subs;
-
-subs
-────
-{
-  "user": "amelie",
-  "name": "top_sub",
-  "description": ""
-}
-{
-  "user": "amelie",
-  "name": "test_sub",
-  "description": ""
-}
-{
-  "user": "amelie",
-  "name": "test_clone_sub",
-  "description": ""
-}
-{
-  "user": "amelie",
-  "name": "test_clone2_sub",
-  "description": ""
-}
-select * from top_sub;
-
-lsn  cmd      data
-────────────────────
-24   publish  123
-25   publish  1
-25   publish  2
-25   publish  3
-26   publish  null
-select * from test_;
-
-id
-──
-1
-select * from test_clone;
-
-id
-──
-2
-select * from test_clone2;
-
-id
-──
-3
-select * from test_sub;
-
-lsn  cmd    data
-───────────────────────
-33   write  {"id": 1}
-select * from test_clone_sub;
-
-lsn  cmd    data
-───────────────────────
-34   write  {"id": 2}
-select * from test_clone2_sub;
-
-lsn  cmd    data
-───────────────────────
-35   write  {"id": 3}
-# test: drop subscription
-drop subscription test_sub;
-drop subscription test_clone_sub;
-drop subscription test_clone2_sub;
-drop table test_ cascade;
-drop subscription top_sub;
-show subs;
-
-subs
-────
 # test: drop channel
 drop channel test_top;
 show channels;
@@ -719,7 +603,7 @@ select show('state').lsn;
 
 lsn
 ───
-41
+23
 show channels;
 
 channels
@@ -727,46 +611,16 @@ channels
 # test: create channel (multi-stmt)
 create channel a;
 create channel b;
-create subscription sa on a;
-create subscription sb on b;
 begin
   publish into a 1;
   publish into b 2;
   publish into b 3,4,5;
 end;
-select * from sa;
-
-lsn  cmd      data
-────────────────────
-46   publish  1
-select * from sb;
-
-lsn  cmd      data
-────────────────────
-46   publish  2
-46   publish  3
-46   publish  4
-46   publish  5
 # test: restart
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select * from sa;
-
-lsn  cmd      data
-────────────────────
-46   publish  1
-select * from sb;
-
-lsn  cmd      data
-────────────────────
-46   publish  2
-46   publish  3
-46   publish  4
-46   publish  5
-drop subscription sa;
-drop subscription sb;
 drop channel a;
 drop channel b;
 # test: validate state
@@ -774,11 +628,7 @@ select show('state').lsn;
 
 lsn
 ───
-50
-show subs;
-
-subs
-────
+28
 # test: create user
 create user test;
 select show('user', 'test').name;
@@ -790,7 +640,7 @@ select show('state').lsn;
 
 lsn
 ───
-51
+29
 # test: restart
 disconnect S0;
 close E0;
@@ -801,7 +651,7 @@ select show('state').lsn;
 
 lsn
 ───
-51
+29
 select show('user', 'test').name;
 
 name
@@ -823,7 +673,7 @@ select show('state').lsn;
 
 lsn
 ───
-52
+30
 # test: restart
 disconnect S0;
 close E0;
@@ -834,7 +684,7 @@ select show('state').lsn;
 
 lsn
 ───
-52
+30
 select show('user', 'test2').name;
 
 name
@@ -846,7 +696,7 @@ select show('state').lsn;
 
 lsn
 ───
-53
+31
 # test: restart
 disconnect S0;
 close E0;
@@ -857,7 +707,7 @@ select show('state').lsn;
 
 lsn
 ───
-53
+31
 select show('user', 'test2', null, "verbose").limits;
 
 limits
@@ -872,7 +722,7 @@ select show('state').lsn;
 
 lsn
 ───
-54
+32
 # test: restart
 disconnect S0;
 close E0;
@@ -883,7 +733,7 @@ select show('state').lsn;
 
 lsn
 ───
-54
+32
 select show('user', 'test2', null, "verbose").limits;
 
 limits
@@ -897,7 +747,7 @@ select show('state').lsn;
 
 lsn
 ───
-55
+33
 select show('user', 'test2').name;
 
 name
@@ -913,7 +763,7 @@ select show('state').lsn;
 
 lsn
 ───
-55
+33
 select show('user', 'test').name;
 
 name
@@ -937,7 +787,7 @@ select show('state').lsn;
 
 lsn
 ───
-56
+34
 show functions verbose;
 
 functions
@@ -974,7 +824,7 @@ select show('state').lsn;
 
 lsn
 ───
-56
+34
 show functions verbose;
 
 functions
@@ -1031,7 +881,7 @@ select show('state').lsn;
 
 lsn
 ───
-57
+35
 show functions verbose;
 
 functions
@@ -1068,7 +918,7 @@ select show('state').lsn;
 
 lsn
 ───
-57
+35
 show functions verbose;
 
 functions
@@ -1110,7 +960,7 @@ select show('state').lsn;
 
 lsn
 ───
-58
+36
 select [1,2,3]::reverse2;
 
 col1
@@ -1126,7 +976,7 @@ select show('state').lsn;
 
 lsn
 ───
-58
+36
 show functions verbose;
 
 functions
@@ -1159,7 +1009,7 @@ select show('state').lsn;
 
 lsn
 ───
-59
+37
 show functions verbose;
 
 functions
@@ -1178,7 +1028,7 @@ select show('state').lsn;
 
 lsn
 ───
-59
+37
 # test: limit
 alter user amelie set limit tables = 1;
 create table test (id int primary key);

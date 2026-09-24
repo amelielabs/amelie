@@ -359,41 +359,6 @@ describe_channel(Channel* self, Buf* buf, Str* user, int flags)
 }
 
 static void
-describe_subscription(Sub* self, Buf* buf, Str* user, int flags)
-{
-	auto verbose = !flags_has(flags, FMINIMAL);
-	auto config = self->config;
-
-	// create subscription
-	if (!verbose && str_compare_case(self->rel.user, user))
-		buf_format(buf, "create subscription {str}", &config->name);
-	else
-		buf_format(buf, "create subscription {str}.{str}",
-		           &config->user, &config->name);
-
-	// on
-	if (!verbose && str_compare_case(&config->rel_user, user))
-		buf_format(buf, " on {str}\n", &config->rel);
-	else
-		buf_format(buf, " on {str}.{str}\n",
-		           &config->rel_user, &config->rel);
-
-	// description
-	if (! str_empty(&config->description))
-		buf_format(buf, "  description {qstr}\n", &config->description);
-
-	// id
-	if (! verbose)
-		return;
-
-	// lsn
-	buf_format(buf, "  lsn {i64}\n", config->lsn);
-
-	// grants
-	describe_grants(&self->config->grants, buf);
-}
-
-static void
 describe_udf(Udf* self, Buf* buf, Str* user, int flags)
 {
 	auto verbose = !flags_has(flags, FMINIMAL);
@@ -547,9 +512,6 @@ describe_text(Rel* self, Buf* buf, Str* user, int flags)
 		break;
 	case REL_CHANNEL:
 		describe_channel(channel_of(self), buf, user, flags);
-		break;
-	case REL_SUBSCRIPTION:
-		describe_subscription(sub_of(self), buf, user, flags);
 		break;
 	case REL_UDF:
 		describe_udf(udf_of(self), buf, user, flags);

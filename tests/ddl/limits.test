@@ -15,16 +15,6 @@ insert into test values (124), (125);
 drop table test;
 alter user amelie unset limit write;
 
-# test: write (publish)
-create channel t;
-create subscription t_sub on t;
-alter user amelie set limit write = 1;
-publish into t 123;
-# error
-publish into t 124, 125;
-alter user amelie unset limit write;
-drop channel t cascade;
-
 # test: send
 alter user amelie set limit send = 0;
 # error
@@ -88,14 +78,6 @@ drop channel test;
 create channel test;
 create channel test2;
 drop channel test;
-
-# test: subscriptions
-create channel test;
-alter user amelie set limit subscriptions = 0;
-create subscription test_sub on test;
-alter user amelie set limit subscriptions = 1;
-create subscription test_sub on test;
-drop channel test cascade;
 
 # test: functions
 alter user amelie set limit functions = 0;
@@ -200,24 +182,6 @@ insert into test values (1, 0);
 
 drop table test;
 show memory;
-
-# test: cdc
-show cdc;
-create channel t;
-create subscription t_sub on t;
-publish into t 123;
-show cdc;
-
-alter system set cdc = 1;
-show cdc;
-publish into t 124;
-
-alter system reset cdc;
-show cdc;
-
-publish into t 125;
-select * from t_sub;
-drop channel t cascade;
 
 disconnect S0;
 close E0;

@@ -761,32 +761,3 @@ cpublish(Vm* self, Op* op)
 	// register transaction
 	gtrs_send(share()->gtrs, gtr, dispatch);
 }
-
-void
-csubscription(Vm* self, Op* op)
-{
-	// [r, sub*]
-	auto r = reg_at(&self->r, op->a);
-	value_set_store(r, &sub_store_create((Sub*)op->b, share()->cdc)->store);
-}
-
-void
-cack(Vm* self, Op* op)
-{
-	// [sub*, offset]
-	auto data = code_data_at(self->code_data, op->b);
-
-	// execute
-	if (! acknowledge((Sub*)op->a, self->tr, data))
-		return;
-
-	// create dispatch (for wal writer)
-	auto gtr = self->gtr;
-	auto dispatches = &gtr->dispatches;
-	auto dispatch = dispatch_create(&dispatches->cache);
-
-	// (dispatch has no partitions)
-
-	// register transaction
-	gtrs_send(share()->gtrs, gtr, dispatch);
-}

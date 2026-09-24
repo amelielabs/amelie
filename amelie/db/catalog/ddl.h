@@ -55,10 +55,7 @@ enum
 	DDL_UDF_CREATE,
 
 	// channel
-	DDL_CHANNEL_CREATE,
-
-	// subscription
-	DDL_SUB_CREATE,
+	DDL_CHANNEL_CREATE
 };
 
 enum

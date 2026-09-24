@@ -93,13 +93,6 @@ parse_stmt_free(Stmt* stmt)
 			channel_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_SUBSCRIPTION:
-	{
-		auto ast = ast_sub_create_of(stmt->ast);
-		if (ast->config)
-			sub_config_free(ast->config);
-		break;
-	}
 	case STMT_WHILE:
 	{
 		auto ast = ast_while_of(stmt->ast);
@@ -316,11 +309,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_CHANNEL;
 			parse_channel_create(self);
 		} else
-		if (stmt_if(self, KSUBSCRIPTION))
-		{
-			self->id = STMT_CREATE_SUBSCRIPTION;
-			parse_sub_create(self);
-		} else
 		if (stmt_if(self, KLOCK))
 		{
 			self->id = STMT_CREATE_LOCK;
@@ -375,11 +363,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_CHANNEL;
 			parse_channel_drop(self);
 		} else
-		if (stmt_if(self, KSUBSCRIPTION))
-		{
-			self->id = STMT_DROP_SUBSCRIPTION;
-			parse_sub_drop(self);
-		} else
 		if (stmt_if(self, KLOCK))
 		{
 			self->id = STMT_DROP_LOCK;
@@ -428,21 +411,9 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_CHANNEL;
 			parse_channel_alter(self);
-		} else
-		if (stmt_if(self, KSUBSCRIPTION))
-		{
-			self->id = STMT_ALTER_SUBSCRIPTION;
-			parse_sub_alter(self);
 		} else {
 			stmt_error(self, NULL, "relation type expected");
 		}
-		break;
-	}
-
-	case KACKNOWLEDGE:
-	{
-		self->id = STMT_ACKNOWLEDGE;
-		parse_acknowledge(self);
 		break;
 	}
 

@@ -7,7 +7,7 @@ select grants from show users verbose;
 grants
 ──────
 []
-[["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_subscription", "create_api", "sql", "import", "feed", "api", "mcp"]]
+[["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_api", "sql", "import", "feed", "api", "mcp"]]
 # test: create_table
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
@@ -53,18 +53,6 @@ error: user 'test': permission denied
 drop function test;
 switch S0;
 grant create_channel to test;
-# test: create_subscription
-switch S1;
-create channel test;
-create subscription test_sub on test;
-switch S0;
-revoke create_subscription from test;
-switch S1;
-create subscription test_sub2 on test;
-error: user 'test': permission denied
-drop subscription test_sub;
-drop channel test;
-switch S0;
 # test: create_user
 switch S1;
 create agent test2;
@@ -77,12 +65,12 @@ select parent, `name`, grants from show users verbose;
 
 parent  name     grants
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_subscr…
+"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_api", …
 select parent, `name`, grants from show users verbose;
 
 parent  name     grants
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_subscr…
+"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_api", …
 drop agent test2;
 select parent, `name`, grants from show users verbose;
 
@@ -487,45 +475,6 @@ show grants fun;
 
 grants
 ──────
-# test: select (from subscription)
-create user u;
-create table t (id int primary key, data int);
-create subscription t_sub on t;
-insert into t values (1, 10), (2, 20);
-connect E0 S1 u@127.0.0.1:3485;
-switch S1;
-select * from amelie.t;
-error: relation 'amelie.t': permission denied
-explain select * from amelie.t_sub;
-
-explain
-───────
-
-main
-  0   set                 0      3      0
-  1   subscription        1      -      -     # amelie.t_sub
-  2   store_open          2      1      11
-  3   store_read          3      2      0
-  4   push                3      0      0
-  5   store_read          3      2      1
-  6   push                3      0      0
-  7   store_read          3      2      2
-  8   push                3      0      0
-  9   set_add             0      0      0
- 10   store_next          2      3      0
- 11   free                2      0      0
- 12   free                1      0      0
- 13   ret                 0      0      -
-
-access
-  •   amelie.t_sub shared [select]
-select * from amelie.t_sub;
-error: relation 'amelie.t_sub': permission denied
-switch S0;
-disconnect S1;
-drop subscription t_sub;
-drop table t;
-drop user u cascade;
 # test: revoke
 create user u1;
 create user u2;
@@ -657,48 +606,5 @@ id
 1
 disconnect S1;
 drop user u cascade;
-# test: create_subscription (user)
-create user u;
-create user uu;
-connect E0 S1 u@127.0.0.1:3485;
-switch S1;
-create subscription uu_sub on user uu;
-error: relation 'amelie.uu': permission denied
-connect E0 S2 uu@127.0.0.1:3485;
-switch S2;
-switch S0;
-create subscription u_sub on user u;
-create subscription uu_sub on user uu;
-switch S1;
-create table test (id int primary key);
-insert into test values (1), (2);
-drop table test;
-switch S2;
-create channel test;
-publish into test 1,2;
-drop channel test;
-switch S0;
-select data[9] from u_sub;
-
-col1
-────
-"create table test (id int primary key);"
-"insert into test values (1), (2);"
-"drop table test;"
-select data[9] from uu_sub;
-
-col1
-────
-"create channel test;"
-"publish into test 1,2;"
-"drop channel test;"
-drop user u;
-error: subscription 'amelie.u_sub' depends on user 'u'
-drop user u cascade;
-drop user uu;
-error: subscription 'amelie.uu_sub' depends on user 'uu'
-drop user uu cascade;
-disconnect S1;
-disconnect S2;
 disconnect S0;
 close E0;

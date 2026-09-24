@@ -50,31 +50,6 @@ catalog_init(Catalog*   self,
 	column_set_name(column, &name);
 	column_set_type(column, TYPE_JSON, 0);
 	columns_add(columns, column);
-
-	// prepare subscription columns
-	columns = &self->cdc_columns;
-	columns_init(columns);
-
-	// lsn
-	column = column_allocate();
-	str_set(&name, "lsn", 3);
-	column_set_name(column, &name);
-	column_set_type(column, TYPE_INT, sizeof(int64_t));
-	columns_add(columns, column);
-
-	// cmd
-	column = column_allocate();
-	str_set(&name, "cmd", 3);
-	column_set_name(column, &name);
-	column_set_type(column, TYPE_STRING, 0);
-	columns_add(columns, column);
-
-	// data
-	column = column_allocate();
-	str_set(&name, "data", 4);
-	column_set_name(column, &name);
-	column_set_type(column, TYPE_JSON, 0);
-	columns_add(columns, column);
 }
 
 void
@@ -82,7 +57,6 @@ catalog_free(Catalog* self)
 {
 	rels_free(&self->rels);
 	rels_free(&self->users);
-	columns_free(&self->cdc_columns);
 	columns_free(&self->channel_columns);
 }
 
@@ -415,14 +389,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		defer(channel_config_free, config);
 		auto if_not_exists = ddl_if_not_exists(flags);
 		write = channel_create(self, tr, config, if_not_exists);
-		break;
-	}
-	case DDL_SUB_CREATE:
-	{
-		auto config = sub_op_create_read(op);
-		defer(sub_config_free, config);
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = sub_create(self, tr, config, if_not_exists);
 		break;
 	}
 	default:

@@ -2,7 +2,6 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: publish (expr)
 create channel x;
-create subscription sub on x;
 explain publish into x 123;
 
 explain
@@ -15,11 +14,6 @@ main
 access
   •   amelie.x shared_rw [publish]
 publish into x 123;
-select * from sub;
-
-lsn  cmd      data
-────────────────────
-4    publish  123
 explain publish into x [2 + 2];
 
 explain
@@ -38,64 +32,18 @@ main
 access
   •   amelie.x shared_rw [publish]
 publish into x [2 + 2];
-select * from sub;
-
-lsn  cmd      data
-────────────────────
-4    publish  123
-5    publish  [4]
 # test: publish (func constify)
 publish into x [8::string];
-select * from sub;
-
-lsn  cmd      data
-─────────────────────
-4    publish  123
-5    publish  [4]
-6    publish  ["8"]
 # test: publish (func)
 publish into x [8::string::int * 2];
-select * from sub;
-
-lsn  cmd      data
-─────────────────────
-4    publish  123
-5    publish  [4]
-6    publish  ["8"]
-7    publish  [16]
 # test: publish (expr json)
 publish into x {
 	"id": 48,
 	"data": 8::string::int * 2,
 	"hash": 8::string::sha1
 };
-select * from sub;
-
-lsn  cmd      data
-──────────────────────────────────────────────────────────────────────────────────────────
-4    publish  123
-5    publish  [4]
-6    publish  ["8"]
-7    publish  [16]
-8    publish  {"id": 48, "data": 16, "hash": "fe5dbbcea5ce7e2988b8c69bcfdfde8904aabc1f"}
 publish into x 1,2,3;
 publish into x (1 * 2)::json, (2 * 2)::json, (3 * 2::string::int)::json;
-select * from sub;
-
-lsn  cmd      data
-──────────────────────────────────────────────────────────────────────────────────────────
-4    publish  123
-5    publish  [4]
-6    publish  ["8"]
-7    publish  [16]
-8    publish  {"id": 48, "data": 16, "hash": "fe5dbbcea5ce7e2988b8c69bcfdfde8904aabc1f"}
-9    publish  1
-9    publish  2
-9    publish  3
-10   publish  2
-10   publish  4
-10   publish  6
-drop subscription sub;
 drop channel x;
 disconnect S0;
 close E0;

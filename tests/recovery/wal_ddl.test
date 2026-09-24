@@ -247,54 +247,6 @@ connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
 show channels;
 
-# test: create subscription
-create subscription top_sub on test_top;
-publish into test_top 123;
-publish into test_top 1,2,3;
-publish into test_top;
-select * from top_sub;
-show subs;
-
-create table test_ (id int primary key);
-create clone test_clone of test_;
-create clone test_clone2 of test_;
-
-create subscription test_sub on test_;
-create subscription test_clone_sub on test_clone;
-create subscription test_clone2_sub on test_clone2;
-
-insert into test_ values (1);
-insert into test_clone values (2);
-insert into test_clone2 values (3);
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-show subs;
-select * from top_sub;
-
-select * from test_;
-select * from test_clone;
-select * from test_clone2;
-
-select * from test_sub;
-select * from test_clone_sub;
-select * from test_clone2_sub;
-
-# test: drop subscription
-drop subscription test_sub;
-drop subscription test_clone_sub;
-drop subscription test_clone2_sub;
-drop table test_ cascade;
-
-drop subscription top_sub;
-show subs;
-
 # test: drop channel
 drop channel test_top;
 show channels;
@@ -312,15 +264,11 @@ show channels;
 # test: create channel (multi-stmt)
 create channel a;
 create channel b;
-create subscription sa on a;
-create subscription sb on b;
 begin
   publish into a 1;
   publish into b 2;
   publish into b 3,4,5;
 end;
-select * from sa;
-select * from sb;
 
 # test: restart
 disconnect S0;
@@ -328,16 +276,11 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 
-select * from sa;
-select * from sb;
-drop subscription sa;
-drop subscription sb;
 drop channel a;
 drop channel b;
 
 # test: validate state
 select show('state').lsn;
-show subs;
 
 # test: create user
 create user test;
