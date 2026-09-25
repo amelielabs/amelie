@@ -26,26 +26,17 @@
 void
 checkpoint_init(Checkpoint* self, Catalog* catalog)
 {
-	self->lsn           = 0;
-	self->workers       = NULL;
-	self->workers_count = 0;
-	self->catalog       = catalog;
+	self->lsn     = 0;
+	self->catalog = catalog;
+	self->pid     = -1;
+	event_init(&self->on_complete);
+	notify_init(&self->notify);
 }
 
 void
 checkpoint_free(Checkpoint* self)
 {
-	if (self->workers)
-	{
-		for (int i = 0; i < self->workers_count; i++)
-		{
-			auto worker = &self->workers[i];
-			notify_close(&worker->notify);
-		}
-		am_free(self->workers);
-	}
-	self->workers = NULL;
-	self->workers_count = 0;
+	notify_close(&self->notify);
 }
 
 static inline void
@@ -56,50 +47,15 @@ checkpoint_worker_on_complete(void* arg)
 }
 
 void
-checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
+checkpoint_begin(Checkpoint* self, uint64_t lsn)
 {
-	// ensure workers are defined
-	if (workers < 1)
-		error("checkpoint: 1 or more workers required");
-
-	// prepare workers
+	// prepare
 	self->lsn = lsn;
-	self->workers_count = workers;
-	self->workers = am_malloc(sizeof(CheckpointWorker) * workers);
-	for (int i = 0; i < self->workers_count; i++)
-	{
-		auto worker = &self->workers[i];
-		worker->pid        = -1;
-		worker->list_count = 0;
-		event_init(&worker->on_complete);
-		notify_init(&worker->notify);
-		notify_open(&worker->notify, &am_task->poller,
-		            checkpoint_worker_on_complete,
-		            &worker->on_complete);
-		list_init(&worker->list);
-	}
-
-	// distribute partitions between workers
-	auto rr = 0;
-	list_foreach(&self->catalog->rels.list)
-	{
-		auto rel = list_at(Rel, link);
-		if (rel->type != REL_TABLE)
-			continue;
-
-		auto table = table_of(rel);
-		list_foreach(&table->parts.list)
-		{
-			auto part = list_at(Part, link);
-			if (rr == self->workers_count)
-				rr = 0;
-			auto order  = rr++;
-			auto worker = &self->workers[order];
-			list_init(&part->link_cp);
-			list_append(&worker->list, &part->link_cp);
-			worker->list_count++;
-		}
-	}
+	self->pid = -1;
+	event_init(&self->on_complete);
+	notify_init(&self->notify);
+	notify_open(&self->notify, &am_task->poller, checkpoint_worker_on_complete,
+	            &self->on_complete);
 }
 
 hot static void
@@ -168,11 +124,45 @@ checkpoint_part(Checkpoint* self, Part* part)
 }
 
 static void
-checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
+checkpoint_main(Checkpoint* self)
 {
+	// create schema.sql
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/schema.sql",
+	       state_directory(), self->lsn);
+	catalog_write(self->catalog, path);
+
+	// create partition files
+	list_foreach(&self->catalog->rels.list)
+	{
+		auto rel = list_at(Rel, link);
+		if (rel->type != REL_TABLE)
+			continue;
+
+		auto table = table_of(rel);
+		list_foreach(&table->parts.list)
+		{
+			auto part = list_at(Part, link);
+			checkpoint_part(self, part);
+		}
+	}
+}
+
+void
+checkpoint_run(Checkpoint* self)
+{
+	// create <base>/checkpoint/<lsn>.incomplete
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete",
+	       state_directory(), self->lsn);
+
+	info("");
+	info("checkpoint: checkpoint/{u64}", self->lsn);
+	fs_mkdir(0755, "{s}", path);
+
 	// create new process
-	worker->pid = fork();
-	switch (worker->pid) {
+	self->pid = fork();
+	switch (self->pid) {
 	case -1:
 		error_system();
 	case  0:
@@ -181,15 +171,14 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 		return;
 	}
 
+	// write checkpoint
 	auto error = error_catch
 	(
-		// create partition files
-		list_foreach(&worker->list)
-			checkpoint_part(self, list_at(Part, link_cp));
+		checkpoint_main(self);
 	);
 
 	// signal waiter process
-	notify_signal(&worker->notify);
+	notify_signal(&self->notify);
 
 	// done
 
@@ -207,7 +196,7 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 }
 
 static bool
-checkpoint_worker_wait(CheckpointWorker* self)
+checkpoint_wait_pid(Checkpoint* self)
 {
 	event_wait(&self->on_complete, -1);
 
@@ -224,76 +213,34 @@ checkpoint_worker_wait(CheckpointWorker* self)
 	} else {
 		failed = true;
 	}
-
 	return failed;
-}
-
-void
-checkpoint_run(Checkpoint* self)
-{
-	// create <base>/checkpoint/<lsn>.incomplete
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete",
-	       state_directory(), self->lsn);
-
-	info("");
-	info("checkpoint: checkpoint/{u64} (using {d} workers)",
-	     self->lsn, self->workers_count);
-	fs_mkdir(0755, "{s}", path);
-
-	// create <base>/checkpoint/<lsn>.incomplete/schema.sql
-	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/schema.sql",
-	       state_directory(), self->lsn);
-	catalog_write(self->catalog, path);
-
-	// run workers
-	for (int i = 0; i < self->workers_count; i++)
-	{
-		auto worker = &self->workers[i];
-		if (worker->list_count == 0)
-			continue;
-		checkpoint_worker_run(self, worker);
-	}
 }
 
 void
 checkpoint_wait(Checkpoint* self)
 {
-	int errors = 0;
-	for (int i = 0; i < self->workers_count; i++)
-	{
-		auto worker = &self->workers[i];
-		if (worker->list_count == 0)
-			continue;
-		bool error;
-		error = checkpoint_worker_wait(worker);
-		if (error)
-		{
-			errors++;
-			continue;
-		}
-	}
-	if (errors > 0)
-	{
-		fs_rmdir("{s}/checkpoint/{u64}.incomplete",
-		         state_directory(), self->lsn);
-		error("checkpoint: {u64} failed", self->lsn);
-	}
-
-	// rename as completed
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete",
 	       state_directory(), self->lsn);
+
+	// wait for completion
+	auto error = checkpoint_wait_pid(self);
+	if (error > 0)
+	{
+		fs_rmdir("{s}", path);
+		error("checkpoint: {u64} failed", self->lsn);
+	}
 
 	// sync checkpoint dir
 	if (opt_int_of(&config()->storage_sync))
 		fs_syncdir("{s}", path);
 
-	fs_rename(path, "{s}/checkpoint/{u64}", state_directory(), self->lsn);
-
 	// sync checkpoint base dir
 	if (opt_int_of(&config()->storage_sync))
 		fs_syncdir("{s}/checkpoint", state_directory());
+
+	// rename as completed
+	fs_rename(path, "{s}/checkpoint/{u64}", state_directory(), self->lsn);
 
 	// done
 	info("");

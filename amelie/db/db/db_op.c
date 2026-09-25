@@ -95,7 +95,7 @@ db_checkpoint(Db* self)
 	defer(checkpoint_free, &checkpoint);
 	auto on_error = error_catch
 	(
-		checkpoint_begin(&checkpoint, lsn, 1);
+		checkpoint_begin(&checkpoint, lsn);
 		checkpoint_run(&checkpoint);
 	);
 

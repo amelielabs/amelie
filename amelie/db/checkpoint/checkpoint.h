@@ -11,28 +11,19 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct CheckpointWorker CheckpointWorker;
-typedef struct Checkpoint       Checkpoint;
-
-struct CheckpointWorker
-{
-	int    list_count;
-	List   list;
-	Notify notify;
-	Event  on_complete;
-	pid_t  pid;
-};
+typedef struct Checkpoint Checkpoint;
 
 struct Checkpoint
 {
-	uint64_t          lsn;
-	CheckpointWorker* workers;
-	int               workers_count;
-	Catalog*          catalog;
+	uint64_t lsn;
+	Notify   notify;
+	Event    on_complete;
+	pid_t    pid;
+	Catalog* catalog;
 };
 
 void checkpoint_init(Checkpoint*, Catalog*);
 void checkpoint_free(Checkpoint*);
-void checkpoint_begin(Checkpoint*, uint64_t, int);
+void checkpoint_begin(Checkpoint*, uint64_t);
 void checkpoint_run(Checkpoint*);
 void checkpoint_wait(Checkpoint*);

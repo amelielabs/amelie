@@ -54,7 +54,7 @@ db_bootstrap(Db* self)
 	Checkpoint checkpoint;
 	checkpoint_init(&checkpoint, &self->catalog);
 	defer(checkpoint_free, &checkpoint);
-	checkpoint_begin(&checkpoint, 1, 1);
+	checkpoint_begin(&checkpoint, 1);
 	checkpoint_run(&checkpoint);
 	checkpoint_wait(&checkpoint);
 
