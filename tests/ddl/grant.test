@@ -235,15 +235,7 @@ switch S1;
 
 select 1;
 switch S0;
-
-# test: api
 grant sql to test;
-revoke api from test;
-
-switch S1;
-
-select 1;
-switch S0;
 
 # test: user drop revoke
 drop user test2 cascade;

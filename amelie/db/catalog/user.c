@@ -605,6 +605,9 @@ user_api_create(Catalog* self,
                 Api*     api,
                 bool     if_exists)
 {
+	// PERM_CREATE_API
+	check_user(tr, PERM_CREATE_API);
+
 	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{

@@ -58,13 +58,8 @@ static Permission perms[] =
 	// Channel
 	{ PERM_PUBLISH,             "publish",             7  },
 
-	// Endpoints
+	// SQL
 	{ PERM_SQL,                 "sql",                 3  },
-	{ PERM_IMPORT,              "import",              6  },
-	{ PERM_FEED,                "feed",                4  },
-	{ PERM_API,                 "api",                 3  },
-	{ PERM_MCP,                 "mcp",                 3  },
-	{ PERM_SERVICE,             "service",             7  },
 
 	// all
 	{ PERM_ALL,                 "all",                 3  },

@@ -239,12 +239,7 @@ catalog_grant_mask(RelType type)
 			PERM_CREATE_FUNCTION |
 			PERM_CREATE_CHANNEL  |
 			PERM_CREATE_API      |
-			PERM_SQL             |
-			PERM_IMPORT          |
-			PERM_FEED            |
-			PERM_API             |
-			PERM_MCP             |
-			PERM_SERVICE;
+			PERM_SQL;
 		break;
 	default:
 		abort();

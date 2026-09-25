@@ -192,11 +192,7 @@ parse_user_create(Stmt* self, bool agent)
 			PERM_CREATE_FUNCTION |
 			PERM_CREATE_CHANNEL  |
 			PERM_CREATE_API      |
-			PERM_SQL             |
-			PERM_IMPORT          |
-			PERM_FEED            |
-			PERM_API             |
-			PERM_MCP;
+			PERM_SQL;
 		Str user_self;
 		str_set_cstr(&user_self, "self");
 		grants_add(&config->grants, &user_self, perms_all);

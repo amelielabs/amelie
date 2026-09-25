@@ -70,9 +70,6 @@ link_api_mcp(Link* self)
 	auto endpoint = &portal->endpoint;
 	auto http     = &self->client->request;
 
-	// check permission
-	user_check(portal->user, PERM_MCP);
-
 	// content type
 	auto content_type = &endpoint->content_type.string;
 	if (!str_empty(content_type) &&
@@ -107,9 +104,6 @@ link_api_get(Link* self)
 {
 	auto portal   = &self->portal;
 	auto endpoint = &portal->endpoint;
-
-	// check FEED permission
-	user_check(portal->user, PERM_FEED);
 
 	// GET (text/event-stream) SSE
 	auto content_type = &endpoint->content_type.string;
@@ -196,9 +190,6 @@ link_api(Link* self)
 	auto portal   = &self->portal;
 	auto endpoint = &portal->endpoint;
 	auto http     = &self->client->request;
-
-	// check API permission
-	user_check(portal->user, PERM_API);
 
 	// find api
 	auto uri = opt_string_of(&endpoint->endpoint);

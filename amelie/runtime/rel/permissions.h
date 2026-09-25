@@ -44,13 +44,8 @@ enum
 	// Channel
 	PERM_PUBLISH             = 1ul << 14,
 
-	// Endpoints
+	// SQL
 	PERM_SQL                 = 1ul << 15,
-	PERM_IMPORT              = 1ul << 16,
-	PERM_FEED                = 1ul << 17,
-	PERM_API                 = 1ul << 18,
-	PERM_MCP                 = 1ul << 19,
-	PERM_SERVICE             = 1ul << 20,
 
 	// all
 	PERM_ALL                 = UINT32_MAX
