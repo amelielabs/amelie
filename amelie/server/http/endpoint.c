@@ -77,26 +77,6 @@ endpoint_reset(Endpoint* self)
 }
 
 void
-endpoint_copy(Endpoint* self, Endpoint* from)
-{
-	opts_copy(&self->opts, &from->opts);
-}
-
-void
-endpoint_read(Endpoint* self, uint8_t** pos)
-{
-	opts_set_json(&self->opts, pos);
-}
-
-void
-endpoint_write(Endpoint* self, Buf* buf)
-{
-	auto opts = opts_list_persistent(&self->opts);
-	defer_buf(opts);
-	buf_write_buf(buf, opts);
-}
-
-void
 endpoint_auth(Endpoint* self)
 {
 	auto token = opt_string_of(&self->token);

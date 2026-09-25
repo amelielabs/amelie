@@ -68,7 +68,4 @@ struct Endpoint
 void endpoint_init(Endpoint*);
 void endpoint_free(Endpoint*);
 void endpoint_reset(Endpoint*);
-void endpoint_copy(Endpoint*, Endpoint*);
-void endpoint_read(Endpoint*, uint8_t**);
-void endpoint_write(Endpoint*, Buf*);
 void endpoint_auth(Endpoint*);

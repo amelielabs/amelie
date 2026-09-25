@@ -10023,7 +10023,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
+    "uri": "amelie://127.0.0.1:3482",
     "connected": true,
     "lsn": 10001,
     "lag": 0
@@ -10075,7 +10075,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
+    "uri": "amelie://127.0.0.1:3482",
     "connected": true,
     "lsn": 10002,
     "lag": 0
@@ -10111,7 +10111,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
+    "uri": "amelie://127.0.0.1:3482",
     "connected": true,
     "lsn": 10003,
     "lag": 0
@@ -10144,7 +10144,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
+    "uri": "amelie://127.0.0.1:3482",
     "connected": true,
     "lsn": 10004,
     "lag": 0
@@ -10177,7 +10177,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
+    "uri": "amelie://127.0.0.1:3482",
     "connected": true,
     "lsn": 10005,
     "lag": 0
@@ -10203,7 +10203,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
+    "uri": "amelie://127.0.0.1:3482",
     "connected": true,
     "lsn": 10006,
     "lag": 0
@@ -10249,7 +10249,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
+    "uri": "amelie://127.0.0.1:3482",
     "connected": true,
     "lsn": 10016,
     "lag": 0
@@ -10276,7 +10276,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
+    "uri": "amelie://127.0.0.1:3482",
     "connected": true,
     "lsn": 10018,
     "lag": 0
@@ -10327,7 +10327,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482/",
+    "uri": "amelie://127.0.0.1:3482",
     "connected": true,
     "lsn": 10022,
     "lag": 0

@@ -45,7 +45,7 @@ static inline void
 replica_start(Replica* self)
 {
 	streamer_start(&self->streamer, &self->config->id,
-	               &self->config->endpoint);
+	               &self->config->uri);
 }
 
 static inline void
@@ -65,11 +65,8 @@ replica_status(Replica* self, Buf* buf, int flags)
 	encode_uuid(buf, &self->config->id);
 
 	// uri
-	auto uri = buf_create();
-	defer_buf(uri);
-	uri_export(&self->config->endpoint, uri);
 	encode_raw(buf, "uri", 3);
-	encode_buf(buf, uri);
+	encode_str(buf, &self->config->uri);
 
 	// connected
 	encode_raw(buf, "connected", 9);

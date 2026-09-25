@@ -13,5 +13,4 @@
 
 void uri_parse(Endpoint*, Str*);
 void uri_parse_request(Endpoint*, Str*);
-void uri_export(Endpoint*, Buf*);
 void uri_export_arg(Opt*, Buf*, bool*);

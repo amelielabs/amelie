@@ -142,10 +142,7 @@ repl_describe(Repl* self, Buf* buf)
 		uuid_get(&replica->config->id, id, sizeof(id));
 
 		// uri
-		auto uri = buf_create();
-		defer_buf(uri);
-		uri_export(&replica->config->endpoint, uri);
-		buf_format(buf, "create replica {qs} {qbuf};\n", id, uri);
+		buf_format(buf, "create replica {qs} {qstr};\n", id, &replica->config->uri);
 	}
 }
 

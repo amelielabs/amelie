@@ -10023,7 +10023,7 @@ repl
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelies://127.0.0.1:3482/?tls_ca=./tls/ca.crt",
+    "uri": "amelies://127.0.0.1:3482?tls_ca=./tls/ca.crt",
     "connected": true,
     "lsn": 10001,
     "lag": 0

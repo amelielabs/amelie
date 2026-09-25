@@ -30,14 +30,14 @@ link_sql(Link* self)
 	// POST / (text/plain)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is_case(method, "POST", 4)))
-		error("unsupported operation method");
+		error("unsupported operation method: {str}", method);
 
 	// content type
 	auto content_type = &endpoint->content_type.string;
 	if (!str_empty(content_type) &&
 	    !str_is(content_type, "text/plain", 10) &&
 	    !str_is(content_type, "application/x-www-form-urlencoded", 33))
-		error("unsupported operation content-type");
+		error("unsupported operation content-type: {str}", content_type);
 
 	// accept
 	OutputIf* output_if;
@@ -52,7 +52,7 @@ link_sql(Link* self)
 	if (str_is(accept, "application/json", 16)) {
 		output_if = &output_json;
 	} else {
-		error("unsupported operation accept type");
+		error("unsupported operation accept: {str}", accept);
 	}
 	output_set(&portal->output, endpoint, output_if, NULL);
 
@@ -77,14 +77,14 @@ link_api_mcp(Link* self)
 	auto content_type = &endpoint->content_type.string;
 	if (!str_empty(content_type) &&
 	    !str_is(content_type, "application/json", 16))
-		error("unsupported operation content-type");
+		error("unsupported operation content-type: {str}", content_type);
 
 	// accept (jsonrpc)
 	auto accept = &endpoint->accept.string;
 	if (!str_empty(accept) &&
 	    !str_is(accept, "application/json", 16) &&
 	    !str_is(accept, "*/*", 3))
-		error("unsupported operation accept");
+		error("unsupported operation accept: {str}", accept);
 
 	str_set(accept, "application/json", 16);
 	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
@@ -120,7 +120,7 @@ link_api_get(Link* self)
 	if (!str_empty(accept) &&
 	    !str_is(accept, "text/event-stream", 17) &&
 	    !str_is(accept, "*/*", 3))
-		error("unsupported operation accept");
+		error("unsupported operation accept: {str}", accept);
 
 	str_set(accept, "text/event-stream", 17);
 	output_set(&portal->output, endpoint, &output_json, NULL);
@@ -218,13 +218,13 @@ link_api(Link* self)
 
 	// POST /<user_api> (application/json)
 	if (unlikely(! str_is_case(method, "POST", 4)))
-		error("unsupported method");
+		error("unsupported operation method: {str}", method);
 
 	// content type (json)
 	auto content_type = &endpoint->content_type.string;
 	if (!str_empty(content_type) &&
 	    !str_is(content_type, "application/json", 16))
-		error("unsupported operation content-type");
+		error("unsupported operation content-type: {str}", content_type);
 
 	// accept (json, text)
 	OutputIf* output_if;
@@ -240,7 +240,7 @@ link_api(Link* self)
 	{
 		output_if = &output_text;
 	} else {
-		error("unsupported operation accept");
+		error("unsupported operation accept: {str}", accept);
 	}
 	output_set(&portal->output, endpoint, output_if, NULL);
 
@@ -269,7 +269,7 @@ link_root(Link* self)
 	auto http   = &self->client->request;
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is_case(method, "POST", 4)))
-		error("unsupported operation");
+		error("unsupported operation method: {str}", method);
 
 	return link_sql(self);
 }

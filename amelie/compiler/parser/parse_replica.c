@@ -37,14 +37,19 @@ parse_replica_create(Stmt* self)
 
 	// uri
 	auto uri = stmt_expect(self, KSTRING);
-	uri_parse(&stmt->config->endpoint, &uri->string);
 
-	if (stmt->config->endpoint.proto.integer != PROTO_AMELIE &&
-	    stmt->config->endpoint.proto.integer != PROTO_AMELIES)
+	// validate uri
+	Endpoint endpoint;
+	endpoint_init(&endpoint);
+	defer(endpoint_free, &endpoint);
+	if (error_catch ( uri_parse(&endpoint, &uri->string) ))
+		stmt_error(self, uri, "failed to read uri");
+
+	if (endpoint.proto.integer != PROTO_AMELIE &&
+	    endpoint.proto.integer != PROTO_AMELIES)
 		stmt_error(self, uri, "amelie protocol expected");
 
-	// set token
-	endpoint_auth(&stmt->config->endpoint);
+	replica_config_set_uri(stmt->config, &uri->string);
 }
 
 void

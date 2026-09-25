@@ -177,10 +177,17 @@ streamer_main(void* arg)
 	info("start");
 
 	// create client, set node uri
+	Endpoint endpoint;
+	endpoint_init(&endpoint);
+	defer(endpoint_free, &endpoint);
+
 	error_catch
 	(
+		uri_parse(&endpoint, self->uri);
+		endpoint_auth(&endpoint);
+
 		self->client = client_allocate();
-		client_set_endpoint(self->client, self->endpoint);
+		client_set_endpoint(self->client, &endpoint);
 		streamer_process(self);
 	);
 
@@ -224,7 +231,7 @@ streamer_init(Streamer* self, Wal* wal, WalSlot* wal_slot)
 	self->lsn       = 0;
 	self->wal       = wal;
 	self->wal_slot  = wal_slot;
-	self->endpoint  = NULL;
+	self->uri       = NULL;
 	uuid_init(&self->id_primary);
 	uuid_init(&self->id_replica);
 	wal_cursor_init(&self->wal_cursor);
@@ -239,11 +246,11 @@ streamer_free(Streamer* self)
 }
 
 void
-streamer_start(Streamer* self, Uuid* id_replica, Endpoint* endpoint)
+streamer_start(Streamer* self, Uuid* id_replica, Str* uri)
 {
 	self->id_primary = *opt_uuid_of(&config()->uuid);
 	self->id_replica = *id_replica;
-	self->endpoint   = endpoint;
+	self->uri        = uri;
 	task_create(&self->task, "streamer", streamer_task_main, self);
 }
 
