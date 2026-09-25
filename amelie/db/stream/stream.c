@@ -56,7 +56,7 @@ stream_open(Stream* self, char* path)
 	if (unlikely(buf_size(&meta) != sizeof(StreamHeader)))
 		error("storage: file '{str}' has invalid stream header", path);
 
-	// set lsn
+	// set id
 	auto header = (StreamHeader*)meta.start;
 	self->id = header->id;
 
@@ -140,7 +140,7 @@ stream_write(Stream* self, uint8_t* data, uint32_t data_size)
 	spinlock_lock(&self->lock);
 
 	// assign id and add to the storage
-	auto id = self->id++;
+	auto id = ++self->id;
 	stream_add(self, id, data, data_size);
 
 	// wakeup subscribers

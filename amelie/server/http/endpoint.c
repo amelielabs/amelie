@@ -46,8 +46,9 @@ endpoint_init(Endpoint* self)
 		{ "timezone",     OPT_STRING,  OPT_C|OPT_A|OPT_AE, &self->timezone,     NULL, 0          },
 		{ "time",         OPT_INT,     OPT_E,              &self->time,         NULL, 0          },
 		{ "seed",         OPT_INT,     OPT_E,              &self->seed,         NULL, 0          },
+		{ "id",           OPT_INT,     OPT_C|OPT_A|OPT_AE, &self->id,           NULL, 0          },
 		// misc
-		{ "id",           OPT_JSON,    OPT_E,              &self->id,           NULL, 0          },
+		{ "jsonrpc",      OPT_JSON,    OPT_E,              &self->jsonrpc,      NULL, 0          },
 		{ "trusted",      OPT_BOOL,    OPT_E,              &self->trusted,      NULL, false      },
 		{ "debug",        OPT_BOOL,    OPT_C,              &self->debug,        NULL, false      },
 		{  NULL,          0,           0,                   NULL,               NULL, 0          },

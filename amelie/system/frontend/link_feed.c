@@ -33,7 +33,8 @@ link_subscribe(Link* self, StreamCursor* cursor)
 
 	// open cursor
 	auto channel = channel_of(rel);
-	stream_cursor_open(cursor, &channel->stream, 0);
+	auto id = opt_int_of(&self->client->endpoint->id);
+	stream_cursor_open(cursor, &channel->stream, id);
 }
 
 static inline void
@@ -97,7 +98,7 @@ link_wait(Link* self, StreamCursor* cursor)
 
 	// prepare stream subscription
 	StreamSub sub;
-	stream_sub_init(&sub, &event_sub, cursor->id + 1);
+	stream_sub_init(&sub, &event_sub, cursor->id);
 	stream_subscribe(cursor->stream, &sub);
 
 	// wait
@@ -146,14 +147,17 @@ link_feed(Link* self)
 	link_feed_begin(self);
 	for (;;)
 	{
-		// wait for client disconnect or first channel event
-		if (link_wait(self, &cursor))
-			break;
-
 		// collect events
 		buf_reset(buf);
 		stream_cursor_collect(&cursor, buf);
 		if (! buf_empty(buf))
+		{
 			tcp_write_buf(&self->client->tcp, buf);
+			continue;
+		}
+
+		// wait for client disconnect or first channel event
+		if (link_wait(self, &cursor))
+			break;
 	}
 }

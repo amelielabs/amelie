@@ -56,8 +56,9 @@ struct Endpoint
 	Opt  timezone;
 	Opt  time;
 	Opt  seed;
-	// misc
 	Opt  id;
+	// misc
+	Opt  jsonrpc;
 	Opt  trusted;
 	Opt  name;
 	Opt  debug;
