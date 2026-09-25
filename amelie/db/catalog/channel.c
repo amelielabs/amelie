@@ -63,8 +63,6 @@ channel_allocate(ChannelConfig* config)
 static void
 channel_open(Channel* self)
 {
-	(void)self;
-#if 0
 	// stream id
 	char uuid[UUID_SZ];
 	uuid_get(&self->config->id, uuid, sizeof(uuid));
@@ -75,7 +73,6 @@ channel_open(Channel* self)
 
 	// read stream file
 	stream_open(&self->stream, path);
-#endif
 }
 
 bool
