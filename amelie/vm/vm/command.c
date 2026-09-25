@@ -699,32 +699,20 @@ ccall_udf(Vm* self, Op* op)
 }
 
 hot static inline void
-cpublish_encode(Vm* self, Uuid* id, Value* value)
+cpublish_encode(Vm* self, Channel* channel, Value* value)
 {
-	(void)self;
-	(void)id;
-	(void)value;
-#if 0
 	auto tr   = self->tr;
-	auto data = &tr->log.cdc.data;
-	auto record_offset = buf_size(data);
-	auto record = (CdcLogRecord*)buf_emplace(data, sizeof(CdcLogRecord));
-	record->cmd       = LOG_PUBLISH;
-	record->id        = id;
-	record->data_size = 0;
-
+	auto data = &tr->log.data;
+	auto op   = log_publish(&tr->log, &channel->rel);
 	if (value)
 		value_encode(value, self->local->timezone, data);
 	else
 		encode_null(data);
-
-	record = (CdcLogRecord*)(data->start + record_offset);
-	record->data_size = (buf_size(data) - record_offset) - sizeof(CdcLogRecord);
+	op->rel_data_size = buf_size(data) - op->rel_data;
 
 	// ensure write limit
 	if (tr->write)
 		usage_add(tr->write, 1);
-#endif
 }
 
 hot void
@@ -738,32 +726,26 @@ cpublish(Vm* self, Op* op)
 	auto dispatch = dispatch_create(&dispatches->cache);
 
 	auto channel = (Channel*)op->a;
-	(void)channel;
-	(void)cpublish_encode;
-#if 0
-	if (channel->rel.subs)
-	{
-		// encode values directly to the cdc log buf
-		if (op->b != -1)
-		{
-			auto refs = stack_at(&self->stack, op->c);
-			auto set = (Set*)op->b;
-			for (auto order = 0; order < set->count_rows; order++)
-			{
-				auto value = set_row(set, order);
-				if (value->type == TYPE_REF)
-					value = &refs[value->integer];
-				cpublish_encode(self, channel->rel.id, value);
-			}
 
-			if (op->c > 0)
-				stack_popn(&self->stack, op->c);
-		} else
+	// encode values
+	if (op->b != -1)
+	{
+		auto refs = stack_at(&self->stack, op->c);
+		auto set = (Set*)op->b;
+		for (auto order = 0; order < set->count_rows; order++)
 		{
-			cpublish_encode(self, channel->rel.id, NULL);
+			auto value = set_row(set, order);
+			if (value->type == TYPE_REF)
+				value = &refs[value->integer];
+			cpublish_encode(self, channel, value);
 		}
+
+		if (op->c > 0)
+			stack_popn(&self->stack, op->c);
+	} else
+	{
+		cpublish_encode(self, channel, NULL);
 	}
-#endif
 
 	// (dispatch has no partitions)
 

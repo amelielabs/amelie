@@ -196,7 +196,7 @@ gtrs_detach(Gtrs* self, Batch* batch)
 	}
 
 	// remove transactions from the gtrs list
-	for (auto it = 0; it < batch->list_count; it++)
+	for (auto it = 0; it < batch->count; it++)
 	{
 		auto gtr = batch_at(batch, it);
 		list_unlink(&gtr->link);

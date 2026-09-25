@@ -31,7 +31,6 @@ struct Gtr
 	Local*     local;
 	Gtr*       link_recover;
 	Gtr*       link_group;
-	List       link_batch;
 	List       link;
 };
 
@@ -53,7 +52,6 @@ gtr_init(Gtr* self)
 	tr_init(&self->tr);
 	write_init(&self->write);
 	usage_init(&self->usage_write, "write");
-	list_init(&self->link_batch);
 	list_init(&self->link);
 	msg_init(&self->msg, MSG_GTR);
 }
@@ -77,7 +75,6 @@ gtr_reset(Gtr* self)
 	tr_reset(&self->tr);
 	write_reset(&self->write);
 	usage_reset(&self->usage_write);
-	list_init(&self->link_batch);
 	list_init(&self->link);
 }
 

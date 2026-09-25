@@ -21,7 +21,8 @@ tr_commit(Tr* self)
 	for (int pos = 0; pos < log->count; pos++)
 	{
 		auto op = log_of(log, pos);
-		op->iface->commit(log, op);
+		if (op->iface)
+			op->iface->commit(log, op);
 	}
 
 	// reset log
@@ -38,7 +39,8 @@ tr_abort(Tr* self)
 	for (int pos = self->log.count - 1; pos >= 0; pos--)
 	{
 		auto op = log_of(log, pos);
-		op->iface->abort(log, op);
+		if (op->iface)
+			op->iface->abort(log, op);
 	}
 
 	// reset log

@@ -157,6 +157,7 @@ bench_service(Bench* self, bool create)
 	{
 		// connect as bench user for deploy
 		str_set_cstr(&endpoint->user.string, "bench");
+		endpoint_auth(endpoint);
 
 		auto client = client_allocate();
 		defer(client_free, client);

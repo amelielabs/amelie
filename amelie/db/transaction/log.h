@@ -20,8 +20,7 @@ enum
 	LOG_REPLACE,
 	LOG_DELETE,
 	LOG_PUBLISH,
-	LOG_DDL,
-	LOG_REQUEST
+	LOG_DDL
 };
 
 struct LogIf
@@ -44,6 +43,7 @@ struct LogOp
 		struct {
 			Rel*      rel;
 			int       rel_data;
+			int       rel_data_size;
 		};
 	};
 };
@@ -135,6 +135,20 @@ log_delete(Log*      self,
 	return log_dml(self, LOG_DELETE, iface, iface_arg, row, timeline);
 }
 
+static inline LogOp*
+log_publish(Log* self, Rel* rel)
+{
+	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
+	op->iface         = NULL;
+	op->iface_arg     = NULL;
+	op->cmd           = LOG_PUBLISH;
+	op->rel           = rel;
+	op->rel_data      = buf_size(&self->data);
+	op->rel_data_size = 0;
+	self->count++;
+	return op;
+}
+
 static inline void
 log_ddl(Log*   self,
         LogIf* iface,
@@ -142,10 +156,11 @@ log_ddl(Log*   self,
         Rel*   rel)
 {
 	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
-	op->iface     = iface;
-	op->iface_arg = iface_arg;
-	op->cmd       = LOG_DDL;
-	op->rel       = rel;
-	op->rel_data  = buf_size(&self->data);
+	op->iface         = iface;
+	op->iface_arg     = iface_arg;
+	op->cmd           = LOG_DDL;
+	op->rel           = rel;
+	op->rel_data      = buf_size(&self->data);
+	op->rel_data_size = 0;
 	self->count++;
 }
