@@ -17,86 +17,30 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
-#if 0
 static inline void
-link_subscribe_to(Link* self, Str* user, Str* name)
+link_subscribe(Link* self, StreamCursor* cursor)
 {
-	// find existing feed
-	auto feed = feeds_find(&self->feeds, user, name);
-	if (feed)
-		error("relation '{str}': is redefined", name);
+	// find channel
+	auto api = self->api;
+	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, &api->rel_user, &api->rel, false);
+	if (! rel)
+		error("relation '{str}.{str}': does not exists",
+		      &api->rel_user, &api->rel);
 
-	// find user or relation
-	Rel* rel = NULL;
-	if (str_empty(name))
-	{
-		auto ref = catalog_find_user(&share()->db->catalog, user, false);
-		if (! ref)
-			error("user '{str}': not found", user);
-		rel = &ref->rel;
-	} else
-	{
-		rel = catalog_find(&share()->db->catalog, REL_UNDEF, user, name, false);
-		if (! rel)
-			error("relation '{str}.{str}': does not exists", user, name);
-
-		if (rel->type != REL_TABLE   &&
-		    rel->type != REL_CLONE   &&
-		    rel->type != REL_CHANNEL)
-			error("relation '{str}.{str}': is not supported for streaming", user, name);
-	}
-
-	// use subscription relation
-	int      flags = 0;
-	uint64_t lsn = state_lsn();
-	Uuid*    id = rel->id;
-
-	// ensure user can create subscription for that relation
-	// user_check_permission(self->portal.user, rel, PERM_CREATE_SUBSCRIPTION);
-
-	// (must be under exclusive lock)
-	rel->subs++;
-
-	// create feed
-	feed = feed_allocate();
-	feed_set_user(feed, user);
-	if (! str_empty(name))
-		feed_set_name(feed, name);
-	feed_set_id(feed, id);
-	feeds_add(&self->feeds, feed);
-
-	// include target name in the data rows
-	if (self->feeds.list_count > 1)
-		flags |= CDC_TARGET;
-	self->feeds.flags |= flags;
+	if (rel->type != REL_CHANNEL)
+		error("relation '{str}.{str}': is not a channel",
+		      &api->rel_user, &api->rel);
 
 	// open cursor
-	cdc_slot_set(&feed->slot, lsn);
-	cdc_cursor_open(&feed->cursor, share()->cdc, id, lsn);
-}
-
-static inline void
-link_subscribe(Link* self, Str* targets)
-{
-	// target[, ...]
-	auto pos = targets->pos;
-	auto end = targets->end;
-
-	// take exclusive lock
-	portal_lock(&self->portal, LOCK_EXCLUSIVE);
-
-	Str user;
-	Str name;
-	while (portal_target(&pos, end, &user, &name))
-		link_subscribe_to(self, &user, &name);
+	auto channel = channel_of(rel);
+	stream_cursor_open(cursor, &channel->stream, 0);
 }
 
 static inline void
 link_unsubscribe(Link* self)
 {
-	if (list_empty(&self->feeds.list))
-		return;
-
+	(void)self;
+#if 0
 	// take exclusive catalog lock
 	auto lock = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
 	defer(unlock, lock);
@@ -116,6 +60,7 @@ link_unsubscribe(Link* self)
 		rel->subs--;
 		assert(rel->subs >= 0);
 	}
+#endif
 }
 
 static inline void
@@ -131,7 +76,7 @@ link_feed_begin(Link* self)
 }
 
 hot static inline bool
-link_wait(Link* self)
+link_wait(Link* self, StreamCursor* cursor)
 {
 	// parent
 	Event event;
@@ -150,14 +95,10 @@ link_wait(Link* self)
 	event_set_parent(&event_sub, &event);
 	event_attach(&event_sub);
 
-	// prepare cdc sub
-	//
-	// get min lsn across all feeds
-	//
-	auto min = feeds_min(&self->feeds);
-	CdcSub sub;
-	cdc_sub_init(&sub, &event_sub, min);
-	cdc_subscribe(share()->cdc, &sub);
+	// prepare stream subscription
+	StreamSub sub;
+	stream_sub_init(&sub, &event_sub, cursor->id + 1);
+	stream_subscribe(cursor->stream, &sub);
 
 	// wait
 	auto on_error = error_catch
@@ -166,7 +107,7 @@ link_wait(Link* self)
 		event_wait(&event, -1);
 	);
 	poll_read_stop(&self->client->tcp.fd);
-	cdc_unsubscribe(share()->cdc, &sub);
+	stream_unsubscribe(cursor->stream, &sub);
 
 	if (unlikely(on_error))
 		rethrow();
@@ -177,10 +118,14 @@ link_wait(Link* self)
 void
 link_feed(Link* self)
 {
+	StreamCursor cursor;
+	stream_cursor_init(&cursor);
+
 	// validate and subscribe
 	auto portal   = &self->portal;
-	auto on_error = error_catch (
-		link_subscribe(self, opt_string_of(&portal->endpoint.feed));
+	auto on_error = error_catch
+	(
+		link_subscribe(self, &cursor);
 	);
 	portal_unlock(portal);
 
@@ -201,21 +146,14 @@ link_feed(Link* self)
 	link_feed_begin(self);
 	for (;;)
 	{
-		// wait for client disconnect or cdc event
-		if (link_wait(self))
+		// wait for client disconnect or first channel event
+		if (link_wait(self, &cursor))
 			break;
 
-		// collect pending cdc events
+		// collect events
 		buf_reset(buf);
-		feeds_collect(&self->feeds, buf);
+		stream_cursor_collect(&cursor, buf);
 		if (! buf_empty(buf))
 			tcp_write_buf(&self->client->tcp, buf);
 	}
-}
-#endif
-
-void
-link_feed(Link* self)
-{
-	(void)self;
 }

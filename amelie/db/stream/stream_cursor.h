@@ -167,3 +167,22 @@ stream_cursor_next(StreamCursor* self)
 	spinlock_unlock(lock);
 	return self->current != NULL;
 }
+
+hot static inline void
+stream_cursor_collect(StreamCursor* self, Buf* buf)
+{
+	for (;;)
+	{
+		auto event = stream_cursor_at(self);
+		if (event)
+		{
+			buf_format(buf, "id: {u64}\n", event->id);
+			buf_write(buf, "data: ", 6);
+			uint8_t* pos = event->data;
+			json_export(buf, runtime()->timezone, &pos);
+			buf_write(buf, "\n\n", 2);
+		}
+		if (! stream_cursor_next(self))
+			break;
+	}
+}

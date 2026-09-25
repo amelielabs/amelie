@@ -132,9 +132,6 @@ stream_add(Stream*  self,
 
 	// advance
 	page->position += size;
-
-	// set last id
-	self->id = id;
 }
 
 hot void

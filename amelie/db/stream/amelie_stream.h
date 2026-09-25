@@ -15,6 +15,3 @@
 #include "stream/stream_sub.h"
 #include "stream/stream.h"
 #include "stream/stream_cursor.h"
-
-// feed
-#include "stream/feed.h"
