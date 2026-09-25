@@ -147,7 +147,7 @@ checkpoint_channel(Checkpoint* self, Channel* channel)
 	       self->lsn,
 	       uuid);
 
-	auto size = stream_create(&channel->stream, path);
+	auto size = stream_create(channel->stream, path);
 	info(" {s}          ({.2f} MB)",
 	     uuid, (double)size / 1024 / 1024);
 }

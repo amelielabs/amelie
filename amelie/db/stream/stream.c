@@ -15,21 +15,65 @@
 #include <amelie_storage.h>
 #include <amelie_stream.h>
 
-void
-stream_init(Stream* self)
+Stream*
+stream_allocate(void)
 {
+	auto self = (Stream*)am_malloc(sizeof(Stream));
+	self->refs       = 1;
 	self->id         = 0;
 	self->subs_count = 0;
+	self->shutdown   = false;
 	spinlock_init(&self->lock);
 	list_init(&self->subs);
 	storage_init(&self->storage, STORAGE_STREAM, 256 * 1024);
+	return self;
 }
 
 void
-stream_free(Stream* self)
+stream_ref(Stream* self)
 {
+	spinlock_lock(&self->lock);
+	self->refs++;
+	spinlock_unlock(&self->lock);
+}
+
+void
+stream_unref(Stream* self)
+{
+	spinlock_lock(&self->lock);
+	auto free = self->refs == 1;
+	if (! free)
+		self->refs--;
+	spinlock_unlock(&self->lock);
+	if (! free)
+		return;
+
 	storage_free(&self->storage);
 	spinlock_free(&self->lock);
+	am_free(self);
+}
+
+static void
+stream_notify(Stream* self)
+{
+	// wakeup subscribers
+	while (self->subs_count > 0)
+	{
+		auto sub = container_of(list_pop(&self->subs), StreamSub, link);
+		self->subs_count--;
+		sub->active   = false;
+		sub->shutdown = self->shutdown;
+		stream_sub_signal(sub);
+	}
+}
+
+void
+stream_shutdown(Stream* self)
+{
+	spinlock_lock(&self->lock);
+	self->shutdown = true;
+	stream_notify(self);
+	spinlock_unlock(&self->lock);
 }
 
 size_t
@@ -63,25 +107,13 @@ stream_open(Stream* self, char* path)
 	return size_file;
 }
 
-static void
-stream_notify(Stream* self)
-{
-	// wakeup subscribers
-	while (self->subs_count > 0)
-	{
-		auto sub = container_of(list_pop(&self->subs), StreamSub, link);
-		self->subs_count--;
-		sub->active = false;
-		stream_sub_signal(sub);
-	}
-}
-
 void
 stream_subscribe(Stream* self, StreamSub* sub)
 {
 	spinlock_lock(&self->lock);
-	if (self->id > sub->id)
+	if (self->shutdown || self->id > sub->id)
 	{
+		sub->shutdown = self->shutdown;
 		stream_sub_signal(sub);
 		spinlock_unlock(&self->lock);
 		return;
@@ -100,7 +132,8 @@ stream_unsubscribe(Stream* self, StreamSub* sub)
 	{
 		list_unlink(&sub->link);
 		self->subs_count--;
-		sub->active = false;
+		sub->shutdown = self->shutdown;
+		sub->active   = false;
 	}
 	spinlock_unlock(&self->lock);
 }

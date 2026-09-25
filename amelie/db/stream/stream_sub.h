@@ -18,15 +18,17 @@ struct StreamSub
 	Event*   event;
 	uint64_t id;
 	bool     active;
+	bool     shutdown;
 	List     link;
 };
 
 static inline void
 stream_sub_init(StreamSub* self, Event* event, uint64_t id)
 {
-	self->event  = event;
-	self->id     = id;
-	self->active = false;
+	self->event    = event;
+	self->id       = id;
+	self->active   = false;
+	self->shutdown = false;
 	list_init(&self->link);
 }
 

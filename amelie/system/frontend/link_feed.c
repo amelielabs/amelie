@@ -31,37 +31,23 @@ link_subscribe(Link* self, StreamCursor* cursor)
 		error("relation '{str}.{str}': is not a channel",
 		      &api->rel_user, &api->rel);
 
+	// take stream reference
+	self->stream = channel_of(rel)->stream;
+	stream_ref(self->stream);
+
 	// open cursor
-	auto channel = channel_of(rel);
 	auto id = opt_int_of(&self->client->endpoint->id);
-	stream_cursor_open(cursor, &channel->stream, id);
+	stream_cursor_open(cursor, self->stream, id);
 }
 
 static inline void
 link_unsubscribe(Link* self)
 {
-	(void)self;
-#if 0
-	// take exclusive catalog lock
-	auto lock = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
-	defer(unlock, lock);
-
-	auto catalog = &share()->db->catalog;
-	list_foreach(&self->feeds.list)
+	if (self->stream)
 	{
-		auto feed = list_at(Feed, link);
-		Rels* rels;
-		if (str_empty(&feed->name))
-			rels = &catalog->users;
-		else
-			rels = &catalog->rels;
-		auto rel = rels_find_by(rels, REL_UNDEF, &feed->id, false);
-		if (! rel)
-			continue;
-		rel->subs--;
-		assert(rel->subs >= 0);
+		stream_unref(self->stream);
+		self->stream = NULL;
 	}
-#endif
 }
 
 static inline void
@@ -113,7 +99,8 @@ link_wait(Link* self, StreamCursor* cursor)
 	if (unlikely(on_error))
 		rethrow();
 
-	return event_client.signal;
+	// client disconnect on stream shutdown
+	return event_client.signal || sub.shutdown;
 }
 
 void
@@ -128,6 +115,8 @@ link_feed(Link* self)
 	(
 		link_subscribe(self, &cursor);
 	);
+
+	// release catalog lock (stream is holding a reference)
 	portal_unlock(portal);
 
 	auto buf = portal->output.buf;
@@ -156,7 +145,7 @@ link_feed(Link* self)
 			continue;
 		}
 
-		// wait for client disconnect or first channel event
+		// wait for first event, eof or channel drop
 		if (link_wait(self, &cursor))
 			break;
 	}

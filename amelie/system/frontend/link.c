@@ -22,6 +22,7 @@ link_init(Link* self, Frontend* fe, Client* client)
 {
 	self->client = client;
 	self->api    = NULL;
+	self->stream = NULL;
 	self->fe     = fe;
 
 	portal_init(&self->portal);
@@ -36,6 +37,16 @@ link_free(Link* self)
 	mcp_free(&self->mcp);
 	json_free(&self->json);
 	portal_free(&self->portal);
+}
+
+static void
+link_reset(Link* self)
+{
+	self->api    = NULL;
+	self->stream = NULL;
+
+	// release catalog lock
+	portal_reset(&self->portal, true);
 }
 
 hot static inline bool
@@ -87,8 +98,7 @@ link_main(Link* self)
 	defer(ctl->session_free, session);
 	for (;;)
 	{
-		self->api = NULL;
-		portal_reset(portal, true);
+		link_reset(self);
 
 		// read header
 		http_reset(http);

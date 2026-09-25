@@ -30,14 +30,19 @@ struct StreamHeader
 struct Stream
 {
 	Spinlock lock;
+	int      refs;
 	uint64_t id;
 	List     subs;
 	int      subs_count;
+	bool     shutdown;
 	Storage  storage;
 };
 
-void   stream_init(Stream*);
-void   stream_free(Stream*);
+Stream*
+stream_allocate(void);
+void   stream_ref(Stream*);
+void   stream_unref(Stream*);
+void   stream_shutdown(Stream*);
 size_t stream_create(Stream*, char*);
 size_t stream_open(Stream*, char*);
 void   stream_gc(Stream*);

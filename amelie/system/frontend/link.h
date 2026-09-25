@@ -27,6 +27,7 @@ struct Link
 	Mcp       mcp;
 	Json      json;
 	Api*      api;
+	Stream*   stream;
 	Client*   client;
 	Frontend* fe;
 };

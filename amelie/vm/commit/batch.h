@@ -200,7 +200,7 @@ batch_publish(Batch* self)
 			auto op = log_of(log, pos);
 			assert(op->cmd == LOG_PUBLISH);
 			auto data = log->data.start + op->rel_data;
-			stream_write(&channel_of(op->rel)->stream, data, op->rel_data_size);
+			stream_write(channel_of(op->rel)->stream, data, op->rel_data_size);
 		}
 	}
 }

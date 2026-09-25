@@ -16,7 +16,7 @@ typedef struct Channel Channel;
 struct Channel
 {
 	Rel            rel;
-	Stream         stream;
+	Stream*        stream;
 	ChannelConfig* config;
 };
 

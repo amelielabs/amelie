@@ -25,7 +25,8 @@ static inline void
 channel_free(Channel* self, bool drop)
 {
 	unused(drop);
-	stream_free(&self->stream);
+	stream_shutdown(self->stream);
+	stream_unref(self->stream);
 	channel_config_free(self->config);
 	am_free(self);
 }
@@ -44,7 +45,7 @@ channel_allocate(ChannelConfig* config)
 {
 	auto self = (Channel*)am_malloc(sizeof(Channel));
 	self->config = channel_config_copy(config);
-	stream_init(&self->stream);
+	self->stream = stream_allocate();
 
 	// set relation
 	auto rel = &self->rel;
@@ -72,7 +73,7 @@ channel_open(Channel* self)
 	       uuid);
 
 	// read stream file
-	stream_open(&self->stream, path);
+	stream_open(self->stream, path);
 }
 
 bool
