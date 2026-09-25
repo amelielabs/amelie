@@ -46,8 +46,6 @@ endpoint_init(Endpoint* self)
 		{ "timezone",     OPT_STRING,  OPT_C|OPT_A|OPT_AE, &self->timezone,     NULL, 0          },
 		{ "time",         OPT_INT,     OPT_E,              &self->time,         NULL, 0          },
 		{ "seed",         OPT_INT,     OPT_E,              &self->seed,         NULL, 0          },
-		// operations
-		{ "mcp",          OPT_BOOL,    OPT_C|OPT_A|OPT_AE, &self->mcp,          NULL, false      },
 		// misc
 		{ "id",           OPT_JSON,    OPT_E,              &self->id,           NULL, 0          },
 		{ "trusted",      OPT_BOOL,    OPT_E,              &self->trusted,      NULL, false      },

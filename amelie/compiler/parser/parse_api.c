@@ -20,7 +20,8 @@
 void
 parse_api_create(Stmt* self)
 {
-	// CREATE URI 'uri' ON [user.]name [DESCRIPTION]
+	// CREATE API 'uri' AS MCP
+	// CREATE API 'uri' ON [user.]name [DESCRIPTION]
 	auto stmt = ast_api_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -50,15 +51,27 @@ parse_api_create_inline(Stmt* self, Apis* apis)
 	apis_add(apis, config);
 	api_set_uri(config, &uri->string);
 
-	// on
-	stmt_expect(self, KON);
+	// [ON user.name] | [AS MCP]
+	if (stmt_if(self, KAS))
+	{
+		// MCP
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME || !str_is_case(&name->string, "mcp", 3))
+			stmt_error(self, name, "MCP expected");
 
-	// [user.]name
-	Str user;
-	Str name;
-	parse_target(self, &user, &name);
-	api_set_rel_user(config, &user);
-	api_set_rel(config, &name);
+		api_set_mcp(config, true);
+	} else
+	{
+		// on
+		stmt_expect(self, KON);
+
+		// [user.]name
+		Str user;
+		Str name;
+		parse_target(self, &user, &name);
+		api_set_rel_user(config, &user);
+		api_set_rel(config, &name);
+	}
 
 	// set options
 	for (;;)

@@ -272,10 +272,6 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	// arguments
 	bool first = true;
 
-	// mcp
-	if (opt_int_of(&endpoint->mcp))
-		uri_export_arg(&endpoint->mcp, buf, &first);
-
 	// timezone
 	uri_export_arg(&endpoint->timezone, buf, &first);
 

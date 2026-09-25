@@ -56,8 +56,6 @@ struct Endpoint
 	Opt  timezone;
 	Opt  time;
 	Opt  seed;
-	// operations
-	Opt  mcp;
 	// misc
 	Opt  id;
 	Opt  trusted;

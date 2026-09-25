@@ -17,6 +17,7 @@ struct Api
 {
 	Str  description;
 	Str  uri;
+	bool mcp;
 	Str  rel_user;
 	Str  rel;
 	List link;
@@ -27,7 +28,7 @@ api_allocate()
 {
 	Api* self;
 	self = am_malloc(sizeof(Api));
-
+	self->mcp = false;
 	str_init(&self->description);
 	str_init(&self->uri);
 	str_init(&self->rel_user);
@@ -61,6 +62,12 @@ api_set_uri(Api* self, Str* value)
 }
 
 static inline void
+api_set_mcp(Api* self, bool value)
+{
+	self->mcp = value;
+}
+
+static inline void
 api_set_rel_user(Api* self, Str* value)
 {
 	str_free(&self->rel_user);
@@ -80,6 +87,7 @@ api_copy(Api* self)
 	auto copy = api_allocate();
 	api_set_description(copy, &self->description);
 	api_set_uri(copy, &self->uri);
+	api_set_mcp(copy, self->mcp);
 	api_set_rel_user(copy, &self->rel_user);
 	api_set_rel(copy, &self->rel);
 	return copy;
@@ -92,11 +100,12 @@ api_read(uint8_t** pos)
 	errdefer(api_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_STR, "description", &self->description },
-		{ DECODE_STR, "uri",         &self->uri         },
-		{ DECODE_STR, "rel_user",    &self->rel_user    },
-		{ DECODE_STR, "rel",         &self->rel         },
-		{ 0,           NULL,          NULL              },
+		{ DECODE_STR,  "description", &self->description },
+		{ DECODE_STR,  "uri",         &self->uri         },
+		{ DECODE_BOOL, "mcp",         &self->mcp         },
+		{ DECODE_STR,  "rel_user",    &self->rel_user    },
+		{ DECODE_STR,  "rel",         &self->rel         },
+		{ 0,            NULL,          NULL              },
 	};
 	decode_obj(obj, "api", pos);
 	return self;
@@ -123,6 +132,10 @@ api_write(Api* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
+
+	// mcp
+	encode_raw(buf, "mcp", 3);
+	encode_bool(buf, self->mcp);
 
 	// rel_user
 	encode_raw(buf, "rel_user", 8);

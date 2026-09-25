@@ -207,6 +207,10 @@ link_api(Link* self)
 		error("user {str}: api '{str}' not found",
 		      &portal->user->config->name, uri);
 
+	// mcp request
+	if (self->api->mcp)
+		return link_api_mcp(self);
+
 	// GET /<user_api> (feed)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(str_is_case(method, "GET", 3)))
@@ -261,17 +265,11 @@ link_api(Link* self)
 hot static inline int
 link_root(Link* self)
 {
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
-	auto http     = &self->client->request;
-
 	// POST /
+	auto http   = &self->client->request;
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported operation");
-
-	if (opt_int_of(&endpoint->mcp))
-		return link_api_mcp(self);
 
 	return link_sql(self);
 }

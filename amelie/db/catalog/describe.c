@@ -476,9 +476,12 @@ describe_user(User* self, Buf* buf, Str* user, int flags)
 	list_foreach(&self->config->apis.list)
 	{
 		auto api = list_at(Api, link);
-		buf_format(buf, "  api {qstr} on {str}.{str}\n",
-		           &api->uri,
-		           &api->rel_user, &api->rel);
+		buf_format(buf, "  api {qstr} ", &api->uri);
+		if (api->mcp)
+			buf_format(buf, "as mcp\n");
+		else
+			buf_format(buf, "on {str}.{str}\n",
+			           &api->rel_user, &api->rel);
 	}
 }
 
