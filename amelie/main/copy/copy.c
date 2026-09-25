@@ -210,10 +210,6 @@ copy_file(Copy* self, char* path)
 static void
 copy_main(Copy* self)
 {
-	// ensure relation is defined
-	if (opt_string_empty(&self->main->endpoint.copy))
-		error("copy: target relation is not set\n");
-
 	// create clients and connect
 	copy_connect(self);
 	self->report_time = time_us();

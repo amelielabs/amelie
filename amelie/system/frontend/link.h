@@ -26,6 +26,7 @@ struct Link
 	Request   req;
 	Mcp       mcp;
 	Json      json;
+	Api*      api;
 	Client*   client;
 	Frontend* fe;
 };

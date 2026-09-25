@@ -57,8 +57,6 @@ struct Endpoint
 	Opt  time;
 	Opt  seed;
 	// operations
-	Opt  feed;
-	Opt  copy;
 	Opt  mcp;
 	// misc
 	Opt  id;

@@ -64,6 +64,72 @@ link_sql(Link* self)
 }
 
 hot static inline int
+link_api_mcp(Link* self)
+{
+	auto portal   = &self->portal;
+	auto endpoint = &portal->endpoint;
+	auto http     = &self->client->request;
+
+	// check permission
+	user_check(portal->user, PERM_MCP);
+
+	// content type
+	auto content_type = &endpoint->content_type.string;
+	if (!str_empty(content_type) &&
+	    !str_is(content_type, "application/json", 16))
+		error("unsupported operation content-type");
+
+	// accept (jsonrpc)
+	auto accept = &endpoint->accept.string;
+	if (!str_empty(accept) &&
+	    !str_is(accept, "application/json", 16) &&
+	    !str_is(accept, "*/*", 3))
+		error("unsupported operation accept");
+
+	str_set(accept, "application/json", 16);
+	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
+
+	Str content;
+	buf_str(&http->content, &content);
+
+	// parse mcp request and run commands which not
+	// require execution
+	auto mcp = &self->mcp;
+	mcp_reset(mcp);
+	if (! mcp_parse(mcp, &content, &self->req))
+		return LINK_ERROR;
+
+	return LINK_EXECUTE;
+}
+
+hot static inline int
+link_api_get(Link* self)
+{
+	auto portal   = &self->portal;
+	auto endpoint = &portal->endpoint;
+
+	// check FEED permission
+	user_check(portal->user, PERM_FEED);
+
+	// GET (text/event-stream) SSE
+	auto content_type = &endpoint->content_type.string;
+	str_set(content_type, "text/event-stream", 17);
+
+	// accept (text/event-stream)
+	auto accept = &endpoint->accept.string;
+	if (!str_empty(accept) &&
+	    !str_is(accept, "text/event-stream", 17) &&
+	    !str_is(accept, "*/*", 3))
+		error("unsupported operation accept");
+
+	str_set(accept, "text/event-stream", 17);
+	output_set(&portal->output, endpoint, &output_json, NULL);
+
+	return LINK_FEED;
+}
+
+#if 0
+hot static inline int
 link_copy(Link* self)
 {
 	auto portal   = &self->portal;
@@ -122,71 +188,7 @@ link_copy(Link* self)
 
 	return LINK_EXECUTE;
 }
-
-hot static inline int
-link_mcp(Link* self)
-{
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
-	auto http     = &self->client->request;
-
-	// check permission
-	user_check(portal->user, PERM_MCP);
-
-	// content type
-	auto content_type = &endpoint->content_type.string;
-	if (!str_empty(content_type) &&
-	    !str_is(content_type, "application/json", 16))
-		error("unsupported operation content-type");
-
-	// accept (jsonrpc)
-	auto accept = &endpoint->accept.string;
-	if (!str_empty(accept) &&
-	    !str_is(accept, "application/json", 16) &&
-	    !str_is(accept, "*/*", 3))
-		error("unsupported operation accept");
-
-	str_set(accept, "application/json", 16);
-	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
-
-	Str content;
-	buf_str(&http->content, &content);
-
-	// parse mcp request and run commands which not
-	// require execution
-	auto mcp = &self->mcp;
-	mcp_reset(mcp);
-	if (! mcp_parse(mcp, &content, &self->req))
-		return LINK_ERROR;
-
-	return LINK_EXECUTE;
-}
-
-hot static inline int
-link_get(Link* self)
-{
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
-
-	// check FEED permission
-	user_check(portal->user, PERM_FEED);
-
-	// GET (text/event-stream) SSE
-	auto content_type = &endpoint->content_type.string;
-	str_set(content_type, "text/event-stream", 17);
-
-	// accept (text/event-stream)
-	auto accept = &endpoint->accept.string;
-	if (!str_empty(accept) &&
-	    !str_is(accept, "text/event-stream", 17) &&
-	    !str_is(accept, "*/*", 3))
-		error("unsupported operation accept");
-
-	str_set(accept, "text/event-stream", 17);
-	output_set(&portal->output, endpoint, &output_json, NULL);
-
-	return LINK_FEED;
-}
+#endif
 
 hot static inline int
 link_api(Link* self)
@@ -200,18 +202,15 @@ link_api(Link* self)
 
 	// find api
 	auto uri = opt_string_of(&endpoint->endpoint);
-	auto api = apis_find(&portal->user->config->apis, uri);
-	if (! api)
+	self->api = apis_find(&portal->user->config->apis, uri);
+	if (! self->api)
 		error("user {str}: api '{str}' not found",
 		      &portal->user->config->name, uri);
 
 	// GET /<user_api> (feed)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(str_is_case(method, "GET", 3)))
-	{
-		opt_string_set_target(&endpoint->feed, &api->rel_user, &api->rel);
-		return link_get(self);
-	}
+		return link_api_get(self);
 
 	// POST /<user_api> (application/json)
 	if (unlikely(! str_is_case(method, "POST", 4)))
@@ -252,8 +251,8 @@ link_api(Link* self)
 	// set request
 	auto req = &self->req;
 	req->type      = REQUEST_WRITE;
-	req->rel_user  = api->rel_user;
-	req->rel       = api->rel;
+	req->rel_user  = self->api->rel_user;
+	req->rel       = self->api->rel;
 	req->args      = json->buf->start;
 	req->args_size = buf_size(json->buf);
 	return LINK_EXECUTE;
@@ -266,28 +265,14 @@ link_root(Link* self)
 	auto endpoint = &portal->endpoint;
 	auto http     = &self->client->request;
 
-	// GET /
+	// POST /
 	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(str_is_case(method, "GET", 3)))
-	{
-		// /?feed
-		if (opt_string_empty(&endpoint->feed))
-			error("feed argument is missing");
-
-		return link_get(self);
-	}
-	if (! opt_string_empty(&endpoint->feed))
+	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported operation");
 
-	// /?copy
-	if (! opt_string_empty(&endpoint->copy))
-		return link_copy(self);
-
-	// /?mcp
 	if (opt_int_of(&endpoint->mcp))
-		return link_mcp(self);
+		return link_api_mcp(self);
 
-	// /
 	return link_sql(self);
 }
 

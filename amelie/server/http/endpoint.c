@@ -47,8 +47,6 @@ endpoint_init(Endpoint* self)
 		{ "time",         OPT_INT,     OPT_E,              &self->time,         NULL, 0          },
 		{ "seed",         OPT_INT,     OPT_E,              &self->seed,         NULL, 0          },
 		// operations
-		{ "feed",         OPT_STRING,  OPT_C|OPT_A|OPT_AE, &self->feed,         NULL, 0          },
-		{ "copy",         OPT_STRING,  OPT_C|OPT_A|OPT_AE, &self->copy,         NULL, 0          },
 		{ "mcp",          OPT_BOOL,    OPT_C|OPT_A|OPT_AE, &self->mcp,          NULL, false      },
 		// misc
 		{ "id",           OPT_JSON,    OPT_E,              &self->id,           NULL, 0          },

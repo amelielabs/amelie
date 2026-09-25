@@ -272,14 +272,6 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	// arguments
 	bool first = true;
 
-	// copy
-	if (! opt_string_empty(&endpoint->copy))
-		uri_export_arg(&endpoint->copy, buf, &first);
-
-	// feed
-	if (! opt_string_empty(&endpoint->feed))
-		uri_export_arg(&endpoint->feed, buf, &first);
-
 	// mcp
 	if (opt_int_of(&endpoint->mcp))
 		uri_export_arg(&endpoint->mcp, buf, &first);

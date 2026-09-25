@@ -21,6 +21,7 @@ void
 link_init(Link* self, Frontend* fe, Client* client)
 {
 	self->client = client;
+	self->api    = NULL;
 	self->fe     = fe;
 
 	portal_init(&self->portal);
@@ -86,6 +87,7 @@ link_main(Link* self)
 	defer(ctl->session_free, session);
 	for (;;)
 	{
+		self->api = NULL;
 		portal_reset(portal, true);
 
 		// read header
