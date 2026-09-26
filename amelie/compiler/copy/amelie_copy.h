@@ -11,7 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_parser.h>
-#include <amelie_copy.h>
-#include <amelie_plan.h>
-#include <amelie_compiler.h>
+#include "copy/parse_copy_api.h"
+#include "copy/parse_copy.h"

@@ -16,6 +16,7 @@
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
+#include <amelie_copy.h>
 #include <amelie_plan.h>
 #include <amelie_compiler.h>
 

@@ -16,6 +16,7 @@
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
+#include <amelie_copy.h>
 
 static void
 copy_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)

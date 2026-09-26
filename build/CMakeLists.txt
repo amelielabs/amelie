@@ -106,6 +106,7 @@ include_directories("${AMELIE_ROOT}/vm/vm")
 # compiler
 include_directories("${AMELIE_ROOT}/compiler")
 include_directories("${AMELIE_ROOT}/compiler/parser")
+include_directories("${AMELIE_ROOT}/compiler/copy")
 include_directories("${AMELIE_ROOT}/compiler/plan")
 include_directories("${AMELIE_ROOT}/compiler/compiler")
 
@@ -310,8 +311,8 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_execute.c
     ${AMELIE_ROOT}/compiler/parser/parse_publish.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
-    ${AMELIE_ROOT}/compiler/parser/parse_copy_api.c
-    ${AMELIE_ROOT}/compiler/parser/parse_copy.c
+    ${AMELIE_ROOT}/compiler/copy/parse_copy_api.c
+    ${AMELIE_ROOT}/compiler/copy/parse_copy.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/plan/path.c
     ${AMELIE_ROOT}/compiler/plan/path_prepare.c

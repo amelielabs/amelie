@@ -143,14 +143,14 @@ session_run(Session* self)
 		profile_start(&profile->time_commit_us);
 	}
 
-	// do group commit and wal write, handle group abort
-	commit(share()->commit, gtr, error);
-
 	// write result
 	auto returning = compiler->program_returning;
 	auto output    = &portal->output;
 	if (returning && ret.value)
 		output_value(output, returning, ret.value);
+
+	// do group commit and wal write, handle group abort
+	commit(share()->commit, gtr, error);
 
 	// explain profile
 	if (compiler->program_profile)

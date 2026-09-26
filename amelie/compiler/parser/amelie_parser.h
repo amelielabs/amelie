@@ -102,7 +102,3 @@
 #include "parser/parse_with.h"
 #include "parser/parse_execute.h"
 #include "parser/parse.h"
-
-// api
-#include "parser/parse_copy_api.h"
-#include "parser/parse_copy.h"
