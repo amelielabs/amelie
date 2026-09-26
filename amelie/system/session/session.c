@@ -297,36 +297,19 @@ session_main(Session* self, Portal* portal, Request* req)
 	self->portal = portal;
 	self->req    = req;
 
-	// parser sql
+	// parse request
 	auto compiler = &self->compiler;
 	compiler_set(compiler, &portal->local, self->program);
 
-	switch (req->type) {
-	case REQUEST_SQL:
+	if (str_empty(&req->rel))
 	{
 		user_check(portal->user, PERM_SQL);
-		compiler_parse(compiler, &req->text);
-		break;
-	}
-	case REQUEST_COPY:
+		compiler_parse(compiler, &req->content);
+	} else
 	{
-		Str content;
-		str_set_u8(&content, req->args, req->args_size);
 		compiler_parse_copy(compiler, &req->rel_user, &req->rel,
-		                    &content);
-		break;
-	}
-	case REQUEST_WRITE:
-	case REQUEST_EXECUTE:
-	{
-		auto execute = req->type == REQUEST_EXECUTE;
-		compiler_parse_api(compiler, &req->rel_user, &req->rel,
-		                   req->args, execute);
-		break;
-	}
-	default:
-		abort();
-		break;
+		                    &req->content_type,
+		                    &req->content);
 	}
 
 	// generate bytecode (unless EXECUTE)

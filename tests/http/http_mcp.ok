@@ -74,7 +74,7 @@ end;
 # test: POST /mcp (tools/call, non udf)
 create table xyz (id int primary key);
 post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "xyz", "arguments": {} } };
-{"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "error: relation amelie.xyz is not a function"}], "isError": true}}
+{"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "error: column 'id' value cannot be NULL"}], "isError": true}}
 # test: POST /mcp (tools/call, error during execution)
 post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "error_as", "arguments": {} } };
 {"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "error: error(❰null❱ ⟵ expected string"}], "isError": true}}

@@ -39,6 +39,9 @@ link_sql(Link* self)
 	    !str_is(content_type, "application/x-www-form-urlencoded", 33))
 		error("unsupported operation content-type: {str}", content_type);
 
+	// set to default
+	str_init(content_type);
+
 	// accept
 	OutputIf* output_if;
 	auto accept = &endpoint->accept.string;
@@ -58,8 +61,7 @@ link_sql(Link* self)
 
 	// set request
 	auto req = &self->req;
-	req->type = REQUEST_SQL;
-	buf_str(&http->content, &req->text);
+	buf_str(&http->content, &req->content);
 	return LINK_EXECUTE;
 }
 
@@ -75,6 +77,9 @@ link_api_mcp(Link* self)
 	if (!str_empty(content_type) &&
 	    !str_is(content_type, "application/json", 16))
 		error("unsupported operation content-type: {str}", content_type);
+
+	// set to default
+	str_init(content_type);
 
 	// accept (jsonrpc)
 	auto accept = &endpoint->accept.string;
@@ -122,68 +127,6 @@ link_api_get(Link* self)
 	return LINK_FEED;
 }
 
-#if 0
-hot static inline int
-link_copy(Link* self)
-{
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
-	auto http     = &self->client->request;
-
-	// check permission
-	user_check(portal->user, PERM_IMPORT);
-
-	// POST /?copy=target (text/plain)
-	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(! str_is_case(method, "POST", 4)))
-		error("unsupported operation method");
-
-	// content type
-	auto content_type = &endpoint->content_type.string;
-	if (!str_empty(content_type) &&
-	    !str_is(content_type, "text/plain", 10) &&
-	    !str_is(content_type, "text/csv", 8) &&
-	    !str_is(content_type, "application/x-www-form-urlencoded", 33))
-		error("unsupported operation content-type");
-
-	// accept
-	OutputIf* output_if;
-	auto accept = &endpoint->accept.string;
-	if (str_empty(accept) ||
-	    str_is(accept, "*/*", 3)         ||
-	    str_is(accept, "text/plain", 10) ||
-	    str_is(accept, "text/csv", 8))
-	{
-		str_set(accept, "text/plain", 10);
-		output_if = &output_text;
-	} else
-	if (str_is(accept, "application/json", 16)) {
-		output_if = &output_json;
-	} else {
-		error("unsupported operation accept type");
-	}
-	output_set(&portal->output, endpoint, output_if, NULL);
-
-	Str content;
-	buf_str(&http->content, &content);
-
-	// set request
-	auto req = &self->req;
-	req->type = REQUEST_COPY;
-	req->args = str_u8(&content);
-	req->args_size = str_size(&content);
-
-	// set target
-	auto target = opt_string_of(&portal->endpoint.copy);
-	auto pos = target->pos;
-	auto end = target->end;
-	if (! portal_target(&pos, end, &req->rel_user, &req->rel))
-		error("failed to read target");
-
-	return LINK_EXECUTE;
-}
-#endif
-
 hot static inline int
 link_api(Link* self)
 {
@@ -211,16 +154,34 @@ link_api(Link* self)
 	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported operation method: {str}", method);
 
+	Str content;
+	buf_str(&http->content, &content);
+
 	// content type (json)
 	auto content_type = &endpoint->content_type.string;
-	if (!str_empty(content_type) &&
-	    !str_is(content_type, "application/json", 16))
+	if (str_empty(content_type) ||
+	    str_is(content_type, "application/json", 16) ||
+	    str_is(content_type, "application/x-www-form-urlencoded", 33))
+	{
+		// json (default)
+		str_init(content_type);
+
+		// parse json body
+		auto json = &self->json;
+		json_reset(json);
+		json_parse(json, &content, NULL);
+		buf_str(json->buf, &content);
+	} else
+	if (str_is(content_type, "text/csv", 8))
+	{
+		// csv
+	} else {
 		error("unsupported operation content-type: {str}", content_type);
+	}
 
 	// accept (json, text)
 	OutputIf* output_if;
 	auto accept = &endpoint->accept.string;
-
 	if (str_empty(accept) ||
 	    str_is(accept, "*/*", 3) ||
 	    str_is(accept, "application/json", 16))
@@ -235,21 +196,12 @@ link_api(Link* self)
 	}
 	output_set(&portal->output, endpoint, output_if, NULL);
 
-	Str content;
-	buf_str(&http->content, &content);
-	
-	// parse json body
-	auto json = &self->json;
-	json_reset(json);
-	json_parse(json, &content, NULL);
-
 	// set request
 	auto req = &self->req;
-	req->type      = REQUEST_WRITE;
-	req->rel_user  = self->api->rel_user;
-	req->rel       = self->api->rel;
-	req->args      = json->buf->start;
-	req->args_size = buf_size(json->buf);
+	req->rel_user     = self->api->rel_user;
+	req->rel          = self->api->rel;
+	req->content_type = *content_type;
+	req->content      =  content;
 	return LINK_EXECUTE;
 }
 

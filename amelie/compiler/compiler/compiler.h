@@ -36,8 +36,7 @@ void compiler_reset(Compiler*);
 void compiler_set(Compiler*, Local*, Program*);
 void compiler_parse(Compiler*, Str*);
 void compiler_parse_udf(Compiler*, Udf*);
-void compiler_parse_api(Compiler*, Str*, Str*, uint8_t*, bool);
-void compiler_parse_copy(Compiler*, Str*, Str*, Str*);
+void compiler_parse_copy(Compiler*, Str*, Str*, Str*, Str*);
 void compiler_emit(Compiler*);
 
 static inline void

@@ -291,7 +291,6 @@ void
 mcp_execute(Mcp* self, Request* req)
 {
 	// process request
-	req->type = REQUEST_UNDEF;
 	switch (self->type) {
 	case MCP_INITIALIZE:
 	{
@@ -306,10 +305,8 @@ mcp_execute(Mcp* self, Request* req)
 	case MCP_TOOLS_CALL:
 	{
 		// execute UDF call
-		req->type      = REQUEST_EXECUTE;
-		req->rel       = self->rel;
-		req->args      = self->args;
-		req->args_size = self->args_size;
+		req->rel = self->rel;
+		str_set_u8(&req->content, self->args, self->args_size);
 
 		auto output = &self->portal->output;
 		output->iface_arg = self;
@@ -324,11 +321,8 @@ mcp_execute(Mcp* self, Request* req)
 	case MCP_RESOURCES_READ:
 	{
 		// execute UDF call
-		req->type      = REQUEST_EXECUTE;
 		req->rel_user  = self->rel_user;
 		req->rel       = self->rel;
-		req->args      = NULL;
-		req->args_size = 0;
 
 		auto output = &self->portal->output;
 		output->iface_arg = self;

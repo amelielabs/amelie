@@ -15,38 +15,20 @@ typedef struct Request Request;
 
 typedef enum
 {
-	REQUEST_UNDEF,
-	REQUEST_SQL,
-	REQUEST_COPY,
-	REQUEST_WRITE,
-	REQUEST_EXECUTE
-} RequestType;
-
-typedef enum
-{
 	META_USER,
 	META_TIMEZONE,
 	META_TIME,
 	META_SEED,
-	META_SQL,
-	META_COPY,
-	META_WRITE
+	META_REQUEST
 } RequestMeta;
 
 struct Request
 {
-	RequestType type;
-	RecordMsg*  recover;
-	union
-	{
-		Str text;
-		struct {
-			Str      rel_user;
-			Str      rel;
-			uint8_t* args;
-			int      args_size;
-		};
-	};
+	Str        rel_user;
+	Str        rel;
+	Str        content_type;
+	Str        content;
+	RecordMsg* recover;
 };
 
 static inline void
@@ -59,6 +41,12 @@ static inline void
 request_reset(Request* self)
 {
 	request_init(self);
+}
+
+static inline bool
+request_empty(Request* self)
+{
+	return str_empty(&self->rel) && str_empty(&self->content);
 }
 
 static inline void
@@ -83,56 +71,24 @@ request_write(Request* self, Endpoint* endpoint, Buf* buf)
 	encode_int(buf, META_SEED);
 	encode_int(buf, opt_int_of(&endpoint->seed));
 
-	// data
-	switch (self->type) {
-	case REQUEST_SQL:
-	{
-		encode_int(buf, META_SQL);
-		encode_str(buf, &self->text);
-		break;
-	}
-	case REQUEST_COPY:
-	{
-		encode_int(buf, META_COPY);
+	// request
+	encode_int(buf, META_REQUEST);
 
-		// []
-		encode_array(buf);
+	// []
+	encode_array(buf);
 
-		// rel_user
-		encode_str(buf, &self->rel_user);
+	// rel_user
+	encode_str(buf, &self->rel_user);
 
-		// rel
-		encode_str(buf, &self->rel);
+	// rel
+	encode_str(buf, &self->rel);
 
-		// content
-		encode_raw(buf, (char*)self->args, self->args_size);
+	// content_type
+	encode_str(buf, &self->content_type);
 
-		encode_array_end(buf);
-		break;
-	}
-	case REQUEST_WRITE:
-	case REQUEST_EXECUTE:
-	{
-		encode_int(buf, META_WRITE);
-
-		// []
-		encode_array(buf);
-
-		// rel_user
-		encode_str(buf, &self->rel_user);
-
-		// rel
-		encode_str(buf, &self->rel);
-
-		// args
-		buf_write(buf, self->args, self->args_size);
-
-		encode_array_end(buf);
-		break;
-	}
-	default:
-		abort();
-	}
+	// content
+	encode_str(buf, &self->content);
+	encode_array_end(buf);
 
 	encode_array_end(buf);
 }
@@ -164,34 +120,13 @@ request_read(Request* self, Endpoint* endpoint, RecordMsg* msg)
 			unpack_int(&pos, &integer);
 			opt_int_set(&endpoint->seed, integer);
 			break;
-		case META_SQL:
+		case META_REQUEST:
 		{
-			self->type = REQUEST_SQL;
-			unpack_str(&pos, &self->text);
-			break;
-		}
-		case META_COPY:
-		{
-			self->type = REQUEST_COPY;
 			unpack_array(&pos);
 			unpack_str(&pos, &self->rel_user);
 			unpack_str(&pos, &self->rel);
-			Str content;
-			unpack_str(&pos, &content);
-			self->args = str_u8(&content);
-			self->args_size = str_size(&content);
-			unpack_array_end(&pos);
-			break;
-		}
-		case META_WRITE:
-		{
-			self->type = REQUEST_WRITE;
-			unpack_array(&pos);
-			unpack_str(&pos, &self->rel_user);
-			unpack_str(&pos, &self->rel);
-			self->args      = pos;
-			data_skip(&pos);
-			self->args_size = pos - self->args;
+			unpack_str(&pos, &self->content_type);
+			unpack_str(&pos, &self->content);
 			unpack_array_end(&pos);
 			break;
 		}

@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_copy(Parser*, Program*, Str*, Str*, Str*);
+void parse_copy(Parser*, Program*, Str*, Str*, Str*, Str*);

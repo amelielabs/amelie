@@ -71,11 +71,11 @@ system_eval(SystemEval* self, Str* command)
 	portal_set(portal, &user, false);
 
 	// set request
-	auto request = &self->request;	
-	request->type = REQUEST_SQL;
-	str_set_str(&request->text, command);
+	auto req = &self->request;
+	request_init(req);
+	str_set_str(&req->content, command);
 
 	// execute
-	session_execute(self->session, portal, request);
+	session_execute(self->session, portal, req);
 	portal_reset(portal, true);
 }

@@ -19,57 +19,84 @@
 #include <amelie_copy.h>
 
 static void
-copy_row(Parser* self, Columns* columns, Set* values, Csv* csv)
+copy_object(Parser* self, Columns* columns, Set* values, uint8_t** pos)
 {
-	// value, ...
 	auto row = set_reserve(values);
 
+	auto buf = buf_create();
+	defer_buf(buf);
+	buf_reserve(buf, sizeof(bool) * columns->count);
+	memset(buf->start, 0, sizeof(bool) * columns->count);
+
+	auto match = (bool*)buf->start;
+	auto match_count = 0;
+
+	// {}
+	unpack_obj(pos);
+	while (! unpack_obj_end(pos))
+	{
+		Str name;
+		unpack_str(pos, &name);
+
+		// match column
+		auto column = columns_find(columns, &name);
+		if (! column)
+			error("column '{str}': does not exists", &name);
+
+		// ensure column is not redefined
+		if (unlikely(match[column->order]))
+			error("column '{str}': value is redefined", &name);
+		match[column->order] = true;
+		match_count++;
+
+		// parse column value
+		auto column_value = &row[column->order];
+		parse_value_data(self->local, column, column_value, pos);
+		parse_value_validate(NULL, column, column_value, NULL);
+
+	}
+	if (match_count == columns->count)
+		return;
+
+	// default value, write IDENTITY, DEFAULT
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		auto column_value = &row[column->order];
-
-		// handle dropped columns as NULL values
-		if (column->dropped)
-		{
-			value_set_null(column_value);
+		if (match[column->order])
 			continue;
-		}
-
-		// read csv value
-		Str value;
-		str_init(&value);
-		switch (csv_next(csv, &value)) {
-		case CSV_NULL:
-			value_set_null(column_value);
-			break;
-		case CSV_VALUE:
-			// parse column value
-			parse_value_string(self->local, column, column_value, &value);
-			break;
-		case CSV_ERROR:
-			error("csv read error");
-			break;
-		default:
-			// eof, eol
-			error("csv row is incomplete");
-			break;
-		}
+		auto column_value = &row[column->order];
+		parse_value_default(column, column_value);
 		parse_value_validate(NULL, column, column_value, NULL);
 	}
-
-	// eol or eof
-	Str value;
-	str_init(&value);
-	auto rc = csv_next(csv, &value);
-	if (rc == CSV_ERROR)
-		error("csv read error");
-	if (rc != CSV_EOL && rc != CSV_EOF)
-		error("csv row columns mismatch");
 }
 
 static void
-copy_insert(Parser* self, Table* table, Clone* clone, Str* content)
+copy_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
+{
+	// {}
+	auto pos = args;
+	if (data_is_obj(pos))
+		return copy_object(self, columns, values, &pos);
+
+	// [{}, ...]
+	if (data_is_array(pos))
+	{
+		unpack_array(&pos);
+		while (! unpack_array_end(&pos))
+		{
+			if (unlikely(! data_is_obj(pos)))
+				error("write: {{}} expected");
+			copy_object(self, columns, values, &pos);
+		}
+		return;
+	}
+
+	// error
+	error("write: expected {{}} or []");
+}
+
+static void
+copy_insert(Parser* self, Table* table, Clone* clone, uint8_t* args)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -118,27 +145,102 @@ copy_insert(Parser* self, Table* table, Clone* clone, Str* content)
 	set_prepare(insert->values, columns->count, 0, NULL);
 
 	// parse and set values
+	copy_args(self, columns, insert->values, args);
+}
 
-	// treat each csv row as insert row
-	//
-	// value, value, ...\r\n
-	// ...
-	//
-	Csv csv;
-	csv_init(&csv);
-	defer(csv_free, &csv);
-	csv_set(&csv, content);
-	if (unlikely(csv_eof(&csv)))
-		error("content is empty");
-	while (! csv_eof(&csv))
-		copy_row(self, columns, insert->values, &csv);
+static void
+copy_publish(Parser* self, Channel* channel, uint8_t* args)
+{
+	// create main namespace and the main block
+	auto ns    = namespaces_add(&self->nss, NULL, NULL);
+	auto block = blocks_add(&ns->blocks, NULL, NULL);
+
+	// prepare execute stmt
+	auto stmt = stmt_allocate(self, &self->lex, block);
+	stmts_add(&block->stmts, stmt);
+	stmt->id  = STMT_PUBLISH;
+	stmt->ast = &ast_publish_allocate(block)->ast;
+	stmt->is_return = true;
+
+	// prepare arguments
+	auto publish = ast_publish_of(stmt->ast);
+	publish->channel = channel;
+	publish->values  = set_cache_create(self->set_cache, &self->program->sets);
+	set_prepare(publish->values, 1, 0, NULL);
+
+	access_add(&self->program->access, &channel->rel,
+	           LOCK_SHARED_RW, PERM_PUBLISH);
+
+	// parse arguments
+	auto pos = args;
+	if (data_is_array(pos))
+	{
+		unpack_array(&pos);
+		while (! unpack_array_end(&pos))
+		{
+			auto row = set_reserve(publish->values);
+			auto size = data_sizeof(pos);
+			value_set_json(row, pos, size, NULL);
+			pos += size;
+		}
+	} else
+	{
+		auto row = set_reserve(publish->values);
+		auto size = data_sizeof(pos);
+		value_set_json(row, pos, size, NULL);
+	}
+}
+
+static void
+copy_execute(Parser* self, Udf* udf, uint8_t* args)
+{
+	// create main namespace and the main block
+	auto ns    = namespaces_add(&self->nss, NULL, NULL);
+	auto block = blocks_add(&ns->blocks, NULL, NULL);
+
+	// prepare execute stmt
+	auto stmt = stmt_allocate(self, &self->lex, block);
+	stmts_add(&block->stmts, stmt);
+	stmt->id  = STMT_EXECUTE;
+	stmt->ast = &ast_execute_allocate()->ast;
+	stmt->is_return = true;
+
+	auto execute = ast_execute_of(stmt->ast);
+	stmt->ret = &execute->ret;
+
+	// prepare arguments
+	execute->udf  = udf;
+	execute->args = set_cache_create(self->set_cache, &self->program->sets);
+	set_prepare(execute->args, udf->config->args.count, 0, NULL);
+
+	// {} by default
+	uint8_t args_empty[2] = {DATA_OBJ, DATA_OBJ_END};
+	if (! args)
+		args = args_empty;
+
+	// parse arguments
+	copy_args(self, &udf->config->args, execute->args, args);
+
+	// ensure not a batch execution
+	if (execute->args->count_rows > 1)
+		error("batch function execution is not support");
+
+	// set returning column
+	if (udf->config->type != TYPE_NULL)
+	{
+		auto column = column_allocate();
+		column_set_name(column, &udf->config->name);
+		column_set_type(column, udf->config->type, -1);
+		columns_add(&execute->ret.columns, column);
+	}
 }
 
 void
-parse_copy(Parser* self, Program* program,
-           Str*    rel_user,
-           Str*    rel,
-           Str*    content)
+parse_copy_api(Parser*  self, Program* program,
+               Str*     rel_user,
+               Str*     rel,
+               uint8_t* args,
+               bool     execute)
 {
 	Str* user = rel_user;
 	if (str_empty(rel_user))
@@ -146,17 +248,96 @@ parse_copy(Parser* self, Program* program,
 	self->program = program;
 
 	auto ref = catalog_find(&share()->db->catalog, REL_UNDEF, user, rel, true);
+	if (execute) {
+		if (ref->type != REL_UDF)
+			error("relation {str}.{str} is not a function",
+			      ref->user, ref->name);
+	}
+
 	switch (ref->type) {
 	case REL_TABLE:
 	{
 		auto table = table_of(ref);
-		copy_insert(self, table, NULL, content);
+		copy_insert(self, table, NULL, args);
 		break;
 	}
 	case REL_CLONE:
 	{
 		auto clone = clone_of(ref);
-		copy_insert(self, clone->table, clone, content);
+		copy_insert(self, clone->table, clone, args);
+		break;
+	}
+	case REL_CHANNEL:
+	{
+		auto channel = channel_of(ref);
+		copy_publish(self, channel, args);
+		break;
+	}
+	case REL_UDF:
+	{
+		auto udf = udf_of(ref);
+		copy_execute(self, udf, args);
+		break;
+	}
+	default:
+	{
+		error("relation '{str}': unsupported relation", rel);
+		break;
+	}
+	}
+}
+
+void
+parse_copy(Parser* self, Program* program,
+           Str*    rel_user,
+           Str*    rel,
+           Str*    content_type,
+           Str*    content)
+{
+	// csv
+	if (str_is(content_type, "text/csv", 8))
+		return parse_copy_csv(self, program, rel_user, rel, content);
+
+	// application/json
+	assert(str_empty(content_type));
+
+	Str* user = rel_user;
+	if (str_empty(rel_user))
+		user = &self->local->user;
+	self->program = program;
+
+	// find relation
+	auto ref = catalog_find(&share()->db->catalog, REL_UNDEF, user, rel, true);
+
+	// only function call have empty content
+	if (str_empty(content) && ref->type != REL_UDF)
+		error("relation {str}.{str} is not a function",
+		      ref->user, ref->name);
+
+	auto args = str_u8(content);
+	switch (ref->type) {
+	case REL_TABLE:
+	{
+		auto table = table_of(ref);
+		copy_insert(self, table, NULL, args);
+		break;
+	}
+	case REL_CLONE:
+	{
+		auto clone = clone_of(ref);
+		copy_insert(self, clone->table, clone, args);
+		break;
+	}
+	case REL_CHANNEL:
+	{
+		auto channel = channel_of(ref);
+		copy_publish(self, channel, args);
+		break;
+	}
+	case REL_UDF:
+	{
+		auto udf = udf_of(ref);
+		copy_execute(self, udf, args);
 		break;
 	}
 	default:

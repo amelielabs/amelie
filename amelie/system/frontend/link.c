@@ -135,7 +135,7 @@ link_main(Link* self)
 		}
 		case LINK_EXECUTE:
 		{
-			auto done = self->req.type == REQUEST_UNDEF;
+			auto done = request_empty(&self->req);
 			if (! done)
 				done = ctl->session_execute(session, portal, &self->req);
 			if (done)
