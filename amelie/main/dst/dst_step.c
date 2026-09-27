@@ -19,41 +19,20 @@ dst_stmt(DstUser* self)
 {
 	auto op = dst_log_add(&self->log);
 
-	// generate relation (table, table_vector, clone, channel)
+	// generate relation (table, table_vector, clone)
 	DstRel* rel;
 	for (;;)
 	{
 		auto rel_order = random_generate(&am_task->random) % self->rels_count;
 		rel = dst_user_rel(self, rel_order);
 		assert(rel);
-		if (rel->type != DST_REL_SUBSCRIPTION &&
-		    rel->type != DST_REL_INDEX)
+		if (rel->type != DST_REL_INDEX)
 			break;
 	}
 	op->rel = rel;
 
 	// generate key
 	uint64_t key_id = random_generate(&am_task->random) % opt_int_of(&self->dst->opt_keys);
-
-	// PUBLISH
-	if (rel->type == DST_REL_CHANNEL)
-	{
-		op->op = DST_OP_PUBLISH;
-
-		DstKey key;
-		memset(&key, 0, sizeof(key));
-		key.key   = key_id;
-		key.value = random_generate(&am_task->random);
-
-		buf_format(&self->log.sql,
-		           "PUBLISH INTO channel_{u64} [{u64}, {i64}];",
-		           rel->id, key.key, key.value);
-		dst_stat(&self->dst->stats, DST_STAT_PUBLISH);
-
-		// add cdc event
-		dst_rel_cdc(rel, &key);
-		return;
-	}
 
 	// INSERT
 	auto key = dst_rel_get(rel, key_id);
@@ -107,7 +86,6 @@ dst_stmt(DstUser* self)
 		} else {
 			abort();
 		}
-		dst_rel_cdc(rel, key);
 		return;
 	}
 	op->prev = *key;
@@ -152,7 +130,6 @@ dst_stmt(DstUser* self)
 		} else {
 			abort();
 		}
-		dst_rel_cdc(rel, key);
 
 		op->key = *key;
 		return;
@@ -197,7 +174,6 @@ dst_stmt(DstUser* self)
 		} else {
 			abort();
 		}
-		dst_rel_cdc(rel, key);
 		op->key = *key;
 		return;
 	}
@@ -227,7 +203,6 @@ dst_stmt(DstUser* self)
 	} else {
 		abort();
 	}
-	dst_rel_cdc(rel, key);
 	dst_rel_delete(rel, key);
 	dst_key_free(key);
 }
@@ -237,16 +212,6 @@ dst_begin(DstUser* self)
 {
 	auto log = &self->log;
 	dst_log_reset(log);
-
-	// save cdc metrics
-	list_foreach(&self->rels)
-	{
-		auto rel = list_at(DstRel, link);
-		if (rel->type != DST_REL_SUBSCRIPTION)
-			continue;
-		rel->step_cdc_sum   = rel->cdc_sum;
-		rel->step_cdc_count = rel->cdc_count;
-	}
 }
 
 static void
@@ -257,11 +222,6 @@ dst_rollback(DstUser* self)
 	{
 		auto op = dst_log_at(log, i);
 		switch (op->op) {
-		case DST_OP_PUBLISH:
-		{
-			// nothing
-			break;
-		}
 		case DST_OP_INSERT:
 		{
 			// delete (table, table_vector)
@@ -305,16 +265,6 @@ dst_rollback(DstUser* self)
 		}
 	}
 
-	// restore cdc metrics
-	list_foreach(&self->rels)
-	{
-		auto rel = list_at(DstRel, link);
-		if (rel->type != DST_REL_SUBSCRIPTION)
-			continue;
-		rel->cdc_sum   = rel->step_cdc_sum;
-		rel->cdc_count = rel->step_cdc_count;
-	}
-
 	dst_log_reset(log);
 }
 
@@ -336,27 +286,10 @@ dst_step_ddl(DstUser* self)
 	{
 		// create any relation
 		auto type = random_generate(&am_task->random) % DST_REL_MAX;
-		if (type == DST_REL_SUBSCRIPTION)
-		{
-			// create subscription for table, channel
-			auto count = dst_user_count(self, true, true, true, true);
-			if (! count)
-			{
-				dst_user_create(self, DST_REL_TABLE);
-				return;
-			}
-
-			// randomly choose table or channel (caped by the count)
-			auto pos = random_generate(&am_task->random) % count;
-			auto parent = dst_user_rel_filter(self, pos, true, true, true, true);
-			assert(parent);
-			dst_user_create_for(self, parent, type);
-
-		} else
 		if (type == DST_REL_INDEX)
 		{
 			// create index for table
-			auto count = dst_user_count(self, true, false, false, false);
+			auto count = dst_user_count(self, true, false, false);
 			if (! count)
 			{
 				dst_user_create(self, DST_REL_TABLE);
@@ -365,7 +298,7 @@ dst_step_ddl(DstUser* self)
 
 			// randomly choose table (caped by the count)
 			auto pos = random_generate(&am_task->random) % count;
-			auto parent = dst_user_rel_filter(self, pos, true, false, false, false);
+			auto parent = dst_user_rel_filter(self, pos, true, false, false);
 			assert(parent);
 			dst_user_create_for(self, parent, type);
 
@@ -373,7 +306,7 @@ dst_step_ddl(DstUser* self)
 		if (type == DST_REL_CLONE)
 		{
 			// create table clone
-			auto count = dst_user_count(self, true, false, false, false);
+			auto count = dst_user_count(self, true, false, false);
 			if (! count)
 			{
 				dst_user_create(self, DST_REL_TABLE);
@@ -382,7 +315,7 @@ dst_step_ddl(DstUser* self)
 
 			// randomly choose table
 			auto pos = random_generate(&am_task->random) % count;
-			auto parent = dst_user_rel_filter(self, pos, true, false, false, false);
+			auto parent = dst_user_rel_filter(self, pos, true, false, false);
 			assert(parent);
 			dst_user_create_for(self, parent, type);
 		} else

@@ -32,15 +32,11 @@ static const char* dst_ops[DST_STAT_MAX] =
 	"delete_vector",
 	"delete_clone",
 
-	"publish",
-
 	"create user",
 	"create table",
 	"create table (vector)",
 	"create index",
 	"create clone",
-	"create channel",
-	"create subscription",
 	"drop",
 
 	"errors injected",

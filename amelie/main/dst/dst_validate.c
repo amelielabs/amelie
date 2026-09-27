@@ -271,79 +271,6 @@ dst_validate_clone(DstUser* self, DstRel* rel)
 		      rel->parent->id, rel->id, rel->state.count, count);
 }
 
-
-static uint64_t
-dst_validate_sub(DstUser* self, DstRel* rel)
-{
-	auto client = self->client;
-
-	// sub
-	if (rel->parent->type == DST_REL_TABLE ||
-	    rel->parent->type == DST_REL_TABLE_VECTOR ||
-	    rel->parent->type == DST_REL_CLONE)
-		dst_execute(self->dst, client,
-		            "SELECT count(*), sum(data.id::int), max(lsn) FROM sub_{u64}_{u64}",
-		            rel->parent->id, rel->id);
-	else
-	if (rel->parent->type == DST_REL_CHANNEL)
-		dst_execute(self->dst, client,
-		            "SELECT count(*), sum(data[0]::int), max(lsn) FROM sub_{u64}_{u64}",
-		            rel->parent->id, rel->id);
-	else
-		abort();
-
-	Str content;
-	buf_str(&client->reply.content, &content);
-	//info("{str}", &content);
-
-	// parse json result
-	Json json;
-	json_init(&json);
-	defer(json_free, &json);
-	json_parse(&json, &content, NULL);
-
-	uint8_t* pos     = json.buf->start;
-	uint8_t* columns = NULL;
-	uint8_t* rows    = NULL;
-	Decode obj[] =
-	{
-		{ DECODE_ARRAY, "columns", &columns },
-		{ DECODE_ARRAY, "rows",    &rows    },
-		{ 0,             NULL,      NULL    },
-	};
-	decode_obj(obj, "result", &pos);
-
-	// [[count, sum, lsn]]
-	unpack_array(&rows);
-	unpack_array(&rows);
-	int64_t count;
-	int64_t sum   = 0;
-	int64_t lsn   = 0;
-	unpack_int(&rows, &count);
-	if (count == 0)
-	{
-		unpack_null(&rows);
-		unpack_null(&rows);
-	} else
-	{
-		unpack_int(&rows, &sum);
-		unpack_int(&rows, &lsn);
-	}
-	unpack_array_end(&rows);
-	unpack_array_end(&rows);
-
-	// validate
-	if (count != rel->cdc_count)
-		error("sub_{u64}_{u64}: count mismatch expected {d} got {i64}",
-		      rel->parent->id, rel->id, rel->cdc_count, count);
-
-	if (sum != rel->cdc_sum)
-		error("sub_{u64}_{u64}: keys sum mismatch",
-		      rel->parent->id, rel->id);
-
-	return lsn;
-}
-
 void
 dst_validate_user(DstUser* self)
 {
@@ -372,25 +299,6 @@ dst_validate_user(DstUser* self)
 		case DST_REL_CLONE:
 		{
 			dst_validate_clone(self, rel);
-			break;
-		}
-		case DST_REL_CHANNEL:
-		{
-			// nothing
-			break;
-		}
-		case DST_REL_SUBSCRIPTION:
-		{
-			// subscription
-			auto ack = dst_validate_sub(self, rel);
-			if (ack)
-			{
-				dst_execute(self->dst, self->client,
-				            "ACKNOWLEDGE sub_{u64}_{u64} TO {u64}",
-				             rel->parent->id, rel->id, ack);
-				rel->cdc_sum   = 0;
-				rel->cdc_count = 0;
-			}
 			break;
 		}
 		}

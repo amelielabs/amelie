@@ -121,14 +121,6 @@ dst_user_create(DstUser* self, int type)
 		dst_stat(&self->dst->stats, DST_STAT_CREATE_TABLE_VECTOR);
 		break;
 	}
-	case DST_REL_CHANNEL:
-	{
-		dst_execute(self->dst, self->client,
-		            "CREATE CHANNEL channel_{u64}",
-		            id);
-		dst_stat(&self->dst->stats, DST_STAT_CREATE_CHANNEL);
-		break;
-	}
 	default:
 	{
 		abort();
@@ -150,38 +142,6 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 	self->rels_count++;
 
 	// create relation
-	if (type == DST_REL_SUBSCRIPTION)
-	{
-		switch (parent->type) {
-		case DST_REL_TABLE:
-			dst_execute(self->dst, self->client,
-			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON table_{u64}",
-			            parent->id, id, parent->id);
-			break;
-		case DST_REL_TABLE_VECTOR:
-			dst_execute(self->dst, self->client,
-			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON table_vector_{u64}",
-			            parent->id, id, parent->id);
-			break;
-		case DST_REL_CLONE:
-			dst_execute(self->dst, self->client,
-			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON clone_{u64}_{u64}",
-			            parent->id, id, parent->parent->id, parent->id);
-			break;
-		case DST_REL_CHANNEL:
-			dst_execute(self->dst, self->client,
-			            "CREATE SUBSCRIPTION sub_{u64}_{u64} ON channel_{u64}",
-			            parent->id, id, parent->id);
-			break;
-		default:
-			abort();
-			break;
-		}
-
-		dst_stat(&self->dst->stats, DST_STAT_CREATE_SUBSCRIPTION);
-		list_append(&parent->subs, &rel->link_parent);
-		parent->subs_count++;
-	} else
 	if (type == DST_REL_INDEX)
 	{
 		assert(parent->type == DST_REL_TABLE);
@@ -249,18 +209,6 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		list_unlink(&rel->link_parent);
 		rel->parent->clones_count--;
 		break;
-	case DST_REL_CHANNEL:
-		dst_execute(self->dst, self->client,
-		            "DROP CHANNEL channel_{u64} CASCADE",
-		            rel->id);
-		break;
-	case DST_REL_SUBSCRIPTION:
-		dst_execute(self->dst, self->client,
-		            "DROP SUBSCRIPTION sub_{u64}_{u64} CASCADE",
-		            rel->parent->id, rel->id);
-		list_unlink(&rel->link_parent);
-		rel->parent->subs_count--;
-		break;
 	}
 
 	// free indexes
@@ -273,16 +221,6 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		dst_rel_free(index);
 	}
 
-	// free subscriptions
-	list_foreach_safe(&rel->subs)
-	{
-		auto sub = list_at(DstRel, link_parent);
-		list_unlink(&sub->link);
-		self->rels_count--;
-		assert(self->rels_count >= 0);
-		dst_rel_free(sub);
-	}
-
 	// free clones
 	list_foreach_safe(&rel->clones)
 	{
@@ -290,16 +228,6 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		list_unlink(&clone->link);
 		self->rels_count--;
 		assert(self->rels_count >= 0);
-
-		// free clones subscriptions
-		list_foreach_safe(&clone->subs)
-		{
-			auto sub = list_at(DstRel, link_parent);
-			list_unlink(&sub->link);
-			self->rels_count--;
-			assert(self->rels_count >= 0);
-			dst_rel_free(sub);
-		}
 		dst_rel_free(clone);
 	}
 

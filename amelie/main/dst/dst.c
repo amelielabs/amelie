@@ -257,19 +257,10 @@ dst_bootstrap(Dst* self)
 		dst_user_connect(user);
 
 		// table
-		auto rel = dst_user_create(user, DST_REL_TABLE);
-
-		// table subscription
-		dst_user_create_for(user, rel, DST_REL_SUBSCRIPTION);
+		dst_user_create(user, DST_REL_TABLE);
 
 		// table vector
 		dst_user_create(user, DST_REL_TABLE_VECTOR);
-
-		// channel
-		rel = dst_user_create(user, DST_REL_CHANNEL);
-
-		// channel subscription
-		dst_user_create_for(user, rel, DST_REL_SUBSCRIPTION);
 	}
 }
 

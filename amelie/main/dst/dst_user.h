@@ -53,7 +53,6 @@ static inline DstRel*
 dst_user_rel_filter(DstUser* self, int order,
                     bool     table,
                     bool     table_vector,
-                    bool     channel,
                     bool     clone)
 {
 	auto pos = 0;
@@ -62,7 +61,6 @@ dst_user_rel_filter(DstUser* self, int order,
 		auto rel = list_at(DstRel, link);
 		if ((table        && rel->type == DST_REL_TABLE) ||
 		    (table_vector && rel->type == DST_REL_TABLE_VECTOR) ||
-		    (channel      && rel->type == DST_REL_CHANNEL) ||
 		    (clone        && rel->type == DST_REL_CLONE))
 		{
 			if (order != pos)
@@ -80,7 +78,6 @@ static inline int
 dst_user_count(DstUser* self,
                bool     table,
                bool     table_vector,
-               bool     channel,
                bool     clone)
 {
 	auto count = 0;
@@ -89,7 +86,6 @@ dst_user_count(DstUser* self,
 		auto rel = list_at(DstRel, link);
 		if ((table        && rel->type == DST_REL_TABLE) ||
 		    (table_vector && rel->type == DST_REL_TABLE_VECTOR) ||
-		    (channel      && rel->type == DST_REL_CHANNEL) ||
 		    (clone        && rel->type == DST_REL_CLONE))
 		{
 			count++;
