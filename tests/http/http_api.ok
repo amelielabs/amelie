@@ -3,7 +3,6 @@ connect E0 S0 127.0.0.1:3485;
 # test: create api
 create table test (id int primary key, data string);
 create clone test_clone on test;
-create channel test_channel;
 create function test_func (arg int)
 return int
 begin
@@ -11,7 +10,6 @@ begin
 end;
 create api '/v1/api_table' on test;
 create api '/v1/api_clone' on test_clone;
-create api '/v1/api_channel' on test_channel;
 create api '/v1/api_func' on test_func;
 # test: POST /custom_api (table)
 post /v1/api_table - - {"id": 1, "data": "hello world"};
@@ -37,15 +35,6 @@ select * from test_clone;
 id   data
 ───────────
 123  null
-# test: POST /custom_api (channel)
-show lsn;
-
-lsn
-───
-12
-post /v1/api_channel - - {"event": 1};
-post /v1/api_channel - - {"event": 2};
-post /v1/api_channel - - {"event": 3};
 # test: POST /custom_api (udf)
 post /v1/api_func - - {"arg": 15};
 {"columns": ["test_func"], "rows": [[30]]}

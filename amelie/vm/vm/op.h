@@ -345,9 +345,6 @@ enum
 	CCALL,
 	CCALL_UDF,
 
-	// channel
-	CPUBLISH,
-
 	// locking
 	CLOCK,
 	CUNLOCK,

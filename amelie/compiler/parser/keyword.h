@@ -93,7 +93,6 @@ enum
 	KCOLUMN,
 	KCONTINUE,
 	KCLONE,
-	KCHANNEL,
 
 	// d
 	KDELETE,
@@ -181,7 +180,6 @@ enum
 	KOUT,
 
 	// p
-	KPUBLISH,
 	KPROFILE,
 	KPOOL,
 	KPRIMARY,

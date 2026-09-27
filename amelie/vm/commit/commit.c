@@ -27,8 +27,6 @@ commit_add(GtrQueue* queue, Batch* batch, Gtr* gtr)
 	{
 		auto gtr = gtr_group_pop(group);
 		batch_add(batch, gtr);
-		if (tr_active(&gtr->tr))
-			batch_add_publish(batch, gtr);
 	}
 }
 
@@ -68,10 +66,6 @@ commit_main(void* arg)
 			if (error_catch( db_write(self->db, &batch.write) ))
 				batch_abort(&batch);
 		}
-
-		// publish events to channels
-		if (batch.count_publish)
-			batch_publish(&batch);
 
 		// do group completion
 		//

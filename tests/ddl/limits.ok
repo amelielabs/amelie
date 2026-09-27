@@ -82,25 +82,6 @@ create clone test_clone of test;
 create clone test_clone2 of test;
 error: user 'amelie': clones limit reached
 drop table test cascade;
-# test: channels
-alter user amelie set limit channels = 0;
-create channel test;
-error: user 'amelie': channels limit reached
-alter user amelie set limit channels = 1;
-create channel test;
-show limits;
-
-limits
-──────
-{
-  "send": 3145728,
-  "channels": 1
-}
-drop channel test;
-create channel test;
-create channel test2;
-error: user 'amelie': channels limit reached
-drop channel test;
 # test: functions
 alter user amelie set limit functions = 0;
 create function test () begin end;
@@ -141,12 +122,6 @@ insert into test values (1);
 insert into test values (2), (3);
 error: insert into test values (2), (3)❰;❱ ⟵ values limit reached
 drop table test;
-create channel test;
-publish into test 1;
-publish into test 2, 3;
-error: publish into test 2, 3❰;❱ ⟵ values limit reached
-drop channel test;
-alter user amelie unset limit values;
 # test: partitions
 alter user amelie set limit partitions = 1;
 create table test (id int primary key) partitions 3;

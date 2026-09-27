@@ -39,20 +39,6 @@ drop clone test_clone;
 drop table test;
 switch S0;
 
-# test: create_channel
-switch S1;
-create channel test;
-
-switch S0;
-revoke create_channel from test;
-
-switch S1;
-create channel test2;
-
-# still possible
-drop channel test;
-switch S0;
-
 # test: create_function
 switch S1;
 create function test () begin end;
@@ -66,7 +52,6 @@ create function test2 () begin end;
 # still possible
 drop function test;
 switch S0;
-grant create_channel to test;
 
 # test: create_user
 switch S1;
@@ -169,22 +154,6 @@ grant delete on test to test;
 switch S1;
 delete from amelie.test where id = 123 returning *;
 select * from amelie.test;
-switch S0;
-
-# test: publish
-create channel test_top;
-grant publish into test;
-
-switch S1;
-show all rels;
-publish into amelie.test_top 123;
-
-switch S0;
-grant publish on test_top to test;
-
-switch S1;
-show all rels;
-publish into amelie.test_top 123;
 switch S0;
 
 # test: execute

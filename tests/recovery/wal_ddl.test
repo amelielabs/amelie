@@ -233,55 +233,6 @@ select show('state').lsn;
 select * from test2;
 show tables;
 
-# test: create channel
-create channel test_top;
-show channels;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-show channels;
-
-# test: drop channel
-drop channel test_top;
-show channels;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-show channels;
-
-# test: create channel (multi-stmt)
-create channel a;
-create channel b;
-begin
-  publish into a 1;
-  publish into b 2;
-  publish into b 3,4,5;
-end;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-drop channel a;
-drop channel b;
-
-# test: validate state
-select show('state').lsn;
-
 # test: create user
 create user test;
 select show('user', 'test').name;

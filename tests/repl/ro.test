@@ -9,15 +9,5 @@ create table leaked (id int primary key);
 show tables;
 select * from leaked;
 
-# test: read-only publish
-unfollow;
-
-create channel t;
-
-follow "00000000-0000-0000-0000-000000000002";
-select show("state").lsn;
-publish into t 123;
-select show("state").lsn;
-
 disconnect S0;
 close E0;

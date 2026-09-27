@@ -535,17 +535,13 @@ select [1,2,3]::reverse;
 col1
 ────
 [-3, -2, -1]
-# test: create channel
-create channel test_top;
-show channels;
+# test: create user
+create user test;
+select show('state').lsn;
 
-channels
-────────
-{
-  "user": "amelie",
-  "name": "test_top",
-  "description": ""
-}
+lsn
+───
+11
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
@@ -561,82 +557,6 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 10
-show channels;
-
-channels
-────────
-{
-  "user": "amelie",
-  "name": "test_top",
-  "description": ""
-}
-# test: checkpoint
-checkpoint;
-select show('state').lsn;
-
-lsn
-───
-11
-select show('state').checkpoint;
-
-checkpoint
-──────────
-11
-show channels;
-
-channels
-────────
-{
-  "user": "amelie",
-  "name": "test_top",
-  "description": ""
-}
-# test: restart/recover (checkpoint)
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-select show('state').lsn;
-
-lsn
-───
-11
-select show('state').checkpoint;
-
-checkpoint
-──────────
-11
-show channels;
-
-channels
-────────
-{
-  "user": "amelie",
-  "name": "test_top",
-  "description": ""
-}
-# test: create user
-create user test;
-select show('state').lsn;
-
-lsn
-───
-12
-# test: restart/recover (checkpoint + wal)
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-select show('state').lsn;
-
-lsn
-───
-12
-select show('state').checkpoint;
-
-checkpoint
-──────────
-11
 select show('user', 'test').name;
 
 name
@@ -648,12 +568,12 @@ select show('state').lsn;
 
 lsn
 ───
-12
+11
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-12
+11
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -663,12 +583,12 @@ select show('state').lsn;
 
 lsn
 ───
-12
+11
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-12
+11
 select show('user', 'test').name;
 
 name
@@ -732,7 +652,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-17
+16
 alter table test drop column old_col;
 select show('table', 'test', null, "verbose").columns;
 
@@ -772,7 +692,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-22
+21
 select show('table', 'test', null, "verbose").columns;
 
 columns
@@ -815,19 +735,13 @@ rels
 ────
 {
   "user": "amelie",
-  "name": "test_top",
-  "type": "channel",
-  "description": ""
-}
-{
-  "user": "amelie",
   "name": "reverse",
   "type": "function",
   "description": ""
 }
 create user x;
-alter user x set limit channels = 0;
-alter user amelie set limit channels = 0;
+alter user x set limit clones = 0;
+alter user amelie set limit clones = 0;
 # test: restart/recover (checkpoint)
 checkpoint;
 disconnect S0;
@@ -840,25 +754,16 @@ limits
 ──────
 {
   "send": 3145728,
-  "channels": 0
+  "clones": 0
 }
 show rels;
 
 rels
 ────
-create channel test_top2;
-error: user 'x': channels limit reached
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-show limits;
-
-limits
-──────
-{
-  "send": 3145728
-}
 drop user x cascade;
 disconnect S0;
 close E0;

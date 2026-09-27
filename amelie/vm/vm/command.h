@@ -14,7 +14,6 @@
 void csend_shard(Vm*, Op*);
 void csend_lookup(Vm*, Op*);
 void csend_all(Vm*, Op*);
-void csend_pub(Vm*, Op*);
 void cclose(Vm*, Op*);
 
 void cunion_limit(Vm*, Op*);
@@ -35,4 +34,3 @@ void cdelete(Vm*, Op*);
 void cupdate(Vm*, Op*);
 
 void ccall_udf(Vm*, Op*);
-void cpublish(Vm*, Op*);

@@ -13,7 +13,6 @@
 #include <amelie_runtime>
 #include <amelie_type.h>
 #include <amelie_storage.h>
-#include <amelie_stream.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>
@@ -319,38 +318,6 @@ describe_clone(Clone* self, Buf* buf, Str* user, int flags)
 }
 
 static void
-describe_channel(Channel* self, Buf* buf, Str* user, int flags)
-{
-	auto verbose = !flags_has(flags, FMINIMAL);
-	auto config = self->config;
-
-	// create channel
-	if (!verbose && str_compare_case(self->rel.user, user))
-		buf_format(buf, "create channel {str}\n", &config->name);
-	else
-		buf_format(buf, "create channel {str}.{str}\n", &config->user,
-		           &config->name);
-
-	// id
-	if (verbose)
-	{
-		char id[UUID_SZ];
-		uuid_get(&config->id, id, sizeof(id));
-		buf_format(buf, "  id {qs}\n", id);
-	}
-
-	// description
-	if (! str_empty(&config->description))
-		buf_format(buf, "  description {qstr}\n", &config->description);
-
-	if (! verbose)
-		return;
-
-	// grants
-	describe_grants(&self->config->grants, buf);
-}
-
-static void
 describe_udf(Udf* self, Buf* buf, Str* user, int flags)
 {
 	auto verbose = !flags_has(flags, FMINIMAL);
@@ -496,9 +463,6 @@ describe_text(Rel* self, Buf* buf, Str* user, int flags)
 		break;
 	case REL_CLONE:
 		describe_clone(clone_of(self), buf, user, flags);
-		break;
-	case REL_CHANNEL:
-		describe_channel(channel_of(self), buf, user, flags);
 		break;
 	case REL_UDF:
 		describe_udf(udf_of(self), buf, user, flags);

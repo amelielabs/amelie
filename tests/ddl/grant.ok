@@ -7,7 +7,7 @@ select grants from show users verbose;
 grants
 ──────
 []
-[["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_api", "sql"]]
+[["self", "grant", "create_table", "create_clone", "create_function", "create_api", "sql"]]
 # test: create_table
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
@@ -32,16 +32,6 @@ error: user 'test': permission denied
 drop clone test_clone;
 drop table test;
 switch S0;
-# test: create_channel
-switch S1;
-create channel test;
-switch S0;
-revoke create_channel from test;
-switch S1;
-create channel test2;
-error: user 'test': permission denied
-drop channel test;
-switch S0;
 # test: create_function
 switch S1;
 create function test () begin end;
@@ -52,7 +42,6 @@ create function test2 () begin end;
 error: user 'test': permission denied
 drop function test;
 switch S0;
-grant create_channel to test;
 # test: create_user
 switch S1;
 create agent test2;
@@ -64,13 +53,13 @@ create agent test2;
 select parent, `name`, grants from show users verbose;
 
 parent  name     grants
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_api", …
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_api", "sql"]]
 select parent, `name`, grants from show users verbose;
 
 parent  name     grants
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_channel", "create_api", …
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+"test"  "test2"  [["self", "grant", "create_table", "create_clone", "create_function", "create_api", "sql"]]
 drop agent test2;
 select parent, `name`, grants from show users verbose;
 
@@ -191,44 +180,6 @@ id   data
 ───────────
 124  1
 switch S0;
-# test: publish
-create channel test_top;
-grant publish into test;
-error: grant publish ❰into❱ ⟵ TO expected
-switch S1;
-show all rels;
-
-rels
-────
-{
-  "user": "amelie",
-  "name": "test",
-  "type": "table",
-  "description": ""
-}
-publish into amelie.test_top 123;
-error: relation 'amelie.test_top': permission denied
-switch S0;
-grant publish on test_top to test;
-switch S1;
-show all rels;
-
-rels
-────
-{
-  "user": "amelie",
-  "name": "test",
-  "type": "table",
-  "description": ""
-}
-{
-  "user": "amelie",
-  "name": "test_top",
-  "type": "channel",
-  "description": ""
-}
-publish into amelie.test_top 123;
-switch S0;
 # test: execute
 create function fun () return int
 begin
@@ -243,12 +194,6 @@ rels
   "user": "amelie",
   "name": "test",
   "type": "table",
-  "description": ""
-}
-{
-  "user": "amelie",
-  "name": "test_top",
-  "type": "channel",
   "description": ""
 }
 select amelie.fun();
@@ -266,12 +211,6 @@ rels
   "user": "amelie",
   "name": "test",
   "type": "table",
-  "description": ""
-}
-{
-  "user": "amelie",
-  "name": "test_top",
-  "type": "channel",
   "description": ""
 }
 {

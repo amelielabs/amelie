@@ -149,49 +149,6 @@ copy_insert(Parser* self, Table* table, Clone* clone, uint8_t* args)
 }
 
 static void
-copy_publish(Parser* self, Channel* channel, uint8_t* args)
-{
-	// create main namespace and the main block
-	auto ns    = namespaces_add(&self->nss, NULL, NULL);
-	auto block = blocks_add(&ns->blocks, NULL, NULL);
-
-	// prepare execute stmt
-	auto stmt = stmt_allocate(self, &self->lex, block);
-	stmts_add(&block->stmts, stmt);
-	stmt->id  = STMT_PUBLISH;
-	stmt->ast = &ast_publish_allocate(block)->ast;
-	stmt->is_return = true;
-
-	// prepare arguments
-	auto publish = ast_publish_of(stmt->ast);
-	publish->channel = channel;
-	publish->values  = set_cache_create(self->set_cache, &self->program->sets);
-	set_prepare(publish->values, 1, 0, NULL);
-
-	access_add(&self->program->access, &channel->rel,
-	           LOCK_SHARED_RW, PERM_PUBLISH);
-
-	// parse arguments
-	auto pos = args;
-	if (data_is_array(pos))
-	{
-		unpack_array(&pos);
-		while (! unpack_array_end(&pos))
-		{
-			auto row = set_reserve(publish->values);
-			auto size = data_sizeof(pos);
-			value_set_json(row, pos, size, NULL);
-			pos += size;
-		}
-	} else
-	{
-		auto row = set_reserve(publish->values);
-		auto size = data_sizeof(pos);
-		value_set_json(row, pos, size, NULL);
-	}
-}
-
-static void
 copy_execute(Parser* self, Udf* udf, uint8_t* args)
 {
 	// create main namespace and the main block
@@ -236,58 +193,6 @@ copy_execute(Parser* self, Udf* udf, uint8_t* args)
 }
 
 void
-parse_copy_api(Parser*  self, Program* program,
-               Str*     rel_user,
-               Str*     rel,
-               uint8_t* args,
-               bool     execute)
-{
-	Str* user = rel_user;
-	if (str_empty(rel_user))
-		user = &self->local->user;
-	self->program = program;
-
-	auto ref = catalog_find(&share()->db->catalog, REL_UNDEF, user, rel, true);
-	if (execute) {
-		if (ref->type != REL_UDF)
-			error("relation {str}.{str} is not a function",
-			      ref->user, ref->name);
-	}
-
-	switch (ref->type) {
-	case REL_TABLE:
-	{
-		auto table = table_of(ref);
-		copy_insert(self, table, NULL, args);
-		break;
-	}
-	case REL_CLONE:
-	{
-		auto clone = clone_of(ref);
-		copy_insert(self, clone->table, clone, args);
-		break;
-	}
-	case REL_CHANNEL:
-	{
-		auto channel = channel_of(ref);
-		copy_publish(self, channel, args);
-		break;
-	}
-	case REL_UDF:
-	{
-		auto udf = udf_of(ref);
-		copy_execute(self, udf, args);
-		break;
-	}
-	default:
-	{
-		error("relation '{str}': unsupported relation", rel);
-		break;
-	}
-	}
-}
-
-void
 parse_copy(Parser* self, Program* program,
            Str*    rel_user,
            Str*    rel,
@@ -326,12 +231,6 @@ parse_copy(Parser* self, Program* program,
 	{
 		auto clone = clone_of(ref);
 		copy_insert(self, clone->table, clone, args);
-		break;
-	}
-	case REL_CHANNEL:
-	{
-		auto channel = channel_of(ref);
-		copy_publish(self, channel, args);
 		break;
 	}
 	case REL_UDF:

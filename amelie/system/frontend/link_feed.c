@@ -17,6 +17,7 @@
 #include <amelie_vm>
 #include <amelie_frontend.h>
 
+#if 0
 static inline void
 link_subscribe(Link* self, StreamCursor* cursor)
 {
@@ -149,4 +150,11 @@ link_feed(Link* self)
 		if (link_wait(self, &cursor))
 			break;
 	}
+}
+#endif
+
+void
+link_feed(Link* self)
+{
+	(void)self;
 }

@@ -23,7 +23,6 @@ typedef enum
 	REL_TABLE,
 	REL_CLONE,
 	REL_UDF,
-	REL_CHANNEL,
 	REL_LOCK,
 	REL_SYSTEM
 } RelType;
@@ -58,7 +57,6 @@ rel_type_of(RelType type)
 	case REL_TABLE:        return "table";
 	case REL_CLONE:        return "clone";
 	case REL_UDF:          return "function";
-	case REL_CHANNEL:      return "channel";
 	case REL_LOCK:         return "lock";
 	case REL_SYSTEM:       return "system";
 	default:

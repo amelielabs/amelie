@@ -22,7 +22,6 @@ link_init(Link* self, Frontend* fe, Client* client)
 {
 	self->client = client;
 	self->api    = NULL;
-	self->stream = NULL;
 	self->fe     = fe;
 
 	portal_init(&self->portal);
@@ -42,8 +41,7 @@ link_free(Link* self)
 static void
 link_reset(Link* self)
 {
-	self->api    = NULL;
-	self->stream = NULL;
+	self->api = NULL;
 
 	// release catalog lock
 	portal_reset(&self->portal, true);

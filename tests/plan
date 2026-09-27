@@ -57,7 +57,6 @@ test table_migration
 test index
 test clone
 test clone_visibility
-test channel
 test function
 test grant
 test limits
@@ -69,7 +68,6 @@ test insert
 test update
 test delete
 test upsert
-test publish
 test truncate
 
 # query

@@ -68,17 +68,6 @@ create clone test_clone of test;
 create clone test_clone2 of test;
 drop table test cascade;
 
-# test: channels
-alter user amelie set limit channels = 0;
-create channel test;
-alter user amelie set limit channels = 1;
-create channel test;
-show limits;
-drop channel test;
-create channel test;
-create channel test2;
-drop channel test;
-
 # test: functions
 alter user amelie set limit functions = 0;
 create function test () begin end;
@@ -114,12 +103,6 @@ create table test (id int primary key);
 insert into test values (1);
 insert into test values (2), (3);
 drop table test;
-
-create channel test;
-publish into test 1;
-publish into test 2, 3;
-drop channel test;
-alter user amelie unset limit values;
 
 # test: partitions
 alter user amelie set limit partitions = 1;

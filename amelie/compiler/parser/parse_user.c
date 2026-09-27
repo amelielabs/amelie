@@ -190,7 +190,6 @@ parse_user_create(Stmt* self, bool agent)
 			PERM_CREATE_TABLE    |
 			PERM_CREATE_CLONE    |
 			PERM_CREATE_FUNCTION |
-			PERM_CREATE_CHANNEL  |
 			PERM_CREATE_API      |
 			PERM_SQL;
 		Str user_self;

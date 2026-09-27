@@ -352,9 +352,6 @@ OpDesc ops[] =
 	{ CCALL, "call" },
 	{ CCALL_UDF, "call_udf" },
 
-	// channel
-	{ CPUBLISH, "publish" },
-
 	// locking
 	{ CLOCK, "lock" },
 	{ CUNLOCK, "unlock" },
@@ -595,13 +592,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto udf = (Udf*)op->b;
 			op_write(buf, op, true, false, false, "{str}.{str}()",
 			         &udf->config->user, &udf->config->name);
-			break;
-		}
-		case CPUBLISH:
-		{
-			auto channel = (Channel*)op->a;
-			op_write(buf, op, false, false, false, "{str}.{str}",
-			         &channel->config->user, &channel->config->name);
 			break;
 		}
 		case CVALUE:

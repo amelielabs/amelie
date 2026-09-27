@@ -79,7 +79,6 @@
 #include "parser/parse_index.h"
 #include "parser/parse_clone.h"
 #include "parser/parse_function.h"
-#include "parser/parse_channel.h"
 
 // dml
 #include "parser/parse_from.h"
@@ -89,7 +88,6 @@
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"
-#include "parser/parse_publish.h"
 
 // query
 #include "parser/parse_order.h"

@@ -38,8 +38,6 @@ enum
 	SHOW_CLONE,
 	SHOW_FUNCTIONS,
 	SHOW_FUNCTION,
-	SHOW_CHANNELS,
-	SHOW_CHANNEL,
 	SHOW_RELS,
 	SHOW_REL,
 	SHOW_GRANTS,
@@ -97,8 +95,6 @@ static ShowCmd show_cmds[] =
 	{ SHOW_CLONE,         "clone",         5,  SHOW_YES,   true  },
 	{ SHOW_FUNCTIONS,     "functions",     9,  SHOW_NO,    false },
 	{ SHOW_FUNCTION,      "function",      8,  SHOW_YES,   true  },
-	{ SHOW_CHANNELS,      "channels",      8,  SHOW_NO,    false },
-	{ SHOW_CHANNEL,       "channel",       7,  SHOW_YES,   true  },
 	{ SHOW_RELS,          "rels",          4,  SHOW_NO,    false },
 	{ SHOW_REL,           "rel",           3,  SHOW_YES,   true  },
 
@@ -348,16 +344,6 @@ fn_show(Call* self)
 	case SHOW_FUNCTION:
 	{
 		rels_list(&catalog->rels, REL_UDF, buf, user_by, user, &name, flags);
-		break;
-	}
-	case SHOW_CHANNELS:
-	{
-		rels_list(&catalog->rels, REL_CHANNEL, buf, user_by, user, NULL, flags);
-		break;
-	}
-	case SHOW_CHANNEL:
-	{
-		rels_list(&catalog->rels, REL_CHANNEL, buf, user_by, user, &name, flags);
 		break;
 	}
 	case SHOW_RELS:

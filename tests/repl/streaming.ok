@@ -10288,61 +10288,6 @@ select count(*) from test2;
 count
 ─────
 4
-# test: channel
-switch S0;
-create channel test_top;
-publish into test_top;
-publish into test_top 123;
-publish into test_top 1,2,3;
-show channels;
-
-channels
-────────
-{
-  "user": "amelie",
-  "name": "test_top",
-  "description": ""
-}
-show state;
-
-state
-─────
-{
-  "version": "1.0.0-rc1",
-  "directory": "./_output/E0",
-  "uuid": "00000000-0000-0000-0000-000000000001",
-  "frontends": 1,
-  "backends": 3,
-  "lsn": 10022,
-  "checkpoint": 1
-}
-# test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
-show repl;
-
-repl
-────
-{
-  "role": "primary",
-  "primary": null,
-  "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000002",
-    "uri": "amelie://127.0.0.1:3482",
-    "connected": true,
-    "lsn": 10022,
-    "lag": 0
-  }]
-}
-switch S1;
-show channels;
-
-channels
-────────
-{
-  "user": "amelie",
-  "name": "test_top",
-  "description": ""
-}
 switch S0;
 disconnect S1;
 close E1;

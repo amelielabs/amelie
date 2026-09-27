@@ -86,13 +86,6 @@ parse_stmt_free(Stmt* stmt)
 			udf_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_CHANNEL:
-	{
-		auto ast = ast_channel_create_of(stmt->ast);
-		if (ast->config)
-			channel_config_free(ast->config);
-		break;
-	}
 	case STMT_WHILE:
 	{
 		auto ast = ast_while_of(stmt->ast);
@@ -304,11 +297,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_FUNCTION;
 			parse_function_create(self, or_replace);
 		} else
-		if (stmt_if(self, KCHANNEL))
-		{
-			self->id = STMT_CREATE_CHANNEL;
-			parse_channel_create(self);
-		} else
 		if (stmt_if(self, KLOCK))
 		{
 			self->id = STMT_CREATE_LOCK;
@@ -358,11 +346,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
 		} else
-		if (stmt_if(self, KCHANNEL))
-		{
-			self->id = STMT_DROP_CHANNEL;
-			parse_channel_drop(self);
-		} else
 		if (stmt_if(self, KLOCK))
 		{
 			self->id = STMT_DROP_LOCK;
@@ -406,11 +389,6 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
-		} else
-		if (stmt_if(self, KCHANNEL))
-		{
-			self->id = STMT_ALTER_CHANNEL;
-			parse_channel_alter(self);
 		} else {
 			stmt_error(self, NULL, "relation type expected");
 		}
@@ -458,12 +436,6 @@ parse_stmt(Stmt* self)
 			self->block->stmts.last_send = self;
 		break;
 	}
-
-	case KPUBLISH:
-		self->id = STMT_PUBLISH;
-		parse_publish(self);
-		self->block->stmts.last_send = self;
-		break;
 
 	case KIF:
 	{

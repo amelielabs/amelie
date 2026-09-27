@@ -10124,25 +10124,8 @@ show repl;
 
 switch S1;
 select count(*) from test2;
-
-# test: channel
 switch S0;
-create channel test_top;
-# does nothing
-publish into test_top;
-publish into test_top 123;
-publish into test_top 1,2,3;
-show channels;
-show state;
 
-# test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
-show repl;
-
-switch S1;
-show channels;
-
-switch S0;
 disconnect S1;
 close E1;
 

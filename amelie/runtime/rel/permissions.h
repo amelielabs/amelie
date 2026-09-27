@@ -27,25 +27,24 @@ enum
 	PERM_CREATE_TABLE        = 1ul << 4,
 	PERM_CREATE_CLONE        = 1ul << 5,
 	PERM_CREATE_FUNCTION     = 1ul << 6,
-	PERM_CREATE_CHANNEL      = 1ul << 7,
-	PERM_CREATE_API          = 1ul << 8,
+	PERM_CREATE_API          = 1ul << 7,
 
 	// DML
-	PERM_INSERT              = 1ul << 9,
-	PERM_UPDATE              = 1ul << 10,
-	PERM_DELETE              = 1ul << 11,
+	PERM_INSERT              = 1ul << 8,
+	PERM_UPDATE              = 1ul << 9,
+	PERM_DELETE              = 1ul << 10,
 
 	// Query
-	PERM_SELECT              = 1ul << 12,
+	PERM_SELECT              = 1ul << 11,
 
 	// UDF
-	PERM_EXECUTE             = 1ul << 13,
+	PERM_EXECUTE             = 1ul << 12,
 
 	// Channel
-	PERM_PUBLISH             = 1ul << 14,
+	PERM_PUBLISH             = 1ul << 13,
 
 	// SQL
-	PERM_SQL                 = 1ul << 15,
+	PERM_SQL                 = 1ul << 14,
 
 	// all
 	PERM_ALL                 = UINT32_MAX

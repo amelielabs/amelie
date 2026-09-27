@@ -79,7 +79,6 @@ include_directories("${AMELIE_ROOT}/server/server")
 include_directories("${AMELIE_ROOT}/db")
 include_directories("${AMELIE_ROOT}/db/type")
 include_directories("${AMELIE_ROOT}/db/storage")
-include_directories("${AMELIE_ROOT}/db/stream")
 include_directories("${AMELIE_ROOT}/db/flat")
 include_directories("${AMELIE_ROOT}/db/heap")
 include_directories("${AMELIE_ROOT}/db/transaction")
@@ -186,7 +185,6 @@ set(AMELIE_SOURCES_SERVER
 
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/storage/storage_file.c
-    ${AMELIE_ROOT}/db/stream/stream.c
     ${AMELIE_ROOT}/db/flat/flat.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/row_encode.c
@@ -205,7 +203,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/table_index.c
     ${AMELIE_ROOT}/db/catalog/clone.c
     ${AMELIE_ROOT}/db/catalog/udf.c
-    ${AMELIE_ROOT}/db/catalog/channel.c
     ${AMELIE_ROOT}/db/catalog/rel.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/catalog_limit.c
@@ -296,7 +293,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
     ${AMELIE_ROOT}/compiler/parser/parse_clone.c
     ${AMELIE_ROOT}/compiler/parser/parse_function.c
-    ${AMELIE_ROOT}/compiler/parser/parse_channel.c
     ${AMELIE_ROOT}/compiler/parser/parse_from.c
     ${AMELIE_ROOT}/compiler/parser/parse_returning.c
     ${AMELIE_ROOT}/compiler/parser/parse_value.c
@@ -309,7 +305,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_declare.c
     ${AMELIE_ROOT}/compiler/parser/parse_with.c
     ${AMELIE_ROOT}/compiler/parser/parse_execute.c
-    ${AMELIE_ROOT}/compiler/parser/parse_publish.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
     ${AMELIE_ROOT}/compiler/copy/parse_copy.c
     ${AMELIE_ROOT}/compiler/copy/parse_copy_csv.c
@@ -329,7 +324,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_delete.c
     ${AMELIE_ROOT}/compiler/compiler/emit_select.c
     ${AMELIE_ROOT}/compiler/compiler/emit_matching.c
-    ${AMELIE_ROOT}/compiler/compiler/emit_publish.c
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
     ${AMELIE_ROOT}/compiler/compiler/emit_utility.c)
 

@@ -45,10 +45,3 @@ catalog_find_udf(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 	return udf_of(rels_find(&self->rels, REL_UDF, user, name,
 	                        error_if_not_exists));
 }
-
-static inline Channel*
-catalog_find_channel(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
-{
-	return channel_of(rels_find(&self->rels, REL_CHANNEL, user, name,
-	                            error_if_not_exists));
-}

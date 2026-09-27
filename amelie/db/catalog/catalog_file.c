@@ -13,7 +13,6 @@
 #include <amelie_runtime>
 #include <amelie_type.h>
 #include <amelie_storage.h>
-#include <amelie_stream.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>
@@ -66,13 +65,12 @@ catalog_dump(Rels* rels, RelType type, Buf* buf)
 void
 catalog_write(Catalog* self, char* path)
 {
-	// users, tables, clones, channels, udfs
+	// users, tables, clones, udfs
 	auto buf = buf_create();
 	defer_buf(buf);
 	catalog_dump(&self->users, REL_USER, buf);
 	catalog_dump(&self->rels, REL_TABLE, buf);
 	catalog_dump(&self->rels, REL_CLONE, buf);
-	catalog_dump(&self->rels, REL_CHANNEL, buf);
 	catalog_dump(&self->rels, REL_UDF, buf);
 
 	// create file

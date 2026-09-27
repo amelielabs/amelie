@@ -13,7 +13,6 @@
 #include <amelie_runtime>
 #include <amelie_type.h>
 #include <amelie_storage.h>
-#include <amelie_stream.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>
@@ -59,7 +58,6 @@ catalog_depends(Catalog* self, Rel* rel, Rel* at)
 		}
 		break;
 	}
-	case REL_CHANNEL:
 	case REL_CLONE:
 	{
 		if (at->type == REL_UDF)

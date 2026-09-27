@@ -57,7 +57,6 @@ Keyword keywords[] =
 	{ KCOLUMN ,               "column",                6  },
 	{ KCONTINUE,              "continue",              8  },
 	{ KCLONE,                 "clone",                 5  },
-	{ KCHANNEL,               "channel",               7  },
 
 	// d
 	{ KDELETE,                "delete",                6  },
@@ -145,7 +144,6 @@ Keyword keywords[] =
 	{ KOUT,                   "out",                   3  },
 
 	// p
-	{ KPUBLISH,               "publish",               7  },
 	{ KPROFILE,               "profile",               7  },
 	{ KPOOL,                  "pool",                  4  },
 	{ KPRIMARY,               "primary",               7  },
@@ -226,7 +224,7 @@ Keyword* keywords_alpha[26] =
 	&keywords[KMIN - KKEYWORD - 1],
 	&keywords[KNULL - KKEYWORD - 1],
 	&keywords[KOR - KKEYWORD - 1],
-	&keywords[KPUBLISH - KKEYWORD - 1],
+	&keywords[KPROFILE - KKEYWORD - 1],
 	NULL,
 	&keywords[KRIGHT - KKEYWORD - 1],
 	&keywords[KSELECT - KKEYWORD - 1],

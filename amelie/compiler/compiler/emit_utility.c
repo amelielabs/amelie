@@ -263,33 +263,6 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
-	// channel
-	case STMT_CREATE_CHANNEL:
-	{
-		auto arg = ast_channel_create_of(stmt->ast);
-		offset = channel_op_create(data, arg->config);
-		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
-		break;
-	}
-	case STMT_DROP_CHANNEL:
-	{
-		auto arg = ast_channel_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_CHANNEL, &arg->user, &arg->name, arg->cascade);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-	case STMT_ALTER_CHANNEL:
-	{
-		auto arg = ast_channel_alter_of(stmt->ast);
-		if (arg->type == CHANNEL_ALTER_RENAME)
-			offset = rel_op_rename(data, REL_CHANNEL, &arg->user, &arg->name, &arg->user, &arg->name_new);
-		else
-		if (arg->type == CHANNEL_ALTER_DESCRIPTION)
-			offset = rel_op_describe(data, REL_CHANNEL, &arg->user, &arg->name, &arg->description);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-
 	default:
 		abort();
 		break;

@@ -13,7 +13,6 @@
 #include <amelie_runtime>
 #include <amelie_type.h>
 #include <amelie_storage.h>
-#include <amelie_stream.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>
@@ -133,25 +132,6 @@ checkpoint_table(Checkpoint* self, Table* table)
 	}
 }
 
-hot static void
-checkpoint_channel(Checkpoint* self, Channel* channel)
-{
-	// <base>/checkpoint/<lsn>.incomplete/<channel_id>
-	char uuid[UUID_SZ];
-	uuid_get(&channel->config->id, uuid, sizeof(uuid));
-
-	char path[PATH_MAX];
-	format(path, sizeof(path),
-	       "{s}/checkpoint/{u64}.incomplete/{s}",
-	       state_directory(),
-	       self->lsn,
-	       uuid);
-
-	auto size = stream_create(channel->stream, path);
-	info(" {s}          ({.2f} MB)",
-	     uuid, (double)size / 1024 / 1024);
-}
-
 static void
 checkpoint_main(Checkpoint* self)
 {
@@ -167,9 +147,6 @@ checkpoint_main(Checkpoint* self)
 		auto rel = list_at(Rel, link);
 		if (rel->type == REL_TABLE)
 			checkpoint_table(self, table_of(rel));
-		else
-		if (rel->type == REL_CHANNEL)
-			checkpoint_channel(self, channel_of(rel));
 	}
 }
 

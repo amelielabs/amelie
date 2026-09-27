@@ -39,11 +39,6 @@
 #include "catalog/udf_op.h"
 #include "catalog/udf.h"
 
-// channel
-#include "catalog/channel_config.h"
-#include "catalog/channel_op.h"
-#include "catalog/channel.h"
-
 // grant
 #include "catalog/rel_op.h"
 #include "catalog/rel.h"

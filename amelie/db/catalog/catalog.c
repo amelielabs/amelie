@@ -13,7 +13,6 @@
 #include <amelie_runtime>
 #include <amelie_type.h>
 #include <amelie_storage.h>
-#include <amelie_stream.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>
@@ -378,14 +377,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		// create or replace
 		write = udf_create(self, tr, config, replace);
-		break;
-	}
-	case DDL_CHANNEL_CREATE:
-	{
-		auto config = channel_op_create_read(op);
-		defer(channel_config_free, config);
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = channel_create(self, tr, config, if_not_exists);
 		break;
 	}
 	default:
