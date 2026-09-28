@@ -15,7 +15,6 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
-#include <amelie_frontend.h>
 #include <amelie_backend.h>
 
 hot static void

@@ -15,7 +15,6 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
-#include <amelie_frontend.h>
 #include <amelie_backend.h>
 
 static void
@@ -38,6 +37,7 @@ backend_rpc(Rpc* rpc, void* arg)
 	{
 		// stop and drop pod
 		Part* part = rpc->arg;
+		// todo: cancel waiting feeds
 		pods_drop_by(&self->pods, part);
 		break;
 	}
@@ -86,6 +86,34 @@ backend_main(void* arg)
 		{
 			auto req = (Req*)msg;
 			ltr_write(req->ltr, msg);
+			break;
+		}
+		case MSG_FEED:
+		{
+			auto feed = (Feed*)msg;
+
+			// todo: feed_step()
+
+				// todo: use index or continue heap iterator
+					// validate it
+
+				// todo: feed step
+					// foreach heap
+					//	  add row to feed->data
+
+				// if has no data
+					// subscribe
+				// else
+					feed_reply(feed);
+			break;
+		}
+		case MSG_FEED_CANCEL:
+		{
+			auto feed = (Feed*)msg;
+			// todo:
+				// remove feed from wait list
+
+			feed_cancel_reply(feed);
 			break;
 		}
 		default:

@@ -111,8 +111,8 @@ include_directories("${AMELIE_ROOT}/compiler/compiler")
 
 # system
 include_directories("${AMELIE_ROOT}/system")
-include_directories("${AMELIE_ROOT}/system/frontend")
 include_directories("${AMELIE_ROOT}/system/backend")
+include_directories("${AMELIE_ROOT}/system/frontend")
 include_directories("${AMELIE_ROOT}/system/session")
 include_directories("${AMELIE_ROOT}/system/system")
 include_directories("${AMELIE_ROOT}/system/api")
@@ -338,6 +338,8 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/link_feed.c
     ${AMELIE_ROOT}/system/frontend/player.c
     ${AMELIE_ROOT}/system/frontend/players.c
+    ${AMELIE_ROOT}/system/backend/feed.c
+    ${AMELIE_ROOT}/system/backend/feeds.c
     ${AMELIE_ROOT}/system/backend/pod.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/session/session.c

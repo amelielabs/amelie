@@ -15,6 +15,7 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
+#include <amelie_backend.h>
 #include <amelie_frontend.h>
 
 hot static void
@@ -100,6 +101,20 @@ frontend_main(void* arg)
 			// forward for execution
 			auto record = (RecordMsg*)msg;
 			player_forward(record->arg, msg);
+			break;
+		}
+		case MSG_FEED:
+		{
+			// notify feed completion (sent from frontend)
+			auto feed = (Feed*)msg;
+			feeds_done(feed);
+			break;
+		}
+		case MSG_FEED_CANCEL:
+		{
+			// notify feed cancel completion (sent from frontend)
+			auto feed = (Feed*)msg;
+			feeds_cancel(feed);
 			break;
 		}
 		default:

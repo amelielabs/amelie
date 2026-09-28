@@ -42,6 +42,12 @@ iov_reset(Iov* self)
 	buf_reset(&self->iov);
 }
 
+static inline bool
+iov_empty(Iov* self)
+{
+	return !self->size;
+}
+
 static inline struct iovec*
 iov_pointer(Iov* self)
 {
