@@ -49,14 +49,16 @@ feeds_create(Feeds* self, Parts* parts, Str* key)
 	self->feeds_count = parts->list_count;
 	self->feeds = am_malloc(sizeof(Feed) * self->feeds_count);
 
+	// todo: prepare key
+	(void)key;
+
 	// prepare feeds per partitions and set as ready
 	auto at = 0;
 	list_foreach(&parts->list)
 	{
 		auto part = list_at(Part, link);
 		auto feed = &self->feeds[at];
-		feed_init(feed, self, part->track.backend, part);
-		feed->key   = key;
+		feed_init(feed, self, self->task, part->track.backend, part);
 		feed->ready = true;
 		list_append(&self->ready, &feed->link);
 		at++;
@@ -67,6 +69,13 @@ hot static void
 feeds_main(Feeds* self)
 {
 	auto client = self->client;
+
+	// prepare client disconnect event
+	Event eof;
+	event_init(&eof);
+	event_set_parent(&eof, &self->notify);
+	poll_read_start(&client->tcp.fd, &eof);
+
 	auto iov = &self->iov;
 	for (;;)
 	{
@@ -75,14 +84,18 @@ feeds_main(Feeds* self)
 		{
 			auto feed = container_of(list_pop(&self->ready), Feed, link);
 			feed->ready = false;
-			feed_request(feed);
+			task_send(feed->part_task, &feed->msg);
 		}
 		list_init(&self->ready);
 
 		// wait for results
 		//
 		// todo: check client disconnect event
-		event_wait(&self->notify, 0);
+		event_wait(&self->notify, -1);
+
+		// eof
+		if (unlikely(eof.signal))
+			break;
 
 		// batch send
 		iov_reset(iov);
@@ -111,7 +124,7 @@ feeds_shutdown(Feeds* self)
 			feed->cancel = true;
 			continue;
 		}
-		feed_cancel(feed);
+		task_send(feed->part_task, &feed->msg_cancel);
 		wait = true;
 	}
 	if (! wait)
@@ -134,7 +147,7 @@ feeds_shutdown(Feeds* self)
 		if (! wait)
 			break;
 
-		event_wait(&self->notify, 0);
+		event_wait(&self->notify, -1);
 	}
 
 	cancel_resume();

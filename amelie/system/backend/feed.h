@@ -20,18 +20,25 @@ struct Feed
 	Msg          msg_cancel;
 	bool         ready;
 	bool         cancel;
+	bool         wait;
+	bool         error;
+
 	HeapIterator it;
-	Str*         key;
+	Row*         key;
 	Buf          data;
+
 	Task*        part_task;
 	Part*        part;
+	Feed*        part_link;
+	Task*        task;
+
 	Feeds*       feeds;
 	List         link;
 };
 
-void feed_init(Feed*, Feeds*, Task*, Part*);
+void feed_init(Feed*, Feeds*, Task*, Task*, Part*);
 void feed_free(Feed*);
-void feed_request(Feed*);
-void feed_reply(Feed*);
+void feed_next(Feed*);
 void feed_cancel(Feed*);
-void feed_cancel_reply(Feed*);
+void feed_cancel_all(Part*);
+void feed_resume(Part*);

@@ -37,7 +37,9 @@ backend_rpc(Rpc* rpc, void* arg)
 	{
 		// stop and drop pod
 		Part* part = rpc->arg;
-		// todo: cancel waiting feeds
+
+		// cancel all pending feeds
+		feed_cancel_all(part);
 		pods_drop_by(&self->pods, part);
 		break;
 	}
@@ -91,29 +93,13 @@ backend_main(void* arg)
 		case MSG_FEED:
 		{
 			auto feed = (Feed*)msg;
-
-			// todo: feed_step()
-
-				// todo: use index or continue heap iterator
-					// validate it
-
-				// todo: feed step
-					// foreach heap
-					//	  add row to feed->data
-
-				// if has no data
-					// subscribe
-				// else
-					feed_reply(feed);
+			feed_next(feed);
 			break;
 		}
 		case MSG_FEED_CANCEL:
 		{
-			auto feed = (Feed*)msg;
-			// todo:
-				// remove feed from wait list
-
-			feed_cancel_reply(feed);
+			auto feed = container_of(msg, Feed, msg_cancel);
+			feed_cancel(feed);
 			break;
 		}
 		default:

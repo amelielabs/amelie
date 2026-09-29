@@ -55,9 +55,8 @@ heap_iterator_next_allocated(HeapIterator* self)
 }
 
 static inline bool
-heap_iterator_open(HeapIterator* self, Heap* heap, Row* key)
+heap_iterator_open(HeapIterator* self, Heap* heap)
 {
-	unused(key);
 	if (unlikely(! heap->header->used_count))
 		return false;
 	self->heap       = heap;
@@ -73,6 +72,12 @@ always_inline static inline bool
 heap_iterator_has(HeapIterator* self)
 {
 	return self->current != NULL;
+}
+
+always_inline static inline bool
+heap_iterator_active(HeapIterator* self)
+{
+	return self->heap != NULL;
 }
 
 always_inline static inline Row*

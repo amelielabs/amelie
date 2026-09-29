@@ -118,6 +118,10 @@ pod_main(void* arg)
 
 		// execute transaction
 		pod_run(self, ltr);
+
+		// resume pending feeds
+		if (self->part->feeds)
+			feed_resume(self->part);
 	}
 }
 

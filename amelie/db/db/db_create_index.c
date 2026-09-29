@@ -78,7 +78,7 @@ db_indexate(Part* part, IndexConfig* config)
 	auto heap = part->heap;
 	HeapIterator it;
 	heap_iterator_init(&it);
-	heap_iterator_open(&it, heap, NULL);
+	heap_iterator_open(&it, heap);
 	for (;; heap_iterator_next(&it))
 	{
 		auto row = heap_iterator_at(&it);

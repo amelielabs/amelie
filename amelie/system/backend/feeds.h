@@ -30,7 +30,7 @@ void feeds_create(Feeds*, Parts*, Str*);
 void feeds_run(Feeds*);
 
 static inline void
-feeds_done(Feed* self)
+feeds_recv(Feed* self)
 {
 	assert(! self->ready);
 	self->ready = true;
@@ -42,9 +42,9 @@ feeds_done(Feed* self)
 }
 
 static inline void
-feeds_cancel(Feed* self)
+feeds_recv_cancel(Feed* self)
 {
-	assert(self->cancel);
+	assert(! self->cancel);
 	self->cancel = true;
 	event_signal(&self->feeds->notify);
 }

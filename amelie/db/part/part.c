@@ -29,6 +29,7 @@ part_allocate(PartConfig* config, PartArg* arg)
 	self->heap          = heap_allocate();
 	self->config        = part_config_copy(config);
 	self->arg           = arg;
+	self->feeds         = NULL;
 	track_init(&self->track);
 	flats_init(&self->flats);
 	list_init(&self->link_cp);
@@ -89,7 +90,7 @@ part_open_heap(Part* self, uint64_t checkpoint)
 	// create heap iterator
 	HeapIterator it;
 	heap_iterator_init(&it);
-	heap_iterator_open(&it, self->heap, NULL);
+	heap_iterator_open(&it, self->heap);
 
 	// build indexes
 	uint64_t count = 0;

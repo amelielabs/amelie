@@ -107,14 +107,14 @@ frontend_main(void* arg)
 		{
 			// notify feed completion (sent from frontend)
 			auto feed = (Feed*)msg;
-			feeds_done(feed);
+			feeds_recv(feed);
 			break;
 		}
 		case MSG_FEED_CANCEL:
 		{
 			// notify feed cancel completion (sent from frontend)
-			auto feed = (Feed*)msg;
-			feeds_cancel(feed);
+			auto feed = container_of(msg, Feed, msg_cancel);
+			feeds_recv_cancel(feed);
 			break;
 		}
 		default:

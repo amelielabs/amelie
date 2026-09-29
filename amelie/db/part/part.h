@@ -23,6 +23,7 @@ struct Part
 	Flats       flats;
 	PartConfig* config;
 	PartArg*    arg;
+	void*       feeds;
 	List        link_cp;
 	List        link;
 };
