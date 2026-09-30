@@ -41,6 +41,7 @@ link_stream(Link* self)
 	Tails tails;
 	tails_init(&tails, am_task, self->client);
 	tails_create(&tails, &table->parts, &self->portal.endpoint.id.string);
+	defer(tails_free, &tails);
 
 	// release catalog lock
 	portal_unlock(&self->portal);

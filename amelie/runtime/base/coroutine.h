@@ -92,6 +92,11 @@ coroutine_cancelled(Coroutine* self)
 static inline void
 coroutine_cancel_pause(Coroutine* self)
 {
+	if (self->cancel)
+	{
+		self->cancel_pause_recv++;
+		self->cancel = false;
+	}
 	self->cancel_pause++;
 }
 

@@ -18,27 +18,26 @@ struct Tail
 {
 	Msg          msg;
 	Msg          msg_cancel;
-	bool         ready;
-	bool         cancel;
 	bool         wait;
-	bool         error;
-
+	bool         shutdown;
+	bool         ready;
+	Event        on_complete;
+	Event        on_cancel;
+	// iterator
 	HeapIterator it;
 	Row*         key;
 	Buf          data;
-
+	// partition state
 	Task*        part_task;
 	Part*        part;
 	Tail*        part_link;
-	Task*        task;
-
 	Tails*       tails;
 	List         link;
 };
 
-void tail_init(Tail*, Tails*, Task*, Task*, Part*);
+void tail_init(Tail*, Tails*, Part*);
 void tail_free(Tail*);
 void tail_next(Tail*);
 void tail_cancel(Tail*);
 void tail_cancel_all(Part*);
-void tail_resume(Part*);
+void tail_resume_all(Part*);

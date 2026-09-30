@@ -37,10 +37,10 @@ tails_free(Tails* self)
 
 	for (auto i = 0; i < self->tails_count; i++)
 		tail_free(&self->tails[i]);
-
-	iov_free(&self->iov);
 	am_free(self->tails);
 	self->tails = NULL;
+
+	iov_free(&self->iov);
 }
 
 void
@@ -58,7 +58,14 @@ tails_create(Tails* self, Parts* parts, Str* key)
 	{
 		auto part = list_at(Part, link);
 		auto tail = &self->tails[at];
-		tail_init(tail, self, self->task, part->track.backend, part);
+		tail_init(tail, self, part);
+
+		event_attach(&tail->on_complete);
+		event_set_parent(&tail->on_complete, &self->notify);
+
+		event_attach(&tail->on_cancel);
+		event_set_parent(&tail->on_cancel, &self->notify);
+
 		tail->ready = true;
 		list_append(&self->ready, &tail->link);
 		at++;
@@ -75,82 +82,82 @@ tails_main(Tails* self)
 	event_init(&eof);
 	event_set_parent(&eof, &self->notify);
 	poll_read_start(&client->tcp.fd, &eof);
+	defer(poll_read_stop, &client->tcp.fd);
 
 	auto iov = &self->iov;
 	for (;;)
 	{
-		// send to all ready tails
+		// send ready
 		while (! list_empty(&self->ready))
 		{
 			auto tail = container_of(list_pop(&self->ready), Tail, link);
 			tail->ready = false;
+			list_init(&tail->link);
 			task_send(tail->part_task, &tail->msg);
 		}
 		list_init(&self->ready);
 
-		// wait for results
-		//
-		// todo: check client disconnect event
+		// wait
 		event_wait(&self->notify, -1);
 
-		// eof
+		// client disconnect
 		if (unlikely(eof.signal))
 			break;
 
-		// batch send
+		// collect results
 		iov_reset(iov);
-		list_foreach(&self->ready)
+		auto shutdown = false;
+		for (auto i = 0; i < self->tails_count; i++)
 		{
-			auto tail = container_of(list_pop(&self->ready), Tail, link);
-			iov_add_buf(iov, &tail->data);
-		}
-		if (iov_empty(iov))
-			continue;
+			auto tail = &self->tails[i];
+			if (! tail->on_complete.signal)
+				continue;
 
-		tcp_write(&client->tcp, iov_pointer(iov), iov->iov_count);
+			tail->on_complete.signal = false;
+			if (tail->shutdown)
+				shutdown = true;
+
+			if (! buf_empty(&tail->data))
+				iov_add_buf(iov, &tail->data);
+
+			tail->ready = true;
+			list_append(&self->ready, &tail->link);
+		}
+		if (unlikely(shutdown))
+			break;
+
+		// batch send
+		if (! iov_empty(iov))
+			tcp_write(&client->tcp, iov_pointer(iov), iov->iov_count);
 	}
 }
 
 static void
 tails_shutdown(Tails* self)
 {
-	// send TAIL_CANCEL cancel active tails
-	auto wait = false;
+	auto pending = false;
 	for (auto i = 0; i < self->tails_count; i++)
 	{
 		auto tail = &self->tails[i];
 		if (tail->ready)
-		{
-			tail->cancel = true;
 			continue;
-		}
 		task_send(tail->part_task, &tail->msg_cancel);
-		wait = true;
+		pending = true;
 	}
-	if (! wait)
+	if (! pending)
 		return;
 
-	cancel_pause();
-
-	// wait for all tails to be canceled
-	for (;;)
+	// wait for completion
+	for (auto i = 0; i < self->tails_count; i++)
 	{
-		wait = false;
-		for (auto i = 0; i < self->tails_count; i++)
-		{
-			if (! self->tails[i].cancel)
-			{
-				wait = true;
-				break;
-			}
-		}
-		if (! wait)
-			break;
-
-		event_wait(&self->notify, -1);
+		auto tail = &self->tails[i];
+		if (tail->ready)
+			continue;
+		event_wait(&tail->on_complete, -1);
+		event_wait(&tail->on_cancel, -1);
+		tail->ready = true;
+		list_append(&self->ready, &tail->link);
 	}
-
-	cancel_resume();
 }
 
 void
@@ -160,48 +167,7 @@ tails_run(Tails* self)
 	error_catch( tails_main(self) );
 
 	// cancel and ensure everyone finished
+	cancel_pause();
 	tails_shutdown(self);
+	cancel_resume();
 }
-
-#if 0
-hot static inline bool
-link_wait(Link* self, TailCursor* cursor)
-{
-	// parent
-	Event event;
-	event_init(&event);
-	event_attach(&event);
-
-	// prepare client event
-	Event event_client;
-	event_init(&event_client);
-	event_set_parent(&event_client, &event);
-	event_attach(&event_client);
-
-	// prepare sub event
-	Event event_sub;
-	event_init(&event_sub);
-	event_set_parent(&event_sub, &event);
-	event_attach(&event_sub);
-
-	// prepare tail subscription
-	TailSub sub;
-	tail_sub_init(&sub, &event_sub, cursor->id);
-	tail_subscribe(cursor->tail, &sub);
-
-	// wait
-	auto on_error = error_catch
-	(
-		poll_read_start(&self->client->tcp.fd, &event_client);
-		event_wait(&event, -1);
-	);
-	poll_read_stop(&self->client->tcp.fd);
-	tail_unsubscribe(cursor->tail, &sub);
-
-	if (unlikely(on_error))
-		rethrow();
-
-	// client disconnect on tail shutdown
-	return event_client.signal || sub.shutdown;
-}
-#endif

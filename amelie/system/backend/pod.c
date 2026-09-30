@@ -121,7 +121,7 @@ pod_main(void* arg)
 
 		// resume streaming
 		if (self->part->tails)
-			tail_resume(self->part);
+			tail_resume_all(self->part);
 	}
 }
 

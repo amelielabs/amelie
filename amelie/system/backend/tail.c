@@ -18,21 +18,21 @@
 #include <amelie_backend.h>
 
 void
-tail_init(Tail* self, Tails* tails, Task* task, Task* part_task, Part* part)
+tail_init(Tail* self, Tails* tails, Part* part)
 {
-	self->key       = NULL;
-	self->ready     = false;
-	self->cancel    = false;
 	self->wait      = false;
-	self->error     = false;
+	self->shutdown  = false;
+	self->ready     = false;
+	self->key       = NULL;
 	self->part      = part;
-	self->part_task = part_task;
+	self->part_task = part->track.backend;
 	self->part_link = NULL;
-	self->task      = task;
 	self->tails     = tails;
 
 	msg_init(&self->msg, MSG_TAIL);
 	msg_init(&self->msg_cancel, MSG_TAIL_CANCEL);
+	event_init(&self->on_complete);
+	event_init(&self->on_cancel);
 	heap_iterator_init(&self->it);
 	buf_init(&self->data);
 	list_init(&self->link);
@@ -76,8 +76,8 @@ tail_next(Tail* self)
 
 	if (! buf_empty(data))
 	{
-		// MSG_TAIL (to frontend)
-		task_send(self->task, &self->msg);
+		// notify completion
+		event_signal(&self->on_complete);
 		return;
 	}
 
@@ -90,10 +90,9 @@ tail_next(Tail* self)
 void
 tail_cancel(Tail* self)
 {
-	// unlink tail from wait list
+	// unlink tail from the wait list
 	if (self->wait)
 	{
-		self->wait = false;
 		auto tail = (Tail*)self->part->tails;
 		if (tail == self)
 		{
@@ -110,10 +109,14 @@ tail_cancel(Tail* self)
 			}
 		}
 		self->part_link = NULL;
+		self->wait = false;
+
+		// notify tail completion
+		event_signal(&self->on_complete);
 	}
 
-	// MSG_TAIL_CANCEL (to frontend)
-	task_send(self->task, &self->msg_cancel);
+	// notify cancel completion
+	event_signal(&self->on_cancel);
 }
 
 void
@@ -127,16 +130,16 @@ tail_cancel_all(Part* self)
 		auto next = tail->part_link;
 		tail->part_link = NULL;
 		tail->wait      = false;
-		tail->error     = true;
+		tail->shutdown  = true;
 
-		// MSG_TAIL (to frontend)
-		task_send(tail->task, &tail->msg);
+		// notify completion
+		event_signal(&tail->on_complete);
 		tail = next;
 	}
 }
 
 hot void
-tail_resume(Part* self)
+tail_resume_all(Part* self)
 {
 	auto tail = (Tail*)self->tails;
 	self->tails = NULL;
