@@ -11,10 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Feed  Feed;
-typedef struct Feeds Feeds;
+typedef struct Tail  Tail;
+typedef struct Tails Tails;
 
-struct Feed
+struct Tail
 {
 	Msg          msg;
 	Msg          msg_cancel;
@@ -29,16 +29,16 @@ struct Feed
 
 	Task*        part_task;
 	Part*        part;
-	Feed*        part_link;
+	Tail*        part_link;
 	Task*        task;
 
-	Feeds*       feeds;
+	Tails*       tails;
 	List         link;
 };
 
-void feed_init(Feed*, Feeds*, Task*, Task*, Part*);
-void feed_free(Feed*);
-void feed_next(Feed*);
-void feed_cancel(Feed*);
-void feed_cancel_all(Part*);
-void feed_resume(Part*);
+void tail_init(Tail*, Tails*, Task*, Task*, Part*);
+void tail_free(Tail*);
+void tail_next(Tail*);
+void tail_cancel(Tail*);
+void tail_cancel_all(Part*);
+void tail_resume(Part*);

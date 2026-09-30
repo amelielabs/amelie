@@ -28,7 +28,7 @@
 #include "frontend/mcp_execute.h"
 #include "frontend/link.h"
 #include "frontend/link_request.h"
-#include "frontend/link_feed.h"
+#include "frontend/link_stream.h"
 
 // player
 #include "frontend/player_sync.h"

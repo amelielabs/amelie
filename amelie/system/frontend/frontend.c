@@ -103,20 +103,6 @@ frontend_main(void* arg)
 			player_forward(record->arg, msg);
 			break;
 		}
-		case MSG_FEED:
-		{
-			// notify feed completion (sent from frontend)
-			auto feed = (Feed*)msg;
-			feeds_recv(feed);
-			break;
-		}
-		case MSG_FEED_CANCEL:
-		{
-			// notify feed cancel completion (sent from frontend)
-			auto feed = container_of(msg, Feed, msg_cancel);
-			feeds_recv_cancel(feed);
-			break;
-		}
 		default:
 		{
 			// command

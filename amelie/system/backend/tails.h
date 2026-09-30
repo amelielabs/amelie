@@ -11,12 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Feeds Feeds;
+typedef struct Tails Tails;
 
-struct Feeds
+struct Tails
 {
-	Feed*   feeds;
-	int     feeds_count;
+	Tail*   tails;
+	int     tails_count;
 	List    ready;
 	Event   notify;
 	Iov     iov;
@@ -24,27 +24,27 @@ struct Feeds
 	Task*   task;
 };
 
-void feeds_init(Feeds*, Task*, Client*);
-void feeds_free(Feeds*);
-void feeds_create(Feeds*, Parts*, Str*);
-void feeds_run(Feeds*);
+void tails_init(Tails*, Task*, Client*);
+void tails_free(Tails*);
+void tails_create(Tails*, Parts*, Str*);
+void tails_run(Tails*);
 
 static inline void
-feeds_recv(Feed* self)
+tails_recv(Tail* self)
 {
 	assert(! self->ready);
 	self->ready = true;
 	list_init(&self->link);
 
-	auto feeds = self->feeds;
-	list_append(&feeds->ready, &self->link);
-	event_signal(&feeds->notify);
+	auto tails = self->tails;
+	list_append(&tails->ready, &self->link);
+	event_signal(&tails->notify);
 }
 
 static inline void
-feeds_recv_cancel(Feed* self)
+tails_recv_cancel(Tail* self)
 {
 	assert(! self->cancel);
 	self->cancel = true;
-	event_signal(&self->feeds->notify);
+	event_signal(&self->tails->notify);
 }

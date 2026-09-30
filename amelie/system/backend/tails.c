@@ -18,10 +18,10 @@
 #include <amelie_backend.h>
 
 void
-feeds_init(Feeds* self, Task* task, Client* client)
+tails_init(Tails* self, Task* task, Client* client)
 {
-	self->feeds       = NULL;
-	self->feeds_count = 0;
+	self->tails       = NULL;
+	self->tails_count = 0;
 	self->task        = task;
 	self->client      = client;
 	list_init(&self->ready);
@@ -30,43 +30,43 @@ feeds_init(Feeds* self, Task* task, Client* client)
 }
 
 void
-feeds_free(Feeds* self)
+tails_free(Tails* self)
 {
-	if (! self->feeds)
+	if (! self->tails)
 		return;
 
-	for (auto i = 0; i < self->feeds_count; i++)
-		feed_free(&self->feeds[i]);
+	for (auto i = 0; i < self->tails_count; i++)
+		tail_free(&self->tails[i]);
 
 	iov_free(&self->iov);
-	am_free(self->feeds);
-	self->feeds = NULL;
+	am_free(self->tails);
+	self->tails = NULL;
 }
 
 void
-feeds_create(Feeds* self, Parts* parts, Str* key)
+tails_create(Tails* self, Parts* parts, Str* key)
 {
-	self->feeds_count = parts->list_count;
-	self->feeds = am_malloc(sizeof(Feed) * self->feeds_count);
+	self->tails_count = parts->list_count;
+	self->tails = am_malloc(sizeof(Tail) * self->tails_count);
 
 	// todo: prepare key
 	(void)key;
 
-	// prepare feeds per partitions and set as ready
+	// prepare tails per partitions and set as ready
 	auto at = 0;
 	list_foreach(&parts->list)
 	{
 		auto part = list_at(Part, link);
-		auto feed = &self->feeds[at];
-		feed_init(feed, self, self->task, part->track.backend, part);
-		feed->ready = true;
-		list_append(&self->ready, &feed->link);
+		auto tail = &self->tails[at];
+		tail_init(tail, self, self->task, part->track.backend, part);
+		tail->ready = true;
+		list_append(&self->ready, &tail->link);
 		at++;
 	}
 }
 
 hot static void
-feeds_main(Feeds* self)
+tails_main(Tails* self)
 {
 	auto client = self->client;
 
@@ -79,12 +79,12 @@ feeds_main(Feeds* self)
 	auto iov = &self->iov;
 	for (;;)
 	{
-		// send to all ready feeds
+		// send to all ready tails
 		while (! list_empty(&self->ready))
 		{
-			auto feed = container_of(list_pop(&self->ready), Feed, link);
-			feed->ready = false;
-			task_send(feed->part_task, &feed->msg);
+			auto tail = container_of(list_pop(&self->ready), Tail, link);
+			tail->ready = false;
+			task_send(tail->part_task, &tail->msg);
 		}
 		list_init(&self->ready);
 
@@ -101,8 +101,8 @@ feeds_main(Feeds* self)
 		iov_reset(iov);
 		list_foreach(&self->ready)
 		{
-			auto feed = container_of(list_pop(&self->ready), Feed, link);
-			iov_add_buf(iov, &feed->data);
+			auto tail = container_of(list_pop(&self->ready), Tail, link);
+			iov_add_buf(iov, &tail->data);
 		}
 		if (iov_empty(iov))
 			continue;
@@ -112,19 +112,19 @@ feeds_main(Feeds* self)
 }
 
 static void
-feeds_shutdown(Feeds* self)
+tails_shutdown(Tails* self)
 {
-	// send FEED_CANCEL cancel active feeds
+	// send TAIL_CANCEL cancel active tails
 	auto wait = false;
-	for (auto i = 0; i < self->feeds_count; i++)
+	for (auto i = 0; i < self->tails_count; i++)
 	{
-		auto feed = &self->feeds[i];
-		if (feed->ready)
+		auto tail = &self->tails[i];
+		if (tail->ready)
 		{
-			feed->cancel = true;
+			tail->cancel = true;
 			continue;
 		}
-		task_send(feed->part_task, &feed->msg_cancel);
+		task_send(tail->part_task, &tail->msg_cancel);
 		wait = true;
 	}
 	if (! wait)
@@ -132,13 +132,13 @@ feeds_shutdown(Feeds* self)
 
 	cancel_pause();
 
-	// wait for all feeds to be canceled
+	// wait for all tails to be canceled
 	for (;;)
 	{
 		wait = false;
-		for (auto i = 0; i < self->feeds_count; i++)
+		for (auto i = 0; i < self->tails_count; i++)
 		{
-			if (! self->feeds[i].cancel)
+			if (! self->tails[i].cancel)
 			{
 				wait = true;
 				break;
@@ -154,18 +154,18 @@ feeds_shutdown(Feeds* self)
 }
 
 void
-feeds_run(Feeds* self)
+tails_run(Tails* self)
 {
-	// relay feeds data to the client
-	error_catch( feeds_main(self) );
+	// relay tails data to the client
+	error_catch( tails_main(self) );
 
 	// cancel and ensure everyone finished
-	feeds_shutdown(self);
+	tails_shutdown(self);
 }
 
 #if 0
 hot static inline bool
-link_wait(Link* self, StreamCursor* cursor)
+link_wait(Link* self, TailCursor* cursor)
 {
 	// parent
 	Event event;
@@ -184,10 +184,10 @@ link_wait(Link* self, StreamCursor* cursor)
 	event_set_parent(&event_sub, &event);
 	event_attach(&event_sub);
 
-	// prepare stream subscription
-	StreamSub sub;
-	stream_sub_init(&sub, &event_sub, cursor->id);
-	stream_subscribe(cursor->stream, &sub);
+	// prepare tail subscription
+	TailSub sub;
+	tail_sub_init(&sub, &event_sub, cursor->id);
+	tail_subscribe(cursor->tail, &sub);
 
 	// wait
 	auto on_error = error_catch
@@ -196,12 +196,12 @@ link_wait(Link* self, StreamCursor* cursor)
 		event_wait(&event, -1);
 	);
 	poll_read_stop(&self->client->tcp.fd);
-	stream_unsubscribe(cursor->stream, &sub);
+	tail_unsubscribe(cursor->tail, &sub);
 
 	if (unlikely(on_error))
 		rethrow();
 
-	// client disconnect on stream shutdown
+	// client disconnect on tail shutdown
 	return event_client.signal || sub.shutdown;
 }
 #endif

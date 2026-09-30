@@ -42,9 +42,9 @@ typedef enum
 	MSG_UNDEPLOY,
 	MSG_CLEANUP,
 
-	// backend feed
-	MSG_FEED,
-	MSG_FEED_CANCEL,
+	// tail
+	MSG_TAIL,
+	MSG_TAIL_CANCEL,
 
 	// system
 	MSG_SHOW_METRICS

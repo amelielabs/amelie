@@ -119,9 +119,9 @@ pod_main(void* arg)
 		// execute transaction
 		pod_run(self, ltr);
 
-		// resume pending feeds
-		if (self->part->feeds)
-			feed_resume(self->part);
+		// resume streaming
+		if (self->part->tails)
+			tail_resume(self->part);
 	}
 }
 

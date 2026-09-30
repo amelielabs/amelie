@@ -125,7 +125,7 @@ link_api_get(Link* self)
 	str_set(accept, "text/event-stream", 17);
 	output_set(&portal->output, endpoint, &output_json, NULL);
 
-	return LINK_FEED;
+	return LINK_STREAM;
 }
 
 hot static inline int

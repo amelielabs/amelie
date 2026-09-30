@@ -17,7 +17,7 @@ enum
 {
 	LINK_ERROR,
 	LINK_EXECUTE,
-	LINK_FEED
+	LINK_STREAM
 };
 
 struct Link

@@ -152,10 +152,10 @@ link_main(Link* self)
 			client_400(client, portal->output.buf);
 			break;
 		}
-		case LINK_FEED:
+		case LINK_STREAM:
 		{
-			// SSE
-			link_feed(self);
+			// sse
+			link_stream(self);
 			return;
 		}
 		}

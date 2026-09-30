@@ -18,7 +18,7 @@
 #include <amelie_backend.h>
 
 void
-feed_init(Feed* self, Feeds* feeds, Task* task, Task* part_task, Part* part)
+tail_init(Tail* self, Tails* tails, Task* task, Task* part_task, Part* part)
 {
 	self->key       = NULL;
 	self->ready     = false;
@@ -29,23 +29,23 @@ feed_init(Feed* self, Feeds* feeds, Task* task, Task* part_task, Part* part)
 	self->part_task = part_task;
 	self->part_link = NULL;
 	self->task      = task;
-	self->feeds     = feeds;
+	self->tails     = tails;
 
-	msg_init(&self->msg, MSG_FEED);
-	msg_init(&self->msg_cancel, MSG_FEED_CANCEL);
+	msg_init(&self->msg, MSG_TAIL);
+	msg_init(&self->msg_cancel, MSG_TAIL_CANCEL);
 	heap_iterator_init(&self->it);
 	buf_init(&self->data);
 	list_init(&self->link);
 }
 
 void
-feed_free(Feed* self)
+tail_free(Tail* self)
 {
 	buf_free(&self->data);
 }
 
 hot void
-feed_next(Feed* self)
+tail_next(Tail* self)
 {
 	// todo: validate partition
 	auto part = self->part;
@@ -76,35 +76,35 @@ feed_next(Feed* self)
 
 	if (! buf_empty(data))
 	{
-		// MSG_FEED (to frontend)
+		// MSG_TAIL (to frontend)
 		task_send(self->task, &self->msg);
 		return;
 	}
 
 	// add to the wait list
 	self->wait      = true;
-	self->part_link = part->feeds;
-	part->feeds     = self;
+	self->part_link = part->tails;
+	part->tails     = self;
 }
 
 void
-feed_cancel(Feed* self)
+tail_cancel(Tail* self)
 {
-	// unlink feed from wait list
+	// unlink tail from wait list
 	if (self->wait)
 	{
 		self->wait = false;
-		auto feed = (Feed*)self->part->feeds;
-		if (feed == self)
+		auto tail = (Tail*)self->part->tails;
+		if (tail == self)
 		{
-			self->part->feeds = self->part_link;
+			self->part->tails = self->part_link;
 		} else
 		{
-			for (; feed; feed = feed->part_link)
+			for (; tail; tail = tail->part_link)
 			{
-				if (feed->part_link == self)
+				if (tail->part_link == self)
 				{
-					feed->part_link = self->part_link;
+					tail->part_link = self->part_link;
 					break;
 				}
 			}
@@ -112,39 +112,39 @@ feed_cancel(Feed* self)
 		self->part_link = NULL;
 	}
 
-	// MSG_FEED_CANCEL (to frontend)
+	// MSG_TAIL_CANCEL (to frontend)
 	task_send(self->task, &self->msg_cancel);
 }
 
 void
-feed_cancel_all(Part* self)
+tail_cancel_all(Part* self)
 {
 	// cancel waiters
-	auto feed = (Feed*)self->feeds;
-	self->feeds = NULL;
-	while (feed)
+	auto tail = (Tail*)self->tails;
+	self->tails = NULL;
+	while (tail)
 	{
-		auto next = feed->part_link;
-		feed->part_link = NULL;
-		feed->wait      = false;
-		feed->error     = true;
+		auto next = tail->part_link;
+		tail->part_link = NULL;
+		tail->wait      = false;
+		tail->error     = true;
 
-		// MSG_FEED (to frontend)
-		task_send(feed->task, &feed->msg);
-		feed = next;
+		// MSG_TAIL (to frontend)
+		task_send(tail->task, &tail->msg);
+		tail = next;
 	}
 }
 
 hot void
-feed_resume(Part* self)
+tail_resume(Part* self)
 {
-	auto feed = (Feed*)self->feeds;
-	self->feeds = NULL;
-	while (feed)
+	auto tail = (Tail*)self->tails;
+	self->tails = NULL;
+	while (tail)
 	{
-		auto next = feed->part_link;
-		feed->part_link = NULL;
-		feed_next(feed);
-		feed = next;
+		auto next = tail->part_link;
+		tail->part_link = NULL;
+		tail_next(tail);
+		tail = next;
 	}
 }

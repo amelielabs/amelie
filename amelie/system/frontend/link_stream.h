@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void link_feed(Link*);
+void link_stream(Link*);

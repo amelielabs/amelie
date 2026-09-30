@@ -38,8 +38,8 @@ backend_rpc(Rpc* rpc, void* arg)
 		// stop and drop pod
 		Part* part = rpc->arg;
 
-		// cancel all pending feeds
-		feed_cancel_all(part);
+		// cancel all pending tails
+		tail_cancel_all(part);
 		pods_drop_by(&self->pods, part);
 		break;
 	}
@@ -90,16 +90,16 @@ backend_main(void* arg)
 			ltr_write(req->ltr, msg);
 			break;
 		}
-		case MSG_FEED:
+		case MSG_TAIL:
 		{
-			auto feed = (Feed*)msg;
-			feed_next(feed);
+			auto tail = (Tail*)msg;
+			tail_next(tail);
 			break;
 		}
-		case MSG_FEED_CANCEL:
+		case MSG_TAIL_CANCEL:
 		{
-			auto feed = container_of(msg, Feed, msg_cancel);
-			feed_cancel(feed);
+			auto tail = container_of(msg, Tail, msg_cancel);
+			tail_cancel(tail);
 			break;
 		}
 		default:

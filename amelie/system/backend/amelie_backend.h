@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-// feed
-#include "backend/feed.h"
-#include "backend/feeds.h"
+// tail
+#include "backend/tail.h"
+#include "backend/tails.h"
 
 // pod
 #include "backend/pod.h"
