@@ -93,6 +93,7 @@ tails_main(Tails* self)
 			auto tail = container_of(list_pop(&self->ready), Tail, link);
 			tail->ready = false;
 			list_init(&tail->link);
+			buf_reset(&tail->data);
 			task_send(tail->part_task, &tail->msg);
 		}
 		list_init(&self->ready);
