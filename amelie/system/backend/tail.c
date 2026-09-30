@@ -17,6 +17,52 @@
 #include <amelie_vm>
 #include <amelie_backend.h>
 
+hot static void
+tail_export(Tail* self, Row* row)
+{
+	Value value;
+	value_init(&value);
+
+	auto buf = &self->data;
+	buf_write(buf, "data: ", 6);
+	buf_write(buf, "{", 1);
+
+	auto list = &self->part->arg->columns->list;
+	list_foreach(list)
+	{
+		auto column = list_at(Column, link);
+		buf_format(buf, "{qstr}: ", &column->name);
+
+		auto data = row_column(row, column);
+		if (! data)
+		{
+			value_set_null(&value);
+		} else
+		if (column->type == TYPE_VECTOR)
+		{
+			auto flat = flats_at(&self->part->flats, column);
+			auto vector = (float*)flat_vector_at(flat, *(uint32_t*)data);
+			value_set_vector(&value, column->size_flat / sizeof(float), vector, NULL);
+		} else
+		{
+			auto size = column->size;
+			if (! size)
+			{
+				uint8_t* start = data;
+				uint8_t* pos = start;
+				data_skip(&pos);
+				size = pos - start;
+			}
+			value_data_decode(&value, column, data, size);
+		}
+		value_export(&value, runtime()->timezone, false, buf);
+
+		if (! list_is_first(list, &column->link))
+			buf_write(buf, ", ", 2);
+	}
+	buf_write(buf, "}\n\n", 3);
+}
+
 void
 tail_init(Tail* self, Tails* tails, Part* part)
 {
@@ -69,8 +115,8 @@ tail_next(Tail* self)
 		auto row = heap_iterator_at(it);
 		if (! row)
 			break;
+		tail_export(self, row);
 		// todo: if limit
-		// todo: write rows to buf
 		heap_iterator_next(it);
 	}
 
