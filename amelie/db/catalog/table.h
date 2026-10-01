@@ -24,7 +24,19 @@ struct Table
 
 bool table_create(Catalog*, Tr*, TableConfig*, bool);
 bool table_truncate(Catalog*, Tr*, Str*, Str*, bool);
-void table_sync(Table*);
+
+static inline void
+table_sync(Table* self)
+{
+	// note: assuming exclusive lock
+
+	// force commit pending prepared transactions
+	list_foreach(&self->parts.list)
+	{
+		auto part = list_at(Part, link);
+		track_sync(&part->track, &part->track.consensus);
+	}
+}
 
 always_inline static inline Table*
 table_of(Rel* self)

@@ -15,18 +15,23 @@ typedef struct Track Track;
 
 struct Track
 {
-	Mailbox    queue;
-	TrList     prepared;
-	TrCache    cache;
-	// commited by pod (stale)
-	Consensus  consensus_pod;
-	// commited (globally)
-	Consensus  consensus;
-	// pending commit state
-	bool       pending;
-	Consensus  pending_consensus;
-	Track*     pending_link;
-	Task*      backend;
+	Mailbox          queue;
+	TrList           prepared;
+	TrCache          cache;
+
+	// commited state (partition)
+	Consensus        consensus_self;
+
+	// commited (actual global state)
+	_Alignas(cache_line)
+	ConsensusAtomic  consensus_atomic;
+	Consensus        consensus;
+
+	// pending commit state (group commit)
+	bool             pending;
+	Consensus        pending_consensus;
+	Track*           pending_link;
+	Task*            backend;
 };
 
 static inline void
@@ -38,9 +43,10 @@ track_init(Track* self)
 	mailbox_init(&self->queue);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
-	consensus_init(&self->pending_consensus);
-	consensus_init(&self->consensus_pod);
+	consensus_init(&self->consensus_self);
 	consensus_init(&self->consensus);
+	consensus_atomic_init(&self->consensus_atomic);
+	consensus_init(&self->pending_consensus);
 }
 
 static inline void
@@ -79,22 +85,21 @@ track_send(Track* self, Msg* msg)
 hot static inline void
 track_sync(Track* self, Consensus* consensus)
 {
-	auto consensus_pod = &self->consensus_pod;
-
 	// commit all transactions <= abort
+	auto consensus_self = &self->consensus_self;
 	auto id = consensus->abort;
-	if (unlikely(id > consensus_pod->abort))
+	if (unlikely(id > consensus_self->abort))
 	{
 		tr_abort_list(&self->prepared, &self->cache, id);
-		consensus_pod->abort = id;
+		consensus_self->abort = id;
 	}
 
 	// commit all transactions <= commit
 	id = consensus->commit;
-	if (id > consensus_pod->commit)
+	if (id > consensus_self->commit)
 	{
 		tr_commit_list(&self->prepared, &self->cache, id);
-		consensus_pod->commit = id;
+		consensus_self->commit = id;
 	}
 }
 

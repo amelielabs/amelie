@@ -77,15 +77,8 @@ db_checkpoint(Db* self)
 	list_foreach(&self->catalog.rels.list)
 	{
 		auto rel = list_at(Rel, link);
-		if (rel->type != REL_TABLE)
-			continue;
-		auto table = table_of(rel);
-		list_foreach(&table->parts.list)
-		{
-			auto part = list_at(Part, link);
-			auto consensus = &part->track.consensus;
-			track_sync(&part->track, consensus);
-		}
+		if (rel->type == REL_TABLE)
+			table_sync(table_of(rel));
 	}
 
 	// prepare and start workers

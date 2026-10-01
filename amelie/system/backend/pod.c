@@ -114,7 +114,7 @@ pod_main(void* arg)
 		auto ltr = (Ltr*)msg;
 
 		// abort and commit previously prepared transactions
-		track_sync(self->track, &ltr->consensus);
+		track_sync(track, &ltr->consensus);
 
 		// execute transaction
 		pod_run(self, ltr);

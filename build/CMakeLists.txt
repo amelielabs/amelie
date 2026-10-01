@@ -25,9 +25,9 @@ message(STATUS "")
 # compiler options
 set(CMAKE_C_COMPILER "clang")
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -Wno-free-nonheap-object -fPIC -g -O3 -march=native -DNDEBUG -mavx2 -mavxvnni")
+	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -Wno-free-nonheap-object -fPIC -g -O3 -mcx16 -march=native -DNDEBUG -mavx2 -mavxvnni")
 elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -fPIC -g -O0 -mavx2 -mavxvnni")
+	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -fPIC -g -O0 -mavx2 -mcx16 -mavxvnni")
 endif()
 
 set_property(GLOBAL PROPERTY TARGET_MESSAGES OFF)

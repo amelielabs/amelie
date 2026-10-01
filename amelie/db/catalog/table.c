@@ -170,17 +170,3 @@ table_truncate(Catalog* self,
 	// do nothing (actual truncate will happen on commit)
 	return true;
 }
-
-void
-table_sync(Table* self)
-{
-	// note: assuming exclusive lock
-
-	// force commit pending prepared transactions
-	list_foreach(&self->parts.list)
-	{
-		auto part = list_at(Part, link);
-		auto consensus = &part->track.consensus;
-		track_sync(&part->track, consensus);
-	}
-}

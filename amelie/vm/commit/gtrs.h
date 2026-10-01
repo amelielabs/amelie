@@ -188,15 +188,18 @@ gtrs_detach(Gtrs* self, Batch* batch)
 	auto ref = batch->pending;
 	while (ref)
 	{
-		auto next = ref->pending_link;
 		ref->consensus    = ref->pending_consensus;
-		ref->pending      = false;
+		consensus_atomic_write(&ref->consensus_atomic, &ref->consensus);
+
+		auto next = ref->pending_link;
 		ref->pending_link = NULL;
+		ref->pending      = false;
 		ref = next;
 	}
 
 	// remove transactions from the gtrs list
-	for (auto it = 0; it < batch->count; it++)
+	const auto count = batch->count;
+	for (auto it = 0; it < count; it++)
 	{
 		auto gtr = batch_at(batch, it);
 		list_unlink(&gtr->link);
