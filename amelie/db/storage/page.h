@@ -15,14 +15,15 @@ typedef struct Page Page;
 
 struct Page
 {
-	// 24 bytes + 40 (aligned by cache line)
+	// 28 bytes + 36 (aligned by cache line)
 	uint32_t crc;
 	uint32_t id;
 	uint32_t size;
 	uint32_t size_compressed;
 	uint32_t position;
+	uint32_t position_last;
 	uint32_t used;
-	uint8_t  padding[40];
+	uint8_t  padding[36];
 	uint8_t  data[];
 } packed;
 
@@ -37,6 +38,7 @@ page_allocate(size_t size)
 	self->size            = size;
 	self->size_compressed = 0;
 	self->position        = sizeof(Page);
+	self->position_last   = 0;
 	self->used            = 0;
 	return self;
 }

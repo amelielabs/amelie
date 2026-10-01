@@ -97,15 +97,31 @@ tail_next(Tail* self)
 	auto part = self->part;
 
 	auto it = &self->it;
-	if (! heap_iterator_active(it))
-	{
-		heap_iterator_open(it, part->heap);
-	} else
+	if (likely(heap_iterator_active(it)))
 	{
 		// reposition to the available next row
 		auto row = heap_iterator_at(it);
 		if (! row)
 			heap_iterator_next(it);
+	} else
+	{
+		// on first access, position to last
+		heap_iterator_open(it, part->heap, true);
+
+		// set heap position using the primary index key
+		if (self->key)
+		{
+			auto timeline = &table_of(part->arg->rel)->timelines.main;
+			auto index = part_primary(part);
+			auto it = index_iterator(index);
+			defer(iterator_close, it);
+			auto match = iterator_open(it, part->heap, timeline, self->key);
+			if (match)
+				iterator_next(it);
+			auto row = it->current;
+			if (row)
+				heap_iterator_set(&self->it, row);
+		}
 	}
 
 	// collect

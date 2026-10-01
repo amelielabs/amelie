@@ -90,7 +90,7 @@ part_open_heap(Part* self, uint64_t checkpoint)
 	// create heap iterator
 	HeapIterator it;
 	heap_iterator_init(&it);
-	heap_iterator_open(&it, self->heap);
+	heap_iterator_open(&it, self->heap, false);
 
 	// build indexes
 	uint64_t count = 0;

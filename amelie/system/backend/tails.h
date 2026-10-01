@@ -18,6 +18,7 @@ struct Tails
 	Tail*   tails;
 	int     tails_count;
 	List    ready;
+	Buf     key;
 	Event   notify;
 	Iov     iov;
 	Client* client;

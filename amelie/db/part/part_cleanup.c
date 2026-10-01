@@ -124,7 +124,7 @@ part_cleanup_main(PartCleanup* self)
 	auto heap = part->heap;
 	HeapIterator it;
 	heap_iterator_init(&it);
-	heap_iterator_open(&it, heap);
+	heap_iterator_open(&it, heap, false);
 
 	// deep cleaning after last clone drop
 	for (;; heap_iterator_next(&it))
@@ -152,7 +152,7 @@ part_cleanup_clone(PartCleanup* self)
 	auto heap     = part->heap;
 	HeapIterator it;
 	heap_iterator_init(&it);
-	heap_iterator_open(&it, heap);
+	heap_iterator_open(&it, heap, false);
 
 	auto primary = part_primary(part);
 	for (;; heap_iterator_next(&it))

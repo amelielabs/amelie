@@ -15,6 +15,7 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
+#include <amelie_compiler>
 #include <amelie_backend.h>
 
 void
@@ -25,6 +26,7 @@ tails_init(Tails* self, Task* task, Client* client)
 	self->task        = task;
 	self->client      = client;
 	list_init(&self->ready);
+	buf_init(&self->key);
 	event_init(&self->notify);
 	iov_init(&self->iov);
 }
@@ -33,24 +35,51 @@ void
 tails_free(Tails* self)
 {
 	if (! self->tails)
-		return;
-
-	for (auto i = 0; i < self->tails_count; i++)
-		tail_free(&self->tails[i]);
-	am_free(self->tails);
-	self->tails = NULL;
-
+	{
+		for (auto i = 0; i < self->tails_count; i++)
+			tail_free(&self->tails[i]);
+		am_free(self->tails);
+		self->tails = NULL;
+	}
+	buf_free(&self->key);
 	iov_free(&self->iov);
 }
 
-void
-tails_create(Tails* self, Parts* parts, Str* key)
+static void
+tails_create_key(Tails* self, Parts* parts, Str* key)
 {
+	auto table   = table_of(parts->arg->rel);
+	auto primary = table_primary(table);
+	if (primary->keys.count > 1)
+		error("stream: compound table keys are not support");
+
+	Local local;
+	local_init(&local);
+
+	// read key and convert
+	auto column = keys_at(&primary->keys, 0)->column;
+	Value value;
+	value_init(&value);
+	defer(value_free, &value);
+	parse_value_string(&local, column, &value, key);
+
+	// create row
+	row_create_key(&self->key, &primary->keys, &value, 1);
+}
+
+void
+tails_create(Tails* self, Parts* parts, Str* key_str)
+{
+	// prepare key
+	Row* key = NULL;
+	if (! str_empty(key_str))
+	{
+		tails_create_key(self, parts, key_str);
+		key = (Row*)self->key.start;
+	}
+
 	self->tails_count = parts->list_count;
 	self->tails = am_malloc(sizeof(Tail) * self->tails_count);
-
-	// todo: prepare key
-	(void)key;
 
 	// prepare tails per partitions and set as ready
 	auto at = 0;
@@ -62,10 +91,10 @@ tails_create(Tails* self, Parts* parts, Str* key)
 
 		event_attach(&tail->on_complete);
 		event_set_parent(&tail->on_complete, &self->notify);
-
 		event_attach(&tail->on_cancel);
 		event_set_parent(&tail->on_cancel, &self->notify);
 
+		tail->key   = key;
 		tail->ready = true;
 		list_append(&self->ready, &tail->link);
 		at++;

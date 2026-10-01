@@ -261,6 +261,7 @@ heap_add(Heap* self, int size)
 		row->bucket = bucket->id;
 		row->offset = page->position;
 
+		page->position_last = page->position;
 		page->position += bucket->size;
 	}
 
