@@ -47,7 +47,11 @@ log_if_commit(Log* self, LogOp* op)
 	auto index = (Index*)op->iface_arg;
 	auto part  = (Part*)index->iface_arg;
 	auto heap  = part->heap;
+
+	// mark row as commited
 	auto row   = op->row;
+	row->commited = true;
+
 	if (op->cmd == LOG_DELETE)
 	{
 		// no clones or versions

@@ -24,13 +24,14 @@ struct Row
 	uint64_t columns:     16;
 	uint64_t byte:        1;
 	uint64_t deleted:     1;
+	uint64_t commited:    1;
 	uint64_t main:        1;
 	uint64_t head:        1;
 
 	// heap
 	uint64_t bucket:      8;
 	uint64_t free:        1;
-	uint64_t reserved:    3;
+	uint64_t reserved:    2;
 
 	// heap version (64bit cut)
 	uint64_t offset:      19;
@@ -62,6 +63,7 @@ row_prepare(Row*     self,
 	self->columns  = columns;
 	self->byte     = byte;
 	self->deleted  = false;
+	self->commited = false;
 	self->main     = main;
 	self->head     = false;
 
