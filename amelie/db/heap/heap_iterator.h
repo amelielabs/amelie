@@ -34,12 +34,11 @@ heap_iterator_next_row(HeapIterator* self)
 		if (storage_empty(storage))
 			return;
 
-		// set position at the last row
-		auto order = storage->list_count - 1;
-		self->page       = storage_at(storage, order);
-		self->page_order = order;
+		// first
+		self->page       = storage_at(storage, 0);
+		self->page_order = 0;
 		self->eof        = false;
-		self->current    = heap_at(self->heap, 0, self->page->position_last);
+		self->current    = heap_at(self->heap, 0, sizeof(Page));
 		return;
 	}
 

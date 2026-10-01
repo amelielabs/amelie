@@ -131,9 +131,8 @@ tail_next(Tail* self)
 		auto row = heap_iterator_at(it);
 		if (!row || !row->commited)
 			break;
-
 		tail_export(self, row);
-		// todo: if limit
+		// todo: limit
 		heap_iterator_next(it);
 	}
 

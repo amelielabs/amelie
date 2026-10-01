@@ -39,7 +39,6 @@ backend_rpc(Rpc* rpc, void* arg)
 		Part* part = rpc->arg;
 
 		// cancel all pending tails
-		tail_cancel_all(part);
 		pods_drop_by(&self->pods, part);
 		break;
 	}
@@ -93,13 +92,13 @@ backend_main(void* arg)
 		case MSG_TAIL:
 		{
 			auto tail = (Tail*)msg;
-			tail_next(tail);
+			track_write(&tail->part->track, msg);
 			break;
 		}
 		case MSG_TAIL_CANCEL:
 		{
 			auto tail = container_of(msg, Tail, msg_cancel);
-			tail_cancel(tail);
+			track_write(&tail->part->track, msg);
 			break;
 		}
 		default:

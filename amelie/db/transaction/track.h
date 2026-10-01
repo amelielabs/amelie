@@ -69,6 +69,12 @@ track_read(Track* self)
 	return mailbox_pop(&self->queue, am_self());
 }
 
+static inline Msg*
+track_read_time(Track* self, int time_ms)
+{
+	return mailbox_pop_time(&self->queue, &am_task->clock, am_self(), time_ms);
+}
+
 static inline void
 track_write(Track* self, Msg* msg)
 {
@@ -82,9 +88,11 @@ track_send(Track* self, Msg* msg)
 	task_send(self->backend, msg);
 }
 
-hot static inline void
+hot static inline bool
 track_sync(Track* self, Consensus* consensus)
 {
+	auto changed = false;
+
 	// commit all transactions <= abort
 	auto consensus_self = &self->consensus_self;
 	auto id = consensus->abort;
@@ -92,6 +100,7 @@ track_sync(Track* self, Consensus* consensus)
 	{
 		tr_abort_list(&self->prepared, &self->cache, id);
 		consensus_self->abort = id;
+		changed = true;
 	}
 
 	// commit all transactions <= commit
@@ -100,7 +109,9 @@ track_sync(Track* self, Consensus* consensus)
 	{
 		tr_commit_list(&self->prepared, &self->cache, id);
 		consensus_self->commit = id;
+		changed = true;
 	}
+	return changed;
 }
 
 hot static inline void

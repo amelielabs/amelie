@@ -102,26 +102,73 @@ pod_run(Pod* self, Ltr* ltr)
 }
 
 static void
+pod_sync(Pod* self)
+{
+	// commit (or abort) pending transactions based on the global
+	// partition commit state to resume tails
+	auto track = self->track;
+	Consensus consensus;
+	consensus_atomic_read(&track->consensus_atomic, &consensus);
+	if (track_sync(track, &consensus))
+		tail_resume_all(self->part);
+}
+
+static void
 pod_main(void* arg)
 {
 	Pod* self = arg;
 	auto track = self->track;
+	auto part  = self->part;
 	for (;;)
 	{
-		auto msg = track_read(track);
-		if (msg->id == MSG_STOP)
+		Msg* msg;
+		if (part->tails && !tr_list_empty(&track->prepared))
+		{
+			msg = track_read_time(track, 2);
+			if (! msg)
+			{
+				pod_sync(self);
+				continue;
+			}
+		} else {
+			msg = track_read(track);
+		}
+
+		switch (msg->id) {
+		case MSG_LTR:
+		{
+			auto ltr = (Ltr*)msg;
+
+			// abort and commit previously prepared transactions
+			auto changed = track_sync(track, &ltr->consensus);
+
+			// execute transaction
+			pod_run(self, ltr);
+
+			// resume streaming
+			if (part->tails && changed)
+				tail_resume_all(self->part);
 			break;
-		auto ltr = (Ltr*)msg;
-
-		// abort and commit previously prepared transactions
-		track_sync(track, &ltr->consensus);
-
-		// execute transaction
-		pod_run(self, ltr);
-
-		// resume streaming
-		if (self->part->tails)
-			tail_resume_all(self->part);
+		}
+		case MSG_TAIL:
+		{
+			auto tail = (Tail*)msg;
+			tail_next(tail);
+			break;
+		}
+		case MSG_TAIL_CANCEL:
+		{
+			auto tail = container_of(msg, Tail, msg_cancel);
+			tail_cancel(tail);
+			break;
+		}
+		case MSG_STOP:
+			tail_cancel_all(part);
+			return;
+		default:
+			abort();
+			break;
+		}
 	}
 }
 

@@ -34,7 +34,7 @@ tails_init(Tails* self, Task* task, Client* client)
 void
 tails_free(Tails* self)
 {
-	if (! self->tails)
+	if (self->tails)
 	{
 		for (auto i = 0; i < self->tails_count; i++)
 			tail_free(&self->tails[i]);

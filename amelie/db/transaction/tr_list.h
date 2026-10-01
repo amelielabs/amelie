@@ -26,6 +26,12 @@ tr_list_init(TrList* self)
 	list_init(&self->list);
 }
 
+static inline bool
+tr_list_empty(TrList* self)
+{
+	return !self->list_count;
+}
+
 static inline void
 tr_list_reset(TrList* self, TrCache* cache)
 {

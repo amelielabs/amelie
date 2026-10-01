@@ -42,6 +42,17 @@ mailbox_pop(Mailbox* self, Coroutine* coro)
 }
 
 static inline Msg*
+mailbox_pop_time(Mailbox* self, Clock* clock, Coroutine* coro, int time_ms)
+{
+	if (list_empty(&self->list))
+		wait_event_time(&self->event, clock, coro, time_ms);
+	if (list_empty(&self->list))
+		return NULL;
+	auto first = list_pop(&self->list);
+	return container_of(first, Msg, link);
+}
+
+static inline Msg*
 mailbox_pop_nowait(Mailbox* self)
 {
 	if (list_empty(&self->list))
