@@ -105,12 +105,12 @@ static void
 pod_sync(Pod* self)
 {
 	// commit (or abort) pending transactions based on the global
-	// partition commit state to resume tails
+	// partition commit state to resume streaming
 	auto track = self->track;
 	Consensus consensus;
 	consensus_atomic_read(&track->consensus_atomic, &consensus);
 	if (track_sync(track, &consensus))
-		tail_resume_all(self->part);
+		streaming_resume(self->part);
 }
 
 static void
@@ -122,7 +122,7 @@ pod_main(void* arg)
 	for (;;)
 	{
 		Msg* msg;
-		if (part->tails && !tr_list_empty(&track->prepared))
+		if (part->streams && !tr_list_empty(&track->prepared))
 		{
 			msg = track_read_time(track, 2);
 			if (! msg)
@@ -146,24 +146,24 @@ pod_main(void* arg)
 			pod_run(self, ltr);
 
 			// resume streaming
-			if (part->tails && changed)
-				tail_resume_all(self->part);
+			if (part->streams && changed)
+				streaming_resume(self->part);
 			break;
 		}
-		case MSG_TAIL:
+		case MSG_STREAM:
 		{
-			auto tail = (Tail*)msg;
-			tail_next(tail);
+			auto stream = (Stream*)msg;
+			stream_next(stream);
 			break;
 		}
-		case MSG_TAIL_CANCEL:
+		case MSG_STREAM_CANCEL:
 		{
-			auto tail = container_of(msg, Tail, msg_cancel);
-			tail_cancel(tail);
+			auto stream = container_of(msg, Stream, msg_cancel);
+			stream_cancel(stream);
 			break;
 		}
 		case MSG_STOP:
-			tail_cancel_all(part);
+			streaming_cancel(part);
 			return;
 		default:
 			abort();

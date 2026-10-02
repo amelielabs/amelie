@@ -29,7 +29,7 @@ part_allocate(PartConfig* config, PartArg* arg)
 	self->heap          = heap_allocate();
 	self->config        = part_config_copy(config);
 	self->arg           = arg;
-	self->tails         = NULL;
+	self->streams       = NULL;
 	track_init(&self->track);
 	flats_init(&self->flats);
 	list_init(&self->link_cp);

@@ -42,9 +42,9 @@ typedef enum
 	MSG_UNDEPLOY,
 	MSG_CLEANUP,
 
-	// tail
-	MSG_TAIL,
-	MSG_TAIL_CANCEL,
+	// streams
+	MSG_STREAM,
+	MSG_STREAM_CANCEL,
 
 	// system
 	MSG_SHOW_METRICS

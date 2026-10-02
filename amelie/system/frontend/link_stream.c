@@ -37,11 +37,11 @@ link_stream(Link* self)
 	auto api = self->api;
 	auto table = catalog_find_table(&share()->db->catalog, &api->rel_user, &api->rel, true);
 
-	// prepare tails (one per partition)
-	Tails tails;
-	tails_init(&tails, am_task, self->client);
-	tails_create(&tails, &table->parts, &self->portal.endpoint.id.string);
-	defer(tails_free, &tails);
+	// prepare streams (one per partition)
+	Streams streams;
+	streams_init(&streams, am_task, self->client);
+	streams_create(&streams, &table->parts, &self->portal.endpoint.id.string);
+	defer(streams_free, &streams);
 
 	// release catalog lock
 	portal_unlock(&self->portal);
@@ -49,6 +49,6 @@ link_stream(Link* self)
 	// start sse streaming
 	link_stream_begin(self);
 
-	// start sending tails data to the client
-	tails_run(&tails);
+	// start streaming data to the client
+	streams_run(&streams);
 }

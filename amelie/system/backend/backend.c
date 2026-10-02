@@ -38,7 +38,7 @@ backend_rpc(Rpc* rpc, void* arg)
 		// stop and drop pod
 		Part* part = rpc->arg;
 
-		// cancel all pending tails
+		// cancel all pending streams
 		pods_drop_by(&self->pods, part);
 		break;
 	}
@@ -89,16 +89,16 @@ backend_main(void* arg)
 			ltr_write(req->ltr, msg);
 			break;
 		}
-		case MSG_TAIL:
+		case MSG_STREAM:
 		{
-			auto tail = (Tail*)msg;
-			track_write(&tail->part->track, msg);
+			auto stream = (Stream*)msg;
+			track_write(&stream->part->track, msg);
 			break;
 		}
-		case MSG_TAIL_CANCEL:
+		case MSG_STREAM_CANCEL:
 		{
-			auto tail = container_of(msg, Tail, msg_cancel);
-			track_write(&tail->part->track, msg);
+			auto stream = container_of(msg, Stream, msg_cancel);
+			track_write(&stream->part->track, msg);
 			break;
 		}
 		default:

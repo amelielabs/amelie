@@ -23,7 +23,7 @@ struct Part
 	Flats       flats;
 	PartConfig* config;
 	PartArg*    arg;
-	void*       tails;
+	void*       streams;
 	List        link_cp;
 	List        link;
 };

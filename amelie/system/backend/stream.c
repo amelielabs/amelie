@@ -18,7 +18,7 @@
 #include <amelie_backend.h>
 
 hot static void
-tail_export(Tail* self, Row* row)
+stream_export(Stream* self, Row* row)
 {
 	Value value;
 	value_init(&value);
@@ -64,7 +64,7 @@ tail_export(Tail* self, Row* row)
 }
 
 void
-tail_init(Tail* self, Tails* tails, Part* part)
+stream_init(Stream* self, Streams* streams, Part* part)
 {
 	self->wait      = false;
 	self->shutdown  = false;
@@ -73,10 +73,14 @@ tail_init(Tail* self, Tails* tails, Part* part)
 	self->part      = part;
 	self->part_task = part->track.backend;
 	self->part_link = NULL;
-	self->tails     = tails;
+	self->streams     = streams;
 
-	msg_init(&self->msg, MSG_TAIL);
-	msg_init(&self->msg_cancel, MSG_TAIL_CANCEL);
+	auto timeline = &self->timeline;
+	timeline_init(timeline);
+	timeline->main = true;
+
+	msg_init(&self->msg, MSG_STREAM);
+	msg_init(&self->msg_cancel, MSG_STREAM_CANCEL);
 	event_init(&self->on_complete);
 	event_init(&self->on_cancel);
 	heap_iterator_init(&self->it);
@@ -85,13 +89,13 @@ tail_init(Tail* self, Tails* tails, Part* part)
 }
 
 void
-tail_free(Tail* self)
+stream_free(Stream* self)
 {
 	buf_free(&self->data);
 }
 
 hot void
-tail_next(Tail* self)
+stream_next(Stream* self)
 {
 	// todo: validate partition
 	auto part = self->part;
@@ -111,11 +115,10 @@ tail_next(Tail* self)
 		// set heap position using the primary index key
 		if (self->key)
 		{
-			auto timeline = &table_of(part->arg->rel)->timelines.main;
 			auto index = part_primary(part);
 			auto it = index_iterator(index);
 			defer(iterator_close, it);
-			auto match = iterator_open(it, part->heap, timeline, self->key);
+			auto match = iterator_open(it, part->heap, &self->timeline, self->key);
 			if (match)
 				iterator_next(it);
 			auto row = it->current;
@@ -131,7 +134,8 @@ tail_next(Tail* self)
 		auto row = heap_iterator_at(it);
 		if (!row || !row->commited)
 			break;
-		tail_export(self, row);
+		if (! row->deleted)
+			stream_export(self, row);
 		// todo: limit
 		heap_iterator_next(it);
 	}
@@ -145,27 +149,27 @@ tail_next(Tail* self)
 
 	// add to the wait list
 	self->wait      = true;
-	self->part_link = part->tails;
-	part->tails     = self;
+	self->part_link = part->streams;
+	part->streams     = self;
 }
 
 void
-tail_cancel(Tail* self)
+stream_cancel(Stream* self)
 {
-	// unlink tail from the wait list
+	// unlink stream from the wait list
 	if (self->wait)
 	{
-		auto tail = (Tail*)self->part->tails;
-		if (tail == self)
+		auto stream = (Stream*)self->part->streams;
+		if (stream == self)
 		{
-			self->part->tails = self->part_link;
+			self->part->streams = self->part_link;
 		} else
 		{
-			for (; tail; tail = tail->part_link)
+			for (; stream; stream = stream->part_link)
 			{
-				if (tail->part_link == self)
+				if (stream->part_link == self)
 				{
-					tail->part_link = self->part_link;
+					stream->part_link = self->part_link;
 					break;
 				}
 			}
@@ -173,7 +177,7 @@ tail_cancel(Tail* self)
 		self->part_link = NULL;
 		self->wait = false;
 
-		// notify tail completion
+		// notify stream completion
 		event_signal(&self->on_complete);
 	}
 
@@ -182,34 +186,34 @@ tail_cancel(Tail* self)
 }
 
 void
-tail_cancel_all(Part* self)
+streaming_cancel(Part* self)
 {
 	// cancel waiters
-	auto tail = (Tail*)self->tails;
-	self->tails = NULL;
-	while (tail)
+	auto stream = (Stream*)self->streams;
+	self->streams = NULL;
+	while (stream)
 	{
-		auto next = tail->part_link;
-		tail->part_link = NULL;
-		tail->wait      = false;
-		tail->shutdown  = true;
+		auto next = stream->part_link;
+		stream->part_link = NULL;
+		stream->wait      = false;
+		stream->shutdown  = true;
 
 		// notify completion
-		event_signal(&tail->on_complete);
-		tail = next;
+		event_signal(&stream->on_complete);
+		stream = next;
 	}
 }
 
 hot void
-tail_resume_all(Part* self)
+streaming_resume(Part* self)
 {
-	auto tail = (Tail*)self->tails;
-	self->tails = NULL;
-	while (tail)
+	auto stream = (Stream*)self->streams;
+	self->streams = NULL;
+	while (stream)
 	{
-		auto next = tail->part_link;
-		tail->part_link = NULL;
-		tail_next(tail);
-		tail = next;
+		auto next = stream->part_link;
+		stream->part_link = NULL;
+		stream_next(stream);
+		stream = next;
 	}
 }

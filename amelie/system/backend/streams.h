@@ -11,12 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Tails Tails;
+typedef struct Streams Streams;
 
-struct Tails
+struct Streams
 {
-	Tail*   tails;
-	int     tails_count;
+	Stream* streams;
+	int     streams_count;
 	List    ready;
 	Buf     key;
 	Event   notify;
@@ -25,7 +25,7 @@ struct Tails
 	Task*   task;
 };
 
-void tails_init(Tails*, Task*, Client*);
-void tails_free(Tails*);
-void tails_create(Tails*, Parts*, Str*);
-void tails_run(Tails*);
+void streams_init(Streams*, Task*, Client*);
+void streams_free(Streams*);
+void streams_create(Streams*, Parts*, Str*);
+void streams_run(Streams*);

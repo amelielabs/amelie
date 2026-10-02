@@ -338,8 +338,8 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/link_stream.c
     ${AMELIE_ROOT}/system/frontend/player.c
     ${AMELIE_ROOT}/system/frontend/players.c
-    ${AMELIE_ROOT}/system/backend/tail.c
-    ${AMELIE_ROOT}/system/backend/tails.c
+    ${AMELIE_ROOT}/system/backend/stream.c
+    ${AMELIE_ROOT}/system/backend/streams.c
     ${AMELIE_ROOT}/system/backend/pod.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/session/session.c

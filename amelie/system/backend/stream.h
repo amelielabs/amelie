@@ -11,10 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Tail  Tail;
-typedef struct Tails Tails;
+typedef struct Stream  Stream;
+typedef struct Streams Streams;
 
-struct Tail
+struct Stream
 {
 	Msg          msg;
 	Msg          msg_cancel;
@@ -27,17 +27,18 @@ struct Tail
 	HeapIterator it;
 	Row*         key;
 	Buf          data;
+	Timeline     timeline;
 	// partition state
 	Task*        part_task;
 	Part*        part;
-	Tail*        part_link;
-	Tails*       tails;
+	Stream*      part_link;
+	Streams*     streams;
 	List         link;
 };
 
-void tail_init(Tail*, Tails*, Part*);
-void tail_free(Tail*);
-void tail_next(Tail*);
-void tail_cancel(Tail*);
-void tail_cancel_all(Part*);
-void tail_resume_all(Part*);
+void stream_init(Stream*, Streams*, Part*);
+void stream_free(Stream*);
+void stream_next(Stream*);
+void stream_cancel(Stream*);
+void streaming_cancel(Part*);
+void streaming_resume(Part*);
