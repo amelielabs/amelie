@@ -101,7 +101,7 @@ pod_run(Pod* self, Ltr* ltr)
 	ltr_complete(ltr);
 }
 
-static void
+void
 pod_sync(Pod* self)
 {
 	// commit (or abort) pending transactions based on the global

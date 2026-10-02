@@ -152,6 +152,8 @@ stream_next(Stream* self)
 			stream_export(self, row);
 			// todo: limit
 		}
+		if (buf_size(data) >= 128 * 1024)
+			break;
 		heap_iterator_next(it);
 	}
 

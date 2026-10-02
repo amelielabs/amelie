@@ -41,6 +41,14 @@ backend_rpc(Rpc* rpc, void* arg)
 		pods_drop_by(&self->pods, part);
 		break;
 	}
+	case MSG_SYNC:
+	{
+		// commit prepared transactions
+		Part* part = rpc->arg;
+		auto pod = pods_find(&self->pods, part);
+		pod_sync(pod);
+		break;
+	}
 	case MSG_TRUNCATE:
 	{
 		// truncate partition

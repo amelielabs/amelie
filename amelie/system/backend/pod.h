@@ -27,3 +27,4 @@ Pod* pod_allocate(Part*);
 void pod_free(Pod*);
 void pod_start(Pod*, Task*);
 void pod_stop(Pod*);
+void pod_sync(Pod*);

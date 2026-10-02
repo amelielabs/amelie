@@ -40,6 +40,7 @@ typedef enum
 	// backend
 	MSG_DEPLOY,
 	MSG_UNDEPLOY,
+	MSG_SYNC,
 	MSG_TRUNCATE,
 	MSG_CLEANUP,
 

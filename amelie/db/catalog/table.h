@@ -29,13 +29,7 @@ static inline void
 table_sync(Table* self)
 {
 	// note: assuming exclusive lock
-
-	// force commit pending prepared transactions
-	list_foreach(&self->parts.list)
-	{
-		auto part = list_at(Part, link);
-		track_sync(&part->track, &part->track.consensus);
-	}
+	self->parts.iface->sync(&self->parts);
 }
 
 always_inline static inline Table*

@@ -155,6 +155,14 @@ parts_if_detach(Parts* self)
 }
 
 static void
+parts_if_sync(Parts* self)
+{
+	// sync prepared transactions
+	System* system = self->iface_arg;
+	backends_sync_all(&system->backends, self);
+}
+
+static void
 parts_if_truncate(Parts* self)
 {
 	// truncate pods on backends
@@ -166,6 +174,7 @@ static PartsIf parts_if =
 {
 	.attach   = parts_if_attach,
 	.detach   = parts_if_detach,
+	.sync     = parts_if_sync,
 	.truncate = parts_if_truncate
 };
 

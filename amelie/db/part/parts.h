@@ -18,6 +18,7 @@ struct PartsIf
 {
 	void (*attach)(Parts*);
 	void (*detach)(Parts*);
+	void (*sync)(Parts*);
 	void (*truncate)(Parts*);
 };
 
