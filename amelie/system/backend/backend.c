@@ -37,15 +37,25 @@ backend_rpc(Rpc* rpc, void* arg)
 	{
 		// stop and drop pod
 		Part* part = rpc->arg;
-
 		// cancel all pending streams
 		pods_drop_by(&self->pods, part);
+		break;
+	}
+	case MSG_TRUNCATE:
+	{
+		// truncate partition
+		Part* part = rpc->arg;
+		// cancel all pending streams
+		streaming_cancel(part);
+		part_truncate(part);
 		break;
 	}
 	case MSG_CLEANUP:
 	{
 		PartCleanup* cleanup = rpc->arg;
 		defer(part_cleanup_free, cleanup);
+		// cancel all pending streams
+		streaming_cancel(cleanup->part);
 		part_cleanup_run(cleanup);
 		break;
 	}

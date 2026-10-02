@@ -154,10 +154,19 @@ parts_if_detach(Parts* self)
 	backends_undeploy_all(&system->backends, self);
 }
 
+static void
+parts_if_truncate(Parts* self)
+{
+	// truncate pods on backends
+	System* system = self->iface_arg;
+	backends_truncate_all(&system->backends, self);
+}
+
 static PartsIf parts_if =
 {
-	.attach = parts_if_attach,
-	.detach = parts_if_detach
+	.attach   = parts_if_attach,
+	.detach   = parts_if_detach,
+	.truncate = parts_if_truncate
 };
 
 static void

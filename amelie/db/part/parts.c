@@ -98,11 +98,7 @@ parts_close(Parts* self)
 void
 parts_truncate(Parts* self)
 {
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		part_truncate(part);
-	}
+	self->iface->truncate(self);
 }
 
 void
