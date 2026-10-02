@@ -113,7 +113,7 @@ link_api_get(Link* self)
 
 	// GET (text/event-stream) SSE
 	auto content_type = &endpoint->content_type.string;
-	str_set(content_type, "text/event-stream", 17);
+	str_set(content_type, "application/json", 16);
 
 	// accept (text/event-stream)
 	auto accept = &endpoint->accept.string;
@@ -122,7 +122,7 @@ link_api_get(Link* self)
 	    !str_is(accept, "*/*", 3))
 		error("unsupported operation accept: {str}", accept);
 
-	str_set(accept, "text/event-stream", 17);
+	str_set(accept, "application/json", 16);
 	output_set(&portal->output, endpoint, &output_json, NULL);
 
 	return LINK_STREAM;

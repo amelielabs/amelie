@@ -27,5 +27,5 @@ struct Streams
 
 void streams_init(Streams*, Task*, Client*);
 void streams_free(Streams*);
-void streams_create(Streams*, Parts*, Str*);
+void streams_create(Streams*, Parts*, Timeline*, Str*);
 void streams_run(Streams*);

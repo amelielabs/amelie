@@ -36,7 +36,7 @@ struct Stream
 	List         link;
 };
 
-void stream_init(Stream*, Streams*, Part*);
+void stream_init(Stream*, Streams*, Part*, Timeline*);
 void stream_free(Stream*);
 void stream_next(Stream*);
 void stream_cancel(Stream*);

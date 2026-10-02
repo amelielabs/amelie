@@ -68,7 +68,7 @@ streams_create_key(Streams* self, Parts* parts, Str* key)
 }
 
 void
-streams_create(Streams* self, Parts* parts, Str* key_str)
+streams_create(Streams* self, Parts* parts, Timeline* timeline, Str* key_str)
 {
 	// prepare key
 	Row* key = NULL;
@@ -87,7 +87,7 @@ streams_create(Streams* self, Parts* parts, Str* key_str)
 	{
 		auto part = list_at(Part, link);
 		auto stream = &self->streams[at];
-		stream_init(stream, self, part);
+		stream_init(stream, self, part, timeline);
 
 		event_attach(&stream->on_complete);
 		event_set_parent(&stream->on_complete, &self->notify);

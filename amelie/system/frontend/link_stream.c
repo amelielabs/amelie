@@ -19,6 +19,39 @@
 #include <amelie_frontend.h>
 
 static inline void
+link_stream_create(Link* self, Streams* streams)
+{
+	// find relation
+	auto api = self->api;
+	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, &api->rel_user, &api->rel, false);
+	if (! rel)
+		error("stream: relation {str}.{str} not found",
+		      &api->rel_user, &api->rel);
+
+	// table or clone
+	Timeline* timeline;
+	Parts*    parts;
+	if (rel->type == REL_TABLE)
+	{
+		auto table = table_of(rel);
+		timeline = &table->timelines.main;
+		parts    = &table->parts;
+	} else
+	if (rel->type == REL_CLONE)
+	{
+		auto clone = clone_of(rel);
+		timeline = &clone->config->timeline;
+		parts    = &clone->table->parts;
+	} else {
+		error("stream: relation {str}.{str} cannot be used for streaming",
+		      rel->user, rel->name);
+	}
+
+	// prepare streams (one per partition)
+	streams_create(streams, parts, timeline, &self->portal.endpoint.id.string);
+}
+
+static inline void
 link_stream_begin(Link* self)
 {
 	auto client = self->client;
@@ -33,18 +66,27 @@ link_stream_begin(Link* self)
 void
 link_stream(Link* self)
 {
-	// find table
-	auto api = self->api;
-	auto table = catalog_find_table(&share()->db->catalog, &api->rel_user, &api->rel, true);
-
 	// prepare streams (one per partition)
 	Streams streams;
 	streams_init(&streams, am_task, self->client);
-	streams_create(&streams, &table->parts, &self->portal.endpoint.id.string);
 	defer(streams_free, &streams);
+	auto on_error = error_catch
+	(
+		link_stream_create(self, &streams);
+	);
+
+	auto portal = &self->portal;
+	if (on_error)
+	{
+		// 400 Bad Request
+		buf_reset(portal->output.buf);
+		output_error(&portal->output, &am_self()->error);
+		client_400(self->client, portal->output.buf);
+		return;
+	}
 
 	// release catalog lock
-	portal_unlock(&self->portal);
+	portal_unlock(portal);
 
 	// start sse streaming
 	link_stream_begin(self);
