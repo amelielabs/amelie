@@ -41,11 +41,12 @@ heap_prepare(Heap* self)
 
 	// header + buckets[]
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
-	auto header = (HeapHeader*)am_malloc(size);
+	storage_add_meta(&self->storage, size);
+
+	auto header = (HeapHeader*)self->storage.meta->data;
 	memset(header->free, 0, sizeof(header->free));
 	header->used_count = 0;
 	header->used       = 0;
-
 	self->header  = header;
 	self->buckets = header->buckets;
 
@@ -80,7 +81,7 @@ heap_allocate(void)
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets = NULL;
 	self->header  = NULL;
-	storage_init(&self->storage, STORAGE_HEAP);
+	storage_init(&self->storage, PAGE_HEAP);
 	heap_prepare(self);
 	return self;
 }
@@ -88,37 +89,17 @@ heap_allocate(void)
 void
 heap_free(Heap* self)
 {
-	if (self->header)
-		am_free(self->header);
 	storage_free(&self->storage);
 	am_free(self);
 }
 
-size_t
-heap_create(Heap* self, char* path)
+void
+heap_open(Heap* self)
 {
-	// create heap storage file
-	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
-	return storage_create(&self->storage, path, (uint8_t*)self->header, size);
-}
-
-size_t
-heap_open(Heap* self, char* path)
-{
-	// read heap storage file
-	Buf meta;
-	buf_init(&meta);
-	defer_buf(&meta);
-	auto size_file = storage_open(&self->storage, path, STORAGE_HEAP, &meta);
-
-	// validate heap header size
-	int size = sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
-	if (unlikely(buf_size(&meta) != size))
-		error("storage: file '{str}' has invalid heap header", path);
-
-	// rewrite header
-	memcpy(self->header, meta.start, size);
-	return size_file;
+	// set header
+	auto storage = &self->storage;
+	assert(!storage->meta && storage->meta->size == sizeof(HeapHeader));
+	self->header = (HeapHeader*)storage->meta->data;
 }
 
 typedef struct
@@ -246,6 +227,7 @@ heap_add(Heap* self, int size)
 		row->prev           = 0;
 		row->prev_offset    = 0;
 		row->free           = false;
+		heap_page_of(row)->changed = true;
 
 		// mark bucket as empty
 		if (! bucket->list_offset)
@@ -263,11 +245,13 @@ heap_add(Heap* self, int size)
 
 		page->position_last = page->position;
 		page->position += bucket->size;
+		page->changed = true;
 	}
 
 	// update total used metrics
 	self->header->used_count++;
 	self->header->used += bucket->size;
+	self->storage.meta->changed = true;
 
 	assert(misalign_of(row->data) == 0);
 	return row;
@@ -288,10 +272,13 @@ heap_remove(Heap* self, Row* row)
 	if (! bucket->list_offset)
 		heap_bucket_set(self, bucket);
 
-	bucket->list        = heap_page_of(row)->id;
+	auto page = heap_page_of(row);
+	page->changed = true;
+	bucket->list        = page->id.id_page;
 	bucket->list_offset = row->offset;
 
 	// update total used metrics
 	self->header->used_count--;
 	self->header->used -= bucket->size;
+	self->storage.meta->changed = true;
 }

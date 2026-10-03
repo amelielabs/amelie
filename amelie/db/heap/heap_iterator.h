@@ -110,7 +110,7 @@ heap_iterator_set(HeapIterator* self, Row* row)
 {
 	self->current    = row;
 	self->page       = heap_page_of(row);
-	self->page_order = self->page->id - self->heap->storage.id_first;
+	self->page_order = self->page->id.id_page - self->heap->storage.id_first;
 	self->eof        = false;
 }
 

@@ -17,13 +17,14 @@ row_prev_set(Row* row, Row* prev)
 	// row->prev = prev
 	if (prev)
 	{
-		row->prev        = heap_page_of(prev)->id;
+		row->prev        = heap_page_of(prev)->id.id_page;
 		row->prev_offset = prev->offset;
 	} else
 	{
 		row->prev        = 0;
 		row->prev_offset = 0;
 	}
+	heap_page_of(row)->changed = true;
 }
 
 always_inline static inline bool

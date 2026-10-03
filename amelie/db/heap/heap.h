@@ -52,9 +52,8 @@ heap_page_of(Row* self)
 	return (Page*)((uintptr_t)self - self->offset);
 }
 
-Heap*  heap_allocate(void);
-void   heap_free(Heap*);
-size_t heap_create(Heap*, char*);
-size_t heap_open(Heap*, char*);
-Row*   heap_add(Heap*, int);
-void   heap_remove(Heap*, Row*);
+Heap* heap_allocate(void);
+void  heap_free(Heap*);
+void  heap_open(Heap*);
+Row*  heap_add(Heap*, int);
+void  heap_remove(Heap*, Row*);

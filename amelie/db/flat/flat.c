@@ -52,7 +52,6 @@ flat_allocate(Column* column)
 
 	self->header = (FlatHeader*)storage->meta->data;
 	self->header->list_free = UINT32_MAX;
-	storage->meta->changed = true;
 	return self;
 }
 

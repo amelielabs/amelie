@@ -88,10 +88,11 @@ storage_add_meta(Storage* self, int size)
 {
 	assert(! self->meta);
 	// create and set meta page
-	auto page = page_allocate(size);
+	auto page = page_allocate(sizeof(Page) + size);
 	page->type       = PAGE_META;
 	page->id         = self->id;
 	page->id.id_page = UINT32_MAX;
+	page->position   = sizeof(Page) + size;
 	self->meta       = page;
 	return page;
 }
