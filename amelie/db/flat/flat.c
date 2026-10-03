@@ -44,10 +44,15 @@ flat_allocate(Column* column)
 	self->page_offset_i8      = (self->page_bitmap + 64 - 1) & ~(64 - 1);
 	self->page_offset_rows    = self->page_offset_i8 + (self->page_rows * self->dim);
 	self->page_offset_vectors = self->page_offset_rows + (self->page_rows * sizeof(FlatRow));
-
-	self->header.list_free = UINT32_MAX;
 	self->column = column;
-	storage_init(&self->storage, STORAGE_FLAT);
+
+	auto storage = &self->storage;
+	storage_init(storage, PAGE_FLAT);
+	storage_add_meta(storage, sizeof(FlatHeader));
+
+	self->header = (FlatHeader*)storage->meta->data;
+	self->header->list_free = UINT32_MAX;
+	storage->meta->changed = true;
 	return self;
 }
 
@@ -58,36 +63,19 @@ flat_free(Flat* self)
 	am_free(self);
 }
 
-size_t
-flat_create(Flat* self, char* path)
+void
+flat_open(Flat* self)
 {
-	return storage_create(&self->storage, path, (uint8_t*)&self->header,
-	                      sizeof(self->header));
-}
-
-size_t
-flat_open(Flat* self, char* path)
-{
-	Buf meta;
-	buf_init(&meta);
-	defer_buf(&meta);
-	auto size_file = storage_open(&self->storage, path, STORAGE_FLAT, &meta);
-
-	// validate header size
-	if (unlikely(buf_size(&meta) != sizeof(FlatHeader)))
-		error("storage: file '{str}' has invalid flat header", path);
-
 	// set header
-	auto header = (FlatHeader*)meta.start;
-	self->header = *header;
-
-	return size_file;
+	auto storage = &self->storage;
+	assert(!storage->meta && storage->meta->size == sizeof(FlatHeader));
+	self->header = (FlatHeader*)storage->meta->data;
 }
 
 uint32_t
 flat_add(Flat* self, int row_page, int row_offset)
 {
-	auto id = self->header.list_free;
+	auto id = self->header->list_free;
 	if (likely(id != UINT32_MAX))
 	{
 		auto page_id  = id / self->page_rows;
@@ -95,7 +83,8 @@ flat_add(Flat* self, int row_page, int row_offset)
 		auto row = flat_row(self, page_id, page_row);
 
 		// mark row as being used and update free list
-		self->header.list_free = row->row_next;
+		self->header->list_free = row->row_next;
+		self->storage.meta->changed = true;
 
 		row->row_page   = row_page;
 		row->row_offset = row_offset;
@@ -106,30 +95,31 @@ flat_add(Flat* self, int row_page, int row_offset)
 
 	// maybe create a new page
 	auto storage = &self->storage;
-	if (unlikely(!storage->current || storage->current->used == self->page_rows))
+	if (unlikely(!storage->current || storage->current->position_last == self->page_rows))
 	{
 		storage_add(storage);
 
 		// prepare the page bitmap
 		auto current = storage->current;
-		current->position = storage->size_page;
+		current->position = storage->size;
 		memset(current->data, 0, self->page_bitmap);
 	}
-	auto page = storage->current;
-	auto page_row = page->used;
+	auto page     = storage->current;
+	auto page_row = page->position_last;
+	auto page_id  = page->id.id_page;
 
 	// mark as used
-	flat_set(self, page->id, page_row, true);
-	page->used++;
+	flat_set(self, page_id, page_row, true);
+	page->position_last++;
 
 	// set row meta
-	auto row = flat_row(self, page->id, page_row);
+	auto row = flat_row(self, page_id, page_row);
 	row->row_page   = row_page;
 	row->row_offset = row_offset;
 	row->padding    = 0;
 
 	// set id
-	id = page->id * self->page_rows + page_row;
+	id = page_id * self->page_rows + page_row;
 	return id;
 }
 
@@ -144,6 +134,7 @@ flat_remove(Flat* self, uint32_t id)
 	flat_set(self, page_id, page_row, false);
 
 	// update free list
-	row->row_next = self->header.list_free;
-	self->header.list_free = id;
+	row->row_next = self->header->list_free;
+	self->header->list_free = id;
+	self->storage.meta->changed = true;
 }

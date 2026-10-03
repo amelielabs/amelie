@@ -36,15 +36,15 @@ union FlatRow
 
 struct Flat
 {
-	uint32_t   page_rows;
-	uint32_t   page_bitmap;
-	uint32_t   page_offset_i8;
-	uint32_t   page_offset_rows;
-	uint32_t   page_offset_vectors;
-	uint32_t   dim;
-	FlatHeader header;
-	Column*    column;
-	Storage    storage;
+	uint32_t    page_rows;
+	uint32_t    page_bitmap;
+	uint32_t    page_offset_i8;
+	uint32_t    page_offset_rows;
+	uint32_t    page_offset_vectors;
+	uint32_t    dim;
+	FlatHeader* header;
+	Column*     column;
+	Storage     storage;
 };
 
 always_inline static inline int8_t*
@@ -104,6 +104,7 @@ flat_set(Flat* self, int page_id, int page_row, bool active)
 	auto bucket    = page_row >> 6;
 	auto bit_index = page_row & 63;
 	auto mask      = 1ULL << bit_index;
+	page->changed = true;
 	if (active)
 		bitmap[bucket] |= mask;
 	else
@@ -120,7 +121,6 @@ flat_set_at(Flat* self, uint32_t id, bool active)
 
 Flat*    flat_allocate(Column*);
 void     flat_free(Flat*);
-size_t   flat_create(Flat*, char*);
-size_t   flat_open(Flat*, char*);
+void     flat_open(Flat*);
 uint32_t flat_add(Flat*, int, int);
 void     flat_remove(Flat*, uint32_t);
