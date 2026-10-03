@@ -56,13 +56,13 @@ storage_is_last(Storage* self, uint32_t id)
 }
 
 static inline void
-storage_init(Storage* self, int type, int size_page)
+storage_init(Storage* self, int type)
 {
 	self->current    = NULL;
 	self->list_count = 0;
 	self->id_first   = 0;
 	self->id_seq     = 0;
-	self->size_page  = size_page;
+	self->size_page  = 64 * 1024 * 1024;
 	self->type       = type;
 	buf_init(&self->list);
 }

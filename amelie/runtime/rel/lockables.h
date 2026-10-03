@@ -20,10 +20,6 @@ enum
 	REL_DDL,
 	REL_CHECKPOINT,
 	REL_BP_QUERY,
-	REL_BP_REFRESH_1,
-	REL_BP_REFRESH_2,
-	REL_BP_REFRESH_3,
-	REL_BP_REFRESH_4,
 	REL_MAX
 };
 
@@ -74,10 +70,6 @@ lockables_init(Lockables* self)
 
 	// breakpoints
 	lockable_init(&self->list[REL_BP_QUERY], REL_BP_QUERY, "bp_query", true);
-	lockable_init(&self->list[REL_BP_REFRESH_1], REL_BP_REFRESH_1, "bp_refresh_1", true);
-	lockable_init(&self->list[REL_BP_REFRESH_2], REL_BP_REFRESH_2, "bp_refresh_2", true);
-	lockable_init(&self->list[REL_BP_REFRESH_3], REL_BP_REFRESH_3, "bp_refresh_3", true);
-	lockable_init(&self->list[REL_BP_REFRESH_4], REL_BP_REFRESH_4, "bp_refresh_4", true);
 }
 
 static inline void

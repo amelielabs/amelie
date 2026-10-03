@@ -25,8 +25,8 @@ union FlatRow
 	// row reference (64 bit)
 	struct
 	{
-		uint64_t row_page:   19;
-		uint64_t row_offset: 19;
+		uint64_t row_page:   12;
+		uint64_t row_offset: 26;
 		uint64_t padding:    26;
 	} packed;
 

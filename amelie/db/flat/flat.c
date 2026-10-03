@@ -27,7 +27,7 @@ flat_allocate(Column* column)
 	//
 	// [page_header][bitmap][vectors_sq8][rows][vectors]
 	//
-	auto size_page   = (512ul * 1024);
+	auto size_page   = (64 * 1024 * 1024);
 	auto size_bucket =
 		sizeof(uint64_t) +         // 64 vectors bitmap
 		(64 * self->dim) +         // 64 vectors in SQ8 encoding (i8)
@@ -47,7 +47,7 @@ flat_allocate(Column* column)
 
 	self->header.list_free = UINT32_MAX;
 	self->column = column;
-	storage_init(&self->storage, STORAGE_FLAT, size_page);
+	storage_init(&self->storage, STORAGE_FLAT);
 	return self;
 }
 

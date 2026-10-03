@@ -80,7 +80,7 @@ heap_allocate(void)
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets = NULL;
 	self->header  = NULL;
-	storage_init(&self->storage, STORAGE_HEAP, 512 * 1024);
+	storage_init(&self->storage, STORAGE_HEAP);
 	heap_prepare(self);
 	return self;
 }
