@@ -12,10 +12,11 @@
 //
 
 // storage
+#include "storage/page_id.h"
 #include "storage/page.h"
+#include "storage/pages.h"
 #include "storage/storage.h"
-#include "storage/storage_file.h"
-#include "storage/basefile.h"
 
 // compression
 #include "storage/encoder.h"
+#include "storage/basefile.h"

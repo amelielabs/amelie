@@ -286,7 +286,7 @@ void*
 vfs_mmap(int fd, uint64_t size)
 {
 	int prot = PROT_READ|PROT_WRITE;
-	void *pointer = mmap(NULL, size, prot, MAP_PRIVATE|MAP_ANONYMOUS, fd, 0);
+	void* pointer = mmap(NULL, size, prot, MAP_PRIVATE|MAP_ANONYMOUS, fd, 0);
 	if (pointer == MAP_FAILED)
 		return NULL;
 	return pointer;
