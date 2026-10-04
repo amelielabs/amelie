@@ -111,6 +111,41 @@ checkpoints_read(Checkpoints* self)
 	}
 }
 
+static void
+checkpoints_open_schema(Checkpoints* self, Ids* ids)
+{
+	// restore last checkpoint schema
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/checkpoint/{u64}/schema.sql",
+	       state_directory(), state_checkpoint());
+
+	// read file
+	Separator sep;
+	separator_init(&sep);
+	defer(separator_free, &sep);
+	file_import_stream(&sep.buf, "{s}", path);
+
+	// prepare eval
+	auto catalog = self->catalog;
+	Eval eval;
+	eval_init(&eval, catalog->iface_eval, catalog->iface_arg);
+	eval_create(&eval);
+	defer(eval_free, &eval);
+
+	// set ids used during recovery
+	catalog->ids = ids;
+
+	// parse and execute statements
+	Str command;
+	while (separator_read(&sep, &command))
+	{
+		eval_execute(&eval, &command);
+		separator_advance(&sep);
+	}
+
+	catalog->ids = NULL;
+}
+
 void
 checkpoints_open(Checkpoints* self)
 {
@@ -131,12 +166,7 @@ checkpoints_open(Checkpoints* self)
 	defer(ids_free, &ids);
 	ids_read(&ids, 	id);
 
-	// restore last checkpoint schema
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}/schema.sql",
-	       state_directory(), id);
-
-	catalog_read(self->catalog, &ids, path);
+	checkpoints_open_schema(self, &ids);
 }
 
 void

@@ -493,3 +493,30 @@ describe(Rel* self, Buf* buf, Str* user, int flags)
 	auto start = buf->start + offset;
 	pack_str32(&start, buf_size(buf) - (offset + data_size_str32()));
 }
+
+static void
+describe_rels(Rels* rels, RelType type, Buf* buf)
+{
+	Str user;
+	str_set(&user, "amelie", 6);
+	list_foreach(&rels->list)
+	{
+		auto rel = list_at(Rel, link);
+		if (rel->type != type)
+			continue;
+		if (rel->type == REL_USER && user_of(rel)->config->superuser)
+			continue;
+		describe_text(rel, buf, &user, 0);
+		buf_write(buf, "\n\n", 2);
+	}
+}
+
+void
+describe_catalog(Catalog* self, Buf* buf)
+{
+	// users, tables, clones, udfs
+	describe_rels(&self->users, REL_USER, buf);
+	describe_rels(&self->rels, REL_TABLE, buf);
+	describe_rels(&self->rels, REL_CLONE, buf);
+	describe_rels(&self->rels, REL_UDF, buf);
+}

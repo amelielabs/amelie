@@ -20,8 +20,17 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_checkpoint.h>
 #include <amelie_db.h>
+
+void
+db_checkpoint(Db* self)
+{
+	// create new checkpoint
+	checkpoint(&self->checkpoints, &self->catalog);
+
+	// run db cleanup
+	db_gc(self);
+}
 
 void
 db_gc(Db* self)
@@ -57,58 +66,6 @@ void
 db_sync(Db* self, uint64_t id, bool close)
 {
 	run(db_sync_job, 3, self, id, close);
-}
-
-void
-db_checkpoint(Db* self)
-{
-	uint64_t lsn = state_lsn();
-	if (lsn == state_checkpoint())
-		return;
-
-	// one checkpoint, create index or backup at a time
-	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
-	defer(unlock, checkpoint_lock);
-
-	// take exclusive catalog lock
-	auto catalog_lock = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
-
-	// force commit pending prepared transactions
-	list_foreach(&self->catalog.rels.list)
-	{
-		auto rel = list_at(Rel, link);
-		if (rel->type == REL_TABLE)
-			table_sync(table_of(rel));
-	}
-
-	// prepare and start workers
-	Checkpoint checkpoint;
-	checkpoint_init(&checkpoint, &self->catalog);
-	defer(checkpoint_free, &checkpoint);
-	auto on_error = error_catch
-	(
-		checkpoint_begin(&checkpoint, lsn);
-		checkpoint_run(&checkpoint);
-	);
-
-	// unlock catalog
-	unlock(catalog_lock);
-
-	if (on_error)
-		rethrow();
-
-	// wait for completion
-	on_error = error_catch (
-		checkpoint_wait(&checkpoint);
-	);
-	if (on_error)
-		rethrow();
-
-	// set checkpoint
-	checkpoints_add(&self->checkpoints, lsn);
-
-	// run db cleanup
-	db_gc(self);
 }
 
 hot void

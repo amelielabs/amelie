@@ -11,7 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
+void db_checkpoint(Db*);
 void db_gc(Db*);
 void db_sync(Db*, uint64_t, bool);
-void db_checkpoint(Db*);
 void db_write(Db*, WriteList*);

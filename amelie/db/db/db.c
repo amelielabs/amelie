@@ -20,7 +20,6 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_checkpoint.h>
 #include <amelie_db.h>
 
 void
@@ -46,20 +45,6 @@ db_free(Db* self)
 	wal_free(&self->wal);
 }
 
-static void
-db_bootstrap(Db* self)
-{
-	// create initial checkpoint
-	Checkpoint checkpoint;
-	checkpoint_init(&checkpoint, &self->catalog);
-	defer(checkpoint_free, &checkpoint);
-	checkpoint_begin(&checkpoint, 1);
-	checkpoint_run(&checkpoint);
-	checkpoint_wait(&checkpoint);
-
-	checkpoints_add(&self->checkpoints, 1);
-}
-
 void
 db_open(Db* self, bool bootstrap)
 {
@@ -76,7 +61,8 @@ db_open(Db* self, bool bootstrap)
 	// create initial checkpoint
 	if (bootstrap)
 	{
-		db_bootstrap(self);
+		// create initial checkpoint
+		db_checkpoint(self);
 		return;
 	}
 

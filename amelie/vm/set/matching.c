@@ -135,7 +135,7 @@ matching_execute(Matching* self, const float* __restrict query)
 		// Direct pointer to contiguous SQ8 byte array
 		auto page_sq8 = (const int8_t*)(page->data + flat->page_offset_i8);
 
-		uint32_t chunks = (page->used + 63) >> 6;
+		uint32_t chunks = (page->position_last + 63) >> 6;
 		if (chunks > page_chunks)
 			chunks = page_chunks;
 
@@ -153,7 +153,7 @@ matching_execute(Matching* self, const float* __restrict query)
 				uint32_t bit = __builtin_ctzll(mask);
 				uint32_t page_row = row_base + bit;
 
-				if (unlikely(page_row >= page->used))
+				if (unlikely(page_row >= page->position_last))
 					break;
 
 				// SIMD Dot Product (AVX2)

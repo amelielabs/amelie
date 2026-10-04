@@ -53,6 +53,7 @@ page_end(Page* self)
 }
 
 Page*  page_allocate(uint32_t);
+Page*  page_allocate_cow(Page*);
 void   page_free(Page*);
 Page*  page_load(Id*, uint64_t);
-size_t page_save(Page*, uint64_t, bool);
+size_t page_save(Page*, uint64_t);

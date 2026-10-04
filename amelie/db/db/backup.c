@@ -20,7 +20,6 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_checkpoint.h>
 #include <amelie_db.h>
 
 typedef struct Backup Backup;

@@ -12,8 +12,8 @@
 //
 
 // checkpoint
-#include "db/checkpoint.h"
 #include "db/checkpoints.h"
+#include "db/checkpoint.h"
 
 // syncer
 #include "db/syncer.h"

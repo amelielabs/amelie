@@ -123,7 +123,7 @@ page_load(Id* id, uint64_t checkpoint)
 }
 
 size_t
-page_save(Page* self, uint64_t checkpoint, bool incomplete)
+page_save(Page* self, uint64_t checkpoint)
 {
 	// prepare encoder
 	Encoder ec;
@@ -139,7 +139,7 @@ page_save(Page* self, uint64_t checkpoint, bool incomplete)
 	// <id_table>.<id_part>.<id_page>
 	// <id_table>.<id_part>.<id_page>.<id_column>
 	char path[PATH_MAX];
-	id_path(&self->id, path, checkpoint, incomplete);
+	id_path(&self->id, path, checkpoint, true);
 
 	// create file
 	File file;

@@ -163,7 +163,7 @@ row_create_vector(Part*    part,
 	auto flat = flats_at(&part->flats, column);
 
 	auto current = flat->storage.current;
-	auto id = flat_add(flat, heap_page_of(row)->id, row->offset);
+	auto id = flat_add(flat, heap_page_of(row)->id.id_page, row->offset);
 	*(uint32_t*)row_column(row, column) = id;
 	*delta += storage_delta(&flat->storage, current);
 
@@ -401,7 +401,7 @@ row_update(Part*     part,
 			auto flat = flats_at(&part->flats, column);
 
 			auto current = flat->storage.current;
-			auto id = flat_add(flat, heap_page_of(row)->id, row->offset);
+			auto id = flat_add(flat, heap_page_of(row)->id.id_page, row->offset);
 			delta += storage_delta(&flat->storage, current);
 
 			*(uint32_t*)row_column(row, column) = id;
