@@ -54,7 +54,7 @@ page_end(Page* self)
 
 Page*  page_allocate(uint32_t, int*);
 Page*  page_allocate_snapshot(Page*, int);
-void   page_free_snapshow(Page*);
+void   page_free_snapshot(Page*);
 void   page_free(Page*);
 Page*  page_load(Id*, int*, uint64_t);
 size_t page_save(Page*, uint64_t);

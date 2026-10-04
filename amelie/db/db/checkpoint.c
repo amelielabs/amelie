@@ -22,308 +22,13 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
-#if 0
-void
-checkpoint_init(Checkpoint* self, Catalog* catalog)
-{
-	self->lsn     = 0;
-	self->catalog = catalog;
-	self->pid     = -1;
-	event_init(&self->on_complete);
-	notify_init(&self->notify);
-}
-
-void
-checkpoint_free(Checkpoint* self)
-{
-	notify_close(&self->notify);
-}
-
-static inline void
-checkpoint_worker_on_complete(void* arg)
-{
-	Event* event = arg;
-	event_signal(event);
-}
-
-void
-checkpoint_begin(Checkpoint* self, uint64_t lsn)
-{
-	// prepare
-	self->lsn = lsn;
-	self->pid = -1;
-	event_init(&self->on_complete);
-	notify_init(&self->notify);
-	notify_open(&self->notify, &am_task->poller, checkpoint_worker_on_complete,
-	            &self->on_complete);
-}
-
-hot static void
-checkpoint_heap(Checkpoint* self, Part* part)
-{
-	// <base>/checkpoint/<lsn>.incomplete/<table_id>.<partition>
-	auto rel = part->arg->rel;
-	char uuid[UUID_SZ];
-	uuid_get(rel->id, uuid, sizeof(uuid));
-
-	char path[PATH_MAX];
-	format(path, sizeof(path),
-	       "{s}/checkpoint/{u64}.incomplete/{s}.{02d}",
-	       state_directory(),
-	       self->lsn,
-	       uuid,
-	       part->config->id);
-
-	auto size = heap_create(part->heap, path);
-	info(" {s}.{02d}    ({.2f} MB)",
-	     uuid,
-	     (int)part->config->id,
-	     (double)size / 1024 / 1024);
-}
-
-hot static void
-checkpoint_flat(Checkpoint* self, Part* part, Flat* flat)
-{
-	// <base>/checkpoint/<lsn>.incomplete/<table_id>.<partition>.<column>
-	auto rel = part->arg->rel;
-	char uuid[UUID_SZ];
-	uuid_get(rel->id, uuid, sizeof(uuid));
-
-	char path[PATH_MAX];
-	format(path, sizeof(path),
-	       "{s}/checkpoint/{u64}.incomplete/{s}.{02d}.{02d}",
-	       state_directory(),
-	       self->lsn,
-	       uuid,
-	       part->config->id,
-	       flat->column->order);
-
-	auto size = flat_create(flat, path);
-	info(" {s}.{02d}.{02d} ({.2f} MB)",
-	     uuid,
-	     part->config->id,
-	     flat->column->order,
-	     (double)size / 1024 / 1024);
-}
-
-hot static void
-checkpoint_part(Checkpoint* self, Part* part)
-{
-	checkpoint_heap(self, part);
-
-	auto primary = part_primary(part);
-	auto columns = index_keys(primary)->columns;
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-		if (! column->size_flat)
-			continue;
-		auto flat = flats_at(&part->flats, column);
-		checkpoint_flat(self, part, flat);
-	}
-}
-
-hot static void
-checkpoint_table(Checkpoint* self, Table* table)
-{
-	list_foreach(&table->parts.list)
-	{
-		auto part = list_at(Part, link);
-		checkpoint_part(self, part);
-	}
-}
-
-static void
-checkpoint_main(Checkpoint* self)
-{
-	// create schema.sql
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/schema.sql",
-	       state_directory(), self->lsn);
-	catalog_write(self->catalog, path);
-
-	// create files
-	list_foreach(&self->catalog->rels.list)
-	{
-		auto rel = list_at(Rel, link);
-		if (rel->type == REL_TABLE)
-			checkpoint_table(self, table_of(rel));
-	}
-}
-
-void
-checkpoint_run(Checkpoint* self)
-{
-	// create <base>/checkpoint/<lsn>.incomplete
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete",
-	       state_directory(), self->lsn);
-
-	info("");
-	info("checkpoint: checkpoint/{u64}", self->lsn);
-	fs_mkdir(0755, "{s}", path);
-
-	// create new process
-	self->pid = fork();
-	switch (self->pid) {
-	case -1:
-		error_system();
-	case  0:
-		break;
-	default:
-		return;
-	}
-
-	// write checkpoint
-	auto error = error_catch
-	(
-		checkpoint_main(self);
-	);
-
-	// signal waiter process
-	notify_signal(&self->notify);
-
-	// done
-
-	// valgrind hack.
-	//
-	// When using _exit(2) valgrind would complain about
-	// memory not being freed in the child.
-	//
-	// We use a simple hack that instead executes another
-	// app which returns result code.
-	//
-	if (! error)
-		execl("/bin/true", "/bin/true", NULL);
-	execl("/bin/false", "/bin/false", NULL);
-}
-
-static bool
-checkpoint_wait_pid(Checkpoint* self)
-{
-	event_wait(&self->on_complete, -1);
-
-	int status = 0;
-	int rc = waitpid(self->pid, &status, 0);
-	if (rc == -1)
-		error_system();
-
-	bool failed = false;
-	if (WIFEXITED(status))
-	{
-		if (WEXITSTATUS(status) == EXIT_FAILURE)
-			failed = true;
-	} else {
-		failed = true;
-	}
-	return failed;
-}
-
-void
-checkpoint_wait(Checkpoint* self)
-{
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete",
-	       state_directory(), self->lsn);
-
-	// wait for completion
-	auto error = checkpoint_wait_pid(self);
-	if (error > 0)
-	{
-		fs_rmdir("{s}", path);
-		error("checkpoint: {u64} failed", self->lsn);
-	}
-
-	// sync checkpoint dir
-	if (opt_int_of(&config()->storage_sync))
-		fs_syncdir("{s}", path);
-
-	// sync checkpoint base dir
-	if (opt_int_of(&config()->storage_sync))
-		fs_syncdir("{s}/checkpoint", state_directory());
-
-	// rename as completed
-	fs_rename(path, "{s}/checkpoint/{u64}", state_directory(), self->lsn);
-
-	// done
-	info("");
-}
-#endif
-
-#if 0
-typedef struct Checkpoint Checkpoint;
-
-struct Checkpoint
-{
-	uint64_t lsn;
-	Catalog* catalog;
-};
-
-void checkpoint_init(Checkpoint*, Catalog*);
-void checkpoint_free(Checkpoint*);
-void checkpoint_begin(Checkpoint*, uint64_t);
-void checkpoint_run(Checkpoint*);
-void checkpoint_wait(Checkpoint*);
-#endif
-
-#if 0
-void
-db_checkpoint(Db* self)
-{
-	uint64_t lsn = state_lsn();
-	if (lsn == state_checkpoint())
-		return;
-
-	// one checkpoint, create index or backup at a time
-	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
-	defer(unlock, checkpoint_lock);
-
-	// take exclusive catalog lock
-	auto catalog_lock = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
-
-	// force commit pending prepared transactions
-	list_foreach(&self->catalog.rels.list)
-	{
-		auto rel = list_at(Rel, link);
-		if (rel->type == REL_TABLE)
-			table_sync(table_of(rel));
-	}
-
-	// prepare and start workers
-	Checkpoint checkpoint;
-	checkpoint_init(&checkpoint, &self->catalog);
-	defer(checkpoint_free, &checkpoint);
-	auto on_error = error_catch
-	(
-		checkpoint_begin(&checkpoint, lsn);
-		checkpoint_run(&checkpoint);
-	);
-
-	// unlock catalog
-	unlock(catalog_lock);
-
-	if (on_error)
-		rethrow();
-
-	// wait for completion
-	on_error = error_catch (
-		checkpoint_wait(&checkpoint);
-	);
-	if (on_error)
-		rethrow();
-
-	// set checkpoint
-	checkpoints_add(&self->checkpoints, lsn);
-}
-#endif
-
 typedef struct CheckpointPage CheckpointPage;
 typedef struct Checkpoint     Checkpoint;
 
 struct CheckpointPage
 {
 	Id    id;
-	Page* cow;
+	Page* snapshot;
 };
 
 struct Checkpoint
@@ -349,11 +54,161 @@ checkpoint_free(Checkpoint* self)
 }
 
 static inline void
-checkpoint_add(Checkpoint* self, Id* id, Page* cow)
+checkpoint_add(Checkpoint* self, Page* page, int page_fd)
 {
 	auto ref = (CheckpointPage*)buf_emplace(&self->list, sizeof(CheckpointPage));
-	memcpy(&ref->id, id, sizeof(*id));
-	ref->cow = cow;
+	memcpy(&ref->id, &page->id, sizeof(ref->id));
+
+	// create page snapshot, if it has pending changes
+	ref->snapshot = NULL;
+	if (page->changed)
+	{
+		page->changed = false;
+		ref->snapshot = page_allocate_snapshot(page, page_fd);
+	}
+}
+
+hot static inline void
+checkpoint_add_storage(Checkpoint* self, Storage* storage)
+{
+	checkpoint_add(self, storage->meta, storage->meta_fd);
+	for (auto i = 0; i < storage->list_count; i++)
+		checkpoint_add(self, storage_at(storage, i), *storage_at_fd(storage, i));
+}
+
+static void
+checkpoint_create(Checkpoint* self)
+{
+	// create checkpoint/<lsn>.incomplete
+	info("");
+	info("checkpoint: checkpoint/{u64}", self->lsn);
+	fs_mkdir(0755, "{s}/checkpoint/{u64}.incomplete",
+	         state_directory(), self->lsn);
+
+	// create schema.sql
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/schema.sql",
+	       state_directory(), self->lsn);
+
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
+	if (! buf_empty(&self->schema))
+	{
+		file_write_buf(&file, &self->schema);
+		if (opt_int_of(&config()->storage_sync))
+			file_sync(&file);
+	}
+
+	// create partition files
+	auto pos = (CheckpointPage*)self->list.start;
+	auto end = (CheckpointPage*)self->list.position;
+	for (; pos < end; pos++)
+	{
+		// create page hardlink using previous checkpoint
+		if (! pos->snapshot)
+		{
+			char path_prev[PATH_MAX];
+			id_path(&pos->id, path_prev, state_checkpoint(), false);
+			id_path(&pos->id, path, self->lsn, true);
+			auto rc = link(path_prev, path);
+			if (rc == -1)
+				error_system();
+			continue;
+		}
+
+		// create page file
+		page_save(pos->snapshot, self->lsn);
+
+		// free snapshot as soon as possible
+		page_free_snapshot(pos->snapshot);
+		pos->snapshot = NULL;
+
+		// todo: info
+	}
+
+	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete",
+	       state_directory(), self->lsn);
+
+	// sync checkpoint dir
+	if (opt_int_of(&config()->storage_sync))
+		fs_syncdir("{s}", path);
+
+	// sync checkpoint base dir
+	if (opt_int_of(&config()->storage_sync))
+		fs_syncdir("{s}/checkpoint", state_directory());
+
+	// rename as completed
+	fs_rename(path, "{s}/checkpoint/{u64}", state_directory(),
+	          self->lsn);
+
+	// done
+	info("");
+}
+
+static void
+checkpoint_abort(Checkpoint* self)
+{
+	auto pos = (CheckpointPage*)self->list.start;
+	auto end = (CheckpointPage*)self->list.position;
+	for (; pos < end; pos++)
+	{
+		if (pos->snapshot)
+		{
+			page_free_snapshot(pos->snapshot);
+			pos->snapshot = NULL;
+		}
+	}
+
+	fs_rmdir("{s}/checkpoint/{u64}.incomplete", state_directory(),
+	         self->lsn);
+
+	error("checkpoint: {u64} failed", self->lsn);
+}
+
+static void
+checkpoint_job(intptr_t* argv)
+{
+	auto self = (Checkpoint*)argv[0];
+	auto on_error = error_catch (
+		checkpoint_create(self);
+	);
+	if (on_error)
+	{
+		checkpoint_abort(self);
+		rethrow();
+	}
+}
+
+static void
+checkpoint_prepare(Checkpoint* self, Catalog* catalog)
+{
+	// create schema.sql content
+	describe_catalog(catalog, &self->schema);
+
+	// collect changed pages
+	list_foreach(&catalog->rels.list)
+	{
+		auto rel = list_at(Rel, link);
+		if (rel->type != REL_TABLE)
+			continue;
+		auto table = table_of(rel);
+		table_sync(table);
+
+		list_foreach(&table->parts.list)
+		{
+			// heap
+			auto part = list_at(Part, link);
+			checkpoint_add_storage(self, &part->heap->storage);
+
+			// vector stores
+			auto pos = (Flat**)part->flats.list.start;
+			auto end = (Flat**)part->flats.list.position;
+			for (; pos < end; pos++)
+				checkpoint_add_storage(self, &(*pos)->storage);
+		}
+	}
 }
 
 void
@@ -372,21 +227,18 @@ checkpoint(Checkpoints* checkpoints, Catalog* catalog)
 	Checkpoint cp;
 	checkpoint_init(&cp, state_lsn());
 	defer(checkpoint_free, &cp);
+	auto on_error =
+		error_catch(checkpoint_prepare(&cp, catalog));
 
-	// create schema.sql content
-	describe_catalog(catalog, &cp.schema);
+	// unlock catalog (still keeping checkpoint lock)
+	unlock(catalog_lock);
 
-#if 0
-	// collect changed pages
-	list_foreach(&self->catalog.rels.list)
-	{
-		auto rel = list_at(Rel, link);
-		if (rel->type == REL_TABLE)
-			table_sync(table_of(rel));
+	if (on_error)
+		rethrow();
 
-	}
-#endif
+	// run and wait
+	run(checkpoint_job, 1, &cp);
 
-	(void)checkpoints;
-	(void)catalog;
+	// set checkpoint
+	checkpoints_add(checkpoints, cp.lsn);
 }
