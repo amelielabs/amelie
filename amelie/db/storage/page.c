@@ -50,12 +50,24 @@ page_allocate(uint32_t size, int* memfd)
 }
 
 Page*
-page_allocate_cow(Page* parent, int fd)
+page_allocate_snapshot(Page* parent, int fd)
 {
-	auto pointer = mmap(NULL, parent->size, PROT_READ, MAP_PRIVATE, fd, 0);
+	// mapping only readable data
+	size_t page_size = 4096;
+	size_t size = (parent->position + page_size - 1) & ~(page_size - 1);
+
+	auto pointer = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (unlikely(pointer == MAP_FAILED))
 		error_system();
 	return (Page*)pointer;
+}
+
+void
+page_free_snapshot(Page* self)
+{
+	size_t page_size = 4096;
+	size_t size = (self->position + page_size - 1) & ~(page_size - 1);
+	vfs_munmap(self, size);
 }
 
 void
