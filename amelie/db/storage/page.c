@@ -15,16 +15,47 @@
 #include <amelie_storage.h>
 
 Page*
-page_allocate(uint32_t size)
+page_allocate(uint32_t size, int* memfd)
 {
-	Page* self = vfs_mmap(-1, size);
-	if (unlikely(self == NULL))
+	auto fd = memfd_create("page", MFD_CLOEXEC);
+	if (unlikely(fd == -1))
 		error_system();
+
+	auto rc = ftruncate(fd, size);
+	if (unlikely(rc == -1))
+	{
+		auto _errno = errno;
+		close(fd);
+		errno = _errno;
+		error_system();
+	}
+
+	auto prot = PROT_READ|PROT_WRITE;
+	auto pointer = mmap(NULL, size, prot, MAP_SHARED, fd, 0);
+	if (unlikely(pointer == MAP_FAILED))
+	{
+		auto _errno = errno;
+		close(fd);
+		errno = _errno;
+		error_system();
+	}
+	*memfd = fd;
+
+	Page* self = pointer;
 	memset(self, 0, sizeof(Page));
 	self->size          = size;
 	self->position      = sizeof(Page);
 	self->position_last = self->position;
 	return self;
+}
+
+Page*
+page_allocate_cow(Page* parent, int fd)
+{
+	auto pointer = mmap(NULL, parent->size, PROT_READ, MAP_PRIVATE, fd, 0);
+	if (unlikely(pointer == MAP_FAILED))
+		error_system();
+	return (Page*)pointer;
 }
 
 void
@@ -33,8 +64,14 @@ page_free(Page* self)
 	vfs_munmap(self, self->size);
 }
 
+static void
+close_defer(int* fd)
+{
+	close(*fd);
+}
+
 Page*
-page_load(Id* id, uint64_t checkpoint)
+page_load(Id* id, int* fd, uint64_t checkpoint)
 {
 	// <id_table>.<id_part>.meta
 	// <id_table>.<id_part>.<id_column>.meta
@@ -72,9 +109,11 @@ page_load(Id* id, uint64_t checkpoint)
 		error("storage: file '{str}' header size mismatch", &file.path);
 
 	// allocate page
-	auto self = page_allocate(header.size);
-	memcpy(self, &header, sizeof(header));
+	auto self = page_allocate(header.size, fd);
 	errdefer(page_free, self);
+	errdefer(close_defer, (void*)fd);
+
+	memcpy(self, &header, sizeof(header));
 
 	// prepare encoder
 	Encoder ec;

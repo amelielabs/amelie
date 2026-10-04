@@ -86,7 +86,6 @@ include_directories("${AMELIE_ROOT}/db/index")
 include_directories("${AMELIE_ROOT}/db/part")
 include_directories("${AMELIE_ROOT}/db/catalog")
 include_directories("${AMELIE_ROOT}/db/wal")
-include_directories("${AMELIE_ROOT}/db/checkpoint")
 include_directories("${AMELIE_ROOT}/db/db")
 
 # repl
@@ -184,7 +183,8 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/server/servers.c)
 
 set(AMELIE_SOURCES_DB
-    ${AMELIE_ROOT}/db/storage/storage_file.c
+    ${AMELIE_ROOT}/db/storage/page.c
+    ${AMELIE_ROOT}/db/storage/storage.c
     ${AMELIE_ROOT}/db/flat/flat.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/row_encode.c
@@ -206,7 +206,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/rel.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/catalog_limit.c
-    ${AMELIE_ROOT}/db/catalog/catalog_file.c
     ${AMELIE_ROOT}/db/catalog/catalog_mcp.c
     ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/catalog/describe.c
@@ -216,8 +215,8 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/wal/wal_cursor.c
     ${AMELIE_ROOT}/db/wal/wal_slot.c
     ${AMELIE_ROOT}/db/wal/wal_subscribe.c
-    ${AMELIE_ROOT}/db/checkpoint/checkpoint.c
-    ${AMELIE_ROOT}/db/checkpoint/checkpoints.c
+    ${AMELIE_ROOT}/db/db/checkpoints.c
+    ${AMELIE_ROOT}/db/db/checkpoint.c
     ${AMELIE_ROOT}/db/db/syncer.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_op.c

@@ -17,7 +17,9 @@ struct Storage
 {
 	Page*    current;
 	Page*    meta;
+	int      meta_fd;
 	Buf      list;
+	Buf      list_fd;
 	int      list_count;
 	int      type;
 	Id       id;
@@ -32,6 +34,12 @@ storage_at(Storage* self, int order)
 	return ((Page**)self->list.start)[order];
 }
 
+always_inline static inline int*
+storage_at_fd(Storage* self, int order)
+{
+	return &((int*)self->list_fd.start)[order];
+}
+
 always_inline static inline Page*
 storage_get(Storage* self, uint32_t id)
 {
@@ -44,31 +52,10 @@ storage_pointer_of(Storage* self, uint32_t page, int offset)
 	return page_at(storage_get(self, page), offset);
 }
 
-static inline void
-storage_init(Storage* self, Id* id, int type)
+static inline bool
+storage_empty(Storage* self)
 {
-	self->current    = NULL;
-	self->meta       = NULL;
-	self->list_count = 0;
-	self->type       = type;
-	self->id         = *id;
-	self->id_first   = 0;
-	self->id_next    = 0;
-	self->size       = 64 * 1024 * 1024;
-	buf_init(&self->list);
-}
-
-static inline void
-storage_free(Storage* self)
-{
-	for (auto i = 0; i < self->list_count; i++)
-	{
-		auto page = storage_at(self, i);
-		page_free(page);
-	}
-	if (self->meta)
-		page_free(self->meta);
-	buf_free(&self->list);
+	return !self->list_count;
 }
 
 static inline size_t
@@ -77,42 +64,13 @@ storage_size(Storage* self)
 	return self->list_count * self->size;
 }
 
-static inline bool
-storage_empty(Storage* self)
-{
-	return !self->list_count;
-}
+void  storage_init(Storage*f, Id*, int);
+void  storage_free(Storage*);
+Page* storage_add_meta(Storage*, int);
+Page* storage_add(Storage*);
+void  storage_open(Storage*, uint64_t, Id*, Buf*);
 
-static inline Page*
-storage_add_meta(Storage* self, int size)
-{
-	assert(! self->meta);
-	// create and set meta page
-	auto page = page_allocate(sizeof(Page) + size);
-	page->type       = PAGE_META;
-	page->id         = self->id;
-	page->id.id_page = UINT32_MAX;
-	page->position   = sizeof(Page) + size;
-	self->meta       = page;
-	return page;
-}
-
-static inline Page*
-storage_add(Storage* self)
-{
-	// create new page
-	auto page = page_allocate(self->size);
-	page->type       = self->type;
-	page->id         = self->id;
-	page->id.id_page = self->id_next++;
-	self->current    = page;
-
-	buf_write(&self->list, &page, sizeof(Page*));
-	self->list_count++;
-	return page;
-}
-
-static inline bool
+hot static inline bool
 storage_ensure(Storage* self, uint32_t size)
 {
 	// ensure size can fit the page
@@ -130,73 +88,10 @@ storage_ensure(Storage* self, uint32_t size)
 	return false;
 }
 
-static inline Page*
-storage_pop(Storage* self)
-{
-	if (unlikely(! self->list_count))
-		return NULL;
-
-	auto page = storage_at(self, 0);
-	self->list_count--;
-
-	auto to_move = self->list_count * sizeof(Page*);
-	memmove(self->list.start, self->list.start + sizeof(Page*), to_move);
-	buf_truncate(&self->list, sizeof(Page*));
-
-	if (self->list_count > 0)
-	{
-		self->id_first = ((Page**)self->list.start)[0]->id.id_page;
-	} else
-	{
-		self->id_first = 0;
-		self->id_next  = 0;
-	}
-	return page;
-}
-
 always_inline static inline int64_t
 storage_delta(Storage* self, Page* page)
 {
 	if (likely(self->current == page))
 		return 0;
 	return self->current->size;
-}
-
-static inline void
-storage_open(Storage* self, uint64_t checkpoint,
-             Id*      meta,
-             Buf*     list)
-{
-	storage_free(self);
-	storage_init(self, &self->id, self->type);
-
-	// load meta page
-	self->meta = page_load(meta, checkpoint);
-
-	// load pages (list is sorted)
-	uint32_t id = 0;
-	auto pos = (Id**)list->start;
-	auto end = (Id**)list->position;
-	while (pos < end)
-	{
-		auto page = page_load(*pos, checkpoint);
-
-		buf_write(&self->list, &page, sizeof(Page*));
-		self->list_count++;
-
-		if (self->list_count == 1)
-			self->id_first = page->id.id_page;
-
-		if (page->id.id_page > id)
-			id = page->id.id_page;
-
-		// last page
-		self->current = page;
-		pos++;
-	}
-
-	// set next page id
-	if (self->list_count > 0)
-		id++;
-	self->id_next = id;
 }
