@@ -68,16 +68,16 @@ part_free(Part* self)
 }
 
 static void
-part_open_heap(Part* self, uint64_t checkpoint)
+part_open_heap(Part* self, Ids* ids)
 {
 	// open partition page files
 	auto list = buf_create();
 	defer_buf(list);
 
-	auto meta    = pages_collect(NULL, list, self->arg->rel->id, self->config->id, UINT32_MAX);
+	auto meta    = ids_collect(ids, list, self->arg->rel->id, self->config->id, UINT32_MAX);
 	auto heap    = self->heap;
 	auto storage = &heap->storage;
-	storage_open(storage, checkpoint, meta, list);
+	storage_open(storage, state_checkpoint(), meta, list);
 	heap_open(heap);
 
 	// create primary index iterator for upsert
@@ -130,14 +130,14 @@ part_open_heap(Part* self, uint64_t checkpoint)
 }
 
 static void
-part_open_flat(Part* self, Flat* flat, uint64_t checkpoint)
+part_open_flat(Part* self, Flat* flat, Ids* ids)
 {
 	// open partition column page files
 	auto list = buf_create();
 	defer_buf(list);
-	auto meta    = pages_collect(NULL, list, self->arg->rel->id, self->config->id, flat->column->order);
+	auto meta    = ids_collect(ids, list, self->arg->rel->id, self->config->id, flat->column->order);
 	auto storage = &flat->storage;
-	storage_open(storage, checkpoint, meta, list);
+	storage_open(storage, state_checkpoint(), meta, list);
 	flat_open(flat);
 
 	usage_update(self->arg->memory, storage_size(&flat->storage));
@@ -154,10 +154,10 @@ part_open_flat(Part* self, Flat* flat, uint64_t checkpoint)
 }
 
 void
-part_open(Part* self, uint64_t checkpoint)
+part_open(Part* self, Ids* ids)
 {
 	// heap
-	part_open_heap(self, checkpoint);
+	part_open_heap(self, ids);
 
 	// vector stores (per column)
 	auto primary = part_primary(self);
@@ -168,7 +168,7 @@ part_open(Part* self, uint64_t checkpoint)
 		if (! column->size_flat)
 			continue;
 		auto flat = flats_at(&self->flats, column);
-		part_open_flat(self, flat, checkpoint);
+		part_open_flat(self, flat, ids);
 	}
 }
 

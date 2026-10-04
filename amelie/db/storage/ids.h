@@ -11,36 +11,36 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Pages Pages;
+typedef struct Ids Ids;
 
-struct Pages
+struct Ids
 {
 	Buf list;
 	int list_count;
 };
 
 static inline void
-pages_init(Pages* self)
+ids_init(Ids* self)
 {
 	self->list_count = 0;
 	buf_init(&self->list);
 }
 
 static inline void
-pages_free(Pages* self)
+ids_free(Ids* self)
 {
 	buf_free(&self->list);
 }
 
 static inline void
-pages_add(Pages* self, Id* id)
+ids_add(Ids* self, Id* id)
 {
 	buf_write(&self->list, id, sizeof(*id));
 	self->list_count++;
 }
 
 static inline void
-pages_read(Pages* self, uint64_t checkpoint)
+ids_read(Ids* self, uint64_t checkpoint)
 {
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{s}/checkpoint/{u64}",
@@ -69,12 +69,12 @@ pages_read(Pages* self, uint64_t checkpoint)
 		id_init(&id);
 		if (id_read(&id, entry->d_name) == -1)
 			continue;
-		pages_add(self, &id);
+		ids_add(self, &id);
 	}
 }
 
 static inline Id*
-pages_collect(Pages* self, Buf* list, Uuid* id_table, int id_part, int id_column)
+ids_collect(Ids* self, Buf* list, Uuid* id_table, int id_part, int id_column)
 {
 	Id* meta = NULL;
 	(void)self;

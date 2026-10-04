@@ -20,7 +20,7 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_checkpoint.h>
+#include <amelie_db.h>
 
 static inline CheckpointRef*
 checkpoint_ref_allocate(uint64_t id)
@@ -125,12 +125,18 @@ checkpoints_open(Checkpoints* self)
 	state_checkpoint_set(id);
 	state_lsn_follow(id);
 
+	// read checkpoint directory
+	Ids ids;
+	ids_init(&ids);
+	defer(ids_free, &ids);
+	ids_read(&ids, 	id);
+
 	// restore last checkpoint schema
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{s}/checkpoint/{u64}/schema.sql",
 	       state_directory(), id);
 
-	catalog_read(self->catalog, path);
+	catalog_read(self->catalog, &ids, path);
 }
 
 void

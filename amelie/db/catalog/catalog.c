@@ -27,6 +27,7 @@ catalog_init(Catalog*   self,
              PartsIf*   iface_part,
              void*      iface_arg)
 {
+	self->ids        = NULL;
 	self->iface      = iface;
 	self->iface_part = iface_part;
 	self->iface_eval = iface_eval;

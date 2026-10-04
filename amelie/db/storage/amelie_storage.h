@@ -11,10 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
-// storage
+// storage file id
 #include "storage/id.h"
+#include "storage/ids.h"
+
+// storage
 #include "storage/page.h"
-#include "storage/pages.h"
 #include "storage/storage.h"
 
 // compression
