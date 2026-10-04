@@ -34,14 +34,14 @@ page_free(Page* self)
 }
 
 Page*
-page_load(PageId* id, uint64_t checkpoint)
+page_load(Id* id, uint64_t checkpoint)
 {
 	// <id_table>.<id_part>.meta
 	// <id_table>.<id_part>.<id_column>.meta
 	// <id_table>.<id_part>.<id_page>
 	// <id_table>.<id_part>.<id_page>.<id_column>
 	char path[PATH_MAX];
-	page_id_path(id, path, checkpoint, false);
+	id_path(id, path, checkpoint, false);
 
 	// open file
 	File file;
@@ -139,7 +139,7 @@ page_save(Page* self, uint64_t checkpoint, bool incomplete)
 	// <id_table>.<id_part>.<id_page>
 	// <id_table>.<id_part>.<id_page>.<id_column>
 	char path[PATH_MAX];
-	page_id_path(&self->id, path, checkpoint, incomplete);
+	id_path(&self->id, path, checkpoint, incomplete);
 
 	// create file
 	File file;

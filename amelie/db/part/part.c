@@ -23,10 +23,12 @@ Part*
 part_allocate(PartConfig* config, PartArg* arg)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
+	Id id;
+	id_set(&id, arg->rel->id, config->id);
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->in_progress   = NULL;
-	self->heap          = heap_allocate();
+	self->heap          = heap_allocate(&id);
 	self->config        = part_config_copy(config);
 	self->arg           = arg;
 	self->streams       = NULL;
@@ -68,19 +70,15 @@ part_free(Part* self)
 static void
 part_open_heap(Part* self, uint64_t checkpoint)
 {
-	// table id
-	auto rel = self->arg->rel;
-	char uuid[UUID_SZ];
-	uuid_get(rel->id, uuid, sizeof(uuid));
+	// open partition page files
+	auto list = buf_create();
+	defer_buf(list);
 
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}/{s}.{02d}",
-	       state_directory(), checkpoint,
-	       uuid,
-	       (int)self->config->id);
-
-	// read heap file
-	heap_open(self->heap, path);
+	auto meta    = pages_collect(NULL, list, self->arg->rel->id, self->config->id, UINT32_MAX);
+	auto heap    = self->heap;
+	auto storage = &heap->storage;
+	storage_open(storage, checkpoint, meta, list);
+	heap_open(heap);
 
 	// create primary index iterator for upsert
 	auto primary = part_primary(self);
@@ -90,7 +88,7 @@ part_open_heap(Part* self, uint64_t checkpoint)
 	// create heap iterator
 	HeapIterator it;
 	heap_iterator_init(&it);
-	heap_iterator_open(&it, self->heap, false);
+	heap_iterator_open(&it, heap, false);
 
 	// build indexes
 	uint64_t count = 0;
@@ -119,39 +117,39 @@ part_open_heap(Part* self, uint64_t checkpoint)
 		usage_update(self->arg->memory, op.delta);
 		count++;
 	}
-	usage_update(self->arg->memory, storage_size(&self->heap->storage));
+	usage_update(self->arg->memory, storage_size(storage));
 
-	auto total = (double)storage_size(&self->heap->storage) / 1024 / 1024;
-	info("recover: {s}.{02d}    ({.2f} MB, {u64} rows)",
+	char uuid[UUID_SZ];
+	uuid_get(self->arg->rel->id, uuid, sizeof(uuid));
+	auto total = (double)storage_size(storage) / 1024 / 1024;
+	info("recover: {s}.{d}    ({d} pages, {.2f} MB, {u64} rows)",
 	     uuid,
 	     (int)self->config->id,
+	     storage->list_count,
 	     total, count);
 }
 
 static void
 part_open_flat(Part* self, Flat* flat, uint64_t checkpoint)
 {
-	// table id
-	auto rel = self->arg->rel;
-	char uuid[UUID_SZ];
-	uuid_get(rel->id, uuid, sizeof(uuid));
+	// open partition column page files
+	auto list = buf_create();
+	defer_buf(list);
+	auto meta    = pages_collect(NULL, list, self->arg->rel->id, self->config->id, flat->column->order);
+	auto storage = &flat->storage;
+	storage_open(storage, checkpoint, meta, list);
+	flat_open(flat);
 
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}/{s}.{02d}.{02d}",
-	       state_directory(), checkpoint,
-	       uuid,
-	       (int)self->config->id,
-	       (int)flat->column->order);
-
-	// read flat file
-	flat_open(flat, path);
 	usage_update(self->arg->memory, storage_size(&flat->storage));
 
+	char uuid[UUID_SZ];
+	uuid_get(self->arg->rel->id, uuid, sizeof(uuid));
 	auto total = (double)storage_size(&flat->storage) / 1024 / 1024;
-	info("recover: {s}.{02d}.{02d} ({.2f} MB)",
+	info("recover: {s}.{02d}.{02d} ({d} pages, {.2f} MB)",
 	     uuid,
 	     (int)self->config->id,
 	     (int)flat->column->order,
+	     storage->list_count,
 	     total);
 }
 
@@ -183,7 +181,9 @@ part_truncate(Part* self)
 		index_truncate(index, &op);
 
 	// create a new empty heap with matching metadata
-	auto new = heap_allocate();
+	Id id;
+	id_set(&id, self->arg->rel->id, self->config->id);
+	auto new = heap_allocate(&id);
 	int64_t delta = -storage_size(&self->heap->storage) + storage_size(&new->storage);
 	heap_free(self->heap);
 	self->heap = new;

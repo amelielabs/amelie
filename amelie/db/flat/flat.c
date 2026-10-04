@@ -16,7 +16,7 @@
 #include <amelie_flat.h>
 
 Flat*
-flat_allocate(Column* column)
+flat_allocate(Column* column, Id* id)
 {
 	auto self = (Flat*)am_malloc(sizeof(Flat));
 	self->dim = column->size_flat / sizeof(float);
@@ -47,7 +47,7 @@ flat_allocate(Column* column)
 	self->column = column;
 
 	auto storage = &self->storage;
-	storage_init(storage, PAGE_FLAT);
+	storage_init(storage, id, PAGE_FLAT);
 	storage_add_meta(storage, sizeof(FlatHeader));
 
 	self->header = (FlatHeader*)storage->meta->data;

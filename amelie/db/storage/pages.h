@@ -33,7 +33,7 @@ pages_free(Pages* self)
 }
 
 static inline void
-pages_add(Pages* self, PageId* id)
+pages_add(Pages* self, Id* id)
 {
 	buf_write(&self->list, id, sizeof(*id));
 	self->list_count++;
@@ -65,10 +65,25 @@ pages_read(Pages* self, uint64_t checkpoint)
 		if (! strcmp(entry->d_name, ".."))
 			continue;
 
-		PageId id;
-		page_id_init(&id);
-		if (page_id_read(&id, entry->d_name) == -1)
+		Id id;
+		id_init(&id);
+		if (id_read(&id, entry->d_name) == -1)
 			continue;
 		pages_add(self, &id);
 	}
+}
+
+static inline Id*
+pages_collect(Pages* self, Buf* list, Uuid* id_table, int id_part, int id_column)
+{
+	Id* meta = NULL;
+	(void)self;
+	(void)id_table;
+	(void)id_part;
+	(void)id_column;
+	(void)list;
+
+	// todo: match everything matching id_table and id_part without id_column
+	// todo: sort by id_part
+	return meta;
 }

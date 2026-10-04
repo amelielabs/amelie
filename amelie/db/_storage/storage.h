@@ -13,23 +13,27 @@
 
 typedef struct Storage Storage;
 
+enum
+{
+	STORAGE_FLAT,
+	STORAGE_HEAP
+};
+
 struct Storage
 {
 	Page*    current;
-	Page*    meta;
 	Buf      list;
 	int      list_count;
-	int      type;
-	Id       id;
 	uint32_t id_first;
-	uint32_t id_next;
-	int      size;
+	uint32_t id_seq;
+	int      size_page;
+	int      type;
 };
 
 always_inline static inline Page*
-storage_at(Storage* self, int order)
+storage_at(Storage* self, int pos)
 {
-	return ((Page**)self->list.start)[order];
+	return ((Page**)self->list.start)[pos];
 }
 
 always_inline static inline Page*
@@ -44,17 +48,22 @@ storage_pointer_of(Storage* self, uint32_t page, int offset)
 	return page_at(storage_get(self, page), offset);
 }
 
+always_inline static inline bool
+storage_is_last(Storage* self, uint32_t id)
+{
+	auto pos = id - self->id_first;
+	return pos == (uint32_t)(self->list_count - 1);
+}
+
 static inline void
-storage_init(Storage* self, Id* id, int type)
+storage_init(Storage* self, int type)
 {
 	self->current    = NULL;
-	self->meta       = NULL;
 	self->list_count = 0;
-	self->type       = type;
-	self->id         = *id;
 	self->id_first   = 0;
-	self->id_next    = 0;
-	self->size       = 64 * 1024 * 1024;
+	self->id_seq     = 0;
+	self->size_page  = 64 * 1024 * 1024;
+	self->type       = type;
 	buf_init(&self->list);
 }
 
@@ -66,15 +75,13 @@ storage_free(Storage* self)
 		auto page = storage_at(self, i);
 		page_free(page);
 	}
-	if (self->meta)
-		page_free(self->meta);
 	buf_free(&self->list);
 }
 
 static inline size_t
 storage_size(Storage* self)
 {
-	return self->list_count * self->size;
+	return self->list_count * self->size_page;
 }
 
 static inline bool
@@ -83,29 +90,31 @@ storage_empty(Storage* self)
 	return !self->list_count;
 }
 
-static inline Page*
-storage_add_meta(Storage* self, int size)
+static inline void
+storage_import(Storage* self, Page* page)
 {
-	assert(! self->meta);
-	// create and set meta page
-	auto page = page_allocate(sizeof(Page) + size);
-	page->type       = PAGE_META;
-	page->id         = self->id;
-	page->id.id_page = UINT32_MAX;
-	page->position   = sizeof(Page) + size;
-	self->meta       = page;
-	return page;
+	buf_write(&self->list, &page, sizeof(Page*));
+	self->list_count++;
+
+	if (self->list_count == 1)
+	{
+		self->id_first = page->id;
+		self->id_seq   = page->id;
+	}
+
+	if (page->id > self->id_seq)
+		self->id_seq = page->id;
+
+	self->current = page;
 }
 
 static inline Page*
 storage_add(Storage* self)
 {
-	// create new page
-	auto page = page_allocate(self->size);
-	page->type       = self->type;
-	page->id         = self->id;
-	page->id.id_page = self->id_next++;
-	self->current    = page;
+	// mmap page
+	auto page = page_allocate(self->size_page);
+	page->id = self->id_seq++;
+	self->current = page;
 
 	buf_write(&self->list, &page, sizeof(Page*));
 	self->list_count++;
@@ -116,7 +125,7 @@ static inline bool
 storage_ensure(Storage* self, uint32_t size)
 {
 	// ensure size can fit the page
-	uint32_t max = self->size - sizeof(Page);
+	uint32_t max = self->size_page - sizeof(Page);
 	if (unlikely(size > max))
 		error("storage: max page capacity {u32} exceeded", max);
 
@@ -145,58 +154,19 @@ storage_pop(Storage* self)
 
 	if (self->list_count > 0)
 	{
-		self->id_first = ((Page**)self->list.start)[0]->id.id_page;
+		self->id_first = ((Page**)self->list.start)[0]->id;
 	} else
 	{
 		self->id_first = 0;
-		self->id_next  = 0;
+		self->id_seq   = 0;
 	}
 	return page;
 }
 
 always_inline static inline int64_t
-storage_delta(Storage* self, Page* page)
+storage_delta(Storage* self, Page* current)
 {
-	if (likely(self->current == page))
+	if (likely(self->current == current))
 		return 0;
-	return self->current->size;
-}
-
-static inline void
-storage_open(Storage* self, uint64_t checkpoint,
-             Id*      meta,
-             Buf*     list)
-{
-	storage_free(self);
-	storage_init(self, &self->id, self->type);
-
-	// load meta page
-	self->meta = page_load(meta, checkpoint);
-
-	// load pages (list is sorted)
-	uint32_t id = 0;
-	auto pos = (Id**)list->start;
-	auto end = (Id**)list->position;
-	while (pos < end)
-	{
-		auto page = page_load(*pos, checkpoint);
-
-		buf_write(&self->list, &page, sizeof(Page*));
-		self->list_count++;
-
-		if (self->list_count == 1)
-			self->id_first = page->id.id_page;
-
-		if (page->id.id_page > id)
-			id = page->id.id_page;
-
-		// last page
-		self->current = page;
-		pos++;
-	}
-
-	// set next page id
-	if (self->list_count > 0)
-		id++;
-	self->id_next = id;
+	return self->size_page;
 }

@@ -73,7 +73,10 @@ parts_open(Parts* self, List* parts, List* indexes)
 			auto column = list_at(Column, link);
 			if (! column->size_flat)
 				continue;
-			auto flat = flat_allocate(column);
+			Id id;
+			id_set(&id, self->arg->rel->id, part->config->id);
+			id_set_column(&id, column->order);
+			auto flat = flat_allocate(column, &id);
 			flats_add(&part->flats, flat);
 		}
 
@@ -145,7 +148,10 @@ parts_column_create(Parts* self, Column* column)
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
-		auto flat = flat_allocate(column);
+		Id id;
+		id_set(&id, self->arg->rel->id, part->config->id);
+		id_set_column(&id, column->order);
+		auto flat = flat_allocate(column, &id);
 		flats_add(&part->flats, flat);
 	}
 }

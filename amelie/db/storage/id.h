@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PageId PageId;
+typedef struct Id Id;
 
-struct PageId
+struct Id
 {
 	Uuid     id_table;
 	uint32_t id_part;
@@ -22,14 +22,34 @@ struct PageId
 } packed;
 
 static inline void
-page_id_init(PageId* self)
+id_init(Id* self)
 {
 	memset(self, 0, sizeof(*self));
+}
+
+static inline void
+id_set(Id* self, Uuid* id_table, uint32_t id_part)
+{
+	self->id_table  = *id_table;
+	self->id_part   =  id_part;
+	self->id_page   = UINT32_MAX;
 	self->id_column = UINT32_MAX;
 }
 
+static inline void
+id_set_page(Id* self, uint32_t id)
+{
+	self->id_page  = id;
+}
+
+static inline void
+id_set_column(Id* self, uint32_t id)
+{
+	self->id_column = id;
+}
+
 static inline int
-page_id_read(PageId* self, char* spec)
+id_read(Id* self, char* spec)
 {
 	(void)self;
 	(void)spec;
@@ -38,7 +58,7 @@ page_id_read(PageId* self, char* spec)
 }
 
 static inline void
-page_id_path(PageId* self, char* path, uint64_t checkpoint, bool incomplete)
+id_path(Id* self, char* path, uint64_t checkpoint, bool incomplete)
 {
 	// <id_table>.<id_part>.meta
 	// <id_table>.<id_part>.<id_column>.meta

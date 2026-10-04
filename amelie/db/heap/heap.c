@@ -76,12 +76,12 @@ heap_prepare(Heap* self)
 }
 
 Heap*
-heap_allocate(void)
+heap_allocate(Id* id)
 {
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets = NULL;
 	self->header  = NULL;
-	storage_init(&self->storage, PAGE_HEAP);
+	storage_init(&self->storage, id, PAGE_HEAP);
 	heap_prepare(self);
 	return self;
 }
@@ -99,7 +99,8 @@ heap_open(Heap* self)
 	// set header
 	auto storage = &self->storage;
 	assert(!storage->meta && storage->meta->size == sizeof(HeapHeader));
-	self->header = (HeapHeader*)storage->meta->data;
+	self->header  = (HeapHeader*)storage->meta->data;
+	self->buckets = self->header->buckets;
 }
 
 typedef struct
