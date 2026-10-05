@@ -67,7 +67,7 @@ flat_open(Flat* self)
 {
 	// set header
 	auto storage = &self->storage;
-	assert(!storage->meta && storage->meta->size == sizeof(FlatHeader));
+	assert(storage->meta && storage->meta->size == sizeof(Page) + sizeof(FlatHeader));
 	self->header = (FlatHeader*)storage->meta->data;
 }
 

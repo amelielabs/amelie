@@ -51,10 +51,6 @@ ids_read(Ids* self, uint64_t checkpoint)
 		error_system();
 	defer(fs_closedir_defer, dir);
 
-	// <id_table>.<id_part>.meta
-	// <id_table>.<id_part>.<id_column>.meta
-	// <id_table>.<id_part>.<id_page>
-	// <id_table>.<id_part>.<id_page>.<id_column>
 	for (;;)
 	{
 		auto entry = readdir(dir);

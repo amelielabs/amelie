@@ -49,7 +49,7 @@ void
 db_open(Db* self, bool bootstrap)
 {
 	state_lsn_set(1);
-	state_checkpoint_set(1);
+	state_checkpoint_set(0);
 
 	// open wal files and maybe truncate wal files according
 	// to the wal_truncate option

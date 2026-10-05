@@ -119,6 +119,7 @@ checkpoint_create(Checkpoint* self)
 		}
 
 		// create page file
+		assert(! pos->snapshot->changed);
 		page_save(pos->snapshot, self->lsn);
 
 		// free snapshot as soon as possible

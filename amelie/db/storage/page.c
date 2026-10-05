@@ -43,6 +43,7 @@ page_allocate(uint32_t size, int* memfd)
 
 	Page* self = pointer;
 	memset(self, 0, sizeof(Page));
+	self->changed       = true;
 	self->size          = size;
 	self->position      = sizeof(Page);
 	self->position_last = self->position;
@@ -56,7 +57,7 @@ page_allocate_snapshot(Page* parent, int fd)
 	size_t page_size = 4096;
 	size_t size = (parent->position + page_size - 1) & ~(page_size - 1);
 
-	auto pointer = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+	auto pointer = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
 	if (unlikely(pointer == MAP_FAILED))
 		error_system();
 	return (Page*)pointer;
