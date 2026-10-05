@@ -89,9 +89,8 @@ ids_collect(Ids* self, Buf* list, Id* filter)
 			continue;
 		if (filter->id_part != pos->id_part)
 			continue;
-		if (filter->id_column != UINT32_MAX && filter->id_column != pos->id_column)
+		if (filter->id_column != pos->id_column)
 			continue;
-
 		// meta
 		if (pos->id_page == UINT32_MAX)
 		{

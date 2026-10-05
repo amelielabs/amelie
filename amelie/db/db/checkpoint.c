@@ -177,28 +177,7 @@ checkpoint_run(Checkpoint* self)
 		error_system();
 
 	if (self->pid > 0)
-	{
-		// wait for completion
-		event_wait(&self->on_complete, -1);
-
-		int status = 0;
-		int rc = waitpid(self->pid, &status, 0);
-		if (rc == -1)
-			error_system();
-
-		bool failed = false;
-		if (WIFEXITED(status))
-		{
-			if (WEXITSTATUS(status) == EXIT_FAILURE)
-				failed = true;
-		} else {
-			failed = true;
-		}
-		if (failed)
-			error("checkpoint: failed");
-
 		return;
-	};
 
 	// create checkpoint
 	auto error = error_catch
@@ -224,6 +203,29 @@ checkpoint_run(Checkpoint* self)
 	if (! error)
 		execl("/bin/true", "/bin/true", NULL);
 	execl("/bin/false", "/bin/false", NULL);
+}
+
+static void
+checkpoint_wait(Checkpoint* self)
+{
+	// wait for completion
+	event_wait(&self->on_complete, -1);
+
+	int status = 0;
+	int rc = waitpid(self->pid, &status, 0);
+	if (rc == -1)
+		error_system();
+
+	bool failed = false;
+	if (WIFEXITED(status))
+	{
+		if (WEXITSTATUS(status) == EXIT_FAILURE)
+			failed = true;
+	} else {
+		failed = true;
+	}
+	if (failed)
+		error("checkpoint: failed");
 }
 
 static void
@@ -274,16 +276,23 @@ checkpoint(Checkpoints* checkpoints, Catalog* catalog)
 	defer(checkpoint_free, &cp);
 	checkpoint_prepare(&cp, catalog);
 
-	// unlock catalog (still keeping checkpoint lock)
-	unlock(catalog_lock);
-
 	info("");
 	info("checkpoint: checkpoint/{u64}", cp.lsn);
 
-	// run and wait
-	auto on_error = error_catch
-	(
+	// run
+	auto on_error = error_catch (
 		checkpoint_run(&cp);
+	);
+
+	// unlock catalog (still keeping checkpoint lock)
+	unlock(catalog_lock);
+
+	if (on_error)
+		rethrow();
+
+	// wait for completion
+	on_error = error_catch (
+		checkpoint_wait(&cp);
 	);
 	if (on_error) {
 		error("checkpoint: {u64} failed", cp.lsn);

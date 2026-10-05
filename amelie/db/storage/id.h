@@ -99,7 +99,7 @@ id_read(Id* self, char* spec)
 	}
 
 	// partition column file
-	if (! str_is(&id, "column", 4))
+	if (! str_is(&id, "column", 6))
 		return -1;
 	str_advance(&name, 1);
 

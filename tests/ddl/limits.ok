@@ -198,7 +198,7 @@ show memory;
 memory
 ──────
 {
-  "usage": 528424,
+  "usage": 67113000,
   "limit_enabled": false,
   "limit": 0
 }
@@ -243,7 +243,7 @@ show memory;
 memory
 ──────
 {
-  "usage": 524288,
+  "usage": 67108864,
   "limit_enabled": false,
   "limit": 0
 }
