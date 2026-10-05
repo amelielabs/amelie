@@ -73,17 +73,44 @@ ids_read(Ids* self, uint64_t checkpoint)
 	}
 }
 
-static inline Id*
-ids_collect(Ids* self, Buf* list, Uuid* id_table, int id_part, int id_column)
+hot static int
+ids_cmp(const void* p1, const void* p2)
 {
-	Id* meta = NULL;
-	(void)self;
-	(void)id_table;
-	(void)id_part;
-	(void)id_column;
-	(void)list;
+	auto a = (*(Id**)p1)->id_page;
+	auto b = (*(Id**)p2)->id_page;
+	return compare_uint64(a, b);
+}
 
-	// todo: match everything matching id_table and id_part without id_column
-	// todo: sort by id_part
+static inline Id*
+ids_collect(Ids* self, Buf* list, Id* filter)
+{
+	auto meta = (Id*)NULL;
+	auto pos  = (Id*)self->list.start;
+	auto end  = (Id*)self->list.position;
+	for (; pos < end; pos++)
+	{
+		if (! uuid_is(&filter->id_table, &pos->id_table))
+			continue;
+		if (filter->id_part != pos->id_part)
+			continue;
+		if (filter->id_column != UINT32_MAX && filter->id_column != pos->id_column)
+			continue;
+
+		// meta
+		if (pos->id_page == UINT32_MAX)
+		{
+			meta = pos;
+			continue;
+		}
+		buf_write(list, &pos, sizeof(Id**));
+	}
+
+	// sort by page
+	if (! buf_empty(list))
+	{
+		auto count = buf_size(list) / sizeof(Id**);
+		qsort(list->start, count, sizeof(Id**), ids_cmp);
+	}
+
 	return meta;
 }

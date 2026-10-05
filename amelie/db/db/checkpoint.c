@@ -187,7 +187,7 @@ checkpoint_prepare(Checkpoint* self, Catalog* catalog)
 	// create schema.sql content
 	describe_catalog(catalog, &self->schema);
 
-	// collect changed pages
+	// collect pages
 	list_foreach(&catalog->rels.list)
 	{
 		auto rel = list_at(Rel, link);
@@ -217,7 +217,7 @@ checkpoint(Checkpoints* checkpoints, Catalog* catalog)
 	if (state_lsn() == state_checkpoint())
 		return;
 
-	// one checkpoint, create index or backup at a time
+	// take checkpoint lock (one checkpoint, create index or backup at a time)
 	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
 	defer(unlock, checkpoint_lock);
 

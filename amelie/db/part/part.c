@@ -70,14 +70,13 @@ part_free(Part* self)
 static void
 part_open_heap(Part* self, Ids* ids)
 {
-	// open partition page files
-	auto list = buf_create();
-	defer_buf(list);
-
-	auto meta    = ids_collect(ids, list, self->arg->rel->id, self->config->id, UINT32_MAX);
 	auto heap    = self->heap;
 	auto storage = &heap->storage;
-	storage_open(storage, state_checkpoint(), meta, list);
+
+	// open partition page files
+	Id filter;
+	id_set(&filter, self->arg->rel->id, self->config->id);
+	storage_open(storage, state_checkpoint(), ids, &filter);
 	heap_open(heap);
 
 	// create primary index iterator for upsert
@@ -133,11 +132,10 @@ static void
 part_open_flat(Part* self, Flat* flat, Ids* ids)
 {
 	// open partition column page files
-	auto list = buf_create();
-	defer_buf(list);
-	auto meta    = ids_collect(ids, list, self->arg->rel->id, self->config->id, flat->column->order);
-	auto storage = &flat->storage;
-	storage_open(storage, state_checkpoint(), meta, list);
+	Id filter;
+	id_set(&filter, self->arg->rel->id, self->config->id);
+	id_set_column(&filter, flat->column->order);
+	storage_open(&flat->storage, state_checkpoint(), ids, &filter);
 	flat_open(flat);
 
 	usage_update(self->arg->memory, storage_size(&flat->storage));
@@ -149,7 +147,7 @@ part_open_flat(Part* self, Flat* flat, Ids* ids)
 	     uuid,
 	     (int)self->config->id,
 	     (int)flat->column->order,
-	     storage->list_count,
+	     flat->storage.list_count,
 	     total);
 }
 

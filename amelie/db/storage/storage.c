@@ -88,11 +88,15 @@ storage_add(Storage* self)
 
 void
 storage_open(Storage* self, uint64_t checkpoint,
-             Id*      meta,
-             Buf*     list)
+             Ids*     ids,
+             Id*      filter)
 {
 	storage_free(self);
 	storage_init(self, &self->id, self->type);
+
+	auto list = buf_create();
+	defer_buf(list);
+	auto meta = ids_collect(ids, list, filter);
 
 	// load meta page
 	self->meta = page_load(meta, &self->meta_fd, checkpoint);
