@@ -15,31 +15,12 @@
 #include <amelie_storage.h>
 
 Page*
-page_allocate(uint32_t size, int* memfd)
+page_allocate(uint32_t size)
 {
-	auto fd = memfd_create("page", MFD_CLOEXEC);
-	if (unlikely(fd == -1))
-		error_system();
-
-	auto rc = ftruncate(fd, size);
-	if (unlikely(rc == -1))
-	{
-		auto _errno = errno;
-		close(fd);
-		errno = _errno;
-		error_system();
-	}
-
 	auto prot = PROT_READ|PROT_WRITE;
-	auto pointer = mmap(NULL, size, prot, MAP_SHARED, fd, 0);
+	auto pointer = mmap(NULL, size, prot, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 	if (unlikely(pointer == MAP_FAILED))
-	{
-		auto _errno = errno;
-		close(fd);
-		errno = _errno;
 		error_system();
-	}
-	*memfd = fd;
 
 	Page* self = pointer;
 	memset(self, 0, sizeof(Page));
@@ -50,46 +31,15 @@ page_allocate(uint32_t size, int* memfd)
 	return self;
 }
 
-Page*
-page_allocate_snapshot(Page* parent, int fd)
-{
-	// mapping only readable data
-	size_t page_size = 4096;
-	size_t size = (parent->position + page_size - 1) & ~(page_size - 1);
-
-	auto pointer = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
-	if (unlikely(pointer == MAP_FAILED))
-		error_system();
-	return (Page*)pointer;
-}
-
-void
-page_free_snapshot(Page* self)
-{
-	size_t page_size = 4096;
-	size_t size = (self->position + page_size - 1) & ~(page_size - 1);
-	vfs_munmap(self, size);
-}
-
 void
 page_free(Page* self)
 {
 	vfs_munmap(self, self->size);
 }
 
-static void
-close_defer(int* fd)
-{
-	close(*fd);
-}
-
 Page*
-page_load(Id* id, int* fd, uint64_t checkpoint)
+page_load(Id* id, uint64_t checkpoint)
 {
-	// <id_table>.<id_part>.meta
-	// <id_table>.<id_part>.<id_column>.meta
-	// <id_table>.<id_part>.<id_page>
-	// <id_table>.<id_part>.<id_page>.<id_column>
 	char path[PATH_MAX];
 	id_path(id, path, checkpoint, false);
 
@@ -122,9 +72,8 @@ page_load(Id* id, int* fd, uint64_t checkpoint)
 		error("storage: file '{str}' header size mismatch", &file.path);
 
 	// allocate page
-	auto self = page_allocate(header.size, fd);
+	auto self = page_allocate(header.size);
 	errdefer(page_free, self);
-	errdefer(close_defer, (void*)fd);
 
 	memcpy(self, &header, sizeof(header));
 
@@ -186,10 +135,6 @@ page_save(Page* self, uint64_t checkpoint)
 	Page header;
 	memcpy(&header, self, sizeof(Page));
 
-	// <id_table>.<id_part>.meta
-	// <id_table>.<id_part>.<id_column>.meta
-	// <id_table>.<id_part>.<id_page>
-	// <id_table>.<id_part>.<id_page>.<id_column>
 	char path[PATH_MAX];
 	id_path(&self->id, path, checkpoint, true);
 

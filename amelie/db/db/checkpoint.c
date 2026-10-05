@@ -28,7 +28,7 @@ typedef struct Checkpoint     Checkpoint;
 struct CheckpointPage
 {
 	Id    id;
-	Page* snapshot;
+	Page* page;
 };
 
 struct Checkpoint
@@ -36,52 +36,57 @@ struct Checkpoint
 	uint64_t lsn;
 	Buf      list;
 	Buf      schema;
+	pid_t    pid;
+	Notify   notify;
+	Event    on_complete;
 };
 
 static inline void
 checkpoint_init(Checkpoint* self, uint64_t lsn)
 {
 	self->lsn = lsn;
+	self->pid = -1;
 	buf_init(&self->list);
 	buf_init(&self->schema);
+	notify_init(&self->notify);
+	event_init(&self->on_complete);
 }
 
 static inline void
 checkpoint_free(Checkpoint* self)
 {
+	notify_close(&self->notify);
 	buf_free(&self->list);
 	buf_free(&self->schema);
 }
 
 static inline void
-checkpoint_add(Checkpoint* self, Page* page, int page_fd)
+checkpoint_add(Checkpoint* self, Page* page)
 {
 	auto ref = (CheckpointPage*)buf_emplace(&self->list, sizeof(CheckpointPage));
 	memcpy(&ref->id, &page->id, sizeof(ref->id));
 
-	// create page snapshot, if it has pending changes
-	ref->snapshot = NULL;
+	// add page it has pending changes
+	ref->page = NULL;
 	if (page->changed)
 	{
 		page->changed = false;
-		ref->snapshot = page_allocate_snapshot(page, page_fd);
+		ref->page = page;
 	}
 }
 
 hot static inline void
 checkpoint_add_storage(Checkpoint* self, Storage* storage)
 {
-	checkpoint_add(self, storage->meta, storage->meta_fd);
+	checkpoint_add(self, storage->meta);
 	for (auto i = 0; i < storage->list_count; i++)
-		checkpoint_add(self, storage_at(storage, i), *storage_at_fd(storage, i));
+		checkpoint_add(self, storage_at(storage, i));
 }
 
 static void
 checkpoint_create(Checkpoint* self)
 {
 	// create checkpoint/<lsn>.incomplete
-	info("");
-	info("checkpoint: checkpoint/{u64}", self->lsn);
 	fs_mkdir(0755, "{s}/checkpoint/{u64}.incomplete",
 	         state_directory(), self->lsn);
 
@@ -107,7 +112,7 @@ checkpoint_create(Checkpoint* self)
 	for (; pos < end; pos++)
 	{
 		// create page hardlink using previous checkpoint
-		if (! pos->snapshot)
+		if (! pos->page)
 		{
 			char path_prev[PATH_MAX];
 			id_path(&pos->id, path_prev, state_checkpoint(), false);
@@ -119,12 +124,8 @@ checkpoint_create(Checkpoint* self)
 		}
 
 		// create page file
-		assert(! pos->snapshot->changed);
-		page_save(pos->snapshot, self->lsn);
-
-		// free snapshot as soon as possible
-		page_free_snapshot(pos->snapshot);
-		pos->snapshot = NULL;
+		assert(! pos->page->changed);
+		page_save(pos->page, self->lsn);
 
 		// todo: info
 	}
@@ -151,35 +152,78 @@ checkpoint_create(Checkpoint* self)
 static void
 checkpoint_abort(Checkpoint* self)
 {
-	auto pos = (CheckpointPage*)self->list.start;
-	auto end = (CheckpointPage*)self->list.position;
-	for (; pos < end; pos++)
-	{
-		if (pos->snapshot)
-		{
-			page_free_snapshot(pos->snapshot);
-			pos->snapshot = NULL;
-		}
-	}
-
 	fs_rmdir("{s}/checkpoint/{u64}.incomplete", state_directory(),
 	         self->lsn);
 
 	error("checkpoint: {u64} failed", self->lsn);
 }
 
-static void
-checkpoint_job(intptr_t* argv)
+static inline void
+checkpoint_on_complete(void* arg)
 {
-	auto self = (Checkpoint*)argv[0];
-	auto on_error = error_catch (
+	Event* event = arg;
+	event_signal(event);
+}
+
+static void
+checkpoint_run(Checkpoint* self)
+{
+	notify_open(&self->notify, &am_task->poller, checkpoint_on_complete,
+	            &self->on_complete);
+
+	// create new process
+	self->pid = fork();
+	if (self->pid == -1)
+		error_system();
+
+	if (self->pid > 0)
+	{
+		// wait for completion
+		event_wait(&self->on_complete, -1);
+
+		int status = 0;
+		int rc = waitpid(self->pid, &status, 0);
+		if (rc == -1)
+			error_system();
+
+		bool failed = false;
+		if (WIFEXITED(status))
+		{
+			if (WEXITSTATUS(status) == EXIT_FAILURE)
+				failed = true;
+		} else {
+			failed = true;
+		}
+		if (failed)
+			error("checkpoint: failed");
+
+		return;
+	};
+
+	// create checkpoint
+	auto error = error_catch
+	(
 		checkpoint_create(self);
 	);
-	if (on_error)
-	{
+	if (error)
 		checkpoint_abort(self);
-		rethrow();
-	}
+
+	// signal waiter process
+	notify_signal(&self->notify);
+
+	// done
+
+	// valgrind hack.
+	//
+	// When using _exit(2) valgrind would complain about
+	// memory not being freed in the child.
+	//
+	// We use a simple hack that instead executes another
+	// app which returns result code.
+	//
+	if (! error)
+		execl("/bin/true", "/bin/true", NULL);
+	execl("/bin/false", "/bin/false", NULL);
 }
 
 static void
@@ -228,17 +272,22 @@ checkpoint(Checkpoints* checkpoints, Catalog* catalog)
 	Checkpoint cp;
 	checkpoint_init(&cp, state_lsn());
 	defer(checkpoint_free, &cp);
-	auto on_error =
-		error_catch(checkpoint_prepare(&cp, catalog));
+	checkpoint_prepare(&cp, catalog);
 
 	// unlock catalog (still keeping checkpoint lock)
 	unlock(catalog_lock);
 
-	if (on_error)
-		rethrow();
+	info("");
+	info("checkpoint: checkpoint/{u64}", cp.lsn);
 
 	// run and wait
-	run(checkpoint_job, 1, &cp);
+	auto on_error = error_catch
+	(
+		checkpoint_run(&cp);
+	);
+	if (on_error) {
+		error("checkpoint: {u64} failed", cp.lsn);
+	}
 
 	// set checkpoint
 	checkpoints_add(checkpoints, cp.lsn);

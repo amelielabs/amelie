@@ -17,9 +17,7 @@ struct Storage
 {
 	Page*    current;
 	Page*    meta;
-	int      meta_fd;
 	Buf      list;
-	Buf      list_fd;
 	int      list_count;
 	int      type;
 	Id       id;
@@ -32,12 +30,6 @@ always_inline static inline Page*
 storage_at(Storage* self, int order)
 {
 	return ((Page**)self->list.start)[order];
-}
-
-always_inline static inline int*
-storage_at_fd(Storage* self, int order)
-{
-	return &((int*)self->list_fd.start)[order];
 }
 
 always_inline static inline Page*

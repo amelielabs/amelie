@@ -19,7 +19,6 @@ storage_init(Storage* self, Id* id, int type)
 {
 	self->current    = NULL;
 	self->meta       = NULL;
-	self->meta_fd    = -1;
 	self->list_count = 0;
 	self->type       = type;
 	self->id         = *id;
@@ -27,7 +26,6 @@ storage_init(Storage* self, Id* id, int type)
 	self->id_next    = 0;
 	self->size       = 64 * 1024 * 1024;
 	buf_init(&self->list);
-	buf_init(&self->list_fd);
 }
 
 void
@@ -36,23 +34,11 @@ storage_free(Storage* self)
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto page = storage_at(self, i);
-		auto fd   = storage_at_fd(self, i);
 		page_free(page);
-		if (*fd != -1)
-		{
-			close(*fd);
-			*fd = -1;
-		}
 	}
 	if (self->meta)
 		page_free(self->meta);
-	if (self->meta_fd != -1)
-	{
-		close(self->meta_fd);
-		self->meta_fd = -1;
-	}
 	buf_free(&self->list);
-	buf_free(&self->list_fd);
 }
 
 Page*
@@ -60,7 +46,7 @@ storage_add_meta(Storage* self, int size)
 {
 	assert(! self->meta);
 	// create and set meta page
-	auto page = page_allocate(sizeof(Page) + size, &self->meta_fd);
+	auto page = page_allocate(sizeof(Page) + size);
 	page->type       = PAGE_META;
 	page->id         = self->id;
 	page->id.id_page = UINT32_MAX;
@@ -73,15 +59,13 @@ Page*
 storage_add(Storage* self)
 {
 	// create new page
-	int  page_fd = -1;
-	auto page = page_allocate(self->size, &page_fd);
+	auto page = page_allocate(self->size);
 	page->type       = self->type;
 	page->id         = self->id;
 	page->id.id_page = self->id_next++;
 	self->current    = page;
 
 	buf_write(&self->list, &page, sizeof(Page*));
-	buf_write(&self->list_fd, &page_fd, sizeof(int));
 	self->list_count++;
 	return page;
 }
@@ -99,7 +83,7 @@ storage_open(Storage* self, uint64_t checkpoint,
 	auto meta = ids_collect(ids, list, filter);
 
 	// load meta page
-	self->meta = page_load(meta, &self->meta_fd, checkpoint);
+	self->meta = page_load(meta, checkpoint);
 
 	// load pages (list is sorted)
 	uint32_t id = 0;
@@ -107,11 +91,9 @@ storage_open(Storage* self, uint64_t checkpoint,
 	auto end = (Id**)list->position;
 	while (pos < end)
 	{
-		int  page_fd = -1;
-		auto page = page_load(*pos, &page_fd, checkpoint);
+		auto page = page_load(*pos, checkpoint);
 
 		buf_write(&self->list, &page, sizeof(Page*));
-		buf_write(&self->list_fd, &page_fd, sizeof(int));
 		self->list_count++;
 
 		if (self->list_count == 1)
