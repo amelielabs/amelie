@@ -468,9 +468,9 @@ select * from test;
 
 id  data
 ──────────
-0   3.14
+0   3
 1   123
-2   3.14
+2   3
 drop table test;
 # test: insert column (decimal p,s) upscale
 create table test (id int primary key, a decimal(5,2), b decimal(6,4), c decimal(15,15), d decimal(5,2));

@@ -41,25 +41,33 @@ parse_type_column(Lex* self, Local* local, Column* column)
 
 	if (type == TYPE_DECIMAL)
 	{
-		// DECIMAL [(p, s)]
+		// DECIMAL [(p [, s])]
 		if (lex_if(self, '('))
 		{
 			auto p = lex_expect(self, KINT);
-			lex_expect(self, ',');
-			auto s = lex_expect(self, KINT);
-			lex_expect(self, ')');
 
-			// validate values
+			// precision
 			if (p->integer < 1 || p->integer > DECIMAL_MAX_PRECISION)
 				lex_error(self, p, "supported decimal precision is 1-15");
 
-			if (s->integer < 0 || s->integer > DECIMAL_MAX_SCALE)
-				lex_error(self, s, "supported decimal scale is 0-15");
+			// scale
+			auto scale = 0;
+			if (lex_if(self, ','))
+			{
+				auto s = lex_expect(self, KINT);
+				if (s->integer < 0 || s->integer > DECIMAL_MAX_SCALE)
+					lex_error(self, s, "supported decimal scale is 0-15");
 
-			if (s->integer > p->integer)
-				lex_error(self, s, "invalid decimal scale");
+				if (s->integer > p->integer)
+					lex_error(self, s, "invalid decimal scale");
 
-			constraints_set_decimal(&column->constraints, p->integer, s->integer);
+				scale = s->integer;
+			}
+			lex_expect(self, ')');
+
+			constraints_set_decimal(&column->constraints, p->integer, scale);
+		} else {
+			constraints_set_decimal(&column->constraints, DECIMAL_MAX_PRECISION, 0);
 		}
 	} else
 	if (type == TYPE_VECTOR)

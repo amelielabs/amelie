@@ -4,12 +4,12 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 
 # test: select count(*) from table empty
-create table test_empty (id int primary key, data int, data2 double, data3 decimal);
+create table test_empty (id int primary key, data int, data2 double, data3 decimal(2,1));
 
-create table test_null (id int primary key, data int, data2 double, data3 decimal);
+create table test_null (id int primary key, data int, data2 double, data3 decimal(2,1));
 insert into test_null values (0, null, null, null);
 
-create table test (id int primary key, data int, data2 double, data3 decimal);
+create table test (id int primary key, data int, data2 double, data3 decimal(2,1));
 insert into test values (0, 0, 0.0e0, 0.0);
 insert into test values (1, 0, 0.0e0, 0.0);
 insert into test values (2, 1, 1.0e0, 1.0);

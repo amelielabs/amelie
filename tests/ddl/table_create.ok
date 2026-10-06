@@ -282,7 +282,7 @@ columns
   "size": 8,
   "size_flat": 0,
   "dropped": false,
-  "constraints": []
+  "constraints": [["decimal", 15, 0]]
 }, {
   "name": "b",
   "type": 4,
@@ -812,7 +812,7 @@ select * from test;
 
 id  data
 ──────────
-1   3.14
+1   3
 drop table test;
 create table test (id int primary key, data decimal (5, 4) default 3.14);
 insert into test (id) values (1);
