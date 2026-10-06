@@ -45,7 +45,7 @@ file_open_stdin(File* self)
 	self->size = 0;
 
 	// open
-	self->fd = vfs_open(str_of(&self->path), O_RDONLY, 0);
+	self->fd = vfs_open(str_of(&self->path), O_RDONLY|O_CLOEXEC, 0);
 	if (unlikely(self->fd == -1))
 		file_error(self, "open");
 }
@@ -75,21 +75,21 @@ static inline void
 file_open(File* self, const char* path)
 {
 	// open existing file
-	file_open_as(self, path, O_RDWR, 0);
+	file_open_as(self, path, O_RDWR|O_CLOEXEC, 0);
 }
 
 static inline void
 file_open_rdonly(File* self, const char* path)
 {
 	// open existing file
-	file_open_as(self, path, O_RDONLY, 0);
+	file_open_as(self, path, O_RDONLY|O_CLOEXEC, 0);
 }
 
 static inline void
 file_create(File* self, const char* path)
 {
 	// create file
-	file_open_as(self, path, O_CREAT|O_RDWR|O_EXCL, 0644);
+	file_open_as(self, path, O_CREAT|O_RDWR|O_EXCL|O_CLOEXEC, 0644);
 }
 
 static inline void

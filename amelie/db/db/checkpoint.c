@@ -72,6 +72,9 @@ checkpoint_add(Checkpoint* self, Page* page)
 	{
 		page->changed = false;
 		ref->page = page;
+		madvise(page, page->size, MADV_DOFORK);
+	} else {
+		madvise(page, page->size, MADV_DONTFORK);
 	}
 }
 

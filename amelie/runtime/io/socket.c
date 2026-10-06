@@ -16,7 +16,7 @@
 int
 socket_for(struct sockaddr* sa)
 {
-	return socket(sa->sa_family, SOCK_STREAM, 0);
+	return socket(sa->sa_family, SOCK_STREAM|SOCK_CLOEXEC, 0);
 }
 
 int
