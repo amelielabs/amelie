@@ -45,39 +45,9 @@ streams_free(Streams* self)
 	iov_free(&self->iov);
 }
 
-static void
-streams_create_key(Streams* self, Parts* parts, Str* key)
-{
-	auto table   = table_of(parts->arg->rel);
-	auto primary = table_primary(table);
-	if (primary->keys.count > 1)
-		error("stream: compound table keys are not support");
-
-	Local local;
-	local_init(&local);
-
-	// read key and convert
-	auto column = keys_at(&primary->keys, 0)->column;
-	Value value;
-	value_init(&value);
-	defer(value_free, &value);
-	parse_value_string(&local, column, &value, key);
-
-	// create row
-	row_create_key(&self->key, &primary->keys, &value, 1);
-}
-
 void
 streams_create(Streams* self, Parts* parts, Timeline* timeline, Str* key_str)
 {
-	// prepare key
-	Row* key = NULL;
-	if (! str_empty(key_str))
-	{
-		streams_create_key(self, parts, key_str);
-		key = (Row*)self->key.start;
-	}
-
 	self->streams_count = parts->list_count;
 	self->streams = am_malloc(sizeof(Stream) * self->streams_count);
 
@@ -93,12 +63,17 @@ streams_create(Streams* self, Parts* parts, Timeline* timeline, Str* key_str)
 		event_set_parent(&stream->on_complete, &self->notify);
 		event_attach(&stream->on_cancel);
 		event_set_parent(&stream->on_cancel, &self->notify);
-
-		stream->key   = key;
 		stream->ready = true;
+
 		list_append(&self->ready, &stream->link);
 		at++;
 	}
+
+	// todo: set positions, if set
+	if (! str_empty(key_str))
+	{
+	}
+
 }
 
 hot static void

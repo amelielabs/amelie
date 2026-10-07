@@ -24,6 +24,9 @@ stream_export(Stream* self, Row* row)
 	value_init(&value);
 
 	auto buf = &self->data;
+	buf_format(buf, "id: {u64}:{u32}:{u32}\n", self->part->config->id,
+	           heap_page_of(row)->id.id_page,
+	           row->offset);
 	buf_write(buf, "data: ", 6);
 	buf_write(buf, "{", 1);
 
@@ -69,7 +72,6 @@ stream_init(Stream* self, Streams* streams, Part* part, Timeline* timeline)
 	self->wait      = false;
 	self->shutdown  = false;
 	self->ready     = false;
-	self->key       = NULL;
 	self->part      = part;
 	self->part_task = part->track.backend;
 	self->part_link = NULL;
@@ -124,20 +126,6 @@ stream_next(Stream* self)
 	{
 		// on first access, position to last
 		heap_iterator_open(it, part->heap, true);
-
-		// set heap position using the primary index key
-		if (self->key)
-		{
-			auto index = part_primary(part);
-			auto it = index_iterator(index);
-			defer(iterator_close, it);
-			auto match = iterator_open(it, part->heap, &self->timeline, self->key);
-			if (match)
-				iterator_next(it);
-			auto row = it->current;
-			if (row)
-				heap_iterator_set(&self->it, row);
-		}
 	}
 
 	// collect
@@ -148,10 +136,7 @@ stream_next(Stream* self)
 		if (!row || !row->commited)
 			break;
 		if (stream_visible(self, row))
-		{
 			stream_export(self, row);
-			// todo: limit
-		}
 		if (buf_size(data) >= 128 * 1024)
 			break;
 		heap_iterator_next(it);
