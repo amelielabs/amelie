@@ -317,7 +317,10 @@ path_key(Path* self, PathKey* key, PathOps* ops)
 }
 
 Path*
-path_create(Target* target, Block* block, Keys* keys, PathOps* ops)
+path_create(Target*  target, Block* block,
+            Keys*    keys,
+            Keys*    mapping,
+            PathOps* ops)
 {
 	unused(block);
 	auto self = path_allocate(target, keys);
@@ -341,7 +344,7 @@ path_create(Target* target, Block* block, Keys* keys, PathOps* ops)
 			if (key_path->start_op->id == '=')
 			{
 				match_eq++;
-				if (key->partitioning)
+				if (keys_find_column(mapping, key->column->order))
 					match_eq_mapping++;
 			}
 		}
@@ -357,7 +360,7 @@ path_create(Target* target, Block* block, Keys* keys, PathOps* ops)
 		self->type = PATH_LOOKUP;
 
 	// point lookup (partitioning)
-	if (match_eq_mapping == keys->mapping.keys_count)
+	if (match_eq_mapping == mapping->count)
 		self->type_mapping = PATH_LOOKUP;
 
 	return self;

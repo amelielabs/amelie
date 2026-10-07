@@ -206,11 +206,10 @@ emit_send(Compiler* self, Target* target, int type, int start)
 		if (path && path->type_mapping == PATH_LOOKUP)
 		{
 			// push partitioning keys for point lookup to match the partition
-			for (auto i = 0; i < path->match_start; i++)
+			auto mapping_n = send->table->config->partitioning.count;
+			for (auto i = 0; i < mapping_n; i++)
 			{
 				auto key = &path->keys[i];
-				if (! key->key->partitioning)
-					continue;
 				emit_push(self, target->from, key->start);
 			}
 

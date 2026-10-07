@@ -148,6 +148,7 @@ Keyword keywords[] =
 	{ KPOOL,                  "pool",                  4  },
 	{ KPRIMARY,               "primary",               7  },
 	{ KPAUSE,                 "pause",                 5  },
+	{ KPARTITION,             "partition",             9  },
 
 	// r
 	{ KRIGHT,                 "right",                 5  },

@@ -181,8 +181,7 @@ show
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true,
-    "partitioning": true
+    "asc": true
   }]
 }]
 # test: partitions

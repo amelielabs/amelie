@@ -59,11 +59,12 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 	assert(table);
 
 	// always use primary index for dml
+	auto mapping = &table->config->partitioning;
 	if (target->dml)
 	{
 		assert(!target->from_index);
 		auto primary = table_primary(target->from_table);
-		target->path_primary = path_create(target, block, &primary->keys, ops);
+		target->path_primary = path_create(target, block, &primary->keys, mapping, ops);
 		target->path = target->path_primary;
 		target->from_index = primary;
 		return;
@@ -73,11 +74,11 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 	if (target->from_index)
 	{
 		auto keys = &target->from_index->keys;
-		target->path = path_create(target, block, keys, ops);
+		target->path = path_create(target, block, keys, mapping, ops);
 
 		auto primary = table_primary(target->from_table);
 		if (target->from_index != primary)
-			target->path_primary = path_create(target, block, &primary->keys, ops);
+			target->path_primary = path_create(target, block, &primary->keys, mapping, ops);
 		else
 			target->path_primary = target->path;
 		return;
@@ -93,7 +94,7 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 		auto keys = &index->keys;
 
 		// primary
-		auto path = path_create(target, block, keys, ops);
+		auto path = path_create(target, block, keys, mapping, ops);
 		if (! match)
 		{
 			match_path_primary = path;

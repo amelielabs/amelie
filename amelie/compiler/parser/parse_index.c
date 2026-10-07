@@ -123,13 +123,15 @@ parse_index_create(Stmt* self, bool unique)
 
 	// parse index keys
 	auto primary = table_primary(table);
-	parse_index_create_inline(self, primary, config, table->config->parts_count);
+	parse_index_create_inline(self, primary, config, &table->config->partitioning,
+	                          table->config->parts_count);
 }
 
 void
 parse_index_create_inline(Stmt*        self,
                           IndexConfig* primary,
                           IndexConfig* config,
+                          Keys*        partitioning,
                           int          partitions)
 {
 	// create index config
@@ -137,7 +139,7 @@ parse_index_create_inline(Stmt*        self,
 	index_config_set_type(config, INDEX_TREE);
 
 	// (keys)
-	parse_key(self, &config->keys, false);
+	parse_key(self, &config->keys);
 
 	if (config->unique)
 	{
@@ -148,11 +150,9 @@ parse_index_create_inline(Stmt*        self,
 		{
 			// ensure all partitioning keys are explicitly made part of the
 			// secondary index key
-			for (auto at = 0; at < primary->keys.count; at++)
+			for (auto at = 0; at < partitioning->count; at++)
 			{
-				auto key = keys_at(&primary->keys, at);
-				if (! key->partitioning)
-					continue;
+				auto key = keys_at(partitioning, at);
 
 				auto match = false;
 				for (auto at = 0; at < config->keys.count; at++)
@@ -173,23 +173,6 @@ parse_index_create_inline(Stmt*        self,
 	{
 		// copy primary keys, which are not already present
 		keys_copy_distinct(&config->keys, &primary->keys);
-	}
-
-	// mark all partitioning keys
-	for (auto at = 0; at < primary->keys.count; at++)
-	{
-		auto key = keys_at(&primary->keys, at);
-		if (! key->partitioning)
-			continue;
-		for (auto at = 0; at < config->keys.count; at++)
-		{
-			auto ref = keys_at(&config->keys, at);
-			if (ref->column == key->column)
-			{
-				ref->partitioning = true;
-				break;
-			}
-		}
 	}
 
 	// [USING type]

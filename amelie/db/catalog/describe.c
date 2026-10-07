@@ -190,37 +190,36 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 		buf_write(buf, ",\n", 2);
 	}
 
-	// primary key ((partitioning key), key)
-	auto keys = table_keys(self);
-	if (keys->count == 1)
-	{
-		auto key = keys_at(keys, 0);
-		buf_format(buf, "  primary key ({str})",  &key->column->name);
-	} else
-	{
-		buf_format(buf, "  primary key ((");
-		auto partitioning = true;
-		for (auto at = 0; at < keys->count; at++)
-		{
-			auto key = keys_at(keys, at);
-			if (partitioning && !key->partitioning)
-			{
-				buf_format(buf, ")");
-				partitioning = false;
-			}
-			if (at > 0)
-				buf_write(buf, ", ", 2);
-			buf_format(buf, "{str}", &key->column->name);
-		}
-		if (partitioning)
-			buf_write(buf, ")", 1);
-		buf_write(buf, ")", 1);
-	}
-
-	// [using hash]
+	// primary key
 	auto primary = table_primary(self);
+	auto keys = &primary->keys;
+	buf_format(buf, "  primary key (");
+	for (auto at = 0; at < keys->count; at++)
+	{
+		auto key = keys_at(keys, at);
+		if (at > 0)
+			buf_write(buf, ", ", 2);
+		buf_format(buf, "{str}", &key->column->name);
+	}
+	buf_write(buf, ")", 1);
+
+	// using type
 	if (primary->type == INDEX_HASH)
-		buf_write(buf, " using hash", 11);
+		buf_write(buf, " using hash,\n", 13);
+	else
+		buf_write(buf, " using tree,\n", 13);
+
+	// partition key
+	keys = &self->config->partitioning;
+	buf_format(buf, "  partition key (");
+	for (auto at = 0; at < keys->count; at++)
+	{
+		auto key = keys_at(keys, at);
+		if (at > 0)
+			buf_write(buf, ", ", 2);
+		buf_format(buf, "{str}", &key->column->name);
+	}
+	buf_write(buf, ")", 1);
 	buf_write(buf, "\n)\n", 3);
 
 	// id

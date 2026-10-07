@@ -44,4 +44,4 @@ struct Path
 	PathKey  keys[];
 };
 
-Path* path_create(Target*, Block* block, Keys*, PathOps*);
+Path* path_create(Target*, Block* block, Keys*, Keys*, PathOps*);

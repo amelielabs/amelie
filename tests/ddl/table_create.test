@@ -151,43 +151,40 @@ create table test(id int primary key primary key);
 create table test(id json primary key);
 create table test(id json, primary key(id));
 
-# test: primary key partition by (default)
+# test: primary key partition key (default)
 create table test(id int primary key);
 select show('table', 'test', null, "verbose").indexes;
 drop table test;
 
-# test: primary key partition by (default #2)
+# test: primary key partition key (default #2)
 create table test(id int, primary key(id));
 select show('table', 'test', null, "verbose").indexes;
 drop table test;
 
-create table test(id int, primary key((id)));
+create table test(id int, primary key(id), partition key(id));
 select show('table', 'test', null, "verbose").indexes;
 drop table test;
 
-# test: primary key partition by (default compound)
+# test: primary key partition key (default compound)
 create table test(id int, data int, primary key (id, data));
 select show('table', 'test', null, "verbose").indexes;
 drop table test;
 
-# test: primary key partition by (compound)
-create table test(id int, data int, primary key((id)));
+# test: primary key partition key (compound)
+create table test(id int, data int, primary key(id), partition key (id));
 select show('table', 'test', null, "verbose").indexes;
 drop table test;
 
-create table test(id int, data int, primary key((id, data)));
+create table test(id int, data int, primary key(id, data), partition key(id, data));
 select show('table', 'test', null, "verbose").indexes;
 drop table test;
 
-create table test(id int, data int, data2 int, primary key((id, data), data2));
+create table test(id int, data int, primary key(id, data), partition key(id));
 select show('table', 'test', null, "verbose").indexes;
 drop table test;
 
-# test: primary key partition by (redefined)
-create table test(id int, data int, primary key((id, data), id));
-
-# test: primary key partition by (mismatch)
-create table test(id int, data int, primary key(id, (data)));
+# test: primary key partition key (mismatch)
+create table test(id int, data int, primary key(id, data), partition key (data));
 
 ## test: table already exists
 create table test (id int primary key);

@@ -18,27 +18,13 @@
 #include <amelie_parser.h>
 
 void
-parse_key(Stmt* self, Keys* keys, bool with_partitioning)
+parse_key(Stmt* self, Keys* keys)
 {
-	// ( [(partition key),] key, ... )
+	// ( key, ... )
 	stmt_expect(self, '(');
 
-	auto partitioning   = false;
-	auto partitioning_n = 0;
 	for (;;)
 	{
-		// partition key
-		auto ast = stmt_if(self, '(');
-		if (ast)
-		{
-			if (! with_partitioning)
-				stmt_error(self, ast, "partition key is not supported here");
-
-			if (partitioning || keys->count)
-				stmt_error(self, ast, "partition key must be defined first");
-			partitioning = true;
-		}
-
 		// (column, ...)
 		auto name = stmt_expect(self, KNAME);
 
@@ -73,49 +59,22 @@ parse_key(Stmt* self, Keys* keys, bool with_partitioning)
 			stmt_error(self, name, "key column is redefined");
 
 		// create key
-		keys_add(keys, column->order, asc, partitioning);
+		keys_add(keys, column->order, asc);
 
 		// check keys limit
 		if (! local_limit(self->parser->local, LIMIT_KEYS, keys->count))
 			stmt_error(self, name, "key limit reached");
 
-		if (partitioning)
-			partitioning_n++;
-
 		// ,
-		ast = stmt_next(self);
+		auto ast = stmt_next(self);
 		if (ast->id == ',')
 			continue;
 
 		// )
 		stmt_push(self, ast);
 		stmt_expect(self, ')');
-		if (! partitioning)
-			break;
-		partitioning = false;
-
-		// [),]
-		if (stmt_if(self, ','))
-			continue;
-
-		stmt_expect(self, ')');
 		break;
 	}
-
-	// set first key as partitioning, if no explicit syntax used
-	if (with_partitioning && !partitioning_n)
-		keys_at(keys, 0)->partitioning = true;
-}
-
-static inline bool
-parse_primary_key(Stmt* self)
-{
-	// PRIMARY KEY [USING type]
-	if (! stmt_if(self, KPRIMARY))
-		return false;
-	stmt_expect(self, KKEY);
-	parse_index_using(self, ast_table_create_of(self->ast)->config_index);
-	return true;
 }
 
 static void
@@ -146,7 +105,6 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 	// constraints
 	auto cons = &column->constraints;
 
-	bool has_primary_key = false;
 	bool done = false;
 	while (! done)
 	{
@@ -173,11 +131,11 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		{
 			stmt_expect(self, KKEY);
 
-			if (has_primary_key)
-				stmt_error(self, name, "PRIMARY KEY defined twice");
-
 			if (! keys)
 				stmt_error(self, name, "PRIMARY KEY clause is not supported in this command");
+
+			if (! keys_empty(keys))
+				stmt_error(self, name, "PRIMARY KEY defined twice");
 
 			// force not_null constraint for keys
 			constraints_set_not_null(&column->constraints, true);
@@ -191,8 +149,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 				stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
 			// create key
-			keys_add(keys, column->order, true, true);
-			has_primary_key = true;
+			keys_add(keys, column->order, true);
 
 			// [USING type]
 			parse_index_using(self, ast_table_create_of(self->ast)->config_index);
@@ -272,7 +229,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 }
 
 static void
-parse_columns(Stmt* self, Columns* columns, Keys* keys)
+parse_columns(Stmt* self, Columns* columns, Keys* keys, Keys* partitioning)
 {
 	// (name type [constraints], ..., primary key())
 
@@ -283,10 +240,34 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 	Column* identity = NULL;
 	for (;;)
 	{
-		// PRIMARY KEY (columns) [USING type]
-		if (parse_primary_key(self))
+		auto ast = stmt_next(self);
+		switch (ast->id) {
+		case KPARTITION:
 		{
-			parse_key(self, keys, true);
+			// PARTITION KEY
+			stmt_expect(self, KKEY);
+
+			if (! keys_empty(partitioning))
+				stmt_error(self, NULL, "partition key is redefined");
+
+			parse_key(self, partitioning);
+
+			// force column not_null constraint
+			for (auto at = 0; at < partitioning->count; at++)
+			{
+				auto key = keys_at(partitioning, at);
+				constraints_set_not_null(&key->column->constraints, true);
+			}
+			break;
+		}
+		case KPRIMARY:
+		{
+			// PRIMARY KEY (columns) [USING type]
+			stmt_expect(self, KKEY);
+
+			if (! keys_empty(keys))
+				stmt_error(self, NULL, "primary key is redefined");
+			parse_key(self, keys);
 
 			// force column not_null constraint
 			for (auto at = 0; at < keys->count; at++)
@@ -298,38 +279,47 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 			parse_index_using(self, ast_table_create_of(self->ast)->config_index);
 			break;
 		}
-
-		// name type [constraint]
-
-		// name
-		auto name = stmt_expect(self, KNAME);
-
-		// ensure column does not exists
-		if (columns_find(keys->columns, &name->string))
-			stmt_error(self, name, "column is redefined");
-
-		// create column
-		auto column = column_allocate();
-		column_set_name(column, &name->string);
-		columns_add(columns, column);
-
-		// check columns limit
-		if (! local_limit(local, LIMIT_COLUMNS, columns->count))
-			stmt_error(self, name, "columns limit reached");
-
-		// type
-		parse_type_column(self->lex, local, column);
-
-		// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
-		parse_constraints(self, keys, column);
-
-		// ensure identity column only one
-		auto cons = &column->constraints;
-		if (cons->identity)
+		case KNAME:
 		{
-			if (identity)
-				stmt_error(self, name, "only one IDENTITY column is allowed");
-			identity = column;
+			// name type [constraint]
+
+			// name
+			auto name = ast;
+
+			// ensure column does not exists
+			if (columns_find(keys->columns, &name->string))
+				stmt_error(self, name, "column is redefined");
+
+			// create column
+			auto column = column_allocate();
+			column_set_name(column, &name->string);
+			columns_add(columns, column);
+
+			// check columns limit
+			if (! local_limit(local, LIMIT_COLUMNS, columns->count))
+				stmt_error(self, name, "columns limit reached");
+
+			// type
+			parse_type_column(self->lex, local, column);
+
+			// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
+			parse_constraints(self, keys, column);
+
+			// ensure identity column only one
+			auto cons = &column->constraints;
+			if (cons->identity)
+			{
+				if (identity)
+					stmt_error(self, name, "only one IDENTITY column is allowed");
+				identity = column;
+			}
+			break;
+		}
+		default:
+		{
+			stmt_error(self, ast, "expected column name, PRIMARY or PARTITION KEY");
+			break;
+		}
 		}
 
 		// ,
@@ -343,9 +333,26 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 	// )
 	auto rbr = stmt_expect(self, ')');
 
-	// ensure primary key is defined
-	if (keys->count == 0)
+	// validate primary and partition keys
+	if (keys_empty(keys))
 		stmt_error(self, rbr, "primary key is not defined");
+
+	if (keys_empty(partitioning))
+	{
+		// use primary key as partition key
+		keys_copy(partitioning, keys);
+	} else
+	{
+		// ensure primary key first columns match partitioning key
+		if (keys->count < partitioning->count)
+			stmt_error(self, NULL, "primary key must include all partition key columns");
+		for (auto at = 0; at < partitioning->count; at++)
+		{
+			auto key = keys_at(partitioning, at);
+			if (keys_at(keys, at)->column != key->column)
+				stmt_error(self, NULL, "primary key must include all partition columns first");
+		}
+	}
 
 	// ensure identity column is a key
 	if (identity)
@@ -450,7 +457,7 @@ parse_table_create(Stmt* self)
 	index_config_set_primary(primary, true);
 
 	// (columns)
-	parse_columns(self, &config->columns, &primary->keys);
+	parse_columns(self, &config->columns, &primary->keys, &config->partitioning);
 
 	// set table options
 	auto index_defined = false;
@@ -523,7 +530,7 @@ parse_table_create(Stmt* self)
 			auto secondary = index_config_allocate(&config->columns);
 			table_config_index_add(config, secondary);
 			index_config_set_name(secondary, &index_name->string);
-			parse_index_create_inline(self, primary, secondary, partitions);
+			parse_index_create_inline(self, primary, secondary, &config->partitioning, partitions);
 			index_defined = true;
 			continue;
 		}
@@ -541,7 +548,7 @@ parse_table_create(Stmt* self)
 			table_config_index_add(config, secondary);
 			index_config_set_name(secondary, &index_name->string);
 			index_config_set_unique(secondary, true);
-			parse_index_create_inline(self, primary, secondary, partitions);
+			parse_index_create_inline(self, primary, secondary, &config->partitioning, partitions);
 			index_defined = true;
 			continue;
 		}

@@ -75,8 +75,6 @@ value_hash_row(Keys*  keys, Value* refs,
 	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
-		if (! key->partitioning)
-			continue;
 		auto column = key->column;
 		auto value = values + column->order;
 		hash = value_hash_refs(value, column, refs, identity, hash);
@@ -95,8 +93,6 @@ value_hash_keys(Keys*  keys, Value* refs,
 	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
-		if (! key->partitioning)
-			continue;
 		hash = value_hash_refs(value, key->column, refs, identity, hash);
 		value++;
 	}

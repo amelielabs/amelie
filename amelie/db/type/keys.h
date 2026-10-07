@@ -16,7 +16,6 @@ typedef struct Keys Keys;
 struct Keys
 {
 	Comparable comparable;
-	Comparable mapping;
 	Buf        list;
 	int        count;
 	Columns*   columns;
@@ -35,14 +34,18 @@ keys_init(Keys* self, Columns* columns)
 	self->count   = 0;
 	buf_init(&self->list);
 	comparable_init(&self->comparable);
-	comparable_init(&self->mapping);
+}
+
+static inline bool
+keys_empty(Keys* self)
+{
+	return !self->count;
 }
 
 static inline void
 keys_free(Keys* self)
 {
 	comparable_free(&self->comparable);
-	comparable_free(&self->mapping);
 	for (auto at = 0; at < self->count; at++)
 	{
 		auto key = keys_at(self, at);
@@ -52,7 +55,7 @@ keys_free(Keys* self)
 }
 
 static inline Key*
-keys_add(Keys* self, int column_order, bool asc, bool partitioning)
+keys_add(Keys* self, int column_order, bool asc)
 {
 	// add key
 	auto key = (Key*)buf_emplace(&self->list, sizeof(Key));
@@ -60,7 +63,6 @@ keys_add(Keys* self, int column_order, bool asc, bool partitioning)
 	key->order        = self->count;
 	key->column_order = column_order;
 	key->asc          = asc;
-	key->partitioning = partitioning;
 	self->count++;
 
 	// resolve column
@@ -69,11 +71,6 @@ keys_add(Keys* self, int column_order, bool asc, bool partitioning)
 
 	// add to the comparable
 	comparable_add(&self->comparable, key->column);
-
-	// if key is used for partitioning add to the mapping
-	if (partitioning)
-		comparable_add(&self->mapping, key->column);
-
 	return key;
 }
 
@@ -107,7 +104,7 @@ keys_copy(Keys* self, Keys* src)
 	for (auto at = 0; at < src->count; at++)
 	{
 		auto key = keys_at(src, at);
-		keys_add(self, key->column_order, key->asc, key->partitioning);
+		keys_add(self, key->column_order, key->asc);
 	}
 }
 
@@ -119,7 +116,7 @@ keys_copy_distinct(Keys* self, Keys* primary)
 		auto key = keys_at(primary, at);
 		if (keys_find_column(self, key->column_order))
 			continue;
-		keys_add(self, key->column_order, key->asc, key->partitioning);
+		keys_add(self, key->column_order, key->asc);
 	}
 }
 
@@ -133,7 +130,7 @@ keys_read(Keys* self, uint8_t** pos)
 		Key read;
 		key_init(&read);
 		key_read(&read, pos);
-		keys_add(self, read.column_order, read.asc, read.partitioning);
+		keys_add(self, read.column_order, read.asc);
 	}
 }
 

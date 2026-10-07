@@ -24,14 +24,14 @@ parts_init(Parts*   self,
            PartsIf* iface,
            void*    iface_arg,
            PartArg* arg,
-           Keys*    keys)
+           Keys*    mapping)
 {
 	self->list_count = 0;
 	self->arg        = arg;
 	self->iface      = iface;
 	self->iface_arg  = iface_arg;
 	list_init(&self->list);
-	part_mapping_init(&self->mapping, keys);
+	part_mapping_init(&self->mapping, mapping);
 }
 
 void
@@ -67,8 +67,7 @@ parts_open(Parts* self, List* parts, List* indexes)
 		}
 
 		// create flat stores
-		auto primary = part_primary(part);
-		list_foreach(&index_keys(primary)->columns->list)
+		list_foreach(&self->arg->columns->list)
 		{
 			auto column = list_at(Column, link);
 			if (! column->size_flat)

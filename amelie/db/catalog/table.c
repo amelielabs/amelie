@@ -59,8 +59,8 @@ table_allocate(TableConfig* config,
 	arg->timelines = &self->timelines;
 
 	// partition manager
-	auto primary = table_primary(self);
-	parts_init(&self->parts, iface, iface_arg, arg, &primary->keys);
+	parts_init(&self->parts, iface, iface_arg, arg,
+	           &self->config->partitioning);
 
 	// timelines
 	timelines_init(&self->timelines, &self->rel, self->config->timeline);

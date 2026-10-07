@@ -117,7 +117,6 @@ csend_lookup(Vm* self, Op* op)
 	// [rdispatch, refs, offset]
 	auto send  = send_at(self->code_data, op->c);
 	auto table = send->table;
-	auto index = table_primary(table);
 
 	// create dispatch
 	auto gtr = self->gtr;
@@ -131,7 +130,7 @@ csend_lookup(Vm* self, Op* op)
 		dispatch_set_close(dispatch);
 
 	// map partition using partitioning keys
-	auto keys_count = index->keys.mapping.keys_count;
+	auto keys_count = table->config->partitioning.count;
 	auto keys = stack_at(&self->stack, keys_count);
 	auto part = row_map_keys(table, keys);
 	stack_popn(&self->stack, keys_count);

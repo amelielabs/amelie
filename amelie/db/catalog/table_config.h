@@ -23,6 +23,7 @@ struct TableConfig
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
+	Keys    partitioning;
 	List    parts;
 	int     parts_count;
 	Grants  grants;
@@ -42,6 +43,7 @@ table_config_allocate(void)
 	uuid_init(&self->id);
 	columns_init(&self->columns);
 	list_init(&self->indexes);
+	keys_init(&self->partitioning, &self->columns);
 	list_init(&self->parts);
 	grants_init(&self->grants);
 	return self;
@@ -54,18 +56,19 @@ table_config_free(TableConfig* self)
 	str_free(&self->name);
 	str_free(&self->description);
 
-	list_foreach_safe(&self->indexes)
-	{
-		auto config = list_at(IndexConfig, link);
-		index_config_free(config);
-	}
-
 	list_foreach_safe(&self->parts)
 	{
 		auto config = list_at(PartConfig, link);
 		part_config_free(config);
 	}
 
+	list_foreach_safe(&self->indexes)
+	{
+		auto config = list_at(IndexConfig, link);
+		index_config_free(config);
+	}
+
+	keys_free(&self->partitioning);
 	columns_free(&self->columns);
 	grants_free(&self->grants);
 	am_free(self);
@@ -142,7 +145,6 @@ table_config_copy(TableConfig* self)
 	table_config_set_id(copy, &self->id);
 	table_config_set_timeline(copy, self->timeline);
 	columns_copy(&copy->columns, &self->columns);
-	grants_copy(&copy->grants, &self->grants);
 
 	list_foreach(&self->indexes)
 	{
@@ -150,12 +152,16 @@ table_config_copy(TableConfig* self)
 		auto config_copy = index_config_copy(config, &copy->columns);
 		table_config_index_add(copy, config_copy);
 	}
+
+	keys_copy(&copy->partitioning, &self->partitioning);
 	list_foreach(&self->parts)
 	{
 		auto config = list_at(PartConfig, link);
 		auto config_copy = part_config_copy(config);
 		table_config_part_add(copy, config_copy);
 	}
+
+	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
@@ -165,22 +171,24 @@ table_config_read(uint8_t** pos)
 	auto self = table_config_allocate();
 	errdefer(table_config_free, self);
 
-	uint8_t* pos_columns = NULL;
-	uint8_t* pos_indexes = NULL;
-	uint8_t* pos_parts   = NULL;
-	uint8_t* pos_grants  = NULL;
+	uint8_t* pos_columns      = NULL;
+	uint8_t* pos_indexes      = NULL;
+	uint8_t* pos_partitioning = NULL;
+	uint8_t* pos_parts        = NULL;
+	uint8_t* pos_grants       = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",        &self->user        },
-		{ DECODE_STR,   "name",        &self->name        },
-		{ DECODE_STR,   "description", &self->description },
-		{ DECODE_UUID,  "id",          &self->id          },
-		{ DECODE_INT,   "timeline",    &self->timeline    },
-		{ DECODE_ARRAY, "columns",     &pos_columns       },
-		{ DECODE_ARRAY, "indexes",     &pos_indexes       },
-		{ DECODE_ARRAY, "partitions",  &pos_parts         },
-		{ DECODE_ARRAY, "grants",      &pos_grants        },
-		{ 0,             NULL,          NULL              },
+		{ DECODE_STR,   "user",         &self->user        },
+		{ DECODE_STR,   "name",         &self->name        },
+		{ DECODE_STR,   "description",  &self->description },
+		{ DECODE_UUID,  "id",           &self->id          },
+		{ DECODE_INT,   "timeline",     &self->timeline    },
+		{ DECODE_ARRAY, "columns",      &pos_columns       },
+		{ DECODE_ARRAY, "indexes",      &pos_indexes       },
+		{ DECODE_ARRAY, "partitioning", &pos_partitioning  },
+		{ DECODE_ARRAY, "partitions",   &pos_parts         },
+		{ DECODE_ARRAY, "grants",       &pos_grants        },
+		{ 0,             NULL,           NULL              },
 	};
 	decode_obj(obj, "table", pos);
 
@@ -194,6 +202,9 @@ table_config_read(uint8_t** pos)
 		auto config = index_config_read(&self->columns, &pos_indexes);
 		table_config_index_add(self, config);
 	}
+
+	// partitioning
+	keys_read(&self->partitioning, &pos_partitioning);
 
 	// partitions
 	unpack_array(&pos_parts);
@@ -253,6 +264,10 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 		index_config_write(config, buf, flags);
 	}
 	encode_array_end(buf);
+
+	// partitioning
+	encode_raw(buf, "partitioning", 12);
+	keys_write(&self->partitioning, buf, 0);
 
 	// partitions
 	encode_raw(buf, "partitions", 10);

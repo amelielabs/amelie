@@ -26,7 +26,7 @@ static inline void
 part_mapping_init(PartMapping* self, Keys* keys)
 {
 	self->map     = NULL;
-	self->mapping = &keys->mapping;
+	self->mapping = &keys->comparable;
 	self->keys    =  keys;
 }
 

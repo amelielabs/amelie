@@ -165,11 +165,10 @@ explain
 ───────
 
 main
-  0   push_int            -      0      0     # 1
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
+  0   send_all            0      0      32    # amelie.test (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
 
 pushdown
   0   set                 0      2      0
@@ -202,10 +201,11 @@ explain
 
 main
   0   push_int            -      0      0     # 1
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
+  1   push_int            -      0      0     # 1
+  2   send_lookup         0      -      32    # amelie.test (select, closing)
+  3   union               1      0      0
+  4   recv                1      0      0
+  5   ret                 1      0      -
 
 pushdown
   0   set                 0      2      0
@@ -242,10 +242,11 @@ explain
 
 main
   0   push_int            -      0      0     # 1
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
+  1   push_int            -      0      0     # 1
+  2   send_lookup         0      -      32    # amelie.test (select, closing)
+  3   union               1      0      0
+  4   recv                1      0      0
+  5   ret                 1      0      -
 
 pushdown
   0   set                 0      2      0
@@ -433,8 +434,7 @@ indexes
   "primary": true,
   "keys": [{
     "column": 0,
-    "asc": true,
-    "partitioning": true
+    "asc": true
   }]
 }, {
   "name": "i",
@@ -444,12 +444,10 @@ indexes
   "primary": false,
   "keys": [{
     "column": 1,
-    "asc": true,
-    "partitioning": false
+    "asc": true
   }, {
     "column": 0,
-    "asc": true,
-    "partitioning": true
+    "asc": true
   }]
 }]
 explain select * from test where data = 1 and id = 1;
