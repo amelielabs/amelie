@@ -32,11 +32,11 @@ catalog_find_table(Catalog* self, Str* user, Str* name, bool error_if_not_exists
 	                          error_if_not_exists));
 }
 
-static inline Clone*
-catalog_find_clone(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
+static inline Sidetable*
+catalog_find_sidetable(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 {
-	return clone_of(rels_find(&self->rels, REL_CLONE, user, name,
-	                          error_if_not_exists));
+	return sidetable_of(rels_find(&self->rels, REL_SIDETABLE, user, name,
+	                              error_if_not_exists));
 }
 
 static inline Udf*

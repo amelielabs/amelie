@@ -83,8 +83,6 @@ db_indexate(Part* part, IndexConfig* config)
 		auto row = heap_iterator_at(&it);
 		if (! row)
 			break;
-		if (! row->head)
-			continue;
 
 		if (unlikely(db_indexate_with_null(index, row)))
 			error("create index: null key column");
@@ -93,16 +91,11 @@ db_indexate(Part* part, IndexConfig* config)
 		io.row   = row;
 		io.delta = 0;
 		auto exists = index_upsert(index, &io);
+		if (exists)
+			error("create index: index unique constraint violation");
 
 		// ensure memory limit
 		usage_add(memory, io.delta);
-		if (! exists)
-			continue;
-
-		// check unique constraint violation
-		auto head = iterator_at(it_upsert);
-		if (row_unique(head, heap))
-			error("create index: index unique constraint violation");
 	}
 
 	auto total = (double)storage_size(&heap->storage) / 1024 / 1024;

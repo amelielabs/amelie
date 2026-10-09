@@ -21,11 +21,11 @@
 #include <amelie_catalog.h>
 
 static inline void
-clone_free(Clone* self, bool drop)
+sidetable_free(Sidetable* self, bool drop)
 {
 	auto id = self->config->timeline.timeline;
 	timelines_remove(&self->table->timelines, &self->config->timeline);
-	clone_config_free(self->config);
+	sidetable_config_free(self->config);
 
 	// do table cleanup
 	if (drop)
@@ -53,44 +53,44 @@ clone_free(Clone* self, bool drop)
 }
 
 static inline void
-clone_show(Clone* self, Buf* buf, Str* user, int flags)
+sidetable_show(Sidetable* self, Buf* buf, Str* user, int flags)
 {
 	if (flags_has(flags, FCREATE))
 		describe(&self->rel, buf, user, flags);
 	else
-		clone_config_write(self->config, buf, flags);
+		sidetable_config_write(self->config, buf, flags);
 }
 
-static inline Clone*
-clone_allocate(CloneConfig* config)
+static inline Sidetable*
+sidetable_allocate(SidetableConfig* config)
 {
-	auto self = (Clone*)am_malloc(sizeof(Clone));
-	self->config = clone_config_copy(config);
+	auto self = (Sidetable*)am_malloc(sizeof(Sidetable));
+	self->config = sidetable_config_copy(config);
 	self->table  = NULL;
 
 	// set relation
 	auto rel = &self->rel;
-	rel_init(rel, REL_CLONE);
+	rel_init(rel, REL_SIDETABLE);
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_description(rel, &self->config->description);
 	rel_set_grants(rel, &self->config->grants);
-	rel_set_show(rel, (RelShow)clone_show);
-	rel_set_free(rel, (RelFree)clone_free);
+	rel_set_show(rel, (RelShow)sidetable_show);
+	rel_set_free(rel, (RelFree)sidetable_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 
 bool
-clone_create(Catalog*     self,
-             Tr*          tr,
-             CloneConfig* config,
-             bool         if_not_exists)
+sidetable_create(Catalog*         self,
+                 Tr*              tr,
+                 SidetableConfig* config,
+                 bool             if_not_exists)
 {
-	// PERM_CREATE_CLONE
-	catalog_check(self, tr, PERM_CREATE_CLONE, &config->user);
+	// PERM_CREATE_TABLE
+	catalog_check(self, tr, PERM_CREATE_TABLE, &config->user);
 
-	// make sure clone does not exists
+	// make sure sidetable does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
 	if (rel)
 	{
@@ -102,38 +102,37 @@ clone_create(Catalog*     self,
 	// ensure table exists
 	auto table = catalog_find_table(self, &config->table_user, &config->table, true);
 
-	// ensure permission to create clone
-	check_permission(tr, &table->rel, PERM_CREATE_CLONE);
+	// ensure permission to create sidetable
+	check_permission(tr, &table->rel, PERM_CREATE_TABLE);
 
 	// validate grants
-	catalog_grant_validate(self, tr, REL_CLONE,
+	catalog_grant_validate(self, tr, REL_SIDETABLE,
 	                       &config->user,
 	                       &config->name, &config->grants);
 
 	// check limit
-	catalog_limit(self, tr, REL_CLONE, LIMIT_CLONES);
+	catalog_limit(self, tr, REL_SIDETABLE, LIMIT_SIDETABLES);
 
 	// ensure table has no vector columns
 	list_foreach(&table_columns(table)->list)
 	{
 		auto column = list_at(Column, link);
 		if (column->type == TYPE_VECTOR)
-			error("table '{str}': vector columns cannot be used together with clones",
+			error("table '{str}': vector columns cannot be used together with sidetables",
 			      &config->name);
 	}
 
-	// create clone
-	auto clone = clone_allocate(config);
-	clone->table = table;
-	clone->config->timeline.rel = &clone->rel;
-	rels_create(&self->rels, tr, &clone->rel);
+	// create sidetable
+	auto sidetable = sidetable_allocate(config);
+	sidetable->table = table;
+	sidetable->config->timeline.rel = &sidetable->rel;
+	rels_create(&self->rels, tr, &sidetable->rel);
 
-	// register clone timeline
+	// register sidetable timeline
 	auto timelines = &table->timelines;
-	timelines_add(timelines, &clone->config->timeline);
+	timelines_add(timelines, &sidetable->config->timeline);
 
 	// advance main timeline (online only)
-	timelines->main.timeline++;
-	table_config_set_timeline(table->config, timelines->main.timeline);
+	table_config_set_timeline(table->config, timelines->max);
 	return true;
 }

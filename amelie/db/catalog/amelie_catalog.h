@@ -29,10 +29,10 @@
 #include "catalog/table_alter.h"
 #include "catalog/table_index.h"
 
-// clone
-#include "catalog/clone_config.h"
-#include "catalog/clone_op.h"
-#include "catalog/clone.h"
+// sidetable
+#include "catalog/sidetable_config.h"
+#include "catalog/sidetable_op.h"
+#include "catalog/sidetable.h"
 
 // udf
 #include "catalog/udf_config.h"

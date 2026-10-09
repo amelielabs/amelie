@@ -330,6 +330,14 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                         if_column_exists);
 		break;
 	}
+	case DDL_SIDETABLE_CREATE:
+	{
+		auto config = sidetable_op_create_read(op);
+		defer(sidetable_config_free, config);
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = sidetable_create(self, tr, config, if_not_exists);
+		break;
+	}
 	case DDL_INDEX_CREATE:
 	{
 		// create index has different processing path and must be
@@ -360,14 +368,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto table = catalog_find_table(self, &user, &name, true);
 		auto if_exists = ddl_if_exists(flags);
 		write = table_index_rename(self, table, tr, &name_index, &name_index_new, if_exists);
-		break;
-	}
-	case DDL_CLONE_CREATE:
-	{
-		auto config = clone_op_create_read(op);
-		defer(clone_config_free, config);
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = clone_create(self, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_UDF_CREATE:

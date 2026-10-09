@@ -21,7 +21,6 @@ struct Iterator
 {
 	Row*          current;
 	Timeline*     timeline;
-	Heap*         heap;
 	IteratorNext  next;
 	IteratorOpen  open;
 	IteratorClose close;
@@ -43,39 +42,28 @@ always_inline static inline void
 iterator_next(Iterator* self)
 {
 	self->next(self);
-	if (! self->heap)
+	if (! self->timeline)
 		return;
 	while (self->current)
 	{
-		auto visible = row_visible(self->current, self->heap, self->timeline);
-		if (visible)
-		{
-			self->current = visible;
+		if (row_visible(self->current, self->timeline))
 			break;
-		}
 		self->next(self);
 	}
 }
 
 static inline bool
-iterator_open(Iterator* self, Heap* heap, Timeline* timeline, Row* key)
+iterator_open(Iterator* self, Timeline* timeline, Row* key)
 {
 	self->timeline = timeline;
-	self->heap     = heap;
-
 	auto match = self->open(self, key);
 	if (! self->current)
 		return false;
-	if (! heap)
+	if (! timeline)
 		return match;
 
-	// set visible version
-	auto visible = row_visible(self->current, heap, timeline);
-	if (visible)
-	{
-		self->current = visible;
+	if (row_visible(self->current, timeline))
 		return match;
-	}
 	iterator_next(self);
 	return false;
 }
@@ -92,7 +80,6 @@ iterator_reset(Iterator* self)
 {
 	self->current  = NULL;
 	self->timeline = NULL;
-	self->heap     = NULL;
 }
 
 static inline void
@@ -103,7 +90,6 @@ iterator_init(Iterator*     self,
 {
 	self->current  = NULL;
 	self->timeline = NULL;
-	self->heap     = NULL;
 	self->next     = next;
 	self->open     = open;
 	self->close    = close;

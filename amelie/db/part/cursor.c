@@ -31,7 +31,7 @@ cursor_lookup(Part*        part,
 	// check heap first
 	auto it = index_iterator(index);
 	errdefer(iterator_close, it);
-	iterator_open(it, part->heap, timeline, key);
+	iterator_open(it, timeline, key);
 	return it;
 }
 
@@ -51,7 +51,7 @@ cursor_scan(Part*        part,
 		auto index = part_index_find(part, &config->name, true);
 		it = index_iterator(index);
 	}
-	iterator_open(it, part->heap, timeline, key);
+	iterator_open(it, timeline, key);
 	return it;
 }
 
@@ -74,11 +74,11 @@ cursor_scan_cross(Parts*       self,
 	{
 		auto part = list_at(Part, link);
 		auto index = part_index_find(part, &config->name, true);
-		it = index_iterator_merge(index, it, part->heap);
+		it = index_iterator_merge(index, it);
 	}
 
 	// iterator use per partition heaps
-	iterator_open(it, NULL, timeline, key);
+	iterator_open(it, timeline, key);
 	return it;
 }
 

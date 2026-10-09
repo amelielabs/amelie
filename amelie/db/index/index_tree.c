@@ -120,11 +120,11 @@ index_tree_iterator(Index* self)
 }
 
 hot static Iterator*
-index_tree_iterator_merge(Index* self, Iterator* it, Heap* heap)
+index_tree_iterator_merge(Index* self, Iterator* it)
 {
 	if (! it)
 		it = index_tree_merge_allocate();
-	index_tree_merge_add(index_tree_merge_of(it), index_tree_of(self), heap);
+	index_tree_merge_add(index_tree_merge_of(it), index_tree_of(self));
 	return it;
 }
 

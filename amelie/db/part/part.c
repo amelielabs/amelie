@@ -99,9 +99,6 @@ part_open_heap(Part* self, Ids* ids)
 			if (! row)
 				break;
 
-			if (! row->head)
-				continue;
-
 			// update index to track the latest version
 			IndexOp op =
 			{

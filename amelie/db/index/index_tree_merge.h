@@ -88,7 +88,7 @@ index_tree_merge_open(Iterator* arg, Row* key)
 	{
 		// iterator is using per iterator heap
 		auto it = &list[i];
-		if (iterator_open(&it->it, it->it.heap, arg->timeline, key))
+		if (iterator_open(&it->it, arg->timeline, key))
 			match = true;
 	}
 	index_tree_merge_step(self);
@@ -125,10 +125,9 @@ index_tree_merge_allocate(void)
 }
 
 static inline void
-index_tree_merge_add(IndexTreeMerge* self, IndexTree* index, Heap* heap)
+index_tree_merge_add(IndexTreeMerge* self, IndexTree* index)
 {
 	auto it = (IndexTreeIterator*)buf_emplace(&self->list, sizeof(IndexTreeIterator));
 	index_tree_iterator_init(it, index);
-	it->it.heap = heap;
 	self->list_count++;
 }

@@ -14,6 +14,11 @@
 always_inline hot static inline int
 compare(Comparable* self, Row* a, Row* b)
 {
+	// compare timelines
+	if (a->timeline != b->timeline)
+		return (a->timeline > b->timeline) - (a->timeline < b->timeline);
+
+	// compare keys
 	const int keys = self->keys_count;
 	for (auto at = 0; at < keys; at++)
 	{

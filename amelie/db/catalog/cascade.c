@@ -44,11 +44,11 @@ catalog_depends(Catalog* self, Rel* rel, Rel* at)
 	switch (rel->type) {
 	case REL_TABLE:
 	{
-		if (at->type == REL_CLONE)
+		if (at->type == REL_SIDETABLE)
 		{
-			// clone depends on the table
-			auto clone = clone_of(at);
-			dep = clone->table == table_of(rel);
+			// sidetable depends on the table
+			auto sidetable = sidetable_of(at);
+			dep = sidetable->table == table_of(rel);
 		} else
 		if (at->type == REL_UDF)
 		{
@@ -58,7 +58,7 @@ catalog_depends(Catalog* self, Rel* rel, Rel* at)
 		}
 		break;
 	}
-	case REL_CLONE:
+	case REL_SIDETABLE:
 	{
 		if (at->type == REL_UDF)
 		{
@@ -180,11 +180,11 @@ catalog_deps_validate_user(Catalog* self, Str* user, bool error_on_match)
 			dep = self->iface->udf_depends(udf, user, NULL);
 			break;
 		}
-		case REL_CLONE:
+		case REL_SIDETABLE:
 		{
-			// clone depends on the user
-			auto clone = clone_of(at);
-			dep = str_compare(&clone->config->table_user, user);
+			// sidetable depends on the user
+			auto sidetable = sidetable_of(at);
+			dep = str_compare(&sidetable->config->table_user, user);
 			break;
 		}
 		default:

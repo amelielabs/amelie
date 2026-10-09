@@ -131,11 +131,11 @@ index_hash_iterator(Index* self)
 }
 
 hot static Iterator*
-index_hash_iterator_merge(Index* self, Iterator* it, Heap* heap)
+index_hash_iterator_merge(Index* self, Iterator* it)
 {
 	if (! it)
 		it = index_hash_merge_allocate();
-	index_hash_merge_add(index_hash_merge_of(it), index_hash_of(self), heap);
+	index_hash_merge_add(index_hash_merge_of(it), index_hash_of(self));
 	return it;
 }
 

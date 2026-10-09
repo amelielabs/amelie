@@ -17,23 +17,20 @@ struct Row
 {
 	// 16 bytes
 
-	// version
+	// timeline
 	uint64_t timeline:    32;
 
 	// row
 	uint64_t columns:     16;
 	uint64_t byte:        1;
-	uint64_t deleted:     1;
 	uint64_t commited:    1;
-	uint64_t main:        1;
-	uint64_t head:        1;
 
 	// heap
 	uint64_t bucket:      8;
 	uint64_t free:        1;
-	uint64_t reserved:    2;
+	uint64_t reserved:    5;
 
-	// heap version (64bit cut)
+	// heap location (64bit cut)
 	uint64_t offset:      26; // 64mb
 	uint64_t prev:        12; // 4096 pages
 	uint64_t prev_offset: 26;
@@ -52,7 +49,6 @@ row_init(Row* self)
 
 always_inline hot static inline void
 row_prepare(Row*     self,
-            bool     main,
             uint32_t timeline,
             int      columns,
             bool     byte,
@@ -61,10 +57,7 @@ row_prepare(Row*     self,
 	self->timeline = timeline;
 	self->columns  = columns;
 	self->byte     = byte;
-	self->deleted  = false;
 	self->commited = false;
-	self->main     = main;
-	self->head     = false;
 
 	// set size
 	if (byte)

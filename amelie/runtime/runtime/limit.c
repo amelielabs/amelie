@@ -41,8 +41,8 @@ limits_names[LIMIT_MAX] =
 	// relations
 	{ "users",          5  },
 	{ "tables",         6  },
+	{ "sidetables",     10 },
 	{ "indexes",        7  },
-	{ "clones",         6  },
 	{ "functions",      9  },
 
 	// options

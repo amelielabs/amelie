@@ -13,7 +13,6 @@
 
 hot static inline Row*
 row_allocate(Heap*    heap,
-             bool     main,
              uint32_t timeline,
              int      columns,
              int      data_size,
@@ -26,7 +25,7 @@ row_allocate(Heap*    heap,
 
 	auto current = heap->storage.current;
 	auto self    = heap_add(heap, size);
-	row_prepare(self, main, timeline, columns, byte, size);
+	row_prepare(self, timeline, columns, byte, size);
 	*delta += storage_delta(&heap->storage, current);
 	return self;
 }
@@ -41,7 +40,7 @@ row_allocate_buf(Buf* buf, int columns, int data_size)
 
 	auto self = (Row*)buf_emplace(buf, size);
 	row_init(self);
-	row_prepare(self, false, 0, columns, byte, size);
+	row_prepare(self, 0, columns, byte, size);
 	return self;
 }
 
@@ -79,4 +78,10 @@ row_filter(Flats* flats, Row* row, bool filter)
 		if (ref)
 			flat_set_at(flat, *(uint32_t*)ref, !filter);
 	}
+}
+
+always_inline hot static inline bool
+row_visible(Row* self, Timeline* timeline)
+{
+	return self->timeline == timeline->timeline;
 }

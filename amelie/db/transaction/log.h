@@ -35,14 +35,13 @@ struct LogOp
 	int    cmd;
 	union {
 		struct {
-			Row*      row;
-			Row*      row_prev;
-			Timeline* timeline;
+			Row* row;
+			Row* row_prev;
 		};
 		struct {
-			Rel*      rel;
-			int       rel_data;
-			int       rel_data_size;
+			Rel* rel;
+			int  rel_data;
+			int  rel_data_size;
 		};
 	};
 };
@@ -99,12 +98,11 @@ log_last(Log* self)
 }
 
 hot static inline LogOp*
-log_dml(Log*      self,
-        int       cmd,
-        LogIf*    iface,
-        void*     iface_arg,
-        Row*      row,
-        Timeline* timeline)
+log_dml(Log*   self,
+        int    cmd,
+        LogIf* iface,
+        void*  iface_arg,
+        Row*   row)
 {
 	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
 	op->iface     = iface;
@@ -112,29 +110,26 @@ log_dml(Log*      self,
 	op->cmd       = cmd;
 	op->row       = row;
 	op->row_prev  = NULL;
-	op->timeline  = timeline;
 	self->count++;
 	return op;
 }
 
 hot static inline LogOp*
-log_replace(Log*      self,
-            LogIf*    iface,
-            void*     iface_arg,
-            Row*      row,
-            Timeline* timeline)
+log_replace(Log*   self,
+            LogIf* iface,
+            void*  iface_arg,
+            Row*   row)
 {
-	return log_dml(self, LOG_REPLACE, iface, iface_arg, row, timeline);
+	return log_dml(self, LOG_REPLACE, iface, iface_arg, row);
 }
 
 hot static inline LogOp*
-log_delete(Log*      self,
-           LogIf*    iface,
-           void*     iface_arg,
-           Row*      row,
-           Timeline* timeline)
+log_delete(Log*   self,
+           LogIf* iface,
+           void*  iface_arg,
+           Row*   row)
 {
-	return log_dml(self, LOG_DELETE, iface, iface_arg, row, timeline);
+	return log_dml(self, LOG_DELETE, iface, iface_arg, row);
 }
 
 static inline void

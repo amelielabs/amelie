@@ -68,8 +68,8 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 	}
 
 	// force commit pending prepared transactions
-	if (type == REL_CLONE)
-		table_sync(clone_of(rel)->table);
+	if (type == REL_SIDETABLE)
+		table_sync(sidetable_of(rel)->table);
 
 	// self
 	catalog_drop_of(self, tr, rel);
@@ -212,12 +212,12 @@ catalog_grant_mask(RelType type)
 	case REL_TABLE:
 		perms_all =
 			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-			PERM_DELETE | PERM_CREATE_CLONE;
+			PERM_DELETE | PERM_CREATE_TABLE;
 		break;
-	case REL_CLONE:
+	case REL_SIDETABLE:
 		perms_all =
 			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-			PERM_DELETE | PERM_CREATE_CLONE;
+			PERM_DELETE;
 		break;
 	case REL_UDF:
 		perms_all =
@@ -230,7 +230,6 @@ catalog_grant_mask(RelType type)
 			PERM_CREATE_USER     |
 			PERM_CREATE_TOKEN    |
 			PERM_CREATE_TABLE    |
-			PERM_CREATE_CLONE    |
 			PERM_CREATE_FUNCTION |
 			PERM_CREATE_API      |
 			PERM_SQL;

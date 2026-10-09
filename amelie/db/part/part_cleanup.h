@@ -45,4 +45,4 @@ part_cleanup_free(PartCleanup* self)
 	buf_free(self->buf);
 }
 
-void part_cleanup_run(PartCleanup*);
+void part_cleanup(PartCleanup*);

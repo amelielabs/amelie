@@ -19,18 +19,27 @@
 #include <amelie_index.h>
 #include <amelie_part.h>
 
-hot static void
-part_cleanup_main_head(PartCleanup* self, Heap* heap, Row* row)
+hot void
+part_cleanup(PartCleanup* self)
 {
-	// row is a main head
-	//
-	// [head] <- [row] <- ...
-	//
-	auto part = self->part;
-	auto primary = part_primary(part);
-	if (row->deleted)
+	// remove all rows related to the timeline
+	auto part     = self->part;
+	auto timeline = self->timeline;
+	auto heap     = part->heap;
+	auto primary  = part_primary(part);
+
+	HeapIterator it;
+	heap_iterator_init(&it);
+	heap_iterator_open(&it, heap, false);
+	for (;; heap_iterator_next(&it))
 	{
-		// remove whole chain from the indexes
+		auto row = heap_iterator_at(&it);
+		if (! row)
+			break;
+		if (row->timeline != timeline)
+			continue;
+
+		// update indexes
 		if (primary)
 		{
 			IndexOp op;
@@ -40,204 +49,8 @@ part_cleanup_main_head(PartCleanup* self, Heap* heap, Row* row)
 				index_delete(index, &op);
 			usage_update(part->arg->memory, op.delta);
 		}
-		row->head = false;
-	} else
-	{
-		// keep the head (free the rest)
-		auto head = row;
-		row = row_prev(row, heap);
-		row_prev_set(head, NULL);
-	}
 
-	while (row)
-	{
-		auto prev = row_prev(row, heap);
+		// free
 		row_free(heap, &part->flats, row);
-		row = prev;
 	}
-}
-
-hot static void
-part_cleanup_main_prev(PartCleanup* self, Heap* heap, Row* row)
-{
-	// row is a head (but not main)
-	//
-	// [row] <- [head] <- ...
-
-	// match the last main row
-	auto head      = row;
-	auto head_next = row;
-	for (; head_next; head_next = row_prev(head_next, heap))
-		if (head_next->main)
-			break;
-	head->head = false;
-
-	// drop whole chain, if the main row is delete
-	if (head_next && head_next->deleted)
-		head_next = NULL;
-
-	// delete or replace the index
-	auto part    = self->part;
-	auto primary = part_primary(part);
-	if (head_next)
-	{
-		if (primary)
-		{
-			IndexOp op;
-			index_op_set(&op, head_next);
-			index_replace(primary, &op);
-			for (auto index = primary->next; index; index = index->next)
-				index_replace(index, &op);
-			usage_update(part->arg->memory, op.delta);
-		}
-
-		// mark new head
-		head_next->head = true;
-
-		// free all other rows except current new head
-		while (row)
-		{
-			auto prev = row_prev(row, heap);
-			if (row != head_next)
-				row_free(heap, &part->flats, row);
-			row = prev;
-		}
-
-		row_prev_set(head_next, NULL);
-		return;
-	}
-
-	// free whole chain
-	if (primary)
-	{
-		IndexOp op;
-		index_op_set(&op, row);
-		index_delete(primary, &op);
-		for (auto index = primary->next; index; index = index->next)
-			index_delete(index, &op);
-		usage_update(part->arg->memory, op.delta);
-	}
-
-	while (row)
-	{
-		auto prev = row_prev(row, heap);
-		row_free(heap, &part->flats, row);
-		row = prev;
-	}
-}
-
-hot static void
-part_cleanup_main(PartCleanup* self)
-{
-	auto part = self->part;
-	auto heap = part->heap;
-	HeapIterator it;
-	heap_iterator_init(&it);
-	heap_iterator_open(&it, heap, false);
-
-	// deep cleaning after last clone drop
-	for (;; heap_iterator_next(&it))
-	{
-		auto row = heap_iterator_at(&it);
-		if (! row)
-			break;
-
-		if (! row->head)
-			continue;
-
-		if (row->main)
-			part_cleanup_main_head(self, heap, row);
-		else
-			part_cleanup_main_prev(self, heap, row);
-	}
-}
-
-hot static void
-part_cleanup_clone(PartCleanup* self)
-{
-	// cleanup clone (timeline) related rows after drop
-	auto part     = self->part;
-	auto timeline = self->timeline;
-	auto heap     = part->heap;
-	HeapIterator it;
-	heap_iterator_init(&it);
-	heap_iterator_open(&it, heap, false);
-
-	auto primary = part_primary(part);
-	for (;; heap_iterator_next(&it))
-	{
-		auto row = heap_iterator_at(&it);
-		if (! row)
-			break;
-
-		if (! row->head)
-			continue;
-
-		// update indexes
-		if (!row->main && row->timeline == timeline)
-		{
-			// get a first row not related to the timeline
-			auto head      = row;
-			auto head_next = row;
-			for (; head_next; head_next = row_prev(head_next, heap))
-				if (head_next->main || head_next->timeline != timeline)
-					break;
-
-			// delete or replace the index
-			head->head = false;
-			if (head_next)
-			{
-				if (primary)
-				{
-					IndexOp op;
-					index_op_set(&op, head_next);
-					index_replace(primary, &op);
-					for (auto index = primary->next; index; index = index->next)
-						index_replace(index, &op);
-					usage_update(part->arg->memory, op.delta);
-				}
-
-				// mark new head
-				head_next->head = true;
-			} else
-			{
-				if (primary)
-				{
-					IndexOp op;
-					index_op_set(&op, head);
-					index_delete(primary, &op);
-					for (auto index = primary->next; index; index = index->next)
-						index_delete(index, &op);
-					usage_update(part->arg->memory, op.delta);
-				}
-			}
-		}
-
-		// free all rows related to the timeline
-		auto parent = NULL;
-		while (row)
-		{
-			auto prev = row_prev(row, heap);
-			if (!row->main && row->timeline == timeline)
-			{
-				if (parent)
-					row_prev_set(parent, prev);
-				row_free(heap, &part->flats, row);
-			} else {
-				parent = row;
-			}
-			row = prev;
-		}
-	}
-}
-
-hot void
-part_cleanup_run(PartCleanup* self)
-{
-	// cleanup partition after last clone drop
-	if (self->part->arg->timelines->list_count == 0)
-		return part_cleanup_main(self);
-
-	// free rows only related to the timelime
-	part_cleanup_clone(self);
 }

@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct CloneConfig CloneConfig;
+typedef struct SidetableConfig SidetableConfig;
 
-struct CloneConfig
+struct SidetableConfig
 {
 	Str      user;
 	Str      name;
@@ -24,11 +24,11 @@ struct CloneConfig
 	Grants   grants;
 };
 
-static inline CloneConfig*
-clone_config_allocate(void)
+static inline SidetableConfig*
+sidetable_config_allocate(void)
 {
-	CloneConfig* self;
-	self = am_malloc(sizeof(CloneConfig));
+	SidetableConfig* self;
+	self = am_malloc(sizeof(SidetableConfig));
 	str_init(&self->user);
 	str_init(&self->name);
 	str_init(&self->description);
@@ -40,7 +40,7 @@ clone_config_allocate(void)
 }
 
 static inline void
-clone_config_free(CloneConfig* self)
+sidetable_config_free(SidetableConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
@@ -52,74 +52,72 @@ clone_config_free(CloneConfig* self)
 }
 
 static inline void
-clone_config_set_user(CloneConfig* self, Str* name)
+sidetable_config_set_user(SidetableConfig* self, Str* name)
 {
 	str_free(&self->user);
 	str_copy(&self->user, name);
 }
 
 static inline void
-clone_config_set_name(CloneConfig* self, Str* name)
+sidetable_config_set_name(SidetableConfig* self, Str* name)
 {
 	str_free(&self->name);
 	str_copy(&self->name, name);
 }
 
 static inline void
-clone_config_set_description(CloneConfig* self, Str* value)
+sidetable_config_set_description(SidetableConfig* self, Str* value)
 {
 	str_free(&self->description);
 	str_copy(&self->description, value);
 }
 
 static inline void
-clone_config_set_table_user(CloneConfig* self, Str* name)
+sidetable_config_set_table_user(SidetableConfig* self, Str* name)
 {
 	str_free(&self->table_user);
 	str_copy(&self->table_user, name);
 }
 
 static inline void
-clone_config_set_table(CloneConfig* self, Str* name)
+sidetable_config_set_table(SidetableConfig* self, Str* name)
 {
 	str_free(&self->table);
 	str_copy(&self->table, name);
 }
 
-static inline CloneConfig*
-clone_config_copy(CloneConfig* self)
+static inline SidetableConfig*
+sidetable_config_copy(SidetableConfig* self)
 {
-	auto copy = clone_config_allocate();
-	clone_config_set_user(copy, &self->user);
-	clone_config_set_name(copy, &self->name);
-	clone_config_set_description(copy, &self->description);
-	clone_config_set_table_user(copy, &self->table_user);
-	clone_config_set_table(copy, &self->table);
+	auto copy = sidetable_config_allocate();
+	sidetable_config_set_user(copy, &self->user);
+	sidetable_config_set_name(copy, &self->name);
+	sidetable_config_set_description(copy, &self->description);
+	sidetable_config_set_table_user(copy, &self->table_user);
+	sidetable_config_set_table(copy, &self->table);
 	timeline_copy(&copy->timeline, &self->timeline);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
-static inline CloneConfig*
-clone_config_read(uint8_t** pos)
+static inline SidetableConfig*
+sidetable_config_read(uint8_t** pos)
 {
-	auto self = clone_config_allocate();
-	errdefer(clone_config_free, self);
-	uint8_t* pos_timeline = NULL;
+	auto self = sidetable_config_allocate();
+	errdefer(sidetable_config_free, self);
 	uint8_t* pos_grants   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",        &self->user        },
-		{ DECODE_STR,   "name",        &self->name        },
-		{ DECODE_STR,   "description", &self->description },
-		{ DECODE_STR,   "table_user",  &self->table_user  },
-		{ DECODE_STR,   "table",       &self->table       },
-		{ DECODE_OBJ,   "timeline",    &pos_timeline      },
-		{ DECODE_ARRAY, "grants",      &pos_grants        },
-		{ 0,             NULL,          NULL              },
+		{ DECODE_STR,   "user",        &self->user              },
+		{ DECODE_STR,   "name",        &self->name              },
+		{ DECODE_STR,   "description", &self->description       },
+		{ DECODE_STR,   "table_user",  &self->table_user        },
+		{ DECODE_STR,   "table",       &self->table             },
+		{ DECODE_INT,   "timeline",    &self->timeline.timeline },
+		{ DECODE_ARRAY, "grants",      &pos_grants              },
+		{ 0,             NULL,          NULL                    },
 	};
-	decode_obj(obj, "clone", pos);
-	timeline_read(&self->timeline, &pos_timeline);
+	decode_obj(obj, "sidetable", pos);
 
 	// grants
 	grants_read(&self->grants, &pos_grants);
@@ -127,7 +125,7 @@ clone_config_read(uint8_t** pos)
 }
 
 static inline void
-clone_config_write(CloneConfig* self, Buf* buf, int flags)
+sidetable_config_write(SidetableConfig* self, Buf* buf, int flags)
 {
 	// {}
 	encode_obj(buf);
@@ -140,7 +138,7 @@ clone_config_write(CloneConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "name", 4);
 	encode_str(buf, &self->name);
 
-	// descriptioon
+	// description
 	encode_raw(buf, "description", 11);
 	encode_str(buf, &self->description);
 
@@ -160,7 +158,7 @@ clone_config_write(CloneConfig* self, Buf* buf, int flags)
 
 	// timeline
 	encode_raw(buf, "timeline", 8);
-	timeline_write(&self->timeline, buf, flags);
+	encode_int(buf, self->timeline.timeline);
 
 	// grants
 	encode_raw(buf, "grants", 6);

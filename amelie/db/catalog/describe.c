@@ -286,23 +286,23 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 }
 
 static void
-describe_clone(Clone* self, Buf* buf, Str* user, int flags)
+describe_sidetable(Sidetable* self, Buf* buf, Str* user, int flags)
 {
 	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config = self->config;
 
-	// create clone
+	// create table
 	if (!verbose && str_compare_case(self->rel.user, user))
-		buf_format(buf, "create clone {str}",  &config->name);
+		buf_format(buf, "create table {str}",  &config->name);
 	else
-		buf_format(buf, "create clone {str}.{str}",
+		buf_format(buf, "create table {str}.{str}",
 		           &config->user, &config->name);
 
-	// of
+	// on
 	if (!verbose && str_compare_case(&config->table_user, user))
-		buf_format(buf, " of {str}\n", &config->table);
+		buf_format(buf, " on {str}\n", &config->table);
 	else
-		buf_format(buf, " of {str}.{str}\n",
+		buf_format(buf, " on {str}.{str}\n",
 		           &config->table_user, &config->table);
 
 	// description
@@ -463,8 +463,8 @@ describe_text(Rel* self, Buf* buf, Str* user, int flags)
 	case REL_TABLE:
 		describe_table(table_of(self), buf, user, flags);
 		break;
-	case REL_CLONE:
-		describe_clone(clone_of(self), buf, user, flags);
+	case REL_SIDETABLE:
+		describe_sidetable(sidetable_of(self), buf, user, flags);
 		break;
 	case REL_UDF:
 		describe_udf(udf_of(self), buf, user, flags);
@@ -516,9 +516,9 @@ describe_rels(Rels* rels, RelType type, Buf* buf)
 void
 describe_catalog(Catalog* self, Buf* buf)
 {
-	// users, tables, clones, udfs
+	// users, tables, sidetables, udfs
 	describe_rels(&self->users, REL_USER, buf);
 	describe_rels(&self->rels, REL_TABLE, buf);
-	describe_rels(&self->rels, REL_CLONE, buf);
+	describe_rels(&self->rels, REL_SIDETABLE, buf);
 	describe_rels(&self->rels, REL_UDF, buf);
 }

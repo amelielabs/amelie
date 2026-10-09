@@ -41,7 +41,7 @@ index_hash_merge_open(Iterator* arg, Row* key)
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto it = &list[i];
-		iterator_open(&it->it, it->it.heap, arg->timeline, NULL);
+		iterator_open(&it->it, arg->timeline, NULL);
 		if (!self->current_it && iterator_has(&it->it))
 		{
 			self->current_it_order = i;
@@ -112,10 +112,9 @@ index_hash_merge_allocate(void)
 }
 
 static inline void
-index_hash_merge_add(IndexHashMerge* self, IndexHash* index, Heap* heap)
+index_hash_merge_add(IndexHashMerge* self, IndexHash* index)
 {
 	auto it = (IndexHashIterator*)buf_emplace(&self->list, sizeof(IndexHashIterator));
 	index_hash_iterator_init(it, index);
-	it->it.heap = heap;
 	self->list_count++;
 }

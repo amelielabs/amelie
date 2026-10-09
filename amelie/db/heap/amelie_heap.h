@@ -11,6 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
+// timeline
+#include "heap/timeline.h"
+#include "heap/timelines.h"
+
 // row
 #include "heap/row.h"
 #include "heap/row_encode.h"
@@ -19,11 +23,4 @@
 // heap
 #include "heap/heap.h"
 #include "heap/heap_iterator.h"
-
-// timeline
-#include "heap/timeline.h"
-#include "heap/timelines.h"
-
-// heap row
-#include "heap/row_heap.h"
-#include "heap/row_timeline.h"
+#include "heap/heap_row.h"

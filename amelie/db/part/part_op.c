@@ -43,40 +43,18 @@ primary_if_commit(Log* self, LogOp* op)
 {
 	Part* part = self->arg;
 	auto heap  = part->heap;
-	auto index = (Index*)op->iface_arg;
 
 	// mark row as commited
 	auto row = op->row;
 	row->commited = true;
-
 	if (op->cmd == LOG_DELETE)
 	{
-		// no clones or versions
 		row_free(heap, &part->flats, row);
 		return;
 	}
 
-	// cleanup version chain starting from head
-	if (! row->head)
-		return;
-
-	// free older versions related to this timeline
-	row_gc(row, heap, &part->flats, op->timeline);
-
-	// last delete
-	if (row->deleted && !row_prev_has(row))
-	{
-		if (index)
-		{
-			IndexOp io;
-			index_op_set(&io, row);
-			index_delete(index, &io);
-			for (index = index->next; index; index = index->next)
-				index_delete(index, &io);
-			usage_update(part->arg->memory, io.delta);
-		}
-		row_free(heap, &part->flats, row);
-	}
+	if (op->row_prev)
+		row_free(heap, &part->flats, op->row_prev);
 }
 
 static void
@@ -90,12 +68,9 @@ primary_if_abort(Log* self, LogOp* op)
 	if (op->cmd != LOG_DELETE && op->row)
 		row_free(part->heap, &part->flats, op->row);
 
+	// unfilter vector columns
 	if (op->row_prev)
-	{
-		op->row_prev->head = true;
-		// unfilter vector columns
 		row_filter(&part->flats, op->row_prev, false);
-	}
 }
 
 hot static void
@@ -125,64 +100,48 @@ static LogIf secondary_if =
 };
 
 hot void
-part_insert(Part*     self, Tr* tr,
-            Timeline* timeline,
-            Row*      row)
+part_insert(Part* self, Tr* tr, Row* row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_replace(&tr->log, &primary_if, primary, row, timeline);
+	auto op = log_replace(&tr->log, &primary_if, primary, row);
 
 	// ensure write limit
 	if (tr->write)
 		usage_add(tr->write, 1);
 
-	row->head = true;
 	if (! primary)
 		return;
 
+	// update primary index
 	IndexOp io;
 	index_op_set(&io, row);
-
-	// update primary index
 	if (index_replace(primary, &io))
 	{
 		op->row_prev = io.row_prev;
-
-		// check unique constraint
-		if (row_visible(io.row_prev, self->heap, timeline))
-			error("index '{str}': unique key constraint violation",
-			      &primary->config->name);
-
-		// chain head row
-		row_prev_set(row, op->row_prev);
-		op->row_prev->head = false;
+		error("index '{str}': unique key constraint violation",
+		      &primary->config->name);
 	}
-	row->head = true;
 
 	// update secondary indexes
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_replace(&tr->log, &secondary_if, index, row, timeline);
+		op = log_replace(&tr->log, &secondary_if, index, row);
 		if (index_replace(index, &io))
 		{
 			op->row_prev = io.row_prev;
-			if (unlikely(row_visible(io.row_prev, self->heap, timeline)))
-				error("index '{str}': unique key constraint violation",
-				      &index->config->name);
+			error("index '{str}': unique key constraint violation",
+				  &index->config->name);
 		}
 	}
 
 	// ensure memory limit
 	usage_add(self->arg->memory, io.delta);
-
 }
 
 hot bool
-part_upsert(Part*     self, Tr* tr, Iterator* it,
-            Timeline* timeline,
-            Row*      row)
+part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 {
 	// ensure primary key is defined
 	auto primary = part_primary(self);
@@ -208,10 +167,9 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	}
 
 	// insert
-	row->head = true;
 
 	// add log record
-	auto op = log_replace(&tr->log, &primary_if, primary, row, timeline);
+	auto op = log_replace(&tr->log, &primary_if, primary, row);
 
 	// ensure write limit
 	if (tr->write)
@@ -222,13 +180,12 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_replace(&tr->log, &secondary_if, index, row, timeline);
+		op = log_replace(&tr->log, &secondary_if, index, row);
 		if (index_replace(index, &io))
 		{
 			op->row_prev = io.row_prev;
-			if (unlikely(row_visible(io.row_prev, self->heap, timeline)))
-				error("index '{str}': unique key constraint violation",
-				      &index->config->name);
+			error("index '{str}': unique key constraint violation",
+			      &index->config->name);
 		}
 	}
 
@@ -238,25 +195,17 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 }
 
 hot void
-part_update(Part*     self, Tr* tr, Iterator* it,
-            Timeline* timeline,
-            Row*      row)
+part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_replace(&tr->log, &primary_if, primary, row, timeline);
+	auto op = log_replace(&tr->log, &primary_if, primary, row);
 
 	// ensure write limit
 	if (tr->write)
 		usage_add(tr->write, 1);
 
 	op->row_prev = iterator_at(it);
-	assert(op->row_prev->head);
-	op->row_prev->head = false;
-
-	// chain head row
-	row_prev_set(row, op->row_prev);
-	row->head = true;
 
 	// filter vector columns
 	row_filter(&self->flats, op->row_prev, true);
@@ -279,7 +228,7 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_replace(&tr->log, &secondary_if, index, row, timeline);
+		op = log_replace(&tr->log, &secondary_if, index, row);
 
 		// replace by key
 		if (index_replace(index, &io))
@@ -291,19 +240,18 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 }
 
 hot void
-part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
+part_delete(Part* self, Tr* tr, Iterator* it)
 {
 	// add log record
 	auto primary = part_primary(self);
 	auto row = iterator_at(it);
-	auto op = log_delete(&tr->log, &primary_if, primary, row, timeline);
+	auto op = log_delete(&tr->log, &primary_if, primary, row);
 
 	// ensure write limit
 	if (tr->write)
 		usage_add(tr->write, 1);
 
 	op->row_prev = row;
-	op->row_prev->head = false;
 
 	// filter vector columns
 	row_filter(&self->flats, op->row_prev, true);
@@ -327,7 +275,7 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_delete(&tr->log, &secondary_if, index, row, timeline);
+		op = log_delete(&tr->log, &secondary_if, index, row);
 
 		// delete by key
 		if (index_delete(index, &io))
