@@ -114,8 +114,8 @@ part_open_heap(Part* self, Ids* ids)
 				index_replace(index, &op);
 			usage_update(self->arg->memory, op.delta);
 		}
-		usage_update(self->arg->memory, storage_size(storage));
 	}
+	usage_update(self->arg->memory, storage_size(storage));
 
 	char uuid[UUID_SZ];
 	uuid_get(self->arg->rel->id, uuid, sizeof(uuid));
