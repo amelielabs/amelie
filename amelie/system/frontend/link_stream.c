@@ -28,7 +28,7 @@ link_stream_create(Link* self, Streams* streams)
 		error("stream: relation {str}.{str} not found",
 		      &api->rel_user, &api->rel);
 
-	// table or clone
+	// table or sidetable
 	Timeline* timeline;
 	Parts*    parts;
 	if (rel->type == REL_TABLE)

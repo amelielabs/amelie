@@ -119,44 +119,32 @@ id
 0
 1
 2
-# test: create clone
-create clone a of test;
+# test: create sidetable
+create table a on test;
 insert into a values (3), (4);
 select * from a;
 
 id
 ──
-0
-1
-2
 3
 4
-create clone b of test;
+create table b on test;
 insert into b values (5), (6);
 insert into b values (7), (8);
 select * from b;
 
 id
 ──
-0
-1
 6
 7
 8
-2
 5
-select timeline from show clones verbose;
+select timeline from show sidetables verbose;
 
 timeline
 ────────
-{
-  "timeline": 1,
-  "timeline_max": 0
-}
-{
-  "timeline": 2,
-  "timeline_max": 0
-}
+1
+2
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
@@ -172,37 +160,25 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 3
-select timeline from show clones verbose;
+select timeline from show sidetables verbose;
 
 timeline
 ────────
-{
-  "timeline": 1,
-  "timeline_max": 0
-}
-{
-  "timeline": 2,
-  "timeline_max": 0
-}
+1
+2
 select * from a;
 
 id
 ──
-0
-1
-2
 3
 4
 select * from b;
 
 id
 ──
-0
-1
 6
 7
 8
-2
 5
 select * from test;
 
@@ -238,37 +214,25 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 8
-select timeline from show clones verbose;
+select timeline from show sidetables verbose;
 
 timeline
 ────────
-{
-  "timeline": 1,
-  "timeline_max": 0
-}
-{
-  "timeline": 2,
-  "timeline_max": 0
-}
+1
+2
 select * from a;
 
 id
 ──
-0
-1
-2
 3
 4
 select * from b;
 
 id
 ──
-0
-1
 6
 7
 8
-2
 5
 select * from test;
 
@@ -740,8 +704,8 @@ rels
   "description": ""
 }
 create user x;
-alter user x set limit clones = 0;
-alter user amelie set limit clones = 0;
+alter user x set limit sidetables = 0;
+alter user amelie set limit sidetables = 0;
 # test: restart/recover (checkpoint)
 checkpoint;
 disconnect S0;
@@ -754,7 +718,7 @@ limits
 ──────
 {
   "send": 3145728,
-  "clones": 0
+  "sidetables": 0
 }
 show rels;
 

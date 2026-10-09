@@ -59,13 +59,13 @@ alter user amelie set limit indexes = 2;
 create index i on test (id);
 drop table test;
 
-# test: clones
+# test: sidetables
 create table test (id int primary key);
-alter user amelie set limit clones = 0;
-create clone test_clone of test;
-alter user amelie set limit clones = 1;
-create clone test_clone of test;
-create clone test_clone2 of test;
+alter user amelie set limit sidetables = 0;
+create table test_side on test;
+alter user amelie set limit sidetables = 1;
+create table test_side on test;
+create table test_side2 on test;
 drop table test cascade;
 
 # test: functions

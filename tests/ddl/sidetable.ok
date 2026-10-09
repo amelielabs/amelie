@@ -1,24 +1,13 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: create clone statement parsing
-create clone;
-error: create clone❰;❱ ⟵ target name expected
-create clone 123;
-error: create clone ❰123❱ ⟵ target name expected
-create clone 123 from;
-error: create clone ❰123❱ ⟵ target name expected
-create clone 123 of;
-error: create clone ❰123❱ ⟵ target name expected
-create clone 123 of 1;
-error: create clone ❰123❱ ⟵ target name expected
-# test: create clone
+# test: create sidetable
 create table main (id int primary key);
 insert into main values (1);
-create clone a of main;
-show clones;
+create table a on main;
+show sidetables;
 
-clones
-──────
+sidetables
+──────────
 {
   "user": "amelie",
   "name": "a",
@@ -26,14 +15,13 @@ clones
   "table_user": "amelie",
   "table": "main"
 }
-drop clone a;
+drop table a;
 drop table main;
-# test: create clone (insert)
+# test: create sidetable (insert)
 create table main (id int primary key);
 insert into main values (1);
-create clone a of main;
+create table a on main;
 insert into a values (1);
-error: index 'primary': unique key constraint violation
 insert into a values (2);
 select * from a;
 
@@ -47,24 +35,20 @@ id
 ──
 1
 drop table main;
-error: table 'main': depends on clone 'amelie.a'
+error: table 'main': depends on sidetable 'amelie.a'
 drop table main cascade;
-# test: create clone (update)
+# test: create sidetable (update)
 create table main (id int primary key, data int);
 insert into main values (1, 0);
 insert into main values (2, 0);
 insert into main values (3, 0);
 insert into main values (4, 0);
-create clone a of main;
+create table a on main;
 update a set data = 42 where id in (1, 3);
 select * from a;
 
 id  data
 ──────────
-1   42
-2   0
-3   42
-4   0
 select * from main;
 
 id  data
@@ -73,13 +57,12 @@ id  data
 2   0
 3   0
 4   0
-# test: create clone (delete/insert)
+# test: create sidetable (delete/insert)
 delete from a where id < 4;
 select * from a;
 
 id  data
 ──────────
-4   0
 select * from main;
 
 id  data
@@ -98,7 +81,6 @@ id  data
 1   2
 2   2
 3   2
-4   0
 select * from main;
 
 id  data
@@ -107,16 +89,16 @@ id  data
 2   0
 3   0
 4   0
-# test: create clone description
-create clone x of main description;
-error: create clone x of main description❰;❱ ⟵ string expected
-create clone x of main description 1;
-error: create clone x of main description ❰1❱ ⟵ string expected
-create clone x of main description 'test test';
-show clone x;
+# test: create sidetable description
+create table x on main description;
+error: create table x on main description❰;❱ ⟵ string expected
+create table x on main description 1;
+error: create table x on main description ❰1❱ ⟵ string expected
+create table x on main description 'test test';
+show sidetable x;
 
-clone
-─────
+sidetable
+─────────
 {
   "user": "amelie",
   "name": "x",
@@ -124,21 +106,8 @@ clone
   "table_user": "amelie",
   "table": "main"
 }
-# test: alter clone statement parsing
-alter clone;
-error: alter clone❰;❱ ⟵ target name expected
-alter clone 1;
-error: alter clone ❰1❱ ⟵ target name expected
-alter clone b;
-error: alter clone b❰;❱ ⟵ RENAME or DESCRIPTION expected
-alter clone b xyz;
-error: alter clone b ❰xyz❱ ⟵ RENAME or DESCRIPTION expected
-alter clone b rename;
-error: alter clone b rename❰;❱ ⟵ TO expected
-alter clone b rename to;
-error: alter clone b rename to❰;❱ ⟵ name expected
-# test: alter clone rename to
-alter clone a rename to b;
+# test: alter sidetable rename to
+alter table a rename to b;
 select * from b;
 
 id  data
@@ -146,7 +115,6 @@ id  data
 1   2
 2   2
 3   2
-4   0
 select * from main;
 
 id  data
@@ -155,12 +123,12 @@ id  data
 2   0
 3   0
 4   0
-# test: alter clone description
-alter clone x description '__renamed';
-show clone x;
+# test: alter sidetable description
+alter table x description '__renamed';
+show sidetable x;
 
-clone
-─────
+sidetable
+─────────
 {
   "user": "amelie",
   "name": "x",
@@ -168,12 +136,12 @@ clone
   "table_user": "amelie",
   "table": "main"
 }
-# test: drop parent clone
-drop clone b;
-show clones;
+# test: drop parent sidetable
+drop table b;
+show sidetables;
 
-clones
-──────
+sidetables
+──────────
 {
   "user": "amelie",
   "name": "x",
@@ -181,8 +149,8 @@ clones
   "table_user": "amelie",
   "table": "main"
 }
-# test: cascade (parent clone)
-create clone b of main;
+# test: cascade (parent sidetable)
+create table b on main;
 drop table main cascade;
 # test: cascade (table)
 create table main (id int primary key, data int);
@@ -190,12 +158,12 @@ insert into main values (1, 0);
 insert into main values (2, 0);
 insert into main values (3, 0);
 insert into main values (4, 0);
-create clone a of main;
-create clone b of main;
-show clones;
+create table a on main;
+create table b on main;
+show sidetables;
 
-clones
-──────
+sidetables
+──────────
 {
   "user": "amelie",
   "name": "a",
@@ -211,27 +179,27 @@ clones
   "table": "main"
 }
 drop table main;
-error: table 'main': depends on clone 'amelie.a' and 1 more
+error: table 'main': depends on sidetable 'amelie.a' and 1 more
 drop table main cascade;
-show clones;
+show sidetables;
 
-clones
-──────
+sidetables
+──────────
 # test: cascade (table, udf)
 create table main (id int primary key, data int);
-create clone a of main;
-create clone b of main;
+create table a on main;
+create table b on main;
 create function f() return int
 begin
    return select count(*) from main;
 end;
 drop table main;
-error: table 'main': depends on clone 'amelie.a' and 2 more
+error: table 'main': depends on sidetable 'amelie.a' and 2 more
 drop table main cascade;
-show clones;
+show sidetables;
 
-clones
-──────
+sidetables
+──────────
 show functions;
 
 functions
@@ -239,33 +207,31 @@ functions
 # test: truncate
 create table main (id int primary key);
 insert into main values (1), (2);
-create clone a of main;
+create table a on main;
 truncate a;
 error: truncate ❰a❱ ⟵ table not found
 select * from a;
 
 id
 ──
-1
-2
 truncate main;
 select * from a;
 
 id
 ──
 drop table main cascade;
-# test: create clone (with vector column)
+# test: create sidetable (with vector column)
 create table test (id int primary key, v vector(1));
-create clone x of test;
-error: table 'x': vector columns cannot be used together with clones
+create table x on test;
+error: table 'x': vector columns cannot be used together with sidetables
 drop table test;
 # test: add column (vector column)
 create table test (id int primary key);
-create clone x of test;
+create table x on test;
 alter table test add column v vector(1);
-error: table 'test': vector columns cannot be used together with clones
+error: table 'test': vector columns cannot be used together with sidetables
 drop table test;
-error: table 'test': depends on clone 'amelie.x'
+error: table 'test': depends on sidetable 'amelie.x'
 drop table test cascade;
 disconnect S0;
 close E0;

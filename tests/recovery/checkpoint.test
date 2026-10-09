@@ -58,17 +58,17 @@ select show('state').lsn;
 select show('state').checkpoint;
 select * from test;
 
-# test: create clone
-create clone a of test;
+# test: create sidetable
+create table a on test;
 insert into a values (3), (4);
 select * from a;
 
-create clone b of test;
+create table b on test;
 insert into b values (5), (6);
 insert into b values (7), (8);
 select * from b;
 
-select timeline from show clones verbose;
+select timeline from show sidetables verbose;
 
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -78,7 +78,7 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-select timeline from show clones verbose;
+select timeline from show sidetables verbose;
 select * from a;
 select * from b;
 select * from test;
@@ -96,7 +96,7 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-select timeline from show clones verbose;
+select timeline from show sidetables verbose;
 
 select * from a;
 select * from b;
@@ -274,8 +274,8 @@ drop table test;
 show rels;
 
 create user x;
-alter user x set limit clones = 0;
-alter user amelie set limit clones = 0;
+alter user x set limit sidetables = 0;
+alter user amelie set limit sidetables = 0;
 
 # test: restart/recover (checkpoint)
 checkpoint;

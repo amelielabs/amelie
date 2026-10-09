@@ -157,7 +157,7 @@ user_drop_of(Catalog* self,
 
 	} else
 	{
-		// ensure no indirect dependecies on the user name (udfs, clones, or users)
+		// ensure no indirect dependecies on the user name (udfs, sidetables, or users)
 		catalog_deps_validate_user(self, user->name, true);
 
 		// revoke all permissions from relations
@@ -258,7 +258,7 @@ user_rename(Catalog* self,
 	if (catalog_find_user(self, name_new, false))
 		error("user '{str}': already exists", name_new);
 
-	// ensure no strict dependecies on the user name (udfs, clones or users)
+	// ensure no strict dependecies on the user name (udfs, sidetables or users)
 	catalog_deps_validate_user(self, name, true);
 
 	// invalidate auth caches

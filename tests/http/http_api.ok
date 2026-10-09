@@ -2,14 +2,14 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: create api
 create table test (id int primary key, data string);
-create clone test_clone on test;
+create table test_sidetable on test;
 create function test_func (arg int)
 return int
 begin
 	return arg * 2;
 end;
 create api '/v1/api_table' on test;
-create api '/v1/api_clone' on test_clone;
+create api '/v1/api_sidetable' on test_sidetable;
 create api '/v1/api_func' on test_func;
 # test: POST /custom_api (table)
 post /v1/api_table - - {"id": 1, "data": "hello world"};
@@ -21,8 +21,8 @@ id  data
 1   hello world
 2   null
 3   null
-# test: POST /custom_api (clone)
-post /v1/api_clone - - {"id": 123};
+# test: POST /custom_api (sidetable)
+post /v1/api_sidetable - - {"id": 123};
 select * from test;
 
 id  data
@@ -30,7 +30,7 @@ id  data
 1   hello world
 2   null
 3   null
-select * from test_clone;
+select * from test_sidetable;
 
 id   data
 ───────────

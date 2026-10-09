@@ -5,7 +5,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: create api
 create table test (id int primary key, data string);
-create clone test_clone on test;
+create table test_sidetable on test;
 
 create function test_func (arg int)
 return int
@@ -14,7 +14,7 @@ begin
 end;
 
 create api '/v1/api_table' on test;
-create api '/v1/api_clone' on test_clone;
+create api '/v1/api_sidetable' on test_sidetable;
 create api '/v1/api_func' on test_func;
 
 # test: POST /custom_api (table)
@@ -23,11 +23,11 @@ post /v1/api_table - - [{"id": 2}, {"id": 3}];
 
 select * from test;
 
-# test: POST /custom_api (clone)
-post /v1/api_clone - - {"id": 123};
+# test: POST /custom_api (sidetable)
+post /v1/api_sidetable - - {"id": 123};
 
 select * from test;
-select * from test_clone;
+select * from test_sidetable;
 
 # test: POST /custom_api (udf)
 post /v1/api_func - - {"arg": 15};

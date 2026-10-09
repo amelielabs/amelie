@@ -55,8 +55,7 @@ test table_drop
 test table_alter
 test table_migration
 test index
-test clone
-#test clone_visibility
+test sidetable
 test function
 test grant
 test limits

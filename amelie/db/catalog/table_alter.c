@@ -156,10 +156,10 @@ table_column_add(Catalog* self,
 	if (column->constraints.identity && table->config->columns.identity)
 		error("table '{str}': already has identity column", name);
 
-	// ensure table has no clones to support vector column
+	// ensure table has no side tables to support vector column
 	if (column->type == TYPE_VECTOR)
 		if (table->timelines.list_count > 0)
-			error("table '{str}': vector columns cannot be used together with clones",
+			error("table '{str}': vector columns cannot be used together with sidetables",
 			      name);
 
 	// add new column

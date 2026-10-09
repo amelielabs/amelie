@@ -411,41 +411,29 @@ id  obj
 0   null
 1   null
 2   null
-# test: create clone
-create clone a of test2;
+# test: create sidetable
+create table a on test2;
 insert into a values (3, {});
 select * from a;
 
 id  obj
-──────────
-0   null
-1   null
-2   null
+─────────
 3   {}
-create clone b of test2;
+create table b on test2;
 insert into b values (4, {});
 insert into b values (5, []);
 select * from b;
 
 id  obj
-──────────
-0   null
-1   null
-2   null
+─────────
 4   {}
 5   []
-select timeline from show clones verbose;
+select timeline from show sidetables verbose;
 
 timeline
 ────────
-{
-  "timeline": 1,
-  "timeline_max": 0
-}
-{
-  "timeline": 2,
-  "timeline_max": 0
-}
+1
+2
 # test: restart
 disconnect S0;
 close E0;
@@ -457,33 +445,21 @@ select show('state').lsn;
 lsn
 ───
 17
-select timeline from show clones verbose;
+select timeline from show sidetables verbose;
 
 timeline
 ────────
-{
-  "timeline": 1,
-  "timeline_max": 0
-}
-{
-  "timeline": 2,
-  "timeline_max": 0
-}
+1
+2
 select * from a;
 
 id  obj
-──────────
-0   null
-1   null
-2   null
+─────────
 3   {}
 select * from b;
 
 id  obj
-──────────
-0   null
-1   null
-2   null
+─────────
 4   {}
 5   []
 select * from test2;
@@ -493,9 +469,9 @@ id  obj
 0   null
 1   null
 2   null
-# test: drop clone
-drop clone b;
-drop clone a;
+# test: drop sidetable
+drop table b;
+drop table a;
 # test: restart
 disconnect S0;
 close E0;
@@ -507,10 +483,10 @@ select show('state').lsn;
 lsn
 ───
 19
-show clones;
+show sidetables;
 
-clones
-──────
+sidetables
+──────────
 # test: truncate
 truncate test2;
 select * from test2;

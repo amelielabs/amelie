@@ -21,23 +21,6 @@ create table test2 (id int primary key);
 # still possible
 drop table test;
 switch S0;
-grant create_table to test;
-
-# test: create_clone
-switch S1;
-create table test (id int primary key);
-create clone test_clone of test;
-
-switch S0;
-revoke create_clone from test;
-
-switch S1;
-create clone test_clone2 of test;
-
-# still possible
-drop clone test_clone;
-drop table test;
-switch S0;
 
 # test: create_function
 switch S1;

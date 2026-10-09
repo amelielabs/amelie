@@ -3,28 +3,21 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-# test: create clone statement parsing
-create clone;
-create clone 123;
-create clone 123 from;
-create clone 123 of;
-create clone 123 of 1;
-
-# test: create clone
+# test: create sidetable
 create table main (id int primary key);
 insert into main values (1);
 
-create clone a of main;
-show clones;
+create table a on main;
+show sidetables;
 
-drop clone a;
+drop table a;
 drop table main;
 
-# test: create clone (insert)
+# test: create sidetable (insert)
 create table main (id int primary key);
 insert into main values (1);
 
-create clone a of main;
+create table a on main;
 
 # error
 insert into a values (1);
@@ -36,20 +29,20 @@ select * from main;
 drop table main;
 drop table main cascade;
 
-# test: create clone (update)
+# test: create sidetable (update)
 create table main (id int primary key, data int);
 insert into main values (1, 0);
 insert into main values (2, 0);
 insert into main values (3, 0);
 insert into main values (4, 0);
 
-create clone a of main;
+create table a on main;
 
 update a set data = 42 where id in (1, 3);
 select * from a;
 select * from main;
 
-# test: create clone (delete/insert)
+# test: create sidetable (delete/insert)
 delete from a where id < 4;
 
 select * from a;
@@ -62,36 +55,28 @@ insert into a values (3, 2);
 select * from a;
 select * from main;
 
-# test: create clone description
-create clone x of main description;
-create clone x of main description 1;
-create clone x of main description 'test test';
-show clone x;
+# test: create sidetable description
+create table x on main description;
+create table x on main description 1;
+create table x on main description 'test test';
+show sidetable x;
 
-# test: alter clone statement parsing
-alter clone;
-alter clone 1;
-alter clone b;
-alter clone b xyz;
-alter clone b rename;
-alter clone b rename to;
-
-# test: alter clone rename to
-alter clone a rename to b;
+# test: alter sidetable rename to
+alter table a rename to b;
 
 select * from b;
 select * from main;
 
-# test: alter clone description
-alter clone x description '__renamed';
-show clone x;
+# test: alter sidetable description
+alter table x description '__renamed';
+show sidetable x;
 
-# test: drop parent clone
-drop clone b;
-show clones;
+# test: drop parent sidetable
+drop table b;
+show sidetables;
 
-# test: cascade (parent clone)
-create clone b of main;
+# test: cascade (parent sidetable)
+create table b on main;
 drop table main cascade;
 
 # test: cascade (table)
@@ -101,18 +86,18 @@ insert into main values (2, 0);
 insert into main values (3, 0);
 insert into main values (4, 0);
 
-create clone a of main;
-create clone b of main;
-show clones;
+create table a on main;
+create table b on main;
+show sidetables;
 
 drop table main;
 drop table main cascade;
-show clones;
+show sidetables;
 
 # test: cascade (table, udf)
 create table main (id int primary key, data int);
-create clone a of main;
-create clone b of main;
+create table a on main;
+create table b on main;
 
 create function f() return int
 begin
@@ -121,33 +106,33 @@ end;
 
 drop table main;
 drop table main cascade;
-show clones;
+show sidetables;
 show functions;
 
 # test: truncate
 create table main (id int primary key);
 insert into main values (1), (2);
-create clone a of main;
+create table a on main;
 
 # not supported
 truncate a;
 
 select * from a;
 
-# truncated clones
+# truncated sidetables
 truncate main;
 select * from a;
 
 drop table main cascade;
 
-# test: create clone (with vector column)
+# test: create sidetable (with vector column)
 create table test (id int primary key, v vector(1));
-create clone x of test;
+create table x on test;
 drop table test;
 
 # test: add column (vector column)
 create table test (id int primary key);
-create clone x of test;
+create table x on test;
 alter table test add column v vector(1);
 drop table test;
 drop table test cascade;

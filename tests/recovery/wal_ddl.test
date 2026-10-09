@@ -164,17 +164,17 @@ select * from test2 index i;
 select * from test2 index i2;
 select * from test2;
 
-# test: create clone
-create clone a of test2;
+# test: create sidetable
+create table a on test2;
 insert into a values (3, {});
 select * from a;
 
-create clone b of test2;
+create table b on test2;
 insert into b values (4, {});
 insert into b values (5, []);
 select * from b;
 
-select timeline from show clones verbose;
+select timeline from show sidetables verbose;
 
 # test: restart
 disconnect S0;
@@ -184,15 +184,15 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select timeline from show clones verbose;
+select timeline from show sidetables verbose;
 
 select * from a;
 select * from b;
 select * from test2;
 
-# test: drop clone
-drop clone b;
-drop clone a;
+# test: drop sidetable
+drop table b;
+drop table a;
 
 # test: restart
 disconnect S0;
@@ -202,7 +202,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-show clones;
+show sidetables;
 
 # test: truncate
 truncate test2;

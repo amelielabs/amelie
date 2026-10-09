@@ -41,7 +41,6 @@ struct LogOp
 		struct {
 			Rel* rel;
 			int  rel_data;
-			int  rel_data_size;
 		};
 	};
 };
@@ -139,11 +138,10 @@ log_ddl(Log*   self,
         Rel*   rel)
 {
 	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
-	op->iface         = iface;
-	op->iface_arg     = iface_arg;
-	op->cmd           = LOG_DDL;
-	op->rel           = rel;
-	op->rel_data      = buf_size(&self->data);
-	op->rel_data_size = 0;
+	op->iface     = iface;
+	op->iface_arg = iface_arg;
+	op->cmd       = LOG_DDL;
+	op->rel       = rel;
+	op->rel_data  = buf_size(&self->data);
 	self->count++;
 }
