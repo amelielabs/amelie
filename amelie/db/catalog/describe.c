@@ -243,10 +243,6 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 	if (! verbose)
 		return;
 
-	// timeline
-	if (config->timeline != 1)
-		buf_format(buf, "  timeline {i64}\n", config->timeline);
-
 	// secondary indexes
 	if (config->indexes_count > 1)
 	{

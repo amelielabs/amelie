@@ -19,7 +19,6 @@ struct TableConfig
 	Str     name;
 	Str     description;
 	Uuid    id;
-	int64_t timeline;
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
@@ -36,7 +35,6 @@ table_config_allocate(void)
 	self = am_malloc(sizeof(TableConfig));
 	self->indexes_count = 0;
 	self->parts_count   = 0;
-	self->timeline      = 1;
 	str_init(&self->name);
 	str_init(&self->user);
 	str_init(&self->description);
@@ -102,12 +100,6 @@ table_config_set_id(TableConfig* self, Uuid* id)
 }
 
 static inline void
-table_config_set_timeline(TableConfig* self, int64_t value)
-{
-	self->timeline = value;
-}
-
-static inline void
 table_config_index_add(TableConfig* self, IndexConfig* config)
 {
 	list_append(&self->indexes, &config->link);
@@ -151,7 +143,6 @@ table_config_copy(TableConfig* self)
 	table_config_set_user(copy, &self->user);
 	table_config_set_description(copy, &self->description);
 	table_config_set_id(copy, &self->id);
-	table_config_set_timeline(copy, self->timeline);
 	columns_copy(&copy->columns, &self->columns);
 
 	list_foreach(&self->indexes)
@@ -190,7 +181,6 @@ table_config_read(uint8_t** pos)
 		{ DECODE_STR,   "name",         &self->name        },
 		{ DECODE_STR,   "description",  &self->description },
 		{ DECODE_UUID,  "id",           &self->id          },
-		{ DECODE_INT,   "timeline",     &self->timeline    },
 		{ DECODE_ARRAY, "columns",      &pos_columns       },
 		{ DECODE_ARRAY, "indexes",      &pos_indexes       },
 		{ DECODE_ARRAY, "partitioning", &pos_partitioning  },
@@ -254,10 +244,6 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	// id
 	encode_raw(buf, "id", 2);
 	encode_uuid(buf, &self->id);
-
-	// timeline
-	encode_raw(buf, "timeline", 8);
-	encode_int(buf, self->timeline);
 
 	// columns
 	encode_raw(buf, "columns", 7);

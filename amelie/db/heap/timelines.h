@@ -22,14 +22,13 @@ struct Timelines
 };
 
 static inline void
-timelines_init(Timelines* self, Rel* rel, uint32_t state)
+timelines_init(Timelines* self, Rel* rel)
 {
 	auto main = &self->main;
 	timeline_init(main);
-	main->rel      = rel;
-	main->timeline = 0;
-
-	self->max = state;
+	main->rel        = rel;
+	main->timeline   = 0;
+	self->max        = 0;
 	self->list_count = 0;
 	list_init(&self->list);
 }

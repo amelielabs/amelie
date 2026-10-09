@@ -489,7 +489,7 @@ parse_table_create_sidetable(Stmt* self, Str* user, Str* name)
 		stmt_error(self, path, "table not found");
 
 	// calculate sidetable id
-	uint32_t id = table->timelines.max;
+	uint32_t id = table->timelines.max + 1;
 
 	// create sidetable config
 	auto config = sidetable_config_allocate();
@@ -528,6 +528,11 @@ parse_table_create_sidetable(Stmt* self, Str* user, Str* name)
 			auto value = stmt_expect(self, KINT);
 			if (value->integer <= 0)
 				stmt_error(self, value, "invalid timeline");
+
+			// allow to set timeline only during recover
+			if (opt_int_of(&state()->recover) != RECOVER_CHECKPOINT)
+				stmt_error(self, value, "timeline cannot be changed now");
+
 			timeline_set_timeline(timeline, value->integer);
 			continue;
 		}
@@ -551,7 +556,6 @@ parse_table_create(Stmt* self)
 	// [ID]
 	// [DESCRIPTION]
 	// [GRANT]
-	// [TIMELINE]
 	// [PARTITIONS]
 	// [INDEX]
 	//
@@ -629,16 +633,6 @@ parse_table_create(Stmt* self)
 		{
 			auto text = stmt_expect(self, KSTRING);
 			table_config_set_description(config, &text->string);
-			continue;
-		}
-
-		// TIMELINE int
-		if (str_is_case(&name->string, "timeline", 8))
-		{
-			auto value = stmt_expect(self, KINT);
-			if (value->integer <= 0)
-				stmt_error(self, value, "invalid timeline");
-			table_config_set_timeline(config, value->integer);
 			continue;
 		}
 

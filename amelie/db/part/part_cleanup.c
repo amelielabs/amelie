@@ -19,15 +19,51 @@
 #include <amelie_index.h>
 #include <amelie_part.h>
 
-hot void
-part_cleanup(PartCleanup* self)
+hot static void
+part_cleanup_index(PartCleanup* self)
 {
-	// remove all rows related to the timeline
+	// delete all rows for this timeline
+	auto part = self->part;
+	auto heap = part->heap;
+
+	Timeline timeline;
+	timeline_init(&timeline);
+	timeline_set_timeline(&timeline, self->timeline);
+
+	auto primary = part_primary(part);
+	auto it = index_iterator(primary);
+	defer(iterator_close, it);
+	iterator_open(it, &timeline, NULL);
+
+	IndexOp op =
+	{
+		.row      = NULL,
+		.row_prev = NULL,
+		.it       = it,
+		.delta    = 0
+	};
+	for (;; iterator_next(it))
+	{
+		auto row = iterator_at(it);
+		if (! row)
+			break;
+		if (! row_visible(row, &timeline))
+			continue;
+		for (auto index = primary; index; index = index->next)
+			index_delete(index, &op);
+		row_free(heap, &part->flats, row);
+	}
+
+	usage_update(self->part->arg->memory, op.delta);
+}
+
+hot void
+part_cleanup_heap(PartCleanup* self)
+{
+	// free all heap rows for this timeline
 	auto part     = self->part;
 	auto timeline = self->timeline;
 	auto heap     = part->heap;
-	auto primary  = part_primary(part);
-
 	HeapIterator it;
 	heap_iterator_init(&it);
 	heap_iterator_open(&it, heap, false);
@@ -38,19 +74,15 @@ part_cleanup(PartCleanup* self)
 			break;
 		if (row->timeline != timeline)
 			continue;
-
-		// update indexes
-		if (primary)
-		{
-			IndexOp op;
-			index_op_set(&op, row);
-			index_delete(primary, &op);
-			for (auto index = primary->next; index; index = index->next)
-				index_delete(index, &op);
-			usage_update(part->arg->memory, op.delta);
-		}
-
-		// free
 		row_free(heap, &part->flats, row);
 	}
+}
+
+hot void
+part_cleanup(PartCleanup* self)
+{
+	if (part_primary(self->part))
+		part_cleanup_index(self);
+	else
+		part_cleanup_heap(self);
 }

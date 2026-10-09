@@ -63,7 +63,7 @@ table_allocate(TableConfig* config,
 	           &self->config->partitioning);
 
 	// timelines
-	timelines_init(&self->timelines, &self->rel, self->config->timeline);
+	timelines_init(&self->timelines, &self->rel);
 
 	// set relation
 	auto rel = &self->rel;

@@ -131,8 +131,5 @@ sidetable_create(Catalog*         self,
 	// register sidetable timeline
 	auto timelines = &table->timelines;
 	timelines_add(timelines, &sidetable->config->timeline);
-
-	// advance main timeline (online only)
-	table_config_set_timeline(table->config, timelines->max);
 	return true;
 }
