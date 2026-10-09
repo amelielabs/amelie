@@ -163,7 +163,10 @@ emit_ddl(Compiler* self)
 	case STMT_CREATE_TABLE:
 	{
 		auto arg = ast_table_create_of(stmt->ast);
-		offset = table_op_create(data, arg->config);
+		if (arg->config_sidetable)
+			offset = sidetable_op_create(data, arg->config_sidetable);
+		else
+			offset = table_op_create(data, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		break;
 	}
@@ -205,33 +208,6 @@ emit_ddl(Compiler* self)
 		auto arg = ast_index_alter_of(stmt->ast);
 		offset = table_op_index_rename(data, &arg->table_user, &arg->table_name, &arg->name,
 		                               &arg->name_new);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-
-	// clone
-	case STMT_CREATE_CLONE:
-	{
-		auto arg = ast_clone_create_of(stmt->ast);
-		offset = clone_op_create(data, arg->config);
-		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
-		break;
-	}
-	case STMT_DROP_CLONE:
-	{
-		auto arg = ast_clone_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_CLONE, &arg->user, &arg->name, arg->cascade);
-		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		break;
-	}
-	case STMT_ALTER_CLONE:
-	{
-		auto arg = ast_clone_alter_of(stmt->ast);
-		if (arg->type == CLONE_ALTER_RENAME)
-			offset = rel_op_rename(data, REL_CLONE, &arg->user, &arg->name, &arg->user, &arg->name_new);
-		else
-		if (arg->type == CLONE_ALTER_DESCRIPTION)
-			offset = rel_op_describe(data, REL_CLONE, &arg->user, &arg->name, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

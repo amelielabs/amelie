@@ -37,11 +37,11 @@ link_stream_create(Link* self, Streams* streams)
 		timeline = &table->timelines.main;
 		parts    = &table->parts;
 	} else
-	if (rel->type == REL_CLONE)
+	if (rel->type == REL_SIDETABLE)
 	{
-		auto clone = clone_of(rel);
-		timeline = &clone->config->timeline;
-		parts    = &clone->table->parts;
+		auto sidetable = sidetable_of(rel);
+		timeline = &sidetable->config->timeline;
+		parts    = &sidetable->table->parts;
 	} else {
 		error("stream: relation {str}.{str} cannot be used for streaming",
 		      rel->user, rel->name);

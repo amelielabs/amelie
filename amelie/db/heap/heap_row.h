@@ -31,7 +31,7 @@ row_allocate(Heap*    heap,
 }
 
 hot static inline Row*
-row_allocate_buf(Buf* buf, int columns, int data_size)
+row_allocate_buf(Buf* buf, uint32_t timeline, int columns, int data_size)
 {
 	bool byte;
 	auto size = row_measure(columns, data_size, &byte);
@@ -40,7 +40,7 @@ row_allocate_buf(Buf* buf, int columns, int data_size)
 
 	auto self = (Row*)buf_emplace(buf, size);
 	row_init(self);
-	row_prepare(self, 0, columns, byte, size);
+	row_prepare(self, timeline, columns, byte, size);
 	return self;
 }
 

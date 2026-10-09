@@ -64,7 +64,7 @@ backend_rpc(Rpc* rpc, void* arg)
 		defer(part_cleanup_free, cleanup);
 		// cancel all pending streams
 		streaming_cancel(cleanup->part);
-		part_cleanup_run(cleanup);
+		part_cleanup(cleanup);
 		break;
 	}
 	case MSG_STOP:

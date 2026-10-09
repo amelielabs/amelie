@@ -188,7 +188,6 @@ parse_user_create(Stmt* self, bool agent)
 		auto perms_all =
 			PERM_GRANT           |
 			PERM_CREATE_TABLE    |
-			PERM_CREATE_CLONE    |
 			PERM_CREATE_FUNCTION |
 			PERM_CREATE_API      |
 			PERM_SQL;

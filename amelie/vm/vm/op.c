@@ -493,7 +493,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 				         "{str}.{str}",
 				         &table->config->user, &table->config->name);
 			else
-			if (timeline->rel->type == REL_CLONE)
+			if (timeline->rel->type == REL_SIDETABLE)
 				op_write(buf, op, false, false, false,
 				         "{str}.{str} [{str}.{str}]",
 				         &table->config->user, &table->config->name,
@@ -531,7 +531,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 				         &index_name,
 				         desc);
 			else
-			if (timeline->rel->type == REL_CLONE)
+			if (timeline->rel->type == REL_SIDETABLE)
 				op_write(buf, op, true, true, true,
 				         "{str}.{str} ({str}) [{str}.{str}] {buf}",
 				         &open->table->config->user,
@@ -557,7 +557,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 				         &table->config->user,
 				         &table->config->name);
 			else
-			if (timeline->rel->type == REL_CLONE)
+			if (timeline->rel->type == REL_SIDETABLE)
 				op_write(buf, op, true, false, false,
 				         "{str}.{str} [{str}.{str}]",
 				         &table->config->user,

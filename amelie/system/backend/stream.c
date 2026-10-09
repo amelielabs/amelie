@@ -80,7 +80,6 @@ stream_init(Stream* self, Streams* streams, Part* part, Timeline* timeline)
 	// set timeline
 	auto timeline_self = &self->timeline;
 	timeline_init(timeline_self);
-	timeline_self->main     = timeline->main;
 	timeline_self->timeline = timeline->timeline;
 
 	msg_init(&self->msg, MSG_STREAM);
@@ -96,17 +95,6 @@ void
 stream_free(Stream* self)
 {
 	buf_free(&self->data);
-}
-
-hot static inline bool
-stream_visible(Stream* self, Row* row)
-{
-	auto timeline = &self->timeline;
-	if (row->deleted)
-		return false;
-	if (timeline->main)
-		return row->main;
-	return row->timeline <= timeline->timeline;
 }
 
 hot void
@@ -135,10 +123,12 @@ stream_next(Stream* self)
 		auto row = heap_iterator_at(it);
 		if (!row || !row->commited)
 			break;
-		if (stream_visible(self, row))
+		if (row_visible(row, &self->timeline))
+		{
 			stream_export(self, row);
-		if (buf_size(data) >= 128 * 1024)
-			break;
+			if (buf_size(data) >= 128 * 1024)
+				break;
+		}
 		heap_iterator_next(it);
 	}
 

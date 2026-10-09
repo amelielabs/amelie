@@ -11,10 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-Row* row_create_key(Buf*, Keys*, Value*, int);
+Row* row_create_key(Buf*, Timeline*, Keys*, Value*, int);
 Row* row_create(Part*, Timeline*, Columns*, Value*, Value*, Value*);
 Row* row_update(Part*, Timeline*, Columns*, Row*, Value*, int);
-Row* row_delete(Part*, Timeline*, Columns*, Row*);
 
 hot static inline Part*
 row_map(Table* table, Value* refs, Value* values, Value* identity)

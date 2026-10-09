@@ -18,9 +18,10 @@ typedef struct AstTableAlter    AstTableAlter;
 
 struct AstTableCreate
 {
-	Ast          ast;
-	bool         if_not_exists;
-	TableConfig* config;
+	Ast              ast;
+	bool             if_not_exists;
+	TableConfig*     config;
+	SidetableConfig* config_sidetable;
 };
 
 struct AstTableDrop

@@ -92,7 +92,6 @@ enum
 	KCASCADE,
 	KCOLUMN,
 	KCONTINUE,
-	KCLONE,
 
 	// d
 	KDELETE,

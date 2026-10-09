@@ -32,13 +32,20 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
              bool     if_exists,
              bool     cascade)
 {
-	auto rel = catalog_find(self, type, user, name, false);
+	auto rel = catalog_find(self, REL_UNDEF, user, name, false);
 	if (! rel)
 	{
 		if (! if_exists)
 			error("{s} '{str}': not exists", rel_type_of(type), name);
 		return false;
 	}
+
+	// validate type
+	if (type == REL_TABLE && rel->type == REL_SIDETABLE)
+		type = REL_SIDETABLE;
+
+	if (rel->type != type)
+		error("relation '{str}': is not a {s}", name, rel_type_of(type));
 
 	// only owner or superuser
 	check_ownership(tr, rel);
@@ -131,13 +138,20 @@ catalog_rename(Catalog* self,
                Str*     name_new,
                bool     if_exists)
 {
-	auto rel = catalog_find(self, type, user, name, false);
+	auto rel = catalog_find(self, REL_UNDEF, user, name, false);
 	if (! rel)
 	{
 		if (! if_exists)
 			error("{s} '{str}': not exists", rel_type_of(type), name);
 		return false;
 	}
+
+	// validate type
+	if (type == REL_TABLE && rel->type == REL_SIDETABLE)
+		type = REL_SIDETABLE;
+
+	if (rel->type != type)
+		error("relation '{str}': is not a {s}", name, rel_type_of(type));
 
 	// only owner or superuser
 	check_ownership(tr, rel);
@@ -388,13 +402,20 @@ catalog_describe(Catalog* self,
                  Str*     description,
                  bool     if_exists)
 {
-	auto rel = catalog_find(self, type, user, name, false);
+	auto rel = catalog_find(self, REL_UNDEF, user, name, false);
 	if (! rel)
 	{
 		if (! if_exists)
 			error("{s} '{str}': not exists", rel_type_of(type), name);
 		return false;
 	}
+
+	// validate type
+	if (type == REL_TABLE && rel->type == REL_SIDETABLE)
+		type = REL_SIDETABLE;
+
+	if (rel->type != type)
+		error("relation '{str}': is not a {s}", name, rel_type_of(type));
 
 	// only owner or superuser
 	check_ownership(tr, rel);

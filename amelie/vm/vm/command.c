@@ -463,7 +463,9 @@ ctable_open(Vm* self, Op* op)
 	{
 		auto keys = &open->index->keys;
 		auto keys_count = open->keys_count;
-		key = row_create_key(buf, keys, stack_at(&self->stack, keys_count),
+		key = row_create_key(buf, open->timeline,
+		                     keys,
+		                     stack_at(&self->stack, keys_count),
 		                     keys_count);
 		stack_popn(&self->stack, keys_count);
 
@@ -552,7 +554,7 @@ cinsert(Vm* self, Op* op)
 		}
 
 		auto row = row_create(part, timeline, columns, value, self->refs, &identity);
-		part_insert(part, self->tr, timeline, row);
+		part_insert(part, self->tr, row);
 	}
 }
 
@@ -601,7 +603,6 @@ cupsert(Vm* self, Op* op)
 		// insert or get (open iterator in both cases)
 		auto exists = part_upsert(cursor->part, self->tr,
 		                          cursor->cursor,
-		                          cursor->timeline,
 		                          row);
 		if (exists)
 		{
@@ -629,27 +630,8 @@ cdelete(Vm* self, Op* op)
 	// [cursor]
 	auto cursor = reg_at(&self->r, op->a);
 
-	// clone update
-	auto timeline = cursor->timeline;
-	auto part = self->part;
-	if (part->arg->timelines->list_count > 0)
-	{
-		auto row = iterator_at(cursor->cursor);
-		row = row_visible(row, part->heap, timeline);
-		if (! row)
-			return;
-
-		// create new row for delete (copy keys)
-		auto columns = part->arg->columns;
-		auto row_for_delete = row_delete(part, timeline, columns, row);
-
-		// update by cursor
-		part_update(part, self->tr, cursor->cursor, timeline, row_for_delete);
-		return;
-	}
-
 	// delete by cursor
-	part_delete(part, self->tr, cursor->cursor, timeline);
+	part_delete(self->part, self->tr, cursor->cursor);
 }
 
 hot void
@@ -663,7 +645,7 @@ cupdate(Vm* self, Op* op)
 	auto row = row_update(cursor->part, cursor->timeline,
 	                      table_columns(cursor->table), row_src,
 	                      row_values, op->b);
-	part_update(cursor->part, self->tr, cursor->cursor, cursor->timeline, row);
+	part_update(cursor->part, self->tr, cursor->cursor, row);
 	stack_popn(&self->stack, op->b * 2);
 }
 

@@ -54,6 +54,8 @@ parse_stmt_free(Stmt* stmt)
 		auto ast = ast_table_create_of(stmt->ast);
 		if (ast->config)
 			table_config_free(ast->config);
+		if (ast->config_sidetable)
+			sidetable_config_free(ast->config_sidetable);
 		break;
 	}
 	case STMT_ALTER_TABLE:
@@ -70,13 +72,6 @@ parse_stmt_free(Stmt* stmt)
 		auto ast = ast_index_create_of(stmt->ast);
 		if (ast->config)
 			index_config_free(ast->config);
-		break;
-	}
-	case STMT_CREATE_CLONE:
-	{
-		auto ast = ast_clone_create_of(stmt->ast);
-		if (ast->config)
-			clone_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_FUNCTION:
@@ -287,11 +282,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_INDEX;
 			parse_index_create(self, unique);
 		} else
-		if (stmt_if(self, KCLONE))
-		{
-			self->id = STMT_CREATE_CLONE;
-			parse_clone_create(self);
-		} else
 		if (stmt_if(self, KFUNCTION))
 		{
 			self->id = STMT_CREATE_FUNCTION;
@@ -336,11 +326,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_INDEX;
 			parse_index_drop(self);
 		} else
-		if (stmt_if(self, KCLONE))
-		{
-			self->id = STMT_DROP_CLONE;
-			parse_clone_drop(self);
-		} else
 		if (stmt_if(self, KFUNCTION))
 		{
 			self->id = STMT_DROP_FUNCTION;
@@ -379,11 +364,6 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_INDEX;
 			parse_index_alter(self);
-		} else
-		if (stmt_if(self, KCLONE))
-		{
-			self->id = STMT_ALTER_CLONE;
-			parse_clone_alter(self);
 		} else
 		if (stmt_if(self, KFUNCTION))
 		{
