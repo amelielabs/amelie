@@ -450,30 +450,34 @@ ctable_open(Vm* self, Op* op)
 {
 	// [cursor, open_offset, _eof]
 	auto open = open_at(self->code_data, op->b);
-
-	// create cursor key
-	auto buf = buf_create();
-	defer_buf(buf);
-	auto keys = &open->index->keys;
-	auto keys_count = open->keys_count;
-	auto key = row_create_key(buf, keys, stack_at(&self->stack, keys_count),
-	                          keys_count);
-	stack_popn(&self->stack, keys_count);
-
-	// in case of hash index, use key only for point-lookup
-	auto key_ref = key;
-	if (open->index->type == INDEX_HASH && !open->point_lookup)
-		key_ref = NULL;
-
-	// create iterator (per or cross partitions)
 	auto part = self->part;
 	if (! open->open_part)
 		part = NULL;
+
+	// create key for index scan
+	auto buf = buf_create();
+	defer_buf(buf);
+
+	Row* key = NULL;
+	if (open->index)
+	{
+		auto keys = &open->index->keys;
+		auto keys_count = open->keys_count;
+		key = row_create_key(buf, keys, stack_at(&self->stack, keys_count),
+		                     keys_count);
+		stack_popn(&self->stack, keys_count);
+
+		// in case of hash index, use key only for point-lookup
+		if (open->index->type == INDEX_HASH && !open->point_lookup)
+			key = NULL;
+	}
+
+	// create iterator (per or cross partitions)
 	auto it = cursor_open(&open->table->parts, part,
 	                       open->index,
 	                       open->point_lookup,
 	                       open->timeline,
-	                       key_ref);
+	                       key);
 
 	// set cursor
 	auto cursor = reg_at(&self->r, op->a);
@@ -494,7 +498,10 @@ ctable_prepare(Vm* self, Op* op)
 	auto cursor = reg_at(&self->r, op->a);
 
 	// create primary index iterator for related partition
-	auto it = index_iterator(part_primary(self->part));
+	auto primary = part_primary(self->part);
+	if (unlikely(! primary))
+		error("primary index is not defined");
+	auto it = index_iterator(primary);
 
 	// set cursor
 	value_set_cursor(cursor, (Table*)op->b, (Timeline*)op->c, self->part, it);

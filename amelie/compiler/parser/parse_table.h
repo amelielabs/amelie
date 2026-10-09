@@ -21,7 +21,6 @@ struct AstTableCreate
 	Ast          ast;
 	bool         if_not_exists;
 	TableConfig* config;
-	IndexConfig* config_index;
 };
 
 struct AstTableDrop

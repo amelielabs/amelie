@@ -26,7 +26,7 @@ tr_commit(Tr* self)
 	}
 
 	// reset log
-	log_reset(&self->log);
+	log_reset(log);
 }
 
 static inline void
@@ -44,7 +44,7 @@ tr_abort(Tr* self)
 	}
 
 	// reset log
-	log_reset(&self->log);
+	log_reset(log);
 }
 
 hot static inline void

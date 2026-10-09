@@ -52,7 +52,7 @@ error: create table if not exists test(name ❰junk_type❱ ⟵ unrecognized dat
 create table if not exists test(name int;
 error: create table if not exists test(name int❰;❱ ⟵ ) expected
 create table test(name int) junk;
-error: create table test(name int❰)❱ ⟵ primary key is not defined
+error: create table test(name int) ❰junk❱ ⟵ PARTITION or PRIMARY KEY is missing
 create table test();
 error: create table test(❰)❱ ⟵ expected column name, PRIMARY or PARTITION KEY
 # test: column bool/boolean
@@ -529,7 +529,7 @@ create table test(id int, id int);
 error: create table test(id int, ❰id❱ ⟵ column is redefined
 # test: primary key is not defined
 create table test(id int);
-error: create table test(id int❰)❱ ⟵ primary key is not defined
+error: create table test(id int)❰;❱ ⟵ PARTITION or PRIMARY KEY is missing
 # test: primary key clause parsing
 create table test(primary);
 error: create table test(primary❰)❱ ⟵ KEY expected
@@ -554,7 +554,7 @@ error: create table test(id int, primary key(❰idd❱ ⟵ column does not exist
 create table test(id int, primary key(id, id));
 error: create table test(id int, primary key(id, ❰id❱ ⟵ key column is redefined
 create table test(id int primary key, primary key(id));
-error: create table test(id int primary key, primary key❰(❱ ⟵ primary key is redefined
+error: create table test(id int primary key, ❰primary❱ ⟵ PRIMARY KEY defined twice
 # test: primary key redefined #2
 create table test(id int primary key primary key);
 error: create table test(id int primary key ❰primary❱ ⟵ PRIMARY KEY defined twice
@@ -697,7 +697,7 @@ indexes
 drop table test;
 # test: primary key partition key (mismatch)
 create table test(id int, data int, primary key(id, data), partition key (data));
-error: create table test(id int, data int, primary key(id, data), partition key (data))❰;❱ ⟵ primary key must include all partition columns first
+error: create table test(id int, data int, primary key(id, data), partition key (data))❰;❱ ⟵ PRIMARY KEY must include all partition columns first
 create table test (id int primary key);
 create table test (id int primary key);
 error: relation 'test': already exists
@@ -964,7 +964,7 @@ create table test (id int primary key, data int as identity;
 error: create table test (id int primary key, data int as identity❰;❱ ⟵ ) expected
 # test: as identity (not primary)
 create table test (id int primary key, data int identity);
-error: create table test (id int primary key, data int identity❰)❱ ⟵ IDENTITY column can only be used with primary key
+error: create table test (id int primary key, data int identity❰)❱ ⟵ IDENTITY column must be part of PARTITION KEY
 # test: as identity int
 create table test (id int primary key as identity);
 select show('table', 'test', null, "verbose").columns;

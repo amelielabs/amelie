@@ -25,21 +25,16 @@ scan_key(Scan* self, Target* target)
 {
 	auto cp    = self->compiler;
 	auto path  = target->path;
-	auto keys  = &target->from_index->keys;
 	auto count = 0;
-	for (auto at = 0; at < keys->count; at++)
+	for (auto at = 0; at < path->keys_count; at++)
 	{
-		auto key = keys_at(keys, at);
-		auto ref = &path->keys[key->order];
-
 		// use value from >, >=, = expression as a key
+		auto ref = &path->keys[at];
 		if (! ref->start)
 			break;
-
 		emit_push(cp, self->from, ref->start);
 		count++;
 	}
-
 	return count;
 }
 
@@ -113,9 +108,9 @@ static inline void
 scan_target(Scan*, Target*);
 
 static inline void
-scan_table(Scan* self, Target* target)
+scan_index(Scan* self, Target* target)
 {
-	auto cp = self->compiler;
+	auto cp    = self->compiler;
 	auto table = target->from_table;
 	auto index = target->from_index;
 	auto path  = target->path;
@@ -173,6 +168,64 @@ scan_table(Scan* self, Target* target)
 	// set scan stop jntr to eof
 	for (auto order = 0; order < path->match_stop; order++)
 		code_at(cp->code, scan_stop_jntr[order])->a = _eof;
+
+	// resolve outer target break/continue
+	if (! target->prev)
+	{
+		op_set_jmp_list(cp, &self->breaks, _eof);
+		op_set_jmp_list(cp, &self->continues, _next);
+	}
+
+	// close cursor
+	target->rcursor = emit_free(cp, target->rcursor);
+}
+
+static inline void
+scan_heap(Scan* self, Target* target)
+{
+	auto cp    = self->compiler;
+	auto table = target->from_table;
+
+	// set target origin
+	target_set_origin(target, cp->origin);
+
+	// push partition keys
+	auto keys_count = scan_key(self, target);
+
+	// create table open argument
+	//
+	// open a single partition or do table scan
+	int  open_offset;
+	auto open = open_create(cp->code_data, &open_offset);
+	open->table        = table;
+	open->timeline     = target->from_timeline;
+	open->index        = NULL;
+	open->keys_count   = keys_count;
+	open->point_lookup = false;
+	open->open_part    = target->from_lock != LOCK_EXCLUSIVE_RO;
+
+	// table_open
+	int _open = op_pos(cp);
+	target->rcursor = op3pin(cp, CTABLE_OPEN, TYPE_CURSOR,
+	                         open_offset, 0 /* _eof */);
+
+	// _where:
+	int _where = op_pos(cp);
+
+	if (target->next)
+		scan_target(self, target->next);
+	else
+		scan_on_match(self);
+
+	// table_next
+	int _next = op_pos(cp);
+	op2(cp, CTABLE_NEXT, target->rcursor, _where);
+
+	// _eof:
+	int _eof = op_pos(cp);
+
+	// set table_open to _eof
+	code_at(cp->code, _open)->c = _eof;
 
 	// resolve outer target break/continue
 	if (! target->prev)
@@ -312,9 +365,14 @@ static inline void
 scan_target(Scan* self, Target* target)
 {
 	if (target_is_table(target))
-		scan_table(self, target);
-	else
+	{
+		if (target->from_index)
+			scan_index(self, target);
+		else
+			scan_heap(self, target);
+	} else {
 		scan_expr(self, target);
+	}
 }
 
 void

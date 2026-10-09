@@ -31,12 +31,15 @@ part_cleanup_main_head(PartCleanup* self, Heap* heap, Row* row)
 	if (row->deleted)
 	{
 		// remove whole chain from the indexes
-		IndexOp op;
-		index_op_set(&op, row);
-		index_delete(primary, &op);
-		for (auto index = primary->next; index; index = index->next)
-			index_delete(index, &op);
-		usage_update(part->arg->memory, op.delta);
+		if (primary)
+		{
+			IndexOp op;
+			index_op_set(&op, row);
+			index_delete(primary, &op);
+			for (auto index = primary->next; index; index = index->next)
+				index_delete(index, &op);
+			usage_update(part->arg->memory, op.delta);
+		}
 		row->head = false;
 	} else
 	{
@@ -78,12 +81,15 @@ part_cleanup_main_prev(PartCleanup* self, Heap* heap, Row* row)
 	auto primary = part_primary(part);
 	if (head_next)
 	{
-		IndexOp op;
-		index_op_set(&op, head_next);
-		index_replace(primary, &op);
-		for (auto index = primary->next; index; index = index->next)
-			index_replace(index, &op);
-		usage_update(part->arg->memory, op.delta);
+		if (primary)
+		{
+			IndexOp op;
+			index_op_set(&op, head_next);
+			index_replace(primary, &op);
+			for (auto index = primary->next; index; index = index->next)
+				index_replace(index, &op);
+			usage_update(part->arg->memory, op.delta);
+		}
 
 		// mark new head
 		head_next->head = true;
@@ -102,12 +108,15 @@ part_cleanup_main_prev(PartCleanup* self, Heap* heap, Row* row)
 	}
 
 	// free whole chain
-	IndexOp op;
-	index_op_set(&op, row);
-	index_delete(primary, &op);
-	for (auto index = primary->next; index; index = index->next)
-		index_delete(index, &op);
-	usage_update(part->arg->memory, op.delta);
+	if (primary)
+	{
+		IndexOp op;
+		index_op_set(&op, row);
+		index_delete(primary, &op);
+		for (auto index = primary->next; index; index = index->next)
+			index_delete(index, &op);
+		usage_update(part->arg->memory, op.delta);
+	}
 
 	while (row)
 	{
@@ -178,23 +187,29 @@ part_cleanup_clone(PartCleanup* self)
 			head->head = false;
 			if (head_next)
 			{
-				IndexOp op;
-				index_op_set(&op, head_next);
-				index_replace(primary, &op);
-				for (auto index = primary->next; index; index = index->next)
-					index_replace(index, &op);
-				usage_update(part->arg->memory, op.delta);
+				if (primary)
+				{
+					IndexOp op;
+					index_op_set(&op, head_next);
+					index_replace(primary, &op);
+					for (auto index = primary->next; index; index = index->next)
+						index_replace(index, &op);
+					usage_update(part->arg->memory, op.delta);
+				}
 
 				// mark new head
 				head_next->head = true;
 			} else
 			{
-				IndexOp op;
-				index_op_set(&op, head);
-				index_delete(primary, &op);
-				for (auto index = primary->next; index; index = index->next)
-					index_delete(index, &op);
-				usage_update(part->arg->memory, op.delta);
+				if (primary)
+				{
+					IndexOp op;
+					index_op_set(&op, head);
+					index_delete(primary, &op);
+					for (auto index = primary->next; index; index = index->next)
+						index_delete(index, &op);
+					usage_update(part->arg->memory, op.delta);
+				}
 			}
 		}
 

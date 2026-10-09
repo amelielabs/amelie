@@ -19,11 +19,10 @@
 #include <amelie_index.h>
 #include <amelie_part.h>
 
-static inline Row*
-rollback(LogOp* op)
+static inline void
+rollback(LogOp* op, Part* part)
 {
 	auto index = (Index*)op->iface_arg;
-	auto part  = (Part*)index->iface_arg;
 	IndexOp io;
 	if (op->row_prev)
 	{
@@ -37,19 +36,17 @@ rollback(LogOp* op)
 		index_delete(index, &io);
 		usage_update(part->arg->memory, io.delta);
 	}
-	return op->row;
 }
 
 hot static void
-log_if_commit(Log* self, LogOp* op)
+primary_if_commit(Log* self, LogOp* op)
 {
-	unused(self);
-	auto index = (Index*)op->iface_arg;
-	auto part  = (Part*)index->iface_arg;
+	Part* part = self->arg;
 	auto heap  = part->heap;
+	auto index = (Index*)op->iface_arg;
 
 	// mark row as commited
-	auto row   = op->row;
+	auto row = op->row;
 	row->commited = true;
 
 	if (op->cmd == LOG_DELETE)
@@ -66,46 +63,43 @@ log_if_commit(Log* self, LogOp* op)
 	// free older versions related to this timeline
 	row_gc(row, heap, &part->flats, op->timeline);
 
-	// last delete in the index
+	// last delete
 	if (row->deleted && !row_prev_has(row))
 	{
-		IndexOp io;
-		index_op_set(&io, row);
-		index_delete(index, &io);
-		for (index = index->next; index; index = index->next)
+		if (index)
+		{
+			IndexOp io;
+			index_op_set(&io, row);
 			index_delete(index, &io);
-		usage_update(part->arg->memory, io.delta);
-
+			for (index = index->next; index; index = index->next)
+				index_delete(index, &io);
+			usage_update(part->arg->memory, io.delta);
+		}
 		row_free(heap, &part->flats, row);
 	}
 }
 
 static void
-log_if_abort(Log* self, LogOp* op)
+primary_if_abort(Log* self, LogOp* op)
 {
-	unused(self);
-	auto row = rollback(op);
+	Part* part = self->arg;
+	auto index = (Index*)op->iface_arg;
+	if (index)
+		rollback(op, self->arg);
 
-	if (op->cmd != LOG_DELETE && row)
-	{
-		auto index = (Index*)op->iface_arg;
-		auto part  = (Part*)index->iface_arg;
-		row_free(part->heap, &part->flats, row);
-	}
+	if (op->cmd != LOG_DELETE && op->row)
+		row_free(part->heap, &part->flats, op->row);
 
 	if (op->row_prev)
 	{
 		op->row_prev->head = true;
-
 		// unfilter vector columns
-		auto index = (Index*)op->iface_arg;
-		auto part  = (Part*)index->iface_arg;
 		row_filter(&part->flats, op->row_prev, false);
 	}
 }
 
 hot static void
-log_if_secondary_commit(Log* self, LogOp* op)
+secondary_if_commit(Log* self, LogOp* op)
 {
 	unused(self);
 	unused(op);
@@ -113,22 +107,21 @@ log_if_secondary_commit(Log* self, LogOp* op)
 }
 
 static void
-log_if_secondary_abort(Log* self, LogOp* op)
+secondary_if_abort(Log* self, LogOp* op)
 {
-	unused(self);
-	rollback(op);
+	rollback(op, self->arg);
 }
 
-static LogIf log_if =
+static LogIf primary_if =
 {
-	.commit = log_if_commit,
-	.abort  = log_if_abort
+	.commit = primary_if_commit,
+	.abort  = primary_if_abort
 };
 
-static LogIf log_if_secondary =
+static LogIf secondary_if =
 {
-	.commit = log_if_secondary_commit,
-	.abort  = log_if_secondary_abort
+	.commit = secondary_if_commit,
+	.abort  = secondary_if_abort
 };
 
 hot void
@@ -138,7 +131,15 @@ part_insert(Part*     self, Tr* tr,
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_replace(&tr->log, &log_if, primary, row, timeline);
+	auto op = log_replace(&tr->log, &primary_if, primary, row, timeline);
+
+	// ensure write limit
+	if (tr->write)
+		usage_add(tr->write, 1);
+
+	row->head = true;
+	if (! primary)
+		return;
 
 	IndexOp io;
 	index_op_set(&io, row);
@@ -163,7 +164,7 @@ part_insert(Part*     self, Tr* tr,
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_replace(&tr->log, &log_if_secondary, index, row, timeline);
+		op = log_replace(&tr->log, &secondary_if, index, row, timeline);
 		if (index_replace(index, &io))
 		{
 			op->row_prev = io.row_prev;
@@ -173,12 +174,9 @@ part_insert(Part*     self, Tr* tr,
 		}
 	}
 
-	// ensure write limit
-	if (tr->write)
-		usage_add(tr->write, 1);
-
 	// ensure memory limit
 	usage_add(self->arg->memory, io.delta);
+
 }
 
 hot bool
@@ -186,8 +184,12 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
             Timeline* timeline,
             Row*      row)
 {
-	// get if exists (iterator is openned in both cases)
+	// ensure primary key is defined
 	auto primary = part_primary(self);
+	if (! primary)
+		error("upsert: requires primary index");
+
+	// get if exists (iterator is openned in both cases)
 	IndexOp io =
 	{
 		.row      = row,
@@ -209,14 +211,18 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 	row->head = true;
 
 	// add log record
-	auto op = log_replace(&tr->log, &log_if, primary, row, timeline);
+	auto op = log_replace(&tr->log, &primary_if, primary, row, timeline);
+
+	// ensure write limit
+	if (tr->write)
+		usage_add(tr->write, 1);
 
 	// update secondary indexes
 	io.it = NULL;
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_replace(&tr->log, &log_if_secondary, index, row, timeline);
+		op = log_replace(&tr->log, &secondary_if, index, row, timeline);
 		if (index_replace(index, &io))
 		{
 			op->row_prev = io.row_prev;
@@ -225,10 +231,6 @@ part_upsert(Part*     self, Tr* tr, Iterator* it,
 				      &index->config->name);
 		}
 	}
-
-	// ensure write limit
-	if (tr->write)
-		usage_add(tr->write, 1);
 
 	// ensure memory limit
 	usage_add(self->arg->memory, io.delta);
@@ -242,7 +244,25 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_replace(&tr->log, &log_if, primary, row, timeline);
+	auto op = log_replace(&tr->log, &primary_if, primary, row, timeline);
+
+	// ensure write limit
+	if (tr->write)
+		usage_add(tr->write, 1);
+
+	op->row_prev = iterator_at(it);
+	assert(op->row_prev->head);
+	op->row_prev->head = false;
+
+	// chain head row
+	row_prev_set(row, op->row_prev);
+	row->head = true;
+
+	// filter vector columns
+	row_filter(&self->flats, op->row_prev, true);
+
+	if (! primary)
+		return;
 
 	// update primary index
 	IndexOp io =
@@ -253,32 +273,18 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 		.delta    = 0
 	};
 	index_replace(primary, &io);
-	op->row_prev = io.row_prev;
-	assert(op->row_prev->head);
-	op->row_prev->head = false;
-
-	// chain head row
-	row_prev_set(row, op->row_prev);
-	row->head = true;
-
-	// filter vector columns
-	row_filter(&self->flats, io.row_prev, true);
 
 	// update secondary indexes
 	io.it = NULL;
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_replace(&tr->log,&log_if_secondary, index, row, timeline);
+		op = log_replace(&tr->log, &secondary_if, index, row, timeline);
 
 		// replace by key
 		if (index_replace(index, &io))
 			op->row_prev = io.row_prev;
 	}
-
-	// ensure write limit
-	if (tr->write)
-		usage_add(tr->write, 1);
 
 	// ensure memory limit
 	usage_add(self->arg->memory, io.delta);
@@ -287,11 +293,23 @@ part_update(Part*     self, Tr* tr, Iterator* it,
 hot void
 part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 {
-	auto primary = part_primary(self);
-
 	// add log record
+	auto primary = part_primary(self);
 	auto row = iterator_at(it);
-	auto op = log_delete(&tr->log, &log_if, primary, row, timeline);
+	auto op = log_delete(&tr->log, &primary_if, primary, row, timeline);
+
+	// ensure write limit
+	if (tr->write)
+		usage_add(tr->write, 1);
+
+	op->row_prev = row;
+	op->row_prev->head = false;
+
+	// filter vector columns
+	row_filter(&self->flats, op->row_prev, true);
+
+	if (! primary)
+		return;
 
 	// update primary index
 	IndexOp io =
@@ -302,11 +320,6 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 		.delta    = 0
 	};
 	index_delete(primary, &io);
-	op->row_prev = io.row_prev;
-	op->row_prev->head = false;
-
-	// filter vector columns
-	row_filter(&self->flats, op->row_prev, true);
 
 	// secondary indexes
 	io.row = row;
@@ -314,16 +327,12 @@ part_delete(Part* self, Tr* tr, Iterator* it, Timeline* timeline)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_delete(&tr->log, &log_if_secondary, index, row, timeline);
+		op = log_delete(&tr->log, &secondary_if, index, row, timeline);
 
 		// delete by key
 		if (index_delete(index, &io))
 			op->row_prev = io.row_prev;
 	}
-
-	// ensure write limit
-	if (tr->write)
-		usage_add(tr->write, 1);
 
 	// ensure memory limit
 	usage_add(self->arg->memory, io.delta);

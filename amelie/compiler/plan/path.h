@@ -35,13 +35,14 @@ struct PathKey
 
 struct Path
 {
-	int      type;
-	int      type_mapping;
-	Target*  target;
-	int      match_start;
-	int      match_start_exprs;
-	int      match_stop;
-	PathKey  keys[];
+	int     type;
+	int     type_mapping;
+	Target* target;
+	int     match_start;
+	int     match_start_exprs;
+	int     match_stop;
+	int     keys_count;
+	PathKey keys[];
 };
 
-Path* path_create(Target*, Block* block, Keys*, Keys*, PathOps*);
+Path* path_create(Target*, Keys*, Keys*, PathOps*);

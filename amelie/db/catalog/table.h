@@ -41,7 +41,7 @@ table_of(Rel* self)
 static inline IndexConfig*
 table_primary(Table* self)
 {
-	return container_of(self->config->indexes.next, IndexConfig, link);
+	return table_config_primary(self->config);
 }
 
 static inline Timeline*

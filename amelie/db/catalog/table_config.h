@@ -121,6 +121,14 @@ table_config_index_remove(TableConfig* self, IndexConfig* config)
 	self->indexes_count--;
 }
 
+static inline IndexConfig*
+table_config_primary(TableConfig* self)
+{
+	if (! self->indexes_count)
+		return NULL;
+	return container_of(self->indexes.next, IndexConfig, link);
+}
+
 static inline void
 table_config_part_add(TableConfig* self, PartConfig* config)
 {

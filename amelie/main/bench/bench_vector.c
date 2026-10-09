@@ -126,7 +126,7 @@ bench_vector_create(Bench* self, Client* client)
 {
 	info("preparing tables.");
 	Str str;
-	str_set_cstr(&str, "create table bench_vector (id int primary key, v vector(128))");
+	str_set_cstr(&str, "create table bench_vector (id int, v vector(128), partition key (id))");
 	client_execute(client, &str, NULL);
 
 	info("preparing function.");

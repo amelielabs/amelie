@@ -165,7 +165,9 @@ plan_main(Plan* self, bool emit_store)
 		if (!from_is_join(from) && !from_is_expr(from))
 		{
 			auto index = first->from_index;
-			if (index->type == INDEX_TREE && ast_order_list_match_index(order_by, first))
+			if (index &&
+			    index->type == INDEX_TREE &&
+			    ast_order_list_match_index(order_by, first))
 			{
 				plan_scan(self);
 				return;

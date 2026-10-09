@@ -514,6 +514,13 @@ op_dump(Program* self, Code* code, Buf* buf)
 					buf_write(desc, ", ", 2);
 				buf_write(desc, "part", 4);
 			}
+		
+			Str index_name;
+			str_init(&index_name);
+			if (open->index)
+				index_name = open->index->name;
+			else
+				str_set(&index_name, "heap", 4);
 
 			auto timeline = open->timeline;
 			if (timeline->rel->type == REL_TABLE)
@@ -521,7 +528,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 				         "{str}.{str} ({str}) {buf}",
 				         &open->table->config->user,
 				         &open->table->config->name,
-				         &open->index->name,
+				         &index_name,
 				         desc);
 			else
 			if (timeline->rel->type == REL_CLONE)
@@ -529,7 +536,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 				         "{str}.{str} ({str}) [{str}.{str}] {buf}",
 				         &open->table->config->user,
 				         &open->table->config->name,
-				         &open->index->name,
+				         &index_name,
 				         timeline->rel->user,
 				         timeline->rel->name,
 				         desc);

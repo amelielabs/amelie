@@ -193,7 +193,9 @@ plan_pushdown(Plan* self)
 		if (! from_is_join(from))
 		{
 			auto index = first->from_index;
-			if (index->type == INDEX_TREE && ast_order_list_match_index(order_by, first))
+			if (index &&
+			    index->type == INDEX_TREE &&
+			    ast_order_list_match_index(order_by, first))
 			{
 				plan_pushdown_order_by_index(self);
 				return;

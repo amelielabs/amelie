@@ -20,13 +20,12 @@
 #include <amelie_part.h>
 
 hot static Iterator*
-cursor_lookup(Parts*       self,
-              Part*        part,
+cursor_lookup(Part*        part,
               IndexConfig* config,
               Timeline*    timeline,
               Row*         key)
 {
-	unused(self);
+	assert(config);
 	auto index = part_index_find(part, &config->name, true);
 
 	// check heap first
@@ -37,15 +36,21 @@ cursor_lookup(Parts*       self,
 }
 
 hot static Iterator*
-cursor_scan(Parts*       self,
-            Part*        part,
+cursor_scan(Part*        part,
             IndexConfig* config,
             Timeline*    timeline,
             Row*         key)
 {
-	unused(self);
-	auto index = part_index_find(part, &config->name, true);
-	auto it = index_iterator(index);
+	Iterator* it;
+	if (! config)
+	{
+		// heap iterator
+		it = iterator_heap_allocate(part->heap);
+	} else
+	{
+		auto index = part_index_find(part, &config->name, true);
+		it = index_iterator(index);
+	}
 	iterator_open(it, part->heap, timeline, key);
 	return it;
 }
@@ -56,6 +61,13 @@ cursor_scan_cross(Parts*       self,
                   Timeline*    timeline,
                   Row*         key)
 {
+	if (! config)
+	{
+		// todo: heap merge iterator
+		abort();
+		return NULL;
+	}
+
 	// prepare heap merge iterators per partition
 	Iterator* it = NULL;
 	list_foreach(&self->list)
@@ -83,10 +95,10 @@ cursor_open(Parts*       self,
 	{
 		// point lookup
 		if (point_lookup)
-			return cursor_lookup(self, part, config, timeline, key);
+			return cursor_lookup(part, config, timeline, key);
 
 		// range scan
-		return cursor_scan(self, part, config, timeline, key);
+		return cursor_scan(part, config, timeline, key);
 	}
 
 	// cross-partition query
@@ -95,7 +107,7 @@ cursor_open(Parts*       self,
 	if (point_lookup)
 	{
 		part = part_mapping_map(&self->mapping, key);
-		return cursor_lookup(self, part, config, timeline, key);
+		return cursor_lookup(part, config, timeline, key);
 	}
 
 	// range scan

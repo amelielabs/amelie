@@ -93,3 +93,9 @@ tr_set_user(Tr* self, Rel* user)
 {
 	self->user = user;
 }
+
+static inline void
+tr_set_arg(Tr* self, void* arg)
+{
+	self->log.arg = arg;
+}

@@ -31,6 +31,7 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 			auto tr = tr_create(&track->cache);
 			tr_set_id(tr, gtr->id);
 			tr_set_limit(tr, &gtr->usage_write);
+			tr_set_arg(tr, self->part);
 			tr_list_add(&track->prepared, tr);
 			ltr->tr = tr;
 		}

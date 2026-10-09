@@ -79,53 +79,55 @@ part_open_heap(Part* self, Ids* ids)
 	storage_open(storage, state_checkpoint(), ids, &filter);
 	heap_open(heap);
 
-	// create primary index iterator for upsert
+	// rebuild indexes
 	auto primary = part_primary(self);
-	auto it_upsert = index_iterator(primary);
-	defer(iterator_close, it_upsert);
-
-	// create heap iterator
-	HeapIterator it;
-	heap_iterator_init(&it);
-	heap_iterator_open(&it, heap, false);
-
-	// build indexes
-	uint64_t count = 0;
-	for (;; heap_iterator_next(&it))
+	if (primary)
 	{
-		auto row = heap_iterator_at(&it);
-		if (! row)
-			break;
+		// create primary index iterator for upsert
+		auto it_upsert = index_iterator(primary);
+		defer(iterator_close, it_upsert);
 
-		if (! row->head)
-			continue;
+		// create heap iterator
+		HeapIterator it;
+		heap_iterator_init(&it);
+		heap_iterator_open(&it, heap, false);
 
-		// update index to track the latest version
-		IndexOp op =
+		// build indexes
+		for (;; heap_iterator_next(&it))
 		{
-			.row      = row,
-			.row_prev = NULL,
-			.it       = it_upsert,
-			.delta    = 0
-		};
-		if (unlikely(index_upsert(primary, &op)))
-			abort();
-		op.it = NULL;
-		for (auto index = primary->next; index; index = index->next)
-			index_replace(index, &op);
-		usage_update(self->arg->memory, op.delta);
-		count++;
+			auto row = heap_iterator_at(&it);
+			if (! row)
+				break;
+
+			if (! row->head)
+				continue;
+
+			// update index to track the latest version
+			IndexOp op =
+			{
+				.row      = row,
+				.row_prev = NULL,
+				.it       = it_upsert,
+				.delta    = 0
+			};
+			if (unlikely(index_upsert(primary, &op)))
+				abort();
+			op.it = NULL;
+			for (auto index = primary->next; index; index = index->next)
+				index_replace(index, &op);
+			usage_update(self->arg->memory, op.delta);
+		}
+		usage_update(self->arg->memory, storage_size(storage));
 	}
-	usage_update(self->arg->memory, storage_size(storage));
 
 	char uuid[UUID_SZ];
 	uuid_get(self->arg->rel->id, uuid, sizeof(uuid));
 	auto total = (double)storage_size(storage) / 1024 / 1024;
-	info("recover: {s}.{d}    ({d} pages, {.2f} MB, {u64} rows)",
+	info("recover: {s}.{d}    ({d} pages, {.2f} MB)",
 	     uuid,
 	     (int)self->config->id,
 	     storage->list_count,
-	     total, count);
+	     total);
 }
 
 static void
@@ -158,8 +160,7 @@ part_open(Part* self, Ids* ids)
 	part_open_heap(self, ids);
 
 	// vector stores (per column)
-	auto primary = part_primary(self);
-	auto columns = index_keys(primary)->columns;
+	auto columns = self->arg->columns;
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);

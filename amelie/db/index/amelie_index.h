@@ -32,3 +32,6 @@
 #include "index/index_hash.h"
 #include "index/index_hash_iterator.h"
 #include "index/index_hash_merge.h"
+
+// heap
+#include "index/iterator_heap.h"

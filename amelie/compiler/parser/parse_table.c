@@ -100,7 +100,7 @@ parse_default(Stmt* self, Column* column, Buf* buf)
 }
 
 static void
-parse_constraints(Stmt* self, Keys* keys, Column* column)
+parse_constraints(Stmt* self, TableConfig* config, Column* column)
 {
 	// constraints
 	auto cons = &column->constraints;
@@ -131,10 +131,10 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		{
 			stmt_expect(self, KKEY);
 
-			if (! keys)
+			if (! config)
 				stmt_error(self, name, "PRIMARY KEY clause is not supported in this command");
 
-			if (! keys_empty(keys))
+			if (table_config_primary(config))
 				stmt_error(self, name, "PRIMARY KEY defined twice");
 
 			// force not_null constraint for keys
@@ -148,11 +148,48 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			    (column->type == TYPE_INT && column->size < 4))
 				stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
+			// create primary index config
+			auto primary = index_config_allocate(&config->columns);
+			table_config_index_add(config, primary);
+			Str index_name;
+			str_set_cstr(&index_name, "primary");
+			index_config_set_name(primary, &index_name);
+			index_config_set_type(primary, INDEX_TREE);
+			index_config_set_unique(primary, true);
+			index_config_set_primary(primary, true);
+
 			// create key
-			keys_add(keys, column->order, true);
+			keys_add(&primary->keys, column->order, true);
 
 			// [USING type]
-			parse_index_using(self, ast_table_create_of(self->ast)->config_index);
+			parse_index_using(self, primary);
+			break;
+		}
+
+		// PARTITION KEY
+		case KPARTITION:
+		{
+			stmt_expect(self, KKEY);
+
+			if (! config)
+				stmt_error(self, name, "PARTITION KEY clause is not supported in this command");
+
+			if (! keys_empty(&config->partitioning))
+				stmt_error(self, NULL, "PARTITION KEY is redefined");
+
+			// force not_null constraint for keys
+			constraints_set_not_null(&column->constraints, true);
+
+			// validate key type
+			if ((column->type != TYPE_INT    &&
+			     column->type != TYPE_STRING &&
+			     column->type != TYPE_UUID   &&
+			     column->type != TYPE_TIMESTAMP) ||
+			    (column->type == TYPE_INT && column->size < 4))
+				stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
+
+			// create key
+			keys_add(&config->partitioning, column->order, true);
 			break;
 		}
 
@@ -229,14 +266,15 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 }
 
 static void
-parse_columns(Stmt* self, Columns* columns, Keys* keys, Keys* partitioning)
+parse_columns(Stmt* self, TableConfig* config)
 {
-	// (name type [constraints], ..., primary key())
+	// (name type [constraints], ..., partition key, primary key)
 
 	// (
 	stmt_expect(self, '(');
 
 	auto local = self->parser->local;
+	auto partitioning = &config->partitioning;
 	Column* identity = NULL;
 	for (;;)
 	{
@@ -248,7 +286,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys, Keys* partitioning)
 			stmt_expect(self, KKEY);
 
 			if (! keys_empty(partitioning))
-				stmt_error(self, NULL, "partition key is redefined");
+				stmt_error(self, NULL, "PARTITION KEY is redefined");
 
 			parse_key(self, partitioning);
 
@@ -265,8 +303,20 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys, Keys* partitioning)
 			// PRIMARY KEY (columns) [USING type]
 			stmt_expect(self, KKEY);
 
-			if (! keys_empty(keys))
-				stmt_error(self, NULL, "primary key is redefined");
+			if (table_config_primary(config))
+				stmt_error(self, ast, "PRIMARY KEY defined twice");
+
+			// create primary index config
+			auto primary = index_config_allocate(&config->columns);
+			table_config_index_add(config, primary);
+			Str index_name;
+			str_set_cstr(&index_name, "primary");
+			index_config_set_name(primary, &index_name);
+			index_config_set_type(primary, INDEX_TREE);
+			index_config_set_unique(primary, true);
+			index_config_set_primary(primary, true);
+
+			auto keys = &primary->keys;
 			parse_key(self, keys);
 
 			// force column not_null constraint
@@ -276,9 +326,10 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys, Keys* partitioning)
 				constraints_set_not_null(&key->column->constraints, true);
 			}
 
-			parse_index_using(self, ast_table_create_of(self->ast)->config_index);
+			parse_index_using(self, primary);
 			break;
 		}
+
 		case KNAME:
 		{
 			// name type [constraint]
@@ -287,7 +338,8 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys, Keys* partitioning)
 			auto name = ast;
 
 			// ensure column does not exists
-			if (columns_find(keys->columns, &name->string))
+			auto columns = &config->columns;
+			if (columns_find(columns, &name->string))
 				stmt_error(self, name, "column is redefined");
 
 			// create column
@@ -303,7 +355,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys, Keys* partitioning)
 			parse_type_column(self->lex, local, column);
 
 			// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
-			parse_constraints(self, keys, column);
+			parse_constraints(self, config, column);
 
 			// ensure identity column only one
 			auto cons = &column->constraints;
@@ -334,23 +386,28 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys, Keys* partitioning)
 	auto rbr = stmt_expect(self, ')');
 
 	// validate primary and partition keys
-	if (keys_empty(keys))
-		stmt_error(self, rbr, "primary key is not defined");
-
+	auto primary = table_config_primary(config);
 	if (keys_empty(partitioning))
 	{
 		// use primary key as partition key
-		keys_copy(partitioning, keys);
+		if (primary)
+			keys_copy(partitioning, &primary->keys);
+		else
+			stmt_error(self, NULL, "PARTITION or PRIMARY KEY is missing");
 	} else
 	{
 		// ensure primary key first columns match partitioning key
-		if (keys->count < partitioning->count)
-			stmt_error(self, NULL, "primary key must include all partition key columns");
-		for (auto at = 0; at < partitioning->count; at++)
+		if (primary)
 		{
-			auto key = keys_at(partitioning, at);
-			if (keys_at(keys, at)->column != key->column)
-				stmt_error(self, NULL, "primary key must include all partition columns first");
+			auto keys = &primary->keys;
+			if (keys->count < partitioning->count)
+				stmt_error(self, NULL, "PRIMARY KEY must include all partition key columns");
+			for (auto at = 0; at < partitioning->count; at++)
+			{
+				auto key = keys_at(partitioning, at);
+				if (keys_at(keys, at)->column != key->column)
+					stmt_error(self, NULL, "PRIMARY KEY must include all partition columns first");
+			}
 		}
 	}
 
@@ -358,16 +415,16 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys, Keys* partitioning)
 	if (identity)
 	{
 		auto match = false;
-		for (auto at = 0; at < keys->count; at++)
+		for (auto at = 0; at < partitioning->count; at++)
 		{
-			auto key = keys_at(keys, at);
+			auto key = keys_at(partitioning, at);
 			if (key->column != identity)
 				continue;
 			match = true;
 			break;
 		}
 		if (! match)
-			stmt_error(self, rbr, "IDENTITY column can only be used with primary key");
+			stmt_error(self, rbr, "IDENTITY column must be part of PARTITION KEY");
 	}
 }
 
@@ -444,23 +501,12 @@ parse_table_create(Stmt* self)
 	uuid_generate(&id, &local->random, local->time_ms);
 	table_config_set_id(config, &id);
 
-	// create primary index config
-	auto primary = index_config_allocate(&config->columns);
-	stmt->config_index = primary;
-	table_config_index_add(config, primary);
-
-	Str index_name;
-	str_set_cstr(&index_name, "primary");
-	index_config_set_name(primary, &index_name);
-	index_config_set_type(primary, INDEX_TREE);
-	index_config_set_unique(primary, true);
-	index_config_set_primary(primary, true);
-
 	// (columns)
-	parse_columns(self, &config->columns, &primary->keys, &config->partitioning);
+	parse_columns(self, config);
 
 	// set table options
 	auto index_defined = false;
+	auto primary = table_config_primary(config);
 	auto partitions = opt_int_of(&config()->backends);
 	for (;;)
 	{
@@ -522,6 +568,9 @@ parse_table_create(Stmt* self)
 		// INDEX name ...
 		if (str_is_case(&name->string, "index", 5))
 		{
+			auto primary = table_config_primary(config);
+			if (! primary)
+				stmt_error(self, NULL, "primary index is missing");
 			auto index_name = stmt_expect(self, KNAME);
 			if (table_config_find(config, &index_name->string))
 				stmt_error(self, index_name, "index redefined");
@@ -538,6 +587,9 @@ parse_table_create(Stmt* self)
 		// UNIQUE INDEX name ...
 		if (str_is_case(&name->string, "unique", 6))
 		{
+			auto primary = table_config_primary(config);
+			if (! primary)
+				stmt_error(self, NULL, "primary index is missing");
 			stmt_expect(self, KINDEX);
 			auto index_name = stmt_expect(self, KNAME);
 			if (table_config_find(config, &index_name->string))
@@ -560,7 +612,8 @@ parse_table_create(Stmt* self)
 	parse_table_partitions(self, config, partitions);
 
 	// configure index size according to the table partitions
-	parse_index_size(self, primary, config->parts_count);
+	if (primary)
+		parse_index_size(self, primary, config->parts_count);
 }
 
 void

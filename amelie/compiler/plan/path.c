@@ -30,6 +30,7 @@ path_allocate(Target* target, Keys* keys)
 	self->match_start_exprs = 0;
 	self->match_stop        = 0;
 
+	self->keys_count = keys->count;
 	for (auto at = 0; at < keys->count; at++)
 	{
 		auto key = keys_at(keys, at);
@@ -317,18 +318,26 @@ path_key(Path* self, PathKey* key, PathOps* ops)
 }
 
 Path*
-path_create(Target*  target, Block* block,
+path_create(Target*  target,
             Keys*    keys,
             Keys*    mapping,
             PathOps* ops)
 {
-	unused(block);
+	// match index and mapping keys or mapping keys only
+	// (if there are no pk)
+	bool with_index = true;
+	if (! keys)
+	{
+		with_index = false;
+		keys = mapping;
+	}
+
 	auto self = path_allocate(target, keys);
 	auto match_eq = 0;
 	auto match_eq_mapping = 0;
 	auto match_last_start = -1;
 	auto match_last_stop  = -1;
-	for (auto at = 0; at < keys->count; at++)
+	for (auto at = 0; at < self->keys_count; at++)
 	{
 		auto key = keys_at(keys, at);
 		auto key_path = &self->keys[key->order];
@@ -356,7 +365,7 @@ path_create(Target*  target, Block* block,
 	}
 
 	// point lookup (index)
-	if (match_eq == keys->count)
+	if (with_index && match_eq == keys->count)
 		self->type = PATH_LOOKUP;
 
 	// point lookup (partitioning)
