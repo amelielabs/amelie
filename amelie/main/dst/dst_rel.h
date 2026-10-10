@@ -17,8 +17,8 @@ enum
 {
 	DST_REL_TABLE,
 	DST_REL_TABLE_VECTOR,
+	DST_REL_SIDETABLE,
 	DST_REL_INDEX,
-	DST_REL_CLONE,
 	DST_REL_MAX
 };
 
@@ -29,8 +29,8 @@ struct DstRel
 	DstRel*   parent;
 	List      indexes;
 	int       indexes_count;
-	List      clones;
-	int       clones_count;
+	List      sidetables;
+	int       sidetables_count;
 	Hashtable state;
 	List      link_parent;
 	List      link;
@@ -40,13 +40,13 @@ static inline DstRel*
 dst_rel_allocate(DstRel* parent, uint64_t id, int type, int keys)
 {
 	auto self = (DstRel*)am_malloc(sizeof(DstRel));
-	self->id            = id;
-	self->type          = type;
-	self->parent        = parent;
-	self->indexes_count = 0;
-	self->clones_count  = 0;
+	self->id               = id;
+	self->type             = type;
+	self->parent           = parent;
+	self->sidetables_count = 0;
+	self->indexes_count    = 0;
+	list_init(&self->sidetables);
 	list_init(&self->indexes);
-	list_init(&self->clones);
 	hashtable_init(&self->state);
 	hashtable_create(&self->state, keys * 2);
 	list_init(&self->link_parent);
@@ -97,18 +97,4 @@ static inline void
 dst_rel_delete(DstRel* self, DstKey* key)
 {
 	hashtable_delete(&self->state, &key->node);
-}
-
-static inline void
-dst_rel_copy(DstRel* self, DstRel* from)
-{
-	auto index = (Hashnode**)(from->state.buf.start);
-	for (int i = 0; i < from->state.size; i++)
-	{
-		if (!index[i] || index[i] == HASHTABLE_DELETED)
-			continue;
-		auto key = container_of(index[i], DstKey, node);
-		auto key_copy = dst_key_copy(key);
-		dst_rel_set(self, key_copy);
-	}
 }

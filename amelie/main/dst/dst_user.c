@@ -159,19 +159,17 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 		list_append(&parent->indexes, &rel->link_parent);
 		parent->indexes_count++;
 	} else
-	if (type == DST_REL_CLONE)
+	if (type == DST_REL_SIDETABLE)
 	{
 		assert(parent->type == DST_REL_TABLE);
 
 		dst_execute(self->dst, self->client,
-		            "CREATE CLONE clone_{u64}_{u64} OF table_{u64}",
+		            "CREATE TABLE sidetable_{u64}_{u64} ON table_{u64}",
 		            parent->id, id, parent->id);
-		dst_stat(&self->dst->stats, DST_STAT_CREATE_CLONE);
+		dst_stat(&self->dst->stats, DST_STAT_CREATE_SIDETABLE);
 
-		dst_rel_copy(rel, parent);
-
-		list_append(&parent->clones, &rel->link_parent);
-		parent->clones_count++;
+		list_append(&parent->sidetables, &rel->link_parent);
+		parent->sidetables_count++;
 	} else
 	{
 		abort();
@@ -202,12 +200,12 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		list_unlink(&rel->link_parent);
 		rel->parent->indexes_count--;
 		break;
-	case DST_REL_CLONE:
+	case DST_REL_SIDETABLE:
 		dst_execute(self->dst, self->client,
-		            "DROP CLONE clone_{u64}_{u64} CASCADE",
+		            "DROP TABLE sidetable_{u64}_{u64} CASCADE",
 		            rel->parent->id, rel->id);
 		list_unlink(&rel->link_parent);
-		rel->parent->clones_count--;
+		rel->parent->sidetables_count--;
 		break;
 	}
 
@@ -221,14 +219,14 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		dst_rel_free(index);
 	}
 
-	// free clones
-	list_foreach_safe(&rel->clones)
+	// free sidetables
+	list_foreach_safe(&rel->sidetables)
 	{
-		auto clone = list_at(DstRel, link_parent);
-		list_unlink(&clone->link);
+		auto sidetable = list_at(DstRel, link_parent);
+		list_unlink(&sidetable->link);
 		self->rels_count--;
 		assert(self->rels_count >= 0);
-		dst_rel_free(clone);
+		dst_rel_free(sidetable);
 	}
 
 	list_unlink(&rel->link);

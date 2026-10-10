@@ -19,7 +19,7 @@ dst_stmt(DstUser* self)
 {
 	auto op = dst_log_add(&self->log);
 
-	// generate relation (table, table_vector, clone)
+	// generate relation (table, table_vector, sidetable)
 	DstRel* rel;
 	for (;;)
 	{
@@ -73,16 +73,16 @@ dst_stmt(DstUser* self)
 			           key->value_vector[3]);
 			dst_stat(&self->dst->stats, DST_STAT_INSERT_VECTOR);
 		} else
-		if (rel->type == DST_REL_CLONE)
+		if (rel->type == DST_REL_SIDETABLE)
 		{
 			key->value = random_generate(&am_task->random);
 			auto payload_size = random_generate(&am_task->random) % opt_int_of(&self->dst->opt_payload);
 			buf_format(&self->log.sql,
-			           "INSERT INTO clone_{u64}_{u64} VALUES ({u64}, {i64}, '{.*s}');",
+			           "INSERT INTO sidetable_{u64}_{u64} VALUES ({u64}, {i64}, '{.*s}');",
 			           rel->parent->id, rel->id, key->key, key->value,
 			           payload_size,
 			           self->dst->payload.start);
-			dst_stat(&self->dst->stats, DST_STAT_INSERT_CLONE);
+			dst_stat(&self->dst->stats, DST_STAT_INSERT_SIDETABLE);
 		} else {
 			abort();
 		}
@@ -120,13 +120,13 @@ dst_stmt(DstUser* self)
 			           key->value_vector[3]);
 			dst_stat(&self->dst->stats, DST_STAT_UPSERT_VECTOR);
 		} else
-		if (rel->type == DST_REL_CLONE)
+		if (rel->type == DST_REL_SIDETABLE)
 		{
 			key->value = random_generate(&am_task->random);
 			buf_format(&self->log.sql,
-			           "INSERT INTO clone_{u64}_{u64} VALUES ({u64}, null, null) ON CONFLICT DO UPDATE SET state = {i64};",
+			           "INSERT INTO sidetable_{u64}_{u64} VALUES ({u64}, null, null) ON CONFLICT DO UPDATE SET state = {i64};",
 			           rel->parent->id, rel->id, key->key, key->value);
-			dst_stat(&self->dst->stats, DST_STAT_UPSERT_CLONE);
+			dst_stat(&self->dst->stats, DST_STAT_UPSERT_SIDETABLE);
 		} else {
 			abort();
 		}
@@ -164,13 +164,13 @@ dst_stmt(DstUser* self)
 			           key->key);
 			dst_stat(&self->dst->stats, DST_STAT_UPDATE_VECTOR);
 		} else
-		if (rel->type == DST_REL_CLONE)
+		if (rel->type == DST_REL_SIDETABLE)
 		{
 			key->value = random_generate(&am_task->random);
 			buf_format(&self->log.sql,
-			           "UPDATE clone_{u64}_{u64} SET state = {i64} WHERE id = {i64};",
+			           "UPDATE sidetable_{u64}_{u64} SET state = {i64} WHERE id = {i64};",
 			           rel->parent->id, rel->id, key->value, key->key);
-			dst_stat(&self->dst->stats, DST_STAT_UPDATE_CLONE);
+			dst_stat(&self->dst->stats, DST_STAT_UPDATE_SIDETABLE);
 		} else {
 			abort();
 		}
@@ -194,12 +194,12 @@ dst_stmt(DstUser* self)
 		           rel->id, key->key);
 		dst_stat(&self->dst->stats, DST_STAT_DELETE_VECTOR);
 	} else
-	if (rel->type == DST_REL_CLONE)
+	if (rel->type == DST_REL_SIDETABLE)
 	{
 		buf_format(&self->log.sql,
-		           "DELETE FROM clone_{u64}_{u64} WHERE id = {u64};",
+		           "DELETE FROM sidetable_{u64}_{u64} WHERE id = {u64};",
 		            rel->parent->id, rel->id, key->key);
-		dst_stat(&self->dst->stats, DST_STAT_DELETE_CLONE);
+		dst_stat(&self->dst->stats, DST_STAT_DELETE_SIDETABLE);
 	} else {
 		abort();
 	}
@@ -303,9 +303,9 @@ dst_step_ddl(DstUser* self)
 			dst_user_create_for(self, parent, type);
 
 		} else
-		if (type == DST_REL_CLONE)
+		if (type == DST_REL_SIDETABLE)
 		{
-			// create table clone
+			// create sidetable
 			auto count = dst_user_count(self, true, false, false);
 			if (! count)
 			{

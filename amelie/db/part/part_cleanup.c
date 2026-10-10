@@ -49,8 +49,15 @@ part_cleanup_index(PartCleanup* self)
 			break;
 		if (! row_visible(row, &timeline))
 			continue;
-		for (auto index = primary; index; index = index->next)
+		op.row = NULL;
+		op.it  = it;
+		index_delete(primary, &op);
+		for (auto index = primary->next; index; index = index->next)
+		{
+			op.row = row;
+			op.it  = NULL;
 			index_delete(index, &op);
+		}
 		row_free(heap, &part->flats, row);
 	}
 

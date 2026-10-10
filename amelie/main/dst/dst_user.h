@@ -53,7 +53,7 @@ static inline DstRel*
 dst_user_rel_filter(DstUser* self, int order,
                     bool     table,
                     bool     table_vector,
-                    bool     clone)
+                    bool     sidetable)
 {
 	auto pos = 0;
 	list_foreach(&self->rels)
@@ -61,7 +61,7 @@ dst_user_rel_filter(DstUser* self, int order,
 		auto rel = list_at(DstRel, link);
 		if ((table        && rel->type == DST_REL_TABLE) ||
 		    (table_vector && rel->type == DST_REL_TABLE_VECTOR) ||
-		    (clone        && rel->type == DST_REL_CLONE))
+		    (sidetable    && rel->type == DST_REL_SIDETABLE))
 		{
 			if (order != pos)
 			{
@@ -78,7 +78,7 @@ static inline int
 dst_user_count(DstUser* self,
                bool     table,
                bool     table_vector,
-               bool     clone)
+               bool     sidetable)
 {
 	auto count = 0;
 	list_foreach(&self->rels)
@@ -86,7 +86,7 @@ dst_user_count(DstUser* self,
 		auto rel = list_at(DstRel, link);
 		if ((table        && rel->type == DST_REL_TABLE) ||
 		    (table_vector && rel->type == DST_REL_TABLE_VECTOR) ||
-		    (clone        && rel->type == DST_REL_CLONE))
+		    (sidetable    && rel->type == DST_REL_SIDETABLE))
 		{
 			count++;
 			continue;
