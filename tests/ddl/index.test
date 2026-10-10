@@ -89,10 +89,6 @@ drop index i on test;
 drop function dep;
 drop index i on test;
 
-# test: drop index primary
-drop index `primary` on test;
-select show('table', 'test', null, "verbose").indexes;
-
 # test: drop index (not null constraint)
 create table t (id int primary key, v int);
 insert into t values (1, 10);
@@ -102,6 +98,18 @@ select show("table", "t", null, "verbose").columns;
 insert into t values (2, null);
 select * from t order by id;
 drop table t cascade;
+
+# test: drop primary index
+create table t (id int primary key);
+insert into t values (1);
+insert into t values (2);
+insert into t values (3);
+explain select * from t;
+drop index `primary` on t;
+select show('table', 'test', null, "verbose").indexes;
+explain select * from t;
+select * from t;
+drop table t;
 
 # test: alter index parsing
 alter;
@@ -135,8 +143,38 @@ alter index if exists k on test rename to z;
 # test: alter index rename (conflict)
 alter index j on test rename to j;
 
-# test: drop index primary rename
+# test: alter index primary rename
 alter index `primary` on test rename to _;
+select show('table', 'test', null, "verbose").indexes;
+drop table test;
+
+# test: alter index set primary (primary exists)
+create table test (id int primary key);
+create unique index i on test(id);
+alter index i on test set;
+alter index i on test set primary;
+drop table test;
+
+# test: alter index set primary
+create table test (id int partition key);
+select show('table', 'test', null, "verbose").indexes;
+
+# no pk
+create index i on test(id);
+create unique index i on test(id);
+
+select show('table', 'test', null, "verbose").indexes;
+alter index i on test set primary;
+# no effect
+alter index i on test set primary;
+select show('table', 'test', null, "verbose").indexes;
+
+# test: alter index unset primary
+alter index i on test unset primary;
+select show('table', 'test', null, "verbose").indexes;
+
+# no effect
+alter index i on test unset primary;
 select show('table', 'test', null, "verbose").indexes;
 drop table test;
 

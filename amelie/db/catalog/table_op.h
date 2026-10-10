@@ -265,3 +265,36 @@ table_op_index_rename_read(uint8_t* op, Str* user, Str* name,
 	unpack_str(&op, name_index_new);
 	unpack_array_end(&op);
 }
+
+static inline int
+table_op_index_primary(Buf* self, Str* user, Str* name,
+                       Str* name_index,
+                       bool pk)
+{
+	// [op, user, name, name_index, pk]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_int(self, DDL_INDEX_PRIMARY);
+	encode_str(self, user);
+	encode_str(self, name);
+	encode_str(self, name_index);
+	encode_bool(self, pk);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+table_op_index_primary_read(uint8_t* op, Str* user, Str* name,
+                            Str*     name_index,
+                            bool*    pk)
+{
+	int64_t cmd;
+	unpack_array(&op);
+	unpack_int(&op, &cmd);
+	assert(cmd == DDL_INDEX_PRIMARY);
+	unpack_str(&op, user);
+	unpack_str(&op, name);
+	unpack_str(&op, name_index);
+	unpack_bool(&op, pk);
+	unpack_array_end(&op);
+}

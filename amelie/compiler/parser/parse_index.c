@@ -210,6 +210,8 @@ void
 parse_index_alter(Stmt* self)
 {
 	// ALTER INDEX [IF EXISTS] name ON table_name RENAME TO name
+	// ALTER INDEX [IF EXISTS] name ON table_name SET PRIMARY
+	// ALTER INDEX [IF EXISTS] name ON table_name UNSET PRIMARY
 	auto stmt = ast_index_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -227,12 +229,35 @@ parse_index_alter(Stmt* self)
 	parse_target(self, &stmt->table_user, &stmt->table_name);
 
 	// RENAME
-	stmt_expect(self, KRENAME);
+	if (stmt_if(self, KRENAME))
+	{
+		// TO
+		stmt_expect(self, KTO);
 
-	// TO
-	stmt_expect(self, KTO);
+		// name
+		name = stmt_expect(self, KNAME);
+		stmt->type = INDEX_ALTER_RENAME;
+		stmt->name_new = name->string;
+		return;
+	}
 
-	// name
-	name = stmt_expect(self, KNAME);
-	stmt->name_new = name->string;
+	// SET
+	if (stmt_if(self, KSET))
+	{
+		stmt_expect(self, KPRIMARY);
+		stmt->type = INDEX_ALTER_PRIMARY;
+		stmt->pk = true;
+		return;
+	}
+
+	// UNSET
+	if (stmt_if(self, KUNSET))
+	{
+		stmt_expect(self, KPRIMARY);
+		stmt->type = INDEX_ALTER_PRIMARY;
+		stmt->pk = false;
+		return;
+	}
+
+	stmt_error(self, NULL, "'RENAME | SET | UNSET' expected");
 }

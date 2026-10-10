@@ -206,8 +206,13 @@ emit_ddl(Compiler* self)
 	case STMT_ALTER_INDEX:
 	{
 		auto arg = ast_index_alter_of(stmt->ast);
-		offset = table_op_index_rename(data, &arg->table_user, &arg->table_name, &arg->name,
-		                               &arg->name_new);
+		if (arg->type == INDEX_ALTER_RENAME)
+			offset = table_op_index_rename(data, &arg->table_user, &arg->table_name,
+			                               &arg->name, &arg->name_new);
+		else
+		if (arg->type == INDEX_ALTER_PRIMARY)
+			offset = table_op_index_primary(data, &arg->table_user, &arg->table_name,
+			                                &arg->name, arg->pk);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

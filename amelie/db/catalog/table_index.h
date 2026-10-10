@@ -14,6 +14,7 @@
 void table_index_add(Catalog*, Table*, Tr*, IndexConfig*);
 bool table_index_drop(Catalog*, Table*, Tr*, Str*, bool);
 bool table_index_rename(Catalog*, Table*, Tr*, Str*, Str*, bool);
+bool table_index_primary(Catalog*, Table*, Tr*, Str*, bool, bool);
 void table_index_list(Table*, Buf*, Str*, int);
 IndexConfig*
 table_index_find(Table*, Str*, bool);

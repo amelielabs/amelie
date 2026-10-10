@@ -370,6 +370,19 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = table_index_rename(self, table, tr, &name_index, &name_index_new, if_exists);
 		break;
 	}
+	case DDL_INDEX_PRIMARY:
+	{
+		Str  user;
+		Str  name;
+		Str  name_index;
+		bool pk;
+		table_op_index_primary_read(op, &user, &name, &name_index, &pk);
+
+		auto table = catalog_find_table(self, &user, &name, true);
+		auto if_exists = ddl_if_exists(flags);
+		write = table_index_primary(self, table, tr, &name_index, pk, if_exists);
+		break;
+	}
 	case DDL_UDF_CREATE:
 	{
 		bool replace;

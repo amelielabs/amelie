@@ -205,7 +205,7 @@ table_index_rename(Catalog* self,
 		error("table '{str}' index '{str}': already exists",
 		      &table->config->name, name_new);
 
-	// ensure no strict dependecies
+	// ensure no strict dependencies
 	catalog_deps_validate(self, &table->rel, true);
 
 	// update table
@@ -216,6 +216,83 @@ table_index_rename(Catalog* self,
 
 	// rename index
 	index_config_set_name(index, name_new);
+	return true;
+}
+
+static void
+primary_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+primary_if_abort(Log* self, LogOp* op)
+{
+	uint8_t* pos = log_data_of(self, op);
+	bool primary;
+	unpack_bool(&pos, &primary);
+	IndexConfig* index = op->iface_arg;
+	index_config_set_primary(index, primary);
+}
+
+static LogIf primary_if =
+{
+	.commit = primary_if_commit,
+	.abort  = primary_if_abort
+};
+
+bool
+table_index_primary(Catalog* self,
+                    Table*   table,
+                    Tr*      tr,
+                    Str*     name,
+                    bool     pk,
+                    bool     if_exists)
+{
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
+
+	auto index = table_index_find(table, name, false);
+	if (! index)
+	{
+		if (! if_exists)
+			error("table '{str}' index '{str}': not exists",
+			      &table->config->name, name);
+		return false;
+	}
+
+	if (index->primary == pk)
+		return false;
+
+	// ensure table has no pk
+	if (pk)
+	{
+		if (! index->unique)
+			error("table '{str}' index '{str}': is not unique",
+			      &table->config->name, name);
+
+		list_foreach_safe(&table->config->indexes)
+		{
+			auto config = list_at(IndexConfig, link);
+			if (config->primary)
+			{
+				error("table '{str}': table already has primary index",
+				      &table->config->name);
+			}
+		}
+	}
+
+	// ensure no strict dependencies
+	catalog_deps_validate(self, &table->rel, true);
+
+	// update table
+	log_ddl(&tr->log, &primary_if, index, &table->rel);
+
+	// save previous state
+	encode_bool(&tr->log.data, index->primary);
+
+	index_config_set_primary(index, pk);
 	return true;
 }
 

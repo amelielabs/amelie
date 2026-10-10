@@ -33,14 +33,22 @@ struct AstIndexDrop
 	Str  name;
 };
 
+enum
+{
+	INDEX_ALTER_RENAME,
+	INDEX_ALTER_PRIMARY,
+};
+
 struct AstIndexAlter
 {
 	Ast  ast;
 	bool if_exists;
+	int  type;
 	Str  table_user;
 	Str  table_name;
 	Str  name;
 	Str  name_new;
+	bool pk;
 };
 
 static inline AstIndexCreate*

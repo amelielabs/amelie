@@ -327,24 +327,6 @@ error: function 'amelie.dep' depends on table 'test'
 # test: drop index after udf drop
 drop function dep;
 drop index i on test;
-# test: drop index primary
-drop index `primary` on test;
-error: table 'test' index 'primary': primary index cannot be dropped
-select show('table', 'test', null, "verbose").indexes;
-
-indexes
-───────
-[{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }]
-}]
 # test: drop index (not null constraint)
 create table t (id int primary key, v int);
 insert into t values (1, 10);
@@ -377,6 +359,81 @@ id  v
 ────────
 1   10
 drop table t cascade;
+# test: drop primary index
+create table t (id int primary key);
+insert into t values (1);
+insert into t values (2);
+insert into t values (3);
+explain select * from t;
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.t (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.t (primary) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.t shared [select]
+drop index `primary` on t;
+select show('table', 'test', null, "verbose").indexes;
+
+indexes
+───────
+[{
+  "name": "primary",
+  "type": 2,
+  "size": 0,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}]
+explain select * from t;
+
+explain
+───────
+
+main
+  0   send_all            0      0      32    # amelie.t (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.t (heap) part
+  2   table_readi32       2      1      -     # id
+  3   push                2      0      0
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
+
+access
+  •   amelie.t shared [select]
+select * from t;
+
+id
+──
+1
+2
+3
+drop table t;
 # test: alter index parsing
 alter;
 error: alter❰;❱ ⟵ relation type expected
@@ -397,9 +454,9 @@ error: alter index i ❰1❱ ⟵ ON expected
 alter index i on;
 error: alter index i on❰;❱ ⟵ target name expected
 alter index i on test;
-error: alter index i on test❰;❱ ⟵ RENAME expected
+error: alter index i on test❰;❱ ⟵ 'RENAME | SET | UNSET' expected
 alter index i on test 1;
-error: alter index i on test ❰1❱ ⟵ RENAME expected
+error: alter index i on test ❰1❱ ⟵ 'RENAME | SET | UNSET' expected
 alter index i on test rename;
 error: alter index i on test rename❰;❱ ⟵ TO expected
 alter index i on test rename 1;
@@ -476,15 +533,14 @@ alter index if exists k on test rename to z;
 # test: alter index rename (conflict)
 alter index j on test rename to j;
 error: table 'test' index 'j': already exists
-# test: drop index primary rename
+# test: alter index primary rename
 alter index `primary` on test rename to _;
-error: table 'test' index 'primary': primary index cannot be renamed
 select show('table', 'test', null, "verbose").indexes;
 
 indexes
 ───────
 [{
-  "name": "primary",
+  "name": "_",
   "type": 2,
   "size": 0,
   "unique": true,
@@ -503,6 +559,90 @@ indexes
     "column": 1,
     "asc": true
   }, {
+    "column": 0,
+    "asc": true
+  }]
+}]
+drop table test;
+# test: alter index set primary (primary exists)
+create table test (id int primary key);
+create unique index i on test(id);
+alter index i on test set;
+error: alter index i on test set❰;❱ ⟵ PRIMARY expected
+alter index i on test set primary;
+error: table 'test': table already has primary index
+drop table test;
+# test: alter index set primary
+create table test (id int partition key);
+select show('table', 'test', null, "verbose").indexes;
+
+indexes
+───────
+[]
+create index i on test(id);
+error: create index i on test(id)❰;❱ ⟵ table has no primary index
+create unique index i on test(id);
+select show('table', 'test', null, "verbose").indexes;
+
+indexes
+───────
+[{
+  "name": "i",
+  "type": 2,
+  "size": 0,
+  "unique": true,
+  "primary": false,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}]
+alter index i on test set primary;
+alter index i on test set primary;
+select show('table', 'test', null, "verbose").indexes;
+
+indexes
+───────
+[{
+  "name": "i",
+  "type": 2,
+  "size": 0,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}]
+# test: alter index unset primary
+alter index i on test unset primary;
+select show('table', 'test', null, "verbose").indexes;
+
+indexes
+───────
+[{
+  "name": "i",
+  "type": 2,
+  "size": 0,
+  "unique": true,
+  "primary": false,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}]
+alter index i on test unset primary;
+select show('table', 'test', null, "verbose").indexes;
+
+indexes
+───────
+[{
+  "name": "i",
+  "type": 2,
+  "size": 0,
+  "unique": true,
+  "primary": false,
+  "keys": [{
     "column": 0,
     "asc": true
   }]
