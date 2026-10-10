@@ -138,9 +138,12 @@ table_index_drop(Catalog* self,
 	}
 
 	// do not allow primary index drop
-	if (index == table_primary(table))
-		error("table '{str}' index '{str}': primary index cannot be dropped",
-		      &table->config->name, name);
+	if (index->primary)
+	{
+		if (table->config->indexes_count > 1)
+			error("table '{str}' index '{str}': a primary index has depended secondary indexes",
+			      &table->config->name, name);
+	}
 
 	// ensure no strict dependecies on udfs
 	catalog_deps_validate_udf(self, &table->rel, true);
@@ -201,11 +204,6 @@ table_index_rename(Catalog* self,
 	if (table_index_find(table, name_new, false))
 		error("table '{str}' index '{str}': already exists",
 		      &table->config->name, name_new);
-
-	// primary index cannot be renamed
-	if (index == table_primary(table))
-		error("table '{str}' index '{str}': primary index cannot be renamed",
-		      &table->config->name, name);
 
 	// ensure no strict dependecies
 	catalog_deps_validate(self, &table->rel, true);

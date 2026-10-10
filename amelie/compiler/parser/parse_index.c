@@ -115,10 +115,6 @@ parse_index_create(Stmt* self, bool unique)
 	if (! table)
 		stmt_error(self, target, "table not found");
 
-	auto primary = table_primary(table);
-	if (! primary)
-			stmt_error(self, NULL, "PRIMARY KEY is missing");
-
 	// create index config
 	auto config = index_config_allocate(table_columns(table));
 	stmt->config = config;
@@ -126,6 +122,7 @@ parse_index_create(Stmt* self, bool unique)
 	index_config_set_name(config, &name->string);
 
 	// parse index keys
+	auto primary = table_primary(table);
 	parse_index_create_inline(self, primary, config, &table->config->partitioning,
 	                          table->config->parts_count);
 }
@@ -174,6 +171,9 @@ parse_index_create_inline(Stmt*        self,
 
 	} else
 	{
+		if (! primary)
+				stmt_error(self, NULL, "table has no primary index");
+
 		// copy primary keys, which are not already present
 		keys_copy_distinct(&config->keys, &primary->keys);
 	}

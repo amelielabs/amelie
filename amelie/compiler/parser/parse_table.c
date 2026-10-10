@@ -646,9 +646,6 @@ parse_table_create(Stmt* self)
 		// INDEX name ...
 		if (str_is_case(&name->string, "index", 5))
 		{
-			auto primary = table_config_primary(config);
-			if (! primary)
-				stmt_error(self, NULL, "primary index is missing");
 			auto index_name = stmt_expect(self, KNAME);
 			if (table_config_find(config, &index_name->string))
 				stmt_error(self, index_name, "index redefined");
@@ -657,6 +654,8 @@ parse_table_create(Stmt* self)
 			auto secondary = index_config_allocate(&config->columns);
 			table_config_index_add(config, secondary);
 			index_config_set_name(secondary, &index_name->string);
+
+			auto primary = table_config_primary(config);
 			parse_index_create_inline(self, primary, secondary, &config->partitioning, partitions);
 			index_defined = true;
 			continue;
@@ -665,9 +664,6 @@ parse_table_create(Stmt* self)
 		// UNIQUE INDEX name ...
 		if (str_is_case(&name->string, "unique", 6))
 		{
-			auto primary = table_config_primary(config);
-			if (! primary)
-				stmt_error(self, NULL, "primary index is missing");
 			stmt_expect(self, KINDEX);
 			auto index_name = stmt_expect(self, KNAME);
 			if (table_config_find(config, &index_name->string))
@@ -678,6 +674,8 @@ parse_table_create(Stmt* self)
 			table_config_index_add(config, secondary);
 			index_config_set_name(secondary, &index_name->string);
 			index_config_set_unique(secondary, true);
+
+			auto primary = table_config_primary(config);
 			parse_index_create_inline(self, primary, secondary, &config->partitioning, partitions);
 			index_defined = true;
 			continue;

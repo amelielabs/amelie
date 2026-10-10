@@ -113,12 +113,23 @@ table_config_index_remove(TableConfig* self, IndexConfig* config)
 	self->indexes_count--;
 }
 
-static inline IndexConfig*
+hot static inline IndexConfig*
 table_config_primary(TableConfig* self)
 {
 	if (! self->indexes_count)
 		return NULL;
-	return container_of(self->indexes.next, IndexConfig, link);
+
+	auto first = container_of(self->indexes.next, IndexConfig, link);
+	if (likely(first->primary))
+		return first;
+
+	list_foreach(&self->indexes)
+	{
+		auto index = list_at(IndexConfig, link);
+		if (index->primary)
+			return index;
+	}
+	return NULL;
 }
 
 static inline void

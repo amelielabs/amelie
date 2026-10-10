@@ -244,37 +244,34 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 		return;
 
 	// secondary indexes
-	if (config->indexes_count > 1)
+	list_foreach(&config->indexes)
 	{
-		list_foreach(&config->indexes)
+		auto index = list_at(IndexConfig, link);
+		if (index == primary)
+			continue;
+
+		// [unique] index
+		if (index->unique)
+			buf_write(buf, "  unique index", 14);
+		else
+			buf_write(buf, "  index ", 7);
+		buf_format(buf, " {str} (", &index->name);
+
+		// (keys)
+		keys = &index->keys;
+		for (auto at = 0; at < keys->count; at++)
 		{
-			auto index = list_at(IndexConfig, link);
-			if (index == primary)
-				continue;
-
-			// [unique] index
-			if (index->unique)
-				buf_write(buf, "  unique index", 14);
-			else
-				buf_write(buf, "  index ", 7);
-			buf_format(buf, " {str} (", &index->name);
-
-			// (keys)
-			keys = &index->keys;
-			for (auto at = 0; at < keys->count; at++)
-			{
-				auto key = keys_at(keys, at);
-				if (at > 0)
-					buf_write(buf, ", ", 2);
-				buf_format(buf, "{str}", &key->column->name);
-			}
-			buf_write(buf, ")", 1);
-
-			// using hash
-			if (index->type == INDEX_HASH)
-				buf_write(buf, " using hash", 11);
-			buf_write(buf, "\n", 1);
+			auto key = keys_at(keys, at);
+			if (at > 0)
+				buf_write(buf, ", ", 2);
+			buf_format(buf, "{str}", &key->column->name);
 		}
+		buf_write(buf, ")", 1);
+
+		// using hash
+		if (index->type == INDEX_HASH)
+			buf_write(buf, " using hash", 11);
+		buf_write(buf, "\n", 1);
 	}
 
 	// grants
