@@ -115,6 +115,16 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 		}
 	}
 
+	// use heap for full scan
+	auto from = target->from;
+	if (!from_is_join(from) && from->select && match && match_path == match_path_primary)
+	{
+		auto select = ast_select_of(from->select);
+		if (ast_list_empty(&select->order_by))
+			if (!match_path->match_start && !match_path->match_stop)
+				match = NULL;
+	}
+
 	// no primary index
 	if (! match)
 	{

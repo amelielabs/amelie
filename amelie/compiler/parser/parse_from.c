@@ -325,7 +325,7 @@ parse_from(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 	// FROM name | expr
 	parse_from_add(self, from, lock, perms, NULL, subquery);
 
-	Ast* join_on = NULL;
+	Ast* on = NULL;
 	for (;;)
 	{
 		// ,
@@ -428,18 +428,18 @@ parse_from(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		// JOIN ON expr AND ...
 		if (target->join_on)
 		{
-			if (join_on == NULL) {
-				join_on = target->join_on;
+			if (on == NULL) {
+				on = target->join_on;
 			} else
 			{
 				auto and = ast(KAND);
-				and->l = join_on;
+				and->l = on;
 				and->r = target->join_on;
 				and->integer = names_count;
-				join_on = and;
+				on = and;
 			}
 		}
 	}
 
-	from->join_on = join_on;
+	from->on = on;
 }

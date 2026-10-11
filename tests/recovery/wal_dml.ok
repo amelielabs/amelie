@@ -223,9 +223,9 @@ select * from test;
 
 id  data
 ──────────
+2   3
 0   0
 1   1
-2   3
 # test: restart
 disconnect S0;
 close E0;

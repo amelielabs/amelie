@@ -61,20 +61,24 @@ cursor_scan_cross(Parts*       self,
                   Timeline*    timeline,
                   Row*         key)
 {
+	// prepare merge iterators per partition
+	Iterator* it = NULL;
 	if (! config)
 	{
-		// todo: heap merge iterator
-		abort();
-		return NULL;
-	}
-
-	// prepare heap merge iterators per partition
-	Iterator* it = NULL;
-	list_foreach(&self->list)
+		it = iterator_heap_merge_allocate();
+		list_foreach(&self->list)
+		{
+			auto part = list_at(Part, link);
+			iterator_heap_merge_add((IteratorHeapMerge*)it, part->heap);
+		}
+	} else
 	{
-		auto part = list_at(Part, link);
-		auto index = part_index_find(part, &config->name, true);
-		it = index_iterator_merge(index, it);
+		list_foreach(&self->list)
+		{
+			auto part = list_at(Part, link);
+			auto index = part_index_find(part, &config->name, true);
+			it = index_iterator_merge(index, it);
+		}
 	}
 
 	// iterator use per partition heaps

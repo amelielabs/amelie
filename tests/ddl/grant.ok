@@ -144,8 +144,8 @@ select * from amelie.test;
 
 id   data
 ───────────
-123  1
 124  1
+123  1
 switch S0;
 # test: delete
 switch S1;

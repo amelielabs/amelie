@@ -3082,12 +3082,14 @@ select * from test where id = 2;
 insert into test (id) values ( 1 );
 select count(*), min(id), max(id) from test;
 select * from test where id = 1;
-select * from test;
+select * from test where id >= 0;
+select count(*) from test index i;
+select count(*) from test;
 
 # test: tree update
 update test set data = 123;
 select count(*) from test where data = 123;
-select * from test;
+select * from test where id >= 0;
 select * from test where data <> 0;
 select * from test index i;
 select * from test index i where data <> 0;

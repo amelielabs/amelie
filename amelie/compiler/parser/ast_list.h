@@ -36,6 +36,12 @@ ast_list_init(AstList* self)
 	self->count     = 0;
 }
 
+static inline bool
+ast_list_empty(AstList* self)
+{
+	return self->list == NULL;
+}
+
 static inline Ast*
 ast_list_last(AstList* self)
 {

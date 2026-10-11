@@ -71,6 +71,7 @@ ast_select_allocate(Stmt* stmt, From* outer, Block* block)
 	ast_list_init(&self->order_by);
 	from_init(&self->from, block);
 	from_init(&self->from_group, block);
+	from_set_select(&self->from, &self->ast);
 	from_set_outer(&self->from, outer);
 	from_set_outer(&self->from_group, outer);
 	columns_init(&self->from_group_columns);

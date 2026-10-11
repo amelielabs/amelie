@@ -167,7 +167,7 @@ parse_select(Stmt* self, From* outer, bool subquery)
 	// WHERE expression or combine WHERE AND JOIN ON
 	// expressions together
 	//
-	auto join_on = select->from.join_on;
+	auto join_on = select->from.on;
 	if (join_on)
 	{
 		if (select->expr_where) {

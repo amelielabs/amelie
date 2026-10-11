@@ -11278,7 +11278,7 @@ select * from test where id = 1;
 id  data
 ──────────
 1   0
-select * from test;
+select * from test where id >= 0;
 
 id   data
 ───────────
@@ -12307,6 +12307,16 @@ id   data
 1023 0
 1024 0
 1025 0
+select count(*) from test index i;
+
+count
+─────
+1025
+select count(*) from test;
+
+count
+─────
+1025
 # test: tree update
 update test set data = 123;
 select count(*) from test where data = 123;
@@ -12314,7 +12324,7 @@ select count(*) from test where data = 123;
 count
 ─────
 1025
-select * from test;
+select * from test where id >= 0;
 
 id   data
 ───────────

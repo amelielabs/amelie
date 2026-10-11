@@ -258,9 +258,9 @@ select * from test;
 
 id
 ──
--100
--10
 -1
+-10
+-100
 0
 1
 10
@@ -601,7 +601,7 @@ main
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (primary) part
+  1   table_open          1      0      12    # amelie.test (heap) part
   2   table_readt         2      1      -     # ts
   3   value               3      -      0     # timestamp
   4   gtii                4      2      3
@@ -637,7 +637,7 @@ main
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (primary) part
+  1   table_open          1      0      12    # amelie.test (heap) part
   2   table_readt         2      1      -     # ts
   3   timestamp           3      -      0     # 4379909090
   4   gtii                4      2      3
@@ -702,7 +702,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readt         2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -907,7 +907,7 @@ main
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (primary) part
+  1   table_open          1      0      12    # amelie.test (heap) part
   2   table_readl         2      1      -     # i
   3   value               3      -      0     # interval
   4   gtll                4      2      3
@@ -986,7 +986,7 @@ main
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (primary) part
+  1   table_open          1      0      12    # amelie.test (heap) part
   2   table_readd         2      1      -     # d
   3   date                3      2440588 0
   4   gteii               4      2      3
@@ -1261,8 +1261,8 @@ select * from test;
 
 id  data
 ──────────
--2  0
 4   0
+-2  0
 # test: insert expr (func constify)
 explain insert into test (id) values (8::string::int);
 
@@ -1285,8 +1285,8 @@ select * from test;
 
 id  data
 ──────────
--2  0
 4   0
+-2  0
 8   0
 explain insert into test (id) values (8::string::int * 2);
 
@@ -1313,8 +1313,8 @@ select * from test;
 
 id  data
 ──────────
--2  0
 4   0
+-2  0
 8   0
 16  0
 # test: insert expr (func)
@@ -1347,8 +1347,8 @@ select * from test;
 
 id  data
 ──────────
--2  0
 4   0
+-2  0
 8   0
 16  0
 64  10
@@ -1374,7 +1374,7 @@ main
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (primary) part
+  1   table_open          1      0      8     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -1534,7 +1534,7 @@ main
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.src (primary) part
+  1   table_open          1      0      8     # amelie.src (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data

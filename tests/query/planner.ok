@@ -19,7 +19,7 @@ main
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (primary) part
+  1   table_open          1      0      8     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -104,7 +104,7 @@ main
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (primary) part
+  1   table_open          1      0      8     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -120,8 +120,8 @@ select * from test;
 
 id  data
 ──────────
-1   1
 0   2
+1   1
 2   0
 # test: hash/hash (unique point lookup)
 create unique index j on test (data) using hash;
@@ -366,7 +366,7 @@ main
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (primary) part
+  1   table_open          1      0      12    # amelie.test (heap) part
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 1
   4   gtii                4      2      3
@@ -401,7 +401,7 @@ main
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (primary) part
+  1   table_open          1      0      12    # amelie.test (heap) part
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 1
   4   equii               4      2      3

@@ -35,3 +35,4 @@
 
 // heap
 #include "index/iterator_heap.h"
+#include "index/iterator_heap_merge.h"

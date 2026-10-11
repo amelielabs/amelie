@@ -45,7 +45,7 @@ main
 pushdown
   0   set                 0      1      0
   1   int                 1      -      0     # 1
-  2   table_open          2      0      8     # amelie.test (primary) part
+  2   table_open          2      0      8     # amelie.test (heap) part
   3   cjltd               8      1      0
   4   table_readi64       3      2      -     # id
   5   push                3      0      0
@@ -142,7 +142,7 @@ main
 pushdown
   0   set                 0      1      0
   1   int                 1      -      0     # 0
-  2   table_open          2      0      8     # amelie.test (primary) part
+  2   table_open          2      0      8     # amelie.test (heap) part
   3   cjltd               8      1      0
   4   table_readi64       3      2      -     # id
   5   push                3      0      0
@@ -180,7 +180,7 @@ pushdown
   1   int                 1      -      0     # 1
   2   int                 2      -      0     # 0
   3   addii               3      1      2
-  4   table_open          1      0      10    # amelie.test (primary) part
+  4   table_open          1      0      10    # amelie.test (heap) part
   5   cjltd               10     3      0
   6   table_readi64       2      1      -     # id
   7   push                2      0      0
@@ -222,7 +222,7 @@ pushdown
   1   int                 1      -      0     # 1
   2   int                 2      -      0     # 1
   3   addii               3      1      2
-  4   table_open          1      0      10    # amelie.test (primary) part
+  4   table_open          1      0      10    # amelie.test (heap) part
   5   cjltd               10     3      0
   6   table_readi64       2      1      -     # id
   7   push                2      0      0
@@ -320,7 +320,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0

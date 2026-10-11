@@ -259,7 +259,7 @@ pushdown
  16   free                0      0      0
  17   ret                 -1     0      -
  18   set                 0      2      0
- 19   table_open          1      112    26    # amelie.a (primary) part
+ 19   table_open          1      112    26    # amelie.a (heap) part
  20   table_readi32       2      1      -     # id
  21   push                2      0      0
  22   table_readi32       2      1      -     # data
@@ -269,7 +269,7 @@ pushdown
  26   free                1      0      0
  27   ret                 0      0      -
  28   set                 1      2      0
- 29   table_open          2      168    36    # amelie.b (primary) part
+ 29   table_open          2      168    36    # amelie.b (heap) part
  30   table_readi32       3      2      -     # id
  31   push                3      0      0
  32   table_readi32       3      2      -     # data
@@ -348,7 +348,7 @@ pushdown
  19   free                0      0      0
  20   ret                 -1     0      -
  21   set                 0      2      0
- 22   table_open          1      80     29    # amelie.a (primary) part
+ 22   table_open          1      80     29    # amelie.a (heap) part
  23   table_readi32       2      1      -     # id
  24   push                2      0      0
  25   table_readi32       2      1      -     # data

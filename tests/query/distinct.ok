@@ -1051,7 +1051,7 @@ main
 pushdown
   0   set                 0      4      1
   1   set_distinct        0      1      3
-  2   table_open          1      0      15    # amelie.test (primary) part
+  2   table_open          1      0      15    # amelie.test (heap) part
   3   push_bool           1      0      0
   4   set_get             2      0      0
   5   table_readi32       3      1      -     # a

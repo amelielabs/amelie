@@ -102,7 +102,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -143,7 +143,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -186,7 +186,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -229,7 +229,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -272,7 +272,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -317,7 +317,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -380,7 +380,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -415,7 +415,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -423,7 +423,7 @@ pushdown
   6   free                1      0      0
   7   ret                 0      0      -
   8   set                 1      1      0
-  9   table_open          2      56     14    # amelie.test (primary) part
+  9   table_open          2      56     14    # amelie.test (heap) part
  10   table_readi32       3      2      -     # id
  11   push                3      0      0
  12   set_add             1      0      0
@@ -458,7 +458,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -466,7 +466,7 @@ pushdown
   6   free                1      0      0
   7   ret                 0      0      -
   8   set                 1      1      0
-  9   table_open          2      56     14    # amelie.test (primary) part
+  9   table_open          2      56     14    # amelie.test (heap) part
  10   table_readi32       3      2      -     # id
  11   push                3      0      0
  12   set_add             1      0      0
@@ -593,7 +593,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -648,7 +648,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_reads         2      1      -     # data
   3   push                2      0      0
   4   set_add             0      0      0
@@ -783,7 +783,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -836,7 +836,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -881,7 +881,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -889,7 +889,7 @@ pushdown
   6   free                1      0      0
   7   ret                 0      0      -
   8   set                 2      1      0
-  9   table_open          3      61     14    # amelie.test (primary) part
+  9   table_open          3      61     14    # amelie.test (heap) part
  10   table_readi32       4      3      -     # id
  11   push                4      0      0
  12   set_add             2      0      0
@@ -931,7 +931,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -939,7 +939,7 @@ pushdown
   6   free                1      0      0
   7   ret                 0      0      -
   8   set                 1      1      0
-  9   table_open          2      56     14    # amelie.test (primary) part
+  9   table_open          2      56     14    # amelie.test (heap) part
  10   table_readi32       3      2      -     # id
  11   push                3      0      0
  12   set_add             1      0      0
@@ -985,7 +985,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -993,7 +993,7 @@ pushdown
   6   free                1      0      0
   7   ret                 0      0      -
   8   set                 1      1      0
-  9   table_open          2      56     14    # amelie.test (primary) part
+  9   table_open          2      56     14    # amelie.test (heap) part
  10   table_readi32       3      2      -     # id
  11   push                3      0      0
  12   set_add             1      0      0
@@ -1001,7 +1001,7 @@ pushdown
  14   free                2      0      0
  15   ret                 1      0      -
  16   set                 3      1      0
- 17   table_open          4      117    22    # amelie.test (primary) part
+ 17   table_open          4      117    22    # amelie.test (heap) part
  18   table_readi32       5      4      -     # id
  19   push                5      0      0
  20   set_add             3      0      0
@@ -1058,7 +1058,7 @@ main
 
 pushdown
   0   set                 1      1      0
-  1   table_open          2      5      6     # amelie.test (primary) part
+  1   table_open          2      5      6     # amelie.test (heap) part
   2   table_readi32       3      2      -     # id
   3   push                3      0      0
   4   set_add             1      0      0
@@ -1103,7 +1103,7 @@ main
 
 pushdown
   0   set                 1      1      0
-  1   table_open          2      5      6     # amelie.test (primary) part
+  1   table_open          2      5      6     # amelie.test (heap) part
   2   table_readi32       3      2      -     # id
   3   push                3      0      0
   4   set_add             1      0      0
@@ -1111,7 +1111,7 @@ pushdown
   6   free                2      0      0
   7   ret                 1      0      -
   8   set                 2      1      0
-  9   table_open          3      61     14    # amelie.test (primary) part
+  9   table_open          3      61     14    # amelie.test (heap) part
  10   table_readi32       4      3      -     # id
  11   push                4      0      0
  12   set_add             2      0      0
@@ -1166,7 +1166,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -1174,7 +1174,7 @@ pushdown
   6   free                1      0      0
   7   ret                 0      0      -
   8   set                 2      1      0
-  9   table_open          3      56     14    # amelie.test (primary) part
+  9   table_open          3      56     14    # amelie.test (heap) part
  10   table_readi32       4      3      -     # id
  11   push                4      0      0
  12   set_add             2      0      0
@@ -1228,7 +1228,7 @@ main
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) part
+  1   table_open          1      0      6     # amelie.test (heap) part
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -1236,7 +1236,7 @@ pushdown
   6   free                1      0      0
   7   ret                 0      0      -
   8   set                 2      1      0
-  9   table_open          3      56     14    # amelie.test (primary) part
+  9   table_open          3      56     14    # amelie.test (heap) part
  10   table_readi32       4      3      -     # id
  11   push                4      0      0
  12   set_add             2      0      0
