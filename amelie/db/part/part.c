@@ -184,6 +184,24 @@ part_truncate(Part* self)
 	heap_free(self->heap);
 	self->heap = new;
 
+	auto flats = &self->flats;
+	op.delta -= flats_size(flats);
+	flats_free(flats);
+	flats_init(flats);
+
+	// create flat stores
+	list_foreach(&self->arg->columns->list)
+	{
+		auto column = list_at(Column, link);
+		if (! column->size_flat)
+			continue;
+		Id id;
+		id_set(&id, self->arg->rel->id, self->config->id);
+		id_set_column(&id, column->order);
+		auto flat = flat_allocate(column, &id);
+		flats_add(flats, flat);
+	}
+
 	usage_update(self->arg->memory, op.delta + delta);
 }
 
