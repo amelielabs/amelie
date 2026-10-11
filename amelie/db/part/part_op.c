@@ -28,33 +28,23 @@ rollback(LogOp* op, Part* part)
 	{
 		index_op_set(&io, op->row_prev);
 		index_replace(index, &io);
-		usage_update(part->arg->memory, io.delta);
 	} else
-	if (op->row)
 	{
 		index_op_set(&io, op->row);
 		index_delete(index, &io);
-		usage_update(part->arg->memory, io.delta);
 	}
+	usage_update(part->arg->memory, io.delta);
 }
 
 hot static void
 primary_if_commit(Log* self, LogOp* op)
 {
 	Part* part = self->arg;
-	auto heap  = part->heap;
 
 	// mark row as commited
-	auto row = op->row;
-	row->commited = true;
-	if (op->cmd == LOG_DELETE)
-	{
-		row_free(heap, &part->flats, row);
-		return;
-	}
-
+	op->row->commited = true;
 	if (op->row_prev)
-		row_free(heap, &part->flats, op->row_prev);
+		row_free(part->heap, &part->flats, op->row_prev);
 }
 
 static void
@@ -65,8 +55,11 @@ primary_if_abort(Log* self, LogOp* op)
 	if (index)
 		rollback(op, self->arg);
 
-	if (op->cmd != LOG_DELETE && op->row)
-		row_free(part->heap, &part->flats, op->row);
+	auto row = op->row;
+	if (row->deleted)
+		row->deleted = false;
+	else
+		row_free(part->heap, &part->flats, row);
 
 	// unfilter vector columns
 	if (op->row_prev)
@@ -104,7 +97,7 @@ part_insert(Part* self, Tr* tr, Row* row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_replace(&tr->log, &primary_if, primary, row);
+	auto op = log_dml(&tr->log, &primary_if, primary, row);
 
 	// ensure write limit
 	if (tr->write)
@@ -127,7 +120,7 @@ part_insert(Part* self, Tr* tr, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_replace(&tr->log, &secondary_if, index, row);
+		op = log_dml(&tr->log, &secondary_if, index, row);
 		if (index_replace(index, &io))
 		{
 			op->row_prev = io.row_prev;
@@ -169,7 +162,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	// insert
 
 	// add log record
-	auto op = log_replace(&tr->log, &primary_if, primary, row);
+	auto op = log_dml(&tr->log, &primary_if, primary, row);
 
 	// ensure write limit
 	if (tr->write)
@@ -180,7 +173,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_replace(&tr->log, &secondary_if, index, row);
+		op = log_dml(&tr->log, &secondary_if, index, row);
 		if (index_replace(index, &io))
 		{
 			op->row_prev = io.row_prev;
@@ -199,7 +192,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_replace(&tr->log, &primary_if, primary, row);
+	auto op = log_dml(&tr->log, &primary_if, primary, row);
 
 	// ensure write limit
 	if (tr->write)
@@ -228,7 +221,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_replace(&tr->log, &secondary_if, index, row);
+		op = log_dml(&tr->log, &secondary_if, index, row);
 
 		// replace by key
 		if (index_replace(index, &io))
@@ -245,12 +238,13 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	// add log record
 	auto primary = part_primary(self);
 	auto row = iterator_at(it);
-	auto op = log_delete(&tr->log, &primary_if, primary, row);
+	auto op = log_dml(&tr->log, &primary_if, primary, row);
 
 	// ensure write limit
 	if (tr->write)
 		usage_add(tr->write, 1);
 
+	row->deleted = true;
 	op->row_prev = row;
 
 	// filter vector columns
@@ -275,7 +269,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_delete(&tr->log, &secondary_if, index, row);
+		op = log_dml(&tr->log, &secondary_if, index, row);
 
 		// delete by key
 		if (index_delete(index, &io))

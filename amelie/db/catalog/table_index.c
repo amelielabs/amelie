@@ -90,10 +90,6 @@ table_index_add(Catalog* self, Table* table, Tr* tr, IndexConfig* config)
 		constraints_write(&column->constraints, &tr->log.data, 0);
 		constraints_set_not_null(&column->constraints, true);
 	}
-
-	// use separate log command for create
-	// index processing
-	log_last(&tr->log)->cmd = LOG_DDL;
 }
 
 static void

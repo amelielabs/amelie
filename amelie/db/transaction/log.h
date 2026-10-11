@@ -15,13 +15,6 @@ typedef struct LogIf LogIf;
 typedef struct LogOp LogOp;
 typedef struct Log   Log;
 
-enum
-{
-	LOG_REPLACE,
-	LOG_DELETE,
-	LOG_DDL
-};
-
 struct LogIf
 {
 	void (*commit)(Log*, LogOp*);
@@ -32,7 +25,6 @@ struct LogOp
 {
 	LogIf* iface;
 	void*  iface_arg;
-	int    cmd;
 	union {
 		struct {
 			Row* row;
@@ -98,7 +90,6 @@ log_last(Log* self)
 
 hot static inline LogOp*
 log_dml(Log*   self,
-        int    cmd,
         LogIf* iface,
         void*  iface_arg,
         Row*   row)
@@ -106,29 +97,10 @@ log_dml(Log*   self,
 	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
 	op->iface     = iface;
 	op->iface_arg = iface_arg;
-	op->cmd       = cmd;
 	op->row       = row;
 	op->row_prev  = NULL;
 	self->count++;
 	return op;
-}
-
-hot static inline LogOp*
-log_replace(Log*   self,
-            LogIf* iface,
-            void*  iface_arg,
-            Row*   row)
-{
-	return log_dml(self, LOG_REPLACE, iface, iface_arg, row);
-}
-
-hot static inline LogOp*
-log_delete(Log*   self,
-           LogIf* iface,
-           void*  iface_arg,
-           Row*   row)
-{
-	return log_dml(self, LOG_DELETE, iface, iface_arg, row);
 }
 
 static inline void
@@ -140,7 +112,6 @@ log_ddl(Log*   self,
 	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
 	op->iface     = iface;
 	op->iface_arg = iface_arg;
-	op->cmd       = LOG_DDL;
 	op->rel       = rel;
 	op->rel_data  = buf_size(&self->data);
 	self->count++;

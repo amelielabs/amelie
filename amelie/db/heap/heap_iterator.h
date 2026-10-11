@@ -68,8 +68,12 @@ heap_iterator_next_row(HeapIterator* self)
 hot static inline void
 heap_iterator_next_allocated(HeapIterator* self)
 {
-	while (!self->eof && self->current && self->current->free)
+	while (!self->eof && self->current)
+	{
+		if (!self->current->free && !self->current->deleted)
+			break;
 		heap_iterator_next_row(self);
+	}
 }
 
 static inline void

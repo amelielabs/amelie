@@ -61,7 +61,6 @@ iterator_open(Iterator* self, Timeline* timeline, Row* key)
 		return false;
 	if (! timeline)
 		return match;
-
 	if (row_visible(self->current, timeline))
 		return match;
 	iterator_next(self);

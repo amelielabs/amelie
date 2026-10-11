@@ -24,11 +24,12 @@ struct Row
 	uint64_t columns:     16;
 	uint64_t byte:        1;
 	uint64_t commited:    1;
+	uint64_t deleted:     1;
 
 	// heap
 	uint64_t bucket:      8;
 	uint64_t free:        1;
-	uint64_t reserved:    5;
+	uint64_t reserved:    4;
 
 	// heap location (64bit cut)
 	uint64_t offset:      26; // 64mb
@@ -57,6 +58,7 @@ row_prepare(Row*     self,
 	self->timeline = timeline;
 	self->columns  = columns;
 	self->byte     = byte;
+	self->deleted  = false;
 	self->commited = false;
 
 	// set size

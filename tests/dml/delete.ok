@@ -362,5 +362,20 @@ id  a   b
 ─────────────
 2   20  200
 drop table test;
+# test: delete heap/abort
+create table test (id int partition key);
+insert into test values (1), (2), (3);
+begin;
+  delete from test;
+  select * from test;
+end;
+
+id
+──
+select * from test;
+
+id
+──
+drop table test;
 disconnect S0;
 close E0;

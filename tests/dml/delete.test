@@ -135,7 +135,16 @@ select * from test where id = 10;
 
 insert into test values (2, 20, 200);
 select * from test;
+drop table test;
 
+# test: delete heap/abort
+create table test (id int partition key);
+insert into test values (1), (2), (3);
+begin;
+  delete from test;
+  select * from test;
+end;
+select * from test;
 drop table test;
 
 disconnect S0;
