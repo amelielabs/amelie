@@ -755,5 +755,39 @@ id  data  value
 update test set data = id;
 error: update test set ❰data❱ ⟵ column 'test.data' used as a part of a key
 drop table test;
+# test: update heap/abort
+create table test (id int partition key, data int);
+insert into test values (1, 0), (2, 0), (3, 0);
+begin;
+  update test set data = id;
+  select * from test;
+end;
+
+id  data
+──────────
+1   1
+2   2
+3   3
+select * from test;
+
+id  data
+──────────
+1   1
+2   2
+3   3
+begin;
+  update test set data = 0;
+  select * from test;
+  select error("abort");
+end;
+error: abort
+select * from test;
+
+id  data
+──────────
+1   1
+2   2
+3   3
+drop table test;
 disconnect S0;
 close E0;

@@ -55,15 +55,17 @@ primary_if_abort(Log* self, LogOp* op)
 	if (index)
 		rollback(op, self->arg);
 
-	auto row = op->row;
-	if (row->deleted)
-		row->deleted = false;
-	else
-		row_free(part->heap, &part->flats, row);
+	if (! op->row->deleted)
+		row_free(part->heap, &part->flats, op->row);
 
-	// unfilter vector columns
 	if (op->row_prev)
+	{
+		// delete/update
+		op->row_prev->deleted = false;
+
+		// unfilter vector columns
 		row_filter(&part->flats, op->row_prev, false);
+	}
 }
 
 hot static void
@@ -199,6 +201,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 		usage_add(tr->write, 1);
 
 	op->row_prev = iterator_at(it);
+	op->row_prev->deleted = true;
 
 	// filter vector columns
 	row_filter(&self->flats, op->row_prev, true);

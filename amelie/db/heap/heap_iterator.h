@@ -19,6 +19,7 @@ struct HeapIterator
 	Page*    page;
 	int      page_order;
 	bool     eof;
+	Row*     stop;
 	Storage* storage;
 	Heap*    heap;
 };
@@ -39,6 +40,13 @@ heap_iterator_next_row(HeapIterator* self)
 		self->page_order = 0;
 		self->eof        = false;
 		self->current    = heap_at(self->heap, 0, sizeof(Page));
+		return;
+	}
+
+	// reached last row to stop
+	if (unlikely(current == self->stop))
+	{
+		self->eof = true;
 		return;
 	}
 
@@ -97,7 +105,7 @@ heap_iterator_open(HeapIterator* self, Heap* heap, bool last)
 		self->page       = storage_at(storage, order);
 		self->page_order = order;
 		self->eof        = true;
-		self->current    = heap_at(heap, 0, self->page->position_last);
+		self->current    = heap_at(heap, order, self->page->position_last);
 		return;
 	}
 
@@ -110,12 +118,14 @@ heap_iterator_open(HeapIterator* self, Heap* heap, bool last)
 }
 
 static inline void
-heap_iterator_set(HeapIterator* self, Row* row)
+heap_iterator_set_stop(HeapIterator* self)
 {
-	self->current    = row;
-	self->page       = heap_page_of(row);
-	self->page_order = self->page->id.id_page - self->heap->storage.id_first;
-	self->eof        = false;
+	auto storage = self->storage;
+	if (storage_empty(storage))
+		return;
+	auto page_order = storage->list_count - 1;
+	auto page = storage_at(storage, page_order);
+	self->stop = heap_at(self->heap, page_order, page->position_last);
 }
 
 always_inline static inline bool
@@ -154,6 +164,7 @@ heap_iterator_init(HeapIterator* self)
 	self->page       = NULL;
 	self->page_order = 0;
 	self->eof        = false;
+	self->stop       = NULL;
 	self->storage    = NULL;
 	self->heap       = NULL;
 }
@@ -165,6 +176,7 @@ heap_iterator_reset(HeapIterator* self)
 	self->page       = NULL;
 	self->page_order = 0;
 	self->eof        = false;
+	self->stop       = NULL;
 	self->storage    = NULL;
 	self->heap       = NULL;
 }

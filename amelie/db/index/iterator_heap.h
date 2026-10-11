@@ -32,6 +32,7 @@ iterator_heap_open(Iterator* arg, Row* key)
 	unused(key);
 	auto self = iterator_heap_of(arg);
 	heap_iterator_open(&self->iterator, self->heap, false);
+	heap_iterator_set_stop(&self->iterator);
 	arg->current = heap_iterator_at(&self->iterator);
 	return false;
 }
