@@ -330,6 +330,17 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                         if_column_exists);
 		break;
 	}
+	case DDL_TABLE_RETENTION:
+	{
+		Str user;
+		Str name;
+		int64_t value;
+		table_op_retention_read(op, &user, &name, &value);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = table_retention(self, tr, &user, &name, value, if_exists);
+		break;
+	}
 	case DDL_SIDETABLE_CREATE:
 	{
 		auto config = sidetable_op_create_read(op);

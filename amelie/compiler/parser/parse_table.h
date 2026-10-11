@@ -48,7 +48,8 @@ enum
 	TABLE_ALTER_COLUMN_DROP,
 	TABLE_ALTER_COLUMN_RENAME,
 	TABLE_ALTER_COLUMN_SET_DEFAULT,
-	TABLE_ALTER_COLUMN_UNSET_DEFAULT
+	TABLE_ALTER_COLUMN_UNSET_DEFAULT,
+	TABLE_ALTER_RETENTION
 };
 
 struct AstTableAlter
@@ -67,6 +68,7 @@ struct AstTableAlter
 	Buf*    value_buf;
 	Str     value;
 	Ast*    identity;
+	int64_t retention;
 };
 
 static inline AstTableCreate*
@@ -122,6 +124,7 @@ ast_table_alter_allocate(void)
 {
 	AstTableAlter* self;
 	self = ast_allocate(0, sizeof(AstTableAlter));
+	self->retention = -1;
 	return self;
 }
 

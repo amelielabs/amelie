@@ -78,6 +78,12 @@ emit_alter_table(Compiler* self)
 			flags |= DDL_IF_COLUMN_EXISTS;
 		break;
 	}
+	case TABLE_ALTER_RETENTION:
+	{
+		offset = table_op_retention(data, &arg->user, &arg->name, arg->retention);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
 	default:
 		abort();
 		break;

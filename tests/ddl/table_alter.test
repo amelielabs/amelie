@@ -317,5 +317,31 @@ alter table test description '';
 select show('table', 'test', null, "verbose").description;
 drop table test;
 
+# test: retention
+create table test (id int primary key);
+alter table test set retention 123;
+alter table test unset retention;
+drop table test;
+
+create table test (id int partition key);
+alter table test set retention 123;
+select show('table', 'test', null, "verbose").retention;
+alter table test unset retention;
+select show('table', 'test', null, "verbose").retention;
+
+# test: retention (create index)
+alter table test set retention 123;
+create unique index i on test (id);
+
+alter table test unset retention;
+create unique index i on test (id);
+
+alter table test set retention 123;
+drop index i on test;
+
+alter table test set retention 123;
+select show('table', 'test', null, "verbose").retention;
+drop table test;
+
 disconnect S0;
 close E0;

@@ -159,6 +159,7 @@ Keyword keywords[] =
 	{ KRESUME,                "resume",                6  },
 	{ KREVOKE,                "revoke",                6  },
 	{ KRESET,                 "reset",                 5  },
+	{ KRETENTION,             "retention",             9  },
 
 	// s
 	{ KSELECT,                "select",                6  },

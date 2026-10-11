@@ -126,6 +126,9 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	// only owner or superuser
 	check_ownership(tr, &table->rel);
 
+	if (table->config->retention >= 0)
+		error("table '{str}': indexes cannot be used with retention", &name);
+
 	auto config = index_config_read(table_columns(table), &pos);
 	errdefer(index_config_free, config);
 

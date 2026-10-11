@@ -25,6 +25,7 @@ struct TableConfig
 	Keys    partitioning;
 	List    parts;
 	int     parts_count;
+	int64_t retention;
 	Grants  grants;
 };
 
@@ -35,6 +36,7 @@ table_config_allocate(void)
 	self = am_malloc(sizeof(TableConfig));
 	self->indexes_count = 0;
 	self->parts_count   = 0;
+	self->retention     = -1;
 	str_init(&self->name);
 	str_init(&self->user);
 	str_init(&self->description);
@@ -100,6 +102,12 @@ table_config_set_id(TableConfig* self, Uuid* id)
 }
 
 static inline void
+table_config_set_retention(TableConfig* self, int64_t value)
+{
+	self->retention = value;
+}
+
+static inline void
 table_config_index_add(TableConfig* self, IndexConfig* config)
 {
 	list_append(&self->indexes, &config->link);
@@ -154,6 +162,7 @@ table_config_copy(TableConfig* self)
 	table_config_set_user(copy, &self->user);
 	table_config_set_description(copy, &self->description);
 	table_config_set_id(copy, &self->id);
+	table_config_set_retention(copy, self->retention);
 	columns_copy(&copy->columns, &self->columns);
 
 	list_foreach(&self->indexes)
@@ -196,6 +205,7 @@ table_config_read(uint8_t** pos)
 		{ DECODE_ARRAY, "indexes",      &pos_indexes       },
 		{ DECODE_ARRAY, "partitioning", &pos_partitioning  },
 		{ DECODE_ARRAY, "partitions",   &pos_parts         },
+		{ DECODE_INT,   "retention",    &self->retention   },
 		{ DECODE_ARRAY, "grants",       &pos_grants        },
 		{ 0,             NULL,           NULL              },
 	};
@@ -283,6 +293,10 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 		part_config_write(config, buf, flags);
 	}
 	encode_array_end(buf);
+
+	// retention
+	encode_raw(buf, "retention", 9);
+	encode_int(buf, self->retention);
 
 	// grants
 	encode_raw(buf, "grants", 6);

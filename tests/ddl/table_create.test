@@ -341,5 +341,13 @@ create table test (id int primary key) description 'test test';
 select show('table', 'test', null, "verbose").description;
 drop table test;
 
+# test: retention
+create table test (id int primary key) retention 123;
+create table test (id int partition key) retention 123 unique index i (id);
+
+create table test (id int partition key) retention 1gb;
+select show('table', 'test', null, "verbose").retention;
+drop table test;
+
 disconnect S0;
 close E0;

@@ -197,6 +197,7 @@ enum
 	KRESUME,
 	KREVOKE,
 	KRESET,
+	KRETENTION,
 
 	// s
 	KSELECT,

@@ -107,6 +107,11 @@ table_create(Catalog*     self,
 	                       &config->user,
 	                       &config->name, &config->grants);
 
+	// validate retention
+	if (config->retention >= 0 && config->indexes_count > 0)
+		error("table '{str}': using indexes with retention is not supported",
+		      &config->name);
+
 	// allocate table
 	auto user  = user_of(tr->user);
 	auto table = table_allocate(config, self->iface_part, self->iface_arg,

@@ -330,3 +330,58 @@ table_column_set(Catalog* self,
 	columns_sync(&table->config->columns);
 	return true;
 }
+
+static void
+retention_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+retention_if_abort(Log* self, LogOp* op)
+{
+	Table* table = op->iface_arg;
+	uint8_t* pos = log_data_of(self, op);
+	int64_t value;
+	unpack_int(&pos, &value);
+	table_config_set_retention(table->config, value);
+}
+
+static LogIf retention_if =
+{
+	.commit = retention_if_commit,
+	.abort  = retention_if_abort
+};
+
+bool
+table_retention(Catalog* self,
+                Tr*      tr,
+                Str*     user,
+                Str*     name,
+                int64_t  value,
+                bool     if_exists)
+{
+	auto table = catalog_find_table(self, user, name, false);
+	if (! table)
+	{
+		if (! if_exists)
+			error("table '{str}': not exists", name);
+		return false;
+	}
+
+	// only owner or superuser
+	check_ownership(tr, &table->rel);
+
+	if (table->config->indexes_count > 0)
+		error("table '{str}': using indexes with retention is not supported", name);
+
+	// update table
+	log_ddl(&tr->log, &retention_if, NULL, &table->rel);
+
+	// save previous value
+	encode_int(&tr->log.data, table->config->retention);
+
+	table_config_set_retention(table->config, value);
+	return true;
+}

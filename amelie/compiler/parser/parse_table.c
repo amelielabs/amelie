@@ -555,9 +555,10 @@ parse_table_create(Stmt* self)
 	// (columns)
 	// [ID]
 	// [DESCRIPTION]
-	// [GRANT]
 	// [PARTITIONS]
+	// [RETENTION]
 	// [INDEX]
+	// [GRANT]
 	//
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
@@ -625,6 +626,18 @@ parse_table_create(Stmt* self)
 			partitions = n->integer;
 			if (index_defined)
 				stmt_error(self, n, "partitions must be defined before indexes");
+			continue;
+		}
+
+		// RETENTION int
+		if (str_is_case(&name->string, "retention", 9))
+		{
+			auto value = stmt_expect(self, KINT);
+			if (value->integer <= 0)
+				stmt_error(self, value, "invalid retention size");
+			if (config->indexes_count > 0)
+				stmt_error(self, value, "using indexes with retention is not supported");
+			table_config_set_retention(config, value->integer);
 			continue;
 		}
 
@@ -719,6 +732,8 @@ parse_table_alter(Stmt* self)
 	// ALTER TABLE [IF EXISTS] name RENAME COLUMN [IF EXISTS] name TO name
 	// ALTER TABLE [IF EXISTS] name SET COLUMN [IF EXISTS] name DEFAULT const
 	// ALTER TABLE [IF EXISTS] name UNSET COLUMN [IF EXISTS] name DEFAULT
+	// ALTER TABLE [IF EXISTS] name SET RETENTION value
+	// ALTER TABLE [IF EXISTS] name UNSET RETENTION
 	auto stmt = ast_table_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -867,6 +882,17 @@ parse_table_alter(Stmt* self)
 			return;
 		}
 
+		// SET RETENTION
+		if (stmt_if(self, KRETENTION))
+		{
+			auto value = stmt_expect(self, KINT);
+			if (value->integer <= 0)
+				stmt_error(self, value, "invalid retention size");
+			stmt->type = TABLE_ALTER_RETENTION;
+			stmt->retention = value->integer;
+			return;
+		}
+
 		stmt_error(self, NULL, "'COLUMN DEFAULT' expected");
 		return;
 	}
@@ -892,6 +918,14 @@ parse_table_alter(Stmt* self)
 			stmt->value_buf = value;
 			buf_str(value, &stmt->value);
 			stmt->type = TABLE_ALTER_COLUMN_UNSET_DEFAULT;
+			return;
+		}
+
+		// UNSET RETENTION
+		if (stmt_if(self, KRETENTION))
+		{
+			stmt->type = TABLE_ALTER_RETENTION;
+			stmt->retention = -1;
 			return;
 		}
 

@@ -240,6 +240,10 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 	// partitions
 	buf_format(buf, "  partitions {d}\n", config->parts_count);
 
+	// retention
+	if (config->retention > 0)
+		buf_format(buf, "  retention {i64}\n", config->retention);
+
 	if (! verbose)
 		return;
 
