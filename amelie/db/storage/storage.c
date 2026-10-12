@@ -123,3 +123,50 @@ storage_open(Storage* self, uint64_t checkpoint,
 		id++;
 	self->id_next = id;
 }
+
+static inline Page*
+storage_pop(Storage* self)
+{
+	auto page = storage_at(self, 0);
+	self->list_count--;
+
+	auto to_move = self->list_count * sizeof(Page*);
+	memmove(self->list.start, self->list.start + sizeof(Page*), to_move);
+	buf_truncate(&self->list, sizeof(Page*));
+
+	if (self->list_count > 0)
+	{
+		self->id_first = ((Page**)self->list.start)[0]->id.id_page;
+	} else
+	{
+		self->id_first = 0;
+		self->id_next  = 0;
+	}
+	return page;
+}
+
+bool
+storage_retention(Storage* self, uint32_t* id)
+{
+	if (! self->retention)
+		return false;
+
+	*id = retention_run(self->retention);
+	if (likely(*id  == 0))
+		return false;
+
+	// drop all pages < id
+	auto changed = false;
+	while (self->list_count > 1)
+	{
+		auto first = storage_at(self, 0);
+		if (first->id_serial >= *id)
+			break;
+		auto page = storage_pop(self);
+		assert(page);
+		page_free(page);
+		changed = true;
+	}
+
+	return changed;
+}

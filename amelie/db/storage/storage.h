@@ -62,6 +62,7 @@ void  storage_free(Storage*);
 Page* storage_add_meta(Storage*, int);
 Page* storage_add(Storage*);
 void  storage_open(Storage*, uint64_t, Ids*, Id*);
+bool  storage_retention(Storage*, uint32_t*);
 
 hot static inline bool
 storage_ensure(Storage* self, uint32_t size)

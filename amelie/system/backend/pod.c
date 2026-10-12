@@ -115,11 +115,29 @@ pod_sync(Pod* self)
 }
 
 static void
+pod_retention(Pod* self)
+{
+	if (! tr_list_empty(&self->track->prepared))
+		return;
+
+	auto part = self->part;
+	uint32_t id;
+	if (likely(! storage_retention(&part->heap->storage, &id)))
+		return;
+
+	// todo: flats
+
+	// todo: cancel all matching streamers
+	streaming_cancel(part);
+}
+
+static void
 pod_main(void* arg)
 {
 	Pod* self = arg;
 	auto track = self->track;
 	auto part  = self->part;
+	auto table = table_of(part->arg->rel);
 	for (;;)
 	{
 		Msg* msg;
@@ -142,6 +160,10 @@ pod_main(void* arg)
 
 			// abort and commit previously prepared transactions
 			auto changed = track_sync(track, &ltr->consensus);
+
+			// run retention
+			if (table->config->retention > 0)
+				pod_retention(self);
 
 			// execute transaction
 			pod_run(self, ltr);
