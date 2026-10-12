@@ -56,11 +56,16 @@ table_allocate(TableConfig* config,
 	arg->rel       = &self->rel;
 	arg->memory    = memory;
 	arg->columns   = &self->config->columns;
+	arg->retention = &self->retention;
 	arg->timelines = &self->timelines;
 
 	// partition manager
 	parts_init(&self->parts, iface, iface_arg, arg,
 	           &self->config->partitioning);
+
+	// retention
+	retention_init(&self->retention);
+	retention_set(&self->retention, self->config->retention);
 
 	// timelines
 	timelines_init(&self->timelines, &self->rel);

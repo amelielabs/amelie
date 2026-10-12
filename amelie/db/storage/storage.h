@@ -15,15 +15,16 @@ typedef struct Storage Storage;
 
 struct Storage
 {
-	Page*    current;
-	Page*    meta;
-	Buf      list;
-	int      list_count;
-	int      type;
-	Id       id;
-	uint32_t id_first;
-	uint32_t id_next;
-	int      size;
+	Page*      current;
+	Page*      meta;
+	Buf        list;
+	int        list_count;
+	Retention* retention;
+	int        type;
+	Id         id;
+	uint32_t   id_first;
+	uint32_t   id_next;
+	int        size;
 };
 
 always_inline static inline Page*
@@ -56,7 +57,7 @@ storage_size(Storage* self)
 	return self->list_count * self->size;
 }
 
-void  storage_init(Storage*f, Id*, int);
+void  storage_init(Storage*, Retention*, Id*, int);
 void  storage_free(Storage*);
 Page* storage_add_meta(Storage*, int);
 Page* storage_add(Storage*);

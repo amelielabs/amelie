@@ -17,6 +17,7 @@ struct PartArg
 {
 	Rel*       rel;
 	Usage*     memory;
+	Retention* retention;
 	Columns*   columns;
 	Timelines* timelines;
 };

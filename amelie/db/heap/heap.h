@@ -52,7 +52,7 @@ heap_page_of(Row* self)
 	return (Page*)((uintptr_t)self - self->offset);
 }
 
-Heap* heap_allocate(Id*);
+Heap* heap_allocate(Retention*, Id*);
 void  heap_free(Heap*);
 void  heap_open(Heap*);
 Row*  heap_add(Heap*, int);

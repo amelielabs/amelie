@@ -28,7 +28,7 @@ part_allocate(PartConfig* config, PartArg* arg)
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->in_progress   = NULL;
-	self->heap          = heap_allocate(&id);
+	self->heap          = heap_allocate(arg->retention, &id);
 	self->config        = part_config_copy(config);
 	self->arg           = arg;
 	self->streams       = NULL;
@@ -176,10 +176,12 @@ part_truncate(Part* self)
 	for (auto index = self->indexes; index; index = index->next)
 		index_truncate(index, &op);
 
+	auto arg = self->arg;
+
 	// create a new empty heap with matching metadata
 	Id id;
-	id_set(&id, self->arg->rel->id, self->config->id);
-	auto new = heap_allocate(&id);
+	id_set(&id, arg->rel->id, self->config->id);
+	auto new = heap_allocate(arg->retention, &id);
 	int64_t delta = -storage_size(&self->heap->storage) + storage_size(&new->storage);
 	heap_free(self->heap);
 	self->heap = new;
@@ -190,19 +192,19 @@ part_truncate(Part* self)
 	flats_init(flats);
 
 	// create flat stores
-	list_foreach(&self->arg->columns->list)
+	list_foreach(&arg->columns->list)
 	{
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
 		Id id;
-		id_set(&id, self->arg->rel->id, self->config->id);
+		id_set(&id, arg->rel->id, self->config->id);
 		id_set_column(&id, column->order);
 		auto flat = flat_allocate(column, &id);
 		flats_add(flats, flat);
 	}
 
-	usage_update(self->arg->memory, op.delta + delta);
+	usage_update(arg->memory, op.delta + delta);
 }
 
 void

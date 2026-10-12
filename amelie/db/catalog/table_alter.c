@@ -335,15 +335,16 @@ static void
 retention_if_commit(Log* self, LogOp* op)
 {
 	unused(self);
-	unused(op);
+	auto table = table_of(op->rel);
+	retention_set(&table->retention, table->config->retention);
 }
 
 static void
 retention_if_abort(Log* self, LogOp* op)
 {
-	Table* table = op->iface_arg;
+	auto     table = table_of(op->rel);
 	uint8_t* pos = log_data_of(self, op);
-	int64_t value;
+	int64_t  value;
 	unpack_int(&pos, &value);
 	table_config_set_retention(table->config, value);
 }

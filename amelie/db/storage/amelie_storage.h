@@ -17,6 +17,7 @@
 
 // storage
 #include "storage/page.h"
+#include "storage/retention.h"
 #include "storage/storage.h"
 
 // compression

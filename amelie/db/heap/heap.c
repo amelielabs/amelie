@@ -76,12 +76,12 @@ heap_prepare(Heap* self)
 }
 
 Heap*
-heap_allocate(Id* id)
+heap_allocate(Retention* retention, Id* id)
 {
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets = NULL;
 	self->header  = NULL;
-	storage_init(&self->storage, id, PAGE_HEAP);
+	storage_init(&self->storage, retention, id, PAGE_HEAP);
 	heap_prepare(self);
 	return self;
 }

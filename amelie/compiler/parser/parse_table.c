@@ -635,6 +635,11 @@ parse_table_create(Stmt* self)
 			auto value = stmt_expect(self, KINT);
 			if (value->integer <= 0)
 				stmt_error(self, value, "invalid retention size");
+
+			// align to the page size
+			auto page_size = 64 * 1024 * 1024;
+			value->integer = ((value->integer + page_size - 1) / page_size) * page_size;
+
 			if (config->indexes_count > 0)
 				stmt_error(self, value, "using indexes with retention is not supported");
 			table_config_set_retention(config, value->integer);
@@ -888,6 +893,11 @@ parse_table_alter(Stmt* self)
 			auto value = stmt_expect(self, KINT);
 			if (value->integer <= 0)
 				stmt_error(self, value, "invalid retention size");
+
+			// align to the page size
+			auto page_size = 64 * 1024 * 1024;
+			value->integer = ((value->integer + page_size - 1) / page_size) * page_size;
+
 			stmt->type = TABLE_ALTER_RETENTION;
 			stmt->retention = value->integer;
 			return;

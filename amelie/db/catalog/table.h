@@ -19,6 +19,7 @@ struct Table
 	Parts        parts;
 	PartArg      part_arg;
 	Timelines    timelines;
+	Retention    retention;
 	TableConfig* config;
 };
 

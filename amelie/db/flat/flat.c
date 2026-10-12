@@ -47,7 +47,7 @@ flat_allocate(Column* column, Id* id)
 	self->column = column;
 
 	auto storage = &self->storage;
-	storage_init(storage, id, PAGE_FLAT);
+	storage_init(storage, NULL, id, PAGE_FLAT);
 	storage_add_meta(storage, sizeof(FlatHeader));
 
 	self->header = (FlatHeader*)storage->meta->data;

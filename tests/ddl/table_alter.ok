@@ -1072,7 +1072,7 @@ select show('table', 'test', null, "verbose").retention;
 
 retention
 ─────────
-123
+67108864
 alter table test unset retention;
 select show('table', 'test', null, "verbose").retention;
 
@@ -1093,7 +1093,7 @@ select show('table', 'test', null, "verbose").retention;
 
 retention
 ─────────
-123
+67108864
 drop table test;
 disconnect S0;
 close E0;

@@ -15,11 +15,12 @@
 #include <amelie_storage.h>
 
 void
-storage_init(Storage* self, Id* id, int type)
+storage_init(Storage* self, Retention* retention, Id* id, int type)
 {
 	self->current    = NULL;
 	self->meta       = NULL;
 	self->list_count = 0;
+	self->retention  = retention;
 	self->type       = type;
 	self->id         = *id;
 	self->id_first   = 0;
@@ -65,6 +66,10 @@ storage_add(Storage* self)
 	page->id.id_page = self->id_next++;
 	self->current    = page;
 
+	// assign global page id
+	if (self->retention)
+		page->id_serial = retention_attach(self->retention);
+
 	buf_write(&self->list, &page, sizeof(Page*));
 	self->list_count++;
 	return page;
@@ -75,8 +80,10 @@ storage_open(Storage* self, uint64_t checkpoint,
              Ids*     ids,
              Id*      filter)
 {
+	auto retention = self->retention;
+
 	storage_free(self);
-	storage_init(self, &self->id, self->type);
+	storage_init(self, retention, &self->id, self->type);
 
 	auto list = buf_create();
 	defer_buf(list);
@@ -101,6 +108,10 @@ storage_open(Storage* self, uint64_t checkpoint,
 
 		if (page->id.id_page > id)
 			id = page->id.id_page;
+
+		// restore retention state
+		if (retention)
+			retention_follow(retention, page->id_serial);
 
 		// last page
 		self->current = page;

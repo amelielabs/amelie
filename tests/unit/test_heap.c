@@ -20,6 +20,6 @@ test_heap(void* arg)
 	Id id;
 	id_init(&id);
 
-	auto heap = heap_allocate(&id);
+	auto heap = heap_allocate(NULL, &id);
 	defer(heap_free, heap);
 }

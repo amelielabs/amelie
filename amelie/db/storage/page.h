@@ -28,10 +28,11 @@ struct Page
 	uint32_t crc_data;
 	uint32_t version;
 	Id       id;
+	uint32_t id_serial;
 	uint8_t  type;
 	uint8_t  compression;
 	uint8_t  changed;
-	uint8_t  reserved[5];
+	uint8_t  reserved;
 	// usage
 	uint32_t size;
 	uint32_t size_compressed;
