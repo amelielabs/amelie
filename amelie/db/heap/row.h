@@ -32,9 +32,9 @@ struct Row
 	uint64_t reserved:    4;
 
 	// heap location (64bit cut)
-	uint64_t offset:      26; // 64mb
-	uint64_t prev:        12; // 4096 pages
-	uint64_t prev_offset: 26;
+	uint64_t offset:      21; // 2mb
+	uint64_t prev:        17; // 131072 pages
+	uint64_t prev_offset: 21;
 
 	// data
 	uint8_t  data[];

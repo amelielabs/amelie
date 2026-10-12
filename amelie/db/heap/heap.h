@@ -19,8 +19,8 @@ struct HeapBucket
 {
 	// 8 bytes
 	uint64_t size:        16;
-	uint64_t list:        12;
-	uint64_t list_offset: 26;
+	uint64_t list:        17;
+	uint64_t list_offset: 21;
 	uint64_t id:           8;
 	uint64_t unused:       2;
 } packed;

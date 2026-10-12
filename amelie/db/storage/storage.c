@@ -25,7 +25,7 @@ storage_init(Storage* self, Retention* retention, Id* id, int type)
 	self->id         = *id;
 	self->id_first   = 0;
 	self->id_next    = 0;
-	self->size       = 64 * 1024 * 1024;
+	self->size       = 2 * 1024 * 1024;
 	buf_init(&self->list);
 }
 

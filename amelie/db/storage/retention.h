@@ -44,7 +44,7 @@ retention_set(Retention* self, int64_t size)
 	auto count = UINT32_MAX;
 	if (size > 0)
 	{
-		auto page_size = 64 * 1024 * 1024;
+		auto page_size = 2 * 1024 * 1024;
 		count = (size + page_size - 1) / page_size;
 	}
 	self->count_retention = count;

@@ -637,7 +637,7 @@ parse_table_create(Stmt* self)
 				stmt_error(self, value, "invalid retention size");
 
 			// align to the page size
-			auto page_size = 64 * 1024 * 1024;
+			auto page_size = 2 * 1024 * 1024;
 			value->integer = ((value->integer + page_size - 1) / page_size) * page_size;
 
 			if (config->indexes_count > 0)
@@ -895,7 +895,7 @@ parse_table_alter(Stmt* self)
 				stmt_error(self, value, "invalid retention size");
 
 			// align to the page size
-			auto page_size = 64 * 1024 * 1024;
+			auto page_size = 2 * 1024 * 1024;
 			value->integer = ((value->integer + page_size - 1) / page_size) * page_size;
 
 			stmt->type = TABLE_ALTER_RETENTION;

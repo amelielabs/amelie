@@ -27,7 +27,7 @@ flat_allocate(Column* column, Id* id)
 	//
 	// [page_header][bitmap][vectors_sq8][rows][vectors]
 	//
-	auto size_page   = (64 * 1024 * 1024);
+	auto size_page   = (2 * 1024 * 1024);
 	auto size_bucket =
 		sizeof(uint64_t) +         // 64 vectors bitmap
 		(64 * self->dim) +         // 64 vectors in SQ8 encoding (i8)
@@ -144,6 +144,7 @@ flat_retention(Flat* self, uint32_t page_wm)
 	// free all vectors/rows which has row page < page_wm as
 	auto storage = &self->storage;
 	auto header  = self->header;
+	auto changed = false;
 	const auto page_chunks = self->page_rows / 64;
 	for (auto i = 0; i < storage->list_count; i++)
 	{
@@ -178,11 +179,12 @@ flat_retention(Flat* self, uint32_t page_wm)
 					// update free list
 					row->row_next = header->list_free;
 					header->list_free = i * self->page_rows + page_row;
-					storage->meta->changed = true;
+					changed = true;
 				}
 
 				mask &= mask - 1;
 			}
 		}
 	}
+	storage->meta->changed = changed;
 }

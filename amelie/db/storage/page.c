@@ -28,6 +28,9 @@ page_allocate(uint32_t size)
 	self->size          = size;
 	self->position      = sizeof(Page);
 	self->position_last = self->position;
+
+	// advice to use huge page
+	madvise(pointer, size, MADV_HUGEPAGE);
 	return self;
 }
 
