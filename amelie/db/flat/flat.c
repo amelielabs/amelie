@@ -137,3 +137,52 @@ flat_remove(Flat* self, uint32_t id)
 	self->header->list_free = id;
 	self->storage.meta->changed = true;
 }
+
+hot void
+flat_retention(Flat* self, uint32_t page_wm)
+{
+	// free all vectors/rows which has row page < page_wm as
+	auto storage = &self->storage;
+	auto header  = self->header;
+	const auto page_chunks = self->page_rows / 64;
+	for (auto i = 0; i < storage->list_count; i++)
+	{
+		auto page = storage_at(storage, i);
+
+		uint32_t chunks = (page->position_last + 63) >> 6;
+		if (chunks > page_chunks)
+			chunks = page_chunks;
+
+		auto bitmap = (uint64_t*)(page->data);
+		for (uint32_t chunk_id = 0; chunk_id < chunks; chunk_id++)
+		{
+			// iterate over the block of 64 vectors
+			uint64_t mask = bitmap[chunk_id];
+			if (! mask)
+				continue;
+
+			uint32_t row_base = chunk_id << 6;
+			while (mask > 0)
+			{
+				uint32_t bit = __builtin_ctzll(mask);
+				uint32_t page_row = row_base + bit;
+				if (unlikely(page_row >= page->position_last))
+					break;
+
+				// mark row as free
+				auto row = flat_row(self, i, page_row);
+				if (row->row_page < page_wm)
+				{
+					flat_set(self, i, page_row, false);
+
+					// update free list
+					row->row_next = header->list_free;
+					header->list_free = i * self->page_rows + page_row;
+					storage->meta->changed = true;
+				}
+
+				mask &= mask - 1;
+			}
+		}
+	}
+}

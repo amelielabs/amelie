@@ -124,3 +124,4 @@ void     flat_free(Flat*);
 void     flat_open(Flat*);
 uint32_t flat_add(Flat*, int, int);
 void     flat_remove(Flat*, uint32_t);
+void     flat_retention(Flat*, uint32_t);

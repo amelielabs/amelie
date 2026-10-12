@@ -125,7 +125,8 @@ pod_retention(Pod* self)
 	if (likely(! storage_retention(&part->heap->storage, &id)))
 		return;
 
-	// todo: flats
+	// cleanup vector stores
+	flats_retention(&part->flats, id);
 
 	// todo: cancel all matching streamers
 	streaming_cancel(part);
