@@ -26,7 +26,6 @@ streams_init(Streams* self, Task* task, Client* client)
 	self->task          = task;
 	self->client        = client;
 	list_init(&self->ready);
-	buf_init(&self->key);
 	event_init(&self->notify);
 	iov_init(&self->iov);
 }
@@ -41,39 +40,64 @@ streams_free(Streams* self)
 		am_free(self->streams);
 		self->streams = NULL;
 	}
-	buf_free(&self->key);
 	iov_free(&self->iov);
 }
 
-void
-streams_create(Streams* self, Parts* parts, Timeline* timeline, Str* key_str)
+static void
+streams_add(Streams* self, Stream* stream, StreamPos* pos, Part* part, Timeline* timeline)
 {
+	stream_init(stream, self, part, timeline);
+	if (pos)
+		stream->pos = *pos;
+	event_attach(&stream->on_complete);
+	event_set_parent(&stream->on_complete, &self->notify);
+	event_attach(&stream->on_cancel);
+	event_set_parent(&stream->on_cancel, &self->notify);
+	stream->ready = true;
+
+	list_append(&self->ready, &stream->link);
+}
+
+void
+streams_create_for(Streams* self, Parts* parts, Timeline* timeline, Str* id)
+{
+	// prepare streams according to the passed partitions list
+	auto list = buf_create();
+	defer_buf(list);
+	if (stream_pos_list_read(list, id) == -1)
+		error("stream: invalid id");
+
+	// ensure all partitions exists first
+	auto pos = (StreamPos*)list->start;
+	auto end = (StreamPos*)list->position;
+	for (; pos < end; pos++)
+		if (! parts_find(parts, pos->part))
+			error("stream: partition {u32} not found", pos->part);
+
+	self->streams_count = buf_size(list) / sizeof(StreamPos);
+	self->streams = am_malloc(sizeof(Stream) * self->streams_count);
+	pos = (StreamPos*)list->start;
+	for (auto at = 0; pos < end; pos++)
+	{
+		auto part = parts_find(parts, pos->part);
+		streams_add(self, &self->streams[at], pos, part, timeline);
+		at++;
+	}
+}
+
+void
+streams_create(Streams* self, Parts* parts, Timeline* timeline)
+{
+	// prepare streams per partitions and set as ready
 	self->streams_count = parts->list_count;
 	self->streams = am_malloc(sizeof(Stream) * self->streams_count);
-
-	// prepare streams per partitions and set as ready
 	auto at = 0;
 	list_foreach(&parts->list)
 	{
 		auto part = list_at(Part, link);
-		auto stream = &self->streams[at];
-		stream_init(stream, self, part, timeline);
-
-		event_attach(&stream->on_complete);
-		event_set_parent(&stream->on_complete, &self->notify);
-		event_attach(&stream->on_cancel);
-		event_set_parent(&stream->on_cancel, &self->notify);
-		stream->ready = true;
-
-		list_append(&self->ready, &stream->link);
+		streams_add(self, &self->streams[at], NULL, part, timeline);
 		at++;
 	}
-
-	// todo: set positions, if set
-	if (! str_empty(key_str))
-	{
-	}
-
 }
 
 hot static void

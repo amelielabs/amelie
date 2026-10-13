@@ -25,6 +25,7 @@ struct Stream
 	Event        on_cancel;
 	// iterator
 	HeapIterator it;
+	StreamPos    pos;
 	Buf          data;
 	Timeline     timeline;
 	// partition state

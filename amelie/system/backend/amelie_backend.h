@@ -12,6 +12,7 @@
 //
 
 // stream
+#include "backend/stream_pos.h"
 #include "backend/stream.h"
 #include "backend/streams.h"
 

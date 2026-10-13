@@ -32,14 +32,15 @@ struct Parts
 	void*       iface_arg;
 };
 
-void parts_init(Parts*, PartsIf*, void*, PartArg*, Keys*);
-void parts_free(Parts*);
-void parts_open(Parts*, List*, List*);
-void parts_close(Parts*);
-void parts_truncate(Parts*);
-void parts_add(Parts*, Part*);
-void parts_remove(Parts*, Part*);
-void parts_index_create(Parts*, IndexConfig*);
-void parts_index_remove(Parts*, Str*);
-void parts_column_create(Parts*, Column*);
-void parts_list(Parts*, Buf*, int);
+void  parts_init(Parts*, PartsIf*, void*, PartArg*, Keys*);
+void  parts_free(Parts*);
+void  parts_open(Parts*, List*, List*);
+void  parts_close(Parts*);
+void  parts_truncate(Parts*);
+void  parts_add(Parts*, Part*);
+void  parts_remove(Parts*, Part*);
+Part* parts_find(Parts*, int);
+void  parts_index_create(Parts*, IndexConfig*);
+void  parts_index_remove(Parts*, Str*);
+void  parts_column_create(Parts*, Column*);
+void  parts_list(Parts*, Buf*, int);

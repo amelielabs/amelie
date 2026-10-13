@@ -48,7 +48,11 @@ link_stream_create(Link* self, Streams* streams)
 	}
 
 	// prepare streams (one per partition)
-	streams_create(streams, parts, timeline, &self->portal.endpoint.id.string);
+	auto id = &self->portal.endpoint.id.string;
+	if (str_empty(id))
+		streams_create(streams, parts, timeline);
+	else
+		streams_create_for(streams, parts, timeline, id);
 }
 
 static inline void

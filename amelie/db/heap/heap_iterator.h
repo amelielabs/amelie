@@ -117,6 +117,41 @@ heap_iterator_open(HeapIterator* self, Heap* heap, bool last)
 	heap_iterator_next_allocated(self);
 }
 
+static inline bool
+heap_iterator_set(HeapIterator* self, uint32_t page_id, uint32_t page_offset)
+{
+	auto heap    = self->heap;
+	auto storage = &heap->storage;
+	if (storage_empty(storage))
+		return false;
+
+	// validate position
+	if (page_id < storage->id_first)
+		return false;
+
+	auto last = storage_at(storage, storage->list_count - 1);
+	if (page_id > last->id.id_page)
+		return false;
+
+	auto page = storage_get(storage, page_id);
+	if (page_offset > page->position_last)
+		return false;
+	if (page_offset < sizeof(Page))
+		return false;
+
+	auto row = heap_at(heap, page_id, page_offset);
+	if (row->offset != page_offset || row->free)
+		return false;
+	if (heap_page_of(row)->id.id_page != page_id)
+		return false;
+
+	self->page       = page;
+	self->page_order = page->id.id_page - storage->id_first;
+	self->eof        = false;
+	self->current    = row;
+	return true;
+}
+
 static inline void
 heap_iterator_set_stop(HeapIterator* self)
 {

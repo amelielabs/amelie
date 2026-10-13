@@ -117,6 +117,18 @@ parts_remove(Parts* self, Part* part)
 	self->list_count--;
 }
 
+Part*
+parts_find(Parts* self, int id)
+{
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		if (part->config->id == id)
+			return part;
+	}
+	return NULL;
+}
+
 void
 parts_index_create(Parts* self, IndexConfig* config)
 {

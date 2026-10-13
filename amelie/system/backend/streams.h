@@ -18,7 +18,6 @@ struct Streams
 	Stream* streams;
 	int     streams_count;
 	List    ready;
-	Buf     key;
 	Event   notify;
 	Iov     iov;
 	Client* client;
@@ -27,5 +26,6 @@ struct Streams
 
 void streams_init(Streams*, Task*, Client*);
 void streams_free(Streams*);
-void streams_create(Streams*, Parts*, Timeline*, Str*);
+void streams_create_for(Streams*, Parts*, Timeline*, Str*);
+void streams_create(Streams*, Parts*, Timeline*);
 void streams_run(Streams*);

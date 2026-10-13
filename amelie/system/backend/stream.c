@@ -69,12 +69,12 @@ stream_export(Stream* self, Row* row)
 void
 stream_init(Stream* self, Streams* streams, Part* part, Timeline* timeline)
 {
-	self->wait      = false;
-	self->shutdown  = false;
-	self->ready     = false;
-	self->part      = part;
-	self->part_task = part->track.backend;
-	self->part_link = NULL;
+	self->wait        = false;
+	self->shutdown    = false;
+	self->ready       = false;
+	self->part        = part;
+	self->part_task   = part->track.backend;
+	self->part_link   = NULL;
 	self->streams     = streams;
 
 	// set timeline
@@ -87,6 +87,7 @@ stream_init(Stream* self, Streams* streams, Part* part, Timeline* timeline)
 	event_init(&self->on_complete);
 	event_init(&self->on_cancel);
 	heap_iterator_init(&self->it);
+	stream_pos_init(&self->pos);
 	buf_init(&self->data);
 	list_init(&self->link);
 }
@@ -100,9 +101,7 @@ stream_free(Stream* self)
 hot void
 stream_next(Stream* self)
 {
-	// todo: validate partition
 	auto part = self->part;
-
 	auto it = &self->it;
 	if (likely(heap_iterator_active(it)))
 	{
@@ -114,6 +113,19 @@ stream_next(Stream* self)
 	{
 		// on first access, position to last
 		heap_iterator_open(it, part->heap, true);
+
+		// open by position
+		auto pos = &self->pos;
+		if (! stream_pos_empty(pos))
+		{
+			if (! heap_iterator_set(it, pos->page, pos->page_offset))
+			{
+				self->shutdown = true;
+				event_signal(&self->on_complete);
+				return;
+			}
+			heap_iterator_next(it);
+		}
 	}
 
 	// collect
