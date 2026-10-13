@@ -159,7 +159,7 @@ table_column_add(Catalog* self,
 	// ensure table has no side tables to support vector column
 	if (column->type == TYPE_VECTOR)
 		if (table->timelines.list_count > 0)
-			error("table '{str}': vector columns cannot be used together with sidetables",
+			error("table '{str}': vector columns cannot be used together with layers",
 			      name);
 
 	// add new column

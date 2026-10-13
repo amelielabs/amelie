@@ -411,7 +411,7 @@ id  obj
 0   null
 1   null
 2   null
-# test: create sidetable
+# test: create layer
 create table a on test2;
 insert into a values (3, {});
 select * from a;
@@ -428,7 +428,7 @@ id  obj
 ─────────
 4   {}
 5   []
-select timeline from show sidetables verbose;
+select timeline from show layers verbose;
 
 timeline
 ────────
@@ -445,7 +445,7 @@ select show('state').lsn;
 lsn
 ───
 17
-select timeline from show sidetables verbose;
+select timeline from show layers verbose;
 
 timeline
 ────────
@@ -469,7 +469,7 @@ id  obj
 0   null
 1   null
 2   null
-# test: drop sidetable
+# test: drop layer
 drop table b;
 drop table a;
 # test: restart
@@ -483,10 +483,10 @@ select show('state').lsn;
 lsn
 ───
 19
-show sidetables;
+show layers;
 
-sidetables
-──────────
+layers
+──────
 # test: truncate
 truncate test2;
 select * from test2;

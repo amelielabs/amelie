@@ -72,15 +72,15 @@ error: table 'test': indexes limit reached
 alter user amelie set limit indexes = 2;
 create index i on test (id);
 drop table test;
-# test: sidetables
+# test: layers
 create table test (id int primary key);
-alter user amelie set limit sidetables = 0;
+alter user amelie set limit layers = 0;
 create table test_side on test;
-error: user 'amelie': sidetables limit reached
-alter user amelie set limit sidetables = 1;
+error: user 'amelie': layers limit reached
+alter user amelie set limit layers = 1;
 create table test_side on test;
 create table test_side2 on test;
-error: user 'amelie': sidetables limit reached
+error: user 'amelie': layers limit reached
 drop table test cascade;
 # test: functions
 alter user amelie set limit functions = 0;

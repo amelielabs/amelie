@@ -58,7 +58,7 @@ select show('state').lsn;
 select show('state').checkpoint;
 select * from test;
 
-# test: create sidetable
+# test: create layer
 create table a on test;
 insert into a values (3), (4);
 select * from a;
@@ -68,7 +68,7 @@ insert into b values (5), (6);
 insert into b values (7), (8);
 select * from b;
 
-select timeline from show sidetables verbose;
+select timeline from show layers verbose;
 
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
@@ -78,7 +78,7 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-select timeline from show sidetables verbose;
+select timeline from show layers verbose;
 select * from a;
 select * from b;
 select * from test;
@@ -96,7 +96,7 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-select timeline from show sidetables verbose;
+select timeline from show layers verbose;
 
 select * from a;
 select * from b;
@@ -274,8 +274,8 @@ drop table test;
 show rels;
 
 create user x;
-alter user x set limit sidetables = 0;
-alter user amelie set limit sidetables = 0;
+alter user x set limit layers = 0;
+alter user amelie set limit layers = 0;
 
 # test: restart/recover (checkpoint)
 checkpoint;

@@ -201,7 +201,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/table.c
     ${AMELIE_ROOT}/db/catalog/table_alter.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
-    ${AMELIE_ROOT}/db/catalog/sidetable.c
+    ${AMELIE_ROOT}/db/catalog/layer.c
     ${AMELIE_ROOT}/db/catalog/udf.c
     ${AMELIE_ROOT}/db/catalog/rel.c
     ${AMELIE_ROOT}/db/catalog/catalog.c

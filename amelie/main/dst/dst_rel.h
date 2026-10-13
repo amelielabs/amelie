@@ -17,7 +17,7 @@ enum
 {
 	DST_REL_TABLE,
 	DST_REL_TABLE_VECTOR,
-	DST_REL_SIDETABLE,
+	DST_REL_LAYER,
 	DST_REL_INDEX,
 	DST_REL_MAX
 };
@@ -29,8 +29,8 @@ struct DstRel
 	DstRel*   parent;
 	List      indexes;
 	int       indexes_count;
-	List      sidetables;
-	int       sidetables_count;
+	List      layers;
+	int       layers_count;
 	Hashtable state;
 	List      link_parent;
 	List      link;
@@ -40,12 +40,12 @@ static inline DstRel*
 dst_rel_allocate(DstRel* parent, uint64_t id, int type, int keys)
 {
 	auto self = (DstRel*)am_malloc(sizeof(DstRel));
-	self->id               = id;
-	self->type             = type;
-	self->parent           = parent;
-	self->sidetables_count = 0;
-	self->indexes_count    = 0;
-	list_init(&self->sidetables);
+	self->id            = id;
+	self->type          = type;
+	self->parent        = parent;
+	self->layers_count  = 0;
+	self->indexes_count = 0;
+	list_init(&self->layers);
 	list_init(&self->indexes);
 	hashtable_init(&self->state);
 	hashtable_create(&self->state, keys * 2);

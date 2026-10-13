@@ -221,20 +221,20 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		}
 		break;
 	}
-	case REL_SIDETABLE:
+	case REL_LAYER:
 	{
-		auto sidetable = sidetable_of(rel);
-		auto table = sidetable->table;
+		auto layer = layer_of(rel);
+		auto table = layer->table;
 		target->type          = TARGET_TABLE;
 		target->from_lock     = lock;
 		target->from_table    = table;
-		target->from_timeline = &sidetable->config->timeline;
+		target->from_timeline = &layer->config->timeline;
 		target->columns       = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
-		// adding sidetable relation to the access list for dependency
+		// adding layer relation to the access list for dependency
 		// tracking and permissions check
 		access_add(&self->parser->program->access, &table->rel, lock, PERM_SELECT);
-		access_add(&self->parser->program->access, &sidetable->rel, LOCK_NONE, perms);
+		access_add(&self->parser->program->access, &layer->rel, LOCK_NONE, perms);
 
 		// [INDEX name]
 		if (stmt_if(self, KINDEX))

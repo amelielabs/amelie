@@ -32,11 +32,11 @@ catalog_find_table(Catalog* self, Str* user, Str* name, bool error_if_not_exists
 	                          error_if_not_exists));
 }
 
-static inline Sidetable*
-catalog_find_sidetable(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
+static inline Layer*
+catalog_find_layer(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 {
-	return sidetable_of(rels_find(&self->rels, REL_SIDETABLE, user, name,
-	                              error_if_not_exists));
+	return layer_of(rels_find(&self->rels, REL_LAYER, user, name,
+	                          error_if_not_exists));
 }
 
 static inline Udf*

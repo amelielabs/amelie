@@ -283,7 +283,7 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 }
 
 static void
-describe_sidetable(Sidetable* self, Buf* buf, Str* user, int flags)
+describe_layer(Layer* self, Buf* buf, Str* user, int flags)
 {
 	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config = self->config;
@@ -460,8 +460,8 @@ describe_text(Rel* self, Buf* buf, Str* user, int flags)
 	case REL_TABLE:
 		describe_table(table_of(self), buf, user, flags);
 		break;
-	case REL_SIDETABLE:
-		describe_sidetable(sidetable_of(self), buf, user, flags);
+	case REL_LAYER:
+		describe_layer(layer_of(self), buf, user, flags);
 		break;
 	case REL_UDF:
 		describe_udf(udf_of(self), buf, user, flags);
@@ -513,9 +513,9 @@ describe_rels(Rels* rels, RelType type, Buf* buf)
 void
 describe_catalog(Catalog* self, Buf* buf)
 {
-	// users, tables, sidetables, udfs
+	// users, tables, layers, udfs
 	describe_rels(&self->users, REL_USER, buf);
 	describe_rels(&self->rels, REL_TABLE, buf);
-	describe_rels(&self->rels, REL_SIDETABLE, buf);
+	describe_rels(&self->rels, REL_LAYER, buf);
 	describe_rels(&self->rels, REL_UDF, buf);
 }

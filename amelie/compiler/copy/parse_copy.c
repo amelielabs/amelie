@@ -96,7 +96,7 @@ copy_args(Parser* self, Columns* columns, Set* values, uint8_t* args)
 }
 
 static void
-copy_insert(Parser* self, Table* table, Sidetable* sidetable, uint8_t* args)
+copy_insert(Parser* self, Table* table, Layer* layer, uint8_t* args)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -115,8 +115,8 @@ copy_insert(Parser* self, Table* table, Sidetable* sidetable, uint8_t* args)
 
 	// set timeline
 	Timeline* timeline;
-	if (sidetable)
-		timeline = &sidetable->config->timeline;
+	if (layer)
+		timeline = &layer->config->timeline;
 	else
 		timeline = table_main(table);
 
@@ -131,11 +131,11 @@ copy_insert(Parser* self, Table* table, Sidetable* sidetable, uint8_t* args)
 	str_set_str(&target->name, &table->config->name);
 	from_add(&insert->from, target);
 
-	// add table/sidetable to the access list
-	if (sidetable)
+	// add table/layer to the access list
+	if (layer)
 	{
 		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_SELECT);
-		access_add(&self->program->access, &sidetable->rel, LOCK_NONE, PERM_INSERT);
+		access_add(&self->program->access, &layer->rel, LOCK_NONE, PERM_INSERT);
 	} else {
 		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_INSERT);
 	}
@@ -227,10 +227,10 @@ parse_copy(Parser* self, Program* program,
 		copy_insert(self, table, NULL, args);
 		break;
 	}
-	case REL_SIDETABLE:
+	case REL_LAYER:
 	{
-		auto sidetable = sidetable_of(ref);
-		copy_insert(self, sidetable->table, sidetable, args);
+		auto layer = layer_of(ref);
+		copy_insert(self, layer->table, layer, args);
 		break;
 	}
 	case REL_UDF:

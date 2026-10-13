@@ -29,10 +29,10 @@
 #include "catalog/table_alter.h"
 #include "catalog/table_index.h"
 
-// sidetable
-#include "catalog/sidetable_config.h"
-#include "catalog/sidetable_op.h"
-#include "catalog/sidetable.h"
+// layer
+#include "catalog/layer_config.h"
+#include "catalog/layer_op.h"
+#include "catalog/layer.h"
 
 // udf
 #include "catalog/udf_config.h"

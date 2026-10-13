@@ -3,17 +3,17 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-# test: create sidetable
+# test: create layer
 create table main (id int primary key);
 insert into main values (1);
 
 create table a on main;
-show sidetables;
+show layers;
 
 drop table a;
 drop table main;
 
-# test: create sidetable (insert)
+# test: create layer (insert)
 create table main (id int primary key);
 insert into main values (1);
 
@@ -29,7 +29,7 @@ select * from main;
 drop table main;
 drop table main cascade;
 
-# test: create sidetable (update)
+# test: create layer (update)
 create table main (id int primary key, data int);
 insert into main values (1, 0);
 insert into main values (2, 0);
@@ -42,7 +42,7 @@ update a set data = 42 where id in (1, 3);
 select * from a;
 select * from main;
 
-# test: create sidetable (delete/insert)
+# test: create layer (delete/insert)
 delete from a where id < 4;
 
 select * from a;
@@ -55,27 +55,27 @@ insert into a values (3, 2);
 select * from a;
 select * from main;
 
-# test: create sidetable description
+# test: create layer description
 create table x on main description;
 create table x on main description 1;
 create table x on main description 'test test';
-show sidetable x;
+show layer x;
 
-# test: alter sidetable rename to
+# test: alter layer rename to
 alter table a rename to b;
 
 select * from b;
 select * from main;
 
-# test: alter sidetable description
+# test: alter layer description
 alter table x description '__renamed';
-show sidetable x;
+show layer x;
 
-# test: drop parent sidetable
+# test: drop parent layer
 drop table b;
-show sidetables;
+show layers;
 
-# test: cascade (parent sidetable)
+# test: cascade (parent layer)
 create table b on main;
 drop table main cascade;
 
@@ -88,11 +88,11 @@ insert into main values (4, 0);
 
 create table a on main;
 create table b on main;
-show sidetables;
+show layers;
 
 drop table main;
 drop table main cascade;
-show sidetables;
+show layers;
 
 # test: cascade (table, udf)
 create table main (id int primary key, data int);
@@ -106,7 +106,7 @@ end;
 
 drop table main;
 drop table main cascade;
-show sidetables;
+show layers;
 show functions;
 
 # test: truncate
@@ -119,13 +119,13 @@ truncate a;
 
 select * from a;
 
-# truncated sidetables
+# truncated layers
 truncate main;
 select * from a;
 
 drop table main cascade;
 
-# test: create sidetable (with vector column)
+# test: create layer (with vector column)
 create table test (id int primary key, v vector(1));
 create table x on test;
 drop table test;

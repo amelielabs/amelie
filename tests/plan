@@ -55,7 +55,7 @@ test table_drop
 test table_alter
 test table_migration
 test index
-test sidetable
+test layer
 test function
 test grant
 test limits

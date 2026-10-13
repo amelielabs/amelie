@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct SidetableConfig SidetableConfig;
+typedef struct LayerConfig LayerConfig;
 
-struct SidetableConfig
+struct LayerConfig
 {
 	Str      user;
 	Str      name;
@@ -24,11 +24,11 @@ struct SidetableConfig
 	Grants   grants;
 };
 
-static inline SidetableConfig*
-sidetable_config_allocate(void)
+static inline LayerConfig*
+layer_config_allocate(void)
 {
-	SidetableConfig* self;
-	self = am_malloc(sizeof(SidetableConfig));
+	LayerConfig* self;
+	self = am_malloc(sizeof(LayerConfig));
 	str_init(&self->user);
 	str_init(&self->name);
 	str_init(&self->description);
@@ -40,7 +40,7 @@ sidetable_config_allocate(void)
 }
 
 static inline void
-sidetable_config_free(SidetableConfig* self)
+layer_config_free(LayerConfig* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
@@ -52,59 +52,59 @@ sidetable_config_free(SidetableConfig* self)
 }
 
 static inline void
-sidetable_config_set_user(SidetableConfig* self, Str* name)
+layer_config_set_user(LayerConfig* self, Str* name)
 {
 	str_free(&self->user);
 	str_copy(&self->user, name);
 }
 
 static inline void
-sidetable_config_set_name(SidetableConfig* self, Str* name)
+layer_config_set_name(LayerConfig* self, Str* name)
 {
 	str_free(&self->name);
 	str_copy(&self->name, name);
 }
 
 static inline void
-sidetable_config_set_description(SidetableConfig* self, Str* value)
+layer_config_set_description(LayerConfig* self, Str* value)
 {
 	str_free(&self->description);
 	str_copy(&self->description, value);
 }
 
 static inline void
-sidetable_config_set_table_user(SidetableConfig* self, Str* name)
+layer_config_set_table_user(LayerConfig* self, Str* name)
 {
 	str_free(&self->table_user);
 	str_copy(&self->table_user, name);
 }
 
 static inline void
-sidetable_config_set_table(SidetableConfig* self, Str* name)
+layer_config_set_table(LayerConfig* self, Str* name)
 {
 	str_free(&self->table);
 	str_copy(&self->table, name);
 }
 
-static inline SidetableConfig*
-sidetable_config_copy(SidetableConfig* self)
+static inline LayerConfig*
+layer_config_copy(LayerConfig* self)
 {
-	auto copy = sidetable_config_allocate();
-	sidetable_config_set_user(copy, &self->user);
-	sidetable_config_set_name(copy, &self->name);
-	sidetable_config_set_description(copy, &self->description);
-	sidetable_config_set_table_user(copy, &self->table_user);
-	sidetable_config_set_table(copy, &self->table);
+	auto copy = layer_config_allocate();
+	layer_config_set_user(copy, &self->user);
+	layer_config_set_name(copy, &self->name);
+	layer_config_set_description(copy, &self->description);
+	layer_config_set_table_user(copy, &self->table_user);
+	layer_config_set_table(copy, &self->table);
 	timeline_copy(&copy->timeline, &self->timeline);
 	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
-static inline SidetableConfig*
-sidetable_config_read(uint8_t** pos)
+static inline LayerConfig*
+layer_config_read(uint8_t** pos)
 {
-	auto self = sidetable_config_allocate();
-	errdefer(sidetable_config_free, self);
+	auto self = layer_config_allocate();
+	errdefer(layer_config_free, self);
 	uint8_t* pos_grants   = NULL;
 	Decode obj[] =
 	{
@@ -117,7 +117,7 @@ sidetable_config_read(uint8_t** pos)
 		{ DECODE_ARRAY, "grants",      &pos_grants              },
 		{ 0,             NULL,          NULL                    },
 	};
-	decode_obj(obj, "sidetable", pos);
+	decode_obj(obj, "layer", pos);
 
 	// grants
 	grants_read(&self->grants, &pos_grants);
@@ -125,7 +125,7 @@ sidetable_config_read(uint8_t** pos)
 }
 
 static inline void
-sidetable_config_write(SidetableConfig* self, Buf* buf, int flags)
+layer_config_write(LayerConfig* self, Buf* buf, int flags)
 {
 	// {}
 	encode_obj(buf);

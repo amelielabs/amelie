@@ -159,17 +159,17 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 		list_append(&parent->indexes, &rel->link_parent);
 		parent->indexes_count++;
 	} else
-	if (type == DST_REL_SIDETABLE)
+	if (type == DST_REL_LAYER)
 	{
 		assert(parent->type == DST_REL_TABLE);
 
 		dst_execute(self->dst, self->client,
-		            "CREATE TABLE sidetable_{u64}_{u64} ON table_{u64}",
+		            "CREATE TABLE layer_{u64}_{u64} ON table_{u64}",
 		            parent->id, id, parent->id);
-		dst_stat(&self->dst->stats, DST_STAT_CREATE_SIDETABLE);
+		dst_stat(&self->dst->stats, DST_STAT_CREATE_LAYER);
 
-		list_append(&parent->sidetables, &rel->link_parent);
-		parent->sidetables_count++;
+		list_append(&parent->layers, &rel->link_parent);
+		parent->layers_count++;
 	} else
 	{
 		abort();
@@ -200,12 +200,12 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		list_unlink(&rel->link_parent);
 		rel->parent->indexes_count--;
 		break;
-	case DST_REL_SIDETABLE:
+	case DST_REL_LAYER:
 		dst_execute(self->dst, self->client,
-		            "DROP TABLE sidetable_{u64}_{u64} CASCADE",
+		            "DROP TABLE layer_{u64}_{u64} CASCADE",
 		            rel->parent->id, rel->id);
 		list_unlink(&rel->link_parent);
-		rel->parent->sidetables_count--;
+		rel->parent->layers_count--;
 		break;
 	}
 
@@ -219,14 +219,14 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		dst_rel_free(index);
 	}
 
-	// free sidetables
-	list_foreach_safe(&rel->sidetables)
+	// free layers
+	list_foreach_safe(&rel->layers)
 	{
-		auto sidetable = list_at(DstRel, link_parent);
-		list_unlink(&sidetable->link);
+		auto layer = list_at(DstRel, link_parent);
+		list_unlink(&layer->link);
 		self->rels_count--;
 		assert(self->rels_count >= 0);
-		dst_rel_free(sidetable);
+		dst_rel_free(layer);
 	}
 
 	list_unlink(&rel->link);

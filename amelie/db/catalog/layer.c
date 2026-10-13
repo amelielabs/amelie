@@ -21,11 +21,11 @@
 #include <amelie_catalog.h>
 
 static inline void
-sidetable_free(Sidetable* self, bool drop)
+layer_free(Layer* self, bool drop)
 {
 	auto id = self->config->timeline.timeline;
 	timelines_remove(&self->table->timelines, &self->config->timeline);
-	sidetable_config_free(self->config);
+	layer_config_free(self->config);
 
 	// do table cleanup
 	if (drop)
@@ -53,44 +53,44 @@ sidetable_free(Sidetable* self, bool drop)
 }
 
 static inline void
-sidetable_show(Sidetable* self, Buf* buf, Str* user, int flags)
+layer_show(Layer* self, Buf* buf, Str* user, int flags)
 {
 	if (flags_has(flags, FCREATE))
 		describe(&self->rel, buf, user, flags);
 	else
-		sidetable_config_write(self->config, buf, flags);
+		layer_config_write(self->config, buf, flags);
 }
 
-static inline Sidetable*
-sidetable_allocate(SidetableConfig* config)
+static inline Layer*
+layer_allocate(LayerConfig* config)
 {
-	auto self = (Sidetable*)am_malloc(sizeof(Sidetable));
-	self->config = sidetable_config_copy(config);
+	auto self = (Layer*)am_malloc(sizeof(Layer));
+	self->config = layer_config_copy(config);
 	self->table  = NULL;
 
 	// set relation
 	auto rel = &self->rel;
-	rel_init(rel, REL_SIDETABLE);
+	rel_init(rel, REL_LAYER);
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_description(rel, &self->config->description);
 	rel_set_grants(rel, &self->config->grants);
-	rel_set_show(rel, (RelShow)sidetable_show);
-	rel_set_free(rel, (RelFree)sidetable_free);
+	rel_set_show(rel, (RelShow)layer_show);
+	rel_set_free(rel, (RelFree)layer_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 
 bool
-sidetable_create(Catalog*         self,
-                 Tr*              tr,
-                 SidetableConfig* config,
-                 bool             if_not_exists)
+layer_create(Catalog*     self,
+             Tr*          tr,
+             LayerConfig* config,
+             bool         if_not_exists)
 {
 	// PERM_CREATE_TABLE
 	catalog_check(self, tr, PERM_CREATE_TABLE, &config->user);
 
-	// make sure sidetable does not exists
+	// make sure layer does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
 	if (rel)
 	{
@@ -102,34 +102,34 @@ sidetable_create(Catalog*         self,
 	// ensure table exists
 	auto table = catalog_find_table(self, &config->table_user, &config->table, true);
 
-	// ensure permission to create sidetable
+	// ensure permission to create layer
 	check_permission(tr, &table->rel, PERM_CREATE_TABLE);
 
 	// validate grants
-	catalog_grant_validate(self, tr, REL_SIDETABLE,
+	catalog_grant_validate(self, tr, REL_LAYER,
 	                       &config->user,
 	                       &config->name, &config->grants);
 
 	// check limit
-	catalog_limit(self, tr, REL_SIDETABLE, LIMIT_SIDETABLES);
+	catalog_limit(self, tr, REL_LAYER, LIMIT_LAYERS);
 
 	// ensure table has no vector columns
 	list_foreach(&table_columns(table)->list)
 	{
 		auto column = list_at(Column, link);
 		if (column->type == TYPE_VECTOR)
-			error("table '{str}': vector columns cannot be used together with sidetables",
+			error("table '{str}': vector columns cannot be used together with layers",
 			      &config->name);
 	}
 
-	// create sidetable
-	auto sidetable = sidetable_allocate(config);
-	sidetable->table = table;
-	sidetable->config->timeline.rel = &sidetable->rel;
-	rels_create(&self->rels, tr, &sidetable->rel);
+	// create layer
+	auto layer = layer_allocate(config);
+	layer->table = table;
+	layer->config->timeline.rel = &layer->rel;
+	rels_create(&self->rels, tr, &layer->rel);
 
-	// register sidetable timeline
+	// register layer timeline
 	auto timelines = &table->timelines;
-	timelines_add(timelines, &sidetable->config->timeline);
+	timelines_add(timelines, &layer->config->timeline);
 	return true;
 }

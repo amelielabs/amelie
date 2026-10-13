@@ -44,11 +44,11 @@ catalog_depends(Catalog* self, Rel* rel, Rel* at)
 	switch (rel->type) {
 	case REL_TABLE:
 	{
-		if (at->type == REL_SIDETABLE)
+		if (at->type == REL_LAYER)
 		{
-			// sidetable depends on the table
-			auto sidetable = sidetable_of(at);
-			dep = sidetable->table == table_of(rel);
+			// layer depends on the table
+			auto layer = layer_of(at);
+			dep = layer->table == table_of(rel);
 		} else
 		if (at->type == REL_UDF)
 		{
@@ -58,7 +58,7 @@ catalog_depends(Catalog* self, Rel* rel, Rel* at)
 		}
 		break;
 	}
-	case REL_SIDETABLE:
+	case REL_LAYER:
 	{
 		if (at->type == REL_UDF)
 		{
@@ -180,11 +180,11 @@ catalog_deps_validate_user(Catalog* self, Str* user, bool error_on_match)
 			dep = self->iface->udf_depends(udf, user, NULL);
 			break;
 		}
-		case REL_SIDETABLE:
+		case REL_LAYER:
 		{
-			// sidetable depends on the user
-			auto sidetable = sidetable_of(at);
-			dep = str_compare(&sidetable->config->table_user, user);
+			// layer depends on the user
+			auto layer = layer_of(at);
+			dep = str_compare(&layer->config->table_user, user);
 			break;
 		}
 		default:

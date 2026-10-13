@@ -469,7 +469,7 @@ parse_table_partitions(Stmt* self, TableConfig* table_config, int partitions)
 }
 
 static void
-parse_table_create_sidetable(Stmt* self, Str* user, Str* name)
+parse_table_create_layer(Stmt* self, Str* user, Str* name)
 {
 	// CREATE TABLE [IF NOT EXISTS] name ON name
 	// [DESCRIPTION]
@@ -488,18 +488,18 @@ parse_table_create_sidetable(Stmt* self, Str* user, Str* name)
 	if (! table)
 		stmt_error(self, path, "table not found");
 
-	// calculate sidetable id
+	// calculate layer id
 	uint32_t id = table->timelines.max + 1;
 
-	// create sidetable config
-	auto config = sidetable_config_allocate();
-	stmt->config_sidetable = config;
-	sidetable_config_set_user(config, user);
-	sidetable_config_set_name(config, name);
-	sidetable_config_set_table_user(config, &table->config->user);
-	sidetable_config_set_table(config, &table->config->name);
+	// create layer config
+	auto config = layer_config_allocate();
+	stmt->config_layer = config;
+	layer_config_set_user(config, user);
+	layer_config_set_name(config, name);
+	layer_config_set_table_user(config, &table->config->user);
+	layer_config_set_table(config, &table->config->name);
 
-	// set sidetable timeline
+	// set layer timeline
 	auto timeline = &config->timeline;
 	timeline_set_timeline(timeline, id);
 
@@ -518,7 +518,7 @@ parse_table_create_sidetable(Stmt* self, Str* user, Str* name)
 		if (str_is_case(&name->string, "description", 11))
 		{
 			auto text = stmt_expect(self, KSTRING);
-			sidetable_config_set_description(config, &text->string);
+			layer_config_set_description(config, &text->string);
 			continue;
 		}
 
@@ -574,7 +574,7 @@ parse_table_create(Stmt* self)
 	// [ON name]
 	if (stmt_if(self, KON))
 	{
-		parse_table_create_sidetable(self, &user, &name);
+		parse_table_create_layer(self, &user, &name);
 		return;
 	}
 

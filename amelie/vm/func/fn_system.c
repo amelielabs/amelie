@@ -34,8 +34,8 @@ enum
 	SHOW_USER,
 	SHOW_TABLES,
 	SHOW_TABLE,
-	SHOW_SIDETABLES,
-	SHOW_SIDETABLE,
+	SHOW_LAYERS,
+	SHOW_LAYER,
 	SHOW_FUNCTIONS,
 	SHOW_FUNCTION,
 	SHOW_RELS,
@@ -91,8 +91,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_USER,          "user",          4,  SHOW_YES,   true  },
 	{ SHOW_TABLES,        "tables",        6,  SHOW_NO,    false },
 	{ SHOW_TABLE,         "table",         5,  SHOW_YES,   true  },
-	{ SHOW_SIDETABLES,    "sidetables",    10, SHOW_NO,    false },
-	{ SHOW_SIDETABLE,     "sidetable",     9,  SHOW_YES,   true  },
+	{ SHOW_LAYERS,        "layers",        6,  SHOW_NO,    false },
+	{ SHOW_LAYER,         "layer",         5,  SHOW_YES,   true  },
 	{ SHOW_FUNCTIONS,     "functions",     9,  SHOW_NO,    false },
 	{ SHOW_FUNCTION,      "function",      8,  SHOW_YES,   true  },
 	{ SHOW_RELS,          "rels",          4,  SHOW_NO,    false },
@@ -326,14 +326,14 @@ fn_show(Call* self)
 		rels_list(&catalog->rels, REL_TABLE, buf, user_by, user, &name, flags);
 		break;
 	}
-	case SHOW_SIDETABLES:
+	case SHOW_LAYERS:
 	{
-		rels_list(&catalog->rels, REL_SIDETABLE, buf, user_by, user, NULL, flags);
+		rels_list(&catalog->rels, REL_LAYER, buf, user_by, user, NULL, flags);
 		break;
 	}
-	case SHOW_SIDETABLE:
+	case SHOW_LAYER:
 	{
-		rels_list(&catalog->rels, REL_SIDETABLE, buf, user_by, user, &name, flags);
+		rels_list(&catalog->rels, REL_LAYER, buf, user_by, user, &name, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:

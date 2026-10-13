@@ -210,12 +210,12 @@ dst_validate_index(DstUser* self, DstRel* rel)
 }
 
 static void
-dst_validate_sidetable(DstUser* self, DstRel* rel)
+dst_validate_layer(DstUser* self, DstRel* rel)
 {
 	auto client = self->client;
 
-	// sidetable
-	dst_execute(self->dst, client, "SELECT id, state FROM sidetable_{u64}_{u64}",
+	// layer
+	dst_execute(self->dst, client, "SELECT id, state FROM layer_{u64}_{u64}",
 	            rel->parent->id, rel->id);
 	Str content;
 	buf_str(&client->reply.content, &content);
@@ -256,18 +256,18 @@ dst_validate_sidetable(DstUser* self, DstRel* rel)
 		auto ref = dst_rel_get(rel, key);
 		if (! ref)
 		{
-			error("sidetable_{u64}_{u64}: key {u64} is missing",
+			error("layer_{u64}_{u64}: key {u64} is missing",
 			      rel->parent->id, rel->id, key);
 		} else
 		{
 			if (ref->value != value)
-				error("sidetable_{u64}_{u64}: key {u64} value expected '{i64}' got '{i64}'",
+				error("layer_{u64}_{u64}: key {u64} value expected '{i64}' got '{i64}'",
 				      rel->parent->id, rel->id, ref->key, ref->value, value);
 		}
 		count++;
 	}
 	if (count != rel->state.count)
-		error("sidetable_{u64}_{u64}: keys count expected '{d}' got '{d}'",
+		error("layer_{u64}_{u64}: keys count expected '{d}' got '{d}'",
 		      rel->parent->id, rel->id, rel->state.count, count);
 }
 
@@ -290,9 +290,9 @@ dst_validate_user(DstUser* self)
 			dst_validate_table_vector(self, rel);
 			break;
 		}
-		case DST_REL_SIDETABLE:
+		case DST_REL_LAYER:
 		{
-			dst_validate_sidetable(self, rel);
+			dst_validate_layer(self, rel);
 			break;
 		}
 		case DST_REL_INDEX:

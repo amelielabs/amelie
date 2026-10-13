@@ -119,7 +119,7 @@ id
 0
 1
 2
-# test: create sidetable
+# test: create layer
 create table a on test;
 insert into a values (3), (4);
 select * from a;
@@ -139,7 +139,7 @@ id
 7
 8
 5
-select timeline from show sidetables verbose;
+select timeline from show layers verbose;
 
 timeline
 ────────
@@ -160,7 +160,7 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 3
-select timeline from show sidetables verbose;
+select timeline from show layers verbose;
 
 timeline
 ────────
@@ -214,7 +214,7 @@ select show('state').checkpoint;
 checkpoint
 ──────────
 8
-select timeline from show sidetables verbose;
+select timeline from show layers verbose;
 
 timeline
 ────────
@@ -704,8 +704,8 @@ rels
   "description": ""
 }
 create user x;
-alter user x set limit sidetables = 0;
-alter user amelie set limit sidetables = 0;
+alter user x set limit layers = 0;
+alter user amelie set limit layers = 0;
 # test: restart/recover (checkpoint)
 checkpoint;
 disconnect S0;
@@ -718,7 +718,7 @@ limits
 ──────
 {
   "send": 3145728,
-  "sidetables": 0
+  "layers": 0
 }
 show rels;
 

@@ -12,25 +12,25 @@
 //
 
 static inline int
-sidetable_op_create(Buf* self, SidetableConfig* config)
+layer_op_create(Buf* self, LayerConfig* config)
 {
 	// [op, config]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_SIDETABLE_CREATE);
-	sidetable_config_write(config, self, 0);
+	encode_int(self, DDL_LAYER_CREATE);
+	layer_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }
 
-static inline SidetableConfig*
-sidetable_op_create_read(uint8_t* op)
+static inline LayerConfig*
+layer_op_create_read(uint8_t* op)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_SIDETABLE_CREATE);
-	auto config = sidetable_config_read(&op);
+	assert(cmd == DDL_LAYER_CREATE);
+	auto config = layer_config_read(&op);
 	unpack_array_end(&op);
 	return config;
 }

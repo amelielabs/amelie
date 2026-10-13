@@ -28,7 +28,7 @@ link_stream_create(Link* self, Streams* streams)
 		error("stream: relation {str}.{str} not found",
 		      &api->rel_user, &api->rel);
 
-	// table or sidetable
+	// table or layer
 	Timeline* timeline;
 	Parts*    parts;
 	if (rel->type == REL_TABLE)
@@ -37,11 +37,11 @@ link_stream_create(Link* self, Streams* streams)
 		timeline = &table->timelines.main;
 		parts    = &table->parts;
 	} else
-	if (rel->type == REL_SIDETABLE)
+	if (rel->type == REL_LAYER)
 	{
-		auto sidetable = sidetable_of(rel);
-		timeline = &sidetable->config->timeline;
-		parts    = &sidetable->table->parts;
+		auto layer = layer_of(rel);
+		timeline = &layer->config->timeline;
+		parts    = &layer->table->parts;
 	} else {
 		error("stream: relation {str}.{str} cannot be used for streaming",
 		      rel->user, rel->name);

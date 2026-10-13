@@ -169,8 +169,8 @@ emit_ddl(Compiler* self)
 	case STMT_CREATE_TABLE:
 	{
 		auto arg = ast_table_create_of(stmt->ast);
-		if (arg->config_sidetable)
-			offset = sidetable_op_create(data, arg->config_sidetable);
+		if (arg->config_layer)
+			offset = layer_op_create(data, arg->config_layer);
 		else
 			offset = table_op_create(data, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;

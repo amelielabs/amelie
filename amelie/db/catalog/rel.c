@@ -41,8 +41,8 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 	}
 
 	// validate type
-	if (type == REL_TABLE && rel->type == REL_SIDETABLE)
-		type = REL_SIDETABLE;
+	if (type == REL_TABLE && rel->type == REL_LAYER)
+		type = REL_LAYER;
 
 	if (rel->type != type)
 		error("relation '{str}': is not a {s}", name, rel_type_of(type));
@@ -75,8 +75,8 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 	}
 
 	// force commit pending prepared transactions
-	if (type == REL_SIDETABLE)
-		table_sync(sidetable_of(rel)->table);
+	if (type == REL_LAYER)
+		table_sync(layer_of(rel)->table);
 
 	// self
 	catalog_drop_of(self, tr, rel);
@@ -147,8 +147,8 @@ catalog_rename(Catalog* self,
 	}
 
 	// validate type
-	if (type == REL_TABLE && rel->type == REL_SIDETABLE)
-		type = REL_SIDETABLE;
+	if (type == REL_TABLE && rel->type == REL_LAYER)
+		type = REL_LAYER;
 
 	if (rel->type != type)
 		error("relation '{str}': is not a {s}", name, rel_type_of(type));
@@ -228,7 +228,7 @@ catalog_grant_mask(RelType type)
 			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
 			PERM_DELETE | PERM_CREATE_TABLE;
 		break;
-	case REL_SIDETABLE:
+	case REL_LAYER:
 		perms_all =
 			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
 			PERM_DELETE;
@@ -411,8 +411,8 @@ catalog_describe(Catalog* self,
 	}
 
 	// validate type
-	if (type == REL_TABLE && rel->type == REL_SIDETABLE)
-		type = REL_SIDETABLE;
+	if (type == REL_TABLE && rel->type == REL_LAYER)
+		type = REL_LAYER;
 
 	if (rel->type != type)
 		error("relation '{str}': is not a {s}", name, rel_type_of(type));

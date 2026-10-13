@@ -1,13 +1,13 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: create sidetable
+# test: create layer
 create table main (id int primary key);
 insert into main values (1);
 create table a on main;
-show sidetables;
+show layers;
 
-sidetables
-──────────
+layers
+──────
 {
   "user": "amelie",
   "name": "a",
@@ -17,7 +17,7 @@ sidetables
 }
 drop table a;
 drop table main;
-# test: create sidetable (insert)
+# test: create layer (insert)
 create table main (id int primary key);
 insert into main values (1);
 create table a on main;
@@ -35,9 +35,9 @@ id
 ──
 1
 drop table main;
-error: table 'main': depends on sidetable 'amelie.a'
+error: table 'main': depends on layer 'amelie.a'
 drop table main cascade;
-# test: create sidetable (update)
+# test: create layer (update)
 create table main (id int primary key, data int);
 insert into main values (1, 0);
 insert into main values (2, 0);
@@ -57,7 +57,7 @@ id  data
 2   0
 3   0
 4   0
-# test: create sidetable (delete/insert)
+# test: create layer (delete/insert)
 delete from a where id < 4;
 select * from a;
 
@@ -89,16 +89,16 @@ id  data
 2   0
 3   0
 4   0
-# test: create sidetable description
+# test: create layer description
 create table x on main description;
 error: create table x on main description❰;❱ ⟵ string expected
 create table x on main description 1;
 error: create table x on main description ❰1❱ ⟵ string expected
 create table x on main description 'test test';
-show sidetable x;
+show layer x;
 
-sidetable
-─────────
+layer
+─────
 {
   "user": "amelie",
   "name": "x",
@@ -106,7 +106,7 @@ sidetable
   "table_user": "amelie",
   "table": "main"
 }
-# test: alter sidetable rename to
+# test: alter layer rename to
 alter table a rename to b;
 select * from b;
 
@@ -123,12 +123,12 @@ id  data
 2   0
 3   0
 4   0
-# test: alter sidetable description
+# test: alter layer description
 alter table x description '__renamed';
-show sidetable x;
+show layer x;
 
-sidetable
-─────────
+layer
+─────
 {
   "user": "amelie",
   "name": "x",
@@ -136,12 +136,12 @@ sidetable
   "table_user": "amelie",
   "table": "main"
 }
-# test: drop parent sidetable
+# test: drop parent layer
 drop table b;
-show sidetables;
+show layers;
 
-sidetables
-──────────
+layers
+──────
 {
   "user": "amelie",
   "name": "x",
@@ -149,7 +149,7 @@ sidetables
   "table_user": "amelie",
   "table": "main"
 }
-# test: cascade (parent sidetable)
+# test: cascade (parent layer)
 create table b on main;
 drop table main cascade;
 # test: cascade (table)
@@ -160,10 +160,10 @@ insert into main values (3, 0);
 insert into main values (4, 0);
 create table a on main;
 create table b on main;
-show sidetables;
+show layers;
 
-sidetables
-──────────
+layers
+──────
 {
   "user": "amelie",
   "name": "a",
@@ -179,12 +179,12 @@ sidetables
   "table": "main"
 }
 drop table main;
-error: table 'main': depends on sidetable 'amelie.a' and 1 more
+error: table 'main': depends on layer 'amelie.a' and 1 more
 drop table main cascade;
-show sidetables;
+show layers;
 
-sidetables
-──────────
+layers
+──────
 # test: cascade (table, udf)
 create table main (id int primary key, data int);
 create table a on main;
@@ -194,12 +194,12 @@ begin
    return select count(*) from main;
 end;
 drop table main;
-error: table 'main': depends on sidetable 'amelie.a' and 2 more
+error: table 'main': depends on layer 'amelie.a' and 2 more
 drop table main cascade;
-show sidetables;
+show layers;
 
-sidetables
-──────────
+layers
+──────
 show functions;
 
 functions
@@ -220,18 +220,18 @@ select * from a;
 id
 ──
 drop table main cascade;
-# test: create sidetable (with vector column)
+# test: create layer (with vector column)
 create table test (id int primary key, v vector(1));
 create table x on test;
-error: table 'x': vector columns cannot be used together with sidetables
+error: table 'x': vector columns cannot be used together with layers
 drop table test;
 # test: add column (vector column)
 create table test (id int primary key);
 create table x on test;
 alter table test add column v vector(1);
-error: table 'test': vector columns cannot be used together with sidetables
+error: table 'test': vector columns cannot be used together with layers
 drop table test;
-error: table 'test': depends on sidetable 'amelie.x'
+error: table 'test': depends on layer 'amelie.x'
 drop table test cascade;
 disconnect S0;
 close E0;
