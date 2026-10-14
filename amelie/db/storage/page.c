@@ -41,10 +41,10 @@ page_free(Page* self)
 }
 
 Page*
-page_load(Id* id, uint64_t checkpoint)
+page_load(uint64_t checkpoint, uint32_t psn)
 {
 	char path[PATH_MAX];
-	id_path(id, path, checkpoint, false);
+	page_path(path, checkpoint, psn, false);
 
 	// open file
 	File file;
@@ -58,12 +58,12 @@ page_load(Id* id, uint64_t checkpoint)
 
 	// validate version
 	if (header.version != 0)
-		error("storage: file '{str}' has incompatible version", &file.path);
+		error("storage: file '{str}' has incompatible version", path);
 
 	// validate header crc
 	uint32_t crc = runtime()->crc(0, &header.crc_data, sizeof(header) - sizeof(uint32_t));
 	if (crc != header.crc)
-		error("storage: file '{str}' header crc mismatch", &file.path);
+		error("storage: file '{str}' header crc mismatch", path);
 
 	// validate size
 	uint64_t size;
@@ -72,7 +72,7 @@ page_load(Id* id, uint64_t checkpoint)
 	else
 		size = sizeof(header) + header.position;
 	if (file.size != size)
-		error("storage: file '{str}' header size mismatch", &file.path);
+		error("storage: file '{str}' header size mismatch", path);
 
 	// allocate page
 	auto self = page_allocate(header.size);
@@ -100,7 +100,7 @@ page_load(Id* id, uint64_t checkpoint)
 		{
 			crc = runtime()->crc(0, buf->start, buf_size(buf));
 			if (crc != header.crc_data)
-				error("storage: file '{str}' data crc mismatch", &file.path);
+				error("storage: file '{str}' data crc mismatch", path);
 		}
 
 		encoder_decode(&ec, self->data,
@@ -119,7 +119,7 @@ page_load(Id* id, uint64_t checkpoint)
 		{
 			crc = runtime()->crc(0, page_data, page_size);
 			if (crc != header.crc_data)
-				error("storage: file '{str}' data crc mismatch", &file.path);
+				error("storage: file '{str}' data crc mismatch", path);
 		}
 	}
 
@@ -129,6 +129,9 @@ page_load(Id* id, uint64_t checkpoint)
 size_t
 page_save(Page* self, uint64_t checkpoint)
 {
+	char path[PATH_MAX];
+	page_path(path, checkpoint, self->psn, true);
+
 	// prepare encoder
 	Encoder ec;
 	encoder_init(&ec);
@@ -137,9 +140,6 @@ page_save(Page* self, uint64_t checkpoint)
 
 	Page header;
 	memcpy(&header, self, sizeof(Page));
-
-	char path[PATH_MAX];
-	id_path(&self->id, path, checkpoint, true);
 
 	// create file
 	File file;

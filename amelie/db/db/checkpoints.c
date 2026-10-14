@@ -112,7 +112,7 @@ checkpoints_read(Checkpoints* self)
 }
 
 static void
-checkpoints_open_schema(Checkpoints* self, Ids* ids)
+checkpoints_open_schema(Checkpoints* self, Manifest* manifest)
 {
 	// restore last checkpoint schema
 	char path[PATH_MAX];
@@ -132,8 +132,8 @@ checkpoints_open_schema(Checkpoints* self, Ids* ids)
 	eval_create(&eval);
 	defer(eval_free, &eval);
 
-	// set ids used during recovery
-	catalog->ids = ids;
+	// set manifest used during recovery
+	catalog->manifest = manifest;
 
 	// parse and execute statements
 	Str command;
@@ -143,7 +143,7 @@ checkpoints_open_schema(Checkpoints* self, Ids* ids)
 		separator_advance(&sep);
 	}
 
-	catalog->ids = NULL;
+	catalog->manifest = NULL;
 }
 
 void
@@ -160,13 +160,20 @@ checkpoints_open(Checkpoints* self)
 	state_checkpoint_set(id);
 	state_lsn_follow(id);
 
-	// read checkpoint directory
-	Ids ids;
-	ids_init(&ids);
-	defer(ids_free, &ids);
-	ids_read(&ids, 	id);
+	// read manifest
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/checkpoint/{u64}/manifest.json",
+	       state_directory(), state_checkpoint());
+	Manifest manifest;
+	manifest_init(&manifest);
+	defer(manifest_free, &manifest);
+	manifest_open(&manifest, path);
 
-	checkpoints_open_schema(self, &ids);
+	// execute schema.sql
+	checkpoints_open_schema(self, &manifest);
+
+	// reset psn
+	state_psn_set(manifest.psn);
 }
 
 void

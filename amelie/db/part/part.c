@@ -23,12 +23,10 @@ Part*
 part_allocate(PartConfig* config, PartArg* arg)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
-	Id id;
-	id_set(&id, arg->rel->id, config->id);
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->in_progress   = NULL;
-	self->heap          = heap_allocate(arg->retention, &id);
+	self->heap          = heap_allocate(arg->retention);
 	self->config        = part_config_copy(config);
 	self->arg           = arg;
 	self->streams       = NULL;
@@ -68,15 +66,13 @@ part_free(Part* self)
 }
 
 static void
-part_open_heap(Part* self, Ids* ids)
+part_open_heap(Part* self, ManifestPart* ref)
 {
 	auto heap    = self->heap;
 	auto storage = &heap->storage;
 
 	// open partition page files
-	Id filter;
-	id_set(&filter, self->arg->rel->id, self->config->id);
-	storage_open(storage, state_checkpoint(), ids, &filter);
+	storage_open(storage, state_checkpoint(), ref->pages_count, &ref->pages[0]);
 	heap_open(heap);
 
 	// rebuild indexes
@@ -117,54 +113,68 @@ part_open_heap(Part* self, Ids* ids)
 	}
 	usage_update(self->arg->memory, storage_size(storage));
 
-	char uuid[UUID_SZ];
-	uuid_get(self->arg->rel->id, uuid, sizeof(uuid));
 	auto total = (double)storage_size(storage) / 1024 / 1024;
-	info("recover: {s}.{d}    ({d} pages, {.2f} MB)",
-	     uuid,
+	info("recover: {str}.{str} [{d}] ({d} files, {.2f} MB)",
+	     self->arg->rel->user,
+	     self->arg->rel->name,
 	     (int)self->config->id,
 	     storage->list_count,
 	     total);
 }
 
 static void
-part_open_flat(Part* self, Flat* flat, Ids* ids)
+part_open_flat(Part* self, Flat* flat, ManifestPart* ref)
 {
-	// open partition column page files
-	Id filter;
-	id_set(&filter, self->arg->rel->id, self->config->id);
-	id_set_column(&filter, flat->column->order);
-	storage_open(&flat->storage, state_checkpoint(), ids, &filter);
+	// open partition column storage
+	auto storage = &flat->storage;
+	storage_open(storage, state_checkpoint(), ref->pages_count, &ref->pages[0]);
 	flat_open(flat);
+	usage_update(self->arg->memory, storage_size(storage));
 
-	usage_update(self->arg->memory, storage_size(&flat->storage));
-
-	char uuid[UUID_SZ];
-	uuid_get(self->arg->rel->id, uuid, sizeof(uuid));
-	auto total = (double)storage_size(&flat->storage) / 1024 / 1024;
-	info("recover: {s}.{02d}.{02d} ({d} pages, {.2f} MB)",
-	     uuid,
+	auto total = (double)storage_size(storage) / 1024 / 1024;
+	info("recover: {str}.{str} [{d}] ({d} column, {d} files, {.2f} MB)",
+	     self->arg->rel->user,
+	     self->arg->rel->name,
 	     (int)self->config->id,
-	     (int)flat->column->order,
-	     flat->storage.list_count,
+	     flat->column->order,
+	     storage->list_count,
 	     total);
 }
 
 void
-part_open(Part* self, Ids* ids)
+part_open(Part* self, Manifest* manifest)
 {
-	// heap
-	part_open_heap(self, ids);
+	auto rel = self->arg->rel;
 
-	// vector stores (per column)
+	// find partition manifest
+	auto ref = manifest_find(manifest, rel->user, rel->name, -1,
+	                         self->config->id);
+	if (! ref)
+		error("recover: manifest is missing {str}.{str} partition {d}",
+		      rel->user,
+		      rel->name,
+		      (int)self->config->id);
+
+	// open storage and rebuild indexes
+	part_open_heap(self, ref);
+
+	// open storage per vector column
 	auto columns = self->arg->columns;
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
+		ref = manifest_find(manifest, rel->user, rel->name, column->order,
+		                    self->config->id);
+		if (! ref)
+			error("recover: manifest is missing {str}.{str}.{d} partition {d}",
+			      rel->user,
+			      rel->name,
+			      column->order,
+			      (int)self->config->id);
 		auto flat = flats_at(&self->flats, column);
-		part_open_flat(self, flat, ids);
+		part_open_flat(self, flat, ref);
 	}
 }
 
@@ -178,10 +188,8 @@ part_truncate(Part* self)
 
 	auto arg = self->arg;
 
-	// create a new empty heap with matching metadata
-	Id id;
-	id_set(&id, arg->rel->id, self->config->id);
-	auto new = heap_allocate(arg->retention, &id);
+	// create a new empty heap
+	auto new = heap_allocate(arg->retention);
 	int64_t delta = -storage_size(&self->heap->storage) + storage_size(&new->storage);
 	heap_free(self->heap);
 	self->heap = new;
@@ -197,10 +205,7 @@ part_truncate(Part* self)
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
-		Id id;
-		id_set(&id, arg->rel->id, self->config->id);
-		id_set_column(&id, column->order);
-		auto flat = flat_allocate(column, &id);
+		auto flat = flat_allocate(column);
 		flats_add(flats, flat);
 	}
 

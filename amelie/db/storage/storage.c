@@ -15,14 +15,14 @@
 #include <amelie_storage.h>
 
 void
-storage_init(Storage* self, Retention* retention, Id* id, int type)
+storage_init(Storage* self, Retention* retention, int type_meta, int type)
 {
 	self->current    = NULL;
 	self->meta       = NULL;
 	self->list_count = 0;
 	self->retention  = retention;
+	self->type_meta  = type_meta;
 	self->type       = type;
-	self->id         = *id;
 	self->id_first   = 0;
 	self->id_next    = 0;
 	self->size       = 2 * 1024 * 1024;
@@ -48,11 +48,12 @@ storage_add_meta(Storage* self, int size)
 	assert(! self->meta);
 	// create and set meta page
 	auto page = page_allocate(sizeof(Page) + size);
-	page->type       = PAGE_META;
-	page->id         = self->id;
-	page->id.id_page = UINT32_MAX;
-	page->position   = sizeof(Page) + size;
-	self->meta       = page;
+	page->type     = self->type_meta;
+	page->psn      = state_psn_next();
+	page->id       = UINT32_MAX;
+	page->id_seq   = UINT32_MAX;
+	page->position = sizeof(Page) + size;
+	self->meta     = page;
 	return page;
 }
 
@@ -61,14 +62,13 @@ storage_add(Storage* self)
 {
 	// create new page
 	auto page = page_allocate(self->size);
-	page->type       = self->type;
-	page->id         = self->id;
-	page->id.id_page = self->id_next++;
-	self->current    = page;
+	page->type    = self->type;
+	page->psn     = state_psn_next();
+	page->id      = self->id_next++;
+	self->current = page;
 
-	// assign global page id
 	if (self->retention)
-		page->id_serial = retention_attach(self->retention);
+		page->id_seq = retention_attach(self->retention);
 
 	buf_write(&self->list, &page, sizeof(Page*));
 	self->list_count++;
@@ -77,45 +77,36 @@ storage_add(Storage* self)
 
 void
 storage_open(Storage* self, uint64_t checkpoint,
-             Ids*     ids,
-             Id*      filter)
+             int      pages_count,
+             int64_t* pages)
 {
 	auto retention = self->retention;
-
 	storage_free(self);
-	storage_init(self, retention, &self->id, self->type);
-
-	auto list = buf_create();
-	defer_buf(list);
-	auto meta = ids_collect(ids, list, filter);
+	storage_init(self, retention, self->type_meta, self->type);
 
 	// load meta page
-	self->meta = page_load(meta, checkpoint);
+	self->meta = page_load(checkpoint, pages[0]);
 
-	// load pages (list is sorted)
+	// load pages
 	uint32_t id = 0;
-	auto pos = (Id**)list->start;
-	auto end = (Id**)list->position;
-	while (pos < end)
+	for (auto pos = 1; pos < pages_count; pos++)
 	{
-		auto page = page_load(*pos, checkpoint);
-
+		auto page = page_load(checkpoint, pages[pos]);
 		buf_write(&self->list, &page, sizeof(Page*));
 		self->list_count++;
 
-		if (self->list_count == 1)
-			self->id_first = page->id.id_page;
+		if (pos == 1)
+			self->id_first = page->id;
 
-		if (page->id.id_page > id)
-			id = page->id.id_page;
+		if (page->id > id)
+			id = page->id;
 
 		// restore retention state
 		if (retention)
-			retention_follow(retention, page->id_serial);
+			retention_follow(retention, page->id_seq);
 
 		// last page
 		self->current = page;
-		pos++;
 	}
 
 	// set next page id
@@ -136,7 +127,7 @@ storage_pop(Storage* self)
 
 	if (self->list_count > 0)
 	{
-		self->id_first = ((Page**)self->list.start)[0]->id.id_page;
+		self->id_first = ((Page**)self->list.start)[0]->id;
 	} else
 	{
 		self->id_first = 0;
@@ -160,7 +151,7 @@ storage_retention(Storage* self, uint32_t* id)
 	while (self->list_count > 1)
 	{
 		auto first = storage_at(self, 0);
-		if (first->id_serial >= *id)
+		if (first->id_seq >= *id)
 			break;
 		auto page = storage_pop(self);
 		assert(page);

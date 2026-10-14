@@ -104,7 +104,7 @@ encode_base64(Buf* self, Buf* buf)
 always_inline hot static inline void
 encode_target(Buf* self, Str* user, Str* name)
 {
-	//  user.name
+	// user.name
 	auto size = str_size(user) + 1 + str_size(name);
 	auto size_str = data_size_str(size);
 	auto pos = buf_reserve(self, size_str);
@@ -115,6 +115,29 @@ encode_target(Buf* self, Str* user, Str* name)
 	*pos += 1;
 	memcpy(*pos, str_of(name), str_size(name));
 	*pos += str_size(name);
+}
+
+always_inline hot static inline void
+encode_target_column(Buf* self, Str* user, Str* name, int column)
+{
+	// user.name.column
+	char column_sz[16];
+	auto column_size = format(column_sz, sizeof(column_sz), "{d}", column);
+	auto size = str_size(user) + 1 +
+	            str_size(name) + 1 + column_size;
+	auto size_str = data_size_str(size);
+	auto pos = buf_reserve(self, size_str);
+	pack_raw(pos, NULL, size);
+	memcpy(*pos, str_of(user), str_size(user));
+	*pos += str_size(user);
+	memcpy(*pos, ".", 1);
+	*pos += 1;
+	memcpy(*pos, str_of(name), str_size(name));
+	*pos += str_size(name);
+	memcpy(*pos, ".", 1);
+	*pos += 1;
+	memcpy(*pos, column_sz, column_size);
+	*pos += column_size;
 }
 
 always_inline hot static inline void

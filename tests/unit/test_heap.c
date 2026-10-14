@@ -17,9 +17,6 @@ void
 test_heap(void* arg)
 {
 	unused(arg);
-	Id id;
-	id_init(&id);
-
-	auto heap = heap_allocate(NULL, &id);
+	auto heap = heap_allocate(NULL);
 	defer(heap_free, heap);
 }

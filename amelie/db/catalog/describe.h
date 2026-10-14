@@ -13,4 +13,4 @@
 
 void describe_text(Rel*, Buf*, Str*, int);
 void describe(Rel*, Buf*, Str*, int);
-void describe_catalog(Catalog*, Buf*);
+void describe_catalog(Catalog*, Buf*, Buf*);

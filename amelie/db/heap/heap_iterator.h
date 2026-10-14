@@ -130,7 +130,7 @@ heap_iterator_set(HeapIterator* self, uint32_t page_id, uint32_t page_offset)
 		return false;
 
 	auto last = storage_at(storage, storage->list_count - 1);
-	if (page_id > last->id.id_page)
+	if (page_id > last->id)
 		return false;
 
 	auto page = storage_get(storage, page_id);
@@ -142,11 +142,11 @@ heap_iterator_set(HeapIterator* self, uint32_t page_id, uint32_t page_offset)
 	auto row = heap_at(heap, page_id, page_offset);
 	if (row->offset != page_offset || row->free)
 		return false;
-	if (heap_page_of(row)->id.id_page != page_id)
+	if (heap_page_of(row)->id != page_id)
 		return false;
 
 	self->page       = page;
-	self->page_order = page->id.id_page - storage->id_first;
+	self->page_order = page->id - storage->id_first;
 	self->eof        = false;
 	self->current    = row;
 	return true;

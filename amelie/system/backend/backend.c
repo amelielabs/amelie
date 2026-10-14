@@ -27,7 +27,7 @@ backend_rpc(Rpc* rpc, void* arg)
 		// load partition heap file
 		Part* part = rpc->arg;
 		if (opt_int_of(&state()->recover) == RECOVER_CHECKPOINT)
-			part_open(part, share()->db->catalog.ids);
+			part_open(part, share()->db->catalog.manifest);
 
 		// create and start new pod
 		pods_create(&self->pods, part);

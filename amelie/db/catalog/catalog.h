@@ -27,7 +27,7 @@ struct Catalog
 	Rels       users;
 	Rels       rels;
 	Columns    channel_columns;
-	Ids*       ids;
+	Manifest*  manifest;
 	PartsIf*   iface_part;
 	EvalIf*    iface_eval;
 	CatalogIf* iface;

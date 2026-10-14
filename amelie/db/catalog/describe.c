@@ -176,9 +176,9 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 
 	// create table
 	if (!verbose && str_compare_case(self->rel.user, user))
-		buf_format(buf, "create table {str} (\n", &config->name);
+		buf_format(buf, "create table {str}\n(\n", &config->name);
 	else
-		buf_format(buf, "create table {str}.{str} (\n", &config->user,
+		buf_format(buf, "create table {str}.{str}\n(\n", &config->user,
 		           &config->name);
 
 	// (columns)
@@ -494,7 +494,66 @@ describe(Rel* self, Buf* buf, Str* user, int flags)
 }
 
 static void
-describe_rels(Rels* rels, RelType type, Buf* buf)
+describe_manifest(Table* self, Column* column, Buf* buf)
+{
+	// {}
+	encode_obj(buf);
+
+	// user
+	encode_raw(buf, "user", 4);
+	encode_str(buf, self->rel.user);
+
+	// name
+	encode_raw(buf, "name", 4);
+	encode_str(buf, self->rel.name);
+
+	// column
+	if (column)
+	{
+		encode_raw(buf, "column", 6);
+		encode_int(buf, column->order);
+	}
+
+	// timeline
+	encode_raw(buf, "timeline", 8);
+	encode_int(buf, 0);
+
+	// partitions
+	encode_raw(buf, "parts", 5);
+
+	// [{}, ...]
+	encode_array(buf);
+	list_foreach(&self->parts.list)
+	{
+		auto part = list_at(Part, link);
+
+		// []
+		encode_array(buf);
+
+		Storage* storage;
+		if (column)
+			storage = &flats_at(&part->flats, column)->storage;
+		else
+			storage = &part->heap->storage;
+
+		assert(storage->meta);
+
+		encode_int(buf, storage->meta->psn);
+		for (auto i = 0; i < storage->list_count; i++)
+		{
+			auto page = storage_at(storage, i);
+			encode_int(buf, page->psn);
+		}
+
+		encode_array_end(buf);
+	}
+	encode_array_end(buf);
+
+	encode_obj_end(buf);
+}
+
+static void
+describe_rels(Rels* rels, RelType type, Buf* schema, Buf* manifest)
 {
 	Str user;
 	str_set(&user, "amelie", 6);
@@ -505,17 +564,41 @@ describe_rels(Rels* rels, RelType type, Buf* buf)
 			continue;
 		if (rel->type == REL_USER && user_of(rel)->config->superuser)
 			continue;
-		describe_text(rel, buf, &user, 0);
-		buf_write(buf, "\n\n", 2);
+		describe_text(rel, schema, &user, 0);
+		buf_write(schema, "\n\n", 2);
+
+		// update manifest
+		if (rel->type == REL_TABLE)
+		{
+			// heap
+			auto table = table_of(rel);
+			describe_manifest(table, NULL, manifest);
+
+			// flat
+			if (table->config->columns.count_flat > 0)
+			{
+				list_foreach(&table->config->columns.list)
+				{
+					auto column = list_at(Column, link);
+					if (! column->size_flat)
+						continue;
+					describe_manifest(table, column, manifest);
+				}
+			}
+		}
 	}
 }
 
 void
-describe_catalog(Catalog* self, Buf* buf)
+describe_catalog(Catalog* self, Buf* schema, Buf* manifest)
 {
 	// users, tables, layers, udfs
-	describe_rels(&self->users, REL_USER, buf);
-	describe_rels(&self->rels, REL_TABLE, buf);
-	describe_rels(&self->rels, REL_LAYER, buf);
-	describe_rels(&self->rels, REL_UDF, buf);
+	encode_array(manifest);
+
+	describe_rels(&self->users, REL_USER, schema, NULL);
+	describe_rels(&self->rels, REL_TABLE, schema, manifest);
+	describe_rels(&self->rels, REL_LAYER, schema, manifest);
+	describe_rels(&self->rels, REL_UDF, schema, NULL);
+
+	encode_array_end(manifest);
 }

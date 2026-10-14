@@ -25,7 +25,7 @@ stream_export(Stream* self, Row* row)
 
 	auto buf = &self->data;
 	buf_format(buf, "id: {u64}:{u32}:{u32}\n", self->part->config->id,
-	           heap_page_of(row)->id.id_page,
+	           heap_page_of(row)->id,
 	           row->offset);
 	buf_write(buf, "data: ", 6);
 	buf_write(buf, "{", 1);

@@ -27,8 +27,8 @@ typedef struct Checkpoint     Checkpoint;
 
 struct CheckpointPage
 {
-	Id    id;
-	Page* page;
+	uint64_t psn;
+	Page*    page;
 };
 
 struct Checkpoint
@@ -36,6 +36,7 @@ struct Checkpoint
 	uint64_t lsn;
 	Buf      list;
 	Buf      schema;
+	Buf      manifest;
 	pid_t    pid;
 	Notify   notify;
 	Event    on_complete;
@@ -48,6 +49,7 @@ checkpoint_init(Checkpoint* self, uint64_t lsn)
 	self->pid = -1;
 	buf_init(&self->list);
 	buf_init(&self->schema);
+	buf_init(&self->manifest);
 	notify_init(&self->notify);
 	event_init(&self->on_complete);
 }
@@ -58,15 +60,16 @@ checkpoint_free(Checkpoint* self)
 	notify_close(&self->notify);
 	buf_free(&self->list);
 	buf_free(&self->schema);
+	buf_free(&self->manifest);
 }
 
 static inline void
 checkpoint_add(Checkpoint* self, Page* page)
 {
 	auto ref = (CheckpointPage*)buf_emplace(&self->list, sizeof(CheckpointPage));
-	memcpy(&ref->id, &page->id, sizeof(ref->id));
+	ref->psn = page->psn;
 
-	// add page it has pending changes
+	// add page if has pending changes
 	ref->page = NULL;
 	if (page->changed)
 	{
@@ -87,27 +90,55 @@ checkpoint_add_storage(Checkpoint* self, Storage* storage)
 }
 
 static void
-checkpoint_create(Checkpoint* self)
+checkpoint_create_schema(Checkpoint* self)
 {
-	// create checkpoint/<lsn>.incomplete
-	fs_mkdir(0755, "{s}/checkpoint/{u64}.incomplete",
-	         state_directory(), self->lsn);
-
 	// create schema.sql
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/schema.sql",
 	       state_directory(), self->lsn);
-
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
-	if (! buf_empty(&self->schema))
-	{
-		file_write_buf(&file, &self->schema);
-		if (opt_int_of(&config()->storage_sync))
-			file_sync(&file);
-	}
+	if (buf_empty(&self->schema))
+		return;
+	file_write_buf(&file, &self->schema);
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&file);
+}
+
+static void
+checkpoint_create_manifest(Checkpoint* self)
+{
+	// create manifest.json
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/manifest.json",
+	       state_directory(), self->lsn);
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
+	if (buf_empty(&self->manifest))
+		return;
+
+	file_write_buf(&file, &self->manifest);
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&file);
+}
+
+static void
+checkpoint_create(Checkpoint* self)
+{
+	// create checkpoint/<lsn>.incomplete
+	char path[PATH_MAX];
+	fs_mkdir(0755, "{s}/checkpoint/{u64}.incomplete",
+	         state_directory(), self->lsn);
+
+	// create schema.sql
+	checkpoint_create_schema(self);
+
+	// create manifest.json
+	checkpoint_create_manifest(self);
 
 	// create partition files
 	auto pos = (CheckpointPage*)self->list.start;
@@ -118,8 +149,8 @@ checkpoint_create(Checkpoint* self)
 		if (! pos->page)
 		{
 			char path_prev[PATH_MAX];
-			id_path(&pos->id, path_prev, state_checkpoint(), false);
-			id_path(&pos->id, path, self->lsn, true);
+			page_path(path_prev, state_checkpoint(), pos->psn, false);
+			page_path(path, self->lsn, pos->psn, true);
 			auto rc = link(path_prev, path);
 			if (rc == -1)
 				error_system();
@@ -157,8 +188,6 @@ checkpoint_abort(Checkpoint* self)
 {
 	fs_rmdir("{s}/checkpoint/{u64}.incomplete", state_directory(),
 	         self->lsn);
-
-	error("checkpoint: {u64} failed", self->lsn);
 }
 
 static inline void
@@ -228,14 +257,19 @@ checkpoint_wait(Checkpoint* self)
 		failed = true;
 	}
 	if (failed)
-		error("checkpoint: failed");
+		error("checkpoint: {u64} failed", self->lsn);
 }
 
 static void
 checkpoint_prepare(Checkpoint* self, Catalog* catalog)
 {
-	// create schema.sql content
-	describe_catalog(catalog, &self->schema);
+	// dump catalog
+	Buf buf;
+	buf_init(&buf);
+	defer_buf(&buf);
+	describe_catalog(catalog, &self->schema, &buf);
+	auto pos = buf.start;
+	json_export_pretty(&self->manifest, runtime()->timezone, &pos);
 
 	// collect pages
 	list_foreach(&catalog->rels.list)
@@ -274,6 +308,9 @@ checkpoint(Checkpoints* checkpoints, Catalog* catalog)
 	// take exclusive catalog lock
 	auto catalog_lock = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
 
+	cancel_pause();
+	defer(coroutine_cancel_resume, am_self());
+
 	Checkpoint cp;
 	checkpoint_init(&cp, state_lsn());
 	defer(checkpoint_free, &cp);
@@ -294,12 +331,7 @@ checkpoint(Checkpoints* checkpoints, Catalog* catalog)
 		rethrow();
 
 	// wait for completion
-	on_error = error_catch (
-		checkpoint_wait(&cp);
-	);
-	if (on_error) {
-		error("checkpoint: {u64} failed", cp.lsn);
-	}
+	checkpoint_wait(&cp);
 
 	// set checkpoint
 	checkpoints_add(checkpoints, cp.lsn);

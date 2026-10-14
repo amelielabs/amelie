@@ -76,12 +76,12 @@ heap_prepare(Heap* self)
 }
 
 Heap*
-heap_allocate(Retention* retention, Id* id)
+heap_allocate(Retention* retention)
 {
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets = NULL;
 	self->header  = NULL;
-	storage_init(&self->storage, retention, id, PAGE_HEAP);
+	storage_init(&self->storage, retention, PAGE_HEAP_META, PAGE_HEAP);
 	heap_prepare(self);
 	return self;
 }
@@ -277,7 +277,7 @@ heap_remove(Heap* self, Row* row)
 
 	auto page = heap_page_of(row);
 	page->changed = true;
-	bucket->list        = page->id.id_page;
+	bucket->list        = page->id;
 	bucket->list_offset = row->offset;
 
 	// update total used metrics

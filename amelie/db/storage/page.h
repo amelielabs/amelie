@@ -16,19 +16,21 @@ typedef struct Page Page;
 enum
 {
 	PAGE_UNDEF,
-	PAGE_META,
+	PAGE_HEAP_META,
 	PAGE_HEAP,
+	PAGE_FLAT_META,
 	PAGE_FLAT
 };
 
 struct Page
 {
-	// 59 bytes (aligned by cache line)
+	// 56 bytes (aligned by cache line)
 	uint32_t crc;
 	uint32_t crc_data;
 	uint32_t version;
-	Id       id;
-	uint32_t id_serial;
+	uint32_t psn;
+	uint32_t id;
+	uint32_t id_seq;
 	uint8_t  type;
 	uint8_t  compression;
 	uint8_t  changed;
@@ -38,6 +40,7 @@ struct Page
 	uint32_t size_compressed;
 	uint32_t position;
 	uint32_t position_last;
+	uint8_t  padding[20];
 	uint8_t  data[];
 } packed;
 
@@ -53,7 +56,17 @@ page_end(Page* self)
 	return (uintptr_t)self + self->position;
 }
 
+static inline void
+page_path(char* path, uint64_t checkpoint, uint32_t psn, bool incomplete)
+{
+	format(path, PATH_MAX, "{s}/checkpoint/{u64}{s}/{d}",
+	       state_directory(),
+	       checkpoint,
+	       incomplete ? ".incomplete": "",
+	       psn);
+}
+
 Page*  page_allocate(uint32_t);
 void   page_free(Page*);
-Page*  page_load(Id*, uint64_t);
+Page*  page_load(uint64_t, uint32_t);
 size_t page_save(Page*, uint64_t);

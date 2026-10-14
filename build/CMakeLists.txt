@@ -183,6 +183,7 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/server/servers.c)
 
 set(AMELIE_SOURCES_DB
+    ${AMELIE_ROOT}/db/storage/manifest.c
     ${AMELIE_ROOT}/db/storage/page.c
     ${AMELIE_ROOT}/db/storage/storage.c
     ${AMELIE_ROOT}/db/flat/flat.c

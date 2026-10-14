@@ -21,11 +21,18 @@ struct Storage
 	int        list_count;
 	Retention* retention;
 	int        type;
-	Id         id;
+	int        type_meta;
 	uint32_t   id_first;
 	uint32_t   id_next;
 	int        size;
 };
+
+void  storage_init(Storage*, Retention*, int, int);
+void  storage_free(Storage*);
+Page* storage_add_meta(Storage*, int);
+Page* storage_add(Storage*);
+void  storage_open(Storage*, uint64_t, int, int64_t*);
+bool  storage_retention(Storage*, uint32_t*);
 
 always_inline static inline Page*
 storage_at(Storage* self, int order)
@@ -56,13 +63,6 @@ storage_size(Storage* self)
 {
 	return self->list_count * self->size;
 }
-
-void  storage_init(Storage*, Retention*, Id*, int);
-void  storage_free(Storage*);
-Page* storage_add_meta(Storage*, int);
-Page* storage_add(Storage*);
-void  storage_open(Storage*, uint64_t, Ids*, Id*);
-bool  storage_retention(Storage*, uint32_t*);
 
 hot static inline bool
 storage_ensure(Storage* self, uint32_t size)

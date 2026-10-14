@@ -11,9 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-// storage file id
-#include "storage/id.h"
-#include "storage/ids.h"
+// storage manifest
+#include "storage/manifest.h"
 
 // storage
 #include "storage/page.h"

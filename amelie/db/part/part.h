@@ -30,7 +30,7 @@ struct Part
 
 Part*  part_allocate(PartConfig*, PartArg*);
 void   part_free(Part*);
-void   part_open(Part*, Ids*);
+void   part_open(Part*, Manifest*);
 void   part_truncate(Part*);
 void   part_index_add(Part*, Index*);
 void   part_index_create(Part*, IndexConfig*);

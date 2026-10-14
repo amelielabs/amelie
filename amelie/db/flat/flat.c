@@ -16,7 +16,7 @@
 #include <amelie_flat.h>
 
 Flat*
-flat_allocate(Column* column, Id* id)
+flat_allocate(Column* column)
 {
 	auto self = (Flat*)am_malloc(sizeof(Flat));
 	self->dim = column->size_flat / sizeof(float);
@@ -47,7 +47,7 @@ flat_allocate(Column* column, Id* id)
 	self->column = column;
 
 	auto storage = &self->storage;
-	storage_init(storage, NULL, id, PAGE_FLAT);
+	storage_init(storage, NULL, PAGE_FLAT_META, PAGE_FLAT);
 	storage_add_meta(storage, sizeof(FlatHeader));
 
 	self->header = (FlatHeader*)storage->meta->data;
@@ -105,7 +105,7 @@ flat_add(Flat* self, int row_page, int row_offset)
 	}
 	auto page     = storage->current;
 	auto page_row = page->position_last;
-	auto page_id  = page->id.id_page;
+	auto page_id  = page->id;
 
 	// mark as used
 	flat_set(self, page_id, page_row, true);
