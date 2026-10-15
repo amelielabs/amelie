@@ -81,7 +81,7 @@ checkpoints_read(Checkpoints* self)
 {
 	// create directory
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint", state_directory());
+	format(path, sizeof(path), "{s}/storage", state_directory());
 
 	// read directory, get a list of checkpoints
 	auto dir = opendir(path);
@@ -116,7 +116,7 @@ checkpoints_open_schema(Checkpoints* self, Manifest* manifest)
 {
 	// restore last checkpoint schema
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}/schema.sql",
+	format(path, sizeof(path), "{s}/storage/{u64}/schema.sql",
 	       state_directory(), state_checkpoint());
 
 	// read file
@@ -162,7 +162,7 @@ checkpoints_open(Checkpoints* self)
 
 	// read manifest
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}/manifest.json",
+	format(path, sizeof(path), "{s}/storage/{u64}/manifest.json",
 	       state_directory(), state_checkpoint());
 	Manifest manifest;
 	manifest_init(&manifest);
@@ -205,12 +205,12 @@ checkpoints_gc(Checkpoints* self)
 
 		// rename as incomplete
 		char path[PATH_MAX];
-		format(path, sizeof(path), "{s}/checkpoint/{u64}", state_directory(), gc->id);
-		fs_rename(path, "{s}/checkpoint/{u64}.incomplete",
+		format(path, sizeof(path), "{s}/storage/{u64}", state_directory(), gc->id);
+		fs_rename(path, "{s}/storage/{u64}.incomplete",
 		          state_directory(), gc->id);
 
 		// remove
-		fs_rmdir("{s}/checkpoint/{u64}.incomplete", state_directory(), gc->id);
+		fs_rmdir("{s}/storage/{u64}.incomplete", state_directory(), gc->id);
 	}
 }
 
@@ -257,7 +257,7 @@ checkpoints_backup(CheckpointRef* ref, char* path_base)
 {
 	char path_backup[PATH_MAX];
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}",
+	format(path, sizeof(path), "{s}/storage/{u64}",
 	       state_directory(), ref->id);
 
 	auto dir = opendir(path);
@@ -277,11 +277,11 @@ checkpoints_backup(CheckpointRef* ref, char* path_base)
 			continue;
 
 		format(path, sizeof(path),
-		       "{s}/checkpoint/{u64}/{s}",
+		       "{s}/storage/{u64}/{s}",
 		       state_directory(), ref->id, entry->d_name);
 
 		format(path_backup, sizeof(path_backup),
-		       "{s}/checkpoint/{u64}/{s}",
+		       "{s}/storage/{u64}/{s}",
 		       path_base, ref->id, entry->d_name);
 
 		auto rc = link(path, path_backup);

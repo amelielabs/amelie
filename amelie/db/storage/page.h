@@ -59,7 +59,7 @@ page_end(Page* self)
 static inline void
 page_path(char* path, uint64_t checkpoint, uint32_t psn, bool incomplete)
 {
-	format(path, PATH_MAX, "{s}/checkpoint/{u64}{s}/{d}",
+	format(path, PATH_MAX, "{s}/storage/{u64}{s}/{d}",
 	       state_directory(),
 	       checkpoint,
 	       incomplete ? ".incomplete": "",

@@ -94,7 +94,7 @@ checkpoint_create_schema(Checkpoint* self)
 {
 	// create schema.sql
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/schema.sql",
+	format(path, sizeof(path), "{s}/storage/{u64}.incomplete/schema.sql",
 	       state_directory(), self->lsn);
 	File file;
 	file_init(&file);
@@ -112,7 +112,7 @@ checkpoint_create_manifest(Checkpoint* self)
 {
 	// create manifest.json
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete/manifest.json",
+	format(path, sizeof(path), "{s}/storage/{u64}.incomplete/manifest.json",
 	       state_directory(), self->lsn);
 	File file;
 	file_init(&file);
@@ -129,9 +129,9 @@ checkpoint_create_manifest(Checkpoint* self)
 static void
 checkpoint_create(Checkpoint* self)
 {
-	// create checkpoint/<lsn>.incomplete
+	// create storage/<lsn>.incomplete
 	char path[PATH_MAX];
-	fs_mkdir(0755, "{s}/checkpoint/{u64}.incomplete",
+	fs_mkdir(0755, "{s}/storage/{u64}.incomplete",
 	         state_directory(), self->lsn);
 
 	// create schema.sql
@@ -164,7 +164,7 @@ checkpoint_create(Checkpoint* self)
 		// todo: info
 	}
 
-	format(path, sizeof(path), "{s}/checkpoint/{u64}.incomplete",
+	format(path, sizeof(path), "{s}/storage/{u64}.incomplete",
 	       state_directory(), self->lsn);
 
 	// sync checkpoint dir
@@ -173,10 +173,10 @@ checkpoint_create(Checkpoint* self)
 
 	// sync checkpoint base dir
 	if (opt_int_of(&config()->storage_sync))
-		fs_syncdir("{s}/checkpoint", state_directory());
+		fs_syncdir("{s}/storage", state_directory());
 
 	// rename as completed
-	fs_rename(path, "{s}/checkpoint/{u64}", state_directory(),
+	fs_rename(path, "{s}/storage/{u64}", state_directory(),
 	          self->lsn);
 
 	// done
@@ -186,7 +186,7 @@ checkpoint_create(Checkpoint* self)
 static void
 checkpoint_abort(Checkpoint* self)
 {
-	fs_rmdir("{s}/checkpoint/{u64}.incomplete", state_directory(),
+	fs_rmdir("{s}/storage/{u64}.incomplete", state_directory(),
 	         self->lsn);
 }
 
@@ -317,7 +317,7 @@ checkpoint(Checkpoints* checkpoints, Catalog* catalog)
 	checkpoint_prepare(&cp, catalog);
 
 	info("");
-	info("checkpoint: checkpoint/{u64}", cp.lsn);
+	info("checkpoint: storage/{u64}", cp.lsn);
 
 	// run
 	auto on_error = error_catch (

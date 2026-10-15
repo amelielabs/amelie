@@ -148,8 +148,8 @@ backup_main(Backup* self)
 	fs_mkdir(0755, "{s}", path);
 	fs_mkdir(0755, "{s}/security", path);
 	fs_mkdir(0755, "{s}/backup", path);
-	fs_mkdir(0755, "{s}/checkpoint", path);
-	fs_mkdir(0755, "{s}/checkpoint/{u64}", path, state_checkpoint());
+	fs_mkdir(0755, "{s}/storage", path);
+	fs_mkdir(0755, "{s}/storage/{u64}", path, state_checkpoint());
 	fs_mkdir(0755, "{s}/wal", path);
 
 	// amelie.config
@@ -167,8 +167,8 @@ backup_main(Backup* self)
 	// sync all directories
 	if (opt_int_of(&config()->storage_sync))
 	{
-		fs_syncdir("{s}/checkpoint", path);
-		fs_syncdir("{s}/checkpoint/{u64}", path, state_checkpoint());
+		fs_syncdir("{s}/storage", path);
+		fs_syncdir("{s}/storage/{u64}", path, state_checkpoint());
 		fs_syncdir("{s}/wal", path);
 		fs_syncdir("{s}", path);
 		fs_syncdir("{s}/backup", state_directory());
