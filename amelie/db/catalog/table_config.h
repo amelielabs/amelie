@@ -18,7 +18,6 @@ struct TableConfig
 	Str     user;
 	Str     name;
 	Str     description;
-	Uuid    id;
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
@@ -40,7 +39,6 @@ table_config_allocate(void)
 	str_init(&self->name);
 	str_init(&self->user);
 	str_init(&self->description);
-	uuid_init(&self->id);
 	columns_init(&self->columns);
 	list_init(&self->indexes);
 	keys_init(&self->partitioning, &self->columns);
@@ -93,12 +91,6 @@ table_config_set_description(TableConfig* self, Str* value)
 {
 	str_free(&self->description);
 	str_copy(&self->description, value);
-}
-
-static inline void
-table_config_set_id(TableConfig* self, Uuid* id)
-{
-	self->id = *id;
 }
 
 static inline void
@@ -161,7 +153,6 @@ table_config_copy(TableConfig* self)
 	table_config_set_name(copy, &self->name);
 	table_config_set_user(copy, &self->user);
 	table_config_set_description(copy, &self->description);
-	table_config_set_id(copy, &self->id);
 	table_config_set_retention(copy, self->retention);
 	columns_copy(&copy->columns, &self->columns);
 
@@ -200,7 +191,6 @@ table_config_read(uint8_t** pos)
 		{ DECODE_STR,   "user",         &self->user        },
 		{ DECODE_STR,   "name",         &self->name        },
 		{ DECODE_STR,   "description",  &self->description },
-		{ DECODE_UUID,  "id",           &self->id          },
 		{ DECODE_ARRAY, "columns",      &pos_columns       },
 		{ DECODE_ARRAY, "indexes",      &pos_indexes       },
 		{ DECODE_ARRAY, "partitioning", &pos_partitioning  },
@@ -261,10 +251,6 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
-
-	// id
-	encode_raw(buf, "id", 2);
-	encode_uuid(buf, &self->id);
 
 	// columns
 	encode_raw(buf, "columns", 7);

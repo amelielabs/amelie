@@ -225,14 +225,6 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 	buf_write(buf, ")", 1);
 	buf_write(buf, "\n)\n", 3);
 
-	// id
-	if (verbose)
-	{
-		char id[UUID_SZ];
-		uuid_get(&config->id, id, sizeof(id));
-		buf_format(buf, "  id {qs}\n", id);
-	}
-
 	// description
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);

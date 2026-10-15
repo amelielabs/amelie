@@ -76,7 +76,6 @@ table_allocate(TableConfig* config,
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_description(rel, &self->config->description);
-	rel_set_id(rel, &self->config->id);
 	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)table_show);
 	rel_set_free(rel, (RelFree)table_free);

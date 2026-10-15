@@ -584,12 +584,6 @@ parse_table_create(Stmt* self)
 	table_config_set_user(config, &user);
 	table_config_set_name(config, &name);
 
-	Uuid id;
-	uuid_init(&id);
-	auto local = self->parser->local;
-	uuid_generate(&id, &local->random, local->time_ms);
-	table_config_set_id(config, &id);
-
 	// (columns)
 	parse_columns(self, config);
 
@@ -605,18 +599,6 @@ parse_table_create(Stmt* self)
 		{
 			stmt_push(self, name);
 			break;
-		}
-
-		// ID string
-		if (str_is_case(&name->string, "id", 2))
-		{
-			auto value = stmt_expect(self, KSTRING);
-			Uuid id;
-			uuid_init(&id);
-			if (uuid_set_nothrow(&id, &value->string) == -1)
-				stmt_error(self, value, "failed to parse uuid");
-			table_config_set_id(config, &id);
-			continue;
 		}
 
 		// PARTITIONS int

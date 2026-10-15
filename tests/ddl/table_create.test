@@ -325,15 +325,6 @@ select show('table', 'test', null, "verbose").partitions;
 show partitions test;
 drop table test;
 
-# test: id
-create table test (id int primary key) partitions 3 with (id "00000000-0000-0000-0000-000000000001");
-create table test (id int primary key) partitions 3 id;
-create table test (id int primary key)
-	partitions 3
-	id "00000000-0000-0000-0000-000000000001";
-select show('table', 'test', null, "verbose").id;
-drop table test;
-
 # test: description
 create table test (id int primary key) description;
 create table test (id int primary key) description 123;
