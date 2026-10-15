@@ -576,12 +576,36 @@ describe_rels(Rels* rels, RelType type, Buf* schema, Buf* manifest)
 	}
 }
 
+static void
+describe_amelie(Catalog* self, Buf* buf)
+{
+	Str user;
+	str_set(&user, "amelie", 6);
+	auto amelie = catalog_find_user(self, &user, true);
+
+	// apis
+	list_foreach(&amelie->config->apis.list)
+	{
+		auto api = list_at(Api, link);
+		buf_format(buf, "create api {qstr} ", &api->uri);
+		if (api->mcp)
+			buf_format(buf, "as mcp\n");
+		else
+			buf_format(buf, "on {str}.{str}\n",
+			           &api->rel_user, &api->rel);
+		buf_write(buf, ";", 1);
+	}
+}
+
 void
 describe_catalog(Catalog* self, Buf* schema, Buf* manifest)
 {
-	// users, tables, layers, udfs
 	encode_array(manifest);
 
+	// alter superuser
+	describe_amelie(self, schema);
+
+	// users, tables, layers, udfs
 	describe_rels(&self->users, REL_USER, schema, NULL);
 	describe_rels(&self->rels, REL_TABLE, schema, manifest);
 	describe_rels(&self->rels, REL_LAYER, schema, manifest);
