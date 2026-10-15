@@ -332,6 +332,7 @@ STATE
   "frontends": 1,
   "backends": 1,
   "lsn": 4,
+  "psn": 1,
   "checkpoint": 1
 }
 select show('state', null, null);
@@ -345,6 +346,7 @@ show
   "frontends": 1,
   "backends": 1,
   "lsn": 4,
+  "psn": 1,
   "checkpoint": 1
 }
 select show('state', null, null).directory;

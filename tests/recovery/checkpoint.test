@@ -10,15 +10,18 @@ select show('state').checkpoint;
 # test: checkpoint (no data)
 checkpoint;
 select show('state').lsn;
+select show('state').psn;
 select show('state').checkpoint;
 
 # test: create table
 create table test (id i64 primary key);
 select show('state').lsn;
+select show('state').psn;
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
+select show('state').psn;
 select show('state').checkpoint;
 
 # test: restart/recover
@@ -27,6 +30,7 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
+select show('state').psn;
 select show('state').checkpoint;
 select * from test;
 
@@ -59,6 +63,8 @@ select show('state').checkpoint;
 select * from test;
 
 # test: create layer
+select show('state').psn;
+
 create table a on test;
 insert into a values (3), (4);
 select * from a;
@@ -76,6 +82,7 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 
+select show('state').psn;
 select show('state').lsn;
 select show('state').checkpoint;
 select timeline from show layers verbose;
@@ -85,6 +92,7 @@ select * from test;
 
 # test: checkpoint
 checkpoint;
+select show('state').psn;
 select show('state').lsn;
 select show('state').checkpoint;
 
@@ -94,6 +102,7 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 
+select show('state').psn;
 select show('state').lsn;
 select show('state').checkpoint;
 select timeline from show layers verbose;

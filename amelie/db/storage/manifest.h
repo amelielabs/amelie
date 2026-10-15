@@ -27,7 +27,6 @@ struct ManifestRel
 	Str     user;
 	Str     name;
 	int64_t column;
-	int64_t timeline;
 	int     parts_count;
 	Buf     parts;
 };

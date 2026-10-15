@@ -83,6 +83,7 @@ show
   "frontends": 1,
   "backends": 1,
   "lsn": 1,
+  "psn": 0,
   "checkpoint": 1
 }
 # test: replicas

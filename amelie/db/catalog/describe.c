@@ -223,14 +223,13 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 		buf_format(buf, "{str}", &key->column->name);
 	}
 	buf_write(buf, ")", 1);
-	buf_write(buf, "\n)\n", 3);
+
+	// partitions
+	buf_format(buf, "\n) partitions {d}\n", config->parts_count);
 
 	// description
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
-
-	// partitions
-	buf_format(buf, "  partitions {d}\n", config->parts_count);
 
 	// retention
 	if (config->retention > 0)
@@ -505,10 +504,6 @@ describe_manifest(Table* self, Column* column, Buf* buf)
 		encode_raw(buf, "column", 6);
 		encode_int(buf, column->order);
 	}
-
-	// timeline
-	encode_raw(buf, "timeline", 8);
-	encode_int(buf, 0);
 
 	// partitions
 	encode_raw(buf, "parts", 5);

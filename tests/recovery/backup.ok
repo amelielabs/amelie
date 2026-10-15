@@ -47,6 +47,7 @@ state
   "frontends": 1,
   "backends": 1,
   "lsn": 1,
+  "psn": 0,
   "checkpoint": 1
 }
 create table test (id int primary key);
@@ -107,6 +108,7 @@ state
   "frontends": 1,
   "backends": 1,
   "lsn": 4,
+  "psn": 2,
   "checkpoint": 3
 }
 select * from test;

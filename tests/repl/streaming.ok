@@ -10237,6 +10237,7 @@ state
   "frontends": 1,
   "backends": 3,
   "lsn": 10016,
+  "psn": 12,
   "checkpoint": 1
 }
 watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;

@@ -19,7 +19,6 @@ manifest_rel_allocate(void)
 {
 	auto self = (ManifestRel*)am_malloc(sizeof(ManifestRel));
 	self->column      = -1;
-	self->timeline    = 0;
 	self->parts_count = 0;
 	str_init(&self->user);
 	str_init(&self->name);
@@ -68,7 +67,6 @@ manifest_read(Manifest* self, uint8_t** pos)
 		{ DECODE_STR,            "user",     &rel->user     },
 		{ DECODE_STR,            "name",     &rel->name     },
 		{ DECODE_INT|DECODE_OPT, "column",   &rel->column   },
-		{ DECODE_INT|DECODE_OPT, "timeline", &rel->timeline },
 		{ DECODE_ARRAY,          "parts",    &parts         },
 		{ 0,                      NULL,       NULL          },
 	};
