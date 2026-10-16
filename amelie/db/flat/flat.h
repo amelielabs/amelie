@@ -42,8 +42,10 @@ struct Flat
 	uint32_t    page_offset_rows;
 	uint32_t    page_offset_vectors;
 	uint32_t    dim;
-	FlatHeader* header;
 	Column*     column;
+	uint32_t    timeline;
+	Flat*       timeline_next;
+	FlatHeader* header;
 	Storage     storage;
 };
 
@@ -119,7 +121,7 @@ flat_set_at(Flat* self, uint32_t id, bool active)
 	flat_set(self, page_id, page_row, active);
 }
 
-Flat*    flat_allocate(Column*);
+Flat*    flat_allocate(Column*, uint32_t);
 void     flat_free(Flat*);
 void     flat_open(Flat*);
 uint32_t flat_add(Flat*, int, int);

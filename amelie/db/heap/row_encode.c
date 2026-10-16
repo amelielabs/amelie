@@ -17,7 +17,12 @@
 #include <amelie_heap.h>
 
 void
-row_encode_column(uint8_t* pos, Flats* flats, Column* column, Timezone* tz, Buf* buf)
+row_encode_column(uint8_t*  pos,
+                  uint32_t  timeline,
+                  Flats*    flats,
+                  Column*   column,
+                  Timezone* tz,
+                  Buf*      buf)
 {
 	// null
 	if (! pos)
@@ -79,7 +84,7 @@ row_encode_column(uint8_t* pos, Flats* flats, Column* column, Timezone* tz, Buf*
 		break;
 	case TYPE_VECTOR:
 	{
-		auto flat = flats_at(flats, column);
+		auto flat = flats_at(flats, column, timeline);
 		auto vector = flat_vector_at(flat, *(uint32_t*)pos);
 		encode_vector(buf, column->size_flat / sizeof(float), vector);
 		break;
@@ -105,7 +110,7 @@ row_encode(Row* self, Flats* flats, Columns* columns, Timezone* tz, Buf* buf)
 
 		// value
 		uint8_t* pos = row_column(self, column);
-		row_encode_column(pos, flats, column, tz, buf);
+		row_encode_column(pos, 0, flats, column, tz, buf);
 	}
 	encode_obj_end(buf);
 }

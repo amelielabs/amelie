@@ -160,7 +160,7 @@ row_create_vector(Part*    part,
                   Value*   value,
                   int64_t* delta)
 {
-	auto flat = flats_at(&part->flats, column);
+	auto flat = flats_at(&part->flats, column, 0);
 
 	auto current = flat->storage.current;
 	auto id = flat_add(flat, heap_page_of(row)->id, row->offset);
@@ -395,7 +395,7 @@ row_update(Part*     part,
 		case TYPE_VECTOR:
 		{
 			// create a new vector copy
-			auto flat = flats_at(&part->flats, column);
+			auto flat = flats_at(&part->flats, column, 0);
 
 			auto current = flat->storage.current;
 			auto id = flat_add(flat, heap_page_of(row)->id, row->offset);

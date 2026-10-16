@@ -43,7 +43,7 @@ stream_export(Stream* self, Row* row)
 		} else
 		if (column->type == TYPE_VECTOR)
 		{
-			auto flat = flats_at(&self->part->flats, column);
+			auto flat = flats_at(&self->part->flats, column, 0);
 			auto vector = (float*)flat_vector_at(flat, *(uint32_t*)data);
 			value_set_vector(&value, column->size_flat / sizeof(float), vector, NULL);
 		} else

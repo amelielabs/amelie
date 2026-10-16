@@ -173,7 +173,7 @@ part_open(Part* self, Manifest* manifest)
 			      rel->name,
 			      column->order,
 			      (int)self->config->id);
-		auto flat = flats_at(&self->flats, column);
+		auto flat = flats_at(&self->flats, column, 0);
 		part_open_flat(self, flat, ref);
 	}
 }
@@ -205,7 +205,7 @@ part_truncate(Part* self)
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
-		auto flat = flat_allocate(column);
+		auto flat = flat_allocate(column, 0);
 		flats_add(flats, flat);
 	}
 

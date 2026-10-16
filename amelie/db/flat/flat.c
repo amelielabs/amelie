@@ -16,7 +16,7 @@
 #include <amelie_flat.h>
 
 Flat*
-flat_allocate(Column* column)
+flat_allocate(Column* column, uint32_t timeline)
 {
 	auto self = (Flat*)am_malloc(sizeof(Flat));
 	self->dim = column->size_flat / sizeof(float);
@@ -44,7 +44,6 @@ flat_allocate(Column* column)
 	self->page_offset_i8      = (self->page_bitmap + 64 - 1) & ~(64 - 1);
 	self->page_offset_rows    = self->page_offset_i8 + (self->page_rows * self->dim);
 	self->page_offset_vectors = self->page_offset_rows + (self->page_rows * sizeof(FlatRow));
-	self->column = column;
 
 	auto storage = &self->storage;
 	storage_init(storage, NULL, PAGE_FLAT_META, PAGE_FLAT);
@@ -52,6 +51,10 @@ flat_allocate(Column* column)
 
 	self->header = (FlatHeader*)storage->meta->data;
 	self->header->list_free = UINT32_MAX;
+
+	self->column        = column;
+	self->timeline      = timeline;
+	self->timeline_next = NULL;
 	return self;
 }
 

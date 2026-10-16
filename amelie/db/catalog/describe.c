@@ -111,7 +111,7 @@ describe_column(Column* self, Buf* buf, int flags)
 
 		auto value = buf_create();
 		defer_buf(value);
-		row_encode_column(cons->value.start, NULL, self, runtime()->timezone, value);
+		row_encode_column(cons->value.start, 0, NULL, self, runtime()->timezone, value);
 
 		auto pos = value->start;
 		json_export(buf, runtime()->timezone, &pos);
@@ -519,7 +519,7 @@ describe_manifest(Table* self, Column* column, Buf* buf)
 
 		Storage* storage;
 		if (column)
-			storage = &flats_at(&part->flats, column)->storage;
+			storage = &flats_at(&part->flats, column, 0)->storage;
 		else
 			storage = &part->heap->storage;
 
