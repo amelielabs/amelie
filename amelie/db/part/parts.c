@@ -149,7 +149,7 @@ parts_index_remove(Parts* self, Str* name)
 }
 
 void
-parts_column_create(Parts* self, Column* column)
+parts_column_create(Parts* self, Column* column, uint32_t timeline)
 {
 	if (column->type != TYPE_VECTOR)
 		return;
@@ -158,7 +158,7 @@ parts_column_create(Parts* self, Column* column)
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
-		auto flat = flat_allocate(column, 0);
+		auto flat = flat_allocate(column, timeline);
 		flats_add_column(&part->flats);
 		flats_add(&part->flats, flat);
 	}

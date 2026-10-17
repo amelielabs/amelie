@@ -42,5 +42,5 @@ void  parts_remove(Parts*, Part*);
 Part* parts_find(Parts*, int);
 void  parts_index_create(Parts*, IndexConfig*);
 void  parts_index_remove(Parts*, Str*);
-void  parts_column_create(Parts*, Column*);
+void  parts_column_create(Parts*, Column*, uint32_t);
 void  parts_list(Parts*, Buf*, int);

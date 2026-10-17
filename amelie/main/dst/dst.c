@@ -254,6 +254,7 @@ dst_bootstrap(Dst* self)
 	{
 		auto user = list_at(DstUser, link);
 		dst_execute(self, client, "CREATE USER user_{u64}", user->id);
+		dst_stat(&self->stats, DST_STAT_CREATE_USER);
 		dst_user_connect(user);
 
 		// table

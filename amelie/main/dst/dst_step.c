@@ -315,7 +315,7 @@ dst_step_ddl(DstUser* self)
 
 			// randomly choose table
 			auto pos = random_generate(&am_task->random) % count;
-			auto parent = dst_user_rel_filter(self, pos, true, false, false);
+			auto parent = dst_user_rel_filter(self, pos, true, true, false);
 			assert(parent);
 			dst_user_create_for(self, parent, type);
 		} else

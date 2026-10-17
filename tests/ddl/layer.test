@@ -128,14 +128,34 @@ drop table main cascade;
 # test: create layer (with vector column)
 create table test (id int primary key, v vector(1));
 create table x on test;
-drop table test;
 
-# test: add column (vector column)
-create table test (id int primary key);
-create table x on test;
-alter table test add column v vector(1);
+insert into test values (1, vector [1]);
+insert into x values (2, vector [2]);
+
+select * from test;
+select * from x;
+
+truncate test;
+
+select * from test;
+select * from x;
+
+insert into test values (3, vector [3]);
+insert into x values (4, vector [4]);
+
+select * from test;
+select * from x;
+
 drop table test;
 drop table test cascade;
+
+
+## test: add column (vector column)
+#create table test (id int primary key);
+#create table x on test;
+#alter table test add column v vector(1);
+#drop table test;
+#drop table test cascade;
 
 disconnect S0;
 close E0;

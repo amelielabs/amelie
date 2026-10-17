@@ -73,5 +73,58 @@ insert into test values (1, vector [2,2]);
 select * from test;
 drop table test;
 
+# test: create layer
+create table test(id int primary key, v1 vector(2));
+create table l on test;
+
+insert into test values (0, vector [0,0]);
+insert into test values (1, vector [1,1]);
+
+insert into l values (2, vector [2,2]);
+insert into l values (3, vector [3,3]);
+
+select * from test;
+select * from l;
+
+select show('state').psn;
+
+# test: checkpoint
+checkpoint;
+select show('state').checkpoint;
+select show('state').psn;
+
+# test: restart/recover
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select show('state').checkpoint;
+select show('state').psn;
+
+select * from test;
+select * from l;
+
+# test: truncate
+truncate test;
+select * from test;
+select * from l;
+
+# test: checkpoint
+checkpoint;
+select show('state').checkpoint;
+select show('state').psn;
+
+# test: restart/recover
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select show('state').checkpoint;
+select show('state').psn;
+
+select * from test;
+select * from l;
+drop table test cascade;
+
 disconnect S0;
 close E0;

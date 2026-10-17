@@ -139,5 +139,114 @@ id  v1
 0   [0, 0]
 1   [2, 2]
 drop table test;
+# test: create layer
+create table test(id int primary key, v1 vector(2));
+create table l on test;
+insert into test values (0, vector [0,0]);
+insert into test values (1, vector [1,1]);
+insert into l values (2, vector [2,2]);
+insert into l values (3, vector [3,3]);
+select * from test;
+
+id  v1
+────────────
+0   [0, 0]
+1   [1, 1]
+select * from l;
+
+id  v1
+────────────
+2   [2, 2]
+3   [3, 3]
+select show('state').psn;
+
+psn
+───
+31
+# test: checkpoint
+checkpoint;
+select show('state').checkpoint;
+
+checkpoint
+──────────
+23
+select show('state').psn;
+
+psn
+───
+31
+# test: restart/recover
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select show('state').checkpoint;
+
+checkpoint
+──────────
+23
+select show('state').psn;
+
+psn
+───
+31
+select * from test;
+
+id  v1
+────────────
+0   [0, 0]
+1   [1, 1]
+select * from l;
+
+id  v1
+────────────
+2   [2, 2]
+3   [3, 3]
+# test: truncate
+truncate test;
+select * from test;
+
+id  v1
+────────
+select * from l;
+
+id  v1
+────────
+# test: checkpoint
+checkpoint;
+select show('state').checkpoint;
+
+checkpoint
+──────────
+24
+select show('state').psn;
+
+psn
+───
+34
+# test: restart/recover
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select show('state').checkpoint;
+
+checkpoint
+──────────
+24
+select show('state').psn;
+
+psn
+───
+34
+select * from test;
+
+id  v1
+────────
+select * from l;
+
+id  v1
+────────
+drop table test cascade;
 disconnect S0;
 close E0;

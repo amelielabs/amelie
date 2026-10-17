@@ -58,7 +58,9 @@ part_cleanup_index(PartCleanup* self)
 			op.it  = NULL;
 			index_delete(index, &op);
 		}
-		row_free(heap, &part->flats, row);
+
+		// free row direct (without flats)
+		heap_remove(heap, row);
 	}
 
 	usage_update(self->part->arg->memory, op.delta);
@@ -81,7 +83,9 @@ part_cleanup_heap(PartCleanup* self)
 			break;
 		if (row->timeline != timeline)
 			continue;
-		row_free(heap, &part->flats, row);
+
+		// free row direct (without flats)
+		heap_remove(heap, row);
 	}
 }
 

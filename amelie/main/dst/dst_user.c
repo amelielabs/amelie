@@ -161,11 +161,15 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 	} else
 	if (type == DST_REL_LAYER)
 	{
-		assert(parent->type == DST_REL_TABLE);
-
-		dst_execute(self->dst, self->client,
-		            "CREATE TABLE layer_{u64}_{u64} ON table_{u64}",
-		            parent->id, id, parent->id);
+		if (parent->type == DST_REL_TABLE)
+			dst_execute(self->dst, self->client,
+			            "CREATE TABLE layer_{u64}_{u64} ON table_{u64}",
+			            parent->id, id, parent->id);
+		else
+		if (parent->type == DST_REL_TABLE_VECTOR)
+			dst_execute(self->dst, self->client,
+			            "CREATE TABLE layer_{u64}_{u64} ON table_vector_{u64}",
+			            parent->id, id, parent->id);
 		dst_stat(&self->dst->stats, DST_STAT_CREATE_LAYER);
 
 		list_append(&parent->layers, &rel->link_parent);

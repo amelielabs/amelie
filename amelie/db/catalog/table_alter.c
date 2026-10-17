@@ -103,7 +103,16 @@ column_add_if_commit(Log* self, LogOp* op)
 	unused(self);
 	auto table = table_of(op->rel);
 	Column* column = op->iface_arg;
-	parts_column_create(&table->parts, column);
+	if (column->type != TYPE_VECTOR)
+		return;
+
+	// create vector columns for each layer
+	parts_column_create(&table->parts, column, 0);
+	list_foreach(&table->timelines.list)
+	{
+		auto timeline = list_at(Timeline, link);
+		parts_column_create(&table->parts, column, timeline->timeline);
+	}
 }
 
 static void

@@ -23,15 +23,12 @@
 static inline void
 layer_free(Layer* self, bool drop)
 {
-	auto id = self->config->timeline.timeline;
-	timelines_remove(&self->table->timelines, &self->config->timeline);
-	layer_config_free(self->config);
+	auto table = self->table;
+	auto timeline = self->config->timeline.timeline;
 
 	// do table cleanup
 	if (drop)
 	{
-		auto table = self->table;
-
 		RpcSet set;
 		rpc_set_init(&set);
 		defer(rpc_set_free, &set);
@@ -41,13 +38,40 @@ layer_free(Layer* self, bool drop)
 		list_foreach(&table->parts.list)
 		{
 			auto part = list_at(Part, link);
-			auto msg  = part_cleanup_allocate(part, id);
+			auto msg  = part_cleanup_allocate(part, timeline);
 			auto rpc  = rpc_set_add(&set, order, MSG_CLEANUP, msg);
 			rpc_send(rpc, part->track.backend);
 			order++;
 		}
 		rpc_set_wait(&set);
 	}
+
+	// detach and free vector stores
+	auto columns = table_columns(table);
+	if (columns->count_flat)
+	{
+		int64_t delta = 0;
+		list_foreach(&columns->list)
+		{
+			auto column = list_at(Column, link);
+			if (column->type != TYPE_VECTOR)
+				continue;
+			list_foreach(&table->parts.list)
+			{
+				auto part = list_at(Part, link);
+				auto flat = flats_remove(&part->flats, column, timeline);
+				if (flat)
+				{
+					delta -= storage_size(&flat->storage);
+					flat_free(flat);
+				}
+			}
+		}
+		usage_update(table->part_arg.memory, delta);
+	}
+
+	timelines_remove(&self->table->timelines, &self->config->timeline);
+	layer_config_free(self->config);
 
 	am_free(self);
 }
@@ -79,6 +103,54 @@ layer_allocate(LayerConfig* config)
 	rel_set_free(rel, (RelFree)layer_free);
 	rel_set_rsn(rel, state_rsn_next());
 	return self;
+}
+
+static void
+layer_open(Catalog* self, Layer* layer)
+{
+	// create vector stores
+	auto table   = layer->table;
+	auto columns = table_columns(table);
+	if (! columns->count_flat)
+		return;
+
+	auto user     = layer->rel.user;
+	auto name     = layer->rel.name;
+	auto timeline = layer->config->timeline.timeline;
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		if (column->type != TYPE_VECTOR)
+			continue;
+		list_foreach(&table->parts.list)
+		{
+			auto part = list_at(Part, link);
+			auto flat = flat_allocate(column, timeline);
+			flats_add(&part->flats, flat);
+
+			// restore storage during recovery
+			if (opt_int_of(&state()->recover) != RECOVER_CHECKPOINT)
+				continue;
+
+			// find partition manifest
+			auto ref = manifest_find(self->manifest, user, name, column->order, part->config->id);
+			if (! ref)
+				error("recover: manifest is missing {str}.{str} partition {d}",
+				      user, name, (int)part->config->id);
+
+			auto storage = &flat->storage;
+			storage_open(storage, state_checkpoint(), ref->pages_count, &ref->pages[0]);
+			flat_open(flat);
+			usage_update(table->part_arg.memory, storage_size(storage));
+
+			auto total = (double)storage_size(storage) / 1024 / 1024;
+			info("recover: {str}.{str} [{d}] ({d} column, {d} files, {.2f} MB)",
+			     user, name, (int)part->config->id,
+			     column->order,
+			     storage->list_count,
+			     total);
+		}
+	}
 }
 
 bool
@@ -113,15 +185,6 @@ layer_create(Catalog*     self,
 	// check limit
 	catalog_limit(self, tr, REL_LAYER, LIMIT_LAYERS);
 
-	// ensure table has no vector columns
-	list_foreach(&table_columns(table)->list)
-	{
-		auto column = list_at(Column, link);
-		if (column->type == TYPE_VECTOR)
-			error("table '{str}': vector columns cannot be used together with layers",
-			      &config->name);
-	}
-
 	// create layer
 	auto layer = layer_allocate(config);
 	layer->table = table;
@@ -131,5 +194,8 @@ layer_create(Catalog*     self,
 	// register layer timeline
 	auto timelines = &table->timelines;
 	timelines_add(timelines, &layer->config->timeline);
+
+	// create vector stores
+	layer_open(self, layer);
 	return true;
 }

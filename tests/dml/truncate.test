@@ -58,6 +58,5 @@ insert into test values (1, vector [1,4]);
 select * from test matching v to vector [1,1] top 2;
 drop table test;
 
-
 disconnect S0;
 close E0;

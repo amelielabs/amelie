@@ -47,6 +47,7 @@ row_allocate_buf(Buf* buf, uint32_t timeline, int columns, int data_size)
 hot static inline void
 row_free(Heap* heap, Flats* flats, Row* row)
 {
+	uint32_t timeline = row->timeline;
 	heap_remove(heap, row);
 
 	if (flats_empty(flats))
@@ -56,7 +57,7 @@ row_free(Heap* heap, Flats* flats, Row* row)
 	auto end = (Flat**)flats->list.position;
 	for (; pos < end; pos++)
 	{
-		auto flat = flats_match(*pos, 0);
+		auto flat = flats_match(*pos, timeline);
 		auto ref  = row_at(row, flat->column->order);
 		if (ref)
 			flat_remove(flat, *(uint32_t*)ref);
@@ -73,7 +74,7 @@ row_filter(Flats* flats, Row* row, bool filter)
 	auto end = (Flat**)flats->list.position;
 	for (; pos < end; pos++)
 	{
-		auto flat = flats_match(*pos, 0);
+		auto flat = flats_match(*pos, row->timeline);
 		auto ref  = row_at(row, flat->column->order);
 		if (ref)
 			flat_set_at(flat, *(uint32_t*)ref, !filter);

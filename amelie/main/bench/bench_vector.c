@@ -15,7 +15,7 @@
 #include <amelie_main_bench.h>
 #include <math.h>
 
-static const int vector_dim  = 128;
+static const int vector_dim  = 1024;
 static const int vector_rows = 10000;
 
 typedef struct VectorLoader VectorLoader;
@@ -126,7 +126,7 @@ bench_vector_create(Bench* self, Client* client)
 {
 	info("preparing tables.");
 	Str str;
-	str_set_cstr(&str, "create table bench_vector (id int, v vector(128), partition key (id))");
+	str_set_cstr(&str, "create table bench_vector (id int, v vector(1024), primary key (id))");
 	client_execute(client, &str, NULL);
 
 	info("preparing function.");

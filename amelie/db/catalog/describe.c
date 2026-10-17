@@ -485,18 +485,18 @@ describe(Rel* self, Buf* buf, Str* user, int flags)
 }
 
 static void
-describe_manifest(Table* self, Column* column, Buf* buf)
+describe_manifest(Rel* self, Column* column, Buf* buf)
 {
 	// {}
 	encode_obj(buf);
 
 	// user
 	encode_raw(buf, "user", 4);
-	encode_str(buf, self->rel.user);
+	encode_str(buf, self->user);
 
 	// name
 	encode_raw(buf, "name", 4);
-	encode_str(buf, self->rel.name);
+	encode_str(buf, self->name);
 
 	// column
 	if (column)
@@ -508,9 +508,22 @@ describe_manifest(Table* self, Column* column, Buf* buf)
 	// partitions
 	encode_raw(buf, "parts", 5);
 
+	uint32_t timeline = 0;
+	Table*   table;
+	Layer*   layer = NULL;
+	if (self->type == REL_LAYER)
+	{
+		layer    = layer_of(self);
+		table    = layer->table;
+		timeline = layer->config->timeline.timeline;
+	} else
+	{
+		table = table_of(self);
+	}
+
 	// [{}, ...]
 	encode_array(buf);
-	list_foreach(&self->parts.list)
+	list_foreach(&table->parts.list)
 	{
 		auto part = list_at(Part, link);
 
@@ -519,12 +532,11 @@ describe_manifest(Table* self, Column* column, Buf* buf)
 
 		Storage* storage;
 		if (column)
-			storage = &flats_at(&part->flats, column, 0)->storage;
+			storage = &flats_at(&part->flats, column, timeline)->storage;
 		else
 			storage = &part->heap->storage;
 
 		assert(storage->meta);
-
 		encode_int(buf, storage->meta->psn);
 		for (auto i = 0; i < storage->list_count; i++)
 		{
@@ -554,24 +566,28 @@ describe_rels(Rels* rels, RelType type, Buf* schema, Buf* manifest)
 		describe_text(rel, schema, &user, 0);
 		buf_write(schema, "\n\n", 2);
 
-		// update manifest
+		if (rel->type != REL_TABLE && rel->type != REL_LAYER)
+			continue;
+
+		// heap
+		Columns* columns;
 		if (rel->type == REL_TABLE)
 		{
-			// heap
-			auto table = table_of(rel);
-			describe_manifest(table, NULL, manifest);
+			describe_manifest(rel, NULL, manifest);
+			columns = table_columns(table_of(rel));
+		} else {
+			columns = table_columns(layer_of(rel)->table);
+		}
 
-			// flat
-			if (table->config->columns.count_flat > 0)
-			{
-				list_foreach(&table->config->columns.list)
-				{
-					auto column = list_at(Column, link);
-					if (! column->size_flat)
-						continue;
-					describe_manifest(table, column, manifest);
-				}
-			}
+		// vector columns stores
+		if (! columns->count_flat)
+			continue;
+		list_foreach(&columns->list)
+		{
+			auto column = list_at(Column, link);
+			if (! column->size_flat)
+				continue;
+			describe_manifest(rel, column, manifest);
 		}
 	}
 }

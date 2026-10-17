@@ -199,17 +199,27 @@ part_truncate(Part* self)
 	flats_free(flats);
 	flats_init(flats);
 
-	// create flat stores
+	usage_update(arg->memory, op.delta + delta);
+
+	// recreate flat stores
 	list_foreach(&arg->columns->list)
 	{
 		auto column = list_at(Column, link);
-		if (! column->size_flat)
+		if (column->type != TYPE_VECTOR)
 			continue;
-		auto flat = flat_allocate(column, 0);
-		flats_add(flats, flat);
-	}
 
-	usage_update(arg->memory, op.delta + delta);
+		auto flat = flat_allocate(column, 0);
+		flats_add_column(flats);
+		flats_add(flats, flat);
+
+		list_foreach(&arg->timelines->list)
+		{
+			auto timeline = list_at(Timeline, link);
+			flat = flat_allocate(column, timeline->timeline);
+			flats_add_column(flats);
+			flats_add(flats, flat);
+		}
+	}
 }
 
 void

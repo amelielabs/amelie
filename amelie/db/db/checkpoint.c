@@ -286,11 +286,14 @@ checkpoint_prepare(Checkpoint* self, Catalog* catalog)
 			auto part = list_at(Part, link);
 			checkpoint_add_storage(self, &part->heap->storage);
 
-			// vector stores
+			// vector stores (including layers)
 			auto pos = (Flat**)part->flats.list.start;
 			auto end = (Flat**)part->flats.list.position;
 			for (; pos < end; pos++)
-				checkpoint_add_storage(self, &(*pos)->storage);
+			{
+				for (auto at = *pos; at; at = at->timeline_next)
+					checkpoint_add_storage(self, &at->storage);
+			}
 		}
 	}
 }

@@ -376,7 +376,7 @@ cmatching(Vm* self, Op* op)
 		error("MATCHING: vector dimension mismatch");
 
 	// create matching context as store
-	auto flat = flats_at(&cursor->part->flats, column, 0);
+	auto flat = flats_at(&cursor->part->flats, column, cursor->timeline->timeline);
 	auto matching = matching_create(columns, cursor->part->heap, flat, op->d);
 
 	value_set_store(reg_at(r, op->a), &matching->store);

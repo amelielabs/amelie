@@ -223,13 +223,39 @@ drop table main cascade;
 # test: create layer (with vector column)
 create table test (id int primary key, v vector(1));
 create table x on test;
-error: table 'x': vector columns cannot be used together with layers
-drop table test;
-# test: add column (vector column)
-create table test (id int primary key);
-create table x on test;
-alter table test add column v vector(1);
-error: table 'test': vector columns cannot be used together with layers
+insert into test values (1, vector [1]);
+insert into x values (2, vector [2]);
+select * from test;
+
+id  v
+─────────
+1   [1]
+select * from x;
+
+id  v
+─────────
+2   [2]
+truncate test;
+select * from test;
+
+id  v
+───────
+select * from x;
+
+id  v
+───────
+insert into test values (3, vector [3]);
+insert into x values (4, vector [4]);
+select * from test;
+
+id  v
+─────────
+3   [3]
+select * from x;
+
+id  v
+─────────
+4   [4]
 drop table test;
 error: table 'test': depends on layer 'amelie.x'
 drop table test cascade;

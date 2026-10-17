@@ -128,20 +128,24 @@ flats_add(Flats* self, Flat* flat)
 	prev->timeline_next = flat;
 }
 
-static inline void
-flats_remove(Flats* self, Flat* flat)
+static inline Flat*
+flats_remove(Flats* self, Column* column, uint32_t timeline)
 {
-	auto at = ((Flat**)self->list.start) + flat->column->order_flat;
-	if (*at == flat)
-	{
-		*at = (*at)->timeline_next;
-		return;
-	}
+	auto at = ((Flat**)self->list.start) + column->order_flat;
+	if (! *at)
+		return NULL;
 	auto prev = *at;
-	while (prev->timeline_next && prev->timeline_next != flat)
+	if (prev->timeline == timeline)
+	{
+		*at = prev->timeline_next;
+		return prev;
+	}
+	while (prev->timeline_next && prev->timeline_next->timeline != timeline)
 		prev = prev->timeline_next;
 	if (! prev->timeline_next)
-		return;
-	prev->timeline_next = flat->timeline_next;
-	flat->timeline_next = NULL;
+		return NULL;
+	auto match = prev->timeline_next;
+	prev->timeline_next = match->timeline_next;
+	match->timeline_next = NULL;
+	return match;
 }

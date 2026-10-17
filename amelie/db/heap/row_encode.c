@@ -110,7 +110,7 @@ row_encode(Row* self, Flats* flats, Columns* columns, Timezone* tz, Buf* buf)
 
 		// value
 		uint8_t* pos = row_column(self, column);
-		row_encode_column(pos, 0, flats, column, tz, buf);
+		row_encode_column(pos, self->timeline, flats, column, tz, buf);
 	}
 	encode_obj_end(buf);
 }
