@@ -204,7 +204,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		target->from_table    = table;
 		target->from_timeline = table_main(table);
 		target->columns       = &table->config->columns;
-		str_set_str(&target->name, &table->config->name);
+		str_set_str(&target->name, rel->name);
 		access_add(&self->parser->program->access, &table->rel, lock, perms);
 
 		// [INDEX name]
@@ -230,7 +230,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, int perms, bool subquery)
 		target->from_table    = table;
 		target->from_timeline = &layer->config->timeline;
 		target->columns       = &table->config->columns;
-		str_set_str(&target->name, &table->config->name);
+		str_set_str(&target->name, rel->name);
 		// adding layer relation to the access list for dependency
 		// tracking and permissions check
 		access_add(&self->parser->program->access, &table->rel, lock, PERM_SELECT);
