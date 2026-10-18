@@ -31,11 +31,11 @@ Part*  part_allocate(PartArg*);
 void   part_free(Part*);
 void   part_open(Part*, Manifest*);
 void   part_truncate(Part*);
+void   part_column_create(Part*, Column*, uint32_t);
 void   part_index_add(Part*, Index*);
 void   part_index_create(Part*, IndexConfig*);
 void   part_index_drop(Part*, Str*);
 Index* part_index_find(Part*, Str*, bool);
-void   part_status(Part*, Buf*, int);
 
 static inline Index*
 part_primary(Part* self)

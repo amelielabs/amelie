@@ -90,12 +90,48 @@ catalog_if_udf_depends(Udf* udf, Str* user, Str* name)
 	return access_find_user(&program->access, user);
 }
 
+static void
+catalog_if_table_attach(Catalog* catalog, Table* table)
+{
+	// create pod on backend
+	System* system = catalog->iface_arg;
+	backends_deploy(&system->backends, table->part);
+}
+
+static void
+catalog_if_table_detach(Catalog* catalog, Table* table)
+{
+	// drop pods on backends
+	System* system = catalog->iface_arg;
+	backends_undeploy(&system->backends, table->part);
+}
+
+static void
+catalog_if_table_sync(Catalog* catalog, Table* table)
+{
+	// sync prepared transactions
+	System* system = catalog->iface_arg;
+	backends_sync(&system->backends, table->part);
+}
+
+static void
+catalog_if_table_truncate(Catalog* catalog, Table* table)
+{
+	// truncate pods on backends
+	System* system = catalog->iface_arg;
+	backends_truncate(&system->backends, table->part);
+}
+
 static CatalogIf catalog_if =
 {
 	.user_invalidate = catalog_if_user_invalidate,
 	.udf_compile     = catalog_if_udf_compile,
 	.udf_free        = catalog_if_udf_free,
-	.udf_depends     = catalog_if_udf_depends
+	.udf_depends     = catalog_if_udf_depends,
+	.table_attach    = catalog_if_table_attach,
+	.table_detach    = catalog_if_table_detach,
+	.table_sync      = catalog_if_table_sync,
+	.table_truncate  = catalog_if_table_truncate
 };
 
 static void*
@@ -134,46 +170,6 @@ system_on_server_connect(Server* server, Client* client)
 	else
 		frontends_forward(&self->frontends, &client->msg);
 }
-
-static void
-parts_if_attach(Parts* self)
-{
-	// create pods on backends
-	System* system = self->iface_arg;
-	backends_deploy(&system->backends, self->part);
-}
-
-static void
-parts_if_detach(Parts* self)
-{
-	// drop pods on backends
-	System* system = self->iface_arg;
-	backends_undeploy(&system->backends, self->part);
-}
-
-static void
-parts_if_sync(Parts* self)
-{
-	// sync prepared transactions
-	System* system = self->iface_arg;
-	backends_sync(&system->backends, self->part);
-}
-
-static void
-parts_if_truncate(Parts* self)
-{
-	// truncate pods on backends
-	System* system = self->iface_arg;
-	backends_truncate(&system->backends, self->part);
-}
-
-static PartsIf parts_if =
-{
-	.attach   = parts_if_attach,
-	.detach   = parts_if_detach,
-	.sync     = parts_if_sync,
-	.truncate = parts_if_truncate
-};
 
 static void
 recover_if_create(Recover* recover)
@@ -303,10 +299,7 @@ system_create(void)
 	functions_init(&self->functions);
 
 	// db
-	db_init(&self->db,
-	        &catalog_if,
-	        &eval_if,
-	        &parts_if, self);
+	db_init(&self->db, &catalog_if, &eval_if, self);
 
 	// replication
 	repl_init(&self->repl, &self->db, &recover_if, self);

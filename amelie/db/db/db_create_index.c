@@ -153,13 +153,13 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	// todo: exclusive lock
 
 	// force commit pending prepared transactions
-	table_sync(table);
+	table->catalog->iface->table_sync(table->catalog, table);
 
 	// create indexes on table under the exclusive_ro lock,
 	// this will make table accessible on backends, while
 	// preventing writes
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE_RO);
-	auto part = table->parts.part;
+	auto part = table->part;
 	auto on_error = error_catch
 	(
 		db_indexate(part, config);

@@ -40,7 +40,7 @@ csend(Vm* self, Op* op)
 		dispatch_set_close(dispatch);
 
 	// send to the table
-	auto part = table->parts.part;
+	auto part = table->part;
 	auto req = dispatch_add(dispatch, &dispatches->cache_req,
 	                        REQ_EXECUTE,
 	                        send->start,

@@ -20,21 +20,23 @@ struct CatalogIf
 	void (*udf_compile)(Catalog*, Udf*);
 	void (*udf_free)(Udf*);
 	bool (*udf_depends)(Udf*, Str*, Str*);
+	void (*table_attach)(Catalog*, Table*);
+	void (*table_detach)(Catalog*, Table*);
+	void (*table_sync)(Catalog*, Table*);
+	void (*table_truncate)(Catalog*, Table*);
 };
 
 struct Catalog
 {
 	Rels       users;
 	Rels       rels;
-	Columns    channel_columns;
 	Manifest*  manifest;
-	PartsIf*   iface_part;
 	EvalIf*    iface_eval;
 	CatalogIf* iface;
 	void*      iface_arg;
 };
 
-void catalog_init(Catalog*, CatalogIf*, EvalIf*, PartsIf*, void*);
+void catalog_init(Catalog*, CatalogIf*, EvalIf*, void*);
 void catalog_free(Catalog*);
 void catalog_create(Catalog*);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);

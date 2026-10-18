@@ -45,9 +45,6 @@ select show('table', 'test');
 # test: indexes
 select show('indexes', 'test');
 
-# test: partitions
-select show('partitions', 'test');
-
 # test: functions
 select show('functions');
 

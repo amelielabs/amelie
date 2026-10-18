@@ -278,10 +278,10 @@ checkpoint_prepare(Checkpoint* self, Catalog* catalog)
 		if (rel->type != REL_TABLE)
 			continue;
 		auto table = table_of(rel);
-		table_sync(table);
+		table->catalog->iface->table_sync(table->catalog, table);
 
 		// heap
-		auto part = table->parts.part;
+		auto part = table->part;
 		checkpoint_add_storage(self, &part->heap->storage);
 
 		// vector stores (including layers)

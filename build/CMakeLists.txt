@@ -196,8 +196,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/part/part.c
     ${AMELIE_ROOT}/db/part/part_cleanup.c
     ${AMELIE_ROOT}/db/part/part_op.c
-    ${AMELIE_ROOT}/db/part/parts.c
-    ${AMELIE_ROOT}/db/part/cursor.c
     ${AMELIE_ROOT}/db/catalog/user.c
     ${AMELIE_ROOT}/db/catalog/table.c
     ${AMELIE_ROOT}/db/catalog/table_alter.c
@@ -327,6 +325,10 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_utility.c)
 
 set(AMELIE_SOURCES_SYSTEM
+    ${AMELIE_ROOT}/system/backend/stream.c
+    ${AMELIE_ROOT}/system/backend/streams.c
+    ${AMELIE_ROOT}/system/backend/pod.c
+    ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/frontend/auth_cache.c
     ${AMELIE_ROOT}/system/frontend/auth.c
     ${AMELIE_ROOT}/system/frontend/frontend.c
@@ -337,10 +339,6 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/link_stream.c
     ${AMELIE_ROOT}/system/frontend/player.c
     ${AMELIE_ROOT}/system/frontend/players.c
-    ${AMELIE_ROOT}/system/backend/stream.c
-    ${AMELIE_ROOT}/system/backend/streams.c
-    ${AMELIE_ROOT}/system/backend/pod.c
-    ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/session/session.c
     ${AMELIE_ROOT}/system/system/repo.c
     ${AMELIE_ROOT}/system/system/system.c

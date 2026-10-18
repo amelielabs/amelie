@@ -107,11 +107,11 @@ column_add_if_commit(Log* self, LogOp* op)
 		return;
 
 	// create vector columns for each layer
-	parts_column_create(&table->parts, column, 0);
+	part_column_create(table->part, column, 0);
 	list_foreach(&table->timelines.list)
 	{
 		auto timeline = list_at(Timeline, link);
-		parts_column_create(&table->parts, column, timeline->timeline);
+		part_column_create(table->part, column, timeline->timeline);
 	}
 }
 

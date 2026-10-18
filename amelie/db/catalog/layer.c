@@ -27,17 +27,11 @@ layer_free(Layer* self, bool drop)
 	auto timeline = self->config->timeline.timeline;
 
 	// do table cleanup
-	auto part = table->parts.part;
+	auto part = table->part;
 	if (drop)
 	{
-		RpcSet set;
-		rpc_set_init(&set);
-		defer(rpc_set_free, &set);
-		rpc_set_prepare(&set, 1);
 		auto msg = part_cleanup_allocate(part, timeline);
-		auto rpc = rpc_set_add(&set, 0, MSG_CLEANUP, msg);
-		rpc_send(rpc, part->track.backend);
-		rpc_set_wait(&set);
+		rpc(part->track.backend, MSG_CLEANUP, msg);
 	}
 
 	// detach and free vector stores
@@ -107,7 +101,7 @@ layer_open(Catalog* self, Layer* layer)
 	auto user     = layer->rel.user;
 	auto name     = layer->rel.name;
 	auto timeline = layer->config->timeline.timeline;
-	auto part     = table->parts.part;
+	auto part     = table->part;
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);

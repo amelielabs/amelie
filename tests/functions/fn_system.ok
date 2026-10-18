@@ -185,14 +185,6 @@ show
     "asc": true
   }]
 }]
-# test: partitions
-select show('partitions', 'test');
-
-show
-────
-{
-  "size": 0
-}
 # test: functions
 select show('functions');
 

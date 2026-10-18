@@ -24,29 +24,15 @@ void
 catalog_init(Catalog*   self,
              CatalogIf* iface,
              EvalIf*    iface_eval,
-             PartsIf*   iface_part,
              void*      iface_arg)
 {
 	self->manifest   = NULL;
 	self->iface      = iface;
-	self->iface_part = iface_part;
 	self->iface_eval = iface_eval;
 	self->iface_arg  = iface_arg;
 
 	rels_init(&self->users);
 	rels_init(&self->rels);
-
-	// prepare channel columns
-	auto columns = &self->channel_columns;
-	columns_init(columns);
-
-	// data
-	auto column = column_allocate();
-	Str name;
-	str_set(&name, "data", 4);
-	column_set_name(column, &name);
-	column_set_type(column, TYPE_JSON, 0);
-	columns_add(columns, column);
 }
 
 void
@@ -54,7 +40,6 @@ catalog_free(Catalog* self)
 {
 	rels_free(&self->rels);
 	rels_free(&self->users);
-	columns_free(&self->channel_columns);
 }
 
 void

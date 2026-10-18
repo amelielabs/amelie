@@ -11,27 +11,22 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Table Table;
+typedef struct Catalog Catalog;
+typedef struct Table   Table;
 
 struct Table
 {
 	Rel          rel;
-	Parts        parts;
+	Part*        part;
 	PartArg      part_arg;
 	Timelines    timelines;
 	Retention    retention;
 	TableConfig* config;
+	Catalog*     catalog;
 };
 
 bool table_create(Catalog*, Tr*, TableConfig*, bool);
 bool table_truncate(Catalog*, Tr*, Str*, Str*, bool);
-
-static inline void
-table_sync(Table* self)
-{
-	// note: assuming exclusive lock
-	self->parts.iface->sync(&self->parts);
-}
 
 always_inline static inline Table*
 table_of(Rel* self)

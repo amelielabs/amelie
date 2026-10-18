@@ -26,12 +26,11 @@ void
 db_init(Db*        self,
         CatalogIf* iface,
         EvalIf*    iface_eval,
-        PartsIf*   iface_parts,
         void*      iface_arg)
 {
 	catalog_init(&self->catalog,
 	             iface,
-	             iface_eval, iface_parts, iface_arg);
+	             iface_eval, iface_arg);
 	wal_init(&self->wal);
 	checkpoints_init(&self->checkpoints, &self->catalog);
 	syncer_init(&self->syncer, self);

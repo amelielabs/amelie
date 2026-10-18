@@ -24,7 +24,7 @@ static void
 table_index_delete(Table* table, IndexConfig* index)
 {
 	// remove index
-	parts_index_remove(&table->parts, &index->name);
+	part_index_drop(table->part, &index->name);
 
 	// remove index from table config
 	table_config_index_remove(table->config, index);
@@ -145,7 +145,7 @@ table_index_drop(Catalog* self,
 	catalog_deps_validate_udf(self, &table->rel, true);
 
 	// force commit pending prepared transactions
-	table_sync(table);
+	self->iface->table_sync(self, table);
 
 	// update table
 	log_ddl(&tr->log, &drop_if, index, &table->rel);

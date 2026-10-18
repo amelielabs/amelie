@@ -24,9 +24,16 @@ static inline void
 table_free(Table* self, bool drop)
 {
 	unused(drop);
-	auto parts = &self->parts;
-	parts_close(parts);
-	parts_free(parts);
+
+	if (self->part)
+	{
+		// undeploy
+		self->catalog->iface->table_detach(self->catalog, self);
+
+		// free
+		part_free(self->part);
+		self->part = NULL;
+	}
 
 	if (self->config)
 		table_config_free(self->config);
@@ -43,13 +50,14 @@ table_show(Table* self, Buf* buf, Str* user, int flags)
 }
 
 static inline Table*
-table_allocate(TableConfig* config,
-               PartsIf*     iface,
-               void*        iface_arg,
+table_allocate(Catalog*     catalog,
+               TableConfig* config,
                Usage*       memory)
 {
 	auto self = (Table*)am_malloc(sizeof(Table));
-	self->config = table_config_copy(config);
+	self->config  = table_config_copy(config);
+	self->catalog = catalog;
+	self->part    = NULL;
 
 	// part context
 	auto arg = &self->part_arg;
@@ -58,9 +66,6 @@ table_allocate(TableConfig* config,
 	arg->columns   = &self->config->columns;
 	arg->retention = &self->retention;
 	arg->timelines = &self->timelines;
-
-	// partition
-	parts_init(&self->parts, iface, iface_arg, arg);
 
 	// retention
 	retention_init(&self->retention);
@@ -82,6 +87,35 @@ table_allocate(TableConfig* config,
 	return self;
 }
 
+static void
+table_deploy(Catalog* self, Table* table)
+{
+	// create partition
+	auto part = part_allocate(&table->part_arg);
+	table->part = part;
+
+	// create indexes and stores
+	list_foreach(&table->config->indexes)
+	{
+		auto config = list_at(IndexConfig, link);
+		part_index_create(part, config);
+	}
+
+	// create flat stores
+	list_foreach(&table->config->columns.list)
+	{
+		auto column = list_at(Column, link);
+		if (! column->size_flat)
+			continue;
+		auto flat = flat_allocate(column, 0);
+		flats_add_column(&part->flats);
+		flats_add(&part->flats, flat);
+	}
+
+	// deploy table
+	self->iface->table_attach(self, table);
+}
+
 bool
 table_create(Catalog*     self,
              Tr*          tr,
@@ -100,8 +134,6 @@ table_create(Catalog*     self,
 		return false;
 	}
 
-	// todo: ensure relation has unique id
-
 	// check limit
 	catalog_limit(self, tr, REL_TABLE, LIMIT_TABLES);
 
@@ -117,14 +149,13 @@ table_create(Catalog*     self,
 
 	// allocate table
 	auto user  = user_of(tr->user);
-	auto table = table_allocate(config, self->iface_part, self->iface_arg,
-	                            &user->memory);
+	auto table = table_allocate(self, config, &user->memory);
 
 	// update tables
 	rels_create(&self->rels, tr, &table->rel);
 
-	// recover, map and deploy
-	parts_open(&table->parts, &table->config->indexes);
+	// deploy table
+	table_deploy(self, table);
 	return true;
 }
 
@@ -133,7 +164,8 @@ truncate_if_commit(Log* self, LogOp* op)
 {
 	unused(self);
 	auto table = table_of(op->rel);
-	parts_truncate(&table->parts);
+
+	table->catalog->iface->table_truncate(table->catalog, table);
 }
 
 static void
@@ -171,7 +203,7 @@ table_truncate(Catalog* self,
 	log_ddl(&tr->log, &truncate_if, NULL, &table->rel);
 
 	// force commit pending prepared transactions
-	table_sync(table);
+	self->iface->table_sync(self, table);
 
 	// do nothing (actual truncate will happen on commit)
 	return true;

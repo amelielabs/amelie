@@ -35,13 +35,13 @@ link_stream_create(Link* self, Streams* streams)
 	{
 		auto table = table_of(rel);
 		timeline = &table->timelines.main;
-		part     =  table->parts.part;
+		part     =  table->part;
 	} else
 	if (rel->type == REL_LAYER)
 	{
 		auto layer = layer_of(rel);
 		timeline = &layer->config->timeline;
-		part     =  layer->table->parts.part;
+		part     =  layer->table->part;
 	} else {
 		error("stream: relation {str}.{str} cannot be used for streaming",
 		      rel->user, rel->name);

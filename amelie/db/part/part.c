@@ -212,6 +212,18 @@ part_truncate(Part* self)
 }
 
 void
+part_column_create(Part* self, Column* column, uint32_t timeline)
+{
+	if (column->type != TYPE_VECTOR)
+		return;
+
+	// create flat store
+	auto flat = flat_allocate(column, timeline);
+	flats_add_column(&self->flats);
+	flats_add(&self->flats, flat);
+}
+
+void
 part_index_add(Part* self, Index* index)
 {
 	// link index
@@ -289,17 +301,4 @@ part_index_find(Part* self, Str* name, bool error_if_not_exists)
 	if (error_if_not_exists)
 		error("index '{str}': not exists", name);
 	return NULL;
-}
-
-void
-part_status(Part* self, Buf* buf, int flags)
-{
-	unused(flags);
-	encode_obj(buf);
-
-	// size
-	encode_raw(buf, "size", 4);
-	encode_int(buf, storage_size(&self->heap->storage));
-
-	encode_obj_end(buf);
 }

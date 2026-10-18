@@ -506,7 +506,7 @@ describe_manifest(Rel* self, Column* column, Buf* buf)
 	{
 		table = table_of(self);
 	}
-	auto part = table->parts.part;
+	auto part = table->part;
 
 	// [id, ...]
 	encode_array(buf);
