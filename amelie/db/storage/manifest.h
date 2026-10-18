@@ -11,24 +11,16 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct ManifestPart ManifestPart;
-typedef struct ManifestRel  ManifestRel;
-typedef struct Manifest     Manifest;
-
-struct ManifestPart
-{
-	int     order;
-	int     pages_count;
-	int64_t pages[];
-};
+typedef struct ManifestRel ManifestRel;
+typedef struct Manifest    Manifest;
 
 struct ManifestRel
 {
 	Str     user;
 	Str     name;
 	int64_t column;
-	int     parts_count;
-	Buf     parts;
+	int     pages_count;
+	Buf     pages;
 };
 
 struct Manifest
@@ -41,5 +33,5 @@ struct Manifest
 void manifest_init(Manifest*);
 void manifest_free(Manifest*);
 void manifest_open(Manifest*, char*);
-ManifestPart*
-manifest_find(Manifest*, Str*, Str*, int, int);
+ManifestRel*
+manifest_find(Manifest*, Str*, Str*, int);

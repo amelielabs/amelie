@@ -18,11 +18,11 @@ static inline ManifestRel*
 manifest_rel_allocate(void)
 {
 	auto self = (ManifestRel*)am_malloc(sizeof(ManifestRel));
-	self->column      = -1;
-	self->parts_count = 0;
+	self->column = -1;
+	self->pages_count = 0;
+	buf_init(&self->pages);
 	str_init(&self->user);
 	str_init(&self->name);
-	buf_init(&self->parts);
 	return self;
 }
 
@@ -31,7 +31,7 @@ manifest_rel_free(ManifestRel* self)
 {
 	str_free(&self->user);
 	str_free(&self->name);
-	buf_free(&self->parts);
+	buf_free(&self->pages);
 	am_free(self);
 }
 
@@ -61,41 +61,26 @@ manifest_read(Manifest* self, uint8_t** pos)
 	self->list_count++;
 
 	// {}
-	uint8_t* parts = NULL;
+	uint8_t* pages = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_STR,            "user",     &rel->user     },
 		{ DECODE_STR,            "name",     &rel->name     },
 		{ DECODE_INT|DECODE_OPT, "column",   &rel->column   },
-		{ DECODE_ARRAY,          "parts",    &parts         },
+		{ DECODE_ARRAY,          "pages",    &pages         },
 		{ 0,                      NULL,       NULL          },
 	};
 	decode_obj(obj, "manifest", pos);
 
-	// [[int, ...], ...]
-	unpack_array(&parts);
-	while (! unpack_array_end(&parts))
+	// [int, ...]
+	unpack_array(&pages);
+	while (! unpack_array_end(&pages))
 	{
-		auto part_offset = buf_size(&rel->parts);
-		auto part = (ManifestPart*)buf_emplace(&rel->parts, sizeof(ManifestPart));
-		part->order = rel->parts_count;
-		part->pages_count = 0;
-
-		auto count = 0;
-		unpack_array(&parts);
-		while (! unpack_array_end(&parts))
-		{
-			int64_t* value = (int64_t*)buf_emplace(&rel->parts, sizeof(int64_t));
-			unpack_int(&parts, value);
-			if (*value > self->psn)
-				self->psn = *value;
-			count++;
-		}
-
-		part = (ManifestPart*)(rel->parts.start + part_offset);
-		part->pages_count = count;
-
-		rel->parts_count++;
+		int64_t* value = (int64_t*)buf_emplace(&rel->pages, sizeof(int64_t));
+		unpack_int(&pages, value);
+		if (*value > self->psn)
+			self->psn = *value;
+		rel->pages_count++;
 	}
 }
 
@@ -119,8 +104,8 @@ manifest_open(Manifest* self, char* path)
 		manifest_read(self, &pos);
 }
 
-static ManifestRel*
-manifest_find_rel(Manifest* self, Str* user, Str* name, int column)
+ManifestRel*
+manifest_find(Manifest* self, Str* user, Str* name, int column)
 {
 	auto pos = (ManifestRel**)self->list.start;
 	auto end = (ManifestRel**)self->list.position;
@@ -135,32 +120,4 @@ manifest_find_rel(Manifest* self, Str* user, Str* name, int column)
 		return at;
 	}
 	return NULL;
-}
-
-static ManifestPart*
-manifest_find_part(ManifestRel* self, int order)
-{
-	if (! self->parts_count)
-		return NULL;
-	if (order >= self->parts_count)
-		return NULL;
-	auto pos = self->parts.start;
-	auto end = self->parts.position;
-	while (pos < end)
-	{
-		auto at = (ManifestPart*)pos;
-		if (at->order == order)
-			return at;
-		pos += sizeof(ManifestPart) + sizeof(int64_t) * at->pages_count;
-	}
-	return NULL;
-}
-
-ManifestPart*
-manifest_find(Manifest* self, Str* user, Str* name, int column, int part)
-{
-	auto ref = manifest_find_rel(self, user, name, column);
-	if (! ref)
-		return NULL;
-	return manifest_find_part(ref, part);
 }
