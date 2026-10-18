@@ -145,7 +145,7 @@ part_open(Part* self, Manifest* manifest)
 	// find partition manifest
 	auto ref = manifest_find(manifest, rel->user, rel->name, -1);
 	if (! ref)
-		error("recover: manifest is missing {str}.{str} partition {d}",
+		error("recover: manifest is missing {str}.{str}",
 		      rel->user, rel->name);
 
 	// open storage and rebuild indexes
@@ -160,7 +160,7 @@ part_open(Part* self, Manifest* manifest)
 			continue;
 		ref = manifest_find(manifest, rel->user, rel->name, column->order);
 		if (! ref)
-			error("recover: manifest is missing {str}.{str}.{d} partition {d}",
+			error("recover: manifest is missing {str}.{str}.{d}",
 			      rel->user, rel->name, column->order);
 		auto flat = flats_at(&self->flats, column, 0);
 		part_open_flat(self, flat, ref);

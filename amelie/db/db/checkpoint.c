@@ -140,7 +140,7 @@ checkpoint_create(Checkpoint* self)
 	// create manifest.json
 	checkpoint_create_manifest(self);
 
-	// create partition files
+	// create files
 	auto pos = (CheckpointPage*)self->list.start;
 	auto end = (CheckpointPage*)self->list.position;
 	for (; pos < end; pos++)
@@ -280,20 +280,17 @@ checkpoint_prepare(Checkpoint* self, Catalog* catalog)
 		auto table = table_of(rel);
 		table_sync(table);
 
-		list_foreach(&table->parts.list)
-		{
-			// heap
-			auto part = list_at(Part, link);
-			checkpoint_add_storage(self, &part->heap->storage);
+		// heap
+		auto part = table->parts.part;
+		checkpoint_add_storage(self, &part->heap->storage);
 
-			// vector stores (including layers)
-			auto pos = (Flat**)part->flats.list.start;
-			auto end = (Flat**)part->flats.list.position;
-			for (; pos < end; pos++)
-			{
-				for (auto at = *pos; at; at = at->timeline_next)
-					checkpoint_add_storage(self, &at->storage);
-			}
+		// vector stores (including layers)
+		auto pos = (Flat**)part->flats.list.start;
+		auto end = (Flat**)part->flats.list.position;
+		for (; pos < end; pos++)
+		{
+			for (auto at = *pos; at; at = at->timeline_next)
+				checkpoint_add_storage(self, &at->storage);
 		}
 	}
 }

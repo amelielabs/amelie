@@ -99,8 +99,7 @@ db_indexate(Part* part, IndexConfig* config)
 	}
 
 	auto total = (double)storage_size(&heap->storage) / 1024 / 1024;
-	info("create index: partition {u64} ({.2f} MiB)",
-	     part->config->id, total);
+	info("create index: ({.2f} MiB)", total);
 }
 
 void
@@ -156,14 +155,14 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	// force commit pending prepared transactions
 	table_sync(table);
 
-	// create indexes on every table partition under the exclusive_ro lock,
+	// create indexes on table under the exclusive_ro lock,
 	// this will make table accessible on backends, while
 	// preventing writes
 	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE_RO);
+	auto part = table->parts.part;
 	auto on_error = error_catch
 	(
-		list_foreach(&table->parts.list)
-			db_indexate(list_at(Part, link), config);
+		db_indexate(part, config);
 	);
 	unlock(lock_table);
 
@@ -172,11 +171,8 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 		// abort index creation
 		IndexOp io;
 		index_op_init(&io);
-		list_foreach(&table->parts.list)
+		if (part->in_progress)
 		{
-			auto part = list_at(Part, link);
-			if (! part->in_progress)
-				continue;
 			index_free(part->in_progress, &io);
 			part->in_progress = NULL;
 		}
@@ -192,14 +188,10 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 
 	// todo: validate table again
 
-	// attach indexes to partitions
-	list_foreach(&table->parts.list)
-	{
-		auto part = list_at(Part, link);
-		assert(part->in_progress);
-		part_index_add(part, part->in_progress);
-		part->in_progress = NULL;
-	}
+	// attach index
+	assert(part->in_progress);
+	part_index_add(part, part->in_progress);
+	part->in_progress = NULL;
 
 	// attach index to the table
 	table_index_add(&self->catalog, table, tr, config);

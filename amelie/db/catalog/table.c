@@ -59,9 +59,8 @@ table_allocate(TableConfig* config,
 	arg->retention = &self->retention;
 	arg->timelines = &self->timelines;
 
-	// partition manager
-	parts_init(&self->parts, iface, iface_arg, arg,
-	           &self->config->partitioning);
+	// partition
+	parts_init(&self->parts, iface, iface_arg, arg);
 
 	// retention
 	retention_init(&self->retention);
@@ -124,9 +123,8 @@ table_create(Catalog*     self,
 	// update tables
 	rels_create(&self->rels, tr, &table->rel);
 
-	// recover, map and deploy partitions
-	parts_open(&table->parts, &table->config->parts,
-	           &table->config->indexes);
+	// recover, map and deploy
+	parts_open(&table->parts, &table->config->indexes);
 	return true;
 }
 
@@ -134,7 +132,6 @@ static void
 truncate_if_commit(Log* self, LogOp* op)
 {
 	unused(self);
-	// truncate partitions
 	auto table = table_of(op->rel);
 	parts_truncate(&table->parts);
 }

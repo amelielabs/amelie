@@ -23,7 +23,7 @@
 static void
 table_index_delete(Table* table, IndexConfig* index)
 {
-	// remove index from partitions
+	// remove index
 	parts_index_remove(&table->parts, &index->name);
 
 	// remove index from table config

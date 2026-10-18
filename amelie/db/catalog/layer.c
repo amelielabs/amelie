@@ -27,22 +27,16 @@ layer_free(Layer* self, bool drop)
 	auto timeline = self->config->timeline.timeline;
 
 	// do table cleanup
+	auto part = table->parts.part;
 	if (drop)
 	{
 		RpcSet set;
 		rpc_set_init(&set);
 		defer(rpc_set_free, &set);
-		rpc_set_prepare(&set, table->parts.list_count);
-
-		auto order = 0;
-		list_foreach(&table->parts.list)
-		{
-			auto part = list_at(Part, link);
-			auto msg  = part_cleanup_allocate(part, timeline);
-			auto rpc  = rpc_set_add(&set, order, MSG_CLEANUP, msg);
-			rpc_send(rpc, part->track.backend);
-			order++;
-		}
+		rpc_set_prepare(&set, 1);
+		auto msg = part_cleanup_allocate(part, timeline);
+		auto rpc = rpc_set_add(&set, 0, MSG_CLEANUP, msg);
+		rpc_send(rpc, part->track.backend);
 		rpc_set_wait(&set);
 	}
 
@@ -56,15 +50,11 @@ layer_free(Layer* self, bool drop)
 			auto column = list_at(Column, link);
 			if (column->type != TYPE_VECTOR)
 				continue;
-			list_foreach(&table->parts.list)
+			auto flat = flats_remove(&part->flats, column, timeline);
+			if (flat)
 			{
-				auto part = list_at(Part, link);
-				auto flat = flats_remove(&part->flats, column, timeline);
-				if (flat)
-				{
-					delta -= storage_size(&flat->storage);
-					flat_free(flat);
-				}
+				delta -= storage_size(&flat->storage);
+				flat_free(flat);
 			}
 		}
 		usage_update(table->part_arg.memory, delta);
@@ -117,39 +107,35 @@ layer_open(Catalog* self, Layer* layer)
 	auto user     = layer->rel.user;
 	auto name     = layer->rel.name;
 	auto timeline = layer->config->timeline.timeline;
+	auto part     = table->parts.part;
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
 		if (column->type != TYPE_VECTOR)
 			continue;
-		list_foreach(&table->parts.list)
-		{
-			auto part = list_at(Part, link);
-			auto flat = flat_allocate(column, timeline);
-			flats_add(&part->flats, flat);
+		auto flat = flat_allocate(column, timeline);
+		flats_add(&part->flats, flat);
 
-			// restore storage during recovery
-			if (opt_int_of(&state()->recover) != RECOVER_CHECKPOINT)
-				continue;
+		// restore storage during recovery
+		if (opt_int_of(&state()->recover) != RECOVER_CHECKPOINT)
+			continue;
 
-			// find partition manifest
-			auto ref = manifest_find(self->manifest, user, name, column->order, part->config->id);
-			if (! ref)
-				error("recover: manifest is missing {str}.{str} partition {d}",
-				      user, name, (int)part->config->id);
+		// find manifest
+		auto ref = manifest_find(self->manifest, user, name, column->order);
+		if (! ref)
+			error("recover: manifest is missing {str}.{str}", user, name);
 
-			auto storage = &flat->storage;
-			storage_open(storage, state_checkpoint(), ref->pages_count, &ref->pages[0]);
-			flat_open(flat);
-			usage_update(table->part_arg.memory, storage_size(storage));
+		auto storage = &flat->storage;
+		storage_open(storage, state_checkpoint(), ref->pages_count, (int64_t*)ref->pages.start);
+		flat_open(flat);
+		usage_update(table->part_arg.memory, storage_size(storage));
 
-			auto total = (double)storage_size(storage) / 1024 / 1024;
-			info("recover: {str}.{str} [{d}] ({d} column, {d} files, {.2f} MB)",
-			     user, name, (int)part->config->id,
-			     column->order,
-			     storage->list_count,
-			     total);
-		}
+		auto total = (double)storage_size(storage) / 1024 / 1024;
+		info("recover: {str}.{str} ({d} column, {d} files, {.2f} MB)",
+		     user, name,
+		     column->order,
+		     storage->list_count,
+		     total);
 	}
 }
 

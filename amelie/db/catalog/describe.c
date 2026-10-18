@@ -207,25 +207,11 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 
 		// using type
 		if (primary->type == INDEX_HASH)
-			buf_write(buf, " using hash,\n", 13);
+			buf_write(buf, " using hash\n", 13);
 		else
-			buf_write(buf, " using tree,\n", 13);
-	}
-
-	// partition key
-	auto keys = &self->config->partitioning;
-	buf_format(buf, "  partition key (");
-	for (auto at = 0; at < keys->count; at++)
-	{
-		auto key = keys_at(keys, at);
-		if (at > 0)
-			buf_write(buf, ", ", 2);
-		buf_format(buf, "{str}", &key->column->name);
+			buf_write(buf, " using tree\n", 13);
 	}
 	buf_write(buf, ")", 1);
-
-	// partitions
-	buf_format(buf, "\n) partitions {d}\n", config->parts_count);
 
 	// description
 	if (! str_empty(&config->description))
@@ -253,7 +239,7 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 		buf_format(buf, " {str} (", &index->name);
 
 		// (keys)
-		keys = &index->keys;
+		auto keys = &index->keys;
 		for (auto at = 0; at < keys->count; at++)
 		{
 			auto key = keys_at(keys, at);
@@ -505,8 +491,8 @@ describe_manifest(Rel* self, Column* column, Buf* buf)
 		encode_int(buf, column->order);
 	}
 
-	// partitions
-	encode_raw(buf, "parts", 5);
+	// pages
+	encode_raw(buf, "pages", 5);
 
 	uint32_t timeline = 0;
 	Table*   table;
@@ -520,32 +506,25 @@ describe_manifest(Rel* self, Column* column, Buf* buf)
 	{
 		table = table_of(self);
 	}
+	auto part = table->parts.part;
 
-	// [{}, ...]
+	// [id, ...]
 	encode_array(buf);
-	list_foreach(&table->parts.list)
+
+	Storage* storage;
+	if (column)
+		storage = &flats_at(&part->flats, column, timeline)->storage;
+	else
+		storage = &part->heap->storage;
+
+	assert(storage->meta);
+	encode_int(buf, storage->meta->psn);
+	for (auto i = 0; i < storage->list_count; i++)
 	{
-		auto part = list_at(Part, link);
-
-		// []
-		encode_array(buf);
-
-		Storage* storage;
-		if (column)
-			storage = &flats_at(&part->flats, column, timeline)->storage;
-		else
-			storage = &part->heap->storage;
-
-		assert(storage->meta);
-		encode_int(buf, storage->meta->psn);
-		for (auto i = 0; i < storage->list_count; i++)
-		{
-			auto page = storage_at(storage, i);
-			encode_int(buf, page->psn);
-		}
-
-		encode_array_end(buf);
+		auto page = storage_at(storage, i);
+		encode_int(buf, page->psn);
 	}
+
 	encode_array_end(buf);
 
 	encode_obj_end(buf);
