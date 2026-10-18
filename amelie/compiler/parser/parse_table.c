@@ -166,33 +166,6 @@ parse_constraints(Stmt* self, TableConfig* config, Column* column)
 			break;
 		}
 
-		// PARTITION KEY
-		case KPARTITION:
-		{
-			stmt_expect(self, KKEY);
-
-			if (! config)
-				stmt_error(self, name, "PARTITION KEY clause is not supported in this command");
-
-			if (! keys_empty(&config->partitioning))
-				stmt_error(self, NULL, "PARTITION KEY is redefined");
-
-			// force not_null constraint for keys
-			constraints_set_not_null(&column->constraints, true);
-
-			// validate key type
-			if ((column->type != TYPE_INT    &&
-			     column->type != TYPE_STRING &&
-			     column->type != TYPE_UUID   &&
-			     column->type != TYPE_TIMESTAMP) ||
-			    (column->type == TYPE_INT && column->size < 4))
-				stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
-
-			// create key
-			keys_add(&config->partitioning, column->order, true);
-			break;
-		}
-
 		// [GENERATED ALWAYS] [AS] ...
 		case KGENERATED:
 		{
@@ -268,36 +241,17 @@ parse_constraints(Stmt* self, TableConfig* config, Column* column)
 static void
 parse_columns(Stmt* self, TableConfig* config)
 {
-	// (name type [constraints], ..., partition key, primary key)
+	// (name type [constraints], ..., primary key)
 
 	// (
 	stmt_expect(self, '(');
 
 	auto local = self->parser->local;
-	auto partitioning = &config->partitioning;
 	Column* identity = NULL;
 	for (;;)
 	{
 		auto ast = stmt_next(self);
 		switch (ast->id) {
-		case KPARTITION:
-		{
-			// PARTITION KEY
-			stmt_expect(self, KKEY);
-
-			if (! keys_empty(partitioning))
-				stmt_error(self, NULL, "PARTITION KEY is redefined");
-
-			parse_key(self, partitioning);
-
-			// force column not_null constraint
-			for (auto at = 0; at < partitioning->count; at++)
-			{
-				auto key = keys_at(partitioning, at);
-				constraints_set_not_null(&key->column->constraints, true);
-			}
-			break;
-		}
 		case KPRIMARY:
 		{
 			// PRIMARY KEY (columns) [USING type]
@@ -369,7 +323,7 @@ parse_columns(Stmt* self, TableConfig* config)
 		}
 		default:
 		{
-			stmt_error(self, ast, "expected column name, PRIMARY or PARTITION KEY");
+			stmt_error(self, ast, "expected column name or PRIMARY KEY");
 			break;
 		}
 		}
@@ -385,86 +339,25 @@ parse_columns(Stmt* self, TableConfig* config)
 	// )
 	auto rbr = stmt_expect(self, ')');
 
-	// validate primary and partition keys
-	auto primary = table_config_primary(config);
-	if (keys_empty(partitioning))
-	{
-		// use primary key as partition key
-		if (primary)
-			keys_copy(partitioning, &primary->keys);
-		else
-			stmt_error(self, NULL, "PARTITION or PRIMARY KEY is missing");
-	} else
-	{
-		// ensure primary key first columns match partitioning key
-		if (primary)
-		{
-			auto keys = &primary->keys;
-			if (keys->count < partitioning->count)
-				stmt_error(self, NULL, "PRIMARY KEY must include all partition key columns");
-			for (auto at = 0; at < partitioning->count; at++)
-			{
-				auto key = keys_at(partitioning, at);
-				if (keys_at(keys, at)->column != key->column)
-					stmt_error(self, NULL, "PRIMARY KEY must include all partition columns first");
-			}
-		}
-	}
-
 	// ensure identity column is a key
 	if (identity)
 	{
+		auto primary = table_config_primary(config);
+		if (! primary)
+			stmt_error(self, rbr, "PRIMARY KEY must be defined for indentity column");
+
+		auto keys  = &primary->keys;
 		auto match = false;
-		for (auto at = 0; at < partitioning->count; at++)
+		for (auto at = 0; at < keys->count; at++)
 		{
-			auto key = keys_at(partitioning, at);
+			auto key = keys_at(keys, at);
 			if (key->column != identity)
 				continue;
 			match = true;
 			break;
 		}
 		if (! match)
-			stmt_error(self, rbr, "IDENTITY column must be part of PARTITION KEY");
-	}
-}
-
-static void
-parse_table_partitions(Stmt* self, TableConfig* table_config, int partitions)
-{
-	// validate partitions
-	if (partitions < 1 || partitions >= PART_MAPPING_MAX)
-		stmt_error(self, NULL, "table has invalid hash partitions number");
-
-	// check partitions limit
-	if (! local_limit(self->parser->local, LIMIT_PARTITIONS, partitions))
-		stmt_error(self, NULL, "partitions limit reached");
-
-	// partition_max / partitions
-	int range_max      = PART_MAPPING_MAX;
-	int range_interval = range_max / partitions;
-	int range_start    = 0;
-	for (auto order = 0; order < partitions; order++)
-	{
-		// set partition range
-		int range_step;
-		auto is_last = (order == partitions - 1);
-		if (is_last)
-			range_step = range_max - range_start;
-		else
-			range_step = range_interval;
-		if ((range_start + range_step) > range_max)
-			range_step = range_max - range_start;
-
-		// create partition config
-		auto config = part_config_allocate();
-		part_config_set_id(config, order);
-		part_config_set_range(config, range_start, range_start + range_step);
-
-		table_config_part_add(table_config, config);
-		if (is_last)
-			break;
-
-		range_start += range_step;
+			stmt_error(self, rbr, "IDENTITY column must be part of PRIMARY KEY");
 	}
 }
 
@@ -553,9 +446,7 @@ parse_table_create(Stmt* self)
 {
 	// CREATE TABLE [IF NOT EXISTS] name [ON name]
 	// (columns)
-	// [ID]
 	// [DESCRIPTION]
-	// [PARTITIONS]
 	// [RETENTION]
 	// [INDEX]
 	// [GRANT]
@@ -588,9 +479,7 @@ parse_table_create(Stmt* self)
 	parse_columns(self, config);
 
 	// set table options
-	auto index_defined = false;
 	auto primary = table_config_primary(config);
-	auto partitions = opt_int_of(&config()->backends);
 	for (;;)
 	{
 		// name value
@@ -599,16 +488,6 @@ parse_table_create(Stmt* self)
 		{
 			stmt_push(self, name);
 			break;
-		}
-
-		// PARTITIONS int
-		if (str_is_case(&name->string, "partitions", 10))
-		{
-			auto n = stmt_expect(self, KINT);
-			partitions = n->integer;
-			if (index_defined)
-				stmt_error(self, n, "partitions must be defined before indexes");
-			continue;
 		}
 
 		// RETENTION int
@@ -656,8 +535,7 @@ parse_table_create(Stmt* self)
 			index_config_set_name(secondary, &index_name->string);
 
 			auto primary = table_config_primary(config);
-			parse_index_create_inline(self, primary, secondary, &config->partitioning, partitions);
-			index_defined = true;
+			parse_index_create_inline(self, primary, secondary);
 			continue;
 		}
 
@@ -676,20 +554,16 @@ parse_table_create(Stmt* self)
 			index_config_set_unique(secondary, true);
 
 			auto primary = table_config_primary(config);
-			parse_index_create_inline(self, primary, secondary, &config->partitioning, partitions);
-			index_defined = true;
+			parse_index_create_inline(self, primary, secondary);
 			continue;
 		}
 
 		stmt_error(self, name, "unrecognized option");
 	}
 
-	// configure partitions mapping
-	parse_table_partitions(self, config, partitions);
-
-	// configure index size according to the table partitions
+	// configure index size
 	if (primary)
-		parse_index_size(self, primary, config->parts_count);
+		parse_index_size(self, primary);
 }
 
 void

@@ -36,7 +36,6 @@ struct PathKey
 struct Path
 {
 	int     type;
-	int     type_mapping;
 	Target* target;
 	int     match_start;
 	int     match_start_exprs;
@@ -45,4 +44,4 @@ struct Path
 	PathKey keys[];
 };
 
-Path* path_create(Target*, Keys*, Keys*, PathOps*);
+Path* path_create(Target*, Keys*, PathOps*);

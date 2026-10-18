@@ -11,9 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-void csend_shard(Vm*, Op*);
-void csend_lookup(Vm*, Op*);
-void csend_all(Vm*, Op*);
+void csend(Vm*, Op*);
 void cclose(Vm*, Op*);
 
 void cunion_limit(Vm*, Op*);

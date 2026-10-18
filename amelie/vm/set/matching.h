@@ -35,4 +35,4 @@ struct Matching
 Matching*
 matching_create(Columns*, Heap*, Flat*, int);
 void matching_execute(Matching*, const float*__restrict);
-void matching_merge(Value*, Value**, int);
+void matching_result(Value*, Value*);

@@ -329,9 +329,7 @@ enum
 	CDDL_CREATE_INDEX,
 
 	// compute
-	CSEND_SHARD,
-	CSEND_LOOKUP,
-	CSEND_ALL,
+	CSEND,
 	CCLOSE,
 
 	// var

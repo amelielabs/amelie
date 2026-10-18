@@ -20,7 +20,6 @@ struct Open
 	Timeline*    timeline;
 	int          keys_count;
 	bool         point_lookup;
-	bool         open_part;
 };
 
 static inline Open*

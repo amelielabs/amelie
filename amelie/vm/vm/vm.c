@@ -415,9 +415,7 @@ vm_run(Vm*       self,
 		&&cddl_create_index,
 
 		// compute
-		&&csend_shard,
-		&&csend_lookup,
-		&&csend_all,
+		&&csend,
 		&&cclose,
 
 		// var
@@ -2191,16 +2189,8 @@ cddl_create_index:
 	cddl_create_index(self, op);
 	op_next;
 
-csend_shard:
-	csend_shard(self, op);
-	op_next;
-
-csend_lookup:
-	csend_lookup(self, op);
-	op_next;
-
-csend_all:
-	csend_all(self, op);
+csend:
+	csend(self, op);
 	op_next;
 
 cclose:

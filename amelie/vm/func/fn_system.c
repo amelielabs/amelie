@@ -379,7 +379,7 @@ fn_show(Call* self)
 	{
 		// todo: check permissions
 		auto table = catalog_find_table(catalog, user, &name, true);
-		parts_list(&table->parts, buf, flags);
+		part_status(table->parts.part, buf, flags);
 		break;
 	}
 	case SHOW_INDEXES:

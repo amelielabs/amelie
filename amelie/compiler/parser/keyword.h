@@ -183,7 +183,6 @@ enum
 	KPOOL,
 	KPRIMARY,
 	KPAUSE,
-	KPARTITION,
 
 	// q
 

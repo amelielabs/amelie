@@ -184,32 +184,11 @@ matching_execute(Matching* self, const float* __restrict query)
 }
 
 hot void
-matching_merge(Value* result, Value** values, int count)
+matching_result(Value* result, Value* value)
 {
-	auto first = (Matching*)values[0]->store;
+	auto first = (Matching*)value->store;
 	auto top   = &first->top[0];
 	auto top_k = first->top_count;
-
-	// merge results into the first one
-	for (auto i = 1; i < count; i++)
-	{
-		auto next = (Matching*)values[i]->store;
-		for (auto j = 0; j < first->top_count; j++)
-		{
-			auto next_top = &next->top[j];
-			if (next_top->score == INT32_MIN)
-				continue;
-
-			auto pos = top_k - 1;
-			while (pos > 0 && top[pos - 1].score < next_top->score)
-			{
-				top[pos] = top[pos - 1];
-				pos--;
-			}
-
-			top[pos] = *next_top;
-		}
-	}
 
 	// create result set of matched rows
 	auto dim = first->flat->column->size_flat / sizeof(float);
@@ -217,7 +196,6 @@ matching_merge(Value* result, Value** values, int count)
 	auto set = set_create();
 	set_prepare(set, columns->count, 0, NULL);
 	value_set_store(result, &set->store);
-
 	for (auto i = 0; i < top_k; i++)
 	{
 		auto at = &top[i];

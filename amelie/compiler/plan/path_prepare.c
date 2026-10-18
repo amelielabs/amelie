@@ -65,11 +65,10 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 		primary_keys = &primary->keys;
 
 	// always use primary index for dml
-	auto mapping = &table->config->partitioning;
 	if (target->dml)
 	{
 		assert(!target->from_index);
-		target->path_primary = path_create(target, primary_keys, mapping, ops);
+		target->path_primary = path_create(target, primary_keys, ops);
 		target->path = target->path_primary;
 		target->from_index = primary;
 		return;
@@ -79,10 +78,10 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 	if (target->from_index)
 	{
 		auto keys = &target->from_index->keys;
-		target->path = path_create(target, keys, mapping, ops);
+		target->path = path_create(target, keys, ops);
 
 		if (target->from_index != primary)
-			target->path_primary = path_create(target, primary_keys, mapping, ops);
+			target->path_primary = path_create(target, primary_keys, ops);
 		else
 			target->path_primary = target->path;
 		return;
@@ -98,7 +97,7 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 		auto keys = &index->keys;
 
 		// primary
-		auto path = path_create(target, keys, mapping, ops);
+		auto path = path_create(target, keys, ops);
 		if (! match)
 		{
 			match_path_primary = path;
@@ -128,7 +127,7 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 	// no primary index
 	if (! match)
 	{
-		match_path_primary = path_create(target, NULL, mapping, ops);
+		match_path_primary = path_create(target, NULL, ops);
 		match_path         = match_path_primary;
 	}
 

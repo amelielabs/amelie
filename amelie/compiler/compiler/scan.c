@@ -132,7 +132,6 @@ scan_index(Scan* self, Target* target)
 	open->index        = index;
 	open->keys_count   = keys_count;
 	open->point_lookup = point_lookup;
-	open->open_part    = target->from_lock != LOCK_EXCLUSIVE_RO;
 
 	// table_open
 	int _open = op_pos(cp);
@@ -189,9 +188,6 @@ scan_heap(Scan* self, Target* target)
 	// set target origin
 	target_set_origin(target, cp->origin);
 
-	// push partition keys
-	auto keys_count = scan_key(self, target);
-
 	// create table open argument
 	//
 	// open a single partition or do table scan
@@ -200,9 +196,8 @@ scan_heap(Scan* self, Target* target)
 	open->table        = table;
 	open->timeline     = target->from_timeline;
 	open->index        = NULL;
-	open->keys_count   = keys_count;
+	open->keys_count   = 0;
 	open->point_lookup = false;
-	open->open_part    = target->from_lock != LOCK_EXCLUSIVE_RO;
 
 	// table_open
 	int _open = op_pos(cp);

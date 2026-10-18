@@ -336,9 +336,7 @@ OpDesc ops[] =
 	{ CDDL_CREATE_INDEX, "ddl_create_index" },
 
 	// compute
-	{ CSEND_SHARD, "send_shard" },
-	{ CSEND_LOOKUP, "send_lookup" },
-	{ CSEND_ALL, "send_all" },
+	{ CSEND, "send" },
 	{ CCLOSE, "close" },
 
 	// var
@@ -472,16 +470,8 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CSET_PTR:
 			op_write(buf, op, true, false, true, NULL);
 			break;
-		case CSEND_SHARD:
+		case CSEND:
 			op_dump_send(self, code, op, buf, send_at(data, op->d),
-			             true, true, true);
-			break;
-		case CSEND_LOOKUP:
-			op_dump_send(self, code, op, buf, send_at(data, op->c),
-			             true, false, true);
-			break;
-		case CSEND_ALL:
-			op_dump_send(self, code, op, buf, send_at(data, op->c),
 			             true, true, true);
 			break;
 		case CINSERT:
@@ -508,12 +498,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 			defer_buf(desc);
 			if (open->point_lookup)
 				buf_write(desc, "point_lookup", 12);
-			if (open->open_part)
-			{
-				if (! buf_empty(desc))
-					buf_write(desc, ", ", 2);
-				buf_write(desc, "part", 4);
-			}
 		
 			Str index_name;
 			str_init(&index_name);

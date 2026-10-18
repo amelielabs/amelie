@@ -193,35 +193,13 @@ emit_send(Compiler* self, Target* target, int type, int start)
 		// create or match a set to use with the insert operation
 		auto r = emit_insert_store(self);
 
-		// CSEND_SHARD
-		op4(self, CSEND_SHARD, rdispatch, r, refs_count, send_offset);
+		// CSEND
+		op4(self, CSEND, rdispatch, refs_count, send_offset, r);
 		runpin(self, r);
 	} else
 	{
 		// UPDATE, DELETE, SELECT
-		//
-		// point-lookup or range scan
-		//
-		auto path = target->path_primary;
-		if (path && path->type_mapping == PATH_LOOKUP)
-		{
-			// push partitioning keys for point lookup to match the partition
-			auto mapping_n = send->table->config->partitioning.count;
-			for (auto i = 0; i < mapping_n; i++)
-			{
-				auto key = &path->keys[i];
-				emit_push(self, target->from, key->start);
-			}
-
-			// CSEND_LOOKUP
-			op3(self, CSEND_LOOKUP, rdispatch, refs_count, send_offset);
-		} else
-		{
-			// send to all table partitions (one or more)
-
-			// CSEND_ALL
-			op3(self, CSEND_ALL, rdispatch, refs_count, send_offset);
-		}
+		op4(self, CSEND, rdispatch, refs_count, send_offset, -1);
 	}
 
 	if (send->has_result)

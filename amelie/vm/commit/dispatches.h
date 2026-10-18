@@ -144,14 +144,10 @@ dispatches_snapshot(Dispatches* self, Access* access)
 		auto ac = access_at(access, i);
 		if (ac->rel->type != REL_TABLE)
 			continue;
-		auto table = table_of(ac->rel);
-		list_foreach(&table->parts.list)
-		{
-			auto part = list_at(Part, link);
-			auto ltr = ltr_create(&self->cache_ltr, part, self->gtr, &self->complete);
-			list_append(&self->ltrs, &ltr->link);
-			self->ltrs_count++;
-		}
+		auto part = table_of(ac->rel)->parts.part;
+		auto ltr = ltr_create(&self->cache_ltr, part, self->gtr, &self->complete);
+		list_append(&self->ltrs, &ltr->link);
+		self->ltrs_count++;
 	}
 }
 

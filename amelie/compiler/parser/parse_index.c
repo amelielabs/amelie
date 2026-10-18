@@ -66,16 +66,14 @@ parse_index_using(Stmt* self, IndexConfig* config)
 }
 
 void
-parse_index_size(Stmt* self, IndexConfig* config, int partitions)
+parse_index_size(Stmt* self, IndexConfig* config)
 {
 	unused(self);
 	if (! config->size)
 		return;
 
-	// calculate size per partition
-	uint64_t size = (config->size + partitions - 1) / partitions;
-
 	// get next power of two rounding
+	uint64_t size = config->size;
 	if (size < 64)
 		size = 64;
 	else
@@ -84,7 +82,6 @@ parse_index_size(Stmt* self, IndexConfig* config, int partitions)
 	else
 		size = 1ULL << (64 - __builtin_clzll(size - 1));
 
-	// set size per partition
 	index_config_set_size(config, size);
 }
 
@@ -123,16 +120,13 @@ parse_index_create(Stmt* self, bool unique)
 
 	// parse index keys
 	auto primary = table_primary(table);
-	parse_index_create_inline(self, primary, config, &table->config->partitioning,
-	                          table->config->parts_count);
+	parse_index_create_inline(self, primary, config);
 }
 
 void
 parse_index_create_inline(Stmt*        self,
                           IndexConfig* primary,
-                          IndexConfig* config,
-                          Keys*        partitioning,
-                          int          partitions)
+                          IndexConfig* config)
 {
 	// create index config
 	index_config_set_primary(config, false);
@@ -141,38 +135,10 @@ parse_index_create_inline(Stmt*        self,
 	// (keys)
 	parse_key(self, &config->keys);
 
-	if (config->unique)
-	{
-		if (partitions == 1)
-		{
-			// any keys allowed
-		} else
-		{
-			// ensure all partitioning keys are explicitly made part of the
-			// secondary index key
-			for (auto at = 0; at < partitioning->count; at++)
-			{
-				auto key = keys_at(partitioning, at);
-
-				auto match = false;
-				for (auto at = 0; at < config->keys.count; at++)
-				{
-					auto ref = keys_at(&config->keys, at);
-					if (ref->column == key->column)
-					{
-						match = true;
-						break;
-					}
-				}
-				if (! match)
-					stmt_error(self, NULL, "secondary UNIQUE INDEX must include partitioning keys");
-			}
-		}
-
-	} else
+	if (! config->unique)
 	{
 		if (! primary)
-				stmt_error(self, NULL, "table has no primary index");
+			stmt_error(self, NULL, "table has no primary index");
 
 		// copy primary keys, which are not already present
 		keys_copy_distinct(&config->keys, &primary->keys);
@@ -181,8 +147,8 @@ parse_index_create_inline(Stmt*        self,
 	// [USING type]
 	parse_index_using(self, config);
 
-	// configure index size according to the table partitions
-	parse_index_size(self, config, partitions);
+	// configure index size
+	parse_index_size(self, config);
 }
 
 void

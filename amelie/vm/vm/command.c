@@ -22,99 +22,9 @@
 #include <amelie_vm.h>
 
 hot void
-csend_shard(Vm* self, Op* op)
+csend(Vm* self, Op* op)
 {
-	// [rdispatch, store, refs, offset]
-	auto send  = send_at(self->code_data, op->d);
-	auto table = send->table;
-
-	// create dispatch
-	auto gtr        = self->gtr;
-	auto program    = self->program;
-	auto dispatches = &gtr->dispatches;
-	auto dispatch   = dispatch_create(&dispatches->cache);
-	if (send->has_result)
-		dispatch_set_returning(dispatch);
-
-	if (self->allow_close && program->send_last == code_posof(self->code, op))
-		dispatch_set_close(dispatch);
-
-	// prepare identity
-	auto    identity_column = table_columns(table)->identity;
-	int64_t identity_seed = 0;
-	Value   identity;
-	value_init(&identity);
-
-	// redistribute rows between partitions
-	auto refs  = stack_at(&self->stack, op->c);
-	auto store = reg_at(&self->r, op->b)->store;
-	if (store->type == STORE_SET)
-	{
-		auto set = (Set*)store;
-		for (auto order = 0; order < set->count_rows; order++)
-		{
-			auto row = set_row(set, order);
-			if (identity_column)
-				identity_seed = row_identity(identity_column, refs, row, &identity, self->local);
-
-			auto part = row_map(table, refs, row, &identity);
-			auto req  = dispatch_find(dispatch, part);
-			if (! req)
-			{
-				req = dispatch_add(dispatch, &dispatches->cache_req,
-				                   REQ_EXECUTE,
-				                   send->start,
-				                   &program->code_backend,
-				                   &program->code_data,
-				                   part);
-				if (op->c > 0)
-					req_copy_refs(req, refs, op->c);
-			}
-			buf_write(&req->arg, &row, sizeof(Value*));
-			buf_write(&req->arg, &identity_seed, sizeof(int64_t));
-		}
-	} else
-	{
-		auto it = store_iterator(store);
-		defer(store_iterator_close, it);
-		Value* row;
-		for (; (row = store_iterator_at(it)); store_iterator_next(it))
-		{
-			if (identity_column)
-				identity_seed = row_identity(identity_column, refs, row, &identity, self->local);
-
-			auto part = row_map(table, refs, row, &identity);
-			auto req = dispatch_find(dispatch, part);
-			if (! req)
-			{
-				req = dispatch_add(dispatch, &dispatches->cache_req,
-				                   REQ_EXECUTE,
-				                   send->start,
-				                   &program->code_backend,
-				                   &program->code_data,
-				                   part);
-				if (op->c > 0)
-					req_copy_refs(req, refs, op->c);
-			}
-			buf_write(&req->arg, &row, sizeof(Value*));
-			buf_write(&req->arg, &identity_seed, sizeof(int64_t));
-		}
-	}
-	if (op->c > 0)
-		stack_popn(&self->stack, op->c);
-	value_free(reg_at(&self->r, op->b));
-
-	// execute dispatch
-	gtrs_send(share()->gtrs, gtr, dispatch);
-
-	// return dispatch order
-	value_set_int(reg_at(&self->r, op->a), dispatch->order);
-}
-
-hot void
-csend_lookup(Vm* self, Op* op)
-{
-	// [rdispatch, refs, offset]
+	// [rdispatch, refs, offset, store]
 	auto send  = send_at(self->code_data, op->c);
 	auto table = send->table;
 
@@ -129,66 +39,21 @@ csend_lookup(Vm* self, Op* op)
 	    self->program->send_last == code_posof(self->code, op))
 		dispatch_set_close(dispatch);
 
-	// map partition using partitioning keys
-	auto keys_count = table->config->partitioning.count;
-	auto keys = stack_at(&self->stack, keys_count);
-	auto part = row_map_keys(table, keys);
-	stack_popn(&self->stack, keys_count);
-
-	auto req  = dispatch_add(dispatch, &dispatches->cache_req,
-	                         REQ_EXECUTE,
-	                         send->start,
-	                         &self->program->code_backend,
-	                         &self->program->code_data,
-	                         part);
-
-	auto refs = stack_at(&self->stack, op->b);
+	// send to the table
+	auto part = table->parts.part;
+	auto req = dispatch_add(dispatch, &dispatches->cache_req,
+	                        REQ_EXECUTE,
+	                        send->start,
+	                        &self->program->code_backend,
+	                        &self->program->code_data,
+	                        part);
 	if (op->b > 0)
 	{
-		req_copy_refs(req, refs, op->b);
+		req_copy_refs(req, stack_at(&self->stack, op->b), op->b);
 		stack_popn(&self->stack, op->b);
 	}
 
-	// execute dispatch
-	gtrs_send(share()->gtrs, gtr, dispatch);
-
-	// return dispatch order
-	value_set_int(reg_at(&self->r, op->a), dispatch->order);
-}
-
-hot void
-csend_all(Vm* self, Op* op)
-{
-	// [rdispatch, refs, offset]
-	auto send  = send_at(self->code_data, op->c);
-	auto table = send->table;
-
-	// create dispatch
-	auto gtr = self->gtr;
-	auto dispatches = &gtr->dispatches;
-	auto dispatch = dispatch_create(&dispatches->cache);
-	if (send->has_result)
-		dispatch_set_returning(dispatch);
-
-	if (self->allow_close &&
-	    self->program->send_last == code_posof(self->code, op))
-		dispatch_set_close(dispatch);
-
-	// send to all table backends
-	list_foreach(&table->parts.list)
-	{
-		auto part = list_at(Part, link);
-		auto req = dispatch_add(dispatch, &dispatches->cache_req,
-		                        REQ_EXECUTE,
-		                        send->start,
-		                        &self->program->code_backend,
-		                        &self->program->code_data,
-		                        part);
-		if (op->b > 0)
-			req_copy_refs(req, stack_at(&self->stack, op->b), op->b);
-	}
-	if (op->b > 0)
-		stack_popn(&self->stack, op->b);
+	// todo: pass store
 
 	// execute dispatch
 	gtrs_send(share()->gtrs, gtr, dispatch);
@@ -334,8 +199,7 @@ crecv_matching(Vm* self, Op* op)
 	// wait for group completion
 	dispatch_wait(dispatch);
 
-	Value* values[dispatch->list_count];
-	int    values_count = 0;
+	Value* matching = NULL;
 
 	// collect results
 	auto error = (Req*)NULL;
@@ -347,15 +211,15 @@ crecv_matching(Vm* self, Op* op)
 		auto value = &req->result;
 		if (value->type == TYPE_STORE)
 		{
-			values[values_count] = value;
-			values_count++;
+			assert(! matching);
+			matching = value;
 		}
 	}
 	if (error)
 		rethrow_buf(error->error);
 
 	// merge matching results into the one set
-	matching_merge(reg_at(&self->r, op->a), values, values_count);
+	matching_result(reg_at(&self->r, op->a), matching);
 }
 
 hot void
@@ -378,7 +242,6 @@ cmatching(Vm* self, Op* op)
 	// create matching context as store
 	auto flat = flats_at(&cursor->part->flats, column, cursor->timeline->timeline);
 	auto matching = matching_create(columns, cursor->part->heap, flat, op->d);
-
 	value_set_store(reg_at(r, op->a), &matching->store);
 
 	// execute vector search
@@ -451,8 +314,6 @@ ctable_open(Vm* self, Op* op)
 	// [cursor, open_offset, _eof]
 	auto open = open_at(self->code_data, op->b);
 	auto part = self->part;
-	if (! open->open_part)
-		part = NULL;
 
 	// create key for index scan
 	auto buf = buf_create();
@@ -474,12 +335,12 @@ ctable_open(Vm* self, Op* op)
 			key = NULL;
 	}
 
-	// create iterator (per or cross partitions)
-	auto it = cursor_open(&open->table->parts, part,
-	                       open->index,
-	                       open->point_lookup,
-	                       open->timeline,
-	                       key);
+	// create iterator
+	auto it = cursor_open(part,
+	                      open->index,
+	                      open->point_lookup,
+	                      open->timeline,
+	                      key);
 
 	// set cursor
 	auto cursor = reg_at(&self->r, op->a);
@@ -492,6 +353,98 @@ ctable_open(Vm* self, Op* op)
 	// jmp on eof
 	return code_at(self->code, op->c);
 }
+
+#if 0
+hot void
+csend_shard(Vm* self, Op* op)
+{
+	// [rdispatch, store, refs, offset]
+	auto send  = send_at(self->code_data, op->d);
+	auto table = send->table;
+
+	// create dispatch
+	auto gtr        = self->gtr;
+	auto program    = self->program;
+	auto dispatches = &gtr->dispatches;
+	auto dispatch   = dispatch_create(&dispatches->cache);
+	if (send->has_result)
+		dispatch_set_returning(dispatch);
+
+	if (self->allow_close && program->send_last == code_posof(self->code, op))
+		dispatch_set_close(dispatch);
+
+	// prepare identity
+	auto    identity_column = table_columns(table)->identity;
+	int64_t identity_seed = 0;
+	Value   identity;
+	value_init(&identity);
+
+	// redistribute rows between partitions
+	auto refs  = stack_at(&self->stack, op->c);
+	auto store = reg_at(&self->r, op->b)->store;
+	if (store->type == STORE_SET)
+	{
+		auto set = (Set*)store;
+		for (auto order = 0; order < set->count_rows; order++)
+		{
+			auto row = set_row(set, order);
+			if (identity_column)
+				identity_seed = row_identity(identity_column, refs, row, &identity, self->local);
+
+			auto part = row_map(table, refs, row, &identity);
+			auto req  = dispatch_find(dispatch, part);
+			if (! req)
+			{
+				req = dispatch_add(dispatch, &dispatches->cache_req,
+				                   REQ_EXECUTE,
+				                   send->start,
+				                   &program->code_backend,
+				                   &program->code_data,
+				                   part);
+				if (op->c > 0)
+					req_copy_refs(req, refs, op->c);
+			}
+			buf_write(&req->arg, &row, sizeof(Value*));
+			buf_write(&req->arg, &identity_seed, sizeof(int64_t));
+		}
+	} else
+	{
+		auto it = store_iterator(store);
+		defer(store_iterator_close, it);
+		Value* row;
+		for (; (row = store_iterator_at(it)); store_iterator_next(it))
+		{
+			if (identity_column)
+				identity_seed = row_identity(identity_column, refs, row, &identity, self->local);
+
+			auto part = row_map(table, refs, row, &identity);
+			auto req = dispatch_find(dispatch, part);
+			if (! req)
+			{
+				req = dispatch_add(dispatch, &dispatches->cache_req,
+				                   REQ_EXECUTE,
+				                   send->start,
+				                   &program->code_backend,
+				                   &program->code_data,
+				                   part);
+				if (op->c > 0)
+					req_copy_refs(req, refs, op->c);
+			}
+			buf_write(&req->arg, &row, sizeof(Value*));
+			buf_write(&req->arg, &identity_seed, sizeof(int64_t));
+		}
+	}
+	if (op->c > 0)
+		stack_popn(&self->stack, op->c);
+	value_free(reg_at(&self->r, op->b));
+
+	// execute dispatch
+	gtrs_send(share()->gtrs, gtr, dispatch);
+
+	// return dispatch order
+	value_set_int(reg_at(&self->r, op->a), dispatch->order);
+}
+#endif
 
 hot void
 ctable_prepare(Vm* self, Op* op)
@@ -523,36 +476,24 @@ cinsert(Vm* self, Op* op)
 	auto part     = self->part;
 	auto columns  = table_columns(table);
 
-	auto  identity_type = TYPE_NULL;
 	Value identity;
 	value_init(&identity);
+	/*
+	auto  identity_type = TYPE_NULL;
 	if (columns->identity)
 		identity_type = columns->identity->type;
 
-	// insert
-	auto pos = self->code_arg->start;
-	auto end = self->code_arg->position;
-	while (pos < end)
+		if (identity_column)
+			identity_seed = row_identity(identity_column, refs, row, &identity, self->local);
+	*/
+
+	auto store = *(Store**)self->code_arg->start;
+	auto it = store_iterator(store);
+	defer(store_iterator_close, it);
+
+	Value* value;
+	for (; (value = store_iterator_at(it)); store_iterator_next(it))
 	{
-		auto value      = *(Value**)pos;
-		auto value_seed = *(int64_t*)(pos + sizeof(Value*));
-		pos += sizeof(Value*) + sizeof(int64_t);
-
-		// set identity column
-		switch (identity_type) {
-		case TYPE_NULL:
-			break;
-		case TYPE_INT:
-			value_set_int(&identity, value_seed);
-			break;
-		case TYPE_UUID:
-			identity.type = TYPE_UUID;
-			uuid_generate_as(&identity.uuid, value_seed, self->local->time_ms);
-			break;
-		default: __builtin_unreachable();
-			break;
-		}
-
 		auto row = row_create(part, timeline, columns, value, self->refs, &identity);
 		part_insert(part, self->tr, row);
 	}
@@ -561,6 +502,11 @@ cinsert(Vm* self, Op* op)
 Op*
 cupsert(Vm* self, Op* op)
 {
+	(void)self;
+	(void)op;
+	return NULL;
+
+#if 0
 	// [cursor, _jmp, _jmp_returning]
 	auto cursor = reg_at(&self->r, op->a);
 	assert(cursor->type == TYPE_CURSOR);
@@ -622,6 +568,7 @@ cupsert(Vm* self, Op* op)
 
 	// done
 	return ++op;
+#endif
 }
 
 hot void
