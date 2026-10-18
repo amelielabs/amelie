@@ -20,14 +20,13 @@
 #include <amelie_part.h>
 
 Part*
-part_allocate(PartConfig* config, PartArg* arg)
+part_allocate(PartArg* arg)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->in_progress   = NULL;
 	self->heap          = heap_allocate(arg->retention);
-	self->config        = part_config_copy(config);
 	self->arg           = arg;
 	self->streams       = NULL;
 	track_init(&self->track);
@@ -61,18 +60,17 @@ part_free(Part* self)
 	flats_free(&self->flats);
 	usage_update(self->arg->memory, op.delta);
 
-	part_config_free(self->config);
 	am_free(self);
 }
 
 static void
-part_open_heap(Part* self, ManifestPart* ref)
+part_open_heap(Part* self, ManifestRel* ref)
 {
 	auto heap    = self->heap;
 	auto storage = &heap->storage;
 
 	// open partition page files
-	storage_open(storage, state_checkpoint(), ref->pages_count, &ref->pages[0]);
+	storage_open(storage, state_checkpoint(), ref->pages_count, (int64_t*)ref->pages.start);
 	heap_open(heap);
 
 	// rebuild indexes
@@ -114,28 +112,26 @@ part_open_heap(Part* self, ManifestPart* ref)
 	usage_update(self->arg->memory, storage_size(storage));
 
 	auto total = (double)storage_size(storage) / 1024 / 1024;
-	info("recover: {str}.{str} [{d}] ({d} files, {.2f} MB)",
+	info("recover: {str}.{str} ({d} files, {.2f} MB)",
 	     self->arg->rel->user,
 	     self->arg->rel->name,
-	     (int)self->config->id,
 	     storage->list_count,
 	     total);
 }
 
 static void
-part_open_flat(Part* self, Flat* flat, ManifestPart* ref)
+part_open_flat(Part* self, Flat* flat, ManifestRel* ref)
 {
 	// open partition column storage
 	auto storage = &flat->storage;
-	storage_open(storage, state_checkpoint(), ref->pages_count, &ref->pages[0]);
+	storage_open(storage, state_checkpoint(), ref->pages_count, (int64_t*)ref->pages.start);
 	flat_open(flat);
 	usage_update(self->arg->memory, storage_size(storage));
 
 	auto total = (double)storage_size(storage) / 1024 / 1024;
-	info("recover: {str}.{str} [{d}] ({d} column, {d} files, {.2f} MB)",
+	info("recover: {str}.{str} ({d} column, {d} files, {.2f} MB)",
 	     self->arg->rel->user,
 	     self->arg->rel->name,
-	     (int)self->config->id,
 	     flat->column->order,
 	     storage->list_count,
 	     total);
@@ -147,13 +143,10 @@ part_open(Part* self, Manifest* manifest)
 	auto rel = self->arg->rel;
 
 	// find partition manifest
-	auto ref = manifest_find(manifest, rel->user, rel->name, -1,
-	                         self->config->id);
+	auto ref = manifest_find(manifest, rel->user, rel->name, -1);
 	if (! ref)
 		error("recover: manifest is missing {str}.{str} partition {d}",
-		      rel->user,
-		      rel->name,
-		      (int)self->config->id);
+		      rel->user, rel->name);
 
 	// open storage and rebuild indexes
 	part_open_heap(self, ref);
@@ -165,14 +158,10 @@ part_open(Part* self, Manifest* manifest)
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
-		ref = manifest_find(manifest, rel->user, rel->name, column->order,
-		                    self->config->id);
+		ref = manifest_find(manifest, rel->user, rel->name, column->order);
 		if (! ref)
 			error("recover: manifest is missing {str}.{str}.{d} partition {d}",
-			      rel->user,
-			      rel->name,
-			      column->order,
-			      (int)self->config->id);
+			      rel->user, rel->name, column->order);
 		auto flat = flats_at(&self->flats, column, 0);
 		part_open_flat(self, flat, ref);
 	}
@@ -307,18 +296,6 @@ part_status(Part* self, Buf* buf, int flags)
 {
 	unused(flags);
 	encode_obj(buf);
-
-	// id
-	encode_raw(buf, "id", 2);
-	encode_int(buf, self->config->id);
-
-	// min
-	encode_raw(buf, "min", 3);
-	encode_int(buf, self->config->hash_min);
-
-	// max
-	encode_raw(buf, "max", 3);
-	encode_int(buf, self->config->hash_max);
 
 	// size
 	encode_raw(buf, "size", 4);

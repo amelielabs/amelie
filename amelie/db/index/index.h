@@ -24,7 +24,6 @@ struct IndexIf
 	void      (*create)(Index*, IndexOp*);
 	void      (*free)(Index*, IndexOp*);
 	Iterator* (*iterator)(Index*);
-	Iterator* (*iterator_merge)(Index*, Iterator*);
 };
 
 struct IndexOp
@@ -107,12 +106,6 @@ static inline Iterator*
 index_iterator(Index* self)
 {
 	return self->iface.iterator(self);
-}
-
-static inline Iterator*
-index_iterator_merge(Index* self, Iterator* it)
-{
-	return self->iface.iterator_merge(self, it);
 }
 
 static inline Keys*

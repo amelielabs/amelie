@@ -16,31 +16,25 @@ typedef struct Parts   Parts;
 
 struct PartsIf
 {
-	void (*attach)(Parts*);
-	void (*detach)(Parts*);
-	void (*sync)(Parts*);
-	void (*truncate)(Parts*);
+	void (*attach)(Part*);
+	void (*detach)(Part*);
+	void (*sync)(Part*);
+	void (*truncate)(Part*);
 };
 
 struct Parts
 {
-	PartMapping mapping;
-	List        list;
-	int         list_count;
-	PartArg*    arg;
-	PartsIf*    iface;
-	void*       iface_arg;
+	Part*    part;
+	PartArg* arg;
+	PartsIf* iface;
+	void*    iface_arg;
 };
 
-void  parts_init(Parts*, PartsIf*, void*, PartArg*, Keys*);
-void  parts_free(Parts*);
-void  parts_open(Parts*, List*, List*);
-void  parts_close(Parts*);
-void  parts_truncate(Parts*);
-void  parts_add(Parts*, Part*);
-void  parts_remove(Parts*, Part*);
-Part* parts_find(Parts*, int);
-void  parts_index_create(Parts*, IndexConfig*);
-void  parts_index_remove(Parts*, Str*);
-void  parts_column_create(Parts*, Column*, uint32_t);
-void  parts_list(Parts*, Buf*, int);
+void parts_init(Parts*, PartsIf*, void*, PartArg*);
+void parts_free(Parts*);
+void parts_open(Parts*, List*);
+void parts_close(Parts*);
+void parts_truncate(Parts*);
+void parts_index_create(Parts*, IndexConfig*);
+void parts_index_remove(Parts*, Str*);
+void parts_column_create(Parts*, Column*, uint32_t);

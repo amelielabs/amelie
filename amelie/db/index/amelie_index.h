@@ -23,7 +23,6 @@
 #include "index/tree_iterator.h"
 #include "index/index_tree.h"
 #include "index/index_tree_iterator.h"
-#include "index/index_tree_merge.h"
 
 // hash
 #include "index/hash_store.h"
@@ -31,8 +30,6 @@
 #include "index/hash_iterator.h"
 #include "index/index_hash.h"
 #include "index/index_hash_iterator.h"
-#include "index/index_hash_merge.h"
 
 // heap
 #include "index/iterator_heap.h"
-#include "index/iterator_heap_merge.h"

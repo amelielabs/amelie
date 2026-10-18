@@ -119,15 +119,6 @@ index_tree_iterator(Index* self)
 	return index_tree_iterator_allocate(index_tree_of(self));
 }
 
-hot static Iterator*
-index_tree_iterator_merge(Index* self, Iterator* it)
-{
-	if (! it)
-		it = index_tree_merge_allocate();
-	index_tree_merge_add(index_tree_merge_of(it), index_tree_of(self));
-	return it;
-}
-
 Index*
 index_tree_allocate(IndexConfig* config, void* arg)
 {
@@ -136,13 +127,12 @@ index_tree_allocate(IndexConfig* config, void* arg)
 	tree_init(&self->tree, 512, 256, &config->keys.comparable);
 
 	auto iface = &self->index.iface;
-	iface->upsert         = index_tree_upsert;
-	iface->replace        = index_tree_replace;
-	iface->delete         = index_tree_delete;
-	iface->truncate       = index_tree_truncate;
-	iface->create         = index_tree_create;
-	iface->free           = index_tree_free;
-	iface->iterator       = index_tree_iterator;
-	iface->iterator_merge = index_tree_iterator_merge;
+	iface->upsert   = index_tree_upsert;
+	iface->replace  = index_tree_replace;
+	iface->delete   = index_tree_delete;
+	iface->truncate = index_tree_truncate;
+	iface->create   = index_tree_create;
+	iface->free     = index_tree_free;
+	iface->iterator = index_tree_iterator;
 	return &self->index;
 }

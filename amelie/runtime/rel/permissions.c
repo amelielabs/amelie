@@ -53,9 +53,6 @@ static Permission perms[] =
 	// UDF
 	{ PERM_EXECUTE,             "execute",             7  },
 
-	// Channel
-	{ PERM_PUBLISH,             "publish",             7  },
-
 	// SQL
 	{ PERM_SQL,                 "sql",                 3  },
 

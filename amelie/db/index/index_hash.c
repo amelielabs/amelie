@@ -130,15 +130,6 @@ index_hash_iterator(Index* self)
 	return index_hash_iterator_allocate(index_hash_of(self));
 }
 
-hot static Iterator*
-index_hash_iterator_merge(Index* self, Iterator* it)
-{
-	if (! it)
-		it = index_hash_merge_allocate();
-	index_hash_merge_add(index_hash_merge_of(it), index_hash_of(self));
-	return it;
-}
-
 Index*
 index_hash_allocate(IndexConfig* config, void* arg)
 {
@@ -147,14 +138,13 @@ index_hash_allocate(IndexConfig* config, void* arg)
 	hash_init(&self->hash);
 
 	auto iface = &self->index.iface;
-	iface->upsert         = index_hash_upsert;
-	iface->replace        = index_hash_replace;
-	iface->delete         = index_hash_delete;
-	iface->truncate       = index_hash_truncate;
-	iface->create         = index_hash_create;
-	iface->free           = index_hash_free;
-	iface->iterator       = index_hash_iterator;
-	iface->iterator_merge = index_hash_iterator_merge;
+	iface->upsert   = index_hash_upsert;
+	iface->replace  = index_hash_replace;
+	iface->delete   = index_hash_delete;
+	iface->truncate = index_hash_truncate;
+	iface->create   = index_hash_create;
+	iface->free     = index_hash_free;
+	iface->iterator = index_hash_iterator;
 	return &self->index;
 }
 

@@ -39,11 +39,8 @@ enum
 	// UDF
 	PERM_EXECUTE             = 1ul << 11,
 
-	// Channel
-	PERM_PUBLISH             = 1ul << 12,
-
 	// SQL
-	PERM_SQL                 = 1ul << 13,
+	PERM_SQL                 = 1ul << 12,
 
 	// all
 	PERM_ALL                 = UINT32_MAX

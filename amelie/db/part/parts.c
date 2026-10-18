@@ -23,129 +23,80 @@ void
 parts_init(Parts*   self,
            PartsIf* iface,
            void*    iface_arg,
-           PartArg* arg,
-           Keys*    mapping)
+           PartArg* arg)
 {
-	self->list_count = 0;
-	self->arg        = arg;
-	self->iface      = iface;
-	self->iface_arg  = iface_arg;
-	list_init(&self->list);
-	part_mapping_init(&self->mapping, mapping);
+	self->part      = NULL;
+	self->arg       = arg;
+	self->iface     = iface;
+	self->iface_arg = iface_arg;
 }
 
 void
 parts_free(Parts* self)
 {
-	list_foreach_safe(&self->list)
+	if (self->part)
 	{
-		auto part = list_at(Part, link);
-		part_free(part);
+		part_free(self->part);
+		self->part = NULL;
 	}
-	part_mapping_free(&self->mapping);
 }
 
 void
-parts_open(Parts* self, List* parts, List* indexes)
+parts_open(Parts* self, List* indexes)
 {
-	// prepare partitions
-	list_foreach(parts)
-	{
-		auto config = list_at(PartConfig, link);
-		auto part = part_allocate(config, self->arg);
-		parts_add(self, part);
-	}
+	// prepare partition
+	auto part = part_allocate(self->arg);
+	self->part = part;
 
 	// create indexes and stores
-	list_foreach(&self->list)
+	list_foreach(indexes)
 	{
-		auto part = list_at(Part, link);
-		list_foreach(indexes)
-		{
-			auto config = list_at(IndexConfig, link);
-			part_index_create(part, config);
-		}
+		auto config = list_at(IndexConfig, link);
+		part_index_create(part, config);
+	}
 
-		// create flat stores
-		list_foreach(&self->arg->columns->list)
-		{
-			auto column = list_at(Column, link);
-			if (! column->size_flat)
-				continue;
+	// create flat stores
+	list_foreach(&self->arg->columns->list)
+	{
+		auto column = list_at(Column, link);
+		if (! column->size_flat)
+			continue;
 
-			auto flat = flat_allocate(column, 0);
-			flats_add_column(&part->flats);
-			flats_add(&part->flats, flat);
-		}
-
-		// map hash partition
-		part_mapping_add(&self->mapping, part);
+		auto flat = flat_allocate(column, 0);
+		flats_add_column(&part->flats);
+		flats_add(&part->flats, flat);
 	}
 
 	// create pods and load heaps
-	self->iface->attach(self);
+	self->iface->attach(part);
 }
 
 void
 parts_close(Parts* self)
 {
-	if (! self->list_count)
+	if (! self->part)
 		return;
 
 	// drop pods
-	self->iface->detach(self);
+	self->iface->detach(self->part);
 }
 
 void
 parts_truncate(Parts* self)
 {
-	self->iface->truncate(self);
-}
-
-void
-parts_add(Parts* self, Part* part)
-{
-	list_append(&self->list, &part->link);
-	self->list_count++;
-}
-
-void
-parts_remove(Parts* self, Part* part)
-{
-	list_unlink(&part->link);
-	self->list_count--;
-}
-
-Part*
-parts_find(Parts* self, int id)
-{
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		if (part->config->id == id)
-			return part;
-	}
-	return NULL;
+	self->iface->truncate(self->part);
 }
 
 void
 parts_index_create(Parts* self, IndexConfig* config)
 {
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		part_index_create(part, config);
-	}
+	part_index_create(self->part, config);
 }
 
 void
 parts_index_remove(Parts* self, Str* name)
 {
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		part_index_drop(part, name);
-	}
+	part_index_drop(self->part, name);
 }
 
 void
@@ -155,24 +106,8 @@ parts_column_create(Parts* self, Column* column, uint32_t timeline)
 		return;
 
 	// create flat stores
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		auto flat = flat_allocate(column, timeline);
-		flats_add_column(&part->flats);
-		flats_add(&part->flats, flat);
-	}
-}
-
-void
-parts_list(Parts* self, Buf* buf, int flags)
-{
-	// show partitions on table
-	encode_array(buf);
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		part_status(part, buf, flags);
-	}
-	encode_array_end(buf);
+	auto part = self->part;
+	auto flat = flat_allocate(column, timeline);
+	flats_add_column(&part->flats);
+	flats_add(&part->flats, flat);
 }

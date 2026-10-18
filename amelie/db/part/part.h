@@ -15,20 +15,19 @@ typedef struct Part Part;
 
 struct Part
 {
-	Index*      indexes;
-	int         indexes_count;
-	Index*      in_progress;
-	Track       track;
-	Heap*       heap;
-	Flats       flats;
-	PartConfig* config;
-	PartArg*    arg;
-	void*       streams;
-	List        link_cp;
-	List        link;
+	Index*   indexes;
+	int      indexes_count;
+	Index*   in_progress;
+	Track    track;
+	Heap*    heap;
+	Flats    flats;
+	PartArg* arg;
+	void*    streams;
+	List     link_cp;
+	List     link;
 };
 
-Part*  part_allocate(PartConfig*, PartArg*);
+Part*  part_allocate(PartArg*);
 void   part_free(Part*);
 void   part_open(Part*, Manifest*);
 void   part_truncate(Part*);
