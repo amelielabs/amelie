@@ -50,7 +50,7 @@ vector_loader_client_main(VectorLoader* self, Client* client)
 		buf_format(&buf, "INSERT INTO bench_vector VALUES ");
 		for (int i = 0; i < batch; i++)
 		{
-			buf_format(&buf, "{s}({d}, vector [", i > 0 ? "," : "", seq);
+			buf_format(&buf, "{s}(vector [", i > 0 ? "," : "");
 			for (int j = 0; j < vector_dim; j++)
 			{
 				float val = ((float)random_generate(&am_task->random) / (float)UINT64_MAX) * 2.0f - 1.0f;
@@ -126,7 +126,7 @@ bench_vector_create(Bench* self, Client* client)
 {
 	info("preparing tables.");
 	Str str;
-	str_set_cstr(&str, "create table bench_vector (id int, v vector(1024), primary key (id))");
+	str_set_cstr(&str, "create table bench_vector (v vector(1024))");
 	client_execute(client, &str, NULL);
 
 	info("preparing function.");
@@ -138,7 +138,7 @@ bench_vector_create(Bench* self, Client* client)
 	           "create function matching_func() "
 	           "begin ");
 	buf_format(&buf,
-	           "  SELECT id FROM bench_vector MATCHING v TO vector [");
+	           "  SELECT 1 FROM bench_vector MATCHING v TO vector [");
 	for (int j = 0; j < vector_dim; j++)
 	{
 		float val = ((float)random_generate(&am_task->random) / (float)UINT64_MAX) * 2.0f - 1.0f;

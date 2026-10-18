@@ -30,7 +30,7 @@ static inline void
 table_sync(Table* self)
 {
 	// note: assuming exclusive lock
-	self->parts.iface->sync(self->parts.part);
+	self->parts.iface->sync(&self->parts);
 }
 
 always_inline static inline Table*

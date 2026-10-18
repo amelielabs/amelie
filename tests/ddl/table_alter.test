@@ -321,13 +321,7 @@ drop table test;
 create table test (id int primary key);
 alter table test set retention 123;
 alter table test unset retention;
-drop table test;
-
-create table test (id int partition key);
-alter table test set retention 123;
-select show('table', 'test', null, "verbose").retention;
-alter table test unset retention;
-select show('table', 'test', null, "verbose").retention;
+drop index `primary` on test;
 
 # test: retention (create index)
 alter table test set retention 123;

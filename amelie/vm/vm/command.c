@@ -53,7 +53,18 @@ csend(Vm* self, Op* op)
 		stack_popn(&self->stack, op->b);
 	}
 
-	// todo: pass store
+	// pass store to insert
+	if (op->d != -1)
+	{
+		// store, seed, time
+		buf_write(&req->arg, &reg_at(&self->r, op->d)->store, sizeof(Store*));
+		uint64_t value = random_generate(&self->local->random);
+		buf_write(&req->arg, &value, sizeof(value));
+		value = self->local->time_ms;
+		buf_write(&req->arg, &value, sizeof(value));
+
+		value_free(reg_at(&self->r, op->d));
+	}
 
 	// execute dispatch
 	gtrs_send(share()->gtrs, gtr, dispatch);
@@ -354,97 +365,47 @@ ctable_open(Vm* self, Op* op)
 	return code_at(self->code, op->c);
 }
 
-#if 0
 hot void
-csend_shard(Vm* self, Op* op)
+cinsert(Vm* self, Op* op)
 {
-	// [rdispatch, store, refs, offset]
-	auto send  = send_at(self->code_data, op->d);
-	auto table = send->table;
+	// [table*, timeline*]
+	auto table    = (Table*)op->a;
+	auto timeline = (Timeline*)op->b;
+	auto part     = self->part;
+	auto columns  = table_columns(table);
 
-	// create dispatch
-	auto gtr        = self->gtr;
-	auto program    = self->program;
-	auto dispatches = &gtr->dispatches;
-	auto dispatch   = dispatch_create(&dispatches->cache);
-	if (send->has_result)
-		dispatch_set_returning(dispatch);
+	auto store      = *(Store**)self->code_arg->start;
+	auto store_seed = *(uint64_t*)(self->code_arg->start + sizeof(Store**));
+	auto store_time = *(uint64_t*)(self->code_arg->start + sizeof(Store**) + sizeof(uint64_t));
 
-	if (self->allow_close && program->send_last == code_posof(self->code, op))
-		dispatch_set_close(dispatch);
+	Random random;
+	random.seed[0] = store_time;
+	random.seed[1] = store_seed;
 
-	// prepare identity
-	auto    identity_column = table_columns(table)->identity;
-	int64_t identity_seed = 0;
-	Value   identity;
+	auto it = store_iterator(store);
+	defer(store_iterator_close, it);
+
+	Value identity;
 	value_init(&identity);
-
-	// redistribute rows between partitions
-	auto refs  = stack_at(&self->stack, op->c);
-	auto store = reg_at(&self->r, op->b)->store;
-	if (store->type == STORE_SET)
+	Value* value;
+	if (columns->identity)
 	{
-		auto set = (Set*)store;
-		for (auto order = 0; order < set->count_rows; order++)
+		for (; (value = store_iterator_at(it)); store_iterator_next(it))
 		{
-			auto row = set_row(set, order);
-			if (identity_column)
-				identity_seed = row_identity(identity_column, refs, row, &identity, self->local);
+			row_identity(columns->identity, self->refs, value, &identity, &random, store_time);
 
-			auto part = row_map(table, refs, row, &identity);
-			auto req  = dispatch_find(dispatch, part);
-			if (! req)
-			{
-				req = dispatch_add(dispatch, &dispatches->cache_req,
-				                   REQ_EXECUTE,
-				                   send->start,
-				                   &program->code_backend,
-				                   &program->code_data,
-				                   part);
-				if (op->c > 0)
-					req_copy_refs(req, refs, op->c);
-			}
-			buf_write(&req->arg, &row, sizeof(Value*));
-			buf_write(&req->arg, &identity_seed, sizeof(int64_t));
+			auto row = row_create(part, timeline, columns, value, self->refs, &identity);
+			part_insert(part, self->tr, row);
 		}
 	} else
 	{
-		auto it = store_iterator(store);
-		defer(store_iterator_close, it);
-		Value* row;
-		for (; (row = store_iterator_at(it)); store_iterator_next(it))
+		for (; (value = store_iterator_at(it)); store_iterator_next(it))
 		{
-			if (identity_column)
-				identity_seed = row_identity(identity_column, refs, row, &identity, self->local);
-
-			auto part = row_map(table, refs, row, &identity);
-			auto req = dispatch_find(dispatch, part);
-			if (! req)
-			{
-				req = dispatch_add(dispatch, &dispatches->cache_req,
-				                   REQ_EXECUTE,
-				                   send->start,
-				                   &program->code_backend,
-				                   &program->code_data,
-				                   part);
-				if (op->c > 0)
-					req_copy_refs(req, refs, op->c);
-			}
-			buf_write(&req->arg, &row, sizeof(Value*));
-			buf_write(&req->arg, &identity_seed, sizeof(int64_t));
+			auto row = row_create(part, timeline, columns, value, self->refs, &identity);
+			part_insert(part, self->tr, row);
 		}
 	}
-	if (op->c > 0)
-		stack_popn(&self->stack, op->c);
-	value_free(reg_at(&self->r, op->b));
-
-	// execute dispatch
-	gtrs_send(share()->gtrs, gtr, dispatch);
-
-	// return dispatch order
-	value_set_int(reg_at(&self->r, op->a), dispatch->order);
 }
-#endif
 
 hot void
 ctable_prepare(Vm* self, Op* op)
@@ -454,49 +415,17 @@ ctable_prepare(Vm* self, Op* op)
 
 	// create primary index iterator for related partition
 	auto primary = part_primary(self->part);
-	if (unlikely(! primary))
-		error("primary index is not defined");
-	auto it = index_iterator(primary);
+	Iterator* it;
+	if (unlikely(primary))
+		it = index_iterator(primary);
+	else
+		it = iterator_heap_allocate(self->part->heap);
 
 	// set cursor
 	value_set_cursor(cursor, (Table*)op->b, (Timeline*)op->c, self->part, it);
 
 	// prepare upsert state
 	self->upsert = self->code_arg->start;
-}
-
-hot void
-cinsert(Vm* self, Op* op)
-{
-	// [table*, timeline*]
-
-	// find related table partition
-	auto table    = (Table*)op->a;
-	auto timeline = (Timeline*)op->b;
-	auto part     = self->part;
-	auto columns  = table_columns(table);
-
-	Value identity;
-	value_init(&identity);
-	/*
-	auto  identity_type = TYPE_NULL;
-	if (columns->identity)
-		identity_type = columns->identity->type;
-
-		if (identity_column)
-			identity_seed = row_identity(identity_column, refs, row, &identity, self->local);
-	*/
-
-	auto store = *(Store**)self->code_arg->start;
-	auto it = store_iterator(store);
-	defer(store_iterator_close, it);
-
-	Value* value;
-	for (; (value = store_iterator_at(it)); store_iterator_next(it))
-	{
-		auto row = row_create(part, timeline, columns, value, self->refs, &identity);
-		part_insert(part, self->tr, row);
-	}
 }
 
 Op*

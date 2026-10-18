@@ -16,10 +16,10 @@ typedef struct Parts   Parts;
 
 struct PartsIf
 {
-	void (*attach)(Part*);
-	void (*detach)(Part*);
-	void (*sync)(Part*);
-	void (*truncate)(Part*);
+	void (*attach)(Parts*);
+	void (*detach)(Parts*);
+	void (*sync)(Parts*);
+	void (*truncate)(Parts*);
 };
 
 struct Parts

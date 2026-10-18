@@ -29,7 +29,6 @@ show memory;
 create table test (id int primary key);
 show tables;
 select * from show tables;
-show partitions test;
 
 SHOW TABLES;
 
@@ -42,11 +41,6 @@ select * from show table test;
 show indexes test;
 select show('indexes', 'test', null);
 select * from show indexes test;
-
-# test: show partitions
-show partitions test;
-select show('partitions', 'test', null);
-select * from show partitions test;
 
 # test: show functions
 create function test_fn (id int) return json

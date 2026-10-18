@@ -207,9 +207,9 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 
 		// using type
 		if (primary->type == INDEX_HASH)
-			buf_write(buf, " using hash\n", 13);
+			buf_write(buf, " using hash\n", 12);
 		else
-			buf_write(buf, " using tree\n", 13);
+			buf_write(buf, " using tree\n", 12);
 	}
 	buf_write(buf, ")", 1);
 

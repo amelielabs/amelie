@@ -19,7 +19,7 @@ bench_insert_create(Bench* self, Client* client)
 {
 	unused(self);
 	Str str;
-	str_set_cstr(&str, "create table test (id uuid identity, partition key(id)) retention 1gb");
+	str_set_cstr(&str, "create table test (id int) retention 1gb");
 	client_execute(client, &str, NULL);
 
 	auto batch = opt_int_of(&self->batch);

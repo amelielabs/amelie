@@ -104,13 +104,6 @@ insert into test values (1);
 insert into test values (2), (3);
 drop table test;
 
-# test: partitions
-alter user amelie set limit partitions = 1;
-create table test (id int primary key) partitions 3;
-create table test (id int primary key) partitions 1;
-drop table test;
-alter user amelie unset limit partitions;
-
 # test: vector
 alter user amelie set limit vector = 1;
 create table test (id int primary key, v vector(1));
@@ -124,22 +117,11 @@ alter user amelie set limit compute = 100;
 explain while 1 do end;
 while 1 do end;
 
-alter user amelie set limit partitions = 1;
-create table test (id int primary key, data int) partitions 1;
-insert into test values (1, 0);
-insert into test values (2, 0);
-insert into test values (3, 0);
-insert into test values (4, 0);
-
-alter user amelie set limit compute = 3;
-update test set data = id;
-drop table test;
-
 # test: memory
 show rels;
 show memory;
 
-create table test (id int primary key, data int) partitions 1;
+create table test (id int primary key, data int);
 show memory;
 
 insert into test values (1, 0);
@@ -152,7 +134,7 @@ alter user amelie set limit memory = 128;
 show memory;
 show limits;
 
-create table test (id int primary key, data int) partitions 1;
+create table test (id int primary key, data int);
 
 insert into test values (1, 0);
 select * from test;

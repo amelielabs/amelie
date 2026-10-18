@@ -135,7 +135,7 @@ regexp_replace
 ──────────────
 какдела
 # test: regexpr (pattern change)
-create table test (id int primary key using tree, s text, p text) partitions 1;
+create table test (id int primary key using tree, s text, p text);
 insert into test values (1, "abc", "^a"), (2, "abc", "^z");
 select id, regexp_like(s, p) from test order by id;
 

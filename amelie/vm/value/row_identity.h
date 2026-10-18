@@ -11,21 +11,22 @@
 // AGPL-3.0 Licensed.
 //
 
-hot static inline int64_t
-row_identity(Column* column, Value* refs,
-             Value*  row,
-             Value*  identity,
-             Local*  local)
+hot static inline void
+row_identity(Column*  column, Value* refs,
+             Value*   row,
+             Value*   identity,
+             Random*  random,
+             uint64_t time_ms)
 {
 	// get existing identity value
 	auto value = row + column->order;
 	if (value->type == TYPE_REF)
 		value = &refs[value->integer];
 	if (value->type != TYPE_NULL)
-		return 0;
+		return;
 
 	// generate
-	auto seed = random_generate(&local->random);
+	auto seed = random_generate(random);
 	if (column->type == TYPE_INT)
 	{
 		seed %= column->constraints.identity_modulo;
@@ -34,7 +35,6 @@ row_identity(Column* column, Value* refs,
 	{
 		// uuid
 		identity->type = TYPE_UUID;
-		uuid_generate_as(&identity->uuid, seed, local->time_ms);
+		uuid_generate_as(&identity->uuid, seed, time_ms);
 	}
-	return seed;
 }

@@ -15,8 +15,7 @@ typedef struct Streams Streams;
 
 struct Streams
 {
-	Stream* streams;
-	int     streams_count;
+	Stream* stream;
 	List    ready;
 	Event   notify;
 	Iov     iov;
@@ -26,6 +25,6 @@ struct Streams
 
 void streams_init(Streams*, Task*, Client*);
 void streams_free(Streams*);
-void streams_create_for(Streams*, Parts*, Timeline*, Str*);
-void streams_create(Streams*, Parts*, Timeline*);
+void streams_create_for(Streams*, Part*, Timeline*, Str*);
+void streams_create(Streams*, Part*, Timeline*);
 void streams_run(Streams*);

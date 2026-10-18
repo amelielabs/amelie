@@ -1065,20 +1065,7 @@ alter table test set retention 123;
 error: table 'test': using indexes with retention is not supported
 alter table test unset retention;
 error: table 'test': using indexes with retention is not supported
-drop table test;
-create table test (id int partition key);
-alter table test set retention 123;
-select show('table', 'test', null, "verbose").retention;
-
-retention
-─────────
-2097152
-alter table test unset retention;
-select show('table', 'test', null, "verbose").retention;
-
-retention
-─────────
--1
+drop index `primary` on test;
 # test: retention (create index)
 alter table test set retention 123;
 create unique index i on test (id);

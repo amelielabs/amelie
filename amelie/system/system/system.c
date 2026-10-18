@@ -138,12 +138,9 @@ system_on_server_connect(Server* server, Client* client)
 static void
 parts_if_attach(Parts* self)
 {
-	System* system = self->iface_arg;
-	if (self->list_count > PART_MAPPING_MAX)
-		error("exceeded the maximum number of hash partitions per table");
-
 	// create pods on backends
-	backends_deploy_all(&system->backends, self);
+	System* system = self->iface_arg;
+	backends_deploy(&system->backends, self->part);
 }
 
 static void
@@ -151,7 +148,7 @@ parts_if_detach(Parts* self)
 {
 	// drop pods on backends
 	System* system = self->iface_arg;
-	backends_undeploy_all(&system->backends, self);
+	backends_undeploy(&system->backends, self->part);
 }
 
 static void
@@ -159,7 +156,7 @@ parts_if_sync(Parts* self)
 {
 	// sync prepared transactions
 	System* system = self->iface_arg;
-	backends_sync_all(&system->backends, self);
+	backends_sync(&system->backends, self->part);
 }
 
 static void
@@ -167,7 +164,7 @@ parts_if_truncate(Parts* self)
 {
 	// truncate pods on backends
 	System* system = self->iface_arg;
-	backends_truncate_all(&system->backends, self);
+	backends_truncate(&system->backends, self->part);
 }
 
 static PartsIf parts_if =

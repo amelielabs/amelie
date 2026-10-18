@@ -370,14 +370,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      32    # amelie.t (select, closing)
+  0   send                0      0      32    # amelie.t (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.t (heap) part
+  1   table_open          1      0      6     # amelie.t (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -409,14 +409,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      32    # amelie.t (select, closing)
+  0   send                0      0      32    # amelie.t (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.t (heap) part
+  1   table_open          1      0      6     # amelie.t (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -573,7 +573,7 @@ alter index i on test set primary;
 error: table 'test': table already has primary index
 drop table test;
 # test: alter index set primary
-create table test (id int partition key);
+create table test (id int);
 select show('table', 'test', null, "verbose").indexes;
 
 indexes
@@ -694,7 +694,7 @@ alter table test add column data int not null default 1;
 error: alter table test add column data int not null default 1❰;❱ ⟵ NOT NULL currently not supported with ALTER
 drop table test;
 # test: create index (indexation error)
-create table test (id int primary key, data int) partitions 1;
+create table test (id int primary key, data int);
 insert into test values (1, 10);
 insert into test values (2, 10);
 create unique index j on test (data);
@@ -758,16 +758,6 @@ columns
 drop table test;
 # test: create index (size)
 create table test (id int primary key using hash (size 1234));
-show partitions test;
-
-partitions
-──────────
-{
-  "id": 0,
-  "min": 0,
-  "max": 8096,
-  "size": 0
-}
 show indexes test;
 
 indexes
@@ -776,45 +766,6 @@ indexes
   "name": "primary",
   "type": 1,
   "size": 2048,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }]
-}
-drop table test;
-create table test (id int primary key using hash (size 1234)) partitions 3;
-show partitions test;
-
-partitions
-──────────
-{
-  "id": 0,
-  "min": 0,
-  "max": 2698,
-  "size": 0
-}
-{
-  "id": 1,
-  "min": 2698,
-  "max": 5396,
-  "size": 0
-}
-{
-  "id": 2,
-  "min": 5396,
-  "max": 8096,
-  "size": 0
-}
-show indexes test;
-
-indexes
-───────
-{
-  "name": "primary",
-  "type": 1,
-  "size": 512,
   "unique": true,
   "primary": true,
   "keys": [{

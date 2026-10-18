@@ -190,12 +190,9 @@ select show('partitions', 'test');
 
 show
 ────
-[{
-  "id": 0,
-  "min": 0,
-  "max": 8096,
+{
   "size": 0
-}]
+}
 # test: functions
 select show('functions');
 

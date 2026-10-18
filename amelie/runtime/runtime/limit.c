@@ -50,7 +50,6 @@ limits_names[LIMIT_MAX] =
 	{ "keys",           4  },
 	{ "values",         6  },
 	{ "args",           4  },
-	{ "partitions",     10 },
 	{ "vector",         6  }
 };
 

@@ -471,7 +471,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 			op_write(buf, op, true, false, true, NULL);
 			break;
 		case CSEND:
-			op_dump_send(self, code, op, buf, send_at(data, op->d),
+			op_dump_send(self, code, op, buf, send_at(data, op->c),
 			             true, true, true);
 			break;
 		case CINSERT:

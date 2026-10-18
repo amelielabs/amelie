@@ -24,8 +24,7 @@ stream_export(Stream* self, Row* row)
 	value_init(&value);
 
 	auto buf = &self->data;
-	buf_format(buf, "id: {u64}:{u32}:{u32}\n", self->part->config->id,
-	           heap_page_of(row)->id,
+	buf_format(buf, "id: {u32}:{u32}\n", heap_page_of(row)->id,
 	           row->offset);
 	buf_write(buf, "data: ", 6);
 	buf_write(buf, "{", 1);
@@ -69,13 +68,13 @@ stream_export(Stream* self, Row* row)
 void
 stream_init(Stream* self, Streams* streams, Part* part, Timeline* timeline)
 {
-	self->wait        = false;
-	self->shutdown    = false;
-	self->ready       = false;
-	self->part        = part;
-	self->part_task   = part->track.backend;
-	self->part_link   = NULL;
-	self->streams     = streams;
+	self->wait      = false;
+	self->shutdown  = false;
+	self->ready     = false;
+	self->part      = part;
+	self->part_task = part->track.backend;
+	self->part_link = NULL;
+	self->streams   = streams;
 
 	// set timeline
 	auto timeline_self = &self->timeline;

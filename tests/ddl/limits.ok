@@ -122,13 +122,6 @@ insert into test values (1);
 insert into test values (2), (3);
 error: insert into test values (2), (3)❰;❱ ⟵ values limit reached
 drop table test;
-# test: partitions
-alter user amelie set limit partitions = 1;
-create table test (id int primary key) partitions 3;
-error: create table test (id int primary key) partitions 3❰;❱ ⟵ partitions limit reached
-create table test (id int primary key) partitions 1;
-drop table test;
-alter user amelie unset limit partitions;
 # test: vector
 alter user amelie set limit vector = 1;
 create table test (id int primary key, v vector(1));
@@ -158,16 +151,6 @@ main
   4   ret                 -1     0      -
 while 1 do end;
 error: compute limit reached
-alter user amelie set limit partitions = 1;
-create table test (id int primary key, data int) partitions 1;
-insert into test values (1, 0);
-insert into test values (2, 0);
-insert into test values (3, 0);
-insert into test values (4, 0);
-alter user amelie set limit compute = 3;
-update test set data = id;
-error: compute limit reached
-drop table test;
 # test: memory
 show rels;
 
@@ -182,7 +165,7 @@ memory
   "limit_enabled": false,
   "limit": 0
 }
-create table test (id int primary key, data int) partitions 1;
+create table test (id int primary key, data int);
 show memory;
 
 memory
@@ -230,7 +213,7 @@ limits
   "send": 3145728,
   "memory": 128
 }
-create table test (id int primary key, data int) partitions 1;
+create table test (id int primary key, data int);
 insert into test values (1, 0);
 error: memory limit reached
 select * from test;

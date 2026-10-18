@@ -30,18 +30,18 @@ link_stream_create(Link* self, Streams* streams)
 
 	// table or layer
 	Timeline* timeline;
-	Parts*    parts;
+	Part*     part;
 	if (rel->type == REL_TABLE)
 	{
 		auto table = table_of(rel);
 		timeline = &table->timelines.main;
-		parts    = &table->parts;
+		part     =  table->parts.part;
 	} else
 	if (rel->type == REL_LAYER)
 	{
 		auto layer = layer_of(rel);
 		timeline = &layer->config->timeline;
-		parts    = &layer->table->parts;
+		part     =  layer->table->parts.part;
 	} else {
 		error("stream: relation {str}.{str} cannot be used for streaming",
 		      rel->user, rel->name);
@@ -50,9 +50,9 @@ link_stream_create(Link* self, Streams* streams)
 	// prepare streams (one per partition)
 	auto id = &self->portal.endpoint.id.string;
 	if (str_empty(id))
-		streams_create(streams, parts, timeline);
+		streams_create(streams, part, timeline);
 	else
-		streams_create_for(streams, parts, timeline, id);
+		streams_create_for(streams, part, timeline, id);
 }
 
 static inline void

@@ -114,117 +114,31 @@ backends_next(Backends* self)
 }
 
 static inline void
-backends_deploy_all(Backends* self, Parts* parts)
+backends_deploy(Backends* self, Part* part)
 {
-	RpcSet set;
-	rpc_set_init(&set);
-	defer(rpc_set_free, &set);
-	rpc_set_prepare(&set, parts->list_count);
-
-	auto order = 0;
-	list_foreach(&parts->list)
-	{
-		auto part = list_at(Part, link);
-		auto rpc = rpc_set_add(&set, order, MSG_DEPLOY, part);
-		auto backend = backends_next(self);
-		rpc_send(rpc, &backend->task);
-		order++;
-	}
-	rpc_set_wait(&set);
+	auto backend = backends_next(self);
+	rpc(&backend->task, MSG_DEPLOY, part);
 }
 
 static inline void
-backends_undeploy_all(Backends* self, Parts* parts)
+backends_undeploy(Backends* self, Part* part)
 {
-	auto count = 0;
-	list_foreach(&parts->list)
-	{
-		auto part = list_at(Part, link);
-		if (part->track.backend)
-			count++;
-	}
-	if (! count)
+	unused(self);
+	if (! part->track.backend)
 		return;
-
-	RpcSet set;
-	rpc_set_init(&set);
-	defer(rpc_set_free, &set);
-	rpc_set_prepare(&set, count);
-
-	auto order = 0;
-	list_foreach(&parts->list)
-	{
-		auto part = list_at(Part, link);
-		if (! part->track.backend)
-			continue;
-		auto rpc = rpc_set_add(&set, order, MSG_UNDEPLOY, part);
-		auto backend = backends_find(self, part->track.backend);
-		rpc_send(rpc, &backend->task);
-		order++;
-	}
-	rpc_set_wait(&set);
+	rpc(part->track.backend, MSG_UNDEPLOY, part);
 }
 
 static inline void
-backends_sync_all(Backends* self, Parts* parts)
+backends_sync(Backends* self, Part* part)
 {
-	auto count = 0;
-	list_foreach(&parts->list)
-	{
-		auto part = list_at(Part, link);
-		if (part->track.backend)
-			count++;
-	}
-	if (! count)
-		return;
-
-	RpcSet set;
-	rpc_set_init(&set);
-	defer(rpc_set_free, &set);
-	rpc_set_prepare(&set, count);
-
-	auto order = 0;
-	list_foreach(&parts->list)
-	{
-		auto part = list_at(Part, link);
-		if (! part->track.backend)
-			continue;
-		auto rpc = rpc_set_add(&set, order, MSG_SYNC, part);
-		auto backend = backends_find(self, part->track.backend);
-		rpc_send(rpc, &backend->task);
-		order++;
-	}
-	rpc_set_wait(&set);
+	unused(self);
+	rpc(part->track.backend, MSG_SYNC, part);
 }
 
 static inline void
-backends_truncate_all(Backends* self, Parts* parts)
+backends_truncate(Backends* self, Part* part)
 {
-	auto count = 0;
-	list_foreach(&parts->list)
-	{
-		auto part = list_at(Part, link);
-		if (part->track.backend)
-			count++;
-	}
-	if (! count)
-		return;
-
-	RpcSet set;
-	rpc_set_init(&set);
-	defer(rpc_set_free, &set);
-	rpc_set_prepare(&set, count);
-
-	auto order = 0;
-	list_foreach(&parts->list)
-	{
-		auto part = list_at(Part, link);
-		if (! part->track.backend)
-			continue;
-		auto rpc = rpc_set_add(&set, order, MSG_TRUNCATE, part);
-		auto backend = backends_find(self, part->track.backend);
-		rpc_send(rpc, &backend->task);
-		order++;
-	}
-	rpc_set_wait(&set);
+	unused(self);
+	rpc(part->track.backend, MSG_TRUNCATE, part);
 }

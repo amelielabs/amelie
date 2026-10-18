@@ -68,7 +68,7 @@ parts_open(Parts* self, List* indexes)
 	}
 
 	// create pods and load heaps
-	self->iface->attach(part);
+	self->iface->attach(self);
 }
 
 void
@@ -78,13 +78,13 @@ parts_close(Parts* self)
 		return;
 
 	// drop pods
-	self->iface->detach(self->part);
+	self->iface->detach(self);
 }
 
 void
 parts_truncate(Parts* self)
 {
-	self->iface->truncate(self->part);
+	self->iface->truncate(self);
 }
 
 void

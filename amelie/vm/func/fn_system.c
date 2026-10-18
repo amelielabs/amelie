@@ -42,7 +42,6 @@ enum
 	SHOW_REL,
 	SHOW_GRANTS,
 	SHOW_INDEXES,
-	SHOW_PARTITIONS,
 	SHOW_TOOLS,
 	SHOW_RESOURCES,
 	SHOW_STATE,
@@ -100,7 +99,6 @@ static ShowCmd show_cmds[] =
 
 	// relations objects
 	{ SHOW_GRANTS,        "grants",        6,  SHOW_MAYBE, false },
-	{ SHOW_PARTITIONS,    "partitions",    10, SHOW_YES,   false },
 	{ SHOW_INDEXES,       "indexes",       7,  SHOW_YES,   false },
 
 	// mcp
@@ -373,13 +371,6 @@ fn_show(Call* self)
 			grants_write(rel->grants, buf, 0);
 		else
 			encode_null(buf);
-		break;
-	}
-	case SHOW_PARTITIONS:
-	{
-		// todo: check permissions
-		auto table = catalog_find_table(catalog, user, &name, true);
-		part_status(table->parts.part, buf, flags);
 		break;
 	}
 	case SHOW_INDEXES:

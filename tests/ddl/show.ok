@@ -48,16 +48,6 @@ tables
   "name": "test",
   "description": ""
 }
-show partitions test;
-
-partitions
-──────────
-{
-  "id": 0,
-  "min": 0,
-  "max": 8096,
-  "size": 0
-}
 SHOW TABLES;
 
 TABLES
@@ -133,37 +123,6 @@ indexes
     "column": 0,
     "asc": true
   }]
-}
-# test: show partitions
-show partitions test;
-
-partitions
-──────────
-{
-  "id": 0,
-  "min": 0,
-  "max": 8096,
-  "size": 0
-}
-select show('partitions', 'test', null);
-
-show
-────
-[{
-  "id": 0,
-  "min": 0,
-  "max": 8096,
-  "size": 0
-}]
-select * from show partitions test;
-
-partitions
-──────────
-{
-  "id": 0,
-  "min": 0,
-  "max": 8096,
-  "size": 0
 }
 # test: show functions
 create function test_fn (id int) return json

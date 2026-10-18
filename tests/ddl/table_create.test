@@ -126,6 +126,7 @@ create table test(id int, id int);
 
 # test: primary key is not defined
 create table test(id int);
+drop table test;
 
 # test: primary key clause parsing
 create table test(primary);
@@ -150,41 +151,6 @@ create table test(id int primary key primary key);
 # test: primary key ensure valid type
 create table test(id json primary key);
 create table test(id json, primary key(id));
-
-# test: primary key partition key (default)
-create table test(id int primary key);
-select show('table', 'test', null, "verbose").indexes;
-drop table test;
-
-# test: primary key partition key (default #2)
-create table test(id int, primary key(id));
-select show('table', 'test', null, "verbose").indexes;
-drop table test;
-
-create table test(id int, primary key(id), partition key(id));
-select show('table', 'test', null, "verbose").indexes;
-drop table test;
-
-# test: primary key partition key (default compound)
-create table test(id int, data int, primary key (id, data));
-select show('table', 'test', null, "verbose").indexes;
-drop table test;
-
-# test: primary key partition key (compound)
-create table test(id int, data int, primary key(id), partition key (id));
-select show('table', 'test', null, "verbose").indexes;
-drop table test;
-
-create table test(id int, data int, primary key(id, data), partition key(id, data));
-select show('table', 'test', null, "verbose").indexes;
-drop table test;
-
-create table test(id int, data int, primary key(id, data), partition key(id));
-select show('table', 'test', null, "verbose").indexes;
-drop table test;
-
-# test: primary key partition key (mismatch)
-create table test(id int, data int, primary key(id, data), partition key (data));
 
 ## test: table already exists
 create table test (id int primary key);
@@ -318,13 +284,6 @@ drop table test;
 create table test (id int primary key using hash);
 drop table test;
 
-# test: partitions
-create table test (id int primary key) partitions;
-create table test (id int primary key) partitions 4;
-select show('table', 'test', null, "verbose").partitions;
-show partitions test;
-drop table test;
-
 # test: description
 create table test (id int primary key) description;
 create table test (id int primary key) description 123;
@@ -334,9 +293,7 @@ drop table test;
 
 # test: retention
 create table test (id int primary key) retention 123;
-create table test (id int partition key) retention 123 unique index i (id);
-
-create table test (id int partition key) retention 1gb;
+create table test (id int) retention 1gb;
 select show('table', 'test', null, "verbose").retention;
 drop table test;
 

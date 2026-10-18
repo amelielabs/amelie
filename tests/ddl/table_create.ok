@@ -22,11 +22,11 @@ error: create table if not exists❰;❱ ⟵ target name expected
 create table 1234;
 error: create table ❰1234❱ ⟵ target name expected
 create table test(;
-error: create table test(❰;❱ ⟵ expected column name, PRIMARY or PARTITION KEY
+error: create table test(❰;❱ ⟵ expected column name or PRIMARY KEY
 create table test(0;
-error: create table test(❰0❱ ⟵ expected column name, PRIMARY or PARTITION KEY
+error: create table test(❰0❱ ⟵ expected column name or PRIMARY KEY
 create table test("123";
-error: create table test(❰"123"❱ ⟵ expected column name, PRIMARY or PARTITION KEY
+error: create table test(❰"123"❱ ⟵ expected column name or PRIMARY KEY
 create table test(name;
 error: create table test(name❰;❱ ⟵ unrecognized data type
 create table test(name junk_type;
@@ -34,17 +34,17 @@ error: create table test(name ❰junk_type❱ ⟵ unrecognized data type
 create table test(name int;
 error: create table test(name int❰;❱ ⟵ ) expected
 create table test(name int,;
-error: create table test(name int,❰;❱ ⟵ expected column name, PRIMARY or PARTITION KEY
+error: create table test(name int,❰;❱ ⟵ expected column name or PRIMARY KEY
 create table test(name int,);
-error: create table test(name int,❰)❱ ⟵ expected column name, PRIMARY or PARTITION KEY
+error: create table test(name int,❰)❱ ⟵ expected column name or PRIMARY KEY
 create table if not exists 1234;
 error: create table if not exists ❰1234❱ ⟵ target name expected
 create table if not exists test(;
-error: create table if not exists test(❰;❱ ⟵ expected column name, PRIMARY or PARTITION KEY
+error: create table if not exists test(❰;❱ ⟵ expected column name or PRIMARY KEY
 create table if not exists test(0;
-error: create table if not exists test(❰0❱ ⟵ expected column name, PRIMARY or PARTITION KEY
+error: create table if not exists test(❰0❱ ⟵ expected column name or PRIMARY KEY
 create table if not exists test("123";
-error: create table if not exists test(❰"123"❱ ⟵ expected column name, PRIMARY or PARTITION KEY
+error: create table if not exists test(❰"123"❱ ⟵ expected column name or PRIMARY KEY
 create table if not exists test(name;
 error: create table if not exists test(name❰;❱ ⟵ unrecognized data type
 create table if not exists test(name junk_type;
@@ -52,9 +52,9 @@ error: create table if not exists test(name ❰junk_type❱ ⟵ unrecognized dat
 create table if not exists test(name int;
 error: create table if not exists test(name int❰;❱ ⟵ ) expected
 create table test(name int) junk;
-error: create table test(name int) ❰junk❱ ⟵ PARTITION or PRIMARY KEY is missing
+error: create table test(name int) ❰junk❱ ⟵ unrecognized option
 create table test();
-error: create table test(❰)❱ ⟵ expected column name, PRIMARY or PARTITION KEY
+error: create table test(❰)❱ ⟵ expected column name or PRIMARY KEY
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean);
 select show('table', 'test', null, "verbose").name;
@@ -529,7 +529,7 @@ create table test(id int, id int);
 error: create table test(id int, ❰id❱ ⟵ column is redefined
 # test: primary key is not defined
 create table test(id int);
-error: create table test(id int)❰;❱ ⟵ PARTITION or PRIMARY KEY is missing
+drop table test;
 # test: primary key clause parsing
 create table test(primary);
 error: create table test(primary❰)❱ ⟵ KEY expected
@@ -563,141 +563,6 @@ create table test(id json primary key);
 error: create table test(id json ❰primary❱ ⟵ supported key types are int32, int64, uuid, timestamp or text
 create table test(id json, primary key(id));
 error: create table test(id json, primary key(❰id❱ ⟵ supported key types are int32, int64, uuid, timestamp or text
-# test: primary key partition key (default)
-create table test(id int primary key);
-select show('table', 'test', null, "verbose").indexes;
-
-indexes
-───────
-[{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }]
-}]
-drop table test;
-# test: primary key partition key (default #2)
-create table test(id int, primary key(id));
-select show('table', 'test', null, "verbose").indexes;
-
-indexes
-───────
-[{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }]
-}]
-drop table test;
-create table test(id int, primary key(id), partition key(id));
-select show('table', 'test', null, "verbose").indexes;
-
-indexes
-───────
-[{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }]
-}]
-drop table test;
-# test: primary key partition key (default compound)
-create table test(id int, data int, primary key (id, data));
-select show('table', 'test', null, "verbose").indexes;
-
-indexes
-───────
-[{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }, {
-    "column": 1,
-    "asc": true
-  }]
-}]
-drop table test;
-# test: primary key partition key (compound)
-create table test(id int, data int, primary key(id), partition key (id));
-select show('table', 'test', null, "verbose").indexes;
-
-indexes
-───────
-[{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }]
-}]
-drop table test;
-create table test(id int, data int, primary key(id, data), partition key(id, data));
-select show('table', 'test', null, "verbose").indexes;
-
-indexes
-───────
-[{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }, {
-    "column": 1,
-    "asc": true
-  }]
-}]
-drop table test;
-create table test(id int, data int, primary key(id, data), partition key(id));
-select show('table', 'test', null, "verbose").indexes;
-
-indexes
-───────
-[{
-  "name": "primary",
-  "type": 2,
-  "size": 0,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0,
-    "asc": true
-  }, {
-    "column": 1,
-    "asc": true
-  }]
-}]
-drop table test;
-# test: primary key partition key (mismatch)
-create table test(id int, data int, primary key(id, data), partition key (data));
-error: create table test(id int, data int, primary key(id, data), partition key (data))❰;❱ ⟵ PRIMARY KEY must include all partition columns first
 create table test (id int primary key);
 create table test (id int primary key);
 error: relation 'test': already exists
@@ -964,7 +829,7 @@ create table test (id int primary key, data int as identity;
 error: create table test (id int primary key, data int as identity❰;❱ ⟵ ) expected
 # test: as identity (not primary)
 create table test (id int primary key, data int identity);
-error: create table test (id int primary key, data int identity❰)❱ ⟵ IDENTITY column must be part of PARTITION KEY
+error: create table test (id int primary key, data int identity❰)❱ ⟵ IDENTITY column must be part of PRIMARY KEY
 # test: as identity int
 create table test (id int primary key as identity);
 select show('table', 'test', null, "verbose").columns;
@@ -1020,60 +885,6 @@ create table test (id int primary key using tree);
 drop table test;
 create table test (id int primary key using hash);
 drop table test;
-# test: partitions
-create table test (id int primary key) partitions;
-error: create table test (id int primary key) partitions❰;❱ ⟵ int expected
-create table test (id int primary key) partitions 4;
-select show('table', 'test', null, "verbose").partitions;
-
-partitions
-──────────
-[{
-  "id": 0,
-  "hash_min": 0,
-  "hash_max": 2024
-}, {
-  "id": 1,
-  "hash_min": 2024,
-  "hash_max": 4048
-}, {
-  "id": 2,
-  "hash_min": 4048,
-  "hash_max": 6072
-}, {
-  "id": 3,
-  "hash_min": 6072,
-  "hash_max": 8096
-}]
-show partitions test;
-
-partitions
-──────────
-{
-  "id": 0,
-  "min": 0,
-  "max": 2024,
-  "size": 0
-}
-{
-  "id": 1,
-  "min": 2024,
-  "max": 4048,
-  "size": 0
-}
-{
-  "id": 2,
-  "min": 4048,
-  "max": 6072,
-  "size": 0
-}
-{
-  "id": 3,
-  "min": 6072,
-  "max": 8096,
-  "size": 0
-}
-drop table test;
 # test: description
 create table test (id int primary key) description;
 error: create table test (id int primary key) description❰;❱ ⟵ string expected
@@ -1089,9 +900,7 @@ drop table test;
 # test: retention
 create table test (id int primary key) retention 123;
 error: create table test (id int primary key) retention ❰123❱ ⟵ using indexes with retention is not supported
-create table test (id int partition key) retention 123 unique index i (id);
-error: table 'test': using indexes with retention is not supported
-create table test (id int partition key) retention 1gb;
+create table test (id int) retention 1gb;
 select show('table', 'test', null, "verbose").retention;
 
 retention
