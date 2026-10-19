@@ -271,6 +271,13 @@ checkpoint_prepare(Checkpoint* self, Catalog* catalog)
 	auto pos = buf.start;
 	json_export_pretty(&self->manifest, runtime()->timezone, &pos);
 
+	// commit prepared transactions
+	list_foreach(&catalog->users.list)
+	{
+		auto user = user_of(list_at(Rel, link));
+		catalog->iface->user_sync(catalog, user);
+	}
+
 	// collect pages
 	list_foreach(&catalog->rels.list)
 	{
@@ -278,7 +285,6 @@ checkpoint_prepare(Checkpoint* self, Catalog* catalog)
 		if (rel->type != REL_TABLE)
 			continue;
 		auto table = table_of(rel);
-		table->catalog->iface->table_sync(table->catalog, table);
 
 		// heap
 		auto part = table->part;

@@ -18,6 +18,7 @@
 #include <amelie_backend.h>
 #include <amelie_frontend.h>
 
+#if 0
 static inline void
 link_stream_create(Link* self, Streams* streams)
 {
@@ -97,4 +98,11 @@ link_stream(Link* self)
 
 	// start streaming data to the client
 	streams_run(&streams);
+}
+#endif
+
+void
+link_stream(Link* self)
+{
+	(void)self;
 }

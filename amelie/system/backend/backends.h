@@ -114,31 +114,31 @@ backends_next(Backends* self)
 }
 
 static inline void
-backends_deploy(Backends* self, Part* part)
+backends_deploy(Backends* self, User* user)
 {
 	auto backend = backends_next(self);
-	rpc(&backend->task, MSG_DEPLOY, part);
+	rpc(&backend->task, MSG_DEPLOY, user);
 }
 
 static inline void
-backends_undeploy(Backends* self, Part* part)
+backends_undeploy(Backends* self, User* user)
 {
 	unused(self);
-	if (! part->track.backend)
+	if (! user->track.backend)
 		return;
-	rpc(part->track.backend, MSG_UNDEPLOY, part);
+	rpc(user->track.backend, MSG_UNDEPLOY, user);
 }
 
 static inline void
-backends_sync(Backends* self, Part* part)
+backends_sync(Backends* self, User* user)
 {
 	unused(self);
-	rpc(part->track.backend, MSG_SYNC, part);
+	rpc(user->track.backend, MSG_SYNC, user);
 }
 
 static inline void
-backends_truncate(Backends* self, Part* part)
+backends_truncate(Backends* self, Table* table)
 {
 	unused(self);
-	rpc(part->track.backend, MSG_TRUNCATE, part);
+	rpc(table->user->track.backend, MSG_TRUNCATE, table);
 }

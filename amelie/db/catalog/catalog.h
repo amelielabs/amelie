@@ -19,12 +19,12 @@ struct CatalogIf
 	void (*user_invalidate)(Catalog*, User*);
 	void (*user_attach)(Catalog*, User*);
 	void (*user_detach)(Catalog*, User*);
+	void (*user_sync)(Catalog*, User*);
 
 	void (*udf_compile)(Catalog*, Udf*);
 	void (*udf_free)(Udf*);
 	bool (*udf_depends)(Udf*, Str*, Str*);
 
-	void (*table_sync)(Catalog*, Table*);
 	void (*table_truncate)(Catalog*, Table*);
 };
 

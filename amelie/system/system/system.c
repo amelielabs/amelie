@@ -91,27 +91,27 @@ catalog_if_udf_depends(Udf* udf, Str* user, Str* name)
 }
 
 static void
-catalog_if_table_attach(Catalog* catalog, Table* table)
+catalog_if_user_attach(Catalog* catalog, User* user)
 {
 	// create pod on backend
 	System* system = catalog->iface_arg;
-	backends_deploy(&system->backends, table->part);
+	backends_deploy(&system->backends, user);
 }
 
 static void
-catalog_if_table_detach(Catalog* catalog, Table* table)
+catalog_if_user_detach(Catalog* catalog, User* user)
 {
 	// drop pods on backends
 	System* system = catalog->iface_arg;
-	backends_undeploy(&system->backends, table->part);
+	backends_undeploy(&system->backends, user);
 }
 
 static void
-catalog_if_table_sync(Catalog* catalog, Table* table)
+catalog_if_user_sync(Catalog* catalog, User* user)
 {
 	// sync prepared transactions
 	System* system = catalog->iface_arg;
-	backends_sync(&system->backends, table->part);
+	backends_sync(&system->backends, user);
 }
 
 static void
@@ -119,18 +119,18 @@ catalog_if_table_truncate(Catalog* catalog, Table* table)
 {
 	// truncate pods on backends
 	System* system = catalog->iface_arg;
-	backends_truncate(&system->backends, table->part);
+	backends_truncate(&system->backends, table);
 }
 
 static CatalogIf catalog_if =
 {
 	.user_invalidate = catalog_if_user_invalidate,
+	.user_attach     = catalog_if_user_attach,
+	.user_detach     = catalog_if_user_detach,
+	.user_sync       = catalog_if_user_sync,
 	.udf_compile     = catalog_if_udf_compile,
 	.udf_free        = catalog_if_udf_free,
 	.udf_depends     = catalog_if_udf_depends,
-	.table_attach    = catalog_if_table_attach,
-	.table_detach    = catalog_if_table_detach,
-	.table_sync      = catalog_if_table_sync,
 	.table_truncate  = catalog_if_table_truncate
 };
 

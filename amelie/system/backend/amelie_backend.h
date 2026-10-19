@@ -11,10 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
+#if 0
 // stream
 #include "backend/stream_pos.h"
 #include "backend/stream.h"
 #include "backend/streams.h"
+#endif
 
 // pod
 #include "backend/pod.h"

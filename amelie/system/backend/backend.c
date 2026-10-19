@@ -24,46 +24,41 @@ backend_rpc(Rpc* rpc, void* arg)
 	switch (rpc->msg.id) {
 	case MSG_DEPLOY:
 	{
-		// load partition heap file
-		Part* part = rpc->arg;
-		if (opt_int_of(&state()->recover) == RECOVER_CHECKPOINT)
-			part_open(part, share()->db->catalog.manifest);
-
 		// create and start new pod
-		pods_create(&self->pods, part);
+		User* user = rpc->arg;
+		pods_create(&self->pods, user);
 		break;
 	}
 	case MSG_UNDEPLOY:
 	{
 		// stop and drop pod
-		Part* part = rpc->arg;
-		// cancel all pending streams
-		pods_drop_by(&self->pods, part);
+		User* user = rpc->arg;
+		pods_drop_by(&self->pods, user);
 		break;
 	}
 	case MSG_SYNC:
 	{
 		// commit prepared transactions
-		Part* part = rpc->arg;
-		auto pod = pods_find(&self->pods, part);
+		User* user = rpc->arg;
+		auto pod = pods_find(&self->pods, user);
 		pod_sync(pod);
 		break;
 	}
 	case MSG_TRUNCATE:
 	{
 		// truncate partition
-		Part* part = rpc->arg;
-		// cancel all pending streams
-		streaming_cancel(part);
-		part_truncate(part);
+		Table* table = rpc->arg;
+		// todo: cancel all pending streams
+			// streaming_cancel(part);
+		part_truncate(table->part);
 		break;
 	}
 	case MSG_CLEANUP:
 	{
 		PartCleanup* cleanup = rpc->arg;
 		defer(part_cleanup_free, cleanup);
-		// cancel all pending streams
-		streaming_cancel(cleanup->part);
+		// todo: cancel all pending streams
+			// streaming_cancel(cleanup->part);
 		part_cleanup(cleanup);
 		break;
 	}
@@ -92,7 +87,7 @@ backend_main(void* arg)
 		case MSG_LTR:
 		{
 			auto ltr = (Ltr*)msg;
-			track_write(&ltr->part->track, msg);
+			track_write(&ltr->user->track, msg);
 			break;
 		}
 		case MSG_LTR_STOP:
@@ -107,10 +102,11 @@ backend_main(void* arg)
 			ltr_write(req->ltr, msg);
 			break;
 		}
+#if 0
 		case MSG_STREAM:
 		{
 			auto stream = (Stream*)msg;
-			track_write(&stream->part->track, msg);
+			track_write(&stream->user->track, msg);
 			break;
 		}
 		case MSG_STREAM_CANCEL:
@@ -119,6 +115,7 @@ backend_main(void* arg)
 			track_write(&stream->part->track, msg);
 			break;
 		}
+#endif
 		default:
 			// rpc commands
 			stop = msg->id == MSG_STOP;

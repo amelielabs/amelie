@@ -80,14 +80,13 @@ dispatch_prepare(Dispatch* self)
 }
 
 static inline Req*
-dispatch_add(Dispatch* self, ReqCache* cache, int type,
+dispatch_add(Dispatch* self, ReqCache* cache,
              int       start,
              Code*     code,
              CodeData* code_data,
              User*     user)
 {
 	auto req = req_create(cache);
-	req->type      = type;
 	req->start     = start;
 	req->code      = code;
 	req->code_data = code_data;

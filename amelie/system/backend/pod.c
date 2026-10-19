@@ -20,46 +20,40 @@
 hot static void
 pod_request(Pod* self, Ltr* ltr, Req* req)
 {
+	// create and add transaction to the prepared list (even on error)
 	auto gtr = ltr->gtr;
-	switch (req->type) {
-	case REQ_EXECUTE:
+	if (ltr->tr == NULL)
 	{
-		// create and add transaction to the prepared list (even on error)
-		if (ltr->tr == NULL)
-		{
-			auto track = self->track;
-			auto tr = tr_create(&track->cache);
-			tr_set_id(tr, gtr->id);
-			tr_set_limit(tr, &gtr->usage_write);
-			tr_list_add(&track->prepared, tr);
-			ltr->tr = tr;
-		}
-
-		// execute request
-		vm_reset(&self->vm);
-		reg_prepare(&self->vm.r, req->code->regs);
-
-		Return ret;
-		return_init(&ret);
-
-		vm_run(&self->vm, gtr->local,
-		        gtr,
-		        ltr->tr,
-		        NULL,
-		        req->code,
-		        req->code_data,
-		       &req->arg,
-		       (Value*)req->refs.start,
-		        NULL,
-		       &ret,
-		        false,
-		        req->start);
-
-		if (ret.value)
-			value_move(&req->result, ret.value);
-		break;
+		auto track = self->track;
+		auto tr = tr_create(&track->cache);
+		tr_set_id(tr, gtr->id);
+		tr_set_limit(tr, &gtr->usage_write);
+		tr_list_add(&track->prepared, tr);
+		ltr->tr = tr;
 	}
-	}
+
+	// execute request
+	vm_reset(&self->vm);
+	reg_prepare(&self->vm.r, req->code->regs);
+
+	Return ret;
+	return_init(&ret);
+
+	vm_run(&self->vm, gtr->local,
+	        gtr,
+	        ltr->tr,
+	        NULL,
+	        req->code,
+	        req->code_data,
+	        &req->arg,
+	        (Value*)req->refs.start,
+	        NULL,
+	        &ret,
+	        false,
+	        req->start);
+
+	if (ret.value)
+		value_move(&req->result, ret.value);
 }
 
 hot static void
@@ -105,14 +99,19 @@ void
 pod_sync(Pod* self)
 {
 	// commit (or abort) pending transactions based on the global
-	// partition commit state to resume streaming
+	// commit state to resume streaming
 	auto track = self->track;
 	Consensus consensus;
 	consensus_atomic_read(&track->consensus_atomic, &consensus);
+	track_sync(track, &consensus);
+
+	/*
 	if (track_sync(track, &consensus))
 		streaming_resume(self->part);
+		*/
 }
 
+#if 0
 static void
 pod_retention(Pod* self)
 {
@@ -130,16 +129,16 @@ pod_retention(Pod* self)
 	// todo: cancel all matching streamers
 	streaming_cancel(part);
 }
+#endif
 
 static void
 pod_main(void* arg)
 {
-	Pod* self = arg;
+	Pod* self  = arg;
 	auto track = self->track;
-	auto part  = self->part;
-	auto table = table_of(part->arg->rel);
 	for (;;)
 	{
+#if 0
 		Msg* msg;
 		if (part->streams && !tr_list_empty(&track->prepared))
 		{
@@ -152,6 +151,8 @@ pod_main(void* arg)
 		} else {
 			msg = track_read(track);
 		}
+#endif
+		auto msg = track_read(track);
 
 		switch (msg->id) {
 		case MSG_LTR:
@@ -161,18 +162,24 @@ pod_main(void* arg)
 			// abort and commit previously prepared transactions
 			auto changed = track_sync(track, &ltr->consensus);
 
+#if 0
 			// run retention
 			if (table->config->retention > 0)
 				pod_retention(self);
+#endif
 
 			// execute transaction
 			pod_run(self, ltr);
 
+			(void)changed;
+#if 0
 			// resume streaming
 			if (part->streams && changed)
 				streaming_resume(self->part);
+#endif
 			break;
 		}
+#if 0
 		case MSG_STREAM:
 		{
 			auto stream = (Stream*)msg;
@@ -185,8 +192,9 @@ pod_main(void* arg)
 			stream_cancel(stream);
 			break;
 		}
+#endif
 		case MSG_STOP:
-			streaming_cancel(part);
+			// streaming_cancel(part);
 			return;
 		default:
 			abort();
@@ -196,11 +204,11 @@ pod_main(void* arg)
 }
 
 Pod*
-pod_allocate(Part* part)
+pod_allocate(User* user)
 {
 	auto self = (Pod*)am_malloc(sizeof(Pod));
-	self->part      =  part;
-	self->track     = &part->track;
+	self->user      =  user;
+	self->track     = &user->track;
 	self->worker_id = -1;
 	quota_init(&self->quota);
 	vm_init(&self->vm, &self->quota);

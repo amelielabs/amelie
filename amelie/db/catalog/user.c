@@ -37,7 +37,7 @@ user_free(User* self, bool drop)
 	unused(drop);
 
 	// undeploy
-	self->catalog->iface->user_attach(self->catalog, self);
+	self->catalog->iface->user_detach(self->catalog, self);
 
 	track_free(&self->track);
 	if (self->config)

@@ -18,12 +18,12 @@ struct Pod
 	Vm      vm;
 	Quota   quota;
 	Track*  track;
-	Part*   part;
+	User*   user;
 	int64_t worker_id;
 	List    link;
 };
 
-Pod* pod_allocate(Part*);
+Pod* pod_allocate(User*);
 void pod_free(Pod*);
 void pod_start(Pod*, Task*);
 void pod_stop(Pod*);

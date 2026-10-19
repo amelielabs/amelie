@@ -145,7 +145,7 @@ table_index_drop(Catalog* self,
 	catalog_deps_validate_udf(self, &table->rel, true);
 
 	// force commit pending prepared transactions
-	self->iface->table_sync(self, table);
+	self->iface->user_sync(self, table->user);
 
 	// update table
 	log_ddl(&tr->log, &drop_if, index, &table->rel);

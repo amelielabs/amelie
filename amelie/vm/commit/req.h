@@ -16,15 +16,9 @@ typedef struct ReqCache ReqCache;
 typedef struct Dispatch Dispatch;
 typedef struct Ltr      Ltr;
 
-enum
-{
-	REQ_EXECUTE
-};
-
 struct Req
 {
 	Msg       msg;
-	int       type;
 	int       start;
 	Buf       arg;
 	Code*     code;
@@ -44,7 +38,6 @@ static inline Req*
 req_allocate(void)
 {
 	auto self = (Req*)am_malloc(sizeof(Req));
-	self->type           = 0;
 	self->start          = 0;
 	self->code           = NULL;
 	self->code_data      = NULL;
@@ -95,7 +88,6 @@ req_reset(Req* self)
 	buf_reset(&self->refs);
 	value_free(&self->result);
 
-	self->type           = 0;
 	self->start          = 0;
 	self->code           = NULL;
 	self->code_data      = NULL;

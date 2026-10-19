@@ -39,14 +39,11 @@ csend(Vm* self, Op* op)
 	    self->program->send_last == code_posof(self->code, op))
 		dispatch_set_close(dispatch);
 
-	// send to the table
-	auto part = table->part;
 	auto req = dispatch_add(dispatch, &dispatches->cache_req,
-	                        REQ_EXECUTE,
 	                        send->start,
 	                        &self->program->code_backend,
 	                        &self->program->code_data,
-	                        part);
+	                        table->user);
 	if (op->b > 0)
 	{
 		req_copy_refs(req, stack_at(&self->stack, op->b), op->b);

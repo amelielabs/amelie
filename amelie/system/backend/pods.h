@@ -29,9 +29,9 @@ pods_init(Pods* self, Task* task)
 }
 
 static inline void
-pods_create(Pods* self, Part* part)
+pods_create(Pods* self, User* user)
 {
-	auto pod = pod_allocate(part);
+	auto pod = pod_allocate(user);
 	list_append(&self->list, &pod->link);
 	self->list_count++;
 	pod_start(pod, self->task);
@@ -47,21 +47,21 @@ pods_drop(Pods* self, Pod* pod)
 }
 
 static inline Pod*
-pods_find(Pods* self, Part* part)
+pods_find(Pods* self, User* user)
 {
 	list_foreach(&self->list)
 	{
 		auto pod = list_at(Pod, link);
-		if (pod->part == part)
+		if (pod->user == user)
 			return pod;
 	}
 	return NULL;
 }
 
 static inline void
-pods_drop_by(Pods* self, Part* part)
+pods_drop_by(Pods* self, User* user)
 {
-	auto pod = pods_find(self, part);
+	auto pod = pods_find(self, user);
 	if (! pod)
 		return;
 	list_unlink(&pod->link);

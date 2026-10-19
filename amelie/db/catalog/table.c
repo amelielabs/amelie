@@ -200,7 +200,7 @@ table_truncate(Catalog* self,
 	log_ddl(&tr->log, &truncate_if, NULL, &table->rel);
 
 	// force commit pending prepared transactions
-	self->iface->table_sync(self, table);
+	self->iface->user_sync(self, table->user);
 
 	// do nothing (actual truncate will happen on commit)
 	return true;
