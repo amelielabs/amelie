@@ -115,7 +115,7 @@ parse_update(Stmt* self)
 	self->ret = &stmt->ret;
 
 	// table
-	parse_from(self, &stmt->from, LOCK_SHARED_RW, PERM_UPDATE, false);
+	parse_from(self, &stmt->from, PERM_UPDATE, false);
 	if (from_empty(&stmt->from) || from_is_join(&stmt->from))
 		stmt_error(self, NULL, "table name expected");
 	auto target = from_first(&stmt->from);
@@ -151,6 +151,6 @@ parse_update(Stmt* self)
 
 		// require SELECT permission
 		access_add(&self->parser->program->access, &stmt->table->rel,
-		           LOCK_SHARED, PERM_SELECT);
+		           PERM_SELECT);
 	}
 }

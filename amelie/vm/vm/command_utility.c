@@ -281,12 +281,14 @@ cunlock_rel(Vm* self, Op* op)
 		return;
 	}
 
+#if 0
 	// derefence breakpoint (disable on zero)
 	if (lock->rel->lock_order < REL_MAX)
 	{
 		auto ref = &runtime()->lockables.list[lock->rel->lock_order];
 		lockable_breakpoint_unref(ref);
 	}
+#endif
 
 	unlock(lock);
 }

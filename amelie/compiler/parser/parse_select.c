@@ -137,12 +137,7 @@ parse_select(Stmt* self, From* outer, bool subquery)
 
 	// [FROM]
 	if (stmt_if(self, KFROM))
-	{
-		parse_from(self, &select->from,
-		           subquery ? LOCK_EXCLUSIVE_RO : LOCK_SHARED,
-		           PERM_SELECT,
-		           subquery);
-	}
+		parse_from(self, &select->from, PERM_SELECT, subquery);
 
 	// save the names count after join for AND expression below before
 	// processing WHERE expression

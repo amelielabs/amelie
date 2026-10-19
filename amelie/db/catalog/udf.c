@@ -58,7 +58,6 @@ udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
 	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)udf_show);
 	rel_set_free(rel, (RelFree)udf_free);
-	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 

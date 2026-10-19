@@ -128,7 +128,7 @@ parse_insert(Stmt* self)
 	auto into = stmt_expect(self, KINTO);
 
 	// table
-	parse_from(self, &stmt->from, LOCK_SHARED_RW, PERM_INSERT, false);
+	parse_from(self, &stmt->from, PERM_INSERT, false);
 	if (from_empty(&stmt->from) || from_is_join(&stmt->from))
 		stmt_error(self, into, "table name expected");
 	auto target = from_first(&stmt->from);
@@ -206,8 +206,7 @@ parse_insert(Stmt* self)
 			stmt->on_conflict = ON_CONFLICT_ERROR;
 
 		// require SELECT permission
-		access_add(&self->parser->program->access, &table->rel,
-		           LOCK_SHARED, PERM_SELECT);
+		access_add(&self->parser->program->access, &table->rel, PERM_SELECT);
 	}
 
 	// update requested permissions to UPDATE

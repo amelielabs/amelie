@@ -104,13 +104,6 @@ state_psn_follow(uint64_t value)
 	return opt_int_follow(&state()->psn, value);
 }
 
-// rsn
-static inline uint64_t
-state_rsn_next(void)
-{
-	return opt_int_set_next(&state()->rsn);
-}
-
 // replication
 static inline bool
 state_is_primary(void)
@@ -167,10 +160,6 @@ resolve(char* addr, int port, struct addrinfo** result)
 	           &runtime()->lockables.list[(rel_id)].rel, (rel_lock), \
 	           NULL, \
 	           source_function) \
-
-#define lock_access(access) \
-	locks_lock_access(&runtime()->locks, (access), \
-	                  source_function) \
 
 #define breakpoint(rel_id) \
 ({ \

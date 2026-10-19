@@ -31,7 +31,7 @@ parse_delete(Stmt* self)
 	auto from = stmt_expect(self, KFROM);
 
 	// table
-	parse_from(self, &stmt->from, LOCK_SHARED_RW, PERM_DELETE, false);
+	parse_from(self, &stmt->from, PERM_DELETE, false);
 	if (from_empty(&stmt->from) || from_is_join(&stmt->from))
 		stmt_error(self, from, "table name expected");
 	auto target = from_first(&stmt->from);
@@ -64,6 +64,6 @@ parse_delete(Stmt* self)
 
 		// require SELECT permission
 		access_add(&self->parser->program->access, &stmt->table->rel,
-		           LOCK_SHARED, PERM_SELECT);
+		           PERM_SELECT);
 	}
 }

@@ -79,7 +79,6 @@ table_allocate(Catalog*     catalog,
 	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)table_show);
 	rel_set_free(rel, (RelFree)table_free);
-	rel_set_rsn(rel, state_rsn_next());
 	return self;
 }
 

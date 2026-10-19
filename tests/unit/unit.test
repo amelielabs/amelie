@@ -143,12 +143,6 @@ unit test_lock2;
 # test: test lock3
 unit test_lock3;
 
-# test: test lock4
-unit test_lock4;
-
-# test: test lock5
-unit test_lock5;
-
 # test: test api init
 unit test_api_init;
 

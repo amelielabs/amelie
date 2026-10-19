@@ -587,10 +587,6 @@ emit_for(Compiler* self, Stmt* stmt)
 	     emit_for_on_match,
 	     fora);
 
-	// set snapshot if loop is using send command
-	if (fora->block->stmts.last_send)
-		self->program->snapshot = true;
-
 	// mark last sending operation in the main block
 	emit_close(self, stmt);
 
@@ -644,10 +640,6 @@ emit_while(Compiler* self, Stmt* stmt)
 	// resolve nested breaks/continues
 	op_set_jmp_list(self, &whilea->breaks, _stop);
 	op_set_jmp_list(self, &whilea->continues, _start);
-
-	// set snapshot if loop is using send command
-	if (whilea->block->stmts.last_send)
-		self->program->snapshot = true;
 
 	// mark last sending operation in the main block
 	emit_close(self, stmt);
@@ -868,13 +860,58 @@ emit_block(Compiler* self, Block* block)
 	self->current = stmt_prev;
 }
 
+hot static void
+compiler_analyze(Compiler* self)
+{
+	auto program = self->program;
+	auto access = &program->access;
+	program->ro       = true;
+	program->snapshot = false;
+	User* user = NULL;
+	for (auto i = 0; i < access->list_count; i++)
+	{
+		auto record = access_at(access, i);
+
+		// set snapshot, if program does cross user access
+		auto rel = record->rel;
+		if (rel->type == REL_TABLE)
+		{
+			auto table = table_of(rel);
+			if (! user) {
+				user = table->user;
+			} else {
+				if (user != table->user)
+					program->snapshot = true;
+			}
+		}
+
+		// set program ro flags
+		if (record->perm & PERM_EXECUTE)
+		{
+			if (((Program*)udf_of(record->rel)->data)->ro)
+				continue;
+
+			program->ro = false;
+		}
+
+		// dml
+		if ((record->perm & PERM_INSERT) ||
+		    (record->perm & PERM_UPDATE) ||
+		    (record->perm & PERM_DELETE))
+			program->ro = false;
+	}
+}
+
 hot void
 compiler_emit(Compiler* self)
 {
-	// ddl/utility or dml/query
 	auto main = compiler_namespace(self);
 	assert(main);
 
+	// read only or cross user operations
+	compiler_analyze(self);
+
+	// ddl/utility or dml/query
 	if (stmt_is_utility(compiler_stmt(self)))
 	{
 		emit_utility(self);
@@ -896,34 +933,4 @@ compiler_emit(Compiler* self)
 	auto program = self->program;
 	code_set_regs(&program->code, self->map.count);
 	code_set_regs(&program->code_backend, self->map.count);
-
-	// set snapshot if the program access relations more than once,
-	// this includes nested udf calls
-	auto access = &program->access;
-	if (access->count > 1)
-		program->snapshot = true;
-
-	// set program ro flags
-	program->ro = true;
-	for (auto i = 0; i < access->list_count; i++)
-	{
-		auto record = access_at(access, i);
-		switch (record->lock) {
-		case LOCK_NONE:
-		case LOCK_SHARED:
-		case LOCK_EXCLUSIVE_RO:
-			continue;
-		case LOCK_CALL:
-			if (((Program*)udf_of(record->rel)->data)->ro)
-				continue;
-			break;
-		default:
-			break;
-		}
-		program->ro = false;
-		break;
-	}
-
-	// sort relations by rsn
-	access_sort(&program->access);
 }

@@ -107,7 +107,7 @@ pushdown
   7   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test;
 
 id
@@ -182,7 +182,7 @@ pushdown
   9   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select id, data from test;
 
 id  data
@@ -234,7 +234,7 @@ pushdown
   9   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select data.data from test;
 
 col1
@@ -279,7 +279,7 @@ pushdown
   9   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select data.data.data from test;
 
 col1
@@ -317,7 +317,7 @@ pushdown
   9   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select test.id, test.data from test;
 
 col1  col2
@@ -355,7 +355,7 @@ pushdown
   9   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select test.data.data from test;
 
 col1
@@ -414,7 +414,7 @@ pushdown
   9   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select alias.id, alias.data from test alias;
 
 col1  col2
@@ -452,7 +452,7 @@ pushdown
   9   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select alias.data.data from test alias;
 
 col1
@@ -504,7 +504,7 @@ pushdown
   9   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select alias.id, alias.* from test alias;
 
 col1  id  data
@@ -683,8 +683,8 @@ pushdown
  12   ret                 0      0      -
 
 access
-  •   amelie.a shared [select]
-  •   amelie.b exclusive_ro [select]
+  •   amelie.a [select]
+  •   amelie.b [select]
 select x, y from a, b;
 
 x  y

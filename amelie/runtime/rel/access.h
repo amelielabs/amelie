@@ -17,7 +17,6 @@ typedef struct Access       Access;
 struct AccessRecord
 {
 	Rel*     rel;
-	LockId   lock;
 	uint32_t perm;
 };
 
@@ -26,7 +25,6 @@ struct Access
 	Buf list;
 	Buf list_ordered;
 	int list_count;
-	int count;
 };
 
 static inline AccessRecord*
@@ -46,7 +44,6 @@ static inline void
 access_init(Access* self)
 {
 	self->list_count = 0;
-	self->count      = 0;
 	buf_init(&self->list);
 	buf_init(&self->list_ordered);
 }
@@ -62,7 +59,6 @@ static inline void
 access_reset(Access* self)
 {
 	self->list_count = 0;
-	self->count      = 0;
 	buf_reset(&self->list);
 	buf_reset(&self->list_ordered);
 }
@@ -74,46 +70,22 @@ access_empty(Access* self)
 }
 
 hot static inline void
-access_add(Access* self, Rel* rel, LockId lock, uint32_t perm)
+access_add(Access* self, Rel* rel, uint32_t perm)
 {
-	// count total number of accesses, exclusive calls
-	if (lock != LOCK_CALL)
-		self->count++;
-
-	// find and upgrade access to the relation or catalog
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
 		if (record->rel == rel)
 		{
-			if (record->lock < lock)
-				record->lock = lock;
 			record->perm |= perm;
 			return;
 		}
 	}
 	auto record = (AccessRecord*)buf_emplace(&self->list, sizeof(AccessRecord));
 	record->rel  = rel;
-	record->lock = lock;
 	record->perm = perm;
 	buf_write(&self->list_ordered, &self->list_count, sizeof(int));
 	self->list_count++;
-}
-
-hot static int
-access_cmp(const void* p1, const void* p2, void* arg)
-{
-	Access* self = arg;
-	auto a = access_at(self, *(int*)p1);
-	auto b = access_at(self, *(int*)p2);
-	return compare_uint64(a->rel->lock_order, b->rel->lock_order);
-}
-
-static inline void
-access_sort(Access* self)
-{
-	qsort_r(self->list_ordered.start, self->list_count, sizeof(int),
-	        access_cmp, self);
 }
 
 hot static inline void
@@ -122,11 +94,8 @@ access_merge(Access* self, Access* access)
 	for (auto i = 0; i < access->list_count; i++)
 	{
 		auto record = access_at(access, i);
-		access_add(self, record->rel, record->lock, record->perm);
+		access_add(self, record->rel, record->perm);
 	}
-
-	// order relations by lock_order
-	access_sort(self);
 }
 
 hot static inline AccessRecord*
@@ -152,50 +121,4 @@ access_find(Access* self, Str* user, Str* name)
 			return record;
 	}
 	return NULL;
-}
-
-hot static inline int
-access_tables(Access* self)
-{
-	auto count = 0;
-	for (auto i = 0; i < self->list_count; i++)
-	{
-		auto record = access_at(self, i);
-		if (record->lock == LOCK_CALL)
-			continue;
-		count++;
-	}
-	return count;
-}
-
-static inline bool
-access_list(Access* self, Buf* buf)
-{
-	auto call = false;
-	encode_array(buf);
-	for (auto i = 0; i < self->list_count; i++)
-	{
-		auto record = access_at(self, i);
-		encode_array(buf);
-
-		// target
-		encode_target(buf, record->rel->user, record->rel->name);
-
-		// lock
-		lock_id_encode(buf, record->lock);
-		if (record->lock == LOCK_CALL)
-			call = true;
-
-		// permissions
-		uint32_t perm = record->perm;
-		while (perm > 0)
-		{
-			auto id = permission_next(&perm);
-			auto name = permission_name_of(id);
-			encode_cstr(buf, name);
-		}
-		encode_array_end(buf);
-	}
-	encode_array_end(buf);
-	return call;
 }

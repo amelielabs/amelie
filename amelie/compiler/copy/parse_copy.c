@@ -124,7 +124,6 @@ copy_insert(Parser* self, Table* table, Layer* layer, uint8_t* args)
 	auto target  = target_allocate();
 	target->type          = TARGET_TABLE;
 	target->ast           = stmt->ast;
-	target->from_lock     = LOCK_SHARED_RW;
 	target->from_table    = table;
 	target->from_timeline = timeline;
 	target->columns       = columns;
@@ -134,10 +133,10 @@ copy_insert(Parser* self, Table* table, Layer* layer, uint8_t* args)
 	// add table/layer to the access list
 	if (layer)
 	{
-		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_SELECT);
-		access_add(&self->program->access, &layer->rel, LOCK_NONE, PERM_INSERT);
+		access_add(&self->program->access, &table->rel, PERM_SELECT);
+		access_add(&self->program->access, &layer->rel, PERM_INSERT);
 	} else {
-		access_add(&self->program->access, &table->rel, LOCK_SHARED_RW, PERM_INSERT);
+		access_add(&self->program->access, &table->rel, PERM_INSERT);
 	}
 
 	// prepare result set

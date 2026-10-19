@@ -41,7 +41,6 @@ struct Rel
 
 	// lock manager
 	Spinlock lock;
-	uint64_t lock_order;
 	int      lock_set[LOCK_MAX];
 	List     lock_wait;
 	int      lock_wait_count;
@@ -75,7 +74,6 @@ rel_init(Rel* self, RelType type)
 	self->grants          = NULL;
 	self->show            = NULL;
 	self->free            = NULL;
-	self->lock_order      = 0;
 	self->lock_wait_count = 0;
 	spinlock_init(&self->lock);
 	hashnode_init(&self->link_ht);
@@ -118,12 +116,6 @@ static inline void
 rel_set_free(Rel* self, RelFree func)
 {
 	self->free = func;
-}
-
-static inline void
-rel_set_rsn(Rel* self, uint64_t value)
-{
-	self->lock_order = value;
 }
 
 static inline void

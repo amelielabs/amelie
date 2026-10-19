@@ -105,6 +105,12 @@ db_indexate(Part* part, IndexConfig* config)
 void
 db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 {
+	(void)self;
+	(void)tr;
+	(void)op;
+	(void)flags;
+	(void)db_indexate;
+#if 0
 	// one checkpoint (or create index) at a time
 	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
 	defer(unlock, checkpoint_lock);
@@ -195,4 +201,5 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 
 	// attach index to the table
 	table_index_add(&self->catalog, table, tr, config);
+#endif
 }

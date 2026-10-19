@@ -37,14 +37,13 @@ struct Lockables
 };
 
 static inline void
-lockable_init(Lockable* self, uint64_t rsn, const char* name, bool bp)
+lockable_init(Lockable* self, const char* name, bool bp)
 {
 	self->bp      = bp;
 	self->bp_refs = 0;
 	str_set_cstr(&self->rel_name, name);
 	auto rel = &self->rel;
 	rel_init(rel, REL_SYSTEM);
-	rel_set_rsn(rel, rsn);
 	rel_set_name(rel, &self->rel_name);
 }
 
@@ -64,12 +63,12 @@ static inline void
 lockables_init(Lockables* self)
 {
 	self->list = am_malloc(sizeof(Lockable) * REL_MAX);
-	lockable_init(&self->list[REL_CATALOG], REL_CATALOG, "catalog", false);
-	lockable_init(&self->list[REL_DDL], REL_DDL, "ddl", false);
-	lockable_init(&self->list[REL_CHECKPOINT], REL_CHECKPOINT, "checkpoint", false);
+	lockable_init(&self->list[REL_CATALOG], "catalog", false);
+	lockable_init(&self->list[REL_DDL], "ddl", false);
+	lockable_init(&self->list[REL_CHECKPOINT], "checkpoint", false);
 
 	// breakpoints
-	lockable_init(&self->list[REL_BP_QUERY], REL_BP_QUERY, "bp_query", true);
+	lockable_init(&self->list[REL_BP_QUERY], "bp_query", true);
 }
 
 static inline void

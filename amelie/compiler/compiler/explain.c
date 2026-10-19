@@ -27,11 +27,10 @@ explain_access(Access* self, Buf* buf)
 	{
 		auto record = access_at(self, i);
 
-		// target and lock
-		buf_format(buf, "  •   {str}.{str} {s} [",
+		// target
+		buf_format(buf, "  •   {str}.{str} [",
 		           record->rel->user,
-		           record->rel->name,
-		           lock_id_cstr(record->lock));
+		           record->rel->name);
 
 		// permissions
 		auto     first = true;
@@ -84,7 +83,7 @@ explain_program(Compiler* self, Program* program, Str* user, Str* name)
 		for (auto i = 0; i < access->list_count; i++)
 		{
 			auto record = access_at(access, i);
-			if (record->lock == LOCK_CALL)
+			if (record->perm & PERM_EXECUTE)
 			{
 				auto udf = udf_of(record->rel);
 				auto udf_program = (Program*)udf->data;

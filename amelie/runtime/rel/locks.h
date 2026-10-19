@@ -63,25 +63,12 @@ lock_resolve(Rel* rel, LockId lock)
 	auto set = rel->lock_set;
 	if (set[LOCK_EXCLUSIVE])
 		return false;
-	switch (lock) {
-	case LOCK_SHARED:
-		return true;
-	case LOCK_SHARED_RW:
-		return !set[LOCK_EXCLUSIVE_RO];
-	case LOCK_EXCLUSIVE_RO:
-		return !set[LOCK_SHARED_RW];
-	case LOCK_EXCLUSIVE:
-		return !set[LOCK_SHARED]       &&
-		       !set[LOCK_SHARED_RW]    &&
-		       !set[LOCK_EXCLUSIVE_RO] &&
-		       !set[LOCK_CALL];
-	case LOCK_CALL:
-		return true;
-	default:
-		abort();
-	}
-	// conflict
-	return false;
+
+	if (lock == LOCK_EXCLUSIVE)
+		return !set[LOCK_SHARED];
+
+	// shared
+	return true;
 }
 
 hot static inline void
@@ -147,26 +134,6 @@ locks_lock(Locks*      self, Rel* rel, LockId rel_lock,
 	lock_attach(lock);
 	lock->refs++;
 	return lock;
-}
-
-hot static inline void
-locks_lock_access(Locks*      self, Access* access,
-                  const char* func)
-{
-	// do nothing if the access list is empty
-	if (access_empty(access))
-		return;
-
-	// lock all relations from the access list
-	//
-	// all access relations are ordered by relation->lock_order,
-	// which should prevent deadlocks
-	//
-	for (auto at = 0; at < access->list_count; at++)
-	{
-		auto record = access_at_ordered(access, at);
-		locks_lock(self, record->rel, record->lock, NULL, func);
-	}
 }
 
 hot static inline void

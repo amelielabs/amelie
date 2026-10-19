@@ -84,9 +84,6 @@ session_run(Session* self)
 
 	reg_prepare(&self->vm.r, program->code.regs);
 
-	// take transaction locks
-	lock_access(&program->access);
-
 	// prepare global transaction
 	gtr_prepare(gtr, &portal->local, portal->user, program);
 
