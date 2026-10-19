@@ -94,18 +94,18 @@ dispatches_close(Dispatches* self)
 		auto ltr = list_at(Ltr, link);
 		if (ltr->closed)
 			continue;
-		track_send(&ltr->part->track, &ltr->queue_close);
+		track_send(&ltr->user->track, &ltr->queue_close);
 		ltr->closed = true;
 	}
 }
 
 hot static inline Ltr*
-dispatches_find(Dispatches* self, Part* part)
+dispatches_find(Dispatches* self, User* user)
 {
 	list_foreach(&self->ltrs)
 	{
 		auto ltr = list_at(Ltr, link);
-		if (ltr->part == part)
+		if (ltr->user == user)
 			return ltr;
 	}
 	return NULL;
@@ -117,7 +117,7 @@ dispatches_overlaps(Dispatches* self, Dispatches* with)
 	list_foreach(&self->ltrs)
 	{
 		auto ltr = list_at(Ltr, link);
-		if (dispatches_find(with, ltr->part))
+		if (dispatches_find(with, ltr->user))
 			return true;
 	}
 	return false;
@@ -129,7 +129,7 @@ dispatches_overlaps_dispatch(Dispatches* self, Dispatch* with)
 	list_foreach(&self->ltrs)
 	{
 		auto ltr = list_at(Ltr, link);
-		if (dispatch_find(with, ltr->part))
+		if (dispatch_find(with, ltr->user))
 			return true;
 	}
 	return false;
@@ -138,14 +138,18 @@ dispatches_overlaps_dispatch(Dispatches* self, Dispatch* with)
 hot static inline void
 dispatches_snapshot(Dispatches* self, Access* access)
 {
-	// create ltr for each partition from access
+	// create ltr for each unique user
 	for (auto i = 0; i < access->list_count; i++)
 	{
 		auto ac = access_at(access, i);
 		if (ac->rel->type != REL_TABLE)
 			continue;
-		auto part = table_of(ac->rel)->part;
-		auto ltr = ltr_create(&self->cache_ltr, part, self->gtr, &self->complete);
+
+		auto user = table_of(ac->rel)->user;
+		auto ltr  = dispatches_find(self, user);
+		if (ltr)
+			continue;
+		ltr = ltr_create(&self->cache_ltr, user, self->gtr, &self->complete);
 		list_append(&self->ltrs, &ltr->link);
 		self->ltrs_count++;
 	}
@@ -161,7 +165,7 @@ dispatches_send(Dispatches* self, Dispatch* dispatch)
 		list_foreach(&self->ltrs)
 		{
 			auto ltr   = list_at(Ltr, link);
-			auto track = &ltr->part->track;
+			auto track = &ltr->user->track;
 			ltr->consensus = track->consensus;
 			track_send(track, &ltr->msg);
 		}
@@ -177,13 +181,13 @@ dispatches_send(Dispatches* self, Dispatch* dispatch)
 	list_foreach(&dispatch->list)
 	{
 		auto req   = list_at(Req, link);
-		auto track = &req->part->track;
+		auto track = &req->user->track;
 		// find or create transaction
-		auto ltr = dispatches_find(self, req->part);
+		auto ltr = dispatches_find(self, req->user);
 		if (! ltr)
 		{
 			assert(self->list_count == 1);
-			ltr = ltr_create(&self->cache_ltr, req->part, self->gtr, &self->complete);
+			ltr = ltr_create(&self->cache_ltr, req->user, self->gtr, &self->complete);
 			ltr->consensus = track->consensus;
 			list_append(&self->ltrs, &ltr->link);
 			self->ltrs_count++;

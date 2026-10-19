@@ -17,9 +17,11 @@ typedef struct User    User;
 struct User
 {
 	Rel         rel;
+	Track       track;
 	int64_t     revoked_at;
 	UserConfig* config;
 	Usage       memory;
+	Catalog*    catalog;
 };
 
 bool user_create(Catalog*, Tr*, UserConfig*, bool);

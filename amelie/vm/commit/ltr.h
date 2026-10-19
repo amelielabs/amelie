@@ -23,7 +23,7 @@ struct Ltr
 	Msg       queue_close;
 	Consensus consensus;
 	Buf*      error;
-	Part*     part;
+	User*     user;
 	bool      closed;
 	Complete* complete;
 	List      link;
@@ -36,7 +36,7 @@ ltr_allocate(Gtr* gtr, Complete* complete)
 	self->gtr      = gtr;
 	self->tr       = NULL;
 	self->error    = NULL;
-	self->part     = NULL;
+	self->user     = NULL;
 	self->closed   = false;
 	self->complete = complete;
 	mailbox_init(&self->queue);
@@ -58,7 +58,7 @@ ltr_reset(Ltr* self)
 {
 	self->tr     = NULL;
 	self->error  = NULL;
-	self->part   = NULL;
+	self->user   = NULL;
 	self->closed = false;
 	list_init(&self->link);
 }

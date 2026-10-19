@@ -29,7 +29,6 @@ part_allocate(PartArg* arg)
 	self->heap          = heap_allocate(arg->retention);
 	self->arg           = arg;
 	self->streams       = NULL;
-	track_init(&self->track);
 	flats_init(&self->flats);
 	list_init(&self->link_cp);
 	list_init(&self->link);
@@ -39,8 +38,6 @@ part_allocate(PartArg* arg)
 void
 part_free(Part* self)
 {
-	track_free(&self->track);
-
 	// free index
 	IndexOp op;
 	index_op_init(&op);

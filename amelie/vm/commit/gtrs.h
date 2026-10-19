@@ -90,7 +90,7 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 		{
 			auto ref = list_at(Gtr, link);
 
-			// find overlapping partitions
+			// find overlapping users
 			bool overlaps;
 			if (is_snapshot)
 				overlaps = dispatches_overlaps(&ref->dispatches, &gtr->dispatches);
@@ -154,9 +154,8 @@ gtrs_send(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 
 	if (first)
 	{
-		// handle snapshot by creating transaction for every used partition
-		// to handle multi-statement access, otherwise use
-		// partitions from dispatch
+		// handle snapshot by creating transaction for every user
+		// to handle multi-statement access
 		int ltrs_count;
 		if (gtr->program->snapshot)
 		{
@@ -184,7 +183,7 @@ gtrs_detach(Gtrs* self, Batch* batch)
 	// called by Commit
 	spinlock_lock(&self->lock);
 
-	// apply pending partitions metrics
+	// apply pending metrics
 	auto ref = batch->pending;
 	while (ref)
 	{

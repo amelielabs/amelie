@@ -65,10 +65,10 @@ batch_add(Batch* self, Gtr* gtr)
 }
 
 hot static inline void
-batch_add_partition(Batch* self, Ltr* ltr)
+batch_add_user(Batch* self, Ltr* ltr)
 {
-	// create a unique list of partitions
-	auto track = &ltr->part->track;
+	// create a unique list of users
+	auto track = &ltr->user->track;
 	if (track->pending)
 		return;
 	track->pending = true;
@@ -82,7 +82,7 @@ batch_process(Batch* self)
 	// process transaction
 	for (auto it = 0; it < self->count; it++)
 	{
-		// handle aborts per partition
+		// handle aborts per user
 		auto gtr = batch_at(self, it);
 		list_foreach(&gtr->dispatches.ltrs)
 		{
@@ -91,12 +91,12 @@ batch_process(Batch* self)
 			if (! tr)
 				continue;
 
-			// collect unique partitions across batch
-			batch_add_partition(self, ltr);
+			// collect unique users across batch
+			batch_add_user(self, ltr);
 
-			// abort transaction if its partition transaction id lower then
-			// the partition abort id
-			auto track   = &ltr->part->track;
+			// abort transaction if its local transaction id lower
+			// then the abort id
+			auto track   = &ltr->user->track;
 			auto pending = &track->pending_consensus;
 			auto last    = &track->consensus;
 			if (pending->abort >= tr->id || last->abort >= tr->id)
@@ -113,7 +113,7 @@ batch_process(Batch* self)
 				continue;
 
 			// sync metrics
-			auto pending = &ltr->part->track.pending_consensus;
+			auto pending = &ltr->user->track.pending_consensus;
 			if (gtr->abort)
 			{
 				// sync abort id
@@ -158,7 +158,7 @@ batch_abort(Batch* self)
 			auto tr  = ltr->tr;
 			if (! tr)
 				continue;
-			auto pending = &ltr->part->track.pending_consensus;
+			auto pending = &ltr->user->track.pending_consensus;
 			if (tr->id > pending->abort)
 				pending->abort = tr->id;
 		}

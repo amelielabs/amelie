@@ -18,7 +18,6 @@ struct Part
 	Index*   indexes;
 	int      indexes_count;
 	Index*   in_progress;
-	Track    track;
 	Heap*    heap;
 	Flats    flats;
 	PartArg* arg;

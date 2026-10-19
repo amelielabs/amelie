@@ -24,17 +24,11 @@ static inline void
 table_free(Table* self, bool drop)
 {
 	unused(drop);
-
 	if (self->part)
 	{
-		// undeploy
-		self->catalog->iface->table_detach(self->catalog, self);
-
-		// free
 		part_free(self->part);
 		self->part = NULL;
 	}
-
 	if (self->config)
 		table_config_free(self->config);
 	am_free(self);
@@ -51,6 +45,7 @@ table_show(Table* self, Buf* buf, Str* user, int flags)
 
 static inline Table*
 table_allocate(Catalog*     catalog,
+               User*        user,
                TableConfig* config,
                Usage*       memory)
 {
@@ -58,6 +53,7 @@ table_allocate(Catalog*     catalog,
 	self->config  = table_config_copy(config);
 	self->catalog = catalog;
 	self->part    = NULL;
+	self->user    = user;
 
 	// part context
 	auto arg = &self->part_arg;
@@ -88,21 +84,21 @@ table_allocate(Catalog*     catalog,
 }
 
 static void
-table_deploy(Catalog* self, Table* table)
+table_open(Table* self)
 {
 	// create partition
-	auto part = part_allocate(&table->part_arg);
-	table->part = part;
+	auto part = part_allocate(&self->part_arg);
+	self->part = part;
 
 	// create indexes and stores
-	list_foreach(&table->config->indexes)
+	list_foreach(&self->config->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
 		part_index_create(part, config);
 	}
 
 	// create flat stores
-	list_foreach(&table->config->columns.list)
+	list_foreach(&self->config->columns.list)
 	{
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
@@ -112,8 +108,9 @@ table_deploy(Catalog* self, Table* table)
 		flats_add(&part->flats, flat);
 	}
 
-	// deploy table
-	self->iface->table_attach(self, table);
+	// open partition files
+	if (opt_int_of(&state()->recover) == RECOVER_CHECKPOINT)
+		part_open(part, self->catalog->manifest);
 }
 
 bool
@@ -149,13 +146,13 @@ table_create(Catalog*     self,
 
 	// allocate table
 	auto user  = user_of(tr->user);
-	auto table = table_allocate(self, config, &user->memory);
+	auto table = table_allocate(self, user, config, &user->memory);
 
 	// update tables
 	rels_create(&self->rels, tr, &table->rel);
 
-	// deploy table
-	table_deploy(self, table);
+	// prepare table and recover
+	table_open(table);
 	return true;
 }
 

@@ -31,7 +31,7 @@ layer_free(Layer* self, bool drop)
 	if (drop)
 	{
 		auto msg = part_cleanup_allocate(part, timeline);
-		rpc(part->track.backend, MSG_CLEANUP, msg);
+		rpc(table->user->track.backend, MSG_CLEANUP, msg);
 	}
 
 	// detach and free vector stores

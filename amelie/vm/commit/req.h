@@ -36,7 +36,7 @@ struct Req
 	Buf*      error;
 	Dispatch* dispatch;
 	Ltr*      ltr;
-	Part*     part;
+	User*     user;
 	List      link;
 };
 
@@ -49,7 +49,7 @@ req_allocate(void)
 	self->code           = NULL;
 	self->code_data      = NULL;
 	self->error          = NULL;
-	self->part           = NULL;
+	self->user           = NULL;
 	self->ltr            = NULL;
 	self->refs_count     = 0;
 	self->result_pending = false;
@@ -99,7 +99,7 @@ req_reset(Req* self)
 	self->start          = 0;
 	self->code           = NULL;
 	self->code_data      = NULL;
-	self->part           = NULL;
+	self->user           = NULL;
 	self->ltr            = NULL;
 	self->refs_count     = 0;
 	self->result_pending = false;

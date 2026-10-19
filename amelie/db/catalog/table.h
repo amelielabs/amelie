@@ -11,8 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Catalog Catalog;
-typedef struct Table   Table;
+typedef struct Table Table;
 
 struct Table
 {
@@ -22,6 +21,7 @@ struct Table
 	Timelines    timelines;
 	Retention    retention;
 	TableConfig* config;
+	User*        user;
 	Catalog*     catalog;
 };
 

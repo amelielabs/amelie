@@ -35,6 +35,11 @@ static inline void
 user_free(User* self, bool drop)
 {
 	unused(drop);
+
+	// undeploy
+	self->catalog->iface->user_attach(self->catalog, self);
+
+	track_free(&self->track);
 	if (self->config)
 		user_config_free(self->config);
 	am_free(self);
@@ -50,11 +55,13 @@ user_show(User* self, Buf* buf, Str* user, int flags)
 }
 
 static inline User*
-user_allocate(UserConfig* config)
+user_allocate(Catalog* catalog, UserConfig* config)
 {
 	User* self = am_malloc(sizeof(User));
 	self->revoked_at = 0;
 	self->config     = user_config_copy(config);
+	self->catalog    = catalog;
+	track_init(&self->track);
 
 	// prepare memory usage
 	usage_init(&self->memory, "memory");
@@ -103,11 +110,14 @@ user_create(Catalog*    self,
 		                       &config->grants);
 
 	// create user
-	user = user_allocate(config);
+	user = user_allocate(self, config);
 	rels_create(&self->users, tr, &user->rel);
 
 	// update timestamps
 	user_sync(user);
+
+	// deploy user
+	self->iface->user_attach(self, user);
 	return true;
 }
 

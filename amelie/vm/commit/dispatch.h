@@ -84,14 +84,14 @@ dispatch_add(Dispatch* self, ReqCache* cache, int type,
              int       start,
              Code*     code,
              CodeData* code_data,
-             Part*     part)
+             User*     user)
 {
 	auto req = req_create(cache);
 	req->type      = type;
 	req->start     = start;
 	req->code      = code;
 	req->code_data = code_data;
-	req->part      = part;
+	req->user      = user;
 	req->dispatch  = self;
 	list_append(&self->list, &req->link);
 	self->list_count++;
@@ -99,12 +99,12 @@ dispatch_add(Dispatch* self, ReqCache* cache, int type,
 }
 
 static inline Req*
-dispatch_find(Dispatch* self, Part* part)
+dispatch_find(Dispatch* self, User* user)
 {
 	list_foreach(&self->list)
 	{
 		auto req = list_at(Req, link);
-		if (req->part == part)
+		if (req->user == user)
 			return req;
 	}
 	return NULL;

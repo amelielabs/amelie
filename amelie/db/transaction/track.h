@@ -15,23 +15,23 @@ typedef struct Track Track;
 
 struct Track
 {
-	Mailbox          queue;
-	TrList           prepared;
-	TrCache          cache;
+	Mailbox         queue;
+	TrList          prepared;
+	TrCache         cache;
 
-	// commited state (partition)
-	Consensus        consensus_self;
+	// commited state
+	Consensus       consensus_self;
 
 	// commited (actual global state)
 	_Alignas(cache_line)
-	ConsensusAtomic  consensus_atomic;
-	Consensus        consensus;
+	ConsensusAtomic consensus_atomic;
+	Consensus       consensus;
 
 	// pending commit state (group commit)
-	bool             pending;
-	Consensus        pending_consensus;
-	Track*           pending_link;
-	Task*            backend;
+	bool            pending;
+	Consensus       pending_consensus;
+	Track*          pending_link;
+	Task*           backend;
 };
 
 static inline void
