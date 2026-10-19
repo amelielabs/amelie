@@ -20,7 +20,7 @@
 #include <amelie_part.h>
 
 static inline void
-rollback(LogOp* op, Part* part)
+rollback(LogOp* op)
 {
 	auto index = (Index*)op->iface_arg;
 	IndexOp io;
@@ -33,13 +33,14 @@ rollback(LogOp* op, Part* part)
 		index_op_set(&io, op->row);
 		index_delete(index, &io);
 	}
-	usage_update(part->arg->memory, io.delta);
+	usage_update(op->part->arg->memory, io.delta);
 }
 
 hot static void
 primary_if_commit(Log* self, LogOp* op)
 {
-	Part* part = self->arg;
+	unused(self);
+	auto part = op->part;
 
 	// mark row as commited
 	op->row->commited = true;
@@ -50,10 +51,10 @@ primary_if_commit(Log* self, LogOp* op)
 static void
 primary_if_abort(Log* self, LogOp* op)
 {
-	Part* part = self->arg;
-	auto index = (Index*)op->iface_arg;
-	if (index)
-		rollback(op, self->arg);
+	unused(self);
+	auto part = op->part;
+	if (op->iface_arg)
+		rollback(op);
 
 	if (! op->row->deleted)
 		row_free(part->heap, &part->flats, op->row);
@@ -79,7 +80,8 @@ secondary_if_commit(Log* self, LogOp* op)
 static void
 secondary_if_abort(Log* self, LogOp* op)
 {
-	rollback(op, self->arg);
+	unused(self);
+	rollback(op);
 }
 
 static LogIf primary_if =
@@ -99,7 +101,7 @@ part_insert(Part* self, Tr* tr, Row* row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_dml(&tr->log, &primary_if, primary, row);
+	auto op = log_dml(&tr->log, &primary_if, primary, self, row);
 
 	// ensure write limit
 	if (tr->write)
@@ -122,7 +124,7 @@ part_insert(Part* self, Tr* tr, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, &secondary_if, index, row);
+		op = log_dml(&tr->log, &secondary_if, index, self, row);
 		if (index_replace(index, &io))
 		{
 			op->row_prev = io.row_prev;
@@ -164,7 +166,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	// insert
 
 	// add log record
-	auto op = log_dml(&tr->log, &primary_if, primary, row);
+	auto op = log_dml(&tr->log, &primary_if, primary, self, row);
 
 	// ensure write limit
 	if (tr->write)
@@ -175,7 +177,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, &secondary_if, index, row);
+		op = log_dml(&tr->log, &secondary_if, index, self, row);
 		if (index_replace(index, &io))
 		{
 			op->row_prev = io.row_prev;
@@ -194,7 +196,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 {
 	// add log record
 	auto primary = part_primary(self);
-	auto op = log_dml(&tr->log, &primary_if, primary, row);
+	auto op = log_dml(&tr->log, &primary_if, primary, self, row);
 
 	// ensure write limit
 	if (tr->write)
@@ -224,7 +226,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, &secondary_if, index, row);
+		op = log_dml(&tr->log, &secondary_if, index, self, row);
 
 		// replace by key
 		if (index_replace(index, &io))
@@ -241,7 +243,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	// add log record
 	auto primary = part_primary(self);
 	auto row = iterator_at(it);
-	auto op = log_dml(&tr->log, &primary_if, primary, row);
+	auto op = log_dml(&tr->log, &primary_if, primary, self, row);
 
 	// ensure write limit
 	if (tr->write)
@@ -272,7 +274,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	for (auto index = primary->next; index; index = index->next)
 	{
 		// add log record (not persisted)
-		op = log_dml(&tr->log, &secondary_if, index, row);
+		op = log_dml(&tr->log, &secondary_if, index, self, row);
 
 		// delete by key
 		if (index_delete(index, &io))

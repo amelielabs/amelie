@@ -14,6 +14,7 @@
 typedef struct LogIf LogIf;
 typedef struct LogOp LogOp;
 typedef struct Log   Log;
+typedef struct Part  Part;
 
 struct LogIf
 {
@@ -27,22 +28,22 @@ struct LogOp
 	void*  iface_arg;
 	union {
 		struct {
-			Row* row;
-			Row* row_prev;
+			Part* part;
+			Row*  row;
+			Row*  row_prev;
 		};
 		struct {
-			Rel* rel;
-			int  rel_data;
+			Rel*  rel;
+			int   rel_data;
 		};
 	};
 };
 
 struct Log
 {
-	Buf   op;
-	Buf   data;
-	int   count;
-	void* arg;
+	Buf op;
+	Buf data;
+	int count;
 };
 
 always_inline static inline LogOp*
@@ -61,7 +62,6 @@ static inline void
 log_init(Log* self)
 {
 	self->count = 0;
-	self->arg   = NULL;
 	buf_init(&self->op);
 	buf_init(&self->data);
 }
@@ -77,7 +77,6 @@ static inline void
 log_reset(Log* self)
 {
 	self->count = 0;
-	self->arg   = NULL;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
 }
@@ -92,11 +91,13 @@ hot static inline LogOp*
 log_dml(Log*   self,
         LogIf* iface,
         void*  iface_arg,
+        Part*  part,
         Row*   row)
 {
 	auto op = (LogOp*)buf_emplace(&self->op, sizeof(LogOp));
 	op->iface     = iface;
 	op->iface_arg = iface_arg;
+	op->part      = part;
 	op->row       = row;
 	op->row_prev  = NULL;
 	self->count++;
