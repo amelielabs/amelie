@@ -204,7 +204,7 @@ pod_allocate(Part* part)
 	self->track     = &part->track;
 	self->worker_id = -1;
 	quota_init(&self->quota);
-	vm_init(&self->vm, &self->quota, part);
+	vm_init(&self->vm, &self->quota);
 	list_init(&self->link);
 	return self;
 }

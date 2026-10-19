@@ -91,14 +91,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      32    # amelie.test (select, closing)
+  0   send                0      0      32    # amelie.test (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -164,14 +164,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      32    # amelie.test (select, closing)
+  0   send                0      0      32    # amelie.test (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -216,14 +216,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      37    # amelie.test (select, closing)
+  0   send                0      0      37    # amelie.test (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readj         2      1      -     # data
   3   string              3      32     0     # data
   4   dotjs               4      2      3
@@ -261,14 +261,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      42    # amelie.test (select, closing)
+  0   send                0      0      42    # amelie.test (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readj         2      1      -     # data
   3   string              3      32     0     # data.data
   4   dotjs               4      2      3
@@ -299,14 +299,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      32    # amelie.test (select, closing)
+  0   send                0      0      32    # amelie.test (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -337,14 +337,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      37    # amelie.test (select, closing)
+  0   send                0      0      37    # amelie.test (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readj         2      1      -     # data
   3   string              3      32     0     # data
   4   dotjs               4      2      3
@@ -396,14 +396,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      32    # amelie.test (select, closing)
+  0   send                0      0      32    # amelie.test (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -434,14 +434,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      37    # amelie.test (select, closing)
+  0   send                0      0      37    # amelie.test (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      1      0
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readj         2      1      -     # data
   3   string              3      32     0     # data
   4   dotjs               4      2      3
@@ -486,14 +486,14 @@ explain
 ───────
 
 main
-  0   send_all            0      0      32    # amelie.test (select, closing)
+  0   send                0      0      32    # amelie.test (select, closing)
   1   union               1      0      0
   2   recv                1      0      0
   3   ret                 1      0      -
 
 pushdown
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -656,6 +656,35 @@ create table a (x int primary key);
 create table b (y int primary key);
 insert into a values (1);
 insert into b values (2);
+explain select x, y from a, b;
+
+explain
+───────
+
+main
+  0   send                0      0      64    # amelie.a (select, closing)
+  1   union               1      0      0
+  2   recv                1      0      0
+  3   ret                 1      0      -
+
+pushdown
+  0   set                 0      2      0
+  1   table_open          1      0      11    # amelie.a (primary) 
+  2   table_open          2      32     9     # amelie.b (primary) 
+  3   table_readi32       3      1      -     # x
+  4   push                3      0      0
+  5   table_readi32       3      2      -     # y
+  6   push                3      0      0
+  7   set_add             0      0      0
+  8   table_next          2      3      0
+  9   free                2      0      0
+ 10   table_next          1      2      0
+ 11   free                1      0      0
+ 12   ret                 0      0      -
+
+access
+  •   amelie.a shared [select]
+  •   amelie.b exclusive_ro [select]
 select x, y from a, b;
 
 x  y

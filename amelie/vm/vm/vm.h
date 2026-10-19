@@ -24,7 +24,6 @@ struct Vm
 	bool      allow_close;
 	Value*    refs;
 	Value*    args;
-	Part*     part;
 	Gtr*      gtr;
 	Program*  program;
 	Quota*    quota;
@@ -33,7 +32,7 @@ struct Vm
 	Calls     calls;
 };
 
-void vm_init(Vm*, Quota*, Part*);
+void vm_init(Vm*, Quota*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
 void vm_run(Vm*, Local*, Gtr*, Tr*, Program*, Code*, CodeData*, Buf*,

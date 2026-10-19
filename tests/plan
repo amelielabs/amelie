@@ -69,10 +69,10 @@ test limits
 #test upsert
 #test truncate
 
-## query
-#directory query
-#group query
-#test select
+# query
+directory query
+group query
+test select
 #test where
 #test scan
 #test planner

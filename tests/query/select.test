@@ -187,6 +187,7 @@ create table a (x int primary key);
 create table b (y int primary key);
 insert into a values (1);
 insert into b values (2);
+explain select x, y from a, b;
 select x, y from a, b;
 drop table a;
 drop table b;

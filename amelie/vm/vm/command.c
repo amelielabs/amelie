@@ -57,6 +57,7 @@ csend(Vm* self, Op* op)
 	if (op->d != -1)
 	{
 		// store, seed, time
+		buf_reset(&req->arg);
 		buf_write(&req->arg, &reg_at(&self->r, op->d)->store, sizeof(Store*));
 		uint64_t value = random_generate(&self->local->random);
 		buf_write(&req->arg, &value, sizeof(value));
@@ -324,7 +325,7 @@ ctable_open(Vm* self, Op* op)
 {
 	// [cursor, open_offset, _eof]
 	auto open = open_at(self->code_data, op->b);
-	auto part = self->part;
+	auto part = open->table->part;
 
 	// create key for index scan
 	auto buf = buf_create();
@@ -371,7 +372,7 @@ cinsert(Vm* self, Op* op)
 	// [table*, timeline*]
 	auto table    = (Table*)op->a;
 	auto timeline = (Timeline*)op->b;
-	auto part     = self->part;
+	auto part     = table->part;
 	auto columns  = table_columns(table);
 
 	auto store      = *(Store**)self->code_arg->start;
@@ -412,17 +413,19 @@ ctable_prepare(Vm* self, Op* op)
 {
 	// [cursor, table*, timeline*]
 	auto cursor = reg_at(&self->r, op->a);
+	auto table  = (Table*)op->b;
+	auto part   = table->part;
 
 	// create primary index iterator for related partition
-	auto primary = part_primary(self->part);
+	auto primary = part_primary(part);
 	Iterator* it;
 	if (unlikely(primary))
 		it = index_iterator(primary);
 	else
-		it = iterator_heap_allocate(self->part->heap);
+		it = iterator_heap_allocate(part->heap);
 
 	// set cursor
-	value_set_cursor(cursor, (Table*)op->b, (Timeline*)op->c, self->part, it);
+	value_set_cursor(cursor, table, (Timeline*)op->c, part, it);
 
 	// prepare upsert state
 	self->upsert = self->code_arg->start;
@@ -507,7 +510,7 @@ cdelete(Vm* self, Op* op)
 	auto cursor = reg_at(&self->r, op->a);
 
 	// delete by cursor
-	part_delete(self->part, self->tr, cursor->cursor);
+	part_delete(cursor->table->part, self->tr, cursor->cursor);
 }
 
 hot void
@@ -542,7 +545,7 @@ ccall_udf(Vm* self, Op* op)
 
 	// execute udf
 	Vm vm;
-	vm_init(&vm, self->quota, self->part);
+	vm_init(&vm, self->quota);
 	defer(vm_free, &vm);
 	reg_prepare(&vm.r, program->code.regs);
 

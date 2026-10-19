@@ -23,7 +23,7 @@
 #include "base/overflow_fp.h"
 
 void
-vm_init(Vm* self, Quota* quota, Part* part)
+vm_init(Vm* self, Quota* quota)
 {
 	self->code        = NULL;
 	self->code_data   = NULL;
@@ -32,7 +32,6 @@ vm_init(Vm* self, Quota* quota, Part* part)
 	self->allow_close = true;
 	self->refs        = NULL;
 	self->args        = NULL;
-	self->part        = part;
 	self->gtr         = NULL;
 	self->program     = NULL;
 	self->quota       = quota;

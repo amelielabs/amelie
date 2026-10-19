@@ -30,7 +30,7 @@ session_create(void)
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->set_cache);
 	quota_init(&self->quota);
-	vm_init(&self->vm, &self->quota, NULL);
+	vm_init(&self->vm, &self->quota);
 	profile_init(&self->profile);
 	gtr_init(&self->gtr);
 	return self;
