@@ -247,7 +247,7 @@ static void
 fn_breakpoint(Call* self)
 {
 	call_expect(self, 0);
-	breakpoint(REL_BP_QUERY);
+	breakpoint(RES_BP_QUERY);
 }
 
 void

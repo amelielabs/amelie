@@ -16,17 +16,16 @@ typedef struct Lockables Lockables;
 
 enum
 {
-	REL_CATALOG,
-	REL_DDL,
-	REL_CHECKPOINT,
-	REL_BP_QUERY,
-	REL_MAX
+	RES_CATALOG,
+	RES_DDL,
+	RES_CHECKPOINT,
+	RES_BP_QUERY,
+	RES_MAX
 };
 
 struct Lockable
 {
-	Rel        rel;
-	Str        rel_name;
+	Resource   res;
 	bool       bp;
 	atomic_u32 bp_refs;
 };
@@ -37,14 +36,11 @@ struct Lockables
 };
 
 static inline void
-lockable_init(Lockable* self, const char* name, bool bp)
+lockable_init(Lockable* self, char* name, bool bp)
 {
 	self->bp      = bp;
 	self->bp_refs = 0;
-	str_set_cstr(&self->rel_name, name);
-	auto rel = &self->rel;
-	rel_init(rel, REL_SYSTEM);
-	rel_set_name(rel, &self->rel_name);
+	resource_init(&self->res, name);
 }
 
 static inline void
@@ -62,20 +58,20 @@ lockable_breakpoint_unref(Lockable* self)
 static inline void
 lockables_init(Lockables* self)
 {
-	self->list = am_malloc(sizeof(Lockable) * REL_MAX);
-	lockable_init(&self->list[REL_CATALOG], "catalog", false);
-	lockable_init(&self->list[REL_DDL], "ddl", false);
-	lockable_init(&self->list[REL_CHECKPOINT], "checkpoint", false);
+	self->list = am_malloc(sizeof(Lockable) * RES_MAX);
+	lockable_init(&self->list[RES_CATALOG], "catalog", false);
+	lockable_init(&self->list[RES_DDL], "ddl", false);
+	lockable_init(&self->list[RES_CHECKPOINT], "checkpoint", false);
 
 	// breakpoints
-	lockable_init(&self->list[REL_BP_QUERY], "bp_query", true);
+	lockable_init(&self->list[RES_BP_QUERY], "bp_query", true);
 }
 
 static inline void
 lockables_free(Lockables* self)
 {
-	for (auto i = 0; i < REL_MAX; i++)
-		rel_free(&self->list[i].rel);
+	for (auto i = 0; i < RES_MAX; i++)
+		resource_free(&self->list[i].res);
 	am_free(self->list);
 	self->list = NULL;
 }
@@ -83,10 +79,10 @@ lockables_free(Lockables* self)
 static inline Lockable*
 lockables_find(Lockables* self, Str* name)
 {
-	for (auto i = 0; i < REL_MAX; i++)
+	for (auto i = 0; i < RES_MAX; i++)
 	{
 		auto ref = &self->list[i];
-		if (str_compare(ref->rel.name, name))
+		if (str_is_cstr(name, ref->res.name))
 			return ref;
 	}
 	return NULL;

@@ -35,12 +35,8 @@ db_checkpoint(Db* self)
 void
 db_gc(Db* self)
 {
-	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
-	auto lsn = state_checkpoint();
-
-	unlock(lock_catalog);
-
 	// remove wal files < lsn
+	auto lsn = state_checkpoint();
 	wal_gc(&self->wal, lsn);
 
 	// checkpoint gc

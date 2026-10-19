@@ -150,22 +150,21 @@ resolve(char* addr, int port, struct addrinfo** result)
 }
 
 // lock manager
-#define lock(rel, rel_lock) \
-	locks_lock(&runtime()->locks, (rel), (rel_lock), \
-	           NULL, \
-	           source_function) \
-
-#define lock_system(rel_id, rel_lock) \
+#define lock(res_id, id) \
 	locks_lock(&runtime()->locks, \
-	           &runtime()->lockables.list[(rel_id)].rel, (rel_lock), \
+	           &runtime()->lockables.list[(res_id)].res, (id), \
 	           NULL, \
-	           source_function) \
+	           source_function)
 
-#define breakpoint(rel_id) \
+#define lock_catalog(id)    lock(RES_CATALOG, id)
+#define lock_ddl(id)        lock(RES_DDL, id)
+#define lock_checkpoint(id) lock(RES_CHECKPOINT, id)
+
+#define breakpoint(res_id) \
 ({ \
-	auto ref = &runtime()->lockables.list[(rel_id)]; \
+	auto ref = &runtime()->lockables.list[(res_id)]; \
 	if (unlikely(atomic_u32_of(&ref->bp_refs) > 0)) \
-		unlock(locks_lock(&runtime()->locks, &ref->rel, LOCK_SHARED, \
+		unlock(locks_lock(&runtime()->locks, &ref->res, LOCK_SHARED, \
 		       NULL, \
 		       source_function)); \
 })

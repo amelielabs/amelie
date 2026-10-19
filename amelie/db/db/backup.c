@@ -67,8 +67,8 @@ backup_free(Backup* self)
 static void
 backup_prepare(Backup* self)
 {
-	auto lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
-	defer(unlock, lock_catalog);
+	auto lock = lock_catalog(LOCK_EXCLUSIVE);
+	defer(unlock, lock);
 
 	// config
 	auto buf = opts_list_persistent(&runtime()->config.opts);
@@ -193,8 +193,8 @@ void
 backup(Db* self, Uuid* id)
 {
 	// one checkpoint, create index or backup at a time
-	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
-	defer(unlock, checkpoint_lock);
+	auto lock = lock_checkpoint(LOCK_EXCLUSIVE);
+	defer(unlock, lock);
 
 	Backup backup;
 	backup_init(&backup, self, id);

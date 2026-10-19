@@ -179,7 +179,7 @@ session_run_utility(Session* self)
 	portal_lock(portal, program->lock_catalog);
 
 	// prevent concurrent ddls
-	lock_system(REL_DDL, program->lock_ddl);
+	lock_ddl(program->lock_ddl);
 
 	// [PROFILE]
 	auto profile = &self->profile;

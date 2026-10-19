@@ -10,11 +10,12 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_base.h>
-#include <amelie_io.h>
-#include <amelie_lib.h>
-#include <amelie_data.h>
-#include <amelie_rel.h>
+#include <amelie_runtime>
+#include <amelie_type.h>
+#include <amelie_storage.h>
+#include <amelie_flat.h>
+#include <amelie_heap.h>
+#include <amelie_transaction.h>
 
 typedef struct Permission Permission;
 

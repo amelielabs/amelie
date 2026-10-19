@@ -12,6 +12,7 @@
 //
 
 typedef struct Timeline Timeline;
+typedef struct Rel      Rel;
 
 struct Timeline
 {

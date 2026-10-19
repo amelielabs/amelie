@@ -57,10 +57,10 @@ locks_remove(Locks* self, Lock* lock)
 }
 
 hot static inline bool
-lock_resolve(Rel* rel, LockId lock)
+lock_resolve(Resource* res, LockId lock)
 {
 	// validate lock against currently active locks
-	auto set = rel->lock_set;
+	auto set = res->lock_set;
 	if (set[LOCK_EXCLUSIVE])
 		return false;
 
@@ -74,29 +74,29 @@ lock_resolve(Rel* rel, LockId lock)
 hot static inline void
 locks_lock_of(Locks* self, Lock* lock)
 {
-	auto rel = lock->rel;
+	auto res = lock->res;
 
-	// try to lock the relation
-	spinlock_lock(&rel->lock);
+	// try to lock the resource
+	spinlock_lock(&res->lock);
 
 	// add lock to the lock manager
 	locks_add(self, lock);
 
 	// always wait if there are waiters
-	auto pass = !rel->lock_wait_count && lock_resolve(rel, lock->rel_lock);
+	auto pass = !res->lock_wait_count && lock_resolve(res, lock->lock);
 	if (likely(pass))
 	{
 		// success
-		rel->lock_set[lock->rel_lock]++;
+		res->lock_set[lock->lock]++;
 	} else
 	{
-		// add lock to the relation wait list
+		// add lock to the wait list
 		lock->waiting = true;
-		list_append(&rel->lock_wait, &lock->link);
-		rel->lock_wait_count++;
+		list_append(&res->lock_wait, &lock->link);
+		res->lock_wait_count++;
 	}
 
-	spinlock_unlock(&rel->lock);
+	spinlock_unlock(&res->lock);
 
 	// wait for the lock
 	if (unlikely(! pass))
@@ -108,18 +108,18 @@ locks_lock_of(Locks* self, Lock* lock)
 }
 
 hot static inline Lock*
-locks_lock(Locks*      self, Rel* rel, LockId rel_lock,
+locks_lock(Locks*      self, Resource* res, LockId id,
            Str*        name,
            const char* func)
 {
-	if (unlikely(rel_lock == LOCK_NONE))
+	if (unlikely(id == LOCK_NONE))
 		return NULL;
 
 	// reentrant support
 	list_foreach(&am_self()->locks)
 	{
 		auto lock = list_at(Lock, link);
-		if (lock->rel == rel && lock->rel_lock == rel_lock)
+		if (lock->res == res && lock->lock == id)
 		{
 			lock->refs++;
 			return lock;
@@ -127,7 +127,7 @@ locks_lock(Locks*      self, Rel* rel, LockId rel_lock,
 	}
 
 	// create lock
-	auto lock = lock_create(&self->cache, rel, rel_lock, name, func);
+	auto lock = lock_create(&self->cache, res, id, name, func);
 	locks_lock_of(self, lock);
 
 	// attach lock to the coroutine
@@ -139,7 +139,7 @@ locks_lock(Locks*      self, Rel* rel, LockId rel_lock,
 hot static inline void
 locks_unlock(Locks* self, Lock* lock)
 {
-	if (!lock || lock->rel_lock == LOCK_NONE)
+	if (!lock || lock->lock == LOCK_NONE)
 		return;
 
 	// reentrant support
@@ -151,23 +151,23 @@ locks_unlock(Locks* self, Lock* lock)
 	if (lock->coro)
 		lock_detach(lock);
 
-	auto rel = lock->rel;
-	spinlock_lock(&rel->lock);
+	auto res = lock->res;
+	spinlock_lock(&res->lock);
 
-	// detach from the relation lock set
-	rel->lock_set[lock->rel_lock]--;
+	// detach from the lock set
+	res->lock_set[lock->lock]--;
 
 	// detach from the lock manager
 	locks_remove(self, lock);
 
 	// batch wakeup non-conflicting waiters
-	while (rel->lock_wait_count > 0)
+	while (res->lock_wait_count > 0)
 	{
-		auto lock = container_of(list_first(&rel->lock_wait), Lock, link);
-		if (lock_resolve(lock->rel, lock->rel_lock))
+		auto lock = container_of(list_first(&res->lock_wait), Lock, link);
+		if (lock_resolve(lock->res, lock->lock))
 		{
-			rel->lock_set[lock->rel_lock]++;
-			rel->lock_wait_count--;
+			res->lock_set[lock->lock]++;
+			res->lock_wait_count--;
 			lock->waiting = false;
 			list_unlink(&lock->link);
 			event_signal(&lock->event);
@@ -176,10 +176,10 @@ locks_unlock(Locks* self, Lock* lock)
 		break;
 	}
 
-	spinlock_unlock(&lock->rel->lock);
+	spinlock_unlock(&lock->res->lock);
 
-	lock->rel      = NULL;
-	lock->rel_lock = LOCK_NONE;
+	lock->res  = NULL;
+	lock->lock = LOCK_NONE;
 
 	lock_cache_push(&self->cache, lock);
 }
@@ -217,7 +217,7 @@ locks_list(Locks* self, Buf* buf)
 }
 
 static inline int
-locks_count(Locks* self, Str* rel_name)
+locks_count(Locks* self, Str* name)
 {
 	spinlock_lock(&self->lock);
 	defer(spinlock_unlock, &self->lock);
@@ -226,7 +226,7 @@ locks_count(Locks* self, Str* rel_name)
 	list_foreach(&self->list)
 	{
 		auto lock = list_at(Lock, link_mgr);
-		if (str_compare(lock->rel->name, rel_name))
+		if (str_is_cstr(name, lock->res->name))
 			count++;
 	}
 	return count;

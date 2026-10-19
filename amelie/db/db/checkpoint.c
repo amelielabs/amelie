@@ -308,11 +308,11 @@ checkpoint(Checkpoints* checkpoints, Catalog* catalog)
 		return;
 
 	// take checkpoint lock (one checkpoint, create index or backup at a time)
-	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
+	auto checkpoint_lock = lock_checkpoint(LOCK_EXCLUSIVE);
 	defer(unlock, checkpoint_lock);
 
 	// take exclusive catalog lock
-	auto catalog_lock = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
+	auto catalog_lock = lock_catalog(LOCK_EXCLUSIVE);
 
 	cancel_pause();
 	defer(coroutine_cancel_resume, am_self());

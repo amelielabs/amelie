@@ -22,9 +22,7 @@ typedef enum
 	REL_USER,
 	REL_TABLE,
 	REL_LAYER,
-	REL_UDF,
-	REL_LOCK,
-	REL_SYSTEM
+	REL_UDF
 } RelType;
 
 struct Rel
@@ -38,25 +36,17 @@ struct Rel
 	RelFree  free;
 	Hashnode link_ht;
 	List     link;
-
-	// lock manager
-	Spinlock lock;
-	int      lock_set[LOCK_MAX];
-	List     lock_wait;
-	int      lock_wait_count;
 };
 
 static inline const char*
 rel_type_of(RelType type)
 {
 	switch (type) {
-	case REL_UNDEF:  return "relation";
-	case REL_USER:   return "user";
-	case REL_TABLE:  return "table";
-	case REL_LAYER:  return "layer";
-	case REL_UDF:    return "function";
-	case REL_LOCK:   return "lock";
-	case REL_SYSTEM: return "system";
+	case REL_UNDEF: return "relation";
+	case REL_USER:  return "user";
+	case REL_TABLE: return "table";
+	case REL_LAYER: return "layer";
+	case REL_UDF:   return "function";
 	default:
 		break;
 	}
@@ -67,19 +57,15 @@ rel_type_of(RelType type)
 static inline void
 rel_init(Rel* self, RelType type)
 {
-	self->user            = NULL;
-	self->name            = NULL;
-	self->type            = type;
-	self->description     = NULL;
-	self->grants          = NULL;
-	self->show            = NULL;
-	self->free            = NULL;
-	self->lock_wait_count = 0;
-	spinlock_init(&self->lock);
+	self->user        = NULL;
+	self->name        = NULL;
+	self->type        = type;
+	self->description = NULL;
+	self->grants      = NULL;
+	self->show        = NULL;
+	self->free        = NULL;
 	hashnode_init(&self->link_ht);
 	list_init(&self->link);
-	memset(self->lock_set, 0, sizeof(self->lock_set));
-	list_init(&self->lock_wait);
 }
 
 static inline void
@@ -128,7 +114,6 @@ rel_show(Rel* self, Buf* buf, Str* user, int flags)
 static inline void
 rel_free(Rel* self)
 {
-	spinlock_free(&self->lock);
 	if (self->free)
 		self->free(self, false);
 }
@@ -136,7 +121,6 @@ rel_free(Rel* self)
 static inline void
 rel_drop(Rel* self)
 {
-	spinlock_free(&self->lock);
 	if (self->free)
 		self->free(self, true);
 }

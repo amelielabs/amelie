@@ -62,12 +62,12 @@ lock_cache_push(LockCache* self, Lock* lock)
 }
 
 static inline Lock*
-lock_create(LockCache* self, Rel* rel, LockId rel_lock,
+lock_create(LockCache* self, Resource* res, LockId id,
             Str*       name, const char* func)
 {
 	auto lock = lock_cache_pop(self);
 	if (unlikely(! lock))
-		lock = malloc(sizeof(Lock));
-	lock_init(lock, rel, rel_lock, name, func);
+		lock = am_malloc(sizeof(Lock));
+	lock_init(lock, res, id, name, func);
 	return lock;
 }

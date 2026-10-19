@@ -208,6 +208,9 @@ cddl_create_index(Vm* self, Op* op)
 void
 clock_rel(Vm* self, Op* op)
 {
+	(void)self;
+	(void)op;
+#if 0
 	// PERM_SYSTEM
 	check_user(self->tr, PERM_SYSTEM);
 
@@ -234,16 +237,15 @@ clock_rel(Vm* self, Op* op)
 		return;
 	}
 
-	Rel* rel;
-
 	// find breakpoint
+	Resource* res;
 	auto ref = lockables_find(&runtime()->lockables, &name_rel);
 	if (ref)
 	{
 		// ensure relation is a breakpoint
 		if (! ref->bp)
 			error("lock: relation '{str}' cannot be locked this way", &name);
-		rel = &ref->rel;
+		res = &ref->res;
 
 		// enable breakpoint
 		lockable_breakpoint_ref(ref);
@@ -252,18 +254,22 @@ clock_rel(Vm* self, Op* op)
 		// find table
 		auto table = catalog_find_table(&share()->db->catalog, &self->local->user,
 		                                &name_rel, true);
-		rel = &table->rel;
+		res = &table->rel;
 	}
 
 	// create detached lock
 	lock = locks_lock(&runtime()->locks, rel, lock_id,
 	                  &name, source_function);
 	lock_detach(lock);
+#endif
 }
 
 void
 cunlock_rel(Vm* self, Op* op)
 {
+	(void)self;
+	(void)op;
+#if 0
 	// PERM_SYSTEM
 	check_user(self->tr, PERM_SYSTEM);
 
@@ -291,4 +297,5 @@ cunlock_rel(Vm* self, Op* op)
 #endif
 
 	unlock(lock);
+#endif
 }

@@ -15,8 +15,8 @@ typedef struct Lock Lock;
 
 struct Lock
 {
-	Rel*        rel;
-	LockId      rel_lock;
+	Resource*   res;
+	LockId      lock;
 	int         refs;
 	bool        waiting;
 	Event       event;
@@ -28,15 +28,15 @@ struct Lock
 };
 
 static inline void
-lock_init(Lock* self, Rel* rel, LockId rel_lock,
+lock_init(Lock* self, Resource* res, LockId lock,
           Str*  name, const char* func)
 {
-	self->rel       = rel;
-	self->rel_lock  = rel_lock;
-	self->refs      = 0;
-	self->waiting   = false;
-	self->coro      = NULL;
-	self->func      = func;
+	self->res     = res;
+	self->lock    = lock;
+	self->refs    = 0;
+	self->waiting = false;
+	self->coro    = NULL;
+	self->func    = func;
 	str_init(&self->name);
 	if (unlikely(name))
 		str_copy(&self->name, name);
@@ -87,13 +87,13 @@ lock_write(Lock* self, Buf* buf)
 		encode_str(buf, &self->name);
 	}
 
-	// relation
-	encode_raw(buf, "relation", 8);
-	encode_str(buf, self->rel->name);
+	// resource
+	encode_raw(buf, "resource", 8);
+	encode_cstr(buf, self->res->name);
 
 	// lock
 	encode_raw(buf, "lock", 4);
-	lock_id_encode(buf, self->rel_lock);
+	lock_id_encode(buf, self->lock);
 
 	// waiting
 	encode_raw(buf, "waiting", 7);

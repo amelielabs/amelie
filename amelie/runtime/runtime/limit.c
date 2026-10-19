@@ -14,7 +14,7 @@
 #include <amelie_io.h>
 #include <amelie_lib.h>
 #include <amelie_data.h>
-#include <amelie_rel.h>
+#include <amelie_lock.h>
 #include <amelie_runtime.h>
 
 typedef struct LimitName LimitName;

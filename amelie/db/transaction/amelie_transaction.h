@@ -24,5 +24,13 @@
 #include "transaction/consensus.h"
 #include "transaction/track.h"
 
-// relation manager
+// grants
+#include "transaction/permissions.h"
+#include "transaction/grants.h"
+
+// relation
+#include "transaction/rel.h"
 #include "transaction/rels.h"
+
+// access list
+#include "transaction/access.h"

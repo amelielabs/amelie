@@ -28,12 +28,12 @@ portal_lock(Portal* self, LockId id)
 	// take catalog lock
 	if (self->lock)
 	{
-		if (self->lock->rel_lock == id)
+		if (self->lock->lock == id)
 			return;
 		unlock(self->lock);
 		self->lock = NULL;
 	}
-	self->lock = lock_system(REL_CATALOG, id);
+	self->lock = lock_catalog(id);
 	if (self->lock)
 		lock_detach(self->lock);
 }
@@ -97,7 +97,7 @@ hot static inline void
 portal_auth(Portal* self, Auth* auth_ref)
 {
 	// take catalog lock
-	self->lock = lock_system(REL_CATALOG, LOCK_SHARED);
+	self->lock = lock_catalog(LOCK_SHARED);
 	lock_detach(self->lock);
 
 	// authenticate user
@@ -138,7 +138,7 @@ hot static inline void
 portal_set(Portal* self, Str* user, bool with_limits)
 {
 	// take catalog lock
-	self->lock = lock_system(REL_CATALOG, LOCK_SHARED);
+	self->lock = lock_catalog(LOCK_SHARED);
 	lock_detach(self->lock);
 
 	// find user
