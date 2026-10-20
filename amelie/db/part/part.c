@@ -159,7 +159,7 @@ part_open(Part* self, Manifest* manifest)
 		if (! ref)
 			error("recover: manifest is missing {str}.{str}.{d}",
 			      rel->user, rel->name, column->order);
-		auto flat = flats_at(&self->flats, column, 0);
+		auto flat = flats_at(&self->flats, column);
 		part_open_flat(self, flat, ref);
 	}
 }
@@ -193,30 +193,19 @@ part_truncate(Part* self)
 		auto column = list_at(Column, link);
 		if (column->type != TYPE_VECTOR)
 			continue;
-
-		auto flat = flat_allocate(column, 0);
-		flats_add_column(flats);
+		auto flat = flat_allocate(column);
 		flats_add(flats, flat);
-
-		list_foreach(&arg->timelines->list)
-		{
-			auto timeline = list_at(Timeline, link);
-			flat = flat_allocate(column, timeline->timeline);
-			flats_add_column(flats);
-			flats_add(flats, flat);
-		}
 	}
 }
 
 void
-part_column_create(Part* self, Column* column, uint32_t timeline)
+part_column_create(Part* self, Column* column)
 {
 	if (column->type != TYPE_VECTOR)
 		return;
 
 	// create flat store
-	auto flat = flat_allocate(column, timeline);
-	flats_add_column(&self->flats);
+	auto flat = flat_allocate(column);
 	flats_add(&self->flats, flat);
 }
 

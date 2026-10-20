@@ -19,5 +19,4 @@ struct PartArg
 	Usage*     memory;
 	Retention* retention;
 	Columns*   columns;
-	Timelines* timelines;
 };

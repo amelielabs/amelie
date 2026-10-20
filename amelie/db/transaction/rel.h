@@ -21,7 +21,6 @@ typedef enum
 	REL_UNDEF,
 	REL_USER,
 	REL_TABLE,
-	REL_LAYER,
 	REL_UDF
 } RelType;
 
@@ -45,7 +44,6 @@ rel_type_of(RelType type)
 	case REL_UNDEF: return "relation";
 	case REL_USER:  return "user";
 	case REL_TABLE: return "table";
-	case REL_LAYER: return "layer";
 	case REL_UDF:   return "function";
 	default:
 		break;

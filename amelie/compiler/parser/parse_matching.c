@@ -43,10 +43,9 @@ parse_matching(Stmt* self, From* from, Table* table)
 
 	// add table target
 	auto target = target_allocate();
-	target->type          = TARGET_TABLE;
-	target->from_table    = table;
-	target->from_timeline = table_main(table);
-	target->columns       = &table->config->columns;
+	target->type       = TARGET_TABLE;
+	target->from_table = table;
+	target->columns    = &table->config->columns;
 	str_set_str(&target->name, &table->config->name);
 	access_add(&self->parser->program->access, &table->rel, PERM_SELECT);
 	from_add(&stmt->from, target);

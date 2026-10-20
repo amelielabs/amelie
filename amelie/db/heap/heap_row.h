@@ -13,7 +13,6 @@
 
 hot static inline Row*
 row_allocate(Heap*    heap,
-             uint32_t timeline,
              int      columns,
              int      data_size,
              int64_t* delta)
@@ -25,13 +24,13 @@ row_allocate(Heap*    heap,
 
 	auto current = heap->storage.current;
 	auto self    = heap_add(heap, size);
-	row_prepare(self, timeline, columns, byte, size);
+	row_prepare(self, columns, byte, size);
 	*delta += storage_delta(&heap->storage, current);
 	return self;
 }
 
 hot static inline Row*
-row_allocate_buf(Buf* buf, uint32_t timeline, int columns, int data_size)
+row_allocate_buf(Buf* buf, int columns, int data_size)
 {
 	bool byte;
 	auto size = row_measure(columns, data_size, &byte);
@@ -40,14 +39,13 @@ row_allocate_buf(Buf* buf, uint32_t timeline, int columns, int data_size)
 
 	auto self = (Row*)buf_emplace(buf, size);
 	row_init(self);
-	row_prepare(self, timeline, columns, byte, size);
+	row_prepare(self, columns, byte, size);
 	return self;
 }
 
 hot static inline void
 row_free(Heap* heap, Flats* flats, Row* row)
 {
-	uint32_t timeline = row->timeline;
 	heap_remove(heap, row);
 
 	if (flats_empty(flats))
@@ -57,7 +55,7 @@ row_free(Heap* heap, Flats* flats, Row* row)
 	auto end = (Flat**)flats->list.position;
 	for (; pos < end; pos++)
 	{
-		auto flat = flats_match(*pos, timeline);
+		auto flat = *pos;
 		auto ref  = row_at(row, flat->column->order);
 		if (ref)
 			flat_remove(flat, *(uint32_t*)ref);
@@ -74,15 +72,9 @@ row_filter(Flats* flats, Row* row, bool filter)
 	auto end = (Flat**)flats->list.position;
 	for (; pos < end; pos++)
 	{
-		auto flat = flats_match(*pos, row->timeline);
+		auto flat = *pos;
 		auto ref  = row_at(row, flat->column->order);
 		if (ref)
 			flat_set_at(flat, *(uint32_t*)ref, !filter);
 	}
-}
-
-always_inline hot static inline bool
-row_visible(Row* self, Timeline* timeline)
-{
-	return self->timeline == timeline->timeline;
 }

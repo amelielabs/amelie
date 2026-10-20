@@ -42,7 +42,6 @@ typedef enum
 	MSG_UNDEPLOY,
 	MSG_SYNC,
 	MSG_TRUNCATE,
-	MSG_CLEANUP,
 
 	// streams
 	MSG_STREAM,

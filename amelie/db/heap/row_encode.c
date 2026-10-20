@@ -18,7 +18,6 @@
 
 void
 row_encode_column(uint8_t*  pos,
-                  uint32_t  timeline,
                   Flats*    flats,
                   Column*   column,
                   Timezone* tz,
@@ -84,7 +83,7 @@ row_encode_column(uint8_t*  pos,
 		break;
 	case TYPE_VECTOR:
 	{
-		auto flat = flats_at(flats, column, timeline);
+		auto flat = flats_at(flats, column);
 		auto vector = flat_vector_at(flat, *(uint32_t*)pos);
 		encode_vector(buf, column->size_flat / sizeof(float), vector);
 		break;
@@ -110,7 +109,7 @@ row_encode(Row* self, Flats* flats, Columns* columns, Timezone* tz, Buf* buf)
 
 		// value
 		uint8_t* pos = row_column(self, column);
-		row_encode_column(pos, self->timeline, flats, column, tz, buf);
+		row_encode_column(pos, flats, column, tz, buf);
 	}
 	encode_obj_end(buf);
 }

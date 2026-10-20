@@ -44,25 +44,9 @@ catalog_depends(Catalog* self, Rel* rel, Rel* at)
 	switch (rel->type) {
 	case REL_TABLE:
 	{
-		if (at->type == REL_LAYER)
-		{
-			// layer depends on the table
-			auto layer = layer_of(at);
-			dep = layer->table == table_of(rel);
-		} else
 		if (at->type == REL_UDF)
 		{
 			// udf depends on the table
-			auto udf = udf_of(at);
-			dep = self->iface->udf_depends(udf, rel->user, rel->name);
-		}
-		break;
-	}
-	case REL_LAYER:
-	{
-		if (at->type == REL_UDF)
-		{
-			// udf depends on the rel
 			auto udf = udf_of(at);
 			dep = self->iface->udf_depends(udf, rel->user, rel->name);
 		}
@@ -178,13 +162,6 @@ catalog_deps_validate_user(Catalog* self, Str* user, bool error_on_match)
 			// udf depends on the user
 			auto udf = udf_of(at);
 			dep = self->iface->udf_depends(udf, user, NULL);
-			break;
-		}
-		case REL_LAYER:
-		{
-			// layer depends on the user
-			auto layer = layer_of(at);
-			dep = str_compare(&layer->config->table_user, user);
 			break;
 		}
 		default:

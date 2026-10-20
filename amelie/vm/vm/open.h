@@ -17,7 +17,6 @@ struct Open
 {
 	Table*       table;
 	IndexConfig* index;
-	Timeline*    timeline;
 	int          keys_count;
 	bool         point_lookup;
 };

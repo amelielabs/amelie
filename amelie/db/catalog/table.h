@@ -18,7 +18,6 @@ struct Table
 	Rel          rel;
 	Part*        part;
 	PartArg      part_arg;
-	Timelines    timelines;
 	Retention    retention;
 	TableConfig* config;
 	User*        user;
@@ -38,12 +37,6 @@ static inline IndexConfig*
 table_primary(Table* self)
 {
 	return table_config_primary(self->config);
-}
-
-static inline Timeline*
-table_main(Table* self)
-{
-	return &self->timelines.main;
 }
 
 static inline Columns*

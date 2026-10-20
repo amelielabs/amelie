@@ -1977,7 +1977,7 @@ ctable_readv:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 	{
-		flat = flats_at(&r[op->b].part->flats, (Column*)op->c, r[op->b].timeline->timeline);
+		flat = flats_at(&r[op->b].part->flats, (Column*)op->c);
 		value_set_vector(&r[op->a],
 		                 ((Column*)op->c)->size_flat / sizeof(float),
 		                 flat_vector_at(flat, *(uint32_t*)ptr),

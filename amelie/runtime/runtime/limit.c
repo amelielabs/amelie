@@ -41,7 +41,6 @@ limits_names[LIMIT_MAX] =
 	// relations
 	{ "users",          5  },
 	{ "tables",         6  },
-	{ "layers",         6  },
 	{ "indexes",        7  },
 	{ "functions",      9  },
 

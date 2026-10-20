@@ -15,7 +15,6 @@ hot static inline Iterator*
 cursor_open(Part*        self,
             IndexConfig* config,
             bool         point_lookup,
-            Timeline*    timeline,
             Row*         key)
 {
 	// point lookup
@@ -28,7 +27,7 @@ cursor_open(Part*        self,
 		// check heap first
 		it = index_iterator(index);
 		errdefer(iterator_close, it);
-		iterator_open(it, timeline, key);
+		iterator_open(it, key);
 		return it;
 	}
 
@@ -42,6 +41,6 @@ cursor_open(Part*        self,
 		auto index = part_index_find(self, &config->name, true);
 		it = index_iterator(index);
 	}
-	iterator_open(it, timeline, key);
+	iterator_open(it, key);
 	return it;
 }

@@ -69,7 +69,7 @@ copy_row(Parser* self, Columns* columns, Set* values, Csv* csv)
 }
 
 static void
-copy_insert(Parser* self, Table* table, Layer* layer, Str* content)
+copy_insert(Parser* self, Table* table, Str* content)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -86,31 +86,17 @@ copy_insert(Parser* self, Table* table, Layer* layer, Str* content)
 	auto insert  = ast_insert_of(stmt->ast);
 	stmt->ret = &insert->ret;
 
-	// set timeline
-	Timeline* timeline;
-	if (layer)
-		timeline = &layer->config->timeline;
-	else
-		timeline = table_main(table);
-
 	auto columns = table_columns(table);
 	auto target  = target_allocate();
-	target->type          = TARGET_TABLE;
-	target->ast           = stmt->ast;
-	target->from_table    = table;
-	target->from_timeline = timeline;
-	target->columns       = columns;
+	target->type       = TARGET_TABLE;
+	target->ast        = stmt->ast;
+	target->from_table = table;
+	target->columns    = columns;
 	str_set_str(&target->name, &table->config->name);
 	from_add(&insert->from, target);
 
-	// add table/layer to the access list
-	if (layer)
-	{
-		access_add(&self->program->access, &table->rel, PERM_SELECT);
-		access_add(&self->program->access, &layer->rel, PERM_INSERT);
-	} else {
-		access_add(&self->program->access, &table->rel, PERM_INSERT);
-	}
+	// add table to the access list
+	access_add(&self->program->access, &table->rel, PERM_INSERT);
 
 	// prepare result set
 	insert->values = set_cache_create(self->set_cache, &self->program->sets);
@@ -149,13 +135,7 @@ parse_copy_csv(Parser* self, Program* program,
 	case REL_TABLE:
 	{
 		auto table = table_of(ref);
-		copy_insert(self, table, NULL, content);
-		break;
-	}
-	case REL_LAYER:
-	{
-		auto layer = layer_of(ref);
-		copy_insert(self, layer->table, layer, content);
+		copy_insert(self, table, content);
 		break;
 	}
 	default:

@@ -32,13 +32,6 @@ catalog_find_table(Catalog* self, Str* user, Str* name, bool error_if_not_exists
 	                          error_if_not_exists));
 }
 
-static inline Layer*
-catalog_find_layer(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
-{
-	return layer_of(rels_find(&self->rels, REL_LAYER, user, name,
-	                          error_if_not_exists));
-}
-
 static inline Udf*
 catalog_find_udf(Catalog* self, Str* user, Str* name, bool error_if_not_exists)
 {

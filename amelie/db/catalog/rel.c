@@ -40,10 +40,6 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 		return false;
 	}
 
-	// validate type
-	if (type == REL_TABLE && rel->type == REL_LAYER)
-		type = REL_LAYER;
-
 	if (rel->type != type)
 		error("relation '{str}': is not a {s}", name, rel_type_of(type));
 
@@ -77,9 +73,6 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 	// force commit pending prepared transactions
 	if (type == REL_TABLE)
 		self->iface->user_sync(self, table_of(rel)->user);
-	else
-	if (type == REL_LAYER)
-		self->iface->user_sync(self, layer_of(rel)->table->user);
 
 	// self
 	catalog_drop_of(self, tr, rel);
@@ -148,10 +141,6 @@ catalog_rename(Catalog* self,
 			error("{s} '{str}': not exists", rel_type_of(type), name);
 		return false;
 	}
-
-	// validate type
-	if (type == REL_TABLE && rel->type == REL_LAYER)
-		type = REL_LAYER;
 
 	if (rel->type != type)
 		error("relation '{str}': is not a {s}", name, rel_type_of(type));
@@ -230,11 +219,6 @@ catalog_grant_mask(RelType type)
 		perms_all =
 			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
 			PERM_DELETE | PERM_CREATE_TABLE;
-		break;
-	case REL_LAYER:
-		perms_all =
-			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-			PERM_DELETE;
 		break;
 	case REL_UDF:
 		perms_all =
@@ -412,10 +396,6 @@ catalog_describe(Catalog* self,
 			error("{s} '{str}': not exists", rel_type_of(type), name);
 		return false;
 	}
-
-	// validate type
-	if (type == REL_TABLE && rel->type == REL_LAYER)
-		type = REL_LAYER;
 
 	if (rel->type != type)
 		error("relation '{str}': is not a {s}", name, rel_type_of(type));

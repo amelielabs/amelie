@@ -326,14 +326,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = table_retention(self, tr, &user, &name, value, if_exists);
 		break;
 	}
-	case DDL_LAYER_CREATE:
-	{
-		auto config = layer_op_create_read(op);
-		defer(layer_config_free, config);
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = layer_create(self, tr, config, if_not_exists);
-		break;
-	}
 	case DDL_INDEX_CREATE:
 	{
 		// create index has different processing path and must be

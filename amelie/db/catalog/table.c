@@ -61,14 +61,10 @@ table_allocate(Catalog*     catalog,
 	arg->memory    = memory;
 	arg->columns   = &self->config->columns;
 	arg->retention = &self->retention;
-	arg->timelines = &self->timelines;
 
 	// retention
 	retention_init(&self->retention);
 	retention_set(&self->retention, self->config->retention);
-
-	// timelines
-	timelines_init(&self->timelines, &self->rel);
 
 	// set relation
 	auto rel = &self->rel;
@@ -102,8 +98,7 @@ table_open(Table* self)
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
-		auto flat = flat_allocate(column, 0);
-		flats_add_column(&part->flats);
+		auto flat = flat_allocate(column);
 		flats_add(&part->flats, flat);
 	}
 

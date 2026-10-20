@@ -20,7 +20,6 @@ typedef void (*IteratorClose)(Iterator*);
 struct Iterator
 {
 	Row*          current;
-	Timeline*     timeline;
 	IteratorNext  next;
 	IteratorOpen  open;
 	IteratorClose close;
@@ -42,29 +41,12 @@ always_inline static inline void
 iterator_next(Iterator* self)
 {
 	self->next(self);
-	if (! self->timeline)
-		return;
-	while (self->current)
-	{
-		if (row_visible(self->current, self->timeline))
-			break;
-		self->next(self);
-	}
 }
 
 static inline bool
-iterator_open(Iterator* self, Timeline* timeline, Row* key)
+iterator_open(Iterator* self, Row* key)
 {
-	self->timeline = timeline;
-	auto match = self->open(self, key);
-	if (! self->current)
-		return false;
-	if (! timeline)
-		return match;
-	if (row_visible(self->current, timeline))
-		return match;
-	iterator_next(self);
-	return false;
+	return self->open(self, key);
 }
 
 static inline void
@@ -77,8 +59,7 @@ iterator_close(Iterator* self)
 static inline void
 iterator_reset(Iterator* self)
 {
-	self->current  = NULL;
-	self->timeline = NULL;
+	self->current = NULL;
 }
 
 static inline void
@@ -87,9 +68,8 @@ iterator_init(Iterator*     self,
               IteratorClose close,
               IteratorNext  next)
 {
-	self->current  = NULL;
-	self->timeline = NULL;
-	self->next     = next;
-	self->open     = open;
-	self->close    = close;
+	self->current = NULL;
+	self->next    = next;
+	self->open    = open;
+	self->close   = close;
 }

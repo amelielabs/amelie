@@ -51,7 +51,6 @@ struct Target
 	union {
 		struct {
 			Table*       from_table;
-			Timeline*    from_timeline;
 			IndexConfig* from_index;
 		};
 		AstList* from_group_by;

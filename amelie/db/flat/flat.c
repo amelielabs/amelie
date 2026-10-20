@@ -16,7 +16,7 @@
 #include <amelie_flat.h>
 
 Flat*
-flat_allocate(Column* column, uint32_t timeline)
+flat_allocate(Column* column)
 {
 	auto self = (Flat*)am_malloc(sizeof(Flat));
 	self->dim = column->size_flat / sizeof(float);
@@ -52,9 +52,7 @@ flat_allocate(Column* column, uint32_t timeline)
 	self->header = (FlatHeader*)storage->meta->data;
 	self->header->list_free = UINT32_MAX;
 
-	self->column        = column;
-	self->timeline      = timeline;
-	self->timeline_next = NULL;
+	self->column = column;
 	return self;
 }
 

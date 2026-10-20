@@ -15,6 +15,7 @@ typedef struct LogIf LogIf;
 typedef struct LogOp LogOp;
 typedef struct Log   Log;
 typedef struct Part  Part;
+typedef struct Rel   Rel;
 
 struct LogIf
 {

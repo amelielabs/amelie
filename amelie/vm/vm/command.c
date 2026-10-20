@@ -249,7 +249,7 @@ cmatching(Vm* self, Op* op)
 		error("MATCHING: vector dimension mismatch");
 
 	// create matching context as store
-	auto flat = flats_at(&cursor->part->flats, column, cursor->timeline->timeline);
+	auto flat = flats_at(&cursor->part->flats, column);
 	auto matching = matching_create(columns, cursor->part->heap, flat, op->d);
 	value_set_store(reg_at(r, op->a), &matching->store);
 
@@ -333,9 +333,7 @@ ctable_open(Vm* self, Op* op)
 	{
 		auto keys = &open->index->keys;
 		auto keys_count = open->keys_count;
-		key = row_create_key(buf, open->timeline,
-		                     keys,
-		                     stack_at(&self->stack, keys_count),
+		key = row_create_key(buf, keys, stack_at(&self->stack, keys_count),
 		                     keys_count);
 		stack_popn(&self->stack, keys_count);
 
@@ -345,15 +343,11 @@ ctable_open(Vm* self, Op* op)
 	}
 
 	// create iterator
-	auto it = cursor_open(part,
-	                      open->index,
-	                      open->point_lookup,
-	                      open->timeline,
-	                      key);
+	auto it = cursor_open(part, open->index, open->point_lookup, key);
 
 	// set cursor
 	auto cursor = reg_at(&self->r, op->a);
-	value_set_cursor(cursor, open->table, open->timeline, part, it);
+	value_set_cursor(cursor, open->table, part, it);
 
 	// jmp to next op if has data
 	if (likely(iterator_has(cursor->cursor)))
@@ -366,11 +360,10 @@ ctable_open(Vm* self, Op* op)
 hot void
 cinsert(Vm* self, Op* op)
 {
-	// [table*, timeline*]
-	auto table    = (Table*)op->a;
-	auto timeline = (Timeline*)op->b;
-	auto part     = table->part;
-	auto columns  = table_columns(table);
+	// [table*]
+	auto table   = (Table*)op->a;
+	auto part    = table->part;
+	auto columns = table_columns(table);
 
 	auto store      = *(Store**)self->code_arg->start;
 	auto store_seed = *(uint64_t*)(self->code_arg->start + sizeof(Store**));
@@ -392,14 +385,14 @@ cinsert(Vm* self, Op* op)
 		{
 			row_identity(columns->identity, self->refs, value, &identity, &random, store_time);
 
-			auto row = row_create(part, timeline, columns, value, self->refs, &identity);
+			auto row = row_create(part, columns, value, self->refs, &identity);
 			part_insert(part, self->tr, row);
 		}
 	} else
 	{
 		for (; (value = store_iterator_at(it)); store_iterator_next(it))
 		{
-			auto row = row_create(part, timeline, columns, value, self->refs, &identity);
+			auto row = row_create(part, columns, value, self->refs, &identity);
 			part_insert(part, self->tr, row);
 		}
 	}
@@ -408,7 +401,7 @@ cinsert(Vm* self, Op* op)
 hot void
 ctable_prepare(Vm* self, Op* op)
 {
-	// [cursor, table*, timeline*]
+	// [cursor, table*]
 	auto cursor = reg_at(&self->r, op->a);
 	auto table  = (Table*)op->b;
 	auto part   = table->part;
@@ -422,7 +415,7 @@ ctable_prepare(Vm* self, Op* op)
 		it = iterator_heap_allocate(part->heap);
 
 	// set cursor
-	value_set_cursor(cursor, table, (Timeline*)op->c, part, it);
+	value_set_cursor(cursor, table, part, it);
 
 	// prepare upsert state
 	self->upsert = self->code_arg->start;
@@ -471,7 +464,7 @@ cupsert(Vm* self, Op* op)
 		}
 
 		// create row
-		auto row = row_create(cursor->part, cursor->timeline, columns,
+		auto row = row_create(cursor->part, columns,
 		                      value, self->refs,
 		                      &identity);
 
@@ -518,7 +511,7 @@ cupdate(Vm* self, Op* op)
 	assert(cursor->type == TYPE_CURSOR);
 	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
-	auto row = row_update(cursor->part, cursor->timeline,
+	auto row = row_update(cursor->part,
 	                      table_columns(cursor->table), row_src,
 	                      row_values, op->b);
 	part_update(cursor->part, self->tr, cursor->cursor, row);

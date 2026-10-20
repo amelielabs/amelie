@@ -472,19 +472,10 @@ op_dump(Program* self, Code* code, Buf* buf)
 			break;
 		case CINSERT:
 		{
-			auto table    = (Table*)op->a;
-			auto timeline = (Timeline*)op->b;
-			if (timeline->rel->type == REL_TABLE)
-				op_write(buf, op, false, false, false,
-				         "{str}.{str}",
-				         &table->config->user, &table->config->name);
-			else
-			if (timeline->rel->type == REL_LAYER)
-				op_write(buf, op, false, false, false,
-				         "{str}.{str} [{str}.{str}]",
-				         &table->config->user, &table->config->name,
-				         timeline->rel->user,
-				         timeline->rel->name);
+			auto table = (Table*)op->a;
+			op_write(buf, op, false, false, false,
+			         "{str}.{str}",
+			         &table->config->user, &table->config->name);
 			break;
 		}
 		case CTABLE_OPEN:
@@ -501,25 +492,12 @@ op_dump(Program* self, Code* code, Buf* buf)
 				index_name = open->index->name;
 			else
 				str_set(&index_name, "heap", 4);
-
-			auto timeline = open->timeline;
-			if (timeline->rel->type == REL_TABLE)
-				op_write(buf, op, true, true, true,
-				         "{str}.{str} ({str}) {buf}",
-				         &open->table->config->user,
-				         &open->table->config->name,
-				         &index_name,
-				         desc);
-			else
-			if (timeline->rel->type == REL_LAYER)
-				op_write(buf, op, true, true, true,
-				         "{str}.{str} ({str}) [{str}.{str}] {buf}",
-				         &open->table->config->user,
-				         &open->table->config->name,
-				         &index_name,
-				         timeline->rel->user,
-				         timeline->rel->name,
-				         desc);
+			op_write(buf, op, true, true, true,
+			         "{str}.{str} ({str}) {buf}",
+			         &open->table->config->user,
+			         &open->table->config->name,
+			         &index_name,
+			         desc);
 			break;
 		}
 		case CMATCHING:
@@ -529,21 +507,11 @@ op_dump(Program* self, Code* code, Buf* buf)
 		}
 		case CTABLE_PREPARE:
 		{
-			auto table    = (Table*)op->b;
-			auto timeline = (Timeline*)op->c;
-			if (timeline->rel->type == REL_TABLE)
-				op_write(buf, op, true, false, false,
-				         "{str}.{str}",
-				         &table->config->user,
-				         &table->config->name);
-			else
-			if (timeline->rel->type == REL_LAYER)
-				op_write(buf, op, true, false, false,
-				         "{str}.{str} [{str}.{str}]",
-				         &table->config->user,
-				         &table->config->name,
-				         timeline->rel->user,
-				         timeline->rel->name);
+			auto table = (Table*)op->b;
+			op_write(buf, op, true, false, false,
+			         "{str}.{str}",
+			         &table->config->user,
+			         &table->config->name);
 			break;
 		}
 		case CTABLE_READB:

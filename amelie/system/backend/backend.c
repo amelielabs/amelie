@@ -53,15 +53,6 @@ backend_rpc(Rpc* rpc, void* arg)
 		part_truncate(table->part);
 		break;
 	}
-	case MSG_CLEANUP:
-	{
-		PartCleanup* cleanup = rpc->arg;
-		defer(part_cleanup_free, cleanup);
-		// todo: cancel all pending streams
-			// streaming_cancel(cleanup->part);
-		part_cleanup(cleanup);
-		break;
-	}
 	case MSG_STOP:
 	{
 		// shutdown pods

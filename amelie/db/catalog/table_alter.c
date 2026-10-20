@@ -105,14 +105,7 @@ column_add_if_commit(Log* self, LogOp* op)
 	Column* column = op->iface_arg;
 	if (column->type != TYPE_VECTOR)
 		return;
-
-	// create vector columns for each layer
-	part_column_create(table->part, column, 0);
-	list_foreach(&table->timelines.list)
-	{
-		auto timeline = list_at(Timeline, link);
-		part_column_create(table->part, column, timeline->timeline);
-	}
+	part_column_create(table->part, column);
 }
 
 static void
@@ -164,12 +157,6 @@ table_column_add(Catalog* self,
 	// ensure only one identity column defined
 	if (column->constraints.identity && table->config->columns.identity)
 		error("table '{str}': already has identity column", name);
-
-	// ensure table has no side tables to support vector column
-	if (column->type == TYPE_VECTOR)
-		if (table->timelines.list_count > 0)
-			error("table '{str}': vector columns cannot be used together with layers",
-			      name);
 
 	// add new column
 	auto column_new = column_copy(column);

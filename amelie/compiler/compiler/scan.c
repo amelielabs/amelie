@@ -128,7 +128,6 @@ scan_index(Scan* self, Target* target)
 	int  open_offset;
 	auto open = open_create(cp->code_data, &open_offset);
 	open->table        = table;
-	open->timeline     = target->from_timeline;
 	open->index        = index;
 	open->keys_count   = keys_count;
 	open->point_lookup = point_lookup;
@@ -194,7 +193,6 @@ scan_heap(Scan* self, Target* target)
 	int  open_offset;
 	auto open = open_create(cp->code_data, &open_offset);
 	open->table        = table;
-	open->timeline     = target->from_timeline;
 	open->index        = NULL;
 	open->keys_count   = 0;
 	open->point_lookup = false;

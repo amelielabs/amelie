@@ -17,7 +17,7 @@
 #include <amelie_value.h>
 
 hot Row*
-row_create_key(Buf* buf, Timeline* timeline, Keys* self, Value* values, int count)
+row_create_key(Buf* buf, Keys* self, Value* values, int count)
 {
 	// create a row which has only key columns (others are set to NULL)
 	int size = 0;
@@ -46,7 +46,7 @@ row_create_key(Buf* buf, Timeline* timeline, Keys* self, Value* values, int coun
 	}
 
 	auto     columns_count = self->columns->count;
-	auto     row = row_allocate_buf(buf, timeline->timeline, columns_count, size);
+	auto     row = row_allocate_buf(buf, columns_count, size);
 	uint8_t* pos = row_data(row, columns_count);
 	list_foreach(&self->columns->list)
 	{
@@ -160,7 +160,7 @@ row_create_vector(Part*    part,
                   Value*   value,
                   int64_t* delta)
 {
-	auto flat = flats_at(&part->flats, column, row->timeline);
+	auto flat = flats_at(&part->flats, column);
 
 	auto current = flat->storage.current;
 	auto id = flat_add(flat, heap_page_of(row)->id, row->offset);
@@ -176,12 +176,11 @@ row_create_vector(Part*    part,
 }
 
 hot Row*
-row_create(Part*     part,
-           Timeline* timeline,
-           Columns*  columns,
-           Value*    values,
-           Value*    refs,
-           Value*    identity)
+row_create(Part*    part,
+           Columns* columns,
+           Value*   values,
+           Value*   refs,
+           Value*   identity)
 {
 	// calculate row size
 	auto size = 0;
@@ -218,7 +217,7 @@ row_create(Part*     part,
 
 	// create and write row
 	int64_t  delta = 0;
-	auto     row   = row_allocate(part->heap, timeline->timeline, columns->count, size, &delta);
+	auto     row   = row_allocate(part->heap, columns->count, size, &delta);
 	uint8_t* pos   = row_data(row, columns->count);
 	list_foreach(&columns->list)
 	{
@@ -330,7 +329,6 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 
 hot Row*
 row_update(Part*     part,
-           Timeline* timeline,
            Columns*  columns,
            Row*      origin,
            Value*    values,
@@ -343,7 +341,7 @@ row_update(Part*     part,
 
 	int64_t  delta    = 0;
 	auto     row_size = row_update_prepare(origin, columns, values, count);
-	auto     row      = row_allocate(part->heap, timeline->timeline, columns->count, row_size, &delta);
+	auto     row      = row_allocate(part->heap, columns->count, row_size, &delta);
 	uint8_t* pos      = row_data(row, columns->count);
 
 	auto order = 0;
@@ -395,7 +393,7 @@ row_update(Part*     part,
 		case TYPE_VECTOR:
 		{
 			// create a new vector copy
-			auto flat = flats_at(&part->flats, column, timeline->timeline);
+			auto flat = flats_at(&part->flats, column);
 
 			auto current = flat->storage.current;
 			auto id = flat_add(flat, heap_page_of(row)->id, row->offset);

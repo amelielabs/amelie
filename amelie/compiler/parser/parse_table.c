@@ -361,86 +361,6 @@ parse_columns(Stmt* self, TableConfig* config)
 	}
 }
 
-static void
-parse_table_create_layer(Stmt* self, Str* user, Str* name)
-{
-	// CREATE TABLE [IF NOT EXISTS] name ON name
-	// [DESCRIPTION]
-	// [GRANT]
-	// [TIMELINE]
-	//
-	auto stmt = ast_table_create_of(self->ast);
-
-	// [user.]name
-	Str target_user;
-	Str target;
-	auto path = parse_target(self, &target_user, &target);
-
-	// find target
-	auto table = catalog_find_table(&share()->db->catalog, &target_user, &target, true);
-	if (! table)
-		stmt_error(self, path, "table not found");
-
-	// calculate layer id
-	uint32_t id = table->timelines.max + 1;
-
-	// create layer config
-	auto config = layer_config_allocate();
-	stmt->config_layer = config;
-	layer_config_set_user(config, user);
-	layer_config_set_name(config, name);
-	layer_config_set_table_user(config, &table->config->user);
-	layer_config_set_table(config, &table->config->name);
-
-	// set layer timeline
-	auto timeline = &config->timeline;
-	timeline_set_timeline(timeline, id);
-
-	// set options
-	for (;;)
-	{
-		// name value
-		auto name = stmt_next_shadow(self);
-		if (name->id != KNAME)
-		{
-			stmt_push(self, name);
-			break;
-		}
-
-		// DESCRIPTION string
-		if (str_is_case(&name->string, "description", 11))
-		{
-			auto text = stmt_expect(self, KSTRING);
-			layer_config_set_description(config, &text->string);
-			continue;
-		}
-
-		// TIMELINE int
-		if (str_is_case(&name->string, "timeline", 8))
-		{
-			auto value = stmt_expect(self, KINT);
-			if (value->integer <= 0)
-				stmt_error(self, value, "invalid timeline");
-
-			// allow to set timeline only during recover
-			if (opt_int_of(&state()->recover) != RECOVER_CHECKPOINT)
-				stmt_error(self, value, "timeline cannot be changed now");
-
-			timeline_set_timeline(timeline, value->integer);
-			continue;
-		}
-
-		// GRANT name, ... TO user
-		if (str_is_case(&name->string, "grant", 5))
-		{
-			parse_grant_to_inline(self, &config->grants);
-			continue;
-		}
-
-		stmt_error(self, name, "unrecognized option");
-	}
-}
-
 void
 parse_table_create(Stmt* self)
 {
@@ -461,13 +381,6 @@ parse_table_create(Stmt* self)
 	Str user;
 	Str name;
 	parse_target(self, &user, &name);
-
-	// [ON name]
-	if (stmt_if(self, KON))
-	{
-		parse_table_create_layer(self, &user, &name);
-		return;
-	}
 
 	// create table config
 	auto config = table_config_allocate();

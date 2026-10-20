@@ -54,8 +54,6 @@ parse_stmt_free(Stmt* stmt)
 		auto ast = ast_table_create_of(stmt->ast);
 		if (ast->config)
 			table_config_free(ast->config);
-		if (ast->config_layer)
-			layer_config_free(ast->config_layer);
 		break;
 	}
 	case STMT_ALTER_TABLE:

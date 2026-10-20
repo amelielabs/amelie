@@ -199,40 +199,11 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 		}
 
 		// FROM table
-		target->type          = TARGET_TABLE;
-		target->from_table    = table;
-		target->from_timeline = table_main(table);
-		target->columns       = &table->config->columns;
+		target->type       = TARGET_TABLE;
+		target->from_table = table;
+		target->columns    = &table->config->columns;
 		str_set_str(&target->name, rel->name);
 		access_add(&self->parser->program->access, &table->rel, perms);
-
-		// [INDEX name]
-		if (stmt_if(self, KINDEX))
-		{
-			// name
-			auto name_index = stmt_next_shadow(self);
-			if (name_index->id != KNAME)
-				stmt_error(self, name_index, "index name expected");
-
-			target->from_index = table_index_find(target->from_table, &name_index->string, false);
-			if (! target->from_index)
-				stmt_error(self, name_index, "index not found");
-		}
-		break;
-	}
-	case REL_LAYER:
-	{
-		auto layer = layer_of(rel);
-		auto table = layer->table;
-		target->type          = TARGET_TABLE;
-		target->from_table    = table;
-		target->from_timeline = &layer->config->timeline;
-		target->columns       = &table->config->columns;
-		str_set_str(&target->name, rel->name);
-		// adding layer relation to the access list for dependency
-		// tracking and permissions check
-		access_add(&self->parser->program->access, &table->rel, PERM_SELECT);
-		access_add(&self->parser->program->access, &layer->rel, perms);
 
 		// [INDEX name]
 		if (stmt_if(self, KINDEX))

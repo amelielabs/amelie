@@ -35,7 +35,6 @@ struct Value
 		struct {
 			Iterator*  cursor;
 			Table*     table;
-			Timeline*  timeline;
 			Part*      part;
 		};
 		struct {
@@ -216,13 +215,12 @@ value_set_store(Value* self, Store* store)
 }
 
 always_inline hot static inline void
-value_set_cursor(Value* self, Table* table, Timeline* timeline, Part* part, Iterator* cursor)
+value_set_cursor(Value* self, Table* table, Part* part, Iterator* cursor)
 {
-	self->type     = TYPE_CURSOR;
-	self->table    = table;
-	self->timeline = timeline;
-	self->part     = part;
-	self->cursor   = cursor;
+	self->type   = TYPE_CURSOR;
+	self->table  = table;
+	self->part   = part;
+	self->cursor = cursor;
 }
 
 always_inline hot static inline void

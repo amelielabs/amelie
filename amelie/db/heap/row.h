@@ -17,8 +17,8 @@ struct Row
 {
 	// 16 bytes
 
-	// timeline
-	uint64_t timeline:    32;
+	// unused
+	uint64_t unused:      32;
 
 	// row
 	uint64_t columns:     16;
@@ -50,12 +50,11 @@ row_init(Row* self)
 
 always_inline hot static inline void
 row_prepare(Row*     self,
-            uint32_t timeline,
             int      columns,
             bool     byte,
             int      size)
 {
-	self->timeline = timeline;
+	self->unused   = 0;
 	self->columns  = columns;
 	self->byte     = byte;
 	self->deleted  = false;

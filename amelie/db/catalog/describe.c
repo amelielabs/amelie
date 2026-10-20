@@ -111,7 +111,7 @@ describe_column(Column* self, Buf* buf, int flags)
 
 		auto value = buf_create();
 		defer_buf(value);
-		row_encode_column(cons->value.start, 0, NULL, self, runtime()->timezone, value);
+		row_encode_column(cons->value.start, NULL, self, runtime()->timezone, value);
 
 		auto pos = value->start;
 		json_export(buf, runtime()->timezone, &pos);
@@ -187,7 +187,8 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 		auto column = list_at(Column, link);
 		buf_write(buf, "  ", 2);
 		describe_column(column, buf, flags);
-		buf_write(buf, ",\n", 2);
+		if (! list_is_last(&config->columns.list, &column->link))
+			buf_write(buf, ",\n", 2);
 	}
 
 	// primary key
@@ -195,7 +196,7 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 	if (primary)
 	{
 		auto keys = &primary->keys;
-		buf_format(buf, "  primary key (");
+		buf_format(buf, ",\n  primary key (");
 		for (auto at = 0; at < keys->count; at++)
 		{
 			auto key = keys_at(keys, at);
@@ -210,6 +211,9 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 			buf_write(buf, " using hash\n", 12);
 		else
 			buf_write(buf, " using tree\n", 12);
+	} else {
+		// last column
+		buf_write(buf, "\n", 1);
 	}
 	buf_write(buf, ")", 1);
 
@@ -254,40 +258,6 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 			buf_write(buf, " using hash", 11);
 		buf_write(buf, "\n", 1);
 	}
-
-	// grants
-	describe_grants(&self->config->grants, buf);
-}
-
-static void
-describe_layer(Layer* self, Buf* buf, Str* user, int flags)
-{
-	auto verbose = !flags_has(flags, FMINIMAL);
-	auto config = self->config;
-
-	// create table
-	if (!verbose && str_compare_case(self->rel.user, user))
-		buf_format(buf, "create table {str}",  &config->name);
-	else
-		buf_format(buf, "create table {str}.{str}",
-		           &config->user, &config->name);
-
-	// on
-	if (!verbose && str_compare_case(&config->table_user, user))
-		buf_format(buf, " on {str}\n", &config->table);
-	else
-		buf_format(buf, " on {str}.{str}\n",
-		           &config->table_user, &config->table);
-
-	// description
-	if (! str_empty(&config->description))
-		buf_format(buf, "  description {qstr}\n", &config->description);
-
-	if (! verbose)
-		return;
-
-	// timeline
-	buf_format(buf, "  timeline {i64}\n", config->timeline.timeline);
 
 	// grants
 	describe_grants(&self->config->grants, buf);
@@ -437,9 +407,6 @@ describe_text(Rel* self, Buf* buf, Str* user, int flags)
 	case REL_TABLE:
 		describe_table(table_of(self), buf, user, flags);
 		break;
-	case REL_LAYER:
-		describe_layer(layer_of(self), buf, user, flags);
-		break;
 	case REL_UDF:
 		describe_udf(udf_of(self), buf, user, flags);
 		break;
@@ -494,18 +461,7 @@ describe_manifest(Rel* self, Column* column, Buf* buf)
 	// pages
 	encode_raw(buf, "pages", 5);
 
-	uint32_t timeline = 0;
-	Table*   table;
-	Layer*   layer = NULL;
-	if (self->type == REL_LAYER)
-	{
-		layer    = layer_of(self);
-		table    = layer->table;
-		timeline = layer->config->timeline.timeline;
-	} else
-	{
-		table = table_of(self);
-	}
+	auto table = table_of(self);
 	auto part = table->part;
 
 	// [id, ...]
@@ -513,7 +469,7 @@ describe_manifest(Rel* self, Column* column, Buf* buf)
 
 	Storage* storage;
 	if (column)
-		storage = &flats_at(&part->flats, column, timeline)->storage;
+		storage = &flats_at(&part->flats, column)->storage;
 	else
 		storage = &part->heap->storage;
 
@@ -545,20 +501,12 @@ describe_rels(Rels* rels, RelType type, Buf* schema, Buf* manifest)
 		describe_text(rel, schema, &user, 0);
 		buf_write(schema, "\n\n", 2);
 
-		if (rel->type != REL_TABLE && rel->type != REL_LAYER)
+		if (rel->type != REL_TABLE)
 			continue;
 
-		// heap
-		Columns* columns;
-		if (rel->type == REL_TABLE)
-		{
-			describe_manifest(rel, NULL, manifest);
-			columns = table_columns(table_of(rel));
-		} else {
-			columns = table_columns(layer_of(rel)->table);
-		}
-
-		// vector columns stores
+		// heap and vector stores
+		describe_manifest(rel, NULL, manifest);
+		auto columns = table_columns(table_of(rel));
 		if (! columns->count_flat)
 			continue;
 		list_foreach(&columns->list)
@@ -600,10 +548,9 @@ describe_catalog(Catalog* self, Buf* schema, Buf* manifest)
 	// alter superuser
 	describe_amelie(self, schema);
 
-	// users, tables, layers, udfs
+	// users, tables, udfs
 	describe_rels(&self->users, REL_USER, schema, NULL);
 	describe_rels(&self->rels, REL_TABLE, schema, manifest);
-	describe_rels(&self->rels, REL_LAYER, schema, manifest);
 	describe_rels(&self->rels, REL_UDF, schema, NULL);
 
 	encode_array_end(manifest);

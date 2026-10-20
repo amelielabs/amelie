@@ -30,9 +30,8 @@ emit_matching(Compiler* self, Ast* ast)
 	target_set_origin(target, self->origin);
 
 	// CTABLE_PREPARE
-	auto rcursor = op3pin(self, CTABLE_PREPARE, TYPE_CURSOR,
-	                      (intptr_t)target->from_table,
-	                      (intptr_t)target->from_timeline);
+	auto rcursor = op2pin(self, CTABLE_PREPARE, TYPE_CURSOR,
+	                      (intptr_t)target->from_table);
 
 	// CMATCHING(rset, cursor, column, top)
 	auto rset = op4pin(self, CMATCHING, TYPE_STORE,
