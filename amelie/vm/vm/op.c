@@ -350,10 +350,6 @@ OpDesc ops[] =
 	{ CCALL, "call" },
 	{ CCALL_UDF, "call_udf" },
 
-	// locking
-	{ CLOCK, "lock" },
-	{ CUNLOCK, "unlock" },
-
 	{ CRET, "ret" },
 
 	{ 0, NULL }
@@ -590,12 +586,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto value = (Value*)op->b;
 			op_write(buf, op, true, false, true, "{s}",
 			         type_of(value->type));
-			break;
-		}
-		case CLOCK:
-		case CUNLOCK:
-		{
-			op_write(buf, op, false, false, false, NULL);
 			break;
 		}
 		case CRET:

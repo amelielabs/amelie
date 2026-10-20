@@ -32,7 +32,3 @@ void crepl_unfollow(Vm*, Op*);
 // ddl
 void cddl(Vm*, Op*);
 void cddl_create_index(Vm*, Op*);
-
-// locking
-void clock_rel(Vm*, Op*);
-void cunlock_rel(Vm*, Op*);

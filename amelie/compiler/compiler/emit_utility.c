@@ -432,28 +432,6 @@ emit_utility(Compiler* self)
 		break;
 	}
 
-	// locking
-	case STMT_CREATE_LOCK:
-	{
-		auto arg = ast_lock_create_of(stmt->ast);
-		auto name      = code_data_add_string(self->code_data, &arg->name);
-		auto name_rel  = code_data_add_string(self->code_data, &arg->name_rel);
-		auto name_lock = code_data_add_string(self->code_data, &arg->name_lock);
-		op4(self, CLOCK, name, name_rel, name_lock, arg->if_not_exists);
-
-		lock_catalog = LOCK_SHARED;
-		break;
-	}
-	case STMT_DROP_LOCK:
-	{
-		auto arg = ast_lock_drop_of(stmt->ast);
-		auto name = code_data_add_string(self->code_data, &arg->name);
-		op2(self, CUNLOCK, name, arg->if_exists);
-
-		lock_catalog = LOCK_SHARED;
-		break;
-	}
-
 	// ddl
 	default:	
 	{

@@ -287,11 +287,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_FUNCTION;
 			parse_function_create(self, or_replace);
 		} else
-		if (stmt_if(self, KLOCK))
-		{
-			self->id = STMT_CREATE_LOCK;
-			parse_lock_create(self);
-		} else
 		{
 			stmt_error(self, NULL, "relation type expected");
 		}
@@ -330,11 +325,6 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
-		} else
-		if (stmt_if(self, KLOCK))
-		{
-			self->id = STMT_DROP_LOCK;
-			parse_lock_drop(self);
 		} else
 		{
 			stmt_error(self, NULL, "relation type expected");

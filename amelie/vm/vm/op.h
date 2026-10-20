@@ -343,10 +343,6 @@ enum
 	CCALL,
 	CCALL_UDF,
 
-	// locking
-	CLOCK,
-	CUNLOCK,
-
 	CRET
 };
 
