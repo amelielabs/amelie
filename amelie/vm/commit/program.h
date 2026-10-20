@@ -22,7 +22,7 @@ struct Program
 	Buf      explain;
 	SetList  sets;
 	int      send_last;
-	bool     snapshot;
+	bool     distributed;
 	bool     utility;
 	bool     ro;
 	LockId   lock_catalog;
@@ -34,7 +34,7 @@ program_allocate(void)
 {
 	auto self = (Program*)am_malloc(sizeof(Program));
 	self->send_last    = -1;
-	self->snapshot     = false;
+	self->distributed  = false;
 	self->utility      = false;
 	self->ro           = false;
 	self->lock_catalog = LOCK_SHARED;
@@ -65,7 +65,7 @@ static inline void
 program_reset(Program* self, SetCache* cache)
 {
 	self->send_last    = -1;
-	self->snapshot     = false;
+	self->distributed  = false;
 	self->utility      = false;
 	self->ro           = false;
 	self->lock_catalog = LOCK_SHARED;

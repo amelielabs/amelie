@@ -865,14 +865,14 @@ compiler_analyze(Compiler* self)
 {
 	auto program = self->program;
 	auto access = &program->access;
-	program->ro       = true;
-	program->snapshot = false;
+	program->ro          = true;
+	program->distributed = false;
 	User* user = NULL;
 	for (auto i = 0; i < access->list_count; i++)
 	{
 		auto record = access_at(access, i);
 
-		// set snapshot, if program does cross user access
+		// set distributed, if program does cross user access
 		auto rel = record->rel;
 		if (rel->type == REL_TABLE)
 		{
@@ -881,7 +881,7 @@ compiler_analyze(Compiler* self)
 				user = table->user;
 			} else {
 				if (user != table->user)
-					program->snapshot = true;
+					program->distributed = true;
 			}
 		}
 

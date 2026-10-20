@@ -63,31 +63,50 @@ from_add(From* self, Target* target)
 	target->from = self;
 }
 
-static inline Target*
-from_first(From* self)
-{
-	return self->list;
-}
-
 static inline bool
 from_empty(From* self)
 {
 	return !self->count;
 }
 
-static inline bool
-from_is_expr(From* self)
+static inline Target*
+from_first(From* self)
+{
+	return self->list;
+}
+
+static inline Target*
+from_first_table(From* self)
 {
 	for (auto target = self->list; target; target = target->next)
 		if (target->type == TARGET_TABLE)
-			return false;
-	return true;
+			return target;
+	return NULL;
+}
+
+static inline bool
+from_is_expr(From* self)
+{
+	return !from_first_table(self);
 }
 
 static inline bool
 from_is_join(From* self)
 {
 	return self->count > 1;
+}
+
+static inline Target*
+from_match_user_mismatch(From* self, Str* user)
+{
+	for (auto target = self->list; target; target = target->next)
+	{
+		if (target->type != TARGET_TABLE)
+			continue;
+		if (! str_compare(target->from_table->rel.user, user))
+			return target;
+	}
+	return NULL;
 }
 
 static inline Target*

@@ -85,14 +85,14 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 	} else
 	{
 		// match overlapping transactions
-		auto is_snapshot = gtr->program->snapshot;
+		auto is_distributed = gtr->program->distributed;
 		list_foreach_reverse(&self->list)
 		{
 			auto ref = list_at(Gtr, link);
 
 			// find overlapping users
 			bool overlaps;
-			if (is_snapshot)
+			if (is_distributed)
 				overlaps = dispatches_overlaps(&ref->dispatches, &gtr->dispatches);
 			else
 				overlaps = dispatches_overlaps_dispatch(&ref->dispatches, dispatch);
@@ -154,10 +154,10 @@ gtrs_send(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 
 	if (first)
 	{
-		// handle snapshot by creating transaction for every user
+		// handle distributed by creating transaction for every user
 		// to handle multi-statement access
 		int ltrs_count;
-		if (gtr->program->snapshot)
+		if (gtr->program->distributed)
 		{
 			dispatches_snapshot(dispatches, &gtr->program->access);
 			ltrs_count = dispatches->ltrs_count;

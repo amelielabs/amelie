@@ -280,6 +280,14 @@ parse_from_add(Stmt* self, From* from, int perms,
 		columns_add(target->columns, column);
 	}
 
+	// ensure that table access is unique to one tenant
+	if (target->type == TARGET_TABLE)
+	{
+		// find first table target that mismatch user
+		if (block_find_distributed(from, target->from_table->rel.user))
+			stmt_error(self, NULL, "cross user subqueries and joins are not permitted");
+	}
+
 	// add target
 	from_add(from, target);
 	return target;

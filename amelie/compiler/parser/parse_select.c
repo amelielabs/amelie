@@ -126,6 +126,7 @@ parse_select(Stmt* self, From* outer, bool subquery)
 			parse_select_distinct(self, select);
 
 	// * | expr [AS] [name], ...
+	auto last_select = self->select_list.list_tail;
 	Expr ctx;
 	expr_init(&ctx);
 	ctx.select = true;
@@ -137,7 +138,23 @@ parse_select(Stmt* self, From* outer, bool subquery)
 
 	// [FROM]
 	if (stmt_if(self, KFROM))
+	{
 		parse_from(self, &select->from, PERM_SELECT, subquery);
+
+		// ensure that created subqueries are strictly per single user
+		auto target = from_first_table(&select->from);
+		if (target)
+		{
+			auto last = self->select_list.list_tail;
+			while (last && last != last_select)
+			{
+				auto subselect = ast_select_of(last->ast);
+				if (from_match_user_mismatch(&subselect->from, target->from_table->rel.user))
+					stmt_error(self, NULL, "cross user subqueries are not permitted");
+				last = last->prev;
+			}
+		}
+	}
 
 	// save the names count after join for AND expression below before
 	// processing WHERE expression

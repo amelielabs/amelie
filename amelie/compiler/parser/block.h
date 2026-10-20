@@ -106,6 +106,25 @@ block_find_from(From* self)
 	return NULL;
 }
 
+static inline Target*
+block_find_distributed(From* self, Str* user)
+{
+	// find first table target that mismatch user
+	while (self)
+	{
+		auto from = self;
+		while (from)
+		{
+			auto target = from_match_user_mismatch(from, user);
+			if (target)
+				return target;
+			from = from->outer;
+		}
+		self = self->block->from;
+	}
+	return NULL;
+}
+
 static inline Column*
 block_find_column(From* self, Target** match_target, Str* name, bool* conflict)
 {
