@@ -66,7 +66,6 @@ struct Stmt
 	Ast*       ast;
 	StmtId     id;
 	int        r;
-	int        rdispatch;
 	Returning* ret;
 	Str*       cte_name;
 	Columns    cte_columns;
@@ -74,7 +73,6 @@ struct Stmt
 	bool       is_break;
 	bool       udfs;
 	bool       udfs_sending;
-	Deps       deps;
 	Refs       refs;
 	AstList    select_list;
 	Block*     block;
@@ -90,7 +88,6 @@ stmt_allocate(Parser* parser, Lex* lex, Block* block)
 	self->ast          = NULL;
 	self->id           = STMT_UNDEF;
 	self->r            = -1;
-	self->rdispatch    = -1;
 	self->ret          = NULL;
 	self->cte_name     = NULL;
 	self->is_return    = false;
@@ -102,7 +99,6 @@ stmt_allocate(Parser* parser, Lex* lex, Block* block)
 	self->lex          = lex;
 	self->block        = block;
 	self->parser       = parser;
-	deps_init(&self->deps);
 	refs_init(&self->refs);
 	columns_init(&self->cte_columns);
 	ast_list_init(&self->select_list);

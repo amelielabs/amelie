@@ -11,5 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-int  emit_insert_store(Compiler*);
-void emit_insert(Compiler*, Ast*);
+int emit_insert(Compiler*, Ast*);

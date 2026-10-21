@@ -12,4 +12,3 @@
 //
 
 int emit_matching(Compiler*, Ast*);
-int emit_matching_recv(Compiler*, Ast*);

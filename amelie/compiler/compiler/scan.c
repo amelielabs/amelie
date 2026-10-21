@@ -116,9 +116,6 @@ scan_index(Scan* self, Target* target)
 	auto path  = target->path;
 	auto point_lookup = (path->type == PATH_LOOKUP);
 
-	// set target origin
-	target_set_origin(target, cp->origin);
-
 	// push keys
 	auto keys_count = scan_key(self, target);
 
@@ -184,9 +181,6 @@ scan_heap(Scan* self, Target* target)
 	auto cp    = self->compiler;
 	auto table = target->from_table;
 
-	// set target origin
-	target_set_origin(target, cp->origin);
-
 	// create table open argument
 	//
 	// open a single partition or do table scan
@@ -250,41 +244,19 @@ scan_expr(Scan* self, Target* target)
 			// set expression type
 			assert(target->columns->count == 1);
 			column_set_type(columns_first(target->columns), type, type_sizeof(type));
-			target_set_origin(target, cp->origin);
 			break;
 		}
 		case TARGET_STMT:
 			r = target->from_stmt->r;
-			target_set_origin(target, ORIGIN_FRONTEND);
-
-			// create reference, if frontend value is accessed from backend
 			type = rtype(cp, r);
-			if (cp->origin == ORIGIN_BACKEND)
-			{
-				auto ref = refs_add(&cp->current->refs, self->from, NULL, r);
-				r = op2pin(cp, CREF, type, ref->order);
-			} else {
-				r = op2pin(cp, CDUP, type, r);
-			}
-
-			// futher object access will be using cursor created on backend
-			target_set_origin(target, ORIGIN_BACKEND);
+			r = op2pin(cp, CDUP, type, r);
 			break;
 		case TARGET_VAR:
 		{
 			// create reference, if frontend value is accessed from backend
 			auto var = target->from_var;
 			type = var->type;
-			if (cp->origin == ORIGIN_BACKEND)
-			{
-				auto ref = refs_add(&cp->current->refs, self->from, target->ast, -1);
-				r = op2pin(cp, CREF, type, ref->order);
-			} else {
-				r = op3pin(cp, CVAR, type, var->order, var->is_arg);
-			}
-
-			// futher object access will be using cursor created on backend
-			target_set_origin(target, ORIGIN_FRONTEND);
+			r = op3pin(cp, CVAR, type, var->order, var->is_arg);
 			break;
 		}
 		default:

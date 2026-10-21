@@ -56,10 +56,6 @@ emit_delete(Compiler* self, Ast* ast)
 	// DELETE FROM name [WHERE expr] [RETURNING expr]
 	auto delete = ast_delete_of(ast);
 
-	// set target origin
-	auto target = from_first(&delete->from);
-	target_set_origin(target, self->origin);
-
 	// delete by cursor
 	if (! returning_has(&delete->ret))
 	{

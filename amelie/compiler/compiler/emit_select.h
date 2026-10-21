@@ -12,4 +12,3 @@
 //
 
 int emit_select(Compiler*, Ast*, bool);
-int emit_select_recv(Compiler*, Ast*);

@@ -44,7 +44,6 @@ typedef enum
 struct Target
 {
 	TargetType   type;
-	TargetOrigin origin;
 	Str          name;
 	Ast*         ast;
 	// target src
@@ -81,7 +80,6 @@ target_allocate(void)
 	Target* self = palloc(sizeof(Target));
 	memset(self, 0, sizeof(Target));
 	self->type    = TARGET_NONE;
-	self->origin  = ORIGIN_FRONTEND;
 	self->dml     = false;
 	self->columns = NULL;
 	self->r       = -1;
@@ -89,12 +87,6 @@ target_allocate(void)
 	self->join    = JOIN_NONE;
 	str_init(&self->name);
 	return self;
-}
-
-static inline void
-target_set_origin(Target* self, TargetOrigin origin)
-{
-	self->origin = origin;
 }
 
 static inline void

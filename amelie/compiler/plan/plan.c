@@ -190,9 +190,7 @@ plan_create(Ast* ast, bool emit_store)
 	auto self = (Plan*)palloc(sizeof(Plan));
 	self->select = select;
 	self->r      = -1;
-	self->recv   = false;
 	list_init(&self->list);
-	list_init(&self->list_recv);
 
 	// prepare scan path using where expression per target
 	//
@@ -200,9 +198,6 @@ plan_create(Ast* ast, bool emit_store)
 	//
 	path_prepare(&select->from, select->expr_where);
 
-	if (select->pushdown)
-		plan_pushdown(self);
-	else
-		plan_main(self, emit_store);
+	plan_main(self, emit_store);
 	return self;
 }

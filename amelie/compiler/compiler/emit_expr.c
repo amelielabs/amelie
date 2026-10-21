@@ -104,14 +104,8 @@ emit_column(Compiler* self,
             Column*   column,
             Str*      path)
 {
+	unused(from);
 	assert(column);
-
-	// create reference, if frontend target column is accessed from backend
-	if (self->origin == ORIGIN_BACKEND && target->origin == ORIGIN_FRONTEND)
-	{
-		auto ref = refs_add(&self->current->refs, from, ast, -1);
-		return op2pin(self, CREF, column->type, ref->order);
-	}
 
 	// exclude.column[.path]
 	int r;
@@ -124,10 +118,12 @@ emit_column(Compiler* self,
 	// generate cursor read based on the target
 	if (target->type == TARGET_TABLE)
 	{
+#if 0
 		// prevent addressing own columns by INSERT
 		if (self->current->id == STMT_INSERT)
 			if (self->origin == ORIGIN_FRONTEND)
 				stmt_error(self->current, ast, "column cannot be used here");
+#endif
 
 		int op;
 		switch (column->type) {
@@ -1063,12 +1059,6 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	{
 		// var + var
 		auto var = ast->var;
-		if (self->origin == ORIGIN_BACKEND)
-		{
-			// create reference, if variable is accessed from backend
-			auto ref = refs_add(&self->current->refs, from, ast, -1);
-			return op2pin(self, CREF, var->type, ref->order);
-		}
 		auto r = op3pin(self, CVAR, var->type, var->order, var->is_arg);
 		return r;
 	}
@@ -1379,13 +1369,9 @@ emit_push(Compiler* self, From* from, Ast* ast)
 	}
 	case KVAR:
 	{
-		if (self->origin == ORIGIN_FRONTEND)
-		{
-			auto var = ast->var;
-			op3(self, CPUSH_VAR, var->order, var->is_arg, false);
-			return var->type;
-		}
-		break;
+		auto var = ast->var;
+		op3(self, CPUSH_VAR, var->order, var->is_arg, false);
+		return var->type;
 	}
 	}
 

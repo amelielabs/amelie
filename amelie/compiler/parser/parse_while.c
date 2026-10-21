@@ -40,14 +40,6 @@ parse_while(Stmt* self)
 	// END
 	stmt_expect(self, KEND);
 
-	// iterate all created blocks and copy deps (to vars) to the
-	// statements of the outer block
-	//
-	// this is necessary to receive all vars stmts before executing
-	// the while blocks.
-	//
-	block_copy_deps(self, stmt->block, false);
-
 	// if while block sends data
 	return stmt->block->stmts.last_send != NULL;
 }

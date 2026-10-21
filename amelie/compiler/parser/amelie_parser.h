@@ -23,7 +23,6 @@
 #include "parser/lex.h"
 
 // stmt
-#include "parser/deps.h"
 #include "parser/refs.h"
 #include "parser/stmt.h"
 #include "parser/stmts.h"

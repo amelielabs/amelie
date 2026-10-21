@@ -26,9 +26,6 @@ emit_matching(Compiler* self, Ast* ast)
 	auto matching = ast_matching_of(ast);
 	auto target   = from_first(&matching->from);
 
-	// set target origin
-	target_set_origin(target, self->origin);
-
 	// CTABLE_PREPARE
 	auto rcursor = op2pin(self, CTABLE_PREPARE, TYPE_CURSOR,
 	                      (intptr_t)target->from_table);
@@ -42,15 +39,4 @@ emit_matching(Compiler* self, Ast* ast)
 	// CFREE
 	emit_free(self, rcursor);
 	return rset;
-}
-
-int
-emit_matching_recv(Compiler* self, Ast* ast)
-{
-	// CRECV_MATCHING
-	unused(ast);
-
-	// [result, rdispatch]
-	return op2pin(self, CRECV_MATCHING, TYPE_STORE,
-	              self->current->rdispatch);
 }

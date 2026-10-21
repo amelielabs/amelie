@@ -49,14 +49,6 @@ parse_for(Stmt* self)
 	// END
 	stmt_expect(self, KEND);
 
-	// iterate all created blocks and copy deps (to vars) to the
-	// statements of the outer block
-	//
-	// this is necessary to receive all vars stmts before executing
-	// the for blocks
-	//
-	block_copy_deps(self, stmt->block, false);
-
 	// if for block sends data
 	return stmt->block->stmts.last_send != NULL;
 }

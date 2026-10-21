@@ -79,13 +79,8 @@ parse_if(Stmt* self)
 		break;
 	}
 
-	// iterate all created blocks and copy deps (to vars) to the
-	// statements of the outer block
-	//
-	// this is necessary to receive all vars stmts before executing
-	// the if blocks
-	//
-	block_copy_deps(self, first->block, true);
+	// mark that inner block has break/continue statements
+	block_derive_break(self, first->block);
 
 	// return true if any of the blocks send data
 	auto ref = stmt->conds.list;

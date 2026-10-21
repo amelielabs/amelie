@@ -131,9 +131,6 @@ parse_stmt_return(Stmt* self)
 				stmt_error(self, name, "variable not found");
 			name->id  = KVAR;
 			name->var = var;
-			if (var->writer)
-				deps_add_var(&self->deps, var->writer, var);
-
 			self->id  = STMT_RETURN;
 			self->ast = name;
 			stmt_push(self, semicolon);
@@ -400,7 +397,9 @@ parse_stmt(Stmt* self)
 		auto select = parse_select(self, self->block->from, false);
 		self->ast = &select->ast;
 		self->ret = &select->ret;
-		if (select->pushdown)
+
+		auto outer = select->from.list;
+		if (outer && target_is_table(outer))
 			self->block->stmts.last_send = self;
 		break;
 	}

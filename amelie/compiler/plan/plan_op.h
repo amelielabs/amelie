@@ -14,10 +14,7 @@
 static inline void
 plan_add(Plan* self, Command* cmd)
 {
-	if (self->recv)
-		list_append(&self->list_recv, &cmd->link);
-	else
-		list_append(&self->list, &cmd->link);
+	list_append(&self->list, &cmd->link);
 }
 
 static inline void
@@ -104,26 +101,5 @@ static inline void
 plan_add_set_agg_merge(Plan* self)
 {
 	auto cmd = command_allocate(COMMAND_SET_AGG_MERGE, sizeof(Command));
-	plan_add(self, cmd);
-}
-
-static inline void
-plan_add_recv(Plan* self)
-{
-	auto cmd = command_allocate(COMMAND_RECV, sizeof(Command));
-	plan_add(self, cmd);
-}
-
-static inline void
-plan_add_recv_ordered(Plan* self)
-{
-	auto cmd = command_allocate(COMMAND_RECV_ORDERED, sizeof(Command));
-	plan_add(self, cmd);
-}
-
-static inline void
-plan_add_recv_aggs(Plan* self)
-{
-	auto cmd = command_allocate(COMMAND_RECV_AGGS, sizeof(Command));
 	plan_add(self, cmd);
 }

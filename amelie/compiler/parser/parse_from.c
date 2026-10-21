@@ -42,7 +42,6 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 				auto stmt = stmt_allocate(self->parser, &self->parser->lex, self->block);
 				stmt->id = STMT_SELECT;
 				stmts_insert(&self->block->stmts, self, stmt);
-				deps_add_stmt(&self->deps, stmt);
 
 				select = parse_select(stmt, NULL, false);
 				stmt_expect(self, ')');
@@ -135,8 +134,6 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 	{
 		target->type     = TARGET_VAR;
 		target->from_var = var;
-		if (var->writer)
-			deps_add_var(&self->deps, var->writer, var);
 		if (var->columns.count > 0) {
 			target->columns = &var->columns;
 		} else
@@ -161,7 +158,6 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 		target->from_stmt = stmt;
 		target->columns   = &stmt->cte_columns;
 		str_set_str(&target->name, stmt->cte_name);
-		deps_add_stmt(&self->deps, stmt);
 		return target;
 	}
 
@@ -184,7 +180,6 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 			auto stmt = stmt_allocate(self->parser, &self->parser->lex, self->block);
 			stmt->id = STMT_MATCHING;
 			stmts_insert(&self->block->stmts, self, stmt);
-			deps_add_stmt(&self->deps, stmt);
 
 			auto matching = parse_matching(stmt, NULL, table);
 			matching->ast.pos_start = ast->pos_start;

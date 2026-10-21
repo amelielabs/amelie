@@ -32,7 +32,6 @@ struct AstSelect
 	From      from;
 	From      from_group;
 	Columns   from_group_columns;
-	Target*   pushdown;
 	Plan*     plan;
 	int       rset_agg;
 	int       rset_agg_row;
@@ -59,7 +58,6 @@ ast_select_allocate(Stmt* stmt, From* outer, Block* block)
 	self->distinct      = false;
 	self->distinct_on   = false;
 	self->distinct_aggs = false;
-	self->pushdown      = NULL;
 	self->plan          = NULL;
 	self->rset_agg      = -1;
 	self->rset_agg_row  = -1;

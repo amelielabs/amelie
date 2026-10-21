@@ -18,21 +18,21 @@
 #include "compiler/compiler.h"
 #include "compiler/compiler_op.h"
 
-// scan
-#include "compiler/scan.h"
-
 // emit
-#include "compiler/cast.h"
+#include "compiler/emit.h"
+#include "compiler/emit_control.h"
 #include "compiler/emit_expr.h"
 #include "compiler/emit_insert.h"
-#include "compiler/emit_upsert.h"
 #include "compiler/emit_update.h"
 #include "compiler/emit_delete.h"
 #include "compiler/emit_select.h"
 #include "compiler/emit_matching.h"
 #include "compiler/emit_watch.h"
 #include "compiler/emit_utility.h"
-#include "compiler/emit_ref.h"
+#include "compiler/cast.h"
+
+// scan
+#include "compiler/scan.h"
 
 // explain
 #include "compiler/explain.h"

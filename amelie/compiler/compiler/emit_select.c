@@ -414,61 +414,6 @@ cmd_set_agg_merge(Compiler* self, Plan* plan, Command* ref)
 	op2(self, CSET_AGG_MERGE, plan->r, select->aggs);
 }
 
-static void
-cmd_recv(Compiler* self, Plan* plan, Command* ref)
-{
-	unused(ref);
-	auto select = plan->select;
-
-	// set union type
-	UnionType type = UNION_ALL;
-	if (ref->id == COMMAND_RECV_ORDERED)
-	{
-		if (select->distinct)
-			type = UNION_ORDERED_DISTINCT;
-		else
-			type = UNION_ORDERED;
-	}
-
-	// CUNION
-	auto runion = op2pin(self, CUNION, TYPE_STORE, type);
-
-	// limit
-	if (select->expr_limit)
-	{
-		/// CUNION_LIMIT
-		auto r = emit_expr(self, &select->from, select->expr_limit);
-		op2(self, CUNION_LIMIT, runion, r);
-		runpin(self, r);
-	}
-
-	// offset
-	if (select->expr_offset)
-	{
-		/// CUNION_OFFSET
-		auto r = emit_expr(self, &select->from, select->expr_offset);
-		op2(self, CUNION_OFFSET, runion, r);
-		runpin(self, r);
-	}
-
-	// CRECV
-	op2(self, CRECV, runion, self->current->rdispatch);
-
-	plan->r = runion;
-}
-
-static void
-cmd_recv_aggs(Compiler* self, Plan* plan, Command* ref)
-{
-	unused(ref);
-	auto select = plan->select;
-
-	// CRECV_AGGS
-	plan->r = op3pin(self, CRECV_AGGS, TYPE_STORE,
-	                 self->current->rdispatch,
-	                 select->aggs);
-}
-
 typedef void (*PlanFunction)(Compiler*, Plan*, Command*);
 
 static PlanFunction cmds[] =
@@ -481,18 +426,13 @@ static PlanFunction cmds[] =
 	[COMMAND_PIPE]          = cmd_pipe,
 	[COMMAND_SORT]          = cmd_sort,
 	[COMMAND_UNION]         = cmd_union,
-	[COMMAND_SET_AGG_MERGE] = cmd_set_agg_merge,
-	[COMMAND_RECV]          = cmd_recv,
-	[COMMAND_RECV_ORDERED]  = cmd_recv,
-	[COMMAND_RECV_AGGS]     = cmd_recv_aggs
+	[COMMAND_SET_AGG_MERGE] = cmd_set_agg_merge
 };
 
 static int
-emit_plan(Compiler* self, Plan* plan, bool recv)
+emit_plan(Compiler* self, Plan* plan)
 {
 	auto list = &plan->list;
-	if (recv)
-		list = &plan->list_recv;
 	plan->r = -1;
 	list_foreach(list)
 	{
@@ -508,13 +448,5 @@ emit_select(Compiler* self, Ast* ast, bool emit_store)
 	AstSelect* select = ast_select_of(ast);
 	if (! select->plan)
 		select->plan = plan_create(ast, emit_store);
-	return emit_plan(self, select->plan, false);
-}
-
-int
-emit_select_recv(Compiler* self, Ast* ast)
-{
-	AstSelect* select = ast_select_of(ast);
-	assert(select->plan);
-	return emit_plan(self, select->plan, true);
+	return emit_plan(self, select->plan);
 }

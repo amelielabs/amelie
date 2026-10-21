@@ -151,10 +151,6 @@ emit_update(Compiler* self, Ast* ast)
 	// UPDATE name SET column = expr [, ... ] [WHERE expr]
 	auto update = ast_update_of(ast);
 
-	// set target origin
-	auto target = from_first(&update->from);
-	target_set_origin(target, self->origin);
-
 	// update by cursor
 	if (! returning_has(&update->ret))
 	{

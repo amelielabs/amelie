@@ -834,8 +834,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		{
 			value->id  = KVAR;
 			value->var = var;
-			if (var->writer)
-				deps_add_var(&self->deps, var->writer, var);
 			break;
 		}
 
@@ -867,8 +865,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		{
 			value->id  = KVAR;
 			value->var = var;
-			if (var->writer)
-				deps_add_var(&self->deps, var->writer, var);
 
 			// .path
 			self->lex->pos = name.end;

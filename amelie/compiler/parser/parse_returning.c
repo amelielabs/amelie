@@ -346,10 +346,6 @@ parse_returning_resolve(Returning* self, Stmt* stmt, From* from)
 		if (! var)
 			stmt_error(stmt, NULL, "variable '{str}' not found", &ref->string);
 		ref->var = var;
-
-		// add dep for previous var updating stmt and update writer to self
-		if (var->writer)
-			deps_add_var(&stmt->deps, var->writer, var);
 		var->writer = stmt;
 	}
 }

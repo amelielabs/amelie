@@ -280,7 +280,7 @@ parse_value_const(Stmt* self, Column* column, Value* value)
 hot Ast*
 parse_value(Stmt* self, From* from, Column* column, Value* value)
 {
-	// handle as reference pushdown (execute before send)
+	// handle as reference (execute before insert)
 	auto ast = parse_expr(self, NULL);
 	if (! parse_expr_is_const(ast))
 	{

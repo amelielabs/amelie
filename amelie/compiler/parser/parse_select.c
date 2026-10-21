@@ -276,14 +276,6 @@ parse_select(Stmt* self, From* outer, bool subquery)
 		// during resolve
 	}
 
-	// set pushdown strategy for the root query
-	if (! subquery)
-	{
-		auto outer = select->from.list;
-		if (outer && target_is_table(select->from.list))
-			select->pushdown = outer;
-	}
-
 	return select;
 }
 
