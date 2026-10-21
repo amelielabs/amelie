@@ -15,7 +15,6 @@
 #include "vm/op.h"
 
 // command arguments
-#include "vm/send.h"
 #include "vm/open.h"
 
 // vm

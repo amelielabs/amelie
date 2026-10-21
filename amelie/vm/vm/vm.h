@@ -18,12 +18,10 @@ struct Vm
 	Reg       r;
 	Stack     stack;
 	Code*     code;
-	CodeData* code_data;
-	Buf*      code_arg;
 	uint8_t*  upsert;
 	bool      allow_close;
-	Value*    refs;
 	Value*    args;
+	Value*    refs;
 	Gtr*      gtr;
 	Program*  program;
 	Quota*    quota;
@@ -35,5 +33,5 @@ struct Vm
 void vm_init(Vm*, Quota*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Gtr*, Tr*, Program*, Code*, CodeData*, Buf*,
-            Value*, Value*, Return*, bool, int);
+void vm_run(Vm*, Local*, Gtr*, Tr*, Program*, Value*,
+            Return*, bool, int);

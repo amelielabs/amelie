@@ -19,15 +19,11 @@
 
 // local transaction (per pod)
 #include "commit/complete.h"
-#include "commit/req.h"
-#include "commit/req_cache.h"
 #include "commit/ltr.h"
 #include "commit/ltr_cache.h"
 
 // dispatch
 #include "commit/dispatch.h"
-#include "commit/dispatch_cache.h"
-#include "commit/dispatches.h"
 
 // global transaction
 #include "commit/gtr.h"

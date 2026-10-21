@@ -88,11 +88,9 @@ commit(Commit* self, Gtr* gtr, Buf* error)
 	cancel_pause();
 
 	// finilize transaction and handle errors
-	auto error_pending = dispatches_complete(&gtr->dispatches);
+	auto error_pending = dispatch_complete(&gtr->dispatch);
 	if (! error)
 	{
-		// unless transaction is used for replication writer, respect
-		// system read-only state
 		if (error_pending)
 		{
 			error = buf_create();
@@ -106,7 +104,7 @@ commit(Commit* self, Gtr* gtr, Buf* error)
 	}
 
 	// process transaction commit/abort, only if the transaction
-	// was registered in manager
+	// was registered in the manager
 	if (gtr_active(gtr))
 	{
 		task_send(&self->task, &gtr->msg);

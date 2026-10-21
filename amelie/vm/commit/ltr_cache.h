@@ -52,11 +52,11 @@ ltr_cache_push(LtrCache* self, Ltr* ltr)
 }
 
 hot static inline Ltr*
-ltr_create(LtrCache* self, User* user, Gtr* gtr, Complete* complete)
+ltr_create(LtrCache* self, User* user, Gtr* gtr, Dispatch* dispatch, Complete* complete)
 {
 	auto ltr = ltr_cache_pop(self);
 	if (! ltr)
-		ltr = ltr_allocate(gtr, complete);
+		ltr = ltr_allocate(gtr, dispatch, complete);
 	else
 		list_init(&ltr->link);
 	ltr->user = user;

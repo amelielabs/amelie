@@ -21,62 +21,12 @@
 #include <amelie_func.h>
 #include <amelie_vm.h>
 
-hot void
-csend(Vm* self, Op* op)
-{
-	// [rdispatch, refs, offset, store]
-	auto send  = send_at(self->code_data, op->c);
-	auto table = send->table;
-
-	// create dispatch
-	auto gtr = self->gtr;
-	auto dispatches = &gtr->dispatches;
-	auto dispatch = dispatch_create(&dispatches->cache);
-	if (send->has_result)
-		dispatch_set_returning(dispatch);
-
-	if (self->allow_close &&
-	    self->program->send_last == code_posof(self->code, op))
-		dispatch_set_close(dispatch);
-
-	auto req = dispatch_add(dispatch, &dispatches->cache_req,
-	                        send->start,
-	                        &self->program->code_backend,
-	                        &self->program->code_data,
-	                        table->user);
-	if (op->b > 0)
-	{
-		req_copy_refs(req, stack_at(&self->stack, op->b), op->b);
-		stack_popn(&self->stack, op->b);
-	}
-
-	// pass store to insert
-	if (op->d != -1)
-	{
-		// store, seed, time
-		buf_reset(&req->arg);
-		buf_write(&req->arg, &reg_at(&self->r, op->d)->store, sizeof(Store*));
-		uint64_t value = random_generate(&self->local->random);
-		buf_write(&req->arg, &value, sizeof(value));
-		value = self->local->time_ms;
-		buf_write(&req->arg, &value, sizeof(value));
-
-		value_free(reg_at(&self->r, op->d));
-	}
-
-	// execute dispatch
-	gtrs_send(share()->gtrs, gtr, dispatch);
-
-	// return dispatch order
-	value_set_int(reg_at(&self->r, op->a), dispatch->order);
-}
-
 void
 cclose(Vm* self, Op* op)
 {
 	unused(op);
 	if (self->allow_close)
-		dispatches_close(&self->gtr->dispatches);
+		dispatch_close(&self->gtr->dispatch);
 }
 
 void
@@ -120,118 +70,6 @@ cunion_offset(Vm* self, Op* op)
 }
 
 hot void
-crecv_aggs(Vm* self, Op* op)
-{
-	// [set, rdispatch, aggs]
-	auto aggs = (Agg*)code_data_at(self->code_data, op->c);
-
-	// get dispatch
-	auto dispatch_order = reg_at(&self->r, op->b)->integer;
-	auto dispatch = dispatches_at(&self->gtr->dispatches, dispatch_order);
-	assert(dispatch);
-
-	// wait for group completion
-	dispatch_wait(dispatch);
-
-	Value* values[dispatch->list_count];
-	int    values_count = 0;
-
-	// collect results
-	auto error = (Req*)NULL;
-	list_foreach(&dispatch->list)
-	{
-		auto req = list_at(Req, link);
-		if (req->error && !error)
-			error = req;
-		auto value = &req->result;
-		if (value->type == TYPE_STORE)
-		{
-			values[values_count] = value;
-			values_count++;
-		}
-	}
-	if (error)
-		rethrow_buf(error->error);
-
-	// merge aggregate sets into the one set (first)
-	assert(values_count > 0);
-	agg_merge_sets(aggs, values, values_count);
-
-	// return first set
-	auto first = values[0];
-	value_set_store(reg_at(&self->r, op->a), first->store);
-	value_init(first);
-}
-
-hot void
-crecv(Vm* self, Op* op)
-{
-	// [runion, rdispatch]
-	auto result = (Union*)reg_at(&self->r, op->a)->store;
-
-	// get dispatch
-	auto dispatch_order = reg_at(&self->r, op->b)->integer;
-	auto dispatch = dispatches_at(&self->gtr->dispatches, dispatch_order);
-	assert(dispatch);
-
-	// wait for group completion
-	dispatch_wait(dispatch);
-
-	// collect result and to the union
-	auto error = (Req*)NULL;
-	list_foreach(&dispatch->list)
-	{
-		auto req = list_at(Req, link);
-		if (req->error && !error)
-			error = req;
-		auto value = &req->result;
-		if (value->type == TYPE_STORE)
-		{
-			union_add(result, value->store);
-			value_init(value);
-		}
-	}
-	if (error)
-		rethrow_buf(error->error);
-}
-
-hot void
-crecv_matching(Vm* self, Op* op)
-{
-	// [set, rdispatch]
-
-	// get dispatch
-	auto dispatch_order = reg_at(&self->r, op->b)->integer;
-	auto dispatch = dispatches_at(&self->gtr->dispatches, dispatch_order);
-	assert(dispatch);
-
-	// wait for group completion
-	dispatch_wait(dispatch);
-
-	Value* matching = NULL;
-
-	// collect results
-	auto error = (Req*)NULL;
-	list_foreach(&dispatch->list)
-	{
-		auto req = list_at(Req, link);
-		if (req->error && !error)
-			error = req;
-		auto value = &req->result;
-		if (value->type == TYPE_STORE)
-		{
-			assert(! matching);
-			matching = value;
-		}
-	}
-	if (error)
-		rethrow_buf(error->error);
-
-	// merge matching results into the one set
-	matching_result(reg_at(&self->r, op->a), matching);
-}
-
-hot void
 cmatching(Vm* self, Op* op)
 {
 	// [set, cursor, column, top]
@@ -255,6 +93,11 @@ cmatching(Vm* self, Op* op)
 
 	// execute vector search
 	matching_execute(matching, vector->vector);
+
+	// todo:
+
+	// merge matching results into the one set
+	// matching_result(reg_at(&self->r, op->a), matching);
 }
 
 void
@@ -321,7 +164,7 @@ hot Op*
 ctable_open(Vm* self, Op* op)
 {
 	// [cursor, open_offset, _eof]
-	auto open = open_at(self->code_data, op->b);
+	auto open = open_at(&self->program->code_data, op->b);
 	auto part = open->table->part;
 
 	// create key for index scan
@@ -360,6 +203,10 @@ ctable_open(Vm* self, Op* op)
 hot void
 cinsert(Vm* self, Op* op)
 {
+	(void)self;
+	(void)op;
+	// TODO
+#if 0
 	// [table*]
 	auto table   = (Table*)op->a;
 	auto part    = table->part;
@@ -396,8 +243,10 @@ cinsert(Vm* self, Op* op)
 			part_insert(part, self->tr, row);
 		}
 	}
+#endif
 }
 
+#if 0
 hot void
 ctable_prepare(Vm* self, Op* op)
 {
@@ -554,3 +403,4 @@ ccall_udf(Vm* self, Op* op)
 
 	stack_popn(&self->stack, argc);
 }
+#endif

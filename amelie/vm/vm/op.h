@@ -256,9 +256,6 @@ enum
 	CUNION_LIMIT,
 	CUNION_OFFSET,
 	CUNION_ADD,
-	CRECV_AGGS,
-	CRECV,
-	CRECV_MATCHING,
 
 	// table cursor
 	CTABLE_OPEN,
@@ -329,7 +326,6 @@ enum
 	CDDL_CREATE_INDEX,
 
 	// compute
-	CSEND,
 	CCLOSE,
 
 	// var

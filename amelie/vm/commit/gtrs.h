@@ -67,7 +67,7 @@ gtrs_recover(Gtrs* self, Gtr* gtr)
 }
 
 hot static inline void
-gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
+gtrs_attach(Gtrs* self, Gtr* gtr)
 {
 	spinlock_lock(&self->lock);
 
@@ -85,19 +85,12 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 	} else
 	{
 		// match overlapping transactions
-		auto is_distributed = gtr->program->distributed;
 		list_foreach_reverse(&self->list)
 		{
 			auto ref = list_at(Gtr, link);
 
-			// find overlapping users
-			bool overlaps;
-			if (is_distributed)
-				overlaps = dispatches_overlaps(&ref->dispatches, &gtr->dispatches);
-			else
-				overlaps = dispatches_overlaps_dispatch(&ref->dispatches, dispatch);
-
-			// derive transaction group on overlap
+			// derive transaction group on user overlap
+			auto overlaps = dispatch_overlaps(&ref->dispatch, &gtr->dispatch);
 			if (overlaps)
 			{
 				gtr->group       = ref->group;
@@ -130,7 +123,7 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 	list_append(&self->list, &gtr->link);
 
 	// begin execution
-	dispatches_send(&gtr->dispatches, dispatch);
+	dispatch_send(&gtr->dispatch);
 
 	// wakeup next recovery waiter
 	if (gtr->write.recover && gtr_recover_pending(&self->recover))
@@ -145,34 +138,12 @@ gtrs_attach(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
 }
 
 hot static inline void
-gtrs_send(Gtrs* self, Gtr* gtr, Dispatch* dispatch)
+gtrs_send(Gtrs* self, Gtr* gtr)
 {
-	auto dispatches = &gtr->dispatches;
-	auto first = dispatches_is_first(dispatches);
+	// register transaction and begin execution
+	gtrs_attach(self, gtr);
 
-	dispatch_prepare(dispatch);
-
-	if (first)
-	{
-		// handle distributed by creating transaction for every user
-		// to handle multi-statement access
-		int ltrs_count;
-		if (gtr->program->distributed)
-		{
-			dispatches_snapshot(dispatches, &gtr->program->access);
-			ltrs_count = dispatches->ltrs_count;
-		} else {
-			ltrs_count = dispatch->list_count;
-		}
-		complete_prepare(&dispatches->complete, ltrs_count);
-
-		// register transaction and begin execution
-		gtrs_attach(self, gtr, dispatch);
-		return;
-	}
-
-	// multi-statement request
-	dispatches_send(dispatches, dispatch);
+	// todo: wait if program->distributed for all ready?
 }
 
 hot static inline uint64_t

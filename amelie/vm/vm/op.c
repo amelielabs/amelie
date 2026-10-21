@@ -263,9 +263,6 @@ OpDesc ops[] =
 	{ CUNION_LIMIT, "union_limit" },
 	{ CUNION_OFFSET, "union_offset" },
 	{ CUNION_ADD, "union_add" },
-	{ CRECV_AGGS, "recv_aggs" },
-	{ CRECV, "recv" },
-	{ CRECV_MATCHING, "recv_matching" },
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },
@@ -336,7 +333,6 @@ OpDesc ops[] =
 	{ CDDL_CREATE_INDEX, "ddl_create_index" },
 
 	// compute
-	{ CSEND, "send" },
 	{ CCLOSE, "close" },
 
 	// var
@@ -389,18 +385,6 @@ op_write(Buf* buf, Op* op, bool a, bool b, bool c, char *fmt, ...)
 		else
 			buf_format(buf, "-");
 	}
-}
-
-static void
-op_dump_send(Program* self, Code* code, Op* op, Buf* buf, Send* send,
-             bool a, bool b, bool c)
-{
-	auto is_last = self->send_last == code_posof(code, op);
-	auto config = send->table->config;
-	op_write(buf, op, a, b, c, "{str}.{str} ({s}{s})",
-	         &config->user, &config->name,
-	         send_of(send),
-	         is_last ? ", closing" : "");
 }
 
 void
@@ -465,10 +449,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 
 		case CSET_PTR:
 			op_write(buf, op, true, false, true, NULL);
-			break;
-		case CSEND:
-			op_dump_send(self, code, op, buf, send_at(data, op->c),
-			             true, true, true);
 			break;
 		case CINSERT:
 		{

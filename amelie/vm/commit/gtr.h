@@ -15,23 +15,23 @@ typedef struct Gtr Gtr;
 
 struct Gtr
 {
-	Msg        msg;
-	uint64_t   id;
-	uint64_t   group;
-	uint64_t   group_order;
-	Dispatches dispatches;
-	Program*   program;
-	Buf*       error;
-	bool       abort;
-	Tr         tr;
-	Write      write;
-	Usage      usage_write;
-	Event      on_commit;
-	Event*     on_recover;
-	Local*     local;
-	Gtr*       link_recover;
-	Gtr*       link_group;
-	List       link;
+	Msg      msg;
+	uint64_t id;
+	uint64_t group;
+	uint64_t group_order;
+	Dispatch dispatch;
+	Program* program;
+	Buf*     error;
+	bool     abort;
+	Tr       tr;
+	Write    write;
+	Usage    usage_write;
+	Event    on_commit;
+	Event*   on_recover;
+	Local*   local;
+	Gtr*     link_recover;
+	Gtr*     link_group;
+	List     link;
 };
 
 static inline void
@@ -47,7 +47,7 @@ gtr_init(Gtr* self)
 	self->on_recover   = NULL;
 	self->link_recover = NULL;
 	self->link_group   = NULL;
-	dispatches_init(&self->dispatches, self);
+	dispatch_init(&self->dispatch, self);
 	event_init(&self->on_commit);
 	tr_init(&self->tr);
 	write_init(&self->write);
@@ -71,7 +71,7 @@ gtr_reset(Gtr* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	dispatches_reset(&self->dispatches);
+	dispatch_reset(&self->dispatch);
 	tr_reset(&self->tr);
 	write_reset(&self->write);
 	usage_reset(&self->usage_write);
@@ -82,7 +82,7 @@ static inline void
 gtr_free(Gtr* self)
 {
 	gtr_reset(self);
-	dispatches_free(&self->dispatches);
+	dispatch_free(&self->dispatch);
 	tr_free(&self->tr);
 	write_free(&self->write);
 }
@@ -108,6 +108,9 @@ gtr_prepare(Gtr* self, Local* local, User* user, Program* program)
 
 	// set program
 	self->program = program;
+
+	// prepare dispatch
+	dispatch_prepare(&self->dispatch, program);
 }
 
 static inline bool

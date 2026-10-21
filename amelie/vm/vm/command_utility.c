@@ -25,7 +25,7 @@ void
 csystem_set_secret(Vm* self, Op* op)
 {
 	// [secret]
-	auto pos = code_data_at(self->code_data, op->a);
+	auto pos = code_data_at(&self->program->code_data, op->a);
 	Str secret;
 	unpack_str(&pos, &secret);
 
@@ -46,7 +46,7 @@ ccreate_token(Vm* self, Op* op)
 	check_user(self->tr, PERM_CREATE_TOKEN);
 
 	// [result, options_offset]
-	auto pos = code_data_at(self->code_data, op->b);
+	auto pos = code_data_at(&self->program->code_data, op->b);
 	Str  name;
 	Str  interval;
 	unpack_str(&pos, &name);
@@ -95,7 +95,7 @@ void
 cbackup(Vm* self, Op* op)
 {
 	// [uuid_offset]
-	auto id = (Uuid*)code_data_at(self->code_data, op->a);
+	auto id = (Uuid*)code_data_at(&self->program->code_data, op->a);
 
 	// PERM_SYSTEM
 	check_user(self->tr, PERM_SYSTEM);
@@ -110,7 +110,7 @@ creplica_create(Vm* self, Op* op)
 	check_user(self->tr, PERM_SYSTEM);
 
 	// [config_offset, if_not_exists]
-	auto pos = code_data_at(self->code_data, op->a);
+	auto pos = code_data_at(&self->program->code_data, op->a);
 	auto config = replica_config_read(&pos);
 	defer(replica_config_free, config);
 
@@ -126,7 +126,7 @@ creplica_drop(Vm* self, Op* op)
 	check_user(self->tr, PERM_SYSTEM);
 
 	// [id, if_exists]
-	auto pos = code_data_at(self->code_data, op->a);
+	auto pos = code_data_at(&self->program->code_data, op->a);
 	Str  id_str;
 	Uuid id;
 	unpack_str(&pos, &id_str);
@@ -166,7 +166,7 @@ crepl_follow(Vm* self, Op* op)
 	check_user(self->tr, PERM_SYSTEM);
 
 	// [id, if_exists]
-	auto pos = code_data_at(self->code_data, op->a);
+	auto pos = code_data_at(&self->program->code_data, op->a);
 	Str  id;
 	unpack_str(&pos, &id);
 	repl_follow(share()->repl, &id);
@@ -190,7 +190,7 @@ cddl(Vm* self, Op* op)
 {
 	// [op, flags]
 	unused(self);
-	auto pos = code_data_at(self->code_data, op->a);
+	auto pos = code_data_at(&self->program->code_data, op->a);
 	auto flags = op->b;
 	catalog_execute(&share()->db->catalog, self->tr, pos, flags);
 }
@@ -200,7 +200,7 @@ cddl_create_index(Vm* self, Op* op)
 {
 	// [op, flags]
 	unused(self);
-	auto pos = code_data_at(self->code_data, op->a);
+	auto pos = code_data_at(&self->program->code_data, op->a);
 	auto flags = op->b;
 	db_create_index(share()->db, self->tr, pos, flags);
 }

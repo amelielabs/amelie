@@ -11,8 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Ltr Ltr;
-typedef struct Gtr Gtr;
+typedef struct Ltr      Ltr;
+typedef struct Dispatch Dispatch;
+typedef struct Gtr      Gtr;
 
 struct Ltr
 {
@@ -22,23 +23,25 @@ struct Ltr
 	Mailbox   queue;
 	Msg       queue_close;
 	Consensus consensus;
-	Buf*      error;
+	Dispatch* dispatch;
 	User*     user;
+	Buf*      error;
 	bool      closed;
 	Complete* complete;
 	List      link;
 };
 
 static inline Ltr*
-ltr_allocate(Gtr* gtr, Complete* complete)
+ltr_allocate(Gtr* gtr, Dispatch* dispatch, Complete* complete)
 {
 	auto self = (Ltr*)am_malloc(sizeof(Ltr));
-	self->gtr      = gtr;
-	self->tr       = NULL;
-	self->error    = NULL;
-	self->user     = NULL;
-	self->closed   = false;
-	self->complete = complete;
+	self->gtr            = gtr;
+	self->tr             = NULL;
+	self->dispatch       = dispatch;
+	self->user           = NULL;
+	self->error          = NULL;
+	self->closed         = false;
+	self->complete       = complete;
 	mailbox_init(&self->queue);
 	msg_init(&self->queue_close, MSG_LTR_STOP);
 	msg_init(&self->msg, MSG_LTR);
@@ -50,14 +53,20 @@ ltr_allocate(Gtr* gtr, Complete* complete)
 static inline void
 ltr_free(Ltr* self)
 {
+	if (self->error)
+		buf_free(self->error);
 	am_free(self);
 }
 
 static inline void
 ltr_reset(Ltr* self)
 {
+	if (self->error)
+	{
+		buf_free(self->error);
+		self->error = NULL;
+	}
 	self->tr     = NULL;
-	self->error  = NULL;
 	self->user   = NULL;
 	self->closed = false;
 	list_init(&self->link);

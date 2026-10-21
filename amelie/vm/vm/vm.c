@@ -25,13 +25,10 @@
 void
 vm_init(Vm* self, Quota* quota)
 {
-	self->code        = NULL;
-	self->code_data   = NULL;
-	self->code_arg    = NULL;
 	self->upsert      = NULL;
 	self->allow_close = true;
-	self->refs        = NULL;
 	self->args        = NULL;
+	self->refs        = NULL;
 	self->gtr         = NULL;
 	self->program     = NULL;
 	self->quota       = quota;
@@ -54,15 +51,12 @@ vm_free(Vm* self)
 void
 vm_reset(Vm* self)
 {
-	if (self->code_data)
-		calls_reset(&self->calls);
+	calls_reset(&self->calls);
 	reg_reset(&self->r);
 	stack_reset(&self->stack);
-	self->code        = NULL;
-	self->code_data   = NULL;
-	self->code_arg    = NULL;
-	self->refs        = NULL;
+	self->program     = NULL;
 	self->args        = NULL;
+	self->refs        = NULL;
 	self->upsert      = NULL;
 	self->allow_close = true;
 }
@@ -72,30 +66,25 @@ vm_reset(Vm* self)
 #define op_jmp   goto *ops[(op)->op]
 
 hot void
-vm_run(Vm*       self,
-       Local*    local,
-       Gtr*      gtr,
-       Tr*       tr,
-       Program*  program,
-       Code*     code,
-       CodeData* code_data,
-       Buf*      code_arg,
-       Value*    refs,
-       Value*    args,
-       Return*   ret,
-       bool      allow_close,
-       int       start)
+vm_run(Vm*      self,
+       Local*   local,
+       Gtr*     gtr,
+       Tr*      tr,
+       Program* program,
+       Value*   args,
+       Return*  ret,
+       bool     allow_close,
+       int      start)
 {
 	self->local       = local;
 	self->gtr         = gtr;
 	self->tr          = tr;
 	self->program     = program;
-	self->code        = code;
-	self->code_data   = code_data;
-	self->code_arg    = code_arg;
-	self->refs        = refs;
 	self->args        = args;
 	self->allow_close = allow_close;
+
+	auto code      = &program->code;
+	auto code_data = &program->code_data;
 	calls_prepare(&self->calls, local, code_data);
 
 	const void* ops[] =
@@ -341,9 +330,6 @@ vm_run(Vm*       self,
 		&&cunion_limit,
 		&&cunion_offset,
 		&&cunion_add,
-		&&crecv_aggs,
-		&&crecv,
-		&&crecv_matching,
 
 		// table cursor
 		&&ctable_open,
@@ -414,7 +400,6 @@ vm_run(Vm*       self,
 		&&cddl_create_index,
 
 		// compute
-		&&csend,
 		&&cclose,
 
 		// var
@@ -451,7 +436,7 @@ vm_run(Vm*       self,
 	auto quota = self->quota;
 	auto stack = &self->stack;
 	auto r     = self->r.r;
-	auto op    = code_at(self->code, start);
+	auto op    = code_at(code, start);
 	op_start;
 
 cnop:
@@ -1797,7 +1782,7 @@ cset_agg:
 cset_agg_merge:
 	// [set, aggs]
 	a = &r[op->a];
-	agg_merge_sets((Agg*)code_data_at(self->code_data, op->b), &a, 1);
+	agg_merge_sets((Agg*)code_data_at(code_data, op->b), &a, 1);
 	op_next;
 
 cself:
@@ -1832,20 +1817,6 @@ cunion_add:
 	value_init(&r[op->b]);
 	op_next;
 
-crecv_aggs:
-	// [set, rdispatch, aggs]
-	crecv_aggs(self, op);
-	op_next;
-
-crecv:
-	// [union, rdispatch]
-	crecv(self, op);
-	op_next;
-
-crecv_matching:
-	crecv_matching(self, op);
-	op_next;
-
 // table cursor
 ctable_open:
 	op = ctable_open(self, op);
@@ -1860,7 +1831,7 @@ ctable_next:
 	quota_add(quota);
 	iterator_next(r[op->a].cursor);
 	// jmp on success or skip to the next op on eof
-	op = likely(iterator_has(r[op->a].cursor)) ? code_at(self->code, op->b) : op + 1;
+	op = likely(iterator_has(r[op->a].cursor)) ? code_at(code, op->b) : op + 1;
 	op_jmp;
 
 ctable_readb:
@@ -2006,12 +1977,12 @@ cstore_open:
 		if (likely(store_iterator_has(a->cursor_store)))
 			op++;
 		else
-			op = code_at(self->code, op->c);
+			op = code_at(code, op->c);
 		a->type = TYPE_CURSOR_STORE;
 	} else {
 		assert(r[op->b].type == TYPE_NULL);
 		value_set_null(&r[op->a]);
-		op = code_at(self->code, op->c);
+		op = code_at(code, op->c);
 	}
 	op_jmp;
 
@@ -2022,7 +1993,7 @@ cstore_next:
 	store_iterator_next(a->cursor_store);
 	// jmp on success or skip to the next op on eof
 	if (likely(store_iterator_has(a->cursor_store)))
-		op = code_at(self->code, op->b);
+		op = code_at(code, op->b);
 	else
 		op++;
 	op_jmp;
@@ -2047,12 +2018,12 @@ cjson_open:
 			a->json_size = data_sizeof(a->json);
 			op++;
 		} else {
-			op = code_at(self->code, op->c);
+			op = code_at(code, op->c);
 		}
 	} else {
 		assert(r[op->b].type == TYPE_NULL);
 		value_set_null(&r[op->a]);
-		op = code_at(self->code, op->c);
+		op = code_at(code, op->c);
 	}
 	op_jmp;
 
@@ -2063,7 +2034,7 @@ cjson_next:
 	data_skip(&a->json);
 	if (likely(! unpack_array_end(&a->json))) {
 		a->json_size = data_sizeof(a->json);
-		op = code_at(self->code, op->b);
+		op = code_at(code, op->b);
 	} else {
 		op++;
 	}
@@ -2182,10 +2153,6 @@ cddl:
 
 cddl_create_index:
 	cddl_create_index(self, op);
-	op_next;
-
-csend:
-	csend(self, op);
 	op_next;
 
 cclose:
