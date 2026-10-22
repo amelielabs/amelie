@@ -87,16 +87,7 @@ commit(Commit* self, Gtr* gtr, Buf* error)
 {
 	cancel_pause();
 
-	// finilize transaction and handle errors
-	auto error_pending = dispatch_complete(&gtr->dispatch);
-	if (! error)
-	{
-		if (error_pending)
-		{
-			error = buf_create();
-			buf_write_buf(error, error_pending);
-		}
-	}
+	// note: dispatch is completed
 	if (unlikely(error))
 	{
 		gtr_set_abort(gtr);

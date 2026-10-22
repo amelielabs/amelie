@@ -71,8 +71,6 @@ struct Stmt
 	Columns    cte_columns;
 	bool       is_return;
 	bool       is_break;
-	bool       udfs;
-	bool       udfs_sending;
 	Refs       refs;
 	AstList    select_list;
 	Block*     block;
@@ -92,8 +90,6 @@ stmt_allocate(Parser* parser, Lex* lex, Block* block)
 	self->cte_name     = NULL;
 	self->is_return    = false;
 	self->is_break     = false;
-	self->udfs         = false;
-	self->udfs_sending = false;
 	self->next         = NULL;
 	self->prev         = NULL;
 	self->lex          = lex;

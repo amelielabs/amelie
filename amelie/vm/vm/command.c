@@ -197,7 +197,7 @@ ctable_open(Vm* self, Op* op)
 		return ++op;
 
 	// jmp on eof
-	return code_at(self->code, op->c);
+	return code_at(&self->program->code, op->c);
 }
 
 hot void
@@ -246,7 +246,6 @@ cinsert(Vm* self, Op* op)
 #endif
 }
 
-#if 0
 hot void
 ctable_prepare(Vm* self, Op* op)
 {
@@ -266,8 +265,11 @@ ctable_prepare(Vm* self, Op* op)
 	// set cursor
 	value_set_cursor(cursor, table, part, it);
 
+	// TODO:
+	/*
 	// prepare upsert state
 	self->upsert = self->code_arg->start;
+	*/
 }
 
 Op*
@@ -391,16 +393,13 @@ ccall_udf(Vm* self, Op* op)
 	vm_run(&vm, self->local,
 	       self->gtr,
 	       self->tr,
-	       program, &program->code, &program->code_data, NULL,
-	       NULL, // refs
+	       program,
 	       argv,
 	       &ret,
-	       false,
-		   0);
+	       false);
 
 	if (ret.value)
 		value_move(result, ret.value);
 
 	stack_popn(&self->stack, argc);
 }
-#endif

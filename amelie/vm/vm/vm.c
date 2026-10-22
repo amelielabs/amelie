@@ -85,6 +85,7 @@ vm_run(Vm*      self,
 	auto code      = &program->code;
 	auto code_data = &program->code_data;
 	calls_prepare(&self->calls, local, code_data);
+	reg_prepare(&self->r, code->regs);
 
 	const void* ops[] =
 	{

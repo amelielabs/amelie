@@ -17,7 +17,6 @@ struct Vm
 {
 	Reg       r;
 	Stack     stack;
-	Code*     code;
 	uint8_t*  upsert;
 	bool      allow_close;
 	Value*    args;

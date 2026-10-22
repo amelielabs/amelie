@@ -74,22 +74,22 @@ session_run(Session* self)
 	auto portal   = self->portal;
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
+	auto access   = &program->access;
 	auto profile  = &self->profile;
 	auto gtr      = &self->gtr;
 
 	// prevent client writes on replica
-	if (!program->ro && !state_is_primary())
+	auto ro = access_ro(access);
+	if (!ro && !state_is_primary())
 		if (! self->req->recover)
 			error("system is in read-only mode");
-
-	reg_prepare(&self->vm.r, program->code.regs);
 
 	// prepare global transaction
 	gtr_prepare(gtr, &portal->local, portal->user, program);
 
 	// prepare request for the wal writer
 	auto write = &gtr->write;
-	if (! program->ro)
+	if (! ro)
 	{
 		auto req = self->req;
 		if (req->recover)
@@ -111,28 +111,48 @@ session_run(Session* self)
 			quota_set(quota, limits_get(limits, LIMIT_COMPUTE));
 	}
 
-	// execute coordinator
+	// pushdown (execute or coordinate multi user access)
+	auto users = gtr->dispatch.ltrs_count;
+	if (users > 0)
+		gtrs_send(share()->gtrs, gtr);
+
+	// execute
+	Buf* error = NULL;
 	Return ret;
 	return_init(&ret);
-	auto on_error = error_catch
-	(
-		vm_run(&self->vm, &portal->local,
-		       gtr,
-		       &gtr->tr,
-		       program,
-		       &program->code,
-		       &program->code_data,
-		       NULL,
-		       NULL,
-		       compiler->program_args,
-		       &ret,
-		       true,
-		       0);
-	);
+	if (users == 0 || users > 1)
+	{
+		// expr or multi-user access
+		auto on_error = error_catch
+		(
+			vm_run(&self->vm, &portal->local,
+			       gtr,
+			       &gtr->tr,
+			       program,
+			       compiler->program_args,
+			       &ret,
+			       true);
+		);
+		if (on_error)
+			error = error_create(&am_self()->error);
+	}
 
-	Buf* error = NULL;
-	if (on_error)
-		error = error_create(&am_self()->error);
+	// wait for completion
+	auto returning = compiler->program_returning;
+	if (users > 0)
+	{
+		// wait for completion
+		auto error_pushdown = dispatch_complete(&gtr->dispatch);
+		if (error_pushdown)
+		{
+			assert(! error);
+			error = error_pushdown;
+		}
+
+		// pushdown result
+		if (users == 1 && returning)
+			ret.value = &gtr->dispatch.result;
+	}
 
 	if (compiler->program_profile)
 	{
@@ -141,8 +161,7 @@ session_run(Session* self)
 	}
 
 	// write result
-	auto returning = compiler->program_returning;
-	auto output    = &portal->output;
+	auto output = &portal->output;
 	if (returning && ret.value)
 		output_value(output, returning, ret.value);
 
@@ -163,7 +182,6 @@ session_run_utility(Session* self)
 	auto portal   = self->portal;
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
-	reg_prepare(&self->vm.r, program->code.regs);
 
 	// prevent client writes on replica
 	if (! state_is_primary())
@@ -201,14 +219,9 @@ session_run_utility(Session* self)
 		       &self->gtr,
 		       &tr,
 		       program,
-		       &program->code,
-		       &program->code_data,
-		       NULL,
-		       NULL,
 		       NULL,
 		       &ret,
-		       true,
-		       0);
+		       true);
 	);
 
 	if (unlikely(on_error))
@@ -244,7 +257,6 @@ session_run_utility(Session* self)
 	Write write;
 	write_init(&write);
 	defer(write_free, &write);
-
 	if (tr_active(&tr))
 	{
 		auto req = self->req;
@@ -336,7 +348,8 @@ session_main(Session* self, Portal* portal, Request* req)
 
 	// permission to EXECUTE
 	if (stmt->id == STMT_EXECUTE)
-		user_check_permission(portal->user, &compiler->program_udf->rel, PERM_EXECUTE);
+		user_check_permission(portal->user, &compiler->program_udf->rel,
+		                      PERM_EXECUTE);
 
 	// validate user permissions
 	user_check_access(portal->user, &program->access);

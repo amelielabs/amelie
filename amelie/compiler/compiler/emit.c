@@ -172,9 +172,7 @@ emit_block(Compiler* self, Block* block)
 		if (stmt->ret && stmt->ret->count_into > 0)
 			emit_into(self, stmt);
 
-		// emit close for last sending SELECT udf()
-		if (stmt->udfs_sending)
-			emit_close(self, stmt);
+		emit_close(self, stmt);
 
 		// RETURN var | stmt
 		if (stmt->is_return)

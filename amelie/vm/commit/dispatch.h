@@ -67,12 +67,6 @@ dispatch_set_program(Dispatch* self, Program* program)
 	self->program = program;
 }
 
-static inline bool
-dispatch_multi_user(Dispatch* self)
-{
-	return self->ltrs_count > 1;
-}
-
 hot static inline void
 dispatch_close(Dispatch* self)
 {
@@ -176,7 +170,7 @@ dispatch_complete(Dispatch* self)
 	// wait for group completion
 	complete_wait(&self->complete);
 
-	// sync metrics
+	// set error
 	Buf* error = NULL;
 	list_foreach(&self->ltrs)
 	{

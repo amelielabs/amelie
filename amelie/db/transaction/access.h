@@ -52,6 +52,7 @@ access_free(Access* self)
 static inline void
 access_reset(Access* self)
 {
+	self->list_count = 0;
 	self->ro         = true;
 	self->multi_user = false;
 	buf_reset(&self->list);

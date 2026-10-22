@@ -139,7 +139,7 @@ table_create(Catalog*     self,
 		      &config->name);
 
 	// allocate table
-	auto user  = user_of(tr->user);
+	auto user  = catalog_find_user(self, &config->user, true);
 	auto table = table_allocate(self, user, config, &user->memory);
 
 	// update tables
