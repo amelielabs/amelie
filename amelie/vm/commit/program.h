@@ -16,15 +16,12 @@ typedef struct Program Program;
 struct Program
 {
 	Code     code;
-	Code     code_backend;
 	CodeData code_data;
 	Access   access;
 	Buf      explain;
 	SetList  sets;
 	int      send_last;
-	bool     distributed;
 	bool     utility;
-	bool     ro;
 	LockId   lock_catalog;
 	LockId   lock_ddl;
 };
@@ -34,13 +31,10 @@ program_allocate(void)
 {
 	auto self = (Program*)am_malloc(sizeof(Program));
 	self->send_last    = -1;
-	self->distributed  = false;
 	self->utility      = false;
-	self->ro           = false;
 	self->lock_catalog = LOCK_SHARED;
 	self->lock_ddl     = LOCK_NONE;
 	code_init(&self->code);
-	code_init(&self->code_backend);
 	code_data_init(&self->code_data);
 	access_init(&self->access);
 	buf_init(&self->explain);
@@ -54,7 +48,6 @@ program_free(Program* self)
 	if (self->sets.list_count)
 		set_list_free(&self->sets);
 	code_free(&self->code);
-	code_free(&self->code_backend);
 	code_data_free(&self->code_data);
 	access_free(&self->access);
 	buf_free(&self->explain);
@@ -65,13 +58,10 @@ static inline void
 program_reset(Program* self, SetCache* cache)
 {
 	self->send_last    = -1;
-	self->distributed  = false;
 	self->utility      = false;
-	self->ro           = false;
 	self->lock_catalog = LOCK_SHARED;
 	self->lock_ddl     = LOCK_NONE;
 	code_reset(&self->code);
-	code_reset(&self->code_backend);
 	code_data_reset(&self->code_data);
 	access_reset(&self->access);
 	buf_reset(&self->explain);

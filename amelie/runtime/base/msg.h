@@ -25,7 +25,6 @@ typedef enum
 	MSG_GTR,
 	MSG_LTR,
 	MSG_LTR_STOP,
-	MSG_REQ,
 
 	// frontend
 	MSG_CLIENT,

@@ -39,20 +39,6 @@ void compiler_parse_udf(Compiler*, Udf*);
 void compiler_parse_copy(Compiler*, Str*, Str*, Str*, Str*);
 void compiler_emit(Compiler*);
 
-static inline void
-compiler_switch_frontend(Compiler* self)
-{
-	self->origin = ORIGIN_FRONTEND;
-	self->code   = &self->program->code;
-}
-
-static inline void
-compiler_switch_backend(Compiler* self)
-{
-	self->origin = ORIGIN_BACKEND;
-	self->code = &self->program->code_backend;
-}
-
 static inline Namespace*
 compiler_namespace(Compiler* self)
 {

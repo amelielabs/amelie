@@ -59,18 +59,17 @@ explain_program(Compiler* self, Program* program, Str* user, Str* name)
 		buf_format(buf, "FUNCTION {str}.{str}()\n\n", user, name);
 
 	// main
-	buf_format(buf, "main\n");
+	auto access = &self->program->access;
+	if (access_empty(access))
+		buf_format(buf, "main\n");
+	else
+	if (access_multi_user(access))
+		buf_format(buf, "main (multi-tenant)\n");
+	else
+		buf_format(buf, "main (pushdown)\n");
 	op_dump(program, &program->code, buf);
 
-	// pushdown
-	if (code_count(&program->code_backend) > 0)
-	{
-		buf_format(buf, "\npushdown\n");
-		op_dump(program, &program->code_backend, buf);
-	}
-
 	// access
-	auto access = &program->access;
 	if (! access_empty(access))
 	{
 		buf_format(buf, "\naccess\n");

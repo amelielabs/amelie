@@ -381,3 +381,19 @@ session_execute(Session* self, Portal* portal, Request* req)
 	// note: request keeps catalog lock
 	return !on_error;
 }
+
+#if 0
+	// pass store to insert
+	if (op->d != -1)
+	{
+		// store, seed, time
+		buf_reset(&req->arg);
+		buf_write(&req->arg, &reg_at(&self->r, op->d)->store, sizeof(Store*));
+		uint64_t value = random_generate(&self->local->random);
+		buf_write(&req->arg, &value, sizeof(value));
+		value = self->local->time_ms;
+		buf_write(&req->arg, &value, sizeof(value));
+
+		value_free(reg_at(&self->r, op->d));
+	}
+#endif

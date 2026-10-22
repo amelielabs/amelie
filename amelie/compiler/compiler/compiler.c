@@ -70,47 +70,6 @@ compiler_set(Compiler* self, Local* local, Program* program)
 	parser_prepare(&self->parser, local);
 }
 
-hot static void
-compiler_analyze(Compiler* self)
-{
-	auto program = self->program;
-	auto access = &program->access;
-	program->ro          = true;
-	program->distributed = false;
-	User* user = NULL;
-	for (auto i = 0; i < access->list_count; i++)
-	{
-		auto record = access_at(access, i);
-
-		// set distributed, if program does cross user access
-		auto rel = record->rel;
-		if (rel->type == REL_TABLE)
-		{
-			auto table = table_of(rel);
-			if (! user) {
-				user = table->user;
-			} else {
-				if (user != table->user)
-					program->distributed = true;
-			}
-		}
-
-		// set program ro flags
-		if (record->perm & PERM_EXECUTE)
-		{
-			if (((Program*)udf_of(record->rel)->data)->ro)
-				continue;
-			program->ro = false;
-		}
-
-		// dml
-		if ((record->perm & PERM_INSERT) ||
-		    (record->perm & PERM_UPDATE) ||
-		    (record->perm & PERM_DELETE))
-			program->ro = false;
-	}
-}
-
 static void
 compiler_prepare(Compiler* self)
 {
@@ -128,10 +87,7 @@ compiler_prepare(Compiler* self)
 		self->program_returning = &ret->columns;
 
 	if (stmt->id != STMT_EXECUTE)
-	{
-		compiler_analyze(self);
 		return;
-	}
 
 	// handle EXECUTE
 	//
@@ -187,5 +143,4 @@ compiler_emit(Compiler* self)
 	// set the max number of registers used
 	auto program = self->program;
 	code_set_regs(&program->code, self->map.count);
-	code_set_regs(&program->code_backend, self->map.count);
 }

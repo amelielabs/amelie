@@ -18,7 +18,7 @@
 #include <amelie_backend.h>
 
 hot static void
-pod_request(Pod* self, Ltr* ltr, Req* req)
+pod_request(Pod* self, Ltr* ltr)
 {
 	// create and add transaction to the prepared list (even on error)
 	auto gtr = ltr->gtr;
@@ -32,35 +32,8 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 		ltr->tr = tr;
 	}
 
-	// execute request
-	vm_reset(&self->vm);
-	reg_prepare(&self->vm.r, req->code->regs);
-
-	Return ret;
-	return_init(&ret);
-
-	vm_run(&self->vm, gtr->local,
-	        gtr,
-	        ltr->tr,
-	        NULL,
-	        req->code,
-	        req->code_data,
-	        &req->arg,
-	        (Value*)req->refs.start,
-	        NULL,
-	        &ret,
-	        false,
-	        req->start);
-
-	if (ret.value)
-		value_move(&req->result, ret.value);
-}
-
-hot static void
-pod_run(Pod* self, Ltr* ltr)
-{
 	// set compute limit
-	auto limits = ltr->gtr->local->limits;
+	auto limits = gtr->local->limits;
 	if (limits)
 	{
 		auto quota = &self->quota;
@@ -70,25 +43,43 @@ pod_run(Pod* self, Ltr* ltr)
 			quota_reset(quota);
 	}
 
-	// execute incoming requests till close
-	auto active = true;
-	while (active)
+	// execute request
+	vm_reset(&self->vm);
+
+	auto program = ltr->dispatch->program;
+	reg_prepare(&self->vm.r, program->code.regs);
+
+	Return ret;
+	return_init(&ret);
+
+	vm_run(&self->vm, gtr->local,
+	        gtr,
+	        ltr->tr,
+	        program,
+	        NULL,
+	        &ret,
+	        false);
+
+	if (ret.value)
+		value_move(&ltr->dispatch->result, ret.value);
+}
+
+hot static void
+pod_run(Pod* self, Ltr* ltr)
+{
+	// execute or wait to release
+	if (access_multi_user(&ltr->dispatch->program->access))
 	{
+		// notify ready to handle multi-tenant access
+		ltr_ready(ltr);
+
+		// wait for completion
 		auto msg = ltr_read(ltr);
-		if (msg->id == MSG_LTR_STOP)
-		{
-			active = false;
-			continue;
-		}
-		auto req = (Req*)msg;
-		if (error_catch(pod_request(self, ltr, req)))
-		{
-			req->error = error_create(&am_self()->error);
-			if (! ltr->error)
-				ltr->error = req->error;
-		}
-		active = !req->dispatch->close;
-		dispatch_complete(req->dispatch);
+		assert(msg->id == MSG_LTR_STOP);
+	} else
+	{
+		if (error_catch(pod_request(self, ltr)))
+			ltr->error = error_create(&am_self()->error);
 	}
 
 	calls_reset(&self->vm.calls);

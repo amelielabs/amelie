@@ -28,11 +28,15 @@ struct Ltr
 	Buf*      error;
 	bool      closed;
 	Complete* complete;
+	Complete* ready;
 	List      link;
 };
 
 static inline Ltr*
-ltr_allocate(Gtr* gtr, Dispatch* dispatch, Complete* complete)
+ltr_allocate(Gtr*      gtr,
+             Dispatch* dispatch,
+             Complete* complete,
+             Complete* ready)
 {
 	auto self = (Ltr*)am_malloc(sizeof(Ltr));
 	self->gtr            = gtr;
@@ -42,6 +46,7 @@ ltr_allocate(Gtr* gtr, Dispatch* dispatch, Complete* complete)
 	self->error          = NULL;
 	self->closed         = false;
 	self->complete       = complete;
+	self->ready          = ready;
 	mailbox_init(&self->queue);
 	msg_init(&self->queue_close, MSG_LTR_STOP);
 	msg_init(&self->msg, MSG_LTR);
@@ -89,4 +94,10 @@ static inline void
 ltr_complete(Ltr* self)
 {
 	complete_signal(self->complete);
+}
+
+static inline void
+ltr_ready(Ltr* self)
+{
+	complete_signal(self->ready);
 }

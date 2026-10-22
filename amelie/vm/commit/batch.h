@@ -131,7 +131,7 @@ batch_process(Batch* self)
 			continue;
 
 		// add for wal write
-		if (! gtr->program->ro)
+		if (! access_ro(&gtr->program->access))
 			write_list_add(&self->write, write);
 	}
 }

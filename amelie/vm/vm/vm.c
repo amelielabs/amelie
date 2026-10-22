@@ -73,8 +73,7 @@ vm_run(Vm*      self,
        Program* program,
        Value*   args,
        Return*  ret,
-       bool     allow_close,
-       int      start)
+       bool     allow_close)
 {
 	self->local       = local;
 	self->gtr         = gtr;
@@ -436,7 +435,7 @@ vm_run(Vm*      self,
 	auto quota = self->quota;
 	auto stack = &self->stack;
 	auto r     = self->r.r;
-	auto op    = code_at(code, start);
+	auto op    = code_at(code, 0);
 	op_start;
 
 cnop:

@@ -23,15 +23,14 @@
 void
 emit_close(Compiler* self, Stmt* stmt)
 {
-	// only if fe? (cross tenant multi-stmts)
-	(void)self;
-	(void)stmt;
-#if 0
+	// early release control for cross tenant transactions
+	if (! access_multi_user(&self->program->access))
+		return;
+
 	// mark last sending operation in the main block
 	auto block = compiler_main(self);
 	if (stmt->block == block && block->stmts.last_send == stmt)
 		op0(self, CCLOSE);
-#endif
 }
 
 hot static void
@@ -200,10 +199,6 @@ emit(Compiler* self)
 	auto main = compiler_namespace(self);
 	assert(main);
 
-	// TODO: send
-	// 	// set fe or be
-	compiler_switch_frontend(self);
-
 	// initialize declared variables (skipping arguments)
 	auto vars = 0;
 	for (auto var = main->vars.list; var; var = var->next)
@@ -215,96 +210,10 @@ emit(Compiler* self)
 	// emit main block
 	emit_block(self, main->blocks.list);
 
-	// TODO: recv (not needed?)
-}
-
 #if 0
-static void
-emit_send(Compiler* self, Target* target, int type, int start)
-{
-	auto stmt = self->current;
-	auto ret  = stmt->ret;
-	assert(stmt->rdispatch == -1);
-
-	// create send context
-	auto program = self->program;
-	int  send_offset;
-	auto send = send_create(&program->code_data, &send_offset);
-	send->type       = type;
-	send->start      = start;
-	send->has_result = ret && returning_has(ret);
-	send->table      = target->from_table;
-
-	// prepare statement dispatch order register
-	auto rdispatch = rpin(self, TYPE_INT);
-
-	// INSERT
-	if (stmt->id == STMT_INSERT)
-	{
-		// create or match a set to use with the insert operation
-		auto r = emit_insert_store(self);
-
-		// CSEND
-		op4(self, CSEND, rdispatch, refs_count, send_offset, r);
-		runpin(self, r);
-	} else
-	{
-		// UPDATE, DELETE, SELECT
-		op4(self, CSEND, rdispatch, refs_count, send_offset, -1);
-	}
-
-	if (send->has_result)
-		stmt->rdispatch = rdispatch;
-	else
-		runpin(self, rdispatch);
-
 	// mark last sending operation in the main block
 	auto block = compiler_main(self);
 	if (stmt->block == block && block->stmts.last_send == stmt)
 		program->send_last = op_pos(self) - 1;
-}
-
-static void
-emit_recv(Compiler* self, Stmt* stmt)
-{
-	// Select or DML Returning with target
-	if (stmt->rdispatch == -1)
-		return;
-	auto ret = stmt->ret;
-	assert(ret);
-
-	auto stmt_prev = self->current;
-	self->current = stmt;
-
-	// process pushdown result
-	//
-	// create union and receive results
-	//
-	if (stmt->id == STMT_SELECT)
-	{
-		stmt->r = emit_select_recv(self, stmt->ast);
-	} else
-	if (stmt->id == STMT_MATCHING)
-	{
-		stmt->r = emit_matching_recv(self, stmt->ast);
-	} else
-	{
-		// DML returning
-
-		// CUNION
-		stmt->r = op2pin(self, CUNION, TYPE_STORE, UNION_ALL);
-
-		// CRECV
-		op2(self, CRECV, stmt->r, stmt->rdispatch);
-	}
-
-	runpin(self, stmt->rdispatch);
-	stmt->rdispatch = -1;
-
-	// handle INTO and := after receive
-	if (ret->count_into > 0)
-		emit_into(self, stmt);
-
-	self->current = stmt_prev;
-}
 #endif
+}

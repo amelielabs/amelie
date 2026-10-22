@@ -143,7 +143,9 @@ gtrs_send(Gtrs* self, Gtr* gtr)
 	// register transaction and begin execution
 	gtrs_attach(self, gtr);
 
-	// todo: wait if program->distributed for all ready?
+	// wait for group ready first
+	if (gtr->dispatch.ltrs_count > 1)
+		dispatch_wait(&gtr->dispatch);
 }
 
 hot static inline uint64_t

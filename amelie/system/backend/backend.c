@@ -87,12 +87,6 @@ backend_main(void* arg)
 			ltr_write(ltr, msg);
 			break;
 		}
-		case MSG_REQ:
-		{
-			auto req = (Req*)msg;
-			ltr_write(req->ltr, msg);
-			break;
-		}
 #if 0
 		case MSG_STREAM:
 		{

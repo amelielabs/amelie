@@ -22,9 +22,10 @@ struct AccessRecord
 
 struct Access
 {
-	Buf list;
-	Buf list_ordered;
-	int list_count;
+	Buf  list;
+	int  list_count;
+	bool ro;
+	bool multi_user;
 };
 
 static inline AccessRecord*
@@ -33,34 +34,27 @@ access_at(Access* self, int order)
 	return &((AccessRecord*)self->list.start)[order];
 }
 
-static inline AccessRecord*
-access_at_ordered(Access* self, int order)
-{
-	auto ref = ((int*)self->list_ordered.start)[order];
-	return access_at(self, ref);
-}
-
 static inline void
 access_init(Access* self)
 {
 	self->list_count = 0;
+	self->ro         = true;
+	self->multi_user = false;
 	buf_init(&self->list);
-	buf_init(&self->list_ordered);
 }
 
 static inline void
 access_free(Access* self)
 {
 	buf_free(&self->list);
-	buf_free(&self->list_ordered);
 }
 
 static inline void
 access_reset(Access* self)
 {
-	self->list_count = 0;
+	self->ro         = true;
+	self->multi_user = false;
 	buf_reset(&self->list);
-	buf_reset(&self->list_ordered);
 }
 
 static inline bool
@@ -69,9 +63,27 @@ access_empty(Access* self)
 	return !self->list_count;
 }
 
+static inline bool
+access_ro(Access* self)
+{
+	return self->ro;
+}
+
+static inline bool
+access_multi_user(Access* self)
+{
+	return self->multi_user;
+}
+
 hot static inline void
 access_add(Access* self, Rel* rel, uint32_t perm)
 {
+	if ((perm & PERM_INSERT) ||
+	    (perm & PERM_UPDATE) ||
+	    (perm & PERM_DELETE))
+	{
+		self->ro = false;
+	}
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
@@ -80,11 +92,13 @@ access_add(Access* self, Rel* rel, uint32_t perm)
 			record->perm |= perm;
 			return;
 		}
+		if (! str_compare(record->rel->user, rel->user))
+			self->multi_user = true;
+
 	}
 	auto record = (AccessRecord*)buf_emplace(&self->list, sizeof(AccessRecord));
 	record->rel  = rel;
 	record->perm = perm;
-	buf_write(&self->list_ordered, &self->list_count, sizeof(int));
 	self->list_count++;
 }
 

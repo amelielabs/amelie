@@ -21,8 +21,8 @@ struct Dispatch
 	Gtr*     gtr;
 	Program* program;
 	Value    result;
-	bool     close;
 	Complete complete;
+	Complete ready;
 	LtrCache cache;
 };
 
@@ -32,10 +32,10 @@ dispatch_init(Dispatch* self, Gtr* gtr)
 	self->ltrs_count = 0;
 	self->gtr        = gtr;
 	self->program    = NULL;
-	self->close      = false;
 	list_init(&self->ltrs);
 	value_init(&self->result);
 	complete_init(&self->complete);
+	complete_init(&self->ready);
 	ltr_cache_init(&self->cache);
 }
 
@@ -43,7 +43,6 @@ static inline void
 dispatch_reset(Dispatch* self)
 {
 	self->ltrs_count = 0;
-	self->close      = false;
 	list_foreach_safe(&self->ltrs)
 	{
 		auto ltr = list_at(Ltr, link);
@@ -52,6 +51,7 @@ dispatch_reset(Dispatch* self)
 	list_init(&self->ltrs);
 	value_free(&self->result);
 	complete_reset(&self->complete);
+	complete_reset(&self->ready);
 }
 
 static inline void
@@ -67,10 +67,10 @@ dispatch_set_program(Dispatch* self, Program* program)
 	self->program = program;
 }
 
-static inline void
-dispatch_set_close(Dispatch* self)
+static inline bool
+dispatch_multi_user(Dispatch* self)
 {
-	self->close = true;
+	return self->ltrs_count > 1;
 }
 
 hot static inline void
@@ -126,14 +126,16 @@ dispatch_prepare(Dispatch* self, Program* program)
 		auto ltr  = dispatch_find(self, user);
 		if (ltr)
 			continue;
-		ltr = ltr_create(&self->cache, user, self->gtr, self, &self->complete);
-		// todo: program->distributed?
+		ltr = ltr_create(&self->cache, user, self->gtr, self, &self->complete, &self->ready);
 		list_append(&self->ltrs, &ltr->link);
 		self->ltrs_count++;
 	}
 
 	if (self->ltrs_count > 0)
 		complete_prepare(&self->complete, self->ltrs_count);
+
+	if (self->ltrs_count > 1)
+		complete_prepare(&self->ready, self->ltrs_count);
 }
 
 hot static inline void
@@ -149,12 +151,16 @@ dispatch_send(Dispatch* self)
 		ltr->consensus = track->consensus;
 		track_send(track, &ltr->msg);
 	}
+}
 
-#if 0
-	// send early close requests
-	if (dispatch->close)
-		dispatch_close(self);
-#endif
+hot static inline void
+dispatch_wait(Dispatch* self)
+{
+	if (! self->ltrs_count)
+		return;
+
+	// wait for group ready
+	complete_wait(&self->ready);
 }
 
 hot static inline Buf*
@@ -163,8 +169,9 @@ dispatch_complete(Dispatch* self)
 	if (! self->ltrs_count)
 		return NULL;
 
-	// make sure all transactions completed execution
-	dispatch_close(self);
+	// shutdown multi user transaction
+	if (self->ltrs_count > 1)
+		dispatch_close(self);
 
 	// wait for group completion
 	complete_wait(&self->complete);
