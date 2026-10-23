@@ -11,14 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-void cclose(Vm*, Op*);
-
-void cunion_limit(Vm*, Op*);
-void cunion_offset(Vm*, Op*);
-void cmatching(Vm*, Op*);
-
-void cvar_set(Vm*, Op*);
-void cfirst(Vm*, Op*);
 Op*  ctable_open(Vm*, Op*);
 void ctable_prepare(Vm*, Op*);
 
@@ -26,5 +18,13 @@ void cinsert(Vm*, Op*);
 Op*  cupsert(Vm*, Op*);
 void cdelete(Vm*, Op*);
 void cupdate(Vm*, Op*);
+
+void cclose(Vm*, Op*);
+void cunion_limit(Vm*, Op*);
+void cunion_offset(Vm*, Op*);
+void cmatching(Vm*, Op*);
+
+void cvar_set(Vm*, Op*);
+void cfirst(Vm*, Op*);
 
 void ccall_udf(Vm*, Op*);

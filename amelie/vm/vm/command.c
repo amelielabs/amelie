@@ -21,6 +21,211 @@
 #include <amelie_func.h>
 #include <amelie_vm.h>
 
+hot Op*
+ctable_open(Vm* self, Op* op)
+{
+	// [cursor, open_offset, _eof]
+	auto open = open_at(&self->program->code_data, op->b);
+	auto part = open->table->part;
+
+	// create key for index scan
+	auto buf = buf_create();
+	defer_buf(buf);
+
+	Row* key = NULL;
+	if (open->index)
+	{
+		auto keys = &open->index->keys;
+		auto keys_count = open->keys_count;
+		key = row_create_key(buf, keys, stack_at(&self->stack, keys_count),
+		                     keys_count);
+		stack_popn(&self->stack, keys_count);
+
+		// in case of hash index, use key only for point-lookup
+		if (open->index->type == INDEX_HASH && !open->point_lookup)
+			key = NULL;
+	}
+
+	// create iterator
+	auto it = cursor_open(part, open->index, open->point_lookup, key);
+
+	// set cursor
+	auto cursor = reg_at(&self->r, op->a);
+	value_set_cursor(cursor, open->table, part, it);
+
+	// jmp to next op if has data
+	if (likely(iterator_has(cursor->cursor)))
+		return ++op;
+
+	// jmp on eof
+	return code_at(&self->program->code, op->c);
+}
+
+hot void
+ctable_prepare(Vm* self, Op* op)
+{
+	// [cursor, table*]
+	auto cursor = reg_at(&self->r, op->a);
+	auto table  = (Table*)op->b;
+	auto part   = table->part;
+
+	// create primary index iterator for related partition
+	auto primary = part_primary(part);
+	Iterator* it;
+	if (unlikely(primary))
+		it = index_iterator(primary);
+	else
+		it = iterator_heap_allocate(part->heap);
+
+	// set cursor
+	value_set_cursor(cursor, table, part, it);
+
+	// TODO:
+	/*
+	// prepare upsert state
+	self->upsert = self->code_arg->start;
+	*/
+}
+
+hot void
+cinsert(Vm* self, Op* op)
+{
+	// [table*, store, refs]
+	auto table   = (Table*)op->a;
+	auto part    = table->part;
+	auto columns = table_columns(table);
+	auto store   = reg_at(&self->r, op->b);
+
+	// set refs
+	auto refs    = stack_at(&self->stack, op->c);
+
+	// todo: pass time and seed
+	auto seed = random_generate(&am_task->random);
+	auto time = time_ms();
+	Random random;
+	random.seed[0] = time;
+	random.seed[1] = seed;
+
+	Value identity;
+	value_init(&identity);
+
+	auto it = store_iterator(store->store);
+	defer(store_iterator_close, it);
+
+	for (Value* value;
+	    (value = store_iterator_at(it));
+	     store_iterator_next(it))
+	{
+		if (columns->identity)
+			row_identity(columns->identity, refs, value, &identity, &random, time);
+
+		auto row = row_create(part, columns, value, refs, &identity);
+		part_insert(part, self->tr, row);
+	}
+
+	if (op->c)
+		stack_popn(&self->stack, op->c);
+
+	value_free(store);
+}
+
+Op*
+cupsert(Vm* self, Op* op)
+{
+	(void)self;
+	(void)op;
+	return NULL;
+
+#if 0
+	// [cursor, _jmp, _jmp_returning]
+	auto cursor = reg_at(&self->r, op->a);
+	assert(cursor->type == TYPE_CURSOR);
+	auto columns = table_columns(cursor->table);
+
+	auto  identity_type = TYPE_NULL;
+	Value identity;
+	value_init(&identity);
+	if (columns->identity)
+		identity_type = columns->identity->type;
+
+	auto end = self->code_arg->position;
+	while (self->upsert < end)
+	{
+		// set upsert pointer to the current insert row
+		auto value      = *(Value**)self->upsert;
+		auto value_seed = *(int64_t*)(self->upsert + sizeof(Value*));
+		self->upsert += sizeof(Value*) + sizeof(int64_t);
+
+		// set identity column
+		switch (identity_type) {
+		case TYPE_NULL:
+			break;
+		case TYPE_INT:
+			value_set_int(&identity, value_seed);
+			break;
+		case TYPE_UUID:
+			identity.type = TYPE_UUID;
+			uuid_generate_as(&identity.uuid, value_seed, self->local->time_ms);
+			break;
+		default: __builtin_unreachable();
+			break;
+		}
+
+		// create row
+		auto row = row_create(cursor->part, columns,
+		                      value, self->refs,
+		                      &identity);
+
+		// insert or get (open iterator in both cases)
+		auto exists = part_upsert(cursor->part, self->tr,
+		                          cursor->cursor,
+		                          row);
+		if (exists)
+		{
+			// upsert
+
+			// execute on where/on conflict logic (and returning after it)
+			return code_at(self->code, op->b);
+		}
+
+		// returning
+		if (op->c != -1)
+		{
+			// jmp to returning
+			return code_at(self->code, op->c);
+		}
+	}
+
+	// done
+	return ++op;
+#endif
+}
+
+hot void
+cdelete(Vm* self, Op* op)
+{
+	// [cursor]
+	auto cursor = reg_at(&self->r, op->a);
+
+	// delete by cursor
+	part_delete(cursor->table->part, self->tr, cursor->cursor);
+}
+
+hot void
+cupdate(Vm* self, Op* op)
+{
+	// [cursor, order/value count]
+	auto cursor = reg_at(&self->r, op->a);
+	assert(cursor->type == TYPE_CURSOR);
+	auto row_src = iterator_at(cursor->cursor);
+	auto row_values = stack_at(&self->stack, op->b * 2);
+	auto row = row_update(cursor->part,
+	                      table_columns(cursor->table), row_src,
+	                      row_values, op->b);
+	part_update(cursor->part, self->tr, cursor->cursor, row);
+	stack_popn(&self->stack, op->b * 2);
+}
+
 void
 cclose(Vm* self, Op* op)
 {
@@ -160,215 +365,6 @@ cfirst(Vm* self, Op* op)
 	value_free(src);
 }
 
-hot Op*
-ctable_open(Vm* self, Op* op)
-{
-	// [cursor, open_offset, _eof]
-	auto open = open_at(&self->program->code_data, op->b);
-	auto part = open->table->part;
-
-	// create key for index scan
-	auto buf = buf_create();
-	defer_buf(buf);
-
-	Row* key = NULL;
-	if (open->index)
-	{
-		auto keys = &open->index->keys;
-		auto keys_count = open->keys_count;
-		key = row_create_key(buf, keys, stack_at(&self->stack, keys_count),
-		                     keys_count);
-		stack_popn(&self->stack, keys_count);
-
-		// in case of hash index, use key only for point-lookup
-		if (open->index->type == INDEX_HASH && !open->point_lookup)
-			key = NULL;
-	}
-
-	// create iterator
-	auto it = cursor_open(part, open->index, open->point_lookup, key);
-
-	// set cursor
-	auto cursor = reg_at(&self->r, op->a);
-	value_set_cursor(cursor, open->table, part, it);
-
-	// jmp to next op if has data
-	if (likely(iterator_has(cursor->cursor)))
-		return ++op;
-
-	// jmp on eof
-	return code_at(&self->program->code, op->c);
-}
-
-hot void
-cinsert(Vm* self, Op* op)
-{
-	(void)self;
-	(void)op;
-	// TODO
-#if 0
-	// [table*]
-	auto table   = (Table*)op->a;
-	auto part    = table->part;
-	auto columns = table_columns(table);
-
-	auto store      = *(Store**)self->code_arg->start;
-	auto store_seed = *(uint64_t*)(self->code_arg->start + sizeof(Store**));
-	auto store_time = *(uint64_t*)(self->code_arg->start + sizeof(Store**) + sizeof(uint64_t));
-
-	Random random;
-	random.seed[0] = store_time;
-	random.seed[1] = store_seed;
-
-	auto it = store_iterator(store);
-	defer(store_iterator_close, it);
-
-	Value identity;
-	value_init(&identity);
-	Value* value;
-	if (columns->identity)
-	{
-		for (; (value = store_iterator_at(it)); store_iterator_next(it))
-		{
-			row_identity(columns->identity, self->refs, value, &identity, &random, store_time);
-
-			auto row = row_create(part, columns, value, self->refs, &identity);
-			part_insert(part, self->tr, row);
-		}
-	} else
-	{
-		for (; (value = store_iterator_at(it)); store_iterator_next(it))
-		{
-			auto row = row_create(part, columns, value, self->refs, &identity);
-			part_insert(part, self->tr, row);
-		}
-	}
-#endif
-}
-
-hot void
-ctable_prepare(Vm* self, Op* op)
-{
-	// [cursor, table*]
-	auto cursor = reg_at(&self->r, op->a);
-	auto table  = (Table*)op->b;
-	auto part   = table->part;
-
-	// create primary index iterator for related partition
-	auto primary = part_primary(part);
-	Iterator* it;
-	if (unlikely(primary))
-		it = index_iterator(primary);
-	else
-		it = iterator_heap_allocate(part->heap);
-
-	// set cursor
-	value_set_cursor(cursor, table, part, it);
-
-	// TODO:
-	/*
-	// prepare upsert state
-	self->upsert = self->code_arg->start;
-	*/
-}
-
-Op*
-cupsert(Vm* self, Op* op)
-{
-	(void)self;
-	(void)op;
-	return NULL;
-
-#if 0
-	// [cursor, _jmp, _jmp_returning]
-	auto cursor = reg_at(&self->r, op->a);
-	assert(cursor->type == TYPE_CURSOR);
-	auto columns = table_columns(cursor->table);
-
-	auto  identity_type = TYPE_NULL;
-	Value identity;
-	value_init(&identity);
-	if (columns->identity)
-		identity_type = columns->identity->type;
-
-	auto end = self->code_arg->position;
-	while (self->upsert < end)
-	{
-		// set upsert pointer to the current insert row
-		auto value      = *(Value**)self->upsert;
-		auto value_seed = *(int64_t*)(self->upsert + sizeof(Value*));
-		self->upsert += sizeof(Value*) + sizeof(int64_t);
-
-		// set identity column
-		switch (identity_type) {
-		case TYPE_NULL:
-			break;
-		case TYPE_INT:
-			value_set_int(&identity, value_seed);
-			break;
-		case TYPE_UUID:
-			identity.type = TYPE_UUID;
-			uuid_generate_as(&identity.uuid, value_seed, self->local->time_ms);
-			break;
-		default: __builtin_unreachable();
-			break;
-		}
-
-		// create row
-		auto row = row_create(cursor->part, columns,
-		                      value, self->refs,
-		                      &identity);
-
-		// insert or get (open iterator in both cases)
-		auto exists = part_upsert(cursor->part, self->tr,
-		                          cursor->cursor,
-		                          row);
-		if (exists)
-		{
-			// upsert
-
-			// execute on where/on conflict logic (and returning after it)
-			return code_at(self->code, op->b);
-		}
-
-		// returning
-		if (op->c != -1)
-		{
-			// jmp to returning
-			return code_at(self->code, op->c);
-		}
-	}
-
-	// done
-	return ++op;
-#endif
-}
-
-hot void
-cdelete(Vm* self, Op* op)
-{
-	// [cursor]
-	auto cursor = reg_at(&self->r, op->a);
-
-	// delete by cursor
-	part_delete(cursor->table->part, self->tr, cursor->cursor);
-}
-
-hot void
-cupdate(Vm* self, Op* op)
-{
-	// [cursor, order/value count]
-	auto cursor = reg_at(&self->r, op->a);
-	assert(cursor->type == TYPE_CURSOR);
-	auto row_src = iterator_at(cursor->cursor);
-	auto row_values = stack_at(&self->stack, op->b * 2);
-	auto row = row_update(cursor->part,
-	                      table_columns(cursor->table), row_src,
-	                      row_values, op->b);
-	part_update(cursor->part, self->tr, cursor->cursor, row);
-	stack_popn(&self->stack, op->b * 2);
-}
-
 hot void
 ccall_udf(Vm* self, Op* op)
 {
@@ -388,7 +384,6 @@ ccall_udf(Vm* self, Op* op)
 	Vm vm;
 	vm_init(&vm, self->quota);
 	defer(vm_free, &vm);
-	reg_prepare(&vm.r, program->code.regs);
 
 	vm_run(&vm, self->local,
 	       self->gtr,

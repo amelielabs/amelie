@@ -58,19 +58,13 @@ ltr_allocate(Gtr*      gtr,
 static inline void
 ltr_free(Ltr* self)
 {
-	if (self->error)
-		buf_free(self->error);
 	am_free(self);
 }
 
 static inline void
 ltr_reset(Ltr* self)
 {
-	if (self->error)
-	{
-		buf_free(self->error);
-		self->error = NULL;
-	}
+	self->error  = NULL;
 	self->tr     = NULL;
 	self->user   = NULL;
 	self->closed = false;

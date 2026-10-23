@@ -88,7 +88,7 @@ gtr_free(Gtr* self)
 }
 
 static inline void
-gtr_prepare(Gtr* self, Local* local, User* user, Program* program)
+gtr_prepare(Gtr* self, Local* local, User* user, Program* program, Value* args)
 {
 	self->local = local;
 
@@ -110,7 +110,7 @@ gtr_prepare(Gtr* self, Local* local, User* user, Program* program)
 	self->program = program;
 
 	// prepare dispatch
-	dispatch_prepare(&self->dispatch, program);
+	dispatch_prepare(&self->dispatch, program, args);
 }
 
 static inline bool

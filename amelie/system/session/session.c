@@ -85,7 +85,9 @@ session_run(Session* self)
 			error("system is in read-only mode");
 
 	// prepare global transaction
-	gtr_prepare(gtr, &portal->local, portal->user, program);
+	gtr_prepare(gtr, &portal->local, portal->user,
+	            compiler->program,
+	            compiler->program_args);
 
 	// prepare request for the wal writer
 	auto write = &gtr->write;

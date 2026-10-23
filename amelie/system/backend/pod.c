@@ -53,7 +53,7 @@ pod_request(Pod* self, Ltr* ltr)
 	        gtr,
 	        ltr->tr,
 	        dispatch->program,
-	        NULL,
+	        dispatch->args,
 	        &ret,
 	        false);
 
@@ -73,6 +73,7 @@ pod_run(Pod* self, Ltr* ltr)
 		// wait for completion
 		auto msg = ltr_read(ltr);
 		assert(msg->id == MSG_LTR_STOP);
+		unused(msg);
 	} else
 	{
 		if (error_catch(pod_request(self, ltr)))

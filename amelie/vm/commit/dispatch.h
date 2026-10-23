@@ -20,6 +20,7 @@ struct Dispatch
 	int      ltrs_count;
 	Gtr*     gtr;
 	Program* program;
+	Value*   args;
 	Value    result;
 	Complete complete;
 	Complete ready;
@@ -32,6 +33,7 @@ dispatch_init(Dispatch* self, Gtr* gtr)
 	self->ltrs_count = 0;
 	self->gtr        = gtr;
 	self->program    = NULL;
+	self->args       = NULL;
 	list_init(&self->ltrs);
 	value_init(&self->result);
 	complete_init(&self->complete);
@@ -42,6 +44,8 @@ dispatch_init(Dispatch* self, Gtr* gtr)
 static inline void
 dispatch_reset(Dispatch* self)
 {
+	self->program    = NULL;
+	self->args       = NULL;
 	self->ltrs_count = 0;
 	list_foreach_safe(&self->ltrs)
 	{
@@ -59,12 +63,6 @@ dispatch_free(Dispatch* self)
 {
 	dispatch_reset(self);
 	ltr_cache_free(&self->cache);
-}
-
-static inline void
-dispatch_set_program(Dispatch* self, Program* program)
-{
-	self->program = program;
 }
 
 hot static inline void
@@ -105,9 +103,10 @@ dispatch_overlaps(Dispatch* self, Dispatch* with)
 }
 
 hot static inline void
-dispatch_prepare(Dispatch* self, Program* program)
+dispatch_prepare(Dispatch* self, Program* program, Value* args)
 {
 	self->program = program;
+	self->args    = args;
 
 	// create ltr for each unique user
 	for (auto i = 0; i < program->access.list_count; i++)
