@@ -51,7 +51,7 @@ pod_request(Pod* self, Ltr* ltr)
 	return_init(&ret);
 	vm_run(&self->vm, gtr->local,
 	        gtr,
-	        ltr->tr,
+	        NULL,
 	        dispatch->program,
 	        dispatch->args,
 	        &ret,

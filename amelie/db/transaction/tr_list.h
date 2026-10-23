@@ -32,6 +32,13 @@ tr_list_empty(TrList* self)
 	return !self->list_count;
 }
 
+static inline Tr*
+tr_list_last(TrList* self)
+{
+	assert(self->list_count > 0);
+	return container_of(list_last(&self->list), Tr, link);
+}
+
 static inline void
 tr_list_reset(TrList* self, TrCache* cache)
 {

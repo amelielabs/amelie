@@ -124,12 +124,27 @@ session_run(Session* self)
 	return_init(&ret);
 	if (users == 0 || users > 1)
 	{
+		if (users > 1)
+		{
+			list_foreach(&gtr->dispatch.ltrs)
+			{
+				auto ltr = list_at(Ltr, link);
+				assert(! ltr->tr);
+				auto track = &ltr->user->track;
+				auto tr = tr_create(&track->cache);
+				tr_set_id(tr, gtr->id);
+				tr_set_limit(tr, &gtr->usage_write);
+				tr_list_add(&track->prepared, tr);
+				ltr->tr = tr;
+			}
+		}
+
 		// expr or multi-user access
 		auto on_error = error_catch
 		(
 			vm_run(&self->vm, &portal->local,
 			       gtr,
-			       &gtr->tr,
+			       NULL,
 			       program,
 			       compiler->program_args,
 			       &ret,

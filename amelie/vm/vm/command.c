@@ -106,6 +106,8 @@ cinsert(Vm* self, Op* op)
 	random.seed[0] = time;
 	random.seed[1] = seed;
 
+	auto tr = tr_list_last(&table->user->track.prepared);
+
 	Value identity;
 	value_init(&identity);
 
@@ -120,7 +122,7 @@ cinsert(Vm* self, Op* op)
 			row_identity(columns->identity, refs, value, &identity, &random, time);
 
 		auto row = row_create(part, columns, value, refs, &identity);
-		part_insert(part, self->tr, row);
+		part_insert(part, tr, row);
 	}
 
 	if (op->c)
@@ -207,8 +209,11 @@ cdelete(Vm* self, Op* op)
 	// [cursor]
 	auto cursor = reg_at(&self->r, op->a);
 
+	auto table = cursor->table;
+	auto tr = tr_list_last(&table->user->track.prepared);
+
 	// delete by cursor
-	part_delete(cursor->table->part, self->tr, cursor->cursor);
+	part_delete(table->part, tr, cursor->cursor);
 }
 
 hot void
@@ -217,12 +222,16 @@ cupdate(Vm* self, Op* op)
 	// [cursor, order/value count]
 	auto cursor = reg_at(&self->r, op->a);
 	assert(cursor->type == TYPE_CURSOR);
+
+	auto table = cursor->table;
+	auto tr = tr_list_last(&table->user->track.prepared);
+
 	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
 	auto row = row_update(cursor->part,
-	                      table_columns(cursor->table), row_src,
+	                      table_columns(table), row_src,
 	                      row_values, op->b);
-	part_update(cursor->part, self->tr, cursor->cursor, row);
+	part_update(cursor->part, tr, cursor->cursor, row);
 	stack_popn(&self->stack, op->b * 2);
 }
 
@@ -387,7 +396,7 @@ ccall_udf(Vm* self, Op* op)
 
 	vm_run(&vm, self->local,
 	       self->gtr,
-	       self->tr,
+	       NULL,
 	       program,
 	       argv,
 	       &ret,
