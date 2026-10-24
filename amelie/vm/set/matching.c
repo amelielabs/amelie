@@ -68,25 +68,15 @@ sq8_dot_product_avx2(const uint8_t* query_u8, const int8_t* vector_i8, uint32_t 
 	return _mm_cvtsi128_si32(sum);
 }
 
-static void
-matching_free(Store* store)
-{
-	auto self = (Matching*)store;
-	am_free(self);
-}
-
 Matching*
 matching_create(Columns* columns, Heap* heap, Flat* flat, int k)
 {
 	auto size = sizeof(Matching) + sizeof(MatchingTop) * k;
 	auto self = (Matching*)am_malloc_aligned(size, cache_line);
-	store_init(&self->store, STORE_MATCHING);
-	self->store.free     = matching_free;
-	self->store.iterator = NULL;
-	self->columns        = columns;
-	self->heap           = heap;
-	self->flat           = flat;
-	self->top_count      = k;
+	self->columns   = columns;
+	self->heap      = heap;
+	self->flat      = flat;
+	self->top_count = k;
 
 	auto top = &self->top[0];
 	for (auto i = 0; i < k; i++)
@@ -97,6 +87,12 @@ matching_create(Columns* columns, Heap* heap, Flat* flat, int k)
 		top[i].heap  = heap;
 	}
 	return self;
+}
+
+void
+matching_free(Matching* self)
+{
+	am_free(self);
 }
 
 hot void
@@ -184,18 +180,18 @@ matching_execute(Matching* self, const float* __restrict query)
 }
 
 hot void
-matching_result(Value* result, Value* value)
+matching_result(Matching* self, Value* result)
 {
-	auto first = (Matching*)value->store;
-	auto top   = &first->top[0];
-	auto top_k = first->top_count;
+	auto top   = &self->top[0];
+	auto top_k =  self->top_count;
 
 	// create result set of matched rows
-	auto dim = first->flat->column->size_flat / sizeof(float);
-	auto columns = first->columns;
+	auto dim = self->flat->column->size_flat / sizeof(float);
+	auto columns = self->columns;
 	auto set = set_create();
 	set_prepare(set, columns->count, 0, NULL);
 	value_set_store(result, &set->store);
+
 	for (auto i = 0; i < top_k; i++)
 	{
 		auto at = &top[i];

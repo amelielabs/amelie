@@ -268,33 +268,24 @@ cunion_offset(Vm* self, Op* op)
 hot void
 cmatching(Vm* self, Op* op)
 {
-	// [set, table, column, top]
-	auto r = & self->r;
-	assert(self->refs);
-
-	auto table   = (Table*)op->a;
+	// [set, table, column, to, top]
+	auto table   = (Table*)op->b;
 	auto column  = (Column*)op->c;
 	auto columns = table_columns(table);
 	auto part    = table->part;
+	auto flat    = flats_at(&part->flats, column);
 
-	auto vector = &self->refs[0];
+	auto vector = reg_at(&self->r, op->d);
 	if (vector->type != TYPE_VECTOR)
 		error("MATCHING: vector expression expected");
 	if (vector->vector_dim != (column->size_flat / sizeof(float)))
 		error("MATCHING: vector dimension mismatch");
 
-	// create matching context as store
-	auto flat = flats_at(&part->flats, column);
-	auto matching = matching_create(columns, part->heap, flat, op->d);
-	value_set_store(reg_at(r, op->a), &matching->store);
-
-	// execute vector search
+	// vector search
+	auto matching = matching_create(columns, part->heap, flat, op->e);
+	defer(matching_free, matching);
 	matching_execute(matching, vector->vector);
-
-	// todo:
-
-	// merge matching results into the one set
-	// matching_result(reg_at(&self->r, op->a), matching);
+	matching_result(matching, reg_at(&self->r, op->a));
 }
 
 void

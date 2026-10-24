@@ -64,9 +64,6 @@ parse_matching(Stmt* self, From* from, Table* table)
 	ctx.from   = &stmt->from;
 	stmt->expr_to = parse_expr(self, &ctx);
 
-	auto ref = refs_add(&self->refs, &stmt->from, stmt->expr_to, -1);
-	ref->not_null = true;
-
 	// TOP
 	stmt_expect(self, KTOP);
 	stmt->expr_top = stmt_expect(self, KINT);

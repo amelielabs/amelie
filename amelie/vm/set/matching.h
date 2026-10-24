@@ -24,7 +24,6 @@ struct MatchingTop
 
 struct Matching 
 {
-	Store       store;
 	Columns*    columns;
 	Heap*       heap;
 	Flat*       flat;
@@ -34,5 +33,6 @@ struct Matching
 
 Matching*
 matching_create(Columns*, Heap*, Flat*, int);
+void matching_free(Matching*);
 void matching_execute(Matching*, const float*__restrict);
-void matching_result(Value*, Value*);
+void matching_result(Matching*, Value*);

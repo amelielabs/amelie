@@ -26,10 +26,16 @@ emit_matching(Compiler* self, Ast* ast)
 	auto matching = ast_matching_of(ast);
 	auto target   = from_first(&matching->from);
 
+	// TO expr
+	auto r = emit_expr(self, &matching->from, matching->expr_to);
+
 	// CMATCHING
-	auto rset = op4pin(self, CMATCHING, TYPE_STORE,
+	auto rset = op5pin(self, CMATCHING, TYPE_STORE,
 	                   (intptr_t)target->from_table,
 	                   (intptr_t)matching->column,
+	                   r,
 	                   matching->expr_top->integer);
+
+	runpin(self, r);
 	return rset;
 }
