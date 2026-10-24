@@ -96,12 +96,9 @@ dst_user_create(DstUser* self, int type)
 			index_type = "tree";
 		else
 			index_type = "hash";
-		auto parts =
-			(int)((random_generate(&am_task->random) % self->dst->opt_parts.integer) + 1);
 		dst_execute(self->dst, self->client,
-		            "CREATE TABLE table_{u64} (id int primary key using {s}, state bigint, payload text) "
-		            "PARTITIONS {d}",
-		            id, index_type, parts);
+		            "CREATE TABLE table_{u64} (id int primary key using {s}, state bigint, payload text)",
+		            id, index_type);
 		dst_stat(&self->dst->stats, DST_STAT_CREATE_TABLE);
 		break;
 	}
@@ -112,12 +109,9 @@ dst_user_create(DstUser* self, int type)
 			index_type = "tree";
 		else
 			index_type = "hash";
-		auto parts =
-			(int)((random_generate(&am_task->random) % self->dst->opt_parts.integer) + 1);
 		dst_execute(self->dst, self->client,
-		            "CREATE TABLE table_vector_{u64} (id int primary key using {s}, state vector(4))"
-		            "PARTITIONS {d}",
-		            id, index_type, parts);
+		            "CREATE TABLE table_vector_{u64} (id int primary key using {s}, state vector(4))",
+		            id, index_type);
 		dst_stat(&self->dst->stats, DST_STAT_CREATE_TABLE_VECTOR);
 		break;
 	}
@@ -159,22 +153,6 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 		list_append(&parent->indexes, &rel->link_parent);
 		parent->indexes_count++;
 	} else
-	if (type == DST_REL_LAYER)
-	{
-		if (parent->type == DST_REL_TABLE)
-			dst_execute(self->dst, self->client,
-			            "CREATE TABLE layer_{u64}_{u64} ON table_{u64}",
-			            parent->id, id, parent->id);
-		else
-		if (parent->type == DST_REL_TABLE_VECTOR)
-			dst_execute(self->dst, self->client,
-			            "CREATE TABLE layer_{u64}_{u64} ON table_vector_{u64}",
-			            parent->id, id, parent->id);
-		dst_stat(&self->dst->stats, DST_STAT_CREATE_LAYER);
-
-		list_append(&parent->layers, &rel->link_parent);
-		parent->layers_count++;
-	} else
 	{
 		abort();
 	}
@@ -204,13 +182,6 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		list_unlink(&rel->link_parent);
 		rel->parent->indexes_count--;
 		break;
-	case DST_REL_LAYER:
-		dst_execute(self->dst, self->client,
-		            "DROP TABLE layer_{u64}_{u64} CASCADE",
-		            rel->parent->id, rel->id);
-		list_unlink(&rel->link_parent);
-		rel->parent->layers_count--;
-		break;
 	}
 
 	// free indexes
@@ -221,16 +192,6 @@ dst_user_drop(DstUser* self, DstRel* rel)
 		self->rels_count--;
 		assert(self->rels_count >= 0);
 		dst_rel_free(index);
-	}
-
-	// free layers
-	list_foreach_safe(&rel->layers)
-	{
-		auto layer = list_at(DstRel, link_parent);
-		list_unlink(&layer->link);
-		self->rels_count--;
-		assert(self->rels_count >= 0);
-		dst_rel_free(layer);
 	}
 
 	list_unlink(&rel->link);

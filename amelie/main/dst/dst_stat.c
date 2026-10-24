@@ -18,25 +18,20 @@ static const char* dst_ops[DST_STAT_MAX] =
 {
 	"insert",
 	"insert_vector",
-	"insert_layer",
 
 	"upsert",
 	"upsert_vector",
-	"upsert_layer",
 
 	"update",
 	"update_vector",
-	"update_layer",
 
 	"delete",
 	"delete_vector",
-	"delete_layer",
 
 	"create user",
 	"create table",
 	"create table (vector)",
 	"create index",
-	"create layer",
 	"drop",
 
 	"errors injected",

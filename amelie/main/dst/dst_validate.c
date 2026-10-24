@@ -209,68 +209,6 @@ dst_validate_index(DstUser* self, DstRel* rel)
 		      rel->id, rel->parent->state.count, count);
 }
 
-static void
-dst_validate_layer(DstUser* self, DstRel* rel)
-{
-	auto client = self->client;
-
-	// layer
-	dst_execute(self->dst, client, "SELECT id, state FROM layer_{u64}_{u64}",
-	            rel->parent->id, rel->id);
-	Str content;
-	buf_str(&client->reply.content, &content);
-	//info("{str}", &content);
-
-	// parse json result
-	Json json;
-	json_init(&json);
-	defer(json_free, &json);
-	json_parse(&json, &content, NULL);
-
-	uint8_t* pos     = json.buf->start;
-	uint8_t* columns = NULL;
-	uint8_t* rows    = NULL;
-	Decode obj[] =
-	{
-		{ DECODE_ARRAY, "columns", &columns },
-		{ DECODE_ARRAY, "rows",    &rows    },
-		{ 0,             NULL,      NULL    },
-	};
-	decode_obj(obj, "result", &pos);
-
-	// read and validate rows
-
-	// [[...], ...]
-	auto count = 0;
-	unpack_array(&rows);
-	while (! unpack_array_end(&rows))
-	{
-		// [key, value]
-		unpack_array(&rows);
-		int64_t key;
-		int64_t value;
-		unpack_int(&rows, &key);
-		unpack_int(&rows, &value);
-		unpack_array_end(&rows);
-
-		auto ref = dst_rel_get(rel, key);
-		if (! ref)
-		{
-			error("layer_{u64}_{u64}: key {u64} is missing",
-			      rel->parent->id, rel->id, key);
-		} else
-		{
-			if (ref->value != value)
-				error("layer_{u64}_{u64}: key {u64} value expected '{i64}' got '{i64}'",
-				      rel->parent->id, rel->id, ref->key, ref->value, value);
-		}
-		count++;
-	}
-	if (count != rel->state.count)
-		error("layer_{u64}_{u64}: keys count expected '{d}' got '{d}'",
-		      rel->parent->id, rel->id, rel->state.count, count);
-}
-
 void
 dst_validate_user(DstUser* self)
 {
@@ -288,11 +226,6 @@ dst_validate_user(DstUser* self)
 		{
 			// table_vector
 			dst_validate_table_vector(self, rel);
-			break;
-		}
-		case DST_REL_LAYER:
-		{
-			dst_validate_layer(self, rel);
 			break;
 		}
 		case DST_REL_INDEX:

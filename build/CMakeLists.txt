@@ -64,7 +64,7 @@ include_directories("${AMELIE_ROOT}/runtime/base")
 include_directories("${AMELIE_ROOT}/runtime/io")
 include_directories("${AMELIE_ROOT}/runtime/lib")
 include_directories("${AMELIE_ROOT}/runtime/data")
-include_directories("${AMELIE_ROOT}/runtime/rel")
+include_directories("${AMELIE_ROOT}/runtime/lock")
 include_directories("${AMELIE_ROOT}/runtime/runtime")
 
 # server
@@ -163,7 +163,6 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/histogram.c
     ${AMELIE_ROOT}/runtime/data/json.c
     ${AMELIE_ROOT}/runtime/data/json_export.c
-    ${AMELIE_ROOT}/runtime/rel/permissions.c
     ${AMELIE_ROOT}/runtime/runtime/opts.c
     ${AMELIE_ROOT}/runtime/runtime/config.c
     ${AMELIE_ROOT}/runtime/runtime/state.c
@@ -189,18 +188,17 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/flat/flat.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/row_encode.c
+    ${AMELIE_ROOT}/db/transaction/permissions.c
     ${AMELIE_ROOT}/db/transaction/rels.c
     ${AMELIE_ROOT}/db/index/tree.c
     ${AMELIE_ROOT}/db/index/index_tree.c
     ${AMELIE_ROOT}/db/index/index_hash.c
     ${AMELIE_ROOT}/db/part/part.c
-    ${AMELIE_ROOT}/db/part/part_cleanup.c
     ${AMELIE_ROOT}/db/part/part_op.c
     ${AMELIE_ROOT}/db/catalog/user.c
     ${AMELIE_ROOT}/db/catalog/table.c
     ${AMELIE_ROOT}/db/catalog/table_alter.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
-    ${AMELIE_ROOT}/db/catalog/layer.c
     ${AMELIE_ROOT}/db/catalog/udf.c
     ${AMELIE_ROOT}/db/catalog/rel.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
@@ -283,7 +281,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_replica.c
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
     ${AMELIE_ROOT}/compiler/parser/parse_watch.c
-    ${AMELIE_ROOT}/compiler/parser/parse_lock.c
     ${AMELIE_ROOT}/compiler/parser/parse_grant.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c
     ${AMELIE_ROOT}/compiler/parser/parse_api.c
@@ -309,24 +306,24 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/plan/path.c
     ${AMELIE_ROOT}/compiler/plan/path_prepare.c
     ${AMELIE_ROOT}/compiler/plan/plan.c
-    ${AMELIE_ROOT}/compiler/plan/plan_pushdown.c
     ${AMELIE_ROOT}/compiler/compiler/compiler.c
-    ${AMELIE_ROOT}/compiler/compiler/explain.c
-    ${AMELIE_ROOT}/compiler/compiler/cast.c
-    ${AMELIE_ROOT}/compiler/compiler/scan.c
+    ${AMELIE_ROOT}/compiler/compiler/emit.c
+    ${AMELIE_ROOT}/compiler/compiler/emit_control.c
     ${AMELIE_ROOT}/compiler/compiler/emit_expr.c
     ${AMELIE_ROOT}/compiler/compiler/emit_insert.c
-    ${AMELIE_ROOT}/compiler/compiler/emit_upsert.c
     ${AMELIE_ROOT}/compiler/compiler/emit_update.c
     ${AMELIE_ROOT}/compiler/compiler/emit_delete.c
     ${AMELIE_ROOT}/compiler/compiler/emit_select.c
     ${AMELIE_ROOT}/compiler/compiler/emit_matching.c
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
-    ${AMELIE_ROOT}/compiler/compiler/emit_utility.c)
+    ${AMELIE_ROOT}/compiler/compiler/emit_utility.c
+    ${AMELIE_ROOT}/compiler/compiler/cast.c
+    ${AMELIE_ROOT}/compiler/compiler/scan.c
+    ${AMELIE_ROOT}/compiler/compiler/explain.c)
 
 set(AMELIE_SOURCES_SYSTEM
-    ${AMELIE_ROOT}/system/backend/stream.c
-    ${AMELIE_ROOT}/system/backend/streams.c
+	#${AMELIE_ROOT}/system/backend/stream.c
+	#${AMELIE_ROOT}/system/backend/streams.c
     ${AMELIE_ROOT}/system/backend/pod.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/frontend/auth_cache.c
@@ -369,7 +366,6 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/bench/bench_copy.c
     ${AMELIE_ROOT}/main/bench/bench_decre.c
     ${AMELIE_ROOT}/main/bench/bench_vector.c
-    ${AMELIE_ROOT}/main/bench/bench_pubsub.c
     ${AMELIE_ROOT}/main/bench/bench_main.c
     ${AMELIE_ROOT}/main/test/test_plan.c
     ${AMELIE_ROOT}/main/test/test_suite.c
