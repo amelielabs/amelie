@@ -26,17 +26,10 @@ emit_matching(Compiler* self, Ast* ast)
 	auto matching = ast_matching_of(ast);
 	auto target   = from_first(&matching->from);
 
-	// CTABLE_PREPARE
-	auto rcursor = op2pin(self, CTABLE_PREPARE, TYPE_CURSOR,
-	                      (intptr_t)target->from_table);
-
-	// CMATCHING(rset, cursor, column, top)
+	// CMATCHING
 	auto rset = op4pin(self, CMATCHING, TYPE_STORE,
-	                   rcursor,
+	                   (intptr_t)target->from_table,
 	                   (intptr_t)matching->column,
 	                   matching->expr_top->integer);
-
-	// CFREE
-	emit_free(self, rcursor);
 	return rset;
 }

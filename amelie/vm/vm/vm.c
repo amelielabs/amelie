@@ -30,6 +30,7 @@ vm_init(Vm* self, Quota* quota)
 	self->args        = NULL;
 	self->refs        = NULL;
 	self->gtr         = NULL;
+	self->code        = NULL;
 	self->program     = NULL;
 	self->quota       = quota;
 	self->tr          = NULL;
@@ -51,13 +52,18 @@ vm_free(Vm* self)
 void
 vm_reset(Vm* self)
 {
+	if (self->upsert)
+	{
+		store_iterator_close(self->upsert);
+		self->upsert = NULL;
+	}
 	calls_reset(&self->calls);
 	reg_reset(&self->r);
 	stack_reset(&self->stack);
+	self->code        = NULL;
 	self->program     = NULL;
 	self->args        = NULL;
 	self->refs        = NULL;
-	self->upsert      = NULL;
 	self->allow_close = true;
 }
 
@@ -78,6 +84,7 @@ vm_run(Vm*      self,
 	self->local       = local;
 	self->gtr         = gtr;
 	self->tr          = tr;
+	self->code        = &program->code;
 	self->program     = program;
 	self->args        = args;
 	self->allow_close = allow_close;
@@ -333,7 +340,6 @@ vm_run(Vm*      self,
 
 		// table cursor
 		&&ctable_open,
-		&&ctable_prepare,
 		&&ctable_next,
 		&&ctable_readb,
 		&&ctable_readi8,
@@ -373,6 +379,7 @@ vm_run(Vm*      self,
 
 		// dml
 		&&cinsert,
+		&&cupsert_open,
 		&&cupsert,
 		&&cdelete,
 		&&cupdate,
@@ -743,7 +750,8 @@ cexcluded:
 	// [result, column]
 	if (unlikely(! self->upsert))
 		error("unexpected EXCLUDED usage");
-	b = *(Value**)(self->upsert - (sizeof(Value*) + sizeof(int64_t))) + op->b;
+
+	b = store_iterator_at(self->upsert);
 	if (b->type != TYPE_REF)
 		value_copy(&r[op->a], b);
 	else
@@ -1822,10 +1830,6 @@ ctable_open:
 	op = ctable_open(self, op);
 	op_jmp;
 
-ctable_prepare:
-	ctable_prepare(self, op);
-	op_next;
-
 ctable_next:
 	// [cursor, _on_success]
 	quota_add(quota);
@@ -1948,7 +1952,7 @@ ctable_readv:
 	ptr = row_column(iterator_at(r[op->b].cursor), (Column*)op->c);
 	if (likely(ptr))
 	{
-		flat = flats_at(&r[op->b].part->flats, (Column*)op->c);
+		flat = flats_at(&r[op->b].table->part->flats, (Column*)op->c);
 		value_set_vector(&r[op->a],
 		                 ((Column*)op->c)->size_flat / sizeof(float),
 		                 flat_vector_at(flat, *(uint32_t*)ptr),
@@ -2093,6 +2097,10 @@ cmatching:
 
 cinsert:
 	cinsert(self, op);
+	op_next;
+
+cupsert_open:
+	cupsert_open(self, op);
 	op_next;
 
 cupsert:

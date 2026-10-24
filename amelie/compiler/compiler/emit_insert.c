@@ -90,8 +90,8 @@ emit_upsert(Compiler* self, AstInsert* insert, int rstore, int refs_count)
 	if (returning_has(&insert->ret))
 		rset = op3pin(self, CSET, TYPE_STORE, insert->ret.count, 0);
 
-	// CTABLE_PREPARE
-	target->rcursor = op2pin(self, CTABLE_PREPARE, TYPE_CURSOR,
+	// CUPSERT_OPEN
+	target->rcursor = op2pin(self, CUPSERT_OPEN, TYPE_CURSOR,
 	                         (intptr_t)target->from_table);
 
 	// jmp _start
@@ -185,9 +185,8 @@ emit_upsert(Compiler* self, AstInsert* insert, int rstore, int refs_count)
 	// CUPSERT
 	op5(self, CUPSERT, target->rcursor, jmp_where, jmp_returning,
 	    rstore, refs_count);
-
-	// close and free cursor
-	target->rcursor = emit_free(self, target->rcursor);
+	runpin(self, target->rcursor);
+	target->rcursor = -1;
 
 	// returning set
 	return rset;

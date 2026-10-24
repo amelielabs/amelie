@@ -259,7 +259,6 @@ enum
 
 	// table cursor
 	CTABLE_OPEN,
-	CTABLE_PREPARE,
 	CTABLE_NEXT,
 	CTABLE_READB,
 	CTABLE_READI8,
@@ -299,6 +298,7 @@ enum
 
 	// dml
 	CINSERT,
+	CUPSERT_OPEN,
 	CUPSERT,
 	CDELETE,
 	CUPDATE,

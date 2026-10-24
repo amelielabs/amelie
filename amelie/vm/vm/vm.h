@@ -15,18 +15,19 @@ typedef struct Vm Vm;
 
 struct Vm
 {
-	Reg       r;
-	Stack     stack;
-	uint8_t*  upsert;
-	bool      allow_close;
-	Value*    args;
-	Value*    refs;
-	Gtr*      gtr;
-	Program*  program;
-	Quota*    quota;
-	Tr*       tr;
-	Local*    local;
-	Calls     calls;
+	Reg            r;
+	Stack          stack;
+	StoreIterator* upsert;
+	Value*         args;
+	Value*         refs;
+	Code*          code;
+	Program*       program;
+	Quota*         quota;
+	Tr*            tr;
+	Gtr*           gtr;
+	Local*         local;
+	bool           allow_close;
+	Calls          calls;
 };
 
 void vm_init(Vm*, Quota*);

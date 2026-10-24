@@ -12,9 +12,9 @@
 //
 
 Op*  ctable_open(Vm*, Op*);
-void ctable_prepare(Vm*, Op*);
 
 void cinsert(Vm*, Op*);
+void cupsert_open(Vm*, Op*);
 Op*  cupsert(Vm*, Op*);
 void cdelete(Vm*, Op*);
 void cupdate(Vm*, Op*);

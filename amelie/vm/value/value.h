@@ -35,7 +35,6 @@ struct Value
 		struct {
 			Iterator*  cursor;
 			Table*     table;
-			Part*      part;
 		};
 		struct {
 			uint8_t*   json;
@@ -215,11 +214,10 @@ value_set_store(Value* self, Store* store)
 }
 
 always_inline hot static inline void
-value_set_cursor(Value* self, Table* table, Part* part, Iterator* cursor)
+value_set_cursor(Value* self, Table* table, Iterator* cursor)
 {
 	self->type   = TYPE_CURSOR;
 	self->table  = table;
-	self->part   = part;
 	self->cursor = cursor;
 }
 

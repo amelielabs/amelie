@@ -51,40 +51,14 @@ ctable_open(Vm* self, Op* op)
 
 	// set cursor
 	auto cursor = reg_at(&self->r, op->a);
-	value_set_cursor(cursor, open->table, part, it);
+	value_set_cursor(cursor, open->table, it);
 
 	// jmp to next op if has data
 	if (likely(iterator_has(cursor->cursor)))
 		return ++op;
 
 	// jmp on eof
-	return code_at(&self->program->code, op->c);
-}
-
-hot void
-ctable_prepare(Vm* self, Op* op)
-{
-	// [cursor, table*]
-	auto cursor = reg_at(&self->r, op->a);
-	auto table  = (Table*)op->b;
-	auto part   = table->part;
-
-	// create primary index iterator for related partition
-	auto primary = part_primary(part);
-	Iterator* it;
-	if (unlikely(primary))
-		it = index_iterator(primary);
-	else
-		it = iterator_heap_allocate(part->heap);
-
-	// set cursor
-	value_set_cursor(cursor, table, part, it);
-
-	// TODO:
-	/*
-	// prepare upsert state
-	self->upsert = self->code_arg->start;
-	*/
+	return code_at(self->code, op->c);
 }
 
 hot void
@@ -131,57 +105,62 @@ cinsert(Vm* self, Op* op)
 	value_free(store);
 }
 
+hot void
+cupsert_open(Vm* self, Op* op)
+{
+	// [cursor, table*]
+	auto cursor = reg_at(&self->r, op->a);
+	auto table  = (Table*)op->b;
+	auto part   = table->part;
+
+	// create primary index iterator for related partition
+	auto primary = part_primary(part);
+	if (unlikely(! primary))
+		error("table {str}.{str}: primary key is required for upsert",
+		      table->rel.user, table->rel.name);
+	auto it = index_iterator(primary);
+	value_set_cursor(cursor, table, it);
+}
+
 Op*
 cupsert(Vm* self, Op* op)
 {
-	(void)self;
-	(void)op;
-	return NULL;
-
-#if 0
-	// [cursor, _jmp, _jmp_returning]
+	// [cursor, _jmp, _jmp_returning, store, refs]
 	auto cursor = reg_at(&self->r, op->a);
 	assert(cursor->type == TYPE_CURSOR);
-	auto columns = table_columns(cursor->table);
+	auto table  = cursor->table;
+	auto columns = table_columns(table);
 
-	auto  identity_type = TYPE_NULL;
+	// todo: pass time and seed
+	auto seed = random_generate(&am_task->random);
+	auto time = time_ms();
+	Random random;
+	random.seed[0] = time;
+	random.seed[1] = seed;
+
+	// create values iterator
+	auto store = reg_at(&self->r, op->d);
+	if (self->upsert)
+		store_iterator_next(self->upsert);
+	else
+		self->upsert = store_iterator(store->store);
+
+	auto refs = stack_at(&self->stack, op->e);
 	Value identity;
 	value_init(&identity);
-	if (columns->identity)
-		identity_type = columns->identity->type;
 
-	auto end = self->code_arg->position;
-	while (self->upsert < end)
+	auto tr = tr_list_last(&table->user->track.prepared);
+	for (Value* value;
+	    (value = store_iterator_at(self->upsert));
+	     store_iterator_next(self->upsert))
 	{
-		// set upsert pointer to the current insert row
-		auto value      = *(Value**)self->upsert;
-		auto value_seed = *(int64_t*)(self->upsert + sizeof(Value*));
-		self->upsert += sizeof(Value*) + sizeof(int64_t);
-
-		// set identity column
-		switch (identity_type) {
-		case TYPE_NULL:
-			break;
-		case TYPE_INT:
-			value_set_int(&identity, value_seed);
-			break;
-		case TYPE_UUID:
-			identity.type = TYPE_UUID;
-			uuid_generate_as(&identity.uuid, value_seed, self->local->time_ms);
-			break;
-		default: __builtin_unreachable();
-			break;
-		}
-
 		// create row
-		auto row = row_create(cursor->part, columns,
-		                      value, self->refs,
-		                      &identity);
+		if (columns->identity)
+			row_identity(columns->identity, refs, value, &identity, &random, time);
+		auto row = row_create(table->part, columns, value, refs, &identity);
 
 		// insert or get (open iterator in both cases)
-		auto exists = part_upsert(cursor->part, self->tr,
-		                          cursor->cursor,
-		                          row);
+		auto exists = part_upsert(table->part, tr, cursor->cursor, row);
 		if (exists)
 		{
 			// upsert
@@ -198,9 +177,12 @@ cupsert(Vm* self, Op* op)
 		}
 	}
 
-	// done
+	// cleanup
+	store_iterator_close(self->upsert);
+	self->upsert = NULL;
+	value_free(cursor);
+	value_free(store);
 	return ++op;
-#endif
 }
 
 hot void
@@ -228,10 +210,10 @@ cupdate(Vm* self, Op* op)
 
 	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
-	auto row = row_update(cursor->part,
+	auto row = row_update(table->part,
 	                      table_columns(table), row_src,
 	                      row_values, op->b);
-	part_update(cursor->part, tr, cursor->cursor, row);
+	part_update(table->part, tr, cursor->cursor, row);
 	stack_popn(&self->stack, op->b * 2);
 }
 
@@ -286,13 +268,14 @@ cunion_offset(Vm* self, Op* op)
 hot void
 cmatching(Vm* self, Op* op)
 {
-	// [set, cursor, column, top]
+	// [set, table, column, top]
 	auto r = & self->r;
 	assert(self->refs);
 
-	auto cursor  = reg_at(r, op->b);
+	auto table   = (Table*)op->a;
 	auto column  = (Column*)op->c;
-	auto columns = table_columns(cursor->table);
+	auto columns = table_columns(table);
+	auto part    = table->part;
 
 	auto vector = &self->refs[0];
 	if (vector->type != TYPE_VECTOR)
@@ -301,8 +284,8 @@ cmatching(Vm* self, Op* op)
 		error("MATCHING: vector dimension mismatch");
 
 	// create matching context as store
-	auto flat = flats_at(&cursor->part->flats, column);
-	auto matching = matching_create(columns, cursor->part->heap, flat, op->d);
+	auto flat = flats_at(&part->flats, column);
+	auto matching = matching_create(columns, part->heap, flat, op->d);
 	value_set_store(reg_at(r, op->a), &matching->store);
 
 	// execute vector search

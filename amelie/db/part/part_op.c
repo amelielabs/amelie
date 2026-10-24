@@ -142,8 +142,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 {
 	// ensure primary key is defined
 	auto primary = part_primary(self);
-	if (! primary)
-		error("upsert: requires primary index");
+	assert(primary);
 
 	// get if exists (iterator is openned in both cases)
 	IndexOp io =

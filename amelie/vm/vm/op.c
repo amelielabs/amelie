@@ -266,7 +266,6 @@ OpDesc ops[] =
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },
-	{ CTABLE_PREPARE, "table_prepare" },
 	{ CTABLE_NEXT, "table_next" },
 	{ CTABLE_READB, "table_readb" },
 	{ CTABLE_READI8, "table_readi8" },
@@ -306,6 +305,7 @@ OpDesc ops[] =
 
 	// dml
 	{ CINSERT, "insert" },
+	{ CUPSERT_OPEN, "upsert_open" },
 	{ CUPSERT, "upsert" },
 	{ CDELETE, "delete" },
 	{ CUPDATE, "update" },
@@ -458,6 +458,15 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         &table->config->user, &table->config->name);
 			break;
 		}
+		case CUPSERT_OPEN:
+		{
+			auto table = (Table*)op->b;
+			op_write(buf, op, true, false, false,
+			         "{str}.{str}",
+			         &table->config->user,
+			         &table->config->name);
+			break;
+		}
 		case CTABLE_OPEN:
 		{
 			auto open = open_at(data, op->b);
@@ -483,15 +492,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CMATCHING:
 		{
 			op_write(buf, op, true, true, false, NULL);
-			break;
-		}
-		case CTABLE_PREPARE:
-		{
-			auto table = (Table*)op->b;
-			op_write(buf, op, true, false, false,
-			         "{str}.{str}",
-			         &table->config->user,
-			         &table->config->name);
 			break;
 		}
 		case CTABLE_READB:
