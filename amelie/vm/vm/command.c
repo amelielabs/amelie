@@ -140,19 +140,22 @@ cupsert(Vm* self, Op* op)
 
 	// create values iterator
 	auto store = reg_at(&self->r, op->d);
-	if (self->upsert)
-		store_iterator_next(self->upsert);
-	else
-		self->upsert = store_iterator(store->store);
-
 	auto refs = stack_at(&self->stack, op->e);
+	if (self->insert) {
+		store_iterator_next(self->insert);
+	} else
+	{
+		self->insert = store_iterator(store->store);
+		self->insert_refs = refs;
+	}
+
 	Value identity;
 	value_init(&identity);
 
 	auto tr = tr_list_last(&table->user->track.prepared);
 	for (Value* value;
-	    (value = store_iterator_at(self->upsert));
-	     store_iterator_next(self->upsert))
+	    (value = store_iterator_at(self->insert));
+	     store_iterator_next(self->insert))
 	{
 		// create row
 		if (columns->identity)
@@ -178,8 +181,9 @@ cupsert(Vm* self, Op* op)
 	}
 
 	// cleanup
-	store_iterator_close(self->upsert);
-	self->upsert = NULL;
+	store_iterator_close(self->insert);
+	self->insert = NULL;
+	self->insert_refs = NULL;
 	value_free(cursor);
 	value_free(store);
 	return ++op;

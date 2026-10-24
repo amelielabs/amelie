@@ -333,7 +333,6 @@ enum
 	CVAR_MOV,
 	CVAR_SET,
 	CFIRST,
-	CREF,
 
 	// call/return
 	CCALL,

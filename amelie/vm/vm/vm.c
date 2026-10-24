@@ -25,15 +25,15 @@
 void
 vm_init(Vm* self, Quota* quota)
 {
-	self->upsert      = NULL;
-	self->allow_close = true;
+	self->insert      = NULL;
+	self->insert_refs = NULL;
 	self->args        = NULL;
-	self->refs        = NULL;
 	self->gtr         = NULL;
 	self->code        = NULL;
 	self->program     = NULL;
 	self->quota       = quota;
 	self->tr          = NULL;
+	self->allow_close = true;
 	self->local       = NULL;
 	reg_init(&self->r);
 	stack_init(&self->stack);
@@ -52,10 +52,11 @@ vm_free(Vm* self)
 void
 vm_reset(Vm* self)
 {
-	if (self->upsert)
+	if (self->insert)
 	{
-		store_iterator_close(self->upsert);
-		self->upsert = NULL;
+		store_iterator_close(self->insert);
+		self->insert = NULL;
+		self->insert_refs = NULL;
 	}
 	calls_reset(&self->calls);
 	reg_reset(&self->r);
@@ -63,7 +64,6 @@ vm_reset(Vm* self)
 	self->code        = NULL;
 	self->program     = NULL;
 	self->args        = NULL;
-	self->refs        = NULL;
 	self->allow_close = true;
 }
 
@@ -414,7 +414,6 @@ vm_run(Vm*      self,
 		&&cvar_mov,
 		&&cvar_set,
 		&&cfirst,
-		&&cref,
 
 		// call / return
 		&&ccall,
@@ -748,14 +747,14 @@ cuser_current:
 
 cexcluded:
 	// [result, column]
-	if (unlikely(! self->upsert))
+	if (unlikely(! self->insert))
 		error("unexpected EXCLUDED usage");
 
-	b = store_iterator_at(self->upsert);
+	b = store_iterator_at(self->insert);
 	if (b->type != TYPE_REF)
 		value_copy(&r[op->a], b);
 	else
-		value_copy(&r[op->a], &self->refs[b->integer]);
+		value_copy(&r[op->a], &self->insert_refs[b->integer]);
 	op_next;
 
 cnullop:
@@ -2193,11 +2192,6 @@ cvar_set:
 cfirst:
 	// [result, store]
 	cfirst(self, op);
-	op_next;
-
-cref:
-	// [result, id]
-	value_copy(&r[op->a], &self->refs[op->b]);
 	op_next;
 
 ccall:

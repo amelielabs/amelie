@@ -17,9 +17,9 @@ struct Vm
 {
 	Reg            r;
 	Stack          stack;
-	StoreIterator* upsert;
+	StoreIterator* insert;
+	Value*         insert_refs;
 	Value*         args;
-	Value*         refs;
 	Code*          code;
 	Program*       program;
 	Quota*         quota;

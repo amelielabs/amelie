@@ -340,7 +340,6 @@ OpDesc ops[] =
 	{ CVAR_MOV, "var_mov" },
 	{ CVAR_SET, "var_set" },
 	{ CFIRST, "first" },
-	{ CREF, "ref" },
 
 	// call / return
 	{ CCALL, "call" },
@@ -491,7 +490,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 		}
 		case CMATCHING:
 		{
-			op_write(buf, op, true, true, false, NULL);
+			op_write(buf, op, true, false, false, NULL);
 			break;
 		}
 		case CTABLE_READB:
