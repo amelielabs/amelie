@@ -39,9 +39,8 @@ ast_order_allocate(int order, Ast* expr, bool asc)
 }
 
 static inline bool
-ast_order_list_match_index(AstList* exprs, Target* target)
+ast_order_list_match_index(AstList* exprs, Target* target, IndexConfig* index)
 {
-	auto index = target->from_index;
 	if (!index || index->keys.count != exprs->count)
 		return false;
 

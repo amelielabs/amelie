@@ -58,7 +58,6 @@ struct Target
 	int          rcursor;
 	// target path
 	Path*        path;
-	Path*        path_primary;
 	// join
 	TargetJoin   join;
 	Ast*         join_on;

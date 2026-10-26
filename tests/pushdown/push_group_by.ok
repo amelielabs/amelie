@@ -974,7 +974,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1016,7 +1016,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1055,7 +1055,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1103,7 +1103,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1155,7 +1155,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1206,7 +1206,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1261,7 +1261,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1313,7 +1313,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1364,7 +1364,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1428,7 +1428,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1493,7 +1493,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1553,7 +1553,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1626,7 +1626,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1691,7 +1691,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1751,7 +1751,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
@@ -1824,7 +1824,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      10    # amelie.test (primary) 
+  1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 0
   4   gtii                4      2      3
@@ -1868,7 +1868,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      10    # amelie.test (primary) 
+  1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 0
   4   gtii                4      2      3
@@ -1915,7 +1915,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      10    # amelie.test (primary) 
+  1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 0
   4   gtii                4      2      3
@@ -1964,7 +1964,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      10    # amelie.test (primary) 
+  1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 0
   4   gtii                4      2      3
@@ -2011,7 +2011,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      10    # amelie.test (primary) 
+  1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 0
   4   gtii                4      2      3
@@ -2064,7 +2064,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      10    # amelie.test (primary) 
+  1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 0
   4   gtii                4      2      3
@@ -2120,7 +2120,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      10    # amelie.test (primary) 
+  1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 0
   4   gtii                4      2      3
@@ -2176,7 +2176,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      10    # amelie.test (primary) 
+  1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 0
   4   gtii                4      2      3
@@ -2234,7 +2234,7 @@ explain
 
 backend
   0   set                 0      0      1
-  1   table_open          1      0      10    # amelie.test (primary) 
+  1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 0
   4   gtii                4      2      3

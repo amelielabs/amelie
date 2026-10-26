@@ -432,7 +432,7 @@ explain
 backend
   0   json                0      0      0
   1   set                 1      2      0
-  2   table_open          2      5      13    # amelie.test (primary) 
+  2   table_open          2      5      13    # amelie.test (heap) 
   3   dup                 3      0      0
   4   json_open           4      3      11
   5   table_readi32       5      2      -     # id
@@ -473,7 +473,7 @@ explain
 backend
   0   json                0      0      0
   1   set                 1      2      0
-  2   table_open          2      5      13    # amelie.test (primary) 
+  2   table_open          2      5      13    # amelie.test (heap) 
   3   dup                 3      0      0
   4   json_open           4      3      11
   5   table_readi32       5      2      -     # id
@@ -520,7 +520,7 @@ backend
   5   table_next          1      2      0
   6   free                1      0      0
   7   set                 1      1      0
-  8   table_open          2      24     22    # amelie.test (primary) 
+  8   table_open          2      24     22    # amelie.test (heap) 
   9   dup                 3      0      0
  10   store_open          4      3      19
  11   table_readi32       5      2      -     # id
@@ -564,7 +564,7 @@ backend
   5   table_next          1      2      0
   6   free                1      0      0
   7   set                 1      2      0
-  8   table_open          2      24     24    # amelie.test (primary) 
+  8   table_open          2      24     24    # amelie.test (heap) 
   9   dup                 3      0      0
  10   store_open          4      3      21
  11   table_reads         5      2      -     # data

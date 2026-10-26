@@ -64,12 +64,11 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 	if (primary)
 		primary_keys = &primary->keys;
 
-	// always use primary index for dml
+	// dml
 	if (target->dml)
 	{
 		assert(!target->from_index);
-		target->path_primary = path_create(target, primary_keys, ops);
-		target->path = target->path_primary;
+		target->path = path_create(target, primary_keys, ops);
 		target->from_index = primary;
 		return;
 	}
@@ -79,34 +78,38 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 	{
 		auto keys = &target->from_index->keys;
 		target->path = path_create(target, keys, ops);
-
-		if (target->from_index != primary)
-			target->path_primary = path_create(target, primary_keys, ops);
-		else
-			target->path_primary = target->path;
 		return;
 	}
 
 	// match the most optimal index to use
-	Path*        match_path_primary = NULL;
 	Path*        match_path = NULL;
 	IndexConfig* match = NULL;
 	list_foreach(&table->config->indexes)
 	{
 		auto index = list_at(IndexConfig, link);
-		auto keys = &index->keys;
 
-		// primary
-		auto path = path_create(target, keys, ops);
+		// use index only if it has matching keys
+		auto path = path_create(target, &index->keys, ops);
+		if (!path->match_start && !path->match_stop)
+		{
+			// use index without matching keys only if it
+			// matches select order by
+			if (! target->from->select)
+				continue;
+			auto select = ast_select_of(target->from->select);
+			if (ast_list_empty(&select->order_by))
+				continue;
+			if (! ast_order_list_match_index(&select->order_by, target, index))
+				continue;
+		}
+
 		if (! match)
 		{
-			match_path_primary = path;
 			match_path = path;
 			match = index;
 			continue;
 		}
 
-		// secondary
 		if (path_prepare_match(match_path, match, path, index))
 		{
 			match_path = path;
@@ -114,27 +117,20 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 		}
 	}
 
-	// use heap for full scan
-	auto from = target->from;
-	if (!from_is_join(from) && from->select && match && match_path == match_path_primary)
+	// downgrade full HASH index scan to heap scan
+	if (match && match->type == INDEX_HASH && match_path->type == PATH_SCAN)
 	{
-		auto select = ast_select_of(from->select);
-		if (ast_list_empty(&select->order_by))
-			if (!match_path->match_start && !match_path->match_stop)
-				match = NULL;
+		match = NULL;
+		match_path = NULL;
 	}
 
-	// no primary index
+	// no primary index (full heap scan)
 	if (! match)
-	{
-		match_path_primary = path_create(target, NULL, ops);
-		match_path         = match_path_primary;
-	}
+		match_path = path_create(target, NULL, ops);
 
 	// set index and path
-	target->from_index   = match;
-	target->path_primary = match_path_primary;
-	target->path         = match_path;
+	target->from_index = match;
+	target->path       = match_path;
 }
 
 void

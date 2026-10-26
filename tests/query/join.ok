@@ -17,7 +17,7 @@ explain
 
 backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      11    # amelie.a (primary) 
+  1   table_open          1      1      11    # amelie.a (heap) 
   2   table_open          2      25     9     # amelie.b (primary) 
   3   table_readi32       3      2      -     # id
   4   push                3      0      0
@@ -67,8 +67,8 @@ explain
 
 backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      11    # amelie.a (primary) 
-  2   table_open          2      25     9     # amelie.b (primary) 
+  1   table_open          1      1      11    # amelie.a (heap) 
+  2   table_open          2      25     9     # amelie.b (heap) 
   3   table_readi32       3      2      -     # id
   4   push                3      0      0
   5   table_readi32       3      2      -     # id
@@ -116,8 +116,8 @@ explain
 
 backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      11    # amelie.a (primary) 
-  2   table_open          2      25     9     # amelie.b (primary) 
+  1   table_open          1      1      11    # amelie.a (heap) 
+  2   table_open          2      25     9     # amelie.b (heap) 
   3   table_readi32       3      2      -     # id
   4   push                3      0      0
   5   table_readi32       3      2      -     # id

@@ -67,7 +67,7 @@ explain
 
 backend
   0   set_ordered         0      2      1
-  1   table_open          1      21     16    # amelie.test (primary) 
+  1   table_open          1      21     16    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readv         2      1      -     # embedding
@@ -100,7 +100,7 @@ explain
 
 backend
   0   set_ordered         0      1      1
-  1   table_open          1      21     11    # amelie.test (primary) 
+  1   table_open          1      21     11    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readv         2      1      -     # embedding

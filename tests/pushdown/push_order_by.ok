@@ -120,7 +120,7 @@ explain
 
 backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (primary) 
+  1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi64       2      1      -     # id
@@ -275,7 +275,7 @@ explain
 
 backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (primary) 
+  1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi64       2      1      -     # id
@@ -433,7 +433,7 @@ explain
 
 backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (primary) 
+  1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi64       2      1      -     # id
@@ -612,7 +612,7 @@ explain
 
 backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (primary) 
+  1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi64       2      1      -     # id
