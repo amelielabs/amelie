@@ -27,5 +27,7 @@ cmd_bench(Main* self)
 	// parse command line
 	opts_set_argv(&bench.opts, self->argc, self->argv);
 
-	bench_run(&bench);
+	error_catch (
+		bench_run(&bench);
+	);
 }

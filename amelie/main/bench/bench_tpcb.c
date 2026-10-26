@@ -166,8 +166,9 @@ tpcb_execute(Client* client,
 }
 
 static void
-bench_tpcb_create(Bench* self, Client* client)
+bench_tpcb_deploy(BenchClient* self)
 {
+	auto client = self->client;
 	info("preparing tables.");
 
 	char* ddl[] =
@@ -175,7 +176,7 @@ bench_tpcb_create(Bench* self, Client* client)
 		"create table bench_branches (bid int primary key using hash, bbalance int, filler text)",
 		"create table bench_tellers (tid int primary key using hash, bid int, tbalance int, filler text)",
 		"create table bench_accounts (aid int primary key using hash, bid int, abalance int, filler text)",
-		"create table bench_history (tid int, bid int, aid int, delta int, time timestamp, seq uuid primary key identity, filler text)",
+		"create table bench_history (tid int, bid int, aid int, delta int, time timestamp, filler text)",
 		 NULL
 	};
 
@@ -231,8 +232,8 @@ bench_tpcb_create(Bench* self, Client* client)
 	buf_emplace(filler, 100);
 	memset(filler->start, ' ', 100);
 
-	auto batch = (int)opt_int_of(&self->batch);
-	auto scale = (int)opt_int_of(&self->scale);
+	auto batch = (int)opt_int_of(&self->bench->opt_batch);
+	auto scale = (int)opt_int_of(&self->bench->opt_scale);
 	auto buf = buf_create();
 	defer_buf(buf);
 
@@ -267,8 +268,8 @@ bench_tpcb_create(Bench* self, Client* client)
 			client_execute(client, &str, NULL);
 		}
 	} else {
-		auto clients = opt_int_of(&self->clients);
-		bench_tpcb_load(self, scale, batch, clients);
+		auto clients = opt_int_of(&self->bench->opt_clients);
+		bench_tpcb_load(self->bench, scale, batch, clients);
 	}
 
 	// add 100 to account 1 by teller 1 at branch 1
@@ -279,60 +280,29 @@ bench_tpcb_create(Bench* self, Client* client)
 }
 
 hot static void
-bench_tpcb_main(BenchWorker* self, Client* client)
+bench_tpcb_main(BenchClient* self)
 {
-	auto bench = self->bench;
-	int batch = opt_int_of(&bench->batch);
-	int scale = opt_int_of(&bench->scale);
+	auto bench  = self->bench;
+	auto batch  = opt_int_of(&bench->opt_batch);
+	auto scale  = opt_int_of(&bench->opt_scale);
+	auto client = self->client;
+
 	Buf buf;
 	buf_init(&buf);
 	defer_buf(&buf);
 	buf_format(&buf, "execute bench_tpcb_batch({d}, {d});", batch, scale);
 	Str cmd;
 	buf_str(&buf, &cmd);
-	while (! self->shutdown)
+	while (! bench->shutdown)
 	{
 		client_execute(client, &cmd, NULL);
-		atomic_u64_add(&bench->transactions, batch);
-		atomic_u64_add(&bench->writes, 3 * batch);
+		bench->transactions += batch;
+		bench->writes += 3 * batch;
 	}
-
-#if 0
-	int  scale    = opt_int_of(&bench->scale);
-	auto accounts = tpcb_accounts * scale;
-	auto branches = tpcb_branches * scale;
-	auto tellers  = tpcb_tellers  * scale;
-
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
-	buf_reserve(&buf, 512);
-
-	Str cmd;
-	buf_str(&buf, &cmd);
-	while (! self->shutdown)
-	{
-		uint64_t random = random_generate(&runtime()->random);
-		uint32_t a = random;
-		uint32_t b = random >> 32;
-		uint32_t c = a ^ b;
-		int aid    = a % accounts;
-		int bid    = b % branches;
-		int tid    = c % tellers;
-		int delta  = -5000 + (c % 10000); // -5000 to 5000
-
-		buf_reset(&buf);
-		buf_format(&buf, "execute __bench.tpcb({d}, {d}, {d}, {d});", bid, tid, aid, delta);
-		bench_client_execute(client, &cmd);
-
-		atomic_u64_add(&bench->transactions, 1);
-		atomic_u64_add(&bench->writes, 3);
-	}
-#endif
 }
 
 BenchIf bench_tpcb =
 {
-	.create = bench_tpcb_create,
+	.deploy = bench_tpcb_deploy,
 	.main   = bench_tpcb_main
 };

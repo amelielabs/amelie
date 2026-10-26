@@ -58,6 +58,14 @@ client_execute(Client* self, Str* content, Buf* result)
 	return code;
 }
 
+static inline int
+client_run(Client* self, char* str)
+{
+	Str content;
+	str_set_cstr(&content, str);
+	return client_execute(self, &content, NULL);
+}
+
 static inline void
 client_200(Client* self, Buf* content)
 {

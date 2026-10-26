@@ -86,7 +86,7 @@ vector_loader_main(void* arg)
 }
 
 static void
-bench_vector_load(Bench* self, int scale, int batch, int clients)
+bench_vector_load(Bench* self, int batch, int clients)
 {
 	auto loaders_complete = 0;
 	auto loaders_count = clients;
@@ -95,7 +95,7 @@ bench_vector_load(Bench* self, int scale, int batch, int clients)
 
 	uint64_t transactions = 0;
 	uint64_t writes       = 0;
-	auto     rows         = vector_rows * scale;
+	auto     rows         = vector_rows;
 	auto     step         = rows / loaders_count;
 	auto     from         = 0ul;
 	for (auto i = 0; i < loaders_count; i++)
@@ -122,9 +122,11 @@ bench_vector_load(Bench* self, int scale, int batch, int clients)
 }
 
 static void
-bench_vector_create(Bench* self, Client* client)
+bench_vector_deploy(BenchClient* self)
 {
+	auto client = self->client;
 	info("preparing tables.");
+
 	Str str;
 	str_set_cstr(&str, "create table bench_vector (v vector(1024))");
 	client_execute(client, &str, NULL);
@@ -150,31 +152,32 @@ bench_vector_create(Bench* self, Client* client)
 	client_execute(client, &str, NULL);
 
 	info("preparing data.");
-	auto batch   = (int)opt_int_of(&self->batch);
-	auto scale   = (int)opt_int_of(&self->scale);
-	auto clients = opt_int_of(&self->clients);
-	bench_vector_load(self, scale, batch, clients);
+	auto bench   = self->bench;
+	auto batch   = (int)opt_int_of(&bench->opt_batch);
+	auto clients = (int)opt_int_of(&bench->opt_clients);
+	bench_vector_load(bench, batch, clients);
 
 	info("done.");
 	info("");
 }
 
 hot static void
-bench_vector_main(BenchWorker* self, Client* client)
+bench_vector_main(BenchClient* self)
 {
-	auto bench = self->bench;
+	auto bench  = self->bench;
+	auto client = self->client;
 
 	Str cmd;
-	str_set_cstr(&cmd,  "execute matching_func();");
-	while (! self->shutdown)
+	str_set_cstr(&cmd, "execute matching_func();");
+	while (! bench->shutdown)
 	{
 		client_execute(client, &cmd, NULL);
-		atomic_u64_add(&bench->transactions, 1);
+		bench->transactions += 1;
 	}
 }
 
 BenchIf bench_vector =
 {
-	.create = bench_vector_create,
+	.deploy = bench_vector_deploy,
 	.main   = bench_vector_main
 };

@@ -14,102 +14,22 @@
 #include <amelie_main.h>
 #include <amelie_main_bench.h>
 
-static void
-bench_connection(void* arg)
-{
-	BenchWorker* self = arg;
-	auto client = client_allocate();
-	defer(client_free, client);
-	client_set_endpoint(client, &self->bench->main->endpoint);
-	if (opt_int_of(&self->bench->histogram))
-		client_set_histogram(client, &self->histogram);
-
-	error_catch
-	(
-		// create client and connect
-		client_connect(client);
-
-		// process
-		self->bench->iface->main(self, client);
-	);
-}
-
-static void
-bench_worker_main(void* arg)
-{
-	BenchWorker* self = arg;
-
-	// start connections
-	int connections = self->connections;
-	while (connections-- > 0)
-		coroutine_create(bench_connection, self);
-
-	// wait for stop
-	task_recv();
-
-	// wait for completion
-	self->shutdown = true;
-	while (am_task->coroutines.count > 1)
-		coroutine_yield();
-}
-
-static BenchWorker*
-bench_worker_allocate(Bench* bench, int connections)
-{
-	auto self = (BenchWorker*)am_malloc(sizeof(BenchWorker));
-	self->connections = connections;
-	self->shutdown    = false;
-	self->bench       = bench;
-	histogram_init(&self->histogram);
-	msg_init(&self->stop, MSG_STOP);
-	task_init(&self->task);
-	list_init(&self->link);
-	return self;
-}
-
-static void
-bench_worker_free(BenchWorker* self)
-{
-	task_free(&self->task);
-	am_free(self);
-}
-
-static void
-bench_worker_start(BenchWorker* self)
-{
-	task_create(&self->task, "bench", bench_worker_main, self);
-}
-
-static void
-bench_worker_stop_notify(BenchWorker* self)
-{
-	task_send(&self->task, &self->stop);
-}
-
-static void
-bench_worker_stop(BenchWorker* self)
-{
-	task_wait(&self->task);
-}
-
 void
 bench_init(Bench* self, Main* main)
 {
 	memset(self, 0, sizeof(*self));
-	self->iface = NULL;
-	self->main  = main;
+	self->main = main;
 	opts_init(&self->opts);
-	list_init(&self->list);
 	OptsDef defs[] =
 	{
-		{ "type",      OPT_STRING, OPT_C,       &self->type,     "tpcb", 0     },
-		{ "clients",   OPT_INT,    OPT_C|OPT_Z, &self->clients,   NULL,  32    },
-		{ "duration",  OPT_INT,    OPT_C|OPT_Z, &self->duration,  NULL,  10    },
-		{ "scale",     OPT_INT,    OPT_C|OPT_Z, &self->scale,     NULL,  1     },
-		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->batch,     NULL,  64    },
-		{ "init",      OPT_INT,    OPT_C,       &self->init,      NULL,  1     },
-		{ "histogram", OPT_BOOL,   OPT_C,       &self->histogram, NULL,  false },
-		{  NULL,       0,          0,            NULL,            NULL,  0     }
+		{ "type",      OPT_STRING, OPT_C,       &self->opt_type,     "tpcb", 0     },
+		{ "users",     OPT_INT,    OPT_C|OPT_Z, &self->opt_users,     NULL,  1     },
+		{ "clients",   OPT_INT,    OPT_C|OPT_Z, &self->opt_clients,   NULL,  32    },
+		{ "duration",  OPT_INT,    OPT_C|OPT_Z, &self->opt_duration,  NULL,  20    },
+		{ "scale",     OPT_INT,    OPT_C|OPT_Z, &self->opt_scale,     NULL,  1     },
+		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->opt_batch,     NULL,  64    },
+		{ "histogram", OPT_BOOL,   OPT_C,       &self->opt_histogram, NULL,  false },
+		{  NULL,       0,          0,            NULL,                NULL,  0     }
 	};
 	opts_define(&self->opts, defs);
 }
@@ -117,139 +37,143 @@ bench_init(Bench* self, Main* main)
 void
 bench_free(Bench* self)
 {
-	list_foreach_safe(&self->list)
+	if (self->clients)
 	{
-		auto worker = list_at(BenchWorker, link);
-		bench_worker_free(worker);
+		for (auto i = 0; i < self->clients_count; i++)
+		{
+			auto client = &self->clients[i];
+			if (client->client)
+				client_free(client->client);
+			endpoint_free(&client->endpoint);
+		}
+		am_free(self->clients);
 	}
 	opts_free(&self->opts);
 }
 
 static void
-bench_service_prepare(Client* client, bool create)
+bench_deploy_client(BenchClient* self, int user_id)
 {
-	// recreate bench user
+	auto endpoint_main = &self->bench->main->endpoint;
+	auto endpoint = &self->endpoint;
+
+	// set host/path
+	auto path = &endpoint_main->path;
+	auto host = &endpoint_main->host;
+	auto port = &endpoint_main->port;
+	if (! opt_string_empty(path))
+		opt_string_set(&endpoint->path, &path->string);
+	if (! opt_string_empty(host))
+		opt_string_set(&endpoint->host, &host->string);
+	opt_int_set(&endpoint->port, port->integer);
+
+	// set user
+	char name[16];
+	format(name, sizeof(name), "bench_{d}", user_id);
 	Str str;
-	str_set_cstr(&str, "drop user if exists bench cascade");
-	client_execute(client, &str, NULL);
-	if (create)
+	str_set_cstr(&str, name);
+	opt_string_set(&endpoint->user, &str);
+	endpoint_auth(endpoint);
+
+	// connnect
+	self->client = client_allocate();
+	client_set_endpoint(self->client, endpoint);
+	if (opt_int_of(&self->bench->opt_histogram))
+		client_set_histogram(self->client, &self->bench->histogram);
+	client_connect(self->client);
+}
+
+static void
+bench_deploy_user(BenchClient* self)
+{
+	auto endpoint = &self->endpoint;
+	Str user;
+	str_init(&user);
+	defer(str_free, &user);
+	str_copy(&user, &endpoint->user.string);
+
+	// switch to superuser
+	opt_free(&endpoint->user);
+	opt_free(&endpoint->token);
+
+	// recreate user
+	char cmd[256];
+	format(cmd, sizeof(cmd), "drop user if exists {str} cascade", &user);
+	client_run(self->client, cmd);
+
+	format(cmd, sizeof(cmd), "create user {str}", &user);
+	client_run(self->client, cmd);
+
+	// switch back and deploy
+	opt_string_set(&endpoint->user, &user);
+	endpoint_auth(endpoint);
+
+	self->bench->iface->deploy(self);
+}
+
+static void
+bench_deploy(Bench* self)
+{
+	// prepare clients
+	auto users   = (int)self->opt_users.integer;
+	auto clients = (int)self->opt_clients.integer;
+	auto size    = sizeof(BenchClient) * users * clients;
+
+	self->clients_count = users * clients;
+	self->clients = am_malloc(size);
+	for (auto i = 0; i < self->clients_count; i++)
 	{
-		str_set_cstr(&str, "create user bench");
-		client_execute(client, &str, NULL);
+		auto at = &self->clients[i];
+		at->client = NULL;
+		at->bench  = self;
+		endpoint_init(&at->endpoint);
+	}
+
+	// connect clients
+	auto seq = 0;
+	for (auto i = 0; i < users; i++)
+	{
+		auto at = &self->clients[seq];
+		bench_deploy_client(at, i);
+		bench_deploy_user(at);
+		seq++;
+		for (auto j = 1; j < clients; j++)
+		{
+			at = &self->clients[seq];
+			bench_deploy_client(at, i);
+			seq++;
+		}
 	}
 }
 
 static void
-bench_service(Bench* self, bool create)
+bench_client(void* arg)
 {
-	auto endpoint = &self->main->endpoint;
-	auto client_init = client_allocate();
-	defer(client_free, client_init);
-	client_set_endpoint(client_init, endpoint);
-
-	error_catch
-	(
-		client_connect(client_init);
-		bench_service_prepare(client_init, create);
+	BenchClient* self = arg;
+	error_catch (
+		self->bench->iface->main(self);
 	);
-
-	if (create)
-	{
-		// connect as bench user for deploy
-		str_set_cstr(&endpoint->user.string, "bench");
-		endpoint_auth(endpoint);
-
-		auto client = client_allocate();
-		defer(client_free, client);
-		client_set_endpoint(client, endpoint);
-
-		error_catch(
-			client_connect(client);
-			self->iface->create(self, client);
-		);
-	}
 }
 
-void
-bench_run(Bench* self)
+static void
+bench_main(Bench* self)
 {
-	// validate options
-	auto type      = opt_string_of(&self->type);
-	auto batch     = opt_int_of(&self->batch);
-	auto duration  = opt_int_of(&self->duration);
-	auto clients   = opt_int_of(&self->clients);
-	auto init      = opt_int_of(&self->init);
-	auto histogram = opt_int_of(&self->histogram);
-
-	// set benchmark
-	if (str_is_cstr(type, "tpcb"))
-		self->iface = &bench_tpcb;
-	else
-	if (str_is_cstr(type, "copy"))
-		self->iface = &bench_copy;
-	else
-	if (str_is_cstr(type, "insert"))
-		self->iface = &bench_insert;
-	else
-	if (str_is_cstr(type, "upsert"))
-		self->iface = &bench_upsert;
-	else
-	if (str_is_cstr(type, "decre"))
-		self->iface = &bench_decre;
-	else
-	if (str_is_cstr(type, "vector"))
-		self->iface = &bench_vector;
-	else
-		error("unknown benchmark type '{str}'", type);
-
-	// hello
-	info("");
-	info("amelie benchmark.");
-	info("");
-	info("type:     {str}", type);
-	info("duration: {u64} sec", duration);
-	info("clients:  {u64} ", clients);
-	info("batch:    {u64}", batch);
-	info("");
-
-	// prepare workers
-	auto workers = 1;
-	while (workers-- > 0)
+	// start
+	for (auto i = 0; i < self->clients_count; i++)
 	{
-		auto worker = bench_worker_allocate(self, clients);
-		list_append(&self->list, &worker->link);
+		auto client = &self->clients[i];
+		coroutine_create(bench_client, client);
 	}
 
-	// prepare tables
-	if (init)
-	{
-		bench_service(self, true);
-		if (init == 2)
-		{
-			info("init complete.");
-			return;
-		}
-	}
-
-	// switch to bench user
-	auto endpoint = &self->main->endpoint;
-	str_set_cstr(&endpoint->user.string, "bench");
-	opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
-
-	// begin
-	list_foreach_safe(&self->list)
-	{
-		auto worker = list_at(BenchWorker, link);
-		bench_worker_start(worker);
-	}
-
+	// report
+	auto duration = opt_int_of(&self->opt_duration);
 	uint64_t prev_tx = 0;
 	uint64_t prev_wr = 0;
 	for (; duration > 0; duration--)
 	{
 		coroutine_sleep(1000);
-		auto tx = atomic_u64_of(&self->transactions);
-		auto wr = atomic_u64_of(&self->writes);
+		auto tx = self->transactions;
+		auto wr = self->writes;
 		if (wr > 0)
 			info("{u64} transactions/sec, {.2f} millions writes/sec ({u64})",
 			     tx - prev_tx,
@@ -261,20 +185,10 @@ bench_run(Bench* self)
 		prev_wr = wr;
 	}
 
-	// stop
-	list_foreach(&self->list)
-	{
-		auto worker = list_at(BenchWorker, link);
-		bench_worker_stop_notify(worker);
-	}
-	list_foreach(&self->list)
-	{
-		auto worker = list_at(BenchWorker, link);
-		bench_worker_stop(worker);
-	}
-
-	// cleanup
-	bench_service(self, false);
+	// stop and wait for completion
+	self->shutdown = true;
+	while (am_task->coroutines.count > 1)
+		coroutine_yield();
 
 	// report
 	info("");
@@ -283,13 +197,44 @@ bench_run(Bench* self)
 	     self->writes / 1000000.0,
 	     self->writes);
 	info("");
-
+	auto histogram = opt_int_of(&self->opt_histogram);
 	if (histogram)
-	{
-		list_foreach_safe(&self->list)
-		{
-			auto worker = list_at(BenchWorker, link);
-			histogram_print(&worker->histogram);
-		}
-	}
+		histogram_print(&self->histogram);
+}
+
+void
+bench_run(Bench* self)
+{
+	info("");
+	info("amelie benchmark.");
+	info("");
+	info("type:     {str}",     opt_string_of(&self->opt_type));
+	info("duration: {u64} sec", opt_int_of(&self->opt_duration));
+	info("users:    {u64} ",    opt_int_of(&self->opt_users));
+	info("clients:  {u64} ",    opt_int_of(&self->opt_clients));
+	info("batch:    {u64}",     opt_int_of(&self->opt_batch));
+	info("");
+
+	// set benchmark
+	auto type = opt_string_of(&self->opt_type);
+	if (str_is_cstr(type, "insert"))
+		self->iface = &bench_insert;
+	else
+	if (str_is_cstr(type, "upsert"))
+		self->iface = &bench_upsert;
+	else
+	if (str_is_cstr(type, "tpcb"))
+		self->iface = &bench_tpcb;
+	else
+	if (str_is_cstr(type, "decre"))
+		self->iface = &bench_decre;
+	else
+	if (str_is_cstr(type, "vector"))
+		self->iface = &bench_vector;
+	else
+		error("unknown benchmark type '{str}'", type);
+
+	// create clients and deploy
+	bench_deploy(self);
+	bench_main(self);
 }

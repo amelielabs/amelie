@@ -12,41 +12,40 @@
 //
 
 typedef struct BenchIf     BenchIf;
-typedef struct BenchWorker BenchWorker;
+typedef struct BenchClient BenchClient;
 typedef struct Bench       Bench;
 
 struct BenchIf
 {
-	void (*create)(Bench*, Client*);
-	void (*main)(BenchWorker*, Client*);
+	void (*deploy)(BenchClient*);
+	void (*main)(BenchClient*);
 };
 
-struct BenchWorker
+struct BenchClient
 {
-	int       connections;
-	bool      shutdown;
-	Histogram histogram;
-	Bench*    bench;
-	Msg       stop;
-	Task      task;
-	List      link;
+	Client*  client;
+	Endpoint endpoint;
+	Bench*   bench;
 };
 
 struct Bench
 {
-	BenchIf*   iface;
-	atomic_u64 transactions;
-	atomic_u64 writes;
-	Opt        type;
-	Opt        clients;
-	Opt        duration;
-	Opt        scale;
-	Opt        batch;
-	Opt        init;
-	Opt        histogram;
-	Opts       opts;
-	Main*      main;
-	List       list;
+	bool         shutdown;
+	uint64_t     transactions;
+	uint64_t     writes;
+	BenchClient* clients;
+	int          clients_count;
+	Histogram    histogram;
+	BenchIf*     iface;
+	Opt          opt_type;
+	Opt          opt_users;
+	Opt          opt_clients;
+	Opt          opt_duration;
+	Opt          opt_scale;
+	Opt          opt_batch;
+	Opt          opt_histogram;
+	Opts         opts;
+	Main*        main;
 };
 
 void bench_init(Bench*, Main*);

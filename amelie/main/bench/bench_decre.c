@@ -15,15 +15,16 @@
 #include <amelie_main_bench.h>
 
 static void
-bench_decre_create(Bench* self, Client* client)
+bench_decre_deploy(BenchClient* self)
 {
+	auto client = self->client;
 	unused(self);
 
 	Str str;
 	str_set_cstr(&str, "create table accounts(id int primary key using hash, money decimal default 100.0)");
 	client_execute(client, &str, NULL);
 
-	str_set_cstr(&str, "create table history(id uuid identity, src int, dst int, amount decimal, partition key(id))");
+	str_set_cstr(&str, "create table history(src int, dst int, amount decimal)");
 	client_execute(client, &str, NULL);
 
 	// prepare dataset
@@ -76,11 +77,12 @@ bench_decre_create(Bench* self, Client* client)
 }
 
 hot static void
-bench_decre_main(BenchWorker* self, Client* client)
+bench_decre_main(BenchClient* self)
 {
-	auto bench = self->bench;
-	auto total = 100000;
-	auto batch = (int)opt_int_of(&bench->batch);
+	auto bench  = self->bench;
+	auto total  = 100000;
+	auto batch  = (int)opt_int_of(&bench->opt_batch);
+	auto client = self->client;
 
 	Buf buf;
 	buf_init(&buf);
@@ -88,17 +90,16 @@ bench_decre_main(BenchWorker* self, Client* client)
 	buf_format(&buf, "execute debit_credit_batch({d}, {d});", batch, total);
 	Str cmd;
 	buf_str(&buf, &cmd);
-
-	while (! self->shutdown)
+	while (! bench->shutdown)
 	{
 		client_execute(client, &cmd, NULL);
-		atomic_u64_add(&bench->transactions, batch);
-		atomic_u64_add(&bench->writes, 3 * batch);
+		bench->transactions += batch;
+		bench->writes += 3 * batch;
 	}
 }
 
 BenchIf bench_decre =
 {
-	.create = bench_decre_create,
+	.deploy = bench_decre_deploy,
 	.main   = bench_decre_main
 };

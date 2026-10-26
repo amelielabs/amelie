@@ -15,14 +15,14 @@
 #include <amelie_main_bench.h>
 
 static void
-bench_upsert_create(Bench* self, Client* client)
+bench_upsert_deploy(BenchClient* self)
 {
 	unused(self);
 	Str str;
 	str_set_cstr(&str, "create table test(id int primary key using hash as identity (100000), data int default 0)");
-	client_execute(client, &str, NULL);
+	client_execute(self->client, &str, NULL);
 
-	auto batch = opt_int_of(&self->batch);
+	auto batch = opt_int_of(&self->bench->opt_batch);
 	Buf buf;
 	buf_init(&buf);
 	defer_buf(&buf);
@@ -41,27 +41,28 @@ bench_upsert_create(Bench* self, Client* client)
 
 	Str cmd;
 	buf_str(&buf, &cmd);
-	client_execute(client, &cmd, NULL);
+	client_execute(self->client, &cmd, NULL);
 }
 
 hot static void
-bench_upsert_main(BenchWorker* self, Client* client)
+bench_upsert_main(BenchClient* self)
 {
-	auto bench = self->bench;
-	auto batch = opt_int_of(&bench->batch);
+	auto bench  = self->bench;
+	auto batch  = opt_int_of(&bench->opt_batch);
+	auto client = self->client;
 
 	Str cmd;
 	str_set_cstr(&cmd,  "execute upsert_func();");
-	while (! self->shutdown)
+	while (! bench->shutdown)
 	{
 		client_execute(client, &cmd, NULL);
-		atomic_u64_add(&bench->transactions, 1);
-		atomic_u64_add(&bench->writes, batch);
+		bench->transactions += 1;
+		bench->writes += batch;
 	}
 }
 
 BenchIf bench_upsert =
 {
-	.create = bench_upsert_create,
+	.deploy = bench_upsert_deploy,
 	.main   = bench_upsert_main
 };
