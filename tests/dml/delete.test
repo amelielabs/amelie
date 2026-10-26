@@ -138,7 +138,7 @@ select * from test;
 drop table test;
 
 # test: delete heap/abort
-create table test (id int partition key);
+create table test (id int);
 insert into test values (1), (2), (3);
 begin;
   delete from test;

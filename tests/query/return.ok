@@ -6,7 +6,7 @@ explain select 1;
 explain
 ───────
 
-main
+frontend
   0   int                 0      -      0     # 1
   1   ret                 0      0      -
 explain begin select 1; select 2; end;
@@ -14,7 +14,7 @@ explain begin select 1; select 2; end;
 explain
 ───────
 
-main
+frontend
   0   int                 0      -      0     # 1
   1   int                 1      -      0     # 2
   2   ret                 1      0      -
@@ -23,7 +23,7 @@ explain begin select 1; select 2; select 3; end;
 explain
 ───────
 
-main
+frontend
   0   int                 0      -      0     # 1
   1   int                 1      -      0     # 2
   2   int                 2      -      0     # 3
@@ -39,7 +39,7 @@ explain if true then end;
 explain
 ───────
 
-main
+frontend
   0   bool                0      1      0
   1   jntr                2      0      0
   2   ret                 -1     0      -
@@ -49,7 +49,7 @@ explain begin if true then end; select 1; end;
 explain
 ───────
 
-main
+frontend
   0   bool                0      1      0
   1   jntr                2      0      0
   2   int                 0      -      0     # 1
@@ -64,7 +64,7 @@ explain begin if true then select 1; end; select 2; end;
 explain
 ───────
 
-main
+frontend
   0   bool                0      1      0
   1   jntr                3      0      0
   2   int                 0      -      0     # 1
@@ -81,7 +81,7 @@ explain begin declare x int; select 123 into x; end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
@@ -100,28 +100,22 @@ explain begin declare x int; select id into x from test; select x; end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   var                 0      0      0
-  7   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   var                 0      0      0
+ 11   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin declare x int; select id into x from test; select x; end;
 
 col1
@@ -149,16 +143,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   ret                 -1     0      -
 select test();
 
@@ -174,16 +168,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   ret                 -1     0      -
 select test();
 
@@ -201,16 +195,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   string              0      0      0     # 123
   1   ret                 -1     0      -
 select test();
@@ -236,16 +230,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   ret                 -1     0      -
 select test();
 
@@ -263,16 +257,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   ret                 -1     0      -
 select test();
 
@@ -290,16 +284,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   null                0      0      0
   1   ret                 0      0      -
 select test();
@@ -324,16 +318,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   null                0      0      0
   1   ret                 0      0      -
 select test();
@@ -352,16 +346,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   int                 0      -      0     # 123
   1   ret                 0      0      -
 select test();
@@ -406,16 +400,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   ret                 -1     0      -
 select test();
 
@@ -433,16 +427,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   ret                 -1     0      -
 select test();
 
@@ -459,16 +453,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   null                0      0      0
   1   ret                 0      0      -
 select test();
@@ -487,16 +481,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   push_int            -      0      0     # 2
@@ -514,7 +508,7 @@ explain
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   push_int            -      0      0     # 2
@@ -537,16 +531,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   var                 0      0      0
   2   ret                 0      0      -
@@ -562,7 +556,7 @@ explain
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   var                 0      0      0
   2   ret                 0      0      -
@@ -584,16 +578,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   set                 0      2      0
   2   push_int            -      0      0     # 1
@@ -614,7 +608,7 @@ explain
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   set                 0      2      0
   2   push_int            -      0      0     # 1
@@ -669,16 +663,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   var                 0      0      0
   2   ret                 0      0      -
@@ -694,7 +688,7 @@ explain
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   var                 0      0      0
   2   ret                 0      0      -
@@ -714,16 +708,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
@@ -741,7 +735,7 @@ explain
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
@@ -765,16 +759,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -802,16 +796,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   bool                0      1      0
   2   jntr                7      0      0
@@ -841,16 +835,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   bool                0      1      0
   2   jntr                7      0      0
@@ -880,16 +874,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   bool                0      0      0
   2   jntr                7      0      0
@@ -923,47 +917,40 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared [select]
+  •   amelie.test [execute]
+  •   amelie.src [select]
 
 FUNCTION amelie.test()
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.src (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      1      0
-  7   jntr                14     0      0
-  8   var                 0      0      0
-  9   int                 1      -      0     # 1
- 10   addii               2      0      1
- 11   var_set             0      0      2
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.src (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                18     0      0
  12   var                 0      0      0
- 13   ret                 0      0      -
- 14   var                 1      0      0
- 15   ret                 1      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.src (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+ 13   int                 1      -      0     # 1
+ 14   addii               2      0      1
+ 15   var_set             0      0      2
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
+ 18   var                 1      0      0
+ 19   ret                 1      0      -
 
 access
-  •   amelie.src shared [select]
+  •   amelie.src [select]
 select test();
 
 test
@@ -985,47 +972,40 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared [select]
+  •   amelie.test [execute]
+  •   amelie.src [select]
 
 FUNCTION amelie.test()
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.src (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      0      0
-  7   jntr                14     0      0
-  8   var                 0      0      0
-  9   int                 1      -      0     # 1
- 10   addii               2      0      1
- 11   var_set             0      0      2
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.src (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      0      0
+ 11   jntr                18     0      0
  12   var                 0      0      0
- 13   ret                 0      0      -
- 14   var                 1      0      0
- 15   ret                 1      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.src (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+ 13   int                 1      -      0     # 1
+ 14   addii               2      0      1
+ 15   var_set             0      0      2
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
+ 18   var                 1      0      0
+ 19   ret                 1      0      -
 
 access
-  •   amelie.src shared [select]
+  •   amelie.src [select]
 select test();
 
 test
@@ -1046,44 +1026,36 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared [select]
+  •   amelie.test [execute]
+  •   amelie.src [select]
 
 FUNCTION amelie.test()
 
-main
+backend
   0   push_nulls          1      0      0
   1   bool                0      1      0
-  2   jntr                10     0      0
-  3   send_all            0      0      32    # amelie.src (select)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
-  7   free                1      0      0
-  8   var                 0      0      0
-  9   ret                 0      0      -
- 10   close               0      0      0
- 11   var                 1      0      0
- 12   ret                 1      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.src (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  2   jntr                14     0      0
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.src (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   var_set             0      0      0
+ 11   free                0      0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
+ 14   var                 1      0      0
+ 15   ret                 1      0      -
 
 access
-  •   amelie.src shared [select]
+  •   amelie.src [select]
 select test();
 
 test
@@ -1104,44 +1076,36 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared [select]
+  •   amelie.test [execute]
+  •   amelie.src [select]
 
 FUNCTION amelie.test()
 
-main
+backend
   0   push_nulls          1      0      0
   1   bool                0      0      0
-  2   jntr                10     0      0
-  3   send_all            0      0      32    # amelie.src (select)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
-  7   free                1      0      0
-  8   var                 0      0      0
-  9   ret                 0      0      -
- 10   close               0      0      0
- 11   var                 1      0      0
- 12   ret                 1      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.src (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  2   jntr                14     0      0
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.src (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   var_set             0      0      0
+ 11   free                0      0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
+ 14   var                 1      0      0
+ 15   ret                 1      0      -
 
 access
-  •   amelie.src shared [select]
+  •   amelie.src [select]
 select test();
 
 test
@@ -1165,54 +1129,47 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared [select]
+  •   amelie.test [execute]
+  •   amelie.src [select]
 
 FUNCTION amelie.test()
 
-main
+backend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
-  3   send_all            0      0      32    # amelie.src (select)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   dup                 0      1      0
-  7   store_open          2      0      19
-  8   store_read          3      2      0
-  9   int                 4      -      0     # 2
- 10   gtii                5      3      4
- 11   jntr                14     5      0
- 12   var                 3      0      0
- 13   ret                 3      0      -
- 14   var                 4      0      0
- 15   int                 5      -      0     # 1
- 16   addii               6      4      5
- 17   var_set             0      0      6
- 18   store_next          2      8      0
- 19   free                2      0      0
- 20   free                0      0      0
- 21   var                 0      0      0
- 22   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.src (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.src (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   dup                 1      0      0
+ 11   store_open          2      1      23
+ 12   store_read          3      2      0
+ 13   int                 4      -      0     # 2
+ 14   gtii                5      3      4
+ 15   jntr                18     5      0
+ 16   var                 3      0      0
+ 17   ret                 3      0      -
+ 18   var                 4      0      0
+ 19   int                 5      -      0     # 1
+ 20   addii               6      4      5
+ 21   var_set             0      0      6
+ 22   store_next          2      12     0
+ 23   free                2      0      0
+ 24   free                1      0      0
+ 25   var                 1      0      0
+ 26   ret                 -1     0      -
 
 access
-  •   amelie.src shared [select]
+  •   amelie.src [select]
 select test();
 
 test
@@ -1236,54 +1193,47 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared [select]
+  •   amelie.test [execute]
+  •   amelie.src [select]
 
 FUNCTION amelie.test()
 
-main
+backend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
-  3   send_all            0      0      32    # amelie.src (select)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   dup                 0      1      0
-  7   store_open          2      0      19
-  8   store_read          3      2      0
-  9   int                 4      -      0     # 2
- 10   gtii                5      3      4
- 11   jntr                14     5      0
- 12   var                 3      0      0
- 13   ret                 3      0      -
- 14   var                 4      0      0
- 15   int                 5      -      0     # 1
- 16   addii               6      4      5
- 17   var_set             0      0      6
- 18   store_next          2      8      0
- 19   free                2      0      0
- 20   free                0      0      0
- 21   var                 0      0      0
- 22   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.src (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.src (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   dup                 1      0      0
+ 11   store_open          2      1      23
+ 12   store_read          3      2      0
+ 13   int                 4      -      0     # 2
+ 14   gtii                5      3      4
+ 15   jntr                18     5      0
+ 16   var                 3      0      0
+ 17   ret                 3      0      -
+ 18   var                 4      0      0
+ 19   int                 5      -      0     # 1
+ 20   addii               6      4      5
+ 21   var_set             0      0      6
+ 22   store_next          2      12     0
+ 23   free                2      0      0
+ 24   free                1      0      0
+ 25   var                 1      0      0
+ 26   ret                 -1     0      -
 
 access
-  •   amelie.src shared [select]
+  •   amelie.src [select]
 select test();
 
 test
@@ -1306,16 +1256,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -1359,16 +1309,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -1407,30 +1357,25 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared_rw [insert]
+  •   amelie.test [execute]
+  •   amelie.src [insert]
 
 FUNCTION amelie.test()
 
-main
-  0   set_ptr             1      -      0
-  1   send_shard          0      1      0     # amelie.src (insert, closing)
+backend
+  0   set_ptr             0      -      0
+  1   insert              -      -      -     # amelie.src
   2   ret                 -1     0      -
   3   int                 0      -      0     # 1
   4   ret                 -1     0      -
 
-pushdown
-  0   insert              -      -      -     # amelie.src
-  1   ret                 -1     0      -
-
 access
-  •   amelie.src shared_rw [insert]
+  •   amelie.src [insert]
 select test();
 
 test
@@ -1448,43 +1393,35 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared_rw [insert, select]
+  •   amelie.test [execute]
+  •   amelie.src [insert, select]
 
 FUNCTION amelie.test()
 
-main
-  0   set_ptr             1      -      0
-  1   send_shard          0      1      0     # amelie.src (insert, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   first               0      1      0
-  5   ret                 0      0      -
-  6   int                 1      -      0     # 1
-  7   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_prepare       1      -      -     # amelie.src
-  2   jmp                 9      0      0
-  3   string              2      0      0     # unique key constraint violation
-  4   push                2      0      0
-  5   call                2      -      1     # error()
-  6   table_readi32       2      1      -     # id
-  7   push                2      0      0
-  8   set_add             0      0      0
-  9   upsert              1      3      6
- 10   free                1      0      0
- 11   ret                 0      0      -
+backend
+  0   set_ptr             0      -      0
+  1   set                 1      1      0
+  2   upsert_open         2      -      -     # amelie.src
+  3   jmp                 10     0      0
+  4   string              3      0      0     # unique key constraint violation
+  5   push                3      0      0
+  6   call                3      -      1     # error()
+  7   table_readi32       3      2      -     # id
+  8   push                3      0      0
+  9   set_add             1      0      0
+ 10   upsert              2      4      7
+ 11   first               0      1      0
+ 12   ret                 0      0      -
+ 13   int                 1      -      0     # 1
+ 14   ret                 -1     0      -
 
 access
-  •   amelie.src shared_rw [insert, select]
+  •   amelie.src [insert, select]
 select test();
 
 test
@@ -1513,44 +1450,36 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared_rw [insert, select]
+  •   amelie.test [execute]
+  •   amelie.src [insert, select]
 
 FUNCTION amelie.test()
 
-main
+backend
   0   push_nulls          1      0      0
-  1   set_ptr             1      -      0
-  2   send_shard          0      1      0     # amelie.src (insert, closing)
-  3   union               1      0      0
-  4   recv                1      0      0
-  5   var_set             0      0      1
-  6   free                1      0      0
-  7   var                 0      0      0
-  8   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_prepare       1      -      -     # amelie.src
-  2   jmp                 9      0      0
-  3   string              2      0      0     # unique key constraint violation
-  4   push                2      0      0
-  5   call                2      -      1     # error()
-  6   table_readi32       2      1      -     # id
-  7   push                2      0      0
-  8   set_add             0      0      0
-  9   upsert              1      3      6
- 10   free                1      0      0
- 11   ret                 0      0      -
+  1   set_ptr             0      -      0
+  2   set                 1      1      0
+  3   upsert_open         2      -      -     # amelie.src
+  4   jmp                 11     0      0
+  5   string              3      0      0     # unique key constraint violation
+  6   push                3      0      0
+  7   call                3      -      1     # error()
+  8   table_readi32       3      2      -     # id
+  9   push                3      0      0
+ 10   set_add             1      0      0
+ 11   upsert              2      5      8
+ 12   var_set             0      0      1
+ 13   free                1      0      0
+ 14   var                 0      0      0
+ 15   ret                 0      0      -
 
 access
-  •   amelie.src shared_rw [insert, select]
+  •   amelie.src [insert, select]
 select test();
 
 test
@@ -1572,49 +1501,40 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared_rw [insert, select]
+  •   amelie.test [execute]
+  •   amelie.src [insert, select]
 
 FUNCTION amelie.test()
 
-main
+backend
   0   push_nulls          1      0      0
   1   bool                0      1      0
-  2   jntr                11     0      0
-  3   set_ptr             1      -      0
-  4   send_shard          0      1      0     # amelie.src (insert)
-  5   union               1      0      0
-  6   recv                1      0      0
-  7   var_set             0      0      1
-  8   free                1      0      0
-  9   var                 0      0      0
- 10   ret                 0      0      -
- 11   close               0      0      0
- 12   int                 1      -      0     # 0
- 13   ret                 1      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_prepare       1      -      -     # amelie.src
-  2   jmp                 9      0      0
-  3   string              2      0      0     # unique key constraint violation
-  4   push                2      0      0
-  5   call                2      -      1     # error()
-  6   table_readi32       2      1      -     # id
-  7   push                2      0      0
-  8   set_add             0      0      0
-  9   upsert              1      3      6
- 10   free                1      0      0
- 11   ret                 0      0      -
+  2   jntr                18     0      0
+  3   set_ptr             0      -      0
+  4   set                 1      1      0
+  5   upsert_open         2      -      -     # amelie.src
+  6   jmp                 13     0      0
+  7   string              3      0      0     # unique key constraint violation
+  8   push                3      0      0
+  9   call                3      -      1     # error()
+ 10   table_readi32       3      2      -     # id
+ 11   push                3      0      0
+ 12   set_add             1      0      0
+ 13   upsert              2      7      10
+ 14   var_set             0      0      1
+ 15   free                1      0      0
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
+ 18   int                 1      -      0     # 0
+ 19   ret                 1      0      -
 
 access
-  •   amelie.src shared_rw [insert, select]
+  •   amelie.src [insert, select]
 select test();
 
 test
@@ -1636,49 +1556,40 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared_rw [insert, select]
+  •   amelie.test [execute]
+  •   amelie.src [insert, select]
 
 FUNCTION amelie.test()
 
-main
+backend
   0   push_nulls          1      0      0
   1   bool                0      0      0
-  2   jntr                11     0      0
-  3   set_ptr             1      -      0
-  4   send_shard          0      1      0     # amelie.src (insert)
-  5   union               1      0      0
-  6   recv                1      0      0
-  7   var_set             0      0      1
-  8   free                1      0      0
-  9   var                 0      0      0
- 10   ret                 0      0      -
- 11   close               0      0      0
- 12   int                 1      -      0     # 0
- 13   ret                 1      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_prepare       1      -      -     # amelie.src
-  2   jmp                 9      0      0
-  3   string              2      0      0     # unique key constraint violation
-  4   push                2      0      0
-  5   call                2      -      1     # error()
-  6   table_readi32       2      1      -     # id
-  7   push                2      0      0
-  8   set_add             0      0      0
-  9   upsert              1      3      6
- 10   free                1      0      0
- 11   ret                 0      0      -
+  2   jntr                18     0      0
+  3   set_ptr             0      -      0
+  4   set                 1      1      0
+  5   upsert_open         2      -      -     # amelie.src
+  6   jmp                 13     0      0
+  7   string              3      0      0     # unique key constraint violation
+  8   push                3      0      0
+  9   call                3      -      1     # error()
+ 10   table_readi32       3      2      -     # id
+ 11   push                3      0      0
+ 12   set_add             1      0      0
+ 13   upsert              2      7      10
+ 14   var_set             0      0      1
+ 15   free                1      0      0
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
+ 18   int                 1      -      0     # 0
+ 19   ret                 1      0      -
 
 access
-  •   amelie.src shared_rw [insert, select]
+  •   amelie.src [insert, select]
 select test();
 
 test
@@ -1699,16 +1610,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   var_set             0      0      0
@@ -1758,16 +1669,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   var_set             0      0      0
@@ -1832,16 +1743,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   set                 0      1      1
   2   json                1      0      0
@@ -1909,16 +1820,16 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   set                 0      1      1
   2   json                1      0      0
@@ -1984,38 +1895,31 @@ explain select test();
 explain
 ───────
 
-main
+backend
   0   call_udf            0      -      -     # amelie.test()
-  1   close               0      0      0
-  2   ret                 0      0      -
+  1   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
-  •   amelie.src shared [select]
+  •   amelie.test [execute]
+  •   amelie.src [select]
 
 FUNCTION amelie.test()
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.src (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_mov             0      0      1
-  5   var                 0      0      0
-  6   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.src (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.src (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_mov             0      0      0
+  9   var                 0      0      0
+ 10   ret                 0      0      -
 
 access
-  •   amelie.src shared [select]
+  •   amelie.src [select]
 select test();
 
 test
@@ -2052,17 +1956,17 @@ explain select test(123);
 explain
 ───────
 
-main
+backend
   0   push_int            -      0      0     # 123
   1   call_udf            0      -      -     # amelie.test()
   2   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   var                 0      0      1
   1   var                 1      0      1
   2   mulii               2      0      1
@@ -2086,17 +1990,17 @@ explain select test(-1);
 explain
 ───────
 
-main
+backend
   0   push_int            -      0      0     # -1
   1   call_udf            0      -      -     # amelie.test()
   2   ret                 0      0      -
 
 access
-  •   amelie.test call [execute]
+  •   amelie.test [execute]
 
 FUNCTION amelie.test()
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0

@@ -59,15 +59,6 @@ alter user amelie set limit indexes = 2;
 create index i on test (id);
 drop table test;
 
-# test: layers
-create table test (id int primary key);
-alter user amelie set limit layers = 0;
-create table test_side on test;
-alter user amelie set limit layers = 1;
-create table test_side on test;
-create table test_side2 on test;
-drop table test cascade;
-
 # test: functions
 alter user amelie set limit functions = 0;
 create function test () begin end;

@@ -13,16 +13,10 @@ explain select * from test where id >= 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
-  2   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          1      0      13    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 0
   5   gteii               4      2      3
@@ -37,7 +31,7 @@ pushdown
  14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id >= 0;
 
 id  data
@@ -65,17 +59,11 @@ explain select * from test where data.data::int >= 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      37    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      16    # amelie.test (heap) part
+  1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readj         2      1      -     # data
-  3   string              3      32     0     # data
+  3   string              3      24     0     # data
   4   dotjs               4      2      3
   5   push                4      0      0
   6   call                2      -      1     # int()
@@ -92,7 +80,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where data.data::int >= 0;
 
 id  data
@@ -118,17 +106,11 @@ explain select * from test where data.data.data::int >= 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      42    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      16    # amelie.test (heap) part
+  1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readj         2      1      -     # data
-  3   string              3      32     0     # data.data
+  3   string              3      24     0     # data.data
   4   dotjs               4      2      3
   5   push                4      0      0
   6   call                2      -      1     # int()
@@ -145,7 +127,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where data.data.data::int >= 0;
 
 id  data
@@ -164,16 +146,10 @@ explain select * from test where test.id >= 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
-  2   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          1      0      13    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 0
   5   gteii               4      2      3
@@ -188,7 +164,7 @@ pushdown
  14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where test.id >= 0;
 
 id  data
@@ -207,17 +183,11 @@ explain select * from test where test.data.data::int >= 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      37    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      16    # amelie.test (heap) part
+  1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readj         2      1      -     # data
-  3   string              3      32     0     # data
+  3   string              3      24     0     # data
   4   dotjs               4      2      3
   5   push                4      0      0
   6   call                2      -      1     # int()
@@ -234,7 +204,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where test.data.data::int >= 0;
 
 id  data
@@ -253,16 +223,10 @@ explain select * from test alias where alias.id >= 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
-  2   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          1      0      13    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 0
   5   gteii               4      2      3
@@ -277,7 +241,7 @@ pushdown
  14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test alias where alias.id >= 0;
 
 id  data
@@ -296,17 +260,11 @@ explain select * from test alias where alias.data.data::int >= 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      37    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      16    # amelie.test (heap) part
+  1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readj         2      1      -     # data
-  3   string              3      32     0     # data
+  3   string              3      24     0     # data
   4   dotjs               4      2      3
   5   push                4      0      0
   6   call                2      -      1     # int()
@@ -323,7 +281,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test alias where alias.data.data::int >= 0;
 
 id  data
@@ -348,15 +306,9 @@ explain select * from test where true;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   bool                2      1      0
   3   jntr                7      2      0
   4   table_readi32       2      1      -     # id
@@ -367,7 +319,7 @@ pushdown
   9   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where true;
 
 id
@@ -388,16 +340,10 @@ explain select * from test where id >= 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      1      0
   1   push_int            -      0      0     # 0
-  2   table_open          1      0      11    # amelie.test (primary) part
+  2   table_open          1      0      11    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 0
   5   gteii               4      2      3
@@ -410,7 +356,7 @@ pushdown
  12   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id >= 0;
 
 id
@@ -473,15 +419,9 @@ explain select * from test where id <= 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      14    # amelie.test (primary) part
+  1   table_open          1      0      14    # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   int                 3      -      0     # 0
   4   lteii               4      2      3
@@ -498,7 +438,7 @@ pushdown
  15   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id <= 0;
 
 id
@@ -534,15 +474,9 @@ explain select * from test where id < 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      14    # amelie.test (primary) part
+  1   table_open          1      0      14    # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   int                 3      -      0     # 0
   4   ltii                4      2      3
@@ -559,7 +493,7 @@ pushdown
  15   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id < 0;
 
 id
@@ -595,17 +529,10 @@ explain select * from test where id = 2;
 explain
 ───────
 
-main
-  0   push_int            -      0      0     # 2
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      1      0
   1   push_int            -      0      0     # 2
-  2   table_open          1      0      10    # amelie.test (primary) point_lookup, part
+  2   table_open          1      0      10    # amelie.test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 2
   5   equii               4      2      3
@@ -617,7 +544,7 @@ pushdown
  11   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id = 2;
 
 id

@@ -36,7 +36,7 @@ emit_insert_store_rows(Compiler* self)
 		list_foreach(&columns->list)
 		{
 			auto column = list_at(Column, link);
-			auto type = emit_push(self, &insert->from, col);
+			auto type = emit_push(self, &insert->from_values, col);
 			if (unlikely(type != TYPE_NULL && column->type != type))
 				stmt_error(stmt, row->ast, "'{s}' expected for column '{str}",
 				           type_of(column->type),

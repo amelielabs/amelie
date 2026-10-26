@@ -58,42 +58,36 @@ explain select t.x from (select z.id as x from (select id from test) z) t;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      1      0
-  4   dup                 2      1      0
-  5   store_open          3      2      10
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   set_add             0      0      0
-  9   store_next          3      6      0
- 10   free                3      0      0
- 11   free                2      0      0
- 12   set                 2      1      0
- 13   dup                 3      0      0
- 14   store_open          4      3      19
- 15   store_read          5      4      0
- 16   push                5      0      0
- 17   set_add             2      0      0
- 18   store_next          4      15     0
- 19   free                4      0      0
- 20   free                3      0      0
- 21   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   set                 1      1      0
+  8   dup                 2      0      0
+  9   store_open          3      2      14
+ 10   store_read          4      3      0
+ 11   push                4      0      0
+ 12   set_add             1      0      0
+ 13   store_next          3      10     0
+ 14   free                3      0      0
+ 15   free                2      0      0
+ 16   set                 2      1      0
+ 17   dup                 3      1      0
+ 18   store_open          4      3      23
+ 19   store_read          5      4      0
+ 20   push                5      0      0
+ 21   set_add             2      0      0
+ 22   store_next          4      19     0
+ 23   free                4      0      0
+ 24   free                3      0      0
+ 25   ret                 2      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 disconnect S0;
 close E0;

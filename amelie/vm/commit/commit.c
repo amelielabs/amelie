@@ -78,8 +78,7 @@ commit_main(void* arg)
 		batch_complete(&batch);
 
 		// remove all groups < group_min
-		if (group_min != UINT64_MAX)
-			gtr_queue_gc(queue, group_min);
+		gtr_queue_gc(queue, group_min);
 	}
 }
 

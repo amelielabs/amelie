@@ -104,7 +104,7 @@ explain select [current_date];
 explain
 ───────
 
-main
+frontend
   0   push_date_current   0      0      0
   1   json_array          0      1      0
   2   ret                 0      0      -
@@ -113,7 +113,7 @@ explain select [date '1970-01-01'];
 explain
 ───────
 
-main
+frontend
   0   json                0      0      0
   1   ret                 0      0      -
 select [date '1970-01-01'];
@@ -132,7 +132,7 @@ explain select now()::date between date '0001-01-01' and date '9999-12-31';
 explain
 ───────
 
-main
+frontend
   0   call                0      -      0     # now()
   1   push                0      0      0
   2   call                0      -      1     # date()
@@ -150,7 +150,7 @@ explain select date '1970-01-01' between date '1970-01-01' and date '1970-01-01'
 explain
 ───────
 
-main
+frontend
   0   date                0      2440588 0
   1   date                1      2440588 0
   2   gteii               2      0      1

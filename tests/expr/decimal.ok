@@ -188,7 +188,7 @@ explain select 1.0000 = 1;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      4611686018427397904 0
   1   int                 1      -      0     # 1
   2   equei               2      0      1
@@ -214,7 +214,7 @@ explain select 12.3 = 12.3;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606847099 0
   1   decimal             1      1152921504606847099 0
   2   equee               2      0      1
@@ -249,7 +249,7 @@ explain select 1.1 <> 1;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606846987 0
   1   int                 1      -      0     # 1
   2   equei               2      0      1
@@ -276,7 +276,7 @@ explain select 11.1 >= 1;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606847087 0
   1   int                 1      -      0     # 1
   2   gteei               2      0      1
@@ -302,7 +302,7 @@ explain select decimal '1.11' >= decimal '1.13';
 explain
 ───────
 
-main
+frontend
   0   decimal             0      2305843009213694063 0
   1   decimal             1      2305843009213694065 0
   2   gteee               2      0      1
@@ -318,7 +318,7 @@ explain select 0.11 >= null;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      2305843009213693963 0
   1   null                1      0      0
   2   nullop              2      0      1
@@ -347,7 +347,7 @@ explain select 11.1 > 1;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606847087 0
   1   int                 1      -      0     # 1
   2   gtei                2      0      1
@@ -383,7 +383,7 @@ explain select 1.11 > 1.13;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      2305843009213694063 0
   1   decimal             1      2305843009213694065 0
   2   gtee                2      0      1
@@ -423,7 +423,7 @@ explain select 11.1 <= 1;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606847087 0
   1   int                 1      -      0     # 1
   2   lteei               2      0      1
@@ -454,7 +454,7 @@ explain select 1.11 <= 1.13;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      2305843009213694063 0
   1   decimal             1      2305843009213694065 0
   2   lteee               2      0      1
@@ -470,7 +470,7 @@ explain select 0.11 <= null;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      2305843009213693963 0
   1   null                1      0      0
   2   nullop              2      0      1
@@ -499,7 +499,7 @@ explain select 11.1 < 1;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606847087 0
   1   int                 1      -      0     # 1
   2   ltei                2      0      1
@@ -525,7 +525,7 @@ explain select 1.11 < 1.13;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      2305843009213694063 0
   1   decimal             1      2305843009213694065 0
   2   ltee                2      0      1
@@ -546,7 +546,7 @@ explain select 0.11 < null;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      2305843009213693963 0
   1   null                1      0      0
   2   nullop              2      0      1
@@ -565,7 +565,7 @@ explain select 1.5 + 1;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606846991 0
   1   int                 1      -      0     # 1
   2   addei               2      0      1
@@ -581,7 +581,7 @@ explain select 1.5 + 1.5;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606846991 0
   1   decimal             1      1152921504606846991 0
   2   addee               2      0      1
@@ -626,7 +626,7 @@ explain select 1.5 - 1;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606846991 0
   1   int                 1      -      0     # 1
   2   subei               2      0      1
@@ -647,7 +647,7 @@ explain select 1.5 - 1.5;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606846991 0
   1   decimal             1      1152921504606846991 0
   2   subee               2      0      1
@@ -687,7 +687,7 @@ explain select 1.5 * 2;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606846991 0
   1   int                 1      -      0     # 2
   2   mulei               2      0      1
@@ -703,7 +703,7 @@ explain select 1.5 * 1.5;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606846991 0
   1   decimal             1      1152921504606846991 0
   2   mulee               2      0      1
@@ -738,7 +738,7 @@ explain select 3.5 / 2;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606847011 0
   1   int                 1      -      0     # 2
   2   divei               2      0      1
@@ -756,7 +756,7 @@ explain select 3.5 / 1.5;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606847011 0
   1   decimal             1      1152921504606846991 0
   2   divee               2      0      1
@@ -788,7 +788,7 @@ explain select - 18.8;
 explain
 ───────
 
-main
+frontend
   0   decimal             0      2305843009213693764 0
   1   ret                 0      0      -
 explain select - decimal '18.8';
@@ -796,7 +796,7 @@ explain select - decimal '18.8';
 explain
 ───────
 
-main
+frontend
   0   decimal             0      1152921504606847164 0
   1   nege                1      0      0
   2   ret                 1      0      -

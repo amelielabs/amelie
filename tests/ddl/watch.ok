@@ -23,7 +23,7 @@ explain watch show('state').lsn::int = 1;
 explain
 ───────
 
-main
+frontend
   0   push_string         0      0      0     # state
   1   call                0      -      1     # show()
   2   string              1      6      0     # lsn

@@ -21,8 +21,7 @@ enum
 	FN_NONE     = 0,
 	FN_DERIVE   = 1 << 0,
 	FN_CONTEXT  = 1 << 1,
-	FN_CONST    = 1 << 2,
-	FN_FRONTEND = 1 << 3
+	FN_CONST    = 1 << 2
 };
 
 struct Function

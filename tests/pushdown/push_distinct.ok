@@ -7,15 +7,9 @@ explain select distinct * from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      34    # amelie.test (select, closing)
-  1   union               1      2      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set_ordered         0      2      2
-  1   table_open          1      2      12    # amelie.test (primary) part
+  1   table_open          1      2      12    # amelie.test (primary) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -28,10 +22,12 @@ pushdown
  11   table_next          1      2      0
  12   free                1      0      0
  13   set_sort            0      0      0
- 14   ret                 0      0      -
+ 14   union               1      2      0
+ 15   union_add           1      0      0
+ 16   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select distinct * from test;
 
 id  data
@@ -47,24 +43,24 @@ id  data
 ──────────
 0   0
 1   0
-6   3
-7   3
-8   4
-14  7
-15  7
-17  8
 2   1
-9   4
-10  5
-12  6
-18  9
-19  9
 3   1
 4   2
 5   2
+6   3
+7   3
+8   4
+9   4
+10  5
 11  5
+12  6
 13  6
+14  7
+15  7
 16  8
+17  8
+18  9
+19  9
 select * from test order by id;
 
 id  data
@@ -94,15 +90,9 @@ explain select distinct * from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      34    # amelie.test (select, closing)
-  1   union               1      2      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set_ordered         0      2      2
-  1   table_open          1      2      12    # amelie.test (primary) part
+  1   table_open          1      2      12    # amelie.test (primary) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -115,10 +105,12 @@ pushdown
  11   table_next          1      2      0
  12   free                1      0      0
  13   set_sort            0      0      0
- 14   ret                 0      0      -
+ 14   union               1      2      0
+ 15   union_add           1      0      0
+ 16   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select distinct * from test;
 
 id  data
@@ -149,26 +141,18 @@ explain select distinct id from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      33    # amelie.test (select, closing)
-  1   union               1      2      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
-  0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (primary) part
+backend
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
-  4   table_readi64       2      1      -     # id
-  5   push                2      0      0
-  6   set_add             0      0      0
-  7   table_next          1      2      0
-  8   free                1      0      0
-  9   ret                 0      0      -
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select distinct id from test;
 
 id
@@ -213,15 +197,9 @@ explain select distinct id, data from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      34    # amelie.test (select, closing)
-  1   union               1      2      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set_ordered         0      2      2
-  1   table_open          1      2      12    # amelie.test (primary) part
+  1   table_open          1      2      12    # amelie.test (primary) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -234,10 +212,12 @@ pushdown
  11   table_next          1      2      0
  12   free                1      0      0
  13   set_sort            0      0      0
- 14   ret                 0      0      -
+ 14   union               1      2      0
+ 15   union_add           1      0      0
+ 16   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select distinct id, data from test;
 
 id  data
@@ -268,17 +248,9 @@ explain select distinct data from test limit 4;
 explain
 ───────
 
-main
-  0   send_all            0      0      33    # amelie.test (select, closing)
-  1   union               1      2      0
-  2   int                 2      -      0     # 4
-  3   union_limit         1      2      0
-  4   recv                1      0      0
-  5   ret                 1      0      -
-
-pushdown
+backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (primary) part
+  1   table_open          1      1      8     # amelie.test (primary) 
   2   table_readi32       2      1      -     # data
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -287,10 +259,14 @@ pushdown
   7   table_next          1      2      0
   8   free                1      0      0
   9   set_sort            0      0      0
- 10   ret                 0      0      -
+ 10   union               1      2      0
+ 11   int                 2      -      0     # 4
+ 12   union_limit         1      2      0
+ 13   union_add           1      0      0
+ 14   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select distinct data from test limit 4;
 
 data
@@ -305,17 +281,9 @@ explain select distinct data from test limit 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      33    # amelie.test (select, closing)
-  1   union               1      2      0
-  2   int                 2      -      0     # 0
-  3   union_limit         1      2      0
-  4   recv                1      0      0
-  5   ret                 1      0      -
-
-pushdown
+backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (primary) part
+  1   table_open          1      1      8     # amelie.test (primary) 
   2   table_readi32       2      1      -     # data
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -324,10 +292,14 @@ pushdown
   7   table_next          1      2      0
   8   free                1      0      0
   9   set_sort            0      0      0
- 10   ret                 0      0      -
+ 10   union               1      2      0
+ 11   int                 2      -      0     # 0
+ 12   union_limit         1      2      0
+ 13   union_add           1      0      0
+ 14   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select distinct data from test limit 0;
 
 data
@@ -338,19 +310,9 @@ explain select distinct data from test limit 1 offset 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      33    # amelie.test (select, closing)
-  1   union               1      2      0
-  2   int                 2      -      0     # 1
-  3   union_limit         1      2      0
-  4   int                 2      -      0     # 1
-  5   union_offset        1      2      0
-  6   recv                1      0      0
-  7   ret                 1      0      -
-
-pushdown
+backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (primary) part
+  1   table_open          1      1      8     # amelie.test (primary) 
   2   table_readi32       2      1      -     # data
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -359,10 +321,16 @@ pushdown
   7   table_next          1      2      0
   8   free                1      0      0
   9   set_sort            0      0      0
- 10   ret                 0      0      -
+ 10   union               1      2      0
+ 11   int                 2      -      0     # 1
+ 12   union_limit         1      2      0
+ 13   int                 2      -      0     # 1
+ 14   union_offset        1      2      0
+ 15   union_add           1      0      0
+ 16   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select distinct data from test limit 1 offset 0;
 
 data
@@ -389,17 +357,9 @@ explain select distinct data from test offset 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      33    # amelie.test (select, closing)
-  1   union               1      2      0
-  2   int                 2      -      0     # 1
-  3   union_offset        1      2      0
-  4   recv                1      0      0
-  5   ret                 1      0      -
-
-pushdown
+backend
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (primary) part
+  1   table_open          1      1      8     # amelie.test (primary) 
   2   table_readi32       2      1      -     # data
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -408,10 +368,14 @@ pushdown
   7   table_next          1      2      0
   8   free                1      0      0
   9   set_sort            0      0      0
- 10   ret                 0      0      -
+ 10   union               1      2      0
+ 11   int                 2      -      0     # 1
+ 12   union_offset        1      2      0
+ 13   union_add           1      0      0
+ 14   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select distinct data from test offset 0;
 
 data
@@ -489,15 +453,9 @@ explain select * from test order by data;
 explain
 ───────
 
-main
-  0   send_all            0      0      33    # amelie.test (select, closing)
-  1   union               1      1      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set_ordered         0      2      1
-  1   table_open          1      1      10    # amelie.test (primary) part
+  1   table_open          1      1      10    # amelie.test (primary) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -511,21 +469,15 @@ pushdown
  12   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 explain select distinct on (data) * from test;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      33    # amelie.test (select, closing)
-  1   union               1      2      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set_ordered         0      2      1
-  1   table_open          1      1      10    # amelie.test (primary) part
+  1   table_open          1      1      10    # amelie.test (primary) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -536,10 +488,12 @@ pushdown
   9   table_next          1      2      0
  10   free                1      0      0
  11   set_sort            0      0      0
- 12   ret                 0      0      -
+ 12   union               1      2      0
+ 13   union_add           1      0      0
+ 14   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select distinct on (data) * from test;
 
 id  data
@@ -552,7 +506,7 @@ id  data
 10  5
 12  6
 14  7
-17  8
+16  8
 18  9
 select distinct on (id) * from test;
 

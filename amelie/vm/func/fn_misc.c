@@ -267,13 +267,11 @@ fn_misc_register(Functions* self)
 	// random()
 	func = function_allocate(TYPE_INT, "random", fn_random);
 	function_unset(func, FN_CONST);
-	function_set(func, FN_FRONTEND);
 	functions_add(self, func);
 
 	// random_uuid()
 	func = function_allocate(TYPE_UUID, "random_uuid", fn_random_uuid);
 	function_unset(func, FN_CONST);
-	function_set(func, FN_FRONTEND);
 	functions_add(self, func);
 
 	// md5()

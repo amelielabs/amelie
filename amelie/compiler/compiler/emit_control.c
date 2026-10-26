@@ -218,7 +218,8 @@ emit_return(Compiler* self, Stmt* stmt)
 	if (! udf)
 	{
 		auto r = -1;
-		if (stmt->ret && stmt->ret->columns.count > 0)
+		auto ret = stmt->ret;
+		if (ret && ret->columns.count > 0 && !ret->count_into)
 			r = stmt->r;
 		op1(self, CRET, r);
 		return;
@@ -245,7 +246,8 @@ emit_return(Compiler* self, Stmt* stmt)
 		columns = &var->columns;
 	} else
 	{
-		if (stmt->ret && stmt->ret->columns.count > 0)
+		auto ret = stmt->ret;
+		if (ret && ret->columns.count > 0 && !ret->count_into)
 			r = stmt->r;
 		else
 			r = -1;

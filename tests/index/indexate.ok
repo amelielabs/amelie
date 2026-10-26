@@ -10020,7 +10020,7 @@ count
 9999
 drop table test;
 # test: indexate (unique conflict)
-create table test (id int primary key, data int) partitions 1;
+create table test (id int primary key, data int);
 insert into test values (1, 1);
 insert into test values (2, 2);
 insert into test values (3, 3);

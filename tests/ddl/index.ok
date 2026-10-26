@@ -369,13 +369,7 @@ explain select * from t;
 explain
 ───────
 
-main
-  0   send                0      0      32    # amelie.t (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.t (heap) 
   2   table_readi32       2      1      -     # id
@@ -386,7 +380,7 @@ pushdown
   7   ret                 0      0      -
 
 access
-  •   amelie.t shared [select]
+  •   amelie.t [select]
 drop index `primary` on t;
 select show('table', 'test', null, "verbose").indexes;
 
@@ -408,13 +402,7 @@ explain select * from t;
 explain
 ───────
 
-main
-  0   send                0      0      32    # amelie.t (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.t (heap) 
   2   table_readi32       2      1      -     # id
@@ -425,7 +413,7 @@ pushdown
   7   ret                 0      0      -
 
 access
-  •   amelie.t shared [select]
+  •   amelie.t [select]
 select * from t;
 
 id
@@ -733,7 +721,7 @@ explain create index i on test (data);
 explain
 ───────
 
-main
+frontend
   0   ddl_create_index    0      0      0
   1   ret                 -1     0      -
 select show('table', 'test', null, "verbose").columns;

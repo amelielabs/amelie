@@ -15,7 +15,7 @@ explain select true and true;
 explain
 ───────
 
-main
+frontend
   0   bool                0      1      0
   1   bool                1      1      0
   2   and                 2      0      1
@@ -91,7 +91,7 @@ explain select false or true;
 explain
 ───────
 
-main
+frontend
   0   bool                0      0      0
   1   bool                1      1      0
   2   or                  2      0      1

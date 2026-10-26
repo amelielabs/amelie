@@ -6,7 +6,7 @@ explain begin declare x int; select x; end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   var                 0      0      0
   2   ret                 0      0      -
@@ -21,7 +21,7 @@ explain begin declare x int := 0; select x; end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -41,7 +41,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -70,7 +70,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
@@ -96,7 +96,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
@@ -127,27 +127,21 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   ret                 -1     0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -162,28 +156,22 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   var                 0      0      0
-  7   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   var                 0      0      0
+ 11   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -204,29 +192,23 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   int                 1      -      0     # 123
-  3   union               2      0      0
-  4   recv                2      0      0
-  5   var_set             0      0      2
-  6   free                2      0      0
-  7   var                 0      0      0
-  8   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   int                 0      -      0     # 123
+ 11   var                 1      0      0
+ 12   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -248,37 +230,29 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select)
-  2   send_all            1      0      88    # amelie.test (select, closing)
-  3   union               2      0      0
-  4   recv                2      0      0
-  5   var_set             0      0      2
-  6   free                2      0      0
-  7   var                 0      0      0
-  8   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 1      1      0
-  9   table_open          2      56     14    # amelie.test (heap) part
- 10   table_readi32       3      2      -     # id
- 11   push                3      0      0
- 12   set_add             1      0      0
- 13   table_next          2      10     0
- 14   free                2      0      0
- 15   ret                 1      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   set                 0      1      0
+ 11   table_open          1      24     16    # amelie.test (heap) 
+ 12   table_readi32       2      1      -     # id
+ 13   push                2      0      0
+ 14   set_add             0      0      0
+ 15   table_next          1      12     0
+ 16   free                1      0      0
+ 17   var                 1      0      0
+ 18   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -300,40 +274,34 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   int                 1      -      0     # 123
-  3   union               2      0      0
-  4   recv                2      0      0
-  5   var_set             0      0      2
-  6   free                2      0      0
-  7   set                 0      1      0
-  8   var                 2      0      0
-  9   push                2      0      0
- 10   set                 2      1      0
- 11   set_add             2      0      0
- 12   store_open          3      2      17
- 13   store_read          4      3      0
- 14   push                4      0      0
- 15   set_add             0      0      0
- 16   store_next          3      13     0
- 17   free                3      0      0
- 18   free                2      0      0
- 19   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   int                 0      -      0     # 123
+ 11   set                 1      1      0
+ 12   var                 2      0      0
+ 13   push                2      0      0
+ 14   set                 2      1      0
+ 15   set_add             2      0      0
+ 16   store_open          3      2      21
+ 17   store_read          4      3      0
+ 18   push                4      0      0
+ 19   set_add             1      0      0
+ 20   store_next          3      17     0
+ 21   free                3      0      0
+ 22   free                2      0      0
+ 23   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -354,39 +322,29 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   send_all            0      0      88    # amelie.test (select, closing)
-  7   union               1      0      0
-  8   recv                1      0      0
-  9   var_set             0      0      1
- 10   free                1      0      0
- 11   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 0      1      0
-  9   table_open          1      56     13    # amelie.test (heap) part
- 10   push_int            -      0      0     # 123
- 11   set_add             0      0      0
- 12   table_next          1      10     0
- 13   free                1      0      0
- 14   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   set                 0      1      0
+ 11   table_open          1      24     15    # amelie.test (heap) 
+ 12   push_int            -      0      0     # 123
+ 13   set_add             0      0      0
+ 14   table_next          1      12     0
+ 15   free                1      0      0
+ 16   var_set             0      0      0
+ 17   free                0      0      0
+ 18   ret                 -1     0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -403,40 +361,30 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   send_all            0      0      88    # amelie.test (select, closing)
-  7   union               1      0      0
-  8   recv                1      0      0
-  9   var_set             0      0      1
- 10   free                1      0      0
- 11   var                 0      0      0
- 12   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 0      1      0
-  9   table_open          1      56     13    # amelie.test (heap) part
- 10   push_int            -      0      0     # 123
- 11   set_add             0      0      0
- 12   table_next          1      10     0
- 13   free                1      0      0
- 14   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   set                 0      1      0
+ 11   table_open          1      24     15    # amelie.test (heap) 
+ 12   push_int            -      0      0     # 123
+ 13   set_add             0      0      0
+ 14   table_next          1      12     0
+ 15   free                1      0      0
+ 16   var_set             0      0      0
+ 17   free                0      0      0
+ 18   var                 0      0      0
+ 19   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -457,29 +405,23 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
-  3   send_all            0      0      32    # amelie.test (select, closing)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
-  7   free                1      0      0
-  8   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.test (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   var_set             0      0      0
+ 11   free                0      0      0
+ 12   ret                 -1     0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select 123 into x;
@@ -496,30 +438,24 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
-  3   send_all            0      0      32    # amelie.test (select, closing)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
-  7   free                1      0      0
-  8   var                 0      0      0
-  9   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.test (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   var_set             0      0      0
+ 11   free                0      0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select 123 into x;
@@ -541,30 +477,24 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   bool                1      1      0
-  3   jntr                4      1      0
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
   7   free                1      0      0
-  8   var                 0      0      0
-  9   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                12     0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -586,30 +516,24 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   var                 0      0      0
-  7   jntr                8      0      0
-  8   var                 0      0      0
-  9   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   var                 0      0      0
+ 11   jntr                12     0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -633,31 +557,25 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      1      0
-  7   jntr                9      0      0
-  8   var                 0      0      0
-  9   var                 0      0      0
- 10   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                13     0      0
+ 12   var                 0      0      0
+ 13   var                 0      0      0
+ 14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -683,32 +601,26 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      1      0
-  7   jntr                10     0      0
-  8   int                 0      -      0     # 7
-  9   var_set             0      0      0
- 10   var                 0      0      0
- 11   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                14     0      0
+ 12   int                 0      -      0     # 7
+ 13   var_set             0      0      0
+ 14   var                 0      0      0
+ 15   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -735,35 +647,29 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      1      0
-  7   jntr                10     0      0
-  8   var                 0      0      0
-  9   var_set             1      0      0
- 10   set                 0      2      0
- 11   push_var            0      0      0
- 12   push_var            1      0      0
- 13   set_add             0      0      0
- 14   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                14     0      0
+ 12   var                 0      0      0
+ 13   var_set             1      0      0
+ 14   set                 0      2      0
+ 15   push_var            0      0      0
+ 16   push_var            1      0      0
+ 17   set_add             0      0      0
+ 18   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	declare y int;
@@ -788,32 +694,26 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      0      0
-  7   jntr                9      0      0
-  8   jmp                 10     0      0
-  9   var                 0      0      0
- 10   var                 0      0      0
- 11   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      0      0
+ 11   jntr                13     0      0
+ 12   jmp                 14     0      0
+ 13   var                 0      0      0
+ 14   var                 0      0      0
+ 15   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -834,33 +734,27 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      0      0
-  7   jntr                10     0      0
-  8   int                 0      -      0     # 1
-  9   jmp                 11     0      0
- 10   var                 0      0      0
- 11   var                 0      0      0
- 12   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      0      0
+ 11   jntr                14     0      0
+ 12   int                 0      -      0     # 1
+ 13   jmp                 15     0      0
+ 14   var                 0      0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -882,33 +776,27 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      0      0
-  7   jntr                9      0      0
-  8   jmp                 11     0      0
-  9   int                 0      -      0     # 7
- 10   var_set             0      0      0
- 11   var                 0      0      0
- 12   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      0      0
+ 11   jntr                13     0      0
+ 12   jmp                 15     0      0
+ 13   int                 0      -      0     # 7
+ 14   var_set             0      0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -929,34 +817,28 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      0      0
-  7   jntr                10     0      0
-  8   int                 0      -      0     # 1
-  9   jmp                 12     0      0
- 10   int                 0      -      0     # 7
- 11   var_set             0      0      0
- 12   var                 0      0      0
- 13   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      0      0
+ 11   jntr                14     0      0
+ 12   int                 0      -      0     # 1
+ 13   jmp                 16     0      0
+ 14   int                 0      -      0     # 7
+ 15   var_set             0      0      0
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -979,36 +861,30 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      0      0
-  7   jntr                9      0      0
-  8   jmp                 11     0      0
-  9   var                 0      0      0
- 10   var_set             1      0      0
- 11   set                 0      2      0
- 12   push_var            0      0      0
- 13   push_var            1      0      0
- 14   set_add             0      0      0
- 15   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      0      0
+ 11   jntr                13     0      0
+ 12   jmp                 15     0      0
+ 13   var                 0      0      0
+ 14   var_set             1      0      0
+ 15   set                 0      2      0
+ 16   push_var            0      0      0
+ 17   push_var            1      0      0
+ 18   set_add             0      0      0
+ 19   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	declare y int;
@@ -1031,37 +907,31 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      0      0
-  7   jntr                10     0      0
-  8   int                 0      -      0     # 1
-  9   jmp                 12     0      0
- 10   var                 0      0      0
- 11   var_set             1      0      0
- 12   set                 0      2      0
- 13   push_var            0      0      0
- 14   push_var            1      0      0
- 15   set_add             0      0      0
- 16   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      0      0
+ 11   jntr                14     0      0
+ 12   int                 0      -      0     # 1
+ 13   jmp                 16     0      0
+ 14   var                 0      0      0
+ 15   var_set             1      0      0
+ 16   set                 0      2      0
+ 17   push_var            0      0      0
+ 18   push_var            1      0      0
+ 19   set_add             0      0      0
+ 20   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	declare y int;
@@ -1084,32 +954,26 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      1      0
-  7   jntr                10     0      0
-  8   var                 0      0      0
-  9   jntr                10     0      0
- 10   var                 0      0      0
- 11   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                14     0      0
+ 12   var                 0      0      0
+ 13   jntr                14     0      0
+ 14   var                 0      0      0
+ 15   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1135,33 +999,27 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      1      0
-  7   jntr                11     0      0
-  8   bool                0      1      0
-  9   jntr                11     0      0
- 10   var                 0      0      0
- 11   var                 0      0      0
- 12   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                15     0      0
+ 12   bool                0      1      0
+ 13   jntr                15     0      0
+ 14   var                 0      0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1191,34 +1049,28 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      1      0
-  7   jntr                12     0      0
-  8   bool                0      1      0
-  9   jntr                12     0      0
- 10   int                 0      -      0     # 123
- 11   var_set             0      0      0
- 12   var                 0      0      0
- 13   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                16     0      0
+ 12   bool                0      1      0
+ 13   jntr                16     0      0
+ 14   int                 0      -      0     # 123
+ 15   var_set             0      0      0
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1248,38 +1100,32 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      1      0
-  7   jntr                16     0      0
-  8   bool                0      1      0
-  9   jntr                16     0      0
- 10   int                 0      -      0     # 123
- 11   var_set             1      0      0
- 12   var                 0      0      0
- 13   var                 1      1      0
- 14   addii               2      0      1
- 15   var_set             0      0      2
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                20     0      0
+ 12   bool                0      1      0
+ 13   jntr                20     0      0
+ 14   int                 0      -      0     # 123
+ 15   var_set             1      0      0
  16   var                 0      0      0
- 17   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+ 17   var                 1      1      0
+ 18   addii               2      0      1
+ 19   var_set             0      0      2
+ 20   var                 0      0      0
+ 21   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin declare x int;
 	declare y int;
 	select id into x from test;
@@ -1307,31 +1153,24 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   bool                0      1      0
-  2   jntr                8      0      0
-  3   send_all            0      0      32    # amelie.test (select)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
-  7   free                1      0      0
-  8   close               0      0      0
-  9   var                 0      0      0
- 10   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  2   jntr                12     0      0
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.test (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   var_set             0      0      0
+ 11   free                0      0      0
+ 12   var                 0      0      0
+ 13   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	if true then
@@ -1357,47 +1196,36 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   bool                0      1      0
-  2   jntr                9      0      0
-  3   send_all            0      0      32    # amelie.test (select)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
-  7   free                1      0      0
-  8   jmp                 14     0      0
-  9   send_all            0      0      88    # amelie.test (select)
- 10   union               1      0      0
- 11   recv                1      0      0
- 12   var_set             0      0      1
- 13   free                1      0      0
- 14   close               0      0      0
- 15   var                 0      0      0
- 16   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 0      1      0
-  9   table_open          1      56     16    # amelie.test (heap) part
- 10   int                 2      -      0     # 7
- 11   table_readi32       3      1      -     # id
- 12   addii               4      2      3
- 13   push                4      0      0
- 14   set_add             0      0      0
- 15   table_next          1      10     0
- 16   free                1      0      0
- 17   ret                 0      0      -
+  2   jntr                13     0      0
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.test (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   var_set             0      0      0
+ 11   free                0      0      0
+ 12   jmp                 24     0      0
+ 13   set                 0      1      0
+ 14   table_open          1      24     21    # amelie.test (heap) 
+ 15   int                 2      -      0     # 7
+ 16   table_readi32       3      1      -     # id
+ 17   addii               4      2      3
+ 18   push                4      0      0
+ 19   set_add             0      0      0
+ 20   table_next          1      15     0
+ 21   free                1      0      0
+ 22   var_set             0      0      0
+ 23   free                0      0      0
+ 24   var                 0      0      0
+ 25   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	if true then
@@ -1424,47 +1252,36 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   bool                0      0      0
-  2   jntr                9      0      0
-  3   send_all            0      0      32    # amelie.test (select)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
-  7   free                1      0      0
-  8   jmp                 14     0      0
-  9   send_all            0      0      88    # amelie.test (select)
- 10   union               1      0      0
- 11   recv                1      0      0
- 12   var_set             0      0      1
- 13   free                1      0      0
- 14   close               0      0      0
- 15   var                 0      0      0
- 16   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 0      1      0
-  9   table_open          1      56     16    # amelie.test (heap) part
- 10   int                 2      -      0     # 7
- 11   table_readi32       3      1      -     # id
- 12   addii               4      2      3
- 13   push                4      0      0
- 14   set_add             0      0      0
- 15   table_next          1      10     0
- 16   free                1      0      0
- 17   ret                 0      0      -
+  2   jntr                13     0      0
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.test (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   var_set             0      0      0
+ 11   free                0      0      0
+ 12   jmp                 24     0      0
+ 13   set                 0      1      0
+ 14   table_open          1      24     21    # amelie.test (heap) 
+ 15   int                 2      -      0     # 7
+ 16   table_readi32       3      1      -     # id
+ 17   addii               4      2      3
+ 18   push                4      0      0
+ 19   set_add             0      0      0
+ 20   table_next          1      15     0
+ 21   free                1      0      0
+ 22   var_set             0      0      0
+ 23   free                0      0      0
+ 24   var                 0      0      0
+ 25   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	if false then
@@ -1493,62 +1310,47 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      1      0
-  7   jntr                14     0      0
-  8   send_all            0      0      88    # amelie.test (select)
-  9   union               1      0      0
- 10   recv                1      0      0
- 11   var_set             0      0      1
- 12   free                1      0      0
- 13   jmp                 19     0      0
- 14   send_all            0      0      144   # amelie.test (select)
- 15   union               1      0      0
- 16   recv                1      0      0
- 17   var_set             0      0      1
- 18   free                1      0      0
- 19   close               0      0      0
- 20   var                 0      0      0
- 21   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 0      1      0
-  9   table_open          1      56     16    # amelie.test (heap) part
- 10   int                 2      -      0     # 5
- 11   table_readi32       3      1      -     # id
- 12   addii               4      2      3
- 13   push                4      0      0
- 14   set_add             0      0      0
- 15   table_next          1      10     0
- 16   free                1      0      0
- 17   ret                 0      0      -
- 18   set                 0      1      0
- 19   table_open          1      112    26    # amelie.test (heap) part
- 20   int                 2      -      0     # 10
- 21   table_readi32       3      1      -     # id
- 22   addii               4      2      3
- 23   push                4      0      0
- 24   set_add             0      0      0
- 25   table_next          1      20     0
- 26   free                1      0      0
- 27   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                24     0      0
+ 12   set                 0      1      0
+ 13   table_open          1      24     20    # amelie.test (heap) 
+ 14   int                 2      -      0     # 5
+ 15   table_readi32       3      1      -     # id
+ 16   addii               4      2      3
+ 17   push                4      0      0
+ 18   set_add             0      0      0
+ 19   table_next          1      14     0
+ 20   free                1      0      0
+ 21   var_set             0      0      0
+ 22   free                0      0      0
+ 23   jmp                 35     0      0
+ 24   set                 0      1      0
+ 25   table_open          1      48     32    # amelie.test (heap) 
+ 26   int                 2      -      0     # 10
+ 27   table_readi32       3      1      -     # id
+ 28   addii               4      2      3
+ 29   push                4      0      0
+ 30   set_add             0      0      0
+ 31   table_next          1      26     0
+ 32   free                1      0      0
+ 33   var_set             0      0      0
+ 34   free                0      0      0
+ 35   var                 0      0      0
+ 36   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1577,62 +1379,47 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   bool                0      0      0
-  7   jntr                14     0      0
-  8   send_all            0      0      88    # amelie.test (select)
-  9   union               1      0      0
- 10   recv                1      0      0
- 11   var_set             0      0      1
- 12   free                1      0      0
- 13   jmp                 19     0      0
- 14   send_all            0      0      144   # amelie.test (select)
- 15   union               1      0      0
- 16   recv                1      0      0
- 17   var_set             0      0      1
- 18   free                1      0      0
- 19   close               0      0      0
- 20   var                 0      0      0
- 21   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 0      1      0
-  9   table_open          1      56     16    # amelie.test (heap) part
- 10   int                 2      -      0     # 5
- 11   table_readi32       3      1      -     # id
- 12   addii               4      2      3
- 13   push                4      0      0
- 14   set_add             0      0      0
- 15   table_next          1      10     0
- 16   free                1      0      0
- 17   ret                 0      0      -
- 18   set                 0      1      0
- 19   table_open          1      112    26    # amelie.test (heap) part
- 20   int                 2      -      0     # 10
- 21   table_readi32       3      1      -     # id
- 22   addii               4      2      3
- 23   push                4      0      0
- 24   set_add             0      0      0
- 25   table_next          1      20     0
- 26   free                1      0      0
- 27   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      0      0
+ 11   jntr                24     0      0
+ 12   set                 0      1      0
+ 13   table_open          1      24     20    # amelie.test (heap) 
+ 14   int                 2      -      0     # 5
+ 15   table_readi32       3      1      -     # id
+ 16   addii               4      2      3
+ 17   push                4      0      0
+ 18   set_add             0      0      0
+ 19   table_next          1      14     0
+ 20   free                1      0      0
+ 21   var_set             0      0      0
+ 22   free                0      0      0
+ 23   jmp                 35     0      0
+ 24   set                 0      1      0
+ 25   table_open          1      48     32    # amelie.test (heap) 
+ 26   int                 2      -      0     # 10
+ 27   table_readi32       3      1      -     # id
+ 28   addii               4      2      3
+ 29   push                4      0      0
+ 30   set_add             0      0      0
+ 31   table_next          1      26     0
+ 32   free                1      0      0
+ 33   var_set             0      0      0
+ 34   free                0      0      0
+ 35   var                 0      0      0
+ 36   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1657,35 +1444,29 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   var                 0      0      0
-  7   push                0      0      0
-  8   set                 0      1      0
-  9   set_add             0      0      0
- 10   store_open          1      0      12
- 11   store_next          1      11     0
- 12   free                1      0      0
- 13   free                0      0      0
- 14   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   var                 0      0      0
+ 11   push                0      0      0
+ 12   set                 0      1      0
+ 13   set_add             0      0      0
+ 14   store_open          1      0      16
+ 15   store_next          1      15     0
+ 16   free                1      0      0
+ 17   free                0      0      0
+ 18   ret                 -1     0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1703,32 +1484,26 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   json                0      56     0
-  7   json_open           1      0      10
-  8   var                 2      0      0
-  9   json_next           1      8      0
- 10   free                0      0      0
- 11   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   json                0      24     0
+ 11   json_open           1      0      14
+ 12   var                 2      0      0
+ 13   json_next           1      12     0
+ 14   free                0      0      0
+ 15   ret                 -1     0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1749,36 +1524,30 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   json                0      56     0
-  7   json_open           1      0      13
-  8   json_read           2      1      0
-  9   push                2      0      0
- 10   call                2      -      1     # int()
- 11   var_set             0      0      2
- 12   json_next           1      8      0
- 13   free                0      0      0
- 14   var                 0      0      0
- 15   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   json                0      24     0
+ 11   json_open           1      0      17
+ 12   json_read           2      1      0
+ 13   push                2      0      0
+ 14   call                2      -      1     # int()
+ 15   var_set             0      0      2
+ 16   json_next           1      12     0
+ 17   free                0      0      0
+ 18   var                 0      0      0
+ 19   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1804,41 +1573,35 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   json                0      56     0
-  7   json_open           1      0      15
-  8   var                 2      0      0
-  9   json_read           3      1      0
- 10   push                3      0      0
- 11   call                3      -      1     # int()
- 12   addii               4      2      3
- 13   var_set             1      0      4
- 14   json_next           1      8      0
- 15   free                0      0      0
- 16   set                 0      2      0
- 17   push_var            0      0      0
- 18   push_var            1      0      0
- 19   set_add             0      0      0
- 20   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   json                0      24     0
+ 11   json_open           1      0      19
+ 12   var                 2      0      0
+ 13   json_read           3      1      0
+ 14   push                3      0      0
+ 15   call                3      -      1     # int()
+ 16   addii               4      2      3
+ 17   var_set             1      0      4
+ 18   json_next           1      12     0
+ 19   free                0      0      0
+ 20   set                 0      2      0
+ 21   push_var            0      0      0
+ 22   push_var            1      0      0
+ 23   set_add             0      0      0
+ 24   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	declare y int;
@@ -1865,34 +1628,28 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   json                1      56     0
-  3   json_open           2      1      7
-  4   bool                3      1      0
-  5   jntr                6      3      0
-  6   json_next           2      4      0
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
   7   free                1      0      0
-  8   union               1      0      0
-  9   recv                1      0      0
- 10   var_set             0      0      1
- 11   free                1      0      0
- 12   var                 0      0      0
- 13   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   json                0      24     0
+ 11   json_open           1      0      15
+ 12   bool                2      1      0
+ 13   jntr                14     2      0
+ 14   json_next           1      12     0
+ 15   free                0      0      0
+ 16   var                 0      0      0
+ 17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1917,33 +1674,27 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   json                0      56     0
-  7   json_open           1      0      11
-  8   var                 2      0      0
-  9   jntr                10     2      0
- 10   json_next           1      8      0
- 11   free                0      0      0
- 12   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   json                0      24     0
+ 11   json_open           1      0      15
+ 12   var                 2      0      0
+ 13   jntr                14     2      0
+ 14   json_next           1      12     0
+ 15   free                0      0      0
+ 16   ret                 -1     0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -1963,34 +1714,28 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   json                0      56     0
-  7   json_open           1      0      12
-  8   bool                2      1      0
-  9   jntr                11     2      0
- 10   var                 2      0      0
- 11   json_next           1      8      0
- 12   free                0      0      0
- 13   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   json                0      24     0
+ 11   json_open           1      0      16
+ 12   bool                2      1      0
+ 13   jntr                15     2      0
+ 14   var                 2      0      0
+ 15   json_next           1      12     0
+ 16   free                0      0      0
+ 17   ret                 -1     0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2013,43 +1758,37 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   json                0      56     0
-  7   json_open           1      0      17
-  8   bool                2      1      0
-  9   jntr                16     2      0
- 10   var                 2      0      0
- 11   json_read           3      1      0
- 12   push                3      0      0
- 13   call                3      -      1     # int()
- 14   addii               4      2      3
- 15   var_set             1      0      4
- 16   json_next           1      8      0
- 17   free                0      0      0
- 18   set                 0      2      0
- 19   push_var            0      0      0
- 20   push_var            1      0      0
- 21   set_add             0      0      0
- 22   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   json                0      24     0
+ 11   json_open           1      0      21
+ 12   bool                2      1      0
+ 13   jntr                20     2      0
+ 14   var                 2      0      0
+ 15   json_read           3      1      0
+ 16   push                3      0      0
+ 17   call                3      -      1     # int()
+ 18   addii               4      2      3
+ 19   var_set             1      0      4
+ 20   json_next           1      12     0
+ 21   free                0      0      0
+ 22   set                 0      2      0
+ 23   push_var            0      0      0
+ 24   push_var            1      0      0
+ 25   set_add             0      0      0
+ 26   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	declare y int;
@@ -2078,7 +1817,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -2120,7 +1859,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -2165,45 +1904,39 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   json                0      56     0
-  7   json_open           1      0      19
-  8   bool                2      1      0
-  9   jntr                18     2      0
- 10   bool                2      1      0
- 11   jntr                18     2      0
- 12   var                 2      0      0
- 13   json_read           3      1      0
- 14   push                3      0      0
- 15   call                3      -      1     # int()
- 16   addii               4      2      3
- 17   var_set             1      0      4
- 18   json_next           1      8      0
- 19   free                0      0      0
- 20   set                 0      2      0
- 21   push_var            0      0      0
- 22   push_var            1      0      0
- 23   set_add             0      0      0
- 24   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   json                0      24     0
+ 11   json_open           1      0      23
+ 12   bool                2      1      0
+ 13   jntr                22     2      0
+ 14   bool                2      1      0
+ 15   jntr                22     2      0
+ 16   var                 2      0      0
+ 17   json_read           3      1      0
+ 18   push                3      0      0
+ 19   call                3      -      1     # int()
+ 20   addii               4      2      3
+ 21   var_set             1      0      4
+ 22   json_next           1      12     0
+ 23   free                0      0      0
+ 24   set                 0      2      0
+ 25   push_var            0      0      0
+ 26   push_var            1      0      0
+ 27   set_add             0      0      0
+ 28   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	declare y int;
@@ -2233,35 +1966,29 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   var                 0      0      0
-  7   jntr                14     0      0
-  8   var                 0      0      0
-  9   int                 1      -      0     # 1
- 10   subii               2      0      1
- 11   var_set             0      0      2
- 12   quota               0      0      0
- 13   jmp                 6      0      0
- 14   ret                 -1     0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   var                 0      0      0
+ 11   jntr                18     0      0
+ 12   var                 0      0      0
+ 13   int                 1      -      0     # 1
+ 14   subii               2      0      1
+ 15   var_set             0      0      2
+ 16   quota               0      0      0
+ 17   jmp                 10     0      0
+ 18   ret                 -1     0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2284,43 +2011,37 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   var_set             0      0      1
-  5   free                1      0      0
-  6   var                 0      0      0
-  7   jntr                18     0      0
-  8   var                 0      0      0
-  9   int                 1      -      0     # 1
- 10   addii               2      0      1
- 11   var_set             1      0      2
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   var                 0      0      0
+ 11   jntr                22     0      0
  12   var                 0      0      0
  13   int                 1      -      0     # 1
- 14   subii               2      0      1
- 15   var_set             0      0      2
- 16   quota               0      0      0
- 17   jmp                 6      0      0
- 18   set                 0      2      0
- 19   push_var            0      0      0
- 20   push_var            1      0      0
- 21   set_add             0      0      0
- 22   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+ 14   addii               2      0      1
+ 15   var_set             1      0      2
+ 16   var                 0      0      0
+ 17   int                 1      -      0     # 1
+ 18   subii               2      0      1
+ 19   var_set             0      0      2
+ 20   quota               0      0      0
+ 21   jmp                 10     0      0
+ 22   set                 0      2      0
+ 23   push_var            0      0      0
+ 24   push_var            1      0      0
+ 25   set_add             0      0      0
+ 26   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	declare y int;
@@ -2347,7 +2068,7 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 4
   2   var_set             0      0      0
@@ -2355,24 +2076,19 @@ main
   4   int                 1      -      0     # 8
   5   ltii                2      0      1
   6   jntr                16     2      0
-  7   push_var            0      0      1
-  8   set_ptr             1      -      0
-  9   send_shard          0      1      1     # amelie.test (insert)
+  7   set_ptr             0      -      0
+  8   push_var            0      0      1
+  9   insert              -      -      -     # amelie.test
  10   var                 0      0      0
  11   int                 1      -      0     # 1
  12   addii               2      0      1
  13   var_set             0      0      2
  14   quota               0      0      0
  15   jmp                 3      0      0
- 16   close               0      0      0
- 17   ret                 -1     0      -
-
-pushdown
-  0   insert              -      -      -     # amelie.test
-  1   ret                 -1     0      -
+ 16   ret                 -1     0      -
 
 access
-  •   amelie.test shared_rw [insert]
+  •   amelie.test [insert]
 begin
 	declare x int := 4;
 	while x < 8 do
@@ -2392,7 +2108,7 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 8
   2   var_set             0      0      0
@@ -2400,34 +2116,26 @@ main
   4   int                 1      -      0     # 10
   5   ltii                2      0      1
   6   jntr                16     2      0
-  7   push_var            0      0      1
-  8   set_ptr             1      -      0
-  9   send_shard          0      1      1     # amelie.test (insert)
+  7   set_ptr             0      -      0
+  8   push_var            0      0      1
+  9   insert              -      -      -     # amelie.test
  10   var                 0      0      0
  11   int                 1      -      0     # 1
  12   addii               2      0      1
  13   var_set             0      0      2
  14   quota               0      0      0
  15   jmp                 3      0      0
- 16   send_all            0      0      56    # amelie.test (select, closing)
- 17   union               1      0      0
- 18   recv                1      0      0
- 19   ret                 1      0      -
-
-pushdown
-  0   insert              -      -      -     # amelie.test
-  1   ret                 -1     0      -
-  2   set                 0      1      0
-  3   table_open          1      24     8     # amelie.test (heap) part
-  4   table_readi32       2      1      -     # id
-  5   push                2      0      0
-  6   set_add             0      0      0
-  7   table_next          1      4      0
-  8   free                1      0      0
-  9   ret                 0      0      -
+ 16   set                 0      1      0
+ 17   table_open          1      0      22    # amelie.test (heap) 
+ 18   table_readi32       2      1      -     # id
+ 19   push                2      0      0
+ 20   set_add             0      0      0
+ 21   table_next          1      18     0
+ 22   free                1      0      0
+ 23   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert, select]
+  •   amelie.test [insert, select]
 begin
 	declare x int := 8;
 	while x < 10 do
@@ -2461,33 +2169,27 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   bool                1      1      0
-  3   jntr                7      1      0
-  4   jmp                 7      0      0
-  5   quota               0      0      0
-  6   jmp                 2      0      0
-  7   union               1      0      0
-  8   recv                1      0      0
-  9   var_set             0      0      1
- 10   free                1      0      0
- 11   var                 0      0      0
- 12   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                15     0      0
+ 12   jmp                 15     0      0
+ 13   quota               0      0      0
+ 14   jmp                 10     0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2515,35 +2217,29 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   bool                1      1      0
-  3   jntr                9      1      0
-  4   bool                1      1      0
-  5   jntr                7      1      0
-  6   jmp                 9      0      0
-  7   quota               0      0      0
-  8   jmp                 2      0      0
-  9   union               1      0      0
- 10   recv                1      0      0
- 11   var_set             0      0      1
- 12   free                1      0      0
- 13   var                 0      0      0
- 14   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   bool                0      1      0
+ 11   jntr                17     0      0
+ 12   bool                0      1      0
+ 13   jntr                15     0      0
+ 14   jmp                 17     0      0
+ 15   quota               0      0      0
+ 16   jmp                 10     0      0
+ 17   var                 0      0      0
+ 18   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2572,36 +2268,29 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   bool                0      1      0
-  2   jntr                13     0      0
-  3   send_all            0      0      32    # amelie.test (select)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
-  7   free                1      0      0
-  8   jmp                 13     0      0
-  9   null                0      0      0
+  2   jntr                17     0      0
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.test (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
  10   var_set             0      0      0
- 11   quota               0      0      0
- 12   jmp                 1      0      0
- 13   close               0      0      0
- 14   var                 0      0      0
- 15   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+ 11   free                0      0      0
+ 12   jmp                 17     0      0
+ 13   null                0      0      0
+ 14   var_set             0      0      0
+ 15   quota               0      0      0
+ 16   jmp                 1      0      0
+ 17   var                 0      0      0
+ 18   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	while true do
@@ -2631,38 +2320,31 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   bool                0      1      0
-  2   jntr                15     0      0
-  3   send_all            0      0      32    # amelie.test (select)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
-  7   free                1      0      0
-  8   bool                0      1      0
-  9   jntr                11     0      0
- 10   jmp                 15     0      0
- 11   null                0      0      0
- 12   var_set             0      0      0
- 13   quota               0      0      0
- 14   jmp                 1      0      0
- 15   close               0      0      0
- 16   var                 0      0      0
- 17   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  2   jntr                19     0      0
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.test (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   var_set             0      0      0
+ 11   free                0      0      0
+ 12   bool                0      1      0
+ 13   jntr                15     0      0
+ 14   jmp                 19     0      0
+ 15   null                0      0      0
+ 16   var_set             0      0      0
+ 17   quota               0      0      0
+ 18   jmp                 1      0      0
+ 19   var                 0      0      0
+ 20   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	while true do
@@ -2696,40 +2378,33 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   bool                0      1      0
-  2   jntr                17     0      0
-  3   send_all            0      0      32    # amelie.test (select)
-  4   union               1      0      0
-  5   recv                1      0      0
-  6   var_set             0      0      1
-  7   free                1      0      0
-  8   bool                0      1      0
-  9   jntr                13     0      0
- 10   bool                0      1      0
- 11   jntr                13     0      0
- 12   jmp                 17     0      0
- 13   null                0      0      0
- 14   var_set             0      0      0
- 15   quota               0      0      0
- 16   jmp                 1      0      0
- 17   close               0      0      0
- 18   var                 0      0      0
- 19   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  2   jntr                21     0      0
+  3   set                 0      1      0
+  4   table_open          1      0      9     # amelie.test (heap) 
+  5   table_readi32       2      1      -     # id
+  6   push                2      0      0
+  7   set_add             0      0      0
+  8   table_next          1      5      0
+  9   free                1      0      0
+ 10   var_set             0      0      0
+ 11   free                0      0      0
+ 12   bool                0      1      0
+ 13   jntr                17     0      0
+ 14   bool                0      1      0
+ 15   jntr                17     0      0
+ 16   jmp                 21     0      0
+ 17   null                0      0      0
+ 18   var_set             0      0      0
+ 19   quota               0      0      0
+ 20   jmp                 1      0      0
+ 21   var                 0      0      0
+ 22   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	while true do
@@ -2771,54 +2446,47 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
   3   bool                0      1      0
-  4   jntr                28     0      0
+  4   jntr                32     0      0
   5   var                 0      0      0
   6   int                 1      -      0     # 3
   7   equii               2      0      1
   8   jntr                10     2      0
-  9   jmp                 28     0      0
+  9   jmp                 32     0      0
  10   var                 0      0      0
  11   int                 1      -      0     # 1
  12   addii               2      0      1
  13   var_set             0      0      2
- 14   send_all            0      0      32    # amelie.test (select)
- 15   union               1      0      0
- 16   recv                1      0      0
- 17   var_set             1      0      1
- 18   free                1      0      0
- 19   bool                0      1      0
- 20   jntr                24     0      0
- 21   bool                0      1      0
- 22   jntr                24     0      0
- 23   jmp                 3      0      0
- 24   null                0      0      0
- 25   var_set             1      0      0
- 26   quota               0      0      0
+ 14   set                 0      1      0
+ 15   table_open          1      0      20    # amelie.test (heap) 
+ 16   table_readi32       2      1      -     # id
+ 17   push                2      0      0
+ 18   set_add             0      0      0
+ 19   table_next          1      16     0
+ 20   free                1      0      0
+ 21   var_set             1      0      0
+ 22   free                0      0      0
+ 23   bool                0      1      0
+ 24   jntr                28     0      0
+ 25   bool                0      1      0
+ 26   jntr                28     0      0
  27   jmp                 3      0      0
- 28   close               0      0      0
- 29   set                 0      2      0
- 30   push_var            0      0      0
- 31   push_var            1      0      0
- 32   set_add             0      0      0
- 33   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+ 28   null                0      0      0
+ 29   var_set             1      0      0
+ 30   quota               0      0      0
+ 31   jmp                 3      0      0
+ 32   set                 0      2      0
+ 33   push_var            0      0      0
+ 34   push_var            1      0      0
+ 35   set_add             0      0      0
+ 36   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare i int := 0;
 	declare x int;
@@ -2855,33 +2523,27 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   json                1      56     0
-  3   json_open           2      1      6
-  4   jmp                 6      0      0
-  5   json_next           2      4      0
-  6   free                1      0      0
-  7   union               1      0      0
-  8   recv                1      0      0
-  9   var_set             0      0      1
- 10   free                1      0      0
- 11   var                 0      0      0
- 12   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   json                0      24     0
+ 11   json_open           1      0      14
+ 12   jmp                 14     0      0
+ 13   json_next           1      12     0
+ 14   free                0      0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2909,35 +2571,29 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      32    # amelie.test (select, closing)
-  2   json                1      56     0
-  3   json_open           2      1      8
-  4   bool                3      1      0
-  5   jntr                7      3      0
-  6   jmp                 8      0      0
-  7   json_next           2      4      0
-  8   free                1      0      0
-  9   union               1      0      0
- 10   recv                1      0      0
- 11   var_set             0      0      1
- 12   free                1      0      0
- 13   var                 0      0      0
- 14   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+  1   set                 0      1      0
+  2   table_open          1      0      7     # amelie.test (heap) 
+  3   table_readi32       2      1      -     # id
+  4   push                2      0      0
+  5   set_add             0      0      0
+  6   table_next          1      3      0
+  7   free                1      0      0
+  8   var_set             0      0      0
+  9   free                0      0      0
+ 10   json                0      24     0
+ 11   json_open           1      0      16
+ 12   bool                2      1      0
+ 13   jntr                15     2      0
+ 14   jmp                 16     0      0
+ 15   json_next           1      12     0
+ 16   free                0      0      0
+ 17   var                 0      0      0
+ 18   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	select id into x from test;
@@ -2965,34 +2621,27 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
   1   json                0      0      0
-  2   json_open           1      0      10
-  3   send_all            2      0      35    # amelie.test (select)
-  4   union               3      0      0
-  5   recv                3      2      0
-  6   var_set             0      0      3
-  7   free                3      0      0
-  8   jmp                 10     0      0
-  9   json_next           1      3      0
- 10   free                0      0      0
- 11   close               0      0      0
- 12   var                 0      0      0
- 13   ret                 0      0      -
-
-pushdown
-  0   set                 2      1      0
-  1   table_open          3      3      6     # amelie.test (heap) part
-  2   table_readi32       4      3      -     # id
-  3   push                4      0      0
-  4   set_add             2      0      0
-  5   table_next          3      2      0
-  6   free                3      0      0
-  7   ret                 2      0      -
+  2   json_open           1      0      14
+  3   set                 2      1      0
+  4   table_open          3      3      9     # amelie.test (heap) 
+  5   table_readi32       4      3      -     # id
+  6   push                4      0      0
+  7   set_add             2      0      0
+  8   table_next          3      5      0
+  9   free                3      0      0
+ 10   var_set             0      0      2
+ 11   free                2      0      0
+ 12   jmp                 14     0      0
+ 13   json_next           1      3      0
+ 14   free                0      0      0
+ 15   var                 0      0      0
+ 16   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare x int;
 	for i in ([1]) do
@@ -3022,41 +2671,34 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
   1   json                0      0      0
-  2   json_open           1      0      14
-  3   send_all            2      0      35    # amelie.test (select)
-  4   union               3      0      0
-  5   recv                3      2      0
-  6   var_set             1      0      3
-  7   free                3      0      0
-  8   bool                2      1      0
-  9   jntr                11     2      0
- 10   jmp                 14     0      0
- 11   int                 2      -      0     # 123
- 12   var_set             0      0      2
- 13   json_next           1      3      0
- 14   free                0      0      0
- 15   close               0      0      0
- 16   set                 0      2      0
- 17   push_var            1      0      0
- 18   push_var            0      0      0
- 19   set_add             0      0      0
- 20   ret                 0      0      -
-
-pushdown
-  0   set                 2      1      0
-  1   table_open          3      3      6     # amelie.test (heap) part
-  2   table_readi32       4      3      -     # id
-  3   push                4      0      0
-  4   set_add             2      0      0
-  5   table_next          3      2      0
-  6   free                3      0      0
-  7   ret                 2      0      -
+  2   json_open           1      0      18
+  3   set                 2      1      0
+  4   table_open          3      3      9     # amelie.test (heap) 
+  5   table_readi32       4      3      -     # id
+  6   push                4      0      0
+  7   set_add             2      0      0
+  8   table_next          3      5      0
+  9   free                3      0      0
+ 10   var_set             1      0      2
+ 11   free                2      0      0
+ 12   bool                2      1      0
+ 13   jntr                15     2      0
+ 14   jmp                 18     0      0
+ 15   int                 2      -      0     # 123
+ 16   var_set             0      0      2
+ 17   json_next           1      3      0
+ 18   free                0      0      0
+ 19   set                 0      2      0
+ 20   push_var            1      0      0
+ 21   push_var            0      0      0
+ 22   set_add             0      0      0
+ 23   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare p int;
 	declare x int;
@@ -3090,41 +2732,34 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
   1   json                0      0      0
-  2   json_open           1      0      14
-  3   send_all            2      0      36    # amelie.test (select)
-  4   union               3      0      0
-  5   recv                3      2      0
-  6   var_set             1      0      3
-  7   free                3      0      0
-  8   bool                2      1      0
-  9   jntr                11     2      0
- 10   jmp                 13     0      0
- 11   int                 2      -      0     # 123
- 12   var_set             0      0      2
- 13   json_next           1      3      0
- 14   free                0      0      0
- 15   close               0      0      0
- 16   set                 0      2      0
- 17   push_var            1      0      0
- 18   push_var            0      0      0
- 19   set_add             0      0      0
- 20   ret                 0      0      -
-
-pushdown
-  0   set                 2      1      0
-  1   table_open          3      4      6     # amelie.test (heap) part
-  2   table_readi32       4      3      -     # id
-  3   push                4      0      0
-  4   set_add             2      0      0
-  5   table_next          3      2      0
-  6   free                3      0      0
-  7   ret                 2      0      -
+  2   json_open           1      0      18
+  3   set                 2      1      0
+  4   table_open          3      4      9     # amelie.test (heap) 
+  5   table_readi32       4      3      -     # id
+  6   push                4      0      0
+  7   set_add             2      0      0
+  8   table_next          3      5      0
+  9   free                3      0      0
+ 10   var_set             1      0      2
+ 11   free                2      0      0
+ 12   bool                2      1      0
+ 13   jntr                15     2      0
+ 14   jmp                 17     0      0
+ 15   int                 2      -      0     # 123
+ 16   var_set             0      0      2
+ 17   json_next           1      3      0
+ 18   free                0      0      0
+ 19   set                 0      2      0
+ 20   push_var            1      0      0
+ 21   push_var            0      0      0
+ 22   set_add             0      0      0
+ 23   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare p int;
 	declare x int;
@@ -3155,58 +2790,48 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          1      0      0
-  1   send_all            0      0      40    # amelie.test (select)
-  2   recv_aggs           1      0      32
-  3   set                 2      1      0
-  4   store_open          3      1      11
-  5   agg                 4      3      0
-  6   int                 5      -      0     # 1
-  7   addii               6      4      5
-  8   push                6      0      0
-  9   set_add             2      0      0
- 10   store_next          3      5      0
- 11   free                3      0      0
- 12   free                1      0      0
- 13   var_set             0      0      2
- 14   free                2      0      0
- 15   push_var            0      0      1
- 16   set_ptr             1      -      0
- 17   send_shard          0      1      1     # amelie.test (insert)
- 18   send_all            0      0      120   # amelie.test (select, closing)
- 19   union               1      0      0
- 20   recv                1      0      0
- 21   ret                 1      0      -
-
-pushdown
-  0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
-  2   push_bool           1      0      0
-  3   set_get             2      0      0
-  4   table_readi32       3      1      -     # id
-  5   push                3      0      0
-  6   set_agg             0      2      32
-  7   table_next          1      2      0
-  8   free                1      0      0
-  9   push_bool           1      0      0
- 10   set_get             1      0      0
- 11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
- 14   insert              -      -      -     # amelie.test
- 15   ret                 -1     0      -
- 16   set                 0      1      0
- 17   table_open          1      88     22    # amelie.test (heap) part
- 18   table_readi32       2      1      -     # id
- 19   push                2      0      0
- 20   set_add             0      0      0
- 21   table_next          1      18     0
- 22   free                1      0      0
- 23   ret                 0      0      -
+  1   set                 0      1      1
+  2   table_open          1      0      9     # amelie.test (heap) 
+  3   push_bool           1      0      0
+  4   set_get             2      0      0
+  5   table_readi32       3      1      -     # id
+  6   push                3      0      0
+  7   set_agg             0      2      24
+  8   table_next          1      3      0
+  9   free                1      0      0
+ 10   push_bool           1      0      0
+ 11   set_get             1      0      0
+ 12   push_nulls          1      0      0
+ 13   set_agg             0      1      24
+ 14   set_agg_merge       0      24     0
+ 15   set                 1      1      0
+ 16   store_open          2      0      23
+ 17   agg                 3      2      0
+ 18   int                 4      -      0     # 1
+ 19   addii               5      3      4
+ 20   push                5      0      0
+ 21   set_add             1      0      0
+ 22   store_next          2      17     0
+ 23   free                2      0      0
+ 24   free                0      0      0
+ 25   var_set             0      0      1
+ 26   free                1      0      0
+ 27   set_ptr             0      -      0
+ 28   push_var            0      0      1
+ 29   insert              -      -      -     # amelie.test
+ 30   set                 0      1      0
+ 31   table_open          1      32     36    # amelie.test (heap) 
+ 32   table_readi32       2      1      -     # id
+ 33   push                2      0      0
+ 34   set_add             0      0      0
+ 35   table_next          1      32     0
+ 36   free                1      0      0
+ 37   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert, select]
+  •   amelie.test [insert, select]
 begin
 	declare id int;
 	select max(test.id) + 1 into id from test;

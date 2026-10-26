@@ -33,7 +33,6 @@ compiler_init(Compiler* self, SetCache* set_cache)
 	self->current           = NULL;
 	self->code              = NULL;
 	self->code_data         = NULL;
-	self->origin            = ORIGIN_FRONTEND;
 	parser_init(&self->parser, self->set_cache);
 	rmap_init(&self->map);
 }

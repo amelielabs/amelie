@@ -118,13 +118,6 @@ emit_column(Compiler* self,
 	// generate cursor read based on the target
 	if (target->type == TARGET_TABLE)
 	{
-#if 0
-		// prevent addressing own columns by INSERT
-		if (self->current->id == STMT_INSERT)
-			if (self->origin == ORIGIN_FRONTEND)
-				stmt_error(self->current, ast, "column cannot be used here");
-#endif
-
 		int op;
 		switch (column->type) {
 		case TYPE_BOOL:
@@ -628,11 +621,6 @@ emit_func(Compiler* self, From* from, Ast* ast)
 	auto fn_type = fn->type;
 	auto current = args->l;
 
-	// ensure function can be executed on backend
-	if (fn->flags & FN_FRONTEND)
-		if (self->origin == ORIGIN_BACKEND)
-			stmt_error(self->current, ast, "function cannot be used here");
-
 	for (; current; current = current->next)
 	{
 		auto type = emit_push(self, from, current);
@@ -662,11 +650,6 @@ emit_method(Compiler* self, From* from, Ast* ast)
 
 	auto fn = func->fn;
 	auto fn_type = fn->type;
-
-	// ensure method can be executed on backend
-	if (fn->flags & FN_FRONTEND)
-		if (self->origin == ORIGIN_BACKEND)
-			stmt_error(self->current, ast, "method cannot be used here");
 
 	// use expression as the first argument to the call
 	auto type = emit_push(self, from, expr);

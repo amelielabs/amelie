@@ -22,6 +22,7 @@ struct Dispatch
 	Program* program;
 	Value*   args;
 	Value    result;
+	bool     result_has;
 	Complete complete;
 	Complete ready;
 	LtrCache cache;
@@ -34,6 +35,7 @@ dispatch_init(Dispatch* self, Gtr* gtr)
 	self->gtr        = gtr;
 	self->program    = NULL;
 	self->args       = NULL;
+	self->result_has = false;
 	list_init(&self->ltrs);
 	value_init(&self->result);
 	complete_init(&self->complete);
@@ -47,6 +49,7 @@ dispatch_reset(Dispatch* self)
 	self->program    = NULL;
 	self->args       = NULL;
 	self->ltrs_count = 0;
+	self->result_has = false;
 	list_foreach_safe(&self->ltrs)
 	{
 		auto ltr = list_at(Ltr, link);

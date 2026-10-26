@@ -34,7 +34,7 @@ explain select cast (false as bool);
 explain
 ───────
 
-main
+frontend
   0   value               0      -      0     # bool
   1   ret                 0      0      -
 # test: cast (bool as int)
@@ -212,7 +212,7 @@ explain select cast (123 as timestamp);
 explain
 ───────
 
-main
+frontend
   0   value               0      -      0     # timestamp
   1   ret                 0      0      -
 # test: cast (int as interval)
@@ -499,7 +499,7 @@ explain select cast ('00000000-0000-0000-0000-000000000000' as uuid);
 explain
 ───────
 
-main
+frontend
   0   value               0      -      0     # uuid
   1   ret                 0      0      -
 # test: cast (json as bool)

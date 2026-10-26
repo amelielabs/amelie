@@ -49,7 +49,7 @@ pod_request(Pod* self, Ltr* ltr)
 	auto dispatch = ltr->dispatch;
 	Return ret;
 	return_init(&ret);
-	vm_run(&self->vm, gtr->local,
+	vm_run(&self->vm,
 	        gtr,
 	        NULL,
 	        dispatch->program,
@@ -58,7 +58,10 @@ pod_request(Pod* self, Ltr* ltr)
 	        false);
 
 	if (ret.value)
+	{
 		value_move(&dispatch->result, ret.value);
+		dispatch->result_has = true;
+	}
 }
 
 hot static void

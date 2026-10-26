@@ -19,7 +19,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -65,7 +65,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          3      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -159,7 +159,7 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          3      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -167,49 +167,43 @@ main
   4   var_set             1      0      0
   5   int                 0      -      0     # 0
   6   var_set             2      0      0
-  7   send_all            0      0      32    # amelie.test (select, closing)
-  8   union               1      0      0
-  9   recv                1      0      0
- 10   var_set             1      0      1
- 11   free                1      0      0
- 12   var                 0      0      0
- 13   var                 1      1      0
- 14   ltii                2      0      1
- 15   jntr                32     2      0
+  7   set                 0      1      0
+  8   table_open          1      0      13    # amelie.test (heap) 
+  9   table_readi32       2      1      -     # id
+ 10   push                2      0      0
+ 11   set_add             0      0      0
+ 12   table_next          1      9      0
+ 13   free                1      0      0
+ 14   var_set             1      0      0
+ 15   free                0      0      0
  16   var                 0      0      0
- 17   int                 1      -      0     # 2
- 18   modii               2      0      1
- 19   int                 0      -      0     # 0
- 20   equii               1      2      0
- 21   jntr                26     1      0
- 22   var                 0      2      0
- 23   int                 1      -      0     # 1
- 24   addii               2      0      1
- 25   var_set             2      0      2
- 26   var                 0      0      0
+ 17   var                 1      1      0
+ 18   ltii                2      0      1
+ 19   jntr                36     2      0
+ 20   var                 0      0      0
+ 21   int                 1      -      0     # 2
+ 22   modii               2      0      1
+ 23   int                 0      -      0     # 0
+ 24   equii               1      2      0
+ 25   jntr                30     1      0
+ 26   var                 0      2      0
  27   int                 1      -      0     # 1
  28   addii               2      0      1
- 29   var_set             0      0      2
- 30   quota               0      0      0
- 31   jmp                 12     0      0
- 32   set                 0      2      0
- 33   push_var            2      0      0
- 34   push_var            1      0      0
- 35   set_add             0      0      0
- 36   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
-  2   table_readi32       2      1      -     # id
-  3   push                2      0      0
-  4   set_add             0      0      0
-  5   table_next          1      2      0
-  6   free                1      0      0
-  7   ret                 0      0      -
+ 29   var_set             2      0      2
+ 30   var                 0      0      0
+ 31   int                 1      -      0     # 1
+ 32   addii               2      0      1
+ 33   var_set             0      0      2
+ 34   quota               0      0      0
+ 35   jmp                 16     0      0
+ 36   set                 0      2      0
+ 37   push_var            2      0      0
+ 38   push_var            1      0      0
+ 39   set_add             0      0      0
+ 40   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 begin
 	declare i int := 0;
 	declare x int := 0;
@@ -271,80 +265,70 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
-  3   send_all            0      0      40    # amelie.test (select)
-  4   recv_aggs           1      0      32
-  5   set                 2      1      0
-  6   store_open          3      1      11
-  7   agg                 4      3      0
-  8   push                4      0      0
-  9   set_add             2      0      0
- 10   store_next          3      7      0
- 11   free                3      0      0
- 12   free                1      0      0
- 13   var_set             0      0      2
- 14   free                2      0      0
- 15   var                 0      0      0
- 16   int                 1      -      0     # 1
- 17   addii               2      0      1
- 18   var_set             0      0      2
- 19   var                 0      0      0
- 20   int                 1      -      0     # 10
- 21   addii               2      0      1
- 22   var_set             1      0      2
- 23   var                 0      0      0
- 24   var                 1      1      0
- 25   ltii                2      0      1
- 26   jntr                39     2      0
- 27   push_var            0      0      1
- 28   set_ptr             1      -      0
- 29   send_shard          0      1      1     # amelie.test (insert)
- 30   var                 1      0      0
- 31   int                 2      -      0     # 1
- 32   addii               3      1      2
- 33   var_set             0      0      3
- 34   union               1      0      0
- 35   recv                1      0      0
- 36   free                1      0      0
- 37   quota               0      0      0
- 38   jmp                 23     0      0
- 39   close               0      0      0
- 40   var                 0      1      0
- 41   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
-  2   push_bool           1      0      0
-  3   set_get             2      0      0
-  4   table_readi32       3      1      -     # id
-  5   push                3      0      0
-  6   set_agg             0      2      32
-  7   table_next          1      2      0
-  8   free                1      0      0
-  9   push_bool           1      0      0
- 10   set_get             1      0      0
- 11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
- 14   set                 0      1      0
- 15   table_prepare       1      -      -     # amelie.test
- 16   jmp                 23     0      0
- 17   string              2      64     0     # unique key constraint violation
- 18   push                2      0      0
- 19   call                2      -      1     # error()
- 20   table_readi32       2      1      -     # id
- 21   push                2      0      0
- 22   set_add             0      0      0
- 23   upsert              1      17     20
- 24   free                1      0      0
- 25   ret                 0      0      -
+  3   set                 0      1      1
+  4   table_open          1      0      11    # amelie.test (heap) 
+  5   push_bool           1      0      0
+  6   set_get             2      0      0
+  7   table_readi32       3      1      -     # id
+  8   push                3      0      0
+  9   set_agg             0      2      24
+ 10   table_next          1      5      0
+ 11   free                1      0      0
+ 12   push_bool           1      0      0
+ 13   set_get             1      0      0
+ 14   push_nulls          1      0      0
+ 15   set_agg             0      1      24
+ 16   set_agg_merge       0      24     0
+ 17   set                 1      1      0
+ 18   store_open          2      0      23
+ 19   agg                 3      2      0
+ 20   push                3      0      0
+ 21   set_add             1      0      0
+ 22   store_next          2      19     0
+ 23   free                2      0      0
+ 24   free                0      0      0
+ 25   var_set             0      0      1
+ 26   free                1      0      0
+ 27   var                 0      0      0
+ 28   int                 1      -      0     # 1
+ 29   addii               2      0      1
+ 30   var_set             0      0      2
+ 31   var                 0      0      0
+ 32   int                 1      -      0     # 10
+ 33   addii               2      0      1
+ 34   var_set             1      0      2
+ 35   var                 0      0      0
+ 36   var                 1      1      0
+ 37   ltii                2      0      1
+ 38   jntr                58     2      0
+ 39   set_ptr             0      -      0
+ 40   push_var            0      0      1
+ 41   set                 1      1      0
+ 42   upsert_open         2      -      -     # amelie.test
+ 43   jmp                 50     0      0
+ 44   string              3      32     0     # unique key constraint violation
+ 45   push                3      0      0
+ 46   call                3      -      1     # error()
+ 47   table_readi32       3      2      -     # id
+ 48   push                3      0      0
+ 49   set_add             1      0      0
+ 50   upsert              2      44     47
+ 51   var                 0      0      0
+ 52   int                 2      -      0     # 1
+ 53   addii               3      0      2
+ 54   var_set             0      0      3
+ 55   free                1      0      0
+ 56   quota               0      0      0
+ 57   jmp                 35     0      0
+ 58   var                 0      1      0
+ 59   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert, select]
+  •   amelie.test [insert, select]
 begin
 	declare i int := 0;
 	select max(id) into i from test;
@@ -399,86 +383,76 @@ end;
 explain
 ───────
 
-main
+backend
   0   push_nulls          3      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
-  3   send_all            0      0      40    # amelie.test (select)
-  4   recv_aggs           1      0      32
-  5   set                 2      1      0
-  6   store_open          3      1      11
-  7   agg                 4      3      0
-  8   push                4      0      0
-  9   set_add             2      0      0
- 10   store_next          3      7      0
- 11   free                3      0      0
- 12   free                1      0      0
- 13   var_set             0      0      2
- 14   free                2      0      0
- 15   var                 0      0      0
- 16   int                 1      -      0     # 1
- 17   addii               2      0      1
- 18   var_set             0      0      2
- 19   var                 0      0      0
- 20   int                 1      -      0     # 10
- 21   addii               2      0      1
- 22   var_set             1      0      2
- 23   int                 0      -      0     # 0
- 24   var_set             2      0      0
- 25   var                 0      0      0
- 26   var                 1      1      0
- 27   ltii                2      0      1
- 28   jntr                42     2      0
- 29   push_var            0      0      1
- 30   set_ptr             1      -      0
- 31   send_shard          0      1      1     # amelie.test (insert)
- 32   var                 1      0      0
- 33   int                 2      -      0     # 1
- 34   addii               3      1      2
- 35   var_set             0      0      3
- 36   union               1      0      0
- 37   recv                1      0      0
- 38   var_set             2      0      1
- 39   free                1      0      0
- 40   quota               0      0      0
- 41   jmp                 25     0      0
- 42   close               0      0      0
- 43   set                 0      2      0
- 44   push_var            1      0      0
- 45   push_var            2      0      0
- 46   set_add             0      0      0
- 47   ret                 0      0      -
-
-pushdown
-  0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
-  2   push_bool           1      0      0
-  3   set_get             2      0      0
-  4   table_readi32       3      1      -     # id
-  5   push                3      0      0
-  6   set_agg             0      2      32
-  7   table_next          1      2      0
-  8   free                1      0      0
-  9   push_bool           1      0      0
- 10   set_get             1      0      0
- 11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
- 14   set                 0      1      0
- 15   table_prepare       1      -      -     # amelie.test
- 16   jmp                 23     0      0
- 17   string              2      64     0     # unique key constraint violation
- 18   push                2      0      0
- 19   call                2      -      1     # error()
- 20   table_readi32       2      1      -     # id
- 21   push                2      0      0
- 22   set_add             0      0      0
- 23   upsert              1      17     20
- 24   free                1      0      0
- 25   ret                 0      0      -
+  3   set                 0      1      1
+  4   table_open          1      0      11    # amelie.test (heap) 
+  5   push_bool           1      0      0
+  6   set_get             2      0      0
+  7   table_readi32       3      1      -     # id
+  8   push                3      0      0
+  9   set_agg             0      2      24
+ 10   table_next          1      5      0
+ 11   free                1      0      0
+ 12   push_bool           1      0      0
+ 13   set_get             1      0      0
+ 14   push_nulls          1      0      0
+ 15   set_agg             0      1      24
+ 16   set_agg_merge       0      24     0
+ 17   set                 1      1      0
+ 18   store_open          2      0      23
+ 19   agg                 3      2      0
+ 20   push                3      0      0
+ 21   set_add             1      0      0
+ 22   store_next          2      19     0
+ 23   free                2      0      0
+ 24   free                0      0      0
+ 25   var_set             0      0      1
+ 26   free                1      0      0
+ 27   var                 0      0      0
+ 28   int                 1      -      0     # 1
+ 29   addii               2      0      1
+ 30   var_set             0      0      2
+ 31   var                 0      0      0
+ 32   int                 1      -      0     # 10
+ 33   addii               2      0      1
+ 34   var_set             1      0      2
+ 35   int                 0      -      0     # 0
+ 36   var_set             2      0      0
+ 37   var                 0      0      0
+ 38   var                 1      1      0
+ 39   ltii                2      0      1
+ 40   jntr                61     2      0
+ 41   set_ptr             0      -      0
+ 42   push_var            0      0      1
+ 43   set                 1      1      0
+ 44   upsert_open         2      -      -     # amelie.test
+ 45   jmp                 52     0      0
+ 46   string              3      32     0     # unique key constraint violation
+ 47   push                3      0      0
+ 48   call                3      -      1     # error()
+ 49   table_readi32       3      2      -     # id
+ 50   push                3      0      0
+ 51   set_add             1      0      0
+ 52   upsert              2      46     49
+ 53   var_set             2      0      1
+ 54   free                1      0      0
+ 55   var                 0      0      0
+ 56   int                 1      -      0     # 1
+ 57   addii               2      0      1
+ 58   var_set             0      0      2
+ 59   quota               0      0      0
+ 60   jmp                 37     0      0
+ 61   set                 0      2      0
+ 62   push_var            1      0      0
+ 63   push_var            2      0      0
+ 64   set_add             0      0      0
+ 65   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert, select]
+  •   amelie.test [insert, select]
 begin
 	declare i int := 0;
 	select max(id) into i from test;
@@ -565,7 +539,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -615,7 +589,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -676,7 +650,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -730,7 +704,7 @@ end;
 explain
 ───────
 
-main
+frontend
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0

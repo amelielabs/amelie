@@ -29,12 +29,6 @@ typedef enum
 
 typedef enum
 {
-	ORIGIN_FRONTEND,
-	ORIGIN_BACKEND
-} TargetOrigin;
-
-typedef enum
-{
 	JOIN_NONE,
 	JOIN_INNER,
 	JOIN_LEFT,

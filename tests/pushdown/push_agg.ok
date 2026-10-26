@@ -17,36 +17,32 @@ explain select count(*) from test_empty;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_empty (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   count               4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      7     # amelie.test_empty (heap) part
+  1   table_open          1      0      7     # amelie.test_empty (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   push_int            -      0      0     # 1
-  5   set_agg             0      2      32
+  5   set_agg             0      2      24
   6   table_next          1      2      0
   7   free                1      0      0
   8   push_bool           1      0      0
   9   set_get             1      0      0
  10   push_nulls          1      0      0
- 11   set_agg             0      1      32
- 12   ret                 0      0      -
+ 11   set_agg             0      1      24
+ 12   set_agg_merge       0      24     0
+ 13   set                 1      1      0
+ 14   store_open          2      0      19
+ 15   count               3      2      0
+ 16   push                3      0      0
+ 17   set_add             1      0      0
+ 18   store_next          2      15     0
+ 19   free                2      0      0
+ 20   free                0      0      0
+ 21   ret                 1      0      -
 
 access
-  •   amelie.test_empty shared [select]
+  •   amelie.test_empty [select]
 select count(*) from test_empty;
 
 count
@@ -59,46 +55,42 @@ id  data  data2  data3
 ────────────────────────
 0   0     0      0.0
 1   0     0      0.0
+2   1     1      1.0
 3   1     1      1.0
 4   2     2      2.0
 5   null  null   null
 6   3     3.1    3.1
-2   1     1      1.0
 explain select count(*) from test;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   count               4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      7     # amelie.test (heap) part
+  1   table_open          1      0      7     # amelie.test (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   push_int            -      0      0     # 1
-  5   set_agg             0      2      32
+  5   set_agg             0      2      24
   6   table_next          1      2      0
   7   free                1      0      0
   8   push_bool           1      0      0
   9   set_get             1      0      0
  10   push_nulls          1      0      0
- 11   set_agg             0      1      32
- 12   ret                 0      0      -
+ 11   set_agg             0      1      24
+ 12   set_agg_merge       0      24     0
+ 13   set                 1      1      0
+ 14   store_open          2      0      19
+ 15   count               3      2      0
+ 16   push                3      0      0
+ 17   set_add             1      0      0
+ 18   store_next          2      15     0
+ 19   free                2      0      0
+ 20   free                0      0      0
+ 21   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select count(*) from test;
 
 count
@@ -110,37 +102,33 @@ explain select count(id) from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   count               4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readi32       3      1      -     # id
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   count               3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select count(id) from test;
 
 count
@@ -152,37 +140,33 @@ explain select count(data) from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   count               4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readi32       3      1      -     # data
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   count               3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select count(data) from test;
 
 count
@@ -193,37 +177,33 @@ explain select count(data) from test_null;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_null (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   count               4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_null (heap) part
+  1   table_open          1      0      8     # amelie.test_null (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readi32       3      1      -     # data
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   count               3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_null shared [select]
+  •   amelie.test_null [select]
 select count(data) from test_null;
 
 count
@@ -249,38 +229,34 @@ explain select count(distinct id) from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   count               4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
   1   set_distinct        0      1      3
-  2   table_open          1      0      9     # amelie.test (heap) part
+  2   table_open          1      0      9     # amelie.test (heap) 
   3   push_bool           1      0      0
   4   set_get             2      0      0
   5   table_readi32       3      1      -     # id
   6   push                3      0      0
-  7   set_agg             0      2      32
+  7   set_agg             0      2      24
   8   table_next          1      3      0
   9   free                1      0      0
  10   push_bool           1      0      0
  11   set_get             1      0      0
  12   push_nulls          1      0      0
- 13   set_agg             0      1      32
- 14   ret                 0      0      -
+ 13   set_agg             0      1      24
+ 14   set_agg_merge       0      24     0
+ 15   set                 1      1      0
+ 16   store_open          2      0      21
+ 17   count               3      2      0
+ 18   push                3      0      0
+ 19   set_add             1      0      0
+ 20   store_next          2      17     0
+ 21   free                2      0      0
+ 22   free                0      0      0
+ 23   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select count(distinct id) from test;
 
 count
@@ -322,37 +298,33 @@ explain select sum(id) from test_empty;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_empty (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_empty (heap) part
+  1   table_open          1      0      8     # amelie.test_empty (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readi32       3      1      -     # id
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_empty shared [select]
+  •   amelie.test_empty [select]
 select sum(id) from test_empty;
 
 sum
@@ -364,37 +336,33 @@ explain select sum(id) from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readi32       3      1      -     # id
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select sum(id) from test;
 
 sum
@@ -411,37 +379,33 @@ explain select sum(data2) from test_empty;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_empty (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_empty (heap) part
+  1   table_open          1      0      8     # amelie.test_empty (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readf64       3      1      -     # data2
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_empty shared [select]
+  •   amelie.test_empty [select]
 select sum(data2) from test_empty;
 
 sum
@@ -453,37 +417,33 @@ explain select sum(data2) from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readf64       3      1      -     # data2
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select sum(data2) from test;
 
 sum
@@ -495,37 +455,33 @@ explain select sum(data3) from test_empty;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_empty (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_empty (heap) part
+  1   table_open          1      0      8     # amelie.test_empty (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_reade         3      1      -     # data3
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_empty shared [select]
+  •   amelie.test_empty [select]
 select sum(data3) from test_empty;
 
 sum
@@ -537,37 +493,33 @@ explain select sum(data3) from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_reade         3      1      -     # data3
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select sum(data3) from test;
 
 sum
@@ -584,37 +536,33 @@ explain select sum(data) from test_null;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_null (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_null (heap) part
+  1   table_open          1      0      8     # amelie.test_null (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readi32       3      1      -     # data
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_null shared [select]
+  •   amelie.test_null [select]
 select sum(data) from test_null;
 
 sum
@@ -632,37 +580,33 @@ explain select avg(id) from test;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   avgi                4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readi32       3      1      -     # id
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   avgi                3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select avg(id) from test;
 
 avg
@@ -714,37 +658,33 @@ explain select avg(data2) from test_null;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_null (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   avgf                4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_null (heap) part
+  1   table_open          1      0      8     # amelie.test_null (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readf64       3      1      -     # data2
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   avgf                3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_null shared [select]
+  •   amelie.test_null [select]
 select avg(data2) from test_null;
 
 avg
@@ -755,37 +695,33 @@ explain select avg(data3) from test_null;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_null (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   avge                4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_null (heap) part
+  1   table_open          1      0      8     # amelie.test_null (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_reade         3      1      -     # data3
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   avge                3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_null shared [select]
+  •   amelie.test_null [select]
 select avg(data3) from test_null;
 
 avg
@@ -838,37 +774,33 @@ explain select min(data2) from test_null;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_null (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_null (heap) part
+  1   table_open          1      0      8     # amelie.test_null (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readf64       3      1      -     # data2
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_null shared [select]
+  •   amelie.test_null [select]
 select min(data2) from test_null;
 
 min
@@ -879,37 +811,33 @@ explain select min(data3) from test_null;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_null (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_null (heap) part
+  1   table_open          1      0      8     # amelie.test_null (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_reade         3      1      -     # data3
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_null shared [select]
+  •   amelie.test_null [select]
 select min(data3) from test_null;
 
 min
@@ -962,37 +890,33 @@ explain select max(data2) from test_null;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_null (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_null (heap) part
+  1   table_open          1      0      8     # amelie.test_null (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_readf64       3      1      -     # data2
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_null shared [select]
+  •   amelie.test_null [select]
 select max(data2) from test_null;
 
 max
@@ -1003,37 +927,33 @@ explain select max(data3) from test_null;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test_null (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   agg                 4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test_null (heap) part
+  1   table_open          1      0      8     # amelie.test_null (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   table_reade         3      1      -     # data3
   5   push                3      0      0
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
   9   push_bool           1      0      0
  10   set_get             1      0      0
  11   push_nulls          1      0      0
- 12   set_agg             0      1      32
- 13   ret                 0      0      -
+ 12   set_agg             0      1      24
+ 13   set_agg_merge       0      24     0
+ 14   set                 1      1      0
+ 15   store_open          2      0      20
+ 16   agg                 3      2      0
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      16     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test_null shared [select]
+  •   amelie.test_null [select]
 select max(data3) from test_null;
 
 max
@@ -1056,54 +976,50 @@ explain select id, count(*) from test group by id;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      2      0
-  3   store_open          3      1      10
-  4   store_read          4      3      1
-  5   push                4      0      0
-  6   count               4      3      0
-  7   push                4      0      0
-  8   set_add             2      0      0
-  9   store_next          3      4      0
- 10   free                3      0      0
- 11   free                1      0      0
- 12   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
-  9   ret                 0      0      -
+  9   set_agg_merge       0      24     0
+ 10   set                 1      2      0
+ 11   store_open          2      0      18
+ 12   store_read          3      2      1
+ 13   push                3      0      0
+ 14   count               3      2      0
+ 15   push                3      0      0
+ 16   set_add             1      0      0
+ 17   store_next          2      12     0
+ 18   free                2      0      0
+ 19   free                0      0      0
+ 20   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select id, count(*) from test group by id;
 
 id  count
 ───────────
 0   1
 1   1
+2   1
 3   1
-6   1
 4   1
 5   1
-2   1
+6   1
 select data, count(*) from test group by data;
 
 data  count
 ─────────────
 0     2
 1     2
-null  1
 2     1
+null  1
 3     1
 select data2, count(*) from test group by data2;
 
@@ -1111,8 +1027,8 @@ data2  count
 ──────────────
 0      2
 1      2
-null   1
 2      1
+null   1
 3.1    1
 select data3, count(*) from test group by data3;
 
@@ -1120,9 +1036,9 @@ data3  count
 ──────────────
 0.0    2
 1.0    2
+2.0    1
 null   1
 3.1    1
-2.0    1
 select data, count(*) from test_empty group by data;
 
 data  count
@@ -1138,54 +1054,50 @@ explain select id, count(*) from test group by 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      2      0
-  3   store_open          3      1      10
-  4   store_read          4      3      1
-  5   push                4      0      0
-  6   count               4      3      0
-  7   push                4      0      0
-  8   set_add             2      0      0
-  9   store_next          3      4      0
- 10   free                3      0      0
- 11   free                1      0      0
- 12   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
-  9   ret                 0      0      -
+  9   set_agg_merge       0      24     0
+ 10   set                 1      2      0
+ 11   store_open          2      0      18
+ 12   store_read          3      2      1
+ 13   push                3      0      0
+ 14   count               3      2      0
+ 15   push                3      0      0
+ 16   set_add             1      0      0
+ 17   store_next          2      12     0
+ 18   free                2      0      0
+ 19   free                0      0      0
+ 20   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select id, count(*) from test group by 1;
 
 id  count
 ───────────
 0   1
 1   1
+2   1
 3   1
-6   1
 4   1
 5   1
-2   1
+6   1
 select data, count(*) from test group by 1;
 
 data  count
 ─────────────
 0     2
 1     2
-null  1
 2     1
+null  1
 3     1
 select data2, count(*) from test group by 1;
 
@@ -1193,8 +1105,8 @@ data2  count
 ──────────────
 0      2
 1      2
-null   1
 2      1
+null   1
 3.1    1
 select data3, count(*) from test group by 1;
 
@@ -1202,9 +1114,9 @@ data3  count
 ──────────────
 0.0    2
 1.0    2
+2.0    1
 null   1
 3.1    1
-2.0    1
 select data, count(*) from test_empty group by 1;
 
 data  count
@@ -1220,45 +1132,41 @@ explain select * from (select count(*) from test) t;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      8
-  4   count               4      3      0
-  5   push                4      0      0
-  6   set_add             2      0      0
-  7   store_next          3      4      0
-  8   free                3      0      0
-  9   free                1      0      0
- 10   set                 0      1      0
- 11   dup                 1      2      0
- 12   store_open          3      1      17
- 13   store_read          4      3      0
- 14   push                4      0      0
- 15   set_add             0      0      0
- 16   store_next          3      13     0
- 17   free                3      0      0
- 18   free                1      0      0
- 19   ret                 0      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      7     # amelie.test (heap) part
+  1   table_open          1      0      7     # amelie.test (heap) 
   2   push_bool           1      0      0
   3   set_get             2      0      0
   4   push_int            -      0      0     # 1
-  5   set_agg             0      2      32
+  5   set_agg             0      2      24
   6   table_next          1      2      0
   7   free                1      0      0
   8   push_bool           1      0      0
   9   set_get             1      0      0
  10   push_nulls          1      0      0
- 11   set_agg             0      1      32
- 12   ret                 0      0      -
+ 11   set_agg             0      1      24
+ 12   set_agg_merge       0      24     0
+ 13   set                 1      1      0
+ 14   store_open          2      0      19
+ 15   count               3      2      0
+ 16   push                3      0      0
+ 17   set_add             1      0      0
+ 18   store_next          2      15     0
+ 19   free                2      0      0
+ 20   free                0      0      0
+ 21   set                 0      1      0
+ 22   dup                 2      1      0
+ 23   store_open          3      2      28
+ 24   store_read          4      3      0
+ 25   push                4      0      0
+ 26   set_add             0      0      0
+ 27   store_next          3      24     0
+ 28   free                3      0      0
+ 29   free                2      0      0
+ 30   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from (select count(*) from test) t;
 
 count
@@ -1270,65 +1178,61 @@ explain select * from (select id, count(*) from test group by id) t;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select)
-  1   recv_aggs           1      0      32
-  2   set                 2      2      0
-  3   store_open          3      1      10
-  4   store_read          4      3      1
-  5   push                4      0      0
-  6   count               4      3      0
-  7   push                4      0      0
-  8   set_add             2      0      0
-  9   store_next          3      4      0
- 10   free                3      0      0
- 11   free                1      0      0
- 12   set                 0      2      0
- 13   dup                 1      2      0
- 14   store_open          3      1      21
- 15   store_read          4      3      0
- 16   push                4      0      0
- 17   store_read          4      3      1
- 18   push                4      0      0
- 19   set_add             0      0      0
- 20   store_next          3      15     0
- 21   free                3      0      0
- 22   free                1      0      0
- 23   ret                 0      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
-  9   ret                 0      0      -
+  9   set_agg_merge       0      24     0
+ 10   set                 1      2      0
+ 11   store_open          2      0      18
+ 12   store_read          3      2      1
+ 13   push                3      0      0
+ 14   count               3      2      0
+ 15   push                3      0      0
+ 16   set_add             1      0      0
+ 17   store_next          2      12     0
+ 18   free                2      0      0
+ 19   free                0      0      0
+ 20   set                 0      2      0
+ 21   dup                 2      1      0
+ 22   store_open          3      2      29
+ 23   store_read          4      3      0
+ 24   push                4      0      0
+ 25   store_read          4      3      1
+ 26   push                4      0      0
+ 27   set_add             0      0      0
+ 28   store_next          3      23     0
+ 29   free                3      0      0
+ 30   free                2      0      0
+ 31   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from (select id, count(*) from test group by id) t;
 
 id  count
 ───────────
 0   1
 1   1
+2   1
 3   1
-6   1
 4   1
 5   1
-2   1
+6   1
 select * from (select data, count(*) from test group by data) t;
 
 data  count
 ─────────────
 0     2
 1     2
-null  1
 2     1
+null  1
 3     1
 select * from (select data, count(*) from test_empty group by data) t;
 
@@ -1367,38 +1271,34 @@ explain select id, count(*) from test group by id order by id;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set_ordered         2      2      1
-  3   store_open          3      1      12
-  4   store_read          4      3      1
-  5   push                4      0      0
-  6   count               4      3      0
-  7   push                4      0      0
-  8   store_read          4      3      1
-  9   push                4      0      0
- 10   set_add             2      0      0
- 11   store_next          3      4      0
- 12   free                3      0      0
- 13   free                1      0      0
- 14   set_sort            2      0      0
- 15   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (primary) part
+  1   table_open          1      0      8     # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
-  9   ret                 0      0      -
+  9   set_agg_merge       0      24     0
+ 10   set_ordered         1      2      1
+ 11   store_open          2      0      20
+ 12   store_read          3      2      1
+ 13   push                3      0      0
+ 14   count               3      2      0
+ 15   push                3      0      0
+ 16   store_read          3      2      1
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      12     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   set_sort            1      0      0
+ 23   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select id, count(*) from test group by id order by id;
 
 id  count
@@ -1418,38 +1318,34 @@ explain select id, count(*) from test group by 1 order by 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set_ordered         2      2      1
-  3   store_open          3      1      12
-  4   store_read          4      3      1
-  5   push                4      0      0
-  6   count               4      3      0
-  7   push                4      0      0
-  8   store_read          4      3      1
-  9   push                4      0      0
- 10   set_add             2      0      0
- 11   store_next          3      4      0
- 12   free                3      0      0
- 13   free                1      0      0
- 14   set_sort            2      0      0
- 15   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (primary) part
+  1   table_open          1      0      8     # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
-  9   ret                 0      0      -
+  9   set_agg_merge       0      24     0
+ 10   set_ordered         1      2      1
+ 11   store_open          2      0      20
+ 12   store_read          3      2      1
+ 13   push                3      0      0
+ 14   count               3      2      0
+ 15   push                3      0      0
+ 16   store_read          3      2      1
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      12     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   set_sort            1      0      0
+ 23   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select id, count(*) from test group by 1 order by 1;
 
 id  count
@@ -1511,11 +1407,11 @@ id  count
 ───────────
 0   1
 1   1
+2   1
 3   1
-6   1
 4   1
 5   1
-2   1
+6   1
 select id, count(*) from test group by 1 having id > 5;
 
 id  count
@@ -1531,39 +1427,35 @@ explain select id, count(*) from test group by 1 having id > 5;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      2      0
-  3   store_open          3      1      14
-  4   store_read          4      3      1
-  5   int                 5      -      0     # 5
-  6   gtii                6      4      5
-  7   jntr                13     6      0
-  8   store_read          4      3      1
-  9   push                4      0      0
- 10   count               4      3      0
- 11   push                4      0      0
- 12   set_add             2      0      0
- 13   store_next          3      4      0
- 14   free                3      0      0
- 15   free                1      0      0
- 16   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
-  9   ret                 0      0      -
+  9   set_agg_merge       0      24     0
+ 10   set                 1      2      0
+ 11   store_open          2      0      22
+ 12   store_read          3      2      1
+ 13   int                 4      -      0     # 5
+ 14   gtii                5      3      4
+ 15   jntr                21     5      0
+ 16   store_read          3      2      1
+ 17   push                3      0      0
+ 18   count               3      2      0
+ 19   push                3      0      0
+ 20   set_add             1      0      0
+ 21   store_next          2      12     0
+ 22   free                2      0      0
+ 23   free                0      0      0
+ 24   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 # test: select from table group by order by having
 select id, count(*) from test group by 1 order by 1;
 
@@ -1607,57 +1499,53 @@ explain select id from test group by id having count(id) > 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      12
-  4   count               4      3      0
-  5   int                 5      -      0     # 0
-  6   gtii                6      4      5
-  7   jntr                11     6      0
-  8   store_read          4      3      1
-  9   push                4      0      0
- 10   set_add             2      0      0
- 11   store_next          3      4      0
- 12   free                3      0      0
- 13   free                1      0      0
- 14   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      9     # amelie.test (heap) part
+  1   table_open          1      0      9     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
   5   table_readi32       3      1      -     # id
   6   push                3      0      0
-  7   set_agg             0      2      32
+  7   set_agg             0      2      24
   8   table_next          1      2      0
   9   free                1      0      0
- 10   ret                 0      0      -
+ 10   set_agg_merge       0      24     0
+ 11   set                 1      1      0
+ 12   store_open          2      0      21
+ 13   count               3      2      0
+ 14   int                 4      -      0     # 0
+ 15   gtii                5      3      4
+ 16   jntr                20     5      0
+ 17   store_read          3      2      1
+ 18   push                3      0      0
+ 19   set_add             1      0      0
+ 20   store_next          2      13     0
+ 21   free                2      0      0
+ 22   free                0      0      0
+ 23   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select id from test group by id having count(id) > 0;
 
 id
 ──
 0
 1
+2
 3
-6
 4
 5
-2
+6
 select data from test group by data;
 
 data
 ────
 0
 1
-null
 2
+null
 3
 select data from test;
 
@@ -1666,10 +1554,10 @@ data
 0
 0
 1
+1
 2
 null
 3
-1
 select data from test group by data having count(data) > 1;
 
 data
@@ -1682,263 +1570,239 @@ explain select id from test group by id having count(*) > 0;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      1      0
-  3   store_open          3      1      12
-  4   count               4      3      0
-  5   int                 5      -      0     # 0
-  6   gtii                6      4      5
-  7   jntr                11     6      0
-  8   store_read          4      3      1
-  9   push                4      0      0
- 10   set_add             2      0      0
- 11   store_next          3      4      0
- 12   free                3      0      0
- 13   free                1      0      0
- 14   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (heap) part
+  1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
-  9   ret                 0      0      -
+  9   set_agg_merge       0      24     0
+ 10   set                 1      1      0
+ 11   store_open          2      0      20
+ 12   count               3      2      0
+ 13   int                 4      -      0     # 0
+ 14   gtii                5      3      4
+ 15   jntr                19     5      0
+ 16   store_read          3      2      1
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      12     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select id from test group by id having count(*) > 0;
 
 id
 ──
 0
 1
+2
 3
-6
 4
 5
-2
+6
 explain select id, count(*) from test group by id having count(*) > 0;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      48    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      2      0
-  3   store_open          3      1      14
-  4   count               4      3      1
-  5   int                 5      -      0     # 0
-  6   gtii                6      4      5
-  7   jntr                13     6      0
-  8   store_read          4      3      2
-  9   push                4      0      0
- 10   count               4      3      0
- 11   push                4      0      0
- 12   set_add             2      0      0
- 13   store_next          3      4      0
- 14   free                3      0      0
- 15   free                1      0      0
- 16   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      2      1
-  1   table_open          1      0      9     # amelie.test (heap) part
+  1   table_open          1      0      9     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
   6   push_int            -      0      0     # 1
-  7   set_agg             0      2      32
+  7   set_agg             0      2      24
   8   table_next          1      2      0
   9   free                1      0      0
- 10   ret                 0      0      -
+ 10   set_agg_merge       0      24     0
+ 11   set                 1      2      0
+ 12   store_open          2      0      23
+ 13   count               3      2      1
+ 14   int                 4      -      0     # 0
+ 15   gtii                5      3      4
+ 16   jntr                22     5      0
+ 17   store_read          3      2      2
+ 18   push                3      0      0
+ 19   count               3      2      0
+ 20   push                3      0      0
+ 21   set_add             1      0      0
+ 22   store_next          2      13     0
+ 23   free                2      0      0
+ 24   free                0      0      0
+ 25   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select id, count(*) from test group by id having count(*) > 0;
 
 id  count
 ───────────
 0   1
 1   1
+2   1
 3   1
-6   1
 4   1
 5   1
-2   1
+6   1
 explain select id, count(*) from test group by 1 having count(*) > 0;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      48    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      2      0
-  3   store_open          3      1      14
-  4   count               4      3      1
-  5   int                 5      -      0     # 0
-  6   gtii                6      4      5
-  7   jntr                13     6      0
-  8   store_read          4      3      2
-  9   push                4      0      0
- 10   count               4      3      0
- 11   push                4      0      0
- 12   set_add             2      0      0
- 13   store_next          3      4      0
- 14   free                3      0      0
- 15   free                1      0      0
- 16   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      2      1
-  1   table_open          1      0      9     # amelie.test (heap) part
+  1   table_open          1      0      9     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
   6   push_int            -      0      0     # 1
-  7   set_agg             0      2      32
+  7   set_agg             0      2      24
   8   table_next          1      2      0
   9   free                1      0      0
- 10   ret                 0      0      -
+ 10   set_agg_merge       0      24     0
+ 11   set                 1      2      0
+ 12   store_open          2      0      23
+ 13   count               3      2      1
+ 14   int                 4      -      0     # 0
+ 15   gtii                5      3      4
+ 16   jntr                22     5      0
+ 17   store_read          3      2      2
+ 18   push                3      0      0
+ 19   count               3      2      0
+ 20   push                3      0      0
+ 21   set_add             1      0      0
+ 22   store_next          2      13     0
+ 23   free                2      0      0
+ 24   free                0      0      0
+ 25   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 explain select data, count(*) from test group by data having count(*) > 0;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      48    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      2      0
-  3   store_open          3      1      14
-  4   count               4      3      1
-  5   int                 5      -      0     # 0
-  6   gtii                6      4      5
-  7   jntr                13     6      0
-  8   store_read          4      3      2
-  9   push                4      0      0
- 10   count               4      3      0
- 11   push                4      0      0
- 12   set_add             2      0      0
- 13   store_next          3      4      0
- 14   free                3      0      0
- 15   free                1      0      0
- 16   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      2      1
-  1   table_open          1      0      9     # amelie.test (heap) part
+  1   table_open          1      0      9     # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
   6   push_int            -      0      0     # 1
-  7   set_agg             0      2      32
+  7   set_agg             0      2      24
   8   table_next          1      2      0
   9   free                1      0      0
- 10   ret                 0      0      -
+ 10   set_agg_merge       0      24     0
+ 11   set                 1      2      0
+ 12   store_open          2      0      23
+ 13   count               3      2      1
+ 14   int                 4      -      0     # 0
+ 15   gtii                5      3      4
+ 16   jntr                22     5      0
+ 17   store_read          3      2      2
+ 18   push                3      0      0
+ 19   count               3      2      0
+ 20   push                3      0      0
+ 21   set_add             1      0      0
+ 22   store_next          2      13     0
+ 23   free                2      0      0
+ 24   free                0      0      0
+ 25   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select data, count(*) from test group by data having count(*) > 0;
 
 data  count
 ─────────────
 0     2
 1     2
-null  1
 2     1
+null  1
 3     1
 explain select data, count(*) from test group by 1 having count(*) > 0;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      48    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      2      0
-  3   store_open          3      1      14
-  4   count               4      3      1
-  5   int                 5      -      0     # 0
-  6   gtii                6      4      5
-  7   jntr                13     6      0
-  8   store_read          4      3      2
-  9   push                4      0      0
- 10   count               4      3      0
- 11   push                4      0      0
- 12   set_add             2      0      0
- 13   store_next          3      4      0
- 14   free                3      0      0
- 15   free                1      0      0
- 16   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      2      1
-  1   table_open          1      0      9     # amelie.test (heap) part
+  1   table_open          1      0      9     # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
   6   push_int            -      0      0     # 1
-  7   set_agg             0      2      32
+  7   set_agg             0      2      24
   8   table_next          1      2      0
   9   free                1      0      0
- 10   ret                 0      0      -
+ 10   set_agg_merge       0      24     0
+ 11   set                 1      2      0
+ 12   store_open          2      0      23
+ 13   count               3      2      1
+ 14   int                 4      -      0     # 0
+ 15   gtii                5      3      4
+ 16   jntr                22     5      0
+ 17   store_read          3      2      2
+ 18   push                3      0      0
+ 19   count               3      2      0
+ 20   push                3      0      0
+ 21   set_add             1      0      0
+ 22   store_next          2      13     0
+ 23   free                2      0      0
+ 24   free                0      0      0
+ 25   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 explain select data, count(*) from test group by data having count(*) > 1;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      48    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      2      0
-  3   store_open          3      1      14
-  4   count               4      3      1
-  5   int                 5      -      0     # 1
-  6   gtii                6      4      5
-  7   jntr                13     6      0
-  8   store_read          4      3      2
-  9   push                4      0      0
- 10   count               4      3      0
- 11   push                4      0      0
- 12   set_add             2      0      0
- 13   store_next          3      4      0
- 14   free                3      0      0
- 15   free                1      0      0
- 16   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      2      1
-  1   table_open          1      0      9     # amelie.test (heap) part
+  1   table_open          1      0      9     # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
   6   push_int            -      0      0     # 1
-  7   set_agg             0      2      32
+  7   set_agg             0      2      24
   8   table_next          1      2      0
   9   free                1      0      0
- 10   ret                 0      0      -
+ 10   set_agg_merge       0      24     0
+ 11   set                 1      2      0
+ 12   store_open          2      0      23
+ 13   count               3      2      1
+ 14   int                 4      -      0     # 1
+ 15   gtii                5      3      4
+ 16   jntr                22     5      0
+ 17   store_read          3      2      2
+ 18   push                3      0      0
+ 19   count               3      2      0
+ 20   push                3      0      0
+ 21   set_add             1      0      0
+ 22   store_next          2      13     0
+ 23   free                2      0      0
+ 24   free                0      0      0
+ 25   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select data, count(*) from test group by data having count(*) > 1;
 
 data  count
@@ -1950,40 +1814,36 @@ explain select data, count(*) from test group by 1  having count(*) > 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      48    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      2      0
-  3   store_open          3      1      14
-  4   count               4      3      1
-  5   int                 5      -      0     # 1
-  6   gtii                6      4      5
-  7   jntr                13     6      0
-  8   store_read          4      3      2
-  9   push                4      0      0
- 10   count               4      3      0
- 11   push                4      0      0
- 12   set_add             2      0      0
- 13   store_next          3      4      0
- 14   free                3      0      0
- 15   free                1      0      0
- 16   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      2      1
-  1   table_open          1      0      9     # amelie.test (heap) part
+  1   table_open          1      0      9     # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
   6   push_int            -      0      0     # 1
-  7   set_agg             0      2      32
+  7   set_agg             0      2      24
   8   table_next          1      2      0
   9   free                1      0      0
- 10   ret                 0      0      -
+ 10   set_agg_merge       0      24     0
+ 11   set                 1      2      0
+ 12   store_open          2      0      23
+ 13   count               3      2      1
+ 14   int                 4      -      0     # 1
+ 15   gtii                5      3      4
+ 16   jntr                22     5      0
+ 17   store_read          3      2      2
+ 18   push                3      0      0
+ 19   count               3      2      0
+ 20   push                3      0      0
+ 21   set_add             1      0      0
+ 22   store_next          2      13     0
+ 23   free                2      0      0
+ 24   free                0      0      0
+ 25   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 # test: select as from table group by having alias (unsupported)
 select data, count(*) as c from test group by data having c > 1;
 error: select data, count(*) as c from test group by data having ❰c❱ ⟵ column 'c' must appear in the GROUP BY clause or be used by an aggregate function
@@ -1993,38 +1853,34 @@ explain select data, count(*) from test group by data order by data;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set_ordered         2      2      1
-  3   store_open          3      1      12
-  4   store_read          4      3      1
-  5   push                4      0      0
-  6   count               4      3      0
-  7   push                4      0      0
-  8   store_read          4      3      1
-  9   push                4      0      0
- 10   set_add             2      0      0
- 11   store_next          3      4      0
- 12   free                3      0      0
- 13   free                1      0      0
- 14   set_sort            2      0      0
- 15   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (primary) part
+  1   table_open          1      0      8     # amelie.test (primary) 
   2   table_readi32       2      1      -     # data
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
-  9   ret                 0      0      -
+  9   set_agg_merge       0      24     0
+ 10   set_ordered         1      2      1
+ 11   store_open          2      0      20
+ 12   store_read          3      2      1
+ 13   push                3      0      0
+ 14   count               3      2      0
+ 15   push                3      0      0
+ 16   store_read          3      2      1
+ 17   push                3      0      0
+ 18   set_add             1      0      0
+ 19   store_next          2      12     0
+ 20   free                2      0      0
+ 21   free                0      0      0
+ 22   set_sort            1      0      0
+ 23   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select data, count(*) from test group by data order by data;
 
 data  count
@@ -2039,36 +1895,32 @@ explain select count(*) from test group by data order by data;
 explain
 ───────
 
-main
-  0   send_all            0      0      40    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set_ordered         2      1      1
-  3   store_open          3      1      10
-  4   count               4      3      0
-  5   push                4      0      0
-  6   store_read          4      3      1
-  7   push                4      0      0
-  8   set_add             2      0      0
-  9   store_next          3      4      0
- 10   free                3      0      0
- 11   free                1      0      0
- 12   set_sort            2      0      0
- 13   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      1
-  1   table_open          1      0      8     # amelie.test (primary) part
+  1   table_open          1      0      8     # amelie.test (primary) 
   2   table_readi32       2      1      -     # data
   3   push                2      0      0
   4   set_get             2      0      0
   5   push_int            -      0      0     # 1
-  6   set_agg             0      2      32
+  6   set_agg             0      2      24
   7   table_next          1      2      0
   8   free                1      0      0
-  9   ret                 0      0      -
+  9   set_agg_merge       0      24     0
+ 10   set_ordered         1      1      1
+ 11   store_open          2      0      18
+ 12   count               3      2      0
+ 13   push                3      0      0
+ 14   store_read          3      2      1
+ 15   push                3      0      0
+ 16   set_add             1      0      0
+ 17   store_next          2      12     0
+ 18   free                2      0      0
+ 19   free                0      0      0
+ 20   set_sort            1      0      0
+ 21   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select count(*) from test group by data order by data;
 
 count
@@ -2102,7 +1954,7 @@ id
 ──
 5
 0
-3
+2
 4
 6
 select distinct data, count(*) from test group by data;
@@ -2143,30 +1995,30 @@ id  count  count
 ──────────────────
 0   1      1
 1   1      1
+2   1      1
 3   1      1
-6   1      1
 4   1      1
 5   0      0
-2   1      1
+6   1      1
 select id, count(distinct data), count(distinct data3) from test group by id;
 
 id  count  count
 ──────────────────
 0   1      1
 1   1      1
+2   1      1
 3   1      1
-6   1      1
 4   1      1
 5   0      0
-2   1      1
+6   1      1
 select count(data) from test group by data;
 
 count
 ─────
 2
 2
-0
 1
+0
 1
 select count(distinct data) from test group by data;
 
@@ -2174,8 +2026,8 @@ count
 ─────
 1
 1
-0
 1
+0
 1
 select count(distinct data), count(distinct data2) from test group by true;
 
@@ -2193,7 +2045,7 @@ explain select (select count(distinct data) from test group by id);
 explain
 ───────
 
-main
+backend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   table_open          1      0      10    # amelie.test (heap) 
@@ -2202,10 +2054,10 @@ main
   5   set_get             2      0      0
   6   table_readi32       3      1      -     # data
   7   push                3      0      0
-  8   set_agg             0      2      32
+  8   set_agg             0      2      24
   9   table_next          1      3      0
  10   free                1      0      0
- 11   set_agg_merge       0      32     0
+ 11   set_agg_merge       0      24     0
  12   set                 1      1      0
  13   store_open          2      0      18
  14   count               3      2      0
@@ -2218,7 +2070,7 @@ main
  21   ret                 0      0      -
 
 access
-  •   amelie.test exclusive_ro [select]
+  •   amelie.test [select]
 select (select count(distinct data) from test group by id);
 
 col1

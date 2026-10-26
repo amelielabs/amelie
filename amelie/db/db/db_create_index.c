@@ -105,18 +105,12 @@ db_indexate(Part* part, IndexConfig* config)
 void
 db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 {
-	(void)self;
-	(void)tr;
-	(void)op;
-	(void)flags;
-	(void)db_indexate;
-#if 0
 	// one checkpoint (or create index) at a time
-	auto checkpoint_lock = lock_system(REL_CHECKPOINT, LOCK_EXCLUSIVE);
+	auto checkpoint_lock = lock_checkpoint(LOCK_EXCLUSIVE);
 	defer(unlock, checkpoint_lock);
 
 	// take shared catalog lock
-	auto lock_catalog = lock_system(REL_CATALOG, LOCK_SHARED);
+	auto lock_catalog = lock_catalog(LOCK_SHARED);
 	defer(unlock, lock_catalog);
 
 	Str  name_user;
@@ -161,16 +155,16 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	// force commit pending prepared transactions
 	table->catalog->iface->user_sync(table->catalog, table->user);
 
-	// create indexes on table under the exclusive_ro lock,
-	// this will make table accessible on backends, while
-	// preventing writes
-	auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE_RO);
+	// todo:
+	// auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE_RO);
+
 	auto part = table->part;
 	auto on_error = error_catch
 	(
 		db_indexate(part, config);
 	);
-	unlock(lock_table);
+
+	//unlock(lock_table);
 
 	if (on_error)
 	{
@@ -190,7 +184,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	unlock(lock_catalog);
 
 	// take exclusive catalog lock (HELD till completion)
-	lock_catalog = lock_system(REL_CATALOG, LOCK_EXCLUSIVE);
+	lock_catalog = lock_catalog(LOCK_EXCLUSIVE);
 
 	// todo: validate table again
 
@@ -201,5 +195,4 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 
 	// attach index to the table
 	table_index_add(&self->catalog, table, tr, config);
-#endif
 }

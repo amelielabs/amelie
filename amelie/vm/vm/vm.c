@@ -748,7 +748,7 @@ cexcluded:
 	if (unlikely(! self->insert))
 		error("unexpected EXCLUDED usage");
 
-	b = store_iterator_at(self->insert);
+	b = store_iterator_at(self->insert) + op->b;
 	if (b->type != TYPE_REF)
 		value_copy(&r[op->a], b);
 	else

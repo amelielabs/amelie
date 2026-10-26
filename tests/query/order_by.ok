@@ -10,15 +10,9 @@ explain select * from test order by data;
 explain
 ───────
 
-main
-  0   send_all            0      0      33    # amelie.test (select, closing)
-  1   union               1      1      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set_ordered         0      2      1
-  1   table_open          1      1      10    # amelie.test (primary) part
+  1   table_open          1      1      10    # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -32,7 +26,7 @@ pushdown
  12   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test order by data;
 
 id  data
@@ -109,26 +103,18 @@ explain select id from test order by id;
 explain
 ───────
 
-main
-  0   send_all            0      0      33    # amelie.test (select, closing)
-  1   union               1      1      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
-  0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (primary) part
+backend
+  0   set                 0      1      0
+  1   table_open          1      0      6     # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
-  4   table_readi32       2      1      -     # id
-  5   push                2      0      0
-  6   set_add             0      0      0
-  7   table_next          1      2      0
-  8   free                1      0      0
-  9   ret                 0      0      -
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select id from test order by id;
 
 id
@@ -141,21 +127,19 @@ explain select (select id from test order by id);
 explain
 ───────
 
-main
+backend
   0   set                 0      1      0
-  1   table_open          1      0      8     # amelie.test (primary) 
+  1   table_open          1      0      6     # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
-  4   table_readi32       2      1      -     # id
-  5   push                2      0      0
-  6   set_add             0      0      0
-  7   table_next          1      2      0
-  8   free                1      0      0
-  9   first               1      0      0
- 10   ret                 1      0      -
+  4   set_add             0      0      0
+  5   table_next          1      2      0
+  6   free                1      0      0
+  7   first               1      0      0
+  8   ret                 1      0      -
 
 access
-  •   amelie.test exclusive_ro [select]
+  •   amelie.test [select]
 select (select id from test order by id);
 
 col1
@@ -172,7 +156,7 @@ explain select (select id from test order by id desc);
 explain
 ───────
 
-main
+backend
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
@@ -187,7 +171,7 @@ main
  11   ret                 1      0      -
 
 access
-  •   amelie.test exclusive_ro [select]
+  •   amelie.test [select]
 select (select id from test order by id desc);
 
 col1
@@ -199,7 +183,7 @@ explain select (select id from test order by data);
 explain
 ───────
 
-main
+backend
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
@@ -214,7 +198,7 @@ main
  11   ret                 1      0      -
 
 access
-  •   amelie.test exclusive_ro [select]
+  •   amelie.test [select]
 select (select id from test order by data);
 
 col1

@@ -6,7 +6,7 @@ explain select all it from ([1,2,3,1,2]) it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      0
   1   json                1      0      0
   2   json_open           2      1      7
@@ -31,7 +31,7 @@ explain select distinct it from ([1,2,3,1,2]) it;
 explain
 ───────
 
-main
+frontend
   0   set_ordered         0      1      1
   1   json                1      1      0
   2   json_open           2      1      9
@@ -75,7 +75,7 @@ explain select count(distinct it) from ([1,2,3]) it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -147,7 +147,7 @@ explain select count(distinct it) from ([1,2,3]) it group by it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -253,7 +253,7 @@ explain select count(distinct it) from ([1,2,3]) it group by it order by 1;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -369,7 +369,7 @@ explain select count(distinct it) from ([1,2,3]) it order by 1;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -414,7 +414,7 @@ explain select count(distinct it) from ([1,2,3]) it group by it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -449,7 +449,7 @@ explain select (select count(distinct it) from ([1,2,3,1,2]) it group by it);
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -484,7 +484,7 @@ explain select (select distinct it from ([1,2,3,1,2]) it);
 explain
 ───────
 
-main
+frontend
   0   set_ordered         0      1      1
   1   json                1      1      0
   2   json_open           2      1      9
@@ -522,7 +522,7 @@ explain select sum(distinct it::int) from ([1,2,3,3,1]) it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -560,7 +560,7 @@ explain select sum(distinct it::double) from ([1,2,3,3,1]) it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -599,7 +599,7 @@ explain select sum(it::int) from ([1,2,3,3,1]) it group by it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   json                1      0      0
   2   json_open           2      1      12
@@ -635,7 +635,7 @@ explain select sum(distinct it::int) from ([1,2,3,3,1]) it group by it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -673,7 +673,7 @@ explain select sum(it::int) from ([1,2,3,3,1]) it group by it order by 1;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   json                1      0      0
   2   json_open           2      1      12
@@ -712,7 +712,7 @@ explain select sum(distinct it::int) from ([1,2,3,3,1]) it group by it order by 
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -764,7 +764,7 @@ explain select avg(distinct it::int) from ([1,2,3,3,1]) it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -802,7 +802,7 @@ explain select avg(distinct it::double) from ([1,2,3,3,1]) it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -841,7 +841,7 @@ explain select avg(it::int) from ([1,2,3,3,1]) it group by it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   json                1      0      0
   2   json_open           2      1      12
@@ -877,7 +877,7 @@ explain select avg(distinct it::int) from ([1,2,3,3,1]) it group by it;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -915,7 +915,7 @@ explain select avg(it::int) from ([1,2,3,3,1]) it group by it order by 1;
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   json                1      0      0
   2   json_open           2      1      12
@@ -954,7 +954,7 @@ explain select avg(distinct it::int) from ([1,2,3,3,1]) it group by it order by 
 explain
 ───────
 
-main
+frontend
   0   set                 0      1      1
   1   set_distinct        0      1      3
   2   json                1      0      0
@@ -1022,36 +1022,17 @@ max
 ───
 3
 # test: select count(distinct) from table
-create table test (id int primary key using tree, a int, b int, c int, d int) partitions 2;
+create table test (id int primary key using tree, a int, b int, c int, d int);
 insert into test values (1, 10, 20, 30, 40), (2, 11, 21, 31, 41), (3, 10, 22, 32, 42), (4, 12, 20, 33, 43);
 explain select count(distinct a), count(distinct b), count(distinct c), count(distinct d) from test;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      64    # amelie.test (select, closing)
-  1   recv_aggs           1      0      32
-  2   set                 2      4      0
-  3   store_open          3      1      14
-  4   count               4      3      0
-  5   push                4      0      0
-  6   count               4      3      1
-  7   push                4      0      0
-  8   count               4      3      2
-  9   push                4      0      0
- 10   count               4      3      3
- 11   push                4      0      0
- 12   set_add             2      0      0
- 13   store_next          3      4      0
- 14   free                3      0      0
- 15   free                1      0      0
- 16   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      4      1
   1   set_distinct        0      1      3
-  2   table_open          1      0      15    # amelie.test (heap) part
+  2   table_open          1      0      15    # amelie.test (heap) 
   3   push_bool           1      0      0
   4   set_get             2      0      0
   5   table_readi32       3      1      -     # a
@@ -1062,7 +1043,7 @@ pushdown
  10   push                3      0      0
  11   table_readi32       3      1      -     # d
  12   push                3      0      0
- 13   set_agg             0      2      32
+ 13   set_agg             0      2      24
  14   table_next          1      3      0
  15   free                1      0      0
  16   push_bool           1      0      0
@@ -1071,11 +1052,26 @@ pushdown
  19   push_nulls          1      0      0
  20   push_nulls          1      0      0
  21   push_nulls          1      0      0
- 22   set_agg             0      1      32
- 23   ret                 0      0      -
+ 22   set_agg             0      1      24
+ 23   set_agg_merge       0      24     0
+ 24   set                 1      4      0
+ 25   store_open          2      0      36
+ 26   count               3      2      0
+ 27   push                3      0      0
+ 28   count               3      2      1
+ 29   push                3      0      0
+ 30   count               3      2      2
+ 31   push                3      0      0
+ 32   count               3      2      3
+ 33   push                3      0      0
+ 34   set_add             1      0      0
+ 35   store_next          2      26     0
+ 36   free                2      0      0
+ 37   free                0      0      0
+ 38   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select count(distinct a), count(distinct b), count(distinct c), count(distinct d) from test;
 
 count  count  count  count

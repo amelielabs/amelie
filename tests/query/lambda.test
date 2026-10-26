@@ -9,8 +9,8 @@ select -> 1;
 select 1 ->;
 select 1 -> 1;
 
-# test: select int -> from table (partitions 1)
-create table test (id int primary key, data int) partitions 1;
+# test: select int -> from table
+create table test (id int primary key, data int);
 insert into test values (0, 0);
 insert into test values (1, 1);
 insert into test values (2, 2);
@@ -73,8 +73,8 @@ select (0.0 -> self + id) / (0 -> self + 1) from test;
 
 drop table test;
 
-# test: select int -> self from table (partitions N, unsupported)
-create table test (id int primary key, data int) partitions 2;
+# test: select int -> self from table
+create table test (id int primary key, data int);
 insert into test values (0, 0);
 insert into test values (1, 1);
 insert into test values (2, 2);

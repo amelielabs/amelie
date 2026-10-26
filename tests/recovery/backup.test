@@ -11,17 +11,11 @@ create table test (id int primary key);
 insert into test values (1), (2), (3);
 
 create table test_vector(id int primary key, v1 vector(2));
-create table l on test_vector;
-
 insert into test_vector values (0, vector [0,0]);
 insert into test_vector values (1, vector [1,1]);
-insert into l values (2, vector [2,2]);
-insert into l values (3, vector [3,3]);
 
 checkpoint;
 insert into test values (4);
-insert into l values (4, vector [4,4]);
-insert into l values (5, vector [5,5]);
 
 show state;
 
@@ -41,7 +35,6 @@ show all;
 show state;
 select * from test;
 select * from test_vector;
-select * from l;
 
 disconnect S1;
 close E1;

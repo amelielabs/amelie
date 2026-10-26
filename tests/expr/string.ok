@@ -11,7 +11,7 @@ explain select "hello world";
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # hello world
   1   ret                 0      0      -
 select 'hello world';
@@ -91,7 +91,7 @@ explain select '1 hour' = '1 hours';
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # 1 hour
   1   string              1      7      0     # 1 hours
   2   equss               2      0      1
@@ -121,7 +121,7 @@ explain select '1 hour' <> '1 hours';
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # 1 hour
   1   string              1      7      0     # 1 hours
   2   equss               2      0      1
@@ -152,7 +152,7 @@ explain select '1 hour' >= '1 hour';
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # 1 hour
   1   string              1      7      0     # 1 hour
   2   gtess               2      0      1
@@ -163,7 +163,7 @@ explain select '1 hour' >= null;
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # 1 hour
   1   null                1      0      0
   2   nullop              2      0      1
@@ -187,7 +187,7 @@ explain select '1 hour' > '1 hour';
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # 1 hour
   1   string              1      7      0     # 1 hour
   2   gtss                2      0      1
@@ -198,7 +198,7 @@ explain select '1 hour' > null;
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # 1 hour
   1   null                1      0      0
   2   nullop              2      0      1
@@ -222,7 +222,7 @@ explain select '1 hour' <= '1 hour';
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # 1 hour
   1   string              1      7      0     # 1 hour
   2   ltess               2      0      1
@@ -233,7 +233,7 @@ explain select '1 hour' <= null;
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # 1 hour
   1   null                1      0      0
   2   nullop              2      0      1
@@ -257,7 +257,7 @@ explain select '1 hour' < '1 hour';
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # 1 hour
   1   string              1      7      0     # 1 hour
   2   ltss                2      0      1
@@ -268,7 +268,7 @@ explain select '1 hour' < null;
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # 1 hour
   1   null                1      0      0
   2   nullop              2      0      1
@@ -287,7 +287,7 @@ explain select "hello " || "world";
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # hello 
   1   string              1      7      0     # world
   2   catss               2      0      1
@@ -334,7 +334,7 @@ explain select 'abc' like 'abc';
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # abc
   1   string              1      4      0     # abc
   2   likess              2      0      1

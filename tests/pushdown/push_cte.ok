@@ -95,23 +95,19 @@ explain with a as (select * from test) select 2;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   int                 1      -      0     # 2
-  2   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   int                 1      -      0     # 2
+  8   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 with a as (select * from test) select 2;
 
 col1
@@ -126,40 +122,34 @@ explain with a as (select * from test) select * from a;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      1      0
-  4   dup                 2      1      0
-  5   store_open          3      2      10
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   set_add             0      0      0
-  9   store_next          3      6      0
- 10   free                3      0      0
- 11   free                2      0      0
- 12   ret                 0      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   set                 1      1      0
+  8   dup                 2      0      0
+  9   store_open          3      2      14
+ 10   store_read          4      3      0
+ 11   push                4      0      0
+ 12   set_add             1      0      0
+ 13   store_next          3      10     0
+ 14   free                3      0      0
+ 15   free                2      0      0
+ 16   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 with a as (select * from test) select * from a;
 
 id
 ──
 1
-3
 2
+3
 drop table test;
 # test: with(select * from table), select column from cte
 create table test (id int primary key);
@@ -169,40 +159,34 @@ explain with a as (select * from test) select id from a;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      1      0
-  4   dup                 2      1      0
-  5   store_open          3      2      10
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   set_add             0      0      0
-  9   store_next          3      6      0
- 10   free                3      0      0
- 11   free                2      0      0
- 12   ret                 0      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   set                 1      1      0
+  8   dup                 2      0      0
+  9   store_open          3      2      14
+ 10   store_read          4      3      0
+ 11   push                4      0      0
+ 12   set_add             1      0      0
+ 13   store_next          3      10     0
+ 14   free                3      0      0
+ 15   free                2      0      0
+ 16   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 with a as (select * from test) select id from a;
 
 id
 ──
 1
-3
 2
+3
 drop table test;
 # test: with(select * from table), select target.column from cte
 create table test (id int primary key);
@@ -212,40 +196,34 @@ explain with a as (select * from test) select a.id from a;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      1      0
-  4   dup                 2      1      0
-  5   store_open          3      2      10
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   set_add             0      0      0
-  9   store_next          3      6      0
- 10   free                3      0      0
- 11   free                2      0      0
- 12   ret                 0      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   set                 1      1      0
+  8   dup                 2      0      0
+  9   store_open          3      2      14
+ 10   store_read          4      3      0
+ 11   push                4      0      0
+ 12   set_add             1      0      0
+ 13   store_next          3      10     0
+ 14   free                3      0      0
+ 15   free                2      0      0
+ 16   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 with a as (select * from test) select a.id from a;
 
 col1
 ────
 1
-3
 2
+3
 drop table test;
 # test: with(select column from table), select column from cte
 create table test (id int primary key);
@@ -255,40 +233,34 @@ explain with a as (select id from test) select id from a;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      1      0
-  4   dup                 2      1      0
-  5   store_open          3      2      10
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   set_add             0      0      0
-  9   store_next          3      6      0
- 10   free                3      0      0
- 11   free                2      0      0
- 12   ret                 0      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   set                 1      1      0
+  8   dup                 2      0      0
+  9   store_open          3      2      14
+ 10   store_read          4      3      0
+ 11   push                4      0      0
+ 12   set_add             1      0      0
+ 13   store_next          3      10     0
+ 14   free                3      0      0
+ 15   free                2      0      0
+ 16   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 with a as (select id from test) select id from a;
 
 id
 ──
 1
-3
 2
+3
 drop table test;
 # test: with(select column as from table), select column from cte
 create table test (id int primary key);
@@ -300,40 +272,34 @@ explain with a as (select id as x from test) select x from a;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      1      0
-  4   dup                 2      1      0
-  5   store_open          3      2      10
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   set_add             0      0      0
-  9   store_next          3      6      0
- 10   free                3      0      0
- 11   free                2      0      0
- 12   ret                 0      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   set                 1      1      0
+  8   dup                 2      0      0
+  9   store_open          3      2      14
+ 10   store_read          4      3      0
+ 11   push                4      0      0
+ 12   set_add             1      0      0
+ 13   store_next          3      10     0
+ 14   free                3      0      0
+ 15   free                2      0      0
+ 16   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 with a as (select id as x from test) select x from a;
 
 x
 ─
 1
-3
 2
+3
 drop table test;
 # test: with(select column, column from table), select * from cte (conflict)
 create table test (id int primary key);
@@ -345,8 +311,8 @@ with a as (select id, id as x from test) select * from a;
 id  x
 ───────
 1   1
-3   3
 2   2
+3   3
 drop table test;
 # test: with(select * from table), select * from cte
 create table test (id int primary key);
@@ -356,40 +322,34 @@ with a as (select * from test) select * from a;
 id
 ──
 1
-3
 2
+3
 explain with a as (select * from test) select * from a;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      1      0
-  4   dup                 2      1      0
-  5   store_open          3      2      10
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   set_add             0      0      0
-  9   store_next          3      6      0
- 10   free                3      0      0
- 11   free                2      0      0
- 12   ret                 0      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   set                 1      1      0
+  8   dup                 2      0      0
+  9   store_open          3      2      14
+ 10   store_read          4      3      0
+ 11   push                4      0      0
+ 12   set_add             1      0      0
+ 13   store_next          3      10     0
+ 14   free                3      0      0
+ 15   free                2      0      0
+ 16   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: with(select * from table), select * from table
 create table test (id int primary key);
@@ -399,40 +359,32 @@ with a as (select * from test) select * from test;
 id
 ──
 1
-3
 2
+3
 explain with a as (select * from test) select * from test;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select)
-  1   send_all            1      0      88    # amelie.test (select, closing)
-  2   union               2      0      0
-  3   recv                2      1      0
-  4   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 1      1      0
-  9   table_open          2      56     14    # amelie.test (heap) part
- 10   table_readi32       3      2      -     # id
- 11   push                3      0      0
- 12   set_add             1      0      0
- 13   table_next          2      10     0
- 14   free                2      0      0
- 15   ret                 1      0      -
+  7   set                 1      1      0
+  8   table_open          2      24     13    # amelie.test (heap) 
+  9   table_readi32       3      2      -     # id
+ 10   push                3      0      0
+ 11   set_add             1      0      0
+ 12   table_next          2      9      0
+ 13   free                2      0      0
+ 14   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: with(select * from table), select * from table
 create table test (id int primary key);
@@ -442,40 +394,32 @@ with a as (select * from test) select * from test;
 id
 ──
 1
-3
 2
+3
 explain with a as (select * from test) select * from test;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select)
-  1   send_all            1      0      88    # amelie.test (select, closing)
-  2   union               2      0      0
-  3   recv                2      1      0
-  4   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 1      1      0
-  9   table_open          2      56     14    # amelie.test (heap) part
- 10   table_readi32       3      2      -     # id
- 11   push                3      0      0
- 12   set_add             1      0      0
- 13   table_next          2      10     0
- 14   free                2      0      0
- 15   ret                 1      0      -
+  7   set                 1      1      0
+  8   table_open          2      24     13    # amelie.test (heap) 
+  9   table_readi32       3      2      -     # id
+ 10   push                3      0      0
+ 11   set_add             1      0      0
+ 12   table_next          2      9      0
+ 13   free                2      0      0
+ 14   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: with(select expr), select * from table join
 create table test (id int primary key);
@@ -485,32 +429,25 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a;
 explain
 ───────
 
-main
+backend
   0   json                0      0      0
-  1   push_ref            0      1      0
-  2   send_all            1      1      37    # amelie.test (select, closing)
-  3   union               2      0      0
-  4   recv                2      1      0
-  5   ret                 2      0      -
-
-pushdown
-  0   set                 1      2      0
-  1   table_open          2      5      12    # amelie.test (primary) part
-  2   ref                 3      0      0
-  3   json_open           4      3      10
-  4   table_readi32       5      2      -     # id
-  5   push                5      0      0
-  6   json_read           5      4      0
-  7   push                5      0      0
-  8   set_add             1      0      0
-  9   json_next           4      4      0
- 10   free                3      0      0
- 11   table_next          2      2      0
- 12   free                2      0      0
- 13   ret                 1      0      -
+  1   set                 1      2      0
+  2   table_open          2      5      13    # amelie.test (primary) 
+  3   dup                 3      0      0
+  4   json_open           4      3      11
+  5   table_readi32       5      2      -     # id
+  6   push                5      0      0
+  7   json_read           5      4      0
+  8   push                5      0      0
+  9   set_add             1      0      0
+ 10   json_next           4      5      0
+ 11   free                3      0      0
+ 12   table_next          2      3      0
+ 13   free                2      0      0
+ 14   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 with a as (select [4,5,6]) select test.*, a.* from test, a;
 
 id  col1
@@ -518,12 +455,12 @@ id  col1
 1   4
 1   5
 1   6
-3   4
-3   5
-3   6
 2   4
 2   5
 2   6
+3   4
+3   5
+3   6
 drop table test;
 # test: with(select expr), select * from table join
 create table test (id int primary key);
@@ -533,32 +470,25 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a;
 explain
 ───────
 
-main
+backend
   0   json                0      0      0
-  1   push_ref            0      1      0
-  2   send_all            1      1      37    # amelie.test (select, closing)
-  3   union               2      0      0
-  4   recv                2      1      0
-  5   ret                 2      0      -
-
-pushdown
-  0   set                 1      2      0
-  1   table_open          2      5      12    # amelie.test (primary) part
-  2   ref                 3      0      0
-  3   json_open           4      3      10
-  4   table_readi32       5      2      -     # id
-  5   push                5      0      0
-  6   json_read           5      4      0
-  7   push                5      0      0
-  8   set_add             1      0      0
-  9   json_next           4      4      0
- 10   free                3      0      0
- 11   table_next          2      2      0
- 12   free                2      0      0
- 13   ret                 1      0      -
+  1   set                 1      2      0
+  2   table_open          2      5      13    # amelie.test (primary) 
+  3   dup                 3      0      0
+  4   json_open           4      3      11
+  5   table_readi32       5      2      -     # id
+  6   push                5      0      0
+  7   json_read           5      4      0
+  8   push                5      0      0
+  9   set_add             1      0      0
+ 10   json_next           4      5      0
+ 11   free                3      0      0
+ 12   table_next          2      3      0
+ 13   free                2      0      0
+ 14   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 with a as (select [4,5,6]) select test.*, a.* from test, a;
 
 id  col1
@@ -566,12 +496,12 @@ id  col1
 1   4
 1   5
 1   6
-3   4
-3   5
-3   6
 2   4
 2   5
 2   6
+3   4
+3   5
+3   6
 drop table test;
 # test: with(select * from table), select from table join
 create table test (id int primary key);
@@ -581,52 +511,41 @@ explain with a as (select * from test) select test.* from test join a on test.id
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   push_ref            1      1      0
-  4   send_all            0      1      88    # amelie.test (select, closing)
-  5   union               2      0      0
-  6   recv                2      0      0
-  7   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 0      1      0
-  9   table_open          2      56     23    # amelie.test (primary) part
- 10   ref                 3      0      0
- 11   store_open          4      3      20
- 12   table_readi32       5      2      -     # id
- 13   store_read          6      4      0
- 14   equii               7      5      6
- 15   jntr                19     7      0
- 16   table_readi32       5      2      -     # id
- 17   push                5      0      0
- 18   set_add             0      0      0
- 19   store_next          4      12     0
- 20   free                4      0      0
- 21   free                3      0      0
- 22   table_next          2      10     0
- 23   free                2      0      0
- 24   ret                 0      0      -
+  7   set                 1      1      0
+  8   table_open          2      24     22    # amelie.test (primary) 
+  9   dup                 3      0      0
+ 10   store_open          4      3      19
+ 11   table_readi32       5      2      -     # id
+ 12   store_read          6      4      0
+ 13   equii               7      5      6
+ 14   jntr                18     7      0
+ 15   table_readi32       5      2      -     # id
+ 16   push                5      0      0
+ 17   set_add             1      0      0
+ 18   store_next          4      11     0
+ 19   free                4      0      0
+ 20   free                3      0      0
+ 21   table_next          2      9      0
+ 22   free                2      0      0
+ 23   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 with a as (select * from test) select test.* from test join a on test.id = a.id;
 
 id
 ──
 1
-3
 2
+3
 drop table test;
 # test: with(select string from table), select from table join
 create table test (id int primary key, data string);
@@ -636,54 +555,43 @@ explain with a as (select data from test) select test.* from test join a on test
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   push_ref            1      1      0
-  4   send_all            0      1      88    # amelie.test (select, closing)
-  5   union               2      0      0
-  6   recv                2      0      0
-  7   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_reads         2      1      -     # data
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 0      2      0
-  9   table_open          2      56     25    # amelie.test (primary) part
- 10   ref                 3      0      0
- 11   store_open          4      3      22
- 12   table_reads         5      2      -     # data
- 13   store_read          6      4      0
- 14   equss               7      5      6
- 15   jntr                21     7      0
- 16   table_readi32       5      2      -     # id
- 17   push                5      0      0
- 18   table_reads         5      2      -     # data
- 19   push                5      0      0
- 20   set_add             0      0      0
- 21   store_next          4      12     0
- 22   free                4      0      0
- 23   free                3      0      0
- 24   table_next          2      10     0
- 25   free                2      0      0
- 26   ret                 0      0      -
+  7   set                 1      2      0
+  8   table_open          2      24     24    # amelie.test (primary) 
+  9   dup                 3      0      0
+ 10   store_open          4      3      21
+ 11   table_reads         5      2      -     # data
+ 12   store_read          6      4      0
+ 13   equss               7      5      6
+ 14   jntr                20     7      0
+ 15   table_readi32       5      2      -     # id
+ 16   push                5      0      0
+ 17   table_reads         5      2      -     # data
+ 18   push                5      0      0
+ 19   set_add             1      0      0
+ 20   store_next          4      11     0
+ 21   free                4      0      0
+ 22   free                3      0      0
+ 23   table_next          2      9      0
+ 24   free                2      0      0
+ 25   ret                 1      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 with a as (select data from test) select test.* from test join a on test.data = a.data;
 
 id  data
 ──────────
 1   1
-3   3
 2   2
+3   3
 drop table test;
 # test: with (columns) as (select expr), select * from cte
 explain with z (a,b,c) as (select 4,5,6) select * from z;
@@ -691,7 +599,7 @@ explain with z (a,b,c) as (select 4,5,6) select * from z;
 explain
 ───────
 
-main
+frontend
   0   set                 0      3      0
   1   push_int            -      0      0     # 4
   2   push_int            -      0      0     # 5
@@ -750,49 +658,43 @@ with a as (select * from test), b as (select * from a) select * from b;
 id
 ──
 1
-3
 2
+3
 explain with a as (select * from test), b as (select * from a) select * from b;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      1      0
-  4   dup                 2      1      0
-  5   store_open          3      2      10
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   set_add             0      0      0
-  9   store_next          3      6      0
- 10   free                3      0      0
- 11   free                2      0      0
- 12   set                 2      1      0
- 13   dup                 3      0      0
- 14   store_open          4      3      19
- 15   store_read          5      4      0
- 16   push                5      0      0
- 17   set_add             2      0      0
- 18   store_next          4      15     0
- 19   free                4      0      0
- 20   free                3      0      0
- 21   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   set                 1      1      0
+  8   dup                 2      0      0
+  9   store_open          3      2      14
+ 10   store_read          4      3      0
+ 11   push                4      0      0
+ 12   set_add             1      0      0
+ 13   store_next          3      10     0
+ 14   free                3      0      0
+ 15   free                2      0      0
+ 16   set                 2      1      0
+ 17   dup                 3      1      0
+ 18   store_open          4      3      23
+ 19   store_read          5      4      0
+ 20   push                5      0      0
+ 21   set_add             2      0      0
+ 22   store_next          4      19     0
+ 23   free                4      0      0
+ 24   free                3      0      0
+ 25   ret                 2      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: a(table), b(expr), c(a)
 create table test (id int primary key);
@@ -802,50 +704,44 @@ with a as (select * from test), b as (select [1,2,3]), c as (select * from a) se
 id
 ──
 1
-3
 2
+3
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   json                1      56     0
-  2   union               2      0      0
-  3   recv                2      0      0
-  4   set                 0      1      0
-  5   dup                 3      2      0
-  6   store_open          4      3      11
-  7   store_read          5      4      0
-  8   push                5      0      0
-  9   set_add             0      0      0
- 10   store_next          4      7      0
- 11   free                4      0      0
- 12   free                3      0      0
- 13   set                 3      1      0
- 14   dup                 4      0      0
- 15   store_open          5      4      20
- 16   store_read          6      5      0
- 17   push                6      0      0
- 18   set_add             3      0      0
- 19   store_next          5      16     0
- 20   free                5      0      0
- 21   free                4      0      0
- 22   ret                 3      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   json                1      24     0
+  8   set                 2      1      0
+  9   dup                 3      0      0
+ 10   store_open          4      3      15
+ 11   store_read          5      4      0
+ 12   push                5      0      0
+ 13   set_add             2      0      0
+ 14   store_next          4      11     0
+ 15   free                4      0      0
+ 16   free                3      0      0
+ 17   set                 3      1      0
+ 18   dup                 4      2      0
+ 19   store_open          5      4      24
+ 20   store_read          6      5      0
+ 21   push                6      0      0
+ 22   set_add             3      0      0
+ 23   store_next          5      20     0
+ 24   free                5      0      0
+ 25   free                4      0      0
+ 26   ret                 3      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: a(table), b(expr), c(table)
 create table test (id int primary key);
@@ -855,50 +751,42 @@ with a as (select * from test), b as (select [1,2,3]), c as (select * from test)
 id
 ──
 1
-3
 2
+3
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select)
-  1   json                1      56     0
-  2   send_all            2      0      93    # amelie.test (select, closing)
-  3   union               3      0      0
-  4   recv                3      2      0
-  5   set                 2      1      0
-  6   dup                 4      3      0
-  7   store_open          5      4      12
-  8   store_read          6      5      0
-  9   push                6      0      0
- 10   set_add             2      0      0
- 11   store_next          5      8      0
- 12   free                5      0      0
- 13   free                4      0      0
- 14   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
+  7   json                1      24     0
   8   set                 2      1      0
-  9   table_open          3      61     14    # amelie.test (heap) part
+  9   table_open          3      29     14    # amelie.test (heap) 
  10   table_readi32       4      3      -     # id
  11   push                4      0      0
  12   set_add             2      0      0
  13   table_next          3      10     0
  14   free                3      0      0
- 15   ret                 2      0      -
+ 15   set                 3      1      0
+ 16   dup                 4      2      0
+ 17   store_open          5      4      22
+ 18   store_read          6      5      0
+ 19   push                6      0      0
+ 20   set_add             3      0      0
+ 21   store_next          5      18     0
+ 22   free                5      0      0
+ 23   free                4      0      0
+ 24   ret                 3      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: a(table), b(table), c(expr)
 create table test (id int primary key);
@@ -915,40 +803,34 @@ explain with a as (select * from test), b as (select * from test), c as (select 
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select)
-  1   send_all            1      0      88    # amelie.test (select, closing)
-  2   json                2      112    0
-  3   set                 3      1      0
-  4   dup                 4      2      0
-  5   json_open           5      4      10
-  6   json_read           6      5      0
-  7   push                6      0      0
-  8   set_add             3      0      0
-  9   json_next           5      6      0
- 10   free                4      0      0
- 11   ret                 3      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 1      1      0
-  9   table_open          2      56     14    # amelie.test (heap) part
- 10   table_readi32       3      2      -     # id
- 11   push                3      0      0
- 12   set_add             1      0      0
- 13   table_next          2      10     0
- 14   free                2      0      0
- 15   ret                 1      0      -
+  7   set                 1      1      0
+  8   table_open          2      24     13    # amelie.test (heap) 
+  9   table_readi32       3      2      -     # id
+ 10   push                3      0      0
+ 11   set_add             1      0      0
+ 12   table_next          2      9      0
+ 13   free                2      0      0
+ 14   json                2      48     0
+ 15   set                 3      1      0
+ 16   dup                 4      2      0
+ 17   json_open           5      4      22
+ 18   json_read           6      5      0
+ 19   push                6      0      0
+ 20   set_add             3      0      0
+ 21   json_next           5      18     0
+ 22   free                4      0      0
+ 23   ret                 3      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: a(table), b(table), c(expr), d(table)
 create table test (id int primary key);
@@ -958,59 +840,49 @@ with a as (select * from test), b as (select * from test), c as (select [1,2,3])
 id
 ──
 1
-3
 2
+3
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select)
-  1   send_all            1      0      88    # amelie.test (select)
-  2   json                2      112    0
-  3   send_all            3      0      149   # amelie.test (select, closing)
-  4   union               4      0      0
-  5   recv                4      3      0
-  6   set                 3      1      0
-  7   dup                 5      4      0
-  8   store_open          6      5      13
-  9   store_read          7      6      0
- 10   push                7      0      0
- 11   set_add             3      0      0
- 12   store_next          6      9      0
- 13   free                6      0      0
- 14   free                5      0      0
- 15   ret                 3      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 1      1      0
-  9   table_open          2      56     14    # amelie.test (heap) part
- 10   table_readi32       3      2      -     # id
- 11   push                3      0      0
- 12   set_add             1      0      0
- 13   table_next          2      10     0
- 14   free                2      0      0
- 15   ret                 1      0      -
- 16   set                 3      1      0
- 17   table_open          4      117    22    # amelie.test (heap) part
- 18   table_readi32       5      4      -     # id
- 19   push                5      0      0
- 20   set_add             3      0      0
- 21   table_next          4      18     0
- 22   free                4      0      0
- 23   ret                 3      0      -
+  7   set                 1      1      0
+  8   table_open          2      24     13    # amelie.test (heap) 
+  9   table_readi32       3      2      -     # id
+ 10   push                3      0      0
+ 11   set_add             1      0      0
+ 12   table_next          2      9      0
+ 13   free                2      0      0
+ 14   json                2      48     0
+ 15   set                 3      1      0
+ 16   table_open          4      53     21    # amelie.test (heap) 
+ 17   table_readi32       5      4      -     # id
+ 18   push                5      0      0
+ 19   set_add             3      0      0
+ 20   table_next          4      17     0
+ 21   free                4      0      0
+ 22   set                 4      1      0
+ 23   dup                 5      3      0
+ 24   store_open          6      5      29
+ 25   store_read          7      6      0
+ 26   push                7      0      0
+ 27   set_add             4      0      0
+ 28   store_next          6      25     0
+ 29   free                6      0      0
+ 30   free                5      0      0
+ 31   ret                 4      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: a(expr), b(table), c(expr)
 create table test (id int primary key);
@@ -1022,52 +894,46 @@ id  col1
 1   1
 1   2
 1   3
-3   1
-3   2
-3   3
 2   1
 2   2
 2   3
+3   1
+3   2
+3   3
 explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c;
 
 explain
 ───────
 
-main
+backend
   0   json                0      0      0
-  1   send_all            1      0      37    # amelie.test (select, closing)
-  2   json                2      61     0
-  3   union               3      0      0
-  4   recv                3      1      0
-  5   set                 1      2      0
-  6   dup                 4      3      0
-  7   store_open          5      4      18
-  8   dup                 6      2      0
-  9   json_open           7      6      16
- 10   store_read          8      5      0
- 11   push                8      0      0
- 12   json_read           8      7      0
- 13   push                8      0      0
- 14   set_add             1      0      0
- 15   json_next           7      10     0
- 16   free                6      0      0
- 17   store_next          5      8      0
- 18   free                5      0      0
- 19   free                4      0      0
- 20   ret                 1      0      -
-
-pushdown
-  0   set                 1      1      0
-  1   table_open          2      5      6     # amelie.test (heap) part
-  2   table_readi32       3      2      -     # id
-  3   push                3      0      0
-  4   set_add             1      0      0
-  5   table_next          2      2      0
-  6   free                2      0      0
-  7   ret                 1      0      -
+  1   set                 1      1      0
+  2   table_open          2      5      7     # amelie.test (heap) 
+  3   table_readi32       3      2      -     # id
+  4   push                3      0      0
+  5   set_add             1      0      0
+  6   table_next          2      3      0
+  7   free                2      0      0
+  8   json                2      29     0
+  9   set                 3      2      0
+ 10   dup                 4      1      0
+ 11   store_open          5      4      22
+ 12   dup                 6      2      0
+ 13   json_open           7      6      20
+ 14   store_read          8      5      0
+ 15   push                8      0      0
+ 16   json_read           8      7      0
+ 17   push                8      0      0
+ 18   set_add             3      0      0
+ 19   json_next           7      14     0
+ 20   free                6      0      0
+ 21   store_next          5      12     0
+ 22   free                5      0      0
+ 23   free                4      0      0
+ 24   ret                 3      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: a(expr), b(table), c(table)
 create table test (id int primary key);
@@ -1077,50 +943,42 @@ with a as (select [1,2,3]), b as (select * from test), c as (select * from test)
 id
 ──
 1
-3
 2
+3
 explain with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c;
 
 explain
 ───────
 
-main
+backend
   0   json                0      0      0
-  1   send_all            1      0      37    # amelie.test (select)
-  2   send_all            2      0      93    # amelie.test (select, closing)
-  3   union               3      0      0
-  4   recv                3      2      0
-  5   set                 2      1      0
-  6   dup                 4      3      0
-  7   store_open          5      4      12
-  8   store_read          6      5      0
-  9   push                6      0      0
- 10   set_add             2      0      0
- 11   store_next          5      8      0
- 12   free                5      0      0
- 13   free                4      0      0
- 14   ret                 2      0      -
-
-pushdown
-  0   set                 1      1      0
-  1   table_open          2      5      6     # amelie.test (heap) part
-  2   table_readi32       3      2      -     # id
-  3   push                3      0      0
-  4   set_add             1      0      0
-  5   table_next          2      2      0
-  6   free                2      0      0
-  7   ret                 1      0      -
+  1   set                 1      1      0
+  2   table_open          2      5      7     # amelie.test (heap) 
+  3   table_readi32       3      2      -     # id
+  4   push                3      0      0
+  5   set_add             1      0      0
+  6   table_next          2      3      0
+  7   free                2      0      0
   8   set                 2      1      0
-  9   table_open          3      61     14    # amelie.test (heap) part
+  9   table_open          3      29     14    # amelie.test (heap) 
  10   table_readi32       4      3      -     # id
  11   push                4      0      0
  12   set_add             2      0      0
  13   table_next          3      10     0
  14   free                3      0      0
- 15   ret                 2      0      -
+ 15   set                 3      1      0
+ 16   dup                 4      2      0
+ 17   store_open          5      4      22
+ 18   store_read          6      5      0
+ 19   push                6      0      0
+ 20   set_add             3      0      0
+ 21   store_next          5      18     0
+ 22   free                5      0      0
+ 23   free                4      0      0
+ 24   ret                 3      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: a(table), b(a), c(table)
 create table test (id int primary key);
@@ -1130,60 +988,50 @@ with a as (select * from test), b as (select * from a), c as (select * from test
 id
 ──
 1
-3
 2
+3
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      1      0
-  4   dup                 2      1      0
-  5   store_open          3      2      10
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   set_add             0      0      0
-  9   store_next          3      6      0
- 10   free                3      0      0
- 11   free                2      0      0
- 12   send_all            2      0      88    # amelie.test (select, closing)
- 13   union               3      0      0
- 14   recv                3      2      0
- 15   set                 2      1      0
- 16   dup                 4      3      0
- 17   store_open          5      4      22
- 18   store_read          6      5      0
- 19   push                6      0      0
- 20   set_add             2      0      0
- 21   store_next          5      18     0
- 22   free                5      0      0
- 23   free                4      0      0
- 24   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 2      1      0
-  9   table_open          3      56     14    # amelie.test (heap) part
- 10   table_readi32       4      3      -     # id
+  7   set                 1      1      0
+  8   dup                 2      0      0
+  9   store_open          3      2      14
+ 10   store_read          4      3      0
  11   push                4      0      0
- 12   set_add             2      0      0
- 13   table_next          3      10     0
+ 12   set_add             1      0      0
+ 13   store_next          3      10     0
  14   free                3      0      0
- 15   ret                 2      0      -
+ 15   free                2      0      0
+ 16   set                 2      1      0
+ 17   table_open          3      24     22    # amelie.test (heap) 
+ 18   table_readi32       4      3      -     # id
+ 19   push                4      0      0
+ 20   set_add             2      0      0
+ 21   table_next          3      18     0
+ 22   free                3      0      0
+ 23   set                 3      1      0
+ 24   dup                 4      2      0
+ 25   store_open          5      4      30
+ 26   store_read          6      5      0
+ 27   push                6      0      0
+ 28   set_add             3      0      0
+ 29   store_next          5      26     0
+ 30   free                5      0      0
+ 31   free                4      0      0
+ 32   ret                 3      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
@@ -1192,60 +1040,50 @@ with a as (select * from test), b as (select * from a), c as (select * from test
 id
 ──
 1
-3
 2
+3
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
 
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      1      0
-  4   dup                 2      1      0
-  5   store_open          3      2      10
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   set_add             0      0      0
-  9   store_next          3      6      0
- 10   free                3      0      0
- 11   free                2      0      0
- 12   send_all            2      0      88    # amelie.test (select, closing)
- 13   union               3      0      0
- 14   recv                3      2      0
- 15   set                 2      1      0
- 16   dup                 4      3      0
- 17   store_open          5      4      22
- 18   store_read          6      5      0
- 19   push                6      0      0
- 20   set_add             2      0      0
- 21   store_next          5      18     0
- 22   free                5      0      0
- 23   free                4      0      0
- 24   ret                 2      0      -
-
-pushdown
+backend
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) part
+  1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
   5   table_next          1      2      0
   6   free                1      0      0
-  7   ret                 0      0      -
-  8   set                 2      1      0
-  9   table_open          3      56     14    # amelie.test (heap) part
- 10   table_readi32       4      3      -     # id
+  7   set                 1      1      0
+  8   dup                 2      0      0
+  9   store_open          3      2      14
+ 10   store_read          4      3      0
  11   push                4      0      0
- 12   set_add             2      0      0
- 13   table_next          3      10     0
+ 12   set_add             1      0      0
+ 13   store_next          3      10     0
  14   free                3      0      0
- 15   ret                 2      0      -
+ 15   free                2      0      0
+ 16   set                 2      1      0
+ 17   table_open          3      24     22    # amelie.test (heap) 
+ 18   table_readi32       4      3      -     # id
+ 19   push                4      0      0
+ 20   set_add             2      0      0
+ 21   table_next          3      18     0
+ 22   free                3      0      0
+ 23   set                 3      1      0
+ 24   dup                 4      2      0
+ 25   store_open          5      4      30
+ 26   store_read          6      5      0
+ 27   push                6      0      0
+ 28   set_add             3      0      0
+ 29   store_next          5      26     0
+ 30   free                5      0      0
+ 31   free                4      0      0
+ 32   ret                 3      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 drop table test;
 # test: a(expr), stmt, b(expr), stmt
 create table test (id int primary key);
@@ -1257,12 +1095,12 @@ id  col1
 1   1
 1   2
 1   3
-3   1
-3   2
-3   3
 2   1
 2   2
 2   3
+3   1
+3   2
+3   3
 drop table test;
 # test: a(expr), a(expr) (cte redefined)
 create table test (id int primary key);
@@ -1282,42 +1120,35 @@ explain begin with a as (insert into test values (2, 0) returning *) select * fr
 explain
 ───────
 
-main
-  0   set_ptr             1      -      0
-  1   send_shard          0      1      0     # amelie.test (insert, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   set                 0      2      0
-  5   dup                 2      1      0
-  6   store_open          3      2      13
-  7   store_read          4      3      0
-  8   push                4      0      0
-  9   store_read          4      3      1
- 10   push                4      0      0
- 11   set_add             0      0      0
- 12   store_next          3      7      0
- 13   free                3      0      0
- 14   free                2      0      0
- 15   ret                 0      0      -
-
-pushdown
-  0   set                 0      2      0
-  1   table_prepare       1      -      -     # amelie.test
-  2   jmp                 11     0      0
-  3   string              2      0      0     # unique key constraint violation
-  4   push                2      0      0
-  5   call                2      -      1     # error()
-  6   table_readi32       2      1      -     # id
-  7   push                2      0      0
-  8   table_readi32       2      1      -     # data
-  9   push                2      0      0
- 10   set_add             0      0      0
- 11   upsert              1      3      6
- 12   free                1      0      0
- 13   ret                 0      0      -
+backend
+  0   set_ptr             0      -      0
+  1   set                 1      2      0
+  2   upsert_open         2      -      -     # amelie.test
+  3   jmp                 12     0      0
+  4   string              3      0      0     # unique key constraint violation
+  5   push                3      0      0
+  6   call                3      -      1     # error()
+  7   table_readi32       3      2      -     # id
+  8   push                3      0      0
+  9   table_readi32       3      2      -     # data
+ 10   push                3      0      0
+ 11   set_add             1      0      0
+ 12   upsert              2      4      7
+ 13   set                 0      2      0
+ 14   dup                 2      1      0
+ 15   store_open          3      2      22
+ 16   store_read          4      3      0
+ 17   push                4      0      0
+ 18   store_read          4      3      1
+ 19   push                4      0      0
+ 20   set_add             0      0      0
+ 21   store_next          3      16     0
+ 22   free                3      0      0
+ 23   free                2      0      0
+ 24   ret                 0      0      -
 
 access
-  •   amelie.test shared_rw [insert, select]
+  •   amelie.test [insert, select]
 drop table test;
 # test: with(update returning), select * from cte
 create table test (id int primary key, data int);
@@ -1336,26 +1167,9 @@ explain with a as (update test set data = data + 1 returning *) select * from a;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (update, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      2      0
-  4   dup                 2      1      0
-  5   store_open          3      2      12
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   store_read          4      3      1
-  9   push                4      0      0
- 10   set_add             0      0      0
- 11   store_next          3      6      0
- 12   free                3      0      0
- 13   free                2      0      0
- 14   ret                 0      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      15    # amelie.test (primary) part
+  1   table_open          1      0      15    # amelie.test (primary) 
   2   int                 2      -      0     # 1
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -1370,10 +1184,21 @@ pushdown
  13   set_add             0      0      0
  14   table_next          1      2      0
  15   free                1      0      0
- 16   ret                 0      0      -
+ 16   set                 1      2      0
+ 17   dup                 2      0      0
+ 18   store_open          3      2      25
+ 19   store_read          4      3      0
+ 20   push                4      0      0
+ 21   store_read          4      3      1
+ 22   push                4      0      0
+ 23   set_add             1      0      0
+ 24   store_next          3      19     0
+ 25   free                3      0      0
+ 26   free                2      0      0
+ 27   ret                 1      0      -
 
 access
-  •   amelie.test shared_rw [update, select]
+  •   amelie.test [update, select]
 drop table test;
 # test: with(delete returning), select * from cte
 create table test (id int primary key, data int);
@@ -1392,26 +1217,9 @@ explain with a as (delete from test returning *) select * from a;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (delete, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   set                 0      2      0
-  4   dup                 2      1      0
-  5   store_open          3      2      12
-  6   store_read          4      3      0
-  7   push                4      0      0
-  8   store_read          4      3      1
-  9   push                4      0      0
- 10   set_add             0      0      0
- 11   store_next          3      6      0
- 12   free                3      0      0
- 13   free                2      0      0
- 14   ret                 0      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      9     # amelie.test (primary) part
+  1   table_open          1      0      9     # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -1420,10 +1228,21 @@ pushdown
   7   delete              1      0      0
   8   table_next          1      2      0
   9   free                1      0      0
- 10   ret                 0      0      -
+ 10   set                 1      2      0
+ 11   dup                 2      0      0
+ 12   store_open          3      2      19
+ 13   store_read          4      3      0
+ 14   push                4      0      0
+ 15   store_read          4      3      1
+ 16   push                4      0      0
+ 17   set_add             1      0      0
+ 18   store_next          3      13     0
+ 19   free                3      0      0
+ 20   free                2      0      0
+ 21   ret                 1      0      -
 
 access
-  •   amelie.test shared_rw [delete, select]
+  •   amelie.test [delete, select]
 drop table test;
 disconnect S0;
 close E0;

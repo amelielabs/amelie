@@ -26,7 +26,7 @@ explain select case 1 when 1 then 1 end;
 explain
 ───────
 
-main
+frontend
   0   int                 1      -      0     # 1
   1   int                 2      -      0     # 1
   2   equii               3      1      2
@@ -52,7 +52,7 @@ explain select case 0 when 1 then 1 when 2 then 2 end;
 explain
 ───────
 
-main
+frontend
   0   int                 1      -      0     # 0
   1   int                 2      -      0     # 1
   2   equii               3      1      2
@@ -107,7 +107,7 @@ explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when nul
 explain
 ───────
 
-main
+frontend
   0   null                1      0      0
   1   json                2      0      0
   2   nullop              3      1      2
@@ -163,7 +163,7 @@ explain select case when 1 then 1 end;
 explain
 ───────
 
-main
+frontend
   0   int                 1      -      0     # 1
   1   jntr                5      1      0
   2   int                 2      -      0     # 1

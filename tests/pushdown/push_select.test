@@ -56,7 +56,7 @@ explain select * from test where exists (select 1 from ref where test.id = ref.i
 select * from test where exists (select 1 from ref where test.id = ref.id);
 
 # test: select random from table
-select random() from test;
+select random()::type from test;
 select 1 from test where random();
 
 drop table ref;

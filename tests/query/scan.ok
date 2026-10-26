@@ -8,16 +8,10 @@ explain select * from test where id > 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          1      0      13    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   gtii                4      2      3
@@ -32,7 +26,7 @@ pushdown
  14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id > 1;
 
 id  data
@@ -44,16 +38,10 @@ explain select * from test where id >= 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          1      0      13    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   gteii               4      2      3
@@ -68,7 +56,7 @@ pushdown
  14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id >= 1;
 
 id  data
@@ -85,16 +73,10 @@ explain select * from test where test.id > 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          1      0      13    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   gtii                4      2      3
@@ -109,7 +91,7 @@ pushdown
  14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where test.id > 1;
 
 id  data
@@ -121,16 +103,10 @@ explain select * from test where test.id > -1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # -1
-  2   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          1      0      13    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # -1
   5   gtii                4      2      3
@@ -145,7 +121,7 @@ pushdown
  14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where test.id > -1;
 
 id  data
@@ -162,16 +138,10 @@ explain select * from test alias where alias.id > 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          1      0      13    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   gtii                4      2      3
@@ -186,7 +156,7 @@ pushdown
  14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test alias where alias.id > 1;
 
 id  data
@@ -216,16 +186,10 @@ explain select * from test where id > 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          1      0      13    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   gtii                4      2      3
@@ -240,7 +204,7 @@ pushdown
  14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id > 1;
 
 id  data
@@ -253,16 +217,10 @@ explain select * from test where id > 1 and id > 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      17    # amelie.test (primary) part
+  2   table_open          1      0      17    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   gtii                4      2      3
@@ -281,7 +239,7 @@ pushdown
  18   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id > 1 and id > 1;
 
 id  data
@@ -294,16 +252,10 @@ explain select * from test where id > 2 and id > 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 2
-  2   table_open          1      0      17    # amelie.test (primary) part
+  2   table_open          1      0      17    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 2
   5   gtii                4      2      3
@@ -322,7 +274,7 @@ pushdown
  18   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id > 2 and id > 1;
 
 id  data
@@ -334,16 +286,10 @@ explain select * from test where id > 1 and id > 2;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 2
-  2   table_open          1      0      17    # amelie.test (primary) part
+  2   table_open          1      0      17    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   gtii                4      2      3
@@ -362,7 +308,7 @@ pushdown
  18   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id > 1 and id > 2;
 
 id  data
@@ -374,17 +320,10 @@ explain select * from test where id > 1 and id = 2;
 explain
 ───────
 
-main
-  0   push_int            -      0      0     # 2
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 2
-  2   table_open          1      0      16    # amelie.test (primary) point_lookup, part
+  2   table_open          1      0      16    # amelie.test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   gtii                4      2      3
@@ -402,7 +341,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id > 1 and id = 2;
 
 id  data
@@ -414,15 +353,9 @@ explain select * from test where id < 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      16    # amelie.test (primary) part
+  1   table_open          1      0      16    # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   int                 3      -      0     # 1
   4   ltii                4      2      3
@@ -441,7 +374,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id < 1;
 
 id  data
@@ -451,15 +384,9 @@ explain select * from test where id <= 2;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      16    # amelie.test (primary) part
+  1   table_open          1      0      16    # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   int                 3      -      0     # 2
   4   lteii               4      2      3
@@ -478,7 +405,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id <= 2;
 
 id  data
@@ -491,15 +418,9 @@ explain select * from test where id < 1 and id < 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      20    # amelie.test (primary) part
+  1   table_open          1      0      20    # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   int                 3      -      0     # 1
   4   ltii                4      2      3
@@ -522,7 +443,7 @@ pushdown
  21   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id < 1 and id < 1;
 
 id  data
@@ -533,15 +454,9 @@ explain select * from test where id < 2 and id < 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      20    # amelie.test (primary) part
+  1   table_open          1      0      20    # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   int                 3      -      0     # 1
   4   ltii                4      2      3
@@ -564,7 +479,7 @@ pushdown
  21   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id < 2 and id < 1;
 
 id  data
@@ -575,15 +490,9 @@ explain select * from test where id < 1 and id < 2;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      20    # amelie.test (primary) part
+  1   table_open          1      0      20    # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
   3   int                 3      -      0     # 1
   4   ltii                4      2      3
@@ -606,7 +515,7 @@ pushdown
  21   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id < 1 and id < 2;
 
 id  data
@@ -617,17 +526,10 @@ explain select * from test where id < 1 and id = 2;
 explain
 ───────
 
-main
-  0   push_int            -      0      0     # 2
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 2
-  2   table_open          1      0      20    # amelie.test (primary) point_lookup, part
+  2   table_open          1      0      20    # amelie.test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   ltii                4      2      3
@@ -649,7 +551,7 @@ pushdown
  21   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id < 1 and id = 2;
 
 id  data
@@ -660,16 +562,10 @@ explain select * from test where id > 1 and id < 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      21    # amelie.test (primary) part
+  2   table_open          1      0      21    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   ltii                4      2      3
@@ -692,7 +588,7 @@ pushdown
  22   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id > 1 and id < 1;
 
 id  data
@@ -702,16 +598,10 @@ explain select * from test where id >= 1 and id <= 2;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      21    # amelie.test (primary) part
+  2   table_open          1      0      21    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 2
   5   lteii               4      2      3
@@ -734,7 +624,7 @@ pushdown
  22   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id >= 1 and id <= 2;
 
 id  data
@@ -747,17 +637,10 @@ explain select * from test where id > 1 and id < 1 and id = 1;
 explain
 ───────
 
-main
-  0   push_int            -      0      0     # 1
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      24    # amelie.test (primary) point_lookup, part
+  2   table_open          1      0      24    # amelie.test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   ltii                4      2      3
@@ -783,7 +666,7 @@ pushdown
  25   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id > 1 and id < 1 and id = 1;
 
 id  data
@@ -794,16 +677,10 @@ explain select * from test where id > 1 and id < 1 and data = 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      25    # amelie.test (primary) part
+  2   table_open          1      0      25    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   ltii                4      2      3
@@ -830,7 +707,7 @@ pushdown
  26   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id > 1 and id < 1 and data = 1;
 
 id  data
@@ -841,17 +718,10 @@ explain select * from test where id = 1;
 explain
 ───────
 
-main
-  0   push_int            -      0      0     # 1
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      12    # amelie.test (primary) point_lookup, part
+  2   table_open          1      0      12    # amelie.test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   equii               4      2      3
@@ -865,7 +735,7 @@ pushdown
  13   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id = 0;
 
 id  data
@@ -895,17 +765,10 @@ explain select * from test where id = 3::int;
 explain
 ───────
 
-main
-  0   push_value          -      0      0     # int
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_value          -      0      0     # int
-  2   table_open          1      0      12    # amelie.test (primary) point_lookup, part
+  2   table_open          1      0      12    # amelie.test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   value               3      -      0     # int
   5   equii               4      2      3
@@ -919,7 +782,7 @@ pushdown
  13   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id = 3::int;
 
 id  data
@@ -931,15 +794,9 @@ explain select * from test where data = 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (heap) part
+  1   table_open          1      0      12    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 1
   4   equii               4      2      3
@@ -954,7 +811,7 @@ pushdown
  13   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where data = 1;
 
 id  data
@@ -968,17 +825,10 @@ explain select * from test where id = 1 and id > 0;
 explain
 ───────
 
-main
-  0   push_int            -      0      0     # 1
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      16    # amelie.test (primary) point_lookup, part
+  2   table_open          1      0      16    # amelie.test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   equii               4      2      3
@@ -996,7 +846,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id = 1 and id > 0;
 
 id  data
@@ -1008,17 +858,10 @@ explain select * from test where id = 1 and id > 0 and id < 10;
 explain
 ───────
 
-main
-  0   push_int            -      0      0     # 1
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      24    # amelie.test (primary) point_lookup, part
+  2   table_open          1      0      24    # amelie.test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 10
   5   ltii                4      2      3
@@ -1044,7 +887,7 @@ pushdown
  25   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id = 1 and id > 0 and id < 10;
 
 id  data
@@ -1056,17 +899,10 @@ explain select * from test where id = 1 and id = 2;
 explain
 ───────
 
-main
-  0   push_int            -      0      0     # 1
-  1   send_lookup         0      -      32    # amelie.test (select, closing)
-  2   union               1      0      0
-  3   recv                1      0      0
-  4   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      16    # amelie.test (primary) point_lookup, part
+  2   table_open          1      0      16    # amelie.test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   equii               4      2      3
@@ -1084,7 +920,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id = 1 and id = 2;
 
 id  data
@@ -1098,16 +934,10 @@ explain select * from test where a > 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      13    # amelie.test (primary) part
+  2   table_open          1      0      13    # amelie.test (primary) 
   3   table_readi32       2      1      -     # a
   4   int                 3      -      0     # 1
   5   gtii                4      2      3
@@ -1122,7 +952,7 @@ pushdown
  14   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where a > 1;
 
 a  b
@@ -1135,17 +965,11 @@ explain select * from test where a > 1 and b > 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   push_int            -      0      0     # 1
-  3   table_open          1      0      18    # amelie.test (primary) part
+  3   table_open          1      0      18    # amelie.test (primary) 
   4   table_readi32       2      1      -     # a
   5   int                 3      -      0     # 1
   6   gtii                4      2      3
@@ -1164,7 +988,7 @@ pushdown
  19   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where a > 1 and b > 1;
 
 a  b
@@ -1177,16 +1001,10 @@ explain select * from test where a > 1 and b < 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      17    # amelie.test (primary) part
+  2   table_open          1      0      17    # amelie.test (primary) 
   3   table_readi32       2      1      -     # a
   4   int                 3      -      0     # 1
   5   gtii                4      2      3
@@ -1205,7 +1023,7 @@ pushdown
  18   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where a > 1 and b < 1;
 
 a  b
@@ -1216,16 +1034,10 @@ explain select * from test where a > 1 and b < 2 and a < 10;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      25    # amelie.test (primary) part
+  2   table_open          1      0      25    # amelie.test (primary) 
   3   table_readi32       2      1      -     # a
   4   int                 3      -      0     # 10
   5   ltii                4      2      3
@@ -1252,7 +1064,7 @@ pushdown
  26   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where a > 1 and b < 2 and a < 10;
 
 a  b
@@ -1263,17 +1075,11 @@ explain select * from test where a > 1 and b = 10;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   push_int            -      0      0     # 10
-  3   table_open          1      0      18    # amelie.test (primary) part
+  3   table_open          1      0      18    # amelie.test (primary) 
   4   table_readi32       2      1      -     # a
   5   int                 3      -      0     # 1
   6   gtii                4      2      3
@@ -1292,7 +1098,7 @@ pushdown
  19   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where a > 1 and b = 10;
 
 a  b
@@ -1303,17 +1109,11 @@ explain select * from test where a > 1 and b = 10 and b = 20;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   push_int            -      0      0     # 10
-  3   table_open          1      0      22    # amelie.test (primary) part
+  3   table_open          1      0      22    # amelie.test (primary) 
   4   table_readi32       2      1      -     # a
   5   int                 3      -      0     # 1
   6   gtii                4      2      3
@@ -1336,7 +1136,7 @@ pushdown
  23   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where a > 1 and b = 10 and b = 20;
 
 a  b
@@ -1347,19 +1147,11 @@ explain select * from test where a > 1 and b = 10 and a = 20;
 explain
 ───────
 
-main
-  0   push_int            -      0      0     # 20
-  1   push_int            -      0      0     # 10
-  2   send_lookup         0      -      32    # amelie.test (select, closing)
-  3   union               1      0      0
-  4   recv                1      0      0
-  5   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 20
   2   push_int            -      0      0     # 10
-  3   table_open          1      0      21    # amelie.test (primary) point_lookup, part
+  3   table_open          1      0      21    # amelie.test (primary) point_lookup
   4   table_readi32       2      1      -     # a
   5   int                 3      -      0     # 1
   6   gtii                4      2      3
@@ -1381,7 +1173,7 @@ pushdown
  22   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where a > 1 and b = 10 and a = 20;
 
 a  b
@@ -1392,19 +1184,11 @@ explain select * from test where a = 1 and b = 10;
 explain
 ───────
 
-main
-  0   push_int            -      0      0     # 1
-  1   push_int            -      0      0     # 10
-  2   send_lookup         0      -      32    # amelie.test (select, closing)
-  3   union               1      0      0
-  4   recv                1      0      0
-  5   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   push_int            -      0      0     # 10
-  3   table_open          1      0      17    # amelie.test (primary) point_lookup, part
+  3   table_open          1      0      17    # amelie.test (primary) point_lookup
   4   table_readi32       2      1      -     # a
   5   int                 3      -      0     # 1
   6   equii               4      2      3
@@ -1422,7 +1206,7 @@ pushdown
  18   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where a = 1 and b = 10;
 
 a  b
@@ -1433,17 +1217,11 @@ explain select * from test where a = 1 and b > 1;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   push_int            -      0      0     # 1
-  3   table_open          1      0      18    # amelie.test (primary) part
+  3   table_open          1      0      18    # amelie.test (primary) 
   4   table_readi32       2      1      -     # a
   5   int                 3      -      0     # 1
   6   equii               4      2      3
@@ -1462,7 +1240,7 @@ pushdown
  19   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where a = 1 and b > 1;
 
 a  b
@@ -1476,16 +1254,10 @@ explain select * from test where id between 1 and 2;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      21    # amelie.test (primary) part
+  2   table_open          1      0      21    # amelie.test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 2
   5   lteii               4      2      3
@@ -1508,7 +1280,7 @@ pushdown
  22   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id between 1 and 2;
 
 id  data
@@ -1520,15 +1292,9 @@ explain select * from test where data between 1 and 2;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      16    # amelie.test (heap) part
+  1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
   3   int                 3      -      0     # 1
   4   gteii               4      2      3
@@ -1547,7 +1313,7 @@ pushdown
  17   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where data between 1 and 2;
 
 id  data
@@ -1561,15 +1327,9 @@ explain select * from test where id not between 1 and 2;
 explain
 ───────
 
-main
-  0   send_all            0      0      32    # amelie.test (select, closing)
-  1   union               1      0      0
-  2   recv                1      0      0
-  3   ret                 1      0      -
-
-pushdown
+backend
   0   set                 0      2      0
-  1   table_open          1      0      17    # amelie.test (heap) part
+  1   table_open          1      0      17    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
   3   int                 3      -      0     # 1
   4   gteii               4      2      3
@@ -1589,7 +1349,7 @@ pushdown
  18   ret                 0      0      -
 
 access
-  •   amelie.test shared [select]
+  •   amelie.test [select]
 select * from test where id not between 1 and 2;
 
 id  data

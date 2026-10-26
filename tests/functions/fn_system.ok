@@ -221,7 +221,7 @@ select show('locks');
 show
 ────
 [{
-  "relation": "catalog",
+  "resource": "catalog",
   "lock": "shared",
   "waiting": false,
   "function": "portal_auth"

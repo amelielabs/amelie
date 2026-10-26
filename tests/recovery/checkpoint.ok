@@ -39,7 +39,7 @@ select show('state').psn;
 
 psn
 ───
-3
+1
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
@@ -51,7 +51,7 @@ select show('state').psn;
 
 psn
 ───
-3
+1
 select show('state').checkpoint;
 
 checkpoint
@@ -71,7 +71,7 @@ select show('state').psn;
 
 psn
 ───
-3
+1
 select show('state').checkpoint;
 
 checkpoint
@@ -139,148 +139,6 @@ id
 0
 1
 2
-# test: create layer
-select show('state').psn;
-
-psn
-───
-5
-create table a on test;
-insert into a values (3), (4);
-select * from a;
-
-id
-──
-3
-4
-create table b on test;
-insert into b values (5), (6);
-insert into b values (7), (8);
-select * from b;
-
-id
-──
-6
-7
-8
-5
-select timeline from show layers verbose;
-
-timeline
-────────
-1
-2
-# test: restart/recover (checkpoint + wal)
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-select show('state').psn;
-
-psn
-───
-6
-select show('state').lsn;
-
-lsn
-───
-8
-select show('state').checkpoint;
-
-checkpoint
-──────────
-3
-select timeline from show layers verbose;
-
-timeline
-────────
-1
-2
-select * from a;
-
-id
-──
-3
-4
-select * from b;
-
-id
-──
-6
-7
-8
-5
-select * from test;
-
-id
-──
-0
-1
-2
-# test: checkpoint
-checkpoint;
-select show('state').psn;
-
-psn
-───
-6
-select show('state').lsn;
-
-lsn
-───
-8
-select show('state').checkpoint;
-
-checkpoint
-──────────
-8
-# test: restart/recover (checkpoint)
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-select show('state').psn;
-
-psn
-───
-6
-select show('state').lsn;
-
-lsn
-───
-8
-select show('state').checkpoint;
-
-checkpoint
-──────────
-8
-select timeline from show layers verbose;
-
-timeline
-────────
-1
-2
-select * from a;
-
-id
-──
-3
-4
-select * from b;
-
-id
-──
-6
-7
-8
-5
-select * from test;
-
-id
-──
-0
-1
-2
 # test: create function
 create function reverse(array json) return json
 begin
@@ -325,12 +183,12 @@ select show('state').lsn;
 
 lsn
 ───
-9
+4
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-8
+3
 show functions verbose;
 
 functions
@@ -363,12 +221,12 @@ select show('state').lsn;
 
 lsn
 ───
-9
+4
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-9
+4
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -378,12 +236,12 @@ select show('state').lsn;
 
 lsn
 ───
-9
+4
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-9
+4
 show functions verbose;
 
 functions
@@ -454,12 +312,12 @@ select show('state').lsn;
 
 lsn
 ───
-10
+5
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-9
+4
 show functions verbose;
 
 functions
@@ -492,12 +350,12 @@ select show('state').lsn;
 
 lsn
 ───
-10
+5
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-10
+5
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -507,12 +365,12 @@ select show('state').lsn;
 
 lsn
 ───
-10
+5
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-10
+5
 show functions verbose;
 
 functions
@@ -545,7 +403,7 @@ select show('state').lsn;
 
 lsn
 ───
-11
+6
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
@@ -555,12 +413,12 @@ select show('state').lsn;
 
 lsn
 ───
-11
+6
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-10
+5
 select show('user', 'test').name;
 
 name
@@ -572,12 +430,12 @@ select show('state').lsn;
 
 lsn
 ───
-11
+6
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-11
+6
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
@@ -587,12 +445,12 @@ select show('state').lsn;
 
 lsn
 ───
-11
+6
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-11
+6
 select show('user', 'test').name;
 
 name
@@ -656,7 +514,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-16
+11
 alter table test drop column old_col;
 select show('table', 'test', null, "verbose").columns;
 
@@ -696,7 +554,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-21
+16
 select show('table', 'test', null, "verbose").columns;
 
 columns
@@ -744,8 +602,8 @@ rels
   "description": ""
 }
 create user x;
-alter user x set limit layers = 0;
-alter user amelie set limit layers = 0;
+alter user x set limit tables = 0;
+alter user amelie set limit tables = 0;
 # test: restart/recover (checkpoint)
 checkpoint;
 disconnect S0;
@@ -758,7 +616,7 @@ limits
 ──────
 {
   "send": 3145728,
-  "layers": 0
+  "tables": 0
 }
 show rels;
 

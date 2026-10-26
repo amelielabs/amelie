@@ -86,7 +86,7 @@ explain select 0.058e0 between 0.010e0 and 0.053e0;
 explain
 ───────
 
-main
+frontend
   0   double              0      0      0     # 0.058
   1   double              1      8      0     # 0.01
   2   gteff               2      0      1
@@ -105,7 +105,7 @@ explain select 0.058e0 not between 0.010e0 and 0.053e0;
 explain
 ───────
 
-main
+frontend
   0   double              0      0      0     # 0.058
   1   double              1      8      0     # 0.01
   2   gteff               2      0      1

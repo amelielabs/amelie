@@ -142,7 +142,7 @@ session_run(Session* self)
 		// expr or multi-user access
 		auto on_error = error_catch
 		(
-			vm_run(&self->vm, &portal->local,
+			vm_run(&self->vm,
 			       gtr,
 			       NULL,
 			       program,
@@ -167,7 +167,7 @@ session_run(Session* self)
 		}
 
 		// pushdown result
-		if (users == 1 && returning)
+		if (users == 1 && returning && gtr->dispatch.result_has)
 			ret.value = &gtr->dispatch.result;
 	}
 
@@ -199,6 +199,7 @@ session_run_utility(Session* self)
 	auto portal   = self->portal;
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
+	auto gtr      = &self->gtr;
 
 	// prevent client writes on replica
 	if (! state_is_primary())
@@ -212,6 +213,11 @@ session_run_utility(Session* self)
 	// note: user not changed
 	//
 	portal_lock(portal, program->lock_catalog);
+
+	// prepare global transaction
+	gtr_prepare(gtr, &portal->local, portal->user,
+	            compiler->program,
+	            compiler->program_args);
 
 	// prevent concurrent ddls
 	lock_ddl(program->lock_ddl);
@@ -232,8 +238,8 @@ session_run_utility(Session* self)
 	return_init(&ret);
 	auto on_error = error_catch
 	(
-		vm_run(&self->vm, &portal->local,
-		       &self->gtr,
+		vm_run(&self->vm,
+		       gtr,
 		       &tr,
 		       program,
 		       NULL,

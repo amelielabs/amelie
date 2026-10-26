@@ -30,7 +30,9 @@ struct AstInsert
 	Ast*      update_expr;
 	Ast*      update_where;
 	Stmt*     select;
+	Target*   target;
 	From      from;
+	From      from_values;
 	Returning ret;
 };
 
@@ -46,6 +48,7 @@ ast_insert_allocate(Block* block)
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
 	from_init(&self->from, block);
+	from_init(&self->from_values, block);
 	ast_list_init(&self->rows);
 	returning_init(&self->ret);
 	return self;

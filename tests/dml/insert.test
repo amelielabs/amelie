@@ -542,7 +542,7 @@ drop index i on test;
 drop table test;
 
 # test: insert secondary index (unique)
-create table test (id int primary key, data int) partitions 1;
+create table test (id int primary key, data int);
 create unique index i on test (data);
 insert into test values (0, 0);
 # conflict

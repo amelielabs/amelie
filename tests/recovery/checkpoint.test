@@ -62,55 +62,6 @@ select show('state').lsn;
 select show('state').checkpoint;
 select * from test;
 
-# test: create layer
-select show('state').psn;
-
-create table a on test;
-insert into a values (3), (4);
-select * from a;
-
-create table b on test;
-insert into b values (5), (6);
-insert into b values (7), (8);
-select * from b;
-
-select timeline from show layers verbose;
-
-# test: restart/recover (checkpoint + wal)
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-select show('state').psn;
-select show('state').lsn;
-select show('state').checkpoint;
-select timeline from show layers verbose;
-select * from a;
-select * from b;
-select * from test;
-
-# test: checkpoint
-checkpoint;
-select show('state').psn;
-select show('state').lsn;
-select show('state').checkpoint;
-
-# test: restart/recover (checkpoint)
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-select show('state').psn;
-select show('state').lsn;
-select show('state').checkpoint;
-select timeline from show layers verbose;
-
-select * from a;
-select * from b;
-select * from test;
-
 # test: create function
 create function reverse(array json) return json
 begin
@@ -283,8 +234,8 @@ drop table test;
 show rels;
 
 create user x;
-alter user x set limit layers = 0;
-alter user amelie set limit layers = 0;
+alter user x set limit tables = 0;
+alter user amelie set limit tables = 0;
 
 # test: restart/recover (checkpoint)
 checkpoint;

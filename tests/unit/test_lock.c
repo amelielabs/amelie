@@ -19,8 +19,8 @@ static int active = 0;
 static void
 test_lock_main0(void* arg)
 {
-	Rel* rel = arg;
-	auto l = lock(rel, LOCK_EXCLUSIVE);
+	unused(arg);
+	auto l = lock_catalog(LOCK_EXCLUSIVE);
 	defer(unlock, l);
 
 	active++;
@@ -42,14 +42,11 @@ test_lock0(void* arg)
 	total  = 0;
 	active = 0;
 
-	Rel rel;
-	rel_init(&rel, REL_LOCK);
-
 	Task task[10];
 	for (auto i = 0; i < 10; i++)
 	{
 		task_init(&task[i]);
-		task_create(&task[i], "test", test_lock_main0, &rel);
+		task_create(&task[i], "test", test_lock_main0, NULL);
 	}
 
 	for (auto i = 0; i < 10; i++)
@@ -68,16 +65,13 @@ test_lock1(void* arg)
 	total  = 0;
 	active = 0;
 
-	Rel rel;
-	rel_init(&rel, REL_LOCK);
-
-	auto l = lock(&rel, LOCK_SHARED);
+	auto l = lock_catalog(LOCK_SHARED);
 
 	Task task[10];
 	for (auto i = 0; i < 10; i++)
 	{
 		task_init(&task[i]);
-		task_create(&task[i], "test", test_lock_main0, &rel);
+		task_create(&task[i], "test", test_lock_main0, NULL);
 	}
 
 	coroutine_yield();
@@ -101,16 +95,13 @@ test_lock2(void* arg)
 	total  = 0;
 	active = 0;
 
-	Rel rel;
-	rel_init(&rel, REL_LOCK);
-
-	auto l = lock(&rel, LOCK_EXCLUSIVE);
+	auto l = lock_catalog(LOCK_EXCLUSIVE);
 
 	Task task[10];
 	for (auto i = 0; i < 10; i++)
 	{
 		task_init(&task[i]);
-		task_create(&task[i], "test", test_lock_main0, &rel);
+		task_create(&task[i], "test", test_lock_main0, NULL);
 	}
 
 	coroutine_yield();
@@ -135,18 +126,15 @@ test_lock3(void* arg)
 	active = 0;
 
 	// reentrant
-	Rel rel;
-	rel_init(&rel, REL_LOCK);
-
-	auto l0 = lock(&rel, LOCK_SHARED);
-	auto l1 = lock(&rel, LOCK_SHARED);
+	auto l0 = lock_catalog(LOCK_SHARED);
+	auto l1 = lock_catalog(LOCK_SHARED);
 	test(l0 == l1);
 
 	unlock(l1);
 	unlock(l0);
 
-	l0 = lock(&rel, LOCK_EXCLUSIVE);
-	l1 = lock(&rel, LOCK_EXCLUSIVE);
+	l0 = lock_catalog(LOCK_EXCLUSIVE);
+	l1 = lock_catalog(LOCK_EXCLUSIVE);
 	test(l0 == l1);
 
 	unlock(l1);

@@ -15,19 +15,18 @@ typedef struct Compiler Compiler;
 
 struct Compiler
 {
-	Stmt*        current;
-	Code*        code;
-	CodeData*    code_data;
-	TargetOrigin origin;
-	Rmap         map;
-	Program*     program;
-	Value*       program_args;
-	Columns*     program_returning;
-	Udf*         program_udf;
-	bool         program_explain;
-	bool         program_profile;
-	SetCache*    set_cache;
-	Parser       parser;
+	Stmt*     current;
+	Code*     code;
+	CodeData* code_data;
+	Rmap      map;
+	Program*  program;
+	Value*    program_args;
+	Columns*  program_returning;
+	Udf*      program_udf;
+	bool      program_explain;
+	bool      program_profile;
+	SetCache* set_cache;
+	Parser    parser;
 };
 
 void compiler_init(Compiler*, SetCache*);

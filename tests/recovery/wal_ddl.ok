@@ -411,82 +411,6 @@ id  obj
 0   null
 1   null
 2   null
-# test: create layer
-create table a on test2;
-insert into a values (3, {});
-select * from a;
-
-id  obj
-─────────
-3   {}
-create table b on test2;
-insert into b values (4, {});
-insert into b values (5, []);
-select * from b;
-
-id  obj
-─────────
-4   {}
-5   []
-select timeline from show layers verbose;
-
-timeline
-────────
-1
-2
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-# test: validate state
-select show('state').lsn;
-
-lsn
-───
-17
-select timeline from show layers verbose;
-
-timeline
-────────
-1
-2
-select * from a;
-
-id  obj
-─────────
-3   {}
-select * from b;
-
-id  obj
-─────────
-4   {}
-5   []
-select * from test2;
-
-id  obj
-──────────
-0   null
-1   null
-2   null
-# test: drop layer
-drop table b;
-drop table a;
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-# test: validate state
-select show('state').lsn;
-
-lsn
-───
-19
-show layers;
-
-layers
-──────
 # test: truncate
 truncate test2;
 select * from test2;
@@ -503,7 +427,7 @@ select show('state').lsn;
 
 lsn
 ───
-20
+13
 select * from test2;
 
 id  obj
@@ -514,7 +438,7 @@ select show('state').lsn;
 
 lsn
 ───
-21
+14
 # test: restart
 disconnect S0;
 close E0;
@@ -525,7 +449,7 @@ select show('state').lsn;
 
 lsn
 ───
-21
+14
 select * from test2;
 error: select * from ❰test2❱ ⟵ relation not found
 show tables;
@@ -543,7 +467,7 @@ select show('state').lsn;
 
 lsn
 ───
-22
+15
 # test: restart
 disconnect S0;
 close E0;
@@ -554,7 +478,7 @@ select show('state').lsn;
 
 lsn
 ───
-22
+15
 select show('user', 'test').name;
 
 name
@@ -576,7 +500,7 @@ select show('state').lsn;
 
 lsn
 ───
-23
+16
 # test: restart
 disconnect S0;
 close E0;
@@ -587,7 +511,7 @@ select show('state').lsn;
 
 lsn
 ───
-23
+16
 select show('user', 'test2').name;
 
 name
@@ -599,7 +523,7 @@ select show('state').lsn;
 
 lsn
 ───
-24
+17
 # test: restart
 disconnect S0;
 close E0;
@@ -610,7 +534,7 @@ select show('state').lsn;
 
 lsn
 ───
-24
+17
 select show('user', 'test2', null, "verbose").limits;
 
 limits
@@ -625,7 +549,7 @@ select show('state').lsn;
 
 lsn
 ───
-25
+18
 # test: restart
 disconnect S0;
 close E0;
@@ -636,7 +560,7 @@ select show('state').lsn;
 
 lsn
 ───
-25
+18
 select show('user', 'test2', null, "verbose").limits;
 
 limits
@@ -650,7 +574,7 @@ select show('state').lsn;
 
 lsn
 ───
-26
+19
 select show('user', 'test2').name;
 
 name
@@ -666,7 +590,7 @@ select show('state').lsn;
 
 lsn
 ───
-26
+19
 select show('user', 'test').name;
 
 name
@@ -690,7 +614,7 @@ select show('state').lsn;
 
 lsn
 ───
-27
+20
 show functions verbose;
 
 functions
@@ -727,7 +651,7 @@ select show('state').lsn;
 
 lsn
 ───
-27
+20
 show functions verbose;
 
 functions
@@ -784,7 +708,7 @@ select show('state').lsn;
 
 lsn
 ───
-28
+21
 show functions verbose;
 
 functions
@@ -821,7 +745,7 @@ select show('state').lsn;
 
 lsn
 ───
-28
+21
 show functions verbose;
 
 functions
@@ -863,7 +787,7 @@ select show('state').lsn;
 
 lsn
 ───
-29
+22
 select [1,2,3]::reverse2;
 
 col1
@@ -879,7 +803,7 @@ select show('state').lsn;
 
 lsn
 ───
-29
+22
 show functions verbose;
 
 functions
@@ -912,7 +836,7 @@ select show('state').lsn;
 
 lsn
 ───
-30
+23
 show functions verbose;
 
 functions
@@ -931,7 +855,7 @@ select show('state').lsn;
 
 lsn
 ───
-30
+23
 # test: limit
 alter user amelie set limit tables = 1;
 create table test (id int primary key);

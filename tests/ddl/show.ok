@@ -447,7 +447,7 @@ explain show log_enable;
 explain
 ───────
 
-main
+frontend
   0   string              0      0      0     # log_enable
   1   push                0      0      0
   2   string              0      11     0     # 
@@ -507,7 +507,7 @@ show locks;
 locks
 ─────
 {
-  "relation": "catalog",
+  "resource": "catalog",
   "lock": "shared",
   "waiting": false,
   "function": "portal_auth"

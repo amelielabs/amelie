@@ -24,7 +24,7 @@ explain select 1 in ();
 explain
 ───────
 
-main
+frontend
   0   int                 0      -      0     # 1
   1   in                  1      0      0
   2   ret                 1      0      -
@@ -149,7 +149,7 @@ explain select 0 in (3,5, (select * from test), 0);
 explain
 ───────
 
-main
+backend
   0   int                 0      -      0     # 0
   1   push_int            -      0      0     # 3
   2   push_int            -      0      0     # 5
@@ -166,7 +166,7 @@ main
  13   ret                 1      0      -
 
 access
-  •   amelie.test exclusive_ro [select]
+  •   amelie.test [select]
 select 0 in (3,5, (select * from test));
 
 col1

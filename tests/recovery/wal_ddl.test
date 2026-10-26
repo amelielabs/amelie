@@ -164,46 +164,6 @@ select * from test2 index i;
 select * from test2 index i2;
 select * from test2;
 
-# test: create layer
-create table a on test2;
-insert into a values (3, {});
-select * from a;
-
-create table b on test2;
-insert into b values (4, {});
-insert into b values (5, []);
-select * from b;
-
-select timeline from show layers verbose;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-select timeline from show layers verbose;
-
-select * from a;
-select * from b;
-select * from test2;
-
-# test: drop layer
-drop table b;
-drop table a;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select show('state').lsn;
-show layers;
-
 # test: truncate
 truncate test2;
 select * from test2;

@@ -45,8 +45,8 @@ id  v1      data  v2   v3
 ──────────────────────────────────
 0   [0, 0]  null  [0]  null
 1   [1, 1]  null  [1]  null
-3   [3, 3]  null  [3]  [1, 2, 3]
 2   [2, 2]  null  [2]  null
+3   [3, 3]  null  [3]  [1, 2, 3]
 # test: checkpoint
 checkpoint;
 select show('state').checkpoint;
@@ -70,8 +70,8 @@ id  v1      data  v2   v3
 ──────────────────────────────────
 0   [0, 0]  null  [0]  null
 1   [1, 1]  null  [1]  null
-3   [3, 3]  null  [3]  [1, 2, 3]
 2   [2, 2]  null  [2]  null
+3   [3, 3]  null  [3]  [1, 2, 3]
 # test: drop column (vector)
 alter table test_flat drop column v1;
 select * from test_flat;
@@ -80,8 +80,8 @@ id  data  v2   v3
 ──────────────────────────
 0   null  [0]  null
 1   null  [1]  null
-3   null  [3]  [1, 2, 3]
 2   null  [2]  null
+3   null  [3]  [1, 2, 3]
 # test: checkpoint
 checkpoint;
 select show('state').checkpoint;
@@ -105,8 +105,8 @@ id  data  v2   v3
 ──────────────────────────
 0   null  [0]  null
 1   null  [1]  null
-3   null  [3]  [1, 2, 3]
 2   null  [2]  null
+3   null  [3]  [1, 2, 3]
 # test: delete/insert
 delete from test_flat where id = 1;
 select * from test_flat;
@@ -114,17 +114,17 @@ select * from test_flat;
 id  data  v2   v3
 ──────────────────────────
 0   null  [0]  null
-3   null  [3]  [1, 2, 3]
 2   null  [2]  null
+3   null  [3]  [1, 2, 3]
 insert into test_flat values (4, null, null, vector [4,4,4]);
 select * from test_flat;
 
 id  data  v2    v3
 ───────────────────────────
 0   null  [0]   null
+2   null  [2]   null
 3   null  [3]   [1, 2, 3]
 4   null  null  [4, 4, 4]
-2   null  [2]   null
 drop table test_flat;
 # test: delete/insert
 create table test(id int primary key, v1 vector(2));
@@ -138,92 +138,24 @@ id  v1
 ────────────
 0   [0, 0]
 1   [2, 2]
-drop table test;
-# test: create layer
-create table test(id int primary key, v1 vector(2));
-create table l on test;
-insert into test values (0, vector [0,0]);
-insert into test values (1, vector [1,1]);
-insert into l values (2, vector [2,2]);
-insert into l values (3, vector [3,3]);
-select * from test;
-
-id  v1
-────────────
-0   [0, 0]
-1   [1, 1]
-select * from l;
-
-id  v1
-────────────
-2   [2, 2]
-3   [3, 3]
-select show('state').psn;
-
-psn
-───
-31
-# test: checkpoint
-checkpoint;
-select show('state').checkpoint;
-
-checkpoint
-──────────
-23
-select show('state').psn;
-
-psn
-───
-31
-# test: restart/recover
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-select show('state').checkpoint;
-
-checkpoint
-──────────
-23
-select show('state').psn;
-
-psn
-───
-31
-select * from test;
-
-id  v1
-────────────
-0   [0, 0]
-1   [1, 1]
-select * from l;
-
-id  v1
-────────────
-2   [2, 2]
-3   [3, 3]
 # test: truncate
 truncate test;
 select * from test;
 
 id  v1
 ────────
-select * from l;
-
-id  v1
-────────
 # test: checkpoint
 checkpoint;
 select show('state').checkpoint;
 
 checkpoint
 ──────────
-24
+17
 select show('state').psn;
 
 psn
 ───
-34
+14
 # test: restart/recover
 disconnect S0;
 close E0;
@@ -233,17 +165,13 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-24
+17
 select show('state').psn;
 
 psn
 ───
-34
+14
 select * from test;
-
-id  v1
-────────
-select * from l;
 
 id  v1
 ────────
