@@ -169,6 +169,7 @@ plan_main(Plan* self, bool emit_store)
 			    index->type == INDEX_TREE &&
 			    ast_order_list_match_index(order_by, first))
 			{
+				ast_list_init(order_by);
 				plan_scan(self);
 				return;
 			}

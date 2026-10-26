@@ -73,18 +73,14 @@ cinsert(Vm* self, Op* op)
 	// set refs
 	auto refs    = stack_at(&self->stack, op->c);
 
-	// todo: pass time and seed
-	auto seed = random_generate(&am_task->random);
-	auto time = time_ms();
-	Random random;
-	random.seed[0] = time;
-	random.seed[1] = seed;
-
-	auto tr = tr_list_last(&table->user->track.prepared);
+	// using local context for random/time source
+	auto random = &self->gtr->local->random;
+	auto time   =  self->gtr->local->time_ms;
 
 	Value identity;
 	value_init(&identity);
 
+	auto tr = tr_list_last(&table->user->track.prepared);
 	auto it = store_iterator(store->store);
 	defer(store_iterator_close, it);
 
@@ -93,7 +89,7 @@ cinsert(Vm* self, Op* op)
 	     store_iterator_next(it))
 	{
 		if (columns->identity)
-			row_identity(columns->identity, refs, value, &identity, &random, time);
+			row_identity(columns->identity, refs, value, &identity, random, time);
 
 		auto row = row_create(part, columns, value, refs, &identity);
 		part_insert(part, tr, row);
@@ -131,12 +127,9 @@ cupsert(Vm* self, Op* op)
 	auto table  = cursor->table;
 	auto columns = table_columns(table);
 
-	// todo: pass time and seed
-	auto seed = random_generate(&am_task->random);
-	auto time = time_ms();
-	Random random;
-	random.seed[0] = time;
-	random.seed[1] = seed;
+	// using local context for random/time source
+	auto random = &self->gtr->local->random;
+	auto time   =  self->gtr->local->time_ms;
 
 	// create values iterator
 	auto store = reg_at(&self->r, op->d);
@@ -159,7 +152,7 @@ cupsert(Vm* self, Op* op)
 	{
 		// create row
 		if (columns->identity)
-			row_identity(columns->identity, refs, value, &identity, &random, time);
+			row_identity(columns->identity, refs, value, &identity, random, time);
 		auto row = row_create(table->part, columns, value, refs, &identity);
 
 		// insert or get (open iterator in both cases)
@@ -371,15 +364,7 @@ ccall_udf(Vm* self, Op* op)
 	Vm vm;
 	vm_init(&vm, self->quota);
 	defer(vm_free, &vm);
-
-	vm_run(&vm, self->local,
-	       self->gtr,
-	       NULL,
-	       program,
-	       argv,
-	       &ret,
-	       false);
-
+	vm_run(&vm, self->gtr, NULL, program, argv, &ret, false);
 	if (ret.value)
 		value_move(result, ret.value);
 

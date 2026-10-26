@@ -25,7 +25,6 @@ struct Vm
 	Quota*         quota;
 	Tr*            tr;
 	Gtr*           gtr;
-	Local*         local;
 	bool           allow_close;
 	Calls          calls;
 };
@@ -33,5 +32,5 @@ struct Vm
 void vm_init(Vm*, Quota*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Gtr*, Tr*, Program*, Value*,
+void vm_run(Vm*, Gtr*, Tr*, Program*, Value*,
             Return*, bool);

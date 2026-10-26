@@ -34,7 +34,6 @@ vm_init(Vm* self, Quota* quota)
 	self->quota       = quota;
 	self->tr          = NULL;
 	self->allow_close = true;
-	self->local       = NULL;
 	reg_init(&self->r);
 	stack_init(&self->stack);
 	calls_init(&self->calls);
@@ -73,7 +72,6 @@ vm_reset(Vm* self)
 
 hot void
 vm_run(Vm*      self,
-       Local*   local,
        Gtr*     gtr,
        Tr*      tr,
        Program* program,
@@ -81,7 +79,6 @@ vm_run(Vm*      self,
        Return*  ret,
        bool     allow_close)
 {
-	self->local       = local;
 	self->gtr         = gtr;
 	self->tr          = tr;
 	self->code        = &program->code;
@@ -89,6 +86,7 @@ vm_run(Vm*      self,
 	self->args        = args;
 	self->allow_close = allow_close;
 
+	auto local     = gtr->local;
 	auto code      = &program->code;
 	auto code_data = &program->code_data;
 	calls_prepare(&self->calls, local, code_data);
@@ -625,7 +623,7 @@ cpush_timestamp_current:
 	// [value]
 	a = stack_push(stack);
 	value_init(a);
-	value_set_timestamp(a, self->local->time_us);
+	value_set_timestamp(a, local->time_us);
 	op_next;
 
 cpush_date:
@@ -639,7 +637,7 @@ cpush_date_current:
 	// [value]
 	a = stack_push(stack);
 	value_init(a);
-	value_set_date(a, timestamp_date(self->local->time_us));
+	value_set_date(a, timestamp_date(local->time_us));
 	op_next;
 
 cpush_vector:
@@ -715,7 +713,7 @@ ctimestamp:
 	op_next;
 
 ctimestamp_current:
-	value_set_timestamp(&r[op->a], self->local->time_us);
+	value_set_timestamp(&r[op->a], local->time_us);
 	op_next;
 
 cdate:
@@ -723,7 +721,7 @@ cdate:
 	op_next;
 
 cdate_current:
-	value_set_date(&r[op->a], timestamp_date(self->local->time_us));
+	value_set_date(&r[op->a], timestamp_date(local->time_us));
 	op_next;
 
 cvector:
@@ -742,7 +740,7 @@ cvalue:
 	op_next;
 
 cuser_current:
-	value_set_string(&r[op->a], &self->local->user, NULL);
+	value_set_string(&r[op->a], &local->user, NULL);
 	op_next;
 
 cexcluded:
@@ -2201,7 +2199,7 @@ ccall:
 	call.result   = &r[op->a];
 	call.type     = CALL_EXECUTE;
 	call.function = (Function*)op->b;
-	call.local    = self->local;
+	call.local    = local;
 	call.context  = NULL;
 	if (op->d != -1)
 		call.context = calls_at(&self->calls, op->d);
