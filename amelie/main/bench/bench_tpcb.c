@@ -22,17 +22,17 @@ typedef struct Loader Loader;
 
 struct Loader
 {
-	int       from;
-	int       to;
-	int       batch;
-	uint64_t* transactions;
-	uint64_t* writes;
-	int*      complete;
-	Bench*    bench;
+	int          from;
+	int          to;
+	int          batch;
+	uint64_t*    transactions;
+	uint64_t*    writes;
+	int*         complete;
+	BenchClient* bench;
 };
 
 static inline void
-loader_init(Loader*   self, Bench* bench,
+loader_init(Loader*   self, BenchClient* bench,
             int       from,
             int       to,
             int       batch,
@@ -93,7 +93,7 @@ loader_main(void* arg)
 	auto self   = (Loader*)arg;
 	auto client = client_allocate();
 	defer(client_free, client);
-	client_set_endpoint(client, &self->bench->main->endpoint);
+	client_set_endpoint(client, self->bench->client->endpoint);
 
 	error_catch
 	(
@@ -105,7 +105,7 @@ loader_main(void* arg)
 }
 
 static void
-bench_tpcb_load(Bench* self, int scale, int batch, int clients)
+bench_tpcb_load(BenchClient* self, int scale, int batch, int clients)
 {
 	int     loaders_complete = 0;
 	int     loaders_count = clients;
@@ -256,21 +256,8 @@ bench_tpcb_deploy(BenchClient* self)
 		client_execute(client, &str, NULL);
 	}
 
-	if (scale == 1)
-	{
-		for (auto i = 0; i < tpcb_accounts * scale; i++)
-		{
-			buf_reset(buf);
-			buf_format(buf, "INSERT INTO bench_accounts VALUES ({d}, {d}, 0, \"{buf}\")",
-			           i, i / tpcb_accounts,
-			           filler);
-			buf_str(buf, &str);
-			client_execute(client, &str, NULL);
-		}
-	} else {
-		auto clients = opt_int_of(&self->bench->opt_clients);
-		bench_tpcb_load(self->bench, scale, batch, clients);
-	}
+	auto clients = opt_int_of(&self->bench->opt_clients);
+	bench_tpcb_load(self, scale, batch, clients);
 
 	// add 100 to account 1 by teller 1 at branch 1
 	tpcb_execute(client, 1, 1, 1, 100);
