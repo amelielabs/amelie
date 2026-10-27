@@ -516,17 +516,19 @@ hot int
 emit_udf(Compiler* self, From* from, Ast* ast)
 {
 	// (function_name, args)
-	auto func = ast_func_of(ast);
-	auto args = ast->r;
-	auto udf  = func->udf;
+	auto func    = ast_func_of(ast);
+	auto args    = ast->r;
+	auto udf     = func->udf;
+	auto program = (Program*)udf->data;
 
 	// validate number of arguments
 	if (args->integer != func->udf->config->args.count)
 		stmt_error(self->current, ast, "invalid number of arguments");
 
-	// ensure UDF is not pushed down
-	if (block_find_from(from))
-		stmt_error(self->current, ast, "UDF cannot be called with FROM clause");
+	// SELECT udf() FROM
+	auto outer_from = block_find_from(from);
+	if (outer_from && !program->access.ro)
+		stmt_error(self->current, ast, "UDF with DML cannot be called with FROM clause");
 
 	// push arguments
 	auto current = args->l;
@@ -542,17 +544,32 @@ emit_udf(Compiler* self, From* from, Ast* ast)
 	}
 
 	// CALL_UDF
-	return op2pin(self, CCALL_UDF, udf->config->type, (intptr_t)udf);
+	auto r = op2pin(self, CCALL_UDF, udf->config->type, (intptr_t)udf);
+
+	// table result
+	if (outer_from && udf->config->type == TYPE_STORE)
+	{
+		auto columns = &udf->config->returning;
+		if (columns->count > 1)
+			stmt_error(self->current, ast, "subquery must return only one column");
+		// return first column of the first row and free the set
+		auto rresult = op2pin(self, CFIRST, columns_first(columns)->type, r);
+		runpin(self, r);
+		return rresult;
+	}
+
+	return r;
 }
 
 hot int
 emit_udf_method(Compiler* self, From* from, Ast* ast)
 {
 	// expr, method(path, [args])
-	auto expr = ast->l;
-	auto func = ast_func_of(ast->r);
-	auto udf  = func->udf;
-	auto args = func->ast.r;
+	auto expr    = ast->l;
+	auto func    = ast_func_of(ast->r);
+	auto udf     = func->udf;
+	auto args    = func->ast.r;
+	auto program = (Program*)udf->data;
 
 	// validate number of arguments
 	auto argc = 1;
@@ -565,9 +582,10 @@ emit_udf_method(Compiler* self, From* from, Ast* ast)
 	if (argc != func->udf->config->args.count)
 		stmt_error(self->current, ast, "invalid number of arguments");
 
-	// ensure UDF is not pushed down
-	if (block_find_from(from))
-		stmt_error(self->current, ast, "UDF cannot be called with FROM clause");
+	// SELECT udf() FROM
+	auto outer_from = block_find_from(from);
+	if (outer_from && !program->access.ro)
+		stmt_error(self->current, ast, "UDF with DML cannot be called with FROM clause");
 
 	// push arguments
 	list_foreach(&udf->config->args.list)
@@ -596,7 +614,21 @@ emit_udf_method(Compiler* self, From* from, Ast* ast)
 	}
 
 	// CALL_UDF
-	return op2pin(self, CCALL_UDF, udf->config->type, (intptr_t)udf);
+	auto r = op2pin(self, CCALL_UDF, udf->config->type, (intptr_t)udf);
+
+	// table result
+	if (outer_from && udf->config->type == TYPE_STORE)
+	{
+		auto columns = &udf->config->returning;
+		if (columns->count > 1)
+			stmt_error(self->current, ast, "subquery must return only one column");
+		// return first column of the first row and free the set
+		auto rresult = op2pin(self, CFIRST, columns_first(columns)->type, r);
+		runpin(self, r);
+		return rresult;
+	}
+
+	return r;
 }
 
 hot static inline bool

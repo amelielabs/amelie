@@ -108,12 +108,13 @@ drop function a;
 begin declare x int; with a as (select reverse([1,2,3])) select * from a; end;
 begin declare x int; with a as (select 1) select reverse([1,2,3]); end;
 
-# test: select udf() from expr (unsupported)
+# test: select udf() from expr
 select x::reverse() from ([1,2,3]) x;
 
-# test: select udf() from table (unsupported)
-create table test (id int primary key);
-select x::reverse() from test;
+# test: select udf() from table
+create table test (id int);
+insert into test values (1), (2), (3);
+select [id::json]::reverse() from test;
 select * from test where reverse(null);
 drop table test;
 

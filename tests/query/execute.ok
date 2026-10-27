@@ -285,13 +285,19 @@ begin declare x int; with a as (select 1) select reverse([1,2,3]); end;
 reverse
 ───────
 [3, 2, 1]
-# test: select udf() from expr (unsupported)
+# test: select udf() from expr
 select x::reverse() from ([1,2,3]) x;
-error: select x❰::❱ ⟵ UDF cannot be called with FROM clause
-# test: select udf() from table (unsupported)
-create table test (id int primary key);
-select x::reverse() from test;
-error: select x❰::❱ ⟵ UDF cannot be called with FROM clause
+error: FROM: json array expected
+# test: select udf() from table
+create table test (id int);
+insert into test values (1), (2), (3);
+select [id::json]::reverse() from test;
+
+col1
+────
+[1]
+[2]
+[3]
 select * from test where reverse(null);
 error: select * from test where ❰reverse❱ ⟵ UDF cannot be used here
 drop table test;
