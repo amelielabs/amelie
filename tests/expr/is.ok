@@ -18,7 +18,7 @@ explain select 1 is null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   is                  1      0      0
   2   ret                 1      0      -
@@ -38,7 +38,7 @@ explain select 1 is not null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   is                  1      0      0
   2   not                 0      1      0

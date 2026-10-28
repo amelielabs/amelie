@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: create table (with vector columns)
 create table test_flat(id int primary key, v1 vector(2), data int, v2 vector(1));

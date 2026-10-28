@@ -36,7 +36,7 @@ typedef enum
 	MSG_PLAYER,
 	MSG_PLAYER_STOP,
 
-	// backend
+	// compute
 	MSG_DEPLOY,
 	MSG_UNDEPLOY,
 	MSG_SYNC,

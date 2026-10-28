@@ -60,13 +60,10 @@ explain_program(Compiler* self, Program* program, Str* user, Str* name)
 
 	// main
 	auto access = &program->access;
-	if (access_empty(access))
-		buf_format(buf, "frontend\n");
-	else
 	if (access_multi_user(access))
-		buf_format(buf, "frontend [multi-tenant]\n");
+		buf_format(buf, "main [multi-user]\n");
 	else
-		buf_format(buf, "backend\n");
+		buf_format(buf, "main\n");
 	op_dump(program, &program->code, buf);
 
 	// access

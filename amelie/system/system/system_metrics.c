@@ -16,8 +16,7 @@
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_compiler>
-#include <amelie_backend.h>
-#include <amelie_frontend.h>
+#include <amelie_compute.h>
 #include <amelie_session.h>
 #include <amelie_system.h>
 
@@ -36,24 +35,16 @@ system_metrics_process(System* self, Buf* buf)
 	os_cpuusage_system(&cpu_count, &cpu_usage);
 
 	// get cpu usage per worker
-	auto  fe = &self->frontends;
-	auto  be = &self->backends;
+	auto  co = &self->computes;
 
-	int      workers = fe->workers_count + be->workers_count;
+	int      workers = co->workers_count;
 	int      workers_id[workers];
 	uint64_t workers_usage[workers];
 	int i = 0;
-	for (; i < fe->workers_count; i++)
+	for (; i < co->workers_count; i++)
 	{
-		workers_id[i] = fe->workers[i].task.thread.tid;
+		workers_id[i] = co->workers[i].task.thread.tid;
 		workers_usage[i] = 0;
-	}
-	for (int j = 0; j < be->workers_count; j++)
-	{
-		auto backend = be->workers[j];
-		workers_id[i] = backend->task.thread.tid;
-		workers_usage[i] = 0;
-		i++;
 	}
 	os_cpuusage(workers, workers_id, workers_usage);
 
@@ -84,23 +75,12 @@ system_metrics_process(System* self, Buf* buf)
 	encode_raw(buf, "cpu", 3);
 	encode_int(buf, cpu_usage);
 
-	// cpu_frontends
-	encode_raw(buf, "cpu_frontends", 13);
+	// compute
+	encode_raw(buf, "compute", 7);
 	encode_array(buf);
 	i = 0;
-	for (; i < fe->workers_count; i++)
+	for (; i < co->workers_count; i++)
 		encode_int(buf, workers_usage[i]);
-	encode_array_end(buf);
-
-	// cpu_backends
-	encode_raw(buf, "cpu_backends", 12);
-	encode_array(buf);
-	auto j = 0;
-	for (; j < be->workers_count; j++)
-	{
-		encode_int(buf, workers_usage[i]);
-		i++;
-	}
 	encode_array_end(buf);
 
 	encode_obj_end(buf);
@@ -120,13 +100,9 @@ system_metrics(System* self, Buf* buf)
 	encode_raw(buf, "version", 7);
 	encode_str(buf, &config()->version.string);
 
-	// frontends
-	encode_raw(buf, "frontends", 9);
-	encode_int(buf, opt_int_of(&config()->frontends));
-
-	// backends
-	encode_raw(buf, "backends", 8);
-	encode_int(buf, opt_int_of(&config()->backends));
+	// compute
+	encode_raw(buf, "compute", 7);
+	encode_int(buf, opt_int_of(&config()->compute));
 
 	// db
 	encode_raw(buf, "db", 2);

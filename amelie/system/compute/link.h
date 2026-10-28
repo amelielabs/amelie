@@ -22,17 +22,17 @@ enum
 
 struct Link
 {
-	Portal    portal;
-	Request   req;
-	Mcp       mcp;
-	Json      json;
-	Api*      api;
-	Client*   client;
-	Frontend* fe;
+	Portal   portal;
+	Request  req;
+	Mcp      mcp;
+	Json     json;
+	Api*     api;
+	Client*  client;
+	Compute* compute;
 };
 
-void link_init(Link*, Frontend*, Client*);
+void link_init(Link*, Compute*, Client*);
 void link_free(Link*);
 void link_main(Link*);
 
-void frontend_link(Frontend*, Client*);
+void compute_link(Compute*, Client*);

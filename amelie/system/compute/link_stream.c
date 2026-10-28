@@ -15,8 +15,7 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
-#include <amelie_backend.h>
-#include <amelie_frontend.h>
+#include <amelie_compute.h>
 
 #if 0
 static inline void

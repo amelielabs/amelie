@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 create table ref (id int primary key, data int default 0);
 insert into ref (id) values (1), (2), (3);
@@ -10,7 +10,7 @@ explain select test.*, ref.* from test, ref;
 explain
 ───────
 
-backend
+main
   0   set                 0      4      0
   1   table_open          1      0      15    # amelie.test (heap) 
   2   table_open          2      24     13    # amelie.ref (heap) 
@@ -51,7 +51,7 @@ explain select test.*, ref.* from ref, test;
 explain
 ───────
 
-backend
+main
   0   set                 0      4      0
   1   table_open          1      0      15    # amelie.ref (heap) 
   2   table_open          2      24     13    # amelie.test (heap) 
@@ -92,7 +92,7 @@ explain select t.* from test, test t;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      11    # amelie.test (heap) 
   2   table_open          2      24     9     # amelie.test (heap) 
@@ -128,7 +128,7 @@ explain select test.id, ref.id from test join ref on true;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      13    # amelie.test (heap) 
   2   table_open          2      24     11    # amelie.ref (heap) 
@@ -167,7 +167,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -203,7 +203,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      24    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -247,7 +247,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
   2   table_open          1      0      29    # amelie.test (primary) 
@@ -296,7 +296,7 @@ explain select test.id, ref.id from test, ref where test.id = ref.id;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -331,7 +331,7 @@ explain select test.id, ref.id from test, ref where ref.id = test.id;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -366,7 +366,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      15    # amelie.test (heap) 
   2   push_int            -      0      0     # 1
@@ -400,7 +400,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   table_open          1      0      19    # amelie.test (primary) point_lookup
@@ -436,7 +436,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      17    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -484,7 +484,7 @@ explain select test.id, ref.id from test join ref using(id);
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -523,7 +523,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
   2   table_open          1      0      29    # amelie.test (primary) 
@@ -574,7 +574,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -623,7 +623,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -672,7 +672,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -722,7 +722,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -791,7 +791,7 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      14    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id

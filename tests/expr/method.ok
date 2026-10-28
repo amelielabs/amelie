@@ -22,7 +22,7 @@ explain select show('state').directory::length();
 explain
 ───────
 
-frontend
+main
   0   push_string         0      0      0     # state
   1   call                0      -      1     # show()
   2   string              1      6      0     # directory
@@ -67,7 +67,7 @@ explain select [1]::append(1)::append(2)::append(3);
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # json
   1   ret                 0      0      -
 select {}::set("a", 1)::set("b", 2);
@@ -92,7 +92,7 @@ explain select show('state').directory::length;
 explain
 ───────
 
-frontend
+main
   0   push_string         0      0      0     # state
   1   call                0      -      1     # show()
   2   string              1      6      0     # directory

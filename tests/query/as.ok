@@ -58,7 +58,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id

@@ -10,7 +10,7 @@ explain select * from test order by data;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      2      1
   1   table_open          1      1      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -103,7 +103,7 @@ explain select id from test order by id;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
@@ -127,7 +127,7 @@ explain select (select id from test order by id);
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
@@ -156,7 +156,7 @@ explain select (select id from test order by id desc);
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -183,7 +183,7 @@ explain select (select id from test order by data);
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id

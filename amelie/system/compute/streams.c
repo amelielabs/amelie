@@ -16,7 +16,7 @@
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_compiler>
-#include <amelie_backend.h>
+#include <amelie_compute.h>
 
 void
 streams_init(Streams* self, Task* task, Client* client)

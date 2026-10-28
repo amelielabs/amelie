@@ -369,7 +369,7 @@ explain select * from t;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.t (heap) 
   2   table_readi32       2      1      -     # id
@@ -402,7 +402,7 @@ explain select * from t;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.t (heap) 
   2   table_readi32       2      1      -     # id
@@ -721,7 +721,7 @@ explain create index i on test (data);
 explain
 ───────
 
-frontend
+main
   0   ddl_create_index    0      0      0
   1   ret                 -1     0      -
 select show('table', 'test', null, "verbose").columns;

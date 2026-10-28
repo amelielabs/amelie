@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: begin abort
 begin; select error("abort"); end;
@@ -55,7 +55,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   table_open          0      0      3     # amelie.test (primary) 
   1   delete              0      0      0
   2   table_next          0      1      0
@@ -88,7 +88,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   table_open          0      0      7     # amelie.test (primary) 
   1   int                 1      -      0     # 1
   2   push                1      0      0
@@ -125,7 +125,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   upsert_open         1      -      -     # amelie.test
   2   jmp                 8      0      0
@@ -177,7 +177,7 @@ explain insert into b (id) values (10), (20), (30);
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   insert              -      -      -     # amelie.b
   2   ret                 -1     0      -
@@ -213,7 +213,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   table_open          0      0      7     # amelie.a (primary) 
   1   int                 1      -      0     # 1
   2   push                1      0      0
@@ -289,7 +289,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   upsert_open         1      -      -     # amelie.a
   2   jmp                 8      0      0

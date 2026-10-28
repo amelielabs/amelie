@@ -99,13 +99,9 @@ db_state(Db* self, Buf* buf)
 	encode_raw(buf, "uuid", 4);
 	encode_uuid(buf, opt_uuid_of(&config()->uuid));
 
-	// frontends
-	encode_raw(buf, "frontends", 9);
-	encode_int(buf, opt_int_of(&config()->frontends));
-
-	// backends
-	encode_raw(buf, "backends", 8);
-	encode_int(buf, opt_int_of(&config()->backends));
+	// compute
+	encode_raw(buf, "compute", 7);
+	encode_int(buf, opt_int_of(&config()->compute));
 
 	// lsn
 	encode_raw(buf, "lsn", 3);

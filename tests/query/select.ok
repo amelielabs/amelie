@@ -57,7 +57,7 @@ explain select 1;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   ret                 0      0      -
 explain select [1, 2, 3];
@@ -65,7 +65,7 @@ explain select [1, 2, 3];
 explain
 ───────
 
-frontend
+main
   0   json                0      0      0
   1   ret                 0      0      -
 # test: select name
@@ -90,7 +90,7 @@ explain select * from test;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -157,7 +157,7 @@ explain select id, data from test;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -203,7 +203,7 @@ explain select data.data from test;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readj         2      1      -     # data
@@ -242,7 +242,7 @@ explain select data.data.data from test;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readj         2      1      -     # data
@@ -274,7 +274,7 @@ explain select test.id, test.data from test;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -306,7 +306,7 @@ explain select test.data.data from test;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readj         2      1      -     # data
@@ -359,7 +359,7 @@ explain select alias.id, alias.data from test alias;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -391,7 +391,7 @@ explain select alias.data.data from test alias;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readj         2      1      -     # data
@@ -437,7 +437,7 @@ explain select alias.id, alias.data from test alias;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -484,7 +484,7 @@ explain select * from main.show('users');
 explain
 ───────
 
-frontend
+main
   0   set                 0      1      0
   1   push_string         0      0      0     # users
   2   call                1      -      1     # show()
@@ -508,7 +508,7 @@ explain select name from main.show('users');
 explain
 ───────
 
-frontend
+main
   0   set                 0      1      0
   1   push_string         0      0      0     # users
   2   call                1      -      1     # show()
@@ -570,7 +570,7 @@ explain select * from ([]) t;
 explain
 ───────
 
-frontend
+main
   0   set                 0      1      0
   1   json                1      0      0
   2   json_open           2      1      7
@@ -607,7 +607,7 @@ explain select x, y from a, b;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      11    # amelie.a (heap) 
   2   table_open          2      24     9     # amelie.b (heap) 

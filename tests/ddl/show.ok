@@ -288,8 +288,7 @@ STATE
   "version": "1.0.0-rc1",
   "directory": "./_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000001",
-  "frontends": 1,
-  "backends": 1,
+  "compute": 1,
   "lsn": 4,
   "psn": 1,
   "checkpoint": 1
@@ -302,8 +301,7 @@ show
   "version": "1.0.0-rc1",
   "directory": "./_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000001",
-  "frontends": 1,
-  "backends": 1,
+  "compute": 1,
   "lsn": 4,
   "psn": 1,
   "checkpoint": 1
@@ -328,8 +326,7 @@ config
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "frontends": 1,
-  "backends": 1,
+  "compute": 1,
   "workers": 1,
   "cpu_affinity": true,
   "wal_crc": true,
@@ -363,8 +360,7 @@ config
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "frontends": 1,
-  "backends": 1,
+  "compute": 1,
   "workers": 1,
   "cpu_affinity": true,
   "wal_crc": true,
@@ -405,8 +401,7 @@ config
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "frontends": 1,
-  "backends": 1,
+  "compute": 1,
   "workers": 1,
   "cpu_affinity": true,
   "wal_crc": true,
@@ -447,7 +442,7 @@ explain show log_enable;
 explain
 ───────
 
-frontend
+main
   0   string              0      0      0     # log_enable
   1   push                0      0      0
   2   string              0      11     0     # 
@@ -475,8 +470,7 @@ config
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "frontends": 1,
-  "backends": 1,
+  "compute": 1,
   "workers": 1,
   "cpu_affinity": true,
   "wal_crc": true,

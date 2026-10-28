@@ -48,7 +48,7 @@ explain select test();
 explain
 ───────
 
-backend
+main
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
@@ -57,7 +57,7 @@ access
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   ret                 -1     0      -
 select test();
 
@@ -71,7 +71,7 @@ explain
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   ret                 -1     0      -
 execute test();
 drop function test;
@@ -84,7 +84,7 @@ explain select test();
 explain
 ───────
 
-backend
+main
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
@@ -93,7 +93,7 @@ access
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   ret                 -1     0      -
 select test();
 
@@ -117,7 +117,7 @@ explain
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   ret                 -1     0      -
 execute test();
 select test() + 123;
@@ -136,7 +136,7 @@ explain select test();
 explain
 ───────
 
-backend
+main
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
@@ -145,7 +145,7 @@ access
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   int                 0      -      0     # 123
   1   ret                 0      0      -
 select test();
@@ -160,7 +160,7 @@ explain
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   int                 0      -      0     # 123
   1   ret                 0      0      -
 execute test();
@@ -184,7 +184,7 @@ explain select test();
 explain
 ───────
 
-backend
+main
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
@@ -193,7 +193,7 @@ access
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   int                 0      -      0     # 123
   1   ret                 -1     0      -
 select test();
@@ -208,7 +208,7 @@ explain
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   int                 0      -      0     # 123
   1   ret                 -1     0      -
 execute test();
@@ -258,7 +258,7 @@ explain select test();
 explain
 ───────
 
-backend
+main
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
@@ -267,7 +267,7 @@ access
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   int                 0      -      0     # 123
   1   ret                 0      0      -
 select test();
@@ -282,7 +282,7 @@ explain
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   int                 0      -      0     # 123
   1   ret                 0      0      -
 execute test();
@@ -475,7 +475,7 @@ explain select test(123);
 explain
 ───────
 
-backend
+main
   0   push_int            -      0      0     # 123
   1   call_udf            0      -      -     # amelie.test()
   2   ret                 0      0      -
@@ -485,7 +485,7 @@ access
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   var                 0      0      1
   1   ret                 0      0      -
 select test(123);
@@ -529,7 +529,7 @@ explain select test(10);
 explain
 ───────
 
-backend
+main
   0   push_int            -      0      0     # 10
   1   call_udf            0      -      -     # amelie.test()
   2   ret                 0      0      -
@@ -539,7 +539,7 @@ access
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -573,7 +573,7 @@ explain
 
 FUNCTION amelie.test()
 
-frontend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -612,7 +612,7 @@ explain select [1,2,3]::reverse;
 explain
 ───────
 
-backend
+main
   0   push_json           0      0      0
   1   call_udf            0      -      -     # amelie.reverse()
   2   ret                 0      0      -
@@ -622,7 +622,7 @@ access
 
 FUNCTION amelie.reverse()
 
-frontend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      1
   2   json                1      0      0
@@ -674,7 +674,7 @@ explain
 
 FUNCTION amelie.reverse()
 
-frontend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      1
   2   json                1      0      0
@@ -766,7 +766,7 @@ explain select [1,2,3]::reverse;
 explain
 ───────
 
-backend
+main
   0   push_json           0      0      0
   1   call_udf            0      -      -     # amelie.reverse()
   2   ret                 0      0      -
@@ -776,7 +776,7 @@ access
 
 FUNCTION amelie.reverse()
 
-frontend
+main
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   var_set             0      0      0
@@ -805,7 +805,7 @@ explain
 
 FUNCTION amelie.reverse()
 
-frontend
+main
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   var_set             0      0      0
@@ -1005,7 +1005,7 @@ explain select test();
 explain
 ───────
 
-backend
+main
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
@@ -1015,7 +1015,7 @@ access
 
 FUNCTION amelie.test()
 
-backend
+main
   0   call_udf            0      -      -     # amelie.test_dep()
   1   ret                 -1     0      -
 
@@ -1024,7 +1024,7 @@ access
 
 FUNCTION amelie.test_dep()
 
-frontend
+main
   0   ret                 -1     0      -
 drop function test_dep;
 error: function 'test_dep': depends on function 'amelie.test'
@@ -1039,7 +1039,7 @@ explain select test();
 explain
 ───────
 
-backend
+main
   0   call_udf            0      -      -     # amelie.test()
   1   ret                 0      0      -
 
@@ -1049,7 +1049,7 @@ access
 
 FUNCTION amelie.test()
 
-backend
+main
   0   call_udf            0      -      -     # amelie.test_dep()
   1   ret                 -1     0      -
 
@@ -1058,7 +1058,7 @@ access
 
 FUNCTION amelie.test_dep()
 
-frontend
+main
   0   ret                 -1     0      -
 drop function test_dep;
 error: function 'test_dep': depends on function 'amelie.test'

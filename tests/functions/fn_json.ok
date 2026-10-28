@@ -195,7 +195,7 @@ explain select [1,2,3]::pop_back::pop_back::pop_back::pop_back;
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # json
   1   ret                 0      0      -
 # test: put()
@@ -312,7 +312,7 @@ explain select []::append(1,2,3)::remove(0)::remove(0)::remove(0);
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # json
   1   ret                 0      0      -
 # test: set()
@@ -346,7 +346,7 @@ explain select {}::set("id", 42)::set("data", {"misc": null}).data.misc;
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # json
   1   string              1      0      0     # data.misc
   2   dotjs               2      0      1
@@ -477,7 +477,7 @@ explain select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size;
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # int
   1   ret                 0      0      -
 select set([], 0, 1);
@@ -523,7 +523,7 @@ explain select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")::set
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # json
   1   ret                 0      0      -
 select unset({}, "a");
@@ -616,7 +616,7 @@ explain select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d");
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # json
   1   ret                 0      0      -
 select unset([1], 0);
@@ -642,7 +642,7 @@ explain select {"id": null, "data": {"misc": true}}::has("data.misc");
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # bool
   1   ret                 0      0      -
 select has({"a": 0}, "a");
@@ -670,7 +670,7 @@ explain select has({"a": {"b": 777}}, "a.c");
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # bool
   1   ret                 0      0      -
 disconnect S0;

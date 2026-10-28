@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 create table test (id int primary key, data int default 0);
 insert into test (id) values (1), (2), (3);
@@ -8,7 +8,7 @@ explain select (select id from test);
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -34,7 +34,7 @@ explain select (select id from test) from test2;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      13    # amelie.test2 (heap) 
   2   set                 2      1      0
@@ -67,7 +67,7 @@ explain select (select id from test) from (select * from test2) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test2 (heap) 
   2   table_readi32       2      1      -     # id
@@ -110,7 +110,7 @@ explain select * from (select * from test) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -150,7 +150,7 @@ explain select * from (select (select id from test2) from test) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      13    # amelie.test (heap) 
   2   set                 2      1      0
@@ -193,7 +193,7 @@ explain select * from (select (select id from test t) from test) g;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      13    # amelie.test (heap) 
   2   set                 2      1      0
@@ -246,7 +246,7 @@ explain select (select t.id from test2) from (select * from test) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -291,7 +291,7 @@ explain select (select t.id from test z) from (select * from test) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -347,7 +347,7 @@ explain select * from (select * from test) a, (select * from test) b;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id

@@ -29,7 +29,7 @@ test_api_open(void* arg)
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{str}/__api0", &suite->option_result_dir);
 
-	int   argc   = 9;
+	int   argc   = 8;
 	char* argv[] =
 	{
 		"--log_stdout=false",
@@ -38,8 +38,7 @@ test_api_open(void* arg)
 		"--wal_sync_write=false",
 		"--wal_service=false",
 		"--storage_sync=false",
-		"--frontends=1",
-		"--backends=1",
+		"--compute=1",
 		"--listen=[]"
 	};
 	auto amelie = amelie_init();

@@ -6,7 +6,7 @@ explain begin declare x int; select x; end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   var                 0      0      0
   2   ret                 0      0      -
@@ -21,7 +21,7 @@ explain begin declare x int := 0; select x; end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -41,7 +41,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -70,7 +70,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
@@ -96,7 +96,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
@@ -127,7 +127,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -156,7 +156,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -192,7 +192,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -230,7 +230,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -274,7 +274,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -322,7 +322,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -361,7 +361,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -405,7 +405,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
@@ -438,7 +438,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 123
   2   var_set             0      0      0
@@ -477,7 +477,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -516,7 +516,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -557,7 +557,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -601,7 +601,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -647,7 +647,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -694,7 +694,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -734,7 +734,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -776,7 +776,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -817,7 +817,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -861,7 +861,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -907,7 +907,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -954,7 +954,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -999,7 +999,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1049,7 +1049,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1100,7 +1100,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1153,7 +1153,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   bool                0      1      0
   2   jntr                12     0      0
@@ -1196,7 +1196,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   bool                0      1      0
   2   jntr                13     0      0
@@ -1252,7 +1252,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   bool                0      0      0
   2   jntr                13     0      0
@@ -1310,7 +1310,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1379,7 +1379,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1444,7 +1444,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1484,7 +1484,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1524,7 +1524,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1573,7 +1573,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1628,7 +1628,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1674,7 +1674,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1714,7 +1714,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1758,7 +1758,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1817,7 +1817,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -1859,7 +1859,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -1904,7 +1904,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -1966,7 +1966,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -2011,7 +2011,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -2068,7 +2068,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 4
   2   var_set             0      0      0
@@ -2108,7 +2108,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 8
   2   var_set             0      0      0
@@ -2169,7 +2169,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -2217,7 +2217,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -2268,7 +2268,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   bool                0      1      0
   2   jntr                17     0      0
@@ -2320,7 +2320,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   bool                0      1      0
   2   jntr                19     0      0
@@ -2378,7 +2378,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   bool                0      1      0
   2   jntr                21     0      0
@@ -2446,7 +2446,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -2523,7 +2523,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -2571,7 +2571,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -2621,7 +2621,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   json_open           1      0      14
@@ -2671,7 +2671,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   json                0      0      0
   2   json_open           1      0      18
@@ -2732,7 +2732,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   json                0      0      0
   2   json_open           1      0      18
@@ -2790,7 +2790,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      1
   2   table_open          1      0      9     # amelie.test (heap) 

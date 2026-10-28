@@ -6,7 +6,7 @@ explain select true;
 explain
 ───────
 
-frontend
+main
   0   bool                0      1      0
   1   ret                 0      0      -
 select true;
@@ -40,7 +40,7 @@ explain select true = false;
 explain
 ───────
 
-frontend
+main
   0   bool                0      1      0
   1   bool                1      0      0
   2   equii               2      0      1
@@ -61,7 +61,7 @@ explain select true = 1;
 explain
 ───────
 
-frontend
+main
   0   bool                0      1      0
   1   int                 1      -      0     # 1
   2   equii               2      0      1
@@ -82,7 +82,7 @@ explain select true = null;
 explain
 ───────
 
-frontend
+main
   0   bool                0      1      0
   1   null                1      0      0
   2   nullop              2      0      1
@@ -110,7 +110,7 @@ explain select true <> false;
 explain
 ───────
 
-frontend
+main
   0   bool                0      1      0
   1   bool                1      0      0
   2   equii               2      0      1
@@ -132,7 +132,7 @@ explain select true <> 1;
 explain
 ───────
 
-frontend
+main
   0   bool                0      1      0
   1   int                 1      -      0     # 1
   2   equii               2      0      1
@@ -154,7 +154,7 @@ explain select true <> null;
 explain
 ───────
 
-frontend
+main
   0   bool                0      1      0
   1   null                1      0      0
   2   nullop              2      0      1

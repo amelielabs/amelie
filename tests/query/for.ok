@@ -27,7 +27,7 @@ explain for it in (select [1,2,3]) do end;
 explain
 ───────
 
-frontend
+main
   0   json                0      0      0
   1   dup                 1      0      0
   2   json_open           2      1      4
@@ -87,7 +87,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -172,7 +172,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -237,7 +237,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -316,7 +316,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -479,7 +479,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -551,7 +551,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -615,7 +615,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -696,7 +696,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          3      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -761,7 +761,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -827,7 +827,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   json_open           1      0      11
@@ -886,7 +886,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   json_open           1      0      18
@@ -991,7 +991,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   json_open           1      0      9
@@ -1031,7 +1031,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -1083,7 +1083,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -1149,7 +1149,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   json_open           1      0      16
@@ -1204,7 +1204,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0

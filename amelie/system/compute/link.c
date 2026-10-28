@@ -15,15 +15,14 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
-#include <amelie_backend.h>
-#include <amelie_frontend.h>
+#include <amelie_compute.h>
 
 void
-link_init(Link* self, Frontend* fe, Client* client)
+link_init(Link* self, Compute* compute, Client* client)
 {
-	self->client = client;
-	self->api    = NULL;
-	self->fe     = fe;
+	self->client  = client;
+	self->api     = NULL;
+	self->compute = compute;
 
 	portal_init(&self->portal);
 	request_init(&self->req);
@@ -78,7 +77,7 @@ link_auth(Link* self)
 
 	// authenticate user (and take catalog lock)
 	return !error_catch (
-		portal_auth(portal, &self->fe->auth);
+		portal_auth(portal, &self->compute->auth);
 	);
 }
 
@@ -92,8 +91,8 @@ link_main(Link* self)
 	client_set_endpoint(client, &portal->endpoint);
 
 	// create sesssion
-	auto ctl = self->fe->iface;
-	auto session = ctl->session_create(self->fe, self->fe->iface_arg);
+	auto ctl = self->compute->iface;
+	auto session = ctl->session_create(self->compute, self->compute->iface_arg);
 	defer(ctl->session_free, session);
 	for (;;)
 	{
@@ -163,7 +162,7 @@ link_main(Link* self)
 }
 
 void
-frontend_link(Frontend* self, Client* client)
+compute_link(Compute* self, Client* client)
 {
 	Link link;
 	link_init(&link, self, client);

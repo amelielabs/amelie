@@ -13,7 +13,7 @@ explain select * from test where id >= 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
   2   table_open          1      0      13    # amelie.test (primary) 
@@ -59,7 +59,7 @@ explain select * from test where data.data::int >= 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readj         2      1      -     # data
@@ -106,7 +106,7 @@ explain select * from test where data.data.data::int >= 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readj         2      1      -     # data
@@ -146,7 +146,7 @@ explain select * from test where test.id >= 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
   2   table_open          1      0      13    # amelie.test (primary) 
@@ -183,7 +183,7 @@ explain select * from test where test.data.data::int >= 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readj         2      1      -     # data
@@ -223,7 +223,7 @@ explain select * from test alias where alias.id >= 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   push_int            -      0      0     # 0
   2   table_open          1      0      13    # amelie.test (primary) 
@@ -260,7 +260,7 @@ explain select * from test alias where alias.data.data::int >= 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      16    # amelie.test (heap) 
   2   table_readj         2      1      -     # data
@@ -306,7 +306,7 @@ explain select * from test where true;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   bool                2      1      0
@@ -340,7 +340,7 @@ explain select * from test where id >= 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   push_int            -      0      0     # 0
   2   table_open          1      0      11    # amelie.test (primary) 
@@ -419,7 +419,7 @@ explain select * from test where id <= 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      14    # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
@@ -474,7 +474,7 @@ explain select * from test where id < 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      14    # amelie.test (primary) 
   2   table_readi32       2      1      -     # id
@@ -529,7 +529,7 @@ explain select * from test where id = 2;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   push_int            -      0      0     # 2
   2   table_open          1      0      10    # amelie.test (primary) point_lookup

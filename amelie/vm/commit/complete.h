@@ -36,7 +36,7 @@ static inline void
 complete_prepare(Complete* self, int count)
 {
 	self->pending = count;
-	event_attach(&self->event);
+//	event_attach(&self->event);
 }
 
 static inline void

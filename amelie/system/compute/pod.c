@@ -15,7 +15,7 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
-#include <amelie_backend.h>
+#include <amelie_compute.h>
 
 hot static void
 pod_request(Pod* self, Ltr* ltr)
@@ -24,7 +24,7 @@ pod_request(Pod* self, Ltr* ltr)
 	auto gtr = ltr->gtr;
 	if (ltr->tr == NULL)
 	{
-		auto track = self->track;
+		auto track = &self->user->track;
 		auto tr = tr_create(&track->cache);
 		tr_set_id(tr, gtr->id);
 		tr_set_limit(tr, &gtr->usage_write);
@@ -92,7 +92,7 @@ pod_sync(Pod* self)
 {
 	// commit (or abort) pending transactions based on the global
 	// commit state to resume streaming
-	auto track = self->track;
+	auto track = &self->user->track;
 	Consensus consensus;
 	consensus_atomic_read(&track->consensus_atomic, &consensus);
 	track_sync(track, &consensus);
@@ -127,7 +127,7 @@ static void
 pod_main(void* arg)
 {
 	Pod* self  = arg;
-	auto track = self->track;
+	auto track = &self->user->track;
 	for (;;)
 	{
 #if 0
@@ -200,7 +200,6 @@ pod_allocate(User* user)
 {
 	auto self = (Pod*)am_malloc(sizeof(Pod));
 	self->user      =  user;
-	self->track     = &user->track;
 	self->worker_id = -1;
 	quota_init(&self->quota);
 	vm_init(&self->vm, &self->quota);
@@ -220,7 +219,7 @@ pod_start(Pod* self, Task* task)
 {
 	if (self->worker_id != -1)
 		return;
-	track_set_backend(self->track, task);
+	track_set_compute(&self->user->track, task);
 	self->worker_id = coroutine_create(pod_main, self);
 }
 
@@ -233,8 +232,10 @@ pod_stop(Pod* self)
 	assert(worker);
 	Msg stop;
 	msg_init(&stop, MSG_STOP);
-	track_write(self->track, &stop);
+
+	auto track = &self->user->track;
+	track_write(track, &stop);
 	wait_event(&worker->on_exit, am_self());
-	track_set_backend(self->track, NULL);
+	track_set_compute(track, NULL);
 	self->worker_id = -1;
 }

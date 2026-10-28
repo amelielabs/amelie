@@ -16,8 +16,7 @@
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_compiler>
-#include <amelie_backend.h>
-#include <amelie_frontend.h>
+#include <amelie_compute.h>
 #include <amelie_session.h>
 #include <amelie_system.h>
 
@@ -26,7 +25,7 @@ catalog_if_user_invalidate(Catalog* catalog, User* user)
 {
 	// note: exclusive catalog lock must be held
 	System* self = catalog->iface_arg;
-	frontends_invalidate(&self->frontends, user);
+	computes_invalidate(&self->computes, user);
 }
 
 static void
@@ -93,17 +92,17 @@ catalog_if_udf_depends(Udf* udf, Str* user, Str* name)
 static void
 catalog_if_user_attach(Catalog* catalog, User* user)
 {
-	// create pod on backend
+	// create pod
 	System* system = catalog->iface_arg;
-	backends_deploy(&system->backends, user);
+	computes_deploy(&system->computes, user);
 }
 
 static void
 catalog_if_user_detach(Catalog* catalog, User* user)
 {
-	// drop pods on backends
+	// drop pods
 	System* system = catalog->iface_arg;
-	backends_undeploy(&system->backends, user);
+	computes_undeploy(&system->computes, user);
 }
 
 static void
@@ -111,15 +110,15 @@ catalog_if_user_sync(Catalog* catalog, User* user)
 {
 	// sync prepared transactions
 	System* system = catalog->iface_arg;
-	backends_sync(&system->backends, user);
+	computes_sync(&system->computes, user);
 }
 
 static void
 catalog_if_table_truncate(Catalog* catalog, Table* table)
 {
-	// truncate pods on backends
+	// truncate pod
 	System* system = catalog->iface_arg;
-	backends_truncate(&system->backends, table);
+	computes_truncate(&system->computes, table);
 }
 
 static CatalogIf catalog_if =
@@ -135,7 +134,7 @@ static CatalogIf catalog_if =
 };
 
 static void*
-frontend_if_session_create(Frontend* fe, void* arg)
+compute_if_session_create(Compute* fe, void* arg)
 {
 	unused(fe);
 	unused(arg);
@@ -143,22 +142,22 @@ frontend_if_session_create(Frontend* fe, void* arg)
 }
 
 static void
-frontend_if_session_free(void* ptr)
+compute_if_session_free(void* ptr)
 {
 	return session_free(ptr);
 }
 
 static bool
-frontend_if_session_execute(void* ptr, Portal* portal, Request* req)
+compute_if_session_execute(void* ptr, Portal* portal, Request* req)
 {
 	return session_execute(ptr, portal, req);
 }
 
-static FrontendIf frontend_if =
+static ComputeIf compute_if =
 {
-	.session_create  = frontend_if_session_create,
-	.session_free    = frontend_if_session_free,
-	.session_execute = frontend_if_session_execute
+	.session_create  = compute_if_session_create,
+	.session_free    = compute_if_session_free,
+	.session_execute = compute_if_session_execute
 };
 
 static void
@@ -168,7 +167,7 @@ system_on_server_connect(Server* server, Client* client)
 	if (client->repl)
 		repl_connect(&self->repl, client);
 	else
-		frontends_forward(&self->frontends, &client->msg);
+		computes_forward(&self->computes, &client->msg);
 }
 
 static void
@@ -176,7 +175,7 @@ recover_if_create(Recover* recover)
 {
 	System* self = recover->iface_arg;
 	auto players = players_allocate();
-	players_start(players, &self->frontends);
+	players_start(players, &self->computes);
 	recover->state = players;
 }
 
@@ -255,7 +254,7 @@ system_ctl_invalidate_auth(void* arg)
 {
 	// note: exclusive catalog lock must be held
 	System* self = arg;
-	frontends_invalidate_all(&self->frontends);
+	computes_invalidate_all(&self->computes);
 }
 
 System*
@@ -287,9 +286,8 @@ system_create(void)
 	// server
 	servers_init(&self->servers, system_on_server_connect, self);
 
-	// frontends/backends
-	frontends_init(&self->frontends);
-	backends_init(&self->backends);
+	// computes
+	computes_init(&self->computes);
 
 	// transactions
 	gtrs_init(&self->gtrs);
@@ -365,15 +363,11 @@ system_start(System* self, bool bootstrap)
 	// register builtin functions
 	fn_register(&self->functions);
 
-	// start frontends
-	auto workers = opt_int_of(&config()->frontends);
-	frontends_start(&self->frontends, &frontend_if,
+	// start computes
+	auto workers = opt_int_of(&config()->compute);
+	computes_start(&self->computes, &compute_if,
 	                self,
 	                workers);
-
-	// start backend workers
-	workers = opt_int_of(&config()->backends);
-	backends_start(&self->backends, workers);
 
 	// start commit worker
 	commit_start(&self->commit);
@@ -406,17 +400,14 @@ system_stop(System* self)
 	// stop replication
 	repl_stop(&self->repl);
 
-	// stop frontends
-	frontends_stop(&self->frontends);
+	// stop computes
+	computes_stop(&self->computes);
 
 	// stop commit worker
 	commit_stop(&self->commit);
 
 	// stop db
 	db_close(&self->db);
-
-	// stop backends
-	backends_stop(&self->backends);
 }
 
 static void

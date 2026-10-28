@@ -23,8 +23,7 @@ struct System
 	// transactions
 	Gtrs       gtrs;
 	Commit     commit;
-	Frontends  frontends;
-	Backends   backends;
+	Computes   computes;
 	// db
 	Db         db;
 	// server

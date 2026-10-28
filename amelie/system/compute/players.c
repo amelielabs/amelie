@@ -15,8 +15,7 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
-#include <amelie_backend.h>
-#include <amelie_frontend.h>
+#include <amelie_compute.h>
 
 Players*
 players_allocate()
@@ -37,7 +36,7 @@ players_free(Players* self)
 }
 
 void
-players_start(Players* self, Frontends* frontends)
+players_start(Players* self, Computes* computes)
 {
 	// prepare player clients
 	self->player_count = 32;
@@ -48,14 +47,14 @@ players_start(Players* self, Frontends* frontends)
 	for (auto i = 0; i < self->player_count; i++)
 	{
 		auto player = &self->player[i];
-		auto fe = &frontends->workers[fe_id];
+		auto fe = &computes->workers[fe_id];
 		fe_id++;
-		if (fe_id >= frontends->workers_count)
+		if (fe_id >= computes->workers_count)
 			fe_id = 0;
 		player_init(player, sync, fe);
 
 		// deploy
-		frontend_add(fe, &player->msg);
+		compute_add(fe, &player->msg);
 	}
 
 	// sync gtrs and commit recover state to the current lsn
@@ -76,7 +75,7 @@ players_stop(Players* self)
 	for (auto i = 0; i < self->player_count; i++)
 	{
 		auto player = &self->player[i];
-		frontend_add(player->fe, &player->msg_stop);
+		compute_add(player->compute, &player->msg_stop);
 	}
 
 	// wait for stop
@@ -125,10 +124,10 @@ players_execute(Players* self, RecordMsg* msg)
 		sync_after = true;
 	}
 
-	// send to the next frontend player client
+	// send to the next compute player client
 	auto player = players_next(self);
 	msg->arg = player;
-	frontend_add(player->fe, &msg->msg);
+	compute_add(player->compute, &msg->msg);
 	player_sync_add(sync);
 
 	// sync

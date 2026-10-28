@@ -31,7 +31,7 @@ explain
 
 FUNCTION amelie.reverse()
 
-frontend
+main
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   var_set             0      0      0
@@ -101,7 +101,7 @@ explain select reverse([1,2,3]);
 explain
 ───────
 
-backend
+main
   0   push_json           0      0      0
   1   call_udf            0      -      -     # amelie.reverse()
   2   ret                 0      0      -
@@ -111,7 +111,7 @@ access
 
 FUNCTION amelie.reverse()
 
-frontend
+main
   0   push_nulls          1      0      0
   1   json                0      0      0
   2   var_set             0      0      0
@@ -166,7 +166,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   int                 0      -      0     # 1
   1   call_udf            1      -      -     # amelie.fn()
   2   int                 2      -      0     # 1
@@ -178,7 +178,7 @@ access
 
 FUNCTION amelie.fn()
 
-backend
+main
   0   push_nulls          1      0      0
   1   set                 0      1      0
   2   table_open          1      0      7     # amelie.test (heap) 
@@ -228,7 +228,7 @@ explain select c(123);
 explain
 ───────
 
-backend
+main
   0   push_int            -      0      0     # 123
   1   call_udf            0      -      -     # amelie.c()
   2   ret                 0      0      -
@@ -240,7 +240,7 @@ access
 
 FUNCTION amelie.c()
 
-backend
+main
   0   push_var            0      1      0
   1   call_udf            0      -      -     # amelie.b()
   2   ret                 0      0      -
@@ -251,7 +251,7 @@ access
 
 FUNCTION amelie.b()
 
-backend
+main
   0   push_var            0      1      0
   1   call_udf            0      -      -     # amelie.a()
   2   ret                 0      0      -
@@ -261,7 +261,7 @@ access
 
 FUNCTION amelie.a()
 
-frontend
+main
   0   var                 0      0      1
   1   ret                 0      0      -
 select c(123);

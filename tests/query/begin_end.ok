@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: begin
 begin end;
@@ -21,7 +21,7 @@ explain begin; select 1; end;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   ret                 0      0      -
 begin; select 1; end;
@@ -35,7 +35,7 @@ explain begin; select 1; select 2; end;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   int                 1      -      0     # 2
   2   ret                 1      0      -

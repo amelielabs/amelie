@@ -17,7 +17,6 @@ struct Pod
 {
 	Vm      vm;
 	Quota   quota;
-	Track*  track;
 	User*   user;
 	int64_t worker_id;
 	List    link;

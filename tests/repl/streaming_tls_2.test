@@ -1,13 +1,13 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "repl_reconnect_ms": 10;
 connect E0 S0 https://127.0.0.1:3480 ./tls/ca.crt;
 
 # test: create replica 1 (backup using https)
 backup id '00000000-0000-0000-0000-000000000002';
 restore E1 E0/backup/00000000-0000-0000-0000-000000000002;
 
-open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }, { "repl": true, "host": "127.0.0.1", "port": 3482, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3;
+open E1 "uuid": "00000000-0000-0000-0000-000000000002", "listen": [{ "host": "127.0.0.1", "port": 3481, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }, { "repl": true, "host": "127.0.0.1", "port": 3482, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }];
 connect E1 S1 https://127.0.0.1:3481 ./tls/ca.crt;
 switch S1;
 follow "00000000-0000-0000-0000-000000000001";
@@ -16,7 +16,7 @@ follow "00000000-0000-0000-0000-000000000001";
 backup id '00000000-0000-0000-0000-000000000003';
 restore E2 E1/backup/00000000-0000-0000-0000-000000000003;
 
-open E2 "uuid": "00000000-0000-0000-0000-000000000003", "listen": [{ "host": "127.0.0.1", "port": 3483, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }, { "repl": true, "host": "127.0.0.1", "port": 3484, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3;
+open E2 "uuid": "00000000-0000-0000-0000-000000000003", "listen": [{ "host": "127.0.0.1", "port": 3483, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }, { "repl": true, "host": "127.0.0.1", "port": 3484, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }];
 connect E2 S2 https://127.0.0.1:3483 ./tls/ca.crt;
 switch S2;
 follow "00000000-0000-0000-0000-000000000001";

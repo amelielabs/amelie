@@ -19,7 +19,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -65,7 +65,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          3      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -159,7 +159,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          3      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -265,7 +265,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -383,7 +383,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          3      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -539,7 +539,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -589,7 +589,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -650,7 +650,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -704,7 +704,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          2      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0

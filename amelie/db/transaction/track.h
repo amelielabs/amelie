@@ -31,7 +31,7 @@ struct Track
 	bool            pending;
 	Consensus       pending_consensus;
 	Track*          pending_link;
-	Task*           backend;
+	Task*           compute;
 };
 
 static inline void
@@ -39,7 +39,7 @@ track_init(Track* self)
 {
 	self->pending      = false;
 	self->pending_link = NULL;
-	self->backend      = NULL;
+	self->compute      = NULL;
 	mailbox_init(&self->queue);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
@@ -58,9 +58,9 @@ track_free(Track* self)
 }
 
 static inline void
-track_set_backend(Track* self, Task* task)
+track_set_compute(Track* self, Task* task)
 {
-	self->backend = task;
+	self->compute = task;
 }
 
 static inline Msg*
@@ -85,7 +85,8 @@ track_write(Track* self, Msg* msg)
 static inline void
 track_send(Track* self, Msg* msg)
 {
-	task_send(self->backend, msg);
+	//task_send(self->compute, msg);
+	track_write(self, msg);
 }
 
 hot static inline bool

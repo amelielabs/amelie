@@ -22,11 +22,11 @@ struct Player
 	Mailbox     queue;
 	PlayerSync* sync;
 	Buf         buf;
-	Frontend*   fe;
+	Compute*    compute;
 	void*       arg;
 };
 
-void player_init(Player*, PlayerSync*, Frontend*);
+void player_init(Player*, PlayerSync*, Compute*);
 void player_free(Player*);
 void player_main(Player*);
 

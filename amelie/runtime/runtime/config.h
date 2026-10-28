@@ -28,8 +28,7 @@ struct Config
 	Opt  log_connections;
 	Opt  log_options;
 	// workers
-	Opt  frontends;
-	Opt  backends;
+	Opt  compute;
 	Opt  workers;
 	Opt  cpu_affinity;
 	// wal

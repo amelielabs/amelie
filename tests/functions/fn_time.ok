@@ -82,7 +82,7 @@ explain select '2020-02-11 15:44:17'::timestamp::date_bin('250 us'::interval);
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # timestamp
   1   ret                 0      0      -
 # test: date_bin(negative interval)
@@ -93,7 +93,7 @@ explain select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', 
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # timestamp
   1   ret                 0      0      -
 # test: date_bin(month)
@@ -640,7 +640,7 @@ explain select EXTRACT(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # int
   1   ret                 0      0      -
 # test: extract from timestamp

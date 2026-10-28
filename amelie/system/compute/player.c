@@ -15,15 +15,14 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
-#include <amelie_backend.h>
-#include <amelie_frontend.h>
+#include <amelie_compute.h>
 
 void
-player_init(Player* self, PlayerSync* sync, Frontend* fe)
+player_init(Player* self, PlayerSync* sync, Compute* compute)
 {
-	self->sync = sync;
-	self->fe   = fe;
-	self->arg  = NULL;
+	self->sync    = sync;
+	self->compute = compute;
+	self->arg     = NULL;
 	msg_init(&self->msg, MSG_PLAYER);
 	msg_init(&self->msg_stop, MSG_PLAYER_STOP);
 	portal_init(&self->portal);
@@ -76,7 +75,7 @@ player_record(Player* self, RecordMsg* record, void* session)
 			player_record_primary(record);
 
 		// execute
-		self->fe->iface->session_execute(session, portal, &self->req);
+		self->compute->iface->session_execute(session, portal, &self->req);
 	);
 	portal_reset(portal, true);
 	if (on_error)
@@ -86,10 +85,10 @@ player_record(Player* self, RecordMsg* record, void* session)
 void
 player_main(Player* self)
 {
-	auto fe      = self->fe;
+	auto compute = self->compute;
 	auto sync    = self->sync;
-	auto ctl     = fe->iface;
-	auto session = ctl->session_create(fe, fe->iface_arg);
+	auto ctl     = compute->iface;
+	auto session = ctl->session_create(compute, compute->iface_arg);
 
 	for (;;)
 	{

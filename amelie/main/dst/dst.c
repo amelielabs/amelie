@@ -104,7 +104,7 @@ dst_configure(Dst* self)
 	memset(payload->start, 'x', payload_size);
 
 	// create users
-	for (auto i = 0; i < 3; i++)
+	for (auto i = 0; i < 10; i++)
 	{
 		auto user = dst_user_allocate(self, self->users_seq++);
 		list_append(&self->users, &user->link);

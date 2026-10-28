@@ -146,7 +146,7 @@ explain select ('x' like 'x')::type;
 explain
 ───────
 
-frontend
+main
   0   string              0      0      0     # x
   1   string              1      2      0     # x
   2   likess              2      0      1

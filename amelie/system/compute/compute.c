@@ -15,14 +15,13 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
-#include <amelie_backend.h>
-#include <amelie_frontend.h>
+#include <amelie_compute.h>
 
 hot static void
-frontend_main_client(void* arg)
+compute_main_client(void* arg)
 {
 	auto client = (Client*)arg;
-	auto self   = (Frontend*)client->arg;
+	auto self   = (Compute*)client->arg;
 
 	clients_add(&self->clients, client);
 
@@ -31,7 +30,7 @@ frontend_main_client(void* arg)
 	(
 		client_attach(client);
 		client_accept(client);
-		frontend_link(self, client);
+		compute_link(self, client);
 	);
 
 	clients_del(&self->clients, client);
@@ -41,7 +40,7 @@ frontend_main_client(void* arg)
 }
 
 hot static void
-frontend_main_player(void* arg)
+compute_main_player(void* arg)
 {
 	auto player = (Player*)arg;
 
@@ -50,14 +49,48 @@ frontend_main_player(void* arg)
 }
 
 static void
-frontend_rpc(Rpc* rpc, void* arg)
+compute_rpc(Rpc* rpc, void* arg)
 {
-	Frontend* self = arg;
+	Compute* self = arg;
 	switch (rpc->msg.id) {
+	case MSG_DEPLOY:
+	{
+		// create and start new pod
+		User* user = rpc->arg;
+		pods_create(&self->pods, user);
+		break;
+	}
+	case MSG_UNDEPLOY:
+	{
+		// stop and drop pod
+		User* user = rpc->arg;
+		pods_drop_by(&self->pods, user);
+		break;
+	}
+	case MSG_SYNC:
+	{
+		// commit prepared transactions
+		User* user = rpc->arg;
+		auto pod = pods_find(&self->pods, user);
+		pod_sync(pod);
+		break;
+	}
+	case MSG_TRUNCATE:
+	{
+		// truncate partition
+		Table* table = rpc->arg;
+		// todo: cancel all pending streams
+			// streaming_cancel(part);
+		part_truncate(table->part);
+		break;
+	}
 	case MSG_STOP:
 	{
 		// disconnect clients
 		clients_shutdown(&self->clients);
+
+		// shutdown pods
+		pods_shutdown(&self->pods);
 		break;
 	}
 	default:
@@ -66,9 +99,9 @@ frontend_rpc(Rpc* rpc, void* arg)
 }
 
 static void
-frontend_main(void* arg)
+compute_main(void* arg)
 {
-	Frontend* self = arg;
+	Compute* self = arg;
 	bool stop = false;
 	while (! stop)
 	{
@@ -79,7 +112,7 @@ frontend_main(void* arg)
 			// remote client
 			auto client = (Client*)msg;
 			client->arg = self;
-			coroutine_create(frontend_main_client, client);
+			coroutine_create(compute_main_client, client);
 			break;
 		}
 		case MSG_PLAYER:
@@ -87,7 +120,7 @@ frontend_main(void* arg)
 			// player
 			auto player = (Player*)msg;
 			player->arg = self;
-			coroutine_create(frontend_main_player, player);
+			coroutine_create(compute_main_player, player);
 			break;
 		}
 		case MSG_PLAYER_STOP:
@@ -103,12 +136,48 @@ frontend_main(void* arg)
 			player_forward(record->arg, msg);
 			break;
 		}
+
+		// --------------------------------------
+
+#if 0
+		// forward messages to the pods
+		case MSG_LTR:
+		{
+			auto ltr = (Ltr*)msg;
+			track_write(&ltr->user->track, msg);
+			break;
+		}
+		case MSG_LTR_STOP:
+		{
+			auto ltr = container_of(msg, Ltr, queue_close);
+			ltr_write(ltr, msg);
+			break;
+		}
+#endif
+
+#if 0
+		case MSG_STREAM:
+		{
+			auto stream = (Stream*)msg;
+			track_write(&stream->user->track, msg);
+			break;
+		}
+		case MSG_STREAM_CANCEL:
+		{
+			auto stream = container_of(msg, Stream, msg_cancel);
+			track_write(&stream->part->track, msg);
+			break;
+		}
+#endif
+
+		// --------------------------------------
+
 		default:
 		{
 			// command
 			stop = msg->id == MSG_STOP;
 			auto rpc = rpc_of(msg);
-			rpc_execute(rpc, frontend_rpc, self);
+			rpc_execute(rpc, compute_rpc, self);
 			break;
 		}
 		}
@@ -116,19 +185,20 @@ frontend_main(void* arg)
 }
 
 void
-frontend_init(Frontend*   self,
-              FrontendIf* iface,
+compute_init(Compute*   self,
+              ComputeIf* iface,
               void*       iface_arg)
 {
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
 	clients_init(&self->clients);
+	pods_init(&self->pods, &self->task);
 	auth_init(&self->auth);
 	task_init(&self->task);
 }
 
 void
-frontend_free(Frontend* self)
+compute_free(Compute* self)
 {
 	clients_free(&self->clients);
 	auth_free(&self->auth);
@@ -136,13 +206,13 @@ frontend_free(Frontend* self)
 }
 
 void
-frontend_start(Frontend* self)
+compute_start(Compute* self)
 {
-	task_create(&self->task, "frontend", frontend_main, self);
+	task_create(&self->task, "compute", compute_main, self);
 }
 
 void
-frontend_stop(Frontend* self)
+compute_stop(Compute* self)
 {
 	// send stop request
 	if (task_active(&self->task))

@@ -6,7 +6,7 @@ explain select null;
 explain
 ───────
 
-frontend
+main
   0   null                0      0      0
   1   ret                 0      0      -
 select null;

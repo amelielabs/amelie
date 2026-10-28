@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: select distinct * from table empty
 create table test (id i64 primary key, data int default 0);
@@ -7,7 +7,7 @@ explain select distinct * from test;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      2      2
   1   table_open          1      2      12    # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
@@ -90,7 +90,7 @@ explain select distinct * from test;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      2      2
   1   table_open          1      2      12    # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
@@ -141,7 +141,7 @@ explain select distinct id from test;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test (primary) 
   2   table_readi64       2      1      -     # id
@@ -197,7 +197,7 @@ explain select distinct id, data from test;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      2      2
   1   table_open          1      2      12    # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
@@ -248,7 +248,7 @@ explain select distinct data from test limit 4;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -281,7 +281,7 @@ explain select distinct data from test limit 0;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -310,7 +310,7 @@ explain select distinct data from test limit 1 offset 1;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -357,7 +357,7 @@ explain select distinct data from test offset 1;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -453,7 +453,7 @@ explain select * from test order by data;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      2      1
   1   table_open          1      1      10    # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
@@ -475,7 +475,7 @@ explain select distinct on (data) * from test;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      2      1
   1   table_open          1      1      10    # amelie.test (heap) 
   2   table_readi64       2      1      -     # id

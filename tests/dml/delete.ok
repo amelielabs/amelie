@@ -43,7 +43,7 @@ explain delete from test where id = 3;
 explain
 ───────
 
-backend
+main
   0   push_int            -      0      0     # 3
   1   table_open          0      0      7     # amelie.test (primary) point_lookup
   2   table_readi32       1      0      -     # id
@@ -129,7 +129,7 @@ explain delete from test where id > 0 and id < 1;
 explain
 ───────
 
-backend
+main
   0   push_int            -      0      0     # 0
   1   table_open          0      0      16    # amelie.test (primary) 
   2   table_readi32       1      0      -     # id
@@ -292,7 +292,7 @@ explain delete from test where a = 10;
 explain
 ───────
 
-backend
+main
   0   table_open          0      0      7     # amelie.test (primary) 
   1   table_readi32       1      0      -     # a
   2   int                 2      -      0     # 10
@@ -311,7 +311,7 @@ explain select * from test where id = 10;
 explain
 ───────
 
-backend
+main
   0   set                 0      3      0
   1   push_int            -      0      0     # 10
   2   table_open          1      0      14    # amelie.test (primary) point_lookup

@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: select from table order by
 create table test (id i64 primary key);
@@ -34,7 +34,7 @@ explain select * from test order by id;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test (primary) 
   2   table_readi64       2      1      -     # id
@@ -76,7 +76,7 @@ explain select * from test order by id asc;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test (primary) 
   2   table_readi64       2      1      -     # id
@@ -118,7 +118,7 @@ explain select * from test order by id desc;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
@@ -163,7 +163,7 @@ explain select * from test order by id limit 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   int                 1      -      0     # 1
   2   table_open          2      0      8     # amelie.test (primary) 
@@ -247,7 +247,7 @@ explain select * from test order by id limit 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   int                 1      -      0     # 0
   2   table_open          2      0      8     # amelie.test (primary) 
@@ -273,7 +273,7 @@ explain select * from test order by id desc limit 1;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
@@ -362,7 +362,7 @@ explain select * from test order by id limit 1 offset 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   int                 1      -      0     # 1
   2   int                 2      -      0     # 0
@@ -389,7 +389,7 @@ explain select * from test order by id limit 1 offset 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   int                 1      -      0     # 1
   2   int                 2      -      0     # 1
@@ -431,7 +431,7 @@ explain select * from test order by id desc limit 1 offset 1;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi64       2      1      -     # id
@@ -478,7 +478,7 @@ explain select * from test order by id offset 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   int                 1      -      0     # 1
   2   table_open          2      0      8     # amelie.test (primary) 
@@ -610,7 +610,7 @@ explain select * from test order by id desc offset 1;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      8     # amelie.test (heap) 
   2   table_readi64       2      1      -     # id

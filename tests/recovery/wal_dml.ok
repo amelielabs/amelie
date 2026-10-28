@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: create wal on start
 show wal;
@@ -42,8 +42,7 @@ config
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "frontends": 1,
-  "backends": 3,
+  "compute": 1,
   "workers": 1,
   "cpu_affinity": true,
   "wal_crc": true,
@@ -109,8 +108,7 @@ config
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "frontends": 1,
-  "backends": 1,
+  "compute": 1,
   "workers": 1,
   "cpu_affinity": true,
   "wal_crc": true,
@@ -241,9 +239,9 @@ select * from test;
 
 id  data
 ──────────
+2   3
 0   0
 1   1
-2   3
 # test: delete
 delete from test where id in (0, 1);
 select show('state').lsn;

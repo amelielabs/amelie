@@ -15,7 +15,7 @@
 #include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
-#include <amelie_backend.h>
+#include <amelie_compute.h>
 
 hot static void
 stream_export(Stream* self, Row* row)

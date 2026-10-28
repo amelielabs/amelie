@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }, { "repl": true, "host": "127.0.0.1", "port": 3481 }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }, { "repl": true, "host": "127.0.0.1", "port": 3481 }], "repl_reconnect_ms": 10;
 connect E0 S0 127.0.0.1:3480;
 # test: primary by default
 show repl;
@@ -123,7 +123,7 @@ replicas
 # test: restart primary
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }, { "repl": true, "host": "127.0.0.1", "port": 3481 }], "backends": 3, "repl_reconnect_ms": 10;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3480 }, { "repl": true, "host": "127.0.0.1", "port": 3481 }], "repl_reconnect_ms": 10;
 connect E0 S0 127.0.0.1:3480;
 # test: wait for primary reconnect
 switch S0;

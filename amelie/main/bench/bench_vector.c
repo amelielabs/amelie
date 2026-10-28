@@ -22,13 +22,13 @@ typedef struct VectorLoader VectorLoader;
 
 struct VectorLoader
 {
-	int       from;
-	int       to;
-	int       batch;
-	uint64_t* transactions;
-	uint64_t* writes;
-	int*      complete;
-	Bench*    bench;
+	int          from;
+	int          to;
+	int          batch;
+	uint64_t*    transactions;
+	uint64_t*    writes;
+	int*         complete;
+	BenchClient* bench;
 };
 
 static void
@@ -74,7 +74,7 @@ vector_loader_main(void* arg)
 	auto self   = (VectorLoader*)arg;
 	auto client = client_allocate();
 	defer(client_free, client);
-	client_set_endpoint(client, &self->bench->main->endpoint);
+	client_set_endpoint(client, self->bench->client->endpoint);
 
 	error_catch
 	(
@@ -86,7 +86,7 @@ vector_loader_main(void* arg)
 }
 
 static void
-bench_vector_load(Bench* self, int batch, int clients)
+bench_vector_load(BenchClient* self, int batch, int clients)
 {
 	auto loaders_complete = 0;
 	auto loaders_count = clients;
@@ -155,7 +155,7 @@ bench_vector_deploy(BenchClient* self)
 	auto bench   = self->bench;
 	auto batch   = (int)opt_int_of(&bench->opt_batch);
 	auto clients = (int)opt_int_of(&bench->opt_clients);
-	bench_vector_load(bench, batch, clients);
+	bench_vector_load(self, batch, clients);
 
 	info("done.");
 	info("");

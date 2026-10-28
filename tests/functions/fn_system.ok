@@ -15,8 +15,7 @@ show
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "frontends": 1,
-  "backends": 1,
+  "compute": 1,
   "workers": 1,
   "cpu_affinity": true,
   "wal_crc": true,
@@ -50,8 +49,7 @@ show
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "frontends": 1,
-  "backends": 1,
+  "compute": 1,
   "workers": 1,
   "cpu_affinity": true,
   "wal_crc": true,
@@ -80,8 +78,7 @@ show
   "version": "1.0.0-rc1",
   "directory": "./_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000001",
-  "frontends": 1,
-  "backends": 1,
+  "compute": 1,
   "lsn": 1,
   "psn": 0,
   "checkpoint": 1
@@ -214,7 +211,7 @@ select show('metrics')::size;
 
 size
 ────
-8
+7
 # test: locks
 select show('locks');
 

@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: select * from (select expr)
 explain select * from (select 1) t;
@@ -6,7 +6,7 @@ explain select * from (select 1) t;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   set                 1      1      0
   2   dup                 2      0      0
@@ -31,7 +31,7 @@ explain select * from (select 1, 2) t;
 explain
 ───────
 
-frontend
+main
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   push_int            -      0      0     # 2
@@ -59,7 +59,7 @@ explain select x from (select 1 as x) t;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   set                 1      1      0
   2   dup                 2      0      0
@@ -84,7 +84,7 @@ explain select a, b from (select 1 as a, 2 as b) t;
 explain
 ───────
 
-frontend
+main
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   push_int            -      0      0     # 2

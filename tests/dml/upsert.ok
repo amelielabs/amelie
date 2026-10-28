@@ -37,7 +37,7 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   upsert_open         1      -      -     # amelie.test
   2   jmp                 4      0      0
@@ -68,7 +68,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1;
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   upsert_open         1      -      -     # amelie.test
   2   jmp                 10     0      0
@@ -119,7 +119,7 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   upsert_open         1      -      -     # amelie.test
   2   jmp                 10     0      0
@@ -159,7 +159,7 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   upsert_open         1      -      -     # amelie.test
   2   jmp                 12     0      0
@@ -205,7 +205,7 @@ explain insert into test values (1, 123) on conflict do update set data = data +
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   upsert_open         1      -      -     # amelie.test
   2   jmp                 10     0      0
@@ -236,7 +236,7 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   upsert_open         1      -      -     # amelie.test
   2   jmp                 14     0      0
@@ -374,7 +374,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   set                 1      2      0
   2   upsert_open         2      -      -     # amelie.test
@@ -425,7 +425,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   set                 1      2      0
   2   upsert_open         2      -      -     # amelie.test
@@ -466,7 +466,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   set                 1      2      0
   2   upsert_open         2      -      -     # amelie.test
@@ -663,7 +663,7 @@ explain insert into test select * from src on conflict do update set data = data
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.src (heap) 
   2   table_readi32       2      1      -     # id

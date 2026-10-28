@@ -13,7 +13,7 @@ explain if 1 then select 123; end;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   jntr                3      0      0
   2   int                 0      -      0     # 123
@@ -25,7 +25,7 @@ explain if 1 then end;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   jntr                2      0      0
   2   ret                 -1     0      -
@@ -40,7 +40,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   jntr                4      0      0
   2   int                 0      -      0     # 123
@@ -75,7 +75,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   jntr                4      0      0
   2   int                 0      -      0     # 123
@@ -101,7 +101,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   jntr                4      0      0
   2   int                 0      -      0     # 123
@@ -152,7 +152,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   jntr                4      0      0
   2   int                 0      -      0     # 123
@@ -184,7 +184,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   jntr                4      0      0
   2   int                 0      -      0     # 123
@@ -222,7 +222,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -263,7 +263,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -311,7 +311,7 @@ end;
 explain
 ───────
 
-frontend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -390,7 +390,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   bool                0      1      0
   1   jntr                6      0      0
   2   set_ptr             0      -      0
@@ -423,7 +423,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   bool                0      1      0
   1   jntr                4      0      0
   2   set_ptr             0      -      0
@@ -485,7 +485,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   bool                0      1      0
   1   jntr                5      0      0
   2   set_ptr             0      -      0
@@ -547,7 +547,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -640,7 +640,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -689,7 +689,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -735,7 +735,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -777,7 +777,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -834,7 +834,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -894,7 +894,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -956,7 +956,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
@@ -1024,7 +1024,7 @@ end;
 explain
 ───────
 
-backend
+main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0

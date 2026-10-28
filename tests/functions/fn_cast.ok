@@ -373,7 +373,7 @@ explain select '{"id": 42, "data": [1,2,3]}'::json_decode::string::json_decode;
 explain
 ───────
 
-frontend
+main
   0   value               0      -      0     # json
   1   ret                 0      0      -
 select 123::json_decode;

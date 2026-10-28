@@ -6,7 +6,7 @@ explain select 0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 0
   1   ret                 0      0      -
 select 0;
@@ -24,7 +24,7 @@ explain select -1234;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # -1234
   1   ret                 0      0      -
 select -1234;
@@ -76,7 +76,7 @@ explain select 1 = true;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   bool                1      1      0
   2   equii               2      0      1
@@ -102,7 +102,7 @@ explain select 1 = 18;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   int                 1      -      0     # 18
   2   equii               2      0      1
@@ -128,7 +128,7 @@ explain select 1 = 1.0000e0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   double              1      0      0     # 1
   2   equif               2      0      1
@@ -159,7 +159,7 @@ explain select 1 = 1.0000;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   decimal             1      4611686018427397904 0
   2   equie               2      0      1
@@ -175,7 +175,7 @@ explain select 0 = '1970-01-01 00:00:00'::timestamp;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 0
   1   value               1      -      0     # timestamp
   2   equii               2      0      1
@@ -196,7 +196,7 @@ explain select 1 = null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   null                1      0      0
   2   nullop              2      0      1
@@ -222,7 +222,7 @@ explain select 1 <> true;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   bool                1      1      0
   2   equii               2      0      1
@@ -249,7 +249,7 @@ explain select 1 <> 18;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   int                 1      -      0     # 18
   2   equii               2      0      1
@@ -276,7 +276,7 @@ explain select 1 <> 1.0000e0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   double              1      0      0     # 1
   2   equif               2      0      1
@@ -298,7 +298,7 @@ explain select 1 <> 1.0000;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   decimal             1      4611686018427397904 0
   2   equie               2      0      1
@@ -315,7 +315,7 @@ explain select 0 <> '1970-01-01 00:00:00'::timestamp;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 0
   1   value               1      -      0     # timestamp
   2   equii               2      0      1
@@ -337,7 +337,7 @@ explain select 1 <> null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   null                1      0      0
   2   nullop              2      0      1
@@ -389,7 +389,7 @@ explain select -1 >= -10;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # -1
   1   int                 1      -      0     # -10
   2   gteii               2      0      1
@@ -410,7 +410,7 @@ explain select 1 >= 1.11e0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   double              1      0      0     # 1.11
   2   gteif               2      0      1
@@ -431,7 +431,7 @@ explain select 1 >= 1.11;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   decimal             1      2305843009213694063 0
   2   gteie               2      0      1
@@ -452,7 +452,7 @@ explain select 0 >= '1970-01-01 00:00:00'::timestamp;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 0
   1   value               1      -      0     # timestamp
   2   gteii               2      0      1
@@ -468,7 +468,7 @@ explain select 1 >= null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   null                1      0      0
   2   nullop              2      0      1
@@ -517,7 +517,7 @@ explain select -1 > -10;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # -1
   1   int                 1      -      0     # -10
   2   gtii                2      0      1
@@ -538,7 +538,7 @@ explain select 1 > 1.11e0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   double              1      0      0     # 1.11
   2   gtif                2      0      1
@@ -559,7 +559,7 @@ explain select 1 > 1.11;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   decimal             1      2305843009213694063 0
   2   gtie                2      0      1
@@ -580,7 +580,7 @@ explain select 0 > '1970-01-01 00:00:00'::timestamp;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 0
   1   value               1      -      0     # timestamp
   2   gtii                2      0      1
@@ -596,7 +596,7 @@ explain select 1 > null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   null                1      0      0
   2   nullop              2      0      1
@@ -645,7 +645,7 @@ explain select -1 <= -10;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # -1
   1   int                 1      -      0     # -10
   2   lteii               2      0      1
@@ -666,7 +666,7 @@ explain select 1 <= 1.11e0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   double              1      0      0     # 1.11
   2   lteif               2      0      1
@@ -687,7 +687,7 @@ explain select 1 <= 1.11;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   decimal             1      2305843009213694063 0
   2   lteie               2      0      1
@@ -708,7 +708,7 @@ explain select 0 <= '1970-01-01 00:00:00'::timestamp;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 0
   1   value               1      -      0     # timestamp
   2   lteii               2      0      1
@@ -724,7 +724,7 @@ explain select 1 <= null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   null                1      0      0
   2   nullop              2      0      1
@@ -773,7 +773,7 @@ explain select -1 < -10;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # -1
   1   int                 1      -      0     # -10
   2   ltii                2      0      1
@@ -794,7 +794,7 @@ explain select 1 < 1.11e0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   double              1      0      0     # 1.11
   2   ltif                2      0      1
@@ -815,7 +815,7 @@ explain select 1 < 1.11;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   decimal             1      2305843009213694063 0
   2   ltie                2      0      1
@@ -836,7 +836,7 @@ explain select 0 < '1970-01-01 00:00:00'::timestamp;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 0
   1   value               1      -      0     # timestamp
   2   ltii                2      0      1
@@ -852,7 +852,7 @@ explain select 1 < null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   null                1      0      0
   2   nullop              2      0      1
@@ -871,7 +871,7 @@ explain select 1 + 1;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   int                 1      -      0     # 1
   2   addii               2      0      1
@@ -905,7 +905,7 @@ explain select 1 + 1.5e0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   double              1      0      0     # 1.5
   2   addif               2      0      1
@@ -921,7 +921,7 @@ explain select 1 + decimal '1.5';
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   decimal             1      1152921504606846991 0
   2   addie               2      0      1
@@ -946,7 +946,7 @@ explain select 1 - 1;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   int                 1      -      0     # 1
   2   subii               2      0      1
@@ -980,7 +980,7 @@ explain select 1 - 1.5e0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   double              1      0      0     # 1.5
   2   subif               2      0      1
@@ -996,7 +996,7 @@ explain select 1 - 1.5;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 1
   1   decimal             1      1152921504606846991 0
   2   subie               2      0      1
@@ -1021,7 +1021,7 @@ explain select 2 * 2;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 2
   1   int                 1      -      0     # 2
   2   mulii               2      0      1
@@ -1052,7 +1052,7 @@ explain select 2 * 1.5e0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 2
   1   double              1      0      0     # 1.5
   2   mulif               2      0      1
@@ -1068,7 +1068,7 @@ explain select 2 * 1.5;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 2
   1   decimal             1      1152921504606846991 0
   2   mulie               2      0      1
@@ -1093,7 +1093,7 @@ explain select 2 / 2;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 2
   1   int                 1      -      0     # 2
   2   divii               2      0      1
@@ -1116,7 +1116,7 @@ explain select 35 / 1.5e0;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 35
   1   double              1      0      0     # 1.5
   2   divif               2      0      1
@@ -1132,7 +1132,7 @@ explain select 35 / 1.5;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 35
   1   decimal             1      1152921504606846991 0
   2   divie               2      0      1
@@ -1157,7 +1157,7 @@ explain select 8 % 3;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 8
   1   int                 1      -      0     # 3
   2   modii               2      0      1
@@ -1184,7 +1184,7 @@ explain select 60 | 13;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 60
   1   int                 1      -      0     # 13
   2   borii               2      0      1
@@ -1200,7 +1200,7 @@ explain select 60 | null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 60
   1   null                1      0      0
   2   nullop              2      0      1
@@ -1219,7 +1219,7 @@ explain select 60 & 13;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 60
   1   int                 1      -      0     # 13
   2   bandii              2      0      1
@@ -1235,7 +1235,7 @@ explain select 60 & null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 60
   1   null                1      0      0
   2   nullop              2      0      1
@@ -1254,7 +1254,7 @@ explain select 60 ^ 13;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 60
   1   int                 1      -      0     # 13
   2   bxorii              2      0      1
@@ -1270,7 +1270,7 @@ explain select 60 ^ null;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 60
   1   null                1      0      0
   2   nullop              2      0      1
@@ -1289,7 +1289,7 @@ explain select 60 << 2;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 60
   1   int                 1      -      0     # 2
   2   bshlii              2      0      1
@@ -1314,7 +1314,7 @@ explain select 60 >> 2;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # 60
   1   int                 1      -      0     # 2
   2   bshrii              2      0      1
@@ -1345,7 +1345,7 @@ explain select -18;
 explain
 ───────
 
-frontend
+main
   0   int                 0      -      0     # -18
   1   ret                 0      0      -
 # test: kb, mb, gb

@@ -253,7 +253,6 @@ scan_expr(Scan* self, Target* target)
 			break;
 		case TARGET_VAR:
 		{
-			// create reference, if frontend value is accessed from backend
 			auto var = target->from_var;
 			type = var->type;
 			r = op3pin(cp, CVAR, type, var->order, var->is_arg);

@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: select * from table group by (column not defined)
 create table test (id int primary key, data int);
@@ -14,7 +14,7 @@ explain select * from test group by id;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -63,7 +63,7 @@ explain select id from test group by id;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -138,7 +138,7 @@ explain select * from (select id from test group by id) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -192,7 +192,7 @@ explain select id from test group by id limit 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -242,7 +242,7 @@ explain select id from test group by id limit 1 offset 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -293,7 +293,7 @@ explain select id from test group by id offset 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -348,7 +348,7 @@ explain select * from (select id from test group by id limit 1) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -412,7 +412,7 @@ explain select * from (select id from test group by id limit 1 offset 1) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -472,7 +472,7 @@ explain select * from (select id from test group by id offset 1) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -536,7 +536,7 @@ explain select id from test group by id having id >= 3;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -609,7 +609,7 @@ explain select id from test group by id having id >= 1 limit 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -653,7 +653,7 @@ explain select id from test group by id having id >= 1 limit 1 offset 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -703,7 +703,7 @@ explain select id from test group by id having id >= 1 offset 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -754,7 +754,7 @@ explain select * from (select id from test group by id having id >= 3) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -800,7 +800,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -853,7 +853,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -912,7 +912,7 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -972,7 +972,7 @@ explain select id from test group by id order by id;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1014,7 +1014,7 @@ explain select id from test group by id order by id desc;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1053,7 +1053,7 @@ explain select * from (select id from test group by id order by id desc) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1101,7 +1101,7 @@ explain select id from test group by id order by id asc limit 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1153,7 +1153,7 @@ explain select id from test group by id order by id asc limit 1 offset 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1204,7 +1204,7 @@ explain select id from test group by id order by id asc offset 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1259,7 +1259,7 @@ explain select id from test group by id order by id desc limit 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1311,7 +1311,7 @@ explain select id from test group by id order by id desc limit 1 offset 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1362,7 +1362,7 @@ explain select id from test group by id order by id desc offset 1;
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1426,7 +1426,7 @@ explain select * from (select id from test group by id order by id asc limit 1) 
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1491,7 +1491,7 @@ explain select * from (select id from test group by id order by id asc limit 1 o
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1551,7 +1551,7 @@ explain select * from (select id from test group by id order by id asc offset 1)
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1624,7 +1624,7 @@ explain select * from (select id from test group by id order by id desc limit 1)
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1689,7 +1689,7 @@ explain select * from (select id from test group by id order by id desc limit 1 
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1749,7 +1749,7 @@ explain select * from (select id from test group by id order by id desc offset 1
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1822,7 +1822,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -1866,7 +1866,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -1913,7 +1913,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -1962,7 +1962,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -2009,7 +2009,7 @@ explain select * from (select data from test where data > 0 group by data having
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -2062,7 +2062,7 @@ explain select * from (select data from test where data > 0 group by data having
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -2118,7 +2118,7 @@ explain select * from (select data from test where data > 0 group by data having
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -2174,7 +2174,7 @@ explain select * from (select data from test where data > 0 group by data having
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data
@@ -2232,7 +2232,7 @@ explain select * from (select data from test where data > 0 group by data having
 explain
 ───────
 
-backend
+main
   0   set                 0      0      1
   1   table_open          1      0      10    # amelie.test (heap) 
   2   table_readi32       2      1      -     # data

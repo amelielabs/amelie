@@ -15,7 +15,7 @@ explain select b.id from a, b order by b.id;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      11    # amelie.a (heap) 
   2   table_open          2      25     9     # amelie.b (primary) 
@@ -65,7 +65,7 @@ explain select b.id from a, b order by b.id;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      11    # amelie.a (heap) 
   2   table_open          2      25     9     # amelie.b (heap) 
@@ -114,7 +114,7 @@ explain select b.id from a, b order by b.id;
 explain
 ───────
 
-backend
+main
   0   set_ordered         0      1      1
   1   table_open          1      1      11    # amelie.a (heap) 
   2   table_open          2      25     9     # amelie.b (heap) 

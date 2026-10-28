@@ -24,7 +24,7 @@ struct Players
 Players*
 players_allocate();
 void players_free(Players*);
-void players_start(Players*, Frontends*);
+void players_start(Players*, Computes*);
 void players_stop(Players*);
 void players_sync(Players*);
 void players_execute(Players*, RecordMsg*);

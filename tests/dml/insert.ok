@@ -286,7 +286,7 @@ explain insert into test values (1),(2),(3) returning *;
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   set                 1      1      0
   2   upsert_open         2      -      -     # amelie.test
@@ -586,7 +586,7 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      12    # amelie.test (heap) 
   2   table_readt         2      1      -     # ts
@@ -616,7 +616,7 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      12    # amelie.test (heap) 
   2   table_readt         2      1      -     # ts
@@ -675,7 +675,7 @@ explain select * from test;
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      6     # amelie.test (heap) 
   2   table_readt         2      1      -     # id
@@ -720,7 +720,7 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   push_timestamp      -      0      0     # 1000002
   2   table_open          1      0      11    # amelie.test (primary) 
@@ -751,7 +751,7 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   push_timestamp      -      0      0     # 1000002
   2   table_open          1      0      11    # amelie.test (primary) 
@@ -779,7 +779,7 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   table_open          1      0      14    # amelie.test (primary) 
   2   table_readt         2      1      -     # id
@@ -809,7 +809,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   push_timestamp      -      0      0     # 1000003
   2   table_open          1      0      10    # amelie.test (primary) point_lookup
@@ -849,7 +849,7 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      12    # amelie.test (heap) 
   2   table_readl         2      1      -     # i
@@ -922,7 +922,7 @@ explain select * from test where d >= date '1970-01-01';
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      12    # amelie.test (heap) 
   2   table_readd         2      1      -     # d
@@ -1069,7 +1069,7 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
 explain
 ───────
 
-backend
+main
   0   set                 0      1      0
   1   push_uuid           0      0      0
   2   table_open          1      16     10    # amelie.test (primary) point_lookup
@@ -1149,7 +1149,7 @@ explain insert into test (id) values (2 * 2);
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   int                 1      -      0     # 2
   2   int                 2      -      0     # 2
@@ -1172,7 +1172,7 @@ explain insert into test (id) values (-2);
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   insert              -      -      -     # amelie.test
   2   ret                 -1     0      -
@@ -1192,7 +1192,7 @@ explain insert into test (id) values (8::string::int);
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   insert              -      -      -     # amelie.test
   2   ret                 -1     0      -
@@ -1212,7 +1212,7 @@ explain insert into test (id) values (8::string::int * 2);
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   value               1      -      0     # int
   2   int                 2      -      0     # 2
@@ -1238,7 +1238,7 @@ explain insert into test (id) values ( string(8 * 8)::int );
 explain
 ───────
 
-backend
+main
   0   set_ptr             0      -      0
   1   int                 1      -      0     # 8
   2   int                 2      -      0     # 8
@@ -1277,7 +1277,7 @@ explain select * from test;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (heap) 
   2   table_readi32       2      1      -     # id
@@ -1305,7 +1305,7 @@ explain select * from test index i;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.test (i) 
   2   table_readi32       2      1      -     # id
@@ -1353,7 +1353,7 @@ explain insert into test select 1, 0;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
   2   push_int            -      0      0     # 0
@@ -1378,7 +1378,7 @@ explain insert into test select * from (select 2, 0) t;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   push_int            -      0      0     # 2
   2   push_int            -      0      0     # 0
@@ -1415,7 +1415,7 @@ explain insert into test select * from src;
 explain
 ───────
 
-backend
+main
   0   set                 0      2      0
   1   table_open          1      0      8     # amelie.src (heap) 
   2   table_readi32       2      1      -     # id
