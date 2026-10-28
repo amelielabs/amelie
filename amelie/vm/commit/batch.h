@@ -65,10 +65,10 @@ batch_add(Batch* self, Gtr* gtr)
 }
 
 hot static inline void
-batch_add_user(Batch* self, Ltr* ltr)
+batch_add_user(Batch* self, Peer* peer)
 {
 	// create a unique list of users
-	auto track = &ltr->user->track;
+	auto track = &peer->user->track;
 	if (track->pending)
 		return;
 	track->pending = true;
@@ -84,36 +84,31 @@ batch_process(Batch* self)
 	{
 		// handle aborts per user
 		auto gtr = batch_at(self, it);
-		list_foreach(&gtr->dispatch.ltrs)
+		for (auto i = 0; i < gtr->peers.count; i++)
 		{
-			auto ltr = list_at(Ltr, link);
-			auto tr  = ltr->tr;
-			if (! tr)
-				continue;
+			auto peer = peers_at(&gtr->peers, i);
 
 			// collect unique users across batch
-			batch_add_user(self, ltr);
+			batch_add_user(self, peer);
 
 			// abort transaction if its local transaction id lower
 			// then the abort id
-			auto track   = &ltr->user->track;
+			auto track   = &peer->user->track;
 			auto pending = &track->pending_consensus;
-			auto last    = &track->consensus;
+			auto last    = &track->consensus_commit_last;
+			auto tr      = peer->tr;
 			if (pending->abort >= tr->id || last->abort >= tr->id)
 				gtr_set_abort(gtr);
 		}
 
 		// sync metrics and prepare gtr for wal write
-		auto write = &gtr->write;
-		list_foreach(&gtr->dispatch.ltrs)
+		for (auto i = 0; i < gtr->peers.count; i++)
 		{
-			auto ltr = list_at(Ltr, link);
-			auto tr  = ltr->tr;
-			if (! tr)
-				continue;
+			auto peer = peers_at(&gtr->peers, i);
+			auto tr   = peer->tr;
 
 			// sync metrics
-			auto pending = &ltr->user->track.pending_consensus;
+			auto pending = &peer->user->track.pending_consensus;
 			if (gtr->abort)
 			{
 				// sync abort id
@@ -126,13 +121,12 @@ batch_process(Batch* self)
 					pending->commit = tr->id;
 			}
 		}
-
 		if (gtr->abort)
 			continue;
 
 		// add for wal write
 		if (! access_ro(&gtr->program->access))
-			write_list_add(&self->write, write);
+			write_list_add(&self->write, &gtr->write);
 	}
 }
 
@@ -152,13 +146,11 @@ batch_abort(Batch* self)
 		gtr_set_abort(gtr);
 
 		// sync abort id
-		list_foreach(&gtr->dispatch.ltrs)
+		for (auto i = 0; i < gtr->peers.count; i++)
 		{
-			auto ltr = list_at(Ltr, link);
-			auto tr  = ltr->tr;
-			if (! tr)
-				continue;
-			auto pending = &ltr->user->track.pending_consensus;
+			auto peer = peers_at(&gtr->peers, i);
+			auto tr   = peer->tr;
+			auto pending = &peer->user->track.pending_consensus;
 			if (tr->id > pending->abort)
 				pending->abort = tr->id;
 		}
@@ -170,6 +162,21 @@ batch_abort(Batch* self)
 hot static inline void
 batch_complete(Batch* self)
 {
+	// group completion
+
+	// apply pending metrics
+	auto ref = self->pending;
+	while (ref)
+	{
+		ref->consensus_commit_last = ref->pending_consensus;
+		consensus_atomic_write(&ref->consensus_commit, &ref->consensus_commit_last);
+		auto next = ref->pending_link;
+		ref->pending_link = NULL;
+		ref->pending      = false;
+		ref = next;
+	}
+
+	// wakeup transactions
 	for (auto it = 0; it < self->count; it++)
 	{
 		auto gtr = batch_at(self, it);

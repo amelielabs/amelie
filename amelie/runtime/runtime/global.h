@@ -150,15 +150,15 @@ resolve(char* addr, int port, struct addrinfo** result)
 }
 
 // lock manager
-#define lock(res_id, id) \
-	locks_lock(&runtime()->locks, \
-	           &runtime()->lockables.list[(res_id)].res, (id), \
-	           NULL, \
-	           source_function)
+#define lock(resource, id) \
+	locks_lock(&runtime()->locks, (resource), (id), NULL, source_function)
 
-#define lock_catalog(id)    lock(RES_CATALOG, id)
-#define lock_ddl(id)        lock(RES_DDL, id)
-#define lock_checkpoint(id) lock(RES_CHECKPOINT, id)
+#define lock_system(resource_id, id) \
+	lock(&runtime()->lockables.list[(resource_id)].res, (id))
+
+#define lock_catalog(id)    lock_system(RES_CATALOG, id)
+#define lock_ddl(id)        lock_system(RES_DDL, id)
+#define lock_checkpoint(id) lock_system(RES_CHECKPOINT, id)
 
 #define breakpoint(res_id) \
 ({ \

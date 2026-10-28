@@ -21,28 +21,18 @@ typedef enum
 	// resolver
 	MSG_RESOLVE,
 
-	// transaction
-	MSG_GTR,
-	MSG_LTR,
-	MSG_LTR_STOP,
-
-	// frontend
-	MSG_CLIENT,
-
 	// wal
 	MSG_RECORD,
 
-	// player
-	MSG_PLAYER,
-	MSG_PLAYER_STOP,
+	// commit
+	MSG_GTR,
 
 	// compute
+	MSG_CLIENT,
 	MSG_DEPLOY,
 	MSG_UNDEPLOY,
-	MSG_SYNC,
-	MSG_TRUNCATE,
-
-	// streams
+	MSG_PLAYER,
+	MSG_PLAYER_STOP,
 	MSG_STREAM,
 	MSG_STREAM_CANCEL,
 

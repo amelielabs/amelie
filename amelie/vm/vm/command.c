@@ -217,9 +217,12 @@ cupdate(Vm* self, Op* op)
 void
 cclose(Vm* self, Op* op)
 {
+	unused(self);
 	unused(op);
+	/*
 	if (self->allow_close)
 		dispatch_close(&self->gtr->dispatch);
+	*/
 }
 
 void

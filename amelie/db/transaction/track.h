@@ -16,16 +16,18 @@ typedef struct Track Track;
 struct Track
 {
 	Mailbox         queue;
+	uint64_t        id;
 	TrList          prepared;
 	TrCache         cache;
+	Resource        lock;
+
+	// current state
+	Consensus       consensus;
 
 	// commited state
-	Consensus       consensus_self;
-
-	// commited (actual global state)
 	_Alignas(cache_line)
-	ConsensusAtomic consensus_atomic;
-	Consensus       consensus;
+	ConsensusAtomic consensus_commit;
+	Consensus       consensus_commit_last;
 
 	// pending commit state (group commit)
 	bool            pending;
@@ -37,15 +39,17 @@ struct Track
 static inline void
 track_init(Track* self)
 {
+	self->id           = 1;
 	self->pending      = false;
 	self->pending_link = NULL;
 	self->compute      = NULL;
 	mailbox_init(&self->queue);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
-	consensus_init(&self->consensus_self);
+	resource_init(&self->lock, "user");
 	consensus_init(&self->consensus);
-	consensus_atomic_init(&self->consensus_atomic);
+	consensus_atomic_init(&self->consensus_commit);
+	consensus_init(&self->consensus_commit_last);
 	consensus_init(&self->pending_consensus);
 }
 
@@ -55,6 +59,7 @@ track_free(Track* self)
 	assert(list_empty(&self->queue.list));
 	tr_list_reset(&self->prepared, &self->cache);
 	tr_cache_free(&self->cache);
+	resource_free(&self->lock);
 }
 
 static inline void
@@ -90,36 +95,27 @@ track_send(Track* self, Msg* msg)
 }
 
 hot static inline bool
-track_sync(Track* self, Consensus* consensus)
+track_commit(Track* self, Consensus* commit)
 {
 	auto changed = false;
 
 	// commit all transactions <= abort
-	auto consensus_self = &self->consensus_self;
-	auto id = consensus->abort;
-	if (unlikely(id > consensus_self->abort))
+	auto consensus = &self->consensus;
+	auto id = commit->abort;
+	if (unlikely(id > consensus->abort))
 	{
 		tr_abort_list(&self->prepared, &self->cache, id);
-		consensus_self->abort = id;
+		consensus->abort = id;
 		changed = true;
 	}
 
 	// commit all transactions <= commit
-	id = consensus->commit;
-	if (id > consensus_self->commit)
+	id = commit->commit;
+	if (id > consensus->commit)
 	{
 		tr_commit_list(&self->prepared, &self->cache, id);
-		consensus_self->commit = id;
+		consensus->commit = id;
 		changed = true;
 	}
 	return changed;
-}
-
-hot static inline void
-track_follow(Track* self, uint64_t id)
-{
-	// follow transaction id
-	auto consensus = &self->consensus;
-	if (consensus->commit < id)
-		consensus->commit = id;
 }

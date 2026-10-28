@@ -15,7 +15,6 @@ typedef struct Share Share;
 
 struct Share
 {
-	Gtrs*      gtrs;
 	Commit*    commit;
 	Repl*      repl;
 	Functions* functions;

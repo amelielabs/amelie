@@ -17,21 +17,10 @@
 #include "commit/code.h"
 #include "commit/program.h"
 
-// local transaction (per pod)
-#include "commit/complete.h"
-#include "commit/ltr.h"
-#include "commit/ltr_cache.h"
-
-// dispatch
-#include "commit/dispatch.h"
-
 // global transaction
+#include "commit/peer.h"
 #include "commit/gtr.h"
-#include "commit/batch.h"
-#include "commit/gtr_group.h"
-#include "commit/gtr_queue.h"
-#include "commit/gtr_recover.h"
-#include "commit/gtrs.h"
 
 // group commit
+#include "commit/batch.h"
 #include "commit/commit.h"

@@ -19,23 +19,11 @@
 #include <amelie_output.h>
 #include <amelie_commit.h>
 
-hot static inline void
-commit_add(GtrQueue* queue, Batch* batch, Gtr* gtr)
-{
-	auto group = gtr_queue_add(queue, gtr);
-	while (gtr_group_pending(group))
-	{
-		auto gtr = gtr_group_pop(group);
-		batch_add(batch, gtr);
-	}
-}
-
 hot static void
 commit_main(void* arg)
 {
 	Commit* self = arg;
 
-	auto queue = &self->queue;
 	Batch batch;
 	batch_init(&batch);
 	defer(batch_free, &batch);
@@ -47,10 +35,8 @@ commit_main(void* arg)
 
 		// collect prepared transactions
 		batch_reset(&batch);
-
-		commit_add(queue, &batch, (Gtr*)msg);
 		while ((msg = task_recv_try()))
-			commit_add(queue, &batch, (Gtr*)msg);
+			batch_add(&batch, (Gtr*)msg);
 		if (batch_empty(&batch))
 			continue;
 
@@ -67,18 +53,9 @@ commit_main(void* arg)
 				batch_abort(&batch);
 		}
 
-		// do group completion
-		//
-		// update global commit/abort metrics and detach
+		// update commit/abort metrics and wakeup
 		// transactions
-		//
-		auto group_min = gtrs_detach(self->gtrs, &batch);
-
-		// wakeup transactions
 		batch_complete(&batch);
-
-		// remove all groups < group_min
-		gtr_queue_gc(queue, group_min);
 	}
 }
 
@@ -94,8 +71,6 @@ commit(Commit* self, Gtr* gtr, Buf* error)
 		gtr_set_error(gtr, error);
 	}
 
-	// process transaction commit/abort, only if the transaction
-	// was registered in the manager
 	if (gtr_active(gtr))
 	{
 		task_send(&self->task, &gtr->msg);
@@ -109,23 +84,20 @@ commit(Commit* self, Gtr* gtr, Buf* error)
 		if (gtr->error)
 			rethrow_buf(gtr->error);
 
-		error("transaction aborted during commit");
+		error("transaction aborted");
 	}
 }
 
 void
-commit_init(Commit* self, Db* db, Gtrs* gtrs)
+commit_init(Commit* self, Db* db)
 {
-	self->db   = db;
-	self->gtrs = gtrs;
-	gtr_queue_init(&self->queue);
+	self->db = db;
 	task_init(&self->task);
 }
 
 void
 commit_free(Commit* self)
 {
-	gtr_queue_free(&self->queue);
 	task_free(&self->task);
 }
 
@@ -146,12 +118,4 @@ commit_stop(Commit* self)
 		task_send(&self->task, &stop);
 		task_wait(&self->task);
 	}
-}
-
-void
-commit_sync(Commit* self)
-{
-	auto recover = self->queue.recover;
-	assert(! recover->list);
-	recover->id_next = state_lsn() + 1;
 }
