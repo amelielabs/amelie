@@ -53,44 +53,10 @@ compute_rpc(Rpc* rpc, void* arg)
 {
 	Compute* self = arg;
 	switch (rpc->msg.id) {
-	case MSG_DEPLOY:
-	{
-		// create and start new pod
-		User* user = rpc->arg;
-		pods_create(&self->pods, user);
-		break;
-	}
-	case MSG_UNDEPLOY:
-	{
-		// stop and drop pod
-		User* user = rpc->arg;
-		pods_drop_by(&self->pods, user);
-		break;
-	}
-	case MSG_SYNC:
-	{
-		// commit prepared transactions
-		User* user = rpc->arg;
-		auto pod = pods_find(&self->pods, user);
-		pod_sync(pod);
-		break;
-	}
-	case MSG_TRUNCATE:
-	{
-		// truncate partition
-		Table* table = rpc->arg;
-		// todo: cancel all pending streams
-			// streaming_cancel(part);
-		part_truncate(table->part);
-		break;
-	}
 	case MSG_STOP:
 	{
 		// disconnect clients
 		clients_shutdown(&self->clients);
-
-		// shutdown pods
-		pods_shutdown(&self->pods);
 		break;
 	}
 	default:
@@ -137,24 +103,6 @@ compute_main(void* arg)
 			break;
 		}
 
-		// --------------------------------------
-
-#if 0
-		// forward messages to the pods
-		case MSG_LTR:
-		{
-			auto ltr = (Ltr*)msg;
-			track_write(&ltr->user->track, msg);
-			break;
-		}
-		case MSG_LTR_STOP:
-		{
-			auto ltr = container_of(msg, Ltr, queue_close);
-			ltr_write(ltr, msg);
-			break;
-		}
-#endif
-
 #if 0
 		case MSG_STREAM:
 		{
@@ -169,9 +117,6 @@ compute_main(void* arg)
 			break;
 		}
 #endif
-
-		// --------------------------------------
-
 		default:
 		{
 			// command
@@ -192,7 +137,6 @@ compute_init(Compute*   self,
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
 	clients_init(&self->clients);
-	pods_init(&self->pods, &self->task);
 	auth_init(&self->auth);
 	task_init(&self->task);
 }

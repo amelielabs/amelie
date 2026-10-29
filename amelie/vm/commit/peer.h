@@ -30,7 +30,7 @@ struct Peers
 static inline Peer*
 peers_at(Peers* self, int order)
 {
-	return ((Peer**)self->list.start)[order];
+	return &((Peer*)self->list.start)[order];
 }
 
 static inline void

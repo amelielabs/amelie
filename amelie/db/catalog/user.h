@@ -44,14 +44,7 @@ user_of(Rel* self)
 static inline void
 user_sync(User* self)
 {
-	if (str_empty(&self->config->revoked_at))
-	{
-		self->revoked_at = 0;
-		return;
-	}
-	Timestamp ts;
-	timestamp_init(&ts);
-	timestamp_set(&ts, &self->config->revoked_at);
-	auto time = timestamp_get_unixtime(&ts, runtime()->timezone);
-	self->revoked_at = time / 1000 / 1000;
+	Consensus commit;
+	consensus_atomic_read(&self->track.consensus_commit, &commit);
+	track_commit(&self->track, &commit);
 }

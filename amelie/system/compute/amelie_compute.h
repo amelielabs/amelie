@@ -16,11 +16,11 @@
 #include "compute/stream_pos.h"
 #include "compute/stream.h"
 #include "compute/streams.h"
-#endif
 
 // pod
 #include "compute/pod.h"
 #include "compute/pods.h"
+#endif
 
 // auth
 #include "compute/auth_cache.h"

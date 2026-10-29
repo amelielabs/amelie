@@ -156,7 +156,8 @@ truncate_if_commit(Log* self, LogOp* op)
 	unused(self);
 	auto table = table_of(op->rel);
 
-	table->catalog->iface->table_truncate(table->catalog, table);
+	//table->catalog->iface->table_truncate(table->catalog, table);
+	part_truncate(table->part);
 }
 
 static void
@@ -194,7 +195,7 @@ table_truncate(Catalog* self,
 	log_ddl(&tr->log, &truncate_if, NULL, &table->rel);
 
 	// force commit pending prepared transactions
-	self->iface->user_sync(self, table->user);
+	user_sync(table->user);
 
 	// do nothing (actual truncate will happen on commit)
 	return true;

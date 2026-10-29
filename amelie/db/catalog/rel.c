@@ -72,7 +72,7 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 
 	// force commit pending prepared transactions
 	if (type == REL_TABLE)
-		self->iface->user_sync(self, table_of(rel)->user);
+		user_sync(table_of(rel)->user);
 
 	// self
 	catalog_drop_of(self, tr, rel);

@@ -79,6 +79,21 @@ user_allocate(Catalog* catalog, UserConfig* config)
 	return self;
 }
 
+static inline void
+user_sync_revoke(User* self)
+{
+	if (str_empty(&self->config->revoked_at))
+	{
+		self->revoked_at = 0;
+		return;
+	}
+	Timestamp ts;
+	timestamp_init(&ts);
+	timestamp_set(&ts, &self->config->revoked_at);
+	auto time = timestamp_get_unixtime(&ts, runtime()->timezone);
+	self->revoked_at = time / 1000 / 1000;
+}
+
 bool
 user_create(Catalog*    self,
             Tr*         tr,
@@ -113,7 +128,7 @@ user_create(Catalog*    self,
 	rels_create(&self->users, tr, &user->rel);
 
 	// update timestamps
-	user_sync(user);
+	user_sync_revoke(user);
 
 	// deploy user
 	self->iface->user_attach(self, user);
@@ -386,7 +401,7 @@ revoke_token_if_abort(Log* self, LogOp* op)
 
 	auto user = user_of(op->rel);
 	user_config_set_revoked_at(user->config, &value);
-	user_sync(user);
+	user_sync_revoke(user);
 }
 
 static LogIf revoke_token_if =
@@ -430,7 +445,7 @@ user_revoke_token(Catalog* self,
 	user_config_set_revoked_at(user->config, revoked_at);
 
 	// update timestamps
-	user_sync(user);
+	user_sync_revoke(user);
 	return true;
 }
 

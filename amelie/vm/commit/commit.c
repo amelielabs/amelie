@@ -35,6 +35,7 @@ commit_main(void* arg)
 
 		// collect prepared transactions
 		batch_reset(&batch);
+		batch_add(&batch, (Gtr*)msg);
 		while ((msg = task_recv_try()))
 			batch_add(&batch, (Gtr*)msg);
 		if (batch_empty(&batch))

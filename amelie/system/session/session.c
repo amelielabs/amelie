@@ -83,11 +83,6 @@ session_run(Session* self)
 		if (! self->req->recover)
 			error("system is in read-only mode");
 
-	// prepare global transaction
-	gtr_prepare(gtr, &portal->local, portal->user,
-	            compiler->program,
-	            compiler->program_args);
-
 	// prepare request for the wal writer
 	auto write = &gtr->write;
 	if (! ro)
@@ -112,63 +107,27 @@ session_run(Session* self)
 			quota_set(quota, limits_get(limits, LIMIT_COMPUTE));
 	}
 
-	// pushdown (execute or coordinate multi user access)
-	auto users = gtr->dispatch.ltrs_count;
-	if (users > 0)
-		gtrs_send(share()->gtrs, gtr);
+	// begin transaction
+	//
+	// lock users and commit prepared transactions per user
+	gtr_begin(gtr, &portal->local, portal->user, compiler->program);
 
 	// execute
 	Buf* error = NULL;
 	Return ret;
 	return_init(&ret);
-	if (users == 0 || users > 1)
-	{
-		if (users > 1)
-		{
-			list_foreach(&gtr->dispatch.ltrs)
-			{
-				auto ltr = list_at(Ltr, link);
-				assert(! ltr->tr);
-				auto track = &ltr->user->track;
-				auto tr = tr_create(&track->cache);
-				tr_set_id(tr, gtr->id);
-				tr_set_limit(tr, &gtr->usage_write);
-				tr_list_add(&track->prepared, tr);
-				ltr->tr = tr;
-			}
-		}
-
-		// expr or multi-user access
-		auto on_error = error_catch
-		(
-			vm_run(&self->vm,
-			       gtr,
-			       NULL,
-			       program,
-			       compiler->program_args,
-			       &ret,
-			       true);
-		);
-		if (on_error)
-			error = error_create(&am_self()->error);
-	}
-
-	// wait for completion
-	auto returning = compiler->program_returning;
-	if (users > 0)
-	{
-		// wait for completion
-		auto error_pushdown = dispatch_complete(&gtr->dispatch);
-		if (error_pushdown)
-		{
-			assert(! error);
-			error = error_pushdown;
-		}
-
-		// pushdown result
-		if (users == 1 && returning && gtr->dispatch.result_has)
-			ret.value = &gtr->dispatch.result;
-	}
+	auto on_error = error_catch
+	(
+		vm_run(&self->vm,
+		       gtr,
+		       NULL,
+		       program,
+		       compiler->program_args,
+		       &ret,
+		       true);
+	);
+	if (on_error)
+		error = error_create(&am_self()->error);
 
 	if (compiler->program_profile)
 	{
@@ -177,6 +136,7 @@ session_run(Session* self)
 	}
 
 	// write result
+	auto returning = compiler->program_returning;
 	auto output = &portal->output;
 	if (returning && ret.value)
 		output_value(output, returning, ret.value);
@@ -214,9 +174,7 @@ session_run_utility(Session* self)
 	portal_lock(portal, program->lock_catalog);
 
 	// prepare global transaction
-	gtr_prepare(gtr, &portal->local, portal->user,
-	            compiler->program,
-	            compiler->program_args);
+	gtr_begin(gtr, &portal->local, portal->user, compiler->program);
 
 	// prevent concurrent ddls
 	lock_ddl(program->lock_ddl);
@@ -416,19 +374,3 @@ session_execute(Session* self, Portal* portal, Request* req)
 	// note: request keeps catalog lock
 	return !on_error;
 }
-
-#if 0
-	// pass store to insert
-	if (op->d != -1)
-	{
-		// store, seed, time
-		buf_reset(&req->arg);
-		buf_write(&req->arg, &reg_at(&self->r, op->d)->store, sizeof(Store*));
-		uint64_t value = random_generate(&self->local->random);
-		buf_write(&req->arg, &value, sizeof(value));
-		value = self->local->time_ms;
-		buf_write(&req->arg, &value, sizeof(value));
-
-		value_free(reg_at(&self->r, op->d));
-	}
-#endif

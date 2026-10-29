@@ -56,10 +56,6 @@ players_start(Players* self, Computes* computes)
 		// deploy
 		compute_add(fe, &player->msg);
 	}
-
-	// sync gtrs and commit recover state to the current lsn
-	gtrs_sync(share()->gtrs);
-	commit_sync(share()->commit);
 }
 
 void
@@ -97,10 +93,6 @@ void
 players_sync(Players* self)
 {
 	player_sync(&self->sync);
-
-	// sync gtrs and commit recover state to the current lsn
-	gtrs_sync(share()->gtrs);
-	commit_sync(share()->commit);
 }
 
 static inline Player*

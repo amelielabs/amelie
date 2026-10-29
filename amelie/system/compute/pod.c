@@ -17,6 +17,7 @@
 #include <amelie_vm>
 #include <amelie_compute.h>
 
+#if 0
 hot static void
 pod_request(Pod* self, Ltr* ltr)
 {
@@ -239,3 +240,4 @@ pod_stop(Pod* self)
 	track_set_compute(track, NULL);
 	self->worker_id = -1;
 }
+#endif

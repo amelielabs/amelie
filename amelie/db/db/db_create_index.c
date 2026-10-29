@@ -153,7 +153,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	// todo: exclusive lock
 
 	// force commit pending prepared transactions
-	table->catalog->iface->user_sync(table->catalog, table->user);
+	user_sync(table->user);
 
 	// todo:
 	// auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE_RO);

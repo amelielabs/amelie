@@ -29,8 +29,6 @@ typedef enum
 
 	// compute
 	MSG_CLIENT,
-	MSG_DEPLOY,
-	MSG_UNDEPLOY,
 	MSG_PLAYER,
 	MSG_PLAYER_STOP,
 	MSG_STREAM,

@@ -25,7 +25,6 @@ struct Compute
 {
 	Clients    clients;
 	Auth       auth;
-	Pods       pods;
 	ComputeIf* iface;
 	void*      iface_arg;
 	Task       task;

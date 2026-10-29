@@ -20,12 +20,11 @@ struct System
 	Functions  functions;
 	// repl
 	Repl       repl;
-	// transactions
-	Gtrs       gtrs;
-	Commit     commit;
+	// compute
 	Computes   computes;
 	// db
 	Db         db;
+	Commit     commit;
 	// server
 	Servers    servers;
 	// runtime control

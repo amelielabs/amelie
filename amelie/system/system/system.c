@@ -105,32 +105,14 @@ catalog_if_user_detach(Catalog* catalog, User* user)
 	computes_undeploy(&system->computes, user);
 }
 
-static void
-catalog_if_user_sync(Catalog* catalog, User* user)
-{
-	// sync prepared transactions
-	System* system = catalog->iface_arg;
-	computes_sync(&system->computes, user);
-}
-
-static void
-catalog_if_table_truncate(Catalog* catalog, Table* table)
-{
-	// truncate pod
-	System* system = catalog->iface_arg;
-	computes_truncate(&system->computes, table);
-}
-
 static CatalogIf catalog_if =
 {
 	.user_invalidate = catalog_if_user_invalidate,
 	.user_attach     = catalog_if_user_attach,
 	.user_detach     = catalog_if_user_detach,
-	.user_sync       = catalog_if_user_sync,
 	.udf_compile     = catalog_if_udf_compile,
 	.udf_free        = catalog_if_udf_free,
-	.udf_depends     = catalog_if_udf_depends,
-	.table_truncate  = catalog_if_table_truncate
+	.udf_depends     = catalog_if_udf_depends
 };
 
 static void*
@@ -272,7 +254,6 @@ system_create(void)
 
 	// prepare shared context
 	auto share = &self->share;
-	share->gtrs           = &self->gtrs;
 	share->commit         = &self->commit;
 	share->repl           = &self->repl;
 	share->functions      = &self->functions;
@@ -290,8 +271,7 @@ system_create(void)
 	computes_init(&self->computes);
 
 	// transactions
-	gtrs_init(&self->gtrs);
-	commit_init(&self->commit, &self->db, &self->gtrs);
+	commit_init(&self->commit, &self->db);
 
 	// vm
 	functions_init(&self->functions);
@@ -309,7 +289,6 @@ system_free(System* self)
 {
 	repl_free(&self->repl);
 	commit_free(&self->commit);
-	gtrs_free(&self->gtrs);
 	db_free(&self->db);
 	functions_free(&self->functions);
 	servers_free(&self->servers);

@@ -123,28 +123,12 @@ computes_deploy(Computes* self, User* user)
 {
 	auto id = computes_next(self);
 	auto compute = &self->workers[id];
-	rpc(&compute->task, MSG_DEPLOY, user);
+	track_set_compute(&user->track, &compute->task);
 }
 
 static inline void
 computes_undeploy(Computes* self, User* user)
 {
 	unused(self);
-	if (! user->track.compute)
-		return;
-	rpc(user->track.compute, MSG_UNDEPLOY, user);
-}
-
-static inline void
-computes_sync(Computes* self, User* user)
-{
-	unused(self);
-	rpc(user->track.compute, MSG_SYNC, user);
-}
-
-static inline void
-computes_truncate(Computes* self, Table* table)
-{
-	unused(self);
-	rpc(table->user->track.compute, MSG_TRUNCATE, table);
+	track_set_compute(&user->track, NULL);
 }
