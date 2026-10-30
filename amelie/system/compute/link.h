@@ -31,8 +31,4 @@ struct Link
 	Compute* compute;
 };
 
-void link_init(Link*, Compute*, Client*);
-void link_free(Link*);
-void link_main(Link*);
-
-void compute_link(Compute*, Client*);
+Task* compute_link(Compute*, Client*);

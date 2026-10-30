@@ -104,7 +104,7 @@ server_accept(Server* self)
 		auto is_localhost = tcp_set_fd(&client->tcp, fd);
 
 		// trust localhost clients (including unixsocket)
-		token_set_trusted(&client->token, is_localhost);
+		client_set_trusted(client, is_localhost);
 		client_set_repl(client, config->repl);
 		fd = -1;
 

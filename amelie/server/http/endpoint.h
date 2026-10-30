@@ -59,6 +59,7 @@ struct Endpoint
 	Opt  id;
 	// misc
 	Opt  jsonrpc;
+	Opt  trusted;
 	Opt  name;
 	Opt  debug;
 	Opts opts;

@@ -142,24 +142,6 @@ static ComputeIf compute_if =
 	.session_execute = compute_if_session_execute
 };
 
-hot static void
-system_client(void* arg)
-{
-	Client* client = arg;
-	System* self = client->arg;
-
-	// authenticate user
-	auto user = auth(&self->auth, client);
-	if (! user)
-	{
-		client_free(client);
-		return;
-	}
-
-	// send to the user compute worker
-	task_send(user->track.compute, &client->msg);
-}
-
 static void
 system_on_server_connect(Server* server, Client* client)
 {
@@ -170,8 +152,9 @@ system_on_server_connect(Server* server, Client* client)
 		return;
 	}
 
-	client->arg = self;
-	coroutine_create(system_client, client);
+	// forward to next compute, client will be migrated if the
+	// user does not match
+	computes_connect(&self->computes, client);
 }
 
 static void
@@ -287,7 +270,6 @@ system_create(void)
 	am_share = share;
 
 	// server
-	auth_init(&self->auth);
 	servers_init(&self->servers, system_on_server_connect, self);
 
 	// compute
@@ -315,7 +297,6 @@ system_free(System* self)
 	db_free(&self->db);
 	functions_free(&self->functions);
 	servers_free(&self->servers);
-	auth_free(&self->auth);
 	am_free(self);
 }
 

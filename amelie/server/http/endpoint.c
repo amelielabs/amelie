@@ -49,6 +49,7 @@ endpoint_init(Endpoint* self)
 		{ "id",           OPT_STRING,  OPT_C|OPT_A|OPT_AE, &self->id,           NULL, 0          },
 		// misc
 		{ "jsonrpc",      OPT_JSON,    OPT_E,              &self->jsonrpc,      NULL, 0          },
+		{ "trusted",      OPT_BOOL,    OPT_E,              &self->trusted,      NULL, false      },
 		{ "debug",        OPT_BOOL,    OPT_C,              &self->debug,        NULL, false      },
 		{  NULL,          0,           0,                   NULL,               NULL, 0          },
 	};

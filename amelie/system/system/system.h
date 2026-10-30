@@ -26,7 +26,6 @@ struct System
 	Db         db;
 	Commit     commit;
 	// server
-	Auth       auth;
 	Servers    servers;
 	// runtime control
 	RuntimeIf  runtime_if;

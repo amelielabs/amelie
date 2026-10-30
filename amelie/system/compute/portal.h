@@ -94,27 +94,18 @@ portal_prepare(Portal* self)
 }
 
 hot static inline void
-portal_auth(Portal* self, Token* token)
+portal_auth(Portal* self, Auth* auth, Token* token)
 {
 	// take catalog lock
 	self->lock = lock_catalog(LOCK_SHARED);
 	lock_detach(self->lock);
 
-	// todo: validate token
-	self->user = token->user;
-
-#if 0
-	// authenticate user
+	// authenticate user/token
 	auto endpoint = &self->endpoint;
-	self->user = auth(auth_ref, endpoint);
+	self->user = auth_run(auth, endpoint, token);
 
-	// superuser can connect only from localhost/unixsocket (trusted source)
-	auto trusted = opt_int_of(&endpoint->trusted);
-	if (self->user->config->superuser && !trusted)
-		error("auth: superuser can connect only from localhost");
-
+	// set user name
 	opt_string_set(&endpoint->user, &self->user->config->name);
-#endif
 }
 
 hot static inline void

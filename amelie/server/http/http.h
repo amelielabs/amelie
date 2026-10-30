@@ -57,3 +57,9 @@ Buf* http_begin_reply(Http*, Endpoint*, char*, int, uint64_t);
 void http_end(Buf*);
 HttpHeader*
 http_find(Http*, char*, int);
+
+static inline bool
+http_empty(Http* self)
+{
+	return buf_empty(&self->raw);
+}

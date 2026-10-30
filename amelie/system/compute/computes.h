@@ -16,6 +16,7 @@ typedef struct Computes Computes;
 struct Computes
 {
 	int      rr;
+	int      rr_connect;
 	int      workers_count;
 	Compute* workers;
 };
@@ -24,6 +25,7 @@ static inline void
 computes_init(Computes* self)
 {
 	self->rr            = 0;
+	self->rr_connect    = 0;
 	self->workers_count = 0;
 	self->workers       = NULL;
 }
@@ -87,6 +89,15 @@ computes_next(Computes* self)
 	return self->rr++;
 }
 
+static inline int
+computes_next_connect(Computes* self)
+{
+	assert(self->workers_count > 0);
+	if (self->rr_connect == self->workers_count)
+		self->rr_connect = 0;
+	return self->rr_connect++;
+}
+
 static inline void
 computes_invalidate(Computes* self, User* user)
 {
@@ -126,8 +137,6 @@ static inline void
 computes_deploy(Computes* self, User* user)
 {
 	auto id = computes_next(self);
-	info("[{d}] {str}", id, user->rel.name);
-
 	auto compute = &self->workers[id];
 	track_set_compute(&user->track, &compute->task);
 }
@@ -137,4 +146,12 @@ computes_undeploy(Computes* self, User* user)
 {
 	unused(self);
 	track_set_compute(&user->track, NULL);
+}
+
+static inline void
+computes_connect(Computes* self, Client* client)
+{
+	auto id = computes_next_connect(self);
+	auto compute = &self->workers[id];
+	task_send(&compute->task, &client->msg);
 }

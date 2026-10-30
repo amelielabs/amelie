@@ -325,6 +325,7 @@ set(AMELIE_SOURCES_SYSTEM
 	#${AMELIE_ROOT}/system/backend/stream.c
 	#${AMELIE_ROOT}/system/backend/streams.c
 
+    ${AMELIE_ROOT}/system/compute/auth.c
     ${AMELIE_ROOT}/system/compute/compute.c
     ${AMELIE_ROOT}/system/compute/mcp.c
     ${AMELIE_ROOT}/system/compute/mcp_execute.c
@@ -334,8 +335,6 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/compute/player.c
     ${AMELIE_ROOT}/system/compute/players.c
     ${AMELIE_ROOT}/system/session/session.c
-
-    ${AMELIE_ROOT}/system/system/auth.c
     ${AMELIE_ROOT}/system/system/repo.c
     ${AMELIE_ROOT}/system/system/system.c
     ${AMELIE_ROOT}/system/system/system_state.c

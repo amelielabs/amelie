@@ -24,6 +24,7 @@ client_allocate(void)
 	self->coroutine_id = UINT64_MAX;
 	self->accepted     = false;
 	self->repl         = false;
+	self->trusted      = false;
 	self->arg          = NULL;
 	self->sync         = 0;
 	self->histogram    = NULL;
@@ -52,17 +53,15 @@ client_free(Client* self)
 }
 
 void
-client_set_coroutine_name(Client* self)
-{
-	char addr[128];
-	tcp_getpeername(&self->tcp, addr, sizeof(addr));
-	coroutine_set_name(am_self(), "client {s}", addr);
-}
-
-void
 client_set_endpoint(Client* self, Endpoint* endpoint)
 {
 	self->endpoint = endpoint;
+}
+
+void
+client_set_trusted(Client* self, bool value)
+{
+	self->trusted = value;
 }
 
 void
@@ -88,17 +87,13 @@ client_attach(Client* self)
 void
 client_detach(Client* self)
 {
-	if (tcp_connected(&self->tcp))
-		tcp_detach(&self->tcp);
+	tcp_detach(&self->tcp);
 	self->coroutine_id = UINT64_MAX;
 }
 
 void
 client_accept(Client* self)
 {
-	// new client
-	client_set_coroutine_name(self);
-
 	// handshake
 	tcp_connect_fd(&self->tcp);
 	self->accepted = true;

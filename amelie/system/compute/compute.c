@@ -26,15 +26,25 @@ compute_main_client(void* arg)
 	clients_add(&self->clients, client);
 
 	// process client connection
+	Task* migrate = NULL;
 	error_catch
 	(
 		client_attach(client);
-		compute_link(self, client);
+		if (! client->accepted)
+			client_accept(client);
+		migrate = compute_link(self, client);
 	);
 
+	client_detach(client);
 	clients_del(&self->clients, client);
 
-	client_close(client);
+	// migrate client to other compute
+	if (migrate)
+	{
+		task_send(migrate, &client->msg);
+		return;
+	}
+
 	client_free(client);
 }
 
@@ -134,6 +144,7 @@ compute_init(Compute* self, ComputeIf* iface, void* iface_arg)
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
 	clients_init(&self->clients);
+	auth_init(&self->auth);
 	task_init(&self->task);
 }
 
@@ -141,6 +152,7 @@ void
 compute_free(Compute* self)
 {
 	clients_free(&self->clients);
+	auth_free(&self->auth);
 	task_free(&self->task);
 }
 

@@ -17,7 +17,7 @@
 #include <amelie_vm>
 #include <amelie_compute.h>
 
-void
+static void
 link_init(Link* self, Compute* compute, Client* client)
 {
 	self->client  = client;
@@ -30,7 +30,7 @@ link_init(Link* self, Compute* compute, Client* client)
 	json_init(&self->json);
 }
 
-void
+static void
 link_free(Link* self)
 {
 	mcp_free(&self->mcp);
@@ -69,17 +69,20 @@ link_auth(Link* self)
 	if (auth)
 		endpoint->token.string = auth->value;
 
+	// trusted
+	opt_int_set(&endpoint->trusted, self->client->trusted);
+
 	// update time and random seed
 	portal_prepare(portal);
 
 	// authenticate user (and take catalog lock)
 	return !error_catch
 	(
-		portal_auth(portal, &self->client->token)
+		portal_auth(portal, &self->compute->auth, &self->client->token)
 	);
 }
 
-hot void
+hot static Task*
 link_main(Link* self)
 {
 	auto client    = self->client;
@@ -95,12 +98,39 @@ link_main(Link* self)
 
 	for (;;)
 	{
+		if (likely(http_empty(http)))
+		{
+			// read header
+			auto eof = http_read(http, readahead, true);
+			if (unlikely(eof))
+				break;
+
+			// read content
+			auto limit = opt_int_of(&config()->recv);
+			auto limit_reached =
+				http_read_content_limit(http, readahead, &http->content, limit);
+			if (unlikely(limit_reached))
+			{
+				// 413 Payload Too Large (disconnect)
+				client_413(client);
+				break;
+			}
+		}
+
 		// authenticate
 		if (! link_auth(self))
 		{
 			// 401 Unauthorized (disconnect)
 			client_401(client);
 			break;
+		}
+
+		// migrate client to other compute
+		auto task = portal->user->track.compute;
+		if (unlikely(task != am_task))
+		{
+			token_reset(&client->token);
+			return task;
 		}
 
 		// read request
@@ -135,37 +165,22 @@ link_main(Link* self)
 		{
 			// sse
 			link_stream(self);
-			return;
+			return NULL;
 		}
 		}
 
-		// read next request
 		link_reset(self);
-
-		// read header
 		http_reset(http);
-		auto eof = http_read(http, readahead, true);
-		if (unlikely(eof))
-			break;
-
-		// read content
-		auto limit = opt_int_of(&config()->recv);
-		auto limit_reached =
-			http_read_content_limit(http, readahead, &http->content, limit);
-		if (unlikely(limit_reached))
-		{
-			// 413 Payload Too Large (disconnect)
-			client_413(client);
-			break;
-		}
 	}
+
+	return NULL;
 }
 
-void
+Task*
 compute_link(Compute* self, Client* client)
 {
 	Link link;
 	link_init(&link, self, client);
 	defer(link_free, &link);
-	link_main(&link);
+	return link_main(&link);
 }

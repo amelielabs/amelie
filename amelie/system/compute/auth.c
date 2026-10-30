@@ -17,8 +17,6 @@
 #include <amelie_vm>
 #include <amelie_compiler>
 #include <amelie_compute.h>
-#include <amelie_session.h>
-#include <amelie_system.h>
 
 void
 auth_init(Auth* self)
@@ -40,7 +38,7 @@ auth_reset(Auth* self)
 }
 
 hot static inline User*
-auth_jwt(Auth* self, Str* token, int64_t* expire)
+auth_jwt(Auth* self, Str* token, uint64_t* expire)
 {
 	auto jwt = &self->jwt;
 	jwt_decode_reset(jwt);
@@ -113,9 +111,9 @@ auth_basic(Auth* self, Str* token)
 }
 
 hot static inline User*
-auth_token(Auth* self, Str* token, bool trusted, int64_t* expire)
+auth_token(Auth* self, Str* token, bool trusted, uint64_t* expire)
 {
-	*expire = -1;
+	*expire = UINT64_MAX;
 
 	// no token
 	if (str_empty(token))
@@ -155,80 +153,41 @@ auth_token(Auth* self, Str* token, bool trusted, int64_t* expire)
 	return NULL;
 }
 
-static inline User*
-auth_run(Auth* self, Client* client)
+User*
+auth_run(Auth* self, Endpoint* endpoint, Token* token)
 {
-	auto readahead = &client->readahead;
-	auto http      = &client->request;
-
-	// todo: add timeouts
-
-	// read header
-	auto eof = http_read(http, readahead, true);
-	if (unlikely(eof))
-		return NULL;
-
-	// read content
-	auto limit = opt_int_of(&config()->recv);
-	auto limit_reached =
-		http_read_content_limit(http, readahead, &http->content, limit);
-	if (unlikely(limit_reached))
+	// validate token
+	auto ref = opt_string_of(&endpoint->token);
+	if (likely(! token_empty(token)))
 	{
-		// 413 Payload Too Large (disconnect)
-		client_413(client);
-		return NULL;
+		if (str_compare(ref, &token->token))
+		{
+			if (token->expire != UINT64_MAX)
+			{
+				auto now = time_us();
+				if (now >= token->expire)
+					token_reset(token);
+			}
+		} else {
+			token_reset(token);
+		}
 	}
 
-	// token
-	Str token;
-	str_init(&token);
-	auto header = http_find(http, "Authorization", 13);
-	if (header)
-		token = header->value;
+	// use token
+	if (likely(! token_empty(token)))
+		return token->user;
+
+	auto trusted = opt_int_of(&endpoint->trusted);
 
 	// authenticate user
-	auto    trusted = client->token.trusted;
-	int64_t expire;
-	User*   user = NULL;
-	auto on_error = error_catch
-	(
-		user = auth_token(self, &token, trusted, &expire);
+	uint64_t expire;
+	auto user = auth_token(self, ref, trusted, &expire);
 
-		// superuser can connect only from localhost/unixsocket (trusted source)
-		if (user->config->superuser && !trusted)
-			error("auth: superuser can connect only from localhost");
-	);
+	// superuser can connect only from localhost/unixsocket (trusted source)
+	if (user->config->superuser && !trusted)
+		error("auth: superuser can connect only from localhost");
 
-	if (on_error)
-	{
-		// 401 Unauthorized (disconnect)
-		client_401(client);
-		return NULL;
-	}
-
-	// set client token
-	token_set(&client->token, &token, expire, user);
-	return user;
-}
-
-User*
-auth(Auth* self, Client* client)
-{
-	User* user = NULL;
-	auto on_error = error_catch
-	(
-		client_attach(client);
-		client_accept(client);
-		user = auth_run(self, client);
-	);
-
-	client_detach(client);
-
-	if (on_error || !user)
-	{
-		client_close(client);
-		return NULL;
-	}
-
+	// set token
+	token_set(token, ref, expire, user);
 	return user;
 }
