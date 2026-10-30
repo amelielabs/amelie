@@ -49,7 +49,7 @@ config_prepare(Config* self)
 		// workers
 		{ "compute",                 OPT_INT,    OPT_C|OPT_Z,             &self->compute,                 NULL,             1                   },
 		{ "workers",                 OPT_INT,    OPT_C|OPT_Z,             &self->workers,                 NULL,             1                   },
-		{ "cpu_affinity",            OPT_BOOL,   OPT_C,                   &self->cpu_affinity,            NULL,             true                },
+		{ "cpu_affinity",            OPT_BOOL,   OPT_C,                   &self->cpu_affinity,            NULL,             false               },
 		// wal
 		{ "wal_crc",                 OPT_BOOL,   OPT_C,                   &self->wal_crc,                 NULL,             true                },
 		{ "wal_sync_create",         OPT_BOOL,   OPT_C,                   &self->wal_sync_create,         NULL,             true                },

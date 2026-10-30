@@ -52,7 +52,7 @@ bench_free(Bench* self)
 }
 
 static void
-bench_deploy_client(BenchClient* self, int user_id)
+bench_deploy_client(BenchClient* self, int user_id, bool deploy)
 {
 	auto endpoint_main = &self->bench->main->endpoint;
 	auto endpoint = &self->endpoint;
@@ -81,34 +81,35 @@ bench_deploy_client(BenchClient* self, int user_id)
 	if (opt_int_of(&self->bench->opt_histogram))
 		client_set_histogram(self->client, &self->bench->histogram);
 	client_connect(self->client);
+
+	// create user relations
+	if (deploy)
+		self->bench->iface->deploy(self);
 }
 
 static void
-bench_deploy_user(BenchClient* self)
+bench_create(Bench* self)
 {
-	auto endpoint = &self->endpoint;
-	Str user;
-	str_init(&user);
-	defer(str_free, &user);
-	str_copy(&user, &endpoint->user.string);
+	// create users (under superuser)
+	auto users  = (int)self->opt_users.integer;
+	auto client = client_allocate();
+	defer(client_free, client);
+	client_set_endpoint(client, &self->main->endpoint);
+	client_connect(client);
+	for (auto i = 0; i < users; i++)
+	{
+		char name[16];
+		format(name, sizeof(name), "bench_{d}", i);
+		Str str;
+		str_set_cstr(&str, name);
 
-	// switch to superuser
-	opt_free(&endpoint->user);
-	opt_free(&endpoint->token);
+		char cmd[256];
+		format(cmd, sizeof(cmd), "drop user if exists {str} cascade", &str);
+		client_run(client, cmd);
 
-	// recreate user
-	char cmd[256];
-	format(cmd, sizeof(cmd), "drop user if exists {str} cascade", &user);
-	client_run(self->client, cmd);
-
-	format(cmd, sizeof(cmd), "create user {str}", &user);
-	client_run(self->client, cmd);
-
-	// switch back and deploy
-	opt_string_set(&endpoint->user, &user);
-	endpoint_auth(endpoint);
-
-	self->bench->iface->deploy(self);
+		format(cmd, sizeof(cmd), "create user {str}", &str);
+		client_run(client, cmd);
+	}
 }
 
 static void
@@ -118,6 +119,9 @@ bench_deploy(Bench* self)
 	auto users   = (int)self->opt_users.integer;
 	auto clients = (int)self->opt_clients.integer;
 	auto size    = sizeof(BenchClient) * users * clients;
+
+	// create users
+	bench_create(self);
 
 	self->clients_count = users * clients;
 	self->clients = am_malloc(size);
@@ -134,13 +138,12 @@ bench_deploy(Bench* self)
 	for (auto i = 0; i < users; i++)
 	{
 		auto at = &self->clients[seq];
-		bench_deploy_client(at, i);
-		bench_deploy_user(at);
+		bench_deploy_client(at, i, true);
 		seq++;
 		for (auto j = 1; j < clients; j++)
 		{
 			at = &self->clients[seq];
-			bench_deploy_client(at, i);
+			bench_deploy_client(at, i, false);
 			seq++;
 		}
 	}

@@ -42,19 +42,19 @@ players_start(Players* self, Computes* computes)
 	self->player_count = 32;
 	self->player = am_malloc(sizeof(Player) * self->player_count);
 
-	auto sync  = &self->sync;
-	auto fe_id = 0;
+	auto sync = &self->sync;
+	auto id   = 0;
 	for (auto i = 0; i < self->player_count; i++)
 	{
 		auto player = &self->player[i];
-		auto fe = &computes->workers[fe_id];
-		fe_id++;
-		if (fe_id >= computes->workers_count)
-			fe_id = 0;
-		player_init(player, sync, fe);
+		auto compute = &computes->workers[id];
+		id++;
+		if (id >= computes->workers_count)
+			id = 0;
+		player_init(player, sync, compute);
 
 		// deploy
-		compute_add(fe, &player->msg);
+		task_send(&compute->task, &player->msg);
 	}
 }
 
@@ -71,7 +71,7 @@ players_stop(Players* self)
 	for (auto i = 0; i < self->player_count; i++)
 	{
 		auto player = &self->player[i];
-		compute_add(player->compute, &player->msg_stop);
+		task_send(&player->compute->task, &player->msg_stop);
 	}
 
 	// wait for stop
@@ -119,7 +119,7 @@ players_execute(Players* self, RecordMsg* msg)
 	// send to the next compute player client
 	auto player = players_next(self);
 	msg->arg = player;
-	compute_add(player->compute, &msg->msg);
+	task_send(&player->compute->task, &msg->msg);
 	player_sync_add(sync);
 
 	// sync

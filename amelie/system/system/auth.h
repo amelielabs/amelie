@@ -16,10 +16,10 @@ typedef struct Auth Auth;
 struct Auth
 {
 	JwtDecode jwt;
-	AuthCache cache;
+	User*     amelie;
 };
 
 void  auth_init(Auth*);
 void  auth_free(Auth*);
 void  auth_reset(Auth*);
-User* auth(Auth*, Endpoint*);
+User* auth(Auth*, Client*);

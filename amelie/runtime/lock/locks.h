@@ -81,6 +81,7 @@ locks_lock_of(Locks* self, Lock* lock)
 
 	// add lock to the lock manager
 	locks_add(self, lock);
+	auto event = &lock->event;
 
 	// always wait if there are waiters
 	auto pass = !res->lock_wait_count && lock_resolve(res, lock->lock);
@@ -94,17 +95,16 @@ locks_lock_of(Locks* self, Lock* lock)
 		lock->waiting = true;
 		list_append(&res->lock_wait, &lock->link);
 		res->lock_wait_count++;
+
+		// set bus
+		event_attach(event);
 	}
 
 	spinlock_unlock(&res->lock);
 
 	// wait for the lock
 	if (unlikely(! pass))
-	{
-		auto event = &lock->event;
-		event_attach(event);
 		event_wait(event, -1);
-	}
 }
 
 hot static inline Lock*

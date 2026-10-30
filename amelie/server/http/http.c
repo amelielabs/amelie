@@ -334,13 +334,16 @@ http_begin_reply(Http*    self, Endpoint* endpoint,
 	buf_write(buf, msg, msg_size);
 	buf_write(buf, "\r\n", 2);
 
-	// accept
-	auto accept = opt_string_of(&endpoint->accept);
-	if (! str_empty(accept))
+	if (endpoint)
 	{
-		buf_write(buf, "Content-Type: ", 14);
-		buf_write_str(buf, accept);
-		buf_write(buf, "\r\n", 2);
+		// accept
+		auto accept = opt_string_of(&endpoint->accept);
+		if (! str_empty(accept))
+		{
+			buf_write(buf, "Content-Type: ", 14);
+			buf_write_str(buf, accept);
+			buf_write(buf, "\r\n", 2);
+		}
 	}
 
 	// content-length

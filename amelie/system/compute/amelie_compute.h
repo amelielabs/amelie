@@ -22,10 +22,6 @@
 #include "compute/pods.h"
 #endif
 
-// auth
-#include "compute/auth_cache.h"
-#include "compute/auth.h"
-
 // portal / request
 #include "compute/request.h"
 #include "compute/portal.h"

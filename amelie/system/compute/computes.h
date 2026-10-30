@@ -31,6 +31,7 @@ computes_init(Computes* self)
 static inline void
 computes_set_affinity(Computes* self)
 {
+	(void)self;
 	auto cpus = get_nprocs();
 	if (self->workers_count > cpus)
 	{
@@ -44,9 +45,9 @@ computes_set_affinity(Computes* self)
 
 static inline void
 computes_start(Computes*  self,
-                ComputeIf* iface,
-                void*       iface_arg,
-                int         count)
+               ComputeIf* iface,
+               void*      iface_arg,
+               int        count)
 {
 	if (count == 0)
 		return;
@@ -87,16 +88,13 @@ computes_next(Computes* self)
 }
 
 static inline void
-computes_forward(Computes* self, Msg* msg)
-{
-	assert(self->workers_count > 0);
-	int pos = computes_next(self);
-	compute_add(&self->workers[pos], msg);
-}
-
-static inline void
 computes_invalidate(Computes* self, User* user)
 {
+	(void)self;
+	(void)user;
+	// todo:
+
+	/*
 	if (self->workers == NULL)
 		return;
 	for (int i = 0; i < self->workers_count; i++)
@@ -104,11 +102,16 @@ computes_invalidate(Computes* self, User* user)
 		auto compute = &self->workers[i];
 		auth_cache_invalidate(&compute->auth.cache, user);
 	}
+	*/
 }
 
 static inline void
 computes_invalidate_all(Computes* self)
 {
+	(void)self;
+	// todo:
+
+	/*
 	if (self->workers == NULL)
 		return;
 	for (int i = 0; i < self->workers_count; i++)
@@ -116,12 +119,15 @@ computes_invalidate_all(Computes* self)
 		auto compute = &self->workers[i];
 		auth_reset(&compute->auth);
 	}
+	*/
 }
 
 static inline void
 computes_deploy(Computes* self, User* user)
 {
 	auto id = computes_next(self);
+	info("[{d}] {str}", id, user->rel.name);
+
 	auto compute = &self->workers[id];
 	track_set_compute(&user->track, &compute->task);
 }

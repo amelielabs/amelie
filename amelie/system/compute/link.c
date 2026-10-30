@@ -72,12 +72,10 @@ link_auth(Link* self)
 	// update time and random seed
 	portal_prepare(portal);
 
-	// if auth is required
-	opt_int_set(&endpoint->trusted, self->client->trusted);
-
 	// authenticate user (and take catalog lock)
-	return !error_catch (
-		portal_auth(portal, &self->compute->auth);
+	return !error_catch
+	(
+		portal_auth(portal, &self->client->token)
 	);
 }
 
@@ -94,27 +92,9 @@ link_main(Link* self)
 	auto ctl = self->compute->iface;
 	auto session = ctl->session_create(self->compute, self->compute->iface_arg);
 	defer(ctl->session_free, session);
+
 	for (;;)
 	{
-		link_reset(self);
-
-		// read header
-		http_reset(http);
-		auto eof = http_read(http, readahead, true);
-		if (unlikely(eof))
-			break;
-
-		// read content
-		auto limit = opt_int_of(&config()->recv);
-		auto limit_reached =
-			http_read_content_limit(http, readahead, &http->content, limit);
-		if (unlikely(limit_reached))
-		{
-			// 413 Payload Too Large (disconnect)
-			client_413(client);
-			break;
-		}
-
 		// authenticate
 		if (! link_auth(self))
 		{
@@ -157,6 +137,26 @@ link_main(Link* self)
 			link_stream(self);
 			return;
 		}
+		}
+
+		// read next request
+		link_reset(self);
+
+		// read header
+		http_reset(http);
+		auto eof = http_read(http, readahead, true);
+		if (unlikely(eof))
+			break;
+
+		// read content
+		auto limit = opt_int_of(&config()->recv);
+		auto limit_reached =
+			http_read_content_limit(http, readahead, &http->content, limit);
+		if (unlikely(limit_reached))
+		{
+			// 413 Payload Too Large (disconnect)
+			client_413(client);
+			break;
 		}
 	}
 }

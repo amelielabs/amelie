@@ -24,7 +24,6 @@ struct ComputeIf
 struct Compute
 {
 	Clients    clients;
-	Auth       auth;
 	ComputeIf* iface;
 	void*      iface_arg;
 	Task       task;
@@ -34,9 +33,3 @@ void compute_init(Compute*, ComputeIf*, void*);
 void compute_free(Compute*);
 void compute_start(Compute*);
 void compute_stop(Compute*);
-
-static inline void
-compute_add(Compute* self, Msg* msg)
-{
-	task_send(&self->task, msg);
-}

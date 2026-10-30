@@ -29,7 +29,6 @@ compute_main_client(void* arg)
 	error_catch
 	(
 		client_attach(client);
-		client_accept(client);
 		compute_link(self, client);
 	);
 
@@ -130,14 +129,11 @@ compute_main(void* arg)
 }
 
 void
-compute_init(Compute*   self,
-              ComputeIf* iface,
-              void*       iface_arg)
+compute_init(Compute* self, ComputeIf* iface, void* iface_arg)
 {
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
 	clients_init(&self->clients);
-	auth_init(&self->auth);
 	task_init(&self->task);
 }
 
@@ -145,7 +141,6 @@ void
 compute_free(Compute* self)
 {
 	clients_free(&self->clients);
-	auth_free(&self->auth);
 	task_free(&self->task);
 }
 

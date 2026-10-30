@@ -11,6 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
+// auth
+#include "system/auth.h"
+
 // repository
 #include "system/repo.h"
 

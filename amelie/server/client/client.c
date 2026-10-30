@@ -12,6 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_http.h>
+#include <amelie_token.h>
 #include <amelie_client.h>
 
 Client*
@@ -22,7 +23,6 @@ client_allocate(void)
 	self->endpoint     = NULL;
 	self->coroutine_id = UINT64_MAX;
 	self->accepted     = false;
-	self->trusted      = false;
 	self->repl         = false;
 	self->arg          = NULL;
 	self->sync         = 0;
@@ -33,6 +33,7 @@ client_allocate(void)
 	tls_context_init(&self->tls_context);
 	readahead_init(&self->readahead, &self->tcp, 16 * 1024);
 	tcp_init(&self->tcp);
+	token_init(&self->token);
 	list_init(&self->link);
 	return self;
 }
@@ -46,6 +47,7 @@ client_free(Client* self)
 	client_close(self);
 	tls_context_free(&self->tls_context);
 	tcp_free(&self->tcp);
+	token_free(&self->token);
 	am_free(self);
 }
 
@@ -61,12 +63,6 @@ void
 client_set_endpoint(Client* self, Endpoint* endpoint)
 {
 	self->endpoint = endpoint;
-}
-
-void
-client_set_trusted(Client* self, bool value)
-{
-	self->trusted = value;
 }
 
 void
