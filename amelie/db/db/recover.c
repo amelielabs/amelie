@@ -74,12 +74,12 @@ void
 recover_next(Recover* self, RecordMsg* msg)
 {
 	auto user = recover_read(self, msg);
-	// todo: track cross-user access alongside ddl
 
-	// ddl (wait for completion)
+	// sync on ddl and multi-user transactions (wait for completion)
 	auto sync = &self->sync;
 	auto sync_after = false;
-	if (unlikely(msg->record->flags & RECORD_UTILITY))
+	if (unlikely((msg->record->flags & RECORD_UTILITY) > 0 ||
+	             (msg->record->flags & RECORD_MULTI_USER) > 0))
 	{
 		recover_sync(sync);
 		sync_after = true;

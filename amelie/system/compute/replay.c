@@ -52,6 +52,8 @@ replay_record_primary(RecordMsg* record)
 void
 replay_run(Replay* self, RecordMsg* record)
 {
+	defer_buf(record->msg_buf);
+
 	auto compute = self->compute;
 	auto iface   = self->compute->iface;
 	if (! self->session)

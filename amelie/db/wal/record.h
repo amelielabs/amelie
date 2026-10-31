@@ -15,7 +15,8 @@ typedef struct Record Record;
 
 enum
 {
-	RECORD_UTILITY = 1
+	RECORD_UTILITY    = 1,
+	RECORD_MULTI_USER = 2
 };
 
 struct Record

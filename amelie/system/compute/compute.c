@@ -87,7 +87,6 @@ compute_main(void* arg)
 			replay_run(&self->replay, record);
 			break;
 		}
-
 #if 0
 		case MSG_STREAM:
 		{

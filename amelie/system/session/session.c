@@ -88,10 +88,14 @@ session_run(Session* self)
 	if (! ro)
 	{
 		auto req = self->req;
-		if (req->recover)
+		if (req->recover) {
 			write_set_recover(write, req->recover);
-		else
+		} else
+		{
 			request_write(req, &portal->endpoint, &write->record_data);
+			if (access_multi_user(access))
+				write_set_flags(write, RECORD_MULTI_USER);
+		}
 	}
 
 	// [PROFILE]
