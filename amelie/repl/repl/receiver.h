@@ -15,15 +15,13 @@ typedef struct Receiver Receiver;
 
 struct Receiver
 {
-	List       list;
-	int        list_count;
-	RecoverIf* recover_if;
-	void*      recover_if_arg;
-	Db*        db;
-	Task       task;
+	List list;
+	int  list_count;
+	Db*  db;
+	Task task;
 };
 
-void receiver_init(Receiver*, Db*, RecoverIf*, void*);
+void receiver_init(Receiver*, Db*);
 void receiver_free(Receiver*);
 void receiver_start(Receiver*);
 void receiver_stop(Receiver*);

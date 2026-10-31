@@ -19,8 +19,6 @@ struct Share
 	Repl*      repl;
 	Functions* functions;
 	Db*        db;
-	RecoverIf* recover_if;
-	void*      recover_if_arg;
 };
 
 #define share() ((Share*)am_share)

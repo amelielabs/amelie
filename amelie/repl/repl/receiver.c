@@ -26,10 +26,7 @@ receiver_main(void* arg)
 	client_accept(client);
 
 	Node node;
-	node_init(&node, self->db,
-	          self->recover_if,
-	          self->recover_if_arg,
-	          client);
+	node_init(&node, self->db, client);
 
 	list_append(&self->list, &node.link);
 	self->list_count++;
@@ -78,12 +75,10 @@ receiver_task_main(void* arg)
 }
 
 void
-receiver_init(Receiver* self, Db* db, RecoverIf* iface, void* iface_arg)
+receiver_init(Receiver* self, Db* db)
 {
-	self->list_count     = 0;
-	self->recover_if     = iface;
-	self->recover_if_arg = iface_arg;
-	self->db             = db;
+	self->list_count = 0;
+	self->db         = db;
 	task_init(&self->task);
 	list_init(&self->list);
 }

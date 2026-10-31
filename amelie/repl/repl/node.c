@@ -16,12 +16,12 @@
 #include <amelie_repl.h>
 
 void
-node_init(Node* self, Db* db, RecoverIf* iface, void* iface_arg, Client* client)
+node_init(Node* self, Db* db, Client* client)
 {
 	self->coroutine_id = am_self()->id;
 	self->client = client;
 	list_init(&self->link);
-	recover_init(&self->recover, db, iface, iface_arg);
+	recover_init(&self->recover, db);
 }
 
 void
@@ -56,13 +56,13 @@ node_replay(Node* self, NodeMsg* node_msg, Buf* data)
 		memcpy(msg->record, record, record->size);
 
 		// execute
-		recover->iface->execute(recover, msg);
+		recover_next(recover, msg);
 
 		pos += record->size;
 	}
 
 	// wait for commit
-	recover->iface->sync(recover);
+	recover_wait(recover);
 }
 
 static void
@@ -100,12 +100,10 @@ node_main(Node* self)
 {
 	info("node connected.");
 
-	// prepare recovery state
-	self->recover.iface->create(&self->recover);
-
-	error_catch (
-		node_process(self);
+	error_catch
+	(
+		node_process(self)
 	);
 
-	self->recover.iface->sync(&self->recover);
+	recover_wait(&self->recover);
 }

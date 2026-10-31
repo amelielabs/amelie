@@ -24,8 +24,9 @@ struct ComputeIf
 struct Compute
 {
 	Clients    clients;
-	ComputeIf* iface;
 	Auth       auth;
+	Replay     replay;
+	ComputeIf* iface;
 	void*      iface_arg;
 	Task       task;
 };

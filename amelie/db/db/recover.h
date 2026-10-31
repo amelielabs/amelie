@@ -11,26 +11,16 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct RecoverIf RecoverIf;
-typedef struct Recover   Recover;
-
-struct RecoverIf
-{
-	void (*create)(Recover*);
-	void (*free)(Recover*);
-	void (*execute)(Recover*, RecordMsg*);
-	void (*sync)(Recover*);
-};
+typedef struct Recover Recover;
 
 struct Recover
 {
-	RecoverIf* iface;
-	void*      iface_arg;
-	void*      state;
-	Db*        db;
+	RecoverSync sync;
+	Db*         db;
 };
 
-void recover_init(Recover*, Db*, RecoverIf*, void*);
+void recover_init(Recover*, Db*);
 void recover_free(Recover*);
-void recover_next(Recover*, Record*);
+void recover_wait(Recover*);
+void recover_next(Recover*, RecordMsg*);
 void recover_wal(Recover*);

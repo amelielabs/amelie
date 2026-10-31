@@ -26,11 +26,11 @@ repl_role_of(ReplRole role)
 }
 
 void
-repl_init(Repl* self, Db* db, RecoverIf* iface, void* iface_arg)
+repl_init(Repl* self, Db* db)
 {
 	self->role = REPL_PRIMARY;
 	replicas_init(&self->replicas, db);
-	receiver_init(&self->receiver, db, iface, iface_arg);
+	receiver_init(&self->receiver, db);
 }
 
 void

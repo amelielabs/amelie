@@ -17,6 +17,7 @@ struct RecordMsg
 {
 	Msg    msg;
 	Buf*   msg_buf;
+	User*  user;
 	void*  arg;
 	Uuid   instance_id;
 	Record record[];

@@ -108,7 +108,7 @@ session_run(Session* self)
 	}
 
 	// begin transaction
-	//
+
 	// lock users and commit prepared transactions per user
 	gtr_begin(gtr, &portal->local, portal->user, compiler->program);
 

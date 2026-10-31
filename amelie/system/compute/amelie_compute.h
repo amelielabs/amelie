@@ -29,6 +29,9 @@
 #include "compute/request.h"
 #include "compute/portal.h"
 
+// replay
+#include "compute/replay.h"
+
 // compute
 #include "compute/compute.h"
 #include "compute/computes.h"
@@ -39,8 +42,3 @@
 #include "compute/link.h"
 #include "compute/link_request.h"
 #include "compute/link_stream.h"
-
-// player
-#include "compute/player_sync.h"
-#include "compute/player.h"
-#include "compute/players.h"

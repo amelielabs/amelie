@@ -158,46 +158,6 @@ system_on_server_connect(Server* server, Client* client)
 }
 
 static void
-recover_if_create(Recover* recover)
-{
-	System* self = recover->iface_arg;
-	auto players = players_allocate();
-	players_start(players, &self->computes);
-	recover->state = players;
-}
-
-static void
-recover_if_free(Recover* recover)
-{
-	if (! recover->state)
-		return;
-	players_stop(recover->state);
-	players_free(recover->state);
-	recover->state = NULL;
-}
-
-static void
-recover_if_execute(Recover* recover, RecordMsg* record)
-{
-	players_execute(recover->state, record);
-}
-
-static void
-recover_if_sync(Recover* recover)
-{
-	players_sync(recover->state);
-}
-
-static RecoverIf recover_if =
-{
-	.create  = recover_if_create,
-	.free    = recover_if_free,
-	.execute = recover_if_execute,
-	.sync    = recover_if_sync
-};
-
-
-static void
 eval_if_create(Eval* self)
 {
 	self->state = system_eval_allocate();
@@ -263,8 +223,6 @@ system_create(void)
 	share->repl           = &self->repl;
 	share->functions      = &self->functions;
 	share->db             = &self->db;
-	share->recover_if     = &recover_if;
-	share->recover_if_arg = self;
 
 	// share shared context globally
 	am_share = share;
@@ -285,7 +243,7 @@ system_create(void)
 	db_init(&self->db, &catalog_if, &eval_if, self);
 
 	// replication
-	repl_init(&self->repl, &self->db, &recover_if, self);
+	repl_init(&self->repl, &self->db);
 	return self;
 }
 
@@ -316,7 +274,7 @@ system_recover(System* self, bool bootstrap)
 
 	// replay wals
 	Recover recover;
-	recover_init(&recover, &self->db, &recover_if, self);
+	recover_init(&recover, &self->db);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 	info("");

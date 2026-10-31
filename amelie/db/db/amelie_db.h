@@ -22,6 +22,9 @@
 #include "db/db.h"
 #include "db/db_op.h"
 #include "db/db_create_index.h"
+
+// recover
+#include "db/recover_sync.h"
 #include "db/recover.h"
 
 // backup

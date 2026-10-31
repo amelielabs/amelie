@@ -26,35 +26,26 @@ compute_main_client(void* arg)
 	clients_add(&self->clients, client);
 
 	// process client connection
-	Task* migrate = NULL;
+	Task* migrate_to = NULL;
 	error_catch
 	(
 		client_attach(client);
 		if (! client->accepted)
 			client_accept(client);
-		migrate = compute_link(self, client);
+		migrate_to = compute_link(self, client);
 	);
 
 	client_detach(client);
 	clients_del(&self->clients, client);
 
 	// migrate client to other compute
-	if (migrate)
+	if (migrate_to)
 	{
-		task_send(migrate, &client->msg);
+		task_send(migrate_to, &client->msg);
 		return;
 	}
 
 	client_free(client);
-}
-
-hot static void
-compute_main_player(void* arg)
-{
-	auto player = (Player*)arg;
-
-	// process recovery connection
-	player_main(player);
 }
 
 static void
@@ -90,25 +81,10 @@ compute_main(void* arg)
 			coroutine_create(compute_main_client, client);
 			break;
 		}
-		case MSG_PLAYER:
-		{
-			// player
-			auto player = (Player*)msg;
-			player->arg = self;
-			coroutine_create(compute_main_player, player);
-			break;
-		}
-		case MSG_PLAYER_STOP:
-		{
-			auto player = container_of(msg, Player, msg_stop);
-			player_forward(player, msg);
-			break;
-		}
 		case MSG_RECORD:
 		{
-			// forward for execution
 			auto record = (RecordMsg*)msg;
-			player_forward(record->arg, msg);
+			replay_run(&self->replay, record);
 			break;
 		}
 
@@ -145,6 +121,7 @@ compute_init(Compute* self, ComputeIf* iface, void* iface_arg)
 	self->iface_arg = iface_arg;
 	clients_init(&self->clients);
 	auth_init(&self->auth);
+	replay_init(&self->replay, self);
 	task_init(&self->task);
 }
 
@@ -152,6 +129,7 @@ void
 compute_free(Compute* self)
 {
 	clients_free(&self->clients);
+	replay_free(&self->replay);
 	auth_free(&self->auth);
 	task_free(&self->task);
 }

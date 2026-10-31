@@ -130,7 +130,9 @@ wal_recover(WalContext* context)
 	{
 		auto write = list_at(Write, link);
 		assert(write->recover);
-		context->lsn = write->recover->record->lsn;
+		auto lsn = write->recover->record->lsn;
+		if (lsn > context->lsn)
+			context->lsn = lsn;
 	}
 }
 
@@ -223,7 +225,7 @@ wal_write(Wal* self, WalContext* context)
 	}
 
 	// set global lsn
-	state_lsn_set(context->lsn);
+	state_lsn_follow(context->lsn);
 
 	// notify subscribers
 	wal_subscribe_notify(self, context->lsn);

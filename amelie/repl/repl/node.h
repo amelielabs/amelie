@@ -21,6 +21,6 @@ struct Node
 	List     link;
 };
 
-void node_init(Node*, Db*, RecoverIf*, void*, Client*);
+void node_init(Node*, Db*, Client*);
 void node_free(Node*);
 void node_main(Node*);

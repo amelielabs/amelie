@@ -23,31 +23,85 @@
 #include <amelie_db.h>
 
 void
-recover_init(Recover* self, Db* db, RecoverIf* iface, void* iface_arg)
+recover_init(Recover* self, Db* db)
 {
-	self->iface     = iface;
-	self->iface_arg = iface_arg;
-	self->state     = NULL;
-	self->db        = db;
+	self->db = db;
+	recover_sync_init(&self->sync);
 }
 
 void
 recover_free(Recover* self)
 {
-	if (self->state)
-		self->iface->free(self);
 	unused(self);
+}
+
+void
+recover_wait(Recover* self)
+{
+	recover_sync(&self->sync);
+}
+
+static inline User*
+recover_read(Recover* self, RecordMsg* msg)
+{
+	Str name;
+	str_init(&name);
+
+	auto record = msg->record;
+	auto pos = record_data(record);
+	unpack_array(&pos);
+	while (! unpack_array_end(&pos))
+	{
+		int64_t field;
+		unpack_int(&pos, &field);
+
+		// META_USER
+		if (field == 0)
+		{
+			unpack_str(&pos, &name);
+			break;
+		}
+		data_skip(&pos);
+	}
+
+	if (str_empty(&name))
+		error("recover: user field not found");
+
+	return catalog_find_user(&self->db->catalog, &name, true);
+}
+
+void
+recover_next(Recover* self, RecordMsg* msg)
+{
+	auto user = recover_read(self, msg);
+	// todo: track cross-user access alongside ddl
+
+	// ddl (wait for completion)
+	auto sync = &self->sync;
+	auto sync_after = false;
+	if (unlikely(msg->record->flags & RECORD_UTILITY))
+	{
+		recover_sync(sync);
+		sync_after = true;
+	}
+
+	// send for execution
+	recover_sync_add(sync);
+	msg->user = user;
+	msg->arg  = sync;
+	task_send(user->track.compute, &msg->msg);
+
+	// sync
+	uint64_t total = atomic_u64_of(&sync->total);
+	if (sync_after || !(total % 10000))
+		recover_sync(sync);
 }
 
 static void
 recover_wal_main(Recover* self)
 {
-	// open wal files and maybe truncate wal files according
-	// to the wal_truncate option
 	auto wal = &self->db->wal;
-
-	// prepare recovery state
-	self->iface->create(self);
+	auto wal_crc = opt_int_of(&config()->wal_crc);
 
 	// replay wals starting after last checkpoint
 	uint64_t id = state_checkpoint() + 1;
@@ -59,8 +113,6 @@ recover_wal_main(Recover* self)
 		WalCursor cursor;
 		wal_cursor_init(&cursor);
 		defer(wal_cursor_close, &cursor);
-
-		auto wal_crc = opt_int_of(&config()->wal_crc);
 		wal_cursor_open(&cursor, wal, id, false, wal_crc, false);
 		for (;;)
 		{
@@ -71,13 +123,13 @@ recover_wal_main(Recover* self)
 			count++;
 
 			// execute
-			self->iface->execute(self, msg);
+			recover_next(self, msg);
 		}
 		if (! wal_cursor_active(&cursor))
 			break;
 
 		// sync
-		self->iface->sync(self);
+		recover_wait(self);
 
 		clock_update(&am_task->clock);
 		info("recover: wal/{u64} ({.2f} MiB, {u64} transactions)", cursor.file->id,
