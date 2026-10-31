@@ -61,7 +61,7 @@ explain_program(Compiler* self, Program* program, Str* user, Str* name)
 	// main
 	auto access = &program->access;
 	if (access_multi_user(access))
-		buf_format(buf, "main [multi-user]\n");
+		buf_format(buf, "main [cross-user]\n");
 	else
 		buf_format(buf, "main\n");
 	op_dump(program, &program->code, buf);

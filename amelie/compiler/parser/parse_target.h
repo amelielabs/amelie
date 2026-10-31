@@ -48,7 +48,7 @@ parse_target_path(Stmt* self, Ast* path, Str* user, Str* target)
 	case KNAME:
 	{
 		// name
-		*user = *self->parser->user;
+		*user = self->parser->local->user;
 		*target = path->string;
 		break;
 	}

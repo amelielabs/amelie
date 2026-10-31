@@ -89,7 +89,7 @@ parse_function_create(Stmt* self, bool or_replace)
 	// copy existing grants
 	if (stmt->or_replace)
 	{
-		auto udf = catalog_find_udf(&share()->db->catalog, self->parser->user, &name, false);
+		auto udf = catalog_find_udf(&share()->db->catalog, &self->parser->local->user, &name, false);
 		if (udf)
 			grants_copy(&stmt->config->grants, &udf->config->grants);
 	}

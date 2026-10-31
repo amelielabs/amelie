@@ -40,6 +40,7 @@ catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 
 	auto program = program_allocate();
 	errdefer(program_free, program);
+	access_set_user(&program->access, &user->rel);
 
 	SetCache set_cache;
 	set_cache_init(&set_cache);

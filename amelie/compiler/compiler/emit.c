@@ -23,6 +23,9 @@
 void
 emit_close(Compiler* self, Stmt* stmt)
 {
+	(void)self;
+	(void)stmt;
+#if 0
 	// early release control for cross tenant transactions
 	if (! access_multi_user(&self->program->access))
 		return;
@@ -31,6 +34,7 @@ emit_close(Compiler* self, Stmt* stmt)
 	auto block = compiler_main(self);
 	if (stmt->block == block && block->stmts.last_send == stmt)
 		op0(self, CCLOSE);
+#endif
 }
 
 hot static void

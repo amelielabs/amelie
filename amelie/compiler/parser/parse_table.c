@@ -637,7 +637,7 @@ parse_table_alter(Stmt* self)
 			stmt_expect(self, KDEFAULT);
 
 			// find table and column
-			auto table  = catalog_find_table(&share()->db->catalog, self->parser->user,
+			auto table  = catalog_find_table(&share()->db->catalog, &self->parser->local->user,
 			                                 &stmt->name, false);
 			if (! table)
 				stmt_error(self, target, "table not found");

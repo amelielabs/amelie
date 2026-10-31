@@ -22,7 +22,6 @@ struct Parser
 	SetCache*  set_cache;
 	Json       json;
 	Lex        lex;
-	Str*       user;
 	Local*     local;
 };
 

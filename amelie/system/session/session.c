@@ -110,7 +110,7 @@ session_run(Session* self)
 	// begin transaction
 
 	// lock users and commit prepared transactions per user
-	gtr_begin(gtr, &portal->local, portal->user, compiler->program);
+	gtr_begin(gtr, &portal->local, portal->user, program);
 
 	// execute
 	Buf* error = NULL;
@@ -285,6 +285,9 @@ session_main(Session* self, Portal* portal, Request* req)
 	// set session local settings
 	self->portal = portal;
 	self->req    = req;
+
+	// set user
+	access_set_user(&self->program->access, &portal->user->rel);
 
 	// parse request
 	auto compiler = &self->compiler;

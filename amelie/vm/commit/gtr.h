@@ -109,9 +109,9 @@ gtr_begin(Gtr* self, Local* local, User* user, Program* program)
 	// set program
 	self->program = program;
 
-	// prepare ppers
+	// prepare peers
 	peers_prepare(&self->peers, &program->access);
 
 	// set consensus metrics and take user locks
-	peers_begin(&self->peers, &self->usage);
+	peers_begin(&self->peers, &program->access, &self->usage);
 }

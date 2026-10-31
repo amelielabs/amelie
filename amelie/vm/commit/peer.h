@@ -89,11 +89,11 @@ peers_prepare(Peers* self, Access* access)
 }
 
 hot static inline void
-peers_begin(Peers* self, Usage* usage)
+peers_begin(Peers* self, Access* access, Usage* usage)
 {
 	// lock users
 	LockId lock = LOCK_SHARED;
-	if (self->count > 1)
+	if (access_multi_user(access))
 		lock = LOCK_EXCLUSIVE;
 	for (auto i = 0; i < self->count; i++)
 	{
