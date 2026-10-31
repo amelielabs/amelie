@@ -39,7 +39,7 @@ user_free(User* self, bool drop)
 	// undeploy
 	self->catalog->iface->user_detach(self->catalog, self);
 
-	track_free(&self->track);
+	resource_free(&self->lock);
 	if (self->config)
 		user_config_free(self->config);
 	am_free(self);
@@ -61,7 +61,8 @@ user_allocate(Catalog* catalog, UserConfig* config)
 	self->revoked_at = 0;
 	self->config     = user_config_copy(config);
 	self->catalog    = catalog;
-	track_init(&self->track);
+	self->compute    = NULL;
+	resource_init(&self->lock, "user");
 
 	// prepare memory usage
 	usage_init(&self->memory, "memory");

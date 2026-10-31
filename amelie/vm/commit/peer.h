@@ -93,8 +93,7 @@ peers_lock(Peers* self, Access* access)
 		lock = LOCK_EXCLUSIVE;
 	for (auto i = 0; i < self->count; i++)
 	{
-		auto peer  = peers_at(self, i);
-		auto track = &peer->user->track;
-		lock(&track->lock, lock);
+		auto peer = peers_at(self, i);
+		lock(&peer->user->lock, lock);
 	}
 }

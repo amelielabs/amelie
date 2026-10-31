@@ -17,7 +17,8 @@ typedef struct User    User;
 struct User
 {
 	Rel         rel;
-	Track       track;
+	Resource    lock;
+	Task*       compute;
 	int64_t     revoked_at;
 	UserConfig* config;
 	Usage       memory;

@@ -138,14 +138,14 @@ computes_deploy(Computes* self, User* user)
 {
 	auto id = computes_next(self);
 	auto compute = &self->workers[id];
-	track_set_compute(&user->track, &compute->task);
+	user->compute = &compute->task;
 }
 
 static inline void
 computes_undeploy(Computes* self, User* user)
 {
 	unused(self);
-	track_set_compute(&user->track, NULL);
+	user->compute = NULL;
 }
 
 static inline void

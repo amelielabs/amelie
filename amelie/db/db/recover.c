@@ -89,7 +89,7 @@ recover_next(Recover* self, RecordMsg* msg)
 	recover_sync_add(sync);
 	msg->user = user;
 	msg->arg  = sync;
-	task_send(user->track.compute, &msg->msg);
+	task_send(user->compute, &msg->msg);
 
 	// sync
 	uint64_t total = atomic_u64_of(&sync->total);

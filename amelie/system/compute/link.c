@@ -126,7 +126,7 @@ link_main(Link* self)
 		}
 
 		// migrate client to other compute
-		auto task = portal->user->track.compute;
+		auto task = portal->user->compute;
 		if (unlikely(task != am_task))
 		{
 			token_reset(&client->token);
