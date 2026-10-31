@@ -30,6 +30,16 @@ node_free(Node* self)
 	recover_free(&self->recover);
 }
 
+#if 0
+	// validate replicated record
+	//
+	// ensure record comes from the current primary
+	//
+	if (! uuid_is(&record->instance_id, opt_uuid_of(&config()->uuid)))
+		if (! uuid_is(&record->instance_id, opt_uuid_of(&state()->primary)))
+			error("replay: primary id mismatch");
+#endif
+
 static void
 node_replay(Node* self, NodeMsg* node_msg, Buf* data)
 {
@@ -41,6 +51,11 @@ node_replay(Node* self, NodeMsg* node_msg, Buf* data)
 	while (pos < end)
 	{
 		auto record = (Record*)pos;
+
+		if (!record->lsn || record->size < sizeof(Record) ||
+		    (uint8_t*)record + record->size > end)
+				error("node: invalid record");
+
 		if (opt_int_of(&config()->wal_crc))
 			if (unlikely(! record_validate(record)))
 				error("node: record crc mismatch");

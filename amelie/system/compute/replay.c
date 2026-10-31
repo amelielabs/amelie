@@ -39,16 +39,6 @@ replay_free(Replay* self)
 	buf_free(&self->buf);
 }
 
-#if 0
-static inline void
-replay_record_primary(RecordMsg* record)
-{
-	// ensure record comes from the current primary
-	if (! uuid_is(&record->instance_id, opt_uuid_of(&state()->primary)))
-		error("replay: primary id mismatch");
-}
-#endif
-
 void
 replay_run(Replay* self, RecordMsg* record)
 {
@@ -78,12 +68,6 @@ replay_run(Replay* self, RecordMsg* record)
 
 		// ignore user limits during recovery
 		portal_set(portal, opt_string_of(&endpoint->user), false);
-
-#if 0
-		// validate replicated record
-		if (! uuid_is(&record->instance_id, opt_uuid_of(&config()->uuid)))
-			replay_record_primary(record);
-#endif
 
 		// execute
 		compute->iface->session_execute(self->session, portal, &self->req);
