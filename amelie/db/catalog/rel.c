@@ -70,10 +70,6 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 		catalog_deps_drop(self, tr, &deps);
 	}
 
-	// force commit pending prepared transactions
-	if (type == REL_TABLE)
-		user_sync(table_of(rel)->user);
-
 	// self
 	catalog_drop_of(self, tr, rel);
 	return true;

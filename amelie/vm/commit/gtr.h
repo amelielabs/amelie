@@ -15,25 +15,21 @@ typedef struct Gtr Gtr;
 
 struct Gtr
 {
-	Msg      msg;
-	Peers    peers;
-	Program* program;
-	Buf*     error;
-	bool     abort;
-	Tr       tr;
-	Usage    usage;
-	Write    write;
-	Event    on_commit;
-	Local*   local;
+	Msg     msg;
+	Peers   peers;
+	Access* access;
+	Tr      tr;
+	Usage   usage;
+	Write   write;
+	Event   on_commit;
+	Local*  local;
 };
 
 static inline void
 gtr_init(Gtr* self)
 {
-	self->program = NULL;
-	self->error   = NULL;
-	self->abort   = false;
-	self->local   = NULL;
+	self->access = NULL;
+	self->local  = NULL;
 	peers_init(&self->peers);
 	event_init(&self->on_commit);
 	tr_init(&self->tr);
@@ -45,14 +41,8 @@ gtr_init(Gtr* self)
 static inline void
 gtr_reset(Gtr* self)
 {
-	self->program = NULL;
-	self->abort   = false;
-	self->local   = NULL;
-	if (self->error)
-	{
-		buf_free(self->error);
-		self->error = NULL;
-	}
+	self->access = NULL;
+	self->local  = NULL;
 	peers_reset(&self->peers);
 	tr_reset(&self->tr);
 	write_reset(&self->write);
@@ -75,20 +65,7 @@ gtr_active(Gtr* self)
 }
 
 static inline void
-gtr_set_abort(Gtr* self)
-{
-	self->abort = true;
-}
-
-static inline void
-gtr_set_error(Gtr* self, Buf* buf)
-{
-	assert(! self->error);
-	self->error = buf;
-}
-
-static inline void
-gtr_begin(Gtr* self, Local* local, User* user, Program* program)
+gtr_begin(Gtr* self, Local* local, User* user, Access* access)
 {
 	self->local = local;
 
@@ -106,12 +83,12 @@ gtr_begin(Gtr* self, Local* local, User* user, Program* program)
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
 
-	// set program
-	self->program = program;
+	// set access
+	self->access = access;
 
 	// prepare peers
-	peers_prepare(&self->peers, &program->access);
+	peers_prepare(&self->peers, access);
 
-	// set consensus metrics and take user locks
-	peers_begin(&self->peers, &program->access, &self->usage);
+	// take user locks
+	peers_lock(&self->peers, access);
 }

@@ -16,9 +16,7 @@ typedef struct Peers Peers;
 
 struct Peer
 {
-	User*     user;
-	Tr*       tr;
-	Consensus consensus;
+	User* user;
 };
 
 struct Peers
@@ -82,14 +80,12 @@ peers_prepare(Peers* self, Access* access)
 			continue;
 		auto peer = (Peer*)buf_emplace(&self->list, sizeof(Peer));
 		peer->user = user;
-		peer->tr   = NULL;
-		consensus_init(&peer->consensus);
 		self->count++;
 	}
 }
 
 hot static inline void
-peers_begin(Peers* self, Access* access, Usage* usage)
+peers_lock(Peers* self, Access* access)
 {
 	// lock users
 	LockId lock = LOCK_SHARED;
@@ -100,28 +96,5 @@ peers_begin(Peers* self, Access* access, Usage* usage)
 		auto peer  = peers_at(self, i);
 		auto track = &peer->user->track;
 		lock(&track->lock, lock);
-	}
-
-	// start transactions
-	for (auto i = 0; i < self->count; i++)
-	{
-		auto peer  = peers_at(self, i);
-		auto track = &peer->user->track;
-
-		// set last commit metrics
-		consensus_atomic_read(&track->consensus_commit, &peer->consensus);
-
-		// commit/abort prepared transactions
-		track_commit(track, &peer->consensus);
-
-		// assign next transaction id
-		auto id = track->id++;
-
-		// create transaction
-		auto tr = tr_create(&track->cache);
-		tr_set_id(tr, id);
-		tr_set_limit(tr, usage);
-		tr_list_add(&track->prepared, tr);
-		peer->tr = tr;
 	}
 }

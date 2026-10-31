@@ -30,7 +30,7 @@ csystem_set_secret(Vm* self, Op* op)
 	unpack_str(&pos, &secret);
 
 	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
+	check_user(&self->gtr->tr, PERM_SYSTEM);
 
 	// create new system secret
 	opt_string_set(&state()->secret, &secret);
@@ -43,7 +43,7 @@ void
 ccreate_token(Vm* self, Op* op)
 {
 	// PERM_CREATE_TOKEN
-	check_user(self->tr, PERM_CREATE_TOKEN);
+	check_user(&self->gtr->tr, PERM_CREATE_TOKEN);
 
 	// [result, options_offset]
 	auto pos = code_data_at(&self->program->code_data, op->b);
@@ -56,7 +56,7 @@ ccreate_token(Vm* self, Op* op)
 	auto user = catalog_find_user(&share()->db->catalog, &name, true);
 
 	// allow to create tokens only for child users (or anyone if superuser)
-	check_ownership_user(self->tr, &user->rel);
+	check_ownership_user(&self->gtr->tr, &user->rel);
 
 	// ensure user has a secret
 	auto secret = opt_string_of(&state()->secret);
@@ -86,7 +86,7 @@ ccheckpoint(Vm* self, Op* op)
 	unused(op);
 
 	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
+	check_user(&self->gtr->tr, PERM_SYSTEM);
 
 	db_checkpoint(share()->db);
 }
@@ -98,7 +98,7 @@ cbackup(Vm* self, Op* op)
 	auto id = (Uuid*)code_data_at(&self->program->code_data, op->a);
 
 	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
+	check_user(&self->gtr->tr, PERM_SYSTEM);
 
 	backup(share()->db, id);
 }
@@ -107,7 +107,7 @@ void
 creplica_create(Vm* self, Op* op)
 {
 	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
+	check_user(&self->gtr->tr, PERM_SYSTEM);
 
 	// [config_offset, if_not_exists]
 	auto pos = code_data_at(&self->program->code_data, op->a);
@@ -123,7 +123,7 @@ void
 creplica_drop(Vm* self, Op* op)
 {
 	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
+	check_user(&self->gtr->tr, PERM_SYSTEM);
 
 	// [id, if_exists]
 	auto pos = code_data_at(&self->program->code_data, op->a);
@@ -141,7 +141,7 @@ void
 crepl_start(Vm* self, Op* op)
 {
 	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
+	check_user(&self->gtr->tr, PERM_SYSTEM);
 
 	unused(op);
 	repl_start(share()->repl);
@@ -152,7 +152,7 @@ void
 crepl_stop(Vm* self, Op* op)
 {
 	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
+	check_user(&self->gtr->tr, PERM_SYSTEM);
 
 	unused(op);
 	repl_stop(share()->repl);
@@ -163,7 +163,7 @@ void
 crepl_follow(Vm* self, Op* op)
 {
 	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
+	check_user(&self->gtr->tr, PERM_SYSTEM);
 
 	// [id, if_exists]
 	auto pos = code_data_at(&self->program->code_data, op->a);
@@ -177,7 +177,7 @@ void
 crepl_unfollow(Vm* self, Op* op)
 {
 	// PERM_SYSTEM
-	check_user(self->tr, PERM_SYSTEM);
+	check_user(&self->gtr->tr, PERM_SYSTEM);
 
 	unused(self);
 	unused(op);
@@ -192,7 +192,7 @@ cddl(Vm* self, Op* op)
 	unused(self);
 	auto pos = code_data_at(&self->program->code_data, op->a);
 	auto flags = op->b;
-	catalog_execute(&share()->db->catalog, self->tr, pos, flags);
+	catalog_execute(&share()->db->catalog, &self->gtr->tr, pos, flags);
 }
 
 void
@@ -202,5 +202,5 @@ cddl_create_index(Vm* self, Op* op)
 	unused(self);
 	auto pos = code_data_at(&self->program->code_data, op->a);
 	auto flags = op->b;
-	db_create_index(share()->db, self->tr, pos, flags);
+	db_create_index(share()->db, &self->gtr->tr, pos, flags);
 }

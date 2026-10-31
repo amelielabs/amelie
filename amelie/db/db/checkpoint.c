@@ -271,13 +271,6 @@ checkpoint_prepare(Checkpoint* self, Catalog* catalog)
 	auto pos = buf.start;
 	json_export_pretty(&self->manifest, runtime()->timezone, &pos);
 
-	// commit prepared transactions
-	list_foreach(&catalog->users.list)
-	{
-		auto user = user_of(list_at(Rel, link));
-		user_sync(user);
-	}
-
 	// collect pages
 	list_foreach(&catalog->rels.list)
 	{

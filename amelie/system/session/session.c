@@ -113,25 +113,26 @@ session_run(Session* self)
 
 	// begin transaction
 
-	// lock users and commit prepared transactions per user
-	gtr_begin(gtr, &portal->local, portal->user, program);
+	// lock users
+	gtr_begin(gtr, &portal->local, portal->user, access);
 
 	// execute
-	Buf* error = NULL;
 	Return ret;
 	return_init(&ret);
 	auto on_error = error_catch
 	(
 		vm_run(&self->vm,
 		       gtr,
-		       NULL,
 		       program,
 		       compiler->program_args,
 		       &ret,
 		       true);
 	);
 	if (on_error)
-		error = error_create(&am_self()->error);
+	{
+		tr_abort(&gtr->tr);
+		rethrow();
+	}
 
 	if (compiler->program_profile)
 	{
@@ -145,8 +146,9 @@ session_run(Session* self)
 	if (returning && ret.value)
 		output_value(output, returning, ret.value);
 
-	// do group commit and wal write, handle group abort
-	commit(share()->commit, gtr, error);
+	// wal write and commit
+	commit(share()->commit, gtr);
+	tr_commit(&gtr->tr);
 
 	// explain profile
 	if (compiler->program_profile)
@@ -178,7 +180,7 @@ session_run_utility(Session* self)
 	portal_lock(portal, program->lock_catalog);
 
 	// prepare global transaction
-	gtr_begin(gtr, &portal->local, portal->user, compiler->program);
+	gtr_begin(gtr, &portal->local, portal->user, &program->access);
 
 	// prevent concurrent ddls
 	lock_ddl(program->lock_ddl);
@@ -189,19 +191,12 @@ session_run_utility(Session* self)
 		profile_start(&profile->time_run_us);
 
 	// execute utility/ddl transaction
-	Tr tr;
-	tr_init(&tr);
-	tr_set_user(&tr, &portal->user->rel);
-	tr_set_local(&tr, &portal->local);
-	defer(tr_free, &tr);
-
 	Return ret;
 	return_init(&ret);
 	auto on_error = error_catch
 	(
 		vm_run(&self->vm,
 		       gtr,
-		       &tr,
 		       program,
 		       NULL,
 		       &ret,
@@ -210,7 +205,7 @@ session_run_utility(Session* self)
 
 	if (unlikely(on_error))
 	{
-		tr_abort(&tr);
+		tr_abort(&gtr->tr);
 		rethrow();
 	}
 
@@ -237,11 +232,11 @@ session_run_utility(Session* self)
 		}
 	}
 
-	// prepare write
+	// wal write
 	Write write;
 	write_init(&write);
 	defer(write_free, &write);
-	if (tr_active(&tr))
+	if (tr_active(&gtr->tr))
 	{
 		auto req = self->req;
 		if (req->recover) {
@@ -251,29 +246,15 @@ session_run_utility(Session* self)
 			write_set_flags(&write, RECORD_UTILITY);
 			request_write(req, &portal->endpoint, &write.record_data);
 		}
-	}
 
-	// wal write
-	if (tr_active(&tr))
-	{
 		WriteList write_list;
 		write_list_init(&write_list);
-
-		auto on_error = error_catch
-		(
-			write_list_add(&write_list, &write);
-
-			db_write(share()->db, &write_list);
-		);
-		if (unlikely(on_error))
-		{
-			tr_abort(&tr);
-			rethrow();
-		}
+		write_list_add(&write_list, &write);
+		db_write(share()->db, &write_list);
 	}
 
 	// commit
-	tr_commit(&tr);
+	tr_commit(&gtr->tr);
 
 	// profile
 	if (compiler->program_profile)

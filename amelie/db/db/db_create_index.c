@@ -152,9 +152,6 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 
 	// todo: exclusive lock
 
-	// force commit pending prepared transactions
-	user_sync(table->user);
-
 	// todo:
 	// auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE_RO);
 

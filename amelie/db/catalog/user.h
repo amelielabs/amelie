@@ -40,11 +40,3 @@ user_of(Rel* self)
 {
 	return (User*)self;
 }
-
-static inline void
-user_sync(User* self)
-{
-	Consensus commit;
-	consensus_atomic_read(&self->track.consensus_commit, &commit);
-	track_commit(&self->track, &commit);
-}

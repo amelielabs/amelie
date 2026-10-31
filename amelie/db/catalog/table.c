@@ -194,9 +194,6 @@ table_truncate(Catalog* self,
 	// update table
 	log_ddl(&tr->log, &truncate_if, NULL, &table->rel);
 
-	// force commit pending prepared transactions
-	user_sync(table->user);
-
 	// do nothing (actual truncate will happen on commit)
 	return true;
 }

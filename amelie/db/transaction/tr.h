@@ -15,19 +15,17 @@ typedef struct Tr Tr;
 
 struct Tr
 {
-	uint64_t id;
-	Log      log;
-	Rel*     user;
-	Local*   local;
-	Usage*   write;
-	bool     allocated;
-	List     link;
+	Log    log;
+	Rel*   user;
+	Local* local;
+	Usage* write;
+	bool   allocated;
+	List   link;
 };
 
 static inline void
 tr_init(Tr* self)
 {
-	self->id        = 0;
 	self->user      = NULL;
 	self->local     = NULL;
 	self->write     = NULL;
@@ -39,7 +37,6 @@ tr_init(Tr* self)
 static inline void
 tr_reset(Tr* self)
 {
-	self->id    = 0;
 	self->user  = NULL;
 	self->local = NULL;
 	self->write = NULL;
@@ -68,12 +65,6 @@ always_inline static inline bool
 tr_active(Tr* self)
 {
 	return self->log.count > 0;
-}
-
-static inline void
-tr_set_id(Tr* self, uint64_t value)
-{
-	self->id = value;
 }
 
 static inline void

@@ -213,16 +213,12 @@ wal_write(Wal* self, WalContext* context)
 	defer(wal_file_unpin_defer, current);
 
 	// do atomical write of a list of wal records
-	auto current_offset = current->file.size;
 	auto on_error = error_catch
 	(
 		wal_write_state(self, current, context)
 	);
-	if (unlikely(on_error)) {
-		if (error_catch(wal_file_truncate(current, current_offset)))
-			panic("wal: failed to truncate wal file after failed write");
-		rethrow();
-	}
+	if (unlikely(on_error))
+		panic("wal: wal write failed");
 
 	// set global lsn
 	state_lsn_follow(context->lsn);

@@ -46,37 +46,3 @@ tr_abort(Tr* self)
 	// reset log
 	log_reset(log);
 }
-
-hot static inline void
-tr_commit_list(TrList* self, TrCache* cache, uint64_t id)
-{
-	// commit all transactions <= id
-	list_foreach_safe(&self->list)
-	{
-		auto tr = list_at(Tr, link);
-		if (tr->id <= id)
-		{
-			list_unlink(&tr->link);
-			self->list_count--;
-			tr_commit(tr);
-			tr_cache_push(cache, tr);
-		}
-	}
-}
-
-static inline void
-tr_abort_list(TrList* self, TrCache* cache, uint64_t id)
-{
-	// abort all transactions <= id
-	list_foreach_reverse_safe(&self->list)
-	{
-		auto tr = list_at(Tr, link);
-		if (tr->id <= id)
-		{
-			list_unlink(&tr->link);
-			self->list_count--;
-			tr_abort(tr);
-			tr_cache_push(cache, tr);
-		}
-	}
-}

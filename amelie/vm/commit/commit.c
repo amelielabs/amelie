@@ -41,52 +41,24 @@ commit_main(void* arg)
 		if (batch_empty(&batch))
 			continue;
 
-		// prepare transactions for commit and handle aborts
-		batch_process(&batch);
-
 		// wal write
-		//
-		// in case of an error abort all prepared transactions
-		//
 		if (batch.write.list_count)
-		{
-			if (error_catch( db_write(self->db, &batch.write) ))
-				batch_abort(&batch);
-		}
+			db_write(self->db, &batch.write);
 
-		// update commit/abort metrics and wakeup
-		// transactions
+		// wakeup transactions
 		batch_complete(&batch);
 	}
 }
 
 void
-commit(Commit* self, Gtr* gtr, Buf* error)
+commit(Commit* self, Gtr* gtr)
 {
 	cancel_pause();
 
-	// note: dispatch is completed
-	if (unlikely(error))
-	{
-		gtr_set_abort(gtr);
-		gtr_set_error(gtr, error);
-	}
-
-	if (gtr_active(gtr))
-	{
-		task_send(&self->task, &gtr->msg);
-		event_wait(&gtr->on_commit, -1);
-	}
+	task_send(&self->task, &gtr->msg);
+	event_wait(&gtr->on_commit, -1);
 
 	cancel_resume();
-
-	if (unlikely(gtr->abort))
-	{
-		if (gtr->error)
-			rethrow_buf(gtr->error);
-
-		error("transaction aborted");
-	}
 }
 
 void

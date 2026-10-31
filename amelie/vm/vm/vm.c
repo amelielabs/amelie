@@ -32,7 +32,6 @@ vm_init(Vm* self, Quota* quota)
 	self->code        = NULL;
 	self->program     = NULL;
 	self->quota       = quota;
-	self->tr          = NULL;
 	self->allow_close = true;
 	reg_init(&self->r);
 	stack_init(&self->stack);
@@ -73,14 +72,12 @@ vm_reset(Vm* self)
 hot void
 vm_run(Vm*      self,
        Gtr*     gtr,
-       Tr*      tr,
        Program* program,
        Value*   args,
        Return*  ret,
        bool     allow_close)
 {
 	self->gtr         = gtr;
-	self->tr          = tr;
 	self->code        = &program->code;
 	self->program     = program;
 	self->args        = args;

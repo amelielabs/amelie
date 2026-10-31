@@ -80,7 +80,7 @@ cinsert(Vm* self, Op* op)
 	Value identity;
 	value_init(&identity);
 
-	auto tr = tr_list_last(&table->user->track.prepared);
+	auto tr = &self->gtr->tr;
 	auto it = store_iterator(store->store);
 	defer(store_iterator_close, it);
 
@@ -145,7 +145,7 @@ cupsert(Vm* self, Op* op)
 	Value identity;
 	value_init(&identity);
 
-	auto tr = tr_list_last(&table->user->track.prepared);
+	auto tr = &self->gtr->tr;
 	for (Value* value;
 	    (value = store_iterator_at(self->insert));
 	     store_iterator_next(self->insert))
@@ -189,7 +189,7 @@ cdelete(Vm* self, Op* op)
 	auto cursor = reg_at(&self->r, op->a);
 
 	auto table = cursor->table;
-	auto tr = tr_list_last(&table->user->track.prepared);
+	auto tr = &self->gtr->tr;
 
 	// delete by cursor
 	part_delete(table->part, tr, cursor->cursor);
@@ -203,7 +203,7 @@ cupdate(Vm* self, Op* op)
 	assert(cursor->type == TYPE_CURSOR);
 
 	auto table = cursor->table;
-	auto tr = tr_list_last(&table->user->track.prepared);
+	auto tr = &self->gtr->tr;
 
 	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
@@ -367,7 +367,7 @@ ccall_udf(Vm* self, Op* op)
 	Vm vm;
 	vm_init(&vm, self->quota);
 	defer(vm_free, &vm);
-	vm_run(&vm, self->gtr, NULL, program, argv, &ret, false);
+	vm_run(&vm, self->gtr, program, argv, &ret, false);
 	if (ret.value)
 		value_move(result, ret.value);
 
