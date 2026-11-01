@@ -90,6 +90,7 @@ include_directories("${AMELIE_ROOT}/db/db")
 
 # repl
 include_directories("${AMELIE_ROOT}/repl")
+include_directories("${AMELIE_ROOT}/repl/sync")
 include_directories("${AMELIE_ROOT}/repl/repl")
 
 # vm
@@ -221,9 +222,9 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/backup.c)
 
 set(AMELIE_SOURCES_REPL
-    ${AMELIE_ROOT}/repl/repl/streamer.c
-    ${AMELIE_ROOT}/repl/repl/node.c
-    ${AMELIE_ROOT}/repl/repl/receiver.c
+    ${AMELIE_ROOT}/repl/sync/streamer.c
+    ${AMELIE_ROOT}/repl/sync/node.c
+    ${AMELIE_ROOT}/repl/sync/receiver.c
     ${AMELIE_ROOT}/repl/repl/replicas.c
     ${AMELIE_ROOT}/repl/repl/repl.c)
 

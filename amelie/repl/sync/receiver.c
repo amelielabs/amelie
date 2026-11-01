@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_repl.h>
+#include <amelie_sync.h>
 
 static void
 receiver_main(void* arg)

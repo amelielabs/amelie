@@ -11,4 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
+#include <amelie_sync.h>
 #include <amelie_repl.h>

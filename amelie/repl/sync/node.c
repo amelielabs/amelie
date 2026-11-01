@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
-#include <amelie_repl.h>
+#include <amelie_sync.h>
 
 void
 node_init(Node* self, Db* db, Client* client)
@@ -41,7 +41,7 @@ node_free(Node* self)
 #endif
 
 static void
-node_replay(Node* self, NodeMsg* node_msg, Buf* data)
+node_replay(Node* self, Buf* data)
 {
 	auto recover = &self->recover;
 
@@ -65,9 +65,8 @@ node_replay(Node* self, NodeMsg* node_msg, Buf* data)
 
 		auto msg = (RecordMsg*)buf->start;
 		msg_init(&msg->msg, MSG_RECORD);
-		msg->msg_buf     = buf;
-		msg->arg         = NULL;
-		msg->instance_id = node_msg->id;
+		msg->msg_buf = buf;
+		msg->arg     = NULL;
 		memcpy(msg->record, record, record->size);
 
 		// execute
@@ -96,11 +95,13 @@ node_process(Node* self)
 		if (msg.op != NODE_WRITE)
 			error("node: unexpected message");
 
+		// todo: validate node_msg->id
+
 		// replay batch write
 		if (! buf_empty(buf))
 		{
 			cancel_pause();
-			node_replay(self, &msg, buf);
+			node_replay(self, buf);
 			cancel_resume();
 		}
 

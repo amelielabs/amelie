@@ -11,14 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-// streamer
-#include "repl/protocol.h"
-#include "repl/streamer.h"
-
-// receiver
-#include "repl/node.h"
-#include "repl/receiver.h"
-
 // replica
 #include "repl/replica_config.h"
 #include "repl/replica.h"

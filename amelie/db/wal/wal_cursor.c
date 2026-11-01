@@ -157,7 +157,6 @@ wal_cursor_next_msg(WalCursor* self)
 		msg_init(&msg->msg, MSG_RECORD);
 		msg->msg_buf     = buf;
 		msg->arg         = NULL;
-		msg->instance_id = *opt_uuid_of(&config()->uuid);
 		return (RecordMsg*)buf->start;
 	}
 

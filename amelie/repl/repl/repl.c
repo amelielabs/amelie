@@ -13,6 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_server>
 #include <amelie_db>
+#include <amelie_sync.h>
 #include <amelie_repl.h>
 
 static inline char*
