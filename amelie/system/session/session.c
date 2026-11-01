@@ -140,14 +140,17 @@ session_run(Session* self)
 		profile_start(&profile->time_commit_us);
 	}
 
-	// write result
+	// create reply
 	auto returning = compiler->program_returning;
 	auto output = &portal->output;
 	if (returning && ret.value)
 		output_value(output, returning, ret.value);
 
-	// wal write and commit
-	commit(share()->commit, gtr);
+	// wal write
+	if (! state_is_recovery())
+		commit(share()->commit, gtr);
+
+	// commit
 	tr_commit(&gtr->tr);
 
 	// explain profile
@@ -233,19 +236,15 @@ session_run_utility(Session* self)
 	}
 
 	// wal write
-	Write write;
-	write_init(&write);
-	defer(write_free, &write);
-	if (tr_active(&gtr->tr))
+	if (tr_active(&gtr->tr) && !state_is_recovery())
 	{
+		Write write;
+		write_init(&write);
+		defer(write_free, &write);
+		write_set_flags(&write, RECORD_UTILITY);
+
 		auto req = self->req;
-		if (req->recover) {
-			write_set_recover(&write, req->recover);
-		} else
-		{
-			write_set_flags(&write, RECORD_UTILITY);
-			request_write(req, &portal->endpoint, &write.record_data);
-		}
+		request_write(req, &portal->endpoint, &write.record_data);
 
 		WriteList write_list;
 		write_list_init(&write_list);

@@ -34,6 +34,20 @@ control_invalidate_auth(void)
 	runtime()->iface->invalidate_auth(runtime()->iface->arg);
 }
 
+// recovery
+static inline bool
+state_is_recovery(void)
+{
+	return opt_int_of(&state()->recover) != RECOVER_NONE;
+}
+
+// replication
+static inline bool
+state_is_primary(void)
+{
+	return opt_uuid_empty(&state()->primary);
+}
+
 // directory
 static inline const char*
 state_directory(void)
@@ -102,13 +116,6 @@ static inline void
 state_psn_follow(uint64_t value)
 {
 	return opt_int_follow(&state()->psn, value);
-}
-
-// replication
-static inline bool
-state_is_primary(void)
-{
-	return opt_uuid_empty(&state()->primary);
 }
 
 // background function in background

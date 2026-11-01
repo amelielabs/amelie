@@ -15,7 +15,7 @@ typedef struct State State;
 
 enum
 {
-	RECOVER_OFF,
+	RECOVER_NONE,
 	RECOVER_CHECKPOINT,
 	RECOVER_WAL,
 	RECOVER_REPL

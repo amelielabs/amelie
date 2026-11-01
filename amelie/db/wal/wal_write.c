@@ -85,7 +85,7 @@ wal_create(Wal* self, WalContext* context, uint64_t id)
 }
 
 hot static inline void
-wal_flush(Wal* self, WalFile* current, WalContext* context)
+wal_write_state(Wal* self, WalFile* current, WalContext* context)
 {
 	auto iov = &self->iov;
 	iov_reset(iov);
@@ -113,75 +113,6 @@ wal_flush(Wal* self, WalFile* current, WalContext* context)
 	// sync after write
 	if (opt_int_of(&config()->wal_sync_write))
 		wal_file_sync(current);
-}
-
-hot static inline void
-wal_recover_checkpoint(WalContext* context)
-{
-	// keep current lsn
-	context->lsn = state_lsn();
-}
-
-hot static inline void
-wal_recover(WalContext* context)
-{
-	context->lsn = state_lsn();
-	list_foreach(&context->list->list)
-	{
-		auto write = list_at(Write, link);
-		assert(write->recover);
-		auto lsn = write->recover->record->lsn;
-		if (lsn > context->lsn)
-			context->lsn = lsn;
-	}
-}
-
-hot static inline void
-wal_recover_write(Wal* self, WalFile* current, WalContext* context)
-{
-	auto iov = &self->iov;
-	iov_reset(iov);
-
-	context->lsn = state_lsn();
-	list_foreach(&context->list->list)
-	{
-		auto write = list_at(Write, link);
-		assert(write->recover);
-		auto record = write->recover->record;
-		context->lsn = record->lsn;
-		iov_add(iov, record, record->size);
-	}
-
-	// write
-	wal_file_write(current, iov);
-
-	// sync after write
-	if (opt_int_of(&config()->wal_sync_write))
-		wal_file_sync(current);
-}
-
-hot static inline void
-wal_write_state(Wal* self, WalFile* current, WalContext* context)
-{
-	// handle current system recovery state
-	switch (opt_int_of(&state()->recover)) {
-	case RECOVER_OFF:
-		// wal write
-		wal_flush(self, current, context);
-		break;
-	case RECOVER_CHECKPOINT:
-		// wal write druing checkpoint recovery
-		wal_recover_checkpoint(context);
-		break;
-	case RECOVER_WAL:
-		// wal recover
-		wal_recover(context);
-		break;
-	case RECOVER_REPL:
-		// wal recover (with write)
-		wal_recover_write(self, current, context);
-		break;
-	}
 
 	context->list->lsn = context->lsn;
 }
@@ -189,15 +120,12 @@ wal_write_state(Wal* self, WalFile* current, WalContext* context)
 hot void
 wal_write(Wal* self, WalContext* context)
 {
-	auto recover_state = opt_int_of(&state()->recover);
-	auto do_write =
-		recover_state == RECOVER_OFF ||
-		recover_state == RECOVER_REPL;
+	assert(! state_is_recovery());
 
 	// get or create a new wal file
 	spinlock_lock(&self->lock);
 	auto current = self->current;
-	if (do_write && (current->file.size >= opt_int_of(&config()->wal_size)))
+	if (current->file.size >= opt_int_of(&config()->wal_size))
 	{
 		spinlock_unlock(&self->lock);
 
@@ -221,7 +149,7 @@ wal_write(Wal* self, WalContext* context)
 		panic("wal: wal write failed");
 
 	// set global lsn
-	state_lsn_follow(context->lsn);
+	state_lsn_set(context->lsn);
 
 	// notify subscribers
 	wal_subscribe_notify(self, context->lsn);

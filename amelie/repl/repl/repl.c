@@ -92,7 +92,7 @@ repl_follow(Repl* self, Str* primary_id)
 	uuid_init(&empty);
 	opt_uuid_set(&state()->primary, &empty);
 
-	opt_int_set(&state()->recover, RECOVER_OFF);
+	opt_int_set(&state()->recover, RECOVER_NONE);
 	self->role = REPL_PRIMARY;
 
 	info("replication: switch to primary");

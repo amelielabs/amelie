@@ -280,7 +280,7 @@ system_recover(System* self, bool bootstrap)
 	recover_wal(&recover);
 	info("");
 
-	opt_int_set(&state()->recover, RECOVER_OFF);
+	opt_int_set(&state()->recover, RECOVER_NONE);
 }
 
 void

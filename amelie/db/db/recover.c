@@ -93,7 +93,7 @@ recover_next(Recover* self, RecordMsg* msg)
 
 	// sync
 	uint64_t total = atomic_u64_of(&sync->total);
-	if (sync_after || !(total % 10000))
+	if (sync_after || (total % 100000) == 0)
 		recover_sync(sync);
 }
 
@@ -121,6 +121,10 @@ recover_wal_main(Recover* self)
 				break;
 			size += msg->record->size;
 			count++;
+
+			// set lsn
+			assert(state_lsn() < msg->record->lsn);
+			state_lsn_set(msg->record->lsn);
 
 			// execute
 			recover_next(self, msg);
