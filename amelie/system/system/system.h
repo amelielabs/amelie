@@ -15,20 +15,14 @@ typedef struct System System;
 
 struct System
 {
-	Share      share;
-	// vm
-	Functions  functions;
-	// repl
-	Repl       repl;
-	// compute
-	Computes   computes;
-	// db
-	Db         db;
-	Commit     commit;
-	// server
-	Servers    servers;
-	// runtime control
-	RuntimeIf  runtime_if;
+	Share     share;
+	Functions functions;
+	Repl      repl;
+	Computes  computes;
+	Db        db;
+	Commit    commit;
+	Servers   servers;
+	RuntimeIf runtime_if;
 };
 
 System*

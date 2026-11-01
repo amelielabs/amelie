@@ -47,14 +47,10 @@ profile_end(uint64_t* metric)
 
 static inline void
 profile_create(Profile* self,
-               Program* program,
+               Buf*     buf,
                Output*  output)
 {
-	auto buf = buf_create();
-	defer_buf(buf);
-
-	// explain
-	buf_write_buf(buf, &program->explain);
+	// (after explain)
 
 	buf_format(buf, "\nprofile\n");
 	uint64_t time_us = self->time_run_us + self->time_commit_us;

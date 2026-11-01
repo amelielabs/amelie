@@ -24,7 +24,6 @@ struct Access
 {
 	Buf  list;
 	int  list_count;
-	Rel* user;
 	bool ro;
 	bool multi_user;
 };
@@ -38,7 +37,6 @@ access_at(Access* self, int order)
 static inline void
 access_init(Access* self)
 {
-	self->user       = NULL;
 	self->ro         = true;
 	self->multi_user = false;
 	self->list_count = 0;
@@ -54,7 +52,6 @@ access_free(Access* self)
 static inline void
 access_reset(Access* self)
 {
-	self->user       = NULL;
 	self->ro         = true;
 	self->multi_user = false;
 	self->list_count = 0;
@@ -65,12 +62,6 @@ static inline bool
 access_empty(Access* self)
 {
 	return !self->list_count;
-}
-
-static inline void
-access_set_user(Access* self, Rel* user)
-{
-	self->user = user;
 }
 
 static inline bool
@@ -103,23 +94,19 @@ access_add(Access* self, Rel* rel, uint32_t perm)
 			record->perm |= perm;
 			return;
 		}
+		if (! str_compare(record->rel->user, rel->user))
+			self->multi_user = true;
 	}
 
 	auto record = (AccessRecord*)buf_emplace(&self->list, sizeof(AccessRecord));
 	record->rel  = rel;
 	record->perm = perm;
 	self->list_count++;
-
-	if (! str_compare(record->rel->user, self->user->user))
-		self->multi_user = true;
 }
 
 hot static inline void
 access_merge(Access* self, Access* access)
 {
-	if (self->user != access->user)
-		self->multi_user = true;
-
 	for (auto i = 0; i < access->list_count; i++)
 	{
 		auto record = access_at(access, i);

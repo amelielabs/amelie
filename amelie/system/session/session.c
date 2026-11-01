@@ -83,21 +83,6 @@ session_run(Session* self)
 		if (! self->req->recover)
 			error("system is in read-only mode");
 
-	// prepare request for the wal writer
-	auto write = &gtr->write;
-	if (! ro)
-	{
-		auto req = self->req;
-		if (req->recover) {
-			write_set_recover(write, req->recover);
-		} else
-		{
-			request_write(req, &portal->endpoint, &write->record_data);
-			if (access_multi_user(access))
-				write_set_flags(write, RECORD_MULTI_USER);
-		}
-	}
-
 	// [PROFILE]
 	if (compiler->program_profile)
 		profile_start(&profile->time_run_us);
@@ -114,7 +99,7 @@ session_run(Session* self)
 	// begin transaction
 
 	// lock users
-	gtr_begin(gtr, &portal->local, portal->user, access);
+	auto multi_user = gtr_begin(gtr, &portal->local, portal->user, access);
 
 	// execute
 	Return ret;
@@ -148,7 +133,23 @@ session_run(Session* self)
 
 	// wal write
 	if (! state_is_recovery())
+	{
+		auto write = &gtr->write;
+		if (! ro)
+		{
+			auto req = self->req;
+			if (req->recover) {
+				write_set_recover(write, req->recover);
+			} else
+			{
+				request_write(req, &portal->endpoint, &write->record_data);
+				if (multi_user)
+					write_set_flags(write, RECORD_MULTI_USER);
+			}
+		}
+
 		commit(share()->commit, gtr);
+	}
 
 	// commit
 	tr_commit(&gtr->tr);
@@ -157,7 +158,7 @@ session_run(Session* self)
 	if (compiler->program_profile)
 	{
 		profile_end(&profile->time_commit_us);
-		profile_create(profile, program, output);
+		profile_create(profile, &compiler->explain, output);
 	}
 }
 
@@ -259,7 +260,7 @@ session_run_utility(Session* self)
 	if (compiler->program_profile)
 	{
 		profile_end(&profile->time_commit_us);
-		profile_create(profile, program, output);
+		profile_create(profile, &compiler->explain, output);
 	}
 }
 
@@ -269,9 +270,6 @@ session_main(Session* self, Portal* portal, Request* req)
 	// set session local settings
 	self->portal = portal;
 	self->req    = req;
-
-	// set user
-	access_set_user(&self->program->access, &portal->user->rel);
 
 	// parse request
 	auto compiler = &self->compiler;
@@ -299,8 +297,7 @@ session_main(Session* self, Portal* portal, Request* req)
 
 	// [EXPLAIN]
 	if (compiler->program_explain || compiler->program_profile)
-		if (! compiler->program_udf)
-			explain(compiler, NULL, NULL);
+		explain(compiler, compiler->program, compiler->program_udf, true);
 
 	// explain output
 	if (compiler->program_explain)
@@ -308,7 +305,7 @@ session_main(Session* self, Portal* portal, Request* req)
 		Str column;
 		str_set(&column, "explain", 7);
 		Str str;
-		buf_str(&program->explain, &str);
+		buf_str(&compiler->explain, &str);
 		output_str(&portal->output, &column, &str);
 		return;
 	}

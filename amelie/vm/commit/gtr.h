@@ -64,7 +64,7 @@ gtr_active(Gtr* self)
 	return !peers_empty(&self->peers);
 }
 
-static inline void
+static inline bool
 gtr_begin(Gtr* self, Local* local, User* user, Access* access)
 {
 	self->local = local;
@@ -90,5 +90,5 @@ gtr_begin(Gtr* self, Local* local, User* user, Access* access)
 	peers_prepare(&self->peers, access);
 
 	// take user locks
-	peers_lock(&self->peers, access);
+	return peers_lock(&self->peers, user);
 }

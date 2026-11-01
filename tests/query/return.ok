@@ -150,7 +150,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   ret                 -1     0      -
@@ -175,7 +175,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   ret                 -1     0      -
@@ -202,7 +202,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   string              0      0      0     # 123
@@ -237,7 +237,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   ret                 -1     0      -
@@ -264,7 +264,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   ret                 -1     0      -
@@ -291,7 +291,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   null                0      0      0
@@ -325,7 +325,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   null                0      0      0
@@ -353,7 +353,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   int                 0      -      0     # 123
@@ -407,7 +407,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   ret                 -1     0      -
@@ -434,7 +434,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   ret                 -1     0      -
@@ -460,7 +460,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   null                0      0      0
@@ -488,7 +488,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   set                 0      2      0
@@ -506,7 +506,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   set                 0      2      0
@@ -538,7 +538,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -554,7 +554,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -585,7 +585,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -606,7 +606,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -670,7 +670,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -686,7 +686,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -715,7 +715,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -733,7 +733,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -766,7 +766,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -803,7 +803,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -842,7 +842,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -881,7 +881,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -925,7 +925,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -980,7 +980,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1034,7 +1034,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1084,7 +1084,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1137,7 +1137,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1201,7 +1201,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1263,7 +1263,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1316,7 +1316,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1365,7 +1365,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [insert]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   set_ptr             0      -      0
@@ -1401,7 +1401,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [insert, select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   set_ptr             0      -      0
@@ -1458,7 +1458,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [insert, select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1509,7 +1509,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [insert, select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1564,7 +1564,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [insert, select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1617,7 +1617,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1676,7 +1676,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1750,7 +1750,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1827,7 +1827,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1903,7 +1903,7 @@ access
   •   amelie.test [execute]
   •   amelie.src [select]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0
@@ -1964,7 +1964,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   var                 0      0      1
@@ -1998,7 +1998,7 @@ main
 access
   •   amelie.test [execute]
 
-FUNCTION amelie.test()
+FUNCTION amelie.test
 
 main
   0   push_nulls          1      0      0

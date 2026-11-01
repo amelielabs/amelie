@@ -34,6 +34,7 @@ compiler_init(Compiler* self, SetCache* set_cache)
 	self->code              = NULL;
 	self->code_data         = NULL;
 	parser_init(&self->parser, self->set_cache);
+	buf_init(&self->explain);
 	rmap_init(&self->map);
 }
 
@@ -41,6 +42,7 @@ void
 compiler_free(Compiler* self)
 {
 	parser_free(&self->parser);
+	buf_free(&self->explain);
 	rmap_free(&self->map);
 }
 
@@ -57,6 +59,7 @@ compiler_reset(Compiler* self)
 	self->code_data         = NULL;
 	self->current           = NULL;
 	parser_reset(&self->parser);
+	buf_reset(&self->explain);
 	rmap_reset(&self->map);
 }
 

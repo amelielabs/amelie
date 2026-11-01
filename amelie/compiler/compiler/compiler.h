@@ -25,6 +25,7 @@ struct Compiler
 	Udf*      program_udf;
 	bool      program_explain;
 	bool      program_profile;
+	Buf       explain;
 	SetCache* set_cache;
 	Parser    parser;
 };

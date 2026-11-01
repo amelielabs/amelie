@@ -40,7 +40,6 @@ catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 
 	auto program = program_allocate();
 	errdefer(program_free, program);
-	access_set_user(&program->access, &user->rel);
 
 	SetCache set_cache;
 	set_cache_init(&set_cache);
@@ -56,9 +55,6 @@ catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 
 	// generate bytecode
 	compiler_emit(&compiler);
-
-	// generate explain for udf
-	explain(&compiler, &udf->config->user, &udf->config->name);
 
 	// assign udf program
 	udf->data = program;

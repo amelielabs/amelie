@@ -84,16 +84,28 @@ peers_prepare(Peers* self, Access* access)
 	}
 }
 
-hot static inline void
-peers_lock(Peers* self, Access* access)
+hot static inline bool
+peers_lock(Peers* self, User* user)
 {
-	// lock users
+	if (! self->count)
+		return false;
+
+	// same user (shared) or cross-user access (exclusive)
 	LockId lock = LOCK_SHARED;
-	if (access_multi_user(access))
+	if (self->count == 1)
+	{
+		if (peers_at(self, 0)->user != user)
+			lock = LOCK_EXCLUSIVE;
+	} else {
 		lock = LOCK_EXCLUSIVE;
+	}
+
+	// lock users
 	for (auto i = 0; i < self->count; i++)
 	{
 		auto peer = peers_at(self, i);
 		lock(&peer->user->lock, lock);
 	}
+
+	return lock == LOCK_EXCLUSIVE;
 }
