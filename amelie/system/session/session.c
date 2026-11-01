@@ -78,9 +78,10 @@ session_run(Session* self)
 	auto gtr      = &self->gtr;
 
 	// prevent client writes on replica
+	auto recovery = state_is_recovery();
 	auto ro = access_ro(access);
 	if (!ro && !state_is_primary())
-		if (! self->req->recover)
+		if (! recovery)
 			error("system is in read-only mode");
 
 	// [PROFILE]
@@ -132,21 +133,12 @@ session_run(Session* self)
 		output_value(output, returning, ret.value);
 
 	// wal write
-	if (! state_is_recovery())
+	if (!recovery && !ro)
 	{
 		auto write = &gtr->write;
-		if (! ro)
-		{
-			auto req = self->req;
-			if (req->recover) {
-				write_set_recover(write, req->recover);
-			} else
-			{
-				request_write(req, &portal->endpoint, &write->record_data);
-				if (multi_user)
-					write_set_flags(write, RECORD_MULTI_USER);
-			}
-		}
+		request_write(self->req, &portal->endpoint, &write->record_data);
+		if (multi_user)
+			write_set_flags(write, RECORD_MULTI_USER);
 
 		commit(share()->commit, gtr);
 	}
@@ -171,9 +163,10 @@ session_run_utility(Session* self)
 	auto gtr      = &self->gtr;
 
 	// prevent client writes on replica
-	if (! state_is_primary())
-	{
-		if (!self->req->recover && !stmt_is_utility_ro(compiler_stmt(compiler)))
+	auto recovery = state_is_recovery();
+	auto ro = stmt_is_utility_ro(compiler_stmt(compiler));
+	if (! state_is_primary()) {
+		if (!recovery && !ro)
 			error("system is in read-only mode");
 	}
 
@@ -185,9 +178,6 @@ session_run_utility(Session* self)
 
 	// prepare global transaction
 	gtr_begin(gtr, &portal->local, portal->user, &program->access);
-
-	// prevent concurrent ddls
-	lock_ddl(program->lock_ddl);
 
 	// [PROFILE]
 	auto profile = &self->profile;
@@ -237,7 +227,7 @@ session_run_utility(Session* self)
 	}
 
 	// wal write
-	if (tr_active(&gtr->tr) && !state_is_recovery())
+	if (tr_active(&gtr->tr) && !recovery)
 	{
 		Write write;
 		write_init(&write);
@@ -252,6 +242,18 @@ session_run_utility(Session* self)
 		write_list_add(&write_list, &write);
 		db_write(share()->db, &write_list);
 	}
+
+#if 0
+	// wal write
+	if (!recovery && !ro && tr_active(&gtr->tr))
+	{
+		auto write = &gtr->write;
+		write_set_flags(write, RECORD_UTILITY);
+		request_write(self->req, &portal->endpoint, &write->record_data);
+
+		commit(share()->commit, gtr);
+	}
+#endif
 
 	// commit
 	tr_commit(&gtr->tr);

@@ -21,7 +21,6 @@ struct Program
 	SetList  sets;
 	bool     utility;
 	LockId   lock_catalog;
-	LockId   lock_ddl;
 };
 
 static inline Program*
@@ -30,7 +29,6 @@ program_allocate(void)
 	auto self = (Program*)am_malloc(sizeof(Program));
 	self->utility      = false;
 	self->lock_catalog = LOCK_SHARED;
-	self->lock_ddl     = LOCK_NONE;
 	code_init(&self->code);
 	code_data_init(&self->code_data);
 	access_init(&self->access);
@@ -54,7 +52,6 @@ program_reset(Program* self, SetCache* cache)
 {
 	self->utility      = false;
 	self->lock_catalog = LOCK_SHARED;
-	self->lock_ddl     = LOCK_NONE;
 	code_reset(&self->code);
 	code_data_reset(&self->code_data);
 	access_reset(&self->access);

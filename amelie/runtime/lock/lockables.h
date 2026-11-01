@@ -17,7 +17,6 @@ typedef struct Lockables Lockables;
 enum
 {
 	RES_CATALOG,
-	RES_DDL,
 	RES_CHECKPOINT,
 	RES_BP_QUERY,
 	RES_MAX
@@ -60,7 +59,6 @@ lockables_init(Lockables* self)
 {
 	self->list = am_malloc(sizeof(Lockable) * RES_MAX);
 	lockable_init(&self->list[RES_CATALOG], "catalog", false);
-	lockable_init(&self->list[RES_DDL], "ddl", false);
 	lockable_init(&self->list[RES_CHECKPOINT], "checkpoint", false);
 
 	// breakpoints

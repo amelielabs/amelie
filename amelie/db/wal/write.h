@@ -15,16 +15,14 @@ typedef struct Write Write;
 
 struct Write
 {
-	Record     record;
-	Buf        record_data;
-	RecordMsg* recover;
-	List       link;
+	Record record;
+	Buf    record_data;
+	List   link;
 };
 
 static inline void
 write_init(Write* self)
 {
-	self->recover = NULL;
 	memset(&self->record, 0, sizeof(self->record));
 	buf_init(&self->record_data);
 	list_init(&self->link);
@@ -39,16 +37,9 @@ write_free(Write* self)
 static inline void
 write_reset(Write* self)
 {
-	self->recover = NULL;
 	memset(&self->record, 0, sizeof(self->record));
 	buf_reset(&self->record_data);
 	list_init(&self->link);
-}
-
-static inline void
-write_set_recover(Write* self, RecordMsg* msg)
-{
-	self->recover = msg;
 }
 
 static inline void

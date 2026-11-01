@@ -24,11 +24,10 @@ typedef enum
 
 struct Request
 {
-	Str        rel_user;
-	Str        rel;
-	Str        content_type;
-	Str        content;
-	RecordMsg* recover;
+	Str rel_user;
+	Str rel;
+	Str content_type;
+	Str content;
 };
 
 static inline void
@@ -135,6 +134,4 @@ request_read(Request* self, Endpoint* endpoint, RecordMsg* msg)
 			break;
 		}
 	}
-
-	self->recover = msg;
 }

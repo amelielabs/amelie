@@ -310,7 +310,6 @@ emit_utility(Compiler* self)
 	// the utility/ddl commands with some exceptions below
 	program->utility = true;
 	auto lock_catalog = LOCK_EXCLUSIVE;
-	auto lock_ddl     = LOCK_EXCLUSIVE;
 
 	int r = -1;
 	switch (stmt->id) {
@@ -321,7 +320,6 @@ emit_utility(Compiler* self)
 
 		// lock
 		lock_catalog = LOCK_SHARED;
-		lock_ddl     = LOCK_NONE;
 		break;
 	}
 	case STMT_ALTER_SYSTEM:
@@ -444,5 +442,4 @@ emit_utility(Compiler* self)
 
 	// set catalog lock
 	program->lock_catalog = lock_catalog;
-	program->lock_ddl     = lock_ddl;
 }
