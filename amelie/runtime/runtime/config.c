@@ -46,9 +46,6 @@ config_prepare(Config* self)
 		{ "log_stdout_time",         OPT_BOOL,   OPT_C,                   &self->log_stdout_time,         NULL,             true                },
 		{ "log_connections",         OPT_BOOL,   OPT_C,                   &self->log_connections,         NULL,             true                },
 		{ "log_options",             OPT_BOOL,   OPT_C,                   &self->log_options,             NULL,             false               },
-		// workers
-		{ "compute",                 OPT_INT,    OPT_C|OPT_Z,             &self->compute,                 NULL,             1                   },
-		{ "cpu_affinity",            OPT_BOOL,   OPT_C,                   &self->cpu_affinity,            NULL,             false               },
 		// wal
 		{ "wal_crc",                 OPT_BOOL,   OPT_C,                   &self->wal_crc,                 NULL,             true                },
 		{ "wal_sync_create",         OPT_BOOL,   OPT_C,                   &self->wal_sync_create,         NULL,             true                },
@@ -64,6 +61,8 @@ config_prepare(Config* self)
 		{ "storage_crc",             OPT_BOOL,   OPT_C,                   &self->storage_crc,             NULL,             true                },
 		{ "storage_compression",     OPT_STRING, OPT_C,                   &self->storage_compression,     "zstd",           0                   },
 		{ "storage_sync",            OPT_BOOL,   OPT_C,                   &self->storage_sync,            NULL,             true                },
+		// compute
+		{ "compute",                 OPT_INT,    OPT_C|OPT_Z,             &self->compute,                 NULL,             1                   },
 		// replication
 		{ "repl_readahead",          OPT_INT,    OPT_C|OPT_Z,             &self->repl_readahead,          NULL,             256 * 1024          },
 		{ "repl_reconnect_ms",       OPT_INT,    OPT_C,                   &self->repl_reconnect_ms,       NULL,             3000                },

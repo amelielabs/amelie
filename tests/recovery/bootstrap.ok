@@ -15,8 +15,6 @@ config
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "compute": 1,
-  "cpu_affinity": false,
   "wal_crc": true,
   "wal_sync_create": false,
   "wal_sync_close": false,
@@ -30,6 +28,7 @@ config
   "storage_crc": true,
   "storage_compression": "zstd",
   "storage_sync": false,
+  "compute": 1,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000,
   "recv": 1048576
@@ -66,8 +65,6 @@ config
   "log_stdout_time": true,
   "log_connections": true,
   "log_options": true,
-  "compute": 1,
-  "cpu_affinity": false,
   "wal_crc": true,
   "wal_sync_create": false,
   "wal_sync_close": false,
@@ -81,6 +78,7 @@ config
   "storage_crc": true,
   "storage_compression": "zstd",
   "storage_sync": false,
+  "compute": 1,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000,
   "recv": 1048576

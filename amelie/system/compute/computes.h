@@ -34,6 +34,7 @@ static inline void
 computes_set_affinity(Computes* self)
 {
 	(void)self;
+#if 0
 	auto cpus = get_nprocs();
 	if (self->workers_count > cpus)
 	{
@@ -43,6 +44,7 @@ computes_set_affinity(Computes* self)
 	}
 	for (int i = 0; i < self->workers_count; i++)
 		thread_set_affinity(&self->workers[i].task.thread, i);
+#endif
 }
 
 static inline void
@@ -61,9 +63,11 @@ computes_start(Computes*  self,
 	for (i = 0; i < count; i++)
 		compute_start(&self->workers[i]);
 
+#if 0
 	// set cpu affinity
 	if (opt_int_of(&config()->cpu_affinity))
 		computes_set_affinity(self);
+#endif
 }
 
 static inline void

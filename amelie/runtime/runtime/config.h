@@ -27,9 +27,6 @@ struct Config
 	Opt  log_stdout_time;
 	Opt  log_connections;
 	Opt  log_options;
-	// compute
-	Opt  compute;
-	Opt  cpu_affinity;
 	// wal
 	Opt  wal_crc;
 	Opt  wal_sync_create;
@@ -45,6 +42,8 @@ struct Config
 	Opt  storage_crc;
 	Opt  storage_compression;
 	Opt  storage_sync;
+	// compute
+	Opt  compute;
 	// replication
 	Opt  repl_readahead;
 	Opt  repl_reconnect_ms;
