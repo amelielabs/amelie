@@ -15,6 +15,7 @@ typedef struct Receiver Receiver;
 
 struct Receiver
 {
+	Uuid primary;
 	List list;
 	int  list_count;
 	Db*  db;
@@ -23,6 +24,6 @@ struct Receiver
 
 void receiver_init(Receiver*, Db*);
 void receiver_free(Receiver*);
-void receiver_start(Receiver*);
+void receiver_start(Receiver*, Uuid*);
 void receiver_stop(Receiver*);
 void receiver_send(Receiver*, Client*);

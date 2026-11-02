@@ -44,8 +44,7 @@ repl_free(Repl* self)
 void
 repl_start(Repl* self)
 {
-	// start receiver
-	receiver_start(&self->receiver);
+	unused(self);
 }
 
 void
@@ -78,6 +77,10 @@ repl_follow(Repl* self, Str* primary_id)
 		opt_int_set(&state()->recover, RECOVER_REPL);
 		self->role = REPL_REPLICA;
 
+		// restart receiver
+		receiver_stop(&self->receiver);
+		receiver_start(&self->receiver, &id);
+
 		// set new primary id
 		opt_uuid_set(&state()->primary, &id);
 
@@ -87,6 +90,7 @@ repl_follow(Repl* self, Str* primary_id)
 	}
 
 	// switch to primary
+	receiver_stop(&self->receiver);
 
 	// remove primary id
 	Uuid empty;
@@ -151,6 +155,9 @@ repl_describe(Repl* self, Buf* buf)
 void
 repl_connect(Repl* self, Client* client)
 {
+	auto lock = lock_catalog(LOCK_SHARED);
+	defer(unlock, lock);
+
 	// ensure server is replica
 	if (state_is_primary())
 	{

@@ -16,10 +16,11 @@
 #include <amelie_sync.h>
 
 void
-node_init(Node* self, Db* db, Client* client)
+node_init(Node* self, Db* db, Uuid* primary, Client* client)
 {
 	self->coroutine_id = am_self()->id;
-	self->client = client;
+	self->client       = client;
+	self->primary      = primary;
 	list_init(&self->link);
 	recover_init(&self->recover, db);
 }
@@ -29,16 +30,6 @@ node_free(Node* self)
 {
 	recover_free(&self->recover);
 }
-
-#if 0
-	// validate replicated record
-	//
-	// ensure record comes from the current primary
-	//
-	if (! uuid_is(&record->instance_id, opt_uuid_of(&config()->uuid)))
-		if (! uuid_is(&record->instance_id, opt_uuid_of(&state()->primary)))
-			error("replay: primary id mismatch");
-#endif
 
 static void
 node_replay(Node* self, Buf* data)
@@ -95,7 +86,8 @@ node_process(Node* self)
 		if (msg.op != NODE_WRITE)
 			error("node: unexpected message");
 
-		// todo: validate node_msg->id
+		if (! uuid_is(&msg.id, self->primary))
+			error("node: primary id mismatch");
 
 		// replay batch write
 		if (! buf_empty(buf))

@@ -316,8 +316,6 @@ enum
 	CREPLICA_DROP,
 
 	// replication
-	CREPL_START,
-	CREPL_STOP,
 	CREPL_FOLLOW,
 	CREPL_UNFOLLOW,
 

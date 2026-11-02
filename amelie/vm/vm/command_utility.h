@@ -24,8 +24,6 @@ void creplica_create(Vm*, Op*);
 void creplica_drop(Vm*, Op*);
 
 // replication
-void crepl_start(Vm*, Op*);
-void crepl_stop(Vm*, Op*);
 void crepl_follow(Vm*, Op*);
 void crepl_unfollow(Vm*, Op*);
 

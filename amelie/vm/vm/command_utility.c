@@ -138,28 +138,6 @@ creplica_drop(Vm* self, Op* op)
 }
 
 void
-crepl_start(Vm* self, Op* op)
-{
-	// PERM_SYSTEM
-	check_user(&self->gtr->tr, PERM_SYSTEM);
-
-	unused(op);
-	repl_start(share()->repl);
-	control_state_write();
-}
-
-void
-crepl_stop(Vm* self, Op* op)
-{
-	// PERM_SYSTEM
-	check_user(&self->gtr->tr, PERM_SYSTEM);
-
-	unused(op);
-	repl_stop(share()->repl);
-	control_state_write();
-}
-
-void
 crepl_follow(Vm* self, Op* op)
 {
 	// PERM_SYSTEM

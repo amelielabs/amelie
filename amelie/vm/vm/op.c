@@ -323,8 +323,6 @@ OpDesc ops[] =
 	{ CREPLICA_DROP, "replica_drop" },
 
 	// replication
-	{ CREPL_START, "repl_start" },
-	{ CREPL_STOP, "repl_stop" },
 	{ CREPL_FOLLOW, "repl_follow" },
 	{ CREPL_UNFOLLOW, "repl_unfollow" },
 

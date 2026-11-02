@@ -392,8 +392,6 @@ vm_run(Vm*      self,
 		&&creplica_drop,
 
 		// replication
-		&&crepl_start,
-		&&crepl_stop,
 		&&crepl_follow,
 		&&crepl_unfollow,
 
@@ -2131,14 +2129,6 @@ creplica_create:
 
 creplica_drop:
 	creplica_drop(self, op);
-	op_next;
-
-crepl_start:
-	crepl_start(self, op);
-	op_next;
-
-crepl_stop:
-	crepl_stop(self, op);
 	op_next;
 
 crepl_follow:

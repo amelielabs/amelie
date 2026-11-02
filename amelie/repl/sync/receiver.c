@@ -26,7 +26,7 @@ receiver_main(void* arg)
 	client_accept(client);
 
 	Node node;
-	node_init(&node, self->db, client);
+	node_init(&node, self->db, &self->primary, client);
 
 	list_append(&self->list, &node.link);
 	self->list_count++;
@@ -79,6 +79,7 @@ receiver_init(Receiver* self, Db* db)
 {
 	self->list_count = 0;
 	self->db         = db;
+	uuid_init(&self->primary);
 	task_init(&self->task);
 	list_init(&self->list);
 }
@@ -90,16 +91,21 @@ receiver_free(Receiver* self)
 }
 
 void
-receiver_start(Receiver* self)
+receiver_start(Receiver* self, Uuid* primary)
 {
+	assert(! task_active(&self->task));
+	self->primary = *primary;
 	task_create(&self->task, "receiver", receiver_task_main, self);
 }
 
 void
 receiver_stop(Receiver* self)
 {
-	rpc(&self->task, MSG_STOP, 0);
-	task_wait(&self->task);
+	if (task_active(&self->task))
+	{
+		rpc(&self->task, MSG_STOP, 0);
+		task_wait(&self->task);
+	}
 	task_free(&self->task);
 	task_init(&self->task);
 }

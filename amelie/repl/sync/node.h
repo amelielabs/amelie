@@ -16,11 +16,12 @@ typedef struct Node Node;
 struct Node
 {
 	Client*  client;
+	Uuid*    primary;
 	Recover  recover;
 	uint64_t coroutine_id;
 	List     link;
 };
 
-void node_init(Node*, Db*, Client*);
+void node_init(Node*, Db*, Uuid*, Client*);
 void node_free(Node*);
 void node_main(Node*);
