@@ -73,6 +73,7 @@ system_eval(SystemEval* self, Str* command)
 	// set request
 	auto req = &self->request;
 	request_init(req);
+	request_set_replay(req);
 	str_set_str(&req->content, command);
 
 	// execute

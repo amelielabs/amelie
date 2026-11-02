@@ -73,6 +73,7 @@ db_write(Db* self, WriteList* write_list)
 	WalContext context =
 	{
 		.list       = write_list,
+		.recover    = NULL,
 		.lsn        = 0,
 		.sync_close = 0,
 		.sync       = 0,
@@ -93,4 +94,22 @@ db_write(Db* self, WriteList* write_list)
 	if (unlikely(context.checkpoint))
 		service_schedule(service, ACTION_CHECKPOINT, 0);
 #endif
+}
+
+void
+db_write_recover(Db* self, Buf* recover, uint64_t lsn)
+{
+	WalContext context =
+	{
+		.list       = NULL,
+		.recover    = recover,
+		.lsn        = lsn,
+		.sync_close = 0,
+		.sync       = 0,
+		.checkpoint = false
+	};
+	wal_write(&self->wal, &context);
+
+	// todo:
+		// schedule sync and checkpoint service
 }

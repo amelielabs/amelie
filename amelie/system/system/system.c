@@ -271,7 +271,7 @@ system_recover(System* self, bool bootstrap)
 
 	// replay wals
 	Recover recover;
-	recover_init(&recover, &self->db);
+	recover_init(&recover, &self->db, false);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 	info("");

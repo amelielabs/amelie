@@ -22,7 +22,7 @@ node_init(Node* self, Db* db, Uuid* primary, Client* client)
 	self->client       = client;
 	self->primary      = primary;
 	list_init(&self->link);
-	recover_init(&self->recover, db);
+	recover_init(&self->recover, db, true);
 }
 
 void
@@ -32,17 +32,17 @@ node_free(Node* self)
 }
 
 static void
-node_replay(Node* self, Buf* data)
+node_replay(Node* self, Buf* batch)
 {
 	auto recover = &self->recover;
 
-	// replay writes
-	auto pos = data->start;
-	auto end = data->position;
+	// validate records and prepare for wal write
+	auto lsn = state_lsn();
+	auto pos = batch->start;
+	auto end = batch->position;
 	while (pos < end)
 	{
 		auto record = (Record*)pos;
-
 		if (!record->lsn || record->size < sizeof(Record) ||
 		    (uint8_t*)record + record->size > end)
 				error("node: invalid record");
@@ -50,6 +50,22 @@ node_replay(Node* self, Buf* data)
 		if (opt_int_of(&config()->wal_crc))
 			if (unlikely(! record_validate(record)))
 				error("node: record crc mismatch");
+
+		if (record->lsn != (lsn + 1))
+			error("node: next lsn mismatch");
+
+		lsn++;
+		pos += record->size;
+	}
+
+	// wal write (update global lsn)
+	db_write_recover(self->recover.db, batch, lsn);
+
+	// execute
+	pos = batch->start;
+	while (pos < end)
+	{
+		auto record = (Record*)pos;
 
 		auto buf = buf_create();
 		buf_emplace(buf, sizeof(RecordMsg) + record->size);

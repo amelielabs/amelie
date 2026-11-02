@@ -45,7 +45,7 @@ recover_sync_add_error(RecoverSync* self)
 }
 
 static inline void
-recover_sync(RecoverSync* self)
+recover_sync(RecoverSync* self, bool panic)
 {
 	// wait for completion
 	uint64_t total = atomic_u64_of(&self->total);
@@ -60,5 +60,10 @@ recover_sync(RecoverSync* self)
 	// check for errors
 	uint64_t errors = atomic_u64_of(&self->errors);
 	if (unlikely(errors))
-		error("recover: error during playback");
+	{
+		if (panic)
+			panic("recover: error during playback");
+		else
+			error("recover: error during playback");
+	}
 }

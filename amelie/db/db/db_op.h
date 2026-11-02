@@ -15,3 +15,4 @@ void db_checkpoint(Db*);
 void db_gc(Db*);
 void db_sync(Db*, uint64_t, bool);
 void db_write(Db*, WriteList*);
+void db_write_recover(Db*, Buf*, uint64_t);

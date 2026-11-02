@@ -16,6 +16,7 @@ typedef struct WalContext WalContext;
 struct WalContext
 {
 	WriteList* list;
+	Buf*       recover;
 	uint64_t   lsn;
 	uint64_t   sync;
 	uint64_t   sync_close;

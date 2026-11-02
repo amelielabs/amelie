@@ -76,13 +76,12 @@ session_run(Session* self)
 	auto access   = &program->access;
 	auto profile  = &self->profile;
 	auto gtr      = &self->gtr;
+	auto req      = self->req;
 
 	// prevent client writes on replica
-	auto recovery = state_is_recovery();
 	auto ro = access_ro(access);
-	if (!ro && !state_is_primary())
-		if (! recovery)
-			error("system is in read-only mode");
+	if (!req->replay && !ro && !state_is_primary())
+		error("system is in read-only mode");
 
 	// [PROFILE]
 	if (compiler->program_profile)
@@ -133,10 +132,10 @@ session_run(Session* self)
 		output_value(output, returning, ret.value);
 
 	// wal write
-	if (!recovery && !ro)
+	if (!req->replay && !ro)
 	{
 		auto write = &gtr->write;
-		request_write(self->req, &portal->endpoint, &write->record_data);
+		request_write(req, &portal->endpoint, &write->record_data);
 		if (multi_user)
 			write_set_flags(write, RECORD_MULTI_USER);
 
@@ -161,14 +160,12 @@ session_run_utility(Session* self)
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	auto gtr      = &self->gtr;
+	auto req      = self->req;
 
 	// prevent client writes on replica
-	auto recovery = state_is_recovery();
 	auto ro = stmt_is_utility_ro(compiler_stmt(compiler));
-	if (! state_is_primary()) {
-		if (!recovery && !ro)
-			error("system is in read-only mode");
-	}
+	if (!req->replay && !ro && !state_is_primary())
+		error("system is in read-only mode");
 
 	// switch session lock to match the program catalog lock
 	//
@@ -227,14 +224,13 @@ session_run_utility(Session* self)
 	}
 
 	// wal write
-	if (tr_active(&gtr->tr) && !recovery)
+	if (tr_active(&gtr->tr) && !req->replay)
 	{
 		Write write;
 		write_init(&write);
 		defer(write_free, &write);
 		write_set_flags(&write, RECORD_UTILITY);
 
-		auto req = self->req;
 		request_write(req, &portal->endpoint, &write.record_data);
 
 		WriteList write_list;

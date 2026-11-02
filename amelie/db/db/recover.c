@@ -23,9 +23,10 @@
 #include <amelie_db.h>
 
 void
-recover_init(Recover* self, Db* db)
+recover_init(Recover* self, Db* db, bool panic)
 {
 	self->db = db;
+	self->panic = panic;
 	recover_sync_init(&self->sync);
 }
 
@@ -38,7 +39,7 @@ recover_free(Recover* self)
 void
 recover_wait(Recover* self)
 {
-	recover_sync(&self->sync);
+	recover_sync(&self->sync, self->panic);
 }
 
 static inline User*
@@ -81,7 +82,7 @@ recover_next(Recover* self, RecordMsg* msg)
 	if (unlikely((msg->record->flags & RECORD_UTILITY) > 0 ||
 	             (msg->record->flags & RECORD_MULTI_USER) > 0))
 	{
-		recover_sync(sync);
+		recover_wait(self);
 		sync_after = true;
 	}
 
@@ -94,7 +95,7 @@ recover_next(Recover* self, RecordMsg* msg)
 	// sync
 	uint64_t total = atomic_u64_of(&sync->total);
 	if (sync_after || (total % 100000) == 0)
-		recover_sync(sync);
+		recover_wait(self);
 }
 
 static void

@@ -24,10 +24,11 @@ typedef enum
 
 struct Request
 {
-	Str rel_user;
-	Str rel;
-	Str content_type;
-	Str content;
+	Str  rel_user;
+	Str  rel;
+	Str  content_type;
+	Str  content;
+	bool replay;
 };
 
 static inline void
@@ -46,6 +47,12 @@ static inline bool
 request_empty(Request* self)
 {
 	return str_empty(&self->rel) && str_empty(&self->content);
+}
+
+static inline void
+request_set_replay(Request* self)
+{
+	self->replay = true;
 }
 
 static inline void
@@ -134,4 +141,6 @@ request_read(Request* self, Endpoint* endpoint, RecordMsg* msg)
 			break;
 		}
 	}
+
+	request_set_replay(self);
 }

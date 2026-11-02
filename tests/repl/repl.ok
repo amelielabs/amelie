@@ -51,6 +51,8 @@ show replicas;
 replicas
 ────────
 create replica "00000000-0000-0000-0000-000000000002" "amelie://127.0.0.1:3483";
+# test: wait for primary connect
+watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = true;
 show replicas;
 
 replicas
@@ -58,12 +60,10 @@ replicas
 {
   "id": "00000000-0000-0000-0000-000000000002",
   "uri": "amelie://127.0.0.1:3483",
-  "connected": false,
-  "lsn": 0,
-  "lag": 1
+  "connected": true,
+  "lsn": 1,
+  "lag": 0
 }
-# test: wait for primary connect
-watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = true;
 # test: write
 create table test (id int primary key);
 insert into test values (1),(2),(3);

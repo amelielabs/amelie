@@ -29,10 +29,10 @@ switch S0;
 show replicas;
 
 create replica "00000000-0000-0000-0000-000000000002" "amelie://127.0.0.1:3483";
-show replicas;
 
 # test: wait for primary connect
 watch show('replica', '00000000-0000-0000-0000-000000000002').connected::bool = true;
+show replicas;
 
 # test: write
 create table test (id int primary key);

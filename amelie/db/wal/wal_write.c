@@ -85,7 +85,23 @@ wal_create(Wal* self, WalContext* context, uint64_t id)
 }
 
 hot static inline void
-wal_write_state(Wal* self, WalFile* current, WalContext* context)
+wal_write_recover(Wal* self, WalFile* current, WalContext* context)
+{
+	// context contains a prepared list of records and lsn to set
+	auto iov = &self->iov;
+	iov_reset(iov);
+	iov_add_buf(iov, context->recover);
+
+	// write
+	wal_file_write(current, iov);
+
+	// sync after write
+	if (opt_int_of(&config()->wal_sync_write))
+		wal_file_sync(current);
+}
+
+hot static inline void
+wal_write_list(Wal* self, WalFile* current, WalContext* context)
 {
 	auto iov = &self->iov;
 	iov_reset(iov);
@@ -120,8 +136,6 @@ wal_write_state(Wal* self, WalFile* current, WalContext* context)
 hot void
 wal_write(Wal* self, WalContext* context)
 {
-	assert(! state_is_recovery());
-
 	// get or create a new wal file
 	spinlock_lock(&self->lock);
 	auto current = self->current;
@@ -143,7 +157,10 @@ wal_write(Wal* self, WalContext* context)
 	// do atomical write of a list of wal records
 	auto on_error = error_catch
 	(
-		wal_write_state(self, current, context)
+		if (context->recover)
+			wal_write_recover(self, current, context);
+		else
+			wal_write_list(self, current, context);
 	);
 	if (unlikely(on_error))
 		panic("wal: wal write failed");
