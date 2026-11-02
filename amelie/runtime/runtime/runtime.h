@@ -27,7 +27,6 @@ struct RuntimeIf
 {
 	void (*state_write)(void*);
 	void (*state_read)(void*, Buf*);
-	void (*invalidate_auth)(void*);
 	void*  arg;
 };
 

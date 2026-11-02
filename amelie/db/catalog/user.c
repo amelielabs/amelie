@@ -58,10 +58,11 @@ static inline User*
 user_allocate(Catalog* catalog, UserConfig* config)
 {
 	User* self = am_malloc(sizeof(User));
-	self->revoked_at = 0;
-	self->config     = user_config_copy(config);
-	self->catalog    = catalog;
-	self->compute    = NULL;
+	self->config      = user_config_copy(config);
+	self->catalog     = catalog;
+	self->compute     = NULL;
+	self->inv_seq     = 0;
+	self->inv_revoked = 0;
 	resource_init(&self->lock, "user");
 
 	// prepare memory usage
@@ -85,14 +86,14 @@ user_sync_revoke(User* self)
 {
 	if (str_empty(&self->config->revoked_at))
 	{
-		self->revoked_at = 0;
+		self->inv_revoked = 0;
 		return;
 	}
 	Timestamp ts;
 	timestamp_init(&ts);
 	timestamp_set(&ts, &self->config->revoked_at);
 	auto time = timestamp_get_unixtime(&ts, runtime()->timezone);
-	self->revoked_at = time / 1000 / 1000;
+	self->inv_revoked = time / 1000 / 1000;
 }
 
 bool
@@ -198,8 +199,8 @@ user_drop_of(Catalog* self,
 		}
 	}
 
-	// invalidate auth caches
-	self->iface->user_invalidate(self, user_of(user));
+	// invalidate tokens
+	user_invalidate(user_of(user));
 
 	// drop user by object
 	rels_drop(&self->users, tr, user);
@@ -286,8 +287,8 @@ user_rename(Catalog* self,
 	// ensure no strict dependecies on the user name
 	catalog_deps_validate_user(self, name, true);
 
-	// invalidate auth caches
-	self->iface->user_invalidate(self, user);
+	// invalidate tokens
+	user_invalidate(user);
 
 	// rename own relations and grants
 	list_foreach_safe(&self->rels.list)
@@ -433,8 +434,8 @@ user_revoke_token(Catalog* self,
 	if (user->config->superuser)
 		error("user '{str}': system user is immutable", name);
 
-	// invalidate auth caches
-	self->iface->user_invalidate(self, user);
+	// invalidate tokens
+	user_invalidate(user);
 
 	// update user
 	log_ddl(&tr->log, &revoke_token_if, NULL, &user->rel);

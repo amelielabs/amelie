@@ -19,7 +19,8 @@ struct User
 	Rel         rel;
 	Resource    lock;
 	Task*       compute;
-	int64_t     revoked_at;
+	uint32_t    inv_seq;
+	uint64_t    inv_revoked;
 	UserConfig* config;
 	Usage       memory;
 	Catalog*    catalog;
@@ -40,4 +41,10 @@ always_inline static inline User*
 user_of(Rel* self)
 {
 	return (User*)self;
+}
+
+static inline void
+user_invalidate(User* self)
+{
+	self->inv_seq++;
 }

@@ -28,12 +28,6 @@ control_state_read(Buf* buf)
 	return runtime()->iface->state_read(runtime()->iface->arg, buf);
 }
 
-static inline void
-control_invalidate_auth(void)
-{
-	runtime()->iface->invalidate_auth(runtime()->iface->arg);
-}
-
 // recovery
 static inline bool
 state_is_recovery(void)

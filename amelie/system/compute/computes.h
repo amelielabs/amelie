@@ -99,41 +99,6 @@ computes_next_connect(Computes* self)
 }
 
 static inline void
-computes_invalidate(Computes* self, User* user)
-{
-	(void)self;
-	(void)user;
-	// todo:
-
-	/*
-	if (self->workers == NULL)
-		return;
-	for (int i = 0; i < self->workers_count; i++)
-	{
-		auto compute = &self->workers[i];
-		auth_cache_invalidate(&compute->auth.cache, user);
-	}
-	*/
-}
-
-static inline void
-computes_invalidate_all(Computes* self)
-{
-	(void)self;
-	// todo:
-
-	/*
-	if (self->workers == NULL)
-		return;
-	for (int i = 0; i < self->workers_count; i++)
-	{
-		auto compute = &self->workers[i];
-		auth_reset(&compute->auth);
-	}
-	*/
-}
-
-static inline void
 computes_deploy(Computes* self, User* user)
 {
 	auto id = computes_next(self);

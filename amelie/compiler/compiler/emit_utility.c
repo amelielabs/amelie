@@ -333,7 +333,6 @@ emit_utility(Compiler* self)
 			encode_str(data, &arg->secret);
 			op1(self, CSYSTEM_SET_SECRET, offset);
 		}
-		lock_catalog = LOCK_SHARED;
 		break;
 	}
 	case STMT_CHECKPOINT:

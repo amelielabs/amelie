@@ -34,9 +34,9 @@ csystem_set_secret(Vm* self, Op* op)
 
 	// create new system secret
 	opt_string_set(&state()->secret, &secret);
+	opt_int_set_next(&state()->secret_seq);
 
 	control_state_write();
-	control_invalidate_auth();
 }
 
 void

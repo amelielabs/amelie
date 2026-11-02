@@ -65,15 +65,12 @@ auth_jwt(Auth* self, Str* token, uint64_t* expire)
 		error("auth: user '{str}' token has expired", &sub);
 
 	// find user
-	auto lock = lock_catalog(LOCK_SHARED);
-	defer(unlock, lock);
-
 	auto user = catalog_find_user(&share()->db->catalog, &sub, false);
 	if (! user)
 		error("auth: user '{str}' not found", &sub);
 
 	// check issued time against user revoked_at
-	if (iat <= user->revoked_at)
+	if (iat <= (int64_t)user->inv_revoked)
 		error("auth: user '{str}' token has been revoked", &sub);
 
 	// validate token using secret
@@ -100,9 +97,6 @@ auth_basic(Auth* self, Str* token)
 	defer_buf(buf);
 
 	// find user
-	auto lock = lock_catalog(LOCK_SHARED);
-	defer(unlock, lock);
-
 	auto user = catalog_find_user(&share()->db->catalog, &name, false);
 	if (! user)
 		error("auth: user '{str}' not found", &name);
@@ -126,9 +120,6 @@ auth_token(Auth* self, Str* token, bool trusted, uint64_t* expire)
 			return self->amelie;
 
 		// set superuser
-		auto lock = lock_catalog(LOCK_SHARED);
-		defer(unlock, lock);
-
 		Str name;
 		str_set(&name, "amelie", 6);
 		self->amelie = catalog_find_user(&share()->db->catalog, &name, true);
@@ -156,26 +147,25 @@ auth_token(Auth* self, Str* token, bool trusted, uint64_t* expire)
 User*
 auth_run(Auth* self, Endpoint* endpoint, Token* token)
 {
+	uint64_t seq_secret = opt_int_of(&state()->secret_seq);
+
 	// validate token
 	auto ref = opt_string_of(&endpoint->token);
 	if (likely(! token_empty(token)))
 	{
-		if (str_compare(ref, &token->token))
+		auto now = time_us();
+		if (likely(token->seq_secret == seq_secret &&
+		           token->expire > now &&
+		           str_compare(ref, &token->token)))
 		{
-			if (token->expire != UINT64_MAX)
-			{
-				auto now = time_us();
-				if (now >= token->expire)
-					token_reset(token);
-			}
-		} else {
-			token_reset(token);
+			auto user = catalog_find_user(&share()->db->catalog, &token->user, true);
+			if (user->inv_seq == token->seq_user)
+				return user;
 		}
-	}
 
-	// use token
-	if (likely(! token_empty(token)))
-		return token->user;
+		// invalidate token
+		token_reset(token);
+	}
 
 	auto trusted = opt_int_of(&endpoint->trusted);
 
@@ -188,6 +178,6 @@ auth_run(Auth* self, Endpoint* endpoint, Token* token)
 		error("auth: superuser can connect only from localhost");
 
 	// set token
-	token_set(token, ref, expire, user);
+	token_set(token, ref, &user->config->name, user->inv_seq, seq_secret, expire);
 	return user;
 }

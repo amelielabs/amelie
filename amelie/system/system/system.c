@@ -21,14 +21,6 @@
 #include <amelie_system.h>
 
 static void
-catalog_if_user_invalidate(Catalog* catalog, User* user)
-{
-	// note: exclusive catalog lock must be held
-	System* self = catalog->iface_arg;
-	computes_invalidate(&self->computes, user);
-}
-
-static void
 catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 {
 	auto user = catalog_find_user(catalog, &udf->config->user, true);
@@ -104,12 +96,11 @@ catalog_if_user_detach(Catalog* catalog, User* user)
 
 static CatalogIf catalog_if =
 {
-	.user_invalidate = catalog_if_user_invalidate,
-	.user_attach     = catalog_if_user_attach,
-	.user_detach     = catalog_if_user_detach,
-	.udf_compile     = catalog_if_udf_compile,
-	.udf_free        = catalog_if_udf_free,
-	.udf_depends     = catalog_if_udf_depends
+	.user_attach = catalog_if_user_attach,
+	.user_detach = catalog_if_user_detach,
+	.udf_compile = catalog_if_udf_compile,
+	.udf_free    = catalog_if_udf_free,
+	.udf_depends = catalog_if_udf_depends
 };
 
 static void*
@@ -193,14 +184,6 @@ system_ctl_state_read(void* arg, Buf* buf)
 	system_state_create(arg, buf);
 }
 
-static void
-system_ctl_invalidate_auth(void* arg)
-{
-	// note: exclusive catalog lock must be held
-	System* self = arg;
-	computes_invalidate_all(&self->computes);
-}
-
 System*
 system_create(void)
 {
@@ -210,7 +193,6 @@ system_create(void)
 	auto control = &self->runtime_if;
 	control->state_write     = system_ctl_state_write;
 	control->state_read      = system_ctl_state_read;
-	control->invalidate_auth = system_ctl_invalidate_auth;
 	control->arg             = self;
 	runtime()->iface         = control;
 

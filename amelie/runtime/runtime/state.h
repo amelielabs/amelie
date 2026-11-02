@@ -29,6 +29,7 @@ struct State
 	Opt  checkpoint;
 	Opt  recover;
 	Opt  secret;
+	Opt  secret_seq;
 	Opt  primary;
 	Opts opts;
 };
