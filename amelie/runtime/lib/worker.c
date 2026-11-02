@@ -47,7 +47,7 @@ worker_free(Worker* self)
 void
 worker_start(Worker* self)
 {
-	task_create(&self->task, "worker", worker_main, self);
+	task_create(&self->task, "bg", worker_main, self);
 }
 
 void

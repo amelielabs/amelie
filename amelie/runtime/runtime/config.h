@@ -27,9 +27,8 @@ struct Config
 	Opt  log_stdout_time;
 	Opt  log_connections;
 	Opt  log_options;
-	// workers
+	// compute
 	Opt  compute;
-	Opt  workers;
 	Opt  cpu_affinity;
 	// wal
 	Opt  wal_crc;

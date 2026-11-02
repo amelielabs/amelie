@@ -10038,7 +10038,7 @@ insert into test values ( 9999 );
 watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
 
 # test: wait replica 2 sync
-watch show('replica', "00000000-0000-0000-0000-000000000002").lsn = show('state').lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000003").lsn = show('state').lsn;
 
 show repl;
 

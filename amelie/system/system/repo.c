@@ -195,15 +195,6 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	logger_set_stdout_time(logger, opt_int_of(&config->log_stdout_time));
 	if (! opt_int_of(&config->log_file))
 		logger_close(logger);
-
-	// reconfigure workers
-	auto workers = &runtime()->workers;
-	auto workers_count = (int)opt_int_of(&config->workers);
-	if (workers_count != workers->workers_count)
-	{
-		workers_stop(workers);
-		workers_start(workers, workers_count);
-	}
 }
 
 void
