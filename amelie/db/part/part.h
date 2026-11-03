@@ -20,8 +20,8 @@ struct Part
 	Index*   in_progress;
 	Heap*    heap;
 	Flats    flats;
+	Subs     subs;
 	PartArg* arg;
-	void*    streams;
 	List     link_cp;
 	List     link;
 };

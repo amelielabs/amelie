@@ -164,7 +164,7 @@ link_main(Link* self)
 		case LINK_STREAM:
 		{
 			// sse
-			link_stream(self);
+			streaming(self);
 			return NULL;
 		}
 		}

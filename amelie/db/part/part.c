@@ -28,8 +28,8 @@ part_allocate(PartArg* arg)
 	self->in_progress   = NULL;
 	self->heap          = heap_allocate(arg->retention);
 	self->arg           = arg;
-	self->streams       = NULL;
 	flats_init(&self->flats);
+	subs_init(&self->subs);
 	list_init(&self->link_cp);
 	list_init(&self->link);
 	return self;
@@ -38,6 +38,9 @@ part_allocate(PartArg* arg)
 void
 part_free(Part* self)
 {
+	// cancel subscribers
+	subs_cancel(&self->subs);
+
 	// free index
 	IndexOp op;
 	index_op_init(&op);
@@ -196,6 +199,9 @@ part_truncate(Part* self)
 		auto flat = flat_allocate(column);
 		flats_add(flats, flat);
 	}
+
+	// cancel subscribers
+	subs_cancel(&self->subs);
 }
 
 bool
@@ -206,6 +212,9 @@ part_retention(Part* self)
 		return false;
 	// cleanup vector stores
 	flats_retention(&self->flats, id);
+
+	// cancel subscribers
+	subs_cancel(&self->subs);
 	return true;
 }
 

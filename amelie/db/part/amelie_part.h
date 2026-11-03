@@ -11,6 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
+// subscriber
+#include "part/sub.h"
+#include "part/subs.h"
+
+// part
 #include "part/part_arg.h"
 #include "part/part.h"
 #include "part/part_op.h"

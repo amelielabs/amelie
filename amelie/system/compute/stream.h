@@ -11,34 +11,33 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Stream  Stream;
-typedef struct Streams Streams;
+typedef struct Stream Stream;
 
 struct Stream
 {
-	Msg          msg;
-	Msg          msg_cancel;
-	bool         wait;
-	bool         shutdown;
-	bool         ready;
-	Event        on_complete;
-	Event        on_cancel;
-	// iterator
 	HeapIterator it;
-	StreamPos    pos;
+	Sub          sub;
 	Buf          data;
-	Timeline     timeline;
-	// partition state
-	Task*        part_task;
+	StreamPos    pos;
 	Part*        part;
-	Stream*      part_link;
-	Streams*     streams;
-	List         link;
 };
 
-void stream_init(Stream*, Streams*, Part*, Timeline*);
+void stream_init(Stream*, StreamPos*, Part*);
 void stream_free(Stream*);
-void stream_next(Stream*);
-void stream_cancel(Stream*);
-void streaming_cancel(Part*);
-void streaming_resume(Part*);
+int  stream_next(Stream*);
+
+static inline void
+stream_attach(Stream* self)
+{
+	// add to the wait list
+	subs_add(&self->part->subs, &self->sub);
+}
+
+static inline bool
+stream_detach(Stream* self)
+{
+	auto cancel = self->sub.cancel;
+	if (self->sub.wait)
+		subs_remove(&self->part->subs, &self->sub);
+	return cancel;
+}
