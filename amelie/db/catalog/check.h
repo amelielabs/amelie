@@ -60,12 +60,12 @@ user_check_access(User* self, Access* access)
 	// check permissions on the relations
 	if (self->config->superuser)
 		return;
-	for (auto i = 0; i < access->list_count; i++)
+	for (auto i = 0; i < access->count; i++)
 	{
-		auto record = access_at(access, i);
-		if (record->perm == PERM_NONE)
+		auto rel = access_at(access, i);
+		if (rel->perm == PERM_NONE)
 			continue;
-		user_check_permission(self, record->rel, record->perm);
+		user_check_permission(self, rel->rel, rel->perm);
 	}
 }
 

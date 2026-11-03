@@ -11,10 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct AccessRecord AccessRecord;
-typedef struct Access       Access;
+typedef struct AccessRel AccessRel;
+typedef struct Access    Access;
 
-struct AccessRecord
+struct AccessRel
 {
 	Rel*     rel;
 	uint32_t perm;
@@ -22,46 +22,56 @@ struct AccessRecord
 
 struct Access
 {
+	int  count;
+	int  count_users;
 	Buf  list;
-	int  list_count;
+	Buf  list_users;
 	bool ro;
-	bool multi_user;
 };
 
-static inline AccessRecord*
+static inline AccessRel*
 access_at(Access* self, int order)
 {
-	return &((AccessRecord*)self->list.start)[order];
+	return &((AccessRel*)self->list.start)[order];
+}
+
+static inline Rel*
+access_at_user(Access* self, int order)
+{
+	return ((Rel**)self->list_users.start)[order];
 }
 
 static inline void
 access_init(Access* self)
 {
-	self->ro         = true;
-	self->multi_user = false;
-	self->list_count = 0;
+	self->ro          = true;
+	self->count       = 0;
+	self->count_users = 0;
 	buf_init(&self->list);
+	buf_init(&self->list_users);
 }
 
 static inline void
 access_free(Access* self)
 {
 	buf_free(&self->list);
+	buf_free(&self->list_users);
 }
 
 static inline void
 access_reset(Access* self)
 {
-	self->ro         = true;
-	self->multi_user = false;
-	self->list_count = 0;
+	self->ro          = true;
+	self->count       = 0;
+	self->count_users = 0;
 	buf_reset(&self->list);
+	buf_reset(&self->list_users);
 }
 
 static inline bool
 access_empty(Access* self)
 {
-	return !self->list_count;
+	return !self->count;
 }
 
 static inline bool
@@ -73,7 +83,7 @@ access_ro(Access* self)
 static inline bool
 access_multi_user(Access* self)
 {
-	return self->multi_user;
+	return self->count_users > 1;
 }
 
 hot static inline void
@@ -86,55 +96,65 @@ access_add(Access* self, Rel* rel, uint32_t perm)
 		self->ro = false;
 	}
 
-	for (auto i = 0; i < self->list_count; i++)
+	// add unique relation
+	for (auto i = 0; i < self->count; i++)
 	{
-		auto record = access_at(self, i);
-		if (record->rel == rel)
+		auto ref = access_at(self, i);
+		if (ref->rel == rel)
 		{
-			record->perm |= perm;
+			ref->perm |= perm;
 			return;
 		}
-		if (! str_compare(record->rel->user, rel->user))
-			self->multi_user = true;
 	}
 
-	auto record = (AccessRecord*)buf_emplace(&self->list, sizeof(AccessRecord));
-	record->rel  = rel;
-	record->perm = perm;
-	self->list_count++;
+	auto ref  = (AccessRel*)buf_emplace(&self->list, sizeof(AccessRel));
+	ref->rel  = rel;
+	ref->perm = perm;
+	self->count++;
+
+	// add unique user
+	for (auto i = 0; i < self->count_users; i++)
+	{
+		auto user = access_at_user(self, i);
+		if (user == rel->parent)
+			return;
+	}
+
+	buf_write(&self->list_users, &rel->parent, sizeof(Rel**));
+	self->count_users++;
 }
 
 hot static inline void
 access_merge(Access* self, Access* access)
 {
-	for (auto i = 0; i < access->list_count; i++)
+	for (auto i = 0; i < access->count; i++)
 	{
-		auto record = access_at(access, i);
-		access_add(self, record->rel, record->perm);
+		auto rel = access_at(access, i);
+		access_add(self, rel->rel, rel->perm);
 	}
 }
 
-hot static inline AccessRecord*
-access_find_user(Access* self, Str* user)
+hot static inline AccessRel*
+access_find(Access* self, Str* user, Str* name)
 {
-	for (auto i = 0; i < self->list_count; i++)
+	for (auto i = 0; i < self->count; i++)
 	{
-		auto record = access_at(self, i);
-		if (str_compare(record->rel->user, user))
-			return record;
+		auto rel = access_at(self, i);
+		if (str_compare(rel->rel->user, user) &&
+		    str_compare(rel->rel->name, name))
+			return rel;
 	}
 	return NULL;
 }
 
-hot static inline AccessRecord*
-access_find(Access* self, Str* user, Str* name)
+hot static inline Rel*
+access_find_user(Access* self, Str* name)
 {
-	for (auto i = 0; i < self->list_count; i++)
+	for (auto i = 0; i < self->count_users; i++)
 	{
-		auto record = access_at(self, i);
-		if (str_compare(record->rel->user, user) &&
-		    str_compare(record->rel->name, name))
-			return record;
+		auto rel = access_at_user(self, i);
+		if (str_compare(rel->name, name))
+			return rel;
 	}
 	return NULL;
 }

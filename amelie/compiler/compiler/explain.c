@@ -23,7 +23,7 @@
 static void
 explain_access(Access* self, Buf* buf)
 {
-	for (auto i = 0; i < self->list_count; i++)
+	for (auto i = 0; i < self->count; i++)
 	{
 		auto record = access_at(self, i);
 
@@ -60,8 +60,8 @@ explain(Compiler* self, Program* program, Udf* udf, bool calls)
 
 	// main
 	auto access = &program->access;
-	auto multi_user = access->multi_user;
-	if (access->list_count > 0 && !multi_user)
+	auto multi_user = access_multi_user(access);
+	if (access->count > 0 && !multi_user)
 	{
 		auto first = access_at(access, 0);
 		if (! str_compare(&self->parser.local->user, first->rel->user))
@@ -85,7 +85,7 @@ explain(Compiler* self, Program* program, Udf* udf, bool calls)
 	// calls
 	if (calls)
 	{
-		for (auto i = 0; i < access->list_count; i++)
+		for (auto i = 0; i < access->count; i++)
 		{
 			auto record = access_at(access, i);
 			if (record->perm & PERM_EXECUTE)

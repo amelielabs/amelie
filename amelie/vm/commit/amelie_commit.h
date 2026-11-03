@@ -18,7 +18,6 @@
 #include "commit/program.h"
 
 // global transaction
-#include "commit/peer.h"
 #include "commit/gtr.h"
 
 // group commit

@@ -41,7 +41,7 @@ udf_show(Udf* self, Buf* buf, Str* user, int flags)
 }
 
 static inline Udf*
-udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
+udf_allocate_as(Rel* user, UdfConfig* config, void* data, UdfFree free, void* free_arg)
 {
 	auto self = (Udf*)am_malloc(sizeof(Udf));
 	self->free     = free;
@@ -54,6 +54,7 @@ udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
 	rel_init(rel, REL_UDF);
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
+	rel_set_parent(rel, user);
 	rel_set_description(rel, &self->config->description);
 	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)udf_show);
@@ -62,9 +63,9 @@ udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
 }
 
 static inline Udf*
-udf_allocate(UdfConfig* config, UdfFree free, void* free_arg)
+udf_allocate(Rel* user, UdfConfig* config, UdfFree free, void* free_arg)
 {
-	return udf_allocate_as(udf_config_copy(config), NULL, free, free_arg);
+	return udf_allocate_as(user, udf_config_copy(config), NULL, free, free_arg);
 }
 
 static void
@@ -73,9 +74,11 @@ replace_if_commit(Log* self, LogOp* op)
 	// free previous config and data by constructing
 	// temprorary udf object
 	Catalog* catalog = op->iface_arg;
+	auto udf  = udf_of(op->rel);
 	auto data = (void**)log_data_of(self, op);
-	auto tmp = udf_allocate_as(data[0], data[1], catalog->iface->udf_free,
-	                           catalog->iface_arg);
+	auto tmp  = udf_allocate_as(udf->rel.parent, data[0], data[1],
+	                            catalog->iface->udf_free,
+	                            catalog->iface_arg);
 	udf_free(tmp, false);
 }
 
@@ -86,7 +89,8 @@ replace_if_abort(Log* self, LogOp* op)
 	// temprorary udf object
 	Catalog* catalog = op->iface_arg;
 	auto udf = udf_of(op->rel);
-	auto tmp = udf_allocate_as(udf->config, udf->data, catalog->iface->udf_free,
+	auto tmp = udf_allocate_as(udf->rel.parent, udf->config,
+	                           udf->data, catalog->iface->udf_free,
 	                           catalog->iface_arg);
 	udf_free(tmp, false);
 
@@ -135,7 +139,7 @@ udf_replace(Catalog*   self,
 		      &config->name);
 
 	// create and compile new temporary udf
-	auto udf_new = udf_allocate(config, self->iface->udf_free, self->iface_arg);
+	auto udf_new = udf_allocate(udf->rel.parent, config, self->iface->udf_free, self->iface_arg);
 	defer(rel_free, udf_new);
 
 	// compile on creation
@@ -199,7 +203,8 @@ udf_create(Catalog*   self,
 	catalog_limit(self, tr, REL_UDF, LIMIT_FUNCTIONS);
 
 	// create udf
-	udf = udf_allocate(config, self->iface->udf_free, self->iface_arg);
+	auto user = catalog_find_user(self, &config->user, true);
+	udf = udf_allocate(&user->rel, config, self->iface->udf_free, self->iface_arg);
 	rels_create(&self->rels, tr, &udf->rel);
 
 	// compile on creation

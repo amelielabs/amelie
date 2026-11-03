@@ -16,7 +16,6 @@ typedef struct Gtr Gtr;
 struct Gtr
 {
 	Msg     msg;
-	Peers   peers;
 	Access* access;
 	Tr      tr;
 	Usage   usage;
@@ -30,7 +29,6 @@ gtr_init(Gtr* self)
 {
 	self->access = NULL;
 	self->local  = NULL;
-	peers_init(&self->peers);
 	event_init(&self->on_commit);
 	tr_init(&self->tr);
 	write_init(&self->write);
@@ -43,7 +41,6 @@ gtr_reset(Gtr* self)
 {
 	self->access = NULL;
 	self->local  = NULL;
-	peers_reset(&self->peers);
 	tr_reset(&self->tr);
 	write_reset(&self->write);
 	usage_reset(&self->usage);
@@ -53,15 +50,34 @@ static inline void
 gtr_free(Gtr* self)
 {
 	gtr_reset(self);
-	peers_free(&self->peers);
 	tr_free(&self->tr);
 	write_free(&self->write);
 }
 
 static inline bool
-gtr_active(Gtr* self)
+gtr_lock(Access* self, User* user)
 {
-	return !peers_empty(&self->peers);
+	if (! self->count_users)
+		return false;
+
+	// same user (shared) or cross-user access (exclusive)
+	LockId lock = LOCK_SHARED;
+	if (self->count == 1)
+	{
+		if (access_at_user(self, 0) != &user->rel)
+			lock = LOCK_EXCLUSIVE;
+	} else {
+		lock = LOCK_EXCLUSIVE;
+	}
+
+	// lock users
+	for (auto i = 0; i < self->count_users; i++)
+	{
+		auto ref = user_of(access_at_user(self, i));
+		lock(&ref->lock, lock);
+	}
+
+	return lock == LOCK_EXCLUSIVE;
 }
 
 static inline bool
@@ -86,9 +102,6 @@ gtr_begin(Gtr* self, Local* local, User* user, Access* access)
 	// set access
 	self->access = access;
 
-	// prepare peers
-	peers_prepare(&self->peers, access);
-
 	// take user locks
-	return peers_lock(&self->peers, user);
+	return gtr_lock(access, user);
 }

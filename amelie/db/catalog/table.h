@@ -20,7 +20,6 @@ struct Table
 	PartArg      part_arg;
 	Retention    retention;
 	TableConfig* config;
-	User*        user;
 	Catalog*     catalog;
 };
 

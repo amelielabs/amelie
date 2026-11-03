@@ -53,7 +53,6 @@ table_allocate(Catalog*     catalog,
 	self->config  = table_config_copy(config);
 	self->catalog = catalog;
 	self->part    = NULL;
-	self->user    = user;
 
 	// part context
 	auto arg = &self->part_arg;
@@ -71,6 +70,7 @@ table_allocate(Catalog*     catalog,
 	rel_init(rel, REL_TABLE);
 	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
+	rel_set_parent(rel, &user->rel);
 	rel_set_description(rel, &self->config->description);
 	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)table_show);
