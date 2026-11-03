@@ -24,11 +24,10 @@ struct Vm
 	Program*       program;
 	Quota*         quota;
 	Gtr*           gtr;
-	bool           allow_close;
 	Calls          calls;
 };
 
 void vm_init(Vm*, Quota*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Gtr*, Program*, Value*, Return*, bool);
+void vm_run(Vm*, Gtr*, Program*, Value*, Return*);

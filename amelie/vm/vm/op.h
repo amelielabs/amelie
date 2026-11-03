@@ -323,9 +323,6 @@ enum
 	CDDL,
 	CDDL_CREATE_INDEX,
 
-	// compute
-	CCLOSE,
-
 	// var
 	CVAR,
 	CVAR_MOV,

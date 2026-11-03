@@ -42,4 +42,4 @@ ast_while_allocate(Block* block)
 	return self;
 }
 
-bool parse_while(Stmt*);
+void parse_while(Stmt*);

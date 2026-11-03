@@ -20,23 +20,6 @@
 #include <amelie_plan.h>
 #include <amelie_compiler.h>
 
-void
-emit_close(Compiler* self, Stmt* stmt)
-{
-	(void)self;
-	(void)stmt;
-#if 0
-	// early release control for cross tenant transactions
-	if (! access_multi_user(&self->program->access))
-		return;
-
-	// mark last sending operation in the main block
-	auto block = compiler_main(self);
-	if (stmt->block == block && block->stmts.last_send == stmt)
-		op0(self, CCLOSE);
-#endif
-}
-
 hot static void
 emit_into(Compiler* self, Stmt* stmt)
 {
@@ -176,8 +159,6 @@ emit_block(Compiler* self, Block* block)
 		if (stmt->ret && stmt->ret->count_into > 0)
 			emit_into(self, stmt);
 
-		emit_close(self, stmt);
-
 		// RETURN var | stmt
 		if (stmt->is_return)
 			emit_return(self, stmt);
@@ -211,11 +192,4 @@ emit(Compiler* self)
 
 	// emit main block
 	emit_block(self, main->blocks.list);
-
-#if 0
-	// mark last sending operation in the main block
-	auto block = compiler_main(self);
-	if (stmt->block == block && block->stmts.last_send == stmt)
-		program->send_last = op_pos(self) - 1;
-#endif
 }

@@ -32,7 +32,6 @@ vm_init(Vm* self, Quota* quota)
 	self->code        = NULL;
 	self->program     = NULL;
 	self->quota       = quota;
-	self->allow_close = true;
 	reg_init(&self->r);
 	stack_init(&self->stack);
 	calls_init(&self->calls);
@@ -62,7 +61,6 @@ vm_reset(Vm* self)
 	self->code        = NULL;
 	self->program     = NULL;
 	self->args        = NULL;
-	self->allow_close = true;
 }
 
 #define op_start goto *ops[(op)->op]
@@ -74,14 +72,12 @@ vm_run(Vm*      self,
        Gtr*     gtr,
        Program* program,
        Value*   args,
-       Return*  ret,
-       bool     allow_close)
+       Return*  ret)
 {
-	self->gtr         = gtr;
-	self->code        = &program->code;
-	self->program     = program;
-	self->args        = args;
-	self->allow_close = allow_close;
+	self->gtr     = gtr;
+	self->code    = &program->code;
+	self->program = program;
+	self->args    = args;
 
 	auto local     = gtr->local;
 	auto code      = &program->code;
@@ -398,9 +394,6 @@ vm_run(Vm*      self,
 		// ddl
 		&&cddl,
 		&&cddl_create_index,
-
-		// compute
-		&&cclose,
 
 		// var
 		&&cvar,
@@ -2145,10 +2138,6 @@ cddl:
 
 cddl_create_index:
 	cddl_create_index(self, op);
-	op_next;
-
-cclose:
-	cclose(self, op);
 	op_next;
 
 cvar:

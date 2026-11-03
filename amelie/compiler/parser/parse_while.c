@@ -17,7 +17,7 @@
 #include <amelie_vm>
 #include <amelie_parser.h>
 
-bool
+void
 parse_while(Stmt* self)
 {
 	// WHILE expr DO
@@ -39,7 +39,4 @@ parse_while(Stmt* self)
 
 	// END
 	stmt_expect(self, KEND);
-
-	// if while block sends data
-	return stmt->block->stmts.last_send != NULL;
 }

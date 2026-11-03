@@ -43,7 +43,7 @@ parse_if_block(Stmt* self)
 	return cond;
 }
 
-bool
+void
 parse_if(Stmt* self)
 {
 	// IF expr THEN
@@ -81,16 +81,4 @@ parse_if(Stmt* self)
 
 	// mark that inner block has break/continue statements
 	block_derive_break(self, first->block);
-
-	// return true if any of the blocks send data
-	auto ref = stmt->conds.list;
-	for (; ref; ref = ref->next)
-		if (ast_if_cond_of(ref->ast)->block->stmts.last_send)
-			return true;
-
-	// else stmt sends data
-	if (stmt->cond_else && stmt->cond_else->stmts.last_send)
-		return true;
-
-	return false;
 }

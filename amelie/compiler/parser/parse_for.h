@@ -40,4 +40,4 @@ ast_for_allocate(Block* block)
 	return self;
 }
 
-bool parse_for(Stmt*);
+void parse_for(Stmt*);

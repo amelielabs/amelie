@@ -110,8 +110,7 @@ session_run(Session* self)
 		       gtr,
 		       program,
 		       compiler->program_args,
-		       &ret,
-		       true);
+		       &ret);
 	);
 	if (on_error)
 	{
@@ -190,8 +189,7 @@ session_run_utility(Session* self)
 		       gtr,
 		       program,
 		       NULL,
-		       &ret,
-		       true);
+		       &ret);
 	);
 
 	if (unlikely(on_error))

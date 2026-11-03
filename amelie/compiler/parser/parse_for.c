@@ -17,7 +17,7 @@
 #include <amelie_vm>
 #include <amelie_parser.h>
 
-bool
+void
 parse_for(Stmt* self)
 {
 	// FOR alias IN from_target DO
@@ -48,7 +48,4 @@ parse_for(Stmt* self)
 
 	// END
 	stmt_expect(self, KEND);
-
-	// if for block sends data
-	return stmt->block->stmts.last_send != NULL;
 }

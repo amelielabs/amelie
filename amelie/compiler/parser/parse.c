@@ -376,19 +376,16 @@ parse_stmt(Stmt* self)
 	case KINSERT:
 		self->id  = STMT_INSERT;
 		parse_insert(self);
-		self->block->stmts.last_send = self;
 		break;
 
 	case KUPDATE:
 		self->id = STMT_UPDATE;
 		parse_update(self);
-		self->block->stmts.last_send = self;
 		break;
 
 	case KDELETE:
 		self->id = STMT_DELETE;
 		parse_delete(self);
-		self->block->stmts.last_send = self;
 		break;
 
 	case KSELECT:
@@ -397,34 +394,27 @@ parse_stmt(Stmt* self)
 		auto select = parse_select(self, self->block->from, false);
 		self->ast = &select->ast;
 		self->ret = &select->ret;
-
-		auto outer = select->from.list;
-		if (outer && target_is_table(outer))
-			self->block->stmts.last_send = self;
 		break;
 	}
 
 	case KIF:
 	{
 		self->id = STMT_IF;
-		if (parse_if(self))
-			self->block->stmts.last_send = self;
+		parse_if(self);
 		break;
 	}
 
 	case KFOR:
 	{
 		self->id = STMT_FOR;
-		if (parse_for(self))
-			self->block->stmts.last_send = self;
+		parse_for(self);
 		break;
 	}
 
 	case KWHILE:
 	{
 		self->id = STMT_WHILE;
-		if (parse_while(self))
-			self->block->stmts.last_send = self;
+		parse_while(self);
 		break;
 	}
 

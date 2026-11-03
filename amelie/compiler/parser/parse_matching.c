@@ -25,9 +25,6 @@ parse_matching(Stmt* self, From* from, Table* table)
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;
 
-	// mark as closing
-	self->block->stmts.last_send = self;
-
 	// column
 	auto name = stmt_expect(self, KNAME);
 	auto column = columns_find(table_columns(table), &name->string);

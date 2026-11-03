@@ -19,7 +19,6 @@ Op*  cupsert(Vm*, Op*);
 void cdelete(Vm*, Op*);
 void cupdate(Vm*, Op*);
 
-void cclose(Vm*, Op*);
 void cunion_limit(Vm*, Op*);
 void cunion_offset(Vm*, Op*);
 void cmatching(Vm*, Op*);

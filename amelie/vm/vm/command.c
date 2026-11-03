@@ -215,17 +215,6 @@ cupdate(Vm* self, Op* op)
 }
 
 void
-cclose(Vm* self, Op* op)
-{
-	unused(self);
-	unused(op);
-	/*
-	if (self->allow_close)
-		dispatch_close(&self->gtr->dispatch);
-	*/
-}
-
-void
 cunion_limit(Vm* self, Op* op)
 {
 	// [union, limit]
@@ -367,7 +356,7 @@ ccall_udf(Vm* self, Op* op)
 	Vm vm;
 	vm_init(&vm, self->quota);
 	defer(vm_free, &vm);
-	vm_run(&vm, self->gtr, program, argv, &ret, false);
+	vm_run(&vm, self->gtr, program, argv, &ret);
 	if (ret.value)
 		value_move(result, ret.value);
 

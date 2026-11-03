@@ -78,9 +78,6 @@ emit_if(Compiler* self, Stmt* stmt)
 	auto _stop = op_pos(self);
 	for (auto i = 0; i < jntr_stop_count; i++)
 		op_set_jmp(self, jntr_stop[i], _stop);
-
-	// mark last sending operation in the main block
-	emit_close(self, stmt);
 }
 
 static void
@@ -105,9 +102,6 @@ emit_for(Compiler* self, Stmt* stmt)
 	     NULL,
 	     emit_for_on_match,
 	     fora);
-
-	// mark last sending operation in the main block
-	emit_close(self, stmt);
 }
 
 hot void
@@ -152,9 +146,6 @@ emit_while(Compiler* self, Stmt* stmt)
 	// resolve nested breaks/continues
 	op_set_jmp_list(self, &whilea->breaks, _stop);
 	op_set_jmp_list(self, &whilea->continues, _start);
-
-	// mark last sending operation in the main block
-	emit_close(self, stmt);
 }
 
 hot void

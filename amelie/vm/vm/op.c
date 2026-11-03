@@ -330,9 +330,6 @@ OpDesc ops[] =
 	{ CDDL, "ddl" },
 	{ CDDL_CREATE_INDEX, "ddl_create_index" },
 
-	// compute
-	{ CCLOSE, "close" },
-
 	// var
 	{ CVAR, "var" },
 	{ CVAR_MOV, "var_mov" },
