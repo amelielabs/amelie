@@ -26,7 +26,6 @@ bench_init(Bench* self, Main* main)
 		{ "users",     OPT_INT,    OPT_C|OPT_Z, &self->opt_users,     NULL,  1     },
 		{ "clients",   OPT_INT,    OPT_C|OPT_Z, &self->opt_clients,   NULL,  32    },
 		{ "duration",  OPT_INT,    OPT_C|OPT_Z, &self->opt_duration,  NULL,  10    },
-		{ "scale",     OPT_INT,    OPT_C|OPT_Z, &self->opt_scale,     NULL,  1     },
 		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->opt_batch,     NULL,  64    },
 		{ "histogram", OPT_BOOL,   OPT_C,       &self->opt_histogram, NULL,  false },
 		{  NULL,       0,          0,            NULL,                NULL,  0     }

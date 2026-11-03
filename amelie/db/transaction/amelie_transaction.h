@@ -14,8 +14,6 @@
 // transaction
 #include "transaction/log.h"
 #include "transaction/tr.h"
-#include "transaction/tr_cache.h"
-#include "transaction/tr_list.h"
 
 // commit
 #include "transaction/commit.h"

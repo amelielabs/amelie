@@ -233,7 +233,7 @@ bench_tpcb_deploy(BenchClient* self)
 	memset(filler->start, ' ', 100);
 
 	auto batch = (int)opt_int_of(&self->bench->opt_batch);
-	auto scale = (int)opt_int_of(&self->bench->opt_scale);
+	auto scale = 1;
 	auto buf = buf_create();
 	defer_buf(buf);
 
@@ -271,7 +271,7 @@ bench_tpcb_main(BenchClient* self)
 {
 	auto bench  = self->bench;
 	auto batch  = opt_int_of(&bench->opt_batch);
-	auto scale  = opt_int_of(&bench->opt_scale);
+	auto scale  = 1;
 	auto client = self->client;
 
 	Buf buf;

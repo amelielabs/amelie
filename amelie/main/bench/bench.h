@@ -41,7 +41,6 @@ struct Bench
 	Opt          opt_users;
 	Opt          opt_clients;
 	Opt          opt_duration;
-	Opt          opt_scale;
 	Opt          opt_batch;
 	Opt          opt_histogram;
 	Opts         opts;
