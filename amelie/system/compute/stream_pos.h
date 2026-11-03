@@ -36,22 +36,19 @@ stream_pos_empty(StreamPos* self)
 static inline int
 stream_pos_read(StreamPos* self, Str* spec)
 {
-	// <page>:<offset>
-	Str pos = *spec;
-
-	// page
-	Str str;
-	if (! str_split(&pos, &str, ':'))
-		return -1;
-	str_advance(&pos, str_size(&str) + 1);
+	// <value>
 	uint64_t value;
-	if (str_u64(&str, &value) == -1 || value > UINT32_MAX)
+	if (str_u64(spec, &value) == -1)
 		return -1;
-	self->page = value;
 
-	// page_offset
-	if (str_u64(&pos, &value) == -1 || value > UINT32_MAX)
+	auto size = (2 * 1024 * 1024);
+	self->page = value / size;
+	self->page_offset = value % size;
+
+	if (self->page > (1 << 17))
 		return -1;
-	self->page_offset = value;
+	if (self->page_offset > (1 << 21))
+		return -1;
+
 	return 0;
 }
