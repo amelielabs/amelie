@@ -61,6 +61,7 @@ user_allocate(Catalog* catalog, UserConfig* config)
 	self->config      = user_config_copy(config);
 	self->catalog     = catalog;
 	self->compute     = NULL;
+	self->commit      = 0;
 	self->inv_seq     = 0;
 	self->inv_revoked = 0;
 	resource_init(&self->lock, "user");

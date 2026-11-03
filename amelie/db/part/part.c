@@ -198,6 +198,17 @@ part_truncate(Part* self)
 	}
 }
 
+bool
+part_retention(Part* self)
+{
+	uint32_t id;
+	if (likely(! storage_retention(&self->heap->storage, &id)))
+		return false;
+	// cleanup vector stores
+	flats_retention(&self->flats, id);
+	return true;
+}
+
 void
 part_column_create(Part* self, Column* column)
 {

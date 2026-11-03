@@ -60,6 +60,15 @@ flats_free(Flats* self)
 	self->list_count = 0;
 }
 
+hot static inline void
+flats_retention(Flats* self, uint32_t wm)
+{
+	auto pos = (Flat**)self->list.start;
+	auto end = (Flat**)self->list.position;
+	for (; pos < end; pos++)
+		flat_retention(*pos, wm);
+}
+
 static inline void
 flats_add(Flats* self, Flat* flat)
 {

@@ -176,7 +176,7 @@ bench_tpcb_deploy(BenchClient* self)
 		"create table bench_branches (bid int primary key using hash, bbalance int, filler text)",
 		"create table bench_tellers (tid int primary key using hash, bid int, tbalance int, filler text)",
 		"create table bench_accounts (aid int primary key using hash, bid int, abalance int, filler text)",
-		"create table bench_history (tid int, bid int, aid int, delta int, time timestamp, filler text)",
+		"create table bench_history (tid int, bid int, aid int, delta int, time timestamp, filler text) retention 100mb",
 		 NULL
 	};
 

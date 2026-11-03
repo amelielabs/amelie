@@ -89,12 +89,8 @@ access_multi_user(Access* self)
 hot static inline void
 access_add(Access* self, Rel* rel, uint32_t perm)
 {
-	if ((perm & PERM_INSERT) ||
-	    (perm & PERM_UPDATE) ||
-	    (perm & PERM_DELETE))
-	{
+	if (permission_is_dml(perm))
 		self->ro = false;
-	}
 
 	// add unique relation
 	for (auto i = 0; i < self->count; i++)

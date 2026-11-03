@@ -24,7 +24,7 @@ bench_decre_deploy(BenchClient* self)
 	str_set_cstr(&str, "create table accounts(id int primary key using hash, money decimal default 100.0)");
 	client_execute(client, &str, NULL);
 
-	str_set_cstr(&str, "create table history(src int, dst int, amount decimal)");
+	str_set_cstr(&str, "create table history(src int, dst int, amount decimal) retention 100mb");
 	client_execute(client, &str, NULL);
 
 	// prepare dataset

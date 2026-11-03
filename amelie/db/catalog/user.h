@@ -19,10 +19,11 @@ struct User
 	Rel         rel;
 	Resource    lock;
 	Task*       compute;
+	int         commit;
 	uint32_t    inv_seq;
 	uint64_t    inv_revoked;
-	UserConfig* config;
 	Usage       memory;
+	UserConfig* config;
 	Catalog*    catalog;
 };
 

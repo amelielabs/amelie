@@ -68,6 +68,28 @@ session_free(Session *self)
 }
 
 hot static inline void
+session_retention(Session* self, Access* access, User* user)
+{
+	// execute only if no commit pending wal writes for the user
+	if (access->ro || user->commit > 0)
+		return;
+
+	for (auto i = 0; i < access->count; i++)
+	{
+		auto ref = access_at(access, i);
+		if (! permission_is_dml(ref->perm))
+			continue;
+		auto table = table_of(ref->rel);
+		if (table->config->retention == -1)
+			continue;
+		part_retention(table->part);
+	}
+
+	(void)self;
+	// todo: cancel all matching streamers
+}
+
+hot static inline void
 session_run(Session* self)
 {
 	auto portal   = self->portal;
@@ -100,6 +122,9 @@ session_run(Session* self)
 
 	// lock users
 	auto multi_user = gtr_begin(gtr, &portal->local, portal->user, access);
+
+	// do retention
+	session_retention(self, access, portal->user);
 
 	// execute
 	Return ret;

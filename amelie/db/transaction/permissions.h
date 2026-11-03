@@ -50,3 +50,11 @@ int      permission_of(Str*, uint32_t*);
 char*    permission_name_of(uint32_t);
 uint32_t permission_next(uint32_t*);
 uint32_t permission_validate(Str*, Str*, uint32_t, uint32_t);
+
+static inline bool
+permission_is_dml(uint32_t perm)
+{
+	return (perm & PERM_INSERT) ||
+	       (perm & PERM_UPDATE) ||
+	       (perm & PERM_DELETE);
+}
